@@ -493,11 +493,11 @@ package Ada.Strings.Wide_Wide_Bounded is
       --  the Wide_Wide_Superbounded package.
 
       Null_Bounded_Wide_Wide_String : constant Bounded_Wide_Wide_String :=
-                                   [Max_Length         => Max_Length,
+                                   (Max_Length         => Max_Length,
                                     Current_Length     => 0,
                                     Data               =>
                                       [1 .. Max_Length =>
-                                        Wide_Wide_Superbounded.Wide_Wide_NUL]];
+                                        Wide_Wide_Superbounded.Wide_Wide_NUL]);
 
       pragma Inline (To_Bounded_Wide_Wide_String);
 

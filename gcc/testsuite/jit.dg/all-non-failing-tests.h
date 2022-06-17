@@ -77,6 +77,13 @@
 /* test-builtin-unreachable.c: We don't add this one, since it touches
    the optimization level of the context as a whole.  */
 
+/* test-bitcast.c */
+#define create_code create_code_bitcast
+#define verify_code verify_code_bitcast
+#include "test-bitcast.c"
+#undef create_code
+#undef verify_code
+
 /* test-calling-external-function.c */
 #define create_code create_code_calling_external_function
 #define verify_code verify_code_calling_external_function
@@ -306,6 +313,12 @@
 #undef create_code
 #undef verify_code
 
+/* test-register-variable.c: This can't be in the testcases array as it
+   is target-specific.  */
+
+/* test-setting-alignment.c: This can't be in the testcases array as it
+   is target-specific.  */
+
 /* test-string-literal.c */
 #define create_code create_code_string_literal
 #define verify_code verify_code_string_literal
@@ -400,6 +413,9 @@ const struct testcase testcases[] = {
   {"builtin-memcpy",
    create_code_builtin_memcpy,
    verify_code_builtin_memcpy},
+  {"bitcast",
+   create_code_bitcast,
+   verify_code_bitcast},
   {"calling_external_function",
    create_code_calling_external_function,
    verify_code_calling_external_function},

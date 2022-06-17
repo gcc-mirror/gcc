@@ -182,6 +182,33 @@ enum flatten = attribute("flatten");
 enum no_icf = attribute("no_icf");
 
 /**
+ * The `@no_sanitize` attribute on functions is used to inform the compiler
+ * that it should not do sanitization of any option mentioned in
+ * sanitize_option.  A list of values acceptable by the `-fsanitize` option
+ * can be provided.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @no_sanitize("alignment", "object-size") void func1() { }
+ * @no_sanitize("alignment,object-size") void func2() { }
+ * ---
+ */
+
+auto no_sanitize(A...)(A arguments)
+    if (allSatisfy!(isStringValue, arguments))
+{
+    return attribute("no_sanitize", arguments);
+}
+
+auto no_sanitize(A...)(A arguments)
+    if (!allSatisfy!(isStringValue, arguments))
+{
+    assert(false, "no_sanitize attribute argument not a string constant");
+}
+
+/**
  * The `@noclone` attribute prevents a function from being considered for
  * cloning - a mechanism that produces specialized copies of functions and
  * which is (currently) performed by interprocedural constant propagation.
@@ -425,6 +452,30 @@ auto target_clones(A...)(A arguments)
 enum used = attribute("used");
 
 /**
+ * The `@visibility` attribute affects the linkage of the declaration to which
+ * it is attached. It can be applied to variables, types, and functions.
+ *
+ * There are four supported visibility_type values: `default`, `hidden`,
+ * `protected`, or `internal` visibility.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @visibility("protected") void func() {  }
+ * ---
+ */
+auto visibility(string visibilityName)
+{
+    return attribute("visibility", visibilityName);
+}
+
+auto visibility(A...)(A arguments)
+{
+    assert(false, "visibility attribute argument not a string constant");
+}
+
+/**
  * The `@weak` attribute causes a declaration of an external symbol to be
  * emitted as a weak symbol rather than a global.  This is primarily useful in
  * defining library functions that can be overridden in user code, though it can
@@ -543,6 +594,16 @@ enum dynamicCompileEmit = false;
 enum fastmath = optimize("Ofast");
 
 /**
+ * Sets the visibility of a function or global variable to "hidden".
+ * Such symbols aren't directly accessible from outside the DSO
+ * (executable or DLL/.so/.dylib) and are resolved inside the DSO
+ * during linking. If unreferenced within the DSO, the linker can
+ * strip a hidden symbol.
+ * An `export` visibility overrides this attribute.
+ */
+enum hidden = visibility("hidden");
+
+/**
  * Adds GCC's "naked" attribute to a function, disabling function prologue /
  * epilogue emission.
  * Intended to be used in combination with basic `asm` statement.  While using
@@ -559,6 +620,14 @@ enum fastmath = optimize("Ofast");
  * ---
  */
 enum naked = attribute("naked");
+
+/**
+ * Disables a particular sanitizer for this function.
+ * Valid sanitizer names are all names accepted by `-fsanitize=` commandline option.
+ * Multiple sanitizers can be disabled by applying this UDA multiple times, e.g.
+ * `@noSanitize("address") `@noSanitize("thread")` to disable both ASan and TSan.
+ */
+alias noSanitize = no_sanitize;
 
 /**
  * Sets the optimization strategy for a function.

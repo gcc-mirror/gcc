@@ -34,7 +34,6 @@ with Elists;         use Elists;
 with Errout;         use Errout;
 with Exp_Ch11;       use Exp_Ch11;
 with Exp_Util;       use Exp_Util;
-with Expander;       use Expander;
 with Inline;         use Inline;
 with Lib;            use Lib;
 with Namet;          use Namet;
@@ -286,7 +285,7 @@ package body Exp_Prag is
       --  expression is not usually the best choice here, because it points to
       --  the location of the topmost tree node, which may be an operator in
       --  the middle of the source text of the expression. For example, it gets
-      --  located on the last AND keyword in a chain of boolean expressiond
+      --  located on the last AND keyword in a chain of boolean expressions
       --  AND'ed together. It is best to put the message on the first character
       --  of the condition, which is the effect of the First_Node call here.
       --  This source location is used to build the default exception message,
@@ -605,14 +604,14 @@ package body Exp_Prag is
             Get_Name_String (Chars (External));
          end if;
 
-         Set_All_Upper_Case;
+         Set_Casing (All_Upper_Case);
 
          Psect :=
            Make_String_Literal (Eloc, Strval => String_From_Name_Buffer);
 
       else
          Get_Name_String (Chars (Internal));
-         Set_All_Upper_Case;
+         Set_Casing (All_Upper_Case);
          Psect :=
            Make_String_Literal (Iloc, Strval => String_From_Name_Buffer);
       end if;
@@ -1054,7 +1053,7 @@ package body Exp_Prag is
          Result : constant List_Id := New_List;
          Elmt   : Elmt_Id;
       begin
-         if Elmts = No_Elist then
+         if No (Elmts) then
             return Result;
          end if;
 
@@ -2010,7 +2009,7 @@ package body Exp_Prag is
             Rewrite (Expression (Lang_Char),
               Make_Character_Literal (Loc,
                 Chars              => Name_uC,
-                Char_Literal_Value => UI_From_Int (Character'Pos ('C'))));
+                Char_Literal_Value => UI_From_CC (Get_Char_Code ('C'))));
             Analyze (Expression (Lang_Char));
 
             --  Change the value of Foreign_Data
@@ -2390,10 +2389,7 @@ package body Exp_Prag is
          Set_Pragma_Argument_Associations (N, A);
       end if;
 
-      --  Process the arguments of the pragma and expand them. Expanding an
-      --  entity reference is a noop, except in a protected operation, where
-      --  a reference may have to be transformed into a reference to the
-      --  corresponding prival. Are there other pragmas that require this ???
+      --  Process the arguments of the pragma
 
       Rip := False;
       Assoc := First (Pragma_Argument_Associations (N));
@@ -2401,8 +2397,6 @@ package body Exp_Prag is
          --  The back end may need to take the address of the object
 
          Set_Address_Taken (Entity (Expression (Assoc)));
-
-         Expand (Expression (Assoc));
 
          --  If any of the objects have a freeze node, it must appear before
          --  pragma Inspection_Point, otherwise the entity won't be elaborated
@@ -2636,6 +2630,7 @@ package body Exp_Prag is
                  Expression =>
                    Make_Variant_Comparison (Loc,
                      Mode     => Chars (Variant),
+                     Typ      => Expr_Typ,
                      Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
                      Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
 
@@ -2693,10 +2688,15 @@ package body Exp_Prag is
       --  If pragma is not enabled, rewrite as Null statement. If pragma is
       --  disabled, it has already been rewritten as a Null statement.
       --
-      --  Likewise, do this in CodePeer mode, because the expanded code is too
+      --  Likewise, ignore structural variants for execution.
+      --
+      --  Also do this in CodePeer mode, because the expanded code is too
       --  complicated for CodePeer to analyse.
 
-      if Is_Ignored (N) or else CodePeer_Mode then
+      if Is_Ignored (N)
+        or else Chars (Last_Var) = Name_Structural
+        or else CodePeer_Mode
+      then
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze (N);
          return;
@@ -3000,6 +3000,7 @@ package body Exp_Prag is
                  Expression =>
                    Make_Variant_Comparison (Loc,
                      Mode     => Chars (First (Choices (Variant))),
+                     Typ      => Expr_Typ,
                      Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
                      Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
 
@@ -3056,10 +3057,12 @@ package body Exp_Prag is
 
       Loc : constant Source_Ptr := Sloc (Prag);
 
-      Aggr         : Node_Id;
+      Aggr         : constant Node_Id :=
+        Expression (First (Pragma_Argument_Associations (Prag)));
       Formal_Map   : Elist_Id;
       Last         : Node_Id;
-      Last_Variant : Node_Id;
+      Last_Variant : constant Node_Id :=
+        Nlists.Last (Component_Associations (Aggr));
       Proc_Bod     : Node_Id;
       Proc_Decl    : Node_Id;
       Proc_Id      : Entity_Id;
@@ -3067,13 +3070,14 @@ package body Exp_Prag is
       Variant      : Node_Id;
 
    begin
-      --  Do nothing if pragma is not present or is disabled
+      --  Do nothing if pragma is not present or is disabled.
+      --  Also ignore structural variants for execution.
 
-      if Is_Ignored (Prag) then
+      if Is_Ignored (Prag)
+        or else Chars (Nlists.Last (Choices (Last_Variant))) = Name_Structural
+      then
          return;
       end if;
-
-      Aggr := Expression (First (Pragma_Argument_Associations (Prag)));
 
       --  The expansion of Subprogram Variant is quite distributed as it
       --  produces various statements to capture and compare the arguments.
@@ -3113,7 +3117,6 @@ package body Exp_Prag is
 
       Last         := Proc_Decl;
       Curr_Decls   := New_List;
-      Last_Variant := Nlists.Last (Component_Associations (Aggr));
 
       Variant := First (Component_Associations (Aggr));
       while Present (Variant) loop

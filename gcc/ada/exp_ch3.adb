@@ -106,6 +106,13 @@ package body Exp_Ch3 is
    --  types with discriminants. Otherwise new identifiers are created,
    --  with the source names of the discriminants.
 
+   procedure Build_Discr_Checking_Funcs (N : Node_Id);
+   --  For each variant component, builds a function which checks whether
+   --  the component name is consistent with the current discriminants
+   --  and sets the component's Dcheck_Function attribute to refer to it.
+   --  N is the full type declaration node; the discriminant checking
+   --  functions are inserted after this node.
+
    function Build_Equivalent_Array_Aggregate (T : Entity_Id) return Node_Id;
    --  This function builds a static aggregate that can serve as the initial
    --  value for an array type whose bounds are static, and whose component
@@ -152,6 +159,12 @@ package body Exp_Ch3 is
    --  needed after an initialization. Typ is the component type, and Proc_Id
    --  the initialization procedure for the enclosing composite type.
 
+   procedure Copy_Discr_Checking_Funcs (N : Node_Id);
+   --  For a derived untagged type, copy the attributes that were set
+   --  for the components of the parent type onto the components of the
+   --  derived type. No new subprograms are constructed.
+   --  N is the full type declaration node, as for Build_Discr_Checking_Funcs.
+
    procedure Expand_Freeze_Array_Type (N : Node_Id);
    --  Freeze an array type. Deals with building the initialization procedure,
    --  creating the packed array type for a packed array and also with the
@@ -184,6 +197,63 @@ package body Exp_Ch3 is
    --  Treat user-defined stream operations as renaming_as_body if the
    --  subprogram they rename is not frozen when the type is frozen.
 
+   package Initialization_Control is
+
+      function Requires_Late_Init
+        (Decl : Node_Id; Rec_Type : Entity_Id) return Boolean;
+      --  Return True iff the given component declaration requires late
+      --  initialization, as defined by 3.3.1 (8.1/5).
+
+      function Has_Late_Init_Component
+        (Tagged_Rec_Type : Entity_Id) return Boolean;
+      --  Return True iff the given tagged record type has at least one
+      --  component that requires late initialization; this includes
+      --  components of ancestor types.
+
+      type Initialization_Mode is
+        (Full_Init, Full_Init_Except_Tag, Early_Init_Only, Late_Init_Only);
+      --  The initialization routine for a tagged type is passed in a
+      --  formal parameter of this type, indicating what initialization
+      --  is to be performed. This parameter defaults to Full_Init in all
+      --  cases except when the init proc of a type extension (let's call
+      --  that type T2) calls the init proc of its parent (let's call that
+      --  type T1). In that case, one of the other 3 values will
+      --  be passed in. In all three of those cases, the Tag component has
+      --  already been initialized before the call and is therefore not to be
+      --  modified. T2's init proc will either call T1's init proc
+      --  once (with Full_Init_Except_Tag as the parameter value) or twice
+      --  (first with Early_Init_Only, then later with Late_Init_Only),
+      --  depending on the result returned by Has_Late_Init_Component (T1).
+      --  In the latter case, the first call does not initialize any
+      --  components that require late initialization and the second call
+      --  then performs that deferred initialization.
+      --  Strictly speaking, the formal parameter subtype is actually Natural
+      --  but calls will only pass in values corresponding to literals
+      --  of this enumeration type.
+
+      function Make_Mode_Literal
+        (Loc : Source_Ptr; Mode : Initialization_Mode) return Node_Id
+      is (Make_Integer_Literal (Loc, Initialization_Mode'Pos (Mode)));
+      --  Generate an integer literal for a given mode value.
+
+      function Tag_Init_Condition
+        (Loc : Source_Ptr;
+         Init_Control_Formal : Entity_Id) return Node_Id;
+      function Early_Init_Condition
+        (Loc : Source_Ptr;
+         Init_Control_Formal : Entity_Id) return Node_Id;
+      function Late_Init_Condition
+        (Loc : Source_Ptr;
+         Init_Control_Formal : Entity_Id) return Node_Id;
+      --  These three functions each return a Boolean expression that
+      --  can be used to determine whether a given call to the initialization
+      --  expression for a tagged type should initialize (respectively)
+      --  the Tag component, the non-Tag components that do not require late
+      --  initialization, and the components that do require late
+      --  initialization.
+
+   end Initialization_Control;
+
    procedure Initialization_Warning (E : Entity_Id);
    --  If static elaboration of the package is requested, indicate
    --  when a type does meet the conditions for static initialization. If
@@ -213,9 +283,6 @@ package body Exp_Ch3 is
    --  Returns true if Stmts is made of null statements only, possibly wrapped
    --  in a case statement, recursively. This latter pattern may occur for the
    --  initialization procedure of an unchecked union.
-
-   function Is_User_Defined_Equality (Prim : Node_Id) return Boolean;
-   --  Returns true if Prim is a user defined equality function
 
    function Make_Eq_Body
      (Typ     : Entity_Id;
@@ -1165,6 +1232,25 @@ package body Exp_Ch3 is
       end if;
    end Build_Discr_Checking_Funcs;
 
+   ----------------------------------------
+   -- Build_Or_Copy_Discr_Checking_Funcs --
+   ----------------------------------------
+
+   procedure Build_Or_Copy_Discr_Checking_Funcs (N : Node_Id) is
+      Typ : constant Entity_Id := Defining_Identifier (N);
+   begin
+      if Is_Unchecked_Union (Typ) or else not Has_Discriminants (Typ) then
+         null;
+      elsif not Is_Derived_Type (Typ)
+        or else Has_New_Non_Standard_Rep (Typ)
+        or else Is_Tagged_Type (Typ)
+      then
+         Build_Discr_Checking_Funcs (N);
+      else
+         Copy_Discr_Checking_Funcs (N);
+      end if;
+   end Build_Or_Copy_Discr_Checking_Funcs;
+
    --------------------------------
    -- Build_Discriminant_Formals --
    --------------------------------
@@ -1287,8 +1373,6 @@ package body Exp_Ch3 is
       Agg       : Node_Id;
       Comp      : Entity_Id;
       Comp_Type : Entity_Id;
-
-      --  Start of processing for Build_Equivalent_Record_Aggregate
 
    begin
       if not Is_Record_Type (T)
@@ -1449,14 +1533,15 @@ package body Exp_Ch3 is
    --  end;
 
    function Build_Initialization_Call
-     (Loc               : Source_Ptr;
-      Id_Ref            : Node_Id;
-      Typ               : Entity_Id;
-      In_Init_Proc      : Boolean := False;
-      Enclos_Type       : Entity_Id := Empty;
-      Discr_Map         : Elist_Id := New_Elmt_List;
-      With_Default_Init : Boolean := False;
-      Constructor_Ref   : Node_Id := Empty) return List_Id
+     (Loc                 : Source_Ptr;
+      Id_Ref              : Node_Id;
+      Typ                 : Entity_Id;
+      In_Init_Proc        : Boolean := False;
+      Enclos_Type         : Entity_Id := Empty;
+      Discr_Map           : Elist_Id := New_Elmt_List;
+      With_Default_Init   : Boolean := False;
+      Constructor_Ref     : Node_Id := Empty;
+      Init_Control_Actual : Entity_Id := Empty) return List_Id
    is
       Res : constant List_Id := New_List;
 
@@ -1840,14 +1925,26 @@ package body Exp_Ch3 is
 
       --  If this is a call to initialize the parent component of a derived
       --  tagged type, indicate that the tag should not be set in the parent.
+      --  This is done via the actual parameter value for the Init_Control
+      --  formal parameter, which is also used to deal with late initialization
+      --  requirements.
+      --
+      --  We pass in Full_Init_Except_Tag unless the caller tells us to do
+      --  otherwise (by passing in a nonempty Init_Control_Actual parameter).
 
       if Is_Tagged_Type (Full_Init_Type)
         and then not Is_CPP_Class (Full_Init_Type)
         and then Nkind (Id_Ref) = N_Selected_Component
         and then Chars (Selector_Name (Id_Ref)) = Name_uParent
       then
-         Append_To (Args, New_Occurrence_Of (Standard_False, Loc));
-
+         declare
+            use Initialization_Control;
+         begin
+            Append_To (Args,
+              (if Present (Init_Control_Actual)
+               then Init_Control_Actual
+               else Make_Mode_Literal (Loc, Full_Init_Except_Tag)));
+         end;
       elsif Present (Constructor_Ref) then
          Append_List_To (Args,
            New_Copy_List (Parameter_Associations (Constructor_Ref)));
@@ -1908,8 +2005,9 @@ package body Exp_Ch3 is
       Counter   : Nat := 0;
       Proc_Id   : Entity_Id;
       Rec_Type  : Entity_Id;
-      Set_Tag   : Entity_Id := Empty;
-      Has_Late_Init_Comp : Boolean := False; -- set in Build_Init_Statements
+
+      Init_Control_Formal : Entity_Id := Empty; -- set in Build_Init_Statements
+      Has_Late_Init_Comp  : Boolean := False;   -- set in Build_Init_Statements
 
       function Build_Assignment
         (Id      : Entity_Id;
@@ -2031,8 +2129,7 @@ package body Exp_Ch3 is
                  and then Present (Incomplete_View (Parent (Rec_Type)))
                then
                   Append_Elmt (
-                    N  => Defining_Identifier
-                            (Incomplete_View (Parent (Rec_Type))),
+                    N  => Incomplete_View (Parent (Rec_Type)),
                     To => Map);
                   Append_Elmt (
                     N  => Defining_Identifier
@@ -2534,6 +2631,7 @@ package body Exp_Ch3 is
          Proc_Spec_Node        : Node_Id;
          Record_Extension_Node : Node_Id;
 
+         use Initialization_Control;
       begin
          Body_Stmts := New_List;
          Body_Node := New_Node (N_Subprogram_Body, Loc);
@@ -2546,21 +2644,27 @@ package body Exp_Ch3 is
          Append_List_To (Parameters,
            Build_Discriminant_Formals (Rec_Type, True));
 
-         --  For tagged types, we add a flag to indicate whether the routine
-         --  is called to initialize a parent component in the init_proc of
-         --  a type extension. If the flag is false, we do not set the tag
-         --  because it has been set already in the extension.
+         --  For tagged types, we add a parameter to indicate what
+         --  portion of the object's initialization is to be performed.
+         --  This is used for two purposes:
+         --   1)  When a type extension's initialization procedure calls
+         --       the initialization procedure of the parent type, we do
+         --       not want the parent to initialize the Tag component;
+         --       it has been set already.
+         --   2)  If an ancestor type has at least one component that requires
+         --       late initialization, then we need to be able to initialize
+         --       those components separately after initializing any other
+         --       components.
 
          if Is_Tagged_Type (Rec_Type) then
-            Set_Tag := Make_Temporary (Loc, 'P');
+            Init_Control_Formal := Make_Temporary (Loc, 'P');
 
             Append_To (Parameters,
               Make_Parameter_Specification (Loc,
-                Defining_Identifier => Set_Tag,
+                Defining_Identifier => Init_Control_Formal,
                 Parameter_Type =>
-                  New_Occurrence_Of (Standard_Boolean, Loc),
-                Expression =>
-                  New_Occurrence_Of (Standard_True, Loc)));
+                  New_Occurrence_Of (Standard_Natural, Loc),
+                Expression => Make_Mode_Literal (Loc, Full_Init)));
          end if;
 
          --  Create an extra accessibility parameter to capture the level of
@@ -2624,22 +2728,45 @@ package body Exp_Ch3 is
                      declare
                         Parent_IP : constant Name_Id :=
                                       Make_Init_Proc_Name (Etype (Rec_Ent));
-                        Stmt      : Node_Id;
-                        IP_Call   : Node_Id;
-                        IP_Stmts  : List_Id;
-
+                        Stmt      : Node_Id := First (Stmts);
+                        IP_Call   : Node_Id := Empty;
                      begin
-                        --  Look for a call to the parent IP at the beginning
-                        --  of Stmts associated with the record extension
+                        --  Look for a call to the parent IP associated with
+                        --  the record extension.
+                        --  The call will be inside not one but two
+                        --  if-statements (with the same condition). Testing
+                        --  the same Early_Init condition twice might seem
+                        --  redundant. However, as soon as we exit this loop,
+                        --  we are going to hoist the inner if-statement out
+                        --  of the outer one; the "redundant" test was built
+                        --  in anticipation of this hoisting.
 
-                        Stmt := First (Stmts);
-                        IP_Call := Empty;
                         while Present (Stmt) loop
-                           if Nkind (Stmt) = N_Procedure_Call_Statement
-                             and then Chars (Name (Stmt)) = Parent_IP
-                           then
-                              IP_Call := Stmt;
-                              exit;
+                           if Nkind (Stmt) = N_If_Statement then
+                              declare
+                                 Then_Stmt1 : Node_Id :=
+                                   First (Then_Statements (Stmt));
+                                 Then_Stmt2 : Node_Id;
+                              begin
+                                 while Present (Then_Stmt1) loop
+                                    if Nkind (Then_Stmt1) = N_If_Statement then
+                                       Then_Stmt2 :=
+                                         First (Then_Statements (Then_Stmt1));
+
+                                       if Nkind (Then_Stmt2) =
+                                            N_Procedure_Call_Statement
+                                         and then Chars (Name (Then_Stmt2)) =
+                                           Parent_IP
+                                       then
+                                          --  IP_Call is a call wrapped in an
+                                          --  if statement.
+                                          IP_Call := Then_Stmt1;
+                                          exit;
+                                       end if;
+                                    end if;
+                                    Next (Then_Stmt1);
+                                 end loop;
+                              end;
                            end if;
 
                            Next (Stmt);
@@ -2649,14 +2776,8 @@ package body Exp_Ch3 is
                         --  statements of this IP routine
 
                         if Present (IP_Call) then
-                           IP_Stmts := New_List;
-                           loop
-                              Stmt := Remove_Head (Stmts);
-                              Append_To (IP_Stmts, Stmt);
-                              exit when Stmt = IP_Call;
-                           end loop;
-
-                           Prepend_List_To (Body_Stmts, IP_Stmts);
+                           Remove (IP_Call);
+                           Prepend_List_To (Body_Stmts, New_List (IP_Call));
                         end if;
                      end;
                   end if;
@@ -2731,7 +2852,8 @@ package body Exp_Ch3 is
 
                      Elab_List := New_List (
                        Make_If_Statement (Loc,
-                         Condition       => New_Occurrence_Of (Set_Tag, Loc),
+                         Condition       =>
+                           Tag_Init_Condition (Loc, Init_Control_Formal),
                          Then_Statements => Init_Tags_List));
 
                      if Elab_Flag_Needed (Rec_Type) then
@@ -2757,7 +2879,8 @@ package body Exp_Ch3 is
                else
                   Prepend_To (Body_Stmts,
                     Make_If_Statement (Loc,
-                      Condition       => New_Occurrence_Of (Set_Tag, Loc),
+                      Condition =>
+                        Tag_Init_Condition (Loc, Init_Control_Formal),
                       Then_Statements => Init_Tags_List));
                end if;
 
@@ -2825,11 +2948,18 @@ package body Exp_Ch3 is
                begin
                   --  Search for the call to the IP of the parent. We assume
                   --  that the first init_proc call is for the parent.
+                  --  It is wrapped in an "if Early_Init_Condition"
+                  --  if-statement.
 
                   Ins_Nod := First (Body_Stmts);
                   while Present (Next (Ins_Nod))
-                    and then (Nkind (Ins_Nod) /= N_Procedure_Call_Statement
-                               or else not Is_Init_Proc (Name (Ins_Nod)))
+                    and then
+                      (Nkind (Ins_Nod) /= N_If_Statement
+                        or else (Nkind (First (Then_Statements (Ins_Nod)))
+                                   /= N_Procedure_Call_Statement)
+                        or else not Is_Init_Proc
+                                      (Name (First (Then_Statements
+                                         (Ins_Nod)))))
                   loop
                      Next (Ins_Nod);
                   end loop;
@@ -2976,34 +3106,31 @@ package body Exp_Ch3 is
          Decl               : Node_Id;
          Id                 : Entity_Id;
          Parent_Stmts       : List_Id;
-         Stmts              : List_Id;
+         Parent_Id          : Entity_Id := Empty;
+         Stmts, Late_Stmts  : List_Id := Empty_List;
          Typ                : Entity_Id;
 
-         procedure Increment_Counter (Loc : Source_Ptr);
+         procedure Increment_Counter
+           (Loc  : Source_Ptr; Late : Boolean := False);
          --  Generate an "increment by one" statement for the current counter
-         --  and append it to the list Stmts.
+         --  and append it to the appropriate statement list.
 
          procedure Make_Counter (Loc : Source_Ptr);
          --  Create a new counter for the current component list. The routine
          --  creates a new defining Id, adds an object declaration and sets
          --  the Id generator for the next variant.
 
-         function Requires_Late_Initialization
-           (Decl     : Node_Id;
-            Rec_Type : Entity_Id) return Boolean;
-         --  Return whether the given Decl requires late initialization, as
-         --  defined by 3.3.1 (8.1/5).
-
          -----------------------
          -- Increment_Counter --
          -----------------------
 
-         procedure Increment_Counter (Loc : Source_Ptr) is
+         procedure Increment_Counter
+           (Loc  : Source_Ptr; Late : Boolean := False) is
          begin
             --  Generate:
             --    Counter := Counter + 1;
 
-            Append_To (Stmts,
+            Append_To ((if Late then Late_Stmts else Stmts),
               Make_Assignment_Statement (Loc,
                 Name       => New_Occurrence_Of (Counter_Id, Loc),
                 Expression =>
@@ -3039,157 +3166,6 @@ package body Exp_Ch3 is
                 Expression          =>
                   Make_Integer_Literal (Loc, 0)));
          end Make_Counter;
-
-         ----------------------------------
-         -- Requires_Late_Initialization --
-         ----------------------------------
-
-         function Requires_Late_Initialization
-           (Decl     : Node_Id;
-            Rec_Type : Entity_Id) return Boolean
-         is
-            References_Current_Instance : Boolean := False;
-            Has_Access_Discriminant     : Boolean := False;
-            Has_Internal_Call           : Boolean := False;
-
-            function Find_Access_Discriminant
-              (N : Node_Id) return Traverse_Result;
-            --  Look for a name denoting an access discriminant
-
-            function Find_Current_Instance
-              (N : Node_Id) return Traverse_Result;
-            --  Look for a reference to the current instance of the type
-
-            function Find_Internal_Call
-              (N : Node_Id) return Traverse_Result;
-            --  Look for an internal protected function call
-
-            ------------------------------
-            -- Find_Access_Discriminant --
-            ------------------------------
-
-            function Find_Access_Discriminant
-              (N : Node_Id) return Traverse_Result is
-            begin
-               if Is_Entity_Name (N)
-                 and then Denotes_Discriminant (N)
-                 and then Is_Access_Type (Etype (N))
-               then
-                  Has_Access_Discriminant := True;
-                  return Abandon;
-               else
-                  return OK;
-               end if;
-            end Find_Access_Discriminant;
-
-            ---------------------------
-            -- Find_Current_Instance --
-            ---------------------------
-
-            function Find_Current_Instance
-              (N : Node_Id) return Traverse_Result is
-            begin
-               if Is_Entity_Name (N)
-                 and then Present (Entity (N))
-                 and then Is_Current_Instance (N)
-               then
-                  References_Current_Instance := True;
-                  return Abandon;
-               else
-                  return OK;
-               end if;
-            end Find_Current_Instance;
-
-            ------------------------
-            -- Find_Internal_Call --
-            ------------------------
-
-            function Find_Internal_Call (N : Node_Id) return Traverse_Result is
-
-               function Call_Scope (N : Node_Id) return Entity_Id;
-               --  Return the scope enclosing a given call node N
-
-               ----------------
-               -- Call_Scope --
-               ----------------
-
-               function Call_Scope (N : Node_Id) return Entity_Id is
-                  Nam : constant Node_Id := Name (N);
-               begin
-                  if Nkind (Nam) = N_Selected_Component then
-                     return Scope (Entity (Prefix (Nam)));
-                  else
-                     return Scope (Entity (Nam));
-                  end if;
-               end Call_Scope;
-
-            begin
-               if Nkind (N) = N_Function_Call
-                 and then Call_Scope (N)
-                            = Corresponding_Concurrent_Type (Rec_Type)
-               then
-                  Has_Internal_Call := True;
-                  return Abandon;
-               else
-                  return OK;
-               end if;
-            end Find_Internal_Call;
-
-            procedure Search_Access_Discriminant is new
-              Traverse_Proc (Find_Access_Discriminant);
-
-            procedure Search_Current_Instance is new
-              Traverse_Proc (Find_Current_Instance);
-
-            procedure Search_Internal_Call is new
-              Traverse_Proc (Find_Internal_Call);
-
-         begin
-            --  A component of an object is said to require late initialization
-            --  if:
-
-            --  it has an access discriminant value constrained by a per-object
-            --  expression;
-
-            if Has_Access_Constraint (Defining_Identifier (Decl))
-              and then No (Expression (Decl))
-            then
-               return True;
-
-            elsif Present (Expression (Decl)) then
-
-               --  it has an initialization expression that includes a name
-               --  denoting an access discriminant;
-
-               Search_Access_Discriminant (Expression (Decl));
-
-               if Has_Access_Discriminant then
-                  return True;
-               end if;
-
-               --  or it has an initialization expression that includes a
-               --  reference to the current instance of the type either by
-               --  name...
-
-               Search_Current_Instance (Expression (Decl));
-
-               if References_Current_Instance then
-                  return True;
-               end if;
-
-               --  ...or implicitly as the target object of a call.
-
-               if Is_Protected_Record_Type (Rec_Type) then
-                  Search_Internal_Call (Expression (Decl));
-
-                  if Has_Internal_Call then
-                     return True;
-                  end if;
-               end if;
-            end if;
-
-            return False;
-         end Requires_Late_Initialization;
 
       --  Start of processing for Build_Init_Statements
 
@@ -3258,7 +3234,10 @@ package body Exp_Ch3 is
             --  Leave any processing of component requiring late initialization
             --  for the second pass.
 
-            if Requires_Late_Initialization (Decl, Rec_Type) then
+            if Initialization_Control.Requires_Late_Init (Decl, Rec_Type) then
+               if not Has_Late_Init_Comp then
+                  Late_Stmts := New_List;
+               end if;
                Has_Late_Init_Comp := True;
 
             --  Regular component cases
@@ -3405,17 +3384,56 @@ package body Exp_Ch3 is
                elsif not Is_Interface (Typ)
                  and then Has_Non_Null_Base_Init_Proc (Typ)
                then
-                  Actions :=
-                    Build_Initialization_Call
-                      (Comp_Loc,
-                       Make_Selected_Component (Comp_Loc,
-                         Prefix        =>
-                           Make_Identifier (Comp_Loc, Name_uInit),
-                         Selector_Name => New_Occurrence_Of (Id, Comp_Loc)),
-                       Typ,
-                       In_Init_Proc => True,
-                       Enclos_Type  => Rec_Type,
-                       Discr_Map    => Discr_Map);
+                  declare
+                     use Initialization_Control;
+                     Init_Control_Actual : Node_Id := Empty;
+                     Is_Parent : constant Boolean := Chars (Id) = Name_uParent;
+                     Init_Call_Stmts : List_Id;
+                  begin
+                     if Is_Parent and then Has_Late_Init_Component (Etype (Id))
+                     then
+                        Init_Control_Actual :=
+                          Make_Mode_Literal (Comp_Loc, Early_Init_Only);
+                        --  Parent_Id used later in second call to parent's
+                        --  init proc to initialize late-init components.
+                        Parent_Id := Id;
+                     end if;
+
+                     Init_Call_Stmts :=
+                       Build_Initialization_Call
+                         (Comp_Loc,
+                          Make_Selected_Component (Comp_Loc,
+                            Prefix        =>
+                              Make_Identifier (Comp_Loc, Name_uInit),
+                            Selector_Name => New_Occurrence_Of (Id, Comp_Loc)),
+                          Typ,
+                          In_Init_Proc        => True,
+                          Enclos_Type         => Rec_Type,
+                          Discr_Map           => Discr_Map,
+                          Init_Control_Actual => Init_Control_Actual);
+
+                     if Is_Parent then
+                        --  This is tricky. At first it looks like
+                        --  we are going to end up with nested
+                        --  if-statements with the same condition:
+                        --    if Early_Init_Condition then
+                        --       if Early_Init_Condition then
+                        --          Parent_TypeIP (...);
+                        --       end if;
+                        --    end if;
+                        --  But later we will hoist the inner if-statement
+                        --  out of the outer one; we do this  because the
+                        --  init-proc call for the _Parent component of a type
+                        --  extension has to precede any other initialization.
+                        Actions :=
+                          New_List (Make_If_Statement (Loc,
+                            Condition =>
+                              Early_Init_Condition (Loc, Init_Control_Formal),
+                            Then_Statements => Init_Call_Stmts));
+                     else
+                        Actions := Init_Call_Stmts;
+                     end if;
+                  end;
 
                   Clean_Task_Names (Typ, Proc_Id);
 
@@ -3445,7 +3463,7 @@ package body Exp_Ch3 is
                --  DIC here.
 
                if Has_DIC (Typ)
-                 and then not Present (Expression (Decl))
+                 and then No (Expression (Decl))
                  and then Present (DIC_Procedure (Typ))
                  and then not Has_Null_Body (DIC_Procedure (Typ))
 
@@ -3483,7 +3501,6 @@ package body Exp_Ch3 is
                if Present (Actions) then
                   if Chars (Id) = Name_uParent then
                      Append_List_To (Parent_Stmts, Actions);
-
                   else
                      Append_List_To (Stmts, Actions);
 
@@ -3597,6 +3614,34 @@ package body Exp_Ch3 is
 
          --  Second pass: components that require late initialization
 
+         if Present (Parent_Id) then
+            declare
+               Parent_Loc : constant Source_Ptr := Sloc (Parent (Parent_Id));
+               use Initialization_Control;
+            begin
+               --  We are building the init proc for a type extension.
+               --  Call the parent type's init proc a second time, this
+               --  time to initialize the parent's components that require
+               --  late initialization.
+
+               Append_List_To (Late_Stmts,
+                 Build_Initialization_Call
+                   (Loc                  => Parent_Loc,
+                    Id_Ref               =>
+                      Make_Selected_Component (Parent_Loc,
+                        Prefix        => Make_Identifier
+                                           (Parent_Loc, Name_uInit),
+                        Selector_Name => New_Occurrence_Of (Parent_Id,
+                                                            Parent_Loc)),
+                    Typ                 => Etype (Parent_Id),
+                    In_Init_Proc        => True,
+                    Enclos_Type         => Rec_Type,
+                    Discr_Map           => Discr_Map,
+                    Init_Control_Actual => Make_Mode_Literal
+                                             (Parent_Loc, Late_Init_Only)));
+            end;
+         end if;
+
          if Has_Late_Init_Comp then
             Decl := First_Non_Pragma (Component_Items (Comp_List));
             while Present (Decl) loop
@@ -3604,13 +3649,14 @@ package body Exp_Ch3 is
                Id := Defining_Identifier (Decl);
                Typ := Etype (Id);
 
-               if Requires_Late_Initialization (Decl, Rec_Type) then
+               if Initialization_Control.Requires_Late_Init (Decl, Rec_Type)
+               then
                   if Present (Expression (Decl)) then
-                     Append_List_To (Stmts,
+                     Append_List_To (Late_Stmts,
                        Build_Assignment (Id, Expression (Decl)));
 
                   elsif Has_Non_Null_Base_Init_Proc (Typ) then
-                     Append_List_To (Stmts,
+                     Append_List_To (Late_Stmts,
                        Build_Initialization_Call (Comp_Loc,
                          Make_Selected_Component (Comp_Loc,
                            Prefix        =>
@@ -3630,10 +3676,10 @@ package body Exp_Ch3 is
                            Make_Counter (Comp_Loc);
                         end if;
 
-                        Increment_Counter (Comp_Loc);
+                        Increment_Counter (Comp_Loc, Late => True);
                      end if;
                   elsif Component_Needs_Simple_Initialization (Typ) then
-                     Append_List_To (Stmts,
+                     Append_List_To (Late_Stmts,
                        Build_Assignment
                          (Id      => Id,
                           Default =>
@@ -3648,7 +3694,8 @@ package body Exp_Ch3 is
             end loop;
          end if;
 
-         --  Process the variant part
+         --  Process the variant part (incorrectly ignoring late
+         --  initialization requirements for components therein).
 
          if Present (Variant_Part (Comp_List)) then
             declare
@@ -3683,16 +3730,42 @@ package body Exp_Ch3 is
             end;
          end if;
 
-         --  If no initializations when generated for component declarations
-         --  corresponding to this Stmts, append a null statement to Stmts to
-         --  to make it a valid Ada tree.
+         if No (Init_Control_Formal) then
+            Append_List_To (Stmts, Late_Stmts);
 
-         if Is_Empty_List (Stmts) then
-            Append (Make_Null_Statement (Loc), Stmts);
+            --  If no initializations were generated for component declarations
+            --  and included in Stmts, then append a null statement to Stmts
+            --  to make it a valid Ada tree.
+
+            if Is_Empty_List (Stmts) then
+               Append (Make_Null_Statement (Loc), Stmts);
+            end if;
+
+            return Stmts;
+         else
+            declare
+               use Initialization_Control;
+
+               If_Early : constant Node_Id :=
+                  (if Is_Empty_List (Stmts) then
+                      Make_Null_Statement (Loc)
+                   else
+                      Make_If_Statement (Loc,
+                        Condition =>
+                          Early_Init_Condition (Loc, Init_Control_Formal),
+                        Then_Statements => Stmts));
+               If_Late : constant Node_Id :=
+                  (if Is_Empty_List (Late_Stmts) then
+                      Make_Null_Statement (Loc)
+                   else
+                      Make_If_Statement (Loc,
+                        Condition =>
+                          Late_Init_Condition (Loc, Init_Control_Formal),
+                        Then_Statements => Late_Stmts));
+            begin
+               return New_List (If_Early, If_Late);
+            end;
          end if;
-
-         return Stmts;
-
       exception
          when RE_Not_Available =>
             return Empty_List;
@@ -4443,7 +4516,6 @@ package body Exp_Ch3 is
       Comp     : Entity_Id;
       Decl     : Node_Id;
       Op       : Entity_Id;
-      Prim     : Elmt_Id;
       Eq_Op    : Entity_Id;
 
       function User_Defined_Eq (T : Entity_Id) return Entity_Id;
@@ -4456,32 +4528,14 @@ package body Exp_Ch3 is
       ---------------------
 
       function User_Defined_Eq (T : Entity_Id) return Entity_Id is
-         Prim : Elmt_Id;
-         Op   : Entity_Id;
+         Op : constant Entity_Id := TSS (T, TSS_Composite_Equality);
 
       begin
-         Op := TSS (T, TSS_Composite_Equality);
-
          if Present (Op) then
             return Op;
+         else
+            return Get_User_Defined_Equality (T);
          end if;
-
-         Prim := First_Elmt (Collect_Primitive_Operations (T));
-         while Present (Prim) loop
-            Op := Node (Prim);
-
-            if Chars (Op) = Name_Op_Eq
-              and then Etype (Op) = Standard_Boolean
-              and then Etype (First_Formal (Op)) = T
-              and then Etype (Next_Formal (First_Formal (Op))) = T
-            then
-               return Op;
-            end if;
-
-            Next_Elmt (Prim);
-         end loop;
-
-         return Empty;
       end User_Defined_Eq;
 
    --  Start of processing for Build_Untagged_Equality
@@ -4497,6 +4551,7 @@ package body Exp_Ch3 is
            and then Present (User_Defined_Eq (Etype (Comp)))
          then
             Build_Eq := True;
+            exit;
          end if;
 
          Next_Component (Comp);
@@ -4505,23 +4560,14 @@ package body Exp_Ch3 is
       --  If there is a user-defined equality for the type, we do not create
       --  the implicit one.
 
-      Prim := First_Elmt (Collect_Primitive_Operations (Typ));
-      Eq_Op := Empty;
-      while Present (Prim) loop
-         if Chars (Node (Prim)) = Name_Op_Eq
-           and then Comes_From_Source (Node (Prim))
-
-         --  Don't we also need to check formal types and return type as in
-         --  User_Defined_Eq above???
-
-         then
-            Eq_Op := Node (Prim);
+      Eq_Op := Get_User_Defined_Equality (Typ);
+      if Present (Eq_Op) then
+         if Comes_From_Source (Eq_Op) then
             Build_Eq := False;
-            exit;
+         else
+            Eq_Op := Empty;
          end if;
-
-         Next_Elmt (Prim);
-      end loop;
+      end if;
 
       --  If the type is derived, inherit the operation, if present, from the
       --  parent type. It may have been declared after the type derivation. If
@@ -4530,35 +4576,28 @@ package body Exp_Ch3 is
       --  flags. Ditto for inequality.
 
       if No (Eq_Op) and then Is_Derived_Type (Typ) then
-         Prim := First_Elmt (Collect_Primitive_Operations (Etype (Typ)));
-         while Present (Prim) loop
-            if Chars (Node (Prim)) = Name_Op_Eq then
-               Copy_TSS (Node (Prim), Typ);
-               Build_Eq := False;
+         Eq_Op := Get_User_Defined_Equality (Etype (Typ));
+         if Present (Eq_Op) then
+            Copy_TSS (Eq_Op, Typ);
+            Build_Eq := False;
 
-               declare
-                  Op    : constant Entity_Id := User_Defined_Eq (Typ);
-                  Eq_Op : constant Entity_Id := Node (Prim);
-                  NE_Op : constant Entity_Id := Next_Entity (Eq_Op);
+            declare
+               Op    : constant Entity_Id := User_Defined_Eq (Typ);
+               NE_Op : constant Entity_Id := Next_Entity (Eq_Op);
 
-               begin
-                  if Present (Op) then
-                     Set_Alias (Op, Eq_Op);
+            begin
+               if Present (Op) then
+                  Set_Alias (Op, Eq_Op);
+                  Set_Is_Abstract_Subprogram
+                    (Op, Is_Abstract_Subprogram (Eq_Op));
+
+                  if Chars (Next_Entity (Op)) = Name_Op_Ne then
                      Set_Is_Abstract_Subprogram
-                       (Op, Is_Abstract_Subprogram (Eq_Op));
-
-                     if Chars (Next_Entity (Op)) = Name_Op_Ne then
-                        Set_Is_Abstract_Subprogram
-                          (Next_Entity (Op), Is_Abstract_Subprogram (NE_Op));
-                     end if;
+                       (Next_Entity (Op), Is_Abstract_Subprogram (NE_Op));
                   end if;
-               end;
-
-               exit;
-            end if;
-
-            Next_Elmt (Prim);
-         end loop;
+               end if;
+            end;
+         end if;
       end if;
 
       --  If not inherited and not user-defined, build body as for a type with
@@ -4834,6 +4873,27 @@ package body Exp_Ch3 is
          Set_Uses_Sec_Stack (Proc_Id);
       end if;
    end Clean_Task_Names;
+
+   -------------------------------
+   -- Copy_Discr_Checking_Funcs --
+   -------------------------------
+
+   procedure Copy_Discr_Checking_Funcs (N : Node_Id) is
+      Typ      : constant Entity_Id := Defining_Identifier (N);
+      Comp     : Entity_Id := First_Component (Typ);
+      Old_Comp : Entity_Id := First_Component
+                                (Base_Type (Underlying_Type (Etype (Typ))));
+   begin
+      while Present (Comp) loop
+         if Chars (Comp) = Chars (Old_Comp) then
+            Set_Discriminant_Checking_Func
+              (Comp, Discriminant_Checking_Func (Old_Comp));
+         end if;
+
+         Next_Component (Old_Comp);
+         Next_Component (Comp);
+      end loop;
+   end Copy_Discr_Checking_Funcs;
 
    ----------------------------------------
    -- Ensure_Activation_Chain_And_Master --
@@ -5520,40 +5580,7 @@ package body Exp_Ch3 is
       --  we copy explicitly the discriminant checking functions from the
       --  parent into the components of the derived type.
 
-      if not Is_Derived_Type (Typ)
-        or else Has_New_Non_Standard_Rep (Typ)
-        or else Is_Tagged_Type (Typ)
-      then
-         Build_Discr_Checking_Funcs (Typ_Decl);
-
-      elsif Is_Derived_Type (Typ)
-        and then not Is_Tagged_Type (Typ)
-
-        --  If we have a derived Unchecked_Union, we do not inherit the
-        --  discriminant checking functions from the parent type since the
-        --  discriminants are non existent.
-
-        and then not Is_Unchecked_Union (Typ)
-        and then Has_Discriminants (Typ)
-      then
-         declare
-            Old_Comp : Entity_Id;
-
-         begin
-            Old_Comp :=
-              First_Component (Base_Type (Underlying_Type (Etype (Typ))));
-            Comp := First_Component (Typ);
-            while Present (Comp) loop
-               if Chars (Comp) = Chars (Old_Comp) then
-                  Set_Discriminant_Checking_Func
-                    (Comp, Discriminant_Checking_Func (Old_Comp));
-               end if;
-
-               Next_Component (Old_Comp);
-               Next_Component (Comp);
-            end loop;
-         end;
-      end if;
+      Build_Or_Copy_Discr_Checking_Funcs (Typ_Decl);
 
       if Is_Derived_Type (Typ)
         and then Is_Limited_Type (Typ)
@@ -5736,7 +5763,7 @@ package body Exp_Ch3 is
 
                --  Generate dispatch table of locally defined tagged type.
                --  Dispatch tables of library level tagged types are built
-               --  later (see Analyze_Declarations).
+               --  later (see Build_Static_Dispatch_Tables).
 
                if not Building_Static_DT (Typ) then
                   Append_Freeze_Actions (Typ, Make_DT (Typ));
@@ -6095,8 +6122,7 @@ package body Exp_Ch3 is
          Par_Id := Base_Type (Full_View (Par_Id));
       end if;
 
-      if Nkind (Type_Definition (Original_Node (N))) =
-                                                   N_Derived_Type_Definition
+      if Nkind (Type_Definition (N)) = N_Derived_Type_Definition
         and then not Is_Tagged_Type (Def_Id)
         and then Present (Freeze_Node (Par_Id))
         and then Present (TSS_Elist (Freeze_Node (Par_Id)))
@@ -6881,37 +6907,6 @@ package body Exp_Ch3 is
          return;
       end if;
 
-      --  First we do special processing for objects of a tagged type where
-      --  this is the point at which the type is frozen. The creation of the
-      --  dispatch table and the initialization procedure have to be deferred
-      --  to this point, since we reference previously declared primitive
-      --  subprograms.
-
-      --  Force construction of dispatch tables of library level tagged types
-
-      if Tagged_Type_Expansion
-        and then Building_Static_Dispatch_Tables
-        and then Is_Library_Level_Entity (Def_Id)
-        and then Is_Library_Level_Tagged_Type (Base_Typ)
-        and then Ekind (Base_Typ) in E_Record_Type
-                                   | E_Protected_Type
-                                   | E_Task_Type
-        and then not Has_Dispatch_Table (Base_Typ)
-      then
-         declare
-            New_Nodes : List_Id := No_List;
-
-         begin
-            if Is_Concurrent_Type (Base_Typ) then
-               New_Nodes := Make_DT (Corresponding_Record_Type (Base_Typ), N);
-            else
-               New_Nodes := Make_DT (Base_Typ, N);
-            end if;
-
-            Insert_List_Before (N, New_Nodes);
-         end;
-      end if;
-
       --  Make shared memory routines for shared passive variable
 
       if Is_Shared_Passive (Def_Id) then
@@ -7536,6 +7531,7 @@ package body Exp_Ch3 is
             elsif Comes_From_Source (N)
               and then Is_Discrete_Type (Typ)
               and then Expr_Known_Valid (Expr)
+              and then Safe_To_Capture_Value (N, Def_Id)
             then
                Set_Is_Known_Valid (Def_Id);
 
@@ -7566,7 +7562,9 @@ package body Exp_Ch3 is
               and then not Is_Generic_Type (Etype (Def_Id))
             then
                Ensure_Valid (Expr);
-               Set_Is_Known_Valid (Def_Id);
+               if Safe_To_Capture_Value (N, Def_Id) then
+                  Set_Is_Known_Valid (Def_Id);
+               end if;
             end if;
          end if;
 
@@ -9047,6 +9045,230 @@ package body Exp_Ch3 is
       return Is_RTU (S1, System) or else Is_RTU (S1, Ada);
    end In_Runtime;
 
+   package body Initialization_Control is
+
+      ------------------------
+      -- Requires_Late_Init --
+      ------------------------
+
+      function Requires_Late_Init
+        (Decl     : Node_Id;
+         Rec_Type : Entity_Id) return Boolean
+      is
+         References_Current_Instance : Boolean := False;
+         Has_Access_Discriminant     : Boolean := False;
+         Has_Internal_Call           : Boolean := False;
+
+         function Find_Access_Discriminant
+           (N : Node_Id) return Traverse_Result;
+         --  Look for a name denoting an access discriminant
+
+         function Find_Current_Instance
+           (N : Node_Id) return Traverse_Result;
+         --  Look for a reference to the current instance of the type
+
+         function Find_Internal_Call
+           (N : Node_Id) return Traverse_Result;
+         --  Look for an internal protected function call
+
+         ------------------------------
+         -- Find_Access_Discriminant --
+         ------------------------------
+
+         function Find_Access_Discriminant
+           (N : Node_Id) return Traverse_Result is
+         begin
+            if Is_Entity_Name (N)
+              and then Denotes_Discriminant (N)
+              and then Is_Access_Type (Etype (N))
+            then
+               Has_Access_Discriminant := True;
+               return Abandon;
+            else
+               return OK;
+            end if;
+         end Find_Access_Discriminant;
+
+         ---------------------------
+         -- Find_Current_Instance --
+         ---------------------------
+
+         function Find_Current_Instance
+           (N : Node_Id) return Traverse_Result is
+         begin
+            if Is_Entity_Name (N)
+              and then Present (Entity (N))
+              and then Is_Current_Instance (N)
+            then
+               References_Current_Instance := True;
+               return Abandon;
+            else
+               return OK;
+            end if;
+         end Find_Current_Instance;
+
+         ------------------------
+         -- Find_Internal_Call --
+         ------------------------
+
+         function Find_Internal_Call (N : Node_Id) return Traverse_Result is
+
+            function Call_Scope (N : Node_Id) return Entity_Id;
+            --  Return the scope enclosing a given call node N
+
+            ----------------
+            -- Call_Scope --
+            ----------------
+
+            function Call_Scope (N : Node_Id) return Entity_Id is
+               Nam : constant Node_Id := Name (N);
+            begin
+               if Nkind (Nam) = N_Selected_Component then
+                  return Scope (Entity (Prefix (Nam)));
+               else
+                  return Scope (Entity (Nam));
+               end if;
+            end Call_Scope;
+
+         begin
+            if Nkind (N) = N_Function_Call
+              and then Call_Scope (N)
+                         = Corresponding_Concurrent_Type (Rec_Type)
+            then
+               Has_Internal_Call := True;
+               return Abandon;
+            else
+               return OK;
+            end if;
+         end Find_Internal_Call;
+
+         procedure Search_Access_Discriminant is new
+           Traverse_Proc (Find_Access_Discriminant);
+
+         procedure Search_Current_Instance is new
+           Traverse_Proc (Find_Current_Instance);
+
+         procedure Search_Internal_Call is new
+           Traverse_Proc (Find_Internal_Call);
+
+         --  Start of processing for Requires_Late_Init
+
+      begin
+         --  A component of an object is said to require late initialization
+         --  if:
+
+         --  it has an access discriminant value constrained by a per-object
+         --  expression;
+
+         if Has_Access_Constraint (Defining_Identifier (Decl))
+           and then No (Expression (Decl))
+         then
+            return True;
+
+         elsif Present (Expression (Decl)) then
+
+            --  it has an initialization expression that includes a name
+            --  denoting an access discriminant;
+
+            Search_Access_Discriminant (Expression (Decl));
+
+            if Has_Access_Discriminant then
+               return True;
+            end if;
+
+            --  or it has an initialization expression that includes a
+            --  reference to the current instance of the type either by
+            --  name...
+
+            Search_Current_Instance (Expression (Decl));
+
+            if References_Current_Instance then
+               return True;
+            end if;
+
+            --  ...or implicitly as the target object of a call.
+
+            if Is_Protected_Record_Type (Rec_Type) then
+               Search_Internal_Call (Expression (Decl));
+
+               if Has_Internal_Call then
+                  return True;
+               end if;
+            end if;
+         end if;
+
+         return False;
+      end Requires_Late_Init;
+
+      -----------------------------
+      -- Has_Late_Init_Component --
+      -----------------------------
+
+      function Has_Late_Init_Component
+        (Tagged_Rec_Type : Entity_Id) return Boolean
+      is
+         Comp_Id : Entity_Id :=
+           First_Component (Implementation_Base_Type (Tagged_Rec_Type));
+      begin
+         while Present (Comp_Id) loop
+            if Requires_Late_Init (Decl     => Parent (Comp_Id),
+                                   Rec_Type => Tagged_Rec_Type)
+            then
+               return True; -- found a component that requires late init
+
+            elsif Chars (Comp_Id) = Name_uParent
+              and then Has_Late_Init_Component (Etype (Comp_Id))
+            then
+               return True; -- an ancestor type has a late init component
+            end if;
+
+            Next_Component (Comp_Id);
+         end loop;
+
+         return False;
+      end Has_Late_Init_Component;
+
+      ------------------------
+      -- Tag_Init_Condition --
+      ------------------------
+
+      function Tag_Init_Condition
+        (Loc : Source_Ptr;
+         Init_Control_Formal : Entity_Id) return Node_Id is
+      begin
+         return Make_Op_Eq (Loc,
+                  New_Occurrence_Of (Init_Control_Formal, Loc),
+                  Make_Mode_Literal (Loc, Full_Init));
+      end Tag_Init_Condition;
+
+      --------------------------
+      -- Early_Init_Condition --
+      --------------------------
+
+      function Early_Init_Condition
+        (Loc : Source_Ptr;
+         Init_Control_Formal : Entity_Id) return Node_Id is
+      begin
+         return Make_Op_Ne (Loc,
+                  New_Occurrence_Of (Init_Control_Formal, Loc),
+                  Make_Mode_Literal (Loc, Late_Init_Only));
+      end Early_Init_Condition;
+
+      -------------------------
+      -- Late_Init_Condition --
+      -------------------------
+
+      function Late_Init_Condition
+        (Loc : Source_Ptr;
+         Init_Control_Formal : Entity_Id) return Node_Id is
+      begin
+         return Make_Op_Ne (Loc,
+                  New_Occurrence_Of (Init_Control_Formal, Loc),
+                  Make_Mode_Literal (Loc, Early_Init_Only));
+      end Late_Init_Condition;
+
+   end Initialization_Control;
+
    ----------------------------
    -- Initialization_Warning --
    ----------------------------
@@ -9284,7 +9506,7 @@ package body Exp_Ch3 is
             --       Prim_T       => Typ'Tag,
             --       Interface_T  => Iface'Tag,
             --       Offset_Value => n,
-            --       Offset_Func  => Fn'Address)
+            --       Offset_Func  => Fn'Unrestricted_Access)
 
             Append_To (Stmts_List,
               Make_Procedure_Call_Statement (Loc,
@@ -9319,7 +9541,7 @@ package body Exp_Ch3 is
                     Make_Attribute_Reference (Loc,
                       Prefix => New_Occurrence_Of
                                   (DT_Offset_To_Top_Func (Tag_Comp), Loc),
-                      Attribute_Name => Name_Address)))));
+                      Attribute_Name => Name_Unrestricted_Access)))));
 
             --  In this case the next component stores the value of the offset
             --  to the top.
@@ -9574,18 +9796,6 @@ package body Exp_Ch3 is
       return True;
    end Is_Null_Statement_List;
 
-   ------------------------------
-   -- Is_User_Defined_Equality --
-   ------------------------------
-
-   function Is_User_Defined_Equality (Prim : Node_Id) return Boolean is
-   begin
-      return Chars (Prim) = Name_Op_Eq
-        and then Etype (First_Formal (Prim)) =
-                 Etype (Next_Formal (First_Formal (Prim)))
-        and then Base_Type (Etype (Prim)) = Standard_Boolean;
-   end Is_User_Defined_Equality;
-
    ----------------------------------------
    -- Make_Controlling_Function_Wrappers --
    ----------------------------------------
@@ -9789,6 +9999,13 @@ package body Exp_Ch3 is
 
             Mutate_Ekind (Func_Id, E_Function);
             Set_Is_Wrapper (Func_Id);
+
+            --  Corresponding_Spec will be set again to the same value during
+            --  analysis, but we need this information earlier.
+            --  Expand_N_Freeze_Entity needs to know whether a subprogram body
+            --  is a wrapper's body in order to get check suppression right.
+
+            Set_Corresponding_Spec (Func_Body, Func_Id);
 
             Override_Dispatching_Operation (Tag_Typ, Subp, New_Op => Func_Id);
          end if;
@@ -10958,15 +11175,8 @@ package body Exp_Ch3 is
 
          Prim := First_Elmt (Primitive_Operations (Tag_Typ));
          while Present (Prim) loop
-            if Chars (Node (Prim)) = Name_Op_Eq
+            if Is_User_Defined_Equality (Node (Prim))
               and then not Is_Internal (Node (Prim))
-
-              --  The predefined equality primitive must have exactly two
-              --  formals whose type is this tagged type.
-
-              and then Number_Formals (Node (Prim)) = 2
-              and then Etype (First_Formal (Node (Prim))) = Tag_Typ
-              and then Etype (Last_Formal (Node (Prim))) = Tag_Typ
             then
                Eq_Needed := False;
                Eq_Name := No_Name;
@@ -10982,7 +11192,7 @@ package body Exp_Ch3 is
 
          Prim := First_Elmt (Primitive_Operations (Tag_Typ));
          while Present (Prim) loop
-            if Chars (Node (Prim)) = Name_Op_Eq
+            if Is_User_Defined_Equality (Node (Prim))
               and then Is_Internal (Node (Prim))
             then
                Eq_Needed := True;

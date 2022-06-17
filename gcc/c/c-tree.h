@@ -685,6 +685,7 @@ extern tree require_complete_type (location_t, tree);
 extern bool same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
 extern int comptypes_check_different_types (tree, tree, bool *);
+extern int comptypes_check_enum_int (tree, tree, bool *);
 extern bool c_vla_type_p (const_tree);
 extern bool c_mark_addressable (tree, bool = false);
 extern void c_incomplete_type_error (location_t, const_tree, const_tree);
@@ -698,7 +699,8 @@ extern struct c_expr convert_lvalue_to_rvalue (location_t, struct c_expr,
 extern tree decl_constant_value_1 (tree, bool);
 extern void mark_exp_read (tree);
 extern tree composite_type (tree, tree);
-extern tree build_component_ref (location_t, tree, tree, location_t);
+extern tree build_component_ref (location_t, tree, tree, location_t,
+				 location_t);
 extern tree build_array_ref (location_t, tree, tree);
 extern tree build_external_ref (location_t, tree, bool, tree *);
 extern void pop_maybe_used (bool);
@@ -834,6 +836,8 @@ set_c_expr_source_range (c_expr *expr,
 
 /* In c-fold.cc */
 extern vec<tree> incomplete_record_decls;
+
+extern const char *c_get_sarif_source_language (const char *filename);
 
 #if CHECKING_P
 namespace selftest {

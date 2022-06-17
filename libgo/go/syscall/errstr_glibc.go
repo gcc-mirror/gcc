@@ -7,6 +7,7 @@
 // We use this rather than errstr.go because on GNU/Linux sterror_r
 // returns a pointer to the error message, and may not use buf at all.
 
+//go:build hurd || linux
 // +build hurd linux
 
 package syscall

@@ -296,6 +296,12 @@ package body Sem_Disp is
       Ctrl_Type : Entity_Id;
 
    begin
+      --  We skip the check for thunks
+
+      if Is_Thunk (Subp) then
+         return;
+      end if;
+
       Formal := First_Formal (Subp);
       while Present (Formal) loop
          Ctrl_Type := Check_Controlling_Type (Etype (Formal), Subp);
@@ -566,7 +572,10 @@ package body Sem_Disp is
          --  when it is user-defined.
 
          if Is_Predefined_Dispatching_Operation (Subp_Entity)
-           and then not Is_User_Defined_Equality (Subp_Entity)
+           and then not (Is_User_Defined_Equality (Subp_Entity)
+                          and then Comes_From_Source (Subp_Entity)
+                          and then Nkind (Parent (Subp_Entity)) =
+                                                      N_Function_Specification)
          then
             return;
          end if;
@@ -748,14 +757,22 @@ package body Sem_Disp is
 
             elsif Is_Subprogram (Scop)
               and then not Is_Tag_Indeterminate (N)
-              and then In_Pre_Post_Condition (Call, Class_Wide_Only => True)
-
-              --  The tagged type associated with the called subprogram must be
-              --  the same as that of the subprogram with a class-wide aspect.
-
-              and then Is_Dispatching_Operation (Scop)
               and then
-                Find_Dispatching_Type (Subp) = Find_Dispatching_Type (Scop)
+               --  The context is an internally built helper or an indirect
+               --  call wrapper that handles class-wide preconditions
+                 (Present (Class_Preconditions_Subprogram (Scop))
+
+               --  ... or the context is a class-wide pre/postcondition.
+                   or else
+                     (In_Pre_Post_Condition (Call, Class_Wide_Only => True)
+
+                       --  The tagged type associated with the called
+                       --  subprogram must be the same as that of the
+                       --  subprogram with a class-wide aspect.
+
+                       and then Is_Dispatching_Operation (Scop)
+                       and then Find_Dispatching_Type (Subp)
+                                  = Find_Dispatching_Type (Scop)))
             then
                null;
 
@@ -1196,7 +1213,7 @@ package body Sem_Disp is
                   Error_Msg_Name_2 := Chars (E);
                   Error_Msg_Sloc := Sloc (E);
                   Error_Msg_N
-                    ("?j?primitive of type % defined after private extension "
+                    ("?.j?primitive of type % defined after private extension "
                      & "% #?", Prim);
                   Error_Msg_Name_1 := Chars (Prim);
                   Error_Msg_Name_2 := Chars (E);
@@ -1505,11 +1522,10 @@ package body Sem_Disp is
                        ("\spec should appear immediately after the type!",
                         Subp);
 
-                  elsif Is_Frozen (Subp) then
+                  else
 
                      --  The subprogram body declares a primitive operation.
-                     --  If the subprogram is already frozen, we must update
-                     --  its dispatching information explicitly here. The
+                     --  We must update its dispatching information here. The
                      --  information is taken from the overridden subprogram.
                      --  We must also generate a cross-reference entry because
                      --  references to other primitives were already created
@@ -1717,7 +1733,11 @@ package body Sem_Disp is
             --  emitted after those tables are built, to prevent access before
             --  elaboration in gigi.
 
-            if Body_Is_Last_Primitive and then Expander_Active then
+            if Body_Is_Last_Primitive
+              and then not Building_Static_DT (Tagged_Type)
+              and then Expander_Active
+              and then Tagged_Type_Expansion
+            then
                declare
                   Subp_Body : constant Node_Id := Unit_Declaration_Node (Subp);
                   Elmt      : Elmt_Id;
@@ -1728,13 +1748,9 @@ package body Sem_Disp is
                   while Present (Elmt) loop
                      Prim := Node (Elmt);
 
-                     --  No code required to register primitives in VM targets
-
                      if Present (Alias (Prim))
                        and then Present (Interface_Alias (Prim))
                        and then Alias (Prim) = Subp
-                       and then not Building_Static_DT (Tagged_Type)
-                       and then Tagged_Type_Expansion
                      then
                         Insert_Actions_After (Subp_Body,
                           Register_Primitive (Sloc (Subp_Body), Prim => Prim));

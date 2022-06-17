@@ -1511,8 +1511,10 @@ structural_comptypes (tree t1, tree t2, int strict)
 	 substitute into the specialization arguments at instantiation
 	 time.  And aliases can't be equivalent without being ==, so
 	 we don't need to look any deeper.  */
+      ++processing_template_decl;
       tree dep1 = dependent_alias_template_spec_p (t1, nt_transparent);
       tree dep2 = dependent_alias_template_spec_p (t2, nt_transparent);
+      --processing_template_decl;
       if ((dep1 || dep2) && dep1 != dep2)
 	return false;
     }
@@ -1873,9 +1875,9 @@ compparms (const_tree parms1, const_tree parms2)
 }
 
 
-/* Process a sizeof or alignof expression where the operand is a
-   type. STD_ALIGNOF indicates whether an alignof has C++11 (minimum alignment)
-   or GNU (preferred alignment) semantics; it is ignored if op is
+/* Process a sizeof or alignof expression where the operand is a type.
+   STD_ALIGNOF indicates whether an alignof has C++11 (minimum alignment)
+   or GNU (preferred alignment) semantics; it is ignored if OP is
    SIZEOF_EXPR.  */
 
 tree
@@ -1898,6 +1900,13 @@ cxx_sizeof_or_alignof_type (location_t loc, tree type, enum tree_code op,
 	}
       else
 	return error_mark_node;
+    }
+  else if (VOID_TYPE_P (type) && std_alignof)
+    {
+      if (complain)
+	error_at (loc, "invalid application of %qs to a void type",
+		  OVL_OP_INFO (false, op)->name);
+      return error_mark_node;
     }
 
   bool dependent_p = dependent_type_p (type);
@@ -2132,11 +2141,13 @@ cxx_alignas_expr (tree e)
     /* [dcl.align]/3:
        
 	   When the alignment-specifier is of the form
-	   alignas(type-id ), it shall have the same effect as
-	   alignas(alignof(type-id )).  */
+	   alignas(type-id), it shall have the same effect as
+	   alignas(alignof(type-id)).  */
 
     return cxx_sizeof_or_alignof_type (input_location,
-				       e, ALIGNOF_EXPR, true, false);
+				       e, ALIGNOF_EXPR,
+				       /*std_alignof=*/true,
+				       /*complain=*/true);
   
   /* If we reach this point, it means the alignas expression if of
      the form "alignas(assignment-expression)", so we should follow
@@ -4746,8 +4757,16 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
       tree off = TREE_OPERAND (cop, 1);
       if (!integer_zerop (off)
 	  && !warning_suppressed_p (cop, OPT_Waddress))
-	warning_at (location, OPT_Waddress, "comparing the result of pointer "
-		    "addition %qE and NULL", cop);
+	{
+	  tree base = TREE_OPERAND (cop, 0);
+	  STRIP_NOPS (base);
+	  if (TYPE_REF_P (TREE_TYPE (base)))
+	    warning_at (location, OPT_Waddress, "the compiler can assume that "
+			"the address of %qE will never be NULL", base);
+	  else
+	    warning_at (location, OPT_Waddress, "comparing the result of "
+			"pointer addition %qE and NULL", cop);
+	}
       return;
     }
   else if (CONVERT_EXPR_P (op)
@@ -4920,7 +4939,7 @@ cp_build_binary_op (const op_location_t &location,
      convert it to this type.  */
   tree final_type = 0;
 
-  tree result, result_ovl;
+  tree result;
 
   /* Nonzero if this is an operation like MIN or MAX which can
      safely be computed in short if both args are promoted shorts.
@@ -6244,25 +6263,29 @@ cp_build_binary_op (const op_location_t &location,
     result = build2 (COMPOUND_EXPR, TREE_TYPE (result),
 		     instrument_expr, result);
 
-  if (!processing_template_decl)
-    {
-      if (resultcode == SPACESHIP_EXPR)
-	result = get_target_expr_sfinae (result, complain);
-      op0 = cp_fully_fold (op0);
-      /* Only consider the second argument if the first isn't overflowed.  */
-      if (!CONSTANT_CLASS_P (op0) || TREE_OVERFLOW_P (op0))
-	return result;
-      op1 = cp_fully_fold (op1);
-      if (!CONSTANT_CLASS_P (op1) || TREE_OVERFLOW_P (op1))
-	return result;
-    }
-  else if (!CONSTANT_CLASS_P (op0) || !CONSTANT_CLASS_P (op1)
-	   || TREE_OVERFLOW_P (op0) || TREE_OVERFLOW_P (op1))
-    return result;
+  if (resultcode == SPACESHIP_EXPR && !processing_template_decl)
+    result = get_target_expr_sfinae (result, complain);
 
-  result_ovl = fold_build2 (resultcode, build_type, op0, op1);
-  if (TREE_OVERFLOW_P (result_ovl))
-    overflow_warning (location, result_ovl);
+  if (!c_inhibit_evaluation_warnings)
+    {
+      if (!processing_template_decl)
+	{
+	  op0 = cp_fully_fold (op0);
+	  /* Only consider the second argument if the first isn't overflowed.  */
+	  if (!CONSTANT_CLASS_P (op0) || TREE_OVERFLOW_P (op0))
+	    return result;
+	  op1 = cp_fully_fold (op1);
+	  if (!CONSTANT_CLASS_P (op1) || TREE_OVERFLOW_P (op1))
+	    return result;
+	}
+      else if (!CONSTANT_CLASS_P (op0) || !CONSTANT_CLASS_P (op1)
+	       || TREE_OVERFLOW_P (op0) || TREE_OVERFLOW_P (op1))
+	return result;
+
+      tree result_ovl = fold_build2 (resultcode, build_type, op0, op1);
+      if (TREE_OVERFLOW_P (result_ovl))
+	overflow_warning (location, result_ovl);
+    }
 
   return result;
 }
@@ -6306,7 +6329,9 @@ build_x_shufflevector (location_t loc, vec<tree, va_gc> *args,
   if (processing_template_decl)
     {
       for (unsigned i = 0; i < args->length (); ++i)
-	if (type_dependent_expression_p ((*args)[i]))
+	if (i <= 1
+	    ? type_dependent_expression_p ((*args)[i])
+	    : instantiation_dependent_expression_p ((*args)[i]))
 	  {
 	    tree exp = build_min_nt_call_vec (NULL, args);
 	    CALL_EXPR_IFN (exp) = IFN_SHUFFLEVECTOR;
@@ -10436,7 +10461,11 @@ check_return_expr (tree retval, bool *no_warning)
     {
       if (retval)
 	error_at (loc, "returning a value from a destructor");
-      return NULL_TREE;
+
+      if (targetm.cxx.cdtor_returns_this () && !processing_template_decl)
+	retval = current_class_ptr;
+      else
+	return NULL_TREE;
     }
   else if (DECL_CONSTRUCTOR_P (current_function_decl))
     {
@@ -10447,7 +10476,11 @@ check_return_expr (tree retval, bool *no_warning)
       else if (retval)
 	/* You can't return a value from a constructor.  */
 	error_at (loc, "returning a value from a constructor");
-      return NULL_TREE;
+
+      if (targetm.cxx.cdtor_returns_this () && !processing_template_decl)
+	retval = current_class_ptr;
+      else
+	return NULL_TREE;
     }
 
   const tree saved_retval = retval;

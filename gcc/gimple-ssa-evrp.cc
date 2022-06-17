@@ -27,9 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "cfganal.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
-#include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop.h"
@@ -68,19 +68,19 @@ public:
       }
   }
 
-  tree value_of_expr (tree name, gimple *stmt) OVERRIDE
+  tree value_of_expr (tree name, gimple *stmt) override
   {
     return m_range_analyzer.value_of_expr (name, stmt);
   }
 
-  void pre_fold_bb (basic_block bb) OVERRIDE
+  void pre_fold_bb (basic_block bb) override
   {
     if (dump_file && (dump_flags & TDF_DETAILS))
       fprintf (dump_file, "evrp visiting BB%d\n", bb->index);
     m_range_analyzer.enter (bb);
   }
 
-  void pre_fold_stmt (gimple *stmt) OVERRIDE
+  void pre_fold_stmt (gimple *stmt) override
   {
     if (dump_file && (dump_flags & TDF_DETAILS))
       {
@@ -90,17 +90,17 @@ public:
     m_range_analyzer.record_ranges_from_stmt (stmt, false);
   }
 
-  bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
+  bool fold_stmt (gimple_stmt_iterator *gsi) override
   {
     return simplifier.simplify (gsi);
   }
 
-  void post_fold_bb (basic_block bb) OVERRIDE
+  void post_fold_bb (basic_block bb) override
   {
     m_range_analyzer.leave (bb);
   }
 
-  void post_new_stmt (gimple *stmt) OVERRIDE
+  void post_new_stmt (gimple *stmt) override
   {
     m_range_analyzer.set_defs_to_varying (stmt);
   }
@@ -157,7 +157,7 @@ public:
     delete m_pta;
   }
 
-  bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
+  bool fold_stmt (gimple_stmt_iterator *gsi) override
     {
       simplifier.set_range_query (first, first_exec_flag);
       if (simplifier.simplify (gsi))
@@ -173,27 +173,27 @@ public:
       return false;
     }
 
-  void pre_fold_stmt (gimple *stmt) OVERRIDE
+  void pre_fold_stmt (gimple *stmt) override
   {
     evrp_folder::pre_fold_stmt (stmt);
     m_pta->visit_stmt (stmt);
   }
 
-  void pre_fold_bb (basic_block bb) OVERRIDE
+  void pre_fold_bb (basic_block bb) override
   {
     evrp_folder::pre_fold_bb (bb);
     m_pta->enter (bb);
   }
 
-  void post_fold_bb (basic_block bb) OVERRIDE
+  void post_fold_bb (basic_block bb) override
   {
     evrp_folder::post_fold_bb (bb);
     m_pta->leave (bb);
   }
 
-  tree value_of_expr (tree name, gimple *) OVERRIDE;
-  tree value_on_edge (edge, tree name) OVERRIDE;
-  tree value_of_stmt (gimple *, tree name) OVERRIDE;
+  tree value_of_expr (tree name, gimple *) override;
+  tree value_on_edge (edge, tree name) override;
+  tree value_of_stmt (gimple *, tree name) override;
 
 private:
   DISABLE_COPY_AND_ASSIGN (hybrid_folder);

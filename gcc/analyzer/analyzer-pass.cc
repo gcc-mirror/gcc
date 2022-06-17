@@ -66,8 +66,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate (function *) FINAL OVERRIDE;
-  unsigned int execute (function *) FINAL OVERRIDE;
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 }; // class pass_analyzer
 
 /* Only run the analyzer if -fanalyzer.  */

@@ -1017,6 +1017,45 @@ default_function_value_regno_p (const unsigned int regno ATTRIBUTE_UNUSED)
 #endif
 }
 
+/* Choose the mode and rtx to use to zero REGNO, storing tem in PMODE and
+   PREGNO_RTX and returning TRUE if successful, otherwise returning FALSE.  If
+   the natural mode for REGNO doesn't work, attempt to group it with subsequent
+   adjacent registers set in TOZERO.  */
+
+static inline bool
+zcur_select_mode_rtx (unsigned int regno, machine_mode *pmode,
+		      rtx *pregno_rtx, HARD_REG_SET tozero)
+{
+  rtx regno_rtx = regno_reg_rtx[regno];
+  machine_mode mode = GET_MODE (regno_rtx);
+
+  /* If the natural mode doesn't work, try some wider mode.  */
+  if (!targetm.hard_regno_mode_ok (regno, mode))
+    {
+      bool found = false;
+      for (int nregs = 2;
+	   !found && nregs <= hard_regno_max_nregs
+	     && regno + nregs <= FIRST_PSEUDO_REGISTER
+	     && TEST_HARD_REG_BIT (tozero,
+				   regno + nregs - 1);
+	   nregs++)
+	{
+	  mode = choose_hard_reg_mode (regno, nregs, 0);
+	  if (mode == E_VOIDmode)
+	    continue;
+	  gcc_checking_assert (targetm.hard_regno_mode_ok (regno, mode));
+	  regno_rtx = gen_rtx_REG (mode, regno);
+	  found = true;
+	}
+      if (!found)
+	return false;
+    }
+
+  *pmode = mode;
+  *pregno_rtx = regno_rtx;
+  return true;
+}
+
 /* The default hook for TARGET_ZERO_CALL_USED_REGS.  */
 
 HARD_REG_SET
@@ -1035,16 +1074,28 @@ default_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
     if (TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
       {
 	rtx_insn *last_insn = get_last_insn ();
-	machine_mode mode = GET_MODE (regno_reg_rtx[regno]);
+	rtx regno_rtx;
+	machine_mode mode;
+
+	if (!zcur_select_mode_rtx (regno, &mode, &regno_rtx,
+				   need_zeroed_hardregs))
+	  {
+	    SET_HARD_REG_BIT (failed, regno);
+	    continue;
+	  }
+
 	rtx zero = CONST0_RTX (mode);
-	rtx_insn *insn = emit_move_insn (regno_reg_rtx[regno], zero);
+	rtx_insn *insn = emit_move_insn (regno_rtx, zero);
 	if (!valid_insn_p (insn))
 	  {
 	    SET_HARD_REG_BIT (failed, regno);
 	    delete_insns_since (last_insn);
 	  }
 	else
-	  progress = true;
+	  {
+	    progress = true;
+	    regno += hard_regno_nregs (regno, mode) - 1;
+	  }
       }
 
   /* Now retry with copies from zeroed registers, as long as we've
@@ -1060,7 +1111,18 @@ default_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
       for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	if (TEST_HARD_REG_BIT (retrying, regno))
 	  {
-	    machine_mode mode = GET_MODE (regno_reg_rtx[regno]);
+	    rtx regno_rtx;
+	    machine_mode mode;
+
+	    /* This might select registers we've already zeroed.  If grouping
+	       with them is what it takes to get regno zeroed, so be it.  */
+	    if (!zcur_select_mode_rtx (regno, &mode, &regno_rtx,
+				       need_zeroed_hardregs))
+	      {
+		SET_HARD_REG_BIT (failed, regno);
+		continue;
+	      }
+
 	    bool success = false;
 	    /* Look for a source.  */
 	    for (unsigned int src = 0; src < FIRST_PSEUDO_REGISTER; src++)
@@ -1086,8 +1148,8 @@ default_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 
 		/* SRC is usable, try to copy from it.  */
 		rtx_insn *last_insn = get_last_insn ();
-		rtx zsrc = gen_rtx_REG (mode, src);
-		rtx_insn *insn = emit_move_insn (regno_reg_rtx[regno], zsrc);
+		rtx src_rtx = gen_rtx_REG (mode, src);
+		rtx_insn *insn = emit_move_insn (regno_rtx, src_rtx);
 		if (!valid_insn_p (insn))
 		  /* It didn't work, remove any inserts.  We'll look
 		     for another SRC.  */
@@ -1100,13 +1162,16 @@ default_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 		  }
 	      }
 
-	    /* If nothing worked for REGNO this round, marked it to be
+	    /* If nothing worked for REGNO this round, mark it to be
 	       retried if we get another round.  */
 	    if (!success)
 	      SET_HARD_REG_BIT (failed, regno);
 	    else
-	      /* Take note so as to enable another round if needed.  */
-	      progress = true;
+	      {
+		/* Take note so as to enable another round if needed.  */
+		progress = true;
+		regno += hard_regno_nregs (regno, mode) - 1;
+	      }
 	  }
     }
 
@@ -1778,6 +1843,20 @@ no_c99_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED,
   return false;
 }
 
+/* Assume some c99 functions are present at the runtime including sincos.  */
+bool
+bsd_libc_has_function (enum function_class fn_class,
+		       tree type ATTRIBUTE_UNUSED)
+{
+  if (fn_class == function_c94
+      || fn_class == function_c99_misc
+      || fn_class == function_sincos)
+    return true;
+
+  return false;
+}
+
+
 tree
 default_builtin_tm_load_store (tree ARG_UNUSED (type))
 {
@@ -1930,8 +2009,12 @@ default_print_patchable_function_entry_1 (FILE *file,
       patch_area_number++;
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPFE", patch_area_number);
 
-      switch_to_section (get_section ("__patchable_function_entries",
-				      flags, current_function_decl));
+      section *sect = get_section ("__patchable_function_entries",
+				  flags, current_function_decl);
+      if (HAVE_COMDAT_GROUP && DECL_COMDAT_GROUP (current_function_decl))
+	switch_to_comdat_section (sect, current_function_decl);
+      else
+	switch_to_section (sect);
       assemble_align (POINTER_SIZE);
       fputs (asm_op, file);
       assemble_name_raw (file, buf);

@@ -18,15 +18,26 @@ alias I = long;
 alias U = ulong;
 enum Ubits = uint(U.sizeof * 8);
 
-align(16) struct Cent
+version (X86_64) private enum Cent_alignment = 16;
+else             private enum Cent_alignment = (size_t.sizeof * 2);
+
+align(Cent_alignment) struct Cent
 {
-    U lo;      // low 64 bits
-    U hi;      // high 64 bits
+    version (LittleEndian)
+    {
+        U lo;  // low 64 bits
+        U hi;  // high 64 bits
+    }
+    else
+    {
+        U hi;  // high 64 bits
+        U lo;  // low 64 bits
+    }
 }
 
-enum One = Cent(1);
-enum Zero = Cent();
-enum MinusOne = neg(One);
+enum Cent One = { lo:1 };
+enum Cent Zero = { lo:0 };
+enum Cent MinusOne = neg(One);
 
 /*****************************
  * Test against 0
@@ -320,7 +331,8 @@ Cent ror(Cent c, uint n)
 pure
 Cent and(Cent c1, Cent c2)
 {
-    return Cent(c1.lo & c2.lo, c1.hi & c2.hi);
+    const Cent ret = { lo:c1.lo & c2.lo, hi:c1.hi & c2.hi };
+    return ret;
 }
 
 /****************************
@@ -334,7 +346,8 @@ Cent and(Cent c1, Cent c2)
 pure
 Cent or(Cent c1, Cent c2)
 {
-    return Cent(c1.lo | c2.lo, c1.hi | c2.hi);
+    const Cent ret = { lo:c1.lo | c2.lo, hi:c1.hi | c2.hi };
+    return ret;
 }
 
 /****************************
@@ -348,7 +361,8 @@ Cent or(Cent c1, Cent c2)
 pure
 Cent xor(Cent c1, Cent c2)
 {
-    return Cent(c1.lo ^ c2.lo, c1.hi ^ c2.hi);
+    const Cent ret = { lo:c1.lo ^ c2.lo, hi:c1.hi ^ c2.hi };
+    return ret;
 }
 
 /****************************
@@ -363,7 +377,8 @@ pure
 Cent add(Cent c1, Cent c2)
 {
     U r = cast(U)(c1.lo + c2.lo);
-    return Cent(r, cast(U)(c1.hi + c2.hi + (r < c1.lo)));
+    const Cent ret = { lo:r, hi:cast(U)(c1.hi + c2.hi + (r < c1.lo)) };
+    return ret;
 }
 
 /****************************
@@ -419,9 +434,9 @@ Cent mul(Cent c1, Cent c2)
     const c1h1 = c1.hi >> mulshift;
     r3 = c1h1 * c2l0 + (r3 & mulmask);
 
-    return Cent((r0 & mulmask) + (r1 & mulmask) * (mulmask + 1),
-                (r2 & mulmask) + (r3 & mulmask) * (mulmask + 1));
-
+    const Cent ret = { lo:(r0 & mulmask) + (r1 & mulmask) * (mulmask + 1),
+                       hi:(r2 & mulmask) + (r3 & mulmask) * (mulmask + 1) };
+    return ret;
 }
 
 
@@ -523,8 +538,10 @@ Cent udivmod(Cent c1, Cent c2, out Cent modulus)
     if (c1.hi == 0 && c2.hi == 0)
     {
         // Single precision divide
-        modulus = Cent(c1.lo % c2.lo);
-        return Cent(c1.lo / c2.lo);
+        const Cent rem = { lo:c1.lo % c2.lo };
+        modulus = rem;
+        const Cent ret = { lo:c1.lo / c2.lo };
+        return ret;
     }
     if (c1.hi == 0)
     {
@@ -539,10 +556,11 @@ Cent udivmod(Cent c1, Cent c2, out Cent modulus)
         const q1 = (c1.hi < c2.lo) ? 0 : (c1.hi / c2.lo);
         if (q1)
             c1.hi = c1.hi % c2.lo;
-        U rem;
-        const q0 = udivmod128_64(c1, c2.lo, rem);
-        modulus = Cent(rem);
-        return Cent(q0, q1);
+        Cent rem;
+        const q0 = udivmod128_64(c1, c2.lo, rem.lo);
+        modulus = rem;
+        const Cent ret = { lo:q0, hi:q1 };
+        return ret;
     }
 
     // Full cent precision division.
@@ -560,10 +578,10 @@ Cent udivmod(Cent c1, Cent c2, out Cent modulus)
 
     // Get quotient from divide unsigned operation.
     U rem_ignored;
-    const q1 = udivmod128_64(u1, v1, rem_ignored);
+    const Cent q1 = { lo:udivmod128_64(u1, v1, rem_ignored) };
 
     // Undo normalization and division of c1 by 2.
-    Cent quotient = shr(shl(Cent(q1), shift), 63);
+    Cent quotient = shr(shl(q1, shift), 63);
 
     // Make quotient correct or too small by 1
     if (tst(quotient))
@@ -770,44 +788,44 @@ version (unittest)
 
 unittest
 {
-    const C0 = Zero;
-    const C1 = One;
-    const C2 = Cent(2);
-    const C3 = Cent(3);
-    const C5 = Cent(5);
-    const C10 = Cent(10);
-    const C20 = Cent(20);
-    const C30 = Cent(30);
-    const C100 = Cent(100);
+    const Cent C0 = Zero;
+    const Cent C1 = One;
+    const Cent C2 = { lo:2 };
+    const Cent C3 = { lo:3 };
+    const Cent C5 = { lo:5 };
+    const Cent C10 = { lo:10 };
+    const Cent C20 = { lo:20 };
+    const Cent C30 = { lo:30 };
+    const Cent C100 = { lo:100 };
 
-    const Cm1 =  neg(One);
-    const Cm3 =  neg(C3);
-    const Cm10 = neg(C10);
+    const Cent Cm1 =  neg(One);
+    const Cent Cm3 =  neg(C3);
+    const Cent Cm10 = neg(C10);
 
-    const C3_1 = Cent(1,3);
-    const C3_2 = Cent(2,3);
-    const C4_8  = Cent(8, 4);
-    const C5_0  = Cent(0, 5);
-    const C7_1 = Cent(1,7);
-    const C7_9 = Cent(9,7);
-    const C9_3 = Cent(3,9);
-    const C10_0 = Cent(0,10);
-    const C10_1 = Cent(1,10);
-    const C10_3 = Cent(3,10);
-    const C11_3 = Cent(3,11);
-    const C20_0 = Cent(0,20);
-    const C90_30 = Cent(30,90);
+    const Cent C3_1 = { lo:1, hi:3 };
+    const Cent C3_2 = { lo:2, hi:3 };
+    const Cent C4_8  = { lo:8, hi:4 };
+    const Cent C5_0  = { lo:0, hi:5 };
+    const Cent C7_1 = { lo:1, hi:7 };
+    const Cent C7_9 = { lo:9, hi:7 };
+    const Cent C9_3 = { lo:3, hi:9 };
+    const Cent C10_0 = { lo:0, hi:10 };
+    const Cent C10_1 = { lo:1, hi:10 };
+    const Cent C10_3 = { lo:3, hi:10 };
+    const Cent C11_3 = { lo:3, hi:11 };
+    const Cent C20_0 = { lo:0, hi:20 };
+    const Cent C90_30 = { lo:30, hi:90 };
 
-    const Cm10_0 = inc(com(C10_0)); // Cent(0, -10);
-    const Cm10_1 = inc(com(C10_1)); // Cent(-1, -11);
-    const Cm10_3 = inc(com(C10_3)); // Cent(-3, -11);
-    const Cm20_0 = inc(com(C20_0)); // Cent(0, -20);
+    const Cent Cm10_0 = inc(com(C10_0)); // Cent(lo=0,  hi=-10);
+    const Cent Cm10_1 = inc(com(C10_1)); // Cent(lo=-1, hi=-11);
+    const Cent Cm10_3 = inc(com(C10_3)); // Cent(lo=-3, hi=-11);
+    const Cent Cm20_0 = inc(com(C20_0)); // Cent(lo=0,  hi=-20);
 
-    enum Cs_3 = Cent(3, I.min);
+    enum Cent Cs_3 = { lo:3, hi:I.min };
 
-    const Cbig_1 = Cent(0xa3ccac1832952398, 0xc3ac542864f652f8);
-    const Cbig_2 = Cent(0x5267b85f8a42fc20, 0);
-    const Cbig_3 = Cent(0xf0000000ffffffff, 0);
+    const Cent Cbig_1 = { lo:0xa3ccac1832952398, hi:0xc3ac542864f652f8 };
+    const Cent Cbig_2 = { lo:0x5267b85f8a42fc20, hi:0 };
+    const Cent Cbig_3 = { lo:0xf0000000ffffffff, hi:0 };
 
     /************************/
 
@@ -893,12 +911,20 @@ unittest
     assert(div(mul(C90_30, C2), C2) == C90_30);
     assert(div(mul(C90_30, C2), C90_30) == C2);
 
-    assert(divmod(Cbig_1, Cbig_2, modulus) == Cent(0x4496aa309d4d4a2f, U.max));
-    assert(modulus == Cent(0xd83203d0fdc799b8, U.max));
-    assert(udivmod(Cbig_1, Cbig_2, modulus) == Cent(0x5fe0e9bace2bedad, 2));
-    assert(modulus == Cent(0x2c923125a68721f8, 0));
-    assert(div(Cbig_1, Cbig_3) == Cent(0xbfa6c02b5aff8b86, U.max));
-    assert(udiv(Cbig_1, Cbig_3) == Cent(0xd0b7d13b48cb350f, 0));
+    const Cent Cb1divb2 = { lo:0x4496aa309d4d4a2f, hi:U.max };
+    const Cent Cb1modb2 = { lo:0xd83203d0fdc799b8, hi:U.max };
+    assert(divmod(Cbig_1, Cbig_2, modulus) == Cb1divb2);
+    assert(modulus == Cb1modb2);
+
+    const Cent Cb1udivb2 = { lo:0x5fe0e9bace2bedad, hi:2 };
+    const Cent Cb1umodb2 = { lo:0x2c923125a68721f8, hi:0 };
+    assert(udivmod(Cbig_1, Cbig_2, modulus) == Cb1udivb2);
+    assert(modulus == Cb1umodb2);
+
+    const Cent Cb1divb3 = { lo:0xbfa6c02b5aff8b86, hi:U.max };
+    const Cent Cb1udivb3 = { lo:0xd0b7d13b48cb350f, hi:0 };
+    assert(div(Cbig_1, Cbig_3) == Cb1divb3);
+    assert(udiv(Cbig_1, Cbig_3) == Cb1udivb3);
 
     assert(mul(Cm10, C1) == Cm10);
     assert(mul(C1, Cm10) == Cm10);

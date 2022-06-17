@@ -90,11 +90,11 @@ Syntax:
     | (EXTERNAL_PROPERTY {, EXTERNAL_PROPERTY} )
 
   EXTERNAL_PROPERTY ::=
-      Async_Readers    [=> boolean_EXPRESSION]
-    | Async_Writers    [=> boolean_EXPRESSION]
-    | Effective_Reads  [=> boolean_EXPRESSION]
-    | Effective_Writes [=> boolean_EXPRESSION]
-      others            => boolean_EXPRESSION
+      Async_Readers    [=> static_boolean_EXPRESSION]
+    | Async_Writers    [=> static_boolean_EXPRESSION]
+    | Effective_Reads  [=> static_boolean_EXPRESSION]
+    | Effective_Writes [=> static_boolean_EXPRESSION]
+      others            => static_boolean_EXPRESSION
 
   STATE_NAME ::= defining_identifier
 
@@ -232,6 +232,36 @@ Syntax:
 
 This configuration pragma is a synonym for pragma Ada_12 and has the
 same syntax and effect.
+
+Pragma Ada_2022
+===============
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Ada_2022;
+  pragma Ada_2022 (local_NAME);
+
+
+A configuration pragma that establishes Ada 2022 mode for the unit to which
+it applies, regardless of the mode set by the command line switches.
+This mode is set automatically for the ``Ada`` and ``System``
+packages and their children, so you need not specify it in these
+contexts.  This pragma is useful when writing a reusable component that
+itself uses Ada 2022 features, but which is intended to be usable from
+Ada 83, Ada 95, Ada 2005 or Ada 2012 programs.
+
+The one argument form, which is not a configuration pragma,
+is used for managing the transition from Ada
+2012 to Ada 2022 in the run-time library. If an entity is marked
+as Ada_2022 only, then referencing the entity in any pre-Ada_2022
+mode will generate a warning. In addition, in any pre-Ada_2012
+mode, a preference rule is established which does not choose
+such an entity unless it is unambiguously specified. This avoids
+extra subprograms marked this way from generating ambiguities in
+otherwise legal pre-Ada_2022 programs. The one argument form is
+intended for exclusive use in the GNAT run-time library.
 
 Pragma Aggregate_Individually_Assign
 ====================================
@@ -478,7 +508,7 @@ applies to both the ``Precondition`` pragma
 and the aspect ``Precondition``. Note that the identifiers for
 pragmas Pre_Class and Post_Class are Pre'Class and Post'Class (not
 Pre_Class and Post_Class), since these pragmas are intended to be
-identical to the corresponding aspects).
+identical to the corresponding aspects.
 
 If the policy is ``CHECK``, then assertions are enabled, i.e.
 the corresponding pragma or aspect is activated.
@@ -600,7 +630,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Async_Readers [ (boolean_EXPRESSION) ];
+  pragma Async_Readers [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Async_Readers`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -614,7 +644,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Async_Writers [ (boolean_EXPRESSION) ];
+  pragma Async_Writers [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Async_Writers`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -1132,7 +1162,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Constant_After_Elaboration [ (boolean_EXPRESSION) ];
+  pragma Constant_After_Elaboration [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect
 ``Constant_After_Elaboration`` in the SPARK 2014 Reference Manual, section 3.3.1.
@@ -1147,7 +1177,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Contract_Cases ((CONTRACT_CASE {, CONTRACT_CASE));
+  pragma Contract_Cases (CONTRACT_CASE {, CONTRACT_CASE});
 
   CONTRACT_CASE ::= CASE_GUARD => CONSEQUENCE
 
@@ -1656,7 +1686,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Effective_Reads [ (boolean_EXPRESSION) ];
+  pragma Effective_Reads [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Effective_Reads`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -1670,7 +1700,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Effective_Writes [ (boolean_EXPRESSION) ];
+  pragma Effective_Writes [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Effective_Writes``
 in the SPARK 2014 Reference Manual, section 7.1.2.
@@ -1735,27 +1765,23 @@ The pragma has the following semantics, where ``U`` is the unit specified by
 the ``Unit_Name`` argument and ``E`` is the entity specified by the ``Entity``
 argument:
 
-*  ``E`` must be a subprogram that is explicitly declared either:
+* ``E`` must be a subprogram that is explicitly declared either:
 
-   o  Within ``U``, or
+  * Within ``U``, or
+  * Within a generic package that is instantiated in ``U``, or
+  * As an instance of generic subprogram instantiated in ``U``.
 
-   o  Within a generic package that is instantiated in ``U``, or
+  Otherwise the pragma is ignored.
 
-   o  As an instance of generic subprogram instantiated in ``U``.
-
-   Otherwise the pragma is ignored.
-
-*  If ``E`` is overloaded within ``U`` then, in the absence of a
-   ``Source_Location`` argument, all overloadings are eliminated.
-
-*  If ``E`` is overloaded within ``U`` and only some overloadings
-   are to be eliminated, then each overloading to be eliminated
-   must be specified in a corresponding pragma ``Eliminate``
-   with a ``Source_Location`` argument identifying the line where the
-   declaration appears, as described below.
-
-*  If ``E`` is declared as the result of a generic instantiation, then
-   a ``Source_Location`` argument is needed, as described below
+* If ``E`` is overloaded within ``U`` then, in the absence of a
+  ``Source_Location`` argument, all overloadings are eliminated.
+* If ``E`` is overloaded within ``U`` and only some overloadings
+  are to be eliminated, then each overloading to be eliminated
+  must be specified in a corresponding pragma ``Eliminate``
+  with a ``Source_Location`` argument identifying the line where the
+  declaration appears, as described below.
+* If ``E`` is declared as the result of a generic instantiation, then
+  a ``Source_Location`` argument is needed, as described below.
 
 Pragma ``Eliminate`` allows a program to be compiled in a system-independent
 manner, so that unused entities are eliminated but without
@@ -1959,10 +1985,10 @@ Syntax:
 
 ::
 
-  pragma Export_Object
+  pragma Export_Object (
         [Internal =>] LOCAL_NAME
      [, [External =>] EXTERNAL_SYMBOL]
-     [, [Size     =>] EXTERNAL_SYMBOL]
+     [, [Size     =>] EXTERNAL_SYMBOL]);
 
   EXTERNAL_SYMBOL ::=
     IDENTIFIER
@@ -2401,7 +2427,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Extensions_Visible [ (boolean_EXPRESSION) ];
+  pragma Extensions_Visible [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Extensions_Visible``
 in the SPARK 2014 Reference Manual, section 6.1.7.
@@ -2615,7 +2641,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Ghost [ (boolean_EXPRESSION) ];
+  pragma Ghost [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Ghost`` in the SPARK
 2014 Reference Manual, section 6.9.
@@ -2821,12 +2847,12 @@ Syntax:
 ::
 
   pragma Import_Function (
-       [Internal                 =>] LOCAL_NAME,
-    [, [External                 =>] EXTERNAL_SYMBOL]
-    [, [Parameter_Types          =>] PARAMETER_TYPES]
-    [, [Result_Type              =>] SUBTYPE_MARK]
-    [, [Mechanism                =>] MECHANISM]
-    [, [Result_Mechanism         =>] MECHANISM_NAME]);
+       [Internal         =>] LOCAL_NAME,
+    [, [External         =>] EXTERNAL_SYMBOL]
+    [, [Parameter_Types  =>] PARAMETER_TYPES]
+    [, [Result_Type      =>] SUBTYPE_MARK]
+    [, [Mechanism        =>] MECHANISM]
+    [, [Result_Mechanism =>] MECHANISM_NAME]);
 
   EXTERNAL_SYMBOL ::=
     IDENTIFIER
@@ -2885,7 +2911,7 @@ Syntax:
 
 ::
 
-  pragma Import_Object
+  pragma Import_Object (
        [Internal =>] LOCAL_NAME
     [, [External =>] EXTERNAL_SYMBOL]
     [, [Size     =>] EXTERNAL_SYMBOL]);
@@ -2912,10 +2938,10 @@ Syntax:
 ::
 
   pragma Import_Procedure (
-       [Internal                 =>] LOCAL_NAME
-    [, [External                 =>] EXTERNAL_SYMBOL]
-    [, [Parameter_Types          =>] PARAMETER_TYPES]
-    [, [Mechanism                =>] MECHANISM]);
+       [Internal        =>] LOCAL_NAME
+    [, [External        =>] EXTERNAL_SYMBOL]
+    [, [Parameter_Types =>] PARAMETER_TYPES]
+    [, [Mechanism       =>] MECHANISM]);
 
   EXTERNAL_SYMBOL ::=
     IDENTIFIER
@@ -2952,10 +2978,10 @@ Syntax:
 ::
 
   pragma Import_Valued_Procedure (
-       [Internal                 =>] LOCAL_NAME
-    [, [External                 =>] EXTERNAL_SYMBOL]
-    [, [Parameter_Types          =>] PARAMETER_TYPES]
-    [, [Mechanism                =>] MECHANISM]);
+       [Internal        =>] LOCAL_NAME
+    [, [External        =>] EXTERNAL_SYMBOL]
+    [, [Parameter_Types =>] PARAMETER_TYPES]
+    [, [Mechanism       =>] MECHANISM]);
 
   EXTERNAL_SYMBOL ::=
     IDENTIFIER
@@ -3235,7 +3261,7 @@ with some extended implementations of this pragma in certain Ada 83
 implementations.  The only difference between pragma ``Interface``
 and pragma ``Import`` is that there is special circuitry to allow
 both pragmas to appear for the same subprogram entity (normally it
-is illegal to have multiple ``Import`` pragmas. This is useful in
+is illegal to have multiple ``Import`` pragmas). This is useful in
 maintaining Ada 83/Ada 95 compatibility and is compatible with other
 Ada 83 compilers.
 
@@ -3969,7 +3995,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma No_Caching [ (boolean_EXPRESSION) ];
+  pragma No_Caching [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``No_Caching`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -4249,12 +4275,12 @@ Syntax:
 
   pragma Obsolescent (
     [Message =>] static_string_EXPRESSION
-  [,[Version =>] Ada_05]]);
+  [,[Version =>] Ada_05]);
 
   pragma Obsolescent (
     [Entity  =>] NAME
   [,[Message =>] static_string_EXPRESSION
-  [,[Version =>] Ada_05]] );
+  [,[Version =>] Ada_05]]);
 
 
 This pragma can occur immediately following a declaration of an entity,
@@ -6005,7 +6031,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Short_Descriptors
+  pragma Short_Descriptors;
 
 
 This pragma is provided for compatibility with other Ada implementations. It
@@ -6095,12 +6121,12 @@ Syntax:
 ::
 
   pragma Source_File_Name (
-    [Unit_Name   =>] unit_NAME,
+    [Unit_Name     =>] unit_NAME,
     Spec_File_Name =>  STRING_LITERAL,
     [Index => INTEGER_LITERAL]);
 
   pragma Source_File_Name (
-    [Unit_Name   =>] unit_NAME,
+    [Unit_Name     =>] unit_NAME,
     Body_File_Name =>  STRING_LITERAL,
     [Index => INTEGER_LITERAL]);
 
@@ -6108,7 +6134,7 @@ Syntax:
 Use this to override the normal naming convention.  It is a configuration
 pragma, and so has the usual applicability of configuration pragmas
 (i.e., it applies to either an entire partition, or to all units in a
-compilation, or to a single unit, depending on how it is used.
+compilation, or to a single unit, depending on how it is used).
 ``unit_name`` is mapped to ``file_name_literal``.  The identifier for
 the second argument is required, and indicates whether this is the file
 name for the spec or for the body.
@@ -7150,7 +7176,7 @@ for this purpose, see :ref:`Pragma_Obsolescent`.
 The second form of pragma ``Unreferenced`` is used within a context
 clause. In this case the arguments must be unit names of units previously
 mentioned in ``with`` clauses (similar to the usage of pragma
-``Elaborate_All``. The effect is to suppress warnings about unreferenced
+``Elaborate_All``). The effect is to suppress warnings about unreferenced
 units and unreferenced entities within these units.
 
 For the variable case, warnings are never given for unreferenced variables
@@ -7313,7 +7339,7 @@ For the variable case, warnings are never given for unreferenced
 variables whose name contains one of the substrings
 ``DISCARD, DUMMY, IGNORE, JUNK, UNUSED`` in any casing. Such names
 are typically to be used in cases where such warnings are expected.
-Thus it is never necessary to use ``pragma Unmodified`` for such
+Thus it is never necessary to use ``pragma Unused`` for such
 variables, though it is harmless to do so.
 
 Pragma Validity_Checks
@@ -7430,7 +7456,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Volatile_Function [ (boolean_EXPRESSION) ];
+  pragma Volatile_Function [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Volatile_Function``
 in the SPARK 2014 Reference Manual, section 7.1.2.

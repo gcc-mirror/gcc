@@ -2104,8 +2104,7 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
       char r_str[27];
       enum ld_plugin_symbol_resolution r = (enum ld_plugin_symbol_resolution) 0;
       unsigned int j;
-      unsigned int lto_resolution_str_len
-	= sizeof (lto_resolution_str) / sizeof (char *);
+      unsigned int lto_resolution_str_len = ARRAY_SIZE (lto_resolution_str);
       res_pair rp;
 
       t = fscanf (resolution, "%u " HOST_WIDE_INT_PRINT_HEX_PURE

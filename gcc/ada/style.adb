@@ -126,9 +126,14 @@ package body Style is
       elsif Error_Posted (Ref) or else Error_Posted (Def) then
          return;
 
-      --  Case of definition comes from source
+      --  Case of definition comes from source, or a record component whose
+      --  Original_Record_Component comes from source.
 
-      elsif Comes_From_Source (Def) then
+      elsif Comes_From_Source (Def) or else
+        (Ekind (Def) in Record_Field_Kind
+           and then Present (Original_Record_Component (Def))
+           and then Comes_From_Source (Original_Record_Component (Def)))
+      then
 
          --  Check same casing if we are checking references
 

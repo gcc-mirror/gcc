@@ -173,21 +173,40 @@ class OutBuffer
     }
 
     /****************************************
-     * Append nbytes of 0 to the internal buffer.
+     * Append nbytes of val to the internal buffer.
+     * Params:
+     *   nbytes = Number of bytes to fill.
+     *   val = Value to fill, defaults to 0.
      */
 
-    void fill0(size_t nbytes)
+    void fill(size_t nbytes, ubyte val = 0)
     {
         reserve(nbytes);
-        data[offset .. offset + nbytes] = 0;
+        data[offset .. offset + nbytes] = val;
         offset += nbytes;
     }
 
+    /****************************************
+     * Append nbytes of 0 to the internal buffer.
+     * Param:
+     *   nbytes - number of bytes to fill.
+     */
+    void fill0(size_t nbytes)
+    {
+        fill(nbytes);
+    }
+
     /**********************************
-     * 0-fill to align on power of 2 boundary.
+     * Append bytes until the buffer aligns on a power of 2 boundary.
+     *
+     * By default fills with 0 bytes.
+     *
+     * Params:
+     *   alignsize = Alignment value. Must be power of 2.
+     *   val = Value to fill, defaults to 0.
      */
 
-    void alignSize(size_t alignsize)
+    void alignSize(size_t alignsize, ubyte val = 0)
     in
     {
         assert(alignsize && (alignsize & (alignsize - 1)) == 0);
@@ -200,7 +219,35 @@ class OutBuffer
     {
         auto nbytes = offset & (alignsize - 1);
         if (nbytes)
-            fill0(alignsize - nbytes);
+            fill(alignsize - nbytes, val);
+    }
+    ///
+    @safe unittest
+    {
+        OutBuffer buf = new OutBuffer();
+        buf.write(cast(ubyte) 1);
+        buf.align2();
+        assert(buf.toBytes() == "\x01\x00");
+        buf.write(cast(ubyte) 2);
+        buf.align4();
+        assert(buf.toBytes() == "\x01\x00\x02\x00");
+        buf.write(cast(ubyte) 3);
+        buf.alignSize(8);
+        assert(buf.toBytes() == "\x01\x00\x02\x00\x03\x00\x00\x00");
+    }
+    /// ditto
+    @safe unittest
+    {
+        OutBuffer buf = new OutBuffer();
+        buf.write(cast(ubyte) 1);
+        buf.align2(0x55);
+        assert(buf.toBytes() == "\x01\x55");
+        buf.write(cast(ubyte) 2);
+        buf.align4(0x55);
+        assert(buf.toBytes() == "\x01\x55\x02\x55");
+        buf.write(cast(ubyte) 3);
+        buf.alignSize(8, 0x55);
+        assert(buf.toBytes() == "\x01\x55\x02\x55\x03\x55\x55\x55");
     }
 
     /// Clear the data in the buffer
@@ -211,23 +258,27 @@ class OutBuffer
 
     /****************************************
      * Optimize common special case alignSize(2)
+     * Params:
+     *   val = Value to fill, defaults to 0.
      */
 
-    void align2()
+    void align2(ubyte val = 0)
     {
         if (offset & 1)
-            write(cast(byte) 0);
+            write(cast(byte) val);
     }
 
     /****************************************
      * Optimize common special case alignSize(4)
+     * Params:
+     *   val = Value to fill, defaults to 0.
      */
 
-    void align4()
+    void align4(ubyte val = 0)
     {
         if (offset & 3)
         {   auto nbytes = (4 - offset) & 3;
-            fill0(nbytes);
+            fill(nbytes, val);
         }
     }
 
@@ -331,7 +382,7 @@ class OutBuffer
         import std.format : checkFormatException;
 
         alias e = checkFormatException!(fmt, A);
-        static assert(!e, e.msg);
+        static assert(!e, e);
         return this.writef(fmt, args);
     }
 
@@ -377,7 +428,7 @@ class OutBuffer
         import std.format : checkFormatException;
 
         alias e = checkFormatException!(fmt, A);
-        static assert(!e, e.msg);
+        static assert(!e, e);
         return this.writefln(fmt, args);
     }
 

@@ -491,7 +491,7 @@ omp_set_num_teams_ (const int32_t *num_teams)
 void
 omp_set_num_teams_8_ (const int64_t *num_teams)
 {
-  omp_set_max_active_levels (TO_INT (*num_teams));
+  omp_set_num_teams (TO_INT (*num_teams));
 }
 
 int32_t

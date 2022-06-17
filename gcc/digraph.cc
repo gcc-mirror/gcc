@@ -51,7 +51,7 @@ struct test_graph_traits
 struct test_node : public dnode<test_graph_traits>
 {
   test_node (const char *name, int index) : m_name (name), m_index (index) {}
-  void dump_dot (graphviz_out *, const dump_args_t &) const OVERRIDE
+  void dump_dot (graphviz_out *, const dump_args_t &) const override
   {
   }
 
@@ -65,7 +65,7 @@ struct test_edge : public dedge<test_graph_traits>
   : dedge<test_graph_traits> (src, dest)
   {}
 
-  void dump_dot (graphviz_out *gv, const dump_args_t &) const OVERRIDE
+  void dump_dot (graphviz_out *gv, const dump_args_t &) const override
   {
     gv->println ("%s %s %s%c", m_src->m_name, "->", m_dest->m_name, ';');
   }

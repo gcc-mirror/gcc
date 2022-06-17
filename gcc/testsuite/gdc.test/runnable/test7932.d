@@ -28,4 +28,3 @@ void main()
     auto x = new C;
     x.f(1);
 }
-

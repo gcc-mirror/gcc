@@ -18,8 +18,8 @@ Copies @var{count} bytes from memory area @var{from} to memory area
 
 void bcopy (const void*, void*, size_t);
 
-PTR
-memmove (PTR s1, const PTR s2, size_t n)
+void *
+memmove (void *s1, const void *s2, size_t n)
 {
   bcopy (s2, s1, n);
   return s1;

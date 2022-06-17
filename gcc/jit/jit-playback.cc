@@ -237,6 +237,38 @@ get_tree_node_for_type (enum gcc_jit_types type_)
     case GCC_JIT_TYPE_UNSIGNED_INT:
       return unsigned_type_node;
 
+    case GCC_JIT_TYPE_UINT8_T:
+      return unsigned_intQI_type_node;
+    case GCC_JIT_TYPE_UINT16_T:
+      return uint16_type_node;
+    case GCC_JIT_TYPE_UINT32_T:
+      return uint32_type_node;
+    case GCC_JIT_TYPE_UINT64_T:
+      return uint64_type_node;
+    case GCC_JIT_TYPE_UINT128_T:
+      if (targetm.scalar_mode_supported_p (TImode))
+	return uint128_type_node;
+
+      add_error (NULL, "gcc_jit_types value unsupported on this target: %i",
+		 type_);
+      return NULL;
+
+    case GCC_JIT_TYPE_INT8_T:
+      return intQI_type_node;
+    case GCC_JIT_TYPE_INT16_T:
+      return intHI_type_node;
+    case GCC_JIT_TYPE_INT32_T:
+      return intSI_type_node;
+    case GCC_JIT_TYPE_INT64_T:
+      return intDI_type_node;
+    case GCC_JIT_TYPE_INT128_T:
+      if (targetm.scalar_mode_supported_p (TImode))
+	return intTI_type_node;
+
+      add_error (NULL, "gcc_jit_types value unsupported on this target: %i",
+		 type_);
+      return NULL;
+
     case GCC_JIT_TYPE_LONG:
       return long_integer_type_node;
     case GCC_JIT_TYPE_UNSIGNED_LONG:
@@ -268,6 +300,9 @@ get_tree_node_for_type (enum gcc_jit_types type_)
       return complex_long_double_type_node;
     }
 
+  add_error (NULL, "unrecognized (enum gcc_jit_types) value: %i",
+	     type_);
+
   return NULL;
 }
 
@@ -280,10 +315,7 @@ get_type (enum gcc_jit_types type_)
 {
   tree type_node = get_tree_node_for_type (type_);
   if (type_node == NULL)
-    {
-      add_error (NULL, "unrecognized (enum gcc_jit_types) value: %i", type_);
-      return NULL;
-    }
+    return NULL;
 
   return new type (type_node);
 }
@@ -1388,6 +1420,36 @@ new_cast (playback::location *loc,
   if (loc)
     set_tree_location (t_cast, loc);
   return new rvalue (this, t_cast);
+}
+
+/* Construct a playback::rvalue instance (wrapping a tree) for a
+   bitcast.  */
+
+playback::rvalue *
+playback::context::
+new_bitcast (location *loc,
+	     rvalue *expr,
+	     type *type_)
+{
+  tree expr_size = TYPE_SIZE (expr->get_type ()->as_tree ());
+  tree type_size = TYPE_SIZE (type_->as_tree ());
+  tree t_expr = expr->as_tree ();
+  tree t_dst_type = type_->as_tree ();
+  if (expr_size != type_size)
+  {
+    active_playback_ctxt->add_error (loc,
+      "bitcast with types of different sizes");
+    fprintf (stderr, "input expression (size: %ld):\n",
+      (long) tree_to_uhwi (expr_size));
+    debug_tree (t_expr);
+    fprintf (stderr, "requested type (size: %ld):\n",
+      (long) tree_to_uhwi (type_size));
+    debug_tree (t_dst_type);
+  }
+  tree t_bitcast = build1 (VIEW_CONVERT_EXPR, t_dst_type, t_expr);
+  if (loc)
+    set_tree_location (t_bitcast, loc);
+  return new rvalue (this, t_bitcast);
 }
 
 /* Construct a playback::lvalue instance (wrapping a tree) for an

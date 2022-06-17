@@ -568,9 +568,7 @@ recording::context::context (context *parent_ctxt)
   if (parent_ctxt)
     {
       /* Inherit options from parent.  */
-      for (unsigned i = 0;
-	   i < sizeof (m_str_options) / sizeof (m_str_options[0]);
-	   i++)
+      for (unsigned i = 0; i < ARRAY_SIZE (m_str_options); i++)
 	{
 	  const char *parent_opt = parent_ctxt->m_str_options[i];
 	  m_str_options[i] = parent_opt ? xstrdup (parent_opt) : NULL;
@@ -592,6 +590,7 @@ recording::context::context (context *parent_ctxt)
       memset (m_int_options, 0, sizeof (m_int_options));
       memset (m_bool_options, 0, sizeof (m_bool_options));
       memset (m_inner_bool_options, 0, sizeof (m_inner_bool_options));
+      m_inner_bool_options[INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR] = true;
     }
 
   memset (m_basic_types, 0, sizeof (m_basic_types));
@@ -822,6 +821,10 @@ recording::context::get_int_type (int num_bytes, int is_signed)
     return get_type (is_signed
 		     ? GCC_JIT_TYPE_LONG_LONG
 		     : GCC_JIT_TYPE_UNSIGNED_LONG_LONG);
+  if (num_bits == 128)
+    return get_type (is_signed
+		     ? GCC_JIT_TYPE_INT128_T
+		     : GCC_JIT_TYPE_UINT128_T);
 
   /* Some other size, not corresponding to the C int types.  */
   /* To be written: support arbitrary other sizes, sharing by
@@ -1242,6 +1245,22 @@ recording::context::new_cast (recording::location *loc,
   return result;
 }
 
+/* Create a recording::bitcast instance and add it to this context's list
+   of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_new_bitcast.  */
+
+recording::rvalue *
+recording::context::new_bitcast (location *loc,
+				 rvalue *expr,
+				 type *type_)
+{
+  recording::rvalue *result = new bitcast (this, loc, expr, type_);
+  record (result);
+  return result;
+}
+
 /* Create a recording::call instance and add it to this context's list
    of mementos.
 
@@ -1551,15 +1570,20 @@ recording::context::add_error_va (location *loc, const char *fmt, va_list ap)
   if (!ctxt_progname)
     ctxt_progname = "libgccjit.so";
 
-  if (loc)
-    fprintf (stderr, "%s: %s: error: %s\n",
-	     ctxt_progname,
-	     loc->get_debug_string (),
-	     errmsg);
-  else
-    fprintf (stderr, "%s: error: %s\n",
-	     ctxt_progname,
-	     errmsg);
+  bool print_errors_to_stderr =
+      get_inner_bool_option (INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR);
+  if (print_errors_to_stderr)
+  {
+    if (loc)
+      fprintf (stderr, "%s: %s: error: %s\n",
+	       ctxt_progname,
+	       loc->get_debug_string (),
+	       errmsg);
+    else
+      fprintf (stderr, "%s: error: %s\n",
+	       ctxt_progname,
+	       errmsg);
+  }
 
   if (!m_error_count)
     {
@@ -1687,7 +1711,8 @@ static const char * const
 static const char * const
  inner_bool_option_reproducer_strings[NUM_INNER_BOOL_OPTIONS] = {
   "gcc_jit_context_set_bool_allow_unreachable_blocks",
-  "gcc_jit_context_set_bool_use_external_driver"
+  "gcc_jit_context_set_bool_use_external_driver",
+  "gcc_jit_context_set_bool_print_errors_to_stderr",
 };
 
 /* Write the current value of all options to the log file (if any).  */
@@ -2325,6 +2350,26 @@ recording::memento_of_get_type::get_size ()
     case GCC_JIT_TYPE_UNSIGNED_LONG_LONG:
       size = LONG_LONG_TYPE_SIZE;
       break;
+    case GCC_JIT_TYPE_UINT8_T:
+    case GCC_JIT_TYPE_INT8_T:
+      size = 8;
+      break;
+    case GCC_JIT_TYPE_UINT16_T:
+    case GCC_JIT_TYPE_INT16_T:
+      size = 16;
+      break;
+    case GCC_JIT_TYPE_UINT32_T:
+    case GCC_JIT_TYPE_INT32_T:
+      size = 32;
+      break;
+    case GCC_JIT_TYPE_UINT64_T:
+    case GCC_JIT_TYPE_INT64_T:
+      size = 64;
+      break;
+    case GCC_JIT_TYPE_UINT128_T:
+    case GCC_JIT_TYPE_INT128_T:
+      size = 128;
+      break;
     case GCC_JIT_TYPE_FLOAT:
       size = FLOAT_TYPE_SIZE;
       break;
@@ -2333,6 +2378,9 @@ recording::memento_of_get_type::get_size ()
       break;
     case GCC_JIT_TYPE_LONG_DOUBLE:
       size = LONG_DOUBLE_TYPE_SIZE;
+      break;
+    case GCC_JIT_TYPE_SIZE_T:
+      size = MAX_BITS_PER_WORD;
       break;
     default:
       /* As this function is called by
@@ -2373,6 +2421,16 @@ recording::memento_of_get_type::dereference ()
     case GCC_JIT_TYPE_UNSIGNED_LONG:
     case GCC_JIT_TYPE_LONG_LONG:
     case GCC_JIT_TYPE_UNSIGNED_LONG_LONG:
+    case GCC_JIT_TYPE_UINT8_T:
+    case GCC_JIT_TYPE_UINT16_T:
+    case GCC_JIT_TYPE_UINT32_T:
+    case GCC_JIT_TYPE_UINT64_T:
+    case GCC_JIT_TYPE_UINT128_T:
+    case GCC_JIT_TYPE_INT8_T:
+    case GCC_JIT_TYPE_INT16_T:
+    case GCC_JIT_TYPE_INT32_T:
+    case GCC_JIT_TYPE_INT64_T:
+    case GCC_JIT_TYPE_INT128_T:
     case GCC_JIT_TYPE_FLOAT:
     case GCC_JIT_TYPE_DOUBLE:
     case GCC_JIT_TYPE_LONG_DOUBLE:
@@ -2425,6 +2483,16 @@ recording::memento_of_get_type::is_int () const
     case GCC_JIT_TYPE_UNSIGNED_LONG:
     case GCC_JIT_TYPE_LONG_LONG:
     case GCC_JIT_TYPE_UNSIGNED_LONG_LONG:
+    case GCC_JIT_TYPE_UINT8_T:
+    case GCC_JIT_TYPE_UINT16_T:
+    case GCC_JIT_TYPE_UINT32_T:
+    case GCC_JIT_TYPE_UINT64_T:
+    case GCC_JIT_TYPE_UINT128_T:
+    case GCC_JIT_TYPE_INT8_T:
+    case GCC_JIT_TYPE_INT16_T:
+    case GCC_JIT_TYPE_INT32_T:
+    case GCC_JIT_TYPE_INT64_T:
+    case GCC_JIT_TYPE_INT128_T:
       return true;
 
     case GCC_JIT_TYPE_FLOAT:
@@ -2440,6 +2508,60 @@ recording::memento_of_get_type::is_int () const
 
     case GCC_JIT_TYPE_FILE_PTR:
       return false;
+
+    case GCC_JIT_TYPE_COMPLEX_FLOAT:
+    case GCC_JIT_TYPE_COMPLEX_DOUBLE:
+    case GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE:
+      return false;
+    }
+}
+
+/* Implementation of pure virtual hook recording::type::is_signed for
+   recording::memento_of_get_type.  */
+
+bool
+recording::memento_of_get_type::is_signed () const
+{
+  switch (m_kind)
+    {
+    default: gcc_unreachable ();
+
+    case GCC_JIT_TYPE_SIGNED_CHAR:
+    case GCC_JIT_TYPE_CHAR:
+    case GCC_JIT_TYPE_SHORT:
+    case GCC_JIT_TYPE_INT:
+    case GCC_JIT_TYPE_LONG:
+    case GCC_JIT_TYPE_LONG_LONG:
+    case GCC_JIT_TYPE_INT8_T:
+    case GCC_JIT_TYPE_INT16_T:
+    case GCC_JIT_TYPE_INT32_T:
+    case GCC_JIT_TYPE_INT64_T:
+    case GCC_JIT_TYPE_INT128_T:
+      return true;
+
+    case GCC_JIT_TYPE_VOID:
+    case GCC_JIT_TYPE_VOID_PTR:
+    case GCC_JIT_TYPE_BOOL:
+    case GCC_JIT_TYPE_UNSIGNED_CHAR:
+    case GCC_JIT_TYPE_UNSIGNED_SHORT:
+    case GCC_JIT_TYPE_UNSIGNED_INT:
+    case GCC_JIT_TYPE_UNSIGNED_LONG:
+    case GCC_JIT_TYPE_UNSIGNED_LONG_LONG:
+    case GCC_JIT_TYPE_UINT8_T:
+    case GCC_JIT_TYPE_UINT16_T:
+    case GCC_JIT_TYPE_UINT32_T:
+    case GCC_JIT_TYPE_UINT64_T:
+    case GCC_JIT_TYPE_UINT128_T:
+
+    case GCC_JIT_TYPE_FLOAT:
+    case GCC_JIT_TYPE_DOUBLE:
+    case GCC_JIT_TYPE_LONG_DOUBLE:
+
+    case GCC_JIT_TYPE_CONST_CHAR_PTR:
+
+    case GCC_JIT_TYPE_SIZE_T:
+
+    case GCC_JIT_TYPE_FILE_PTR:
 
     case GCC_JIT_TYPE_COMPLEX_FLOAT:
     case GCC_JIT_TYPE_COMPLEX_DOUBLE:
@@ -2478,6 +2600,16 @@ recording::memento_of_get_type::is_float () const
     case GCC_JIT_TYPE_UNSIGNED_LONG:
     case GCC_JIT_TYPE_LONG_LONG:
     case GCC_JIT_TYPE_UNSIGNED_LONG_LONG:
+    case GCC_JIT_TYPE_UINT8_T:
+    case GCC_JIT_TYPE_UINT16_T:
+    case GCC_JIT_TYPE_UINT32_T:
+    case GCC_JIT_TYPE_UINT64_T:
+    case GCC_JIT_TYPE_UINT128_T:
+    case GCC_JIT_TYPE_INT8_T:
+    case GCC_JIT_TYPE_INT16_T:
+    case GCC_JIT_TYPE_INT32_T:
+    case GCC_JIT_TYPE_INT64_T:
+    case GCC_JIT_TYPE_INT128_T:
       return false;
 
     case GCC_JIT_TYPE_FLOAT:
@@ -2531,6 +2663,16 @@ recording::memento_of_get_type::is_bool () const
     case GCC_JIT_TYPE_UNSIGNED_LONG:
     case GCC_JIT_TYPE_LONG_LONG:
     case GCC_JIT_TYPE_UNSIGNED_LONG_LONG:
+    case GCC_JIT_TYPE_UINT8_T:
+    case GCC_JIT_TYPE_UINT16_T:
+    case GCC_JIT_TYPE_UINT32_T:
+    case GCC_JIT_TYPE_UINT64_T:
+    case GCC_JIT_TYPE_UINT128_T:
+    case GCC_JIT_TYPE_INT8_T:
+    case GCC_JIT_TYPE_INT16_T:
+    case GCC_JIT_TYPE_INT32_T:
+    case GCC_JIT_TYPE_INT64_T:
+    case GCC_JIT_TYPE_INT128_T:
       return false;
 
     case GCC_JIT_TYPE_FLOAT:
@@ -2601,7 +2743,18 @@ static const char * const get_type_strings[] = {
 
   "complex float", /* GCC_JIT_TYPE_COMPLEX_FLOAT */
   "complex double", /* GCC_JIT_TYPE_COMPLEX_DOUBLE */
-  "complex long double"  /* GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE */
+  "complex long double",  /* GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE */
+
+  "__uint8_t",    /* GCC_JIT_TYPE_UINT8_T */
+  "__uint16_t",   /* GCC_JIT_TYPE_UINT16_T */
+  "__uint32_t",   /* GCC_JIT_TYPE_UINT32_T */
+  "__uint64_t",   /* GCC_JIT_TYPE_UINT64_T */
+  "__uint128_t",  /* GCC_JIT_TYPE_UINT128_T */
+  "__int8_t",     /* GCC_JIT_TYPE_INT8_T */
+  "__int16_t",    /* GCC_JIT_TYPE_INT16_T */
+  "__int32_t",    /* GCC_JIT_TYPE_INT32_T */
+  "__int64_t",    /* GCC_JIT_TYPE_INT64_T */
+  "__int128_t",   /* GCC_JIT_TYPE_INT128_T */
 
 };
 
@@ -2637,7 +2790,17 @@ static const char * const get_type_enum_strings[] = {
   "GCC_JIT_TYPE_FILE_PTR",
   "GCC_JIT_TYPE_COMPLEX_FLOAT",
   "GCC_JIT_TYPE_COMPLEX_DOUBLE",
-  "GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE"
+  "GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE",
+  "GCC_JIT_TYPE_UINT8_T",
+  "GCC_JIT_TYPE_UINT16_T",
+  "GCC_JIT_TYPE_UINT32_T",
+  "GCC_JIT_TYPE_UINT64_T",
+  "GCC_JIT_TYPE_UINT128_T",
+  "GCC_JIT_TYPE_INT8_T",
+  "GCC_JIT_TYPE_INT16_T",
+  "GCC_JIT_TYPE_INT32_T",
+  "GCC_JIT_TYPE_INT64_T",
+  "GCC_JIT_TYPE_INT128_T",
 };
 
 void
@@ -3578,7 +3741,7 @@ class rvalue_usage_validator : public recording::rvalue_visitor
 			  recording::statement *stmt);
 
   void
-  visit (recording::rvalue *rvalue) FINAL OVERRIDE;
+  visit (recording::rvalue *rvalue) final override;
 
  private:
   const char *m_api_funcname;
@@ -3805,6 +3968,16 @@ recording::lvalue::set_tls_model (enum gcc_jit_tls_model model)
 void recording::lvalue::set_link_section (const char *name)
 {
   m_link_section = new_string (name);
+}
+
+void recording::lvalue::set_register_name (const char *reg_name)
+{
+  m_reg_name = new_string (reg_name);
+}
+
+void recording::lvalue::set_alignment (unsigned bytes)
+{
+  m_alignment = bytes;
 }
 
 /* The implementation of class gcc::jit::recording::param.  */
@@ -4672,6 +4845,12 @@ recording::global::replay_into (replayer *r)
 
   if (m_link_section != NULL)
     global->set_link_section (m_link_section->c_str ());
+
+  if (m_reg_name != NULL)
+    global->set_register_name (m_reg_name->c_str ());
+
+  if (m_alignment != 0)
+    global->set_alignment (m_alignment);
 
   set_playback_obj (global);
 }
@@ -5740,6 +5919,56 @@ recording::cast::write_reproducer (reproducer &r)
 	   r.get_identifier_as_type (get_type ()));
 }
 
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::bitcast.  */
+
+void
+recording::bitcast::replay_into (replayer *r)
+{
+  set_playback_obj (r->new_bitcast (playback_location (r, m_loc),
+				    m_rvalue->playback_rvalue (),
+				    get_type ()->playback_type ()));
+}
+
+/* Implementation of pure virtual hook recording::rvalue::visit_children
+   for recording::bitcast.  */
+void
+recording::bitcast::visit_children (rvalue_visitor *v)
+{
+  v->visit (m_rvalue);
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   casts.  */
+
+recording::string *
+recording::bitcast::make_debug_string ()
+{
+  enum precedence prec = get_precedence ();
+  return string::from_printf (m_ctxt,
+			      "bitcast(%s, %s)",
+			      m_rvalue->get_debug_string_parens (prec),
+			      get_type ()->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for casts.  */
+
+void
+recording::bitcast::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_context_new_bitcast (%s,\n"
+	   "                                 %s, /* gcc_jit_location *loc */\n"
+	   "                                 %s, /* gcc_jit_rvalue *rvalue */\n"
+	   "                                 %s); /* gcc_jit_type *type */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_rvalue (m_rvalue),
+	   r.get_identifier_as_type (get_type ()));
+}
+
 /* The implementation of class gcc::jit::recording::base_call.  */
 
 /* The constructor for gcc::jit::recording::base_call.  */
@@ -6343,11 +6572,18 @@ recording::function_pointer::write_reproducer (reproducer &r)
 void
 recording::local::replay_into (replayer *r)
 {
-  set_playback_obj (
-    m_func->playback_function ()
+  playback::lvalue *obj = m_func->playback_function ()
       ->new_local (playback_location (r, m_loc),
 		   m_type->playback_type (),
-		   playback_string (m_name)));
+		   playback_string (m_name));
+
+  if (m_reg_name != NULL)
+    obj->set_register_name (m_reg_name->c_str ());
+
+  if (m_alignment != 0)
+    obj->set_alignment (m_alignment);
+
+  set_playback_obj (obj);
 }
 
 /* Override the default implementation of

@@ -2009,6 +2009,47 @@ df_reg_used (rtx_insn *insn, rtx reg)
   return df_find_use (insn, reg) != NULL;
 }
 
+/* If REG has a single definition, return its known value, otherwise return
+   null.  */
+
+rtx
+df_find_single_def_src (rtx reg)
+{
+  rtx src = NULL_RTX;
+
+  /* Don't look through unbounded number of single definition REG copies,
+     there might be loops for sources with uninitialized variables.  */
+  for (int cnt = 0; cnt < 128; cnt++)
+    {
+      df_ref adef = DF_REG_DEF_CHAIN (REGNO (reg));
+      if (adef == NULL || DF_REF_NEXT_REG (adef) != NULL
+	  || DF_REF_IS_ARTIFICIAL (adef)
+	  || (DF_REF_FLAGS (adef)
+	      & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
+	return NULL_RTX;
+
+      rtx set = single_set (DF_REF_INSN (adef));
+      if (set == NULL || !rtx_equal_p (SET_DEST (set), reg))
+	return NULL_RTX;
+
+      rtx note = find_reg_equal_equiv_note (DF_REF_INSN (adef));
+      if (note && function_invariant_p (XEXP (note, 0)))
+	return XEXP (note, 0);
+      src = SET_SRC (set);
+
+      if (REG_P (src))
+	{
+	  reg = src;
+	  continue;
+	}
+      break;
+    }
+  if (!function_invariant_p (src))
+    return NULL_RTX;
+
+  return src;
+}
+
 
 /*----------------------------------------------------------------------------
    Debugging and printing functions.

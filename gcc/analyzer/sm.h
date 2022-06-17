@@ -242,6 +242,8 @@ public:
      issue a diagnostic D using NODE and STMT for location information.  */
   virtual void warn (const supernode *node, const gimple *stmt,
 		     tree var, pending_diagnostic *d) = 0;
+  virtual void warn (const supernode *node, const gimple *stmt,
+		     const svalue *var, pending_diagnostic *d) = 0;
 
   /* For use when generating trees when creating pending_diagnostics, so that
      rather than e.g.
@@ -275,8 +277,7 @@ public:
   virtual bool unknown_side_effects_p () const { return false; }
 
   virtual const program_state *get_old_program_state () const = 0;
-
-  const svalue *get_old_svalue (tree expr) const;
+  virtual const program_state *get_new_program_state () const = 0;
 
 protected:
   sm_context (int sm_idx, const state_machine &sm)
@@ -299,6 +300,7 @@ extern state_machine *make_taint_state_machine (logger *logger);
 extern state_machine *make_sensitive_state_machine (logger *logger);
 extern state_machine *make_signal_state_machine (logger *logger);
 extern state_machine *make_pattern_test_state_machine (logger *logger);
+extern state_machine *make_va_list_state_machine (logger *logger);
 
 } // namespace ana
 

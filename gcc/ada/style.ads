@@ -147,9 +147,10 @@ package Style is
    --  is that the starting column is appropriate to the indentation rules if
    --  Token_Ptr is the first token on the line.
 
-   procedure Check_Left_Paren
-     renames Style_Inst.Check_Left_Paren;
-   --  Called after scanning out a left parenthesis to check spacing
+   procedure Check_Left_Paren_Square_Bracket
+     renames Style_Inst.Check_Left_Paren_Square_Bracket;
+   --  Called after scanning out a left parenthesis to check spacing. If
+   --  Ada_Version >= Ada_2022 then called similarly for a left square bracket.
 
    procedure Check_Line_Terminator (Len : Int)
      renames Style_Inst.Check_Line_Terminator;

@@ -419,7 +419,7 @@ Driver Alias(symbolic)
 
 -target-help
 Common Driver
-Alias for --help=target.
+Display target specific command line options (including assembler and linker options).
 
 -time
 Driver Alias(time)
@@ -1390,7 +1390,7 @@ Common Joined RejectNegative UInteger
 
 fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
--fdiagnostics-format=[text|json]	Select output format.
+-fdiagnostics-format=[text|sarif-stderr|sarif-file|json|json-stderr|json-file]	Select output format.
 
 fdiagnostics-escape-format=
 Common Joined RejectNegative Enum(diagnostics_escape_format)
@@ -1425,7 +1425,19 @@ EnumValue
 Enum(diagnostics_output_format) String(text) Value(DIAGNOSTICS_OUTPUT_FORMAT_TEXT)
 
 EnumValue
-Enum(diagnostics_output_format) String(json) Value(DIAGNOSTICS_OUTPUT_FORMAT_JSON)
+Enum(diagnostics_output_format) String(json) Value(DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR)
+
+EnumValue
+Enum(diagnostics_output_format) String(json-stderr) Value(DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR)
+
+EnumValue
+Enum(diagnostics_output_format) String(json-file) Value(DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE)
+
+EnumValue
+Enum(diagnostics_output_format) String(sarif-stderr) Value(DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR)
+
+EnumValue
+Enum(diagnostics_output_format) String(sarif-file) Value(DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE)
 
 fdiagnostics-parseable-fixits
 Common Var(flag_diagnostics_parseable_fixits)
@@ -1878,8 +1890,12 @@ EnumValue
 Enum(cf_protection_level) String(none) Value(CF_NONE)
 
 finstrument-functions
-Common Var(flag_instrument_function_entry_exit)
+Common Var(flag_instrument_function_entry_exit,1)
 Instrument function entry and exit with profiling calls.
+
+finstrument-functions-once
+Common Var(flag_instrument_function_entry_exit,2)
+Instrument function entry and exit with profiling calls invoked once.
 
 finstrument-functions-exclude-function-list=
 Common RejectNegative Joined

@@ -18,7 +18,8 @@
 // { dg-do compile { target c++17 } }
 
 #include <list>
-#include <memory_resource>
+
+std::pmr::list<int> c{1, 2, 3, 4};
 
 struct X { };
 

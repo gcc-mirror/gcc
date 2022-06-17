@@ -272,6 +272,10 @@ public:
     void visit(AST.UshrAssignExp e) { visit(cast(AST.BinAssignExp)e); }
     void visit(AST.CatAssignExp e) { visit(cast(AST.BinAssignExp)e); }
 
+    // CatAssignExp
+    void visit(AST.CatElemAssignExp e) { visit(cast(AST.CatAssignExp)e); }
+    void visit(AST.CatDcharAssignExp e) { visit(cast(AST.CatAssignExp)e); }
+
     //===============================================================================
     // TemplateParameter
     void visit(AST.TemplateAliasParameter tp) { visit(cast(AST.TemplateParameter)tp); }

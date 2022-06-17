@@ -414,7 +414,7 @@ simplify_replace_fn_rtx (rtx x, const_rtx old_rtx,
   rtvec vec, newvec;
   int i, j;
 
-  if (__builtin_expect (fn != NULL, 0))
+  if (UNLIKELY (fn != NULL))
     {
       newx = fn (x, old_rtx, data);
       if (newx)
@@ -5066,6 +5066,15 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	case SS_ASHIFT:
 	case US_ASHIFT:
 	  {
+	    /* The shift count might be in SImode while int_mode might
+	       be narrower.  On IA-64 it is even DImode.  If the shift
+	       count is too large and doesn't fit into int_mode, we'd
+	       ICE.  So, if int_mode is narrower than word, use
+	       word_mode for the shift count.  */
+	    if (GET_MODE (op1) == VOIDmode
+		&& GET_MODE_PRECISION (int_mode) < BITS_PER_WORD)
+	      pop1 = rtx_mode_t (op1, word_mode);
+
 	    wide_int wop1 = pop1;
 	    if (SHIFT_COUNT_TRUNCATED)
 	      wop1 = wi::umod_trunc (wop1, GET_MODE_PRECISION (int_mode));
@@ -5112,6 +5121,15 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	case ROTATE:
 	case ROTATERT:
 	  {
+	    /* The rotate count might be in SImode while int_mode might
+	       be narrower.  On IA-64 it is even DImode.  If the shift
+	       count is too large and doesn't fit into int_mode, we'd
+	       ICE.  So, if int_mode is narrower than word, use
+	       word_mode for the shift count.  */
+	    if (GET_MODE (op1) == VOIDmode
+		&& GET_MODE_PRECISION (int_mode) < BITS_PER_WORD)
+	      pop1 = rtx_mode_t (op1, word_mode);
+
 	    if (wi::neg_p (pop1))
 	      return NULL_RTX;
 
@@ -5208,7 +5226,11 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	case ASHIFT:
 	  if (CONST_SCALAR_INT_P (op1))
 	    {
-	      wide_int shift = rtx_mode_t (op1, mode);
+	      wide_int shift
+		= rtx_mode_t (op1,
+			      GET_MODE (op1) == VOIDmode
+			      && GET_MODE_PRECISION (int_mode) < BITS_PER_WORD
+			      ? word_mode : mode);
 	      if (SHIFT_COUNT_TRUNCATED)
 		shift = wi::umod_trunc (shift, GET_MODE_PRECISION (int_mode));
 	      else if (wi::geu_p (shift, GET_MODE_PRECISION (int_mode)))

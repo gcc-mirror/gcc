@@ -6,4 +6,3 @@
 void test()(string[] args) if (args[$])
 {
 }
-

@@ -156,7 +156,7 @@ package body Debug is
    --  d_o
    --  d_p  Ignore assertion pragmas for elaboration
    --  d_q
-   --  d_r
+   --  d_r  Disable the use of the return slot in functions
    --  d_s  Stop elaboration checks on synchronous suspension
    --  d_t  In LLVM-based CCG, dump LLVM IR after transformations are done
    --  d_u  In LLVM-based CCG, dump flows
@@ -992,6 +992,11 @@ package body Debug is
    --  d_p  The compiler ignores calls to subprograms which verify the run-time
    --       semantics of invariants and postconditions in both the static and
    --       dynamic elaboration models.
+
+   --  d_r  The compiler does not make use of the return slot in the expansion
+   --       of functions returning a by-reference type. If this use is required
+   --       for these functions to return on the primary stack, then they are
+   --       changed to return on the secondary stack instead.
 
    --  d_s  The compiler stops the examination of a task body once it reaches
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True

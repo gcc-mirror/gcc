@@ -187,7 +187,7 @@ begin
    --  Line for -gnatef switch
 
    Write_Switch_Char ("ef");
-   Write_Line ("Full source path in brief error messages");
+   Write_Line ("Full source path in brief error messages and JSON output");
 
    --  Line for -gnateF switch
 

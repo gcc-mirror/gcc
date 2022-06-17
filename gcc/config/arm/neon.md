@@ -6005,6 +6005,43 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
+(define_expand "vec_unpack<US>_hi_<mode>"
+  [(match_operand:<V_unpack> 0 "register_operand")
+   (SE:<V_unpack> (match_operand:VU 1 "register_operand"))]
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  {
+   rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
+   rtx t1;
+   int i;
+   for (i = 0; i < (<V_mode_nunits>/2); i++)
+     RTVEC_ELT (v, i) = GEN_INT ((<V_mode_nunits>/2) + i);
+  
+   t1 = gen_rtx_PARALLEL (<MODE>mode, v);
+   emit_insn (gen_neon_vec_unpack<US>_hi_<mode> (operands[0], 
+                                                 operands[1], 
+					         t1));
+   DONE;
+  }
+)
+
+(define_expand "vec_unpack<US>_lo_<mode>"
+  [(match_operand:<V_unpack> 0 "register_operand")
+   (SE:<V_unpack> (match_operand:VU 1 "register_operand"))]
+ "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  {
+   rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
+   rtx t1;
+   int i;
+   for (i = 0; i < (<V_mode_nunits>/2) ; i++)
+     RTVEC_ELT (v, i) = GEN_INT (i);
+   t1 = gen_rtx_PARALLEL (<MODE>mode, v);
+   emit_insn (gen_neon_vec_unpack<US>_lo_<mode> (operands[0], 
+                                                 operands[1], 
+				   	         t1));
+   DONE;
+  }
+)
+
 (define_insn "neon_vec_<US>mult_lo_<mode>"
  [(set (match_operand:<V_unpack> 0 "register_operand" "=w")
        (mult:<V_unpack> (SE:<V_unpack> (vec_select:<V_HALF>
@@ -6220,7 +6257,7 @@ if (BYTES_BIG_ENDIAN)
 ; because the ordering of vector elements in Q registers is different from what
 ; the semantics of the instructions require.
 
-(define_insn "neon_quad_vec_pack_trunc_<mode>"
+(define_insn "vec_pack_trunc_<mode>"
  [(set (match_operand:<V_narrow_pack> 0 "register_operand" "=&w")
        (vec_concat:<V_narrow_pack> 
 		(truncate:<V_narrow> 

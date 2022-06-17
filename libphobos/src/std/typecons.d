@@ -3109,6 +3109,64 @@ struct Nullable(T)
     {
         return isNull ? fallback : _value.payload;
     }
+
+    /// $(MREF_ALTTEXT Range interface, std, range, primitives) functions.
+    alias empty = isNull;
+
+    /// ditto
+    alias popFront = nullify;
+
+    /// ditto
+    alias popBack = nullify;
+
+    /// ditto
+    @property ref inout(T) front() inout @safe pure nothrow
+    {
+        return get();
+    }
+
+    /// ditto
+    alias back = front;
+
+    /// ditto
+    @property inout(typeof(this)) save() inout
+    {
+        return this;
+    }
+
+    /// ditto
+    inout(typeof(this)) opIndex() inout
+    {
+        return this;
+    }
+
+    /// ditto
+    inout(typeof(this)) opIndex(size_t[2] dim) inout
+    in (dim[0] <= length && dim[1] <= length && dim[1] >= dim[0])
+    {
+        return (dim[0] == 0 && dim[1] == 1) ? this : this.init;
+    }
+    /// ditto
+    size_t[2] opSlice(size_t dim : 0)(size_t from, size_t to) const
+    {
+        return [from, to];
+    }
+
+    /// ditto
+    @property size_t length() const @safe pure nothrow
+    {
+        return !empty;
+    }
+
+    /// ditto
+    alias opDollar(size_t dim : 0) = length;
+
+    /// ditto
+    ref inout(T) opIndex(size_t index) inout @safe pure nothrow
+    in (index < length)
+    {
+        return get();
+    }
 }
 
 /// ditto
@@ -3161,6 +3219,23 @@ auto nullable(T)(T t)
     a.nullify();
     assert(a.isNull);
     assertThrown!Throwable(a.get);
+}
+///
+@safe unittest
+{
+    import std.algorithm.iteration : each, joiner;
+    Nullable!int a = 42;
+    Nullable!int b;
+    // Add each value to an array
+    int[] arr;
+    a.each!((n) => arr ~= n);
+    assert(arr == [42]);
+    b.each!((n) => arr ~= n);
+    assert(arr == [42]);
+    // Take first value from an array of Nullables
+    Nullable!int[] c = new Nullable!int[](10);
+    c[7] = Nullable!int(42);
+    assert(c.joiner.front == 42);
 }
 @safe unittest
 {
@@ -3636,6 +3711,42 @@ auto nullable(T)(T t)
     Nullable!int a, b, c;
     a = b = c = 5;
     a = b = c = nullable(5);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=18374
+@safe pure nothrow unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.range : only, takeNone;
+    import std.range.primitives : hasAssignableElements, hasLength,
+        hasLvalueElements, hasSlicing, hasSwappableElements,
+        isRandomAccessRange;
+    Nullable!int a = 42;
+    assert(!a.empty);
+    assert(a.front == 42);
+    assert(a.back == 42);
+    assert(a[0] == 42);
+    assert(a.equal(only(42)));
+    assert(a[0 .. $].equal(only(42)));
+    a[0] = 43;
+    assert(a.equal(only(43)));
+    --a[0];
+    assert(a.equal(only(42)));
+    Nullable!int b;
+    assert(b.empty);
+    assert(b.equal(takeNone(b)));
+    Nullable!int c = a.save();
+    assert(!c.empty);
+    c.popFront();
+    assert(!a.empty);
+    assert(c.empty);
+
+    assert(isRandomAccessRange!(Nullable!int));
+    assert(hasLength!(Nullable!int));
+    assert(hasSlicing!(Nullable!int));
+    assert(hasAssignableElements!(Nullable!int));
+    assert(hasSwappableElements!(Nullable!int));
+    assert(hasLvalueElements!(Nullable!int));
 }
 
 /**
@@ -8156,7 +8267,7 @@ if (is(T == class))
 {
     // _d_newclass now use default GC alignment (looks like (void*).sizeof * 2 for
     // small objects). We will just use the maximum of filed alignments.
-    alias alignment = classInstanceAlignment!T;
+    enum alignment = __traits(classInstanceAlignment, T);
     alias aligned = _alignUp!alignment;
 
     static struct Scoped
@@ -8793,19 +8904,6 @@ private:
     enum isBaseEnumType(T) = is(E == T);
     alias Base = OriginalType!E;
     Base mValue;
-    static struct Negation
-    {
-    @safe @nogc pure nothrow:
-    private:
-        Base mValue;
-
-        // Prevent non-copy construction outside the module.
-        @disable this();
-        this(Base value)
-        {
-            mValue = value;
-        }
-    }
 
 public:
     this(E flag)
@@ -8830,10 +8928,10 @@ public:
         return mValue;
     }
 
-    Negation opUnary(string op)() const
+    auto opUnary(string op)() const
         if (op == "~")
     {
-        return Negation(~mValue);
+        return BitFlags(cast(E) cast(Base) ~mValue);
     }
 
     auto ref opAssign(T...)(T flags)
@@ -8877,12 +8975,6 @@ public:
         return this;
     }
 
-    auto ref opOpAssign(string op: "&")(Negation negatedFlags)
-    {
-        mValue &= negatedFlags.mValue;
-        return this;
-    }
-
     auto opBinary(string op)(BitFlags flags) const
         if (op == "|" || op == "&")
     {
@@ -8896,13 +8988,6 @@ public:
     {
         BitFlags result = this;
         result.opOpAssign!op(flag);
-        return result;
-    }
-
-    auto opBinary(string op: "&")(Negation negatedFlags) const
-    {
-        BitFlags result = this;
-        result.opOpAssign!op(negatedFlags);
         return result;
     }
 
@@ -9102,6 +9187,34 @@ public:
     flags.A = true;
     flags.BC = false;
     assert(flags.A && !flags.B && !flags.C);
+}
+
+// Negation of BitFlags should work with any base type.
+// Double-negation of BitFlags should work.
+@safe @nogc pure nothrow unittest
+{
+    static foreach (alias Base; AliasSeq!(
+        byte,
+        ubyte,
+        short,
+        ushort,
+        int,
+        uint,
+        long,
+        ulong,
+    ))
+    {{
+        enum Enum : Base
+        {
+            A = 1 << 0,
+            B = 1 << 1,
+            C = 1 << 2,
+        }
+
+        auto flags = BitFlags!Enum(Enum.A);
+
+        assert(flags == ~~flags);
+    }}
 }
 
 private enum false_(T) = false;
@@ -9305,6 +9418,8 @@ private template replaceTypeInFunctionTypeUnless(alias pred, From, To, fun)
             result ~= " shared";
         static if (attributes & FunctionAttribute.return_)
             result ~= " return";
+        static if (attributes & FunctionAttribute.live)
+            result ~= " @live";
 
         return result;
     }

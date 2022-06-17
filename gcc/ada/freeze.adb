@@ -184,9 +184,11 @@ package body Freeze is
    --  the designated type. Otherwise freezing the access type does not freeze
    --  the designated type.
 
-   function Should_Freeze_Type (Typ : Entity_Id; E : Entity_Id) return Boolean;
-   --  If Typ is in the current scope or in an instantiation, then return True.
-   --  ???Expression functions (represented by E) shouldn't freeze types in
+   function Should_Freeze_Type
+     (Typ : Entity_Id; E : Entity_Id; N : Node_Id) return Boolean;
+   --  If Typ is in the current scope, then return True.
+   --  N is a node whose source location corresponds to the freeze point.
+   --  ??? Expression functions (represented by E) shouldn't freeze types in
    --  general, but our current expansion and freezing model requires an early
    --  freezing when the dispatch table is needed or when building an aggregate
    --  with a subtype of Typ, so return True also in this case.
@@ -198,7 +200,7 @@ package body Freeze is
    ------------------------
 
    function Should_Freeze_Type
-     (Typ : Entity_Id; E : Entity_Id) return Boolean
+     (Typ : Entity_Id; E : Entity_Id; N : Node_Id) return Boolean
    is
       function Is_Dispatching_Call_Or_Aggregate
         (N : Node_Id) return Traverse_Result;
@@ -244,7 +246,8 @@ package body Freeze is
 
    begin
       return Within_Scope (Typ, Current_Scope)
-        or else In_Instance
+        or else (Nkind (N) = N_Subprogram_Renaming_Declaration
+                 and then Present (Corresponding_Formal_Spec (N)))
         or else (Present (Decl)
                  and then Nkind (Decl) = N_Expression_Function
                  and then Need_Dispatch_Table (Expression (Decl)) = Abandon);
@@ -786,7 +789,7 @@ package body Freeze is
                then
                   Error_Msg_Sloc := Sloc (Addr);
                   Error_Msg_NE
-                    ("??constant& may be modified via address clause#",
+                    ("?o?constant& may be modified via address clause#",
                      Decl, O_Ent);
                end if;
             end;
@@ -1455,7 +1458,8 @@ package body Freeze is
                                                          N_Object_Declaration
            and then not Is_Imported (Entity (Nod))
            and then not Has_Completion (Entity (Nod))
-           and then not Is_Frozen (Entity (Nod))
+           and then not (Present (Full_View (Entity (Nod)))
+                          and then Has_Completion (Full_View (Entity (Nod))))
          then
             Error_Msg_NE
               ("premature use of& in call or instance", N, Entity (Nod));
@@ -1619,6 +1623,13 @@ package body Freeze is
          DTW_Spec := Build_Overriding_Spec (Par_Prim, R);
          DTW_Id   := Defining_Entity (DTW_Spec);
 
+         --  Clear the not-overriding indicator since the DTW wrapper overrides
+         --  its wrapped subprogram; required because if present in the parent
+         --  primitive, given that Build_Overriding_Spec inherits it, we report
+         --  spurious errors.
+
+         Set_Must_Not_Override (DTW_Spec, False);
+
          --  Add minimal decoration of fields
 
          Mutate_Ekind (DTW_Id, Ekind (Par_Prim));
@@ -1741,17 +1752,6 @@ package body Freeze is
                 (Nkind (Parent (N)) /= N_Attribute_Reference
                   or else Attribute_Name (Parent (N)) /= Name_Class)
             then
-               --  The check does not apply to dispatching calls within the
-               --  condition, but only to calls whose static tag is that of
-               --  the parent type.
-
-               if Is_Subprogram (Entity (N))
-                 and then Nkind (Parent (N)) = N_Function_Call
-                 and then Present (Controlling_Argument (Parent (N)))
-               then
-                  return OK;
-               end if;
-
                --  Determine whether entity has a renaming
 
                New_E := Get_Mapped_Entity (Entity (N));
@@ -1794,6 +1794,10 @@ package body Freeze is
       Ifaces_List    : Elist_Id := No_Elist;
       Ifaces_Listed  : Boolean := False;
       --  Cache the list of interface operations inherited by R
+
+      Wrappers_List  : Elist_Id := No_Elist;
+      --  List containing identifiers of built wrappers. Used to defer building
+      --  and analyzing their class-wide precondition subprograms.
 
    --  Start of processing for Check_Inherited_Conditions
 
@@ -1981,16 +1985,24 @@ package body Freeze is
                DTW_Id   : Entity_Id;
                DTW_Spec : Node_Id;
 
+               Prim_Next_E : constant Entity_Id := Next_Entity (Prim);
+               Prim_Prev_E : constant Entity_Id := Prev_Entity (Prim);
+
             begin
-               --  The wrapper must be analyzed in the scope of its wrapped
-               --  primitive (to ensure its correct decoration).
-
-               Push_Scope (Scope (Prim));
-
                DTW_Spec := Build_DTW_Spec (Par_Prim);
                DTW_Id   := Defining_Entity (DTW_Spec);
                DTW_Decl := Make_Subprogram_Declaration (Loc,
                              Specification => DTW_Spec);
+
+               --  The spec of the wrapper has been built using the source
+               --  location of its parent primitive; we must update it now
+               --  (with the source location of the internal primitive built
+               --  by Derive_Subprogram that will override this wrapper) to
+               --  avoid inlining conflicts between internally built helpers
+               --  for class-wide pre/postconditions of the parent and the
+               --  helpers built for this wrapper.
+
+               Set_Sloc (DTW_Id, Sloc (Prim));
 
                --  For inherited class-wide preconditions the DTW wrapper
                --  reuses the ICW of the parent (which checks the parent
@@ -2049,9 +2061,46 @@ package body Freeze is
                   Insert_Before_And_Analyze (Freeze_Node (R), DTW_Decl);
                else
                   Append_Freeze_Action (R, DTW_Decl);
+                  Analyze (DTW_Decl);
                end if;
 
-               Analyze (DTW_Decl);
+               --  The analyis of DTW_Decl has removed Prim from its scope
+               --  chain and added DTW_Id at the end of the scope chain. Move
+               --  DTW_Id to its correct place in the scope chain: the analysis
+               --  of the wrapper declaration has just added DTW_Id at the end
+               --  of the list of entities of its scope. However, given that
+               --  this wrapper overrides Prim, we must move DTW_Id to the
+               --  original place of Prim in its scope chain. This is required
+               --  for wrappers of private type primitives to ensure their
+               --  correct visibility since wrappers are built when the full
+               --  tagged type declaration is frozen (in the private part of
+               --  the package) but they may override primitives defined in the
+               --  public part of the package.
+
+               declare
+                  DTW_Prev_E : constant Entity_Id := Prev_Entity (DTW_Id);
+
+               begin
+                  pragma Assert (Last_Entity (Current_Scope) = DTW_Id);
+                  pragma Assert
+                    (Ekind (Current_Scope) not in E_Package | E_Generic_Package
+                       or else No (First_Private_Entity (Current_Scope))
+                       or else First_Private_Entity (Current_Scope) /= DTW_Id);
+
+                  --  Remove DTW_Id from the end of the doubly-linked list of
+                  --  entities of this scope; no need to handle removing it
+                  --  from the beginning of the chain since such case can never
+                  --  occur for this entity.
+
+                  Set_Last_Entity (Current_Scope, DTW_Prev_E);
+                  Set_Next_Entity (DTW_Prev_E, Empty);
+
+                  --  Place DTW_Id back in the original place of its wrapped
+                  --  primitive in the list of entities of this scope.
+
+                  Link_Entities (Prim_Prev_E, DTW_Id);
+                  Link_Entities (DTW_Id, Prim_Next_E);
+               end;
 
                --  Insert the body of the wrapper in the freeze actions of
                --  its record type declaration to ensure that it is placed
@@ -2081,42 +2130,58 @@ package body Freeze is
                     Register_Primitive (Loc, DTW_Id));
                end if;
 
-               --  Build the helper and ICW for the DTW
+               --  Defer building helpers and ICW for the DTW. Required to
+               --  ensure uniqueness in their names because when building
+               --  these wrappers for overlapped subprograms their homonym
+               --  number is not definite until all these dispatch table
+               --  wrappers of tagged type R have been analyzed.
 
                if Present (Indirect_Call_Wrapper (Par_Prim)) then
-                  declare
-                     CW_Subp : Entity_Id;
-                     Decl_N  : Node_Id;
-                     Body_N  : Node_Id;
-
-                  begin
-                     Merge_Class_Conditions (DTW_Id);
-                     Make_Class_Precondition_Subps (DTW_Id,
-                       Late_Overriding => Late_Overriding);
-
-                     CW_Subp := Static_Call_Helper (DTW_Id);
-                     Decl_N  := Unit_Declaration_Node (CW_Subp);
-                     Analyze (Decl_N);
-
-                     --  If the DTW was built for a late-overriding primitive
-                     --  its body must be analyzed now (since the tagged type
-                     --  is already frozen).
-
-                     if Late_Overriding then
-                        Body_N :=
-                          Unit_Declaration_Node
-                            (Corresponding_Body (Decl_N));
-                        Analyze (Body_N);
-                     end if;
-                  end;
+                  Append_New_Elmt (DTW_Id, Wrappers_List);
                end if;
-
-               Pop_Scope;
             end;
          end if;
 
          Next_Elmt (Op_Node);
       end loop;
+
+      --  Build and analyze deferred class-wide precondition subprograms of
+      --  built wrappers.
+
+      if Present (Wrappers_List) then
+         declare
+            Body_N  : Node_Id;
+            CW_Subp : Entity_Id;
+            Decl_N  : Node_Id;
+            DTW_Id  : Entity_Id;
+            Elmt    : Elmt_Id;
+
+         begin
+            Elmt := First_Elmt (Wrappers_List);
+
+            while Present (Elmt) loop
+               DTW_Id := Node (Elmt);
+               Next_Elmt (Elmt);
+
+               Merge_Class_Conditions (DTW_Id);
+               Make_Class_Precondition_Subps (DTW_Id, Late_Overriding);
+
+               CW_Subp := Static_Call_Helper (DTW_Id);
+               Decl_N  := Unit_Declaration_Node (CW_Subp);
+               Analyze (Decl_N);
+
+               --  If the DTW was built for a late-overriding primitive
+               --  its body must be analyzed now (since the tagged type
+               --  is already frozen).
+
+               if Late_Overriding then
+                  Body_N :=
+                    Unit_Declaration_Node (Corresponding_Body (Decl_N));
+                  Analyze (Body_N);
+               end if;
+            end loop;
+         end;
+      end if;
    end Check_Inherited_Conditions;
 
    ----------------------------
@@ -3581,7 +3646,7 @@ package body Freeze is
                      end if;
                   end Complain_CS;
 
-                  --  Start of processing for Alias_Atomic_Check
+               --  Start of processing for Alias_Atomic_Check
 
                begin
                   --  If object size of component type isn't known, we cannot
@@ -4545,7 +4610,7 @@ package body Freeze is
             end if;
 
             if not From_Limited_With (F_Type)
-              and then Should_Freeze_Type (F_Type, E)
+              and then Should_Freeze_Type (F_Type, E, N)
             then
                Freeze_And_Append (F_Type, N, Result);
             end if;
@@ -4567,9 +4632,7 @@ package body Freeze is
                   Result := No_List;
                   return False;
 
-               elsif not After_Last_Declaration
-                 and then not Freezing_Library_Level_Tagged_Type
-               then
+               elsif not After_Last_Declaration then
                   Error_Msg_NE
                     ("type & must be fully defined before this point",
                      N,
@@ -4687,17 +4750,6 @@ package body Freeze is
                if Is_Access_Type (F_Type) then
                   F_Type := Designated_Type (F_Type);
                end if;
-
-               --  If the formal is an anonymous_access_to_subprogram
-               --  freeze the  subprogram type as well, to prevent
-               --  scope anomalies in gigi, because there is no other
-               --  clear point at which it could be frozen.
-
-               if Is_Itype (Etype (Formal))
-                 and then Ekind (F_Type) = E_Subprogram_Type
-               then
-                  Freeze_And_Append (F_Type, N, Result);
-               end if;
             end if;
 
             Next_Formal (Formal);
@@ -4725,7 +4777,7 @@ package body Freeze is
                Set_Etype (E, R_Type);
             end if;
 
-            if Should_Freeze_Type (R_Type, E) then
+            if Should_Freeze_Type (R_Type, E, N) then
                Freeze_And_Append (R_Type, N, Result);
             end if;
 
@@ -6426,9 +6478,10 @@ package body Freeze is
 
             --  In Ada 2012, freezing a subprogram does not always freeze the
             --  corresponding profile (see AI05-019). An attribute reference
-            --  is not a freezing point of the profile. Flag Do_Freeze_Profile
+            --  is not a freezing point of the profile. Similarly, we do not
+            --  freeze the profile of primitives of a library-level tagged type
+            --  when we are building its dispatch table. Flag Do_Freeze_Profile
             --  indicates whether the profile should be frozen now.
-            --  Other constructs that should not freeze ???
 
             --  This processing doesn't apply to internal entities (see below)
 
@@ -6521,9 +6574,13 @@ package body Freeze is
                end if;
             end if;
 
-            --  Special processing for objects created by object declaration
+            --  Special processing for objects created by object declaration;
+            --  we protect the call to Declaration_Node against entities of
+            --  expressions replaced by the frontend with an N_Raise_CE node.
 
-            if Nkind (Declaration_Node (E)) = N_Object_Declaration then
+            if Ekind (E) in E_Constant | E_Variable
+              and then Nkind (Declaration_Node (E)) = N_Object_Declaration
+            then
                Freeze_Object_Declaration (E);
             end if;
 
@@ -7903,15 +7960,17 @@ package body Freeze is
 
       else
          --  If the enumeration type interfaces to C, and it has a size clause
-         --  that specifies less than int size, it warrants a warning. The
-         --  user may intend the C type to be an enum or a char, so this is
+         --  that is smaller than the size of int, it warrants a warning. The
+         --  user may intend the C type to be a boolean or a char, so this is
          --  not by itself an error that the Ada compiler can detect, but it
-         --  it is a worth a heads-up. For Boolean and Character types we
+         --  is worth a heads-up. For Boolean and Character types we
          --  assume that the programmer has the proper C type in mind.
+         --  For explicit sizes larger than int, assume the user knows what
+         --  he is doing and that the code is intentional.
 
          if Convention (Typ) = Convention_C
            and then Has_Size_Clause (Typ)
-           and then Esize (Typ) /= Esize (Standard_Integer)
+           and then Esize (Typ) < Standard_Integer_Size
            and then not Is_Boolean_Type (Typ)
            and then not Is_Character_Type (Typ)
 
@@ -7920,7 +7979,12 @@ package body Freeze is
            and then not Target_Short_Enums
          then
             Error_Msg_N
-              ("C enum types have the size of a C int??", Size_Clause (Typ));
+              ("??the size of enums in C is implementation-defined",
+               Size_Clause (Typ));
+            Error_Msg_N
+              ("\??check that the C counterpart has size of " &
+               UI_Image (Esize (Typ)),
+               Size_Clause (Typ));
          end if;
 
          Adjust_Esize_For_Alignment (Typ);
@@ -10575,11 +10639,11 @@ package body Freeze is
          if Present (Old) then
             Error_Msg_Node_2 := Old;
             Error_Msg_N
-              ("default initialization of & may modify &??",
+              ("default initialization of & may modify &?o?",
                Nam);
          else
             Error_Msg_N
-              ("default initialization of & may modify overlaid storage??",
+              ("default initialization of & may modify overlaid storage?o?",
                Nam);
          end if;
 

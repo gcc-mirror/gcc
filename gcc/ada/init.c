@@ -1758,8 +1758,26 @@ extern size_t vxIntStackOverflowSize;
 #define INT_OVERFLOW_SIZE vxIntStackOverflowSize
 #endif
 
-#ifdef VTHREADS
-#include "private/vThreadsP.h"
+/* VxWorks 653 vThreads expects the field excCnt to be zeroed when a signal is.
+   handled.  The VxWorks version of longjmp does this; GCC's builtin_longjmp
+   doesn't.  A similar issue is present VxWorks 7.2 and affects ZCX as well
+   as builtin_longjmp.  This field only exists in Kernel mode, not RTP.  */
+#if defined(VTHREADS) || (!defined(__RTP__) && (_WRS_VXWORKS_MAJOR >= 7))
+# ifdef VTHREADS
+#  include "private/vThreadsP.h"
+#  define EXCCNT vThreads.excCnt
+# else
+#  include "private/taskLibP.h"
+#  define EXCCNT excCnt
+# endif
+# define CLEAR_EXCEPTION_COUNT()			 \
+  do							 \
+    {							 \
+      WIND_TCB *currentTask = (WIND_TCB *) taskIdSelf(); \
+      currentTask->EXCCNT = 0;				 \
+    } while (0)
+#else
+# define CLEAR_EXCEPTION_COUNT()
 #endif
 
 #ifndef __RTP__
@@ -1833,19 +1851,6 @@ __gnat_reset_guard_page (int sig)
     }
 #endif /* VXWORKS_FORCE_GUARD_PAGE */
   return FALSE;
-}
-
-/* VxWorks 653 vThreads expects the field excCnt to be zeroed when a signal is.
-   handled. The VxWorks version of longjmp does this; GCC's builtin_longjmp
-   doesn't.  */
-void
-__gnat_clear_exception_count (void)
-{
-#ifdef VTHREADS
-  WIND_TCB *currentTask = (WIND_TCB *) taskIdSelf();
-
-  currentTask->vThreads.excCnt = 0;
-#endif
 }
 
 /* Handle different SIGnal to exception mappings in different VxWorks
@@ -1959,7 +1964,8 @@ __gnat_map_signal (int sig,
           break;
         }
     }
-  __gnat_clear_exception_count ();
+
+  CLEAR_EXCEPTION_COUNT ();
   Raise_From_Signal_Handler (exception, msg);
 }
 
@@ -2554,6 +2560,39 @@ __gnat_install_handler (void)
 #include <errno.h>
 #include "sigtramp.h"
 
+#if defined (__ARMEL__) && !defined (__aarch64__)
+
+/* ARM-QNX case with arm unwinding exceptions */
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+#include <ucontext.h>
+#include <arm/cpu.h>
+#include <stdint.h>
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
+				 void *sc ATTRIBUTE_UNUSED)
+{
+  /* In case of ARM exceptions, the registers context have the PC pointing
+     to the instruction that raised the signal.  However the unwinder expects
+     the instruction to be in the range [PC+2,PC+3].  */
+  uintptr_t *pc_addr;
+  mcontext_t *mcontext = &((ucontext_t *) sc)->uc_mcontext;
+  pc_addr = (uintptr_t *)&mcontext->cpu.gpr [ARM_REG_PC];
+
+  /* ARM Bump has to be an even number because of odd/even architecture.  */
+  *pc_addr += 2;
+#ifdef __thumb2__
+  /* For thumb, the return address must have the low order bit set, otherwise
+     the unwinder will reset to "arm" mode upon return.  As long as the
+     compilation unit containing the landing pad is compiled with the same
+     mode (arm vs thumb) as the signaling compilation unit, this works.  */
+  if (mcontext->cpu.spsr & ARM_CPSR_T)
+    *pc_addr += 1;
+#endif
+}
+#endif /* ARMEL */
+
 void
 __gnat_map_signal (int sig,
 		   siginfo_t *si ATTRIBUTE_UNUSED,
@@ -2591,6 +2630,13 @@ __gnat_map_signal (int sig,
 static void
 __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 {
+#ifdef HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+  /* We need to sometimes to adjust the PC in case of signals so that it
+     doesn't reference the exception that actually raised the signal but the
+     instruction before it.  */
+  __gnat_adjust_context_for_raise (sig, ucontext);
+#endif
+
   __gnat_sigtramp (sig, (void *) si, (void *) ucontext,
 		   (__sigtramphandler_t *)&__gnat_map_signal);
 }
@@ -2605,7 +2651,7 @@ __gnat_install_handler (void)
   struct sigaction act;
   int err;
 
-  act.sa_handler = __gnat_error_handler;
+  act.sa_sigaction = __gnat_error_handler;
   act.sa_flags = SA_NODEFER | SA_SIGINFO;
   sigemptyset (&act.sa_mask);
 
@@ -2619,26 +2665,26 @@ __gnat_install_handler (void)
     }
   }
   if (__gnat_get_interrupt_state (SIGILL) != 's') {
-    sigaction (SIGILL,  &act, NULL);
+    err = sigaction (SIGILL,  &act, NULL);
     if (err == -1) {
       err = errno;
-      perror ("error while attaching SIGFPE");
+      perror ("error while attaching SIGILL");
       perror (strerror (err));
     }
   }
   if (__gnat_get_interrupt_state (SIGSEGV) != 's') {
-    sigaction (SIGSEGV, &act, NULL);
+    err = sigaction (SIGSEGV, &act, NULL);
     if (err == -1) {
       err = errno;
-      perror ("error while attaching SIGFPE");
+      perror ("error while attaching SIGSEGV");
       perror (strerror (err));
     }
   }
   if (__gnat_get_interrupt_state (SIGBUS) != 's') {
-    sigaction (SIGBUS,  &act, NULL);
+    err = sigaction (SIGBUS,  &act, NULL);
     if (err == -1) {
       err = errno;
-      perror ("error while attaching SIGFPE");
+      perror ("error while attaching SIGBUS");
       perror (strerror (err));
     }
   }

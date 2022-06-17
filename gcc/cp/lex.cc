@@ -273,6 +273,14 @@ init_reswords (void)
       C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
       set_identifier_kind (id, cik_keyword);
     }
+
+  if (flag_openmp)
+    {
+      id = get_identifier ("omp_all_memory");
+      C_SET_RID_CODE (id, RID_OMP_ALL_MEMORY);
+      set_identifier_kind (id, cik_keyword);
+      ridpointers [RID_OMP_ALL_MEMORY] = id;
+    }
 }
 
 static void
@@ -1008,8 +1016,8 @@ cxx_dup_lang_specific_decl (tree node)
      (module_purview_p still does).  */
   ld->u.base.module_entity_p = false;
   ld->u.base.module_import_p = false;
-  ld->u.base.module_attached_p = false;
-  
+  ld->u.base.module_keyed_decls_p = false;
+
   if (GATHER_STATISTICS)
     {
       tree_node_counts[(int)lang_decl] += 1;

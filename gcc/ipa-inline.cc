@@ -278,7 +278,7 @@ sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
       SANITIZE_POINTER_SUBTRACT
     };
 
-  for (unsigned i = 0; i < sizeof (codes) / sizeof (codes[0]); i++)
+  for (unsigned i = 0; i < ARRAY_SIZE (codes); i++)
     if (sanitize_flags_p (codes[i], caller)
 	!= sanitize_flags_p (codes[i], callee))
       return false;

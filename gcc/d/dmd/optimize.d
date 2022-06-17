@@ -221,7 +221,7 @@ package void setLengthVarIfKnown(VarDeclaration lengthVar, Expression arr)
         return;
     if (lengthVar._init && !lengthVar._init.isVoidInitializer())
         return; // we have previously calculated the length
-    d_uns64 len;
+    dinteger_t len;
     if (auto se = arr.isStringExp())
         len = se.len;
     else if (auto ale = arr.isArrayLiteralExp())
@@ -253,7 +253,7 @@ package void setLengthVarIfKnown(VarDeclaration lengthVar, Type type)
     auto tsa = type.toBasetype().isTypeSArray();
     if (!tsa)
         return; // we don't know the length yet
-    d_uns64 len = tsa.dim.toInteger();
+    const len = tsa.dim.toInteger();
     Expression dollar = new IntegerExp(Loc.initial, len, Type.tsize_t);
     lengthVar._init = new ExpInitializer(Loc.initial, dollar);
     lengthVar.storage_class |= STC.static_ | STC.const_;
@@ -271,7 +271,7 @@ package void setLengthVarIfKnown(VarDeclaration lengthVar, Type type)
  */
 Expression Expression_optimize(Expression e, int result, bool keepLvalue)
 {
-    //printf("Expression_optimize() %s\n", e.toChars());
+    //printf("Expression_optimize() e: %s result: %d keepLvalue %d\n", e.toChars(), result, keepLvalue);
     Expression ret = e;
 
     void error()
@@ -426,7 +426,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
 
     void visitAddr(AddrExp e)
     {
-        //printf("AddrExp::optimize(result = %d) %s\n", result, e.toChars());
+        //printf("AddrExp::optimize(result = %d, keepLvalue = %d) %s\n", result, keepLvalue, e.toChars());
         /* Rewrite &(a,b) as (a,&b)
          */
         if (auto ce = e.e1.isCommaExp())
@@ -438,7 +438,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         }
         // Keep lvalue-ness
         if (expOptimize(e.e1, result, true))
-            return;
+            return;                     // error return
+
         // Convert &*ex to ex
         if (auto pe = e.e1.isPtrExp())
         {
@@ -504,6 +505,33 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     {
                         eint = ei;
                     }
+                    else if (auto se = ep.e1.isSymOffExp())
+                    {
+                        if (!se.var.isReference() &&
+                            !se.var.isImportedSymbol() &&
+                            se.var.isDataseg())
+                        {
+                            var = se.var.isVarDeclaration();
+                            offset += se.offset;
+                        }
+                    }
+                }
+                else if (auto ei = e.isIndexExp())
+                {
+                    if (auto ve = ei.e1.isVarExp())
+                    {
+                        if (!ve.var.isReference() &&
+                            !ve.var.isImportedSymbol() &&
+                            ve.var.isDataseg() &&
+                            ve.var.isCsymbol())
+                        {
+                            if (auto ie = ei.e2.isIntegerExp())
+                            {
+                                var = ve.var.isVarDeclaration();
+                                offset += ie.toInteger() * ve.type.toBasetype().nextOf().size();
+                            }
+                        }
+                    }
                 }
                 return false;
             }
@@ -528,10 +556,45 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                 return;
             }
         }
-        if (auto ae = e.e1.isIndexExp())
+        else if (auto ae = e.e1.isIndexExp())
         {
+            if (ae.e2.isIntegerExp() && ae.e1.isIndexExp())
+            {
+                /* Rewrite `(a[i])[index]` to `(&a[i]) + index*size`
+                 */
+                sinteger_t index = ae.e2.toInteger();
+                auto ae1 = ae.e1.isIndexExp();          // ae1 is a[i]
+                if (auto ts = ae1.type.isTypeSArray())
+                {
+                    sinteger_t dim = ts.dim.toInteger();
+
+                    if (index < 0 || index > dim)
+                    {
+                        e.error("array index %lld is out of bounds `[0..%lld]`", index, dim);
+                        return error();
+                    }
+
+                    import core.checkedint : mulu;
+                    bool overflow;
+                    const offset = mulu(index, ts.nextOf().size(e.loc), overflow); // offset = index*size
+                    if (overflow)
+                    {
+                        e.error("array offset overflow");
+                        return error();
+                    }
+
+                    Expression ex = new AddrExp(ae1.loc, ae1);  // &a[i]
+                    ex.type = ae1.type.pointerTo();
+
+                    Expression add = new AddExp(ae.loc, ex, new IntegerExp(ae.loc, offset, e.type));
+                    add.type = e.type;
+                    ret = Expression_optimize(add, result, keepLvalue);
+                    return;
+                }
+            }
+
             // Convert &array[n] to &array+n
-            if (ae.e2.op == EXP.int64 && ae.e1.isVarExp())
+            if (ae.e2.isIntegerExp() && ae.e1.isVarExp())
             {
                 sinteger_t index = ae.e2.toInteger();
                 VarExp ve = ae.e1.isVarExp();
@@ -541,8 +604,14 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     sinteger_t dim = ts.dim.toInteger();
                     if (index < 0 || index >= dim)
                     {
-                        e.error("array index %lld is out of bounds `[0..%lld]`", index, dim);
-                        return error();
+                        /* 0 for C static arrays means size is unknown, no need to check,
+                         * and address one past the end is OK, too
+                         */
+                        if (!((dim == 0 || dim == index) && ve.var.isCsymbol()))
+                        {
+                            e.error("array index %lld is out of bounds `[0..%lld]`", index, dim);
+                            return error();
+                        }
                     }
 
                     import core.checkedint : mulu;
@@ -555,6 +624,43 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     }
 
                     ret = new SymOffExp(e.loc, ve.var, offset);
+                    ret.type = e.type;
+                    return;
+                }
+            }
+            // Convert &((a.b)[index]) to (&a.b)+index*elementsize
+            else if (ae.e2.isIntegerExp() && ae.e1.isDotVarExp())
+            {
+                sinteger_t index = ae.e2.toInteger();
+                DotVarExp ve = ae.e1.isDotVarExp();
+                if (ve.type.isTypeSArray() && ve.var.isField() && ve.e1.isPtrExp())
+                {
+                    TypeSArray ts = ve.type.isTypeSArray();
+                    sinteger_t dim = ts.dim.toInteger();
+                    if (index < 0 || index >= dim)
+                    {
+                        /* 0 for C static arrays means size is unknown, no need to check,
+                         * and address one past the end is OK, too
+                         */
+                        if (!((dim == 0 || dim == index) && ve.var.isCsymbol()))
+                        {
+                            e.error("array index %lld is out of bounds `[0..%lld]`", index, dim);
+                            return error();
+                        }
+                    }
+
+                    import core.checkedint : mulu;
+                    bool overflow;
+                    const offset = mulu(index, ts.nextOf().size(e.loc), overflow); // index*elementsize
+                    if (overflow)
+                    {
+                        e.error("array offset overflow");
+                        return error();
+                    }
+
+                    auto pe = new AddrExp(e.loc, ve);
+                    pe.type = e.type;
+                    ret = new AddExp(e.loc, pe, new IntegerExp(e.loc, offset, Type.tsize_t));
                     ret.type = e.type;
                     return;
                 }
@@ -809,7 +915,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             if (e.e2.isConst() == 1)
             {
                 sinteger_t i2 = e.e2.toInteger();
-                d_uns64 sz = e.e1.type.size(e.e1.loc);
+                uinteger_t sz = e.e1.type.size(e.e1.loc);
                 assert(sz != SIZE_INVALID);
                 sz *= 8;
                 if (i2 < 0 || i2 >= sz)
@@ -895,7 +1001,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         if (e.e2.isConst() == 1)
         {
             sinteger_t i2 = e.e2.toInteger();
-            d_uns64 sz = e.e1.type.size(e.e1.loc);
+            uinteger_t sz = e.e1.type.size(e.e1.loc);
             assert(sz != SIZE_INVALID);
             sz *= 8;
             if (i2 < 0 || i2 >= sz)

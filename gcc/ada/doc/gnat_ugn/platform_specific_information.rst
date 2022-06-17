@@ -233,7 +233,6 @@ GNU/Linux Topics
 This section describes topics that are specific to GNU/Linux platforms.
 
 .. _Required_packages_on_GNU_Linux:
-.. _A_GNU_Linux_debug_quirk:
 
 Required Packages on GNU/Linux
 ------------------------------
@@ -248,10 +247,14 @@ If using the 32-bit version of GNAT on a 64-bit version of GNU/Linux,
 you'll need the 32-bit version of the following packages:
 
 * RedHat, SUSE: ``glibc.i686``, ``glibc-devel.i686``, ``ncurses-libs.i686``
+* SUSE: ``glibc-locale-base-32bit``
 * Debian, Ubuntu: ``libc6:i386``, ``libc6-dev:i386``, ``lib32ncursesw5``
 
 Other GNU/Linux distributions might be choosing a different name
 for those packages.
+
+
+.. _A_GNU_Linux_debug_quirk:
 
 A GNU/Linux Debug Quirk
 -----------------------
@@ -1716,7 +1719,7 @@ is
 :switch:`-k`
   Kill :samp:`@{nn}` from exported names
   (:ref:`Windows_Calling_Conventions`
-  for a discussion about ``Stdcall``-style symbols.
+  for a discussion about ``Stdcall``-style symbols).
 
 
 .. index:: --help (dlltool)

@@ -30,6 +30,219 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-range.h"
 
+// Convenience function only available for integers and pointers.
+
+wide_int
+Value_Range::lower_bound () const
+{
+  if (is_a <irange> (*m_vrange))
+    return as_a <irange> (*m_vrange).lower_bound ();
+  gcc_unreachable ();
+}
+
+// Convenience function only available for integers and pointers.
+
+wide_int
+Value_Range::upper_bound () const
+{
+  if (is_a <irange> (*m_vrange))
+    return as_a <irange> (*m_vrange).upper_bound ();
+  gcc_unreachable ();
+}
+
+void
+Value_Range::dump (FILE *out) const
+{
+  if (m_vrange)
+    m_vrange->dump (out);
+  else
+    fprintf (out, "NULL");
+}
+
+DEBUG_FUNCTION void
+debug (const Value_Range &r)
+{
+  r.dump (stderr);
+  fprintf (stderr, "\n");
+}
+
+// Default vrange definitions.
+
+bool
+vrange::contains_p (tree) const
+{
+  return varying_p ();
+}
+
+bool
+vrange::singleton_p (tree *) const
+{
+  return false;
+}
+
+void
+vrange::set (tree, tree, value_range_kind)
+{
+}
+
+tree
+vrange::type () const
+{
+  return void_type_node;
+}
+
+bool
+vrange::supports_type_p (tree) const
+{
+  return false;
+}
+
+void
+vrange::set_undefined ()
+{
+  m_kind = VR_UNDEFINED;
+}
+
+void
+vrange::set_varying (tree)
+{
+  m_kind = VR_VARYING;
+}
+
+bool
+vrange::union_ (const vrange &r)
+{
+  if (r.undefined_p () || varying_p ())
+    return false;
+  if (undefined_p () || r.varying_p ())
+    {
+      operator= (r);
+      return true;
+    }
+  gcc_unreachable ();
+  return false;
+}
+
+bool
+vrange::intersect (const vrange &r)
+{
+  if (undefined_p () || r.varying_p ())
+    return false;
+  if (r.undefined_p ())
+    {
+      set_undefined ();
+      return true;
+    }
+  if (varying_p ())
+    {
+      operator= (r);
+      return true;
+    }
+  gcc_unreachable ();
+  return false;
+}
+
+bool
+vrange::zero_p () const
+{
+  return false;
+}
+
+bool
+vrange::nonzero_p () const
+{
+  return false;
+}
+
+void
+vrange::set_nonzero (tree)
+{
+}
+
+void
+vrange::set_zero (tree)
+{
+}
+
+void
+vrange::set_nonnegative (tree)
+{
+}
+
+bool
+vrange::fits_p (const vrange &) const
+{
+  return true;
+}
+
+// Assignment operator for generic ranges.  Copying incompatible types
+// is not allowed.
+
+vrange &
+vrange::operator= (const vrange &src)
+{
+  if (is_a <irange> (src))
+    {
+      as_a <irange> (*this) = as_a <irange> (src);
+      return *this;
+    }
+  else
+    gcc_unreachable ();
+}
+
+// Equality operator for generic ranges.
+
+bool
+vrange::operator== (const vrange &src) const
+{
+  if (is_a <irange> (src))
+    return as_a <irange> (*this) == as_a <irange> (src);
+  gcc_unreachable ();
+}
+
+bool
+irange::supports_type_p (tree type) const
+{
+  return supports_p (type);
+}
+
+// Return TRUE if R fits in THIS.
+
+bool
+irange::fits_p (const vrange &r) const
+{
+  return m_max_ranges >= as_a <irange> (r).num_pairs ();
+}
+
+void
+irange::set_nonnegative (tree type)
+{
+  set (build_int_cst (type, 0), TYPE_MAX_VALUE (type));
+}
+
+unsupported_range::unsupported_range ()
+{
+  m_discriminator = VR_UNKNOWN;
+  set_undefined ();
+}
+
+void
+unsupported_range::dump (FILE *file) const
+{
+  fprintf (file, "[unsupported_range] ");
+  if (undefined_p ())
+    {
+      fprintf (file, "UNDEFINED");
+      return;
+    }
+  if (varying_p ())
+    {
+      fprintf (file, "VARYING");
+      return;
+    }
+  gcc_unreachable ();
+}
+
 // Here we copy between any two irange's.  The ranges can be legacy or
 // multi-ranges, and copying between any combination works correctly.
 
@@ -291,7 +504,7 @@ irange::set (tree min, tree max, value_range_kind kind)
     }
   if (kind == VR_UNDEFINED)
     {
-      set_undefined ();
+      irange::set_undefined ();
       return;
     }
 
@@ -370,6 +583,7 @@ irange::set (tree min, tree max, value_range_kind kind)
 void
 irange::verify_range ()
 {
+  gcc_checking_assert (m_discriminator == VR_IRANGE);
   if (m_kind == VR_UNDEFINED)
     {
       gcc_checking_assert (m_num_ranges == 0);
@@ -1439,10 +1653,11 @@ irange::legacy_union (irange *vr0, const irange *vr1)
 
 /* Meet operation for value ranges.  Given two value ranges VR0 and
    VR1, store in VR0 a range that contains both VR0 and VR1.  This
-   may not be the smallest possible such range.  */
+   may not be the smallest possible such range.
+   Return TRUE if the original value changes.  */
 
-void
-irange::union_ (const irange *other)
+bool
+irange::legacy_verbose_union_ (const irange *other)
 {
   if (legacy_mode_p ())
     {
@@ -1450,7 +1665,7 @@ irange::union_ (const irange *other)
 	{
 	  int_range<1> tmp = *other;
 	  legacy_union (this, &tmp);
-	  return;
+	  return true;
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1469,20 +1684,20 @@ irange::union_ (const irange *other)
 	  dump_value_range (dump_file, this);
 	  fprintf (dump_file, "\n");
 	}
-      return;
+      return true;
     }
 
   if (other->legacy_mode_p ())
     {
       int_range<2> wider = *other;
-      irange_union (wider);
+      return irange_union (wider);
     }
   else
-    irange_union (*other);
+    return irange_union (*other);
 }
 
-void
-irange::intersect (const irange *other)
+bool
+irange::legacy_verbose_intersect (const irange *other)
 {
   if (legacy_mode_p ())
     {
@@ -1490,7 +1705,7 @@ irange::intersect (const irange *other)
 	{
 	  int_range<1> tmp = *other;
 	  legacy_intersect (this, &tmp);
-	  return;
+	  return true;
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1509,34 +1724,107 @@ irange::intersect (const irange *other)
 	  dump_value_range (dump_file, this);
 	  fprintf (dump_file, "\n");
 	}
-      return;
+      return true;
     }
 
   if (other->legacy_mode_p ())
     {
       int_range<2> wider;
       wider = *other;
-      irange_intersect (wider);
+      return irange_intersect (wider);
     }
   else
-    irange_intersect (*other);
+    return irange_intersect (*other);
+}
+
+// Perform an efficient union with R when both ranges have only a single pair.
+// Excluded are VARYING and UNDEFINED ranges.
+
+bool
+irange::irange_single_pair_union (const irange &r)
+{
+  gcc_checking_assert (!undefined_p () && !varying_p ());
+  gcc_checking_assert (!r.undefined_p () && !varying_p ());
+
+  signop sign = TYPE_SIGN (TREE_TYPE (m_base[0]));
+  // Check if current lower bound is also the new lower bound.
+  if (wi::le_p (wi::to_wide (m_base[0]), wi::to_wide (r.m_base[0]), sign))
+    {
+      // If current upper bound is new upper bound, we're done.
+      if (wi::le_p (wi::to_wide (r.m_base[1]), wi::to_wide (m_base[1]), sign))
+	return false;
+      // Otherwise R has the new upper bound.
+      // Check for overlap/touching ranges, or single target range.
+      if (m_max_ranges == 1
+	  || wi::to_widest (m_base[1]) + 1 >= wi::to_widest (r.m_base[0]))
+	{
+	  m_base[1] = r.m_base[1];
+	  if (varying_compatible_p ())
+	    m_kind = VR_VARYING;
+	}
+      else
+	{
+	  // This is a dual range result.
+	  m_base[2] = r.m_base[0];
+	  m_base[3] = r.m_base[1];
+	  m_num_ranges = 2;
+	}
+      if (flag_checking)
+	verify_range ();
+      return true;
+    }
+
+  // Set the new lower bound to R's lower bound.
+  tree lb = m_base[0];
+  m_base[0] = r.m_base[0];
+
+  // If R fully contains THIS range, just set the upper bound.
+  if (wi::ge_p (wi::to_wide (r.m_base[1]), wi::to_wide (m_base[1]), sign))
+    m_base[1] = r.m_base[1];
+  // Check for overlapping ranges, or target limited to a single range.
+  else if (m_max_ranges == 1
+	   || wi::to_widest (r.m_base[1]) + 1 >= wi::to_widest (lb))
+    {
+      // This has the new upper bound, just check for varying.
+      if (varying_compatible_p ())
+	  m_kind = VR_VARYING;
+    }
+  else
+    {
+      // Left with 2 pairs.
+      m_num_ranges = 2;
+      m_base[2] = lb;
+      m_base[3] = m_base[1];
+      m_base[1] = r.m_base[1];
+    }
+  if (flag_checking)
+    verify_range ();
+  return true;
 }
 
 // union_ for multi-ranges.
 
-void
+bool
 irange::irange_union (const irange &r)
 {
   gcc_checking_assert (!legacy_mode_p () && !r.legacy_mode_p ());
 
   if (r.undefined_p () || varying_p ())
-    return;
+    return false;
 
   if (undefined_p () || r.varying_p ())
     {
       operator= (r);
-      return;
+      return true;
     }
+
+  // Special case one range union one range.
+  if (m_num_ranges == 1 && r.m_num_ranges == 1)
+    return irange_single_pair_union (r);
+
+  // If this ranges fully contains R, then we need do nothing.
+  if (irange_contains_p (r))
+    return false;
 
   // Do not worry about merging and such by reserving twice as many
   // pairs as needed, and then simply sort the 2 ranges into this
@@ -1628,11 +1916,58 @@ irange::irange_union (const irange &r)
 
   if (flag_checking)
     verify_range ();
+  return true;
 }
 
-// intersect for multi-ranges.
+// Return TRUE if THIS fully contains R.  No undefined or varying cases.
 
-void
+bool
+irange::irange_contains_p (const irange &r) const
+{
+  gcc_checking_assert (!undefined_p () && !varying_p ());
+  gcc_checking_assert (!r.undefined_p () && !varying_p ());
+
+  // In order for THIS to fully contain R, all of the pairs within R must
+  // be fully contained by the pairs in this object.
+  signop sign = TYPE_SIGN (TREE_TYPE(m_base[0]));
+  unsigned ri = 0;
+  unsigned i = 0;
+  tree rl = r.m_base[0];
+  tree ru = r.m_base[1];
+  tree l = m_base[0];
+  tree u = m_base[1];
+  while (1)
+    {
+      // If r is contained within this range, move to the next R
+      if (wi::ge_p (wi::to_wide (rl), wi::to_wide (l), sign)
+	  && wi::le_p (wi::to_wide (ru), wi::to_wide (u), sign))
+	{
+	  // This pair is OK, Either done, or bump to the next.
+	  if (++ri >= r.num_pairs ())
+	    return true;
+	  rl = r.m_base[ri * 2];
+	  ru = r.m_base[ri * 2 + 1];
+	  continue;
+	}
+      // Otherwise, check if this's pair occurs before R's.
+      if (wi::lt_p (wi::to_wide (u), wi::to_wide (rl), sign))
+	{
+	  // THere's still at leats one pair of R left.
+	  if (++i >= num_pairs ())
+	    return false;
+	  l = m_base[i * 2];
+	  u = m_base[i * 2 + 1];
+	  continue;
+	}
+      return false;
+    }
+  return false;
+}
+
+
+// Intersect for multi-ranges.  Return TRUE if anything changes.
+
+bool
 irange::irange_intersect (const irange &r)
 {
   gcc_checking_assert (!legacy_mode_p () && !r.legacy_mode_p ());
@@ -1640,24 +1975,24 @@ irange::irange_intersect (const irange &r)
 		       || range_compatible_p (type (), r.type ()));
 
   if (undefined_p () || r.varying_p ())
-    return;
+    return false;
   if (r.undefined_p ())
     {
       set_undefined ();
-      return;
+      return true;
     }
   if (varying_p ())
     {
       operator= (r);
-      return;
+      return true;
     }
 
   if (r.num_pairs () == 1)
-   {
-     // R cannot be undefined, use more efficent pair routine.
-     intersect (r.lower_bound(), r.upper_bound ());
-     return;
-   }
+    return intersect (r.lower_bound (), r.upper_bound ());
+
+  // If R fully contains this, then intersection will change nothing.
+  if (r.irange_contains_p (*this))
+    return false;
 
   signop sign = TYPE_SIGN (TREE_TYPE(m_base[0]));
   unsigned bld_pair = 0;
@@ -1732,21 +2067,25 @@ irange::irange_intersect (const irange &r)
 
   if (flag_checking)
     verify_range ();
+
+  return true;
 }
 
-// Multirange intersect for a specified wide_int [lb, ub] range.
 
-void
+// Multirange intersect for a specified wide_int [lb, ub] range.
+// Return TRUE if intersect changed anything.
+
+bool
 irange::intersect (const wide_int& lb, const wide_int& ub)
 {
   // Undefined remains undefined.
   if (undefined_p ())
-    return;
+    return false;
 
   if (legacy_mode_p ())
     {
       intersect (int_range<1> (type (), lb, ub));
-      return;
+      return true;
     }
 
   tree range_type = type();
@@ -1754,6 +2093,11 @@ irange::intersect (const wide_int& lb, const wide_int& ub)
 
   gcc_checking_assert (TYPE_PRECISION (range_type) == wi::get_precision (lb));
   gcc_checking_assert (TYPE_PRECISION (range_type) == wi::get_precision (ub));
+
+  // If this range is fuly contained, then intersection will do nothing.
+  if (wi::ge_p (lower_bound (), lb, sign)
+      && wi::le_p (upper_bound (), ub, sign))
+    return false;
 
   unsigned bld_index = 0;
   unsigned pair_lim = num_pairs ();
@@ -1793,7 +2137,10 @@ irange::intersect (const wide_int& lb, const wide_int& ub)
 
   if (flag_checking)
     verify_range ();
+  return true;
 }
+
+
 // Signed 1-bits are strange.  You can't subtract 1, because you can't
 // represent the number 1.  This works around that for the invert routine.
 
@@ -1954,6 +2301,7 @@ dump_bound_with_infinite_markers (FILE *file, tree bound)
 void
 irange::dump (FILE *file) const
 {
+  fprintf (file, "[irange] ");
   if (undefined_p ())
     {
       fprintf (file, "UNDEFINED");
@@ -1988,27 +2336,27 @@ irange::dump (FILE *file) const
 }
 
 void
-irange::debug () const
+vrange::debug () const
 {
   dump (stderr);
   fprintf (stderr, "\n");
 }
 
 void
-dump_value_range (FILE *file, const irange *vr)
+dump_value_range (FILE *file, const vrange *vr)
 {
   vr->dump (file);
 }
 
 DEBUG_FUNCTION void
-debug (const irange *vr)
+debug (const vrange *vr)
 {
   dump_value_range (stderr, vr);
   fprintf (stderr, "\n");
 }
 
 DEBUG_FUNCTION void
-debug (const irange &vr)
+debug (const vrange &vr)
 {
   debug (&vr);
 }

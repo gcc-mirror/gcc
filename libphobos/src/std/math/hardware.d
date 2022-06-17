@@ -214,12 +214,12 @@ private:
         }
         else version (SPARC)
         {
-           /*
+            /*
                int retval;
                asm pure nothrow @nogc { st %fsr, retval; }
                return retval;
             */
-           assert(0, "Not yet supported");
+            assert(0, "Not yet supported");
         }
         else version (ARM)
         {

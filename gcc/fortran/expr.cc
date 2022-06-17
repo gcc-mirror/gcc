@@ -1595,8 +1595,8 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 	  if ((begin && begin->expr_type != EXPR_CONSTANT)
 	      || (finish && finish->expr_type != EXPR_CONSTANT)
 	      || (step && step->expr_type != EXPR_CONSTANT)
-	      || (!begin && !lower)
-	      || (!finish && !upper))
+	      || !lower
+	      || !upper)
 	    {
 	      t = false;
 	      goto cleanup;

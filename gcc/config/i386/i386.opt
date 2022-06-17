@@ -1047,7 +1047,7 @@ Enable shadow stack built-in functions from Control-flow Enforcement
 Technology (CET).
 
 mcet-switch
-Target Undocumented Var(flag_cet_switch) Init(0)
+Target Var(flag_cet_switch) Init(0)
 Turn on CET instrumentation for switch statements that use a jump table and
 an indirect jump.
 
@@ -1210,3 +1210,7 @@ Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5
 mdirect-extern-access
 Target Var(ix86_direct_extern_access) Init(1)
 Do not use GOT to access external symbols.
+
+-param=x86-stlf-window-ninsns=
+Target Joined UInteger Var(x86_stlf_window_ninsns) Init(64) Param
+Instructions number above which STFL stall penalty can be compensated.

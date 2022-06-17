@@ -3,6 +3,12 @@
 extern "C" void abort(void);
 extern "C" void __xtensa_libgcc_window_spill(void);
 
+#ifdef __XTENSA_CALL0_ABI__
+void __xtensa_libgcc_window_spill(void)
+{
+}
+#endif
+
 static int call;
 static int cnt;
 

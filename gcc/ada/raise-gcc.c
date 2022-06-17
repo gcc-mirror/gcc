@@ -78,7 +78,7 @@
    (SJLJ or DWARF). We need a consistently named interface to import from
    a-except, so wrappers are defined here.  */
 
-#ifdef __CYGWIN__
+#if defined (__CYGWIN__) || (defined(__SEH__) && defined(STANDALONE))
 /* Prevent compile error due to unwind-generic.h including <windows.h>,
    see comment above #include <windows.h> in mingw32.h.  */
 #include "mingw32.h"

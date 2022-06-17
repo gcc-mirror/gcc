@@ -178,9 +178,8 @@ rid_int128(void)
   return RID_MAX + 1;
 }
 
-/* Called to decide whether a conditional macro should be expanded.
-   Since we have exactly one such macro (i.e, 'vector'), we do not
-   need to examine the 'tok' parameter.  */
+/* Called to decide whether a conditional macro should be expanded
+   by peeking two or more tokens(_bool/_pixel/int/long/double/...).  */
 
 static cpp_hashnode *
 rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
@@ -282,7 +281,9 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 		expand_bool_pixel = __pixel_keyword;
 	      else if (ident == C_CPP_HASHNODE (__bool_keyword))
 		expand_bool_pixel = __bool_keyword;
-	      else
+
+	      /* If there are more tokens to check.  */
+	      else if (ident)
 		{
 		  /* Try two tokens down, too.  */
 		  do
@@ -1686,6 +1687,10 @@ find_instance (bool *unsupported_builtin, ovlddata **instance,
 
   ovlddata *inst = *instance;
   gcc_assert (inst != NULL);
+  /* It is possible for an instance to require a data type that isn't
+     defined on this target, in which case inst->fntype will be NULL.  */
+  if (!inst->fntype)
+    return error_mark_node;
   tree fntype = rs6000_builtin_info[inst->bifid].fntype;
   tree parmtype0 = TREE_VALUE (TYPE_ARG_TYPES (fntype));
   tree parmtype1 = TREE_VALUE (TREE_CHAIN (TYPE_ARG_TYPES (fntype)));
@@ -1788,8 +1793,9 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	{
 	  if (TYPE_READONLY (TREE_TYPE (type))
 	      && !TYPE_READONLY (TREE_TYPE (decl_type)))
-	    warning (0, "passing argument %d of %qE discards const qualifier "
-		     "from pointer target type", n + 1, fndecl);
+	    warning (0, "passing argument %d of %qE discards %qs "
+		     "qualifier from pointer target type", n + 1, fndecl,
+		     "const");
 	  type = build_qualified_type (TREE_TYPE (type), 0);
 	  type = build_pointer_type (type);
 	  arg = fold_convert (type, arg);

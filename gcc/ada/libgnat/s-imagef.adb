@@ -31,8 +31,23 @@
 
 with System.Image_I;
 with System.Img_Util; use System.Img_Util;
+with System.Val_Util;
 
 package body System.Image_F is
+
+   --  Contracts, ghost code, loop invariants and assertions in this unit are
+   --  meant for analysis only, not for run-time checking, as it would be too
+   --  costly otherwise. This is enforced by setting the assertion policy to
+   --  Ignore.
+
+   pragma Assertion_Policy (Assert             => Ignore,
+                            Assert_And_Cut     => Ignore,
+                            Contract_Cases     => Ignore,
+                            Ghost              => Ignore,
+                            Loop_Invariant     => Ignore,
+                            Pre                => Ignore,
+                            Post               => Ignore,
+                            Subprogram_Variant => Ignore);
 
    Maxdigs : constant Natural := Int'Width - 2;
    --  Maximum number of decimal digits that can be represented in an Int.
@@ -54,7 +69,70 @@ package body System.Image_F is
    --  if the small is larger than 1, and smaller than 2**(Int'Size - 1) / 10
    --  if the small is smaller than 1.
 
-   package Image_I is new System.Image_I (Int);
+   --  Define ghost subprograms without implementation (marked as Import) to
+   --  create a suitable package Int_Params for type Int, as instantiations
+   --  of System.Image_F use for this type one of the derived integer types
+   --  defined in Interfaces, instead of the standard signed integer types
+   --  which are used to define System.Img_*.Int_Params.
+
+   type Uns_Option (Overflow : Boolean := False) is record
+      case Overflow is
+         when True =>
+            null;
+         when False =>
+            Value : Uns := 0;
+      end case;
+   end record;
+
+   Unsigned_Width_Ghost : constant Natural := Int'Width;
+
+   function Wrap_Option (Value : Uns) return Uns_Option
+     with Ghost, Import;
+   function Only_Decimal_Ghost
+     (Str      : String;
+      From, To : Integer)
+      return Boolean
+     with Ghost, Import;
+   function Hexa_To_Unsigned_Ghost (X : Character) return Uns
+     with Ghost, Import;
+   function Scan_Based_Number_Ghost
+     (Str      : String;
+      From, To : Integer;
+      Base     : Uns := 10;
+      Acc      : Uns := 0)
+      return Uns_Option
+     with Ghost, Import;
+   function Is_Integer_Ghost (Str : String) return Boolean
+     with Ghost, Import;
+   procedure Prove_Iter_Scan_Based_Number_Ghost
+     (Str1, Str2 : String;
+      From, To : Integer;
+      Base     : Uns := 10;
+      Acc      : Uns := 0)
+     with Ghost, Import;
+   procedure Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int)
+     with Ghost, Import;
+   function Abs_Uns_Of_Int (Val : Int) return Uns
+     with Ghost, Import;
+   function Value_Integer (Str : String) return Int
+     with Ghost, Import;
+
+   package Int_Params is new Val_Util.Int_Params
+     (Int                                => Int,
+      Uns                                => Uns,
+      Uns_Option                         => Uns_Option,
+      Unsigned_Width_Ghost               => Unsigned_Width_Ghost,
+      Wrap_Option                        => Wrap_Option,
+      Only_Decimal_Ghost                 => Only_Decimal_Ghost,
+      Hexa_To_Unsigned_Ghost             => Hexa_To_Unsigned_Ghost,
+      Scan_Based_Number_Ghost            => Scan_Based_Number_Ghost,
+      Is_Integer_Ghost                   => Is_Integer_Ghost,
+      Prove_Iter_Scan_Based_Number_Ghost => Prove_Iter_Scan_Based_Number_Ghost,
+      Prove_Scan_Only_Decimal_Ghost      => Prove_Scan_Only_Decimal_Ghost,
+      Abs_Uns_Of_Int                     => Abs_Uns_Of_Int,
+      Value_Integer                      => Value_Integer);
+
+   package Image_I is new System.Image_I (Int_Params);
 
    procedure Set_Image_Integer
      (V : Int;
@@ -96,7 +174,7 @@ package body System.Image_F is
    --  operation are omitted here.
 
    --  A 64-bit value can represent all integers with 18 decimal digits, but
-   --  not all with 19 decimal digits. If the total number of requested ouput
+   --  not all with 19 decimal digits. If the total number of requested output
    --  digits (Fore - 1) + Aft is greater than 18 then, for purposes of the
    --  conversion, Aft is adjusted to 18 - (Fore - 1). In that case, trailing
    --  zeros can complete the output after writing the first 18 significant
@@ -355,6 +433,8 @@ package body System.Image_F is
          Digs (1 .. 2) := " 0";
          Ndigs := 2;
       end if;
+      pragma Annotate (CodePeer, False_Positive, "test always true",
+                       "no digits were output for zero");
 
       Set_Decimal_Digits (Digs, Ndigs, S, P, Scale, Fore, Aft, Exp);
    end Set_Image_Fixed;

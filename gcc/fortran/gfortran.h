@@ -1271,6 +1271,7 @@ enum gfc_omp_depend_op
   OMP_DEPEND_IN,
   OMP_DEPEND_OUT,
   OMP_DEPEND_INOUT,
+  OMP_DEPEND_INOUTSET,
   OMP_DEPEND_MUTEXINOUTSET,
   OMP_DEPEND_DEPOBJ,
   OMP_DEPEND_SINK_FIRST,
@@ -1394,6 +1395,7 @@ enum
   OMP_LIST_NONTEMPORAL,
   OMP_LIST_ALLOCATE,
   OMP_LIST_HAS_DEVICE_ADDR,
+  OMP_LIST_ENTER,
   OMP_LIST_NUM /* Must be the last.  */
 };
 
@@ -1533,13 +1535,14 @@ typedef struct gfc_omp_clauses
   unsigned simd:1, threads:1, depend_source:1, destroy:1, order_concurrent:1;
   unsigned order_unconstrained:1, order_reproducible:1, capture:1;
   unsigned grainsize_strict:1, num_tasks_strict:1, compare:1, weak:1;
+  unsigned non_rectangular:1;
   ENUM_BITFIELD (gfc_omp_sched_kind) sched_kind:3;
   ENUM_BITFIELD (gfc_omp_device_type) device_type:2;
   ENUM_BITFIELD (gfc_omp_memorder) memorder:3;
   ENUM_BITFIELD (gfc_omp_memorder) fail:3;
   ENUM_BITFIELD (gfc_omp_cancel_kind) cancel:3;
   ENUM_BITFIELD (gfc_omp_proc_bind_kind) proc_bind:3;
-  ENUM_BITFIELD (gfc_omp_depend_op) depobj_update:3;
+  ENUM_BITFIELD (gfc_omp_depend_op) depobj_update:4;
   ENUM_BITFIELD (gfc_omp_bind_type) bind:2;
   ENUM_BITFIELD (gfc_omp_at_type) at:2;
   ENUM_BITFIELD (gfc_omp_severity_type) severity:2;

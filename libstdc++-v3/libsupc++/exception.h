@@ -33,13 +33,11 @@
 
 #pragma GCC system_header
 
-#pragma GCC visibility push(default)
-
 #include <bits/c++config.h>
 
 extern "C++" {
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   /**
    * @defgroup exceptions Exceptions
@@ -81,7 +79,5 @@ namespace std
 } // namespace std
 
 }
-
-#pragma GCC visibility pop
 
 #endif

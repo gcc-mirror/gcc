@@ -302,9 +302,9 @@ enum omp_clause_code {
   /* OpenMP clause: uniform (argument-list).  */
   OMP_CLAUSE_UNIFORM,
 
-  /* OpenMP clause: to (extended-list).
-     Only when it appears in declare target.  */
-  OMP_CLAUSE_TO_DECLARE,
+  /* OpenMP clause: enter (extended-list).
+     to is a deprecated alias when it appears in declare target.  */
+  OMP_CLAUSE_ENTER,
 
   /* OpenMP clause: link (variable-list).  */
   OMP_CLAUSE_LINK,
@@ -1461,7 +1461,7 @@ struct GTY(()) tree_int_cst {
 
 struct GTY(()) tree_real_cst {
   struct tree_typed typed;
-  struct real_value * real_cst_ptr;
+  struct real_value value;
 };
 
 struct GTY(()) tree_fixed_cst {
@@ -1527,6 +1527,7 @@ enum omp_clause_depend_kind
   OMP_CLAUSE_DEPEND_OUT,
   OMP_CLAUSE_DEPEND_INOUT,
   OMP_CLAUSE_DEPEND_MUTEXINOUTSET,
+  OMP_CLAUSE_DEPEND_INOUTSET,
   OMP_CLAUSE_DEPEND_SOURCE,
   OMP_CLAUSE_DEPEND_SINK,
   OMP_CLAUSE_DEPEND_DEPOBJ,
@@ -1563,9 +1564,7 @@ enum omp_clause_linear_kind
 struct GTY(()) tree_exp {
   struct tree_typed typed;
   location_t locus;
-  tree GTY ((special ("tree_exp"),
-	     desc ("TREE_CODE ((tree) &%0)")))
-    operands[1];
+  tree GTY ((length ("TREE_OPERAND_LENGTH ((tree)&%h)"))) operands[1];
 };
 
 /* Immediate use linking structure.  This structure is used for maintaining
@@ -2115,8 +2114,10 @@ struct attribute_spec {
   bool function_type_required;
   /* Specifies if attribute affects type's identity.  */
   bool affects_type_identity;
-  /* Function to handle this attribute.  NODE points to the node to which
-     the attribute is to be applied.  If a DECL, it should be modified in
+  /* Function to handle this attribute.  NODE points to a tree[3] array,
+     where node[0] is the node to which the attribute is to be applied;
+     node[1] is the last pushed/merged declaration if one exists, and node[2]
+     may be the declaration for node[0].  If a DECL, it should be modified in
      place; if a TYPE, a copy should be created.  NAME is the canonicalized
      name of the attribute i.e. without any leading or trailing underscores.
      ARGS is the TREE_LIST of the arguments (which may be NULL).  FLAGS gives

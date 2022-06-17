@@ -1240,8 +1240,7 @@ extern enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 /* Register classes for various constraints that are based on the target
    switches.  */
 enum r6000_reg_class_enum {
-  RS6000_CONSTRAINT_d,		/* fpr registers for double values */
-  RS6000_CONSTRAINT_f,		/* fpr registers for single values */
+  RS6000_CONSTRAINT_d,		/* FPR registers */
   RS6000_CONSTRAINT_v,		/* Altivec registers */
   RS6000_CONSTRAINT_wa,		/* Any VSX register */
   RS6000_CONSTRAINT_we,		/* VSX register if ISA 3.0 vector. */
@@ -2249,54 +2248,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 /* General flags.  */
 extern int frame_pointer_needed;
 
-/* Classification of the builtin functions as to which switches enable the
-   builtin, and what attributes it should have.  We used to use the target
-   flags macros, but we've run out of bits, so we now map the options into new
-   settings used here.  */
-
-/* Builtin operand count.  */
-#define RS6000_BTC_UNARY	0x00000001	/* normal unary function.  */
-#define RS6000_BTC_BINARY	0x00000002	/* normal binary function.  */
-#define RS6000_BTC_TERNARY	0x00000003	/* normal ternary function.  */
-#define RS6000_BTC_QUATERNARY	0x00000004	/* normal quaternary
-						   function. */
-#define RS6000_BTC_QUINARY	0x00000005	/* normal quinary function.  */
-#define RS6000_BTC_SENARY	0x00000006	/* normal senary function.  */
-#define RS6000_BTC_OPND_MASK	0x00000007	/* Mask to isolate operands. */
-
-/* Builtin attributes.  */
-#define RS6000_BTC_SPECIAL	0x00000000	/* Special function.  */
-#define RS6000_BTC_PREDICATE	0x00000008	/* predicate function.  */
-#define RS6000_BTC_ABS		0x00000010	/* Altivec/VSX ABS
-						   function.  */
-#define RS6000_BTC_DST		0x00000020	/* Altivec DST function.  */
-
-#define RS6000_BTC_TYPE_MASK	0x0000003f	/* Mask to isolate types */
-
-#define RS6000_BTC_MISC		0x00000000	/* No special attributes.  */
-#define RS6000_BTC_CONST	0x00000100	/* Neither uses, nor
-						   modifies global state.  */
-#define RS6000_BTC_PURE		0x00000200	/* reads global
-						   state/mem and does
-						   not modify global state.  */
-#define RS6000_BTC_FP		0x00000400	/* depends on rounding mode.  */
-#define RS6000_BTC_QUAD		0x00000800	/* Uses a register quad.  */
-#define RS6000_BTC_PAIR		0x00001000	/* Uses a register pair.  */
-#define RS6000_BTC_QUADPAIR	0x00001800	/* Uses a quad and a pair.  */
-#define RS6000_BTC_ATTR_MASK	0x00001f00	/* Mask of the attributes.  */
-
-/* Miscellaneous information.  */
-#define RS6000_BTC_SPR		0x01000000	/* function references SPRs.  */
-#define RS6000_BTC_VOID		0x02000000	/* function has no return value.  */
-#define RS6000_BTC_CR		0x04000000	/* function references a CR.  */
-#define RS6000_BTC_OVERLOADED	0x08000000	/* function is overloaded.  */
-#define RS6000_BTC_GIMPLE	0x10000000	/* function should be expanded
-						   into gimple.  */
-#define RS6000_BTC_MISC_MASK	0x1f000000	/* Mask of the misc info.  */
-
-/* Convenience macros to document the instruction type.  */
-#define RS6000_BTC_MEM		RS6000_BTC_MISC	/* load/store touches mem.  */
-#define RS6000_BTC_SAT		RS6000_BTC_MISC	/* saturate sets VSCR.  */
 
 /* Builtin targets.  For now, we reuse the masks for those options that are in
    target flags, and pick a random bit for ldbl128, which isn't in

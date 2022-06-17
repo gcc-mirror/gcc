@@ -1,5 +1,5 @@
 /* { dg-do compile { target *-*-linux* } } */
-/* { dg-options "-O2 -fzero-call-used-regs=all-gpr" } */
+/* { dg-options "-O2 -fzero-call-used-regs=all-gpr -fno-stack-protector" } */
 
 extern void foo (void) __attribute__ ((zero_call_used_regs("skip")));
 

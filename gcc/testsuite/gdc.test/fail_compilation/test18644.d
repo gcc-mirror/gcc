@@ -21,5 +21,3 @@ fail_compilation/test18644.d(22): Error: escaping reference to stack allocated v
     ref int foo() { return i; }
     return foo();
 }
-
-

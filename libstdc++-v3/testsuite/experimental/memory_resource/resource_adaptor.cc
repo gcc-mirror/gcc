@@ -59,7 +59,9 @@ test05()
   Allocator<int> a1(1), a2(2); // minimal interface allocators
   resource_adaptor<decltype(a1)> r1(a1), r2(a2);
   VERIFY( r1 == r1 );
+#if __cpp_rtti
   VERIFY( r1 == r2 );
+#endif
   p = r1.allocate(1);
   VERIFY( aligned<max_align_t>(p) );
   r1.deallocate(p, 1);
@@ -97,7 +99,9 @@ test05()
   __gnu_cxx::debug_allocator<std::allocator<short>> a5, a6;
   resource_adaptor<decltype(a5)> r5(a5), r6(a6);
   VERIFY( r5 == r5 );
+#if __cpp_rtti
   VERIFY( r5 == r6 );
+#endif
   VERIFY( r5 != r1 );
   VERIFY( r5 != r3 );
   p = r5.allocate(1);
@@ -128,7 +132,9 @@ test05()
   __gnu_cxx::new_allocator<short> a7, a8;
   resource_adaptor<decltype(a7)> r7(a7), r8(a8);
   VERIFY( r7 == r7 );
+#if __cpp_rtti
   VERIFY( r7 == r8 );
+#endif
   VERIFY( r7 != r1 );
   VERIFY( r7 != r3 );
   VERIFY( r7 != r5 );
@@ -158,7 +164,9 @@ test05()
   __gnu_cxx::malloc_allocator<short> a9, a10;
   resource_adaptor<decltype(a9)> r9(a9), r10(a10);
   VERIFY( r9 == r9 );
+#if __cpp_rtti
   VERIFY( r9 == r10 );
+#endif
   VERIFY( r9 != r1 );
   VERIFY( r9 != r3 );
   VERIFY( r9 != r5 );
@@ -189,7 +197,9 @@ test05()
   std::allocator<short> a11, a12;
   resource_adaptor<decltype(a11)> r11(a11), r12(a12);
   VERIFY( r11 == r11 );
+#if __cpp_rtti
   VERIFY( r11 == r12 );
+#endif
   VERIFY( r11 != r1 );
   VERIFY( r11 != r3 );
   VERIFY( r11 != r5 );

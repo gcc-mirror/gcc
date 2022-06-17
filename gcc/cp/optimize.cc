@@ -163,14 +163,7 @@ build_delete_destructor_body (tree delete_dtor, tree complete_dtor)
 
   /* Return the address of the object.
      ??? How is it useful to return an invalid address?  */
-  if (targetm.cxx.cdtor_returns_this ())
-    {
-      tree val = DECL_ARGUMENTS (delete_dtor);
-      suppress_warning (val, OPT_Wuse_after_free);
-      val = build2 (MODIFY_EXPR, TREE_TYPE (val),
-                    DECL_RESULT (delete_dtor), val);
-      add_stmt (build_stmt (0, RETURN_EXPR, val));
-    }
+  maybe_return_this ();
 }
 
 /* Return name of comdat group for complete and base ctor (or dtor)

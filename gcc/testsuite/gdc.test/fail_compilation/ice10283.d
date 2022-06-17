@@ -13,4 +13,3 @@ struct S10283
 {
     string source = 7;
 }
-

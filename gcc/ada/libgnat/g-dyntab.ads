@@ -82,10 +82,6 @@ package GNAT.Dynamic_Tables is
    --  freely (expensive reallocation occurs only at major granularity
    --  chunks controlled by the allocation parameters).
 
-   --  Note: we do not make the table components aliased, since this would
-   --  restrict the use of table for discriminated types. If it is necessary
-   --  to take the access of a table element, use Unrestricted_Access.
-
    --  WARNING: On HPPA, the virtual addressing approach used in this unit is
    --  incompatible with the indexing instructions on the HPPA. So when using
    --  this unit, compile your application with -mdisable-indexing.
@@ -120,9 +116,10 @@ package GNAT.Dynamic_Tables is
    --  freely (expensive reallocation occurs only at major granularity
    --  chunks controlled by the allocation parameters).
 
-   --  Note: we do not make the table components aliased, since this would
-   --  restrict the use of table for discriminated types. If it is necessary
-   --  to take the access of a table element, use Unrestricted_Access.
+   --  Note: For backward compatibility we do not make the table components
+   --  aliased, since for Ada 95 this would have restricted the use of tables
+   --  for discriminated types. If it is necessary to take the access of a
+   --  table element, use Unrestricted_Access.
 
    type Table_Type is
      array (Valid_Table_Index_Type range <>) of Table_Component_Type;

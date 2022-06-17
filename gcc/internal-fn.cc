@@ -140,6 +140,86 @@ const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
   not_direct
 };
 
+/* Expand STMT using instruction ICODE.  The instruction has NOUTPUTS
+   output operands and NINPUTS input operands, where NOUTPUTS is either
+   0 or 1.  The output operand (if any) comes first, followed by the
+   NINPUTS input operands.  */
+
+static void
+expand_fn_using_insn (gcall *stmt, insn_code icode, unsigned int noutputs,
+		      unsigned int ninputs)
+{
+  gcc_assert (icode != CODE_FOR_nothing);
+
+  expand_operand *ops = XALLOCAVEC (expand_operand, noutputs + ninputs);
+  unsigned int opno = 0;
+  rtx lhs_rtx = NULL_RTX;
+  tree lhs = gimple_call_lhs (stmt);
+
+  if (noutputs)
+    {
+      gcc_assert (noutputs == 1);
+      if (lhs)
+	lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+
+      /* Do not assign directly to a promoted subreg, since there is no
+	 guarantee that the instruction will leave the upper bits of the
+	 register in the state required by SUBREG_PROMOTED_SIGN.  */
+      rtx dest = lhs_rtx;
+      if (dest && GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
+	dest = NULL_RTX;
+      create_output_operand (&ops[opno], dest,
+			     insn_data[icode].operand[opno].mode);
+      opno += 1;
+    }
+  else
+    gcc_assert (!lhs);
+
+  for (unsigned int i = 0; i < ninputs; ++i)
+    {
+      tree rhs = gimple_call_arg (stmt, i);
+      tree rhs_type = TREE_TYPE (rhs);
+      rtx rhs_rtx = expand_normal (rhs);
+      if (INTEGRAL_TYPE_P (rhs_type))
+	create_convert_operand_from (&ops[opno], rhs_rtx,
+				     TYPE_MODE (rhs_type),
+				     TYPE_UNSIGNED (rhs_type));
+      else
+	create_input_operand (&ops[opno], rhs_rtx, TYPE_MODE (rhs_type));
+      opno += 1;
+    }
+
+  gcc_assert (opno == noutputs + ninputs);
+  expand_insn (icode, opno, ops);
+  if (lhs_rtx && !rtx_equal_p (lhs_rtx, ops[0].value))
+    {
+      /* If the return value has an integral type, convert the instruction
+	 result to that type.  This is useful for things that return an
+	 int regardless of the size of the input.  If the instruction result
+	 is smaller than required, assume that it is signed.
+
+	 If the return value has a nonintegral type, its mode must match
+	 the instruction result.  */
+      if (GET_CODE (lhs_rtx) == SUBREG && SUBREG_PROMOTED_VAR_P (lhs_rtx))
+	{
+	  /* If this is a scalar in a register that is stored in a wider
+	     mode than the declared mode, compute the result into its
+	     declared mode and then convert to the wider mode.  */
+	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
+	  rtx tmp = convert_to_mode (GET_MODE (lhs_rtx), ops[0].value, 0);
+	  convert_move (SUBREG_REG (lhs_rtx), tmp,
+			SUBREG_PROMOTED_SIGN (lhs_rtx));
+	}
+      else if (GET_MODE (lhs_rtx) == GET_MODE (ops[0].value))
+	emit_move_insn (lhs_rtx, ops[0].value);
+      else
+	{
+	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
+	  convert_move (lhs_rtx, ops[0].value, 0);
+	}
+    }
+}
+
 /* ARRAY_TYPE is an array of vector modes.  Return the associated insn
    for load-lanes-style optab OPTAB, or CODE_FOR_nothing if none.  */
 
@@ -3565,67 +3645,9 @@ static void
 expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
 			unsigned int nargs)
 {
-  expand_operand *ops = XALLOCAVEC (expand_operand, nargs + 1);
-
   tree_pair types = direct_internal_fn_types (fn, stmt);
   insn_code icode = direct_optab_handler (optab, TYPE_MODE (types.first));
-  gcc_assert (icode != CODE_FOR_nothing);
-
-  tree lhs = gimple_call_lhs (stmt);
-  rtx lhs_rtx = NULL_RTX;
-  if (lhs)
-    lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-
-  /* Do not assign directly to a promoted subreg, since there is no
-     guarantee that the instruction will leave the upper bits of the
-     register in the state required by SUBREG_PROMOTED_SIGN.  */
-  rtx dest = lhs_rtx;
-  if (dest && GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
-    dest = NULL_RTX;
-
-  create_output_operand (&ops[0], dest, insn_data[icode].operand[0].mode);
-
-  for (unsigned int i = 0; i < nargs; ++i)
-    {
-      tree rhs = gimple_call_arg (stmt, i);
-      tree rhs_type = TREE_TYPE (rhs);
-      rtx rhs_rtx = expand_normal (rhs);
-      if (INTEGRAL_TYPE_P (rhs_type))
-	create_convert_operand_from (&ops[i + 1], rhs_rtx,
-				     TYPE_MODE (rhs_type),
-				     TYPE_UNSIGNED (rhs_type));
-      else
-	create_input_operand (&ops[i + 1], rhs_rtx, TYPE_MODE (rhs_type));
-    }
-
-  expand_insn (icode, nargs + 1, ops);
-  if (lhs_rtx && !rtx_equal_p (lhs_rtx, ops[0].value))
-    {
-      /* If the return value has an integral type, convert the instruction
-	 result to that type.  This is useful for things that return an
-	 int regardless of the size of the input.  If the instruction result
-	 is smaller than required, assume that it is signed.
-
-	 If the return value has a nonintegral type, its mode must match
-	 the instruction result.  */
-      if (GET_CODE (lhs_rtx) == SUBREG && SUBREG_PROMOTED_VAR_P (lhs_rtx))
-	{
-	  /* If this is a scalar in a register that is stored in a wider
-	     mode than the declared mode, compute the result into its
-	     declared mode and then convert to the wider mode.  */
-	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
-	  rtx tmp = convert_to_mode (GET_MODE (lhs_rtx), ops[0].value, 0);
-	  convert_move (SUBREG_REG (lhs_rtx), tmp,
-			SUBREG_PROMOTED_SIGN (lhs_rtx));
-	}
-      else if (GET_MODE (lhs_rtx) == GET_MODE (ops[0].value))
-	emit_move_insn (lhs_rtx, ops[0].value);
-      else
-	{
-	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
-	  convert_move (lhs_rtx, ops[0].value, 0);
-	}
-    }
+  expand_fn_using_insn (stmt, icode, 1, nargs);
 }
 
 /* Expand WHILE_ULT call STMT using optab OPTAB.  */

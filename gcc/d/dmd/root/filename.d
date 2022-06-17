@@ -36,6 +36,8 @@ version (Windows)
     import core.sys.windows.windef;
     import core.sys.windows.winnls;
 
+    import dmd.common.string : extendedPathThen;
+
     extern (Windows) DWORD GetFullPathNameW(LPCWSTR, DWORD, LPWSTR, LPWSTR*) nothrow @nogc;
     extern (Windows) void SetLastError(DWORD) nothrow @nogc;
     extern (C) char* getcwd(char* buffer, size_t maxlen) nothrow;
@@ -855,7 +857,7 @@ nothrow:
         }
         else version (Windows)
         {
-            return name.toWStringzThen!((wname)
+            return name.extendedPathThen!((wname)
             {
                 const dw = GetFileAttributesW(&wname[0]);
                 if (dw == -1)
@@ -1005,7 +1007,7 @@ nothrow:
                 // Have canonicalize_file_name, which malloc's memory.
                 // We need a dmd.root.rmem allocation though.
                 auto path = name.toCStringThen!((n) => canonicalize_file_name(n.ptr));
-                scope(exit) .free(path.ptr);
+                scope(exit) .free(path);
                 if (path !is null)
                     return xarraydup(path.toDString);
             }
@@ -1124,7 +1126,6 @@ version(Windows)
      */
     private int _mkdir(const(char)[] path) nothrow
     {
-        import dmd.common.string : extendedPathThen;
         const createRet = path.extendedPathThen!(
             p => CreateDirectoryW(&p[0], null /*securityAttributes*/));
         // different conventions for CreateDirectory and mkdir

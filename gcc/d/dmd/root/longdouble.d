@@ -29,6 +29,8 @@ nothrow:
 // Type used by the front-end for compile-time reals
 struct longdouble
 {
+nothrow:
+@nogc:
     extern (D) this(T)(T r)
     {
         this.set(cast(SetType!T)r);

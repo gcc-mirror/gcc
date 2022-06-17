@@ -2977,7 +2977,8 @@ gather_stats_on_scev_database (void)
 void
 scev_initialize (void)
 {
-  gcc_assert (! scev_initialized_p ());
+  gcc_assert (! scev_initialized_p ()
+	      && loops_state_satisfies_p (cfun, LOOPS_NORMAL));
 
   scalar_evolution_info = hash_table<scev_info_hasher>::create_ggc (100);
 
@@ -3395,7 +3396,7 @@ expression_expensive_p (tree expr, hash_map<tree, uint64_t> &cache,
       call_expr_arg_iterator iter;
       /* Even though is_inexpensive_builtin might say true, we will get a
 	 library call for popcount when backend does not have an instruction
-	 to do so.  We consider this to be expenseive and generate
+	 to do so.  We consider this to be expensive and generate
 	 __builtin_popcount only when backend defines it.  */
       combined_fn cfn = get_call_combined_fn (expr);
       switch (cfn)
@@ -3420,12 +3421,15 @@ expression_expensive_p (tree expr, hash_map<tree, uint64_t> &cache,
 		  break;
 	      return true;
 	    }
+	  break;
+
 	default:
+	  if (cfn == CFN_LAST
+	      || !is_inexpensive_builtin (get_callee_fndecl (expr)))
+	    return true;
 	  break;
 	}
 
-      if (!is_inexpensive_builtin (get_callee_fndecl (expr)))
-	return true;
       FOR_EACH_CALL_EXPR_ARG (arg, iter, expr)
 	if (expression_expensive_p (arg, cache, op_cost))
 	  return true;
@@ -3483,6 +3487,154 @@ expression_expensive_p (tree expr)
 	  || expanded_size > cache.elements ());
 }
 
+/* Match.pd function to match bitwise inductive expression.
+   .i.e.
+   _2 = 1 << _1;
+   _3 = ~_2;
+   tmp_9 = _3 & tmp_12;  */
+extern bool gimple_bitwise_induction_p (tree, tree *, tree (*)(tree));
+
+/* Return the inductive expression of bitwise operation if possible,
+   otherwise returns DEF.  */
+static tree
+analyze_and_compute_bitwise_induction_effect (class loop* loop,
+					      tree phidef,
+					      unsigned HOST_WIDE_INT niter)
+{
+  tree match_op[3],inv, bitwise_scev;
+  tree type = TREE_TYPE (phidef);
+  gphi* header_phi = NULL;
+
+  /* Match things like op2(MATCH_OP[2]), op1(MATCH_OP[1]), phidef(PHIDEF)
+
+     op2 = PHI <phidef, inv>
+     _1 = (int) bit_17;
+     _3 = 1 << _1;
+     op1 = ~_3;
+     phidef = op1 & op2;  */
+  if (!gimple_bitwise_induction_p (phidef, &match_op[0], NULL)
+      || TREE_CODE (match_op[2]) != SSA_NAME
+      || !(header_phi = dyn_cast <gphi *> (SSA_NAME_DEF_STMT (match_op[2])))
+      || gimple_phi_num_args (header_phi) != 2)
+    return NULL_TREE;
+
+  if (PHI_ARG_DEF_FROM_EDGE (header_phi, loop_latch_edge (loop)) != phidef)
+    return NULL_TREE;
+
+  bitwise_scev = analyze_scalar_evolution (loop, match_op[1]);
+  bitwise_scev = instantiate_parameters (loop, bitwise_scev);
+
+  /* Make sure bits is in range of type precision.  */
+  if (TREE_CODE (bitwise_scev) != POLYNOMIAL_CHREC
+      || !INTEGRAL_TYPE_P (TREE_TYPE (bitwise_scev))
+      || !tree_fits_uhwi_p (CHREC_LEFT (bitwise_scev))
+      || tree_to_uhwi (CHREC_LEFT (bitwise_scev)) >= TYPE_PRECISION (type)
+      || !tree_fits_shwi_p (CHREC_RIGHT (bitwise_scev)))
+    return NULL_TREE;
+
+enum bit_op_kind
+  {
+   INDUCTION_BIT_CLEAR,
+   INDUCTION_BIT_IOR,
+   INDUCTION_BIT_XOR,
+   INDUCTION_BIT_RESET,
+   INDUCTION_ZERO,
+   INDUCTION_ALL
+  };
+
+  enum bit_op_kind induction_kind;
+  enum tree_code code1
+    = gimple_assign_rhs_code (SSA_NAME_DEF_STMT (phidef));
+  enum tree_code code2
+    = gimple_assign_rhs_code (SSA_NAME_DEF_STMT (match_op[0]));
+
+  /* BIT_CLEAR: A &= ~(1 << bit)
+     BIT_RESET: A ^= (1 << bit).
+     BIT_IOR: A |= (1 << bit)
+     BIT_ZERO: A &= (1 << bit)
+     BIT_ALL: A |= ~(1 << bit)
+     BIT_XOR: A ^= ~(1 << bit).
+     bit is induction variable.  */
+  switch (code1)
+    {
+    case BIT_AND_EXPR:
+      induction_kind = code2 == BIT_NOT_EXPR
+	? INDUCTION_BIT_CLEAR
+	: INDUCTION_ZERO;
+      break;
+    case BIT_IOR_EXPR:
+      induction_kind = code2 == BIT_NOT_EXPR
+	? INDUCTION_ALL
+	: INDUCTION_BIT_IOR;
+      break;
+    case BIT_XOR_EXPR:
+      induction_kind = code2 == BIT_NOT_EXPR
+	? INDUCTION_BIT_XOR
+	: INDUCTION_BIT_RESET;
+      break;
+      /* A ^ ~(1 << bit) is equal to ~(A ^ (1 << bit)).  */
+    case BIT_NOT_EXPR:
+      gcc_assert (code2 == BIT_XOR_EXPR);
+      induction_kind = INDUCTION_BIT_XOR;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (induction_kind == INDUCTION_ZERO)
+    return build_zero_cst (type);
+  if (induction_kind == INDUCTION_ALL)
+    return build_all_ones_cst (type);
+
+  wide_int bits = wi::zero (TYPE_PRECISION (type));
+  HOST_WIDE_INT bit_start = tree_to_shwi (CHREC_LEFT (bitwise_scev));
+  HOST_WIDE_INT step = tree_to_shwi (CHREC_RIGHT (bitwise_scev));
+  HOST_WIDE_INT bit_final = bit_start + step * niter;
+
+  /* bit_start, bit_final in range of [0,TYPE_PRECISION)
+     implies all bits are set in range.  */
+  if (bit_final >= TYPE_PRECISION (type)
+      || bit_final < 0)
+    return NULL_TREE;
+
+  /* Loop tripcount should be niter + 1.  */
+  for (unsigned i = 0; i != niter + 1; i++)
+    {
+      bits = wi::set_bit (bits, bit_start);
+      bit_start += step;
+    }
+
+  bool inverted = false;
+  switch (induction_kind)
+    {
+    case INDUCTION_BIT_CLEAR:
+      code1 = BIT_AND_EXPR;
+      inverted = true;
+      break;
+    case INDUCTION_BIT_IOR:
+      code1 = BIT_IOR_EXPR;
+      break;
+    case INDUCTION_BIT_RESET:
+      code1 = BIT_XOR_EXPR;
+      break;
+    /* A ^= ~(1 << bit) is special, when loop tripcount is even,
+       it's equal to  A ^= bits, else A ^= ~bits.  */
+    case INDUCTION_BIT_XOR:
+      code1 = BIT_XOR_EXPR;
+      if (niter % 2 == 0)
+	inverted = true;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (inverted)
+    bits = wi::bit_not (bits);
+
+  inv = PHI_ARG_DEF_FROM_EDGE (header_phi, loop_preheader_edge (loop));
+  return fold_build2 (code1, type, inv, wide_int_to_tree (type, bits));
+}
+
 /* Do final value replacement for LOOP, return true if we did anything.  */
 
 bool
@@ -3515,7 +3667,8 @@ final_value_replacement_loop (class loop *loop)
     {
       gphi *phi = psi.phi ();
       tree rslt = PHI_RESULT (phi);
-      tree def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
+      tree phidef = PHI_ARG_DEF_FROM_EDGE (phi, exit);
+      tree def = phidef;
       if (virtual_operand_p (def))
 	{
 	  gsi_next (&psi);
@@ -3533,6 +3686,28 @@ final_value_replacement_loop (class loop *loop)
       def = analyze_scalar_evolution_in_loop (ex_loop, loop, def,
 					      &folded_casts);
       def = compute_overall_effect_of_inner_loop (ex_loop, def);
+
+      /* Handle bitwise induction expression.
+
+	 .i.e.
+	 for (int i = 0; i != 64; i+=3)
+	   res &= ~(1UL << i);
+
+	 RES can't be analyzed out by SCEV because it is not polynomially
+	 expressible, but in fact final value of RES can be replaced by
+	 RES & CONSTANT where CONSTANT all ones with bit {0,3,6,9,... ,63}
+	 being cleared, similar for BIT_IOR_EXPR/BIT_XOR_EXPR.  */
+      unsigned HOST_WIDE_INT niter_num;
+      tree bit_def;
+      if (tree_fits_uhwi_p (niter)
+	  && (niter_num = tree_to_uhwi (niter)) != 0
+	  && niter_num < TYPE_PRECISION (TREE_TYPE (phidef))
+	  && (bit_def
+	      = analyze_and_compute_bitwise_induction_effect (loop,
+							      phidef,
+							      niter_num)))
+	def = bit_def;
+
       if (!tree_does_not_contain_chrecs (def)
 	  || chrec_contains_symbols_defined_in_loop (def, ex_loop->num)
 	  /* Moving the computation from the loop may prolong life range

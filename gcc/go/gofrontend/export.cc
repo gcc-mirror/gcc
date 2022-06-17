@@ -124,6 +124,11 @@ class Collect_export_references : public Traverse
   void
   prepare_types(const std::vector<Named_object*>& sorted_exports);
 
+  // Third entry point (called after the method above), to find
+  // all types in expressions referenced by exports.
+  void
+  prepare_expressions(const std::vector<Named_object*>& sorted_exports);
+
  protected:
   // Override of parent class method.
   int
@@ -281,6 +286,28 @@ Collect_export_references::expression(Expression** pexpr)
   return TRAVERSE_CONTINUE;
 }
 
+// Collect up the set of types mentioned in expressions of things we're exporting,
+// and collect all the packages encountered during type traversal, to make sure
+// we can declare things referered to indirectly (for example, in the body of an
+// exported inline function from another package).
+
+void
+Collect_export_references::prepare_expressions(const std::vector<Named_object*>& sorted_exports)
+{
+  for (std::vector<Named_object*>::const_iterator p = sorted_exports.begin();
+       p != sorted_exports.end();
+       ++p)
+    {
+      Named_object* no = *p;
+      if (no->classification() == Named_object::NAMED_OBJECT_CONST)
+        {
+          Expression* e = no->const_value()->expr();
+          if (e != NULL)
+            Expression::traverse(&e, this);
+        }
+    }
+}
+
 // Collect up the set of types mentioned in things we're exporting, and collect
 // all the packages encountered during type traversal, to make sure we can
 // declare things referered to indirectly (for example, in the body of an
@@ -359,16 +386,6 @@ Collect_export_references::type(Type* type)
   // only in things like const declarations.
   if (type->is_abstract())
     return TRAVERSE_SKIP_COMPONENTS;
-
-  // For interfaces make sure that embedded methods are sorted, since the
-  // comparison function we use for indexing types relies on it (this call has
-  // to happen before the record_type call below).
-  if (type->classification() == Type::TYPE_INTERFACE)
-    {
-      Interface_type* it = type->interface_type();
-      if (it != NULL)
-        it->sort_embedded();
-    }
 
   if (!this->exp_->record_type(type))
     {
@@ -501,6 +518,11 @@ should_export(Named_object* no)
   return true;
 }
 
+// Compare Typed_identifier_list's.
+
+static int
+compare_til(const Typed_identifier_list*, const Typed_identifier_list*);
+
 // A functor to sort Named_object pointers by name.
 
 struct Sort_bindings
@@ -514,10 +536,57 @@ struct Sort_bindings
 	  return true;
 	if (n2->package() == NULL)
 	  return false;
-	return n1->package()->pkgpath() < n2->package()->pkgpath();
+
+	// Make sure we don't see the same pkgpath twice.
+	const std::string& p1(n1->package()->pkgpath());
+	const std::string& p2(n2->package()->pkgpath());
+	go_assert(p1 != p2);
+
+	return p1 < p2;
       }
 
-    return n1->name() < n2->name();
+    if (n1->name() != n2->name())
+      return n1->name() < n2->name();
+
+    // We shouldn't see the same name twice, but it can happen for
+    // nested type names.
+
+    go_assert(n1->is_type() && n2->is_type());
+
+    unsigned int ind1;
+    const Named_object* g1 = n1->type_value()->in_function(&ind1);
+    unsigned int ind2;
+    const Named_object* g2 = n2->type_value()->in_function(&ind2);
+
+    if (g1 == NULL)
+      {
+	go_assert(g2 != NULL);
+	return true;
+      }
+    else if (g2 == NULL)
+      return false;
+    else if (g1 == g2)
+      {
+	go_assert(ind1 != ind2);
+	return ind1 < ind2;
+      }
+    else if ((g1->package() != g2->package()) || (g1->name() != g2->name()))
+      return Sort_bindings()(g1, g2);
+    else
+      {
+	// This case can happen if g1 or g2 is a method.
+	if (g1 != NULL && g1->func_value()->is_method())
+	  {
+	    const Typed_identifier* r = g1->func_value()->type()->receiver();
+	    g1 = r->type()->named_type()->named_object();
+	  }
+	if (g2 != NULL && g2->func_value()->is_method())
+	  {
+	    const Typed_identifier* r = g2->func_value()->type()->receiver();
+	    g2 = r->type()->named_type()->named_object();
+	  }
+	return Sort_bindings()(g1, g2);
+      }
   }
 };
 
@@ -528,17 +597,20 @@ struct Sort_types
   bool
   operator()(const Type* t1, const Type* t2) const
   {
+    t1 = t1->forwarded();
+    t2 = t2->forwarded();
+
     const Named_type* nt1 = t1->named_type();
     const Named_type* nt2 = t2->named_type();
     if (nt1 != NULL)
       {
-        if (nt2 != NULL)
-          {
-            Sort_bindings sb;
-            return sb(nt1->named_object(), nt2->named_object());
-          }
-        else
-          return true;
+	if (nt2 != NULL)
+	  {
+	    Sort_bindings sb;
+	    return sb(nt1->named_object(), nt2->named_object());
+	  }
+	else
+	  return true;
       }
     else if (nt2 != NULL)
       return false;
@@ -549,9 +621,217 @@ struct Sort_types
     gogo->type_descriptor_backend_name(t1, NULL, &b1);
     Backend_name b2;
     gogo->type_descriptor_backend_name(t2, NULL, &b2);
-    return b1.name() < b2.name();
+
+    std::string n1 = b1.name();
+    std::string n2 = b2.name();
+    if (n1 != n2)
+      return n1 < n2;
+
+    // We should never see equal types here.  If we do, we may not
+    // generate an identical output file for identical input.  But the
+    // backend names can be equal because we want to treat aliases
+    // differently while type_descriptor_backend_name does not.  In
+    // that case we need to traverse the type elements.
+
+    // t1 == t2 in case std::sort compares elements to themselves.
+    if (t1 == t2)
+      return false;
+
+    Sort_types sort;
+    Type_alias_identical identical;
+    go_assert(!identical(t1, t2));
+
+    switch (t1->classification())
+      {
+      case Type::TYPE_ERROR:
+	return false;
+
+      case Type::TYPE_VOID:
+      case Type::TYPE_BOOLEAN:
+      case Type::TYPE_INTEGER:
+      case Type::TYPE_FLOAT:
+      case Type::TYPE_COMPLEX:
+      case Type::TYPE_STRING:
+      case Type::TYPE_SINK:
+      case Type::TYPE_NIL:
+      case Type::TYPE_CALL_MULTIPLE_RESULT:
+      case Type::TYPE_NAMED:
+      case Type::TYPE_FORWARD:
+      default:
+	go_unreachable();
+
+      case Type::TYPE_FUNCTION:
+	{
+	  const Function_type* ft1 = t1->function_type();
+	  const Function_type* ft2 = t2->function_type();
+	  const Typed_identifier* r1 = ft1->receiver();
+	  const Typed_identifier* r2 = ft2->receiver();
+	  if (r1 == NULL)
+	    go_assert(r2 == NULL);
+	  else
+	    {
+	      go_assert(r2 != NULL);
+	      const Type* rt1 = r1->type()->forwarded();
+	      const Type* rt2 = r2->type()->forwarded();
+	      if (!identical(rt1, rt2))
+		return sort(rt1, rt2);
+	    }
+
+	  const Typed_identifier_list* p1 = ft1->parameters();
+	  const Typed_identifier_list* p2 = ft2->parameters();
+	  if (p1 == NULL || p1->empty())
+	    go_assert(p2 == NULL || p2->empty());
+	  else
+	    {
+	      go_assert(p2 != NULL && !p2->empty());
+	      int i = compare_til(p1, p2);
+	      if (i < 0)
+		return false;
+	      else if (i > 0)
+		return true;
+	    }
+
+	  p1 = ft1->results();
+	  p2 = ft2->results();
+	  if (p1 == NULL || p1->empty())
+	    go_assert(p2 == NULL || p2->empty());
+	  else
+	    {
+	      go_assert(p2 != NULL && !p2->empty());
+	      int i = compare_til(p1, p2);
+	      if (i < 0)
+		return false;
+	      else if (i > 0)
+		return true;
+	    }
+
+	  go_unreachable();
+	}
+
+      case Type::TYPE_POINTER:
+	{
+	  const Type* p1 = t1->points_to()->forwarded();
+	  const Type* p2 = t2->points_to()->forwarded();
+	  go_assert(!identical(p1, p2));
+	  return sort(p1, p2);
+	}
+
+      case Type::TYPE_STRUCT:
+	{
+	  const Struct_type* s1 = t1->struct_type();
+	  const Struct_type* s2 = t2->struct_type();
+	  const Struct_field_list* f1 = s1->fields();
+	  const Struct_field_list* f2 = s2->fields();
+	  go_assert(f1 != NULL && f2 != NULL);
+	  Struct_field_list::const_iterator p1 = f1->begin();
+	  Struct_field_list::const_iterator p2 = f2->begin();
+	  for (; p2 != f2->end(); ++p1, ++p2)
+	    {
+	      go_assert(p1 != f1->end());
+	      go_assert(p1->field_name() == p2->field_name());
+	      go_assert(p1->is_anonymous() == p2->is_anonymous());
+	      const Type* ft1 = p1->type()->forwarded();
+	      const Type* ft2 = p2->type()->forwarded();
+	      if (!identical(ft1, ft2))
+		return sort(ft1, ft2);
+	    }
+	  go_assert(p1 == f1->end());
+	  go_unreachable();
+	}
+
+      case Type::TYPE_ARRAY:
+	{
+	  const Type* e1 = t1->array_type()->element_type()->forwarded();
+	  const Type* e2 = t2->array_type()->element_type()->forwarded();
+	  go_assert(!identical(e1, e2));
+	  return sort(e1, e2);
+	}
+
+      case Type::TYPE_MAP:
+	{
+	  const Map_type* m1 = t1->map_type();
+	  const Map_type* m2 = t2->map_type();
+	  const Type* k1 = m1->key_type()->forwarded();
+	  const Type* k2 = m2->key_type()->forwarded();
+	  if (!identical(k1, k2))
+	    return sort(k1, k2);
+	  const Type* v1 = m1->val_type()->forwarded();
+	  const Type* v2 = m2->val_type()->forwarded();
+	  go_assert(!identical(v1, v2));
+	  return sort(v1, v2);
+	}
+
+      case Type::TYPE_CHANNEL:
+	{
+	  const Type* e1 = t1->channel_type()->element_type()->forwarded();
+	  const Type* e2 = t2->channel_type()->element_type()->forwarded();
+	  go_assert(!identical(e1, e2));
+	  return sort(e1, e2);
+	}
+
+      case Type::TYPE_INTERFACE:
+	{
+	  const Interface_type* it1 = t1->interface_type();
+	  const Interface_type* it2 = t2->interface_type();
+	  const Typed_identifier_list* m1 = it1->local_methods();
+	  const Typed_identifier_list* m2 = it2->local_methods();
+
+	  // We know the full method lists are the same, because the
+	  // mangled type names were the same, but here we are looking
+	  // at the local method lists, which include embedded
+	  // interfaces, and we can have an embedded empty interface.
+	  if (m1 == NULL || m1->empty())
+	    {
+	      go_assert(m2 != NULL && !m2->empty());
+	      return true;
+	    }
+	  else if (m2 == NULL || m2->empty())
+	    {
+	      go_assert(m1 != NULL && !m1->empty());
+	      return false;
+	    }
+
+	  int i = compare_til(m1, m2);
+	  if (i < 0)
+	    return false;
+	  else if (i > 0)
+	    return true;
+	  else
+	    go_unreachable();
+	}
+      }
   }
 };
+
+// Compare Typed_identifier_list's with Sort_types, returning -1, 0, +1.
+
+static int
+compare_til(
+    const Typed_identifier_list* til1,
+    const Typed_identifier_list* til2)
+{
+  Type_alias_identical identical;
+  Sort_types sort;
+  Typed_identifier_list::const_iterator p1 = til1->begin();
+  Typed_identifier_list::const_iterator p2 = til2->begin();
+  for (; p2 != til2->end(); ++p1, ++p2)
+    {
+      if (p1 == til1->end())
+	return -1;
+      const Type* t1 = p1->type()->forwarded();
+      const Type* t2 = p2->type()->forwarded();
+      if (!identical(t1, t2))
+	{
+	  if (sort(t1, t2))
+	    return -1;
+	  else
+	    return +1;
+	}
+    }
+  if (p1 != til1->end())
+    return +1;
+  return 0;
+}
 
 // Export those identifiers marked for exporting.
 
@@ -638,6 +918,7 @@ Export::export_globals(const std::string& package_name,
   // Collect up the set of types mentioned in things we're exporting,
   // and any packages that may be referred to indirectly.
   collect.prepare_types(sorted_exports);
+  collect.prepare_expressions(sorted_exports);
 
   // Assign indexes to all exported types and types referenced by
   // things we're exporting.  Return value is index of first non-exported
@@ -714,17 +995,9 @@ bool
 Export::record_type(Type* type)
 {
   type = type->forwarded();
-
   std::pair<Type_refs::iterator, bool> ins =
     this->impl_->type_refs.insert(std::make_pair(type, 0));
-  if (!ins.second)
-    {
-      // We've already seen this type.
-      return false;
-    }
-  ins.first->second = 0;
-
-  return true;
+  return ins.second;
 }
 
 // Assign the specified type an index.
@@ -733,13 +1006,12 @@ void
 Export::set_type_index(const Type* type)
 {
   type = type->forwarded();
-  std::pair<Type_refs::iterator, bool> ins =
-    this->impl_->type_refs.insert(std::make_pair(type, 0));
-  go_assert(!ins.second);
+  Type_refs::iterator p = this->impl_->type_refs.find(type);
+  go_assert(p != this->impl_->type_refs.end());
   int index = this->type_index_;
   ++this->type_index_;
-  go_assert(ins.first->second == 0);
-  ins.first->second = index;
+  go_assert(p->second == 0);
+  p->second = index;
 }
 
 // This helper assigns type indices to all types mentioned directly or
@@ -758,9 +1030,6 @@ Export::assign_type_indices(const std::vector<Named_object*>& sorted_exports)
     {
       if (!(*p)->is_type())
 	continue;
-      Interface_type* it = (*p)->type_value()->interface_type();
-      if (it != NULL)
-        it->sort_embedded();
       this->record_type((*p)->type_value());
       this->set_type_index((*p)->type_value());
     }

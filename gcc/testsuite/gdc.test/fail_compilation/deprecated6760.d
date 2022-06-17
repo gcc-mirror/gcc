@@ -17,4 +17,3 @@ class Bar
 {
     deprecated override bool opEquals(Object);
 }
-

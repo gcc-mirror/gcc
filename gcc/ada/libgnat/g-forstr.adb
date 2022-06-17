@@ -58,7 +58,7 @@ package body GNAT.Formatted_String is
 
    type Sign_Kind is (Neg, Zero, Pos);
 
-   subtype Is_Number is F_Kind range Decimal_Int .. Decimal_Float;
+   subtype Is_Number is F_Kind range Decimal_Int .. Shortest_Decimal_Float_Up;
 
    type F_Sign is (If_Neg, Forced, Space) with Default_Value => If_Neg;
 

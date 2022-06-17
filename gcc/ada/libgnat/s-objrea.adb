@@ -979,7 +979,7 @@ package body System.Object_Reader is
 
          --  Map section table
 
-         Opt_Stream := Create_Stream (Res.Mf, Signature_Loc_Offset, 4);
+         Opt_Stream := Create_Stream (Res.MF, Signature_Loc_Offset, 4);
          Hdr_Offset := Offset (uint32'(Read (Opt_Stream)));
          Close (Opt_Stream);
          Res.Sectab_Stream := Create_Stream
@@ -999,7 +999,7 @@ package body System.Object_Reader is
                Opt_32 : Optional_Header_PE32;
             begin
                Opt_Stream := Create_Stream
-                 (Res.Mf, Opt_Offset, Opt_32'Size / SSU);
+                 (Res.MF, Opt_Offset, Opt_32'Size / SSU);
                Read_Raw
                  (Opt_Stream, Opt_32'Address, uint32 (Opt_32'Size / SSU));
                Res.ImageBase := uint64 (Opt_32.ImageBase);
@@ -1011,7 +1011,7 @@ package body System.Object_Reader is
                Opt_64 : Optional_Header_PE64;
             begin
                Opt_Stream := Create_Stream
-                 (Res.Mf, Opt_Offset, Opt_64'Size / SSU);
+                 (Res.MF, Opt_Offset, Opt_64'Size / SSU);
                Read_Raw
                  (Opt_Stream, Opt_64'Address, uint32 (Opt_64'Size / SSU));
                Res.ImageBase := Opt_64.ImageBase;
@@ -1367,7 +1367,7 @@ package body System.Object_Reader is
          Strtab_Sz : uint32;
 
       begin
-         Res.Mf := F;
+         Res.MF := F;
          Res.In_Exception := In_Exception;
 
          Res.Arch := PPC;
@@ -1515,14 +1515,14 @@ package body System.Object_Reader is
    end Arch;
 
    function Create_Stream
-     (Mf : Mapped_File;
+     (MF : Mapped_File;
       File_Offset : File_Size;
       File_Length : File_Size)
      return Mapped_Stream
    is
       Region : Mapped_Region;
    begin
-      Read (Mf, Region, File_Offset, File_Length, False);
+      Read (MF, Region, File_Offset, File_Length, False);
       return (Region, 0, Offset (File_Length));
    end Create_Stream;
 
@@ -1531,7 +1531,7 @@ package body System.Object_Reader is
       Sec : Object_Section) return Mapped_Stream
    is
    begin
-      return Create_Stream (Obj.Mf, File_Size (Sec.Off), File_Size (Sec.Size));
+      return Create_Stream (Obj.MF, File_Size (Sec.Off), File_Size (Sec.Size));
    end Create_Stream;
 
    procedure Tell (Obj : in out Mapped_Stream; Off : out Offset) is
@@ -1573,7 +1573,7 @@ package body System.Object_Reader is
             null;
       end case;
 
-      Close (Obj.Mf);
+      Close (Obj.MF);
    end Close;
 
    ------------------------

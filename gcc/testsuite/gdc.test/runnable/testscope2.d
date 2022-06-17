@@ -4,7 +4,7 @@ TEST_OUTPUT:
 ---
 foo1 ulong function(return ref int* delegate() return p) ref return
 foo2 int function(return ref int delegate() p) ref
-foo3 int function(return ref inout(int*) p) ref
+foo3 int function(ref inout(int*) p) ref
 foo4 int function(return ref inout(int*) p) ref
 ---
 */
@@ -47,13 +47,13 @@ void test3()
         // Test scope mangling
         assert(SS.foo1.mangleof == "_D10testscope22SS4foo1MFNcNjNkKDFNjZPiZm");
         assert(SS.foo2.mangleof == "_D10testscope22SS4foo2MFNcNkKDFZiZi");
-        assert(SS.foo3.mangleof == "_D10testscope22SS4foo3MFNcNkKNgPiZi");
+        assert(SS.foo3.mangleof == "_D10testscope22SS4foo3MFNcKNgPiZi");
         assert(SS.foo4.mangleof == "_D10testscope22SS4foo4MFNcNkKNgPiZi");
 
         // Test scope pretty-printing
         assert(typeof(SS.foo1).stringof == "ref ulong(return ref int* delegate() return p) return");
         assert(typeof(SS.foo2).stringof == "ref int(return ref int delegate() p)");
-        assert(typeof(SS.foo3).stringof == "ref int(return ref inout(int*) p)");
+        assert(typeof(SS.foo3).stringof == "ref int(ref inout(int*) p)");
         assert(typeof(SS.foo4).stringof == "ref int(return ref inout(int*) p)");
     }
 }

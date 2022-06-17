@@ -60,7 +60,7 @@ TEST_OUTPUT:
 fail_compilation/test18282.d(1007): Error: copying `& foo` into allocated memory escapes a reference to local variable `foo`
 fail_compilation/test18282.d(1008): Error: copying `& foo` into allocated memory escapes a reference to local variable `foo`
 fail_compilation/test18282.d(1009): Error: copying `& foo` into allocated memory escapes a reference to local variable `foo`
-fail_compilation/test18282.d(1016): Error: copying `&this` into allocated memory escapes a reference to parameter variable `this`
+fail_compilation/test18282.d(1016): Error: copying `&this` into allocated memory escapes a reference to parameter `this`
 ---
 */
 
@@ -86,4 +86,3 @@ struct S
 
     S*[] arr;
 }
-

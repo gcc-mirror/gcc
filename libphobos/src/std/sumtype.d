@@ -234,23 +234,13 @@ import std.meta : anySatisfy, allSatisfy;
 import std.traits : hasElaborateCopyConstructor, hasElaborateDestructor;
 import std.traits : isAssignable, isCopyable, isStaticArray, isRvalueAssignable;
 import std.traits : ConstOf, ImmutableOf, InoutOf, TemplateArgsOf;
-import std.traits : CommonType;
+import std.traits : CommonType, DeducedParameterType;
 import std.typecons : ReplaceTypeUnless;
 import std.typecons : Flag;
+import std.conv : toCtString;
 
 /// Placeholder used to refer to the enclosing [SumType].
 struct This {}
-
-// Converts an unsigned integer to a compile-time string constant.
-private enum toCtString(ulong n) = n.stringof[0 .. $ - "LU".length];
-
-// Check that .stringof does what we expect, since it's not guaranteed by the
-// language spec.
-@safe unittest
-{
-    assert(toCtString!0 == "0");
-    assert(toCtString!123456 == "123456");
-}
 
 // True if a variable of type T can appear on the lhs of an assignment
 private enum isAssignableTo(T) =
@@ -359,6 +349,10 @@ public:
 
         /// ditto
         this(immutable(T) value) immutable;
+
+        /// ditto
+        this(Value)(Value value) inout
+        if (is(Value == DeducedParameterType!(inout(T))));
     }
 
     static foreach (tid, T; Types)
@@ -413,6 +407,25 @@ public:
         else
         {
             @disable this(immutable(T) value) immutable;
+        }
+
+        static if (isCopyable!(inout(T)))
+        {
+            static if (IndexOf!(inout(T), Map!(InoutOf, Types)) == tid)
+            {
+                /// ditto
+                this(Value)(Value value) inout
+                if (is(Value == DeducedParameterType!(inout(T))))
+                {
+                    __traits(getMember, storage, Storage.memberName!T) = value;
+                    tag = tid;
+                }
+            }
+        }
+        else
+        {
+            @disable this(Value)(Value value) inout
+            if (is(Value == DeducedParameterType!(inout(T))));
         }
     }
 
@@ -1300,6 +1313,7 @@ version (D_BetterC) {} else
 // Types with invariants
 // Disabled in BetterC due to use of exceptions
 version (D_BetterC) {} else
+version (D_Invariants)
 @system unittest
 {
     import std.exception : assertThrown;
@@ -1317,22 +1331,13 @@ version (D_BetterC) {} else
         invariant { assert(i >= 0); }
     }
 
-    // Only run test if contract checking is enabled
-    try
-    {
-        S probe = S(-1);
-        assert(&probe);
-    }
-    catch (AssertError _)
-    {
-        SumType!S x;
-        x.match!((ref v) { v.i = -1; });
-        assertThrown!AssertError(assert(&x));
+    SumType!S x;
+    x.match!((ref v) { v.i = -1; });
+    assertThrown!AssertError(assert(&x));
 
-        SumType!C y = new C();
-        y.match!((ref v) { v.i = -1; });
-        assertThrown!AssertError(assert(&y));
-    }
+    SumType!C y = new C();
+    y.match!((ref v) { v.i = -1; });
+    assertThrown!AssertError(assert(&y));
 }
 
 // Calls value postblit on self-assignment
@@ -1552,6 +1557,16 @@ version (D_BetterC) {} else
     }
 
     SumType!Value s;
+}
+
+// Construction of inout-qualified SumTypes
+// https://issues.dlang.org/show_bug.cgi?id=22901
+@safe unittest
+{
+    static inout(SumType!(int[])) example(inout(int[]) arr)
+    {
+        return inout(SumType!(int[]))(arr);
+    }
 }
 
 /// True if `T` is an instance of the `SumType` template, otherwise false.
@@ -1807,7 +1822,7 @@ class MatchException : Exception
 template canMatch(alias handler, Ts...)
 if (Ts.length > 0)
 {
-    enum canMatch = is(typeof((Ts args) => handler(args)));
+    enum canMatch = is(typeof((ref Ts args) => handler(args)));
 }
 
 ///
@@ -2550,6 +2565,27 @@ version (D_Exceptions)
     {
         return x.match!((inout(int[]) a) => a);
     }
+}
+
+// return ref
+// issue: https://issues.dlang.org/show_bug.cgi?id=23101
+@safe unittest
+{
+    static assert(!__traits(compiles, () {
+        SumType!(int, string) st;
+        return st.match!(
+            function int* (string x) => assert(0),
+            function int* (return ref int i) => &i,
+        );
+    }));
+
+    SumType!(int, string) st;
+    static assert(__traits(compiles, () {
+        return st.match!(
+            function int* (string x) => null,
+            function int* (return ref int i) => &i,
+        );
+    }));
 }
 
 private void destroyIfOwner(T)(ref T value)

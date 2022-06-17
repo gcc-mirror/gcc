@@ -4565,7 +4565,8 @@ expand_debug_expr (tree exp)
 	      || !DECL_NAME (exp)
 	      || DECL_HARD_REGISTER (exp)
 	      || DECL_IN_CONSTANT_POOL (exp)
-	      || mode == VOIDmode)
+	      || mode == VOIDmode
+	      || symtab_node::get (exp) == NULL)
 	    return NULL;
 
 	  op0 = make_decl_rtl_for_debug (exp);
@@ -4574,6 +4575,10 @@ expand_debug_expr (tree exp)
 	      || SYMBOL_REF_DECL (XEXP (op0, 0)) != exp)
 	    return NULL;
 	}
+      else if (VAR_P (exp)
+	       && is_global_var (exp)
+	       && symtab_node::get (exp) == NULL)
+	return NULL;
       else
 	op0 = copy_rtx (op0);
 

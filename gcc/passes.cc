@@ -903,7 +903,7 @@ void
 pass_manager::register_pass_name (opt_pass *pass, const char *name)
 {
   if (!m_name_to_pass_map)
-    m_name_to_pass_map = new hash_map<nofree_string_hash, opt_pass *> (256);
+    m_name_to_pass_map = new hash_map<free_string_hash, opt_pass *> (256);
 
   if (m_name_to_pass_map->get (name))
     return; /* Ignore plugin passes.  */
@@ -1674,6 +1674,7 @@ pass_manager::~pass_manager ()
   GCC_PASS_LISTS
 #undef DEF_PASS_LIST
 
+  delete m_name_to_pass_map;
 }
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
@@ -1943,7 +1944,7 @@ pass_manager::dump_profile_report () const
 	   "                                 |in count     |out prob     "
 	   "|in count                  |out prob                  "
 	   "|size               |time                      |\n");
-	   
+
   for (int i = 1; i < passes_by_id_size; i++)
     if (profile_record[i].run)
       {

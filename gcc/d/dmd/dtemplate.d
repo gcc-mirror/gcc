@@ -1173,7 +1173,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
 
                 fd = new FuncDeclaration(fd.loc, fd.endloc, fd.ident, fd.storage_class, tf);
                 fd.parent = ti;
-                fd.inferRetType = true;
+                fd.flags |= FUNCFLAG.inferRetType;
 
                 // Shouldn't run semantic on default arguments and return type.
                 foreach (ref param; *tf.parameterList.parameters)
@@ -1632,7 +1632,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                             if (farg.op == EXP.error || farg.type.ty == Terror)
                                 return nomatch();
 
-                            if (!(fparam.storageClass & STC.lazy_) && farg.type.ty == Tvoid)
+                            if (!fparam.isLazy() && farg.type.ty == Tvoid)
                                 return nomatch();
 
                             Type tt;
@@ -1837,7 +1837,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                     }
                     Type argtype = farg.type;
 
-                    if (!(fparam.storageClass & STC.lazy_) && argtype.ty == Tvoid && farg.op != EXP.function_)
+                    if (!fparam.isLazy() && argtype.ty == Tvoid && farg.op != EXP.function_)
                         return nomatch();
 
                     // https://issues.dlang.org/show_bug.cgi?id=12876
@@ -1943,7 +1943,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                             {
                                 // Allow conversion from T[lwr .. upr] to ref T[upr-lwr]
                             }
-                            else if (global.params.rvalueRefParam)
+                            else if (global.params.rvalueRefParam == FeatureState.enabled)
                             {
                                 // Allow implicit conversion to ref
                             }
@@ -1958,7 +1958,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                         if (!farg.type.isMutable()) // https://issues.dlang.org/show_bug.cgi?id=11916
                             return nomatch();
                     }
-                    if (m == MATCH.nomatch && (fparam.storageClass & STC.lazy_) && prmtype.ty == Tvoid && farg.type.ty != Tvoid)
+                    if (m == MATCH.nomatch && fparam.isLazy() && prmtype.ty == Tvoid && farg.type.ty != Tvoid)
                         m = MATCH.convert;
                     if (m != MATCH.nomatch)
                     {
@@ -2626,7 +2626,7 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
             printf("\t%s %s\n", arg.type.toChars(), arg.toChars());
             //printf("\tty = %d\n", arg.type.ty);
         }
-        //printf("stc = %llx\n", dstart.scope.stc);
+        //printf("stc = %llx\n", dstart._scope.stc);
         //printf("match:t/f = %d/%d\n", ta_last, m.last);
     }
 
@@ -2777,7 +2777,7 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
             fd.storage_class == m.lastf.storage_class &&
             fd.parent == m.lastf.parent &&
             fd.visibility == m.lastf.visibility &&
-            fd.linkage == m.lastf.linkage)
+            fd._linkage == m.lastf._linkage)
         {
             if (fd.fbody && !m.lastf.fbody)
                 goto LfIsBetter;
@@ -2827,13 +2827,13 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
         if (!sc)
             sc = td._scope; // workaround for Type.aliasthisOf
 
-        if (td.semanticRun == PASS.init && td._scope)
+        if (td.semanticRun == PASS.initial && td._scope)
         {
             // Try to fix forward reference. Ungag errors while doing so.
             Ungag ungag = td.ungagSpeculative();
             td.dsymbolSemantic(td._scope);
         }
-        if (td.semanticRun == PASS.init)
+        if (td.semanticRun == PASS.initial)
         {
             .error(loc, "forward reference to template `%s`", td.toChars());
         Lerror:
@@ -2851,7 +2851,7 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
                 tiargs = new Objects();
             auto ti = new TemplateInstance(loc, td, tiargs);
             Objects dedtypes = Objects(td.parameters.dim);
-            assert(td.semanticRun != PASS.init);
+            assert(td.semanticRun != PASS.initial);
             MATCH mta = td.matchWithInstance(sc, ti, &dedtypes, fargs, 0);
             //printf("matchWithInstance = %d\n", mta);
             if (mta == MATCH.nomatch || mta < ta_last)   // no match or less match
@@ -4332,7 +4332,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
             {
                 TypeStruct tp = cast(TypeStruct)tparam;
 
-                //printf("\t%d\n", (MATCH) t.implicitConvTo(tp));
+                //printf("\t%d\n", cast(MATCH) t.implicitConvTo(tp));
                 if (wm && t.deduceWild(tparam, false))
                 {
                     result = MATCH.constant;
@@ -4513,7 +4513,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
             {
                 TypeClass tp = cast(TypeClass)tparam;
 
-                //printf("\t%d\n", (MATCH) t.implicitConvTo(tp));
+                //printf("\t%d\n", cast(MATCH) t.implicitConvTo(tp));
                 if (wm && t.deduceWild(tparam, false))
                 {
                     result = MATCH.constant;
@@ -5352,7 +5352,7 @@ extern (C++) class TemplateParameter : ASTNode
         return this.ident.toChars();
     }
 
-    override DYNCAST dyncast() const pure @nogc nothrow @safe
+    override DYNCAST dyncast() const
     {
         return DYNCAST.templateparameter;
     }
@@ -6425,7 +6425,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 if (!td)
                     return 0;
 
-                if (td.semanticRun == PASS.init)
+                if (td.semanticRun == PASS.initial)
                 {
                     if (td._scope)
                     {
@@ -6433,7 +6433,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                         Ungag ungag = td.ungagSpeculative();
                         td.dsymbolSemantic(td._scope);
                     }
-                    if (td.semanticRun == PASS.init)
+                    if (td.semanticRun == PASS.initial)
                     {
                         error("`%s` forward references template declaration `%s`",
                             toChars(), td.toChars());
@@ -6786,7 +6786,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 (*tiargs)[j] = sa;
 
                 TemplateDeclaration td = sa.isTemplateDeclaration();
-                if (td && td.semanticRun == PASS.init && td.literal)
+                if (td && td.semanticRun == PASS.initial && td.literal)
                 {
                     td.dsymbolSemantic(sc);
                 }
@@ -6915,7 +6915,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
 
                 dedtypes.setDim(td.parameters.dim);
                 dedtypes.zero();
-                assert(td.semanticRun != PASS.init);
+                assert(td.semanticRun != PASS.initial);
 
                 MATCH m = td.matchWithInstance(sc, this, &dedtypes, fargs, 0);
                 //printf("matchWithInstance = %d\n", m);
@@ -7093,7 +7093,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
     extern (D) final bool needsTypeInference(Scope* sc, int flag = 0)
     {
         //printf("TemplateInstance.needsTypeInference() %s\n", toChars());
-        if (semanticRun != PASS.init)
+        if (semanticRun != PASS.initial)
             return false;
 
         uint olderrs = global.errors;
@@ -7174,7 +7174,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                      */
                     dedtypes.setDim(td.parameters.dim);
                     dedtypes.zero();
-                    if (td.semanticRun == PASS.init)
+                    if (td.semanticRun == PASS.initial)
                     {
                         if (td._scope)
                         {
@@ -7182,7 +7182,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                             Ungag ungag = td.ungagSpeculative();
                             td.dsymbolSemantic(td._scope);
                         }
-                        if (td.semanticRun == PASS.init)
+                        if (td.semanticRun == PASS.initial)
                         {
                             error("`%s` forward references template declaration `%s`", toChars(), td.toChars());
                             return 1;
@@ -7723,7 +7723,7 @@ extern (C++) final class TemplateMixin : TemplateInstance
             }
             if (!tempdecl)
             {
-                error("`%s` isn't a template", s.toChars());
+                error("- `%s` is a %s, not a template", s.toChars(), s.kind());
                 return false;
             }
         }
@@ -7740,13 +7740,13 @@ extern (C++) final class TemplateMixin : TemplateInstance
                 if (!td)
                     return 0;
 
-                if (td.semanticRun == PASS.init)
+                if (td.semanticRun == PASS.initial)
                 {
                     if (td._scope)
                         td.dsymbolSemantic(td._scope);
                     else
                     {
-                        semanticRun = PASS.init;
+                        semanticRun = PASS.initial;
                         return 1;
                     }
                 }
@@ -8346,7 +8346,7 @@ struct TemplateStats
     }
 }
 
-void printTemplateStats()
+extern (C++) void printTemplateStats()
 {
     static struct TemplateDeclarationStats
     {

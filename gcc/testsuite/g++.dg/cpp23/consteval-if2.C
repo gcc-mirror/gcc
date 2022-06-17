@@ -77,11 +77,11 @@ qux (int x)
     }
   else
     {
-      r += foo (8 * x);	// { dg-error "is not a constant expression" }
+      r += foo (8 * x);	// { dg-error "is not a constant expression" "" { xfail *-*-* } }
     }
   if ! consteval	// { dg-warning "'if consteval' only available with" "" { target c++20_only } }
     {
-      r += foo (32 * x);// { dg-error "is not a constant expression" }
+      r += foo (32 * x);// { dg-error "is not a constant expression" "" { xfail *-*-* } }
     }
   if consteval		// { dg-warning "'if consteval' only available with" "" { target c++20_only } }
     {

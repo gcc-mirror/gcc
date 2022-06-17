@@ -34,10 +34,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "cfganal.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
 #include "tree-dfa.h"
@@ -384,18 +384,6 @@ lookup_expression_id (const pre_expr expr)
     }
 }
 
-/* Return the existing expression id for EXPR, or create one if one
-   does not exist yet.  */
-
-static inline unsigned int
-get_or_alloc_expression_id (pre_expr expr)
-{
-  unsigned int id = lookup_expression_id (expr);
-  if (id == 0)
-    return alloc_expression_id (expr);
-  return expr->id = id;
-}
-
 /* Return the expression that has expression id ID */
 
 static inline pre_expr
@@ -729,7 +717,7 @@ add_to_value (unsigned int v, pre_expr e)
 	  set = BITMAP_ALLOC (&grand_bitmap_obstack);
 	  value_expressions[v] = set;
 	}
-      bitmap_set_bit (set, get_or_alloc_expression_id (e));
+      bitmap_set_bit (set, get_expression_id (e));
     }
 }
 
@@ -792,7 +780,7 @@ bitmap_insert_into_set (bitmap_set_t set, pre_expr expr)
          for the same value to appear in a set.  This is needed for
 	 TMP_GEN, PHI_GEN and NEW_SETs.  */
       bitmap_set_bit (&set->values, val);
-      bitmap_set_bit (&set->expressions, get_or_alloc_expression_id (expr));
+      bitmap_set_bit (&set->expressions, get_expression_id (expr));
     }
 }
 
@@ -1030,7 +1018,7 @@ bitmap_value_insert_into_set (bitmap_set_t set, pre_expr expr)
 {
   unsigned int val = get_expr_value_id (expr);
 
-  gcc_checking_assert (expr->id == get_or_alloc_expression_id (expr));
+  gcc_checking_assert (expr->id == get_expression_id (expr));
 
   /* Constant values are always considered to be part of the set.  */
   if (value_id_constant_p (val))
@@ -3246,14 +3234,11 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	  && r.kind () == VR_RANGE
 	  && !wi::neg_p (r.lower_bound (), SIGNED)
 	  && !wi::neg_p (r.upper_bound (), SIGNED))
-	/* Just handle extension and sign-changes of all-positive ranges.  */
-	set_range_info (temp, VR_RANGE,
-			wide_int_storage::from (r.lower_bound (),
-						TYPE_PRECISION (type),
-						TYPE_SIGN (type)),
-			wide_int_storage::from (r.upper_bound (),
-						TYPE_PRECISION (type),
-						TYPE_SIGN (type)));
+	{
+	  /* Just handle extension and sign-changes of all-positive ranges.  */
+	  range_cast (r, type);
+	  set_range_info (temp, r);
+	}
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))

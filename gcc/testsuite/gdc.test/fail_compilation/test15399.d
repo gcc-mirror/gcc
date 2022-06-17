@@ -44,4 +44,3 @@ struct S2
 @safe void bar(ref int*);
 @safe void cbar(ref const int*);
 @safe void sinister(out int*);
-

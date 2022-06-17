@@ -437,14 +437,12 @@ package Einfo.Utils is
    function Invariant_Procedure                  (Id : E) return E;
    function Partial_Invariant_Procedure          (Id : E) return E;
    function Predicate_Function                   (Id : E) return E;
-   function Predicate_Function_M                 (Id : E) return E;
 
    procedure Set_DIC_Procedure                   (Id : E; V : E);
    procedure Set_Partial_DIC_Procedure           (Id : E; V : E);
    procedure Set_Invariant_Procedure             (Id : E; V : E);
    procedure Set_Partial_Invariant_Procedure     (Id : E; V : E);
    procedure Set_Predicate_Function              (Id : E; V : E);
-   procedure Set_Predicate_Function_M            (Id : E; V : E);
 
    ---------------
    -- Iterators --

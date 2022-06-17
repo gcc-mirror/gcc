@@ -414,12 +414,9 @@ package Snames is
    Name_Check_Float_Overflow           : constant Name_Id := N + $; -- GNAT
    Name_Check_Name                     : constant Name_Id := N + $; -- GNAT
    Name_Check_Policy                   : constant Name_Id := N + $; -- GNAT
-   Name_Compile_Time_Error             : constant Name_Id := N + $; -- GNAT
-   Name_Compile_Time_Warning           : constant Name_Id := N + $; -- GNAT
    Name_Component_Alignment            : constant Name_Id := N + $; -- GNAT
    Name_Convention_Identifier          : constant Name_Id := N + $; -- GNAT
    Name_Debug_Policy                   : constant Name_Id := N + $; -- GNAT
-   Name_Detect_Blocking                : constant Name_Id := N + $; -- Ada 05
 
    --  Note: Default_Scalar_Storage_Order is not in this list because its name
    --  matches the name of the corresponding attribute. However, it is included
@@ -427,6 +424,7 @@ package Snames is
    --  and Is_Pragma_Name correctly recognize Default_Scalar_Storage_Order.
 
    Name_Default_Storage_Pool           : constant Name_Id := N + $; -- Ada 12
+   Name_Detect_Blocking                : constant Name_Id := N + $; -- Ada 05
    Name_Disable_Atomic_Synchronization : constant Name_Id := N + $; -- GNAT
    Name_Discard_Names                  : constant Name_Id := N + $;
    Name_Elaboration_Checks             : constant Name_Id := N + $; -- GNAT
@@ -508,6 +506,8 @@ package Snames is
    Name_Check                          : constant Name_Id := N + $; -- GNAT
    Name_Comment                        : constant Name_Id := N + $; -- GNAT
    Name_Common_Object                  : constant Name_Id := N + $; -- GNAT
+   Name_Compile_Time_Error             : constant Name_Id := N + $; -- GNAT
+   Name_Compile_Time_Warning           : constant Name_Id := N + $; -- GNAT
    Name_Complete_Representation        : constant Name_Id := N + $; -- GNAT
    Name_Complex_Representation         : constant Name_Id := N + $; -- GNAT
    Name_Constant_After_Elaboration     : constant Name_Id := N + $; -- GNAT
@@ -875,6 +875,7 @@ package Snames is
    Name_Static                         : constant Name_Id := N + $;
    Name_Stack_Size                     : constant Name_Id := N + $;
    Name_Strict                         : constant Name_Id := N + $;
+   Name_Structural                     : constant Name_Id := N + $;
    Name_Subunit_File_Name              : constant Name_Id := N + $;
    Name_Suppressible                   : constant Name_Id := N + $;
    Name_Synchronous                    : constant Name_Id := N + $;
@@ -957,6 +958,7 @@ package Snames is
    Name_Has_Tagged_Values              : constant Name_Id := N + $; -- GNAT
    Name_Identity                       : constant Name_Id := N + $;
    Name_Implicit_Dereference           : constant Name_Id := N + $; -- GNAT
+   Name_Index                          : constant Name_Id := N + $; -- Ada 22
    Name_Initialized                    : constant Name_Id := N + $; -- GNAT
    Name_Integer_Value                  : constant Name_Id := N + $; -- GNAT
    Name_Invalid_Value                  : constant Name_Id := N + $; -- GNAT
@@ -1479,6 +1481,7 @@ package Snames is
       Attribute_Has_Tagged_Values,
       Attribute_Identity,
       Attribute_Implicit_Dereference,
+      Attribute_Index,
       Attribute_Initialized,
       Attribute_Integer_Value,
       Attribute_Invalid_Value,
@@ -1737,13 +1740,11 @@ package Snames is
       Pragma_Check_Float_Overflow,
       Pragma_Check_Name,
       Pragma_Check_Policy,
-      Pragma_Compile_Time_Error,
-      Pragma_Compile_Time_Warning,
       Pragma_Component_Alignment,
       Pragma_Convention_Identifier,
       Pragma_Debug_Policy,
-      Pragma_Detect_Blocking,
       Pragma_Default_Storage_Pool,
+      Pragma_Detect_Blocking,
       Pragma_Disable_Atomic_Synchronization,
       Pragma_Discard_Names,
       Pragma_Elaboration_Checks,
@@ -1818,6 +1819,8 @@ package Snames is
       Pragma_Check,
       Pragma_Comment,
       Pragma_Common_Object,
+      Pragma_Compile_Time_Error,
+      Pragma_Compile_Time_Warning,
       Pragma_Complete_Representation,
       Pragma_Complex_Representation,
       Pragma_Constant_After_Elaboration,

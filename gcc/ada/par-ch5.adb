@@ -1975,7 +1975,7 @@ package body Ch5 is
       Append_Elmt (Goto_Node, Goto_List);
 
       if Token = Tok_When then
-         Error_Msg_GNAT_Extension ("goto when statement");
+         Error_Msg_GNAT_Extension ("goto when statement", Token_Ptr);
 
          Scan; -- past WHEN
          Mutate_Nkind (Goto_Node, N_Goto_When_Statement);

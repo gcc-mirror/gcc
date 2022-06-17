@@ -78,9 +78,9 @@ static bool check_format_string (const_tree argument,
 				 unsigned HOST_WIDE_INT format_num,
 				 int flags, bool *no_add_attrs,
 				 int expected_format_type);
-static tree get_constant (const_tree fntype, const_tree atname, tree expr,
-			  int argno, unsigned HOST_WIDE_INT *value,
-			  int flags, bool validated_p);
+static bool validate_constant (const_tree fn, const_tree atname, tree &expr,
+			       int argno, unsigned HOST_WIDE_INT *value,
+			       int flags, bool validated_p);
 static const char *convert_format_name_to_system_name (const char *attr_name);
 
 static int first_target_format_type;
@@ -172,14 +172,12 @@ handle_format_arg_attribute (tree *node, tree atname,
 			     tree args, int flags, bool *no_add_attrs)
 {
   tree type = *node;
-  /* Note that TREE_VALUE (args) is changed in place below.  */
+  /* Note that TREE_VALUE (args) is changed in the validate_constant call.  */
   tree *format_num_expr = &TREE_VALUE (args);
   unsigned HOST_WIDE_INT format_num = 0;
 
-  if (tree val = get_constant (type, atname, *format_num_expr, 0, &format_num,
-			       0, false))
-    *format_num_expr = val;
-  else
+  if (!validate_constant (type, atname, *format_num_expr, 0, &format_num, 0,
+			  false))
     {
       *no_add_attrs = true;
       return NULL_TREE;
@@ -301,38 +299,39 @@ check_format_string (const_tree fntype, unsigned HOST_WIDE_INT format_num,
 /* Under the control of FLAGS, verify EXPR is a valid constant that
    refers to a positional argument ARGNO having a string type (char*
    or, for targets like Darwin, a pointer to struct CFString) to
-   a function type FNTYPE declared with attribute ATNAME.
-   If valid, store the constant's integer value in *VALUE and return
-   the value.
-   If VALIDATED_P is true assert the validation is successful.
-   Returns the converted constant value on success, null otherwise.  */
+   a function FN declared with attribute ATNAME.  If valid, store the
+   constant's integer value in *VALUE and return true.  If VALIDATED_P
+   is true assert the validation is successful.
 
-static tree
-get_constant (const_tree fntype, const_tree atname, tree expr, int argno,
-	      unsigned HOST_WIDE_INT *value, int flags, bool validated_p)
+   N.B. This function modifies EXPR.  */
+
+static bool
+validate_constant (const_tree fn, const_tree atname, tree &expr, int argno,
+		   unsigned HOST_WIDE_INT *value, int flags, bool validated_p)
 {
   /* Require the referenced argument to have a string type.  For targets
      like Darwin, also accept pointers to struct CFString.  */
-  if (tree val = positional_argument (fntype, atname, expr, STRING_CST,
+  if (tree val = positional_argument (fn, atname, expr, STRING_CST,
 				      argno, flags))
     {
       *value = TREE_INT_CST_LOW (val);
-      return val;
+      return true;
     }
 
   gcc_assert (!validated_p);
-  return NULL_TREE;
+  return false;
 }
 
 /* Decode the arguments to a "format" attribute into a
    function_format_info structure.  It is already known that the list
    is of the right length.  If VALIDATED_P is true, then these
    attributes have already been validated and must not be erroneous;
-   if false, it will give an error message.  Returns true if the
-   attributes are successfully decoded, false otherwise.  */
+   if false, it will give an error message.  FN is either a function
+   declaration or function type.  Returns true if the attributes are
+   successfully decoded, false otherwise.  */
 
 static bool
-decode_format_attr (const_tree fntype, tree atname, tree args,
+decode_format_attr (const_tree fn, tree atname, tree args,
 		    function_format_info *info, bool validated_p)
 {
   tree format_type_id = TREE_VALUE (args);
@@ -372,17 +371,13 @@ decode_format_attr (const_tree fntype, tree atname, tree args,
 	}
     }
 
-  if (tree val = get_constant (fntype, atname, *format_num_expr,
-			       2, &info->format_num, 0, validated_p))
-    *format_num_expr = val;
-  else
+  if (!validate_constant (fn, atname, *format_num_expr, 2, &info->format_num,
+			  0, validated_p))
     return false;
 
-  if (tree val = get_constant (fntype, atname, *first_arg_num_expr,
-			       3, &info->first_arg_num,
-			       (POSARG_ZERO | POSARG_ELLIPSIS), validated_p))
-    *first_arg_num_expr = val;
-  else
+  if (!validate_constant (fn, atname, *first_arg_num_expr, 3,
+			  &info->first_arg_num,
+			  (POSARG_ZERO | POSARG_ELLIPSIS), validated_p))
     return false;
 
   if (info->first_arg_num != 0 && info->first_arg_num <= info->format_num)
@@ -1154,13 +1149,12 @@ decode_format_type (const char *s, bool *is_raw /* = NULL */)
 
 /* Check the argument list of a call to printf, scanf, etc.
    ATTRS are the attributes on the function type.  There are NARGS argument
-   values in the array ARGARRAY.
-   Also, if -Wsuggest-attribute=format,
-   warn for calls to vprintf or vscanf in functions with no such format
-   attribute themselves.  */
+   values in the array ARGARRAY.  FN is either a function declaration or
+   function type.  Also, if -Wsuggest-attribute=format, warn for calls to
+   vprintf or vscanf in functions with no such format attribute themselves.  */
 
 void
-check_function_format (const_tree fntype, tree attrs, int nargs,
+check_function_format (const_tree fn, tree attrs, int nargs,
 		       tree *argarray, vec<location_t> *arglocs)
 {
   tree a;
@@ -1174,7 +1168,7 @@ check_function_format (const_tree fntype, tree attrs, int nargs,
 	{
 	  /* Yup; check it.  */
 	  function_format_info info;
-	  decode_format_attr (fntype, atname, TREE_VALUE (a), &info,
+	  decode_format_attr (fn, atname, TREE_VALUE (a), &info,
 			      /*validated=*/true);
 	  if (warn_format)
 	    {
@@ -3195,7 +3189,7 @@ check_tokens (const token_t *tokens, unsigned ntoks,
   else
     {
       /* Diagnose some common misspellings.  */
-      for (unsigned i = 0; i != sizeof badwords / sizeof *badwords; ++i)
+      for (unsigned i = 0; i != ARRAY_SIZE (badwords); ++i)
 	{
 	  unsigned badwlen = strspn (badwords[i].name, " -");
 	  if (wlen >= badwlen
@@ -3390,14 +3384,14 @@ check_plain (location_t format_string_loc, tree format_string_cst,
 
   if (ISPUNCT (format_chars[0]))
     {
-      size_t nelts = sizeof c_opers / sizeof *c_opers;
+      size_t nelts = ARRAY_SIZE (c_opers);
       if (const char *ret = check_tokens (c_opers, nelts,
 					  format_string_loc, format_string_cst,
 					  orig_format_chars, format_chars,
 					  baltoks))
 	return ret;
 
-      nelts = c_dialect_cxx () ? sizeof cxx_opers / sizeof *cxx_opers : 0;
+      nelts = c_dialect_cxx () ? ARRAY_SIZE (cxx_opers) : 0;
       if (const char *ret = check_tokens (cxx_opers, nelts,
 					  format_string_loc, format_string_cst,
 					  orig_format_chars, format_chars,
@@ -3407,14 +3401,14 @@ check_plain (location_t format_string_loc, tree format_string_cst,
 
   if (ISALPHA (format_chars[0]))
     {
-      size_t nelts = sizeof c_keywords / sizeof *c_keywords;
+      size_t nelts = ARRAY_SIZE (c_keywords);
       if (const char *ret = check_tokens (c_keywords, nelts,
 					  format_string_loc, format_string_cst,
 					  orig_format_chars, format_chars,
 					  baltoks))
 	return ret;
 
-      nelts = c_dialect_cxx () ? sizeof cxx_keywords / sizeof *cxx_keywords : 0;
+      nelts = c_dialect_cxx () ? ARRAY_SIZE (cxx_keywords) : 0;
       if (const char *ret = check_tokens (cxx_keywords, nelts,
 					  format_string_loc, format_string_cst,
 					  orig_format_chars, format_chars,
@@ -3533,7 +3527,7 @@ check_plain (location_t format_string_loc, tree format_string_cst,
 	  && ISALPHA (format_chars[1]))
 	{
 	  /* Diagnose a subset of contractions that are best avoided.  */
-	  for (unsigned i = 0; i != sizeof contrs / sizeof *contrs; ++i)
+	  for (unsigned i = 0; i != ARRAY_SIZE (contrs); ++i)
 	    {
 	      const char *apos = strchr (contrs[i].name, '\'');
 	      gcc_assert (apos != NULL);
@@ -4619,7 +4613,7 @@ class range_label_for_format_type_mismatch
   {
   }
 
-  label_text get_text (unsigned range_idx) const FINAL OVERRIDE
+  label_text get_text (unsigned range_idx) const final override
   {
     label_text text = range_label_for_type_mismatch::get_text (range_idx);
     if (text.m_buffer == NULL)
@@ -5150,10 +5144,14 @@ convert_format_name_to_system_name (const char *attr_name)
 /* Handle a "format" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
-handle_format_attribute (tree *node, tree atname, tree args,
+handle_format_attribute (tree node[3], tree atname, tree args,
 			 int flags, bool *no_add_attrs)
 {
   const_tree type = *node;
+  /* NODE[2] may be NULL, and it also may be a PARM_DECL for function
+     pointers.  */
+  const_tree fndecl = ((node[2] && TREE_CODE (node[2]) == FUNCTION_DECL)
+		       ? node[2] : NULL_TREE);
   function_format_info info;
 
 #ifdef TARGET_FORMAT_TYPES
@@ -5179,7 +5177,8 @@ handle_format_attribute (tree *node, tree atname, tree args,
   if (TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
     TREE_VALUE (args) = canonicalize_attr_name (TREE_VALUE (args));
 
-  if (!decode_format_attr (type, atname, args, &info, /* validated_p = */false))
+  if (!decode_format_attr (fndecl ? fndecl : type, atname, args, &info,
+			   /* validated_p = */false))
     {
       *no_add_attrs = true;
       return NULL_TREE;

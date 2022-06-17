@@ -52,7 +52,6 @@
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 # define _GLIBCXX_FILESYSTEM_IS_WINDOWS 1
-# include <algorithm>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -1060,8 +1059,12 @@ namespace __detail
   path::make_preferred()
   {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    std::replace(_M_pathname.begin(), _M_pathname.end(), L'/',
-		 preferred_separator);
+    auto __pos = _M_pathname.find(L'/');
+    while (__pos != _M_pathname.npos)
+      {
+	_M_pathname[__pos] = preferred_separator;
+	__pos = _M_pathname.find(L'/', __pos);
+      }
 #endif
     return *this;
   }
@@ -1412,6 +1415,16 @@ template<typename _Distance>
 extern template class __shared_ptr<const filesystem::filesystem_error::_Impl>;
 
 /// @endcond
+
+// _GLIBCXX_RESOLVE_LIB_DEFECTS
+// 3657. std::hash<std::filesystem::path> is not enabled
+template<>
+  struct hash<filesystem::path>
+  {
+    size_t
+    operator()(const filesystem::path& __p) const noexcept
+    { return filesystem::hash_value(__p); }
+  };
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

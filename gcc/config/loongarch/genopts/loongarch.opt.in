@@ -1,0 +1,179 @@
+; Copyright (C) 2021-2022 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT
+; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+; or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+; License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+;
+
+; Variables (macros) that should be exported by loongarch.opt:
+;   la_opt_switches,
+;   la_opt_abi_base, la_opt_abi_ext,
+;   la_opt_cpu_arch, la_opt_cpu_tune,
+;   la_opt_fpu,
+;   la_cmodel.
+
+HeaderInclude
+config/loongarch/loongarch-opts.h
+
+HeaderInclude
+config/loongarch/loongarch-str.h
+
+Variable
+HOST_WIDE_INT la_opt_switches = 0
+
+; ISA related options
+;; Base ISA
+Enum
+Name(isa_base) Type(int)
+Basic ISAs of LoongArch:
+
+EnumValue
+Enum(isa_base) String(@@STR_ISA_BASE_LA64V100@@) Value(ISA_BASE_LA64V100)
+
+
+;; ISA extensions / adjustments
+Enum
+Name(isa_ext_fpu) Type(int)
+FPU types of LoongArch:
+
+EnumValue
+Enum(isa_ext_fpu) String(@@STR_ISA_EXT_NOFPU@@) Value(ISA_EXT_NOFPU)
+
+EnumValue
+Enum(isa_ext_fpu) String(@@STR_ISA_EXT_FPU32@@) Value(ISA_EXT_FPU32)
+
+EnumValue
+Enum(isa_ext_fpu) String(@@STR_ISA_EXT_FPU64@@) Value(ISA_EXT_FPU64)
+
+m@@OPTSTR_ISA_EXT_FPU@@=
+Target RejectNegative Joined ToLower Enum(isa_ext_fpu) Var(la_opt_fpu) Init(M_OPTION_NOT_SEEN)
+-m@@OPTSTR_ISA_EXT_FPU@@=FPU	Generate code for the given FPU.
+
+m@@OPTSTR_ISA_EXT_FPU@@=@@STR_ISA_EXT_FPU0@@
+Target RejectNegative Alias(m@@OPTSTR_ISA_EXT_FPU@@=,@@STR_ISA_EXT_NOFPU@@)
+
+m@@OPTSTR_SOFT_FLOAT@@
+Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_SOFTF) Negative(m@@OPTSTR_SINGLE_FLOAT@@)
+Prevent the use of all hardware floating-point instructions.
+
+m@@OPTSTR_SINGLE_FLOAT@@
+Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F32) Negative(m@@OPTSTR_DOUBLE_FLOAT@@)
+Restrict the use of hardware floating-point instructions to 32-bit operations.
+
+m@@OPTSTR_DOUBLE_FLOAT@@
+Target Driver RejectNegative Var(la_opt_switches) Mask(FORCE_F64) Negative(m@@OPTSTR_SOFT_FLOAT@@)
+Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations.
+
+
+;; Base target models (implies ISA & tune parameters)
+Enum
+Name(cpu_type) Type(int)
+LoongArch CPU types:
+
+EnumValue
+Enum(cpu_type) String(@@STR_CPU_NATIVE@@) Value(CPU_NATIVE)
+
+EnumValue
+Enum(cpu_type) String(@@STR_CPU_LOONGARCH64@@) Value(CPU_LOONGARCH64)
+
+EnumValue
+Enum(cpu_type) String(@@STR_CPU_LA464@@) Value(CPU_LA464)
+
+m@@OPTSTR_ARCH@@=
+Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_arch) Init(M_OPTION_NOT_SEEN)
+-m@@OPTSTR_ARCH@@=PROCESSOR	Generate code for the given PROCESSOR ISA.
+
+m@@OPTSTR_TUNE@@=
+Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_tune) Init(M_OPTION_NOT_SEEN)
+-m@@OPTSTR_TUNE@@=PROCESSOR	Generate optimized code for PROCESSOR.
+
+
+; ABI related options
+; (ISA constraints on ABI are handled dynamically)
+
+;; Base ABI
+Enum
+Name(abi_base) Type(int)
+Base ABI types for LoongArch:
+
+EnumValue
+Enum(abi_base) String(@@STR_ABI_BASE_LP64D@@) Value(ABI_BASE_LP64D)
+
+EnumValue
+Enum(abi_base) String(@@STR_ABI_BASE_LP64F@@) Value(ABI_BASE_LP64F)
+
+EnumValue
+Enum(abi_base) String(@@STR_ABI_BASE_LP64S@@) Value(ABI_BASE_LP64S)
+
+m@@OPTSTR_ABI_BASE@@=
+Target RejectNegative Joined ToLower Enum(abi_base) Var(la_opt_abi_base) Init(M_OPTION_NOT_SEEN)
+-m@@OPTSTR_ABI_BASE@@=BASEABI	Generate code that conforms to the given BASEABI.
+
+;; ABI Extension
+Variable
+int la_opt_abi_ext = M_OPTION_NOT_SEEN
+
+
+mbranch-cost=
+Target RejectNegative Joined UInteger Var(loongarch_branch_cost)
+-mbranch-cost=COST	Set the cost of branches to roughly COST instructions.
+
+mcheck-zero-division
+Target Mask(CHECK_ZERO_DIV)
+Trap on integer divide by zero.
+
+mcond-move-int
+Target Var(TARGET_COND_MOVE_INT) Init(1)
+Conditional moves for integral are enabled.
+
+mcond-move-float
+Target Var(TARGET_COND_MOVE_FLOAT) Init(1)
+Conditional moves for float are enabled.
+
+mmemcpy
+Target Mask(MEMCPY)
+Prevent optimizing block moves, which is also the default behavior of -Os.
+
+mstrict-align
+Target Var(TARGET_STRICT_ALIGN) Init(0)
+Do not generate unaligned memory accesses.
+
+mmax-inline-memcpy-size=
+Target Joined RejectNegative UInteger Var(loongarch_max_inline_memcpy_size) Init(1024)
+-mmax-inline-memcpy-size=SIZE	Set the max size of memcpy to inline, default is 1024.
+
+; The code model option names for -mcmodel.
+Enum
+Name(cmodel) Type(int)
+The code model option names for -mcmodel:
+
+EnumValue
+Enum(cmodel) String(@@STR_CMODEL_NORMAL@@) Value(CMODEL_NORMAL)
+
+EnumValue
+Enum(cmodel) String(@@STR_CMODEL_TINY@@) Value(CMODEL_TINY)
+
+EnumValue
+Enum(cmodel) String(@@STR_CMODEL_TS@@) Value(CMODEL_TINY_STATIC)
+
+EnumValue
+Enum(cmodel) String(@@STR_CMODEL_LARGE@@) Value(CMODEL_LARGE)
+
+EnumValue
+Enum(cmodel) String(@@STR_CMODEL_EXTREME@@) Value(CMODEL_EXTREME)
+
+mcmodel=
+Target RejectNegative Joined Enum(cmodel) Var(la_opt_cmodel) Init(CMODEL_NORMAL)
+Specify the code model.

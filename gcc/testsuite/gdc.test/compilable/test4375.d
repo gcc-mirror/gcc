@@ -471,4 +471,3 @@ void f() {
     else
         x = null;
 }
-

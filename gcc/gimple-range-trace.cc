@@ -102,7 +102,7 @@ range_tracer::print (unsigned counter, const char *str)
 
 void
 range_tracer::trailer (unsigned counter, const char *caller, bool result,
-		      tree name, const irange &r)
+		      tree name, const vrange &r)
 {
   gcc_checking_assert (tracing && counter != 0);
 
@@ -141,7 +141,6 @@ debug_seed_ranger (gimple_ranger &ranger)
     }
 
   basic_block bb;
-  int_range_max r;
   gimple_stmt_iterator gsi;
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -151,7 +150,11 @@ debug_seed_ranger (gimple_ranger &ranger)
 	if (is_gimple_debug (stmt))
 	  continue;
 
-	ranger.range_of_stmt (r, stmt);
+	if (tree type = gimple_range_type (stmt))
+	  {
+	    Value_Range r (type);
+	    ranger.range_of_stmt (r, stmt);
+	  }
       }
 }
 

@@ -33,6 +33,7 @@ with Snames; use Snames;
 
 with GNAT;                 use GNAT;
 with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
+with System.String_Hash;
 
 package body ALI is
 
@@ -251,6 +252,7 @@ package body ALI is
       'E' | --  external
       'G' | --  invocation graph
       'I' | --  interrupt
+      'K' | --  CUDA kernels
       'L' | --  linker option
       'M' | --  main program
       'N' | --  notes
@@ -268,7 +270,7 @@ package body ALI is
 
       --  Still available:
 
-      'B' | 'F' | 'H' | 'J' | 'K' | 'O' | 'Q' => False);
+      'B' | 'F' | 'H' | 'J' | 'O' | 'Q' => False);
 
    ------------------------------
    -- Add_Invocation_Construct --
@@ -578,20 +580,18 @@ package body ALI is
    function Hash
      (IS_Rec : Invocation_Signature_Record) return Bucket_Range_Type
    is
+      function String_Hash is new System.String_Hash.Hash
+        (Char_Type => Character,
+         Key_Type  => String,
+         Hash_Type => Bucket_Range_Type);
+
       Buffer : Bounded_String (2052);
-      IS_Nam : Name_Id;
 
    begin
-      --  The hash is obtained in the following manner:
-      --
-      --    * A String signature based on the scope, name, line number, column
-      --      number, and locations, in the following format:
+      --  The hash is obtained from a signature based on the scope, name, line
+      --  number, column number, and locations, in the following format:
       --
       --         scope__name__line_column__locations
-      --
-      --    * The String is converted into a Name_Id
-      --
-      --    * The absolute value of the Name_Id is used as the hash
 
       Append (Buffer, IS_Rec.Scope);
       Append (Buffer, "__");
@@ -606,8 +606,7 @@ package body ALI is
          Append (Buffer, IS_Rec.Locations);
       end if;
 
-      IS_Nam := Name_Find (Buffer);
-      return Bucket_Range_Type (abs IS_Nam);
+      return String_Hash (To_String (Buffer));
    end Hash;
 
    --------------------
@@ -672,7 +671,6 @@ package body ALI is
       SSO_Default_Specified                  := False;
       Task_Dispatching_Policy_Specified      := ' ';
       Unreserve_All_Interrupts_Specified     := False;
-      Frontend_Exceptions_Specified          := False;
       Zero_Cost_Exceptions_Specified         := False;
    end Initialize_ALI;
 
@@ -1746,12 +1744,14 @@ package body ALI is
       ALIs.Table (Id) := (
         Afile                        => F,
         Compile_Errors               => False,
+        First_CUDA_Kernel            => CUDA_Kernels.Last + 1,
         First_Interrupt_State        => Interrupt_States.Last + 1,
         First_Sdep                   => No_Sdep_Id,
         First_Specific_Dispatching   => Specific_Dispatching.Last + 1,
         First_Unit                   => No_Unit_Id,
         GNATprove_Mode               => False,
         Invocation_Graph_Encoding    => No_Encoding,
+        Last_CUDA_Kernel             => CUDA_Kernels.Last,
         Last_Interrupt_State         => Interrupt_States.Last,
         Last_Sdep                    => No_Sdep_Id,
         Last_Specific_Dispatching    => Specific_Dispatching.Last,
@@ -1776,7 +1776,6 @@ package body ALI is
         Unit_Exception_Table         => False,
         Ver                          => (others => ' '),
         Ver_Len                      => 0,
-        Frontend_Exceptions          => False,
         Zero_Cost_Exceptions         => False);
 
       --  Now we acquire the input lines from the ALI file. Note that the
@@ -1919,6 +1918,24 @@ package body ALI is
          C := Getc;
       end loop A_Loop;
 
+      --  Acquire 'K' lines if present
+
+      Check_Unknown_Line;
+
+      while C = 'K' loop
+         if Ignore ('K') then
+            Skip_Line;
+
+         else
+            Skip_Space;
+            CUDA_Kernels.Append ((Kernel_Name => Get_Name));
+            ALIs.Table (Id).Last_CUDA_Kernel := CUDA_Kernels.Last;
+            Skip_Eol;
+         end if;
+
+         C := Getc;
+      end loop;
+
       --  Acquire P line
 
       Check_Unknown_Line;
@@ -1973,9 +1990,10 @@ package body ALI is
             elsif C = 'F' then
                C := Getc;
 
+               --  Old front-end exceptions marker, ignore
+
                if C = 'X' then
-                  ALIs.Table (Id).Frontend_Exceptions := True;
-                  Frontend_Exceptions_Specified := True;
+                  null;
                else
                   Fatal_Error_Ignore;
                end if;
@@ -2061,7 +2079,15 @@ package body ALI is
                --  Processing for SS
 
                elsif C = 'S' then
-                  Opt.Sec_Stack_Used := True;
+                  --  Special case: a-tags.ali by itself should not set
+                  --  Sec_Stack_Used, only if other code uses the secondary
+                  --  stack should we set this flag. This ensures that we do
+                  --  not bring the secondary stack unnecessarily when using
+                  --  Ada.Tags and not actually using the secondary stack.
+
+                  if Get_Name_String (F) /= "a-tags.ali" then
+                     Opt.Sec_Stack_Used := True;
+                  end if;
 
                --  Invalid switch starting with S
 

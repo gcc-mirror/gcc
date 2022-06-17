@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "langhooks.h"
 #include "internal-fn.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimplify.h"
@@ -337,7 +338,7 @@ const struct s390_processor processor_table[] =
   { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost,  11 },
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
   { "z15",    "arch13", PROCESSOR_8561_Z15,    &zEC12_cost,  13 },
-  { "arch14", "arch14", PROCESSOR_ARCH14,      &zEC12_cost,  14 },
+  { "z16",    "arch14", PROCESSOR_3931_Z16,    &zEC12_cost,  14 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
@@ -851,12 +852,6 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if ((bflags & B_VXE2) && !TARGET_VXE2)
 	{
 	  error ("Builtin %qF requires z15 or higher", fndecl);
-	  return const0_rtx;
-	}
-
-      if ((bflags & B_NNPA) && !TARGET_NNPA)
-	{
-	  error ("Builtin %qF requires arch14 or higher.", fndecl);
 	  return const0_rtx;
 	}
     }
@@ -8525,7 +8520,7 @@ s390_issue_rate (void)
     case PROCESSOR_2827_ZEC12:
     case PROCESSOR_2964_Z13:
     case PROCESSOR_3906_Z14:
-    case PROCESSOR_ARCH14:
+    case PROCESSOR_3931_Z16:
     default:
       return 1;
     }
@@ -8774,7 +8769,7 @@ static machine_mode constant_modes[] =
   QImode,
   V1QImode
 };
-#define NR_C_MODES (sizeof (constant_modes) / sizeof (constant_modes[0]))
+#define NR_C_MODES (ARRAY_SIZE (constant_modes))
 
 struct constant
 {
@@ -12148,29 +12143,26 @@ s390_function_arg_size (machine_mode mode, const_tree type)
   gcc_unreachable ();
 }
 
-/* Return true if a function argument of type TYPE and mode MODE
-   is to be passed in a vector register, if available.  */
+/* Return true if a variable of TYPE should be passed as single value
+   with type CODE. If STRICT_SIZE_CHECK_P is true the sizes of the
+   record type and the field type must match.
 
-bool
-s390_function_arg_vector (machine_mode mode, const_tree type)
+   The ABI says that record types with a single member are treated
+   just like that member would be.  This function is a helper to
+   detect such cases.  The function also produces the proper
+   diagnostics for cases where the outcome might be different
+   depending on the GCC version.  */
+static bool
+s390_single_field_struct_p (enum tree_code code, const_tree type,
+			    bool strict_size_check_p)
 {
-  if (!TARGET_VX_ABI)
-    return false;
-
-  if (s390_function_arg_size (mode, type) > 16)
-    return false;
-
-  /* No type info available for some library calls ...  */
-  if (!type)
-    return VECTOR_MODE_P (mode);
-
-  /* The ABI says that record types with a single member are treated
-     just like that member would be.  */
   int empty_base_seen = 0;
+  bool zero_width_bf_skipped_p = false;
   const_tree orig_type = type;
+
   while (TREE_CODE (type) == RECORD_TYPE)
     {
-      tree field, single = NULL_TREE;
+      tree field, single_type = NULL_TREE;
 
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	{
@@ -12187,48 +12179,108 @@ s390_function_arg_vector (machine_mode mode, const_tree type)
 	      continue;
 	    }
 
-	  if (single == NULL_TREE)
-	    single = TREE_TYPE (field);
+	  if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
+	    {
+	      zero_width_bf_skipped_p = true;
+	      continue;
+	    }
+
+	  if (single_type == NULL_TREE)
+	    single_type = TREE_TYPE (field);
 	  else
 	    return false;
 	}
 
-      if (single == NULL_TREE)
+      if (single_type == NULL_TREE)
 	return false;
-      else
-	{
-	  /* If the field declaration adds extra byte due to
-	     e.g. padding this is not accepted as vector type.  */
-	  if (int_size_in_bytes (single) <= 0
-	      || int_size_in_bytes (single) != int_size_in_bytes (type))
-	    return false;
-	  type = single;
-	}
+
+      /* Reaching this point we have a struct with a single member and
+	 zero or more zero-sized bit-fields which have been skipped in the
+	 past.  */
+
+      /* If ZERO_WIDTH_BF_SKIPPED_P then the struct will not be accepted.  In case
+	 we are not supposed to emit a warning exit early.  */
+      if (zero_width_bf_skipped_p && !warn_psabi)
+	return false;
+
+      /* If the field declaration adds extra bytes due to padding this
+	 is not accepted with STRICT_SIZE_CHECK_P.  */
+      if (strict_size_check_p
+	  && (int_size_in_bytes (single_type) <= 0
+	      || int_size_in_bytes (single_type) != int_size_in_bytes (type)))
+	return false;
+
+      type = single_type;
     }
 
-  if (!VECTOR_TYPE_P (type))
+  if (TREE_CODE (type) != code)
     return false;
 
-  if (warn_psabi && empty_base_seen)
+  if (warn_psabi)
     {
-      static unsigned last_reported_type_uid;
       unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (orig_type));
-      if (uid != last_reported_type_uid)
+
+      if (empty_base_seen)
 	{
-	  const char *url = CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
-	  last_reported_type_uid = uid;
-	  if (empty_base_seen & 1)
-	    inform (input_location,
-		    "parameter passing for argument of type %qT when C++17 "
-		    "is enabled changed to match C++14 %{in GCC 10.1%}",
-		    orig_type, url);
-	  else
-	    inform (input_location,
-		    "parameter passing for argument of type %qT with "
-		    "%<[[no_unique_address]]%> members changed "
-		    "%{in GCC 10.1%}", orig_type, url);
+	  static unsigned last_reported_type_uid_empty_base;
+	  if (uid != last_reported_type_uid_empty_base)
+	    {
+	      last_reported_type_uid_empty_base = uid;
+	      const char *url = CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
+	      if (empty_base_seen & 1)
+		inform (input_location,
+			"parameter passing for argument of type %qT when C++17 "
+			"is enabled changed to match C++14 %{in GCC 10.1%}",
+			orig_type, url);
+	      else
+		inform (input_location,
+			"parameter passing for argument of type %qT with "
+			"%<[[no_unique_address]]%> members changed "
+			"%{in GCC 10.1%}", orig_type, url);
+	    }
+	}
+
+      /* For C++ older GCCs ignored zero width bitfields and therefore
+	 passed structs more often as single values than GCC 12 does.
+	 So diagnostics are only required in cases where we do NOT
+	 accept the struct to be passed as single value.  */
+      if (zero_width_bf_skipped_p)
+	{
+	  static unsigned last_reported_type_uid_zero_width;
+	  if (uid != last_reported_type_uid_zero_width)
+	    {
+	      last_reported_type_uid_zero_width = uid;
+	      inform (input_location,
+		      "parameter passing for argument of type %qT with "
+		      "zero-width bit fields members changed in GCC 12",
+		      orig_type);
+	    }
 	}
     }
+
+  return !zero_width_bf_skipped_p;
+}
+
+
+/* Return true if a function argument of type TYPE and mode MODE
+   is to be passed in a vector register, if available.  */
+
+static bool
+s390_function_arg_vector (machine_mode mode, const_tree type)
+{
+  if (!TARGET_VX_ABI)
+    return false;
+
+  if (s390_function_arg_size (mode, type) > 16)
+    return false;
+
+  /* No type info available for some library calls ...  */
+  if (!type)
+    return VECTOR_MODE_P (mode);
+
+  if (!s390_single_field_struct_p (VECTOR_TYPE, type, true))
+    return false;
+
   return true;
 }
 
@@ -12249,63 +12301,8 @@ s390_function_arg_float (machine_mode mode, const_tree type)
   if (!type)
     return mode == SFmode || mode == DFmode || mode == SDmode || mode == DDmode;
 
-  /* The ABI says that record types with a single member are treated
-     just like that member would be.  */
-  int empty_base_seen = 0;
-  const_tree orig_type = type;
-  while (TREE_CODE (type) == RECORD_TYPE)
-    {
-      tree field, single = NULL_TREE;
-
-      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-	{
-	  if (TREE_CODE (field) != FIELD_DECL)
-	    continue;
-	  if (DECL_FIELD_ABI_IGNORED (field))
-	    {
-	      if (lookup_attribute ("no_unique_address",
-				    DECL_ATTRIBUTES (field)))
-		empty_base_seen |= 2;
-	      else
-		empty_base_seen |= 1;
-	      continue;
-	    }
-
-	  if (single == NULL_TREE)
-	    single = TREE_TYPE (field);
-	  else
-	    return false;
-	}
-
-      if (single == NULL_TREE)
-	return false;
-      else
-	type = single;
-    }
-
-  if (TREE_CODE (type) != REAL_TYPE)
+  if (!s390_single_field_struct_p (REAL_TYPE, type, false))
     return false;
-
-  if (warn_psabi && empty_base_seen)
-    {
-      static unsigned last_reported_type_uid;
-      unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (orig_type));
-      if (uid != last_reported_type_uid)
-	{
-	  const char *url = CHANGES_ROOT_URL "gcc-10/changes.html#empty_base";
-	  last_reported_type_uid = uid;
-	  if (empty_base_seen & 1)
-	    inform (input_location,
-		    "parameter passing for argument of type %qT when C++17 "
-		    "is enabled changed to match C++14 %{in GCC 10.1%}",
-		    orig_type, url);
-	  else
-	    inform (input_location,
-		    "parameter passing for argument of type %qT with "
-		    "%<[[no_unique_address]]%> members changed "
-		    "%{in GCC 10.1%}", orig_type, url);
-	}
-    }
 
   return true;
 }
@@ -14879,7 +14876,6 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     case PROCESSOR_8561_Z15:
-    case PROCESSOR_ARCH14:
       if (get_attr_z15_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z15_expanded (insn))
@@ -14889,6 +14885,18 @@ s390_get_sched_attrmask (rtx_insn *insn)
       if (get_attr_z15_groupalone (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
       if (get_attr_z15_groupoftwo (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
+      break;
+    case PROCESSOR_3931_Z16:
+      if (get_attr_z16_cracked (insn))
+	mask |= S390_SCHED_ATTR_MASK_CRACKED;
+      if (get_attr_z16_expanded (insn))
+	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
+      if (get_attr_z16_endgroup (insn))
+	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
+      if (get_attr_z16_groupalone (insn))
+	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
+      if (get_attr_z16_groupoftwo (insn))
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     default:
@@ -14927,7 +14935,6 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
 	mask |= 1 << 3;
       break;
     case PROCESSOR_8561_Z15:
-    case PROCESSOR_ARCH14:
       *units = 4;
       if (get_attr_z15_unit_lsu (insn))
 	mask |= 1 << 0;
@@ -14936,6 +14943,17 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
       if (get_attr_z15_unit_fxb (insn))
 	mask |= 1 << 2;
       if (get_attr_z15_unit_vfu (insn))
+	mask |= 1 << 3;
+      break;
+    case PROCESSOR_3931_Z16:
+      *units = 4;
+      if (get_attr_z16_unit_lsu (insn))
+	mask |= 1 << 0;
+      if (get_attr_z16_unit_fxa (insn))
+	mask |= 1 << 1;
+      if (get_attr_z16_unit_fxb (insn))
+	mask |= 1 << 2;
+      if (get_attr_z16_unit_vfu (insn))
 	mask |= 1 << 3;
       break;
     default:
@@ -14951,7 +14969,7 @@ s390_is_fpd (rtx_insn *insn)
     return false;
 
   return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn)
-    || get_attr_z15_unit_fpd (insn);
+    || get_attr_z15_unit_fpd (insn) || get_attr_z16_unit_fpd (insn);
 }
 
 static bool
@@ -14961,7 +14979,7 @@ s390_is_fxd (rtx_insn *insn)
     return false;
 
   return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn)
-    || get_attr_z15_unit_fxd (insn);
+    || get_attr_z15_unit_fxd (insn) || get_attr_z16_unit_fxd (insn);
 }
 
 /* Returns TRUE if INSN is a long-running instruction.  */
@@ -17157,9 +17175,13 @@ vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
    hook is supposed to emit the required INSNs.  */
 
 bool
-s390_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
+s390_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+			       rtx target, rtx op0, rtx op1,
 			       const vec_perm_indices &sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   struct expand_vec_perm_d d;
   unsigned int i, nelt;
 

@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Unchecked_Conversion;
 with Aspects;        use Aspects;
 with Debug;          use Debug;
 with Namet;          use Namet;
@@ -504,7 +505,7 @@ package body Atree is
          pragma Assert (Field_Type'Size = 1);
 
          function Cast is new
-           Unchecked_Conversion (Field_Size_1_Bit, Field_Type);
+           Ada.Unchecked_Conversion (Field_Size_1_Bit, Field_Type);
          Val : constant Field_Size_1_Bit := Get_1_Bit_Val (N, Offset);
       begin
          return Cast (Val);
@@ -516,7 +517,7 @@ package body Atree is
          pragma Assert (Field_Type'Size = 2);
 
          function Cast is new
-           Unchecked_Conversion (Field_Size_2_Bit, Field_Type);
+           Ada.Unchecked_Conversion (Field_Size_2_Bit, Field_Type);
          Val : constant Field_Size_2_Bit := Get_2_Bit_Val (N, Offset);
       begin
          return Cast (Val);
@@ -528,7 +529,7 @@ package body Atree is
          pragma Assert (Field_Type'Size = 4);
 
          function Cast is new
-           Unchecked_Conversion (Field_Size_4_Bit, Field_Type);
+           Ada.Unchecked_Conversion (Field_Size_4_Bit, Field_Type);
          Val : constant Field_Size_4_Bit := Get_4_Bit_Val (N, Offset);
       begin
          return Cast (Val);
@@ -540,7 +541,7 @@ package body Atree is
          pragma Assert (Field_Type'Size = 8);
 
          function Cast is new
-           Unchecked_Conversion (Field_Size_8_Bit, Field_Type);
+           Ada.Unchecked_Conversion (Field_Size_8_Bit, Field_Type);
          Val : constant Field_Size_8_Bit := Get_8_Bit_Val (N, Offset);
       begin
          return Cast (Val);
@@ -552,7 +553,7 @@ package body Atree is
          pragma Assert (Field_Type'Size = 32);
 
          function Cast is new
-           Unchecked_Conversion (Field_Size_32_Bit, Field_Type);
+           Ada.Unchecked_Conversion (Field_Size_32_Bit, Field_Type);
 
          Val : constant Field_Size_32_Bit := Get_32_Bit_Val (N, Offset);
          Result : constant Field_Type := Cast (Val);
@@ -604,7 +605,7 @@ package body Atree is
          pragma Assert (Field_Type'Size = 1);
 
          function Cast is new
-           Unchecked_Conversion (Field_Type, Field_Size_1_Bit);
+           Ada.Unchecked_Conversion (Field_Type, Field_Size_1_Bit);
       begin
          Set_1_Bit_Val (N, Offset, Cast (Val));
       end Set_1_Bit_Field;
@@ -615,7 +616,7 @@ package body Atree is
          pragma Assert (Field_Type'Size = 2);
 
          function Cast is new
-           Unchecked_Conversion (Field_Type, Field_Size_2_Bit);
+           Ada.Unchecked_Conversion (Field_Type, Field_Size_2_Bit);
       begin
          Set_2_Bit_Val (N, Offset, Cast (Val));
       end Set_2_Bit_Field;
@@ -626,7 +627,7 @@ package body Atree is
          pragma Assert (Field_Type'Size = 4);
 
          function Cast is new
-           Unchecked_Conversion (Field_Type, Field_Size_4_Bit);
+           Ada.Unchecked_Conversion (Field_Type, Field_Size_4_Bit);
       begin
          Set_4_Bit_Val (N, Offset, Cast (Val));
       end Set_4_Bit_Field;
@@ -637,7 +638,7 @@ package body Atree is
          pragma Assert (Field_Type'Size = 8);
 
          function Cast is new
-           Unchecked_Conversion (Field_Type, Field_Size_8_Bit);
+           Ada.Unchecked_Conversion (Field_Type, Field_Size_8_Bit);
       begin
          Set_8_Bit_Val (N, Offset, Cast (Val));
       end Set_8_Bit_Field;
@@ -648,7 +649,7 @@ package body Atree is
          pragma Assert (Field_Type'Size = 32);
 
          function Cast is new
-           Unchecked_Conversion (Field_Type, Field_Size_32_Bit);
+           Ada.Unchecked_Conversion (Field_Type, Field_Size_32_Bit);
       begin
          Set_32_Bit_Val (N, Offset, Cast (Val));
       end Set_32_Bit_Field;
@@ -853,7 +854,7 @@ package body Atree is
       ----------------------
 
       procedure Print_Atree_Info (N : Node_Or_Entity_Id) is
-         function Cast is new Unchecked_Conversion (Slot, Int);
+         function Cast is new Ada.Unchecked_Conversion (Slot, Int);
       begin
          Write_Int (Int (Size_In_Slots (N)));
          Write_Str (" slots (");
@@ -1774,6 +1775,11 @@ package body Atree is
 
          --  Mark the copy as Ghost depending on the current Ghost region
 
+         if Nkind (New_Id) in N_Entity then
+            Set_Is_Checked_Ghost_Entity (New_Id, False);
+            Set_Is_Ignored_Ghost_Entity (New_Id, False);
+         end if;
+
          Mark_New_Ghost_Node (New_Id);
 
          New_Node_Debugging_Output (New_Id);
@@ -2146,7 +2152,7 @@ package body Atree is
       --  not already rewritten the node, as indicated by an Orig_Nodes entry
       --  that does not reference the Old_Node.
 
-      if Original_Node (Old_Node) = Old_Node then
+      if not Is_Rewrite_Substitution (Old_Node) then
          Sav_Node := New_Copy (Old_Node);
          Set_Original_Node (Sav_Node, Sav_Node);
          Set_Original_Node (Old_Node, Sav_Node);

@@ -1225,7 +1225,7 @@ package body Ch12 is
 
          elsif Token = Tok_Left_Paren then
             Error_Msg_GNAT_Extension
-              ("expression default for formal subprograms");
+              ("expression default for formal subprograms", Token_Ptr);
 
             if Nkind (Spec_Node) = N_Function_Specification then
                Scan;  --  past "("

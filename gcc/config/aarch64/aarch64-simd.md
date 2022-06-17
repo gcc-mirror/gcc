@@ -3385,20 +3385,6 @@
 
 ;; 'across lanes' add.
 
-(define_expand "reduc_plus_scal_<mode>"
-  [(match_operand:<VEL> 0 "register_operand")
-   (unspec:VDQ_I [(match_operand:VDQ_I 1 "register_operand")]
-	       UNSPEC_ADDV)]
-  "TARGET_SIMD"
-  {
-    rtx elt = aarch64_endian_lane_rtx (<MODE>mode, 0);
-    rtx scratch = gen_reg_rtx (<MODE>mode);
-    emit_insn (gen_aarch64_reduc_plus_internal<mode> (scratch, operands[1]));
-    emit_insn (gen_aarch64_get_lane<mode> (operands[0], scratch, elt));
-    DONE;
-  }
-)
-
 (define_insn "aarch64_faddp<mode>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
@@ -3409,14 +3395,57 @@
   [(set_attr "type" "neon_fp_reduc_add_<stype><q>")]
 )
 
-(define_insn "aarch64_reduc_plus_internal<mode>"
- [(set (match_operand:VDQV 0 "register_operand" "=w")
-       (unspec:VDQV [(match_operand:VDQV 1 "register_operand" "w")]
+(define_insn "reduc_plus_scal_<mode>"
+ [(set (match_operand:<VEL> 0 "register_operand" "=w")
+       (unspec:<VEL> [(match_operand:VDQV 1 "register_operand" "w")]
 		    UNSPEC_ADDV))]
  "TARGET_SIMD"
  "add<VDQV:vp>\\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
 )
+
+(define_insn "reduc_plus_scal_v2si"
+ [(set (match_operand:SI 0 "register_operand" "=w")
+       (unspec:SI [(match_operand:V2SI 1 "register_operand" "w")]
+		    UNSPEC_ADDV))]
+ "TARGET_SIMD"
+ "addp\\t%0.2s, %1.2s, %1.2s"
+  [(set_attr "type" "neon_reduc_add")]
+)
+
+;; ADDV with result zero-extended to SI/DImode (for popcount).
+(define_insn "aarch64_zero_extend<GPI:mode>_reduc_plus_<VDQV_E:mode>"
+ [(set (match_operand:GPI 0 "register_operand" "=w")
+       (zero_extend:GPI
+	(unspec:<VDQV_E:VEL> [(match_operand:VDQV_E 1 "register_operand" "w")]
+			     UNSPEC_ADDV)))]
+ "TARGET_SIMD"
+ "add<VDQV_E:vp>\\t%<VDQV_E:Vetype>0, %1.<VDQV_E:Vtype>"
+  [(set_attr "type" "neon_reduc_add<VDQV_E:q>")]
+)
+
+(define_insn "reduc_plus_scal_<mode>"
+ [(set (match_operand:<VEL> 0 "register_operand" "=w")
+       (unspec:<VEL> [(match_operand:V2F 1 "register_operand" "w")]
+		   UNSPEC_FADDV))]
+ "TARGET_SIMD"
+ "faddp\\t%<Vetype>0, %1.<Vtype>"
+  [(set_attr "type" "neon_fp_reduc_add_<Vetype><q>")]
+)
+
+(define_expand "reduc_plus_scal_v4sf"
+ [(set (match_operand:SF 0 "register_operand")
+       (unspec:SF [(match_operand:V4SF 1 "register_operand")]
+		    UNSPEC_FADDV))]
+ "TARGET_SIMD"
+{
+  rtx elt = aarch64_endian_lane_rtx (V4SFmode, 0);
+  rtx scratch = gen_reg_rtx (V4SFmode);
+  emit_insn (gen_aarch64_faddpv4sf (scratch, operands[1], operands[1]));
+  emit_insn (gen_aarch64_faddpv4sf (scratch, scratch, scratch));
+  emit_insn (gen_aarch64_get_lanev4sf (operands[0], scratch, elt));
+  DONE;
+})
 
 (define_insn "aarch64_<su>addlv<mode>"
  [(set (match_operand:<VWIDE_S> 0 "register_operand" "=w")
@@ -3435,49 +3464,6 @@
  "<su>addlp\\t%0.<Vwhalf>, %1.<Vtype>"
   [(set_attr "type" "neon_reduc_add<q>")]
 )
-
-;; ADDV with result zero-extended to SI/DImode (for popcount).
-(define_insn "aarch64_zero_extend<GPI:mode>_reduc_plus_<VDQV_E:mode>"
- [(set (match_operand:GPI 0 "register_operand" "=w")
-       (zero_extend:GPI
-	(unspec:<VDQV_E:VEL> [(match_operand:VDQV_E 1 "register_operand" "w")]
-			     UNSPEC_ADDV)))]
- "TARGET_SIMD"
- "add<VDQV_E:vp>\\t%<VDQV_E:Vetype>0, %1.<VDQV_E:Vtype>"
-  [(set_attr "type" "neon_reduc_add<VDQV_E:q>")]
-)
-
-(define_insn "aarch64_reduc_plus_internalv2si"
- [(set (match_operand:V2SI 0 "register_operand" "=w")
-       (unspec:V2SI [(match_operand:V2SI 1 "register_operand" "w")]
-		    UNSPEC_ADDV))]
- "TARGET_SIMD"
- "addp\\t%0.2s, %1.2s, %1.2s"
-  [(set_attr "type" "neon_reduc_add")]
-)
-
-(define_insn "reduc_plus_scal_<mode>"
- [(set (match_operand:<VEL> 0 "register_operand" "=w")
-       (unspec:<VEL> [(match_operand:V2F 1 "register_operand" "w")]
-		   UNSPEC_FADDV))]
- "TARGET_SIMD"
- "faddp\\t%<Vetype>0, %1.<Vtype>"
-  [(set_attr "type" "neon_fp_reduc_add_<Vetype><q>")]
-)
-
-(define_expand "reduc_plus_scal_v4sf"
- [(set (match_operand:SF 0 "register_operand")
-       (unspec:V4SF [(match_operand:V4SF 1 "register_operand")]
-		    UNSPEC_FADDV))]
- "TARGET_SIMD"
-{
-  rtx elt = aarch64_endian_lane_rtx (V4SFmode, 0);
-  rtx scratch = gen_reg_rtx (V4SFmode);
-  emit_insn (gen_aarch64_faddpv4sf (scratch, operands[1], operands[1]));
-  emit_insn (gen_aarch64_faddpv4sf (scratch, scratch, scratch));
-  emit_insn (gen_aarch64_get_lanev4sf (operands[0], scratch, elt));
-  DONE;
-})
 
 (define_insn "clrsb<mode>2"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")

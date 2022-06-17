@@ -1,8 +1,8 @@
 // { dg-additional-options "-fmodules-ts -fno-inline" }
+export module Baz;
+// { dg-module-cmi Baz }
 
-import Foo;
-import Bar;
-
-// We know Bar imports Foo, so only call Bar's Global Init
-// { dg-final { scan-assembler {call[ \t]+_?_ZGIW3Bar} { target i?86-*-* x86_64-*-* } } }
-// { dg-final { scan-assembler-not {call[ \t]+_?_ZGIW3Foo} { target i?86-*-* x86_64-*-* } } }
+// { dg-final { scan-assembler {_ZGIW3Baz:} } }
+// But it is empty, and so no idempotency bool
+// { dg-final { scan-assembler-not {_ZZ9_ZGIW3BazE9__in_chrg} } }
+// { dg-final { scan-assembler-not {.(quad|long)[ \t]+_ZGIW3Baz} { target i?86-*-* x86_64-*-* } } }

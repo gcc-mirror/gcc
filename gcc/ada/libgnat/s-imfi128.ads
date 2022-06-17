@@ -37,11 +37,11 @@ with System.Arith_128;
 with System.Image_F;
 
 package System.Img_Fixed_128 is
-   pragma Pure;
 
    subtype Int128 is Interfaces.Integer_128;
+   subtype Uns128 is Interfaces.Unsigned_128;
 
-   package Impl is new Image_F (Int128, Arith_128.Scaled_Divide128);
+   package Impl is new Image_F (Int128, Uns128, Arith_128.Scaled_Divide128);
 
    procedure Image_Fixed128
      (V    : Int128;

@@ -2788,7 +2788,7 @@ package body Ch3 is
             else
                P_Index_Subtype_Def_With_Fixed_Lower_Bound (Subtype_Mark_Node);
 
-               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array", Token_Ptr);
             end if;
 
             exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -2857,7 +2857,8 @@ package body Ch3 is
                      P_Index_Subtype_Def_With_Fixed_Lower_Bound
                        (Subtype_Mark_Node);
 
-                     Error_Msg_GNAT_Extension ("fixed-lower-bound array");
+                     Error_Msg_GNAT_Extension
+                       ("fixed-lower-bound array", Token_Ptr);
                   end if;
 
                   exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -3179,7 +3180,8 @@ package body Ch3 is
                   Scan;
 
                   if Token = Tok_Access then
-                     Error_Msg_SC ("CONSTANT must appear after ACCESS");
+                     Error_Msg_SC -- CODEFIX
+                       ("ACCESS must come before CONSTANT");
                      Set_Discriminant_Type
                        (Specification_Node,
                         P_Access_Definition (Not_Null_Present));
@@ -3359,7 +3361,7 @@ package body Ch3 is
             --  later during analysis), and scan to the next token.
 
             if Token = Tok_Box then
-               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array", Token_Ptr);
 
                Expr_Node := Empty;
                Scan;
@@ -3461,7 +3463,41 @@ package body Ch3 is
    --  Error recovery: can raise Error_Resync
 
    function P_Record_Definition return Node_Id is
+
+      procedure Catch_Out_Of_Order_Keywords (Keyword : String);
+      --  Catch ouf-of-order keywords in a record definition
+
+      ---------------------------------
+      -- Catch_Out_Of_Order_Keywords --
+      ---------------------------------
+
+      procedure Catch_Out_Of_Order_Keywords (Keyword : String) is
+      begin
+         loop
+            if Token = Tok_Abstract then
+               Error_Msg_SC -- CODEFIX
+                 ("ABSTRACT must come before " & Keyword);
+               Scan; -- past ABSTRACT
+
+            elsif Token = Tok_Tagged then
+               Error_Msg_SC -- CODEFIX
+                 ("TAGGED must come before " & Keyword);
+               Scan; -- past TAGGED
+
+            elsif Token = Tok_Limited then
+               Error_Msg_SC -- CODEFIX
+                 ("LIMITED must come before " & Keyword);
+               Scan; -- past LIMITED
+
+            else
+               exit;
+            end if;
+         end loop;
+      end Catch_Out_Of_Order_Keywords;
+
       Rec_Node : Node_Id;
+
+   --  Start of processing for P_Record_Definition
 
    begin
       Inside_Record_Definition := True;
@@ -3471,8 +3507,11 @@ package body Ch3 is
 
       if Token = Tok_Null then
          Scan; -- past NULL
+
+         Catch_Out_Of_Order_Keywords ("NULL");
          T_Record;
          Set_Null_Present (Rec_Node, True);
+         Catch_Out_Of_Order_Keywords ("RECORD");
 
       --  Catch incomplete declaration to prevent cascaded errors, see
       --  ACATS B393002 for an example.
@@ -3500,6 +3539,7 @@ package body Ch3 is
          Scopes (Scope.Last).Junk := (Token /= Tok_Record);
 
          T_Record;
+         Catch_Out_Of_Order_Keywords ("RECORD");
 
          Set_Component_List (Rec_Node, P_Component_List);
 
@@ -4205,7 +4245,15 @@ package body Ch3 is
          --  second null exclusion is present in the access type definition.
 
          Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
+
+         if Token /= Tok_Access then
+            Error_Msg
+              ("ACCESS expected",
+               Token_Ptr);
+         end if;
+
          Scan; -- past ACCESS
+
          Not_Null_Subtype_Loc := Token_Ptr;
          Not_Null_Subtype := P_Null_Exclusion; --  Might also appear
       end if;

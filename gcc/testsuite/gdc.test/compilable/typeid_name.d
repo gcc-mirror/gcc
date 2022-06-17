@@ -11,4 +11,3 @@ class Tiger : Panzer {}
 static assert (() {
     Panzer p = new Tiger(); return classname(p);
 } () == "Tiger");
-

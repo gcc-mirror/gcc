@@ -27,9 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "cfganal.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
-#include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop.h"
@@ -110,9 +110,7 @@ evrp_range_analyzer::set_ssa_range_info (tree lhs, value_range_equiv *vr)
   if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
     {
       if (!vr->varying_p () && vr->constant_p ())
-	set_range_info (lhs, vr->kind (),
-			wi::to_wide (vr->min ()),
-			wi::to_wide (vr->max ()));
+	set_range_info (lhs, *vr);
     }
   else if (POINTER_TYPE_P (TREE_TYPE (lhs))
 	   && range_includes_zero_p (vr) == 0)
@@ -209,7 +207,7 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      const value_range_equiv *old_vr
 		= get_value_range (vrs[i].first);
 	      value_range tem (*old_vr);
-	      tem.intersect (vrs[i].second);
+	      tem.legacy_verbose_intersect (vrs[i].second);
 	      if (tem.equal_p (*old_vr))
 		{
 		  free_value_range (vrs[i].second);
@@ -257,7 +255,7 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
 
       /* Skips floats and other things we can't represent in a
 	 range.  */
-      if (!value_range::supports_type_p (TREE_TYPE (lhs)))
+      if (!value_range_equiv::supports_p (TREE_TYPE (lhs)))
 	continue;
 
       value_range_equiv vr_result;

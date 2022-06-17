@@ -166,7 +166,7 @@ test_stdio_example ()
     "getwc_unlocked",
     "putc_unlocked"
   };
-  const size_t count = sizeof(example) / sizeof (example[0]);
+  const size_t count = ARRAY_SIZE (example);
   function_set fs (example, count);
   fs.assert_sorted ();
   fs.assert_sane ();

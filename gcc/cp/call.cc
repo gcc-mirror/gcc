@@ -948,7 +948,7 @@ field_in_pset (hash_set<tree, true> &pset, tree field)
     for (field = TYPE_FIELDS (TREE_TYPE (field));
 	 field; field = DECL_CHAIN (field))
       {
-	field = next_initializable_field (field);
+	field = next_aggregate_field (field);
 	if (field == NULL_TREE)
 	  break;
 	if (field_in_pset (pset, field))
@@ -965,7 +965,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 {
   unsigned HOST_WIDE_INT i = 0;
   conversion *c;
-  tree field = next_initializable_field (TYPE_FIELDS (type));
+  tree field = next_aggregate_field (TYPE_FIELDS (type));
   tree empty_ctor = NULL_TREE;
   hash_set<tree, true> pset;
 
@@ -1011,7 +1011,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 	}
     }
 
-  for (; field; field = next_initializable_field (DECL_CHAIN (field)))
+  for (; field; field = next_aggregate_field (DECL_CHAIN (field)))
     {
       tree ftype = TREE_TYPE (field);
       tree val;
@@ -1680,8 +1680,19 @@ direct_reference_binding (tree type, conversion *conv)
        because the types "int *" and "const int *const" are
        reference-related and we were binding both directly and they
        had the same rank.  To break it up, we add a ck_qual under the
-       ck_ref_bind so that conversion sequence ranking chooses #1.  */
-    conv = build_conv (ck_qual, t, conv);
+       ck_ref_bind so that conversion sequence ranking chooses #1.
+
+       We strip_top_quals here which is also what standard_conversion
+       does.  Failure to do so would confuse comp_cv_qual_signature
+       into thinking that in
+
+	 void f(const int * const &); // #1
+	 void f(const int *); // #2
+	 int *x;
+	 f(x);
+
+       #2 is a better match than #1 even though they're ambiguous (97296).  */
+    conv = build_conv (ck_qual, strip_top_quals (t), conv);
 
   return build_conv (ck_ref_bind, type, conv);
 }
@@ -2821,7 +2832,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	  tree c1 = TREE_TYPE (type1);
 	  tree c2 = TYPE_PTRMEM_CLASS_TYPE (type2);
 
-	  if (MAYBE_CLASS_TYPE_P (c1) && DERIVED_FROM_P (c2, c1)
+	  if (CLASS_TYPE_P (c1) && DERIVED_FROM_P (c2, c1)
 	      && (TYPE_PTRMEMFUNC_P (type2)
 		  || is_complete (TYPE_PTRMEM_POINTED_TO_TYPE (type2))))
 	    break;
@@ -4661,6 +4672,11 @@ resolve_args (vec<tree, va_gc> *args, tsubst_flags_t complain)
 	}
       else if (invalid_nonstatic_memfn_p (EXPR_LOCATION (arg), arg, complain))
 	return NULL;
+
+      /* Force auto deduction now.  Omit tf_warning to avoid redundant
+	 deprecated warning on deprecated-14.C.  */
+      if (!mark_single_function (arg, tf_error))
+	return NULL;
     }
   return args;
 }
@@ -4899,8 +4915,7 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
        up in the global scope.
 
      we disregard block-scope declarations of "operator new".  */
-  fns = lookup_name (fnname, LOOK_where::NAMESPACE);
-  fns = lookup_arg_dependent (fnname, fns, *args);
+  fns = lookup_qualified_name (global_namespace, fnname);
 
   if (align_arg)
     {
@@ -7101,9 +7116,10 @@ extract_call_expr (tree call)
       default:;
       }
 
-  gcc_assert (TREE_CODE (call) == CALL_EXPR
-	      || TREE_CODE (call) == AGGR_INIT_EXPR
-	      || call == error_mark_node);
+  if (TREE_CODE (call) != CALL_EXPR
+      && TREE_CODE (call) != AGGR_INIT_EXPR
+      && call != error_mark_node)
+    return NULL_TREE;
   return call;
 }
 
@@ -8087,10 +8103,10 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	totype = complete_type_or_maybe_complain (totype, NULL_TREE, complain);
 	if (!totype)
 	  return error_mark_node;
-	tree field = next_initializable_field (TYPE_FIELDS (totype));
+	tree field = next_aggregate_field (TYPE_FIELDS (totype));
 	vec<constructor_elt, va_gc> *vec = NULL;
 	CONSTRUCTOR_APPEND_ELT (vec, field, array);
-	field = next_initializable_field (DECL_CHAIN (field));
+	field = next_aggregate_field (DECL_CHAIN (field));
 	CONSTRUCTOR_APPEND_ELT (vec, field, size_int (len));
 	tree new_ctor = build_constructor (totype, vec);
 	return get_target_expr_sfinae (new_ctor, complain);
@@ -8958,6 +8974,7 @@ make_base_init_ok (tree exp)
        call target.  It would be possible to splice in the appropriate
        arguments, but probably not worth the complexity.  */
     return false;
+  mark_used (fn);
   AGGR_INIT_EXPR_FN (exp) = build_address (fn);
   return true;
 }
@@ -9232,8 +9249,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       else
 	{
-	  tree binfo = TYPE_BINFO (TREE_TYPE (first_arg));
-	  callee = build_baselink (binfo, binfo, fn, NULL_TREE);
+	  callee = build_baselink (cand->conversion_path, cand->access_path,
+				   fn, NULL_TREE);
 	  callee = build_min (COMPONENT_REF, TREE_TYPE (fn),
 			      first_arg, callee, NULL_TREE);
 	}
@@ -9939,7 +9956,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 		    obj_arg = TREE_OPERAND (addr, 0);
 		}
 	    }
-	  call = cxx_constant_value (call, obj_arg);
+	  call = cxx_constant_value_sfinae (call, obj_arg, complain);
 	  if (obj_arg && !error_operand_p (call))
 	    call = build2 (INIT_EXPR, void_type_node, obj_arg, call);
 	  call = convert_from_reference (call);
@@ -10317,6 +10334,8 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
 	  /* Finally, warn on partial copies.  */
 	  unsigned HOST_WIDE_INT typesize
 	    = tree_to_uhwi (TYPE_SIZE_UNIT (desttype));
+	  if (typesize == 0)
+	    break;
 	  if (unsigned HOST_WIDE_INT partial = tree_to_uhwi (sz) % typesize)
 	    warned = warning_at (loc, OPT_Wclass_memaccess,
 				 (typesize - partial > 1
@@ -11169,6 +11188,12 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 		*fn_p = fn;
 	      /* Build the actual CALL_EXPR.  */
 	      call = build_over_call (cand, flags, complain);
+
+	      /* Suppress warnings for if (my_struct.operator= (x)) where
+		 my_struct is implicitly converted to bool. */
+	      if (TREE_CODE (call) == MODIFY_EXPR)
+		suppress_warning (call, OPT_Wparentheses);
+
 	      /* In an expression of the form `a->f()' where `f' turns
 		 out to be a static member function, `a' is
 		 none-the-less evaluated.  */
@@ -11535,12 +11560,9 @@ compare_ics (conversion *ics1, conversion *ics2)
 	 P0388R4.)  */
       else if (t1->kind == ck_aggr
 	       && TREE_CODE (t1->type) == ARRAY_TYPE
-	       && TREE_CODE (t2->type) == ARRAY_TYPE)
+	       && TREE_CODE (t2->type) == ARRAY_TYPE
+	       && same_type_p (TREE_TYPE (t1->type), TREE_TYPE (t2->type)))
 	{
-	  /* The type of the array elements must be the same.  */
-	  if (!same_type_p (TREE_TYPE (t1->type), TREE_TYPE (t2->type)))
-	    return 0;
-
 	  tree n1 = nelts_initialized_by_list_init (t1);
 	  tree n2 = nelts_initialized_by_list_init (t2);
 	  if (tree_int_cst_lt (n1, n2))
@@ -13252,8 +13274,8 @@ type_has_extended_temps (tree type)
     {
       if (is_std_init_list (type))
 	return true;
-      for (tree f = next_initializable_field (TYPE_FIELDS (type));
-	   f; f = next_initializable_field (DECL_CHAIN (f)))
+      for (tree f = next_aggregate_field (TYPE_FIELDS (type));
+	   f; f = next_aggregate_field (DECL_CHAIN (f)))
 	if (type_has_extended_temps (TREE_TYPE (f)))
 	  return true;
     }

@@ -619,7 +619,9 @@ tree gfc_get_extern_function_decl (gfc_symbol *,
 tree gfc_build_addr_expr (tree, tree);
 
 /* Build an ARRAY_REF.  */
-tree gfc_build_array_ref (tree, tree, tree, tree vptr = NULL_TREE);
+tree gfc_build_array_ref (tree, tree, tree,
+			  bool non_negative_offset = false,
+			  tree vptr = NULL_TREE);
 
 /* Build an array ref using pointer arithmetic.  */
 tree gfc_build_spanned_array_ref (tree base, tree offset, tree span);
@@ -806,6 +808,7 @@ bool gfc_get_array_descr_info (const_tree, struct array_descr_info *);
 bool gfc_omp_is_allocatable_or_ptr (const_tree);
 tree gfc_omp_check_optional_argument (tree, bool);
 tree gfc_omp_array_data (tree, bool);
+tree gfc_omp_array_size (tree, gimple_seq *);
 bool gfc_omp_privatize_by_reference (const_tree);
 enum omp_clause_default_kind gfc_omp_predetermined_sharing (tree);
 enum omp_clause_defaultmap_kind gfc_omp_predetermined_mapping (tree);

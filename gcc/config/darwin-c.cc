@@ -505,7 +505,7 @@ darwin_register_frameworks (const char *sysroot,
       size_t i;
 
       /* Setup default search path for frameworks.  */
-      for (i=0; i<sizeof (framework_defaults)/sizeof(const char *); ++i)
+      for (i = 0; i < ARRAY_SIZE (framework_defaults); ++i)
 	{
 	  char *str;
 	  if (sysroot)
@@ -691,7 +691,8 @@ macosx_version_as_macro (void)
   if (!version_array)
     goto fail;
 
-  if (version_array[MAJOR] < 10 || version_array[MAJOR] > 12)
+  /* System tools accept up to 99 as a major version.  */
+  if (version_array[MAJOR] < 10 || version_array[MAJOR] > 99)
     goto fail;
 
   if (version_array[MAJOR] == 10 && version_array[MINOR] < 10)

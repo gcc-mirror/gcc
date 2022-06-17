@@ -38,9 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "cfganal.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
-#include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "tree-cfg.h"
 #include "tree-ssa-loop.h"
@@ -2254,7 +2254,11 @@ eliminate_redundant_comparison (enum tree_code opcode,
 	 BIT_AND_EXPR or BIT_IOR_EXPR was of a wider integer type,
 	 we need to convert.  */
       if (!useless_type_conversion_p (TREE_TYPE (curr->op), TREE_TYPE (t)))
-	t = fold_convert (TREE_TYPE (curr->op), t);
+	{
+	  if (!fold_convertible_p (TREE_TYPE (curr->op), t))
+	    continue;
+	  t = fold_convert (TREE_TYPE (curr->op), t);
+	}
 
       if (TREE_CODE (t) != INTEGER_CST
 	  && !operand_equal_p (t, curr->op, 0))
@@ -5185,17 +5189,26 @@ swap_ops_for_binary_stmt (const vec<operand_entry *> &ops,
 }
 
 /* If definition of RHS1 or RHS2 dominates STMT, return the later of those
-   two definitions, otherwise return STMT.  */
+   two definitions, otherwise return STMT.  Sets INSERT_BEFORE to indicate
+   whether RHS1 op RHS2 can be inserted before or needs to be inserted
+   after the returned stmt.  */
 
 static inline gimple *
-find_insert_point (gimple *stmt, tree rhs1, tree rhs2)
+find_insert_point (gimple *stmt, tree rhs1, tree rhs2, bool &insert_before)
 {
+  insert_before = true;
   if (TREE_CODE (rhs1) == SSA_NAME
       && reassoc_stmt_dominates_stmt_p (stmt, SSA_NAME_DEF_STMT (rhs1)))
-    stmt = SSA_NAME_DEF_STMT (rhs1);
+    {
+      stmt = SSA_NAME_DEF_STMT (rhs1);
+      insert_before = false;
+    }
   if (TREE_CODE (rhs2) == SSA_NAME
       && reassoc_stmt_dominates_stmt_p (stmt, SSA_NAME_DEF_STMT (rhs2)))
-    stmt = SSA_NAME_DEF_STMT (rhs2);
+    {
+      stmt = SSA_NAME_DEF_STMT (rhs2);
+      insert_before = false;
+    }
   return stmt;
 }
 
@@ -5207,7 +5220,8 @@ insert_stmt_before_use (gimple *stmt, gimple *stmt_to_insert)
   gcc_assert (is_gimple_assign (stmt_to_insert));
   tree rhs1 = gimple_assign_rhs1 (stmt_to_insert);
   tree rhs2 = gimple_assign_rhs2 (stmt_to_insert);
-  gimple *insert_point = find_insert_point (stmt, rhs1, rhs2);
+  bool insert_before;
+  gimple *insert_point = find_insert_point (stmt, rhs1, rhs2, insert_before);
   gimple_stmt_iterator gsi = gsi_for_stmt (insert_point);
   gimple_set_uid (stmt_to_insert, gimple_uid (insert_point));
 
@@ -5215,7 +5229,7 @@ insert_stmt_before_use (gimple *stmt, gimple *stmt_to_insert)
      the point where operand rhs1 or rhs2 is defined. In this case,
      stmt_to_insert has to be inserted afterwards. This would
      only happen when the stmt insertion point is flexible. */
-  if (stmt == insert_point)
+  if (insert_before)
     gsi_insert_before (&gsi, stmt_to_insert, GSI_NEW_STMT);
   else
     insert_stmt_after (stmt_to_insert, insert_point);
@@ -5275,22 +5289,25 @@ rewrite_expr_tree (gimple *stmt, enum tree_code rhs_code, unsigned int opindex,
 	     return lhs), force creation of a new SSA_NAME.  */
 	  if (changed || ((rhs1 != oe2->op || rhs2 != oe1->op) && opindex))
 	    {
+	      bool insert_before;
 	      gimple *insert_point
-		= find_insert_point (stmt, oe1->op, oe2->op);
+		= find_insert_point (stmt, oe1->op, oe2->op, insert_before);
 	      lhs = make_ssa_name (TREE_TYPE (lhs));
 	      stmt
 		= gimple_build_assign (lhs, rhs_code,
 				       oe1->op, oe2->op);
 	      gimple_set_uid (stmt, uid);
 	      gimple_set_visited (stmt, true);
-	      if (insert_point == gsi_stmt (gsi))
+	      if (insert_before)
 		gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 	      else
 		insert_stmt_after (stmt, insert_point);
 	    }
 	  else
 	    {
-	      gcc_checking_assert (find_insert_point (stmt, oe1->op, oe2->op)
+	      bool insert_before;
+	      gcc_checking_assert (find_insert_point (stmt, oe1->op, oe2->op,
+						      insert_before)
 				   == stmt);
 	      gimple_assign_set_rhs1 (stmt, oe1->op);
 	      gimple_assign_set_rhs2 (stmt, oe2->op);
@@ -5346,21 +5363,25 @@ rewrite_expr_tree (gimple *stmt, enum tree_code rhs_code, unsigned int opindex,
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 	  unsigned int uid = gimple_uid (stmt);
-	  gimple *insert_point = find_insert_point (stmt, new_rhs1, oe->op);
+	  bool insert_before;
+	  gimple *insert_point = find_insert_point (stmt, new_rhs1, oe->op,
+						    insert_before);
 
 	  lhs = make_ssa_name (TREE_TYPE (lhs));
 	  stmt = gimple_build_assign (lhs, rhs_code,
 				      new_rhs1, oe->op);
 	  gimple_set_uid (stmt, uid);
 	  gimple_set_visited (stmt, true);
-	  if (insert_point == gsi_stmt (gsi))
+	  if (insert_before)
 	    gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 	  else
 	    insert_stmt_after (stmt, insert_point);
 	}
       else
 	{
-	  gcc_checking_assert (find_insert_point (stmt, new_rhs1, oe->op)
+	  bool insert_before;
+	  gcc_checking_assert (find_insert_point (stmt, new_rhs1, oe->op,
+						  insert_before)
 			       == stmt);
 	  gimple_assign_set_rhs1 (stmt, new_rhs1);
 	  gimple_assign_set_rhs2 (stmt, oe->op);
@@ -5840,7 +5861,9 @@ try_special_add_to_ops (vec<operand_entry *> *ops,
 	   && gimple_assign_rhs_code (def_stmt) == NEGATE_EXPR
 	   && !HONOR_SNANS (TREE_TYPE (op))
 	   && (!HONOR_SIGNED_ZEROS (TREE_TYPE (op))
-	       || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (op))))
+	       || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (op)))
+	   && (!FLOAT_TYPE_P (TREE_TYPE (op))
+	       || !DECIMAL_FLOAT_MODE_P (element_mode (op))))
     {
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
       tree cst = build_minus_one_cst (TREE_TYPE (op));
@@ -5970,8 +5993,12 @@ repropagate_negates (void)
   FOR_EACH_VEC_ELT (plus_negates, i, negate)
     {
       gimple *user = get_single_immediate_use (negate);
-
       if (!user || !is_gimple_assign (user))
+	continue;
+
+      tree negateop = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (negate));
+      if (TREE_CODE (negateop) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (negateop))
 	continue;
 
       /* The negate operand can be either operand of a PLUS_EXPR
@@ -5996,9 +6023,9 @@ repropagate_negates (void)
 	  if (gimple_assign_rhs2 (user) == negate)
 	    {
 	      tree rhs1 = gimple_assign_rhs1 (user);
-	      tree rhs2 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (negate));
 	      gimple_stmt_iterator gsi = gsi_for_stmt (user);
-	      gimple_assign_set_rhs_with_ops (&gsi, MINUS_EXPR, rhs1, rhs2);
+	      gimple_assign_set_rhs_with_ops (&gsi, MINUS_EXPR, rhs1,
+					      negateop);
 	      update_stmt (user);
 	    }
 	}
@@ -6007,21 +6034,20 @@ repropagate_negates (void)
 	  if (gimple_assign_rhs1 (user) == negate)
 	    {
 	      /* We have
-	           x = -a
+		   x = -negateop
 		   y = x - b
 		 which we transform into
-		   x = a + b
+		   x = negateop + b
 		   y = -x .
 		 This pushes down the negate which we possibly can merge
 		 into some other operation, hence insert it into the
 		 plus_negates vector.  */
 	      gimple *feed = SSA_NAME_DEF_STMT (negate);
-	      tree a = gimple_assign_rhs1 (feed);
 	      tree b = gimple_assign_rhs2 (user);
 	      gimple_stmt_iterator gsi = gsi_for_stmt (feed);
 	      gimple_stmt_iterator gsi2 = gsi_for_stmt (user);
 	      tree x = make_ssa_name (TREE_TYPE (gimple_assign_lhs (feed)));
-	      gimple *g = gimple_build_assign (x, PLUS_EXPR, a, b);
+	      gimple *g = gimple_build_assign (x, PLUS_EXPR, negateop, b);
 	      gsi_insert_before (&gsi2, g, GSI_SAME_STMT);
 	      gimple_assign_set_rhs_with_ops (&gsi2, NEGATE_EXPR, x);
 	      user = gsi_stmt (gsi2);
@@ -6032,13 +6058,11 @@ repropagate_negates (void)
 	    }
 	  else
 	    {
-	      /* Transform "x = -a; y = b - x" into "y = b + a", getting
-	         rid of one operation.  */
-	      gimple *feed = SSA_NAME_DEF_STMT (negate);
-	      tree a = gimple_assign_rhs1 (feed);
+	      /* Transform "x = -negateop; y = b - x" into "y = b + negateop",
+		 getting rid of one operation.  */
 	      tree rhs1 = gimple_assign_rhs1 (user);
 	      gimple_stmt_iterator gsi = gsi_for_stmt (user);
-	      gimple_assign_set_rhs_with_ops (&gsi, PLUS_EXPR, rhs1, a);
+	      gimple_assign_set_rhs_with_ops (&gsi, PLUS_EXPR, rhs1, negateop);
 	      update_stmt (gsi_stmt (gsi));
 	    }
 	}

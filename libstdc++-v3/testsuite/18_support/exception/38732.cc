@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-do run { target { c++11 && { ! c++23 } } } }
+
 #include <typeinfo>
 #include <exception>
 #include "unwind.h"
@@ -66,21 +68,27 @@ void test01 ()
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
     VERIFY ( exc != 0 );
+#if __cpp_rtti
     VERIFY ( typeid(int) == *exc->exceptionType );
+#endif
   }
   try {
     throw 0LL;
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
     VERIFY ( exc != 0 );
+#if __cpp_rtti
     VERIFY ( typeid(long long int) == *exc->exceptionType );
+#endif
   }
   try {
     throw 0.0;
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
     VERIFY ( exc != 0 );
+#if __cpp_rtti
     VERIFY ( typeid(double) == *exc->exceptionType );
+#endif
   }
 }
 

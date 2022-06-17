@@ -126,6 +126,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-chlat9$(objext) \
   a-chtgbk$(objext) \
   a-chtgbo$(objext) \
+  a-chtgfk$(objext) \
+  a-chtgfo$(objext) \
   a-chtgke$(objext) \
   a-chtgop$(objext) \
   a-chzla1$(objext) \
@@ -414,6 +416,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-arrspl$(objext) \
   g-awk$(objext) \
   g-binenv$(objext) \
+  g-binsea$(objext) \
   g-brapre$(objext) \
   g-bubsor$(objext) \
   g-busora$(objext) \
@@ -448,6 +451,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-exptty$(objext) \
   g-flocon$(objext) \
   g-forstr$(objext) \
+  g-gfmafu$(objext) \
   g-graphs$(objext) \
   g-heasor$(objext) \
   g-hesora$(objext) \
@@ -735,6 +739,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-regpat$(objext) \
   s-resfil$(objext) \
   s-restri$(objext) \
+  s-retsta$(objext) \
   s-rident$(objext) \
   s-rpc$(objext)    \
   s-scaval$(objext) \
@@ -744,6 +749,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-shasto$(objext) \
   s-soflin$(objext) \
   s-soliin$(objext) \
+  s-spark$(objext) \
+  s-spcuop$(objext) \
   s-spsufi$(objext) \
   s-stache$(objext) \
   s-stalib$(objext) \
@@ -894,7 +901,7 @@ ATOMICS_TARGET_PAIRS = \
 ATOMICS_BUILTINS_TARGET_PAIRS = \
   s-atocou.adb<libgnat/s-atocou__builtin.adb
 
-# Special version of units for x86 and x86-64 platforms.
+# Special version of units for x86 and x86-64 platforms
 
 X86_TARGET_PAIRS = \
   a-nuauco.ads<libgnat/a-nuauco__x86.ads \
@@ -904,7 +911,14 @@ X86_64_TARGET_PAIRS = \
   a-nuauco.ads<libgnat/a-nuauco__x86.ads \
   s-atocou.adb<libgnat/s-atocou__builtin.adb
 
-# Implementation of symbolic traceback based on dwarf
+# Special version of units for platforms with SIMD math functions
+
+SIMD_PATH_TARGET_PAIRS = \
+  a-nalofl.ads<libgnat/a-nalofl__simd.ads \
+  a-nuaufl.ads<libgnat/a-nuaufl__simd.ads
+
+# Implementation of symbolic traceback based on DWARF
+
 TRASYM_DWARF_UNIX_PAIRS = \
   s-trasym.adb<libgnat/s-trasym__dwarf.adb \
   s-mmosin.ads<libgnat/s-mmosin__unix.ads \
@@ -916,12 +930,17 @@ TRASYM_DWARF_MINGW_PAIRS = \
   s-mmosin.ads<libgnat/s-mmosin__mingw.ads \
   s-mmosin.adb<libgnat/s-mmosin__mingw.adb
 
-TRASYM_DWARF_COMMON_OBJS = s-objrea$(objext) s-dwalin$(objext) s-mmap$(objext) \
+TRASYM_DWARF_COMMON_OBJS = \
+  s-objrea$(objext) \
+  s-dwalin$(objext) \
+  s-mmap$(objext)   \
   s-mmosin$(objext)
 
 TRASYM_DWARF_UNIX_OBJS = $(TRASYM_DWARF_COMMON_OBJS) s-mmauni$(objext)
 
 TRASYM_DWARF_MINGW_OBJS = $(TRASYM_DWARF_COMMON_OBJS)
+
+# Support for 128-bit types
 
 GNATRTL_128BIT_PAIRS = \
   a-decima.ads<libgnat/a-decima__128.ads \
@@ -941,7 +960,6 @@ GNATRTL_128BIT_PAIRS = \
   s-scaval.ads<libgnat/s-scaval__128.ads \
   s-scaval.adb<libgnat/s-scaval__128.adb
 
-# Objects needed for 128-bit types
 GNATRTL_128BIT_OBJS = \
   s-arit128$(objext) \
   s-casi128$(objext) \
@@ -1490,12 +1508,11 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
-# AARCH64 QNX
-ifeq ($(strip $(filter-out aarch64 %qnx,$(target_cpu) $(target_os))),)
+# ARM and AARCH64 QNX
+ifeq ($(strip $(filter-out arm aarch64 %qnx,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__qnx.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
-  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__qnx.adb \
   s-osinte.adb<libgnarl/s-osinte__qnx.adb \
@@ -1508,21 +1525,31 @@ ifeq ($(strip $(filter-out aarch64 %qnx,$(target_cpu) $(target_os))),)
   g-soliop.ads<libgnat/g-soliop__qnx.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  $(GNATRTL_128BIT_PAIRS) \
-  system.ads<libgnat/system-qnx-aarch64.ads
+  system.ads<libgnat/system-qnx-arm.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
-  EXTRA_GNATRTL_NONTASKING_OBJS = $(GNATRTL_128BIT_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-qnx.o
-  EXTRA_LIBGNAT_OBJS+=sigtramp-qnx.o
+  ifeq ($(strip $(filter-out arm%, $(target_cpu))),)
+     EH_MECHANISM=-arm
+     SIGTRAMP_OBJ=sigtramp-arm-qnx.o
+  else
+     EH_MECHANISM=-gcc
+     SIGTRAMP_OBJ=sigtramp-qnx.o
+     # "fma*" instructions not available for ARM fpu=vfpv3
+     # but not an issue on AARCH64.
+     LIBGNAT_TARGET_PAIRS += \
+       s-dorepr.adb<libgnat/s-dorepr__fma.adb
+     LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
+     EXTRA_GNATRTL_NONTASKING_OBJS = $(GNATRTL_128BIT_OBJS)
+  endif
+  GNATLIB_SHARED = gnatlib-shared-dual
+  EXTRA_LIBGNAT_OBJS+=$(SIGTRAMP_OBJ)
   EXTRA_LIBGNAT_SRCS+=sigtramp.h
-  EH_MECHANISM=-gcc
 
   SO_OPTS= -shared-libgcc -Wl,-soname,
   MISCLIB= -lsocket
   THREADSLIB=
-  GNATLIB_SHARED = gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
@@ -2611,6 +2638,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
+  $(SIMD_PATH_TARGET_PAIRS) \
   $(GNATRTL_128BIT_PAIRS) \
   system.ads<libgnat/system-linux-x86.ads
 
@@ -2655,6 +2683,7 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
+  $(SIMD_PATH_TARGET_PAIRS) \
   $(GNATRTL_128BIT_PAIRS) \
   system.ads<libgnat/system-linux-x86.ads
 
@@ -2852,7 +2881,7 @@ endif
 
 # Turn on shared gnatlib for specific vx7r2 targets for RTP runtimes. Once
 # all targets are ported the target_cpu selector can be removed.
-ifeq ($(strip $(filter-out vxworks7r2 powerpc64 x86_64 rtp rtp-smp, $(target_os) $(target_cpu) $(THREAD_KIND))),)
+ifeq ($(strip $(filter-out vxworks7r2 powerpc64 x86_64 aarch64 rtp rtp-smp, $(target_os) $(target_cpu) $(THREAD_KIND))),)
     GNATLIB_SHARED = gnatlib-shared-dual
     LIBRARY_VERSION := $(LIB_VERSION)
 endif

@@ -30,10 +30,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "cfganal.h"
 #include "cfgloop.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "tree-inline.h"
-#include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
 #include "domwalk.h"
@@ -220,8 +220,7 @@ edge_info::derive_equivalences (tree name, tree value, int recursion_limit)
 	/* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
 	   set via a widening type conversion, then we may be able to record
 	   additional equivalences.  */
-	case NOP_EXPR:
-	case CONVERT_EXPR:
+	CASE_CONVERT:
 	  {
 	    tree rhs = gimple_assign_rhs1 (def_stmt);
 	    tree rhs_type = TREE_TYPE (rhs);
@@ -694,7 +693,7 @@ dom_jt_simplifier::simplify (gimple *stmt, gimple *within_stmt,
       if (TREE_CODE (op) != SSA_NAME)
 	return NULL_TREE;
 
-      const value_range_equiv *vr = m_vr_values->get_value_range (op);
+      const value_range *vr = m_vr_values->get_value_range (op);
       return find_case_label_range (switch_stmt, vr);
     }
   if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))

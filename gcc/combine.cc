@@ -382,7 +382,7 @@ struct undo
   struct undo *next;
   enum undo_kind kind;
   union { rtx r; int i; machine_mode m; struct insn_link *l; } old_contents;
-  union { rtx *r; int *i; struct insn_link **l; } where;
+  union { rtx *r; int *i; int regno; struct insn_link **l; } where;
 };
 
 /* Record a bunch of changes to be undone, up to MAX_UNDO of them.
@@ -761,10 +761,11 @@ do_SUBST_INT (int *into, int newval)
    well.  */
 
 static void
-do_SUBST_MODE (rtx *into, machine_mode newval)
+subst_mode (int regno, machine_mode newval)
 {
   struct undo *buf;
-  machine_mode oldval = GET_MODE (*into);
+  rtx reg = regno_reg_rtx[regno];
+  machine_mode oldval = GET_MODE (reg);
 
   if (oldval == newval)
     return;
@@ -775,14 +776,12 @@ do_SUBST_MODE (rtx *into, machine_mode newval)
     buf = XNEW (struct undo);
 
   buf->kind = UNDO_MODE;
-  buf->where.r = into;
+  buf->where.regno = regno;
   buf->old_contents.m = oldval;
-  adjust_reg_mode (*into, newval);
+  adjust_reg_mode (reg, newval);
 
   buf->next = undobuf.undos, undobuf.undos = buf;
 }
-
-#define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE (&(INTO), (NEWVAL))
 
 /* Similar to SUBST, but NEWVAL is a LOG_LINKS expression.  */
 
@@ -2570,6 +2569,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   rtx new_other_notes;
   int i;
   scalar_int_mode dest_mode, temp_mode;
+  bool has_non_call_exception = false;
 
   /* Immediately return if any of I0,I1,I2 are the same insn (I3 can
      never be).  */
@@ -2952,6 +2952,32 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       return 0;
     }
 
+  /* With non-call exceptions we can end up trying to combine multiple
+     insns with possible EH side effects.  Make sure we can combine
+     that to a single insn which means there must be at most one insn
+     in the combination with an EH side effect.  */
+  if (cfun->can_throw_non_call_exceptions)
+    {
+      if (find_reg_note (i3, REG_EH_REGION, NULL_RTX)
+	  || find_reg_note (i2, REG_EH_REGION, NULL_RTX)
+	  || (i1 && find_reg_note (i1, REG_EH_REGION, NULL_RTX))
+	  || (i0 && find_reg_note (i0, REG_EH_REGION, NULL_RTX)))
+	{
+	  has_non_call_exception = true;
+	  if (insn_could_throw_p (i3)
+	      + insn_could_throw_p (i2)
+	      + (i1 ? insn_could_throw_p (i1) : 0)
+	      + (i0 ? insn_could_throw_p (i0) : 0) > 1)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Can't combine multiple insns with EH "
+			 "side-effects\n");
+	      undo_all ();
+	      return 0;
+	    }
+	}
+    }
+
   /* Record whether i2 and i3 are trivial moves.  */
   i2_was_move = is_just_move (i2);
   i3_was_move = is_just_move (i3);
@@ -3186,7 +3212,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		    newpat_dest = gen_rtx_REG (compare_mode, regno);
 		  else
 		    {
-		      SUBST_MODE (regno_reg_rtx[regno], compare_mode);
+		      subst_mode (regno, compare_mode);
 		      newpat_dest = regno_reg_rtx[regno];
 		    }
 		}
@@ -3576,7 +3602,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		ni2dest = gen_rtx_REG (new_mode, REGNO (i2dest));
 	      else
 		{
-		  SUBST_MODE (regno_reg_rtx[REGNO (i2dest)], new_mode);
+		  subst_mode (REGNO (i2dest), new_mode);
 		  ni2dest = regno_reg_rtx[REGNO (i2dest)];
 		}
 
@@ -3686,7 +3712,13 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	      || !modified_between_p (*split, i2, i3))
 	  /* We can't overwrite I2DEST if its value is still used by
 	     NEWPAT.  */
-	  && ! reg_referenced_p (i2dest, newpat))
+	  && ! reg_referenced_p (i2dest, newpat)
+	  /* We should not split a possibly trapping part when we
+	     care about non-call EH and have REG_EH_REGION notes
+	     to distribute.  */
+	  && ! (cfun->can_throw_non_call_exceptions
+		&& has_non_call_exception
+		&& may_trap_p (*split)))
 	{
 	  rtx newdest = i2dest;
 	  enum rtx_code split_code = GET_CODE (*split);
@@ -3712,7 +3744,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		newdest = gen_rtx_REG (split_mode, REGNO (i2dest));
 	      else
 		{
-		  SUBST_MODE (regno_reg_rtx[REGNO (i2dest)], split_mode);
+		  subst_mode (REGNO (i2dest), split_mode);
 		  newdest = regno_reg_rtx[REGNO (i2dest)];
 		}
 	    }
@@ -4082,7 +4114,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       for (undo = undobuf.undos; undo; undo = undo->next)
 	if (undo->kind == UNDO_MODE)
 	  {
-	    rtx reg = *undo->where.r;
+	    rtx reg = regno_reg_rtx[undo->where.regno];
 	    machine_mode new_mode = GET_MODE (reg);
 	    machine_mode old_mode = undo->old_contents.m;
 
@@ -4755,7 +4787,8 @@ undo_to_marker (void *marker)
 	  *undo->where.i = undo->old_contents.i;
 	  break;
 	case UNDO_MODE:
-	  adjust_reg_mode (*undo->where.r, undo->old_contents.m);
+	  adjust_reg_mode (regno_reg_rtx[undo->where.regno],
+			   undo->old_contents.m);
 	  break;
 	case UNDO_LINKS:
 	  *undo->where.l = undo->old_contents.l;
@@ -6819,7 +6852,7 @@ simplify_set (rtx x)
 		new_dest = gen_rtx_REG (compare_mode, regno);
 	      else
 		{
-		  SUBST_MODE (regno_reg_rtx[regno], compare_mode);
+		  subst_mode (regno, compare_mode);
 		  new_dest = regno_reg_rtx[regno];
 		}
 
@@ -14175,23 +14208,35 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	  break;
 
 	case REG_EH_REGION:
-	  /* These notes must remain with the call or trapping instruction.  */
-	  if (CALL_P (i3))
-	    place = i3;
-	  else if (i2 && CALL_P (i2))
-	    place = i2;
-	  else
-	    {
-	      gcc_assert (cfun->can_throw_non_call_exceptions);
-	      if (may_trap_p (i3))
-		place = i3;
-	      else if (i2 && may_trap_p (i2))
-		place = i2;
-	      /* ??? Otherwise assume we've combined things such that we
-		 can now prove that the instructions can't trap.  Drop the
-		 note in this case.  */
-	    }
-	  break;
+	  {
+	    /* The landing pad handling needs to be kept in sync with the
+	       prerequisite checking in try_combine.  */
+	    int lp_nr = INTVAL (XEXP (note, 0));
+	    /* A REG_EH_REGION note transfering control can only ever come
+	       from i3.  */
+	    if (lp_nr > 0)
+	      gcc_assert (from_insn == i3);
+	    /* We are making sure there is a single effective REG_EH_REGION
+	       note and it's valid to put it on i3.  */
+	    if (!insn_could_throw_p (from_insn))
+	      /* Throw away stra notes on insns that can never throw.  */
+	      ;
+	    else
+	      {
+		if (CALL_P (i3))
+		  place = i3;
+		else
+		  {
+		    gcc_assert (cfun->can_throw_non_call_exceptions);
+		    /* If i3 can still trap preserve the note, otherwise we've
+		       combined things such that we can now prove that the
+		       instructions can't trap.  Drop the note in this case.  */
+		    if (may_trap_p (i3))
+		      place = i3;
+		  }
+	      }
+	    break;
+	  }
 
 	case REG_ARGS_SIZE:
 	  /* ??? How to distribute between i3-i1.  Assume i3 contains the

@@ -30,9 +30,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "fold-const.h"
 #include "stor-layout.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-into-ssa.h"
@@ -1905,6 +1905,7 @@ execute_update_addresses_taken (void)
 					? REALPART_EXPR : IMAGPART_EXPR,
 					TREE_TYPE (other),
 					TREE_OPERAND (lhs, 0));
+		    suppress_warning (lrhs);
 		    gimple *load = gimple_build_assign (other, lrhs);
 		    location_t loc = gimple_location (stmt);
 		    gimple_set_location (load, loc);

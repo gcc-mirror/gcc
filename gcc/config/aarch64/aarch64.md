@@ -1477,11 +1477,11 @@
    (set_attr "arch" "simd,fp16,simd,simd,simd,fp16,simd,*,*,*,*,*")]
 )
 
-(define_insn "*movsf_aarch64"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
-	(match_operand:SF 1 "general_operand"      "Y ,?rY, w,w,Ufc,Uvi,m,w,m,rY,r,M"))]
-  "TARGET_FLOAT && (register_operand (operands[0], SFmode)
-    || aarch64_reg_or_fp_zero (operands[1], SFmode))"
+(define_insn "*mov<mode>_aarch64"
+  [(set (match_operand:SFD 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
+	(match_operand:SFD 1 "general_operand"      "Y ,?rY, w,w,Ufc,Uvi,m,w,m,rY,r,M"))]
+  "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
+    || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
   "@
    movi\\t%0.2s, #0
    fmov\\t%s0, %w1
@@ -1501,11 +1501,11 @@
    (set_attr "arch" "simd,*,*,*,*,simd,*,*,*,*,*,*")]
 )
 
-(define_insn "*movdf_aarch64"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=w, w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
-	(match_operand:DF 1 "general_operand"      "Y , ?rY, w,w,Ufc,Uvi,m,w,m,rY,r,N"))]
-  "TARGET_FLOAT && (register_operand (operands[0], DFmode)
-    || aarch64_reg_or_fp_zero (operands[1], DFmode))"
+(define_insn "*mov<mode>_aarch64"
+  [(set (match_operand:DFD 0 "nonimmediate_operand" "=w, w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
+	(match_operand:DFD 1 "general_operand"      "Y , ?rY, w,w,Ufc,Uvi,m,w,m,rY,r,N"))]
+  "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
+    || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
   "@
    movi\\t%d0, #0
    fmov\\t%d0, %x1
@@ -1545,13 +1545,13 @@
   }
 )
 
-(define_insn "*movtf_aarch64"
-  [(set (match_operand:TF 0
+(define_insn "*mov<mode>_aarch64"
+  [(set (match_operand:TFD 0
 	 "nonimmediate_operand" "=w,?r ,w ,?r,w,?w,w,m,?r,m ,m")
-	(match_operand:TF 1
+	(match_operand:TFD 1
 	 "general_operand"      " w,?rY,?r,w ,Y,Y ,m,w,m ,?r,Y"))]
-  "TARGET_FLOAT && (register_operand (operands[0], TFmode)
-    || aarch64_reg_or_fp_zero (operands[1], TFmode))"
+  "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
+    || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
   "@
    mov\\t%0.16b, %1.16b
    #
@@ -1571,8 +1571,8 @@
 )
 
 (define_split
-   [(set (match_operand:TF 0 "register_operand" "")
-	 (match_operand:TF 1 "nonmemory_operand" ""))]
+   [(set (match_operand:TFD 0 "register_operand" "")
+	 (match_operand:TFD 1 "nonmemory_operand" ""))]
   "reload_completed && aarch64_split_128bit_move_p (operands[0], operands[1])"
   [(const_int 0)]
   {
@@ -1581,16 +1581,29 @@
   }
 )
 
-(define_insn "aarch64_cpymemdi"
-  [(parallel [
-   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+(define_expand "aarch64_cpymemdi"
+  [(parallel
+     [(set (match_operand 2) (const_int 0))
+      (clobber (match_dup 3))
+      (clobber (match_dup 4))
+      (set (match_operand 0)
+	   (unspec:BLK [(match_operand 1) (match_dup 2)] UNSPEC_CPYMEM))])]
+  "TARGET_MOPS"
+  {
+    operands[3] = XEXP (operands[0], 0);
+    operands[4] = XEXP (operands[1], 0);
+  }
+)
+
+(define_insn "*aarch64_cpymemdi"
+  [(set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
    (clobber (match_operand:DI 0 "register_operand" "+&r"))
    (clobber (match_operand:DI 1 "register_operand" "+&r"))
    (set (mem:BLK (match_dup 0))
-        (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_CPYMEM))])]
- "TARGET_MOPS"
- "cpyfp\t[%x0]!, [%x1]!, %x2!\;cpyfm\t[%x0]!, [%x1]!, %x2!\;cpyfe\t[%x0]!, [%x1]!, %x2!"
- [(set_attr "length" "12")]
+        (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_CPYMEM))]
+  "TARGET_MOPS"
+  "cpyfp\t[%x0]!, [%x1]!, %x2!\;cpyfm\t[%x0]!, [%x1]!, %x2!\;cpyfe\t[%x0]!, [%x1]!, %x2!"
+  [(set_attr "length" "12")]
 )
 
 ;; 0 is dst
@@ -1657,16 +1670,28 @@
 }
 )
 
-(define_insn "aarch64_setmemdi"
-  [(parallel [
-   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+(define_expand "aarch64_setmemdi"
+  [(parallel
+     [(set (match_operand 2) (const_int 0))
+      (clobber (match_dup 3))
+      (set (match_operand 0)
+	   (unspec:BLK [(match_operand 1)
+			(match_dup 2)] UNSPEC_SETMEM))])]
+  "TARGET_MOPS"
+  {
+    operands[3] = XEXP (operands[0], 0);
+  }
+)
+
+(define_insn "*aarch64_setmemdi"
+  [(set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
    (clobber (match_operand:DI 0 "register_operand" "+&r"))
    (set (mem:BLK (match_dup 0))
         (unspec:BLK [(match_operand:QI 1 "aarch64_reg_or_zero" "rZ")
-                    (match_dup 2)] UNSPEC_SETMEM))])]
- "TARGET_MOPS"
- "setp\t[%x0]!, %x2!, %x1\;setm\t[%x0]!, %x2!, %x1\;sete\t[%x0]!, %x2!, %x1"
- [(set_attr "length" "12")]
+		     (match_dup 2)] UNSPEC_SETMEM))]
+  "TARGET_MOPS"
+  "setp\t[%x0]!, %x2!, %x1\;setm\t[%x0]!, %x2!, %x1\;sete\t[%x0]!, %x2!, %x1"
+  [(set_attr "length" "12")]
 )
 
 ;; 0 is dst
@@ -4524,7 +4549,11 @@
    (set (match_operand:GPI 0 "register_operand" "=r")
 	(and:GPI (SHIFT:GPI (match_dup 1) (match_dup 2)) (match_dup 3)))]
   ""
-  "ands\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
+{
+  if (<SHIFT:is_rotl>)
+    operands[2] = GEN_INT (<sizen> - UINTVAL (operands[2]));
+  return "ands\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2";
+}
   [(set_attr "type" "logics_shift_imm")]
 )
 
@@ -4541,7 +4570,11 @@
 	(zero_extend:DI (and:SI (SHIFT:SI (match_dup 1) (match_dup 2))
 				(match_dup 3))))]
   ""
-  "ands\\t%w0, %w3, %w1, <SHIFT:shift> %2"
+{
+  if (<SHIFT:is_rotl>)
+    operands[2] = GEN_INT (32 - UINTVAL (operands[2]));
+  return "ands\\t%w0, %w3, %w1, <SHIFT:shift> %2";
+}
   [(set_attr "type" "logics_shift_imm")]
 )
 
@@ -4552,7 +4585,11 @@
 		      (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))
 		     (match_operand:GPI 3 "register_operand" "r")))]
   ""
-  "<LOGICAL:logical>\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
+{
+  if (<SHIFT:is_rotl>)
+    operands[2] = GEN_INT (<sizen> - UINTVAL (operands[2]));
+  return "<LOGICAL:logical>\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2";
+}
   [(set_attr "type" "logic_shift_imm")]
 )
 
@@ -4622,17 +4659,6 @@
   "operands[3] = gen_reg_rtx (<MODE>mode);"
 )
 
-(define_insn "*<optab>_rol<mode>3"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(LOGICAL:GPI (rotate:GPI
-		      (match_operand:GPI 1 "register_operand" "r")
-		      (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))
-		     (match_operand:GPI 3 "register_operand" "r")))]
-  ""
-  "<logical>\\t%<w>0, %<w>3, %<w>1, ror #(<sizen> - %2)"
-  [(set_attr "type" "logic_shift_imm")]
-)
-
 ;; zero_extend versions of above
 (define_insn "*<LOGICAL:optab>_<SHIFT:optab>si3_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -4642,19 +4668,11 @@
 		      (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
 		     (match_operand:SI 3 "register_operand" "r"))))]
   ""
-  "<LOGICAL:logical>\\t%w0, %w3, %w1, <SHIFT:shift> %2"
-  [(set_attr "type" "logic_shift_imm")]
-)
-
-(define_insn "*<optab>_rolsi3_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
-	 (LOGICAL:SI (rotate:SI
-		      (match_operand:SI 1 "register_operand" "r")
-		      (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
-		     (match_operand:SI 3 "register_operand" "r"))))]
-  ""
-  "<logical>\\t%w0, %w3, %w1, ror #(32 - %2)"
+{
+  if (<SHIFT:is_rotl>)
+    operands[2] = GEN_INT (32 - UINTVAL (operands[2]));
+  return "<LOGICAL:logical>\\t%w0, %w3, %w1, <SHIFT:shift> %2";
+}
   [(set_attr "type" "logic_shift_imm")]
 )
 
@@ -4683,7 +4701,11 @@
 	(not:GPI (SHIFT:GPI (match_operand:GPI 1 "register_operand" "r")
 			    (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))))]
   ""
-  "mvn\\t%<w>0, %<w>1, <shift> %2"
+{
+  if (<SHIFT:is_rotl>)
+    operands[2] = GEN_INT (<sizen> - UINTVAL (operands[2]));
+  return "mvn\\t%<w>0, %<w>1, <shift> %2";
+}
   [(set_attr "type" "logic_shift_imm")]
 )
 
@@ -4790,7 +4812,28 @@
 		       (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n")))
 		     (match_operand:GPI 3 "register_operand" "r")))]
   ""
-  "<LOGICAL:nlogical>\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
+{
+  if (<SHIFT:is_rotl>)
+    operands[2] = GEN_INT (<sizen> - UINTVAL (operands[2]));
+  return "<LOGICAL:nlogical>\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2";
+}
+  [(set_attr "type" "logic_shift_imm")]
+)
+
+;; Zero-extend version of the above.
+(define_insn "<LOGICAL:optab>_one_cmpl_<SHIFT:optab>sidi_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI (LOGICAL:SI (not:SI
+			 (SHIFT:SI
+			  (match_operand:SI 1 "register_operand" "r")
+			  (match_operand:QI 2 "aarch64_shift_imm_si" "n")))
+			 (match_operand:SI 3 "register_operand" "r"))))]
+  ""
+{
+  if (<SHIFT:is_rotl>)
+    operands[2] = GEN_INT (32 - UINTVAL (operands[2]));
+  return "<LOGICAL:nlogical>\\t%w0, %w3, %w1, <SHIFT:shift> %2";
+}
   [(set_attr "type" "logic_shift_imm")]
 )
 
@@ -4802,7 +4845,11 @@
 		       (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))
 		     (match_operand:GPI 3 "register_operand" "r"))))]
   ""
-  "eon\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
+{
+  if (<SHIFT:is_rotl>)
+    operands[2] = GEN_INT (<sizen> - UINTVAL (operands[2]));
+  return "eon\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2";
+}
   [(set_attr "type" "logic_shift_imm")]
 )
 
@@ -4816,7 +4863,11 @@
 		      (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
 		    (match_operand:SI 3 "register_operand" "r")))))]
   ""
-  "eon\\t%w0, %w3, %w1, <SHIFT:shift> %2"
+{
+  if (<SHIFT:is_rotl>)
+    operands[2] = GEN_INT (32 - UINTVAL (operands[2]));
+  return "eon\\t%w0, %w3, %w1, <SHIFT:shift> %2";
+}
   [(set_attr "type" "logic_shift_imm")]
 )
 
@@ -4834,7 +4885,11 @@
 		  (SHIFT:GPI
 		   (match_dup 1) (match_dup 2))) (match_dup 3)))]
   ""
-  "bics\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
+{
+  if (<SHIFT:is_rotl>)
+    operands[2] = GEN_INT (<sizen> - UINTVAL (operands[2]));
+  return "bics\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2";
+}
   [(set_attr "type" "logics_shift_imm")]
 )
 
@@ -4853,7 +4908,11 @@
 			 (not:SI
 			  (SHIFT:SI (match_dup 1) (match_dup 2))) (match_dup 3))))]
   ""
-  "bics\\t%w0, %w3, %w1, <SHIFT:shift> %2"
+{
+  if (<SHIFT:is_rotl>)
+    operands[2] = GEN_INT (32 - UINTVAL (operands[2]));
+  return "bics\\t%w0, %w3, %w1, <SHIFT:shift> %2";
+}
   [(set_attr "type" "logics_shift_imm")]
 )
 
@@ -4867,7 +4926,11 @@
           (match_operand:GPI 2 "register_operand" "r"))
      (const_int 0)))]
   ""
-  "bics\\t<w>zr, %<w>2, %<w>0, <SHIFT:shift> %1"
+{
+  if (<SHIFT:is_rotl>)
+    operands[1] = GEN_INT (<sizen> - UINTVAL (operands[1]));
+  return "bics\\t<w>zr, %<w>2, %<w>0, <SHIFT:shift> %1";
+}
   [(set_attr "type" "logics_shift_imm")]
 )
 
@@ -5041,7 +5104,11 @@
 		  (match_operand:GPI 2 "register_operand" "r"))
 	(const_int 0)))]
   ""
-  "tst\\t%<w>2, %<w>0, <SHIFT:shift> %1"
+{
+  if (<SHIFT:is_rotl>)
+    operands[1] = GEN_INT (<sizen> - UINTVAL (operands[1]));
+  return "tst\\t%<w>2, %<w>0, <SHIFT:shift> %1";
+}
   [(set_attr "type" "logics_shift_imm")]
 )
 
@@ -5442,10 +5509,22 @@
   [(set_attr "type" "rotate_imm,shift_reg")]
 )
 
-;; zero_extend version of above
+(define_insn "*rol<mode>3_insn"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (rotate:GPI (match_operand:GPI 1 "register_operand" "r")
+                    (match_operand 2 "const_int_operand" "n")))]
+  "UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
+{
+  operands[3] = GEN_INT (<sizen> - UINTVAL (operands[2]));
+  return "ror\\t%<w>0, %<w>1, %3";
+}
+  [(set_attr "type" "rotate_imm")]
+)
+
+;; zero_extend version of shifts
 (define_insn "*<optab>si3_insn_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
-	(zero_extend:DI (SHIFT:SI
+	(zero_extend:DI (SHIFT_no_rotate:SI
 	 (match_operand:SI 1 "register_operand" "r,r")
 	 (match_operand:QI 2 "aarch64_reg_or_shift_imm_si" "Uss,r"))))]
   ""
@@ -5453,6 +5532,31 @@
    <shift>\\t%w0, %w1, %2
    <shift>\\t%w0, %w1, %w2"
   [(set_attr "type" "bfx,shift_reg")]
+)
+
+;; zero_extend version of rotate right
+(define_insn "*rorsi3_insn_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (zero_extend:DI
+         (rotatert:SI (match_operand:SI 1 "register_operand" "r")
+                    (match_operand 2 "const_int_operand" "n"))))]
+  "UINTVAL (operands[2]) < 32"
+  "ror\\t%w0, %w1, %2"
+  [(set_attr "type" "rotate_imm")]
+)
+
+;; zero_extend version of rotate left
+(define_insn "*rolsi3_insn_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (zero_extend:DI
+         (rotate:SI (match_operand:SI 1 "register_operand" "r")
+                    (match_operand 2 "const_int_operand" "n"))))]
+  "UINTVAL (operands[2]) < 32"
+{
+  operands[2] = GEN_INT (32 - UINTVAL (operands[2]));
+  return "ror\\t%w0, %w1, %2";
+}
+  [(set_attr "type" "rotate_imm")]
 )
 
 (define_insn "*<optab><mode>3_insn"
@@ -5534,32 +5638,6 @@
    && UINTVAL (operands[3]) + UINTVAL (operands[4]) == 32
    && INTVAL (operands[3]) == INTVAL (operands[5])"
   "extr\\t%w0, %w1, %w2, %4"
-  [(set_attr "type" "rotate_imm")]
-)
-
-(define_insn "*ror<mode>3_insn"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(rotate:GPI (match_operand:GPI 1 "register_operand" "r")
-		    (match_operand 2 "const_int_operand" "n")))]
-  "UINTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode)"
-{
-  operands[3] = GEN_INT (<sizen> - UINTVAL (operands[2]));
-  return "ror\\t%<w>0, %<w>1, %3";
-}
-  [(set_attr "type" "rotate_imm")]
-)
-
-;; zero_extend version of the above
-(define_insn "*rorsi3_insn_uxtw"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
-	 (rotate:SI (match_operand:SI 1 "register_operand" "r")
-		    (match_operand 2 "const_int_operand" "n"))))]
-  "UINTVAL (operands[2]) < 32"
-{
-  operands[3] = GEN_INT (32 - UINTVAL (operands[2]));
-  return "ror\\t%w0, %w1, %3";
-}
   [(set_attr "type" "rotate_imm")]
 )
 

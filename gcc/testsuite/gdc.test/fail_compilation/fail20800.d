@@ -21,4 +21,3 @@ void initCommands()
 {
     fun(m.index);
 }
-

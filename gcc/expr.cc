@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "builtins.h"
 #include "ccmp.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "rtx-vector-builder.h"
 #include "tree-pretty-print.h"
@@ -83,7 +84,6 @@ static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
 static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
 static rtx_insn *compress_float_constant (rtx, rtx);
 static rtx get_subtarget (rtx);
-static void store_constructor (tree, rtx, int, poly_int64, bool);
 static rtx store_field (rtx, poly_int64, poly_int64, poly_uint64, poly_uint64,
 			machine_mode, tree, alias_set_type, bool, bool);
 
@@ -99,7 +99,6 @@ static void do_tablejump (rtx, machine_mode, rtx, rtx, rtx,
 			  profile_probability);
 static rtx const_vector_from_tree (tree);
 static tree tree_expr_size (const_tree);
-static HOST_WIDE_INT int_expr_size (tree);
 static void convert_mode_scalar (rtx, rtx, int);
 
 
@@ -2802,10 +2801,26 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	    {
 	      machine_mode dest_mode = GET_MODE (dest);
 	      machine_mode tmp_mode = GET_MODE (tmps[i]);
+	      scalar_int_mode imode;
 
 	      gcc_assert (known_eq (bytepos, 0) && XVECLEN (src, 0));
 
-	      if (GET_MODE_ALIGNMENT (dest_mode)
+	      if (finish == 1
+		  && REG_P (tmps[i])
+		  && COMPLEX_MODE_P (dest_mode)
+		  && SCALAR_INT_MODE_P (tmp_mode)
+		  && int_mode_for_mode (dest_mode).exists (&imode))
+		{
+		  if (tmp_mode != imode)
+		    {
+		      rtx tmp = gen_reg_rtx (imode);
+		      emit_move_insn (tmp, gen_lowpart (imode, tmps[i]));
+		      dst = gen_lowpart (dest_mode, tmp);
+		    }
+		  else
+		    dst = gen_lowpart (dest_mode, tmps[i]);
+		}
+	      else if (GET_MODE_ALIGNMENT (dest_mode)
 		  >= GET_MODE_ALIGNMENT (tmp_mode))
 		{
 		  dest = assign_stack_temp (dest_mode,
@@ -4866,7 +4881,22 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 		    return false;
 		}
 	    }
-	  emit_block_move (target, xinner, size, BLOCK_OP_CALL_PARM);
+
+	  /* If source is a constant VAR_DECL with a simple constructor,
+             store the constructor to the stack instead of moving it.  */
+	  const_tree decl;
+	  if (partial == 0
+	      && MEM_P (xinner)
+	      && SYMBOL_REF_P (XEXP (xinner, 0))
+	      && (decl = SYMBOL_REF_DECL (XEXP (xinner, 0))) != NULL_TREE
+	      && VAR_P (decl)
+	      && TREE_READONLY (decl)
+	      && !TREE_SIDE_EFFECTS (decl)
+	      && immediate_const_ctor_p (DECL_INITIAL (decl), 2))
+	    store_constructor (DECL_INITIAL (decl), target, 0,
+			       int_expr_size (DECL_INITIAL (decl)), false);
+	  else
+	    emit_block_move (target, xinner, size, BLOCK_OP_CALL_PARM);
 	}
     }
   else if (partial > 0)
@@ -6575,6 +6605,25 @@ categorize_ctor_elements (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 				     p_init_elts, p_complete);
 }
 
+/* Return true if constructor CTOR is simple enough to be materialized
+   in an integer mode register.  Limit the size to WORDS words, which
+   is 1 by default.  */
+
+bool
+immediate_const_ctor_p (const_tree ctor, unsigned int words)
+{
+  /* Allow function to be called with a VAR_DECL's DECL_INITIAL.  */
+  if (!ctor || TREE_CODE (ctor) != CONSTRUCTOR)
+    return false;
+
+  return TREE_CONSTANT (ctor)
+	 && !TREE_ADDRESSABLE (ctor)
+	 && CONSTRUCTOR_NELTS (ctor)
+	 && TREE_CODE (TREE_TYPE (ctor)) != ARRAY_TYPE
+	 && int_expr_size (ctor) <= words * UNITS_PER_WORD
+	 && initializer_constant_valid_for_bitfield_p (ctor);
+}
+
 /* TYPE is initialized by a constructor with NUM_ELTS elements, the last
    of which had type LAST_TYPE.  Each element was itself a complete
    initializer, in the sense that every meaningful byte was explicitly
@@ -6722,7 +6771,7 @@ fields_length (const_tree type)
    which has been packed to exclude padding bits.
    If REVERSE is true, the store is to be done in reverse order.  */
 
-static void
+void
 store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		   bool reverse)
 {
@@ -9540,6 +9589,38 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	}
 
       expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
+
+      /* Expand X*Y as X&-Y when Y must be zero or one.  */
+      if (SCALAR_INT_MODE_P (mode))
+	{
+	  bool bit0_p = tree_nonzero_bits (treeop0) == 1;
+	  bool bit1_p = tree_nonzero_bits (treeop1) == 1;
+
+	  /* Expand X*Y as X&Y when both X and Y must be zero or one.  */
+	  if (bit0_p && bit1_p)
+	    return REDUCE_BIT_FIELD (expand_and (mode, op0, op1, target));
+
+	  if (bit0_p || bit1_p)
+	    {
+	      bool speed = optimize_insn_for_speed_p ();
+	      int cost = add_cost (speed, mode) + neg_cost (speed, mode);
+	      struct algorithm algorithm;
+	      enum mult_variant variant;
+	      if (CONST_INT_P (op1)
+		  ? !choose_mult_variant (mode, INTVAL (op1),
+					  &algorithm, &variant, cost)
+		  : cost < mul_cost (speed, mode))
+		{
+		  target = bit0_p ? expand_and (mode, negate_rtx (mode, op0),
+						op1, target)
+				  : expand_and (mode, op0,
+						negate_rtx (mode, op1),
+						target);
+		  return REDUCE_BIT_FIELD (target);
+		}
+	    }
+	}
+
       return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1, target, unsignedp));
 
     case TRUNC_MOD_EXPR:
@@ -10534,6 +10615,21 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  if (temp)
 	    return temp;
 	}
+      /* Expand const VAR_DECLs with CONSTRUCTOR initializers that
+	 have scalar integer modes to a reg via store_constructor.  */
+      if (TREE_READONLY (exp)
+	  && !TREE_SIDE_EFFECTS (exp)
+	  && (modifier == EXPAND_NORMAL || modifier == EXPAND_STACK_PARM)
+	  && immediate_const_ctor_p (DECL_INITIAL (exp))
+	  && SCALAR_INT_MODE_P (TYPE_MODE (TREE_TYPE (exp)))
+	  && crtl->emit.regno_pointer_align_length
+	  && !target)
+	{
+	  target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
+	  store_constructor (DECL_INITIAL (exp), target, 0,
+			     int_expr_size (DECL_INITIAL (exp)), false);
+	  return target;
+	}
       /* ... fall through ...  */
 
     case PARM_DECL:
@@ -11101,6 +11197,13 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	   infinitely recurse.  */
 	gcc_assert (tem != exp);
 
+	/* If tem is a VAR_DECL, we need a memory reference.  */
+	enum expand_modifier tem_modifier = modifier;
+	if (tem_modifier == EXPAND_SUM)
+	  tem_modifier = EXPAND_NORMAL;
+	if (TREE_CODE (tem) == VAR_DECL)
+	  tem_modifier = EXPAND_MEMORY;
+
 	/* If TEM's type is a union of variable size, pass TARGET to the inner
 	   computation, since it will need a temporary and TARGET is known
 	   to have to do.  This occurs in unchecked conversion in Ada.  */
@@ -11112,9 +11215,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 				   != INTEGER_CST)
 			       && modifier != EXPAND_STACK_PARM
 			       ? target : NULL_RTX),
-			      VOIDmode,
-			      modifier == EXPAND_SUM ? EXPAND_NORMAL : modifier,
-			      NULL, true);
+			      VOIDmode, tem_modifier, NULL, true);
 
 	/* If the field has a mode, we want to access it in the
 	   field's mode, not the computed mode.
@@ -13127,8 +13228,8 @@ expr_size (tree exp)
 /* Return a wide integer for the size in bytes of the value of EXP, or -1
    if the size can vary or is larger than an integer.  */
 
-static HOST_WIDE_INT
-int_expr_size (tree exp)
+HOST_WIDE_INT
+int_expr_size (const_tree exp)
 {
   tree size;
 

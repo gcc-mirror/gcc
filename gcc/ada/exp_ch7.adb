@@ -76,15 +76,15 @@ package body Exp_Ch7 is
    -- Transient Scope Management --
    --------------------------------
 
-   --  A transient scope is created when temporary objects are created by the
-   --  compiler. These temporary objects are allocated on the secondary stack
-   --  and the transient scope is responsible for finalizing the object when
-   --  appropriate and reclaiming the memory at the right time. The temporary
-   --  objects are generally the objects allocated to store the result of a
-   --  function returning an unconstrained or a tagged value. Expressions
-   --  needing to be wrapped in a transient scope (functions calls returning
-   --  unconstrained or tagged values) may appear in 3 different contexts which
-   --  lead to 3 different kinds of transient scope expansion:
+   --  A transient scope is needed when certain temporary objects are created
+   --  by the compiler. These temporary objects are allocated on the secondary
+   --  stack and/or need finalization, and the transient scope is responsible
+   --  for finalizing the objects and reclaiming the memory of the secondary
+   --  stack at the appropriate time. They are generally objects allocated to
+   --  store the result of a function returning an unconstrained or controlled
+   --  value. Expressions needing to be wrapped in a transient scope may appear
+   --  in three different contexts which lead to different kinds of transient
+   --  scope expansion:
 
    --   1. In a simple statement (procedure call, assignment, ...). In this
    --      case the instruction is wrapped into a transient block. See
@@ -98,34 +98,6 @@ package body Exp_Ch7 is
    --      here, so the finalization actions, if any, are done right after the
    --      declaration and the secondary stack deallocation is done in the
    --      proper enclosing scope. See Wrap_Transient_Declaration for details.
-
-   --  Note about functions returning tagged types: it has been decided to
-   --  always allocate their result in the secondary stack, even though is not
-   --  absolutely mandatory when the tagged type is constrained because the
-   --  caller knows the size of the returned object and thus could allocate the
-   --  result in the primary stack. An exception to this is when the function
-   --  builds its result in place, as is done for functions with inherently
-   --  limited result types for Ada 2005. In that case, certain callers may
-   --  pass the address of a constrained object as the target object for the
-   --  function result.
-
-   --  By allocating tagged results in the secondary stack a number of
-   --  implementation difficulties are avoided:
-
-   --    - If it is a dispatching function call, the computation of the size of
-   --      the result is possible but complex from the outside.
-
-   --    - If the returned type is controlled, the assignment of the returned
-   --      value to the anonymous object involves an Adjust, and we have no
-   --      easy way to access the anonymous object created by the back end.
-
-   --    - If the returned type is class-wide, this is an unconstrained type
-   --      anyway.
-
-   --  Furthermore, the small loss in efficiency which is the result of this
-   --  decision is not such a big deal because functions returning tagged types
-   --  are not as common in practice compared to functions returning access to
-   --  a tagged type.
 
    --------------------------------------------------
    -- Transient Blocks and Finalization Management --
@@ -157,14 +129,14 @@ package body Exp_Ch7 is
    -- Finalization Management --
    -----------------------------
 
-   --  This part describe how Initialization/Adjustment/Finalization procedures
-   --  are generated and called. Two cases must be considered, types that are
-   --  Controlled (Is_Controlled flag set) and composite types that contain
-   --  controlled components (Has_Controlled_Component flag set). In the first
-   --  case the procedures to call are the user-defined primitive operations
-   --  Initialize/Adjust/Finalize. In the second case, GNAT generates
-   --  Deep_Initialize, Deep_Adjust and Deep_Finalize that are in charge
-   --  of calling the former procedures on the controlled components.
+   --  This part describes how Initialization/Adjustment/Finalization
+   --  procedures are generated and called. Two cases must be considered: types
+   --  that are Controlled (Is_Controlled flag set) and composite types that
+   --  contain controlled components (Has_Controlled_Component flag set). In
+   --  the first case the procedures to call are the user-defined primitive
+   --  operations Initialize/Adjust/Finalize. In the second case, GNAT
+   --  generates Deep_Initialize, Deep_Adjust and Deep_Finalize that are in
+   --  charge of calling the former procedures on the controlled components.
 
    --  For records with Has_Controlled_Component set, a hidden "controller"
    --  component is inserted. This controller component contains its own
@@ -346,8 +318,8 @@ package body Exp_Ch7 is
    --  Build_Finalizer.
 
    procedure Build_Finalizer_Call (N : Node_Id; Fin_Id : Entity_Id);
-   --  N is a construct which contains a handled sequence of statements, Fin_Id
-   --  is the entity of a finalizer. Create an At_End handler which covers the
+   --  N is a construct that contains a handled sequence of statements, Fin_Id
+   --  is the entity of a finalizer. Create an At_End handler that covers the
    --  statements of N and calls Fin_Id. If the handled statement sequence has
    --  an exception handler, the statements will be wrapped in a block to avoid
    --  unwanted interaction with the new At_End handler.
@@ -2850,16 +2822,14 @@ package body Exp_Ch7 is
                 Left_Opnd  => New_Occurrence_Of (Fin_Mas_Id, Loc),
                 Right_Opnd => Make_Null (Loc));
 
-            --  For constrained or tagged results escalate the condition to
+            --  For unconstrained or tagged results, escalate the condition to
             --  include the allocation format. Generate:
 
             --    if BIPallocform > Secondary_Stack'Pos
             --      and then BIPfinalizationmaster /= null
             --    then
 
-            if not Is_Constrained (Func_Typ)
-              or else Is_Tagged_Type (Func_Typ)
-            then
+            if Needs_BIP_Alloc_Form (Func_Id) then
                declare
                   Alloc : constant Entity_Id :=
                             Build_In_Place_Formal (Func_Id, BIP_Alloc_Form);
@@ -3729,7 +3699,7 @@ package body Exp_Ch7 is
       --  which belongs to a protected type.
 
       Loc : constant Source_Ptr := Sloc (N);
-      HSS : Node_Id;
+      HSS : Node_Id := Handled_Statement_Sequence (N);
 
    begin
       --  Do not perform this expansion in SPARK mode because we do not create
@@ -3739,13 +3709,8 @@ package body Exp_Ch7 is
          return;
       end if;
 
-      --  The At_End handler should have been assimilated by the finalizer
-
-      HSS := Handled_Statement_Sequence (N);
-      pragma Assert (No (At_End_Proc (HSS)));
-
       --  If the construct to be cleaned up is a protected subprogram body, the
-      --  finalizer call needs to be associated with the block which wraps the
+      --  finalizer call needs to be associated with the block that wraps the
       --  unprotected version of the subprogram. The following illustrates this
       --  scenario:
 
@@ -3767,27 +3732,9 @@ package body Exp_Ch7 is
 
       if Is_Prot_Body then
          HSS := Handled_Statement_Sequence (Last (Statements (HSS)));
-
-      --  An At_End handler and regular exception handlers cannot coexist in
-      --  the same statement sequence. Wrap the original statements in a block.
-
-      elsif Present (Exception_Handlers (HSS)) then
-         declare
-            End_Lab : constant Node_Id := End_Label (HSS);
-            Block   : Node_Id;
-
-         begin
-            Block :=
-              Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS);
-
-            Set_Handled_Statement_Sequence (N,
-              Make_Handled_Sequence_Of_Statements (Loc, New_List (Block)));
-
-            HSS := Handled_Statement_Sequence (N);
-            Set_End_Label (HSS, End_Lab);
-         end;
       end if;
 
+      pragma Assert (No (At_End_Proc (HSS)));
       Set_At_End_Proc (HSS, New_Occurrence_Of (Fin_Id, Loc));
 
       --  Attach reference to finalizer to tree, for LLVM use
@@ -4247,14 +4194,33 @@ package body Exp_Ch7 is
          --
          --    Postcond_Enable := False;
 
-         Append_To (Top_Decls,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               New_Occurrence_Of
-                 (Get_Postcond_Enabled (Def_Ent), Loc),
-             Expression =>
-               New_Occurrence_Of
-                 (Standard_False, Loc)));
+         --  Note that we do not disable early evaluation of postconditions
+         --  for return types that are unconstrained or have unconstrained
+         --  elements since the temporary result object could get allocated on
+         --  the stack and be out of scope at the point where we perform late
+         --  evaluation of postconditions - leading to uninitialized memory
+         --  reads.
+
+         --  This disabling of early evaluation can lead to incorrect run-time
+         --  semantics where functions with unconstrained elements will
+         --  have their corresponding postconditions evaluated before
+         --  finalization. The proper solution here is to generate a wrapper
+         --  to capture the result instead of using multiple flags and playing
+         --  with flags which does not even work in all cases ???
+
+         if not Has_Unconstrained_Elements (Etype (Def_Ent))
+           or else (Is_Array_Type (Etype (Def_Ent))
+                     and then not Is_Constrained (Etype (Def_Ent)))
+         then
+            Append_To (Top_Decls,
+              Make_Assignment_Statement (Loc,
+                Name       =>
+                  New_Occurrence_Of
+                    (Get_Postcond_Enabled (Def_Ent), Loc),
+                Expression =>
+                  New_Occurrence_Of
+                    (Standard_False, Loc)));
+         end if;
 
          --  Add the subprogram to the list of declarations an analyze it
 
@@ -5556,10 +5522,10 @@ package body Exp_Ch7 is
    procedure Expand_Cleanup_Actions (N : Node_Id) is
       pragma Assert
         (Nkind (N) in N_Block_Statement
-                    | N_Entry_Body
-                    | N_Extended_Return_Statement
                     | N_Subprogram_Body
-                    | N_Task_Body);
+                    | N_Task_Body
+                    | N_Entry_Body
+                    | N_Extended_Return_Statement);
 
       Scop : constant Entity_Id := Current_Scope;
 
@@ -5627,18 +5593,14 @@ package body Exp_Ch7 is
       -----------------------
 
       procedure Wrap_HSS_In_Block is
-         Block    : Node_Id;
-         Block_Id : Entity_Id;
-         End_Lab  : Node_Id;
-
-      begin
+         Block : constant Node_Id :=
+           Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS);
+         Block_Id : constant Entity_Id :=
+           New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+         End_Lab : constant Node_Id := End_Label (HSS);
          --  Preserve end label to provide proper cross-reference information
 
-         End_Lab := End_Label (HSS);
-         Block :=
-           Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS);
-
-         Block_Id := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+      begin
          Set_Identifier (Block, New_Occurrence_Of (Block_Id, Loc));
          Set_Etype (Block_Id, Standard_Void_Type);
          Set_Block_Node (Block_Id, Identifier (Block));
@@ -5648,14 +5610,11 @@ package body Exp_Ch7 is
 
          Set_Is_Finalization_Wrapper (Block);
 
-         Set_Handled_Statement_Sequence (N,
-           Make_Handled_Sequence_Of_Statements (Loc, New_List (Block)));
-         HSS := Handled_Statement_Sequence (N);
-
+         HSS := Make_Handled_Sequence_Of_Statements (Loc,
+           Statements => New_List (Block),
+           End_Label => End_Lab);
          Set_First_Real_Statement (HSS, Block);
-         Set_End_Label (HSS, End_Lab);
-
-         --  Comment needed here, see RH for 1.306 ???
+         Set_Handled_Statement_Sequence (N, HSS);
 
          if Nkind (N) = N_Subprogram_Body then
             Set_Has_Nested_Block_With_Handler (Scop);
@@ -5777,11 +5736,17 @@ package body Exp_Ch7 is
             Set_Uses_Sec_Stack (Scop, False);
          end if;
 
-         --  If exception handlers are present, wrap the sequence of statements
-         --  in a block since it is not possible to have exception handlers and
-         --  an At_End handler in the same construct.
+         --  If exception handlers are present in a non-subprogram
+         --  construct, wrap the sequence of statements in a block.
+         --  Otherwise, code can be moved so that the wrong handlers
+         --  apply. It is important not to do this for function bodies,
+         --  because otherwise transient finalizable objects created
+         --  by a return statement get finalized too late. It is harmless
+         --  not to do this for procedures.
 
-         if Present (Exception_Handlers (HSS)) then
+         if Present (Exception_Handlers (HSS))
+           and then Nkind (N) /= N_Subprogram_Body
+         then
             Wrap_HSS_In_Block;
 
          --  Ensure that the First_Real_Statement field is set
@@ -5911,15 +5876,19 @@ package body Exp_Ch7 is
       --  This is done only for non-generic packages
 
       if Ekind (Spec_Id) = E_Package then
-         Push_Scope (Spec_Id);
-
-         --  Build dispatch tables of library level tagged types
+         --  Build dispatch tables of library-level tagged types for bodies
+         --  that are not compilation units (see Analyze_Compilation_Unit),
+         --  except for instances because they have no N_Compilation_Unit.
 
          if Tagged_Type_Expansion
            and then Is_Library_Level_Entity (Spec_Id)
+           and then (not Is_Compilation_Unit (Spec_Id)
+                      or else Is_Generic_Instance (Spec_Id))
          then
             Build_Static_Dispatch_Tables (N);
          end if;
+
+         Push_Scope (Spec_Id);
 
          Expand_CUDA_Package (N);
 
@@ -6070,12 +6039,13 @@ package body Exp_Ch7 is
          Pop_Scope;
       end if;
 
-      --  Build dispatch tables of library-level tagged types
+      --  Build dispatch tables of library-level tagged types for instances
+      --  that are not compilation units (see Analyze_Compilation_Unit).
 
       if Tagged_Type_Expansion
-        and then (Is_Compilation_Unit (Id)
-                   or else (Is_Generic_Instance (Id)
-                             and then Is_Library_Level_Entity (Id)))
+        and then Is_Library_Level_Entity (Id)
+        and then Is_Generic_Instance (Id)
+        and then not Is_Compilation_Unit (Id)
       then
          Build_Static_Dispatch_Tables (N);
       end if;
@@ -8273,19 +8243,23 @@ package body Exp_Ch7 is
 
          Counter        : Nat := 0;
          Finalizer_Data : Finalization_Exception_Data;
+         Last_POC_Call  : Node_Id := Empty;
 
          function Process_Component_List_For_Finalize
-           (Comps : Node_Id) return List_Id;
+           (Comps           : Node_Id;
+            In_Variant_Part : Boolean := False) return List_Id;
          --  Build all necessary finalization statements for a single component
          --  list. The statements may include a jump circuitry if flag Is_Local
-         --  is enabled.
+         --  is enabled. In_Variant_Part indicates whether this is a recursive
+         --  call.
 
          -----------------------------------------
          -- Process_Component_List_For_Finalize --
          -----------------------------------------
 
          function Process_Component_List_For_Finalize
-           (Comps : Node_Id) return List_Id
+           (Comps           : Node_Id;
+            In_Variant_Part : Boolean := False) return List_Id
          is
             procedure Process_Component_For_Finalize
               (Decl      : Node_Id;
@@ -8467,7 +8441,8 @@ package body Exp_Ch7 is
                            New_Copy_List (Discrete_Choices (Var)),
                          Statements =>
                            Process_Component_List_For_Finalize (
-                             Component_List (Var))));
+                             Component_List (Var),
+                             In_Variant_Part => True)));
 
                      Next_Non_Pragma (Var);
                   end loop;
@@ -8532,6 +8507,12 @@ package body Exp_Ch7 is
 
                   Prev_Non_Pragma (Decl);
                end loop;
+            end if;
+
+            if not In_Variant_Part then
+               Last_POC_Call := Last (Stmts);
+               --  In the case of a type extension, the deep-finalize call
+               --  for the _Parent component will be inserted here.
             end if;
 
             --  Process the rest of the components in reverse order
@@ -8749,7 +8730,38 @@ package body Exp_Ch7 is
                                     (Finalizer_Data))));
                      end if;
 
-                     Append_To (Bod_Stmts, Fin_Stmt);
+                     --  The intended component finalization order is
+                     --    1) POC components of extension
+                     --    2) _Parent component
+                     --    3) non-POC components of extension.
+                     --
+                     --  With this "finalize the parent part in the middle"
+                     --  ordering, we can avoid the need for making two
+                     --  calls to the parent's subprogram in the way that
+                     --  is necessary for Init_Procs. This does have the
+                     --  peculiar (but legal) consequence that the parent's
+                     --  non-POC components are finalized before the
+                     --  non-POC extension components. This violates the
+                     --  usual "finalize in reverse declaration order"
+                     --  principle, but that's ok (see Ada RM 7.6.1(9)).
+                     --
+                     --  Last_POC_Call should be non-empty if the extension
+                     --  has at least one POC. Interactions with variant
+                     --  parts are incorrectly ignored.
+
+                     if Present (Last_POC_Call) then
+                        Insert_After (Last_POC_Call, Fin_Stmt);
+                     else
+                        --  At this point, we could look for the common case
+                        --  where there are no POC components anywhere in
+                        --  sight (inherited or not) and, in that common case,
+                        --  call Append_To instead of Prepend_To. That would
+                        --  result in finalizing the parent part after, rather
+                        --  than before, the extension components. That might
+                        --  be more intuitive (as discussed in preceding
+                        --  comment), but it is not required.
+                        Prepend_To (Bod_Stmts, Fin_Stmt);
+                     end if;
                   end if;
                end if;
             end;
@@ -10282,7 +10294,7 @@ package body Exp_Ch7 is
          --  reclamation is done by the caller.
 
          if Ekind (Curr_S) = E_Function
-           and then Requires_Transient_Scope (Etype (Curr_S))
+           and then Needs_Secondary_Stack (Etype (Curr_S))
          then
             null;
 

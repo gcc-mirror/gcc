@@ -2,7 +2,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/diag_funclit.d(103): Error: function literal `__lambda1(x, y, z)` is not callable using argument types `()`
-fail_compilation/diag_funclit.d(103):        missing argument for parameter #1: `x`
+fail_compilation/diag_funclit.d(103):        too few arguments, expected `3`, got `0`
 fail_compilation/diag_funclit.d(106): Error: function literal `__lambda2(x, y, z)` is not callable using argument types `(int, string, int, int)`
 fail_compilation/diag_funclit.d(106):        too many arguments, expected `3`, got `4`
 fail_compilation/diag_funclit.d(108): Error: function literal `__lambda3(x, y, string z = "Hello")` is not callable using argument types `(int, int, string, string)`

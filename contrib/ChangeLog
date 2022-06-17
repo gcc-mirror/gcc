@@ -1,3 +1,62 @@
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc-changelog/git_update_version.py (active_refs): Remove
+	releases/gcc-9.
+
+2022-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 12.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (active_refs): Add
+	releases/gcc-12.
+
+2022-04-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out
+	-Wc++20-attribute-extensions in lex.cc.
+
+2022-04-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out
+	-Wbitwise-instead-of-logical.
+
+2022-04-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Ignore the revision.
+
+2022-03-31  Jakub Jelinek  <jakub@redhat.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR other/105114
+	* gcc_update: Fix up spelling of
+	gcc/config/loongarch/genopts/loongarch-strings dependency.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config-list.mk: Add LoongArch triplet.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc_update (files_and_dependencies): Add
+	  config/loongarch/loongarch.opt and config/loongarch/loongarch-str.h.
+
+2022-03-28  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Match trailing dot literally.
+
+2022-03-28  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Make the parsing stricter.
+
+2022-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	3ab5c8cd03d92bf4ec41e351820349d92fbc40c4 to ignored commits.
+
 2022-03-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR other/102664

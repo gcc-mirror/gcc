@@ -1099,7 +1099,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // compatibility definitions for previous versions.  At some
     // point, when these clocks settle down, the inlined namespaces
     // can be removed.  XXX GLIBCXX_ABI Deprecated
-    inline namespace _V2 {
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 
     /**
      *  @brief System clock.
@@ -1171,7 +1171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     */
     using high_resolution_clock = system_clock;
 
-    } // end inline namespace _V2
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
 #if __cplusplus >= 202002L
     /// @addtogroup chrono

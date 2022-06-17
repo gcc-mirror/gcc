@@ -1,0 +1,65 @@
+/* Definitions of prototypes for LoongArch built-in functions.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Contributed by Loongson Ltd.
+   Based on MIPS target for GNU ckompiler.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Invoke DEF_LARCH_FTYPE (NARGS, LIST) for each prototype used by
+   LoongArch built-in functions, where:
+
+      NARGS is the number of arguments.
+      LIST contains the return-type code followed by the codes for each
+      argument type.
+
+   Argument- and return-type codes are either modes or one of the following:
+
+      VOID for void_type_node
+      INT for integer_type_node
+      POINTER for ptr_type_node
+
+   (we don't use PTR because that's a ANSI-compatibillity macro).
+
+   Please keep this list lexicographically sorted by the LIST argument.  */
+
+DEF_LARCH_FTYPE (1, (UQI, USI))
+DEF_LARCH_FTYPE (1, (UHI, USI))
+DEF_LARCH_FTYPE (1, (USI, USI))
+DEF_LARCH_FTYPE (1, (UDI, USI))
+DEF_LARCH_FTYPE (1, (USI, UQI))
+DEF_LARCH_FTYPE (1, (VOID, USI))
+
+DEF_LARCH_FTYPE (2, (VOID, UQI, USI))
+DEF_LARCH_FTYPE (2, (VOID, UHI, USI))
+DEF_LARCH_FTYPE (2, (VOID, USI, USI))
+DEF_LARCH_FTYPE (2, (VOID, UDI, USI))
+DEF_LARCH_FTYPE (2, (VOID, DI, UQI))
+DEF_LARCH_FTYPE (2, (VOID, SI, UQI))
+DEF_LARCH_FTYPE (2, (VOID, DI, DI))
+DEF_LARCH_FTYPE (2, (SI, SI, UQI))
+DEF_LARCH_FTYPE (2, (DI, DI, UQI))
+DEF_LARCH_FTYPE (2, (SI, QI, SI))
+DEF_LARCH_FTYPE (2, (SI, HI, SI))
+DEF_LARCH_FTYPE (2, (SI, SI, SI))
+DEF_LARCH_FTYPE (2, (SI, DI, SI))
+DEF_LARCH_FTYPE (2, (USI, USI, USI))
+DEF_LARCH_FTYPE (2, (UDI, UDI, USI))
+
+DEF_LARCH_FTYPE (3, (VOID, USI, USI, SI))
+DEF_LARCH_FTYPE (3, (VOID, USI, UDI, SI))
+DEF_LARCH_FTYPE (3, (USI, USI, USI, USI))
+DEF_LARCH_FTYPE (3, (UDI, UDI, UDI, USI))

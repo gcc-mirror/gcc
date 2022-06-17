@@ -168,11 +168,9 @@ package Exp_Disp is
    --  Generate checks required on dispatching calls
 
    function Building_Static_DT (Typ : Entity_Id) return Boolean;
-   pragma Inline (Building_Static_DT);
    --  Returns true when building statically allocated dispatch tables
 
    function Building_Static_Secondary_DT (Typ : Entity_Id) return Boolean;
-   pragma Inline (Building_Static_Secondary_DT);
    --  Returns true when building statically allocated secondary dispatch
    --  tables
 
@@ -187,7 +185,6 @@ package Exp_Disp is
 
    function Convert_Tag_To_Interface
      (Typ : Entity_Id; Expr : Node_Id) return Node_Id;
-   pragma Inline (Convert_Tag_To_Interface);
    --  This function is used in class-wide interface conversions; the expanded
    --  code generated to convert a tagged object to a class-wide interface type
    --  involves referencing the tag component containing the secondary dispatch
@@ -236,31 +233,14 @@ package Exp_Disp is
    --  to the object to give access to the interface tag associated with the
    --  dispatch table of the target type.
 
-   procedure Expand_Interface_Thunk
-     (Prim       : Node_Id;
-      Thunk_Id   : out Entity_Id;
-      Thunk_Code : out Node_Id;
-      Iface      : Entity_Id);
-   --  Ada 2005 (AI-251): When a tagged type implements abstract interfaces we
-   --  generate additional subprograms (thunks) associated with each primitive
-   --  Prim to have a layout compatible with the C++ ABI. The thunk displaces
-   --  the pointers to the actuals that depend on the controlling type before
-   --  transferring control to the target subprogram. If there is no need to
-   --  generate the thunk then Thunk_Id and Thunk_Code are set to Empty.
-   --  Otherwise they are set to the defining identifier and the subprogram
-   --  body of the generated thunk.
-
    function Has_CPP_Constructors (Typ : Entity_Id) return Boolean;
    --  Returns true if the type has CPP constructors
 
    function Is_Expanded_Dispatching_Call (N : Node_Id) return Boolean;
    --  Returns true if N is the expanded code of a dispatching call
 
-   function Make_DT (Typ : Entity_Id; N : Node_Id := Empty) return List_Id;
-   --  Expand the declarations for the Dispatch Table. The node N is the
-   --  declaration that forces the generation of the table. It is used to place
-   --  error messages when the declaration leads to the freezing of a given
-   --  primitive operation that has an incomplete non- tagged formal.
+   function Make_DT (Typ : Entity_Id) return List_Id;
+   --  Expand the declarations for the Dispatch Table of Typ
 
    function Make_Disp_Asynchronous_Select_Body
      (Typ : Entity_Id) return Node_Id;
@@ -342,6 +322,15 @@ package Exp_Disp is
    --  Typ and fill the contents of Access_Disp_Table. In case of library level
    --  tagged types this routine imports the forward declaration of the tag
    --  entity, that will be declared and exported by Make_DT.
+
+   function Register_Predefined_Primitive
+     (Loc     : Source_Ptr;
+      Prim    : Entity_Id) return List_Id;
+   --  Ada 2005: Register a predefined primitive in all the secondary dispatch
+   --  tables of its primitive type.
+   --
+   --  The caller is responsible for inserting the generated code in the
+   --  proper place.
 
    function Register_Primitive
      (Loc     : Source_Ptr;

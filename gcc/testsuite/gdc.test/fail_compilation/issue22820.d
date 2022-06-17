@@ -65,4 +65,3 @@ void main() {
 	p = (*cp)[].ptr;
 	p = (*e)[].ptr;
 }
-

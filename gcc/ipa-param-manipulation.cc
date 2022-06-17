@@ -114,10 +114,10 @@ class ipa_edge_modification_sum
 
   /* Hook that is called by summary when an edge is duplicated.  */
 
-  virtual void duplicate (cgraph_edge *,
-			  cgraph_edge *,
-			  ipa_edge_modification_info *old_info,
-			  ipa_edge_modification_info *new_info)
+  void duplicate (cgraph_edge *,
+		  cgraph_edge *,
+		  ipa_edge_modification_info *old_info,
+		  ipa_edge_modification_info *new_info) final override
   {
     new_info->index_map.safe_splice (old_info->index_map);
     new_info->pass_through_map.safe_splice (old_info->pass_through_map);

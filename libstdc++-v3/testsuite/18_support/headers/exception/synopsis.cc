@@ -1,4 +1,4 @@
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target { c++11 && { ! c++23 } } } }
 
 // Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //

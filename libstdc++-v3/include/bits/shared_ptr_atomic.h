@@ -38,9 +38,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @addtogroup pointer_abstractions
+   * @relates shared_ptr
    * @{
    */
-  /// @relates shared_ptr @{
 
   /// @cond undocumented
 
@@ -94,8 +94,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __p A non-null pointer to a shared_ptr object.
    *  @return @c *__p
    *
-   *  The memory order shall not be @c memory_order_release or
-   *  @c memory_order_acq_rel.
+   *  The memory order shall not be `memory_order_release` or
+   *  `memory_order_acq_rel`.
    *  @{
   */
   template<typename _Tp>
@@ -130,8 +130,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __p A non-null pointer to a shared_ptr object.
    *  @param  __r The value to store.
    *
-   *  The memory order shall not be @c memory_order_acquire or
-   *  @c memory_order_acq_rel.
+   *  The memory order shall not be `memory_order_acquire` or
+   *  `memory_order_acq_rel`.
    *  @{
   */
   template<typename _Tp>
@@ -167,8 +167,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief  Atomic exchange for shared_ptr objects.
    *  @param  __p A non-null pointer to a shared_ptr object.
-   *  @param  __r New value to store in @c *__p.
-   *  @return The original value of @c *__p
+   *  @param  __r New value to store in `*__p`.
+   *  @return The original value of `*__p`
    *  @{
   */
   template<typename _Tp>
@@ -214,10 +214,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __p A non-null pointer to a shared_ptr object.
    *  @param  __v A non-null pointer to a shared_ptr object.
    *  @param  __w A non-null pointer to a shared_ptr object.
-   *  @return True if @c *__p was equivalent to @c *__v, false otherwise.
+   *  @return True if `*__p` was equivalent to `*__v`, false otherwise.
    *
-   *  The memory order for failure shall not be @c memory_order_release or
-   *  @c memory_order_acq_rel, or stronger than the memory order for success.
+   *  The memory order for failure shall not be `memory_order_release` or
+   *  `memory_order_acq_rel`.
    *  @{
   */
   template<typename _Tp>
@@ -327,10 +327,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   /// @}
 
+  /// @} group pointer_abstractions
+
 #if __cplusplus >= 202002L
 # define __cpp_lib_atomic_shared_ptr 201711L
   template<typename _Tp>
     class atomic;
+
+  /**
+   * @addtogroup pointer_abstractions
+   * @relates shared_ptr
+   * @{
+   */
 
   template<typename _Up>
     static constexpr bool __is_shared_ptr = false;
@@ -573,6 +581,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr atomic() noexcept = default;
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3661. constinit atomic<shared_ptr<T>> a(nullptr); should work
+      constexpr atomic(nullptr_t) noexcept : atomic() { }
+
       atomic(shared_ptr<_Tp> __r) noexcept
       : _M_impl(std::move(__r))
       { }
@@ -784,10 +796,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       _Sp_atomic<weak_ptr<_Tp>> _M_impl;
     };
-#endif // C++20
-
-  /// @} relates shared_ptr
   /// @} group pointer_abstractions
+#endif // C++20
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -1409,19 +1409,19 @@ tree
 hybrid_jt_simplifier::simplify (gimple *stmt, gimple *, basic_block,
 				jt_state *state)
 {
-  int_range_max r;
-
   compute_ranges_from_state (stmt, state);
 
   if (gimple_code (stmt) == GIMPLE_COND
       || gimple_code (stmt) == GIMPLE_ASSIGN)
     {
+      Value_Range r (gimple_range_type (stmt));
       tree ret;
       if (m_query->range_of_stmt (r, stmt) && r.singleton_p (&ret))
 	return ret;
     }
   else if (gimple_code (stmt) == GIMPLE_SWITCH)
     {
+      int_range_max r;
       gswitch *switch_stmt = dyn_cast <gswitch *> (stmt);
       tree index = gimple_switch_index (switch_stmt);
       if (m_query->range_of_expr (r, index, stmt))
@@ -1452,7 +1452,7 @@ hybrid_jt_simplifier::compute_ranges_from_state (gimple *stmt, jt_state *state)
 	  tree op = gimple_op (stmt, i);
 	  if (op
 	      && TREE_CODE (op) == SSA_NAME
-	      && irange::supports_type_p (TREE_TYPE (op)))
+	      && Value_Range::supports_type_p (TREE_TYPE (op)))
 	    bitmap_set_bit (imports, SSA_NAME_VERSION (op));
 	}
     }

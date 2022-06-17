@@ -9,4 +9,3 @@ void main()
 {
     static assert([__traits(allMembers, LeClass)] == ["toString", "toHash", "opCmp", "opEquals", "Monitor", "factory"]);
 }
-

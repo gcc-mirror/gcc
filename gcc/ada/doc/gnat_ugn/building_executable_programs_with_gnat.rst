@@ -1238,7 +1238,8 @@ Alphabetical List of All Switches
 :switch:`-fdiagnostics-format=json`
   Makes GNAT emit warning and error messages as JSON. Inhibits printing of
   text warning and errors messages except if :switch:`-gnatv` or
-  :switch:`-gnatl` are present.
+  :switch:`-gnatl` are present. Uses absolute file paths when used along
+  :switch:`-gnatef`.
 
 
 .. index:: -fdump-scos  (gcc)
@@ -1454,7 +1455,7 @@ Alphabetical List of All Switches
   Check syntax and semantics only (no code generation attempted). When the
   compiler is invoked by ``gnatmake``, if the switch :switch:`-gnatc` is
   only given to the compiler (after :switch:`-cargs` or in package Compiler of
-  the project file, ``gnatmake`` will fail because it will not find the
+  the project file), ``gnatmake`` will fail because it will not find the
   object file after compilation. If ``gnatmake`` is called with
   :switch:`-gnatc` as a builder switch (before :switch:`-cargs` or in package
   Builder of the project file) then ``gnatmake`` will not fail because
@@ -1582,7 +1583,8 @@ Alphabetical List of All Switches
 .. index:: -gnatef  (gcc)
 
 :switch:`-gnatef`
-  Display full source path name in brief error messages.
+  Display full source path name in brief error messages and absolute paths in
+  :switch:`-fdiagnostics-format=json`'s output.
 
 
 .. index:: -gnateF  (gcc)
@@ -1786,7 +1788,7 @@ Alphabetical List of All Switches
 
 
   where ``name`` is the string name of the type (which can have
-  single spaces embedded in the name (e.g. long double), ``digs`` is
+  single spaces embedded in the name, e.g. long double), ``digs`` is
   the number of digits for the floating-point type, ``float_rep`` is
   the float representation (I for IEEE-754-Binary, which is
   the only one supported at this time),
@@ -2389,7 +2391,7 @@ format:
 :switch:`-gnatv`
   The ``v`` stands for verbose.
   The effect of this setting is to write long-format error
-  messages to :file:`stdout` (the standard output file.
+  messages to :file:`stdout` (the standard output file).
   The same program compiled with the
   :switch:`-gnatv` switch would generate:
 
@@ -2489,7 +2491,7 @@ format:
   brief format error messages to :file:`stderr` (the standard error
   file) as well as the verbose
   format message or full listing (which as usual is written to
-  :file:`stdout` (the standard output file).
+  :file:`stdout`, the standard output file).
 
 
 .. index:: -gnatm  (gcc)
@@ -5165,7 +5167,7 @@ checks to be performed. The following checks are defined:
 
 
 .. end of switch description (leave this comment to ease automatic parsing for
-.. GNAT Studio
+.. GNAT Studio)
 
 In the above rules, appearing in column one is always permitted, that is,
 counts as meeting either a requirement for a required preceding space,
@@ -6015,10 +6017,10 @@ Debugging Control
 
 :switch:`-gnatx`
   Normally the compiler generates full cross-referencing information in
-  the :file:`ALI` file. This information is used by a number of tools,
-  including ``gnatfind`` and ``gnatxref``. The :switch:`-gnatx` switch
-  suppresses this information. This saves some space and may slightly
-  speed up compilation, but means that these tools cannot be used.
+  the :file:`ALI` file. This information is used by a number of tools.
+  The :switch:`-gnatx` switch suppresses this information. This saves some space
+  and may slightly speed up compilation, but means that tools depending
+  on this information cannot be used.
 
 
 .. index:: -fgnat-encodings  (gcc)
@@ -7618,9 +7620,9 @@ which might help you in case your project has a lot of subdirectories.
   ##    Each of these csc is put in its own directory.
   ##    Their name are referenced by the directory names.
   ##    They will be compiled into shared library (although this would also work
-  ##    with static libraries
+  ##    with static libraries)
   ##  - The main program (and possibly other packages that do not belong to any
-  ##    csc is put in the top level directory (where the Makefile is).
+  ##    csc) is put in the top level directory (where the Makefile is).
   ##       toplevel_dir __ first_csc  (sources) __ lib (will contain the library)
   ##                    \\_ second_csc (sources) __ lib (will contain the library)
   ##                    \\_ ...

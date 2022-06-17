@@ -209,5 +209,3 @@ extern (C++) final class PrintASTVisitor : Visitor
             putc(' ', stdout);
     }
 }
-
-

@@ -76,7 +76,6 @@ selftest::run_tests ()
   json_cc_tests ();
   cgraph_cc_tests ();
   optinfo_emit_json_cc_tests ();
-  opt_problem_cc_tests ();
   ordered_hash_map_tests_cc_tests ();
   splay_tree_cc_tests ();
 
@@ -95,7 +94,6 @@ selftest::run_tests ()
   /* Higher-level tests, or for components that other selftests don't
      rely on.  */
   diagnostic_show_locus_cc_tests ();
-  diagnostic_cc_tests ();
   diagnostic_format_json_cc_tests ();
   edit_context_cc_tests ();
   fold_const_cc_tests ();

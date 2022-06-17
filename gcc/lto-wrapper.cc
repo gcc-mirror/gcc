@@ -1364,14 +1364,17 @@ jobserver_active_p (void)
 void
 print_lto_docs_link ()
 {
-  const char *url = get_option_url (NULL, OPT_flto);
+  bool print_url = global_dc->printer->url_format != URL_FORMAT_NONE;
+  const char *url = global_dc->get_option_url (global_dc, OPT_flto);
 
   pretty_printer pp;
   pp.url_format = URL_FORMAT_DEFAULT;
   pp_string (&pp, "see the ");
-  pp_begin_url (&pp, url);
+  if (print_url)
+    pp_begin_url (&pp, url);
   pp_string (&pp, "%<-flto%> option documentation");
-  pp_end_url (&pp);
+  if (print_url)
+    pp_end_url (&pp);
   pp_string (&pp, " for more information");
   inform (UNKNOWN_LOCATION, pp_formatted_text (&pp));
 }
@@ -1425,7 +1428,6 @@ run_gcc (unsigned argc, char *argv[])
   char **lto_argv, **ltoobj_argv;
   bool linker_output_rel = false;
   bool skip_debug = false;
-  unsigned n_debugobj;
   const char *incoming_dumppfx = dumppfx = NULL;
   static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
 
@@ -1571,6 +1573,14 @@ run_gcc (unsigned argc, char *argv[])
 
 	case OPT_dumpdir:
 	  incoming_dumppfx = dumppfx = option->arg;
+	  break;
+
+	case OPT_fdiagnostics_urls_:
+	  diagnostic_urls_init (global_dc, option->value);
+	  break;
+
+	case OPT_fdiagnostics_color_:
+	  diagnostic_color_init (global_dc, option->value);
 	  break;
 
 	default:
@@ -1860,7 +1870,6 @@ cont1:
 
   /* Copy the early generated debug info from the objects to temporary
      files and append those to the partial link commandline.  */
-  n_debugobj = 0;
   early_debug_object_names = NULL;
   if (! skip_debug)
     {
@@ -1870,10 +1879,7 @@ cont1:
 	{
 	  const char *tem;
 	  if ((tem = debug_objcopy (ltoobj_argv[i], !linker_output_rel)))
-	    {
-	      early_debug_object_names[i] = tem;
-	      n_debugobj++;
-	    }
+	    early_debug_object_names[i] = tem;
 	}
     }
 
@@ -2130,6 +2136,9 @@ main (int argc, char *argv[])
   gcc_init_libintl ();
 
   diagnostic_initialize (global_dc, 0);
+  diagnostic_color_init (global_dc);
+  diagnostic_urls_init (global_dc);
+  global_dc->get_option_url = get_option_url;
 
   if (atexit (lto_wrapper_cleanup) != 0)
     fatal_error (input_location, "%<atexit%> failed");

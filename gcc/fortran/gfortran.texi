@@ -589,7 +589,7 @@ Malformed environment variables are silently ignored.
 * GFORTRAN_SHOW_LOCUS::  Show location for runtime errors
 * GFORTRAN_OPTIONAL_PLUS:: Print leading + where permitted
 * GFORTRAN_LIST_SEPARATOR::  Separator for list output
-* GFORTRAN_CONVERT_UNIT::  Set endianness for unformatted I/O
+* GFORTRAN_CONVERT_UNIT::  Set conversion for unformatted I/O
 * GFORTRAN_ERROR_BACKTRACE:: Show backtrace on run-time errors
 * GFORTRAN_FORMATTED_BUFFER_SIZE:: Buffer size for formatted files
 * GFORTRAN_UNFORMATTED_BUFFER_SIZE:: Buffer size for unformatted files
@@ -686,11 +686,12 @@ when @command{a.out} is the compiled Fortran program that you want to run.
 Default is a single space.
 
 @node GFORTRAN_CONVERT_UNIT
-@section @env{GFORTRAN_CONVERT_UNIT}---Set endianness for unformatted I/O
+@section @env{GFORTRAN_CONVERT_UNIT}---Set conversion for unformatted I/O
 
 By setting the @env{GFORTRAN_CONVERT_UNIT} variable, it is possible
 to change the representation of data for unformatted files.
-The syntax for the @env{GFORTRAN_CONVERT_UNIT} variable is:
+The syntax for the @env{GFORTRAN_CONVERT_UNIT} variable for
+most systems is:
 @smallexample
 GFORTRAN_CONVERT_UNIT: mode | mode ';' exception | exception ;
 mode: 'native' | 'swap' | 'big_endian' | 'little_endian' ;
@@ -711,6 +712,14 @@ the modes are the same as for the @code{CONVERT} specifier:
 for unformatted files.
 @item @code{BIG_ENDIAN} Use the big-endian format for unformatted files.
 @end itemize
+For POWER systems which support @option{-mabi=ieeelongdouble},
+there are additional options, which can be combined with the
+others with commas. Those are
+@itemize @w{}
+@item @code{R16_IEEE} Use IEEE 128-bit format for @code{REAL(KIND=16)}.
+@item @code{R16_IBM} Use IBM @code{long double} format for
+@code{REAL(KIND=16)}.
+@end itemize
 A missing mode for an exception is taken to mean @code{BIG_ENDIAN}.
 Examples of values for @env{GFORTRAN_CONVERT_UNIT} are:
 @itemize @w{}
@@ -719,6 +728,8 @@ Examples of values for @env{GFORTRAN_CONVERT_UNIT} are:
 in little_endian mode, except for units 10 to 20 and 25, which are in
 native format.
 @item @code{'10-20'}  Units 10 to 20 are big-endian, the rest is native.
+@item @code{'big_endian,r16_ibm'} Do all unformatted I/O in big-endian
+mode and use IBM long double for output of @code{REAL(KIND=16)} values.
 @end itemize
 
 Setting the environment variables should be done on the command
@@ -1736,7 +1747,7 @@ the @code{CONVERT} specifier on the @code{OPEN} statement.
 @xref{GFORTRAN_CONVERT_UNIT}, for an alternative way of specifying
 the data format via an environment variable.
 
-Valid values for @code{CONVERT} are:
+Valid values for @code{CONVERT} on most systems are:
 @itemize @w{}
 @item @code{CONVERT='NATIVE'} Use the native format.  This is the default.
 @item @code{CONVERT='SWAP'} Swap between little- and big-endian.
@@ -1744,6 +1755,15 @@ Valid values for @code{CONVERT} are:
 for unformatted files.
 @item @code{CONVERT='BIG_ENDIAN'} Use the big-endian representation for
 unformatted files.
+@end itemize
+On POWER systems which support @option{-mabi=ieeelongdouble},
+there are additional options, which can be combined with the others
+with commas. Those are
+@itemize @w{}
+@item @code{CONVERT='R16_IEEE'} Use IEEE 128-bit format for
+@code{REAL(KIND=16)}.
+@item @code{CONVERT='R16_IBM'} Use IBM @code{long double} format for
+real@code{REAL(KIND=16)}.
 @end itemize
 
 Using the option could look like this:

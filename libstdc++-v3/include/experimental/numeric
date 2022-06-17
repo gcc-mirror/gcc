@@ -56,17 +56,15 @@ inline namespace fundamentals_v2
     constexpr common_type_t<_Mn, _Nn>
     gcd(_Mn __m, _Nn __n) noexcept
     {
-      static_assert(is_integral_v<_Mn>,
-	  "std::experimental::gcd arguments must be integers");
-      static_assert(is_integral_v<_Nn>,
-	  "std::experimental::gcd arguments must be integers");
-      static_assert(_Mn(2) != _Mn(1),
-	  "std::experimental::gcd arguments must not be bool");
-      static_assert(_Nn(2) != _Nn(1),
-	  "std::experimental::gcd arguments must not be bool");
-      using _Up = make_unsigned_t<common_type_t<_Mn, _Nn>>;
-      return std::__detail::__gcd(std::__detail::__absu<_Up>(__m),
-				  std::__detail::__absu<_Up>(__n));
+      static_assert(is_integral_v<_Mn> && is_integral_v<_Nn>,
+		    "std::experimental::gcd arguments must be integers");
+      static_assert(_Mn(2) == 2 && _Nn(2) == 2,
+		    "std::experimental::gcd arguments must not be bool");
+      namespace __detail = std::__detail;
+      using _Ct = common_type_t<_Mn, _Nn>;
+      const _Ct __m2 = __detail::__abs_r<_Ct>(__m);
+      const _Ct __n2 = __detail::__abs_r<_Ct>(__n);
+      return __detail::__gcd<make_unsigned_t<_Ct>>(__m2, __n2);
     }
 
   /// Least common multiple
@@ -74,17 +72,25 @@ inline namespace fundamentals_v2
     constexpr common_type_t<_Mn, _Nn>
     lcm(_Mn __m, _Nn __n)
     {
-      static_assert(is_integral_v<_Mn>,
+      static_assert(is_integral_v<_Mn> && is_integral_v<_Nn>,
 	  "std::experimental::lcm arguments must be integers");
-      static_assert(is_integral_v<_Nn>,
-	  "std::experimental::lcm arguments must be integers");
-      static_assert(_Mn(2) != _Mn(1),
+      static_assert(_Mn(2) == 2 && _Nn(2) == 2,
 	  "std::experimental::lcm arguments must not be bool");
-      static_assert(_Nn(2) != _Nn(1),
-	  "std::experimental::lcm arguments must not be bool");
-      using _Up = make_unsigned_t<common_type_t<_Mn, _Nn>>;
-      return std::__detail::__lcm(std::__detail::__absu<_Up>(__m),
-				  std::__detail::__absu<_Up>(__n));
+      namespace __detail = std::__detail;
+      using _Ct = common_type_t<_Mn, _Nn>;
+      const _Ct __m2 = __detail::__abs_r<_Ct>(__m);
+      const _Ct __n2 = __detail::__abs_r<_Ct>(__n);
+      if (__m2 == 0 || __n2 == 0)
+	return 0;
+      _Ct __r = __m2 / __detail::__gcd<make_unsigned_t<_Ct>>(__m2, __n2);
+
+      if _GLIBCXX17_CONSTEXPR (is_signed_v<_Ct>)
+	if (__is_constant_evaluated())
+	  return __r * __n2; // constant evaluation can detect overflow here.
+
+      bool __overflow = __builtin_mul_overflow(__r, __n2, &__r);
+      __glibcxx_assert(!__overflow);
+      return __r;
     }
 } // namespace fundamentals_v2
 } // namespace experimental

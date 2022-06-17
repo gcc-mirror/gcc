@@ -123,6 +123,7 @@ immutable Msgtable[] msgtable =
     { "__c_longlong" },
     { "__c_ulonglong" },
     { "__c_long_double" },
+    { "__c_char" },
     { "__c_wchar_t" },
     { "__c_complex_float" },
     { "__c_complex_double" },
@@ -310,6 +311,7 @@ immutable Msgtable[] msgtable =
     { "__ArrayPostblit" },
     { "__ArrayDtor" },
     { "_d_delThrowable" },
+    { "_d_newThrowable" },
     { "_d_assert_fail" },
     { "dup" },
     { "_aaApply" },
@@ -348,6 +350,11 @@ immutable Msgtable[] msgtable =
     { "_d_arraysetlengthTImpl"},
     { "_d_arraysetlengthT"},
     { "_d_arraysetlengthTTrace"},
+    { "_d_arrayappendT" },
+    { "_d_arrayappendTTrace" },
+    { "_d_arrayappendcTXImpl" },
+    { "_d_arrayappendcTX" },
+    { "_d_arrayappendcTXTrace" },
 
     // varargs implementation
     { "stdc" },
@@ -359,6 +366,8 @@ immutable Msgtable[] msgtable =
     { "core" },
     { "etc" },
     { "attribute" },
+    { "atomic" },
+    { "atomicOp" },
     { "math" },
     { "sin" },
     { "cos" },
@@ -451,6 +460,7 @@ immutable Msgtable[] msgtable =
     { "getVirtualFunctions" },
     { "getVirtualMethods" },
     { "classInstanceSize" },
+    { "classInstanceAlignment" },
     { "allMembers" },
     { "derivedMembers" },
     { "isSame" },
@@ -488,6 +498,7 @@ immutable Msgtable[] msgtable =
     { "udaGNUAbiTag", "gnuAbiTag" },
     { "udaSelector", "selector" },
     { "udaOptional", "optional"},
+    { "udaMustUse", "mustuse" },
 
     // C names, for undefined identifier error messages
     { "NULL" },
@@ -513,6 +524,8 @@ immutable Msgtable[] msgtable =
     { "show" },
     { "push" },
     { "pop" },
+    { "define" },
+    { "undef" },
 ];
 
 

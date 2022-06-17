@@ -33,4 +33,3 @@ S bar2()
    S result;
    return result.foo();
 }
-

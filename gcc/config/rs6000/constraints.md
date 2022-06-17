@@ -29,7 +29,7 @@
   "A base register.  Like @code{r}, but @code{r0} is not allowed, so
    @code{r1}@dots{}@code{r31}.")
 
-(define_register_constraint "f" "rs6000_constraints[RS6000_CONSTRAINT_f]"
+(define_register_constraint "f" "rs6000_constraints[RS6000_CONSTRAINT_d]"
   "A floating point register (FPR), @code{f0}@dots{}@code{f31}.")
 
 (define_register_constraint "d" "rs6000_constraints[RS6000_CONSTRAINT_d]"
@@ -37,7 +37,7 @@
    historically @code{f} was for single-precision and @code{d} was for
    double-precision floating point.")
 
-(define_register_constraint "v" "ALTIVEC_REGS"
+(define_register_constraint "v" "rs6000_constraints[RS6000_CONSTRAINT_v]"
   "An Altivec vector register (VR), @code{v0}@dots{}@code{v31}.")
 
 (define_register_constraint "wa" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
@@ -263,7 +263,7 @@
        (match_test "REG_P (XEXP (op, 0))")))
 
 (define_memory_constraint "Y"
-  "@internal A memory operand for a DQ-form instruction."
+  "@internal A memory operand for a DS-form instruction."
   (and (match_code "mem")
        (match_test "mem_operand_gpr (op, mode)")))
 

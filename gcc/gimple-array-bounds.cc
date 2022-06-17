@@ -761,7 +761,7 @@ public:
     checker (checker) { }
   ~check_array_bounds_dom_walker () {}
 
-  edge before_dom_children (basic_block) FINAL OVERRIDE;
+  edge before_dom_children (basic_block) final override;
 
 private:
   array_bounds_checker *checker;

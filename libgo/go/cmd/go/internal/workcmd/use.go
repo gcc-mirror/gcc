@@ -20,7 +20,7 @@ import (
 )
 
 var cmdUse = &base.Command{
-	UsageLine: "go work use [-r] [moddirs]",
+	UsageLine: "go work use [-r] moddirs",
 	Short:     "add modules to workspace file",
 	Long: `Use provides a command-line interface for adding
 directories, optionally recursively, to a go.work file.
@@ -33,6 +33,9 @@ The -r flag searches recursively for modules in the argument
 directories, and the use command operates as if each of the directories
 were specified as arguments: namely, use directives will be added for
 directories that exist, and removed for directories that do not exist.
+
+See the workspaces reference at https://go.dev/ref/mod#workspaces
+for more information.
 `,
 }
 
@@ -101,6 +104,9 @@ func runUse(ctx context.Context, cmd *base.Command, args []string) {
 		keepDirs[absDir] = dir
 	}
 
+	if len(args) == 0 {
+		base.Fatalf("go: 'go work use' requires one or more directory arguments")
+	}
 	for _, useDir := range args {
 		if !*useR {
 			lookDir(useDir)
@@ -186,5 +192,5 @@ func pathRel(workDir, dir string) (abs, canonical string) {
 
 	// Normalize relative paths to use slashes, so that checked-in go.work
 	// files with relative paths within the repo are platform-independent.
-	return abs, filepath.ToSlash(rel)
+	return abs, modload.ToDirectoryPath(rel)
 }

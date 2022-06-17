@@ -20,4 +20,3 @@ struct Bar
         return x == Foo.y;
     }
 }
-

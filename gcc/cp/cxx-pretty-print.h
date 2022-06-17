@@ -34,7 +34,7 @@ class cxx_pretty_printer : public c_pretty_printer
 public:
   cxx_pretty_printer ();
 
-  pretty_printer *clone () const OVERRIDE;
+  pretty_printer *clone () const override;
 
   void constant (tree);
   void id_expression (tree);

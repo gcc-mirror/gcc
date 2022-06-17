@@ -1379,6 +1379,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_DEPEND_IN: fputs ("in:", dumpfile); break;
 	  case OMP_DEPEND_OUT: fputs ("out:", dumpfile); break;
 	  case OMP_DEPEND_INOUT: fputs ("inout:", dumpfile); break;
+	  case OMP_DEPEND_INOUTSET: fputs ("inoutset:", dumpfile); break;
 	  case OMP_DEPEND_DEPOBJ: fputs ("depobj:", dumpfile); break;
 	  case OMP_DEPEND_MUTEXINOUTSET:
 	    fputs ("mutexinoutset:", dumpfile);
@@ -1423,7 +1424,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_LINEAR_UVAL: fputs ("uval(", dumpfile); break;
 	  default: break;
 	  }
-      fprintf (dumpfile, "%s", n->sym->name);
+      fprintf (dumpfile, "%s", n->sym ? n->sym->name : "omp_all_memory");
       if (list_type == OMP_LIST_LINEAR && n->u.linear_op != OMP_LINEAR_DEFAULT)
 	fputc (')', dumpfile);
       if (n->expr)
@@ -1678,6 +1679,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_IN_REDUCTION: type = "IN_REDUCTION"; break;
 	  case OMP_LIST_TASK_REDUCTION: type = "TASK_REDUCTION"; break;
 	  case OMP_LIST_DEVICE_RESIDENT: type = "DEVICE_RESIDENT"; break;
+	  case OMP_LIST_ENTER: type = "ENTER"; break;
 	  case OMP_LIST_LINK: type = "LINK"; break;
 	  case OMP_LIST_USE_DEVICE: type = "USE_DEVICE"; break;
 	  case OMP_LIST_CACHE: type = "CACHE"; break;
@@ -1898,6 +1900,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	case OMP_DEPEND_IN: deptype = "IN"; break;
 	case OMP_DEPEND_OUT: deptype = "OUT"; break;
 	case OMP_DEPEND_INOUT: deptype = "INOUT"; break;
+	case OMP_DEPEND_INOUTSET: deptype = "INOUTSET"; break;
 	case OMP_DEPEND_MUTEXINOUTSET: deptype = "MUTEXINOUTSET"; break;
 	default: gcc_unreachable ();
 	}

@@ -1354,6 +1354,14 @@ proc check_effective_target_stacktrace { } {
     }]
 }
 
+# Return 1 if RTTI is enabled by the current test flags.
+proc check_effective_target_rtti { } {
+    return [check_v3_target_prop_cached et_rtti {
+	set cond "__cpp_rtti"
+	return [v3_check_preprocessor_condition rtti $cond]
+    }]
+}
+
 set additional_prunes ""
 
 if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \

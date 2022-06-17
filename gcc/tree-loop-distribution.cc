@@ -3658,6 +3658,7 @@ loop_distribution::transform_reduction_loop (loop_p loop)
   /* Handle strlen like loops.  */
   if (store_dr == NULL
       && integer_zerop (pattern)
+      && INTEGRAL_TYPE_P (TREE_TYPE (reduction_var))
       && TREE_CODE (reduction_iv.base) == INTEGER_CST
       && TREE_CODE (reduction_iv.step) == INTEGER_CST
       && integer_onep (reduction_iv.step))

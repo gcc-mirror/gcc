@@ -27,6 +27,7 @@ bool objc_init (void);
 const char *objc_printable_name (tree, int);
 int objc_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 void objc_common_init_ts (void);
+const char *objc_get_sarif_source_language (const char *);
 
 /* NB: The remaining public functions are prototyped in c-common.h, for the
    benefit of stub-objc.cc and objc-act.cc.  */

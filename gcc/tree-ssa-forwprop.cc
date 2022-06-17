@@ -32,10 +32,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "stor-layout.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "tree-cfg.h"
 #include "expr.h"
@@ -511,9 +511,7 @@ forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
 /* Propagate from the ssa name definition statements of COND_EXPR
    in GIMPLE_COND statement STMT into the conditional if that simplifies it.
    Returns zero if no statement was changed, one if there were
-   changes and two if cfg_cleanup needs to run.
-
-   This must be kept in sync with forward_propagate_into_cond.  */
+   changes and two if cfg_cleanup needs to run.  */
 
 static int
 forward_propagate_into_gimple_cond (gcond *stmt)
@@ -568,70 +566,6 @@ forward_propagate_into_gimple_cond (gcond *stmt)
       EDGE_SUCC (bb, 0)->flags ^= (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
       EDGE_SUCC (bb, 1)->flags ^= (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
       return 1;
-    }
-
-  return 0;
-}
-
-
-/* Propagate from the ssa name definition statements of COND_EXPR
-   in the rhs of statement STMT into the conditional if that simplifies it.
-   Returns true zero if the stmt was changed.  */
-
-static bool
-forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
-{
-  gimple *stmt = gsi_stmt (*gsi_p);
-  tree tmp = NULL_TREE;
-  tree cond = gimple_assign_rhs1 (stmt);
-  enum tree_code code = gimple_assign_rhs_code (stmt);
-
-  /* We can do tree combining on SSA_NAME and comparison expressions.  */
-  if (COMPARISON_CLASS_P (cond))
-    tmp = forward_propagate_into_comparison_1 (stmt, TREE_CODE (cond),
-					       TREE_TYPE (cond),
-					       TREE_OPERAND (cond, 0),
-					       TREE_OPERAND (cond, 1));
-  else if (TREE_CODE (cond) == SSA_NAME)
-    {
-      enum tree_code def_code;
-      tree name = cond;
-      gimple *def_stmt = get_prop_source_stmt (name, true, NULL);
-      if (!def_stmt || !can_propagate_from (def_stmt))
-	return 0;
-
-      def_code = gimple_assign_rhs_code (def_stmt);
-      if (TREE_CODE_CLASS (def_code) == tcc_comparison)
-	tmp = fold_build2_loc (gimple_location (def_stmt),
-			       def_code,
-			       TREE_TYPE (cond),
-			       gimple_assign_rhs1 (def_stmt),
-			       gimple_assign_rhs2 (def_stmt));
-    }
-
-  if (tmp
-      && is_gimple_condexpr (tmp))
-    {
-      if (dump_file)
-	{
-	  fprintf (dump_file, "  Replaced '");
-	  print_generic_expr (dump_file, cond);
-	  fprintf (dump_file, "' with '");
-	  print_generic_expr (dump_file, tmp);
-	  fprintf (dump_file, "'\n");
-	}
-
-      if ((code == VEC_COND_EXPR) ? integer_all_onesp (tmp)
-				  : integer_onep (tmp))
-	gimple_assign_set_rhs_from_tree (gsi_p, gimple_assign_rhs2 (stmt));
-      else if (integer_zerop (tmp))
-	gimple_assign_set_rhs_from_tree (gsi_p, gimple_assign_rhs3 (stmt));
-      else
-	gimple_assign_set_rhs1 (stmt, unshare_expr (tmp));
-      stmt = gsi_stmt (*gsi_p);
-      update_stmt (stmt);
-
-      return true;
     }
 
   return 0;
@@ -2334,8 +2268,10 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
   gimple *stmt = gsi_stmt (*gsi);
   gimple *def_stmt;
   tree op, op0, op1;
-  tree elem_type;
-  unsigned idx, size;
+  tree elem_type, type;
+  tree p, m, tem;
+  unsigned HOST_WIDE_INT nelts, idx;
+  poly_uint64 size, elem_size;
   enum tree_code code;
 
   op = gimple_assign_rhs1 (stmt);
@@ -2353,42 +2289,74 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
   op1 = TREE_OPERAND (op, 1);
   code = gimple_assign_rhs_code (def_stmt);
   elem_type = TREE_TYPE (TREE_TYPE (op0));
-  if (TREE_TYPE (op) != elem_type)
-    return false;
+  type = TREE_TYPE (op);
+  /* Also handle vector type.
+     .i.e.
+     _7 = VEC_PERM_EXPR <_1, _1, { 2, 3, 2, 3 }>;
+     _11 = BIT_FIELD_REF <_7, 64, 0>;
 
-  size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
+     to
+
+     _11 = BIT_FIELD_REF <_1, 64, 64>.  */
+
+  size = tree_to_poly_uint64 (TYPE_SIZE (type));
   if (maybe_ne (bit_field_size (op), size))
     return false;
 
-  if (code == VEC_PERM_EXPR
-      && constant_multiple_p (bit_field_offset (op), size, &idx))
+  elem_size = tree_to_poly_uint64 (TYPE_SIZE (elem_type));
+  if (code != VEC_PERM_EXPR
+      || !constant_multiple_p (bit_field_offset (op), elem_size, &idx))
+    return false;
+
+  m = gimple_assign_rhs3 (def_stmt);
+  if (TREE_CODE (m) != VECTOR_CST
+      || !VECTOR_CST_NELTS (m).is_constant (&nelts))
+    return false;
+
+  /* One element.  */
+  if (known_eq (size, elem_size))
+    idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (m, idx)) % (2 * nelts);
+  else
     {
-      tree p, m, tem;
-      unsigned HOST_WIDE_INT nelts;
-      m = gimple_assign_rhs3 (def_stmt);
-      if (TREE_CODE (m) != VECTOR_CST
-	  || !VECTOR_CST_NELTS (m).is_constant (&nelts))
+      unsigned HOST_WIDE_INT nelts_op;
+      if (!constant_multiple_p (size, elem_size, &nelts_op)
+	  || !pow2p_hwi (nelts_op))
 	return false;
-      idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (m, idx));
-      idx %= 2 * nelts;
-      if (idx < nelts)
+      /* Clamp vec_perm_expr index.  */
+      unsigned start = TREE_INT_CST_LOW (vector_cst_elt (m, idx)) % (2 * nelts);
+      unsigned end = TREE_INT_CST_LOW (vector_cst_elt (m, idx + nelts_op - 1))
+		     % (2 * nelts);
+      /* Be in the same vector.  */
+      if ((start < nelts) != (end < nelts))
+	return false;
+      for (unsigned HOST_WIDE_INT i = 1; i != nelts_op; i++)
 	{
-	  p = gimple_assign_rhs1 (def_stmt);
+	  /* Continuous area.  */
+	  if (TREE_INT_CST_LOW (vector_cst_elt (m, idx + i)) % (2 * nelts) - 1
+	      != TREE_INT_CST_LOW (vector_cst_elt (m, idx + i - 1))
+		 % (2 * nelts))
+	    return false;
 	}
-      else
-	{
-	  p = gimple_assign_rhs2 (def_stmt);
-	  idx -= nelts;
-	}
-      tem = build3 (BIT_FIELD_REF, TREE_TYPE (op),
-		    unshare_expr (p), op1, bitsize_int (idx * size));
-      gimple_assign_set_rhs1 (stmt, tem);
-      fold_stmt (gsi);
-      update_stmt (gsi_stmt (*gsi));
-      return true;
+      /* Alignment not worse than before.  */
+      if (start % nelts_op)
+       return false;
+      idx = start;
     }
 
-  return false;
+  if (idx < nelts)
+    p = gimple_assign_rhs1 (def_stmt);
+  else
+    {
+      p = gimple_assign_rhs2 (def_stmt);
+      idx -= nelts;
+    }
+
+  tem = build3 (BIT_FIELD_REF, TREE_TYPE (op),
+		p, op1, bitsize_int (idx * elem_size));
+  gimple_assign_set_rhs1 (stmt, tem);
+  fold_stmt (gsi);
+  update_stmt (gsi_stmt (*gsi));
+  return true;
 }
 
 /* Determine whether applying the 2 permutations (mask1 then mask2)
@@ -2985,7 +2953,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 			: (elts[0].second == 0 && elts[0].first == 0
 			   ? 0 : refnelts) + i);
       vec_perm_indices indices (sel, orig[1] ? 2 : 1, refnelts);
-      if (!can_vec_perm_const_p (TYPE_MODE (perm_type), indices))
+      machine_mode vmode = TYPE_MODE (perm_type);
+      if (!can_vec_perm_const_p (vmode, vmode, indices))
 	return false;
       mask_type
 	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),
@@ -3034,7 +3003,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	    sel.quick_push (elts[i].first
 			    ? elts[i].second + nelts : i);
 	  vec_perm_indices indices (sel, 2, nelts);
-	  if (!can_vec_perm_const_p (TYPE_MODE (type), indices))
+	  machine_mode vmode = TYPE_MODE (type);
+	  if (!can_vec_perm_const_p (vmode, vmode, indices))
 	    return false;
 	  mask_type
 	    = build_vector_type (build_nonstandard_integer_type (elem_size, 1),
@@ -3686,16 +3656,7 @@ pass_forwprop::execute (function *fun)
 		    tree rhs1 = gimple_assign_rhs1 (stmt);
 		    enum tree_code code = gimple_assign_rhs_code (stmt);
 
-		    if (code == COND_EXPR)
-		      {
-			/* In this case the entire COND_EXPR is in rhs1. */
-			if (forward_propagate_into_cond (&gsi))
-			  {
-			    changed = true;
-			    stmt = gsi_stmt (gsi);
-			  }
-		      }
-		    else if (TREE_CODE_CLASS (code) == tcc_comparison)
+		    if (TREE_CODE_CLASS (code) == tcc_comparison)
 		      {
 			int did_something;
 			did_something = forward_propagate_into_comparison (&gsi);

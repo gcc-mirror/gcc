@@ -137,10 +137,10 @@ public:
   funct_state_summary_t (symbol_table *symtab):
     fast_function_summary <funct_state_d *, va_heap> (symtab) {}
 
-  virtual void insert (cgraph_node *, funct_state_d *state);
-  virtual void duplicate (cgraph_node *src_node, cgraph_node *dst_node,
-			  funct_state_d *src_data,
-			  funct_state_d *dst_data);
+  void insert (cgraph_node *, funct_state_d *state) final override;
+  void duplicate (cgraph_node *src_node, cgraph_node *dst_node,
+		  funct_state_d *src_data,
+		  funct_state_d *dst_data) final override;
 };
 
 static funct_state_summary_t *funct_state_summaries = NULL;

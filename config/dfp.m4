@@ -1,3 +1,21 @@
+# Copyright (C) 2010-2022 Free Software Foundation, Inc.
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3, or (at your option) any
+# later version.
+
+# GCC is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
 dnl @synopsis GCC_AC_ENABLE_DECIMAL_FLOAT([target triplet])
 dnl
 dnl Enable C extension for decimal float if target supports it.
@@ -20,6 +38,7 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'.]) ;;
 ],
 [
   case $1 in
+    aarch64* | \
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
     i?86*-*-elfiamcu | i?86*-*-gnu* | x86_64*-*-gnu* | \
     i?86*-*-mingw* | x86_64*-*-mingw* | \
@@ -37,7 +56,7 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'.]) ;;
 case x$enable_decimal_float in
   xyes)
     case $1 in
-      i?86*-*-* | x86_64*-*-*)
+      aarch64* | i?86*-*-* | x86_64*-*-*)
 	enable_decimal_float=bid
 	;;
       *)

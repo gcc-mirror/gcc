@@ -3706,7 +3706,7 @@ zero_call_used_regno_mode (const unsigned int regno)
   else if (MASK_REGNO_P (regno))
     return HImode;
   else if (MMX_REGNO_P (regno))
-    return V4HImode;
+    return V2SImode;
   else
     gcc_unreachable ();
 }
@@ -3753,16 +3753,17 @@ zero_all_vector_registers (HARD_REG_SET need_zeroed_hardregs)
    needs to be cleared, the whole stack should be cleared.  However,
    x87 stack registers that hold the return value should be excluded.
    x87 returns in the top (two for complex values) register, so
-   num_of_st should be 7/6 when x87 returns, otherwise it will be 8.  */
+   num_of_st should be 7/6 when x87 returns, otherwise it will be 8.
+   return the value of num_of_st.  */
 
 
-static bool
+static int
 zero_all_st_registers (HARD_REG_SET need_zeroed_hardregs)
 {
 
   /* If the FPU is disabled, no need to zero all st registers.  */
   if (! (TARGET_80387 || TARGET_FLOAT_RETURNS_IN_80387))
-    return false;
+    return 0;
 
   unsigned int num_of_st = 0;
   for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
@@ -3774,7 +3775,7 @@ zero_all_st_registers (HARD_REG_SET need_zeroed_hardregs)
       }
 
   if (num_of_st == 0)
-    return false;
+    return 0;
 
   bool return_with_x87 = false;
   return_with_x87 = (crtl->return_rtx
@@ -3802,7 +3803,7 @@ zero_all_st_registers (HARD_REG_SET need_zeroed_hardregs)
       insn = emit_insn (gen_rtx_SET (st_reg, st_reg));
       add_reg_note (insn, REG_DEAD, st_reg);
     }
-  return true;
+  return num_of_st;
 }
 
 
@@ -3825,19 +3826,12 @@ zero_all_mm_registers (HARD_REG_SET need_zeroed_hardregs,
   if (!need_zero_all_mm)
     return false;
 
-  rtx zero_mmx = NULL_RTX;
-  machine_mode mode = V4HImode;
+  machine_mode mode = V2SImode;
   for (unsigned int regno = FIRST_MMX_REG; regno <= LAST_MMX_REG; regno++)
     if (regno != ret_mmx_regno)
       {
 	rtx reg = gen_rtx_REG (mode, regno);
-	if (zero_mmx == NULL_RTX)
-	  {
-	    zero_mmx = reg;
-	    emit_insn (gen_rtx_SET (reg, CONST0_RTX (mode)));
-	  }
-	else
-	  emit_move_insn (reg, zero_mmx);
+	emit_insn (gen_rtx_SET (reg, CONST0_RTX (mode)));
       }
   return true;
 }
@@ -3851,7 +3845,7 @@ ix86_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 {
   HARD_REG_SET zeroed_hardregs;
   bool all_sse_zeroed = false;
-  bool all_st_zeroed = false;
+  int all_st_zeroed_num = 0;
   bool all_mm_zeroed = false;
 
   CLEAR_HARD_REG_SET (zeroed_hardregs);
@@ -3881,9 +3875,17 @@ ix86_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
   if (!exit_with_mmx_mode)
     /* x87 exit mode, we should zero all st registers together.  */
     {
-      all_st_zeroed = zero_all_st_registers (need_zeroed_hardregs);
-      if (all_st_zeroed)
-	SET_HARD_REG_BIT (zeroed_hardregs, FIRST_STACK_REG);
+      all_st_zeroed_num = zero_all_st_registers (need_zeroed_hardregs);
+
+      if (all_st_zeroed_num > 0)
+	for (unsigned int regno = FIRST_STACK_REG; regno <= LAST_STACK_REG; regno++)
+	  /* x87 stack registers that hold the return value should be excluded.
+	     x87 returns in the top (two for complex values) register.  */
+	  if (all_st_zeroed_num == 8
+	      || !((all_st_zeroed_num >= 6 && regno == REGNO (crtl->return_rtx))
+		   || (all_st_zeroed_num == 6
+		       && (regno == (REGNO (crtl->return_rtx) + 1)))))
+	    SET_HARD_REG_BIT (zeroed_hardregs, regno);
     }
   else
     /* MMX exit mode, check whether we can zero all mm registers.  */
@@ -3899,11 +3901,6 @@ ix86_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 
   /* Now, generate instructions to zero all the other registers.  */
 
-  rtx zero_gpr = NULL_RTX;
-  rtx zero_vector = NULL_RTX;
-  rtx zero_mask = NULL_RTX;
-  rtx zero_mmx = NULL_RTX;
-
   for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
       if (!TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
@@ -3914,59 +3911,34 @@ ix86_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 
       SET_HARD_REG_BIT (zeroed_hardregs, regno);
 
-      rtx reg, tmp, zero_rtx;
       machine_mode mode = zero_call_used_regno_mode (regno);
 
-      reg = gen_rtx_REG (mode, regno);
-      zero_rtx = CONST0_RTX (mode);
+      rtx reg = gen_rtx_REG (mode, regno);
+      rtx tmp = gen_rtx_SET (reg, CONST0_RTX (mode));
 
-      if (mode == SImode)
-	if (zero_gpr == NULL_RTX)
-	  {
-	    zero_gpr = reg;
-	    tmp = gen_rtx_SET (reg, zero_rtx);
-	    if (!TARGET_USE_MOV0 || optimize_insn_for_size_p ())
-	      {
-		rtx clob = gen_rtx_CLOBBER (VOIDmode,
-					    gen_rtx_REG (CCmode,
-							 FLAGS_REG));
-		tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2,
-							     tmp,
-							     clob));
-	      }
-	    emit_insn (tmp);
-	  }
-	else
-	  emit_move_insn (reg, zero_gpr);
-      else if (mode == V4SFmode)
-	if (zero_vector == NULL_RTX)
-	  {
-	    zero_vector = reg;
-	    tmp = gen_rtx_SET (reg, zero_rtx);
-	    emit_insn (tmp);
-	  }
-	else
-	  emit_move_insn (reg, zero_vector);
-      else if (mode == HImode)
-	if (zero_mask == NULL_RTX)
-	  {
-	    zero_mask = reg;
-	    tmp = gen_rtx_SET (reg, zero_rtx);
-	    emit_insn (tmp);
-	  }
-	else
-	  emit_move_insn (reg, zero_mask);
-      else if (mode == V4HImode)
-	if (zero_mmx == NULL_RTX)
-	  {
-	    zero_mmx = reg;
-	    tmp = gen_rtx_SET (reg, zero_rtx);
-	    emit_insn (tmp);
-	  }
-	else
-	  emit_move_insn (reg, zero_mmx);
-      else
-	gcc_unreachable ();
+      switch (mode)
+	{
+	case E_SImode:
+	  if (!TARGET_USE_MOV0 || optimize_insn_for_size_p ())
+	    {
+	      rtx clob = gen_rtx_CLOBBER (VOIDmode,
+					  gen_rtx_REG (CCmode,
+						       FLAGS_REG));
+	      tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2,
+							   tmp,
+							   clob));
+	    }
+	  /* FALLTHRU.  */
+
+	case E_V4SFmode:
+	case E_HImode:
+	case E_V2SImode:
+	  emit_insn (tmp);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
     }
   return zeroed_hardregs;
 }
@@ -4882,6 +4854,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	{
 	  int i, prev_size = 0;
 	  tree temp = create_tmp_var (type, "va_arg_tmp");
+	  TREE_ADDRESSABLE (temp) = 1;
 
 	  /* addr = &temp; */
 	  t = build1 (ADDR_EXPR, build_pointer_type (type), temp);
@@ -6515,7 +6488,8 @@ ix86_initial_elimination_offset (int from, int to)
 }
 
 /* Emits a warning for unsupported msabi to sysv pro/epilogues.  */
-void warn_once_call_ms2sysv_xlogues (const char *feature)
+void
+warn_once_call_ms2sysv_xlogues (const char *feature)
 {
   static bool warned_once = false;
   if (!warned_once)
@@ -16846,7 +16820,8 @@ int
 ix86_attr_length_vex_default (rtx_insn *insn, bool has_0f_opcode,
 			      bool has_vex_w)
 {
-  int i;
+  int i, reg_only = 2 + 1;
+  bool has_mem = false;
 
   /* Only 0f opcode can use 2 byte VEX prefix and  VEX W bit uses 3
      byte VEX prefix.  */
@@ -16866,16 +16841,23 @@ ix86_attr_length_vex_default (rtx_insn *insn, bool has_0f_opcode,
 	if (GET_MODE (recog_data.operand[i]) == DImode
 	    && GENERAL_REG_P (recog_data.operand[i]))
 	  return 3 + 1;
+
+	/* REX.B bit requires 3-byte VEX. Right here we don't know which
+	   operand will be encoded using VEX.B, so be conservative.  */
+	if (REX_INT_REGNO_P (recog_data.operand[i])
+	    || REX_SSE_REGNO_P (recog_data.operand[i]))
+	  reg_only = 3 + 1;
       }
-    else
+    else if (MEM_P (recog_data.operand[i]))
       {
 	/* REX.X or REX.B bits use 3 byte VEX prefix.  */
-	if (MEM_P (recog_data.operand[i])
-	    && x86_extended_reg_mentioned_p (recog_data.operand[i]))
+	if (x86_extended_reg_mentioned_p (recog_data.operand[i]))
 	  return 3 + 1;
+
+	has_mem = true;
       }
 
-  return 2 + 1;
+  return has_mem ? 2 + 1 : reg_only;
 }
 
 
@@ -18368,10 +18350,16 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	}
       break;
 
+    case IX86_BUILTIN_BLENDVPD:
+      /* blendvpd is under sse4.1 but pcmpgtq is under sse4.2,
+	 w/o sse4.2, it's veclowered to scalar operations and
+	 not combined back.  */
+      if (!TARGET_SSE4_2)
+	break;
+      /* FALLTHRU.  */
     case IX86_BUILTIN_PBLENDVB128:
     case IX86_BUILTIN_PBLENDVB256:
     case IX86_BUILTIN_BLENDVPS:
-    case IX86_BUILTIN_BLENDVPD:
     case IX86_BUILTIN_BLENDVPS256:
     case IX86_BUILTIN_BLENDVPD256:
       gcc_assert (n_args == 3);
@@ -18791,7 +18779,8 @@ ix86_veclibabi_svml (combined_fn fn, tree type_out, tree type_in)
       return NULL_TREE;
     }
 
-  tree fndecl = mathfn_built_in (TREE_TYPE (type_in), fn);
+  tree fndecl = mathfn_built_in (el_mode == DFmode
+				 ? double_type_node : float_type_node, fn);
   bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
 
   if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_LOGF)
@@ -18883,7 +18872,8 @@ ix86_veclibabi_acml (combined_fn fn, tree type_out, tree type_in)
       return NULL_TREE;
     }
 
-  tree fndecl = mathfn_built_in (TREE_TYPE (type_in), fn);
+  tree fndecl = mathfn_built_in (el_mode == DFmode
+				 ? double_type_node : float_type_node, fn);
   bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
   sprintf (name + 7, "%s", bname+10);
 
@@ -20159,6 +20149,18 @@ ix86_modes_tieable_p (machine_mode mode1, machine_mode mode2)
     return (GET_MODE_SIZE (mode1) == 8
 	    && ix86_hard_regno_mode_ok (FIRST_MMX_REG, mode1));
 
+  /* SCmode and DImode can be tied.  */
+  if ((mode1 == E_SCmode && mode2 == E_DImode)
+      || (mode1 == E_DImode && mode2 == E_SCmode))
+    return TARGET_64BIT;
+
+  /* [SD]Cmode and V2[SD]Fmode modes can be tied.  */
+  if ((mode1 == E_SCmode && mode2 == E_V2SFmode)
+      || (mode1 == E_V2SFmode && mode2 == E_SCmode)
+      || (mode1 == E_DCmode && mode2 == E_V2DFmode)
+      || (mode1 == E_V2DFmode && mode2 == E_DCmode))
+    return true;
+
   return false;
 }
 
@@ -20652,7 +20654,17 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	        op0 = XEXP (op0, 0), mode = GET_MODE (op0);
 	    }
 
-  	  *total = (cost->mult_init[MODE_INDEX (mode)]
+	  int mult_init;
+	  // Double word multiplication requires 3 mults and 2 adds.
+	  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	    {
+	      mult_init = 3 * cost->mult_init[MODE_INDEX (word_mode)]
+			  + 2 * cost->add;
+	      nbits *= 3;
+	    }
+	  else mult_init = cost->mult_init[MODE_INDEX (mode)];
+
+  	  *total = (mult_init
 		    + nbits * cost->mult_bit
 	            + rtx_cost (op0, mode, outer_code, opno, speed)
 		    + rtx_cost (op1, mode, outer_code, opno, speed));
@@ -20746,66 +20758,121 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
 
       if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
-	{
-	  *total = cost->addss;
-	  return false;
-	}
+	*total = cost->addss;
       else if (X87_FLOAT_MODE_P (mode))
-	{
-	  *total = cost->fadd;
-	  return false;
-	}
+	*total = cost->fadd;
       else if (FLOAT_MODE_P (mode))
-	{
-	  *total = ix86_vec_cost (mode, cost->addss);
-	  return false;
-	}
-      /* FALLTHRU */
+	*total = ix86_vec_cost (mode, cost->addss);
+      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	*total = ix86_vec_cost (mode, cost->sse_op);
+      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	*total = cost->add * 2;
+      else
+	*total = cost->add;
+      return false;
 
-    case AND:
     case IOR:
     case XOR:
-      if (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-	{
-	  *total = (cost->add * 2
-		    + (rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed)
-		       << (GET_MODE (XEXP (x, 0)) != DImode))
-		    + (rtx_cost (XEXP (x, 1), mode, outer_code, opno, speed)
-	               << (GET_MODE (XEXP (x, 1)) != DImode)));
-	  return true;
-	}
-      else if (code == AND
-	       && address_no_seg_operand (x, mode))
-	{
-	  *total = cost->lea;
-	  return true;
-	}
-      /* FALLTHRU */
-
-    case NEG:
-      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
-	{
-	  *total = cost->sse_op;
-	  return false;
-	}
-      else if (X87_FLOAT_MODE_P (mode))
-	{
-	  *total = cost->fchs;
-	  return false;
-	}
-      else if (FLOAT_MODE_P (mode))
-	{
-	  *total = ix86_vec_cost (mode, cost->sse_op);
-	  return false;
-	}
-      /* FALLTHRU */
-
-    case NOT:
       if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
 	*total = ix86_vec_cost (mode, cost->sse_op);
       else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	*total = cost->add * 2;
+      else
+	*total = cost->add;
+      return false;
+
+    case AND:
+      if (address_no_seg_operand (x, mode))
+	{
+	  *total = cost->lea;
+	  return true;
+	}
+      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	{
+	  /* pandn is a single instruction.  */
+	  if (GET_CODE (XEXP (x, 0)) == NOT)
+	    {
+	      *total = ix86_vec_cost (mode, cost->sse_op)
+		       + rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+				   outer_code, opno, speed)
+		       + rtx_cost (XEXP (x, 1), mode,
+				   outer_code, opno, speed);
+	      return true;
+	    }
+	  else if (GET_CODE (XEXP (x, 1)) == NOT)
+	    {
+	      *total = ix86_vec_cost (mode, cost->sse_op)
+		       + rtx_cost (XEXP (x, 0), mode,
+				   outer_code, opno, speed)
+		       + rtx_cost (XEXP (XEXP (x, 1), 0), mode,
+				   outer_code, opno, speed);
+	      return true;
+	    }
+	  *total = ix86_vec_cost (mode, cost->sse_op);
+	}
+      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	{
+	  if (TARGET_BMI && GET_CODE (XEXP (x,0)) == NOT)
+	    {
+	      *total = cost->add * 2
+		       + rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+				   outer_code, opno, speed)
+		       + rtx_cost (XEXP (x, 1), mode,
+				   outer_code, opno, speed);
+	      return true;
+	    }
+	  else if (TARGET_BMI && GET_CODE (XEXP (x, 1)) == NOT)
+	    {
+	      *total = cost->add * 2
+		       + rtx_cost (XEXP (x, 0), mode,
+				   outer_code, opno, speed)
+		       + rtx_cost (XEXP (XEXP (x, 1), 0), mode,
+				   outer_code, opno, speed);
+	      return true;
+	    }
+	  *total = cost->add * 2;
+	}
+      else if (TARGET_BMI && GET_CODE (XEXP (x,0)) == NOT)
+	{
+	  *total = cost->add
+		   + rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+			       outer_code, opno, speed)
+		   + rtx_cost (XEXP (x, 1), mode, outer_code, opno, speed);
+	  return true;
+	}
+      else if (TARGET_BMI && GET_CODE (XEXP (x,1)) == NOT)
+	{
+	  *total = cost->add
+		   + rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed)
+		   + rtx_cost (XEXP (XEXP (x, 1), 0), mode,
+			       outer_code, opno, speed);
+	  return true;
+	}
+      else
+	*total = cost->add;
+      return false;
+
+    case NOT:
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	// vnot is pxor -1.
+	*total = ix86_vec_cost (mode, cost->sse_op) + 1;
+      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	*total = cost->add * 2;
+      else
+	*total = cost->add;
+      return false;
+
+    case NEG:
+      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+	*total = cost->sse_op;
+      else if (X87_FLOAT_MODE_P (mode))
+	*total = cost->fchs;
+      else if (FLOAT_MODE_P (mode))
+	*total = ix86_vec_cost (mode, cost->sse_op);
+      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	*total = ix86_vec_cost (mode, cost->sse_op);
+      else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	*total = cost->add * 3;
       else
 	*total = cost->add;
       return false;
@@ -20934,6 +21001,51 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
          than one that does not.  */
       if (speed)
         *total += 1;
+      return false;
+
+    case ZERO_EXTRACT:
+      if (XEXP (x, 1) == const1_rtx
+	  && GET_CODE (XEXP (x, 2)) == ZERO_EXTEND
+	  && GET_MODE (XEXP (x, 2)) == SImode
+	  && GET_MODE (XEXP (XEXP (x, 2), 0)) == QImode)
+	{
+	  /* Ignore cost of zero extension and masking of last argument.  */
+	  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
+	  *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
+	  *total += rtx_cost (XEXP (XEXP (x, 2), 0), mode, code, 2, speed);
+	  return true;
+	}
+      return false;
+
+    case IF_THEN_ELSE:
+      if (TARGET_XOP
+	  && VECTOR_MODE_P (mode)
+	  && (GET_MODE_SIZE (mode) == 16 || GET_MODE_SIZE (mode) == 32))
+	{
+	  /* vpcmov.  */
+	  *total = speed ? COSTS_N_INSNS (2) : COSTS_N_BYTES (6);
+	  if (!REG_P (XEXP (x, 0)))
+	    *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
+	  if (!REG_P (XEXP (x, 1)))
+	    *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
+	  if (!REG_P (XEXP (x, 2)))
+	    *total += rtx_cost (XEXP (x, 2), mode, code, 2, speed);
+	  return true;
+	}
+      else if (TARGET_CMOVE
+	       && SCALAR_INT_MODE_P (mode)
+	       && GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+	{
+	  /* cmov.  */
+	  *total = COSTS_N_INSNS (1);
+	  if (!REG_P (XEXP (x, 0)))
+	    *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
+	  if (!REG_P (XEXP (x, 1)))
+	    *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
+	  if (!REG_P (XEXP (x, 2)))
+	    *total += rtx_cost (XEXP (x, 2), mode, code, 2, speed);
+	  return true;
+	}
       return false;
 
     default:
@@ -21927,6 +22039,65 @@ ix86_seh_fixup_eh_fallthru (void)
       emit_insn_after (gen_nops (const1_rtx), insn);
     }
 }
+/* Split vector load from parm_decl to elemental loads to avoid STLF
+   stalls.  */
+static void
+ix86_split_stlf_stall_load ()
+{
+  rtx_insn* insn, *start = get_insns ();
+  unsigned window = 0;
+
+  for (insn = start; insn; insn = NEXT_INSN (insn))
+    {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+      window++;
+      /* Insert 64 vaddps %xmm18, %xmm19, %xmm20(no dependence between each
+	 other, just emulate for pipeline) before stalled load, stlf stall
+	 case is as fast as no stall cases on CLX.
+	 Since CFG is freed before machine_reorg, just do a rough
+	 calculation of the window according to the layout.  */
+      if (window > (unsigned) x86_stlf_window_ninsns)
+	return;
+
+      if (any_uncondjump_p (insn)
+	  || ANY_RETURN_P (PATTERN (insn))
+	  || CALL_P (insn))
+	return;
+
+      rtx set = single_set (insn);
+      if (!set)
+	continue;
+      rtx src = SET_SRC (set);
+      if (!MEM_P (src)
+	  /* Only handle V2DFmode load since it doesn't need any scratch
+	     register.  */
+	  || GET_MODE (src) != E_V2DFmode
+	  || !MEM_EXPR (src)
+	  || TREE_CODE (get_base_address (MEM_EXPR (src))) != PARM_DECL)
+	continue;
+
+      rtx zero = CONST0_RTX (V2DFmode);
+      rtx dest = SET_DEST (set);
+      rtx m = adjust_address (src, DFmode, 0);
+      rtx loadlpd = gen_sse2_loadlpd (dest, zero, m);
+      emit_insn_before (loadlpd, insn);
+      m = adjust_address (src, DFmode, 8);
+      rtx loadhpd = gen_sse2_loadhpd (dest, dest, m);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fputs ("Due to potential STLF stall, split instruction:\n",
+		 dump_file);
+	  print_rtl_single (dump_file, insn);
+	  fputs ("To:\n", dump_file);
+	  print_rtl_single (dump_file, loadlpd);
+	  print_rtl_single (dump_file, loadhpd);
+	}
+      PATTERN (insn) = loadhpd;
+      INSN_CODE (insn) = -1;
+      gcc_assert (recog_memoized (insn) != -1);
+    }
+}
 
 /* Implement machine specific optimizations.  We implement padding of returns
    for K8 CPUs and pass to avoid 4 jumps in the single 16 byte window.  */
@@ -21942,6 +22113,8 @@ ix86_reorg (void)
 
   if (optimize && optimize_function_for_speed_p (cfun))
     {
+      if (TARGET_SSE2)
+	ix86_split_stlf_stall_load ();
       if (TARGET_PAD_SHORT_FUNCTION)
 	ix86_pad_short_function ();
       else if (TARGET_PAD_RETURNS)

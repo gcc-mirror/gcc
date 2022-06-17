@@ -432,7 +432,7 @@ MATCH implicitConvTo(Expression e, Type t)
                 return MATCH.nomatch;
             goto case Tuns8;
         case Tuns8:
-            //printf("value = %llu %llu\n", (dinteger_t)(unsigned char)value, value);
+            //printf("value = %llu %llu\n", cast(dinteger_t)cast(ubyte)value, value);
             if (cast(ubyte)value != value)
                 return MATCH.nomatch;
             break;
@@ -492,8 +492,8 @@ MATCH implicitConvTo(Expression e, Type t)
             break;
 
         case Tpointer:
-            //printf("type = %s\n", type.toBasetype()->toChars());
-            //printf("t = %s\n", t.toBasetype()->toChars());
+            //printf("type = %s\n", type.toBasetype().toChars());
+            //printf("t = %s\n", t.toBasetype().toChars());
             if (ty == Tpointer && e.type.toBasetype().nextOf().ty == t.toBasetype().nextOf().ty)
             {
                 /* Allow things like:
@@ -824,9 +824,8 @@ MATCH implicitConvTo(Expression e, Type t)
          * convert to immutable
          */
         if (e.f &&
-            // lots of legacy code breaks with the following purity check
-            (global.params.useDIP1000 != FeatureState.enabled || e.f.isPure() >= PURE.const_) &&
-             e.f.isReturnIsolated() // check isReturnIsolated last, because it is potentially expensive.
+            (!global.params.fixImmutableConv || e.f.isPure() >= PURE.const_) &&
+            e.f.isReturnIsolated() // check isReturnIsolated last, because it is potentially expensive.
            )
         {
             result = e.type.immutableOf().implicitConvTo(t);
@@ -917,7 +916,7 @@ MATCH implicitConvTo(Expression e, Type t)
             if (i - j < nparams)
             {
                 Parameter fparam = tf.parameterList[i - j];
-                if (fparam.storageClass & STC.lazy_)
+                if (fparam.isLazy())
                     return result; // not sure what to do with this
                 Type tparam = fparam.type;
                 if (!tparam)
@@ -1107,6 +1106,10 @@ MATCH implicitConvTo(Expression e, Type t)
 
     MATCH visitCond(CondExp e)
     {
+        auto result = visit(e);
+        if (result != MATCH.nomatch)
+            return result;
+
         MATCH m1 = e.e1.implicitConvTo(t);
         MATCH m2 = e.e2.implicitConvTo(t);
         //printf("CondExp: m1 %d m2 %d\n", m1, m2);
@@ -1221,7 +1224,7 @@ MATCH implicitConvTo(Expression e, Type t)
                 if (i - j < nparams)
                 {
                     Parameter fparam = tf.parameterList[i - j];
-                    if (fparam.storageClass & STC.lazy_)
+                    if (fparam.isLazy())
                         return MATCH.nomatch; // not sure what to do with this
                     Type tparam = fparam.type;
                     if (!tparam)
@@ -1691,14 +1694,6 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             {
                 // T[n] sa;
                 // cast(U[])sa; // ==> cast(U[])sa[];
-                if (global.params.useDIP1000 == FeatureState.enabled)
-                {
-                    if (auto v = expToVariable(e))
-                    {
-                        if (e.type.hasPointers() && !checkAddressVar(sc, e, v))
-                            goto Lfail;
-                    }
-                }
                 const fsize = t1b.nextOf().size();
                 const tsize = tob.nextOf().size();
                 if (fsize == SIZE_INVALID || tsize == SIZE_INVALID)
@@ -1894,7 +1889,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         if (e.committed && tb.ty == Tsarray && typeb.ty == Tarray)
         {
             se = e.copy().isStringExp();
-            d_uns64 szx = tb.nextOf().size();
+            uinteger_t szx = tb.nextOf().size();
             assert(szx <= 255);
             se.sz = cast(ubyte)szx;
             se.len = cast(size_t)tb.isTypeSArray().dim.toInteger();
@@ -2059,7 +2054,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 }
 
                 {
-                    d_uns64 szx = tb.nextOf().size();
+                    uinteger_t szx = tb.nextOf().size();
                     assert(szx <= 255);
                     se.setData(buffer.extractSlice().ptr, newlen, cast(ubyte)szx);
                 }
@@ -2077,7 +2072,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         if (auto tsa = tb.isTypeSArray())
         {
             size_t dim2 = cast(size_t)tsa.dim.toInteger();
-            //printf("dim from = %d, to = %d\n", (int)se.len, (int)dim2);
+            //printf("dim from = %d, to = %d\n", cast(int)se.len, cast(int)dim2);
 
             // Changing dimensions
             if (dim2 != se.len)
@@ -2232,7 +2227,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         ArrayLiteralExp ae = e;
 
         Type tb = t.toBasetype();
-        if (tb.ty == Tarray && global.params.useDIP1000 == FeatureState.enabled)
+        if (tb.ty == Tarray)
         {
             if (checkArrayLiteralEscape(sc, ae, false))
             {
@@ -2742,7 +2737,7 @@ Expression scaleFactor(BinExp be, Scope* sc)
         // Replace (ptr + int) with (ptr + (int * stride))
         Type t = Type.tptrdiff_t;
 
-        d_uns64 stride = t1b.nextOf().size(be.loc);
+        uinteger_t stride = t1b.nextOf().size(be.loc);
         if (!t.equals(t2b))
             be.e2 = be.e2.castTo(sc, t);
         eoff = be.e2;
@@ -2757,7 +2752,7 @@ Expression scaleFactor(BinExp be, Scope* sc)
         Type t = Type.tptrdiff_t;
         Expression e;
 
-        d_uns64 stride = t2b.nextOf().size(be.loc);
+        uinteger_t stride = t2b.nextOf().size(be.loc);
         if (!t.equals(t1b))
             e = be.e1.castTo(sc, t);
         else
@@ -2772,17 +2767,14 @@ Expression scaleFactor(BinExp be, Scope* sc)
     else
         assert(0);
 
-    if (sc.func && !sc.intypeof)
+
+    eoff = eoff.optimize(WANTvalue);
+    if (eoff.op == EXP.int64 && eoff.toInteger() == 0)
     {
-        eoff = eoff.optimize(WANTvalue);
-        if (eoff.op == EXP.int64 && eoff.toInteger() == 0)
-        {
-        }
-        else if (sc.func.setUnsafe())
-        {
-            be.error("pointer arithmetic not allowed in @safe functions");
-            return ErrorExp.get();
-        }
+    }
+    else if (sc.setUnsafe(false, be.loc, "pointer arithmetic not allowed in @safe functions"))
+    {
+        return ErrorExp.get();
     }
 
     return be;
@@ -3880,4 +3872,3 @@ IntRange getIntRange(Expression e)
         case EXP.negate             : return visitNeg(e.isNegExp());
     }
 }
-

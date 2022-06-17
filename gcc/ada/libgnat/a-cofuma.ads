@@ -32,6 +32,9 @@
 pragma Ada_2012;
 private with Ada.Containers.Functional_Base;
 
+with Ada.Numerics.Big_Numbers.Big_Integers;
+use Ada.Numerics.Big_Numbers.Big_Integers;
+
 generic
    type Key_Type (<>) is private;
    type Element_Type (<>)  is private;
@@ -97,7 +100,7 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
                   (Equivalent_Keys (K, Key) =
                     (Witness (Container, Key) = Witness (Container, K)))));
 
-   function Length (Container : Map) return Count_Type with
+   function Length (Container : Map) return Big_Natural with
      Global => null;
    --  Return the number of mappings in Container
 
@@ -233,15 +236,21 @@ package Ada.Containers.Functional_Maps with SPARK_Mode is
 
    with
      Global => null,
-     Pre    =>
-       not Has_Key (Container, New_Key)
-         and Length (Container) < Count_Type'Last,
+     Pre    => not Has_Key (Container, New_Key),
      Post   =>
        Length (Container) + 1 = Length (Add'Result)
          and Has_Key (Add'Result, New_Key)
          and Get (Add'Result, New_Key) = New_Item
          and Container <= Add'Result
          and Keys_Included_Except (Add'Result, Container, New_Key);
+
+   function Empty_Map return Map with
+   --  Return an empty Map
+
+     Global => null,
+     Post   =>
+       Length (Empty_Map'Result) = 0
+         and Is_Empty (Empty_Map'Result);
 
    function Remove
      (Container : Map;

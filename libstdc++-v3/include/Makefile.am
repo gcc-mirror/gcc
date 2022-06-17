@@ -42,6 +42,7 @@ std_headers = \
 	${std_srcdir}/coroutine \
 	${std_srcdir}/deque \
 	${std_srcdir}/execution \
+	${std_srcdir}/expected \
 	${std_srcdir}/filesystem \
 	${std_srcdir}/forward_list \
 	${std_srcdir}/fstream \
@@ -156,6 +157,7 @@ bits_headers = \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
 	${bits_srcdir}/max_size_type.h \
+	${bits_srcdir}/memory_resource.h \
 	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/mofunc_impl.h \
 	${bits_srcdir}/move.h \

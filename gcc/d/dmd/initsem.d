@@ -197,15 +197,16 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 if (vd.type.hasPointers)
                 {
                     if ((!t.alignment.isDefault() && t.alignment.get() < target.ptrsize ||
-                         (vd.offset & (target.ptrsize - 1))) &&
-                        sc.func && sc.func.setUnsafe())
+                         (vd.offset & (target.ptrsize - 1))))
                     {
-                        error(i.value[j].loc, "field `%s.%s` cannot assign to misaligned pointers in `@safe` code",
-                            sd.toChars(), vd.toChars());
-                        errors = true;
-                        elems[fieldi] = ErrorExp.get(); // for better diagnostics on multiple errors
-                        ++fieldi;
-                        continue;
+                        if (sc.setUnsafe(false, i.value[j].loc,
+                            "field `%s.%s` cannot assign to misaligned pointers in `@safe` code", sd, vd))
+                        {
+                            errors = true;
+                            elems[fieldi] = ErrorExp.get(); // for better diagnostics on multiple errors
+                            ++fieldi;
+                            continue;
+                        }
                     }
                 }
 
@@ -502,6 +503,18 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 i.exp = se.castTo(sc, t);
                 goto L1;
             }
+
+            /* Lop off terminating 0 of initializer for:
+             *  static char s[5] = "hello";
+             */
+            if (sc.flags & SCOPE.Cfile &&
+                typeb.ty == Tsarray &&
+                tynto.isSomeChar &&
+                tb.isTypeSArray().dim.toInteger() + 1 == typeb.isTypeSArray().dim.toInteger())
+            {
+                i.exp = se.castTo(sc, t);
+                goto L1;
+            }
         }
         /* C11 6.7.9-14..15
          * Initialize an array of unknown size with a string.
@@ -554,26 +567,39 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                     i.exp = e.optimize(WANTvalue);
             }
         }
+        {
         // Look for the case of statically initializing an array
         // with a single member.
-        if (tb.ty == Tsarray && !tb.nextOf().equals(ti.toBasetype().nextOf()) && i.exp.implicitConvTo(tb.nextOf()))
+        auto tba = tb.isTypeSArray();
+        if (tba && !tba.next.equals(ti.toBasetype().nextOf()) && i.exp.implicitConvTo(tba.next))
         {
             /* If the variable is not actually used in compile time, array creation is
              * redundant. So delay it until invocation of toExpression() or toDt().
              */
             t = tb.nextOf();
         }
+
+        auto tta = t.isTypeSArray();
         if (i.exp.implicitConvTo(t))
         {
             i.exp = i.exp.implicitCastTo(sc, t);
+        }
+        else if (sc.flags & SCOPE.Cfile && i.exp.isStringExp() &&
+            tta && (tta.next.ty == Tint8 || tta.next.ty == Tuns8) &&
+            ti.ty == Tsarray && ti.nextOf().ty == Tchar)
+        {
+            /* unsigned char bbb[1] = "";
+             *   signed char ccc[1] = "";
+             */
+            i.exp = i.exp.castTo(sc, t);
         }
         else
         {
             // Look for mismatch of compile-time known length to emit
             // better diagnostic message, as same as AssignExp::semantic.
-            if (tb.ty == Tsarray && i.exp.implicitConvTo(tb.nextOf().arrayOf()) > MATCH.nomatch)
+            if (tba && i.exp.implicitConvTo(tba.next.arrayOf()) > MATCH.nomatch)
             {
-                uinteger_t dim1 = tb.isTypeSArray().dim.toInteger();
+                uinteger_t dim1 = tba.dim.toInteger();
                 uinteger_t dim2 = dim1;
                 if (auto ale = i.exp.isArrayLiteralExp())
                 {
@@ -595,6 +621,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             i.exp = i.exp.implicitCastTo(sc, t);
             if (global.endGagging(errors))
                 currExp.error("cannot implicitly convert expression `%s` of type `%s` to `%s`", currExp.toChars(), et.toChars(), t.toChars());
+        }
         }
     L1:
         if (i.exp.op == EXP.error)
@@ -681,7 +708,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 assert(sc);
                 auto tm = vd.type.addMod(ts.mod);
                 auto iz = di.initializer.initializerSemantic(sc, tm, needInterpret);
-                auto ex = iz.initializerToExpression();
+                auto ex = iz.initializerToExpression(null, true);
                 if (ex.op == EXP.error)
                 {
                     errors = true;
@@ -1059,7 +1086,7 @@ Initializer inferType(Initializer init, Scope* sc)
 
     Initializer visitC(CInitializer i)
     {
-        //printf(CInitializer::inferType()\n");
+        //printf("CInitializer.inferType()\n");
         error(i.loc, "TODO C inferType initializers not supported yet");
         return new ErrorInitializer();
     }
@@ -1080,11 +1107,14 @@ Initializer inferType(Initializer init, Scope* sc)
  * Params:
  *      init = `Initializer` AST node
  *      itype = if not `null`, type to coerce expression to
+ *      isCfile = default initializers are different with C
  * Returns:
  *      `Expression` created, `null` if cannot, `ErrorExp` for other errors
  */
-extern (C++) Expression initializerToExpression(Initializer init, Type itype = null)
+extern (C++) Expression initializerToExpression(Initializer init, Type itype = null, const bool isCfile = false)
 {
+    //printf("initializerToExpression() isCfile: %d\n", isCfile);
+
     Expression visitVoid(VoidInitializer)
     {
         return null;
@@ -1182,7 +1212,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
             assert(j < edim);
             if (Initializer iz = init.value[i])
             {
-                if (Expression ex = iz.initializerToExpression())
+                if (Expression ex = iz.initializerToExpression(null, isCfile))
                 {
                     (*elements)[j] = ex;
                     ++j;
@@ -1204,7 +1234,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
                 if (!init.type) // don't know what type to use
                     return null;
                 if (!defaultInit)
-                    defaultInit = (cast(TypeNext)t).next.defaultInit(Loc.initial);
+                    defaultInit = (cast(TypeNext)t).next.defaultInit(Loc.initial, isCfile);
                 element = defaultInit;
             }
         }
@@ -1270,7 +1300,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
 
     Expression visitC(CInitializer i)
     {
-        //printf("CInitializer.initializerToExpression()\n");
+        //printf("CInitializer.initializerToExpression(null, true)\n");
         return null;
     }
 
@@ -1330,6 +1360,10 @@ private bool hasNonConstPointers(Expression e)
     }
     if (auto ae = e.isAddrExp())
     {
+        if (ae.type.nextOf().isImmutable() || ae.type.nextOf().isConst())
+        {
+            return false;
+        }
         if (auto se = ae.e1.isStructLiteralExp())
         {
             if (!(se.stageflags & stageSearchPointers))

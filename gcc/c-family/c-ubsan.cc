@@ -308,7 +308,9 @@ tree
 ubsan_instrument_return (location_t loc)
 {
   if (flag_sanitize_undefined_trap_on_error)
-    return build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
+    return build_call_expr_loc
+      /* pass_warn_function_return checks for BUILTINS_LOCATION.  */
+      (BUILTINS_LOCATION, builtin_decl_explicit (BUILT_IN_TRAP), 0);
 
   tree data = ubsan_create_data ("__ubsan_missing_return_data", 1, &loc,
 				 NULL_TREE, NULL_TREE);

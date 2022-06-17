@@ -210,10 +210,12 @@ dump_alias_stats (FILE *s)
 }
 
 
-/* Return true, if dereferencing PTR may alias with a global variable.  */
+/* Return true, if dereferencing PTR may alias with a global variable.
+   When ESCAPED_LOCAL_P is true escaped local memory is also considered
+   global.  */
 
 bool
-ptr_deref_may_alias_global_p (tree ptr)
+ptr_deref_may_alias_global_p (tree ptr, bool escaped_local_p)
 {
   struct ptr_info_def *pi;
 
@@ -230,7 +232,7 @@ ptr_deref_may_alias_global_p (tree ptr)
     return true;
 
   /* ???  This does not use TBAA to prune globals ptr may not access.  */
-  return pt_solution_includes_global (&pi->pt);
+  return pt_solution_includes_global (&pi->pt, escaped_local_p);
 }
 
 /* Return true if dereferencing PTR may alias DECL.
@@ -480,37 +482,44 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
   return false;
 }
 
-/* Returns whether reference REF to BASE may refer to global memory.  */
+/* Returns whether reference REF to BASE may refer to global memory.
+   When ESCAPED_LOCAL_P is true escaped local memory is also considered
+   global.  */
 
 static bool
-ref_may_alias_global_p_1 (tree base)
+ref_may_alias_global_p_1 (tree base, bool escaped_local_p)
 {
   if (DECL_P (base))
-    return is_global_var (base);
+    return (is_global_var (base)
+	    || (escaped_local_p
+		&& pt_solution_includes (&cfun->gimple_df->escaped, base)));
   else if (TREE_CODE (base) == MEM_REF
 	   || TREE_CODE (base) == TARGET_MEM_REF)
-    return ptr_deref_may_alias_global_p (TREE_OPERAND (base, 0));
+    return ptr_deref_may_alias_global_p (TREE_OPERAND (base, 0),
+					 escaped_local_p);
   return true;
 }
 
 bool
-ref_may_alias_global_p (ao_ref *ref)
+ref_may_alias_global_p (ao_ref *ref, bool escaped_local_p)
 {
   tree base = ao_ref_base (ref);
-  return ref_may_alias_global_p_1 (base);
+  return ref_may_alias_global_p_1 (base, escaped_local_p);
 }
 
 bool
-ref_may_alias_global_p (tree ref)
+ref_may_alias_global_p (tree ref, bool escaped_local_p)
 {
   tree base = get_base_address (ref);
-  return ref_may_alias_global_p_1 (base);
+  return ref_may_alias_global_p_1 (base, escaped_local_p);
 }
 
-/* Return true whether STMT may clobber global memory.  */
+/* Return true whether STMT may clobber global memory.
+   When ESCAPED_LOCAL_P is true escaped local memory is also considered
+   global.  */
 
 bool
-stmt_may_clobber_global_p (gimple *stmt)
+stmt_may_clobber_global_p (gimple *stmt, bool escaped_local_p)
 {
   tree lhs;
 
@@ -531,7 +540,7 @@ stmt_may_clobber_global_p (gimple *stmt)
     case GIMPLE_ASSIGN:
       lhs = gimple_assign_lhs (stmt);
       return (TREE_CODE (lhs) != SSA_NAME
-	      && ref_may_alias_global_p (lhs));
+	      && ref_may_alias_global_p (lhs, escaped_local_p));
     case GIMPLE_CALL:
       return true;
     default:
@@ -2388,15 +2397,6 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
       || CONSTANT_CLASS_P (base2))
     return false;
 
-  /* We can end up referring to code via function and label decls.
-     As we likely do not properly track code aliases conservatively
-     bail out.  */
-  if (TREE_CODE (base1) == FUNCTION_DECL
-      || TREE_CODE (base1) == LABEL_DECL
-      || TREE_CODE (base2) == FUNCTION_DECL
-      || TREE_CODE (base2) == LABEL_DECL)
-    return true;
-
   /* Two volatile accesses always conflict.  */
   if (ref1->volatile_p
       && ref2->volatile_p)
@@ -2422,6 +2422,15 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 				  ref1->size,
 				  ref2ref, base2, offset2, max_size2,
 				  ref2->size);
+
+  /* We can end up referring to code via function and label decls.
+     As we likely do not properly track code aliases conservatively
+     bail out.  */
+  if (TREE_CODE (base1) == FUNCTION_DECL
+      || TREE_CODE (base1) == LABEL_DECL
+      || TREE_CODE (base2) == FUNCTION_DECL
+      || TREE_CODE (base2) == LABEL_DECL)
+    return true;
 
   /* Handle restrict based accesses.
      ???  ao_ref_base strips inner MEM_REF [&decl], recover from that
@@ -2567,30 +2576,6 @@ refs_output_dependent_p (tree store1, tree store2)
   return refs_may_alias_p_1 (&r1, &r2, false);
 }
 
-/* Return ture if REF may access global memory.  */
-
-bool
-ref_may_access_global_memory_p (ao_ref *ref)
-{
-  if (!ref->ref)
-    return true;
-  tree base = ao_ref_base (ref);
-  if (TREE_CODE (base) == MEM_REF
-      || TREE_CODE (base) == TARGET_MEM_REF)
-    {
-      if (ptr_deref_may_alias_global_p (TREE_OPERAND (base, 0)))
-	return true;
-    }
-  else
-    {
-      if (!auto_var_in_fn_p (base, current_function_decl)
-	  || pt_solution_includes (&cfun->gimple_df->escaped,
-				   base))
-	return true;
-    }
-  return false;
-}
-
 /* Returns true if and only if REF may alias any access stored in TT.
    IF TBAA_P is true, use TBAA oracle.  */
 
@@ -2654,7 +2639,7 @@ modref_may_conflict (const gcall *stmt,
 		{
 		  if (global_memory_ok)
 		    continue;
-		  if (ref_may_access_global_memory_p (ref))
+		  if (ref_may_alias_global_p (ref, true))
 		    return true;
 		  global_memory_ok = true;
 		  num_tests++;
@@ -2990,7 +2975,7 @@ ref_maybe_used_by_stmt_p (gimple *stmt, ao_ref *ref, bool tbaa_p)
 	return is_global_var (base);
       else if (TREE_CODE (base) == MEM_REF
 	       || TREE_CODE (base) == TARGET_MEM_REF)
-	return ptr_deref_may_alias_global_p (TREE_OPERAND (base, 0));
+	return ptr_deref_may_alias_global_p (TREE_OPERAND (base, 0), false);
       return false;
     }
 

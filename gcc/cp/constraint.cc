@@ -1268,20 +1268,15 @@ remove_constraints (tree t)
    for declaration matching.  */
 
 tree
-maybe_substitute_reqs_for (tree reqs, const_tree decl_)
+maybe_substitute_reqs_for (tree reqs, const_tree decl)
 {
   if (reqs == NULL_TREE)
     return NULL_TREE;
 
-  tree decl = CONST_CAST_TREE (decl_);
-  tree result = STRIP_TEMPLATE (decl);
-
-  if (DECL_UNIQUE_FRIEND_P (result))
+  decl = STRIP_TEMPLATE (decl);
+  if (DECL_UNIQUE_FRIEND_P (decl) && DECL_TEMPLATE_INFO (decl))
     {
-      tree tmpl = decl;
-      if (TREE_CODE (decl) != TEMPLATE_DECL)
-	tmpl = DECL_TI_TEMPLATE (result);
-
+      tree tmpl = DECL_TI_TEMPLATE (decl);
       tree gargs = generic_targs_for (tmpl);
       processing_template_decl_sentinel s;
       if (uses_template_parms (gargs))
@@ -2353,12 +2348,9 @@ tsubst_parameter_mapping (tree map, tree args, subst_info info)
       if (TREE_CODE (new_arg) == TYPE_ARGUMENT_PACK)
 	{
 	  tree pack_args = ARGUMENT_PACK_ARGS (new_arg);
-	  for (int i = 0; i < TREE_VEC_LENGTH (pack_args); i++)
-	    {
-	      tree& pack_arg = TREE_VEC_ELT (pack_args, i);
-	      if (TYPE_P (pack_arg))
-		pack_arg = canonicalize_type_argument (pack_arg, complain);
-	    }
+	  for (tree& pack_arg : tree_vec_range (pack_args))
+	    if (TYPE_P (pack_arg))
+	      pack_arg = canonicalize_type_argument (pack_arg, complain);
 	}
       if (new_arg == error_mark_node)
 	return error_mark_node;
@@ -3659,8 +3651,49 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_IS_UNION:
       inform (loc, "  %qT is not a union", t1);
       break;
-    default:
+    case CPTK_IS_AGGREGATE:
+      inform (loc, "  %qT is not an aggregate", t1);
+      break;
+    case CPTK_IS_TRIVIALLY_COPYABLE:
+      inform (loc, "  %qT is not trivially copyable", t1);
+      break;
+    case CPTK_IS_ASSIGNABLE:
+      inform (loc, "  %qT is not assignable from %qT", t1, t2);
+      break;
+    case CPTK_IS_TRIVIALLY_ASSIGNABLE:
+      inform (loc, "  %qT is not trivially assignable from %qT", t1, t2);
+      break;
+    case CPTK_IS_NOTHROW_ASSIGNABLE:
+      inform (loc, "  %qT is not %<nothrow%> assignable from %qT", t1, t2);
+      break;
+    case CPTK_IS_CONSTRUCTIBLE:
+      if (!t2)
+	inform (loc, "  %qT is not default constructible", t1);
+      else
+	inform (loc, "  %qT is not constructible from %qE", t1, t2);
+      break;
+    case CPTK_IS_TRIVIALLY_CONSTRUCTIBLE:
+      if (!t2)
+	inform (loc, "  %qT is not trivially default constructible", t1);
+      else
+	inform (loc, "  %qT is not trivially constructible from %qE", t1, t2);
+      break;
+    case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
+      if (!t2)
+	inform (loc, "  %qT is not %<nothrow%> default constructible", t1);
+      else
+	inform (loc, "  %qT is not %<nothrow%> constructible from %qE", t1, t2);
+      break;
+    case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
+      inform (loc, "  %qT does not have unique object representations", t1);
+      break;
+    case CPTK_BASES:
+    case CPTK_DIRECT_BASES:
+    case CPTK_UNDERLYING_TYPE:
+      /* We shouldn't see these non-expression traits.  */
       gcc_unreachable ();
+    /* We deliberately omit the default case so that when adding a new
+       trait we'll get reminded (by way of a warning) to handle it here.  */
     }
 }
 

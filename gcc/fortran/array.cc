@@ -134,6 +134,13 @@ end_element:
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
 
+  if (star && ar->start[i] == NULL)
+    {
+      gfc_error ("Missing lower bound in assumed size "
+		 "coarray specification at %C");
+      return MATCH_ERROR;
+    }
+
   /* See if we have an optional stride.  */
   if (gfc_match_char (':') == MATCH_YES)
     {
@@ -950,23 +957,28 @@ gfc_copy_array_spec (gfc_array_spec *src)
 }
 
 
-/* Returns nonzero if the two expressions are equal.  Only handles integer
-   constants.  */
+/* Returns nonzero if the two expressions are equal.
+   We should not need to support more than constant values, as that’s what is
+   allowed in derived type component array spec.  However, we may create types
+   with non-constant array spec for dummy variable class container types, for
+   which the _data component holds the array spec of the variable declaration.
+   So we have to support non-constant bounds as well.  */
 
-static int
+static bool
 compare_bounds (gfc_expr *bound1, gfc_expr *bound2)
 {
   if (bound1 == NULL || bound2 == NULL
-      || bound1->expr_type != EXPR_CONSTANT
-      || bound2->expr_type != EXPR_CONSTANT
       || bound1->ts.type != BT_INTEGER
       || bound2->ts.type != BT_INTEGER)
     gfc_internal_error ("gfc_compare_array_spec(): Array spec clobbered");
 
-  if (mpz_cmp (bound1->value.integer, bound2->value.integer) == 0)
-    return 1;
-  else
-    return 0;
+  /* What qualifies as identical bounds?  We could probably just check that the
+     expressions are exact clones.  We avoid rewriting a specific comparison
+     function and re-use instead the rather involved gfc_dep_compare_expr which
+     is just a bit more permissive, as it can also detect identical values for
+     some mismatching expressions (extra parenthesis, swapped operands, unary
+     plus, etc).  It probably only makes a difference in corner cases.  */
+  return gfc_dep_compare_expr (bound1, bound2) == 0;
 }
 
 
@@ -999,10 +1011,10 @@ gfc_compare_array_spec (gfc_array_spec *as1, gfc_array_spec *as2)
   if (as1->type == AS_EXPLICIT)
     for (i = 0; i < as1->rank + as1->corank; i++)
       {
-	if (compare_bounds (as1->lower[i], as2->lower[i]) == 0)
+	if (!compare_bounds (as1->lower[i], as2->lower[i]))
 	  return 0;
 
-	if (compare_bounds (as1->upper[i], as2->upper[i]) == 0)
+	if (!compare_bounds (as1->upper[i], as2->upper[i]))
 	  return 0;
       }
 

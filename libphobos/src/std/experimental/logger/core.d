@@ -1628,19 +1628,20 @@ private @property Logger defaultSharedLoggerImpl() @trusted
     import core.lifetime : emplace;
     import std.stdio : stderr;
 
-    __gshared align(FileLogger.alignof) void[__traits(classInstanceSize, FileLogger)] _buffer;
+    __gshared align(__traits(classInstanceAlignment, FileLogger))
+        void[__traits(classInstanceSize, FileLogger)] _buffer;
 
     import std.concurrency : initOnce;
     initOnce!stdSharedDefaultLogger({
         auto buffer = cast(ubyte[]) _buffer;
-        return emplace!FileLogger(buffer, stderr, LogLevel.warning);
+        return emplace!FileLogger(buffer, stderr, LogLevel.info);
     }());
 
     return stdSharedDefaultLogger;
 }
 
 /** This property sets and gets the default `Logger`. Unless set to another
-logger by the user, the default logger's log level is LogLevel.warning.
+logger by the user, the default logger's log level is LogLevel.info.
 
 Example:
 -------------
@@ -1762,9 +1763,8 @@ private @property Logger stdThreadLocalLogImpl() @trusted
 {
     import core.lifetime : emplace;
 
-    static void*[(__traits(classInstanceSize, StdForwardLogger) - 1) / (void*).sizeof + 1] _buffer;
-
-    auto buffer = cast(ubyte[]) _buffer;
+    static align(__traits(classInstanceAlignment, StdForwardLogger))
+        void[__traits(classInstanceSize, StdForwardLogger)] buffer;
 
     if (stdLoggerDefaultThreadLogger is null)
     {
@@ -2008,7 +2008,7 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     auto oldunspecificLogger = sharedLog;
 
-    assert(oldunspecificLogger.logLevel == LogLevel.warning,
+    assert(oldunspecificLogger.logLevel == LogLevel.info,
          to!string(oldunspecificLogger.logLevel));
 
     assert(l.logLevel == LogLevel.all);
@@ -3064,7 +3064,7 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
 {
     auto dl = cast(FileLogger) sharedLog;
     assert(dl !is null);
-    assert(dl.logLevel == LogLevel.warning);
+    assert(dl.logLevel == LogLevel.info);
     assert(globalLogLevel == LogLevel.all);
 
     auto tl = cast(StdForwardLogger) stdThreadLocalLog;

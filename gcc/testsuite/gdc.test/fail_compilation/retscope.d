@@ -85,7 +85,7 @@ struct HTTP
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(96): Error: reference to local variable `sa` assigned to non-scope parameter `a` calling retscope.bar8
+fail_compilation/retscope.d(96): Error: reference to local variable `sa` assigned to non-scope parameter `a`
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=8838
@@ -234,16 +234,16 @@ void* funretscope(scope dg_t ptr) @safe
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `__lambda2` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() @safe`
-fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `__lambda2` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() @safe`
-fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `__lambda4` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() @safe`
-fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `__lambda4` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() @safe`
+fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `__lambda2` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
+fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `__lambda2` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
+fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `__lambda4` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
+fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `__lambda4` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
 ---
 */
 
 void escape4() @safe
 {
-    alias FunDG = void* delegate () @safe;
+    alias FunDG = void* delegate () scope @safe;
     int x = 42;
     scope FunDG f = () return { return &x; };
     scope FunDG g = ()        { return &x; };
@@ -254,7 +254,7 @@ void escape4() @safe
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(266): Error: cannot take address of `scope` local `p` in `@safe` function `escape5`
+fail_compilation/retscope.d(266): Error: cannot take address of `scope` variable `p` since `scope` applies to first indirection only
 ---
 */
 
@@ -331,7 +331,7 @@ int* bar10( scope int** ptr ) @safe
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(342): Error: cannot take address of `scope` local `aa` in `@safe` function `escape11`
+fail_compilation/retscope.d(342): Error: cannot take address of `scope` variable `aa` since `scope` applies to first indirection only
 ---
 */
 
@@ -403,7 +403,7 @@ class Foo13
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(1205): Error: scope variable `f14` assigned to non-scope parameter `this` calling retscope.Foo14.foo
+fail_compilation/retscope.d(1205): Error: scope variable `f14` assigned to non-scope parameter `this`
 ---
 */
 
@@ -454,7 +454,7 @@ fail_compilation/retscope.d(1311): Error: scope variable `u2` assigned to `ek` w
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(1405): Error: reference to local variable `buf` assigned to non-scope parameter `__anonymous_param` calling retscope.myprintf
+fail_compilation/retscope.d(1405): Error: reference to local variable `buf` assigned to non-scope parameter `__anonymous_param`
 ---
 */
 

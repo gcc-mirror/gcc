@@ -129,10 +129,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "fold-const.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-ssa-propagate.h"
 #include "dbgcnt.h"
@@ -180,8 +180,8 @@ public:
 class ccp_propagate : public ssa_propagation_engine
 {
  public:
-  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
-  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) final override;
+  enum ssa_prop_result visit_phi (gphi *) final override;
 };
 
 /* Array of propagated constant values.  After propagation,
@@ -947,8 +947,8 @@ do_dbg_cnt (void)
 class ccp_folder : public substitute_and_fold_engine
 {
  public:
-  tree value_of_expr (tree, gimple *) FINAL OVERRIDE;
-  bool fold_stmt (gimple_stmt_iterator *) FINAL OVERRIDE;
+  tree value_of_expr (tree, gimple *) final override;
+  bool fold_stmt (gimple_stmt_iterator *) final override;
 };
 
 /* This method just wraps GET_CONSTANT_VALUE for now.  Over time
@@ -3789,11 +3789,12 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
   tree new_lhs = make_ssa_name (TREE_TYPE (lhs));
   tree flag = build_int_cst (TREE_TYPE (lhs), use_bool);
   if (has_model_arg)
-    g = gimple_build_call_internal (fn, 4, gimple_call_arg (call, 0),
-				    bit, flag, gimple_call_arg (call, 2));
+    g = gimple_build_call_internal (fn, 5, gimple_call_arg (call, 0),
+				    bit, flag, gimple_call_arg (call, 2),
+				    gimple_call_fn (call));
   else
-    g = gimple_build_call_internal (fn, 3, gimple_call_arg (call, 0),
-				    bit, flag);
+    g = gimple_build_call_internal (fn, 4, gimple_call_arg (call, 0),
+				    bit, flag, gimple_call_fn (call));
   gimple_call_set_lhs (g, new_lhs);
   gimple_set_location (g, gimple_location (call));
   gimple_move_vops (g, call);
@@ -4003,14 +4004,16 @@ optimize_atomic_op_fetch_cmp_0 (gimple_stmt_iterator *gsip,
   gimple *g;
   tree flag = build_int_cst (TREE_TYPE (lhs), encoded);
   if (has_model_arg)
+    g = gimple_build_call_internal (fn, 5, flag,
+				    gimple_call_arg (call, 0),
+				    gimple_call_arg (call, 1),
+				    gimple_call_arg (call, 2),
+				    gimple_call_fn (call));
+  else
     g = gimple_build_call_internal (fn, 4, flag,
 				    gimple_call_arg (call, 0),
 				    gimple_call_arg (call, 1),
-				    gimple_call_arg (call, 2));
-  else
-    g = gimple_build_call_internal (fn, 3, flag,
-				    gimple_call_arg (call, 0),
-				    gimple_call_arg (call, 1));
+				    gimple_call_fn (call));
   gimple_call_set_lhs (g, new_lhs);
   gimple_set_location (g, gimple_location (call));
   gimple_move_vops (g, call);

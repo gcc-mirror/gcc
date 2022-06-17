@@ -457,14 +457,14 @@ from Ada 83 to Ada 95 or Ada 2005.  For example, consider:
 
 .. code-block:: ada
 
-     type Rec is record;
+     type Rec is record
         A : Natural;
         B : Natural;
      end record;
 
      for Rec use record
-        at 0  range 0 .. Natural'Size - 1;
-        at 0  range Natural'Size .. 2 * Natural'Size - 1;
+        A at 0 range 0 .. Natural'Size - 1;
+        B at 0 range Natural'Size .. 2 * Natural'Size - 1;
      end record;
 
 In the above code, since the typical size of ``Natural`` objects
@@ -525,7 +525,7 @@ The default rules for the value of ``Value_Size`` are as follows:
 
 *
   If a subtype statically matches the first subtype of a given type, then it has
-  by default the same ``Value_Size`` as the first subtype.  This is a
+  by default the same ``Value_Size`` as the first subtype.  (This is a
   consequence of RM 13.1(14): "if two subtypes statically match,
   then their subtype-specific aspects are the same".)
 
@@ -873,7 +873,7 @@ Suppose that we have an external device which presents two bytes, the first
 byte presented, which is the first (low addressed byte) of the two byte
 record is called Master, and the second byte is called Slave.
 
-The left most (most significant bit is called Control for each byte, and
+The left most (most significant) bit is called Control for each byte, and
 the remaining 7 bits are called V1, V2, ... V7, where V7 is the rightmost
 (least significant) bit.
 
@@ -1585,9 +1585,20 @@ check Alignment_Check is suppressed, or if
 ``pragma Restrictions (No_Elaboration_Code)`` is in effect. It is also
 suppressed by default on non-strict alignment machines (such as the x86).
 
-Finally, GNAT does not permit overlaying of objects of class-wide types. In
-most cases, the compiler can detect an attempt at such overlays and will
-generate a warning at compile time and a Program_Error exception at run time.
+In some cases, GNAT does not support an address specification (using either
+form of aspect specification syntax) for the declaration of an object that has
+an indefinite nominal subtype. An object declaration has an indefinite
+nominal subtype if it takes its bounds (for an array type), discriminant
+values (for a discriminated type whose discriminants lack defaults), or tag
+(for a class-wide type) from its initial value, as in
+
+.. code-block:: ada
+
+    X : String := Some_Function_Call;
+    -- String has no constraint, so bounds for X come from function call
+
+This restriction does not apply if the size of the object's initial value is
+known at compile time and the type of the object is not class-wide.
 
 .. index:: Export
 

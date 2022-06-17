@@ -228,6 +228,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/spec.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/write.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/functional.lo std/getopt.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/int128.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/attributes.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/cstring.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintcore.lo \
@@ -591,7 +592,7 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/typecons.d std/file.d std/format/internal/floats.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/internal/read.d std/format/internal/write.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/package.d std/format/read.d std/format/spec.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/write.d std/functional.d std/getopt.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/write.d std/functional.d std/getopt.d std/int128.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/attributes.d std/internal/cstring.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/errorfunction.d std/internal/math/gammafunction.d \
@@ -846,6 +847,7 @@ std/format/spec.lo: std/format/$(am__dirstamp)
 std/format/write.lo: std/format/$(am__dirstamp)
 std/functional.lo: std/$(am__dirstamp)
 std/getopt.lo: std/$(am__dirstamp)
+std/int128.lo: std/$(am__dirstamp)
 std/internal/$(am__dirstamp):
 	@$(MKDIR_P) std/internal
 	@: > std/internal/$(am__dirstamp)

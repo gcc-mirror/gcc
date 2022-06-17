@@ -1375,11 +1375,22 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	  && comp->ts.u.cl->length->expr_type == EXPR_CONSTANT
 	  && cons->expr->ts.u.cl && cons->expr->ts.u.cl->length
 	  && cons->expr->ts.u.cl->length->expr_type == EXPR_CONSTANT
-	  && cons->expr->rank != 0
 	  && mpz_cmp (cons->expr->ts.u.cl->length->value.integer,
 		      comp->ts.u.cl->length->value.integer) != 0)
 	{
+	  if (comp->attr.pointer)
+	    {
+	      HOST_WIDE_INT la, lb;
+	      la = gfc_mpz_get_hwi (comp->ts.u.cl->length->value.integer);
+	      lb = gfc_mpz_get_hwi (cons->expr->ts.u.cl->length->value.integer);
+	      gfc_error ("Unequal character lengths (%wd/%wd) for pointer "
+			 "component %qs in constructor at %L",
+			 la, lb, comp->name, &cons->expr->where);
+	      t = false;
+	    }
+
 	  if (cons->expr->expr_type == EXPR_VARIABLE
+	      && cons->expr->rank != 0
 	      && cons->expr->symtree->n.sym->attr.flavor == FL_PARAMETER)
 	    {
 	      /* Wrap the parameter in an array constructor (EXPR_ARRAY)
@@ -2386,8 +2397,9 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
   if (rank > 0 && esym && expr == NULL)
     for (eformal = esym->formal, arg = arg0; arg && eformal;
 	 arg = arg->next, eformal = eformal->next)
-      if ((eformal->sym->attr.intent == INTENT_OUT
-	   || eformal->sym->attr.intent == INTENT_INOUT)
+      if (eformal->sym
+	  && (eformal->sym->attr.intent == INTENT_OUT
+	      || eformal->sym->attr.intent == INTENT_INOUT)
 	  && arg->expr && arg->expr->rank == 0)
 	{
 	  gfc_error ("Actual argument at %L for INTENT(%s) dummy %qs of "
@@ -8096,12 +8108,13 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 	    goto failure;
 
 	  case  DIMEN_RANGE:
-	    if (ar->start[i] == 0 || ar->end[i] == 0)
+	    /* F2018:R937:
+	     * allocate-coshape-spec is [ lower-bound-expr : ] upper-bound-expr
+	     */
+	    if (ar->start[i] == 0 || ar->end[i] == 0 || ar->stride[i] != NULL)
 	      {
-		/* If ar->stride[i] is NULL, we issued a previous error.  */
-		if (ar->stride[i] == NULL)
-		  gfc_error ("Bad array specification in ALLOCATE statement "
-			     "at %L", &e->where);
+		gfc_error ("Bad coarray specification in ALLOCATE statement "
+			   "at %L", &e->where);
 		goto failure;
 	      }
 	    else if (gfc_dep_compare_expr (ar->start[i], ar->end[i]) == 1)
@@ -9232,7 +9245,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       if (!sym->ts.u.cl)
 	sym->ts.u.cl = target->ts.u.cl;
 
-      if (sym->ts.deferred && target->expr_type == EXPR_VARIABLE
+      if (sym->ts.deferred
 	  && sym->ts.u.cl == target->ts.u.cl)
 	{
 	  sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);
@@ -9251,8 +9264,11 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 		|| sym->ts.u.cl->length->expr_type != EXPR_CONSTANT)
 		&& target->expr_type != EXPR_VARIABLE)
 	{
-	  sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);
-	  sym->ts.deferred = 1;
+	  if (!sym->ts.deferred)
+	    {
+	      sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);
+	      sym->ts.deferred = 1;
+	    }
 
 	  /* This is reset in trans-stmt.cc after the assignment
 	     of the target expression to the associate name.  */
@@ -11815,6 +11831,23 @@ deferred_op_assign (gfc_code **code, gfc_namespace *ns)
 }
 
 
+static bool
+check_team (gfc_expr *team, const char *intrinsic)
+{
+  if (team->rank != 0
+      || team->ts.type != BT_DERIVED
+      || team->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
+      || team->ts.u.derived->intmod_sym_id != ISOFORTRAN_TEAM_TYPE)
+    {
+      gfc_error ("TEAM argument to %qs at %L must be a scalar expression "
+		 "of type TEAM_TYPE", intrinsic, &team->where);
+      return false;
+    }
+
+  return true;
+}
+
+
 /* Given a block of code, recursively resolve everything pointed to by this
    code block.  */
 
@@ -11983,10 +12016,25 @@ start:
 	  break;
 
 	case EXEC_FAIL_IMAGE:
+	  break;
+
 	case EXEC_FORM_TEAM:
+	  if (code->expr1 != NULL
+	      && (code->expr1->ts.type != BT_INTEGER || code->expr1->rank))
+	    gfc_error ("TEAM NUMBER argument to FORM TEAM at %L must be "
+		       "a scalar INTEGER", &code->expr1->where);
+	  check_team (code->expr2, "FORM TEAM");
+	  break;
+
 	case EXEC_CHANGE_TEAM:
+	  check_team (code->expr1, "CHANGE TEAM");
+	  break;
+
 	case EXEC_END_TEAM:
+	  break;
+
 	case EXEC_SYNC_TEAM:
+	  check_team (code->expr1, "SYNC TEAM");
 	  break;
 
 	case EXEC_ENTRY:
@@ -15135,7 +15183,10 @@ resolve_fl_derived (gfc_symbol *sym)
 
       /* Nothing more to do for unlimited polymorphic entities.  */
       if (data->ts.u.derived->attr.unlimited_polymorphic)
-	return true;
+	{
+	  add_dt_to_dt_list (sym);
+	  return true;
+	}
       else if (vptr->ts.u.derived == NULL)
 	{
 	  gfc_symbol *vtab = gfc_find_derived_vtab (data->ts.u.derived);
@@ -15453,6 +15504,13 @@ resolve_symbol (gfc_symbol *sym)
 
   if (sym->attr.unlimited_polymorphic)
     return;
+
+  if (UNLIKELY (flag_openmp && strcmp (sym->name, "omp_all_memory") == 0))
+    {
+      gfc_error ("%<omp_all_memory%>, declared at %L, may only be used in "
+		 "the OpenMP DEPEND clause", &sym->declared_at);
+      return;
+    }
 
   if (sym->attr.flavor == FL_UNKNOWN
       || (sym->attr.flavor == FL_PROCEDURE && !sym->attr.intrinsic

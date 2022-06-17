@@ -148,9 +148,6 @@
 
 #define PCC_BITFIELD_TYPE_MATTERS	1
 
-/* Major revision number of the ARM Architecture implemented by the target.  */
-extern unsigned aarch64_architecture_version;
-
 /* Instruction tuning/selection flags.  */
 
 /* Bit values used to identify processor capabilities.  */
@@ -278,7 +275,8 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FOR_ARCH8_R     \
   (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_R)
 #define AARCH64_FL_FOR_ARCH9       \
-  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9)
+  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9 \
+   | AARCH64_FL_F16)
 
 /* Macros to test ISA flags.  */
 
@@ -814,8 +812,7 @@ enum target_cpus
 
 /* If there is no CPU defined at configure, use generic as default.  */
 #ifndef TARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT \
-  (TARGET_CPU_generic | (AARCH64_CPU_DEFAULT_FLAGS << 6))
+# define TARGET_CPU_DEFAULT TARGET_CPU_generic
 #endif
 
 /* If inserting NOP before a mult-accumulate insn remember to adjust the

@@ -1,6 +1,7 @@
 import core.stdc.stdio;
 
-extern (C) int main(char** argv, int argc) {
+extern (C) int main()
+{
     printf("hello world\n");
     foo(3);
     return 0;

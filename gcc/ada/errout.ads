@@ -468,6 +468,9 @@ package Errout is
    Error_Msg_Name_1 : Name_Id renames Err_Vars.Error_Msg_Name_1;
    Error_Msg_Name_2 : Name_Id renames Err_Vars.Error_Msg_Name_2;
    Error_Msg_Name_3 : Name_Id renames Err_Vars.Error_Msg_Name_3;
+   Error_Msg_Name_4 : Name_Id renames Err_Vars.Error_Msg_Name_4;
+   Error_Msg_Name_5 : Name_Id renames Err_Vars.Error_Msg_Name_5;
+   Error_Msg_Name_6 : Name_Id renames Err_Vars.Error_Msg_Name_6;
    --  Name_Id values for % insertion characters in message
 
    Error_Msg_File_1 : File_Name_Type renames Err_Vars.Error_Msg_File_1;
@@ -481,6 +484,10 @@ package Errout is
 
    Error_Msg_Node_1 : Node_Id renames Err_Vars.Error_Msg_Node_1;
    Error_Msg_Node_2 : Node_Id renames Err_Vars.Error_Msg_Node_2;
+   Error_Msg_Node_3 : Node_Id renames Err_Vars.Error_Msg_Node_3;
+   Error_Msg_Node_4 : Node_Id renames Err_Vars.Error_Msg_Node_4;
+   Error_Msg_Node_5 : Node_Id renames Err_Vars.Error_Msg_Node_5;
+   Error_Msg_Node_6 : Node_Id renames Err_Vars.Error_Msg_Node_6;
    --  Node_Id values for & insertion characters in message
 
    Error_Msg_Qual_Level : Nat renames Err_Vars.Error_Msg_Qual_Level;
@@ -936,10 +943,11 @@ package Errout is
    procedure Error_Msg_Ada_2022_Feature (Feature : String; Loc : Source_Ptr);
    --  Analogous to Error_Msg_Ada_2012_Feature, for Ada 2022
 
-   procedure Error_Msg_GNAT_Extension (Extension : String);
+   procedure Error_Msg_GNAT_Extension (Extension : String; Loc : Source_Ptr);
    --  If not operating with extensions allowed, posts errors complaining
-   --  that Extension is only supported when the -gnatX switch is enabled,
-   --  with appropriate suggestions to fix it.
+   --  that Extension is only supported when the -gnatX switch is enabled
+   --  or pragma Extensions_Allowed (On) is used. Loc indicates the source
+   --  location of the extension construct.
 
    procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message

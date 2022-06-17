@@ -32,6 +32,9 @@
 pragma Ada_2012;
 private with Ada.Containers.Functional_Base;
 
+with Ada.Numerics.Big_Numbers.Big_Integers;
+use Ada.Numerics.Big_Numbers.Big_Integers;
+
 generic
    type Element_Type (<>) is private;
 
@@ -79,7 +82,7 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
           (if (for some E of Container => Equivalent_Elements (E, Item)) then
               Contains'Result));
 
-   function Length (Container : Set) return Count_Type with
+   function Length (Container : Set) return Big_Natural with
      Global => null;
    --  Return the number of elements in Container
 
@@ -183,7 +186,7 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
        No_Overlap'Result =
          (for all Item of Left => not Contains (Right, Item));
 
-   function Num_Overlaps (Left : Set; Right : Set) return Count_Type with
+   function Num_Overlaps (Left : Set; Right : Set) return Big_Natural with
    --  Number of elements that are both in Left and Right
 
      Global => null,
@@ -206,14 +209,18 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
    --  Return a new set containing all the elements of Container plus E
 
      Global => null,
-     Pre    =>
-       not Contains (Container, Item)
-       and Length (Container) < Count_Type'Last,
+     Pre    => not Contains (Container, Item),
      Post   =>
        Length (Add'Result) = Length (Container) + 1
          and Contains (Add'Result, Item)
          and Container <= Add'Result
          and Included_Except (Add'Result, Container, Item);
+
+   function Empty_Set return Set with
+   --  Return a new empty set
+
+     Global => null,
+     Post   => Is_Empty (Empty_Set'Result);
 
    function Remove (Container : Set; Item : Element_Type) return Set with
    --  Return a new set containing all the elements of Container except E
@@ -239,9 +246,6 @@ package Ada.Containers.Functional_Sets with SPARK_Mode is
    --  Returns the union of Left and Right
 
      Global => null,
-     Pre    =>
-       Length (Left) - Num_Overlaps (Left, Right) <=
-         Count_Type'Last - Length (Right),
      Post   =>
        Length (Union'Result) =
          Length (Left) - Num_Overlaps (Left, Right) + Length (Right)

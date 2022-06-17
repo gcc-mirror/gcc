@@ -599,7 +599,7 @@ host_detect_local_cpu (int argc, const char **argv)
 
   if (assembler)
     {
-      for (i = 0; i < sizeof (asm_names) / sizeof (asm_names[0]); i++)
+      for (i = 0; i < ARRAY_SIZE (asm_names); i++)
 	{
 	  if (!asm_names[i].cpu || !strcmp (asm_names[i].cpu, cpu))
 	    return asm_names[i].asm_sw;

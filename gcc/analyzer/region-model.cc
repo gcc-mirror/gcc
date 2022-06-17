@@ -465,9 +465,9 @@ public:
     m_src_region (src_region)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "poisoned_value_diagnostic"; }
+  const char *get_kind () const final override { return "poisoned_value_diagnostic"; }
 
-  bool use_of_uninit_p () const FINAL OVERRIDE
+  bool use_of_uninit_p () const final override
   {
     return m_pkind == POISON_KIND_UNINIT;
   }
@@ -479,7 +479,22 @@ public:
 	    && m_src_region == other.m_src_region);
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    switch (m_pkind)
+      {
+      default:
+	gcc_unreachable ();
+      case POISON_KIND_UNINIT:
+	return OPT_Wanalyzer_use_of_uninitialized_value;
+      case POISON_KIND_FREED:
+	return OPT_Wanalyzer_use_after_free;
+      case POISON_KIND_POPPED_STACK:
+	return OPT_Wanalyzer_use_of_pointer_in_stale_stack_frame;
+      }
+  }
+
+  bool emit (rich_location *rich_loc) final override
   {
     switch (m_pkind)
       {
@@ -489,8 +504,7 @@ public:
 	{
 	  diagnostic_metadata m;
 	  m.add_cwe (457); /* "CWE-457: Use of Uninitialized Variable".  */
-	  return warning_meta (rich_loc, m,
-			       OPT_Wanalyzer_use_of_uninitialized_value,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use of uninitialized value %qE",
 			       m_expr);
 	}
@@ -499,8 +513,7 @@ public:
 	{
 	  diagnostic_metadata m;
 	  m.add_cwe (416); /* "CWE-416: Use After Free".  */
-	  return warning_meta (rich_loc, m,
-			       OPT_Wanalyzer_use_after_free,
+	  return warning_meta (rich_loc, m, get_controlling_option (),
 			       "use after %<free%> of %qE",
 			       m_expr);
 	}
@@ -509,8 +522,7 @@ public:
 	{
 	  /* TODO: which CWE?  */
 	  return warning_at
-	    (rich_loc,
-	     OPT_Wanalyzer_use_of_pointer_in_stale_stack_frame,
+	    (rich_loc, get_controlling_option (),
 	     "dereferencing pointer %qE to within stale stack frame",
 	     m_expr);
 	}
@@ -518,7 +530,7 @@ public:
       }
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     switch (m_pkind)
       {
@@ -537,7 +549,7 @@ public:
       }
   }
 
-  void mark_interesting_stuff (interesting_t *interest) FINAL OVERRIDE
+  void mark_interesting_stuff (interesting_t *interest) final override
   {
     if (m_src_region)
       interest->add_region_creation (m_src_region);
@@ -560,7 +572,7 @@ public:
   : m_assign (assign), m_count_cst (count_cst)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "shift_count_negative_diagnostic";
   }
@@ -571,13 +583,18 @@ public:
 	    && same_tree_p (m_count_cst, other.m_count_cst));
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
-    return warning_at (rich_loc, OPT_Wanalyzer_shift_count_negative,
+    return OPT_Wanalyzer_shift_count_negative;
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    return warning_at (rich_loc, get_controlling_option (),
 		       "shift by negative count (%qE)", m_count_cst);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("shift by negative amount here (%qE)", m_count_cst);
   }
@@ -601,7 +618,7 @@ public:
     m_count_cst (count_cst)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "shift_count_overflow_diagnostic";
   }
@@ -613,14 +630,19 @@ public:
 	    && same_tree_p (m_count_cst, other.m_count_cst));
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
-    return warning_at (rich_loc, OPT_Wanalyzer_shift_count_overflow,
+    return OPT_Wanalyzer_shift_count_overflow;
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    return warning_at (rich_loc, get_controlling_option (),
 		       "shift by count (%qE) >= precision of type (%qi)",
 		       m_count_cst, m_operand_precision);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("shift by count %qE here", m_count_cst);
   }
@@ -1095,13 +1117,18 @@ class dump_path_diagnostic
   : public pending_diagnostic_subclass<dump_path_diagnostic>
 {
 public:
-  bool emit (rich_location *richloc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    return 0;
+  }
+
+  bool emit (rich_location *richloc) final override
   {
     inform (richloc, "path");
     return true;
   }
 
-  const char *get_kind () const FINAL OVERRIDE { return "dump_path_diagnostic"; }
+  const char *get_kind () const final override { return "dump_path_diagnostic"; }
 
   bool operator== (const dump_path_diagnostic &) const
   {
@@ -1297,8 +1324,9 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	     use a conjured value, and purge any prior state involving that
 	     value (in case this is in a loop).  */
 	  sval = m_mgr->get_or_create_conjured_svalue (TREE_TYPE (lhs), call,
-						       lhs_region);
-	  purge_state_involving (sval, ctxt);
+						       lhs_region,
+						       conjured_purge (this,
+								       ctxt));
 	}
       set_value (lhs_region, sval, ctxt);
     }
@@ -1313,6 +1341,9 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	 impl_call_builtin_expect (cd);
 	 return false;
        case IFN_UBSAN_BOUNDS:
+	 return false;
+       case IFN_VA_ARG:
+	 impl_call_va_arg (cd);
 	 return false;
        }
     }
@@ -1400,6 +1431,13 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	       on the return value.  */
 	    check_call_args (cd);
 	    break;
+
+	  case BUILT_IN_VA_START:
+	    impl_call_va_start (cd);
+	    return false;
+	  case BUILT_IN_VA_COPY:
+	    impl_call_va_copy (cd);
+	    return false;
 	  }
       else if (is_named_call_p (callee_fndecl, "malloc", call, 1))
 	{
@@ -1542,6 +1580,10 @@ region_model::on_call_post (const gcall *call,
 	  case BUILT_IN_REALLOC:
 	    impl_call_realloc (cd);
 	    return;
+
+	  case BUILT_IN_VA_END:
+	    impl_call_va_end (cd);
+	    return;
 	  }
     }
 
@@ -1596,9 +1638,9 @@ public:
   {
   }
 
-  const char *get_kind () const FINAL OVERRIDE { return "reason_attr_access"; }
+  const char *get_kind () const final override { return "reason_attr_access"; }
 
-  void emit () const
+  void emit () const final override
   {
     inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
 	    "parameter %i of %qD marked with attribute %qs",
@@ -1677,7 +1719,7 @@ check_external_function_for_access_attr (const gcall *call,
 	      m_access (access)
 	    {
 	    }
-	    pending_note *make_note () FINAL OVERRIDE
+	    pending_note *make_note () final override
 	    {
 	      return new reason_attr_access (m_callee_fndecl, m_access);
 	    }
@@ -1775,7 +1817,8 @@ region_model::handle_unrecognized_call (const gcall *call,
 
   /* Update bindings for all clusters that have escaped, whether above,
      or previously.  */
-  m_store.on_unknown_fncall (call, m_mgr->get_store_manager ());
+  m_store.on_unknown_fncall (call, m_mgr->get_store_manager (),
+			     conjured_purge (this, ctxt));
 
   /* Purge dynamic extents from any regions that have escaped mutably:
      realloc could have been called on them.  */
@@ -2054,7 +2097,7 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt) const
 	int stack_index = pv.m_stack_depth;
 	const frame_region *frame = get_frame_at_index (stack_index);
 	gcc_assert (frame);
-	return frame->get_region_for_local (m_mgr, expr);
+	return frame->get_region_for_local (m_mgr, expr, ctxt);
       }
 
     case COMPONENT_REF:
@@ -2523,7 +2566,7 @@ public:
   : m_reg (reg), m_decl (decl)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "write_to_const_diagnostic";
   }
@@ -2534,22 +2577,27 @@ public:
 	    && m_decl == other.m_decl);
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_write_to_const;
+  }
+
+  bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
     bool warned;
     switch (m_reg->get_kind ())
       {
       default:
-	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+	warned = warning_at (rich_loc, get_controlling_option (),
 			     "write to %<const%> object %qE", m_decl);
 	break;
       case RK_FUNCTION:
-	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+	warned = warning_at (rich_loc, get_controlling_option (),
 			     "write to function %qE", m_decl);
 	break;
       case RK_LABEL:
-	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+	warned = warning_at (rich_loc, get_controlling_option (),
 			     "write to label %qE", m_decl);
 	break;
       }
@@ -2558,7 +2606,7 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     switch (m_reg->get_kind ())
       {
@@ -2587,7 +2635,7 @@ public:
   : m_reg (reg)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "write_to_string_literal_diagnostic";
   }
@@ -2597,15 +2645,20 @@ public:
     return m_reg == other.m_reg;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
-    return warning_at (rich_loc, OPT_Wanalyzer_write_to_string_literal,
+    return OPT_Wanalyzer_write_to_string_literal;
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    return warning_at (rich_loc, get_controlling_option (),
 		       "write to string literal");
     /* Ideally we would show the location of the STRING_CST as well,
        but it is not available at this point.  */
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("write to string literal here");
   }
@@ -3481,6 +3534,7 @@ region_model::get_representative_path_var_1 (const region *reg,
 	return path_var (string_reg->get_string_cst (), 0);
       }
 
+    case RK_VAR_ARG:
     case RK_UNKNOWN:
       return path_var (NULL_TREE, 0);
     }
@@ -3659,20 +3713,11 @@ void
 region_model::update_for_return_gcall (const gcall *call_stmt,
 				       region_model_context *ctxt)
 {
-  /* Get the region for the result of the call, within the caller frame.  */
-  const region *result_dst_reg = NULL;
+  /* Get the lvalue for the result of the call, passing it to pop_frame,
+     so that pop_frame can determine the region with respect to the
+     *caller* frame.  */
   tree lhs = gimple_call_lhs (call_stmt);
-  if (lhs)
-    {
-      /* Normally we access the top-level frame, which is:
-         path_var (expr, get_stack_depth () - 1)
-         whereas here we need the caller frame, hence "- 2" here.  */
-      gcc_assert (get_stack_depth () >= 2);
-      result_dst_reg = get_lvalue (path_var (lhs, get_stack_depth () - 2),
-           			   ctxt);
-    }
-
-  pop_frame (result_dst_reg, NULL, ctxt);
+  pop_frame (lhs, NULL, ctxt);
 }
 
 /* Extract calling information from the superedge and update the model for the 
@@ -3858,6 +3903,17 @@ region_model::push_frame (function *fun, const vec<const svalue *> *arg_svals,
 	  const svalue *arg_sval = (*arg_svals)[idx];
 	  set_value (parm_reg, arg_sval, ctxt);
 	}
+
+      /* Handle any variadic args.  */
+      unsigned va_arg_idx = 0;
+      for (; idx < arg_svals->length (); idx++, va_arg_idx++)
+	{
+	  const svalue *arg_sval = (*arg_svals)[idx];
+	  const region *var_arg_reg
+	    = m_mgr->get_var_arg_region (m_current_frame,
+					 va_arg_idx);
+	  set_value (var_arg_reg, arg_sval, ctxt);
+	}
     }
   else
     {
@@ -3891,8 +3947,9 @@ region_model::get_current_function () const
 
 /* Pop the topmost frame_region from this region_model's stack;
 
-   If RESULT_DST_REG is non-null, copy any return value from the frame
-   into RESULT_DST_REG's region.
+   If RESULT_LVALUE is non-null, copy any return value from the frame
+   into the corresponding region (evaluated with respect to the *caller*
+   frame, rather than the called frame).
    If OUT_RESULT is non-null, copy any return value from the frame
    into *OUT_RESULT.
 
@@ -3901,7 +3958,7 @@ region_model::get_current_function () const
    POISON_KIND_POPPED_STACK svalues.  */
 
 void
-region_model::pop_frame (const region *result_dst_reg,
+region_model::pop_frame (tree result_lvalue,
 			 const svalue **out_result,
 			 region_model_context *ctxt)
 {
@@ -3911,17 +3968,24 @@ region_model::pop_frame (const region *result_dst_reg,
   const frame_region *frame_reg = m_current_frame;
   tree fndecl = m_current_frame->get_function ()->decl;
   tree result = DECL_RESULT (fndecl);
+  const svalue *retval = NULL;
   if (result && TREE_TYPE (result) != void_type_node)
     {
-      const svalue *retval = get_rvalue (result, ctxt);
-      if (result_dst_reg)
-	set_value (result_dst_reg, retval, ctxt);
+      retval = get_rvalue (result, ctxt);
       if (out_result)
 	*out_result = retval;
     }
 
   /* Pop the frame.  */
   m_current_frame = m_current_frame->get_calling_frame ();
+
+  if (result_lvalue && retval)
+    {
+      /* Compute result_dst_reg using RESULT_LVALUE *after* popping
+	 the frame, but before poisoning pointers into the old frame.  */
+      const region *result_dst_reg = get_lvalue (result_lvalue, ctxt);
+      set_value (result_dst_reg, retval, ctxt);
+    }
 
   unbind_region_and_descendents (frame_reg,POISON_KIND_POPPED_STACK);
 }
@@ -4111,39 +4175,35 @@ region_model::get_fndecl_for_call (const gcall *call,
 
 /* Would be much simpler to use a lambda here, if it were supported.  */
 
-struct append_ssa_names_cb_data
+struct append_regions_cb_data
 {
   const region_model *model;
   auto_vec<const decl_region *> *out;
 };
 
-/* Populate *OUT with all decl_regions for SSA names in the current
+/* Populate *OUT with all decl_regions in the current
    frame that have clusters within the store.  */
 
 void
 region_model::
-get_ssa_name_regions_for_current_frame (auto_vec<const decl_region *> *out)
-  const
+get_regions_for_current_frame (auto_vec<const decl_region *> *out) const
 {
-  append_ssa_names_cb_data data;
+  append_regions_cb_data data;
   data.model = this;
   data.out = out;
-  m_store.for_each_cluster (append_ssa_names_cb, &data);
+  m_store.for_each_cluster (append_regions_cb, &data);
 }
 
-/* Implementation detail of get_ssa_name_regions_for_current_frame.  */
+/* Implementation detail of get_regions_for_current_frame.  */
 
 void
-region_model::append_ssa_names_cb (const region *base_reg,
-				   append_ssa_names_cb_data *cb_data)
+region_model::append_regions_cb (const region *base_reg,
+				 append_regions_cb_data *cb_data)
 {
   if (base_reg->get_parent_region () != cb_data->model->m_current_frame)
     return;
   if (const decl_region *decl_reg = base_reg->dyn_cast_decl_region ())
-    {
-      if (TREE_CODE (decl_reg->get_decl ()) == SSA_NAME)
-	cb_data->out->safe_push (decl_reg);
-    }
+    cb_data->out->safe_push (decl_reg);
 }
 
 /* Return a new region describing a heap-allocated block of memory.
@@ -4333,8 +4393,8 @@ rejected_ranges_constraint::dump_to_pp (pretty_printer *pp) const
 
 /* engine's ctor.  */
 
-engine::engine (logger *logger)
-: m_mgr (logger)
+engine::engine (const supergraph *sg, logger *logger)
+: m_sg (sg), m_mgr (logger)
 {
 }
 
@@ -5105,16 +5165,20 @@ test_stack_frames ()
   tree a = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("a"),
 		       integer_type_node);
+  DECL_CONTEXT (a) = parent_fndecl;
   tree b = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("b"),
 		       integer_type_node);
+  DECL_CONTEXT (b) = parent_fndecl;
   /* "x" and "y" in a child frame.  */
   tree x = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("x"),
 		       integer_type_node);
+  DECL_CONTEXT (x) = child_fndecl;
   tree y = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("y"),
 		       integer_type_node);
+  DECL_CONTEXT (y) = child_fndecl;
 
   /* "p" global.  */
   tree p = build_global_decl ("p", ptr_type_node);
@@ -5225,6 +5289,7 @@ test_get_representative_path_var ()
   tree n = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("n"),
 		       integer_type_node);
+  DECL_CONTEXT (n) = fndecl;
 
   region_model_manager mgr;
   test_region_model_context ctxt;
@@ -5437,12 +5502,14 @@ test_state_merging ()
   tree a = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("a"),
 		       integer_type_node);
+  DECL_CONTEXT (a) = test_fndecl;
   tree addr_of_a = build1 (ADDR_EXPR, ptr_type_node, a);
 
   /* Param "q", a pointer.  */
   tree q = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 		       get_identifier ("q"),
 		       ptr_type_node);
+  DECL_CONTEXT (q) = test_fndecl;
 
   program_point point (program_point::origin ());
   region_model_manager mgr;

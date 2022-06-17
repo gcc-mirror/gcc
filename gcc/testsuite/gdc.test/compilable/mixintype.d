@@ -52,4 +52,3 @@ void test4()
     enum getStuff = q{ __traits(getMember,sb,"fieldb") };
     auto b = Foo4!(mixin(getStuff));
 }
-

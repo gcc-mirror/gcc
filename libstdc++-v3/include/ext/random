@@ -346,6 +346,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    0xa3ac4000U, 0xecc1327aU>
     sfmt44497_64;
 
+#if __SIZE_WIDTH__ >= 32
 
   typedef simd_fast_mersenne_twister_engine<uint32_t, 86243, 366,
 					    6, 7, 19, 1,
@@ -396,6 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    0xf8000001U, 0x89e80709U,
 					    0x3bd2b64bU, 0x0c64b1e4U>
     sfmt216091_64;
+#endif // __SIZE_WIDTH__ >= 32
 
 #endif // __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 

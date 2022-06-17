@@ -9784,7 +9784,7 @@ conv_intrinsic_ieee_builtin (gfc_se * se, gfc_expr * expr,
 			     enum built_in_function code, int nargs)
 {
   tree args[2];
-  gcc_assert ((unsigned) nargs <= sizeof(args)/sizeof(args[0]));
+  gcc_assert ((unsigned) nargs <= ARRAY_SIZE (args));
 
   conv_ieee_function_args (se, expr, args, nargs);
   se->expr = build_call_expr_loc_array (input_location,

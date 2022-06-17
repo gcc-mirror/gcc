@@ -18,7 +18,8 @@
 // { dg-do compile { target c++17 } }
 
 #include <deque>
-#include <memory_resource>
+
+std::pmr::deque<int> c{1, 2, 3, 4};
 
 struct X { };
 

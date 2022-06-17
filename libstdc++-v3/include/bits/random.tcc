@@ -1907,15 +1907,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__d1._M_param == __d2._M_param
 	  && __d1._M_saved_available == __d2._M_saved_available)
-	{
-	  if (__d1._M_saved_available
-	      && __d1._M_saved == __d2._M_saved)
-	    return true;
-	  else if(!__d1._M_saved_available)
-	    return true;
-	  else
-	    return false;
-	}
+	return __d1._M_saved_available ? __d1._M_saved == __d2._M_saved : true;
       else
 	return false;
     }
@@ -1961,7 +1953,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool __saved_avail;
       if (__is >> __mean >> __stddev >> __saved_avail)
 	{
-	  if (__saved_avail && (__is >> __x._M_saved))
+	  if (!__saved_avail || (__is >> __x._M_saved))
 	    {
 	      __x._M_saved_available = __saved_avail;
 	      __x.param(param_type(__mean, __stddev));

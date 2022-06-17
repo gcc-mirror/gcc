@@ -58,8 +58,8 @@
 #include "reload.h"
 #include "sched-int.h"
 #include "gimplify.h"
-#include "gimple-fold.h"
 #include "gimple-iterator.h"
+#include "gimple-fold.h"
 #include "gimple-walk.h"
 #include "ssa.h"
 #include "tree-vectorizer.h"
@@ -2305,7 +2305,6 @@ rs6000_debug_reg_global (void)
   fprintf (stderr,
 	   "\n"
 	   "d  reg_class = %s\n"
-	   "f  reg_class = %s\n"
 	   "v  reg_class = %s\n"
 	   "wa reg_class = %s\n"
 	   "we reg_class = %s\n"
@@ -2314,7 +2313,6 @@ rs6000_debug_reg_global (void)
 	   "wA reg_class = %s\n"
 	   "\n",
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_d]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_f]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_v]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wa]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
@@ -2953,7 +2951,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
      constraints are:
 
 	d  - Register class to use with traditional DFmode instructions.
-	f  - Register class to use with traditional SFmode instructions.
 	v  - Altivec register.
 	wa - Any VSX register.
 	wc - Reserved to represent individual CR bits (used in LLVM).
@@ -2962,18 +2959,11 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wx - Float register if we can do 32-bit int stores.  */
 
   if (TARGET_HARD_FLOAT)
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_f] = FLOAT_REGS;	/* SFmode  */
-      rs6000_constraints[RS6000_CONSTRAINT_d] = FLOAT_REGS;	/* DFmode  */
-    }
-
-  if (TARGET_VSX)
-    rs6000_constraints[RS6000_CONSTRAINT_wa] = VSX_REGS;
-
-  /* Add conditional constraints based on various options, to allow us to
-     collapse multiple insn patterns.  */
+    rs6000_constraints[RS6000_CONSTRAINT_d] = FLOAT_REGS;
   if (TARGET_ALTIVEC)
     rs6000_constraints[RS6000_CONSTRAINT_v] = ALTIVEC_REGS;
+  if (TARGET_VSX)
+    rs6000_constraints[RS6000_CONSTRAINT_wa] = VSX_REGS;
 
   if (TARGET_POWERPC64)
     {
@@ -4151,7 +4141,10 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (!(rs6000_isa_flags_explicit & OPTION_MASK_BLOCK_OPS_VECTOR_PAIR))
     {
-      if (TARGET_MMA && TARGET_EFFICIENT_UNALIGNED_VSX)
+      /* Do not generate lxvp and stxvp on power10 since there are some
+	 performance issues.  */
+      if (TARGET_MMA && TARGET_EFFICIENT_UNALIGNED_VSX
+	  && rs6000_tune != PROCESSOR_POWER10)
 	rs6000_isa_flags |= OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
       else
 	rs6000_isa_flags &= ~OPTION_MASK_BLOCK_OPS_VECTOR_PAIR;
@@ -4345,8 +4338,8 @@ rs6000_option_override_internal (bool global_init_p)
 	    rs6000_veclib_handler = rs6000_builtin_vectorized_libmass;
 	  else
 	    {
-	      error ("unknown vectorization library ABI type (%qs) for "
-		     "%qs switch", rs6000_veclibabi_name, "-mveclibabi=");
+	      error ("unknown vectorization library ABI type in "
+		     "%<-mveclibabi=%s%>", rs6000_veclibabi_name);
 	      ret = false;
 	    }
 	}
@@ -15867,11 +15860,30 @@ rs6000_maybe_emit_maxc_minc (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   rtx op1 = XEXP (op, 1);
   machine_mode compare_mode = GET_MODE (op0);
   machine_mode result_mode = GET_MODE (dest);
-  bool max_p = false;
 
   if (result_mode != compare_mode)
     return false;
 
+  /* See the comments of this function, it simply expects GE/GT/LE/LT in
+     the checks, but for the reversible equivalent UNLT/UNLE/UNGT/UNGE,
+     we need to do the reversions first to make the following checks
+     support fewer cases, like:
+
+	(a UNLT b) ? op1 : op2 =>  (a >= b) ? op2 : op1;
+	(a UNLE b) ? op1 : op2 =>  (a >  b) ? op2 : op1;
+	(a UNGT b) ? op1 : op2 =>  (a <= b) ? op2 : op1;
+	(a UNGE b) ? op1 : op2 =>  (a <  b) ? op2 : op1;
+
+     By the way, if we see these UNLT/UNLE/UNGT/UNGE it's guaranteed
+     that we have 4-way condition codes (LT/GT/EQ/UN), so we do not
+     have to check for fast-math or the like.  */
+  if (code == UNGE || code == UNGT || code == UNLE || code == UNLT)
+    {
+      code = reverse_condition_maybe_unordered (code);
+      std::swap (true_cond, false_cond);
+    }
+
+  bool max_p;
   if (code == GE || code == GT)
     max_p = true;
   else if (code == LE || code == LT)
@@ -23285,9 +23297,13 @@ rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
 static bool
-rs6000_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
-				 rtx op1, const vec_perm_indices &sel)
+rs6000_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+				 rtx target, rtx op0, rtx op1,
+				 const vec_perm_indices &sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   bool testing_p = !target;
 
   /* AltiVec (and thus VSX) can handle arbitrary permutations.  */
@@ -25331,6 +25347,11 @@ rs6000_can_inline_p (tree caller, tree callee)
 	    }
 	}
 
+      /* Ignore -mpower8-fusion and -mpower10-fusion options for inlining
+	 purposes.  */
+      callee_isa &= ~(OPTION_MASK_P8_FUSION | OPTION_MASK_P10_FUSION);
+      explicit_isa &= ~(OPTION_MASK_P8_FUSION | OPTION_MASK_P10_FUSION);
+
       /* The callee's options must be a subset of the caller's options, i.e.
 	 a vsx function may inline an altivec function, but a no-vsx function
 	 must not inline a vsx function.  However, for those options that the
@@ -25659,10 +25680,19 @@ rs6000_sibcall_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
   rtx r12 = NULL_RTX;
   rtx func_addr = func_desc;
 
-  gcc_assert (INTVAL (cookie) == 0);
-
   if (global_tlsarg)
     tlsarg = global_tlsarg;
+
+  /* Handle longcall attributes.  */
+  if (INTVAL (cookie) & CALL_LONG && SYMBOL_REF_P (func_desc))
+    {
+      /* PCREL can do a sibling call to a longcall function
+	 because we don't need to restore the TOC register.  */
+      gcc_assert (rs6000_pcrel_p ());
+      func_desc = rs6000_longcall_ref (func_desc, tlsarg);
+    }
+  else
+    gcc_assert (INTVAL (cookie) == 0);
 
   /* For ELFv2, r12 and CTR need to hold the function address
      for an indirect call.  */

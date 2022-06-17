@@ -1458,30 +1458,6 @@ process_options (bool no_backend)
 		debug_type_names[debug_set_to_format (write_symbols)]);
     }
 
-  /* We know which debug output will be used so we can set flag_var_tracking
-     and flag_var_tracking_uninit if the user has not specified them.  */
-  if (debug_info_level < DINFO_LEVEL_NORMAL
-      || !dwarf_debuginfo_p ()
-      || debug_hooks->var_location == do_nothing_debug_hooks.var_location)
-    {
-      if ((OPTION_SET_P (flag_var_tracking) && flag_var_tracking == 1)
-	  || (OPTION_SET_P (flag_var_tracking_uninit)
-	      && flag_var_tracking_uninit == 1))
-        {
-	  if (debug_info_level < DINFO_LEVEL_NORMAL)
-	    warning_at (UNKNOWN_LOCATION, 0,
-			"variable tracking requested, but useless unless "
-			"producing debug info");
-	  else
-	    warning_at (UNKNOWN_LOCATION, 0,
-			"variable tracking requested, but not supported "
-			"by this debug format");
-	}
-      flag_var_tracking = 0;
-      flag_var_tracking_uninit = 0;
-      flag_var_tracking_assignments = 0;
-    }
-
   /* The debug hooks are used to implement -fdump-go-spec because it
      gives a simple and stable API for all the information we need to
      dump.  */
@@ -2378,6 +2354,8 @@ toplev::finalize (void)
   gcse_cc_finalize ();
   ipa_cp_cc_finalize ();
   ira_costs_cc_finalize ();
+  tree_cc_finalize ();
+  reginfo_cc_finalize ();
 
   /* save_decoded_options uses opts_obstack, so these must
      be cleaned up together.  */

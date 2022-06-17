@@ -20,44 +20,63 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+# TODO: Extract riscv_subset_t from riscv-common.cc and make it can be compiled
+#       standalone to replace this script, that also prevents us implementing
+#       that twice and keep sync again and again.
 
 from __future__ import print_function
 import sys
+import argparse
 import collections
 import itertools
 from functools import reduce
 
-
-CANONICAL_ORDER = "imafdgqlcbjktpvn"
+SUPPORTED_ISA_SPEC = ["2.2", "20190608", "20191213"]
+CANONICAL_ORDER = "imafdgqlcbkjtpvn"
 LONG_EXT_PREFIXES = ['z', 's', 'h', 'x']
 
 #
 # IMPLIED_EXT(ext) -> implied extension list.
 #
 IMPLIED_EXT = {
-  "d" : ["f"],
-  "zk" : ["zkn"],
-  "zk" : ["zkr"],
-  "zk" : ["zkt"],
-  "zkn" : ["zbkb"],
-  "zkn" : ["zbkc"],
-  "zkn" : ["zbkx"],
-  "zkn" : ["zkne"],
-  "zkn" : ["zknd"],
-  "zkn" : ["zknh"],
-  "zks" : ["zbkb"],
-  "zks" : ["zbkc"],
-  "zks" : ["zbkx"],
-  "zks" : ["zksed"],
-  "zks" : ["zksh"],
+  "d" : ["f", "zicsr"],
+  "f" : ["zicsr"],
+  "zk" : ["zkn", "zkr", "zkt"],
+  "zkn" : ["zbkb", "zbkc", "zbkx", "zkne", "zknd", "zknh"],
+  "zks" : ["zbkb", "zbkc", "zbkx", "zksed", "zksh"],
+
+  "v" : ["zvl128b", "zve64d"],
+  "zve32x" : ["zvl32b"],
+  "zve64x" : ["zve32x", "zvl64b"],
+  "zve32f" : ["f", "zve32x"],
+  "zve64f" : ["f", "zve32f", "zve64x"],
+  "zve64d" : ["d", "zve64f"],
+
+  "zvl64b" : ["zvl32b"],
+  "zvl128b" : ["zvl64b"],
+  "zvl256b" : ["zvl128b"],
+  "zvl512b" : ["zvl256b"],
+  "zvl1024b" : ["zvl512b"],
+  "zvl2048b" : ["zvl1024b"],
+  "zvl4096b" : ["zvl2048b"],
+  "zvl8192b" : ["zvl4096b"],
+  "zvl16384b" : ["zvl8192b"],
+  "zvl32768b" : ["zvl16384b"],
+  "zvl65536b" : ["zvl32768b"],
 }
 
-def arch_canonicalize(arch):
+def arch_canonicalize(arch, isa_spec):
   # TODO: Support extension version.
+  is_isa_spec_2p2 = isa_spec == '2.2'
   new_arch = ""
+  extra_long_ext = []
+  std_exts = []
   if arch[:5] in ['rv32e', 'rv32i', 'rv32g', 'rv64i', 'rv64g']:
-    # TODO: We should expand g to imad_zifencei once we support newer spec.
-    new_arch = arch[:5].replace("g", "imafd")
+    new_arch = arch[:5].replace("g", "i")
+    if arch[:5] in ['rv32g', 'rv64g']:
+      std_exts = ['m', 'a', 'f', 'd']
+      if not is_isa_spec_2p2:
+        extra_long_ext = ['zicsr', 'zifencei']
   else:
     raise Exception("Unexpected arch: `%s`" % arch[:5])
 
@@ -69,20 +88,29 @@ def arch_canonicalize(arch):
   if long_ext_prefixes_idx:
     first_long_ext_idx = min(long_ext_prefixes_idx)
     long_exts = arch[first_long_ext_idx:].split("_")
-    std_exts = list(arch[5:first_long_ext_idx])
+    std_exts += list(arch[5:first_long_ext_idx])
   else:
     long_exts = []
-    std_exts = list(arch[5:])
+    std_exts += list(arch[5:])
+
+  long_exts += extra_long_ext
 
   #
   # Handle implied extensions.
   #
-  for ext in std_exts + long_exts:
-    if ext in IMPLIED_EXT:
-      implied_exts = IMPLIED_EXT[ext]
-      for implied_ext in implied_exts:
-        if implied_ext not in std_exts + long_exts:
-          long_exts.append(implied_ext)
+  any_change = True
+  while any_change:
+    any_change = False
+    for ext in std_exts + long_exts:
+      if ext in IMPLIED_EXT:
+        implied_exts = IMPLIED_EXT[ext]
+        for implied_ext in implied_exts:
+          if implied_ext == 'zicsr' and is_isa_spec_2p2:
+              continue
+
+          if implied_ext not in std_exts + long_exts:
+            long_exts.append(implied_ext)
+            any_change = True
 
   # Single letter extension might appear in the long_exts list,
   # becasue we just append extensions list to the arch string.
@@ -98,6 +126,9 @@ def arch_canonicalize(arch):
       canonical_sort = -1
     return (exts.startswith("x"), exts.startswith("zxm"),
             LONG_EXT_PREFIXES.index(exts[0]), canonical_sort, exts[1:])
+
+  # Removing duplicates.
+  long_exts = list(set(long_exts))
 
   # Multi-letter extension must be in lexicographic order.
   long_exts = list(sorted(filter(lambda x:len(x) != 1, long_exts),
@@ -118,11 +149,20 @@ def arch_canonicalize(arch):
   # Concat rest of the multi-char extensions.
   if long_exts:
     new_arch += "_" + "_".join(long_exts)
+
   return new_arch
 
 if len(sys.argv) < 2:
   print ("Usage: %s <arch_str> [<arch_str>*]" % sys.argv)
   sys.exit(1)
 
-for arg in sys.argv[1:]:
-  print (arch_canonicalize(arg))
+parser = argparse.ArgumentParser()
+parser.add_argument('-misa-spec', type=str,
+                    default='20191213',
+                    choices=SUPPORTED_ISA_SPEC)
+parser.add_argument('arch_strs', nargs=argparse.REMAINDER)
+
+args = parser.parse_args()
+
+for arch in args.arch_strs:
+  print (arch_canonicalize(arch, args.misa_spec))

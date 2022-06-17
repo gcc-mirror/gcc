@@ -350,8 +350,12 @@ fs::copy(const path& from, const path& to, copy_options options,
       // set an unused bit in options to disable further recursion
       if (!is_set(options, copy_options::recursive))
 	options |= static_cast<copy_options>(4096);
-      for (const directory_entry& x : directory_iterator(from))
-	copy(x.path(), to/x.path().filename(), options, ec);
+      for (const directory_entry& x : directory_iterator(from, ec))
+	{
+	  copy(x.path(), to/x.path().filename(), options, ec);
+	  if (ec)
+	    return;
+	}
     }
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2683. filesystem::copy() says "no effects"

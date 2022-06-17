@@ -67,8 +67,6 @@ struct GTY ((variable_size)) range_info_def {
     if (VAR)
 
 /* Sets the value range to SSA.  */
-extern void set_range_info (tree, enum value_range_kind, const wide_int_ref &,
-			    const wide_int_ref &);
 extern void set_range_info (tree, const value_range &);
 extern void set_nonzero_bits (tree, const wide_int_ref &);
 extern wide_int get_nonzero_bits (const_tree);
@@ -92,8 +90,7 @@ extern void set_ptr_nonnull (tree);
 extern tree copy_ssa_name_fn (struct function *, tree, gimple *);
 extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
 extern tree duplicate_ssa_name_fn (struct function *, tree, gimple *);
-extern void duplicate_ssa_name_range_info (tree, enum value_range_kind,
-					   struct range_info_def *);
+extern void duplicate_ssa_name_range_info (tree dest, tree src);
 extern void reset_flow_sensitive_info (tree);
 extern void reset_flow_sensitive_info_in_bb (basic_block);
 extern void release_defs (gimple *);

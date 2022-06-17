@@ -1,3 +1,60 @@
+2022-05-28  Bruce Korb  <bkorb@gnu.org>
+
+	* .gitignore: Ignore vim swap files
+
+2022-05-13  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2022-05-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* MAINTAINERS: Remove myself from DCO section.
+
+2022-05-09  Xi Ruoyao  <xry111@xry111.site>
+
+	* MAINTAINERS: Update my email address.
+
+2022-05-09  Clément Chigot  <chigot@adacore.com>
+
+	* MAINTAINERS: Update my email address.
+
+2022-05-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* MAINTAINERS: Add myself as PowerPC port co-maintainer and to DCO
+	section.
+
+2022-04-19  Richard Henderson  <rth@gcc.gnu.org>
+
+	* MAINTAINERS: Update my email address.
+
+2022-04-01  Qian Jianhua  <qianjh@fujitsu.com>
+
+	* MAINTAINERS: Update my email address.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+
+	* MAINTAINERS: (CPU Port Maintainers): Add myself and
+	Lulu as LoongArch port maintainer.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* configure.ac: Add LoongArch tuples.
+	* configure: Regenerate.
+
+2022-03-28  Tom Tromey  <tromey@adacore.com>
+
+	* configure.ac: Remove --with-mpfr-dir and --with-gmp-dir.
+	* configure: Rebuild.
+
+2022-03-24  Bill Schmidt  <bill.schmidt@gmail.com>
+
+	* MAINTAINERS: Change my information.
+
+2022-03-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* MAINTAINERS: Add myself to DCO section.
+
 2022-03-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* configure.ac: Fix incorrect option in comment.

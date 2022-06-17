@@ -76,9 +76,9 @@ void foo() @safe
 /* TEST_OUTPUT:
 ---
 fail_compilation/retscope6.d(8016): Error: address of variable `i` assigned to `p` with longer lifetime
-fail_compilation/retscope6.d(8031): Error: reference to local variable `i` assigned to non-scope parameter `p` calling retscope6.betty!().betty
-fail_compilation/retscope6.d(8031): Error: reference to local variable `j` assigned to non-scope parameter `q` calling retscope6.betty!().betty
-fail_compilation/retscope6.d(8048): Error: reference to local variable `j` assigned to non-scope parameter `q` calling retscope6.archie!().archie
+fail_compilation/retscope6.d(8031): Error: reference to local variable `i` assigned to non-scope parameter `p`
+fail_compilation/retscope6.d(8031): Error: reference to local variable `j` assigned to non-scope parameter `q`
+fail_compilation/retscope6.d(8048): Error: reference to local variable `j` assigned to non-scope parameter `q`
 ---
 */
 
@@ -172,7 +172,7 @@ T9 testfred()
 
 /* TEST_OUTPUT:
 ---
-fail_compilation/retscope6.d(10003): Error: scope variable `values` assigned to non-scope parameter `values` calling retscope6.escape
+fail_compilation/retscope6.d(10003): Error: scope variable `values` assigned to non-scope parameter `values`
 ---
 */
 
@@ -201,8 +201,8 @@ void hmac(scope ubyte[] secret)
 
 /* TEST_OUTPUT:
 ---
-fail_compilation/retscope6.d(12011): Error: reference to local variable `x` assigned to non-scope parameter `r` calling retscope6.escape_m_20150
-fail_compilation/retscope6.d(12022): Error: reference to local variable `x` assigned to non-scope parameter `r` calling retscope6.escape_c_20150
+fail_compilation/retscope6.d(12011): Error: returning `escape_m_20150(& x)` escapes a reference to local variable `x`
+fail_compilation/retscope6.d(12022): Error: returning `escape_c_20150(& x)` escapes a reference to local variable `x`
 ---
 */
 
@@ -210,24 +210,80 @@ fail_compilation/retscope6.d(12022): Error: reference to local variable `x` assi
 
 // https://issues.dlang.org/show_bug.cgi?id=20150
 
-int* escape_m_20150(int* r) @safe pure
+int* escape_m_20150(int* r) @safe pure nothrow
 {
     return r;
 }
 
-int* f_m_20150() @safe
+int* f_m_20150() @safe nothrow
 {
     int x = 42;
     return escape_m_20150(&x);
 }
 
-const(int)* escape_c_20150(const int* r) @safe pure
+const(int)* escape_c_20150(const int* r) @safe pure nothrow
 {
     return r;
 }
 
-const(int)* f_c_20150() @safe
+const(int)* f_c_20150() @safe nothrow
 {
     int x = 42;
     return escape_c_20150(&x);
+}
+
+/* TEST_OUTPUT:
+---
+fail_compilation/retscope6.d(13010): Error: reference to local variable `str` assigned to non-scope parameter `x`
+---
+*/
+
+#line 13000
+// https://issues.dlang.org/show_bug.cgi?id=22221
+
+void f_throw(string x) @safe pure
+{
+    throw new Exception(x);
+}
+
+void escape_throw_20150() @safe
+{
+    immutable(char)[4] str;
+    f_throw(str[]);
+}
+
+/* TEST_OUTPUT:
+---
+fail_compilation/retscope6.d(14019): Error: scope variable `scopePtr` assigned to non-scope parameter `x`
+fail_compilation/retscope6.d(14022): Error: scope variable `scopePtr` may not be returned
+---
+*/
+
+#line 14000
+// https://issues.dlang.org/show_bug.cgi?id=23021
+
+ref int infer23021(ref int* x) @safe pure nothrow
+{
+    return *x;
+}
+
+ref int noInfer23021(ref int* x, const(int)** escapeHole = null) @safe pure nothrow
+{
+    *escapeHole = x;
+    return *x;
+}
+
+ref int escape23021() @safe
+{
+    scope int* scopePtr;
+    int* nonScopePtr = null;
+
+    // don't infer scope
+    cast(void) noInfer23021(scopePtr); // error
+
+    // ensure we infer return scope
+    return infer23021(scopePtr); // error
+
+    // ensure we do not infer return ref
+    return infer23021(nonScopePtr); // no error
 }

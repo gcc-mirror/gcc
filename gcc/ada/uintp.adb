@@ -1431,7 +1431,7 @@ package body Uintp is
 
             N := N / Uint_2;
             exit when N = Uint_0;
-            Squares := Squares *  Squares;
+            Squares := Squares * Squares;
          end loop;
 
          Uintp.Release_And_Save (M, Result);
@@ -2233,30 +2233,17 @@ package body Uintp is
 
    function UI_To_CC (Input : Valid_Uint) return Char_Code is
    begin
-      if Direct (Input) then
-         return Char_Code (Direct_Val (Input));
+      --  Char_Code and Int have equal upper bounds, so simply guard against
+      --  negative Input and reuse conversion to Int. We trust that conversion
+      --  to Int will raise Constraint_Error when Input is too large.
 
-      --  Case of input is more than one digit
+      pragma Assert
+        (Char_Code'First = 0 and then Int (Char_Code'Last) = Int'Last);
 
+      if Input >= Uint_0 then
+         return Char_Code (UI_To_Int (Input));
       else
-         declare
-            In_Length : constant Int := N_Digits (Input);
-            In_Vec    : UI_Vector (1 .. In_Length);
-            Ret_CC    : Char_Code;
-
-         begin
-            Init_Operand (Input, In_Vec);
-
-            --  We assume value is positive
-
-            Ret_CC := 0;
-            for Idx in In_Vec'Range loop
-               Ret_CC := Ret_CC * Char_Code (Base) +
-                                  Char_Code (abs In_Vec (Idx));
-            end loop;
-
-            return Ret_CC;
-         end;
+         raise Constraint_Error;
       end if;
    end UI_To_CC;
 

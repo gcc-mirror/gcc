@@ -1,5 +1,5 @@
 /* { dg-do compile { target *-*-linux* } } */
-/* { dg-options "-O2 -fzero-call-used-regs=used-gpr" } */
+/* { dg-options "-O2 -fzero-call-used-regs=used-gpr -fno-stack-protector" } */
 
 int
 foo (int x)

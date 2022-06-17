@@ -2338,31 +2338,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator==(const __versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
 	       const __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
-    { return __lhs.compare(__rhs) == 0; }
-
-  template<typename _CharT,
-	   template <typename, typename, typename> class _Base>
-    inline typename __enable_if<std::__is_char<_CharT>::__value, bool>::__type
-    operator==(const __versa_string<_CharT, std::char_traits<_CharT>,
-	       std::allocator<_CharT>, _Base>& __lhs,
-	       const __versa_string<_CharT, std::char_traits<_CharT>,
-	       std::allocator<_CharT>, _Base>& __rhs)
-    { return (__lhs.size() == __rhs.size()
-	      && !std::char_traits<_CharT>::compare(__lhs.data(), __rhs.data(),
-						    __lhs.size())); }
-
-  /**
-   *  @brief  Test equivalence of C string and string.
-   *  @param __lhs  C string.
-   *  @param __rhs  String.
-   *  @return  True if @a __rhs.compare(@a __lhs) == 0.  False otherwise.
-   */
-  template<typename _CharT, typename _Traits, typename _Alloc,
-	   template <typename, typename, typename> class _Base>
-    inline bool
-    operator==(const _CharT* __lhs,
-	       const __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
-    { return __rhs.compare(__lhs) == 0; }
+    {
+      return __lhs.size() == __rhs.size()
+	       && !_Traits::compare(__lhs.data(), __rhs.data(), __lhs.size());
+    }
 
   /**
    *  @brief  Test equivalence of string and C string.
@@ -2375,7 +2354,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator==(const __versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
 	       const _CharT* __rhs)
-    { return __lhs.compare(__rhs) == 0; }
+    {
+      return __lhs.size() == _Traits::length(__rhs)
+	       && !_Traits::compare(__lhs.data(), __rhs, __lhs.size());
+    }
+
+  /**
+   *  @brief  Test equivalence of C string and string.
+   *  @param __lhs  C string.
+   *  @param __rhs  String.
+   *  @return  True if @a __rhs.compare(@a __lhs) == 0.  False otherwise.
+   */
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   template <typename, typename, typename> class _Base>
+    inline bool
+    operator==(const _CharT* __lhs,
+	       const __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
+    { return __rhs == __lhs; }
 
   // operator !=
   /**
@@ -2402,7 +2397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator!=(const _CharT* __lhs,
 	       const __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
-    { return !(__lhs == __rhs); }
+    { return !(__rhs == __lhs); }
 
   /**
    *  @brief  Test difference of string and C string.

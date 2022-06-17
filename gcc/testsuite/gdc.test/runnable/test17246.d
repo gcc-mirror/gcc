@@ -47,4 +47,3 @@ int main(string[] args)
     auto bar = genBar(args.length == 0);
     return 0;
 }
-

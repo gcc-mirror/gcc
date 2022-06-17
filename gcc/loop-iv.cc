@@ -1378,49 +1378,6 @@ simple_rhs_p (rtx rhs)
     }
 }
 
-/* If REGNO has a single definition, return its known value, otherwise return
-   null.  */
-
-static rtx
-find_single_def_src (unsigned int regno)
-{
-  rtx src = NULL_RTX;
-
-  /* Don't look through unbounded number of single definition REG copies,
-     there might be loops for sources with uninitialized variables.  */
-  for (int cnt = 0; cnt < 128; cnt++)
-    {
-      df_ref adef = DF_REG_DEF_CHAIN (regno);
-      if (adef == NULL || DF_REF_NEXT_REG (adef) != NULL
-	  || DF_REF_IS_ARTIFICIAL (adef))
-	return NULL_RTX;
-
-      rtx set = single_set (DF_REF_INSN (adef));
-      if (set == NULL || !REG_P (SET_DEST (set))
-	  || REGNO (SET_DEST (set)) != regno)
-	return NULL_RTX;
-
-      rtx note = find_reg_equal_equiv_note (DF_REF_INSN (adef));
-      if (note && function_invariant_p (XEXP (note, 0)))
-	{
-	  src = XEXP (note, 0);
-	  break;
-	}
-      src = SET_SRC (set);
-
-      if (REG_P (src))
-	{
-	  regno = REGNO (src);
-	  continue;
-	}
-      break;
-    }
-  if (!function_invariant_p (src))
-    return NULL_RTX;
-
-  return src;
-}
-
 /* If any registers in *EXPR that have a single definition, try to replace
    them with the known-equivalent values.  */
 
@@ -1433,7 +1390,7 @@ replace_single_def_regs (rtx *expr)
     {
       rtx x = *iter;
       if (REG_P (x))
-	if (rtx new_x = find_single_def_src (REGNO (x)))
+	if (rtx new_x = df_find_single_def_src (x))
 	  {
 	    *expr = simplify_replace_rtx (*expr, x, new_x);
 	    goto repeat;

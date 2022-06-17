@@ -409,9 +409,7 @@ add_path_to_list (gfc_directorylist **list, const char *path,
     *list = dir;
   dir->use_for_modules = use_for_modules;
   dir->warn = warn;
-  dir->path = XCNEWVEC (char, strlen (p) + 2);
-  strcpy (dir->path, p);
-  strcat (dir->path, "/");	/* make '/' last character */
+  dir->path = xstrdup (p);
 }
 
 /* defer_warn is set to true while parsing the commandline.  */
@@ -476,8 +474,9 @@ open_included_file (const char *name, gfc_directorylist *list,
       if (module && !p->use_for_modules)
 	continue;
 
-      fullname = (char *) alloca(strlen (p->path) + strlen (name) + 1);
+      fullname = (char *) alloca(strlen (p->path) + strlen (name) + 2);
       strcpy (fullname, p->path);
+      strcat (fullname, "/");
       strcat (fullname, name);
 
       f = gfc_open_file (fullname);

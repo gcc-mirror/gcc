@@ -40,7 +40,6 @@ extern void extract_ops_from_tree (tree, enum tree_code *, tree *, tree *,
 extern void gimple_cond_get_ops_from_tree (tree, enum tree_code *, tree *,
 					   tree *);
 extern bool is_gimple_lvalue (tree);
-extern bool is_gimple_condexpr (tree);
 extern bool is_gimple_condexpr_for_cond (tree);
 extern bool is_gimple_address (const_tree);
 extern bool is_gimple_invariant_address (const_tree);
@@ -56,6 +55,7 @@ extern bool is_gimple_mem_ref_addr (tree);
 extern void flush_mark_addressable_queue (void);
 extern void mark_addressable (tree);
 extern bool is_gimple_reg_rhs (tree);
+extern tree canonicalize_cond_expr_cond (tree);
 
 /* Return true if a conversion from either type of TYPE1 and TYPE2
    to the other is not required.  Otherwise return false.  */

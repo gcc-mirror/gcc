@@ -43,3 +43,18 @@ foo (int x, int z)
   #pragma omp parallel private (x) allocate (0 : x)	/* { dg-error "'allocate' clause allocator expression has type 'int' rather than 'omp_allocator_handle_t'" } */
   bar (x, &x, 0);
 }
+
+void
+foo1 ()
+{
+  int a = 10;
+#pragma omp target
+  {
+    #pragma omp parallel private (a) allocate(a) // { dg-error "'allocate' clause must specify an allocator here" }
+    a = 20;
+  }
+#pragma omp target private(a) allocate(a) // { dg-error "'allocate' clause must specify an allocator here" }
+  {
+    a = 30;
+  }
+}

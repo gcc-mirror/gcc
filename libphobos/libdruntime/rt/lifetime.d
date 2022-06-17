@@ -163,23 +163,6 @@ extern (C) void _d_delclass(Object* p) @weak
     }
 }
 
-/**
- * This is called for a delete statement where the value
- * being deleted is a pointer to a struct with a destructor
- * but doesn't have an overloaded delete operator.
- */
-extern (C) void _d_delstruct(void** p, TypeInfo_Struct inf) @weak
-{
-    if (*p)
-    {
-        debug(PRINTF) printf("_d_delstruct(%p, %p)\n", *p, cast(void*)inf);
-
-        inf.destroy(*p);
-        GC.free(*p);
-        *p = null;
-    }
-}
-
 // strip const/immutable/shared/inout from type info
 inout(TypeInfo) unqualify(return scope inout(TypeInfo) cti) pure nothrow @nogc
 {
@@ -1872,23 +1855,6 @@ do
     return *p;
 }
 
-/**
- * Append y[] to array x[]
- */
-extern (C) void[] _d_arrayappendT(const TypeInfo ti, ref byte[] x, byte[] y) @weak
-{
-    import core.stdc.string;
-    auto length = x.length;
-    auto tinext = unqualify(ti.next);
-    auto sizeelem = tinext.tsize;              // array element size
-    _d_arrayappendcTX(ti, x, y.length);
-    memcpy(x.ptr + length * sizeelem, y.ptr, y.length * sizeelem);
-
-    // do postblit
-    __doPostblit(x.ptr + length * sizeelem, y.length * sizeelem, tinext);
-    return x;
-}
-
 
 /**
  *
@@ -2126,7 +2092,7 @@ extern (C) void[] _d_arrayappendcd(ref byte[] x, dchar c) @weak
 
     // Hack because _d_arrayappendT takes `x` as a reference
     auto xx = cast(shared(char)[])x;
-    object._d_arrayappendTImpl!(shared(char)[])._d_arrayappendT(xx, cast(shared(char)[])appendthis);
+    object._d_arrayappendT(xx, cast(shared(char)[])appendthis);
     x = cast(byte[])xx;
     return x;
 }
@@ -2187,7 +2153,7 @@ extern (C) void[] _d_arrayappendwd(ref byte[] x, dchar c) @weak
     //
 
     auto xx = (cast(shared(wchar)*)x.ptr)[0 .. x.length];
-    object._d_arrayappendTImpl!(shared(wchar)[])._d_arrayappendT(xx, cast(shared(wchar)[])appendthis);
+    object._d_arrayappendT(xx, cast(shared(wchar)[])appendthis);
     x = (cast(byte*)xx.ptr)[0 .. xx.length];
     return x;
 }
@@ -2605,11 +2571,6 @@ deprecated unittest
             dtorCount++;
         }
     }
-
-    dtorCount = 0;
-    S1* s1 = new S1;
-    _d_delstruct(cast(void**)&s1, typeid(typeof(*s1))); // delete s1;
-    assert(dtorCount == 1);
 
     dtorCount = 0;
     S1[] arr1 = new S1[7];

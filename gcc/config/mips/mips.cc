@@ -6042,11 +6042,28 @@ mips_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 	  for (i = 0; i < info.reg_words; i++)
 	    {
 	      rtx reg;
+	      bool zero_width_field_abi_change = false;
 
 	      for (; field; field = DECL_CHAIN (field))
-		if (TREE_CODE (field) == FIELD_DECL
-		    && int_bit_position (field) >= bitpos)
-		  break;
+		{
+		  if (TREE_CODE (field) != FIELD_DECL)
+		    continue;
+
+		  /* Ignore zero-width fields.  And, if the ignored
+		     field is not a C++ zero-width bit-field, it may be
+		     an ABI change.  */
+		  if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
+		    continue;
+		  if (DECL_SIZE (field)
+		      && integer_zerop (DECL_SIZE (field)))
+		    {
+		      zero_width_field_abi_change = true;
+		      continue;
+		    }
+
+		  if (int_bit_position (field) >= bitpos)
+		    break;
+		}
 
 	      if (field
 		  && int_bit_position (field) == bitpos
@@ -6054,7 +6071,29 @@ mips_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 		  && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
 		reg = gen_rtx_REG (DFmode, FP_ARG_FIRST + info.reg_offset + i);
 	      else
-		reg = gen_rtx_REG (DImode, GP_ARG_FIRST + info.reg_offset + i);
+		{
+		  reg = gen_rtx_REG (DImode,
+				     GP_ARG_FIRST + info.reg_offset + i);
+		  zero_width_field_abi_change = false;
+		}
+
+	      if (zero_width_field_abi_change && warn_psabi)
+		{
+		  static unsigned last_reported_type_uid;
+		  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (arg.type));
+		  if (uid != last_reported_type_uid)
+		    {
+		      static const char *url
+			= CHANGES_ROOT_URL
+			  "gcc-12/changes.html#mips_zero_width_fields";
+		      inform (input_location,
+			      "the ABI for passing a value containing "
+			      "zero-width fields before an adjacent "
+			      "64-bit floating-point field was changed "
+			      "in GCC %{12.1%}", url);
+		      last_reported_type_uid = uid;
+		    }
+		}
 
 	      XVECEXP (ret, 0, i)
 		= gen_rtx_EXPR_LIST (VOIDmode, reg,
@@ -6274,10 +6313,26 @@ mips_callee_copies (cumulative_args_t, const function_arg_info &arg)
 
    For n32 & n64, a structure with one or two fields is returned in
    floating-point registers as long as every field has a floating-point
-   type.  */
+   type.
+
+   The C++ FE used to remove zero-width bit-fields in GCC 11 and earlier.
+   To make a proper diagnostic, this function will set
+   HAS_CXX_ZERO_WIDTH_BF to true once a C++ zero-width bit-field shows up,
+   and then ignore it.
+
+   We had failed to ignore C++17 empty bases in GCC 7, 8, 9, 10, and 11.
+   This caused an ABI incompatibility between C++14 and C++17.  This is
+   fixed now and to make a proper diagnostic, this function will set
+   HAS_CXX17_EMPTY_BASE to true once a C++17 empty base shows up, and
+   then ignore it.
+
+   The caller should use the value of HAS_CXX17_EMPTY_BASE and/or
+   HAS_CXX_ZERO_WIDTH_BF to emit a proper -Wpsabi inform.  */
 
 static int
-mips_fpr_return_fields (const_tree valtype, tree *fields)
+mips_fpr_return_fields (const_tree valtype, tree *fields,
+			bool *has_cxx_zero_width_bf,
+			bool *has_cxx17_empty_base)
 {
   tree field;
   int i;
@@ -6293,6 +6348,18 @@ mips_fpr_return_fields (const_tree valtype, tree *fields)
     {
       if (TREE_CODE (field) != FIELD_DECL)
 	continue;
+
+      if (cxx17_empty_base_field_p (field))
+	{
+	  *has_cxx17_empty_base = true;
+	  continue;
+	}
+
+      if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
+	{
+	  *has_cxx_zero_width_bf = true;
+	  continue;
+	}
 
       if (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (field)))
 	return 0;
@@ -6318,12 +6385,19 @@ mips_fpr_return_fields (const_tree valtype, tree *fields)
 static bool
 mips_return_in_msb (const_tree valtype)
 {
-  tree fields[2];
+  if (!TARGET_NEWABI || !TARGET_BIG_ENDIAN || !AGGREGATE_TYPE_P (valtype))
+    return false;
 
-  return (TARGET_NEWABI
-	  && TARGET_BIG_ENDIAN
-	  && AGGREGATE_TYPE_P (valtype)
-	  && mips_fpr_return_fields (valtype, fields) == 0);
+  tree fields[2];
+  bool has_cxx_zero_width_bf = false;
+
+  /* Its value is not used.  */
+  bool has_cxx17_empty_base = false;
+
+  return (mips_fpr_return_fields (valtype, fields,
+				  &has_cxx_zero_width_bf,
+				  &has_cxx17_empty_base) == 0
+	  || has_cxx_zero_width_bf);
 }
 
 /* Return true if the function return value MODE will get returned in a
@@ -6418,8 +6492,63 @@ mips_function_value_1 (const_tree valtype, const_tree fn_decl_or_type,
 	 return values, promote the mode here too.  */
       mode = promote_function_mode (valtype, mode, &unsigned_p, func, 1);
 
+      bool has_cxx_zero_width_bf = false;
+      bool has_cxx17_empty_base = false;
+      int use_fpr = mips_fpr_return_fields (valtype, fields,
+					    &has_cxx_zero_width_bf,
+					    &has_cxx17_empty_base);
+
+      /* If has_cxx_zero_width_bf and has_cxx17_empty_base are both
+	 true, it *happens* that there is no ABI change.  So we won't
+	 inform in this case.  */
+      if (TARGET_HARD_FLOAT
+	  && warn_psabi
+	  && has_cxx_zero_width_bf
+	  && !has_cxx17_empty_base
+	  && use_fpr != 0)
+	{
+	  static unsigned last_reported_type_uid;
+	  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (valtype));
+	  if (uid != last_reported_type_uid)
+	    {
+	      static const char *url
+		= CHANGES_ROOT_URL
+		  "gcc-12/changes.html#zero_width_bitfields";
+	      inform (input_location,
+		      "the ABI for returning a value containing "
+		      "zero-width bit-fields but otherwise an aggregate "
+		      "with only one or two floating-point fields was "
+		      "changed in GCC %{12.1%}", url);
+	      last_reported_type_uid = uid;
+	    }
+	}
+
+      if (has_cxx_zero_width_bf)
+	use_fpr = 0;
+
+      if (TARGET_HARD_FLOAT
+	  && warn_psabi
+	  && use_fpr != 0
+	  && has_cxx17_empty_base)
+	{
+	  static unsigned last_reported_type_uid;
+	  unsigned uid = TYPE_UID (TYPE_MAIN_VARIANT (valtype));
+	  if (uid != last_reported_type_uid)
+	    {
+	      static const char *url
+		= CHANGES_ROOT_URL
+		  "gcc-12/changes.html#mips_cxx17_empty_bases";
+	      inform (input_location,
+		      "the ABI for returning a value with C++17 empty "
+		      "bases but otherwise an aggregate with only one or "
+		      "two floating-point fields was changed in GCC "
+		      "%{12.1%}", url);
+	      last_reported_type_uid = uid;
+	    }
+	}
+
       /* Handle structures whose fields are returned in $f0/$f2.  */
-      switch (mips_fpr_return_fields (valtype, fields))
+      switch (use_fpr)
 	{
 	case 1:
 	  return mips_return_fpr_single (mode,
@@ -12254,10 +12383,22 @@ mips_expand_prologue (void)
 	      /* Insert the RIPL into our copy of SR (k1) as the new IPL.  */
 	      if (!cfun->machine->keep_interrupts_masked_p
 		  && cfun->machine->int_mask == INT_MASK_EIC)
-		emit_insn (gen_insvsi (gen_rtx_REG (SImode, K1_REG_NUM),
-				       GEN_INT (6),
+		{
+		  emit_insn (gen_insvsi (gen_rtx_REG (SImode, K1_REG_NUM),
+				       TARGET_MCU ? GEN_INT (7) : GEN_INT (6),
 				       GEN_INT (SR_IPL),
 				       gen_rtx_REG (SImode, K0_REG_NUM)));
+		  if (TARGET_MCU)
+		    {
+		      emit_insn (gen_lshrsi3 (gen_rtx_REG (SImode, K0_REG_NUM),
+					gen_rtx_REG (SImode, K0_REG_NUM),
+					GEN_INT (7)));
+		      emit_insn (gen_insvsi (gen_rtx_REG (SImode, K1_REG_NUM),
+				       GEN_INT (1),
+				       GEN_INT (SR_IPL+8),
+				       gen_rtx_REG (SImode, K0_REG_NUM)));
+		    }
+		}
 
 	      /* Clear all interrupt mask bits up to and including the
 		 handler's interrupt line.  */
@@ -21649,9 +21790,13 @@ mips_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
 static bool
-mips_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
-			       rtx op1, const vec_perm_indices &sel)
+mips_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+			       rtx target, rtx op0, rtx op1,
+			       const vec_perm_indices &sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   struct expand_vec_perm_d d;
   int i, nelt, which;
   unsigned char orig_perm[MAX_VECT_LEN];

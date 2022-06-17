@@ -818,4 +818,3 @@ void test13840() nothrow
 }
 
 // Add more tests regarding inferences later.
-

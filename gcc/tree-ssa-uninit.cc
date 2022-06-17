@@ -797,6 +797,9 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
     {
       ++argno;
 
+      if (argno > nargs)
+	break;
+
       if (!POINTER_TYPE_P (argtype))
 	continue;
 

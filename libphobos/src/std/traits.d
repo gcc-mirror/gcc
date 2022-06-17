@@ -788,7 +788,8 @@ private template fqnType(T,
                 ~ (attrs & FA.trusted ? " @trusted" : "")
                 ~ (attrs & FA.safe ? " @safe" : "")
                 ~ (attrs & FA.nogc ? " @nogc" : "")
-                ~ (attrs & FA.return_ ? " return" : "");
+                ~ (attrs & FA.return_ ? " return" : "")
+                ~ (attrs & FA.live ? " @live" : "");
     }
 
     string addQualifiers(string typeString,
@@ -1422,6 +1423,11 @@ if (isCallable!func)
             enum val = "val" ~ (name == "val" ? "_" : "");
             enum ptr = "ptr" ~ (name == "ptr" ? "_" : "");
             mixin("
+                enum hasDefaultArg = (PT[i .. i+1] " ~ args ~ ") { return true; };
+            ");
+            static if (is(typeof(hasDefaultArg())))
+            {
+                mixin("
                 // workaround scope escape check, see
                 // https://issues.dlang.org/show_bug.cgi?id=16582
                 // should use return scope once available
@@ -1432,10 +1438,9 @@ if (isCallable!func)
                     auto " ~ val ~ " = " ~ args ~ "[0];
                     auto " ~ ptr ~ " = &" ~ val ~ ";
                     return *" ~ ptr ~ ";
-                };
-            ");
-            static if (is(typeof(get())))
+                };");
                 enum Get = get();
+            }
             else
                 alias Get = void;
                 // If default arg doesn't exist, returns void instead.
@@ -1481,6 +1486,17 @@ if (isCallable!func)
     alias Voids = ParameterDefaults!func;
     static assert(Voids.length == 12);
     static foreach (V; Voids) static assert(is(V == void));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=20182
+@safe pure nothrow @nogc unittest
+{
+    struct S
+    {
+        this(ref S) {}
+    }
+
+    static assert(__traits(compiles, ParameterDefaults!(S.__ctor)));
 }
 
 /**
@@ -4823,7 +4839,7 @@ Returns class instance alignment.
 template classInstanceAlignment(T)
 if (is(T == class))
 {
-    alias classInstanceAlignment = maxAlignment!(void*, typeof(T.tupleof));
+    enum classInstanceAlignment = __traits(classInstanceAlignment, T);
 }
 
 ///
@@ -9079,4 +9095,44 @@ enum isCopyable(S) = __traits(isCopyable, S);
     static assert(isCopyable!C1);
     static assert(isCopyable!int);
     static assert(isCopyable!(int[]));
+}
+
+/**
+ * The parameter type deduced by IFTI when an expression of type T is passed as
+ * an argument to a template function.
+ *
+ * For all types other than pointer and slice types, `DeducedParameterType!T`
+ * is the same as `T`. For pointer and slice types, it is `T` with the
+ * outer-most layer of qualifiers dropped.
+ */
+package(std) template DeducedParameterType(T)
+{
+    static if (is(T == U*, U) || is(T == U[], U))
+        alias DeducedParameterType = Unqual!T;
+    else
+        alias DeducedParameterType = T;
+}
+
+@safe unittest
+{
+    static assert(is(DeducedParameterType!(const(int)) == const(int)));
+    static assert(is(DeducedParameterType!(const(int[2])) == const(int[2])));
+
+    static assert(is(DeducedParameterType!(const(int*)) == const(int)*));
+    static assert(is(DeducedParameterType!(const(int[])) == const(int)[]));
+}
+
+@safe unittest
+{
+    static struct NoCopy
+    {
+        @disable this(this);
+    }
+
+    static assert(is(DeducedParameterType!NoCopy == NoCopy));
+}
+
+@safe unittest
+{
+    static assert(is(DeducedParameterType!(inout(int[])) == inout(int)[]));
 }

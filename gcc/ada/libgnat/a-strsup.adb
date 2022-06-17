@@ -1150,6 +1150,14 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
          Result.Data (Position .. Position - 1 + New_Item'Length) :=
            Super_String_Data (New_Item);
          Result.Current_Length := Source.Current_Length;
+         pragma Assert
+           (String'(Super_Slice (Result, 1, Position - 1)) =
+              Super_Slice (Source, 1, Position - 1));
+         pragma Assert
+           (Super_Slice (Result,
+            Position, Position - 1 + New_Item'Length) =
+              New_Item);
+
          return Result;
 
       elsif Position - 1 <= Max_Length - New_Item'Length then
@@ -1157,6 +1165,14 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
          Result.Data (Position .. Position - 1 + New_Item'Length) :=
            Super_String_Data (New_Item);
          Result.Current_Length := Position - 1 + New_Item'Length;
+         pragma Assert
+           (String'(Super_Slice (Result, 1, Position - 1)) =
+              Super_Slice (Source, 1, Position - 1));
+         pragma Assert
+           (Super_Slice (Result,
+            Position, Position - 1 + New_Item'Length) =
+              New_Item);
+
          return Result;
 
       else
@@ -1189,6 +1205,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
          end case;
 
          Result.Current_Length := Max_Length;
+         pragma Assert (Super_Length (Result) = Source.Max_Length);
          return Result;
       end if;
    end Super_Overwrite;
@@ -1226,7 +1243,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                  (New_Item (New_Item'First .. New_Item'Last - Droplen));
 
             when Strings.Left =>
-               if New_Item'Length > Max_Length then
+               if New_Item'Length >= Max_Length then
                   Source.Data (1 .. Max_Length) := Super_String_Data
                     (New_Item
                       (New_Item'Last - Max_Length + 1 .. New_Item'Last));

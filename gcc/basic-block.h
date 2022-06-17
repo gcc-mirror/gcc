@@ -36,7 +36,7 @@ public:
   } insns;
 
   /* Auxiliary info specific to a pass.  */
-  PTR aux;
+  void *aux;
 
   /* Location of any goto implicit in the edge.  */
   location_t goto_locus;
@@ -120,7 +120,7 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
   vec<edge, va_gc> *succs;
 
   /* Auxiliary info specific to a pass.  */
-  PTR GTY ((skip (""))) aux;
+  void *GTY ((skip (""))) aux;
 
   /* Innermost loop containing the block.  */
   class loop *loop_father;
@@ -158,10 +158,7 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
 /* This ensures that struct gimple_bb_info is smaller than
    struct rtl_bb_info, so that inlining the former into basic_block_def
    is the better choice.  */
-typedef int __assert_gimple_bb_smaller_rtl_bb
-              [(int) sizeof (struct rtl_bb_info)
-               - (int) sizeof (struct gimple_bb_info)];
-
+STATIC_ASSERT (sizeof (rtl_bb_info) >= sizeof (gimple_bb_info));
 
 #define BB_FREQ_MAX 10000
 

@@ -61,7 +61,7 @@ with Stylesw;        use Stylesw;
 with Uintp;          use Uintp;
 with Uname;          use Uname;
 
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 
 pragma Warnings (Off, Sem_Util);
 --  Suppress warnings of unused with for Sem_Util (used only in asserts)
@@ -380,22 +380,22 @@ package body Sem is
             Analyze_Arithmetic_Op (N);
 
          when N_Op_Eq =>
-            Analyze_Equality_Op (N);
+            Analyze_Comparison_Equality_Op (N);
 
          when N_Op_Expon =>
             Analyze_Arithmetic_Op (N);
 
          when N_Op_Ge =>
-            Analyze_Comparison_Op (N);
+            Analyze_Comparison_Equality_Op (N);
 
          when N_Op_Gt =>
-            Analyze_Comparison_Op (N);
+            Analyze_Comparison_Equality_Op (N);
 
          when N_Op_Le =>
-            Analyze_Comparison_Op (N);
+            Analyze_Comparison_Equality_Op (N);
 
          when N_Op_Lt =>
-            Analyze_Comparison_Op (N);
+            Analyze_Comparison_Equality_Op (N);
 
          when N_Op_Minus =>
             Analyze_Unary_Op (N);
@@ -407,7 +407,7 @@ package body Sem is
             Analyze_Arithmetic_Op (N);
 
          when N_Op_Ne =>
-            Analyze_Equality_Op (N);
+            Analyze_Comparison_Equality_Op (N);
 
          when N_Op_Not =>
             Analyze_Negation (N);
@@ -1062,7 +1062,7 @@ package body Sem is
    procedure Initialize is
       Next : Suppress_Stack_Entry_Ptr;
 
-      procedure Free is new Unchecked_Deallocation
+      procedure Free is new Ada.Unchecked_Deallocation
         (Suppress_Stack_Entry, Suppress_Stack_Entry_Ptr);
 
    begin

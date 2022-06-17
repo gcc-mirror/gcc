@@ -75,6 +75,11 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_AS_TLS 0
 #endif
 
+/* Define this if the target has no hardware divide instructions.  */
+#if !TARGET_DIV32
+#define TARGET_HAS_NO_HW_DIVIDE
+#endif
+
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()					\
@@ -499,7 +504,7 @@ enum reg_class
    used for this purpose since all function arguments are pushed on
    the stack.  */
 #define FUNCTION_ARG_REGNO_P(N)						\
-  ((N) >= GP_OUTGOING_ARG_FIRST && (N) <= GP_OUTGOING_ARG_LAST)
+  IN_RANGE ((N), GP_OUTGOING_ARG_FIRST, GP_OUTGOING_ARG_LAST)
 
 /* Record the number of argument words seen so far, along with a flag to
    indicate whether these are incoming arguments.  (FUNCTION_INCOMING_ARG

@@ -113,7 +113,7 @@ class text_range_label : public range_label
  public:
   text_range_label (const char *text) : m_text (text) {}
 
-  label_text get_text (unsigned /*range_idx*/) const FINAL OVERRIDE
+  label_text get_text (unsigned /*range_idx*/) const final override
   {
     return label_text::borrow (m_text);
   }
@@ -159,7 +159,7 @@ class range_label_for_type_mismatch : public range_label
   {
   }
 
-  label_text get_text (unsigned range_idx) const OVERRIDE;
+  label_text get_text (unsigned range_idx) const override;
 
  protected:
   tree m_labelled_type;
@@ -178,7 +178,7 @@ class maybe_range_label_for_tree_type_mismatch : public range_label
   {
   }
 
-  label_text get_text (unsigned range_idx) const FINAL OVERRIDE;
+  label_text get_text (unsigned range_idx) const final override;
 
  private:
   tree m_expr;

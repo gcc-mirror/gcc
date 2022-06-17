@@ -1060,6 +1060,10 @@ package body Ada.Containers.Red_Black_Trees.Generic_Operations is
 
    function Vet (Tree : Tree_Type; Node : Node_Access) return Boolean is
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if Node = null then
          return True;
       end if;

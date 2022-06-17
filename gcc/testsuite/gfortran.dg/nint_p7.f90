@@ -1,8 +1,7 @@
 ! Fortran
 ! { dg-do compile { target { powerpc*-*-* } } }
 ! { dg-require-effective-target powerpc_vsx_ok } 
-! { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } 
-! { dg-options "-O2 -mcpu=power7 -ffast-math" } 
+! { dg-options "-O2 -mdejagnu-cpu=power7 -ffast-math" } 
 ! { dg-final { scan-assembler-times "xsrdpi" 2 } } 
 
 	subroutine test_nint(x4,x8)

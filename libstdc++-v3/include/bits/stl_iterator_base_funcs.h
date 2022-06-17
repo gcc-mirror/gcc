@@ -63,6 +63,7 @@
 
 #include <bits/concept_check.h>
 #include <debug/assertions.h>
+#include <bits/stl_iterator_base_types.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

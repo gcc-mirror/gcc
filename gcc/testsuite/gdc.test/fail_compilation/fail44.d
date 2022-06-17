@@ -18,4 +18,3 @@ void Foo()
     foo[i] = bar[i];
   }
 }
-

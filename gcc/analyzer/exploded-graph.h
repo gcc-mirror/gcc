@@ -47,12 +47,12 @@ class impl_region_model_context : public region_model_context
 			     uncertainty_t *uncertainty,
 			     logger *logger = NULL);
 
-  bool warn (pending_diagnostic *d) FINAL OVERRIDE;
-  void add_note (pending_note *pn) FINAL OVERRIDE;
-  void on_svalue_leak (const svalue *) OVERRIDE;
+  bool warn (pending_diagnostic *d) final override;
+  void add_note (pending_note *pn) final override;
+  void on_svalue_leak (const svalue *) override;
   void on_liveness_change (const svalue_set &live_svalues,
-			   const region_model *model) FINAL OVERRIDE;
-  logger *get_logger () FINAL OVERRIDE
+			   const region_model *model) final override;
+  logger *get_logger () final override
   {
     return m_logger.get_logger ();
   }
@@ -63,35 +63,35 @@ class impl_region_model_context : public region_model_context
 
   void on_condition (const svalue *lhs,
 		     enum tree_code op,
-		     const svalue *rhs) FINAL OVERRIDE;
+		     const svalue *rhs) final override;
 
-  void on_unknown_change (const svalue *sval, bool is_mutable) FINAL OVERRIDE;
+  void on_unknown_change (const svalue *sval, bool is_mutable) final override;
 
-  void on_phi (const gphi *phi, tree rhs) FINAL OVERRIDE;
+  void on_phi (const gphi *phi, tree rhs) final override;
 
   void on_unexpected_tree_code (tree t,
-				const dump_location_t &loc) FINAL OVERRIDE;
+				const dump_location_t &loc) final override;
 
-  void on_escaped_function (tree fndecl) FINAL OVERRIDE;
+  void on_escaped_function (tree fndecl) final override;
 
-  uncertainty_t *get_uncertainty () FINAL OVERRIDE;
+  uncertainty_t *get_uncertainty () final override;
 
-  void purge_state_involving (const svalue *sval) FINAL OVERRIDE;
+  void purge_state_involving (const svalue *sval) final override;
 
-  void bifurcate (custom_edge_info *info) FINAL OVERRIDE;
-  void terminate_path () FINAL OVERRIDE;
-  const extrinsic_state *get_ext_state () const FINAL OVERRIDE
+  void bifurcate (custom_edge_info *info) final override;
+  void terminate_path () final override;
+  const extrinsic_state *get_ext_state () const final override
   {
     return &m_ext_state;
   }
   bool get_malloc_map (sm_state_map **out_smap,
 		       const state_machine **out_sm,
-		       unsigned *out_sm_idx) FINAL OVERRIDE;
+		       unsigned *out_sm_idx) final override;
   bool get_taint_map (sm_state_map **out_smap,
 		       const state_machine **out_sm,
-		       unsigned *out_sm_idx) FINAL OVERRIDE;
+		       unsigned *out_sm_idx) final override;
 
-  const gimple *get_stmt () const OVERRIDE { return m_stmt; }
+  const gimple *get_stmt () const override { return m_stmt; }
 
   exploded_graph *m_eg;
   log_user m_logger;
@@ -205,7 +205,7 @@ class exploded_node : public dnode<eg_traits>
 
   const char * get_dot_fillcolor () const;
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
-    const FINAL OVERRIDE;
+    const final override;
   void dump_dot_id (pretty_printer *pp) const;
 
   void dump_to_pp (pretty_printer *pp, const extrinsic_state &ext_state) const;
@@ -343,7 +343,7 @@ class exploded_edge : public dedge<eg_traits>
 		 custom_edge_info *custom_info);
   ~exploded_edge ();
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
-    const FINAL OVERRIDE;
+    const final override;
   void dump_dot_label (pretty_printer *pp) const;
 
   json::object *to_json () const;
@@ -374,7 +374,7 @@ public:
     m_is_returning_call (is_returning_call)
   {}
 
-  void print (pretty_printer *pp) const FINAL OVERRIDE
+  void print (pretty_printer *pp) const final override
   {
     if (m_is_returning_call)
       pp_string (pp, "dynamic_return");
@@ -384,10 +384,10 @@ public:
 
   bool update_model (region_model *model,
 		     const exploded_edge *eedge,
-		     region_model_context *ctxt) const FINAL OVERRIDE;
+		     region_model_context *ctxt) const final override;
 
   void add_events_to_path (checker_path *emission_path,
-			   const exploded_edge &eedge) const FINAL OVERRIDE;
+			   const exploded_edge &eedge) const final override;
 private:
   const gcall *m_dynamic_call;
   const bool m_is_returning_call;
@@ -406,17 +406,17 @@ public:
     m_longjmp_call (longjmp_call)
   {}
 
-  void print (pretty_printer *pp) const FINAL OVERRIDE
+  void print (pretty_printer *pp) const final override
   {
     pp_string (pp, "rewind");
   }
 
   bool update_model (region_model *model,
 		     const exploded_edge *eedge,
-		     region_model_context *ctxt) const FINAL OVERRIDE;
+		     region_model_context *ctxt) const final override;
 
   void add_events_to_path (checker_path *emission_path,
-			   const exploded_edge &eedge) const FINAL OVERRIDE;
+			   const exploded_edge &eedge) const final override;
 
   const program_point &get_setjmp_point () const
   {
@@ -1000,6 +1000,8 @@ public:
 
   const region_model &get_model () const { return m_model; }
   const auto_sbitmap &get_snodes_visited () const { return m_snodes_visited; }
+
+  void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
 
 private:
   region_model m_model;

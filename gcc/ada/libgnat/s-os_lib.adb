@@ -1602,15 +1602,15 @@ package body System.OS_Lib is
       SIGKILL : constant := 9;
       SIGINT  : constant := 2;
 
-      procedure C_Kill (Pid : Process_Id; Sig_Num : Integer; Close : Integer);
+      procedure C_Kill (Pid : Process_Id; Sig_Num : Integer);
       pragma Import (C, C_Kill, "__gnat_kill");
 
    begin
       if Pid /= Invalid_Pid then
          if Hard_Kill then
-            C_Kill (Pid, SIGKILL, 1);
+            C_Kill (Pid, SIGKILL);
          else
-            C_Kill (Pid, SIGINT, 1);
+            C_Kill (Pid, SIGINT);
          end if;
       end if;
    end Kill;

@@ -2647,6 +2647,14 @@ The mode is intended to be used as a means to help validate the expected
 object size, for example in functions that call @code{__builtin_object_size}.
 @xref{Object Size Checking}.
 
+Note that the @code{access} attribute merely specifies how an object
+referenced by the pointer argument can be accessed; it does not imply that
+an access @strong{will} happen.  Also, the @code{access} attribute does not
+imply the attribute @code{nonnull}; it may be appropriate to add both attributes
+at the declaration of a function that unconditionally manipulates a buffer via
+a pointer argument.  See the @code{nonnull} attribute for more information and
+caveats.
+
 @item alias ("@var{target}")
 @cindex @code{alias} function attribute
 The @code{alias} attribute causes the declaration to be emitted as an alias
@@ -13447,7 +13455,7 @@ There are also built-in versions of the ISO C99 functions
 @code{expl}, @code{fabsf}, @code{fabsl}, @code{floorf}, @code{floorl},
 @code{fmodf}, @code{fmodl}, @code{frexpf}, @code{frexpl}, @code{ldexpf},
 @code{ldexpl}, @code{log10f}, @code{log10l}, @code{logf}, @code{logl},
-@code{modfl}, @code{modf}, @code{powf}, @code{powl}, @code{sinf},
+@code{modfl}, @code{modff}, @code{powf}, @code{powl}, @code{sinf},
 @code{sinhf}, @code{sinhl}, @code{sinl}, @code{sqrtf}, @code{sqrtl},
 @code{tanf}, @code{tanhf}, @code{tanhl} and @code{tanl}
 that are recognized in any mode since ISO C90 reserves these names for
@@ -13512,7 +13520,7 @@ exceptions handling functions @code{fegetround}, @code{feclearexcept} and
 @code{feraiseexcept}.  They may not be available for all targets, and because
 they need close interaction with libc internal values, they may not be available
 for all target libcs, but in all cases they will gracefully fallback to libc
-calls.  This built-in functions appear both with and without the
+calls.  These built-in functions appear both with and without the
 @code{__builtin_} prefix.
 
 @deftypefn {Built-in Function} void *__builtin_alloca (size_t size)
@@ -21827,6 +21835,9 @@ Intel Knights Landing CPU.
 @item knm
 Intel Knights Mill CPU.
 
+@item lujiazui
+ZHAOXIN lujiazui CPU.
+
 @item amdfam10h
 AMD Family 10h CPU.
 
@@ -25139,7 +25150,7 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 
 @item __has_trivial_assign (type)
 If @code{type} is @code{const}- qualified or is a reference type then
-the trait is @code{false}.  Otherwise if @code{__is_pod (type)} is
+the trait is @code{false}.  Otherwise if @code{__is_trivial (type)} is
 @code{true} then the trait is @code{true}, else if @code{type} is
 a cv-qualified class or union type with a trivial copy assignment
 ([class.copy]) then the trait is @code{true}, else it is @code{false}.
@@ -25147,7 +25158,7 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
 
 @item __has_trivial_copy (type)
-If @code{__is_pod (type)} is @code{true} or @code{type} is a reference
+If @code{__is_trivial (type)} is @code{true} or @code{type} is a reference
 type then the trait is @code{true}, else if @code{type} is a cv class
 or union type with a trivial copy constructor ([class.copy]) then the trait
 is @code{true}, else it is @code{false}.  Requires: @code{type} shall be
@@ -25155,7 +25166,7 @@ a complete type, (possibly cv-qualified) @code{void}, or an array of unknown
 bound.
 
 @item __has_trivial_constructor (type)
-If @code{__is_pod (type)} is @code{true} then the trait is @code{true},
+If @code{__is_trivial (type)} is @code{true} then the trait is @code{true},
 else if @code{type} is a cv-qualified class or union type (or array thereof)
 with a trivial default constructor ([class.ctor]) then the trait is @code{true},
 else it is @code{false}.
@@ -25163,7 +25174,7 @@ Requires: @code{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
 
 @item __has_trivial_destructor (type)
-If @code{__is_pod (type)} is @code{true} or @code{type} is a reference type
+If @code{__is_trivial (type)} is @code{true} or @code{type} is a reference type
 then the trait is @code{true}, else if @code{type} is a cv class or union
 type (or array thereof) with a trivial destructor ([class.dtor]) then
 the trait is @code{true}, else it is @code{false}.

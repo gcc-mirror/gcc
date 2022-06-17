@@ -28,4 +28,3 @@ class TestMembers(TemplateArg)
 void main()
 {
 }
-

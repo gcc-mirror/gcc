@@ -1351,7 +1351,6 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
       unsigned j;
 
       bb = bbs[i];
-      bb->aux = 0;
 
       auto_vec<basic_block> dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
       FOR_EACH_VEC_ELT (dom_bbs, j, dominated)

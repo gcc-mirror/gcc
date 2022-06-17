@@ -3612,6 +3612,9 @@ AC_DEFUN([GLIBCXX_ENABLE_LOCK_POLICY], [
     dnl Why don't we check 8-byte CAS for sparc64, where _Atomic_word is long?!
     dnl New targets should only check for CAS for the _Atomic_word type.
     AC_TRY_COMPILE([
+    #if defined __riscv
+    # error "Defaulting to mutex-based locks for ABI compatibility"
+    #endif
     #if ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
     # error "No 2-byte compare-and-swap"
     #elif ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
@@ -5003,18 +5006,41 @@ elf64) elfsize=64 ;;
 esac
 BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
 
-  ALLOC_FILE=alloc.lo
-  AC_SUBST(ALLOC_FILE)
-  VIEW_FILE=read.lo
-  AC_SUBST(VIEW_FILE)
-
   AC_MSG_CHECKING([whether to build libbacktrace support])
-  if test "$enable_libstdcxx_backtrace" == "auto"; then
+  if test "$enable_libstdcxx_backtrace" = "auto"; then
     enable_libstdcxx_backtrace=no
   fi
-  if test "$enable_libstdcxx_backtrace" == "yes"; then
+  if test "$enable_libstdcxx_backtrace" = "yes"; then
     BACKTRACE_SUPPORTED=1
-    BACKTRACE_USES_MALLOC=1
+
+    AC_CHECK_HEADERS(sys/mman.h)
+    case "${host}" in
+      *-*-msdosdjgpp) # DJGPP has sys/man.h, but no mmap
+	have_mmap=no ;;
+      *-*-*)
+	have_mmap="$ac_cv_header_sys_mman_h" ;;
+    esac
+
+    if test "$have_mmap" = "no"; then
+      VIEW_FILE=read.lo
+      ALLOC_FILE=alloc.lo
+    else
+      VIEW_FILE=mmapio.lo
+      AC_PREPROC_IFELSE([AC_LANG_SOURCE([
+    #include <sys/mman.h>
+    #if !defined(MAP_ANONYMOUS) && !defined(MAP_ANON)
+      #error no MAP_ANONYMOUS
+    #endif
+    ])], [ALLOC_FILE=mmap.lo], [ALLOC_FILE=alloc.lo])
+    fi
+    AC_SUBST(VIEW_FILE)
+    AC_SUBST(ALLOC_FILE)
+
+    BACKTRACE_USES_MALLOC=0
+    if test "$ALLOC_FILE" = "alloc.lo"; then
+      BACKTRACE_USES_MALLOC=1
+    fi
+
     if test "$ac_has_gthreads" = "yes"; then
       BACKTRACE_SUPPORTS_THREADS=1
     else
@@ -5031,7 +5057,7 @@ BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
     BACKTRACE_SUPPORTS_THREADS=0
   fi
   AC_MSG_RESULT($enable_libstdcxx_backtrace)
-  GLIBCXX_CONDITIONAL(ENABLE_BACKTRACE, [test "$enable_libstdcxx_backtrace" != no])
+  GLIBCXX_CONDITIONAL(ENABLE_BACKTRACE, [test "$enable_libstdcxx_backtrace" = yes])
 ])
 
 # Macros from the top-level gcc directory.

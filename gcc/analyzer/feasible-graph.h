@@ -91,7 +91,7 @@ public:
   }
 
   void dump_dot (graphviz_out *gv,
-		 const dump_args_t &args) const FINAL OVERRIDE;
+		 const dump_args_t &args) const final override;
 
   const feasibility_state &get_state () const { return m_state; }
   const region_model &get_model () const { return m_state.get_model (); }
@@ -123,7 +123,7 @@ public:
   ~infeasible_node () { delete m_rc; }
 
   void dump_dot (graphviz_out *gv,
-		 const dump_args_t &args) const FINAL OVERRIDE;
+		 const dump_args_t &args) const final override;
 
 private:
   rejected_constraint *m_rc;
@@ -135,7 +135,7 @@ class base_feasible_edge : public dedge<fg_traits>
 {
  public:
   void dump_dot (graphviz_out *gv,
-		 const dump_args_t &args) const FINAL OVERRIDE;
+		 const dump_args_t &args) const final override;
 
   const exploded_edge *get_inner_edge () const { return m_inner_edge; }
 
@@ -197,11 +197,17 @@ class feasible_graph : public digraph <fg_traits>
 
   exploded_path *make_epath (feasible_node *fnode) const;
 
+  void dump_feasible_path (const feasible_node &dst_fnode,
+			   const char *filename) const;
+
   unsigned get_num_infeasible () const { return m_num_infeasible; }
 
   void log_stats (logger *logger) const;
 
 private:
+  void dump_feasible_path (const feasible_node &dst_fnode,
+			   pretty_printer *pp) const;
+
   unsigned m_num_infeasible;
 };
 

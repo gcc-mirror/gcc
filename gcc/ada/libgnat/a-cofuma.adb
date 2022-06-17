@@ -34,6 +34,9 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    use Key_Containers;
    use Element_Containers;
 
+   package Conversions is new Signed_Conversions (Int => Count_Type);
+   use Conversions;
+
    ---------
    -- "=" --
    ---------
@@ -129,6 +132,13 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
       end loop;
       return True;
    end Elements_Equal_Except;
+
+   ---------------
+   -- Empty_Map --
+   ---------------
+
+   function Empty_Map return Map is
+      ((others =>  <>));
 
    ---------
    -- Get --
@@ -238,9 +248,9 @@ package body Ada.Containers.Functional_Maps with SPARK_Mode => Off is
    -- Length --
    ------------
 
-   function Length (Container : Map) return Count_Type is
+   function Length (Container : Map) return Big_Natural is
    begin
-      return Length (Container.Elements);
+      return To_Big_Integer (Length (Container.Elements));
    end Length;
 
    ------------

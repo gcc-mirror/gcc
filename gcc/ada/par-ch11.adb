@@ -234,7 +234,7 @@ package body Ch11 is
       end if;
 
       if Token = Tok_When then
-         Error_Msg_GNAT_Extension ("raise when statement");
+         Error_Msg_GNAT_Extension ("raise when statement", Token_Ptr);
 
          Mutate_Nkind (Raise_Node, N_Raise_When_Statement);
 

@@ -7,4 +7,3 @@ void main() {
     funcC!(bool)(1.0);
     foo!int(0);
 }
-

@@ -20,6 +20,7 @@
 #include <string>
 #include <memory_resource>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 // C++17 24.3.5 [basic.string.hash]
 // If S is one of these string types, SV is the corresponding string view type,
@@ -54,9 +55,24 @@ test02()
 #endif
 }
 
+template<typename C>
+using String
+  = std::basic_string<C, std::char_traits<C>, __gnu_test::SimpleAllocator<C>>;
+
+void
+test03()
+{
+  // LWG 3705. Hashability shouldn't depend on basic_string's allocator
+  VERIFY( test(String<char>("a narrow string")) );
+  VERIFY( test(String<char16_t>(u"a utf-16 string")) );
+  VERIFY( test(String<char32_t>(U"a utf-32 string")) );
+  VERIFY( test(String<wchar_t>(L"a wide string")) );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

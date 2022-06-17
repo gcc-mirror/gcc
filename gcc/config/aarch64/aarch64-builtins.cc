@@ -716,6 +716,7 @@ static GTY(()) struct aarch64_simd_type_info aarch64_simd_types [] = {
 };
 #undef ENTRY
 
+static machine_mode aarch64_simd_tuple_modes[ARM_NEON_H_TYPES_LAST][3];
 static GTY(()) tree aarch64_simd_tuple_types[ARM_NEON_H_TYPES_LAST][3];
 
 static GTY(()) tree aarch64_simd_intOI_type_node = NULL_TREE;
@@ -831,7 +832,7 @@ aarch64_lookup_simd_builtin_type (machine_mode mode,
 				  enum aarch64_type_qualifiers q)
 {
   int i;
-  int nelts = sizeof (aarch64_simd_types) / sizeof (aarch64_simd_types[0]);
+  int nelts = ARRAY_SIZE (aarch64_simd_types);
 
   /* Non-poly scalar modes map to standard types not in the table.  */
   if (q != qualifier_poly && !VECTOR_MODE_P (mode))
@@ -844,7 +845,7 @@ aarch64_lookup_simd_builtin_type (machine_mode mode,
 	return aarch64_simd_types[i].itype;
       if (aarch64_simd_tuple_types[i][0] != NULL_TREE)
 	for (int j = 0; j < 3; j++)
-	  if (TYPE_MODE (aarch64_simd_tuple_types[i][j]) == mode
+	  if (aarch64_simd_tuple_modes[i][j] == mode
 	      && aarch64_simd_types[i].q == q)
 	    return aarch64_simd_tuple_types[i][j];
     }
@@ -868,7 +869,7 @@ static void
 aarch64_init_simd_builtin_types (void)
 {
   int i;
-  int nelts = sizeof (aarch64_simd_types) / sizeof (aarch64_simd_types[0]);
+  int nelts = ARRAY_SIZE (aarch64_simd_types);
   tree tdecl;
 
   /* Init all the element types built by the front-end.  */
@@ -1297,8 +1298,10 @@ register_tuple_type (unsigned int num_vectors, unsigned int type_index)
     }
 
   unsigned int alignment
-	= (known_eq (GET_MODE_SIZE (type->mode), 16) ? 128 : 64);
-  gcc_assert (TYPE_MODE_RAW (array_type) == TYPE_MODE (array_type)
+    = known_eq (GET_MODE_SIZE (type->mode), 16) ? 128 : 64;
+  machine_mode tuple_mode = TYPE_MODE_RAW (array_type);
+  gcc_assert (VECTOR_MODE_P (tuple_mode)
+	      && TYPE_MODE (array_type) == tuple_mode
 	      && TYPE_ALIGN (array_type) == alignment);
 
   tree field = build_decl (input_location, FIELD_DECL,
@@ -1309,14 +1312,13 @@ register_tuple_type (unsigned int num_vectors, unsigned int type_index)
 						  make_array_slice (&field,
 								    1));
   gcc_assert (TYPE_MODE_RAW (t) == TYPE_MODE (t)
-	      && TYPE_ALIGN (t) == alignment);
+	      && (flag_pack_struct
+		  || maximum_field_alignment
+		  || (TYPE_MODE_RAW (t) == tuple_mode
+		      && TYPE_ALIGN (t) == alignment)));
 
-  if (num_vectors == 2)
-    aarch64_simd_tuple_types[type_index][0] = t;
-  else if (num_vectors == 3)
-    aarch64_simd_tuple_types[type_index][1] = t;
-  else if (num_vectors == 4)
-    aarch64_simd_tuple_types[type_index][2] = t;
+  aarch64_simd_tuple_modes[type_index][num_vectors - 2] = tuple_mode;
+  aarch64_simd_tuple_types[type_index][num_vectors - 2] = t;
 }
 
 static bool
@@ -1325,10 +1327,31 @@ aarch64_scalar_builtin_type_p (aarch64_simd_type t)
   return (t == Poly8_t || t == Poly16_t || t == Poly64_t || t == Poly128_t);
 }
 
+/* Enable AARCH64_FL_* flags EXTRA_FLAGS on top of the base Advanced SIMD
+   set.  */
+aarch64_simd_switcher::aarch64_simd_switcher (unsigned int extra_flags)
+  : m_old_isa_flags (aarch64_isa_flags),
+    m_old_general_regs_only (TARGET_GENERAL_REGS_ONLY)
+{
+  /* Changing the ISA flags should be enough here.  We shouldn't need to
+     pay the compile-time cost of a full target switch.  */
+  aarch64_isa_flags = AARCH64_FL_FP | AARCH64_FL_SIMD | extra_flags;
+  global_options.x_target_flags &= ~MASK_GENERAL_REGS_ONLY;
+}
+
+aarch64_simd_switcher::~aarch64_simd_switcher ()
+{
+  if (m_old_general_regs_only)
+    global_options.x_target_flags |= MASK_GENERAL_REGS_ONLY;
+  aarch64_isa_flags = m_old_isa_flags;
+}
+
 /* Implement #pragma GCC aarch64 "arm_neon.h".  */
 void
 handle_arm_neon_h (void)
 {
+  aarch64_simd_switcher simd;
+
   /* Register the AdvSIMD vector tuple types.  */
   for (unsigned int i = 0; i < ARM_NEON_H_TYPES_LAST; i++)
     for (unsigned int count = 2; count <= 4; ++count)
@@ -1411,7 +1434,7 @@ aarch64_init_builtin_rsqrt (void)
   };
 
   builtin_decls_data *bdd = bdda;
-  builtin_decls_data *bdd_end = bdd + (sizeof (bdda) / sizeof (builtin_decls_data));
+  builtin_decls_data *bdd_end = bdd + (ARRAY_SIZE (bdda));
 
   for (; bdd < bdd_end; bdd++)
   {
@@ -1641,6 +1664,14 @@ aarch64_init_ls64_builtins (void)
       = aarch64_general_add_builtin (data[i].name, data[i].type, data[i].code);
 }
 
+/* Implement #pragma GCC aarch64 "arm_acle.h".  */
+void
+handle_arm_acle_h (void)
+{
+  if (TARGET_LS64)
+    aarch64_init_ls64_builtins ();
+}
+
 /* Initialize fpsr fpcr getters and setters.  */
 
 static void
@@ -1703,8 +1734,10 @@ aarch64_general_init_builtins (void)
 
   aarch64_init_bf16_types ();
 
-  if (TARGET_SIMD)
+  {
+    aarch64_simd_switcher simd;
     aarch64_init_simd_builtins ();
+  }
 
   aarch64_init_crc32_builtins ();
   aarch64_init_builtin_rsqrt ();
@@ -1730,9 +1763,6 @@ aarch64_general_init_builtins (void)
 
   if (TARGET_MEMTAG)
     aarch64_init_memtag_builtins ();
-
-  if (TARGET_LS64)
-    aarch64_init_ls64_builtins ();
 }
 
 /* Implement TARGET_BUILTIN_DECL for the AARCH64_BUILTIN_GENERAL group.  */

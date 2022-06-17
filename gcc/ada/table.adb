@@ -30,7 +30,7 @@ with System;  use System;
 
 with System.Memory; use System.Memory;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 pragma Elaborate_All (Output);
 
@@ -58,8 +58,8 @@ package body Table is
       --  internally in this package, and cannot never result in any instances
       --  of improperly aliased pointers for the client of the package.
 
-      function To_Address is new Unchecked_Conversion (Table_Ptr, Address);
-      function To_Pointer is new Unchecked_Conversion (Address, Table_Ptr);
+      function To_Address is new Ada.Unchecked_Conversion (Table_Ptr, Address);
+      function To_Pointer is new Ada.Unchecked_Conversion (Address, Table_Ptr);
 
       pragma Warnings (On);
 

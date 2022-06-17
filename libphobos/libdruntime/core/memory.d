@@ -31,14 +31,14 @@
         $(LI Maintain another reference to that same data in another thread that the
         GC does know about.)
         $(LI Disable GC collection cycles while that thread is active with $(LREF disable)/$(LREF enable).)
-        $(LI Register the thread with the GC using $(REF thread_attachThis, core,thread)/$(REF thread_detachThis, core,thread).)
+        $(LI Register the thread with the GC using $(REF thread_attachThis, core,thread,osthread)/$(REF thread_detachThis, core,thread,threadbase).)
         )
    )
    )
  *
  * Notes_to_implementors:
  * $(UL
- * $(LI On POSIX systems, the signals SIGUSR1 and SIGUSR2 are reserved
+ * $(LI On POSIX systems, the signals `SIGRTMIN` and `SIGRTMIN + 1` are reserved
  *   by this module for use in the garbage collector implementation.
  *   Typically, they will be used to stop and resume other threads
  *   when performing a collection, but an implementation may choose

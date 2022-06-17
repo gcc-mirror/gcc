@@ -421,14 +421,12 @@ do_jump (tree exp, rtx_code_label *if_false_label,
       break;
 #endif
 
-    case NOP_EXPR:
+    CASE_CONVERT:
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == COMPONENT_REF
           || TREE_CODE (TREE_OPERAND (exp, 0)) == BIT_FIELD_REF
           || TREE_CODE (TREE_OPERAND (exp, 0)) == ARRAY_REF
           || TREE_CODE (TREE_OPERAND (exp, 0)) == ARRAY_RANGE_REF)
         goto normal;
-      /* FALLTHRU */
-    case CONVERT_EXPR:
       /* If we are narrowing the operand, we have to do the compare in the
          narrower mode.  */
       if ((TYPE_PRECISION (TREE_TYPE (exp))

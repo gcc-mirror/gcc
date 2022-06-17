@@ -166,6 +166,11 @@ package Namet is
    --  does a save/restore on Name_Len and Name_Buffer (1 .. Name_Len). This
    --  works in part because Name_Len is default-initialized to 0.
 
+   procedure Destroy_Global_Name_Buffer with Inline;
+   --  Overwrites Global_Name_Buffer with meaningless data. This can be used in
+   --  the transition away from Global_Name_Buffer, in order to detect cases
+   --  where we incorrectly rely on the global.
+
    -----------------------------
    -- Types for Namet Package --
    -----------------------------
@@ -422,11 +427,15 @@ package Namet is
    --  Write_Name writes the characters of the specified name using the
    --  standard output procedures in package Output. The name is written
    --  in encoded form (i.e. including Uhh, Whhh, Qx, _op as they appear in
-   --  the name table). If Id is Error_Name, or No_Name, no text is output.
+   --  the name table). If Id is Error_Name or No_Name, no text is output.
 
    procedure Write_Name_Decoded (Id : Valid_Name_Id);
    --  Like Write_Name, except that the name written is the decoded name, as
    --  described for Append_Decoded.
+
+   procedure Write_Name_For_Debug (Id : Name_Id; Quote : String := "");
+   --  Like Write_Name, except it tries to be robust in the presence of invalid
+   --  data, and valid names are surrounded by Quote.
 
    function Name_Entries_Count return Nat;
    --  Return current number of entries in the names table
@@ -537,14 +546,8 @@ package Namet is
 
    procedure wn (Id : Name_Id);
    pragma Export (Ada, wn);
-   --  This routine is intended for debugging use only (i.e. it is intended to
-   --  be called from the debugger). It writes the characters of the specified
-   --  name using the standard output procedures in package Output, followed by
-   --  a new line. The name is written in encoded form (i.e. including Uhh,
-   --  Whhh, Qx, _op as they appear in the name table). If Id is Error_Name,
-   --  No_Name, or invalid an appropriate string is written (<Error_Name>,
-   --  <No_Name>, <invalid name>). Unlike Write_Name, this call does not affect
-   --  the contents of Name_Buffer or Name_Len.
+   --  Write Id to standard output, followed by a newline. Intended to be
+   --  called in the debugger.
 
 private
 

@@ -62,7 +62,9 @@ void test03()
 
   // target_type and target() functions
   const function<int(float)>& f1c = f1;
+#if __cpp_rtti
   VERIFY( typeid(long(*)(double)) == f1.target_type() );
+#endif
   VERIFY( f2.target<long(*)(double)>() != 0 );
   VERIFY( *f2.target<long(*)(double)>() == &truncate_double );
   VERIFY( f1c.target<long(*)(double)>() != 0 );

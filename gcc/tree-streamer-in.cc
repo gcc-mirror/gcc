@@ -190,7 +190,6 @@ unpack_ts_real_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
   unsigned i;
   REAL_VALUE_TYPE r;
-  REAL_VALUE_TYPE *rp;
 
   /* Clear all bits of the real value type so that we can later do
      bitwise comparisons to see if two values are the same.  */
@@ -204,9 +203,7 @@ unpack_ts_real_cst_value_fields (struct bitpack_d *bp, tree expr)
   for (i = 0; i < SIGSZ; i++)
     r.sig[i] = (unsigned long) bp_unpack_value (bp, HOST_BITS_PER_LONG);
 
-  rp = ggc_alloc<real_value> ();
-  memcpy (rp, &r, sizeof (REAL_VALUE_TYPE));
-  TREE_REAL_CST_PTR (expr) = rp;
+  memcpy (TREE_REAL_CST_PTR (expr), &r, sizeof (REAL_VALUE_TYPE));
 }
 
 

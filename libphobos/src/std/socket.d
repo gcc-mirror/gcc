@@ -122,6 +122,12 @@ version (StdUnittest)
                 writefln("Ignoring std.socket(%d) test failure (likely caused by flaky environment): %s", line, e.msg);
         }
     }
+
+    // Without debug=std_socket, still compile the slow tests, just don't run them.
+    debug (std_socket)
+        private enum runSlowTests = true;
+    else
+        private enum runSlowTests = false;
 }
 
 /// Base exception thrown by `std.socket`.
@@ -169,7 +175,7 @@ string formatSocketError(int err) @trusted
     else
     version (Windows)
     {
-        return sysErrorString(err);
+        return generateSysErrorMsg(err);
     }
     else
         return "Socket error " ~ to!string(err);
@@ -842,7 +848,7 @@ private string formatGaiError(int err) @trusted
 {
     version (Windows)
     {
-        return sysErrorString(err);
+        return generateSysErrorMsg(err);
     }
     else
     {
@@ -1698,7 +1704,7 @@ public:
         }
     });
 
-    debug (std_socket)
+    if (runSlowTests)
     softUnittest({
         // test failing reverse lookup
         const InternetAddress ia = new InternetAddress("255.255.255.255", 80);
@@ -2633,7 +2639,7 @@ private:
 
     @safe unittest
     {
-        debug (std_socket)
+        if (runSlowTests)
         softUnittest({
             import std.datetime.stopwatch;
             import std.typecons;
@@ -3000,7 +3006,7 @@ public:
      * Returns: The number of bytes actually sent, or `Socket.ERROR` on
      * failure.
      */
-    ptrdiff_t send(const(void)[] buf, SocketFlags flags) @trusted
+    ptrdiff_t send(scope const(void)[] buf, SocketFlags flags) @trusted
     {
         static if (is(typeof(MSG_NOSIGNAL)))
         {
@@ -3014,7 +3020,7 @@ public:
     }
 
     /// ditto
-    ptrdiff_t send(const(void)[] buf)
+    ptrdiff_t send(scope const(void)[] buf)
     {
         return send(buf, SocketFlags.NONE);
     }
@@ -3026,7 +3032,7 @@ public:
      * Returns: The number of bytes actually sent, or `Socket.ERROR` on
      * failure.
      */
-    ptrdiff_t sendTo(const(void)[] buf, SocketFlags flags, Address to) @trusted
+    ptrdiff_t sendTo(scope const(void)[] buf, SocketFlags flags, Address to) @trusted
     {
         static if (is(typeof(MSG_NOSIGNAL)))
         {
@@ -3042,7 +3048,7 @@ public:
     }
 
     /// ditto
-    ptrdiff_t sendTo(const(void)[] buf, Address to)
+    ptrdiff_t sendTo(scope const(void)[] buf, Address to)
     {
         return sendTo(buf, SocketFlags.NONE, to);
     }
@@ -3050,7 +3056,7 @@ public:
 
     //assumes you connect()ed
     /// ditto
-    ptrdiff_t sendTo(const(void)[] buf, SocketFlags flags) @trusted
+    ptrdiff_t sendTo(scope const(void)[] buf, SocketFlags flags) @trusted
     {
         static if (is(typeof(MSG_NOSIGNAL)))
         {
@@ -3065,7 +3071,7 @@ public:
 
     //assumes you connect()ed
     /// ditto
-    ptrdiff_t sendTo(const(void)[] buf)
+    ptrdiff_t sendTo(scope const(void)[] buf)
     {
         return sendTo(buf, SocketFlags.NONE);
     }
@@ -3077,7 +3083,7 @@ public:
      * Returns: The number of bytes actually received, `0` if the remote side
      * has closed the connection, or `Socket.ERROR` on failure.
      */
-    ptrdiff_t receive(void[] buf, SocketFlags flags) @trusted
+    ptrdiff_t receive(scope void[] buf, SocketFlags flags) @trusted
     {
         version (Windows)         // Does not use size_t
         {
@@ -3094,7 +3100,7 @@ public:
     }
 
     /// ditto
-    ptrdiff_t receive(void[] buf)
+    ptrdiff_t receive(scope void[] buf)
     {
         return receive(buf, SocketFlags.NONE);
     }
@@ -3106,7 +3112,7 @@ public:
      * Returns: The number of bytes actually received, `0` if the remote side
      * has closed the connection, or `Socket.ERROR` on failure.
      */
-    ptrdiff_t receiveFrom(void[] buf, SocketFlags flags, ref Address from) @trusted
+    ptrdiff_t receiveFrom(scope void[] buf, SocketFlags flags, ref Address from) @trusted
     {
         if (!buf.length)         //return 0 and don't think the connection closed
             return 0;
@@ -3129,7 +3135,7 @@ public:
 
 
     /// ditto
-    ptrdiff_t receiveFrom(void[] buf, ref Address from)
+    ptrdiff_t receiveFrom(scope void[] buf, ref Address from)
     {
         return receiveFrom(buf, SocketFlags.NONE, from);
     }
@@ -3137,7 +3143,7 @@ public:
 
     //assumes you connect()ed
     /// ditto
-    ptrdiff_t receiveFrom(void[] buf, SocketFlags flags) @trusted
+    ptrdiff_t receiveFrom(scope void[] buf, SocketFlags flags) @trusted
     {
         if (!buf.length)         //return 0 and don't think the connection closed
             return 0;
@@ -3158,7 +3164,7 @@ public:
 
     //assumes you connect()ed
     /// ditto
-    ptrdiff_t receiveFrom(void[] buf)
+    ptrdiff_t receiveFrom(scope void[] buf)
     {
         return receiveFrom(buf, SocketFlags.NONE);
     }
@@ -3169,7 +3175,7 @@ public:
      * Returns: The number of bytes written to `result`.
      * The length, in bytes, of the actual result - very different from getsockopt()
      */
-    int getOption(SocketOptionLevel level, SocketOption option, void[] result) @trusted
+    int getOption(SocketOptionLevel level, SocketOption option, scope void[] result) @trusted
     {
         socklen_t len = cast(socklen_t) result.length;
         if (_SOCKET_ERROR == .getsockopt(sock, cast(int) level, cast(int) option, result.ptr, &len))
@@ -3217,7 +3223,7 @@ public:
     }
 
     /// Set a socket option.
-    void setOption(SocketOptionLevel level, SocketOption option, void[] value) @trusted
+    void setOption(SocketOptionLevel level, SocketOption option, scope void[] value) @trusted
     {
         if (_SOCKET_ERROR == .setsockopt(sock, cast(int) level,
                                         cast(int) option, value.ptr, cast(uint) value.length))
@@ -3647,55 +3653,55 @@ class UdpSocket: Socket
             {
                 checkAttributes!q{@trusted}; assert(0);
             }
-            @trusted ptrdiff_t send(const(void)[] buf, SocketFlags flags)
+            @trusted ptrdiff_t send(scope const(void)[] buf, SocketFlags flags)
             {
                 checkAttributes!q{@trusted}; assert(0);
             }
-            @safe ptrdiff_t send(const(void)[] buf)
+            @safe ptrdiff_t send(scope const(void)[] buf)
             {
                 checkAttributes!q{@safe}; assert(0);
             }
-            @trusted ptrdiff_t sendTo(const(void)[] buf, SocketFlags flags, Address to)
+            @trusted ptrdiff_t sendTo(scope const(void)[] buf, SocketFlags flags, Address to)
             {
                 checkAttributes!q{@trusted}; assert(0);
             }
-            @safe ptrdiff_t sendTo(const(void)[] buf, Address to)
+            @safe ptrdiff_t sendTo(scope const(void)[] buf, Address to)
             {
                 checkAttributes!q{@safe}; assert(0);
             }
-            @trusted ptrdiff_t sendTo(const(void)[] buf, SocketFlags flags)
+            @trusted ptrdiff_t sendTo(scope const(void)[] buf, SocketFlags flags)
             {
                 checkAttributes!q{@trusted}; assert(0);
             }
-            @safe ptrdiff_t sendTo(const(void)[] buf)
+            @safe ptrdiff_t sendTo(scope const(void)[] buf)
             {
                 checkAttributes!q{@safe}; assert(0);
             }
-            @trusted ptrdiff_t receive(void[] buf, SocketFlags flags)
+            @trusted ptrdiff_t receive(scope void[] buf, SocketFlags flags)
             {
                 checkAttributes!q{@trusted}; assert(0);
             }
-            @safe ptrdiff_t receive(void[] buf)
+            @safe ptrdiff_t receive(scope void[] buf)
             {
                 checkAttributes!q{@safe}; assert(0);
             }
-            @trusted ptrdiff_t receiveFrom(void[] buf, SocketFlags flags, ref Address from)
+            @trusted ptrdiff_t receiveFrom(scope void[] buf, SocketFlags flags, ref Address from)
             {
                 checkAttributes!q{@trusted}; assert(0);
             }
-            @safe ptrdiff_t receiveFrom(void[] buf, ref Address from)
+            @safe ptrdiff_t receiveFrom(scope void[] buf, ref Address from)
             {
                 checkAttributes!q{@safe}; assert(0);
             }
-            @trusted ptrdiff_t receiveFrom(void[] buf, SocketFlags flags)
+            @trusted ptrdiff_t receiveFrom(scope void[] buf, SocketFlags flags)
             {
                 checkAttributes!q{@trusted}; assert(0);
             }
-            @safe ptrdiff_t receiveFrom(void[] buf)
+            @safe ptrdiff_t receiveFrom(scope void[] buf)
             {
                 checkAttributes!q{@safe}; assert(0);
             }
-            @trusted int getOption(SocketOptionLevel level, SocketOption option, void[] result)
+            @trusted int getOption(SocketOptionLevel level, SocketOption option, scope void[] result)
             {
                 checkAttributes!q{@trusted}; assert(0);
             }
@@ -3711,7 +3717,7 @@ class UdpSocket: Socket
             {
                 checkAttributes!q{@trusted};
             }
-            @trusted void setOption(SocketOptionLevel level, SocketOption option, void[] value)
+            @trusted void setOption(SocketOptionLevel level, SocketOption option, scope void[] value)
             {
                 checkAttributes!q{@trusted};
             }
@@ -3793,11 +3799,11 @@ Socket[2] socketPair() @trusted
 ///
 @safe unittest
 {
-    immutable ubyte[] data = [1, 2, 3, 4];
+    immutable ubyte[4] data = [1, 2, 3, 4];
     auto pair = socketPair();
     scope(exit) foreach (s; pair) s.close();
 
-    pair[0].send(data);
+    pair[0].send(data[]);
 
     auto buf = new ubyte[data.length];
     pair[1].receive(buf);

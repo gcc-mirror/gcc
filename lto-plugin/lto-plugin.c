@@ -122,7 +122,7 @@ struct plugin_symtab
 struct plugin_objfile
 {
   int found;
-  int offload;
+  bool offload;
   simple_object_read *objfile;
   struct plugin_symtab *out;
   const struct ld_plugin_input_file *file;
@@ -205,7 +205,7 @@ static const char *link_output_name = NULL;
 
 /* This indicates link_output_name already contains the dot of the
    suffix, so we can skip it in extensions.  */
-static int skip_in_suffix = 0;
+static bool skip_in_suffix = false;
 
 /* The version of gold being used, or -1 if not gold.  The number is
    MAJOR * 100 + MINOR.  */
@@ -636,7 +636,8 @@ exec_lto_wrapper (char *argv[])
   /* Write argv to a file to avoid a command line that is too long
      Save the file locally on save-temps.  */
   const char *suffix = ".lto_wrapper_args";
-  suffix += skip_in_suffix;
+  if (skip_in_suffix)
+    suffix++;
   if (save_temps && link_output_name)
     arguments_file_name = concat (link_output_name, suffix, NULL);
   else
@@ -1139,7 +1140,7 @@ process_offload_section (void *data, const char *name, off_t offset, off_t len)
   if (startswith (name, ".gnu.offload_lto_.opts"))
     {
       struct plugin_objfile *obj = (struct plugin_objfile *) data;
-      obj->offload = 1;
+      obj->offload = true;
       return 0;
     }
 
@@ -1182,7 +1183,7 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   *claimed = 0;
   obj.file = file;
   obj.found = 0;
-  obj.offload = 0;
+  obj.offload = false;
   obj.out = &lto_file.symtab;
   errmsg = NULL;
   obj.objfile = simple_object_start_read (file->fd, file->offset, LTO_SEGMENT_NAME,
@@ -1220,7 +1221,7 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
     simple_object_find_sections (obj.objfile, process_offload_section,
 				 &obj, &err);
 
-  if (obj.found == 0 && obj.offload == 0)
+  if (obj.found == 0 && !obj.offload)
     goto err;
 
   if (obj.found > 1)
@@ -1257,10 +1258,10 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   /* If this is an LTO file without offload, and it is the first LTO file, save
      the pointer to the last offload file in the list.  Further offload LTO
      files will be inserted after it, if any.  */
-  if (*claimed && obj.offload == 0 && offload_files_last_lto == NULL)
+  if (*claimed && !obj.offload && offload_files_last_lto == NULL)
     offload_files_last_lto = offload_files_last;
 
-  if (obj.offload == 1)
+  if (obj.offload)
     {
       /* Add file to the list.  The order must be exactly the same as the final
 	 order after recompilation and linking, otherwise host and target tables
@@ -1547,7 +1548,7 @@ onload (struct ld_plugin_tv *tv)
 	  assert (escapes == 0);
 	  assert (ticks == oddticks);
 	  assert (q - link_output_name == len - 1);
-	  skip_in_suffix = 1;
+	  skip_in_suffix = true;
 	}
     }
 

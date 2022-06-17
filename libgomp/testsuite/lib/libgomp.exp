@@ -28,6 +28,7 @@ load_gcc_lib scanasm.exp
 load_gcc_lib scandump.exp
 load_gcc_lib scanlang.exp
 load_gcc_lib scanrtl.exp
+load_gcc_lib scansarif.exp
 load_gcc_lib scantree.exp
 load_gcc_lib scanltranstree.exp
 load_gcc_lib scanoffload.exp
@@ -188,23 +189,6 @@ proc libgomp_init { args } {
 		    "additional_flags=-L${atomic_library_path}"
 		append always_ld_library_path ":${atomic_library_path}"
 	    }
-	}
-	global cuda_driver_include
-	global cuda_driver_lib
-	if { $cuda_driver_include != "" } {
-	    # Stop gfortran from freaking out:
-	    # Warning: Nonexistent include directory "[...]"
-	    if {[file exists $cuda_driver_include]} {
-		lappend ALWAYS_CFLAGS "additional_flags=-I$cuda_driver_include"
-	    }
-	}
-	if { $cuda_driver_lib != "" } {
-	    lappend ALWAYS_CFLAGS "additional_flags=-L$cuda_driver_lib"
-	    append always_ld_library_path ":$cuda_driver_lib"
-	}
-	global hsa_runtime_lib
-	if { $hsa_runtime_lib != "" } {
-	    append always_ld_library_path ":$hsa_runtime_lib"
 	}
     }
 

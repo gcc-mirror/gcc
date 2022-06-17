@@ -95,3 +95,6 @@ snapshot_ret:
 	.comm	zmm_regs,2048,64
 	.comm	x87_regs,128,32
 	.comm   volatile_var,8,8
+#ifdef __linux__
+	.section	.note.GNU-stack,"",@progbits
+#endif

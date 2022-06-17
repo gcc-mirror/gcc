@@ -8,4 +8,3 @@ struct S {
 struct tmp(alias fns) {
     alias fun = fns!int;
 }
-

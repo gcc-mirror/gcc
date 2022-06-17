@@ -2587,7 +2587,7 @@ points_to_local_or_readonly_memory_p (tree t)
 	  && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl))
 	  && t == ssa_default_def (cfun, DECL_RESULT (current_function_decl)))
 	return true;
-      return !ptr_deref_may_alias_global_p (t);
+      return !ptr_deref_may_alias_global_p (t, false);
     }
   if (TREE_CODE (t) == ADDR_EXPR)
     return refs_local_or_readonly_memory_p (TREE_OPERAND (t, 0));

@@ -18,7 +18,8 @@
 // { dg-do compile { target c++17 } }
 
 #include <unordered_set>
-#include <memory_resource>
+
+std::pmr::unordered_set<int> c{1, 2, 3, 4};
 
 struct X { };
 struct Hash { std::size_t operator()(X) const { return 0; } };

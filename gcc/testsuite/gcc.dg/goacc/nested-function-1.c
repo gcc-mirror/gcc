@@ -2,6 +2,8 @@
 /* See gcc/testsuite/gfortran.dg/goacc/nested-function-1.f90 for the Fortran
    version.  */
 
+/* { dg-additional-options "--param=openacc-kernels=decompose" } */
+
 /* { dg-additional-options "-fopt-info-all-omp" } */
 
 /* { dg-additional-options "--param=openacc-privatization=noisy" }
@@ -42,6 +44,11 @@ int main ()
 #pragma acc kernels loop /* { dg-line l_compute_loop[incr c_compute_loop] } */ \
   gang(num:local_arg) worker(local_arg) vector(local_arg) \
   wait async(local_arg)
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'local_arg' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute_loop$c_compute_loop }
+       { dg-note {variable 'local_arg' made addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {variable 'local_arg\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {variable 'local_i\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     /* { dg-note {variable 'local_i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     for (local_i = 0; local_i < N; ++local_i)
@@ -61,6 +68,11 @@ int main ()
 #pragma acc kernels loop /* { dg-line l_compute_loop[incr c_compute_loop] } */ \
   gang(static:local_arg) worker(local_arg) vector(local_arg) \
   wait(local_arg, local_arg + 1, local_arg + 2) async
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'local_arg' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute_loop$c_compute_loop }
+       { dg-note {variable 'local_arg' already made addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {variable 'local_arg\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {variable 'local_i\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     /* { dg-note {variable 'local_i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     for (local_i = 0; local_i < N; ++local_i)
@@ -87,6 +99,11 @@ int main ()
 #pragma acc kernels loop /* { dg-line l_compute_loop[incr c_compute_loop] } */ \
   gang(num:nonlocal_arg) worker(nonlocal_arg) vector(nonlocal_arg) \
   wait async(nonlocal_arg)
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'nonlocal_arg' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute_loop$c_compute_loop }
+       { dg-note {variable 'nonlocal_arg' made addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {variable 'nonlocal_arg\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {variable 'nonlocal_i\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     /* { dg-note {variable 'nonlocal_i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     for (nonlocal_i = 0; nonlocal_i < N; ++nonlocal_i)
@@ -106,6 +123,11 @@ int main ()
 #pragma acc kernels loop /* { dg-line l_compute_loop[incr c_compute_loop] } */ \
   gang(static:nonlocal_arg) worker(nonlocal_arg) vector(nonlocal_arg) \
   wait(nonlocal_arg, nonlocal_arg + 1, nonlocal_arg + 2) async
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'nonlocal_arg' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute_loop$c_compute_loop }
+       { dg-note {variable 'nonlocal_arg' already made addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {variable 'nonlocal_arg\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
+    /* { dg-note {variable 'nonlocal_i\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     /* { dg-note {variable 'nonlocal_i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute_loop$c_compute_loop } */
     for (nonlocal_i = 0; nonlocal_i < N; ++nonlocal_i)

@@ -7671,8 +7671,7 @@ Expression::comparison(Translate_context* context, Type* result_type,
 	  && left_type->array_type()->length() == NULL)
 	{
 	  Array_type* at = left_type->array_type();
-          bool is_lvalue = false;
-          left = at->get_value_pointer(context->gogo(), left, is_lvalue);
+          left = at->get_value_pointer(context->gogo(), left);
 	}
       else if (left_type->interface_type() != NULL)
 	{
@@ -9276,7 +9275,7 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
   Type* unsafe_ptr_type = Type::make_pointer_type(Type::make_void_type());
   Expression* a1 = Expression::make_type_descriptor(element_type, loc);
   Expression* a2 = Expression::make_temporary_reference(s1tmp, loc);
-  a2 = slice_type->array_type()->get_value_pointer(gogo, a2, false);
+  a2 = slice_type->array_type()->get_value_pointer(gogo, a2);
   a2 = Expression::make_cast(unsafe_ptr_type, a2, loc);
   Expression* a3 = Expression::make_temporary_reference(l1tmp, loc);
   Expression* a4 = Expression::make_temporary_reference(c1tmp, loc);
@@ -13848,9 +13847,8 @@ Array_index_expression::do_get_backend(Translate_context* context)
 	}
       else
 	{
-	  Expression* valptr =
-              array_type->get_value_pointer(gogo, this->array_,
-                                            this->is_lvalue_);
+	  Expression* valptr = array_type->get_value_pointer(gogo,
+							     this->array_);
 	  Bexpression* ptr = valptr->get_backend(context);
           ptr = gogo->backend()->pointer_offset_expression(ptr, start, loc);
 
@@ -13891,8 +13889,7 @@ Array_index_expression::do_get_backend(Translate_context* context)
   Bexpression* offset = gogo->backend()->conditional_expression(bfn, int_btype,
 								cond, zero,
 								start, loc);
-  Expression* valptr = array_type->get_value_pointer(gogo, this->array_,
-                                                     this->is_lvalue_);
+  Expression* valptr = array_type->get_value_pointer(gogo, this->array_);
   Bexpression* val = valptr->get_backend(context);
   val = gogo->backend()->pointer_offset_expression(val, offset, loc);
 
@@ -17266,6 +17263,8 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
   Location location = this->location();
   Unordered_map(unsigned int, std::vector<Expression*>) st;
   Unordered_map(unsigned int, std::vector<Expression*>) nt;
+  bool saw_false = false;
+  bool saw_true = false;
   if (this->vals_ != NULL)
     {
       if (!this->has_keys_)
@@ -17300,6 +17299,7 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 	    continue;
 	  std::string sval;
 	  Numeric_constant nval;
+	  bool bval;
 	  if ((*p)->string_constant_value(&sval)) // Check string keys.
 	    {
 	      unsigned int h = Gogo::hash_string(sval, 0);
@@ -17372,6 +17372,19 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
 		  // Add this new numeric key to the vector indexed by h.
 		  mit->second.push_back(*p);
 		}
+	    }
+	  else if ((*p)->boolean_constant_value(&bval))
+	    {
+	      if ((bval && saw_true) || (!bval && saw_false))
+		{
+		  go_error_at((*p)->location(),
+			      "duplicate key in map literal");
+		  return Expression::make_error(location);
+		}
+	      if (bval)
+		saw_true = true;
+	      else
+		saw_false = true;
 	    }
 	}
     }

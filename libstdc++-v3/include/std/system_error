@@ -77,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++17
   /// @}
 
-  inline namespace _V2 {
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 
   /** @addtogroup diagnostics
    * @{
@@ -85,13 +85,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /** Abstract base class for types defining a category of error codes.
    *
-   * An error category defines a context that give meaning to the integer
+   * An error category defines a context that gives meaning to the integer
    * stored in an `error_code` or `error_condition` object. For example,
    * the standard `errno` constants such a `EINVAL` and `ENOMEM` are
    * associated with the "generic" category and other OS-specific error
    * numbers are associated with the "system" category, but a user-defined
    * category might give different meanings to the same numerical values.
    *
+   * A user-defined category can override the `equivalent` member functions
+   * to define correspondence between errors in different categories.
+   * For example, a category for errors from disk I/O could consider some
+   * of its error numbers equivalent to ENOSPC and ENOENT in the generic
+   * category.
+   *
+   * @headerfile system_error
    * @since C++11
    */
   class error_category
@@ -104,6 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     error_category(const error_category&) = delete;
     error_category& operator=(const error_category&) = delete;
 
+    /// A string that identifies the error category.
     virtual const char*
     name() const noexcept = 0;
 
@@ -118,6 +126,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_message(int) const;
 
   public:
+    /// A description of the error condition corresponding to the number.
     _GLIBCXX_DEFAULT_ABI_TAG
     virtual string
     message(int) const = 0;
@@ -131,44 +140,56 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   public:
+    /// Return an error_condition corresponding to `i` in this category.
     virtual error_condition
     default_error_condition(int __i) const noexcept;
 
+    /// Test whether `cond` corresponds to `i` for this category.
     virtual bool
     equivalent(int __i, const error_condition& __cond) const noexcept;
 
+    /// Test whether `code` corresponds to `i` for this category.
     virtual bool
     equivalent(const error_code& __code, int __i) const noexcept;
 
+    /// An error_category only compares equal to itself.
+    [[__nodiscard__]]
     bool
     operator==(const error_category& __other) const noexcept
     { return this == &__other; }
 
+    /// Ordered comparison that defines a total order for error categories.
 #if __cpp_lib_three_way_comparison
+    [[nodiscard]]
     strong_ordering
     operator<=>(const error_category& __rhs) const noexcept
     { return std::compare_three_way()(this, &__rhs); }
 #else
     bool
-    operator!=(const error_category& __other) const noexcept
-    { return this != &__other; }
-
-    bool
     operator<(const error_category& __other) const noexcept
     { return less<const error_category*>()(this, &__other); }
+
+    bool
+    operator!=(const error_category& __other) const noexcept
+    { return this != &__other; }
 #endif
   };
 
   // DR 890.
 
   /// Error category for `errno` error codes.
-  _GLIBCXX_CONST const error_category& generic_category() noexcept;
+  [[__nodiscard__, __gnu__::__const__]]
+  const error_category&
+  generic_category() noexcept;
 
   /// Error category for other error codes defined by the OS.
-  _GLIBCXX_CONST const error_category& system_category() noexcept;
+  [[__nodiscard__, __gnu__::__const__]]
+  const error_category&
+  system_category() noexcept;
 
   /// @}
-  } // end inline namespace
+
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
   /** @addtogroup diagnostics
    * @{
@@ -190,8 +211,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * library might be represented by an HTTP response status code (e.g. 404)
    * and a custom category defined by the library.
    *
+   * @headerfile system_error
    * @since C++11
-   * @ingroup diagnostics
    */
   class error_code
   {
@@ -225,20 +246,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(_ErrorCodeEnum __e) noexcept
       { return *this = make_error_code(__e); }
 
+    /// The error value.
+    [[__nodiscard__]]
     int
     value() const noexcept { return _M_value; }
 
+    /// The error category that this error belongs to.
+    [[__nodiscard__]]
     const error_category&
     category() const noexcept { return *_M_cat; }
 
+    /// An `error_condition` for this error's category and value.
     error_condition
     default_error_condition() const noexcept;
 
+    /// The category's description of the value.
     _GLIBCXX_DEFAULT_ABI_TAG
     string
     message() const
     { return category().message(value()); }
 
+    /// Test whether `value()` is non-zero.
+    [[__nodiscard__]]
     explicit operator bool() const noexcept
     { return _M_value != 0; }
 
@@ -248,15 +277,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     const error_category* 	_M_cat;
   };
 
-  // 19.4.2.6 non-member functions
+  // C++11 19.5.2.5 non-member functions
 
-  /// @relates error_code @{
-
+  /** Create an `error_code` representing a standard `errc` condition.
+   *
+   * The `std::errc` constants correspond to `errno` macros and so use the
+   * generic category.
+   *
+   * @relates error_code
+   * @since C++11
+   */
+  [[__nodiscard__]]
   inline error_code
   make_error_code(errc __e) noexcept
   { return error_code(static_cast<int>(__e), generic_category()); }
 
+  /** Ordered comparison for std::error_code.
+   *
+   * This defines a total order by comparing the categories, and then
+   * if they are equal comparing the values.
+   *
+   * @relates error_code
+   * @since C++11
+   */
 #if __cpp_lib_three_way_comparison
+  [[nodiscard]]
   inline strong_ordering
   operator<=>(const error_code& __lhs, const error_code& __rhs) noexcept
   {
@@ -274,12 +319,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 #endif
 
+  /** Write a std::error_code to an ostream.
+   *
+   * @relates error_code
+   * @since C++11
+   */
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __os, const error_code& __e)
     { return (__os << __e.category().name() << ':' << __e.value()); }
-
-  /// @}
 
   error_condition make_error_condition(errc) noexcept;
 
@@ -292,14 +340,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * An `error_condition` represents something that the program can test for,
    * and subsequently take appropriate action.
    *
+   * @headerfile system_error
    * @since C++11
    */
   class error_condition
   {
   public:
+    /// Initialize with a zero (no error) value and the generic category.
     error_condition() noexcept
     : _M_value(0), _M_cat(&generic_category()) { }
 
+    /// Initialize with the specified value and category.
     error_condition(int __v, const error_category& __cat) noexcept
     : _M_value(__v), _M_cat(&__cat) { }
 
@@ -308,6 +359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       error_condition(_ErrorConditionEnum __e) noexcept
       { *this = make_error_condition(__e); }
 
+    /// Set the value and category.
     void
     assign(int __v, const error_category& __cat) noexcept
     {
@@ -322,22 +374,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(_ErrorConditionEnum __e) noexcept
       { return *this = make_error_condition(__e); }
 
+    /// Reset the value and category to the default-constructed state.
     void
     clear() noexcept
     { assign(0, generic_category()); }
 
-    // 19.4.3.4 observers
+    // C++11 19.5.3.4 observers
+
+    /// The error value.
+    [[__nodiscard__]]
     int
     value() const noexcept { return _M_value; }
 
+    /// The error category that this error belongs to.
+    [[__nodiscard__]]
     const error_category&
     category() const noexcept { return *_M_cat; }
 
+    /// The category's description of the value.
     _GLIBCXX_DEFAULT_ABI_TAG
     string
     message() const
     { return category().message(value()); }
 
+    /// Test whether `value()` is non-zero.
+    [[__nodiscard__]]
     explicit operator bool() const noexcept
     { return _M_value != 0; }
 
@@ -347,42 +408,80 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     const error_category* 	_M_cat;
   };
 
-  // 19.4.3.6 non-member functions
+  // C++11 19.5.3.5 non-member functions
 
-  /// Create an `error_condition` representing a standard `errc` condition.
-  /// @relates error_condition
+  /** Create an `error_condition` representing a standard `errc` condition.
+   *
+   * The `std::errc` constants correspond to `errno` macros and so use the
+   * generic category.
+   *
+   * @relates error_condition
+   * @since C++11
+   */
+  [[__nodiscard__]]
   inline error_condition
   make_error_condition(errc __e) noexcept
   { return error_condition(static_cast<int>(__e), generic_category()); }
 
-  // 19.4.4 Comparison operators
+  // C++11 19.5.4 Comparison operators
 
-  /// @relates error_code
+  /** Equality comparison for std::error_code.
+   *
+   * Returns true only if they have the same category and the same value.
+   *
+   * @relates error_condition
+   * @since C++11
+   */
+  [[__nodiscard__]]
   inline bool
   operator==(const error_code& __lhs, const error_code& __rhs) noexcept
-  { return (__lhs.category() == __rhs.category()
-	    && __lhs.value() == __rhs.value()); }
+  {
+    return __lhs.category() == __rhs.category()
+	     && __lhs.value() == __rhs.value();
+  }
 
-  /// @relates error_code
+  /** Equality comparison for std::error_code and std::error_condition.
+   *
+   * Uses each category's `equivalent` member function to check whether
+   * the values correspond to an equivalent error in that category.
+   *
+   * @relates error_condition
+   * @since C++11
+   */
+  [[__nodiscard__]]
   inline bool
   operator==(const error_code& __lhs, const error_condition& __rhs) noexcept
   {
-    return (__lhs.category().equivalent(__lhs.value(), __rhs)
-	    || __rhs.category().equivalent(__lhs, __rhs.value()));
+    return __lhs.category().equivalent(__lhs.value(), __rhs)
+	     || __rhs.category().equivalent(__lhs, __rhs.value());
   }
 
-  /// @relates error_condition
+  /** Equality comparison for std::error_condition.
+   *
+   * Returns true only if they have the same category and the same value.
+   *
+   * @relates error_condition
+   * @since C++11
+   */
+  [[__nodiscard__]]
   inline bool
   operator==(const error_condition& __lhs,
 	     const error_condition& __rhs) noexcept
   {
-    return (__lhs.category() == __rhs.category()
-	    && __lhs.value() == __rhs.value());
+    return __lhs.category() == __rhs.category()
+	     && __lhs.value() == __rhs.value();
   }
 
+  /** Ordered comparison for std::error_condition.
+   *
+   * This defines a total order by comparing the categories, and then
+   * if they are equal comparing the values.
+   *
+   * @relates error_condition
+   * @since C++11
+   */
 #if __cpp_lib_three_way_comparison
-  /// Define an ordering for error_condition objects.
-  /// @relates error_condition
+  [[nodiscard]]
   inline strong_ordering
   operator<=>(const error_condition& __lhs,
 	      const error_condition& __rhs) noexcept
@@ -392,8 +491,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __lhs.value() <=> __rhs.value();
   }
 #else
-  /// Define an ordering for error_condition objects.
-  /// @relates error_condition
   inline bool
   operator<(const error_condition& __lhs,
 	    const error_condition& __rhs) noexcept
@@ -440,6 +537,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Typically used to report errors from the operating system and other
    * low-level APIs.
    *
+   * @headerfile system_error
    * @since C++11
    * @ingroup exceptions
    */

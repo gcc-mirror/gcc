@@ -1,3 +1,12 @@
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* go-lang.cc (go_get_sarif_source_language): New.
+	(LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (go.tags): Look at *.cc.
+
 2022-02-13  Ian Lance Taylor  <iant@golang.org>
 
 	* gospec.cc: Revert 2022-02-09 change:

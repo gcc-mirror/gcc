@@ -90,6 +90,8 @@ typedef long long MUL_TYPE;
 #define MIN(x, y)  ((x) <= (y) ? (x) : (y))
 #define MAX(x, y)  ((x) >= (y) ? (x) : (y))
 
+#define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))
+
 /* For this program a unary op is one which has only one nonconstant
    operand.  So shift left by 5 is considered unary.  */
 typedef MUL_TYPE (*unary_op_func) (MUL_TYPE);
@@ -462,7 +464,7 @@ find_sequences (ExpressionTree &s, ExpressionTreeMap &best_solution)
   const Operator *const prev_op = s.m_exprs[num_vals - 1].m_op;
   const int prev_top_index = (prev_op != NULL) ? prev_op->m_top_index : -1;
 
-  for (size_t f = 0; f < sizeof ops / sizeof ops[0]; f++)
+  for (size_t f = 0; f < ARRAY_SIZE (ops); f++)
     {
       const Operator *const op = &ops[f];
 
@@ -564,7 +566,7 @@ create_insn_code_compression_table ()
   printf ("const enum insn_code %s_multiply_insn_seq_decode_opcode[] = {\n"
 	  "  CODE_FOR_nothing /* must be first */ ", ARCH);
 
-  for (size_t i = 0; i < sizeof ops / sizeof ops[0]; i++)
+  for (size_t i = 0; i < ARRAY_SIZE (ops); i++)
     {
       Operator *op = &ops[i];
       int index = -1;

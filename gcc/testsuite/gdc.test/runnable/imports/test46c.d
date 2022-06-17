@@ -4,4 +4,3 @@ class C(T)
 {
     void foo() { }
 }
-

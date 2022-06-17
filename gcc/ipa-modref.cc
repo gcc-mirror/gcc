@@ -119,10 +119,10 @@ public:
   fnspec_summaries_t (symbol_table *symtab)
       : call_summary <fnspec_summary *> (symtab) {}
   /* Hook that is called by summary when an edge is duplicated.  */
-  virtual void duplicate (cgraph_edge *,
-			  cgraph_edge *,
-			  fnspec_summary *src,
-			  fnspec_summary *dst)
+  void duplicate (cgraph_edge *,
+		  cgraph_edge *,
+		  fnspec_summary *src,
+		  fnspec_summary *dst) final override
   {
     dst->fnspec = xstrdup (src->fnspec);
   }
@@ -194,10 +194,10 @@ public:
   escape_summaries_t (symbol_table *symtab)
       : call_summary <escape_summary *> (symtab) {}
   /* Hook that is called by summary when an edge is duplicated.  */
-  virtual void duplicate (cgraph_edge *,
-			  cgraph_edge *,
-			  escape_summary *src,
-			  escape_summary *dst)
+  void duplicate (cgraph_edge *,
+		  cgraph_edge *,
+		  escape_summary *src,
+		  escape_summary *dst) final override
   {
     dst->esc = src->esc.copy ();
   }
@@ -217,11 +217,11 @@ class GTY((user)) modref_summaries
 public:
   modref_summaries (symbol_table *symtab)
       : fast_function_summary <modref_summary *, va_gc> (symtab) {}
-  virtual void insert (cgraph_node *, modref_summary *state);
-  virtual void duplicate (cgraph_node *src_node,
-			  cgraph_node *dst_node,
-			  modref_summary *src_data,
-			  modref_summary *dst_data);
+  void insert (cgraph_node *, modref_summary *state) final override;
+  void duplicate (cgraph_node *src_node,
+		  cgraph_node *dst_node,
+		  modref_summary *src_data,
+		  modref_summary *dst_data) final override;
   static modref_summaries *create_ggc (symbol_table *symtab)
   {
     return new (ggc_alloc_no_dtor<modref_summaries> ())
@@ -241,11 +241,11 @@ public:
   modref_summaries_lto (symbol_table *symtab)
       : fast_function_summary <modref_summary_lto *, va_gc> (symtab),
 	propagated (false) {}
-  virtual void insert (cgraph_node *, modref_summary_lto *state);
-  virtual void duplicate (cgraph_node *src_node,
-			  cgraph_node *dst_node,
-			  modref_summary_lto *src_data,
-			  modref_summary_lto *dst_data);
+  void insert (cgraph_node *, modref_summary_lto *state) final override;
+  void duplicate (cgraph_node *src_node,
+		  cgraph_node *dst_node,
+		  modref_summary_lto *src_data,
+		  modref_summary_lto *dst_data) final override;
   static modref_summaries_lto *create_ggc (symbol_table *symtab)
   {
     return new (ggc_alloc_no_dtor<modref_summaries_lto> ())
@@ -5281,6 +5281,29 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
       if (!ignore_stores)
 	to_info_lto->stores->collapse ();
     }
+  /* Merge side effects and non-determinism.
+     PURE/CONST flags makes functions deterministic and if there is
+     no LOOPING_CONST_OR_PURE they also have no side effects.  */
+  if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
+      || (flags & ECF_LOOPING_CONST_OR_PURE))
+    {
+      if (to_info)
+	{
+	  if (!callee_info || callee_info->side_effects)
+	    to_info->side_effects = true;
+	  if ((!callee_info || callee_info->nondeterministic)
+	      && !ignore_nondeterminism_p (edge->caller->decl, flags))
+	    to_info->nondeterministic = true;
+	}
+      if (to_info_lto)
+	{
+	  if (!callee_info_lto || callee_info_lto->side_effects)
+	    to_info_lto->side_effects = true;
+	  if ((!callee_info_lto || callee_info_lto->nondeterministic)
+	      && !ignore_nondeterminism_p (edge->caller->decl, flags))
+	    to_info_lto->nondeterministic = true;
+	}
+     }
   if (callee_info || callee_info_lto)
     {
       auto_vec <modref_parm_map, 32> parm_map;

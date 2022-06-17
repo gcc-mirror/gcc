@@ -181,6 +181,7 @@ class general_scalar_chain : public scalar_chain
   void convert_reg (rtx_insn *insn, rtx dst, rtx src);
   void make_vector_copies (rtx_insn *, rtx);
   void convert_registers ();
+  rtx convert_compare (rtx op1, rtx op2, rtx_insn *insn);
   int vector_const_cost (rtx exp);
 };
 

@@ -52,8 +52,7 @@ alias wchar_t = __c_wchar_t;
 
 T[] values(T)()
 {
-    T[] values;
-    values ~= T();
+    T[] values = [T()];
     return values;
 }
 
@@ -61,4 +60,3 @@ void main()
 {
     values!wchar_t;
 }
-

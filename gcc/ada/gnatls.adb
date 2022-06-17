@@ -44,6 +44,7 @@ with Snames;
 with Stringt;
 with Switch;      use Switch;
 with Types;       use Types;
+with Uintp;
 
 with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.Command_Line;         use GNAT.Command_Line;
@@ -2023,6 +2024,7 @@ begin
    --  Initialize standard packages
 
    Csets.Initialize;
+   Uintp.Initialize;
    Snames.Initialize;
    Stringt.Initialize;
 

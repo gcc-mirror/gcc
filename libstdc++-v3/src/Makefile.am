@@ -96,6 +96,16 @@ else
 ldbl_alt128_compat_sources =
 endif
 
+if ENABLE_SYMVERS_GNU_NAMESPACE
+cxx0x_compat_sources =
+else
+cxx0x_compat_sources = \
+	compatibility-atomic-c++0x.cc \
+	compatibility-c++0x.cc \
+	compatibility-chrono.cc \
+	compatibility-condvar.cc \
+	compatibility-thread-c++0x.cc
+endif
 
 parallel_compat_sources = \
 	compatibility-parallel_list.cc  compatibility-parallel_list-2.cc
@@ -108,11 +118,7 @@ cxx98_sources = \
 	${ldbl_compat_sources}
 
 cxx11_sources = \
-	compatibility-c++0x.cc \
-	compatibility-atomic-c++0x.cc \
-	compatibility-thread-c++0x.cc \
-	compatibility-chrono.cc \
-	compatibility-condvar.cc \
+	${cxx0x_compat_sources} \
 	${ldbl_alt128_compat_sources}
 
 libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
@@ -278,7 +284,9 @@ CXXLINK = \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXX) \
 	$(VTV_CXXLINKFLAGS) \
-	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) $(LTLDFLAGS) -o $@
+	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_CXXFLAGS) \
+	$(LTLDFLAGS) $(LTLIBICONV) \
+	-o $@
 
 # Symbol versioning for shared libraries.
 if ENABLE_SYMVERS

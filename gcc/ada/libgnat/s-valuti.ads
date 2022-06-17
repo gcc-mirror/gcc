@@ -41,8 +41,6 @@ pragma Assertion_Policy (Pre            => Ignore,
                          Post           => Ignore,
                          Contract_Cases => Ignore,
                          Ghost          => Ignore);
-pragma Warnings (Off, "postcondition does not mention function result");
---  True postconditions are used to avoid inlining for GNATprove
 
 with System.Case_Util;
 
@@ -375,6 +373,41 @@ is
    --  This routine must not be called with Str'Last = Positive'Last. There is
    --  no check for this case, the caller must ensure this condition is met.
    pragma Warnings (GNATprove, On, """Ptr"" is not modified");
+
+   --  Bundle Int type with other types, constants and subprograms used in
+   --  ghost code, so that this package can be instantiated once and used
+   --  multiple times as generic formal for a given Int type.
+   generic
+      type Int is range <>;
+      type Uns is mod <>;
+      type Uns_Option is private;
+
+      Unsigned_Width_Ghost : Natural;
+
+      with function Wrap_Option (Value : Uns) return Uns_Option;
+      with function Only_Decimal_Ghost
+        (Str      : String;
+         From, To : Integer)
+         return Boolean;
+      with function Hexa_To_Unsigned_Ghost (X : Character) return Uns;
+      with function Scan_Based_Number_Ghost
+        (Str      : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0)
+         return Uns_Option;
+      with function Is_Integer_Ghost (Str : String) return Boolean;
+      with procedure Prove_Iter_Scan_Based_Number_Ghost
+        (Str1, Str2 : String;
+         From, To : Integer;
+         Base     : Uns := 10;
+         Acc      : Uns := 0);
+      with procedure Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int);
+      with function Abs_Uns_Of_Int (Val : Int) return Uns;
+      with function Value_Integer (Str : String) return Int;
+
+   package Int_Params is
+   end Int_Params;
 
 private
 

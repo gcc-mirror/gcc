@@ -629,10 +629,13 @@ to the value an expression had upon entry to the subprogram. The
 relevant loop is either identified by the given loop name, or it is the
 innermost enclosing loop when no loop name is given.
 
-A ``Loop_Entry`` attribute can only occur within a
-``Loop_Variant`` or ``Loop_Invariant`` pragma. A common use of
-``Loop_Entry`` is to compare the current value of objects with their
-initial value at loop entry, in a ``Loop_Invariant`` pragma.
+A ``Loop_Entry`` attribute can only occur within an ``Assert``,
+``Assert_And_Cut``, ``Assume``, ``Loop_Variant`` or ``Loop_Invariant`` pragma.
+In addition, such a pragma must be one of the items in the sequence
+of statements of a loop body, or nested inside block statements that
+appear in the sequence of statements of a loop body.
+A common use of ``Loop_Entry`` is to compare the current value of objects with
+their initial value at loop entry, in a ``Loop_Invariant`` pragma.
 
 The effect of using ``X'Loop_Entry`` is the same as declaring
 a constant initialized with the initial value of ``X`` at loop
@@ -1043,7 +1046,7 @@ are relaxed. Instead, the following rules apply:
 * the enclosing machine scalar is defined as the smallest machine
   scalar starting at a position no greater than
   ``position + first_bit / storage_element_size`` and covering
-  storage elements at least up to ``position + (last_bit + storage_element_size - 1) / storage_element_size```
+  storage elements at least up to ``position + (last_bit + storage_element_size - 1) / storage_element_size``
 * the position of the component is interpreted relative to that machine
   scalar.
 

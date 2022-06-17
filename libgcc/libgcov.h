@@ -115,7 +115,6 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define gcov_open __gcov_open
 #define gcov_close __gcov_close
 #define gcov_position __gcov_position
-#define gcov_seek __gcov_seek
 #define gcov_rewrite __gcov_rewrite
 #define gcov_is_error __gcov_is_error
 #define gcov_write_unsigned __gcov_write_unsigned
@@ -236,7 +235,7 @@ struct gcov_info
   gcov_merge_fn merge[GCOV_COUNTERS];  /* merge functions (null for
 					  unused) */
   
-  unsigned n_functions;		/* number of functions */
+  gcov_unsigned_t n_functions;		/* number of functions */
 
 #ifndef IN_GCOV_TOOL
   const struct gcov_fn_info *const *functions; /* pointer to pointers
@@ -343,11 +342,9 @@ extern int __gcov_execve (const char *, char  *const [], char *const [])
   ATTRIBUTE_HIDDEN;
 
 /* Functions that only available in libgcov.  */
-GCOV_LINKAGE int gcov_open (const char */*name*/) ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE void gcov_write_summary (gcov_unsigned_t /*tag*/,
                                       const struct gcov_summary *)
     ATTRIBUTE_HIDDEN;
-GCOV_LINKAGE void gcov_seek (gcov_position_t /*position*/) ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE void gcov_rewrite (void) ATTRIBUTE_HIDDEN;
 
 /* "Counts" stored in gcda files can be a real counter value, or

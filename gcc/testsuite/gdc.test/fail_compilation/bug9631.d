@@ -108,4 +108,3 @@ void targ()
     void ft2(T)(S, T){}
     ft2(y, 1);
 }
-

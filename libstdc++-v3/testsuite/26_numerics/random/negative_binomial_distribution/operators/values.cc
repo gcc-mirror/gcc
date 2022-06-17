@@ -26,6 +26,14 @@
 #include <functional>
 #include <testsuite_random.h>
 
+// { dg-additional-options "-DSIMULATOR_TEST" { target simulator } }
+
+#ifdef SIMULATOR_TEST
+# define ARGS 100, 1000
+#else
+# define ARGS
+#endif
+
 void test01()
 {
   using namespace __gnu_test;
@@ -34,18 +42,18 @@ void test01()
 
   std::negative_binomial_distribution<> nbd1(5, 0.3);
   auto bnbd1 = std::bind(nbd1, eng);
-  testDiscreteDist(bnbd1, [](int n)
-		   { return negative_binomial_pdf(n, 5, 0.3); } );
+  testDiscreteDist<ARGS>(bnbd1, [](int n)
+			 { return negative_binomial_pdf(n, 5, 0.3); } );
 
   std::negative_binomial_distribution<> nbd2(55, 0.3);
   auto bnbd2 = std::bind(nbd2, eng);
-  testDiscreteDist(bnbd2, [](int n)
-		   { return negative_binomial_pdf(n, 55, 0.3); } );
+  testDiscreteDist<ARGS>(bnbd2, [](int n)
+			 { return negative_binomial_pdf(n, 55, 0.3); } );
 
   std::negative_binomial_distribution<> nbd3(10, 0.75);
   auto bnbd3 = std::bind(nbd3, eng);
-  testDiscreteDist(bnbd3, [](int n)
-		   { return negative_binomial_pdf(n, 10, 0.75); } );
+  testDiscreteDist<ARGS>(bnbd3, [](int n)
+			 { return negative_binomial_pdf(n, 10, 0.75); } );
 }
 
 int main()

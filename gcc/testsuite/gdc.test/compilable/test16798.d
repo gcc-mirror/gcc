@@ -11,4 +11,3 @@ it's a dessert topping
 
 import its.a.floorwax.wax16798;
 import its.a.dessert.topping;
-

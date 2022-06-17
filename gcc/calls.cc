@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-traits.h"
 #include "attribs.h"
 #include "builtins.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "attr-fnspec.h"
 #include "value-query.h"
@@ -201,7 +202,8 @@ mark_stack_region_used (poly_uint64 lower_bound, poly_uint64 upper_bound)
 {
   unsigned HOST_WIDE_INT const_lower, const_upper;
   const_lower = constant_lower_bound (lower_bound);
-  if (upper_bound.is_constant (&const_upper))
+  if (upper_bound.is_constant (&const_upper)
+      && const_upper <= highest_outgoing_arg_in_use)
     for (unsigned HOST_WIDE_INT i = const_lower; i < const_upper; ++i)
       stack_usage_map[i] = 1;
   else
@@ -2093,7 +2095,8 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	  poly_int64 size = 0;
 	  HOST_WIDE_INT const_size = 0;
 	  rtx_insn *before_arg = get_last_insn ();
-	  tree type = TREE_TYPE (args[i].tree_value);
+	  tree tree_value = args[i].tree_value;
+	  tree type = TREE_TYPE (tree_value);
 	  if (RECORD_OR_UNION_TYPE_P (type) && TYPE_TRANSPARENT_AGGR (type))
 	    type = TREE_TYPE (first_field (type));
 	  /* Set non-negative if we must move a word at a time, even if
@@ -2170,6 +2173,25 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	      emit_move_insn (gen_rtx_REG (word_mode, REGNO (reg) + j),
 			      args[i].aligned_regs[j]);
 
+	  /* If we need a single register and the source is a constant
+	     VAR_DECL with a simple constructor, expand that constructor
+	     via a pseudo rather than read from (possibly misaligned)
+	     memory.  PR middle-end/95126.  */
+	  else if (nregs == 1
+		   && partial == 0
+		   && !args[i].pass_on_stack
+		   && VAR_P (tree_value)
+		   && TREE_READONLY (tree_value)
+		   && !TREE_SIDE_EFFECTS (tree_value)
+		   && immediate_const_ctor_p (DECL_INITIAL (tree_value)))
+	    {
+	      rtx target = gen_reg_rtx (word_mode);
+	      store_constructor (DECL_INITIAL (tree_value), target, 0,
+				 int_expr_size (DECL_INITIAL (tree_value)),
+				 false);
+	      reg = gen_rtx_REG (word_mode, REGNO (reg));
+	      emit_move_insn (reg, target);
+	    }
 	  else if (partial == 0 || args[i].pass_on_stack)
 	    {
 	      /* SIZE and CONST_SIZE are 0 for partial arguments and
@@ -3068,6 +3090,7 @@ expand_call (tree exp, rtx target, int ignore)
   for (pass = try_tail_call ? 0 : 1; pass < 2; pass++)
     {
       int sibcall_failure = 0;
+      bool normal_failure = false;
       /* We want to emit any pending stack adjustments before the tail
 	 recursion "call".  That way we know any adjustment after the tail
 	 recursion call can be ignored if we indeed use the tail
@@ -3448,7 +3471,10 @@ expand_call (tree exp, rtx target, int ignore)
 	        {
 	          sorry ("passing too large argument on stack");
 		  /* Don't worry about stack clean-up.  */
-		  flags |= ECF_NORETURN;
+		  if (pass == 0)
+		    sibcall_failure = 1;
+		  else
+		    normal_failure = true;
 		  continue;
 		}
 
@@ -3905,9 +3931,12 @@ expand_call (tree exp, rtx target, int ignore)
 
 	  /* Verify that we've deallocated all the stack we used.  */
 	  gcc_assert ((flags & ECF_NORETURN)
+		      || normal_failure
 		      || known_eq (old_stack_allocated,
 				   stack_pointer_delta
 				   - pending_stack_adjust));
+	  if (normal_failure)
+	    normal_call_insns = NULL;
 	}
 
       /* If something prevents making this a sibling call,

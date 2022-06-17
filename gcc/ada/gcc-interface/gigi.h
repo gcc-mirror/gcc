@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -399,18 +399,7 @@ enum standard_datatypes
   /* Identifier for the name of the Not_Handled_By_Others field.  */
   ADT_not_handled_by_others_name_id,
 
-  /* Types and decls used by the SJLJ exception mechanism.  */
-  ADT_jmpbuf_type,
-  ADT_jmpbuf_ptr_type,
-  ADT_get_jmpbuf_decl,
-  ADT_set_jmpbuf_decl,
-  ADT_get_excptr_decl,
-  ADT_not_handled_by_others_decl,
-  ADT_setjmp_decl,
-  ADT_update_setjmp_buf_decl,
-  ADT_raise_nodefer_decl,
-
-  /* Types and decls used by the ZCX exception mechanism.  */
+  /* Types and decls used by the exception mechanism.  */
   ADT_reraise_zcx_decl,
   ADT_set_exception_parameter_decl,
   ADT_begin_handler_decl,
@@ -469,25 +458,15 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 #define parent_name_id gnat_std_decls[(int) ADT_parent_name_id]
 #define not_handled_by_others_name_id \
 	  gnat_std_decls[(int) ADT_not_handled_by_others_name_id]
-#define jmpbuf_type gnat_std_decls[(int) ADT_jmpbuf_type]
-#define jmpbuf_ptr_type gnat_std_decls[(int) ADT_jmpbuf_ptr_type]
-#define get_jmpbuf_decl gnat_std_decls[(int) ADT_get_jmpbuf_decl]
-#define set_jmpbuf_decl gnat_std_decls[(int) ADT_set_jmpbuf_decl]
-#define get_excptr_decl gnat_std_decls[(int) ADT_get_excptr_decl]
-#define not_handled_by_others_decl \
-	  gnat_std_decls[(int) ADT_not_handled_by_others_decl]
-#define setjmp_decl gnat_std_decls[(int) ADT_setjmp_decl]
-#define update_setjmp_buf_decl gnat_std_decls[(int) ADT_update_setjmp_buf_decl]
-#define raise_nodefer_decl gnat_std_decls[(int) ADT_raise_nodefer_decl]
 #define reraise_zcx_decl gnat_std_decls[(int) ADT_reraise_zcx_decl]
 #define set_exception_parameter_decl \
 	  gnat_std_decls[(int) ADT_set_exception_parameter_decl]
 #define begin_handler_decl gnat_std_decls[(int) ADT_begin_handler_decl]
+#define end_handler_decl gnat_std_decls[(int) ADT_end_handler_decl]
+#define unhandled_except_decl gnat_std_decls[(int) ADT_unhandled_except_decl]
 #define others_decl gnat_std_decls[(int) ADT_others_decl]
 #define all_others_decl gnat_std_decls[(int) ADT_all_others_decl]
 #define unhandled_others_decl gnat_std_decls[(int) ADT_unhandled_others_decl]
-#define end_handler_decl gnat_std_decls[(int) ADT_end_handler_decl]
-#define unhandled_except_decl gnat_std_decls[(int) ADT_unhandled_except_decl]
 
 /* Routines expected by the gcc back-end. They must have exactly the same
    prototype and names as below.  */
@@ -503,12 +482,6 @@ extern void gnat_zaplevel (void);
 /* Set SUPERCONTEXT of the BLOCK for the current binding level to FNDECL
    and point FNDECL to this BLOCK.  */
 extern void set_current_block_context (tree fndecl);
-
-/* Set the jmpbuf_decl for the current binding level to DECL.  */
-extern void set_block_jmpbuf_decl (tree decl);
-
-/* Get the setjmp_decl, if any, for the current binding level.  */
-extern tree get_block_jmpbuf_decl (void);
 
 /* Record DECL as belonging to the current lexical scope and use GNAT_NODE
    for location information and flag propagation.  */
@@ -547,7 +520,7 @@ extern int gnat_types_compatible_p (tree t1, tree t2);
 extern bool gnat_useless_type_conversion (tree expr);
 
 /* Return true if T, a {FUNCTION,METHOD}_TYPE, has the specified flags.  */
-extern bool fntype_same_flags_p (const_tree, tree, bool, bool, bool);
+extern bool fntype_same_flags_p (const_tree, tree, bool, bool);
 
 /* Create an expression whose value is that of EXPR,
    converted to type TYPE.  The TREE_TYPE of the value

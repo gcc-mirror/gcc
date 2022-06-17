@@ -2388,14 +2388,14 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
      set of rgroups.  */
   gcc_assert (LOOP_VINFO_MASKS (loop_vinfo).is_empty ());
 
+  /* This is the point where we can re-start analysis with SLP forced off.  */
+start_over:
+
   /* Apply the suggested unrolling factor, this was determined by the backend
      during finish_cost the first time we ran the analyzis for this
      vector mode.  */
   if (loop_vinfo->suggested_unroll_factor > 1)
     LOOP_VINFO_VECT_FACTOR (loop_vinfo) *= loop_vinfo->suggested_unroll_factor;
-
-  /* This is the point where we can re-start analysis with SLP forced off.  */
-start_over:
 
   /* Now the vectorization factor is final.  */
   poly_uint64 vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
@@ -4527,7 +4527,7 @@ have_whole_vector_shift (machine_mode mode)
     {
       calc_vec_perm_mask_for_shift (i, nelt, &sel);
       indices.new_vector (sel, 2, nelt);
-      if (!can_vec_perm_const_p (mode, indices, false))
+      if (!can_vec_perm_const_p (mode, mode, indices, false))
 	return false;
     }
   return true;
@@ -5271,9 +5271,17 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     /* All statements produce live-out values.  */
     live_out_stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   else if (slp_node)
-    /* The last statement in the reduction chain produces the live-out
-       value.  */
-    single_live_out_stmt[0] = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
+    {
+      /* The last statement in the reduction chain produces the live-out
+	 value.  Note SLP optimization can shuffle scalar stmts to
+	 optimize permutations so we have to search for the last stmt.  */
+      for (k = 0; k < group_size; ++k)
+	if (!REDUC_GROUP_NEXT_ELEMENT (SLP_TREE_SCALAR_STMTS (slp_node)[k]))
+	  {
+	    single_live_out_stmt[0] = SLP_TREE_SCALAR_STMTS (slp_node)[k];
+	    break;
+	  }
+    }
 
   unsigned vec_num;
   int ncopies;
@@ -5466,7 +5474,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   
   scalar_dest = gimple_get_lhs (orig_stmt_info->stmt);
   scalar_type = TREE_TYPE (scalar_dest);
-  scalar_results.create (group_size); 
+  scalar_results.truncate (0);
+  scalar_results.reserve_exact (group_size);
   new_scalar_dest = vect_create_destination_var (scalar_dest, NULL);
   bitsize = TYPE_SIZE (scalar_type);
 
@@ -5688,14 +5697,13 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 						     old_idx_val);
 		  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 		}
+	      tree cond = make_ssa_name (boolean_type_node);
+	      epilog_stmt = gimple_build_assign (cond, GT_EXPR,
+						 idx_val, old_idx_val);
+	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 	      tree new_val = make_ssa_name (data_eltype);
-	      epilog_stmt = gimple_build_assign (new_val,
-						 COND_EXPR,
-						 build2 (GT_EXPR,
-							 boolean_type_node,
-							 idx_val,
-							 old_idx_val),
-						 val, old_val);
+	      epilog_stmt = gimple_build_assign (new_val, COND_EXPR,
+						 cond, val, old_val);
 	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 	      idx_val = new_idx_val;
 	      val = new_val;
@@ -5738,10 +5746,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	     values.  Check the result and if it is induc_val then replace
 	     with the original initial value, unless induc_val is
 	     the same as initial_def already.  */
-	  tree zcompare = build2 (EQ_EXPR, boolean_type_node, new_temp,
-				  induc_val);
+	  tree zcompare = make_ssa_name (boolean_type_node);
+	  epilog_stmt = gimple_build_assign (zcompare, EQ_EXPR,
+					     new_temp, induc_val);
+	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 	  tree initial_def = reduc_info->reduc_initial_values[0];
-
 	  tmp = make_ssa_name (new_scalar_dest);
 	  epilog_stmt = gimple_build_assign (tmp, COND_EXPR, zcompare,
 					     initial_def, new_temp);
@@ -6030,10 +6039,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	     values.  Check the result and if it is induc_val then replace
 	     with the original initial value, unless induc_val is
 	     the same as initial_def already.  */
-	  tree zcompare = build2 (EQ_EXPR, boolean_type_node, new_temp,
-				  induc_val);
+	  tree zcompare = make_ssa_name (boolean_type_node);
+	  epilog_stmt = gimple_build_assign (zcompare, EQ_EXPR, new_temp,
+					     induc_val);
+	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 	  tree initial_def = reduc_info->reduc_initial_values[0];
-
 	  tree tmp = make_ssa_name (new_scalar_dest);
 	  epilog_stmt = gimple_build_assign (tmp, COND_EXPR, zcompare,
 					     initial_def, new_temp);
@@ -6625,19 +6635,14 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	 need it to get at the number of vector stmts which wasn't
 	 yet initialized for the instance root.  */
     }
-  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
-    stmt_info = vect_stmt_to_vectorize (STMT_VINFO_REDUC_DEF (stmt_info));
-  else
+  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
     {
-      gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info)
-		  == vect_double_reduction_def);
       use_operand_p use_p;
       gimple *use_stmt;
       bool res = single_imm_use (gimple_phi_result (stmt_info->stmt),
 				 &use_p, &use_stmt);
       gcc_assert (res);
       phi_info = loop_vinfo->lookup_stmt (use_stmt);
-      stmt_info = vect_stmt_to_vectorize (STMT_VINFO_REDUC_DEF (phi_info));
     }
 
   /* PHIs should not participate in patterns.  */
@@ -9968,7 +9973,11 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			    lowest_vf) - 1
 	   : wi::udiv_floor (loop->nb_iterations_upper_bound + bias_for_lowest,
 			     lowest_vf) - 1);
-      if (main_vinfo)
+      if (main_vinfo
+	  /* Both peeling for alignment and peeling for gaps can end up
+	     with the scalar epilogue running for more than VF-1 iterations.  */
+	  && !main_vinfo->peeling_for_alignment
+	  && !main_vinfo->peeling_for_gaps)
 	{
 	  unsigned int bound;
 	  poly_uint64 main_iters

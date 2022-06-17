@@ -2,11 +2,13 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fcompare-debug -fopenmp -fno-tree-ter -save-temps" } */
 
-enum {
-  omp_default_mem_alloc,
-  omp_large_cap_mem_alloc,
-  omp_const_mem_alloc,
-  omp_high_bw_mem_alloc
+typedef enum omp_allocator_handle_t
+{
+  omp_null_allocator = 0,
+  omp_default_mem_alloc = 1,
+  omp_large_cap_mem_alloc = 2,
+  omp_const_mem_alloc = 3,
+  omp_high_bw_mem_alloc = 4,
 } omp_allocator_handle_t;
 
 int t, bar_nte, bar_tl, bar_i3, bar_dd;
@@ -23,7 +25,7 @@ bar (int *idp, int s, int nth, int g, int nta, int fi, int pp, int *q,
   int p = 0, i2 = 0, i1 = 0, m = 0, d = 0;
 
 #pragma omp target parallel for                               \
-  device(p) firstprivate (f) allocate (f) in_reduction(+:r2)
+  device(p) firstprivate (f) allocate (omp_default_mem_alloc:f) in_reduction(+:r2)
   for (int i = 0; i < 4; i++)
     ll++;
 
@@ -31,8 +33,8 @@ bar (int *idp, int s, int nth, int g, int nta, int fi, int pp, int *q,
   device(d) map (m)                                                     \
   if (target: p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp) \
   if (parallel: i2) reduction(+:r) num_threads (nth) linear (ll)        \
-  schedule(static) collapse(1) nowait depend(inout: d) allocate (f)     \
-  in_reduction(+:r2)
+  schedule(static) collapse(1) nowait depend(inout: d) \
+  allocate (omp_default_mem_alloc:f) in_reduction(+:r2)
   for (int i = 0; i < 4; i++)
     ll++;
 

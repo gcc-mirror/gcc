@@ -1095,8 +1095,9 @@ gzopen_included_file_1 (const char *name, gfc_directorylist *list,
       if (module && !p->use_for_modules)
        continue;
 
-      fullname = (char *) alloca(strlen (p->path) + strlen (name) + 1);
+      fullname = (char *) alloca(strlen (p->path) + strlen (name) + 2);
       strcpy (fullname, p->path);
+      strcat (fullname, "/");
       strcat (fullname, name);
 
       f = gzopen (fullname, "r");

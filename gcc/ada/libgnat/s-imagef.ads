@@ -36,6 +36,7 @@
 generic
 
    type Int is range <>;
+   type Uns is mod <>;
 
    with procedure Scaled_Divide
           (X, Y, Z : Int;
@@ -43,7 +44,6 @@ generic
            Round : Boolean);
 
 package System.Image_F is
-   pragma Pure;
 
    procedure Image_Fixed
      (V    : Int;

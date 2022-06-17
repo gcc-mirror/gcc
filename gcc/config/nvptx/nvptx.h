@@ -29,11 +29,6 @@
 
 #define STARTFILE_SPEC "%{mmainkernel:crt0.o}"
 
-/* Default needs to be in sync with default for misa in nvptx.opt.
-   We add a default here to work around a hard-coded sm_30 default in
-   nvptx-as.  */
-#define ASM_SPEC "%{misa=*:-m %*; :-m sm_35}%{misa=sm_30:--no-verify}"
-
 #define TARGET_CPU_CPP_BUILTINS() nvptx_cpu_cpp_builtins ()
 
 /* Avoid the default in ../../gcc.cc, which adds "-pthread", which is not
@@ -315,6 +310,23 @@ struct GTY(()) machine_function
   ((VALUE) = GET_MODE_BITSIZE ((MODE)), 2)
 
 #define SUPPORTS_WEAK 1
+
+/* The documentation states that ASM_OUTPUT_DEF_FROM_DECLS is used in
+   preference to ASM_OUTPUT_DEF if the tree nodes are available.  However, we
+   need the tree nodes to emit the prototype, so at this point it's not clear
+   how we can support ASM_OUTPUT_DEF.  Still, we need to define it, or
+   ASM_OUTPUT_DEF_FROM_DECLS is ignored.  For now, assert, and once we run
+   into it possibly improve by somehow emitting the prototype elsewhere, or
+   emitting a reasonable error message.  */
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)	\
+  do						\
+    {						\
+      gcc_unreachable ();			\
+    }						\
+  while (0)
+#define ASM_OUTPUT_DEF_FROM_DECLS(STREAM, NAME, VALUE)	\
+  nvptx_asm_output_def_from_decls (STREAM, NAME, VALUE)
+
 #define NO_DOT_IN_LABEL
 #define ASM_COMMENT_START "//"
 

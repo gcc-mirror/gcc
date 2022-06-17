@@ -50,7 +50,11 @@ package System.Wid_LLU
 is
    subtype Long_Long_Unsigned is Unsigned_Types.Long_Long_Unsigned;
 
-   function Width_Long_Long_Unsigned is new Width_U (Long_Long_Unsigned);
-   pragma Pure_Function (Width_Long_Long_Unsigned);
+   package Width_Uns is new Width_U (Long_Long_Unsigned);
+
+   function Width_Long_Long_Unsigned
+     (Lo, Hi : Long_Long_Unsigned)
+      return Natural
+      renames Width_Uns.Width;
 
 end System.Wid_LLU;

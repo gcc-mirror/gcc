@@ -492,6 +492,13 @@ No_Local_Protected_Objects
 [RM D.7] This restriction ensures at compile time that protected objects are
 only declared at the library level.
 
+No_Local_Tagged_Types
+---------------------
+.. index:: No_Local_Tagged_Types
+
+[GNAT] This restriction ensures at compile time that tagged types are only
+declared at the library level.
+
 No_Local_Timing_Events
 ----------------------
 .. index:: No_Local_Timing_Events

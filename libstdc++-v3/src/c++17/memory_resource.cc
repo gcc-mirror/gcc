@@ -112,13 +112,13 @@ namespace pmr
       mutex mx;
       memory_resource* val;
 
-      memory_resource* load()
+      memory_resource* load(std::memory_order)
       {
 	lock_guard<mutex> lock(mx);
 	return val;
       }
 
-      memory_resource* exchange(memory_resource* r)
+      memory_resource* exchange(memory_resource* r, std::memory_order)
       {
 	lock_guard<mutex> lock(mx);
 	return std::__exchange(val, r);
@@ -134,12 +134,12 @@ namespace pmr
 
       memory_resource* val;
 
-      memory_resource* load() const
+      memory_resource* load(std::memory_order) const
       {
 	return val;
       }
 
-      memory_resource* exchange(memory_resource* r)
+      memory_resource* exchange(memory_resource* r, std::memory_order)
       {
 	return std::__exchange(val, r);
       }
@@ -166,12 +166,12 @@ namespace pmr
   {
     if (r == nullptr)
       r = new_delete_resource();
-    return default_res.obj.exchange(r);
+    return default_res.obj.exchange(r, std::memory_order_acq_rel);
   }
 
   memory_resource*
   get_default_resource() noexcept
-  { return default_res.obj.load(); }
+  { return default_res.obj.load(std::memory_order_acquire); }
 
   // Member functions for std::pmr::monotonic_buffer_resource
 

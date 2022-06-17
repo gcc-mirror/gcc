@@ -44,6 +44,7 @@
 #include "aarch64-sve-builtins-shapes.h"
 #include "aarch64-sve-builtins-base.h"
 #include "aarch64-sve-builtins-functions.h"
+#include "ssa.h"
 
 using namespace aarch64_sve;
 
@@ -148,7 +149,7 @@ class svabd_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* The integer operations are represented as the subtraction of the
        minimum from the maximum, with the signedness of the instruction
@@ -179,7 +180,7 @@ public:
   CONSTEXPR svac_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.add_ptrue_hint (0, e.gp_mode (0));
     insn_code icode = code_for_aarch64_pred_fac (m_unspec, e.vector_mode (0));
@@ -194,7 +195,7 @@ class svadda_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Put the predicate last, as required by mask_fold_left_plus_optab.  */
     e.rotate_inputs_left (0, 3);
@@ -211,7 +212,7 @@ public:
   CONSTEXPR svadr_bhwd_impl (unsigned int shift) : m_shift (shift) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = GET_MODE (e.args[0]);
     if (m_shift == 0)
@@ -231,7 +232,7 @@ class svbic_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Convert svbic of a constant into svand of its inverse.  */
     if (CONST_INT_P (e.args[2]))
@@ -261,7 +262,7 @@ public:
   CONSTEXPR svbrk_binary_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.use_exact_insn (code_for_aarch64_brk (m_unspec));
   }
@@ -277,7 +278,7 @@ public:
   CONSTEXPR svbrk_unary_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.use_cond_insn (code_for_aarch64_brk (m_unspec));
   }
@@ -290,7 +291,7 @@ class svcadd_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Convert the rotation amount into a specific unspec.  */
     int rot = INTVAL (e.args.pop ());
@@ -311,7 +312,7 @@ public:
   CONSTEXPR svclast_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Match the fold_extract_optab order.  */
     std::swap (e.args[0], e.args[1]);
@@ -332,7 +333,7 @@ class svcmla_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Convert the rotation amount into a specific unspec.  */
     int rot = INTVAL (e.args.pop ());
@@ -355,7 +356,7 @@ class svcmla_lane_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Convert the rotation amount into a specific unspec.  */
     int rot = INTVAL (e.args.pop ());
@@ -384,7 +385,7 @@ public:
     : m_code (code), m_unspec_for_fp (unspec_for_fp) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     tree pg = gimple_call_arg (f.call, 0);
     tree rhs1 = gimple_call_arg (f.call, 1);
@@ -406,7 +407,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
 
@@ -442,7 +443,7 @@ public:
       m_unspec_for_uint (unspec_for_uint) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
     bool unsigned_p = e.type_suffix (0).unsigned_p;
@@ -480,7 +481,7 @@ class svcmpuo_impl : public quiet<function_base>
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.add_ptrue_hint (0, e.gp_mode (0));
     return e.use_exact_insn (code_for_aarch64_pred_fcmuo (e.vector_mode (0)));
@@ -491,7 +492,7 @@ class svcnot_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
     if (e.pred == PRED_x)
@@ -514,7 +515,7 @@ public:
   CONSTEXPR svcnt_bhwd_impl (machine_mode ref_mode) : m_ref_mode (ref_mode) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     tree count = build_int_cstu (TREE_TYPE (f.lhs),
 				 GET_MODE_NUNITS (m_ref_mode));
@@ -522,7 +523,7 @@ public:
   }
 
   rtx
-  expand (function_expander &) const OVERRIDE
+  expand (function_expander &) const override
   {
     return gen_int_mode (GET_MODE_NUNITS (m_ref_mode), DImode);
   }
@@ -539,7 +540,7 @@ public:
     : svcnt_bhwd_impl (ref_mode) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     tree pattern_arg = gimple_call_arg (f.call, 0);
     aarch64_svpattern pattern = (aarch64_svpattern) tree_to_shwi (pattern_arg);
@@ -562,7 +563,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     unsigned int elements_per_vq = 128 / GET_MODE_UNIT_BITSIZE (m_ref_mode);
     e.args.quick_push (gen_int_mode (elements_per_vq, DImode));
@@ -575,7 +576,7 @@ class svcntp_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
     e.add_ptrue_hint (0, mode);
@@ -591,7 +592,7 @@ public:
     : quiet<multi_vector_function> (vectors_per_tuple) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     unsigned int nargs = gimple_call_num_args (f.call);
     tree lhs_type = TREE_TYPE (f.lhs);
@@ -621,7 +622,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     rtx lhs_tuple = e.get_nonoverlapping_reg_target ();
 
@@ -643,7 +644,7 @@ class svcvt_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode0 = e.vector_mode (0);
     machine_mode mode1 = e.vector_mode (1);
@@ -706,7 +707,7 @@ class svdot_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* In the optab, the multiplication operands come before the accumulator
        operand.  The optab is keyed off the multiplication mode.  */
@@ -729,7 +730,7 @@ public:
 				  unspec_for_float) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Use the same ordering as the dot_prod_optab, with the
        accumulator last.  */
@@ -744,7 +745,7 @@ class svdup_impl : public quiet<function_base>
 {
 public:
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     tree vec_type = TREE_TYPE (f.lhs);
     tree rhs = gimple_call_arg (f.call, f.pred == PRED_none ? 0 : 1);
@@ -784,7 +785,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     if (e.pred == PRED_none || e.pred == PRED_x)
       /* There's no benefit to using predicated instructions for _x here.  */
@@ -812,7 +813,7 @@ class svdup_lane_impl : public quiet<function_base>
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* The native DUP lane has an index range of 64 bytes.  */
     machine_mode mode = e.vector_mode (0);
@@ -829,7 +830,7 @@ class svdupq_impl : public quiet<function_base>
 {
 public:
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     tree vec_type = TREE_TYPE (f.lhs);
     unsigned int nargs = gimple_call_num_args (f.call);
@@ -851,7 +852,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
     unsigned int elements_per_vq = e.args.length ();
@@ -900,7 +901,7 @@ class svdupq_lane_impl : public quiet<function_base>
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
     rtx index = e.args[1];
@@ -964,7 +965,7 @@ public:
     : m_from_mode (from_mode) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     if (e.type_suffix (0).unsigned_p)
       {
@@ -1006,7 +1007,7 @@ public:
     : quiet<multi_vector_function> (vectors_per_tuple) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     /* Fold into a normal gimple component access.  */
     tree rhs_tuple = gimple_call_arg (f.call, 0);
@@ -1020,7 +1021,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Fold the access into a subreg rvalue.  */
     return simplify_gen_subreg (e.vector_mode (0), e.args[0],
@@ -1033,7 +1034,7 @@ class svindex_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.use_exact_insn (e.direct_optab_handler (vec_series_optab));
   }
@@ -1043,7 +1044,7 @@ class svinsr_impl : public quiet<function_base>
 {
 public:
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     gcall *new_call = gimple_build_call_internal (IFN_VEC_SHL_INSERT, 2,
 						  gimple_call_arg (f.call, 0),
@@ -1053,7 +1054,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     insn_code icode = direct_optab_handler (vec_shl_insert_optab,
 					    e.vector_mode (0));
@@ -1068,7 +1069,7 @@ public:
   CONSTEXPR svlast_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.use_exact_insn (code_for_extract (m_unspec, e.vector_mode (0)));
   }
@@ -1081,13 +1082,13 @@ class svld1_impl : public full_width_access
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_READ_MEMORY;
   }
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     tree vectype = f.vector_type (0);
 
@@ -1105,7 +1106,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     insn_code icode = convert_optab_handler (maskload_optab,
 					     e.vector_mode (0), e.gp_mode (0));
@@ -1121,7 +1122,7 @@ public:
     : extending_load (memory_type) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     insn_code icode = code_for_aarch64_load (UNSPEC_LD1_SVE, extend_rtx_code (),
 					     e.vector_mode (0),
@@ -1134,13 +1135,13 @@ class svld1_gather_impl : public full_width_access
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_READ_MEMORY;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.prepare_gather_address_operands (1);
     /* Put the predicate last, as required by mask_gather_load_optab.  */
@@ -1161,7 +1162,7 @@ public:
     : extending_load (memory_type) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.prepare_gather_address_operands (1);
     /* Put the predicate last, since the extending gathers use the same
@@ -1180,13 +1181,13 @@ class load_replicate : public function_base
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_READ_MEMORY;
   }
 
   tree
-  memory_scalar_type (const function_instance &fi) const OVERRIDE
+  memory_scalar_type (const function_instance &fi) const override
   {
     return fi.scalar_type (0);
   }
@@ -1196,16 +1197,74 @@ class svld1rq_impl : public load_replicate
 {
 public:
   machine_mode
-  memory_vector_mode (const function_instance &fi) const OVERRIDE
+  memory_vector_mode (const function_instance &fi) const override
   {
     return aarch64_vq_mode (GET_MODE_INNER (fi.vector_mode (0))).require ();
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     insn_code icode = code_for_aarch64_sve_ld1rq (e.vector_mode (0));
     return e.use_contiguous_load_insn (icode);
+  }
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    tree arg0 = gimple_call_arg (f.call, 0);
+    tree arg1 = gimple_call_arg (f.call, 1);
+
+    /* Transform:
+       lhs = svld1rq ({-1, -1, ... }, arg1)
+       into:
+       tmp = mem_ref<vectype> [(elem * {ref-all}) arg1]
+       lhs = vec_perm_expr<tmp, tmp, {0, 1, 2, 3, ...}>.
+       on little endian target.
+       vectype is the corresponding ADVSIMD type.  */
+
+    if (!BYTES_BIG_ENDIAN
+	&& integer_all_onesp (arg0))
+      {
+	tree lhs = gimple_call_lhs (f.call);
+	tree lhs_type = TREE_TYPE (lhs);
+	poly_uint64 lhs_len = TYPE_VECTOR_SUBPARTS (lhs_type);
+	tree eltype = TREE_TYPE (lhs_type);
+
+	scalar_mode elmode = GET_MODE_INNER (TYPE_MODE (lhs_type));
+	machine_mode vq_mode = aarch64_vq_mode (elmode).require ();
+	tree vectype = build_vector_type_for_mode (eltype, vq_mode);
+
+	tree elt_ptr_type
+	  = build_pointer_type_for_mode (eltype, VOIDmode, true);
+	tree zero = build_zero_cst (elt_ptr_type);
+
+	/* Use element type alignment.  */
+	tree access_type
+	  = build_aligned_type (vectype, TYPE_ALIGN (eltype));
+
+	tree mem_ref_lhs = make_ssa_name_fn (cfun, access_type, 0);
+	tree mem_ref_op = fold_build2 (MEM_REF, access_type, arg1, zero);
+	gimple *mem_ref_stmt
+	  = gimple_build_assign (mem_ref_lhs, mem_ref_op);
+	gsi_insert_before (f.gsi, mem_ref_stmt, GSI_SAME_STMT);
+
+	int source_nelts = TYPE_VECTOR_SUBPARTS (access_type).to_constant ();
+	vec_perm_builder sel (lhs_len, source_nelts, 1);
+	for (int i = 0; i < source_nelts; i++)
+	  sel.quick_push (i);
+
+	vec_perm_indices indices (sel, 1, source_nelts);
+	gcc_checking_assert (can_vec_perm_const_p (TYPE_MODE (lhs_type),
+						   TYPE_MODE (access_type),
+						   indices));
+	tree mask_type = build_vector_type (ssizetype, lhs_len);
+	tree mask = vec_perm_indices_to_tree (mask_type, indices);
+	return gimple_build_assign (lhs, VEC_PERM_EXPR,
+				    mem_ref_lhs, mem_ref_lhs, mask);
+      }
+
+    return NULL;
   }
 };
 
@@ -1213,13 +1272,13 @@ class svld1ro_impl : public load_replicate
 {
 public:
   machine_mode
-  memory_vector_mode (const function_instance &) const OVERRIDE
+  memory_vector_mode (const function_instance &) const override
   {
     return OImode;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     insn_code icode = code_for_aarch64_sve_ld1ro (e.vector_mode (0));
     return e.use_contiguous_load_insn (icode);
@@ -1234,13 +1293,13 @@ public:
     : full_width_access (vectors_per_tuple) {}
 
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_READ_MEMORY;
   }
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     tree tuple_type = TREE_TYPE (f.lhs);
     tree vectype = f.vector_type (0);
@@ -1275,7 +1334,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode tuple_mode = TYPE_MODE (TREE_TYPE (e.call_expr));
     insn_code icode = convert_optab_handler (vec_mask_load_lanes_optab,
@@ -1288,13 +1347,13 @@ class svldff1_gather_impl : public full_width_access
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_READ_MEMORY | CP_READ_FFR | CP_WRITE_FFR;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* See the block comment in aarch64-sve.md for details about the
        FFR handling.  */
@@ -1317,7 +1376,7 @@ public:
     : extending_load (memory_type) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* See the block comment in aarch64-sve.md for details about the
        FFR handling.  */
@@ -1340,13 +1399,13 @@ class svldnt1_impl : public full_width_access
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_READ_MEMORY;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     insn_code icode = code_for_aarch64_ldnt1 (e.vector_mode (0));
     return e.use_contiguous_load_insn (icode);
@@ -1360,13 +1419,13 @@ public:
   CONSTEXPR svldxf1_impl (int unspec) : m_unspec (unspec) {}
 
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_READ_MEMORY | CP_READ_FFR | CP_WRITE_FFR;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* See the block comment in aarch64-sve.md for details about the
        FFR handling.  */
@@ -1388,13 +1447,13 @@ public:
     : extending_load (memory_type), m_unspec (unspec) {}
 
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_READ_MEMORY | CP_READ_FFR | CP_WRITE_FFR;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* See the block comment in aarch64-sve.md for details about the
        FFR handling.  */
@@ -1414,7 +1473,7 @@ class svlen_impl : public quiet<function_base>
 {
 public:
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     /* The argument only exists for its type.  */
     tree rhs_type = TREE_TYPE (gimple_call_arg (f.call, 0));
@@ -1424,7 +1483,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* The argument only exists for its type.  */
     return gen_int_mode (GET_MODE_NUNITS (e.vector_mode (0)), DImode);
@@ -1435,7 +1494,7 @@ class svmad_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return expand_mad (e);
   }
@@ -1445,7 +1504,7 @@ class svmla_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Put the accumulator at the end (argument 3), but keep it as the
        merge input for _m functions.  */
@@ -1458,7 +1517,7 @@ class svmla_lane_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     if (e.type_suffix (0).integer_p)
       {
@@ -1473,7 +1532,7 @@ class svmls_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Put the accumulator at the end (argument 3), but keep it as the
        merge input for _m functions.  */
@@ -1486,7 +1545,7 @@ class svmov_impl : public function_base
 {
 public:
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     return gimple_build_assign (f.lhs, BIT_AND_EXPR,
 				gimple_call_arg (f.call, 0),
@@ -1494,7 +1553,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* The canonical form for the assembler alias "MOV Pa.B, Pb/Z, Pc.B"
        is "AND Pa.B, Pb/Z, Pc.B, Pc.B".  */
@@ -1508,7 +1567,7 @@ class svmls_lane_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     if (e.type_suffix (0).integer_p)
       {
@@ -1523,7 +1582,7 @@ class svmmla_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     insn_code icode;
     if (e.type_suffix (0).integer_p)
@@ -1543,7 +1602,7 @@ class svmsb_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return expand_msb (e);
   }
@@ -1553,7 +1612,7 @@ class svnand_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     gcc_assert (e.pred == PRED_z);
     return e.use_exact_insn (CODE_FOR_aarch64_pred_nandvnx16bi_z);
@@ -1564,7 +1623,7 @@ class svnor_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     gcc_assert (e.pred == PRED_z);
     return e.use_exact_insn (CODE_FOR_aarch64_pred_norvnx16bi_z);
@@ -1577,7 +1636,7 @@ public:
   CONSTEXPR svnot_impl () : rtx_code_function (NOT, NOT, -1) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     if (e.type_suffix_ids[0] == TYPE_SUFFIX_b)
       {
@@ -1595,7 +1654,7 @@ class svorn_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     gcc_assert (e.pred == PRED_z);
     return e.use_exact_insn (CODE_FOR_aarch64_pred_ornvnx16bi_z);
@@ -1606,13 +1665,13 @@ class svpfalse_impl : public function_base
 {
 public:
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     return f.fold_to_pfalse ();
   }
 
   rtx
-  expand (function_expander &) const OVERRIDE
+  expand (function_expander &) const override
   {
     return CONST0_RTX (VNx16BImode);
   }
@@ -1625,7 +1684,7 @@ public:
   CONSTEXPR svpfirst_svpnext_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
     e.add_ptrue_hint (0, mode);
@@ -1643,13 +1702,13 @@ public:
   CONSTEXPR svprf_bhwd_impl (machine_mode mode) : m_mode (mode) {}
 
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_PREFETCH_MEMORY;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.prepare_prefetch_operands ();
     insn_code icode = code_for_aarch64_sve_prefetch (m_mode);
@@ -1667,19 +1726,19 @@ public:
   CONSTEXPR svprf_bhwd_gather_impl (machine_mode mode) : m_mode (mode) {}
 
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_PREFETCH_MEMORY;
   }
 
   machine_mode
-  memory_vector_mode (const function_instance &) const OVERRIDE
+  memory_vector_mode (const function_instance &) const override
   {
     return m_mode;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.prepare_prefetch_operands ();
     e.prepare_gather_address_operands (1);
@@ -1705,7 +1764,7 @@ public:
   CONSTEXPR svptest_impl (rtx_code compare) : m_compare (compare) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* See whether GP is an exact ptrue for some predicate mode;
        i.e. whether converting the GP to that mode will not drop
@@ -1751,13 +1810,13 @@ class svptrue_impl : public function_base
 {
 public:
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     return f.fold_to_ptrue ();
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return aarch64_ptrue_all (e.type_suffix (0).element_bytes);
   }
@@ -1767,7 +1826,7 @@ class svptrue_pat_impl : public function_base
 {
 public:
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     tree pattern_arg = gimple_call_arg (f.call, 0);
     aarch64_svpattern pattern = (aarch64_svpattern) tree_to_shwi (pattern_arg);
@@ -1788,7 +1847,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* In rtl, the predicate is represented as the constant:
 
@@ -1816,7 +1875,7 @@ public:
   {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Treat non-_pat functions in the same way as _pat functions with
        an SV_ALL argument.  */
@@ -1877,7 +1936,7 @@ public:
   {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     rtx_code code = (e.type_suffix (0).unsigned_p
 		     ? m_code_for_uint
@@ -1908,13 +1967,13 @@ class svrdffr_impl : public function_base
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_READ_FFR;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* See the block comment in aarch64-sve.md for details about the
        FFR handling.  */
@@ -1931,7 +1990,7 @@ class svreinterpret_impl : public quiet<function_base>
 {
 public:
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     /* Punt to rtl if the effect of the reinterpret on registers does not
        conform to GCC's endianness model.  */
@@ -1947,7 +2006,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
     return e.use_exact_insn (code_for_aarch64_sve_reinterpret (mode));
@@ -1958,7 +2017,7 @@ class svrev_impl : public permute
 {
 public:
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     /* Punt for now on _b16 and wider; we'd need more complex evpc logic
        to rerecognize the result.  */
@@ -1974,7 +2033,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.use_exact_insn (code_for_aarch64_sve_rev (e.vector_mode (0)));
   }
@@ -1984,7 +2043,7 @@ class svsel_impl : public quiet<function_base>
 {
 public:
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     /* svsel corresponds exactly to VEC_COND_EXPR.  */
     gimple_seq stmts = NULL;
@@ -1996,7 +2055,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* svsel (cond, truev, falsev) is vcond_mask (truev, falsev, cond).  */
     e.rotate_inputs_left (0, 3);
@@ -2015,7 +2074,7 @@ public:
     : quiet<multi_vector_function> (vectors_per_tuple) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     tree rhs_tuple = gimple_call_arg (f.call, 0);
     tree index = gimple_call_arg (f.call, 1);
@@ -2042,7 +2101,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     rtx rhs_tuple = e.args[0];
     unsigned int index = INTVAL (e.args[1]);
@@ -2065,13 +2124,13 @@ class svsetffr_impl : public function_base
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_WRITE_FFR;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.args.quick_push (CONSTM1_RTX (VNx16BImode));
     return e.use_exact_insn (CODE_FOR_aarch64_wrffr);
@@ -2082,13 +2141,13 @@ class svst1_impl : public full_width_access
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_WRITE_MEMORY;
   }
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     tree vectype = f.vector_type (0);
 
@@ -2105,7 +2164,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     insn_code icode = convert_optab_handler (maskstore_optab,
 					     e.vector_mode (0), e.gp_mode (0));
@@ -2117,13 +2176,13 @@ class svst1_scatter_impl : public full_width_access
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_WRITE_MEMORY;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.prepare_gather_address_operands (1);
     /* Put the predicate last, as required by mask_scatter_store_optab.  */
@@ -2144,7 +2203,7 @@ public:
     : truncating_store (to_mode) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.prepare_gather_address_operands (1);
     /* Put the predicate last, since the truncating scatters use the same
@@ -2164,7 +2223,7 @@ public:
     : truncating_store (to_mode) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     insn_code icode = code_for_aarch64_store_trunc (e.memory_vector_mode (),
 						    e.vector_mode (0));
@@ -2180,13 +2239,13 @@ public:
     : full_width_access (vectors_per_tuple) {}
 
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_WRITE_MEMORY;
   }
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     tree vectype = f.vector_type (0);
 
@@ -2208,7 +2267,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode tuple_mode = GET_MODE (e.args.last ());
     insn_code icode = convert_optab_handler (vec_mask_store_lanes_optab,
@@ -2221,13 +2280,13 @@ class svstnt1_impl : public full_width_access
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_WRITE_MEMORY;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     insn_code icode = code_for_aarch64_stnt1 (e.vector_mode (0));
     return e.use_contiguous_store_insn (icode);
@@ -2241,7 +2300,7 @@ public:
     : rtx_code_function (MINUS, MINUS, UNSPEC_COND_FSUB) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Canonicalize subtractions of constants to additions.  */
     machine_mode mode = e.vector_mode (0);
@@ -2256,7 +2315,7 @@ class svtbl_impl : public permute
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.use_exact_insn (code_for_aarch64_sve_tbl (e.vector_mode (0)));
   }
@@ -2270,7 +2329,7 @@ public:
     : binary_permute (base ? UNSPEC_TRN2 : UNSPEC_TRN1), m_base (base) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     /* svtrn1: { 0, nelts, 2, nelts + 2, 4, nelts + 4, ... }
        svtrn2: as for svtrn1, but with 1 added to each index.  */
@@ -2296,7 +2355,7 @@ public:
     : quiet<multi_vector_function> (vectors_per_tuple) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     rtx target = e.get_reg_target ();
     emit_clobber (copy_rtx (target));
@@ -2311,7 +2370,7 @@ public:
   CONSTEXPR svunpk_impl (bool high_p) : m_high_p (high_p) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     /* Don't fold the predicate ops, since every bit of the svbool_t
        result is significant.  */
@@ -2326,7 +2385,7 @@ public:
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = GET_MODE (e.args[0]);
     unsigned int unpacku = m_high_p ? UNSPEC_UNPACKUHI : UNSPEC_UNPACKULO;
@@ -2353,7 +2412,7 @@ public:
   CONSTEXPR svusdot_impl (bool su) : m_su (su) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* The implementation of the ACLE function svsudot (for the non-lane
        version) is through the USDOT instruction but with the second and third
@@ -2382,7 +2441,7 @@ public:
     : binary_permute (base ? UNSPEC_UZP2 : UNSPEC_UZP1), m_base (base) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     /* svuzp1: { 0, 2, 4, 6, ... }
        svuzp2: { 1, 3, 5, 7, ... }.  */
@@ -2456,7 +2515,7 @@ public:
   }
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     if (f.type_suffix (1).unsigned_p)
       return fold_type<poly_uint64> (f);
@@ -2472,13 +2531,13 @@ class svwrffr_impl : public function_base
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_WRITE_FFR;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.use_exact_insn (CODE_FOR_aarch64_wrffr);
   }
@@ -2492,7 +2551,7 @@ public:
     : binary_permute (base ? UNSPEC_ZIP2 : UNSPEC_ZIP1), m_base (base) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     /* svzip1: { 0, nelts, 1, nelts + 1, 2, nelts + 2, ... }
        svzip2: as for svzip1, but with nelts / 2 added to each index.  */

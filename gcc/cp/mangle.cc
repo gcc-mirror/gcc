@@ -916,7 +916,10 @@ maybe_write_module (tree decl)
   if (!DECL_NAMESPACE_SCOPE_P (decl))
     return;
 
-  if (TREE_CODE (decl) == NAMESPACE_DECL && DECL_NAME (decl))
+  if (!TREE_PUBLIC (STRIP_TEMPLATE (decl)))
+    return;
+
+  if (TREE_CODE (decl) == NAMESPACE_DECL)
     return;
 
   int m = get_originating_module (decl, true);
@@ -3363,7 +3366,7 @@ write_expression (tree expr)
 		  {
 		    if (i > last_nonzero)
 		      break;
-		    if (TREE_CODE (etype) == UNION_TYPE)
+		    if (!undigested && TREE_CODE (etype) == UNION_TYPE)
 		      {
 			/* Express the active member as a designator.  */
 			write_string ("di");

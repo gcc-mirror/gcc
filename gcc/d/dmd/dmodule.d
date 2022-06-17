@@ -69,13 +69,13 @@ void semantic3OnDependencies(Module m)
 /**
  * Remove generated .di files on error and exit
  */
-void removeHdrFilesAndFail(ref Param params, ref Modules modules)
+void removeHdrFilesAndFail(ref Param params, ref Modules modules) nothrow
 {
-    if (params.doHdrGeneration)
+    if (params.dihdr.doOutput)
     {
         foreach (m; modules)
         {
-            if (m.isHdrFile)
+            if (m.filetype == FileType.dhdr)
                 continue;
             File.remove(m.hdrfile.toChars());
         }
@@ -94,7 +94,7 @@ void removeHdrFilesAndFail(ref Param params, ref Modules modules)
  * Returns:
  *  the filename of the child package or module
  */
-private const(char)[] getFilename(Identifier[] packages, Identifier ident)
+private const(char)[] getFilename(Identifier[] packages, Identifier ident) nothrow
 {
     const(char)[] filename = ident.toString();
 
@@ -157,14 +157,14 @@ extern (C++) class Package : ScopeDsymbol
     uint tag;        // auto incremented tag, used to mask package tree in scopes
     Module mod;     // !=null if isPkgMod == PKG.module_
 
-    final extern (D) this(const ref Loc loc, Identifier ident)
+    final extern (D) this(const ref Loc loc, Identifier ident) nothrow
     {
         super(loc, ident);
         __gshared uint packageTag;
         this.tag = packageTag++;
     }
 
-    override const(char)* kind() const
+    override const(char)* kind() const nothrow
     {
         return "package";
     }
@@ -351,12 +351,10 @@ extern (C++) final class Module : Package
     const FileName objfile;     // output .obj file
     const FileName hdrfile;     // 'header' file
     FileName docfile;           // output documentation file
-    FileBuffer* srcBuffer;      // set during load(), free'd in parse()
+    const(ubyte)[] src;         /// Raw content of the file
     uint errors;                // if any errors in file
     uint numlines;              // number of lines in source file
-    bool isHdrFile;             // if it is a header (.di) file
-    bool isCFile;               // if it is a C (.c) file
-    bool isDocFile;             // if it is a documentation input file, not D source
+    FileType filetype;          // source file type
     bool hasAlwaysInlines;      // contains references to functions that must be inlined
     bool isPackageFile;         // if it is a package.d
     Package pkg;                // if isPackageFile is true, the Package that contains this package.d
@@ -364,6 +362,9 @@ extern (C++) final class Module : Package
     int needmoduleinfo;
     int selfimports;            // 0: don't know, 1: does not, 2: does
     Dsymbol[void*] tagSymTab;   /// ImportC: tag symbols that conflict with other symbols used as the index
+
+    private OutBuffer defines;  // collect all the #define lines here
+
 
     /*************************************
      * Return true if module imports itself.
@@ -474,7 +475,7 @@ extern (C++) final class Module : Package
         if (doDocComment)
             setDocfile();
         if (doHdrGen)
-            hdrfile = setOutfilename(global.params.hdrname, global.params.hdrdir, arg, hdr_ext);
+            hdrfile = setOutfilename(global.params.dihdr.name, global.params.dihdr.dir, arg, hdr_ext);
     }
 
     extern (D) this(const(char)[] filename, Identifier ident, int doDocComment, int doHdrGen)
@@ -586,28 +587,21 @@ extern (C++) final class Module : Package
 
     extern (D) void setDocfile()
     {
-        docfile = setOutfilename(global.params.docname, global.params.docdir, arg, doc_ext);
+        docfile = setOutfilename(global.params.ddoc.name, global.params.ddoc.dir, arg, doc_ext);
     }
 
     /**
-     * Loads the source buffer from the given read result into `this.srcBuffer`.
+     * Trigger the relevant semantic error when a file cannot be read
      *
-     * Will take ownership of the buffer located inside `readResult`.
+     * We special case `object.d` as a failure is likely to be a rare
+     * but difficult to diagnose case for the user. Packages also require
+     * special handling to avoid exposing the compiler's internals.
      *
      * Params:
-     *  loc = the location
-     *  readResult = the result of reading a file containing the source code
-     *
-     * Returns: `true` if successful
+     *  loc = The location at which the file read originated (e.g. import)
      */
-    bool loadSourceBuffer(const ref Loc loc, ref File.ReadResult readResult)
+    private void onFileReadError(const ref Loc loc)
     {
-        //printf("Module::loadSourceBuffer('%s') file '%s'\n", toChars(), srcfile.toChars());
-        // take ownership of buffer
-        srcBuffer = new FileBuffer(readResult.extractSlice());
-        if (readResult.success)
-            return true;
-
         if (FileName.equals(srcfile.toString(), "object.d"))
         {
             .error(loc, "cannot find source code for runtime library file 'object.d'");
@@ -621,7 +615,6 @@ extern (C++) final class Module : Package
             // have a valid location come from the command-line.
             // Error that their file cannot be found and return early.
             .error(loc, "cannot find input file `%s`", srcfile.toChars());
-            return false;
         }
         else
         {
@@ -653,7 +646,6 @@ extern (C++) final class Module : Package
 
             removeHdrFilesAndFail(global.params, Module.amodules);
         }
-        return false;
     }
 
     /**
@@ -666,37 +658,41 @@ extern (C++) final class Module : Package
      *  loc = the location
      *
      * Returns: `true` if successful
-     * See_Also: loadSourceBuffer
      */
     bool read(const ref Loc loc)
     {
-        if (srcBuffer)
+        if (this.src)
             return true; // already read
 
         //printf("Module::read('%s') file '%s'\n", toChars(), srcfile.toChars());
 
+        /* Preprocess the file if it's a .c file
+         */
+        FileName filename = srcfile;
+        bool ifile = false;             // did we generate a .i file
+        scope (exit)
+        {
+            if (ifile)
+                File.remove(filename.toChars());        // remove generated file
+        }
 
+        if (global.preprocess &&
+            FileName.equalsExt(srcfile.toString(), c_ext) &&
+            FileName.exists(srcfile.toString()))
+        {
+            filename = global.preprocess(srcfile, loc, global.params.cppswitches, ifile, &defines);  // run C preprocessor
+        }
 
-        bool success;
-        if (auto readResult = FileManager.fileManager.lookup(srcfile))
+        if (auto result = global.fileManager.lookup(filename))
         {
-            srcBuffer = readResult;
-            success = true;
+            this.src = result;
+            if (global.params.makeDeps.doOutput)
+                global.params.makeDeps.files.push(srcfile.toChars());
+            return true;
         }
-        else
-        {
-            auto readResult = File.read(srcfile.toChars());
-            if (loadSourceBuffer(loc, readResult))
-            {
-                FileManager.fileManager.add(srcfile, srcBuffer);
-                success = true;
-            }
-        }
-        if (success && global.params.emitMakeDeps)
-        {
-            global.params.makeDeps.push(srcfile.toChars());
-        }
-        return success;
+
+        this.onFileReadError(loc);
+        return false;
     }
 
     /// syntactic parse
@@ -830,7 +826,7 @@ extern (C++) final class Module : Package
         //printf("Module::parse(srcname = '%s')\n", srcname);
         isPackageFile = (strcmp(srcfile.name(), package_d) == 0 ||
                          strcmp(srcfile.name(), package_di) == 0);
-        const(char)[] buf = cast(const(char)[]) srcBuffer.data;
+        const(char)[] buf = cast(const(char)[]) this.src;
 
         bool needsReencoding = true;
         bool hasBOM = true; //assume there's a BOM
@@ -942,7 +938,7 @@ extern (C++) final class Module : Package
         if (buf.length>= 4 && buf[0..4] == "Ddoc")
         {
             comment = buf.ptr + 4;
-            isDocFile = true;
+            filetype = FileType.ddoc;
             if (!docfile)
                 setDocfile();
             return this;
@@ -955,7 +951,7 @@ extern (C++) final class Module : Package
         if (FileName.equalsExt(arg, dd_ext))
         {
             comment = buf.ptr; // the optional Ddoc, if present, is handled above.
-            isDocFile = true;
+            filetype = FileType.ddoc;
             if (!docfile)
                 setDocfile();
             return this;
@@ -963,9 +959,7 @@ extern (C++) final class Module : Package
         /* If it has the extension ".di", it is a "header" file.
          */
         if (FileName.equalsExt(arg, hdr_ext))
-        {
-            isHdrFile = true;
-        }
+            filetype = FileType.dhdr;
 
         /// Promote `this` to a root module if requested via `-i`
         void checkCompiledImport()
@@ -982,9 +976,9 @@ extern (C++) final class Module : Package
          */
         if (FileName.equalsExt(arg, c_ext) || FileName.equalsExt(arg, i_ext))
         {
-            isCFile = true;
+            filetype = FileType.c;
 
-            scope p = new CParser!AST(this, buf, cast(bool) docfile, target.c);
+            scope p = new CParser!AST(this, buf, cast(bool) docfile, target.c, &defines);
             p.nextToken();
             checkCompiledImport();
             members = p.parseModule();
@@ -1014,8 +1008,7 @@ extern (C++) final class Module : Package
             members = p.parseModuleContent();
             numlines = p.scanloc.linnum;
         }
-        srcBuffer.destroy();
-        srcBuffer = null;
+
         /* The symbol table into which the module is to be inserted.
          */
 
@@ -1141,7 +1134,7 @@ extern (C++) final class Module : Package
         //printf("+Module::importAll(this = %p, '%s'): parent = %p\n", this, toChars(), parent);
         if (_scope)
             return; // already done
-        if (isDocFile)
+        if (filetype == FileType.ddoc)
         {
             error("is a Ddoc file, cannot import it");
             return;
@@ -1161,8 +1154,10 @@ extern (C++) final class Module : Package
         // If it isn't there, some compiler rewrites, like
         //    classinst == classinst -> .object.opEquals(classinst, classinst)
         // would fail inside object.d.
-        if (members.dim == 0 || (*members)[0].ident != Id.object ||
-            (*members)[0].isImport() is null)
+        if (filetype != FileType.c &&
+            (members.dim == 0 ||
+             (*members)[0].ident != Id.object ||
+             (*members)[0].isImport() is null))
         {
             auto im = new Import(Loc.initial, null, Id.object, null, 0);
             members.shift(im);
@@ -1408,7 +1403,7 @@ extern (C++) final class Module : Package
         a.setDim(0);
     }
 
-    extern (D) static void clearCache()
+    extern (D) static void clearCache() nothrow
     {
         foreach (Module m; amodules)
             m.searchCacheIdent = null;
@@ -1419,7 +1414,7 @@ extern (C++) final class Module : Package
      * return true if it imports m.
      * Can be used to detect circular imports.
      */
-    int imports(Module m)
+    int imports(Module m) nothrow
     {
         //printf("%s Module::imports(%s)\n", toChars(), m.toChars());
         version (none)
@@ -1442,14 +1437,14 @@ extern (C++) final class Module : Package
         return false;
     }
 
-    bool isRoot()
+    bool isRoot() nothrow
     {
         return this.importedFrom == this;
     }
 
     // true if the module source file is directly
     // listed in command line.
-    bool isCoreModule(Identifier ident)
+    bool isCoreModule(Identifier ident) nothrow
     {
         return this.ident == ident && parent && parent.ident == Id.core && !parent.parent;
     }
@@ -1468,7 +1463,7 @@ extern (C++) final class Module : Package
 
     uint[uint] ctfe_cov; /// coverage information from ctfe execution_count[line]
 
-    override inout(Module) isModule() inout
+    override inout(Module) isModule() inout nothrow
     {
         return this;
     }
@@ -1483,7 +1478,7 @@ extern (C++) final class Module : Package
      * Params:
      *    buf = The buffer to write to
      */
-    void fullyQualifiedName(ref OutBuffer buf)
+    void fullyQualifiedName(ref OutBuffer buf) nothrow
     {
         buf.writestring(ident.toString());
 
@@ -1497,7 +1492,7 @@ extern (C++) final class Module : Package
     /** Lazily initializes and returns the escape table.
     Turns out it eats a lot of memory.
     */
-    extern(D) Escape* escapetable()
+    extern(D) Escape* escapetable() nothrow
     {
         if (!_escapetable)
             _escapetable = new Escape();

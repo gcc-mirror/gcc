@@ -1,4 +1,5 @@
 /* TEST_OUTPUT:
+REQUIRED_ARGS: -preview=dip1000
 ---
 fail_compilation/test22145.d(115): Error: scope variable `x` assigned to non-scope `global`
 ---
@@ -25,4 +26,3 @@ void test() @safe
         global = x;
     }
 }
-

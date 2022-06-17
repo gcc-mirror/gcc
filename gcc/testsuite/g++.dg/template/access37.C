@@ -6,10 +6,10 @@ struct EnumeratorRange {
     EnumeratorRange range_;
 
     friend void f(Iterator i) {
-      i.range_.end_reached_; // { dg-error "private" }
-      i.range_.EnumeratorRange::end_reached_; // { dg-error "private" }
-      &i.range_.end_reached_; // { dg-error "private" }
-      &i.range_.EnumeratorRange::end_reached_; // { dg-error "private" }
+      i.range_.end_reached_;
+      i.range_.EnumeratorRange::end_reached_;
+      &i.range_.end_reached_;
+      &i.range_.EnumeratorRange::end_reached_;
     }
   };
 

@@ -507,6 +507,7 @@ cgraph_node::create (tree decl)
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   node->decl = decl;
+  node->semantic_interposition = opt_for_fn (decl, flag_semantic_interposition);
 
   if ((flag_openacc || flag_openmp)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
@@ -544,12 +545,12 @@ cgraph_node::get_create (tree decl)
       node->order = first_clone->order;
       symtab->symtab_prevail_in_asm_name_hash (node);
       node->decl->decl_with_vis.symtab_node = node;
-      if (dump_file)
+      if (dump_file && symtab->state != PARSING)
 	fprintf (dump_file, "Introduced new external node "
 		 "(%s) and turned into root of the clone tree.\n",
 		 node->dump_name ());
     }
-  else if (dump_file)
+  else if (dump_file && symtab->state != PARSING)
     fprintf (dump_file, "Introduced new external node "
 	     "(%s).\n", node->dump_name ());
   return node;
@@ -1892,7 +1893,11 @@ cgraph_node::remove (void)
   if (prev_sibling_clone)
     prev_sibling_clone->next_sibling_clone = next_sibling_clone;
   else if (clone_of)
-    clone_of->clones = next_sibling_clone;
+    {
+      clone_of->clones = next_sibling_clone;
+      if (!clone_of->analyzed && !clone_of->clones && !clones)
+	clone_of->release_body ();
+    }
   if (next_sibling_clone)
     next_sibling_clone->prev_sibling_clone = prev_sibling_clone;
   if (clones)
@@ -3487,7 +3492,11 @@ cgraph_node::verify_node (void)
 	     "returns a pointer");
       error_found = true;
     }
-  if (definition && externally_visible
+  if (definition
+      && externally_visible
+      /* For aliases in lto1 free_lang_data doesn't guarantee preservation
+	 of opt_for_fn (decl, flag_semantic_interposition).  See PR105399.  */
+      && (!alias || !in_lto_p)
       && semantic_interposition
 	 != opt_for_fn (decl, flag_semantic_interposition))
     {

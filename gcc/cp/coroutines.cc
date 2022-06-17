@@ -344,7 +344,7 @@ instantiate_coro_traits (tree fndecl, location_t kw)
     }
 
   tree argtypepack = cxx_make_type (TYPE_ARGUMENT_PACK);
-  SET_ARGUMENT_PACK_ARGS (argtypepack, argtypes);
+  ARGUMENT_PACK_ARGS (argtypepack) = argtypes;
 
   tree targ = make_tree_vec (2);
   TREE_VEC_ELT (targ, 0) = TREE_TYPE (functyp);
@@ -513,8 +513,14 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 		      coro_info->promise_type);
 	  inform (DECL_SOURCE_LOCATION (BASELINK_FUNCTIONS (has_ret_void)),
 		  "%<return_void%> declared here");
-	  inform (DECL_SOURCE_LOCATION (BASELINK_FUNCTIONS (has_ret_val)),
-		  "%<return_value%> declared here");
+	  has_ret_val = BASELINK_FUNCTIONS (has_ret_val);
+	  const char *message = "%<return_value%> declared here";
+	  if (TREE_CODE (has_ret_val) == OVERLOAD)
+	    {
+	      has_ret_val = OVL_FIRST (has_ret_val);
+	      message = "%<return_value%> first declared here";
+	    }
+	  inform (DECL_SOURCE_LOCATION (has_ret_val), message);
 	  coro_info->coro_co_return_error_emitted = true;
 	  return false;
 	}
@@ -877,13 +883,14 @@ coro_diagnose_throwing_fn (tree fndecl)
 static bool
 coro_diagnose_throwing_final_aw_expr (tree expr)
 {
-  tree t = TARGET_EXPR_INITIAL (expr);
+  if (TREE_CODE (expr) == TARGET_EXPR)
+    expr = TARGET_EXPR_INITIAL (expr);
   tree fn = NULL_TREE;
-  if (TREE_CODE (t) == CALL_EXPR)
-    fn = CALL_EXPR_FN(t);
-  else if (TREE_CODE (t) == AGGR_INIT_EXPR)
-    fn = AGGR_INIT_EXPR_FN (t);
-  else if (TREE_CODE (t) == CONSTRUCTOR)
+  if (TREE_CODE (expr) == CALL_EXPR)
+    fn = CALL_EXPR_FN (expr);
+  else if (TREE_CODE (expr) == AGGR_INIT_EXPR)
+    fn = AGGR_INIT_EXPR_FN (expr);
+  else if (TREE_CODE (expr) == CONSTRUCTOR)
     return false;
   else
     {
@@ -1148,10 +1155,13 @@ finish_co_await_expr (location_t kw, tree expr)
      extraneous warnings during substitution.  */
   suppress_warning (current_function_decl, OPT_Wreturn_type);
 
-  /* If we don't know the promise type, we can't proceed, build the
-     co_await with the expression unchanged.  */
-  tree functype = TREE_TYPE (current_function_decl);
-  if (dependent_type_p (functype) || type_dependent_expression_p (expr))
+  /* Defer expansion when we are processing a template.
+     FIXME: If the coroutine function's type is not dependent, and the operand
+     is not dependent, we should determine the type of the co_await expression
+     using the DEPENDENT_EXPR wrapper machinery.  That allows us to determine
+     the subexpression type, but leave its operand unchanged and then
+     instantiate it later.  */
+  if (processing_template_decl)
     {
       tree aw_expr = build5_loc (kw, CO_AWAIT_EXPR, unknown_type_node, expr,
 				 NULL_TREE, NULL_TREE, NULL_TREE,
@@ -1222,10 +1232,9 @@ finish_co_yield_expr (location_t kw, tree expr)
      extraneous warnings during substitution.  */
   suppress_warning (current_function_decl, OPT_Wreturn_type);
 
-  /* If we don't know the promise type, we can't proceed, build the
-     co_await with the expression unchanged.  */
-  tree functype = TREE_TYPE (current_function_decl);
-  if (dependent_type_p (functype) || type_dependent_expression_p (expr))
+  /* Defer expansion when we are processing a template; see FIXME in the
+     co_await code.  */
+  if (processing_template_decl)
     return build2_loc (kw, CO_YIELD_EXPR, unknown_type_node, expr, NULL_TREE);
 
   if (!coro_promise_type_found_p (current_function_decl, kw))
@@ -1307,10 +1316,9 @@ finish_co_return_stmt (location_t kw, tree expr)
       && check_for_bare_parameter_packs (expr))
     return error_mark_node;
 
-  /* If we don't know the promise type, we can't proceed, build the
-     co_return with the expression unchanged.  */
-  tree functype = TREE_TYPE (current_function_decl);
-  if (dependent_type_p (functype) || type_dependent_expression_p (expr))
+  /* Defer expansion when we are processing a template; see FIXME in the
+     co_await code.  */
+  if (processing_template_decl)
     {
       /* co_return expressions are always void type, regardless of the
 	 expression type.  */
@@ -3109,7 +3117,7 @@ maybe_promote_temps (tree *stmt, void *d)
 	 If the initializer is a conditional expression, we need to collect
 	 and declare any promoted variables nested within it.  DTORs for such
 	 variables must be run conditionally too.  */
-      if (t->var && DECL_NAME (t->var))
+      if (t->var)
 	{
 	  tree var = t->var;
 	  DECL_CHAIN (var) = vlist;
@@ -3310,7 +3318,7 @@ add_var_to_bind (tree& bind, tree var_type,
   tree b_vars = BIND_EXPR_VARS (bind);
   /* Build a variable to hold the condition, this will be included in the
      frame as a local var.  */
-  char *nam = xasprintf ("%s.%d", nam_root, nam_vers);
+  char *nam = xasprintf ("__%s_%d", nam_root, nam_vers);
   tree newvar = build_lang_decl (VAR_DECL, get_identifier (nam), var_type);
   free (nam);
   DECL_CHAIN (newvar) = b_vars;
@@ -3905,6 +3913,7 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
   if (TREE_CODE (*stmt) == BIND_EXPR)
     {
       tree lvar;
+      unsigned serial = 0;
       for (lvar = BIND_EXPR_VARS (*stmt); lvar != NULL;
 	   lvar = DECL_CHAIN (lvar))
 	{
@@ -3955,7 +3964,7 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	     scopes with identically named locals and still be able to
 	     identify them in the coroutine frame.  */
 	  tree lvname = DECL_NAME (lvar);
-	  char *buf;
+	  char *buf = NULL;
 
 	  /* The outermost bind scope contains the artificial variables that
 	     we inject to implement the coro state machine.  We want to be able
@@ -3966,12 +3975,13 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	    buf = xasprintf ("%s_%u_%u", IDENTIFIER_POINTER (lvname),
 			     lvd->nest_depth, lvd->bind_indx);
 	  else
-	    buf = xasprintf ("_D%u_%u_%u", DECL_UID (lvar), lvd->nest_depth,
-			     lvd->bind_indx);
+	    buf = xasprintf ("_D%u_%u_%u", lvd->nest_depth, lvd->bind_indx,
+			     serial++);
+
 	  /* TODO: Figure out if we should build a local type that has any
 	     excess alignment or size from the original decl.  */
-	  local_var.field_id
-	    = coro_make_frame_entry (lvd->field_list, buf, lvtype, lvd->loc);
+	  local_var.field_id = coro_make_frame_entry (lvd->field_list, buf,
+						      lvtype, lvd->loc);
 	  free (buf);
 	  /* We don't walk any of the local var sub-trees, they won't contain
 	     any bind exprs.  */
@@ -4540,6 +4550,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   BIND_EXPR_BLOCK (ramp_bind) = top_block;
   BLOCK_VARS (top_block) = BIND_EXPR_VARS (ramp_bind);
   BLOCK_SUBBLOCKS (top_block) = NULL_TREE;
+  current_binding_level->blocks = top_block;
 
   /* The decl_expr for the coro frame pointer, initialize to zero so that we
      can pass it to the IFN_CO_FRAME (since there's no way to pass a type,

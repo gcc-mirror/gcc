@@ -721,6 +721,18 @@ Provides AWK-like parsing functions, with an easy interface for parsing one
 or more files containing formatted data.  The file is viewed as a database
 where each record is a line and a field is a data element in this line.
 
+.. _`GNAT.Binary_Search_(g-binsea.ads)`:
+
+``GNAT.Binary_Search`` (:file:`g-binsea.ads`)
+================================================
+
+.. index:: GNAT.Binary_Search (g-binsea.ads)
+
+.. index:: Binary search
+
+Allow binary search of a sorted array (or of an array-like container;
+the generic does not reference the array directly).
+
 .. _`GNAT.Bind_Environment_(g-binenv.ads)`:
 
 ``GNAT.Bind_Environment`` (:file:`g-binenv.ads`)
@@ -1289,6 +1301,24 @@ copied from the printf() routine and should therefore gives identical
 output. Some generic routines are provided to be able to use types
 derived from Integer, Float or enumerations as values for the
 formatted string.
+
+.. _`GNAT.Generic_Fast_Math_Functions_(g-gfmafu.ads)`:
+
+``GNAT.Generic_Fast_Math_Functions`` (:file:`g-gfmafu.ads`)
+===========================================================
+
+.. index:: GNAT.Generic_Fast_Math_Functions (g-gfmafu.ads)
+
+.. index:: Mathematical functions
+
+Provides direct access to the underlying implementation of the common
+mathematical functions, generally from the system mathematical library.
+This differs from ``Ada.Numerics.Generic_Elementary_Functions`` in that
+the implementation may deviate from the semantics specified for these
+functions in the Reference Manual, for example ``Numerics.Argument_Error``
+is not raised. On selected platforms, some of these functions may also
+have a vector implementation that can be automatically used by the
+compiler when auto-vectorization is enabled.
 
 .. _`GNAT.Heap_Sort_(g-heasor.ads)`:
 
@@ -2177,7 +2207,7 @@ x86, and x86_64 platforms.
 
 This package provides the interface to the low level routines used
 by the generated code for allocation and freeing storage for the
-default storage pool (analogous to the C routines malloc and free.
+default storage pool (analogous to the C routines malloc and free).
 It also provides a reallocation interface analogous to the C routine
 realloc. The body of this unit may be modified to provide alternative
 allocation mechanisms for the default pool, and in addition, direct

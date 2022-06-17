@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 }
 
 /* { dg-output "HWAddressSanitizer: tag-mismatch on address 0x\[0-9a-f\]*.*" } */
-/* { dg-output "READ of size 1 at 0x\[0-9a-f\]* tags: \[\[:xdigit:\]\]\[\[:xdigit:\]\]/\[\[:xdigit:\]\]\[\[:xdigit:\]\] \\(ptr/mem\\) in thread T0.*" } */
+/* { dg-output "READ of size 1 at 0x\[0-9a-f\]* tags: \[\[:xdigit:\]\]\[\[:xdigit:\]\]/\[\[:xdigit:\]\]\[\[:xdigit:\]\].* \\(ptr/mem\\) in thread T0.*" } */
 /* { dg-output "located 0 bytes to the right of 10-byte region.*" } */
 /* { dg-output "allocated here:.*" } */
 /* { dg-output "#1 0x\[0-9a-f\]+ +in _*main \[^\n\r]*heap-overflow.c:18" } */

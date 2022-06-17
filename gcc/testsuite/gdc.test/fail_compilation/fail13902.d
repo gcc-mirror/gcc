@@ -8,11 +8,11 @@ class C { int v; }
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13902.d(45): Error: Using the result of a comma expression is not allowed
+fail_compilation/fail13902.d(45): Error: using the result of a comma expression is not allowed
 fail_compilation/fail13902.d(32): Error: returning `& x` escapes a reference to local variable `x`
 fail_compilation/fail13902.d(33): Error: returning `&s1.v` escapes a reference to local variable `s1`
 fail_compilation/fail13902.d(38): Error: returning `& sa1` escapes a reference to local variable `sa1`
-fail_compilation/fail13902.d(39): Error: returning `&sa2[0][0]` escapes a reference to local variable `sa2`
+fail_compilation/fail13902.d(39): Error: returning `& sa2` escapes a reference to local variable `sa2`
 fail_compilation/fail13902.d(40): Error: returning `& x` escapes a reference to local variable `x`
 fail_compilation/fail13902.d(41): Error: returning `(& x+4)` escapes a reference to local variable `x`
 fail_compilation/fail13902.d(42): Error: returning `& x + cast(long)x * 4L` escapes a reference to local variable `x`
@@ -53,15 +53,15 @@ int* testEscape1()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13902.d(88): Error: Using the result of a comma expression is not allowed
-fail_compilation/fail13902.d(75): Error: returning `& x` escapes a reference to local variable `x`
-fail_compilation/fail13902.d(76): Error: returning `&s1.v` escapes a reference to local variable `s1`
-fail_compilation/fail13902.d(81): Error: returning `& sa1` escapes a reference to local variable `sa1`
-fail_compilation/fail13902.d(82): Error: returning `&sa2[0][0]` escapes a reference to local variable `sa2`
-fail_compilation/fail13902.d(83): Error: returning `& x` escapes a reference to local variable `x`
-fail_compilation/fail13902.d(84): Error: returning `(& x+4)` escapes a reference to local variable `x`
-fail_compilation/fail13902.d(85): Error: returning `& x + cast(long)x * 4L` escapes a reference to local variable `x`
-fail_compilation/fail13902.d(88): Error: returning `& y` escapes a reference to local variable `y`
+fail_compilation/fail13902.d(88): Error: using the result of a comma expression is not allowed
+fail_compilation/fail13902.d(75): Error: returning `& x` escapes a reference to parameter `x`
+fail_compilation/fail13902.d(76): Error: returning `&s1.v` escapes a reference to parameter `s1`
+fail_compilation/fail13902.d(81): Error: returning `& sa1` escapes a reference to parameter `sa1`
+fail_compilation/fail13902.d(82): Error: returning `& sa2` escapes a reference to parameter `sa2`
+fail_compilation/fail13902.d(83): Error: returning `& x` escapes a reference to parameter `x`
+fail_compilation/fail13902.d(84): Error: returning `(& x+4)` escapes a reference to parameter `x`
+fail_compilation/fail13902.d(85): Error: returning `& x + cast(long)x * 4L` escapes a reference to parameter `x`
+fail_compilation/fail13902.d(88): Error: returning `& y` escapes a reference to parameter `y`
 ---
 */
 int* testEscape2(
@@ -98,7 +98,7 @@ int* testEscape2(
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13902.d(123): Error: Using the result of a comma expression is not allowed
+fail_compilation/fail13902.d(123): Error: using the result of a comma expression is not allowed
 ---
 */
 int* testEscape3(
@@ -134,9 +134,9 @@ int* testEscape3(
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13902.d(150): Error: returning `cast(int[])sa1` escapes a reference to local variable `sa1`
-fail_compilation/fail13902.d(151): Error: returning `cast(int[])sa1` escapes a reference to local variable `sa1`
-fail_compilation/fail13902.d(152): Error: returning `sa1[]` escapes a reference to local variable `sa1`
+fail_compilation/fail13902.d(150): Error: returning `cast(int[])sa1` escapes a reference to parameter `sa1`
+fail_compilation/fail13902.d(151): Error: returning `cast(int[])sa1` escapes a reference to parameter `sa1`
+fail_compilation/fail13902.d(152): Error: returning `sa1[]` escapes a reference to parameter `sa1`
 fail_compilation/fail13902.d(155): Error: returning `cast(int[])sa2` escapes a reference to local variable `sa2`
 fail_compilation/fail13902.d(156): Error: returning `cast(int[])sa2` escapes a reference to local variable `sa2`
 fail_compilation/fail13902.d(157): Error: returning `sa2[]` escapes a reference to local variable `sa2`
@@ -223,14 +223,14 @@ ref int testEscapeRef1()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13902.d(240): Error: returning `x` escapes a reference to local variable `x`
-fail_compilation/fail13902.d(241): Error: returning `s1.v` escapes a reference to local variable `s1`
-fail_compilation/fail13902.d(245): Error: returning `sa1[0]` escapes a reference to local variable `sa1`
-fail_compilation/fail13902.d(246): Error: returning `sa2[0][0]` escapes a reference to local variable `sa2`
-fail_compilation/fail13902.d(247): Error: returning `x = 1` escapes a reference to local variable `x`
-fail_compilation/fail13902.d(248): Error: returning `x += 1` escapes a reference to local variable `x`
-fail_compilation/fail13902.d(249): Error: returning `s1.v = 1` escapes a reference to local variable `s1`
-fail_compilation/fail13902.d(250): Error: returning `s1.v += 1` escapes a reference to local variable `s1`
+fail_compilation/fail13902.d(240): Error: returning `x` escapes a reference to parameter `x`
+fail_compilation/fail13902.d(241): Error: returning `s1.v` escapes a reference to parameter `s1`
+fail_compilation/fail13902.d(245): Error: returning `sa1[0]` escapes a reference to parameter `sa1`
+fail_compilation/fail13902.d(246): Error: returning `sa2[0][0]` escapes a reference to parameter `sa2`
+fail_compilation/fail13902.d(247): Error: returning `x = 1` escapes a reference to parameter `x`
+fail_compilation/fail13902.d(248): Error: returning `x += 1` escapes a reference to parameter `x`
+fail_compilation/fail13902.d(249): Error: returning `s1.v = 1` escapes a reference to parameter `s1`
+fail_compilation/fail13902.d(250): Error: returning `s1.v += 1` escapes a reference to parameter `s1`
 ---
 */
 ref int testEscapeRef2(
@@ -324,8 +324,8 @@ int[] testSlice2() { int[3] sa; int n; return sa[n..2][1..2]; }
 TEST_OUTPUT:
 ---
 fail_compilation/fail13902.d(324): Error: returning `vda[0]` escapes a reference to parameter `vda`
-fail_compilation/fail13902.d(324):        perhaps annotate the parameter with `return`
 ---
+
 */
 ref int testDynamicArrayVariadic1(int[] vda...) { return vda[0]; }
 @safe int[]   testDynamicArrayVariadic2(int[] vda...) { return vda[]; }
@@ -334,7 +334,7 @@ int[3]  testDynamicArrayVariadic3(int[] vda...) { return vda[0..3]; }   // no er
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13902.d(335): Error: returning `vsa[0]` escapes a reference to local variable `vsa`
+fail_compilation/fail13902.d(335): Error: returning `vsa[0]` escapes a reference to parameter `vsa`
 fail_compilation/fail13902.d(336): Error: returning `vsa[]` escapes a reference to variadic parameter `vsa`
 ---
 */

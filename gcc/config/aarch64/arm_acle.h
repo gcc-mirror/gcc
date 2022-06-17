@@ -29,6 +29,8 @@
 
 #include <stdint.h>
 
+#pragma GCC aarch64 "arm_acle.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

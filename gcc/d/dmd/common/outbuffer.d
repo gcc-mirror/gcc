@@ -16,6 +16,8 @@ import core.stdc.stdio;
 import core.stdc.string;
 import core.stdc.stdlib;
 
+nothrow:
+
 // In theory these functions should also restore errno, but we don't care because
 // we abort application on error anyway.
 extern (C) private pure @system @nogc nothrow
@@ -53,6 +55,8 @@ struct OutBuffer
     /// Current indent level
     int level;
     // state }
+
+  nothrow:
 
     /**
     Construct given size.
@@ -305,23 +309,24 @@ struct OutBuffer
         writenl();
     }
 
-    // Zero-terminated
-    void writeString(const(char)* s) pure nothrow @trusted
+    /** Write string to buffer, ensure it is zero terminated
+     */
+    void writeStringz(const(char)* s) pure nothrow @trusted
     {
         write(s[0 .. strlen(s)+1]);
     }
 
     /// ditto
-    void writeString(const(char)[] s) pure nothrow
+    void writeStringz(const(char)[] s) pure nothrow
     {
         write(s);
         writeByte(0);
     }
 
     /// ditto
-    void writeString(string s) pure nothrow
+    void writeStringz(string s) pure nothrow
     {
-        writeString(cast(const(char)[])(s));
+        writeStringz(cast(const(char)[])(s));
     }
 
     extern (C++) void prependstring(const(char)* string) pure nothrow

@@ -52,6 +52,24 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
    --  Resize the underlying array if needed so that it can contain one more
    --  element.
 
+   function Elements (C : Container) return Element_Array_Access is
+     (C.Controlled_Base.Base.Elements)
+   with
+     Global => null,
+     Pre    =>
+       C.Controlled_Base.Base /= null
+       and then C.Controlled_Base.Base.Elements /= null;
+
+   function Get
+     (C_E : Element_Array_Access;
+      I   : Count_Type)
+      return Element_Access
+   is
+     (C_E (I).Ref.E_Access)
+   with
+     Global => null,
+     Pre    => C_E /= null and then C_E (I).Ref /= null;
+
    ---------
    -- "=" --
    ---------
@@ -61,9 +79,8 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
       if C1.Length /= C2.Length then
          return False;
       end if;
-
       for I in 1 .. C1.Length loop
-         if C1.Base.Elements (I).all /= C2.Base.Elements (I).all then
+         if Get (Elements (C1), I).all /= Get (Elements (C2), I).all then
             return False;
          end if;
       end loop;
@@ -78,7 +95,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
    function "<=" (C1 : Container; C2 : Container) return Boolean is
    begin
       for I in 1 .. C1.Length loop
-         if Find (C2, C1.Base.Elements (I)) = 0 then
+         if Find (C2, Get (Elements (C1), I)) = 0 then
             return False;
          end if;
       end loop;
@@ -95,49 +112,137 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
       I : Index_Type;
       E : Element_Type) return Container
    is
+      C_B : Array_Base_Access renames C.Controlled_Base.Base;
    begin
-      if To_Count (I) = C.Length + 1 and then C.Length = C.Base.Max_Length then
-         Resize (C.Base);
-         C.Base.Max_Length := C.Base.Max_Length + 1;
-         C.Base.Elements (C.Base.Max_Length) := new Element_Type'(E);
+      if To_Count (I) = C.Length + 1 and then C.Length = C_B.Max_Length then
+         Resize (C_B);
+         C_B.Max_Length := C_B.Max_Length + 1;
+         C_B.Elements (C_B.Max_Length) := Element_Init (E);
 
-         return Container'(Length => C.Base.Max_Length, Base => C.Base);
+         return Container'(Length          => C_B.Max_Length,
+                           Controlled_Base => C.Controlled_Base);
       else
          declare
-            A : constant Array_Base_Access := Content_Init (C.Length);
+            A : constant Array_Base_Controlled_Access :=
+              Content_Init (C.Length);
             P : Count_Type := 0;
          begin
-            A.Max_Length := C.Length + 1;
+            A.Base.Max_Length := C.Length + 1;
             for J in 1 .. C.Length + 1 loop
                if J /= To_Count (I) then
                   P := P + 1;
-                  A.Elements (J) := C.Base.Elements (P);
+                  A.Base.Elements (J) := C_B.Elements (P);
                else
-                  A.Elements (J) := new Element_Type'(E);
+                  A.Base.Elements (J) := Element_Init (E);
                end if;
             end loop;
 
-            return Container'(Length => A.Max_Length,
-                              Base   => A);
+            return Container'(Length           => A.Base.Max_Length,
+                              Controlled_Base  => A);
          end;
       end if;
    end Add;
+
+   ------------
+   -- Adjust --
+   ------------
+
+   procedure Adjust (Controlled_Base : in out Array_Base_Controlled_Access) is
+      C_B : Array_Base_Access renames Controlled_Base.Base;
+   begin
+      if C_B /= null then
+         C_B.Reference_Count := C_B.Reference_Count + 1;
+      end if;
+   end Adjust;
+
+   procedure Adjust (Ctrl_E : in out Controlled_Element_Access) is
+   begin
+      if Ctrl_E.Ref /= null then
+         Ctrl_E.Ref.Reference_Count := Ctrl_E.Ref.Reference_Count + 1;
+      end if;
+   end Adjust;
 
    ------------------
    -- Content_Init --
    ------------------
 
-   function Content_Init (L : Count_Type := 0) return Array_Base_Access
+   function Content_Init
+     (L : Count_Type := 0) return Array_Base_Controlled_Access
    is
       Max_Init : constant Count_Type := 100;
       Size     : constant Count_Type :=
         (if L < Count_Type'Last - Max_Init then L + Max_Init
          else Count_Type'Last);
+
+      --  The Access in the array will be initialized to null
+
       Elements : constant Element_Array_Access :=
         new Element_Array'(1 .. Size => <>);
+      B        : constant Array_Base_Access :=
+        new Array_Base'(Reference_Count => 1,
+                        Max_Length      => 0,
+                        Elements        => Elements);
    begin
-      return new Array_Base'(Max_Length => 0, Elements => Elements);
+      return (Ada.Finalization.Controlled with Base => B);
    end Content_Init;
+
+   ------------------
+   -- Element_Init --
+   ------------------
+
+   function Element_Init (E : Element_Type) return Controlled_Element_Access
+   is
+      Refcounted_E : constant Refcounted_Element_Access :=
+        new Refcounted_Element'(Reference_Count => 1,
+                                E_Access        => new Element_Type'(E));
+   begin
+      return (Ada.Finalization.Controlled with Ref => Refcounted_E);
+   end Element_Init;
+
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (Controlled_Base : in out Array_Base_Controlled_Access)
+   is
+      procedure Unchecked_Free_Base is new Ada.Unchecked_Deallocation
+        (Object => Array_Base,
+         Name   => Array_Base_Access);
+      procedure Unchecked_Free_Array is new Ada.Unchecked_Deallocation
+        (Object => Element_Array,
+         Name   => Element_Array_Access);
+
+      C_B : Array_Base_Access renames Controlled_Base.Base;
+   begin
+      if C_B /= null then
+         C_B.Reference_Count := C_B.Reference_Count - 1;
+         if C_B.Reference_Count = 0 then
+            Unchecked_Free_Array (Controlled_Base.Base.Elements);
+            Unchecked_Free_Base (Controlled_Base.Base);
+         end if;
+         C_B := null;
+      end if;
+   end Finalize;
+
+   procedure Finalize (Ctrl_E : in out Controlled_Element_Access) is
+      procedure Unchecked_Free_Ref is new Ada.Unchecked_Deallocation
+        (Object => Refcounted_Element,
+         Name   => Refcounted_Element_Access);
+
+      procedure Unchecked_Free_Element is new Ada.Unchecked_Deallocation
+        (Object => Element_Type,
+         Name   => Element_Access);
+
+   begin
+      if Ctrl_E.Ref /= null then
+         Ctrl_E.Ref.Reference_Count := Ctrl_E.Ref.Reference_Count - 1;
+         if Ctrl_E.Ref.Reference_Count = 0 then
+            Unchecked_Free_Element (Ctrl_E.Ref.E_Access);
+            Unchecked_Free_Ref (Ctrl_E.Ref);
+         end if;
+         Ctrl_E.Ref := null;
+      end if;
+   end Finalize;
 
    ----------
    -- Find --
@@ -146,7 +251,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
    function Find (C : Container; E : access Element_Type) return Count_Type is
    begin
       for I in 1 .. C.Length loop
-         if C.Base.Elements (I).all = E.all then
+         if Get (Elements (C), I).all = E.all then
             return I;
          end if;
       end loop;
@@ -162,7 +267,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
    ---------
 
    function Get (C : Container; I : Index_Type) return Element_Type is
-     (C.Base.Elements (To_Count (I)).all);
+      (Get (Elements (C), To_Count (I)).all);
 
    ------------------
    -- Intersection --
@@ -170,19 +275,19 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
 
    function Intersection (C1 : Container; C2 : Container) return Container is
       L : constant Count_Type := Num_Overlaps (C1, C2);
-      A : constant Array_Base_Access := Content_Init (L);
+      A : constant Array_Base_Controlled_Access := Content_Init (L);
       P : Count_Type := 0;
 
    begin
-      A.Max_Length := L;
+      A.Base.Max_Length := L;
       for I in 1 .. C1.Length loop
-         if Find (C2, C1.Base.Elements (I)) > 0 then
+         if Find (C2, Get (Elements (C1), I)) > 0 then
             P := P + 1;
-            A.Elements (P) := C1.Base.Elements (I);
+            A.Base.Elements (P) := Elements (C1) (I);
          end if;
       end loop;
 
-      return Container'(Length => P, Base => A);
+      return Container'(Length => P, Controlled_Base => A);
    end Intersection;
 
    ------------
@@ -199,7 +304,7 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
 
    begin
       for I in 1 .. C1.Length loop
-         if Find (C2, C1.Base.Elements (I)) > 0 then
+         if Find (C2, Get (Elements (C1), I)) > 0 then
             P := P + 1;
          end if;
       end loop;
@@ -214,21 +319,23 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
    function Remove (C : Container; I : Index_Type) return Container is
    begin
       if To_Count (I) = C.Length then
-         return Container'(Length => C.Length - 1, Base => C.Base);
+         return Container'(Length          => C.Length - 1,
+                           Controlled_Base => C.Controlled_Base);
       else
          declare
-            A : constant Array_Base_Access := Content_Init (C.Length - 1);
+            A : constant Array_Base_Controlled_Access
+              := Content_Init (C.Length - 1);
             P : Count_Type := 0;
          begin
-            A.Max_Length := C.Length - 1;
+            A.Base.Max_Length := C.Length - 1;
             for J in 1 .. C.Length loop
                if J /= To_Count (I) then
                   P := P + 1;
-                  A.Elements (P) := C.Base.Elements (J);
+                  A.Base.Elements (P) := Elements (C) (J);
                end if;
             end loop;
 
-            return Container'(Length => C.Length - 1, Base => A);
+            return Container'(Length => C.Length - 1, Controlled_Base => A);
          end;
       end if;
    end Remove;
@@ -277,13 +384,14 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
       E : Element_Type) return Container
    is
       Result : constant Container :=
-                 Container'(Length => C.Length,
-                            Base => Content_Init (C.Length));
+                 Container'(Length          => C.Length,
+                            Controlled_Base => Content_Init (C.Length));
+      R_Base : Array_Base_Access renames Result.Controlled_Base.Base;
 
    begin
-      Result.Base.Max_Length := C.Length;
-      Result.Base.Elements (1 .. C.Length) := C.Base.Elements (1 .. C.Length);
-      Result.Base.Elements (To_Count (I)) := new Element_Type'(E);
+      R_Base.Max_Length := C.Length;
+      R_Base.Elements (1 .. C.Length) := Elements (C) (1 .. C.Length);
+      R_Base.Elements (To_Count (I)) := Element_Init (E);
       return Result;
    end Set;
 
@@ -305,20 +413,19 @@ package body Ada.Containers.Functional_Base with SPARK_Mode => Off is
 
       declare
          L : constant Count_Type := Length (C1) - N + Length (C2);
-         A : constant Array_Base_Access := Content_Init (L);
+         A : constant Array_Base_Controlled_Access := Content_Init (L);
          P : Count_Type := Length (C1);
-
       begin
-         A.Max_Length := L;
-         A.Elements (1 .. C1.Length) := C1.Base.Elements (1 .. C1.Length);
+         A.Base.Max_Length := L;
+         A.Base.Elements (1 .. C1.Length) := Elements (C1) (1 .. C1.Length);
          for I in 1 .. C2.Length loop
-            if Find (C1, C2.Base.Elements (I)) = 0 then
+            if Find (C1, Get (Elements (C2), I)) = 0 then
                P := P + 1;
-               A.Elements (P) := C2.Base.Elements (I);
+               A.Base.Elements (P) := Elements (C2) (I);
             end if;
          end loop;
 
-         return Container'(Length => L, Base => A);
+         return Container'(Length => L, Controlled_Base => A);
       end;
    end Union;
 

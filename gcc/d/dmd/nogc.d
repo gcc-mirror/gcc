@@ -84,6 +84,17 @@ public:
             }
             f.printGCUsage(e.loc, "setting `length` may cause a GC allocation");
         }
+        else if (fd.ident == Id._d_arrayappendT || fd.ident == Id._d_arrayappendcTX)
+        {
+            if (f.setGC())
+            {
+                e.error("cannot use operator `~=` in `@nogc` %s `%s`",
+                    f.kind(), f.toPrettyChars());
+                err = true;
+                return;
+            }
+            f.printGCUsage(e.loc, "operator `~=` may cause a GC allocation");
+        }
     }
 
     override void visit(ArrayLiteralExp e)
@@ -137,9 +148,9 @@ public:
 
     override void visit(DeleteExp e)
     {
-        if (e.e1.op == EXP.variable)
+        if (VarExp ve = e.e1.isVarExp())
         {
-            VarDeclaration v = (cast(VarExp)e.e1).var.isVarDeclaration();
+            VarDeclaration v = ve.var.isVarDeclaration();
             if (v && v.onstack)
                 return; // delete for scope allocated class object
         }
@@ -181,14 +192,15 @@ public:
 
     override void visit(CatAssignExp e)
     {
+        /* CatAssignExp will exist in `__traits(compiles, ...)` and in the `.e1` branch of a `__ctfe ? :` CondExp.
+         * The other branch will be `_d_arrayappendcTX(e1, 1), e1[$-1]=e2` which will generate the warning about
+         * GC usage. See visit(CallExp).
+         */
         if (f.setGC())
         {
-            e.error("cannot use operator `~=` in `@nogc` %s `%s`",
-                f.kind(), f.toPrettyChars());
             err = true;
             return;
         }
-        f.printGCUsage(e.loc, "operator `~=` may cause a GC allocation");
     }
 
     override void visit(CatExp e)

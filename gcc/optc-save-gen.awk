@@ -1104,7 +1104,7 @@ for (i = 0; i < n_target_val; i++) {
 }
 
 if (has_target_explicit_mask) {
-	print "  for (size_t i = 0; i < sizeof (ptr1->explicit_mask) / sizeof (ptr1->explicit_mask[0]); i++)";
+	print "  for (size_t i = 0; i < ARRAY_SIZE (ptr1->explicit_mask); i++)";
 	print "    if (ptr1->explicit_mask[i] != ptr2->explicit_mask[i])";
 	print "      return false;"
 }
@@ -1152,7 +1152,7 @@ for (i = 0; i < n_target_val; i++) {
 	print "  hstate.add_hwi (ptr->" name");";
 }
 if (has_target_explicit_mask) {
-	print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+	print "  for (size_t i = 0; i < ARRAY_SIZE (ptr->explicit_mask); i++)";
 	print "    hstate.add_hwi (ptr->explicit_mask[i]);";
 }
 
@@ -1192,7 +1192,7 @@ for (i = 0; i < n_target_val; i++) {
 }
 
 if (has_target_explicit_mask) {
-	print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+	print "  for (size_t i = 0; i < ARRAY_SIZE (ptr->explicit_mask); i++)";
 	print "    bp_pack_value (bp, ptr->explicit_mask[i], 64);";
 }
 
@@ -1235,7 +1235,7 @@ for (i = 0; i < n_target_val; i++) {
 }
 
 if (has_target_explicit_mask) {
-	print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+	print "  for (size_t i = 0; i < ARRAY_SIZE (ptr->explicit_mask); i++)";
 	print "    ptr->explicit_mask[i] = bp_unpack_value (bp, 64);";
 }
 
@@ -1317,7 +1317,7 @@ for (i = 0; i < n_opt_val; i++) {
 	else
 		print "  hstate.add_hwi (ptr->" name");";
 }
-print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+print "  for (size_t i = 0; i < ARRAY_SIZE (ptr->explicit_mask); i++)";
 print "    hstate.add_hwi (ptr->explicit_mask[i]);";
 print "  return hstate.end ();";
 print "}";
@@ -1346,7 +1346,7 @@ for (i = 0; i < n_opt_val; i++) {
 		print "    return false;";
 	}
 }
-print "  for (size_t i = 0; i < sizeof (ptr1->explicit_mask) / sizeof (ptr1->explicit_mask[0]); i++)";
+print "  for (size_t i = 0; i < ARRAY_SIZE (ptr1->explicit_mask); i++)";
 print "    if (ptr1->explicit_mask[i] != ptr2->explicit_mask[i])";
 print "      return false;"
 print "  return true;";
@@ -1380,7 +1380,7 @@ for (i = 0; i < n_opt_val; i++) {
 		}
 	}
 }
-print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+print "  for (size_t i = 0; i < ARRAY_SIZE (ptr->explicit_mask); i++)";
 print "    bp_pack_value (bp, ptr->explicit_mask[i], 64);";
 print "}";
 
@@ -1412,7 +1412,7 @@ for (i = 0; i < n_opt_val; i++) {
 		}
 	}
 }
-print "  for (size_t i = 0; i < sizeof (ptr->explicit_mask) / sizeof (ptr->explicit_mask[0]); i++)";
+print "  for (size_t i = 0; i < ARRAY_SIZE (ptr->explicit_mask); i++)";
 print "    ptr->explicit_mask[i] = bp_unpack_value (bp, 64);";
 print "}";
 print "/* Free heap memory used by optimization options  */";

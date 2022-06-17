@@ -82,7 +82,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 {
   aarch64_def_or_undef (flag_unsafe_math_optimizations, "__ARM_FP_FAST", pfile);
 
-  builtin_define_with_int_value ("__ARM_ARCH", aarch64_architecture_version);
+  builtin_define_with_int_value ("__ARM_ARCH", AARCH64_ISA_V9 ? 9 : 8);
 
   builtin_define_with_int_value ("__ARM_SIZEOF_MINIMAL_ENUM",
 				 flag_short_enums ? 1 : 4);
@@ -302,6 +302,8 @@ aarch64_pragma_aarch64 (cpp_reader *)
     aarch64_sve::handle_arm_sve_h ();
   else if (strcmp (name, "arm_neon.h") == 0)
     handle_arm_neon_h ();
+  else if (strcmp (name, "arm_acle.h") == 0)
+    handle_arm_acle_h ();
   else
     error ("unknown %<#pragma GCC aarch64%> option %qs", name);
 }

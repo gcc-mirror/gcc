@@ -50,15 +50,15 @@
 
 @item avrxmega2
 ``XMEGA'' devices with more than 8@tie{}KiB and up to 64@tie{}KiB of program memory.
-@*@var{mcu}@tie{}= @code{atxmega8e5}, @code{atxmega16a4}, @code{atxmega16a4u}, @code{atxmega16c4}, @code{atxmega16d4}, @code{atxmega16e5}, @code{atxmega32a4}, @code{atxmega32a4u}, @code{atxmega32c3}, @code{atxmega32c4}, @code{atxmega32d3}, @code{atxmega32d4}, @code{atxmega32e5}.
+@*@var{mcu}@tie{}= @code{atxmega8e5}, @code{atxmega16a4}, @code{atxmega16a4u}, @code{atxmega16c4}, @code{atxmega16d4}, @code{atxmega16e5}, @code{atxmega32a4}, @code{atxmega32a4u}, @code{atxmega32c3}, @code{atxmega32c4}, @code{atxmega32d3}, @code{atxmega32d4}, @code{atxmega32e5}, @code{avr64da28}, @code{avr64da32}, @code{avr64da48}, @code{avr64da64}, @code{avr64db28}, @code{avr64db32}, @code{avr64db48}, @code{avr64db64}.
 
 @item avrxmega3
 ``XMEGA'' devices with up to 64@tie{}KiB of combined program memory and RAM, and with program memory visible in the RAM address space.
-@*@var{mcu}@tie{}= @code{attiny202}, @code{attiny204}, @code{attiny212}, @code{attiny214}, @code{attiny402}, @code{attiny404}, @code{attiny406}, @code{attiny412}, @code{attiny414}, @code{attiny416}, @code{attiny417}, @code{attiny804}, @code{attiny806}, @code{attiny807}, @code{attiny814}, @code{attiny816}, @code{attiny817}, @code{attiny1604}, @code{attiny1606}, @code{attiny1607}, @code{attiny1614}, @code{attiny1616}, @code{attiny1617}, @code{attiny3214}, @code{attiny3216}, @code{attiny3217}, @code{atmega808}, @code{atmega809}, @code{atmega1608}, @code{atmega1609}, @code{atmega3208}, @code{atmega3209}, @code{atmega4808}, @code{atmega4809}.
+@*@var{mcu}@tie{}= @code{attiny202}, @code{attiny204}, @code{attiny212}, @code{attiny214}, @code{attiny402}, @code{attiny404}, @code{attiny406}, @code{attiny412}, @code{attiny414}, @code{attiny416}, @code{attiny417}, @code{attiny804}, @code{attiny806}, @code{attiny807}, @code{attiny814}, @code{attiny816}, @code{attiny817}, @code{attiny1604}, @code{attiny1606}, @code{attiny1607}, @code{attiny1614}, @code{attiny1616}, @code{attiny1617}, @code{attiny3214}, @code{attiny3216}, @code{attiny3217}, @code{atmega808}, @code{atmega809}, @code{atmega1608}, @code{atmega1609}, @code{atmega3208}, @code{atmega3209}, @code{atmega4808}, @code{atmega4809}, @code{avr32da28}, @code{avr32da32}, @code{avr32da48}, @code{avr32db28}, @code{avr32db32}, @code{avr32db48}.
 
 @item avrxmega4
 ``XMEGA'' devices with more than 64@tie{}KiB and up to 128@tie{}KiB of program memory.
-@*@var{mcu}@tie{}= @code{atxmega64a3}, @code{atxmega64a3u}, @code{atxmega64a4u}, @code{atxmega64b1}, @code{atxmega64b3}, @code{atxmega64c3}, @code{atxmega64d3}, @code{atxmega64d4}.
+@*@var{mcu}@tie{}= @code{atxmega64a3}, @code{atxmega64a3u}, @code{atxmega64a4u}, @code{atxmega64b1}, @code{atxmega64b3}, @code{atxmega64c3}, @code{atxmega64d3}, @code{atxmega64d4}, @code{avr128da28}, @code{avr128da32}, @code{avr128da48}, @code{avr128da64}, @code{avr128db28}, @code{avr128db32}, @code{avr128db48}, @code{avr128db64}.
 
 @item avrxmega5
 ``XMEGA'' devices with more than 64@tie{}KiB and up to 128@tie{}KiB of program memory and more than 64@tie{}KiB of RAM.

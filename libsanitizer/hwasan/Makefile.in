@@ -152,9 +152,10 @@ am__objects_1 = hwasan_allocation_functions.lo hwasan_allocator.lo \
 	hwasan_fuchsia.lo hwasan_globals.lo hwasan_interceptors.lo \
 	hwasan_interceptors_vfork.lo hwasan_linux.lo \
 	hwasan_memintrinsics.lo hwasan_new_delete.lo \
-	hwasan_poisoning.lo hwasan_report.lo hwasan_setjmp_aarch64.lo \
-	hwasan_setjmp_x86_64.lo hwasan_tag_mismatch_aarch64.lo \
-	hwasan_thread.lo hwasan_thread_list.lo hwasan_type_test.lo
+	hwasan_poisoning.lo hwasan_preinit.lo hwasan_report.lo \
+	hwasan_setjmp_aarch64.lo hwasan_setjmp_x86_64.lo \
+	hwasan_tag_mismatch_aarch64.lo hwasan_thread.lo \
+	hwasan_thread_list.lo hwasan_type_test.lo
 am_libhwasan_la_OBJECTS = $(am__objects_1)
 libhwasan_la_OBJECTS = $(am_libhwasan_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -387,7 +388,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -430,6 +430,7 @@ hwasan_files = \
 	hwasan_memintrinsics.cpp \
 	hwasan_new_delete.cpp \
 	hwasan_poisoning.cpp \
+	hwasan_preinit.cpp \
 	hwasan_report.cpp \
 	hwasan_setjmp_aarch64.S \
 	hwasan_setjmp_x86_64.S \
@@ -574,6 +575,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_memintrinsics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_new_delete.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_poisoning.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_preinit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_setjmp_aarch64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hwasan_setjmp_x86_64.Plo@am__quote@

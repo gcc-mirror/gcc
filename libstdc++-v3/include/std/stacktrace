@@ -30,13 +30,15 @@
 
 #if __cplusplus > 202002L && _GLIBCXX_HAVE_STACKTRACE
 #include <compare>
+#include <new>
 #include <string>
 #include <sstream>
+#include <bits/memory_resource.h>
 #include <bits/stl_algobase.h>
 #include <bits/stl_algo.h>
 #include <bits/stl_iterator.h>
 #include <bits/stl_uninitialized.h>
-#include <cxxabi.h>
+#include <ext/numeric_traits.h>
 
 struct __glibcxx_backtrace_state;
 struct __glibcxx_backtrace_simple_data;
@@ -50,22 +52,29 @@ __glibcxx_backtrace_create_state(const char*, int,
 
 int
 __glibcxx_backtrace_simple(__glibcxx_backtrace_state*, int,
-			   int (*) (void*, uintptr_t),
+			   int (*) (void*, __UINTPTR_TYPE__),
 			   void(*)(void*, const char*, int),
 			   void*);
 int
-__glibcxx_backtrace_pcinfo(__glibcxx_backtrace_state*, uintptr_t,
-			   int (*)(void*, uintptr_t,
+__glibcxx_backtrace_pcinfo(__glibcxx_backtrace_state*, __UINTPTR_TYPE__,
+			   int (*)(void*, __UINTPTR_TYPE__,
 				   const char*, int, const char*),
 			   void(*)(void*, const char*, int),
 			   void*);
 
 int
-__glibcxx_backtrace_syminfo(__glibcxx_backtrace_state*, uintptr_t addr,
-			    void (*) (void*, uintptr_t, const char*,
-				      uintptr_t, uintptr_t),
+__glibcxx_backtrace_syminfo(__glibcxx_backtrace_state*, __UINTPTR_TYPE__ addr,
+			    void (*) (void*, __UINTPTR_TYPE__, const char*,
+				      __UINTPTR_TYPE__, __UINTPTR_TYPE__),
 			    void(*)(void*, const char*, int),
 			    void*);
+}
+
+namespace __cxxabiv1
+{
+  extern "C" char*
+  __cxa_demangle(const char* __mangled_name, char* __output_buffer,
+		 size_t* __length, int* __status);
 }
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -216,6 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class basic_stacktrace
     {
       using _AllocTraits = allocator_traits<_Allocator>;
+      using uintptr_t = __UINTPTR_TYPE__;
 
     public:
       using value_type = stacktrace_entry;
@@ -232,43 +242,75 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // [stacktrace.basic.ctor], creation and assignment
 
+      [[__gnu__::__noinline__]]
       static basic_stacktrace
       current(const allocator_type& __alloc = allocator_type()) noexcept
       {
-	return current(0, size_type(-1), __alloc);
+	basic_stacktrace __ret(__alloc);
+	if (auto __cb = __ret._M_prepare()) [[likely]]
+	  {
+	    auto __state = stacktrace_entry::_S_init();
+	    if (__glibcxx_backtrace_simple(__state, 1, __cb, nullptr,
+					   std::__addressof(__ret)))
+	      __ret._M_clear();
+	  }
+	return __ret;
       }
 
+      [[__gnu__::__noinline__]]
       static basic_stacktrace
       current(size_type __skip,
 	      const allocator_type& __alloc = allocator_type()) noexcept
       {
-	return current(__skip, size_type(-1), __alloc);
+	basic_stacktrace __ret(__alloc);
+	if (__skip >= __INT_MAX__) [[unlikely]]
+	  return __ret;
+	if (auto __cb = __ret._M_prepare()) [[likely]]
+	  {
+	    auto __state = stacktrace_entry::_S_init();
+	    if (__glibcxx_backtrace_simple(__state, __skip + 1, __cb, nullptr,
+					   std::__addressof(__ret)))
+	      __ret._M_clear();
+	  }
+
+	return __ret;
       }
 
+      [[__gnu__::__noinline__]]
       static basic_stacktrace
       current(size_type __skip, size_type __max_depth,
 	      const allocator_type& __alloc = allocator_type()) noexcept
       {
 	__glibcxx_assert(__skip <= (size_type(-1) - __max_depth));
 
-	auto __state = stacktrace_entry::_S_init();
 	basic_stacktrace __ret(__alloc);
-	if (!__ret._M_reserve(std::min<int>(__max_depth, 64)))
+	if (__max_depth == 0) [[unlikely]]
 	  return __ret;
-
-	auto __cb = [](void* __data, uintptr_t __pc) {
-	  auto& __s = *static_cast<basic_stacktrace*>(__data);
-	  stacktrace_entry __f;
-	  __f._M_pc = __pc;
-	  if (__s._M_push_back(__f))
-	    return 0;
-	  return 1;
-	};
-
-	if (__glibcxx_backtrace_simple(__state, __skip, +__cb, nullptr,
-				       std::__addressof(__ret)))
+	if (__skip >= __INT_MAX__) [[unlikely]]
+	  return __ret;
+	if (auto __cb = __ret._M_prepare(__max_depth)) [[likely]]
 	  {
-	    __ret._M_clear();
+	    auto __state = stacktrace_entry::_S_init();
+	    int __err = __glibcxx_backtrace_simple(__state, __skip + 1, __cb,
+						   nullptr,
+						   std::__addressof(__ret));
+	    if (__err < 0)
+	      __ret._M_clear();
+	    else if (__ret.size() > __max_depth)
+	      {
+		__ret._M_impl._M_resize(__max_depth, __ret._M_alloc);
+
+		if (__ret._M_impl._M_capacity / 2 >= __max_depth)
+		  {
+		    // shrink to fit
+		    _Impl __tmp = __ret._M_impl._M_clone(__ret._M_alloc);
+		    if (__tmp._M_capacity)
+		      {
+			__ret._M_clear();
+			__ret._M_impl = __tmp;
+		      }
+		  }
+	      }
 	  }
 	return __ret;
       }
@@ -283,7 +325,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
       basic_stacktrace(const basic_stacktrace& __other) noexcept
-      : basic_stacktrace(__other, __other._M_alloc)
+      : basic_stacktrace(__other,
+	  _AllocTraits::select_on_container_copy_construction(__other._M_alloc))
       { }
 
       basic_stacktrace(basic_stacktrace&& __other) noexcept
@@ -296,11 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_alloc(__alloc)
       {
 	if (const auto __s = __other._M_impl._M_size)
-	  if (auto __f = _M_impl._M_allocate(_M_alloc, __s))
-	    {
-	      std::uninitialized_copy_n(__other.begin(), __s, __f);
-	      _M_impl._M_size = __s;
-	    }
+	  _M_impl = __other._M_impl._M_clone(_M_alloc);
       }
 
       basic_stacktrace(basic_stacktrace&& __other,
@@ -308,13 +347,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_alloc(__alloc)
       {
 	if constexpr (_Allocator::is_always_equal::value)
-	  {
-	    _M_impl = std::__exchange(__other._M_impl, {});
-	  }
+	  _M_impl = std::__exchange(__other._M_impl, {});
 	else if (_M_alloc == __other._M_alloc)
-	  {
-	    _M_impl = std::__exchange(__other._M_impl, {});
-	  }
+	  _M_impl = std::__exchange(__other._M_impl, {});
+	else if (const auto __s = __other._M_impl._M_size)
+	  _M_impl = __other._M_impl._M_clone(_M_alloc);
       }
 
       basic_stacktrace&
@@ -343,25 +380,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    // Need to allocate new storage.
 	    _M_clear();
 
-	    // Use the allocator we will have after this function returns.
-	    auto& __alloc = __pocca ? __other._M_alloc : _M_alloc;
-	    if (auto __f = _M_impl._M_allocate(__alloc, __s))
-	      {
-		std::uninitialized_copy_n(__other.begin(), __s, __f);
-		_M_impl._M_size = __s;
-	      }
+	    if constexpr (__pocca)
+	      _M_alloc = __other._M_alloc;
+
+	    _M_impl = __other._M_impl._M_clone(_M_alloc);
 	  }
 	else
 	  {
-	    // Current storage is large enough and can be freed by whichever
-	    // allocator we will have after this function returns.
-	    auto __to = std::copy_n(__other.begin(), __s, begin());
-	    std::destroy(__to, end());
-	    _M_impl._M_size = __s;
-	  }
+	    // Current storage is large enough.
+	    _M_impl._M_resize(0, _M_alloc);
+	    _M_impl._M_assign(__other._M_impl, _M_alloc);
 
-	if constexpr (__pocca)
-	  _M_alloc = __other._M_alloc;
+	    if constexpr (__pocca)
+	      _M_alloc = __other._M_alloc;
+	  }
 
 	return *this;
       }
@@ -379,31 +411,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  std::swap(_M_impl, __other._M_impl);
 	else if (_M_alloc == __other._M_alloc)
 	  std::swap(_M_impl, __other._M_impl);
-	else
+	else if constexpr (__pocma)
 	  {
-	    const auto __s = __other.size();
+	    // Free current storage and take ownership of __other's storage.
+	    _M_clear();
+	    _M_impl = std::__exchange(__other._M_impl, {});
+	  }
+	else // Allocators are unequal and don't propagate.
+	  {
+	    const size_type __s = __other.size();
 
-	    if constexpr (__pocma || _M_impl._M_capacity < __s)
+	    if (_M_impl._M_capacity < __s)
 	      {
 		// Need to allocate new storage.
 		_M_clear();
-
-		// Use the allocator we will have after this function returns.
-		auto& __alloc = __pocma ? __other._M_alloc : _M_alloc;
-		if (auto __f = _M_impl._M_allocate(__alloc, __s))
-		  std::uninitialized_copy_n(__other.begin(), __s, __f);
+		_M_impl = __other._M_impl._M_clone(_M_alloc);
 	      }
 	    else
 	      {
 		// Current storage is large enough.
-		auto __first = __other.begin();
-		auto __mid = __first + std::min(__s, _M_impl._M_size);
-		auto __last = __other.end();
-		auto __to = std::copy(__first, __mid, begin());
-		__to = std::uninitialized_copy(__mid, __last, __to);
-		std::destroy(__to, end());
+		_M_impl._M_resize(0, _M_alloc);
+		_M_impl._M_assign(__other._M_impl, _M_alloc);
 	      }
-	    _M_impl._M_size = __s;
 	  }
 
 	if constexpr (__pocma)
@@ -443,7 +472,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       [[nodiscard]] bool empty() const noexcept { return size() == 0; }
       size_type size() const noexcept { return _M_impl._M_size; }
-      size_type max_size() const noexcept { return size_type(-1); }
+
+      size_type
+      max_size() const noexcept
+      { return _Impl::_S_max_size(_M_impl._M_alloc); }
 
       const_reference
       operator[](size_type __n) const noexcept
@@ -482,18 +514,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       swap(basic_stacktrace& __other) noexcept
       {
-	std::swap(_M_impl. __other._M_impl);
+	std::swap(_M_impl, __other._M_impl);
 	if constexpr (_AllocTraits::propagate_on_container_swap::value)
 	  std::swap(_M_alloc, __other._M_alloc);
+	else if constexpr (!_AllocTraits::is_always_equal::value)
+	  {
+	    __glibcxx_assert(_M_alloc == __other._M_alloc);
+	  }
       }
 
     private:
-      bool
-      _M_reserve(size_type __n) noexcept
-      {
-	return _M_impl._M_allocate(_M_alloc, __n) != nullptr;
-      }
-
       bool
       _M_push_back(const value_type& __x) noexcept
       {
@@ -503,8 +533,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_clear() noexcept
       {
-	_M_impl._M_destroy();
+	_M_impl._M_resize(0, _M_alloc);
 	_M_impl._M_deallocate(_M_alloc);
+      }
+
+      // Precondition: __max_depth != 0
+      auto
+      _M_prepare(size_type __max_depth = -1) noexcept
+      -> int (*) (void*, uintptr_t)
+      {
+	auto __cb = +[](void* __data, uintptr_t __pc) {
+	  auto& __s = *static_cast<basic_stacktrace*>(__data);
+	  stacktrace_entry __f;
+	  __f._M_pc = __pc;
+	  if (__s._M_push_back(__f)) [[likely]]
+	    return 0; // continue tracing
+	  return -1; // stop tracing due to error
+	};
+
+	if (__max_depth > 128)
+	  __max_depth = 64; // soft limit, _M_push_back will reallocate
+	else
+	  __cb = [](void* __data, uintptr_t __pc) {
+	    auto& __s = *static_cast<basic_stacktrace*>(__data);
+	    stacktrace_entry __f;
+	    __f._M_pc = __pc;
+	    if (__s.size() == __s._M_impl._M_capacity) [[unlikely]]
+	      return 1; // stop tracing due to reaching max depth
+	    if (__s._M_push_back(__f)) [[likely]]
+	      return 0; // continue tracing
+	    return -1; // stop tracing due to error
+	  };
+
+	if (_M_impl._M_allocate(_M_alloc, __max_depth)) [[likely]]
+	  return __cb;
+	return nullptr;
       }
 
       struct _Impl
@@ -515,21 +578,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	size_type _M_size     = 0;
 	size_type _M_capacity = 0;
 
-	// Precondition: _M_frames == nullptr
+	static size_type
+	_S_max_size(const allocator_type& __alloc) noexcept
+	{
+	  const size_t __size_max = __gnu_cxx::__int_traits<size_type>::__max;
+	  const size_t __alloc_max = _AllocTraits::max_size(__alloc);
+	  return std::min(__size_max, __alloc_max);
+	}
+
+#if __has_builtin(__builtin_operator_new) >= 201802L
+# define _GLIBCXX_OPERATOR_NEW __builtin_operator_new
+# define _GLIBCXX_OPERATOR_DELETE __builtin_operator_delete
+#else
+# define _GLIBCXX_OPERATOR_NEW ::operator new
+# define _GLIBCXX_OPERATOR_DELETE ::operator delete
+#endif
+
+	// Precondition: _M_frames == nullptr && __n != 0
 	pointer
 	_M_allocate(allocator_type& __alloc, size_type __n) noexcept
 	{
-	  __try
+	  if (__n <= _S_max_size(__alloc)) [[likely]]
 	    {
-	      _M_frames = __n ? __alloc.allocate(__n) : nullptr;
+	      if constexpr (is_same_v<allocator_type, allocator<value_type>>)
+		{
+		  __n *= sizeof(value_type);
+		  void* const __p = _GLIBCXX_OPERATOR_NEW (__n, nothrow_t{});
+		  if (__p == nullptr) [[unlikely]]
+		    return nullptr;
+		  _M_frames = static_cast<pointer>(__p);
+		}
+	      else
+		{
+		  __try
+		    {
+		      _M_frames = __alloc.allocate(__n);
+		    }
+		  __catch (const std::bad_alloc&)
+		    {
+		      return nullptr;
+		    }
+		}
 	      _M_capacity = __n;
+	      return _M_frames;
 	    }
-	  __catch (...)
-	    {
-	      _M_frames = nullptr;
-	      _M_capacity = 0;
-	    }
-	  return _M_frames;
+	  return nullptr;
 	}
 
 	void
@@ -537,38 +630,72 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  if (_M_capacity)
 	    {
-	      __alloc.deallocate(_M_frames, _M_capacity);
+	      if constexpr (is_same_v<allocator_type, allocator<value_type>>)
+		_GLIBCXX_OPERATOR_DELETE (static_cast<void*>(_M_frames),
+					  _M_capacity * sizeof(value_type));
+	      else
+		__alloc.deallocate(_M_frames, _M_capacity);
 	      _M_frames = nullptr;
 	      _M_capacity = 0;
 	    }
 	}
 
+#undef _GLIBCXX_OPERATOR_DELETE
+#undef _GLIBCXX_OPERATOR_NEW
+
+	// Precondition: __n <= _M_size
 	void
-	_M_destroy() noexcept
+	_M_resize(size_type __n, allocator_type& __alloc) noexcept
 	{
-	  std::destroy_n(_M_frames, _M_size);
-	  _M_size = 0;
+	  for (size_type __i = __n; __i < _M_size; ++__i)
+	    _AllocTraits::destroy(__alloc, &_M_frames[__i]);
+	  _M_size = __n;
 	}
 
 	bool
 	_M_push_back(allocator_type& __alloc,
 		     const stacktrace_entry& __f) noexcept
 	{
-	  if (_M_size == _M_capacity)
+	  if (_M_size == _M_capacity) [[unlikely]]
 	    {
-	      _Impl __tmp;
-	      if (auto __f = __tmp._M_allocate(__alloc, _M_capacity * 2))
-		std::uninitialized_copy_n(_M_frames, _M_size, __f);
-	      else
+	      _Impl __tmp = _M_xclone(_M_capacity ? _M_capacity : 8, __alloc);
+	      if (!__tmp._M_capacity) [[unlikely]]
 		return false;
+	      _M_resize(0, __alloc);
 	      _M_deallocate(__alloc);
-	      std::swap(*this, __tmp);
+	      *this = __tmp;
 	    }
 	  stacktrace_entry* __addr = std::to_address(_M_frames + _M_size++);
-	  std::construct_at(__addr, __f);
+	  _AllocTraits::construct(__alloc, __addr, __f);
 	  return true;
 	}
 
+	// Precondition: _M_size != 0
+	_Impl
+	_M_clone(allocator_type& __alloc) const noexcept
+	{
+	  return _M_xclone(_M_size, __alloc);
+	}
+
+	// Precondition: _M_size != 0 || __extra != 0
+	_Impl
+	_M_xclone(size_type __extra, allocator_type& __alloc) const noexcept
+	{
+	  _Impl __i;
+	  if (__i._M_allocate(__alloc, _M_size + __extra)) [[likely]]
+	    __i._M_assign(*this, __alloc);
+	  return __i;
+	}
+
+	// Precondition: _M_capacity >= __other._M_size
+	void
+	_M_assign(const _Impl& __other, allocator_type& __alloc) noexcept
+	{
+	  std::__uninitialized_copy_a(__other._M_frames,
+				      __other._M_frames + __other._M_size,
+				      _M_frames, __alloc);
+	  _M_size = __other._M_size;
+	}
       };
 
       [[no_unique_address]] allocator_type  _M_alloc{};
@@ -633,7 +760,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace pmr
   {
-    template<typename _Tp> class polymorphic_allocator;
     using stacktrace
       = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;
   }

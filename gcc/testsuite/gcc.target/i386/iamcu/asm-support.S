@@ -300,3 +300,6 @@ iamcu_noprintf:
 	.align 4
 .LCiamcu_noprintf1:
 	.long	1132527616
+#ifdef __linux__
+	.section	.note.GNU-stack,"",@progbits
+#endif

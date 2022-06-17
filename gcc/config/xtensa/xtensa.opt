@@ -27,8 +27,12 @@ Target Mask(FORCE_NO_PIC)
 Disable position-independent code (PIC) for use in OS kernel code.
 
 mlongcalls
-Target
+Target Mask(LONGCALLS)
 Use indirect CALLXn instructions for large programs.
+
+mextra-l32r-costs=
+Target RejectNegative Joined UInteger Var(xtensa_extra_l32r_costs) Init(0)
+Set extra memory access cost for L32R instruction, in clock-cycle units.
 
 mtarget-align
 Target

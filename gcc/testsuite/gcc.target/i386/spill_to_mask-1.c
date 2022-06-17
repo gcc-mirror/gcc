@@ -120,7 +120,7 @@ void foo (DTYPE in[16], DTYPE out[8], const DTYPE C[16])
     out[7] += h;
 }
 
-/* { dg-final { scan-assembler "kmovd" } } */
+/* { dg-final { scan-assembler "kmovd" { xfail *-*-* } } } */
 /* { dg-final { scan-assembler-not "knot" } } */
 /* { dg-final { scan-assembler-not "kxor" } } */
 /* { dg-final { scan-assembler-not "kor" } } */

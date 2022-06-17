@@ -410,8 +410,10 @@ package body Sem_Aux is
       Ctyp : Entity_Id;
 
    begin
+      pragma Assert (Is_Tagged_Type (Typ)
+        or else Is_Class_Wide_Equivalent_Type (Typ));
+
       Ctyp := Typ;
-      pragma Assert (Is_Tagged_Type (Ctyp));
 
       if Is_Class_Wide_Type (Ctyp) then
          Ctyp := Root_Type (Ctyp);
@@ -1057,15 +1059,7 @@ package body Sem_Aux is
             end if;
 
          else
-            declare
-               Utyp : constant Entity_Id := Underlying_Type (Btype);
-            begin
-               if No (Utyp) then
-                  return False;
-               else
-                  return Is_Immutably_Limited_Type (Utyp);
-               end if;
-            end;
+            return False;
          end if;
 
       elsif Is_Concurrent_Type (Btype) then
@@ -1258,15 +1252,6 @@ package body Sem_Aux is
          return False;
       end if;
    end Is_Limited_View;
-
-   -------------------------------
-   -- Is_Record_Or_Limited_Type --
-   -------------------------------
-
-   function Is_Record_Or_Limited_Type (Typ : Entity_Id) return Boolean is
-   begin
-      return Is_Record_Type (Typ) or else Is_Limited_Type (Typ);
-   end Is_Record_Or_Limited_Type;
 
    ----------------------
    -- Nearest_Ancestor --

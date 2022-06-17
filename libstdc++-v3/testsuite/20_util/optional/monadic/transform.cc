@@ -137,7 +137,7 @@ void f(int&) { }
 void
 test_unconstrained()
 {
-  // PR libstc++/102863 - Optional monadic ops should not be constrained
+  // PR libstdc++/102863 - Optional monadic ops should not be constrained
   std::optional<int> x;
   auto answer = x.transform([](auto& y) { f(y); return 42; });
   VERIFY( !answer );

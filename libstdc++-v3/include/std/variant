@@ -40,7 +40,6 @@
 #include <bits/functional_hash.h>
 #include <bits/invoke.h>
 #include <bits/parse_numbers.h>
-#include <bits/stl_iterator_base_types.h>
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_construct.h>
 #include <bits/utility.h> // in_place_index_t

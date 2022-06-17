@@ -42,6 +42,39 @@
    </p><p>
    Finally, a few system-specific requirements:
    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term">linux</span></dt><dd><p>
+	  The 'gnu' locale model makes use of <code class="function">iconv</code>
+	  for character set conversions. The relevant functions are provided
+	  by Glibc and so are always available, however they can also be
+	  provided by the separate GNU libiconv library. If GNU libiconv is
+	  found when GCC is built (e.g., because its headers are installed
+	  in <code class="filename">/usr/local/include</code>)
+	  then the <code class="filename">libstdc++.so.6</code> library will have a
+	  run-time dependency on <code class="filename">libiconv.so.2</code>.
+	  If you do not want that run-time dependency then you should do
+	  one of the following:
+	</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+	      Uninstall the libiconv headers before building GCC.
+	      Glibc already provides <code class="function">iconv</code> so you should
+	      not need libiconv anyway.
+	    </p></li><li class="listitem"><p>
+	    <a class="link" href="https://www.gnu.org/software/libiconv/#downloading" target="_top">
+	    Download</a> the libiconv sources and extract them into the
+	    top level of the GCC source tree, e.g.,
+	    </p><pre class="programlisting">
+wget https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz
+tar xf libiconv-1.16.tar.gz
+ln -s libiconv-1.16 libiconv
+</pre><p>
+	      This will build libiconv as part of building GCC and link to
+	      it statically, so there is no <code class="filename">libiconv.so.2</code>
+	      dependency.
+	    </p></li><li class="listitem"><p>
+	      Configure GCC with <code class="option">--with-libiconv-type=static</code>.
+	      This requires the static <code class="filename">libiconv.a</code> library,
+	      which is not installed by default. You might need to reinstall
+	      libiconv using the <code class="option">--enable-static</code> configure
+	      option to get the static library.
+	    </p></li></ul></div><p>
 	  If GCC 3.1.0 or later on is being used on GNU/Linux, an attempt
 	  will be made to use "C" library functionality necessary for
 	  C++ named locale support.  For GCC 4.6.0 and later, this

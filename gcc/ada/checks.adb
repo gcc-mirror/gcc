@@ -1237,9 +1237,14 @@ package body Checks is
          --  ops, but if they appear in an assignment or similar contexts
          --  there is no overflow check that starts from that parent node,
          --  so apply check now.
+         --  Similarly, if these expressions are nested, we should go on.
 
          if Nkind (P) in N_If_Expression | N_Case_Expression
            and then not Is_Signed_Integer_Arithmetic_Op (Parent (P))
+         then
+            null;
+         elsif Nkind (P) in N_If_Expression | N_Case_Expression
+            and then Nkind (Op) in N_If_Expression | N_Case_Expression
          then
             null;
          else
@@ -2939,14 +2944,28 @@ package body Checks is
 
          --  Similarly, if the expression is an aggregate in an object
          --  declaration, apply it to the object after the declaration.
-         --  This is only necessary in rare cases of tagged extensions
-         --  initialized with an aggregate with an "others => <>" clause.
+
+         --  This is only necessary in cases of tagged extensions
+         --  initialized with an aggregate with an "others => <>" clause,
+         --  when the subtypes of LHS and RHS do not statically match or
+         --  when we know the object's type will be rewritten later.
+         --  The condition for the later is copied from the
+         --  Analyze_Object_Declaration procedure when it actually builds the
+         --  subtype.
 
          elsif Nkind (Par) = N_Object_Declaration then
-            Insert_Action_After (Par,
-              Make_Predicate_Check (Typ,
-                New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
-            return;
+            if Subtypes_Statically_Match
+                 (Etype (Defining_Identifier (Par)), Typ)
+              and then (Nkind (N) = N_Extension_Aggregate
+                         or else (Is_Definite_Subtype (Typ)
+                                   and then Build_Default_Subtype_OK (Typ)))
+            then
+               Insert_Action_After (Par,
+                  Make_Predicate_Check (Typ,
+                    New_Occurrence_Of (Defining_Identifier (Par), Sloc (N))));
+               return;
+            end if;
+
          end if;
       end if;
 
@@ -5469,22 +5488,49 @@ package body Checks is
          --  we do NOT do this for the case of a modular type where the
          --  possible upper bound on the value is above the base type high
          --  bound, because that means the result could wrap.
+         --  Same applies for the lower bound if it is negative.
 
-         if Lor > Lo
-           and then not (Is_Modular_Integer_Type (Typ) and then Hir > Hbound)
-         then
-            Lo := Lor;
-         end if;
+         if Is_Modular_Integer_Type (Typ) then
+            if Lor > Lo and then Hir <= Hbound then
+               Lo := Lor;
+            end if;
 
-         --  Similarly, if the refined value of the high bound is less than the
-         --  value so far, then reset it to the more restrictive value. Again,
-         --  we do not do this if the refined low bound is negative for a
-         --  modular type, since this would wrap.
+            if Hir < Hi and then Lor >= Uint_0 then
+               Hi := Hir;
+            end if;
 
-         if Hir < Hi
-           and then not (Is_Modular_Integer_Type (Typ) and then Lor < Uint_0)
-         then
-            Hi := Hir;
+         else
+            if Lor > Hi or else Hir < Lo then
+
+               --  If the ranges are disjoint, return the computed range.
+
+               --  The current range-constraining logic would require returning
+               --  the base type's bounds. However, this would miss an
+               --  opportunity to warn about out-of-range values for some cases
+               --  (e.g. when type's upper bound is equal to base type upper
+               --  bound).
+
+               --  The alternative of always returning the computed values,
+               --  even when ranges are intersecting, has unwanted effects
+               --  (mainly useless constraint checks are inserted) in the
+               --  Enable_Overflow_Check and Apply_Scalar_Range_Check as these
+               --  bounds have a special interpretation.
+
+               Lo := Lor;
+               Hi := Hir;
+            else
+
+               --  If the ranges Lor .. Hir and Lo .. Hi intersect, try to
+               --  refine the returned range.
+
+               if Lor > Lo then
+                  Lo := Lor;
+               end if;
+
+               if Hir < Hi then
+                  Hi := Hir;
+               end if;
+            end if;
          end if;
       end if;
 

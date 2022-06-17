@@ -900,7 +900,7 @@ private
    end record;
 
    package HT_Types is new
-     Ada.Containers.Hash_Tables.Generic_Bounded_Hash_Table_Types (Node_Type);
+     Ada.Containers.Hash_Tables.Generic_Formal_Hash_Table_Types (Node_Type);
 
    type Map (Capacity : Count_Type; Modulus : Hash_Type) is record
      Content : HT_Types.Hash_Table_Type (Capacity, Modulus);

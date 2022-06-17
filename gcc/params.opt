@@ -613,6 +613,10 @@ The maximum number of insns in loop header duplicated by the copy loop headers p
 Common Joined UInteger Var(param_max_modulo_backtrack_attempts) Init(40) Param Optimization
 The maximum number of backtrack attempts the scheduler should make when modulo scheduling a loop.
 
+-param=min-pagesize=
+Common Joined UInteger Var(param_min_pagesize) Init(4096) Param Optimization
+Minimum page size for warning purposes.
+
 -param=max-partial-antic-length=
 Common Joined UInteger Var(param_max_partial_antic_length) Init(100) Param Optimization
 Maximum length of partial antic set when performing tree pre optimization.
@@ -740,10 +744,6 @@ The maximum number of instructions to consider to unroll in a loop.
 -param=max-unswitch-insns=
 Common Joined UInteger Var(param_max_unswitch_insns) Init(50) Param Optimization
 The maximum number of insns of an unswitched loop.
-
--param=max-unswitch-level=
-Common Joined UInteger Var(param_max_unswitch_level) Init(3) Param Optimization
-The maximum number of unswitchings in a single loop.
 
 -param=max-variable-expansions-in-unroller=
 Common Joined UInteger Var(param_max_variable_expansions) Init(1) Param Optimization

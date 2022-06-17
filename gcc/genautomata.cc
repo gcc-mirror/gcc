@@ -5661,7 +5661,6 @@ create_composed_state (state_t original_state, arc_t arcs_marked_by_insn,
   state_t state_in_table;
   state_t temp_state;
   alt_state_t canonical_alt_states_list;
-  int alts_number;
   int new_state_p = 0;
 
   if (arcs_marked_by_insn == NULL)
@@ -5731,17 +5730,15 @@ create_composed_state (state_t original_state, arc_t arcs_marked_by_insn,
 		      || (curr_arc->insn->insn_reserv_decl
 			  != DECL_INSN_RESERV (advance_cycle_insn_decl)))
 		    add_arc (state, curr_arc->to_state, curr_arc->insn);
-            }
-          arcs_marked_by_insn->to_state = state;
-          for (alts_number = 0,
-	       curr_arc = arcs_marked_by_insn->next_arc_marked_by_insn;
-               curr_arc != NULL;
-               curr_arc = next_arc)
-            {
-              next_arc = curr_arc->next_arc_marked_by_insn;
-              remove_arc (original_state, curr_arc);
-	      alts_number++;
-            }
+	    }
+	  arcs_marked_by_insn->to_state = state;
+	  for (curr_arc = arcs_marked_by_insn->next_arc_marked_by_insn;
+	       curr_arc != NULL;
+	       curr_arc = next_arc)
+	    {
+	      next_arc = curr_arc->next_arc_marked_by_insn;
+	      remove_arc (original_state, curr_arc);
+	    }
         }
     }
   if (!state->it_was_placed_in_stack_for_DFA_forming)

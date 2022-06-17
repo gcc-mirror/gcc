@@ -5069,7 +5069,7 @@ initializer_constant_valid_p (tree value, tree endtype, bool reverse)
    an element of a "constant" initializer.  */
 
 bool
-initializer_constant_valid_for_bitfield_p (tree value)
+initializer_constant_valid_for_bitfield_p (const_tree value)
 {
   /* For bitfields we support integer constants or possibly nested aggregates
      of such.  */
@@ -5078,7 +5078,7 @@ initializer_constant_valid_for_bitfield_p (tree value)
     case CONSTRUCTOR:
       {
 	unsigned HOST_WIDE_INT idx;
-	tree elt;
+	const_tree elt;
 
 	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (value), idx, elt)
 	  if (!initializer_constant_valid_for_bitfield_p (elt))
@@ -8457,25 +8457,21 @@ default_asm_output_ident_directive (const char *ident_str)
     fprintf (asm_out_file, "%s\"%s\"\n", ident_asm_op, ident_str);
 }
 
-
-/* This function ensures that vtable_map variables are not only
-   in the comdat section, but that each variable has its own unique
-   comdat name.  Without this the variables end up in the same section
-   with a single comdat name.
-
+/* Switch to a COMDAT section with COMDAT name of decl.
+   
    FIXME:  resolve_unique_section needs to deal better with
    decls with both DECL_SECTION_NAME and DECL_ONE_ONLY.  Once
    that is fixed, this if-else statement can be replaced with
    a single call to "switch_to_section (sect)".  */
 
-static void
-handle_vtv_comdat_section (section *sect, const_tree decl ATTRIBUTE_UNUSED)
+void
+switch_to_comdat_section (section *sect, tree decl)
 {
 #if defined (OBJECT_FORMAT_ELF)
   targetm.asm_out.named_section (sect->named.name,
 				 sect->named.common.flags
 				 | SECTION_LINKONCE,
-				 DECL_NAME (decl));
+				 decl);
   in_section = sect;
 #else
   /* Neither OBJECT_FORMAT_PE, nor OBJECT_FORMAT_COFF is set here.
@@ -8490,23 +8486,34 @@ handle_vtv_comdat_section (section *sect, const_tree decl ATTRIBUTE_UNUSED)
     {
       char *name;
 
-      if (TREE_CODE (DECL_NAME (decl)) == IDENTIFIER_NODE)
+      if (TREE_CODE (decl) == IDENTIFIER_NODE)
 	name = ACONCAT ((sect->named.name, "$",
-			 IDENTIFIER_POINTER (DECL_NAME (decl)), NULL));
+			 IDENTIFIER_POINTER (decl), NULL));
       else
 	name = ACONCAT ((sect->named.name, "$",
-			 IDENTIFIER_POINTER (DECL_COMDAT_GROUP (DECL_NAME (decl))),
+			 IDENTIFIER_POINTER (DECL_COMDAT_GROUP (decl)),
 			 NULL));
 
       targetm.asm_out.named_section (name,
 				     sect->named.common.flags
 				     | SECTION_LINKONCE,
-				     DECL_NAME (decl));
+				     decl);
       in_section = sect;
     }
   else
     switch_to_section (sect);
 #endif
+}
+
+/* This function ensures that vtable_map variables are not only
+   in the comdat section, but that each variable has its own unique
+   comdat name.  Without this the variables end up in the same section
+   with a single comdat name.  */
+
+static void
+handle_vtv_comdat_section (section *sect, const_tree decl ATTRIBUTE_UNUSED)
+{
+  switch_to_comdat_section(sect, DECL_NAME (decl));
 }
 
 #include "gt-varasm.h"
