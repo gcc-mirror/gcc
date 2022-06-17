@@ -28305,13 +28305,13 @@ rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
 	  && tomode != VOIDmode)
 	{
 	  if (frommode == XOmode)
-	    return N_("invalid conversion from type %<* __vector_quad%>");
+	    return N_("invalid conversion from type %<__vector_quad *%>");
 	  if (tomode == XOmode)
-	    return N_("invalid conversion to type %<* __vector_quad%>");
+	    return N_("invalid conversion to type %<__vector_quad *%>");
 	  if (frommode == OOmode)
-	    return N_("invalid conversion from type %<* __vector_pair%>");
+	    return N_("invalid conversion from type %<__vector_pair *%>");
 	  if (tomode == OOmode)
-	    return N_("invalid conversion to type %<* __vector_pair%>");
+	    return N_("invalid conversion to type %<__vector_pair *%>");
 	}
     }
 
