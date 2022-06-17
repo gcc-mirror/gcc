@@ -1,3 +1,11 @@
+2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	Backport from mainline:
+	2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-omp.cc (c_omp_split_clauses): Add OMP_CLAUSE_USES_ALLOCATORS case.
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_USES_ALLOCATORS.
+
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-omp.cc (c_omp_expand_metadirective_r): New.

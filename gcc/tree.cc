@@ -349,6 +349,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_FINALIZE */
   0, /* OMP_CLAUSE_NOHOST */
   2, /* OMP_CLAUSE_ALLOCATOR */
+  3, /* OMP_CLAUSE_USES_ALLOCATORS */
 };
 
 const char * const omp_clause_code_name[] =
@@ -439,6 +440,8 @@ const char * const omp_clause_code_name[] =
   "if_present",
   "finalize",
   "nohost",
+  "allocator",
+  "uses_allocators",
 };
 
 /* Unless specific to OpenACC, we tend to internally maintain OpenMP-centric
