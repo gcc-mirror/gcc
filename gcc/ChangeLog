@@ -1,3 +1,13 @@
+2022-06-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2022-06-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/105981
+	* config/arm/arm.cc (gen_cpymem_ldrd_strd): Rename low_reg and hi_reg
+	to first_reg and second_reg respectively.  Initialize them correctly
+	when generating big-endian code.
+
 2022-06-15  Simon Wright  <simon@pushface.org>
 
 	Backported from master:
