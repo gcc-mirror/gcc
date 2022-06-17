@@ -164,8 +164,7 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
       return recursive_check (
 	static_cast<const TyTy::ProjectionType *> (ty)->get ());
     case TyTy::CLOSURE:
-      sorry_at (locus.gcc_location (),
-		"privacy pass for closures is not handled yet");
+      rust_sorry_at (locus, "privacy pass for closures is not handled yet");
       break;
 
       // If we're dealing with a generic param, there's nothing we should be
