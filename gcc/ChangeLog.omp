@@ -1,3 +1,14 @@
+2022-06-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (unified_shared_memory_enabled): New variable.
+	(gcn_init_cumulative_args): Handle attribute "omp unified memory".
+	(gcn_hsa_declare_function_name): Emit "MKOFFLOAD OPTIONS: USM+".
+	* config/gcn/mkoffload.c (TEST_XNACK_OFF): New macro.
+	(process_asm): Detect "MKOFFLOAD OPTIONS: USM+".
+	Emit configure_xnack constructor, as required.
+	* omp-low.c (create_omp_child_function): Add attribute "omp unified
+	memory".
+
 2022-06-10  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-hsa.h (XNACKOPT): New macro.
