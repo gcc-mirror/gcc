@@ -22,6 +22,7 @@
  * for virtually all AST-related functionality. */
 
 #include "rust-ast.h"
+#include "system.h"
 
 namespace Rust {
 namespace AST {
@@ -128,14 +129,112 @@ public:
   Identifier get_identifier () const { return identifier; }
 };
 
+/* Class representing a const generic application */
+class ConstGenericArg
+{
+public:
+  /**
+   * const generic arguments cannot always be differentiated with generic type
+   * arguments during parsing, e.g:
+   * ```rust
+   * let a: Foo<N>;
+   * ```
+   *
+   * Is N a type? A constant defined elsewhere? The parser cannot know, and must
+   * not draw any conclusions. We must wait until later passes of the compiler
+   * to decide whether this refers to a constant item or a type.
+   *
+   * On the other hand, simple expressions like literals or block expressions
+   * will always be constant expressions: There is no ambiguity at all.
+   */
+  enum class Kind
+  {
+    Error,
+    Clear,
+    Ambiguous,
+  };
+
+  static ConstGenericArg create_error ()
+  {
+    return ConstGenericArg (nullptr, "", Kind::Error);
+  }
+
+  ConstGenericArg (std::unique_ptr<Expr> expression)
+    : expression (std::move (expression)), path (""), kind (Kind::Clear)
+  {}
+
+  ConstGenericArg (Identifier path)
+    : expression (nullptr), path (path), kind (Kind::Ambiguous)
+  {}
+
+  ConstGenericArg (const ConstGenericArg &other)
+    : path (other.path), kind (other.kind)
+  {
+    if (other.expression)
+      expression = other.expression->clone_expr ();
+  }
+
+  ConstGenericArg operator= (const ConstGenericArg &other)
+  {
+    kind = other.kind;
+    path = other.path;
+
+    if (other.expression)
+      expression = other.expression->clone_expr ();
+
+    return *this;
+  }
+
+  bool is_error () const { return kind == Kind::Error; }
+
+  Kind get_kind () const { return kind; }
+
+  std::string as_string () const
+  {
+    switch (get_kind ())
+      {
+      case Kind::Error:
+	gcc_unreachable ();
+      case Kind::Ambiguous:
+	return "Ambiguous: " + path;
+      case Kind::Clear:
+	return "Clear: { " + expression->as_string () + " }";
+      }
+
+    return "";
+  }
+
+private:
+  ConstGenericArg (std::unique_ptr<AST::Expr> expression, Identifier path,
+		   Kind kind)
+    : expression (std::move (expression)), path (std::move (path)), kind (kind)
+  {}
+
+  /**
+   * Expression associated with a `Clear` const generic application
+   * A null pointer here is allowed in the case that the const argument is
+   * ambiguous.
+   */
+  std::unique_ptr<Expr> expression;
+
+  /**
+   * Optional path which cannot be differentiated between a constant item and
+   * a type. Only used for `Ambiguous` const generic arguments, otherwise
+   * empty.
+   */
+  Identifier path;
+
+  /* Which kind of const generic application are we dealing with */
+  Kind kind;
+};
+
 // Generic arguments allowed in each path expression segment - inline?
 struct GenericArgs
 {
   std::vector<Lifetime> lifetime_args;
   std::vector<std::unique_ptr<Type> > type_args;
   std::vector<GenericArgsBinding> binding_args;
-  // TODO: Handle const generics here as well.
-  // We can probably keep a vector of `Expr`s for this.
+  std::vector<ConstGenericArg> const_args;
   Location locus;
 
 public:
@@ -143,22 +242,24 @@ public:
   bool has_generic_args () const
   {
     return !(lifetime_args.empty () && type_args.empty ()
-	     && binding_args.empty ());
+	     && binding_args.empty () && const_args.empty ());
   }
 
   GenericArgs (std::vector<Lifetime> lifetime_args,
 	       std::vector<std::unique_ptr<Type> > type_args,
 	       std::vector<GenericArgsBinding> binding_args,
+	       std::vector<ConstGenericArg> const_args,
 	       Location locus = Location ())
     : lifetime_args (std::move (lifetime_args)),
       type_args (std::move (type_args)),
-      binding_args (std::move (binding_args)), locus (locus)
+      binding_args (std::move (binding_args)),
+      const_args (std::move (const_args)), locus (locus)
   {}
 
   // copy constructor with vector clone
   GenericArgs (GenericArgs const &other)
     : lifetime_args (other.lifetime_args), binding_args (other.binding_args),
-      locus (other.locus)
+      const_args (other.const_args), locus (other.locus)
   {
     type_args.reserve (other.type_args.size ());
     for (const auto &e : other.type_args)
@@ -172,6 +273,7 @@ public:
   {
     lifetime_args = other.lifetime_args;
     binding_args = other.binding_args;
+    const_args = other.const_args;
     locus = other.locus;
 
     type_args.reserve (other.type_args.size ());
@@ -190,7 +292,8 @@ public:
   {
     return GenericArgs (std::vector<Lifetime> (),
 			std::vector<std::unique_ptr<Type> > (),
-			std::vector<GenericArgsBinding> ());
+			std::vector<GenericArgsBinding> (),
+			std::vector<ConstGenericArg> ());
   }
 
   std::string as_string () const;
@@ -202,6 +305,8 @@ public:
   std::vector<GenericArgsBinding> &get_binding_args () { return binding_args; }
 
   std::vector<Lifetime> &get_lifetime_args () { return lifetime_args; };
+
+  std::vector<ConstGenericArg> &get_const_args () { return const_args; };
 
   Location get_locus () { return locus; }
 };
@@ -231,16 +336,14 @@ public:
   /* Constructor for segment with generic arguments (from segment name and all
    * args) */
   PathExprSegment (std::string segment_name, Location locus,
-		   std::vector<Lifetime> lifetime_args
-		   = std::vector<Lifetime> (),
-		   std::vector<std::unique_ptr<Type> > type_args
-		   = std::vector<std::unique_ptr<Type> > (),
-		   std::vector<GenericArgsBinding> binding_args
-		   = std::vector<GenericArgsBinding> ())
+		   std::vector<Lifetime> lifetime_args = {},
+		   std::vector<std::unique_ptr<Type> > type_args = {},
+		   std::vector<GenericArgsBinding> binding_args = {},
+		   std::vector<ConstGenericArg> const_args = {})
     : segment_name (PathIdentSegment (std::move (segment_name), locus)),
-      generic_args (GenericArgs (std::move (lifetime_args),
-				 std::move (type_args),
-				 std::move (binding_args))),
+      generic_args (
+	GenericArgs (std::move (lifetime_args), std::move (type_args),
+		     std::move (binding_args), std::move (const_args))),
       locus (locus), node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
@@ -284,7 +387,8 @@ public:
   }
 };
 
-// AST node representing a pattern that involves a "path" - abstract base class
+// AST node representing a pattern that involves a "path" - abstract base
+// class
 class PathPattern : public Pattern
 {
   std::vector<PathExprSegment> segments;
@@ -297,8 +401,8 @@ protected:
   // Returns whether path has segments.
   bool has_segments () const { return !segments.empty (); }
 
-  /* Converts path segments to their equivalent SimplePath segments if possible,
-   * and creates a SimplePath from them. */
+  /* Converts path segments to their equivalent SimplePath segments if
+   * possible, and creates a SimplePath from them. */
   SimplePath convert_to_simple_path (bool with_opening_scope_resolution) const;
 
   // Removes all segments of the path.
@@ -320,8 +424,8 @@ public:
   const std::vector<PathExprSegment> &get_segments () const { return segments; }
 };
 
-/* AST node representing a path-in-expression pattern (path that allows generic
- * arguments) */
+/* AST node representing a path-in-expression pattern (path that allows
+ * generic arguments) */
 class PathInExpression : public PathPattern, public PathExpr
 {
   std::vector<Attribute> outer_attrs;
@@ -356,9 +460,10 @@ public:
   SimplePath as_simple_path () const
   {
     /* delegate to parent class as can't access segments. however,
-     * QualifiedPathInExpression conversion to simple path wouldn't make sense,
-     * so the method in the parent class should be protected, not public. Have
-     * to pass in opening scope resolution as parent class has no access to it.
+     * QualifiedPathInExpression conversion to simple path wouldn't make
+     * sense, so the method in the parent class should be protected, not
+     * public. Have to pass in opening scope resolution as parent class has no
+     * access to it.
      */
     return convert_to_simple_path (has_opening_scope_resolution);
   }
@@ -389,15 +494,15 @@ public:
   NodeId get_pattern_node_id () const override final { return get_node_id (); }
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   PathInExpression *clone_pattern_impl () const final override
   {
     return clone_path_in_expression_impl ();
   }
 
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   PathInExpression *clone_expr_without_block_impl () const final override
   {
     return clone_path_in_expression_impl ();
@@ -431,7 +536,8 @@ protected:
   bool has_separating_scope_resolution;
   NodeId node_id;
 
-  // Clone function implementation - not pure virtual as overrided by subclasses
+  // Clone function implementation - not pure virtual as overrided by
+  // subclasses
   virtual TypePathSegment *clone_type_path_segment_impl () const
   {
     return new TypePathSegment (*this);
@@ -465,8 +571,8 @@ public:
 
   virtual std::string as_string () const { return ident_segment.as_string (); }
 
-  /* Returns whether the type path segment is in an error state. May be virtual
-   * in future. */
+  /* Returns whether the type path segment is in an error state. May be
+   * virtual in future. */
   bool is_error () const { return ident_segment.is_error (); }
 
   /* Returns whether segment is identifier only (as opposed to generic args or
@@ -526,12 +632,13 @@ public:
 			  std::vector<Lifetime> lifetime_args,
 			  std::vector<std::unique_ptr<Type> > type_args,
 			  std::vector<GenericArgsBinding> binding_args,
+			  std::vector<ConstGenericArg> const_args,
 			  Location locus)
     : TypePathSegment (std::move (segment_name),
 		       has_separating_scope_resolution, locus),
-      generic_args (GenericArgs (std::move (lifetime_args),
-				 std::move (type_args),
-				 std::move (binding_args)))
+      generic_args (
+	GenericArgs (std::move (lifetime_args), std::move (type_args),
+		     std::move (binding_args), std::move (const_args)))
   {}
 
   std::string as_string () const override;
@@ -709,16 +816,16 @@ class TypePath : public TypeNoBounds
   Location locus;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   TypePath *clone_type_no_bounds_impl () const override
   {
     return new TypePath (*this);
   }
 
 public:
-  /* Returns whether the TypePath has an opening scope resolution operator (i.e.
-   * is global path or crate-relative path, not module-relative) */
+  /* Returns whether the TypePath has an opening scope resolution operator
+   * (i.e. is global path or crate-relative path, not module-relative) */
   bool has_opening_scope_resolution_op () const
   {
     return has_opening_scope_resolution;
@@ -900,8 +1007,8 @@ public:
       _node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
-  /* TODO: maybe make a shortcut constructor that has QualifiedPathType elements
-   * as params */
+  /* TODO: maybe make a shortcut constructor that has QualifiedPathType
+   * elements as params */
 
   // Returns whether qualified path in expression is in an error state.
   bool is_error () const { return path_type.is_error (); }
@@ -944,15 +1051,15 @@ public:
   NodeId get_pattern_node_id () const override final { return get_node_id (); }
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   QualifiedPathInExpression *clone_pattern_impl () const final override
   {
     return clone_qual_path_in_expression_impl ();
   }
 
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   QualifiedPathInExpression *
   clone_expr_without_block_impl () const final override
   {
@@ -966,8 +1073,8 @@ protected:
   }
 };
 
-/* Represents a qualified path in a type; used for disambiguating trait function
- * calls */
+/* Represents a qualified path in a type; used for disambiguating trait
+ * function calls */
 class QualifiedPathInType : public TypeNoBounds
 {
   QualifiedPathType path_type;
@@ -976,8 +1083,8 @@ class QualifiedPathInType : public TypeNoBounds
   Location locus;
 
 protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
   QualifiedPathInType *clone_type_no_bounds_impl () const override
   {
     return new QualifiedPathInType (*this);
@@ -994,8 +1101,8 @@ public:
       segments (std::move (path_segments)), locus (locus)
   {}
 
-  /* TODO: maybe make a shortcut constructor that has QualifiedPathType elements
-   * as params */
+  /* TODO: maybe make a shortcut constructor that has QualifiedPathType
+   * elements as params */
 
   // Copy constructor with vector clone
   QualifiedPathInType (QualifiedPathInType const &other)

@@ -2878,25 +2878,28 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 	  return nullptr;
 
 	// optional default value
-	std::unique_ptr<AST::Expr> default_expr = nullptr;
+	auto default_expr = AST::ConstGenericArg::create_error ();
 	if (lexer.peek_token ()->get_id () == EQUAL)
 	  {
 	    lexer.skip_token ();
 	    auto tok = lexer.peek_token ();
 	    default_expr = parse_const_generic_expression ();
 
-	    if (!default_expr)
+	    if (default_expr.is_error ())
 	      rust_error_at (tok->get_locus (),
 			     "invalid token for start of default value for "
 			     "const generic parameter: expected %<block%>, "
 			     "%<identifier%> or %<literal%>, got %qs",
 			     token_id_to_str (tok->get_id ()));
+
+	    // TODO: At this point, we *know* that we are parsing a const
+	    // expression. We should figure out how to disambiguate the default
+	    // expr in the case of `const N: usize = M`
 	  }
 
 	param = std::unique_ptr<AST::ConstGenericParam> (
 	  new AST::ConstGenericParam (name_token->get_str (), std::move (type),
-				      std::move (default_expr),
-				      std::move (outer_attrs),
+				      nullptr, std::move (outer_attrs),
 				      token->get_locus ()));
 
 	break;
@@ -6162,25 +6165,26 @@ Parser<ManagedTokenSource>::parse_type_path ()
 }
 
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::Expr>
+AST::ConstGenericArg
 Parser<ManagedTokenSource>::parse_const_generic_expression ()
 {
   auto tok = lexer.peek_token ();
+  std::unique_ptr<AST::Expr> expr = nullptr;
+
   switch (tok->get_id ())
     {
+    case IDENTIFIER:
+      lexer.skip_token ();
+
+      // TODO: This is ambiguous with regular generic types. We probably need
+      // to differentiate later on during type checking, and thus keep a
+      // special variant here
+
+      // FIXME: We need locus here as well
+      return AST::ConstGenericArg (tok->get_str ());
     case LEFT_CURLY:
-      return parse_block_expr ();
-      case IDENTIFIER: {
-	lexer.skip_token ();
-
-	// TODO: This is ambiguous with regular generic types. We probably need
-	// to differentiate later on during type checking, and thus keep a
-	// special variant here
-
-	// return this
-	return std::unique_ptr<AST::IdentifierExpr> (
-	  new AST::IdentifierExpr (tok->get_str (), {}, tok->get_locus ()));
-      }
+      expr = parse_block_expr ();
+      break;
     case MINUS:
     case STRING_LITERAL:
     case CHAR_LITERAL:
@@ -6188,10 +6192,16 @@ Parser<ManagedTokenSource>::parse_const_generic_expression ()
     case FLOAT_LITERAL:
     case TRUE_LITERAL:
     case FALSE_LITERAL:
-      return parse_literal_expr ();
+      expr = parse_literal_expr ();
+      break;
     default:
-      return nullptr;
+      expr = nullptr;
     }
+
+  if (!expr)
+    return AST::ConstGenericArg::create_error ();
+
+  return AST::ConstGenericArg (std::move (expr));
 }
 
 // Parses the generic arguments in each path segment.
@@ -6237,7 +6247,7 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
 
   // try to parse types second
   std::vector<std::unique_ptr<AST::Type>> type_args;
-  std::vector<std::unique_ptr<AST::Expr>> const_args;
+  std::vector<AST::ConstGenericArg> const_args;
 
   // TODO: Keep list of const expressions as well
 
@@ -6261,10 +6271,10 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
       else
 	{
 	  auto const_generic_expr = parse_const_generic_expression ();
-	  if (const_generic_expr)
-	    const_args.emplace_back (std::move (const_generic_expr));
-	  else
+	  if (const_generic_expr.is_error ())
 	    break;
+	  else
+	    const_args.emplace_back (std::move (const_generic_expr));
 	}
 
       // if next token isn't comma, then it must be end of list
@@ -6315,7 +6325,8 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
   binding_args.shrink_to_fit ();
 
   return AST::GenericArgs (std::move (lifetime_args), std::move (type_args),
-			   std::move (binding_args), locus);
+			   std::move (binding_args), std::move (const_args),
+			   locus);
 }
 
 // Parses a binding in a generic args path segment.
