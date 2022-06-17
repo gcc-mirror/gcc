@@ -353,6 +353,7 @@ The OpenMP 4.5 specification is fully supported.
 @unnumberedsubsec New features listed in Appendix B of the OpenMP specification
 
 @multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
 @item @code{omp_in_explicit_task} routine and @emph{implicit-task-var} ICV
       @tab N @tab
 @item @code{omp}/@code{ompx}/@code{omx} sentinels and @code{omp_}/@code{ompx_}
