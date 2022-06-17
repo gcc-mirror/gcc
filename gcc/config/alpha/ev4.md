@@ -44,14 +44,7 @@
 ; Stores can issue before the data (but not address) is ready.
 (define_insn_reservation "ev4_ist" 1
   (and (eq_attr "tune" "ev4")
-       (eq_attr "type" "ist"))
-  "ev4_ib1+ev4_abox")
-
-; ??? Separate from ev4_ist because store_data_bypass_p can't handle
-; the patterns with multiple sets, like store-conditional.
-(define_insn_reservation "ev4_ist_c" 1
-  (and (eq_attr "tune" "ev4")
-       (eq_attr "type" "st_c"))
+       (eq_attr "type" "ist,st_c"))
   "ev4_ib1+ev4_abox")
 
 (define_insn_reservation "ev4_fst" 1
@@ -110,7 +103,7 @@
 (define_bypass 0
   "ev4_iaddlog,ev4_shiftcm,ev4_icmp"
   "ev4_ist"
-  "store_data_bypass_p")
+  "alpha_store_data_bypass_p")
 
 ; Multiplies use a non-pipelined imul unit.  Also, "no [ebox] insn can
 ; be issued exactly three cycles before an integer multiply completes".
@@ -121,7 +114,7 @@
 	    (eq_attr "opsize" "si")))
   "ev4_ib0+ev4_imul,ev4_imul*18,ev4_ebox")
 
-(define_bypass 20 "ev4_imulsi" "ev4_ist" "store_data_bypass_p")
+(define_bypass 20 "ev4_imulsi" "ev4_ist" "alpha_store_data_bypass_p")
 
 (define_insn_reservation "ev4_imuldi" 23
   (and (eq_attr "tune" "ev4")
@@ -129,7 +122,7 @@
 	    (eq_attr "opsize" "!si")))
   "ev4_ib0+ev4_imul,ev4_imul*20,ev4_ebox")
 
-(define_bypass 22 "ev4_imuldi" "ev4_ist" "store_data_bypass_p")
+(define_bypass 22 "ev4_imuldi" "ev4_ist" "alpha_store_data_bypass_p")
 
 ; Most FP insns have a 6 cycle latency, but with a 4 cycle bypass back in.
 (define_insn_reservation "ev4_fpop" 6
