@@ -73,6 +73,8 @@ extern void alpha_end_function (FILE *, const char *, tree);
 
 extern bool alpha_find_lo_sum_using_gp (rtx);
 
+extern int alpha_store_data_bypass_p (rtx_insn *, rtx_insn *);
+
 #ifdef REAL_VALUE_TYPE
 extern int check_float_value (machine_mode, REAL_VALUE_TYPE *, int);
 #endif
