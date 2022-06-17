@@ -1369,6 +1369,8 @@ typedef struct gfc_omp_namelist
       struct gfc_omp_namelist_udr *udr;
       gfc_namespace *ns;
     } u2;
+  struct gfc_symbol *memspace_sym;
+  struct gfc_symbol *traits_sym;
   struct gfc_omp_namelist *next;
   locus where;
 }
@@ -1412,6 +1414,7 @@ enum
   OMP_LIST_ALLOCATOR,
   OMP_LIST_HAS_DEVICE_ADDR,
   OMP_LIST_ENTER,
+  OMP_LIST_USES_ALLOCATORS,
   OMP_LIST_NUM /* Must be the last.  */
 };
 

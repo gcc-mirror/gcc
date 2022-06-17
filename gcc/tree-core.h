@@ -530,6 +530,9 @@ enum omp_clause_code {
 
   /* OpenMP clause: allocator.  */
   OMP_CLAUSE_ALLOCATOR,
+
+  /* OpenMP clause: uses_allocators.  */
+  OMP_CLAUSE_USES_ALLOCATORS,
 };
 
 #undef DEFTREESTRUCT

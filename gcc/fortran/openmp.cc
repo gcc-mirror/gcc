@@ -1105,6 +1105,7 @@ enum omp_mask2
   OMP_CLAUSE_ENTER, /* OpenMP 5.2 */
   OMP_CLAUSE_DOACROSS, /* OpenMP 5.2 */
   OMP_CLAUSE_ASSUMPTIONS, /* OpenMP 5.1. */
+  OMP_CLAUSE_USES_ALLOCATORS,
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -1687,6 +1688,528 @@ omp_verify_merge_absent_contains (gfc_statement st, gfc_omp_assumptions *check,
   return MATCH_YES;
 }
 
+/* OpenMP 5.0:
+   uses_allocators ( allocator-list )
+
+   allocator-list:
+   allocator
+   allocator , allocator-list
+   allocator ( traits-array )
+   allocator ( traits-array ) , allocator-list
+
+   OpenMP 5.2:
+
+   uses_allocators ( modifier : allocator )
+   uses_allocators ( modifier , modifier : allocator )
+
+   modifier:
+   traits ( traits-array )
+   memspace ( mem-space-handle )  */
+
+static match
+gfc_match_omp_clause_uses_allocators (gfc_omp_clauses *c)
+{
+  char buffer[GFC_MAX_SYMBOL_LEN + 1];
+  gfc_symbol *sym;
+  gfc_symbol *memspace_sym= NULL;
+  gfc_symbol *traits_sym= NULL;
+  locus traits_sym_loc;
+  match m, ret = MATCH_ERROR;
+
+  if (gfc_match ("uses_allocators ( ") != MATCH_YES)
+    return MATCH_NO;
+
+  struct item_tok
+  {
+    locus loc;
+    char *str;
+    item_tok (void) : str (NULL) {}
+    ~item_tok (void) { if (str) free (str); }
+  };
+  struct item { item_tok name, arg; };
+  auto_vec<item> *modifiers = NULL, *allocators = NULL;
+  auto_vec<item> *cur_list = new auto_vec<item> (4);
+
+  gfc_symbol *allocator_handle_kind;
+
+  if (gfc_find_symbol ("omp_allocator_handle_kind", NULL, 1, &sym)
+      || sym == NULL
+      || sym->attr.dimension
+      || sym->value == NULL
+      || sym->value->expr_type != EXPR_CONSTANT
+      || sym->value->ts.type != BT_INTEGER)
+    {
+      gfc_error ("OpenMP %<omp_allocator_handle_kind%> constant not found by "
+		 "%<uses_allocators%> clause at %C");
+      goto error;
+    }
+  allocator_handle_kind = sym;
+
+  while (true)
+    {
+      item it;
+
+      m = gfc_match_name (buffer);
+      if (m == MATCH_YES)
+	{
+	  it.name.str = xstrdup (buffer);
+	  it.name.loc = gfc_current_locus;
+	}
+      else
+	{
+	  gfc_error ("Expected identifier at %C");
+	  goto error;
+	}
+
+      if (gfc_match_char ('(') == MATCH_YES)
+	{
+	  m = gfc_match_name (buffer);
+	  if (m == MATCH_YES)
+	    {
+	      it.arg.str = xstrdup (buffer);
+	      it.arg.loc = gfc_current_locus;
+	    }
+	  else
+	    {
+	      gfc_error ("Expected identifier at %C");
+	      goto error;
+	    }
+	  if (gfc_match_char (')') != MATCH_YES)
+	    {
+	      gfc_error ("Expected %<)%> at %C");
+	      goto error;
+	    }
+	}
+
+      cur_list->safe_push (it);
+      it.name.str = NULL;
+      it.arg.str = NULL;
+
+      if (gfc_match (" , ") == MATCH_YES)
+	continue;
+      else if (gfc_match (" : ") == MATCH_YES)
+	{
+	  if (modifiers)
+	    {
+	      gfc_error ("expected %<)%> at %C");
+	      goto error;
+	    }
+	  else
+	    {
+	      modifiers = cur_list;
+	      cur_list = new auto_vec<item> (4);
+	    }
+	}
+      else if (gfc_match_char (')') == MATCH_YES)
+	{
+	  gcc_assert (allocators == NULL);
+	  allocators = cur_list;
+	  cur_list = NULL;
+	  break;
+	}
+      else
+	{
+	  gfc_error ("expected %<)%> at %C");
+	  goto error;
+	}
+    }
+
+  if (modifiers)
+    for (unsigned i = 0; i < modifiers->length (); i++)
+      {
+	item& it = (*modifiers)[i];
+	const char *p = it.name.str;
+	int strcmp_traits = 1, strcmp_memspace = 1;
+	gfc_symbol *sym;
+
+	if ((strcmp_traits = strcmp ("traits", p)) == 0
+	    || (strcmp_memspace = strcmp ("memspace", p)) == 0)
+	  {
+	    if ((strcmp_traits == 0 && traits_sym != NULL)
+		|| (strcmp_memspace == 0 && memspace_sym != NULL))
+	      {
+		gfc_error ("duplicate %qs modifier at %L", p, &it.name.loc);
+		goto error;
+	      }
+	    if (gfc_find_symbol (it.arg.str, NULL, 1, &sym) || sym == NULL)
+	      {
+		gfc_error ("Symbol %qs at %L is ambiguous",
+			   it.arg.str, &it.arg.loc);
+		goto error;
+	      }
+	    else if (strcmp_memspace == 0)
+	      {
+		memspace_sym = sym;
+
+		/* We have a memspace specified, now check if it is valid.
+		   Start with finding if we have the standards specified
+		   'omp_memspace_handle_kind' available.  */
+		if (gfc_find_symbol ("omp_memspace_handle_kind", NULL, 1, &sym)
+		    || sym == NULL
+		    || sym->attr.dimension
+		    || sym->value == NULL
+		    || sym->value->expr_type != EXPR_CONSTANT
+		    || sym->value->ts.type != BT_INTEGER)
+		  {
+		    gfc_error ("OpenMP %<omp_memspace_handle_kind%> constant "
+			       "not found by %<uses_allocators%> clause at %L",
+			       &it.arg.loc);
+		    goto error;
+		  }
+
+		gfc_symbol *memspace_handle_kind = sym;
+
+		if (memspace_sym->ts.type != BT_INTEGER
+		    || memspace_sym->attr.flavor != FL_PARAMETER
+		    || mpz_cmp_si (memspace_handle_kind->value->value.integer,
+				   memspace_sym->ts.kind) != 0
+		    /* Check if identifier is of 'omp_..._mem_space' format.  */
+		    || !startswith (memspace_sym->name, "omp_")
+		    || !endswith (memspace_sym->name, "_mem_space"))
+		  {
+		    gfc_error ("%<%s%> at %L is not a pre-defined memory space "
+			       "name", memspace_sym->name, &it.arg.loc);
+		    goto error;
+		  }
+	      }
+	    else if (strcmp_traits == 0)
+	      {
+		traits_sym = sym;
+		traits_sym_loc = it.arg.loc;
+	      }
+	    else
+	      gcc_unreachable ();
+	  }
+	else
+	  {
+	    gfc_error ("unknown modifier %qs at %L", p, &it.name.loc);
+	    goto error;
+	  }
+      }
+
+  if (allocators)
+    {
+      if (modifiers)
+	{
+	  if (allocators->length () > 1)
+	    {
+	      gfc_error ("%<uses_allocators%> clause only accepts a single "
+			 "allocator when using modifiers at %L",
+			 &(*allocators)[1].name.loc);
+	      goto error;
+	    }
+	  else if ((*allocators)[0].arg.str)
+	    {
+	      gfc_error ("legacy %<%s(%s)%> traits syntax not allowed in "
+			 "%<uses_allocators%> clause when using modifiers at %L",
+			 (*allocators)[0].name.str, (*allocators)[0].arg.str,
+			 &(*allocators)[0].arg.loc);
+	      goto error;
+	    }
+	}
+
+      for (unsigned i = 0; i < allocators->length (); i++)
+	{
+	  item& it = (*allocators)[i];
+
+	  gfc_symbol *allocator_sym;
+	  locus allocator_sym_loc;
+
+	  if (gfc_find_symbol (it.name.str, NULL, 1, &allocator_sym) != 0
+	      || allocator_sym == NULL)
+	    {
+	      gfc_error ("Symbol %qs at %L is ambiguous",
+			 it.name.str, &it.name.loc);
+	      goto error;
+	    }
+	  allocator_sym_loc = it.name.loc;
+
+	  gfc_symbol *curr_traits_sym;
+	  locus curr_traits_sym_loc;
+
+	  if (it.arg.str)
+	    {
+	      if (gfc_find_symbol (it.arg.str, NULL, 1, &curr_traits_sym)
+		  || curr_traits_sym == NULL)
+		{
+		  gfc_error ("Symbol %qs at %L is ambiguous",
+			     it.arg.str, &it.arg.loc);
+		  goto error;
+		}
+	      curr_traits_sym_loc = it.arg.loc;
+	    }
+	  else
+	    {
+	      curr_traits_sym = traits_sym;
+	      curr_traits_sym_loc = traits_sym_loc;
+	    }
+
+	  if (curr_traits_sym)
+	    {
+	      if (curr_traits_sym->ts.type != BT_DERIVED
+		  || strcmp (curr_traits_sym->ts.u.derived->name,
+			     "omp_alloctrait") != 0
+		  || curr_traits_sym->attr.flavor != FL_PARAMETER
+		  || curr_traits_sym->as->rank != 1)
+		{
+		  gfc_error ("%<%s%> at %L must be of constant "
+			     "%<type(omp_alloctrait)%> array type and have a "
+			     "constant initializer", curr_traits_sym->name,
+			     &curr_traits_sym_loc);
+		  goto error;
+		}
+	      gfc_set_sym_referenced (curr_traits_sym);
+	    }
+
+	  if (allocator_sym->ts.type != BT_INTEGER
+	      || mpz_cmp_si (allocator_handle_kind->value->value.integer,
+			     allocator_sym->ts.kind) != 0)
+	    {
+	      gfc_error ("%<%s%> at %L must be integer of %<%s%> kind",
+			 allocator_sym->name, &allocator_sym_loc,
+			 allocator_handle_kind->name);
+	      goto error;
+	    }
+
+	  if (allocator_sym->attr.flavor == FL_PARAMETER)
+	    {
+	      if (strcmp (allocator_sym->name, "omp_null_allocator") == 0)
+		{
+		  gfc_error ("%<omp_null_allocator%> cannot be used in "
+			     "%<uses_allocators%> clause at %L",
+			     &allocator_sym_loc);
+		  goto error;
+		}
+
+	      /* Check if identifier is a 'omp_..._mem_alloc' pre-defined
+		 allocator.  */
+	      if (!startswith (allocator_sym->name, "omp_")
+		  || !endswith (allocator_sym->name, "_mem_alloc"))
+		{
+		  gfc_error ("%<%s%> at %L is not a pre-defined memory "
+			     "allocator", allocator_sym->name,
+			     &allocator_sym_loc);
+		  goto error;
+		}
+
+	      /* Currently for pre-defined allocators in libgomp, we do not
+		 require additional init/fini inside target regions,
+		 so do nothing here to discard such clauses.  */
+	    }
+	  else
+	    {
+	      gfc_set_sym_referenced (allocator_sym);
+
+	      gfc_omp_namelist *n = gfc_get_omp_namelist ();
+	      n->sym = allocator_sym;
+	      n->memspace_sym = memspace_sym;
+	      n->traits_sym = curr_traits_sym;
+	      n->where = it.name.loc;
+
+	      n->next = c->lists[OMP_LIST_USES_ALLOCATORS];
+	      c->lists[OMP_LIST_USES_ALLOCATORS] = n;
+	    }
+	}
+    }
+
+  ret = MATCH_YES;
+
+ end:
+  if (cur_list)
+    delete cur_list;
+  if (modifiers)
+    delete modifiers;
+  if (allocators)
+    delete allocators;
+  return ret;
+
+ error:
+  ret = MATCH_ERROR;
+  gfc_error_check ();
+  goto end;
+
+#if 0
+  do
+    {
+      if (++i > 2)
+	{
+	  gfc_error ("Only two modifiers are allowed on %<uses_allocators%> "
+		     "clause at %C");
+	  goto error;
+	}
+
+      if (gfc_match ("memspace ( ") == MATCH_YES)
+	{
+	  if (memspace_seen)
+	    {
+	      gfc_error ("Multiple memspace modifiers at %C");
+	      goto error;
+	    }
+	  memspace_seen = true;
+	  m = gfc_match_symbol (&sym, 1);
+	  if (m == MATCH_YES)
+	    memspace_sym = sym;
+	  else
+	    goto error;
+	  if (gfc_match_char (')') != MATCH_YES)
+	    goto error;
+	}
+      else if (gfc_match ("traits ( ") == MATCH_YES)
+	{
+	  if (traits_seen)
+	    {
+	      gfc_error ("Multiple traits modifiers at %C");
+	      goto error;
+	    }
+	  traits_seen = true;
+	  m = gfc_match_symbol (&sym, 1);
+	  if (m == MATCH_YES)
+	    traits_sym = sym;
+	  else
+	    goto error;
+	  if (gfc_match_char (')') != MATCH_YES)
+	    goto error;
+	}
+      else
+	break;
+    }
+  while (gfc_match (" , ") == MATCH_YES);
+
+  if ((memspace_seen || traits_seen)
+      && gfc_match (" : ") != MATCH_YES)
+    goto error;
+
+  while (true)
+    {
+      m = gfc_match_symbol (&sym, 1);
+      if (m != MATCH_YES)
+	{
+	  gfc_error ("Expected name of allocator at %C");
+	  goto error;
+	}
+      gfc_symbol *allocator_sym = sym;
+
+      if (gfc_match_char ('(') == MATCH_YES)
+	{
+	  if (memspace_seen || traits_seen)
+	    {
+	      gfc_error ("Modifiers cannot be used with (deprecated) traits "
+			 "array list syntax at %C");
+	      goto error;
+	    }
+	  m = gfc_match_symbol (&sym, 1);
+	  if (m == MATCH_YES)
+	    traits_sym = sym;
+	  else
+	    goto error;
+	  if (gfc_match_char (')') != MATCH_YES)
+	    goto error;
+	}
+
+      if (traits_sym)
+	{
+	  if (traits_sym->ts.type != BT_DERIVED
+	      || strcmp (traits_sym->ts.u.derived->name,
+			 "omp_alloctrait") != 0
+	      || traits_sym->attr.flavor != FL_PARAMETER
+	      || traits_sym->as->rank != 1)
+	    {
+	      gfc_error ("%<%s%> at %C must be of constant "
+			 "%<type(omp_alloctrait)%> array type and have a "
+			 "constant initializer", traits_sym->name);
+	      goto error;
+	    }
+	  gfc_set_sym_referenced (traits_sym);
+	}
+
+      if (memspace_sym)
+	{
+	  if (gfc_find_symbol ("omp_memspace_handle_kind", NULL, 1, &sym)
+	      || sym == NULL
+	      || sym->attr.dimension
+	      || sym->value == NULL
+	      || sym->value->expr_type != EXPR_CONSTANT
+	      || sym->value->ts.type != BT_INTEGER)
+	    {
+	      gfc_error ("OpenMP %<omp_memspace_handle_kind%> constant not "
+			 "found by %<uses_allocators%> clause at %C");
+	      goto error;
+	    }
+	  gfc_symbol *memspace_handle_kind = sym;
+
+	  if (memspace_sym->ts.type != BT_INTEGER
+	      || memspace_sym->attr.flavor != FL_PARAMETER
+	      || mpz_cmp_si (memspace_handle_kind->value->value.integer,
+			     memspace_sym->ts.kind) != 0
+	      /* Check if identifier is of 'omp_..._mem_space' format.  */
+	      || !startswith (memspace_sym->name, "omp_")
+	      || !endswith (memspace_sym->name, "_mem_space"))
+	    {
+	      gfc_error ("%<%s%> at %C is not a pre-defined memory space name",
+			 memspace_sym->name);
+	      goto error;
+	    }
+	}
+
+      if (allocator_sym->ts.type != BT_INTEGER
+	  || mpz_cmp_si (allocator_handle_kind->value->value.integer,
+			 allocator_sym->ts.kind) != 0)
+	{
+	  gfc_error ("%<%s%> at %C must be integer of %<%s%> kind",
+		     allocator_sym->name, allocator_handle_kind->name);
+	  goto error;
+	}
+
+      if (allocator_sym->attr.flavor == FL_PARAMETER)
+	{
+	  /* Check if identifier is a 'omp_..._mem_alloc' pre-defined
+	     allocator.  */
+	  if (!startswith (allocator_sym->name, "omp_")
+	      || !endswith (allocator_sym->name, "_mem_alloc"))
+	    {
+	      gfc_error ("%<%s%> at %C is not a pre-defined memory allocator",
+			 allocator_sym->name);
+	      goto error;
+	    }
+
+	  /* Currently for pre-defined allocators in libgomp, we do not
+	     require additional init/fini inside target regions,
+	     so do nothing here to discard such clauses.  */
+	}
+      else
+	{
+	  gfc_set_sym_referenced (allocator_sym);
+
+	  gfc_omp_namelist *n = gfc_get_omp_namelist ();
+	  n->sym = allocator_sym;
+	  n->memspace_sym = memspace_sym;
+	  n->traits_sym = traits_sym;
+	  n->where = gfc_current_locus;
+
+	  n->next = c->lists[OMP_LIST_USES_ALLOCATORS];
+	  c->lists[OMP_LIST_USES_ALLOCATORS] = n;
+	}
+
+      if (gfc_match (" , ") == MATCH_YES)
+	{
+	  if (memspace_seen || traits_seen)
+	    {
+	      gfc_error ("When using modifiers, only a single allocator can be "
+			 "specified in each %<uses_allocators%> clause at %C");
+	      goto error;
+	    }
+	}
+      else
+	break;
+
+      memspace_sym = NULL;
+      traits_sym = NULL;
+    }
+
+  if (gfc_match_char (')') != MATCH_YES)
+    goto error;
+#endif
+}
 
 /* Match with duplicate check. Matches 'name'. If expr != NULL, it
    then matches '(expr)', otherwise, if open_parens is true,
@@ -3525,6 +4048,9 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		   ("use_device_addr (", &c->lists[OMP_LIST_USE_DEVICE_ADDR],
 		    false, NULL, NULL, true) == MATCH_YES)
 	    continue;
+	  if ((mask & OMP_CLAUSE_USES_ALLOCATORS)
+	      && gfc_match_omp_clause_uses_allocators (c) == MATCH_YES)
+	    continue;
 	  break;
 	case 'v':
 	  /* VECTOR_LENGTH must be matched before VECTOR, because the latter
@@ -4253,7 +4779,7 @@ cleanup:
    | OMP_CLAUSE_FIRSTPRIVATE | OMP_CLAUSE_DEFAULTMAP			\
    | OMP_CLAUSE_IS_DEVICE_PTR | OMP_CLAUSE_IN_REDUCTION			\
    | OMP_CLAUSE_THREAD_LIMIT | OMP_CLAUSE_ALLOCATE			\
-   | OMP_CLAUSE_HAS_DEVICE_ADDR)
+   | OMP_CLAUSE_HAS_DEVICE_ADDR | OMP_CLAUSE_USES_ALLOCATORS)
 #define OMP_TARGET_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_USE_DEVICE_PTR | OMP_CLAUSE_USE_DEVICE_ADDR)
@@ -7201,7 +7727,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	"IN_REDUCTION", "TASK_REDUCTION",
 	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
-	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR", "ENTER", "ALLOCATOR" };
+	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR", "ENTER", "ALLOCATOR",
+	"USES_ALLOCATORS" };
   STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
 
   if (omp_clauses == NULL)

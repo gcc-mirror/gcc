@@ -15303,6 +15303,120 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      break;
 	    }
 	  gcc_unreachable ();
+
+	case OMP_CLAUSE_USES_ALLOCATORS:
+	  t = OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c);
+	  if ((VAR_P (t) || TREE_CODE (t) == PARM_DECL)
+	      && (bitmap_bit_p (&generic_head, DECL_UID (t))
+		  || bitmap_bit_p (&map_head, DECL_UID (t))
+		  || bitmap_bit_p (&firstprivate_head, DECL_UID (t))
+		  || bitmap_bit_p (&lastprivate_head, DECL_UID (t))))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE appears more than once in data clauses", t);
+	      remove = true;
+	      break;
+	    }
+	  else
+	    bitmap_set_bit (&generic_head, DECL_UID (t));
+	  if (TREE_CODE (TREE_TYPE (t)) != ENUMERAL_TYPE
+	      || strcmp (IDENTIFIER_POINTER (TYPE_IDENTIFIER (TREE_TYPE (t))),
+			 "omp_allocator_handle_t") != 0)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"allocator must be of %<omp_allocator_handle_t%> type");
+	      remove = true;
+	      break;
+	    }
+	  if (TREE_CODE (t) == CONST_DECL)
+	    {
+	      /* Currently for pre-defined allocators in libgomp, we do not
+		 require additional init/fini inside target regions, so discard
+		 such clauses.  */
+	      remove = true;
+
+	      if (strcmp (IDENTIFIER_POINTER (DECL_NAME (t)),
+			  "omp_null_allocator") == 0)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<omp_null_allocator%> cannot be used in "
+			    "%<uses_allocators%> clause");
+		  break;
+		}
+
+	      if (OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (c)
+		  || OMP_CLAUSE_USES_ALLOCATORS_TRAITS (c))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "modifiers cannot be used with pre-defined "
+			    "allocators");
+		  break;
+		}
+	    }
+	  t = OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (c);
+	  if (t != NULL_TREE
+	      && (TREE_CODE (t) != CONST_DECL
+		  || TREE_CODE (TREE_TYPE (t)) != ENUMERAL_TYPE
+		  || strcmp (IDENTIFIER_POINTER (TYPE_IDENTIFIER (TREE_TYPE (t))),
+			     "omp_memspace_handle_t") != 0))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c), "memspace modifier must be "
+			"constant enum of %<omp_memspace_handle_t%> type");
+	      remove = true;
+	      break;
+	    }
+	  t = OMP_CLAUSE_USES_ALLOCATORS_TRAITS (c);
+	  if (t != NULL_TREE)
+	    {
+	      bool type_err = false;
+
+	      if (TREE_CODE (TREE_TYPE (t)) != ARRAY_TYPE
+		  || DECL_SIZE (t) == NULL_TREE)
+		type_err = true;
+	      else
+		{
+		  tree elem_t = TREE_TYPE (TREE_TYPE (t));
+		  if (TREE_CODE (elem_t) != RECORD_TYPE
+		      || strcmp (IDENTIFIER_POINTER (TYPE_IDENTIFIER (elem_t)),
+				 "omp_alloctrait_t") != 0
+		      || !TYPE_READONLY (elem_t))
+		    type_err = true;
+		}
+	      if (type_err)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c), "traits array must be of "
+			    "%<const omp_alloctrait_t []%> type");
+		  remove = true;
+		}
+	      else
+		{
+		  tree cst_val = decl_constant_value_1 (t, true);
+		  if (cst_val == t)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c), "traits array must be "
+				"of constant values");
+
+		      remove = true;
+		    }
+		}
+	    }
+
+	  if (remove)
+	    break;
+	  else
+	    {
+	      /* Create a private clause for the allocator variable, placed
+		 prior to current uses_allocators clause.  */
+	      tree nc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+					  OMP_CLAUSE_PRIVATE);
+	      OMP_CLAUSE_DECL (nc) = OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c);
+	      OMP_CLAUSE_CHAIN (nc) = c;
+	      *pc = nc;
+
+	      pc = &OMP_CLAUSE_CHAIN (c);
+	      continue;
+	    }
+
 	case OMP_CLAUSE_DEPEND:
 	case OMP_CLAUSE_AFFINITY:
 	  t = OMP_CLAUSE_DECL (c);

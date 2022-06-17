@@ -1,3 +1,26 @@
+2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	Backport from mainline:
+	2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gfortran.h (struct gfc_omp_namelist): Add memspace_sym, traits_sym
+	fields.
+	(OMP_LIST_USES_ALLOCATORS): New list enum.
+	* openmp.cc (enum omp_mask2): Add OMP_CLAUSE_USES_ALLOCATORS.
+	(gfc_match_omp_clause_uses_allocators): New function.
+	(gfc_match_omp_clauses): Add case to handle OMP_CLAUSE_USES_ALLOCATORS.
+	(OMP_TARGET_CLAUSES): Add OMP_CLAUSE_USES_ALLOCATORS.
+	(resolve_omp_clauses): Add "USES_ALLOCATORS" to clause_names[].
+	* dump-parse-tree.cc (show_omp_namelist): Handle OMP_LIST_USES_ALLOCATORS.
+	(show_omp_clauses): Likewise.
+	* trans-array.cc (gfc_conv_array_initializer): Adjust array index
+	to always be a created tree expression instead of NULL_TREE when zero.
+	* trans-openmp.cc (gfc_trans_omp_clauses): For ALLOCATE clause, handle
+	using gfc_trans_omp_variable for EXPR_VARIABLE exprs.
+	Add handling of OMP_LIST_USES_ALLOCATORS case.
+	* types.def (BT_FN_VOID_PTRMODE): Define.
+	(BT_FN_PTRMODE_PTRMODE_INT_PTR): Define.
+
 2022-05-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-array.cc (gfc_scalar_elemental_arg_saved_as_reference):

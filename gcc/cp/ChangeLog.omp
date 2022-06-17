@@ -1,3 +1,16 @@
+2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	Backport from mainline:
+	2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_name): Add case for uses_allocators
+	clause.
+	(cp_parser_omp_clause_uses_allocators): New function.
+	(cp_parser_omp_all_clauses): Add PRAGMA_OMP_CLAUSE_USES_ALLOCATORS case.
+	(OMP_TARGET_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_USES_ALLOCATORS to mask.
+	* semantics.cc (finish_omp_clauses): Add case handling for
+	OMP_CLAUSE_USES_ALLOCATORS.
+
 2022-03-10  Andrew Stubbs  <ams@codesourcery.com>
 
 	* parser.cc (cp_parser_omp_requires): Allow "requires

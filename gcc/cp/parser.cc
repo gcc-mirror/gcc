@@ -37365,6 +37365,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR;
 	  else if (!strcmp ("use_device_ptr", p))
 	    result = PRAGMA_OMP_CLAUSE_USE_DEVICE_PTR;
+	  else if (!strcmp ("uses_allocators", p))
+	    result = PRAGMA_OMP_CLAUSE_USES_ALLOCATORS;
 	  break;
 	case 'v':
 	  if (!strcmp ("vector", p))
@@ -39618,6 +39620,234 @@ cp_parser_omp_clause_allocate (cp_parser *parser, tree list)
   return nlist;
 }
 
+/* OpenMP 5.0:
+   uses_allocators ( allocator-list )
+
+   allocator-list:
+   allocator
+   allocator , allocator-list
+   allocator ( traits-array )
+   allocator ( traits-array ) , allocator-list
+
+   OpenMP 5.2:
+
+   uses_allocators ( modifier : allocator )
+   uses_allocators ( modifier , modifier : allocator )
+
+   modifier:
+   traits ( traits-array )
+   memspace ( mem-space-handle )  */
+
+static tree
+cp_parser_omp_clause_uses_allocators (cp_parser *parser, tree list)
+{
+  location_t clause_loc
+    = cp_lexer_peek_token (parser->lexer)->location;
+  tree t = NULL_TREE, nl = list;
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  tree memspace_expr = NULL_TREE;
+  tree traits_var = NULL_TREE;
+
+  struct item_tok
+  {
+    location_t loc;
+    tree id;
+    item_tok (void) : loc (UNKNOWN_LOCATION), id (NULL_TREE) {}
+  };
+  struct item { item_tok name, arg; };
+  auto_vec<item> *modifiers = NULL, *allocators = NULL;
+  auto_vec<item> *cur_list = new auto_vec<item> (4);
+
+  while (true)
+    {
+      item it;
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	{
+	  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+	  it.name.id = tok->u.value;
+	  it.name.loc = tok->location;
+	  cp_lexer_consume_token (parser->lexer);
+
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+	    {
+	      matching_parens parens2;
+	      parens2.consume_open (parser);
+
+	      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+		{
+		  tok = cp_lexer_peek_token (parser->lexer);
+		  it.arg.id = tok->u.value;
+		  it.arg.loc = tok->location;
+		  cp_lexer_consume_token (parser->lexer);
+		}
+	      else
+		{
+		  cp_parser_error (parser, "expected identifier");
+		  cp_parser_skip_to_closing_parenthesis (parser,
+							 /*recovering=*/true,
+							 /*or_comma=*/false,
+							 /*consume_paren=*/true);
+		  goto end;
+		}
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/false,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/true);
+	    }
+	}
+
+      cur_list->safe_push (it);
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
+      else if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+	{
+	  if (modifiers)
+	    {
+	      cp_parser_error (parser, "expected %<)%>");
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/true,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/true);
+	      goto end;
+	    }
+	  else
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      modifiers = cur_list;
+	      cur_list = new auto_vec<item> (4);
+	    }
+	}
+      else if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
+	{
+	  gcc_assert (allocators == NULL);
+	  allocators = cur_list;
+	  cur_list = NULL;
+	  break;
+	}
+      else
+	{
+	  cp_parser_error (parser, "expected %<)%>");
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering=*/true,
+						 /*or_comma=*/false,
+						 /*consume_paren=*/true);
+	  goto end;
+	}
+    }
+
+  if (modifiers)
+    for (unsigned i = 0; i < modifiers->length (); i++)
+      {
+	item& it = (*modifiers)[i];
+	const char *p = IDENTIFIER_POINTER (it.name.id);
+	int strcmp_traits = 1, strcmp_memspace = 1;
+
+	if ((strcmp_traits = strcmp ("traits", p)) == 0
+	    || (strcmp_memspace = strcmp ("memspace", p)) == 0)
+	  {
+	    if ((strcmp_traits == 0 && traits_var != NULL_TREE)
+		|| (strcmp_memspace == 0 && memspace_expr != NULL_TREE))
+	      {
+		error_at (it.name.loc, "duplicate %qs modifier", p);
+		goto end;
+	      }
+	    t = cp_parser_lookup_name_simple (parser, it.arg.id, it.arg.loc);
+	    if (t == error_mark_node)
+	      {
+		cp_parser_name_lookup_error (parser, it.arg.id, t, NLE_NULL,
+					     it.arg.loc);
+	      }
+	    else if (strcmp_memspace == 0)
+	      memspace_expr = t;
+	    else if (strcmp_traits == 0)
+	      traits_var = t;
+	    else
+	      gcc_unreachable ();
+	  }
+	else
+	  {
+	    error_at (it.name.loc, "unknown modifier %qE", it.name.id);
+	    goto end;
+	  }
+      }
+
+  if (allocators)
+    {
+      if (modifiers)
+	{
+	  if (allocators->length () > 1)
+	    {
+	      error_at ((*allocators)[1].name.loc,
+			"%<uses_allocators%> clause only accepts a single "
+			"allocator when using modifiers");
+	      goto end;
+	    }
+	  else if ((*allocators)[0].arg.id)
+	    {
+	      error_at ((*allocators)[0].arg.loc,
+			"legacy %<%E(%E)%> traits syntax not allowed in "
+			"%<uses_allocators%> clause when using modifiers",
+			(*allocators)[0].name.id, (*allocators)[0].arg.id);
+	      goto end;
+	    }
+	}
+
+      for (unsigned i = 0; i < allocators->length (); i++)
+	{
+	  item& it = (*allocators)[i];
+	  t = cp_parser_lookup_name_simple (parser, it.name.id, it.name.loc);
+	  if (t == error_mark_node)
+	    {
+	      cp_parser_name_lookup_error (parser, it.name.id, t, NLE_NULL,
+					   it.name.loc);
+	      goto end;
+	    }
+	  else if (t != error_mark_node)
+	    {
+	      tree t2 = NULL_TREE;
+	      if (it.arg.id)
+		{
+		  t2 = cp_parser_lookup_name_simple (parser, it.arg.id,
+						     it.arg.loc);
+		  if (t2 == error_mark_node)
+		    {
+		      cp_parser_name_lookup_error (parser, it.arg.id, t2,
+						   NLE_NULL, it.arg.loc);
+		      goto end;
+		    }
+		}
+	      else
+		t2 = traits_var;
+
+	      tree c = build_omp_clause (clause_loc,
+					 OMP_CLAUSE_USES_ALLOCATORS);
+	      OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c) = t;
+	      OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (c) = memspace_expr;
+	      OMP_CLAUSE_USES_ALLOCATORS_TRAITS (c) = t2;
+	      OMP_CLAUSE_CHAIN (c) = nl;
+	      nl = c;
+	    }
+	}
+    }
+ end:
+  if (cur_list)
+    delete cur_list;
+  if (modifiers)
+    delete modifiers;
+  if (allocators)
+    delete allocators;
+  cp_parser_skip_to_closing_parenthesis (parser,
+					 /*recovering=*/false,
+					 /*or_comma=*/false,
+					 /*consume_paren=*/true);
+  return nl;
+}
+
 /* OpenMP 2.5:
    lastprivate ( variable-list )
 
@@ -41380,6 +41610,10 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_ALLOCATE:
 	  clauses = cp_parser_omp_clause_allocate (parser, clauses);
 	  c_name = "allocate";
+	  break;
+	case PRAGMA_OMP_CLAUSE_USES_ALLOCATORS:
+	  clauses = cp_parser_omp_clause_uses_allocators (parser, clauses);
+	  c_name = "uses_allocators";
 	  break;
 	case PRAGMA_OMP_CLAUSE_LINEAR:
 	  {
@@ -45510,7 +45744,8 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR)\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR)\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_USES_ALLOCATORS))
 
 static bool
 cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,

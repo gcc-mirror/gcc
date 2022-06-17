@@ -1,3 +1,16 @@
+2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	Backport from mainline:
+	2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/gomp/uses_allocators-1.c: New test.
+	* c-c++-common/gomp/uses_allocators-2.c: New test.
+	* c-c++-common/gomp/uses_allocators-3.c: New test.
+	* gfortran.dg/gomp/allocate-1.f90: Adjust testcase.
+	* gfortran.dg/gomp/uses_allocators-1.f90: New test.
+	* gfortran.dg/gomp/uses_allocators-2.f90: New test.
+	* gfortran.dg/gomp/uses_allocators-3.f90: New test.
+
 2022-05-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/finalize_38b.f90: Compile with -Ofast.

@@ -4085,9 +4085,16 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    if (n->expr)
 		      {
 			tree allocator_;
-			gfc_init_se (&se, NULL);
-			gfc_conv_expr (&se, n->expr);
-			allocator_ = gfc_evaluate_now (se.expr, block);
+			if (n->expr->expr_type == EXPR_VARIABLE)
+			  allocator_
+			    = gfc_trans_omp_variable (n->expr->symtree->n.sym,
+						      false);
+			else
+			  {
+			    gfc_init_se (&se, NULL);
+			    gfc_conv_expr (&se, n->expr);
+			    allocator_ = gfc_evaluate_now (se.expr, block);
+			  }
 			OMP_CLAUSE_ALLOCATE_ALLOCATOR (node) = allocator_;
 		      }
 		    if (n->u.align)
@@ -5201,6 +5208,29 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  OMP_CLAUSE_DECL (node) = build_fold_indirect_ref (ptr);
 		}
 	      omp_clauses = gfc_trans_add_clause (node, omp_clauses);
+	    }
+	  break;
+	case OMP_LIST_USES_ALLOCATORS:
+	  for (; n != NULL; n = n->next)
+	    {
+	      tree allocator = gfc_trans_omp_variable (n->sym, false);
+	      tree memspace = (n->memspace_sym
+			       ? gfc_conv_constant_to_tree (n->memspace_sym->value)
+			       : NULL_TREE);
+	      tree traits = (n->traits_sym
+			     ? gfc_trans_omp_variable (n->traits_sym, false)
+			     : NULL_TREE);
+
+	      tree nc = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
+	      OMP_CLAUSE_DECL (nc) = allocator;
+	      omp_clauses = gfc_trans_add_clause (nc, omp_clauses);
+
+	      nc = build_omp_clause (input_location,
+				     OMP_CLAUSE_USES_ALLOCATORS);
+	      OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (nc) = allocator;
+	      OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (nc) = memspace;
+	      OMP_CLAUSE_USES_ALLOCATORS_TRAITS (nc) = traits;
+	      omp_clauses = gfc_trans_add_clause (nc, omp_clauses);
 	    }
 	  break;
 	default:
@@ -7888,6 +7918,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->device;
 	  clausesa[GFC_OMP_SPLIT_TARGET].thread_limit
 	    = code->ext.omp_clauses->thread_limit;
+	  clausesa[GFC_OMP_SPLIT_TARGET].lists[OMP_LIST_USES_ALLOCATORS]
+	    = code->ext.omp_clauses->lists[OMP_LIST_USES_ALLOCATORS];
 	  for (int i = 0; i < OMP_DEFAULTMAP_CAT_NUM; i++)
 	    clausesa[GFC_OMP_SPLIT_TARGET].defaultmap[i]
 	      = code->ext.omp_clauses->defaultmap[i];

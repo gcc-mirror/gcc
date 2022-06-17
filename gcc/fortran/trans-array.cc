@@ -6567,10 +6567,6 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 			       &expr->where, flag_max_array_constructor);
 	      return NULL_TREE;
 	    }
-          if (mpz_cmp_si (c->offset, 0) != 0)
-            index = gfc_conv_mpz_to_tree (c->offset, gfc_index_integer_kind);
-          else
-            index = NULL_TREE;
 
 	  if (mpz_cmp_si (c->repeat, 1) > 0)
 	    {
@@ -6594,6 +6590,11 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 	    }
 	  else
 	    range = NULL;
+
+	  if (range == NULL || mpz_cmp_si (c->offset, 0) != 0)
+	    index = gfc_conv_mpz_to_tree (c->offset, gfc_index_integer_kind);
+	  else
+	    index = NULL_TREE;
 
           gfc_init_se (&se, NULL);
 	  switch (c->expr->expr_type)

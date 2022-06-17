@@ -1,3 +1,33 @@
+2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	Backport from mainline:
+	2022-06-17  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* builtin-types.def (BT_FN_VOID_PTRMODE): Define.
+	(BT_FN_PTRMODE_PTRMODE_INT_PTR): Define.
+	* omp-builtins.def (BUILT_IN_OMP_INIT_ALLOCATOR): Define.
+	(BUILT_IN_OMP_DESTROY_ALLOCATOR): Define.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_USES_ALLOCATORS.
+	* tree-pretty-print.cc (dump_omp_clause): Handle OMP_CLAUSE_USES_ALLOCATORS.
+	* tree.h (OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR): New macro.
+	(OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE): New macro.
+	(OMP_CLAUSE_USES_ALLOCATORS_TRAITS): New macro.
+	* tree.cc (omp_clause_num_ops): Add OMP_CLAUSE_USES_ALLOCATORS.
+	(omp_clause_code_name): Add "uses_allocators".
+	(walk_tree_1): Add OMP_CLAUSE_USES_ALLOCATORS case.
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Add checking of OpenMP target
+	region allocate clauses, to require a uses_allocators clause to exist
+	for allocators.
+	(gimplify_omp_workshare): Add handling of OMP_CLAUSE_USES_ALLOCATORS
+	for OpenMP target regions; create calls of omp_init/destroy_allocator
+	around target region body.
+	* omp-low.cc (lower_private_allocate): Adjust receiving of allocator.
+	(lower_rec_input_clauses): Likewise.
+	(create_task_copyfn): Add dereference for allocator if needed.
+
+	* system.h (startswith): New function.
+
 2022-03-11  Andrew Stubbs  <ams@codesourcery.com>
 
 	* omp-builtins.def (BUILT_IN_GOMP_ENABLE_PINNED_MODE): New.

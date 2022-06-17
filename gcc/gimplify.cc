@@ -12032,6 +12032,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_BIND:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	case OMP_CLAUSE_USES_ALLOCATORS:
 	  break;
 
 	case OMP_CLAUSE_ORDER:
@@ -12145,6 +12146,49 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    {
 	      remove = true;
 	      break;
+	    }
+	  if ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0
+	      && OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+	      && TREE_CODE (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)) != INTEGER_CST)
+	    {
+	      tree allocator = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
+	      tree clauses = NULL_TREE;
+
+	      /* Get clause list of the nearest enclosing target construct.  */
+	      if (ctx->code == OMP_TARGET)
+		clauses = *orig_list_p;
+	      else
+		{
+		  struct gimplify_omp_ctx *tctx = ctx->outer_context;
+		  while (tctx && tctx->code != OMP_TARGET)
+		    tctx = tctx->outer_context;
+		  if (tctx)
+		    clauses = tctx->clauses;
+		}
+
+	      if (clauses)
+		{
+		  tree uc;
+		  if (TREE_CODE (allocator) == MEM_REF
+		      || TREE_CODE (allocator) == INDIRECT_REF)
+		    allocator = TREE_OPERAND (allocator, 0);
+		  for (uc = clauses; uc; uc = OMP_CLAUSE_CHAIN (uc))
+		    if (OMP_CLAUSE_CODE (uc) == OMP_CLAUSE_USES_ALLOCATORS)
+		      {
+			tree uc_allocator
+			  = OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (uc);
+			if (operand_equal_p (allocator, uc_allocator))
+			  break;
+		      }
+		  if (uc == NULL_TREE)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c), "allocator %qE "
+				"requires %<uses_allocators(%E)%> clause in "
+				"target region", allocator, allocator);
+		      remove = true;
+		      break;
+		    }
+		}
 	    }
 	  if (gimplify_expr (&OMP_CLAUSE_ALLOCATE_ALLOCATOR (c), pre_p, NULL,
 			     is_gimple_val, fb_rvalue) == GS_ERROR)
@@ -15780,6 +15824,73 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
 	  g = gimple_build_try (body, cleanup, GIMPLE_TRY_FINALLY);
 	  body = NULL;
 	  gimple_seq_add_stmt (&body, g);
+	}
+      else if ((ort & ORT_TARGET) != 0 && (ort & ORT_ACC) == 0)
+	{
+	  gimple_seq init_seq = NULL;
+	  gimple_seq fini_seq = NULL;
+
+	  tree omp_init_allocator_fn
+	    = builtin_decl_explicit (BUILT_IN_OMP_INIT_ALLOCATOR);
+	  tree omp_destroy_allocator_fn
+	    = builtin_decl_explicit (BUILT_IN_OMP_DESTROY_ALLOCATOR);
+
+	  for (tree *cp = &OMP_CLAUSES (expr); *cp != NULL;)
+	    if (OMP_CLAUSE_CODE (*cp) == OMP_CLAUSE_USES_ALLOCATORS)
+	      {
+		tree c = *cp;
+		tree allocator = OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c);
+		tree memspace = OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (c);
+		tree traits = OMP_CLAUSE_USES_ALLOCATORS_TRAITS (c);
+		tree ntraits
+		  = ((traits
+		      && DECL_INITIAL (traits)
+		      && TREE_CODE (DECL_INITIAL (traits)) == CONSTRUCTOR)
+		     ? build_int_cst (integer_type_node,
+				      CONSTRUCTOR_NELTS (DECL_INITIAL (traits)))
+		     : integer_zero_node);
+		tree traits_var
+		  = (traits != NULL_TREE
+		     ? get_initialized_tmp_var (DECL_INITIAL (traits),
+						&init_seq, NULL)
+		     : null_pointer_node);
+
+		tree memspace_var = create_tmp_var (pointer_sized_int_node,
+						    "memspace_enum");
+		if (memspace == NULL_TREE)
+		  memspace = build_int_cst (pointer_sized_int_node, 0);
+		else
+		  memspace = fold_convert (pointer_sized_int_node,
+					   memspace);
+		g = gimple_build_assign (memspace_var, memspace);
+		gimple_seq_add_stmt (&init_seq, g);
+
+		tree initcall = build_call_expr_loc (OMP_CLAUSE_LOCATION (c),
+						     omp_init_allocator_fn, 3,
+						     memspace_var,
+						     ntraits,
+						     traits_var);
+		initcall = fold_convert (TREE_TYPE (allocator), initcall);
+		gimplify_assign (allocator, initcall, &init_seq);
+
+		g = gimple_build_call (omp_destroy_allocator_fn, 1, allocator);
+		gimple_seq_add_stmt (&fini_seq, g);
+
+		/* Finished generating runtime calls, remove USES_ALLOCATORS
+		   clause.  */
+		*cp = OMP_CLAUSE_CHAIN (c);
+	      }
+	    else
+	      cp = &OMP_CLAUSE_CHAIN (*cp);
+
+	  if (fini_seq)
+	    {
+	      gbind *bind = as_a<gbind *> (gimple_seq_first_stmt (body));
+	      g = gimple_build_try (gimple_bind_body (bind),
+				    fini_seq, GIMPLE_TRY_FINALLY);
+	      gimple_seq_add_stmt (&init_seq, g);
+	      gimple_bind_set_body (bind, init_seq);
+	    }
 	}
     }
   else

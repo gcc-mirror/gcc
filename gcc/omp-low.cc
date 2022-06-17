@@ -5374,7 +5374,12 @@ lower_private_allocate (tree var, tree new_var, tree &allocator,
       allocator = TREE_PURPOSE (allocator);
     }
   if (TREE_CODE (allocator) != INTEGER_CST)
-    allocator = build_outer_var_ref (allocator, ctx, OMP_CLAUSE_ALLOCATE);
+    {
+      if (is_task_ctx (ctx))
+	allocator = build_receiver_ref (allocator, false, ctx);
+      else
+	allocator = build_outer_var_ref (allocator, ctx, OMP_CLAUSE_ALLOCATE);
+    }
   allocator = fold_convert (pointer_sized_int_node, allocator);
   if (TREE_CODE (allocator) != INTEGER_CST)
     {
@@ -6358,7 +6363,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			if (TREE_CODE (allocator) == TREE_LIST)
 			  allocator = TREE_PURPOSE (allocator);
 			if (TREE_CODE (allocator) != INTEGER_CST)
-			  allocator = build_outer_var_ref (allocator, ctx);
+			  allocator = build_receiver_ref (allocator, false, ctx);
 			allocator = fold_convert (pointer_sized_int_node,
 						  allocator);
 			allocate_ptr = unshare_expr (x);
@@ -6678,7 +6683,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			    if (TREE_CODE (allocator) == TREE_LIST)
 			      allocator = TREE_PURPOSE (allocator);
 			    if (TREE_CODE (allocator) != INTEGER_CST)
-			      allocator = build_outer_var_ref (allocator, ctx);
+			      allocator = build_receiver_ref (allocator, false, ctx);
 			    allocator = fold_convert (pointer_sized_int_node,
 						      allocator);
 			    allocate_ptr = unshare_expr (x);
@@ -13030,6 +13035,8 @@ create_task_copyfn (gomp_task *task_stmt, omp_context *ctx)
 			allocator = *tcctx.cb.decl_map->get (allocator);
 		      tree a = build_simple_mem_ref_loc (loc, sarg);
 		      allocator = omp_build_component_ref (a, allocator);
+		      if (POINTER_TYPE_P (TREE_TYPE (allocator)))
+			allocator = build_simple_mem_ref (allocator);
 		    }
 		  allocator = fold_convert (pointer_sized_int_node, allocator);
 		  tree a = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
