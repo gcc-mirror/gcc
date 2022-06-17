@@ -1182,7 +1182,8 @@ xtensa_emit_move_sequence (rtx *operands, machine_mode mode)
 	  return 1;
 	}
 
-      if (! TARGET_AUTO_LITPOOLS && ! TARGET_CONST16)
+      if (! TARGET_AUTO_LITPOOLS && ! TARGET_CONST16
+	  && ! (CONST_INT_P (src) && can_create_pseudo_p ()))
 	{
 	  src = force_const_mem (SImode, src);
 	  operands[1] = src;
