@@ -83,6 +83,10 @@ void
 Dump::visit (LifetimeParam &lifetime_param)
 {}
 
+void
+Dump::visit (ConstGenericParam &lifetime_param)
+{}
+
 // rust-path.h
 void
 Dump::visit (PathInExpression &path)

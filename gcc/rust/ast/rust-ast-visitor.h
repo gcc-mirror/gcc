@@ -49,6 +49,7 @@ public:
   virtual void visit (Lifetime &lifetime) = 0;
   // virtual void visit(GenericParam& generic_param) = 0;
   virtual void visit (LifetimeParam &lifetime_param) = 0;
+  virtual void visit (ConstGenericParam &const_param) = 0;
   // virtual void visit(TraitItem& trait_item) = 0;
   // virtual void visit(InherentImplItem& inherent_impl_item) = 0;
   // virtual void visit(TraitImplItem& trait_impl_item) = 0;

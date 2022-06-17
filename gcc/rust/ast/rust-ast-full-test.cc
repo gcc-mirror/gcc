@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 // FIXME: This does not work on Windows
+#include <string>
 #include <unistd.h>
 
 #include "rust-ast-full.h"
@@ -2352,6 +2353,18 @@ LifetimeParam::as_string () const
       for (const auto &bound : lifetime_bounds)
 	str += "\n  " + bound.as_string ();
     }
+
+  return str;
+}
+
+std::string
+ConstGenericParam::as_string () const
+{
+  std::string str ("ConstGenericParam: ");
+  str += "const " + name + ": " + type->as_string ();
+
+  if (default_value)
+    str += " = " + default_value->as_string ();
 
   return str;
 }
@@ -4874,6 +4887,12 @@ Lifetime::accept_vis (ASTVisitor &vis)
 
 void
 LifetimeParam::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ConstGenericParam::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

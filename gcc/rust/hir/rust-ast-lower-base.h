@@ -53,6 +53,7 @@ public:
   virtual void visit (AST::Lifetime &lifetime);
   //  virtual void visit(GenericParam& generic_param);
   virtual void visit (AST::LifetimeParam &lifetime_param);
+  virtual void visit (AST::ConstGenericParam &const_param);
   //  virtual void visit(TraitItem& trait_item);
   //  virtual void visit(InherentImplItem& inherent_impl_item);
   //  virtual void visit(TraitImplItem& trait_impl_item);

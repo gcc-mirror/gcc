@@ -368,6 +368,22 @@ public:
 					 std::vector<Lifetime> ());
   }
 
+  void visit (AST::ConstGenericParam &param) override
+  {
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    // FIXME: This creates a BOGUS HIR::Lifetime instance because we do not have
+    // an `HIR::ConstGenericParam` type yet. This needs to be removed, but for
+    // now it avoids bogus ICEs
+    HIR::Lifetime lt (mapping, AST::Lifetime::LifetimeType::WILDCARD, "fixme",
+		      param.get_locus ());
+    translated = new HIR::LifetimeParam (mapping, lt, param.get_locus (),
+					 std::vector<Lifetime> ());
+  }
+
   void visit (AST::TypeParam &param) override
   {
     AST::Attribute outer_attr = AST::Attribute::create_empty ();
