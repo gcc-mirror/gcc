@@ -365,6 +365,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_IF_PRESENT */
   0, /* OMP_CLAUSE_FINALIZE */
   2, /* OMP_CLAUSE_ALLOCATOR */
+  3, /* OMP_CLAUSE_USES_ALLOCATORS */
 };
 
 const char * const omp_clause_code_name[] =
@@ -454,6 +455,8 @@ const char * const omp_clause_code_name[] =
   "tile",
   "if_present",
   "finalize",
+  "allocator",
+  "uses_allocators",
 };
 
 
@@ -12362,6 +12365,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	/* This hunk is only needed on og11 as master uses same code
 	   for all clauses.  */
 	case OMP_CLAUSE_ALLOCATOR:
+	case OMP_CLAUSE_USES_ALLOCATORS:
 	  {
 	    int len = omp_clause_num_ops[OMP_CLAUSE_CODE (*tp)];
 	    for (int i = 0; i < len; i++)
