@@ -1881,6 +1881,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && !TYPE_UNSIGNED (TREE_TYPE (@0)))
   (mult (convert @0) @1)))
 
+/* Narrow integer multiplication by a zero_one_valued_p operand.
+   Multiplication by [0,1] is guaranteed not to overflow.  */
+(simplify
+ (convert (mult@0 zero_one_valued_p@1 INTEGER_CST@2))
+ (if (INTEGRAL_TYPE_P (type)
+      && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0)))
+  (mult (convert @1) (convert @2))))
+
 /* Convert ~ (-A) to A - 1.  */
 (simplify
  (bit_not (convert? (negate @0)))
@@ -4355,6 +4364,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  )
 )
 #endif
+
+(simplify
+ (convert (cond@0 @1 INTEGER_CST@2 INTEGER_CST@3))
+ (if (INTEGRAL_TYPE_P (type)
+      && INTEGRAL_TYPE_P (TREE_TYPE (@0)))
+  (cond @1 (convert @2) (convert @3))))
 
 /* Simplification moved from fold_cond_expr_with_comparison.  It may also
    be extended.  */
