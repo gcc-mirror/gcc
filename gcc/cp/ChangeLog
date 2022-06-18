@@ -1,3 +1,9 @@
+2022-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106001
+	* typeck.cc (build_x_shufflevector): Use fold_non_dependent_expr
+	instead of maybe_constant_value.
+
 2022-06-16  Nathan Sidwell  <nathan@acm.org>
 
 	* decl2.cc (finish_objects): Add startp parameter, adjust.

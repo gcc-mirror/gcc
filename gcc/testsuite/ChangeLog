@@ -1,3 +1,28 @@
+2022-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106001
+	* g++.dg/ext/builtin-shufflevector-4.C: New test.
+
+2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105209
+	* gcc.target/alpha/pr105209.c: New test.
+
+2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105970
+	* gcc.target/i386/pr105970.c: New test.
+
+2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105993
+	* gcc.target/i386/pr105993.c: New test.
+
+2022-06-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/acle/cde-mve-full-assembly.c: Adjust expected
+	output.
+
 2022-06-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/stdarg-1.c

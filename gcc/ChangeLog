@@ -1,3 +1,45 @@
+2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105209
+	* config/alpha/alpha-protos.h (alpha_store_data_bypass_p): New.
+	* config/alpha/alpha.cc (alpha_store_data_bypass_p): New function.
+	(alpha_store_data_bypass_p_1): Ditto.
+	* config/alpha/ev4.md: Use alpha_store_data_bypass_p instead
+	of generic store_data_bypass_p.
+	(ev4_ist_c): Remove insn reservation.
+
+2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105970
+	* config/i386/i386.cc (ix86_function_arg): Assert that
+	the mode of pointer argumet is equal to ptr_mode, not Pmode.
+
+2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105993
+	* config/i386/sse.md (vpmov splitter): Use (match_dup ...)
+	instead of REGNO comparisons in combine splitter.
+
+2022-06-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.cc (rs6000_invalid_conversion): Correct some
+	types.
+
+2022-06-17  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/bitmanip.md: Supress warning.
+
+2022-06-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/106004
+	* config/arm/arm.cc (arm_print_operand, case 'V'): Use UINTVAL.
+	Clear bits in the mask above bit 31.
+
+2022-06-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/mve.md (*mve_mov<mode>): Re-order constraints
+	to avoid spilling trivial literals to the constant pool.
+
 2022-06-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* gimple-ssa-warn-access.cc (warn_string_no_nul): Add

@@ -1,3 +1,8 @@
+2022-06-17  Martin Liska  <mliska@suse.cz>
+
+	* libgomp.texi: Add table header for new features of
+	OpenMP 5.2.
+
 2022-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/get-mapped-ptr-1.c (main): Initialize
