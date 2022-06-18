@@ -609,6 +609,7 @@ Objective-C and Objective-C++ Dialects}.
 -fprofile-exclude-files=@var{regex} @gol
 -fprofile-reproducible=@r{[}multithreaded@r{|}parallel-runs@r{|}serial@r{]} @gol
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
+-fsanitize-trap   -fsanitize-trap=@var{style}  @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
 -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]} @gol
@@ -16116,13 +16117,37 @@ undefined,float-cast-overflow,float-divide-by-zero,bounds-strict
 Enable sanitization of local variables to detect use-after-scope bugs.
 The option sets @option{-fstack-reuse} to @samp{none}.
 
+@item -fsanitize-trap@r{[}=@var{opts}@r{]}
+@opindex fsanitize-trap
+@opindex fno-sanitize-trap
+The @option{-fsanitize-trap=} option instructs the compiler to
+report for sanitizers mentioned in comma-separated list of @var{opts}
+undefined behavior using @code{__builtin_trap} rather than a @code{libubsan}
+library routine.  If this option is enabled for certain sanitizer,
+it takes precedence over the @option{-fsanitizer-recover=} for that
+sanitizer, @code{__builtin_trap} will be emitted and be fatal regardless
+of whether recovery is enabled or disabled using @option{-fsanitize-recover=}.
+
+The advantage of this is that the @code{libubsan} library is not needed
+and is not linked in, so this is usable even in freestanding environments.
+
+Currently this feature works with @option{-fsanitize=undefined} (and its suboptions
+except for @option{-fsanitize=vptr}), @option{-fsanitize=float-cast-overflow},
+@option{-fsanitize=float-divide-by-zero} and
+@option{-fsanitize=bounds-strict}.  @code{-fsanitize-trap=all} can be also
+specified, which enables it for @code{undefined} suboptions,
+@option{-fsanitize=float-cast-overflow},
+@option{-fsanitize=float-divide-by-zero} and
+@option{-fsanitize=bounds-strict}.
+If @code{-fsanitize-trap=undefined} or @code{-fsanitize-trap=all} is used
+and @code{-fsanitize=vptr} is enabled on the command line, the
+instrumentation is silently ignored as the instrumentation always needs
+@code{libubsan} support, @option{-fsanitize-trap=vptr} is not allowed.
+
 @item -fsanitize-undefined-trap-on-error
 @opindex fsanitize-undefined-trap-on-error
-The @option{-fsanitize-undefined-trap-on-error} option instructs the compiler to
-report undefined behavior using @code{__builtin_trap} rather than
-a @code{libubsan} library routine.  The advantage of this is that the
-@code{libubsan} library is not needed and is not linked in, so this
-is usable even in freestanding environments.
+The @option{-fsanitize-undefined-trap-on-error} option is deprecated
+equivalent of @option{-fsanitize-trap=all}.
 
 @item -fsanitize-coverage=trace-pc
 @opindex fsanitize-coverage=trace-pc

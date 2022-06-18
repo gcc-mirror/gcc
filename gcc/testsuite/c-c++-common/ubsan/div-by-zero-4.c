@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fsanitize=signed-integer-overflow -fsanitize-undefined-trap-on-error -Wno-overflow" } */
+/* { dg-options "-fsanitize=signed-integer-overflow -fsanitize-trap=signed-integer-overflow -Wno-overflow" } */
 
 #define INT_MIN (-__INT_MAX__ - 1)
 

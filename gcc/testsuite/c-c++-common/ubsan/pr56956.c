@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fsanitize=undefined -fsanitize-undefined-trap-on-error" } */
+/* { dg-options "-fsanitize=undefined -fsanitize-trap=undefined" } */
 
 unsigned int __attribute__((noinline,noclone))
 foo (unsigned int x)

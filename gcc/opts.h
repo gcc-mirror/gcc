@@ -473,6 +473,7 @@ extern const struct sanitizer_opts_s
   unsigned int flag;
   size_t len;
   bool can_recover;
+  bool can_trap;
 } sanitizer_opts[];
 
 extern const struct zero_call_used_regs_opts_s

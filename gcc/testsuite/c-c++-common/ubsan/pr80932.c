@@ -1,6 +1,6 @@
 /* PR sanitizer/80932 */
 /* { dg-do run } */
-/* { dg-options "-fsanitize=undefined -fsanitize-undefined-trap-on-error" } */
+/* { dg-options "-fsanitize=undefined -fno-sanitize-trap=all -fsanitize-trap=shift,undefined" } */
 
 int x = 1;
 

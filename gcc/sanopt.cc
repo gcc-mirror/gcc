@@ -392,11 +392,11 @@ maybe_optimize_ubsan_null_ifn (class sanopt_ctx *ctx, gimple *stmt)
      stmts have same location.  */
   else if (integer_zerop (align))
     remove = (flag_sanitize_recover & SANITIZE_NULL) == 0
-	      || flag_sanitize_undefined_trap_on_error
+	      || (flag_sanitize_trap & SANITIZE_NULL) != 0
 	      || gimple_location (g) == gimple_location (stmt);
   else if (tree_int_cst_le (cur_align, align))
     remove = (flag_sanitize_recover & SANITIZE_ALIGNMENT) == 0
-	      || flag_sanitize_undefined_trap_on_error
+	      || (flag_sanitize_trap & SANITIZE_ALIGNMENT) != 0
 	      || gimple_location (g) == gimple_location (stmt);
 
   if (!remove && gimple_bb (g) == gimple_bb (stmt)

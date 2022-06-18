@@ -10313,8 +10313,9 @@ sanitize_spec_function (int argc, const char **argv)
     return (flag_sanitize & SANITIZE_THREAD) ? "" : NULL;
   if (strcmp (argv[0], "undefined") == 0)
     return ((flag_sanitize
-	     & (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT))
-	    && !flag_sanitize_undefined_trap_on_error) ? "" : NULL;
+	     & ~flag_sanitize_trap
+	     & (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT)))
+	   ? "" : NULL;
   if (strcmp (argv[0], "leak") == 0)
     return ((flag_sanitize
 	     & (SANITIZE_ADDRESS | SANITIZE_LEAK | SANITIZE_THREAD))

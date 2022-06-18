@@ -223,6 +223,10 @@ unsigned int flag_sanitize
 Variable
 unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT | SANITIZE_KERNEL_ADDRESS | SANITIZE_KERNEL_HWADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
 
+; What sanitizers should use __builtin_trap () instead of runtime diagnostics
+Variable
+unsigned int flag_sanitize_trap
+
 ; Flag whether a prefix has been added to dump_base_name
 Variable
 bool dump_base_name_prefixed = false
@@ -1105,12 +1109,19 @@ fsanitize-recover
 Common
 This switch is deprecated; use -fsanitize-recover= instead.
 
+fsanitize-trap=
+Common Driver Joined
+Use traps instead of diagnostics of undefined behavior sanitizers.
+
+fsanitize-trap
+Common Driver
+
 fsanitize-address-use-after-scope
 Common Driver Var(flag_sanitize_address_use_after_scope) Init(0)
 
 fsanitize-undefined-trap-on-error
-Common Driver Var(flag_sanitize_undefined_trap_on_error) Init(0)
-Use trap instead of a library function for undefined behavior sanitization.
+Common Driver Alias(fsanitize-trap)
+This switch is deprecated; use -fsanitize-trap= instead.
 
 fasynchronous-unwind-tables
 Common Var(flag_asynchronous_unwind_tables) Optimization
