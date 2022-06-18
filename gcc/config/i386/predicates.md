@@ -1194,6 +1194,17 @@
   (ior (match_operand 0 "register_operand")
        (match_code "const_vector")))
 
+;; Return true when OP is CONST_VECTOR which can be converted to a
+;; sign extended 32-bit integer.
+(define_predicate "x86_64_const_vector_operand"
+  (match_code "const_vector")
+{
+  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+    return false;
+  HOST_WIDE_INT val = ix86_convert_const_vector_to_integer (op, mode);
+  return trunc_int_for_mode (val, SImode) == val;
+})
+
 ;; Return true when OP is nonimmediate or standard SSE constant.
 (define_predicate "nonimmediate_or_sse_const_operand"
   (ior (match_operand 0 "nonimmediate_operand")
