@@ -312,7 +312,7 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
   TyTy::ADTType::ReprOptions repr = type.get_repr_options ();
   if (repr.pack)
     {
-      TYPE_PACKED (type_record);
+      TYPE_PACKED (type_record) = 1;
       if (repr.pack > 1)
 	{
 	  SET_TYPE_ALIGN (type_record, repr.pack * 8);
