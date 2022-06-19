@@ -4286,16 +4286,22 @@ xtensa_is_insn_L32R_p (const rtx_insn *insn)
 {
   rtx x = PATTERN (insn);
 
-  if (GET_CODE (x) == SET)
+  if (GET_CODE (x) != SET)
+    return false;
+
+  x = XEXP (x, 1);
+  if (MEM_P (x))
     {
-      x = SET_SRC (x);
-      if (MEM_P (x))
-	{
-	  x = XEXP (x, 0);
-	  return (SYMBOL_REF_P (x) || CONST_INT_P (x))
-		 && CONSTANT_POOL_ADDRESS_P (x);
-	}
+      x = XEXP (x, 0);
+      return (SYMBOL_REF_P (x) || CONST_INT_P (x))
+	     && CONSTANT_POOL_ADDRESS_P (x);
     }
+
+  /* relaxed MOVI instructions, that will be converted to L32R by the
+     assembler.  */
+  if (CONST_INT_P (x)
+      && ! xtensa_simm12b (INTVAL (x)))
+    return true;
 
   return false;
 }
