@@ -1246,14 +1246,14 @@
   int i = 0;
   rtx x = XEXP (operands[1], 0);
   long l[2];
-  if (GET_CODE (x) == SYMBOL_REF
+  if (SYMBOL_REF_P (x)
       && CONSTANT_POOL_ADDRESS_P (x))
     x = get_pool_constant (x);
   else if (GET_CODE (x) == CONST)
     {
       x = XEXP (x, 0);
       gcc_assert (GET_CODE (x) == PLUS
-		  && GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+		  && SYMBOL_REF_P (XEXP (x, 0))
 		  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0))
 		  && CONST_INT_P (XEXP (x, 1)));
       i = INTVAL (XEXP (x, 1));
@@ -2212,7 +2212,7 @@
 	 (match_operand 1 ""))]
   "reload_completed
    && !TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)
-   && IN_RANGE (REGNO (operands[0]), 12, 15)"
+   && ! call_used_or_fixed_reg_p (REGNO (operands[0]))"
   [(set (reg:SI A10_REG)
 	(match_dup 0))
    (call (mem:SI (reg:SI A10_REG))
@@ -2245,7 +2245,7 @@
 	      (match_operand 2 "")))]
   "reload_completed
    && !TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)
-   && IN_RANGE (REGNO (operands[1]), 12, 15)"
+   && ! call_used_or_fixed_reg_p (REGNO (operands[1]))"
   [(set (reg:SI A10_REG)
 	(match_dup 1))
    (set (match_dup 0)
