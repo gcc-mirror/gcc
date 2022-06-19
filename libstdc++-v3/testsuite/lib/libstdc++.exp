@@ -133,9 +133,6 @@ proc libstdc++_init { testfile } {
     if ![info exists DEFAULT_CXXFLAGS] then {
 	set DEFAULT_CXXFLAGS ""
 	# Host specific goo here.
-	if { [string match "powerpc-*-darwin*" $target_triplet] } {
-	    append DEFAULT_CXXFLAGS " -multiply_defined suppress"
-	}
 	if { [string match "powerpc-ibm-aix*" $target_triplet] } {
 	    append DEFAULT_CXXFLAGS " -Wl,-bmaxdata:0x20000000"
 	}
