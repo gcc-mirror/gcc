@@ -1,3 +1,65 @@
+2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (flag_sanitize_trap): New variable.
+	(fsanitize-trap=, fsanitize-trap): New options.
+	(fsanitize-undefined-trap-on-error): Change into deprecated alias
+	for -fsanitize-trap=all.
+	* opts.h (struct sanitizer_opts_s): Add can_trap member.
+	* opts.cc (finish_options): Complain about unsupported
+	-fsanitize-trap= options.
+	(sanitizer_opts): Add can_trap values to all entries.
+	(get_closest_sanitizer_option): Ignore -fsanitize-trap=
+	options which have can_trap false.
+	(parse_sanitizer_options): Add support for -fsanitize-trap=.
+	For -fsanitize-trap=all, enable
+	SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT.  Disallow
+	-fsanitize-trap=vptr here.
+	(common_handle_option): Handle OPT_fsanitize_trap_ and
+	OPT_fsanitize_trap.
+	* sanopt.cc (maybe_optimize_ubsan_null_ifn): Check
+	flag_sanitize_trap & SANITIZE_{NULL,ALIGNMENT} instead of
+	flag_sanitize_undefined_trap_on_error.
+	* gcc.cc (sanitize_spec_function): Use
+	flag_sanitize & ~flag_sanitize_trap instead of flag_sanitize
+	and drop use of flag_sanitize_undefined_trap_on_error in
+	"undefined" handling.
+	* ubsan.cc (ubsan_instrument_unreachable): Use
+	flag_sanitize_trap & SANITIZE_??? instead of
+	flag_sanitize_undefined_trap_on_error.
+	(ubsan_expand_bounds_ifn, ubsan_expand_null_ifn,
+	ubsan_expand_objsize_ifn, ubsan_expand_ptr_ifn,
+	ubsan_build_overflow_builtin, instrument_bool_enum_load,
+	ubsan_instrument_float_cast, instrument_nonnull_arg,
+	instrument_nonnull_return, instrument_builtin): Likewise.
+	* doc/invoke.texi (-fsanitize-trap=, -fsanitize-trap): Document.
+	(-fsanitize-undefined-trap-on-error): Document as deprecated
+	alias of -fsanitize-trap.
+
+2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105998
+	* varasm.cc (narrowing_initializer_constant_valid_p): Check
+	SCALAR_INT_MODE_P instead of INTEGRAL_MODE_P, also break on
+	! INTEGRAL_TYPE_P and do the same check also on op{0,1}'s type.
+
+2022-06-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/105835
+	* match.pd (convert (mult zero_one_valued_p@1 INTEGER_CST@2)):
+	Narrow integer multiplication by a zero_one_valued_p operand.
+	(convert (cond @1 INTEGER_CST@2 INTEGER_CST@3)): Push integer
+	conversions inside COND_EXPR where both data operands are
+	integer constants.
+
+2022-06-18  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/constraints.md (Y):
+	Change to include integer constants until reload begins.
+	* config/xtensa/predicates.md (move_operand): Ditto.
+	* config/xtensa/xtensa.cc (xtensa_emit_move_sequence):
+	Change to allow storing integer constants into litpool only after
+	reload begins.
+
 2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/105209

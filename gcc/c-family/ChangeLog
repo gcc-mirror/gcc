@@ -1,3 +1,14 @@
+2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.cc (ubsan_instrument_division, ubsan_instrument_shift):
+	Use flag_sanitize_trap & SANITIZE_??? instead of
+	flag_sanitize_undefined_trap_on_error.  If 2 sanitizers are involved
+	and flag_sanitize_trap differs for them, emit __builtin_trap only
+	for the comparison where trap is requested.
+	(ubsan_instrument_vla, ubsan_instrument_return): Use
+	lag_sanitize_trap & SANITIZE_??? instead of
+	flag_sanitize_undefined_trap_on_error.
+
 2022-06-13  Jason Merrill  <jason@redhat.com>
 
 	* c-ubsan.cc (ubsan_instrument_return): Use BUILTINS_LOCATION.

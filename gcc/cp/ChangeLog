@@ -1,3 +1,9 @@
+2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-ubsan.cc (cp_ubsan_instrument_vptr_p): Use
+	flag_sanitize_trap & SANITIZE_VPTR instead of
+	flag_sanitize_undefined_trap_on_error.
+
 2022-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106001

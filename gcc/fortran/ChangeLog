@@ -1,3 +1,11 @@
+2022-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105986
+	* simplify.cc (gfc_simplify_btest): Add check for POS argument.
+	(gfc_simplify_ibclr): Add check for POS argument.
+	(gfc_simplify_ibits): Add check for POS and LEN arguments.
+	(gfc_simplify_ibset): Add check for POS argument.
+
 2022-06-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.cc (gfc_match_omp_clauses): Check also parent namespace

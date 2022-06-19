@@ -1,3 +1,35 @@
+2022-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105986
+	* gfortran.dg/check_bits_3.f90: New test.
+
+2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/ubsan/nonnull-4.c: Use -fsanitize-trap=all
+	instead of -fsanitize-undefined-trap-on-error.
+	* c-c++-common/ubsan/div-by-zero-4.c: Use
+	-fsanitize-trap=signed-integer-overflow instead of
+	-fsanitize-undefined-trap-on-error.
+	* c-c++-common/ubsan/overflow-add-4.c: Use -fsanitize-trap=undefined
+	instead of -fsanitize-undefined-trap-on-error.
+	* c-c++-common/ubsan/pr56956.c: Likewise.
+	* c-c++-common/ubsan/pr68142.c: Likewise.
+	* c-c++-common/ubsan/pr80932.c: Use
+	-fno-sanitize-trap=all -fsanitize-trap=shift,undefined
+	instead of -fsanitize-undefined-trap-on-error.
+	* c-c++-common/ubsan/align-8.c: Use -fsanitize-trap=alignment
+	instead of -fsanitize-undefined-trap-on-error.
+
+2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105998
+	* c-c++-common/pr105998.c: New test.
+
+2022-06-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/105835
+	* gcc.dg/pr105835.c: New test case.
+
 2022-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106001
