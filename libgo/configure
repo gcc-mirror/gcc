@@ -15549,7 +15549,10 @@ fi
 
 CFLAGS_hold="$CFLAGS"
 CFLAGS="$OSCFLAGS $CFLAGS"
-ac_fn_c_check_type "$LINENO" "loff_t" "ac_cv_type_loff_t" "#include <fcntl.h>
+ac_fn_c_check_type "$LINENO" "loff_t" "ac_cv_type_loff_t" "
+#include <sys/types.h>
+#include <fcntl.h>
+
 "
 if test "x$ac_cv_type_loff_t" = xyes; then :
 

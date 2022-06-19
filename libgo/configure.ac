@@ -604,7 +604,10 @@ AC_TYPE_OFF_T
 
 CFLAGS_hold="$CFLAGS"
 CFLAGS="$OSCFLAGS $CFLAGS"
-AC_CHECK_TYPES([loff_t], [], [], [[#include <fcntl.h>]])
+AC_CHECK_TYPES([loff_t], [], [], [[
+#include <sys/types.h>
+#include <fcntl.h>
+]])
 CFLAGS="$CFLAGS_hold"
 
 LIBS_hold="$LIBS"
