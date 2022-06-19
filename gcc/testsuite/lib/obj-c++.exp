@@ -277,10 +277,6 @@ proc obj-c++_init { args } {
     set gcc_warning_prefix "warning:"
     set gcc_error_prefix "(fatal )?error:"
 
-    if { [istarget *-*-darwin*] } {
-	lappend ALWAYS_OBJCXXFLAGS "ldflags=-multiply_defined suppress"
-    }
-
     verbose -log "ALWAYS_OBJCXXFLAGS set to $ALWAYS_OBJCXXFLAGS"
 
     verbose "obj-c++ is initialized" 3
