@@ -1,4 +1,4 @@
-/* { dg-module-do link } */
+/* { dg-module-do link { target { ! *-*-darwin* } } } */
 /* { dg-options "-std=c++11 -fpatchable-function-entry=2 -O2" } */
 /* { dg-additional-options "-std=c++11 -fpatchable-function-entry=2 -O2" } */
 
