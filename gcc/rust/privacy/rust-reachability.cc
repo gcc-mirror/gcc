@@ -48,7 +48,7 @@ ReachabilityVisitor::visit_generic_predicates (
 
   for (const auto &generic : generics)
     {
-      if (generic->get_kind () == HIR::GenericParam::TYPE)
+      if (generic->get_kind () == HIR::GenericParam::GenericKind::TYPE)
 	{
 	  TyTy::BaseType *generic_ty = nullptr;
 	  auto ok = ty_ctx.lookup_type (generic->get_mappings ().get_hirid (),

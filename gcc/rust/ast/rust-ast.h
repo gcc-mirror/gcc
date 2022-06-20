@@ -1381,6 +1381,9 @@ public:
   }
 
   bool has_type () { return type != nullptr; }
+  bool has_default_value () { return default_value != nullptr; }
+
+  const Identifier &get_name () const { return name; }
 
   std::unique_ptr<AST::Type> &get_type ()
   {
