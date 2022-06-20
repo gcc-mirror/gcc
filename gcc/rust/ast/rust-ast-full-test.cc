@@ -4096,10 +4096,10 @@ DelimTokenTree::parse_to_meta_item () const
 
   /* assume top-level delim token tree in attribute - convert all nested ones
    * to token stream */
-  std::vector<std::unique_ptr<Token> > token_stream = to_token_stream ();
+  std::vector<std::unique_ptr<Token>> token_stream = to_token_stream ();
 
   AttributeParser parser (std::move (token_stream));
-  std::vector<std::unique_ptr<MetaItemInner> > meta_items (
+  std::vector<std::unique_ptr<MetaItemInner>> meta_items (
     parser.parse_meta_item_seq ());
 
   return new AttrInputMetaItemContainer (std::move (meta_items));
@@ -4282,7 +4282,7 @@ AttributeParser::parse_path_meta_item ()
   switch (peek_token ()->get_id ())
     {
       case LEFT_PAREN: {
-	std::vector<std::unique_ptr<MetaItemInner> > meta_items
+	std::vector<std::unique_ptr<MetaItemInner>> meta_items
 	  = parse_meta_item_seq ();
 
 	return std::unique_ptr<MetaItemSeq> (
@@ -4320,11 +4320,11 @@ AttributeParser::parse_path_meta_item ()
 
 /* Parses a parenthesised sequence of meta item inners. Parentheses are
  * required here. */
-std::vector<std::unique_ptr<MetaItemInner> >
+std::vector<std::unique_ptr<MetaItemInner>>
 AttributeParser::parse_meta_item_seq ()
 {
   int vec_length = token_stream.size ();
-  std::vector<std::unique_ptr<MetaItemInner> > meta_items;
+  std::vector<std::unique_ptr<MetaItemInner>> meta_items;
 
   if (peek_token ()->get_id () != LEFT_PAREN)
     {
@@ -4364,13 +4364,13 @@ AttributeParser::parse_meta_item_seq ()
 
 /* Collects any nested token trees into a flat token stream, suitable for
  * parsing. */
-std::vector<std::unique_ptr<Token> >
+std::vector<std::unique_ptr<Token>>
 DelimTokenTree::to_token_stream () const
 {
-  std::vector<std::unique_ptr<Token> > tokens;
+  std::vector<std::unique_ptr<Token>> tokens;
   for (const auto &tree : token_trees)
     {
-      std::vector<std::unique_ptr<Token> > stream = tree->to_token_stream ();
+      std::vector<std::unique_ptr<Token>> stream = tree->to_token_stream ();
 
       tokens.insert (tokens.end (), std::make_move_iterator (stream.begin ()),
 		     std::make_move_iterator (stream.end ()));
@@ -4711,12 +4711,12 @@ MetaItemPathLit::check_cfg_predicate (const Session &session) const
 							 lit.as_string ());
 }
 
-std::vector<std::unique_ptr<Token> >
+std::vector<std::unique_ptr<Token>>
 Token::to_token_stream () const
 {
   /* initialisation list doesn't work as it needs copy constructor, so have to
    * do this */
-  std::vector<std::unique_ptr<Token> > dummy_vector;
+  std::vector<std::unique_ptr<Token>> dummy_vector;
   dummy_vector.reserve (1);
   dummy_vector.push_back (std::unique_ptr<Token> (clone_token_impl ()));
   return dummy_vector;
@@ -4744,7 +4744,7 @@ MetaItemPath::to_attribute () const
 Attribute
 MetaItemSeq::to_attribute () const
 {
-  std::vector<std::unique_ptr<MetaItemInner> > new_seq;
+  std::vector<std::unique_ptr<MetaItemInner>> new_seq;
   new_seq.reserve (seq.size ());
   for (const auto &e : seq)
     new_seq.push_back (e->clone_meta_item_inner ());
@@ -4768,7 +4768,7 @@ MetaListPaths::to_attribute () const
    * no longer known). If conversions back are required, might have to do a
    * "check all are paths" pass or something. */
 
-  std::vector<std::unique_ptr<MetaItemInner> > new_seq;
+  std::vector<std::unique_ptr<MetaItemInner>> new_seq;
   new_seq.reserve (paths.size ());
   for (const auto &e : paths)
     new_seq.push_back (std::unique_ptr<MetaItemPath> (new MetaItemPath (e)));
@@ -4782,7 +4782,7 @@ MetaListPaths::to_attribute () const
 Attribute
 MetaListNameValueStr::to_attribute () const
 {
-  std::vector<std::unique_ptr<MetaItemInner> > new_seq;
+  std::vector<std::unique_ptr<MetaItemInner>> new_seq;
   new_seq.reserve (strs.size ());
   for (const auto &e : strs)
     new_seq.push_back (
@@ -5792,5 +5792,17 @@ MetaWord::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
+
+ConstGenericArg
+ConstGenericArg::disambiguate_to_const () const
+{
+  rust_assert (get_kind () == Kind::Ambiguous);
+
+  // FIXME: is it fine to have no outer attributes?
+  return ConstGenericArg (std::unique_ptr<Expr> (
+			    new IdentifierExpr (path, {}, locus)),
+			  locus);
+}
+
 } // namespace AST
 } // namespace Rust

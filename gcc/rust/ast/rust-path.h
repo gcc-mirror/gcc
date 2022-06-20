@@ -208,6 +208,12 @@ public:
     return "";
   }
 
+  /**
+   * Disambiguate an amibguous const generic argument or generic type argument
+   * to a const generic argument, unequivocally
+   */
+  ConstGenericArg disambiguate_to_const () const;
+
 private:
   ConstGenericArg (std::unique_ptr<AST::Expr> expression, Identifier path,
 		   Kind kind, Location locus)
