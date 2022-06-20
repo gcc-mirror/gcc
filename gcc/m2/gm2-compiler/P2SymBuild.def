@@ -42,6 +42,7 @@ EXPORT QUALIFIED P2StartBuildDefModule,
                  BuildExportOuterModule,
                  BuildImportInnerModule,
                  BuildExportInnerModule,
+                 BlockStart, BlockEnd, BlockBegin, BlockFinally,
                  BuildNumber,
                  BuildString,
                  BuildConst,
@@ -90,6 +91,33 @@ EXPORT QUALIFIED P2StartBuildDefModule,
                  PushRememberConstant,
                  PopRememberConstant,
                  RememberConstant ;
+
+
+(*
+   BlockStart - tokno is the module/procedure/implementation/definition token
+*)
+
+PROCEDURE BlockStart (tokno: CARDINAL) ;
+
+(*
+   BlockEnd - declare module ctor/init/fini/dep procedures.
+*)
+
+PROCEDURE BlockEnd (tokno: CARDINAL) ;
+
+
+(*
+   BlockBegin - assign curBeginTok to tokno.
+*)
+
+PROCEDURE BlockBegin (tokno: CARDINAL) ;
+
+
+(*
+   BlockFinally - assign curFinallyTok to tokno.
+*)
+
+PROCEDURE BlockFinally (tokno: CARDINAL) ;
 
 
 (*

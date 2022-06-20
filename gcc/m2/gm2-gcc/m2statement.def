@@ -296,21 +296,6 @@ PROCEDURE BuildCallInner (location: location_t; fndecl: Tree) ;
 
 
 (*
-    BuildStartMainModule - expands all the global variables ready for the main module.
-*)
-
-PROCEDURE BuildStartMainModule ;
-
-
-(*
-    BuildEndMainModule - tidies up the end of the main module. It moves
-                         back to global scope.
-*)
-
-PROCEDURE BuildEndMainModule ;
-
-
-(*
    SetBeginLocation - sets the begin location for the function to obtain good debugging info.
 *)
 

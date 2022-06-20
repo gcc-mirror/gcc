@@ -58,6 +58,7 @@ FROM SymbolTable IMPORT NulSym,
                         MakeConstLitString,
                         MakeSubrange,
                         MakeVar, MakeType, PutType,
+                        MakeModuleCtor,
                         PutMode, PutDeclared,
                         PutFieldEnumeration, PutSubrange, PutVar, PutConst,
                         PutConstSet, PutConstructor,
@@ -153,10 +154,109 @@ VAR
    RememberedConstant: CARDINAL ;
    RememberStack,
    TypeStack         : StackOfWord ;
-
+   curModuleSym      : CARDINAL ;
+   curBeginTok,
+   curFinallyTok,
+   curStartTok,
+   curEndTok         : CARDINAL ;
+   BlockStack        : StackOfWord ;
 
 
 PROCEDURE stop ; BEGIN END stop ;
+
+
+(*
+   BlockStart - tokno is the module/procedure/implementation/definition token
+*)
+
+PROCEDURE BlockStart (tokno: CARDINAL) ;
+BEGIN
+   PushBlock (tokno) ;
+END BlockStart ;
+
+
+(*
+   propageteTokenPosition - if laterTokPos is unknown then return knownTokPos.
+                            else return laterTokPos.
+*)
+
+PROCEDURE propageteTokenPosition (knownTokPos, laterTokPos: CARDINAL) : CARDINAL ;
+BEGIN
+   IF laterTokPos = UnknownTokenNo
+   THEN
+      RETURN knownTokPos
+   ELSE
+      RETURN laterTokPos
+   END
+END propageteTokenPosition ;
+
+
+(*
+   BlockEnd - declare module ctor/init/fini/dep procedures.
+*)
+
+PROCEDURE BlockEnd (tokno: CARDINAL) ;
+BEGIN
+   curBeginTok := propageteTokenPosition (curStartTok, curBeginTok) ;
+   curFinallyTok := propageteTokenPosition (tokno, curFinallyTok) ;
+   MakeModuleCtor (curStartTok, curBeginTok, curFinallyTok,
+                   curModuleSym) ;
+   PopBlock
+END BlockEnd ;
+
+
+(*
+   BlockBegin - assign curBeginTok to tokno.
+*)
+
+PROCEDURE BlockBegin (tokno: CARDINAL) ;
+BEGIN
+   curBeginTok := tokno
+END BlockBegin ;
+
+
+(*
+   BlockFinally - assign curFinallyTok to tokno.
+*)
+
+PROCEDURE BlockFinally (tokno: CARDINAL) ;
+BEGIN
+   curFinallyTok := tokno
+END BlockFinally ;
+
+
+(*
+   PushBlock - push the block variables to the block stack.
+*)
+
+PROCEDURE PushBlock (tokno: CARDINAL) ;
+BEGIN
+   PushWord (BlockStack, curStartTok) ;   (* module/implementation/definition/procedure token pos.  *)
+   PushWord (BlockStack, curBeginTok) ;   (* BEGIN keyword pos.  *)
+   PushWord (BlockStack, curEndTok) ;     (* END keyword pos.  *)
+   PushWord (BlockStack, curFinallyTok) ; (* FINALLY keyword pos.  *)
+   PushWord (BlockStack, curModuleSym) ;  (* current module.  *)
+   curStartTok := tokno ;
+   curBeginTok := UnknownTokenNo ;
+   curEndTok := UnknownTokenNo ;
+   curFinallyTok := UnknownTokenNo ;
+   curModuleSym := NulSym
+END PushBlock ;
+
+
+(*
+   PopBlock - pop the block variables from the block stack.
+*)
+
+PROCEDURE PopBlock ;
+BEGIN
+   curFinallyTok := PopWord (BlockStack) ;
+   curEndTok := PopWord (BlockStack) ;
+   curBeginTok := PopWord (BlockStack) ;
+   curStartTok := PopWord (BlockStack) ;
+   curModuleSym := PopWord (BlockStack)
+END PopBlock ;
+
 
 (*
    StartBuildDefinitionModule - Creates a definition module and starts
@@ -181,6 +281,7 @@ VAR
 BEGIN
    PopTtok(name, tokno) ;
    ModuleSym := MakeDefinitionSource(tokno, name) ;
+   curModuleSym := ModuleSym ;
    SetCurrentModule(ModuleSym) ;
    SetFileModule(ModuleSym) ;
    StartScope(ModuleSym) ;
@@ -254,6 +355,7 @@ VAR
 BEGIN
    PopTtok(name, tokno) ;
    ModuleSym := MakeImplementationSource(tokno, name) ;
+   curModuleSym := ModuleSym ;
    SetCurrentModule(ModuleSym) ;
    SetFileModule(ModuleSym) ;
    StartScope(ModuleSym) ;
@@ -322,6 +424,7 @@ VAR
 BEGIN
    PopTtok(name, tokno) ;
    ModuleSym := MakeProgramSource(tokno, name) ;
+   curModuleSym := ModuleSym ;
    SetCurrentModule(ModuleSym) ;
    SetFileModule(ModuleSym) ;
    StartScope(ModuleSym) ;
@@ -395,6 +498,7 @@ VAR
 BEGIN
    PopTtok (name, tok) ;
    ModuleSym := GetDeclareSym (tok, name) ;
+   curModuleSym := ModuleSym ;
    StartScope (ModuleSym) ;
    Assert(NOT IsDefImp (ModuleSym)) ;
    PushTtok (name, tok) ;
@@ -2993,7 +3097,8 @@ END RememberConstant ;
 
 BEGIN
    alignTypeNo := 0 ;
-   TypeStack := InitStackWord() ;
-   RememberStack := InitStackWord() ;
+   TypeStack := InitStackWord () ;
+   RememberStack := InitStackWord () ;
+   BlockStack := InitStackWord () ;
    castType := NulSym
 END P2SymBuild.

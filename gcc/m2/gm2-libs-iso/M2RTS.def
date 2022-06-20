@@ -26,14 +26,37 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 DEFINITION MODULE M2RTS ;
 
+FROM SYSTEM IMPORT ADDRESS ;
+
+
+TYPE
+   ArgCVEnvP = PROCEDURE (INTEGER, ADDRESS, ADDRESS) ;
+
+
+PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+                            argc: INTEGER; argv, envp: ADDRESS) ;
+
+PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+                              argc: INTEGER; argv, envp: ADDRESS) ;
+
+
 (*
-   Author     : Gaius Mulley
-   Title      : M2RTS
-   Date       : Mon Apr 26 09:54:33 BST 2004
-   Description: Implements the run time system facilities of Modula-2.
+   RegisterModule - adds module name to the list of outstanding
+                    modules which need to have their dependencies
+                    explored to determine initialization order.
 *)
 
-FROM SYSTEM IMPORT ADDRESS ;
+PROCEDURE RegisterModule (name: ADDRESS;
+                          init, fini:  ArgCVEnvP;
+                          dependencies: PROC) ;
+
+
+(*
+   RequestDependant - used to specify that modulename is dependant upon
+                      module dependantmodule.
+*)
+
+PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
 
 
 (*

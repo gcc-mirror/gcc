@@ -93,7 +93,7 @@ extern "C" void SysStorage_ALLOCATE (void * *a, unsigned int size)
   (*a) = libc_malloc (static_cast<size_t> (size));
   if ((*a) == NULL)
     {
-      Debug_Halt ((const char *) "out of memory error", 19, 50, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/SysStorage.mod", 82);
+      Debug_Halt ((const char *) "out of memory error", 19, 50, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/SysStorage.mod", 81);
     }
   if (enableTrace && trace)
     {
@@ -118,7 +118,7 @@ extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size)
         }
       if ((libc_memset ((*a), 0, static_cast<size_t> (size))) != (*a))
         {
-          Debug_Halt ((const char *) "memset should have returned the first parameter", 47, 76, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/SysStorage.mod", 82);
+          Debug_Halt ((const char *) "memset should have returned the first parameter", 47, 76, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/SysStorage.mod", 81);
         }
     }
   if (enableDeallocation)
@@ -163,7 +163,7 @@ extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size)
       (*a) = libc_realloc ((*a), static_cast<size_t> (size));
       if ((*a) == NULL)
         {
-          Debug_Halt ((const char *) "out of memory error", 19, 119, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/SysStorage.mod", 82);
+          Debug_Halt ((const char *) "out of memory error", 19, 119, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/SysStorage.mod", 81);
         }
       if (enableTrace && trace)
         {

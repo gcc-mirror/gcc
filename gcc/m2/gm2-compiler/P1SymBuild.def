@@ -52,7 +52,9 @@ EXPORT QUALIFIED P1StartBuildDefinitionModule,
                  BuildProcedureHeading,
                  BuildNulName,
                  BuildTypeEnd,
-                 CheckExplicitExported ;
+                 CheckExplicitExported,
+                 BuildImportStatement,
+                 AddImportToImportStatement ;
 
 
 (*
@@ -525,6 +527,36 @@ PROCEDURE BuildNulName ;
 *)
 
 PROCEDURE BuildTypeEnd ;
+
+
+(*
+   BuildImportStatement - create a new import statement in the current module.
+                          It ignores local modules.
+
+                          The quadruple stack is not used.
+*)
+
+PROCEDURE BuildImportStatement (tok: CARDINAL) ;
+
+
+(*
+   AddImportToImportStatement - the top of stack is expected to be a module name.
+                                This is looked up from the module universe and
+                                wrapped in an import symbol and placed into the
+                                current import statement.
+
+                                The quadruple stack is unchanged.
+
+                                Entry                      Exit
+
+
+                         Ptr ->                                                   <- Ptr
+                                +---------------------+   +---------------------+
+                                | ImportedModuleName  |   | ImportedModuleName  |
+                                |---------------------|   |---------------------|
+*)
+
+PROCEDURE AddImportToImportStatement (qualified: BOOLEAN) ;
 
 
 END P1SymBuild.

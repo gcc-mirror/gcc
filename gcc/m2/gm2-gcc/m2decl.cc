@@ -32,6 +32,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2tree.h"
 #include "m2treelib.h"
 #include "m2type.h"
+#include "m2convert.h"
 
 extern GTY (()) tree current_function_decl;
 
@@ -40,9 +41,39 @@ static GTY (()) tree param_type_list;
 static GTY (()) tree param_list = NULL_TREE; /* Ready for the next time we
                                                 call/define a function.  */
 
-/* DeclareKnownVariable - declares a variable in scope, funcscope.
-   Note that the global variable, current_function_decl, is altered
-   if isglobal is TRUE.  */
+/* DeclareM2linkGlobals creates the following code in the application
+   module globals:
+
+   int StaticInitialization = ScaffoldStatic;
+   const char *ForcedModuleInitOrder = RuntimeOverride;  */
+
+void
+m2decl_DeclareM2linkGlobals (location_t location,
+			     int ScaffoldStatic, const char *RuntimeOverride)
+{
+  m2block_pushGlobalScope ();
+  /* Generate: int StaticInitialization = ScaffoldStatic;  */
+  tree static_init = m2decl_DeclareKnownVariable (location, "StaticInitialization",
+						  integer_type_node,
+						  TRUE, FALSE, FALSE, TRUE, NULL_TREE);
+  DECL_INITIAL (static_init) = m2decl_BuildIntegerConstant (ScaffoldStatic);
+  /* Generate: const char *ForcedModuleInitOrder = RuntimeOverride;  */
+  tree ptr_to_char = build_pointer_type (char_type_node);
+  TYPE_READONLY (ptr_to_char) = TRUE;
+  tree forced_order = m2decl_DeclareKnownVariable (location, "ForcedModuleInitOrder",
+						   ptr_to_char,
+						   TRUE, FALSE, FALSE, TRUE, NULL_TREE);
+  if (RuntimeOverride == NULL || (strlen (RuntimeOverride) == 0))
+    DECL_INITIAL (forced_order) = m2convert_BuildConvert (location, ptr_to_char,
+							  m2decl_BuildIntegerConstant (0),
+							  FALSE);
+  else
+    DECL_INITIAL (forced_order) = build_string_literal (strlen (RuntimeOverride), RuntimeOverride);
+  m2block_popGlobalScope ();
+}
+
+
+/* DeclareKnownVariable declares a variable to GCC.  */
 
 tree
 m2decl_DeclareKnownVariable (location_t location, char *name, tree type,
@@ -224,6 +255,30 @@ m2decl_BuildEndFunctionDeclaration (location_t location_begin,
       = NULL_TREE; /* Ready for the next time we call/define a function.  */
   return fndecl;
 }
+
+/* BuildModuleCtor creates the per module constructor used as part of
+   the dynamic linking scaffold.  */
+
+void
+m2decl_BuildModuleCtor (tree module_ctor)
+{
+  decl_init_priority_insert (module_ctor, DEFAULT_INIT_PRIORITY);
+}
+
+/* DeclareModuleCtor configures the function to be used as a ctor.  */
+
+tree
+m2decl_DeclareModuleCtor (tree decl)
+{
+  /* Declare module_ctor ().  */
+  TREE_PUBLIC (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+  DECL_STATIC_CONSTRUCTOR (decl) = 1;
+  return decl;
+}
+
 
 /* DetermineSizeOfConstant - given, str, and, base, fill in needsLong
    and needsUnsigned appropriately.  */

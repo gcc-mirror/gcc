@@ -58,7 +58,8 @@ extern "C" {
 EXTERN unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *dest, unsigned int _dest_high);
 
 /*
-   PutEnvironment - change or add an environment variable definition EnvDef.
+   PutEnvironment - change or add an environment variable definition
+                    EnvDef.
                     TRUE is returned if the environment variable was
                     set or changed successfully.
 */

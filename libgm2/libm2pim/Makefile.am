@@ -135,7 +135,8 @@ M2DEFS = Args.def   ASCII.def \
          IO.def  ldtoa.def \
          LegacyReal.def  libc.def \
          libm.def  LMathLib0.def \
-         M2EXCEPTION.def  M2RTS.def \
+         M2EXCEPTION.def  M2LINK.def \
+         M2RTS.def \
          MathLib0.def  MemUtils.def \
          NumberIO.def  PushBackInput.def \
          RTExceptions.def  RTint.def \

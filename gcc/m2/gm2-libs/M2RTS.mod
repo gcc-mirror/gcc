@@ -27,25 +27,103 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 IMPLEMENTATION MODULE M2RTS ;
 
 
-FROM libc IMPORT abort, exit, write ;
+FROM libc IMPORT abort, exit, write, getenv, printf ;
+(* FROM Builtins IMPORT strncmp, strcmp ;  not available during bootstrap.  *)
 FROM NumberIO IMPORT CardToStr ;
 FROM StrLib IMPORT StrCopy, StrLen, StrEqual ;
 FROM SYSTEM IMPORT ADDRESS, ADR ;
 FROM ASCII IMPORT nl, nul ;
+FROM Storage IMPORT ALLOCATE ;
+
 IMPORT RTExceptions ;
 IMPORT M2EXCEPTION ;
+IMPORT M2Dependent ;
 
-CONST
-   MaxProcedures = 1024 ;
+TYPE
+   PtrToChar = POINTER TO CHAR ;
+
+   ProcedureList = RECORD
+                      head, tail: ProcedureChain
+                   END ;
+
+   ProcedureChain = POINTER TO RECORD
+                                  p   : PROC ;
+                                  prev,
+                                  next: ProcedureChain ;
+                                END ;
 
 
 VAR
-   iPtr, tPtr   : CARDINAL ;
    InitialProc,
-   TerminateProc: ARRAY [0..MaxProcedures] OF PROC ;
+   TerminateProc: ProcedureList ;
    ExitValue    : INTEGER ;
    isHalting,
    CallExit     : BOOLEAN ;
+   Initialized  : BOOLEAN ;
+
+
+(*
+   ConstructModules - resolve dependencies and then call each
+                      module constructor in turn.
+*)
+
+PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+                            argc: INTEGER; argv, envp: ADDRESS) ;
+BEGIN
+   M2Dependent.ConstructModules (applicationmodule, argc, argv, envp)
+END ConstructModules ;
+
+
+(*
+   DeconstructModules - resolve dependencies and then call each
+                        module constructor in turn.
+*)
+
+PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+                              argc: INTEGER; argv, envp: ADDRESS) ;
+BEGIN
+   M2Dependent.DeconstructModules (applicationmodule, argc, argv, envp)
+END DeconstructModules ;
+
+
+(*
+   RegisterModule - adds module name to the list of outstanding
+                    modules which need to have their dependencies
+                    explored to determine initialization order.
+*)
+
+PROCEDURE RegisterModule (name: ADDRESS;
+                          init, fini:  ArgCVEnvP;
+                          dependencies: PROC) ;
+BEGIN
+   M2Dependent.RegisterModule (name, init, fini, dependencies)
+END RegisterModule ;
+
+
+(*
+   RequestDependant - used to specify that modulename is dependant upon
+                      module dependantmodule.
+*)
+
+PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
+BEGIN
+   M2Dependent.RequestDependant (modulename, dependantmodule)
+END RequestDependant ;
+
+
+(*
+   ExecuteReverse - execute the procedure associated with procptr
+                    and then proceed to try and execute all previous
+                    procedures in the chain.
+*)
+
+PROCEDURE ExecuteReverse (procptr: ProcedureChain) ;
+BEGIN
+   WHILE procptr # NIL DO
+      procptr^.p ;  (* Invoke the procedure.  *)
+      procptr := procptr^.prev
+   END
+END ExecuteReverse ;
 
 
 (*
@@ -54,36 +132,9 @@ VAR
 *)
 
 PROCEDURE ExecuteTerminationProcedures ;
-VAR
-   i: CARDINAL ;
 BEGIN
-   i := tPtr ;
-   WHILE i>0 DO
-      DEC(i) ;
-      TerminateProc[i]
-   END
+   ExecuteReverse (TerminateProc.tail)
 END ExecuteTerminationProcedures ;
-
-
-(*
-   InstallTerminationProcedure - installs a procedure, p, which will
-                                 be called when the procedure
-                                 ExecuteTerminationProcedures
-                                 is invoked.  It returns TRUE is the
-                                 procedure is installed.
-*)
-
-PROCEDURE InstallTerminationProcedure (p: PROC) : BOOLEAN ;
-BEGIN
-   IF tPtr>MaxProcedures
-   THEN
-      RETURN( FALSE )
-   ELSE
-      TerminateProc[tPtr] := p ;
-      INC(tPtr) ;
-      RETURN( TRUE )
-   END
-END InstallTerminationProcedure ;
 
 
 (*
@@ -92,32 +143,58 @@ END InstallTerminationProcedure ;
 *)
 
 PROCEDURE ExecuteInitialProcedures ;
-VAR
-   i: CARDINAL ;
 BEGIN
-   i := iPtr ;
-   WHILE i>0 DO
-      DEC(i) ;
-      InitialProc[i]
-   END
+   ExecuteReverse (InitialProc.tail)
 END ExecuteInitialProcedures ;
 
 
 (*
-   InstallInitialProcedure - installs a procedure to be executed just before the
-                             BEGIN code section of the main program module.
+   AppendProc - append proc to the end of the procedure list
+                defined by proclist.
+*)
+
+PROCEDURE AppendProc (VAR proclist: ProcedureList; proc: PROC) : BOOLEAN ;
+VAR
+   pdes: ProcedureChain ;
+BEGIN
+   NEW (pdes) ;
+   WITH pdes^ DO
+      p := proc ;
+      prev := proclist.tail ;
+      next := NIL
+   END ;
+   IF proclist.head = NIL
+   THEN
+      proclist.head := pdes
+   END ;
+   proclist.tail := pdes ;
+   RETURN TRUE
+END AppendProc ;
+
+
+(*
+   InstallTerminationProcedure - installs a procedure, p, which will
+                                 be called when the procedure
+                                 ExecuteTerminationProcedures
+                                 is invoked.  It returns TRUE if the
+                                 procedure is installed.
+*)
+
+PROCEDURE InstallTerminationProcedure (p: PROC) : BOOLEAN ;
+BEGIN
+   RETURN AppendProc (TerminateProc, p)
+END InstallTerminationProcedure ;
+
+
+(*
+   InstallInitialProcedure - installs a procedure to be executed just
+                             before the BEGIN code section of the
+                             main program module.
 *)
 
 PROCEDURE InstallInitialProcedure (p: PROC) : BOOLEAN ;
 BEGIN
-   IF iPtr>MaxProcedures
-   THEN
-      RETURN( FALSE )
-   ELSE
-      InitialProc[iPtr] := p ;
-      INC(iPtr) ;
-      RETURN( TRUE )
-   END
+   RETURN AppendProc (InitialProc, p)
 END InstallInitialProcedure ;
 
 
@@ -157,7 +234,7 @@ END HALT ;
 
 
 (*
-   Terminate - provides compatibility for pim.  It call exit with
+   Terminate - provides compatibility for pim.  It calls exit with
                the exitcode provided in a prior call to ExitOnHalt
                (or zero if ExitOnHalt was never called).  It does
                not call ExecuteTerminationProcedures.
@@ -165,7 +242,7 @@ END HALT ;
 
 PROCEDURE Terminate <* noreturn *> ;
 BEGIN
-   exit(ExitValue)
+   exit (ExitValue)
 END Terminate ;
 
 
@@ -177,7 +254,7 @@ PROCEDURE ErrorString (a: ARRAY OF CHAR) ;
 VAR
    n: INTEGER ;
 BEGIN
-   n := write(2, ADR(a), StrLen(a))
+   n := write (2, ADR (a), StrLen (a))
 END ErrorString ;
 
 
@@ -192,19 +269,19 @@ PROCEDURE ErrorMessage (message: ARRAY OF CHAR;
 VAR
    LineNo: ARRAY [0..10] OF CHAR ;
 BEGIN
-   ErrorString(file) ; ErrorString(':') ;
-   CardToStr(line, 0, LineNo) ;
-   ErrorString(LineNo) ; ErrorString(':') ;
-   IF NOT StrEqual(function, '')
+   ErrorString (file) ; ErrorString(':') ;
+   CardToStr (line, 0, LineNo) ;
+   ErrorString (LineNo) ; ErrorString(':') ;
+   IF NOT StrEqual (function, '')
    THEN
-      ErrorString('in ') ;
-      ErrorString(function) ;
-      ErrorString(' has caused ') ;
+      ErrorString ('in ') ;
+      ErrorString (function) ;
+      ErrorString (' has caused ') ;
    END ;
-   ErrorString(message) ;
+   ErrorString (message) ;
    LineNo[0] := nl ; LineNo[1] := nul ;
-   ErrorString(LineNo) ;
-   exit(1)
+   ErrorString (LineNo) ;
+   exit (1)
 END ErrorMessage ;
 
 
@@ -216,7 +293,7 @@ END ErrorMessage ;
 PROCEDURE Halt (file: ARRAY OF CHAR; line: CARDINAL;
                 function: ARRAY OF CHAR; description: ARRAY OF CHAR) ;
 BEGIN
-   ErrorMessage(description, file, line, function) ;
+   ErrorMessage (description, file, line, function) ;
    HALT
 END Halt ;
 
@@ -423,10 +500,48 @@ BEGIN
 END Length ;
 
 
+(*
+   InitProcList - initialize the head and tail pointers to NIL.
+*)
+
+PROCEDURE InitProcList (VAR p: ProcedureList) ;
 BEGIN
-   iPtr := 0 ;
-   tPtr := 0 ;
+   p.head := NIL ;
+   p.tail := NIL
+END InitProcList ;
+
+
+(*
+   Init - initialize the initial, terminate procedure lists and booleans.
+*)
+
+PROCEDURE Init ;
+BEGIN
+   InitProcList (InitialProc) ;
+   InitProcList (TerminateProc) ;
    ExitValue := 0 ;
    isHalting := FALSE ;
    CallExit := FALSE   (* default by calling abort *)
+END Init ;
+
+
+(*
+   CheckInitialized - checks to see if this module has been initialized
+                      and if it has not it calls Init.  We need this
+                      approach as this module is called by module ctors
+                      before we reach main.
+*)
+
+PROCEDURE CheckInitialized ;
+BEGIN
+   IF NOT Initialized
+   THEN
+      Initialized := TRUE ;
+      Init
+   END
+END CheckInitialized ;
+
+
+BEGIN
+   CheckInitialized
 END M2RTS.

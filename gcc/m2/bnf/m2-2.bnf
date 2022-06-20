@@ -78,6 +78,7 @@ FROM P2SymBuild IMPORT P2StartBuildProgramModule,
                        BuildExportOuterModule,
                        BuildExportInnerModule,
 
+                       BlockStart, BlockEnd, BlockBegin, BlockFinally,
                        BuildString, BuildNumber,
                        BuildConst,
                        BuildVariable,
@@ -533,6 +534,7 @@ FileUnit :=                                                                % Pus
          =:
 
 ProgramModule := "MODULE"                                                  % M2Error.DefaultProgramModule %
+                                                                           % BlockStart (GetTokenNo () -1) %
                   Ident                                                    % P2StartBuildProgramModule ; %
 
 
@@ -546,12 +548,13 @@ ProgramModule := "MODULE"                                                  % M2E
                   }
 
                   Block
-
+                                                                           % BlockEnd (GetTokenNo () -1) %
                   Ident                                                    % P2EndBuildProgramModule ; %
                   "."
                   =:
 
 ImplementationModule := "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
+                                                                           % BlockStart (GetTokenNo () -1) %
                                          "MODULE"
                          Ident                                             % P2StartBuildImplementationModule ; %
 
@@ -560,7 +563,7 @@ ImplementationModule := "IMPLEMENTATION"                                   % M2E
                          { Import                                          % BuildImportOuterModule %
                            }
                          Block
-
+                                                                           % BlockEnd (GetTokenNo () -1) %
                          Ident                                             % P2EndBuildImplementationModule ; %
                          "." =:
 
@@ -1024,9 +1027,11 @@ ProcedureBlock :=                                                          % Ass
 
 Block := { Declaration } InitialBlock FinalBlock "END" =:
 
-InitialBlock := [ "BEGIN" InitialBlockBody ] =:
+InitialBlock := [ "BEGIN"                                                  % BlockBegin (GetTokenNo () -1) %
+                          InitialBlockBody ] =:
 
-FinalBlock := [ "FINALLY" FinalBlockBody ] =:
+FinalBlock := [ "FINALLY"                                                  % BlockFinally (GetTokenNo () -1) %
+                          FinalBlockBody ] =:
 
 InitialBlockBody := NormalPart [ "EXCEPT"                                 % PutExceptionBlock(GetCurrentScope()) %
                                           ExceptionalPart ] =:
@@ -1124,6 +1129,7 @@ FormalType := "ARRAY" "OF"                                                 % VAR
             =:
 
 ModuleDeclaration := "MODULE"                                              % M2Error.DefaultInnerModule %
+                                                                           % BlockStart (GetTokenNo () -1) %
                      Ident                                                 % StartBuildInnerModule %
                      [ Priority
                                 ] ";"
@@ -1131,6 +1137,7 @@ ModuleDeclaration := "MODULE"                                              % M2E
                         } [ Export                                         % BuildExportInnerModule %
                             ]
                        Block
+                                                                           % BlockEnd (GetTokenNo () -1) %
                        Ident                                               % EndBuildInnerModule %
                      =:
 

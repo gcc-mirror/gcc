@@ -24,9 +24,11 @@ IMPLEMENTATION MODULE M2Quads ;
 
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM M2Debug IMPORT Assert, WriteDebug ;
-FROM NameKey IMPORT Name, NulName, MakeKey, GetKey, makekey, KeyToCharStar ;
+FROM NameKey IMPORT Name, NulName, MakeKey, GetKey, makekey, KeyToCharStar, WriteKey ;
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
 FROM M2DebugStack IMPORT DebugStack ;
+FROM M2Scaffold IMPORT DeclareScaffold, mainFunction, initFunction,
+                       finiFunction ;
 
 FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaError3,
                         MetaErrors1, MetaErrors2, MetaErrors3,
@@ -65,6 +67,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         GetWriteLimitQuads, GetReadLimitQuads,
                         GetVarScope,
                         GetModuleQuads, GetProcedureQuads,
+                        GetModuleCtors,
                         MakeProcedure,
                         MakeConstStringCnul, MakeConstStringM2nul,
                         PutConstString,
@@ -108,6 +111,9 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         GetVariableAtAddress, IsVariableAtAddress,
                         MakeError, UnknownReported,
                         IsInnerModule,
+                        IsImportStatement, IsImport, GetImportModule, GetImportDeclared,
+                        GetImportStatementList,
+                        GetModuleDefImportStatementList, GetModuleModImportStatementList,
 
                         GetUnboundedRecordType,
                         GetUnboundedAddressOffset,
@@ -196,7 +202,8 @@ FROM M2Options IMPORT NilChecking,
                       Iso, Pim, Pim2, Pim3, Pim4, PositiveModFloorDiv,
                       Pedantic, CompilerDebugging, GenerateDebugging,
                       GenerateLineDebug, Exceptions,
-                      Profiling, Coding, Optimizing ;
+                      Profiling, Coding, Optimizing,
+                      ScaffoldDynamic, ScaffoldStatic, cflag, ScaffoldMain ;
 
 FROM M2Pass IMPORT IsPassCodeGeneration, IsNoPass ;
 
@@ -2219,9 +2226,361 @@ BEGIN
                    '{%E}the {%kRETRY} statement must occur after an {%kEXCEPT} statement in the same module or procedure block')
    ELSE
       BuildRTExceptLeave (tok, FALSE) ;
-      GenQuadO (tok, RetryOp, NulSym, NulSym, PeepWord(TryStack, 1), FALSE)
+      GenQuadO (tok, RetryOp, NulSym, NulSym, PeepWord (TryStack, 1), FALSE)
    END
 END BuildRetry ;
+
+
+(*
+   callRequestDependant - create a call:
+                          RequestDependant (GetSymName (modulesym), GetSymName (depModuleSym));
+*)
+
+PROCEDURE callRequestDependant (tokno: CARDINAL;
+                                moduleSym, depModuleSym: CARDINAL;
+                                requestDep: CARDINAL) ;
+BEGIN
+   Assert (requestDep # NulSym) ;
+   PushTtok (requestDep, tokno) ;
+   PushTF (Adr, Address) ;
+   PushTtok (MakeConstLitString (tokno, GetSymName (moduleSym)), tokno) ;
+   PushT (1) ;
+   BuildAdrFunction ;
+
+   IF depModuleSym = NulSym
+   THEN
+      PushTF (Nil, Address)
+   ELSE
+      PushTF (Adr, Address) ;
+      PushTtok (MakeConstLitString (tokno, GetSymName (depModuleSym)), tokno) ;
+      PushT (1) ;
+      BuildAdrFunction
+   END ;
+
+   PushT (2) ;
+   BuildProcedureCall (tokno)
+END callRequestDependant ;
+
+
+(*
+   ForeachImportInDepDo -
+*)
+
+PROCEDURE ForeachImportInDepDo (importStatements: List; moduleSym, requestDep: CARDINAL) ;
+VAR
+   i, j,
+   m, n    : CARDINAL ;
+   imported,
+   stmt     : CARDINAL ;
+   l       : List ;
+BEGIN
+   IF importStatements # NIL
+   THEN
+      i := 1 ;
+      n := NoOfItemsInList (importStatements) ;
+      WHILE i <= n DO
+         stmt := GetItemFromList (importStatements, i) ;
+         Assert (IsImportStatement (stmt)) ;
+         l := GetImportStatementList (stmt) ;
+         j := 1 ;
+         m := NoOfItemsInList (l) ;
+         WHILE j <= m DO
+            imported := GetItemFromList (l, j) ;
+            Assert (IsImport (imported)) ;
+            callRequestDependant (GetImportDeclared (imported),
+                                  moduleSym, GetImportModule (imported),
+                                  requestDep) ;
+            INC (j) ;
+         END ;
+         INC (i)
+      END
+   END
+END ForeachImportInDepDo ;
+
+
+(*
+   ForeachImportedModuleDo -
+*)
+
+PROCEDURE ForeachImportedModuleDo (moduleSym, requestDep: CARDINAL) ;
+VAR
+   importStatements: List ;
+BEGIN
+   importStatements := GetModuleModImportStatementList (moduleSym) ;
+   ForeachImportInDepDo (importStatements, moduleSym, requestDep) ;
+   importStatements := GetModuleDefImportStatementList (moduleSym) ;
+   ForeachImportInDepDo (importStatements, moduleSym, requestDep)
+END ForeachImportedModuleDo ;
+
+
+(*
+   BuildM2DepFunction - creates the dependency graph procedure using IR:
+                        static void
+                        dependencies (void)
+                        {
+                           M2RTS_RequestDependant (module_name, "b");
+                           M2RTS_RequestDependant (module_name, NULL);
+                        }
+*)
+
+PROCEDURE BuildM2DepFunction (tokno: CARDINAL; moduleSym: CARDINAL) ;
+VAR
+   requestDep,
+   ctor, init, fini, dep: CARDINAL ;
+BEGIN
+   IF ScaffoldDynamic
+   THEN
+      (* Scaffold required and dynamic dependency graph should be produced.  *)
+      GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
+      PushT (dep) ;
+      BuildProcedureStart ;
+      BuildProcedureBegin ;
+      StartScope (dep) ;
+      requestDep := GetQualidentImport (tokno,
+                                        MakeKey ("RequestDependant"),
+                                        MakeKey ("M2RTS")) ;
+      IF requestDep # NulSym
+      THEN
+         ForeachImportedModuleDo (moduleSym, requestDep) ;
+         callRequestDependant (tokno, moduleSym, NulSym, requestDep)
+      END ;
+      EndScope ;
+      BuildProcedureEnd ;
+      PopN (1)
+   END
+END BuildM2DepFunction ;
+
+
+(*
+   BuildM2MainFunction - creates the main function with appropriate calls to the scaffold.
+*)
+
+PROCEDURE BuildM2MainFunction (tokno: CARDINAL; modulesym: CARDINAL) ;
+BEGIN
+   IF ScaffoldDynamic OR ScaffoldStatic
+   THEN
+      (* Scaffold required and main should be produced.  *)
+      (*
+         int
+         main (int argc, char *argv[], char *envp[])
+         {
+            init (argc, argv, envp);
+            finish ();
+            return 0;
+         }
+      *)
+      PushT (mainFunction) ;
+      BuildProcedureStart ;
+      BuildProcedureBegin ;
+      StartScope (mainFunction) ;
+
+      (* _M2_init (argc, argv, envp);  *)
+      PushTtok (initFunction, tokno) ;
+      PushTtok (RequestSym (tokno, MakeKey ("argc")), tokno) ;
+      PushTtok (RequestSym (tokno, MakeKey ("argv")), tokno) ;
+      PushTtok (RequestSym (tokno, MakeKey ("envp")), tokno) ;
+      PushT (3) ;
+      BuildProcedureCall (tokno) ;
+
+      (* _M2_finish (argc, argv, envp);  *)
+      PushTtok (finiFunction, tokno) ;
+      PushTtok (RequestSym (tokno, MakeKey ("argc")), tokno) ;
+      PushTtok (RequestSym (tokno, MakeKey ("argv")), tokno) ;
+      PushTtok (RequestSym (tokno, MakeKey ("envp")), tokno) ;
+      PushT (3) ;
+      BuildProcedureCall (tokno) ;
+
+      PushZero (tokno, Integer) ;
+      BuildReturn (tokno) ;
+      EndScope ;
+      BuildProcedureEnd ;
+      PopN (1)
+   END
+END BuildM2MainFunction ;
+
+
+(*
+   BuildM2InitFunction -
+*)
+
+PROCEDURE BuildM2InitFunction (tok: CARDINAL; moduleSym: CARDINAL) ;
+VAR
+   constructModules: CARDINAL ;
+BEGIN
+   IF ScaffoldDynamic OR ScaffoldStatic
+   THEN
+      (* Scaffold required and main should be produced.  *)
+      (* int
+         _M2_init (int argc, char *argv[], char *envp[])
+         {
+            M2RTS_ConstructModules (module_name, argc, argv, envp);
+         }  *)
+      PushT (initFunction) ;
+      BuildProcedureStart ;
+      BuildProcedureBegin ;
+      StartScope (initFunction) ;
+      IF ScaffoldDynamic
+      THEN
+         constructModules := GetQualidentImport (tok,
+                                                 MakeKey ("ConstructModules"),
+                                                 MakeKey ("M2RTS")) ;
+         IF constructModules # NulSym
+         THEN
+            (* ConstructModules (module_name, argc, argv, envp);  *)
+            PushTtok (constructModules, tok) ;
+
+            PushTF(Adr, Address) ;
+            PushTtok (MakeConstLitString (tok, GetSymName (moduleSym)), tok) ;
+            PushT(1) ;
+            BuildAdrFunction ;
+
+            PushTtok (RequestSym (tok, MakeKey ("argc")), tok) ;
+            PushTtok (RequestSym (tok, MakeKey ("argv")), tok) ;
+            PushTtok (RequestSym (tok, MakeKey ("envp")), tok) ;
+            PushT (4) ;
+            BuildProcedureCall (tok) ;
+         END
+      ELSIF ScaffoldStatic
+      THEN
+
+      END ;
+      EndScope ;
+      BuildProcedureEnd ;
+      PopN (1)
+   END
+END BuildM2InitFunction ;
+
+
+(*
+   BuildM2FiniFunction -
+*)
+
+PROCEDURE BuildM2FiniFunction (tok: CARDINAL; moduleSym: CARDINAL) ;
+VAR
+   deconstructModules: CARDINAL ;
+BEGIN
+   IF ScaffoldDynamic OR ScaffoldStatic
+   THEN
+      (* Scaffold required and main should be produced.  *)
+      PushT (finiFunction) ;
+      BuildProcedureStart ;
+      BuildProcedureBegin ;
+      StartScope (finiFunction) ;
+      IF ScaffoldDynamic
+      THEN
+         (* static void
+            _M2_finish (int argc, char *argv[], char *envp[])
+            {
+              M2RTS_DeconstructModules (module_name, argc, argv, envp);
+            }  *)
+         deconstructModules := GetQualidentImport (tok,
+                                                   MakeKey ("DeconstructModules"),
+                                                   MakeKey ("M2RTS")) ;
+         IF deconstructModules # NulSym
+         THEN
+            (* DeconstructModules (module_name, argc, argv, envp);  *)
+            PushTtok (deconstructModules, tok) ;
+
+            PushTF(Adr, Address) ;
+            PushTtok (MakeConstLitString (tok, GetSymName (moduleSym)), tok) ;
+            PushT(1) ;
+            BuildAdrFunction ;
+
+            PushTtok (RequestSym (tok, MakeKey ("argc")), tok) ;
+            PushTtok (RequestSym (tok, MakeKey ("argv")), tok) ;
+            PushTtok (RequestSym (tok, MakeKey ("envp")), tok) ;
+            PushT (4) ;
+            BuildProcedureCall (tok)
+         END
+      ELSIF ScaffoldStatic
+      THEN
+
+      END ;
+      EndScope ;
+      BuildProcedureEnd ;
+      PopN (1)
+   END
+END BuildM2FiniFunction ;
+
+
+(*
+   BuildM2CtorFunction - create a constructor function associated with moduleSym.
+
+                         void
+                         ctorFunction ()
+                         {
+                           M2RTS_RegisterModule (GetSymName (moduleSym),
+                                                 init, fini, dependencies);
+                         }
+*)
+
+PROCEDURE BuildM2CtorFunction (tok: CARDINAL; moduleSym: CARDINAL) ;
+VAR
+   RegisterModule       : CARDINAL ;
+   ctor, init, fini, dep: CARDINAL ;
+BEGIN
+   IF ScaffoldDynamic
+   THEN
+      GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
+      IF ctor # NulSym
+      THEN
+         Assert (IsProcedure (ctor)) ;
+         PushT (ctor) ;
+         BuildProcedureStart ;
+         BuildProcedureBegin ;
+         StartScope (ctor) ;
+         RegisterModule := GetQualidentImport (tok,
+                                               MakeKey ("RegisterModule"),
+                                               MakeKey ("M2RTS")) ;
+         IF RegisterModule # NulSym
+         THEN
+            (* RegisterModule (module_name, init, fini, dependencies);  *)
+            PushTtok (RegisterModule, tok) ;
+
+            PushTF (Adr, Address) ;
+            PushTtok (MakeConstLitString (tok, GetSymName (moduleSym)), tok) ;
+            PushT (1) ;
+            BuildAdrFunction ;
+
+            PushTtok (init, tok) ;
+            PushTtok (fini, tok) ;
+            PushTtok (dep, tok) ;
+            PushT (4) ;
+            BuildProcedureCall (tok)
+         END ;
+         EndScope ;
+         BuildProcedureEnd ;
+         PopN (1)
+      END
+   END
+END BuildM2CtorFunction ;
+
+
+(*
+   BuildScaffold - generate the main, init, finish functions if
+                   no -c and this is the application module.
+*)
+
+PROCEDURE BuildScaffold (tok: CARDINAL; moduleSym: CARDINAL) ;
+BEGIN
+   IF GetMainModule () = moduleSym
+   THEN
+      DeclareScaffold (tok) ;
+      IF (ScaffoldMain OR (NOT cflag))
+      THEN
+         (* There are module init/fini functions and
+            application init/fini functions.
+            Here we create the application pair.  *)
+         BuildM2MainFunction (tok, moduleSym) ;
+         BuildM2InitFunction (tok, moduleSym) ;  (* Application init.  *)
+         BuildM2FiniFunction (tok, moduleSym) ;  (* Application fini.  *)
+      END ;
+      BuildM2DepFunction (tok, moduleSym) ;  (* Per module dependency.  *)
+      (* Each module needs a ctor to register the module
+         init/finish/dep with M2RTS.  *)
+      BuildM2CtorFunction (tok, moduleSym)
+   END
+END BuildScaffold ;
 
 
 (*
@@ -7611,12 +7970,12 @@ BEGIN
       MetaErrorNT2 (tokno,
                     'module {%E%a} cannot be found and is needed to import {%E%a}', module, n) ;
       FlushErrors ;
-      RETURN( NulSym )
+      RETURN NulSym
    END ;
    Assert(IsDefImp(ModSym)) ;
-   IF (GetExported(tokno, ModSym, n)=NulSym) OR IsUnknown (GetExported (tokno, ModSym, n))
+   IF (GetExported (tokno, ModSym, n)=NulSym) OR IsUnknown (GetExported (tokno, ModSym, n))
    THEN
-      MetaErrorN2 ('module {%E%a} does not export procedure {%E%a} which is a necessary component of the runtime system, hint check the path and library/language variant',
+      MetaErrorN2 ('module {%1a} does not export procedure {%2a} which is a necessary component of the runtime system, hint check the path and library/language variant',
                    module, n) ;
       FlushErrors ;
       RETURN NulSym

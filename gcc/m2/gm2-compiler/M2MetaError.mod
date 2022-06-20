@@ -37,6 +37,7 @@ FROM libc IMPORT printf ;
 FROM SYSTEM IMPORT ADDRESS ;
 FROM M2Error IMPORT MoveError ;
 FROM M2Debug IMPORT Assert ;
+FROM Storage IMPORT ALLOCATE ;
 
 FROM Indexing IMPORT Index, InitIndex, KillIndex, GetIndice, PutIndice,
                      DeleteIndice, HighIndice ;

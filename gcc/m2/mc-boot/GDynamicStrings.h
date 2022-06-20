@@ -77,13 +77,15 @@ EXTERN DynamicStrings_String DynamicStrings_KillString (DynamicStrings_String s)
 EXTERN void DynamicStrings_Fin (DynamicStrings_String s);
 
 /*
-   InitStringCharStar - initializes and returns a String to contain the C string.
+   InitStringCharStar - initializes and returns a String to contain
+                        the C string.
 */
 
 EXTERN DynamicStrings_String DynamicStrings_InitStringCharStar (void * a);
 
 /*
-   InitStringChar - initializes and returns a String to contain the single character, ch.
+   InitStringChar - initializes and returns a String to contain the
+                    single character, ch.
 */
 
 EXTERN DynamicStrings_String DynamicStrings_InitStringChar (char ch);
@@ -101,13 +103,15 @@ EXTERN DynamicStrings_String DynamicStrings_Mark (DynamicStrings_String s);
 EXTERN unsigned int DynamicStrings_Length (DynamicStrings_String s);
 
 /*
-   ConCat - returns String, a, after the contents of, b, have been appended.
+   ConCat - returns String, a, after the contents of, b,
+            have been appended.
 */
 
 EXTERN DynamicStrings_String DynamicStrings_ConCat (DynamicStrings_String a, DynamicStrings_String b);
 
 /*
-   ConCatChar - returns String, a, after character, ch, has been appended.
+   ConCatChar - returns String, a, after character, ch,
+                has been appended.
 */
 
 EXTERN DynamicStrings_String DynamicStrings_ConCatChar (DynamicStrings_String a, char ch);
@@ -138,15 +142,15 @@ EXTERN DynamicStrings_String DynamicStrings_Add (DynamicStrings_String a, Dynami
 EXTERN unsigned int DynamicStrings_Equal (DynamicStrings_String a, DynamicStrings_String b);
 
 /*
-   EqualCharStar - returns TRUE if contents of String, s, is the same as the
-                   string, a.
+   EqualCharStar - returns TRUE if contents of String, s, is
+                   the same as the string, a.
 */
 
 EXTERN unsigned int DynamicStrings_EqualCharStar (DynamicStrings_String s, void * a);
 
 /*
-   EqualArray - returns TRUE if contents of String, s, is the same as the
-                string, a.
+   EqualArray - returns TRUE if contents of String, s, is the
+                same as the string, a.
 */
 
 EXTERN unsigned int DynamicStrings_EqualArray (DynamicStrings_String s, const char *a_, unsigned int _a_high);
@@ -193,7 +197,8 @@ EXTERN int DynamicStrings_RIndex (DynamicStrings_String s, char ch, unsigned int
                    which indicates anything to its right is a comment
                    then strip off the comment and also any white space
                    on the remaining right hand side.
-                   It leaves any white space on the left hand side alone.
+                   It leaves any white space on the left hand side
+                   alone.
 */
 
 EXTERN DynamicStrings_String DynamicStrings_RemoveComment (DynamicStrings_String s, char comment);
@@ -213,16 +218,16 @@ EXTERN DynamicStrings_String DynamicStrings_RemoveWhitePrefix (DynamicStrings_St
 EXTERN DynamicStrings_String DynamicStrings_RemoveWhitePostfix (DynamicStrings_String s);
 
 /*
-   ToUpper - returns string, s, after it has had its lower case characters
-             replaced by upper case characters.
+   ToUpper - returns string, s, after it has had its lower case
+             characters replaced by upper case characters.
              The string, s, is not duplicated.
 */
 
 EXTERN DynamicStrings_String DynamicStrings_ToUpper (DynamicStrings_String s);
 
 /*
-   ToLower - returns string, s, after it has had its upper case characters
-             replaced by lower case characters.
+   ToLower - returns string, s, after it has had its upper case
+             characters replaced by lower case characters.
              The string, s, is not duplicated.
 */
 
@@ -308,13 +313,14 @@ EXTERN void DynamicStrings_PushAllocation (void);
 EXTERN void DynamicStrings_PopAllocation (unsigned int halt);
 
 /*
-   PopAllocationExemption - test to see that all strings are deallocated, except
-                            string, e, since the last push.
-                            Then it pops to the previous allocation/deallocation
-                            lists.
+   PopAllocationExemption - test to see that all strings are
+                            deallocated, except string, e, since
+                            the last push.
+                            Then it pops to the previous
+                            allocation/deallocation lists.
 
-                            If halt is true then the application terminates
-                            with an exit code of 1.
+                            If halt is true then the application
+                            terminates with an exit code of 1.
 
                             The string, e, is returned unmodified,
 */

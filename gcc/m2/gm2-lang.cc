@@ -330,7 +330,7 @@ gm2_langhook_handle_option (
       /* handled in the driver.  */
       return 1;
     case OPT_fruntime_modules_:
-      /* handled in the driver.  */
+      M2Options_SetRuntimeModuleOverride (arg);
       return 1;
     case OPT_fno_pthread:
       /* handled in the driver.  */
@@ -338,11 +338,22 @@ gm2_langhook_handle_option (
     case OPT_fno_m2_plugin:
       /* handled in the driver.  */
       return 1;
+#if 0
     case OPT_ftarget_ar_:
       /* handled in the driver.  */
       return 1;
     case OPT_ftarget_ranlib_:
       /* handled in the driver.  */
+      return 1;
+#endif
+    case OPT_fscaffold_dynamic:
+      M2Options_SetScaffoldDynamic (value);
+      return 1;
+    case OPT_fscaffold_static:
+      M2Options_SetScaffoldStatic (value);
+      return 1;
+    case OPT_fscaffold_main:
+      M2Options_SetScaffoldMain (value);
       return 1;
     case OPT_fcpp:
       M2Options_SetCpp (value);
@@ -392,9 +403,11 @@ gm2_langhook_handle_option (
     case OPT_fobject_path_:
       /* handled by the linker.  */
       return 1;
+#if 0
     case OPT_fonlylink:
       /* handled by the driver.  */
       return 1;
+#endif
     case OPT_version:
       M2Options_DisplayVersion (FALSE);
       return 1;

@@ -1916,7 +1916,7 @@ extern "C" DynamicStrings_String StringConvert_ToSigFig (DynamicStrings_String s
   int point;
   unsigned int poTen;
 
-  Assert ((IsDigit (DynamicStrings_char (s, 0))) || ((DynamicStrings_char (s, 0)) == '.'), (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/StringConvert.mod", 85, 1222, (const char *) "ToSigFig", 8);
+  Assert ((IsDigit (DynamicStrings_char (s, 0))) || ((DynamicStrings_char (s, 0)) == '.'), (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/StringConvert.mod", 84, 1222, (const char *) "ToSigFig", 8);
   point = DynamicStrings_Index (s, '.', 0);
   if (point < 0)
     {
@@ -1968,7 +1968,7 @@ extern "C" DynamicStrings_String StringConvert_ToDecimalPlaces (DynamicStrings_S
 {
   int point;
 
-  Assert ((IsDigit (DynamicStrings_char (s, 0))) || ((DynamicStrings_char (s, 0)) == '.'), (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/StringConvert.mod", 85, 1069, (const char *) "ToDecimalPlaces", 15);
+  Assert ((IsDigit (DynamicStrings_char (s, 0))) || ((DynamicStrings_char (s, 0)) == '.'), (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/StringConvert.mod", 84, 1069, (const char *) "ToDecimalPlaces", 15);
   point = DynamicStrings_Index (s, '.', 0);
   if (point < 0)
     {

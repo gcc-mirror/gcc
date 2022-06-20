@@ -32,7 +32,7 @@ FROM SYSTEM IMPORT WORD ;
 FROM DynamicStrings IMPORT String ;
 
 EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
-                 BuildModuleStart,
+                 BuildModuleStart, BuildScaffold,
                  StartBuildInit, EndBuildInit,
                  StartBuildFinally, EndBuildFinally,
                  BuildExceptInitial, BuildExceptFinally,
@@ -508,6 +508,14 @@ PROCEDURE EraseQuad (QuadNo: CARDINAL) ;
 *)
 
 PROCEDURE CountQuads () : CARDINAL ;
+
+
+(*
+   BuildScaffold - generate the main, init, finish functions if
+                   no -c and this is the application module.
+*)
+
+PROCEDURE BuildScaffold (tok: CARDINAL; moduleSym: CARDINAL) ;
 
 
 (*

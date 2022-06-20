@@ -1,4 +1,4 @@
-extern  void exit(int);
+extern  void exit (int);
 
 extern  void _M2_SYSTEM_init (int argc, char *argv[]);
 extern  void _M2_SYSTEM_finish (void);
@@ -9,7 +9,7 @@ extern  void _M2_RTExceptions_finish (void);
 extern  void _M2_hello_init (int argc, char *argv[]);
 extern  void _M2_hello_finish (void);
 
-extern  void M2RTS_Terminate(void);
+extern  void M2RTS_Terminate (void);
 
 static void init (int argc, char *argv[])
 {

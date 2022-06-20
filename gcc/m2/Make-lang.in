@@ -576,11 +576,14 @@ stage2/m2/cc1gm2$(exeext): stage1/m2/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(
 stage1/m2/cc1gm2$(exeext): gm2$(exeext) m2/gm2-compiler-boot/m2flex.o \
                             $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) \
                             $(GM2_LIBS_BOOT) $(MC_LIBS) \
-                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so $(m2.prev)
+                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so \
+                            m2/gm2-libs-boot/M2LINK.o \
+                            $(m2.prev)
 	@$(call LINK_PROGRESS,$(INDEX.m2),start)
 	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler-boot/m2flex.o \
                             attribs.o \
-                             $(GM2_LIBS_BOOT) $(MC_LIBS) m2/gm2-gcc/rtegraph.o \
+                             $(GM2_LIBS_BOOT) $(MC_LIBS) \
+                             m2/gm2-gcc/rtegraph.o m2/gm2-libs-boot/M2LINK.o \
                              $(BACKEND) $(LIBS) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.m2),end)
 
@@ -634,7 +637,7 @@ GM2-LIBS-BOOT-DEFS = ASCII.def       IO.def          Args.def        M2RTS.def  
                      StringConvert.def               M2EXCEPTION.def RTExceptions.def \
                      dtoa.def        ldtoa.def       termios.def     errno.def       \
                      SysExceptions.def               Indexing.def    libc.def        \
-                     libm.def
+                     libm.def        M2LINK.def      M2Dependent.def
 
 GM2-LIBS-BOOT-MODS = ASCII.mod       IO.mod          Args.mod        Assertion.mod   \
                      NumberIO.mod    Break.mod       CmdArgs.mod     Scan.mod        \
@@ -646,7 +649,7 @@ GM2-LIBS-BOOT-MODS = ASCII.mod       IO.mod          Args.mod        Assertion.m
                      FormatStrings.mod               PushBackInput.mod \
                      SEnvironment.mod                StringConvert.mod \
                      M2EXCEPTION.mod RTExceptions.mod \
-                     Indexing.mod
+                     Indexing.mod    M2Dependent.mod
 
 GM2-LIBS-BOOT-C    = wrapc.c         UnixArgs.c      StdIO.c                         \
                      choosetemp.c    dtoa.c          ldtoa.c         termios.c       \
@@ -673,7 +676,7 @@ GM2-COMP-BOOT-DEFS = FifoQueue.def   M2Debug.def     M2Optimize.def  M2Defaults.
                      PCBuild.def     M2Const.def     M2DebugStack.def \
                      M2DriverOptions.def             ObjectFiles.def \
                      M2ColorString.def               M2Emit.def      M2Check.def \
-                     M2SSA.def       Output.def
+                     M2SSA.def       Output.def      M2Scaffold.def
 
 GM2-COMP-BOOT-MODS = FifoQueue.mod   M2LexBuf.mod                             \
                      M2AsmUtil.mod   M2Optimize.mod  M2StackWord.mod \
@@ -696,7 +699,7 @@ GM2-COMP-BOOT-MODS = FifoQueue.mod   M2LexBuf.mod                             \
                      M2DriverOptions.mod \
                      SymbolKey.mod   NameKey.mod     Lists.mod       ObjectFiles.mod \
                      M2ColorString.mod               M2Emit.mod      M2Check.mod \
-                     M2SSA.mod       Output.mod
+                     M2SSA.mod       Output.mod      M2Scaffold.mod
 
 GM2-GCC-DEFS      =  m2builtins.def  m2except.def    m2convert.def   m2decl.def \
                      m2except.def    m2expr.def      m2misc.def      m2block.def \
@@ -720,7 +723,8 @@ GM2-LIBS-DEFS      = ASCII.def         IO.def          Args.def        M2RTS.def
                      Builtins.def      cbuiltin.def    MathLib0.def    M2EXCEPTION.def \
                      RTExceptions.def  SMathLib0.def   dtoa.def        ldtoa.def       \
                      termios.def       RTint.def       COROUTINES.def  Indexing.def    \
-                     LMathLib0.def     LegacyReal.def  MemUtils.def    GetOpt.def
+                     LMathLib0.def     LegacyReal.def  MemUtils.def    GetOpt.def      \
+                     M2LINK.def        M2Dependent.def
 
 GM2-LIBS-MODS      = ASCII.mod         IO.mod          Args.mod        M2RTS.mod       \
                      Assertion.mod     NumberIO.mod    Break.mod       SYSTEM.mod      \
@@ -734,7 +738,7 @@ GM2-LIBS-MODS      = ASCII.mod         IO.mod          Args.mod        M2RTS.mod
                      Builtins.mod                      MathLib0.mod    M2EXCEPTION.mod \
                      RTExceptions.mod  SMathLib0.mod   RTint.mod       COROUTINES.mod  \
                      Indexing.mod      LMathLib0.mod   LegacyReal.mod  MemUtils.mod    \
-                     GetOpt.mod
+                     GetOpt.mod        M2Dependent.mod
 
 GM2-LIBS-C         = wrapc.c           UnixArgs.c      Selective.c     choosetemp.c    \
                      errno.c           dtoa.c          ldtoa.c         \
@@ -757,7 +761,7 @@ GM2-COMP-DEFS      = FifoQueue.def     M2Debug.def     M2Optimize.def  M2Default
                      M2Swig.def        M2MetaError.def Sets.def        M2CaseList.def  \
                      PCSymBuild.def    PCBuild.def     M2Const.def     M2DebugStack.def \
                      M2DriverOptions.def               ObjectFiles.def M2ColorString.def \
-                     M2Emit.def        M2Check.def     M2SSA.def
+                     M2Emit.def        M2Check.def     M2SSA.def       M2Scaffold.def
 
 GM2-COMP-MODS      = FifoQueue.mod     M2AsmUtil.mod                   M2Optimize.mod  \
                      M2StackWord.mod   M2Options.mod   M2Pass.mod      M2Batch.mod     \
@@ -777,7 +781,8 @@ GM2-COMP-MODS      = FifoQueue.mod     M2AsmUtil.mod                   M2Optimiz
                      M2Swig.mod        M2MetaError.mod Sets.mod        M2CaseList.mod  \
                      PCSymBuild.mod    M2Const.mod     M2DebugStack.mod \
                      M2DriverOptions.mod               ObjectFiles.mod M2ColorString.mod \
-                     M2Emit.mod        M2Check.mod     M2SSA.mod       Output.mod
+                     M2Emit.mod        M2Check.mod     M2SSA.mod       Output.mod      \
+                     M2Scaffold.mod
 
 GM2-TOOLS-MOD      = gm2l.mod          gm2lcc.mod      gm2lgen.mod     gm2lorder.mod   \
                      gm2m.mod          ppg.mod
@@ -932,6 +937,9 @@ m2/gm2-libs-boot/RTintdummy.o: $(srcdir)/m2/gm2-libs-ch/RTintdummy.c m2/gm2-libs
 	$(CXX) -c -DIN_GCC $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/wrapc.o: $(srcdir)/m2/gm2-libs-ch/wrapc.c m2/gm2-libs-boot/$(SRC_PREFIX)wrapc.h m2/gm2-libs/gm2-libs-host.h
+	$(CXX) -c -DHAVE_CONFIG_H $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libs $(INCLUDES) $< -o $@
+
+m2/gm2-libs-boot/M2LINK.o: $(srcdir)/m2/gm2-libs-ch/M2LINK.c m2/gm2-libs-boot/$(SRC_PREFIX)M2LINK.h m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -c -DHAVE_CONFIG_H $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libs $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/UnixArgs.o: $(srcdir)/m2/gm2-libs-ch/UnixArgs.c m2/gm2-libs-boot/$(SRC_PREFIX)UnixArgs.h m2/gm2-libs/gm2-libs-host.h
@@ -1312,7 +1320,8 @@ stage1/m2/gm2l$(exeext): \
      m2/gm2-ici-boot/M2Emit.o \
      m2/gm2-libs-boot/libgm2.a m2/gm2-compiler-boot/gm2l.o \
      m2/gm2-ici/m2flex.o  \
-     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS)
+     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS) \
+     m2/gm2-libs-boot/M2LINK.o
 	unset CC ; $(M2LINK) -s --langc++ --exit --name gm2l_init.c $(srcdir)/m2/init/gm2linit
 	mv gm2l_init.c m2/gm2-compiler-boot/gm2l_init.c
 	$(COMPILER) -c -g m2/gm2-compiler-boot/gm2l_init.c -o m2/gm2-compiler-boot/gm2l_init.o
@@ -1321,6 +1330,7 @@ stage1/m2/gm2l$(exeext): \
               m2/gm2-ici/m2flex.o \
               m2/gm2-ici-boot/M2Emit.o \
               m2/gm2-ici-boot/m2linemap.o \
+              m2/gm2-libs-boot/M2LINK.o \
               m2/gm2-compiler-boot/gm2l.o $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS) -lm
 
 stage1/m2/gm2lcc$(exeext): \
@@ -1329,7 +1339,8 @@ stage1/m2/gm2lcc$(exeext): \
      m2/gm2-ici/m2flex.o \
      m2/gm2-ici-boot/m2linemap.o \
      m2/gm2-libs-boot/libgm2.a m2/gm2-compiler-boot/gm2lcc.o \
-     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS)
+     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS) \
+     m2/gm2-libs-boot/M2LINK.o
 	unset CC ; $(M2LINK) -s --langc++ --exit --name gm2lcc_init.c $(srcdir)/m2/init/gm2lccinit
 	mv gm2lcc_init.c m2/gm2-compiler-boot/gm2lcc_init.c
 	$(COMPILER) -c -g m2/gm2-compiler-boot/gm2lcc_init.c -o m2/gm2-compiler-boot/gm2lcc_init.o
@@ -1338,6 +1349,7 @@ stage1/m2/gm2lcc$(exeext): \
               m2/gm2-ici-boot/M2Emit.o \
               m2/gm2-ici/m2flex.o \
               m2/gm2-ici-boot/m2linemap.o \
+              m2/gm2-libs-boot/M2LINK.o \
               m2/gm2-compiler-boot/gm2lcc.o $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS) -lm
 
 stage1/m2/gm2lgen$(exeext): \
@@ -1346,7 +1358,8 @@ stage1/m2/gm2lgen$(exeext): \
      m2/gm2-ici/m2flex.o \
      m2/gm2-ici-boot/m2linemap.o \
      m2/gm2-libs-boot/libgm2.a m2/gm2-compiler-boot/gm2lgen.o \
-     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS)
+     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS) \
+     m2/gm2-libs-boot/M2LINK.o
 	unset CC ; $(M2LINK) -s --langc++ --exit --name gm2lgen_init.c $(srcdir)/m2/init/gm2lgeninit
 	mv gm2lgen_init.c m2/gm2-compiler-boot/gm2lgen_init.c
 	$(COMPILER) -c -g m2/gm2-compiler-boot/gm2lgen_init.c -o m2/gm2-compiler-boot/gm2lgen_init.o
@@ -1355,6 +1368,7 @@ stage1/m2/gm2lgen$(exeext): \
               m2/gm2-ici-boot/M2Emit.o \
               m2/gm2-ici/m2flex.o \
               m2/gm2-ici-boot/m2linemap.o \
+              m2/gm2-libs-boot/M2LINK.o \
               m2/gm2-compiler-boot/gm2lgen.o $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS) -lm
 
 stage1/m2/gm2lorder$(exeext): \
@@ -1363,7 +1377,8 @@ stage1/m2/gm2lorder$(exeext): \
      m2/gm2-ici-boot/M2Emit.o \
      m2/gm2-ici/m2flex.o \
      m2/gm2-ici-boot/m2linemap.o \
-     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS)
+     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS) \
+     m2/gm2-libs-boot/M2LINK.o
 	unset CC ; $(M2LINK) -s --langc++ --exit --name gm2lorder_init.c $(srcdir)/m2/init/gm2lorderinit
 	mv gm2lorder_init.c m2/gm2-compiler-boot/gm2lorder_init.c
 	$(COMPILER) -c -g m2/gm2-compiler-boot/gm2lorder_init.c -o m2/gm2-compiler-boot/gm2lorder_init.o
@@ -1372,6 +1387,7 @@ stage1/m2/gm2lorder$(exeext): \
               m2/gm2-ici-boot/M2Emit.o \
               m2/gm2-ici/m2flex.o \
               m2/gm2-ici-boot/m2linemap.o \
+              m2/gm2-libs-boot/M2LINK.o \
               m2/gm2-compiler-boot/gm2lorder.o $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS) -lm
 
 stage1/m2/gm2m$(exeext): \
@@ -1380,7 +1396,8 @@ stage1/m2/gm2m$(exeext): \
      m2/gm2-ici-boot/M2Emit.o  \
      m2/gm2-ici/m2flex.o \
      m2/gm2-ici-boot/m2linemap.o \
-     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS)
+     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS) \
+     m2/gm2-libs-boot/M2LINK.o
 	unset CC ; $(M2LINK) -s --langc++ --exit --name gm2m_init.c $(srcdir)/m2/init/gm2minit
 	mv gm2m_init.c m2/gm2-compiler-boot/gm2m_init.c
 	$(COMPILER) -c -g m2/gm2-compiler-boot/gm2m_init.c -o m2/gm2-compiler-boot/gm2m_init.o
@@ -1389,6 +1406,7 @@ stage1/m2/gm2m$(exeext): \
               m2/gm2-ici/m2flex.o \
               m2/gm2-ici-boot/m2linemap.o \
               m2/gm2-ici-boot/M2Emit.o \
+              m2/gm2-libs-boot/M2LINK.o \
               m2/gm2-compiler-boot/gm2m.o $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS) -lm
 
 stage2/m2/gm2l$(exeext): $(GM2_LIBS) $(GM2_C_OBJS) $(GM2_LINK_TOOLS_BOOT) m2/gm2-compiler/gm2l.o
@@ -1615,7 +1633,7 @@ MC-LIB-DEFS = Args.def ASCII.def Assertion.def Break.def  \
               SYSTEM.def TimeString.def \
               UnixArgs.def wrapc.def \
               RTco.def \
-              COROUTINES.def Selective.def termios.def
+              COROUTINES.def Selective.def termios.def M2LINK.def
 
 MC-LIB-MODS = Args.mod ASCII.mod Assertion.mod Break.mod  \
               CmdArgs.mod Debug.mod \
@@ -1660,7 +1678,7 @@ MC-BOOT-C = $(MC-MODS:%.mod=%.c) $(MC-AUTO-MODS:%.mod=%.c)
 
 MC-INTERFACE-C = libc.c mcrts.c UnixArgs.c Selective.c termios.c \
                  SysExceptions.c ldtoa.c dtoa.c wrapc.c \
-                 SYSTEM.c errno.c abort.c
+                 SYSTEM.c errno.c abort.c M2LINK.c
 
 BUILD-MC-BOOT-H =  $(MC-LIB-DEFS:%.def=m2/mc-boot-gen/$(SRC_PREFIX)%.h) \
                    $(MC-DEFS:%.def=m2/mc-boot-gen/$(SRC_PREFIX)%.h)
@@ -1867,17 +1885,36 @@ PPG-INTERFACE-C = libc.c mcrts.c UnixArgs.c Selective.c termios.c \
 PPG-MODS         =  SymbolKey.mod   NameKey.mod  Lists.mod  bnflex.mod  Output.mod
 
 
-PPG-LIB-DEFS     = ASCII.def Args.def Indexing.def FIO.def \
-                   StrIO.def StrLib.def M2RTS.def Indexing.def FIO.def SFIO.def \
-                   Storage.def Debug.def IO.def StdIO.def M2EXCEPTION.def \
-                   StrCase.def NumberIO.def Assertion.def PushBackInput.def \
-                   SysStorage.def DynamicStrings.def M2RTS.def RTExceptions.def
+PPG-LIB-DEFS     = Args.def Assertion.def ASCII.def Debug.def \
+                   DynamicStrings.def FIO.def Indexing.def IO.def \
+                   NumberIO.def PushBackInput.def \
+                   M2Dependent.def \
+                   M2EXCEPTION.def M2LINK.def M2RTS.def \
+                   RTExceptions.def \
+                   StdIO.def SFIO.def StrIO.def StrLib.def \
+                   Storage.def StrCase.def SysStorage.def
 
-PPG-LIB-MODS     = ASCII.mod Args.mod FIO.mod SFIO.mod StrIO.mod StrLib.mod \
-                   Indexing.mod Storage.mod Debug.mod IO.mod \
-                   StdIO.mod M2EXCEPTION.mod StrCase.mod NumberIO.mod \
-                   Assertion.mod PushBackInput.mod SysStorage.mod \
-                   DynamicStrings.mod M2RTS.mod RTExceptions.mod
+PPG-LIB-MODS     = ASCII.mod \
+                   Args.mod \
+                   Assertion.mod \
+                   Debug.mod \
+                   DynamicStrings.mod \
+                   FIO.mod \
+                   IO.mod \
+                   Indexing.mod \
+                   M2Dependent.mod \
+                   M2EXCEPTION.mod \
+                   M2RTS.mod \
+                   NumberIO.mod \
+                   PushBackInput.mod \
+                   RTExceptions.mod \
+                   SFIO.mod \
+                   StdIO.mod \
+                   Storage.mod \
+                   StrCase.mod \
+                   StrIO.mod \
+                   StrLib.mod \
+                   SysStorage.mod
 
 PPG-SRC          = ppg.mod
 
@@ -1909,7 +1946,7 @@ m2/gm2-ppg-boot/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.c m2/gm2-libs/gm2
 m2/gm2-ppg-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-libs/%.mod $(MCDEPS) $(BUILD-BOOT-H)
 	$(MCC) -o=m2/gm2-ppg-boot/$(SRC_PREFIX)$*.c $(srcdir)/m2/gm2-libs/$*.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) \
-              -Im2/gm2-ppg-boot -I$(srcdir)/m2/mc-boot \
+              -Im2/gm2-ppg-boot -I$(srcdir)/m2/mc-boot -Im2/gm2-libs-boot \
               -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) -g -c m2/gm2-ppg-boot/$(SRC_PREFIX)$*.c -o $@
 
 m2/gm2-ppg-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-compiler/%.mod $(MCDEPS) $(BUILD-BOOT-H)
@@ -1918,8 +1955,12 @@ m2/gm2-ppg-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-compiler/%.mod $(MCDEPS) $(BU
               -Im2/mc-boot -Im2/gm2-compiler-boot -Im2/gm2-libs-boot \
               -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) -g -c m2/gm2-ppg-boot/$(SRC_PREFIX)$*.c -o $@
 
-m2/ppg$(exeext): m2/boot-bin/mc $(BUILD-PPG-O) $(BUILD-MC-INTERFACE-O) m2/gm2-ppg-boot/main.o m2/gm2-libs-boot/RTcodummy.o m2/mc-boot-ch/$(SRC_PREFIX)abort.o
-	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-PPG-O) m2/gm2-ppg-boot/main.o m2/gm2-libs-boot/RTcodummy.o m2/mc-boot-ch/$(SRC_PREFIX)abort.o -lm
+m2/ppg$(exeext): m2/boot-bin/mc $(BUILD-PPG-O) $(BUILD-MC-INTERFACE-O) m2/gm2-ppg-boot/main.o \
+                 m2/gm2-libs-boot/RTcodummy.o m2/mc-boot-ch/$(SRC_PREFIX)abort.o \
+                 m2/gm2-libs-boot/M2LINK.o
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-PPG-O) m2/gm2-ppg-boot/main.o \
+                 m2/gm2-libs-boot/RTcodummy.o m2/mc-boot-ch/$(SRC_PREFIX)abort.o \
+                 m2/gm2-libs-boot/M2LINK.o -lm
 
 m2/gm2-ppg-boot/main.o: $(M2LINK) $(srcdir)/m2/init/mcinit
 	unset CC ; $(M2LINK) -s --langc++ --exit --name mainppginit.c $(srcdir)/m2/init/ppginit
@@ -1947,7 +1988,9 @@ m2/gm2-pg-boot/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.c m2/gm2-libs/gm2-
 
 m2/gm2-pg-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-libs/%.mod $(MCDEPS) $(BUILD-BOOT-H)
 	$(MCC) -o=m2/gm2-pg-boot/$(SRC_PREFIX)$*.c $(srcdir)/m2/gm2-libs/$*.mod
-	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -Im2/gm2-pg-boot	-I$(srcdir)/m2/mc-boot -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) \
+	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -Im2/gm2-pg-boot	-I$(srcdir)/m2/mc-boot \
+               -I$(srcdir)/m2/mc-boot-ch \
+               -Im2/gm2-libs-boot $(INCLUDES) \
               -g -c m2/gm2-pg-boot/$(SRC_PREFIX)$*.c -o $@
 
 m2/gm2-pg-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-compiler/%.mod $(MCDEPS) $(BUILD-BOOT-H)
@@ -1963,9 +2006,10 @@ m2/gm2-pg-boot/$(SRC_PREFIX)pg.o:  m2/gm2-auto/pg.mod $(MCDEPS) $(BUILD-BOOT-H)
 m2/pg$(exeext): m2/boot-bin/mc \
     $(BUILD-PG-O) $(GM2-PPG-MODS:%.mod=m2/gm2-pg-boot/%.o) \
     $(BUILD-MC-INTERFACE-O) m2/gm2-pg-boot/main.o m2/gm2-libs-boot/RTcodummy.o \
-    m2/mc-boot-ch/$(SRC_PREFIX)abort.o
+    m2/mc-boot-ch/$(SRC_PREFIX)abort.o m2/gm2-libs-boot/M2LINK.o
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-PG-O) \
          m2/gm2-pg-boot/main.o m2/gm2-libs-boot/RTcodummy.o \
+         m2/gm2-libs-boot/M2LINK.o \
          m2/mc-boot-ch/$(SRC_PREFIX)abort.o -lm
 
 m2/gm2-auto/pginit:
@@ -2042,7 +2086,7 @@ m2/gm2-pge-boot/$(SRC_PREFIX)errno.o:  $(srcdir)/m2/mc-boot-ch/Gerrno.c
 m2/gm2-pge-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-libs/%.mod $(MCDEPS) $(BUILD-BOOT-H)
 	$(MCC) -o=m2/gm2-pge-boot/$(SRC_PREFIX)$*.c $(srcdir)/m2/gm2-libs/$*.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -Im2/gm2-pge-boot -I$(srcdir)/m2/mc-boot \
-              -I$(srcdir)/m2/mc-boot-ch \
+              -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs-boot \
               $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)$*.c -o $@
 
 m2/gm2-pge-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-compiler/%.mod $(MCDEPS) $(BUILD-BOOT-H)
@@ -2060,10 +2104,10 @@ m2/gm2-pge-boot/$(SRC_PREFIX)pge.o:  m2/gm2-auto/pge.mod $(MCDEPS) $(BUILD-BOOT-
 m2/pge$(exeext): m2/boot-bin/mc \
     $(BUILD-PGE-O) $(GM2-PPG-MODS:%.mod=m2/gm2-pge-boot/%.o) \
     $(BUILD-MC-INTERFACE-O) m2/gm2-pge-boot/main.o m2/gm2-libs-boot/RTcodummy.o \
-    m2/mc-boot-ch/$(SRC_PREFIX)abort.o
+    m2/mc-boot-ch/$(SRC_PREFIX)abort.o m2/gm2-libs-boot/M2LINK.o
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-PGE-O) \
          m2/gm2-pge-boot/main.o m2/gm2-libs-boot/RTcodummy.o \
-         m2/mc-boot-ch/$(SRC_PREFIX)abort.o -lm
+         m2/mc-boot-ch/$(SRC_PREFIX)abort.o m2/gm2-libs-boot/M2LINK.o -lm
 	$(SHELL) $(srcdir)/m2/tools-src/buildpg $(srcdir)/m2/gm2-compiler/ppg.mod t > m2/gm2-auto/t.bnf
 	./m2/pge$(exeext) m2/gm2-auto/t.bnf -o m2/gm2-auto/t1.mod
 	./m2/pg$(exeext) m2/gm2-auto/t.bnf -o m2/gm2-auto/t2.mod

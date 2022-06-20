@@ -267,6 +267,8 @@ add_B_prefix (unsigned int *in_decoded_options_count ATTRIBUTE_UNUSED,
 }
 #endif
 
+
+#if 0
 /* add_exec_prefix, adds the -ftarget-ar= option so that we can tell
    gm2lcc where to pick up the `ar' utility.  */
 
@@ -279,6 +281,7 @@ add_exec_prefix (void)
   fe_generate_option (OPT_ftarget_ar_, ar, true);
   fe_generate_option (OPT_ftarget_ranlib_, ranlib, true);
 }
+#endif
 
 static const char *
 get_libexec (void)
@@ -1155,10 +1158,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
         case OPT_fexceptions:
           seen_fexceptions = ((*in_decoded_options)[i].value);
           break;
+#if 0
         case OPT_fonlylink:
           seen_fonlylink = true;
           break;
-#if 0
         case OPT_fmakeall:
           seen_fmakeall = true;
           break;
@@ -1185,6 +1188,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	}
     }
 
+#if 0
   /* -fmakeall implies that the first invoked driver only does the link
      and should leave all compiles to the makefile otherwise we will try
      and link two main applications.  */
@@ -1192,6 +1196,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     fe_generate_option (OPT_fonlylink, NULL, false);
 
   check_gm2_root ();
+#endif
   libpath = fe_getenv (LIBRARY_PATH_ENV);
   if (libpath == NULL || (strcmp (libpath, "") == 0))
     libpath = LIBSUBDIR;
@@ -1286,7 +1291,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     }
   add_env_option (gm2ipath, OPT_I);
   add_default_includes (libpath, libraries);
+#if 0
   add_exec_prefix ();
+#endif
 
 #if defined(LOCAL_DEBUGGING)
   if (!seen_B)
@@ -1501,6 +1508,7 @@ exit_callback (int argc ATTRIBUTE_UNUSED, const char *argv[] ATTRIBUTE_UNUSED)
 void
 lang_register_spec_functions (void)
 {
+#if 0
   fe_add_spec_function ("objects", get_objects);
   fe_add_spec_function ("nolink", no_link);
   fe_add_spec_function ("noobjects", remove_objects);
@@ -1508,4 +1516,5 @@ lang_register_spec_functions (void)
   fe_add_spec_function ("exec_prefix", add_exec_dir);
   fe_add_spec_function ("exec_name", add_exec_name);
   fe_add_spec_function ("exit", exit_callback);
+#endif
 }

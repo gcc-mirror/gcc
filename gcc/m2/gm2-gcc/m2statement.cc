@@ -29,13 +29,13 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #define m2statement_c
 #include "m2assert.h"
 #include "m2block.h"
-#include "m2convert.h"
 #include "m2decl.h"
 #include "m2expr.h"
 #include "m2statement.h"
 #include "m2tree.h"
 #include "m2treelib.h"
 #include "m2type.h"
+#include "m2convert.h"
 
 static GTY (()) tree param_list = NULL_TREE; /* Ready for the next time we
                                                 call/define a function.  */
@@ -78,7 +78,9 @@ m2statement_BuildStartFunctionCode (location_t location, tree fndecl,
   `static' in the C sense!) */
   TREE_STATIC (fndecl) = 1;
   TREE_PUBLIC (fndecl) = isexported;
-  TREE_ADDRESSABLE (fndecl) = 1;       /* (--fixme-- not sure about this).  */
+  /* We could do better here by detecting ADR
+     or type PROC used on this function.  --fixme--  */
+  TREE_ADDRESSABLE (fndecl) = 1;
   DECL_DECLARED_INLINE_P (fndecl) = 0; /* isinline;  */
 }
 
@@ -126,8 +128,8 @@ m2statement_BuildEndFunctionCode (location_t location, tree fndecl, int nested)
   m2block_popFunctionScope ();
 
   /* We're leaving the context of this function, so zap cfun.  It's
-  still in DECL_STRUCT_FUNCTION, and we'll restore it in
-  tree_rest_of_compilation.  */
+     still in DECL_STRUCT_FUNCTION, and we'll restore it in
+     tree_rest_of_compilation.  */
   set_cfun (NULL);
   current_function_decl = NULL;
 }
@@ -843,7 +845,7 @@ m2statement_BuildStart (location_t location, char *name, int inner_module)
   return fndecl;
 }
 
-/* BuildEnd - complete the initialisation function for this module.  */
+/* BuildEnd - complete the initialization function for this module.  */
 
 void
 m2statement_BuildEnd (location_t location, tree fndecl, int nested)
@@ -865,23 +867,6 @@ m2statement_BuildCallInner (location_t location, tree fndecl)
             m2statement_BuildProcedureCallTree (location, fndecl, NULL_TREE));
 }
 
-/* BuildStartMainModule - expands all the global variables ready for
-   the main module.  */
-
-void
-m2statement_BuildStartMainModule (void)
-{
-  /* Nothing to do here.  */
-}
-
-/* BuildEndMainModule - tidies up the end of the main module.  It
-   moves back to global scope.  */
-
-void
-m2statement_BuildEndMainModule (void)
-{
-  /* Nothing to do here.  */
-}
 
 /* BuildIfThenDoEnd - returns a tree which will only execute
    statement, s, if, condition, is true.  */
