@@ -89,7 +89,7 @@ ompd_process_initialize (ompd_address_space_context_t *context,
   /* Naive way to read from memory.  */
   ompd_address_t symbol_addr = {OMPD_SEGMENT_UNSPECIFIED, 0};
   GET_VALUE (context, NULL, "gompd_state", gompd_state, gompd_state,
-	     target_sizes.sizeof_long_long, 1, ret, symbol_addr);
+	     target_sizes.sizeof_short, 1, ret, symbol_addr);
 
   ret = callbacks->alloc_memory (sizeof (ompd_address_space_handle_t),
 				 (void **) (handle));

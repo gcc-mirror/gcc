@@ -116,6 +116,7 @@ gompd_get_affinity_format (ompd_address_space_handle_t *ah, const char **string)
   char *temp_str;
   ompd_word_t addr;
   ret = callbacks->alloc_memory (len + 1, (void **) &temp_str);
+  CHECK_RET (ret);
   temp_str[len] = '\0';
   ompd_address_t symbol_addr = {OMPD_SEGMENT_UNSPECIFIED, 0};
   ret = callbacks->symbol_addr_lookup (ah->context, NULL,
@@ -237,7 +238,7 @@ gompd_get_gompd_enabled (ompd_address_space_handle_t *ah, const char **string)
   ompd_rc_t ret;
   ompd_address_t symbol_addr = {OMPD_SEGMENT_UNSPECIFIED, 0};
   GET_VALUE (ah->context, NULL, "gompd_enabled", temp, temp,
-             target_sizes.sizeof_int, 1, ret, symbol_addr);
+	     target_sizes.sizeof_int, 1, ret, symbol_addr);
   static const char *temp_string = "disabled";
   if (temp == 1)
     temp_string = "enabled";
@@ -246,15 +247,363 @@ gompd_get_gompd_enabled (ompd_address_space_handle_t *ah, const char **string)
   *string = temp_string;
   return ret;
 }
+/* End of global ICVs functions.  */
 
+/* Get per thread ICVs.  */
 ompd_rc_t
-gompd_stringize_gompd_enabled (ompd_address_space_handle_t *ah,
-                               const char **string)
+gompd_get_nthread (ompd_thread_handle_t *thread_handle,
+		   ompd_word_t *nthreads_var)
 {
-  return gompd_get_gompd_enabled (ah, string);
+  /* gomp_thread->task->gomp_task_icv.nthreads_var.  */
+  if (thread_handle == NULL)
+    return ompd_rc_stale_handle;
+  if (nthreads_var == NULL)
+    return ompd_rc_bad_input;
+  CHECK (thread_handle->ah);
+
+  ompd_word_t res = 0;
+  ompd_address_t symbol_addr = thread_handle->th;
+  ompd_word_t temp_offset;
+  ompd_address_t temp_sym_addr;
+  ompd_addr_t temp_addr;
+  ompd_address_space_context_t *context = thread_handle->ah->context;
+  ompd_thread_context_t *t_context = thread_handle->thread_context;
+  ompd_rc_t ret;
+  /* gomp_thread->task.  */
+  ACCESS_VALUE (context, t_context, "gompd_access_gomp_thread_task",
+		temp_offset, 1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  /* gomp_thread->task->task_icv.  */
+  ACCESS_VALUE (context, t_context, "gompd_access_gomp_task_icv", temp_offset,
+		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  /* gomp_thread->task->task_icv.nthreads_var.  */
+  ACCESS_VALUE (context, t_context, "gompd_access_gomp_task_icv_nthreads_var",
+		temp_offset, 0, ret, symbol_addr, temp_sym_addr, temp_addr);
+  DEREFERENCE (context, t_context, symbol_addr, target_sizes.sizeof_long_long,
+	       1, res, ret, 0);
+  *nthreads_var = res;
+  return ompd_rc_ok;
 }
 
-/* End of global ICVs functions.  */
+ompd_rc_t
+gompd_get_default_device (ompd_thread_handle_t *thread_handle,
+			  ompd_word_t *default_device_var)
+{
+  /* gomp_thread->task->gomp_task_icv.default_device_var.  */
+  if (thread_handle == NULL)
+    return ompd_rc_stale_handle;
+  if (default_device_var == NULL)
+    return ompd_rc_bad_input;
+  CHECK (thread_handle->ah);
+
+  ompd_word_t res = 0;
+  ompd_address_t symbol_addr = thread_handle->th;
+  ompd_word_t temp_offset;
+  ompd_address_t temp_sym_addr;
+  ompd_addr_t temp_addr;
+  ompd_address_space_context_t *context = thread_handle->ah->context;
+  ompd_thread_context_t *t_context = thread_handle->thread_context;
+  ompd_rc_t ret;
+  /* gomp_thread->task.  */
+  ACCESS_VALUE (context, t_context, "gompd_access_gomp_thread_task",
+		temp_offset, 1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  /* gomp_thread->task->task_icv.  */
+  ACCESS_VALUE (context, t_context, "gompd_access_gomp_task_icv", temp_offset,
+		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  /* gomp_thread->task->task_icv.default_device_var.  */
+  ACCESS_VALUE (context, t_context,
+		"gompd_access_gomp_task_icv_default_device_var", temp_offset, 0,
+		ret, symbol_addr, temp_sym_addr, temp_addr);
+  DEREFERENCE (context, t_context, symbol_addr, target_sizes.sizeof_int, 1,
+	       res, ret, 0);
+  *default_device_var = res;
+  return ompd_rc_ok;
+}
+
+ompd_rc_t
+gompd_get_dynamic (ompd_thread_handle_t *thread_handle, ompd_word_t *dyn_var)
+{
+  /* gomp_thread->task->gomp_task_icv.dyn_var.  */
+  if (thread_handle == NULL)
+    return ompd_rc_stale_handle;
+  if (dyn_var == NULL)
+    return ompd_rc_bad_input;
+  CHECK (thread_handle->ah);
+
+  ompd_word_t res = 0;
+  ompd_address_t symbol_addr = thread_handle->th;
+  ompd_word_t temp_offset;
+  ompd_address_t temp_sym_addr;
+  ompd_addr_t temp_addr;
+  ompd_address_space_context_t *context = thread_handle->ah->context;
+  ompd_thread_context_t *t_context = thread_handle->thread_context;
+  ompd_rc_t ret;
+  /* gomp_thread->task.  */
+  ACCESS_VALUE (context, t_context, "gompd_access_gomp_thread_task",
+		temp_offset, 1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  /* gomp_thread->task->task_icv.  */
+  ACCESS_VALUE (context, t_context, "gompd_access_gomp_task_icv", temp_offset,
+		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  /* gomp_thread->task->task_icv.dyn_var.  */
+  ACCESS_VALUE (context, t_context, "gompd_access_gomp_task_icv_dyn_var",
+		temp_offset, 0, ret, symbol_addr, temp_sym_addr, temp_addr);
+  DEREFERENCE (context, t_context, symbol_addr, target_sizes.sizeof_char, 1,
+	       res, ret, 0);
+  *dyn_var = res;
+  return ompd_rc_ok;
+}
+/* End of per thread ICVs.  */
+
+
+/* Get per task ICVs.  */
+
+ompd_rc_t
+gompd_get_thread_limit (ompd_task_handle_t *task_handle,
+			ompd_word_t *thread_limit_var)
+{
+  /* gomp_task->gomp_task_icv.thread_limit_var.  */
+  if (task_handle == NULL)
+    return ompd_rc_stale_handle;
+  if (thread_limit_var == NULL)
+    return ompd_rc_bad_input;
+  CHECK (task_handle->ah);
+
+  ompd_word_t res = 0;
+  ompd_address_t symbol_addr = task_handle->th;
+  ompd_word_t temp_offset;
+  ompd_address_t temp_sym_addr;
+  ompd_addr_t temp_addr;
+  ompd_address_space_context_t *context = task_handle->ah->context;
+  ompd_rc_t ret;
+  /* gomp_task->task_icv.  */
+  ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_icv", temp_offset,
+		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  /* gomp_task->task_icv.thread_limit_var.  */
+  ACCESS_VALUE (context, NULL,
+		"gompd_access_gomp_task_icv_thread_limit_var", temp_offset, 0,
+		ret, symbol_addr, temp_sym_addr, temp_addr);
+  DEREFERENCE (context, NULL, symbol_addr, target_sizes.sizeof_int, 1,
+	       res, ret, 0);
+  *thread_limit_var = res;
+  return ompd_rc_ok;
+}
+
+ompd_rc_t
+gompd_get_run_sched_chunk_size (ompd_task_handle_t *task_handle,
+				ompd_word_t *run_sched_chunk_size)
+{
+  /* gomp_task->gomp_task_icv.run_sched_chunk_size.  */
+  if (task_handle == NULL)
+    return ompd_rc_stale_handle;
+  if (run_sched_chunk_size == NULL)
+    return ompd_rc_bad_input;
+  CHECK (task_handle->ah);
+
+  ompd_word_t res = 0;
+  ompd_address_t symbol_addr = task_handle->th;
+  ompd_word_t temp_offset;
+  ompd_address_t temp_sym_addr;
+  ompd_addr_t temp_addr;
+  ompd_address_space_context_t *context = task_handle->ah->context;
+  ompd_rc_t ret;
+  /* gomp_task->task_icv.  */
+  ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_icv", temp_offset,
+		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  /* gomp_task->task_icv.run_sched_chunk_size.  */
+  ACCESS_VALUE (context, NULL,
+		"gompd_access_gomp_task_icv_run_sched_chunk_size", temp_offset,
+		0, ret, symbol_addr, temp_sym_addr, temp_addr);
+  DEREFERENCE (context, NULL, symbol_addr, target_sizes.sizeof_int, 1,
+	       res, ret, 0);
+  *run_sched_chunk_size = res;
+  return ompd_rc_ok;
+}
+
+ompd_rc_t
+gompd_get_run_sched (ompd_task_handle_t *task_handle,
+		     ompd_word_t *run_sched_var)
+{
+  /* gomp_task->gomp_task_icv.run_sched_var.  */
+  if (task_handle == NULL)
+    return ompd_rc_stale_handle;
+  if (run_sched_var == NULL)
+    return ompd_rc_bad_input;
+  CHECK (task_handle->ah);
+
+  ompd_word_t res = 0;
+  ompd_address_t symbol_addr = task_handle->th;
+  ompd_word_t temp_offset;
+  ompd_address_t temp_sym_addr;
+  ompd_addr_t temp_addr;
+  ompd_address_space_context_t *context = task_handle->ah->context;
+  ompd_rc_t ret;
+  /* gomp_task->task_icv.  */
+  ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_icv", temp_offset,
+		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  /* gomp_task->task_icv.run_sched_var.  */
+  ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_icv_run_sched_var",
+		temp_offset, 0, ret, symbol_addr, temp_sym_addr, temp_addr);
+  DEREFERENCE (context, NULL, symbol_addr, target_sizes.sizeof_int, 1,
+	       res, ret, 0);
+  *run_sched_var = res;
+  return ompd_rc_ok;
+}
+
+ompd_rc_t
+gompd_get_max_active_levels (ompd_task_handle_t *task_handle,
+			     ompd_word_t *max_active_levels_var)
+{
+  /* gomp_task->gomp_task_icv.max_active_levels_var.  */
+  if (task_handle == NULL)
+    return ompd_rc_stale_handle;
+  if (max_active_levels_var == NULL)
+    return ompd_rc_bad_input;
+  CHECK (task_handle->ah);
+
+  ompd_word_t res = 0;
+  ompd_address_t symbol_addr = task_handle->th;
+  ompd_word_t temp_offset;
+  ompd_address_t temp_sym_addr;
+  ompd_addr_t temp_addr;
+  ompd_address_space_context_t *context = task_handle->ah->context;
+  ompd_rc_t ret;
+  /* gomp_task->task_icv.  */
+  ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_icv", temp_offset,
+		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  /* gomp_task->task_icv.run_sched_var.  */
+  ACCESS_VALUE (context, NULL,
+		"gompd_access_gomp_task_icv_max_active_levels_var", temp_offset,
+		0, ret, symbol_addr, temp_sym_addr, temp_addr);
+  DEREFERENCE (context, NULL, symbol_addr, target_sizes.sizeof_char, 1,
+	       res, ret, 0);
+  *max_active_levels_var = res;
+  return ompd_rc_ok;
+}
+
+ompd_rc_t
+gompd_get_proc_bind (ompd_task_handle_t *task_handle, const char **bind_var)
+{
+  /* gomp_task->gomp_task_icv.bind_var.  */
+  if (task_handle == NULL)
+    return ompd_rc_stale_handle;
+  if (bind_var == NULL)
+    return ompd_rc_bad_input;
+  CHECK (task_handle->ah);
+
+  ompd_word_t res = 0;
+  ompd_address_t symbol_addr = task_handle->th;
+  ompd_word_t temp_offset;
+  ompd_address_t temp_sym_addr;
+  ompd_addr_t temp_addr;
+  ompd_address_space_context_t *context = task_handle->ah->context;
+  ompd_rc_t ret;
+  /* gomp_task->task_icv.  */
+  ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_icv", temp_offset,
+		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  /* gomp_task->task_icv.bind_var.  */
+  ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_icv_bind_var",
+		temp_offset, 0, ret, symbol_addr, temp_sym_addr, temp_addr);
+  DEREFERENCE (context, NULL, symbol_addr, target_sizes.sizeof_char, 1,
+	       res, ret, 0);
+  static const char *temp_string = "undefined";
+  if (res == 0)
+    temp_string = "FALSE";
+  else if (res == 1)
+    temp_string = "TRUE";
+  else if (res == 2)
+    temp_string = "PRIMARY";
+  else if (res == 3)
+    temp_string = "CLOSE";
+  else if (res == 4)
+    temp_string = "SPREAD";
+  else
+    return ompd_rc_error;
+  *bind_var = temp_string;
+  return ompd_rc_ok;
+}
+
+ompd_rc_t
+gompd_is_final (ompd_task_handle_t *task_handle, ompd_word_t *final_task)
+{
+  /* gomp_task->final_task.  */
+  if (task_handle == NULL)
+    return ompd_rc_stale_handle;
+  if (final_task == NULL)
+    return ompd_rc_bad_input;
+  CHECK (task_handle->ah);
+
+  ompd_word_t res = 0;
+  ompd_address_t symbol_addr = task_handle->th;
+  ompd_word_t temp_offset;
+  ompd_address_t temp_sym_addr;
+  ompd_addr_t temp_addr;
+  ompd_address_space_context_t *context = task_handle->ah->context;
+  ompd_rc_t ret;
+  /* gomp_task->final_task.  */
+  ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_final_task", temp_offset,
+		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  DEREFERENCE (context, NULL, symbol_addr, target_sizes.sizeof_char, 1,
+	       res, ret, 0);
+  *final_task = res;
+  return ompd_rc_ok;
+}
+
+ompd_rc_t
+gompd_is_implicit (ompd_task_handle_t *task_handle, ompd_word_t *task_kind)
+{
+  /* gomp_task->kind.  */
+  if (task_handle == NULL)
+    return ompd_rc_stale_handle;
+  if (task_kind == NULL)
+    return ompd_rc_bad_input;
+  CHECK (task_handle->ah);
+
+  ompd_word_t res = -1;
+  ompd_address_t symbol_addr = task_handle->th;
+  ompd_word_t temp_offset;
+  ompd_address_t temp_sym_addr;
+  ompd_addr_t temp_addr;
+  ompd_address_space_context_t *context = task_handle->ah->context;
+  ompd_rc_t ret;
+  /* gomp_task->kind.  */
+  ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_kind", temp_offset, 1,
+		ret, symbol_addr, temp_sym_addr, temp_addr);
+  DEREFERENCE (context, NULL, symbol_addr, target_sizes.sizeof_int, 1, res,
+	       ret, 0);
+  /* if task is implicit, then res = 0.  */
+  res = res ? -1: 0;
+  *task_kind = res;
+  return ompd_rc_ok;
+}
+/* End of task ICVs.  */
+
+/* Get per parallel handle ICVs.  */
+ompd_rc_t
+gompd_get_team_size (ompd_parallel_handle_t *parallel_handle,
+		     ompd_word_t *nthreads)
+{
+  /* gomp_team->nthreads.  */
+  if (parallel_handle == NULL)
+    return ompd_rc_stale_handle;
+  if (nthreads == NULL)
+    return ompd_rc_bad_input;
+  CHECK (parallel_handle->ah);
+
+  ompd_word_t res = -1;
+  ompd_address_t symbol_addr = parallel_handle->th;
+  ompd_word_t temp_offset;
+  ompd_address_t temp_sym_addr;
+  ompd_addr_t temp_addr;
+  ompd_address_space_context_t *context = parallel_handle->ah->context;
+  ompd_rc_t ret;
+  /* gomp_team->nthreads.  */
+  ACCESS_VALUE (context, NULL, "gompd_access_gomp_team_nthreads", temp_offset,
+		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+  DEREFERENCE (context, NULL, symbol_addr, target_sizes.sizeof_int, 1,
+	       res, ret, 0);
+  *nthreads = res;
+  return ompd_rc_ok;
+}
+/* End of parallel handle ICVs.  */
 
 ompd_rc_t
 gompd_get_sizes (ompd_address_space_context_t *context)

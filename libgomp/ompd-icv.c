@@ -97,7 +97,13 @@ ompd_get_icv_from_scope (void *handle, ompd_scope_t scope, ompd_icv_id_t icv_id,
     }
   /* No offloading support for now.  */
   ompd_address_space_handle_t *ashandle
-    = (ompd_address_space_handle_t *)handle;
+    = (ompd_address_space_handle_t *) handle;
+  ompd_thread_handle_t *thread_handle
+    = (ompd_thread_handle_t *) handle;
+  ompd_task_handle_t *task_handle
+    = (ompd_task_handle_t *) handle;
+  ompd_parallel_handle_t *parallel_handle
+    = (ompd_parallel_handle_t *) handle;
   if (device == OMPD_DEVICE_KIND_HOST)
     {
       switch (icv_id)
@@ -130,6 +136,26 @@ ompd_get_icv_from_scope (void *handle, ompd_scope_t scope, ompd_icv_id_t icv_id,
 	    return gompd_get_throttled_spin_count (ashandle, icv_value);
 	  case gompd_icv_managed_threads_var:
 	    return gompd_get_managed_threads (ashandle, icv_value);
+	  case gompd_icv_nthreads_var:
+	    return gompd_get_nthread (thread_handle, icv_value);
+	  case gompd_icv_default_device_var:
+	    return gompd_get_default_device (thread_handle, icv_value);
+	  case gompd_icv_dyn_var:
+	    return gompd_get_dynamic (thread_handle, icv_value);
+	  case gompd_icv_thread_limit_var:
+	    return gompd_get_thread_limit (task_handle, icv_value);
+	  case gompd_icv_run_sched_chunk_size:
+	    return gompd_get_run_sched_chunk_size (task_handle, icv_value);
+	  case gompd_icv_run_sched_var:
+	    return gompd_get_run_sched (task_handle, icv_value);
+	  case gompd_icv_max_active_levels_var:
+	    return gompd_get_max_active_levels (task_handle, icv_value);
+	  case gompd_icv_final_task_var:
+	    return gompd_is_final (task_handle, icv_value);
+	  case gompd_icv_implicit_task_var:
+	    return gompd_is_implicit (task_handle, icv_value);
+	  case gompd_icv_team_size_var:
+	    return gompd_get_team_size (parallel_handle, icv_value);
 	  default:
 	    return ompd_rc_unsupported;
 	}
@@ -167,7 +193,9 @@ ompd_get_icv_string_from_scope (void *handle, ompd_scope_t scope,
     }
   /* No offloading support for now.  */
   ompd_address_space_handle_t *ashandle
-    = (ompd_address_space_handle_t *)handle;
+    = (ompd_address_space_handle_t *) handle;
+  ompd_task_handle_t *task_handle
+    = (ompd_task_handle_t *) handle;
   if (device == OMPD_DEVICE_KIND_HOST)
     {
       switch (icv_id)
@@ -175,7 +203,9 @@ ompd_get_icv_string_from_scope (void *handle, ompd_scope_t scope,
 	  case gompd_icv_affinity_format_var:
 	    return gompd_get_affinity_format (ashandle, icv_value);
 	  case gompd_icv_ompd_state:
-	    return gompd_stringize_gompd_enabled (ashandle, icv_value);
+	    return gompd_get_gompd_enabled (ashandle, icv_value);
+	  case gompd_icv_bind_var:
+	    return gompd_get_proc_bind (task_handle, icv_value);
 	  default:
 	    return ompd_rc_unsupported;
 	}

@@ -67,9 +67,15 @@
 #endif
 
 void gompd_load (void);
-extern __UINT64_TYPE__ gompd_state;
+extern unsigned short gompd_state;
 
 #define OMPD_ENABLED 0x1
+
+#ifdef GOMP_NEEDS_THREAD_HANDLE
+#define gompd_thread_handle_access gompd_access (gomp_thread, handle)
+#else
+#define gompd_thread_handle_access
+#endif
 
 #define GOMPD_FOREACH_ACCESS(gompd_access) \
   gompd_access (gomp_task_icv, nthreads_var) \
@@ -83,7 +89,11 @@ extern __UINT64_TYPE__ gompd_state;
   gompd_access (gomp_thread_pool, threads) \
   gompd_access (gomp_thread, ts) \
   gompd_access (gomp_team_state, team_id) \
-  gompd_access (gomp_task, icv)
+  gompd_access (gomp_task, icv) \
+  gompd_access (gomp_task, kind) \
+  gompd_access (gomp_task, final_task) \
+  gompd_access (gomp_team, nthreads) \
+  gompd_thread_handle_access
 
 #define GOMPD_SIZES(gompd_size) \
   gompd_size (gomp_thread) \

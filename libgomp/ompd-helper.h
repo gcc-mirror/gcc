@@ -90,6 +90,29 @@ typedef struct _ompd_task_handle
     CHECK_RET (ret); \
   } while (0)
 
+#define DEREFERENCE(context, thread_context, symbol_addr, size, count,\
+  buff, ret, is_ptr) \
+  do {\
+    ret = callbacks->read_memory (context, thread_context, &symbol_addr, \
+				  size, &buff); \
+    CHECK_RET (ret); \
+    ret = callbacks->device_to_host (context, &buff, size, count, &buff); \
+    CHECK_RET (ret); \
+    if (is_ptr) \
+      symbol_addr.address = buff; \
+  } while (0);
+
+#define ACCESS_VALUE(context, thread_context, name, temp_offset, \
+  access_pointer, ret, symbol_addr, temp_sym_addr, temp_addr) \
+  do { \
+    GET_VALUE (context, thread_context, name, temp_offset, temp_offset, \
+	       target_sizes.sizeof_short, 1, ret, temp_sym_addr); \
+    symbol_addr.address += temp_offset; \
+    for (int i = 0; i < access_pointer; i++) \
+      DEREFERENCE (context, thread_context, symbol_addr, \
+		   target_sizes.sizeof_pointer, 1, temp_addr, ret, 1); \
+  } while (0);
+
 #define CHECK(ah) \
   do {   \
     if (ah == NULL || ah->context == NULL) \
@@ -158,7 +181,7 @@ ompd_rc_t gompd_get_run_sched_chunk_size (ompd_task_handle_t *, ompd_word_t *);
 ompd_rc_t gompd_get_default_device (ompd_thread_handle_t *, ompd_word_t *);
 ompd_rc_t gompd_get_dynamic (ompd_thread_handle_t *, ompd_word_t *);
 ompd_rc_t gompd_get_max_active_levels (ompd_task_handle_t *, ompd_word_t *);
-ompd_rc_t gompd_get_proc_bind (ompd_task_handle_t *, ompd_word_t *);
+ompd_rc_t gompd_get_proc_bind (ompd_task_handle_t *, const char **);
 ompd_rc_t gompd_is_final (ompd_task_handle_t *, ompd_word_t *);
 ompd_rc_t gompd_is_implicit (ompd_task_handle_t *, ompd_word_t *);
 ompd_rc_t gompd_get_team_size (ompd_parallel_handle_t *, ompd_word_t *);
@@ -166,7 +189,7 @@ ompd_rc_t gompd_get_team_size (ompd_parallel_handle_t *, ompd_word_t *);
 /* Get Global ICVs.  */
 ompd_rc_t gompd_get_cancellation (ompd_address_space_handle_t *, ompd_word_t *);
 ompd_rc_t gompd_get_max_task_priority (ompd_address_space_handle_t *,
-  				       ompd_word_t *);
+				       ompd_word_t *);
 ompd_rc_t gompd_get_stacksize (ompd_address_space_handle_t *, ompd_word_t *);
 ompd_rc_t gompd_get_debug (ompd_address_space_handle_t *, ompd_word_t *);
 ompd_rc_t gompd_get_display_affinity (ompd_address_space_handle_t *,
@@ -186,8 +209,8 @@ ompd_rc_t gompd_get_throttled_spin_count (ompd_address_space_handle_t *,
 					  ompd_word_t *);
 ompd_rc_t gompd_get_managed_threads (ompd_address_space_handle_t *,
 				     ompd_word_t *);
-ompd_rc_t gompd_stringize_gompd_enabled (ompd_address_space_handle_t *,
-                                         const char **);
+ompd_rc_t gompd_get_gompd_enabled (ompd_address_space_handle_t *,
+				   const char **);
 /*End of Global ICVs.  */
 
 

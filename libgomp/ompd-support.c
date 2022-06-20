@@ -20,48 +20,47 @@
 
 #include "ompd-support.h"
 
-#define gompd_declare_access(t, m) __UINT64_TYPE__ gompd_access_##t##_##m;
-  GOMPD_FOREACH_ACCESS (gompd_declare_access)
-#undef gompd_declare_access
+#ifdef __ELF__
+#define OMPD_SECTION __attribute__ ((section ("OMPD")))
+#else
+#define OMPD_SECTION
+#endif
 
-#define gompd_declare_sizeof_members(t, m) \
-  __UINT64_TYPE__ gompd_sizeof_##t##_##m;
-  GOMPD_FOREACH_ACCESS (gompd_declare_sizeof_members)
-#undef gompd_declare_sizeof_members
+#ifndef GOMP_NEEDS_THREAD_HANDLE
+const unsigned short gompd_access_gomp_thread_handle
+  __attribute__ ((used)) OMPD_SECTION = 0;
+const unsigned short gompd_sizeof_gomp_thread_handle
+  __attribute__ ((used)) OMPD_SECTION = 0;
+#endif
 
-#define gompd_declare_sizes(t) __UINT64_TYPE__ gompd_sizeof_##t;
-  GOMPD_SIZES (gompd_declare_sizes)
-#undef gompd_declare_sizes
+/* Get offset of the member m in struct t.  */
+#define gompd_get_offset(t, m) \
+  const unsigned short gompd_access_##t##_##m __attribute__ ((used)) \
+    OMPD_SECTION \
+      = (unsigned short) offsetof (struct t, m);
+  GOMPD_FOREACH_ACCESS (gompd_get_offset)
+#undef gompd_get_offset
+/* Get size of member m in struct t.  */
+#define gompd_get_sizeof_member(t, m) \
+  const unsigned short gompd_sizeof_##t##_##m __attribute__ ((used)) \
+    OMPD_SECTION \
+      = sizeof (((struct t *) NULL)->m);
+  GOMPD_FOREACH_ACCESS (gompd_get_sizeof_member)
+#undef gompd_get_sizeof_member
+/* Get size of struct t.  */
+#define gompd_get_size(t) \
+  const unsigned short gompd_sizeof_##t##_ __attribute__ ((used)) \
+    OMPD_SECTION \
+      = sizeof (struct t);
+  GOMPD_SIZES (gompd_get_size)
+#undef gompd_get_size
 
 const char **ompd_dll_locations = NULL;
-__UINT64_TYPE__ gompd_state;
+unsigned short gompd_state;
 
 void
 gompd_load (void)
 {
-  /* Get the offset of the struct members.  */
-  #define gompd_init_access(t, m)  \
-    gompd_access_##t##_##m = (__UINT64_TYPE__) & (((struct t *) NULL)->m);
-    GOMPD_FOREACH_ACCESS (gompd_init_access);
-  #undef gompd_init_access
-
-  /* Get sizeof members.  */
-
-  #define gompd_init_sizeof_members(t, m) \
-    gompd_sizeof_##t##_##m = sizeof (((struct t *) NULL)->m);
-    GOMPD_FOREACH_ACCESS (gompd_init_sizeof_members);
-  #undef gompd_declare_sizeof_members
-
-  #define gompd_init_sizes(t) gompd_sizeof_##t = sizeof (struct t);
-    GOMPD_SIZES (gompd_init_sizes)
-  #undef gompd_init_sizes
-
-  #ifdef GOMP_NEEDS_THREAD_HANDLE
-    __UINT64_TYPE__ gompd_access_gomp_thread_handle
-      = (__UINT64_TYPE__) & (((struct gomp_thread *) NULL)->handle);
-    __UINT64_TYPE__ gompd_sizeof_gomp_thread_handle
-      = sizeof (((struct gomp_thread *) NULL)->handle);
-  #endif
   gomp_debug (2, "OMP OMPD active\n");
   static const char *ompd_dll_locations_array[2]
     = {"libgompd" SONAME_SUFFIX (1) , NULL};
