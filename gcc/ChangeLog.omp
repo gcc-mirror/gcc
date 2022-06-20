@@ -1,0 +1,4 @@
+2022-06-20  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* Makefile.in (REVISION_s): Change default message.
+
