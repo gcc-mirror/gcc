@@ -1,3 +1,22 @@
+2022-06-19  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_is_insn_L32R_p):
+	Consider relaxed MOVI instructions as L32R.
+
+2022-06-19  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_emit_move_sequence):
+	Use can_create_pseudo_p(), instead of using individual
+	reload_in_progress and reload_completed.
+	(xtensa_expand_block_set_small_loop): Use xtensa_simm8x256(),
+	the existing predicate function.
+	(xtensa_is_insn_L32R_p, gen_int_relational, xtensa_emit_sibcall):
+	Use the standard RTX code predicate macros such as MEM_P,
+	SYMBOL_REF_P and/or CONST_INT_P.
+	* config/xtensa/xtensa.md: Avoid using numeric literals	to determine
+	if callee-saved register, at the split patterns for indirect sibcall
+	fixups.
+
 2022-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* common.opt (flag_sanitize_trap): New variable.
