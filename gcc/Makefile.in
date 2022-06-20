@@ -921,7 +921,7 @@ ifdef REVISION_c
 REVISION_s  := \
   "\"$(if $(DEVPHASE_c)$(filter-out 0,$(PATCHLEVEL_c)), $(REVISION_c))\""
 else
-REVISION_s  := "\"\""
+REVISION_s  := "\" [OG13]\""
 endif
 
 # Shorthand variables for dependency lists.
