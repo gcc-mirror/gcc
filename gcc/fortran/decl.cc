@@ -2775,6 +2775,18 @@ variable_decl (int elem)
 		  else
 		    gfc_free_expr (n);
 		}
+	      /* For an explicit-shape spec with constant bounds, ensure
+		 that the effective upper bound is not lower than the
+		 respective lower bound minus one.  Otherwise adjust it so
+		 that the extent is trivially derived to be zero.  */
+	      if (as->lower[i]->expr_type == EXPR_CONSTANT
+		  && as->upper[i]->expr_type == EXPR_CONSTANT
+		  && as->lower[i]->ts.type == BT_INTEGER
+		  && as->upper[i]->ts.type == BT_INTEGER
+		  && mpz_cmp (as->upper[i]->value.integer,
+			      as->lower[i]->value.integer) < 0)
+		mpz_sub_ui (as->upper[i]->value.integer,
+			    as->lower[i]->value.integer, 1);
 	    }
 	}
     }
