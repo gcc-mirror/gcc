@@ -2102,15 +2102,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	const bool convention_fortran_p
 	  = (Convention (gnat_entity) == Convention_Fortran);
 	const int ndim = Number_Dimensions (gnat_entity);
-	tree gnu_template_type;
-	tree gnu_ptr_template;
-	tree gnu_template_reference, gnu_template_fields, gnu_fat_type;
+	tree gnu_fat_type, gnu_template_type, gnu_ptr_template;
+	tree gnu_template_reference, gnu_template_fields;
 	tree *gnu_index_types = XALLOCAVEC (tree, ndim);
 	tree *gnu_temp_fields = XALLOCAVEC (tree, ndim);
-	tree gnu_max_size = size_one_node, tem, obj;
+	tree gnu_max_size = size_one_node;
+	tree comp_type, tem, obj;
 	Entity_Id gnat_index;
+	alias_set_type ptr_set = -1;
 	int index;
-	tree comp_type;
 
 	/* Create the type for the component now, as it simplifies breaking
 	   type reference loops.  */
@@ -2181,6 +2181,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	if (COMPLETE_TYPE_P (gnu_fat_type))
 	  {
 	    tem = TYPE_FIELDS (gnu_fat_type);
+	    if (TYPE_ALIAS_SET_KNOWN_P (TREE_TYPE (tem)))
+	      ptr_set = TYPE_ALIAS_SET (TREE_TYPE (tem));
 	    TREE_TYPE (tem) = ptr_type_node;
 	    TREE_TYPE (DECL_CHAIN (tem)) = gnu_ptr_template;
 	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (gnu_fat_type)) = 0;
@@ -2389,7 +2391,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  tem = change_qualified_type (tem, TYPE_QUAL_VOLATILE);
 
 	/* Adjust the type of the pointer-to-array field of the fat pointer
-	   and record the aliasing relationships if necessary.  If this is
+	   and preserve its existing alias set, if any.  Note that calling
+	   again record_component_aliases on the fat pointer is not enough
+	   because this may leave dangling references to the existing alias
+	   set from types containing a fat pointer component.  If this is
 	   a packed type implemented specially, then use a ref-all pointer
 	   type since the implementation type may vary between constrained
 	   subtypes and unconstrained base type.  */
@@ -2398,8 +2403,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    = build_pointer_type_for_mode (tem, ptr_mode, true);
 	else
 	  TREE_TYPE (TYPE_FIELDS (gnu_fat_type)) = build_pointer_type (tem);
-	if (TYPE_ALIAS_SET_KNOWN_P (gnu_fat_type))
-	  record_component_aliases (gnu_fat_type);
+	if (ptr_set != -1)
+	  TYPE_ALIAS_SET (TREE_TYPE (TYPE_FIELDS (gnu_fat_type))) = ptr_set;
 
 	/* If the maximum size doesn't overflow, use it.  */
 	if (gnu_max_size
