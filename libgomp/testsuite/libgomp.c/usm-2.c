@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target omp_usm } */
 
 #include <omp.h>
 #include <stdint.h>

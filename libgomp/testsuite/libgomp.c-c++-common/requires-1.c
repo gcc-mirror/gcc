@@ -1,4 +1,5 @@
 /* { dg-additional-sources requires-1-aux.c } */
+/* { dg-require-effective-target omp_usm } */
 
 #pragma omp requires unified_shared_memory
 

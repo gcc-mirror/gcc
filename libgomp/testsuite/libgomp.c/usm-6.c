@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-skip-if "Only valid for nvptx" { ! offload_target_nvptx } } */
+/* { dg-require-effective-target omp_usm } */
 
 #include <stdint.h>
 #include <stdlib.h>
