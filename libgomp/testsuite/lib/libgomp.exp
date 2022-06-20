@@ -517,3 +517,25 @@ int main() {
     return 0;
 } } "-lcuda -lcudart" ]
 }
+
+# return 1 if OpenMP Unified Share Memory is supported
+
+proc check_effective_target_omp_usm { } {
+    if { [libgomp_check_effective_target_offload_target "nvptx"] } {
+	return 1
+    }
+
+    if { [libgomp_check_effective_target_offload_target "amdgcn"] } {
+	return [check_no_compiler_messages omp_usm executable {
+           #pragma omp requires unified_shared_memory
+	   int main () {
+	     #pragma omp target
+	       ;
+	     return 0;
+	   }
+	}]
+    }
+
+    return 0
+}
+

@@ -1,3 +1,27 @@
+2022-06-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices): Allow
+	GOMP_REQUIRES_UNIFIED_ADDRESS and GOMP_REQUIRES_UNIFIED_SHARED_MEMORY.
+	(struct usm_splay_tree_key_s): New.
+	(usm_splay_compare): New.
+	(splay_tree_prefix): New.
+	(GOMP_OFFLOAD_usm_alloc): New.
+	(GOMP_OFFLOAD_usm_free): New.
+	(GOMP_OFFLOAD_is_usm_ptr): New.
+	(GOMP_OFFLOAD_supported_features): Move into the OpenMP API fold.
+	Add GOMP_REQUIRES_UNIFIED_ADDRESS and
+	GOMP_REQUIRES_UNIFIED_SHARED_MEMORY.
+	(gomp_fatal): New.
+	(splay_tree_c): New.
+	* testsuite/lib/libgomp.exp (check_effective_target_omp_usm): New.
+	* testsuite/libgomp.c++/usm-1.C: Use dg-require-effective-target.
+	* testsuite/libgomp.c/usm-1.c: Likewise.
+	* testsuite/libgomp.c/usm-2.c: Likewise.
+	* testsuite/libgomp.c/usm-3.c: Likewise.
+	* testsuite/libgomp.c/usm-4.c: Likewise.
+	* testsuite/libgomp.c/usm-5.c: Likewise.
+	* testsuite/libgomp.c/usm-6.c: Likewise.
+
 2022-03-29  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_supported_features): Allow

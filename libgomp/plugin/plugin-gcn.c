@@ -3229,7 +3229,11 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
   if (!init_hsa_context ())
     return 0;
   /* Return -1 if no omp_requires_mask cannot be fulfilled but
-     devices were present.  */
+     devices were present.
+     Note: not all devices support USM, but the compiler refuses to create
+     binaries for those that don't anyway.  */
+  omp_requires_mask &= ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+			 | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY);
   if (hsa_context.agent_count > 0
       && (omp_requires_mask & ~GOMP_REQUIRES_REVERSE_OFFLOAD) != 0)
     return -1;
@@ -3860,6 +3864,89 @@ GOMP_OFFLOAD_evaluate_device (int device_num, const char *kind,
   return !isa || isa_code (isa) == agent->device_isa;
 }
 
+/* Use a splay tree to track USM allocations.  */
+
+typedef struct usm_splay_tree_node_s *usm_splay_tree_node;
+typedef struct usm_splay_tree_s *usm_splay_tree;
+typedef struct usm_splay_tree_key_s *usm_splay_tree_key;
+
+struct usm_splay_tree_key_s {
+  void *addr;
+  size_t size;
+};
+
+static inline int
+usm_splay_compare (usm_splay_tree_key x, usm_splay_tree_key y)
+{
+  if ((x->addr <= y->addr && x->addr + x->size > y->addr)
+      || (y->addr <= x->addr && y->addr + y->size > x->addr))
+    return 0;
+
+  return (x->addr > y->addr ? 1 : -1);
+}
+
+#define splay_tree_prefix usm
+#include "../splay-tree.h"
+
+static struct usm_splay_tree_s usm_map = { NULL };
+
+/* Allocate memory suitable for Unified Shared Memory.
+
+   In fact, AMD memory need only be "coarse grained", which target
+   allocations already are.  We do need to track allocations so that
+   GOMP_OFFLOAD_is_usm_ptr can look them up.  */
+
+void *
+GOMP_OFFLOAD_usm_alloc (int device, size_t size)
+{
+  void *ptr = GOMP_OFFLOAD_alloc (device, size);
+
+  usm_splay_tree_node node = malloc (sizeof (struct usm_splay_tree_node_s));
+  node->key.addr = ptr;
+  node->key.size = size;
+  node->left = NULL;
+  node->right = NULL;
+  usm_splay_tree_insert (&usm_map, node);
+
+  return ptr;
+}
+
+/* Free memory allocated via GOMP_OFFLOAD_usm_alloc.  */
+
+bool
+GOMP_OFFLOAD_usm_free (int device, void *ptr)
+{
+  struct usm_splay_tree_key_s key = { ptr, 1 };
+  usm_splay_tree_key node = usm_splay_tree_lookup (&usm_map, &key);
+  if (node)
+    {
+      usm_splay_tree_remove (&usm_map, &key);
+      free (node);
+    }
+
+  return GOMP_OFFLOAD_free (device, ptr);
+}
+
+/* True if the memory was allocated via GOMP_OFFLOAD_usm_alloc.  */
+
+bool
+GOMP_OFFLOAD_is_usm_ptr (void *ptr)
+{
+  struct usm_splay_tree_key_s key = { ptr, 1 };
+  return usm_splay_tree_lookup (&usm_map, &key);
+}
+
+/* Indicate which GOMP_REQUIRES_* features are supported.  */
+
+bool
+GOMP_OFFLOAD_supported_features (unsigned int *mask)
+{
+  *mask &= ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+             | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+
+  return (*mask == 0);
+}
+
 /* }}} */
 /* {{{ OpenACC Plugin API  */
 
@@ -4153,3 +4240,18 @@ GOMP_OFFLOAD_openacc_destroy_thread_data (void *data)
 }
 
 /* }}} */
+/* {{{ USM splay tree */
+
+/* Include this now so that splay-tree.c doesn't include it later.  This
+   avoids a conflict with splay_tree_prefix.  */
+#include "libgomp.h"
+
+/* This allows splay-tree.c to call gomp_fatal in this context.  The splay
+   tree code doesn't use the variadic arguments right now.  */
+#define gomp_fatal(MSG, ...) GOMP_PLUGIN_fatal (MSG)
+
+/* Include the splay tree code inline, with the prefixes added.  */
+#define splay_tree_prefix usm
+#define splay_tree_c
+#include "../splay-tree.h"
+/* }}}  */

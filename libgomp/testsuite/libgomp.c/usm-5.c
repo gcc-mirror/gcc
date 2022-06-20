@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target offload_device } */
+/* { dg-require-effective-target omp_usm } */
 
 #include <omp.h>
 #include <stdint.h>
