@@ -189,6 +189,8 @@ public:
 
   Kind get_kind () const { return kind; }
 
+  std::unique_ptr<AST::Expr> &get_expression () { return expression; }
+
   std::string as_string () const
   {
     switch (get_kind ())

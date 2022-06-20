@@ -612,8 +612,19 @@ ASTLoweringBase::lower_generic_args (AST::GenericArgs &args)
       type_args.push_back (std::unique_ptr<HIR::Type> (t));
     }
 
+  std::vector<HIR::ConstGenericArg> const_args;
+  for (auto &const_arg : args.get_const_args ())
+    const_args.emplace_back (HIR::ConstGenericArg (
+      std::unique_ptr<HIR::Expr> (
+	ASTLoweringExpr::translate (const_arg.get_expression ().get ())),
+      Location ()));
+
+  // FIXME:
+  // const_arg.get_locus ());
+
   return HIR::GenericArgs (std::move (lifetime_args), std::move (type_args),
-			   std::move (binding_args), args.get_locus ());
+			   std::move (binding_args), std::move (const_args),
+			   args.get_locus ());
 }
 
 HIR::SelfParam
@@ -650,29 +661,17 @@ ASTLowerTypePath::visit (AST::TypePathSegmentGeneric &segment)
   bool has_separating_scope_resolution
     = segment.get_separating_scope_resolution ();
 
-  std::vector<HIR::Lifetime> lifetime_args;
-  for (auto &lifetime : segment.get_generic_args ().get_lifetime_args ())
-    {
-      HIR::Lifetime l = lower_lifetime (lifetime);
-      lifetime_args.push_back (std::move (l));
-    }
-
-  std::vector<std::unique_ptr<HIR::Type>> type_args;
-  for (auto &type : segment.get_generic_args ().get_type_args ())
-    {
-      HIR::Type *t = ASTLoweringType::translate (type.get ());
-      type_args.push_back (std::unique_ptr<HIR::Type> (t));
-    }
+  auto generic_args = lower_generic_args (segment.get_generic_args ());
 
   auto crate_num = mappings->get_current_crate ();
   auto hirid = mappings->get_next_hir_id (crate_num);
   Analysis::NodeMapping mapping (crate_num, segment.get_node_id (), hirid,
 				 UNKNOWN_LOCAL_DEFID);
 
-  translated_segment = new HIR::TypePathSegmentGeneric (
-    std::move (mapping), segment_name, has_separating_scope_resolution,
-    std::move (lifetime_args), std::move (type_args), std::move (binding_args),
-    segment.get_locus ());
+  translated_segment
+    = new HIR::TypePathSegmentGeneric (std::move (mapping), segment_name,
+				       has_separating_scope_resolution,
+				       generic_args, segment.get_locus ());
 }
 
 void

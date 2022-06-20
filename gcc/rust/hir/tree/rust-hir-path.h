@@ -112,12 +112,41 @@ public:
   Location get_locus () const { return locus; }
 };
 
+class ConstGenericArg
+{
+  // FIXME: Do we need to disambiguate or no? We should be able to disambiguate
+  // at name-resolution, hence no need for ambiguities here
+
+public:
+  ConstGenericArg (std::unique_ptr<Expr> expression, Location locus)
+    : expression (std::move (expression)), locus (locus)
+  {}
+
+  ConstGenericArg (const ConstGenericArg &other) : locus (other.locus)
+  {
+    expression = other.expression->clone_expr ();
+  }
+
+  ConstGenericArg operator= (const ConstGenericArg &other)
+  {
+    expression = other.expression->clone_expr ();
+    locus = other.locus;
+
+    return *this;
+  }
+
+private:
+  std::unique_ptr<Expr> expression;
+  Location locus;
+};
+
 // Generic arguments allowed in each path expression segment - inline?
 struct GenericArgs
 {
   std::vector<Lifetime> lifetime_args;
   std::vector<std::unique_ptr<Type> > type_args;
   std::vector<GenericArgsBinding> binding_args;
+  std::vector<ConstGenericArg> const_args;
   Location locus;
 
 public:
@@ -130,18 +159,21 @@ public:
 
   GenericArgs (std::vector<Lifetime> lifetime_args,
 	       std::vector<std::unique_ptr<Type> > type_args,
-	       std::vector<GenericArgsBinding> binding_args, Location locus)
+	       std::vector<GenericArgsBinding> binding_args,
+	       std::vector<ConstGenericArg> const_args, Location locus)
     : lifetime_args (std::move (lifetime_args)),
       type_args (std::move (type_args)),
-      binding_args (std::move (binding_args)), locus (locus)
+      binding_args (std::move (binding_args)),
+      const_args (std::move (const_args)), locus (locus)
   {}
 
   // copy constructor with vector clone
   GenericArgs (GenericArgs const &other)
     : lifetime_args (other.lifetime_args), binding_args (other.binding_args),
-      locus (other.locus)
+      const_args (other.const_args), locus (other.locus)
   {
     type_args.reserve (other.type_args.size ());
+
     for (const auto &e : other.type_args)
       type_args.push_back (e->clone_type ());
   }
@@ -153,6 +185,7 @@ public:
   {
     lifetime_args = other.lifetime_args;
     binding_args = other.binding_args;
+    const_args = other.const_args;
     locus = other.locus;
 
     type_args.reserve (other.type_args.size ());
@@ -169,9 +202,7 @@ public:
   // Creates an empty GenericArgs (no arguments)
   static GenericArgs create_empty (Location locus = Location ())
   {
-    return GenericArgs (std::vector<Lifetime> (),
-			std::vector<std::unique_ptr<Type> > (),
-			std::vector<GenericArgsBinding> (), locus);
+    return GenericArgs ({}, {}, {}, {}, locus);
   }
 
   bool is_empty () const
@@ -187,6 +218,8 @@ public:
   std::vector<std::unique_ptr<Type> > &get_type_args () { return type_args; }
 
   std::vector<GenericArgsBinding> &get_binding_args () { return binding_args; }
+
+  std::vector<ConstGenericArg> &get_const_args () { return const_args; }
 
   Location get_locus () const { return locus; }
 };
@@ -464,12 +497,13 @@ public:
 			  std::vector<Lifetime> lifetime_args,
 			  std::vector<std::unique_ptr<Type> > type_args,
 			  std::vector<GenericArgsBinding> binding_args,
+			  std::vector<ConstGenericArg> const_args,
 			  Location locus)
     : TypePathSegment (std::move (mappings), std::move (segment_name),
 		       has_separating_scope_resolution, locus),
-      generic_args (GenericArgs (std::move (lifetime_args),
-				 std::move (type_args),
-				 std::move (binding_args), locus))
+      generic_args (
+	GenericArgs (std::move (lifetime_args), std::move (type_args),
+		     std::move (binding_args), std::move (const_args), locus))
   {}
 
   std::string as_string () const override;
