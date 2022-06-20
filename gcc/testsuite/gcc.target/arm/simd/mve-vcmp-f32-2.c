@@ -28,5 +28,7 @@ FUNC(>=, vcmpge)
 /* { dg-final { scan-assembler-times {\tvcmp.f32\tle, q[0-9]+, q[0-9]+\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tvcmp.f32\tgt, q[0-9]+, q[0-9]+\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tvcmp.f32\tge, q[0-9]+, q[0-9]+\n} 1 } } */
-/* { dg-final { scan-assembler-times {\t.word\t1073741824\n} 24 } } */ /* Constant 2.0f.  */
-/* { dg-final { scan-assembler-times {\t.word\t1077936128\n} 24 } } */ /* Constant 3.0f.  */
+/* { dg-final { scan-assembler-times {\tvmov\.f32\tq[0-7], #2\.0e\+0  @ v4sf} 6 } } */
+/* { dg-final { scan-assembler-not {\t.word\t1073741824\n} } } */ /* Constant 2.0f.  */
+/* { dg-final { scan-assembler-times {\tvmov\.f32\tq[0-7], #3\.0e\+0  @ v4sf} 6 } } */
+/* { dg-final { scan-assembler-not {\t.word\t1077936128\n} } } */ /* Constant 3.0f.  */
