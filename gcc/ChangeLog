@@ -1,3 +1,39 @@
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105998
+	* varasm.cc (narrowing_initializer_constant_valid_p): Check
+	SCALAR_INT_MODE_P instead of INTEGRAL_MODE_P, also break on
+	! INTEGRAL_TYPE_P and do the same check also on op{0,1}'s type.
+
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105951
+	* tree-ssa-ccp.cc (optimize_atomic_bit_test_and,
+	optimize_atomic_op_fetch_cmp_0): Remember gimple_call_fn (call)
+	as last argument to the internal functions.
+	* builtins.cc (expand_ifn_atomic_bit_test_and): Adjust for the
+	extra call argument to ifns.  If expand_atomic_fetch_op fails for the
+	lhs == NULL_TREE case, fall through into the optab code with
+	gen_reg_rtx (mode) as target.  If second expand_atomic_fetch_op
+	fails, construct a CALL_EXPR and expand that.
+	(expand_ifn_atomic_op_fetch_cmp_0): Adjust for the extra call argument
+	to ifns.  If expand_atomic_fetch_op fails, construct a CALL_EXPR and
+	expand that.
+
+2022-06-19  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-06-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/105739
+	* ipa-prop.cc (ipa_load_from_parm_agg): Punt on volatile loads.
+
 2022-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:

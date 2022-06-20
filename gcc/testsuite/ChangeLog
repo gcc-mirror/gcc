@@ -1,3 +1,43 @@
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105998
+	* c-c++-common/pr105998.c: New test.
+
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106001
+	* g++.dg/ext/builtin-shufflevector-4.C: New test.
+
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105951
+	* gcc.target/i386/pr105951-1.c: New test.
+	* gcc.target/i386/pr105951-2.c: New test.
+
+2022-06-19  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-06-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/pr105739.c: New test.
+
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105871
+	* g++.dg/pr105871.C: New test.
+
 2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

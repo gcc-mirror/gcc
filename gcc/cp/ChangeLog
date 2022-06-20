@@ -1,3 +1,24 @@
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106001
+	* typeck.cc (build_x_shufflevector): Use fold_non_dependent_expr
+	instead of maybe_constant_value.
+
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105871
+	* constexpr.cc (cxx_eval_bit_field_ref): For BIT_FIELD_REF with
+	non-integral result type use fold_ternary too like for BIT_FIELD_REFs
+	from VECTOR_CST.  If fold_ternary returns NULL, diagnose non-constant
+	expression, set *non_constant_p and return t, instead of returning
+	NULL.
+
 2022-06-11  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
