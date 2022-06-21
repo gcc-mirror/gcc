@@ -910,15 +910,6 @@ package Rtsfind is
      RE_Str_Concat_8,                    -- System.Concat_8
      RE_Str_Concat_9,                    -- System.Concat_9
 
-     RE_Str_Concat_Bounds_2,             -- System.Concat_2
-     RE_Str_Concat_Bounds_3,             -- System.Concat_3
-     RE_Str_Concat_Bounds_4,             -- System.Concat_4
-     RE_Str_Concat_Bounds_5,             -- System.Concat_5
-     RE_Str_Concat_Bounds_6,             -- System.Concat_6
-     RE_Str_Concat_Bounds_7,             -- System.Concat_7
-     RE_Str_Concat_Bounds_8,             -- System.Concat_8
-     RE_Str_Concat_Bounds_9,             -- System.Concat_9
-
      RE_Get_Active_Partition_Id,         -- System.DSA_Services
      RE_Get_Local_Partition_Id,          -- System.DSA_Services
      RE_Get_Passive_Partition_Id,        -- System.DSA_Services
@@ -2607,15 +2598,6 @@ package Rtsfind is
      RE_Str_Concat_7                     => System_Concat_7,
      RE_Str_Concat_8                     => System_Concat_8,
      RE_Str_Concat_9                     => System_Concat_9,
-
-     RE_Str_Concat_Bounds_2              => System_Concat_2,
-     RE_Str_Concat_Bounds_3              => System_Concat_3,
-     RE_Str_Concat_Bounds_4              => System_Concat_4,
-     RE_Str_Concat_Bounds_5              => System_Concat_5,
-     RE_Str_Concat_Bounds_6              => System_Concat_6,
-     RE_Str_Concat_Bounds_7              => System_Concat_7,
-     RE_Str_Concat_Bounds_8              => System_Concat_8,
-     RE_Str_Concat_Bounds_9              => System_Concat_9,
 
      RE_Get_Active_Partition_Id          => System_DSA_Services,
      RE_Get_Local_Partition_Id           => System_DSA_Services,
