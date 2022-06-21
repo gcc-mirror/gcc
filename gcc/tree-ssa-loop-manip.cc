@@ -625,7 +625,7 @@ find_uses_to_rename_in_loop (class loop *loop, bitmap *use_blocks,
       UPDATE_FLAG is used in the call to update_ssa.  See
       TODO_update_ssa* for documentation.  */
 
-void
+static void
 rewrite_into_loop_closed_ssa_1 (bitmap changed_bbs, unsigned update_flag,
 				int use_flags, class loop *loop)
 {
@@ -686,24 +686,16 @@ rewrite_into_loop_closed_ssa_1 (bitmap changed_bbs, unsigned update_flag,
   free (use_blocks);
 }
 
-/* Rewrites the non-virtual defs and uses into a loop closed ssa form.  If
-   CHANGED_BBS is not NULL, we look for uses outside loops only in the basic
+/* Rewrites the defs and uses into a loop closed ssa form.
+   If CHANGED_BBS is not NULL, we look for uses outside loops only in the basic
    blocks in this set.  UPDATE_FLAG is used in the call to update_ssa.  See
    TODO_update_ssa* for documentation.  */
 
 void
 rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
 {
-  rewrite_into_loop_closed_ssa_1 (changed_bbs, update_flag, SSA_OP_USE, NULL);
-}
-
-/* Rewrites virtual defs and uses with def in LOOP into loop closed ssa
-   form.  */
-
-void
-rewrite_virtuals_into_loop_closed_ssa (class loop *loop)
-{
-  rewrite_into_loop_closed_ssa_1 (NULL, 0, SSA_OP_VIRTUAL_USES, loop);
+  rewrite_into_loop_closed_ssa_1 (changed_bbs, update_flag,
+				  SSA_OP_ALL_USES, NULL);
 }
 
 /* Check invariants of the loop closed ssa form for the def in DEF_BB.  */
@@ -736,8 +728,7 @@ check_loop_closed_ssa_bb (basic_block bb)
     {
       gphi *phi = bsi.phi ();
 
-      if (!virtual_operand_p (PHI_RESULT (phi)))
-	check_loop_closed_ssa_def (bb, PHI_RESULT (phi));
+      check_loop_closed_ssa_def (bb, PHI_RESULT (phi));
     }
 
   for (gimple_stmt_iterator bsi = gsi_start_nondebug_bb (bb); !gsi_end_p (bsi);
@@ -747,7 +738,7 @@ check_loop_closed_ssa_bb (basic_block bb)
       tree var;
       gimple *stmt = gsi_stmt (bsi);
 
-      FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_DEF)
+      FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_DEFS)
 	check_loop_closed_ssa_def (bb, var);
     }
 }

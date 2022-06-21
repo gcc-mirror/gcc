@@ -2355,12 +2355,6 @@ transform_to_exit_first_loop_alt (class loop *loop,
   tree control = gimple_cond_lhs (cond_stmt);
   edge e;
 
-  /* Rewriting virtuals into loop-closed ssa normal form makes this
-     transformation simpler.  It also ensures that the virtuals are in
-     loop-closed ssa normal from after the transformation, which is required by
-     create_parallel_loop.  */
-  rewrite_virtuals_into_loop_closed_ssa (loop);
-
   /* Create the new_header block.  */
   basic_block new_header = split_block_before_cond_jump (exit->src);
   edge edge_at_split = single_pred_edge (new_header);
@@ -4223,7 +4217,9 @@ pass_parallelize_loops::execute (function *fun)
 
       checking_verify_loop_structure ();
 
-      todo |= TODO_update_ssa;
+      update_ssa (TODO_update_ssa);
+      if (in_loop_pipeline)
+	rewrite_into_loop_closed_ssa (NULL, 0);
     }
 
   if (!in_loop_pipeline)

@@ -1026,7 +1026,8 @@ remove_dead_phis (basic_block bb)
 	{
 	  /* Virtual PHI nodes with one or identical arguments
 	     can be removed.  */
-	  if (degenerate_phi_p (phi))
+	  if (!loops_state_satisfies_p (LOOP_CLOSED_SSA)
+	      && degenerate_phi_p (phi))
 	    {
 	      tree vdef = gimple_phi_result (phi);
 	      tree vuse = gimple_phi_arg_def (phi, 0);

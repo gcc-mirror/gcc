@@ -980,7 +980,7 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
       free_original_copy_tables ();
 
       /* Update the SSA form after unswitching.  */
-      update_ssa (TODO_update_ssa);
+      update_ssa (TODO_update_ssa_no_phi);
 
       /* Invoke itself on modified loops.  */
       bitmap handled_copy = BITMAP_ALLOC (NULL);
@@ -1068,8 +1068,6 @@ tree_unswitch_outer_loop (class loop *loop)
   auto_vec<gimple *> dbg_to_reset;
   while ((guard = find_loop_guard (loop, dbg_to_reset)))
     {
-      if (! changed)
-	rewrite_virtuals_into_loop_closed_ssa (loop);
       hoist_guard (loop, guard);
       for (gimple *debug_stmt : dbg_to_reset)
 	{

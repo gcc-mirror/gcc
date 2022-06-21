@@ -2934,7 +2934,7 @@ version_loop_for_if_conversion (class loop *loop, vec<gimple *> *preds)
   if (preds)
     preds->safe_push (g);
   gsi_insert_before (&gsi, g, GSI_SAME_STMT);
-  update_ssa (TODO_update_ssa);
+  update_ssa (TODO_update_ssa_no_phi);
   return new_loop;
 }
 

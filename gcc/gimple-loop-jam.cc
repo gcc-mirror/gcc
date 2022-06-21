@@ -363,7 +363,6 @@ fuse_loops (class loop *loop)
       delete_loop (next);
       next = ln;
     }
-  rewrite_into_loop_closed_ssa_1 (NULL, 0, SSA_OP_USE, loop);
 }
 
 /* Return true if any of the access functions for dataref A
@@ -610,6 +609,7 @@ tree_loop_unroll_and_jam (void)
 
   if (todo)
     {
+      rewrite_into_loop_closed_ssa (NULL, 0);
       scev_reset ();
       free_dominance_info (CDI_DOMINATORS);
     }
