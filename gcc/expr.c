@@ -8411,7 +8411,8 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
   expanding_cond_expr_using_cmove = true;
   start_sequence ();
   expand_operands (treeop1, treeop2,
-		   temp, &op1, &op2, EXPAND_NORMAL);
+		   mode == orig_mode ? temp : NULL_RTX, &op1, &op2,
+		   EXPAND_NORMAL);
 
   if (TREE_CODE (treeop0) == SSA_NAME
       && (srcstmt = get_def_for_expr_class (treeop0, tcc_comparison)))
