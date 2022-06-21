@@ -2089,6 +2089,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
        && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
    (op @0 @1))))
+
+/* As a special case, X + C < Y + C is the same as (signed) X < (signed) Y
+   when C is an unsigned integer constant with only the MSB set, and X and
+   Y have types of equal or lower integer conversion rank than C's.  */
+(for op (lt le ge gt)
+ (simplify
+  (op (plus @1 INTEGER_CST@0) (plus @2 @0))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_UNSIGNED (TREE_TYPE (@0))
+       && wi::only_sign_bit_p (wi::to_wide (@0)))
+   (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
+    (op (convert:stype @1) (convert:stype @2))))))
+
 /* For equality and subtraction, this is also true with wrapping overflow.  */
 (for op (eq ne minus)
  (simplify
