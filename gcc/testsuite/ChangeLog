@@ -1,3 +1,52 @@
+2022-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/asan-dg.exp: Do not apply color to asan output when
+	under test.
+
+2022-06-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105960
+	* gcc.target/i386/pr105960.c: New test.
+
+2022-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/modules/pr105169_a.C: Skip the test on Darwin.
+	* g++.dg/modules/pr105169_b.C: Likewise.
+
+2022-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/init/array61.C: Allow for two CTOR bodies on Darwin, where
+	aliases are not currently supported.
+
+2022-06-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/simd/mve-vcmp-f32-2.c: Adjust expected output.
+	* gcc.target/arm/simd/pr100757.c: Likewise.
+	* gcc.target/arm/simd/pr100757-2.c: Likewise.
+	* gcc.target/arm/simd/pr100757-3.c: Likewise.
+	* gcc.target/arm/simd/pr100757-4.c: Likewise.
+
+2022-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/modules/init-2_b.C: Add a missing USER_LABEL_PREFIX
+	to a regex.
+
+2022-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-c++-common/attr-cdtor-1.c: Requite init_priority support.
+
+2022-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106027
+	* gcc.dg/pr106027.c: New testcase.
+
+2022-06-20  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/cmo-zicbom-1.c: modified the input parameters.
+	* gcc.target/riscv/cmo-zicbom-2.c: modified the input parameters.
+	* gcc.target/riscv/cmo-zicboz-1.c: modified the input parameters.
+	* gcc.target/riscv/cmo-zicboz-2.c: modified the input parameters.
+
 2022-06-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/105986

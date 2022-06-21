@@ -1,3 +1,10 @@
+2022-06-20  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (struct plugin_file_info): Add skip_file flag.
+	(write_resolution): Write resolution only if get_symbols != LDPS_NO_SYMS.
+	(all_symbols_read_handler): Ignore file if skip_file is true.
+	(onload): Handle LDPT_GET_SYMBOLS_V3.
+
 2022-05-04  Martin Liska  <mliska@suse.cz>
 
 	* lto-plugin.c (struct plugin_objfile): Use bool for offset

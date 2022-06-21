@@ -1,3 +1,74 @@
+2022-06-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105960
+	* config/i386/i386.cc (ix86_function_ok_for_sibcall): Return
+	false if PIC register is used when calling ifunc functions.
+
+2022-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106027
+	* fold-const.cc (fold_to_nonsharp_ineq_using_bound): Use the
+	type of the prevailing comparison for the new comparison type.
+	(fold_binary_loc): Use proper types for the A < X && A + 1 > Y
+	to A < X && A >= Y folding.
+
+2022-06-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/105940
+	* tree-vect-loop.cc (vect_analyze_loop_2): Add new parameter
+	slp_done_for_suggested_uf and adjust with it accordingly.
+	(vect_analyze_loop_1): Add new variable slp_done_for_suggested_uf,
+	pass it down to vect_analyze_loop_2 for the initial analysis and
+	applying suggested unroll factor.
+	(vect_is_simple_reduction): Add parameter slp and adjust with it.
+	(vect_analyze_scalar_cycles_1): Add parameter slp and pass down.
+	(vect_analyze_scalar_cycles): Likewise.
+
+2022-06-20  Martin Liska  <mliska@suse.cz>
+
+	* bb-reorder.cc (find_traces_1_round): Add operators / and * and
+	use them.
+	(better_edge_p): Likewise.
+	* cfgloop.cc (find_subloop_latch_edge_by_profile): Likewise.
+	* cfgloopmanip.cc (scale_loop_profile): Likewise.
+	* cfgrtl.cc (force_nonfallthru_and_redirect): Likewise.
+	* cgraph.cc (cgraph_edge::maybe_hot_p): Likewise.
+	* config/sh/sh.cc (expand_cbranchdi4): Likewise.
+	* dojump.cc (do_compare_rtx_and_jump): Likewise.
+	* final.cc (compute_alignments): Likewise.
+	* ipa-cp.cc (update_counts_for_self_gen_clones): Likewise.
+	(decide_about_value): Likewise.
+	* ipa-inline-analysis.cc (do_estimate_edge_time): Likewise.
+	* loop-unroll.cc (unroll_loop_runtime_iterations): Likewise.
+	* modulo-sched.cc (sms_schedule): Likewise.
+	* omp-expand.cc (extract_omp_for_update_vars): Likewise.
+	(expand_omp_ordered_sink): Likewise.
+	(expand_omp_for_ordered_loops): Likewise.
+	(expand_omp_for_static_nochunk): Likewise.
+	* predict.cc (maybe_hot_count_p): Likewise.
+	(probably_never_executed): Likewise.
+	(set_even_probabilities): Likewise.
+	(handle_missing_profiles): Likewise.
+	(expensive_function_p): Likewise.
+	* profile-count.h: Likewise.
+	* profile.cc (compute_branch_probabilities): Likewise.
+	* stmt.cc (emit_case_dispatch_table): Likewise.
+	* symtab-thunks.cc (expand_thunk): Likewise.
+	* tree-ssa-loop-manip.cc (tree_transform_and_unroll_loop): Likewise.
+	* tree-ssa-sink.cc (select_best_block): Likewise.
+	* tree-switch-conversion.cc (switch_decision_tree::analyze_switch_statement): Likewise.
+	(switch_decision_tree::balance_case_nodes): Likewise.
+	(switch_decision_tree::emit_case_nodes): Likewise.
+	* tree-vect-loop.cc (scale_profile_for_vect_loop): Likewise.
+
+2022-06-20  yulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/riscv-builtins.cc (RISCV_ATYPE_VOID_PTR): New.
+	* config/riscv/riscv-cmo.def (RISCV_BUILTIN): Changed the FUNCTION_TYPE
+	of RISCV_BUILTIN.
+	* config/riscv/riscv-ftypes.def (0): Remove unused.
+	(1): New.
+
 2022-06-19  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.cc (xtensa_is_insn_L32R_p):
