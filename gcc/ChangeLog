@@ -1,3 +1,25 @@
+2022-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105209
+	* config/alpha/alpha-protos.h (alpha_store_data_bypass_p): New.
+	* config/alpha/alpha.cc (alpha_store_data_bypass_p): New function.
+	(alpha_store_data_bypass_p_1): Ditto.
+	* config/alpha/ev4.md: Use alpha_store_data_bypass_p instead
+	of generic store_data_bypass_p.
+	(ev4_ist_c): Remove insn reservation.
+
+2022-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105970
+	* config/i386/i386.cc (ix86_function_arg): Assert that
+	the mode of pointer argumet is equal to ptr_mode, not Pmode.
+
 2022-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

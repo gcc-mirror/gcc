@@ -1,3 +1,19 @@
+2022-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105209
+	* gcc.target/alpha/pr105209.c: New test.
+
+2022-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105970
+	* gcc.target/i386/pr105970.c: New test.
+
 2022-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
