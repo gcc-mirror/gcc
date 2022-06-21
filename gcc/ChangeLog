@@ -1,3 +1,69 @@
+2022-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105209
+	* config/alpha/alpha-protos.h (alpha_store_data_bypass_p): New.
+	* config/alpha/alpha.c (alpha_store_data_bypass_p): New function.
+	(alpha_store_data_bypass_p_1): Ditto.
+	* config/alpha/ev4.md: Use alpha_store_data_bypass_p instead
+	of generic store_data_bypass_p.
+	(ev4_ist_c): Remove insn reservation.
+
+2022-06-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2022-03-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/104829
+	* config/rs6000/rs6000.c (rs6000_machine_from_flags): Don't output
+	"ppc" and "ppc64" based on rs6000_cpu.
+
+2022-06-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2022-03-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_machine_from_flags): Restructure a
+	bit.  Handle most older CPUs.
+
+2022-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105970
+	* config/i386/i386.c (ix86_function_arg): Assert that
+	the mode of pointer argumet is equal to ptr_mode, not Pmode.
+
+2022-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105998
+	* varasm.c (narrowing_initializer_constant_valid_p): Check
+	SCALAR_INT_MODE_P instead of INTEGRAL_MODE_P, also break on
+	! INTEGRAL_TYPE_P and do the same check also on op{0,1}'s type.
+
+2022-06-20  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-06-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/105739
+	* ipa-prop.c (ipa_load_from_parm_agg): Punt on volatile loads.
+
+2022-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105729
+	* fold-const.c (fold_unary_loc): Don't optimize (X &) ((Y *) z + w)
+	to (X &) z + w if -fsanitize=null during GENERIC folding.
+
 2022-06-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
