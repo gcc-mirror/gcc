@@ -2814,18 +2814,19 @@ noce_try_sign_mask (struct noce_if_info *if_info)
     return FALSE;
 
   /* This is only profitable if T is unconditionally executed/evaluated in the
-     original insn sequence or T is cheap.  The former happens if B is the
-     non-zero (T) value and if INSN_B was taken from TEST_BB, or there was no
-     INSN_B which can happen for e.g. conditional stores to memory.  For the
-     cost computation use the block TEST_BB where the evaluation will end up
-     after the transformation.  */
+     original insn sequence or T is cheap and can't trap or fault.  The former
+     happens if B is the non-zero (T) value and if INSN_B was taken from
+     TEST_BB, or there was no INSN_B which can happen for e.g. conditional
+     stores to memory.  For the cost computation use the block TEST_BB where
+     the evaluation will end up after the transformation.  */
   t_unconditional
     = (t == if_info->b
        && (if_info->insn_b == NULL_RTX
 	   || BLOCK_FOR_INSN (if_info->insn_b) == if_info->test_bb));
   if (!(t_unconditional
-	|| (set_src_cost (t, mode, if_info->speed_p)
-	    < COSTS_N_INSNS (2))))
+	|| ((set_src_cost (t, mode, if_info->speed_p)
+	     < COSTS_N_INSNS (2))
+	    && !may_trap_or_fault_p (t))))
     return FALSE;
 
   if (!noce_can_force_operand (t))
