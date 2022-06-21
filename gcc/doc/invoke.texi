@@ -34639,13 +34639,6 @@ Papers p1815 (@uref{https://wg21.link/p1815}) and p2003
 exported region may reference (for instance, the entities an exported
 template definition may reference).  These are not fully implemented.
 
-@item Language-linkage module attachment
-Declarations with explicit language linkage (@code{extern "C"} or
-@code{extern "C++"}) are attached to the global module, even when in
-the purview of a named module.  This is not implemented.  Such
-declarations will be attached to the module, if any, in which they are
-declared.
-
 @item Standard Library Header Units
 The Standard Library is not provided as importable header units.  If
 you want to import such units, you must explicitly build them first.
