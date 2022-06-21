@@ -530,6 +530,9 @@ struct Sort_bindings
   bool
   operator()(const Named_object* n1, const Named_object* n2) const
   {
+    if (n1 == n2)
+      return false;
+
     if (n1->package() != n2->package())
       {
 	if (n1->package() == NULL)
