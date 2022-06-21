@@ -536,7 +536,7 @@
 {
   rtx_insn *prev_insn = prev_nonnote_nondebug_insn (insn);
   const char *init = "ssai\t8\;";
-  static char result[64];
+  static char result[128];
   if (prev_insn && NONJUMP_INSN_P (prev_insn))
     {
       rtx x = PATTERN (prev_insn);
