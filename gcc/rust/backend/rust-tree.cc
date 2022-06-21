@@ -760,4 +760,92 @@ out:
 #undef WALK_SUBTREE
 }
 
+// forked from gcc/cp/tree.cc cp_expr_location
+
+/* Like EXPR_LOCATION, but also handle some tcc_exceptional that have
+   locations.  */
+
+location_t
+cp_expr_location (const_tree t_)
+{
+  tree t = CONST_CAST_TREE (t_);
+  if (t == NULL_TREE)
+    return UNKNOWN_LOCATION;
+
+  return EXPR_LOCATION (t);
+}
+
+// forked from gcc/cp/class.cc
+
+/* Returns true if TYPE contains no actual data, just various
+   possible combinations of empty classes.  If IGNORE_VPTR is true,
+   a vptr doesn't prevent the class from being considered empty.  Typically
+   we want to ignore the vptr on assignment, and not on initialization.  */
+
+bool
+is_really_empty_class (tree type, bool ignore_vptr)
+{
+  if (CLASS_TYPE_P (type))
+    {
+      tree field;
+      tree binfo;
+      tree base_binfo;
+      int i;
+
+      /* CLASSTYPE_EMPTY_P isn't set properly until the class is actually laid
+	 out, but we'd like to be able to check this before then.  */
+      if (COMPLETE_TYPE_P (type) && is_empty_class (type))
+	return true;
+
+      if (!ignore_vptr && TYPE_CONTAINS_VPTR_P (type))
+	return false;
+
+      for (binfo = TYPE_BINFO (type), i = 0;
+	   BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
+	if (!is_really_empty_class (BINFO_TYPE (base_binfo), ignore_vptr))
+	  return false;
+      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+	if (TREE_CODE (field) == FIELD_DECL
+	    && !DECL_ARTIFICIAL (field)
+	    /* An unnamed bit-field is not a data member.  */
+	    && !DECL_UNNAMED_BIT_FIELD (field)
+	    && !is_really_empty_class (TREE_TYPE (field), ignore_vptr))
+	  return false;
+      return true;
+    }
+  else if (TREE_CODE (type) == ARRAY_TYPE)
+    return (integer_zerop (array_type_nelts_top (type))
+	    || is_really_empty_class (TREE_TYPE (type), ignore_vptr));
+  return false;
+}
+
+// forked from gcc/cp/class.cc is_empty_class
+
+/* Returns 1 if TYPE contains only padding bytes.  */
+
+int
+is_empty_class (tree type)
+{
+  if (type == error_mark_node)
+    return 0;
+
+  if (!CLASS_TYPE_P (type))
+    return 0;
+
+  return CLASSTYPE_EMPTY_P (type);
+}
+
+// forked from gcc/cp/tree.cc array_type_nelts_top
+
+/* Return, as an INTEGER_CST node, the number of elements for TYPE
+   (which is an ARRAY_TYPE).  This counts only elements of the top
+   array.  */
+
+tree
+array_type_nelts_top (tree type)
+{
+  return fold_build2_loc (input_location, PLUS_EXPR, sizetype,
+			  array_type_nelts (type), size_one_node);
+}
+
 } // namespace Rust

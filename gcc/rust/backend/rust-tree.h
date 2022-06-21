@@ -111,7 +111,185 @@
    has been duly initialized in its constructor.  */
 #define TREE_HAS_CONSTRUCTOR(NODE) (TREE_LANG_FLAG_4 (NODE))
 
+/* Nonzero if T is a class type.  Zero for template type parameters,
+   typename types, and so forth.  */
+#define CLASS_TYPE_P(T)                                                        \
+  (RECORD_OR_UNION_CODE_P (TREE_CODE (T)) && TYPE_LANG_FLAG_5 (T))
+
+/* [class.virtual]
+
+   A class that declares or inherits a virtual function is called a
+   polymorphic class.  */
+#define TYPE_POLYMORPHIC_P(NODE) (TREE_LANG_FLAG_2 (NODE))
+
+/* Nonzero if this class has a virtual function table pointer.  */
+#define TYPE_CONTAINS_VPTR_P(NODE)                                             \
+  (TYPE_POLYMORPHIC_P (NODE) || CLASSTYPE_VBASECLASSES (NODE))
+
+/* A vector of BINFOs for the direct and indirect virtual base classes
+   that this type uses in a post-order depth-first left-to-right
+   order.  (In other words, these bases appear in the order that they
+   should be initialized.)  */
+#define CLASSTYPE_VBASECLASSES(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vbases)
+
+/* A vector of BINFOs for the direct and indirect virtual base classes
+   that this type uses in a post-order depth-first left-to-right
+   order.  (In other words, these bases appear in the order that they
+   should be initialized.)  */
+#define CLASSTYPE_VBASECLASSES(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vbases)
+
+/* We used to have a variant type for lang_type.  Keep the name of the
+   checking accessor for the sole survivor.  */
+#define LANG_TYPE_CLASS_CHECK(NODE) (TYPE_LANG_SPECIFIC (NODE))
+
+/* Keep these checks in ascending code order.  */
+#define RECORD_OR_UNION_CODE_P(T) ((T) == RECORD_TYPE || (T) == UNION_TYPE)
+#define OVERLOAD_TYPE_P(T) (CLASS_TYPE_P (T) || TREE_CODE (T) == ENUMERAL_TYPE)
+
+/* Nonzero if this class is "empty" in the sense of the C++ ABI.  */
+#define CLASSTYPE_EMPTY_P(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->empty_p)
+
+// Below macros are copied from gcc/c-family/c-common.h
+
+/* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
+#define DECL_C_BIT_FIELD(NODE) (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) == 1)
+#define SET_DECL_C_BIT_FIELD(NODE)                                             \
+  (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) = 1)
+#define CLEAR_DECL_C_BIT_FIELD(NODE)                                           \
+  (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) = 0)
+
+/* True if the decl was an unnamed bitfield.  */
+#define DECL_UNNAMED_BIT_FIELD(NODE)                                           \
+  (DECL_C_BIT_FIELD (NODE) && !DECL_NAME (NODE))
+
+// Above macros are copied from gcc/c-family/c-common.h
+
+// forked from gcc/cp/cp-tree.h treee_pair_s
+
+struct GTY (()) tree_pair_s
+{
+  tree purpose;
+  tree value;
+};
+
+// forked from gcc/cp/cp-tree.h tree_pair_p
+
+typedef tree_pair_s *tree_pair_p;
+
+// forked from gcc/cp/cp-tree.h lang_type
+
+/* This structure provides additional information above and beyond
+   what is provide in the ordinary tree_type.  In the past, we used it
+   for the types of class types, template parameters types, typename
+   types, and so forth.  However, there can be many (tens to hundreds
+   of thousands) of template parameter types in a compilation, and
+   there's no need for this additional information in that case.
+   Therefore, we now use this data structure only for class types.
+
+   In the past, it was thought that there would be relatively few
+   class types.  However, in the presence of heavy use of templates,
+   many (i.e., thousands) of classes can easily be generated.
+   Therefore, we should endeavor to keep the size of this structure to
+   a minimum.  */
+struct GTY (()) lang_type
+{
+  unsigned char align;
+
+  unsigned has_type_conversion : 1;
+  unsigned has_copy_ctor : 1;
+  unsigned has_default_ctor : 1;
+  unsigned const_needs_init : 1;
+  unsigned ref_needs_init : 1;
+  unsigned has_const_copy_assign : 1;
+  unsigned use_template : 2;
+
+  unsigned has_mutable : 1;
+  unsigned com_interface : 1;
+  unsigned non_pod_class : 1;
+  unsigned nearly_empty_p : 1;
+  unsigned user_align : 1;
+  unsigned has_copy_assign : 1;
+  unsigned has_new : 1;
+  unsigned has_array_new : 1;
+
+  unsigned gets_delete : 2;
+  unsigned interface_only : 1;
+  unsigned interface_unknown : 1;
+  unsigned contains_empty_class_p : 1;
+  unsigned anon_aggr : 1;
+  unsigned non_zero_init : 1;
+  unsigned empty_p : 1;
+  /* 32 bits allocated.  */
+
+  unsigned vec_new_uses_cookie : 1;
+  unsigned declared_class : 1;
+  unsigned diamond_shaped : 1;
+  unsigned repeated_base : 1;
+  unsigned being_defined : 1;
+  unsigned debug_requested : 1;
+  unsigned fields_readonly : 1;
+  unsigned ptrmemfunc_flag : 1;
+
+  unsigned lazy_default_ctor : 1;
+  unsigned lazy_copy_ctor : 1;
+  unsigned lazy_copy_assign : 1;
+  unsigned lazy_destructor : 1;
+  unsigned has_const_copy_ctor : 1;
+  unsigned has_complex_copy_ctor : 1;
+  unsigned has_complex_copy_assign : 1;
+  unsigned non_aggregate : 1;
+
+  unsigned has_complex_dflt : 1;
+  unsigned has_list_ctor : 1;
+  unsigned non_std_layout : 1;
+  unsigned is_literal : 1;
+  unsigned lazy_move_ctor : 1;
+  unsigned lazy_move_assign : 1;
+  unsigned has_complex_move_ctor : 1;
+  unsigned has_complex_move_assign : 1;
+
+  unsigned has_constexpr_ctor : 1;
+  unsigned unique_obj_representations : 1;
+  unsigned unique_obj_representations_set : 1;
+  bool erroneous : 1;
+  bool non_pod_aggregate : 1;
+
+  /* When adding a flag here, consider whether or not it ought to
+     apply to a template instance if it applies to the template.  If
+     so, make sure to copy it in instantiate_class_template!  */
+
+  /* There are some bits left to fill out a 32-bit word.  Keep track
+     of this by updating the size of this bitfield whenever you add or
+     remove a flag.  */
+  unsigned dummy : 3;
+
+  tree primary_base;
+  vec<tree_pair_s, va_gc> *vcall_indices;
+  tree vtables;
+  tree typeinfo_var;
+  vec<tree, va_gc> *vbases;
+  tree as_base;
+  vec<tree, va_gc> *pure_virtuals;
+  tree friend_classes;
+  vec<tree, va_gc> *GTY ((reorder ("resort_type_member_vec"))) members;
+  tree key_method;
+  tree decl_list;
+  tree befriending_classes;
+  /* In a RECORD_TYPE, information specific to Objective-C++, such
+     as a list of adopted protocols or a pointer to a corresponding
+     @interface.  See objc/objc-act.h for details.  */
+  tree objc_info;
+  /* FIXME reuse another field?  */
+  tree lambda_expr;
+};
+
 namespace Rust {
+
+// forked from gcc/cp/cp-tree.h tsubst_flags_t
+
+/* This type is used for parameters and variables which hold
+   combinations of the flags in enum tsubst_flags.  */
+typedef int tsubst_flags_t;
 
 // forked from gcc/cp/cvt.cc convert_to_void
 //
@@ -220,12 +398,45 @@ get_fndecl_from_callee (tree fn);
 extern tree
 pointer_offset_expression (tree base_tree, tree index_tree, location_t locus);
 
+/* A tree node, together with a location, so that we can track locations
+   (and ranges) during parsing.
+
+   The location is redundant for node kinds that have locations,
+   but not all node kinds do (e.g. constants, and references to
+   params, locals, etc), so we stash a copy here.  */
+
+extern location_t cp_expr_location (const_tree);
+
+extern int
+is_empty_class (tree type);
+
+extern tree array_type_nelts_top (tree);
+
 extern tree
 rs_walk_subtrees (tree *, int *, walk_tree_fn, void *, hash_set<tree> *);
 #define rs_walk_tree(tp, func, data, pset)                                     \
   walk_tree_1 (tp, func, data, pset, rs_walk_subtrees)
 #define rs_walk_tree_without_duplicates(tp, func, data)                        \
   walk_tree_without_duplicates_1 (tp, func, data, rs_walk_subtrees)
+
+// forked from gcc/cp/cp-tree.h cp_expr_loc_or_loc
+
+inline location_t
+cp_expr_loc_or_loc (const_tree t, location_t or_loc)
+{
+  location_t loc = cp_expr_location (t);
+  if (loc == UNKNOWN_LOCATION)
+    loc = or_loc;
+  return loc;
+}
+
+// forked from gcc/cp/cp-tree.h cp_expr_loc_or_input_loc
+
+inline location_t
+cp_expr_loc_or_input_loc (const_tree t)
+{
+  return cp_expr_loc_or_loc (t, input_location);
+}
 
 } // namespace Rust
 
