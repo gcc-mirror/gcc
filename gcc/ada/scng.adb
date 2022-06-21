@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Csets;    use Csets;
 with Errout;   use Errout;
 with Hostparm; use Hostparm;
+with Lib;      use Lib;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Sinput;   use Sinput;
@@ -2051,7 +2052,15 @@ package body Scng is
          --  Underline character
 
          when '_' =>
-            Error_Msg_S ("identifier cannot start with underline");
+            --  Identifiers with leading underscores are not allowed in Ada.
+            --  However, we allow them in the run-time library, so we can
+            --  create names that are hidden from normal Ada code. For an
+            --  example, search for "Name_uNext", which is "_Next".
+
+            if not In_Internal_Unit (Scan_Ptr) then
+               Error_Msg_S ("identifier cannot start with underline");
+            end if;
+
             Name_Len := 1;
             Name_Buffer (1) := '_';
             Scan_Ptr := Scan_Ptr + 1;

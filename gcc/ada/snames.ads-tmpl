@@ -1375,7 +1375,9 @@ package Snames is
    Name_Has_Element                      : constant Name_Id := N + $;
    Name_Forward_Iterator                 : constant Name_Id := N + $;
    Name_Reversible_Iterator              : constant Name_Id := N + $;
+   Name_uNext                            : constant Name_Id := N + $;
    Name_Previous                         : constant Name_Id := N + $;
+   Name_uPrevious                        : constant Name_Id := N + $;
    Name_Pseudo_Reference                 : constant Name_Id := N + $;
    Name_Reference_Control_Type           : constant Name_Id := N + $;
    Name_Get_Element_Access               : constant Name_Id := N + $;
