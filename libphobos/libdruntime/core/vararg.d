@@ -28,6 +28,8 @@ version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
 version (PPC64)   version = PPC_Any;
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
 
 version (ARM_Any)
 {
@@ -133,6 +135,21 @@ void va_arg()(ref va_list ap, TypeInfo ti, void* parmn)
         auto p = cast(void*) ap;
         version (BigEndian)
             p = adjustForBigEndian(p, tsize);
+        ap += tsize.alignUp;
+        parmn[0..tsize] = p[0..tsize];
+    }
+    else version (RISCV_Any)
+    {
+        const tsize = ti.tsize;
+        void* p;
+        if (tsize > (size_t.sizeof << 1))
+            p = *cast(void**) ap;
+        else
+        {
+            if (tsize == (size_t.sizeof << 1))
+                ap = ap.alignUp!(size_t.sizeof << 1);
+            p = cast(void*) ap;
+        }
         ap += tsize.alignUp;
         parmn[0..tsize] = p[0..tsize];
     }

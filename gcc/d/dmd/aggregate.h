@@ -159,17 +159,6 @@ struct StructFlags
 class StructDeclaration : public AggregateDeclaration
 {
 public:
-    bool zeroInit;              // !=0 if initialize with 0 fill
-    bool hasIdentityAssign;     // true if has identity opAssign
-    bool hasBlitAssign;         // true if opAssign is a blit
-    bool hasIdentityEquals;     // true if has identity opEquals
-    bool hasNoFields;           // has no fields
-    bool hasCopyCtor;           // copy constructor
-    // Even if struct is defined as non-root symbol, some built-in operations
-    // (e.g. TypeidExp, NewExp, ArrayLiteralExp, etc) request its TypeInfo.
-    // For those, today TypeInfo_Struct is generated in COMDAT.
-    bool requestTypeInfo;
-
     FuncDeclarations postblits; // Array of postblit functions
     FuncDeclaration *postblit;  // aggregate postblit
 
@@ -179,18 +168,37 @@ public:
     static FuncDeclaration *xerreq;      // object.xopEquals
     static FuncDeclaration *xerrcmp;     // object.xopCmp
 
-    structalign_t alignment;    // alignment applied outside of the struct
-    ThreeState ispod;           // if struct is POD
-
     // ABI-specific type(s) if the struct can be passed in registers
     TypeTuple *argTypes;
 
+    structalign_t alignment;    // alignment applied outside of the struct
+    ThreeState ispod;           // if struct is POD
+private:
+    uint8_t bitFields;
+public:
     static StructDeclaration *create(const Loc &loc, Identifier *id, bool inObject);
     StructDeclaration *syntaxCopy(Dsymbol *s) override;
     Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override final;
     const char *kind() const override;
     void finalizeSize() override final;
     bool isPOD();
+    bool zeroInit() const;          // !=0 if initialize with 0 fill
+    bool zeroInit(bool v);
+    bool hasIdentityAssign() const; // true if has identity opAssign
+    bool hasIdentityAssign(bool v);
+    bool hasBlitAssign() const;     // true if opAssign is a blit
+    bool hasBlitAssign(bool v);
+    bool hasIdentityEquals() const; // true if has identity opEquals
+    bool hasIdentityEquals(bool v);
+    bool hasNoFields() const;       // has no fields
+    bool hasNoFields(bool v);
+    bool hasCopyCtor() const;       // copy constructor
+    bool hasCopyCtor(bool v);
+    // Even if struct is defined as non-root symbol, some built-in operations
+    // (e.g. TypeidExp, NewExp, ArrayLiteralExp, etc) request its TypeInfo.
+    // For those, today TypeInfo_Struct is generated in COMDAT.
+    bool requestTypeInfo() const;
+    bool requestTypeInfo(bool v);
 
     StructDeclaration *isStructDeclaration() override final { return this; }
     void accept(Visitor *v) override { v->visit(this); }

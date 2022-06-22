@@ -54,7 +54,7 @@ extern (C) void _d_monitordelete(Object h, bool det)
 }
 
 // does not call dispose events, for internal use only
-extern (C) void _d_monitordelete_nogc(Object h) @nogc
+extern (C) void _d_monitordelete_nogc(Object h) @nogc nothrow
 {
     auto m = getMonitor(h);
     if (m is null)
@@ -148,7 +148,7 @@ extern (C) void rt_detachDisposeEvent(Object h, DEvent e)
 
 nothrow:
 
-extern (C) void _d_monitor_staticctor()
+extern (C) void _d_monitor_staticctor() @nogc nothrow
 {
     version (Posix)
     {
@@ -158,7 +158,7 @@ extern (C) void _d_monitor_staticctor()
     initMutex(&gmtx);
 }
 
-extern (C) void _d_monitor_staticdtor()
+extern (C) void _d_monitor_staticdtor() @nogc nothrow
 {
     destroyMutex(&gmtx);
     version (Posix)

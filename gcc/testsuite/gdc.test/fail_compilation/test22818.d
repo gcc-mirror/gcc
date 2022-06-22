@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=dip1000
  * TEST_OUTPUT:
 ---
-fail_compilation/test22818.d(104): Error: scope variable `c` may not be returned
+fail_compilation/test22818.d(104): Error: scope parameter `c` may not be returned
 ---
 */
 

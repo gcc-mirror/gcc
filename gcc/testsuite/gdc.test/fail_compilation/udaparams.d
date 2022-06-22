@@ -12,8 +12,8 @@ fail_compilation/udaparams.d(40): Error: `@safe` attribute for function paramete
 fail_compilation/udaparams.d(43): Error: `@system` attribute for function parameter is not supported
 fail_compilation/udaparams.d(44): Error: `@trusted` attribute for function parameter is not supported
 fail_compilation/udaparams.d(45): Error: `@nogc` attribute for function parameter is not supported
-fail_compilation/udaparams.d(51): Error: cannot put a storage-class in an alias declaration.
-fail_compilation/udaparams.d(52): Error: cannot put a storage-class in an alias declaration.
+fail_compilation/udaparams.d(51): Error: cannot put a storage-class in an `alias` declaration.
+fail_compilation/udaparams.d(52): Error: cannot put a storage-class in an `alias` declaration.
 fail_compilation/udaparams.d(53): Error: semicolon expected to close `alias` declaration
 fail_compilation/udaparams.d(53): Error: declaration expected, not `=>`
 fail_compilation/udaparams.d(54): Error: semicolon expected to close `alias` declaration

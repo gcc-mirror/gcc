@@ -49,6 +49,7 @@ import dmd.identifier;
 import dmd.importc;
 import dmd.init;
 import dmd.initsem;
+import dmd.intrange;
 import dmd.hdrgen;
 import dmd.mtype;
 import dmd.mustuse;
@@ -2177,6 +2178,13 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             assert(ed.memtype);
             int nextValue = 0;        // C11 6.7.2.2-3 first member value defaults to 0
 
+            // C11 6.7.2.2-2 value must be representable as an int.
+            // The sizemask represents all values that int will fit into,
+            // from 0..uint.max.  We want to cover int.min..uint.max.
+            const mask = Type.tint32.sizemask();
+            IntRange ir = IntRange(SignExtendedNumber(~(mask >> 1), true),
+                                   SignExtendedNumber(mask));
+
             void emSemantic(EnumMember em, ref int nextValue)
             {
                 static void errorReturn(EnumMember em)
@@ -2206,21 +2214,32 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         em.error("enum member must be an integral constant expression, not `%s` of type `%s`", e.toChars(), e.type.toChars());
                         return errorReturn(em);
                     }
-                    const sinteger_t v = ie.toInteger();
-                    if (v < int.min || v > uint.max)
+                    if (!ir.contains(getIntRange(ie)))
                     {
                         // C11 6.7.2.2-2
                         em.error("enum member value `%s` does not fit in an `int`", e.toChars());
                         return errorReturn(em);
                     }
-                    em.value = new IntegerExp(em.loc, cast(int)v, Type.tint32);
-                    nextValue = cast(int)v;
+                    nextValue = cast(int)ie.toInteger();
+                    em.value = new IntegerExp(em.loc, nextValue, Type.tint32);
                 }
                 else
                 {
+                    // C11 6.7.2.2-3 add 1 to value of previous enumeration constant
+                    bool first = (em == (*em.ed.members)[0]);
+                    if (!first)
+                    {
+                        import core.checkedint : adds;
+                        bool overflow;
+                        nextValue = adds(nextValue, 1, overflow);
+                        if (overflow)
+                        {
+                            em.error("initialization with `%d+1` causes overflow for type `int`", nextValue - 1);
+                            return errorReturn(em);
+                        }
+                    }
                     em.value = new IntegerExp(em.loc, nextValue, Type.tint32);
                 }
-                ++nextValue; // C11 6.7.2.2-3 add 1 to value of previous enumeration constant
                 em.semanticRun = PASS.semanticdone;
             }
 

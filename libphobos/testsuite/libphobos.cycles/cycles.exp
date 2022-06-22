@@ -23,7 +23,7 @@ set cycle_test_list [list \
     { ignore ""	 0 } \
     { abort "object.Error@.*: Cyclic dependency between module mod. and mod." 1 } \
     { print "Cyclic dependency between module mod. and mod." 0 } \
-    { deprecate "Deprecation 16211 warning:" 0 } \
+    { deprecate "deprecate is no longer supported, using abort instead" 1 } \
 ]
 
 # Initialize dg.

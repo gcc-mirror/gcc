@@ -2,7 +2,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/typeerrors.d(32): Deprecation: `scope` as a type constraint is deprecated.  Use `scope` at the usage site.
-fail_compilation/typeerrors.d(37): Error: tuple index 4 exceeds 4
+fail_compilation/typeerrors.d(37): Error: tuple index `4` out of bounds `[0 .. 4]`
 fail_compilation/typeerrors.d(39): Error: variable `x` cannot be read at compile time
 fail_compilation/typeerrors.d(40): Error: cannot have array of `void()`
 fail_compilation/typeerrors.d(41): Error: cannot have array of scope `typeerrors.C`

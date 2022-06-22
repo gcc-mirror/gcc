@@ -45,15 +45,15 @@ enum NI_MAXSERV = 32;
 @nogc
 {
 int WSAStartup(ushort wVersionRequested, LPWSADATA lpWSAData);
-int WSACleanup();
-SOCKET socket(int af, int type, int protocol);
+@trusted int WSACleanup();
+@trusted SOCKET socket(int af, int type, int protocol);
 int ioctlsocket(SOCKET s, int cmd, uint* argp);
 int bind(SOCKET s, const(sockaddr)* name, socklen_t namelen);
 int connect(SOCKET s, const(sockaddr)* name, socklen_t namelen);
-int listen(SOCKET s, int backlog);
+@trusted int listen(SOCKET s, int backlog);
 SOCKET accept(SOCKET s, sockaddr* addr, socklen_t* addrlen);
-int closesocket(SOCKET s);
-int shutdown(SOCKET s, int how);
+@trusted int closesocket(SOCKET s);
+@trusted int shutdown(SOCKET s, int how);
 int getpeername(SOCKET s, sockaddr* name, socklen_t* namelen);
 int getsockname(SOCKET s, sockaddr* name, socklen_t* namelen);
 int send(SOCKET s, const(void)* buf, int len, int flags);
@@ -64,11 +64,11 @@ int getsockopt(SOCKET s, int level, int optname, void* optval, socklen_t* optlen
 int setsockopt(SOCKET s, int level, int optname, const(void)* optval, socklen_t optlen);
 uint inet_addr(const char* cp);
 int select(int nfds, fd_set* readfds, fd_set* writefds, fd_set* errorfds, const(timeval)* timeout);
-char* inet_ntoa(in_addr ina);
+@trusted char* inet_ntoa(in_addr ina);
 hostent* gethostbyname(const char* name);
 hostent* gethostbyaddr(const(void)* addr, int len, int type);
 protoent* getprotobyname(const char* name);
-protoent* getprotobynumber(int number);
+@trusted protoent* getprotobynumber(int number);
 servent* getservbyname(const char* name, const char* proto);
 servent* getservbyport(int port, const char* proto);
 }

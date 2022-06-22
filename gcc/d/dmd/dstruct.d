@@ -192,17 +192,6 @@ enum StructFlags : int
  */
 extern (C++) class StructDeclaration : AggregateDeclaration
 {
-    bool zeroInit;              // !=0 if initialize with 0 fill
-    bool hasIdentityAssign;     // true if has identity opAssign
-    bool hasBlitAssign;         // true if opAssign is a blit
-    bool hasIdentityEquals;     // true if has identity opEquals
-    bool hasNoFields;           // has no fields
-    bool hasCopyCtor;           // copy constructor
-    // Even if struct is defined as non-root symbol, some built-in operations
-    // (e.g. TypeidExp, NewExp, ArrayLiteralExp, etc) request its TypeInfo.
-    // For those, today TypeInfo_Struct is generated in COMDAT.
-    bool requestTypeInfo;
-
     FuncDeclarations postblits; // Array of postblit functions
     FuncDeclaration postblit;   // aggregate postblit
 
@@ -212,11 +201,29 @@ extern (C++) class StructDeclaration : AggregateDeclaration
     extern (C++) __gshared FuncDeclaration xerreq;   // object.xopEquals
     extern (C++) __gshared FuncDeclaration xerrcmp;  // object.xopCmp
 
+    // ABI-specific type(s) if the struct can be passed in registers
+    TypeTuple argTypes;
+
     structalign_t alignment;    // alignment applied outside of the struct
     ThreeState ispod;           // if struct is POD
 
-    // ABI-specific type(s) if the struct can be passed in registers
-    TypeTuple argTypes;
+    // `bool` fields that are compacted into bit fields in a string mixin
+    private extern (D) static struct BitFields
+    {
+        bool zeroInit;              // !=0 if initialize with 0 fill
+        bool hasIdentityAssign;     // true if has identity opAssign
+        bool hasBlitAssign;         // true if opAssign is a blit
+        bool hasIdentityEquals;     // true if has identity opEquals
+        bool hasNoFields;           // has no fields
+        bool hasCopyCtor;           // copy constructor
+        // Even if struct is defined as non-root symbol, some built-in operations
+        // (e.g. TypeidExp, NewExp, ArrayLiteralExp, etc) request its TypeInfo.
+        // For those, today TypeInfo_Struct is generated in COMDAT.
+        bool requestTypeInfo;
+    }
+
+    import dmd.common.bitfields : generateBitFields;
+    mixin(generateBitFields!(BitFields, ubyte));
 
     extern (D) this(const ref Loc loc, Identifier id, bool inObject)
     {

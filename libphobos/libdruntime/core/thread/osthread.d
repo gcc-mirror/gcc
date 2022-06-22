@@ -2104,7 +2104,7 @@ private extern (D) void resume(ThreadBase _t) nothrow @nogc
  * garbage collector on startup and before any other thread routines
  * are called.
  */
-extern (C) void thread_init() @nogc
+extern (C) void thread_init() @nogc nothrow
 {
     // NOTE: If thread_init itself performs any allocations then the thread
     //       routines reserved for garbage collector use may be called while
@@ -2191,7 +2191,7 @@ package __gshared align(__traits(classInstanceAlignment, Thread)) MainThreadStor
  * Terminates the thread module. No other thread routine may be called
  * afterwards.
  */
-extern (C) void thread_term() @nogc
+extern (C) void thread_term() @nogc nothrow
 {
     thread_term_tpl!(Thread)(_mainThreadStore);
 }

@@ -4862,7 +4862,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                     if (udas !is null)
                     {
                         if (storage_class != 0)
-                            error("cannot put a storage-class in an alias declaration.");
+                            error("cannot put a storage-class in an `alias` declaration.");
                         // parseAttributes shouldn't have set these variables
                         assert(link == linkage && !setAlignment && ealign is null);
                         auto tpl_ = cast(AST.TemplateDeclaration) s;
@@ -4887,7 +4887,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                     parseAttributes();
                     // type
                     if (udas)
-                        error("user-defined attributes not allowed for alias declarations");
+                        error("user-defined attributes not allowed for `alias` declarations");
 
                     auto t = parseType();
 

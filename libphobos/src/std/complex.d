@@ -935,7 +935,7 @@ Complex!(CommonType!(T, U)) fromPolar(T, U)(const T modulus, const U argument)
     import std.math.operations : isClose;
     import std.math.algebraic : sqrt;
     import std.math.constants : PI_4;
-    auto z = fromPolar(core.math.sqrt(2.0), PI_4);
+    auto z = fromPolar(core.math.sqrt(2.0L), PI_4);
     assert(isClose(z.re, 1.0L));
     assert(isClose(z.im, 1.0L));
 }

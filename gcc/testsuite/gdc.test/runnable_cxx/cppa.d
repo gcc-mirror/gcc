@@ -1,3 +1,4 @@
+// REQUIRED_ARGS: -preview=in
 // PERMUTE_ARGS: -g
 // EXTRA_CPP_SOURCES: cppb.cpp
 // EXTRA_FILES: extra-files/cppb.h
@@ -1637,12 +1638,28 @@ void test19134()
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=18955
-alias std_string = std.basic_string!(char);
+version (linux)
+    alias std_string = std.basic_string!(char);
+else
+{
+    import core.stdcpp.string : core_basic_string = basic_string;
+    alias std_string = core_basic_string!(char);
+}
 
 extern(C++) void callback18955(ref const(std_string) str)
 {
 }
 extern(C++) void test18955();
+
+/****************************************/
+
+extern(C++) void testPreviewIn();
+
+extern(C++) void previewInFunction(in int a, in std_string b, ref const(std_string) c)
+{
+    assert(a == 42);
+    assert(&b is &c);
+}
 
 /****************************************/
 
@@ -1695,6 +1712,7 @@ void main()
     test18966();
     test19134();
     test18955();
+    testPreviewIn();
 
     printf("Success\n");
 }

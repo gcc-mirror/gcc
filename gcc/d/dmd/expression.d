@@ -1438,7 +1438,7 @@ extern (C++) abstract class Expression : ASTNode
             else if (!sc.func.safetyViolation)
             {
                 import dmd.func : AttributeViolation;
-                sc.func.safetyViolation = new AttributeViolation(this.loc, null, f, null);
+                sc.func.safetyViolation = new AttributeViolation(this.loc, null, f, null, null);
             }
         }
         return false;
