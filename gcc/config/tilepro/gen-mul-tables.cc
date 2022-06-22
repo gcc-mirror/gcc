@@ -1190,11 +1190,11 @@ tilegx_emit (long long multiplier, int num_ops)
     long long next_pow10;
 
     while (((j * 10) < abs_multiplier)
-	   && (j < (INTMAX_MAX / 10)))
+	   && (j < (j * 10)))
       j = j * 10;
 
     prev_pow10 = j;
-    next_pow10 = (j > (INTMAX_MAX / 10)) ? 0 : j * 10;
+    next_pow10 = j * 10;
 
     if ((abs_multiplier - prev_pow10 <= 100)
 	|| (next_pow10
