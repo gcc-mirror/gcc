@@ -304,6 +304,9 @@ if { "$aout" != "" } then {
     set oaout "-o $aout"
 }
 
+# Clean up any left-overs from an earlier interrupted run.
+outest "$b-cleanup?" $sing "$oaout" {alt/ dir/ o/ od/ obj/} {{} {} {} {} {} {$aout}}
+
 # Sometimes the -I or -L flags that cause the compiler driver to save
 # .args.[01], instead of leaving it for the linker to save .ld1_args,
 # is hiding in driver self specs.
