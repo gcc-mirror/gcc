@@ -1,3 +1,38 @@
+2022-06-21  Roger Sayle  <roger@nextmovesoftware.com>
+	    Marek Polacek  <polacek@redhat.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+	    Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105991
+	* gcc.target/powerpc/pr105991.c: New test case.
+
+2022-06-21  Arjun Shankar  <arjun@redhat.com>
+
+	* gcc.dg/pr94899.c: New test.
+
+2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106032
+	* gcc.c-torture/execute/pr106032.c: New test.
+
+2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106030
+	* gcc.c-torture/compile/pr106030.c: New test.
+
+2022-06-21  Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/105740
+	* gcc.dg/tree-ssa/if-to-switch-11.c: New test.
+
+2022-06-21  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/105736
+	* gcc.dg/builtin-dynamic-object-size-0.c (TV4): New struct.
+	(val3): New variable.
+	(test_pr105736): New test.
+	(main): Call it.
+
 2022-06-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* lib/asan-dg.exp: Do not apply color to asan output when

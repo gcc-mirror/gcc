@@ -1,3 +1,49 @@
+2022-06-21  Roger Sayle  <roger@nextmovesoftware.com>
+	    Marek Polacek  <polacek@redhat.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+	    Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105991
+	* config/rs6000/rs6000.md (rotl<mode>3_insert_3): Check that
+	exact_log2 doesn't return -1 (or zero).
+	(plus_xor): New code iterator.
+	(*rotl<mode>3_insert_3_<code>): New define_insn_and_split.
+
+2022-06-21  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi (C++ Modules): Remove language-linkage
+	as missing feature.
+
+2022-06-21  Arjun Shankar  <arjun@redhat.com>
+
+	PR tree-optimization/94899
+	* match.pd (X + C < Y + C -> (signed) X < (signed) Y, if C is
+	0x80000000): New simplification.
+
+2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106032
+	* ifcvt.cc (noce_try_sign_mask): Punt if !t_unconditional, and
+	t may_trap_or_fault_p, even if it is cheap.
+
+2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106030
+	* expr.cc (expand_cond_expr_using_cmove): Pass NULL_RTX instead of
+	temp to expand_operands if mode has been promoted.
+
+2022-06-21  Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/105740
+	* gimple-if-to-switch.cc (find_conditions): Don't skip the first
+	condition bb.
+
+2022-06-21  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/105736
+	* tree-object-size.cc (addr_object_size): Return size_unknown
+	when object offset computation returns an error.
+
 2022-06-20  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/105960

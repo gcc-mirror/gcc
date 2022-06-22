@@ -1,3 +1,9 @@
+2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+	    Paul Iannetta  <piannetta@kalrayinc.com>
+
+	PR libgomp/106045
+	* testsuite/libgomp.c/target-31.c: Add private (i) clause.
+
 2022-06-17  Martin Liska  <mliska@suse.cz>
 
 	* libgomp.texi: Add table header for new features of
