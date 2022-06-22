@@ -5503,8 +5503,8 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       expr = unchecked_convert (type, expr, notrunc_p);
     }
 
-  /* If we are converting from a scalar type to a type with a different size,
-     we need to pad to have the same size on both sides.
+  /* If we are converting between fixed-size types with different sizes, we
+     need to pad to have the same size on both sides.
 
      ??? We cannot do it unconditionally because unchecked conversions are
      used liberally by the front-end to implement interface thunks:
@@ -5515,8 +5515,10 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 
      so we need to skip dereferences.  */
   else if (!INDIRECT_REF_P (expr)
-	   && !AGGREGATE_TYPE_P (etype)
+	   && TREE_CODE (expr) != STRING_CST
+	   && !(AGGREGATE_TYPE_P (etype) && AGGREGATE_TYPE_P (type))
 	   && ecode != UNCONSTRAINED_ARRAY_TYPE
+	   && TREE_CONSTANT (TYPE_SIZE (etype))
 	   && TREE_CONSTANT (TYPE_SIZE (type))
 	   && (c = tree_int_cst_compare (TYPE_SIZE (etype), TYPE_SIZE (type))))
     {
@@ -5532,15 +5534,18 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	  tree rec_type = maybe_pad_type (type, TYPE_SIZE (etype), 0, Empty,
 					  false, false, true);
 	  expr = unchecked_convert (rec_type, expr, notrunc_p);
-	  expr = build_component_ref (expr, TYPE_FIELDS (rec_type), false);
+	  expr = build3 (COMPONENT_REF, type, expr, TYPE_FIELDS (rec_type),
+			 NULL_TREE);
 	}
     }
 
-  /* Likewise if we are converting from a scalar type to a type with self-
+  /* Likewise if we are converting from a fixed-szie type to a type with self-
      referential size.  We use the max size to do the padding in this case.  */
   else if (!INDIRECT_REF_P (expr)
-	   && !AGGREGATE_TYPE_P (etype)
+	   && TREE_CODE (expr) != STRING_CST
+	   && !(AGGREGATE_TYPE_P (etype) && AGGREGATE_TYPE_P (type))
 	   && ecode != UNCONSTRAINED_ARRAY_TYPE
+	   && TREE_CONSTANT (TYPE_SIZE (etype))
 	   && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (type)))
     {
       tree new_size = max_size (TYPE_SIZE (type), true);
@@ -5557,7 +5562,8 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	  tree rec_type = maybe_pad_type (type, TYPE_SIZE (etype), 0, Empty,
 					  false, false, true);
 	  expr = unchecked_convert (rec_type, expr, notrunc_p);
-	  expr = build_component_ref (expr, TYPE_FIELDS (rec_type), false);
+	  expr = build3 (COMPONENT_REF, type, expr, TYPE_FIELDS (rec_type),
+			 NULL_TREE);
 	}
     }
 
