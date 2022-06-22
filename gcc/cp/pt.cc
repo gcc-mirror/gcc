@@ -27960,6 +27960,15 @@ type_dependent_expression_p (tree expression)
       && DECL_INITIAL (expression))
    return true;
 
+  /* Pull a FUNCTION_DECL out of a BASELINK if we can.  */
+  if (BASELINK_P (expression))
+    {
+      if (BASELINK_OPTYPE (expression)
+	  && dependent_type_p (BASELINK_OPTYPE (expression)))
+	return true;
+      expression = BASELINK_FUNCTIONS (expression);
+    }
+
   /* A function or variable template-id is type-dependent if it has any
      dependent template arguments.  */
   if (VAR_OR_FUNCTION_DECL_P (expression)
