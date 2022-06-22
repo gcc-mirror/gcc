@@ -1,5 +1,6 @@
 // { dg-lto-do link }
 /* { dg-extra-ld-options {  -r -nostdlib } } */
+// { dg-require-effective-target lto_incremental }
 class A {
 public:
   float m_floats;
