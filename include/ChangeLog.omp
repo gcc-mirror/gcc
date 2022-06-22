@@ -1,3 +1,13 @@
+2022-06-21  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* cuda/cuda.h (CUdevice_attribute): Add definitions for
+	CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR and
+	CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR.
+	(CUmemAttach_flags): New.
+	(CUpointer_attribute): New.
+	(cuMemAllocManaged): New prototype.
+	(cuPointerGetAttribute): New prototype.
+
 2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
             Julian Brown  <julian@codesourcery.com>
 

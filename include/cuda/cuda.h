@@ -78,8 +78,18 @@ typedef enum {
   CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR = 39,
   CU_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT = 40,
   CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING = 41,
+  CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR = 75,
+  CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR = 76,
   CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR = 82
 } CUdevice_attribute;
+
+typedef enum {
+  CU_MEM_ATTACH_GLOBAL = 0x1
+} CUmemAttach_flags;
+
+typedef enum {
+  CU_POINTER_ATTRIBUTE_IS_MANAGED = 8
+} CUpointer_attribute;
 
 enum {
   CU_EVENT_DEFAULT = 0,
@@ -171,6 +181,7 @@ CUresult cuMemGetInfo (size_t *, size_t *);
 CUresult cuMemAlloc (CUdeviceptr *, size_t);
 #define cuMemAllocHost cuMemAllocHost_v2
 CUresult cuMemAllocHost (void **, size_t);
+CUresult cuMemAllocManaged(CUdeviceptr *, size_t, unsigned int);
 CUresult cuMemHostAlloc (void **, size_t, unsigned int);
 CUresult cuMemcpy (CUdeviceptr, CUdeviceptr, size_t);
 #define cuMemcpyDtoDAsync cuMemcpyDtoDAsync_v2
@@ -198,6 +209,7 @@ CUresult cuModuleLoadData (CUmodule *, const void *);
 CUresult cuModuleUnload (CUmodule);
 CUresult cuOccupancyMaxPotentialBlockSize(int *, int *, CUfunction,
 					  CUoccupancyB2DSize, size_t, int);
+CUresult cuPointerGetAttribute(void *, CUpointer_attribute, CUdeviceptr);
 typedef void (*CUstreamCallback)(CUstream, CUresult, void *);
 CUresult cuStreamAddCallback(CUstream, CUstreamCallback, void *, unsigned int);
 CUresult cuStreamCreate (CUstream *, unsigned);
