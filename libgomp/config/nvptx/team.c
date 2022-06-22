@@ -69,10 +69,13 @@ gomp_nvptx_main (void (*fn) (void *), void *fn_data)
 
       /* Find the low-latency heap details ....  */
       uint32_t *shared_pool;
-      uint32_t shared_pool_size;
+      uint32_t shared_pool_size = 0;
       asm ("cvta.shared.u64\t%0, __nvptx_lowlat_pool;" : "=r"(shared_pool));
+#if __PTX_ISA_VERSION_MAJOR__ > 4 \
+    || (__PTX_ISA_VERSION_MAJOR__ == 4 && __PTX_ISA_VERSION_MINOR__ >= 1)
       asm ("mov.u32\t%0, %%dynamic_smem_size;\n"
 	   : "=r"(shared_pool_size));
+#endif
 
       /* ... and initialize it with an empty free-chain.  */
       union {

@@ -1,3 +1,9 @@
+2022-06-21  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/nvptx/team.c (gomp_nvptx_main): Initialize shared_pool_size
+	to zero.  Do not use dynamic_smem_size register if PTX version lower
+	than 4.1.
+
 2021-12-22  Andrew Stubbs  <ams@codesourcery.com>
 
 	* allocator.c (MEMSPACE_ALLOC): New macro.
