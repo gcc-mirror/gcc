@@ -7629,6 +7629,10 @@ outer_binding (tree name,
 		/* Thread this new class-scope binding onto the
 		   IDENTIFIER_BINDING list so that future lookups
 		   find it quickly.  */
+		if (BASELINK_P (class_binding->value))
+		  /* Don't put a BASELINK in IDENTIFIER_BINDING.  */
+		  class_binding->value
+		    = BASELINK_FUNCTIONS (class_binding->value);
 		class_binding->previous = outer;
 		if (binding)
 		  binding->previous = class_binding;
