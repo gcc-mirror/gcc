@@ -1764,6 +1764,9 @@ Type::needs_specific_type_functions(Gogo* gogo)
 Named_object*
 Type::hash_function(Gogo* gogo, Function_type* hash_fntype)
 {
+  if (this->named_type() != NULL)
+    go_assert(!this->named_type()->is_alias());
+
   if (!this->is_comparable())
     return NULL;
 
@@ -2067,6 +2070,9 @@ Type::write_identity_hash(Gogo* gogo, int64_t size)
 Named_object*
 Type::equal_function(Gogo* gogo, Named_type* name, Function_type* equal_fntype)
 {
+  if (this->named_type() != NULL)
+    go_assert(!this->named_type()->is_alias());
+
   // If the unaliased type is not a named type, then the type does not
   // have a name after all.
   if (name != NULL)
@@ -6700,7 +6706,8 @@ Struct_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
       subkey = Expression::make_cast(key_arg_type, subkey, bloc);
 
       // Get the hash function to use for the type of this field.
-      Named_object* hash_fn = pf->type()->hash_function(gogo, hash_fntype);
+      Named_object* hash_fn =
+	pf->type()->unalias()->hash_function(gogo, hash_fntype);
 
       // Call the hash function for the field, passing retval as the seed.
       ref = Expression::make_temporary_reference(retval, bloc);
@@ -7553,8 +7560,8 @@ Array_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
   gogo->start_block(bloc);
 
   // Get the hash function for the element type.
-  Named_object* hash_fn = this->element_type_->hash_function(gogo,
-							     hash_fntype);
+  Named_object* hash_fn =
+    this->element_type_->unalias()->hash_function(gogo, hash_fntype);
 
   // Get a pointer to this element in the loop.
   Expression* subkey = Expression::make_temporary_reference(key, bloc);
@@ -8441,8 +8448,8 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   ++p;
   go_assert(p->is_field_name("hasher"));
   Function_type* hasher_fntype = p->type()->function_type();
-  Named_object* hasher_fn = this->key_type_->hash_function(gogo,
-							   hasher_fntype);
+  Named_object* hasher_fn =
+    this->key_type_->unalias()->hash_function(gogo, hasher_fntype);
   if (hasher_fn == NULL)
     vals->push_back(Expression::make_cast(hasher_fntype,
 					  Expression::make_nil(bloc),

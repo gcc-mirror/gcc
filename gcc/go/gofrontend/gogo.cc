@@ -2811,7 +2811,7 @@ Specific_type_functions::type(Type* t)
 
     case Type::TYPE_MAP:
       {
-	Type* key_type = t->map_type()->key_type();
+	Type* key_type = t->map_type()->key_type()->unalias();
 	if (key_type->needs_specific_type_functions(this->gogo_))
 	  key_type->hash_function(this->gogo_, NULL);
       }
