@@ -2829,24 +2829,10 @@ struct merge_key {
   }
 };
 
-struct duplicate_hash : nodel_ptr_hash<tree_node>
-{
-#if 0
-  /* This breaks variadic bases in the xtreme_header tests.  Since ::equal is
-     the default pointer_hash::equal, let's use the default hash as well.  */
-  inline static hashval_t hash (value_type decl)
-  {
-    if (TREE_CODE (decl) == TREE_BINFO)
-      decl = TYPE_NAME (BINFO_TYPE (decl));
-    return hashval_t (DECL_UID (decl));
-  }
-#endif
-};
-
 /* Hashmap of merged duplicates.  Usually decls, but can contain
    BINFOs.  */
 typedef hash_map<tree,uintptr_t,
-		 simple_hashmap_traits<duplicate_hash,uintptr_t> >
+		 simple_hashmap_traits<nodel_ptr_hash<tree_node>,uintptr_t> >
 duplicate_hash_map;
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
