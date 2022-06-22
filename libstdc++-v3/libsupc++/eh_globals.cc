@@ -119,8 +119,13 @@ struct __eh_globals_init
   ~__eh_globals_init()
   {
     if (_S_init)
-      __gthread_key_delete(_M_key);
-    _S_init = false;
+      {
+	/* Set it before the call, so that, should
+	   __gthread_key_delete throw an exception, it won't rely on
+	   the key being deleted.  */
+	_S_init = false;
+	__gthread_key_delete(_M_key);
+      }
   }
 
   __eh_globals_init(const __eh_globals_init&) = delete;
