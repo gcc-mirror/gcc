@@ -249,7 +249,7 @@ public:
 
 /* Concrete subclass of group_cluster representing a collection
    of cases to be implemented as a jump table.
-   The "emit" vfunc gernerates a nested switch statement which
+   The "emit" vfunc generates a nested switch statement which
    is later lowered to a jump table.  */
 
 class jump_table_cluster: public group_cluster

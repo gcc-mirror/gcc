@@ -1423,7 +1423,7 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
       else
 	{
 	  /* Be sure we redirect all speculative targets before poking
-	     abou tindirect edge.  */
+	     about indirect edge.  */
 	  gcc_checking_assert (e->callee);
 	  cgraph_edge *indirect = e->speculative_call_indirect_edge ();
 	  gcall *new_stmt;
