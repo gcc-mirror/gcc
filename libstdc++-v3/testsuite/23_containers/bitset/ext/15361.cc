@@ -22,6 +22,7 @@
 void test01()
 {
   using namespace std;
+  using std::bitset; // Work around struct ::bitset on rtems.
 
   bitset<256> b;
   b.set(225);
