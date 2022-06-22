@@ -851,7 +851,6 @@ proc check_effective_target_nonlocal_goto {} {
 
 proc check_effective_target_global_constructor {} {
     if { [istarget nvptx-*-*]
-	 || [istarget amdgcn-*-*]
 	 || [istarget bpf-*-*] } {
 	return 0
     }
