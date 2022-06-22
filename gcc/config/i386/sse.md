@@ -23250,8 +23250,10 @@
   "&& 1"
   [(const_int 0)]
 {
-  int ecx = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[0]));
-  int xmm0 = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[1]));
+  int ecx = !find_regno_note (curr_insn, REG_UNUSED,
+			      reg_or_subregno (operands[0]));
+  int xmm0 = !find_regno_note (curr_insn, REG_UNUSED,
+			       reg_or_subregno (operands[1]));
   int flags = !find_regno_note (curr_insn, REG_UNUSED, FLAGS_REG);
 
   if (ecx)
@@ -23386,8 +23388,10 @@
   "&& 1"
   [(const_int 0)]
 {
-  int ecx = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[0]));
-  int xmm0 = !find_regno_note (curr_insn, REG_UNUSED, REGNO (operands[1]));
+  int ecx = !find_regno_note (curr_insn, REG_UNUSED,
+			      reg_or_subregno (operands[0]));
+  int xmm0 = !find_regno_note (curr_insn, REG_UNUSED,
+			       reg_or_subregno (operands[1]));
   int flags = !find_regno_note (curr_insn, REG_UNUSED, FLAGS_REG);
 
   if (ecx)
