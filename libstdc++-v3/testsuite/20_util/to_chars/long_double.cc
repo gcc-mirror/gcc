@@ -36,6 +36,7 @@
 
 // { dg-require-effective-target ieee_floats }
 // { dg-require-effective-target size32plus }
+// { dg-require-cmath "" }
 
 #include <charconv>
 
