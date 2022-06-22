@@ -133,7 +133,6 @@ gm2_langhook_option_lang_mask (void)
 static void
 gm2_langhook_init_options_struct (struct gcc_options *opts)
 {
-
   /* Default to avoiding range issues for complex multiply and divide.  */
   opts->x_flag_complex_method = 2;
 
@@ -338,14 +337,6 @@ gm2_langhook_handle_option (
     case OPT_fno_m2_plugin:
       /* handled in the driver.  */
       return 1;
-#if 0
-    case OPT_ftarget_ar_:
-      /* handled in the driver.  */
-      return 1;
-    case OPT_ftarget_ranlib_:
-      /* handled in the driver.  */
-      return 1;
-#endif
     case OPT_fscaffold_dynamic:
       M2Options_SetScaffoldDynamic (value);
       return 1;
@@ -391,23 +382,12 @@ gm2_langhook_handle_option (
     case OPT_fshared:
       /* handled by the linker.  */
       return 1;
-    case OPT_fmakeinit:
-      /* handled by the linker.  */
-      return 1;
     case OPT_fm2_statistics:
       M2Options_SetStatistics (value);
       return 1;
     case OPT_fm2_g:
       M2Options_SetM2g (value);
       return 1;
-    case OPT_fobject_path_:
-      /* handled by the linker.  */
-      return 1;
-#if 0
-    case OPT_fonlylink:
-      /* handled by the driver.  */
-      return 1;
-#endif
     case OPT_version:
       M2Options_DisplayVersion (FALSE);
       return 1;
@@ -648,8 +628,8 @@ write_globals (void)
   m2block_finishGlobals ();
 
   /* Process all file scopes in this compilation, and the
-  external_scope, through wrapup_global_declarations and
-  check_global_declarations.  */
+     external_scope, through wrapup_global_declarations and
+     check_global_declarations.  */
   FOR_EACH_VEC_ELT (*all_translation_units, i, t)
   m2_write_global_declarations (BLOCK_VARS (DECL_INITIAL (t)));
 }
