@@ -18547,6 +18547,29 @@ lookup_init_capture_pack (tree decl)
   return r;
 }
 
+/* T is an operand of a template tree being substituted.  Return whether
+   T is dependent such that we should suppress some warnings that would
+   make sense if the substituted expression were written directly, like
+     template <int I> bool f() { return I == 2; }
+   We don't want to warn when instantiating f that comparing two constants
+   always has the same value.
+
+   This is a more limited concept of dependence than instantiation-dependent;
+   here we don't care whether substitution could fail.  */
+
+static bool
+dependent_operand_p (tree t)
+{
+  while (TREE_CODE (t) == IMPLICIT_CONV_EXPR)
+    t = TREE_OPERAND (t, 0);
+  ++processing_template_decl;
+  bool r = (potential_constant_expression (t)
+	    ? value_dependent_expression_p (t)
+	    : type_dependent_expression_p (t));
+  --processing_template_decl;
+  return r;
+}
+
 /* Like tsubst_copy for expressions, etc. but also does semantic
    processing.  */
 
@@ -18872,8 +18895,13 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       IF_STMT_CONSTEVAL_P (stmt) = IF_STMT_CONSTEVAL_P (t);
       if (IF_STMT_CONSTEXPR_P (t))
 	args = add_extra_args (IF_STMT_EXTRA_ARGS (t), args, complain, in_decl);
-      tmp = RECUR (IF_COND (t));
-      tmp = finish_if_stmt_cond (tmp, stmt);
+      {
+	tree cond = IF_COND (t);
+	bool was_dep = dependent_operand_p (cond);
+	cond = RECUR (cond);
+	warning_sentinel s1(warn_address, was_dep);
+	tmp = finish_if_stmt_cond (cond, stmt);
+      }
       if (IF_STMT_CONSTEXPR_P (t)
 	  && instantiation_dependent_expression_p (tmp))
 	{
@@ -20422,15 +20450,8 @@ tsubst_copy_and_build (tree t,
 	   warnings that depend on the range of the types involved.  */
 	tree op0 = TREE_OPERAND (t, 0);
 	tree op1 = TREE_OPERAND (t, 1);
-	auto dep_p = [](tree t) {
-	  ++processing_template_decl;
-	  bool r = (potential_constant_expression (t)
-		    ? value_dependent_expression_p (t)
-		    : type_dependent_expression_p (t));
-	  --processing_template_decl;
-	  return r;
-	};
-	const bool was_dep = dep_p (op0) || dep_p (op1);
+	const bool was_dep = (dependent_operand_p (op0)
+			      || dependent_operand_p (op1));
 	op0 = RECUR (op0);
 	op1 = RECUR (op1);
 
