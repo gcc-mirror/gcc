@@ -764,7 +764,7 @@ namespace __variant
     {
       // This function means 'using _Build_FUN<I, T, Ti>::_S_fun;' is valid,
       // but only static functions will be considered in the call below.
-      void _S_fun();
+      void _S_fun() = delete;
     };
 
   // "... for which Ti x[] = {std::forward<T>(t)}; is well-formed."
@@ -795,29 +795,28 @@ namespace __variant
 
   // The index selected for FUN(std::forward<T>(t)), or variant_npos if none.
   template<typename _Tp, typename _Variant, typename = void>
-    struct __accepted_index
-    : integral_constant<size_t, variant_npos>
-    { };
+    inline constexpr size_t
+    __accepted_index = variant_npos;
 
   template<typename _Tp, typename _Variant>
-    struct __accepted_index<_Tp, _Variant, void_t<_FUN_type<_Tp, _Variant>>>
-    : _FUN_type<_Tp, _Variant>
-    { };
+    inline constexpr size_t
+    __accepted_index<_Tp, _Variant, void_t<_FUN_type<_Tp, _Variant>>>
+      = _FUN_type<_Tp, _Variant>::value;
 
-  template <typename _Maybe_variant_cookie, typename _Variant>
-    struct _Extra_visit_slot_needed
-    {
-      template <typename> struct _Variant_never_valueless;
+  template<typename _Maybe_variant_cookie, typename _Variant,
+	   typename = __remove_cvref_t<_Variant>>
+    inline constexpr bool
+    __extra_visit_slot_needed = false;
 
-      template <typename... _Types>
-	struct _Variant_never_valueless<variant<_Types...>>
-	: bool_constant<__variant::__never_valueless<_Types...>()> {};
+  template<typename _Var, typename... _Types>
+    inline constexpr bool
+    __extra_visit_slot_needed<__variant_cookie, _Var, variant<_Types...>>
+      = !__variant::__never_valueless<_Types...>();
 
-      static constexpr bool value =
-	(is_same_v<_Maybe_variant_cookie, __variant_cookie>
-	 || is_same_v<_Maybe_variant_cookie, __variant_idx_cookie>)
-	&& !_Variant_never_valueless<__remove_cvref_t<_Variant>>::value;
-    };
+  template<typename _Var, typename... _Types>
+    inline constexpr bool
+    __extra_visit_slot_needed<__variant_idx_cookie, _Var, variant<_Types...>>
+      = !__variant::__never_valueless<_Types...>();
 
   // Used for storing a multi-dimensional vtable.
   template<typename _Tp, size_t... _Dimensions>
@@ -874,7 +873,7 @@ namespace __variant
       using _Variant = typename _Nth_type<__index, _Variants...>::type;
 
       static constexpr int __do_cookie =
-	_Extra_visit_slot_needed<_Ret, _Variant>::value ? 1 : 0;
+	__extra_visit_slot_needed<_Ret, _Variant> ? 1 : 0;
 
       using _Tp = _Ret(*)(_Visitor, _Variants...);
 
@@ -953,7 +952,7 @@ namespace __variant
 	_S_apply_all_alts(_Array_type& __vtable,
 			  std::index_sequence<__var_indices...>)
 	{
-	  if constexpr (_Extra_visit_slot_needed<_Result_type, _Next>::value)
+	  if constexpr (__extra_visit_slot_needed<_Result_type, _Next>)
 	    (_S_apply_single_alt<true, __var_indices>(
 	      __vtable._M_arr[__var_indices + 1],
 	      &(__vtable._M_arr[0])), ...);
@@ -1372,7 +1371,7 @@ namespace __variant
 
       template<typename _Tp>
 	static constexpr size_t __accepted_index
-	  = __detail::__variant::__accepted_index<_Tp, variant>::value;
+	  = __detail::__variant::__accepted_index<_Tp, variant>;
 
       template<size_t _Np, typename = enable_if_t<(_Np < sizeof...(_Types))>>
 	using __to_type = typename _Nth_type<_Np, _Types...>::type;
