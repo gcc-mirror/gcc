@@ -1,6 +1,7 @@
 // { dg-do run { target c++11 } }
 
 #include <random>
+#include <limits>
 #include <testsuite_hooks.h>
 #include <testsuite_random.h>
 
@@ -12,7 +13,7 @@ test01()
       VERIFY( std::random_device(token).entropy() == 0.0 );
 
   using result_type = std::random_device::result_type;
-  const double max = std::log2(std::numeric_limits<result_type>::max() + 1.0);
+  const double max = std::numeric_limits<result_type>::digits;
 
   for (auto token : { "/dev/random", "/dev/urandom" })
     if (__gnu_test::random_device_available(token))
