@@ -22982,6 +22982,7 @@ type_unification_real (tree tparms,
 	     deduced from a later argument than the one from which
 	     this parameter can be deduced.  */
 	  if (TREE_CODE (tparm) == PARM_DECL
+	      && !is_auto (TREE_TYPE (tparm))
 	      && uses_template_parms (TREE_TYPE (tparm))
 	      && saw_undeduced < 2)
 	    {
@@ -23042,6 +23043,7 @@ type_unification_real (tree tparms,
 
 	  if (saw_undeduced == 1
 	      && TREE_CODE (parm) == PARM_DECL
+	      && !is_auto (TREE_TYPE (parm))
 	      && uses_template_parms (TREE_TYPE (parm)))
 	    {
 	      /* The type of this non-type parameter depends on undeduced
