@@ -397,6 +397,11 @@ fold_for_warn (tree x)
 {
   /* C++ implementation.  */
 
+  if (cp_unevaluated_operand)
+    /* In an unevaluated context we don't care about the reduced value
+       of an expression, so neither should any warnings.  */
+    return x;
+
   /* Prevent warning-dependent constexpr evaluation from changing
      DECL_UID (which breaks -fcompare-debug) and from instantiating
      templates.  */
