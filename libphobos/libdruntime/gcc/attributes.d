@@ -302,6 +302,34 @@ auto optimize(A...)(A arguments)
 }
 
 /**
+ * The `@register` attribute specifies that a local or `__gshared` variable
+ * is to be given a register storage-class in the C99 sense of the term, and
+ * will be placed into a register named `registerName`.
+ *
+ * The variable needs to boiled down to a data type that fits the target
+ * register.  It also cannot have either thread-local or `extern` storage.
+ * It is an error to take the address of a register variable.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @register("ebx") __gshared int ebx = void;
+ *
+ * void func() { @register("r10") long r10 = 0x2a; }
+ * ---
+ */
+auto register(string registerName)
+{
+    return attribute("register", registerName);
+}
+
+auto register(A...)(A arguments)
+{
+    assert(false, "register attribute argument not a string constant");
+}
+
+/**
  * The `@restrict` attribute specifies that a function parameter is to be
  * restrict-qualified in the C99 sense of the term.  The parameter needs to
  * boil down to either a pointer or reference type, such as a D pointer,

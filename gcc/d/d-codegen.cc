@@ -697,11 +697,12 @@ build_address (tree exp)
   return compound_expr (init, exp);
 }
 
-/* Mark EXP saying that we need to be able to take the
-   address of it; it should not be allocated in a register.  */
+/* Mark EXP saying that we need to be able to take the address of it; it should
+   not be allocated in a register.  When COMPLAIN is true, issue an error if we
+   are marking a register variable.  */
 
 tree
-d_mark_addressable (tree exp)
+d_mark_addressable (tree exp, bool complain)
 {
   switch (TREE_CODE (exp))
     {
@@ -713,12 +714,22 @@ d_mark_addressable (tree exp)
       d_mark_addressable (TREE_OPERAND (exp, 0));
       break;
 
-    case PARM_DECL:
     case VAR_DECL:
+      if (complain && DECL_REGISTER (exp))
+	{
+	  if (DECL_HARD_REGISTER (exp) || DECL_EXTERNAL (exp))
+	    error ("address of explicit register variable %qD requested", exp);
+	  else
+	    error ("address of register variable %qD requested", exp);
+	}
+
+      /* Fall through.  */
+    case PARM_DECL:
     case RESULT_DECL:
     case CONST_DECL:
     case FUNCTION_DECL:
-      TREE_ADDRESSABLE (exp) = 1;
+      if (!VAR_P (exp) || !DECL_HARD_REGISTER (exp))
+	TREE_ADDRESSABLE (exp) = 1;
       break;
 
     case CONSTRUCTOR:
@@ -2704,7 +2715,16 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 	  if ((v->edtor && (v->storage_class & STCparameter))
 	      || v->needsScopeDtor ())
 	    error_at (make_location_t (v->loc),
-		      "has scoped destruction, cannot build closure");
+		      "variable %qs has scoped destruction, "
+		      "cannot build closure", v->toChars ());
+	}
+
+      if (DECL_REGISTER (vsym))
+	{
+	  /* Because the value will be in memory, not a register.  */
+	  error_at (make_location_t (v->loc),
+		    "explicit register variable %qs cannot be used in nested "
+		    "function", v->toChars ());
 	}
     }
 

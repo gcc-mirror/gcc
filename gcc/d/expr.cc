@@ -1250,7 +1250,7 @@ public:
 	    tree array_type =
 	      build_array_type_nelts (TREE_TYPE (TREE_TYPE (array)),
 				      TYPE_VECTOR_SUBPARTS (TREE_TYPE (array)));
-	    d_mark_addressable (array);
+	    d_mark_addressable (array, false);
 	    array = build1 (VIEW_CONVERT_EXPR, array_type, array);
 	  }
 

@@ -75,6 +75,7 @@ static tree d_handle_weak_attribute (tree *, tree, tree, int, bool *) ;
 static tree d_handle_noplt_attribute (tree *, tree, tree, int, bool *) ;
 static tree d_handle_alloc_size_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_cold_attribute (tree *, tree, tree, int, bool *);
+static tree d_handle_register_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_restrict_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_used_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_visibility_attribute (tree *, tree, tree, int, bool *);
@@ -223,6 +224,8 @@ const attribute_spec d_langhook_attribute_table[] =
 	     d_handle_cold_attribute, attr_cold_hot_exclusions),
   ATTR_SPEC ("no_sanitize", 1, -1, true, false, false, false,
 	     d_handle_no_sanitize_attribute, NULL),
+  ATTR_SPEC ("register", 1, 1, true, false, false, false,
+	     d_handle_register_attribute, NULL),
   ATTR_SPEC ("restrict", 0, 0, true, false, false, false,
 	     d_handle_restrict_attribute, NULL),
   ATTR_SPEC ("used", 0, 0, true, false, false, false,
@@ -1409,8 +1412,41 @@ d_handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
   else
     {
       DECL_ATTRIBUTES (*node) = tree_cons (get_identifier ("no_sanitize"),
-		      			   build_int_cst (d_uint_type, flags),
-		      			   DECL_ATTRIBUTES (*node));
+					   build_int_cst (d_uint_type, flags),
+					   DECL_ATTRIBUTES (*node));
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "register" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+d_handle_register_attribute (tree *node, tree name, tree args, int,
+			     bool *no_add_attrs)
+{
+  if (!VAR_P (*node))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  else if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+    {
+      error ("%qE attribute argument not a string constant", name);
+      *no_add_attrs = true;
+    }
+  else if (TREE_STRING_LENGTH (TREE_VALUE (args)) == 0
+	   || TREE_STRING_POINTER (TREE_VALUE (args))[0] == '\0')
+    {
+      error ("register name not specified for %q+D", *node);
+      *no_add_attrs = true;
+    }
+  else
+    {
+      DECL_REGISTER (*node) = 1;
+      set_user_assembler_name (*node, TREE_STRING_POINTER (TREE_VALUE (args)));
+      DECL_HARD_REGISTER (*node) = 1;
     }
 
   return NULL_TREE;

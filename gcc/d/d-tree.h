@@ -549,7 +549,7 @@ extern tree stabilize_expr (tree *);
 extern tree build_target_expr (tree, tree);
 extern tree force_target_expr (tree);
 extern tree build_address (tree);
-extern tree d_mark_addressable (tree);
+extern tree d_mark_addressable (tree, bool = true);
 extern tree d_mark_used (tree);
 extern tree d_mark_read (tree);
 extern tree build_memcmp_call (tree, tree, tree);
