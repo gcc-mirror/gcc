@@ -7196,9 +7196,7 @@ package body Sem_Res is
 
       --  Check unreachable code after calls to procedures with No_Return
 
-      if Ekind (Nam) = E_Procedure
-        and then No_Return (Nam)
-      then
+      if Ekind (Nam) = E_Procedure and then No_Return (Nam) then
          Check_Unreachable_Code (N);
       end if;
 

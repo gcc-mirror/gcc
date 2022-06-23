@@ -4868,9 +4868,6 @@ package body Sem_Util is
       --  and post-state. Prag is a [refined] postcondition or a contract-cases
       --  pragma. Result_Seen is set when the pragma mentions attribute 'Result
 
-      function Is_Trivial_Boolean (N : Node_Id) return Boolean;
-      --  Determine whether source node N denotes "True" or "False"
-
       -------------------------------------------
       -- Check_Result_And_Post_State_In_Pragma --
       -------------------------------------------
@@ -5242,20 +5239,6 @@ package body Sem_Util is
             Check_Expression (Expr);
          end if;
       end Check_Result_And_Post_State_In_Pragma;
-
-      ------------------------
-      -- Is_Trivial_Boolean --
-      ------------------------
-
-      function Is_Trivial_Boolean (N : Node_Id) return Boolean is
-      begin
-         return
-           Comes_From_Source (N)
-             and then Is_Entity_Name (N)
-             and then (Entity (N) = Standard_True
-                         or else
-                       Entity (N) = Standard_False);
-      end Is_Trivial_Boolean;
 
       --  Local variables
 
@@ -21501,19 +21484,15 @@ package body Sem_Util is
       Kind : constant Node_Kind := Nkind (N);
 
    begin
-      if Kind = N_Simple_Return_Statement
-           or else
-         Kind = N_Extended_Return_Statement
-           or else
-         Kind = N_Goto_Statement
-           or else
-         Kind = N_Raise_Statement
-           or else
-         Kind = N_Requeue_Statement
+      if Kind in N_Simple_Return_Statement
+               | N_Extended_Return_Statement
+               | N_Goto_Statement
+               | N_Raise_Statement
+               | N_Requeue_Statement
       then
          return True;
 
-      elsif (Kind = N_Exit_Statement or else Kind in N_Raise_xxx_Error)
+      elsif Kind in N_Exit_Statement | N_Raise_xxx_Error
         and then No (Condition (N))
       then
          return True;
@@ -21541,6 +21520,29 @@ package body Sem_Util is
    begin
       return No (U) or else U = Uint_1;
    end Is_True;
+
+   ------------------------
+   -- Is_Trivial_Boolean --
+   ------------------------
+
+   function Is_Trivial_Boolean (N : Node_Id) return Boolean is
+   begin
+      return Comes_From_Source (N)
+        and then Nkind (N) in N_Identifier | N_Expanded_Name
+        and then Entity (N) in Standard_True | Standard_False;
+   end Is_Trivial_Boolean;
+
+   -----------------------------
+   -- Is_Static_Constant_Name --
+   -----------------------------
+
+   function Is_Static_Constant_Name (N : Node_Id) return Boolean is
+   begin
+      return Comes_From_Source (N)
+        and then Is_Static_Expression (N)
+        and then Nkind (N) in N_Identifier | N_Expanded_Name
+        and then Ekind (Entity (N)) = E_Constant;
+   end Is_Static_Constant_Name;
 
    --------------------------------------
    -- Is_Unchecked_Conversion_Instance --

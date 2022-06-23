@@ -189,7 +189,6 @@ procedure Gnatls is
    --  Print usage message
 
    procedure Output_License_Information;
-   pragma No_Return (Output_License_Information);
    --  Output license statement, and if not found, output reference to COPYING
 
    function Image (Restriction : Restriction_Id) return String;
@@ -894,8 +893,6 @@ procedure Gnatls is
                      & " for license terms.");
             Write_Eol;
       end case;
-
-      Exit_Program (E_Success);
    end Output_License_Information;
 
    -------------------

@@ -2481,6 +2481,13 @@ package Sem_Util is
    --  unconditional transfer of control at run time, i.e. the following
    --  statement definitely will not be executed.
 
+   function Is_Trivial_Boolean (N : Node_Id) return Boolean;
+   --  Determine whether source node N denotes "True" or "False". Note that
+   --  this is not true for expressions that got folded to True or False.
+
+   function Is_Static_Constant_Name (N : Node_Id) return Boolean;
+   --  True if N is a name that statically denotes a static constant.
+
    function Is_Unchecked_Conversion_Instance (Id : Entity_Id) return Boolean;
    --  Determine whether an arbitrary entity denotes an instance of function
    --  Ada.Unchecked_Conversion.

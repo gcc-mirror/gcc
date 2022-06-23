@@ -6694,7 +6694,7 @@ package body Sem_Prag is
                if Loc not in Source_First (Sindex) .. Source_Last (Sindex) then
                   --  We do not want to raise an exception here since this code
                   --  is part of the bootstrap path where we cannot rely on
-                  --  exception proapgation working.
+                  --  exception propagation working.
                   --  Instead the caller should check for N being rewritten as
                   --  a null statement.
                   --  This code triggers when compiling a-except.adb.
