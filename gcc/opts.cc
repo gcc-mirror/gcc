@@ -2876,6 +2876,10 @@ common_handle_option (struct gcc_options *opts,
       dc->show_cwe = value;
       break;
 
+    case OPT_fdiagnostics_show_rules:
+      dc->show_rules = value;
+      break;
+
     case OPT_fdiagnostics_path_format_:
       dc->path_format = (enum diagnostic_path_format)value;
       break;

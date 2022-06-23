@@ -227,6 +227,9 @@ struct diagnostic_context
      diagnostics.  */
   bool show_cwe;
 
+  /* True if we should print any rules associated with diagnostics.  */
+  bool show_rules;
+
   /* How should diagnostic_path objects be printed.  */
   enum diagnostic_path_format path_format;
 

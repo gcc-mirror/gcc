@@ -190,6 +190,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   for (i = 0; i < rich_location::STATICALLY_ALLOCATED_RANGES; i++)
     context->caret_chars[i] = '^';
   context->show_cwe = false;
+  context->show_rules = false;
   context->path_format = DPF_NONE;
   context->show_path_depths = false;
   context->show_option_requested = false;
@@ -1291,6 +1292,51 @@ print_any_cwe (diagnostic_context *context,
     }
 }
 
+/* If DIAGNOSTIC has any rules associated with it, print them.
+
+   For example, if the diagnostic metadata associates it with a rule
+   named "STR34-C", then " [STR34-C]" will be printed, suitably colorized,
+   with any URL provided by the rule.  */
+
+static void
+print_any_rules (diagnostic_context *context,
+		const diagnostic_info *diagnostic)
+{
+  if (diagnostic->metadata == NULL)
+    return;
+
+  for (unsigned idx = 0; idx < diagnostic->metadata->get_num_rules (); idx++)
+    {
+      const diagnostic_metadata::rule &rule
+	= diagnostic->metadata->get_rule (idx);
+      if (char *desc = rule.make_description ())
+	{
+	  pretty_printer *pp = context->printer;
+	  char *saved_prefix = pp_take_prefix (context->printer);
+	  pp_string (pp, " [");
+	  pp_string (pp,
+		     colorize_start (pp_show_color (pp),
+				     diagnostic_kind_color[diagnostic->kind]));
+	  char *url = NULL;
+	  if (pp->url_format != URL_FORMAT_NONE)
+	    {
+	      url = rule.make_url ();
+	      if (url)
+		pp_begin_url (pp, url);
+	    }
+	  pp_string (pp, desc);
+	  pp_set_prefix (context->printer, saved_prefix);
+	  if (pp->url_format != URL_FORMAT_NONE)
+	    if (url)
+	      pp_end_url (pp);
+	  free (url);
+	  pp_string (pp, colorize_stop (pp_show_color (pp)));
+	  pp_character (pp, ']');
+	  free (desc);
+	}
+    }
+}
+
 /* Print any metadata about the option used to control DIAGNOSTIC to CONTEXT's
    printer, e.g. " [-Werror=uninitialized]".
    Subroutine of diagnostic_report_diagnostic.  */
@@ -1504,6 +1550,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   pp_output_formatted_text (context->printer);
   if (context->show_cwe)
     print_any_cwe (context, diagnostic);
+  if (context->show_rules)
+    print_any_rules (context, diagnostic);
   if (context->show_option_requested)
     print_option_information (context, diagnostic, orig_diag_kind);
   (*diagnostic_finalizer (context)) (context, diagnostic, orig_diag_kind);

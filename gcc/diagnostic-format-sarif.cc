@@ -1556,6 +1556,7 @@ diagnostic_output_format_init_sarif (diagnostic_context *context)
 
   /* The metadata is handled in SARIF format, rather than as text.  */
   context->show_cwe = false;
+  context->show_rules = false;
 
   /* The option is handled in SARIF format, rather than as text.  */
   context->show_option_requested = false;
