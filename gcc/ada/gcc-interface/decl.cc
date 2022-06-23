@@ -212,6 +212,7 @@ static tree gnat_to_gnu_subprog_type (Entity_Id, bool, bool, tree *);
 static int adjust_packed (tree, tree, int);
 static tree gnat_to_gnu_field (Entity_Id, tree, int, bool, bool);
 static enum inline_status_t inline_status_for_subprog (Entity_Id);
+static Entity_Id Gigi_Cloned_Subtype (Entity_Id);
 static tree gnu_ext_name_for_subprog (Entity_Id, tree);
 static void set_nonaliased_component_on_array_type (tree);
 static void set_reverse_storage_order_on_array_type (tree);
@@ -301,8 +302,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
   const bool foreign = Has_Foreign_Convention (gnat_entity);
   /* For a type, contains the equivalent GNAT node to be used in gigi.  */
   Entity_Id gnat_equiv_type = Empty;
-  /* For a type, contains the GNAT node to be used for back-annotation.  */
-  Entity_Id gnat_annotate_type = Empty;
+  /* For a subtype, contains the GNAT node to be used  as cloned subtype.  */
+  Entity_Id gnat_cloned_subtype = Empty;
   /* Temporary used to walk the GNAT tree.  */
   Entity_Id gnat_temp;
   /* Contains the GCC DECL node which is equivalent to the input GNAT node.
@@ -1807,6 +1808,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
     case E_Modular_Integer_Subtype:
     case E_Ordinary_Fixed_Point_Subtype:
     case E_Decimal_Fixed_Point_Subtype:
+      gnat_cloned_subtype = Gigi_Cloned_Subtype (gnat_entity);
+      if (Present (gnat_cloned_subtype))
+	break;
 
       /* For integral subtypes, we make a new INTEGER_TYPE.  Note that we do
 	 not want to call create_range_type since we would like each subtype
@@ -2035,6 +2039,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       break;
 
     case E_Floating_Point_Subtype:
+      gnat_cloned_subtype = Gigi_Cloned_Subtype (gnat_entity);
+      if (Present (gnat_cloned_subtype))
+	break;
+
       /* See the E_Signed_Integer_Subtype case for the rationale.  */
       if (!definition
 	  && Present (Ancestor_Subtype (gnat_entity))
@@ -2446,6 +2454,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       break;
 
     case E_Array_Subtype:
+      gnat_cloned_subtype = Gigi_Cloned_Subtype (gnat_entity);
+      if (Present (gnat_cloned_subtype))
+	break;
 
       /* This is the actual data type for array variables.  Multidimensional
 	 arrays are implemented as arrays of arrays.  Note that arrays which
@@ -3443,18 +3454,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* ... fall through ... */
 
     case E_Record_Subtype:
-      /* If Cloned_Subtype is Present it means this record subtype has
-	 identical layout to that type or subtype and we should use
-	 that GCC type for this one.  The front-end guarantees that
-	 the component list is shared.  */
-      if (Present (Cloned_Subtype (gnat_entity)))
-	{
-	  gnu_decl = gnat_to_gnu_entity (Cloned_Subtype (gnat_entity),
-					 NULL_TREE, false);
-	  gnat_annotate_type = Cloned_Subtype (gnat_entity);
-	  maybe_present = true;
-	  break;
-	}
+      gnat_cloned_subtype = Gigi_Cloned_Subtype (gnat_entity);
+      if (Present (gnat_cloned_subtype))
+	break;
 
       /* Otherwise, first ensure the base type is elaborated.  Then, if we are
 	 changing the type, make a new type with each field having the type of
@@ -3865,6 +3867,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       break;
 
     case E_Access_Subtype:
+      gnat_cloned_subtype = Gigi_Cloned_Subtype (gnat_entity);
+      if (Present (gnat_cloned_subtype))
+	break;
+
       /* We treat this as identical to its base type; any constraint is
 	 meaningful only to the front-end.  */
       gnu_type = gnat_to_gnu_type (gnat_equiv_type);
@@ -4275,6 +4281,27 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
     default:
       gcc_unreachable ();
+    }
+
+  /* If this is the clone of a subtype, just reuse the cloned subtype; another
+     approach would be to set the cloned subtype as the DECL_ORIGINAL_TYPE of
+     the entity, which would generate a DW_TAG_typedef in the debug info, but
+     at the cost of the duplication of the GCC type and, more annoyingly, of
+     the need to update the copy if the cloned subtype is not complete yet.  */
+  if (Present (gnat_cloned_subtype))
+    {
+      gnu_decl = gnat_to_gnu_entity (gnat_cloned_subtype, NULL_TREE, false);
+      maybe_present = true;
+
+      if (!TYPE_IS_DUMMY_P (TREE_TYPE (gnu_decl)))
+	{
+	  if (!Known_Alignment (gnat_entity))
+	    Copy_Alignment (gnat_entity, gnat_cloned_subtype);
+	  if (!Known_Esize (gnat_entity))
+	    Copy_Esize (gnat_entity, gnat_cloned_subtype);
+	  if (!Known_RM_Size (gnat_entity))
+	    Copy_RM_Size (gnat_entity, gnat_cloned_subtype);
+	}
     }
 
   /* If we had a case where we evaluated another type and it might have
@@ -4768,19 +4795,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	}
     }
 
-  /* Otherwise, for a type reusing an existing DECL, back-annotate values.  */
-  else if (is_type
-	   && !TYPE_IS_DUMMY_P (TREE_TYPE (gnu_decl))
-	   && Present (gnat_annotate_type))
-    {
-      if (!Known_Alignment (gnat_entity))
-	Copy_Alignment (gnat_entity, gnat_annotate_type);
-      if (!Known_Esize (gnat_entity))
-	Copy_Esize (gnat_entity, gnat_annotate_type);
-      if (!Known_RM_Size (gnat_entity))
-	Copy_RM_Size (gnat_entity, gnat_annotate_type);
-    }
-
   /* If we haven't already, associate the ..._DECL node that we just made with
      the input GNAT entity node.  */
   if (!saved)
@@ -5112,6 +5126,58 @@ finalize_from_limited_with (void)
 
       free (p);
     }
+}
+
+/* Return the cloned subtype to be used for GNAT_ENTITY, if the latter is a
+   kind of subtype that needs to be considered as a clone by Gigi, otherwise
+   return Empty.  */
+
+static Entity_Id
+Gigi_Cloned_Subtype (Entity_Id gnat_entity)
+{
+  Node_Id gnat_decl;
+
+  switch (Ekind (gnat_entity))
+    {
+    case E_Class_Wide_Subtype:
+      if (Present (Equivalent_Type (gnat_entity)))
+	return Empty;
+
+      /* ... fall through ... */
+
+    case E_Record_Subtype:
+      /* If Cloned_Subtype is Present, this means that this record subtype has
+	 the same layout as that of the specified (sub)type, and also that the
+	 front-end guarantees that the component list is shared.  */
+      return Cloned_Subtype (gnat_entity);
+
+    case E_Access_Subtype:
+    case E_Array_Subtype:
+    case E_Signed_Integer_Subtype:
+    case E_Enumeration_Subtype:
+    case E_Modular_Integer_Subtype:
+    case E_Ordinary_Fixed_Point_Subtype:
+    case E_Decimal_Fixed_Point_Subtype:
+    case E_Floating_Point_Subtype:
+      if (Sloc (gnat_entity) == Standard_Location)
+	break;
+
+      /* We return true for the subtypes generated for the actuals of formal
+	 private types in instantiations, so that these actuals are the types
+	 of the instantiated objects in the debug info.  */
+      gnat_decl = Declaration_Node (gnat_entity);
+      if (Present (gnat_decl)
+	  && Nkind (gnat_decl) == N_Subtype_Declaration
+	  && Present (Generic_Parent_Type (gnat_decl))
+	  && Is_Entity_Name (Subtype_Indication (gnat_decl)))
+	return Entity (Subtype_Indication (gnat_decl));
+      break;
+
+    default:
+      break;
+    }
+
+  return Empty;
 }
 
 /* Return the equivalent type to be used for GNAT_ENTITY, if it's a kind
