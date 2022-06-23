@@ -3867,7 +3867,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
     case E_Access_Subtype:
       /* We treat this as identical to its base type; any constraint is
 	 meaningful only to the front-end.  */
-      gnu_decl = gnat_to_gnu_entity (gnat_equiv_type, NULL_TREE, false);
+      gnu_type = gnat_to_gnu_type (gnat_equiv_type);
       maybe_present = true;
 
       /* The designated subtype must be elaborated as well, if it does
@@ -3877,11 +3877,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  && Is_Frozen (Directly_Designated_Type (gnat_entity))
 	  && No (Freeze_Node (Directly_Designated_Type (gnat_entity))))
 	{
-	  tree gnu_base_type = TREE_TYPE (gnu_decl);
-	  tree gnu_desig_base_type
-	    = TYPE_IS_FAT_POINTER_P (gnu_base_type)
-	      ? TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_base_type)))
-	      : TREE_TYPE (gnu_base_type);
+	  tree gnu_desig_type
+	    = TYPE_IS_FAT_POINTER_P (gnu_type)
+	      ? TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_type)))
+	      : TREE_TYPE (gnu_type);
 
 	  /* If we are to defer elaborating incomplete types, make a dummy
 	     type node and elaborate it later.  */
@@ -3898,7 +3897,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  /* Otherwise elaborate the designated subtype only if its base type
 	     has already been elaborated.  */
-	  else if (!TYPE_IS_DUMMY_P (gnu_desig_base_type))
+	  else if (!TYPE_IS_DUMMY_P (gnu_desig_type))
 	    gnat_to_gnu_entity (Directly_Designated_Type (gnat_entity),
 				NULL_TREE, false);
 	}
