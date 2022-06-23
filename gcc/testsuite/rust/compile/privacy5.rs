@@ -12,7 +12,6 @@ mod orange {
 
         let _: green::Foo; // { dg-error "definition is private in this context" }
 
-        fn any(a0: green::Foo, a1: green::Bar) {}
-        // { dg-error "definition is private in this context" "" { target *-*-* } .-1 }
+        fn any(a0: green::Foo, a1: green::Bar) {} // { dg-error "20:definition is private in this context" }
     }
 }
