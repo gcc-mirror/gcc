@@ -32,14 +32,14 @@ namespace test_fs = std::experimental::filesystem;
 #endif
 #include <algorithm>
 #include <fstream>
+#include <random>   // std::random_device
 #include <string>
+#include <system_error>
 #include <cstdio>
 #include <unistd.h> // unlink, close, getpid, geteuid
 
 #if defined(_GNU_SOURCE) || _XOPEN_SOURCE >= 500 || _POSIX_C_SOURCE >= 200112L
 #include <stdlib.h> // mkstemp
-#else
-#include <random>   // std::random_device
 #endif
 
 #ifndef _GLIBCXX_HAVE_SYMLINK
@@ -123,32 +123,51 @@ namespace __gnu_test
     if (pos != file.npos)
       file.erase(0, pos+1);
 
+    file.reserve(file.size() + 40);
+    file.insert(0, "filesystem-test.");
+
+    // A counter, starting from a random value, to be included as part
+    // of the filename being returned, and incremented each time
+    // this function is used.  It allows us to ensure that two calls
+    // to this function can never return the same filename, something
+    // testcases do when they need multiple non-existent filenames
+    // for their purposes.
+    static unsigned counter = std::random_device{}();
+    file += '.';
+    file += std::to_string(counter++);
+    file += '.';
+
     test_fs::path p;
 #if defined(_GNU_SOURCE) || _XOPEN_SOURCE >= 500 || _POSIX_C_SOURCE >= 200112L
-    char tmp[] = "filesystem-test.XXXXXX";
-    int fd = ::mkstemp(tmp);
+
+    // Use mkstemp to determine the name of a file which does not exist yet.
+    //
+    // Note that we have seen on some systems (such as RTEMS, for instance)
+    // that mkstemp behaves very predictably, causing it to always try
+    // the same sequence of file names.  In other words, if we call mkstemp
+    // with a pattern, delete the file it created (which is what we do, here),
+    // and call mkstemp with the same pattern again, it returns the same
+    // filename once more.  While most implementations introduce a degree
+    // of randomness, it is not mandated by the standard, and this is why
+    // we also include a counter in the template passed to mkstemp.
+    file += "XXXXXX";
+    int fd = ::mkstemp(&file[0]);
     if (fd == -1)
       throw test_fs::filesystem_error("mkstemp failed",
 	  std::error_code(errno, std::generic_category()));
-    ::unlink(tmp);
+    ::unlink(file.c_str());
     ::close(fd);
-    if (!file.empty())
-      file.insert(0, 1, '-');
-    file.insert(0, tmp);
-    p = file;
+    p = std::move(file);
 #else
     if (file.length() > 64)
       file.resize(64);
-    char buf[128];
-    static unsigned counter = std::random_device{}();
-#if _GLIBCXX_USE_C99_STDIO
-    std::snprintf(buf, 128,
-#else
-    std::sprintf(buf,
-#endif
-      "filesystem-test.%u.%lu-%s", counter++, (unsigned long) ::getpid(),
-      file.c_str());
-    p = buf;
+    // The combination of random counter and PID should be unique for a given
+    // run of the testsuite.
+    file += std::to_string(::getpid());
+    p = std::move(file);
+    if (test_fs::exists(p))
+      throw test_fs::filesystem_error("Failed to generate unique pathname", p,
+	  std::make_error_code(std::errc::file_exists));
 #endif
     return p;
   }
