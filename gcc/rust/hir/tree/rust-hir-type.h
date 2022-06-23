@@ -87,9 +87,7 @@ class ImplTraitType : public Type
 {
   // TypeParamBounds type_param_bounds;
   // inlined form
-  std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
-
-  Location locus;
+  std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -100,17 +98,15 @@ protected:
   }
 
 public:
-  ImplTraitType (
-    Analysis::NodeMapping mappings,
-    std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
-    Location locus)
-    : Type (mappings), type_param_bounds (std::move (type_param_bounds)),
-      locus (locus)
+  ImplTraitType (Analysis::NodeMapping mappings,
+		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
+		 Location locus)
+    : Type (mappings, locus), type_param_bounds (std::move (type_param_bounds))
   {}
 
   // copy constructor with vector clone
   ImplTraitType (ImplTraitType const &other)
-    : Type (other.mappings), locus (other.locus)
+    : Type (other.mappings, other.locus)
   {
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
@@ -136,8 +132,6 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
-
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 };
@@ -146,8 +140,7 @@ public:
 class TraitObjectType : public Type
 {
   bool has_dyn;
-  std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
-  Location locus;
+  std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -160,15 +153,15 @@ protected:
 public:
   TraitObjectType (
     Analysis::NodeMapping mappings,
-    std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
+    std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
     Location locus, bool is_dyn_dispatch)
-    : Type (mappings), has_dyn (is_dyn_dispatch),
-      type_param_bounds (std::move (type_param_bounds)), locus (locus)
+    : Type (mappings, locus), has_dyn (is_dyn_dispatch),
+      type_param_bounds (std::move (type_param_bounds))
   {}
 
   // copy constructor with vector clone
   TraitObjectType (TraitObjectType const &other)
-    : Type (other.mappings), has_dyn (other.has_dyn), locus (other.locus)
+    : Type (other.mappings, other.locus), has_dyn (other.has_dyn)
   {
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
@@ -194,17 +187,15 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
-
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
-  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {
     return type_param_bounds;
   }
 
-  const std::vector<std::unique_ptr<TypeParamBound> > &
+  const std::vector<std::unique_ptr<TypeParamBound>> &
   get_type_param_bounds () const
   {
     return type_param_bounds;
@@ -215,7 +206,6 @@ public:
 class ParenthesisedType : public TypeNoBounds
 {
   std::unique_ptr<Type> type_in_parens;
-  Location locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -236,15 +226,15 @@ public:
   // Constructor uses Type pointer for polymorphism
   ParenthesisedType (Analysis::NodeMapping mappings,
 		     std::unique_ptr<Type> type_inside_parens, Location locus)
-    : TypeNoBounds (mappings), type_in_parens (std::move (type_inside_parens)),
-      locus (locus)
+    : TypeNoBounds (mappings, locus),
+      type_in_parens (std::move (type_inside_parens))
   {}
 
   /* Copy constructor uses custom deep copy method for type to preserve
    * polymorphism */
   ParenthesisedType (ParenthesisedType const &other)
-    : TypeNoBounds (other.mappings),
-      type_in_parens (other.type_in_parens->clone_type ()), locus (other.locus)
+    : TypeNoBounds (other.mappings, other.locus),
+      type_in_parens (other.type_in_parens->clone_type ())
   {}
 
   // overload assignment operator to use custom clone method
@@ -274,8 +264,6 @@ public:
     return type_in_parens->to_trait_bound (true);
   }
 
-  Location get_locus () const { return locus; }
-
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 };
@@ -284,8 +272,6 @@ public:
 class ImplTraitTypeOneBound : public TypeNoBounds
 {
   TraitBound trait_bound;
-
-  Location locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -305,13 +291,10 @@ protected:
 public:
   ImplTraitTypeOneBound (Analysis::NodeMapping mappings, TraitBound trait_bound,
 			 Location locus)
-    : TypeNoBounds (mappings), trait_bound (std::move (trait_bound)),
-      locus (locus)
+    : TypeNoBounds (mappings, locus), trait_bound (std::move (trait_bound))
   {}
 
   std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -323,21 +306,20 @@ class TypePath; // definition moved to "rust-path.h"
  * specific order */
 class TupleType : public TypeNoBounds
 {
-  std::vector<std::unique_ptr<Type> > elems;
-  Location locus;
+  std::vector<std::unique_ptr<Type>> elems;
 
 public:
   // Returns whether the tuple type is the unit type, i.e. has no elements.
   bool is_unit_type () const { return elems.empty (); }
 
   TupleType (Analysis::NodeMapping mappings,
-	     std::vector<std::unique_ptr<Type> > elems, Location locus)
-    : TypeNoBounds (mappings), elems (std::move (elems)), locus (locus)
+	     std::vector<std::unique_ptr<Type>> elems, Location locus)
+    : TypeNoBounds (mappings, locus), elems (std::move (elems))
   {}
 
   // copy constructor with vector clone
   TupleType (TupleType const &other)
-    : TypeNoBounds (other.mappings), locus (other.locus)
+    : TypeNoBounds (other.mappings, other.locus)
   {
     mappings = other.mappings;
     elems.reserve (other.elems.size ());
@@ -363,16 +345,11 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
-
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
-  std::vector<std::unique_ptr<Type> > &get_elems () { return elems; }
-  const std::vector<std::unique_ptr<Type> > &get_elems () const
-  {
-    return elems;
-  }
+  std::vector<std::unique_ptr<Type>> &get_elems () { return elems; }
+  const std::vector<std::unique_ptr<Type>> &get_elems () const { return elems; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -392,8 +369,6 @@ protected:
  * Represented as "!". */
 class NeverType : public TypeNoBounds
 {
-  Location locus;
-
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -408,12 +383,10 @@ protected:
 
 public:
   NeverType (Analysis::NodeMapping mappings, Location locus)
-    : TypeNoBounds (mappings), locus (locus)
+    : TypeNoBounds (mappings, locus)
   {}
 
   std::string as_string () const override { return "! (never type)"; }
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -425,19 +398,18 @@ class RawPointerType : public TypeNoBounds
 private:
   Mutability mut;
   std::unique_ptr<Type> type;
-  Location locus;
 
 public:
   // Constructor requires pointer for polymorphism reasons
   RawPointerType (Analysis::NodeMapping mappings, Mutability mut,
 		  std::unique_ptr<Type> type, Location locus)
-    : TypeNoBounds (mappings), mut (mut), type (std::move (type)), locus (locus)
+    : TypeNoBounds (mappings, locus), mut (mut), type (std::move (type))
   {}
 
   // Copy constructor calls custom polymorphic clone function
   RawPointerType (RawPointerType const &other)
-    : TypeNoBounds (other.mappings), mut (other.mut),
-      type (other.type->clone_type ()), locus (other.locus)
+    : TypeNoBounds (other.mappings, other.locus), mut (other.mut),
+      type (other.type->clone_type ())
   {}
 
   // overload assignment operator to use custom clone method
@@ -455,8 +427,6 @@ public:
   RawPointerType &operator= (RawPointerType &&other) = default;
 
   std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -495,7 +465,6 @@ class ReferenceType : public TypeNoBounds
 
   Mutability mut;
   std::unique_ptr<Type> type;
-  Location locus;
 
 public:
   // Returns whether the reference is mutable or immutable.
@@ -508,14 +477,14 @@ public:
   ReferenceType (Analysis::NodeMapping mappings, Mutability mut,
 		 std::unique_ptr<Type> type_no_bounds, Location locus,
 		 Lifetime lifetime)
-    : TypeNoBounds (mappings), lifetime (std::move (lifetime)), mut (mut),
-      type (std::move (type_no_bounds)), locus (locus)
+    : TypeNoBounds (mappings, locus), lifetime (std::move (lifetime)),
+      mut (mut), type (std::move (type_no_bounds))
   {}
 
   // Copy constructor with custom clone method
   ReferenceType (ReferenceType const &other)
-    : TypeNoBounds (other.mappings), lifetime (other.lifetime), mut (other.mut),
-      type (other.type->clone_type ()), locus (other.locus)
+    : TypeNoBounds (other.mappings, other.locus), lifetime (other.lifetime),
+      mut (other.mut), type (other.type->clone_type ())
   {}
 
   // Operator overload assignment operator to custom clone the unique pointer
@@ -535,8 +504,6 @@ public:
   ReferenceType &operator= (ReferenceType &&other) = default;
 
   std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -568,20 +535,20 @@ class ArrayType : public TypeNoBounds
 {
   std::unique_ptr<Type> elem_type;
   std::unique_ptr<Expr> size;
-  Location locus;
 
 public:
   // Constructor requires pointers for polymorphism
   ArrayType (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
 	     std::unique_ptr<Expr> array_size, Location locus)
-    : TypeNoBounds (mappings), elem_type (std::move (type)),
-      size (std::move (array_size)), locus (locus)
+    : TypeNoBounds (mappings, locus), elem_type (std::move (type)),
+      size (std::move (array_size))
   {}
 
   // Copy constructor requires deep copies of both unique pointers
   ArrayType (ArrayType const &other)
-    : TypeNoBounds (other.mappings), elem_type (other.elem_type->clone_type ()),
-      size (other.size->clone_expr ()), locus (other.locus)
+    : TypeNoBounds (other.mappings, other.locus),
+      elem_type (other.elem_type->clone_type ()),
+      size (other.size->clone_expr ())
   {}
 
   // Overload assignment operator to deep copy pointers
@@ -600,16 +567,12 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
-
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
   Type *get_element_type () { return elem_type.get (); }
 
   Expr *get_size_expr () { return size.get (); }
-
-  Location &get_locus () { return locus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -629,19 +592,18 @@ protected:
 class SliceType : public TypeNoBounds
 {
   std::unique_ptr<Type> elem_type;
-  Location locus;
 
 public:
   // Constructor requires pointer for polymorphism
   SliceType (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
 	     Location locus)
-    : TypeNoBounds (mappings), elem_type (std::move (type)), locus (locus)
+    : TypeNoBounds (mappings, locus), elem_type (std::move (type))
   {}
 
   // Copy constructor requires deep copy of Type smart pointer
   SliceType (SliceType const &other)
-    : TypeNoBounds (other.mappings), elem_type (other.elem_type->clone_type ()),
-      locus (other.locus)
+    : TypeNoBounds (other.mappings, other.locus),
+      elem_type (other.elem_type->clone_type ())
   {}
 
   // Overload assignment operator to deep copy
@@ -659,8 +621,6 @@ public:
   SliceType &operator= (SliceType &&other) = default;
 
   std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -684,8 +644,6 @@ protected:
  * pattern) */
 class InferredType : public TypeNoBounds
 {
-  Location locus;
-
   // e.g. Vec<_> = whatever
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -704,12 +662,10 @@ protected:
 
 public:
   InferredType (Analysis::NodeMapping mappings, Location locus)
-    : TypeNoBounds (mappings), locus (locus)
+    : TypeNoBounds (mappings, locus)
   {}
 
   std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -804,8 +760,6 @@ class BareFunctionType : public TypeNoBounds
 
   std::unique_ptr<Type> return_type; // inlined version
 
-  Location locus;
-
 public:
   // Whether a return type is defined with the function.
   bool has_return_type () const { return return_type != nullptr; }
@@ -818,18 +772,20 @@ public:
 		    FunctionQualifiers qualifiers,
 		    std::vector<MaybeNamedParam> named_params, bool is_variadic,
 		    std::unique_ptr<Type> type, Location locus)
-    : TypeNoBounds (mappings), for_lifetimes (std::move (lifetime_params)),
+    : TypeNoBounds (mappings, locus),
+      for_lifetimes (std::move (lifetime_params)),
       function_qualifiers (std::move (qualifiers)),
       params (std::move (named_params)), is_variadic (is_variadic),
-      return_type (std::move (type)), locus (locus)
+      return_type (std::move (type))
   {}
 
   // Copy constructor with clone
   BareFunctionType (BareFunctionType const &other)
-    : TypeNoBounds (other.mappings), for_lifetimes (other.for_lifetimes),
+    : TypeNoBounds (other.mappings, other.locus),
+      for_lifetimes (other.for_lifetimes),
       function_qualifiers (other.function_qualifiers), params (other.params),
       is_variadic (other.is_variadic),
-      return_type (other.return_type->clone_type ()), locus (other.locus)
+      return_type (other.return_type->clone_type ())
   {}
 
   // Overload assignment operator to deep copy
@@ -851,8 +807,6 @@ public:
   BareFunctionType &operator= (BareFunctionType &&other) = default;
 
   std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;

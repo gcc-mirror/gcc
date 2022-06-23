@@ -478,16 +478,18 @@ public:
   virtual void accept_vis (HIRTypeVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_mappings () const { return mappings; }
+  virtual Location get_locus () const { return locus; }
 
 protected:
-  Type (Analysis::NodeMapping mappings) : mappings (mappings) {}
+  Type (Analysis::NodeMapping mappings, Location locus)
+    : mappings (mappings), locus (locus)
+  {}
 
   // Clone function implementation as pure virtual method
   virtual Type *clone_type_impl () const = 0;
 
   Analysis::NodeMapping mappings;
-
-  // FIXME: How do we get the location here for each type?
+  Location locus;
 };
 
 // A type without parentheses? - abstract
@@ -501,7 +503,9 @@ public:
   }
 
 protected:
-  TypeNoBounds (Analysis::NodeMapping mappings) : Type (mappings) {}
+  TypeNoBounds (Analysis::NodeMapping mappings, Location locus)
+    : Type (mappings, locus)
+  {}
 
   // Clone function implementation as pure virtual method
   virtual TypeNoBounds *clone_type_no_bounds_impl () const = 0;

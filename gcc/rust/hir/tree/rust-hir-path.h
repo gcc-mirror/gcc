@@ -623,7 +623,6 @@ class TypePath : public TypeNoBounds
 public:
   bool has_opening_scope_resolution;
   std::vector<std::unique_ptr<TypePathSegment> > segments;
-  Location locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -660,16 +659,15 @@ public:
   TypePath (Analysis::NodeMapping mappings,
 	    std::vector<std::unique_ptr<TypePathSegment> > segments,
 	    Location locus, bool has_opening_scope_resolution = false)
-    : TypeNoBounds (mappings),
+    : TypeNoBounds (mappings, locus),
       has_opening_scope_resolution (has_opening_scope_resolution),
-      segments (std::move (segments)), locus (locus)
+      segments (std::move (segments))
   {}
 
   // Copy constructor with vector clone
   TypePath (TypePath const &other)
-    : TypeNoBounds (other.mappings),
-      has_opening_scope_resolution (other.has_opening_scope_resolution),
-      locus (other.locus)
+    : TypeNoBounds (other.mappings, other.locus),
+      has_opening_scope_resolution (other.has_opening_scope_resolution)
   {
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
@@ -702,8 +700,6 @@ public:
 
   // Creates a trait bound with a clone of this type path as its only element.
   TraitBound *to_trait_bound (bool in_parens) const override;
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -865,7 +861,6 @@ class QualifiedPathInType : public TypeNoBounds
   QualifiedPathType path_type;
   std::unique_ptr<TypePathSegment> associated_segment;
   std::vector<std::unique_ptr<TypePathSegment> > segments;
-  Location locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -888,9 +883,9 @@ public:
     std::unique_ptr<TypePathSegment> associated_segment,
     std::vector<std::unique_ptr<TypePathSegment> > path_segments,
     Location locus = Location ())
-    : TypeNoBounds (mappings), path_type (std::move (qual_path_type)),
+    : TypeNoBounds (mappings, locus), path_type (std::move (qual_path_type)),
       associated_segment (std::move (associated_segment)),
-      segments (std::move (path_segments)), locus (locus)
+      segments (std::move (path_segments))
   {}
 
   /* TODO: maybe make a shortcut constructor that has QualifiedPathType elements
@@ -898,8 +893,7 @@ public:
 
   // Copy constructor with vector clone
   QualifiedPathInType (QualifiedPathInType const &other)
-    : TypeNoBounds (other.mappings), path_type (other.path_type),
-      locus (other.locus)
+    : TypeNoBounds (other.mappings, other.locus), path_type (other.path_type)
   {
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
@@ -943,8 +937,6 @@ public:
   {
     return segments;
   }
-
-  Location get_locus () { return locus; }
 };
 
 class SimplePathSegment
