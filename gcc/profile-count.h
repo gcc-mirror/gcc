@@ -605,9 +605,10 @@ public:
       return apply_scale (num, 1);
     }
 
-  profile_probability operator*= (int64_t den) const
+  profile_probability operator*= (int64_t num)
     {
-      return *this * den;
+      *this = apply_scale (num, 1);
+      return *this;
     }
 
   profile_probability operator/ (int64_t den) const
@@ -615,9 +616,10 @@ public:
       return apply_scale (1, den);
     }
 
-  profile_probability operator/= (int64_t den) const
+  profile_probability operator/= (int64_t den)
     {
-      return *this / den;
+      *this = apply_scale (1, den);
+      return *this;
     }
 
   /* Get the value of the count.  */
@@ -1017,9 +1019,10 @@ public:
       return apply_scale (num, 1);
     }
 
-  profile_count operator*= (int64_t den) const
+  profile_count operator*= (int64_t num)
     {
-      return *this * den;
+      *this = apply_scale (num, 1);
+      return *this;
     }
 
   profile_count operator/ (int64_t den) const
@@ -1027,9 +1030,10 @@ public:
       return apply_scale (1, den);
     }
 
-  profile_count operator/= (int64_t den) const
+  profile_count operator/= (int64_t den)
     {
-      return *this / den;
+      *this = apply_scale (1, den);
+      return *this;
     }
 
   /* Return true when value is not zero and can be used for scaling. 
