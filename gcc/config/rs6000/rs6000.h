@@ -2253,20 +2253,6 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_CRYPTO	MASK_CRYPTO	/* crypto funcs.  */
 #define RS6000_BTM_HTM		MASK_HTM	/* hardware TM funcs.  */
 #define RS6000_BTM_FRE		MASK_POPCNTB	/* FRE instruction.  */
-#define RS6000_BTM_FRES		MASK_PPC_GFXOPT	/* FRES instruction.  */
-#define RS6000_BTM_FRSQRTE	MASK_PPC_GFXOPT	/* FRSQRTE instruction.  */
-#define RS6000_BTM_FRSQRTES	MASK_POPCNTB	/* FRSQRTES instruction.  */
-#define RS6000_BTM_POPCNTD	MASK_POPCNTD	/* Target supports ISA 2.06.  */
-#define RS6000_BTM_CELL		MASK_FPRND	/* Target is cell powerpc.  */
-#define RS6000_BTM_DFP		MASK_DFP	/* Decimal floating point.  */
-#define RS6000_BTM_HARD_FLOAT	MASK_SOFT_FLOAT	/* Hardware floating point.  */
-#define RS6000_BTM_LDBL128	MASK_MULTIPLE	/* 128-bit long double.  */
-#define RS6000_BTM_64BIT	MASK_64BIT	/* 64-bit addressing.  */
-#define RS6000_BTM_POWERPC64	MASK_POWERPC64	/* 64-bit registers.  */
-#define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
-#define RS6000_BTM_FLOAT128_HW	MASK_FLOAT128_HW /* IEEE 128-bit float h/w.  */
-#define RS6000_BTM_MMA		MASK_MMA	/* ISA 3.1 MMA.  */
-#define RS6000_BTM_P10		MASK_POWER10
 
 
 enum rs6000_builtin_type_index

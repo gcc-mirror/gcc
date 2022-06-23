@@ -3383,28 +3383,28 @@ rs6000_builtin_mask_calculate (void)
 	  | ((TARGET_CMPB)		    ? RS6000_BTM_CMPB	   : 0)
 	  | ((TARGET_VSX)		    ? RS6000_BTM_VSX	   : 0)
 	  | ((TARGET_FRE)		    ? RS6000_BTM_FRE	   : 0)
-	  | ((TARGET_FRES)		    ? RS6000_BTM_FRES	   : 0)
-	  | ((TARGET_FRSQRTE)		    ? RS6000_BTM_FRSQRTE   : 0)
-	  | ((TARGET_FRSQRTES)		    ? RS6000_BTM_FRSQRTES  : 0)
-	  | ((TARGET_POPCNTD)		    ? RS6000_BTM_POPCNTD   : 0)
-	  | ((rs6000_cpu == PROCESSOR_CELL) ? RS6000_BTM_CELL      : 0)
+	  | ((TARGET_FRES)		    ? OPTION_MASK_PPC_GFXOPT : 0)
+	  | ((TARGET_FRSQRTE)		    ? OPTION_MASK_PPC_GFXOPT : 0)
+	  | ((TARGET_FRSQRTES)		    ? OPTION_MASK_POPCNTB    : 0)
+	  | ((TARGET_POPCNTD)		    ? OPTION_MASK_POPCNTD    : 0)
+	  | ((rs6000_cpu == PROCESSOR_CELL) ? OPTION_MASK_FPRND      : 0)
 	  | ((TARGET_P8_VECTOR)		    ? RS6000_BTM_P8_VECTOR : 0)
 	  | ((TARGET_P9_VECTOR)		    ? RS6000_BTM_P9_VECTOR : 0)
 	  | ((TARGET_P9_MISC)		    ? RS6000_BTM_P9_MISC   : 0)
 	  | ((TARGET_MODULO)		    ? RS6000_BTM_MODULO    : 0)
-	  | ((TARGET_64BIT)		    ? RS6000_BTM_64BIT     : 0)
-	  | ((TARGET_POWERPC64)		    ? RS6000_BTM_POWERPC64 : 0)
+	  | ((TARGET_64BIT)		    ? MASK_64BIT	     : 0)
+	  | ((TARGET_POWERPC64)		    ? MASK_POWERPC64	     : 0)
 	  | ((TARGET_CRYPTO)		    ? RS6000_BTM_CRYPTO	   : 0)
 	  | ((TARGET_HTM)		    ? RS6000_BTM_HTM	   : 0)
-	  | ((TARGET_DFP)		    ? RS6000_BTM_DFP	   : 0)
-	  | ((TARGET_HARD_FLOAT)	    ? RS6000_BTM_HARD_FLOAT : 0)
+	  | ((TARGET_DFP)		    ? OPTION_MASK_DFP	     : 0)
+	  | ((TARGET_HARD_FLOAT)	    ? OPTION_MASK_SOFT_FLOAT : 0)
 	  | ((TARGET_LONG_DOUBLE_128
 	      && TARGET_HARD_FLOAT
-	      && !TARGET_IEEEQUAD)	    ? RS6000_BTM_LDBL128   : 0)
-	  | ((TARGET_FLOAT128_TYPE)	    ? RS6000_BTM_FLOAT128  : 0)
-	  | ((TARGET_FLOAT128_HW)	    ? RS6000_BTM_FLOAT128_HW : 0)
-	  | ((TARGET_MMA)		    ? RS6000_BTM_MMA	   : 0)
-	  | ((TARGET_POWER10)               ? RS6000_BTM_P10       : 0));
+	      && !TARGET_IEEEQUAD)	    ? OPTION_MASK_MULTIPLE   : 0)
+	  | ((TARGET_FLOAT128_TYPE)	    ? OPTION_MASK_FLOAT128_KEYWORD : 0)
+	  | ((TARGET_FLOAT128_HW)	    ? OPTION_MASK_FLOAT128_HW : 0)
+	  | ((TARGET_MMA)		    ? OPTION_MASK_MMA	     : 0)
+	  | ((TARGET_POWER10)		    ? OPTION_MASK_POWER10    : 0));
 }
 
 /* Implement TARGET_MD_ASM_ADJUST.  All asm statements are considered
@@ -24056,24 +24056,24 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
   { "altivec",		 RS6000_BTM_ALTIVEC,	false, false },
   { "vsx",		 RS6000_BTM_VSX,	false, false },
   { "fre",		 RS6000_BTM_FRE,	false, false },
-  { "fres",		 RS6000_BTM_FRES,	false, false },
-  { "frsqrte",		 RS6000_BTM_FRSQRTE,	false, false },
-  { "frsqrtes",		 RS6000_BTM_FRSQRTES,	false, false },
-  { "popcntd",		 RS6000_BTM_POPCNTD,	false, false },
-  { "cell",		 RS6000_BTM_CELL,	false, false },
+  { "fres",		 OPTION_MASK_PPC_GFXOPT, false, false },
+  { "frsqrte",		 OPTION_MASK_PPC_GFXOPT, false, false },
+  { "frsqrtes",		 OPTION_MASK_POPCNTB,	false, false },
+  { "popcntd",		 OPTION_MASK_POPCNTD,	false, false },
+  { "cell",		 OPTION_MASK_FPRND,	false, false },
   { "power8-vector",	 RS6000_BTM_P8_VECTOR,	false, false },
   { "power9-vector",	 RS6000_BTM_P9_VECTOR,	false, false },
   { "power9-misc",	 RS6000_BTM_P9_MISC,	false, false },
   { "crypto",		 RS6000_BTM_CRYPTO,	false, false },
   { "htm",		 RS6000_BTM_HTM,	false, false },
-  { "hard-dfp",		 RS6000_BTM_DFP,	false, false },
-  { "hard-float",	 RS6000_BTM_HARD_FLOAT,	false, false },
-  { "long-double-128",	 RS6000_BTM_LDBL128,	false, false },
-  { "powerpc64",	 RS6000_BTM_POWERPC64,  false, false },
-  { "float128",		 RS6000_BTM_FLOAT128,   false, false },
-  { "float128-hw",	 RS6000_BTM_FLOAT128_HW,false, false },
-  { "mma",		 RS6000_BTM_MMA,	false, false },
-  { "power10",		 RS6000_BTM_P10,	false, false },
+  { "hard-dfp",		 OPTION_MASK_DFP,	false, false },
+  { "hard-float",	 OPTION_MASK_SOFT_FLOAT, false, false },
+  { "long-double-128",	 OPTION_MASK_MULTIPLE,	false, false },
+  { "powerpc64",	 MASK_POWERPC64,	false, false },
+  { "float128",		 OPTION_MASK_FLOAT128_KEYWORD, false, false },
+  { "float128-hw",	 OPTION_MASK_FLOAT128_HW,false, false },
+  { "mma",		 OPTION_MASK_MMA,	false, false },
+  { "power10",		 OPTION_MASK_POWER10,	false, false },
 };
 
 /* Option variables that we want to support inside attribute((target)) and
