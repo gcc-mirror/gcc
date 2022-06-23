@@ -505,8 +505,9 @@ extern int rs6000_vector_align[];
 			 && (TARGET_P9_MINMAX || !flag_trapping_math))
 
 /* In switching from using target_flags to using rs6000_isa_flags, the options
-   machinery creates OPTION_MASK_<xxx> instead of MASK_<xxx>.  For now map
-   OPTION_MASK_<xxx> back into MASK_<xxx>.  */
+   machinery creates OPTION_MASK_<xxx> instead of MASK_<xxx>.  The MASK_<xxxx>
+   options that have not yet been replaced by their OPTION_MASK_<xxx>
+   equivalents are defined here.  */
 #define MASK_ALTIVEC			OPTION_MASK_ALTIVEC
 #define MASK_CMPB			OPTION_MASK_CMPB
 #define MASK_CRYPTO			OPTION_MASK_CRYPTO
@@ -536,7 +537,6 @@ extern int rs6000_vector_align[];
 #define MASK_RECIP_PRECISION		OPTION_MASK_RECIP_PRECISION
 #define MASK_SOFT_FLOAT			OPTION_MASK_SOFT_FLOAT
 #define MASK_STRICT_ALIGN		OPTION_MASK_STRICT_ALIGN
-#define MASK_UPDATE			OPTION_MASK_UPDATE
 #define MASK_VSX			OPTION_MASK_VSX
 #define MASK_POWER10			OPTION_MASK_POWER10
 #define MASK_P10_FUSION			OPTION_MASK_P10_FUSION
@@ -551,14 +551,6 @@ extern int rs6000_vector_align[];
 
 #ifdef TARGET_LITTLE_ENDIAN
 #define MASK_LITTLE_ENDIAN		OPTION_MASK_LITTLE_ENDIAN
-#endif
-
-#ifdef TARGET_REGNAMES
-#define MASK_REGNAMES			OPTION_MASK_REGNAMES
-#endif
-
-#ifdef TARGET_PROTOTYPE
-#define MASK_PROTOTYPE			OPTION_MASK_PROTOTYPE
 #endif
 
 #ifdef TARGET_MODULO
@@ -2252,7 +2244,6 @@ extern int frame_pointer_needed;
 /* Builtin targets.  For now, we reuse the masks for those options that are in
    target flags, and pick a random bit for ldbl128, which isn't in
    target_flags.  */
-#define RS6000_BTM_ALWAYS	0		/* Always enabled.  */
 #define RS6000_BTM_ALTIVEC	MASK_ALTIVEC	/* VMX/altivec vectors.  */
 #define RS6000_BTM_CMPB		MASK_CMPB	/* ISA 2.05: compare bytes.  */
 #define RS6000_BTM_VSX		MASK_VSX	/* VSX (vector/scalar).  */
@@ -2277,28 +2268,6 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_MMA		MASK_MMA	/* ISA 3.1 MMA.  */
 #define RS6000_BTM_P10		MASK_POWER10
 
-#define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
-				 | RS6000_BTM_VSX			\
-				 | RS6000_BTM_P8_VECTOR			\
-				 | RS6000_BTM_P9_VECTOR			\
-				 | RS6000_BTM_P9_MISC			\
-				 | RS6000_BTM_MODULO                    \
-				 | RS6000_BTM_CRYPTO			\
-				 | RS6000_BTM_FRE			\
-				 | RS6000_BTM_FRES			\
-				 | RS6000_BTM_FRSQRTE			\
-				 | RS6000_BTM_FRSQRTES			\
-				 | RS6000_BTM_HTM			\
-				 | RS6000_BTM_POPCNTD			\
-				 | RS6000_BTM_CELL			\
-				 | RS6000_BTM_DFP			\
-				 | RS6000_BTM_HARD_FLOAT		\
-				 | RS6000_BTM_LDBL128			\
-				 | RS6000_BTM_POWERPC64			\
-				 | RS6000_BTM_FLOAT128			\
-				 | RS6000_BTM_FLOAT128_HW		\
-				 | RS6000_BTM_MMA			\
-				 | RS6000_BTM_P10)
 
 enum rs6000_builtin_type_index
 {
