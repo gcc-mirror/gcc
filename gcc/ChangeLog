@@ -1,3 +1,53 @@
+2022-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104642
+	* common.opt: Add -funreachable-traps.
+	* doc/invoke.texi (-funreachable-traps): Document it.
+	* opts.cc (finish_options): Enable at -O0 or -Og.
+	* tree.cc (build_common_builtin_nodes): Add __builtin_trap.
+	(builtin_decl_unreachable, build_builtin_unreachable): New.
+	* tree.h: Declare them.
+	* ubsan.cc (sanitize_unreachable_fn): Factor out.
+	(ubsan_instrument_unreachable): Use
+	gimple_build_builtin_unreachable.
+	* ubsan.h (sanitize_unreachable_fn): Declare.
+	* gimple.cc (gimple_build_builtin_unreachable): New.
+	* gimple.h: Declare it.
+	* builtins.cc (expand_builtin_unreachable): Add assert.
+	(fold_builtin_0): Call build_builtin_unreachable.
+	* sanopt.cc: Don't run for just SANITIZE_RETURN
+	or SANITIZE_UNREACHABLE when trapping.
+	* cgraphunit.cc (walk_polymorphic_call_targets): Use new
+	unreachable functions.
+	* gimple-fold.cc (gimple_fold_call)
+	(gimple_get_virt_method_for_vtable)
+	* ipa-fnsummary.cc (redirect_to_unreachable)
+	* ipa-prop.cc (ipa_make_edge_direct_to_target)
+	(ipa_impossible_devirt_target)
+	* ipa.cc (walk_polymorphic_call_targets)
+	* tree-cfg.cc (pass_warn_function_return::execute)
+	(execute_fixup_cfg)
+	* tree-ssa-loop-ivcanon.cc (remove_exits_and_undefined_stmts)
+	(unloop_loops)
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt):
+	Likewise.
+
+2022-06-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/106019
+	* tree-data-ref.cc (dr_may_alias_p): Try using the
+	innermost_loop_behavior to disambiguate non-loop queries.
+
+2022-06-22  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* doc/invoke.texi (RISC-V): Document -mtune=thead-c906.
+
+2022-06-22  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (bswapsi2_internal):
+	Enlarge the buffer that is obviously smaller than the template
+	string given to sprintf().
+
 2022-06-21  Roger Sayle  <roger@nextmovesoftware.com>
 	    Marek Polacek  <polacek@redhat.com>
 	    Segher Boessenkool  <segher@kernel.crashing.org>

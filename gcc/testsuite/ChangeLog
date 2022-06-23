@@ -1,3 +1,42 @@
+2022-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105908
+	* g++.dg/cpp0x/trailing16.C: New test.
+
+2022-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104642
+	* g++.dg/ubsan/return-8a.C: New test.
+	* g++.dg/ubsan/return-8b.C: New test.
+	* g++.dg/ubsan/return-8d.C: New test.
+	* g++.dg/ubsan/return-8e.C: New test.
+
+2022-06-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/106019
+	* gcc.dg/vect/bb-slp-pr106019.c: New test.
+
+2022-06-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.misc-tests/outputs.exp: Clean up left-overs first.
+
+2022-06-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.misc-tests/outputs.exp (outest): Introduce quiet mode,
+	create and return lists of passes and fails.  Use it to catch
+	skip_atsave cases where -L flags are implicitly added by
+	driver self specs.
+
+2022-06-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/lto/pr90990_0.C: Require lto_incremental target.
+
+2022-06-22  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/amx-check.h (request_perm_xtile_data):
+	New function to check if AMX is usable and enable AMX.
+	(main): Run test if AMX is usable.
+
 2022-06-21  Roger Sayle  <roger@nextmovesoftware.com>
 	    Marek Polacek  <polacek@redhat.com>
 	    Segher Boessenkool  <segher@kernel.crashing.org>

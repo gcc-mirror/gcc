@@ -1,3 +1,10 @@
+2022-06-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e150cca1.
+	* src/MERGE: Merge upstream phobos a4a18d21c.
+	* testsuite/libphobos.cycles/cycles.exp (cycle_test_list): Update
+	expected result of deprecate test.
+
 2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/gcc/attributes.d (no_sanitize): Define.

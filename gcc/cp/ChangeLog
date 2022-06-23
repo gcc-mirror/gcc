@@ -1,3 +1,21 @@
+2022-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105908
+	* name-lookup.cc (outer_binding): Strip BASELINK.
+
+2022-06-22  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (struct duplicate_hash): Remove.
+	(duplicate_hash_map): Adjust.
+
+2022-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104642
+	* constexpr.cc (cxx_eval_builtin_function_call): Handle
+	unreachable/trap earlier.
+	* cp-gimplify.cc (cp_maybe_instrument_return): Use
+	build_builtin_unreachable.
+
 2022-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-ubsan.cc (cp_ubsan_instrument_vptr_p): Use

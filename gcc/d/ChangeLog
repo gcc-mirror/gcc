@@ -1,3 +1,10 @@
+2022-06-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 6203135dc.
+	* typeinfo.cc (TypeInfoVisitor::visit (TypeInfoStructDeclaration *)):
+	Update for new front-end interface.
+	(SpeculativeTypeVisitor::visit (TypeStruct *)): Likewise.
+
 2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-attribs.cc (d_langhook_attribute_table): Add no_sanitize.

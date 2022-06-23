@@ -1,3 +1,26 @@
+2022-06-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* libsupc++/eh_globals.cc [!_GLIBCXX_HAVE_TLS]
+	(__eh_globals_init::~__eh_globals_init): Clear _S_init first.
+
+2022-06-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/30_threads/this_thread/60421.cc (test02): Call
+	sched_yield.
+
+2022-06-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/20_util/to_chars/long_double.cc: Require cmath.
+
+2022-06-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/23_containers/bitset/cons/dr1325-2.cc: Work around
+	global struct bitset.
+	* testsuite/23_containers/bitset/ext/15361.cc: Likewise.
+	* testsuite/23_containers/bitset/input/1.cc: Likewise.
+	* testsuite/23_containers/bitset/to_string/1.cc: Likewise.
+	* testsuite/23_containers/bitset/to_string/dr396.cc: Likewise.
+
 2022-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string/cons/char/105995.cc: Add
