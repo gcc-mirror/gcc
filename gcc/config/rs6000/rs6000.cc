@@ -20732,7 +20732,8 @@ rs6000_darwin_file_start (void)
     HOST_WIDE_INT if_set;
   } mapping[] = {
     { "ppc64", "ppc64", MASK_64BIT },
-    { "970", "ppc970", MASK_PPC_GPOPT | OPTION_MASK_MFCRF | MASK_POWERPC64 },
+    { "970", "ppc970", OPTION_MASK_PPC_GPOPT | OPTION_MASK_MFCRF \
+			| MASK_POWERPC64 },
     { "power4", "ppc970", 0 },
     { "G5", "ppc970", 0 },
     { "7450", "ppc7450", 0 },
@@ -24069,8 +24070,8 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
   { "hard-dfp",		 OPTION_MASK_DFP,	false, false },
   { "hard-float",	 OPTION_MASK_SOFT_FLOAT, false, false },
   { "long-double-128",	 OPTION_MASK_MULTIPLE,	false, false },
-  { "powerpc64",	 MASK_POWERPC64,	false, false },
-  { "float128",		 OPTION_MASK_FLOAT128_KEYWORD, false, false },
+  { "powerpc64",	 MASK_POWERPC64,  false, false },
+  { "float128",		 OPTION_MASK_FLOAT128_KEYWORD,   false, false },
   { "float128-hw",	 OPTION_MASK_FLOAT128_HW,false, false },
   { "mma",		 OPTION_MASK_MMA,	false, false },
   { "power10",		 OPTION_MASK_POWER10,	false, false },

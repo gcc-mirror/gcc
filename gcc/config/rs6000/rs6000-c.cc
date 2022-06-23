@@ -384,7 +384,7 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	TARGET_DEFAULT macro is defined to equal zero, and
 	TARGET_POWERPC64 and
 	a) BYTES_BIG_ENDIAN and the flag to be enabled is either
-	   MASK_PPC_GFXOPT or MASK_POWERPC64 (flags for "powerpc64"
+	   OPTION_MASK_PPC_GFXOPT or MASK_POWERPC64 (flags for "powerpc64"
 	   target), or
 	b) !BYTES_BIG_ENDIAN and the flag to be enabled is either
 	   MASK_POWERPC64 or it is one of the flags included in
