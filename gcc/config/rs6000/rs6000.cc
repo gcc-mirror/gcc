@@ -3379,23 +3379,23 @@ darwin_rs6000_override_options (void)
 HOST_WIDE_INT
 rs6000_builtin_mask_calculate (void)
 {
-  return (((TARGET_ALTIVEC)		    ? RS6000_BTM_ALTIVEC   : 0)
-	  | ((TARGET_CMPB)		    ? RS6000_BTM_CMPB	   : 0)
-	  | ((TARGET_VSX)		    ? RS6000_BTM_VSX	   : 0)
-	  | ((TARGET_FRE)		    ? RS6000_BTM_FRE	   : 0)
+  return (((TARGET_ALTIVEC)		    ? OPTION_MASK_ALTIVEC    : 0)
+	  | ((TARGET_CMPB)		    ? OPTION_MASK_CMPB	     : 0)
+	  | ((TARGET_VSX)		    ? OPTION_MASK_VSX	     : 0)
+	  | ((TARGET_FRE)		    ? OPTION_MASK_POPCNTB    : 0)
 	  | ((TARGET_FRES)		    ? OPTION_MASK_PPC_GFXOPT : 0)
 	  | ((TARGET_FRSQRTE)		    ? OPTION_MASK_PPC_GFXOPT : 0)
 	  | ((TARGET_FRSQRTES)		    ? OPTION_MASK_POPCNTB    : 0)
 	  | ((TARGET_POPCNTD)		    ? OPTION_MASK_POPCNTD    : 0)
 	  | ((rs6000_cpu == PROCESSOR_CELL) ? OPTION_MASK_FPRND      : 0)
-	  | ((TARGET_P8_VECTOR)		    ? RS6000_BTM_P8_VECTOR : 0)
-	  | ((TARGET_P9_VECTOR)		    ? RS6000_BTM_P9_VECTOR : 0)
-	  | ((TARGET_P9_MISC)		    ? RS6000_BTM_P9_MISC   : 0)
-	  | ((TARGET_MODULO)		    ? RS6000_BTM_MODULO    : 0)
+	  | ((TARGET_P8_VECTOR)		    ? OPTION_MASK_P8_VECTOR  : 0)
+	  | ((TARGET_P9_VECTOR)		    ? OPTION_MASK_P9_VECTOR  : 0)
+	  | ((TARGET_P9_MISC)		    ? OPTION_MASK_P9_MISC    : 0)
+	  | ((TARGET_MODULO)		    ? OPTION_MASK_MODULO     : 0)
 	  | ((TARGET_64BIT)		    ? MASK_64BIT	     : 0)
 	  | ((TARGET_POWERPC64)		    ? MASK_POWERPC64	     : 0)
-	  | ((TARGET_CRYPTO)		    ? RS6000_BTM_CRYPTO	   : 0)
-	  | ((TARGET_HTM)		    ? RS6000_BTM_HTM	   : 0)
+	  | ((TARGET_CRYPTO)		    ? OPTION_MASK_CRYPTO     : 0)
+	  | ((TARGET_HTM)		    ? OPTION_MASK_HTM	     : 0)
 	  | ((TARGET_DFP)		    ? OPTION_MASK_DFP	     : 0)
 	  | ((TARGET_HARD_FLOAT)	    ? OPTION_MASK_SOFT_FLOAT : 0)
 	  | ((TARGET_LONG_DOUBLE_128
@@ -24053,19 +24053,19 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
 /* Builtin mask mapping for printing the flags.  */
 static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
 {
-  { "altivec",		 RS6000_BTM_ALTIVEC,	false, false },
-  { "vsx",		 RS6000_BTM_VSX,	false, false },
-  { "fre",		 RS6000_BTM_FRE,	false, false },
+  { "altivec",		 OPTION_MASK_ALTIVEC,	false, false },
+  { "vsx",		 OPTION_MASK_VSX,	false, false },
+  { "fre",		 OPTION_MASK_POPCNTB,	false, false },
   { "fres",		 OPTION_MASK_PPC_GFXOPT, false, false },
   { "frsqrte",		 OPTION_MASK_PPC_GFXOPT, false, false },
   { "frsqrtes",		 OPTION_MASK_POPCNTB,	false, false },
   { "popcntd",		 OPTION_MASK_POPCNTD,	false, false },
   { "cell",		 OPTION_MASK_FPRND,	false, false },
-  { "power8-vector",	 RS6000_BTM_P8_VECTOR,	false, false },
-  { "power9-vector",	 RS6000_BTM_P9_VECTOR,	false, false },
-  { "power9-misc",	 RS6000_BTM_P9_MISC,	false, false },
-  { "crypto",		 RS6000_BTM_CRYPTO,	false, false },
-  { "htm",		 RS6000_BTM_HTM,	false, false },
+  { "power8-vector",	 OPTION_MASK_P8_VECTOR,	false, false },
+  { "power9-vector",	 OPTION_MASK_P9_VECTOR,	false, false },
+  { "power9-misc",	 OPTION_MASK_P9_MISC,	false, false },
+  { "crypto",		 OPTION_MASK_CRYPTO,	false, false },
+  { "htm",		 OPTION_MASK_HTM,	false, false },
   { "hard-dfp",		 OPTION_MASK_DFP,	false, false },
   { "hard-float",	 OPTION_MASK_SOFT_FLOAT, false, false },
   { "long-double-128",	 OPTION_MASK_MULTIPLE,	false, false },

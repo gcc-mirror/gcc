@@ -553,11 +553,6 @@ extern int rs6000_vector_align[];
 #define MASK_LITTLE_ENDIAN		OPTION_MASK_LITTLE_ENDIAN
 #endif
 
-#ifdef TARGET_MODULO
-#define RS6000_BTM_MODULO		OPTION_MASK_MODULO
-#endif
-
-
 /* For power systems, we want to enable Altivec and VSX builtins even if the
    user did not use -maltivec or -mvsx to allow the builtins to be used inside
    of #pragma GCC target or the target attribute to change the code level for a
@@ -2239,21 +2234,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 
 /* General flags.  */
 extern int frame_pointer_needed;
-
-
-/* Builtin targets.  For now, we reuse the masks for those options that are in
-   target flags, and pick a random bit for ldbl128, which isn't in
-   target_flags.  */
-#define RS6000_BTM_ALTIVEC	MASK_ALTIVEC	/* VMX/altivec vectors.  */
-#define RS6000_BTM_CMPB		MASK_CMPB	/* ISA 2.05: compare bytes.  */
-#define RS6000_BTM_VSX		MASK_VSX	/* VSX (vector/scalar).  */
-#define RS6000_BTM_P8_VECTOR	MASK_P8_VECTOR	/* ISA 2.07 vector.  */
-#define RS6000_BTM_P9_VECTOR	MASK_P9_VECTOR	/* ISA 3.0 vector.  */
-#define RS6000_BTM_P9_MISC	MASK_P9_MISC	/* ISA 3.0 misc. non-vector */
-#define RS6000_BTM_CRYPTO	MASK_CRYPTO	/* crypto funcs.  */
-#define RS6000_BTM_HTM		MASK_HTM	/* hardware TM funcs.  */
-#define RS6000_BTM_FRE		MASK_POPCNTB	/* FRE instruction.  */
-
 
 enum rs6000_builtin_type_index
 {
