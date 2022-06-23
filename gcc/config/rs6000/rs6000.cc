@@ -20732,11 +20732,11 @@ rs6000_darwin_file_start (void)
     HOST_WIDE_INT if_set;
   } mapping[] = {
     { "ppc64", "ppc64", MASK_64BIT },
-    { "970", "ppc970", MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64 },
+    { "970", "ppc970", MASK_PPC_GPOPT | OPTION_MASK_MFCRF | MASK_POWERPC64 },
     { "power4", "ppc970", 0 },
     { "G5", "ppc970", 0 },
     { "7450", "ppc7450", 0 },
-    { "7400", "ppc7400", MASK_ALTIVEC },
+    { "7400", "ppc7400", OPTION_MASK_ALTIVEC },
     { "G4", "ppc7400", 0 },
     { "750", "ppc750", 0 },
     { "740", "ppc750", 0 },

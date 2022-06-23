@@ -279,7 +279,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
     /* The option machinery will define this.  */
 #endif
 
-#define TARGET_DEFAULT (MASK_MULTIPLE)
+#define TARGET_DEFAULT (OPTION_MASK_MULTIPLE)
 
 /* Define generic processor types based upon current deployment.  */
 #define PROCESSOR_COMMON    PROCESSOR_PPC601
@@ -508,25 +508,6 @@ extern int rs6000_vector_align[];
    machinery creates OPTION_MASK_<xxx> instead of MASK_<xxx>.  The MASK_<xxxx>
    options that have not yet been replaced by their OPTION_MASK_<xxx>
    equivalents are defined here.  */
-#define MASK_ALTIVEC			OPTION_MASK_ALTIVEC
-#define MASK_CMPB			OPTION_MASK_CMPB
-#define MASK_CRYPTO			OPTION_MASK_CRYPTO
-#define MASK_DFP			OPTION_MASK_DFP
-#define MASK_DIRECT_MOVE		OPTION_MASK_DIRECT_MOVE
-#define MASK_DLMZB			OPTION_MASK_DLMZB
-#define MASK_EABI			OPTION_MASK_EABI
-#define MASK_FLOAT128_KEYWORD		OPTION_MASK_FLOAT128_KEYWORD
-#define MASK_FLOAT128_HW		OPTION_MASK_FLOAT128_HW
-#define MASK_FPRND			OPTION_MASK_FPRND
-#define MASK_P8_FUSION			OPTION_MASK_P8_FUSION
-#define MASK_HARD_FLOAT			OPTION_MASK_HARD_FLOAT
-#define MASK_HTM			OPTION_MASK_HTM
-#define MASK_ISEL			OPTION_MASK_ISEL
-#define MASK_MFCRF			OPTION_MASK_MFCRF
-#define MASK_MMA			OPTION_MASK_MMA
-#define MASK_MULHW			OPTION_MASK_MULHW
-#define MASK_MULTIPLE			OPTION_MASK_MULTIPLE
-#define MASK_NO_UPDATE			OPTION_MASK_NO_UPDATE
 #define MASK_P8_VECTOR			OPTION_MASK_P8_VECTOR
 #define MASK_P9_VECTOR			OPTION_MASK_P9_VECTOR
 #define MASK_P9_MISC			OPTION_MASK_P9_MISC

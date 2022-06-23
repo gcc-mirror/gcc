@@ -21,7 +21,7 @@
 
 /* Add -meabi and -maltivec to target flags.  */
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_EABI | MASK_ALTIVEC)
+#define TARGET_DEFAULT (OPTION_MASK_EABI | OPTION_MASK_ALTIVEC)
 
 #undef	ASM_DEFAULT_EXTRA
 #define	ASM_DEFAULT_EXTRA " %{!mvsx:%{!maltivec:%{!no-maltivec:-maltivec}}}"
