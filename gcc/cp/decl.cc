@@ -6505,6 +6505,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       tree elt_init;
       constructor_elt *old_cur = d->cur;
 
+      if (d->cur->index)
+	CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
       check_array_designated_initializer (d->cur, index);
       elt_init = reshape_init_r (elt_type, d,
 				 /*first_initializer_p=*/NULL_TREE,
@@ -6674,6 +6676,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	    }
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
 	    {
+	      CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
 	      field = get_class_binding (type, d->cur->index);
 	      direct_desig = true;
 	    }
@@ -7158,7 +7161,8 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
     CONSTRUCTOR_IS_DIRECT_INIT (new_init) = true;
   if (CONSTRUCTOR_IS_DESIGNATED_INIT (init)
       && BRACE_ENCLOSED_INITIALIZER_P (new_init))
-    CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
+    gcc_checking_assert (CONSTRUCTOR_IS_DESIGNATED_INIT (new_init)
+			 || seen_error ());
 
   return new_init;
 }
