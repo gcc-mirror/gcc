@@ -20438,6 +20438,7 @@ tsubst_copy_and_build (tree t,
 	warning_sentinel s2(warn_div_by_zero, was_dep);
 	warning_sentinel s3(warn_logical_op, was_dep);
 	warning_sentinel s4(warn_tautological_compare, was_dep);
+	warning_sentinel s5(warn_address, was_dep);
 
 	tree r = build_x_binary_op
 	  (input_location, TREE_CODE (t),
