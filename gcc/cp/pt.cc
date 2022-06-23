@@ -10089,16 +10089,19 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 	    {
 	      context = tsubst_aggr_type (context, arglist,
 					  complain, in_decl, true);
-	      context = complete_type (context);
-	      if (is_dependent_type && arg_depth > 1)
+	      /* Try completing the enclosing context if it's not already so.  */
+	      if (context != error_mark_node
+		  && !COMPLETE_TYPE_P (context))
 		{
-		  /* If this is a dependent nested specialization such as
-		     A<T>::B<U> [with T=int, U=U], then completion of A<int>
-		     could have caused to register the desired specialization
-		     of B already, so check the table again (33959).  */
-		  entry = type_specializations->find_with_hash (&elt, hash);
-		  if (entry)
-		    return entry->spec;
+		  context = complete_type (context);
+		  if (COMPLETE_TYPE_P (context))
+		    {
+		      /* Completion could have caused us to register the desired
+			 specialization already, so check the table again.  */
+		      entry = type_specializations->find_with_hash (&elt, hash);
+		      if (entry)
+			return entry->spec;
+		    }
 		}
 	    }
 	}
