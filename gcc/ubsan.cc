@@ -654,9 +654,10 @@ sanitize_unreachable_fn (tree *data, location_t loc)
     }
   else if (san)
     {
-      fn = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE);
+      /* Call ubsan_create_data first as it initializes SANITIZER built-ins.  */
       *data = ubsan_create_data ("__ubsan_unreachable_data", 1, &loc,
 				 NULL_TREE, NULL_TREE);
+      fn = builtin_decl_explicit (BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE);
       *data = build_fold_addr_expr_loc (loc, *data);
     }
   else
