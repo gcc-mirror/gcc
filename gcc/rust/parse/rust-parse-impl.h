@@ -2901,7 +2901,7 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 
 	param = std::unique_ptr<AST::ConstGenericParam> (
 	  new AST::ConstGenericParam (name_token->get_str (), std::move (type),
-				      nullptr, std::move (outer_attrs),
+				      default_expr, std::move (outer_attrs),
 				      token->get_locus ()));
 
 	break;

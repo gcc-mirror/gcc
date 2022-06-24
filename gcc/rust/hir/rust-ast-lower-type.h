@@ -376,10 +376,14 @@ public:
 				   mappings->get_next_localdef_id (crate_num));
 
     auto type = ASTLoweringType::translate (param.get_type ().get ());
-    auto default_expr
-      = param.has_default_value ()
-	  ? ASTLoweringExpr::translate (param.get_default_value ().get ())
-	  : nullptr;
+    // FIXME: Arthur: Remove the second guard once we disambiguate in the
+    // resolveer
+    HIR::Expr *default_expr = nullptr;
+    if (param.has_default_value ()
+	&& param.get_default_value ().get_kind ()
+	     == AST::ConstGenericArg::Kind::Clear)
+      default_expr = ASTLoweringExpr::translate (
+	param.get_default_value ().get_expression ().get ());
 
     translated
       = new HIR::ConstGenericParam (param.get_name (),
