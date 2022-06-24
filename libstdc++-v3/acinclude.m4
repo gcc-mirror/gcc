@@ -4773,6 +4773,18 @@ dnl
     AC_DEFINE(HAVE_DIRFD, 1, [Define if dirfd is available in <dirent.h>.])
   fi
 dnl
+  AC_CACHE_CHECK([for openat],
+    glibcxx_cv_openat, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <fcntl.h>],
+      [int fd = ::openat(AT_FDCWD, "", 0);],
+      [glibcxx_cv_openat=yes],
+      [glibcxx_cv_openat=no])
+  ])
+  if test $glibcxx_cv_openat = yes; then
+    AC_DEFINE(HAVE_OPENAT, 1, [Define if openat is available in <fcntl.h>.])
+  fi
+dnl
   AC_CACHE_CHECK([for unlinkat],
     glibcxx_cv_unlinkat, [dnl
     GCC_TRY_COMPILE_OR_LINK(
