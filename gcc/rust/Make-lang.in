@@ -70,6 +70,7 @@ GRS_OBJS = \
     rust/rust-parse.o \
     rust/rust-ast-full-test.o \
     rust/rust-ast-dump.o \
+    rust/rust-hir-dump.o \
     rust/rust-session-manager.o \
     rust/rust-compile.o \
     rust/rust-mangle.o \

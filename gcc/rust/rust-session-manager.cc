@@ -31,6 +31,7 @@
 #include "rust-cfg-parser.h"
 #include "rust-lint-scan-deadcode.h"
 #include "rust-lint-unused-var.h"
+#include "rust-hir-dump.h"
 
 #include "diagnostic.h"
 #include "input.h"
@@ -1045,7 +1046,7 @@ Session::dump_ast_expanded (Parser<Lexer> &parser, AST::Crate &crate) const
 }
 
 void
-Session::dump_hir (HIR::Crate &hir) const
+Session::dump_hir (HIR::Crate &crate) const
 {
   std::ofstream out;
   out.open (kHIRDumpFile);
@@ -1056,7 +1057,7 @@ Session::dump_hir (HIR::Crate &hir) const
       return;
     }
 
-  out << hir.as_string ();
+  HIR::Dump (out).go (crate);
   out.close ();
 }
 
