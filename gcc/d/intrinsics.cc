@@ -306,8 +306,8 @@ expand_intrinsic_bt (intrinsic_code intrinsic, tree callexp)
   tree bitsize = fold_convert (type, TYPE_SIZE (TREE_TYPE (ptr)));
 
   /* ptr[bitnum / bitsize]  */
-  ptr = build_array_index (ptr, fold_build2 (TRUNC_DIV_EXPR, type,
-					     bitnum, bitsize));
+  ptr = build_pointer_index (ptr, fold_build2 (TRUNC_DIV_EXPR, type,
+					       bitnum, bitsize));
   ptr = indirect_ref (type, ptr);
 
   /* mask = 1 << (bitnum % bitsize);  */

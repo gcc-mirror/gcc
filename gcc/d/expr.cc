@@ -1222,9 +1222,8 @@ public:
       }
     else
       {
-	/* Get the data pointer and length for static and dynamic arrays.  */
+	/* Get the array and length for static and dynamic arrays.  */
 	tree array = d_save_expr (build_expr (e->e1));
-	tree ptr = convert_expr (array, tb1, tb1->nextOf ()->pointerTo ());
 
 	tree length = NULL_TREE;
 	if (tb1->ty != TY::Tpointer)
@@ -1245,10 +1244,35 @@ public:
 	if (tb1->ty != TY::Tpointer)
 	  index = build_bounds_index_condition (e, index, length);
 
-	/* Index the .ptr.  */
-	ptr = void_okay_p (ptr);
-	this->result_ = indirect_ref (TREE_TYPE (TREE_TYPE (ptr)),
-				      build_array_index (ptr, index));
+	/* Convert vectors to their underlying array type.  */
+	if (VECTOR_TYPE_P (TREE_TYPE (array)))
+	  {
+	    tree array_type =
+	      build_array_type_nelts (TREE_TYPE (TREE_TYPE (array)),
+				      TYPE_VECTOR_SUBPARTS (TREE_TYPE (array)));
+	    d_mark_addressable (array);
+	    array = build1 (VIEW_CONVERT_EXPR, array_type, array);
+	  }
+
+	if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
+	  {
+	    /* Generate `array[index]'.  When the index is non-constant, we must
+	       mark the array as addressable because we'll need to do pointer
+	       arithmetic on its address.  */
+	    if (TREE_CODE (index) != INTEGER_CST)
+	      d_mark_addressable (array);
+
+	    this->result_ = build4 (ARRAY_REF, TREE_TYPE (TREE_TYPE (array)),
+				    array, index, NULL_TREE, NULL_TREE);
+	  }
+	else
+	  {
+	    /* Generate `array.ptr[index]'.  */
+	    tree ptr = convert_expr (array, tb1, tb1->nextOf ()->pointerTo ());
+	    ptr = void_okay_p (ptr);
+	    this->result_ = indirect_ref (TREE_TYPE (TREE_TYPE (ptr)),
+					  build_pointer_index (ptr, index));
+	  }
       }
   }
 
@@ -1347,7 +1371,7 @@ public:
     if (!integer_zerop (lwr_tree))
       {
 	tree ptrtype = TREE_TYPE (ptr);
-	ptr = build_array_index (void_okay_p (ptr), lwr_tree);
+	ptr = build_pointer_index (void_okay_p (ptr), lwr_tree);
 	ptr = build_nop (ptrtype, ptr);
       }
 

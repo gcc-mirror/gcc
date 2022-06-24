@@ -1626,7 +1626,7 @@ build_deref (tree exp)
 /* Builds pointer offset expression PTR[INDEX].  */
 
 tree
-build_array_index (tree ptr, tree index)
+build_pointer_index (tree ptr, tree index)
 {
   if (error_operand_p (ptr) || error_operand_p (index))
     return error_mark_node;

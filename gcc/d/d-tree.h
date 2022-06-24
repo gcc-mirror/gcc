@@ -578,7 +578,7 @@ extern tree imaginary_part (tree);
 extern tree complex_expr (tree, tree, tree);
 extern tree indirect_ref (tree, tree);
 extern tree build_deref (tree);
-extern tree build_array_index (tree, tree);
+extern tree build_pointer_index (tree, tree);
 extern tree build_offset_op (tree_code, tree, tree);
 extern tree build_offset (tree, tree);
 extern tree build_memref (tree, tree, tree);
