@@ -99,7 +99,7 @@ echo "scanning for keywords, %e and %n strings..." >&2
   lang_subdirs=`echo */config-lang.in */*/config-lang.in | sed -e 's|/config-lang\.in||g'`
   { for dir in "" c-family/ common/ common/config/ common/config/*/ \
       config/ config/*/ \
-      `find $lang_subdirs -type d -print | fgrep -v .svn | sort | sed -e 's|$|/|'`
+      `find $lang_subdirs -type d -print | sort | sed -e 's|$|/|'`
     do  for glob in '*.c' '*.cc' '*.h' '*.def'
         do  eval echo $dir$glob
         done
