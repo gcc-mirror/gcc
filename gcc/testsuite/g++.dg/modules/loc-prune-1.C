@@ -14,6 +14,6 @@ int foo (int = YES)
 
 // { dg-final { scan-lang-dump { Macro maps:1} module } }
 // { dg-final { scan-lang-dump { Macro:0 YES 1/1.2 locations } module } }
-// { dg-final { scan-lang-dump { Ordinary:[0-9]* maps hwm:[0-9]* macro:1 maps 1 locs} module } }
+// { dg-final { scan-lang-dump { Macro maps:1 locs:1} module } }
 // { dg-final { scan-lang-dump-not {Macro:. NOT } module } }
 // { dg-final { scan-lang-dump-not {Macro:. AGAIN_NO } module } }
