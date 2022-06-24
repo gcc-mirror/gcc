@@ -253,6 +253,12 @@ proc add_options_for_net_ts { flags } {
     # libsocket and libnsl for networking applications.
     if { [istarget *-*-solaris2*] } {
 	return "$flags -lsocket -lnsl"
+    } elseif { [istarget *-*-rtems*] } {
+	# Adding -Wl,--gc-sections would enable a few more tests to
+	# link, but all of them fail at runtime anyway, because the
+	# io_context ctor calls pipe(), which always fails, and thus
+	# the ctor throws a system error.
+	return "$flags -lbsd"
     }
     return $flags
 }
