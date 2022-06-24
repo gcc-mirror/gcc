@@ -1,3 +1,50 @@
+2022-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-show-rules): New option.
+	* diagnostic-format-json.cc (diagnostic_output_format_init_json):
+	Fix up context->show_rules.
+	* diagnostic-format-sarif.cc
+	(diagnostic_output_format_init_sarif): Likewise.
+	* diagnostic-metadata.h (diagnostic_metadata::rule): New class.
+	(diagnostic_metadata::precanned_rule): New class.
+	(diagnostic_metadata::add_rule): New.
+	(diagnostic_metadata::get_num_rules): New.
+	(diagnostic_metadata::get_rule): New.
+	(diagnostic_metadata::m_rules): New field.
+	* diagnostic.cc (diagnostic_initialize): Initialize show_rules.
+	(print_any_rules): New.
+	(diagnostic_report_diagnostic): Call it.
+	* diagnostic.h (diagnostic_context::show_rules): New field.
+	* doc/invoke.texi (-fno-diagnostics-show-rules): New option.
+	* opts.cc (common_handle_option): Handle
+	OPT_fdiagnostics_show_rules.
+	* toplev.cc (general_init): Set up global_dc->show_rules.
+
+2022-06-23  Martin Liska  <mliska@suse.cz>
+
+	PR c++/106062
+	* ubsan.cc (sanitize_unreachable_fn): Change order of calls
+	in order to initialize UBSAN built-ins.
+
+2022-06-23  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/105600
+	* ipa-icf.cc (sem_item_optimizer::filter_removed_items):
+	Skip variables with body_removed.
+
+2022-06-23  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md:(sse4_2_pcmpestr): Replace REGNO with
+	reg_or_subregno.
+	(sse4_2_pcmpistr): Ditto.
+
+2022-06-23  Xionghu Luo  <xionghuluo@tencent.com>
+
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee): Fix
+	typo.
+	* tree-ssa-loop-ivopts.cc (struct iv_cand): Likewise.
+	* tree-switch-conversion.h: Likewise.
+
 2022-06-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104642

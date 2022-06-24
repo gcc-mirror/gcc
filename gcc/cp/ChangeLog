@@ -1,3 +1,74 @@
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105925
+	* call.cc (build_aggr_conv): Don't depend on
+	CONSTRUCTOR_IS_DESIGNATED_INIT.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105925
+	* decl.cc (reshape_init_array_1): Set
+	CONSTRUCTOR_IS_DESIGNATED_INIT here.
+	(reshape_init_class): And here.
+	(reshape_init): Not here.
+
+2022-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105931
+	* expr.cc (fold_for_warn): Don't fold when in an unevaluated
+	context.
+
+2022-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105982
+	* pt.cc (lookup_template_class): After calling complete_type for
+	the substituted context, check the table again iff the type was
+	previously incomplete and complete_type made it complete.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94554
+	* pt.cc (dependent_operand_p): Split out from...
+	(tsubst_copy_and_build): ...here.
+	(tsubst_expr) [IF_STMT]: Use it.
+	* semantics.cc (finish_if_stmt_cond): Keep the pre-conversion
+	condition in the template tree.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105885
+	* pt.cc (tsubst_copy_and_build): Also suppress -Waddress for
+	comparison of dependent operands.
+
+2022-06-23  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (struct macro_info): New.
+	(struct macro_traits): New.
+	(macro_remap, macro_table): New globals.
+	(depset::hash::find_dependencies): Note namespace location.
+	(module_for_macro_loc): Adjust.
+	(module_state::note_location): New.
+	(module_state::Write_location): Note location when not
+	streaming. Adjust macro location streaming.
+	(module_state::read_location): Adjust macro location
+	streaming.
+	(module_state::write_init_maps): New.
+	(module_state::write_prepare_maps): Reimplement macro map
+	preparation.
+	(module_state::write_macro_maps): Reimplement.
+	(module_state::read_macro_maps): Likewise.
+	(module_state::write_begin): Adjust.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (type_unification_real): An auto tparm can't
+	be affected by other deductions.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105964
+	* pt.cc (type_dependent_expression_p): Look through BASELINK.
+
 2022-06-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105908

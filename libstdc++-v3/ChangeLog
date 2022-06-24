@@ -1,3 +1,15 @@
+2022-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/iterators/error_reporting.cc: Use
+	rmdir to remove directories.
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc:
+	Likewise.
+
+2022-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/random_device/entropy.cc: Use
+	numeric_limits<unsigned>::digits.
+
 2022-06-22  Alexandre Oliva  <oliva@adacore.com>
 
 	* libsupc++/eh_globals.cc [!_GLIBCXX_HAVE_TLS]

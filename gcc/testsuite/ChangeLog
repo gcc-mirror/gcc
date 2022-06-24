@@ -1,3 +1,59 @@
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105925
+	* g++.dg/ext/desig4.C: Remove extra errors.
+	* g++.dg/cpp2a/desig26.C: New test.
+
+2022-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105931
+	* g++.dg/cpp0x/decltype82a.C: New test.
+
+2022-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105982
+	* g++.dg/cpp1z/class-deduction111.C: New test.
+
+2022-06-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic-test-metadata.c: Expect " [STR34-C]" to
+	be emitted at the "gets" call.
+	* gcc.dg/plugin/diagnostic_plugin_test_metadata.c
+	(pass_test_metadata::execute): Associate the "gets" diagnostic
+	with a rule named "STR34-C".
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94554
+	* g++.dg/cpp1z/constexpr-if38.C: New test.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105885
+	* g++.dg/cpp1z/constexpr-if37.C: New test.
+
+2022-06-23  Martin Liska  <mliska@suse.cz>
+
+	PR c++/106062
+	* gfortran.dg/ubsan/pr106062.f90: New test.
+
+2022-06-23  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/loc-prune-1.C: New.
+	* g++.dg/modules/loc-prune-2.C: New.
+	* g++.dg/modules/loc-prune-3.C: New.
+	* g++.dg/modules/pr98718_a.C: Adjust.
+	* g++.dg/modules/pr98718_b.C: Adjust.
+
+2022-06-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/tree-ssa/slsr-39.c: Force vectorization off.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105964
+	* g++.dg/cpp1z/nontype-auto21.C: New test.
+
 2022-06-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105908
