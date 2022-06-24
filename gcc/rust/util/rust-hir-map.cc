@@ -831,6 +831,7 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
     builtin_macros = {
       {"assert", MacroBuiltin::assert},
       {"file", MacroBuiltin::file},
+      {"line", MacroBuiltin::line},
       {"column", MacroBuiltin::column},
       {"include_bytes", MacroBuiltin::include_bytes},
       {"include_str", MacroBuiltin::include_str},

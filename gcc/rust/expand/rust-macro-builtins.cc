@@ -467,4 +467,17 @@ MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
   return AST::ASTFragment (nodes);
 }
 
+AST::ASTFragment
+MacroBuiltin::line (Location invoc_locus, AST::MacroInvocData &invoc)
+{
+  auto current_line
+    = Session::get_instance ().linemap->location_to_line (invoc_locus);
+
+  auto line_no = AST::SingleASTNode (std::unique_ptr<AST::Expr> (
+    new AST::LiteralExpr (std::to_string (current_line), AST::Literal::INT,
+			  PrimitiveCoreType::CORETYPE_U32, {}, invoc_locus)));
+
+  return AST::ASTFragment ({line_no});
+}
+
 } // namespace Rust
