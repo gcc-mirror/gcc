@@ -6329,6 +6329,8 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
   if (!same_type_check (vector, 0, field, 2))
     return false;
 
+  gfc_simplify_expr (mask, 0);
+
   if (mask->expr_type == EXPR_ARRAY
       && gfc_array_size (vector, &vector_size))
     {
