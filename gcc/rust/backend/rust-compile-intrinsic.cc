@@ -526,10 +526,10 @@ transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
 		     "dependently-sized types");
       rust_inform (fntype->get_ident ().locus, "source type: %qs (%lu bits)",
 		   fntype->get_params ().at (0).second->as_string ().c_str (),
-		   source_size);
+		   (unsigned long) source_size);
       rust_inform (fntype->get_ident ().locus, "target type: %qs (%lu bits)",
 		   fntype->get_return_type ()->as_string ().c_str (),
-		   target_size);
+		   (unsigned long) target_size);
     }
 
   tree enclosing_scope = NULL_TREE;
