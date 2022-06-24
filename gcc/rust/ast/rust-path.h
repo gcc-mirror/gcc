@@ -156,19 +156,20 @@ public:
 
   static ConstGenericArg create_error ()
   {
-    return ConstGenericArg (nullptr, "", Kind::Error);
+    return ConstGenericArg (nullptr, "", Kind::Error, Location ());
   }
 
-  ConstGenericArg (std::unique_ptr<Expr> expression)
-    : expression (std::move (expression)), path (""), kind (Kind::Clear)
+  ConstGenericArg (std::unique_ptr<Expr> expression, Location locus)
+    : expression (std::move (expression)), path (""), kind (Kind::Clear),
+      locus (locus)
   {}
 
-  ConstGenericArg (Identifier path)
-    : expression (nullptr), path (path), kind (Kind::Ambiguous)
+  ConstGenericArg (Identifier path, Location locus)
+    : expression (nullptr), path (path), kind (Kind::Ambiguous), locus (locus)
   {}
 
   ConstGenericArg (const ConstGenericArg &other)
-    : path (other.path), kind (other.kind)
+    : path (other.path), kind (other.kind), locus (other.locus)
   {
     if (other.expression)
       expression = other.expression->clone_expr ();
@@ -178,6 +179,7 @@ public:
   {
     kind = other.kind;
     path = other.path;
+    locus = other.locus;
 
     if (other.expression)
       expression = other.expression->clone_expr ();
@@ -206,8 +208,9 @@ public:
 
 private:
   ConstGenericArg (std::unique_ptr<AST::Expr> expression, Identifier path,
-		   Kind kind)
-    : expression (std::move (expression)), path (std::move (path)), kind (kind)
+		   Kind kind, Location locus)
+    : expression (std::move (expression)), path (std::move (path)), kind (kind),
+      locus (locus)
   {}
 
   /**
@@ -226,6 +229,8 @@ private:
 
   /* Which kind of const generic application are we dealing with */
   Kind kind;
+
+  Location locus;
 };
 
 // Generic arguments allowed in each path expression segment - inline?

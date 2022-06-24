@@ -6181,7 +6181,7 @@ Parser<ManagedTokenSource>::parse_const_generic_expression ()
       // special variant here
 
       // FIXME: We need locus here as well
-      return AST::ConstGenericArg (tok->get_str ());
+      return AST::ConstGenericArg (tok->get_str (), tok->get_locus ());
     case LEFT_CURLY:
       expr = parse_block_expr ();
       break;
@@ -6201,7 +6201,7 @@ Parser<ManagedTokenSource>::parse_const_generic_expression ()
   if (!expr)
     return AST::ConstGenericArg::create_error ();
 
-  return AST::ConstGenericArg (std::move (expr));
+  return AST::ConstGenericArg (std::move (expr), tok->get_locus ());
 }
 
 // Parses the generic arguments in each path segment.
