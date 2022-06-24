@@ -248,25 +248,6 @@ static void cb_enter_data_end (acc_prof_info *prof_info, acc_event_info *event_i
 
   assert (state == 4
 	  || state == 104);
-#if defined COPYIN
-  /* Conceptually, 'acc_ev_enter_data_end' marks the end of data copying,
-     before 'acc_ev_enqueue_launch_start' marks invoking the compute region.
-     That's the 'state_init = state;' intended to be captured in the compute
-     regions.  */
-  /* In an 'async' setting, this event may be triggered before actual 'async'
-     data copying has completed.  Given that 'state' appears in 'COPYIN', we
-     first have to synchronize (that is, let the 'async' 'COPYIN' read the
-     current 'state' value)...  */
-  if (acc_async != acc_async_sync)
-    {
-      /* "We're not yet accounting for the fact that _OpenACC events may occur
-	 during event processing_"; temporarily disable to avoid deadlock.  */
-      unreg (acc_ev_none, NULL, acc_toggle_per_thread);
-      acc_wait (acc_async);
-      reg (acc_ev_none, NULL, acc_toggle_per_thread);
-    }
-  /* ... before modifying it in the following.  */
-#endif
   STATE_OP (state, ++);
 
   assert (tool_info != NULL);
@@ -698,7 +679,6 @@ int main()
 
       state_init = state;
     }
-    acc_async = acc_async_sync;
 #pragma acc wait
     assert (state_init == 104);
   }
