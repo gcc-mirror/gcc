@@ -73,7 +73,6 @@ test02()
 
   const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
   auto from = __gnu_test::nonexistent_path();
-  auto to = __gnu_test::nonexistent_path();
   std::error_code ec;
 
   ec = bad_ec;
@@ -81,6 +80,7 @@ test02()
   VERIFY( !ec );
   VERIFY( fs::exists(from) );
 
+  auto to = __gnu_test::nonexistent_path();
   ec = bad_ec;
   fs::copy(from, to, fs::copy_options::skip_symlinks, ec);
   VERIFY( !ec );
@@ -117,12 +117,13 @@ void
 test03()
 {
   auto from = __gnu_test::nonexistent_path();
-  auto to = __gnu_test::nonexistent_path();
 
   // test empty file
   std::ofstream{from};
   VERIFY( fs::exists(from) );
   VERIFY( fs::file_size(from) == 0 );
+
+  auto to = __gnu_test::nonexistent_path();
   fs::copy(from, to);
   VERIFY( fs::exists(to) );
   VERIFY( fs::file_size(to) == 0 );
@@ -145,11 +146,11 @@ test04()
 {
   const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
   auto from = __gnu_test::nonexistent_path();
-  auto to = __gnu_test::nonexistent_path();
   std::error_code ec;
 
   create_directories(from/"a/b/c");
 
+  auto to = __gnu_test::nonexistent_path();
   {
     __gnu_test::scoped_file f(to);
     copy(from, to, ec);
