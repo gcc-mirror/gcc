@@ -64,14 +64,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic pop
 #endif
 
-  /// Primary template of default_delete, used by unique_ptr for single objects
-  /// @since C++11
+  /** Primary template of default_delete, used by unique_ptr for single objects
+   *
+   * @headerfile memory
+   * @since C++11
+   */
   template<typename _Tp>
     struct default_delete
     {
       /// Default constructor
       constexpr default_delete() noexcept = default;
-
       /** @brief Converting constructor.
        *
        * Allows conversion from a deleter for objects of another type, `_Up`,
@@ -81,7 +83,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       typename = _Require<is_convertible<_Up*, _Tp*>>>
 	_GLIBCXX23_CONSTEXPR
         default_delete(const default_delete<_Up>&) noexcept { }
-
       /// Calls `delete __ptr`
       _GLIBCXX23_CONSTEXPR
       void
@@ -94,11 +95,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	delete __ptr;
       }
     };
-
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 740 - omit specialization for array objects with a compile time length
 
-  /// Specialization of default_delete for arrays, used by `unique_ptr<T[]>`
+  /** Specialization of default_delete for arrays, used by `unique_ptr<T[]>`
+   *
+   * @headerfile memory
+   * @since C++11
+   */
   template<typename _Tp>
     struct default_delete<_Tp[]>
     {
