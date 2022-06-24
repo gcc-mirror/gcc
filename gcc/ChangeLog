@@ -1,3 +1,44 @@
+2022-06-23  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-06-23  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/105600
+	* ipa-icf.cc (sem_item_optimizer::filter_removed_items):
+	Skip variables with body_removed.
+
+2022-06-23  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2022-06-21  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/105736
+	* tree-object-size.cc (addr_object_size): Return size_unknown
+	when object offset computation returns an error.
+
+2022-06-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2022-06-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/105254
+	PR tree-optimization/105940
+	Revert:
+	* config/aarch64/aarch64.cc
+	(aarch64_vector_costs::determine_suggested_unroll_factor): Take a
+	loop_vec_info as argument.  Restrict the unroll factor to values
+	that divide the VF.
+	(aarch64_vector_costs::finish_cost): Update call accordingly.
+
+2022-06-23  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-06-14  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/105940
+	* tree-vect-loop.cc (vect_analyze_loop_2): Move the place of
+	applying suggested_unroll_factor after start_over.
+
 2022-06-21  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
