@@ -74,6 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       /// Default constructor
       constexpr default_delete() noexcept = default;
+      
       /** @brief Converting constructor.
        *
        * Allows conversion from a deleter for objects of another type, `_Up`,
@@ -83,6 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       typename = _Require<is_convertible<_Up*, _Tp*>>>
 	_GLIBCXX23_CONSTEXPR
         default_delete(const default_delete<_Up>&) noexcept { }
+	
       /// Calls `delete __ptr`
       _GLIBCXX23_CONSTEXPR
       void
@@ -95,6 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	delete __ptr;
       }
     };
+    
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 740 - omit specialization for array objects with a compile time length
 
