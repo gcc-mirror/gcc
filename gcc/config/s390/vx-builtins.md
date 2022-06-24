@@ -2186,6 +2186,27 @@
    vster<bhfgq>\t%v1,%v0"
   [(set_attr "op_type" "*,VRX,VRX")])
 
+; The emulation pattern below will also accept
+;  vst (eltswap (vl))
+; i.e. both operands in memory, which reload needs to fix.
+; Split into
+;  vl
+;  vster (=vst (eltswap))
+; since we prefer vster over vler as long as the latter
+; does not support alignment hints.
+(define_split
+  [(set (match_operand:VEC_HW                 0 "memory_operand" "")
+	(unspec:VEC_HW [(match_operand:VEC_HW 1 "memory_operand" "")]
+		       UNSPEC_VEC_ELTSWAP))]
+  "TARGET_VXE2 && can_create_pseudo_p ()"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0)
+	(unspec:VEC_HW [(match_dup 2)] UNSPEC_VEC_ELTSWAP))]
+{
+  operands[2] = gen_reg_rtx (<MODE>mode);
+})
+
+
 ; Swapping v2df/v2di can be done via vpdi on z13 and z14.
 (define_split
   [(set (match_operand:V_HW_2                 0 "register_operand" "")

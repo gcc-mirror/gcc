@@ -17124,6 +17124,8 @@ struct expand_vec_perm_d
   machine_mode vmode;
   unsigned char nelt;
   bool testing_p;
+  bool only_op0;
+  bool only_op1;
 };
 
 /* Try to expand the vector permute operation described by D using the
@@ -17191,7 +17193,9 @@ expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
   if (d.perm[0] == 0 && d.perm[1] == 3)
     vpdi1_p = true;
 
-  if (d.perm[0] == 1 && d.perm[1] == 2)
+  if ((d.perm[0] == 1 && d.perm[1] == 2)
+      || (d.perm[0] == 1 && d.perm[1] == 0)
+      || (d.perm[0] == 3 && d.perm[1] == 2))
     vpdi4_p = true;
 
   if (!vpdi1_p && !vpdi4_p)
@@ -17203,14 +17207,106 @@ expand_perm_with_vpdi (const struct expand_vec_perm_d &d)
   op0_reg = force_reg (GET_MODE (d.op0), d.op0);
   op1_reg = force_reg (GET_MODE (d.op1), d.op1);
 
+  /* If we only reference either of the operands in
+     the permute mask, just use one of them.  */
+  if (d.only_op0)
+    op1_reg = op0_reg;
+  else if (d.only_op1)
+    op0_reg = op1_reg;
+
   if (vpdi1_p)
     emit_insn (gen_vpdi1 (d.vmode, d.target, op0_reg, op1_reg));
-
   if (vpdi4_p)
     emit_insn (gen_vpdi4 (d.vmode, d.target, op0_reg, op1_reg));
 
   return true;
 }
+
+/* Helper that checks if a vector permutation mask D
+   represents a reversal of the vector's elements.  */
+static inline bool
+is_reverse_perm_mask (const struct expand_vec_perm_d &d)
+{
+  for (int i = 0; i < d.nelt; i++)
+    if (d.perm[i] != d.nelt - i - 1)
+      return false;
+  return true;
+}
+
+/* The case of reversing a four-element vector [0, 1, 2, 3]
+   can be handled by first permuting the doublewords
+   [2, 3, 0, 1] and subsequently rotating them by 32 bits.  */
+static bool
+expand_perm_with_rot (const struct expand_vec_perm_d &d)
+{
+  if (d.nelt != 4)
+    return false;
+
+  if (d.op0 == d.op1 && is_reverse_perm_mask (d))
+    {
+      if (d.testing_p)
+	return true;
+
+      rtx tmp = gen_reg_rtx (d.vmode);
+      rtx op0_reg = force_reg (GET_MODE (d.op0), d.op0);
+
+      emit_insn (gen_vpdi4_2 (d.vmode, tmp, op0_reg, op0_reg));
+      if (d.vmode == V4SImode)
+	emit_insn (gen_rotlv4si3_di (d.target, tmp));
+      else if (d.vmode == V4SFmode)
+	emit_insn (gen_rotlv4sf3_di (d.target, tmp));
+
+      return true;
+    }
+
+  return false;
+}
+
+/* If we just reverse the elements, emit an eltswap if we have
+   vler/vster.  */
+static bool
+expand_perm_with_vster (const struct expand_vec_perm_d &d)
+{
+  if (TARGET_VXE2 && d.op0 == d.op1 && is_reverse_perm_mask (d)
+      && (d.vmode == V2DImode || d.vmode == V2DFmode
+	  || d.vmode == V4SImode || d.vmode == V4SFmode
+	  || d.vmode == V8HImode))
+    {
+      if (d.testing_p)
+	return true;
+
+      if (d.vmode == V2DImode)
+	emit_insn (gen_eltswapv2di (d.target, d.op0));
+      else if (d.vmode == V2DFmode)
+	emit_insn (gen_eltswapv2df (d.target, d.op0));
+      else if (d.vmode == V4SImode)
+	emit_insn (gen_eltswapv4si (d.target, d.op0));
+      else if (d.vmode == V4SFmode)
+	emit_insn (gen_eltswapv4sf (d.target, d.op0));
+      else if (d.vmode == V8HImode)
+	emit_insn (gen_eltswapv8hi (d.target, d.op0));
+      return true;
+    }
+  return false;
+}
+
+/* If we reverse a byte-vector this is the same as
+   byte reversing it which can be done with vstbrq.  */
+static bool
+expand_perm_with_vstbrq (const struct expand_vec_perm_d &d)
+{
+  if (TARGET_VXE2 && d.op0 == d.op1 && is_reverse_perm_mask (d)
+      && d.vmode == V16QImode)
+    {
+      if (d.testing_p)
+	return true;
+
+      emit_insn (gen_eltswapv16qi (d.target, d.op0));
+      return true;
+    }
+  return false;
+}
+
 
 /* Try to find the best sequence for the vector permute operation
    described by D.  Return true if the operation could be
@@ -17221,7 +17317,16 @@ vectorize_vec_perm_const_1 (const struct expand_vec_perm_d &d)
   if (expand_perm_with_merge (d))
     return true;
 
+  if (expand_perm_with_vster (d))
+    return true;
+
+  if (expand_perm_with_vstbrq (d))
+    return true;
+
   if (expand_perm_with_vpdi (d))
+    return true;
+
+  if (expand_perm_with_rot (d))
     return true;
 
   return false;
@@ -17253,16 +17358,26 @@ s390_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   gcc_assert (VECTOR_MODE_P (d.vmode));
   d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = target == NULL_RTX;
+  d.only_op0 = false;
+  d.only_op1 = false;
 
   gcc_assert (target == NULL_RTX || REG_P (target));
   gcc_assert (sel.length () == nelt);
 
+  unsigned int highest = 0, lowest = 2 * nelt - 1;
   for (i = 0; i < nelt; i++)
     {
       unsigned char e = sel[i];
+      lowest = MIN (lowest, e);
+      highest = MAX (highest, e);
       gcc_assert (e < 2 * nelt);
       d.perm[i] = e;
     }
+
+  if (lowest < nelt && highest < nelt)
+    d.only_op0 = true;
+  else if (lowest >= nelt && highest >= nelt)
+    d.only_op1 = true;
 
   return vectorize_vec_perm_const_1 (d);
 }
