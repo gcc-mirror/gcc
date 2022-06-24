@@ -30,7 +30,7 @@ ResolveStmt::visit (AST::ExternBlock &extern_block)
     {
       ResolveToplevelExternItem::go (item.get (),
 				     CanonicalPath::create_empty ());
-      ResolveExternItem::go (item.get ());
+      ResolveExternItem::go (item.get (), prefix, canonical_prefix);
     }
 }
 

@@ -111,9 +111,7 @@ public:
     if (struct_decl.has_generics ())
       {
 	for (auto &generic : struct_decl.get_generic_params ())
-	  {
-	    ResolveGenericParam::go (generic.get ());
-	  }
+	  ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
       }
 
     for (AST::TupleField &field : struct_decl.get_fields ())
@@ -145,9 +143,7 @@ public:
     if (enum_decl.has_generics ())
       {
 	for (auto &generic : enum_decl.get_generic_params ())
-	  {
-	    ResolveGenericParam::go (generic.get ());
-	  }
+	  ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
       }
 
     for (auto &variant : enum_decl.get_variants ())
@@ -271,9 +267,7 @@ public:
     if (struct_decl.has_generics ())
       {
 	for (auto &generic : struct_decl.get_generic_params ())
-	  {
-	    ResolveGenericParam::go (generic.get ());
-	  }
+	  ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
       }
 
     for (AST::StructField &field : struct_decl.get_fields ())
@@ -308,12 +302,8 @@ public:
     resolver->get_type_scope ().push (scope_node_id);
 
     if (union_decl.has_generics ())
-      {
-	for (auto &generic : union_decl.get_generic_params ())
-	  {
-	    ResolveGenericParam::go (generic.get ());
-	  }
-      }
+      for (auto &generic : union_decl.get_generic_params ())
+	ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
     for (AST::StructField &field : union_decl.get_variants ())
       {
@@ -352,10 +342,8 @@ public:
     resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
     if (function.has_generics ())
-      {
-	for (auto &generic : function.get_generic_params ())
-	  ResolveGenericParam::go (generic.get ());
-      }
+      for (auto &generic : function.get_generic_params ())
+	ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
     if (function.has_return_type ())
       ResolveType::go (function.get_return_type ().get ());

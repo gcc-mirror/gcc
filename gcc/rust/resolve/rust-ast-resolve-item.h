@@ -118,13 +118,20 @@ class ResolveExternItem : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::ExternalItem *item);
+  static void go (AST::ExternalItem *item, const CanonicalPath &prefix,
+		  const CanonicalPath &canonical_prefix);
 
   void visit (AST::ExternalFunctionItem &function) override;
   void visit (AST::ExternalStaticItem &item) override;
 
 private:
-  ResolveExternItem () : ResolverBase () {}
+  ResolveExternItem (const CanonicalPath &prefix,
+		     const CanonicalPath &canonical_prefix)
+    : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix)
+  {}
+
+  const CanonicalPath &prefix;
+  const CanonicalPath &canonical_prefix;
 };
 
 } // namespace Resolver
