@@ -4574,12 +4574,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cond (cmp:c (nop_convert1?@c0 @0) (nop_convert2?@c1 @1))
         (convert3? @0) (convert4? @1))
   (if (!HONOR_SIGNED_ZEROS (type)
-       && ((INTEGRAL_TYPE_P (type)
-	    /* Allow widening conversions of the data.  */
+       && (/* Allow widening conversions of the compare operands as data.  */
+	   (INTEGRAL_TYPE_P (type)
+	    && types_match (TREE_TYPE (@c0), TREE_TYPE (@0))
+	    && types_match (TREE_TYPE (@c1), TREE_TYPE (@1))
 	    && TYPE_PRECISION (TREE_TYPE (@0)) <= TYPE_PRECISION (type)
 	    && TYPE_PRECISION (TREE_TYPE (@1)) <= TYPE_PRECISION (type))
-	   || (tree_nop_conversion_p (type, TREE_TYPE (@0))
-	       && tree_nop_conversion_p (type, TREE_TYPE (@1)))))
+	   /* Or sign conversions for the comparison.  */
+	   || (types_match (type, TREE_TYPE (@0))
+	       && types_match (type, TREE_TYPE (@1)))))
    (switch
     (if (cmp == EQ_EXPR)
      (if (VECTOR_TYPE_P (type))
