@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
+// { dg-require-target-fs-space "" }
 
 // 30.10.14.3 Permissions [fs.op.space]
 

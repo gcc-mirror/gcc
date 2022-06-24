@@ -46,6 +46,11 @@ namespace test_fs = std::experimental::filesystem;
 #define NO_SYMLINKS
 #endif
 
+#if !defined (_GLIBCXX_HAVE_SYS_STATVFS_H) \
+  && !defined (_GLIBCXX_FILESYSTEM_IS_WINDOWS)
+#define NO_SPACE
+#endif
+
 namespace __gnu_test
 {
 #define PATH_CHK(p1, p2, fn) \
