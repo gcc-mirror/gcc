@@ -5171,6 +5171,19 @@ Gigi_Cloned_Subtype (Entity_Id gnat_entity)
 	  && Present (Generic_Parent_Type (gnat_decl))
 	  && Is_Entity_Name (Subtype_Indication (gnat_decl)))
 	return Entity (Subtype_Indication (gnat_decl));
+
+      /* Likewise for the full view of such subtypes when they are private.  */
+      if (Is_Itype (gnat_entity))
+	{
+	  gnat_decl = Associated_Node_For_Itype (gnat_entity);
+	  if (Present (gnat_decl)
+	      && Nkind (gnat_decl) == N_Subtype_Declaration
+	      && Is_Private_Type (Defining_Identifier (gnat_decl))
+	      && Full_View (Defining_Identifier (gnat_decl)) == gnat_entity
+	      && Present (Generic_Parent_Type (gnat_decl))
+	      && Is_Entity_Name (Subtype_Indication (gnat_decl)))
+	    return Entity (Subtype_Indication (gnat_decl));
+	}
       break;
 
     default:
