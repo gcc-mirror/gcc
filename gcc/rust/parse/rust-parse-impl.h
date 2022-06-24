@@ -2892,9 +2892,11 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 			     "%<identifier%> or %<literal%>, got %qs",
 			     token_id_to_str (tok->get_id ()));
 
-	    // TODO: At this point, we *know* that we are parsing a const
-	    // expression. We should figure out how to disambiguate the default
-	    // expr in the case of `const N: usize = M`
+	    // At this point, we *know* that we are parsing a const
+	    // expression
+	    if (default_expr.get_kind ()
+		== AST::ConstGenericArg::Kind::Ambiguous)
+	      default_expr = default_expr.disambiguate_to_const ();
 	  }
 
 	param = std::unique_ptr<AST::ConstGenericParam> (
