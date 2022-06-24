@@ -51,6 +51,11 @@ namespace test_fs = std::experimental::filesystem;
 #define NO_SPACE
 #endif
 
+#if !(_GLIBCXX_HAVE_SYS_STAT_H \
+      && (_GLIBCXX_USE_UTIMENSAT || _GLIBCXX_USE_UTIME))
+#define NO_LAST_WRITE_TIME 1
+#endif
+
 namespace __gnu_test
 {
 #define PATH_CHK(p1, p2, fn) \
