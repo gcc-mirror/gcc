@@ -2681,6 +2681,9 @@ Target supports @code{sysconf}.
 @item trampolines
 Target supports trampolines.
 
+@item two_plus_gigs
+Target supports linking programs with 2+GiB of data.
+
 @item uclibc
 Target supports uClibc.
 
