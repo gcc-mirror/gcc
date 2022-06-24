@@ -364,7 +364,7 @@ gigi (Node_Id gnat_root,
 
   /* Enable GNAT stack checking method if needed */
   if (!Stack_Check_Probes_On_Target)
-    set_stack_check_libfunc ("_gnat_stack_check");
+    set_stack_check_libfunc ("__gnat_stack_check");
 
   /* Retrieve alignment settings.  */
   double_float_alignment = get_target_double_float_alignment ();
