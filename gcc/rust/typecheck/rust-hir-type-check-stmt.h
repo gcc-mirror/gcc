@@ -139,7 +139,9 @@ public:
 	    switch (generic_param.get ()->get_kind ())
 	      {
 	      case HIR::GenericParam::GenericKind::LIFETIME:
-		// Skipping Lifetime completely until better handling.
+	      case HIR::GenericParam::GenericKind::CONST:
+		// FIXME: Skipping Lifetime and Const completely until better
+		// handling.
 		break;
 
 		case HIR::GenericParam::GenericKind::TYPE: {
@@ -215,7 +217,9 @@ public:
 	    switch (generic_param.get ()->get_kind ())
 	      {
 	      case HIR::GenericParam::GenericKind::LIFETIME:
-		// Skipping Lifetime completely until better handling.
+	      case HIR::GenericParam::GenericKind::CONST:
+		// FIXME: Skipping Lifetime and Const completely until better
+		// handling.
 		break;
 
 		case HIR::GenericParam::GenericKind::TYPE: {
@@ -273,7 +277,9 @@ public:
 	    switch (generic_param.get ()->get_kind ())
 	      {
 	      case HIR::GenericParam::GenericKind::LIFETIME:
-		// Skipping Lifetime completely until better handling.
+	      case HIR::GenericParam::GenericKind::CONST:
+		// FIXME: Skipping Lifetime and Const completely until better
+		// handling.
 		break;
 
 		case HIR::GenericParam::GenericKind::TYPE: {
@@ -347,7 +353,9 @@ public:
 	    switch (generic_param.get ()->get_kind ())
 	      {
 	      case HIR::GenericParam::GenericKind::LIFETIME:
-		// Skipping Lifetime completely until better handling.
+	      case HIR::GenericParam::GenericKind::CONST:
+		// FIXME: Skipping Lifetime and Const completely until better
+		// handling.
 		break;
 
 		case HIR::GenericParam::GenericKind::TYPE: {
@@ -415,7 +423,9 @@ public:
 	    switch (generic_param.get ()->get_kind ())
 	      {
 	      case HIR::GenericParam::GenericKind::LIFETIME:
-		// Skipping Lifetime completely until better handling.
+	      case HIR::GenericParam::GenericKind::CONST:
+		// FIXME: Skipping Lifetime and Const completely until better
+		// handling.
 		break;
 
 		case HIR::GenericParam::GenericKind::TYPE: {

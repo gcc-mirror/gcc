@@ -188,8 +188,7 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
 }
 
 void
-PrivacyReporter::check_type_privacy (const HIR::Type *type,
-				     const Location &locus)
+PrivacyReporter::check_type_privacy (const HIR::Type *type)
 {
   rust_assert (type);
 
@@ -198,7 +197,7 @@ PrivacyReporter::check_type_privacy (const HIR::Type *type,
     ty_ctx.lookup_type (type->get_mappings ().get_hirid (), &lookup));
 
   auto node_mappings = type->get_mappings ();
-  return check_base_type_privacy (node_mappings, lookup, locus);
+  return check_base_type_privacy (node_mappings, lookup, type->get_locus ());
 }
 
 void
@@ -634,9 +633,7 @@ void
 PrivacyReporter::visit (HIR::Function &function)
 {
   for (auto &param : function.get_function_params ())
-    check_type_privacy (param.get_type (), param.get_locus ());
-
-  // FIXME: It would be better if it was specifically the type's locus (#1256)
+    check_type_privacy (param.get_type ());
 
   function.get_definition ()->accept_vis (*this);
 }
@@ -737,8 +734,7 @@ PrivacyReporter::visit (HIR::LetStmt &stmt)
 {
   auto type = stmt.get_type ();
   if (type)
-    check_type_privacy (type, stmt.get_locus ());
-  // FIXME: #1256
+    check_type_privacy (type);
 
   auto init_expr = stmt.get_init_expr ();
   if (init_expr)

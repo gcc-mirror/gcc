@@ -74,9 +74,8 @@ types
    *
    * @param type Reference to an explicit type used in a statement, expression
    * 		or parameter
-   * @param locus Location of said type
    */
-  void check_type_privacy (const HIR::Type *type, const Location &locus);
+  void check_type_privacy (const HIR::Type *type);
 
   virtual void visit (HIR::StructExprFieldIdentifier &field);
   virtual void visit (HIR::StructExprFieldIdentifierValue &field);

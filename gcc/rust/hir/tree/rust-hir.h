@@ -478,16 +478,18 @@ public:
   virtual void accept_vis (HIRTypeVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_mappings () const { return mappings; }
+  virtual Location get_locus () const { return locus; }
 
 protected:
-  Type (Analysis::NodeMapping mappings) : mappings (mappings) {}
+  Type (Analysis::NodeMapping mappings, Location locus)
+    : mappings (mappings), locus (locus)
+  {}
 
   // Clone function implementation as pure virtual method
   virtual Type *clone_type_impl () const = 0;
 
   Analysis::NodeMapping mappings;
-
-  // FIXME: How do we get the location here for each type?
+  Location locus;
 };
 
 // A type without parentheses? - abstract
@@ -501,7 +503,9 @@ public:
   }
 
 protected:
-  TypeNoBounds (Analysis::NodeMapping mappings) : Type (mappings) {}
+  TypeNoBounds (Analysis::NodeMapping mappings, Location locus)
+    : Type (mappings, locus)
+  {}
 
   // Clone function implementation as pure virtual method
   virtual TypeNoBounds *clone_type_no_bounds_impl () const = 0;
@@ -615,13 +619,11 @@ class GenericParam
 public:
   virtual ~GenericParam () {}
 
-  enum GenericKind
+  enum class GenericKind
   {
     TYPE,
     LIFETIME,
-
-    // CONST generic parameter not yet handled
-    // CONST,
+    CONST,
   };
 
   // Unique pointer custom clone function
@@ -648,7 +650,8 @@ protected:
 
   enum GenericKind kind;
 
-  GenericParam (Analysis::NodeMapping mapping, enum GenericKind kind = TYPE)
+  GenericParam (Analysis::NodeMapping mapping,
+		enum GenericKind kind = GenericKind::TYPE)
     : mappings (mapping), kind (kind)
   {}
 };
@@ -730,6 +733,52 @@ protected:
   {
     return new LifetimeParam (*this);
   }
+};
+
+class ConstGenericParam : public GenericParam
+{
+public:
+  ConstGenericParam (std::string name, std::unique_ptr<Type> type,
+		     std::unique_ptr<Expr> default_expression,
+		     Analysis::NodeMapping mapping, Location locus)
+    : GenericParam (mapping, GenericKind::CONST), name (std::move (name)),
+      type (std::move (type)),
+      default_expression (std::move (default_expression)), locus (locus)
+  {}
+
+  ConstGenericParam (const ConstGenericParam &other) : GenericParam (other)
+  {
+    name = other.name;
+    locus = other.locus;
+
+    if (other.type)
+      type = other.type->clone_type ();
+    if (other.default_expression)
+      default_expression = other.default_expression->clone_expr ();
+  }
+
+  std::string as_string () const override final;
+
+  void accept_vis (HIRFullVisitor &vis) override final;
+
+  Location get_locus () const override final { return locus; };
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  ConstGenericParam *clone_generic_param_impl () const override
+  {
+    return new ConstGenericParam (*this);
+  }
+
+private:
+  std::string name;
+  std::unique_ptr<Type> type;
+
+  /* Optional - can be a null pointer if there is no default expression */
+  std::unique_ptr<Expr> default_expression;
+
+  Location locus;
 };
 
 // Item used in trait declarations - abstract base class

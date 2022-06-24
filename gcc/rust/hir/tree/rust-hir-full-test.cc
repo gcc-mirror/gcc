@@ -5285,5 +5285,20 @@ StaticItem::accept_vis (HIRVisItemVisitor &vis)
   vis.visit (*this);
 }
 
+std::string
+ConstGenericParam::as_string () const
+{
+  auto result = "ConstGenericParam: " + name + " : " + type->as_string ();
+
+  if (default_expression)
+    result += " = " + default_expression->as_string ();
+
+  return result;
+}
+
+void
+ConstGenericParam::accept_vis (HIRFullVisitor &vis)
+{}
+
 } // namespace HIR
 } // namespace Rust

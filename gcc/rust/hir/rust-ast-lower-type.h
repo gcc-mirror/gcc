@@ -375,13 +375,17 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    // FIXME: This creates a BOGUS HIR::Lifetime instance because we do not have
-    // an `HIR::ConstGenericParam` type yet. This needs to be removed, but for
-    // now it avoids bogus ICEs
-    HIR::Lifetime lt (mapping, AST::Lifetime::LifetimeType::WILDCARD, "fixme",
-		      param.get_locus ());
-    translated = new HIR::LifetimeParam (mapping, lt, param.get_locus (),
-					 std::vector<Lifetime> ());
+    auto type = ASTLoweringType::translate (param.get_type ().get ());
+    auto default_expr
+      = param.has_default_value ()
+	  ? ASTLoweringExpr::translate (param.get_default_value ().get ())
+	  : nullptr;
+
+    translated
+      = new HIR::ConstGenericParam (param.get_name (),
+				    std::unique_ptr<Type> (type),
+				    std::unique_ptr<Expr> (default_expr),
+				    mapping, param.get_locus ());
   }
 
   void visit (AST::TypeParam &param) override

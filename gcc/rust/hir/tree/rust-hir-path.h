@@ -112,12 +112,41 @@ public:
   Location get_locus () const { return locus; }
 };
 
+class ConstGenericArg
+{
+  // FIXME: Do we need to disambiguate or no? We should be able to disambiguate
+  // at name-resolution, hence no need for ambiguities here
+
+public:
+  ConstGenericArg (std::unique_ptr<Expr> expression, Location locus)
+    : expression (std::move (expression)), locus (locus)
+  {}
+
+  ConstGenericArg (const ConstGenericArg &other) : locus (other.locus)
+  {
+    expression = other.expression->clone_expr ();
+  }
+
+  ConstGenericArg operator= (const ConstGenericArg &other)
+  {
+    expression = other.expression->clone_expr ();
+    locus = other.locus;
+
+    return *this;
+  }
+
+private:
+  std::unique_ptr<Expr> expression;
+  Location locus;
+};
+
 // Generic arguments allowed in each path expression segment - inline?
 struct GenericArgs
 {
   std::vector<Lifetime> lifetime_args;
   std::vector<std::unique_ptr<Type> > type_args;
   std::vector<GenericArgsBinding> binding_args;
+  std::vector<ConstGenericArg> const_args;
   Location locus;
 
 public:
@@ -130,18 +159,21 @@ public:
 
   GenericArgs (std::vector<Lifetime> lifetime_args,
 	       std::vector<std::unique_ptr<Type> > type_args,
-	       std::vector<GenericArgsBinding> binding_args, Location locus)
+	       std::vector<GenericArgsBinding> binding_args,
+	       std::vector<ConstGenericArg> const_args, Location locus)
     : lifetime_args (std::move (lifetime_args)),
       type_args (std::move (type_args)),
-      binding_args (std::move (binding_args)), locus (locus)
+      binding_args (std::move (binding_args)),
+      const_args (std::move (const_args)), locus (locus)
   {}
 
   // copy constructor with vector clone
   GenericArgs (GenericArgs const &other)
     : lifetime_args (other.lifetime_args), binding_args (other.binding_args),
-      locus (other.locus)
+      const_args (other.const_args), locus (other.locus)
   {
     type_args.reserve (other.type_args.size ());
+
     for (const auto &e : other.type_args)
       type_args.push_back (e->clone_type ());
   }
@@ -153,6 +185,7 @@ public:
   {
     lifetime_args = other.lifetime_args;
     binding_args = other.binding_args;
+    const_args = other.const_args;
     locus = other.locus;
 
     type_args.reserve (other.type_args.size ());
@@ -169,9 +202,7 @@ public:
   // Creates an empty GenericArgs (no arguments)
   static GenericArgs create_empty (Location locus = Location ())
   {
-    return GenericArgs (std::vector<Lifetime> (),
-			std::vector<std::unique_ptr<Type> > (),
-			std::vector<GenericArgsBinding> (), locus);
+    return GenericArgs ({}, {}, {}, {}, locus);
   }
 
   bool is_empty () const
@@ -187,6 +218,8 @@ public:
   std::vector<std::unique_ptr<Type> > &get_type_args () { return type_args; }
 
   std::vector<GenericArgsBinding> &get_binding_args () { return binding_args; }
+
+  std::vector<ConstGenericArg> &get_const_args () { return const_args; }
 
   Location get_locus () const { return locus; }
 };
@@ -464,12 +497,13 @@ public:
 			  std::vector<Lifetime> lifetime_args,
 			  std::vector<std::unique_ptr<Type> > type_args,
 			  std::vector<GenericArgsBinding> binding_args,
+			  std::vector<ConstGenericArg> const_args,
 			  Location locus)
     : TypePathSegment (std::move (mappings), std::move (segment_name),
 		       has_separating_scope_resolution, locus),
-      generic_args (GenericArgs (std::move (lifetime_args),
-				 std::move (type_args),
-				 std::move (binding_args), locus))
+      generic_args (
+	GenericArgs (std::move (lifetime_args), std::move (type_args),
+		     std::move (binding_args), std::move (const_args), locus))
   {}
 
   std::string as_string () const override;
@@ -623,7 +657,6 @@ class TypePath : public TypeNoBounds
 public:
   bool has_opening_scope_resolution;
   std::vector<std::unique_ptr<TypePathSegment> > segments;
-  Location locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -660,16 +693,15 @@ public:
   TypePath (Analysis::NodeMapping mappings,
 	    std::vector<std::unique_ptr<TypePathSegment> > segments,
 	    Location locus, bool has_opening_scope_resolution = false)
-    : TypeNoBounds (mappings),
+    : TypeNoBounds (mappings, locus),
       has_opening_scope_resolution (has_opening_scope_resolution),
-      segments (std::move (segments)), locus (locus)
+      segments (std::move (segments))
   {}
 
   // Copy constructor with vector clone
   TypePath (TypePath const &other)
-    : TypeNoBounds (other.mappings),
-      has_opening_scope_resolution (other.has_opening_scope_resolution),
-      locus (other.locus)
+    : TypeNoBounds (other.mappings, other.locus),
+      has_opening_scope_resolution (other.has_opening_scope_resolution)
   {
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
@@ -702,8 +734,6 @@ public:
 
   // Creates a trait bound with a clone of this type path as its only element.
   TraitBound *to_trait_bound (bool in_parens) const override;
-
-  Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -865,7 +895,6 @@ class QualifiedPathInType : public TypeNoBounds
   QualifiedPathType path_type;
   std::unique_ptr<TypePathSegment> associated_segment;
   std::vector<std::unique_ptr<TypePathSegment> > segments;
-  Location locus;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -888,9 +917,9 @@ public:
     std::unique_ptr<TypePathSegment> associated_segment,
     std::vector<std::unique_ptr<TypePathSegment> > path_segments,
     Location locus = Location ())
-    : TypeNoBounds (mappings), path_type (std::move (qual_path_type)),
+    : TypeNoBounds (mappings, locus), path_type (std::move (qual_path_type)),
       associated_segment (std::move (associated_segment)),
-      segments (std::move (path_segments)), locus (locus)
+      segments (std::move (path_segments))
   {}
 
   /* TODO: maybe make a shortcut constructor that has QualifiedPathType elements
@@ -898,8 +927,7 @@ public:
 
   // Copy constructor with vector clone
   QualifiedPathInType (QualifiedPathInType const &other)
-    : TypeNoBounds (other.mappings), path_type (other.path_type),
-      locus (other.locus)
+    : TypeNoBounds (other.mappings, other.locus), path_type (other.path_type)
   {
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
@@ -943,8 +971,6 @@ public:
   {
     return segments;
   }
-
-  Location get_locus () { return locus; }
 };
 
 class SimplePathSegment
