@@ -39,9 +39,7 @@ test01()
   fs::create_directory(bar/"baz");
   fs::path p;
 
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No symlink support
-#else
+#ifndef NO_SYMLINKS
   fs::create_symlink("../bar", foo/"bar");
 
   p = fs::weakly_canonical(dir/"foo//./bar///../biz/.");

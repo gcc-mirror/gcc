@@ -67,11 +67,7 @@ test01()
 void
 test02()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No symlink support
-  return;
-#endif
-
+#ifndef NO_SYMLINKS
   auto from = __gnu_test::nonexistent_path();
   std::error_code ec, bad = std::make_error_code(std::errc::invalid_argument);
 
@@ -109,6 +105,7 @@ test02()
 
   remove(from, ec);
   remove(to, ec);
+#endif
 }
 
 // Test is_regular_file(f) case.

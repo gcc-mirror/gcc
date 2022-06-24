@@ -75,9 +75,7 @@ test01()
 void
 test_symlinks()
 {
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No symlink support
-#else
+#ifndef NO_SYMLINKS
   std::error_code ec;
   const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
 

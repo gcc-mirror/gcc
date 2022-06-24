@@ -241,6 +241,15 @@ proc dg-require-filesystem-ts { args } {
     return
 }
 
+proc dg-require-target-fs-symlinks { args } {
+    if { ![ check_v3_target_fs_symlinks ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
 proc add_options_for_no_pch { flags } {
     # This forces any generated and possibly included PCH to be invalid.
     return "-D__GLIBCXX__=99999999"

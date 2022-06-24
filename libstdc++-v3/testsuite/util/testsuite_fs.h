@@ -42,6 +42,10 @@ namespace test_fs = std::experimental::filesystem;
 #include <random>   // std::random_device
 #endif
 
+#ifndef _GLIBCXX_HAVE_SYMLINK
+#define NO_SYMLINKS
+#endif
+
 namespace __gnu_test
 {
 #define PATH_CHK(p1, p2, fn) \

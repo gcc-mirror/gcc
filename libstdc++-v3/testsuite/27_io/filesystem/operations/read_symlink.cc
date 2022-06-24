@@ -17,7 +17,7 @@
 
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
-// { dg-xfail-if "symlinks not supported" { *-*-mingw* } }
+// { dg-require-target-fs-symlinks "" }
 
 #include <filesystem>
 #include <testsuite_hooks.h>
