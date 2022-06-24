@@ -1668,12 +1668,12 @@ test_program_state_merging ()
      malloc sm-state, pointing to a region on the heap.  */
   tree p = build_global_decl ("p", ptr_type_node);
 
-  program_point point (program_point::origin ());
+  engine eng;
+  region_model_manager *mgr = eng.get_model_manager ();
+  program_point point (program_point::origin (*mgr));
   auto_delete_vec <state_machine> checkers;
   checkers.safe_push (make_malloc_state_machine (NULL));
-  engine eng;
   extrinsic_state ext_state (checkers, &eng);
-  region_model_manager *mgr = eng.get_model_manager ();
 
   program_state s0 (ext_state);
   uncertainty_t uncertainty;
@@ -1736,10 +1736,11 @@ test_program_state_merging ()
 static void
 test_program_state_merging_2 ()
 {
-  program_point point (program_point::origin ());
+  engine eng;
+  region_model_manager *mgr = eng.get_model_manager ();
+  program_point point (program_point::origin (*mgr));
   auto_delete_vec <state_machine> checkers;
   checkers.safe_push (make_signal_state_machine (NULL));
-  engine eng;
   extrinsic_state ext_state (checkers, &eng);
 
   const state_machine::state test_state_0 ("test state 0", 0);

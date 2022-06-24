@@ -5460,9 +5460,9 @@ assert_region_models_merge (tree expr, tree val_a, tree val_b,
 			     region_model *out_merged_model,
 			     const svalue **out_merged_svalue)
 {
-  program_point point (program_point::origin ());
-  test_region_model_context ctxt;
   region_model_manager *mgr = out_merged_model->get_manager ();
+  program_point point (program_point::origin (*mgr));
+  test_region_model_context ctxt;
   region_model model0 (mgr);
   region_model model1 (mgr);
   if (val_a)
@@ -5511,8 +5511,8 @@ test_state_merging ()
 		       ptr_type_node);
   DECL_CONTEXT (q) = test_fndecl;
 
-  program_point point (program_point::origin ());
   region_model_manager mgr;
+  program_point point (program_point::origin (mgr));
 
   {
     region_model model0 (&mgr);
@@ -5852,7 +5852,7 @@ test_constraint_merging ()
 
   /* They should be mergeable; the merged constraints should
      be: (0 <= x < n).  */
-  program_point point (program_point::origin ());
+  program_point point (program_point::origin (mgr));
   region_model merged (&mgr);
   ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
 
@@ -5873,12 +5873,12 @@ test_constraint_merging ()
 static void
 test_widening_constraints ()
 {
-  program_point point (program_point::origin ());
+  region_model_manager mgr;
+  program_point point (program_point::origin (mgr));
   tree int_0 = build_int_cst (integer_type_node, 0);
   tree int_m1 = build_int_cst (integer_type_node, -1);
   tree int_1 = build_int_cst (integer_type_node, 1);
   tree int_256 = build_int_cst (integer_type_node, 256);
-  region_model_manager mgr;
   test_region_model_context ctxt;
   const svalue *int_0_sval = mgr.get_or_create_constant_svalue (int_0);
   const svalue *int_1_sval = mgr.get_or_create_constant_svalue (int_1);
@@ -5988,7 +5988,8 @@ test_widening_constraints ()
 static void
 test_iteration_1 ()
 {
-  program_point point (program_point::origin ());
+  region_model_manager mgr;
+  program_point point (program_point::origin (mgr));
 
   tree int_0 = build_int_cst (integer_type_node, 0);
   tree int_1 = build_int_cst (integer_type_node, 1);
@@ -5996,7 +5997,6 @@ test_iteration_1 ()
   tree int_257 = build_int_cst (integer_type_node, 257);
   tree i = build_global_decl ("i", integer_type_node);
 
-  region_model_manager mgr;
   test_region_model_context ctxt;
 
   /* model0: i: 0.  */

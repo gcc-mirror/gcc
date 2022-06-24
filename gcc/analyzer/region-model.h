@@ -244,6 +244,12 @@ public:
   region_model_manager (logger *logger = NULL);
   ~region_model_manager ();
 
+  /* call_string consolidation.  */
+  const call_string &get_empty_call_string () const
+  {
+    return m_empty_call_string;
+  }
+
   /* svalue consolidation.  */
   const svalue *get_or_create_constant_svalue (tree cst_expr);
   const svalue *get_or_create_int_cst (tree type, poly_int64);
@@ -380,6 +386,8 @@ private:
 					      const vec<const svalue *> &inputs);
 
   logger *m_logger;
+
+  const call_string m_empty_call_string;
 
   unsigned m_next_region_id;
   root_region m_root_region;

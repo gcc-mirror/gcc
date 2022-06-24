@@ -2374,8 +2374,9 @@ exploded_graph::exploded_graph (const supergraph &sg, logger *logger,
   m_functionless_stats (m_sg.num_nodes ()),
   m_PK_AFTER_SUPERNODE_per_snode (m_sg.num_nodes ())
 {
-  m_origin = get_or_create_node (program_point::origin (),
-				 program_state (ext_state), NULL);
+  m_origin = get_or_create_node
+    (program_point::origin (*ext_state.get_model_manager ()),
+     program_state (ext_state), NULL);
   for (int i = 0; i < m_sg.num_nodes (); i++)
     m_PK_AFTER_SUPERNODE_per_snode.quick_push (i);
 }
@@ -2526,7 +2527,9 @@ exploded_graph::add_function_entry (function *fun)
       return NULL;
     }
 
-  program_point point = program_point::from_function_entry (m_sg, fun);
+  program_point point
+    = program_point::from_function_entry (*m_ext_state.get_model_manager (),
+					  m_sg, fun);
   program_state state (m_ext_state);
   state.push_frame (m_ext_state, fun);
 
@@ -2979,7 +2982,8 @@ add_tainted_args_callback (exploded_graph *eg, tree field, tree fndecl,
   gcc_assert (fun);
 
   program_point point
-    = program_point::from_function_entry (eg->get_supergraph (), fun);
+    = program_point::from_function_entry (*ext_state.get_model_manager (),
+					  eg->get_supergraph (), fun);
   program_state state (ext_state);
   state.push_frame (ext_state, fun);
 
@@ -3341,7 +3345,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
 
       if (point_2.get_kind () == PK_BEFORE_SUPERNODE
 	  && point_2.get_supernode () == snode
-	  && point_2.get_call_string () == point.get_call_string ())
+	  && &point_2.get_call_string () == &point.get_call_string ())
 	{
 	  enodes.safe_push (enode_2);
 	  m_worklist.take_next ();
@@ -4048,7 +4052,7 @@ exploded_graph::process_node (exploded_node *node)
 	if ((is_an_exit_block && !found_a_superedge)
 	    && (!point.get_call_string ().empty_p ()))
 	  {
-	    const call_string cs = point.get_call_string ();
+	    const call_string &cs = point.get_call_string ();
 	    program_point next_point
 	      = program_point::before_supernode (cs.get_caller_node (),
 						 NULL,
@@ -4736,7 +4740,7 @@ private:
 class function_call_string_cluster : public exploded_cluster
 {
 public:
-  function_call_string_cluster (function *fun, call_string cs)
+  function_call_string_cluster (function *fun, const call_string &cs)
   : m_fun (fun), m_cs (cs) {}
 
   ~function_call_string_cluster ()
@@ -4811,7 +4815,7 @@ public:
 
 private:
   function *m_fun;
-  call_string m_cs;
+  const call_string &m_cs;
   typedef ordered_hash_map<const supernode *, supernode_cluster *> map_t;
   map_t m_map;
 };
@@ -4820,14 +4824,15 @@ private:
 
 struct function_call_string
 {
-  function_call_string (function *fun, call_string cs)
+  function_call_string (function *fun, const call_string *cs)
   : m_fun (fun), m_cs (cs)
   {
     gcc_assert (fun);
+    gcc_assert (cs);
   }
 
   function *m_fun;
-  call_string m_cs;
+  const call_string *m_cs;
 };
 
 } // namespace ana
@@ -4842,7 +4847,8 @@ template <>
 inline hashval_t
 pod_hash_traits<function_call_string>::hash (value_type v)
 {
-  return pointer_hash <function>::hash (v.m_fun) ^ v.m_cs.hash ();
+  return (pointer_hash <function>::hash (v.m_fun)
+	  ^ pointer_hash <const call_string>::hash (v.m_cs));
 }
 
 template <>
@@ -4850,7 +4856,7 @@ inline bool
 pod_hash_traits<function_call_string>::equal (const value_type &existing,
 					      const value_type &candidate)
 {
-  return existing.m_fun == candidate.m_fun && existing.m_cs == candidate.m_cs;
+  return existing.m_fun == candidate.m_fun && &existing.m_cs == &candidate.m_cs;
 }
 template <>
 inline void
@@ -4925,7 +4931,7 @@ public:
       }
 
     const call_string &cs = en->get_point ().get_call_string ();
-    function_call_string key (fun, cs);
+    function_call_string key (fun, &cs);
     function_call_string_cluster **slot = m_map.get (key);
     if (slot)
       (*slot)->add_node (en);
@@ -4939,11 +4945,6 @@ public:
   }
 
 private:
-  /* This can't be an ordered_hash_map, as we can't store vec<call_string>,
-     since it's not a POD; vec<>::quick_push has:
-       *slot = obj;
-     and the slot isn't initialized, so the assignment op dies when cleaning up
-     un-inited *slot (within the truncate call).  */
   typedef hash_map<function_call_string, function_call_string_cluster *> map_t;
   map_t m_map;
 
@@ -5319,7 +5320,7 @@ public:
 	    FOR_EACH_VEC_ELT (args.m_eg->m_nodes, i, enode)
 	      {
 		if (enode->get_point ().get_function () == m_fun
-		    && enode->get_point ().get_call_string () == *cs)
+		    && &enode->get_point ().get_call_string () == cs)
 		  num_enodes++;
 	      }
 	    if (num_enodes > 0)
