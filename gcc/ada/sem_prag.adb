@@ -10561,7 +10561,7 @@ package body Sem_Prag is
 
                   --  Check for possible misspelling
 
-                  for J in Restriction_Id loop
+                  for J in All_Restrictions loop
                      declare
                         Rnm : constant String := Restriction_Id'Image (J);
 
