@@ -4039,6 +4039,7 @@ a C++ program.  The new-style casts (@code{dynamic_cast},
 less vulnerable to unintended effects and much easier to search for.
 
 @item -Woverloaded-virtual @r{(C++ and Objective-C++ only)}
+@itemx -Woverloaded-virtual=@var{n}
 @opindex Woverloaded-virtual
 @opindex Wno-overloaded-virtual
 @cindex overloaded virtual function, warning
@@ -4052,7 +4053,7 @@ struct A @{
 @};
 
 struct B: public A @{
-  void f(int);
+  void f(int); // does not override
 @};
 @end smallexample
 
@@ -4066,6 +4067,29 @@ b->f();
 
 @noindent
 fails to compile.
+
+The optional level suffix controls the behavior when all the
+declarations in the derived class override virtual functions in the
+base class, even if not all of the base functions are overridden:
+
+@smallexample
+struct C @{
+  virtual void f();
+  virtual void f(int);
+@};
+
+struct D: public C @{
+  void f(int); // does override
+@}
+@end smallexample
+
+This pattern is less likely to be a mistake; if D is only used
+virtually, the user might have decided that the base class semantics
+for some of the overloads are fine.
+
+At level 1, this case does not warn; at level 2, it does.
+@option{-Woverloaded-virtual} by itself selects level 2.  Level 1 is
+included in @option{-Wall}.
 
 @item -Wno-pmf-conversions @r{(C++ and Objective-C++ only)}
 @opindex Wno-pmf-conversions
