@@ -173,12 +173,16 @@ struct A final
 
     A() :
         a(),
-        s()
+        s(),
+        x(),
+        y()
     {
     }
-    A(int32_t a, S s = S()) :
+    A(int32_t a, S s = S(), int32_t x = 0, int32_t y = 0) :
         a(a),
-        s(s)
+        s(s),
+        x(x),
+        y(y)
         {}
 };
 
@@ -196,11 +200,13 @@ private:
     char smallarray[1$?:32=u|64=LLU$];
 public:
     Array() :
-        length()
+        length(),
+        data()
     {
     }
-    Array(uint32_t length) :
-        length(length)
+    Array(uint32_t length, _d_dynamicArray< char > data = {}) :
+        length(length),
+        data(data)
         {}
 };
 

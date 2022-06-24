@@ -50,9 +50,21 @@ protected:
 private:
     int32_t e;
 public:
-    S1()
+    S1() :
+        a(),
+        b(),
+        c(),
+        d(),
+        e()
     {
     }
+    S1(int32_t a, int32_t b = 0, int32_t c = 0, int32_t d = 0, int32_t e = 0) :
+        a(a),
+        b(b),
+        c(c),
+        d(d),
+        e(e)
+        {}
 };
 
 class S2 final
@@ -102,10 +114,12 @@ public:
     public:
         int32_t publicInner;
         PublicInnerStruct() :
+            privateInner(),
             publicInner()
         {
         }
-        PublicInnerStruct(int32_t publicInner) :
+        PublicInnerStruct(int32_t privateInner, int32_t publicInner = 0) :
+            privateInner(privateInner),
             publicInner(publicInner)
             {}
     };
@@ -118,10 +132,12 @@ private:
     public:
         int32_t publicInner;
         PrivateInnerClass() :
+            privateInner(),
             publicInner()
         {
         }
-        PrivateInnerClass(int32_t publicInner) :
+        PrivateInnerClass(int32_t privateInner, int32_t publicInner = 0) :
+            privateInner(privateInner),
             publicInner(publicInner)
             {}
     };
@@ -142,9 +158,13 @@ private:
 
 public:
     typedef PrivateInnerEnum PublicAlias;
-    Outer()
+    Outer() :
+        privateOuter()
     {
     }
+    Outer(int32_t privateOuter) :
+        privateOuter(privateOuter)
+        {}
 };
 ---
 */

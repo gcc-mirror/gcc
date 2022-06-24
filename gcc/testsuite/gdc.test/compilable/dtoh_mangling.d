@@ -64,9 +64,15 @@ struct HasMangleMember final
     int32_t someAttrC;
     int32_t someAttrCpp;
     void hasDefaultVar(int32_t i = someAttrC);
-    HasMangleMember()
+    HasMangleMember() :
+        someAttrC(),
+        someAttrCpp()
     {
     }
+    HasMangleMember(int32_t someAttrC, int32_t someAttrCpp = 0) :
+        someAttrC(someAttrC),
+        someAttrCpp(someAttrCpp)
+        {}
 };
 
 extern "C" void hasDefaultVar(int32_t i = someVarC);

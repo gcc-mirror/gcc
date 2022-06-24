@@ -873,7 +873,11 @@ public:
         // Tuple field are expanded into multiple VarDeclarations
         // (we'll visit them later)
         if (vd.type && vd.type.isTypeTuple())
+        {
+            assert(vd.aliassym);
+            vd.toAlias().accept(this);
             return;
+        }
 
         if (vd.originalType && vd.type == AST.Type.tsize_t)
             origType = vd.originalType;
@@ -1263,41 +1267,38 @@ public:
             size_t varCount;
             bool first = true;
             buf.level++;
-            foreach (m; *sd.members)
+            foreach (vd; sd.fields)
             {
-                if (auto vd = m.isVarDeclaration())
+                if (!memberField(vd) || vd.overlapped)
+                    continue;
+                varCount++;
+
+                if (!vd._init && !vd.type.isTypeBasic() && !vd.type.isTypePointer && !vd.type.isTypeStruct &&
+                    !vd.type.isTypeClass && !vd.type.isTypeDArray && !vd.type.isTypeSArray)
                 {
-                    if (!memberField(vd))
-                        continue;
-                    varCount++;
-
-                    if (!vd._init && !vd.type.isTypeBasic() && !vd.type.isTypePointer && !vd.type.isTypeStruct &&
-                        !vd.type.isTypeClass && !vd.type.isTypeDArray && !vd.type.isTypeSArray)
-                    {
-                        continue;
-                    }
-                    if (vd._init && vd._init.isVoidInitializer())
-                        continue;
-
-                    if (first)
-                    {
-                        buf.writestringln(" :");
-                        first = false;
-                    }
-                    else
-                    {
-                        buf.writestringln(",");
-                    }
-                    writeIdentifier(vd, true);
-                    buf.writeByte('(');
-
-                    if (vd._init)
-                    {
-                        auto e = AST.initializerToExpression(vd._init);
-                        printExpressionFor(vd.type, e, true);
-                    }
-                    buf.printf(")");
+                    continue;
                 }
+                if (vd._init && vd._init.isVoidInitializer())
+                    continue;
+
+                if (first)
+                {
+                    buf.writestringln(" :");
+                    first = false;
+                }
+                else
+                {
+                    buf.writestringln(",");
+                }
+                writeIdentifier(vd, true);
+                buf.writeByte('(');
+
+                if (vd._init)
+                {
+                    auto e = AST.initializerToExpression(vd._init);
+                    printExpressionFor(vd.type, e, true);
+                }
+                buf.printf(")");
             }
             buf.level--;
             buf.writenl();
@@ -1308,49 +1309,43 @@ public:
             {
                 buf.printf("%s(", sd.ident.toChars());
                 first = true;
-                foreach (m; *sd.members)
+                foreach (vd; sd.fields)
                 {
-                    if (auto vd = m.isVarDeclaration())
+                    if (!memberField(vd) || vd.overlapped)
+                        continue;
+                    if (!first)
+                        buf.writestring(", ");
+                    assert(vd.type);
+                    assert(vd.ident);
+                    typeToBuffer(vd.type, vd, true);
+                    // Don't print default value for first parameter to not clash
+                    // with the default ctor defined above
+                    if (!first)
                     {
-                        if (!memberField(vd))
-                            continue;
-                        if (!first)
-                            buf.writestring(", ");
-                        assert(vd.type);
-                        assert(vd.ident);
-                        typeToBuffer(vd.type, vd, true);
-                        // Don't print default value for first parameter to not clash
-                        // with the default ctor defined above
-                        if (!first)
-                        {
-                            buf.writestring(" = ");
-                            printExpressionFor(vd.type, findDefaultInitializer(vd));
-                        }
-                        first = false;
+                        buf.writestring(" = ");
+                        printExpressionFor(vd.type, findDefaultInitializer(vd));
                     }
+                    first = false;
                 }
                 buf.writestring(") :");
                 buf.level++;
                 buf.writenl();
 
                 first = true;
-                foreach (m; *sd.members)
+                foreach (vd; sd.fields)
                 {
-                    if (auto vd = m.isVarDeclaration())
-                    {
-                        if (!memberField(vd))
-                            continue;
+                    if (!memberField(vd) || vd.overlapped)
+                        continue;
 
-                        if (first)
-                            first = false;
-                        else
-                            buf.writestringln(",");
+                    if (first)
+                        first = false;
+                    else
+                        buf.writestringln(",");
 
-                        writeIdentifier(vd, true);
-                        buf.writeByte('(');
-                        writeIdentifier(vd, true);
-                        buf.writeByte(')');
-                    }
+                    writeIdentifier(vd, true);
+                    buf.writeByte('(');
+                    writeIdentifier(vd, true);
+                    buf.writeByte(')');
                 }
                 buf.writenl();
                 buf.writestringln("{}");
@@ -1661,6 +1656,13 @@ public:
         }
 
         assert(false, "This node type should be handled in the EnumDeclaration");
+    }
+
+    override void visit(AST.TupleDeclaration tup)
+    {
+        debug (Debug_DtoH) mixin(traceVisit!tup);
+
+        tup.foreachVar((s) { s.accept(this); });
     }
 
     /**

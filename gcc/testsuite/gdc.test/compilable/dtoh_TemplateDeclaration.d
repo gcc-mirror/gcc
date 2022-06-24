@@ -219,9 +219,13 @@ struct ImportedBuffer final
 {
     typedef ActualBuffer Buffer;
     ActualBuffer buffer2;
-    ImportedBuffer()
+    ImportedBuffer() :
+        buffer2()
     {
     }
+    ImportedBuffer(ActualBuffer buffer2) :
+        buffer2(buffer2)
+        {}
 };
 ---
 */

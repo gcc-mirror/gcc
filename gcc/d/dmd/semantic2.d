@@ -677,6 +677,11 @@ private extern(C++) final class Semantic2Visitor : Visitor
     {
         visit(cast(AggregateDeclaration) cd);
     }
+
+    override void visit(TupleDeclaration td)
+    {
+        td.foreachVar((s) { s.accept(this); });
+    }
 }
 
 /**

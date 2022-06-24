@@ -191,3 +191,13 @@ void test22019()
             break;
     }
 }
+
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=23205
+
+void test23205()
+{
+    mixin template tpl() { int x; }
+    mixin tpl!();
+    x = 123;
+}

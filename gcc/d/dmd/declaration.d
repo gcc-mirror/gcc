@@ -656,23 +656,46 @@ extern (C++) final class TupleDeclaration : Declaration
     override bool needThis()
     {
         //printf("TupleDeclaration::needThis(%s)\n", toChars());
-        for (size_t i = 0; i < objects.dim; i++)
+        return isexp ? foreachVar((s) { return s.needThis(); }) != 0 : false;
+    }
+
+    /***********************************************************
+     * Calls dg(Dsymbol) for each Dsymbol, which should be a VarDeclaration
+     * inside VarExp (isexp == true).
+     * Params:
+     *    dg = delegate to call for each Dsymbol
+     */
+    extern (D) void foreachVar(scope void delegate(Dsymbol) dg)
+    {
+        assert(isexp);
+        foreach (o; *objects)
         {
-            RootObject o = (*objects)[i];
-            if (o.dyncast() == DYNCAST.expression)
-            {
-                Expression e = cast(Expression)o;
-                if (DsymbolExp ve = e.isDsymbolExp())
-                {
-                    Declaration d = ve.s.isDeclaration();
-                    if (d && d.needThis())
-                    {
-                        return true;
-                    }
-                }
-            }
+            if (auto e = o.isExpression())
+                if (auto ve = e.isVarExp())
+                    dg(ve.var);
         }
-        return false;
+    }
+
+    /***********************************************************
+     * Calls dg(Dsymbol) for each Dsymbol, which should be a VarDeclaration
+     * inside VarExp (isexp == true).
+     * If dg returns !=0, stops and returns that value else returns 0.
+     * Params:
+     *    dg = delegate to call for each Dsymbol
+     * Returns:
+     *    last value returned by dg()
+     */
+    extern (D) int foreachVar(scope int delegate(Dsymbol) dg)
+    {
+        assert(isexp);
+        foreach (o; *objects)
+        {
+            if (auto e = o.isExpression())
+                if (auto ve = e.isVarExp())
+                    if(auto ret = dg(ve.var))
+                        return ret;
+        }
+        return 0;
     }
 
     override inout(TupleDeclaration) isTupleDeclaration() inout
@@ -1142,15 +1165,7 @@ extern (C++) class VarDeclaration : Declaration
             // If this variable was really a tuple, set the offsets for the tuple fields
             TupleDeclaration v2 = aliassym.isTupleDeclaration();
             assert(v2);
-            for (size_t i = 0; i < v2.objects.dim; i++)
-            {
-                RootObject o = (*v2.objects)[i];
-                assert(o.dyncast() == DYNCAST.expression);
-                Expression e = cast(Expression)o;
-                assert(e.op == EXP.dSymbol);
-                DsymbolExp se = e.isDsymbolExp();
-                se.s.setFieldOffset(ad, fieldState, isunion);
-            }
+            v2.foreachVar((s) { s.setFieldOffset(ad, fieldState, isunion); });
             return;
         }
 

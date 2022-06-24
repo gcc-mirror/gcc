@@ -647,7 +647,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 else
                     ti = dsym._init ? dsym._init.syntaxCopy() : null;
 
-                StorageClass storage_class = STC.temp | STC.local | dsym.storage_class;
+                StorageClass storage_class = STC.temp | dsym.storage_class;
                 if ((dsym.storage_class & STC.parameter) && (arg.storageClass & STC.parameter))
                     storage_class |= arg.storageClass;
                 auto v = new VarDeclaration(dsym.loc, arg.type, id, ti, storage_class);
@@ -656,15 +656,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
                 v.dsymbolSemantic(sc);
 
-                if (sc.scopesym)
-                {
-                    //printf("adding %s to %s\n", v.toChars(), sc.scopesym.toChars());
-                    if (sc.scopesym.members)
-                        // Note this prevents using foreach() over members, because the limits can change
-                        sc.scopesym.members.push(v);
-                }
-
-                Expression e = new DsymbolExp(dsym.loc, v);
+                Expression e = new VarExp(dsym.loc, v);
                 (*exps)[i] = e;
             }
             auto v2 = new TupleDeclaration(dsym.loc, dsym.ident, exps);
@@ -728,6 +720,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             else if (!dsym.type.hasPointers())
             {
                 dsym.storage_class &= ~STC.scope_;     // silently ignore; may occur in generic code
+                // https://issues.dlang.org/show_bug.cgi?id=23168
+                if (dsym.storage_class & STC.returnScope)
+                {
+                    dsym.storage_class &= ~(STC.return_ | STC.returnScope);
+                }
             }
         }
 
@@ -3208,10 +3205,19 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 sc.stc |= STC.scope_;
 
             // If 'this' has no pointers, remove 'scope' as it has no meaning
+            // Note: this is already covered by semantic of `VarDeclaration` and `TypeFunction`,
+            // but existing code relies on `hasPointers()` being called here to resolve forward references:
+            // https://github.com/dlang/dmd/pull/14232#issuecomment-1162906573
             if (sc.stc & STC.scope_ && ad && ad.isStructDeclaration() && !ad.type.hasPointers())
             {
                 sc.stc &= ~STC.scope_;
                 tf.isScopeQual = false;
+                if (tf.isreturnscope)
+                {
+                    sc.stc &= ~(STC.return_ | STC.returnScope);
+                    tf.isreturn = false;
+                    tf.isreturnscope = false;
+                }
             }
 
             sc.linkage = funcdecl._linkage;
@@ -6840,7 +6846,12 @@ bool determineFields(AggregateDeclaration ad)
             return 1;
 
         if (v.aliassym)
-            return 0;   // If this variable was really a tuple, skip it.
+        {
+            // If this variable was really a tuple, process each element.
+            if (auto tup = v.aliassym.isTupleDeclaration())
+                return tup.foreachVar(tv => tv.apply(&func, ad));
+            return 0;
+        }
 
         if (v.storage_class & (STC.static_ | STC.extern_ | STC.tls | STC.gshared | STC.manifest | STC.ctfe | STC.templateparameter))
             return 0;

@@ -225,9 +225,9 @@ public:
 	RootObject *o = (*d->objects)[i];
 	if (o->dyncast () == DYNCAST_EXPRESSION)
 	  {
-	    DsymbolExp *de = ((Expression *) o)->isDsymbolExp ();
-	    if (de != NULL && de->s->isDeclaration ())
-	      this->build_dsymbol (de->s);
+	    VarExp *ve = ((Expression *) o)->isVarExp ();
+	    if (ve)
+	      this->build_dsymbol (ve->var);
 	  }
       }
   }

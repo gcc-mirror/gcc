@@ -5877,7 +5877,8 @@ LagainStc:
             {
                 if (isDeclaration(&token, NeedDeclaratorId.mustIfDstyle, TOK.reserved, null))
                     goto Ldeclaration;
-                if (peekNext() == TOK.leftParenthesis)
+                const tv = peekNext();
+                if (tv == TOK.leftParenthesis)
                 {
                     // mixin(string)
                     AST.Expression e = parseAssignExp();
@@ -5891,6 +5892,14 @@ LagainStc:
                     {
                         s = new AST.ExpStatement(loc, e);
                     }
+                    break;
+                }
+                else if (tv == TOK.template_)
+                {
+                    // mixin template
+                    nextToken();
+                    AST.Dsymbol d = parseTemplateDeclaration(true);
+                    s = new AST.ExpStatement(loc, d);
                     break;
                 }
                 AST.Dsymbol d = parseMixin();
