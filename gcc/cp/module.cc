@@ -3241,15 +3241,15 @@ public:
 static loc_spans spans;
 
 /* Information about macro locations we stream out.  */
-struct macro_info
+struct macro_loc_info
 {
   const line_map_macro *src;    // original expansion
   unsigned remap;	  // serialization
 
   static int compare (const void *a_, const void *b_)
   {
-    auto *a = static_cast<const macro_info *> (a_);
-    auto *b = static_cast<const macro_info *> (b_);
+    auto *a = static_cast<const macro_loc_info *> (a_);
+    auto *b = static_cast<const macro_loc_info *> (b_);
 
     gcc_checking_assert (MAP_START_LOCATION (a->src)
 			 != MAP_START_LOCATION (b->src));
@@ -3259,9 +3259,9 @@ struct macro_info
       return +1;
   }
 };
-struct macro_traits
+struct macro_loc_traits
 {
-  typedef macro_info value_type;
+  typedef macro_loc_info value_type;
   typedef const line_map_macro *compare_type;
 
   static const bool empty_zero_p = false;
@@ -3294,9 +3294,9 @@ struct macro_traits
   static void remove (value_type &) {}
 };
 /* Table keyed by line_map_macro, used for noting.  */
-static  hash_table<macro_traits> *macro_table;
+static  hash_table<macro_loc_traits> *macro_loc_table;
 /* Sorted vector, used for writing.  */
-static vec<macro_info> *macro_remap;
+static vec<macro_loc_info> *macro_loc_remap;
 
 /* Indirection to allow bsearching imports by ordinary location.  */
 static vec<module_state *> *ool;
@@ -15616,7 +15616,7 @@ module_state::imported_from () const
 void
 module_state::note_location (location_t loc)
 {
-  if (!macro_table)
+  if (!macro_loc_table)
     ;
   else if (loc < RESERVED_LOCATION_COUNT)
     ;
@@ -15635,9 +15635,9 @@ module_state::note_location (location_t loc)
 	{
 	  const line_map *map = linemap_lookup (line_table, loc);
 	  const line_map_macro *mac_map = linemap_check_macro (map);
-	  hashval_t hv = macro_traits::hash (mac_map);
-	  macro_info *slot
-	    = macro_table->find_slot_with_hash (mac_map, hv, INSERT);
+	  hashval_t hv = macro_loc_traits::hash (mac_map);
+	  macro_loc_info *slot
+	    = macro_loc_table->find_slot_with_hash (mac_map, hv, INSERT);
 	  if (!slot->src)
 	    {
 	      slot->src = mac_map;
@@ -15698,11 +15698,11 @@ module_state::write_location (bytes_out &sec, location_t loc)
     }
   else if (loc >= LINEMAPS_MACRO_LOWEST_LOCATION (line_table))
     {
-      const macro_info *info = nullptr;
+      const macro_loc_info *info = nullptr;
       unsigned offset = 0;
-      if (unsigned hwm = macro_remap->length ())
+      if (unsigned hwm = macro_loc_remap->length ())
 	{
-	  info = macro_remap->begin ();
+	  info = macro_loc_remap->begin ();
 	  while (hwm != 1)
 	    {
 	      unsigned mid = hwm / 2;
@@ -15909,7 +15909,7 @@ module_state::read_location (bytes_in &sec) const
 void
 module_state::write_init_maps ()
 {
-  macro_table = new hash_table<macro_traits> (EXPERIMENT (1, 400));
+  macro_loc_table = new hash_table<macro_loc_traits> (EXPERIMENT (1, 400));
 }
 
 location_map_info
@@ -15954,30 +15954,6 @@ module_state::write_prepare_maps (module_state_config *cfg)
 	    }
 
 	  info.num_maps.first += omap - fmap;
-	}
-
-      if (span.macro.first != span.macro.second)
-	{
-	  /* Iterate over the span's macros, to elide the empty
-	     expansions.  */
-	  unsigned count = 0;
-	  for (unsigned macro
-		 = linemap_lookup_macro_index (line_table,
-					       span.macro.second - 1);
-	       macro < LINEMAPS_MACRO_USED (line_table);
-	       macro++)
-	    {
-	      line_map_macro const *mmap
-		= LINEMAPS_MACRO_MAP_AT (line_table, macro);
-	      if (MAP_START_LOCATION (mmap) < span.macro.first)
-		/* Fallen out of the span.  */
-		break;
-
-	      if (mmap->n_tokens)
-		count++;
-	    }
-	  dump (dumper::LOCATION) && dump ("Span:%u %u macro maps", ix, count);
-	  info.num_maps.second += count;
 	}
     }
 
@@ -16024,23 +16000,23 @@ module_state::write_prepare_maps (module_state_config *cfg)
       ord_off = span.ordinary.second + span.ordinary_delta;
     }
 
-  vec_alloc (macro_remap, macro_table->size ());
-  for (auto iter = macro_table->begin (), end = macro_table->end ();
+  vec_alloc (macro_loc_remap, macro_loc_table->size ());
+  for (auto iter = macro_loc_table->begin (), end = macro_loc_table->end ();
        iter != end; ++iter)
-    macro_remap->quick_push (*iter);
-  delete macro_table;
-  macro_table = nullptr;
+    macro_loc_remap->quick_push (*iter);
+  delete macro_loc_table;
+  macro_loc_table = nullptr;
 
-  macro_remap->qsort (&macro_info::compare);
+  macro_loc_remap->qsort (&macro_loc_info::compare);
   unsigned offset = 0;
-  for (auto iter = macro_remap->begin (), end = macro_remap->end ();
+  for (auto iter = macro_loc_remap->begin (), end = macro_loc_remap->end ();
        iter != end; ++iter)
     {
       auto mac = iter->src;
       iter->remap = offset;
       offset += mac->n_tokens;
     }
-  info.num_maps.second = macro_remap->length ();
+  info.num_maps.second = macro_loc_remap->length ();
   cfg->macro_locs = offset;
 
   dump () && dump ("Ordinary:%u maps hwm:%u macro:%u maps %u locs",
@@ -16244,7 +16220,7 @@ module_state::write_macro_maps (elf_out *to, location_map_info &info,
   sec.u (info.num_maps.second);
 
   unsigned macro_num = 0;
-  for (auto iter = macro_remap->end (), begin = macro_remap->begin ();
+  for (auto iter = macro_loc_remap->end (), begin = macro_loc_remap->begin ();
        iter-- != begin;)
     {
       auto mac = iter->src;
@@ -17936,6 +17912,7 @@ module_state::write_begin (elf_out *to, cpp_reader *reader,
   spaces.release ();
   sccs.release ();
 
+  vec_free (macro_loc_remap);
   vec_free (ool);
 
   // FIXME:QOI:  Have a command line switch to control more detailed
