@@ -172,6 +172,7 @@ struct CompileOptions
     RESOLUTION_DUMP,
     TARGET_OPTION_DUMP,
     HIR_DUMP,
+    HIR_DUMP_PRETTY,
     TYPE_RESOLUTION_DUMP,
   };
 
@@ -211,6 +212,7 @@ struct CompileOptions
     enable_dump_option (DumpOption::RESOLUTION_DUMP);
     enable_dump_option (DumpOption::TARGET_OPTION_DUMP);
     enable_dump_option (DumpOption::HIR_DUMP);
+    enable_dump_option (DumpOption::HIR_DUMP_PRETTY);
     enable_dump_option (DumpOption::TYPE_RESOLUTION_DUMP);
   }
 
@@ -291,6 +293,7 @@ private:
   void dump_ast (Parser<Lexer> &parser, AST::Crate &crate) const;
   void dump_ast_expanded (Parser<Lexer> &parser, AST::Crate &crate) const;
   void dump_hir (HIR::Crate &crate) const;
+  void dump_hir_pretty (HIR::Crate &crate) const;
   void dump_type_resolution (HIR::Crate &crate) const;
 
   void debug_dump_load_crates (Parser<Lexer> &parser);
