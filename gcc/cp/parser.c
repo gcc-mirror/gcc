@@ -29434,9 +29434,12 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
     }
   else if (object_type)
     {
+      bool dep = dependent_scope_p (object_type);
+
       /* Look up the name in the scope of the OBJECT_TYPE, unless the
 	 OBJECT_TYPE is not a class.  */
-      if (CLASS_TYPE_P (object_type))
+      if (CLASS_TYPE_P (object_type)
+	  && !(dep && LAMBDA_TYPE_P (object_type)))
 	/* If the OBJECT_TYPE is a template specialization, it may
 	   be instantiated during name lookup.  In that case, errors
 	   may be issued.  Even if we rollback the current tentative
