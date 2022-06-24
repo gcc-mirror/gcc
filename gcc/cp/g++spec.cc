@@ -159,6 +159,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       switch (decoded_options[i].opt_index)
 	{
 	case OPT_nostdlib:
+	case OPT_nostdlib__:
 	case OPT_nodefaultlibs:
 	  library = -1;
 	  break;

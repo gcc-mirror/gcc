@@ -3467,6 +3467,9 @@ Driver
 nostdlib
 Driver
 
+nostdlib++
+Driver
+
 o
 Common Driver Joined Separate Var(asm_file_name) MissingArgError(missing filename after %qs)
 -o <file>	Place output into <file>.
