@@ -21532,18 +21532,6 @@ package body Sem_Util is
         and then Entity (N) in Standard_True | Standard_False;
    end Is_Trivial_Boolean;
 
-   -----------------------------
-   -- Is_Static_Constant_Name --
-   -----------------------------
-
-   function Is_Static_Constant_Name (N : Node_Id) return Boolean is
-   begin
-      return Comes_From_Source (N)
-        and then Is_Static_Expression (N)
-        and then Nkind (N) in N_Identifier | N_Expanded_Name
-        and then Ekind (Entity (N)) = E_Constant;
-   end Is_Static_Constant_Name;
-
    --------------------------------------
    -- Is_Unchecked_Conversion_Instance --
    --------------------------------------

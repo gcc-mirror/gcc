@@ -4393,6 +4393,31 @@ package body Sem_Ch5 is
    ----------------------------
 
    procedure Check_Unreachable_Code (N : Node_Id) is
+
+      function Is_Simple_Case (N : Node_Id) return Boolean;
+      --  N is the condition of an if statement. True if N is simple enough
+      --  that we should not set Unblocked_Exit_Count in the special case
+      --  below.
+
+      --------------------
+      -- Is_Simple_Case --
+      --------------------
+
+      function Is_Simple_Case (N : Node_Id) return Boolean is
+      begin
+         return
+            Is_Trivial_Boolean (N)
+           or else
+            (Comes_From_Source (N)
+               and then Is_Static_Expression (N)
+               and then Nkind (N) in N_Identifier | N_Expanded_Name
+               and then Ekind (Entity (N)) = E_Constant)
+           or else
+            (not In_Instance
+               and then Nkind (Original_Node (N)) = N_Op_Not
+               and then Is_Simple_Case (Right_Opnd (Original_Node (N))));
+      end Is_Simple_Case;
+
       Error_Node : Node_Id;
       Nxt        : Node_Id;
       P          : Node_Id;
@@ -4574,8 +4599,7 @@ package body Sem_Ch5 is
               and then No (Else_Statements (P))
               and then Is_OK_Static_Expression (Condition (P))
               and then Is_True (Expr_Value (Condition (P)))
-              and then not Is_Trivial_Boolean (Condition (P))
-              and then not Is_Static_Constant_Name (Condition (P))
+              and then not Is_Simple_Case (Condition (P))
             then
                pragma Assert (Unblocked_Exit_Count = 2);
                Unblocked_Exit_Count := 0;
