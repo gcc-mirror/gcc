@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
+// { dg-xfail-run-if "rename is not POSIX-compliant" { *-*-rtems* } }
 
 #include <filesystem>
 #include <testsuite_hooks.h>

@@ -18,6 +18,7 @@
 // { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
+// { dg-xfail-run-if "rename is not POSIX-compliant" { *-*-rtems* } }
 
 #include <experimental/filesystem>
 #include <testsuite_hooks.h>
