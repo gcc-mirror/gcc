@@ -164,13 +164,12 @@ MacroBuiltin::file (Location invoc_locus, AST::MacroInvocData &invoc)
 
   return AST::ASTFragment ({file_str});
 }
+
 AST::ASTFragment
 MacroBuiltin::column (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto current_column
     = Session::get_instance ().linemap->location_to_column (invoc_locus);
-  // auto column_no
-  //   = AST::SingleASTNode (make_string (invoc_locus, current_column));
 
   auto column_no = AST::SingleASTNode (std::unique_ptr<AST::Expr> (
     new AST::LiteralExpr (std::to_string (current_column), AST::Literal::INT,
