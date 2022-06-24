@@ -199,7 +199,7 @@ struct _Dir_base
 #endif
 
 
-#ifdef AT_FDCWD
+#if _GLIBCXX_HAVE_OPENAT && defined AT_FDCWD
     fd = ::openat(fd, pathname, flags);
 #else
     // If we cannot use openat, there's no benefit to using posix::open unless
