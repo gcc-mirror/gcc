@@ -53,6 +53,7 @@ const char *kLexDumpFile = "gccrs.lex.dump";
 const char *kASTDumpFile = "gccrs.ast.dump";
 const char *kASTExpandedDumpFile = "gccrs.ast-expanded.dump";
 const char *kHIRDumpFile = "gccrs.hir.dump";
+const char *kHIRPrettyDumpFile = "gccrs.hir-pretty.dump";
 const char *kHIRTypeResolutionDumpFile = "gccrs.type-resolution.dump";
 const char *kTargetOptionsDumpFile = "gccrs.target-options.dump";
 
@@ -529,6 +530,10 @@ Session::enable_dump (std::string arg)
     {
       options.enable_dump_option (CompileOptions::HIR_DUMP);
     }
+  else if (arg == "hir-pretty")
+    {
+      options.enable_dump_option (CompileOptions::HIR_DUMP_PRETTY);
+    }
   else
     {
       rust_error_at (
@@ -733,6 +738,11 @@ Session::parse_file (const char *filename)
   if (options.dump_option_enabled (CompileOptions::HIR_DUMP))
     {
       dump_hir (hir);
+    }
+
+  if (options.dump_option_enabled (CompileOptions::HIR_DUMP_PRETTY))
+    {
+      dump_hir_pretty (hir);
     }
 
   if (saw_errors ())
@@ -1054,6 +1064,22 @@ Session::dump_hir (HIR::Crate &crate) const
     {
       rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
 		     kHIRDumpFile);
+      return;
+    }
+
+  out << crate.as_string ();
+  out.close ();
+}
+
+void
+Session::dump_hir_pretty (HIR::Crate &crate) const
+{
+  std::ofstream out;
+  out.open (kHIRPrettyDumpFile);
+  if (out.fail ())
+    {
+      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
+		     kHIRPrettyDumpFile);
       return;
     }
 
