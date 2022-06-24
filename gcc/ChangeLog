@@ -1,3 +1,12 @@
+2022-06-23  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-06-23  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/105600
+	* ipa-icf.c (sem_item_optimizer::filter_removed_items):
+	Skip variables with body_removed.
+
 2022-06-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
