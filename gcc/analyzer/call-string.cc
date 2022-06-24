@@ -206,7 +206,7 @@ call_string::calc_recursion_depth () const
 {
   if (m_elements.is_empty ())
     return 0;
-  const call_string::element_t top_return_sedge 
+  const call_string::element_t top_return_sedge
     = m_elements[m_elements.length () - 1];
 
   int result = 0;
@@ -247,12 +247,12 @@ call_string::cmp (const call_string &a,
       /* Otherwise, compare the node pairs.  */
       const call_string::element_t a_node_pair = a[i];
       const call_string::element_t b_node_pair = b[i];
-      int src_cmp 
-      	= a_node_pair.m_callee->m_index - b_node_pair.m_callee->m_index;
+      int src_cmp
+	= a_node_pair.m_callee->m_index - b_node_pair.m_callee->m_index;
       if (src_cmp)
 	return src_cmp;
-      int dest_cmp 
-      	= a_node_pair.m_caller->m_index - b_node_pair.m_caller->m_index;
+      int dest_cmp
+	= a_node_pair.m_caller->m_index - b_node_pair.m_caller->m_index;
       if (dest_cmp)
 	return dest_cmp;
       i++;
@@ -272,7 +272,7 @@ call_string::get_callee_node () const
 
 /* Return the pointer to caller of the topmost call in the stack,
    or NULL if stack is empty.  */
-const supernode * 
+const supernode *
 call_string::get_caller_node () const
 {
   if(m_elements.is_empty ())
@@ -295,10 +295,8 @@ call_string::validate () const
   int i;
   FOR_EACH_VEC_ELT (m_elements, i, e)
     if (i > 0)
-    {
-      gcc_assert (e->get_caller_function () == 
-      		  m_elements[i - 1].get_callee_function ());
-    }
+      gcc_assert (e->get_caller_function () ==
+		  m_elements[i - 1].get_callee_function ());
 }
 
 #endif /* #if ENABLE_ANALYZER */

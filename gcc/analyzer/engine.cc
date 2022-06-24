@@ -1853,18 +1853,19 @@ dynamic_call_info_t::add_events_to_path (checker_path *emission_path,
   const int dest_stack_depth = dest_point.get_stack_depth ();
 
   if (m_is_returning_call)
-    emission_path->add_event (new return_event (eedge, (m_dynamic_call
-	                   			        ? m_dynamic_call->location
-	           	   		                : UNKNOWN_LOCATION),
-	          	      dest_point.get_fndecl (),
-	          	      dest_stack_depth));
+    emission_path->add_event (new return_event (eedge,
+						(m_dynamic_call
+						 ? m_dynamic_call->location
+						 : UNKNOWN_LOCATION),
+						dest_point.get_fndecl (),
+						dest_stack_depth));
   else
-    emission_path->add_event (new call_event (eedge, (m_dynamic_call
-	                   			      ? m_dynamic_call->location
-	           	   		              : UNKNOWN_LOCATION),
-	          	      src_point.get_fndecl (),
-	          	      src_stack_depth));
-
+    emission_path->add_event (new call_event (eedge,
+					      (m_dynamic_call
+					       ? m_dynamic_call->location
+					       : UNKNOWN_LOCATION),
+					      src_point.get_fndecl (),
+					      src_stack_depth));
 }
 
 /* class rewind_info_t : public custom_edge_info.  */
@@ -2825,7 +2826,7 @@ per_function_data *
 exploded_graph::get_per_function_data (function *fun) const
 {
   if (per_function_data **slot
-        = const_cast <per_function_data_t &> (m_per_function_data).get (fun))
+	= const_cast <per_function_data_t &> (m_per_function_data).get (fun))
     return *slot;
 
   return NULL;
@@ -3537,7 +3538,7 @@ state_change_requires_new_enode_p (const program_state &old_state,
   return false;
 }
 
-/* Create enodes and eedges for the function calls that doesn't have an 
+/* Create enodes and eedges for the function calls that doesn't have an
    underlying call superedge.
 
    Such case occurs when GCC's middle end didn't know which function to
@@ -3548,12 +3549,12 @@ state_change_requires_new_enode_p (const program_state &old_state,
 
 bool
 exploded_graph::maybe_create_dynamic_call (const gcall *call,
-                                           tree fn_decl,
-                                           exploded_node *node,
-                                           program_state next_state,
-                                           program_point &next_point,
-                                           uncertainty_t *uncertainty,
-                                           logger *logger)
+					   tree fn_decl,
+					   exploded_node *node,
+					   program_state next_state,
+					   program_point &next_point,
+					   uncertainty_t *uncertainty,
+					   logger *logger)
 {
   LOG_FUNC (logger);
 
@@ -3566,44 +3567,44 @@ exploded_graph::maybe_create_dynamic_call (const gcall *call,
       supernode *sn_exit = sg.get_node_for_function_exit (fun);
 
       program_point new_point
-        = program_point::before_supernode (sn_entry,
-                                           NULL,
-                                           this_point->get_call_string ());
+	= program_point::before_supernode (sn_entry,
+					   NULL,
+					   this_point->get_call_string ());
 
       new_point.push_to_call_stack (sn_exit,
-                                    next_point.get_supernode());
+				    next_point.get_supernode());
 
       /* Impose a maximum recursion depth and don't analyze paths
-         that exceed it further.
-         This is something of a blunt workaround, but it only
-         applies to recursion (and mutual recursion), not to
-         general call stacks.  */
+	 that exceed it further.
+	 This is something of a blunt workaround, but it only
+	 applies to recursion (and mutual recursion), not to
+	 general call stacks.  */
       if (new_point.get_call_string ().calc_recursion_depth ()
-          > param_analyzer_max_recursion_depth)
+	  > param_analyzer_max_recursion_depth)
       {
-        if (logger)
-          logger->log ("rejecting call edge: recursion limit exceeded");
-        return false;
+	if (logger)
+	  logger->log ("rejecting call edge: recursion limit exceeded");
+	return false;
       }
 
       next_state.push_call (*this, node, call, uncertainty);
 
       if (next_state.m_valid)
-        {
-          if (logger)
-            logger->log ("Discovered call to %s [SN: %i -> SN: %i]",
-                          function_name(fun),
-                          this_point->get_supernode ()->m_index,
-                          sn_entry->m_index);
+	{
+	  if (logger)
+	    logger->log ("Discovered call to %s [SN: %i -> SN: %i]",
+			 function_name(fun),
+			 this_point->get_supernode ()->m_index,
+			 sn_entry->m_index);
 
-          exploded_node *enode = get_or_create_node (new_point,
-                                                     next_state,
-                                                     node);
-          if (enode)
-            add_edge (node,enode, NULL,
-                      new dynamic_call_info_t (call));
-          return true;
-        }
+	  exploded_node *enode = get_or_create_node (new_point,
+						     next_state,
+						     node);
+	  if (enode)
+	    add_edge (node,enode, NULL,
+		      new dynamic_call_info_t (call));
+	  return true;
+	}
     }
   return false;
 }
@@ -3933,8 +3934,8 @@ exploded_graph::process_node (exploded_node *node)
       break;
     case PK_AFTER_SUPERNODE:
       {
-        bool found_a_superedge = false;
-        bool is_an_exit_block = false;
+	bool found_a_superedge = false;
+	bool is_an_exit_block = false;
 	/* If this is an EXIT BB, detect leaks, and potentially
 	   create a function summary.  */
 	if (point.get_supernode ()->return_p ())
@@ -3978,54 +3979,54 @@ exploded_graph::process_node (exploded_node *node)
 	    program_state next_state (state);
 	    uncertainty_t uncertainty;
 
-            /* Make use the current state and try to discover and analyse
-               indirect function calls (a call that doesn't have an underlying
-               cgraph edge representing call).
+	    /* Make use the current state and try to discover and analyse
+	       indirect function calls (a call that doesn't have an underlying
+	       cgraph edge representing call).
 
-               Some examples of such calls are virtual function calls
-               and calls that happen via a function pointer.  */
-            if (succ->m_kind == SUPEREDGE_INTRAPROCEDURAL_CALL
-            	&& !(succ->get_any_callgraph_edge ()))
-              {
-                const gcall *call
-                  = point.get_supernode ()->get_final_call ();
+	       Some examples of such calls are virtual function calls
+	       and calls that happen via a function pointer.  */
+	    if (succ->m_kind == SUPEREDGE_INTRAPROCEDURAL_CALL
+		&& !(succ->get_any_callgraph_edge ()))
+	      {
+		const gcall *call
+		  = point.get_supernode ()->get_final_call ();
 
-                impl_region_model_context ctxt (*this,
-                                                node,
-                                                &state,
-                                                &next_state,
-                                                &uncertainty,
+		impl_region_model_context ctxt (*this,
+						node,
+						&state,
+						&next_state,
+						&uncertainty,
 						NULL,
-                                                point.get_stmt());
+						point.get_stmt());
 
-                region_model *model = state.m_region_model;
-                bool call_discovered = false;
+		region_model *model = state.m_region_model;
+		bool call_discovered = false;
 
-                if (tree fn_decl = model->get_fndecl_for_call(call,&ctxt))
-                  call_discovered = maybe_create_dynamic_call (call,
-                                                               fn_decl,
-                                                               node,
-                                                               next_state,
-                                                               next_point,
-                                                               &uncertainty,
-                                                               logger);
-                if (!call_discovered)
-                  {
-                     /* An unknown function or a special function was called 
-                        at this point, in such case, don't terminate the 
-                        analysis of the current function.
+		if (tree fn_decl = model->get_fndecl_for_call (call, &ctxt))
+		  call_discovered = maybe_create_dynamic_call (call,
+							       fn_decl,
+							       node,
+							       next_state,
+							       next_point,
+							       &uncertainty,
+							       logger);
+		if (!call_discovered)
+		  {
+		    /* An unknown function or a special function was called
+		       at this point, in such case, don't terminate the
+		       analysis of the current function.
 
-                        The analyzer handles calls to such functions while
-                        analysing the stmt itself, so the function call
-                        must have been handled by the anlyzer till now.  */
-                     exploded_node *next
-                       = get_or_create_node (next_point,
-                                             next_state,
-                                             node);
-                     if (next)
-                       add_edge (node, next, succ);
-                  }
-              }
+		       The analyzer handles calls to such functions while
+		       analysing the stmt itself, so the function call
+		       must have been handled by the anlyzer till now.  */
+		    exploded_node *next
+		      = get_or_create_node (next_point,
+					    next_state,
+					    node);
+		    if (next)
+		      add_edge (node, next, succ);
+		  }
+	      }
 
 	    if (!node->on_edge (*this, succ, &next_point, &next_state,
 				&uncertainty))
@@ -4041,37 +4042,37 @@ exploded_graph::process_node (exploded_node *node)
 	      add_edge (node, next, succ);
 	  }
 
-        /* Return from the calls which doesn't have a return superedge.
-    	   Such case occurs when GCC's middle end didn't knew which function to
-    	   call but analyzer did.  */
-        if((is_an_exit_block && !found_a_superedge)
-           && (!point.get_call_string ().empty_p ()))
-          {
-            const call_string cs = point.get_call_string ();
-            program_point next_point
-              = program_point::before_supernode (cs.get_caller_node (),
-                                                 NULL,
-                                                 cs);
-            program_state next_state (state);
-            uncertainty_t uncertainty;
+	/* Return from the calls which doesn't have a return superedge.
+	   Such case occurs when GCC's middle end didn't knew which function to
+	   call but analyzer did.  */
+	if ((is_an_exit_block && !found_a_superedge)
+	    && (!point.get_call_string ().empty_p ()))
+	  {
+	    const call_string cs = point.get_call_string ();
+	    program_point next_point
+	      = program_point::before_supernode (cs.get_caller_node (),
+						 NULL,
+						 cs);
+	    program_state next_state (state);
+	    uncertainty_t uncertainty;
 
-            const gcall *call
-              = next_point.get_supernode ()->get_returning_call ();
+	    const gcall *call
+	      = next_point.get_supernode ()->get_returning_call ();
 
-            if(call)
-              next_state.returning_call (*this, node, call, &uncertainty);
+	    if (call)
+	      next_state.returning_call (*this, node, call, &uncertainty);
 
-            if (next_state.m_valid)
-              {
-                next_point.pop_from_call_stack ();
-                exploded_node *enode = get_or_create_node (next_point,
-                                                           next_state,
-                                                           node);
-                if (enode)
-                  add_edge (node, enode, NULL,
-                            new dynamic_call_info_t (call, true));
-              }
-          }
+	    if (next_state.m_valid)
+	      {
+		next_point.pop_from_call_stack ();
+		exploded_node *enode = get_or_create_node (next_point,
+							   next_state,
+							   node);
+		if (enode)
+		  add_edge (node, enode, NULL,
+			    new dynamic_call_info_t (call, true));
+	      }
+	  }
       }
       break;
     }
