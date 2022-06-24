@@ -1015,7 +1015,7 @@ d_handle_section_attribute (tree *node, tree name, tree args, int flags,
 
   if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
     {
-      error ("section attribute argument not a string constant");
+      error ("%qE attribute argument not a string constant", name);
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -1065,7 +1065,8 @@ d_handle_section_attribute (tree *node, tree name, tree args, int flags,
    struct attribute_spec.handler.  */
 
 static tree
-d_handle_symver_attribute (tree *node, tree, tree args, int, bool *no_add_attrs)
+d_handle_symver_attribute (tree *node, tree name, tree args, int,
+			   bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL && TREE_CODE (*node) != VAR_DECL)
     {
@@ -1088,7 +1089,7 @@ d_handle_symver_attribute (tree *node, tree, tree args, int, bool *no_add_attrs)
       tree symver = TREE_VALUE (args);
       if (TREE_CODE (symver) != STRING_CST)
 	{
-	  error ("%<symver%> attribute argument not a string constant");
+	  error ("%qE attribute argument not a string constant", name);
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -1391,7 +1392,7 @@ d_handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
       tree id = TREE_VALUE (args);
       if (TREE_CODE (id) != STRING_CST)
 	{
-	  error ("%qE argument not a string", name);
+	  error ("%qE attribute argument not a string constant", name);
 	  return NULL_TREE;
 	}
 
@@ -1525,7 +1526,7 @@ d_handle_visibility_attribute (tree *node, tree name, tree args,
   tree id = TREE_VALUE (args);
   if (TREE_CODE (id) != STRING_CST)
     {
-      error ("visibility argument not a string");
+      error ("%qE attribute argument not a string constant", name);
       return NULL_TREE;
     }
 

@@ -7,7 +7,7 @@ import gcc.attributes;
 struct S {} // { dg-warning ".section. attribute does not apply to types" }
 
 @attribute("section", 123)
-int f1(); // { dg-error "section attribute argument not a string constant" }
+int f1(); // { dg-error ".section. attribute argument not a string constant" }
 
 int f2(@section("param") int a) // { dg-error "section attribute not allowed for .a." }
 {
