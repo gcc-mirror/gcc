@@ -797,6 +797,17 @@
   "vpdi\t%v0,%v1,%v2,4"
   [(set_attr "op_type" "VRR")])
 
+; Second DW of op1 and first DW of op2 (when interpreted as 2-element vector).
+(define_insn "@vpdi4_2<mode>"
+  [(set (match_operand:V_HW_4   0 "register_operand" "=v")
+	(vec_select:V_HW_4
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_4 1 "register_operand"  "v")
+	  (match_operand:V_HW_4 2 "register_operand"  "v"))
+	 (parallel [(const_int 2) (const_int 3) (const_int 4) (const_int 5)])))]
+  "TARGET_VX"
+  "vpdi\t%v0,%v1,%v2,4"
+  [(set_attr "op_type" "VRR")])
 
 (define_insn "*vmrhb"
   [(set (match_operand:V16QI                     0 "register_operand" "=v")
@@ -1255,6 +1266,23 @@
   "<vec_shifts_mnem><bhfgq>\t%v0,%v1,%Y2"
   [(set_attr "op_type" "VRS")])
 
+; verllg for V4SI/V4SF.  This swaps the first and the second two
+; elements of a vector and is only valid in that context.
+(define_expand "rotl<mode>3_di"
+ [
+ (set (match_dup 2)
+  (subreg:V2DI (match_operand:V_HW_4 1) 0))
+ (set (match_dup 3)
+  (rotate:V2DI
+   (match_dup 2)
+   (const_int 32)))
+ (set (match_operand:V_HW_4 0)
+  (subreg:V_HW_4 (match_dup 3) 0))]
+ "TARGET_VX"
+ {
+  operands[2] = gen_reg_rtx (V2DImode);
+  operands[3] = gen_reg_rtx (V2DImode);
+ })
 
 ; Shift each element by corresponding vector element
 

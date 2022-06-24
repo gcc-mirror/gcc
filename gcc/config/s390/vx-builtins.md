@@ -2181,6 +2181,47 @@
    vster<bhfgq>\t%v1,%v0"
   [(set_attr "op_type" "*,VRX,VRX")])
 
+; Swapping v2df/v2di can be done via vpdi on z13 and z14.
+(define_split
+  [(set (match_operand:V_HW_2                 0 "register_operand" "")
+	(unspec:V_HW_2 [(match_operand:V_HW_2 1 "register_operand" "")]
+		       UNSPEC_VEC_ELTSWAP))]
+  "TARGET_VX && can_create_pseudo_p ()"
+  [(set (match_operand:V_HW_2     0 "register_operand" "=v")
+	(vec_select:V_HW_2
+	 (vec_concat:<vec_2x_nelts>
+	  (match_operand:V_HW_2 1 "register_operand"  "v")
+	  (match_dup 1))
+	 (parallel [(const_int 1) (const_int 2)])))]
+)
+
+
+; Swapping v4df/v4si can be done via vpdi and rot.
+(define_split
+  [(set (match_operand:V_HW_4                 0 "register_operand" "")
+	(unspec:V_HW_4 [(match_operand:V_HW_4 1 "register_operand" "")]
+		       UNSPEC_VEC_ELTSWAP))]
+  "TARGET_VX && can_create_pseudo_p ()"
+  [(set (match_dup 2)
+	(vec_select:V_HW_4
+	 (vec_concat:<vec_2x_nelts>
+	  (match_dup 1)
+	  (match_dup 1))
+	 (parallel [(const_int 2) (const_int 3) (const_int 4) (const_int 5)])))
+ (set (match_dup 3)
+  (subreg:V2DI (match_dup 2) 0))
+ (set (match_dup 4)
+  (rotate:V2DI
+   (match_dup 3)
+   (const_int 32)))
+ (set (match_operand:V_HW_4 0)
+  (subreg:V_HW_4 (match_dup 4) 0))]
+{
+  operands[2] = gen_reg_rtx (<MODE>mode);
+  operands[3] = gen_reg_rtx (V2DImode);
+  operands[4] = gen_reg_rtx (V2DImode);
+})
+
 ; z15 has instructions for doing element reversal from mem to reg
 ; or the other way around.  For reg to reg or on pre z15 machines
 ; we have to emulate it with vector permute.
