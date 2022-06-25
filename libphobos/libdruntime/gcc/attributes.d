@@ -372,6 +372,46 @@ auto section(A...)(A arguments)
 }
 
 /**
+ * The `@simd` attribute enables creation of one or more function versions that
+ * can process multiple arguments using SIMD instructions from a single
+ * invocation. Specifying this attribute allows compiler to assume that such
+ * versions are available at link time (provided in the same or another module).
+ * Generated versions are target-dependent and described in the corresponding
+ * Vector ABI document. For x86_64 target this document can be found here.
+ * https://sourceware.org/glibc/wiki/libmvec?action=AttachFile&do=view&target=VectorABI.txt
+ * 
+ * The `@simd_clones` attribute is the same as `@simd`, but also includes a
+ * `mask` argument.  Valid masks values are `notinbranch` or `inbranch`, and
+ * instructs the compiler to generate non-masked or masked clones
+ * correspondingly.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @simd double sqrt(double x);
+ * @simd("notinbranch") double atan2(double y, double x);
+ * ---
+ */
+enum simd = attribute("simd");
+
+auto simd_clones(string mask)
+{
+    if (mask == "notinbranch" || mask == "inbranch")
+        return attribute("simd", mask);
+    else
+    {
+        assert(false, "unrecognized parameter `" ~ mask
+               ~ "` for `gcc.attribute.simd_clones`");
+    }
+}
+
+auto simd_clones(A...)(A arguments)
+{
+    assert(false, "simd_clones attribute argument not a string constant");
+}
+
+/**
  * The `@symver` attribute creates a symbol version on ELF targets.  The syntax
  * of the string parameter is `name@nodename`.  The `name` part of the parameter
  * is the actual name of the symbol by which it will be externally referenced.

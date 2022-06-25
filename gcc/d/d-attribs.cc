@@ -58,6 +58,7 @@ static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
+static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *);
 
 /* D attribute handlers for user defined attributes.  */
 static tree d_handle_noinline_attribute (tree *, tree, tree, int, bool *);
@@ -80,6 +81,7 @@ static tree d_handle_restrict_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_used_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_visibility_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_no_sanitize_attribute (tree *, tree, tree, int, bool *);
+static tree d_handle_simd_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -186,6 +188,8 @@ const attribute_spec d_langhook_common_attribute_table[] =
 	     handle_type_generic_attribute, NULL),
   ATTR_SPEC ("fn spec", 1, 1, false, true, true, false,
 	     handle_fnspec_attribute, NULL),
+  ATTR_SPEC ("omp declare simd", 0, -1, true,  false, false, false,
+	     handle_omp_declare_simd_attribute, NULL),
   ATTR_SPEC (NULL, 0, 0, false, false, false, false, NULL, NULL),
 };
 
@@ -228,6 +232,8 @@ const attribute_spec d_langhook_attribute_table[] =
 	     d_handle_register_attribute, NULL),
   ATTR_SPEC ("restrict", 0, 0, true, false, false, false,
 	     d_handle_restrict_attribute, NULL),
+  ATTR_SPEC ("simd", 0, 1, true,  false, false, false,
+	     d_handle_simd_attribute, NULL),
   ATTR_SPEC ("used", 0, 0, true, false, false, false,
 	     d_handle_used_attribute, NULL),
   ATTR_SPEC ("visibility", 1, 1, false, false, false, false,
@@ -661,6 +667,16 @@ handle_fnspec_attribute (tree *, tree, tree args, int, bool *)
   gcc_assert (args
 	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST
 	      && !TREE_CHAIN (args));
+  return NULL_TREE;
+}
+
+/* Handle an "omp declare simd" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+tree
+handle_omp_declare_simd_attribute (tree *node, tree, tree, int, bool *)
+{
+  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
   return NULL_TREE;
 }
 
@@ -1470,6 +1486,55 @@ d_handle_restrict_attribute (tree *node, tree name, tree, int,
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
+
+  return NULL_TREE;
+}
+
+/* Handle a "simd" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+d_handle_simd_attribute (tree *node, tree name, tree args, int,
+			 bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  tree omp_attr = get_identifier ("omp declare simd");
+  tree omp_flags = NULL_TREE;
+  if (args)
+    {
+      tree id = TREE_VALUE (args);
+
+      if (TREE_CODE (id) != STRING_CST)
+	{
+	  error ("%qE attribute argument not a string constant", name);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      if (strcmp (TREE_STRING_POINTER (id), "notinbranch") == 0)
+	omp_flags = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+				      OMP_CLAUSE_NOTINBRANCH);
+      else if (strcmp (TREE_STRING_POINTER (id), "inbranch") == 0)
+	omp_flags = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+				      OMP_CLAUSE_INBRANCH);
+      else
+	{
+	  error ("only %<inbranch%> and %<notinbranch%> flags are "
+		 "allowed for %<simd%> attribute");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+    }
+
+  DECL_ATTRIBUTES (*node) =
+    tree_cons (omp_attr, build_tree_list (NULL_TREE, omp_flags),
+	       DECL_ATTRIBUTES (*node));
 
   return NULL_TREE;
 }
