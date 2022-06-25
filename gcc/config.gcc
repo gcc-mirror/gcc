@@ -248,8 +248,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-  tile*-*-*				\
- | cr16-*-*				\
+ cr16-*-*				\
  | hppa[12]*-*-hpux10*			\
  | hppa[12]*-*-hpux11*			\
  | m32c-*-rtems*			\
@@ -556,12 +555,6 @@ tic6x-*-*)
 	;;
 xtensa*-*-*)
 	extra_options="${extra_options} fused-madd.opt"
-	;;
-tilegx*-*-*)
-	cpu_type=tilegx
-	;;
-tilepro*-*-*)
-	cpu_type=tilepro
 	;;
 esac
 
@@ -3476,27 +3469,6 @@ tic6x-*-uclinux)
 	tmake_file="t-sysroot-suffix t-slibgcc"
 	tmake_file="${tmake_file} c6x/t-c6x c6x/t-c6x-elf c6x/t-c6x-uclinux"
 	use_collect2=no
-	;;
-tilegx*-*-linux*)
-	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilegx/linux.h ${tm_file}"
-        tmake_file="${tmake_file} tilegx/t-tilegx"
-	extra_objs="${extra_objs} mul-tables.o"
-	c_target_objs="${c_target_objs} tilegx-c.o"
-	cxx_target_objs="${cxx_target_objs} tilegx-c.o"
-	extra_headers="feedback.h"
-	case $target in
-	tilegxbe-*)
-		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
- 		;;
-	esac
-	;;
-tilepro*-*-linux*)
-	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilepro/linux.h ${tm_file}"
-        tmake_file="${tmake_file} tilepro/t-tilepro"
-	extra_objs="${extra_objs} mul-tables.o"
-	c_target_objs="${c_target_objs} tilepro-c.o"
-	cxx_target_objs="${cxx_target_objs} tilepro-c.o"
-	extra_headers="feedback.h"
 	;;
 v850-*-rtems*)
 	target_cpu_default="TARGET_CPU_generic"

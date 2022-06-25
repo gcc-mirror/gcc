@@ -96,8 +96,6 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   sparc64-sun-solaris2.11OPT-with-gnu-ldOPT-with-gnu-asOPT-enable-threads=posix \
   sparc-wrs-vxworks sparc64-elf sparc64-rtems sparc64-linux sparc64-freebsd6 \
   sparc64-netbsd sparc64-openbsd \
-  tilegx-linux-gnuOPT-enable-obsolete tilegxbe-linux-gnuOPT-enable-obsolete \
-  tilepro-linux-gnuOPT-enable-obsolete \
   v850e1-elf v850e-elf v850-elf v850-rtems vax-linux-gnu \
   vax-netbsdelf visium-elf x86_64-apple-darwin \
   x86_64-pc-linux-gnuOPT-with-fpmath=avx \

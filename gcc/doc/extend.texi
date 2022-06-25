@@ -14638,8 +14638,6 @@ instructions, but allow the compiler to schedule those calls.
 * SH Built-in Functions::
 * SPARC VIS Built-in Functions::
 * TI C6X Built-in Functions::
-* TILE-Gx Built-in Functions::
-* TILEPro Built-in Functions::
 * x86 Built-in Functions::
 * x86 transactional memory intrinsics::
 * x86 control-flow protection intrinsics::
@@ -21571,75 +21569,6 @@ int _extru (int, int);
 int _abs (int);
 int _abs2 (int);
 @end smallexample
-
-@node TILE-Gx Built-in Functions
-@subsection TILE-Gx Built-in Functions
-
-GCC provides intrinsics to access every instruction of the TILE-Gx
-processor.  The intrinsics are of the form:
-
-@smallexample
-
-unsigned long long __insn_@var{op} (...)
-
-@end smallexample
-
-Where @var{op} is the name of the instruction.  Refer to the ISA manual
-for the complete list of instructions.
-
-GCC also provides intrinsics to directly access the network registers.
-The intrinsics are:
-
-@smallexample
-unsigned long long __tile_idn0_receive (void);
-unsigned long long __tile_idn1_receive (void);
-unsigned long long __tile_udn0_receive (void);
-unsigned long long __tile_udn1_receive (void);
-unsigned long long __tile_udn2_receive (void);
-unsigned long long __tile_udn3_receive (void);
-void __tile_idn_send (unsigned long long);
-void __tile_udn_send (unsigned long long);
-@end smallexample
-
-The intrinsic @code{void __tile_network_barrier (void)} is used to
-guarantee that no network operations before it are reordered with
-those after it.
-
-@node TILEPro Built-in Functions
-@subsection TILEPro Built-in Functions
-
-GCC provides intrinsics to access every instruction of the TILEPro
-processor.  The intrinsics are of the form:
-
-@smallexample
-
-unsigned __insn_@var{op} (...)
-
-@end smallexample
-
-@noindent
-where @var{op} is the name of the instruction.  Refer to the ISA manual
-for the complete list of instructions.
-
-GCC also provides intrinsics to directly access the network registers.
-The intrinsics are:
-
-@smallexample
-unsigned __tile_idn0_receive (void);
-unsigned __tile_idn1_receive (void);
-unsigned __tile_sn_receive (void);
-unsigned __tile_udn0_receive (void);
-unsigned __tile_udn1_receive (void);
-unsigned __tile_udn2_receive (void);
-unsigned __tile_udn3_receive (void);
-void __tile_idn_send (unsigned);
-void __tile_sn_send (unsigned);
-void __tile_udn_send (unsigned);
-@end smallexample
-
-The intrinsic @code{void __tile_network_barrier (void)} is used to
-guarantee that no network operations before it are reordered with
-those after it.
 
 @node x86 Built-in Functions
 @subsection x86 Built-in Functions

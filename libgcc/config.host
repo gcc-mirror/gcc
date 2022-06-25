@@ -212,12 +212,6 @@ s390*-*-*)
 sh[123456789lbe]*-*-*)
 	cpu_type=sh
 	;;
-tilegx*-*-*)
-	cpu_type=tilegx
-	;;
-tilepro*-*-*)
-	cpu_type=tilepro
-	;;
 v850*-*-*)
 	cpu_type=v850
 	;;
@@ -1487,17 +1481,6 @@ tic6x-*-elf)
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crti.o crtn.o"
 	unwind_header=config/c6x/unwind-c6x.h
 	;;
-tilegx*-*-linux*)
-	if test "${host_address}" = 64; then
-		tmake_file="${tmake_file} tilegx/t-softfp"
-	fi
-	tmake_file="${tmake_file} tilegx/t-crtstuff t-softfp-sfdf t-softfp tilegx/t-tilegx"
-	md_unwind_header=tilepro/linux-unwind.h
-        ;;
-tilepro*-*-linux*)
-	tmake_file="${tmake_file} tilepro/t-crtstuff t-softfp-sfdf t-softfp tilepro/t-tilepro t-slibgcc-libgcc"
-	md_unwind_header=tilepro/linux-unwind.h
-        ;;
 v850*-*-*)
 	tmake_file="${tmake_file} v850/t-v850 t-fdpbit"
 	;;
