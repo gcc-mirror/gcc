@@ -1377,7 +1377,9 @@ jt_state::register_equivs_stmt (gimple *stmt, basic_block bb,
 		SET_USE (use_p, tmp);
 	    }
 
-	  cached_lhs = simplifier->simplify (stmt, stmt, bb, this);
+	  /* Do not pass state to avoid calling the ranger with the
+	     temporarily altered IL.  */
+	  cached_lhs = simplifier->simplify (stmt, stmt, bb, /*state=*/NULL);
 
 	  /* Restore the statement's original uses/defs.  */
 	  i = 0;

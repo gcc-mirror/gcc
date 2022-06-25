@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-fno-tree-loop-vectorize" } */
+/* { dg-additional-options "-fno-tree-loop-vectorize -fno-tree-dominator-opts" } */
 /* { dg-require-effective-target lp64 } */
 
 double p[1000];

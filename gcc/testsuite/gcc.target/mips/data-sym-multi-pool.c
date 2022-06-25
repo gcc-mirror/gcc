@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mips16 -mcode-readable=yes -fno-tree-vrp" } */
+/* { dg-options "-mips16 -mcode-readable=yes -fno-tree-vrp -fno-tree-dominator-opts" } */
 /* { dg-skip-if "per-function expected output" { *-*-* } { "-flto" } { "" } } */
 
 /* This testcase generates multiple constant pools within a function body.  */
