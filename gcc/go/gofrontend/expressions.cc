@@ -2715,7 +2715,7 @@ Integer_expression::do_import(Import_expression* imp, Location loc)
 	  return Expression::make_error(loc);
 	}
       if (pos == std::string::npos)
-	mpfr_set_ui(real, 0, MPFR_RNDN);
+	mpfr_init_set_ui(real, 0, MPFR_RNDN);
       else
 	{
 	  std::string real_str = num.substr(0, pos);
