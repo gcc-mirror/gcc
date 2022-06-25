@@ -1,3 +1,12 @@
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/105413
+	* libdruntime/gcc/attributes.d (register): Define.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 148608b7.
+
 2022-06-22  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime e150cca1.

@@ -1,3 +1,43 @@
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc (d_handle_section_attribute): Update error message.
+	(d_handle_symver_attribute): Likewise.
+	(d_handle_no_sanitize_attribute): Likewise.
+	(d_handle_visibility_attribute): Likewise.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/105413
+	* d-attribs.cc (d_handle_register_attribute): New function.
+	(d_langhook_attribute_table): Add register attribute.
+	* d-codegen.cc (d_mark_addressable): Error if taken address of
+	register variable.
+	(build_frame_type): Error if register variable has non-local
+	references.
+	* d-tree.h (d_mark_addressable): Add complain parameter.
+	* decl.cc (get_symbol_decl): Mark register varibles DECL_REGISTER.
+	Error when register variable declared thread-local or extern.
+	* expr.cc (ExprVisitor::visit (IndexExp *)): Don't complain about
+	marking register vectors as addressable in an ARRAY_REF.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_array_index): Rename to...
+	(build_pointer_index): ...this.
+	* d-tree.h (build_array_index): Rename declaration to...
+	(build_pointer_index): ...this.
+	* expr.cc (ExprVisitor::visit (IndexExp *)): Construct indexes of
+	ARRAY_TYPE using ARRAY_REF.
+	(ExprVisitor::visit (SliceExp *)): Update.
+	* intrinsics.cc (expand_intrinsic_bt): Update.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 529110f66.
+	* decl.cc (DeclVisitor::visit (TupleDeclaration *)): Update for new
+	front-end interface.
+	* types.cc (layout_aggregate_members): Likewise.
+
 2022-06-22  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 6203135dc.

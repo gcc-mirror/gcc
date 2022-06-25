@@ -1,3 +1,148 @@
+2022-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	PR c++/20423
+	* doc/invoke.texi: Document changes.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/tilepro/gen-mul-tables.cc (tilegx_emit): Adjust loop
+	condition to avoid overflow.
+
+2022-06-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/aix71.h (MASK_PPC_GPOPT, MASK_PPC_GFXOPT): Replace with
+	OPTION_MASK_PPC_GPOPT, OPTION_MASK_PPC_GFXOPT.
+	* config/rs6000/darwin.h (MASK_PPC_GFXOPT): Replace with
+	OPTION_MASK_PPC_GFXOPT.
+	* config/rs6000/darwin64-biarch.h (MASK_PPC_GFXOPT): Same.
+	* config/rs6000/default64.h (MASK_PPC_GPOPT, MASK_PPC_GFXOPT): Replace with
+	OPTION_MASK_PPC_GPOPT, OPTION_MASK_PPC_GFXOPT.
+	* config/rs6000/rs6000-c.cc: Update comment.
+	* config/rs6000/rs6000-cpus.def: Update RS6000_CPU macro calls.
+	* config/rs6000/rs6000.cc (rs6000_darwin_file_start): Replace
+	MASK_PPC_GPOPT with OPTION_MASK_PPC_GPOPT.
+	(rs6000_builtin_mask_names): Replace MASK_PPC_GFXOPT, MASK_POPCNTB
+	with OPTION_MASK_PPC_GFXOPT, OPTION_MASK_POPCNTB.
+	* config/rs6000/rs6000.h: (MASK_P8_VECTOR, MASK_P9_VECTOR,
+	MASK_P9_MISC, MASK_POPCNTB, MASK_POPCNTD, MASK_PPC_GFXOPT,
+	MASK_PPC_GPOPT, MASK_RECIP_PRECISION, MASK_SOFT_FLOAT,
+	MASK_VSX, MASK_POWER10, MASK_P10_FUSION): Delete.
+
+2022-06-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/aix71.h (TARGET_DEFAULT): Replace MASK_MFCRF with
+	OPTION_MASK_MFCRF.
+	* config/rs6000/darwin.h (TARGET_DEFAULT): Replace MASK_MULTIPLE with
+	OPTION_MASK_MULTIPLE.
+	* config/rs6000/darwin64-biarch.h (TARGET_DEFAULT): Same.
+	* config/rs6000/default64.h (TARGET_DEFAULT): Replace MASK_MFCRF with
+	OPTION_MASK_MFCRF.
+	* config/rs6000/eabi.h (TARGET_DEFAULT): Replace MASK_EABI with
+	OPTION_MASK_EABI.
+	* config/rs6000/eabialtivec.h (TARGET_DEFAULT): Same.
+	* config/rs6000/linuxaltivec.h (TARGET_DEFAULT): Replace
+	MASK_ALTIVEC with OPTION_MASK_ALTIVEC.
+	* config/rs6000/rs6000-cpus.def (MASK_ALTIVEC, MASK_CMPB,
+	MASK_CRYPTO, MASK_DFP, MASK_DIRECT_MOVE, MASK_DLMZB, MASK_EABI,
+	MASK_FLOAT128_KEYWORD, MASK_FLOAT128_HW, MASK_FPRND,
+	MASK_P8_FUSION, MASK_HARD_FLOAT, MASK_HTM, MASK_ISEL, MASK_MFCRF,
+	MASK_MMA, MASK_MULHW, MASK_MULTIPLE, MASK_NO_UPDATE):
+	Replace with
+	OPTION_MASK_ALTIVEC, OPTION_MASK_CMPB, OPTION_MASK_CRYPTO,
+	OPTION_MASK_DFP, OPTION_MASK_DIRECT_MOVE, OPTION_MASK_DLMZB,
+	OPTION_MASK_EABI, OPTION_MASK_FLOAT128_KEYWORD,
+	OPTION_MASK_FLOAT128_HW, OPTION_MASK_FPRND, OPTION_MASK_P8_FUSION,
+	OPTION_MASK_HARD_FLOAT, OPTION_MASK_HTM, OPTION_MASK_ISEL,
+	OPTION_MASK_MFCRF, OPTION_MASK_MMA, OPTION_MASK_MULHW,
+	OPTION_MASK_MULTIPLE, OPTION_MASK_NO_UPDATE.
+	* config/rs6000/rs6000.cc (rs6000_darwin_file_start): Replace
+	MASK_MFCRF, MASK_ALTIVEC with OPTION_MASK_MFCRF, OPTION_MASK_ALTIVEC.
+	* config/rs6000/rs6000.h (TARGET_DEFAULT): Replace MASK_MULTIPLE
+	with OPTION_MASK_MULTIPLE.
+	(MASK_ALTIVEC, MASK_CMPB, MASK_CRYPTO, MASK_DFP,
+	MASK_DIRECT_MOVE, MASK_DLMZB, MASK_EABI, MASK_FLOAT128_KEYWORD,
+	MASK_FLOAT128_HW, MASK_FPRND, MASK_P8_FUSION, MASK_HARD_FLOAT,
+	MASK_HTM, MASK_ISEL, MASK_MFCRF, MASK_MMA, MASK_MULHW,
+	MASK_MULTIPLE, MASK_NO_UPDATE): Delete.
+	* config/rs6000/vxworks.h (TARGET_DEFAULT): Replace MASK_EABI
+	with OPTION_MASK_EABI.
+
+2022-06-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.cc (RS6000_BTM_ALTIVEC, RS6000_BTM_CMPB,
+	RS6000_BTM_VSX, RS6000_BTM_FRE, RS6000_BTM_P8_VECTOR,
+	RS6000_BTM_P9_VECTOR, RS6000_BTM_P9_MISC, RS6000_BTM_MODULO,
+	RS6000_BTM_CRYPTO, RS6000_BTM_HTM): Replace with OPTION_MASK_ALTIVEC,
+	OPTION_MASK_CMPB, OPTION_MASK_VSX, OPTION_MASK_POPCNTB,
+	OPTION_MASK_P8_VECTOR, OPTION_MASK_P9_VECTOR, OPTION_MASK_P9_MISC,
+	OPTION_MASK_MODULO, OPTION_MASK_CRYPTO, OPTION_MASK_HTM.
+	* config/rs6000/rs6000.h (RS6000_BTM_MODULO, RS6000_BTM_ALTIVEC,
+	RS6000_BTM_CMPB, RS6000_BTM_VSX, RS6000_BTM_P8_VECTOR,
+	RS6000_BTM_P9_VECTOR, RS6000_BTM_P9_MISC, RS6000_BTM_CRYPTO,
+	RS6000_BTM_HTM, RS6000_BTM_FRE): Remove.
+
+2022-06-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.cc: Update comments.
+	* config/rs6000/rs6000.cc (RS6000_BTM_FRES, RS6000_BTM_FRSQRTE,
+	RS6000_BTM_FRSQRTES, RS6000_BTM_POPCNTD, RS6000_BTM_CELL,
+	RS6000_BTM_64BIT, RS6000_BTM_POWERPC64, RS6000_BTM_DFP,
+	RS6000_BTM_HARD_FLOAT,RS6000_BTM_LDBL128, RS6000_BTM_FLOAT128,
+	RS6000_BTM_FLOAT128_HW, RS6000_BTM_MMA, RS6000_BTM_P10): Replace
+	with OPTION_MASK_PPC_GFXOPT, OPTION_MASK_PPC_GFXOPT,
+	OPTION_MASK_POPCNTB, OPTION_MASK_POPCNTD,
+	OPTION_MASK_FPRND, MASK_64BIT, MASK_POWERPC64,
+	OPTION_MASK_DFP, OPTION_MASK_SOFT_FLOAT, OPTION_MASK_MULTIPLE,
+	OPTION_MASK_FLOAT128_KEYWORD, OPTION_MASK_FLOAT128_HW,
+	OPTION_MASK_MMA, OPTION_MASK_POWER10.
+	* config/rs6000/rs6000.h (RS6000_BTM_FRES, RS6000_BTM_FRSQRTE,
+	RS6000_BTM_FRSQRTES, RS6000_BTM_POPCNTD, RS6000_BTM_CELL,
+	RS6000_BTM_DFP, RS6000_BTM_HARD_FLOAT, RS6000_BTM_LDBL128,
+	RS6000_BTM_64BIT, RS6000_BTM_POWERPC64, RS6000_BTM_FLOAT128,
+	RS6000_BTM_FLOAT128_HW, RS6000_BTM_MMA, RS6000_BTM_P10): Delete.
+
+2022-06-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.h (RS6000_BTM_COMMON, RS6000_BTM_ALWAYS,
+	MASK_REGNAMES, OPTION_MASK_REGNAMES, MASK_PROTOTYPE,
+	OPTION_MASK_PROTOTYPE, MASK_UPDATE, OPTION_MASK_UPDATE): Remove.
+
+2022-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106070
+	* match.pd (a != b ? a : b): Fix translation of
+	operand_equal_for_comparison_p.
+
+2022-06-24  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/106057
+	* tree-ssa-alias.cc (stmt_kills_ref_p): Check for external throw.
+
+2022-06-24  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/106059
+	* profile-count.h: *= and /= operators need to modify this
+	object.
+
+2022-06-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105930
+	* config/i386/i386.md (*<any_or>di3_doubleword): Split after
+	reload.  Use rtx_equal_p to avoid creating memory-to-memory moves,
+	and emit NOTE_INSN_DELETED if operand[2] is zero (i.e. with -O0).
+
+2022-06-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* common.opt (nostdlib++): New.
+	* doc/invoke.texi (-nostdlib++): Document it.
+
+2022-06-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/sourcebuild.texi (Environment attributes): Document
+	two_plus_gigs.
+
 2022-06-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* common.opt (fdiagnostics-show-rules): New option.

@@ -1,3 +1,10 @@
+2022-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105813
+	* check.cc (gfc_check_unpack): Try to simplify MASK argument to
+	UNPACK so that checking of the VECTOR argument can work when MASK
+	is a variable.
+
 2022-06-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/105986

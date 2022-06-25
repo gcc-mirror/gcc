@@ -1,3 +1,126 @@
+2022-06-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-string.cc: Add includes of "analyzer/analyzer.h"
+	and "analyzer/analyzer-logging.h".
+	(call_string::call_string): Delete copy ctor.
+	(call_string::operator=): Delete.
+	(call_string::operator==): Delete.
+	(call_string::hash): Delete.
+	(call_string::push_call): Make const, returning the resulting
+	call_string.
+	(call_string::pop): Delete.
+	(call_string::cmp_ptr_ptr): New.
+	(call_string::validate): Assert that m_parent is non-NULL, or
+	m_elements is empty.
+	(call_string::call_string): Move default ctor here from
+	call-string.h and reimplement.  Add ctor taking a parent
+	and an element.
+	(call_string::~call_string): New.
+	(call_string::recursive_log): New.
+	* call-string.h (call_string::call_string): Move default ctor's
+	defn to call-string.cc.  Delete copy ctor.  Add ctor taking a
+	parent and an element.
+	(call_string::operator=): Delete.
+	(call_string::operator==): Delete.
+	(call_string::hash): Delete.
+	(call_string::push_call): Make const, returning the resulting
+	call_string.
+	(call_string::pop): Delete decl.
+	(call_string::get_parent): New.
+	(call_string::cmp_ptr_ptr): New decl.
+	(call_string::get_top_of_stack): New.
+	(struct call_string::hashmap_traits_t): New.
+	(class call_string): Add friend class region_model_manager.  Add
+	DISABLE_COPY_AND_ASSIGN.
+	(call_string::~call_string): New decl.
+	(call_string::recursive_log): New decl.
+	(call_string::m_parent): New field.
+	(call_string::m_children): New field.
+	* constraint-manager.cc (selftest::test_many_constants): Pass
+	model manager to program_point::origin.
+	* engine.cc (exploded_graph::exploded_graph): Likewise.
+	(exploded_graph::add_function_entry): Likewise for
+	program_point::from_function_entry.
+	(add_tainted_args_callback): Likewise.
+	(exploded_graph::maybe_process_run_of_before_supernode_enodes):
+	Update for change to program_point.get_call_string.
+	(exploded_graph::process_node): Likewise.
+	(class function_call_string_cluster): Convert m_cs from a
+	call_string to a const call_string &.
+	(struct function_call_string): Likewise.
+	(pod_hash_traits<function_call_string>::hash): Use pointer_hash
+	for m_cs.
+	(pod_hash_traits<function_call_string>::equal): Update for change
+	to m_cs.
+	(root_cluster::add_node): Update for change to
+	function_call_string.
+	(viz_callgraph_node::dump_dot): Update for change to call_string.
+	* exploded-graph.h (per_call_string_data::m_key): Convert to a
+	reference.
+	(struct eg_call_string_hash_map_traits): Delete.
+	(exploded_graph::call_string_data_map_t): Remove traits class.
+	* program-point.cc: Move include of "analyzer/call-string.h" to
+	after "analyzer/analyzer-logging.h".
+	(program_point::print): Update for conversion of m_call_string to
+	a pointer.
+	(program_point::to_json): Likewise.
+	(program_point::push_to_call_stack): Update for immutability of
+	call strings.
+	(program_point::pop_from_call_stack): Likewise.
+	(program_point::hash): Use pointer hashing for m_call_string.
+	(program_point::get_function_at_depth): Update for change to
+	m_call_string.
+	(program_point::validate): Update for changes to call_string.
+	(program_point::on_edge): Likewise.
+	(program_point::origin): Move here from call-string.h.  Add
+	region_model_manager param and use it to get empty call string.
+	(program_point::from_function_entry): Likewise.
+	(selftest::test_function_point_ordering): Likewise.
+	(selftest::test_function_point_ordering): Likewise.
+	* program-point.h (program_point::program_point): Update for
+	change to m_call_string.
+	(program_point::get_call_string): Likewise.
+	(program_point::get_stack_depth): Likewise.
+	(program_point::origin): Add region_model_manager param, and move
+	defn to call-string.cc.
+	(program_point::from_function_entry): Likewise.
+	(program_point::empty): Drop call_string.
+	(program_point::deleted): Likewise.
+	(program_point::program_point): New private ctor.
+	(program_point::m_call_string): Convert from call_string to const
+	call_string *.
+	* program-state.cc (selftest::test_program_state_merging): Update
+	for call_string changes.
+	(selftest::test_program_state_merging_2): Likewise.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Construct
+	m_empty_call_string.
+	(region_model_manager::log_stats): Log the call strings.
+	* region-model.cc (assert_region_models_merge): Pass the
+	region_model_manager when creating program_point instances.
+	(selftest::test_state_merging): Likewise.
+	(selftest::test_constraint_merging): Likewise.
+	(selftest::test_widening_constraints): Likewise.
+	(selftest::test_iteration_1): Likewise.
+	* region-model.h (region_model_manager::get_empty_call_string):
+	New.
+	(region_model_manager::m_empty_call_string): New.
+	* sm-signal.cc (register_signal_handler::impl_transition): Update
+	for changes to call_string.
+
+2022-06-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-string.cc (call_string::calc_recursion_depth): Whitespace
+	cleanups.
+	(call_string::cmp): Likewise.
+	(call_string::get_caller_node): Likewise.
+	(call_string::validate): Likewise.
+	* engine.cc (dynamic_call_info_t::add_events_to_path): Likewise.
+	(exploded_graph::get_per_function_data): Likewise.
+	(exploded_graph::maybe_create_dynamic_call): Likewise.
+	(exploded_graph::maybe_create_dynamic_call): Likewise.
+	(exploded_graph::process_node): Likewise.
+
 2022-06-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* varargs.cc (va_arg_type_mismatch::emit): Associate the warning

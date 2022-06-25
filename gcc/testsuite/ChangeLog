@@ -1,3 +1,66 @@
+2022-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	PR c++/20423
+	* g++.dg/warn/Woverloaded-virt1.C: New test.
+	* g++.dg/warn/Woverloaded-virt2.C: New test.
+
+2022-06-24  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/debug/btf/btf-bitfields-1.c: Skip if int is less than
+	32-bits.
+
+2022-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105813
+	* gfortran.dg/unpack_vector_1.f90: New test.
+
+2022-06-24  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/builtin-object-size-20.c: Remove cases which
+	work on default_packed targets.
+	* gcc.dg/builtin-object-size-22.c: New test with the cases
+	removed above.
+
+2022-06-24  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/sso/memcpy-1.c (__big_endian__, __little_endian__):
+	Rename macros to avoid conflicts with predefined ones.
+
+2022-06-24  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR tree-optimization/101868
+	* gcc.dg/lto/pr101868_0.c (zero): New volatile variable.
+	(main): Use it instead of argc.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/attr_section1.d: Update dg-error.
+	* gdc.dg/attr_visibility1.d: Likewise.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/105413
+	* gdc.dg/attr_register1.d: New test.
+	* gdc.dg/attr_register2.d: New test.
+	* gdc.dg/attr_register3.d: New test.
+
+2022-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106070
+	* gcc.dg/torture/pr106070.c: New testcase.
+
+2022-06-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/abi/pure-virtual1.C: Use -nostdlib++.
+
+2022-06-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_two_plus_gigs): New.
+	* gcc.target/aarch64/symbol-range.c: Link only on
+	two_plus_gigs targets, compile otherwise.
+
 2022-06-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105925

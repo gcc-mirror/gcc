@@ -1,3 +1,9 @@
+2022-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	PR c++/20423
+	* c.opt (Woverloaded-virtual): Add levels, include in -Wall.
+
 2022-06-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-ubsan.cc (ubsan_instrument_division, ubsan_instrument_shift):
