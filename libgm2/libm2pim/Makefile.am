@@ -159,14 +159,14 @@ M2DEFS = Args.def   ASCII.def \
 libm2pim_la_SOURCES = $(M2MODS) \
                       UnixArgs.c \
                       Selective.c sckt.c \
-                      errno.c dtoa.c \
-                      ldtoa.c termios.c \
-                      SysExceptions.c target.c \
+                      errno.cc dtoa.c \
+                      ldtoa.c termios.cc \
+                      SysExceptions.cc target.c \
                       wrapc.c cgetopt.c
 
 libm2pimdir = libm2pim
 libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
-libm2pim_la_CFLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../
+libm2pim_la_CFLAGS = -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
 libm2pim_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g
 libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION)
 BUILT_SOURCES = SYSTEM.def
@@ -183,6 +183,9 @@ SYSTEM.def: Makefile
 
 .mod.lo: SYSTEM.def
 	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2pim_la_M2FLAGS) $< -o $@
+
+.cc.lo:
+	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2pim_la_CFLAGS) $< -o $@
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)

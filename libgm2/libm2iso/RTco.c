@@ -29,9 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <pthread.h>
 #include <sys/select.h>
 #include <stdlib.h>
-
-extern void M2RTS_Halt (const char *, int, const char *, const char *);
-int RTco_init (void);
+#include <m2rts.h>
 
 // #define TRACEON
 
@@ -89,9 +87,28 @@ static threadCB *threadArray = NULL;
 static unsigned int nSemaphores = 0;
 static threadSem **semArray = NULL;
 
-/* used to lock the above module data structures.  */
+/* These are used to lock the above module data structures.  */
 static threadSem lock;
 static int initialized = FALSE;
+
+
+extern "C" int RTco_init (void);
+
+
+extern "C" void
+_M2_RTco_dep (void)
+{
+}
+
+extern "C" void
+_M2_RTco_init (int argc, char *argv[], char *envp[])
+{
+}
+
+extern "C" void
+_M2_RTco_finish (int argc, char *argv[], char *envp[])
+{
+}
 
 static void
 initSem (threadSem *sem, int value)
@@ -130,7 +147,7 @@ signalSem (threadSem *sem)
 
 void stop (void) {}
 
-void
+extern "C" void
 RTco_wait (int sid)
 {
   RTco_init ();
@@ -138,7 +155,7 @@ RTco_wait (int sid)
   waitSem (semArray[sid]);
 }
 
-void
+extern "C" void
 RTco_signal (int sid)
 {
   RTco_init ();
@@ -160,7 +177,7 @@ newSem (void)
   threadSem *sem
       = (threadSem *)malloc (sizeof (threadSem));
 
-  /* we need to be careful when using realloc as the lock (semaphore)
+  /* We need to be careful when using realloc as the lock (semaphore)
      operators use the semaphore address.  So we keep an array of pointer
      to semaphores.  */
   if (nSemaphores == 0)
@@ -189,7 +206,7 @@ initSemaphore (int value)
   return sid;
 }
 
-int
+extern "C" int
 RTco_initSemaphore (int value)
 {
   int sid;
@@ -203,7 +220,7 @@ RTco_initSemaphore (int value)
 
 /* signalThread signal the semaphore associated with thread tid.  */
 
-void
+extern "C" void
 RTco_signalThread (int tid)
 {
   int sem;
@@ -217,7 +234,7 @@ RTco_signalThread (int tid)
 
 /* waitThread wait on the semaphore associated with thread tid.  */
 
-void
+extern "C" void
 RTco_waitThread (int tid)
 {
   RTco_init ();
@@ -225,7 +242,7 @@ RTco_waitThread (int tid)
   RTco_wait (threadArray[tid].execution);
 }
 
-int
+extern "C" int
 currentThread (void)
 {
   int tid;
@@ -237,7 +254,7 @@ currentThread (void)
               "failed to find currentThread");
 }
 
-int
+extern "C" int
 RTco_currentThread (void)
 {
   int tid;
@@ -252,7 +269,7 @@ RTco_currentThread (void)
 
 /* currentInterruptLevel returns the interrupt level of the current thread.  */
 
-unsigned int
+extern "C" unsigned int
 RTco_currentInterruptLevel (void)
 {
   RTco_init ();
@@ -264,7 +281,7 @@ RTco_currentInterruptLevel (void)
 /* turninterrupts returns the old interrupt level and assigns the
    interrupt level to newLevel.  */
 
-unsigned int
+extern "C" unsigned int
 RTco_turnInterrupts (unsigned int newLevel)
 {
   int tid = RTco_currentThread ();
@@ -292,10 +309,10 @@ execThread (void *t)
   tprintf ("exec thread tid = %d  function = 0x%p  arg = 0x%p\n", tp->tid,
            tp->proc, t);
   RTco_waitThread (
-      tp->tid); /* forcing this thread to block, waiting to be scheduled.  */
+      tp->tid); /* Forcing this thread to block, waiting to be scheduled.  */
   tprintf ("  exec thread [%d]  function = 0x%p  arg = 0x%p\n", tp->tid,
            tp->proc, t);
-  tp->proc (); /* now execute user procedure.  */
+  tp->proc (); /* Now execute user procedure.  */
 #if 0
   M2RTS_CoroutineException ( __FILE__, __LINE__, __COLUMN__, __FUNCTION__, "coroutine finishing");
 #endif
@@ -365,7 +382,7 @@ initThread (void (*proc) (void), unsigned int stackSize,
   return tid;
 }
 
-int
+extern "C" int
 RTco_initThread (void (*proc) (void), unsigned int stackSize,
                  unsigned int interrupt)
 {
@@ -381,7 +398,7 @@ RTco_initThread (void (*proc) (void), unsigned int stackSize,
 /* transfer unlocks thread p2 and locks the current thread.  p1 is
    updated with the current thread id.  */
 
-void
+extern "C" void
 RTco_transfer (int *p1, int p2)
 {
   int tid = currentThread ();
@@ -406,14 +423,14 @@ RTco_transfer (int *p1, int p2)
     }
 }
 
-int
-RTco_select (int p1, void *p2, void *p3, void *p4, void *p5)
+extern "C" int
+RTco_select (int p1, fd_set *p2, fd_set *p3, fd_set *p4, const timespec *p5)
 {
   tprintf ("[%x]  RTco.select (...)\n", pthread_self ());
   return pselect (p1, p2, p3, p4, p5, NULL);
 }
 
-int
+extern "C" int
 RTco_init (void)
 {
   if (!initialized)
@@ -422,18 +439,18 @@ RTco_init (void)
 
       tprintf ("RTco initialized\n");
       initSem (&lock, 0);
-      /* create initial thread container.  */
+      /* Create initial thread container.  */
 #if defined(POOL)
       threadArray = (threadCB *)malloc (sizeof (threadCB) * THREAD_POOL);
       semArray = (threadSem **)malloc (sizeof (threadSem *) * SEM_POOL);
 #endif
-      tid = newThread (); /* for the current initial thread.  */
+      tid = newThread (); /* For the current initial thread.  */
       threadArray[tid].tid = tid;
       threadArray[tid].execution = initSemaphore (0);
       threadArray[tid].p = pthread_self ();
       threadArray[tid].interruptLevel = 0;
       threadArray[tid].proc
-          = never; /* this shouldn't happen as we are already running.  */
+          = never; /* This shouldn't happen as we are already running.  */
       initialized = TRUE;
       tprintf ("RTco initialized completed\n");
       signalSem (&lock);
@@ -441,12 +458,10 @@ RTco_init (void)
   return 0;
 }
 
-void
-_M2_RTco_init ()
-{
-}
+struct _M2_RTco_ctor { _M2_RTco_ctor (); } _M2_RTco_ctor;
 
-void
-_M2_RTco_finish ()
+_M2_RTco_ctor::_M2_RTco_ctor (void)
 {
+  M2RTS_RegisterModule ("RTco", _M2_RTco_init, _M2_RTco_finish,
+			_M2_RTco_dep);
 }

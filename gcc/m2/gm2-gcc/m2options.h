@@ -63,6 +63,7 @@ EXTERN int M2Options_GetWholeValueCheck (void);
 EXTERN void M2Options_Setc (int value);
 EXTERN int M2Options_Getc (void);
 
+EXTERN void M2Options_SetUselist (const char *filename);
 EXTERN void M2Options_SetAutoInit (int value);
 EXTERN void M2Options_SetPositiveModFloor (int value);
 EXTERN void M2Options_SetNilCheck (int value);

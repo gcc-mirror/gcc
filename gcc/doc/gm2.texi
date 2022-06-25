@@ -588,20 +588,6 @@ If this option is not specified then the default path is added
 which consists of the current directory followed by the appropriate
 language dialect library directories.
 
-@item -fobject-path=
-used to specify the path for objects during the linking stage.  An
-example is: @code{gm2 -g -fobject-path=.:../../libs/O2 -I.:../../libs
-foo.mod}.  The combination of @code{-I} and @code{-fobject-path=}
-allows projects to keep various styles of objects separate from their
-source counterparts.  For example it would be possible to compile
-implementation modules with different levels of optimization and
-with/without debugging and keep them in separate directories.  If the
-@code{-fobject-path=} option is not specified then it is set
-internally by using the path as specified by the @code{-I} option.  If
-the @code{-I} was also not specified then it uses the current
-directory.  In all cases the appropriate language dialect library
-directories are appended to the end of the path.
-
 @item -fdebug-builtins
 call a real function, rather than the builtin equivalent.  This can
 be useful for debugging parameter values to a builtin function as
@@ -616,11 +602,6 @@ generate a swig interface file.
 
 @item -fshared
 generate a shared library from the module.
-
-@item -fmakeinit
-generate the start up C++ code for the module, a file
-@file{modulename_m2.cpp} is created.  This is an internal command
-line option.
 
 @item -fruntime-modules=
 specify, using a comma separated list, the runtime modules and their
@@ -731,18 +712,6 @@ where multiple @code{END} keywords are mapped onto a sequence of
 @item -fm2-lower-case
 render keywords in error messages using lower case.
 
-@item -fmakelist
-this option is only applicable when linking a program module.  The
-compiler will generate a @file{modulename.lst} file which contains a
-list indicating the initialisation order of all modules which are to
-be linked. The actual link does not occur.  The GNU Modula-2 linker
-scans all @code{IMPORT}s, generates a list of dependencies and
-produces an ordered list for initialization.
-This might be useful should your project has cyclic dependencies as the
-@file{.lst} file is plain text and can be modified if required.  Once
-the @file{.lst} file is created it can be used by the compiler to link
-your project via the @samp{-fuselist} option.
-
 @item fno-pthread
 do not automatically link against the pthread library.  This option is
 likely useful if gm2 is configured as a cross compiler targetting
@@ -750,10 +719,11 @@ embedded systems.  By default GNU Modula-2 uses the GCC pthread
 libraries to implement coroutines (see the SYSTEM implementation
 module).
 
-@item -fuselist
-providing @samp{gm2} has been told to link the program module this
-option uses the file @file{modulename.lst} for the initialization
-order of modules.
+@item -fuselist=@file{filename}
+if @samp{-fscaffold-static} is enabled then use the file
+@file{filename} for the initialization order of modules.  Whereas if
+@samp{-fscaffold-dynamic} is enabled then use this file to force
+linking of all module ctors.
 
 @item -fscaffold-static
 the option ensures that @samp{gm2} will generate a static scaffold

@@ -34,7 +34,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <errno.h>
 #endif
 
-int
+#include "m2rts.h"
+
+extern "C" int
 errno_geterrno (void)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
@@ -44,12 +46,25 @@ errno_geterrno (void)
 #endif
 }
 
-void
-_M2_errno_init (void)
+extern "C" void
+_M2_errno_init (int, char *[], char *[])
 {
 }
 
-void
-_M2_errno_finish (void)
+extern "C" void
+_M2_errno_finish (int, char *[], char *[])
 {
+}
+
+extern "C" void
+_M2_errno_dep (void)
+{
+}
+
+struct _M2_errno_ctor { _M2_errno_ctor (); } _M2_errno_ctor;
+
+_M2_errno_ctor::_M2_errno_ctor (void)
+{
+  M2RTS_RegisterModule ("errno", _M2_errno_init, _M2_errno_finish,
+			_M2_errno_dep);
 }

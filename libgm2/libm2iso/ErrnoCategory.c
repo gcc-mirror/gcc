@@ -1,4 +1,4 @@
-/* ErrnoCatogory.c categorizes values of errno maps onto ChanConsts.h.
+/* ErrnoCatogory.cc categorizes values of errno maps onto ChanConsts.h.
 
 Copyright (C) 2008-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
@@ -36,6 +36,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "sys/errno.h"
 #endif
 
+#include "m2rts.h"
+
 #if !defined(FALSE)
 #define FALSE (1 == 0)
 #endif
@@ -47,7 +49,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* IsErrnoHard - returns TRUE if the value of errno is associated
    with a hard device error.  */
 
-int
+extern "C" int
 ErrnoCategory_IsErrnoHard (int e)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
@@ -62,7 +64,7 @@ ErrnoCategory_IsErrnoHard (int e)
 /* IsErrnoSoft - returns TRUE if the value of errno is associated
    with a soft device error.  */
 
-int
+extern "C" int
 ErrnoCategory_IsErrnoSoft (int e)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
@@ -76,7 +78,7 @@ ErrnoCategory_IsErrnoSoft (int e)
 #endif
 }
 
-int
+extern "C" int
 ErrnoCategory_UnAvailable (int e)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
@@ -90,7 +92,7 @@ ErrnoCategory_UnAvailable (int e)
 /* GetOpenResults - maps errno onto the ISO Modula-2 enumerated type,
    OpenResults.  */
 
-openResults
+extern "C" openResults
 ErrnoCategory_GetOpenResults (int e)
 {
   if (e == 0)
@@ -154,12 +156,25 @@ ErrnoCategory_GetOpenResults (int e)
 
 /* GNU Modula-2 linking fodder.  */
 
-void
-_M2_ErrnoCategory_init (void)
+extern "C" void
+_M2_ErrnoCategory_init (int, char *argv[], char *env[])
 {
 }
 
-void
-_M2_ErrnoCategory_finish (void)
+extern "C" void
+_M2_ErrnoCategory_finish (int, char *argv[], char *env[])
 {
+}
+
+extern "C" void
+_M2_ErrnoCategory_dep (void)
+{
+}
+
+struct _M2_ErrnoCategory_ctor { _M2_ErrnoCategory_ctor (); } _M2_ErrnoCategory_ctor;
+
+_M2_ErrnoCategory_ctor::_M2_ErrnoCategory_ctor (void)
+{
+  M2RTS_RegisterModule ("ErrnoCategory", _M2_ErrnoCategory_init, _M2_ErrnoCategory_finish,
+			_M2_ErrnoCategory_dep);
 }

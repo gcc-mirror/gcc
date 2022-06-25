@@ -585,9 +585,6 @@ BEGIN
 END PCBuildImportInnerModule ;
 
 
-PROCEDURE stop ; BEGIN END stop ;
-
-
 (*
    StartBuildProcedure - Builds a Procedure.
 
@@ -611,10 +608,6 @@ VAR
 BEGIN
    PopTtok(name, tok) ;
    PushTtok(name, tok) ;  (* Name saved for the EndBuildProcedure name check *)
-   IF name=1181
-   THEN
-      stop
-   END ;
    ProcSym := RequestSym (tok, name) ;
    Assert (IsProcedure (ProcSym)) ;
    PushTtok (ProcSym, tok) ;
@@ -1884,10 +1877,6 @@ BEGIN
       RETURN( FALSE )
    ELSE
       WITH e^.eleaf DO
-         IF sym=13
-         THEN
-            stop
-         END ;
          IF IsConst(sym) AND (GetType(sym)#NulSym)
          THEN
             type := GetSkippedType(sym) ;

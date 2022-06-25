@@ -23,6 +23,7 @@ DEFINITION MODULE M2Scaffold ;
 
 
 VAR
+   linkFunction,
    finiFunction,
    initFunction,
    mainFunction: CARDINAL ;
@@ -40,6 +41,15 @@ PROCEDURE DeclareScaffold (tokno: CARDINAL) ;
 *)
 
 PROCEDURE DeclareArgEnvParams (tokno: CARDINAL; proc: CARDINAL) ;
+
+
+(*
+   PopulateCtorArray - assign each element of the ctorArray to the external module ctor.
+                       This is only used to force the linker to pull in the ctors from
+                       a library.
+*)
+
+PROCEDURE PopulateCtorArray (tok: CARDINAL) ;
 
 
 END M2Scaffold.
