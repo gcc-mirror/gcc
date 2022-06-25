@@ -1,3 +1,11 @@
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/tilepro/gen-mul-tables.cc (tilegx_emit): Adjust loop
+	condition to avoid overflow.
+
 2022-06-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
