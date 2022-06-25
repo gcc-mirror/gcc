@@ -1868,7 +1868,17 @@ AC_ARG_ENABLE(host-shared,
   x86_64-*-darwin* | aarch64-*-darwin*) host_shared=yes ;;
   *) host_shared=no ;;
  esac])
+
 AC_SUBST(host_shared)
+
+# If we are building PIC/PIE host executables, and we are building dependent
+# libs (e.g. GMP) in-tree those libs need to be configured to generate PIC
+# code.
+host_libs_picflag=
+if test "$host_shared" = "yes";then
+host_libs_picflag='--with-pic'
+fi
+AC_SUBST(host_libs_picflag)
 
 # By default, C and C++ are the only stage 1 languages.
 stage1_languages=,c,

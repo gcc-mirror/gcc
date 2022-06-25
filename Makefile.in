@@ -13118,7 +13118,7 @@ configure-gmp:
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
-	  --target=none-${host_vendor}-${host_os} --disable-shared LEX="touch lex.yy.c" \
+	  --target=none-${host_vendor}-${host_os} --disable-shared LEX="touch lex.yy.c" @host_libs_picflag@ \
 	  || exit 1
 @endif gmp
 
@@ -13154,7 +13154,7 @@ configure-stage1-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared LEX="touch lex.yy.c"
+	  --disable-shared LEX="touch lex.yy.c" @host_libs_picflag@
 @endif gmp-bootstrap
 
 .PHONY: configure-stage2-gmp maybe-configure-stage2-gmp
@@ -13188,7 +13188,7 @@ configure-stage2-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared LEX="touch lex.yy.c"
+	  --disable-shared LEX="touch lex.yy.c" @host_libs_picflag@
 @endif gmp-bootstrap
 
 .PHONY: configure-stage3-gmp maybe-configure-stage3-gmp
@@ -13222,7 +13222,7 @@ configure-stage3-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared LEX="touch lex.yy.c"
+	  --disable-shared LEX="touch lex.yy.c" @host_libs_picflag@
 @endif gmp-bootstrap
 
 .PHONY: configure-stage4-gmp maybe-configure-stage4-gmp
@@ -13256,7 +13256,7 @@ configure-stage4-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared LEX="touch lex.yy.c"
+	  --disable-shared LEX="touch lex.yy.c" @host_libs_picflag@
 @endif gmp-bootstrap
 
 .PHONY: configure-stageprofile-gmp maybe-configure-stageprofile-gmp
@@ -13290,7 +13290,7 @@ configure-stageprofile-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared LEX="touch lex.yy.c"
+	  --disable-shared LEX="touch lex.yy.c" @host_libs_picflag@
 @endif gmp-bootstrap
 
 .PHONY: configure-stagetrain-gmp maybe-configure-stagetrain-gmp
@@ -13324,7 +13324,7 @@ configure-stagetrain-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEtrain_CONFIGURE_FLAGS) \
-	  --disable-shared LEX="touch lex.yy.c"
+	  --disable-shared LEX="touch lex.yy.c" @host_libs_picflag@
 @endif gmp-bootstrap
 
 .PHONY: configure-stagefeedback-gmp maybe-configure-stagefeedback-gmp
@@ -13358,7 +13358,7 @@ configure-stagefeedback-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared LEX="touch lex.yy.c"
+	  --disable-shared LEX="touch lex.yy.c" @host_libs_picflag@
 @endif gmp-bootstrap
 
 .PHONY: configure-stageautoprofile-gmp maybe-configure-stageautoprofile-gmp
@@ -13392,7 +13392,7 @@ configure-stageautoprofile-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautoprofile_CONFIGURE_FLAGS) \
-	  --disable-shared LEX="touch lex.yy.c"
+	  --disable-shared LEX="touch lex.yy.c" @host_libs_picflag@
 @endif gmp-bootstrap
 
 .PHONY: configure-stageautofeedback-gmp maybe-configure-stageautofeedback-gmp
@@ -13426,7 +13426,7 @@ configure-stageautofeedback-gmp:
 	  --target=none-${host_vendor}-${host_os} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautofeedback_CONFIGURE_FLAGS) \
-	  --disable-shared LEX="touch lex.yy.c"
+	  --disable-shared LEX="touch lex.yy.c" @host_libs_picflag@
 @endif gmp-bootstrap
 
 
@@ -14255,7 +14255,7 @@ configure-mpfr:
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} --disable-shared @extra_mpfr_configure_flags@ \
+	  --target=${target_alias} --disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@ \
 	  || exit 1
 @endif mpfr
 
@@ -14291,7 +14291,7 @@ configure-stage1-mpfr:
 	  --target=${target_alias} \
 	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpfr_configure_flags@
+	  --disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stage2-mpfr maybe-configure-stage2-mpfr
@@ -14325,7 +14325,7 @@ configure-stage2-mpfr:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpfr_configure_flags@
+	  --disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stage3-mpfr maybe-configure-stage3-mpfr
@@ -14359,7 +14359,7 @@ configure-stage3-mpfr:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpfr_configure_flags@
+	  --disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stage4-mpfr maybe-configure-stage4-mpfr
@@ -14393,7 +14393,7 @@ configure-stage4-mpfr:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpfr_configure_flags@
+	  --disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stageprofile-mpfr maybe-configure-stageprofile-mpfr
@@ -14427,7 +14427,7 @@ configure-stageprofile-mpfr:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpfr_configure_flags@
+	  --disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stagetrain-mpfr maybe-configure-stagetrain-mpfr
@@ -14461,7 +14461,7 @@ configure-stagetrain-mpfr:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEtrain_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpfr_configure_flags@
+	  --disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stagefeedback-mpfr maybe-configure-stagefeedback-mpfr
@@ -14495,7 +14495,7 @@ configure-stagefeedback-mpfr:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpfr_configure_flags@
+	  --disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stageautoprofile-mpfr maybe-configure-stageautoprofile-mpfr
@@ -14529,7 +14529,7 @@ configure-stageautoprofile-mpfr:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautoprofile_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpfr_configure_flags@
+	  --disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stageautofeedback-mpfr maybe-configure-stageautofeedback-mpfr
@@ -14563,7 +14563,7 @@ configure-stageautofeedback-mpfr:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautofeedback_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpfr_configure_flags@
+	  --disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@
 @endif mpfr-bootstrap
 
 
@@ -15392,7 +15392,7 @@ configure-mpc:
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode \
+	  --target=${target_alias} --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode \
 	  || exit 1
 @endif mpc
 
@@ -15428,7 +15428,7 @@ configure-stage1-mpc:
 	  --target=${target_alias} \
 	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stage2-mpc maybe-configure-stage2-mpc
@@ -15462,7 +15462,7 @@ configure-stage2-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stage3-mpc maybe-configure-stage3-mpc
@@ -15496,7 +15496,7 @@ configure-stage3-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stage4-mpc maybe-configure-stage4-mpc
@@ -15530,7 +15530,7 @@ configure-stage4-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stageprofile-mpc maybe-configure-stageprofile-mpc
@@ -15564,7 +15564,7 @@ configure-stageprofile-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stagetrain-mpc maybe-configure-stagetrain-mpc
@@ -15598,7 +15598,7 @@ configure-stagetrain-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEtrain_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stagefeedback-mpc maybe-configure-stagefeedback-mpc
@@ -15632,7 +15632,7 @@ configure-stagefeedback-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stageautoprofile-mpc maybe-configure-stageautoprofile-mpc
@@ -15666,7 +15666,7 @@ configure-stageautoprofile-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautoprofile_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 .PHONY: configure-stageautofeedback-mpc maybe-configure-stageautofeedback-mpc
@@ -15700,7 +15700,7 @@ configure-stageautofeedback-mpc:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautofeedback_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode
+	  --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode
 @endif mpc-bootstrap
 
 
@@ -16529,7 +16529,7 @@ configure-isl:
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} --disable-shared @extra_isl_gmp_configure_flags@ \
+	  --target=${target_alias} --disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@ \
 	  || exit 1
 @endif isl
 
@@ -16565,7 +16565,7 @@ configure-stage1-isl:
 	  --target=${target_alias} \
 	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_isl_gmp_configure_flags@
+	  --disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@
 @endif isl-bootstrap
 
 .PHONY: configure-stage2-isl maybe-configure-stage2-isl
@@ -16599,7 +16599,7 @@ configure-stage2-isl:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_isl_gmp_configure_flags@
+	  --disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@
 @endif isl-bootstrap
 
 .PHONY: configure-stage3-isl maybe-configure-stage3-isl
@@ -16633,7 +16633,7 @@ configure-stage3-isl:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_isl_gmp_configure_flags@
+	  --disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@
 @endif isl-bootstrap
 
 .PHONY: configure-stage4-isl maybe-configure-stage4-isl
@@ -16667,7 +16667,7 @@ configure-stage4-isl:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_isl_gmp_configure_flags@
+	  --disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@
 @endif isl-bootstrap
 
 .PHONY: configure-stageprofile-isl maybe-configure-stageprofile-isl
@@ -16701,7 +16701,7 @@ configure-stageprofile-isl:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_isl_gmp_configure_flags@
+	  --disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@
 @endif isl-bootstrap
 
 .PHONY: configure-stagetrain-isl maybe-configure-stagetrain-isl
@@ -16735,7 +16735,7 @@ configure-stagetrain-isl:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEtrain_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_isl_gmp_configure_flags@
+	  --disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@
 @endif isl-bootstrap
 
 .PHONY: configure-stagefeedback-isl maybe-configure-stagefeedback-isl
@@ -16769,7 +16769,7 @@ configure-stagefeedback-isl:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_isl_gmp_configure_flags@
+	  --disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@
 @endif isl-bootstrap
 
 .PHONY: configure-stageautoprofile-isl maybe-configure-stageautoprofile-isl
@@ -16803,7 +16803,7 @@ configure-stageautoprofile-isl:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautoprofile_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_isl_gmp_configure_flags@
+	  --disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@
 @endif isl-bootstrap
 
 .PHONY: configure-stageautofeedback-isl maybe-configure-stageautofeedback-isl
@@ -16837,7 +16837,7 @@ configure-stageautofeedback-isl:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautofeedback_CONFIGURE_FLAGS) \
-	  --disable-shared @extra_isl_gmp_configure_flags@
+	  --disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@
 @endif isl-bootstrap
 
 
@@ -29635,7 +29635,7 @@ configure-libiconv:
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} --disable-shared \
+	  --target=${target_alias} --disable-shared  @host_libs_picflag@ \
 	  || exit 1
 @endif libiconv
 
@@ -29671,7 +29671,7 @@ configure-stage1-libiconv:
 	  --target=${target_alias} \
 	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared  @host_libs_picflag@
 @endif libiconv-bootstrap
 
 .PHONY: configure-stage2-libiconv maybe-configure-stage2-libiconv
@@ -29705,7 +29705,7 @@ configure-stage2-libiconv:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared  @host_libs_picflag@
 @endif libiconv-bootstrap
 
 .PHONY: configure-stage3-libiconv maybe-configure-stage3-libiconv
@@ -29739,7 +29739,7 @@ configure-stage3-libiconv:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared  @host_libs_picflag@
 @endif libiconv-bootstrap
 
 .PHONY: configure-stage4-libiconv maybe-configure-stage4-libiconv
@@ -29773,7 +29773,7 @@ configure-stage4-libiconv:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared  @host_libs_picflag@
 @endif libiconv-bootstrap
 
 .PHONY: configure-stageprofile-libiconv maybe-configure-stageprofile-libiconv
@@ -29807,7 +29807,7 @@ configure-stageprofile-libiconv:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared  @host_libs_picflag@
 @endif libiconv-bootstrap
 
 .PHONY: configure-stagetrain-libiconv maybe-configure-stagetrain-libiconv
@@ -29841,7 +29841,7 @@ configure-stagetrain-libiconv:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEtrain_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared  @host_libs_picflag@
 @endif libiconv-bootstrap
 
 .PHONY: configure-stagefeedback-libiconv maybe-configure-stagefeedback-libiconv
@@ -29875,7 +29875,7 @@ configure-stagefeedback-libiconv:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared  @host_libs_picflag@
 @endif libiconv-bootstrap
 
 .PHONY: configure-stageautoprofile-libiconv maybe-configure-stageautoprofile-libiconv
@@ -29909,7 +29909,7 @@ configure-stageautoprofile-libiconv:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautoprofile_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared  @host_libs_picflag@
 @endif libiconv-bootstrap
 
 .PHONY: configure-stageautofeedback-libiconv maybe-configure-stageautofeedback-libiconv
@@ -29943,7 +29943,7 @@ configure-stageautofeedback-libiconv:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautofeedback_CONFIGURE_FLAGS) \
-	  --disable-shared
+	  --disable-shared  @host_libs_picflag@
 @endif libiconv-bootstrap
 
 
@@ -33007,7 +33007,7 @@ configure-zlib:
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} @extra_host_zlib_configure_flags@ \
+	  --target=${target_alias} @extra_host_zlib_configure_flags@ @host_libs_picflag@ \
 	  || exit 1
 @endif zlib
 
@@ -33043,7 +33043,7 @@ configure-stage1-zlib:
 	  --target=${target_alias} \
 	   \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  @extra_host_zlib_configure_flags@
+	  @extra_host_zlib_configure_flags@ @host_libs_picflag@
 @endif zlib-bootstrap
 
 .PHONY: configure-stage2-zlib maybe-configure-stage2-zlib
@@ -33077,7 +33077,7 @@ configure-stage2-zlib:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  @extra_host_zlib_configure_flags@
+	  @extra_host_zlib_configure_flags@ @host_libs_picflag@
 @endif zlib-bootstrap
 
 .PHONY: configure-stage3-zlib maybe-configure-stage3-zlib
@@ -33111,7 +33111,7 @@ configure-stage3-zlib:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  @extra_host_zlib_configure_flags@
+	  @extra_host_zlib_configure_flags@ @host_libs_picflag@
 @endif zlib-bootstrap
 
 .PHONY: configure-stage4-zlib maybe-configure-stage4-zlib
@@ -33145,7 +33145,7 @@ configure-stage4-zlib:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  @extra_host_zlib_configure_flags@
+	  @extra_host_zlib_configure_flags@ @host_libs_picflag@
 @endif zlib-bootstrap
 
 .PHONY: configure-stageprofile-zlib maybe-configure-stageprofile-zlib
@@ -33179,7 +33179,7 @@ configure-stageprofile-zlib:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  @extra_host_zlib_configure_flags@
+	  @extra_host_zlib_configure_flags@ @host_libs_picflag@
 @endif zlib-bootstrap
 
 .PHONY: configure-stagetrain-zlib maybe-configure-stagetrain-zlib
@@ -33213,7 +33213,7 @@ configure-stagetrain-zlib:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEtrain_CONFIGURE_FLAGS) \
-	  @extra_host_zlib_configure_flags@
+	  @extra_host_zlib_configure_flags@ @host_libs_picflag@
 @endif zlib-bootstrap
 
 .PHONY: configure-stagefeedback-zlib maybe-configure-stagefeedback-zlib
@@ -33247,7 +33247,7 @@ configure-stagefeedback-zlib:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  @extra_host_zlib_configure_flags@
+	  @extra_host_zlib_configure_flags@ @host_libs_picflag@
 @endif zlib-bootstrap
 
 .PHONY: configure-stageautoprofile-zlib maybe-configure-stageautoprofile-zlib
@@ -33281,7 +33281,7 @@ configure-stageautoprofile-zlib:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautoprofile_CONFIGURE_FLAGS) \
-	  @extra_host_zlib_configure_flags@
+	  @extra_host_zlib_configure_flags@ @host_libs_picflag@
 @endif zlib-bootstrap
 
 .PHONY: configure-stageautofeedback-zlib maybe-configure-stageautofeedback-zlib
@@ -33315,7 +33315,7 @@ configure-stageautofeedback-zlib:
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEautofeedback_CONFIGURE_FLAGS) \
-	  @extra_host_zlib_configure_flags@
+	  @extra_host_zlib_configure_flags@ @host_libs_picflag@
 @endif zlib-bootstrap
 
 

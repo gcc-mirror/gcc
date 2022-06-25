@@ -685,6 +685,7 @@ get_gcc_base_ver
 extra_host_zlib_configure_flags
 extra_host_libiberty_configure_flags
 stage1_languages
+host_libs_picflag
 host_shared
 extra_linker_plugin_flags
 extra_linker_plugin_configure_flags
@@ -8594,6 +8595,16 @@ else
  esac
 fi
 
+
+
+
+# If we are building PIC/PIE host executables, and we are building dependent
+# libs (e.g. GMP) in-tree those libs need to be configured to generate PIC
+# code.
+host_libs_picflag=
+if test "$host_shared" = "yes";then
+host_libs_picflag='--with-pic'
+fi
 
 
 # By default, C and C++ are the only stage 1 languages.
