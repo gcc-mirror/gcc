@@ -397,5 +397,45 @@ get_function_named_in_call (tree t)
   return fun;
 }
 
+// forked from gcc/cp/constexpr.cc maybe_constexpr_fn
+
+/* True if a function might be declared constexpr  */
+
+bool
+maybe_constexpr_fn (tree t)
+{
+  return (DECL_DECLARED_CONSTEXPR_P (t));
+}
+
+// forked from gcc/cp/constexpr.cc get_nth_callarg
+
+/* We have an expression tree T that represents a call, either CALL_EXPR.
+  Return the Nth argument.  */
+
+inline tree
+get_nth_callarg (tree t, int n)
+{
+  switch (TREE_CODE (t))
+    {
+    case CALL_EXPR:
+      return CALL_EXPR_ARG (t, n);
+
+    default:
+      gcc_unreachable ();
+      return NULL;
+    }
+}
+
+// forked from gcc/cp/constexpr.cc var_in_maybe_constexpr_fn
+
+/* True if T was declared in a function that might be constexpr: either a
+   function that was declared constexpr.  */
+
+bool
+var_in_maybe_constexpr_fn (tree t)
+{
+  return (DECL_FUNCTION_SCOPE_P (t) && maybe_constexpr_fn (DECL_CONTEXT (t)));
+}
+
 } // namespace Compile
 } // namespace Rust
