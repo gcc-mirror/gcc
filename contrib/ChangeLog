@@ -1,3 +1,8 @@
+2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config-list.mk: Remove tilegx and tilepro entries.
+	* gcc_update: Remove tilegx and tilepro entries.
+
 2022-05-27  Richard Biener  <rguenther@suse.de>
 
 	* gcc-changelog/git_update_version.py (active_refs): Remove

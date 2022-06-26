@@ -1,3 +1,84 @@
+2022-06-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-dom.cc (dom_jt_state): Pass ranger to constructor
+	instead of evrp.
+	(dom_jt_state::push): Remove m_evrp.
+	(dom_jt_state::pop): Same.
+	(dom_jt_state::record_ranges_from_stmt): Remove.
+	(dom_jt_state::register_equiv): Remove updating of evrp ranges.
+	(class dom_jt_simplifier): Pass ranger to constructor.
+	Inherit from hybrid_jt_simplifier.
+	(dom_jt_simplifier::simplify): Convert to ranger.
+	(pass_dominator::execute): Same.
+	(all_uses_feed_or_dominated_by_stmt): New.
+	(dom_opt_dom_walker::set_global_ranges_from_unreachable_edges): New.
+	(dom_opt_dom_walker::before_dom_children): Call
+	set_global_ranges_from_unreachable_edges.
+	Do not call record_ranges_from_stmt.
+	(dom_opt_dom_walker::after_dom_children): Remove evrp use.
+	(cprop_operand): Use int_range<> instead of value_range.
+	(dom_opt_dom_walker::fold_cond): New.
+	(dom_opt_dom_walker::optimize_stmt): Pass ranger to
+	cprop_into_stmt.
+	Use fold_cond() instead of vrp_visit_cond_stmt().
+	* tree-ssa-threadedge.cc (jt_state::register_equivs_stmt): Do not
+	pass state to simplifier.
+	* vr-values.h (class vr_values): Make fold_cond public.
+
+2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* common/config/tilegx/tilegx-common.cc: Removed.
+	* common/config/tilepro/tilepro-common.cc: Removed.
+	* config.gcc: Remove tilegx and tilepro entries.
+	* config/tilegx/constraints.md: Removed.
+	* config/tilegx/feedback.h: Removed.
+	* config/tilegx/linux.h: Removed.
+	* config/tilegx/mul-tables.cc: Removed.
+	* config/tilegx/predicates.md: Removed.
+	* config/tilegx/sync.md: Removed.
+	* config/tilegx/t-tilegx: Removed.
+	* config/tilegx/tilegx-builtins.h: Removed.
+	* config/tilegx/tilegx-c.cc: Removed.
+	* config/tilegx/tilegx-generic.md: Removed.
+	* config/tilegx/tilegx-modes.def: Removed.
+	* config/tilegx/tilegx-multiply.h: Removed.
+	* config/tilegx/tilegx-opts.h: Removed.
+	* config/tilegx/tilegx-protos.h: Removed.
+	* config/tilegx/tilegx.cc: Removed.
+	* config/tilegx/tilegx.h: Removed.
+	* config/tilegx/tilegx.md: Removed.
+	* config/tilegx/tilegx.opt: Removed.
+	* config/tilepro/constraints.md: Removed.
+	* config/tilepro/feedback.h: Removed.
+	* config/tilepro/gen-mul-tables.cc: Removed.
+	* config/tilepro/linux.h: Removed.
+	* config/tilepro/mul-tables.cc: Removed.
+	* config/tilepro/predicates.md: Removed.
+	* config/tilepro/t-tilepro: Removed.
+	* config/tilepro/tilepro-builtins.h: Removed.
+	* config/tilepro/tilepro-c.cc: Removed.
+	* config/tilepro/tilepro-generic.md: Removed.
+	* config/tilepro/tilepro-modes.def: Removed.
+	* config/tilepro/tilepro-multiply.h: Removed.
+	* config/tilepro/tilepro-protos.h: Removed.
+	* config/tilepro/tilepro.cc: Removed.
+	* config/tilepro/tilepro.h: Removed.
+	* config/tilepro/tilepro.md: Removed.
+	* config/tilepro/tilepro.opt: Removed.
+	* configure.ac: Remove tilegx and tilepro entries.
+	* configure: Rebuilt.
+	* doc/extend.texi: Remove tilegx and tilepro entries.
+	* doc/install.texi: Remove tilegx and tilepro entries.
+	* doc/invoke.texi: Remove tilegx and tilepro entries.
+	* doc/md.texi: Remove tilegx and tilepro entries.
+
+2022-06-25  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* regcprop.cc (pass_cprop_hardreg::execute): Perform a third
+	iteration over each basic block that was updated by the second
+	iteration.
+
 2022-06-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/87729

@@ -1,3 +1,21 @@
+2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config.host: Removed tilegx and tilepro entries.
+	* config/tilegx/sfp-machine.h: Removed.
+	* config/tilegx/sfp-machine32.h: Removed.
+	* config/tilegx/sfp-machine64.h: Removed.
+	* config/tilegx/t-crtstuff: Removed.
+	* config/tilegx/t-softfp: Removed.
+	* config/tilegx/t-tilegx: Removed.
+	* config/tilepro/atomic.c: Removed.
+	* config/tilepro/atomic.h: Removed.
+	* config/tilepro/linux-unwind.h: Removed.
+	* config/tilepro/sfp-machine.h: Removed.
+	* config/tilepro/softdivide.c: Removed.
+	* config/tilepro/softmpy.S: Removed.
+	* config/tilepro/t-crtstuff: Removed.
+	* config/tilepro/t-tilepro: Removed.
+
 2022-06-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/lib1funcs.S (__clrsbsi2): New function.

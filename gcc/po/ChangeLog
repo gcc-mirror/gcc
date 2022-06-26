@@ -1,3 +1,7 @@
+2022-06-25  Xi Ruoyao  <xry111@xry111.site>
+
+	* exgettext: Remove unneeded fgrep command.
+
 2022-06-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* sv.po: Update.

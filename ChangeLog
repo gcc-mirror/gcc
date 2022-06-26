@@ -1,3 +1,9 @@
+2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Remove tilegx and tilepro entries.
+	* configure.ac: Remove tilegx and tilepro stanzas.
+	* configure: Rebuilt.
+
 2022-05-28  Bruce Korb  <bkorb@gnu.org>
 
 	* .gitignore: Ignore vim swap files

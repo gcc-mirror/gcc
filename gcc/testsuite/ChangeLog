@@ -1,3 +1,25 @@
+2022-06-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/sancov/cmp0.c: Adjust for conversion to ranger.
+	* gcc.dg/tree-ssa/ssa-dom-branch-1.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Same.
+	* gcc.dg/vect/bb-slp-pr81635-2.c: Same.
+	* gcc.dg/vect/bb-slp-pr81635-4.c: Same.
+	* g++.dg/warn/Wstringop-overflow-4.C: Likewise.
+	* gcc.target/mips/data-sym-multi-pool.c: Likewise.
+	* gcc.target/mips/mips.exp: Likewise.
+
+2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.dg/lower-subreg-1.c: Remove tilegx and tilepro entries.
+	* gcc.misc-tests/linkage.exp: Remove tilegx and
+	tilepro entries.
+
+2022-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-comm-1.c: Check for the correct error message for
+	Darwin <= 10.
+
 2022-06-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/87729
