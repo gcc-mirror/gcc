@@ -831,15 +831,28 @@ Struct_type::do_mangled_name(Gogo* gogo, std::string* ret,
 	      ret->push_back(' ');
 	    }
 
-	  // For an anonymous field with an alias type, the field name
-	  // is the alias name.
-	  if (p->is_anonymous()
-	      && p->type()->named_type() != NULL
-	      && p->type()->named_type()->is_alias())
-	    p->type()->named_type()->append_symbol_type_name(gogo, true, ret,
-							     is_non_identifier);
+	  const Type* ft = p->type();
+	  const Named_type* nt = ft->named_type();
+
+	  if (p->is_anonymous() && nt != NULL && nt->is_builtin())
+	    {
+	      // For an embedded field with a builtin type, we must
+	      // include a package path.  Otherwise embedding builtin
+	      // types in different packages will produce identical
+	      // types, which shouldn't happen because the builtin
+	      // types are not exported.
+	      ret->append(gogo->pkgpath());
+	      ret->push_back('.');
+	      nt->append_symbol_type_name(gogo, true, ret, is_non_identifier);
+	    }
+	  else if (p->is_anonymous() && nt != NULL && nt->is_alias())
+	    {
+	      // For an anonymous field with an alias type, the field name
+	      // is the alias name.
+	      nt->append_symbol_type_name(gogo, true, ret, is_non_identifier);
+	    }
 	  else
-	    this->append_mangled_name(p->type(), gogo, ret, is_non_identifier);
+	    this->append_mangled_name(ft, gogo, ret, is_non_identifier);
 
 	  if (p->has_tag())
 	    {
