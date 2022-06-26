@@ -39,6 +39,6 @@ The procedure to update GCC's wcwidth tables is the following:
 
 3.  Run ./gen_wcwidth.py X.Y > ../../libcpp/generated_cpp_wcwidth.h
     (where X.Y is the version of the Unicode standard corresponding to the
-    Unicode data files being used, most recently, 13.0.0).
+    Unicode data files being used, most recently, 14.0.0).
 
 After that, GCC's wcwidth will match the most recent glibc.
