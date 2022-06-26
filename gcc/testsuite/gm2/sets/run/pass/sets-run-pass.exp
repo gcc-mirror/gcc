@@ -28,7 +28,6 @@ load_lib gm2-torture.exp
 set gm2src ${srcdir}/../m2
 
 gm2_init_iso "${srcdir}/gm2/sets/run/pass/"
-gm2_link_with "-lm2iso -lm2pim -lpthread"
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.

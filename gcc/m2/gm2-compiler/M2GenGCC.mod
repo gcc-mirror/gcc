@@ -1156,7 +1156,9 @@ BEGIN
                             IsModuleWithinProcedure (moduleSym)) ;
       IF ScaffoldMain OR (NOT cflag)
       THEN
-         IF CompilingMainModule AND (ScaffoldDynamic OR ScaffoldStatic OR ScaffoldMain)
+         IF CompilingMainModule AND
+            (ScaffoldDynamic OR ScaffoldStatic OR ScaffoldMain) AND
+            (moduleSym = GetMainModule ())
          THEN
             qprintf0 ("generating scaffold m2link information\n");
             DeclareM2linkGlobals (location, VAL (INTEGER, ScaffoldStatic), GetRuntimeModuleOverride ())

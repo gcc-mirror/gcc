@@ -199,6 +199,7 @@ PROCEDURE BlockEnd (tokno: CARDINAL) ;
 BEGIN
    curBeginTok := propageteTokenPosition (curStartTok, curBeginTok) ;
    curFinallyTok := propageteTokenPosition (tokno, curFinallyTok) ;
+   Assert (curModuleSym # NulSym) ;
    MakeModuleCtor (curStartTok, curBeginTok, curFinallyTok,
                    curModuleSym) ;
    PopBlock
@@ -250,11 +251,11 @@ END PushBlock ;
 
 PROCEDURE PopBlock ;
 BEGIN
+   curModuleSym := PopWord (BlockStack) ;
    curFinallyTok := PopWord (BlockStack) ;
    curEndTok := PopWord (BlockStack) ;
    curBeginTok := PopWord (BlockStack) ;
-   curStartTok := PopWord (BlockStack) ;
-   curModuleSym := PopWord (BlockStack)
+   curStartTok := PopWord (BlockStack)
 END PopBlock ;
 
 

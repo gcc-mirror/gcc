@@ -29,7 +29,7 @@ set gm2src ${srcdir}/../m2
 
 gm2_init_log
 
-gm2_link_with "-lm2log -lm2pim -lm2iso -lpthread"
+gm2_link_with "-lm2log"
 
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {

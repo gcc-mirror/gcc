@@ -167,10 +167,10 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
     {
       switch (decoded_options[i].opt_index)
         {
-        case OPT_fcppbegin:
+        case OPT_fcpp_begin:
           in_cpp_args = true;
           break;
-        case OPT_fcppend:
+        case OPT_fcpp_end:
           in_cpp_args = false;
           break;
         case OPT_SPECIAL_input_file:
@@ -343,13 +343,13 @@ gm2_langhook_handle_option (
     case OPT_fcpp:
       M2Options_SetCpp (value);
       return 1;
-    case OPT_fcppbegin:
+    case OPT_fcpp_begin:
       insideCppArgs = TRUE;
       return 1;
-    case OPT_fcppend:
+    case OPT_fcpp_end:
       insideCppArgs = FALSE;
       return 1;
-    case OPT_fcppprog_:
+    case OPT_fcpp_prog_:
       M2Options_CppProg (arg);
       return 1;
     case OPT_fq:

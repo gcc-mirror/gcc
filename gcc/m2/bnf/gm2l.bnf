@@ -867,7 +867,7 @@ BEGIN
             ELSIF EqualArray(Mark (Slice (s, 0, 6)), '-fmod=')
             THEN
                SetModExtension (Slice (s, 6, 0))
-            ELSIF EqualArray (s, '-fcppbegin')
+            ELSIF EqualArray (s, '-fcpp-begin')
             THEN
                i := ScanCppArgs (i)
             ELSIF EqualArray (s, '--M2RTS') OR EqualArray (s, '-M2RTS')

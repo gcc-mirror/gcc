@@ -80,7 +80,7 @@ automatically initializes all pointers to NIL
 
 flocation=
 Modula-2 Joined
-set all location values to a specific value (internal)
+set all location values to a specific value (internal switch)
 
 fbounds
 Modula-2
@@ -326,17 +326,17 @@ fobjc-std=objc1
 Modula-2
 ; Documented in c.opt
 
-fcppend
+fcpp-end
 Modula-2
-passed to the preprocessor if -fcpp is used
+passed to the preprocessor if -fcpp is used (internal switch)
 
-fcppbegin
+fcpp-begin
 Modula-2
-passed to the preprocessor if -fcpp is used
+passed to the preprocessor if -fcpp is used (internal switch)
 
-fcppprog=
+fcpp-prog=
 Modula-2 Joined
-passed to the preprocessor if -fcpp is used
+passed to the preprocessor if -fcpp is used (internal switch)
 
 E
 Modula-2

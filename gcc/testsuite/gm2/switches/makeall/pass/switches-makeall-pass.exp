@@ -26,7 +26,6 @@ load_lib gm2-torture.exp
 
 gm2_init "-I${srcdir}/gm2/switches/makeall/pass" -fmakeall
 gm2_init_pim4 "${srcdir}/gm2/switches/makeall/pass"
-gm2_link_with "-lm2pim -lm2iso -lpthread"
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.

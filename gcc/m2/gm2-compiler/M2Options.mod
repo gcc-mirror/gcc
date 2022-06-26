@@ -175,10 +175,10 @@ VAR
    s: String ;
 BEGIN
    s := InitStringCharStar(opt) ;
-   IF EqualArray(s, '-fcppbegin') OR EqualArray(s, '-fcppend')
+   IF EqualArray(s, '-fcpp-begin') OR EqualArray(s, '-fcpp-end')
    THEN
       (* do nothing *)
-   ELSIF EqualArray(s, '-fcppprog=')
+   ELSIF EqualArray(s, '-fcpp-prog=')
    THEN
       CppProgram := KillString(CppProgram) ;
       CppProgram := InitStringCharStar(arg)
@@ -208,7 +208,7 @@ END CppArg ;
 
 PROCEDURE CppRemember (s: String) ;
 BEGIN
-   IF EqualArray(Mark(Slice(s, 0, 10)), '-fcppprog=')
+   IF EqualArray(Mark(Slice(s, 0, 10)), '-fcpp-prog=')
    THEN
       CppProg(string(Mark(Slice(s, 10, 0))))
    ELSE

@@ -28,7 +28,6 @@ load_lib gm2-torture.exp
 set gm2src ${srcdir}/../m2
 
 gm2_init_pim "${srcdir}/gm2/switches/check-all/run/fail" -fsoft-check-all -fno-m2-plugin
-gm2_link_with "-lm2pim -lm2iso -lpthread"
 
 #
 #  compile the support module

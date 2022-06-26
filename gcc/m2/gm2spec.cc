@@ -117,6 +117,9 @@ static void insert_option (unsigned int *in_decoded_options_count,
                            struct cl_decoded_option **in_decoded_options,
                            unsigned int position);
 static const char *gen_link_path (const char *libpath, const char *dialect);
+static const char *add_exec_dir (int argc, const char *argv[]);
+static const char *gen_gm2_libexec (const char *path);
+static const char *get_libexec (void);
 
 static bool seen_B = false;
 static const char *B_path = NULL;
@@ -129,6 +132,71 @@ static const char *multilib_dir = NULL;
 #define TARGET_OBJECT_SUFFIX ".o"
 #endif
 
+
+static const char *
+get_libexec (void)
+{
+  const char *libexec = getenv (GM2_LIBEXEC_ENV);
+
+  if (libexec == NULL || (strcmp (libexec, "") == 0))
+    return STANDARD_LIBEXEC_PREFIX;
+  else
+    return libexec;
+}
+
+/* gen_gm2_libexec, return a libexec string.  */
+
+static const char *
+gen_gm2_libexec (const char *libexec)
+{
+  int l = strlen (libexec) + 1 + strlen (DEFAULT_TARGET_MACHINE) + 1
+          + strlen (DEFAULT_TARGET_VERSION) + 1;
+  char *s = (char *)xmalloc (l);
+  char dir_sep[2];
+
+  dir_sep[0] = DIR_SEPARATOR;
+  dir_sep[1] = (char)0;
+
+  strcpy (s, libexec);
+  strcat (s, dir_sep);
+  strcat (s, DEFAULT_TARGET_MACHINE);
+  strcat (s, dir_sep);
+  strcat (s, DEFAULT_TARGET_VERSION);
+  return s;
+}
+
+/* add_exec_dir prepends the exec path to the given executable filename.  */
+
+static const char *
+add_exec_dir (int argc, const char *argv[])
+{
+  if (argc == 1 && argv[0] != NULL)
+    {
+      const char *path;
+
+      if (seen_B)
+        path = xstrdup (B_path);
+      else
+        path = gen_gm2_libexec (get_libexec ());
+
+      if (path != NULL)
+        {
+          char *opt = (char *)xmalloc (strlen ("-fcpp-prog=") + strlen (path)
+                                       + 1 + strlen (argv[0]) + 1);
+          char *sep = (char *)alloca (2);
+
+          sep[0] = DIR_SEPARATOR;
+          sep[1] = (char)0;
+
+          strcpy (opt, "-fcpp-prog=");
+          strcat (opt, path);
+          strcat (opt, sep);
+          strcat (opt, argv[0]);
+          return opt;
+        }
+    }
+  return "-fcpp-prog=none";
+}
 
 /* fe_generate_option wrap up arg and pass it to fe_save_switch.  */
 
@@ -793,4 +861,5 @@ lang_specific_pre_link (void)
 void
 lang_register_spec_functions (void)
 {
+  fe_add_spec_function ("exec_prefix", add_exec_dir);
 }
