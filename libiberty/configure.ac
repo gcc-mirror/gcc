@@ -2,6 +2,7 @@ dnl Process this file with autoconf to produce a configure script
 
 AC_INIT
 AC_CONFIG_SRCDIR([xmalloc.c])
+AC_CONFIG_MACRO_DIRS([../config])
 
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of
