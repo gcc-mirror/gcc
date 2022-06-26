@@ -8859,7 +8859,7 @@
   "@
    cvtsd2ss\t{%2, %0|%0, %2}
    cvtsd2ss\t{%2, %0|%0, %q2}
-   vcvtsd2ss\t{<round_mask_op3>%2, %1, %0<mask_operand3>|<mask_operand3>%0, %1, %q2<round_mask_op3>}"
+   vcvtsd2ss\t{<round_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %q2<round_mask_op3>}"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "ssecvt")
    (set_attr "athlon_decode" "vector,double,*")
@@ -8903,7 +8903,7 @@
   "@
    cvtss2sd\t{%2, %0|%0, %2}
    cvtss2sd\t{%2, %0|%0, %k2}
-   vcvtss2sd\t{<round_saeonly_mask_op3>%2, %1, %0<mask_operand3>|<mask_operand3>%0, %1, %k2<round_saeonly_mask_op3>}"
+   vcvtss2sd\t{<round_saeonly_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %k2<round_saeonly_mask_op3>}"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "ssecvt")
    (set_attr "amdfam10_decode" "vector,double,*")
@@ -14406,8 +14406,8 @@
   "TARGET_AVX512VL"
 {
   if (GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) == 4)
-    return "vpmov<trunsuffix><pmov_suff_4>\t{%1, %0%{%2%}|%0%{%2%}, %t1}";
-  return "vpmov<trunsuffix><pmov_suff_4>\t{%1, %0%{%2%}|%0%{%2%}, %g1}";
+    return "vpmov<trunsuffix><pmov_suff_4>\t{%1, %0%{%2%}|%0%{%2%}, %1}";
+  return "vpmov<trunsuffix><pmov_suff_4>\t{%1, %0%{%2%}|%0%{%2%}, %1}";
 }
   [(set_attr "type" "ssemov")
    (set_attr "memory" "store")
@@ -14506,7 +14506,7 @@
 	  (match_dup 0)
 	  (match_operand:QI 2 "register_operand" "Yk")))]
   "TARGET_AVX512VL"
-  "vpmov<trunsuffix>qw\t{%1, %0%{%2%}|%0%{%2%}, %g1}"
+  "vpmov<trunsuffix>qw\t{%1, %0%{%2%}|%0%{%2%}, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "memory" "store")
    (set_attr "prefix" "evex")
