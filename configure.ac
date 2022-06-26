@@ -1872,7 +1872,7 @@ AC_ARG_ENABLE(host-shared,
 [AS_HELP_STRING([--enable-host-shared],
 		[build host code as shared libraries])],
 [host_shared=$enableval
- case $target in
+ case $host in
    x86_64-*-darwin* | aarch64-*-darwin*)
      if test x$host_shared != xyes ; then
        # PIC is the default, and actually cannot be switched off.
@@ -1881,7 +1881,7 @@ AC_ARG_ENABLE(host-shared,
      fi ;;
   *) ;;
  esac],
-[case $target in
+[case $host in
   x86_64-*-darwin* | aarch64-*-darwin*) host_shared=yes ;;
   *) host_shared=no ;;
  esac])
