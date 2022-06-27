@@ -2281,7 +2281,7 @@ public:
     EK_EXPLICIT_HWM,  
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
     EK_FOR_BINDING,	/* A decl being inserted for a binding.  */
-    EK_INNER_DECL,	/* A decl defined outside of it's imported
+    EK_INNER_DECL,	/* A decl defined outside of its imported
 			   context.  */
     EK_DIRECT_HWM = EK_PARTIAL + 1,
 
@@ -3663,9 +3663,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_macro_maps (unsigned);
 
  private:
-  void write_define (bytes_out &, const cpp_macro *, bool located = true);
-  cpp_macro *read_define (bytes_in &, cpp_reader *, bool located = true) const;
-  unsigned write_macros (elf_out *to, cpp_reader *, unsigned *crc_ptr);
+  void write_define (bytes_out &, const cpp_macro *);
+  cpp_macro *read_define (bytes_in &, cpp_reader *) const;
+  vec<cpp_hashnode *> *prepare_macros (cpp_reader *);
+  unsigned write_macros (elf_out *to, vec<cpp_hashnode *> *, unsigned *crc_ptr);
   bool read_macros ();
   void install_macros ();
 
@@ -7136,7 +7137,7 @@ trees_in::tree_node_vals (tree t)
 }
 
 
-/* If T is a back reference, fixed reference or NULL, write out it's
+/* If T is a back reference, fixed reference or NULL, write out its
    code and return WK_none.  Otherwise return WK_value if we must write
    by value, or WK_normal otherwise.  */
 
@@ -10605,7 +10606,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
 /* DECL is a new declaration that may be duplicated in OVL.  Use RET &
    ARGS to find its clone, or NULL.  If DECL's DECL_NAME is NULL, this
-   has been found by a proxy.  It will be an enum type located by it's
+   has been found by a proxy.  It will be an enum type located by its
    first member.
 
    We're conservative with matches, so ambiguous decls will be
@@ -11615,7 +11616,7 @@ trees_in::read_var_def (tree decl, tree maybe_template)
 }
 
 /* If MEMBER doesn't have an independent life outside the class,
-   return it (or it's TEMPLATE_DECL).  Otherwise NULL.  */
+   return it (or its TEMPLATE_DECL).  Otherwise NULL.  */
 
 static tree
 member_owned_by_class (tree member)
@@ -15405,7 +15406,7 @@ module_state::read_entities (unsigned count, unsigned lwm, unsigned hwm)
    sure the specified entities are loaded.
 
    An optimization might be to have a flag in each key-entity saying
-   that it's top key might be in the entity table.  It's not clear to
+   that its top key might be in the entity table.  It's not clear to
    me how to set that flag cheaply -- cheaper than just looking.
 
    FIXME: It'd be nice to have a bit in decls to tell us whether to
@@ -16444,7 +16445,7 @@ module_state::read_macro_maps (unsigned num_macro_locs)
 /* Serialize the definition of MACRO.  */
 
 void
-module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located)
+module_state::write_define (bytes_out &sec, const cpp_macro *macro)
 {
   sec.u (macro->count);
 
@@ -16453,8 +16454,7 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located
   sec.b (macro->syshdr);
   sec.bflush ();
 
-  if (located)
-    write_location (sec, macro->line);
+  write_location (sec, macro->line);
   if (macro->fun_like)
     {
       sec.u (macro->paramc);
@@ -16467,8 +16467,7 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located
   for (unsigned ix = 0; ix != macro->count; ix++)
     {
       const cpp_token *token = &macro->exp.tokens[ix];
-      if (located)
-	write_location (sec, token->src_loc);
+      write_location (sec, token->src_loc);
       sec.u (token->type);
       sec.u (token->flags);
       switch (cpp_token_val_index (token))
@@ -16533,11 +16532,11 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located
 /* Read a macro definition.  */
 
 cpp_macro *
-module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) const
+module_state::read_define (bytes_in &sec, cpp_reader *reader) const
 {
   unsigned count = sec.u ();
   /* We rely on knowing cpp_reader's hash table is ident_hash, and
-     it's subobject allocator is stringpool_ggc_alloc and that is just
+     its subobject allocator is stringpool_ggc_alloc and that is just
      a wrapper for ggc_alloc_atomic.  */
   cpp_macro *macro
     = (cpp_macro *)ggc_alloc_atomic (sizeof (cpp_macro)
@@ -16553,7 +16552,7 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) cons
   macro->syshdr = sec.b ();
   sec.bflush ();
 
-  macro->line = located ? read_location (sec) : loc;
+  macro->line = read_location (sec);
 
   if (macro->fun_like)
     {
@@ -16570,7 +16569,7 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) cons
   for (unsigned ix = 0; ix != count && !sec.get_overrun (); ix++)
     {
       cpp_token *token = &macro->exp.tokens[ix];
-      token->src_loc = located ? read_location (sec) : loc;
+      token->src_loc = read_location (sec);
       token->type = cpp_ttype (sec.u ());
       token->flags = sec.u ();
       switch (cpp_token_val_index (token))
@@ -16899,31 +16898,62 @@ macro_loc_cmp (const void *a_, const void *b_)
     return 0;
 }
 
+/* Gather the macro definitions and undefinitions that we will need to
+   write out.   */
+
+vec<cpp_hashnode *> *
+module_state::prepare_macros (cpp_reader *reader)
+{
+  vec<cpp_hashnode *> *macros;
+  vec_alloc (macros, 100);
+
+  cpp_forall_identifiers (reader, maybe_add_macro, macros);
+
+  dump (dumper::MACRO) && dump ("No more than %u macros", macros->length ());
+
+  macros->qsort (macro_loc_cmp);
+
+  // Note the locations.
+  for (unsigned ix = macros->length (); ix--;)
+    {
+      cpp_hashnode *node = (*macros)[ix];
+      macro_import::slot &slot = (*macro_imports)[node->deferred - 1][0];
+      macro_export &mac = (*macro_exports)[slot.offset];
+
+      if (IDENTIFIER_KEYWORD_P (identifier (node)))
+	continue;
+
+      if (mac.undef_loc != UNKNOWN_LOCATION)
+	note_location (mac.undef_loc);
+      if (mac.def)
+	{
+	  note_location (mac.def->line);
+	  for (unsigned ix = 0; ix != mac.def->count; ix++)
+	    note_location (mac.def->exp.tokens[ix].src_loc);
+	}
+    }
+
+  return macros;
+}
+
 /* Write out the exported defines.  This is two sections, one
    containing the definitions, the other a table of node names.  */
 
 unsigned
-module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
+module_state::write_macros (elf_out *to, vec<cpp_hashnode *> *macros,
+			    unsigned *crc_p)
 {
   dump () && dump ("Writing macros");
   dump.indent ();
-
-  vec<cpp_hashnode *> macros;
-  macros.create (100);
-  cpp_forall_identifiers (reader, maybe_add_macro, &macros);
-
-  dump (dumper::MACRO) && dump ("No more than %u macros", macros.length ());
-
-  macros.qsort (macro_loc_cmp);
 
   /* Write the defs */
   bytes_out sec (to);
   sec.begin ();
 
   unsigned count = 0;
-  for (unsigned ix = macros.length (); ix--;)
+  for (unsigned ix = macros->length (); ix--;)
     {
-      cpp_hashnode *node = macros[ix];
+      cpp_hashnode *node = (*macros)[ix];
       macro_import::slot &slot = (*macro_imports)[node->deferred - 1][0];
       gcc_assert (!slot.get_module () && slot.get_defness ());
 
@@ -16967,9 +16997,9 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
       sec.begin ();
       sec.u (count);
 
-      for (unsigned ix = macros.length (); ix--;)
+      for (unsigned ix = macros->length (); ix--;)
 	{
-	  const cpp_hashnode *node = macros[ix];
+	  const cpp_hashnode *node = (*macros)[ix];
 	  macro_import::slot &slot = (*macro_imports)[node->deferred - 1][0];
 
 	  if (slot.offset)
@@ -16982,7 +17012,6 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
       sec.end (to, to->name (MOD_SNAME_PFX ".mac"), crc_p);
     }
 
-  macros.release ();
   dump.outdent ();
   return count;
 }
@@ -17752,6 +17781,10 @@ module_state::write_begin (elf_out *to, cpp_reader *reader,
     }
   ool->qsort (ool_cmp);
 
+  vec<cpp_hashnode *> *macros = nullptr;
+  if (is_header ())
+    macros = prepare_macros (reader);
+
   location_map_info map_info = write_prepare_maps (&config);
   unsigned counts[MSC_HWM];
 
@@ -17898,8 +17931,9 @@ module_state::write_begin (elf_out *to, cpp_reader *reader,
 
   if (is_header ())
     {
-      counts[MSC_macros] = write_macros (to, reader, &crc);
+      counts[MSC_macros] = write_macros (to, macros, &crc);
       counts[MSC_inits] = write_inits (to, table, &crc);
+      vec_free (macros);
     }
 
   unsigned clusters = counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
