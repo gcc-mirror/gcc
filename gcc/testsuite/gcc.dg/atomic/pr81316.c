@@ -10,7 +10,8 @@ static _Atomic int sem1;
 static void *f(void *va)
 {
   void **p = va;
-  while (!__atomic_load_n(&sem1, __ATOMIC_ACQUIRE));
+  while (!__atomic_load_n(&sem1, __ATOMIC_ACQUIRE))
+    sched_yield ();
   exit(!*p);
 }
 
@@ -24,6 +25,10 @@ int main(int argc)
   p = &p;
   __atomic_store_n(&sem1, 1, __ATOMIC_RELEASE);
   int r = -1;
-  while (r < 0) asm("":"+r"(r));
+  while (r < 0)
+    {
+      sched_yield ();
+      asm("":"+r"(r));
+    }
   return r;
 }

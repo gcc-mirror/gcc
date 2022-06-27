@@ -32,7 +32,10 @@ test_thread_##NAME (void *arg)						\
 {									\
   thread_ready = true;							\
   for (int i = 0; i < ITER_COUNT; i++)					\
-    PRE var_##NAME POST;						\
+    {									\
+      sched_yield ();							\
+      PRE var_##NAME POST;						\
+    }									\
   return NULL;								\
 }									\
 									\
@@ -49,9 +52,12 @@ test_main_##NAME (void)							\
       return 1;								\
     }									\
   while (!thread_ready)							\
-    ;									\
+    sched_yield ();							\
   for (int i = 0; i < ITER_COUNT; i++)					\
-    PRE var_##NAME POST;						\
+    {									\
+      PRE var_##NAME POST;						\
+      sched_yield ();							\
+    }									\
   pthread_join (thread_id, NULL);					\
   if (var_##NAME != (FINAL))						\
     {									\
