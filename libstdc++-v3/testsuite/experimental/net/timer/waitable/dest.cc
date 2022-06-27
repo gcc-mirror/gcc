@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++14 } }
 // { dg-add-options libatomic }
+// { dg-xfail-if "poll not available" { *-*-rtems* } }
 
 #include <experimental/timer>
 #include <testsuite_hooks.h>
