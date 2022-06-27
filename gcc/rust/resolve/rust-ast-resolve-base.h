@@ -205,8 +205,6 @@ protected:
       resolved_node (UNKNOWN_NODEID), parent (parent)
   {}
 
-  bool resolved () const { return resolved_node != UNKNOWN_NODEID; }
-
   /**
    * Resolve a visibility's path through the name resolver
    */
