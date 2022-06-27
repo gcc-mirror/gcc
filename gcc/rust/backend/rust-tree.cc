@@ -955,4 +955,97 @@ rs_type_quals (const_tree type)
   return quals;
 }
 
+// forked from gcc/cp/decl.cc cp_global_trees
+
+/* The following symbols are subsumed in the cp_global_trees array, and
+   listed here individually for documentation purposes.
+
+   C++ extensions
+	tree wchar_decl_node;
+
+	tree vtable_entry_type;
+	tree delta_type_node;
+	tree __t_desc_type_node;
+
+	tree class_type_node;
+	tree unknown_type_node;
+
+   Array type `vtable_entry_type[]'
+
+	tree vtbl_type_node;
+	tree vtbl_ptr_type_node;
+
+   Namespaces,
+
+	tree std_node;
+	tree abi_node;
+
+   A FUNCTION_DECL which can call `abort'.  Not necessarily the
+   one that the user will declare, but sufficient to be called
+   by routines that want to abort the program.
+
+	tree abort_fndecl;
+
+   Used by RTTI
+	tree type_info_type_node, tinfo_decl_id, tinfo_decl_type;
+	tree tinfo_var_id;  */
+
+tree cp_global_trees[CPTI_MAX];
+
+// forked from gcc/cp/module.cc fixed_trees
+
+static GTY (()) vec<tree, va_gc> *fixed_trees;
+
+// forked from gcc/cp/module.cc maybe_add_global
+
+/* VAL is a global tree, add it to the global vec if it is
+   interesting.  Add some of its targets, if they too are
+   interesting.  We do not add identifiers, as they can be re-found
+   via the identifier hash table.  There is a cost to the number of
+   global trees.  */
+
+static int
+maybe_add_global (tree val, unsigned &crc)
+{
+  int v = 0;
+
+  if (val && !(TREE_CODE (val) == IDENTIFIER_NODE || TREE_VISITED (val)))
+    {
+      TREE_VISITED (val) = true;
+      crc = crc32_unsigned (crc, fixed_trees->length ());
+      vec_safe_push (fixed_trees, val);
+      v++;
+
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
+	v += maybe_add_global (TREE_TYPE (val), crc);
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPE_COMMON))
+	v += maybe_add_global (TYPE_NAME (val), crc);
+    }
+
+  return v;
+}
+
+// forked from gcc/cp/module.cc global_tree_arys
+
+/* Global trees.  */
+static const std::pair<tree *, unsigned> global_tree_arys[] = {
+  std::pair<tree *, unsigned> (cp_global_trees, CPTI_MODULE_HWM),
+};
+
+// forked from gcc/cp/module.cc init_modules
+
+void
+init_modules ()
+{
+  unsigned crc = 0;
+  vec_alloc (fixed_trees, 200);
+
+  const tree *ptr = global_tree_arys[0].first;
+  unsigned limit = global_tree_arys[0].second;
+  for (unsigned ix = 0; ix != limit; ix++, ptr++)
+    {
+      maybe_add_global (*ptr, crc);
+    }
+}
+
 } // namespace Rust

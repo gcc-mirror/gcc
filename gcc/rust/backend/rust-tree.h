@@ -156,6 +156,283 @@
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE)                                       \
   TREE_CHECK2 (NODE, VAR_DECL, FUNCTION_DECL)
 
+// forked from gcc/cp/cp-tree.h cp_tree_index
+
+enum cp_tree_index
+{
+  CPTI_WCHAR_DECL,
+  CPTI_VTABLE_ENTRY_TYPE,
+  CPTI_DELTA_TYPE,
+  CPTI_VTABLE_INDEX_TYPE,
+  CPTI_CLEANUP_TYPE,
+  CPTI_VTT_PARM_TYPE,
+
+  CPTI_CLASS_TYPE,
+  CPTI_UNKNOWN_TYPE,
+  CPTI_INIT_LIST_TYPE,
+  CPTI_EXPLICIT_VOID_LIST,
+  CPTI_VTBL_TYPE,
+  CPTI_VTBL_PTR_TYPE,
+  CPTI_GLOBAL,
+  CPTI_ABORT_FNDECL,
+  CPTI_AGGR_TAG,
+  CPTI_CONV_OP_MARKER,
+
+  CPTI_CTOR_IDENTIFIER,
+  CPTI_COMPLETE_CTOR_IDENTIFIER,
+  CPTI_BASE_CTOR_IDENTIFIER,
+  CPTI_DTOR_IDENTIFIER,
+  CPTI_COMPLETE_DTOR_IDENTIFIER,
+  CPTI_BASE_DTOR_IDENTIFIER,
+  CPTI_DELETING_DTOR_IDENTIFIER,
+  CPTI_CONV_OP_IDENTIFIER,
+  CPTI_DELTA_IDENTIFIER,
+  CPTI_IN_CHARGE_IDENTIFIER,
+  CPTI_VTT_PARM_IDENTIFIER,
+  CPTI_AS_BASE_IDENTIFIER,
+  CPTI_THIS_IDENTIFIER,
+  CPTI_PFN_IDENTIFIER,
+  CPTI_VPTR_IDENTIFIER,
+  CPTI_GLOBAL_IDENTIFIER,
+  CPTI_ANON_IDENTIFIER,
+  CPTI_AUTO_IDENTIFIER,
+  CPTI_DECLTYPE_AUTO_IDENTIFIER,
+  CPTI_INIT_LIST_IDENTIFIER,
+  CPTI_FOR_RANGE__IDENTIFIER,
+  CPTI_FOR_BEGIN__IDENTIFIER,
+  CPTI_FOR_END__IDENTIFIER,
+  CPTI_FOR_RANGE_IDENTIFIER,
+  CPTI_FOR_BEGIN_IDENTIFIER,
+  CPTI_FOR_END_IDENTIFIER,
+  CPTI_ABI_TAG_IDENTIFIER,
+  CPTI_ALIGNED_IDENTIFIER,
+  CPTI_BEGIN_IDENTIFIER,
+  CPTI_END_IDENTIFIER,
+  CPTI_GET_IDENTIFIER,
+  CPTI_GNU_IDENTIFIER,
+  CPTI_TUPLE_ELEMENT_IDENTIFIER,
+  CPTI_TUPLE_SIZE_IDENTIFIER,
+  CPTI_TYPE_IDENTIFIER,
+  CPTI_VALUE_IDENTIFIER,
+  CPTI_FUN_IDENTIFIER,
+  CPTI_CLOSURE_IDENTIFIER,
+  CPTI_HEAP_UNINIT_IDENTIFIER,
+  CPTI_HEAP_IDENTIFIER,
+  CPTI_HEAP_DELETED_IDENTIFIER,
+  CPTI_HEAP_VEC_UNINIT_IDENTIFIER,
+  CPTI_HEAP_VEC_IDENTIFIER,
+  CPTI_OMP_IDENTIFIER,
+
+  CPTI_LANG_NAME_C,
+  CPTI_LANG_NAME_CPLUSPLUS,
+
+  CPTI_EMPTY_EXCEPT_SPEC,
+  CPTI_NOEXCEPT_TRUE_SPEC,
+  CPTI_NOEXCEPT_FALSE_SPEC,
+  CPTI_NOEXCEPT_DEFERRED_SPEC,
+
+  CPTI_NULLPTR,
+  CPTI_NULLPTR_TYPE,
+
+  CPTI_ANY_TARG,
+
+  CPTI_MODULE_HWM,
+  /* Nodes after here change during compilation, or should not be in
+     the module's global tree table.  Such nodes must be locatable
+     via name lookup or type-construction, as those are the only
+     cross-TU matching capabilities remaining.  */
+
+  /* We must find these via the global namespace.  */
+  CPTI_STD,
+  CPTI_ABI,
+
+  /* These are created at init time, but the library/headers provide
+     definitions.  */
+  CPTI_ALIGN_TYPE,
+  CPTI_TERMINATE_FN,
+  CPTI_CALL_UNEXPECTED_FN,
+
+  /* These are lazily inited.  */
+  CPTI_CONST_TYPE_INFO_TYPE,
+  CPTI_GET_EXCEPTION_PTR_FN,
+  CPTI_BEGIN_CATCH_FN,
+  CPTI_END_CATCH_FN,
+  CPTI_ALLOCATE_EXCEPTION_FN,
+  CPTI_FREE_EXCEPTION_FN,
+  CPTI_THROW_FN,
+  CPTI_RETHROW_FN,
+  CPTI_ATEXIT_FN_PTR_TYPE,
+  CPTI_ATEXIT,
+  CPTI_DSO_HANDLE,
+  CPTI_DCAST,
+
+  CPTI_SOURCE_LOCATION_IMPL,
+
+  CPTI_FALLBACK_DFLOAT32_TYPE,
+  CPTI_FALLBACK_DFLOAT64_TYPE,
+  CPTI_FALLBACK_DFLOAT128_TYPE,
+
+  CPTI_MAX
+};
+
+// forked from gcc/cp/cp-tree.h cp_global_trees
+
+extern GTY (()) tree cp_global_trees[CPTI_MAX];
+
+#define wchar_decl_node cp_global_trees[CPTI_WCHAR_DECL]
+#define vtable_entry_type cp_global_trees[CPTI_VTABLE_ENTRY_TYPE]
+/* The type used to represent an offset by which to adjust the `this'
+   pointer in pointer-to-member types.  */
+#define delta_type_node cp_global_trees[CPTI_DELTA_TYPE]
+/* The type used to represent an index into the vtable.  */
+#define vtable_index_type cp_global_trees[CPTI_VTABLE_INDEX_TYPE]
+
+#define class_type_node cp_global_trees[CPTI_CLASS_TYPE]
+#define unknown_type_node cp_global_trees[CPTI_UNKNOWN_TYPE]
+#define init_list_type_node cp_global_trees[CPTI_INIT_LIST_TYPE]
+#define explicit_void_list_node cp_global_trees[CPTI_EXPLICIT_VOID_LIST]
+#define vtbl_type_node cp_global_trees[CPTI_VTBL_TYPE]
+#define vtbl_ptr_type_node cp_global_trees[CPTI_VTBL_PTR_TYPE]
+#define std_node cp_global_trees[CPTI_STD]
+#define abi_node cp_global_trees[CPTI_ABI]
+#define global_namespace cp_global_trees[CPTI_GLOBAL]
+#define const_type_info_type_node cp_global_trees[CPTI_CONST_TYPE_INFO_TYPE]
+#define conv_op_marker cp_global_trees[CPTI_CONV_OP_MARKER]
+#define abort_fndecl cp_global_trees[CPTI_ABORT_FNDECL]
+#define current_aggr cp_global_trees[CPTI_AGGR_TAG]
+#define nullptr_node cp_global_trees[CPTI_NULLPTR]
+#define nullptr_type_node cp_global_trees[CPTI_NULLPTR_TYPE]
+/* std::align_val_t */
+#define align_type_node cp_global_trees[CPTI_ALIGN_TYPE]
+
+/* We cache these tree nodes so as to call get_identifier less frequently.
+   For identifiers for functions, including special member functions such
+   as ctors and assignment operators, the nodes can be used (among other
+   things) to iterate over their overloads defined by/for a type.  For
+   example:
+
+     tree ovlid = assign_op_identifier;
+     tree overloads = get_class_binding (type, ovlid);
+     for (ovl_iterator it (overloads); it; ++it) { ... }
+
+   iterates over the set of implicitly and explicitly defined overloads
+   of the assignment operator for type (including the copy and move
+   assignment operators, whether deleted or not).  */
+
+/* The name of a constructor that takes an in-charge parameter to
+   decide whether or not to construct virtual base classes.  */
+#define ctor_identifier cp_global_trees[CPTI_CTOR_IDENTIFIER]
+/* The name of a constructor that constructs virtual base classes.  */
+#define complete_ctor_identifier cp_global_trees[CPTI_COMPLETE_CTOR_IDENTIFIER]
+/* The name of a constructor that does not construct virtual base classes.  */
+#define base_ctor_identifier cp_global_trees[CPTI_BASE_CTOR_IDENTIFIER]
+/* The name of a destructor that takes an in-charge parameter to
+   decide whether or not to destroy virtual base classes and whether
+   or not to delete the object.  */
+#define dtor_identifier cp_global_trees[CPTI_DTOR_IDENTIFIER]
+/* The name of a destructor that destroys virtual base classes.  */
+#define complete_dtor_identifier cp_global_trees[CPTI_COMPLETE_DTOR_IDENTIFIER]
+/* The name of a destructor that does not destroy virtual base
+   classes.  */
+#define base_dtor_identifier cp_global_trees[CPTI_BASE_DTOR_IDENTIFIER]
+/* The name of a destructor that destroys virtual base classes, and
+   then deletes the entire object.  */
+#define deleting_dtor_identifier cp_global_trees[CPTI_DELETING_DTOR_IDENTIFIER]
+
+/* The name used for conversion operators -- but note that actual
+   conversion functions use special identifiers outside the identifier
+   table.  */
+#define conv_op_identifier cp_global_trees[CPTI_CONV_OP_IDENTIFIER]
+
+#define delta_identifier cp_global_trees[CPTI_DELTA_IDENTIFIER]
+#define in_charge_identifier cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]
+/* The name of the parameter that contains a pointer to the VTT to use
+   for this subobject constructor or destructor.  */
+#define vtt_parm_identifier cp_global_trees[CPTI_VTT_PARM_IDENTIFIER]
+#define as_base_identifier cp_global_trees[CPTI_AS_BASE_IDENTIFIER]
+#define this_identifier cp_global_trees[CPTI_THIS_IDENTIFIER]
+#define pfn_identifier cp_global_trees[CPTI_PFN_IDENTIFIER]
+#define vptr_identifier cp_global_trees[CPTI_VPTR_IDENTIFIER]
+/* The name of the ::, std & anon namespaces.  */
+#define global_identifier cp_global_trees[CPTI_GLOBAL_IDENTIFIER]
+#define anon_identifier cp_global_trees[CPTI_ANON_IDENTIFIER]
+/* auto and declspec(auto) identifiers.  */
+#define auto_identifier cp_global_trees[CPTI_AUTO_IDENTIFIER]
+#define decltype_auto_identifier cp_global_trees[CPTI_DECLTYPE_AUTO_IDENTIFIER]
+#define init_list_identifier cp_global_trees[CPTI_INIT_LIST_IDENTIFIER]
+#define for_range__identifier cp_global_trees[CPTI_FOR_RANGE__IDENTIFIER]
+#define for_begin__identifier cp_global_trees[CPTI_FOR_BEGIN__IDENTIFIER]
+#define for_end__identifier cp_global_trees[CPTI_FOR_END__IDENTIFIER]
+#define for_range_identifier cp_global_trees[CPTI_FOR_RANGE_IDENTIFIER]
+#define for_begin_identifier cp_global_trees[CPTI_FOR_BEGIN_IDENTIFIER]
+#define for_end_identifier cp_global_trees[CPTI_FOR_END_IDENTIFIER]
+#define abi_tag_identifier cp_global_trees[CPTI_ABI_TAG_IDENTIFIER]
+#define aligned_identifier cp_global_trees[CPTI_ALIGNED_IDENTIFIER]
+#define begin_identifier cp_global_trees[CPTI_BEGIN_IDENTIFIER]
+#define end_identifier cp_global_trees[CPTI_END_IDENTIFIER]
+#define get__identifier cp_global_trees[CPTI_GET_IDENTIFIER]
+#define gnu_identifier cp_global_trees[CPTI_GNU_IDENTIFIER]
+#define tuple_element_identifier cp_global_trees[CPTI_TUPLE_ELEMENT_IDENTIFIER]
+#define tuple_size_identifier cp_global_trees[CPTI_TUPLE_SIZE_IDENTIFIER]
+#define type_identifier cp_global_trees[CPTI_TYPE_IDENTIFIER]
+#define value_identifier cp_global_trees[CPTI_VALUE_IDENTIFIER]
+#define fun_identifier cp_global_trees[CPTI_FUN_IDENTIFIER]
+#define closure_identifier cp_global_trees[CPTI_CLOSURE_IDENTIFIER]
+#define heap_uninit_identifier cp_global_trees[CPTI_HEAP_UNINIT_IDENTIFIER]
+#define heap_identifier cp_global_trees[CPTI_HEAP_IDENTIFIER]
+#define heap_deleted_identifier cp_global_trees[CPTI_HEAP_DELETED_IDENTIFIER]
+#define heap_vec_uninit_identifier                                             \
+  cp_global_trees[CPTI_HEAP_VEC_UNINIT_IDENTIFIER]
+#define heap_vec_identifier cp_global_trees[CPTI_HEAP_VEC_IDENTIFIER]
+#define omp_identifier cp_global_trees[CPTI_OMP_IDENTIFIER]
+#define lang_name_c cp_global_trees[CPTI_LANG_NAME_C]
+#define lang_name_cplusplus cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
+
+/* Exception specifiers used for throw(), noexcept(true),
+   noexcept(false) and deferred noexcept.  We rely on these being
+   uncloned.  */
+#define empty_except_spec cp_global_trees[CPTI_EMPTY_EXCEPT_SPEC]
+#define noexcept_true_spec cp_global_trees[CPTI_NOEXCEPT_TRUE_SPEC]
+#define noexcept_false_spec cp_global_trees[CPTI_NOEXCEPT_FALSE_SPEC]
+#define noexcept_deferred_spec cp_global_trees[CPTI_NOEXCEPT_DEFERRED_SPEC]
+
+/* Exception handling function declarations.  */
+#define terminate_fn cp_global_trees[CPTI_TERMINATE_FN]
+#define call_unexpected_fn cp_global_trees[CPTI_CALL_UNEXPECTED_FN]
+#define get_exception_ptr_fn cp_global_trees[CPTI_GET_EXCEPTION_PTR_FN]
+#define begin_catch_fn cp_global_trees[CPTI_BEGIN_CATCH_FN]
+#define end_catch_fn cp_global_trees[CPTI_END_CATCH_FN]
+#define allocate_exception_fn cp_global_trees[CPTI_ALLOCATE_EXCEPTION_FN]
+#define free_exception_fn cp_global_trees[CPTI_FREE_EXCEPTION_FN]
+#define throw_fn cp_global_trees[CPTI_THROW_FN]
+#define rethrow_fn cp_global_trees[CPTI_RETHROW_FN]
+
+/* The type of the function-pointer argument to "__cxa_atexit" (or
+   "std::atexit", if "__cxa_atexit" is not being used).  */
+#define atexit_fn_ptr_type_node cp_global_trees[CPTI_ATEXIT_FN_PTR_TYPE]
+
+/* A pointer to `std::atexit'.  */
+#define atexit_node cp_global_trees[CPTI_ATEXIT]
+
+/* A pointer to `__dso_handle'.  */
+#define dso_handle_node cp_global_trees[CPTI_DSO_HANDLE]
+
+/* The declaration of the dynamic_cast runtime.  */
+#define dynamic_cast_node cp_global_trees[CPTI_DCAST]
+
+/* The type of a destructor.  */
+#define cleanup_type cp_global_trees[CPTI_CLEANUP_TYPE]
+
+/* The type of the vtt parameter passed to subobject constructors and
+   destructors.  */
+#define vtt_parm_type cp_global_trees[CPTI_VTT_PARM_TYPE]
+
+/* A node which matches any template argument.  */
+#define any_targ_node cp_global_trees[CPTI_ANY_TARG]
+
+/* std::source_location::__impl class.  */
+#define source_location_impl cp_global_trees[CPTI_SOURCE_LOCATION_IMPL]
+
 // Below macros are copied from gcc/c-family/c-common.h
 
 /* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
@@ -476,6 +753,9 @@ extern int
 rs_type_quals (const_tree type);
 
 extern bool decl_maybe_constant_var_p (tree);
+
+extern void
+init_modules ();
 
 extern tree
 rs_walk_subtrees (tree *, int *, walk_tree_fn, void *, hash_set<tree> *);
