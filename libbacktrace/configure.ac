@@ -500,7 +500,7 @@ AC_CACHE_CHECK([whether objcopy supports debuglink],
   libbacktrace_cv_objcopy_debuglink=no
 elif ! test -n "${OBJCOPY}"; then
   libbacktrace_cv_objcopy_debuglink=no
-elif ${OBJCOPY} --help | fgrep add-gnu-debuglink >/dev/null 2>&1; then
+elif ${OBJCOPY} --help | grep add-gnu-debuglink >/dev/null 2>&1; then
   libbacktrace_cv_objcopy_debuglink=yes
 else
   libbacktrace_cv_objcopy_debuglink=no
