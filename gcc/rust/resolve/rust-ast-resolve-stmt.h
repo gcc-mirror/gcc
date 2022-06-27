@@ -33,27 +33,25 @@ class ResolveStmt : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Stmt *stmt, NodeId parent, const CanonicalPath &prefix,
+  static void go (AST::Stmt *stmt, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix,
 		  const CanonicalPath &enum_prefix)
   {
     if (stmt->is_marked_for_strip ())
       return;
 
-    ResolveStmt resolver (parent, prefix, canonical_prefix, enum_prefix);
+    ResolveStmt resolver (prefix, canonical_prefix, enum_prefix);
     stmt->accept_vis (resolver);
-  };
+  }
 
   void visit (AST::ExprStmtWithBlock &stmt) override
   {
-    ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id (), prefix,
-		     canonical_prefix);
+    ResolveExpr::go (stmt.get_expr ().get (), prefix, canonical_prefix);
   }
 
   void visit (AST::ExprStmtWithoutBlock &stmt) override
   {
-    ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id (), prefix,
-		     canonical_prefix);
+    ResolveExpr::go (stmt.get_expr ().get (), prefix, canonical_prefix);
   }
 
   void visit (AST::ConstantItem &constant) override
@@ -73,8 +71,7 @@ public:
       });
 
     ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
-    ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id (),
-		     prefix, canonical_prefix);
+    ResolveExpr::go (constant.get_expr ().get (), prefix, canonical_prefix);
 
     // the mutability checker needs to verify for immutable decls the number
     // of assignments are <1. This marks an implicit assignment
@@ -87,15 +84,15 @@ public:
   {
     if (stmt.has_init_expr ())
       {
-	ResolveExpr::go (stmt.get_init_expr ().get (), stmt.get_node_id (),
-			 prefix, canonical_prefix);
+	ResolveExpr::go (stmt.get_init_expr ().get (), prefix,
+			 canonical_prefix);
 
 	// mark the assignment
 	resolver->mark_assignment_to_decl (
 	  stmt.get_pattern ()->get_pattern_node_id (), stmt.get_node_id ());
       }
 
-    PatternDeclaration::go (stmt.get_pattern ().get (), stmt.get_node_id ());
+    PatternDeclaration::go (stmt.get_pattern ().get ());
     if (stmt.has_type ())
       ResolveType::go (stmt.get_type ().get (), stmt.get_node_id ());
   }
@@ -124,8 +121,7 @@ public:
       {
 	for (auto &generic : struct_decl.get_generic_params ())
 	  {
-	    ResolveGenericParam::go (generic.get (),
-				     struct_decl.get_node_id ());
+	    ResolveGenericParam::go (generic.get ());
 	  }
       }
 
@@ -160,12 +156,12 @@ public:
       {
 	for (auto &generic : enum_decl.get_generic_params ())
 	  {
-	    ResolveGenericParam::go (generic.get (), enum_decl.get_node_id ());
+	    ResolveGenericParam::go (generic.get ());
 	  }
       }
 
     for (auto &variant : enum_decl.get_variants ())
-      ResolveStmt::go (variant.get (), parent, path, canonical_prefix, path);
+      ResolveStmt::go (variant.get (), path, canonical_prefix, path);
 
     resolver->get_type_scope ().pop ();
   }
@@ -286,8 +282,7 @@ public:
       {
 	for (auto &generic : struct_decl.get_generic_params ())
 	  {
-	    ResolveGenericParam::go (generic.get (),
-				     struct_decl.get_node_id ());
+	    ResolveGenericParam::go (generic.get ());
 	  }
       }
 
@@ -327,7 +322,7 @@ public:
       {
 	for (auto &generic : union_decl.get_generic_params ())
 	  {
-	    ResolveGenericParam::go (generic.get (), union_decl.get_node_id ());
+	    ResolveGenericParam::go (generic.get ());
 	  }
       }
 
@@ -370,7 +365,7 @@ public:
     if (function.has_generics ())
       {
 	for (auto &generic : function.get_generic_params ())
-	  ResolveGenericParam::go (generic.get (), function.get_node_id ());
+	  ResolveGenericParam::go (generic.get ());
       }
 
     if (function.has_return_type ())
@@ -382,8 +377,7 @@ public:
     for (auto &param : function.get_function_params ())
       {
 	ResolveType::go (param.get_type ().get (), param.get_node_id ());
-	PatternDeclaration::go (param.get_pattern ().get (),
-				param.get_node_id ());
+	PatternDeclaration::go (param.get_pattern ().get ());
 
 	// the mutability checker needs to verify for immutable decls the number
 	// of assignments are <1. This marks an implicit assignment
@@ -392,8 +386,7 @@ public:
       }
 
     // resolve the function body
-    ResolveExpr::go (function.get_definition ().get (), function.get_node_id (),
-		     path, cpath);
+    ResolveExpr::go (function.get_definition ().get (), path, cpath);
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
@@ -403,11 +396,11 @@ public:
   void visit (AST::ExternBlock &extern_block) override;
 
 private:
-  ResolveStmt (NodeId parent, const CanonicalPath &prefix,
+  ResolveStmt (const CanonicalPath &prefix,
 	       const CanonicalPath &canonical_prefix,
 	       const CanonicalPath &enum_prefix)
-    : ResolverBase (parent), prefix (prefix),
-      canonical_prefix (canonical_prefix), enum_prefix (enum_prefix)
+    : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix),
+      enum_prefix (enum_prefix)
   {}
 
   const CanonicalPath &prefix;

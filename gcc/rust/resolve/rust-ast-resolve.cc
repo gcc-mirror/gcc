@@ -111,31 +111,6 @@ NameResolution::go (AST::Crate &crate)
   resolver->pop_module_scope ();
 }
 
-// rust-ast-resolve-struct-expr-field.h
-
-void
-ResolveStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
-{
-  ResolveExpr::go (field.get_value ().get (), field.get_node_id (), prefix,
-		   canonical_prefix);
-}
-
-void
-ResolveStructExprField::visit (AST::StructExprFieldIndexValue &field)
-{
-  ResolveExpr::go (field.get_value ().get (), field.get_node_id (), prefix,
-		   canonical_prefix);
-}
-
-void
-ResolveStructExprField::visit (AST::StructExprFieldIdentifier &field)
-{
-  AST::IdentifierExpr expr (field.get_field_name (), {}, field.get_locus ());
-  expr.set_node_id (field.get_node_id ());
-
-  ResolveExpr::go (&expr, field.get_node_id (), prefix, canonical_prefix);
-}
-
 // rust-ast-resolve-item.h
 
 void

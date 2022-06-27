@@ -200,9 +200,9 @@ public:
   void visit (AST::BareFunctionType &);
 
 protected:
-  ResolverBase (NodeId parent)
+  ResolverBase ()
     : resolver (Resolver::get ()), mappings (Analysis::Mappings::get ()),
-      resolved_node (UNKNOWN_NODEID), parent (parent)
+      resolved_node (UNKNOWN_NODEID)
   {}
 
   /**
@@ -213,7 +213,6 @@ protected:
   Resolver *resolver;
   Analysis::Mappings *mappings;
   NodeId resolved_node;
-  NodeId parent;
 };
 
 } // namespace Resolver

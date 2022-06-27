@@ -45,7 +45,7 @@ public:
     NodeId current_module = resolver.resolver->peek_current_module_scope ();
     resolver.mappings->insert_child_item_to_parent_module_mapping (
       item->get_node_id (), current_module);
-  };
+  }
 
   void visit (AST::Module &module) override
   {
@@ -408,8 +408,7 @@ public:
 private:
   ResolveTopLevel (const CanonicalPath &prefix,
 		   const CanonicalPath &canonical_prefix)
-    : ResolverBase (UNKNOWN_NODEID), prefix (prefix),
-      canonical_prefix (canonical_prefix)
+    : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix)
   {}
 
   const CanonicalPath &prefix;

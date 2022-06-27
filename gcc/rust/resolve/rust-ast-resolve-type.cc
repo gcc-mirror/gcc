@@ -122,11 +122,7 @@ void
 ResolveType::visit (AST::ArrayType &type)
 {
   type.get_elem_type ()->accept_vis (*this);
-  // FIXME
-  // the capacity expr can contain block-expr with functions but these should be
-  // folded via constexpr code
-  ResolveExpr::go (type.get_size_expr ().get (), type.get_node_id (),
-		   CanonicalPath::create_empty (),
+  ResolveExpr::go (type.get_size_expr ().get (), CanonicalPath::create_empty (),
 		   CanonicalPath::create_empty ());
 }
 
@@ -207,9 +203,8 @@ void
 ResolveType::visit (AST::ReferenceType &type)
 {
   CanonicalPath path = CanonicalPath::create_empty ();
-  resolved_node
-    = ResolveType::go (type.get_type_referenced ().get (), type.get_node_id (),
-		       canonicalize_type_with_generics, &path);
+  resolved_node = ResolveType::go (type.get_type_referenced ().get (),
+				   canonicalize_type_with_generics, &path);
   if (canonical_path != nullptr)
     {
       std::string ref_type_str = type.is_mut () ? "mut" : "";
@@ -223,9 +218,8 @@ void
 ResolveType::visit (AST::RawPointerType &type)
 {
   CanonicalPath path = CanonicalPath::create_empty ();
-  resolved_node
-    = ResolveType::go (type.get_type_pointed_to ().get (), type.get_node_id (),
-		       canonicalize_type_with_generics, &path);
+  resolved_node = ResolveType::go (type.get_type_pointed_to ().get (),
+				   canonicalize_type_with_generics, &path);
   if (canonical_path != nullptr)
     {
       std::string ptr_type_str
@@ -249,9 +243,8 @@ void
 ResolveType::visit (AST::SliceType &type)
 {
   CanonicalPath path = CanonicalPath::create_empty ();
-  resolved_node
-    = ResolveType::go (type.get_elem_type ().get (), type.get_node_id (),
-		       canonicalize_type_with_generics, &path);
+  resolved_node = ResolveType::go (type.get_elem_type ().get (),
+				   canonicalize_type_with_generics, &path);
   if (canonical_path != nullptr)
     {
       std::string slice_path = "[" + path.get () + "]";
@@ -460,5 +453,6 @@ ResolveRelativeTypePath::go (AST::QualifiedPathInType &path)
 
   return true;
 }
+
 } // namespace Resolver
 } // namespace Rust

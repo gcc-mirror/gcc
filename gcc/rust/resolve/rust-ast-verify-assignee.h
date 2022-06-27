@@ -64,7 +64,7 @@ public:
 
     ok = true;
     // mark the assignment to the name
-    resolver->mark_assignment_to_decl (resolved_node, parent);
+    // resolver->mark_assignment_to_decl (resolved_node, parent);
   }
 
   void visit (AST::DereferenceExpr &expr) override
@@ -75,7 +75,7 @@ public:
   void visit (AST::PathInExpression &expr) override { ok = true; }
 
 private:
-  VerifyAsignee (NodeId parent) : ResolverBase (parent), ok (false) {}
+  VerifyAsignee (NodeId parent) : ResolverBase (), ok (false) {}
 
   bool ok;
 };

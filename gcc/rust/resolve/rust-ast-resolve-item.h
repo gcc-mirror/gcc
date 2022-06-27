@@ -46,10 +46,7 @@ public:
 
 private:
   ResolveTraitItems (const CanonicalPath &prefix,
-		     const CanonicalPath &canonical_prefix)
-    : ResolverBase (UNKNOWN_NODEID), prefix (prefix),
-      canonical_prefix (canonical_prefix)
-  {}
+		     const CanonicalPath &canonical_prefix);
 
   const CanonicalPath &prefix;
   const CanonicalPath &canonical_prefix;
@@ -93,10 +90,7 @@ protected:
   void resolve_extern_item (AST::ExternalItem *item);
 
   ResolveItem (const CanonicalPath &prefix,
-	       const CanonicalPath &canonical_prefix)
-    : ResolverBase (UNKNOWN_NODEID), prefix (prefix),
-      canonical_prefix (canonical_prefix)
-  {}
+	       const CanonicalPath &canonical_prefix);
 
   const CanonicalPath &prefix;
   const CanonicalPath &canonical_prefix;
@@ -116,9 +110,7 @@ public:
 
 private:
   ResolveImplItems (const CanonicalPath &prefix,
-		    const CanonicalPath &canonical_prefix)
-    : ResolveItem (prefix, canonical_prefix)
-  {}
+		    const CanonicalPath &canonical_prefix);
 };
 
 class ResolveExternItem : public ResolverBase
@@ -132,7 +124,7 @@ public:
   void visit (AST::ExternalStaticItem &item) override;
 
 private:
-  ResolveExternItem () : ResolverBase (UNKNOWN_NODEID) {}
+  ResolveExternItem () : ResolverBase () {}
 };
 
 } // namespace Resolver

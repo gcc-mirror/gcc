@@ -23,24 +23,26 @@
 namespace Rust {
 namespace Resolver {
 
+ResolvePath::ResolvePath () : ResolverBase () {}
+
 void
-ResolvePath::go (AST::PathInExpression *expr, NodeId parent)
+ResolvePath::go (AST::PathInExpression *expr)
 {
-  ResolvePath resolver (parent);
+  ResolvePath resolver;
   resolver.resolve_path (expr);
 }
 
 void
-ResolvePath::go (AST::QualifiedPathInExpression *expr, NodeId parent)
+ResolvePath::go (AST::QualifiedPathInExpression *expr)
 {
-  ResolvePath resolver (parent);
+  ResolvePath resolver;
   resolver.resolve_path (expr);
 }
 
 void
-ResolvePath::go (AST::SimplePath *expr, NodeId parent)
+ResolvePath::go (AST::SimplePath *expr)
 {
-  ResolvePath resolver (parent);
+  ResolvePath resolver;
   resolver.resolve_path (expr);
 }
 

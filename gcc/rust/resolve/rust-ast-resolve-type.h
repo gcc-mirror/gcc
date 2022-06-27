@@ -139,7 +139,7 @@ public:
 protected:
   ResolveTypeToCanonicalPath (bool include_generic_args,
 			      bool type_resolve_generic_args)
-    : ResolverBase (UNKNOWN_NODEID), result (CanonicalPath::create_empty ()),
+    : ResolverBase (), result (CanonicalPath::create_empty ()),
       include_generic_args_flag (include_generic_args),
       type_resolve_generic_args_flag (type_resolve_generic_args),
       failure_flag (false)
@@ -204,15 +204,14 @@ class ResolveType : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static NodeId go (AST::Type *type, NodeId parent,
+  static NodeId go (AST::Type *type,
 		    bool canonicalize_type_with_generics = false,
 		    CanonicalPath *canonical_path = nullptr)
   {
-    ResolveType resolver (parent, canonicalize_type_with_generics,
-			  canonical_path);
+    ResolveType resolver (canonicalize_type_with_generics, canonical_path);
     type->accept_vis (resolver);
     return resolver.resolved_node;
-  };
+  }
 
   void visit (AST::BareFunctionType &fntype) override
   {
@@ -273,9 +272,9 @@ public:
   void visit (AST::SliceType &type) override;
 
 private:
-  ResolveType (NodeId parent, bool canonicalize_type_with_generics,
+  ResolveType (bool canonicalize_type_with_generics,
 	       CanonicalPath *canonical_path)
-    : ResolverBase (parent),
+    : ResolverBase (),
       canonicalize_type_with_generics (canonicalize_type_with_generics),
       canonical_path (canonical_path)
   {}
@@ -289,35 +288,27 @@ class ResolveTypeBound : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static NodeId go (AST::TypeParamBound *type, NodeId parent,
+  static NodeId go (AST::TypeParamBound *type,
 		    bool canonicalize_type_with_generics = false)
   {
-    ResolveTypeBound resolver (parent, canonicalize_type_with_generics);
+    ResolveTypeBound resolver (canonicalize_type_with_generics);
     type->accept_vis (resolver);
-    if (!resolver.ok)
-      rust_error_at (type->get_locus (), "unresolved type bound");
-
     return resolver.resolved_node;
   };
 
   void visit (AST::TraitBound &bound) override
   {
-    resolved_node = ResolveType::go (&bound.get_type_path (), parent,
+    resolved_node = ResolveType::go (&bound.get_type_path (),
 				     canonicalize_type_with_generics);
-    ok = resolved_node != UNKNOWN_NODEID;
   }
 
-  void visit (AST::Lifetime &) override { ok = true; }
-
 private:
-  ResolveTypeBound (NodeId parent, bool canonicalize_type_with_generics)
-    : ResolverBase (parent),
-      canonicalize_type_with_generics (canonicalize_type_with_generics),
-      ok (false)
+  ResolveTypeBound (bool canonicalize_type_with_generics)
+    : ResolverBase (),
+      canonicalize_type_with_generics (canonicalize_type_with_generics)
   {}
 
   bool canonicalize_type_with_generics;
-  bool ok;
 };
 
 class ResolveGenericParam : public ResolverBase
@@ -325,33 +316,21 @@ class ResolveGenericParam : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static NodeId go (AST::GenericParam *param, NodeId parent)
+  static NodeId go (AST::GenericParam *param)
   {
-    ResolveGenericParam resolver (parent);
+    ResolveGenericParam resolver;
     param->accept_vis (resolver);
-    if (!resolver.ok)
-      rust_error_at (param->get_locus (), "unresolved generic parameter");
-
     return resolver.resolved_node;
-  };
-
-  void visit (AST::LifetimeParam &) override
-  {
-    // For now do not do anything and accept everything.
-    ok = true;
   }
 
   void visit (AST::ConstGenericParam &) override
   {
     // For now do not do anything and accept everything.
     // FIXME: This needs to change soon!
-    ok = true;
   }
 
   void visit (AST::TypeParam &param) override
   {
-    ok = true;
-
     // if it has a type lets resolve it
     if (param.has_type ())
       ResolveType::go (param.get_type ().get (), param.get_node_id ());
@@ -379,9 +358,7 @@ public:
   }
 
 private:
-  ResolveGenericParam (NodeId parent) : ResolverBase (parent), ok (false) {}
-
-  bool ok;
+  ResolveGenericParam () : ResolverBase () {}
 };
 
 class ResolveWhereClause : public ResolverBase
@@ -391,14 +368,9 @@ class ResolveWhereClause : public ResolverBase
 public:
   static void Resolve (AST::WhereClause &where_clause)
   {
-    ResolveWhereClause r (where_clause.get_node_id ());
+    ResolveWhereClause r;
     for (auto &clause : where_clause.get_items ())
       clause->accept_vis (r);
-  }
-
-  void visit (AST::LifetimeWhereClauseItem &) override
-  {
-    // nothing to do
   }
 
   void visit (AST::TypeBoundWhereClauseItem &item) override
@@ -414,7 +386,7 @@ public:
   }
 
 private:
-  ResolveWhereClause (NodeId parent) : ResolverBase (parent) {}
+  ResolveWhereClause () : ResolverBase () {}
 };
 
 } // namespace Resolver

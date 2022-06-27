@@ -30,9 +30,9 @@ class ResolvePattern : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Pattern *pattern, NodeId parent)
+  static void go (AST::Pattern *pattern)
   {
-    ResolvePattern resolver (parent);
+    ResolvePattern resolver;
     pattern->accept_vis (resolver);
   }
 
@@ -47,7 +47,7 @@ public:
   }
 
 private:
-  ResolvePattern (NodeId parent) : ResolverBase (parent) {}
+  ResolvePattern () : ResolverBase () {}
 };
 
 class PatternDeclaration : public ResolverBase
@@ -55,9 +55,9 @@ class PatternDeclaration : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Pattern *pattern, NodeId parent)
+  static void go (AST::Pattern *pattern)
   {
-    PatternDeclaration resolver (parent);
+    PatternDeclaration resolver;
     pattern->accept_vis (resolver);
   };
 
@@ -94,7 +94,7 @@ public:
   void visit (AST::RangePattern &pattern) override;
 
 private:
-  PatternDeclaration (NodeId parent) : ResolverBase (parent) {}
+  PatternDeclaration () : ResolverBase () {}
 };
 
 } // namespace Resolver

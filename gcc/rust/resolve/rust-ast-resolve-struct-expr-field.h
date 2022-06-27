@@ -32,15 +32,8 @@ class ResolveStructExprField : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::StructExprField *field, NodeId parent,
-		  const CanonicalPath &prefix,
-		  const CanonicalPath &canonical_prefix)
-  {
-    ResolveStructExprField resolver (parent, prefix, canonical_prefix);
-    field->accept_vis (resolver);
-  }
-
-  virtual ~ResolveStructExprField () override {}
+  static void go (AST::StructExprField *field, const CanonicalPath &prefix,
+		  const CanonicalPath &canonical_prefix);
 
   void visit (AST::StructExprFieldIdentifierValue &field) override;
 
@@ -49,11 +42,8 @@ public:
   void visit (AST::StructExprFieldIdentifier &field) override;
 
 private:
-  ResolveStructExprField (NodeId parent, const CanonicalPath &prefix,
-			  const CanonicalPath &canonical_prefix)
-    : ResolverBase (parent), prefix (prefix),
-      canonical_prefix (canonical_prefix)
-  {}
+  ResolveStructExprField (const CanonicalPath &prefix,
+			  const CanonicalPath &canonical_prefix);
 
   const CanonicalPath &prefix;
   const CanonicalPath &canonical_prefix;

@@ -22,6 +22,12 @@
 
 namespace Rust {
 namespace Resolver {
+
+ResolveTraitItems::ResolveTraitItems (const CanonicalPath &prefix,
+				      const CanonicalPath &canonical_prefix)
+  : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix)
+{}
+
 void
 ResolveTraitItems::go (AST::TraitItem *item, const CanonicalPath &prefix,
 		       const CanonicalPath &canonical_prefix)
@@ -67,7 +73,7 @@ ResolveTraitItems::visit (AST::TraitItemFunc &func)
   if (function.has_generics ())
     {
       for (auto &generic : function.get_generic_params ())
-	ResolveGenericParam::go (generic.get (), func.get_node_id ());
+	ResolveGenericParam::go (generic.get ());
     }
 
   if (function.has_return_type ())
@@ -78,8 +84,7 @@ ResolveTraitItems::visit (AST::TraitItemFunc &func)
   for (auto &param : function.get_function_params ())
     {
       ResolveType::go (param.get_type ().get (), param.get_node_id ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      param.get_node_id ());
+      PatternDeclaration::go (param.get_pattern ().get ());
 
       // the mutability checker needs to verify for immutable decls the number
       // of assignments are <1. This marks an implicit assignment
@@ -92,8 +97,7 @@ ResolveTraitItems::visit (AST::TraitItemFunc &func)
 
   // trait items have an optional body
   if (func.has_definition ())
-    ResolveExpr::go (func.get_definition ().get (), func.get_node_id (), path,
-		     cpath);
+    ResolveExpr::go (func.get_definition ().get (), path, cpath);
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -121,7 +125,7 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
   if (function.has_generics ())
     {
       for (auto &generic : function.get_generic_params ())
-	ResolveGenericParam::go (generic.get (), func.get_node_id ());
+	ResolveGenericParam::go (generic.get ());
     }
 
   if (function.has_return_type ())
@@ -142,7 +146,7 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
   AST::TypePath self_type_path (std::move (segments), self_param.get_locus ());
 
   ResolveType::go (&self_type_path, self_param.get_node_id ());
-  PatternDeclaration::go (&self_pattern, self_param.get_node_id ());
+  PatternDeclaration::go (&self_pattern);
 
   resolver->mark_assignment_to_decl (self_pattern.get_node_id (),
 				     self_pattern.get_node_id ());
@@ -152,8 +156,7 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
   for (auto &param : function.get_function_params ())
     {
       ResolveType::go (param.get_type ().get (), param.get_node_id ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      param.get_node_id ());
+      PatternDeclaration::go (param.get_pattern ().get ());
 
       // the mutability checker needs to verify for immutable decls the number
       // of assignments are <1. This marks an implicit assignment
@@ -166,8 +169,7 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
 
   // trait items have an optional body
   if (func.has_definition ())
-    ResolveExpr::go (func.get_definition ().get (), func.get_node_id (), path,
-		     cpath);
+    ResolveExpr::go (func.get_definition ().get (), path, cpath);
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -186,8 +188,7 @@ ResolveTraitItems::visit (AST::TraitItemConst &constant)
   ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
 
   if (constant.has_expr ())
-    ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id (), path,
-		     cpath);
+    ResolveExpr::go (constant.get_expr ().get (), path, cpath);
 
   // the mutability checker needs to verify for immutable decls the number
   // of assignments are <1. This marks an implicit assignment
@@ -195,6 +196,11 @@ ResolveTraitItems::visit (AST::TraitItemConst &constant)
   resolver->mark_assignment_to_decl (constant.get_node_id (),
 				     constant.get_node_id ());
 }
+
+ResolveItem::ResolveItem (const CanonicalPath &prefix,
+			  const CanonicalPath &canonical_prefix)
+  : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix)
+{}
 
 void
 ResolveItem::go (AST::Item *item, const CanonicalPath &prefix,
@@ -220,7 +226,7 @@ ResolveItem::visit (AST::TypeAlias &alias)
   if (alias.has_generics ())
     {
       for (auto &generic : alias.get_generic_params ())
-	ResolveGenericParam::go (generic.get (), alias.get_node_id ());
+	ResolveGenericParam::go (generic.get ());
     }
 
   if (alias.has_where_clause ())
@@ -285,7 +291,7 @@ ResolveItem::visit (AST::TupleStruct &struct_decl)
     {
       for (auto &generic : struct_decl.get_generic_params ())
 	{
-	  ResolveGenericParam::go (generic.get (), struct_decl.get_node_id ());
+	  ResolveGenericParam::go (generic.get ());
 	}
     }
 
@@ -325,7 +331,7 @@ ResolveItem::visit (AST::Enum &enum_decl)
     {
       for (auto &generic : enum_decl.get_generic_params ())
 	{
-	  ResolveGenericParam::go (generic.get (), enum_decl.get_node_id ());
+	  ResolveGenericParam::go (generic.get ());
 	}
     }
 
@@ -423,7 +429,7 @@ ResolveItem::visit (AST::StructStruct &struct_decl)
     {
       for (auto &generic : struct_decl.get_generic_params ())
 	{
-	  ResolveGenericParam::go (generic.get (), struct_decl.get_node_id ());
+	  ResolveGenericParam::go (generic.get ());
 	}
     }
 
@@ -463,7 +469,7 @@ ResolveItem::visit (AST::Union &union_decl)
     {
       for (auto &generic : union_decl.get_generic_params ())
 	{
-	  ResolveGenericParam::go (generic.get (), union_decl.get_node_id ());
+	  ResolveGenericParam::go (generic.get ());
 	}
     }
 
@@ -493,7 +499,7 @@ ResolveItem::visit (AST::StaticItem &var)
 				   var.get_node_id (), cpath);
 
   ResolveType::go (var.get_type ().get (), var.get_node_id ());
-  ResolveExpr::go (var.get_expr ().get (), var.get_node_id (), path, cpath);
+  ResolveExpr::go (var.get_expr ().get (), path, cpath);
 
   // the mutability checker needs to verify for immutable decls the number
   // of assignments are <1. This marks an implicit assignment
@@ -512,8 +518,7 @@ ResolveItem::visit (AST::ConstantItem &constant)
   resolve_visibility (constant.get_visibility ());
 
   ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
-  ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id (), path,
-		   cpath);
+  ResolveExpr::go (constant.get_expr ().get (), path, cpath);
 
   // the mutability checker needs to verify for immutable decls the number
   // of assignments are <1. This marks an implicit assignment
@@ -545,7 +550,7 @@ ResolveItem::visit (AST::Function &function)
   if (function.has_generics ())
     {
       for (auto &generic : function.get_generic_params ())
-	ResolveGenericParam::go (generic.get (), function.get_node_id ());
+	ResolveGenericParam::go (generic.get ());
     }
 
   // resolve any where clause items
@@ -561,8 +566,7 @@ ResolveItem::visit (AST::Function &function)
   for (auto &param : function.get_function_params ())
     {
       ResolveType::go (param.get_type ().get (), param.get_node_id ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      param.get_node_id ());
+      PatternDeclaration::go (param.get_pattern ().get ());
 
       // the mutability checker needs to verify for immutable decls the number
       // of assignments are <1. This marks an implicit assignment
@@ -571,8 +575,7 @@ ResolveItem::visit (AST::Function &function)
     }
 
   // resolve the function body
-  ResolveExpr::go (function.get_definition ().get (), function.get_node_id (),
-		   path, cpath);
+  ResolveExpr::go (function.get_definition ().get (), path, cpath);
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -594,7 +597,7 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
     {
       for (auto &generic : impl_block.get_generic_params ())
 	{
-	  ResolveGenericParam::go (generic.get (), impl_block.get_node_id ());
+	  ResolveGenericParam::go (generic.get ());
 	}
     }
 
@@ -608,7 +611,7 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
   CanonicalPath self_cpath = CanonicalPath::create_empty ();
   bool canonicalize_type_with_generics = false;
   NodeId resolved_node
-    = ResolveType::go (impl_block.get_type ().get (), impl_block.get_node_id (),
+    = ResolveType::go (impl_block.get_type ().get (),
 		       canonicalize_type_with_generics, &self_cpath);
   if (resolved_node == UNKNOWN_NODEID)
     {
@@ -686,7 +689,7 @@ ResolveItem::visit (AST::Method &method)
   if (method.has_generics ())
     {
       for (auto &generic : method.get_generic_params ())
-	ResolveGenericParam::go (generic.get (), method.get_node_id ());
+	ResolveGenericParam::go (generic.get ());
     }
 
   // resolve any where clause items
@@ -711,7 +714,7 @@ ResolveItem::visit (AST::Method &method)
   AST::TypePath self_type_path (std::move (segments), self_param.get_locus ());
 
   ResolveType::go (&self_type_path, self_param.get_node_id ());
-  PatternDeclaration::go (&self_pattern, self_param.get_node_id ());
+  PatternDeclaration::go (&self_pattern);
 
   resolver->mark_assignment_to_decl (self_pattern.get_node_id (),
 				     self_pattern.get_node_id ());
@@ -721,8 +724,7 @@ ResolveItem::visit (AST::Method &method)
   for (auto &param : method.get_function_params ())
     {
       ResolveType::go (param.get_type ().get (), param.get_node_id ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      param.get_node_id ());
+      PatternDeclaration::go (param.get_pattern ().get ());
 
       // the mutability checker needs to verify for immutable decls the number
       // of assignments are <1. This marks an implicit assignment
@@ -735,8 +737,7 @@ ResolveItem::visit (AST::Method &method)
     ResolveWhereClause::Resolve (method.get_where_clause ());
 
   // resolve the function body
-  ResolveExpr::go (method.get_definition ().get (), method.get_node_id (), path,
-		   cpath);
+  ResolveExpr::go (method.get_definition ().get (), path, cpath);
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -759,7 +760,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
     {
       for (auto &generic : impl_block.get_generic_params ())
 	{
-	  ResolveGenericParam::go (generic.get (), impl_block.get_node_id ());
+	  ResolveGenericParam::go (generic.get ());
 	}
     }
 
@@ -770,7 +771,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
   CanonicalPath canonical_trait_type = CanonicalPath::create_empty ();
   bool canonicalize_type_with_generics = false;
   NodeId trait_resolved_node
-    = ResolveType::go (&impl_block.get_trait_path (), impl_block.get_node_id (),
+    = ResolveType::go (&impl_block.get_trait_path (),
 		       canonicalize_type_with_generics, &canonical_trait_type);
   if (trait_resolved_node == UNKNOWN_NODEID)
     {
@@ -781,7 +782,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
 
   CanonicalPath canonical_impl_type = CanonicalPath::create_empty ();
   NodeId type_resolved_node
-    = ResolveType::go (impl_block.get_type ().get (), impl_block.get_node_id (),
+    = ResolveType::go (impl_block.get_type ().get (),
 		       canonicalize_type_with_generics, &canonical_impl_type);
   if (type_resolved_node == UNKNOWN_NODEID)
     {
@@ -869,7 +870,7 @@ ResolveItem::visit (AST::Trait &trait)
 
   for (auto &generic : trait.get_generic_params ())
     {
-      ResolveGenericParam::go (generic.get (), trait.get_node_id ());
+      ResolveGenericParam::go (generic.get ());
     }
 
   // Self is an implicit TypeParam so lets mark it as such
@@ -1037,8 +1038,13 @@ ResolveItem::visit (AST::UseDeclaration &use_item)
   auto to_resolve = flatten_use_dec_to_paths (use_item);
 
   for (auto &path : to_resolve)
-    ResolvePath::go (&path, parent);
+    ResolvePath::go (&path);
 }
+
+ResolveImplItems::ResolveImplItems (const CanonicalPath &prefix,
+				    const CanonicalPath &canonical_prefix)
+  : ResolveItem (prefix, canonical_prefix)
+{}
 
 void
 ResolveImplItems::go (AST::InherentImplItem *item, const CanonicalPath &prefix,
@@ -1099,7 +1105,7 @@ ResolveExternItem::visit (AST::ExternalFunctionItem &function)
   if (function.has_generics ())
     {
       for (auto &generic : function.get_generic_params ())
-	ResolveGenericParam::go (generic.get (), function.get_node_id ());
+	ResolveGenericParam::go (generic.get ());
     }
 
   if (function.has_return_type ())

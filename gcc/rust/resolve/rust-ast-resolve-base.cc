@@ -30,7 +30,7 @@ ResolverBase::resolve_visibility (const AST::Visibility &vis)
   if (vis.has_path ())
     {
       auto path = vis.get_path ();
-      ResolvePath::go (&path, parent);
+      ResolvePath::go (&path);
 
       // Do we need to lookup something here?
       // Is it just about resolving the names correctly so we can look them up

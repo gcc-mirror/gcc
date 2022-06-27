@@ -108,7 +108,7 @@ public:
 
 private:
   ResolveToplevelImplItem (const CanonicalPath &prefix)
-    : ResolverBase (UNKNOWN_NODEID), prefix (prefix)
+    : ResolverBase (), prefix (prefix)
   {
     rust_assert (!prefix.is_empty ());
   }
@@ -203,8 +203,7 @@ public:
 private:
   ResolveTopLevelTraitItems (const CanonicalPath &prefix,
 			     const CanonicalPath &canonical_prefix)
-    : ResolverBase (UNKNOWN_NODEID), prefix (prefix),
-      canonical_prefix (canonical_prefix)
+    : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix)
   {}
 
   const CanonicalPath &prefix;
@@ -260,7 +259,7 @@ public:
 
 private:
   ResolveToplevelExternItem (const CanonicalPath &prefix)
-    : ResolverBase (UNKNOWN_NODEID), prefix (prefix)
+    : ResolverBase (), prefix (prefix)
   {}
 
   const CanonicalPath &prefix;
