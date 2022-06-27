@@ -283,7 +283,7 @@ public:
   find_comparison_dom_walker (cdi_direction direction)
     : dom_walker (direction) {}
 
-  virtual edge before_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
 };
 
 /* Return true if conforming COMPARE with EH_NOTE is redundant with comparison

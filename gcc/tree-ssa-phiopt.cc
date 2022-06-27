@@ -2978,8 +2978,8 @@ public:
     : dom_walker (direction), m_nontrapping (ps), m_seen_refs (128)
   {}
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
 private:
 

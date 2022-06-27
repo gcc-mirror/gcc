@@ -3008,7 +3008,7 @@ public:
   analysis_dom_walker (struct ipa_func_body_info *fbi)
     : dom_walker (CDI_DOMINATORS), m_fbi (fbi) {}
 
-  virtual edge before_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
 
 private:
   struct ipa_func_body_info *m_fbi;
@@ -5655,7 +5655,7 @@ public:
     : dom_walker (CDI_DOMINATORS), m_fbi (fbi), m_descriptors (descs),
       m_aggval (av), m_something_changed (sc) {}
 
-  virtual edge before_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
   bool cleanup_eh ()
     { return gimple_purge_all_dead_eh_edges (m_need_eh_cleanup); }
 

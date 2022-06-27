@@ -2493,8 +2493,8 @@ public:
   eliminate_dom_walker (cdi_direction, bitmap);
   ~eliminate_dom_walker ();
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
   virtual tree eliminate_avail (basic_block, tree op);
   virtual void eliminate_push_avail (basic_block, tree op);

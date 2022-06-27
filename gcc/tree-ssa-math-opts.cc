@@ -4918,7 +4918,7 @@ public:
 
   /* The actual actions performed in the walk.  */
 
-  virtual void after_dom_children (basic_block);
+  void after_dom_children (basic_block) final override;
 
   /* Set of results of chains of multiply and add statement combinations that
      were not transformed into FMAs because of active deferring.  */

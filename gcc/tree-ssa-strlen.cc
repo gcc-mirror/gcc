@@ -243,8 +243,8 @@ public:
 
   ~strlen_pass ();
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
   bool check_and_optimize_stmt (bool *cleanup_eh);
   bool check_and_optimize_call (bool *zero_write);

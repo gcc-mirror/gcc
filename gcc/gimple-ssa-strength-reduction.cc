@@ -1729,7 +1729,7 @@ class find_candidates_dom_walker : public dom_walker
 public:
   find_candidates_dom_walker (cdi_direction direction)
     : dom_walker (direction) {}
-  virtual edge before_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
 };
 
 /* Find strength-reduction candidates in block BB.  */

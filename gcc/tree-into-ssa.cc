@@ -1462,8 +1462,8 @@ public:
   rewrite_dom_walker (cdi_direction direction)
     : dom_walker (direction, ALL_BLOCKS, NULL) {}
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 };
 
 /* SSA Rewriting Step 1.  Initialization, create a block local stack
@@ -2148,8 +2148,8 @@ public:
   rewrite_update_dom_walker (cdi_direction direction)
     : dom_walker (direction, ALL_BLOCKS, NULL) {}
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 };
 
 /* Initialization of block data structures for the incremental SSA
@@ -2300,7 +2300,7 @@ public:
   mark_def_dom_walker (cdi_direction direction);
   ~mark_def_dom_walker ();
 
-  virtual edge before_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
 
 private:
   /* Notice that this bitmap is indexed using variable UIDs, so it must be

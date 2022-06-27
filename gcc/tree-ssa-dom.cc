@@ -670,8 +670,8 @@ public:
       m_threader = threader;
     }
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
 private:
 

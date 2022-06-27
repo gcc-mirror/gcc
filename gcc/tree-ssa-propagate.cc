@@ -679,8 +679,8 @@ public:
       BITMAP_FREE (need_eh_cleanup);
     }
 
-    virtual edge before_dom_children (basic_block);
-    virtual void after_dom_children (basic_block bb)
+    edge before_dom_children (basic_block) final override;
+    void after_dom_children (basic_block bb) final override
     {
       substitute_and_fold_engine->post_fold_bb (bb);
     }

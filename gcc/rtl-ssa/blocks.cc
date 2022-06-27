@@ -85,8 +85,8 @@ class function_info::bb_walker : public dom_walker
 {
 public:
   bb_walker (function_info *, build_info &);
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
 private:
   // Information about the function we're building.

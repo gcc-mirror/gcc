@@ -298,8 +298,8 @@ class uncprop_dom_walker : public dom_walker
 public:
   uncprop_dom_walker (cdi_direction direction) : dom_walker (direction) {}
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
 private:
 
