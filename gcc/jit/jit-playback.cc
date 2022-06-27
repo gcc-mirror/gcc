@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_PTHREAD_H
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -40,8 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc.h"
 #include "diagnostic.h"
 #include "stmt.h"
-
-#include <pthread.h>
 
 #include "jit-playback.h"
 #include "jit-result.h"
