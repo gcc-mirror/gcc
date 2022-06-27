@@ -134,25 +134,6 @@ Maximum number of basic blocks before EVRP uses a sparse cache.
 Common Joined UInteger Var(param_evrp_switch_limit) Init(50) Optimization Param
 Maximum number of outgoing edges in a switch before EVRP will not process it.
 
--param=evrp-mode=
-Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_RVRP_ONLY) Param Optimization
---param=evrp-mode=[legacy|ranger|legacy-first|ranger-first] Specifies the mode Early VRP should operate in.
-
-Enum
-Name(evrp_mode) Type(enum evrp_mode) UnknownError(unknown evrp mode %qs)
-
-EnumValue
-Enum(evrp_mode) String(legacy) Value(EVRP_MODE_EVRP_ONLY)
-
-EnumValue
-Enum(evrp_mode) String(ranger) Value(EVRP_MODE_RVRP_ONLY)
-
-EnumValue
-Enum(evrp_mode) String(legacy-first) Value(EVRP_MODE_EVRP_FIRST)
-
-EnumValue
-Enum(evrp_mode) String(ranger-first) Value(EVRP_MODE_RVRP_FIRST)
-
 -param=fsm-scale-path-blocks=
 Common Joined UInteger Var(param_fsm_scale_path_blocks) Init(3) IntegerRange(1, 10) Param Optimization
 Scale factor to apply to the number of blocks in a threading path when comparing to the number of (scaled) statements.

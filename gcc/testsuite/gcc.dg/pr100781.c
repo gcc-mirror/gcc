@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 --param=evrp-mode=ranger -fcompare-debug  " } */
+/* { dg-options "-O2 -fcompare-debug  " } */
 
 struct a {
   int b;
