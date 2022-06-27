@@ -42,7 +42,8 @@ ResolveTraitItems::go (AST::TraitItem *item, const CanonicalPath &prefix,
 void
 ResolveTraitItems::visit (AST::TraitItemType &type)
 {
-  auto decl = ResolveTraitItemTypeToCanonicalPath::resolve (type);
+  auto decl
+    = CanonicalPath::new_seg (type.get_node_id (), type.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (mappings->get_current_crate (),
@@ -55,7 +56,8 @@ ResolveTraitItems::visit (AST::TraitItemType &type)
 void
 ResolveTraitItems::visit (AST::TraitItemFunc &func)
 {
-  auto decl = ResolveTraitItemFunctionToCanonicalPath::resolve (func);
+  auto decl = CanonicalPath::new_seg (
+    func.get_node_id (), func.get_trait_function_decl ().get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (mappings->get_current_crate (),
@@ -102,7 +104,9 @@ ResolveTraitItems::visit (AST::TraitItemFunc &func)
 void
 ResolveTraitItems::visit (AST::TraitItemMethod &func)
 {
-  auto decl = ResolveTraitItemMethodToCanonicalPath::resolve (func);
+  auto decl
+    = CanonicalPath::new_seg (func.get_node_id (),
+			      func.get_trait_method_decl ().get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (mappings->get_current_crate (),
@@ -166,7 +170,8 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
 void
 ResolveTraitItems::visit (AST::TraitItemConst &constant)
 {
-  auto decl = ResolveTraitItemConstToCanonicalPath::resolve (constant);
+  auto decl = CanonicalPath::new_seg (constant.get_node_id (),
+				      constant.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (mappings->get_current_crate (),
@@ -486,7 +491,8 @@ ResolveItem::visit (AST::StaticItem &var)
 void
 ResolveItem::visit (AST::ConstantItem &constant)
 {
-  auto decl = ResolveConstantItemToCanonicalPath::resolve (constant);
+  auto decl = CanonicalPath::new_seg (constant.get_node_id (),
+				      constant.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (mappings->get_current_crate (),
@@ -501,7 +507,8 @@ ResolveItem::visit (AST::ConstantItem &constant)
 void
 ResolveItem::visit (AST::Function &function)
 {
-  auto decl = ResolveFunctionItemToCanonicalPath::resolve (function);
+  auto decl = CanonicalPath::new_seg (function.get_node_id (),
+				      function.get_function_name ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
 
@@ -638,7 +645,8 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 void
 ResolveItem::visit (AST::Method &method)
 {
-  auto decl = ResolveMethodItemToCanonicalPath::resolve (method);
+  auto decl
+    = CanonicalPath::new_seg (method.get_node_id (), method.get_method_name ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (mappings->get_current_crate (),

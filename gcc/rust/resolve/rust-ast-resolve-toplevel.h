@@ -283,7 +283,8 @@ public:
 
   void visit (AST::ConstantItem &constant) override
   {
-    auto decl = ResolveConstantItemToCanonicalPath::resolve (constant);
+    auto decl = CanonicalPath::new_seg (constant.get_node_id (),
+					constant.get_identifier ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -303,7 +304,8 @@ public:
 
   void visit (AST::Function &function) override
   {
-    auto decl = ResolveFunctionItemToCanonicalPath::resolve (function);
+    auto decl = CanonicalPath::new_seg (function.get_node_id (),
+					function.get_function_name ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
