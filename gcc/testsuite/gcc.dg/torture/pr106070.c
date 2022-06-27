@@ -1,20 +1,22 @@
 /* { dg-do run } */
 
-unsigned int var_2 = 1;
-int var_4 = -1;
-int var_10 = 4;
-unsigned long arr_252;
-void __attribute__((noipa)) test() {
-  for (int a = 0; a < var_10; a += 2)
-    arr_252 = var_2 != (int)var_4 ? (unsigned long)var_4 : (unsigned long)var_2;
+unsigned int a = 1;
+int b = -1;
+int c = 4;
+unsigned long long d;
+
+void __attribute__((noipa))
+test (void)
+{
+  for (int i = 0; i < c; i += 2)
+    d = a != (int) b ? (unsigned long long) b : (unsigned long long) a;
 }
 
-void test();
-
-int main()
+int
+main ()
 {
-  test();
-  if (arr_252 != 0xffffffffffffffff)
-    __builtin_abort();
+  test ();
+  if (d != -1ULL)
+    __builtin_abort ();
   return 0;
 }
