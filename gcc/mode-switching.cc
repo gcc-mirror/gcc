@@ -893,8 +893,8 @@ public:
   /* opt_pass methods: */
   /* The epiphany backend creates a second instance of this pass, so we need
      a clone method.  */
-  opt_pass * clone () { return new pass_mode_switching (m_ctxt); }
-  virtual bool gate (function *)
+  opt_pass * clone () final override { return new pass_mode_switching (m_ctxt); }
+  bool gate (function *) final override
     {
 #ifdef OPTIMIZE_MODE_SWITCHING
       return true;
@@ -903,7 +903,7 @@ public:
 #endif
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
 #ifdef OPTIMIZE_MODE_SWITCHING
       optimize_mode_switching ();

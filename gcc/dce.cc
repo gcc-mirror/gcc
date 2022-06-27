@@ -849,12 +849,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return optimize > 1 && flag_dce && dbg_cnt (dce_ud);
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_ud_dce ();
     }
@@ -1280,12 +1280,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return optimize > 0 && flag_dce && dbg_cnt (dce_fast);
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_fast_dce ();
     }

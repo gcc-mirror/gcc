@@ -480,13 +480,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
   {
     return (jump_table_cluster::is_enabled ()
 	    || bit_test_cluster::is_enabled ());
   }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_if_to_switch
 

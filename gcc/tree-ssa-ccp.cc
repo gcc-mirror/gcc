@@ -2994,14 +2994,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_ccp (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass * clone () final override { return new pass_ccp (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       nonzero_p = param;
     }
-  virtual bool gate (function *) { return flag_tree_ccp != 0; }
-  virtual unsigned int execute (function *) { return do_ssa_ccp (nonzero_p); }
+  bool gate (function *) final override { return flag_tree_ccp != 0; }
+  unsigned int execute (function *) final override
+  {
+    return do_ssa_ccp (nonzero_p);
+  }
 
  private:
   /* Determines whether the pass instance records nonzero bits.  */
@@ -4202,8 +4205,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_fold_builtins (m_ctxt); }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_fold_builtins (m_ctxt); }
+  unsigned int execute (function *) final override;
 
 }; // class pass_fold_builtins
 
@@ -4553,9 +4556,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_post_ipa_warn (m_ctxt); }
-  virtual bool gate (function *) { return warn_nonnull != 0; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_post_ipa_warn (m_ctxt); }
+  bool gate (function *) final override { return warn_nonnull != 0; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_fold_builtins
 

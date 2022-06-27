@@ -168,8 +168,8 @@ public:
   pass_ipa_pure_const(gcc::context *ctxt);
 
   /* opt_pass methods: */
-  bool gate (function *) { return gate_pure_const (); }
-  unsigned int execute (function *fun);
+  bool gate (function *) final override { return gate_pure_const (); }
+  unsigned int execute (function *fun) final override;
 
   void register_hooks (void);
 
@@ -2154,9 +2154,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_local_pure_const (m_ctxt); }
-  virtual bool gate (function *) { return gate_pure_const (); }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override
+  {
+    return new pass_local_pure_const (m_ctxt);
+  }
+  bool gate (function *) final override { return gate_pure_const (); }
+  unsigned int execute (function *) final override;
 
 }; // class pass_local_pure_const
 
@@ -2270,8 +2273,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return warn_suggest_attribute_noreturn; }
-  virtual unsigned int execute (function *fun)
+  bool gate (function *) final override
+  {
+    return warn_suggest_attribute_noreturn;
+  }
+  unsigned int execute (function *fun) final override
     {
       if (!TREE_THIS_VOLATILE (current_function_decl)
 	  && EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (fun)->preds) == 0)
@@ -2316,9 +2322,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_nothrow (m_ctxt); }
-  virtual bool gate (function *) { return optimize; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_nothrow (m_ctxt); }
+  bool gate (function *) final override { return optimize; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_nothrow
 

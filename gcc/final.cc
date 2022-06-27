@@ -804,7 +804,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return compute_alignments (); }
+  unsigned int execute (function *) final override
+  {
+    return compute_alignments ();
+  }
 
 }; // class pass_compute_alignments
 
@@ -4356,7 +4359,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return rest_of_handle_final (); }
+  unsigned int execute (function *) final override
+  {
+    return rest_of_handle_final ();
+  }
 
 }; // class pass_final
 
@@ -4400,7 +4406,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_shorten_branches ();
     }
@@ -4575,7 +4581,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_clean_state ();
     }

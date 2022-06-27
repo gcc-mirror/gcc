@@ -2124,8 +2124,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_object_sizes (m_ctxt); }
-  virtual unsigned int execute (function *fun)
+  opt_pass * clone () final override { return new pass_object_sizes (m_ctxt); }
+  unsigned int execute (function *fun) final override
   {
     return object_sizes_execute (fun, false);
   }
@@ -2164,7 +2164,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *fun)
+  unsigned int execute (function *fun) final override
   {
     return object_sizes_execute (fun, true);
   }

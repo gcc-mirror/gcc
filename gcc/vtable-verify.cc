@@ -818,8 +818,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return (flag_vtable_verify); }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return (flag_vtable_verify); }
+  unsigned int execute (function *) final override;
 
 }; // class pass_vtable_verify
 

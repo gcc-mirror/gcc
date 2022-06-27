@@ -1752,13 +1752,13 @@ public:
   }
 
   /* opt_pass methods: */
-  virtual bool
-  gate (function *)
+  bool
+  gate (function *) final override
   {
     return flag_auto_profile;
   }
-  virtual unsigned int
-  execute (function *)
+  unsigned int
+  execute (function *) final override
   {
     return autofdo::auto_profile ();
   }

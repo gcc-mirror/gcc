@@ -3755,12 +3755,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return optimize > 0 && flag_dse && dbg_cnt (dse1);
     }
 
-  virtual unsigned int execute (function *) { return rest_of_handle_dse (); }
+  unsigned int execute (function *) final override
+  {
+    return rest_of_handle_dse ();
+  }
 
 }; // class pass_rtl_dse1
 
@@ -3795,12 +3798,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return optimize > 0 && flag_dse && dbg_cnt (dse2);
     }
 
-  virtual unsigned int execute (function *) { return rest_of_handle_dse (); }
+  unsigned int execute (function *) final override
+  {
+    return rest_of_handle_dse ();
+  }
 
 }; // class pass_rtl_dse2
 

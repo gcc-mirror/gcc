@@ -4173,16 +4173,19 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
   {
     if (oacc_kernels_p)
       return flag_openacc;
     else
       return flag_tree_parallelize_loops > 1;
   }
-  virtual unsigned int execute (function *);
-  opt_pass * clone () { return new pass_parallelize_loops (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  unsigned int execute (function *) final override;
+  opt_pass * clone () final override
+  {
+    return new pass_parallelize_loops (m_ctxt);
+  }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       oacc_kernels_p = param;

@@ -64,8 +64,8 @@ class pass_wrestrict : public gimple_opt_pass
  public:
   pass_wrestrict (gcc::context *);
 
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 
   void check_call (gimple *);
 

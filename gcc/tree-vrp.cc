@@ -4398,14 +4398,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_vrp (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass * clone () final override { return new pass_vrp (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       warn_array_bounds_p = param;
     }
-  virtual bool gate (function *) { return flag_tree_vrp != 0; }
-  virtual unsigned int execute (function *fun)
+  bool gate (function *) final override { return flag_tree_vrp != 0; }
+  unsigned int execute (function *fun) final override
     {
       if ((my_pass == 1 && param_vrp1_mode == VRP_MODE_RANGER)
 	  || (my_pass == 2 && param_vrp2_mode == VRP_MODE_RANGER))

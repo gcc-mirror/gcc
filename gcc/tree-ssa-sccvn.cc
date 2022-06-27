@@ -8295,17 +8295,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_fre (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass * clone () final override { return new pass_fre (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       may_iterate = param;
     }
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return flag_tree_fre != 0 && (may_iterate || optimize > 1);
     }
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 private:
   bool may_iterate;

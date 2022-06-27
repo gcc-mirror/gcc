@@ -2427,8 +2427,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_switch_conversion != 0; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override
+  {
+    return flag_tree_switch_conversion != 0;
+  }
+  unsigned int execute (function *) final override;
 
 }; // class pass_convert_switch
 
@@ -2506,18 +2509,18 @@ public:
 
   static const pass_data data;
   opt_pass *
-  clone ()
+  clone () final override
   {
     return new pass_lower_switch<O0> (m_ctxt);
   }
 
-  virtual bool
-  gate (function *)
+  bool
+  gate (function *) final override
   {
     return !O0 || !optimize;
   }
 
-  virtual unsigned int execute (function *fun);
+  unsigned int execute (function *fun) final override;
 }; // class pass_lower_switch
 
 template <bool O0>

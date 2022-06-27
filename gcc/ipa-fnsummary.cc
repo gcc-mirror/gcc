@@ -4846,8 +4846,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_local_fn_summary (m_ctxt); }
-  virtual unsigned int execute (function *)
+  opt_pass * clone () final override
+  {
+    return new pass_local_fn_summary (m_ctxt);
+  }
+  unsigned int execute (function *) final override
     {
       return compute_fn_summary_for_current ();
     }
@@ -4889,14 +4892,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass *clone () { return new pass_ipa_free_fn_summary (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass *clone () final override
+  {
+    return new pass_ipa_free_fn_summary (m_ctxt);
+  }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       small_p = param;
     }
-  virtual bool gate (function *) { return true; }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return true; }
+  unsigned int execute (function *) final override
     {
       ipa_free_fn_summary ();
       /* Free ipa-prop structures if they are no longer needed.  */
@@ -4950,7 +4956,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return 0; }
+  unsigned int execute (function *) final override { return 0; }
 
 }; // class pass_ipa_fn_summary
 

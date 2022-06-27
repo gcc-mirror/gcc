@@ -1974,9 +1974,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dce (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_dce != 0; }
-  virtual unsigned int execute (function *) { return tree_ssa_dce (); }
+  opt_pass * clone () final override { return new pass_dce (m_ctxt); }
+  bool gate (function *) final override { return flag_tree_dce != 0; }
+  unsigned int execute (function *) final override { return tree_ssa_dce (); }
 
 }; // class pass_dce
 
@@ -2011,14 +2011,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_cd_dce (m_ctxt); }
-  void set_pass_param (unsigned n, bool param)
+  opt_pass * clone () final override { return new pass_cd_dce (m_ctxt); }
+  void set_pass_param (unsigned n, bool param) final override
     {
       gcc_assert (n == 0);
       update_address_taken_p = param;
     }
-  virtual bool gate (function *) { return flag_tree_dce != 0; }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return flag_tree_dce != 0; }
+  unsigned int execute (function *) final override
     {
       return (tree_ssa_cd_dce ()
 	      | (update_address_taken_p ? TODO_update_address_taken : 0));

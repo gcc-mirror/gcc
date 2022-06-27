@@ -6657,14 +6657,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* FIXME: We should remove the optimize check after we ensure we never run
 	 IPA passes when not optimizing.  */
       return (flag_ipa_cp && optimize) || in_lto_p;
     }
 
-  virtual unsigned int execute (function *) { return ipcp_driver (); }
+  unsigned int execute (function *) final override { return ipcp_driver (); }
 
 }; // class pass_ipa_cp
 

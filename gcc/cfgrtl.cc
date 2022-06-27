@@ -483,7 +483,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_free_cfg
 
@@ -3698,7 +3698,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       cfg_layout_initialize (0);
       return 0;
@@ -3737,7 +3737,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_outof_cfg_layout_mode
 

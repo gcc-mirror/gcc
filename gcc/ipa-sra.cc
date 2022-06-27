@@ -4049,14 +4049,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* TODO: We should remove the optimize check after we ensure we never run
 	 IPA passes when not optimizing.  */
       return (flag_ipa_sra && optimize);
     }
 
-  virtual unsigned int execute (function *) { return ipa_sra_analysis (); }
+  unsigned int execute (function *)  final override
+  {
+    return ipa_sra_analysis ();
+  }
 
 }; // class pass_ipa_sra
 

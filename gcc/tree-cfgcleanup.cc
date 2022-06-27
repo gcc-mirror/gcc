@@ -1406,8 +1406,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_merge_phi (m_ctxt); }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_merge_phi (m_ctxt); }
+  unsigned int execute (function *) final override;
 
 }; // class pass_merge_phi
 
@@ -1584,7 +1584,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return execute_cleanup_cfg_post_optimizing ();
     }

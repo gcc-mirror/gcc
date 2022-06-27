@@ -3788,8 +3788,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *) { return execute_dwarf2_frame (); }
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override
+  {
+    return execute_dwarf2_frame ();
+  }
 
 }; // class pass_dwarf2_frame
 

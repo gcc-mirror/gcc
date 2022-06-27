@@ -126,9 +126,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return warn_nonnull_compare; }
+  bool gate (function *) final override { return warn_nonnull_compare; }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_warn_nonnull_compare
 

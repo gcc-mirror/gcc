@@ -377,12 +377,12 @@ public:
     {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_early_vrp (m_ctxt); }
-  virtual bool gate (function *)
+  opt_pass * clone () final override { return new pass_early_vrp (m_ctxt); }
+  bool gate (function *) final override
     {
       return flag_tree_vrp != 0;
     }
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     { return execute_early_vrp (); }
 
 }; // class pass_vrp

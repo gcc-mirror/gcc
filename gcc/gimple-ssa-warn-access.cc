@@ -2075,13 +2075,13 @@ class pass_waccess : public gimple_opt_pass
 
   ~pass_waccess ();
 
-  opt_pass *clone ();
+  opt_pass *clone () final override;
 
-  virtual bool gate (function *);
+  bool gate (function *) final override;
 
-  void set_pass_param (unsigned, bool);
+  void set_pass_param (unsigned, bool) final override;
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 private:
   /* Not copyable or assignable.  */

@@ -828,10 +828,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_sink != 0; }
-  virtual unsigned int execute (function *);
-  opt_pass *clone (void) { return new pass_sink_code (m_ctxt); }
-  void set_pass_param (unsigned n, bool param)
+  bool gate (function *) final override { return flag_tree_sink != 0; }
+  unsigned int execute (function *) final override;
+  opt_pass *clone (void) final override { return new pass_sink_code (m_ctxt); }
+  void set_pass_param (unsigned n, bool param) final override
     {
       gcc_assert (n == 0);
       unsplit_edges = param;

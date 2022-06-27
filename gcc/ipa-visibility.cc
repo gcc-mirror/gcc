@@ -959,12 +959,12 @@ public:
 
   /* opt_pass methods: */
 
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* Do not re-run on ltrans stage.  */
       return !flag_ltrans;
     }
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return whole_program_function_and_variable_visibility ();
     }
@@ -988,7 +988,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return function_and_variable_visibility (flag_whole_program && !flag_lto);
     }

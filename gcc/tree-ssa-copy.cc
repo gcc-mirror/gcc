@@ -642,9 +642,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_copy_prop (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_copy_prop != 0; }
-  virtual unsigned int execute (function *) { return execute_copy_prop (); }
+  opt_pass * clone () final override { return new pass_copy_prop (m_ctxt); }
+  bool gate (function *) final override { return flag_tree_copy_prop != 0; }
+  unsigned int execute (function *) final override
+  {
+    return execute_copy_prop ();
+  }
 
 }; // class pass_copy_prop
 

@@ -3960,14 +3960,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_phiopt (m_ctxt); }
-  void set_pass_param (unsigned n, bool param)
+  opt_pass * clone () final override { return new pass_phiopt (m_ctxt); }
+  void set_pass_param (unsigned n, bool param) final override
     {
       gcc_assert (n == 0);
       early_p = param;
     }
-  virtual bool gate (function *) { return flag_ssa_phiopt; }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return flag_ssa_phiopt; }
+  unsigned int execute (function *) final override
     {
       return tree_ssa_phiopt_worker (false,
 				     !early_p ? gate_hoist_loads () : false,
@@ -4009,8 +4009,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_cselim; }
-  virtual unsigned int execute (function *) { return tree_ssa_cs_elim (); }
+  bool gate (function *) final override { return flag_tree_cselim; }
+  unsigned int execute (function *) final override
+  {
+    return tree_ssa_cs_elim ();
+  }
 
 }; // class pass_cselim
 

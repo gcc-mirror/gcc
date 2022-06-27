@@ -1538,8 +1538,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_loop_ivcanon != 0; }
-  virtual unsigned int execute (function *fun);
+  bool gate (function *) final override { return flag_tree_loop_ivcanon != 0; }
+  unsigned int execute (function *fun) final override;
 
 }; // class pass_iv_canon
 
@@ -1585,7 +1585,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_complete_unroll
 
@@ -1643,8 +1643,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return optimize >= 2; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return optimize >= 2; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_complete_unrolli
 

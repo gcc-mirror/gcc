@@ -728,14 +728,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dominator (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass * clone () final override { return new pass_dominator (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       may_peel_loop_headers_p = param;
     }
-  virtual bool gate (function *) { return flag_tree_dom != 0; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return flag_tree_dom != 0; }
+  unsigned int execute (function *) final override;
 
  private:
   /* This flag is used to prevent loops from being peeled repeatedly in jump

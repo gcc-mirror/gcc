@@ -838,13 +838,16 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* If the target supports TLS natively, we need do nothing here.  */
       return !targetm.have_tls;
     }
 
-  virtual unsigned int execute (function *) { return ipa_lower_emutls (); }
+  unsigned int execute (function *) final override
+  {
+    return ipa_lower_emutls ();
+  }
 
 }; // class pass_ipa_lower_emutls
 

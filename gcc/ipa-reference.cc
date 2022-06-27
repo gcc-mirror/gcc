@@ -1299,14 +1299,14 @@ public:
     {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return ((in_lto_p || flag_ipa_reference)
 	      /* Don't bother doing anything if the program has errors.  */
 	      && !seen_error ());
     }
 
-  virtual unsigned int execute (function *) { return propagate (); }
+  unsigned int execute (function *) final override { return propagate (); }
 
 }; // class pass_ipa_reference
 

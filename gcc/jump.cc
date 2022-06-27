@@ -182,7 +182,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return cleanup_barriers (); }
+  unsigned int execute (function *) final override
+  {
+    return cleanup_barriers ();
+  }
 
 }; // class pass_cleanup_barriers
 

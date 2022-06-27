@@ -4002,8 +4002,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_slsr; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return flag_tree_slsr; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_strength_reduction
 

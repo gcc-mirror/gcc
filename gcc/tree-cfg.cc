@@ -407,7 +407,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return execute_build_cfg (); }
+  unsigned int execute (function *) final override
+  {
+    return execute_build_cfg ();
+  }
 
 }; // class pass_build_cfg
 
@@ -9209,9 +9212,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return split_critical_edges (); }
+  unsigned int execute (function *)  final override
+  {
+    return split_critical_edges ();
+  }
 
-  opt_pass * clone () { return new pass_split_crit_edges (m_ctxt); }
+  opt_pass * clone () final override
+  {
+    return new pass_split_crit_edges (m_ctxt);
+  }
 }; // class pass_split_crit_edges
 
 } // anon namespace
@@ -9468,7 +9477,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_warn_function_return
 
@@ -9674,8 +9683,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_warn_unused_result; }
-  virtual unsigned int execute (function *)
+  bool gate (function *)  final override { return flag_warn_unused_result; }
+  unsigned int execute (function *) final override
     {
       do_warn_unused_result (gimple_body (current_function_decl));
       return 0;
@@ -9884,8 +9893,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_fixup_cfg (m_ctxt); }
-  virtual unsigned int execute (function *) { return execute_fixup_cfg (); }
+  opt_pass * clone () final override { return new pass_fixup_cfg (m_ctxt); }
+  unsigned int execute (function *) final override
+  {
+    return execute_fixup_cfg ();
+  }
 
 }; // class pass_fixup_cfg
 

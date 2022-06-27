@@ -2633,7 +2633,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       if (targetm.cannot_modify_jumps_p ())
 	return false;
@@ -2641,7 +2641,7 @@ public:
 	      && (flag_reorder_blocks || flag_reorder_blocks_and_partition));
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_reorder_blocks
 
@@ -2794,8 +2794,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 
 }; // class pass_duplicate_computed_gotos
 
@@ -2937,8 +2937,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 
 }; // class pass_partition_blocks
 

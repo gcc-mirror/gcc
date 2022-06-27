@@ -453,9 +453,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_uncprop (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_dom != 0; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_uncprop (m_ctxt); }
+  bool gate (function *) final override { return flag_tree_dom != 0; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_uncprop
 

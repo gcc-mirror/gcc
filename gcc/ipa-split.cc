@@ -1915,8 +1915,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override
     {
       return execute_split_functions ();
     }
@@ -1974,8 +1974,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override
     {
       return execute_feedback_split_functions ();
     }

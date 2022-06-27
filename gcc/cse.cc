@@ -7571,8 +7571,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return optimize > 0; }
-  virtual unsigned int execute (function *) { return rest_of_handle_cse (); }
+  bool gate (function *) final override { return optimize > 0; }
+  unsigned int execute (function *) final override
+  {
+    return rest_of_handle_cse ();
+  }
 
 }; // class pass_cse
 
@@ -7642,12 +7645,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return optimize > 0 && flag_rerun_cse_after_loop;
     }
 
-  virtual unsigned int execute (function *) { return rest_of_handle_cse2 (); }
+  unsigned int execute (function *) final override
+  {
+    return rest_of_handle_cse2 ();
+  }
 
 }; // class pass_cse2
 
@@ -7715,12 +7721,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return optimize > 0 && flag_rerun_cse_after_global_opts;
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_cse_after_global_opts ();
     }

@@ -355,12 +355,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return true;
     }
 
-  virtual unsigned int execute (function *fun)
+  unsigned int execute (function *fun) final override
     {
       return gimple_expand_vec_exprs (fun);
     }

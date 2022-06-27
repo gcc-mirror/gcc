@@ -1614,8 +1614,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_unswitch_loops != 0; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return flag_unswitch_loops != 0; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_tree_unswitch
 

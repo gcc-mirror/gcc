@@ -10625,7 +10625,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       bool gate = ((flag_openacc != 0 || flag_openmp != 0
 		    || flag_openmp_simd != 0)
@@ -10672,12 +10672,18 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  bool gate (function *fun) final override
     {
       return !(fun->curr_properties & PROP_gimple_eomp);
     }
-  virtual unsigned int execute (function *) { return execute_expand_omp (); }
-  opt_pass * clone () { return new pass_expand_omp_ssa (m_ctxt); }
+  unsigned int execute (function *) final override
+  {
+    return execute_expand_omp ();
+  }
+  opt_pass * clone () final override
+  {
+    return new pass_expand_omp_ssa (m_ctxt);
+  }
 
 }; // class pass_expand_omp_ssa
 

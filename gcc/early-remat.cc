@@ -2615,12 +2615,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
   {
     return optimize > 1 && NUM_POLY_INT_COEFFS > 1;
   }
 
-  virtual unsigned int execute (function *f)
+  unsigned int execute (function *f) final override
   {
     auto_sbitmap selected_modes (NUM_MACHINE_MODES);
     bitmap_clear (selected_modes);

@@ -574,7 +574,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_graphite_transforms (); }
+  bool gate (function *) final override { return gate_graphite_transforms (); }
 
 }; // class pass_graphite
 
@@ -609,8 +609,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_graphite_transforms (); }
-  virtual unsigned int execute (function *fun) { return graphite_transforms (fun); }
+  bool gate (function *) final override { return gate_graphite_transforms (); }
+  unsigned int execute (function *fun) final override
+  {
+    return graphite_transforms (fun);
+  }
 
 }; // class pass_graphite_transforms
 

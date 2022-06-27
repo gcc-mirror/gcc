@@ -1880,13 +1880,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return TARGET_AVX && TARGET_VZEROUPPER
 	&& flag_expensive_optimizations && !optimize_size;
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_insert_vzeroupper ();
     }
@@ -1915,23 +1915,23 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return ((!timode_p || TARGET_64BIT)
 	      && TARGET_STV && TARGET_SSE2 && optimize > 1);
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return convert_scalars_to_vector (timode_p);
     }
 
-  opt_pass *clone ()
+  opt_pass *clone () final override
     {
       return new pass_stv (m_ctxt);
     }
 
-  void set_pass_param (unsigned int n, bool param)
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       timode_p = param;
@@ -2142,14 +2142,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       need_endbr = (flag_cf_protection & CF_BRANCH) != 0;
       patchable_area_size = crtl->patch_area_size - crtl->patch_area_entry;
       return need_endbr || patchable_area_size;
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       timevar_push (TV_MACH_DEP);
       rest_of_insert_endbr_and_patchable_area (need_endbr,
@@ -2406,7 +2406,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return (TARGET_AVX
 	      && TARGET_SSE_PARTIAL_REG_DEPENDENCY
@@ -2415,7 +2415,7 @@ public:
 	      && optimize_function_for_speed_p (cfun));
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return remove_partial_avx_dependency ();
     }

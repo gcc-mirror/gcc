@@ -2047,7 +2047,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return set_nothrow_function_flags ();
     }
@@ -2722,8 +2722,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override
     {
       int ret = convert_to_eh_region_ranges ();
       maybe_add_nop_after_section_switch ();

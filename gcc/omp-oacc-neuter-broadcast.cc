@@ -1945,7 +1945,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  bool gate (function *fun) final override
   {
     if (!flag_openacc)
       return false;
@@ -1961,7 +1961,7 @@ public:
     return true;
   }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return execute_omp_oacc_neuter_broadcast ();
     }

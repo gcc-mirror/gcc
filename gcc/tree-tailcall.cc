@@ -1261,9 +1261,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_tail_recursion (m_ctxt); }
-  virtual bool gate (function *) { return gate_tail_calls (); }
-  virtual unsigned int execute (function *)
+  opt_pass * clone () final override
+  {
+    return new pass_tail_recursion (m_ctxt);
+  }
+  bool gate (function *) final override { return gate_tail_calls (); }
+  unsigned int execute (function *) final override
     {
       return tree_optimize_tail_calls_1 (false);
     }
@@ -1301,8 +1304,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_tail_calls (); }
-  virtual unsigned int execute (function *) { return execute_tail_calls (); }
+  bool gate (function *) final override { return gate_tail_calls (); }
+  unsigned int execute (function *) final override
+  {
+    return execute_tail_calls ();
+  }
 
 }; // class pass_tail_calls
 

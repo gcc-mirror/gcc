@@ -864,8 +864,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tm; }
-  virtual unsigned int execute (function *) { return diagnose_tm_blocks (); }
+  bool gate (function *) final override { return flag_tm; }
+  unsigned int execute (function *) final override
+  {
+    return diagnose_tm_blocks ();
+  }
 
 }; // class pass_diagnose_tm_blocks
 
@@ -1850,8 +1853,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tm; }
-  virtual unsigned int execute (function *) { return execute_lower_tm (); }
+  bool gate (function *) final override { return flag_tm; }
+  unsigned int execute (function *) final override
+  {
+    return execute_lower_tm ();
+  }
 
 }; // class pass_lower_tm
 
@@ -2144,7 +2150,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_tm_init (); }
+  bool gate (function *) final override { return gate_tm_init (); }
 
 }; // class pass_tm_init
 
@@ -3162,7 +3168,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return execute_tm_mark (); }
+  unsigned int execute (function *) final override
+  {
+    return execute_tm_mark ();
+  }
 
 }; // class pass_tm_mark
 
@@ -3324,7 +3333,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_tm_edges
 
@@ -4085,8 +4094,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tm && optimize > 0; }
-  virtual unsigned int execute (function *) { return execute_tm_memopt (); }
+  bool gate (function *) final override { return flag_tm && optimize > 0; }
+  unsigned int execute (function *) final override
+  {
+    return execute_tm_memopt ();
+  }
 
 }; // class pass_tm_memopt
 
@@ -5667,8 +5679,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tm; }
-  virtual unsigned int execute (function *) { return ipa_tm_execute (); }
+  bool gate (function *) final override { return flag_tm; }
+  unsigned int execute (function *) final override { return ipa_tm_execute (); }
 
 }; // class pass_ipa_tm
 

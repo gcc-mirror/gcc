@@ -2403,13 +2403,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  bool gate (function *fun) final override
     {
       /* Do nothing for funcions that was produced already in SSA form.  */
       return !(fun->curr_properties & PROP_ssa);
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_build_ssa
 
