@@ -80,7 +80,7 @@ public:
   virtual ~variable_entry ()
   {}
 
-  virtual size_t get_size () const
+  size_t get_size () const final override
   {
     varpool_node *vnode = dyn_cast<varpool_node *> (node);
     if (DECL_SIZE (vnode->decl) && tree_fits_shwi_p (DECL_SIZE (vnode->decl)))
@@ -88,7 +88,7 @@ public:
     return 0;
   }
 
-  virtual void dump ()
+  void dump () final override
   {
     symbol_entry :: dump ();
     varpool_node *vnode = dyn_cast<varpool_node *> (node);
@@ -111,13 +111,13 @@ public:
   virtual ~function_entry ()
   {}
 
-  virtual void dump ()
+  void dump () final override
   {
     symbol_entry :: dump ();
     printf ("\n");
   }
 
-  virtual size_t get_size () const
+  size_t get_size () const final override
   {
     cgraph_node *cnode = dyn_cast<cgraph_node *> (node);
     gcc_assert (cnode);

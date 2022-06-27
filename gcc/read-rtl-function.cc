@@ -188,7 +188,7 @@ class fixup_insn_uid : public operand_fixup
       m_insn_uid (insn_uid)
   {}
 
-  void apply (function_reader *reader) const;
+  void apply (function_reader *reader) const final override;
 
  private:
   int m_insn_uid;
@@ -206,7 +206,7 @@ class fixup_note_insn_basic_block : public operand_fixup
       m_bb_idx (bb_idx)
   {}
 
-  void apply (function_reader *reader) const;
+  void apply (function_reader *reader) const final override;
 
  private:
   int m_bb_idx;
@@ -225,7 +225,7 @@ class fixup_expr : public fixup
 
   ~fixup_expr () { free (m_desc); }
 
-  void apply (function_reader *reader) const;
+  void apply (function_reader *reader) const final override;
 
  private:
   char *m_desc;

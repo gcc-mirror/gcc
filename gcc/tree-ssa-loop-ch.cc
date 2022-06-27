@@ -320,7 +320,7 @@ public:
 
 protected:
   /* ch_base method: */
-  virtual bool process_loop_p (class loop *loop);
+  bool process_loop_p (class loop *loop) final override;
 }; // class pass_ch
 
 const pass_data pass_data_ch_vect =
@@ -358,7 +358,7 @@ public:
 
 protected:
   /* ch_base method: */
-  virtual bool process_loop_p (class loop *loop);
+  bool process_loop_p (class loop *loop) final override;
 }; // class pass_ch_vect
 
 /* For all loops, copy the condition at the end of the loop body in front

@@ -1483,10 +1483,10 @@ private:
 
 protected:
   using allocator::grow;
-  virtual char *grow (char *, unsigned needed);
+  char *grow (char *, unsigned needed) final override;
 #if MAPPED_WRITING
   using allocator::shrink;
-  virtual void shrink (char *);
+  void shrink (char *) final override;
 #endif
 
 public:

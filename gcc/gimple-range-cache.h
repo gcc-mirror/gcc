@@ -77,8 +77,8 @@ public:
   ranger_cache (int not_executable_flag, bool use_imm_uses);
   ~ranger_cache ();
 
-  virtual bool range_of_expr (vrange &r, tree name, gimple *stmt);
-  virtual bool range_on_edge (vrange &r, edge e, tree expr);
+  bool range_of_expr (vrange &r, tree name, gimple *stmt) final override;
+  bool range_on_edge (vrange &r, edge e, tree expr) final override;
   bool block_range (vrange &r, basic_block bb, tree name, bool calc = true);
 
   bool get_global_range (vrange &r, tree name) const;

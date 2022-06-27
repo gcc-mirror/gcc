@@ -2534,9 +2534,9 @@ public:
     : eliminate_dom_walker (CDI_DOMINATORS, NULL), entry (entry_),
       m_avail_freelist (NULL) {}
 
-  virtual tree eliminate_avail (basic_block, tree op);
+  tree eliminate_avail (basic_block, tree op) final override;
 
-  virtual void eliminate_push_avail (basic_block, tree);
+  void eliminate_push_avail (basic_block, tree) final override;
 
   basic_block entry;
   /* Freelist of avail entries which are allocated from the vn_ssa_aux
