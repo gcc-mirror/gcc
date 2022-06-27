@@ -1355,8 +1355,8 @@ op_by_pieces_d::run ()
 class move_by_pieces_d : public op_by_pieces_d
 {
   insn_gen_fn m_gen_fun;
-  void generate (rtx, rtx, machine_mode);
-  bool prepare_mode (machine_mode, unsigned int);
+  void generate (rtx, rtx, machine_mode) final override;
+  bool prepare_mode (machine_mode, unsigned int) final override;
 
  public:
   move_by_pieces_d (rtx to, rtx from, unsigned HOST_WIDE_INT len,
@@ -1451,8 +1451,8 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 class store_by_pieces_d : public op_by_pieces_d
 {
   insn_gen_fn m_gen_fun;
-  void generate (rtx, rtx, machine_mode);
-  bool prepare_mode (machine_mode, unsigned int);
+  void generate (rtx, rtx, machine_mode) final override;
+  bool prepare_mode (machine_mode, unsigned int) final override;
 
  public:
   store_by_pieces_d (rtx to, by_pieces_constfn cfn, void *cfn_data,
@@ -1648,9 +1648,9 @@ class compare_by_pieces_d : public op_by_pieces_d
   rtx m_accumulator;
   int m_count, m_batch;
 
-  void generate (rtx, rtx, machine_mode);
-  bool prepare_mode (machine_mode, unsigned int);
-  void finish_mode (machine_mode);
+  void generate (rtx, rtx, machine_mode) final override;
+  bool prepare_mode (machine_mode, unsigned int) final override;
+  void finish_mode (machine_mode) final override;
  public:
   compare_by_pieces_d (rtx op0, rtx op1, by_pieces_constfn op1_cfn,
 		       void *op1_cfn_data, HOST_WIDE_INT len, int align,
