@@ -54,11 +54,11 @@ namespace detail
 {
   long double
   nextupl(long double x)
-  { return nexttowardl(x, numeric_limits<long double>::infinity()); }
+  { return nexttoward(x, numeric_limits<long double>::infinity()); }
 
   long double
   nextdownl(long double x)
-  { return nexttowardl(x, -numeric_limits<long double>::infinity()); }
+  { return nexttoward(x, -numeric_limits<long double>::infinity()); }
 }
 
 // The long double overloads of std::to_chars currently just go through printf
@@ -138,7 +138,7 @@ test01()
   for (int exponent : {-11000, -3000, -300, -50, -7, 0, 7, 50, 300, 3000, 11000})
     for (long double testcase : hex_testcases)
       {
-	testcase = ldexpl(testcase, exponent);
+	testcase = ldexp(testcase, exponent);
 	if (testcase == 0.0L || isinf(testcase))
 	  continue;
 
