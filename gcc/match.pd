@@ -3572,6 +3572,29 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && wi::lshift (wi::to_wide (@0), cand) == wi::to_wide (@2))
      (cmp @1 { build_int_cst (TREE_TYPE (@1), cand); }))))))
 
+/* Fold ((X << C1) & C2) cmp C3 into (X & (C2 >> C1)) cmp (C3 >> C1)
+	((X >> C1) & C2) cmp C3 into (X & (C2 << C1)) cmp (C3 << C1).  */
+(for cmp (ne eq)
+ (simplify
+  (cmp (bit_and:s (lshift:s @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
+  (if (tree_fits_shwi_p (@1)
+       && tree_to_shwi (@1) > 0
+       && tree_to_shwi (@1) < TYPE_PRECISION (TREE_TYPE (@0))
+       && tree_to_shwi (@1) <= wi::ctz (wi::to_wide (@3)))
+   (with { wide_int c1 = wi::to_wide (@1);
+	   wide_int c2 = wi::lrshift (wi::to_wide (@2), c1);
+	   wide_int c3 = wi::lrshift (wi::to_wide (@3), c1); }
+    (cmp (bit_and @0 { wide_int_to_tree (TREE_TYPE (@0), c2); })
+	 { wide_int_to_tree (TREE_TYPE (@0), c3); }))))
+ (simplify
+  (cmp (bit_and:s (rshift:s @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
+  (if (tree_fits_shwi_p (@1)
+       && tree_to_shwi (@1) > 0
+       && tree_to_shwi (@1) < TYPE_PRECISION (TREE_TYPE (@0))
+       && tree_to_shwi (@1) <= wi::clz (wi::to_wide (@2))
+       && tree_to_shwi (@1) <= wi::clz (wi::to_wide (@3)))
+   (cmp (bit_and @0 (lshift @2 @1)) (lshift @3 @1)))))
+
 /* Fold (X << C1) & C2 into (X << C1) & (C2 | ((1 << C1) - 1))
         (X >> C1) & C2 into (X >> C1) & (C2 | ~((type) -1 >> C1))
    if the new mask might be further optimized.  */
