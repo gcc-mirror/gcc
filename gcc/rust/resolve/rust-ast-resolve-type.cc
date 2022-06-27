@@ -454,5 +454,51 @@ ResolveRelativeTypePath::go (AST::QualifiedPathInType &path)
   return true;
 }
 
+bool
+ResolveRelativeTypePath::resolve_qual_seg (AST::QualifiedPathType &seg,
+					   CanonicalPath &result)
+{
+  if (seg.is_error ())
+    {
+      rust_error_at (seg.get_locus (), "segment has error: %s",
+		     seg.as_string ().c_str ());
+      return false;
+    }
+
+  auto type = seg.get_type ().get ();
+  NodeId type_resolved_node = ResolveType::go (type, seg.get_node_id ());
+  if (type_resolved_node == UNKNOWN_NODEID)
+    return false;
+
+  const CanonicalPath *impl_type_seg = nullptr;
+  bool ok
+    = mappings->lookup_canonical_path (mappings->get_current_crate (),
+				       type_resolved_node, &impl_type_seg);
+  rust_assert (ok);
+
+  if (!seg.has_as_clause ())
+    {
+      result = result.append (*impl_type_seg);
+      return true;
+    }
+
+  NodeId trait_resolved_node
+    = ResolveType::go (&seg.get_as_type_path (), seg.get_node_id ());
+  if (trait_resolved_node == UNKNOWN_NODEID)
+    return false;
+
+  const CanonicalPath *trait_type_seg = nullptr;
+  ok = mappings->lookup_canonical_path (mappings->get_current_crate (),
+					trait_resolved_node, &trait_type_seg);
+  rust_assert (ok);
+
+  CanonicalPath projection
+    = TraitImplProjection::resolve (seg.get_node_id (), *trait_type_seg,
+				    *impl_type_seg);
+
+  result = result.append (projection);
+  return true;
+}
+
 } // namespace Resolver
 } // namespace Rust
