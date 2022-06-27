@@ -275,8 +275,6 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    resolver->mark_decl_mutability (var.get_node_id (), var.is_mutable ());
-
     NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),

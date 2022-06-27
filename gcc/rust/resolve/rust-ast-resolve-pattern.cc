@@ -86,9 +86,6 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	      CanonicalPath::new_seg (ident.get_node_id (),
 				      ident.get_identifier ()),
 	      ident.get_node_id (), ident.get_locus ());
-
-	    resolver->mark_decl_mutability (ident.get_node_id (),
-					    ident.is_mut ());
 	  }
 	  break;
 	}

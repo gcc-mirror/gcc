@@ -68,9 +68,6 @@ public:
     resolver->get_name_scope ().insert (
       CanonicalPath::new_seg (pattern.get_node_id (), pattern.get_ident ()),
       pattern.get_node_id (), pattern.get_locus ());
-
-    resolver->mark_decl_mutability (pattern.get_node_id (),
-				    pattern.get_is_mut ());
   }
 
   void visit (AST::WildcardPattern &pattern) override
@@ -78,8 +75,6 @@ public:
     resolver->get_name_scope ().insert (
       CanonicalPath::new_seg (pattern.get_node_id (), "_"),
       pattern.get_node_id (), pattern.get_locus ());
-
-    resolver->mark_decl_mutability (pattern.get_node_id (), false);
   }
 
   // cases in a match expression

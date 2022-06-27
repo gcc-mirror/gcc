@@ -482,20 +482,5 @@ Resolver::lookup_resolved_macro (NodeId refId, NodeId *defId)
   return true;
 }
 
-void
-Resolver::mark_decl_mutability (NodeId id, bool mut)
-{
-  rust_assert (decl_mutability.find (id) == decl_mutability.end ());
-  decl_mutability[id] = mut;
-}
-
-bool
-Resolver::decl_is_mutable (NodeId id) const
-{
-  auto it = decl_mutability.find (id);
-  rust_assert (it != decl_mutability.end ());
-  return it->second;
-}
-
 } // namespace Resolver
 } // namespace Rust

@@ -72,10 +72,6 @@ public:
 
     ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
     ResolveExpr::go (constant.get_expr ().get (), prefix, canonical_prefix);
-
-    // the mutability checker needs to verify for immutable decls the number
-    // of assignments are <1. This marks an implicit assignment
-    resolver->mark_decl_mutability (constant.get_node_id (), false);
   }
 
   void visit (AST::LetStmt &stmt) override

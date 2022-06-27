@@ -176,10 +176,6 @@ ResolveTraitItems::visit (AST::TraitItemConst &constant)
 
   if (constant.has_expr ())
     ResolveExpr::go (constant.get_expr ().get (), path, cpath);
-
-  // the mutability checker needs to verify for immutable decls the number
-  // of assignments are <1. This marks an implicit assignment
-  resolver->mark_decl_mutability (constant.get_node_id (), false);
 }
 
 ResolveItem::ResolveItem (const CanonicalPath &prefix,
@@ -500,10 +496,6 @@ ResolveItem::visit (AST::ConstantItem &constant)
 
   ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
   ResolveExpr::go (constant.get_expr ().get (), path, cpath);
-
-  // the mutability checker needs to verify for immutable decls the number
-  // of assignments are <1. This marks an implicit assignment
-  resolver->mark_decl_mutability (constant.get_node_id (), false);
 }
 
 void
