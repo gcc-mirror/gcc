@@ -497,25 +497,5 @@ Resolver::decl_is_mutable (NodeId id) const
   return it->second;
 }
 
-void
-Resolver::mark_assignment_to_decl (NodeId id, NodeId assignment)
-{
-  auto it = assignment_to_decl.find (id);
-  if (it == assignment_to_decl.end ())
-    assignment_to_decl[id] = {};
-
-  assignment_to_decl[id].insert (assignment);
-}
-
-size_t
-Resolver::get_num_assignments_to_decl (NodeId id) const
-{
-  auto it = assignment_to_decl.find (id);
-  if (it == assignment_to_decl.end ())
-    return 0;
-
-  return it->second.size ();
-}
-
 } // namespace Resolver
 } // namespace Rust

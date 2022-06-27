@@ -85,11 +85,6 @@ ResolveTraitItems::visit (AST::TraitItemFunc &func)
     {
       ResolveType::go (param.get_type ().get (), param.get_node_id ());
       PatternDeclaration::go (param.get_pattern ().get ());
-
-      // the mutability checker needs to verify for immutable decls the number
-      // of assignments are <1. This marks an implicit assignment
-      resolver->mark_assignment_to_decl (
-	param.get_pattern ()->get_pattern_node_id (), param.get_node_id ());
     }
 
   if (function.has_where_clause ())
@@ -148,20 +143,12 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
   ResolveType::go (&self_type_path, self_param.get_node_id ());
   PatternDeclaration::go (&self_pattern);
 
-  resolver->mark_assignment_to_decl (self_pattern.get_node_id (),
-				     self_pattern.get_node_id ());
-
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
   for (auto &param : function.get_function_params ())
     {
       ResolveType::go (param.get_type ().get (), param.get_node_id ());
       PatternDeclaration::go (param.get_pattern ().get ());
-
-      // the mutability checker needs to verify for immutable decls the number
-      // of assignments are <1. This marks an implicit assignment
-      resolver->mark_assignment_to_decl (
-	param.get_pattern ()->get_pattern_node_id (), param.get_node_id ());
     }
 
   if (function.has_where_clause ())
@@ -193,8 +180,6 @@ ResolveTraitItems::visit (AST::TraitItemConst &constant)
   // the mutability checker needs to verify for immutable decls the number
   // of assignments are <1. This marks an implicit assignment
   resolver->mark_decl_mutability (constant.get_node_id (), false);
-  resolver->mark_assignment_to_decl (constant.get_node_id (),
-				     constant.get_node_id ());
 }
 
 ResolveItem::ResolveItem (const CanonicalPath &prefix,
@@ -500,10 +485,6 @@ ResolveItem::visit (AST::StaticItem &var)
 
   ResolveType::go (var.get_type ().get (), var.get_node_id ());
   ResolveExpr::go (var.get_expr ().get (), path, cpath);
-
-  // the mutability checker needs to verify for immutable decls the number
-  // of assignments are <1. This marks an implicit assignment
-  resolver->mark_assignment_to_decl (var.get_node_id (), var.get_node_id ());
 }
 
 void
@@ -523,8 +504,6 @@ ResolveItem::visit (AST::ConstantItem &constant)
   // the mutability checker needs to verify for immutable decls the number
   // of assignments are <1. This marks an implicit assignment
   resolver->mark_decl_mutability (constant.get_node_id (), false);
-  resolver->mark_assignment_to_decl (constant.get_node_id (),
-				     constant.get_node_id ());
 }
 
 void
@@ -570,8 +549,6 @@ ResolveItem::visit (AST::Function &function)
 
       // the mutability checker needs to verify for immutable decls the number
       // of assignments are <1. This marks an implicit assignment
-      resolver->mark_assignment_to_decl (
-	param.get_pattern ()->get_pattern_node_id (), param.get_node_id ());
     }
 
   // resolve the function body
@@ -716,20 +693,12 @@ ResolveItem::visit (AST::Method &method)
   ResolveType::go (&self_type_path, self_param.get_node_id ());
   PatternDeclaration::go (&self_pattern);
 
-  resolver->mark_assignment_to_decl (self_pattern.get_node_id (),
-				     self_pattern.get_node_id ());
-
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
   for (auto &param : method.get_function_params ())
     {
       ResolveType::go (param.get_type ().get (), param.get_node_id ());
       PatternDeclaration::go (param.get_pattern ().get ());
-
-      // the mutability checker needs to verify for immutable decls the number
-      // of assignments are <1. This marks an implicit assignment
-      resolver->mark_assignment_to_decl (
-	param.get_pattern ()->get_pattern_node_id (), param.get_node_id ());
     }
 
   // resolve any where clause items

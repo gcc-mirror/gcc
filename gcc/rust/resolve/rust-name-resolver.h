@@ -126,8 +126,6 @@ public:
 
   void mark_decl_mutability (NodeId id, bool mut);
   bool decl_is_mutable (NodeId id) const;
-  void mark_assignment_to_decl (NodeId id, NodeId assignment);
-  size_t get_num_assignments_to_decl (NodeId id) const;
 
   // proxy for scoping
   Scope &get_name_scope () { return name_scope; }
@@ -207,8 +205,6 @@ private:
 
   // map of resolved names mutability flag
   std::map<NodeId, bool> decl_mutability;
-  // map of resolved names and set of assignments to the decl
-  std::map<NodeId, std::set<NodeId>> assignment_to_decl;
 
   // keep track of the current module scope ids
   std::vector<NodeId> current_module_stack;

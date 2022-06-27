@@ -76,8 +76,6 @@ public:
     // the mutability checker needs to verify for immutable decls the number
     // of assignments are <1. This marks an implicit assignment
     resolver->mark_decl_mutability (constant.get_node_id (), false);
-    resolver->mark_assignment_to_decl (constant.get_node_id (),
-				       constant.get_node_id ());
   }
 
   void visit (AST::LetStmt &stmt) override
@@ -86,10 +84,6 @@ public:
       {
 	ResolveExpr::go (stmt.get_init_expr ().get (), prefix,
 			 canonical_prefix);
-
-	// mark the assignment
-	resolver->mark_assignment_to_decl (
-	  stmt.get_pattern ()->get_pattern_node_id (), stmt.get_node_id ());
       }
 
     PatternDeclaration::go (stmt.get_pattern ().get ());
@@ -378,11 +372,6 @@ public:
       {
 	ResolveType::go (param.get_type ().get (), param.get_node_id ());
 	PatternDeclaration::go (param.get_pattern ().get ());
-
-	// the mutability checker needs to verify for immutable decls the number
-	// of assignments are <1. This marks an implicit assignment
-	resolver->mark_assignment_to_decl (
-	  param.get_pattern ()->get_pattern_node_id (), param.get_node_id ());
       }
 
     // resolve the function body
