@@ -56,6 +56,7 @@ HIRCompileBase::setup_fndecl (tree fndecl, bool is_main_entry_point,
     }
 
   // is it a const fn
+  DECL_DECLARED_CONSTEXPR_P (fndecl) = qualifiers.is_const ();
   if (qualifiers.is_const ())
     {
       TREE_READONLY (fndecl) = 1;
@@ -630,6 +631,11 @@ HIRCompileBase::compile_function (
   ctx->pop_fn ();
   ctx->push_function (fndecl);
 
+  if (DECL_DECLARED_CONSTEXPR_P (fndecl))
+    {
+      maybe_save_constexpr_fundef (fndecl);
+    }
+
   return fndecl;
 }
 
@@ -695,6 +701,8 @@ HIRCompileBase::compile_constant_item (
 
       gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
       DECL_SAVED_TREE (fndecl) = bind_tree;
+      DECL_DECLARED_CONSTEXPR_P (fndecl) = 1;
+      maybe_save_constexpr_fundef (fndecl);
 
       ctx->pop_fn ();
 

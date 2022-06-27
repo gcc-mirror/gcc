@@ -24,6 +24,8 @@ namespace Rust {
 namespace Compile {
 
 extern tree fold_expr (tree);
+extern void
+maybe_save_constexpr_fundef (tree fun);
 
 } // namespace Compile
 } // namespace Rust
