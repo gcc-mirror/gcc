@@ -3883,7 +3883,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  && Is_Frozen (Directly_Designated_Type (gnat_entity))
 	  && No (Freeze_Node (Directly_Designated_Type (gnat_entity))))
 	{
-	  tree gnu_desig_type
+	  tree gnu_design_base_type
 	    = TYPE_IS_FAT_POINTER_P (gnu_type)
 	      ? TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_type)))
 	      : TREE_TYPE (gnu_type);
@@ -3903,7 +3903,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  /* Otherwise elaborate the designated subtype only if its base type
 	     has already been elaborated.  */
-	  else if (!TYPE_IS_DUMMY_P (gnu_desig_type))
+	  else if (!TYPE_IS_DUMMY_P (gnu_design_base_type))
 	    gnat_to_gnu_entity (Directly_Designated_Type (gnat_entity),
 				NULL_TREE, false);
 	}
