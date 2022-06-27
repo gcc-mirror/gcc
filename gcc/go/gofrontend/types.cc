@@ -4654,8 +4654,11 @@ class Sink_type : public Type
   { return false; }
 
   Btype*
-  do_get_backend(Gogo*)
-  { go_unreachable(); }
+  do_get_backend(Gogo* gogo)
+  {
+    go_assert(saw_errors());
+    return gogo->backend()->error_type();
+  }
 
   Expression*
   do_type_descriptor(Gogo*, Named_type*)

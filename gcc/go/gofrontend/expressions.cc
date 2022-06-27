@@ -1426,7 +1426,12 @@ Sink_expression::do_get_backend(Translate_context* context)
   Gogo* gogo = context->gogo();
   if (this->bvar_ == NULL)
     {
-      go_assert(this->type_ != NULL && !this->type_->is_sink_type());
+      if (this->type_ == NULL || this->type_->is_sink_type())
+	{
+	  go_assert(saw_errors());
+	  return gogo->backend()->error_expression();
+	}
+
       Named_object* fn = context->function();
       go_assert(fn != NULL);
       Bfunction* fn_ctx = fn->func_value()->get_or_make_decl(gogo, fn);
@@ -15235,7 +15240,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	   p != method_parameters->end();
 	   ++p, ++i)
 	{
-	  if (!p->name().empty())
+	  if (!p->name().empty() && !Gogo::is_sink_name(p->name()))
 	    parameters->push_back(*p);
 	  else
 	    {
