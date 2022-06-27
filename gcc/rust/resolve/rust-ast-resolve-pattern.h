@@ -34,12 +34,7 @@ public:
   {
     ResolvePattern resolver (parent);
     pattern->accept_vis (resolver);
-    if (resolver.resolved_node == UNKNOWN_NODEID)
-      {
-	rust_error_at (resolver.locus, "failed to resolve pattern %s",
-		       pattern->as_string ().c_str ());
-      }
-  };
+  }
 
   void visit (AST::IdentifierPattern &pattern) override
   {

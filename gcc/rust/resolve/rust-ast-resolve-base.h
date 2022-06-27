@@ -202,7 +202,7 @@ public:
 protected:
   ResolverBase (NodeId parent)
     : resolver (Resolver::get ()), mappings (Analysis::Mappings::get ()),
-      resolved_node (UNKNOWN_NODEID), parent (parent), locus (Location ())
+      resolved_node (UNKNOWN_NODEID), parent (parent)
   {}
 
   bool resolved () const { return resolved_node != UNKNOWN_NODEID; }
@@ -216,7 +216,6 @@ protected:
   Analysis::Mappings *mappings;
   NodeId resolved_node;
   NodeId parent;
-  Location locus;
 };
 
 } // namespace Resolver
