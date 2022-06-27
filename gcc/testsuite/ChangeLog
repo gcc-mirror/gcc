@@ -1,3 +1,31 @@
+2022-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105691
+	* gfortran.dg/index_6.f90: New test.
+
+2022-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105954
+	* gfortran.dg/pr105954.f90: New test.
+
+2022-06-26  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.dg/torture/fp-double-convert-float-1.c: Add
+	dg-require-effective-target hard_float.
+	* gcc.dg/torture/fp-int-convert-timode-3.c: Ditto.
+	* gcc.dg/torture/fp-int-convert-timode-4.c: Ditto.
+	* gcc.dg/torture/fp-uint64-convert-double-1.c: Ditto.
+	* gcc.dg/torture/fp-uint64-convert-double-2.c: Ditto.
+
+2022-06-26  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/debug/btf/btf-bitfields-1.c: Adjust the checked offsets
+	for targets which pack structures by default.
+
+2022-06-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/warn/Wstringop-overflow-4.C: XFAIL a test.
+
 2022-06-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/sancov/cmp0.c: Adjust for conversion to ranger.

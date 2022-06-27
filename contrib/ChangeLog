@@ -1,3 +1,10 @@
+2022-06-26  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* unicode/EastAsianWidth.txt: Update to Unicode 14.0.0.
+	* unicode/PropList.txt: Likewise.
+	* unicode/README: Likewise.
+	* unicode/UnicodeData.txt: Likewise.
+
 2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* config-list.mk: Remove tilegx and tilepro entries.

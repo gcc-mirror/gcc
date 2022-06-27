@@ -1,3 +1,7 @@
+2022-06-26  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* generated_cpp_wcwidth.h: Generated from updated Unicode data files.
+
 2022-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/105732

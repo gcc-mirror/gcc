@@ -1,3 +1,8 @@
+2022-06-26  Simon Marchi  <simon.marchi@efficios.com>
+
+	* configure.ac: Add AC_CONFIG_MACRO_DIRS call.
+	* configure: Re-generate.
+
 2022-05-23  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-demangle.c (d_make_comp): Adjust.

@@ -1,3 +1,8 @@
+2022-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Correct use of $host.
+
 2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* MAINTAINERS: Remove tilegx and tilepro entries.

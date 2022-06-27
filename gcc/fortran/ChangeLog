@@ -1,3 +1,17 @@
+2022-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105691
+	* simplify.cc (gfc_simplify_index): Replace old simplification
+	code by the equivalent of the runtime library implementation.  Use
+	HOST_WIDE_INT instead of int for string index, length variables.
+
+2022-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105954
+	* decl.cc (variable_decl): Adjust upper bounds for explicit-shape
+	specs with constant bound expressions to ensure non-negative
+	extents.
+
 2022-06-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/105813
