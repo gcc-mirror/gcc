@@ -4297,7 +4297,6 @@ package body Sem_Ch12 is
 
       if Nkind (N) = N_Package_Instantiation then
          Act_Decl_Id := New_Copy (Defining_Entity (N));
-         Set_Comes_From_Source (Act_Decl_Id, True);
 
          if Nkind (Defining_Unit_Name (N)) = N_Defining_Program_Unit_Name then
             Act_Decl_Name :=
