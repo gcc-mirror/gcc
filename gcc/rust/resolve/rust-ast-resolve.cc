@@ -111,30 +111,6 @@ NameResolution::go (AST::Crate &crate)
   resolver->pop_module_scope ();
 }
 
-// rust-ast-resolve-item.h
-
-void
-ResolveItem::resolve_impl_item (AST::TraitImplItem *item,
-				const CanonicalPath &prefix,
-				const CanonicalPath &canonical_prefix)
-{
-  ResolveImplItems::go (item, prefix, canonical_prefix);
-}
-
-void
-ResolveItem::resolve_impl_item (AST::InherentImplItem *item,
-				const CanonicalPath &prefix,
-				const CanonicalPath &canonical_prefix)
-{
-  ResolveImplItems::go (item, prefix, canonical_prefix);
-}
-
-void
-ResolveItem::resolve_extern_item (AST::ExternalItem *item)
-{
-  ResolveExternItem::go (item);
-}
-
 // qualified path in type
 
 bool

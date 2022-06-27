@@ -914,6 +914,28 @@ ResolveItem::visit (AST::ExternBlock &extern_block)
     }
 }
 
+void
+ResolveItem::resolve_impl_item (AST::TraitImplItem *item,
+				const CanonicalPath &prefix,
+				const CanonicalPath &canonical_prefix)
+{
+  ResolveImplItems::go (item, prefix, canonical_prefix);
+}
+
+void
+ResolveItem::resolve_impl_item (AST::InherentImplItem *item,
+				const CanonicalPath &prefix,
+				const CanonicalPath &canonical_prefix)
+{
+  ResolveImplItems::go (item, prefix, canonical_prefix);
+}
+
+void
+ResolveItem::resolve_extern_item (AST::ExternalItem *item)
+{
+  ResolveExternItem::go (item);
+}
+
 static void
 flatten_glob (const AST::UseTreeGlob &glob,
 	      std::vector<AST::SimplePath> &paths);
@@ -1296,6 +1318,7 @@ rust_simple_path_resolve_test (void)
 {
   rust_use_dec_flattening ();
 }
+
 } // namespace selftest
 
 #endif // CHECKING_P
