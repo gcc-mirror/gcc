@@ -124,7 +124,7 @@ struct fs::_Dir : _Dir_base
   dir_and_pathname() const noexcept
   {
     const fs::path& p = entry.path();
-#if _GLIBCXX_HAVE_DIRFD
+#if _GLIBCXX_HAVE_DIRFD && _GLIBCXX_HAVE_OPENAT
     if (!p.empty())
       return {::dirfd(this->dirp), std::prev(p.end())->c_str()};
 #endif
