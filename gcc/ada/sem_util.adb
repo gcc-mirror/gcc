@@ -23305,7 +23305,7 @@ package body Sem_Util is
       ------------------------------
 
       function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean is
-         pragma Assert (Typ = Underlying_Type (Typ));
+         pragma Assert (if Present (Typ) then Typ = Underlying_Type (Typ));
 
          function Depends_On_Discriminant (Typ : Entity_Id) return Boolean;
          --  Called for untagged record and protected types. Return True if Typ
@@ -23342,6 +23342,14 @@ package body Sem_Util is
          end Depends_On_Discriminant;
 
       begin
+         --  This is a protected type without Corresponding_Record_Type set,
+         --  typically because expansion is disabled. The safe thing to do is
+         --  to return True, so Needs_Secondary_Stack returns False.
+
+         if No (Typ) then
+            return True;
+         end if;
+
          --  First see if we have a variant part and return False if it depends
          --  on discriminants.
 
@@ -23367,11 +23375,15 @@ package body Sem_Util is
                                 Underlying_Type (Etype (Comp));
 
                begin
-                  if Is_Record_Type (Comp_Type)
-                        or else
-                     Is_Protected_Type (Comp_Type)
-                  then
+                  if Is_Record_Type (Comp_Type) then
                      if not Caller_Known_Size_Record (Comp_Type) then
+                        return False;
+                     end if;
+
+                  elsif Is_Protected_Type (Comp_Type) then
+                     if not Caller_Known_Size_Record
+                              (Corresponding_Record_Type (Comp_Type))
+                     then
                         return False;
                      end if;
 
@@ -23478,7 +23490,7 @@ package body Sem_Util is
    begin
       --  This is a private type which is not completed yet. This can only
       --  happen in a default expression (of a formal parameter or of a
-      --  record component). Do not expand transient scope in this case.
+      --  record component). The safe thing to do is to return False.
 
       if No (Typ) then
          return False;
@@ -23533,12 +23545,17 @@ package body Sem_Util is
       elsif Is_Definite_Subtype (Typ) or else Is_Task_Type (Typ) then
          return Large_Max_Size_Mutable (Typ);
 
-      --  Indefinite (discriminated) record or protected type
+      --  Indefinite (discriminated) record type
 
-      elsif Is_Record_Type (Typ) or else Is_Protected_Type (Typ) then
+      elsif Is_Record_Type (Typ) then
          return not Caller_Known_Size_Record (Typ);
 
-      --  Unconstrained array
+      --  Indefinite (discriminated) protected type
+
+      elsif Is_Protected_Type (Typ) then
+         return not Caller_Known_Size_Record (Corresponding_Record_Type (Typ));
+
+      --  Unconstrained array type
 
       else
          pragma Assert (Is_Array_Type (Typ) and not Is_Definite_Subtype (Typ));
