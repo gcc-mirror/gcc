@@ -1,5 +1,6 @@
 // { dg-options "-std=c++17 -fno-fast-math" }
 // { dg-do compile { target c++17 } }
+// { dg-require-cmath "" }
 
 // Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
