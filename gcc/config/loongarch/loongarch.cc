@@ -189,7 +189,7 @@ const enum reg_class loongarch_regno_to_class[FIRST_PSEUDO_REGISTER] = {
     GR_REGS,	     GR_REGS,	      GR_REGS,	       GR_REGS,
     JIRL_REGS,       JIRL_REGS,       JIRL_REGS,       JIRL_REGS,
     JIRL_REGS,       JIRL_REGS,       JIRL_REGS,       JIRL_REGS,
-    SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,
+    SIBCALL_REGS,    JIRL_REGS,       SIBCALL_REGS,    SIBCALL_REGS,
     SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,    SIBCALL_REGS,
     SIBCALL_REGS,    GR_REGS,	      GR_REGS,	       JIRL_REGS,
     JIRL_REGS,       JIRL_REGS,       JIRL_REGS,       JIRL_REGS,
