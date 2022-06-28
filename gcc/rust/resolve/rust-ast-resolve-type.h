@@ -56,11 +56,9 @@ class ResolveType : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static NodeId go (AST::Type *type,
-		    bool canonicalize_type_with_generics = false,
-		    CanonicalPath *canonical_path = nullptr)
+  static NodeId go (AST::Type *type)
   {
-    ResolveType resolver (canonicalize_type_with_generics, canonical_path);
+    ResolveType resolver;
     type->accept_vis (resolver);
     return resolver.resolved_node;
   }
@@ -74,10 +72,10 @@ public:
   void visit (AST::BareFunctionType &fntype) override
   {
     for (auto &param : fntype.get_function_params ())
-      ResolveType::go (param.get_type ().get (), fntype.get_node_id ());
+      ResolveType::go (param.get_type ().get ());
 
     if (fntype.has_return_type ())
-      ResolveType::go (fntype.get_return_type ().get (), fntype.get_node_id ());
+      ResolveType::go (fntype.get_return_type ().get ());
   }
 
   void visit (AST::TupleType &tuple) override
@@ -89,23 +87,12 @@ public:
       }
 
     for (auto &elem : tuple.get_elems ())
-      ResolveType::go (elem.get (), tuple.get_node_id ());
+      ResolveType::go (elem.get ());
   }
 
   void visit (AST::TypePath &path) override
   {
-    if (ResolveRelativeTypePath::go (path, resolved_node))
-      {
-	if (canonical_path == nullptr)
-	  return;
-
-	const CanonicalPath *type_path = nullptr;
-	if (mappings->lookup_canonical_path (mappings->get_current_crate (),
-					     resolved_node, &type_path))
-	  {
-	    *canonical_path = *type_path;
-	  }
-      }
+    ResolveRelativeTypePath::go (path, resolved_node);
   }
 
   void visit (AST::QualifiedPathInType &path) override
@@ -130,15 +117,7 @@ public:
   void visit (AST::SliceType &type) override;
 
 private:
-  ResolveType (bool canonicalize_type_with_generics,
-	       CanonicalPath *canonical_path)
-    : ResolverBase (),
-      canonicalize_type_with_generics (canonicalize_type_with_generics),
-      canonical_path (canonical_path)
-  {}
-
-  bool canonicalize_type_with_generics;
-  CanonicalPath *canonical_path;
+  ResolveType () : ResolverBase () {}
 };
 
 class ResolveTypeBound : public ResolverBase
@@ -146,27 +125,20 @@ class ResolveTypeBound : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static NodeId go (AST::TypeParamBound *type,
-		    bool canonicalize_type_with_generics = false)
+  static NodeId go (AST::TypeParamBound *type)
   {
-    ResolveTypeBound resolver (canonicalize_type_with_generics);
+    ResolveTypeBound resolver;
     type->accept_vis (resolver);
     return resolver.resolved_node;
   };
 
   void visit (AST::TraitBound &bound) override
   {
-    resolved_node = ResolveType::go (&bound.get_type_path (),
-				     canonicalize_type_with_generics);
+    resolved_node = ResolveType::go (&bound.get_type_path ());
   }
 
 private:
-  ResolveTypeBound (bool canonicalize_type_with_generics)
-    : ResolverBase (),
-      canonicalize_type_with_generics (canonicalize_type_with_generics)
-  {}
-
-  bool canonicalize_type_with_generics;
+  ResolveTypeBound () : ResolverBase () {}
 };
 
 class ResolveGenericParam : public ResolverBase
@@ -191,13 +163,13 @@ public:
   {
     // if it has a type lets resolve it
     if (param.has_type ())
-      ResolveType::go (param.get_type ().get (), param.get_node_id ());
+      ResolveType::go (param.get_type ().get ());
 
     if (param.has_type_param_bounds ())
       {
 	for (auto &bound : param.get_type_param_bounds ())
 	  {
-	    ResolveTypeBound::go (bound.get (), param.get_node_id ());
+	    ResolveTypeBound::go (bound.get ());
 	  }
       }
 
@@ -233,18 +205,39 @@ public:
 
   void visit (AST::TypeBoundWhereClauseItem &item) override
   {
-    ResolveType::go (item.get_type ().get (), item.get_node_id ());
+    ResolveType::go (item.get_type ().get ());
     if (item.has_type_param_bounds ())
       {
 	for (auto &bound : item.get_type_param_bounds ())
 	  {
-	    ResolveTypeBound::go (bound.get (), item.get_node_id ());
+	    ResolveTypeBound::go (bound.get ());
 	  }
       }
   }
 
 private:
   ResolveWhereClause () : ResolverBase () {}
+};
+
+class ResolveTypeToCanonicalPath : public ResolverBase
+{
+  using Rust::Resolver::ResolverBase::visit;
+
+public:
+  static bool go (AST::Type *type, CanonicalPath &result);
+
+  void visit (AST::TypePath &path) override;
+
+  void visit (AST::ReferenceType &type) override;
+
+  void visit (AST::RawPointerType &type) override;
+
+  void visit (AST::SliceType &type) override;
+
+private:
+  ResolveTypeToCanonicalPath ();
+
+  CanonicalPath result;
 };
 
 } // namespace Resolver

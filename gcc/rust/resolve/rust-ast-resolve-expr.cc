@@ -167,7 +167,7 @@ ResolveExpr::visit (AST::NegationExpr &expr)
 void
 ResolveExpr::visit (AST::TypeCastExpr &expr)
 {
-  ResolveType::go (expr.get_type_to_cast_to ().get (), expr.get_node_id ());
+  ResolveType::go (expr.get_type_to_cast_to ().get ());
   ResolveExpr::go (expr.get_casted_expr ().get (), prefix, canonical_prefix);
 }
 

@@ -35,7 +35,7 @@ ResolveType::visit (AST::ArrayType &type)
 void
 ResolveType::visit (AST::TraitObjectTypeOneBound &type)
 {
-  ResolveTypeBound::go (&type.get_trait_bound (), type.get_node_id ());
+  ResolveTypeBound::go (&type.get_trait_bound ());
 }
 
 void
@@ -44,40 +44,20 @@ ResolveType::visit (AST::TraitObjectType &type)
   for (auto &bound : type.get_type_param_bounds ())
     {
       /* NodeId bound_resolved_id = */
-      ResolveTypeBound::go (bound.get (), type.get_node_id ());
+      ResolveTypeBound::go (bound.get ());
     }
 }
 
 void
 ResolveType::visit (AST::ReferenceType &type)
 {
-  CanonicalPath path = CanonicalPath::create_empty ();
-  resolved_node = ResolveType::go (type.get_type_referenced ().get (),
-				   canonicalize_type_with_generics, &path);
-  if (canonical_path != nullptr)
-    {
-      std::string ref_type_str = type.is_mut () ? "mut" : "";
-      std::string ref_path = "&" + ref_type_str + " " + path.get ();
-      *canonical_path = canonical_path->append (
-	CanonicalPath::new_seg (type.get_node_id (), ref_path));
-    }
+  resolved_node = ResolveType::go (type.get_type_referenced ().get ());
 }
 
 void
 ResolveType::visit (AST::RawPointerType &type)
 {
-  CanonicalPath path = CanonicalPath::create_empty ();
-  resolved_node = ResolveType::go (type.get_type_pointed_to ().get (),
-				   canonicalize_type_with_generics, &path);
-  if (canonical_path != nullptr)
-    {
-      std::string ptr_type_str
-	= type.get_pointer_type () == AST::RawPointerType::CONST ? "const"
-								 : "mut";
-      std::string ptr_path = "*" + ptr_type_str + " " + path.get ();
-      *canonical_path = canonical_path->append (
-	CanonicalPath::new_seg (type.get_node_id (), ptr_path));
-    }
+  resolved_node = ResolveType::go (type.get_type_pointed_to ().get ());
 }
 
 void
@@ -95,15 +75,7 @@ ResolveType::visit (AST::NeverType &type)
 void
 ResolveType::visit (AST::SliceType &type)
 {
-  CanonicalPath path = CanonicalPath::create_empty ();
-  resolved_node = ResolveType::go (type.get_elem_type ().get (),
-				   canonicalize_type_with_generics, &path);
-  if (canonical_path != nullptr)
-    {
-      std::string slice_path = "[" + path.get () + "]";
-      *canonical_path = canonical_path->append (
-	CanonicalPath::new_seg (type.get_node_id (), slice_path));
-    }
+  resolved_node = ResolveType::go (type.get_elem_type ().get ());
 }
 
 // resolve relative type-paths
@@ -159,7 +131,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	      {
 		for (auto &gt : s->get_generic_args ().get_type_args ())
 		  {
-		    ResolveType::go (gt.get (), UNKNOWN_NODEID);
+		    ResolveType::go (gt.get ());
 		  }
 	      }
 	  }
@@ -317,15 +289,14 @@ ResolveRelativeQualTypePath::resolve_qual_seg (AST::QualifiedPathType &seg)
     }
 
   auto type = seg.get_type ().get ();
-  NodeId type_resolved_node = ResolveType::go (type, seg.get_node_id ());
+  NodeId type_resolved_node = ResolveType::go (type);
   if (type_resolved_node == UNKNOWN_NODEID)
     return false;
 
   if (!seg.has_as_clause ())
     return true;
 
-  NodeId trait_resolved_node
-    = ResolveType::go (&seg.get_as_type_path (), seg.get_node_id ());
+  NodeId trait_resolved_node = ResolveType::go (&seg.get_as_type_path ());
   if (trait_resolved_node == UNKNOWN_NODEID)
     return false;
 
@@ -357,6 +328,83 @@ ResolveRelativeQualTypePath::visit (AST::TypePathSegment &seg)
       return;
     }
 }
+
+// resolve to canonical path
+
+bool
+ResolveTypeToCanonicalPath::go (AST::Type *type, CanonicalPath &result)
+{
+  ResolveTypeToCanonicalPath resolver;
+  type->accept_vis (resolver);
+  result = resolver.result;
+  return !resolver.result.is_empty ();
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
+{
+  NodeId resolved_node = UNKNOWN_NODEID;
+  if (!resolver->lookup_resolved_name (path.get_node_id (), &resolved_node))
+    {
+      resolver->lookup_resolved_type (path.get_node_id (), &resolved_node);
+    }
+
+  if (resolved_node == UNKNOWN_NODEID)
+    return;
+
+  const CanonicalPath *type_path = nullptr;
+  if (mappings->lookup_canonical_path (mappings->get_current_crate (),
+				       resolved_node, &type_path))
+    {
+      result = *type_path;
+    }
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::ReferenceType &type)
+{
+  CanonicalPath path = CanonicalPath::create_empty ();
+  bool ok
+    = ResolveTypeToCanonicalPath::go (type.get_type_referenced ().get (), path);
+  if (ok)
+    {
+      std::string ref_type_str = type.is_mut () ? "mut" : "";
+      std::string ref_path = "&" + ref_type_str + " " + path.get ();
+      result = CanonicalPath::new_seg (type.get_node_id (), ref_path);
+    }
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::RawPointerType &type)
+{
+  CanonicalPath path = CanonicalPath::create_empty ();
+  bool ok
+    = ResolveTypeToCanonicalPath::go (type.get_type_pointed_to ().get (), path);
+  if (ok)
+    {
+      std::string ptr_type_str
+	= type.get_pointer_type () == AST::RawPointerType::CONST ? "const"
+								 : "mut";
+      std::string ptr_path = "*" + ptr_type_str + " " + path.get ();
+      result = CanonicalPath::new_seg (type.get_node_id (), ptr_path);
+    }
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::SliceType &type)
+{
+  CanonicalPath path = CanonicalPath::create_empty ();
+  bool ok = ResolveTypeToCanonicalPath::go (type.get_elem_type ().get (), path);
+  if (ok)
+    {
+      std::string slice_path = "[" + path.get () + "]";
+      result = CanonicalPath::new_seg (type.get_node_id (), slice_path);
+    }
+}
+
+ResolveTypeToCanonicalPath::ResolveTypeToCanonicalPath ()
+  : ResolverBase (), result (CanonicalPath::create_empty ())
+{}
 
 } // namespace Resolver
 } // namespace Rust

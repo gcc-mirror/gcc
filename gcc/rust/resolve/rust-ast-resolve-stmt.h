@@ -71,7 +71,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
+    ResolveType::go (constant.get_type ().get ());
     ResolveExpr::go (constant.get_expr ().get (), prefix, canonical_prefix);
   }
 
@@ -85,7 +85,7 @@ public:
 
     PatternDeclaration::go (stmt.get_pattern ().get ());
     if (stmt.has_type ())
-      ResolveType::go (stmt.get_type ().get (), stmt.get_node_id ());
+      ResolveType::go (stmt.get_type ().get ());
   }
 
   void visit (AST::TupleStruct &struct_decl) override
@@ -117,8 +117,7 @@ public:
       }
 
     for (AST::TupleField &field : struct_decl.get_fields ())
-      ResolveType::go (field.get_field_type ().get (),
-		       struct_decl.get_node_id ());
+      ResolveType::go (field.get_field_type ().get ());
 
     resolver->get_type_scope ().pop ();
   }
@@ -199,7 +198,7 @@ public:
 	if (field.get_field_type ()->is_marked_for_strip ())
 	  continue;
 
-	ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+	ResolveType::go (field.get_field_type ().get ());
       }
   }
 
@@ -225,7 +224,7 @@ public:
 	if (field.get_field_type ()->is_marked_for_strip ())
 	  continue;
 
-	ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+	ResolveType::go (field.get_field_type ().get ());
       }
   }
 
@@ -282,8 +281,7 @@ public:
 	if (field.get_field_type ()->is_marked_for_strip ())
 	  continue;
 
-	ResolveType::go (field.get_field_type ().get (),
-			 struct_decl.get_node_id ());
+	ResolveType::go (field.get_field_type ().get ());
       }
 
     resolver->get_type_scope ().pop ();
@@ -322,8 +320,7 @@ public:
 	if (field.get_field_type ()->is_marked_for_strip ())
 	  continue;
 
-	ResolveType::go (field.get_field_type ().get (),
-			 union_decl.get_node_id ());
+	ResolveType::go (field.get_field_type ().get ());
       }
 
     resolver->get_type_scope ().pop ();
@@ -361,14 +358,13 @@ public:
       }
 
     if (function.has_return_type ())
-      ResolveType::go (function.get_return_type ().get (),
-		       function.get_node_id ());
+      ResolveType::go (function.get_return_type ().get ());
 
     // we make a new scope so the names of parameters are resolved and shadowed
     // correctly
     for (auto &param : function.get_function_params ())
       {
-	ResolveType::go (param.get_type ().get (), param.get_node_id ());
+	ResolveType::go (param.get_type ().get ());
 	PatternDeclaration::go (param.get_pattern ().get ());
       }
 
