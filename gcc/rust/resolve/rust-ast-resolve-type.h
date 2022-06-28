@@ -194,21 +194,6 @@ private:
   CanonicalPath *canonical_path;
 };
 
-class ResolvePathSegmentToCanonicalPath
-{
-public:
-  static CanonicalPath resolve (AST::PathExprSegment &seg)
-  {
-    if (!seg.has_generic_args ())
-      return CanonicalPath::new_seg (seg.get_node_id (),
-				     seg.get_ident_segment ().as_string ());
-
-    ResolveType::type_resolve_generic_args (seg.get_generic_args ());
-    return CanonicalPath::new_seg (seg.get_node_id (),
-				   seg.get_ident_segment ().as_string ());
-  }
-};
-
 class ResolveTypeBound : public ResolverBase
 {
   using Rust::Resolver::ResolverBase::visit;
