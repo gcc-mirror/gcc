@@ -48,7 +48,7 @@ struct fs::_Dir : _Dir_base
        [[maybe_unused]] bool filename_only, error_code& ec)
   : _Dir_base(fdcwd(), p.c_str(), skip_permission_denied, nofollow, ec)
   {
-#if _GLIBCXX_HAVE_DIRFD
+#if _GLIBCXX_HAVE_DIRFD && _GLIBCXX_HAVE_OPENAT && _GLIBCXX_HAVE_UNLINKAT
     if (filename_only)
       return; // Do not store path p when we aren't going to use it.
 #endif
