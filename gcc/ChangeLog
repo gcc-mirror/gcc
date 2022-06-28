@@ -1,3 +1,232 @@
+2022-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* genmatch.cc: Add "final" and "override" to various vfunc
+	implementations, removing redundant "virtual" as appropriate.
+	* gensupport.cc: Likewise.
+	* gimple-range-cache.h: Likewise.
+	* ipa-icf-gimple.h: Likewise.
+	* ipa-icf.h: Likewise.
+	* read-md.h: Likewise.
+	* read-rtl-function.cc: Likewise.
+	* tree-ssa-loop-ch.cc: Likewise.
+	* tree-ssa-sccvn.cc: Likewise.
+
+2022-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/i386/i386-features.h: Add "final" and "override" to
+	scalar_chain vfunc implementations as appropriate.
+
+2022-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-switch-conversion.h: Add "final" and "override" to cluster
+	vfunc implementations as appropriate.
+
+2022-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* expr.cc: Add "final" and "override" to op_by_pieces_d vfunc
+	implementations as appropriate.
+
+2022-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* compare-elim.cc: Add "final" and "override" to dom_walker vfunc
+	implementations, removing redundant "virtual" as appropriate.
+	* gimple-ssa-strength-reduction.cc: Likewise.
+	* ipa-prop.cc: Likewise.
+	* rtl-ssa/blocks.cc: Likewise.
+	* tree-into-ssa.cc: Likewise.
+	* tree-ssa-dom.cc: Likewise.
+	* tree-ssa-math-opts.cc: Likewise.
+	* tree-ssa-phiopt.cc: Likewise.
+	* tree-ssa-propagate.cc: Likewise.
+	* tree-ssa-sccvn.cc: Likewise.
+	* tree-ssa-strlen.cc: Likewise.
+	* tree-ssa-uncprop.cc: Likewise.
+
+2022-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* adjust-alignment.cc: Add "final" and "override" to opt_pass
+	vfunc implementations, removing redundant "virtual" as
+	appropriate.
+	* asan.cc: Likewise.
+	* auto-inc-dec.cc: Likewise.
+	* auto-profile.cc: Likewise.
+	* bb-reorder.cc: Likewise.
+	* cfgcleanup.cc: Likewise.
+	* cfgexpand.cc: Likewise.
+	* cfgrtl.cc: Likewise.
+	* cgraphbuild.cc: Likewise.
+	* combine-stack-adj.cc: Likewise.
+	* combine.cc: Likewise.
+	* compare-elim.cc: Likewise.
+	* config/i386/i386-features.cc: Likewise.
+	* coroutine-passes.cc: Likewise.
+	* cprop.cc: Likewise.
+	* cse.cc: Likewise.
+	* dce.cc: Likewise.
+	* df-core.cc: Likewise.
+	* dse.cc: Likewise.
+	* dwarf2cfi.cc: Likewise.
+	* early-remat.cc: Likewise.
+	* except.cc: Likewise.
+	* final.cc: Likewise.
+	* function.cc: Likewise.
+	* fwprop.cc: Likewise.
+	* gcse.cc: Likewise.
+	* gimple-harden-conditionals.cc: Likewise.
+	* gimple-if-to-switch.cc: Likewise.
+	* gimple-isel.cc: Likewise.
+	* gimple-laddress.cc: Likewise.
+	* gimple-loop-interchange.cc: Likewise.
+	* gimple-loop-jam.cc: Likewise.
+	* gimple-loop-versioning.cc: Likewise.
+	* gimple-low.cc: Likewise.
+	* gimple-ssa-backprop.cc: Likewise.
+	* gimple-ssa-evrp.cc: Likewise.
+	* gimple-ssa-isolate-paths.cc: Likewise.
+	* gimple-ssa-nonnull-compare.cc: Likewise.
+	* gimple-ssa-split-paths.cc: Likewise.
+	* gimple-ssa-store-merging.cc: Likewise.
+	* gimple-ssa-strength-reduction.cc: Likewise.
+	* gimple-ssa-warn-access.cc: Likewise.
+	* gimple-ssa-warn-alloca.cc: Likewise.
+	* gimple-ssa-warn-restrict.cc: Likewise.
+	* gimple-warn-recursion.cc: Likewise.
+	* graphite.cc: Likewise.
+	* ifcvt.cc: Likewise.
+	* init-regs.cc: Likewise.
+	* ipa-comdats.cc: Likewise.
+	* ipa-cp.cc: Likewise.
+	* ipa-devirt.cc: Likewise.
+	* ipa-fnsummary.cc: Likewise.
+	* ipa-free-lang-data.cc: Likewise.
+	* ipa-icf.cc: Likewise.
+	* ipa-inline.cc: Likewise.
+	* ipa-modref.cc: Likewise.
+	* ipa-profile.cc: Likewise.
+	* ipa-pure-const.cc: Likewise.
+	* ipa-reference.cc: Likewise.
+	* ipa-split.cc: Likewise.
+	* ipa-sra.cc: Likewise.
+	* ipa-visibility.cc: Likewise.
+	* ipa.cc: Likewise.
+	* ira.cc: Likewise.
+	* jump.cc: Likewise.
+	* loop-init.cc: Likewise.
+	* lower-subreg.cc: Likewise.
+	* mode-switching.cc: Likewise.
+	* modulo-sched.cc: Likewise.
+	* multiple_target.cc: Likewise.
+	* omp-expand.cc: Likewise.
+	* omp-low.cc: Likewise.
+	* omp-oacc-kernels-decompose.cc: Likewise.
+	* omp-oacc-neuter-broadcast.cc: Likewise.
+	* omp-offload.cc: Likewise.
+	* omp-simd-clone.cc: Likewise.
+	* passes.cc: Likewise.
+	* postreload-gcse.cc: Likewise.
+	* postreload.cc: Likewise.
+	* predict.cc: Likewise.
+	* recog.cc: Likewise.
+	* ree.cc: Likewise.
+	* reg-stack.cc: Likewise.
+	* regcprop.cc: Likewise.
+	* reginfo.cc: Likewise.
+	* regrename.cc: Likewise.
+	* reorg.cc: Likewise.
+	* sancov.cc: Likewise.
+	* sanopt.cc: Likewise.
+	* sched-rgn.cc: Likewise.
+	* stack-ptr-mod.cc: Likewise.
+	* store-motion.cc: Likewise.
+	* tracer.cc: Likewise.
+	* trans-mem.cc: Likewise.
+	* tree-call-cdce.cc: Likewise.
+	* tree-cfg.cc: Likewise.
+	* tree-cfgcleanup.cc: Likewise.
+	* tree-complex.cc: Likewise.
+	* tree-eh.cc: Likewise.
+	* tree-emutls.cc: Likewise.
+	* tree-if-conv.cc: Likewise.
+	* tree-into-ssa.cc: Likewise.
+	* tree-loop-distribution.cc: Likewise.
+	* tree-nrv.cc: Likewise.
+	* tree-object-size.cc: Likewise.
+	* tree-parloops.cc: Likewise.
+	* tree-predcom.cc: Likewise.
+	* tree-profile.cc: Likewise.
+	* tree-sra.cc: Likewise.
+	* tree-ssa-ccp.cc: Likewise.
+	* tree-ssa-copy.cc: Likewise.
+	* tree-ssa-dce.cc: Likewise.
+	* tree-ssa-dom.cc: Likewise.
+	* tree-ssa-dse.cc: Likewise.
+	* tree-ssa-forwprop.cc: Likewise.
+	* tree-ssa-ifcombine.cc: Likewise.
+	* tree-ssa-loop-ch.cc: Likewise.
+	* tree-ssa-loop-im.cc: Likewise.
+	* tree-ssa-loop-ivcanon.cc: Likewise.
+	* tree-ssa-loop-prefetch.cc: Likewise.
+	* tree-ssa-loop-split.cc: Likewise.
+	* tree-ssa-loop-unswitch.cc: Likewise.
+	* tree-ssa-loop.cc: Likewise.
+	* tree-ssa-math-opts.cc: Likewise.
+	* tree-ssa-phiopt.cc: Likewise.
+	* tree-ssa-phiprop.cc: Likewise.
+	* tree-ssa-pre.cc: Likewise.
+	* tree-ssa-reassoc.cc: Likewise.
+	* tree-ssa-sccvn.cc: Likewise.
+	* tree-ssa-sink.cc: Likewise.
+	* tree-ssa-strlen.cc: Likewise.
+	* tree-ssa-structalias.cc: Likewise.
+	* tree-ssa-uncprop.cc: Likewise.
+	* tree-ssa-uninit.cc: Likewise.
+	* tree-ssanames.cc: Likewise.
+	* tree-stdarg.cc: Likewise.
+	* tree-switch-conversion.cc: Likewise.
+	* tree-tailcall.cc: Likewise.
+	* tree-vect-generic.cc: Likewise.
+	* tree-vectorizer.cc: Likewise.
+	* tree-vrp.cc: Likewise.
+	* tsan.cc: Likewise.
+	* ubsan.cc: Likewise.
+	* var-tracking.cc: Likewise.
+	* vtable-verify.cc: Likewise.
+	* web.cc: Likewise.
+
+2022-06-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (*movbi): Remove assembler bug workarounds.
+	(jump): Likewise.
+	(movdi_symbol_save_scc): Likewise.
+
+2022-06-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/7061
+	* config/i386/i386.md (*highpartdisi2): New define_insn_and_split.
+
+2022-06-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/94026
+	* match.pd (((X << C1) & C2) eq/ne C3): New simplification.
+	(((X >> C1) & C2) eq/ne C3): Likewise.
+
+2022-06-27  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* statistics.cc: Include tree.h.
+	(get_function_name): New function.
+	(statistics_fini_pass_2): Call get_function_name instead of
+	current_function_name.
+	(statistics_counter_event): Call get_function_name instead of
+	function_name.
+	(statistics_histogram_event): Likewise.
+
+2022-06-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md:
+	Suppress unnecessary emitting nop insn in the split patterns for
+	integer/FP constant synthesis, and add new peephole2 pattern that
+	folds such synthesized additions.
+
 2022-06-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-ssa-dom.cc (dom_jt_state): Pass ranger to constructor

@@ -1,3 +1,12 @@
+2022-06-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (plugin_lock): New lock.
+	(claim_file_handler): Use mutex for critical section.
+	(onload): Initialize mutex.
+	* configure.ac: Check for pthread.h.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2022-06-20  Martin Liska  <mliska@suse.cz>
 
 	* lto-plugin.c (struct plugin_file_info): Add skip_file flag.

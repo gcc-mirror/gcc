@@ -1,3 +1,16 @@
+2022-06-27  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* mapper-client.cc: Include <memory> via "system.h".
+	* mapper-resolver.cc: Ditto.
+	* module.cc: Ditto.
+
+2022-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* cxx-pretty-print.h: Add "final" and "override" to various vfunc
+	implementations, removing redundant "virtual" as appropriate.
+	* module.cc: Likewise.
+
 2022-06-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/87729

@@ -1,3 +1,9 @@
+2022-06-27  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* libcc1plugin.cc: Include <memory> via "system.h".
+	* libcp1plugin.cc: Ditto.
+
 2022-06-01  David Seifert  <soap@gentoo.org>
 
 	PR plugins/95648

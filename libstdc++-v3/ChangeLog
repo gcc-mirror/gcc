@@ -1,3 +1,76 @@
+2022-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/20_util/to_chars/long_double.cc: Use cmath
+	long double overloads for nexttoward and ldexp.
+
+2022-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/experimental/simd/standard_abi_usable.cc: Require
+	cmath support.
+	* testsuite/experimental/simd/standard_abi_usable_2.cc:
+	Likewise.
+
+2022-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/26_numerics/complex/proj.cc: Skip test in the
+	circumstances in which the implementation of proj is known to
+	be broken.
+
+2022-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	* src/c++17/fs_dir.cc (dir_and_pathname): Use dirfd if
+	_GLIBCXX_HAVE_OPENAT.
+
+2022-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/27_io/filesystem/iterators/recursive_directory_iterator.cc
+	(test06): Don't create symlinks when NO_SYMLINKS is defined.
+
+2022-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/lib/dg-options.exp (add_options_for_net_ts):
+	Add -Wl,--gc-sections for RTEMS targets.
+	* testsuite/experimental/net/timer/waitable/dest.cc: Link-time
+	xfail on RTEMS.
+	* testsuite/experimental/net/timer/waitable/ops.cc: Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc:
+	Execution-time xfail on RTEMS.
+	* testsuite/experimental/net/internet/resolver/ops/reverse.cc:
+	Likewise.
+
+2022-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/ext/mt_allocator/22309_thread.cc: Include <string>.
+
+2022-06-27  Joel Brobecker  <brobecker@adacore.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_fs.h (__gnu_test::nonexistent_path):
+	Always include a counter in the filename returned.
+
+2022-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move_only_function.h (_Never_valueless_alt):
+	Define partial specialization for std::move_only_function.
+
+2022-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_Build_FUN::_S_fun): Define fallback case
+	as deleted.
+	(__accepted_index, _Extra_visit_slot_needed): Replace class
+	templates with variable templates.
+
+2022-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (__is_path_iter_src): Replace class
+	template with variable template.
+
+2022-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (is_clock_v): Define to false.
+	(is_clock_v<T>): Define partial specialization for true cases.
+	(is_clock): Define in terms of is_clock_v.
+
 2022-06-24  Xi Ruoyao  <xry111@xry111.site>
 
 	* scripts/extract_symvers.in: Use grep -E instead of egrep.

@@ -1,3 +1,8 @@
+2022-06-27  Tom de Vries  <tdevries@suse.de>
+
+	* configure.ac: Build libiberty pic variant for gdbserver.
+	* configure: Regenerate.
+
 2022-06-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.
