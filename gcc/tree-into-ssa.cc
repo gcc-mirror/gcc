@@ -3109,7 +3109,7 @@ release_ssa_name_after_update_ssa (tree name)
 
 
 /* Insert new PHI nodes to replace VAR.  DFS contains dominance
-   frontier information.  BLOCKS is the set of blocks to be updated.
+   frontier information.
 
    This is slightly different than the regular PHI insertion
    algorithm.  The value of UPDATE_FLAGS controls how PHI nodes for
@@ -3132,8 +3132,8 @@ release_ssa_name_after_update_ssa (tree name)
      names is not pruned.  PHI nodes are inserted at every IDF block.  */
 
 static void
-insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
-                              unsigned update_flags)
+insert_updated_phi_nodes_for (tree var, bitmap_head *dfs,
+			      unsigned update_flags)
 {
   basic_block entry;
   def_blocks *db;
@@ -3197,16 +3197,16 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
 
       /* FIXME, this is not needed if we are updating symbols.  We are
 	 already starting at the ENTRY block anyway.  */
-      bitmap_ior_into (blocks, pruned_idf);
       EXECUTE_IF_SET_IN_BITMAP (pruned_idf, 0, i, bi)
 	{
 	  edge e;
 	  edge_iterator ei;
 	  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
 
+	  mark_block_for_update (bb);
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    if (e->src->index >= 0)
-	      bitmap_set_bit (blocks, e->src->index);
+	      mark_block_for_update (e->src);
 	}
 
       insert_phi_nodes_for (var, pruned_idf, true);
@@ -3475,14 +3475,12 @@ update_ssa (unsigned update_flags)
 	  auto_sbitmap tmp (SBITMAP_SIZE (old_ssa_names));
 	  bitmap_copy (tmp, old_ssa_names);
 	  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, sbi)
-	    insert_updated_phi_nodes_for (ssa_name (i), dfs, blocks_to_update,
-	                                  update_flags);
+	    insert_updated_phi_nodes_for (ssa_name (i), dfs, update_flags);
 	}
 
       symbols_to_rename.qsort (insert_updated_phi_nodes_compare_uids);
       FOR_EACH_VEC_ELT (symbols_to_rename, i, sym)
-	insert_updated_phi_nodes_for (sym, dfs, blocks_to_update,
-	                              update_flags);
+	insert_updated_phi_nodes_for (sym, dfs, update_flags);
 
       FOR_EACH_BB_FN (bb, cfun)
 	bitmap_clear (&dfs[bb->index]);
