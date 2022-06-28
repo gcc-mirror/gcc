@@ -99,18 +99,22 @@ struct _Dir_base
   struct _At_path
   {
     // No file descriptor given, so interpret the pathname relative to the CWD.
-    _At_path(const char* p) noexcept
+    _At_path(const posix::char_type* p) noexcept
     : pathname(p), dir_fd(fdcwd()), offset(0)
     { }
 
-    _At_path(int fd, const char* p, size_t offset) noexcept
+    _At_path(int fd, const posix::char_type* p, size_t offset) noexcept
     : pathname(p), dir_fd(fd), offset(offset)
     { }
 
-    const char* path() const noexcept { return pathname; }
+    const posix::char_type*
+    path() const noexcept { return pathname; }
 
-    int dir() const noexcept { return dir_fd; }
-    const char* path_at_dir() const noexcept { return pathname + offset; }
+    int
+    dir() const noexcept { return dir_fd; }
+
+    const posix::char_type*
+    path_at_dir() const noexcept { return pathname + offset; }
 
   private:
     const posix::char_type* pathname; // Full path relative to CWD.
