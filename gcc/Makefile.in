@@ -146,8 +146,11 @@ endif
 # CFLAGS is for the user to override to, e.g., do a cross build with -O2.
 # TCFLAGS is used for compilations with the GCC just built.
 # T_CFLAGS is used for all compilations and is overridden by t-* files.
+# TFLAGS is also for the user to override, passed down from the top-level
+# Makefile.  It is used for all compilations.
 T_CFLAGS =
 TCFLAGS =
+TFLAGS =
 CFLAGS = @CFLAGS@
 CXXFLAGS = @CXXFLAGS@
 LDFLAGS = @LDFLAGS@
@@ -457,7 +460,7 @@ T_STDINT_GCC_H = $(srcdir)/ginclude/stdint-gcc.h
 # The GCC to use for compiling crt*.o.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES).
-GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include -L$(objdir)/../ld
+GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include -L$(objdir)/../ld $(TFLAGS)
 
 # Set if the compiler was configured with --with-build-sysroot.
 SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
@@ -1193,6 +1196,7 @@ FLAGS_TO_PASS = \
 	"MAKEINFOFLAGS=$(MAKEINFOFLAGS)" \
 	"MAKEOVERRIDES=" \
 	"SHELL=$(SHELL)" \
+	"TFLAGS=$(TFLAGS)" \
 	"exeext=$(exeext)" \
 	"build_exeext=$(build_exeext)" \
 	"objext=$(objext)" \
