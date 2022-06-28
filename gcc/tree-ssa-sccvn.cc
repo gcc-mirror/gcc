@@ -4983,7 +4983,7 @@ valueized_wider_op (tree wide_type, tree op, bool allow_truncate)
 
   /* For constants simply extend it.  */
   if (TREE_CODE (op) == INTEGER_CST)
-    return wide_int_to_tree (wide_type, wi::to_wide (op));
+    return wide_int_to_tree (wide_type, wi::to_widest (op));
 
   return NULL_TREE;
 }
