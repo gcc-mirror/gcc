@@ -356,7 +356,7 @@ else
    getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
    getgid getpid getuid geteuid umask getegid \
    secure_getenv __secure_getenv mkostemp strnlen strndup newlocale \
-   freelocale uselocale strerror_l)
+   freelocale uselocale strerror_l strtof128 strfromf128)
 fi
 
 # Check strerror_r, cannot be above as versions with two and three arguments exist
@@ -582,24 +582,101 @@ GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK2([copysignl], [long double])
 GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK1([fabs], [double])
 GCC_CHECK_MATH_INLINE_BUILTIN_FALLBACK1([fabsl], [long double])
 
+GCC_CHECK_MATH_FUNC([acosf128])
+GCC_CHECK_MATH_FUNC([acoshf128])
+GCC_CHECK_MATH_FUNC([asinf128])
+GCC_CHECK_MATH_FUNC([asinhf128])
+GCC_CHECK_MATH_FUNC([atan2f128])
+GCC_CHECK_MATH_FUNC([atanf128])
+GCC_CHECK_MATH_FUNC([atanhf128])
+GCC_CHECK_MATH_FUNC([cargf128])
+GCC_CHECK_MATH_FUNC([ceilf128])
+GCC_CHECK_MATH_FUNC([copysignf128])
+GCC_CHECK_MATH_FUNC([cosf128])
+GCC_CHECK_MATH_FUNC([ccosf128])
+GCC_CHECK_MATH_FUNC([coshf128])
+GCC_CHECK_MATH_FUNC([ccoshf128])
+GCC_CHECK_MATH_FUNC([expf128])
+GCC_CHECK_MATH_FUNC([cexpf128])
+GCC_CHECK_MATH_FUNC([fabsf128])
+GCC_CHECK_MATH_FUNC([cabsf128])
+GCC_CHECK_MATH_FUNC([floorf128])
+GCC_CHECK_MATH_FUNC([fmaf128])
+GCC_CHECK_MATH_FUNC([fmodf128])
+GCC_CHECK_MATH_FUNC([frexpf128])
+GCC_CHECK_MATH_FUNC([hypotf128])
+GCC_CHECK_MATH_FUNC([ldexpf128])
+GCC_CHECK_MATH_FUNC([logf128])
+GCC_CHECK_MATH_FUNC([clogf128])
+GCC_CHECK_MATH_FUNC([log10f128])
+GCC_CHECK_MATH_FUNC([clog10f128])
+GCC_CHECK_MATH_FUNC([nextafterf128])
+GCC_CHECK_MATH_FUNC([powf128])
+GCC_CHECK_MATH_FUNC([cpowf128])
+GCC_CHECK_MATH_FUNC([roundf128])
+GCC_CHECK_MATH_FUNC([lroundf128])
+GCC_CHECK_MATH_FUNC([llroundf128])
+GCC_CHECK_MATH_FUNC([scalbnf128])
+GCC_CHECK_MATH_FUNC([sinf128])
+GCC_CHECK_MATH_FUNC([csinf128])
+GCC_CHECK_MATH_FUNC([sinhf128])
+GCC_CHECK_MATH_FUNC([csinhf128])
+GCC_CHECK_MATH_FUNC([sqrtf128])
+GCC_CHECK_MATH_FUNC([csqrtf128])
+GCC_CHECK_MATH_FUNC([tanf128])
+GCC_CHECK_MATH_FUNC([ctanf128])
+GCC_CHECK_MATH_FUNC([tanhf128])
+GCC_CHECK_MATH_FUNC([ctanhf128])
+GCC_CHECK_MATH_FUNC([truncf128])
+GCC_CHECK_MATH_FUNC([erff128])
+GCC_CHECK_MATH_FUNC([erfcf128])
+GCC_CHECK_MATH_FUNC([j0f128])
+GCC_CHECK_MATH_FUNC([j1f128])
+GCC_CHECK_MATH_FUNC([jnf128])
+GCC_CHECK_MATH_FUNC([y0f128])
+GCC_CHECK_MATH_FUNC([y1f128])
+GCC_CHECK_MATH_FUNC([ynf128])
+GCC_CHECK_MATH_FUNC([tgammaf128])
+GCC_CHECK_MATH_FUNC([lgammaf128])
+
+GCC_CHECK_MATH_FUNC([cacosf128])
+GCC_CHECK_MATH_FUNC([cacoshf128])
+GCC_CHECK_MATH_FUNC([casinf128])
+GCC_CHECK_MATH_FUNC([casinhf128])
+GCC_CHECK_MATH_FUNC([catanf128])
+GCC_CHECK_MATH_FUNC([catanhf128])
+
 # Check whether the system has a working stat()
 LIBGFOR_CHECK_WORKING_STAT
 
 # Check whether __mingw_snprintf() is present
 LIBGFOR_CHECK_MINGW_SNPRINTF
 
+have_iec_60559_libc_support=no
+if test "x$ac_cv_func_strtof128$ac_cv_func_strfromf128" = xyesyes \
+   && test "x$gcc_cv_math_func_sinf128$gcc_cv_math_func_cacosf128" = xyesyes; then
+  have_iec_60559_libc_support=yes
+fi
+
 # Check whether libquadmath should be used
 AC_ARG_ENABLE(libquadmath-support,
 AS_HELP_STRING([--disable-libquadmath-support],
   [disable libquadmath support for Fortran]),
 ENABLE_LIBQUADMATH_SUPPORT=$enableval,
-ENABLE_LIBQUADMATH_SUPPORT=yes)
+if test "x$have_iec_60559_libc_support" = xyes; then
+  ENABLE_LIBQUADMATH_SUPPORT=default
+else
+  ENABLE_LIBQUADMATH_SUPPORT=yes
+fi)
 enable_libquadmath_support=
 if test "${ENABLE_LIBQUADMATH_SUPPORT}" = "no" ; then
   enable_libquadmath_support=no
+elif test "${ENABLE_LIBQUADMATH_SUPPORT}" = "default" ; then
+  enable_libquadmath_support=default
 fi
 
-# Check whether we have a __float128 type, depends on enable_libquadmath_support
+# Check whether we have a _Float128 type, depends on enable_libquadmath_support
+# and have_iec_60559_libc_support.
 LIBGFOR_CHECK_FLOAT128
 
 # Check for GNU libc feenableexcept

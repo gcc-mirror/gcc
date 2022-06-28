@@ -837,18 +837,60 @@ snprintf (buffer, size, "%+-#.*e", (prec), (val))
 #define DTOA2L(prec,val) \
 snprintf (buffer, size, "%+-#.*Le", (prec), (val))
 
+#if defined(GFC_REAL_16_USE_IEC_60559) || defined(GFC_REAL_17_USE_IEC_60559)
+/* strfromf128 unfortunately doesn't allow +, - and # modifiers
+   nor .* (only allows .number).  For +, work around it by adding
+   leading + manually for !signbit values.  For - I don't see why
+   we need it, when we don't specify field minimum width.
+   For #, add . if it is missing.  Assume size is at least 2.  */
+static int
+gfor_strfromf128 (char *buffer, size_t size, int kind, int prec, _Float128 val)
+{
+  int ret, n = 0;
+  char fmt[sizeof (int) * 3 + 5];
+  snprintf (fmt, sizeof fmt, "%%.%d%c", prec, kind);
+  if (!__builtin_signbit (val))
+    {
+      n = 1;
+      buffer[0] = '+';
+    }
+  ret = strfromf128 (buffer + n, size - n, fmt, val) + n;
+  if ((size_t) ret < size - 1)
+    {
+      size_t s = strcspn (buffer, ".e");
+      if (buffer[s] != '.')
+	{
+	  if (buffer[s] == '\0')
+	    buffer[s + 1] = '\0';
+	  else
+	    memmove (buffer + s + 1, buffer + s, ret + 1 - s);
+	  buffer[s] = '.';
+	  ++ret;
+	}
+    }
+  return ret;
+}
+#endif
 
 #if defined(HAVE_GFC_REAL_17)
 # if defined(POWER_IEEE128)
 #  define DTOA2Q(prec,val) \
 __snprintfieee128 (buffer, size, "%+-#.*Le", (prec), (val))
+# elif defined(GFC_REAL_17_USE_IEC_60559)
+#  define DTOA2Q(prec,val) \
+gfor_strfromf128 (buffer, size, 'e', (prec), (val))
 # else
 #  define DTOA2Q(prec,val) \
 quadmath_snprintf (buffer, size, "%+-#.*Qe", (prec), (val))
 # endif
 #elif defined(GFC_REAL_16_IS_FLOAT128)
-# define DTOA2Q(prec,val) \
+# if defined(GFC_REAL_16_USE_IEC_60559)
+#  define DTOA2Q(prec,val) \
+gfor_strfromf128 (buffer, size, 'e', (prec), (val))
+# else
+#  define DTOA2Q(prec,val) \
 quadmath_snprintf (buffer, size, "%+-#.*Qe", (prec), (val))
+# endif
 #endif
 
 #define FDTOA(suff,prec,val) TOKENPASTE(FDTOA2,suff)(prec,val)
@@ -865,13 +907,21 @@ snprintf (buffer, size, "%+-#.*Lf", (prec), (val))
 # if defined(POWER_IEEE128)
 #  define FDTOA2Q(prec,val) \
 __snprintfieee128 (buffer, size, "%+-#.*Lf", (prec), (val))
+# elif defined(GFC_REAL_17_USE_IEC_60559)
+#  define FDTOA2Q(prec,val) \
+gfor_strfromf128 (buffer, size, 'f', (prec), (val))
 # else
 # define FDTOA2Q(prec,val) \
 quadmath_snprintf (buffer, size, "%+-#.*Qf", (prec), (val))
 # endif
 #elif defined(GFC_REAL_16_IS_FLOAT128)
-# define FDTOA2Q(prec,val) \
+# if defined(GFC_REAL_16_USE_IEC_60559)
+#  define FDTOA2Q(prec,val) \
+gfor_strfromf128 (buffer, size, 'f', (prec), (val))
+# else
+#  define FDTOA2Q(prec,val) \
 quadmath_snprintf (buffer, size, "%+-#.*Qf", (prec), (val))
+# endif
 #endif
 
 

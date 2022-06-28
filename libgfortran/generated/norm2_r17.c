@@ -31,6 +31,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined(POWER_IEEE128)
 #define MATHFUNC(funcname) __ ## funcname ## ieee128
+#elif defined(GFC_REAL_17_USE_IEC_60559)
+#define MATHFUNC(funcname) funcname ## f128
 #else
 #define MATHFUNC(funcname) funcname ## q
 #endif

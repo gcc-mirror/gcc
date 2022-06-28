@@ -58,8 +58,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* If we're support quad-precision floating-point type, include the
    header to our support library.  */
-#ifdef HAVE_FLOAT128
-#  include "quadmath_weak.h"
+#if defined(HAVE_FLOAT128) && !defined(USE_IEC_60559)
+# include "quadmath_weak.h"
 #endif
 
 #ifdef __MINGW32__
@@ -322,6 +322,8 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
 # ifdef HAVE_GFC_REAL_16
 #  ifdef GFC_REAL_16_IS_LONG_DOUBLE
 #   define GFC_REAL_16_INFINITY __builtin_infl ()
+#  elif defined GFC_REAL_16_USE_IEC_60559
+#   define GFC_REAL_16_INFINITY __builtin_inff128 ()
 #  else
 #   define GFC_REAL_16_INFINITY __builtin_infq ()
 #  endif
@@ -343,6 +345,8 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
 # ifdef HAVE_GFC_REAL_16
 #  ifdef GFC_REAL_16_IS_LONG_DOUBLE
 #   define GFC_REAL_16_QUIET_NAN __builtin_nanl ("")
+#  elif defined GFC_REAL_16_USE_IEC_60559
+#   define GFC_REAL_16_QUIET_NAN __builtin_nanf128 ("")
 #  else
 #   define GFC_REAL_16_QUIET_NAN nanq ("")
 #  endif

@@ -264,31 +264,35 @@ __mingw_snprintf (NULL, 0, "%d\n", 1);
 dnl Check whether we have a __float128 type
 AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
   LIBQUADSPEC=
+  LIBQUADLIB=
+  LIBQUADLIB_DEP=
+  LIBQUADINCLUDE=
+  USE_IEC_60559=no
 
   if test "x$enable_libquadmath_support" != xno; then
 
-  AC_CACHE_CHECK([whether we have a usable __float128 type],
+  AC_CACHE_CHECK([whether we have a usable _Float128 type],
                  libgfor_cv_have_float128, [
    GCC_TRY_COMPILE_OR_LINK([
-    typedef _Complex float __attribute__((mode(TC))) __complex128;
-
-    __float128 foo (__float128 x)
+    _Float128 foo (_Float128 x)
     {
 
-     __complex128 z1, z2;
+     _Complex _Float128 z1, z2;
 
      z1 = x;
-     z2 = x / 7.Q;
+     z2 = x / 7.F128;
      z2 /= z1;
 
-     return (__float128) z2;
+     return (_Float128) z2;
     }
 
-    __float128 bar (__float128 x)
+    _Float128 bar (_Float128 x)
     {
-      return x * __builtin_huge_valq ();
+      return x * __builtin_huge_valf128 ();
     }
   ],[
+    foo (1.2F128);
+    bar (1.2F128);
     foo (1.2Q);
     bar (1.2Q);
   ],[
@@ -297,8 +301,16 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
     libgfor_cv_have_float128=no
 ])])
 
+    if test "x$have_iec_60559_libc_support$enable_libquadmath_support$libgfor_cv_have_float128" = xyesdefaultyes; then
+      USE_IEC_60559=yes
+    fi
+
+
   if test "x$libgfor_cv_have_float128" = xyes; then
-    AC_DEFINE(HAVE_FLOAT128, 1, [Define if have a usable __float128 type.])
+    if test "x$USE_IEC_60559" = xyes; then
+      AC_DEFINE(USE_IEC_60559, 1, [Define if IEC 60559 *f128 APIs should be used for _Float128.])
+    fi
+    AC_DEFINE(HAVE_FLOAT128, 1, [Define if have a usable _Float128 type.])
 
     dnl Check whether -Wl,--as-needed resp. -Wl,-zignore is supported
     dnl 
@@ -339,26 +351,30 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
     ])
 
     dnl For static libgfortran linkage, depend on libquadmath only if needed.
+    dnl If using *f128 APIs from libc/libm, depend on libquadmath only if needed
+    dnl even for dynamic libgfortran linkage, and don't link libgfortran against
+    dnl -lquadmath.
     if test "x$libgfor_cv_have_as_needed" = xyes; then
-      LIBQUADSPEC="%{static-libgfortran:$libgfor_cv_as_needed_option} -lquadmath %{static-libgfortran:$libgfor_cv_no_as_needed_option}"
+      if test "x$USE_IEC_60559" = xyes; then
+	LIBQUADSPEC="$libgfor_cv_as_needed_option -lquadmath $libgfor_cv_no_as_needed_option"
+      else
+	LIBQUADSPEC="%{static-libgfortran:$libgfor_cv_as_needed_option} -lquadmath %{static-libgfortran:$libgfor_cv_no_as_needed_option}"
+      fi
     else
       LIBQUADSPEC="-lquadmath"
     fi
-    if test -f ../libquadmath/libquadmath.la; then
-      LIBQUADLIB=../libquadmath/libquadmath.la
-      LIBQUADLIB_DEP=../libquadmath/libquadmath.la
-      LIBQUADINCLUDE='-I$(srcdir)/../libquadmath'
-    else
-      LIBQUADLIB="-lquadmath"
-      LIBQUADLIB_DEP=
-      LIBQUADINCLUDE=
+    if test "x$USE_IEC_60559" != xyes; then
+      if test -f ../libquadmath/libquadmath.la; then
+	LIBQUADLIB=../libquadmath/libquadmath.la
+	LIBQUADLIB_DEP=../libquadmath/libquadmath.la
+	LIBQUADINCLUDE='-I$(srcdir)/../libquadmath'
+      else
+	LIBQUADLIB="-lquadmath"
+      fi
     fi
-  fi
   else
-    # for --disable-quadmath
-    LIBQUADLIB=
-    LIBQUADLIB_DEP=
-    LIBQUADINCLUDE=
+    USE_IEC_60559=no
+  fi
   fi
 
   dnl For the spec file
@@ -366,9 +382,7 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
   AC_SUBST(LIBQUADLIB)
   AC_SUBST(LIBQUADLIB_DEP)
   AC_SUBST(LIBQUADINCLUDE)
-
-  dnl We need a conditional for the Makefile
-  AM_CONDITIONAL(LIBGFOR_BUILD_QUAD, [test "x$libgfor_cv_have_float128" = xyes])
+  AC_SUBST(USE_IEC_60559)
 ])
 
 

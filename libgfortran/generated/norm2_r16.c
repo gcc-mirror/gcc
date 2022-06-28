@@ -30,7 +30,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (HAVE_GFC_REAL_16) && defined (HAVE_GFC_REAL_16) && (defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_SQRTL)) && (defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_FABSL))
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
+#if defined(GFC_REAL_16_USE_IEC_60559)
+#define MATHFUNC(funcname) funcname ## f128
+#else
 #define MATHFUNC(funcname) funcname ## q
+#endif
 #else
 #define MATHFUNC(funcname) funcname ## l
 #endif

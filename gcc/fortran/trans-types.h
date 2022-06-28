@@ -58,6 +58,10 @@ extern GTY(()) tree gfc_charlen_type_node;
    and _Float128.  */
 extern bool gfc_real16_is_float128;
 
+/* True if IEC 60559 *f128 APIs should be used for _Float128 rather than
+   libquadmath *q APIs.  */
+extern bool gfc_real16_use_iec_60559;
+
 enum gfc_packed {
   PACKED_NO = 0,
   PACKED_PARTIAL,

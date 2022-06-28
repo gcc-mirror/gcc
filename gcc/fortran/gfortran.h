@@ -2665,6 +2665,9 @@ typedef struct
   unsigned int c_double : 1;
   unsigned int c_long_double : 1;
   unsigned int c_float128 : 1;
+  /* True if for _Float128 C2X IEC 60559 *f128 APIs should be used
+     instead of libquadmath *q APIs.  */
+  unsigned int use_iec_60559 : 1;
 }
 gfc_real_info;
 

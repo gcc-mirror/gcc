@@ -52,11 +52,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifdef GFC_REAL_16_IS_FLOAT128
 
-# define _THRESH -106.566990228185312813205074546585730Q
-# define _M_2_SQRTPI M_2_SQRTPIq
-# define _INF __builtin_infq()
-# define _ERFC(x) erfcq(x)
-# define _EXP(x) expq(x)
+# ifdef GFC_REAL_16_USE_IEC_60559
+#  define _THRESH -106.566990228185312813205074546585730F128
+#  define _M_2_SQRTPI M_2_SQRTPIf128
+#  define _INF __builtin_inff128()
+#  define _ERFC(x) erfcf128(x)
+#  define _EXP(x) expf128(x)
+# else
+#  define _THRESH -106.566990228185312813205074546585730Q
+#  define _M_2_SQRTPI M_2_SQRTPIq
+#  define _INF __builtin_infq()
+#  define _ERFC(x) erfcq(x)
+#  define _EXP(x) expq(x)
+# endif
 
 #else
 
@@ -139,12 +147,15 @@ ERFC_SCALED(16)
 /* For quadruple-precision, netlib's implementation is
    not accurate enough.  We provide another one.  */
 
-# define _THRESH -106.566990228185312813205074546585730Q
-# define _M_2_SQRTPI M_2_SQRTPIq
+# define _THRESH GFC_REAL_17_LITERAL(-106.566990228185312813205074546585730)
+# define _M_2_SQRTPI GFC_REAL_17_LITERAL(M_2_SQRTPI)
 # define _INF __builtin_inff128()
 # ifdef POWER_IEEE128
 #  define _ERFC(x) __erfcieee128(x)
 #  define _EXP(x) __expieee128(x)
+# elif defined(GFC_REAL_17_USE_IEC_60559)
+#  define _ERFC(x) erfcf128(x)
+#  define _EXP(x) expf128(x)
 # else
 #  define _ERFC(x) erfcq(x)
 #  define _EXP(x) expq(x)

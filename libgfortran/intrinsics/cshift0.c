@@ -132,7 +132,7 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 /* FIXME: This here is a hack, which will have to be removed when
    the array descriptor is reworked.  Currently, we don't store the
    kind value for the type, but only the size.  Because on targets with
-   __float128, we have sizeof(logn double) == sizeof(__float128),
+   _Float128, we have sizeof(long double) == sizeof(_Float128),
    we cannot discriminate here and have to fall back to the generic
    handling (which is suboptimal).  */
 #if !defined(GFC_REAL_16_IS_FLOAT128)
@@ -162,7 +162,7 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 /* FIXME: This here is a hack, which will have to be removed when
    the array descriptor is reworked.  Currently, we don't store the
    kind value for the type, but only the size.  Because on targets with
-   __float128, we have sizeof(logn double) == sizeof(__float128),
+   _Float128, we have sizeof(long double) == sizeof(_Float128),
    we cannot discriminate here and have to fall back to the generic
    handling (which is suboptimal).  */
 #if !defined(GFC_REAL_16_IS_FLOAT128)
