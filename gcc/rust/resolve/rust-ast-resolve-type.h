@@ -79,15 +79,10 @@ protected:
   bool failure_flag;
 };
 
-class ResolveRelativeTypePath : public ResolveTypeToCanonicalPath
+class ResolveRelativeTypePath
 {
-  using ResolveTypeToCanonicalPath::visit;
-
 public:
   static bool go (AST::TypePath &path, NodeId &resolved_node_id);
-
-private:
-  ResolveRelativeTypePath (CanonicalPath qualified_path);
 };
 
 class ResolveRelativeQualTypePath : public ResolverBase

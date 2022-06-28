@@ -245,19 +245,11 @@ ResolveType::visit (AST::SliceType &type)
 
 // resolve relative type-paths
 
-ResolveRelativeTypePath::ResolveRelativeTypePath (CanonicalPath qualified_path)
-  : ResolveTypeToCanonicalPath (true, true)
-{
-  result = qualified_path;
-}
-
 bool
 ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 {
-  CanonicalPath result = CanonicalPath::create_empty ();
-  ResolveRelativeTypePath o (result);
-  auto &resolver = o.resolver;
-  auto &mappings = o.mappings;
+  auto resolver = Resolver::get ();
+  auto mappings = Analysis::Mappings::get ();
 
   NodeId module_scope_id = resolver->peek_current_module_scope ();
   NodeId previous_resolved_node_id = module_scope_id;
