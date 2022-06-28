@@ -274,10 +274,14 @@ package Snames is
 
    --  Names for packages that are treated specially by the compiler
 
+   Name_Arith_64                       : constant Name_Id := N + $;
+   Name_Arith_128                      : constant Name_Id := N + $;
    Name_Exception_Traces               : constant Name_Id := N + $;
    Name_Finalization                   : constant Name_Id := N + $;
    Name_Interfaces                     : constant Name_Id := N + $;
+   Name_Memory                         : constant Name_Id := N + $;
    Name_Most_Recent_Exception          : constant Name_Id := N + $;
+   Name_Stack_Checking                 : constant Name_Id := N + $;
    Name_Standard                       : constant Name_Id := N + $;
    Name_System                         : constant Name_Id := N + $;
    Name_Text_IO                        : constant Name_Id := N + $;
