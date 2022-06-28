@@ -105,6 +105,8 @@ test03()
   if (!__gnu_test::permissions_are_testable())
     return;
 
+  clean_env();
+
   auto p = __gnu_test::nonexistent_path();
   create_directories(p/"tmp");
   permissions(p, fs::perms::none);
@@ -129,8 +131,10 @@ test03()
 void
 test04()
 {
+  clean_env();
+
   __gnu_test::scoped_file f;
-  set_env("TMPDIR", f.path.string());
+  set_env("TMP", f.path.string());
   std::error_code ec;
   auto r = fs::temp_directory_path(ec);
   VERIFY( ec == std::make_error_code(std::errc::not_a_directory) );
