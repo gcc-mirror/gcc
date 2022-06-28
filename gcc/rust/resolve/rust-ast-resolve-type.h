@@ -85,12 +85,30 @@ class ResolveRelativeTypePath : public ResolveTypeToCanonicalPath
 
 public:
   static bool go (AST::TypePath &path, NodeId &resolved_node_id);
-  static bool go (AST::QualifiedPathInType &path);
 
 private:
   ResolveRelativeTypePath (CanonicalPath qualified_path);
+};
 
+class ResolveRelativeQualTypePath : public ResolverBase
+{
+  using ResolverBase::visit;
+
+public:
+  static bool go (AST::QualifiedPathInType &path);
+
+  void visit (AST::TypePathSegmentGeneric &seg) override;
+
+  void visit (AST::TypePathSegment &seg) override;
+
+protected:
   bool resolve_qual_seg (AST::QualifiedPathType &seg, CanonicalPath &result);
+
+private:
+  ResolveRelativeQualTypePath (CanonicalPath qualified_path);
+
+  CanonicalPath result;
+  bool failure_flag;
 };
 
 class ResolveType : public ResolverBase
@@ -152,7 +170,7 @@ public:
 
   void visit (AST::QualifiedPathInType &path) override
   {
-    ResolveRelativeTypePath::go (path);
+    ResolveRelativeQualTypePath::go (path);
   }
 
   void visit (AST::ArrayType &type) override;
