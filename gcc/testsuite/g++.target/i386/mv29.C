@@ -49,6 +49,9 @@ int __attribute__ ((target("arch=znver3"))) foo () {
   return 9;
 }
 
+int __attribute__ ((target("arch=znver4"))) foo () {
+  return 10;
+}
 
 int main ()
 {
@@ -72,6 +75,8 @@ int main ()
     assert (val == 8);
   else if (__builtin_cpu_is ("znver3"))
     assert (val == 9);
+  else if (__builtin_cpu_is ("znver4"))
+    assert (val == 10);
   else
     assert (val == 0);
 

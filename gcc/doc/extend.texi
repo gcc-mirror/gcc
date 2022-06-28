@@ -21587,6 +21587,10 @@ AMD Family 19h CPU.
 
 @item znver3
 AMD Family 19h Zen version 3.
+
+@item znver4
+AMD Family 19h Zen version 4.
+
 @end table
 
 Here is an example:
