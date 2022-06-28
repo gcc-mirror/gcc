@@ -598,13 +598,10 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
   rust_assert (!self_cpath.is_empty ());
 
   // Setup paths
-  bool canonicalize_type_args = !impl_block.has_generics ();
-  bool type_resolve_generic_args = false;
-
+  std::string raw_impl_type_path = impl_block.get_type ()->as_string ();
   CanonicalPath impl_type
-    = ResolveTypeToCanonicalPath::resolve (*impl_block.get_type ().get (),
-					   canonicalize_type_args,
-					   type_resolve_generic_args);
+    = CanonicalPath::new_seg (impl_block.get_type ()->get_node_id (),
+			      raw_impl_type_path);
   CanonicalPath impl_prefix = prefix.append (impl_type);
 
   // see https://godbolt.org/z/a3vMbsT6W
@@ -762,17 +759,15 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
   rust_assert (!canonical_impl_type.is_empty ());
 
   // setup paths
-  bool canonicalize_type_args = !impl_block.has_generics ();
-  bool type_resolve_generic_args = false;
-
+  std::string raw_impl_type_path = impl_block.get_type ()->as_string ();
   CanonicalPath impl_type_seg
-    = ResolveTypeToCanonicalPath::resolve (*impl_block.get_type ().get (),
-					   canonicalize_type_args,
-					   type_resolve_generic_args);
+    = CanonicalPath::new_seg (impl_block.get_type ()->get_node_id (),
+			      raw_impl_type_path);
+
+  std::string raw_trait_type_path = impl_block.get_trait_path ().as_string ();
   CanonicalPath trait_type_seg
-    = ResolveTypeToCanonicalPath::resolve (impl_block.get_trait_path (),
-					   canonicalize_type_args,
-					   type_resolve_generic_args);
+    = CanonicalPath::new_seg (impl_block.get_trait_path ().get_node_id (),
+			      raw_trait_type_path);
 
   CanonicalPath projection
     = CanonicalPath::trait_impl_projection_seg (impl_block.get_node_id (),

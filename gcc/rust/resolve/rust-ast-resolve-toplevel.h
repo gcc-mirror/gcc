@@ -325,34 +325,27 @@ public:
 
   void visit (AST::InherentImpl &impl_block) override
   {
-    bool canonicalize_type_args = !impl_block.has_generics ();
-    bool type_resolve_generic_args = false;
-
+    std::string raw_impl_type_path = impl_block.get_type ()->as_string ();
     CanonicalPath impl_type
-      = ResolveTypeToCanonicalPath::resolve (*impl_block.get_type ().get (),
-					     canonicalize_type_args,
-					     type_resolve_generic_args);
+      = CanonicalPath::new_seg (impl_block.get_type ()->get_node_id (),
+				raw_impl_type_path);
     CanonicalPath impl_prefix = prefix.append (impl_type);
 
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
-
-    // we cannot resolve canonical paths here until later on
   }
 
   void visit (AST::TraitImpl &impl_block) override
   {
-    bool canonicalize_type_args = !impl_block.has_generics ();
-    bool type_resolve_generic_args = false;
-
+    std::string raw_impl_type_path = impl_block.get_type ()->as_string ();
     CanonicalPath impl_type_seg
-      = ResolveTypeToCanonicalPath::resolve (*impl_block.get_type ().get (),
-					     canonicalize_type_args,
-					     type_resolve_generic_args);
+      = CanonicalPath::new_seg (impl_block.get_type ()->get_node_id (),
+				raw_impl_type_path);
+
+    std::string raw_trait_type_path = impl_block.get_trait_path ().as_string ();
     CanonicalPath trait_type_seg
-      = ResolveTypeToCanonicalPath::resolve (impl_block.get_trait_path (),
-					     canonicalize_type_args,
-					     type_resolve_generic_args);
+      = CanonicalPath::new_seg (impl_block.get_trait_path ().get_node_id (),
+				raw_trait_type_path);
 
     CanonicalPath projection
       = CanonicalPath::trait_impl_projection_seg (impl_block.get_node_id (),
@@ -370,8 +363,6 @@ public:
 
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
-
-    // we cannot resolve canonical paths here until later on
   }
 
   void visit (AST::Trait &trait) override
