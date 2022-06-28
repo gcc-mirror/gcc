@@ -64,8 +64,6 @@ public:
 
   static std::string canonicalize_generic_args (AST::GenericArgs &args);
 
-  static bool type_resolve_generic_args (AST::GenericArgs &args);
-
 protected:
   ResolveTypeToCanonicalPath (bool include_generic_args,
 			      bool type_resolve_generic_args)
@@ -79,29 +77,6 @@ protected:
   bool include_generic_args_flag;
   bool type_resolve_generic_args_flag;
   bool failure_flag;
-};
-
-class ResolvePathSegmentToCanonicalPath
-{
-public:
-  static CanonicalPath resolve (AST::PathExprSegment &seg)
-  {
-    if (!seg.has_generic_args ())
-      return CanonicalPath::new_seg (seg.get_node_id (),
-				     seg.get_ident_segment ().as_string ());
-
-    bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
-      seg.get_generic_args ());
-    if (!ok)
-      {
-	rust_error_at (seg.get_locus (),
-		       "failed to resolve all generic arguments");
-	return CanonicalPath::create_empty ();
-      }
-
-    return CanonicalPath::new_seg (seg.get_node_id (),
-				   seg.get_ident_segment ().as_string ());
-  }
 };
 
 class TraitImplProjection
@@ -141,6 +116,12 @@ public:
     ResolveType resolver (canonicalize_type_with_generics, canonical_path);
     type->accept_vis (resolver);
     return resolver.resolved_node;
+  }
+
+  static void type_resolve_generic_args (AST::GenericArgs &args)
+  {
+    for (auto &gt : args.get_type_args ())
+      ResolveType::go (gt.get ());
   }
 
   void visit (AST::BareFunctionType &fntype) override
@@ -211,6 +192,21 @@ private:
 
   bool canonicalize_type_with_generics;
   CanonicalPath *canonical_path;
+};
+
+class ResolvePathSegmentToCanonicalPath
+{
+public:
+  static CanonicalPath resolve (AST::PathExprSegment &seg)
+  {
+    if (!seg.has_generic_args ())
+      return CanonicalPath::new_seg (seg.get_node_id (),
+				     seg.get_ident_segment ().as_string ());
+
+    ResolveType::type_resolve_generic_args (seg.get_generic_args ());
+    return CanonicalPath::new_seg (seg.get_node_id (),
+				   seg.get_ident_segment ().as_string ());
+  }
 };
 
 class ResolveTypeBound : public ResolverBase

@@ -44,19 +44,6 @@ ResolveTypeToCanonicalPath::canonicalize_generic_args (AST::GenericArgs &args)
   return "<" + buf + ">";
 }
 
-bool
-ResolveTypeToCanonicalPath::type_resolve_generic_args (AST::GenericArgs &args)
-{
-  for (auto &gt : args.get_type_args ())
-    {
-      ResolveType::go (gt.get (), UNKNOWN_NODEID);
-      // FIXME error handling here for inference variable since they do not have
-      // a node to resolve to
-      // if (resolved == UNKNOWN_NODEID) return false;
-    }
-  return true;
-}
-
 void
 ResolveTypeToCanonicalPath::visit (AST::TypePathSegmentGeneric &seg)
 {
@@ -79,8 +66,7 @@ ResolveTypeToCanonicalPath::visit (AST::TypePathSegmentGeneric &seg)
 
   if (type_resolve_generic_args_flag)
     {
-      bool ok = type_resolve_generic_args (seg.get_generic_args ());
-      failure_flag = !ok;
+      ResolveType::type_resolve_generic_args (seg.get_generic_args ());
     }
 
   if (include_generic_args_flag)

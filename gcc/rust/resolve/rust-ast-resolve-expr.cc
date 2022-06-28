@@ -87,7 +87,7 @@ ResolveExpr::visit (AST::MethodCallExpr &expr)
   if (expr.get_method_name ().has_generic_args ())
     {
       AST::GenericArgs &args = expr.get_method_name ().get_generic_args ();
-      ResolveTypeToCanonicalPath::type_resolve_generic_args (args);
+      ResolveType::type_resolve_generic_args (args);
     }
 
   auto const &in_params = expr.get_params ();

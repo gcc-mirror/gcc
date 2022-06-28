@@ -88,14 +88,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
       // resolve any generic args
       if (segment.has_generic_args ())
 	{
-	  bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
-	    segment.get_generic_args ());
-	  if (!ok)
-	    {
-	      rust_error_at (segment.get_locus (),
-			     "failed to resolve generic arguments");
-	      return;
-	    }
+	  ResolveType::type_resolve_generic_args (segment.get_generic_args ());
 	}
 
       // logic is awkward here there are a few cases
@@ -235,14 +228,7 @@ ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
       // generic arguments used
       if (segment.has_generic_args ())
 	{
-	  bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
-	    segment.get_generic_args ());
-	  if (!ok)
-	    {
-	      rust_error_at (segment.get_locus (),
-			     "failed to resolve generic arguments");
-	      return;
-	    }
+	  ResolveType::type_resolve_generic_args (segment.get_generic_args ());
 	}
     }
 }
