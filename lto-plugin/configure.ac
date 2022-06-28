@@ -13,9 +13,6 @@ AC_PROG_CC
 AC_SYS_LARGEFILE
 ACX_PROG_CC_WARNING_OPTS([-Wall], [ac_lto_plugin_warn_cflags])
 
-# The plug-in depends on pthreads
-LDFLAGS="-pthread"
-
 # Check whether -static-libgcc is supported.
 saved_LDFLAGS="$LDFLAGS"
 LDFLAGS="$LDFLAGS -static-libgcc"
