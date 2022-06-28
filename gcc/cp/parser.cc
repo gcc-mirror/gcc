@@ -890,10 +890,14 @@ cp_lexer_get_preprocessor_token (unsigned flags, cp_token *token)
       else
 	{
           if (warn_cxx11_compat
-              && C_RID_CODE (token->u.value) >= RID_FIRST_CXX11
-              && C_RID_CODE (token->u.value) <= RID_LAST_CXX11)
+	      && ((C_RID_CODE (token->u.value) >= RID_FIRST_CXX11
+		   && C_RID_CODE (token->u.value) <= RID_LAST_CXX11)
+		  /* These are outside the CXX11 range.  */
+		  || C_RID_CODE (token->u.value) == RID_ALIGNOF
+		  || C_RID_CODE (token->u.value) == RID_ALIGNAS
+		  || C_RID_CODE (token->u.value)== RID_THREAD))
             {
-              /* Warn about the C++0x keyword (but still treat it as
+	      /* Warn about the C++11 keyword (but still treat it as
                  an identifier).  */
 	      warning_at (token->location, OPT_Wc__11_compat,
 			  "identifier %qE is a keyword in C++11",
