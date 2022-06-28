@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "symtab-thunks.h"
+#include "gimple-expr.h"
 
 #include "d-tree.h"
 #include "d-target.h"
@@ -1465,11 +1466,7 @@ declare_local_var (VarDeclaration *var)
 tree
 build_local_temp (tree type)
 {
-  tree decl = build_decl (input_location, VAR_DECL, NULL_TREE, type);
-
-  DECL_CONTEXT (decl) = current_function_decl;
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
+  tree decl = create_tmp_var_raw (type);
   d_pushdecl (decl);
 
   return decl;

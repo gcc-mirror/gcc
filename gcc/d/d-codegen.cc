@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "attribs.h"
 #include "function.h"
+#include "gimple-expr.h"
 
 #include "d-tree.h"
 
@@ -623,11 +624,8 @@ build_target_expr (tree decl, tree exp)
 tree
 force_target_expr (tree exp)
 {
-  tree decl = build_decl (input_location, VAR_DECL, NULL_TREE,
-			  TREE_TYPE (exp));
+  tree decl = create_tmp_var_raw (TREE_TYPE (exp));
   DECL_CONTEXT (decl) = current_function_decl;
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
   layout_decl (decl, 0);
 
   return build_target_expr (decl, exp);

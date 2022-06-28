@@ -421,12 +421,8 @@ expand_intrinsic_rotate (intrinsic_code intrinsic, tree callexp)
     count = CALL_EXPR_ARG (callexp, 1);
   else
     {
-      tree callee = CALL_EXPR_FN (callexp);
-
-      if (TREE_CODE (callee) == ADDR_EXPR)
-	callee = TREE_OPERAND (callee, 0);
-
       /* Retrieve from the encoded template instantation.  */
+      tree callee = get_callee_fndecl (callexp);
       TemplateInstance *ti = DECL_LANG_FRONTEND (callee)->isInstantiated ();
       gcc_assert (ti && ti->tiargs && ti->tiargs->length == 2);
 
@@ -761,12 +757,9 @@ expand_volatile_store (tree callexp)
 tree
 maybe_expand_intrinsic (tree callexp)
 {
-  tree callee = CALL_EXPR_FN (callexp);
+  tree callee = get_callee_fndecl (callexp);
 
-  if (TREE_CODE (callee) == ADDR_EXPR)
-    callee = TREE_OPERAND (callee, 0);
-
-  if (TREE_CODE (callee) != FUNCTION_DECL)
+  if (callee == NULL_TREE || TREE_CODE (callee) != FUNCTION_DECL)
     return callexp;
 
   /* Don't expand CTFE-only intrinsics outside of semantic processing.  */
