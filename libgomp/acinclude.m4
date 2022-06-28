@@ -154,7 +154,7 @@ AC_DEFUN([LIBGOMP_CHECK_LINKER_FEATURES], [
   if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
     libgomp_ld_is_gold=yes
   elif $LD --version 2>/dev/null | grep 'mold'> /dev/null 2>&1; then
-    libat_ld_is_mold=yes
+    libgomp_ld_is_mold=yes
   fi
   changequote(,)
   ldver=`$LD --version 2>/dev/null |
