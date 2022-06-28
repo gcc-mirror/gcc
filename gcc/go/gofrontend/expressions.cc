@@ -6829,11 +6829,12 @@ Binary_expression::do_determine_type(const Type_context* context)
     {
       if ((tleft->integer_type() != NULL && tright->integer_type() != NULL)
 	  || (tleft->float_type() != NULL && tright->float_type() != NULL)
-	  || (tleft->complex_type() != NULL && tright->complex_type() != NULL))
+	  || (tleft->complex_type() != NULL && tright->complex_type() != NULL)
+	  || (tleft->is_boolean_type() && tright->is_boolean_type()))
 	{
-	  // Both sides have an abstract integer, abstract float, or
-	  // abstract complex type.  Just let CONTEXT determine
-	  // whether they may remain abstract or not.
+	  // Both sides have an abstract integer, abstract float,
+	  // abstract complex, or abstract boolean type.  Just let
+	  // CONTEXT determine whether they may remain abstract or not.
 	}
       else if (tleft->complex_type() != NULL)
 	subcontext.type = tleft;
