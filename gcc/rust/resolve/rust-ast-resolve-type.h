@@ -25,12 +25,6 @@
 namespace Rust {
 namespace Resolver {
 
-class ResolveTypeToCanonicalPath
-{
-public:
-  static std::string canonicalize_generic_args (AST::GenericArgs &args);
-};
-
 class ResolveRelativeTypePath
 {
 public:
@@ -49,12 +43,11 @@ public:
   void visit (AST::TypePathSegment &seg) override;
 
 protected:
-  bool resolve_qual_seg (AST::QualifiedPathType &seg, CanonicalPath &result);
+  bool resolve_qual_seg (AST::QualifiedPathType &seg);
 
 private:
-  ResolveRelativeQualTypePath (CanonicalPath qualified_path);
+  ResolveRelativeQualTypePath ();
 
-  CanonicalPath result;
   bool failure_flag;
 };
 

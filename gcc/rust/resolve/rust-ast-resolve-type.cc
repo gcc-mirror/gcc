@@ -24,26 +24,6 @@ namespace Resolver {
 
 // rust-ast-resolve-type.h
 
-std::string
-ResolveTypeToCanonicalPath::canonicalize_generic_args (AST::GenericArgs &args)
-{
-  std::string buf;
-
-  size_t i = 0;
-  size_t total = args.get_type_args ().size ();
-
-  for (auto &ty_arg : args.get_type_args ())
-    {
-      buf += ty_arg->as_string ();
-      if ((i + 1) < total)
-	buf += ",";
-
-      i++;
-    }
-
-  return "<" + buf + ">";
-}
-
 void
 ResolveType::visit (AST::ArrayType &type)
 {
@@ -291,20 +271,18 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 
 // qualified type paths
 
-ResolveRelativeQualTypePath::ResolveRelativeQualTypePath (
-  CanonicalPath qualified_path)
-  : result (qualified_path), failure_flag (false)
+ResolveRelativeQualTypePath::ResolveRelativeQualTypePath ()
+  : failure_flag (false)
 {}
 
 bool
 ResolveRelativeQualTypePath::go (AST::QualifiedPathInType &path)
 {
-  CanonicalPath result = CanonicalPath::create_empty ();
-  ResolveRelativeQualTypePath o (result);
+  ResolveRelativeQualTypePath o;
 
   // resolve the type and trait path
   auto &qualified_path = path.get_qualified_path_type ();
-  if (!o.resolve_qual_seg (qualified_path, result))
+  if (!o.resolve_qual_seg (qualified_path))
     return false;
 
   // qualified types are similar to other paths in that we cannot guarantee
@@ -329,8 +307,7 @@ ResolveRelativeQualTypePath::go (AST::QualifiedPathInType &path)
 }
 
 bool
-ResolveRelativeQualTypePath::resolve_qual_seg (AST::QualifiedPathType &seg,
-					       CanonicalPath &result)
+ResolveRelativeQualTypePath::resolve_qual_seg (AST::QualifiedPathType &seg)
 {
   if (seg.is_error ())
     {
@@ -344,34 +321,14 @@ ResolveRelativeQualTypePath::resolve_qual_seg (AST::QualifiedPathType &seg,
   if (type_resolved_node == UNKNOWN_NODEID)
     return false;
 
-  const CanonicalPath *impl_type_seg = nullptr;
-  bool ok
-    = mappings->lookup_canonical_path (mappings->get_current_crate (),
-				       type_resolved_node, &impl_type_seg);
-  rust_assert (ok);
-
   if (!seg.has_as_clause ())
-    {
-      result = result.append (*impl_type_seg);
-      return true;
-    }
+    return true;
 
   NodeId trait_resolved_node
     = ResolveType::go (&seg.get_as_type_path (), seg.get_node_id ());
   if (trait_resolved_node == UNKNOWN_NODEID)
     return false;
 
-  const CanonicalPath *trait_type_seg = nullptr;
-  ok = mappings->lookup_canonical_path (mappings->get_current_crate (),
-					trait_resolved_node, &trait_type_seg);
-  rust_assert (ok);
-
-  CanonicalPath projection
-    = CanonicalPath::trait_impl_projection_seg (seg.get_node_id (),
-						*trait_type_seg,
-						*impl_type_seg);
-
-  result = result.append (projection);
   return true;
 }
 
@@ -386,24 +343,7 @@ ResolveRelativeQualTypePath::visit (AST::TypePathSegmentGeneric &seg)
       return;
     }
 
-  if (!seg.has_generic_args ())
-    {
-      auto ident_segment
-	= CanonicalPath::new_seg (seg.get_node_id (),
-				  seg.get_ident_segment ().as_string ());
-      result = result.append (ident_segment);
-      return;
-    }
-
   ResolveType::type_resolve_generic_args (seg.get_generic_args ());
-
-  std::string generics = ResolveTypeToCanonicalPath::canonicalize_generic_args (
-    seg.get_generic_args ());
-  auto generic_segment
-    = CanonicalPath::new_seg (seg.get_node_id (),
-			      seg.get_ident_segment ().as_string ()
-				+ "::" + generics);
-  result = result.append (generic_segment);
 }
 
 void
@@ -416,11 +356,6 @@ ResolveRelativeQualTypePath::visit (AST::TypePathSegment &seg)
 		     seg.as_string ().c_str ());
       return;
     }
-
-  CanonicalPath ident_seg
-    = CanonicalPath::new_seg (seg.get_node_id (),
-			      seg.get_ident_segment ().as_string ());
-  result = result.append (ident_seg);
 }
 
 } // namespace Resolver
