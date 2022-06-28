@@ -19,7 +19,7 @@ struct S
     p = (int*) new unsigned char [sizeof (int) * m];
 
     for (int i = 0; i < m; i++)
-      new (p + i) int (); /* { dg-bogus "bounds" "pr102690" { xfail *-*-* } } */
+      new (p + i) int (); /* { dg-bogus "bounds" "pr102690" { xfail lp64 } } */
   }
 };
 
