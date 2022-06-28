@@ -26,6 +26,5 @@ jobs:
       run: npm install remark-cli remark-lint remark-lint-maximum-line-length remark-preset-lint-recommended remark-gfm
 
     # Run
-    - name: Check *.md files
-      run: git ls-files -z *.md | xargs -0 -n 1 npx remark -u lint -f > /dev/null
-
+    # - name: Check *.md files
+    #   run: git ls-files -z *.md | xargs -0 -n 1 npx remark -u lint -f > /dev/null
