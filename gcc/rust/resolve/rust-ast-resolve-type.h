@@ -25,58 +25,10 @@
 namespace Rust {
 namespace Resolver {
 
-class ResolveTypeToCanonicalPath : public ResolverBase
+class ResolveTypeToCanonicalPath
 {
-protected:
-  using Rust::Resolver::ResolverBase::visit;
-
 public:
-  // FIXME this should really only take AST::TypeNoBounds&
-  static CanonicalPath resolve (AST::Type &type,
-				bool include_generic_args = true,
-				bool type_resolve_generic_args = true)
-  {
-    ResolveTypeToCanonicalPath resolver (include_generic_args,
-					 type_resolve_generic_args);
-    type.accept_vis (resolver);
-    return resolver.result;
-  }
-
-  void visit (AST::TypePath &path) override
-  {
-    for (auto &seg : path.get_segments ())
-      {
-	seg->accept_vis (*this);
-	if (failure_flag)
-	  return;
-      }
-  }
-
-  void visit (AST::SliceType &slice) override;
-
-  void visit (AST::RawPointerType &ptr) override;
-
-  void visit (AST::ReferenceType &ref) override;
-
-  void visit (AST::TypePathSegmentGeneric &seg) override;
-
-  void visit (AST::TypePathSegment &seg) override;
-
   static std::string canonicalize_generic_args (AST::GenericArgs &args);
-
-protected:
-  ResolveTypeToCanonicalPath (bool include_generic_args,
-			      bool type_resolve_generic_args)
-    : ResolverBase (), result (CanonicalPath::create_empty ()),
-      include_generic_args_flag (include_generic_args),
-      type_resolve_generic_args_flag (type_resolve_generic_args),
-      failure_flag (false)
-  {}
-
-  CanonicalPath result;
-  bool include_generic_args_flag;
-  bool type_resolve_generic_args_flag;
-  bool failure_flag;
 };
 
 class ResolveRelativeTypePath
