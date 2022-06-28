@@ -21935,6 +21935,9 @@ AMD Family 19h CPU.
 @item znver3
 AMD Family 19h Zen version 3.
 
+@item znver4
+AMD Family 19h Zen version 4.
+
 @item x86-64
 Baseline x86-64 microarchitecture level (as defined in x86-64 psABI).
 
