@@ -3096,6 +3096,10 @@ gfc_simplify_extends_type_of (gfc_expr *a, gfc_expr *mold)
   if (UNLIMITED_POLY (a) || UNLIMITED_POLY (mold))
     return NULL;
 
+  if ((a->ts.type == BT_CLASS && !gfc_expr_attr (a).class_ok)
+      || (mold->ts.type == BT_CLASS && !gfc_expr_attr (mold).class_ok))
+    return NULL;
+
   /* Return .false. if the dynamic type can never be an extension.  */
   if ((a->ts.type == BT_CLASS && mold->ts.type == BT_CLASS
        && !gfc_type_is_extension_of
