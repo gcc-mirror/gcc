@@ -511,7 +511,7 @@ enum reg_class
 #define REG_CLASS_CONTENTS						\
 {									\
   { 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS  */		\
-  { 0x001ff000, 0x00000000, 0x00000000 },	/* SIBCALL_REGS  */	\
+  { 0x001fd000, 0x00000000, 0x00000000 },	/* SIBCALL_REGS  */	\
   { 0xff9ffff0, 0x00000000, 0x00000000 },	/* JIRL_REGS  */	\
   { 0xfffffffc, 0x00000000, 0x00000000 },	/* CSR_REGS  */		\
   { 0xffffffff, 0x00000000, 0x00000000 },	/* GR_REGS  */		\
