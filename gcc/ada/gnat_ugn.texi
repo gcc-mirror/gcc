@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jun 24, 2022
+GNAT User's Guide for Native Platforms , Jul 11, 2022
 
 AdaCore
 
@@ -7120,6 +7120,21 @@ If @code{--version} was not used, display usage, then exit disregarding
 all other options.
 @end table
 
+@geindex -P (gnatmake)
+
+
+@table @asis
+
+@item @code{-P@emph{project}}
+
+Build GNAT project file @code{project} using GPRbuild. When this switch is
+present, all other command-line switches are treated as GPRbuild switches
+and not @code{gnatmake} switches.
+@end table
+
+@c -- Comment:
+@c :ref:`gnatmake_and_Project_Files`.
+
 @geindex --GCC=compiler_name (gnatmake)
 
 
@@ -7619,19 +7634,6 @@ This switch cannot be used when invoking @code{gnatmake} with several
 
 Same as @code{--create-missing-dirs}
 @end table
-
-@geindex -P (gnatmake)
-
-
-@table @asis
-
-@item @code{-P@emph{project}}
-
-Use project file @code{project}. Only one such switch can be used.
-@end table
-
-@c -- Comment:
-@c :ref:`gnatmake_and_Project_Files`.
 
 @geindex -q (gnatmake)
 
