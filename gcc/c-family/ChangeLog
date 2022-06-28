@@ -1,3 +1,7 @@
+2022-06-28  Release Manager
+
+	* GCC 10.4.0 released.
+
 2022-05-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-opts.c (c_common_post_options): Default to

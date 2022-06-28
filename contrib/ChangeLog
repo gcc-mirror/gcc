@@ -1,3 +1,7 @@
+2022-06-28  Release Manager
+
+	* GCC 10.4.0 released.
+
 2022-01-27  Martin Liska  <mliska@suse.cz>
 
 	* gcc-git-customization.sh: Sync from master.
