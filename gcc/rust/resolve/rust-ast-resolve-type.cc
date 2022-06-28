@@ -479,8 +479,9 @@ ResolveRelativeTypePath::resolve_qual_seg (AST::QualifiedPathType &seg,
   rust_assert (ok);
 
   CanonicalPath projection
-    = TraitImplProjection::resolve (seg.get_node_id (), *trait_type_seg,
-				    *impl_type_seg);
+    = CanonicalPath::trait_impl_projection_seg (seg.get_node_id (),
+						*trait_type_seg,
+						*impl_type_seg);
 
   result = result.append (projection);
   return true;

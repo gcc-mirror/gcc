@@ -355,8 +355,9 @@ public:
 					     type_resolve_generic_args);
 
     CanonicalPath projection
-      = TraitImplProjection::resolve (impl_block.get_node_id (), trait_type_seg,
-				      impl_type_seg);
+      = CanonicalPath::trait_impl_projection_seg (impl_block.get_node_id (),
+						  trait_type_seg,
+						  impl_type_seg);
     CanonicalPath impl_prefix = prefix.append (projection);
 
     resolver->get_name_scope ().insert (

@@ -61,6 +61,14 @@ public:
 			  UNKNOWN_CREATENUM);
   }
 
+  static CanonicalPath
+  trait_impl_projection_seg (NodeId id, const CanonicalPath &trait_seg,
+			     const CanonicalPath &impl_type_seg)
+  {
+    return CanonicalPath::new_seg (id, "<" + impl_type_seg.get () + " as "
+					 + trait_seg.get () + ">");
+  }
+
   std::string get () const
   {
     std::string buf;

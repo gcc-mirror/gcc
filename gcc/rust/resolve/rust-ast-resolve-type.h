@@ -79,17 +79,6 @@ protected:
   bool failure_flag;
 };
 
-class TraitImplProjection
-{
-public:
-  static CanonicalPath resolve (NodeId id, const CanonicalPath &trait_seg,
-				const CanonicalPath &impl_type_seg)
-  {
-    return CanonicalPath::new_seg (id, "<" + impl_type_seg.get () + " as "
-					 + trait_seg.get () + ">");
-  }
-};
-
 class ResolveRelativeTypePath : public ResolveTypeToCanonicalPath
 {
   using ResolveTypeToCanonicalPath::visit;

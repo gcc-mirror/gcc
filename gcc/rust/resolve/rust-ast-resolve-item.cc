@@ -775,14 +775,15 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
 					   type_resolve_generic_args);
 
   CanonicalPath projection
-    = TraitImplProjection::resolve (impl_block.get_node_id (), trait_type_seg,
-				    impl_type_seg);
+    = CanonicalPath::trait_impl_projection_seg (impl_block.get_node_id (),
+						trait_type_seg, impl_type_seg);
   CanonicalPath impl_prefix = prefix.append (projection);
 
   // setup canonical-path
   CanonicalPath canonical_projection
-    = TraitImplProjection::resolve (impl_block.get_node_id (),
-				    canonical_trait_type, canonical_impl_type);
+    = CanonicalPath::trait_impl_projection_seg (impl_block.get_node_id (),
+						canonical_trait_type,
+						canonical_impl_type);
   CanonicalPath cpath = CanonicalPath::create_empty ();
   if (canonical_prefix.size () <= 1)
     {
