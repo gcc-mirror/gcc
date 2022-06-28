@@ -1326,25 +1326,32 @@ fs::path
 fs::temp_directory_path()
 {
   error_code ec;
-  path tmp = temp_directory_path(ec);
-  if (ec.value())
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error("temp_directory_path", ec));
-  return tmp;
+  path p = fs::get_temp_directory_from_env(ec);
+  if (!ec)
+    {
+      auto st = status(p, ec);
+      if (!ec && !is_directory(st))
+	ec = std::make_error_code(std::errc::not_a_directory);
+    }
+  if (ec)
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("temp_directory_path", p, ec));
+  return p;
 }
 
 fs::path
 fs::temp_directory_path(error_code& ec)
 {
   path p = fs::get_temp_directory_from_env(ec);
-  if (ec)
-    return p;
-  auto st = status(p, ec);
-  if (ec)
-    p.clear();
-  else if (!is_directory(st))
+  if (!ec)
     {
-      p.clear();
-      ec = std::make_error_code(std::errc::not_a_directory);
+      auto st = status(p, ec);
+      if (ec)
+	p.clear();
+      else if (!is_directory(st))
+	{
+	  p.clear();
+	  ec = std::make_error_code(std::errc::not_a_directory);
+	}
     }
   return p;
 }
