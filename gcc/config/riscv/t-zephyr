@@ -1,12 +1,16 @@
 # Multilib target configurations
 MULTILIB_SRC_ARCH  = rv32i_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv32im_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32im_zicsr_zifencei_zba_zbb_zbc_zbs
 MULTILIB_SRC_ARCH += rv32ima_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32ima_zicsr_zifencei_zba_zbb_zbc_zbs
 MULTILIB_SRC_ARCH += rv32imac_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32imac_zicsr_zifencei_zba_zbb_zbc_zbs
 MULTILIB_SRC_ARCH += rv32imafc_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv32imafd_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv32imafdc_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv32imc_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32imc_zicsr_zifencei_zba_zbb_zbc_zbs
 MULTILIB_SRC_ARCH += rv32ia_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv32iac_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv32ic_zicsr_zifencei
@@ -16,17 +20,23 @@ MULTILIB_SRC_ARCH += rv32e_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv32em_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv32ema_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv32emc_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32emc_zicsr_zifencei_zba_zbb_zbc_zbs
 MULTILIB_SRC_ARCH += rv32emac_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv32emac_zicsr_zifencei_zba_zbb_zbc_zbs
 MULTILIB_SRC_ARCH += rv32ea_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv32eac_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv32ec_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv64i_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv64im_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv64im_zicsr_zifencei_zba_zbb_zbc_zbs
 MULTILIB_SRC_ARCH += rv64ima_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv64ima_zicsr_zifencei_zba_zbb_zbc_zbs
 MULTILIB_SRC_ARCH += rv64imac_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv64imac_zicsr_zifencei_zba_zbb_zbc_zbs
 MULTILIB_SRC_ARCH += rv64imafd_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv64imafdc_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv64imc_zicsr_zifencei
+MULTILIB_SRC_ARCH += rv64imc_zicsr_zifencei_zba_zbb_zbc_zbs
 MULTILIB_SRC_ARCH += rv64ia_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv64iac_zicsr_zifencei
 MULTILIB_SRC_ARCH += rv64ic_zicsr_zifencei
@@ -46,14 +56,19 @@ MULTILIB_SRC_MCMODEL  = medany
 MULTILIB_REQUIRED = \
 march=rv32i_zicsr_zifencei/mabi=ilp32 \
 march=rv32im_zicsr_zifencei/mabi=ilp32 \
+march=rv32im_zicsr_zifencei_zba_zbb_zbc_zbs/mabi=ilp32 \
 march=rv32imac_zicsr_zifencei/mabi=ilp32 \
 march=rv32imafc_zicsr_zifencei/mabi=ilp32f \
 march=rv32imafd_zicsr_zifencei/mabi=ilp32d \
 march=rv32e_zicsr_zifencei/mabi=ilp32e \
 march=rv32em_zicsr_zifencei/mabi=ilp32e \
 march=rv32emc_zicsr_zifencei/mabi=ilp32e \
+march=rv32emc_zicsr_zifencei_zba_zbb_zbc_zbs/mabi=ilp32e \
 march=rv64i_zicsr_zifencei/mabi=lp64 \
+march=rv64im_zicsr_zifencei/mabi=lp64 \
+march=rv64im_zicsr_zifencei_zba_zbb_zbc_zbs/mabi=lp64 \
 march=rv64imac_zicsr_zifencei/mabi=lp64 \
+march=rv64imac_zicsr_zifencei_zba_zbb_zbc_zbs/mabi=lp64 \
 march=rv64imafdc_zicsr_zifencei/mabi=lp64d \
 march=rv64imafd_zicsr_zifencei/mabi=lp64d \
 march=rv64imac_zicsr_zifencei/mabi=lp64/mcmodel=medany \
@@ -67,6 +82,9 @@ march.rv32i_zicsr_zifencei/mabi.ilp32=march.rv32iac_zicsr_zifencei/mabi.ilp32 \
 march.rv32i_zicsr_zifencei/mabi.ilp32=march.rv32ic_zicsr_zifencei/mabi.ilp32 \
 march.rv32im_zicsr_zifencei/mabi.ilp32=march.rv32ima_zicsr_zifencei/mabi.ilp32 \
 march.rv32im_zicsr_zifencei/mabi.ilp32=march.rv32imc_zicsr_zifencei/mabi.ilp32 \
+march.rv32im_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.ilp32=march.rv32ima_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.ilp32 \
+march.rv32im_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.ilp32=march.rv32imac_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.ilp32 \
+march.rv32im_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.ilp32=march.rv32imc_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.ilp32 \
 march.rv32imafd_zicsr_zifencei/mabi.ilp32d=march.rv32imafdc_zicsr_zifencei/mabi.ilp32d \
 march.rv32imafd_zicsr_zifencei/mabi.ilp32d=march.rv32g/mabi.ilp32d \
 march.rv32imafd_zicsr_zifencei/mabi.ilp32d=march.rv32gc/mabi.ilp32d \
@@ -75,12 +93,14 @@ march.rv32e_zicsr_zifencei/mabi.ilp32e=march.rv32eac_zicsr_zifencei/mabi.ilp32e 
 march.rv32e_zicsr_zifencei/mabi.ilp32e=march.rv32ec_zicsr_zifencei/mabi.ilp32e \
 march.rv32em_zicsr_zifencei/mabi.ilp32e=march.rv32ema_zicsr_zifencei/mabi.ilp32e \
 march.rv32emc_zicsr_zifencei/mabi.ilp32e=march.rv32emac_zicsr_zifencei/mabi.ilp32e \
-march.rv64i_zicsr_zifencei/mabi.lp64=march.rv64im_zicsr_zifencei/mabi.lp64 \
-march.rv64i_zicsr_zifencei/mabi.lp64=march.rv64ima_zicsr_zifencei/mabi.lp64 \
-march.rv64i_zicsr_zifencei/mabi.lp64=march.rv64imc_zicsr_zifencei/mabi.lp64 \
+march.rv32emc_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.ilp32e=march.rv32emac_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.ilp32e \
 march.rv64i_zicsr_zifencei/mabi.lp64=march.rv64ia_zicsr_zifencei/mabi.lp64 \
 march.rv64i_zicsr_zifencei/mabi.lp64=march.rv64iac_zicsr_zifencei/mabi.lp64 \
 march.rv64i_zicsr_zifencei/mabi.lp64=march.rv64ic_zicsr_zifencei/mabi.lp64 \
+march.rv64im_zicsr_zifencei/mabi.lp64=march.rv64ima_zicsr_zifencei/mabi.lp64 \
+march.rv64im_zicsr_zifencei/mabi.lp64=march.rv64imc_zicsr_zifencei/mabi.lp64 \
+march.rv64im_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.lp64=march.rv64ima_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.lp64 \
+march.rv64im_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.lp64=march.rv64imc_zicsr_zifencei_zba_zbb_zbc_zbs/mabi.lp64 \
 march.rv64imafdc_zicsr_zifencei/mabi.lp64d=march.rv64gc/mabi.lp64d \
 march.rv64imafd_zicsr_zifencei/mabi.lp64d=march.rv64g/mabi.lp64d
 
