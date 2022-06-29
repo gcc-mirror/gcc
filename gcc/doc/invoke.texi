@@ -15124,9 +15124,6 @@ statement during VRP.
 @item evrp-sparse-threshold
 Maximum number of basic blocks before EVRP uses a sparse cache.
 
-@item evrp-mode
-Specifies the mode Early VRP should operate in.
-
 @item vrp1-mode
 Specifies the mode VRP pass 1 should operate in.
 
