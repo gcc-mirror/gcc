@@ -2211,6 +2211,31 @@ is_xible (enum tree_code code, tree to, tree from)
   return !!expr;
 }
 
+/* Return true iff conjunction_v<is_reference<T>, is_constructible<T, U>> is
+   true, and the initialization
+     T t(VAL<U>); // DIRECT_INIT_P
+   or
+     T t = VAL<U>; // !DIRECT_INIT_P
+   binds t to a temporary object whose lifetime is extended.
+   VAL<T> is defined in [meta.unary.prop]:
+   -- If T is a reference or function type, VAL<T> is an expression with the
+   same type and value category as declval<T>().
+   -- Otherwise, VAL<T> is a prvalue that initially has type T.   */
+
+bool
+ref_xes_from_temporary (tree to, tree from, bool direct_init_p)
+{
+  /* Check is_reference<T>.  */
+  if (!TYPE_REF_P (to))
+    return false;
+  /* We don't check is_constructible<T, U>: if T isn't constructible
+     from U, we won't be able to create a conversion.  */
+  tree val = build_stub_object (from);
+  if (!TYPE_REF_P (from) && TREE_CODE (from) != FUNCTION_TYPE)
+    val = CLASS_TYPE_P (from) ? force_rvalue (val, tf_none) : rvalue (val);
+  return ref_conv_binds_directly (to, val, direct_init_p).is_false ();
+}
+
 /* Categorize various special_function_kinds.  */
 #define SFK_CTOR_P(sfk) \
   ((sfk) >= sfk_constructor && (sfk) <= sfk_move_constructor)

@@ -3697,6 +3697,14 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
       inform (loc, "  %qT does not have unique object representations", t1);
       break;
+    case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
+      inform (loc, "  %qT is not a reference that binds to a temporary "
+	      "object of type %qT (direct-initialization)", t1, t2);
+      break;
+    case CPTK_REF_CONVERTS_FROM_TEMPORARY:
+      inform (loc, "  %qT is not a reference that binds to a temporary "
+	      "object of type %qT (copy-initialization)", t1, t2);
+      break;
     case CPTK_BASES:
     case CPTK_DIRECT_BASES:
     case CPTK_UNDERLYING_TYPE:
