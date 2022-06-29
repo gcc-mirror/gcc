@@ -1397,27 +1397,31 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
   // Ideally we search dependencies for common names, and see what pops out.
   // until then, simply try to resolve direct dependencies.
 
-  // Both names will need to have 2 direct dependencies.
-  tree ssa1_dep2 = src.gori ()->depend2 (ssa1);
-  tree ssa2_dep2 = src.gori ()->depend2 (ssa2);
-  if (!ssa1_dep2 || !ssa2_dep2)
+  gimple *ssa1_stmt = SSA_NAME_DEF_STMT (ssa1);
+  gimple *ssa2_stmt = SSA_NAME_DEF_STMT (ssa2);
+
+  range_op_handler handler1 (SSA_NAME_DEF_STMT (ssa1));
+  range_op_handler handler2 (SSA_NAME_DEF_STMT (ssa2));
+
+  // If either handler is not present, no relation can be found.
+  if (!handler1 || !handler2)
     return;
 
-  tree ssa1_dep1 = src.gori ()->depend1 (ssa1);
-  tree ssa2_dep1 = src.gori ()->depend1 (ssa2);
+  // Both stmts will need to have 2 ssa names in the stmt.
+  tree ssa1_dep1 = gimple_range_ssa_p (gimple_range_operand1 (ssa1_stmt));
+  tree ssa1_dep2 = gimple_range_ssa_p (gimple_range_operand2 (ssa1_stmt));
+  tree ssa2_dep1 = gimple_range_ssa_p (gimple_range_operand1 (ssa2_stmt));
+  tree ssa2_dep2 = gimple_range_ssa_p (gimple_range_operand2 (ssa2_stmt));
+
+  if (!ssa1_dep1 || !ssa1_dep2 || !ssa2_dep1 || !ssa2_dep2)
+    return;
+
   // Make sure they are the same dependencies, and detect the order of the
   // relationship.
   bool reverse_op2 = true;
   if (ssa1_dep1 == ssa2_dep1 && ssa1_dep2 == ssa2_dep2)
     reverse_op2 = false;
   else if (ssa1_dep1 != ssa2_dep2 || ssa1_dep2 != ssa2_dep1)
-    return;
-
-  range_op_handler handler1 (SSA_NAME_DEF_STMT (ssa1));
-  range_op_handler handler2 (SSA_NAME_DEF_STMT (ssa2));
-
-  // If either handler is not present, no relation is found.
-  if (!handler1 || !handler2)
     return;
 
   int_range<2> bool_one (boolean_true_node, boolean_true_node);
