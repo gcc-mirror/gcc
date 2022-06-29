@@ -25862,8 +25862,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __acoshieee128 (__float128);
-__float128 (*ptr)(__float128) = __acoshieee128;
+_Float128 __acoshieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __acoshieee128;
 
 int
 main ()
@@ -25904,8 +25904,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __acosieee128 (__float128);
-__float128 (*ptr)(__float128) = __acosieee128;
+_Float128 __acosieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __acosieee128;
 
 int
 main ()
@@ -25946,8 +25946,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __asinhieee128 (__float128);
-__float128 (*ptr)(__float128) = __asinhieee128;
+_Float128 __asinhieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __asinhieee128;
 
 int
 main ()
@@ -25988,8 +25988,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __asinieee128 (__float128);
-__float128 (*ptr)(__float128) = __asinieee128;
+_Float128 __asinieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __asinieee128;
 
 int
 main ()
@@ -26030,8 +26030,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __atan2ieee128 (__float128);
-__float128 (*ptr)(__float128) = __atan2ieee128;
+_Float128 __atan2ieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __atan2ieee128;
 
 int
 main ()
@@ -26072,8 +26072,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __atanhieee128 (__float128);
-__float128 (*ptr)(__float128) = __atanhieee128;
+_Float128 __atanhieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __atanhieee128;
 
 int
 main ()
@@ -26114,8 +26114,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __atanieee128 (__float128);
-__float128 (*ptr)(__float128) = __atanieee128;
+_Float128 __atanieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __atanieee128;
 
 int
 main ()
@@ -26156,8 +26156,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __coshieee128 (__float128);
-__float128 (*ptr)(__float128) = __coshieee128;
+_Float128 __coshieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __coshieee128;
 
 int
 main ()
@@ -26198,8 +26198,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __cosieee128 (__float128);
-__float128 (*ptr)(__float128) = __cosieee128;
+_Float128 __cosieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __cosieee128;
 
 int
 main ()
@@ -26240,8 +26240,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __erfieee128 (__float128);
-__float128 (*ptr)(__float128) = __erfieee128;
+_Float128 __erfieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __erfieee128;
 
 int
 main ()
@@ -26282,8 +26282,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __expieee128 (__float128);
-__float128 (*ptr)(__float128) = __expieee128;
+_Float128 __expieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __expieee128;
 
 int
 main ()
@@ -26324,8 +26324,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __fabsieee128 (__float128);
-__float128 (*ptr)(__float128) = __fabsieee128;
+_Float128 __fabsieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __fabsieee128;
 
 int
 main ()
@@ -26366,8 +26366,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __jnieee128 (__float128);
-__float128 (*ptr)(__float128) = __jnieee128;
+_Float128 __jnieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __jnieee128;
 
 int
 main ()
@@ -26408,8 +26408,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __log10ieee128 (__float128);
-__float128 (*ptr)(__float128) = __log10ieee128;
+_Float128 __log10ieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __log10ieee128;
 
 int
 main ()
@@ -26450,8 +26450,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __logieee128 (__float128);
-__float128 (*ptr)(__float128) = __logieee128;
+_Float128 __logieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __logieee128;
 
 int
 main ()
@@ -26492,8 +26492,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __powieee128 (__float128);
-__float128 (*ptr)(__float128) = __powieee128;
+_Float128 __powieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __powieee128;
 
 int
 main ()
@@ -26534,8 +26534,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __sinhieee128 (__float128);
-__float128 (*ptr)(__float128) = __sinhieee128;
+_Float128 __sinhieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __sinhieee128;
 
 int
 main ()
@@ -26576,8 +26576,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __sinieee128 (__float128);
-__float128 (*ptr)(__float128) = __sinieee128;
+_Float128 __sinieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __sinieee128;
 
 int
 main ()
@@ -26618,8 +26618,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __sqrtieee128 (__float128);
-__float128 (*ptr)(__float128) = __sqrtieee128;
+_Float128 __sqrtieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __sqrtieee128;
 
 int
 main ()
@@ -26660,8 +26660,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __tanhieee128 (__float128);
-__float128 (*ptr)(__float128) = __tanhieee128;
+_Float128 __tanhieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __tanhieee128;
 
 int
 main ()
@@ -26702,8 +26702,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __tanieee128 (__float128);
-__float128 (*ptr)(__float128) = __tanieee128;
+_Float128 __tanieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __tanieee128;
 
 int
 main ()
@@ -26744,8 +26744,8 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-__float128 __ynieee128 (__float128);
-__float128 (*ptr)(__float128) = __ynieee128;
+_Float128 __ynieee128 (_Float128);
+_Float128 (*ptr)(_Float128) = __ynieee128;
 
 int
 main ()
