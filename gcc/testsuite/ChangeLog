@@ -1,3 +1,28 @@
+2022-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106032
+	* gcc.c-torture/execute/pr106032.c: New test.
+
+2022-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106030
+	* gcc.c-torture/compile/pr106030.c: New test.
+
+2022-06-28  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2022-06-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/106096
+	* g++.target/loongarch/loongarch.exp: New test support file.
+	* g++.target/loongarch/pr106096.C: New test.
+
 2022-06-24  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

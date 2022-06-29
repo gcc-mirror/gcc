@@ -1,3 +1,21 @@
+2022-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+		    Paul Iannetta  <piannetta@kalrayinc.com>
+
+	PR libgomp/106045
+	* testsuite/libgomp.c/target-31.c: Add private (i) clause.
+
+2022-06-28  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-06-28  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Fix typo in mold linker detection.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2022-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

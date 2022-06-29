@@ -1,3 +1,32 @@
+2022-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106032
+	* ifcvt.cc (noce_try_sign_mask): Punt if !t_unconditional, and
+	t may_trap_or_fault_p, even if it is cheap.
+
+2022-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106030
+	* expr.cc (expand_cond_expr_using_cmove): Pass NULL_RTX instead of
+	temp to expand_operands if mode has been promoted.
+
+2022-06-28  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2022-06-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/106096
+	* config/loongarch/loongarch.h (REG_CLASS_CONTENTS): Exclude
+	$r13 from SIBCALL_REGS.
+	* config/loongarch/loongarch.cc (loongarch_regno_to_class):
+	Change $r13 to JIRL_REGS.
+
 2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
