@@ -23,24 +23,26 @@
 namespace Rust {
 namespace Resolver {
 
+ResolvePath::ResolvePath () : ResolverBase () {}
+
 void
-ResolvePath::go (AST::PathInExpression *expr, NodeId parent)
+ResolvePath::go (AST::PathInExpression *expr)
 {
-  ResolvePath resolver (parent);
+  ResolvePath resolver;
   resolver.resolve_path (expr);
 }
 
 void
-ResolvePath::go (AST::QualifiedPathInExpression *expr, NodeId parent)
+ResolvePath::go (AST::QualifiedPathInExpression *expr)
 {
-  ResolvePath resolver (parent);
+  ResolvePath resolver;
   resolver.resolve_path (expr);
 }
 
 void
-ResolvePath::go (AST::SimplePath *expr, NodeId parent)
+ResolvePath::go (AST::SimplePath *expr)
 {
-  ResolvePath resolver (parent);
+  ResolvePath resolver;
   resolver.resolve_path (expr);
 }
 
@@ -86,14 +88,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
       // resolve any generic args
       if (segment.has_generic_args ())
 	{
-	  bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
-	    segment.get_generic_args ());
-	  if (!ok)
-	    {
-	      rust_error_at (segment.get_locus (),
-			     "failed to resolve generic arguments");
-	      return;
-	    }
+	  ResolveType::type_resolve_generic_args (segment.get_generic_args ());
 	}
 
       // logic is awkward here there are a few cases
@@ -221,10 +216,8 @@ void
 ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
 {
   AST::QualifiedPathType &root_segment = expr->get_qualified_path_type ();
-  ResolveType::go (&root_segment.get_as_type_path (),
-		   root_segment.get_node_id ());
-  ResolveType::go (root_segment.get_type ().get (),
-		   root_segment.get_node_id ());
+  ResolveType::go (&root_segment.get_as_type_path ());
+  ResolveType::go (root_segment.get_type ().get ());
 
   for (auto &segment : expr->get_segments ())
     {
@@ -233,14 +226,7 @@ ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
       // generic arguments used
       if (segment.has_generic_args ())
 	{
-	  bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
-	    segment.get_generic_args ());
-	  if (!ok)
-	    {
-	      rust_error_at (segment.get_locus (),
-			     "failed to resolve generic arguments");
-	      return;
-	    }
+	  ResolveType::type_resolve_generic_args (segment.get_generic_args ());
 	}
     }
 }

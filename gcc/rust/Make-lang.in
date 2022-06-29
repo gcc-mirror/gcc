@@ -97,6 +97,7 @@ GRS_OBJS = \
     rust/rust-ast-resolve-type.o \
     rust/rust-ast-resolve-path.o \
     rust/rust-ast-resolve-stmt.o \
+    rust/rust-ast-resolve-struct-expr-field.o \
     rust/rust-hir-type-check.o \
     rust/rust-privacy-check.o \
     rust/rust-privacy-ctx.o \

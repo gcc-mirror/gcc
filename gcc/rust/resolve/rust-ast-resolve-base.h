@@ -200,12 +200,10 @@ public:
   void visit (AST::BareFunctionType &);
 
 protected:
-  ResolverBase (NodeId parent)
+  ResolverBase ()
     : resolver (Resolver::get ()), mappings (Analysis::Mappings::get ()),
-      resolved_node (UNKNOWN_NODEID), parent (parent), locus (Location ())
+      resolved_node (UNKNOWN_NODEID)
   {}
-
-  bool resolved () const { return resolved_node != UNKNOWN_NODEID; }
 
   /**
    * Resolve a visibility's path through the name resolver
@@ -215,8 +213,6 @@ protected:
   Resolver *resolver;
   Analysis::Mappings *mappings;
   NodeId resolved_node;
-  NodeId parent;
-  Location locus;
 };
 
 } // namespace Resolver

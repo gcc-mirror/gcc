@@ -24,116 +24,18 @@ namespace Resolver {
 
 // rust-ast-resolve-type.h
 
-std::string
-ResolveTypeToCanonicalPath::canonicalize_generic_args (AST::GenericArgs &args)
-{
-  std::string buf;
-
-  size_t i = 0;
-  size_t total = args.get_type_args ().size ();
-
-  for (auto &ty_arg : args.get_type_args ())
-    {
-      buf += ty_arg->as_string ();
-      if ((i + 1) < total)
-	buf += ",";
-
-      i++;
-    }
-
-  return "<" + buf + ">";
-}
-
-bool
-ResolveTypeToCanonicalPath::type_resolve_generic_args (AST::GenericArgs &args)
-{
-  for (auto &gt : args.get_type_args ())
-    {
-      ResolveType::go (gt.get (), UNKNOWN_NODEID);
-      // FIXME error handling here for inference variable since they do not have
-      // a node to resolve to
-      // if (resolved == UNKNOWN_NODEID) return false;
-    }
-  return true;
-}
-
-void
-ResolveTypeToCanonicalPath::visit (AST::TypePathSegmentGeneric &seg)
-{
-  if (seg.is_error ())
-    {
-      failure_flag = true;
-      rust_error_at (seg.get_locus (), "segment has error: %s",
-		     seg.as_string ().c_str ());
-      return;
-    }
-
-  if (!seg.has_generic_args ())
-    {
-      auto ident_segment
-	= CanonicalPath::new_seg (seg.get_node_id (),
-				  seg.get_ident_segment ().as_string ());
-      result = result.append (ident_segment);
-      return;
-    }
-
-  if (type_resolve_generic_args_flag)
-    {
-      bool ok = type_resolve_generic_args (seg.get_generic_args ());
-      failure_flag = !ok;
-    }
-
-  if (include_generic_args_flag)
-    {
-      std::string generics
-	= canonicalize_generic_args (seg.get_generic_args ());
-      auto generic_segment
-	= CanonicalPath::new_seg (seg.get_node_id (),
-				  seg.get_ident_segment ().as_string ()
-				    + "::" + generics);
-      result = result.append (generic_segment);
-      return;
-    }
-
-  auto ident_segment
-    = CanonicalPath::new_seg (seg.get_node_id (),
-			      seg.get_ident_segment ().as_string ());
-  result = result.append (ident_segment);
-}
-
-void
-ResolveTypeToCanonicalPath::visit (AST::TypePathSegment &seg)
-{
-  if (seg.is_error ())
-    {
-      failure_flag = true;
-      rust_error_at (seg.get_locus (), "segment has error: %s",
-		     seg.as_string ().c_str ());
-      return;
-    }
-
-  CanonicalPath ident_seg
-    = CanonicalPath::new_seg (seg.get_node_id (),
-			      seg.get_ident_segment ().as_string ());
-  result = result.append (ident_seg);
-}
-
 void
 ResolveType::visit (AST::ArrayType &type)
 {
   type.get_elem_type ()->accept_vis (*this);
-  // FIXME
-  // the capacity expr can contain block-expr with functions but these should be
-  // folded via constexpr code
-  ResolveExpr::go (type.get_size_expr ().get (), type.get_node_id (),
-		   CanonicalPath::create_empty (),
+  ResolveExpr::go (type.get_size_expr ().get (), CanonicalPath::create_empty (),
 		   CanonicalPath::create_empty ());
 }
 
 void
 ResolveType::visit (AST::TraitObjectTypeOneBound &type)
 {
-  ResolveTypeBound::go (&type.get_trait_bound (), type.get_node_id ());
+  ResolveTypeBound::go (&type.get_trait_bound ());
 }
 
 void
@@ -142,137 +44,47 @@ ResolveType::visit (AST::TraitObjectType &type)
   for (auto &bound : type.get_type_param_bounds ())
     {
       /* NodeId bound_resolved_id = */
-      ResolveTypeBound::go (bound.get (), type.get_node_id ());
+      ResolveTypeBound::go (bound.get ());
     }
-}
-
-void
-ResolveTypeToCanonicalPath::visit (AST::ReferenceType &ref)
-{
-  auto inner_type
-    = ResolveTypeToCanonicalPath::resolve (*ref.get_type_referenced ().get (),
-					   include_generic_args_flag,
-					   type_resolve_generic_args_flag);
-
-  std::string segment_string ("&");
-  if (ref.get_has_mut ())
-    segment_string += "mut ";
-
-  segment_string += inner_type.get ();
-
-  auto ident_seg = CanonicalPath::new_seg (ref.get_node_id (), segment_string);
-  result = result.append (ident_seg);
-}
-
-void
-ResolveTypeToCanonicalPath::visit (AST::RawPointerType &ref)
-{
-  auto inner_type
-    = ResolveTypeToCanonicalPath::resolve (*ref.get_type_pointed_to ().get (),
-					   include_generic_args_flag,
-					   type_resolve_generic_args_flag);
-
-  std::string segment_string ("*");
-  switch (ref.get_pointer_type ())
-    {
-    case AST::RawPointerType::PointerType::MUT:
-      segment_string += "mut ";
-      break;
-
-    case AST::RawPointerType::PointerType::CONST:
-      segment_string += "const ";
-      break;
-    }
-
-  segment_string += inner_type.get ();
-
-  auto ident_seg = CanonicalPath::new_seg (ref.get_node_id (), segment_string);
-  result = result.append (ident_seg);
-}
-
-void
-ResolveTypeToCanonicalPath::visit (AST::SliceType &slice)
-{
-  auto inner_type
-    = ResolveTypeToCanonicalPath::resolve (*slice.get_elem_type ().get (),
-					   include_generic_args_flag,
-					   type_resolve_generic_args_flag);
-  std::string segment_string = "[" + inner_type.get () + "]";
-  auto ident_seg
-    = CanonicalPath::new_seg (slice.get_node_id (), segment_string);
-  result = result.append (ident_seg);
 }
 
 void
 ResolveType::visit (AST::ReferenceType &type)
 {
-  CanonicalPath path = CanonicalPath::create_empty ();
-  resolved_node
-    = ResolveType::go (type.get_type_referenced ().get (), type.get_node_id (),
-		       canonicalize_type_with_generics, &path);
-  if (canonical_path != nullptr)
-    {
-      std::string ref_type_str = type.is_mut () ? "mut" : "";
-      std::string ref_path = "&" + ref_type_str + " " + path.get ();
-      *canonical_path = canonical_path->append (
-	CanonicalPath::new_seg (type.get_node_id (), ref_path));
-    }
+  resolved_node = ResolveType::go (type.get_type_referenced ().get ());
 }
 
 void
 ResolveType::visit (AST::RawPointerType &type)
 {
-  CanonicalPath path = CanonicalPath::create_empty ();
-  resolved_node
-    = ResolveType::go (type.get_type_pointed_to ().get (), type.get_node_id (),
-		       canonicalize_type_with_generics, &path);
-  if (canonical_path != nullptr)
-    {
-      std::string ptr_type_str
-	= type.get_pointer_type () == AST::RawPointerType::CONST ? "const"
-								 : "mut";
-      std::string ptr_path = "*" + ptr_type_str + " " + path.get ();
-      *canonical_path = canonical_path->append (
-	CanonicalPath::new_seg (type.get_node_id (), ptr_path));
-    }
+  resolved_node = ResolveType::go (type.get_type_pointed_to ().get ());
 }
 
 void
 ResolveType::visit (AST::InferredType &type)
-{}
+{
+  // FIXME
+}
 
 void
 ResolveType::visit (AST::NeverType &type)
-{}
+{
+  // FIXME
+}
 
 void
 ResolveType::visit (AST::SliceType &type)
 {
-  CanonicalPath path = CanonicalPath::create_empty ();
-  resolved_node
-    = ResolveType::go (type.get_elem_type ().get (), type.get_node_id (),
-		       canonicalize_type_with_generics, &path);
-  if (canonical_path != nullptr)
-    {
-      std::string slice_path = "[" + path.get () + "]";
-      *canonical_path = canonical_path->append (
-	CanonicalPath::new_seg (type.get_node_id (), slice_path));
-    }
+  resolved_node = ResolveType::go (type.get_elem_type ().get ());
 }
 
-ResolveRelativeTypePath::ResolveRelativeTypePath (CanonicalPath qualified_path)
-  : ResolveTypeToCanonicalPath (true, true)
-{
-  result = qualified_path;
-}
+// resolve relative type-paths
 
 bool
 ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 {
-  CanonicalPath result = CanonicalPath::create_empty ();
-  ResolveRelativeTypePath o (result);
-  auto &resolver = o.resolver;
-  auto &mappings = o.mappings;
+  auto resolver = Resolver::get ();
+  auto mappings = Analysis::Mappings::get ();
 
   NodeId module_scope_id = resolver->peek_current_module_scope ();
   NodeId previous_resolved_node_id = module_scope_id;
@@ -319,7 +131,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	      {
 		for (auto &gt : s->get_generic_args ().get_type_args ())
 		  {
-		    ResolveType::go (gt.get (), UNKNOWN_NODEID);
+		    ResolveType::go (gt.get ());
 		  }
 	      }
 	  }
@@ -429,15 +241,20 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
   return true;
 }
 
+// qualified type paths
+
+ResolveRelativeQualTypePath::ResolveRelativeQualTypePath ()
+  : failure_flag (false)
+{}
+
 bool
-ResolveRelativeTypePath::go (AST::QualifiedPathInType &path)
+ResolveRelativeQualTypePath::go (AST::QualifiedPathInType &path)
 {
-  CanonicalPath result = CanonicalPath::create_empty ();
-  ResolveRelativeTypePath o (result);
+  ResolveRelativeQualTypePath o;
 
   // resolve the type and trait path
   auto &qualified_path = path.get_qualified_path_type ();
-  if (!o.resolve_qual_seg (qualified_path, result))
+  if (!o.resolve_qual_seg (qualified_path))
     return false;
 
   // qualified types are similar to other paths in that we cannot guarantee
@@ -460,5 +277,134 @@ ResolveRelativeTypePath::go (AST::QualifiedPathInType &path)
 
   return true;
 }
+
+bool
+ResolveRelativeQualTypePath::resolve_qual_seg (AST::QualifiedPathType &seg)
+{
+  if (seg.is_error ())
+    {
+      rust_error_at (seg.get_locus (), "segment has error: %s",
+		     seg.as_string ().c_str ());
+      return false;
+    }
+
+  auto type = seg.get_type ().get ();
+  NodeId type_resolved_node = ResolveType::go (type);
+  if (type_resolved_node == UNKNOWN_NODEID)
+    return false;
+
+  if (!seg.has_as_clause ())
+    return true;
+
+  NodeId trait_resolved_node = ResolveType::go (&seg.get_as_type_path ());
+  if (trait_resolved_node == UNKNOWN_NODEID)
+    return false;
+
+  return true;
+}
+
+void
+ResolveRelativeQualTypePath::visit (AST::TypePathSegmentGeneric &seg)
+{
+  if (seg.is_error ())
+    {
+      failure_flag = true;
+      rust_error_at (seg.get_locus (), "segment has error: %s",
+		     seg.as_string ().c_str ());
+      return;
+    }
+
+  ResolveType::type_resolve_generic_args (seg.get_generic_args ());
+}
+
+void
+ResolveRelativeQualTypePath::visit (AST::TypePathSegment &seg)
+{
+  if (seg.is_error ())
+    {
+      failure_flag = true;
+      rust_error_at (seg.get_locus (), "segment has error: %s",
+		     seg.as_string ().c_str ());
+      return;
+    }
+}
+
+// resolve to canonical path
+
+bool
+ResolveTypeToCanonicalPath::go (AST::Type *type, CanonicalPath &result)
+{
+  ResolveTypeToCanonicalPath resolver;
+  type->accept_vis (resolver);
+  result = resolver.result;
+  return !resolver.result.is_empty ();
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
+{
+  NodeId resolved_node = UNKNOWN_NODEID;
+  if (!resolver->lookup_resolved_name (path.get_node_id (), &resolved_node))
+    {
+      resolver->lookup_resolved_type (path.get_node_id (), &resolved_node);
+    }
+
+  if (resolved_node == UNKNOWN_NODEID)
+    return;
+
+  const CanonicalPath *type_path = nullptr;
+  if (mappings->lookup_canonical_path (mappings->get_current_crate (),
+				       resolved_node, &type_path))
+    {
+      result = *type_path;
+    }
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::ReferenceType &type)
+{
+  CanonicalPath path = CanonicalPath::create_empty ();
+  bool ok
+    = ResolveTypeToCanonicalPath::go (type.get_type_referenced ().get (), path);
+  if (ok)
+    {
+      std::string ref_type_str = type.is_mut () ? "mut" : "";
+      std::string ref_path = "&" + ref_type_str + " " + path.get ();
+      result = CanonicalPath::new_seg (type.get_node_id (), ref_path);
+    }
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::RawPointerType &type)
+{
+  CanonicalPath path = CanonicalPath::create_empty ();
+  bool ok
+    = ResolveTypeToCanonicalPath::go (type.get_type_pointed_to ().get (), path);
+  if (ok)
+    {
+      std::string ptr_type_str
+	= type.get_pointer_type () == AST::RawPointerType::CONST ? "const"
+								 : "mut";
+      std::string ptr_path = "*" + ptr_type_str + " " + path.get ();
+      result = CanonicalPath::new_seg (type.get_node_id (), ptr_path);
+    }
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::SliceType &type)
+{
+  CanonicalPath path = CanonicalPath::create_empty ();
+  bool ok = ResolveTypeToCanonicalPath::go (type.get_elem_type ().get (), path);
+  if (ok)
+    {
+      std::string slice_path = "[" + path.get () + "]";
+      result = CanonicalPath::new_seg (type.get_node_id (), slice_path);
+    }
+}
+
+ResolveTypeToCanonicalPath::ResolveTypeToCanonicalPath ()
+  : ResolverBase (), result (CanonicalPath::create_empty ())
+{}
+
 } // namespace Resolver
 } // namespace Rust

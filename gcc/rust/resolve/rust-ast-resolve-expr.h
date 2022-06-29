@@ -30,7 +30,7 @@ class ResolveExpr : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Expr *expr, NodeId parent, const CanonicalPath &prefix,
+  static void go (AST::Expr *expr, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix);
 
   void visit (AST::TupleIndexExpr &expr) override;
@@ -119,18 +119,9 @@ public:
 
   void visit (AST::RangeFromToInclExpr &expr) override;
 
-protected:
-  void resolve_expr (AST::Expr *e, NodeId parent)
-  {
-    ResolveExpr::go (e, parent, prefix, canonical_prefix);
-  }
-
 private:
-  ResolveExpr (NodeId parent, const CanonicalPath &prefix,
-	       const CanonicalPath &canonical_prefix)
-    : ResolverBase (parent), prefix (prefix),
-      canonical_prefix (canonical_prefix)
-  {}
+  ResolveExpr (const CanonicalPath &prefix,
+	       const CanonicalPath &canonical_prefix);
 
   const CanonicalPath &prefix;
   const CanonicalPath &canonical_prefix;

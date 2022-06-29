@@ -45,7 +45,7 @@ public:
     NodeId current_module = resolver.resolver->peek_current_module_scope ();
     resolver.mappings->insert_child_item_to_parent_module_mapping (
       item->get_node_id (), current_module);
-  };
+  }
 
   void visit (AST::Module &module) override
   {
@@ -275,8 +275,6 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    resolver->mark_decl_mutability (var.get_node_id (), var.is_mutable ());
-
     NodeId current_module = resolver->peek_current_module_scope ();
     mappings->insert_module_child_item (current_module, decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
@@ -285,7 +283,8 @@ public:
 
   void visit (AST::ConstantItem &constant) override
   {
-    auto decl = ResolveConstantItemToCanonicalPath::resolve (constant);
+    auto decl = CanonicalPath::new_seg (constant.get_node_id (),
+					constant.get_identifier ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -305,7 +304,8 @@ public:
 
   void visit (AST::Function &function) override
   {
-    auto decl = ResolveFunctionItemToCanonicalPath::resolve (function);
+    auto decl = CanonicalPath::new_seg (function.get_node_id (),
+					function.get_function_name ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -325,38 +325,32 @@ public:
 
   void visit (AST::InherentImpl &impl_block) override
   {
-    bool canonicalize_type_args = !impl_block.has_generics ();
-    bool type_resolve_generic_args = false;
-
+    std::string raw_impl_type_path = impl_block.get_type ()->as_string ();
     CanonicalPath impl_type
-      = ResolveTypeToCanonicalPath::resolve (*impl_block.get_type ().get (),
-					     canonicalize_type_args,
-					     type_resolve_generic_args);
+      = CanonicalPath::new_seg (impl_block.get_type ()->get_node_id (),
+				raw_impl_type_path);
     CanonicalPath impl_prefix = prefix.append (impl_type);
 
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
-
-    // we cannot resolve canonical paths here until later on
   }
 
   void visit (AST::TraitImpl &impl_block) override
   {
-    bool canonicalize_type_args = !impl_block.has_generics ();
-    bool type_resolve_generic_args = false;
-
+    std::string raw_impl_type_path = impl_block.get_type ()->as_string ();
     CanonicalPath impl_type_seg
-      = ResolveTypeToCanonicalPath::resolve (*impl_block.get_type ().get (),
-					     canonicalize_type_args,
-					     type_resolve_generic_args);
+      = CanonicalPath::new_seg (impl_block.get_type ()->get_node_id (),
+				raw_impl_type_path);
+
+    std::string raw_trait_type_path = impl_block.get_trait_path ().as_string ();
     CanonicalPath trait_type_seg
-      = ResolveTypeToCanonicalPath::resolve (impl_block.get_trait_path (),
-					     canonicalize_type_args,
-					     type_resolve_generic_args);
+      = CanonicalPath::new_seg (impl_block.get_trait_path ().get_node_id (),
+				raw_trait_type_path);
 
     CanonicalPath projection
-      = TraitImplProjection::resolve (impl_block.get_node_id (), trait_type_seg,
-				      impl_type_seg);
+      = CanonicalPath::trait_impl_projection_seg (impl_block.get_node_id (),
+						  trait_type_seg,
+						  impl_type_seg);
     CanonicalPath impl_prefix = prefix.append (projection);
 
     resolver->get_name_scope ().insert (
@@ -369,8 +363,6 @@ public:
 
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
-
-    // we cannot resolve canonical paths here until later on
   }
 
   void visit (AST::Trait &trait) override
@@ -408,8 +400,7 @@ public:
 private:
   ResolveTopLevel (const CanonicalPath &prefix,
 		   const CanonicalPath &canonical_prefix)
-    : ResolverBase (UNKNOWN_NODEID), prefix (prefix),
-      canonical_prefix (canonical_prefix)
+    : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix)
   {}
 
   const CanonicalPath &prefix;

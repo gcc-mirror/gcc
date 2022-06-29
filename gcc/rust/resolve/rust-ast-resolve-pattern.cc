@@ -26,13 +26,13 @@ namespace Resolver {
 void
 PatternDeclaration::visit (AST::PathInExpression &pattern)
 {
-  ResolvePath::go (&pattern, parent);
+  ResolvePath::go (&pattern);
 }
 
 void
 PatternDeclaration::visit (AST::TupleStructPattern &pattern)
 {
-  ResolvePath::go (&pattern.get_path (), parent);
+  ResolvePath::go (&pattern.get_path ());
 
   std::unique_ptr<AST::TupleStructItems> &items = pattern.get_items ();
   switch (items->get_item_type ())
@@ -49,8 +49,7 @@ PatternDeclaration::visit (AST::TupleStructPattern &pattern)
 
 	for (auto &inner_pattern : items_no_range.get_patterns ())
 	  {
-	    PatternDeclaration::go (inner_pattern.get (),
-				    inner_pattern->get_pattern_node_id ());
+	    PatternDeclaration::go (inner_pattern.get ());
 	  }
       }
       break;
@@ -60,7 +59,7 @@ PatternDeclaration::visit (AST::TupleStructPattern &pattern)
 void
 PatternDeclaration::visit (AST::StructPattern &pattern)
 {
-  ResolvePath::go (&pattern.get_path (), parent);
+  ResolvePath::go (&pattern.get_path ());
 
   auto &struct_pattern_elems = pattern.get_struct_pattern_elems ();
   for (auto &field : struct_pattern_elems.get_struct_pattern_fields ())
@@ -87,9 +86,6 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	      CanonicalPath::new_seg (ident.get_node_id (),
 				      ident.get_identifier ()),
 	      ident.get_node_id (), ident.get_locus ());
-
-	    resolver->mark_decl_mutability (ident.get_node_id (),
-					    ident.is_mut ());
 	  }
 	  break;
 	}
@@ -130,7 +126,7 @@ PatternDeclaration::visit (AST::TuplePattern &pattern)
 }
 
 static void
-resolve_range_pattern_bound (AST::RangePatternBound *bound, NodeId parent)
+resolve_range_pattern_bound (AST::RangePatternBound *bound)
 {
   switch (bound->get_bound_type ())
     {
@@ -142,7 +138,7 @@ resolve_range_pattern_bound (AST::RangePatternBound *bound, NodeId parent)
 	AST::RangePatternBoundPath &ref
 	  = *static_cast<AST::RangePatternBoundPath *> (bound);
 
-	ResolvePath::go (&ref.get_path (), parent);
+	ResolvePath::go (&ref.get_path ());
       }
       break;
 
@@ -150,7 +146,7 @@ resolve_range_pattern_bound (AST::RangePatternBound *bound, NodeId parent)
 	AST::RangePatternBoundQualPath &ref
 	  = *static_cast<AST::RangePatternBoundQualPath *> (bound);
 
-	ResolvePath::go (&ref.get_qualified_path (), parent);
+	ResolvePath::go (&ref.get_qualified_path ());
       }
       break;
     }
@@ -159,8 +155,8 @@ resolve_range_pattern_bound (AST::RangePatternBound *bound, NodeId parent)
 void
 PatternDeclaration::visit (AST::RangePattern &pattern)
 {
-  resolve_range_pattern_bound (pattern.get_upper_bound ().get (), parent);
-  resolve_range_pattern_bound (pattern.get_lower_bound ().get (), parent);
+  resolve_range_pattern_bound (pattern.get_upper_bound ().get ());
+  resolve_range_pattern_bound (pattern.get_lower_bound ().get ());
 }
 
 } // namespace Resolver

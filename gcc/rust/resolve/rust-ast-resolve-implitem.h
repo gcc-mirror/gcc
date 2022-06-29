@@ -66,7 +66,8 @@ public:
 
   void visit (AST::ConstantItem &constant) override
   {
-    auto decl = ResolveConstantItemToCanonicalPath::resolve (constant);
+    auto decl = CanonicalPath::new_seg (constant.get_node_id (),
+					constant.get_identifier ());
     auto path = prefix.append (decl);
 
     resolver->get_name_scope ().insert (
@@ -80,7 +81,8 @@ public:
 
   void visit (AST::Function &function) override
   {
-    auto decl = ResolveFunctionItemToCanonicalPath::resolve (function);
+    auto decl = CanonicalPath::new_seg (function.get_node_id (),
+					function.get_function_name ());
     auto path = prefix.append (decl);
 
     resolver->get_name_scope ().insert (
@@ -94,7 +96,8 @@ public:
 
   void visit (AST::Method &method) override
   {
-    auto decl = ResolveMethodItemToCanonicalPath::resolve (method);
+    auto decl = CanonicalPath::new_seg (method.get_node_id (),
+					method.get_method_name ());
     auto path = prefix.append (decl);
 
     resolver->get_name_scope ().insert (
@@ -108,7 +111,7 @@ public:
 
 private:
   ResolveToplevelImplItem (const CanonicalPath &prefix)
-    : ResolverBase (UNKNOWN_NODEID), prefix (prefix)
+    : ResolverBase (), prefix (prefix)
   {
     rust_assert (!prefix.is_empty ());
   }
@@ -130,7 +133,9 @@ public:
 
   void visit (AST::TraitItemFunc &function) override
   {
-    auto decl = ResolveTraitItemFunctionToCanonicalPath::resolve (function);
+    auto decl = CanonicalPath::new_seg (
+      function.get_node_id (),
+      function.get_trait_function_decl ().get_identifier ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -148,7 +153,8 @@ public:
 
   void visit (AST::TraitItemMethod &method) override
   {
-    auto decl = ResolveTraitItemMethodToCanonicalPath::resolve (method);
+    auto decl = CanonicalPath::new_seg (
+      method.get_node_id (), method.get_trait_method_decl ().get_identifier ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -166,7 +172,8 @@ public:
 
   void visit (AST::TraitItemConst &constant) override
   {
-    auto decl = ResolveTraitItemConstToCanonicalPath::resolve (constant);
+    auto decl = CanonicalPath::new_seg (constant.get_node_id (),
+					constant.get_identifier ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -184,7 +191,8 @@ public:
 
   void visit (AST::TraitItemType &type) override
   {
-    auto decl = ResolveTraitItemTypeToCanonicalPath::resolve (type);
+    auto decl
+      = CanonicalPath::new_seg (type.get_node_id (), type.get_identifier ());
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
 
@@ -203,8 +211,7 @@ public:
 private:
   ResolveTopLevelTraitItems (const CanonicalPath &prefix,
 			     const CanonicalPath &canonical_prefix)
-    : ResolverBase (UNKNOWN_NODEID), prefix (prefix),
-      canonical_prefix (canonical_prefix)
+    : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix)
   {}
 
   const CanonicalPath &prefix;
@@ -260,7 +267,7 @@ public:
 
 private:
   ResolveToplevelExternItem (const CanonicalPath &prefix)
-    : ResolverBase (UNKNOWN_NODEID), prefix (prefix)
+    : ResolverBase (), prefix (prefix)
   {}
 
   const CanonicalPath &prefix;

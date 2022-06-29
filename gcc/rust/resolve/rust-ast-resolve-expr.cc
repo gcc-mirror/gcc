@@ -28,17 +28,17 @@ namespace Rust {
 namespace Resolver {
 
 void
-ResolveExpr::go (AST::Expr *expr, NodeId parent, const CanonicalPath &prefix,
+ResolveExpr::go (AST::Expr *expr, const CanonicalPath &prefix,
 		 const CanonicalPath &canonical_prefix)
 {
-  ResolveExpr resolver (parent, prefix, canonical_prefix);
+  ResolveExpr resolver (prefix, canonical_prefix);
   expr->accept_vis (resolver);
 }
 
 void
 ResolveExpr::visit (AST::TupleIndexExpr &expr)
 {
-  resolve_expr (expr.get_tuple_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_tuple_expr ().get (), prefix, canonical_prefix);
 }
 
 void
@@ -48,58 +48,58 @@ ResolveExpr::visit (AST::TupleExpr &expr)
     return;
 
   for (auto &elem : expr.get_tuple_elems ())
-    resolve_expr (elem.get (), expr.get_node_id ());
+    ResolveExpr::go (elem.get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::PathInExpression &expr)
 {
-  ResolvePath::go (&expr, parent);
+  ResolvePath::go (&expr);
 }
 
 void
 ResolveExpr::visit (AST::QualifiedPathInExpression &expr)
 {
-  ResolvePath::go (&expr, parent);
+  ResolvePath::go (&expr);
 }
 
 void
 ResolveExpr::visit (AST::ReturnExpr &expr)
 {
   if (expr.has_returned_expr ())
-    resolve_expr (expr.get_returned_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_returned_expr ().get (), prefix,
+		     canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::CallExpr &expr)
 {
-  resolve_expr (expr.get_function_expr ().get (), expr.get_node_id ());
-  auto const &in_params = expr.get_params ();
-  for (auto &param : in_params)
-    resolve_expr (param.get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_function_expr ().get (), prefix, canonical_prefix);
+  for (auto &param : expr.get_params ())
+    ResolveExpr::go (param.get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::MethodCallExpr &expr)
 {
-  resolve_expr (expr.get_receiver_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_receiver_expr ().get (), prefix, canonical_prefix);
 
   if (expr.get_method_name ().has_generic_args ())
     {
       AST::GenericArgs &args = expr.get_method_name ().get_generic_args ();
-      ResolveTypeToCanonicalPath::type_resolve_generic_args (args);
+      ResolveType::type_resolve_generic_args (args);
     }
 
   auto const &in_params = expr.get_params ();
   for (auto &param : in_params)
-    resolve_expr (param.get (), expr.get_node_id ());
+    ResolveExpr::go (param.get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::AssignmentExpr &expr)
 {
-  resolve_expr (expr.get_left_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_right_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_left_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_right_expr ().get (), prefix, canonical_prefix);
 
   // need to verify the assignee
   VerifyAsignee::go (expr.get_left_expr ().get (), expr.get_node_id ());
@@ -130,15 +130,15 @@ ResolveExpr::visit (AST::IdentifierExpr &expr)
 void
 ResolveExpr::visit (AST::ArithmeticOrLogicalExpr &expr)
 {
-  resolve_expr (expr.get_left_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_right_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_left_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_right_expr ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::CompoundAssignmentExpr &expr)
 {
-  resolve_expr (expr.get_left_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_right_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_left_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_right_expr ().get (), prefix, canonical_prefix);
 
   // need to verify the assignee
   VerifyAsignee::go (expr.get_left_expr ().get (), expr.get_node_id ());
@@ -147,57 +147,57 @@ ResolveExpr::visit (AST::CompoundAssignmentExpr &expr)
 void
 ResolveExpr::visit (AST::ComparisonExpr &expr)
 {
-  resolve_expr (expr.get_left_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_right_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_left_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_right_expr ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::LazyBooleanExpr &expr)
 {
-  resolve_expr (expr.get_left_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_right_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_left_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_right_expr ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::NegationExpr &expr)
 {
-  resolve_expr (expr.get_negated_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_negated_expr ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::TypeCastExpr &expr)
 {
-  ResolveType::go (expr.get_type_to_cast_to ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_casted_expr ().get (), expr.get_node_id ());
+  ResolveType::go (expr.get_type_to_cast_to ().get ());
+  ResolveExpr::go (expr.get_casted_expr ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::IfExpr &expr)
 {
-  resolve_expr (expr.get_condition_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_if_block ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_condition_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_if_block ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::IfExprConseqElse &expr)
 {
-  resolve_expr (expr.get_condition_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_if_block ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_else_block ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_condition_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_if_block ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_else_block ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::IfExprConseqIf &expr)
 {
-  resolve_expr (expr.get_condition_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_if_block ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_conseq_if_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_condition_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_if_block ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_conseq_if_expr ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::IfLetExpr &expr)
 {
-  resolve_expr (expr.get_value_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_value_expr ().get (), prefix, canonical_prefix);
 
   NodeId scope_node_id = expr.get_node_id ();
   resolver->get_name_scope ().push (scope_node_id);
@@ -209,10 +209,10 @@ ResolveExpr::visit (AST::IfLetExpr &expr)
 
   for (auto &pattern : expr.get_patterns ())
     {
-      PatternDeclaration::go (pattern.get (), expr.get_node_id ());
+      PatternDeclaration::go (pattern.get ());
     }
 
-  resolve_expr (expr.get_if_block ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_if_block ().get (), prefix, canonical_prefix);
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -233,19 +233,19 @@ ResolveExpr::visit (AST::BlockExpr &expr)
   for (auto &s : expr.get_statements ())
     {
       if (s->is_item ())
-	ResolveStmt::go (s.get (), s->get_node_id (), prefix, canonical_prefix,
+	ResolveStmt::go (s.get (), prefix, canonical_prefix,
 			 CanonicalPath::create_empty ());
     }
 
   for (auto &s : expr.get_statements ())
     {
       if (!s->is_item ())
-	ResolveStmt::go (s.get (), s->get_node_id (), prefix, canonical_prefix,
+	ResolveStmt::go (s.get (), prefix, canonical_prefix,
 			 CanonicalPath::create_empty ());
     }
 
   if (expr.has_tail_expr ())
-    resolve_expr (expr.get_tail_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_tail_expr ().get (), prefix, canonical_prefix);
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -262,7 +262,7 @@ void
 ResolveExpr::visit (AST::ArrayElemsValues &elems)
 {
   for (auto &elem : elems.get_values ())
-    resolve_expr (elem.get (), elems.get_node_id ());
+    ResolveExpr::go (elem.get (), prefix, canonical_prefix);
 }
 
 void
@@ -274,41 +274,41 @@ ResolveExpr::visit (AST::ArrayExpr &expr)
 void
 ResolveExpr::visit (AST::ArrayIndexExpr &expr)
 {
-  resolve_expr (expr.get_array_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_index_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_array_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_index_expr ().get (), prefix, canonical_prefix);
 }
 
 void
-ResolveExpr::visit (AST::ArrayElemsCopied &elems)
+ResolveExpr::visit (AST::ArrayElemsCopied &expr)
 {
-  resolve_expr (elems.get_num_copies ().get (), elems.get_node_id ());
-  resolve_expr (elems.get_elem_to_copy ().get (), elems.get_node_id ());
+  ResolveExpr::go (expr.get_num_copies ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_elem_to_copy ().get (), prefix, canonical_prefix);
 }
 
 // this this an empty struct constructor like 'S {}'
 void
 ResolveExpr::visit (AST::StructExprStruct &struct_expr)
 {
-  resolve_expr (&struct_expr.get_struct_name (), struct_expr.get_node_id ());
+  ResolveExpr::go (&struct_expr.get_struct_name (), prefix, canonical_prefix);
 }
 
 // this this a struct constructor with fields
 void
 ResolveExpr::visit (AST::StructExprStructFields &struct_expr)
 {
-  resolve_expr (&struct_expr.get_struct_name (), struct_expr.get_node_id ());
+  ResolveExpr::go (&struct_expr.get_struct_name (), prefix, canonical_prefix);
 
   if (struct_expr.has_struct_base ())
     {
       AST::StructBase &base = struct_expr.get_struct_base ();
-      resolve_expr (base.get_base_struct ().get (), struct_expr.get_node_id ());
+      ResolveExpr::go (base.get_base_struct ().get (), prefix,
+		       canonical_prefix);
     }
 
   auto const &struct_fields = struct_expr.get_fields ();
   for (auto &struct_field : struct_fields)
     {
-      ResolveStructExprField::go (struct_field.get (),
-				  struct_expr.get_node_id (), prefix,
+      ResolveStructExprField::go (struct_field.get (), prefix,
 				  canonical_prefix);
     }
 }
@@ -316,13 +316,13 @@ ResolveExpr::visit (AST::StructExprStructFields &struct_expr)
 void
 ResolveExpr::visit (AST::GroupedExpr &expr)
 {
-  resolve_expr (expr.get_expr_in_parens ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_expr_in_parens ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::FieldAccessExpr &expr)
 {
-  resolve_expr (expr.get_receiver_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_receiver_expr ().get (), prefix, canonical_prefix);
 }
 
 void
@@ -349,7 +349,7 @@ ResolveExpr::visit (AST::LoopExpr &expr)
 	  rust_error_at (locus, "was defined here");
 	});
     }
-  resolve_expr (expr.get_loop_block ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_loop_block ().get (), prefix, canonical_prefix);
 }
 
 void
@@ -379,7 +379,7 @@ ResolveExpr::visit (AST::BreakExpr &expr)
     }
 
   if (expr.has_break_expr ())
-    resolve_expr (expr.get_break_expr ().get (), expr.get_node_id ());
+    ResolveExpr::go (expr.get_break_expr ().get (), prefix, canonical_prefix);
 }
 
 void
@@ -406,8 +406,9 @@ ResolveExpr::visit (AST::WhileLoopExpr &expr)
 	  rust_error_at (locus, "was defined here");
 	});
     }
-  resolve_expr (expr.get_predicate_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_loop_block ().get (), expr.get_node_id ());
+
+  ResolveExpr::go (expr.get_predicate_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_loop_block ().get (), prefix, canonical_prefix);
 }
 
 void
@@ -445,10 +446,11 @@ ResolveExpr::visit (AST::ForLoopExpr &expr)
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
   // resolve the expression
-  PatternDeclaration::go (expr.get_pattern ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_iterator_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_loop_block ().get (), expr.get_node_id ());
+  PatternDeclaration::go (expr.get_pattern ().get ());
+  ResolveExpr::go (expr.get_iterator_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_loop_block ().get (), prefix, canonical_prefix);
 
+  // done
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
   resolver->get_label_scope ().pop ();
@@ -484,19 +486,20 @@ ResolveExpr::visit (AST::ContinueExpr &expr)
 void
 ResolveExpr::visit (AST::BorrowExpr &expr)
 {
-  resolve_expr (expr.get_borrowed_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_borrowed_expr ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::DereferenceExpr &expr)
 {
-  resolve_expr (expr.get_dereferenced_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_dereferenced_expr ().get (), prefix,
+		   canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::MatchExpr &expr)
 {
-  resolve_expr (expr.get_scrutinee_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_scrutinee_expr ().get (), prefix, canonical_prefix);
   for (auto &match_case : expr.get_match_cases ())
     {
       // each arm is in its own scope
@@ -511,16 +514,17 @@ ResolveExpr::visit (AST::MatchExpr &expr)
       // resolve
       AST::MatchArm &arm = match_case.get_arm ();
       if (arm.has_match_arm_guard ())
-	resolve_expr (arm.get_guard_expr ().get (), expr.get_node_id ());
+	ResolveExpr::go (arm.get_guard_expr ().get (), prefix,
+			 canonical_prefix);
 
       // insert any possible new patterns
       for (auto &pattern : arm.get_patterns ())
 	{
-	  PatternDeclaration::go (pattern.get (), expr.get_node_id ());
+	  PatternDeclaration::go (pattern.get ());
 	}
 
       // resolve the body
-      resolve_expr (match_case.get_expr ().get (), expr.get_node_id ());
+      ResolveExpr::go (match_case.get_expr ().get (), prefix, canonical_prefix);
 
       // done
       resolver->get_name_scope ().pop ();
@@ -532,20 +536,20 @@ ResolveExpr::visit (AST::MatchExpr &expr)
 void
 ResolveExpr::visit (AST::RangeFromToExpr &expr)
 {
-  resolve_expr (expr.get_from_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_to_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_from_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_to_expr ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::RangeFromExpr &expr)
 {
-  resolve_expr (expr.get_from_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_from_expr ().get (), prefix, canonical_prefix);
 }
 
 void
 ResolveExpr::visit (AST::RangeToExpr &expr)
 {
-  resolve_expr (expr.get_to_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_to_expr ().get (), prefix, canonical_prefix);
 }
 
 void
@@ -557,9 +561,14 @@ ResolveExpr::visit (AST::RangeFullExpr &expr)
 void
 ResolveExpr::visit (AST::RangeFromToInclExpr &expr)
 {
-  resolve_expr (expr.get_from_expr ().get (), expr.get_node_id ());
-  resolve_expr (expr.get_to_expr ().get (), expr.get_node_id ());
+  ResolveExpr::go (expr.get_from_expr ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_to_expr ().get (), prefix, canonical_prefix);
 }
+
+ResolveExpr::ResolveExpr (const CanonicalPath &prefix,
+			  const CanonicalPath &canonical_prefix)
+  : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix)
+{}
 
 } // namespace Resolver
 } // namespace Rust

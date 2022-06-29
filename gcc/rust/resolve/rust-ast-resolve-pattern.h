@@ -30,16 +30,11 @@ class ResolvePattern : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Pattern *pattern, NodeId parent)
+  static void go (AST::Pattern *pattern)
   {
-    ResolvePattern resolver (parent);
+    ResolvePattern resolver;
     pattern->accept_vis (resolver);
-    if (resolver.resolved_node == UNKNOWN_NODEID)
-      {
-	rust_error_at (resolver.locus, "failed to resolve pattern %s",
-		       pattern->as_string ().c_str ());
-      }
-  };
+  }
 
   void visit (AST::IdentifierPattern &pattern) override
   {
@@ -52,7 +47,7 @@ public:
   }
 
 private:
-  ResolvePattern (NodeId parent) : ResolverBase (parent) {}
+  ResolvePattern () : ResolverBase () {}
 };
 
 class PatternDeclaration : public ResolverBase
@@ -60,9 +55,9 @@ class PatternDeclaration : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Pattern *pattern, NodeId parent)
+  static void go (AST::Pattern *pattern)
   {
-    PatternDeclaration resolver (parent);
+    PatternDeclaration resolver;
     pattern->accept_vis (resolver);
   };
 
@@ -73,9 +68,6 @@ public:
     resolver->get_name_scope ().insert (
       CanonicalPath::new_seg (pattern.get_node_id (), pattern.get_ident ()),
       pattern.get_node_id (), pattern.get_locus ());
-
-    resolver->mark_decl_mutability (pattern.get_node_id (),
-				    pattern.get_is_mut ());
   }
 
   void visit (AST::WildcardPattern &pattern) override
@@ -83,8 +75,6 @@ public:
     resolver->get_name_scope ().insert (
       CanonicalPath::new_seg (pattern.get_node_id (), "_"),
       pattern.get_node_id (), pattern.get_locus ());
-
-    resolver->mark_decl_mutability (pattern.get_node_id (), false);
   }
 
   // cases in a match expression
@@ -99,7 +89,7 @@ public:
   void visit (AST::RangePattern &pattern) override;
 
 private:
-  PatternDeclaration (NodeId parent) : ResolverBase (parent) {}
+  PatternDeclaration () : ResolverBase () {}
 };
 
 } // namespace Resolver

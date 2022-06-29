@@ -29,12 +29,12 @@ class ResolvePath : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::PathInExpression *expr, NodeId parent);
-  static void go (AST::QualifiedPathInExpression *expr, NodeId parent);
-  static void go (AST::SimplePath *expr, NodeId parent);
+  static void go (AST::PathInExpression *expr);
+  static void go (AST::QualifiedPathInExpression *expr);
+  static void go (AST::SimplePath *expr);
 
 private:
-  ResolvePath (NodeId parent) : ResolverBase (parent) {}
+  ResolvePath ();
 
   void resolve_path (AST::PathInExpression *expr);
   void resolve_path (AST::QualifiedPathInExpression *expr);

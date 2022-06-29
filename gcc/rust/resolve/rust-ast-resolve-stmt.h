@@ -33,32 +33,31 @@ class ResolveStmt : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Stmt *stmt, NodeId parent, const CanonicalPath &prefix,
+  static void go (AST::Stmt *stmt, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix,
 		  const CanonicalPath &enum_prefix)
   {
     if (stmt->is_marked_for_strip ())
       return;
 
-    ResolveStmt resolver (parent, prefix, canonical_prefix, enum_prefix);
+    ResolveStmt resolver (prefix, canonical_prefix, enum_prefix);
     stmt->accept_vis (resolver);
-  };
+  }
 
   void visit (AST::ExprStmtWithBlock &stmt) override
   {
-    ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id (), prefix,
-		     canonical_prefix);
+    ResolveExpr::go (stmt.get_expr ().get (), prefix, canonical_prefix);
   }
 
   void visit (AST::ExprStmtWithoutBlock &stmt) override
   {
-    ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id (), prefix,
-		     canonical_prefix);
+    ResolveExpr::go (stmt.get_expr ().get (), prefix, canonical_prefix);
   }
 
   void visit (AST::ConstantItem &constant) override
   {
-    auto decl = ResolveConstantItemToCanonicalPath::resolve (constant);
+    auto decl = CanonicalPath::new_seg (constant.get_node_id (),
+					constant.get_identifier ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
@@ -72,32 +71,21 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
-    ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id (),
-		     prefix, canonical_prefix);
-
-    // the mutability checker needs to verify for immutable decls the number
-    // of assignments are <1. This marks an implicit assignment
-    resolver->mark_decl_mutability (constant.get_node_id (), false);
-    resolver->mark_assignment_to_decl (constant.get_node_id (),
-				       constant.get_node_id ());
+    ResolveType::go (constant.get_type ().get ());
+    ResolveExpr::go (constant.get_expr ().get (), prefix, canonical_prefix);
   }
 
   void visit (AST::LetStmt &stmt) override
   {
     if (stmt.has_init_expr ())
       {
-	ResolveExpr::go (stmt.get_init_expr ().get (), stmt.get_node_id (),
-			 prefix, canonical_prefix);
-
-	// mark the assignment
-	resolver->mark_assignment_to_decl (
-	  stmt.get_pattern ()->get_pattern_node_id (), stmt.get_node_id ());
+	ResolveExpr::go (stmt.get_init_expr ().get (), prefix,
+			 canonical_prefix);
       }
 
-    PatternDeclaration::go (stmt.get_pattern ().get (), stmt.get_node_id ());
+    PatternDeclaration::go (stmt.get_pattern ().get ());
     if (stmt.has_type ())
-      ResolveType::go (stmt.get_type ().get (), stmt.get_node_id ());
+      ResolveType::go (stmt.get_type ().get ());
   }
 
   void visit (AST::TupleStruct &struct_decl) override
@@ -124,14 +112,12 @@ public:
       {
 	for (auto &generic : struct_decl.get_generic_params ())
 	  {
-	    ResolveGenericParam::go (generic.get (),
-				     struct_decl.get_node_id ());
+	    ResolveGenericParam::go (generic.get ());
 	  }
       }
 
     for (AST::TupleField &field : struct_decl.get_fields ())
-      ResolveType::go (field.get_field_type ().get (),
-		       struct_decl.get_node_id ());
+      ResolveType::go (field.get_field_type ().get ());
 
     resolver->get_type_scope ().pop ();
   }
@@ -160,12 +146,12 @@ public:
       {
 	for (auto &generic : enum_decl.get_generic_params ())
 	  {
-	    ResolveGenericParam::go (generic.get (), enum_decl.get_node_id ());
+	    ResolveGenericParam::go (generic.get ());
 	  }
       }
 
     for (auto &variant : enum_decl.get_variants ())
-      ResolveStmt::go (variant.get (), parent, path, canonical_prefix, path);
+      ResolveStmt::go (variant.get (), path, canonical_prefix, path);
 
     resolver->get_type_scope ().pop ();
   }
@@ -212,7 +198,7 @@ public:
 	if (field.get_field_type ()->is_marked_for_strip ())
 	  continue;
 
-	ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+	ResolveType::go (field.get_field_type ().get ());
       }
   }
 
@@ -238,7 +224,7 @@ public:
 	if (field.get_field_type ()->is_marked_for_strip ())
 	  continue;
 
-	ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+	ResolveType::go (field.get_field_type ().get ());
       }
   }
 
@@ -286,8 +272,7 @@ public:
       {
 	for (auto &generic : struct_decl.get_generic_params ())
 	  {
-	    ResolveGenericParam::go (generic.get (),
-				     struct_decl.get_node_id ());
+	    ResolveGenericParam::go (generic.get ());
 	  }
       }
 
@@ -296,8 +281,7 @@ public:
 	if (field.get_field_type ()->is_marked_for_strip ())
 	  continue;
 
-	ResolveType::go (field.get_field_type ().get (),
-			 struct_decl.get_node_id ());
+	ResolveType::go (field.get_field_type ().get ());
       }
 
     resolver->get_type_scope ().pop ();
@@ -327,7 +311,7 @@ public:
       {
 	for (auto &generic : union_decl.get_generic_params ())
 	  {
-	    ResolveGenericParam::go (generic.get (), union_decl.get_node_id ());
+	    ResolveGenericParam::go (generic.get ());
 	  }
       }
 
@@ -336,8 +320,7 @@ public:
 	if (field.get_field_type ()->is_marked_for_strip ())
 	  continue;
 
-	ResolveType::go (field.get_field_type ().get (),
-			 union_decl.get_node_id ());
+	ResolveType::go (field.get_field_type ().get ());
       }
 
     resolver->get_type_scope ().pop ();
@@ -345,7 +328,8 @@ public:
 
   void visit (AST::Function &function) override
   {
-    auto decl = ResolveFunctionItemToCanonicalPath::resolve (function);
+    auto decl = CanonicalPath::new_seg (function.get_node_id (),
+					function.get_function_name ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
     mappings->insert_canonical_path (mappings->get_current_crate (),
@@ -370,30 +354,22 @@ public:
     if (function.has_generics ())
       {
 	for (auto &generic : function.get_generic_params ())
-	  ResolveGenericParam::go (generic.get (), function.get_node_id ());
+	  ResolveGenericParam::go (generic.get ());
       }
 
     if (function.has_return_type ())
-      ResolveType::go (function.get_return_type ().get (),
-		       function.get_node_id ());
+      ResolveType::go (function.get_return_type ().get ());
 
     // we make a new scope so the names of parameters are resolved and shadowed
     // correctly
     for (auto &param : function.get_function_params ())
       {
-	ResolveType::go (param.get_type ().get (), param.get_node_id ());
-	PatternDeclaration::go (param.get_pattern ().get (),
-				param.get_node_id ());
-
-	// the mutability checker needs to verify for immutable decls the number
-	// of assignments are <1. This marks an implicit assignment
-	resolver->mark_assignment_to_decl (
-	  param.get_pattern ()->get_pattern_node_id (), param.get_node_id ());
+	ResolveType::go (param.get_type ().get ());
+	PatternDeclaration::go (param.get_pattern ().get ());
       }
 
     // resolve the function body
-    ResolveExpr::go (function.get_definition ().get (), function.get_node_id (),
-		     path, cpath);
+    ResolveExpr::go (function.get_definition ().get (), path, cpath);
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
@@ -403,11 +379,11 @@ public:
   void visit (AST::ExternBlock &extern_block) override;
 
 private:
-  ResolveStmt (NodeId parent, const CanonicalPath &prefix,
+  ResolveStmt (const CanonicalPath &prefix,
 	       const CanonicalPath &canonical_prefix,
 	       const CanonicalPath &enum_prefix)
-    : ResolverBase (parent), prefix (prefix),
-      canonical_prefix (canonical_prefix), enum_prefix (enum_prefix)
+    : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix),
+      enum_prefix (enum_prefix)
   {}
 
   const CanonicalPath &prefix;
