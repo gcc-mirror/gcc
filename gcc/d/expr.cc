@@ -2993,21 +2993,20 @@ public:
 
   void visit (VectorExp *e)
   {
-    tree type = build_ctype (e->type);
-    tree etype = TREE_TYPE (type);
-
     /* First handle array literal expressions.  */
     if (e->e1->op == TOKarrayliteral)
       {
 	ArrayLiteralExp *ale = ((ArrayLiteralExp *) e->e1);
 	vec<constructor_elt, va_gc> *elms = NULL;
 	bool constant_p = true;
+	tree type = build_ctype (e->type);
 
 	vec_safe_reserve (elms, ale->elements->dim);
 	for (size_t i = 0; i < ale->elements->dim; i++)
 	  {
 	    Expression *expr = ale->getElement (i);
-	    tree value = d_convert (etype, build_expr (expr, this->constp_));
+	    tree value = d_convert (TREE_TYPE (type),
+				    build_expr (expr, this->constp_));
 	    if (!CONSTANT_CLASS_P (value))
 	      constant_p = false;
 
@@ -3020,10 +3019,18 @@ public:
 	else
 	  this->result_ = build_constructor (type, elms);
       }
+    else if (e->e1->type->toBasetype ()->ty == Tsarray)
+      {
+	/* Build a vector representation from a static array.  */
+	this->result_ = convert_expr (build_expr (e->e1, this->constp_),
+				      e->e1->type, e->type);
+      }
     else
       {
 	/* Build constructor from single value.  */
-	tree val = d_convert (etype, build_expr (e->e1, this->constp_));
+	tree type = build_ctype (e->type);
+	tree val = d_convert (TREE_TYPE (type),
+			      build_expr (e->e1, this->constp_));
 	this->result_ = build_vector_from_val (type, val);
       }
   }
