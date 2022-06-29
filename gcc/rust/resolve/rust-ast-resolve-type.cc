@@ -356,7 +356,52 @@ ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
   if (mappings->lookup_canonical_path (mappings->get_current_crate (),
 				       resolved_node, &type_path))
     {
-      result = *type_path;
+      auto &final_seg = path.get_segments ().back ();
+      switch (final_seg->get_type ())
+	{
+	  case AST::TypePathSegment::SegmentType::GENERIC: {
+	    AST::TypePathSegmentGeneric *s
+	      = static_cast<AST::TypePathSegmentGeneric *> (final_seg.get ());
+
+	    std::vector<CanonicalPath> args;
+	    if (s->has_generic_args ())
+	      {
+		for (auto &gt : s->get_generic_args ().get_type_args ())
+		  {
+		    CanonicalPath arg = CanonicalPath::create_empty ();
+		    bool ok = ResolveTypeToCanonicalPath::go (gt.get (), arg);
+		    if (ok)
+		      args.push_back (std::move (arg));
+		  }
+	      }
+
+	    result = *type_path;
+	    if (!args.empty ())
+	      {
+		// append this onto the path
+		std::string buf;
+		for (size_t i = 0; i < args.size (); i++)
+		  {
+		    bool has_next = (i + 1) < args.size ();
+		    const auto &arg = args.at (i);
+
+		    buf += arg.get ();
+		    if (has_next)
+		      buf += ", ";
+		  }
+
+		std::string arg_seg = "<" + buf + ">";
+		CanonicalPath argument_seg
+		  = CanonicalPath::new_seg (s->get_node_id (), arg_seg);
+		result = result.append (argument_seg);
+	      }
+	  }
+	  break;
+
+	default:
+	  result = *type_path;
+	  break;
+	}
     }
 }
 
