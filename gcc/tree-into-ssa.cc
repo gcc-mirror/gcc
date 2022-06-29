@@ -2146,7 +2146,7 @@ class rewrite_update_dom_walker : public dom_walker
 {
 public:
   rewrite_update_dom_walker (cdi_direction direction)
-    : dom_walker (direction, ALL_BLOCKS, NULL) {}
+    : dom_walker (direction, ALL_BLOCKS, (int *)(uintptr_t)-1) {}
 
   edge before_dom_children (basic_block) final override;
   void after_dom_children (basic_block) final override;
