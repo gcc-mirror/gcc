@@ -3352,97 +3352,7 @@ class Find_named_object : public Traverse
   bool found_;
 };
 
-// A reference to a const in an expression.
-
-class Const_expression : public Expression
-{
- public:
-  Const_expression(Named_object* constant, Location location)
-    : Expression(EXPRESSION_CONST_REFERENCE, location),
-      constant_(constant), type_(NULL), seen_(false)
-  { }
-
-  Named_object*
-  named_object()
-  { return this->constant_; }
-
-  const Named_object*
-  named_object() const
-  { return this->constant_; }
-
-  // Check that the initializer does not refer to the constant itself.
-  void
-  check_for_init_loop();
-
- protected:
-  int
-  do_traverse(Traverse*);
-
-  Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
-
-  bool
-  do_is_constant() const
-  { return true; }
-
-  bool
-  do_is_zero_value() const
-  { return this->constant_->const_value()->expr()->is_zero_value(); }
-
-  bool
-  do_is_static_initializer() const
-  { return true; }
-
-  bool
-  do_numeric_constant_value(Numeric_constant* nc) const;
-
-  bool
-  do_string_constant_value(std::string* val) const;
-
-  bool
-  do_boolean_constant_value(bool* val) const;
-
-  Type*
-  do_type();
-
-  // The type of a const is set by the declaration, not the use.
-  void
-  do_determine_type(const Type_context*);
-
-  void
-  do_check_types(Gogo*);
-
-  Expression*
-  do_copy()
-  { return this; }
-
-  Bexpression*
-  do_get_backend(Translate_context* context);
-
-  int
-  do_inlining_cost() const
-  { return 1; }
-
-  // When exporting a reference to a const as part of a const
-  // expression, we export the value.  We ignore the fact that it has
-  // a name.
-  void
-  do_export(Export_function_body* efb) const
-  { this->constant_->const_value()->expr()->export_expression(efb); }
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
-
- private:
-  // The constant.
-  Named_object* constant_;
-  // The type of this reference.  This is used if the constant has an
-  // abstract type.
-  Type* type_;
-  // Used to prevent infinite recursion when a constant incorrectly
-  // refers to itself.
-  mutable bool seen_;
-};
+// Class Const_expression.
 
 // Traversal.
 
@@ -3452,6 +3362,14 @@ Const_expression::do_traverse(Traverse* traverse)
   if (this->type_ != NULL)
     return Type::traverse(this->type_, traverse);
   return TRAVERSE_CONTINUE;
+}
+
+// Whether this is the zero value.
+
+bool
+Const_expression::do_is_zero_value() const
+{
+  return this->constant_->const_value()->expr()->is_zero_value();
 }
 
 // Lower a constant expression.  This is where we convert the
@@ -3706,6 +3624,16 @@ Const_expression::do_get_backend(Translate_context* context)
   if (this->type_ != NULL)
     expr = Expression::make_cast(this->type_, expr, this->location());
   return expr->get_backend(context);
+}
+
+// When exporting a reference to a const as part of a const
+// expression, we export the value.  We ignore the fact that it has
+// a name.
+
+void
+Const_expression::do_export(Export_function_body* efb) const
+{
+  this->constant_->const_value()->expr()->export_expression(efb);
 }
 
 // Dump ast representation for constant expression.

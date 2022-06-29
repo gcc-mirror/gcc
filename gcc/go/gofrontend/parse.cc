@@ -1468,6 +1468,7 @@ Parse::const_spec(int iota, Type** last_type, Expression_list** last_expr_list)
 	{
 	  Expression* copy = (*p)->copy();
 	  copy->set_location(loc);
+	  this->update_references(&copy);
 	  expr_list->push_back(copy);
 	}
     }
@@ -1511,6 +1512,94 @@ Parse::const_spec(int iota, Type** last_type, Expression_list** last_expr_list)
     go_error_at(this->location(), "too many initializers");
 
   return;
+}
+
+// Update any references to names to refer to the current names,
+// for weird cases like
+//
+// const X = 1
+// func F() {
+// 	const (
+// 		X = X + X
+//		Y
+// 	)
+// }
+//
+// where the X + X for the first X is the outer X, but the X + X
+// copied for Y is the inner X.
+
+class Update_references : public Traverse
+{
+ public:
+  Update_references(Gogo* gogo)
+    : Traverse(traverse_expressions),
+      gogo_(gogo)
+  { }
+
+  int
+  expression(Expression**);
+
+ private:
+  Gogo* gogo_;
+};
+
+int
+Update_references::expression(Expression** pexpr)
+{
+  Named_object* old_no;
+  switch ((*pexpr)->classification())
+    {
+    case Expression::EXPRESSION_CONST_REFERENCE:
+      old_no = (*pexpr)->const_expression()->named_object();
+      break;
+    case Expression::EXPRESSION_VAR_REFERENCE:
+      old_no = (*pexpr)->var_expression()->named_object();
+      break;
+    case Expression::EXPRESSION_ENCLOSED_VAR_REFERENCE:
+      old_no = (*pexpr)->enclosed_var_expression()->variable();
+      break;
+    case Expression::EXPRESSION_FUNC_REFERENCE:
+      old_no = (*pexpr)->func_expression()->named_object();
+      break;
+    case Expression::EXPRESSION_UNKNOWN_REFERENCE:
+      old_no = (*pexpr)->unknown_expression()->named_object();
+      break;
+    default:
+      return TRAVERSE_CONTINUE;
+    }
+
+  if (old_no->package() != NULL)
+    {
+      // This is a qualified reference, so it can't have changed in
+      // scope.  FIXME: This probably doesn't handle dot imports
+      // correctly.
+      return TRAVERSE_CONTINUE;
+    }
+
+  Named_object* in_function;
+  Named_object* new_no = this->gogo_->lookup(old_no->name(), &in_function);
+  if (new_no == old_no)
+    return TRAVERSE_CONTINUE;
+
+  // The new name must be a constant, since that is all we have
+  // introduced into scope.
+  if (!new_no->is_const())
+    {
+      go_assert(saw_errors());
+      return TRAVERSE_CONTINUE;
+    }
+
+  *pexpr = Expression::make_const_reference(new_no, (*pexpr)->location());
+
+  return TRAVERSE_CONTINUE;
+}
+
+void
+Parse::update_references(Expression** pexpr)
+{
+  Update_references ur(this->gogo_);
+  ur.expression(pexpr);
+  (*pexpr)->traverse_subexpressions(&ur);
 }
 
 // TypeDecl = "type" Decl<TypeSpec> .
