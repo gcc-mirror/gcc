@@ -701,6 +701,28 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Subtype_Mark_Resync                  return Node_Id;
       function P_Unknown_Discriminant_Part_Opt        return Boolean;
 
+      procedure P_Declarative_Items
+        (Decls              : List_Id;
+         Declare_Expression : Boolean;
+         In_Spec            : Boolean;
+         In_Statements      : Boolean);
+      --  Parses a sequence of zero or more declarative items, and appends them
+      --  to Decls. Done indicates whether or not there might be additional
+      --  declarative items to parse. If Done is True, then there are no more
+      --  to parse; otherwise there might be more.
+      --
+      --  Declare_Expression is true if we are parsing a declare_expression, in
+      --  which case we want to suppress certain style checking.
+      --
+      --  In_Spec is true if we are scanning a package declaration, and is used
+      --  to generate an appropriate message if a statement is encountered in
+      --  such a context.
+      --
+      --  In_Statements is true if we are called to parse declarative items in
+      --  a sequence of statements. In this case, we do not give an error upon
+      --  encountering a statement, but return to the caller with Done = True,
+      --  so the caller can resume parsing statements.
+
       function P_Basic_Declarative_Items
         (Declare_Expression : Boolean) return List_Id;
       --  Used to parse the declarative items in a package visible or
@@ -858,9 +880,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Loop_Parameter_Specification return Node_Id;
       --  Used in loop constructs and quantified expressions.
 
-      function P_Sequence_Of_Statements (SS_Flags : SS_Rec) return List_Id;
+      function P_Sequence_Of_Statements
+        (SS_Flags : SS_Rec; Handled : Boolean := False) return List_Id;
       --  The argument indicates the acceptable termination tokens.
       --  See body in Par.Ch5 for details of the use of this parameter.
+      --  Handled is true if we are parsing a handled sequence of statements.
 
       procedure Parse_Decls_Begin_End (Parent : Node_Id);
       --  Parses declarations and handled statement sequence, setting

@@ -77,40 +77,33 @@ package body Ch3 is
    --  are enabled, to remove the ambiguity of "when X in A | B". We consider
    --  it very unlikely that this will ever arise in practice.
 
-   procedure P_Declarative_Items
+   procedure P_Declarative_Item
      (Decls              : List_Id;
       Done               : out Boolean;
       Declare_Expression : Boolean;
-      In_Spec            : Boolean);
-   --  Scans out a single declarative item, or, in the case of a declaration
-   --  with a list of identifiers, a list of declarations, one for each of the
-   --  identifiers in the list. The declaration or declarations scanned are
-   --  appended to the given list. Done indicates whether or not there may be
-   --  additional declarative items to scan. If Done is True, then a decision
-   --  has been made that there are no more items to scan. If Done is False,
-   --  then there may be additional declarations to scan.
-   --
-   --  Declare_Expression is true if we are parsing a declare_expression, in
-   --  which case we want to suppress certain style checking.
-   --
-   --  In_Spec is true if we are scanning a package declaration, and is used to
-   --  generate an appropriate message if a statement is encountered in such a
-   --  context.
+      In_Spec            : Boolean;
+      In_Statements      : Boolean);
+   --  Parses a single declarative item. The parameters have the same meaning
+   --  as for P_Declarative_Items. If the declarative item has multiple
+   --  identifiers, as in "X, Y, Z : ...", then one declaration is appended to
+   --  Decls for each of the identifiers.
 
    procedure P_Identifier_Declarations
-     (Decls   : List_Id;
-      Done    : out Boolean;
-      In_Spec : Boolean);
-   --  Scans out a set of declarations for an identifier or list of
-   --  identifiers, and appends them to the given list. The parameters have
-   --  the same significance as for P_Declarative_Items.
+     (Decls         : List_Id;
+      Done          : out Boolean;
+      In_Spec       : Boolean;
+      In_Statements : Boolean);
+   --  Parses a sequence of declarations for an identifier or list of
+   --  identifiers, and appends them to the given list. The parameters
+   --  have the same meaning as for P_Declarative_Items.
 
    procedure Statement_When_Declaration_Expected
      (Decls   : List_Id;
       Done    : out Boolean;
       In_Spec : Boolean);
    --  Called when a statement is found at a point where a declaration was
-   --  expected. The parameters are as described for P_Declarative_Items.
+   --  expected. The parameters have the same meaning as for
+   --  P_Declarative_Items.
 
    procedure Set_Declaration_Expected;
    --  Posts a "declaration expected" error messages at the start of the
@@ -1307,9 +1300,10 @@ package body Ch3 is
    --  Error recovery: can raise Error_Resync
 
    procedure P_Identifier_Declarations
-     (Decls   : List_Id;
-      Done    : out Boolean;
-      In_Spec : Boolean)
+     (Decls         : List_Id;
+      Done          : out Boolean;
+      In_Spec       : Boolean;
+      In_Statements : Boolean)
    is
       Acc_Node         : Node_Id;
       Decl_Node        : Node_Id;
@@ -1331,6 +1325,13 @@ package body Ch3 is
       Num_Idents : Nat := 1;
       --  Number of identifiers stored in Idents
 
+      function Identifier_Starts_Statement return Boolean;
+      --  Called with Token being an identifier that might start a declaration
+      --  or a statement. True if we are parsing declarations in a sequence of
+      --  statements, and this identifier is the start of a statement. If this
+      --  is true, we quit parsing declarations, and return Done = True so the
+      --  caller will switch to parsing statements.
+
       procedure No_List;
       --  This procedure is called in renames cases to make sure that we do
       --  not have more than one identifier. If we do have more than one
@@ -1341,6 +1342,55 @@ package body Ch3 is
       --  Checks if current token is RENAMES, and if so, scans past it and
       --  returns True, otherwise returns False. Includes checking for some
       --  common error cases.
+
+      ---------------------------------
+      -- Identifier_Starts_Statement --
+      ---------------------------------
+
+      function Identifier_Starts_Statement return Boolean is
+         pragma Assert (Token = Tok_Identifier);
+         Scan_State : Saved_Scan_State;
+         Result : Boolean := False;
+      begin
+         if not In_Statements then
+            return False;
+         end if;
+
+         Save_Scan_State (Scan_State);
+         Scan;
+
+         case Token is
+            when Tok_Comma => -- "X, ..." is a declaration
+               null;
+
+            when Tok_Colon =>
+               --  "X : ..." is usually a declaration, but "X : begin..."  is
+               --  not. We return true for things like "X : Y : begin...",
+               --  which is a syntax error, because that gives better error
+               --  recovery for some ACATS.
+
+               Scan;
+
+               if Token in Token_Class_Labeled_Stmt then
+                  Result := True;
+
+               elsif Token = Tok_Identifier then
+                  Scan;
+                  if Token = Tok_Colon then
+                     Scan;
+                     if Token in Token_Class_Labeled_Stmt then
+                        Result := True;
+                     end if;
+                  end if;
+               end if;
+
+            when others =>
+               Result := True;
+         end case;
+
+         Restore_Scan_State (Scan_State);
+         return Result;
+      end Identifier_Starts_Statement;
 
       -------------
       -- No_List --
@@ -1395,6 +1445,11 @@ package body Ch3 is
    --  Start of processing for P_Identifier_Declarations
 
    begin
+      if Identifier_Starts_Statement then
+         Done := True;
+         return;
+      end if;
+
       Ident_Sloc := Token_Ptr;
       Save_Scan_State (Scan_State); -- at first identifier
       Idents (1) := P_Defining_Identifier (C_Comma_Colon);
@@ -1513,6 +1568,10 @@ package body Ch3 is
 
          --  Otherwise we definitely have an ordinary identifier with a junk
          --  token after it.
+
+         elsif In_Statements then
+            Done := True;
+            return;
 
          else
             --  If in -gnatd.2 mode, try for statements
@@ -4464,13 +4523,11 @@ package body Ch3 is
 
    --  DECLARATIVE_PART ::= {DECLARATIVE_ITEM}
 
-   --  Error recovery: cannot raise Error_Resync (because P_Declarative_Items
+   --  Error recovery: cannot raise Error_Resync (because P_Declarative_Item
    --  handles errors, and returns cleanly after an error has occurred)
 
    function P_Declarative_Part return List_Id is
-      Decls : List_Id;
-      Done  : Boolean;
-
+      Decls : constant List_Id := New_List;
    begin
       --  Indicate no bad declarations detected yet. This will be reset by
       --  P_Declarative_Items if a bad declaration is discovered.
@@ -4482,15 +4539,10 @@ package body Ch3 is
       --  discussion in Par for further details
 
       SIS_Entry_Active := False;
-      Decls := New_List;
 
-      --  Loop to scan out the declarations
-
-      loop
-         P_Declarative_Items
-           (Decls, Done, Declare_Expression => False, In_Spec => False);
-         exit when Done;
-      end loop;
+      P_Declarative_Items
+        (Decls, Declare_Expression => False,
+         In_Spec => False, In_Statements => False);
 
       --  Get rid of active SIS entry which is left set only if we scanned a
       --  procedure declaration and have not found the body. We could give
@@ -4514,11 +4566,12 @@ package body Ch3 is
    --  Error recovery: cannot raise Error_Resync. If an error resync occurs,
    --  then the scan is set past the next semicolon and Error is returned.
 
-   procedure P_Declarative_Items
+   procedure P_Declarative_Item
      (Decls              : List_Id;
       Done               : out Boolean;
       Declare_Expression : Boolean;
-      In_Spec            : Boolean)
+      In_Spec            : Boolean;
+      In_Statements      : Boolean)
    is
       Scan_State : Saved_Scan_State;
 
@@ -4549,20 +4602,38 @@ package body Ch3 is
             Save_Scan_State (Scan_State);
             Scan; -- past FOR
 
-            if Token = Tok_Identifier then
-               Scan; -- past identifier
-
-               if Token = Tok_In then
-                  Restore_Scan_State (Scan_State);
-                  Statement_When_Declaration_Expected (Decls, Done, In_Spec);
-                  return;
+            declare
+               Is_Statement : Boolean := True;
+            begin
+               if Token = Tok_Identifier then
+                  Scan; -- past identifier
+                  if Token in Tok_Use | Tok_Apostrophe then
+                     Is_Statement := False;
+                  elsif Token = Tok_Dot then
+                     Scan;
+                     if Token = Tok_Identifier then
+                        Scan;
+                        Is_Statement := Token in Tok_In | Tok_Of;
+                     end if;
+                  end if;
+               else
+                  Is_Statement := False;
                end if;
-            end if;
 
-            --  Not a loop, so must be rep clause
+               Restore_Scan_State (Scan_State);
 
-            Restore_Scan_State (Scan_State);
-            Append (P_Representation_Clause, Decls);
+               if Is_Statement then
+                  if not In_Statements then
+                     Statement_When_Declaration_Expected
+                       (Decls, Done, In_Spec);
+                  end if;
+
+                  Done := True;
+                  return;
+               else
+                  Append (P_Representation_Clause, Decls);
+               end if;
+            end;
 
          when Tok_Generic =>
             Check_Bad_Layout;
@@ -4585,7 +4656,7 @@ package body Ch3 is
             --  Normal case, no overriding, or overriding followed by colon
 
             else
-               P_Identifier_Declarations (Decls, Done, In_Spec);
+               P_Identifier_Declarations (Decls, Done, In_Spec, In_Statements);
             end if;
 
          when Tok_Package =>
@@ -4593,7 +4664,14 @@ package body Ch3 is
             Append (P_Package (Pf_Decl_Gins_Pbod_Rnam_Stub_Pexp), Decls);
 
          when Tok_Pragma =>
-            Append (P_Pragma, Decls);
+            --  If we see a pragma and In_Statements is true, we want to let
+            --  the statement-parser deal with it.
+
+            if In_Statements then
+               Done := True;
+            else
+               Append (P_Pragma, Decls);
+            end if;
 
          when Tok_Protected =>
             Check_Bad_Layout;
@@ -4779,10 +4857,16 @@ package body Ch3 is
             | Tok_Select
             | Tok_While
          =>
-            --  But before we decide that it's a statement, let's check for
-            --  a reserved word misused as an identifier.
+            --  If we parsing declarations in a sequence of statements, we want
+            --  to let the caller continue parsing statements.
 
-            if Is_Reserved_Identifier then
+            if In_Statements then
+               Done := True;
+
+            --  Otherwise, give an error. But before we decide that it's a
+            --  statement, check for a reserved word misused as an identifier.
+
+            elsif Is_Reserved_Identifier then
                Save_Scan_State (Scan_State);
                Scan; -- past the token
 
@@ -4799,10 +4883,12 @@ package body Ch3 is
                else
                   Restore_Scan_State (Scan_State);
                   Scan_Reserved_Identifier (Force_Msg => True);
-                  P_Identifier_Declarations (Decls, Done, In_Spec);
+                  P_Identifier_Declarations
+                    (Decls, Done, In_Spec, In_Statements);
                end if;
 
-            --  If not reserved identifier, then it's definitely a statement
+            --  If not reserved identifier, then it's an incorrectly placed a
+            --  statement.
 
             else
                Statement_When_Declaration_Expected (Decls, Done, In_Spec);
@@ -4810,12 +4896,18 @@ package body Ch3 is
             end if;
 
          --  The token RETURN may well also signal a missing BEGIN situation,
-         --  however, we never let it end the declarative part, because it may
-         --  also be part of a half-baked function declaration.
+         --  however, we never let it end the declarative part, because it
+         --  might also be part of a half-baked function declaration. If we are
+         --  In_Statements, then let the caller parse it; otherwise, it's an
+         --  error.
 
          when Tok_Return =>
-            Error_Msg_SC ("misplaced RETURN statement");
-            raise Error_Resync;
+            if In_Statements then
+               Done := True;
+            else
+               Error_Msg_SC ("misplaced RETURN statement");
+               raise Error_Resync;
+            end if;
 
          --  PRIVATE definitely terminates the declarations in a spec,
          --  and is an error in a body.
@@ -4838,6 +4930,10 @@ package body Ch3 is
          --  But first check for misuse of a reserved identifier.
 
          when others =>
+            if In_Statements then
+               Done := True;
+               return;
+            end if;
 
             --  Here we check for a reserved identifier
 
@@ -4853,7 +4949,8 @@ package body Ch3 is
                   Restore_Scan_State (Scan_State);
                   Scan_Reserved_Identifier (Force_Msg => True);
                   Check_Bad_Layout;
-                  P_Identifier_Declarations (Decls, Done, In_Spec);
+                  P_Identifier_Declarations
+                    (Decls, Done, In_Spec, In_Statements);
                end if;
 
             else
@@ -4869,6 +4966,21 @@ package body Ch3 is
    exception
       when Error_Resync =>
          Resync_Past_Semicolon;
+   end P_Declarative_Item;
+
+   procedure P_Declarative_Items
+     (Decls              : List_Id;
+      Declare_Expression : Boolean;
+      In_Spec            : Boolean;
+      In_Statements      : Boolean)
+   is
+      Done  : Boolean;
+   begin
+      loop
+         P_Declarative_Item
+           (Decls, Done, Declare_Expression, In_Spec, In_Statements);
+         exit when Done;
+      end loop;
    end P_Declarative_Items;
 
    ----------------------------------
@@ -4888,9 +5000,8 @@ package body Ch3 is
      (Declare_Expression : Boolean) return List_Id
    is
       Decl  : Node_Id;
-      Decls : List_Id;
+      Decls : constant List_Id := New_List;
       Kind  : Node_Kind;
-      Done  : Boolean;
 
    begin
       --  Indicate no bad declarations detected yet in the current context:
@@ -4904,15 +5015,8 @@ package body Ch3 is
 
       SIS_Entry_Active := False;
 
-      --  Loop to scan out declarations
-
-      Decls := New_List;
-
-      loop
-         P_Declarative_Items
-           (Decls, Done, Declare_Expression, In_Spec => True);
-         exit when Done;
-      end loop;
+      P_Declarative_Items
+        (Decls, Declare_Expression, In_Spec => True, In_Statements => False);
 
       --  Get rid of active SIS entry. This is set only if we have scanned a
       --  procedure declaration and have not found the body. We could give
@@ -5007,11 +5111,11 @@ package body Ch3 is
    ----------------------
 
    procedure Skip_Declaration (S : List_Id) is
-      Dummy_Done : Boolean;
-      pragma Warnings (Off, Dummy_Done);
+      Ignored_Done : Boolean;
    begin
-      P_Declarative_Items
-        (S, Dummy_Done, Declare_Expression => False, In_Spec => False);
+      P_Declarative_Item
+        (S, Ignored_Done, Declare_Expression => False, In_Spec => False,
+         In_Statements => False);
    end Skip_Declaration;
 
    -----------------------------------------
