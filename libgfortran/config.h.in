@@ -468,7 +468,7 @@
 /* Define to 1 if you have the <fenv.h> header file. */
 #undef HAVE_FENV_H
 
-/* Define if have a usable _Float128 type. */
+/* Define if target has usable _Float128 and __float128 types. */
 #undef HAVE_FLOAT128
 
 /* Define to 1 if you have the <floatingpoint.h> header file. */

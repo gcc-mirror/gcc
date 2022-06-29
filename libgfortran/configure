@@ -30130,7 +30130,6 @@ else
 
     _Float128 foo (_Float128 x)
     {
-
      _Complex _Float128 z1, z2;
 
      z1 = x;
@@ -30145,14 +30144,21 @@ else
       return x * __builtin_huge_valf128 ();
     }
 
+    __float128 baz (__float128 x)
+    {
+      return x * __builtin_huge_valf128 ();
+    }
+
 int
 main ()
 {
 
     foo (1.2F128);
     bar (1.2F128);
+    baz (1.2F128);
     foo (1.2Q);
     bar (1.2Q);
+    baz (1.2Q);
 
   ;
   return 0;
@@ -30177,7 +30183,6 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 
     _Float128 foo (_Float128 x)
     {
-
      _Complex _Float128 z1, z2;
 
      z1 = x;
@@ -30192,14 +30197,21 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
       return x * __builtin_huge_valf128 ();
     }
 
+    __float128 baz (__float128 x)
+    {
+      return x * __builtin_huge_valf128 ();
+    }
+
 int
 main ()
 {
 
     foo (1.2F128);
     bar (1.2F128);
+    baz (1.2F128);
     foo (1.2Q);
     bar (1.2Q);
+    baz (1.2Q);
 
   ;
   return 0;

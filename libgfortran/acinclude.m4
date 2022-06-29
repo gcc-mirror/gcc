@@ -261,7 +261,7 @@ __mingw_snprintf (NULL, 0, "%d\n", 1);
   fi
 ])
 
-dnl Check whether we have a __float128 type
+dnl Check whether we have a __float128 and _Float128 type
 AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
   LIBQUADSPEC=
   LIBQUADLIB=
@@ -276,7 +276,6 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
    GCC_TRY_COMPILE_OR_LINK([
     _Float128 foo (_Float128 x)
     {
-
      _Complex _Float128 z1, z2;
 
      z1 = x;
@@ -290,11 +289,18 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
     {
       return x * __builtin_huge_valf128 ();
     }
+
+    __float128 baz (__float128 x)
+    {
+      return x * __builtin_huge_valf128 ();
+    }
   ],[
     foo (1.2F128);
     bar (1.2F128);
+    baz (1.2F128);
     foo (1.2Q);
     bar (1.2Q);
+    baz (1.2Q);
   ],[
     libgfor_cv_have_float128=yes
   ],[
@@ -310,7 +316,7 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
     if test "x$USE_IEC_60559" = xyes; then
       AC_DEFINE(USE_IEC_60559, 1, [Define if IEC 60559 *f128 APIs should be used for _Float128.])
     fi
-    AC_DEFINE(HAVE_FLOAT128, 1, [Define if have a usable _Float128 type.])
+    AC_DEFINE(HAVE_FLOAT128, 1, [Define if target has usable _Float128 and __float128 types.])
 
     dnl Check whether -Wl,--as-needed resp. -Wl,-zignore is supported
     dnl 
