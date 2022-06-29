@@ -25,6 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include <config.h>
+#include <m2rts.h>
 
 #if defined(HAVE_STDDEF_H)
 /* Obtain a definition for NULL.  */
@@ -81,14 +82,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Select wrap a call to the C select.  */
 
 #if defined(HAVE_STRUCT_TIMEVAL)
-int
+extern "C" int
 Selective_Select (int nooffds, fd_set *readfds, fd_set *writefds,
                   fd_set *exceptfds, struct timeval *timeout)
 {
   return select (nooffds, readfds, writefds, exceptfds, timeout);
 }
 #else
-int
+extern "C" int
 Selective_Select (int nooffds, void *readfds, void *writefds, void *exceptfds,
                   void *timeout)
 {
@@ -99,7 +100,7 @@ Selective_Select (int nooffds, void *readfds, void *writefds, void *exceptfds,
 /* InitTime initializes a timeval structure and returns a pointer to it.  */
 
 #if defined(HAVE_STRUCT_TIMEVAL)
-struct timeval *
+extern "C" struct timeval *
 Selective_InitTime (unsigned int sec, unsigned int usec)
 {
   struct timeval *t = (struct timeval *)malloc (sizeof (struct timeval));
@@ -109,14 +110,14 @@ Selective_InitTime (unsigned int sec, unsigned int usec)
   return t;
 }
 
-void
+extern "C" void
 Selective_GetTime (struct timeval *t, unsigned int *sec, unsigned int *usec)
 {
   *sec = (unsigned int)t->tv_sec;
   *usec = (unsigned int)t->tv_usec;
 }
 
-void
+extern "C" void
 Selective_SetTime (struct timeval *t, unsigned int sec, unsigned int usec)
 {
   t->tv_sec = sec;
@@ -125,7 +126,7 @@ Selective_SetTime (struct timeval *t, unsigned int sec, unsigned int usec)
 
 /* KillTime frees the timeval structure and returns NULL.  */
 
-struct timeval *
+extern "C" struct timeval *
 Selective_KillTime (struct timeval *t)
 {
 #if defined(HAVE_STDLIB_H)
@@ -136,7 +137,7 @@ Selective_KillTime (struct timeval *t)
 
 /* InitSet returns a pointer to a FD_SET.  */
 
-FDSET_T *
+extern "C" FDSET_T *
 Selective_InitSet (void)
 {
 #if defined(HAVE_STDLIB_H)
@@ -150,7 +151,7 @@ Selective_InitSet (void)
 
 /* KillSet frees the FD_SET and returns NULL.  */
 
-FDSET_T *
+extern "C" FDSET_T *
 Selective_KillSet (FDSET_T *s)
 {
 #if defined(HAVE_STDLIB_H)
@@ -161,7 +162,7 @@ Selective_KillSet (FDSET_T *s)
 
 /* FdZero generate an empty set.  */
 
-void
+extern "C" void
 Selective_FdZero (FDSET_T *s)
 {
   FD_ZERO (s);
@@ -169,7 +170,7 @@ Selective_FdZero (FDSET_T *s)
 
 /* FS_Set include an element, fd, into set, s.  */
 
-void
+extern "C" void
 Selective_FdSet (int fd, FDSET_T *s)
 {
   FD_SET (fd, s);
@@ -177,7 +178,7 @@ Selective_FdSet (int fd, FDSET_T *s)
 
 /* FdClr exclude an element, fd, from the set, s.  */
 
-void
+extern "C" void
 Selective_FdClr (int fd, FDSET_T *s)
 {
   FD_CLR (fd, s);
@@ -185,7 +186,7 @@ Selective_FdClr (int fd, FDSET_T *s)
 
 /* FdIsSet return TRUE if, fd, is present in set, s.  */
 
-int
+extern "C" int
 Selective_FdIsSet (int fd, FDSET_T *s)
 {
   return FD_ISSET (fd, s);
@@ -195,69 +196,69 @@ Selective_FdIsSet (int fd, FDSET_T *s)
    current system time in seconds and microseconds.
    It returns zero (see man 3p gettimeofday).  */
 
-int
+extern "C" int
 Selective_GetTimeOfDay (struct timeval *t)
 {
   return gettimeofday (t, NULL);
 }
 #else
 
-void *
+extern "C" void *
 Selective_InitTime (unsigned int sec, unsigned int usec)
 {
   return NULL;
 }
 
-void *
+extern "C" void *
 Selective_KillTime (void *t)
 {
   return NULL;
 }
 
-void
+extern "C" void
 Selective_GetTime (void *t, unsigned int *sec, unsigned int *usec)
 {
 }
 
-void
+extern "C" void
 Selective_SetTime (void *t, unsigned int sec, unsigned int usec)
 {
 }
 
-FDSET_T *
+extern "C" FDSET_T *
 Selective_InitSet (void)
 {
   return NULL;
 }
 
-FDSET_T *
+extern "C" FDSET_T *
 Selective_KillSet (void)
 {
   return NULL;
 }
 
-void
+extern "C" void
 Selective_FdZero (void *s)
 {
 }
 
-void
+extern "C" void
 Selective_FdSet (int fd, void *s)
 {
 }
 
-void
+extern "C" void
 Selective_FdClr (int fd, void *s)
 {
 }
 
-int
+extern "C" int
 Selective_FdIsSet (int fd, void *s)
 {
   return 0;
 }
 
-int
+extern "C" int
 Selective_GetTimeOfDay (void *t)
 {
   return -1;
@@ -266,7 +267,7 @@ Selective_GetTimeOfDay (void *t)
 
 /* MaxFdsPlusOne returns max (a + 1, b + 1).  */
 
-int
+extern "C" int
 Selective_MaxFdsPlusOne (int a, int b)
 {
   if (a > b)
@@ -277,7 +278,7 @@ Selective_MaxFdsPlusOne (int a, int b)
 
 /* WriteCharRaw writes a single character to the file descriptor.  */
 
-void
+extern "C" void
 Selective_WriteCharRaw (int fd, char ch)
 {
   write (fd, &ch, 1);
@@ -285,7 +286,7 @@ Selective_WriteCharRaw (int fd, char ch)
 
 /* ReadCharRaw read and return a single char from file descriptor, fd.  */
 
-char
+extern "C" char
 Selective_ReadCharRaw (int fd)
 {
   char ch;
@@ -294,12 +295,25 @@ Selective_ReadCharRaw (int fd)
   return ch;
 }
 
-void
-_M2_Selective_init ()
+extern "C" void
+_M2_Selective_init (int argc, char *argv[], char *envp[])
 {
 }
 
-void
-_M2_Selective_finish ()
+extern "C" void
+_M2_Selective_finish (int argc, char *argv[], char *envp[])
 {
+}
+
+extern "C" void
+_M2_Selective_dep (void)
+{
+}
+
+struct _M2_Selective_ctor { _M2_Selective_ctor (); } _M2_Selective_ctor;
+
+_M2_Selective_ctor::_M2_Selective_ctor (void)
+{
+  M2RTS_RegisterModule ("Selective", _M2_Selective_init, _M2_Selective_finish,
+			_M2_Selective_dep);
 }

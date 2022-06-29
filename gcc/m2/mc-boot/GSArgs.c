@@ -64,7 +64,7 @@ typedef PtrToChar *PtrToPtrToChar;
             new string, otherwise s is set to NIL.
 */
 
-extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int i);
+extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int n);
 
 /*
    Narg - returns the number of arguments available from
@@ -81,14 +81,16 @@ extern "C" unsigned int SArgs_Narg (void);
             new string, otherwise s is set to NIL.
 */
 
-extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int i)
+extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int n)
 {
+  int i;
   PtrToPtrToChar ppc;
 
-  if (i < UnixArgs_ArgC)
+  i = (int ) (n);
+  if (i < (UnixArgs_GetArgC ()))
     {
       /* ppc := ADDRESS (VAL (PtrToPtrToChar, ArgV) + (i * CARDINAL (TSIZE(PtrToChar)))) ;  */
-      ppc = static_cast<PtrToPtrToChar> ((void *) (((PtrToChar) (UnixArgs_ArgV))+(i*sizeof (PtrToChar))));
+      ppc = static_cast<PtrToPtrToChar> ((void *) (((PtrToChar) (UnixArgs_GetArgV ()))+(n*sizeof (PtrToChar))));
       (*s) = DynamicStrings_InitStringCharStar (reinterpret_cast<void *> ((*ppc)));
       return TRUE;
     }
@@ -109,7 +111,7 @@ extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int i)
 
 extern "C" unsigned int SArgs_Narg (void)
 {
-  return UnixArgs_ArgC;
+  return UnixArgs_GetArgC ();
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

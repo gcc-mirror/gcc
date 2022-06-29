@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GM2
 
 #include <config.h>
+#include <m2rts.h>
 
 #if defined(HAVE_STRINGS)
 #include <strings.h>
@@ -96,9 +97,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 typedef enum Mode { maxsignicant, decimaldigits } Mode;
 
-extern int dtoa_calcmaxsig (char *p, int ndigits);
-extern int dtoa_calcdecimal (char *p, int str_size, int ndigits);
-extern int dtoa_calcsign (char *p, int str_size);
+extern "C" int dtoa_calcmaxsig (char *p, int ndigits);
+extern "C" int dtoa_calcdecimal (char *p, int str_size, int ndigits);
+extern "C" int dtoa_calcsign (char *p, int str_size);
 
 /* maxsignicant return a string containing max(1,ndigits) significant
    digits.  The return string contains the string produced by snprintf.
@@ -106,7 +107,7 @@ extern int dtoa_calcsign (char *p, int str_size);
    decimaldigits: return a string produced by fcvt.  The string will
    contain ndigits past the decimal point (ndigits may be negative).  */
 
-long double
+extern "C" long double
 ldtoa_strtold (const char *s, int *error)
 {
   char *endp;
@@ -132,7 +133,7 @@ ldtoa_strtold (const char *s, int *error)
   return d;
 }
 
-char *
+extern "C" char *
 ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
 {
   char format[50];
@@ -143,14 +144,14 @@ ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
 
     case maxsignicant:
       ndigits += 20; /* Enough for exponent.  */
-      p = malloc (ndigits);
+      p = (char *) malloc (ndigits);
       snprintf (format, 50, "%s%d%s", "%.", ndigits - 20, "LE");
       snprintf (p, ndigits, format, d);
       *sign = dtoa_calcsign (p, ndigits);
       *decpt = dtoa_calcmaxsig (p, ndigits);
       return p;
     case decimaldigits:
-      p = malloc (MAX_FP_DIGITS + 20);
+      p = (char *) malloc (MAX_FP_DIGITS + 20);
       snprintf (format, 50, "%s%d%s", "%.", MAX_FP_DIGITS, "LE");
       snprintf (p, MAX_FP_DIGITS + 20, format, d);
       *sign = dtoa_calcsign (p, MAX_FP_DIGITS + 20);
@@ -164,12 +165,26 @@ ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
 #if defined(GM2)
 /* GNU Modula-2 linking hooks.  */
 
-void
-_M2_ldtoa_init (void)
+extern "C" void
+_M2_ldtoa_init (int, char **, char **)
 {
 }
-void
-_M2_ldtoa_finish (void)
+
+extern "C" void
+_M2_ldtoa_finish (int, char **, char **)
 {
+}
+
+extern "C" void
+_M2_ldtoa_dep (void)
+{
+}
+
+struct _M2_ldtoa_ctor { _M2_ldtoa_ctor (); } _M2_ldtoa_ctor;
+
+_M2_ldtoa_ctor::_M2_ldtoa_ctor (void)
+{
+  M2RTS_RegisterModule ("ldtoa", _M2_ldtoa_init, _M2_ldtoa_finish,
+			_M2_ldtoa_dep);
 }
 #endif

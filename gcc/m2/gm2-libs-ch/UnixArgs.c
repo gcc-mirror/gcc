@@ -1,7 +1,7 @@
-/* UnixArgs.c provide access to the underlying argv, argc.
+/* UnixArgs.cc record argc, argv as global variables.
 
-Copyright (C) 2010-2022 Free Software Foundation, Inc.
-Contributed by Gaius Mulley <gaius@glam.ac.uk>.
+Copyright (C) 2009-2022 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
 
@@ -24,25 +24,68 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <config.h>
+#include "m2rts.h"
 
-int UnixArgs_ArgC;
-char **UnixArgs_ArgV;
 
-void
-_M2_UnixArgs_init (int argc, char *argv[])
+extern "C" int UnixArgs_GetArgC (void);
+extern "C" char **UnixArgs_GetArgV (void);
+extern "C" char **UnixArgs_GetEnvV (void);
+
+static int UnixArgs_ArgC;
+static char **UnixArgs_ArgV;
+static char **UnixArgs_EnvV;
+
+
+/* GetArgC returns argc.  */
+
+extern "C" int
+UnixArgs_GetArgC (void)
+{
+  return UnixArgs_ArgC;
+}
+
+
+/* GetArgV returns argv.  */
+
+extern "C" char **
+UnixArgs_GetArgV (void)
+{
+  return UnixArgs_ArgV;
+}
+
+
+/* GetEnvV returns envv.  */
+
+extern "C" char **
+UnixArgs_GetEnvV (void)
+{
+  return UnixArgs_EnvV;
+}
+
+
+extern "C" void
+_M2_UnixArgs_init (int argc, char *argv[], char *envp[])
 {
   UnixArgs_ArgC = argc;
   UnixArgs_ArgV = argv;
+  UnixArgs_EnvV = envp;
 }
 
-void
-_M2_UnixArgs_finish (int argc, char *argv[])
+extern "C" void
+_M2_UnixArgs_finish (int argc, char *argv[], char *envp[])
 {
 }
 
-#ifdef __cplusplus
+extern "C" void
+_M2_UnixArgs_dep (void)
+{
 }
-#endif
+
+struct _M2_UnixArgs_ctor { _M2_UnixArgs_ctor (); } _M2_UnixArgs_ctor;
+
+_M2_UnixArgs_ctor::_M2_UnixArgs_ctor (void)
+{
+  M2RTS_RegisterModule ("UnixArgs", _M2_UnixArgs_init, _M2_UnixArgs_finish,
+			_M2_UnixArgs_dep);
+}

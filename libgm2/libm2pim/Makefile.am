@@ -157,10 +157,10 @@ M2DEFS = Args.def   ASCII.def \
          cgetopt.def
 
 libm2pim_la_SOURCES = $(M2MODS) \
-                      UnixArgs.c \
-                      Selective.c sckt.c \
-                      errno.cc dtoa.c \
-                      ldtoa.c termios.cc \
+                      UnixArgs.cc \
+                      Selective.cc sckt.cc \
+                      errno.cc dtoa.cc \
+                      ldtoa.cc termios.cc \
                       SysExceptions.cc target.c \
                       wrapc.c cgetopt.c
 

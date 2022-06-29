@@ -53,7 +53,7 @@ extern "C" {
             The success of the operation is returned.
 */
 
-EXTERN unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int i);
+EXTERN unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int n);
 
 /*
    Narg - returns the number of arguments available from

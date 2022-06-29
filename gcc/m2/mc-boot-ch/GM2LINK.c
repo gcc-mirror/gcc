@@ -21,4 +21,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 /* mc currently is built using a static scaffold.  */
 
+#include <cstddef>
+
 int M2LINK_StaticInitialization = 1;
+char *M2LINK_ForcedModuleInitOrder = NULL;

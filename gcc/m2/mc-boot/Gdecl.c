@@ -1026,10 +1026,10 @@ extern "C" void M2RTS_ConstructModules (void * applicationmodule, int argc, void
 extern "C" void M2RTS_DeconstructModules (void * applicationmodule, int argc, void * argv, void * envp);
 extern "C" void M2RTS_RegisterModule (void * name, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies);
 extern "C" void M2RTS_RequestDependant (void * modulename, void * dependantmodule);
-extern "C" void M2RTS_ExecuteTerminationProcedures (void);
 extern "C" unsigned int M2RTS_InstallTerminationProcedure (PROC p);
 extern "C" void M2RTS_ExecuteInitialProcedures (void);
 extern "C" unsigned int M2RTS_InstallInitialProcedure (PROC p);
+extern "C" void M2RTS_ExecuteTerminationProcedures (void);
 extern "C" void M2RTS_Terminate (void) __attribute__ ((noreturn));
 extern "C" void M2RTS_HALT (int exitcode) __attribute__ ((noreturn));
 extern "C" void M2RTS_Halt (const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));

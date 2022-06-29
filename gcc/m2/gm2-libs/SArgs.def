@@ -37,7 +37,7 @@ EXPORT QUALIFIED GetArg, Narg ;
             new string, otherwise s is set to NIL.
 *)
 
-PROCEDURE GetArg (VAR s: String ; i: CARDINAL) : BOOLEAN ;
+PROCEDURE GetArg (VAR s: String ; n: CARDINAL) : BOOLEAN ;
 
 
 (*

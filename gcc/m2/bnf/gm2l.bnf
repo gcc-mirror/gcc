@@ -109,8 +109,8 @@ TYPE
                        END ;
 
    BlockInfoPtr = POINTER TO RECORD
-                                LocalModules,                (* locally declared modules at the current level  *)
-                                ImportedModules: List ;      (* current list of imports for the scanned module *)
+                                LocalModules,                (* Locally declared modules at the current level  *)
+                                ImportedModules: List ;      (* Current list of imports for the scanned module *)
                                 Prev           : BlockInfoPtr ;
                              END ;
 
@@ -120,9 +120,9 @@ VAR
    LastIdent,
    MainSrc,
    MainName       : Name ;
-   Head, Tail     : Source ;    (* head source list *)
-   IncludeM2RTS   : BOOLEAN ;   (* do we automatically include M2RTS into the top module? *)
-   pSource        : Source ;    (* current module being parsed *)
+   Head, Tail     : Source ;    (* Head source list *)
+   IncludeM2RTS   : BOOLEAN ;   (* Do we automatically include M2RTS into the top module? *)
+   pSource        : Source ;    (* Current module being parsed *)
    CommentChar    : CHAR ;
    pBlock         : BlockInfoPtr ;
 
@@ -134,7 +134,7 @@ VAR
 PROCEDURE ExamineCompilationUnit (VAR name: Name; VAR isdefimp: BOOLEAN) ;
 BEGIN
    isdefimp := FALSE ;   (* default to program module *)
-   (* stop if we see eof, ';' or '[' *)
+   (* Stop if we see eof, ';' or '[' *)
    WHILE (currenttoken # eoftok) AND (currenttoken # semicolontok) AND (currenttoken # lsbratok) DO
       IF (currenttoken = implementationtok) OR (currenttoken = definitiontok)
       THEN

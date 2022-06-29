@@ -25,6 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include <config.h>
+#include <m2rts.h>
 
 #if defined(HAVE_SYS_TYPES_H)
 #include <sys/types.h>
@@ -123,7 +124,7 @@ localExit (int i)
    information about a socket declared to receive tcp connections.
    This method attempts to use the port specified by the parameter.  */
 
-tcpServerState *
+extern "C" tcpServerState *
 tcpServerEstablishPort (int portNo)
 {
   tcpServerState *s = (tcpServerState *)malloc (sizeof (tcpServerState));
@@ -178,7 +179,7 @@ tcpServerEstablishPort (int portNo)
 /* tcpServerEstablish returns a tcpServerState containing the relevant
    information about a socket declared to receive tcp connections.  */
 
-tcpServerState *
+extern "C" tcpServerState *
 tcpServerEstablish (void)
 {
   return tcpServerEstablishPort (PORTSTART);
@@ -187,10 +188,10 @@ tcpServerEstablish (void)
 /* tcpServerAccept returns a file descriptor once a client has connected and
    been accepted.  */
 
-int
+extern "C" int
 tcpServerAccept (tcpServerState *s)
 {
-  int i = sizeof (s->isa);
+  socklen_t i = sizeof (s->isa);
   int t;
 
 #if defined(DEBUGGING)
@@ -202,7 +203,7 @@ tcpServerAccept (tcpServerState *s)
 
 /* tcpServerPortNo returns the portNo from structure, s.  */
 
-int
+extern "C" int
 tcpServerPortNo (tcpServerState *s)
 {
   return s->portNo;
@@ -210,7 +211,7 @@ tcpServerPortNo (tcpServerState *s)
 
 /* tcpServerSocketFd returns the sockFd from structure, s.  */
 
-int
+extern "C" int
 tcpServerSocketFd (tcpServerState *s)
 {
   return s->sockFd;
@@ -218,7 +219,7 @@ tcpServerSocketFd (tcpServerState *s)
 
 /* getLocalIP returns the IP address of this machine.  */
 
-unsigned int
+extern "C" unsigned int
 getLocalIP (tcpServerState *s)
 {
   char hostname[1024];
@@ -260,7 +261,7 @@ getLocalIP (tcpServerState *s)
 
 /* tcpServerIP returns the IP address from structure s.  */
 
-int
+extern "C" int
 tcpServerIP (tcpServerState *s)
 {
   return *((int *)s->hp->h_addr_list[0]);
@@ -269,7 +270,7 @@ tcpServerIP (tcpServerState *s)
 /* tcpServerClientIP returns the IP address of the client who
    has connected to server s.  */
 
-unsigned int
+extern "C" unsigned int
 tcpServerClientIP (tcpServerState *s)
 {
   unsigned int ip;
@@ -283,7 +284,7 @@ tcpServerClientIP (tcpServerState *s)
 /* tcpServerClientPortNo returns the port number of the client who
    has connected to server s.  */
 
-unsigned int
+extern "C" unsigned int
 tcpServerClientPortNo (tcpServerState *s)
 {
   return s->isa.sin_port;
@@ -307,7 +308,7 @@ typedef struct
 /* tcpClientSocket returns a file descriptor (socket) which has
    connected to, serverName:portNo.  */
 
-tcpClientState *
+extern "C" tcpClientState *
 tcpClientSocket (char *serverName, int portNo)
 {
   tcpClientState *s = (tcpClientState *)malloc (sizeof (tcpClientState));
@@ -340,7 +341,7 @@ tcpClientSocket (char *serverName, int portNo)
 /* tcpClientSocketIP returns a file descriptor (socket) which has
    connected to, ip:portNo.  */
 
-tcpClientState *
+extern "C" tcpClientState *
 tcpClientSocketIP (unsigned int ip, int portNo)
 {
   tcpClientState *s = (tcpClientState *)malloc (sizeof (tcpClientState));
@@ -366,7 +367,7 @@ tcpClientSocketIP (unsigned int ip, int portNo)
 /* tcpClientConnect returns the file descriptor associated with s,
    once a connect has been performed.  */
 
-int
+extern "C" int
 tcpClientConnect (tcpClientState *s)
 {
   if (connect (s->sockFd, (struct sockaddr *)&s->sa, sizeof (s->sa)) < 0)
@@ -377,7 +378,7 @@ tcpClientConnect (tcpClientState *s)
 
 /* tcpClientPortNo returns the portNo from structure s.  */
 
-int
+extern "C" int
 tcpClientPortNo (tcpClientState *s)
 {
   return s->portNo;
@@ -385,7 +386,7 @@ tcpClientPortNo (tcpClientState *s)
 
 /* tcpClientSocketFd returns the sockFd from structure s.  */
 
-int
+extern "C" int
 tcpClientSocketFd (tcpClientState *s)
 {
   return s->sockFd;
@@ -393,7 +394,7 @@ tcpClientSocketFd (tcpClientState *s)
 
 /* tcpClientIP returns the sockFd from structure s.  */
 
-int
+extern "C" int
 tcpClientIP (tcpClientState *s)
 {
 #if defined(DEBUGGING)
@@ -405,12 +406,25 @@ tcpClientIP (tcpClientState *s)
 
 /* GNU Modula-2 link fodder.  */
 
-void
-_M2_sckt_init (void)
+extern "C" void
+_M2_sckt_init (int, char *[], char *[])
 {
 }
 
-void
-_M2_sckt_finish (void)
+extern "C" void
+_M2_sckt_finish (int, char *[], char *[])
 {
+}
+
+extern "C" void
+_M2_sckt_dep (void)
+{
+}
+
+struct _M2_sckt_ctor { _M2_sckt_ctor (); } _M2_sckt_ctor;
+
+_M2_sckt_ctor::_M2_sckt_ctor (void)
+{
+  M2RTS_RegisterModule ("sckt", _M2_sckt_init, _M2_sckt_finish,
+			_M2_sckt_dep);
 }

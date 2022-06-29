@@ -1,4 +1,4 @@
-/* dtoa.c convert double to ascii and visa versa.
+/* dtoa.cc convert double to ascii and visa versa.
 
 Copyright (C) 2009-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GM2
 
 #include <config.h>
+#include <m2rts.h>
 
 #if defined(HAVE_STRINGS)
 #include <strings.h>
@@ -104,7 +105,7 @@ typedef enum Mode { maxsignicant, decimaldigits } Mode;
    decimaldigits: return a string produced by fcvt.  The string will
    contain ndigits past the decimal point (ndigits may be negative).  */
 
-double
+extern "C" double
 dtoa_strtod (const char *s, int *error)
 {
   char *endp;
@@ -128,7 +129,7 @@ dtoa_strtod (const char *s, int *error)
 /* dtoa_calcmaxsig calculates the position of the decimal point
    it also removes the decimal point and exponent from string, p.  */
 
-int
+extern "C" int
 dtoa_calcmaxsig (char *p, int ndigits)
 {
   char *e;
@@ -159,7 +160,7 @@ dtoa_calcmaxsig (char *p, int ndigits)
    It truncates the digits in p accordingly to ndigits.
    Ie ndigits is the number of digits after the '.'.  */
 
-int
+extern "C" int
 dtoa_calcdecimal (char *p, int str_size, int ndigits)
 {
   char *e;
@@ -193,7 +194,7 @@ dtoa_calcdecimal (char *p, int str_size, int ndigits)
   return x;
 }
 
-int
+extern "C" int
 dtoa_calcsign (char *p, int str_size)
 {
   if (p[0] == '-')
@@ -205,7 +206,7 @@ dtoa_calcsign (char *p, int str_size)
     return FALSE;
 }
 
-char *
+extern "C" char *
 dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
 {
   char format[50];
@@ -216,14 +217,14 @@ dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
 
     case maxsignicant:
       ndigits += 20; /* Enough for exponent.  */
-      p = malloc (ndigits);
+      p = (char *) malloc (ndigits);
       snprintf (format, 50, "%s%d%s", "%.", ndigits - 20, "E");
       snprintf (p, ndigits, format, d);
       *sign = dtoa_calcsign (p, ndigits);
       *decpt = dtoa_calcmaxsig (p, ndigits);
       return p;
     case decimaldigits:
-      p = malloc (MAX_FP_DIGITS + 20);
+      p = (char *) malloc (MAX_FP_DIGITS + 20);
       snprintf (format, 50, "%s%d%s", "%.", MAX_FP_DIGITS, "E");
       snprintf (p, MAX_FP_DIGITS + 20, format, d);
       *sign = dtoa_calcsign (p, MAX_FP_DIGITS + 20);
@@ -239,12 +240,26 @@ dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
 #if defined(GM2)
 /* GNU Modula-2 linking hooks.  */
 
-void
-_M2_dtoa_init (void)
+extern "C" void
+_M2_dtoa_init (int, char **, char **)
 {
 }
-void
-_M2_dtoa_finish (void)
+
+extern "C" void
+_M2_dtoa_finish (int, char **, char **)
 {
+}
+
+extern "C" void
+_M2_dtoa_dep (void)
+{
+}
+
+struct _M2_dtoa_ctor { _M2_dtoa_ctor (); } _M2_dtoa_ctor;
+
+_M2_dtoa_ctor::_M2_dtoa_ctor (void)
+{
+  M2RTS_RegisterModule ("dtoa", _M2_dtoa_init, _M2_dtoa_finish,
+			_M2_dtoa_dep);
 }
 #endif

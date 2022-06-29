@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 IMPLEMENTATION MODULE SArgs ;
 
 FROM SYSTEM IMPORT TSIZE, ADDRESS ;
-FROM UnixArgs IMPORT ArgC, ArgV ;
+FROM UnixArgs IMPORT GetArgC, GetArgV ;
 
 FROM DynamicStrings IMPORT InitStringCharStar,
                            InitStringDB, InitStringCharStarDB,
@@ -57,14 +57,16 @@ if defined(GM2_DEBUG_SARGS)
             new string, otherwise s is set to NIL.
 *)
 
-PROCEDURE GetArg (VAR s: String; i: CARDINAL) : BOOLEAN ;
+PROCEDURE GetArg (VAR s: String; n: CARDINAL) : BOOLEAN ;
 VAR
+   i  : INTEGER ;
    ppc: PtrToPtrToChar ;
 BEGIN
-   IF i < ArgC
+   i := VAL (INTEGER, n) ;
+   IF i < GetArgC ()
    THEN
       (* ppc := ADDRESS (VAL (PtrToPtrToChar, ArgV) + (i * CARDINAL (TSIZE(PtrToChar)))) ; *)
-      ppc := ADDRESS (PtrToChar (ArgV) + (i * TSIZE (PtrToChar))) ;
+      ppc := ADDRESS (PtrToChar (GetArgV ()) + (n * TSIZE (PtrToChar))) ;
       s   := InitStringCharStar (ppc^) ;
 
       RETURN TRUE
@@ -82,7 +84,7 @@ END GetArg ;
 
 PROCEDURE Narg () : CARDINAL ;
 BEGIN
-   RETURN( ArgC )
+   RETURN GetArgC ()
 END Narg ;
 
 
