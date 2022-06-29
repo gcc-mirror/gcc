@@ -1024,8 +1024,9 @@ as_truth_value (tree expr, location *loc)
   if (loc)
     set_tree_location (typed_zero, loc);
 
+  tree type = TREE_TYPE (expr);
   expr = fold_build2_loc (UNKNOWN_LOCATION,
-    NE_EXPR, integer_type_node, expr, typed_zero);
+    NE_EXPR, type, expr, typed_zero);
   if (loc)
     set_tree_location (expr, loc);
 
