@@ -127,6 +127,7 @@ fi
 
 # The syscall numbers.  We force the names to upper case.
 grep '^const _SYS_' gen-sysinfo.go | \
+  grep -v '^const _SYS_SECCOMP = ' | \
   sed -e 's/const _\(SYS_[^= ]*\).*$/\1/' | \
   while read sys; do
     sup=`echo $sys | tr abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ`
@@ -506,7 +507,7 @@ fi
 
 # For historical reasons Go uses the suffix "timespec" instead of "tim" for
 # stat_t's time fields on NetBSD.
-st_times='-e s/st_atim/Atim/ -e s/st_mtim/Mtim/ -e s/st_ctim/Ctim/'
+st_times='-e s/st_atim/Atim/g -e s/st_mtim/Mtim/g -e s/st_ctim/Ctim/g'
 if test "${GOOS}" = "netbsd"; then
     st_times='-e s/st_atim/Atimespec/ -e s/st_mtim/Mtimespec/ -e s/st_ctim/Ctimespec/'
 fi
