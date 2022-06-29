@@ -4785,14 +4785,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       else
 	gnu_decl = create_type_decl (gnu_entity_name, gnu_type, artificial_p,
 				     debug_info_p, gnat_entity);
-
-      /* For vector types, make the representative array the debug type.  */
-      if (VECTOR_TYPE_P (gnu_type))
-	{
-	  tree rep = TYPE_REPRESENTATIVE_ARRAY (gnu_type);
-	  TYPE_NAME (rep) = DECL_NAME (gnu_decl);
-	  SET_TYPE_DEBUG_TYPE (gnu_type, rep);
-	}
     }
 
   /* If we haven't already, associate the ..._DECL node that we just made with
