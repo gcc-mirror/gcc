@@ -6093,6 +6093,23 @@ cp_parser_primary_expression (cp_parser *parser,
 				       /*decltype*/false, idk);
 }
 
+/* Complain about missing template keyword when naming a dependent
+   member template.  */
+
+static void
+missing_template_diag (location_t loc, diagnostic_t diag_kind = DK_WARNING)
+{
+  if (warning_suppressed_at (loc, OPT_Wmissing_template_keyword))
+    return;
+
+  gcc_rich_location richloc (loc);
+  richloc.add_fixit_insert_before ("template");
+  emit_diagnostic (diag_kind, &richloc, OPT_Wmissing_template_keyword,
+		   "expected %qs keyword before dependent "
+		   "template name", "template");
+  suppress_warning_at (loc, OPT_Wmissing_template_keyword);
+}
+
 /* Parse an id-expression.
 
    id-expression:
@@ -6268,9 +6285,7 @@ cp_parser_id_expression (cp_parser *parser,
 	     operator.  */
 	  && (cp_lexer_peek_token (parser->lexer)->type
 	      <= CPP_LAST_PUNCTUATOR))
-	warning_at (token->location, OPT_Wmissing_template_keyword,
-		    "expected %qs keyword before dependent "
-		    "template name", "template");
+	missing_template_diag (token->location);
     }
 
   return id;
