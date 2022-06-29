@@ -65,7 +65,7 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    --  the routine for the argument one past the last present argument, but
    --  that is the only case in which a non-present argument can be referenced.
 
-   procedure Check_Arg_Count (Required : Int);
+   procedure Check_Arg_Count (Required : Nat);
    --  Check argument count for pragma = Required. If not give error and raise
    --  Error_Resync.
 
@@ -155,7 +155,7 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    -- Check_Arg_Count --
    ---------------------
 
-   procedure Check_Arg_Count (Required : Int) is
+   procedure Check_Arg_Count (Required : Nat) is
    begin
       if Arg_Count /= Required then
          Error_Msg_N ("wrong number of arguments for pragma%", Pragma_Node);
