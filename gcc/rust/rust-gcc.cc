@@ -51,6 +51,8 @@
 #include "rust-backend.h"
 #include "rust-object-export.h"
 
+#include "backend/rust-tree.h"
+
 // TODO: this will have to be significantly modified to work with Rust
 
 // Bvariable is a bit more complicated, because of zero-sized types.
@@ -1851,6 +1853,14 @@ Gcc_backend::call_expression (tree fn, const std::vector<tree> &fn_args,
     = build_call_array_loc (location.gcc_location (),
 			    excess_type != NULL_TREE ? excess_type : rettype,
 			    fn, nargs, args);
+
+  // check for deprecated function usage
+  if (fndecl && TREE_DEPRECATED (fndecl))
+    {
+      // set up the call-site information for `warn_deprecated_use`
+      input_location = location.gcc_location ();
+      warn_deprecated_use (fndecl, NULL_TREE);
+    }
 
   if (chain_expr)
     CALL_EXPR_STATIC_CHAIN (ret) = chain_expr;

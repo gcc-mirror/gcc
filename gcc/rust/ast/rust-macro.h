@@ -21,6 +21,7 @@
 
 #include "rust-ast.h"
 #include "rust-location.h"
+#include <string>
 
 namespace Rust {
 namespace AST {
@@ -815,6 +816,13 @@ public:
   bool check_cfg_predicate (const Session &session) const override;
 
   Attribute to_attribute () const override;
+
+  inline std::pair<Identifier, std::string> get_name_value_pair () const
+  {
+    return std::pair<Identifier, std::string> (ident, str);
+  }
+
+  bool is_key_value_pair () const override { return true; }
 
 protected:
   // Use covariance to implement clone function as returning this type

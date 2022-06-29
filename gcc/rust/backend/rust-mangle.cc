@@ -14,6 +14,7 @@ static const std::string kMangledPtr = "$BP$";
 static const std::string kMangledLeftSqParen = "$u5b$";	 // [
 static const std::string kMangledRightSqParen = "$u5d$"; // ]
 static const std::string kQualPathBegin = "_" + kMangledSubstBegin;
+static const std::string kMangledComma = "$C$";
 
 namespace Rust {
 namespace Compile {
@@ -39,6 +40,9 @@ legacy_mangle_name (const std::string &name)
   //
   // example::Foo<T>::new:
   // _ZN7example12Foo$LT$T$GT$3new17h9a2aacb7fd783515E:
+  //
+  // <example::Identity as example::FnLike<&T,&T>>::call
+  // _ZN74_$LT$example..Identity$u20$as$u20$example..FnLike$LT$$RF$T$C$$RF$T$GT$$GT$4call17ha9ee58935895acb3E
 
   std::string buffer;
   for (size_t i = 0; i < name.size (); i++)
@@ -62,6 +66,8 @@ legacy_mangle_name (const std::string &name)
 	m = kMangledLeftSqParen;
       else if (c == ']')
 	m = kMangledRightSqParen;
+      else if (c == ',')
+	m = kMangledComma;
       else if (c == ':')
 	{
 	  rust_assert (i + 1 < name.size ());

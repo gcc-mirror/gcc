@@ -22,7 +22,8 @@
 #include "rust-compile-fnparam.h"
 #include "rust-compile-var-decl.h"
 
-#include "rust-expr.h" // for AST::AttrInputLiteral
+#include "rust-expr.h"	// for AST::AttrInputLiteral
+#include "rust-macro.h" // for AST::MetaNameValueStr
 
 #include "fold-const.h"
 #include "stringpool.h"
@@ -66,6 +67,9 @@ HIRCompileBase::setup_fndecl (tree fndecl, bool is_main_entry_point,
       bool is_link_section
 	= attr.get_path ().as_string ().compare ("link_section") == 0;
       bool no_mangle = attr.get_path ().as_string ().compare ("no_mangle") == 0;
+      bool is_deprecated
+	= attr.get_path ().as_string ().compare ("deprecated") == 0;
+
       if (is_inline)
 	{
 	  handle_inline_attribute_on_fndecl (fndecl, attr);
@@ -81,6 +85,10 @@ HIRCompileBase::setup_fndecl (tree fndecl, bool is_main_entry_point,
       else if (is_link_section)
 	{
 	  handle_link_section_attribute_on_fndecl (fndecl, attr);
+	}
+      else if (is_deprecated)
+	{
+	  handle_deprecated_attribute_on_fndecl (fndecl, attr);
 	}
       else if (no_mangle)
 	{
@@ -145,6 +153,69 @@ HIRCompileBase::handle_no_mangle_attribute_on_fndecl (
 
   DECL_ATTRIBUTES (fndecl) = tree_cons (get_identifier ("no_mangle"), NULL_TREE,
 					DECL_ATTRIBUTES (fndecl));
+}
+
+void
+HIRCompileBase::handle_deprecated_attribute_on_fndecl (
+  tree fndecl, const AST::Attribute &attr)
+{
+  tree value = NULL_TREE;
+  TREE_DEPRECATED (fndecl) = 1;
+
+  // simple #[deprecated]
+  if (!attr.has_attr_input ())
+    return;
+
+  const AST::AttrInput &input = attr.get_attr_input ();
+  auto input_type = input.get_attr_input_type ();
+
+  if (input_type == AST::AttrInput::AttrInputType::LITERAL)
+    {
+      // handle #[deprecated = "message"]
+      auto &literal
+	= static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
+      const auto &msg_str = literal.get_literal ().as_string ();
+      value = build_string (msg_str.size (), msg_str.c_str ());
+    }
+  else if (input_type == AST::AttrInput::AttrInputType::TOKEN_TREE)
+    {
+      // handle #[deprecated(since = "...", note = "...")]
+      const auto &option = static_cast<const AST::DelimTokenTree &> (input);
+      AST::AttrInputMetaItemContainer *meta_item = option.parse_to_meta_item ();
+      for (const auto &item : meta_item->get_items ())
+	{
+	  auto converted_item = item->to_meta_name_value_str ();
+	  if (!converted_item)
+	    continue;
+	  auto key_value = converted_item->get_name_value_pair ();
+	  if (key_value.first.compare ("since") == 0)
+	    {
+	      // valid, but this is handled by Cargo and some third-party audit
+	      // tools
+	      continue;
+	    }
+	  else if (key_value.first.compare ("note") == 0)
+	    {
+	      const auto &msg_str = key_value.second;
+	      if (value)
+		rust_error_at (attr.get_locus (), "multiple %<note%> items");
+	      value = build_string (msg_str.size (), msg_str.c_str ());
+	    }
+	  else
+	    {
+	      rust_error_at (attr.get_locus (), "unknown meta item %qs",
+			     key_value.first.c_str ());
+	    }
+	}
+    }
+
+  if (value)
+    {
+      tree attr_list = build_tree_list (NULL_TREE, value);
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (get_identifier ("deprecated"), attr_list,
+		     DECL_ATTRIBUTES (fndecl));
+    }
 }
 
 void
