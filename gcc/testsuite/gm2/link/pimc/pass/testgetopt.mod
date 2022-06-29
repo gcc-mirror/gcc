@@ -61,7 +61,7 @@ BEGIN
    l := InitString (':a:b:c:d:e:o:s:hx:y:') ;
    s := NIL ;
    arg := NIL ;
-   ch := GetOpt (UnixArgs.ArgC, UnixArgs.ArgV, l,
+   ch := GetOpt (UnixArgs.GetArgC (), UnixArgs.GetArgV (), l,
                  arg, optind, opterr, optopt) ;
    WHILE ch # nul DO
       CASE ch OF
@@ -83,7 +83,7 @@ BEGIN
          exit (1)
       END ;
       arg := KillString (arg) ;
-      ch := GetOpt (UnixArgs.ArgC, UnixArgs.ArgV, l,
+      ch := GetOpt (UnixArgs.GetArgC (), UnixArgs.GetArgV (), l,
                     arg, optind, opterr, optopt)
    END
 END HandleOptions ;
