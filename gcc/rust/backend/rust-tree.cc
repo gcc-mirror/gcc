@@ -766,7 +766,7 @@ out:
    locations.  */
 
 location_t
-cp_expr_location (const_tree t_)
+rs_expr_location (const_tree t_)
 {
   tree t = CONST_CAST_TREE (t_);
   if (t == NULL_TREE)
@@ -775,7 +775,7 @@ cp_expr_location (const_tree t_)
   return EXPR_LOCATION (t);
 }
 
-// forked from gcc/cp/class.cc
+// forked from gcc/cp/class.cc is_really_empty_class
 
 /* Returns true if TYPE contains no actual data, just various
    possible combinations of empty classes.  If IGNORE_VPTR is true,
@@ -846,6 +846,113 @@ array_type_nelts_top (tree type)
 {
   return fold_build2_loc (input_location, PLUS_EXPR, sizetype,
 			  array_type_nelts (type), size_one_node);
+}
+
+// forked from gcc/cp/tree.cc builtin_valid_in_constant_expr_p
+
+/* Test whether DECL is a builtin that may appear in a
+   constant-expression. */
+
+bool
+builtin_valid_in_constant_expr_p (const_tree decl)
+{
+  STRIP_ANY_LOCATION_WRAPPER (decl);
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    /* Not a function.  */
+    return false;
+  if (DECL_BUILT_IN_CLASS (decl) != BUILT_IN_NORMAL)
+    {
+      if (fndecl_built_in_p (decl, BUILT_IN_FRONTEND))
+	switch (DECL_FE_FUNCTION_CODE (decl))
+	  {
+	  case RS_BUILT_IN_IS_CONSTANT_EVALUATED:
+	  case RS_BUILT_IN_SOURCE_LOCATION:
+	  case RS_BUILT_IN_IS_CORRESPONDING_MEMBER:
+	  case RS_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS:
+	    return true;
+	  default:
+	    break;
+	  }
+      /* Not a built-in.  */
+      return false;
+    }
+  switch (DECL_FUNCTION_CODE (decl))
+    {
+      /* These always have constant results like the corresponding
+	 macros/symbol.  */
+    case BUILT_IN_FILE:
+    case BUILT_IN_FUNCTION:
+    case BUILT_IN_LINE:
+
+      /* The following built-ins are valid in constant expressions
+	 when their arguments are.  */
+    case BUILT_IN_ADD_OVERFLOW_P:
+    case BUILT_IN_SUB_OVERFLOW_P:
+    case BUILT_IN_MUL_OVERFLOW_P:
+
+      /* These have constant results even if their operands are
+	 non-constant.  */
+    case BUILT_IN_CONSTANT_P:
+    case BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE:
+      return true;
+    default:
+      return false;
+    }
+}
+
+// forked from gcc/cp/decl2.cc decl_maybe_constant_var_p
+
+/* Returns true if DECL could be a symbolic constant variable, depending on
+   its initializer.  */
+
+bool
+decl_maybe_constant_var_p (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+  if (!VAR_P (decl))
+    return false;
+  if (DECL_DECLARED_CONSTEXPR_P (decl))
+    return true;
+  if (DECL_HAS_VALUE_EXPR_P (decl))
+    /* A proxy isn't constant.  */
+    return false;
+  if (TYPE_REF_P (type))
+    /* References can be constant.  */;
+  else if (RS_TYPE_CONST_NON_VOLATILE_P (type)
+	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+    /* And const integers.  */;
+  else
+    return false;
+
+  if (DECL_INITIAL (decl) && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+    /* We know the initializer, and it isn't constant.  */
+    return false;
+  else
+    return true;
+}
+
+// forked from gcc/cp/typeck.cc cp_type_quals
+
+/* Returns the type qualifiers for this type, including the qualifiers on the
+   elements for an array type.  */
+
+int
+rs_type_quals (const_tree type)
+{
+  int quals;
+  /* This CONST_CAST is okay because strip_array_types returns its
+     argument unmodified and we assign it to a const_tree.  */
+  type = strip_array_types (CONST_CAST_TREE (type));
+  if (type == error_mark_node
+      /* Quals on a FUNCTION_TYPE are memfn quals.  */
+      || TREE_CODE (type) == FUNCTION_TYPE)
+    return TYPE_UNQUALIFIED;
+  quals = TYPE_QUALS (type);
+  /* METHOD and REFERENCE_TYPEs should never have quals.  */
+  gcc_assert (
+    (TREE_CODE (type) != METHOD_TYPE && !TYPE_REF_P (type))
+    || ((quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)) == TYPE_UNQUALIFIED));
+  return quals;
 }
 
 } // namespace Rust

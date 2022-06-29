@@ -149,6 +149,13 @@
 /* Nonzero if this class is "empty" in the sense of the C++ ABI.  */
 #define CLASSTYPE_EMPTY_P(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->empty_p)
 
+/* True if DECL is declared 'constexpr'.  */
+#define DECL_DECLARED_CONSTEXPR_P(DECL)                                        \
+  DECL_LANG_FLAG_8 (VAR_OR_FUNCTION_DECL_CHECK (DECL))
+
+#define VAR_OR_FUNCTION_DECL_CHECK(NODE)                                       \
+  TREE_CHECK2 (NODE, VAR_DECL, FUNCTION_DECL)
+
 // Below macros are copied from gcc/c-family/c-common.h
 
 /* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
@@ -161,6 +168,39 @@
 /* True if the decl was an unnamed bitfield.  */
 #define DECL_UNNAMED_BIT_FIELD(NODE)                                           \
   (DECL_C_BIT_FIELD (NODE) && !DECL_NAME (NODE))
+
+/* 1 iff NODE is function-local.  */
+#define DECL_FUNCTION_SCOPE_P(NODE)                                            \
+  (DECL_CONTEXT (NODE) && TREE_CODE (DECL_CONTEXT (NODE)) == FUNCTION_DECL)
+
+/* Nonzero if this type is const-qualified, but not
+   volatile-qualified.  Other qualifiers are ignored.  This macro is
+   used to test whether or not it is OK to bind an rvalue to a
+   reference.  */
+#define RS_TYPE_CONST_NON_VOLATILE_P(NODE)                                     \
+  ((rs_type_quals (NODE) & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE))             \
+   == TYPE_QUAL_CONST)
+
+/* [basic.fundamental]
+
+   Types  bool, char, wchar_t, and the signed and unsigned integer types
+   are collectively called integral types.
+
+   Note that INTEGRAL_TYPE_P, as defined in tree.h, allows enumeration
+   types as well, which is incorrect in C++.  Keep these checks in
+   ascending code order.  */
+#define RS_INTEGRAL_TYPE_P(TYPE)                                               \
+  (TREE_CODE (TYPE) == BOOLEAN_TYPE || TREE_CODE (TYPE) == INTEGER_TYPE)
+
+/* Returns true if TYPE is an integral or enumeration name.  Keep
+   these checks in ascending code order.  */
+#define INTEGRAL_OR_ENUMERATION_TYPE_P(TYPE)                                   \
+  (TREE_CODE (TYPE) == ENUMERAL_TYPE || RS_INTEGRAL_TYPE_P (TYPE))
+
+/* Nonzero for a VAR_DECL that was initialized with a
+   constant-expression.  */
+#define DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P(NODE)                        \
+  (TREE_LANG_FLAG_2 (VAR_DECL_CHECK (NODE)))
 
 // Above macros are copied from gcc/c-family/c-common.h
 
@@ -324,6 +364,17 @@ enum impl_conv_void
   ICV_THIRD_IN_FOR    /* for increment expression */
 };
 
+/* BUILT_IN_FRONTEND function codes.  */
+enum rs_built_in_function
+{
+  RS_BUILT_IN_IS_CONSTANT_EVALUATED,
+  RS_BUILT_IN_INTEGER_PACK,
+  RS_BUILT_IN_IS_CORRESPONDING_MEMBER,
+  RS_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS,
+  RS_BUILT_IN_SOURCE_LOCATION,
+  RS_BUILT_IN_LAST
+};
+
 extern tree
 convert_to_void (tree expr, impl_conv_void implicit);
 
@@ -405,12 +456,26 @@ pointer_offset_expression (tree base_tree, tree index_tree, location_t locus);
    but not all node kinds do (e.g. constants, and references to
    params, locals, etc), so we stash a copy here.  */
 
-extern location_t cp_expr_location (const_tree);
+extern location_t rs_expr_location (const_tree);
 
 extern int
 is_empty_class (tree type);
 
 extern tree array_type_nelts_top (tree);
+
+extern bool
+is_really_empty_class (tree, bool);
+
+extern bool builtin_valid_in_constant_expr_p (const_tree);
+
+extern bool maybe_constexpr_fn (tree);
+
+extern bool var_in_maybe_constexpr_fn (tree);
+
+extern int
+rs_type_quals (const_tree type);
+
+extern bool decl_maybe_constant_var_p (tree);
 
 extern tree
 rs_walk_subtrees (tree *, int *, walk_tree_fn, void *, hash_set<tree> *);
@@ -422,9 +487,9 @@ rs_walk_subtrees (tree *, int *, walk_tree_fn, void *, hash_set<tree> *);
 // forked from gcc/cp/cp-tree.h cp_expr_loc_or_loc
 
 inline location_t
-cp_expr_loc_or_loc (const_tree t, location_t or_loc)
+rs_expr_loc_or_loc (const_tree t, location_t or_loc)
 {
-  location_t loc = cp_expr_location (t);
+  location_t loc = rs_expr_location (t);
   if (loc == UNKNOWN_LOCATION)
     loc = or_loc;
   return loc;
@@ -433,9 +498,9 @@ cp_expr_loc_or_loc (const_tree t, location_t or_loc)
 // forked from gcc/cp/cp-tree.h cp_expr_loc_or_input_loc
 
 inline location_t
-cp_expr_loc_or_input_loc (const_tree t)
+rs_expr_loc_or_input_loc (const_tree t)
 {
-  return cp_expr_loc_or_loc (t, input_location);
+  return rs_expr_loc_or_loc (t, input_location);
 }
 
 } // namespace Rust
