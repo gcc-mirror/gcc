@@ -59,6 +59,18 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
       bool is_first_segment = i == 0;
       resolved_node_id = UNKNOWN_NODEID;
 
+      bool in_middle_of_path = i > 0;
+      if (in_middle_of_path && segment.is_lower_self_seg ())
+	{
+	  // error[E0433]: failed to resolve: `self` in paths can only be used
+	  // in start position
+	  rust_error_at (segment.get_locus (),
+			 "failed to resolve: %<%s%> in paths can only be used "
+			 "in start position",
+			 segment.as_string ().c_str ());
+	  return;
+	}
+
       NodeId crate_scope_id = resolver->peek_crate_module_scope ();
       if (segment.is_crate_path_seg ())
 	{
@@ -170,6 +182,15 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	    }
 	  else
 	    {
+	      if (segment.is_lower_self_seg ())
+		{
+		  module_scope_id = crate_scope_id;
+		  previous_resolved_node_id = module_scope_id;
+		  resolver->insert_resolved_name (segment.get_node_id (),
+						  module_scope_id);
+		  continue;
+		}
+
 	      rust_error_at (segment.get_locus (),
 			     "Cannot find path %<%s%> in this scope",
 			     segment.as_string ().c_str ());

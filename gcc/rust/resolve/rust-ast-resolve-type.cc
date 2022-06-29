@@ -95,6 +95,18 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
       bool is_first_segment = i == 0;
       resolved_node_id = UNKNOWN_NODEID;
 
+      bool in_middle_of_path = i > 0;
+      if (in_middle_of_path && segment->is_lower_self_seg ())
+	{
+	  // error[E0433]: failed to resolve: `self` in paths can only be used
+	  // in start position
+	  rust_error_at (segment->get_locus (),
+			 "failed to resolve: %<%s%> in paths can only be used "
+			 "in start position",
+			 segment->as_string ().c_str ());
+	  return false;
+	}
+
       NodeId crate_scope_id = resolver->peek_crate_module_scope ();
       if (segment->is_crate_path_seg ())
 	{
@@ -129,10 +141,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	      = static_cast<AST::TypePathSegmentGeneric *> (segment.get ());
 	    if (s->has_generic_args ())
 	      {
-		for (auto &gt : s->get_generic_args ().get_type_args ())
-		  {
-		    ResolveType::go (gt.get ());
-		  }
+		ResolveType::type_resolve_generic_args (s->get_generic_args ());
 	      }
 	  }
 	  break;
@@ -198,6 +207,17 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	    }
 	  else
 	    {
+	      if (segment->is_lower_self_seg ())
+		{
+		  // what is the current crate scope node id?
+		  module_scope_id = crate_scope_id;
+		  previous_resolved_node_id = module_scope_id;
+		  resolver->insert_resolved_name (segment->get_node_id (),
+						  module_scope_id);
+
+		  continue;
+		}
+
 	      rust_error_at (segment->get_locus (),
 			     "failed to resolve TypePath: %s in this scope",
 			     segment->as_string ().c_str ());
