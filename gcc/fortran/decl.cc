@@ -6262,6 +6262,14 @@ gfc_match_data_decl (void)
       goto cleanup;
     }
 
+  /* F2018:C708.  */
+  if (current_ts.type == BT_CLASS && current_attr.flavor == FL_PARAMETER)
+    {
+      gfc_error ("CLASS entity at %C cannot have the PARAMETER attribute");
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
+
   if (current_ts.type == BT_CLASS
 	&& current_ts.u.derived->attr.unlimited_polymorphic)
     goto ok;
