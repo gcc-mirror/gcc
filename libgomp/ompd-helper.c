@@ -540,7 +540,7 @@ gompd_is_final (ompd_task_handle_t *task_handle, ompd_word_t *final_task)
   ompd_rc_t ret;
   /* gomp_task->final_task.  */
   ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_final_task", temp_offset,
-		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+		0, ret, symbol_addr, temp_sym_addr, temp_addr);
   DEREFERENCE (context, NULL, symbol_addr, target_sizes.sizeof_char, 1,
 	       res, ret, 0);
   *final_task = res;
@@ -565,7 +565,7 @@ gompd_is_implicit (ompd_task_handle_t *task_handle, ompd_word_t *task_kind)
   ompd_address_space_context_t *context = task_handle->ah->context;
   ompd_rc_t ret;
   /* gomp_task->kind.  */
-  ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_kind", temp_offset, 1,
+  ACCESS_VALUE (context, NULL, "gompd_access_gomp_task_kind", temp_offset, 0,
 		ret, symbol_addr, temp_sym_addr, temp_addr);
   DEREFERENCE (context, NULL, symbol_addr, target_sizes.sizeof_int, 1, res,
 	       ret, 0);
@@ -597,7 +597,7 @@ gompd_get_team_size (ompd_parallel_handle_t *parallel_handle,
   ompd_rc_t ret;
   /* gomp_team->nthreads.  */
   ACCESS_VALUE (context, NULL, "gompd_access_gomp_team_nthreads", temp_offset,
-		1, ret, symbol_addr, temp_sym_addr, temp_addr);
+		0, ret, symbol_addr, temp_sym_addr, temp_addr);
   DEREFERENCE (context, NULL, symbol_addr, target_sizes.sizeof_int, 1,
 	       res, ret, 0);
   *nthreads = res;
