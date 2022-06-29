@@ -273,8 +273,7 @@ build_shuffle_mask_type (tree type)
      printed (this should really be handled by a D tree printer).  */
   Type *t = build_frontend_type (inner);
   gcc_assert (t != NULL);
-  unsigned HOST_WIDE_INT nunits;
-  TYPE_VECTOR_SUBPARTS (type).is_constant (&nunits);
+  unsigned HOST_WIDE_INT nunits = TYPE_VECTOR_SUBPARTS (type).to_constant ();
 
   return build_ctype (TypeVector::create (t->sarrayOf (nunits)));
 }
@@ -1190,9 +1189,10 @@ expand_intrinsic_vec_shufflevector (tree callexp)
   tree vec0 = CALL_EXPR_ARG (callexp, 0);
   tree vec1 = CALL_EXPR_ARG (callexp, 1);
 
-  unsigned HOST_WIDE_INT v0elems, v1elems;
-  TYPE_VECTOR_SUBPARTS (TREE_TYPE (vec0)).is_constant (&v0elems);
-  TYPE_VECTOR_SUBPARTS (TREE_TYPE (vec1)).is_constant (&v1elems);
+  unsigned HOST_WIDE_INT v0elems =
+    TYPE_VECTOR_SUBPARTS (TREE_TYPE (vec0)).to_constant ();
+  unsigned HOST_WIDE_INT v1elems =
+    TYPE_VECTOR_SUBPARTS (TREE_TYPE (vec1)).to_constant ();
 
   unsigned HOST_WIDE_INT num_indices = call_expr_nargs (callexp) - 2;
   unsigned HOST_WIDE_INT masklen = MAX (num_indices, MAX (v0elems, v1elems));
