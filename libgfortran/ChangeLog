@@ -1,3 +1,71 @@
+2022-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Check for strtof128 and strfromf128.
+	Check for math and complex *f128 functions.  Set
+	have_iec_60559_libc_support to yes if *f128 support is around, for
+	--enable-libquadmath-support default to "default" rather than yes if
+	have_iec_60559_libc_support is yes.
+	* acinclude.m4 (LIBGFOR_CHECK_FLOAT128): Test
+	_Float128/_Complex _Float128 rather than __float128 and
+	_Complex float __attribute__((mode(TC))).  If libquadmath support
+	is defaulted and have_iec_60559_libc_support is yes, define and subst
+	USE_IEC_60559.  Remove unused LIBGFOR_BUILD_QUAD conditional.
+	* Makefile.am (kinds.h): Pass @USE_IEC_60559@ as an extra
+	mk-kinds-h.sh argument.
+	* mk-kinds-h.sh: Accept 4th use_iec_60559 argument.  Use
+	_Float128/_Complex _Float128 types instead of __float128 and
+	_Complex float __attribute__((mode(TC))), and if use_iec_60559 is yes,
+	use f128 suffix instead of q and define GFC_REAL_16_USE_IEC_60559.
+	* kinds-override.h: Use _Float128/_Complex _Float128 types instead of
+	__float128 and _Complex float __attribute__((mode(TC))), if
+	USE_IEC_60559 is defined, use f128 suffixes instead of q and
+	define GFC_REAL_17_USE_IEC_60559.
+	* libgfortran.h: Don't include quadmath_weak.h if USE_IEC_60559 is
+	defined.
+	(GFC_REAL_16_INFINITY, GFC_REAL_16_QUIET_NAN): Define
+	for GFC_REAL_16_USE_IEC_60559 differently.
+	* caf/single.c (convert_type): Use _Float128/_Complex _Float128
+	instead of __float128 and _Complex float __attribute__((mode(TC))).
+	For HAVE_GFC_REAL_10 when HAVE_GFC_REAL_16 isn't defined use
+	_Complex long double instead of long double.
+	* ieee/issignaling_fallback.h (ieee854_float128_shape_type): Use
+	_Float128 instead of __float128.
+	(__issignalingf128): Change argument type to _Float128.
+	(issignaling): Use _Float128 instead of __float128 in _Generic.
+	* intrinsics/cshift0.c (cshift0): Use _Float128 instead of __float128
+	in a comment.  Fix a comment typo, logn double -> long double.
+	* intrinsics/erfc_scaled.c (_THRESH, _M_2_SQRTPI, _INF, _ERFC, _EXP):
+	Use different definitions if GFC_REAL_16_USE_IEC_60559.
+	(_THRESH, _M_2_SQRTPI): Use GFC_REAL_17_LITERAL macro.
+	(_ERFC, _EXP): Use different definitions if GFC_REAL_17_USE_IEC_60559.
+	* intrinsics/spread_generic.c (spread, spread_scalar): Use _Float128
+	instead of __float128 in a comment.  Fix a comment typo,
+	logn double -> long double.
+	* intrinsics/trigd.c (ENABLE_SIND, ENABLE_COSD, ENABLE_TAND): Handle
+	GFC_REAL_16_USE_IEC_60559.
+	* intrinsics/pack_generic.c (pack): Use _Float128 instead of
+	__float128 in a comment.  Fix a comment typo, logn double ->
+	long double.
+	* intrinsics/unpack_generic.c (unpack1, unpack0): Likewise.
+	* runtime/in_pack_generic.c (internal_pack): Likewise.
+	* runtime/in_unpack_generic.c (internal_unpack): Likewise.
+	* io/read.c (convert_real, convert_infnan): Handle
+	GFC_REAL_16_USE_IEC_60559 and GFC_REAL_17_USE_IEC_60559.
+	* io/transfer128.c (tmp1, tmp2): Don't define if libquadmath
+	isn't needed.
+	* io/write_float.def (gfor_strfromf128): New function.
+	(DTOA2Q, FDTOA2Q): Define differently if
+	GFC_REAL_16_USE_IEC_60559 or GFC_REAL_17_USE_IEC_60559.
+	* m4/mtype.m4: Use different suffix if GFC_REAL_16_USE_IEC_60559
+	or GFC_REAL_17_USE_IEC_60559.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* generated/bessel_r16.c: Regenerated.
+	* generated/bessel_r17.c: Regenerated.
+	* generated/norm2_r16.c: Regenerated.
+	* generated/norm2_r17.c: Regenerated.
+
 2022-01-26  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	PR libfortran/104233

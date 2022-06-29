@@ -1,3 +1,36 @@
+2022-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/attr_simd1.d: New test.
+	* gdc.dg/attr_simd2.d: New test.
+
+2022-06-28  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* c-c++-common/Wcast-align.c: Silence warnings for targets with
+	no_alignment_constraints.
+	* gcc.dg/c11-align-4.c: Skip for no_alignment_constraints.
+	* gcc.dg/strlenopt-10.c: Replace checks for avr with checks for
+	any target with no_alignment_constraints.
+	* gcc.dg/strlenopt-11.c: Ditto.
+	* gcc.dg/strlenopt-13.c: Ditto.
+	* lib/target-supports.exp
+	(check_effective_target_no_alignment_constraints): New.
+
+2022-06-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/pr100774.C: Remove --param=evrp-mode.
+	* gcc.dg/pr100781.c: Same.
+
+2022-06-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/106096
+	* g++.target/loongarch/loongarch.exp: New test support file.
+	* g++.target/loongarch/pr106096.C: New test.
+
+2022-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106053
+	* gcc.target/i386/pr106053.c: New testcase.
+
 2022-06-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/89197

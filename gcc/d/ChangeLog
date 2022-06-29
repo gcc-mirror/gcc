@@ -1,3 +1,19 @@
+2022-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc: Include gimple-expr.h.
+	(force_target_expr): Use create_tmp_var_raw.
+	* decl.cc: Inlucde gimple-expr.h.
+	(build_local_temp): Use create_tmp_var_raw.
+	* intrinsics.cc (expand_intrinsic_rotate): Use get_callee_fndecl.
+	(maybe_expand_intrinsic): Likewise.
+
+2022-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc (handle_omp_declare_simd_attribute): New function.
+	(d_handle_simd_attribute): New function.
+	(d_langhook_common_attribute_table): Add 'omp declare simd' attribute.
+	(d_langhook_attribute_table): Add simd attribute.
+
 2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-attribs.cc (d_handle_section_attribute): Update error message.

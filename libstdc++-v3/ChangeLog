@@ -1,3 +1,31 @@
+2022-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/dir-common.h (_Dir_base::_At_path):
+	Use char_type consistently for paths.
+
+2022-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (_Dir::dir_and_pathname):: Replace with
+	current() returning _At_path.
+	(_Dir::_Dir, _Dir::open_subdir, _Dir::do_unlink): Adjust.
+	* src/filesystem/dir-common.h (_Dir_base::_At_path): New class.
+	(_Dir_base::_Dir_Base, _Dir_base::openat): Use _At_path.
+	* src/filesystem/dir.cc (_Dir::dir_and_pathname): Replace with
+	current() returning _At_path.
+	(_Dir::_Dir, _Dir::open_subdir): Adjust.
+
+2022-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (_Dir::_Dir) [!_GLIBCXX_HAVE_OPENAT]:
+	Always store pathname if we don't have openat or unlinkat,
+	because the full path is needed to open sub-directories and
+	remove entries.
+
+2022-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/from_chars/4.cc: Only use log2 if C99 math
+	functions are available.
+
 2022-06-27  Alexandre Oliva  <oliva@adacore.com>
 
 	* testsuite/20_util/to_chars/long_double.cc: Use cmath

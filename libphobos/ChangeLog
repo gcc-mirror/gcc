@@ -1,3 +1,7 @@
+2022-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/attributes.d (simd): Define.
+
 2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/105413

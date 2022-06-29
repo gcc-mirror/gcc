@@ -1,3 +1,10 @@
+2022-06-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* unicode/README: Added instructions for updating ucnid.h.
+	* unicode/DerivedCoreProperties.txt: New file added to source
+	control from Unicode 14.0 release.
+	* unicode/DerivedNormalizationProps.txt: Likewise.
+
 2022-06-26  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* unicode/EastAsianWidth.txt: Update to Unicode 14.0.0.

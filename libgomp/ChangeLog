@@ -1,3 +1,9 @@
+2022-06-28  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Fix typo in mold linker detection.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2022-06-21  Jakub Jelinek  <jakub@redhat.com>
 	    Paul Iannetta  <piannetta@kalrayinc.com>
 

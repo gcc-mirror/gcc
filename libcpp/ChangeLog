@@ -1,3 +1,7 @@
+2022-06-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* ucnid.h: Regenerated for Unicode 14.0.
+
 2022-06-26  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* generated_cpp_wcwidth.h: Generated from updated Unicode data files.

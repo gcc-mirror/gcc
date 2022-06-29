@@ -1,3 +1,62 @@
+2022-06-28  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* doc/sourcebuild.texi: Document new no_alignment_constraints
+	effective target check.
+
+2022-06-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in: Remove gimple-ssa-evrp.o and gimple-ssa-evrp-analyze.o.
+	* flag-types.h (enum evrp_mode): Remove.
+	* params.opt: Remove --param=evrp-mode.
+	* tree-vrp.cc (make_pass_early_vrp): New.
+	(pass_vrp::execute): Call early VRP instance.
+	* gimple-ssa-evrp-analyze.cc: Removed.
+	* gimple-ssa-evrp-analyze.h: Removed.
+	* gimple-ssa-evrp.cc: Removed.
+
+2022-06-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (TFLAGS): New.
+	(GCC_FOR_TARGET): Add TFLAGS.
+	(FLAGS_TO_PASS): Pass TFLAGS down.
+
+2022-06-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-split.cc (fix_loop_bb_probability): Do not
+	call update_ssa.
+
+2022-06-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-into-ssa.cc (insert_updated_phi_nodes_for): Use
+	mark_block_for_update.
+	(update_ssa): Adjust.
+
+2022-06-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/106096
+	* config/loongarch/loongarch.h (REG_CLASS_CONTENTS): Exclude
+	$r13 from SIBCALL_REGS.
+	* config/loongarch/loongarch.cc (loongarch_regno_to_class):
+	Change $r13 to JIRL_REGS.
+
+2022-06-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-loop-ch.cc (entry_loop_condition_is_static): Remove
+	irange::supports_p.
+
+2022-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106053
+	* match.pd ((T)a == (T)b): Avoid folding away sign
+	changes in a comparison if we'd truncate to a boolean.
+
+2022-06-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (*rotl<mode>3_insert_4): Replace mode
+	iterator GPR with SImode, adjust the condition and output template,
+	rename to ...
+	(*rotlsi3_insert_4): ... this.
+
 2022-06-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* genmatch.cc: Add "final" and "override" to various vfunc

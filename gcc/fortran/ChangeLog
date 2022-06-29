@@ -1,3 +1,17 @@
+2022-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (gfc_real_info): Add use_iec_60559 bitfield.
+	* trans-types.h (gfc_real16_use_iec_60559): Declare.
+	* trans-types.cc (gfc_real16_use_iec_60559): Define.
+	(gfc_init_kinds): When building powerpc64le-linux libgfortran
+	on glibc 2.26 to 2.31, set gfc_real16_use_iec_60559 and
+	use_iec_60559.
+	(gfc_build_real_type): Set gfc_real16_use_iec_60559 and use_iec_60559
+	on glibc 2.26 or later.
+	* trans-intrinsic.cc (gfc_build_intrinsic_lib_fndecls): Adjust
+	comment.  Handle gfc_real16_use_iec_60559.
+	(gfc_get_intrinsic_lib_fndecl): Handle use_iec_60559.
+
 2022-06-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/105691

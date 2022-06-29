@@ -1,3 +1,13 @@
+2022-06-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.tpl (HOST_EXPORTS): Add TFLAGS to GCC_FOR_TARGET.
+	(EXTRA_GCC_FLAGS): Likewise.
+	* Makefile.in: Rebuilt.
+
+2022-06-28  konglin1  <lingling.kong@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2022-06-27  Tom de Vries  <tdevries@suse.de>
 
 	* configure.ac: Build libiberty pic variant for gdbserver.
