@@ -3034,14 +3034,13 @@ public:
 
   void visit (VectorExp *e)
   {
-    tree type = build_ctype (e->type);
-
     /* First handle array literal expressions.  */
     if (e->e1->op == TOKarrayliteral)
       {
 	ArrayLiteralExp *ale = e->e1->isArrayLiteralExp ();
 	vec <constructor_elt, va_gc> *elms = NULL;
 	bool constant_p = true;
+	tree type = build_ctype (e->type);
 
 	vec_safe_reserve (elms, ale->elements->length);
 	for (size_t i = 0; i < ale->elements->length; i++)
@@ -3061,9 +3060,16 @@ public:
 	else
 	  this->result_ = build_constructor (type, elms);
       }
+    else if (e->e1->type->toBasetype ()->ty == Tsarray)
+      {
+	/* Build a vector representation from a static array.  */
+	this->result_ = convert_expr (build_expr (e->e1, this->constp_),
+				      e->e1->type, e->type);
+      }
     else
       {
 	/* Build constructor from single value.  */
+	tree type = build_ctype (e->type);
 	tree value = d_convert (TREE_TYPE (type),
 				build_expr (e->e1, this->constp_, true));
 	this->result_ = build_vector_from_val (type, value);

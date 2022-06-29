@@ -6330,6 +6330,7 @@ public:
         if (tob->ty == Tvector && t1b->ty != Tvector)
         {
             result = new VectorExp(exp->loc, exp->e1, exp->to);
+            result = expressionSemantic(result, sc);
             return;
         }
 
