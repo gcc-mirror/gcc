@@ -2365,8 +2365,8 @@ ConstGenericParam::as_string () const
   std::string str ("ConstGenericParam: ");
   str += "const " + name + ": " + type->as_string ();
 
-  if (default_value)
-    str += " = " + default_value->as_string ();
+  if (has_default_value ())
+    str += " = " + get_default_value ().as_string ();
 
   return str;
 }

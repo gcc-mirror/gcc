@@ -20,6 +20,7 @@
 #define RUST_AST_RESOLVE_TYPE_H
 
 #include "rust-ast-resolve-base.h"
+#include "rust-ast-resolve-expr.h"
 #include "rust-ast-full.h"
 
 namespace Rust {
@@ -146,17 +147,23 @@ class ResolveGenericParam : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static NodeId go (AST::GenericParam *param)
+  static NodeId go (AST::GenericParam *param, const CanonicalPath &prefix,
+		    const CanonicalPath &canonical_prefix)
   {
-    ResolveGenericParam resolver;
+    ResolveGenericParam resolver (prefix, canonical_prefix);
     param->accept_vis (resolver);
     return resolver.resolved_node;
   }
 
-  void visit (AST::ConstGenericParam &) override
+  void visit (AST::ConstGenericParam &param) override
   {
-    // For now do not do anything and accept everything.
-    // FIXME: This needs to change soon!
+    ResolveType::go (param.get_type ().get ());
+
+    if (param.has_default_value ())
+      ResolveExpr::go (param.get_default_value ().get_expression ().get (),
+		       prefix, canonical_prefix);
+
+    ok = true;
   }
 
   void visit (AST::TypeParam &param) override
@@ -188,7 +195,15 @@ public:
   }
 
 private:
-  ResolveGenericParam () : ResolverBase () {}
+  ResolveGenericParam (const CanonicalPath &prefix,
+		       const CanonicalPath &canonical_prefix)
+    : ResolverBase (), ok (false), prefix (prefix),
+      canonical_prefix (canonical_prefix)
+  {}
+
+  bool ok;
+  const CanonicalPath &prefix;
+  const CanonicalPath &canonical_prefix;
 };
 
 class ResolveWhereClause : public ResolverBase

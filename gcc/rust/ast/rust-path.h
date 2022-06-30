@@ -191,7 +191,12 @@ public:
 
   Kind get_kind () const { return kind; }
 
-  std::unique_ptr<AST::Expr> &get_expression () { return expression; }
+  const std::unique_ptr<AST::Expr> &get_expression () const
+  {
+    rust_assert (kind == Kind::Clear);
+
+    return expression;
+  }
 
   std::string as_string () const
   {
@@ -239,6 +244,76 @@ private:
   Kind kind;
 
   Location locus;
+};
+
+/**
+ * Representation of const generic parameters
+ */
+class ConstGenericParam : public GenericParam
+{
+  /* Name of the parameter */
+  Identifier name;
+
+  /* Mandatory type of the const parameter - a null pointer is an error */
+  std::unique_ptr<AST::Type> type;
+
+  /**
+   * Default value for the const generic parameter
+   */
+  ConstGenericArg default_value;
+
+  Attribute outer_attr;
+  Location locus;
+
+public:
+  ConstGenericParam (Identifier name, std::unique_ptr<AST::Type> type,
+		     ConstGenericArg default_value, Attribute outer_attr,
+		     Location locus)
+    : name (name), type (std::move (type)),
+      default_value (std::move (default_value)), outer_attr (outer_attr),
+      locus (locus)
+  {}
+
+  ConstGenericParam (const ConstGenericParam &other)
+    : GenericParam (), name (other.name), type (other.type->clone_type ()),
+      default_value (other.default_value), outer_attr (other.outer_attr),
+      locus (other.locus)
+  {}
+
+  bool has_type () const { return type != nullptr; }
+  bool has_default_value () const { return !default_value.is_error (); }
+
+  const Identifier &get_name () const { return name; }
+
+  std::unique_ptr<AST::Type> &get_type ()
+  {
+    rust_assert (has_type ());
+
+    return type;
+  }
+
+  const ConstGenericArg &get_default_value () const
+  {
+    rust_assert (has_default_value ());
+
+    return default_value;
+  }
+
+  std::string as_string () const override;
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  Location get_locus () const override final { return locus; }
+
+  Kind get_kind () const override final { return Kind::Const; }
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  ConstGenericParam *clone_generic_param_impl () const override
+  {
+    return new ConstGenericParam (*this);
+  }
 };
 
 // Generic arguments allowed in each path expression segment - inline?

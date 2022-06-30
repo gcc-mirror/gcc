@@ -73,10 +73,8 @@ ResolveTraitItems::visit (AST::TraitItemFunc &func)
 
   AST::TraitFunctionDecl &function = func.get_trait_function_decl ();
   if (function.has_generics ())
-    {
-      for (auto &generic : function.get_generic_params ())
-	ResolveGenericParam::go (generic.get ());
-    }
+    for (auto &generic : function.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   if (function.has_return_type ())
     ResolveType::go (function.get_return_type ().get ());
@@ -122,10 +120,8 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
 
   AST::TraitMethodDecl &function = func.get_trait_method_decl ();
   if (function.has_generics ())
-    {
-      for (auto &generic : function.get_generic_params ())
-	ResolveGenericParam::go (generic.get ());
-    }
+    for (auto &generic : function.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   if (function.has_return_type ())
     ResolveType::go (function.get_return_type ().get ());
@@ -210,10 +206,8 @@ ResolveItem::visit (AST::TypeAlias &alias)
   resolver->get_type_scope ().push (scope_node_id);
 
   if (alias.has_generics ())
-    {
-      for (auto &generic : alias.get_generic_params ())
-	ResolveGenericParam::go (generic.get ());
-    }
+    for (auto &generic : alias.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   if (alias.has_where_clause ())
     ResolveWhereClause::Resolve (alias.get_where_clause ());
@@ -274,12 +268,8 @@ ResolveItem::visit (AST::TupleStruct &struct_decl)
   resolver->get_type_scope ().push (scope_node_id);
 
   if (struct_decl.has_generics ())
-    {
-      for (auto &generic : struct_decl.get_generic_params ())
-	{
-	  ResolveGenericParam::go (generic.get ());
-	}
-    }
+    for (auto &generic : struct_decl.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   if (struct_decl.has_where_clause ())
     ResolveWhereClause::Resolve (struct_decl.get_where_clause ());
@@ -313,12 +303,8 @@ ResolveItem::visit (AST::Enum &enum_decl)
   resolver->get_type_scope ().push (scope_node_id);
 
   if (enum_decl.has_generics ())
-    {
-      for (auto &generic : enum_decl.get_generic_params ())
-	{
-	  ResolveGenericParam::go (generic.get ());
-	}
-    }
+    for (auto &generic : enum_decl.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, cpath);
 
   if (enum_decl.has_where_clause ())
     ResolveWhereClause::Resolve (enum_decl.get_where_clause ());
@@ -411,12 +397,8 @@ ResolveItem::visit (AST::StructStruct &struct_decl)
   resolver->get_type_scope ().push (scope_node_id);
 
   if (struct_decl.has_generics ())
-    {
-      for (auto &generic : struct_decl.get_generic_params ())
-	{
-	  ResolveGenericParam::go (generic.get ());
-	}
-    }
+    for (auto &generic : struct_decl.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   if (struct_decl.has_where_clause ())
     ResolveWhereClause::Resolve (struct_decl.get_where_clause ());
@@ -450,12 +432,8 @@ ResolveItem::visit (AST::Union &union_decl)
   resolver->get_type_scope ().push (scope_node_id);
 
   if (union_decl.has_generics ())
-    {
-      for (auto &generic : union_decl.get_generic_params ())
-	{
-	  ResolveGenericParam::go (generic.get ());
-	}
-    }
+    for (auto &generic : union_decl.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   if (union_decl.has_where_clause ())
     ResolveWhereClause::Resolve (union_decl.get_where_clause ());
@@ -523,10 +501,8 @@ ResolveItem::visit (AST::Function &function)
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
   if (function.has_generics ())
-    {
-      for (auto &generic : function.get_generic_params ())
-	ResolveGenericParam::go (generic.get ());
-    }
+    for (auto &generic : function.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   // resolve any where clause items
   if (function.has_where_clause ())
@@ -566,12 +542,8 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
   resolve_visibility (impl_block.get_visibility ());
 
   if (impl_block.has_generics ())
-    {
-      for (auto &generic : impl_block.get_generic_params ())
-	{
-	  ResolveGenericParam::go (generic.get ());
-	}
-    }
+    for (auto &generic : impl_block.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   // resolve any where clause items
   if (impl_block.has_where_clause ())
@@ -657,10 +629,8 @@ ResolveItem::visit (AST::Method &method)
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
   if (method.has_generics ())
-    {
-      for (auto &generic : method.get_generic_params ())
-	ResolveGenericParam::go (generic.get ());
-    }
+    for (auto &generic : method.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   // resolve any where clause items
   if (method.has_where_clause ())
@@ -719,12 +689,8 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
 
   if (impl_block.has_generics ())
-    {
-      for (auto &generic : impl_block.get_generic_params ())
-	{
-	  ResolveGenericParam::go (generic.get ());
-	}
-    }
+    for (auto &generic : impl_block.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   // resolve any where clause items
   if (impl_block.has_where_clause ())
@@ -836,9 +802,7 @@ ResolveItem::visit (AST::Trait &trait)
   CanonicalPath Self = CanonicalPath::get_big_self (trait.get_node_id ());
 
   for (auto &generic : trait.get_generic_params ())
-    {
-      ResolveGenericParam::go (generic.get ());
-    }
+    ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   // Self is an implicit TypeParam so lets mark it as such
   resolver->get_type_scope ().append_reference_for_def (
@@ -900,7 +864,7 @@ ResolveItem::resolve_impl_item (AST::InherentImplItem *item,
 void
 ResolveItem::resolve_extern_item (AST::ExternalItem *item)
 {
-  ResolveExternItem::go (item);
+  ResolveExternItem::go (item, prefix, canonical_prefix);
 }
 
 static void
@@ -1070,9 +1034,10 @@ ResolveImplItems::visit (AST::TypeAlias &alias)
 }
 
 void
-ResolveExternItem::go (AST::ExternalItem *item)
+ResolveExternItem::go (AST::ExternalItem *item, const CanonicalPath &prefix,
+		       const CanonicalPath &canonical_prefix)
 {
-  ResolveExternItem resolver;
+  ResolveExternItem resolver (prefix, canonical_prefix);
   item->accept_vis (resolver);
 }
 
@@ -1092,10 +1057,8 @@ ResolveExternItem::visit (AST::ExternalFunctionItem &function)
 
   // resolve the generics
   if (function.has_generics ())
-    {
-      for (auto &generic : function.get_generic_params ())
-	ResolveGenericParam::go (generic.get ());
-    }
+    for (auto &generic : function.get_generic_params ())
+      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
 
   if (function.has_return_type ())
     ResolveType::go (function.get_return_type ().get ());
