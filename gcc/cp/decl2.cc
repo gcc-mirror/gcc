@@ -2851,7 +2851,7 @@ determine_visibility (tree decl)
   if (class_type)
     determine_visibility_from_class (decl, class_type);
 
-  if (decl_anon_ns_mem_p (decl))
+  if (decl_internal_context_p (decl))
     /* Names in an anonymous namespace get internal linkage.  */
     constrain_visibility (decl, VISIBILITY_ANON, false);
   else if (TREE_CODE (decl) != TYPE_DECL)
@@ -2965,16 +2965,21 @@ constrain_class_visibility (tree type)
 		  {
 		    if (same_type_p (TREE_TYPE (t), nlt))
 		      warning (OPT_Wsubobject_linkage, "\
-%qT has a field %qD whose type has no linkage",
+%qT has a field %q#D whose type has no linkage",
 			       type, t);
 		    else
 		      warning (OPT_Wsubobject_linkage, "\
 %qT has a field %qD whose type depends on the type %qT which has no linkage",
 			       type, t, nlt);
 		  }
-		else
+		else if (cxx_dialect > cxx98
+			 && !decl_anon_ns_mem_p (ftype))
 		  warning (OPT_Wsubobject_linkage, "\
-%qT has a field %qD whose type uses the anonymous namespace",
+%qT has a field %q#D whose type has internal linkage",
+			   type, t);
+		else // In C++98 this can only happen with unnamed namespaces.
+		  warning (OPT_Wsubobject_linkage, "\
+%qT has a field %q#D whose type uses the anonymous namespace",
 			   type, t);
 	      }
 	  }
@@ -2989,28 +2994,34 @@ constrain_class_visibility (tree type)
   binfo = TYPE_BINFO (type);
   for (i = 0; BINFO_BASE_ITERATE (binfo, i, t); ++i)
     {
-      int subvis = type_visibility (TREE_TYPE (t));
+      tree btype = BINFO_TYPE (t);
+      int subvis = type_visibility (btype);
 
       if (subvis == VISIBILITY_ANON)
         {
 	  if (!in_main_input_context())
 	    {
-	      tree nlt = no_linkage_check (TREE_TYPE (t), /*relaxed_p=*/false);
+	      tree nlt = no_linkage_check (btype, /*relaxed_p=*/false);
 	      if (nlt)
 		{
-		  if (same_type_p (TREE_TYPE (t), nlt))
+		  if (same_type_p (btype, nlt))
 		    warning (OPT_Wsubobject_linkage, "\
-%qT has a base %qT whose type has no linkage",
-			     type, TREE_TYPE (t));
+%qT has a base %qT which has no linkage",
+			     type, btype);
 		  else
 		    warning (OPT_Wsubobject_linkage, "\
-%qT has a base %qT whose type depends on the type %qT which has no linkage",
-			     type, TREE_TYPE (t), nlt);
+%qT has a base %qT which depends on the type %qT which has no linkage",
+			     type, btype, nlt);
 		}
-	      else
+	      else if (cxx_dialect > cxx98
+		       && !decl_anon_ns_mem_p (btype))
 		warning (OPT_Wsubobject_linkage, "\
-%qT has a base %qT whose type uses the anonymous namespace",
-			 type, TREE_TYPE (t));
+%qT has a base %qT which has internal linkage",
+			 type, btype);
+	      else // In C++98 this can only happen with unnamed namespaces.
+		warning (OPT_Wsubobject_linkage, "\
+%qT has a base %qT which uses the anonymous namespace",
+			 type, btype);
 	    }
 	}
       else if (vis < VISIBILITY_HIDDEN

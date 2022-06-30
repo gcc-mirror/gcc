@@ -25025,7 +25025,7 @@ mark_decl_instantiated (tree result, int extern_p)
     return;
 
   /* For anonymous namespace we don't need to do anything.  */
-  if (decl_anon_ns_mem_p (result))
+  if (decl_internal_context_p (result))
     {
       gcc_assert (!TREE_PUBLIC (result));
       return;

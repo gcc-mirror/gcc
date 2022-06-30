@@ -2968,7 +2968,7 @@ verify_stmt_tree (tree t)
 /* Check if the type T depends on a type with no linkage and if so,
    return it.  If RELAXED_P then do not consider a class type declared
    within a vague-linkage function to have no linkage.  Remember:
-   no-linkage is not the same as internal-linkage*/
+   no-linkage is not the same as internal-linkage.  */
 
 tree
 no_linkage_check (tree t, bool relaxed_p)
@@ -3817,7 +3817,15 @@ decl_namespace_context (tree decl)
    nested, or false otherwise.  */
 
 bool
-decl_anon_ns_mem_p (const_tree decl)
+decl_anon_ns_mem_p (tree decl)
+{
+  return !TREE_PUBLIC (decl_namespace_context (decl));
+}
+
+/* Returns true if the enclosing scope of DECL has internal or no linkage.  */
+
+bool
+decl_internal_context_p (const_tree decl)
 {
   while (TREE_CODE (decl) != NAMESPACE_DECL)
     {
