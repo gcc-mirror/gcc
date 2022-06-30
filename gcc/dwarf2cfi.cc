@@ -626,7 +626,7 @@ get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_node *loc)
 		= (op == DW_OP_bregx
 		   ? ptr->dw_loc_oprnd1.v.val_int : op - DW_OP_breg0);
 	      cfa->reg.set_by_dwreg (regno);
-	      cfa->base_offset = (DW_OP_bregx
+	      cfa->base_offset = (op == DW_OP_bregx
 				  ? ptr->dw_loc_oprnd2.v.val_int
 				  : ptr->dw_loc_oprnd1.v.val_int);
 	    }

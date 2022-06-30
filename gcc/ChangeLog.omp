@@ -1,3 +1,7 @@
+2022-06-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* dwarf2cfi.cc (get_cfa_from_loc_descr): Check op against DW_OP_bregx.
+
 2022-06-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* graphite-isl-ast-to-gimple.cc (graphite_oacc_analyze_scop): Update
