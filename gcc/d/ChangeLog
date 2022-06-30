@@ -1,3 +1,50 @@
+2022-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106139
+	* d-convert.cc (convert_expr): Handle casting from array to vector.
+	(convert_for_rvalue): Rewrite vector to array casts of the same
+	element type into a constructor.
+	(convert_for_assignment): Return calling convert_for_rvalue.
+	* expr.cc (ExprVisitor::visit (VectorExp *)): Handle generating a
+	vector expression from a static array.
+	* toir.cc (IRVisitor::visit (ReturnStatement *)): Call
+	convert_for_rvalue on return value.
+
+2022-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.cc (build_shuffle_mask_type): Use to_constant when
+	getting the number of subparts from a vector type.
+	(expand_intrinsic_vec_shufflevector): Likewise.
+
+2022-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* intrinsics.cc: Include diagnostic.h, langhooks.h,
+	vec-perm-indices.h.
+	(maybe_set_intrinsic): Add cases for new simd intrinsics.
+	(warn_mismatched_return_type): New function.
+	(warn_mismatched_argument): New function.
+	(build_shuffle_mask_type): New function.
+	(maybe_warn_intrinsic_mismatch): New function.
+	(expand_intrinsic_vec_cond): New function.
+	(expand_intrinsic_vec_convert): New function.
+	(expand_intrinsic_vec_blend): New function.
+	(expand_intrinsic_vec_shuffle): New function.
+	(expand_intrinsic_vec_shufflevector): New function.
+	(expand_intrinsic_vec_load_unaligned): New function.
+	(expand_intrinsic_vec_store_unaligned): New function.
+	(maybe_expand_intrinsic): Check signature of intrinsic before handing
+	off to front-end lowering.  Add cases for new simd intrinsics.
+	* intrinsics.def (INTRINSIC_LOADUNALIGNED): Define intrinsic.
+	(INTRINSIC_STOREUNALIGNED): Define intrinsic.
+	(INTRINSIC_SHUFFLE): Define intrinsic.
+	(INTRINSIC_SHUFFLEVECTOR): Define intrinsic.
+	(INTRINSIC_CONVERTVECTOR): Define intrinsic.
+	(INTRINSIC_BLENDVECTOR): Define intrinsic.
+	(INTRINSIC_EQUALMASK): Define intrinsic.
+	(INTRINSIC_NOTEQUALMASK): Define intrinsic.
+	(INTRINSIC_GREATERMASK): Define intrinsic.
+	(INTRINSIC_GREATEREQUALMASK): Define intrinsic.
+
 2022-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-codegen.cc: Include gimple-expr.h.

@@ -1,3 +1,11 @@
+2022-06-29  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/106121
+	* simplify.cc (gfc_simplify_extends_type_of): Do not attempt to
+	simplify when one of the arguments is a CLASS variable that was
+	not properly declared.
+
 2022-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.h (gfc_real_info): Add use_iec_60559 bitfield.

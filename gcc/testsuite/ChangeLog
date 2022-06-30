@@ -1,3 +1,52 @@
+2022-06-29  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/105812
+	* jit.dg/test-asm.cc: Add include missing to make the test pass.
+	* jit.dg/test-pr105812-bool-operations.c: New test.
+
+2022-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106139
+	* gdc.dg/pr106139a.d: New test.
+	* gdc.dg/pr106139b.d: New test.
+	* gdc.dg/pr106139c.d: New test.
+	* gdc.dg/pr106139d.d: New test.
+
+2022-06-29  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/106121
+	* gfortran.dg/extends_type_of_4.f90: New test.
+
+2022-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106112
+	* gcc.dg/torture/pr106112.c: New testcase.
+
+2022-06-29  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/avx512fp16-reduce-op-2.c: Force SSE2 for i?86.
+	* gcc.target/i386/pr99464.c: Likewise.
+
+2022-06-29  Jan Beulich  <jbeulich@suse.com>
+
+	* c-c++-common/torture/builtin-shufflevector-2.c: Prune ix86 MMX
+	ABI warning.
+
+2022-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Wbuiltin_declaration_mismatch.d: Rename to...
+	* gdc.dg/Wbuiltin_declaration_mismatch1.d: ...this.
+	* gdc.dg/Wbuiltin_declaration_mismatch2.d: New test.
+	* gdc.dg/torture/simd_blendvector.d: New test.
+	* gdc.dg/torture/simd_cond.d: New test.
+	* gdc.dg/torture/simd_convertvector.d: New test.
+	* gdc.dg/torture/simd_load.d: New test.
+	* gdc.dg/torture/simd_logical.d: New test.
+	* gdc.dg/torture/simd_shuffle.d: New test.
+	* gdc.dg/torture/simd_shufflevector.d: New test.
+	* gdc.dg/torture/simd_store.d: New test.
+
 2022-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.dg/attr_simd1.d: New test.

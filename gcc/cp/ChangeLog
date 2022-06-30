@@ -1,3 +1,12 @@
+2022-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (macro_info, macro_traits, macro_table,
+	macro_remap): Rename to ...
+	(macro_loc_info, macro_loc_traits, macro_loc_table,
+	macro_loc_remap): ... these.  Update all uses.
+	(module_state::write_prepare_maps): Remove unneeded macro checking.
+	(module_state::write_begin): Free macro_loc_remap.
+
 2022-06-27  Sergei Trofimovich  <siarheit@google.com>
 
 	PR c++/106102

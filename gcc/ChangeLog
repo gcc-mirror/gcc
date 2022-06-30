@@ -1,3 +1,35 @@
+2022-06-29  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* system.h: Introduce INCLUDE_PTHREAD_H macros to include <pthread.h>.
+
+2022-06-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/nios2/nios2.cc (nios2_load_pic_address): Use gen_rtx_MEM
+	not gen_const_mem for UNSPEC_PIC_CALL_SYM.
+
+2022-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/106082
+	* combine.cc (distribute_notes): Preserve notes when
+	they indicate a call doesn't perform a non-local goto.
+
+2022-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106112
+	* tree-ssa-sccvn.cc (valueized_wider_op): Properly extend
+	a constant operand according to its type.
+
+2022-06-29  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Remove removed evrp-mode.
+
+2022-06-29  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/106097
+	* config/loongarch/loongarch.cc (loongarch_build_integer):
+	Remove undefined behavior from code.
+
 2022-06-28  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* doc/sourcebuild.texi: Document new no_alignment_constraints

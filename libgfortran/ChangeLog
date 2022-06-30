@@ -1,3 +1,27 @@
+2022-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* mk-kinds-h.sh: Change __float128 to _Float128 in a comment.
+	* acinclude.m4 (LIBGFOR_CHECK_MATH_IEEE128): Use _Float128 instead of
+	__float128.
+	* libgfortran.h (isnan): Change __float128 to _Float128 in a comment.
+	(__acoshieee128, __acosieee128, __asinhieee128, __asinieee128,
+	__atan2ieee128, __atanhieee128, __atanieee128, __copysignieee128,
+	__coshieee128, __cosieee128, __erfcieee128, __erfieee128,
+	__expieee128, __fabsieee128, __fmaieee128, __fmodieee128, __jnieee128,
+	__log10ieee128, __logieee128, __powieee128, __sinhieee128,
+	__sinieee128, __sqrtieee128, __tanhieee128, __tanieee128,
+	__ynieee128, __strtoieee128): Use _Float128 instead of __float128.
+	* configure: Regenerated.
+
+2022-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/106137
+	* acinclude.m4 (LIBGFOR_CHECK_FLOAT128): Adjust comment.
+	Also test for __float128.
+	(HAVE_FLOAT128): Adjust description.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
 2022-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Check for strtof128 and strfromf128.
