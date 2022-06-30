@@ -47177,8 +47177,8 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 	      if (flag_offload_memory != OFFLOAD_MEMORY_UNIFIED
 		  && flag_offload_memory != OFFLOAD_MEMORY_NONE)
 		error_at (cloc,
-			  "unified_address is incompatible with the "
-			  "selected -foffload-memory option");
+			  "%<unified_address%> is incompatible with the "
+			  "selected %<-foffload-memory%> option");
 	      flag_offload_memory = OFFLOAD_MEMORY_UNIFIED;
 	    }
 	  else if (!strcmp (p, "unified_shared_memory"))
@@ -47188,8 +47188,8 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 	      if (flag_offload_memory != OFFLOAD_MEMORY_UNIFIED
 		  && flag_offload_memory != OFFLOAD_MEMORY_NONE)
 		error_at (cloc,
-			  "unified_shared_memory is incompatible with the "
-			  "selected -foffload-memory option");
+			  "%<unified_shared_memory%> is incompatible with the "
+			  "selected %<-foffload-memory%> option");
 	      flag_offload_memory = OFFLOAD_MEMORY_UNIFIED;
 	    }
 	  else if (!strcmp (p, "dynamic_allocators"))
