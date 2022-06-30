@@ -1113,7 +1113,7 @@ package body Sem_Ch12 is
       Analyzed_Formal : Node_Id;
       First_Named     : Node_Id := Empty;
       Formal          : Node_Id;
-      Match           : Node_Id;
+      Match           : Node_Id := Empty;
       Named           : Node_Id;
       Saved_Formal    : Node_Id;
 
