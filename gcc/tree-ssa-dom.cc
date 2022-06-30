@@ -588,9 +588,8 @@ record_edge_info (basic_block bb)
 class dom_jt_state : public jt_state
 {
 public:
-  dom_jt_state (const_and_copies *copies, avail_exprs_stack *avails,
-		gimple_ranger *ranger)
-    : m_copies (copies), m_avails (avails), m_ranger (ranger)
+  dom_jt_state (const_and_copies *copies, avail_exprs_stack *avails)
+    : m_copies (copies), m_avails (avails)
   {
   }
   void push (edge e) override
@@ -613,7 +612,6 @@ public:
 private:
   const_and_copies *m_copies;
   avail_exprs_stack *m_avails;
-  gimple_ranger *m_ranger;
 };
 
 void
@@ -794,7 +792,7 @@ pass_dominator::execute (function *fun)
   gimple_ranger *ranger = enable_ranger (fun);
   path_range_query path_query (/*resolve=*/true, ranger);
   dom_jt_simplifier simplifier (avail_exprs_stack, ranger, &path_query);
-  dom_jt_state state (const_and_copies, avail_exprs_stack, ranger);
+  dom_jt_state state (const_and_copies, avail_exprs_stack);
   jump_threader threader (&simplifier, &state);
   dom_opt_dom_walker walker (CDI_DOMINATORS,
 			     &threader,
