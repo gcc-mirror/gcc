@@ -6174,7 +6174,13 @@ package body Exp_Ch4 is
                Slice_Bnd : Node_Id) return Node_Id is
 
             begin
-               if Nkind (Elsex) = N_Slice then
+               --  We need to use the special processing for slices only if
+               --  they do not have compile-time known bounds; if they do, they
+               --  can be treated like any other expressions.
+
+               if Nkind (Elsex) = N_Slice
+                 and then not Compile_Time_Known_Bounds (Etype (Elsex))
+               then
                   if Compile_Time_Known_Value (Slice_Bnd)
                     and then Expr_Value (Slice_Bnd) = Then_Bnd
                   then
@@ -6230,7 +6236,11 @@ package body Exp_Ch4 is
          begin
             Get_First_Index_Bounds (Etype (Thenx), Then_Lo, Then_Hi);
 
-            if Nkind (Elsex) = N_Slice then
+            --  See the rationale in Build_New_Bound
+
+            if Nkind (Elsex) = N_Slice
+              and then not Compile_Time_Known_Bounds (Etype (Elsex))
+            then
                Slice_Lo := Low_Bound (Discrete_Range (Elsex));
                Slice_Hi := High_Bound (Discrete_Range (Elsex));
                Get_First_Index_Bounds
@@ -6289,7 +6299,11 @@ package body Exp_Ch4 is
 
             Set_Suppress_Assignment_Checks (Last (Then_List));
 
-            if Nkind (Elsex) = N_Slice then
+            --  See the rationale in Build_New_Bound
+
+            if Nkind (Elsex) = N_Slice
+              and then not Compile_Time_Known_Bounds (Etype (Elsex))
+            then
                Else_List := New_List (
                  Make_Assignment_Statement (Loc,
                    Name       =>
