@@ -1136,7 +1136,7 @@ package body Exp_Ch11 is
       Set_Is_Statically_Allocated (Ex_Id);
 
       --  Create the aggregate list for type Standard.Exception_Type:
-      --  Handled_By_Other component: False
+      --  Not_Handled_By_Others component: False
 
       L := Empty_List;
       Append_To (L, New_Occurrence_Of (Standard_False, Loc));
