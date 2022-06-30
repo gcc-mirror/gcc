@@ -302,8 +302,17 @@ region_creation_event::region_creation_event (const region *reg,
    region_creation_event.  */
 
 label_text
-region_creation_event::get_desc (bool) const
+region_creation_event::get_desc (bool can_colorize) const
 {
+  if (m_pending_diagnostic)
+    {
+      label_text custom_desc
+	    = m_pending_diagnostic->describe_region_creation_event
+		(evdesc::region_creation (can_colorize, m_reg));
+      if (custom_desc.m_buffer)
+	return custom_desc;
+    }
+
   switch (m_reg->get_memory_space ())
     {
     default:

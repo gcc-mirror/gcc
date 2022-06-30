@@ -219,7 +219,7 @@ public:
   region_creation_event (const region *reg,
 			 location_t loc, tree fndecl, int depth);
 
-  label_text get_desc (bool) const final override;
+  label_text get_desc (bool can_colorize) const final override;
 
 private:
   const region *m_reg;

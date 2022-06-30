@@ -9739,6 +9739,7 @@ This analysis is much more expensive than other GCC warnings.
 Enabling this option effectively enables the following warnings:
 
 @gccoptlist{ @gol
+-Wanalyzer-allocation-size @gol
 -Wanalyzer-double-fclose @gol
 -Wanalyzer-double-free @gol
 -Wanalyzer-exposure-through-output-file @gol
@@ -9790,6 +9791,19 @@ but these can be defeated by sufficiently complicated code.
 By default, the analysis silently stops if the code is too
 complicated for the analyzer to fully explore and it reaches an internal
 limit.  The @option{-Wanalyzer-too-complex} option warns if this occurs.
+
+@item -Wno-analyzer-allocation-size
+@opindex Wanalyzer-allocation-size
+@opindex Wno-analyzer-allocation-size
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-allocation-size}
+to disable it.
+
+This diagnostic warns for paths through the code in which a pointer to
+a buffer is assigned to point at a buffer with a size that is not a
+multiple of @code{sizeof (*pointer)}.
+
+See @url{https://cwe.mitre.org/data/definitions/131.html, CWE-131: Incorrect Calculation of Buffer Size}.
 
 @item -Wno-analyzer-double-fclose
 @opindex Wanalyzer-double-fclose

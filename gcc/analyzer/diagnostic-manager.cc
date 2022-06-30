@@ -1476,6 +1476,67 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
       const exploded_edge *eedge = epath.m_edges[i];
       add_events_for_eedge (pb, *eedge, emission_path, &interest);
     }
+  add_event_on_final_node (epath.get_final_enode (), emission_path, &interest);
+}
+
+/* Emit a region_creation_event when requested on the last statement in
+   the path.
+
+   If a region_creation_event should be emitted on the last statement of the
+   path, we need to peek to the successors to get whether the final enode
+   created a region.
+*/
+
+void
+diagnostic_manager::add_event_on_final_node (const exploded_node *final_enode,
+					     checker_path *emission_path,
+					     interesting_t *interest) const
+{
+  const program_point &src_point = final_enode->get_point ();
+  const int src_stack_depth = src_point.get_stack_depth ();
+  const program_state &src_state = final_enode->get_state ();
+  const region_model *src_model = src_state.m_region_model;
+
+  unsigned j;
+  exploded_edge *e;
+  FOR_EACH_VEC_ELT (final_enode->m_succs, j, e)
+  {
+    exploded_node *dst = e->m_dest;
+    const program_state &dst_state = dst->get_state ();
+    const region_model *dst_model = dst_state.m_region_model;
+    if (src_model->get_dynamic_extents ()
+	!= dst_model->get_dynamic_extents ())
+      {
+	unsigned i;
+	const region *reg;
+	bool emitted = false;
+	FOR_EACH_VEC_ELT (interest->m_region_creation, i, reg)
+	  {
+	    const region *base_reg = reg->get_base_region ();
+	    const svalue *old_extents
+	= src_model->get_dynamic_extents (base_reg);
+	    const svalue *new_extents
+	= dst_model->get_dynamic_extents (base_reg);
+	    if (old_extents == NULL && new_extents != NULL)
+	      switch (base_reg->get_kind ())
+		{
+		default:
+		  break;
+		case RK_HEAP_ALLOCATED:
+		case RK_ALLOCA:
+		  emission_path->add_region_creation_event
+		    (reg,
+		    src_point.get_location (),
+		    src_point.get_fndecl (),
+		    src_stack_depth);
+		  emitted = true;
+		  break;
+		}
+	  }
+	if (emitted)
+	  break;
+      }
+  }
 }
 
 /* Subclass of state_change_visitor that creates state_change_event

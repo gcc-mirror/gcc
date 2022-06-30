@@ -865,6 +865,8 @@ class region_model
 			       region_model_context *ctxt) const;
   void check_region_for_read (const region *src_reg,
 			      region_model_context *ctxt) const;
+  void check_region_size (const region *lhs_reg, const svalue *rhs_sval,
+			  region_model_context *ctxt) const;
 
   void check_call_args (const call_details &cd) const;
   void check_external_function_for_access_attr (const gcall *call,

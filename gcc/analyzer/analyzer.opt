@@ -54,6 +54,10 @@ The minimum number of supernodes within a function for the analyzer to consider 
 Common Joined UInteger Var(param_analyzer_max_enodes_for_full_dump) Init(200) Param
 The maximum depth of exploded nodes that should appear in a dot dump before switching to a less verbose format.
 
+Wanalyzer-allocation-size
+Common Var(warn_analyzer_allocation_size) Init(1) Warning
+Warn about code paths in which a pointer to a buffer is assigned to an incompatible type.
+
 Wanalyzer-double-fclose
 Common Var(warn_analyzer_double_fclose) Init(1) Warning
 Warn about code paths in which a stdio FILE can be closed more than once.
