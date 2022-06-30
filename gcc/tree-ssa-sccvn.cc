@@ -3243,12 +3243,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       poly_int64 extra_off = 0;
       if (j == 0 && i >= 0
 	  && lhs_ops[0].opcode == MEM_REF
-	  && maybe_ne (lhs_ops[0].off, -1))
+	  && known_ne (lhs_ops[0].off, -1))
 	{
 	  if (known_eq (lhs_ops[0].off, vr->operands[i].off))
 	    i--, j--;
 	  else if (vr->operands[i].opcode == MEM_REF
-		   && maybe_ne (vr->operands[i].off, -1))
+		   && known_ne (vr->operands[i].off, -1))
 	    {
 	      extra_off = vr->operands[i].off - lhs_ops[0].off;
 	      i--, j--;
@@ -3275,6 +3275,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       copy_reference_ops_from_ref (rhs1, &rhs);
 
       /* Apply an extra offset to the inner MEM_REF of the RHS.  */
+      bool force_no_tbaa = false;
       if (maybe_ne (extra_off, 0))
 	{
 	  if (rhs.length () < 2)
@@ -3287,6 +3288,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  rhs[ix].op0 = int_const_binop (PLUS_EXPR, rhs[ix].op0,
 					 build_int_cst (TREE_TYPE (rhs[ix].op0),
 							extra_off));
+	  /* When we have offsetted the RHS, reading only parts of it,
+	     we can no longer use the original TBAA type, force alias-set
+	     zero.  */
+	  force_no_tbaa = true;
 	}
 
       /* Save the operands since we need to use the original ones for
@@ -3339,8 +3344,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* Adjust *ref from the new operands.  */
       ao_ref rhs1_ref;
       ao_ref_init (&rhs1_ref, rhs1);
-      if (!ao_ref_init_from_vn_reference (&r, ao_ref_alias_set (&rhs1_ref),
-					  ao_ref_base_alias_set (&rhs1_ref),
+      if (!ao_ref_init_from_vn_reference (&r,
+					  force_no_tbaa ? 0
+					  : ao_ref_alias_set (&rhs1_ref),
+					  force_no_tbaa ? 0
+					  : ao_ref_base_alias_set (&rhs1_ref),
 					  vr->type, vr->operands))
 	return (void *)-1;
       /* This can happen with bitfields.  */
