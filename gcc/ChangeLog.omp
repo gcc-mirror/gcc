@@ -1,3 +1,15 @@
+2022-06-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Remove extra
+	'%<..%>' pair in format string.
+
+2022-06-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-data-optimize.cc (omp_data_optimize_add_candidate): Suppress
+	format checking.
+	(omp_data_optimize_can_be_private): Likewise.
+	(omp_data_optimize_can_be_private): Likewise.
+
 2022-05-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-expand.cc (expand_omp_target): Gimplify launch dimensions used

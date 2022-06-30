@@ -154,6 +154,10 @@ omp_data_optimize_add_candidate (const dump_user_location_t &loc, tree var,
   inhibit_descriptor in;
   in.stmt = NULL;
 
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
   if (DECL_EXTERNAL (var))
     {
       if (dump_enabled_p () && dump_flags & TDF_DETAILS)
@@ -187,6 +191,9 @@ omp_data_optimize_add_candidate (const dump_user_location_t &loc, tree var,
 
       in.kind = INHIBIT_NOT;
     }
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
 
   if (state->candidates.put (var, in))
     gcc_unreachable ();
@@ -575,6 +582,10 @@ omp_data_optimize_can_be_private (tree var, gimple *target_stmt)
       state.bb = *state.scanned_bb.get (root_id);
     }
 
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
   if (dump_enabled_p () && dump_flags & TDF_DETAILS)
     {
       for (hash_map<const void*,ODO_BB>::iterator it = state.scanned_bb.begin ();
@@ -613,6 +624,9 @@ omp_data_optimize_can_be_private (tree var, gimple *target_stmt)
 		      : state.bb.access == ACCESS_UNKNOWN
 		      ? "complex control flow"
 		      : "unknown reason"));
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
 
   return state.bb.access == ACCESS_DEF_FIRST;
 }
@@ -698,12 +712,19 @@ omp_data_optimize_stmt_target (gimple *stmt, ODO_State *state)
         if (!id) {
           /* The variable was not a parameter or named in any bind, so it
              must be in an external scope, and therefore live-on-exit.  */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
           if (dump_enabled_p ())
             dump_printf_loc(MSG_MISSED_OPTIMIZATION, DUMP_LOC (*pc),
                             "%qs not optimized: %<%T%> is unsuitable"
                             " for privatization\n",
                             c_s_prev, var);
           continue;
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
 	    }
 
 	  switch (id->kind)
@@ -746,6 +767,10 @@ omp_data_optimize_stmt_target (gimple *stmt, ODO_State *state)
 		}
 	      break;
 
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
 	    case INHIBIT_USE:  /* Optimization inhibited by a variable use.  */
 	      if (dump_enabled_p ())
 		{
@@ -776,6 +801,9 @@ omp_data_optimize_stmt_target (gimple *stmt, ODO_State *state)
 				   " for privatization\n", c_s_prev, var);
 		}
 	      break;
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
 
 	    default:
 	      gcc_unreachable ();

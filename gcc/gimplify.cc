@@ -11384,7 +11384,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		      }
 		  if (uc == NULL_TREE)
 		    {
-		      error_at (OMP_CLAUSE_LOCATION (c), "allocator %<%qE%> "
+		      error_at (OMP_CLAUSE_LOCATION (c), "allocator %qE "
 				"requires %<uses_allocators(%E)%> clause in "
 				"target region", allocator, allocator);
 		      remove = true;
