@@ -1781,7 +1781,7 @@ graphite_oacc_analyze_scop (scop_p scop)
 		  if (dump_enabled_p () && dump_flags & TDF_DETAILS)
 		    dump_printf (MSG_NOTE,
 				 "Runtime alias condition applied to: %G",
-				 goacc_call);
+				 stmt);
 		}
 	    }
 	}
@@ -1793,7 +1793,8 @@ graphite_oacc_analyze_scop (scop_p scop)
 	     nothing much to do here.  */
 	  if (dump_enabled_p ())
 	    dump_printf (MSG_NOTE, "Runtime alias check *not* inserted for"
-			 " bb %d (GOACC_LOOP not found)");
+			 " bb %d (GOACC_LOOP not found)",
+			 goacc_loop_block->index);
 
 	  /* Unset can_be_parallel, in case something else might use it.  */
 	  for (unsigned int i = 0; i < region->bbs.length (); i++)

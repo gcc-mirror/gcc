@@ -1,3 +1,24 @@
+2022-06-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	* graphite-isl-ast-to-gimple.cc (graphite_oacc_analyze_scop): Update
+	arguments of dump_printf.
+
+2022-06-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-offload.cc (oacc_loop_warn_if_false_independent): Remove extra
+	'.' at end of message.
+
+2022-06-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-low.cc (usm_transform): Remove unused function argument.
+
+2022-06-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-offload.cc (oacc_loop_get_cfg_loop): Cast tail_mark to
+	gimple* for dump_printf.
+	* tree-scalar-evolution.cc (oacc_ifn_call_extract): Remove
+	unused variable 'call'.
+
 2022-06-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gimplify.cc (gimplify_scan_omp_clauses): Remove extra

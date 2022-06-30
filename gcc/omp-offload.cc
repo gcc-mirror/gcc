@@ -1867,7 +1867,7 @@ oacc_loop_get_cfg_loop (oacc_loop *loop)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	dump_printf (MSG_OPTIMIZED_LOCATIONS | MSG_PRIORITY_INTERNALS, "%G",
-		     tail_mark);
+		     (gimple *) tail_mark);
 
       loop_p mark_cfg_loop = tail_mark->bb->loop_father;
       loop_p current_cfg_loop = mark_cfg_loop;
@@ -2096,7 +2096,7 @@ oacc_loop_warn_if_false_independent (oacc_loop *loop)
   if (!can_be_parallel)
     warning_at (loop->loc, 0,
                 "loop has \"independent\" clause but data dependences were "
-                "found.");
+		"found");
 }
 
 /* Walk the OpenACC loop hierarchy checking and assigning the

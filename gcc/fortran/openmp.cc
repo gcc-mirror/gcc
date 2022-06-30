@@ -10128,7 +10128,7 @@ gfc_resolve_omp_allocate (gfc_code *code, gfc_namespace *ns)
   gfc_alloc *al;
   gfc_omp_namelist *n = NULL;
   gfc_omp_namelist *cn = NULL;
-  gfc_omp_namelist *p, *tail;
+  gfc_omp_namelist *p, *tail = NULL;
   gfc_code *cur;
   hash_set<gfc_symbol*> vars;
 

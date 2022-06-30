@@ -614,8 +614,6 @@ oacc_call_analyzable_p (tree t)
 tree
 oacc_ifn_call_extract (gimple *stmt)
 {
-  gcall *call = as_a<gcall *> (stmt);
-
   if (oacc_call_analyzable_p (stmt))
     {
       gcc_assert (gimple_call_internal_p (stmt, IFN_GOACC_LOOP));

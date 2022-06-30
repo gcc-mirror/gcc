@@ -16232,7 +16232,7 @@ make_pass_diagnose_omp_blocks (gcc::context *ctxt)
 
 static tree
 usm_transform (gimple_stmt_iterator *gsi_p, bool *,
-	       struct walk_stmt_info *wi)
+	       struct walk_stmt_info *)
 {
   gimple *stmt = gsi_stmt (*gsi_p);
   /* ompx_unified_shared_mem_alloc is 10.  */
