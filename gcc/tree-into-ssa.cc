@@ -2214,15 +2214,11 @@ rewrite_update_dom_walker::before_dom_children (basic_block bb)
     }
 
   /* Step 2.  Rewrite every variable used in each statement in the block.  */
-  if (bitmap_bit_p (interesting_blocks, bb->index))
-    {
-      gcc_checking_assert (bitmap_bit_p (blocks_to_update, bb->index));
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
-	if (rewrite_update_stmt (gsi_stmt (gsi), gsi))
-	  gsi_remove (&gsi, true);
-	else
-	  gsi_next (&gsi);
-    }
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
+    if (rewrite_update_stmt (gsi_stmt (gsi), gsi))
+      gsi_remove (&gsi, true);
+    else
+      gsi_next (&gsi);
 
   /* Step 3.  Update PHI nodes.  */
   rewrite_update_phi_arguments (bb);
@@ -2460,6 +2456,7 @@ pass_build_ssa::execute (function *fun)
   free (dfs);
 
   sbitmap_free (interesting_blocks);
+  interesting_blocks = NULL;
 
   fini_ssa_renamer ();
 
@@ -3503,14 +3500,7 @@ update_ssa (unsigned update_flags)
     get_var_info (sym)->info.current_def = NULL_TREE;
 
   /* Now start the renaming process at START_BB.  */
-  interesting_blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
-  bitmap_clear (interesting_blocks);
-  EXECUTE_IF_SET_IN_BITMAP (blocks_to_update, 0, i, bi)
-    bitmap_set_bit (interesting_blocks, i);
-
   rewrite_blocks (start_bb, REWRITE_UPDATE);
-
-  sbitmap_free (interesting_blocks);
 
   /* Debugging dumps.  */
   if (dump_file)
