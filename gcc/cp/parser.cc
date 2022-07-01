@@ -629,6 +629,16 @@ cp_lexer_alloc (void)
   return lexer;
 }
 
+/* Return TRUE if token is the start of a module declaration that will be
+   terminated by a CPP_PRAGMA_EOL token.  */
+static inline bool
+cp_token_is_module_directive (cp_token *token)
+{
+  return token->keyword == RID__EXPORT
+    || token->keyword == RID__MODULE
+    || token->keyword == RID__IMPORT;
+}
+
 /* Create a new main C++ lexer, the lexer that gets tokens from the
    preprocessor.  */
 
@@ -3833,9 +3843,7 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
 	  break;
 
 	case CPP_KEYWORD:
-	  if (token->keyword != RID__EXPORT
-	      && token->keyword != RID__MODULE
-	      && token->keyword != RID__IMPORT)
+	  if (!cp_token_is_module_directive (token))
 	    break;
 	  /* FALLTHROUGH  */
 
@@ -3936,9 +3944,7 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 	  break;
 
 	case CPP_KEYWORD:
-	  if (token->keyword != RID__EXPORT
-	      && token->keyword != RID__MODULE
-	      && token->keyword != RID__IMPORT)
+	  if (!cp_token_is_module_directive (token))
 	    break;
 	  /* FALLTHROUGH  */
 
@@ -4025,9 +4031,7 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 	  break;
 
 	case CPP_KEYWORD:
-	  if (token->keyword != RID__EXPORT
-	      && token->keyword != RID__MODULE
-	      && token->keyword != RID__IMPORT)
+	  if (!cp_token_is_module_directive (token))
 	    break;
 	  /* FALLTHROUGH  */
 
@@ -14958,9 +14962,7 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
       else
 	cp_parser_module_export (parser);
     }
-  else if (token1->keyword == RID__EXPORT
-	   || token1->keyword == RID__IMPORT
-	   || token1->keyword == RID__MODULE)
+  else if (cp_token_is_module_directive (token1))
     {
       bool exporting = token1->keyword == RID__EXPORT;
       cp_token *next = exporting ? token2 : token1;
