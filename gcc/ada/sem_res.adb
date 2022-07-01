@@ -8967,7 +8967,14 @@ package body Sem_Res is
                then
                   Eq := Get_User_Defined_Equality (T);
 
-                  if Present (Eq) then
+                  --  We need to make sure that the instance is not within the
+                  --  same declarative region as the type, or else that it lies
+                  --  after the declaration of the user-defined "=" operator.
+
+                  if Present (Eq)
+                    and then (not In_Same_Extended_Unit (Eq, N)
+                               or else Earlier_In_Extended_Unit (Eq, N))
+                  then
                      if Is_Abstract_Subprogram (Eq) then
                         Nondispatching_Call_To_Abstract_Operation (N, Eq);
                      else
