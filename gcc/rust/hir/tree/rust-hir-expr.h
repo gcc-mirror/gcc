@@ -3827,6 +3827,7 @@ public:
     if (other.guard_expr != nullptr)
       guard_expr = other.guard_expr->clone_expr ();
 
+    match_arm_patterns.clear ();
     match_arm_patterns.reserve (other.match_arm_patterns.size ());
     for (const auto &e : other.match_arm_patterns)
       match_arm_patterns.push_back (e->clone_pattern ());
