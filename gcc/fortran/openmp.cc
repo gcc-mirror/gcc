@@ -7153,10 +7153,16 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			case OMP_MAP_ALWAYS_TO:
 			case OMP_MAP_ALLOC:
 			  break;
+			case OMP_MAP_TOFROM:
+			  n->u.map_op = OMP_MAP_TO;
+			  break;
+			case OMP_MAP_ALWAYS_TOFROM:
+			  n->u.map_op = OMP_MAP_ALWAYS_TO;
+			  break;
 			default:
 			  gfc_error ("TARGET ENTER DATA with map-type other "
-				     "than TO, or ALLOC on MAP clause at %L",
-				     &n->where);
+				     "than TO, TOFROM or ALLOC on MAP clause "
+				     "at %L", &n->where);
 			  break;
 			}
 		      break;
@@ -7168,10 +7174,16 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			case OMP_MAP_RELEASE:
 			case OMP_MAP_DELETE:
 			  break;
+			case OMP_MAP_TOFROM:
+			  n->u.map_op = OMP_MAP_FROM;
+			  break;
+			case OMP_MAP_ALWAYS_TOFROM:
+			  n->u.map_op = OMP_MAP_ALWAYS_FROM;
+			  break;
 			default:
 			  gfc_error ("TARGET EXIT DATA with map-type other "
-				     "than FROM, RELEASE, or DELETE on MAP "
-				     "clause at %L", &n->where);
+				     "than FROM, TOFROM, RELEASE, or DELETE on "
+				     "MAP clause at %L", &n->where);
 			  break;
 			}
 		      break;

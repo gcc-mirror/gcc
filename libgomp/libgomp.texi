@@ -390,7 +390,7 @@ The OpenMP 4.5 specification is fully supported.
       @tab Y @tab
 @item @code{ompt_callback_work} @tab N @tab
 @item Default map-type for @code{map} clause in @code{target enter/exit data}
-      @tab N @tab
+      @tab Y @tab
 @item New @code{doacross} clause as alias for @code{depend} with
       @code{source}/@code{sink} modifier @tab N @tab
 @item Deprecation of @code{depend} with @code{source}/@code{sink} modifier
