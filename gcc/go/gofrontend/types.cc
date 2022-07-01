@@ -6967,7 +6967,7 @@ Struct_type::do_import(Import* imp)
 
 bool
 Struct_type::can_write_to_c_header(
-    std::vector<const Named_object*>* requires,
+    std::vector<const Named_object*>* needs,
     std::vector<const Named_object*>* declare) const
 {
   const Struct_field_list* fields = this->fields_;
@@ -6978,7 +6978,7 @@ Struct_type::can_write_to_c_header(
        p != fields->end();
        ++p)
     {
-      if (!this->can_write_type_to_c_header(p->type(), requires, declare))
+      if (!this->can_write_type_to_c_header(p->type(), needs, declare))
 	return false;
       if (Gogo::message_name(p->field_name()) == "_")
 	sinks++;
@@ -6993,7 +6993,7 @@ Struct_type::can_write_to_c_header(
 bool
 Struct_type::can_write_type_to_c_header(
     const Type* t,
-    std::vector<const Named_object*>* requires,
+    std::vector<const Named_object*>* needs,
     std::vector<const Named_object*>* declare) const
 {
   t = t->forwarded();
@@ -7027,13 +7027,13 @@ Struct_type::can_write_type_to_c_header(
       return true;
 
     case TYPE_STRUCT:
-      return t->struct_type()->can_write_to_c_header(requires, declare);
+      return t->struct_type()->can_write_to_c_header(needs, declare);
 
     case TYPE_ARRAY:
       if (t->is_slice_type())
 	return true;
       return this->can_write_type_to_c_header(t->array_type()->element_type(),
-					      requires, declare);
+					      needs, declare);
 
     case TYPE_NAMED:
       {
@@ -7049,10 +7049,10 @@ Struct_type::can_write_type_to_c_header(
 	    // We will accept empty struct fields, but not print them.
 	    if (t->struct_type()->total_field_count() == 0)
 	      return true;
-	    requires->push_back(no);
-	    return t->struct_type()->can_write_to_c_header(requires, declare);
+	    needs->push_back(no);
+	    return t->struct_type()->can_write_to_c_header(needs, declare);
 	  }
-	return this->can_write_type_to_c_header(t->base(), requires, declare);
+	return this->can_write_type_to_c_header(t->base(), needs, declare);
       }
 
     case TYPE_CALL_MULTIPLE_RESULT:
@@ -7150,9 +7150,9 @@ Struct_type::write_field_to_c_header(std::ostream& os, const std::string& name,
 
     case TYPE_POINTER:
       {
-	std::vector<const Named_object*> requires;
+	std::vector<const Named_object*> needs;
 	std::vector<const Named_object*> declare;
-	if (!this->can_write_type_to_c_header(t->points_to(), &requires,
+	if (!this->can_write_type_to_c_header(t->points_to(), &needs,
 					      &declare))
 	  os << "void*";
 	else

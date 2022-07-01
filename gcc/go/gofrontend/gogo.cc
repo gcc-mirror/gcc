@@ -5302,16 +5302,16 @@ Gogo::write_c_header()
       Named_object* no = types.front();
       types.pop_front();
 
-      std::vector<const Named_object*> requires;
+      std::vector<const Named_object*> needs;
       std::vector<const Named_object*> declare;
-      if (!no->type_value()->struct_type()->can_write_to_c_header(&requires,
+      if (!no->type_value()->struct_type()->can_write_to_c_header(&needs,
 								  &declare))
 	continue;
 
       bool ok = true;
       for (std::vector<const Named_object*>::const_iterator pr
-	     = requires.begin();
-	   pr != requires.end() && ok;
+	     = needs.begin();
+	   pr != needs.end() && ok;
 	   ++pr)
 	{
 	  for (std::list<Named_object*>::const_iterator pt = types.begin();
@@ -5342,10 +5342,10 @@ Gogo::write_c_header()
 	  if (*pd == no)
 	    continue;
 
-	  std::vector<const Named_object*> drequires;
+	  std::vector<const Named_object*> dneeds;
 	  std::vector<const Named_object*> ddeclare;
 	  if (!(*pd)->type_value()->struct_type()->
-	      can_write_to_c_header(&drequires, &ddeclare))
+	      can_write_to_c_header(&dneeds, &ddeclare))
 	    continue;
 
 	  bool done = false;
