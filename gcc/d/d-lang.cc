@@ -904,16 +904,26 @@ d_post_options (const char ** fn)
 	? CHECKENABLEoff : CHECKENABLEon;
     }
 
+  /* When not linking against D runtime, turn off all code generation that
+     would otherwise reference it.  */
   if (global.params.betterC)
     {
       if (!OPTION_SET_P (flag_moduleinfo))
 	global.params.useModuleInfo = false;
 
+      /* Ensure that the front-end options are in sync with the `-frtti' and
+	 `-fexceptions' flags.  */
       if (!OPTION_SET_P (flag_rtti))
-	global.params.useTypeInfo = false;
+	{
+	  global.params.useTypeInfo = false;
+	  flag_rtti = false;
+	}
 
       if (!OPTION_SET_P (flag_exceptions))
-	global.params.useExceptions = false;
+	{
+	  global.params.useExceptions = false;
+	  flag_exceptions = false;
+	}
 
       global.params.checkAction = CHECKACTION_C;
     }
@@ -1071,6 +1081,10 @@ d_parse_file (void)
 				      global.params.doDocComments,
 				      global.params.doHdrGeneration);
 	  modules.push (m);
+
+	  /* Zero the padding past the end of the buffer so the D lexer has a
+	     sentinel.  The lexer only reads up to 4 bytes at a time.  */
+	  memset (buffer + len, '\0', 16);
 
 	  /* Overwrite the source file for the module, the one created by
 	     Module::create would have a forced a `.d' suffix.  */
@@ -1558,7 +1572,7 @@ d_type_promotes_to (tree type)
   /* Promotions are only applied on unnamed function arguments for declarations
      with `extern(C)' or `extern(C++)' linkage.  */
   if (cfun && DECL_LANG_FRONTEND (cfun->decl)
-      && DECL_LANG_FRONTEND (cfun->decl)->linkage != LINK::d)
+      && DECL_LANG_FRONTEND (cfun->decl)->resolvedLinkage () != LINK::d)
     {
       /* In [type/integer-promotions], integer promotions are conversions of the
 	 following types:

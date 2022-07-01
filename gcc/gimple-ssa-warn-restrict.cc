@@ -525,7 +525,6 @@ builtin_memref::set_base_and_offset (tree expr)
     {
       tree memrefoff = fold_convert (ptrdiff_type_node, TREE_OPERAND (base, 1));
       extend_offset_range (memrefoff);
-      base = TREE_OPERAND (base, 0);
 
       if (refoff != HOST_WIDE_INT_MIN
       	  && TREE_CODE (expr) == COMPONENT_REF)
@@ -538,14 +537,19 @@ builtin_memref::set_base_and_offset (tree expr)
 	     REFOFF is set to s[1].b - (char*)s.  */
 	  offset_int off = tree_to_shwi (memrefoff);
 	  refoff += off;
-      	}
 
-      if (!integer_zerop (memrefoff))
-	/* A non-zero offset into an array of struct with flexible array
-	   members implies that the array is empty because there is no
-	   way to initialize such a member when it belongs to an array.
-	   This must be some sort of a bug.  */
-	refsize = 0;
+	  if (!integer_zerop (memrefoff)
+	      && !COMPLETE_TYPE_P (TREE_TYPE (expr))
+	      && multiple_of_p (sizetype, memrefoff,
+				TYPE_SIZE_UNIT (TREE_TYPE (base)), true))
+	    /* A non-zero offset into an array of struct with flexible array
+	       members implies that the array is empty because there is no
+	       way to initialize such a member when it belongs to an array.
+	       This must be some sort of a bug.  */
+	    refsize = 0;
+	}
+
+      base = TREE_OPERAND (base, 0);
     }
 
   if (TREE_CODE (ref) == COMPONENT_REF)

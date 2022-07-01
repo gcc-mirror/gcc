@@ -2295,8 +2295,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	      merge_default_template_args (new_parms, old_parms,
 					   /*class_p=*/false);
 	    }
-	  if (!DECL_UNIQUE_FRIEND_P (old_result))
-	    DECL_UNIQUE_FRIEND_P (new_result) = false;
+	  if (!DECL_UNIQUE_FRIEND_P (new_result))
+	    DECL_UNIQUE_FRIEND_P (old_result) = false;
 
 	  check_default_args (newdecl);
 
@@ -2664,7 +2664,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		TINFO_USED_TEMPLATE_ID (DECL_TEMPLATE_INFO (olddecl))
 		  = TINFO_USED_TEMPLATE_ID (new_template_info);
 	    }
-	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
+
+	  if (non_templated_friend_p (olddecl))
+	    /* Don't copy tinfo from a non-templated friend (PR105761).  */;
+	  else
+	    DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	}
 
       if (DECL_DECLARES_FUNCTION_P (newdecl))
@@ -6409,6 +6413,25 @@ next_initializable_field (tree field)
   return field;
 }
 
+/* FIELD is an element of TYPE_FIELDS or NULL.  In the former case, the value
+   returned is the next FIELD_DECL (possibly FIELD itself) that corresponds
+   to a subobject.  If there are no more such fields, the return value will be
+   NULL.  */
+
+tree
+next_subobject_field (tree field)
+{
+  while (field
+	 && (TREE_CODE (field) != FIELD_DECL
+	     || DECL_UNNAMED_BIT_FIELD (field)
+	     || (DECL_ARTIFICIAL (field)
+		 && !DECL_FIELD_IS_BASE (field)
+		 && !DECL_VIRTUAL_P (field))))
+     field = DECL_CHAIN (field);
+
+  return field;
+}
+
 /* Return true for [dcl.init.list] direct-list-initialization from
    single element of enumeration with a fixed underlying type.  */
 
@@ -6480,6 +6503,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       tree elt_init;
       constructor_elt *old_cur = d->cur;
 
+      if (d->cur->index)
+	CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
       check_array_designated_initializer (d->cur, index);
       elt_init = reshape_init_r (elt_type, d,
 				 /*first_initializer_p=*/NULL_TREE,
@@ -6647,6 +6672,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	    }
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
 	    {
+	      CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
 	      field = get_class_binding (type, d->cur->index);
 	      direct_desig = true;
 	    }
@@ -7397,12 +7423,19 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	      /* Declared constexpr or constinit, but no suitable initializer;
 		 massage init appropriately so we can pass it into
 		 store_init_value for the error.  */
-	      if (CLASS_TYPE_P (type)
-		  && (!init || TREE_CODE (init) == TREE_LIST))
+	      tree new_init = NULL_TREE;
+	      if (!processing_template_decl
+		  && TREE_CODE (init_code) == CALL_EXPR)
+		new_init = build_cplus_new (type, init_code, tf_none);
+	      else if (CLASS_TYPE_P (type)
+		       && (!init || TREE_CODE (init) == TREE_LIST))
+		new_init = build_functional_cast (input_location, type,
+						  init, tf_none);
+	      if (new_init)
 		{
-		  init = build_functional_cast (input_location, type,
-						init, tf_none);
-		  if (TREE_CODE (init) == TARGET_EXPR)
+		  init = new_init;
+		  if (TREE_CODE (init) == TARGET_EXPR
+		      && !(flags & LOOKUP_ONLYCONVERTING))
 		    TARGET_EXPR_DIRECT_INIT_P (init) = true;
 		}
 	      init_code = NULL_TREE;

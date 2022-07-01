@@ -3682,6 +3682,16 @@ rest_of_handle_dse (void)
 
   dse_step0 ();
   dse_step1 ();
+  /* DSE can eliminate potentially-trapping MEMs.
+     Remove any EH edges associated with them, since otherwise
+     DF_LR_RUN_DCE will complain later.  */
+  if ((locally_deleted || globally_deleted)
+      && cfun->can_throw_non_call_exceptions
+      && purge_all_dead_edges ())
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      delete_unreachable_blocks ();
+    }
   dse_step2_init ();
   if (dse_step2 ())
     {

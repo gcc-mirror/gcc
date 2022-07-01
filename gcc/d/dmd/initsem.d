@@ -502,6 +502,18 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 i.exp = se.castTo(sc, t);
                 goto L1;
             }
+
+            /* Lop off terminating 0 of initializer for:
+             *  static char s[5] = "hello";
+             */
+            if (sc.flags & SCOPE.Cfile &&
+                typeb.ty == Tsarray &&
+                tynto.isSomeChar &&
+                tb.isTypeSArray().dim.toInteger() + 1 == typeb.isTypeSArray().dim.toInteger())
+            {
+                i.exp = se.castTo(sc, t);
+                goto L1;
+            }
         }
         /* C11 6.7.9-14..15
          * Initialize an array of unknown size with a string.

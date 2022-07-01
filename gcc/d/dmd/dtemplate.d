@@ -2777,7 +2777,7 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
             fd.storage_class == m.lastf.storage_class &&
             fd.parent == m.lastf.parent &&
             fd.visibility == m.lastf.visibility &&
-            fd.linkage == m.lastf.linkage)
+            fd._linkage == m.lastf._linkage)
         {
             if (fd.fbody && !m.lastf.fbody)
                 goto LfIsBetter;

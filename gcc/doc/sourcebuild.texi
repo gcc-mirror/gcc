@@ -2420,6 +2420,18 @@ PowerPC target pre-defines macro _ARCH_PWR9 which means the @code{-mcpu}
 setting is Power9 or later.
 @end table
 
+@subsection RISC-V specific attributes
+
+@table @code
+
+@item rv32
+Test system has an integer register width of 32 bits.
+
+@item rv64
+Test system has an integer register width of 64 bits.
+
+@end table
+
 @subsubsection Other hardware attributes
 
 @c Please keep this table sorted alphabetically.

@@ -1285,7 +1285,20 @@ has_stmt_been_instrumented_p (gimple *stmt)
 
       if (get_mem_ref_of_assignment (as_a <gassign *> (stmt), &r,
 				     &r_is_store))
-	return has_mem_ref_been_instrumented (&r);
+	{
+	  if (!has_mem_ref_been_instrumented (&r))
+	    return false;
+	  if (r_is_store && gimple_assign_load_p (stmt))
+	    {
+	      asan_mem_ref src;
+	      asan_mem_ref_init (&src, NULL, 1);
+	      src.start = gimple_assign_rhs1 (stmt);
+	      src.access_size = int_size_in_bytes (TREE_TYPE (src.start));
+	      if (!has_mem_ref_been_instrumented (&src))
+		return false;
+	    }
+	  return true;
+	}
     }
   else if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     {

@@ -5011,6 +5011,8 @@ maybe_update_decl_type (tree orig_type, tree scope)
 static tree
 build_template_decl (tree decl, tree parms, bool member_template_p)
 {
+  gcc_checking_assert (TREE_CODE (decl) != TEMPLATE_DECL);
+
   tree tmpl = build_lang_decl (TEMPLATE_DECL, DECL_NAME (decl), NULL_TREE);
   SET_DECL_LANGUAGE (tmpl, DECL_LANGUAGE (decl));
   DECL_TEMPLATE_PARMS (tmpl) = parms;
@@ -11170,6 +11172,33 @@ outermost_tinst_level (void)
   return level;
 }
 
+/* True iff T is a friend function declaration that is not itself a template
+   and is not defined in a class template.  */
+
+bool
+non_templated_friend_p (tree t)
+{
+  if (t && TREE_CODE (t) == FUNCTION_DECL
+      && DECL_UNIQUE_FRIEND_P (t))
+    {
+      tree ti = DECL_TEMPLATE_INFO (t);
+      if (!ti)
+	return true;
+      /* DECL_FRIEND_CONTEXT is set for a friend defined in class.  */
+      if (DECL_FRIEND_CONTEXT (t))
+	return false;
+      /* Non-templated friends in a class template are still represented with a
+	 TEMPLATE_DECL; check that its primary template is the befriending
+	 class.  Note that DECL_PRIMARY_TEMPLATE is null for
+	 template <class T> friend A<T>::f(); */
+      tree tmpl = TI_TEMPLATE (ti);
+      tree primary = DECL_PRIMARY_TEMPLATE (tmpl);
+      return (primary && primary != tmpl);
+    }
+  else
+    return false;
+}
+
 /* DECL is a friend FUNCTION_DECL or TEMPLATE_DECL.  ARGS is the
    vector of template arguments, as for tsubst.
 
@@ -13730,8 +13759,8 @@ tsubst_aggr_type (tree t,
 					 complain, in_decl);
 	  if (argvec == error_mark_node)
 	    r = error_mark_node;
-	  else if (!entering_scope
-		   && cxx_dialect >= cxx17 && dependent_scope_p (context))
+	  else if (!entering_scope && (complain & tf_dguide)
+		   && dependent_scope_p (context))
 	    {
 	      /* See maybe_dependent_member_ref.  */
 	      tree name = TYPE_IDENTIFIER (t);
@@ -14084,7 +14113,9 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 	{
 	  hash = hash_tmpl_and_args (gen_tmpl, argvec);
 	  if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
-	    return spec;
+	    /* The spec for these args might be a partial instantiation of the
+	       template, but here what we want is the FUNCTION_DECL.  */
+	    return STRIP_TEMPLATE (spec);
 	}
     }
   else
@@ -14092,7 +14123,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
       /* This special case arises when we have something like this:
 
 	 template <class T> struct S {
-	 friend void f<int>(int, double);
+	   friend void f<int>(int, double);
 	 };
 
 	 Here, the DECL_TI_TEMPLATE for the friend declaration
@@ -16497,7 +16528,7 @@ tsubst_baselink (tree baselink, tree object_type,
 	name = make_conv_op_name (optype);
 
       /* See maybe_dependent_member_ref.  */
-      if (dependent_scope_p (qualifying_scope))
+      if ((complain & tf_dguide) && dependent_scope_p (qualifying_scope))
 	{
 	  if (template_id_p)
 	    name = build2 (TEMPLATE_ID_EXPR, unknown_type_node, name,
@@ -16817,7 +16848,7 @@ static tree
 maybe_dependent_member_ref (tree t, tree args, tsubst_flags_t complain,
 			    tree in_decl)
 {
-  if (cxx_dialect < cxx17)
+  if (!(complain & tf_dguide))
     return NULL_TREE;
 
   tree ctx = context_for_name_lookup (t);
@@ -17075,7 +17106,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     have to substitute this with one having context `D<int>'.  */
 
 	  tree context = tsubst (DECL_CONTEXT (t), args, complain, in_decl);
-	  if (dependent_scope_p (context))
+	  if ((complain & tf_dguide) && dependent_scope_p (context))
 	    {
 	      /* When rewriting a constructor into a deduction guide, a
 		 non-dependent name can become dependent, so memtmpl<args>
@@ -19720,11 +19751,18 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     return error_mark_node;
 
   if (LAMBDA_EXPR_EXTRA_SCOPE (t) == NULL_TREE)
-    /* A lambda in a default argument outside a class gets no
-       LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
-       tsubst_default_argument calls start_lambda_scope, so we need to
-       specifically ignore it here, and use the global scope.  */
-    record_null_lambda_scope (r);
+    {
+      /* A lambda in a default argument outside a class gets no
+	 LAMBDA_EXPR_EXTRA_SCOPE, as specified by the ABI.  But
+	 tsubst_default_argument calls start_lambda_scope, so we need to
+	 specifically ignore it here, and use the global scope.  */
+      record_null_lambda_scope (r);
+
+      /* If we're pushed into another scope (PR105652), fix it.  */
+      if (TYPE_NAMESPACE_SCOPE_P (TREE_TYPE (t)))
+	TYPE_CONTEXT (type) = DECL_CONTEXT (TYPE_NAME (type))
+	  = TYPE_CONTEXT (TREE_TYPE (t));
+    }
   else
     record_lambda_scope (r);
 
@@ -20326,6 +20364,7 @@ tsubst_copy_and_build (tree t,
 	warning_sentinel s2(warn_div_by_zero, was_dep);
 	warning_sentinel s3(warn_logical_op, was_dep);
 	warning_sentinel s4(warn_tautological_compare, was_dep);
+	warning_sentinel s5(warn_address, was_dep);
 
 	tree r = build_x_binary_op
 	  (input_location, TREE_CODE (t),
@@ -21714,6 +21753,21 @@ instantiate_alias_template (tree tmpl, tree args, tsubst_flags_t complain)
 {
   if (tmpl == error_mark_node || args == error_mark_node)
     return error_mark_node;
+
+  /* See maybe_dependent_member_ref.  */
+  if (complain & tf_dguide)
+    {
+      tree ctx = tsubst_aggr_type (DECL_CONTEXT (tmpl), args, complain,
+				   tmpl, true);
+      if (dependent_scope_p (ctx))
+	{
+	  tree name = DECL_NAME (tmpl);
+	  tree fullname = build_nt (TEMPLATE_ID_EXPR, name,
+				    INNERMOST_TEMPLATE_ARGS (args));
+	  tree tname = build_typename_type (ctx, name, fullname, typename_type);
+	  return TYPE_NAME (tname);
+	}
+    }
 
   args =
     coerce_innermost_template_parms (DECL_TEMPLATE_PARMS (tmpl),
@@ -24276,7 +24330,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	    }
 	}
 
-      if (!TREE_TYPE (arg))
+      if (!TREE_TYPE (arg)
+	  || TREE_CODE (TREE_TYPE (arg)) == DEPENDENT_OPERATOR_TYPE)
 	/* Template-parameter dependent expression.  Just accept it for now.
 	   It will later be processed in convert_template_argument.  */
 	;
@@ -27838,6 +27893,15 @@ type_dependent_expression_p (tree expression)
       && DECL_INITIAL (expression))
    return true;
 
+  /* Pull a FUNCTION_DECL out of a BASELINK if we can.  */
+  if (BASELINK_P (expression))
+    {
+      if (BASELINK_OPTYPE (expression)
+	  && dependent_type_p (BASELINK_OPTYPE (expression)))
+	return true;
+      expression = BASELINK_FUNCTIONS (expression);
+    }
+
   /* A function or variable template-id is type-dependent if it has any
      dependent template arguments.  */
   if (VAR_OR_FUNCTION_DECL_P (expression)
@@ -29278,6 +29342,8 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
       ++processing_template_decl;
       bool ok = true;
 
+      complain |= tf_dguide;
+
       fn_tmpl
 	= (TREE_CODE (ctor) == TEMPLATE_DECL ? ctor
 	   : DECL_TI_TEMPLATE (ctor));
@@ -29555,7 +29621,11 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
 	 PARMS, so that its template level is properly reduced and we don't get
 	 mismatches when deducing types using the guide with PARMS.  */
       if (member_template_p)
-	parms = tsubst (parms, DECL_TI_ARGS (tmpl), complain, init);
+	{
+	  ++processing_template_decl;
+	  parms = tsubst (parms, DECL_TI_ARGS (tmpl), complain, init);
+	  --processing_template_decl;
+	}
     }
   else if (TREE_CODE (init) == TREE_LIST)
     {

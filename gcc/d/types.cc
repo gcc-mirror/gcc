@@ -375,7 +375,7 @@ fixup_anonymous_offset (tree fields, tree offset)
 
 /* Iterate over all MEMBERS of an aggregate, and add them as fields to CONTEXT.
    If INHERITED_P is true, then the members derive from a base class.
-   Returns the number of fields found.  */
+   Returns the number of named fields found.  */
 
 static size_t
 layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
@@ -418,7 +418,8 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 	  /* Insert the field declaration at its given offset.  */
 	  if (var->isField ())
 	    {
-	      const char *ident = var->ident ? var->ident->toChars () : NULL;
+	      const char *ident = (var->ident && !var->ident->isAnonymous ())
+		? var->ident->toChars () : NULL;
 	      tree field = create_field_decl (declaration_type (var), ident,
 					      inherited_p, inherited_p);
 	      apply_user_attributes (var, field);
@@ -442,7 +443,10 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 		  var->csym = field;
 		}
 
-	      fields += 1;
+	      /* Only count the named fields in an aggregate.  */
+	      if (ident != NULL)
+		fields += 1;
+
 	      continue;
 	    }
 	}

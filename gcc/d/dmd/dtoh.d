@@ -966,12 +966,13 @@ public:
         if (vd.storage_class & (AST.STC.static_ | AST.STC.extern_ | AST.STC.gshared) ||
         vd.parent && vd.parent.isModule())
         {
-            if (vd.linkage != LINK.c && vd.linkage != LINK.cpp && !(tdparent && (this.linkage == LINK.c || this.linkage == LINK.cpp)))
+            const vdLinkage = vd.resolvedLinkage();
+            if (vdLinkage != LINK.c && vdLinkage != LINK.cpp && !(tdparent && (this.linkage == LINK.c || this.linkage == LINK.cpp)))
             {
                 ignored("variable %s because of linkage", vd.toPrettyChars());
                 return;
             }
-            if (vd.mangleOverride && vd.linkage != LINK.c)
+            if (vd.mangleOverride && vdLinkage != LINK.c)
             {
                 ignored("variable %s because C++ doesn't support explicit mangling", vd.toPrettyChars());
                 return;
@@ -987,7 +988,7 @@ public:
                 return;
             }
             writeProtection(vd.visibility.kind);
-            if (vd.linkage == LINK.c)
+            if (vdLinkage == LINK.c)
                 buf.writestring("extern \"C\" ");
             else if (!adparent)
                 buf.writestring("extern ");
@@ -2805,7 +2806,10 @@ public:
 
         // Check against the internal information which might be missing, e.g. inside of template declarations
         if (auto dec = sym.isDeclaration())
-            return dec.linkage == LINK.cpp || dec.linkage == LINK.c;
+        {
+            const l = dec.resolvedLinkage();
+            return l == LINK.cpp || l == LINK.c;
+        }
 
         if (auto ad = sym.isAggregateDeclaration())
             return ad.classKind == ClassKind.cpp;
@@ -2853,8 +2857,11 @@ public:
         if (!res)
         {
             // Check against the internal information which might be missing, e.g. inside of template declarations
-            auto dec = sym.isDeclaration();
-            res = dec && (dec.linkage == LINK.cpp || dec.linkage == LINK.c);
+            if (auto dec = sym.isDeclaration())
+            {
+                const l = dec.resolvedLinkage();
+                res = (l == LINK.cpp || l == LINK.c);
+            }
         }
 
         // Remember result for later calls

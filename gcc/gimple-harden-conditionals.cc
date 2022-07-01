@@ -254,8 +254,10 @@ insert_check_and_trap (location_t loc, gimple_stmt_iterator *gsip,
      equality.  */
   single_succ_edge (chk)->flags &= ~EDGE_FALLTHRU;
   single_succ_edge (chk)->flags |= neg_true_false_flag;
+  single_succ_edge (chk)->probability = profile_probability::always ();
   edge e = make_edge (chk, trp, true_false_flag);
   e->goto_locus = loc;
+  e->probability = profile_probability::never ();
 
   if (dom_info_available_p (CDI_DOMINATORS))
     set_immediate_dominator (CDI_DOMINATORS, trp, chk);

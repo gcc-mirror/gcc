@@ -1,3 +1,62 @@
+2022-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105954
+	* decl.cc (variable_decl): Adjust upper bounds for explicit-shape
+	specs with constant bound expressions to ensure non-negative
+	extents.
+
+2022-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105691
+	* simplify.cc (gfc_simplify_index): Replace old simplification
+	code by the equivalent of the runtime library implementation.  Use
+	HOST_WIDE_INT instead of int for string index, length variables.
+
+2022-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105813
+	* check.cc (gfc_check_unpack): Try to simplify MASK argument to
+	UNPACK so that checking of the VECTOR argument can work when MASK
+	is a variable.
+
+2022-05-13  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-05-11  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105230
+	* expr.cc (find_array_section): Correct logic to avoid NULL
+	pointer dereference on invalid array section.
+
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
+2022-05-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2022-04-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: Fix exchanged period and letter.
+
+2022-04-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2022-04-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: Mention r16_ieee and r16_ibm.
+	* invoke.texi: Likewise.
+
 2022-04-27  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/103662

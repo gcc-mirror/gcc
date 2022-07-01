@@ -695,19 +695,21 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	var_size = pt_var_size;
       bytes = compute_object_offset (TREE_OPERAND (ptr, 0), var);
       if (bytes != error_mark_node)
-	bytes = size_for_offset (var_size, bytes);
-      if (var != pt_var
-	  && pt_var_size
-	  && TREE_CODE (pt_var) == MEM_REF
-	  && bytes != error_mark_node)
 	{
-	  tree bytes2 = compute_object_offset (TREE_OPERAND (ptr, 0), pt_var);
-	  if (bytes2 != error_mark_node)
+	  bytes = size_for_offset (var_size, bytes);
+	  if (var != pt_var && pt_var_size && TREE_CODE (pt_var) == MEM_REF)
 	    {
-	      bytes2 = size_for_offset (pt_var_size, bytes2);
-	      bytes = size_binop (MIN_EXPR, bytes, bytes2);
+	      tree bytes2 = compute_object_offset (TREE_OPERAND (ptr, 0),
+						   pt_var);
+	      if (bytes2 != error_mark_node)
+		{
+		  bytes2 = size_for_offset (pt_var_size, bytes2);
+		  bytes = size_binop (MIN_EXPR, bytes, bytes2);
+		}
 	    }
 	}
+      else
+	bytes = size_unknown (object_size_type);
 
       wholebytes
 	= object_size_type & OST_SUBOBJECT ? var_size : pt_var_wholesize;

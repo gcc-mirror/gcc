@@ -1,3 +1,7 @@
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
 2022-03-19  Tiezhu Yang  <yangtiezhu@loongson.cn>
 
 	* floatformat.c (floatformat_ieee_quad_big): Renamed from

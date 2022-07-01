@@ -24,6 +24,14 @@
 #include <functional>
 #include <testsuite_random.h>
 
+// { dg-additional-options "-DSIMULATOR_TEST" { target simulator } }
+
+#ifdef SIMULATOR_TEST
+# define ARGS 100, 1000
+#else
+# define ARGS
+#endif
+
 void test01()
 {
   using namespace __gnu_test;

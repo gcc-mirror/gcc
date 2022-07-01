@@ -1,3 +1,688 @@
+2022-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105954
+	* gfortran.dg/pr105954.f90: New test.
+
+2022-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-06-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105691
+	* gfortran.dg/index_6.f90: New test.
+
+2022-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/105813
+	* gfortran.dg/unpack_vector_1.f90: New test.
+
+2022-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106032
+	* gcc.c-torture/execute/pr106032.c: New test.
+
+2022-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106030
+	* gcc.c-torture/compile/pr106030.c: New test.
+
+2022-06-28  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2022-06-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/106096
+	* g++.target/loongarch/loongarch.exp: New test support file.
+	* g++.target/loongarch/pr106096.C: New test.
+
+2022-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105931
+	* g++.dg/cpp0x/decltype82a.C: New test.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105925
+	* g++.dg/cpp2a/desig26.C: New test.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105885
+	* g++.dg/cpp1z/constexpr-if37.C: New test.
+
+2022-06-23  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2022-06-21  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/105736
+	* gcc.dg/builtin-dynamic-object-size-0.c (TV4): New struct.
+	(val3): New variable.
+	(test_pr105736): New test.
+	(main): Call it.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105964
+	* g++.dg/cpp1z/nontype-auto21.C: New test.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105908
+	* g++.dg/cpp0x/trailing16.C: New test.
+
+2022-06-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2022-06-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_14.c: New test.
+
+2022-06-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-06-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105960
+	* gcc.target/i386/pr105960.c: New test.
+
+2022-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105209
+	* gcc.target/alpha/pr105209.c: New test.
+
+2022-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105970
+	* gcc.target/i386/pr105970.c: New test.
+
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105998
+	* c-c++-common/pr105998.c: New test.
+
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106001
+	* g++.dg/ext/builtin-shufflevector-4.C: New test.
+
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/105951
+	* gcc.target/i386/pr105951-1.c: New test.
+	* gcc.target/i386/pr105951-2.c: New test.
+
+2022-06-19  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-06-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/pr105739.c: New test.
+
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105871
+	* g++.dg/pr105871.C: New test.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Wpadded.d: New test.
+
+2022-06-15  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr105953.C: New test.
+
+2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/rtti1.d: New test.
+
+2022-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105756
+	* g++.dg/cpp0x/decltype82.C: New test.
+
+2022-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105852
+	PR c++/105761
+	* g++.dg/modules/tpl-friend-2_a.C: Adjust expected dump.
+	* g++.dg/template/friend74.C: New test.
+
+2022-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105761
+	* g++.dg/cpp1y/auto-fn64.C: New test.
+
+2022-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105795
+	* g++.dg/cpp1z/constexpr-aggr-base1.C: New test.
+
+2022-06-02  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2022-05-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+		    Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* gcc.dg/pr90838.c: Add additional flags (dg-additional-options)
+	  when compiling for riscv64 and subsume gcc.target/aarch64/pr90838.c
+	  and gcc.target/i386/pr95863-2.c.
+	* gcc.target/aarch64/pr90838.c: Removed.
+	* gcc.target/i386/pr95863-2.c: Removed.
+	* lib/target-supports.exp: Recognize RV32 or RV64 via XLEN
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105786
+	* gcc.dg/torture/pr105786.c: New testcase.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105726
+	* g++.dg/warn/Warray-bounds-27.C: New testcase.
+
+2022-06-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105711
+	* gcc.target/i386/pr105711.c: New testcase.
+
+2022-06-02  Martin Sebor  <msebor@redhat.com>
+
+	Backported from master:
+	2022-05-24  Martin Sebor  <msebor@redhat.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105604
+	* gcc.dg/Wrestrict-24.c: New test.
+	* gcc.dg/Wrestrict-25.c: New test.
+	* gcc.dg/Wrestrict-26.c: New test.
+
+2022-06-02  Vineet Gupta  <vineetg@rivosinc.com>
+
+	Backported from master:
+	2022-05-24  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/pr105666.c: New test.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105734
+	* g++.dg/cpp0x/auto57.C: New test.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105779
+	* g++.dg/cpp1y/auto-fn63.C: New test.
+
+2022-06-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105491
+	* g++.dg/cpp0x/constexpr-union7.C: New test.
+	* g++.dg/cpp0x/constexpr-union7a.C: New test.
+	* g++.dg/cpp2a/constinit17.C: New test.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105652
+	* g++.dg/cpp2a/concepts-lambda20.C: New test.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105655
+	* g++.dg/cpp2a/class-deduction-alias13.C: New test.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105623
+	* g++.dg/cpp1y/auto-fn62.C: New test.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102307
+	* g++.dg/cpp1z/constexpr-array2.C: New test.
+
+2022-05-30  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2022-05-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/105639
+	* gcc.dg/ipa/pr105639.c: New test.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/105732
+	* c-c++-common/cpp/va-opt-10.c: New test.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105729
+	* g++.dg/ubsan/pr105729.C: New test.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/105714
+	* gcc.dg/asan/pr105714.c: New test.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105635
+	* gcc.dg/pr105635.c: New test.
+
+2022-05-27  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105725
+	* g++.dg/warn/Wmismatched-tags-10.C: New test.
+
+2022-05-24  Qing Zhao  <qing.zhao@oracle.com>
+
+	Backported from master:
+	2022-05-09  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.target/i386/zero-scratch-regs-1.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-10.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-13.c: Add -msse.
+	* gcc.target/i386/zero-scratch-regs-14.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-15.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-16.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-17.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-18.c: Add -fno-stack-protector
+	-fno-PIC, adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-19.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-2.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-20.c: Add -msse.
+	* gcc.target/i386/zero-scratch-regs-21.c: Add -fno-stack-protector
+	-fno-PIC, Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-22.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-23.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-26.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-27.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-28.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-3.c: Add -fno-stack-protector.
+	* gcc.target/i386/zero-scratch-regs-31.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-4.c: Add -fno-stack-protector
+	-fno-PIC.
+	* gcc.target/i386/zero-scratch-regs-5.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-6.c: Add -fno-stack-protector.
+	* gcc.target/i386/zero-scratch-regs-7.c: Likewise.
+	* gcc.target/i386/zero-scratch-regs-8.c: Adjust mov to xor.
+	* gcc.target/i386/zero-scratch-regs-9.c: Add -fno-stack-protector.
+
+2022-05-20  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103116
+	* gcc.dg/vect/pr103116-1.c: New testcase.
+	* gcc.dg/vect/pr103116-2.c: Likewise.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105618
+	* gcc.dg/tree-ssa/ssa-sink-19.c: New testcase.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/105577
+	* g++.dg/torture/pr105577.C: New testcase.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105562
+	* g++.dg/warn/uninit-pr105562.C: New testcase.
+
+2022-05-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105537
+	* gcc.dg/torture/pr105537.c: New testcase.
+
+2022-05-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr105458.c: New.
+
+2022-05-16  Sebastian Pop  <spop@amazon.com>
+
+	PR target/105162
+	* gcc.target/aarch64/sync-comp-swap-ool.c: New.
+	* gcc.target/aarch64/sync-op-acquire-ool.c: New.
+	* gcc.target/aarch64/sync-op-full-ool.c: New.
+	* gcc.target/aarch64/target_attr_20.c: Update check.
+	* gcc.target/aarch64/target_attr_21.c: Same.
+
+2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr105598.c: New testcase.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105589
+	PR c++/105191
+	PR c++/92385
+	* g++.dg/cpp0x/initlist-array16.C: New test.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104470
+	* g++.dg/cpp2a/explicit11.C: Second example also ill-formed.
+	* g++.dg/cpp2a/class-deduction-alias12.C: New test.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102651
+	PR c++/49387
+	* g++.dg/rtti/typeid-complete1.C: New test.
+
+2022-05-13  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-05-11  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105230
+	* gfortran.dg/pr105230.f90: New test.
+
+2022-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso17.adb: New test.
+
+2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/105455
+	* gcc.dg/pr105455.c: New.
+
+2022-05-11  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2022-04-29  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/100413
+	* g++.dg/ipa/pr100413.C: New test.
+
+2022-05-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-05-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105472
+	* gcc.target/i386/iamcu/asm-support.S: Add .note.GNU-stack section
+	only for Linux.
+	* gcc.target/x86_64/abi/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512f/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/do-test.S: Likewise.
+
+2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/105528
+	* gcc.dg/pr105528.c: New test.
+
+2022-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20220510-1.c: New test.
+
+2022-05-06  Michael Meissner  <meissner@linux.ibm.com>
+
+	Backported from master:
+	2022-05-06   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/102059
+	* gcc.target/powerpc/pr102059-4.c: New test.
+
+2022-05-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-05-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/105433
+	* gcc.target/i386/iamcu/asm-support.S: Add .note.GNU-stack.
+	* gcc.target/x86_64/abi/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512f/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m256h/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/avx512fp16/m512h/asm-support.S: Likewise.
+	* gcc.target/x86_64/abi/ms-sysv/do-test.S: Likewise.
+
+2022-05-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105476
+	* g++.dg/cpp2a/class-deduction-aggr13.C: New test.
+	* g++.dg/cpp2a/class-deduction-aggr13a.C: New test.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105376
+	* gcc.dg/pr105376.c: New testcase.
+
+2022-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp23/lambda-attr1.C: New test.
+	* g++.dg/cpp23/lambda-attr2.C: New test.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105484
+	* gcc.dg/torture/pr105484.c: New testcase.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105461
+	* gcc.dg/pr105461.c: New testcase.
+
+2022-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105437
+	* g++.dg/vect/pr105437.cc: New testcase.
+
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
+2022-05-03  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-05-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31a.c: Update
+	the expected message for the case in which unaligned accesses
+	are not allowed.
+
+2022-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105425
+	* g++.dg/template/partial-specialization13.C: New test.
+
+2022-04-28  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.dg/lto/pr94157_0.c: Revert last change.
+	* lib/prune.exp (prune_gcc_output): Prune new linker warning.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/105399
+	* g++.dg/lto/pr105399_0.C: New test.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/104051
+	* g++.dg/coroutines/pr104051.C: New test.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/105301
+	* g++.dg/coroutines/pr105301.C: New test.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/105287
+	* g++.dg/coroutines/pr105287.C: New test.
+
+2022-04-28  Nathan Sidwell  <nathan@acm.org>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/103868
+	* g++.dg/coroutines/pr103868.C: New test.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/memcpy-strategy-10.c: Account for
+	__USER_LABEL_PREFIX__.
+	* gcc.target/i386/memcpy-strategy-5.c: Likewise.
+	* gcc.target/i386/memset-strategy-5.c: Likewise.
+	* gcc.target/i386/memset-strategy-7.c: Likewise.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.target/i386/mv31.C: Add target supports guard for ifuncs.
+
+2022-04-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90107
+	* g++.dg/parse/qualified6.C: New test.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105331
+	* gcc.dg/pr105331.c: New test.
+
+2022-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105219
+	* gcc.dg/vect/pr105219.c: New testcase.
+
+2022-04-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105334
+	* gcc.target/powerpc/pr105334.c: New test.
+
+2022-04-28  Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	PR target/104676
+	* gcc.dg/torture/pr104676.c: Add "{target pthread}" check.
+
+2022-04-28  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.target/loongarch/zero-size-field-pass.c: New test.
+	* gcc.target/loongarch/zero-size-field-ret.c: New test.
+
 2022-04-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/pr70673.f90: Removed second invalid

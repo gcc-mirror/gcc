@@ -2430,17 +2430,23 @@ template <typename _Tp>
   template <>                                                                  \
     struct __intrinsic_type_impl<_Tp> { using type = __vector _Tp; }
 _GLIBCXX_SIMD_PPC_INTRIN(float);
+#ifdef __VSX__
 _GLIBCXX_SIMD_PPC_INTRIN(double);
+#endif
 _GLIBCXX_SIMD_PPC_INTRIN(signed char);
 _GLIBCXX_SIMD_PPC_INTRIN(unsigned char);
 _GLIBCXX_SIMD_PPC_INTRIN(signed short);
 _GLIBCXX_SIMD_PPC_INTRIN(unsigned short);
 _GLIBCXX_SIMD_PPC_INTRIN(signed int);
 _GLIBCXX_SIMD_PPC_INTRIN(unsigned int);
+#if defined __VSX__ || __SIZEOF_LONG__ == 4
 _GLIBCXX_SIMD_PPC_INTRIN(signed long);
 _GLIBCXX_SIMD_PPC_INTRIN(unsigned long);
+#endif
+#ifdef __VSX__
 _GLIBCXX_SIMD_PPC_INTRIN(signed long long);
 _GLIBCXX_SIMD_PPC_INTRIN(unsigned long long);
+#endif
 #undef _GLIBCXX_SIMD_PPC_INTRIN
 
 template <typename _Tp, size_t _Bytes>
@@ -2450,10 +2456,11 @@ template <typename _Tp, size_t _Bytes>
     static constexpr bool _S_is_ldouble = is_same_v<_Tp, long double>;
     // allow _Tp == long double with -mlong-double-64
     static_assert(!(_S_is_ldouble && sizeof(long double) > sizeof(double)),
-		  "no __intrinsic_type support for long double on PPC");
+		  "no __intrinsic_type support for 128-bit floating point on PowerPC");
 #ifndef __VSX__
-    static_assert(!is_same_v<_Tp, double>,
-		  "no __intrinsic_type support for double on PPC w/o VSX");
+    static_assert(!(is_same_v<_Tp, double>
+		    || (_S_is_ldouble && sizeof(long double) == sizeof(double))),
+		  "no __intrinsic_type support for 64-bit floating point on PowerPC w/o VSX");
 #endif
     using type =
       typename __intrinsic_type_impl<

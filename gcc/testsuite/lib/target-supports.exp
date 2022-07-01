@@ -1689,6 +1689,36 @@ proc check_linker_plugin_available { } {
   } "-flto -fuse-linker-plugin"]
 }
 
+# Return 1 if the target is RV32, 0 otherwise.  Cache the result.
+
+proc check_effective_target_rv32 { } {
+    # Check that we are compiling for RV32 by checking the xlen size.
+    return [check_no_compiler_messages riscv_rv32 assembly {
+       #if !defined(__riscv_xlen)
+       #error "__riscv_xlen not defined!"
+       #else
+       #if __riscv_xlen != 32
+       #error "Not RV32"
+       #endif
+       #endif
+    }]
+}
+
+# Return 1 if the target is RV64, 0 otherwise.  Cache the result.
+
+proc check_effective_target_rv64 { } {
+    # Check that we are compiling for RV64 by checking the xlen size.
+    return [check_no_compiler_messages riscv_rv64 assembly {
+       #if !defined(__riscv_xlen)
+       #error "__riscv_xlen not defined!"
+       #else
+       #if __riscv_xlen != 64
+       #error "Not RV64"
+       #endif
+       #endif
+    }]
+}
+
 # Return 1 if the target OS supports running SSE executables, 0
 # otherwise.  Cache the result.
 

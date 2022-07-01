@@ -1,5 +1,5 @@
 /* { dg-do compile { target *-*-linux* } } */
-/* { dg-options "-O2 -fzero-call-used-regs=used -march=corei7" } */
+/* { dg-options "-O2 -fzero-call-used-regs=used -march=corei7 -fno-stack-protector -fno-PIC" } */
 
 float
 foo (float z, float y, float x)

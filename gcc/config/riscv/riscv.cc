@@ -220,6 +220,7 @@ struct riscv_tune_param
   unsigned short issue_rate;
   unsigned short branch_cost;
   unsigned short memory_cost;
+  unsigned short fmv_cost;
   bool slow_unaligned_access;
 };
 
@@ -285,6 +286,7 @@ static const struct riscv_tune_param rocket_tune_info = {
   1,						/* issue_rate */
   3,						/* branch_cost */
   5,						/* memory_cost */
+  8,						/* fmv_cost */
   true,						/* slow_unaligned_access */
 };
 
@@ -298,6 +300,7 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   2,						/* issue_rate */
   4,						/* branch_cost */
   3,						/* memory_cost */
+  8,						/* fmv_cost */
   true,						/* slow_unaligned_access */
 };
 
@@ -311,6 +314,7 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   1,            /* issue_rate */
   3,            /* branch_cost */
   5,            /* memory_cost */
+  8,		/* fmv_cost */
   false,            /* slow_unaligned_access */
 };
 
@@ -324,6 +328,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   1,						/* issue_rate */
   1,						/* branch_cost */
   2,						/* memory_cost */
+  8,						/* fmv_cost */
   false,					/* slow_unaligned_access */
 };
 
@@ -415,6 +420,15 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
       /* Simply BSETI.  */
       codes[0].code = UNKNOWN;
       codes[0].value = value;
+
+      /* RISC-V sign-extends all 32bit values that live in a 32bit
+	 register.  To avoid paradoxes, we thus need to use the
+	 sign-extended (negative) representation (-1 << 31) for the
+	 value, if we want to build (1 << 31) in SImode.  This will
+	 then expand to an LUI instruction.  */
+      if (mode == SImode && value == (HOST_WIDE_INT_1U << 31))
+	codes[0].value = (HOST_WIDE_INT_M1U << 31);
+
       return 1;
     }
 
@@ -4737,6 +4751,10 @@ static int
 riscv_register_move_cost (machine_mode mode,
 			  reg_class_t from, reg_class_t to)
 {
+  if ((from == FP_REGS && to == GR_REGS) ||
+      (from == GR_REGS && to == FP_REGS))
+    return tune_param->fmv_cost;
+
   return riscv_secondary_memory_needed (mode, from, to) ? 8 : 2;
 }
 

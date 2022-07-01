@@ -239,6 +239,7 @@ extern int errno;
 # include <functional>
 #endif
 # include <cstring>
+# include <initializer_list>
 # include <new>
 # include <utility>
 # include <type_traits>

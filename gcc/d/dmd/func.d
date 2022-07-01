@@ -1207,12 +1207,12 @@ extern (C++) class FuncDeclaration : Declaration
 
     final bool isMain() const
     {
-        return ident == Id.main && linkage != LINK.c && !isMember() && !isNested();
+        return ident == Id.main && resolvedLinkage() != LINK.c && !isMember() && !isNested();
     }
 
     final bool isCMain() const
     {
-        return ident == Id.main && linkage == LINK.c && !isMember() && !isNested();
+        return ident == Id.main && resolvedLinkage() == LINK.c && !isMember() && !isNested();
     }
 
     final bool isWinMain() const
@@ -1220,24 +1220,24 @@ extern (C++) class FuncDeclaration : Declaration
         //printf("FuncDeclaration::isWinMain() %s\n", toChars());
         version (none)
         {
-            bool x = ident == Id.WinMain && linkage != LINK.c && !isMember();
+            bool x = ident == Id.WinMain && resolvedLinkage() != LINK.c && !isMember();
             printf("%s\n", x ? "yes" : "no");
             return x;
         }
         else
         {
-            return ident == Id.WinMain && linkage != LINK.c && !isMember();
+            return ident == Id.WinMain && resolvedLinkage() != LINK.c && !isMember();
         }
     }
 
     final bool isDllMain() const
     {
-        return ident == Id.DllMain && linkage != LINK.c && !isMember();
+        return ident == Id.DllMain && resolvedLinkage() != LINK.c && !isMember();
     }
 
     final bool isRtInit() const
     {
-        return ident == Id.rt_init && linkage == LINK.c && !isMember() && !isNested();
+        return ident == Id.rt_init && resolvedLinkage() == LINK.c && !isMember() && !isNested();
     }
 
     override final bool isExport() const
@@ -1474,6 +1474,12 @@ extern (C++) class FuncDeclaration : Declaration
         return !!(this.flags & FUNCFLAG.naked);
     }
 
+    final void isNaked(bool v) @safe pure nothrow @nogc
+    {
+        if (v) this.flags |= FUNCFLAG.naked;
+        else this.flags &= ~FUNCFLAG.naked;
+    }
+
     final bool isGenerated() const scope @safe pure nothrow @nogc
     {
         return !!(this.flags & FUNCFLAG.generated);
@@ -1520,9 +1526,21 @@ extern (C++) class FuncDeclaration : Declaration
         return !!(this.flags & FUNCFLAG.CRTCtor);
     }
 
+    final void isCrtCtor(bool v) @safe pure nothrow @nogc
+    {
+        if (v) this.flags |= FUNCFLAG.CRTCtor;
+        else this.flags &= ~FUNCFLAG.CRTCtor;
+    }
+
     final bool isCrtDtor() const scope @safe pure nothrow @nogc
     {
         return !!(this.flags & FUNCFLAG.CRTDtor);
+    }
+
+    final void isCrtDtor(bool v) @safe pure nothrow @nogc
+    {
+        if (v) this.flags |= FUNCFLAG.CRTDtor;
+        else this.flags &= ~FUNCFLAG.CRTDtor;
     }
 
     /**************************************
@@ -1758,7 +1776,7 @@ extern (C++) class FuncDeclaration : Declaration
         auto f = toAliasFunc();
         //printf("\ttoParent2() = '%s'\n", f.toParent2().toChars());
         return ((f.storage_class & STC.static_) == 0) &&
-                (f.linkage == LINK.d) &&
+                (f._linkage == LINK.d) &&
                 (f.toParent2().isFuncDeclaration() !is null ||
                  f.toParent2() !is f.toParentLocal());
     }
@@ -2645,7 +2663,7 @@ extern (C++) class FuncDeclaration : Declaration
             tf = new TypeFunction(ParameterList(fparams), treturn, LINK.c, stc);
             fd = new FuncDeclaration(Loc.initial, Loc.initial, id, STC.static_, tf);
             fd.visibility = Visibility(Visibility.Kind.public_);
-            fd.linkage = LINK.c;
+            fd._linkage = LINK.c;
 
             st.insert(fd);
         }
@@ -2705,6 +2723,7 @@ extern (C++) class FuncDeclaration : Declaration
         const nparams = tf.parameterList.length;
         bool argerr;
 
+        const linkage = resolvedLinkage();
         if (linkage == LINK.d)
         {
             if (nparams == 1)

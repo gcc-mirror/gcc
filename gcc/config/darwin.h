@@ -143,10 +143,7 @@ extern GTY(()) int darwin_ms_struct;
    Right now there's no mechanism to split up the "variable portion" (%*) of
    the matched spec string, so where we have some driver specs that take 2
    or 3 arguments, these cannot be processed here, but are deferred until the
-   LINK_SPEC, where they are copied verbatim.
-   We have a "safe" version of the MacOS version string, that's been sanity-
-   checked and truncated to minor version.  If the 'tiny' (3rd) portion of the
-   value is not significant, it's better to use this in version-compare().  */
+   LINK_SPEC, where they are copied verbatim.  */
 
 #undef SUBTARGET_DRIVER_SELF_SPECS
 #define SUBTARGET_DRIVER_SELF_SPECS					\
@@ -220,13 +217,8 @@ extern GTY(()) int darwin_ms_struct;
   "%{image_base*:-Xlinker -image_base -Xlinker %*} %<image_base*",	\
   "%{init*:-Xlinker -init -Xlinker %*} %<init*",			\
   "%{multi_module:-Xlinker -multi_module} %<multi_module",		\
-  "%{multiply_defined*:-Xlinker -multiply_defined -Xlinker %*; \
-     :%{shared-libgcc: \
-       %:version-compare(< 10.5 asm_macosx_version_min= -Xlinker) \
-       %:version-compare(< 10.5 asm_macosx_version_min= -multiply_defined) \
-       %:version-compare(< 10.5 asm_macosx_version_min= -Xlinker) \
-       %:version-compare(< 10.5 asm_macosx_version_min= suppress)}} \
-     %<multiply_defined*",						\
+  "%{multiply_defined*:-Xlinker -multiply_defined -Xlinker %*} \
+     %<multiply_defined* ",						\
   "%{multiplydefinedunused*:\
      -Xlinker -multiply_defined_unused -Xlinker %*} \
      %<multiplydefinedunused* ",					\
@@ -458,6 +450,9 @@ extern GTY(()) int darwin_ms_struct;
    %{!force_cpusubtype_ALL:-arch %(darwin_subarch)} "\
    LINK_SYSROOT_SPEC \
   "%{mmacosx-version-min=*:-macosx_version_min %*} \
+   %{!multiply_defined*:%{shared-libgcc: \
+     %:version-compare(< 10.5 mmacosx-version-min= -multiply_defined) \
+     %:version-compare(< 10.5 mmacosx-version-min= suppress) }} \
    %{sectalign*} %{sectcreate*} %{sectobjectsymbols*}  %{sectorder*} \
    %{segaddr*} %{segcreate*} %{segprot*} "
 

@@ -3913,6 +3913,7 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
   if (TREE_CODE (*stmt) == BIND_EXPR)
     {
       tree lvar;
+      unsigned serial = 0;
       for (lvar = BIND_EXPR_VARS (*stmt); lvar != NULL;
 	   lvar = DECL_CHAIN (lvar))
 	{
@@ -3973,14 +3974,15 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	  else if (lvname != NULL_TREE)
 	    buf = xasprintf ("%s_%u_%u", IDENTIFIER_POINTER (lvname),
 			     lvd->nest_depth, lvd->bind_indx);
+	  else
+	    buf = xasprintf ("_D%u_%u_%u", lvd->nest_depth, lvd->bind_indx,
+			     serial++);
+
 	  /* TODO: Figure out if we should build a local type that has any
 	     excess alignment or size from the original decl.  */
-	  if (buf)
-	    {
-	      local_var.field_id = coro_make_frame_entry (lvd->field_list, buf,
-							  lvtype, lvd->loc);
-	      free (buf);
-	    }
+	  local_var.field_id = coro_make_frame_entry (lvd->field_list, buf,
+						      lvtype, lvd->loc);
+	  free (buf);
 	  /* We don't walk any of the local var sub-trees, they won't contain
 	     any bind exprs.  */
 	}

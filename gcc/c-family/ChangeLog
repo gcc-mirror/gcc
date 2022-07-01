@@ -1,3 +1,14 @@
+2022-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (dump_ada_node) <COMPLEX_TYPE>: Deal with usual
+	floating-point complex types.
+	<POINTER_TYPE>: Do not use limited_with clause if the designated
+	type is a scalar type.
+
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
 2022-04-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105304

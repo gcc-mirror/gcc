@@ -1,3 +1,7 @@
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
 2021-11-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	* LOCAL_PATCHES: Add commit a91f844ef44.

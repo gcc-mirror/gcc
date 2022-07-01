@@ -1,3 +1,317 @@
+2022-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic (__atomic_val_t): Use __type_identity_t
+	instead of atomic<T>::value_type, as per LWG 3220.
+	* testsuite/29_atomics/atomic/lwg3220.cc: New test.
+
+2022-06-14  Mark Mentovai  <mark@mentovai.com>
+
+	Backported from master:
+	2022-06-13  Mark Mentovai  <mark@mentovai.com>
+
+	* include/experimental/bits/fs_path.h (__detail::__null_terminated):
+	Rename to __nul_terminated to avoid colliding with a macro in
+	Apple's SDK.
+
+2022-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105671
+	* include/std/sstream (basic_stringbuf::_M_high_mark): Add
+	always_inline attribute.
+
+2022-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105681
+	* include/ext/pb_ds/detail/resize_policy/hash_prime_size_policy_imp.hpp:
+	Limit ga_sizes array to values that fit in size_t.
+	* include/ext/random [__SIZE_WIDTH < 32] (sfmt86243)
+	(sfmt86243_64, sfmt132049, sfmt132049_64, sfmt216091)
+	(sfmt216091_64): Do not declare.
+
+2022-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h: Do not include <ext/atomicity.h>
+	here.
+	* include/bits/cow_string.h: Include it here.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdErrorCodePrinter): Make
+	lookup for ios_errc and future_errc check versioned namespace.
+	(StdAtomicPrinter): Strip versioned namespace from typename.
+
+2022-05-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	Backported from master:
+	2022-05-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (StdSpanPrinter.__init__):
+	Strip typename from version namespace.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (SharedPointerPrinter): Strip
+	versioned namespace from the template argument too.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (counted_iterator::operator++(int)):
+	Add 'constexpr' as per LWG 3643.
+	* testsuite/24_iterators/counted_iterator/lwg3643.cc: New test.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory_resource (polymorphic_allocator): Add
+	non-template equality operator, as proposed for LWG 3683.
+	* testsuite/20_util/polymorphic_allocator/lwg3683.cc: New test.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/bernoulli_distribution/operators/values.cc:
+	Run fewer iterations for simulator targets.
+	* testsuite/26_numerics/random/binomial_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/operators/values.cc:
+	Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/values.cc:
+	Likewise.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/expected/synopsis.cc: Skip for versioned
+	namespace.
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: Likewise.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/mofunc_impl.h: Fix doxygen command.
+
+2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (launch): Make operators noexcept.
+
+2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/prerequisites.xml: Fix attributes for external
+	hyperlink.
+	* doc/html/manual/setup.html: Regenerate.
+
+2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2023.xml: Update with gcc-12 support.
+	* doc/html/*: Regenerate.
+
+2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Include new chapter.
+	* doc/xml/manual/status_cxx2020.xml: Tweak release numbers.
+	* doc/xml/manual/status_cxx2023.xml: New file.
+	* doc/html/*: Regenerate.
+
+2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/manual/status.html: Regenerate.
+	* doc/xml/manual/status_cxx2020.xml: Fix supported version for
+	C++20 bit operations.
+
+2022-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-05-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* include/experimental/bits/simd.h [__ALTIVEC__]: Require VSX
+	for double, long long, and 64-bit long intrinsic types.
+	[__ALTIVEC__] (__intrinsic_type): Mention 128-bit in
+	preexisting long double diagnostic, adjust no-VSX double
+	diagnostic to cover 64-bit long double as well.
+
+2022-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105284
+	* include/std/iosfwd: Add declarations for <spanstream> class
+	templates and typedefs.
+	* include/std/spanstream (basic_spanbuf, basic_ispanstream)
+	(basic_ospanstream, basic_spanstream): Remove default template
+	arguments.
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: Add <spanstream>
+	declarations.
+	* testsuite/27_io/headers/iosfwd/types.cc: Check <spanstream>
+	default arguments.
+
+2022-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105284
+	* include/std/iosfwd: Add declarations for <synstream> class
+	templates and typedefs.
+	* include/std/syncstream (basic_syncbuf, basic_osyncstream):
+	Remove default template arguments.
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: New test.
+	* testsuite/27_io/headers/iosfwd/types.cc: New test.
+
+2022-05-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104731
+	* testsuite/27_io/filesystem/iterators/error_reporting.cc:
+	Use a trailing char array as storage for dirent::d_name.
+
+2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105502
+	* include/bits/random.tcc
+	(operator>>(basic_istream<C,T>&, normal_distribution<R>&)):
+	Update state when __state_avail is false.
+	* testsuite/26_numerics/random/normal_distribution/operators/serialize.cc:
+	Check that deserialized object equals serialized one.
+
+2022-05-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/103911
+	* src/c++17/floating_from_chars.cc (find_end_of_float): Accept
+	two delimeters for the exponent part in the form of a possibly
+	NULL string of length two.  Don't use std::tolower.
+	(pattern): Adjust calls to find_end_of_float accordingly.
+
+2022-05-06  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-05-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR c++/105324
+	* testsuite/20_util/from_chars/pr105324.cc: Guard test body
+	with conditional for floating-point overloads of from_char.
+
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
+2022-05-02  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/105441
+	* src/c++17/floating_from_chars.cc (__floating_from_chars_hex):
+	Also accept 'P' as the start of the exponent.
+	* testsuite/20_util/from_chars/7.cc: Add corresponding testcase.
+
+2022-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105417
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* src/c++11/compatibility-ldbl-alt128.cc [_GLIBCXX_USE_DUAL_ABI]:
+	Define __gnu_ieee128::num_get<C>::_M_extract_int[abi:cxx11]<I>
+	symbols as aliases for corresponding symbols without abi-tag.
+
+2022-04-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris/amd64/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/sparc-solaris/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris/sparcv9/baseline_symbols.txt:
+	Likewise.
+
+2022-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx1998.xml: Refer to GCC 12 not
+	mainline.
+	* doc/xml/manual/status_cxx2011.xml: Likewise.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/xml/manual/status_cxx2020.xml: Likewise.
+	* doc/xml/manual/status_cxxtr1.xml: Likewise.
+	* doc/xml/manual/status_cxxtr24733.xml: Likewise.
+	* doc/html/manual/status.html: Regenerate.
+
+2022-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99290
+	* src/c++17/fs_ops.cc (fs::copy): Pass error_code to
+	directory_iterator constructor, and check on each iteration.
+	* src/filesystem/ops.cc (fs::copy): Likewise.
+	* testsuite/27_io/filesystem/operations/copy.cc: Check for
+	errors during recursion.
+	* testsuite/experimental/filesystem/operations/copy.cc:
+	Likewise.
+
+2022-04-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Remove
+	std::random_device::* pattern.
+
 2022-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.

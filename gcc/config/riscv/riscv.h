@@ -528,13 +528,10 @@ enum reg_class
   (((VALUE) | ((1UL<<31) - IMM_REACH)) == ((1UL<<31) - IMM_REACH)	\
    || ((VALUE) | ((1UL<<31) - IMM_REACH)) + IMM_REACH == 0)
 
-/* If this is a single bit mask, then we can load it with bseti.  But this
-   is not useful for any of the low 31 bits because we can use addi or lui
-   to load them.  It is wrong for loading SImode 0x80000000 on rv64 because it
-   needs to be sign-extended.  So we restrict this to the upper 32-bits
-   only.  */
-#define SINGLE_BIT_MASK_OPERAND(VALUE) \
-  (pow2p_hwi (VALUE) && (ctz_hwi (VALUE) >= 32))
+/* If this is a single bit mask, then we can load it with bseti.  Special
+   handling of SImode 0x80000000 on RV64 is done in riscv_build_integer_1. */
+#define SINGLE_BIT_MASK_OPERAND(VALUE)					\
+  (pow2p_hwi (VALUE))
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1003,5 +1000,10 @@ extern unsigned riscv_stack_boundary;
 extern void riscv_remove_unneeded_save_restore_calls (void);
 
 #define HARD_REGNO_RENAME_OK(FROM, TO) riscv_hard_regno_rename_ok (FROM, TO)
+
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
 
 #endif /* ! GCC_RISCV_H */

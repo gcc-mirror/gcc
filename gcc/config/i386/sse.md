@@ -3627,8 +3627,7 @@
 			  gen_lowpart (<ssebytemode>mode, operands[1]));
   operands[2] = gen_lowpart (<ssebytemode>mode, operands[2]);
 
-  if (!MEM_P (operands[3]))
-    operands[3] = force_reg (<ssebytemode>mode, operands[3]);
+  operands[3] = force_reg (<ssebytemode>mode, operands[3]);
   operands[3] = lowpart_subreg (<MODE>mode, operands[3], <ssebytemode>mode);
 })
 
@@ -20874,9 +20873,9 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn_and_split "ssse3_palignrdi"
-  [(set (match_operand:DI 0 "register_operand" "=y,x,Yv")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "0,0,Yv")
-		    (match_operand:DI 2 "register_mmxmem_operand" "ym,x,Yv")
+  [(set (match_operand:DI 0 "register_operand" "=y,x,Yw")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "0,0,Yw")
+		    (match_operand:DI 2 "register_mmxmem_operand" "ym,x,Yw")
 		    (match_operand:SI 3 "const_0_to_255_mul_8_operand" "n,n,n")]
 		   UNSPEC_PALIGNR))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"

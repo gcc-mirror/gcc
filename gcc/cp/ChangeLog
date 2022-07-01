@@ -1,3 +1,242 @@
+2022-06-24  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105931
+	* expr.cc (fold_for_warn): Don't fold when in an unevaluated
+	context.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105925
+	* decl.cc (reshape_init_array_1): Set
+	CONSTRUCTOR_IS_DESIGNATED_INIT here.
+	(reshape_init_class): And here.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105885
+	* pt.cc (tsubst_copy_and_build): Also suppress -Waddress for
+	comparison of dependent operands.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105964
+	* pt.cc (type_dependent_expression_p): Look through BASELINK.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105908
+	* name-lookup.cc (outer_binding): Strip BASELINK.
+
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106001
+	* typeck.cc (build_x_shufflevector): Use fold_non_dependent_expr
+	instead of maybe_constant_value.
+
+2022-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/105871
+	* constexpr.cc (cxx_eval_bit_field_ref): For BIT_FIELD_REF with
+	non-integral result type use fold_ternary too like for BIT_FIELD_REFs
+	from VECTOR_CST.  If fold_ternary returns NULL, diagnose non-constant
+	expression, set *non_constant_p and return t, instead of returning
+	NULL.
+
+2022-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105756
+	* typeck.cc (cp_build_binary_op): Don't fold operands
+	when c_inhibit_evaluation_warnings.
+
+2022-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105852
+	PR c++/105761
+	* decl.cc (duplicate_decls): Avoid copying template info
+	from non-templated friend even if newdecl isn't a definition.
+	Correct handling of DECL_UNIQUE_FRIEND_P on templates.
+	* pt.cc (non_templated_friend_p): New.
+	* cp-tree.h (non_templated_friend_p): Declare it.
+
+2022-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105761
+	* decl.cc (duplicate_decls): Don't copy DECL_TEMPLATE_INFO
+	from a hidden friend.
+
+2022-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105795
+	* constexpr.cc (cxx_eval_bare_aggregate): Always call
+	init_subob_ctx.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105734
+	* parser.cc (cp_parser_postfix_dot_deref_expression): Use typeof
+	if the expression has auto type.
+
+2022-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105779
+	* call.cc (resolve_args): Call mark_single_function here.
+	* pt.cc (unify_one_argument): Not here.
+
+2022-06-01  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105491
+	* constexpr.cc (reduced_constant_expression_p): Use
+	next_subobject_field instead.
+	* cp-tree.h (next_subobject_field): Declare.
+	* decl.cc (next_subobject_field): Define.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105652
+	* pt.cc (tsubst_lambda_expr): Don't let a namespace-scope lambda
+	instantiate into a class-scope lambda.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105655
+	* pt.cc (build_template_decl): Add assert.
+	(tsubst_function_decl): Don't return a template.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105623
+	* decl2.cc (mark_used): Copy type from fn to BASELINK.
+	* pt.cc (unify_one_argument): Call mark_single_function.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102307
+	* decl.cc (check_initializer): Use build_cplus_new in case of
+	constexpr failure.
+
+2022-05-27  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105725
+	* parser.cc (class_decl_loc_t::add): Check CLASS_TYPE_P.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105589
+	PR c++/105191
+	PR c++/92385
+	* init.cc (build_value_init): Handle class in template.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104470
+	* cp-tree.h (enum tsubst_flags): Add tf_dguide.
+	* pt.cc (tsubst_aggr_type): Check it.
+	(tsubst_baselink, tsubst_copy): Check it.
+	(maybe_dependent_member_ref): Check it.
+	(instantiate_alias_template): Handle it.
+	(build_deduction_guide): Set it.
+
+2022-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102651
+	PR c++/49387
+	* rtti.cc (get_tinfo_decl_direct): Don't complete_type.
+	(emit_tinfo_decl): Update tdesc type if needed.
+
+2022-05-06  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105476
+	* pt.cc (maybe_aggr_guide): Set processing_template_decl when
+	partially instantiating the guide's parameter list.
+
+2022-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* lambda.cc: Include decl.h.
+	(maybe_add_lambda_conv_op): Temporarily override deprecated_state to
+	UNAVAILABLE_DEPRECATED_SUPPRESS.
+
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
+2022-04-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-04-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/105426
+	* coroutines.cc (register_local_var_uses): Allow promotion of unnamed
+	temporaries to coroutine frame copies.
+
+2022-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105425
+	* pt.cc (unify) <case TEMPLATE_PARM_INDEX>: Treat
+	DEPENDENT_OPERATOR_TYPE like an empty type.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/104051
+	* coroutines.cc (coro_diagnose_throwing_final_aw_expr): Handle
+	non-target expression inputs.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/105301
+	* coroutines.cc (coro_promise_type_found_p): Account for possible
+	mutliple overloads of the promise return_value() method.
+
+2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/105287
+	* coroutines.cc (maybe_promote_temps): Ensure generated temporaries
+	are added to the bind expr.
+	(add_var_to_bind): Fix local var naming to use portable punctuation.
+	(register_local_var_uses): Do not add synthetic names to unnamed
+	temporaries.
+
+2022-04-28  Nathan Sidwell  <nathan@acm.org>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/103868
+	* coroutines.cc (finish_co_await_expr): Do not process non-dependent
+	coroutine expressions at template definition time.
+	(finish_co_yield_expr): Likewise.
+	(finish_co_return_stmt): Likewise.
+
+2022-04-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90107
+	* parser.cc (cp_parser_class_specifier_1): Accept :: after a class
+	definition.
+
 2022-04-27  Jason Merrill  <jason@redhat.com>
 
 	* tree.cc (strip_typedefs): Add default argument comments.

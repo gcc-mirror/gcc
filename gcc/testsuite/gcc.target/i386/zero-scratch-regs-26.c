@@ -8,16 +8,16 @@ foo (int x)
 }
 
 /* { dg-final { scan-assembler "xorl\[ \t\]+%edx, %edx" } } */
-/* { dg-final { scan-assembler "movl\[ \t\]+%edx, %ecx" } } */
-/* { dg-final { scan-assembler "movl\[ \t\]+%edx, %esi" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "movl\[ \t\]+%edx, %edi" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "movl\[ \t\]+%edx, %r8d" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "movl\[ \t\]+%edx, %r9d" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "pxor\[ \t\]+%xmm0, %xmm0" } } */
-/* { dg-final { scan-assembler "movaps\[ \t\]+%xmm0, %xmm1" } } */
-/* { dg-final { scan-assembler "movaps\[ \t\]+%xmm0, %xmm2" } } */
-/* { dg-final { scan-assembler "movaps\[ \t\]+%xmm0, %xmm3" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "movaps\[ \t\]+%xmm0, %xmm4" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "movaps\[ \t\]+%xmm0, %xmm5" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "movaps\[ \t\]+%xmm0, %xmm6" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "movaps\[ \t\]+%xmm0, %xmm7" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "xorl\[ \t\]+%ecx, %ecx" } } */
+/* { dg-final { scan-assembler "xorl\[ \t\]+%esi, %esi" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "xorl\[ \t\]+%edi, %edi" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "xorl\[ \t\]+%r8d, %r8d" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "xorl\[ \t\]+%r9d, %r9d" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "\[a-z\]*xor\[a-z\]*\[ \t\]+%xmm0, %xmm0" } } */
+/* { dg-final { scan-assembler "\[a-z\]*xor\[a-z\]*\[ \t\]+%xmm1, %xmm1" } } */
+/* { dg-final { scan-assembler "\[a-z\]*xor\[a-z\]*\[ \t\]+%xmm2, %xmm2" } } */
+/* { dg-final { scan-assembler "\[a-z\]*xor\[a-z\]*\[ \t\]+%xmm3, %xmm3" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "\[a-z\]*xor\[a-z\]*\[ \t\]+%xmm4, %xmm4" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "\[a-z\]*xor\[a-z\]*\[ \t\]+%xmm5, %xmm5" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "\[a-z\]*xor\[a-z\]*\[ \t\]+%xmm6, %xmm6" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "\[a-z\]*xor\[a-z\]*\[ \t\]+%xmm7, %xmm7" { target { ! ia32 } } } } */

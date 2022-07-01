@@ -1,3 +1,66 @@
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* typeinfo.cc (make_internal_typeinfo): Set TYPE_ARTIFICIAL.
+
+2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (check_typeinfo_type): Add Expression* parameter.
+	(build_typeinfo): Likewise.  Declare new override.
+	* expr.cc (ExprVisitor): Call build_typeinfo with Expression*.
+	* typeinfo.cc (check_typeinfo_type): Include expression in the
+	diagnostic message.
+	(build_typeinfo): New override.
+
+2022-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-05-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/105544
+	* d-lang.cc (d_parse_file): Zero padding past the end of the stdin
+	buffer so the D lexer has a sentinel to stop parsing at.
+
+2022-05-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd a53934d18.
+	* dmd/VERSION: Update version to v2.100.0.
+	* d-codegen.cc (d_decl_context): Use resolvedLinkage to get
+	declaration linkage.
+	(build_struct_literal): Track offset in bits.
+	* d-gimplify.cc (d_gimplify_modify_expr): Check both operands for a
+	bit-field reference.
+	* d-lang.cc (d_post_options): Set flag_rtti and flag_exceptions if
+	-fno-druntime was seen on command-line.
+	(d_type_promotes_to): Use resolvedLinkage to get declaration linkage.
+	* decl.cc (make_thunk): Likewise.
+	* types.cc (layout_aggregate_members): Ignore anonymous fields in
+	total count.
+
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
+2022-05-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 88de5e369.
+
+2022-05-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 081d61e15.
+	* dmd/VERSION: Update version to v2.100.0-rc.1.
+
+2022-04-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 313d28b3d.
+	* d-port.cc (Port::memicmp): Use d_size_t instead of size_t.
+	(Port::valcpy): Likewise.
+
 2022-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd eb7bee331.

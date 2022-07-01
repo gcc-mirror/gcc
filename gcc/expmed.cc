@@ -1605,20 +1605,22 @@ extract_bit_field_using_extv (const extraction_insn *extv, rtx op0,
   return NULL_RTX;
 }
 
-/* See whether it would be valid to extract the part of OP0 described
-   by BITNUM and BITSIZE into a value of mode MODE using a subreg
-   operation.  Return the subreg if so, otherwise return null.  */
+/* See whether it would be valid to extract the part of OP0 with
+   mode OP0_MODE described by BITNUM and BITSIZE into a value of
+   mode MODE using a subreg operation.
+   Return the subreg if so, otherwise return null.  */
 
 static rtx
 extract_bit_field_as_subreg (machine_mode mode, rtx op0,
+			     machine_mode op0_mode,
 			     poly_uint64 bitsize, poly_uint64 bitnum)
 {
   poly_uint64 bytenum;
   if (multiple_p (bitnum, BITS_PER_UNIT, &bytenum)
       && known_eq (bitsize, GET_MODE_BITSIZE (mode))
-      && lowpart_bit_field_p (bitnum, bitsize, GET_MODE (op0))
-      && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (op0)))
-    return simplify_gen_subreg (mode, op0, GET_MODE (op0), bytenum);
+      && lowpart_bit_field_p (bitnum, bitsize, op0_mode)
+      && TRULY_NOOP_TRUNCATION_MODES_P (mode, op0_mode))
+    return simplify_gen_subreg (mode, op0, op0_mode, bytenum);
   return NULL_RTX;
 }
 
@@ -1777,7 +1779,8 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	 for valid bitsize and bitnum, so we don't need to do that here.  */
       if (VECTOR_MODE_P (mode))
 	{
-	  rtx sub = extract_bit_field_as_subreg (mode, op0, bitsize, bitnum);
+	  rtx sub = extract_bit_field_as_subreg (mode, op0, outermode,
+						 bitsize, bitnum);
 	  if (sub)
 	    return sub;
 	}
@@ -1824,9 +1827,10 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
   /* Extraction of a full MODE1 value can be done with a subreg as long
      as the least significant bit of the value is the least significant
      bit of either OP0 or a word of OP0.  */
-  if (!MEM_P (op0) && !reverse)
+  if (!MEM_P (op0) && !reverse && op0_mode.exists (&imode))
     {
-      rtx sub = extract_bit_field_as_subreg (mode1, op0, bitsize, bitnum);
+      rtx sub = extract_bit_field_as_subreg (mode1, op0, imode,
+					     bitsize, bitnum);
       if (sub)
 	return convert_extracted_bit_field (sub, mode, tmode, unsignedp);
     }

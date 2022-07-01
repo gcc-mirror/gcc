@@ -4270,32 +4270,31 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
       sra_stats.exprs++;
     }
 
-  if (modify_this_stmt)
+  if (modify_this_stmt
+      && !useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
     {
+      /* If we can avoid creating a VIEW_CONVERT_EXPR, then do so.
+	 ??? This should move to fold_stmt which we simply should
+	 call after building a VIEW_CONVERT_EXPR here.  */
+      if (AGGREGATE_TYPE_P (TREE_TYPE (lhs))
+	  && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (lhs)) == racc->reverse
+	  && !contains_bitfld_component_ref_p (lhs))
+	{
+	  lhs = build_ref_for_model (loc, lhs, 0, racc, gsi, false);
+	  gimple_assign_set_lhs (stmt, lhs);
+	}
+      else if (lacc
+	       && AGGREGATE_TYPE_P (TREE_TYPE (rhs))
+	       && TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (rhs)) == lacc->reverse
+	       && !contains_vce_or_bfcref_p (rhs))
+	rhs = build_ref_for_model (loc, rhs, 0, lacc, gsi, false);
+
       if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
 	{
-	  /* If we can avoid creating a VIEW_CONVERT_EXPR do so.
-	     ???  This should move to fold_stmt which we simply should
-	     call after building a VIEW_CONVERT_EXPR here.  */
-	  if (AGGREGATE_TYPE_P (TREE_TYPE (lhs))
-	      && !contains_bitfld_component_ref_p (lhs))
-	    {
-	      lhs = build_ref_for_model (loc, lhs, 0, racc, gsi, false);
-	      gimple_assign_set_lhs (stmt, lhs);
-	    }
-	  else if (lacc
-		   && AGGREGATE_TYPE_P (TREE_TYPE (rhs))
-		   && !contains_vce_or_bfcref_p (rhs))
-	    rhs = build_ref_for_model (loc, rhs, 0, lacc, gsi, false);
-
-	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
-	    {
-	      rhs = fold_build1_loc (loc, VIEW_CONVERT_EXPR, TREE_TYPE (lhs),
-				     rhs);
-	      if (is_gimple_reg_type (TREE_TYPE (lhs))
-		  && TREE_CODE (lhs) != SSA_NAME)
-		force_gimple_rhs = true;
-	    }
+	  rhs = fold_build1_loc (loc, VIEW_CONVERT_EXPR, TREE_TYPE (lhs), rhs);
+	  if (is_gimple_reg_type (TREE_TYPE (lhs))
+	      && TREE_CODE (lhs) != SSA_NAME)
+	    force_gimple_rhs = true;
 	}
     }
 

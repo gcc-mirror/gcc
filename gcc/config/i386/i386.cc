@@ -1015,6 +1015,15 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 	}
     }
 
+  if (decl && ix86_use_pseudo_pic_reg ())
+    {
+      /* When PIC register is used, it must be restored after ifunc
+	 function returns.  */
+       cgraph_node *node = cgraph_node::get (decl);
+       if (node && node->ifunc_resolver)
+	 return false;
+    }
+
   /* Otherwise okay.  That also includes certain types of indirect calls.  */
   return true;
 }
@@ -3348,7 +3357,7 @@ ix86_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
       if (POINTER_TYPE_P (arg.type))
 	{
 	  /* This is the pointer argument.  */
-	  gcc_assert (TYPE_MODE (arg.type) == Pmode);
+	  gcc_assert (TYPE_MODE (arg.type) == ptr_mode);
 	  /* It is at -WORD(AP) in the current frame in interrupt and
 	     exception handlers.  */
 	  reg = plus_constant (Pmode, arg_pointer_rtx, -UNITS_PER_WORD);
@@ -3706,7 +3715,7 @@ zero_call_used_regno_mode (const unsigned int regno)
   else if (MASK_REGNO_P (regno))
     return HImode;
   else if (MMX_REGNO_P (regno))
-    return V4HImode;
+    return V2SImode;
   else
     gcc_unreachable ();
 }
@@ -3826,19 +3835,12 @@ zero_all_mm_registers (HARD_REG_SET need_zeroed_hardregs,
   if (!need_zero_all_mm)
     return false;
 
-  rtx zero_mmx = NULL_RTX;
-  machine_mode mode = V4HImode;
+  machine_mode mode = V2SImode;
   for (unsigned int regno = FIRST_MMX_REG; regno <= LAST_MMX_REG; regno++)
     if (regno != ret_mmx_regno)
       {
 	rtx reg = gen_rtx_REG (mode, regno);
-	if (zero_mmx == NULL_RTX)
-	  {
-	    zero_mmx = reg;
-	    emit_insn (gen_rtx_SET (reg, CONST0_RTX (mode)));
-	  }
-	else
-	  emit_move_insn (reg, zero_mmx);
+	emit_insn (gen_rtx_SET (reg, CONST0_RTX (mode)));
       }
   return true;
 }
@@ -3908,11 +3910,6 @@ ix86_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 
   /* Now, generate instructions to zero all the other registers.  */
 
-  rtx zero_gpr = NULL_RTX;
-  rtx zero_vector = NULL_RTX;
-  rtx zero_mask = NULL_RTX;
-  rtx zero_mmx = NULL_RTX;
-
   for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     {
       if (!TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
@@ -3923,59 +3920,34 @@ ix86_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 
       SET_HARD_REG_BIT (zeroed_hardregs, regno);
 
-      rtx reg, tmp, zero_rtx;
       machine_mode mode = zero_call_used_regno_mode (regno);
 
-      reg = gen_rtx_REG (mode, regno);
-      zero_rtx = CONST0_RTX (mode);
+      rtx reg = gen_rtx_REG (mode, regno);
+      rtx tmp = gen_rtx_SET (reg, CONST0_RTX (mode));
 
-      if (mode == SImode)
-	if (zero_gpr == NULL_RTX)
-	  {
-	    zero_gpr = reg;
-	    tmp = gen_rtx_SET (reg, zero_rtx);
-	    if (!TARGET_USE_MOV0 || optimize_insn_for_size_p ())
-	      {
-		rtx clob = gen_rtx_CLOBBER (VOIDmode,
-					    gen_rtx_REG (CCmode,
-							 FLAGS_REG));
-		tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2,
-							     tmp,
-							     clob));
-	      }
-	    emit_insn (tmp);
-	  }
-	else
-	  emit_move_insn (reg, zero_gpr);
-      else if (mode == V4SFmode)
-	if (zero_vector == NULL_RTX)
-	  {
-	    zero_vector = reg;
-	    tmp = gen_rtx_SET (reg, zero_rtx);
-	    emit_insn (tmp);
-	  }
-	else
-	  emit_move_insn (reg, zero_vector);
-      else if (mode == HImode)
-	if (zero_mask == NULL_RTX)
-	  {
-	    zero_mask = reg;
-	    tmp = gen_rtx_SET (reg, zero_rtx);
-	    emit_insn (tmp);
-	  }
-	else
-	  emit_move_insn (reg, zero_mask);
-      else if (mode == V4HImode)
-	if (zero_mmx == NULL_RTX)
-	  {
-	    zero_mmx = reg;
-	    tmp = gen_rtx_SET (reg, zero_rtx);
-	    emit_insn (tmp);
-	  }
-	else
-	  emit_move_insn (reg, zero_mmx);
-      else
-	gcc_unreachable ();
+      switch (mode)
+	{
+	case E_SImode:
+	  if (!TARGET_USE_MOV0 || optimize_insn_for_size_p ())
+	    {
+	      rtx clob = gen_rtx_CLOBBER (VOIDmode,
+					  gen_rtx_REG (CCmode,
+						       FLAGS_REG));
+	      tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2,
+							   tmp,
+							   clob));
+	    }
+	  /* FALLTHRU.  */
+
+	case E_V4SFmode:
+	case E_HImode:
+	case E_V2SImode:
+	  emit_insn (tmp);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
     }
   return zeroed_hardregs;
 }

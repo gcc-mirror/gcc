@@ -8276,7 +8276,7 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
       tree type = TREE_TYPE (postfix_expression);
       /* If we don't have a (type-dependent) object of class type, use
 	 typeof to figure out the type of the object.  */
-      if (type == NULL_TREE)
+      if (type == NULL_TREE || is_auto (type))
 	type = finish_typeof (postfix_expression);
       parser->context->object_type = type;
     }
@@ -30588,9 +30588,12 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
     }
   else if (object_type)
     {
+      bool dep = dependent_scope_p (object_type);
+
       /* Look up the name in the scope of the OBJECT_TYPE, unless the
 	 OBJECT_TYPE is not a class.  */
-      if (CLASS_TYPE_P (object_type))
+      if (CLASS_TYPE_P (object_type)
+	  && !(dep && LAMBDA_TYPE_P (object_type)))
 	/* If the OBJECT_TYPE is a template specialization, it may
 	   be instantiated during name lookup.  In that case, errors
 	   may be issued.  Even if we rollback the current tentative
@@ -32073,7 +32076,10 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
   /* Parse the template-argument-list itself.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER)
       || cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
-    arguments = NULL_TREE;
+    {
+      arguments = make_tree_vec (0);
+      SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (arguments, 0);
+    }
   else
     arguments = cp_parser_template_argument_list (parser);
   /* Look for the `>' that ends the template-argument-list. If we find
@@ -33535,7 +33541,8 @@ class_decl_loc_t::add (cp_parser *parser, location_t key_loc,
   bool key_redundant = (!def_p && !decl_p
 			&& (decl == type_decl
 			    || TREE_CODE (decl) == TEMPLATE_DECL
-			    || TYPE_BEING_DEFINED (type)));
+			    || (CLASS_TYPE_P (type)
+				&& TYPE_BEING_DEFINED (type))));
 
   if (key_redundant
       && class_key != class_type
@@ -33573,7 +33580,7 @@ class_decl_loc_t::add (cp_parser *parser, location_t key_loc,
 	}
       else
 	{
-	  /* TYPE was previously defined in some unknown precompiled hdeader.
+	  /* TYPE was previously defined in some unknown precompiled header.
 	     Simply add a record of its definition at an unknown location and
 	     proceed below to add a reference to it at the current location.
 	     (Declarations in precompiled headers that are not definitions

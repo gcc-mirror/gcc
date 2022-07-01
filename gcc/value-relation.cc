@@ -1388,15 +1388,15 @@ path_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
       fprintf (dump_file, " (root: bb%d)\n", bb->index);
     }
 
+  relation_kind curr = query_relation (bb, ssa1, ssa2);
+  if (curr != VREL_NONE)
+    k = relation_intersect (curr, k);
+
   if (k == EQ_EXPR)
     {
       register_equiv (bb, ssa1, ssa2);
       return;
     }
-
-  relation_kind curr = query_relation (bb, ssa1, ssa2);
-  if (curr != VREL_NONE)
-    k = relation_intersect (curr, k);
 
   bitmap_set_bit (m_relations.m_names, SSA_NAME_VERSION (ssa1));
   bitmap_set_bit (m_relations.m_names, SSA_NAME_VERSION (ssa2));

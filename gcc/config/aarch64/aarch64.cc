@@ -15637,7 +15637,7 @@ private:
   unsigned int adjust_body_cost (loop_vec_info, const aarch64_vector_costs *,
 				 unsigned int);
   bool prefer_unrolled_loop () const;
-  unsigned int determine_suggested_unroll_factor (loop_vec_info);
+  unsigned int determine_suggested_unroll_factor ();
 
   /* True if we have performed one-time initialization based on the
      vec_info.  */
@@ -16746,8 +16746,7 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
 }
 
 unsigned int
-aarch64_vector_costs::
-determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
+aarch64_vector_costs::determine_suggested_unroll_factor ()
 {
   bool sve = m_vec_flags & VEC_ANY_SVE;
   /* If we are trying to unroll an Advanced SIMD main loop that contains
@@ -16761,7 +16760,6 @@ determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
     return 1;
 
   unsigned int max_unroll_factor = 1;
-  auto vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   for (auto vec_ops : m_ops)
     {
       aarch64_simd_vec_issue_info const *vec_issue
@@ -16770,8 +16768,7 @@ determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
 	return 1;
       /* Limit unroll factor to a value adjustable by the user, the default
 	 value is 4. */
-      unsigned int unroll_factor = MIN (aarch64_vect_unroll_limit,
-					(int) known_alignment (vf));
+      unsigned int unroll_factor = aarch64_vect_unroll_limit;
       unsigned int factor
        = vec_ops.reduction_latency > 1 ? vec_ops.reduction_latency : 1;
       unsigned int temp;
@@ -16949,8 +16946,7 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
     {
       m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
 					     m_costs[vect_body]);
-      m_suggested_unroll_factor
-	= determine_suggested_unroll_factor (loop_vinfo);
+      m_suggested_unroll_factor = determine_suggested_unroll_factor ();
     }
 
   /* Apply the heuristic described above m_stp_sequence_cost.  Prefer
@@ -22678,14 +22674,14 @@ aarch64_emit_unlikely_jump (rtx insn)
   add_reg_br_prob_note (jump, profile_probability::very_unlikely ());
 }
 
-/* We store the names of the various atomic helpers in a 5x4 array.
+/* We store the names of the various atomic helpers in a 5x5 array.
    Return the libcall function given MODE, MODEL and NAMES.  */
 
 rtx
 aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
 			const atomic_ool_names *names)
 {
-  memmodel model = memmodel_base (INTVAL (model_rtx));
+  memmodel model = memmodel_from_int (INTVAL (model_rtx));
   int mode_idx, model_idx;
 
   switch (mode)
@@ -22725,6 +22721,11 @@ aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
     case MEMMODEL_SEQ_CST:
       model_idx = 3;
       break;
+    case MEMMODEL_SYNC_ACQUIRE:
+    case MEMMODEL_SYNC_RELEASE:
+    case MEMMODEL_SYNC_SEQ_CST:
+      model_idx = 4;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -22737,7 +22738,8 @@ aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
   { "__aarch64_" #B #N "_relax", \
     "__aarch64_" #B #N "_acq", \
     "__aarch64_" #B #N "_rel", \
-    "__aarch64_" #B #N "_acq_rel" }
+    "__aarch64_" #B #N "_acq_rel", \
+    "__aarch64_" #B #N "_sync" }
 
 #define DEF4(B)  DEF0(B, 1), DEF0(B, 2), DEF0(B, 4), DEF0(B, 8), \
 		 { NULL, NULL, NULL, NULL }

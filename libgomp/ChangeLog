@@ -1,3 +1,53 @@
+2022-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+		    Paul Iannetta  <piannetta@kalrayinc.com>
+
+	PR libgomp/106045
+	* testsuite/libgomp.c/target-31.c: Add private (i) clause.
+
+2022-06-28  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-06-28  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Fix typo in mold linker detection.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2022-05-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/105745
+	* libgomp.h (GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC): Don't define for
+	defined(HAVE__ALIGNED_MALLOC) case.
+	* alloc.c (gomp_aligned_alloc): Move defined(HAVE__ALIGNED_MALLOC)
+	handling as last option before fallback instead of first.
+	(gomp_aligned_free): For defined(HAVE__ALIGNED_MALLOC) call
+	_aligned_free.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.1): Remove "Not inside target regions"
+	comment for omp_display_env feature.
+
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
+2022-04-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/104717
+	* testsuite/libgomp.oacc-fortran/print-1.f90: Add OpenACC
+	privatization scanning.  For GCN offloading compilation, raise
+	'-mgang-private-size'.
+
 2022-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/105358

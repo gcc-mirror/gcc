@@ -3053,7 +3053,7 @@ reduced_constant_expression_p (tree t)
 	      field = NULL_TREE;
 	    }
 	  else
-	    field = next_initializable_field (TYPE_FIELDS (TREE_TYPE (t)));
+	    field = next_subobject_field (TYPE_FIELDS (TREE_TYPE (t)));
 	}
       else
 	field = NULL_TREE;
@@ -3065,15 +3065,15 @@ reduced_constant_expression_p (tree t)
 	    return false;
 	  /* Empty class field may or may not have an initializer.  */
 	  for (; field && e.index != field;
-	       field = next_initializable_field (DECL_CHAIN (field)))
+	       field = next_subobject_field (DECL_CHAIN (field)))
 	    if (!is_really_empty_class (TREE_TYPE (field),
 					/*ignore_vptr*/false))
 	      return false;
 	  if (field)
-	    field = next_initializable_field (DECL_CHAIN (field));
+	    field = next_subobject_field (DECL_CHAIN (field));
 	}
       /* There could be a non-empty field at the end.  */
-      for (; field; field = next_initializable_field (DECL_CHAIN (field)))
+      for (; field; field = next_subobject_field (DECL_CHAIN (field)))
 	if (!is_really_empty_class (TREE_TYPE (field), /*ignore_vptr*/false))
 	  return false;
 ok:
@@ -4181,9 +4181,16 @@ cxx_eval_bit_field_ref (const constexpr_ctx *ctx, tree t,
   if (*non_constant_p)
     return t;
 
-  if (TREE_CODE (whole) == VECTOR_CST)
-    return fold_ternary (BIT_FIELD_REF, TREE_TYPE (t), whole,
-			 TREE_OPERAND (t, 1), TREE_OPERAND (t, 2));
+  if (TREE_CODE (whole) == VECTOR_CST || !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+    {
+      if (tree r = fold_ternary (BIT_FIELD_REF, TREE_TYPE (t), whole,
+				 TREE_OPERAND (t, 1), TREE_OPERAND (t, 2)))
+	return r;
+      if (!ctx->quiet)
+	error ("%qE is not a constant expression", orig_whole);
+      *non_constant_p = true;
+      return t;
+    }
 
   start = TREE_OPERAND (t, 2);
   istart = tree_to_shwi (start);
@@ -4760,12 +4767,9 @@ cxx_eval_bare_aggregate (const constexpr_ctx *ctx, tree t,
       tree orig_value = value;
       /* Like in cxx_eval_store_expression, omit entries for empty fields.  */
       bool no_slot = TREE_CODE (type) == RECORD_TYPE && is_empty_field (index);
-      if (no_slot)
-	new_ctx = *ctx;
-      else
-	init_subob_ctx (ctx, new_ctx, index, value);
+      init_subob_ctx (ctx, new_ctx, index, value);
       int pos_hint = -1;
-      if (new_ctx.ctor != ctx->ctor)
+      if (new_ctx.ctor != ctx->ctor && !no_slot)
 	{
 	  /* If we built a new CONSTRUCTOR, attach it now so that other
 	     initializers can refer to it.  */

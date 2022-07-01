@@ -1,3 +1,7 @@
+2022-05-06  Release Manager
+
+	* GCC 12.1.0 released.
+
 2021-10-19  Martin Liska  <mliska@suse.cz>
 
 	* include/coi/source/COIBuffer_source.h: Convert 2 chars to

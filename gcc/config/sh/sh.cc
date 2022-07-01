@@ -10762,6 +10762,12 @@ sh_register_move_cost (machine_mode mode,
       && ! REGCLASS_HAS_GENERAL_REG (dstclass))
     return 2 * ((GET_MODE_SIZE (mode) + 7) / 8U);
 
+  if (((dstclass == FP_REGS || dstclass == DF_REGS)
+       && (srcclass == PR_REGS))
+      || ((srcclass == FP_REGS || srcclass == DF_REGS)
+	  && (dstclass == PR_REGS)))
+    return 7;
+
   return 2 * ((GET_MODE_SIZE (mode) + 3) / 4U);
 }
 

@@ -1,16 +1,16 @@
-# Spanish localization for cppli
+# Spanish localization for cpplib
 # Copyright (C) 2001 - 2021 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2001 - 2012.
 # Francisco Javier Serrador <fserrador@gmail.com>, 2018.
 # Antonio Ceballos Roa <aceballos@gmail.com>, 2021.
+# Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2001 - 2012, 2022.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 11.1-b20210207\n"
+"Project-Id-Version: cpplib 12.1-b20220213\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2022-02-11 23:02+0000\n"
-"PO-Revision-Date: 2021-12-18 09:17+0100\n"
-"Last-Translator: Antonio Ceballos Roa <aceballos@gmail.com>\n"
+"PO-Revision-Date: 2022-05-04 09:43-0500\n"
+"Last-Translator: Cristian Othón Martínez Vera <cfuga@cfuga.mx>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -147,7 +147,7 @@ msgstr "secuencia de escape desconocida: '\\%s'"
 
 #: charset.cc:1597
 msgid "converting escape sequence to execution character set"
-msgstr "convirtiendo una secuencia de escape al conjunto de caracteres de ejecución"
+msgstr "se convierte una secuencia de escape al conjunto de caracteres de ejecución"
 
 #: charset.cc:1737
 msgid "missing open quote"
@@ -192,7 +192,7 @@ msgstr "se sugiere no usar #elif en C tradicional"
 #: directives.cc:408
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
-msgstr "C tradicional ignora #%s con el # indentado"
+msgstr "C tradicional descarta #%s con el # indentado"
 
 #: directives.cc:412
 #, c-format
@@ -208,10 +208,9 @@ msgid "style of line directive is a GCC extension"
 msgstr "la directiva de estilo de línea es una extensión de GCC"
 
 #: directives.cc:541
-#, fuzzy, c-format
-#| msgid "invalid preprocessing directive #%s"
+#, c-format
 msgid "invalid preprocessing directive #%s; did you mean #%s?"
-msgstr "directiva de preprocesamiento #%s inválida"
+msgstr "directiva de preprocesamiento #%s inválida. ¿Quería decir #%s?"
 
 #: directives.cc:547
 #, c-format
@@ -221,12 +220,12 @@ msgstr "directiva de preprocesamiento #%s inválida"
 #: directives.cc:617
 #, c-format
 msgid "\"%s\" cannot be used as a macro name"
-msgstr "«%s» no puede utilizarse como nombre de macro"
+msgstr "«%s» no se puede utilizar como nombre de macro"
 
 #: directives.cc:624
 #, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
-msgstr "no se puede usar «%s» como un nombre de macro porque es un operador en C++"
+msgstr "no se puede utilizar «%s» como un nombre de macro porque es un operador en C++"
 
 #: directives.cc:627
 #, c-format
@@ -268,7 +267,7 @@ msgstr "#include_next en fichero primario de código fuente"
 #: directives.cc:926
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
-msgstr "indicador «%s» inválido en la línea de la directiva"
+msgstr "indicador «%s» inválido en la línea de directiva"
 
 #: directives.cc:993
 msgid "unexpected end of file after #line"
@@ -296,7 +295,7 @@ msgstr "«%s» después de # no es un entero positivo"
 #: directives.cc:1125
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
-msgstr "marca lineal de fichero «%s» ignorada debido a anidación incorrecta"
+msgstr "se descarta la marca lineal de fichero «%s» debido a anidación incorrecta"
 
 #: directives.cc:1203 directives.cc:1205 directives.cc:1207 directives.cc:1795
 #, c-format
@@ -356,11 +355,11 @@ msgstr "directiva #pragma de GCC envenenada inválida"
 #: directives.cc:1718
 #, c-format
 msgid "poisoning existing macro \"%s\""
-msgstr "se envenena la macro existente «%s»"
+msgstr "se envenena el macro existente «%s»"
 
 #: directives.cc:1737
 msgid "#pragma system_header ignored outside include file"
-msgstr "#pragma system_header ignorado fuera del fichero a incluir"
+msgstr "se descarta #pragma system_header fuera del fichero a incluir"
 
 #: directives.cc:1762
 #, c-format
@@ -387,35 +386,31 @@ msgstr "#else sin #if"
 
 #: directives.cc:2080
 msgid "#else after #else"
-msgstr "#else tras #else"
+msgstr "#else después de #else"
 
 #: directives.cc:2082 directives.cc:2116
 msgid "the conditional began here"
 msgstr "el condicional empezó aquí"
 
 #: directives.cc:2108
-#, fuzzy, c-format
-#| msgid "#else without #if"
+#, c-format
 msgid "#%s without #if"
-msgstr "#else sin #if"
+msgstr "#%s sin #if"
 
 #: directives.cc:2113
-#, fuzzy, c-format
-#| msgid "#else after #else"
+#, c-format
 msgid "#%s after #else"
-msgstr "#else tras #else"
+msgstr "#%s después de #else"
 
 #: directives.cc:2136 directives.cc:2175
-#, fuzzy, c-format
-#| msgid "#%s is a GCC extension"
+#, c-format
 msgid "#%s before C++23 is a GCC extension"
-msgstr "#%s es una extensión de GCC"
+msgstr "#%s antes de C++23 es una extensión de GCC"
 
 #: directives.cc:2140 directives.cc:2179
-#, fuzzy, c-format
-#| msgid "#%s is a GCC extension"
+#, c-format
 msgid "#%s before C2X is a GCC extension"
-msgstr "#%s es una extensión de GCC"
+msgstr "#%s antes de C2X es una extensión de GCC"
 
 #: directives.cc:2215
 msgid "#endif without #if"
@@ -423,7 +418,7 @@ msgstr "#endif sin #if"
 
 #: directives.cc:2291
 msgid "missing '(' after predicate"
-msgstr "falta '(' antes del predicado"
+msgstr "falta '(' después del predicado"
 
 #: directives.cc:2309
 msgid "missing ')' to complete answer"
@@ -555,7 +550,7 @@ msgstr "el operador «defined» requiere un identificador"
 #: expr.cc:1081
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
-msgstr "(«%s» es una marca alternativa para «%s» en C++)"
+msgstr "(«%s» es un elemento alternativo para «%s» en C++)"
 
 #: expr.cc:1094
 msgid "this use of \"defined\" may not be portable"
@@ -632,7 +627,7 @@ msgstr "operador coma en operando de #if"
 
 #: expr.cc:2156
 msgid "division by zero in #if"
-msgstr "división por cero en #if"
+msgstr "división entre cero en #if"
 
 #: files.cc:516
 msgid "NULL directory in find_file"
@@ -720,34 +715,34 @@ msgstr "se convierte el trigrafo ??%c a %c"
 #: lex.cc:1155
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
-msgstr "se ignora el trigrafo ??%c, use -trigraphs para reconocerlo"
+msgstr "se descarta el trigrafo ??%c, use -trigraphs para reconocerlo"
 
 #: lex.cc:1536
 msgid "end of bidirectional context"
-msgstr ""
+msgstr "final del contexto bidireccional"
 
 #: lex.cc:1577
 msgid "unpaired UTF-8 bidirectional control characters detected"
-msgstr ""
+msgstr "se detectaron caracteres de control bidireccional UTF-8 sin emparejar"
 
 #: lex.cc:1581
 msgid "unpaired UTF-8 bidirectional control character detected"
-msgstr ""
+msgstr "se detectó un carácter de control bidireccional UTF-8 sin emparejar"
 
 #: lex.cc:1619
 #, c-format
 msgid "UTF-8 vs UCN mismatch when closing a context by \"%s\""
-msgstr ""
+msgstr "no coincide UTF-8 vs UCN al cerrar un contexto por «%s»"
 
 #: lex.cc:1628
 #, c-format
 msgid "\"%s\" is closing an unopened context"
-msgstr ""
+msgstr "«%s» está cerrando un contexto sin abrir"
 
 #: lex.cc:1632
 #, c-format
 msgid "found problematic Unicode character \"%s\""
-msgstr ""
+msgstr "se encontró el carácter Unicode problemático «%s»"
 
 #: lex.cc:1682
 msgid "\"/*\" within comment"
@@ -760,7 +755,7 @@ msgstr "%s en la directiva de preprocesamiento"
 
 #: lex.cc:1784
 msgid "null character(s) ignored"
-msgstr "caracter(es) nulo(s) ignorados"
+msgstr "se descarta(n) caracter(es) nulo(s)"
 
 #: lex.cc:1844
 #, c-format
@@ -800,7 +795,7 @@ msgstr "el identificador «%s» es un nombre de operador especial en C++"
 
 #: lex.cc:2132
 msgid "adjacent digit separators"
-msgstr ""
+msgstr "separadores de dígito adyacentes"
 
 #: lex.cc:2450
 msgid "raw string delimiter longer than 16 characters"
@@ -884,25 +879,21 @@ msgid "'##' cannot appear at either end of __VA_OPT__"
 msgstr "'##' no puede aparecer o en el final de una __VA_OPT__"
 
 #: macro.cc:144
-#, fuzzy
-#| msgid "'##' cannot appear at either end of __VA_OPT__"
 msgid "__VA_OPT__ may not appear in a __VA_OPT__"
-msgstr "'##' no puede aparecer o en el final de una __VA_OPT__"
+msgstr "__VA_OPT__ no puede aparecer en un __VA_OPT__"
 
 #: macro.cc:157
 msgid "__VA_OPT__ must be followed by an open parenthesis"
-msgstr ""
+msgstr "__VA_OPT__ debe estar seguido por un paréntesis abierto"
 
 #: macro.cc:235
-#, fuzzy
-#| msgid "unterminated #%s"
 msgid "unterminated __VA_OPT__"
-msgstr "#%s sin terminar"
+msgstr "__VA_OPT__ sin terminar"
 
 #: macro.cc:397
 #, c-format
 msgid "\"%s\" used outside of preprocessing directive"
-msgstr "se ha utilizado «%s» fuera de directiva de preprocesamiento"
+msgstr "se ha utilizado «%s» fuera de una directiva de preprocesamiento"
 
 #: macro.cc:407
 #, c-format
@@ -922,7 +913,7 @@ msgstr "falta ')' después del operando «%s»"
 #: macro.cc:459
 #, c-format
 msgid "macro \"%s\" is not used"
-msgstr "la macro «%s» no se utiliza"
+msgstr "el macro «%s» no se utiliza"
 
 #: macro.cc:498 macro.cc:797
 #, c-format
@@ -948,13 +939,12 @@ msgstr "se expande __COUNTER__ dentro de una directiva con -fdirectives-only"
 
 #: macro.cc:916
 msgid "invalid string literal, ignoring final '\\'"
-msgstr "cadena literal inválida, se ignora el '\\' final"
+msgstr "cadena literal inválida, se descarta el '\\' final"
 
 #: macro.cc:980
-#, fuzzy, c-format
-#| msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
+#, c-format
 msgid "pasting \"%.*s\" and \"%.*s\" does not give a valid preprocessing token"
-msgstr "pegar «%s» y «%s» no da un elemento válido de preprocesamiento"
+msgstr "pegar «%.*s» y «%.*s» no da un elemento válido de preprocesamiento"
 
 #: macro.cc:1112
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
@@ -967,23 +957,22 @@ msgstr "ISO C99 requiere al menos un argumento para la «...» en una macro vari
 #: macro.cc:1123
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
-msgstr "la macro «%s» requiere %u argumentos, pero solo se proporcionan %u"
+msgstr "el macro «%s» requiere %u argumentos, pero solo se proporcionan %u"
 
 #: macro.cc:1128
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
-msgstr "la macro «%s» pasó %u argumentos, pero solamente toma %u"
+msgstr "el macro «%s» pasó %u argumentos, pero solamente toma %u"
 
 #: macro.cc:1132
-#, fuzzy, c-format
-#| msgid "macro \"%s\" is not used"
+#, c-format
 msgid "macro \"%s\" defined here"
-msgstr "la macro «%s» no se utiliza"
+msgstr "el macro «%s» se definió aquí"
 
 #: macro.cc:1326 traditional.cc:822
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
-msgstr "lista de argumentos sin terminar al invocar la macro «%s»"
+msgstr "lista de argumentos sin terminar al invocar el macro «%s»"
 
 #: macro.cc:1472
 #, c-format
@@ -1049,7 +1038,7 @@ msgstr "'##' no puede aparece en o al final de una expansión de macro"
 
 #: macro.cc:3614
 msgid "ISO C++11 requires whitespace after the macro name"
-msgstr "ISO C++11 requiere espacios en blanco tras del nombre de macro"
+msgstr "ISO C++11 requiere espacios en blanco después del nombre de macro"
 
 #: macro.cc:3615
 msgid "ISO C99 requires whitespace after the macro name"
@@ -1113,7 +1102,7 @@ msgstr "al leer el encabezado precompilado"
 #: traditional.cc:891
 #, c-format
 msgid "detected recursion whilst expanding macro \"%s\""
-msgstr "se detectó recursión al expandir la macro «%s»"
+msgstr "se detectó recursión al expandir el macro «%s»"
 
 #: traditional.cc:1114
 msgid "syntax error in macro parameter list"

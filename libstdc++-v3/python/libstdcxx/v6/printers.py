@@ -242,6 +242,7 @@ class SharedPointerPrinter:
         state = 'empty'
         refcounts = self._get_refcounts()
         targ = self.val.type.template_argument(0)
+        targ = strip_versioned_namespace(str(targ))
 
         if refcounts != 0:
             usecount = refcounts['_M_use_count']
@@ -250,7 +251,7 @@ class SharedPointerPrinter:
                 state = 'expired, weak count %d' % weakcount
             else:
                 state = 'use count %d, weak count %d' % (usecount, weakcount - 1)
-        return '%s<%s> (%s)' % (self.typename, str(targ), state)
+        return '%s<%s> (%s)' % (self.typename, targ, state)
 
 def _tuple_impl_get(val):
     "Return the tuple element stored in a _Tuple_impl<N, T> base class."
@@ -1551,6 +1552,15 @@ class StdErrorCodePrinter:
         return None
 
     @classmethod
+    def _find_standard_errc_enum(cls, name):
+        for ns in ['', _versioned_namespace]:
+            try:
+                qname = 'std::{}{}'.format(ns, name)
+                return cls._find_errc_enum(qname)
+            except RuntimeError:
+                pass
+
+    @classmethod
     def _match_net_ts_category(cls, cat):
         net_cats = ['stream', 'socket', 'ip::resolver']
         for c in net_cats:
@@ -1591,10 +1601,10 @@ class StdErrorCodePrinter:
             is_errno = cls._system_is_posix
         if typ.tag.endswith('::future_error_category'):
             name = 'future'
-            enum = cls._find_errc_enum('std::future_errc')
+            enum = cls._find_standard_errc_enum('future_errc')
         if typ.tag.endswith('::io_error_category'):
             name = 'io'
-            enum = cls._find_errc_enum('std::io_errc')
+            enum = cls._find_standard_errc_enum('io_errc')
 
         if name is None:
             try:
@@ -1687,7 +1697,7 @@ class StdSpanPrinter:
             return '[%d]' % count, (self.begin + count).dereference()
 
     def __init__(self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
         if val.type.template_argument(1) == gdb.parse_and_eval('static_cast<std::size_t>(-1)'):
             self.size = val['_M_extent']['_M_extent_value']
@@ -1724,7 +1734,7 @@ class StdAtomicPrinter:
     "Print a std:atomic"
 
     def __init__(self, typename, val):
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         self.val = val
         self.shptr_printer = None
         self.value_type = self.val.type.template_argument(0)
@@ -1994,7 +2004,7 @@ class FilteringTypePrinter(object):
         self.enabled = True
 
     class _recognizer(object):
-        "The recognizer class for TemplateTypePrinter."
+        "The recognizer class for FilteringTypePrinter."
 
         def __init__(self, match, name):
             self.match = match

@@ -1845,7 +1845,7 @@ make_thunk (FuncDeclaration *decl, int offset)
      forcing a D local thunk to be emitted.  */
   const char *ident;
 
-  if (decl->linkage == LINK::cpp)
+  if (decl->resolvedLinkage () == LINK::cpp)
     ident = target.cpp.thunkMangle (decl, offset);
   else
     {
@@ -1862,7 +1862,7 @@ make_thunk (FuncDeclaration *decl, int offset)
 
   d_keep (thunk);
 
-  if (decl->linkage != LINK::cpp)
+  if (decl->resolvedLinkage () != LINK::cpp)
     free (CONST_CAST (char *, ident));
 
   if (!DECL_EXTERNAL (function))

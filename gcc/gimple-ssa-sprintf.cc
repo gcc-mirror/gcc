@@ -2232,8 +2232,9 @@ format_character (const directive &dir, tree arg, pointer_query &ptr_qry)
 }
 
 /* If TYPE is an array or struct or union, increment *FLDOFF by the starting
-   offset of the member that *OFF point into and set *FLDSIZE to its size
-   in bytes and decrement *OFF by the same.  Otherwise do nothing.  */
+   offset of the member that *OFF points into if one can be determined and
+   set *FLDSIZE to its size in bytes and decrement *OFF by the same.
+   Otherwise do nothing.  */
 
 static void
 set_aggregate_size_and_offset (tree type, HOST_WIDE_INT *fldoff,
@@ -2249,9 +2250,9 @@ set_aggregate_size_and_offset (tree type, HOST_WIDE_INT *fldoff,
       if (array_elt_at_offset (type, *off, &index, &arrsize))
 	{
 	  *fldoff += index;
-	  *off -= index;
 	  *fldsize = arrsize;
 	}
+      /* Otherwise leave *FLDOFF et al. unchanged.  */
     }
   else if (RECORD_OR_UNION_TYPE_P (type))
     {
@@ -2269,11 +2270,12 @@ set_aggregate_size_and_offset (tree type, HOST_WIDE_INT *fldoff,
 	  *fldoff += index;
 	  *off -= index;
 	}
+      /* Otherwise leave *FLDOFF et al. unchanged.  */
     }
 }
 
-/* For an expression X of pointer type, recursively try to find the same
-   origin (object or pointer) as Y it references and return such a Y.
+/* For an expression X of pointer type, recursively try to find its origin
+   (either object DECL or pointer such as PARM_DECL) Y and return such a Y.
    When X refers to an array element or struct member, set *FLDOFF to
    the offset of the element or member from the beginning of the "most
    derived" object and *FLDSIZE to its size.  When nonnull, set *OFF to
@@ -2284,9 +2286,6 @@ static tree
 get_origin_and_offset_r (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *fldsize,
 			 HOST_WIDE_INT *off)
 {
-  if (!x)
-    return NULL_TREE;
-
   HOST_WIDE_INT sizebuf = -1;
   if (!fldsize)
     fldsize = &sizebuf;
@@ -2308,23 +2307,33 @@ get_origin_and_offset_r (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *fldsize,
 
     case ARRAY_REF:
       {
-	tree offset = TREE_OPERAND (x, 1);
-	HOST_WIDE_INT idx = (tree_fits_uhwi_p (offset)
-			     ? tree_to_uhwi (offset) : HOST_WIDE_INT_MAX);
+	tree sub = TREE_OPERAND (x, 1);
+	unsigned HOST_WIDE_INT idx =
+	  tree_fits_uhwi_p (sub) ? tree_to_uhwi (sub) : HOST_WIDE_INT_MAX;
 
-	tree eltype = TREE_TYPE (x);
-	if (TREE_CODE (eltype) == INTEGER_TYPE)
+	tree elsz = array_ref_element_size (x);
+	unsigned HOST_WIDE_INT elbytes =
+	  tree_fits_shwi_p (elsz) ? tree_to_shwi (elsz) : HOST_WIDE_INT_MAX;
+
+	unsigned HOST_WIDE_INT byteoff = idx * elbytes;
+
+	if (byteoff < HOST_WIDE_INT_MAX
+	    && elbytes < HOST_WIDE_INT_MAX
+	    && byteoff / elbytes == idx)
 	  {
+	    /* For in-bounds constant offsets into constant-sized arrays
+	       bump up *OFF, and for what's likely arrays or structs of
+	       arrays, also *FLDOFF, as necessary.  */
 	    if (off)
-	      *off = idx;
+	      *off += byteoff;
+	    if (elbytes > 1)
+	      *fldoff += byteoff;
 	  }
-	else if (idx < HOST_WIDE_INT_MAX)
-	  *fldoff += idx * int_size_in_bytes (eltype);
 	else
-	  *fldoff = idx;
+	  *fldoff = HOST_WIDE_INT_MAX;
 
 	x = TREE_OPERAND (x, 0);
-	return get_origin_and_offset_r (x, fldoff, fldsize, nullptr);
+	return get_origin_and_offset_r (x, fldoff, fldsize, off);
       }
 
     case MEM_REF:
@@ -2350,8 +2359,14 @@ get_origin_and_offset_r (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *fldsize,
 
     case COMPONENT_REF:
       {
+	tree foff = component_ref_field_offset (x);
 	tree fld = TREE_OPERAND (x, 1);
-	*fldoff += int_byte_position (fld);
+	if (!tree_fits_shwi_p (foff)
+	    || !tree_fits_shwi_p (DECL_FIELD_BIT_OFFSET (fld)))
+	  return x;
+	*fldoff += (tree_to_shwi (foff)
+		    + (tree_to_shwi (DECL_FIELD_BIT_OFFSET (fld))
+		       / BITS_PER_UNIT));
 
 	get_origin_and_offset_r (fld, fldoff, fldsize, off);
 	x = TREE_OPERAND (x, 0);
@@ -2411,30 +2426,25 @@ get_origin_and_offset_r (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *fldsize,
   return x;
 }
 
-/* Nonrecursive version of the above.  */
+/* Nonrecursive version of the above.
+   The function never returns null unless X is null to begin with.  */
 
 static tree
 get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off,
 		       HOST_WIDE_INT *fldsize = nullptr)
 {
+  if (!x)
+    return NULL_TREE;
+
   HOST_WIDE_INT sizebuf;
   if (!fldsize)
     fldsize = &sizebuf;
 
+  /* Invalidate *FLDSIZE.  */
   *fldsize = -1;
+  *fldoff = *off = 0;
 
-  *fldoff = *off = *fldsize = 0;
-  tree orig = get_origin_and_offset_r (x, fldoff, fldsize, off);
-  if (!orig)
-    return NULL_TREE;
-
-  if (!*fldoff && *off == *fldsize)
-    {
-      *fldoff = *off;
-      *off = 0;
-    }
-
-  return orig;
+  return get_origin_and_offset_r (x, fldoff, fldsize, off);
 }
 
 /* If ARG refers to the same (sub)object or array element as described
@@ -2454,7 +2464,8 @@ alias_offset (tree arg, HOST_WIDE_INT *arg_size,
     return HOST_WIDE_INT_MIN;
 
   /* The two arguments may refer to the same object.  If they both refer
-     to a struct member, see if the members are one and the same.  */
+     to a struct member, see if the members are one and the same.  If so,
+     return the offset into the member.  */
   HOST_WIDE_INT arg_off = 0, arg_fld = 0;
 
   tree arg_orig = get_origin_and_offset (arg, &arg_fld, &arg_off, arg_size);
