@@ -95,7 +95,7 @@ test04()
   ec.clear();
   try
   {
-    exists(unr);
+    (void) exists(unr);
   }
   catch(const std::filesystem::filesystem_error& ex)
   {

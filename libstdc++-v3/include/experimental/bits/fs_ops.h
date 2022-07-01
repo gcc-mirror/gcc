@@ -51,10 +51,16 @@ inline namespace v1
    * @{
    */
 
+  [[__nodiscard__]]
   path absolute(const path& __p, const path& __base = current_path());
 
+  [[__nodiscard__]]
   path canonical(const path& __p, const path& __base = current_path());
+
+  [[__nodiscard__]]
   path canonical(const path& __p, error_code& __ec);
+
+  [[__nodiscard__]]
   path canonical(const path& __p, const path& __base, error_code& __ec);
 
   inline void
@@ -66,6 +72,7 @@ inline namespace v1
   { copy(__from, __to, copy_options::none, __ec); }
 
   void copy(const path& __from, const path& __to, copy_options __options);
+
   void copy(const path& __from, const path& __to, copy_options __options,
 	    error_code& __ec) noexcept;
 
@@ -107,25 +114,34 @@ inline namespace v1
   void create_symlink(const path& __to, const path& __new_symlink,
 		      error_code& __ec) noexcept;
 
+  [[__nodiscard__]]
   path current_path();
+
+  [[__nodiscard__]]
   path current_path(error_code& __ec);
+
   void current_path(const path& __p);
   void current_path(const path& __p, error_code& __ec) noexcept;
 
+  [[__nodiscard__]]
   bool
   equivalent(const path& __p1, const path& __p2);
 
+  [[__nodiscard__]]
   bool
   equivalent(const path& __p1, const path& __p2, error_code& __ec) noexcept;
 
+  [[__nodiscard__]]
   inline bool
   exists(file_status __s) noexcept
   { return status_known(__s) && __s.type() != file_type::not_found; }
 
+  [[__nodiscard__]]
   inline bool
   exists(const path& __p)
   { return exists(status(__p)); }
 
+  [[__nodiscard__]]
   inline bool
   exists(const path& __p, error_code& __ec) noexcept
   {
@@ -138,63 +154,84 @@ inline namespace v1
     return false;
   }
 
+  [[__nodiscard__]]
   uintmax_t file_size(const path& __p);
+
+  [[__nodiscard__]]
   uintmax_t file_size(const path& __p, error_code& __ec) noexcept;
 
+  [[__nodiscard__]]
   uintmax_t hard_link_count(const path& __p);
+
+  [[__nodiscard__]]
   uintmax_t hard_link_count(const path& __p, error_code& __ec) noexcept;
 
+  [[__nodiscard__]]
   inline bool
   is_block_file(file_status __s) noexcept
   { return __s.type() == file_type::block; }
 
+  [[__nodiscard__]]
   inline bool
   is_block_file(const path& __p)
   { return is_block_file(status(__p)); }
 
+  [[__nodiscard__]]
   inline bool
   is_block_file(const path& __p, error_code& __ec) noexcept
   { return is_block_file(status(__p, __ec)); }
 
+  [[__nodiscard__]]
   inline bool
   is_character_file(file_status __s) noexcept
   { return __s.type() == file_type::character; }
 
+  [[__nodiscard__]]
   inline bool
   is_character_file(const path& __p)
   { return is_character_file(status(__p)); }
 
+  [[__nodiscard__]]
   inline bool
   is_character_file(const path& __p, error_code& __ec) noexcept
   { return is_character_file(status(__p, __ec)); }
 
+  [[__nodiscard__]]
   inline bool
   is_directory(file_status __s) noexcept
   { return __s.type() == file_type::directory; }
 
+  [[__nodiscard__]]
   inline bool
   is_directory(const path& __p)
   { return is_directory(status(__p)); }
 
+  [[__nodiscard__]]
   inline bool
   is_directory(const path& __p, error_code& __ec) noexcept
   { return is_directory(status(__p, __ec)); }
 
+  [[__nodiscard__]]
   bool is_empty(const path& __p);
+  [[__nodiscard__]]
   bool is_empty(const path& __p, error_code& __ec) noexcept;
 
+  [[__nodiscard__]]
   inline bool
   is_fifo(file_status __s) noexcept
   { return __s.type() == file_type::fifo; }
 
+  [[__nodiscard__]]
   inline bool
   is_fifo(const path& __p)
   { return is_fifo(status(__p)); }
 
+  [[__nodiscard__]]
   inline bool
   is_fifo(const path& __p, error_code& __ec) noexcept
   { return is_fifo(status(__p, __ec)); }
 
+  [[__nodiscard__]]
   inline bool
   is_other(file_status __s) noexcept
   {
@@ -202,52 +239,67 @@ inline namespace v1
       && !is_symlink(__s);
   }
 
+  [[__nodiscard__]]
   inline bool
   is_other(const path& __p)
   { return is_other(status(__p)); }
 
+  [[__nodiscard__]]
   inline bool
   is_other(const path& __p, error_code& __ec) noexcept
   { return is_other(status(__p, __ec)); }
 
+  [[__nodiscard__]]
   inline bool
   is_regular_file(file_status __s) noexcept
   { return __s.type() == file_type::regular; }
 
+  [[__nodiscard__]]
   inline bool
   is_regular_file(const path& __p)
   { return is_regular_file(status(__p)); }
 
+  [[__nodiscard__]]
   inline bool
   is_regular_file(const path& __p, error_code& __ec) noexcept
   { return is_regular_file(status(__p, __ec)); }
 
+  [[__nodiscard__]]
   inline bool
   is_socket(file_status __s) noexcept
   { return __s.type() == file_type::socket; }
 
+  [[__nodiscard__]]
   inline bool
   is_socket(const path& __p)
   { return is_socket(status(__p)); }
 
+  [[__nodiscard__]]
   inline bool
   is_socket(const path& __p, error_code& __ec) noexcept
   { return is_socket(status(__p, __ec)); }
 
+  [[__nodiscard__]]
   inline bool
   is_symlink(file_status __s) noexcept
   { return __s.type() == file_type::symlink; }
 
+  [[__nodiscard__]]
   inline bool
   is_symlink(const path& __p)
   { return is_symlink(symlink_status(__p)); }
 
+  [[__nodiscard__]]
   inline bool
   is_symlink(const path& __p, error_code& __ec) noexcept
   { return is_symlink(symlink_status(__p, __ec)); }
 
+  [[__nodiscard__]]
   file_time_type  last_write_time(const path& __p);
+
+  [[__nodiscard__]]
   file_time_type  last_write_time(const path& __p, error_code& __ec) noexcept;
+
   void last_write_time(const path& __p, file_time_type __new_time);
   void last_write_time(const path& __p, file_time_type __new_time,
 		       error_code& __ec) noexcept;
@@ -255,7 +307,10 @@ inline namespace v1
   void permissions(const path& __p, perms __prms);
   void permissions(const path& __p, perms __prms, error_code& __ec) noexcept;
 
+  [[__nodiscard__]]
   path read_symlink(const path& __p);
+
+  [[__nodiscard__]]
   path read_symlink(const path& __p, error_code& __ec);
 
   bool remove(const path& __p);
@@ -270,22 +325,38 @@ inline namespace v1
   void resize_file(const path& __p, uintmax_t __size);
   void resize_file(const path& __p, uintmax_t __size, error_code& __ec) noexcept;
 
+  [[__nodiscard__]]
   space_info space(const path& __p);
+
+  [[__nodiscard__]]
   space_info space(const path& __p, error_code& __ec) noexcept;
 
+  [[__nodiscard__]]
   file_status status(const path& __p);
+
+  [[__nodiscard__]]
   file_status status(const path& __p, error_code& __ec) noexcept;
 
+  [[__nodiscard__]]
   inline bool status_known(file_status __s) noexcept
   { return __s.type() != file_type::none; }
 
+  [[__nodiscard__]]
   file_status symlink_status(const path& __p);
+
+  [[__nodiscard__]]
   file_status symlink_status(const path& __p, error_code& __ec) noexcept;
 
+  [[__nodiscard__]]
   path system_complete(const path& __p);
+
+  [[__nodiscard__]]
   path system_complete(const path& __p, error_code& __ec);
 
+  [[__nodiscard__]]
   path temp_directory_path();
+
+  [[__nodiscard__]]
   path temp_directory_path(error_code& __ec);
 
   /// @} group filesystem-ts

@@ -40,7 +40,7 @@ test01()
   VERIFY( !result );
 
   try {
-    fs::is_empty(p);
+    (void) fs::is_empty(p);
   } catch (const fs::filesystem_error& e) {
     ec2 = e.code();
   }
@@ -51,7 +51,7 @@ test01()
   VERIFY( !result );
 
   try {
-    fs::is_empty(p/"f");
+    (void) fs::is_empty(p/"f");
   } catch (const fs::filesystem_error& e) {
     ec2 = e.code();
   }

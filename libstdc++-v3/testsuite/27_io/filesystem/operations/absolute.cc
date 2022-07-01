@@ -84,7 +84,7 @@ test03()
   VERIFY( eabs.empty() );
 
   try {
-    absolute(path{});
+    (void) absolute(path{});
     VERIFY( false );
   } catch (const std::filesystem::filesystem_error& e) {
     VERIFY( e.code() == std::errc::invalid_argument );

@@ -32,7 +32,7 @@ test01()
   auto p = __gnu_test::nonexistent_path();
   std::error_code ec;
 
-  read_symlink(p, ec);
+  (void) read_symlink(p, ec);
   VERIFY( ec );
 
   fs::path tgt = ".";
