@@ -17,7 +17,7 @@ assemble_string (const char *p, int size)
       if (thissize > maximum)
 	thissize = maximum;
 
-      default_elf_asm_output_ascii (asm_out_file, p, thissize);;
+      default_elf_asm_output_ascii (asm_out_file, p, thissize);
 
       pos += thissize;
       p += thissize;
