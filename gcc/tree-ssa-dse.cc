@@ -1463,7 +1463,8 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
       gimple_call_set_lhs (stmt, NULL_TREE);
       update_stmt (stmt);
     }
-  else
+  else if (!stmt_could_throw_p (fun, stmt)
+	   || fun->can_delete_dead_exceptions)
     delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup,
 					 need_ab_cleanup);
 }
