@@ -842,6 +842,13 @@ wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
 	val[i++] = negate ? block : ~block;
     }
 
+  if (end >= prec)
+    {
+      if (!shift)
+	val[i++] = negate ? 0 : -1;
+      return i;
+    }
+
   while (i < end / HOST_BITS_PER_WIDE_INT)
     /* 1111111 */
     val[i++] = negate ? 0 : -1;
@@ -853,7 +860,7 @@ wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
       HOST_WIDE_INT block = (HOST_WIDE_INT_1U << shift) - 1;
       val[i++] = negate ? ~block : block;
     }
-  else if (end < prec)
+  else
     val[i++] = negate ? -1 : 0;
 
   return i;
@@ -2549,6 +2556,10 @@ wide_int_cc_tests ()
   run_all_wide_int_tests <widest_int> ();
   test_overflow ();
   test_round_for_mask ();
+  ASSERT_EQ (wi::mask (128, false, 128),
+	     wi::shifted_mask (0, 128, false, 128));
+  ASSERT_EQ (wi::mask (128, true, 128),
+	     wi::shifted_mask (0, 128, true, 128));
 }
 
 } // namespace selftest
