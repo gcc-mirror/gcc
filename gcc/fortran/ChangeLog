@@ -1,3 +1,13 @@
+2022-06-30  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/103137
+	PR fortran/103138
+	PR fortran/103693
+	PR fortran/105243
+	* decl.cc (gfc_match_data_decl): Reject CLASS entity declaration
+	when it is given the PARAMETER attribute.
+
 2022-06-29  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

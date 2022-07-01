@@ -1,3 +1,42 @@
+2022-06-30  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/103137
+	PR fortran/103138
+	PR fortran/103693
+	PR fortran/105243
+	* gfortran.dg/class_58.f90: Fix test.
+	* gfortran.dg/class_73.f90: New test.
+
+2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/spellcheck-stdlib.C: Check <ctime> types and functions.
+
+2022-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/inext-1.H: Check include-next happened.
+
+2022-06-30  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/xchg-3.c: New test case.
+
+2022-06-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR testsuite/102690
+	* g++.dg/warn/Warray-bounds-16.C: XFAIL only on lp64 for the
+	warning.
+
+2022-06-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106114
+	* gcc.dg/pr106114.c: New.
+
+2022-06-30  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/106095
+	* gcc.target/i386/pr106095.c: Add test using those AVX builtins.
+
 2022-06-29  Antoni Boucher  <bouanto@zoho.com>
 
 	PR jit/105812

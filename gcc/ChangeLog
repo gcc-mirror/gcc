@@ -1,3 +1,63 @@
+2022-06-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR lto/106129
+	* lto-wrapper.cc (find_option): Add argument start.
+	(merge_and_complain): Loop over existing_opt_index and
+	existing_opt2_index for Xassembler check.  Update calls to
+	find_option.
+	(find_and_merge_options): Add argument first to determine whether
+	to merge options with those passed in *opts.
+	(run_gcc): Update calls to find_and_merge_options.
+
+2022-06-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (block_range_cache::block_range_cache):
+	Rename vrange_allocator to obstack_vrange_allocator.
+	(ssa_global_cache::ssa_global_cache): Same.
+	* gimple-range-edge.h (class gimple_outgoing_range): Same.
+	* gimple-range-infer.h (class infer_range_manager): Same.
+	* value-range.h (class vrange_allocator): Make abstract.
+	(class obstack_vrange_allocator): Inherit from vrange_allocator.
+	(class ggc_vrange_allocator): New.
+
+2022-06-30  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (swap_mode): Rename from *swap<mode> to
+	provide gen_swapsi.
+	(<any_rotate>di3): Handle !TARGET_64BIT rotations by 32 bits
+	via new gen_<insn>32di2_doubleword below.
+	(<anyrotate>32di2_doubleword): New define_insn_and_split
+	that splits after reload as either a pair of move instructions
+	or an xchgl (using gen_swapsi).
+
+2022-06-30  Richard Biener  <rguenther@suse.de>
+
+	* domwalk.h (dom_walker::dom_walker): Update comment to
+	reflect reality and new special argument value for
+	bb_index_to_rpo.
+	* domwalk.cc (dom_walker::dom_walker): Recognize -1
+	bb_index_to_rpo.
+	* tree-into-ssa.cc
+	(rewrite_update_dom_walker::rewrite_update_dom_walker): Tell
+	dom_walker to not use RPO.
+
+2022-06-30  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-dom.cc (pass_dominator::execute): Remove m_ranger as
+	it is unused.
+
+2022-06-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106114
+	* gimple-range-fold.cc (fold_using_range::relation_fold_and_or): Check
+	statement operands instead of GORI cache.
+
+2022-06-30  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/106095
+	* config/i386/sse.md: Fix asm generation.
+
 2022-06-29  Sergei Trofimovich  <siarheit@google.com>
 
 	PR c++/106102

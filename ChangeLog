@@ -1,3 +1,14 @@
+2022-06-30  Cui,Lili  <lili.cui@intel.com>
+
+	Revert:
+	2022-06-30  Cui,Lili  <lili.cui@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-06-30  Cui,Lili  <lili.cui@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2022-06-28  Alexandre Oliva  <oliva@adacore.com>
 
 	* Makefile.tpl (HOST_EXPORTS): Add TFLAGS to GCC_FOR_TARGET.

@@ -1,3 +1,30 @@
+2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/utility.h: Fix comment typos.
+
+2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (fs::temp_directory_path()): Include path
+	in exception.
+	(fs::temp_directory_path(error_code&)): Rearrange to more
+	closely match the structure of the first overload.
+	* src/filesystem/ops.cc (fs::temp_directory_path): Likewise.
+	* testsuite/27_io/filesystem/operations/temp_directory_path.cc:
+	Check that exception contains the path.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+
+2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88881
+	* src/filesystem/ops.cc (has_trailing_slash): New helper
+	function.
+	(fs::status): Strip trailing slashes.
+	(fs::symlink_status): Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Clean the environment before each test and use TMP instead of
+	TMPDIR so the test passes on Windows.
+
 2022-06-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/dir-common.h (_Dir_base::_At_path):
