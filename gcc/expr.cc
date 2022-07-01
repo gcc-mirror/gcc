@@ -11186,37 +11186,58 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	machine_mode mode1, mode2;
 	poly_int64 bitsize, bitpos, bytepos;
 	tree offset;
-	int reversep, volatilep = 0, must_force_mem;
+	int reversep, volatilep = 0;
 	tree tem
 	  = get_inner_reference (exp, &bitsize, &bitpos, &offset, &mode1,
 				 &unsignedp, &reversep, &volatilep);
 	rtx orig_op0, memloc;
 	bool clear_mem_expr = false;
+	bool must_force_mem;
 
 	/* If we got back the original object, something is wrong.  Perhaps
 	   we are evaluating an expression too early.  In any event, don't
 	   infinitely recurse.  */
 	gcc_assert (tem != exp);
 
-	/* If tem is a VAR_DECL, we need a memory reference.  */
-	enum expand_modifier tem_modifier = modifier;
-	if (tem_modifier == EXPAND_SUM)
-	  tem_modifier = EXPAND_NORMAL;
-	if (TREE_CODE (tem) == VAR_DECL)
-	  tem_modifier = EXPAND_MEMORY;
+	/* Make sure bitpos is not negative, this can wreak havoc later.  */
+	if (maybe_lt (bitpos, 0))
+	  {
+	    gcc_checking_assert (offset == NULL_TREE);
+	    offset = size_int (bits_to_bytes_round_down (bitpos));
+	    bitpos = num_trailing_bits (bitpos);
+	  }
+
+	/* If we have either an offset, a BLKmode result, or a reference
+	   outside the underlying object, we must force it to memory.
+	   Such a case can occur in Ada if we have unchecked conversion
+	   of an expression from a scalar type to an aggregate type or
+	   for an ARRAY_RANGE_REF whose type is BLKmode, or if we were
+	   passed a partially uninitialized object or a view-conversion
+	   to a larger size.  */
+	must_force_mem = offset != NULL_TREE
+			 || mode1 == BLKmode
+			 || (mode == BLKmode
+			     && !int_mode_for_size (bitsize, 1).exists ());
+
+	const enum expand_modifier tem_modifier
+	  = must_force_mem
+	    ? EXPAND_MEMORY
+	    : modifier == EXPAND_SUM ? EXPAND_NORMAL : modifier;
 
 	/* If TEM's type is a union of variable size, pass TARGET to the inner
 	   computation, since it will need a temporary and TARGET is known
 	   to have to do.  This occurs in unchecked conversion in Ada.  */
+	const rtx tem_target
+	  = TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
+	    && COMPLETE_TYPE_P (TREE_TYPE (tem))
+	    && TREE_CODE (TYPE_SIZE (TREE_TYPE (tem))) != INTEGER_CST
+	    && modifier != EXPAND_STACK_PARM
+	    ? target
+	    : NULL_RTX;
+
 	orig_op0 = op0
-	  = expand_expr_real (tem,
-			      (TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
-			       && COMPLETE_TYPE_P (TREE_TYPE (tem))
-			       && (TREE_CODE (TYPE_SIZE (TREE_TYPE (tem)))
-				   != INTEGER_CST)
-			       && modifier != EXPAND_STACK_PARM
-			       ? target : NULL_RTX),
-			      VOIDmode, tem_modifier, NULL, true);
+	  = expand_expr_real (tem, tem_target, VOIDmode, tem_modifier, NULL,
+			      true);
 
 	/* If the field has a mode, we want to access it in the
 	   field's mode, not the computed mode.
@@ -11233,27 +11254,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	mode2
 	  = CONSTANT_P (op0) ? TYPE_MODE (TREE_TYPE (tem)) : GET_MODE (op0);
 
-	/* Make sure bitpos is not negative, it can wreak havoc later.  */
-	if (maybe_lt (bitpos, 0))
-	  {
-	    gcc_checking_assert (offset == NULL_TREE);
-	    offset = size_int (bits_to_bytes_round_down (bitpos));
-	    bitpos = num_trailing_bits (bitpos);
-	  }
-
-	/* If we have either an offset, a BLKmode result, or a reference
-	   outside the underlying object, we must force it to memory.
-	   Such a case can occur in Ada if we have unchecked conversion
-	   of an expression from a scalar type to an aggregate type or
-	   for an ARRAY_RANGE_REF whose type is BLKmode, or if we were
-	   passed a partially uninitialized object or a view-conversion
-	   to a larger size.  */
-	must_force_mem = (offset
-			  || mode1 == BLKmode
-			  || (mode == BLKmode
-			      && !int_mode_for_size (bitsize, 1).exists ())
-			  || maybe_gt (bitpos + bitsize,
-				       GET_MODE_BITSIZE (mode2)));
+	/* See above for the rationale.  */
+	if (maybe_gt (bitpos + bitsize, GET_MODE_BITSIZE (mode2)))
+	  must_force_mem = true;
 
 	/* Handle CONCAT first.  */
 	if (GET_CODE (op0) == CONCAT && !must_force_mem)
@@ -11311,7 +11314,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	      }
 	    else
 	      /* Otherwise force into memory.  */
-	      must_force_mem = 1;
+	      must_force_mem = true;
 	  }
 
 	/* If this is a constant, put it in a register if it is a legitimate
