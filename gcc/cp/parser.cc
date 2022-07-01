@@ -30565,7 +30565,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 
       /* Look up the name in the scope of the OBJECT_TYPE, unless the
 	 OBJECT_TYPE is not a class.  */
-      if (!dep && CLASS_TYPE_P (object_type))
+      if (CLASS_TYPE_P (object_type)
+	  && !(dep && LAMBDA_TYPE_P (object_type)))
 	/* If the OBJECT_TYPE is a template specialization, it may
 	   be instantiated during name lookup.  In that case, errors
 	   may be issued.  Even if we rollback the current tentative
@@ -30588,25 +30589,6 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 			       consider class templates.  */
 			    : is_template ? LOOK_want::TYPE
 			    : prefer_type_arg (tag_type));
-
-      /* If we did unqualified lookup of a dependent member-qualified name and
-	 found something, do we want to use it?  P1787 clarified that we need
-	 to look in the object scope first even if it's dependent, but for now
-	 let's still use it in some cases.
-	 FIXME remember unqualified lookup result to use if member lookup fails
-	 at instantiation time.	 */
-      if (decl && dep && is_template)
-	{
-	  saved_token_sentinel toks (parser->lexer, STS_ROLLBACK);
-	  /* Only use the unqualified class template lookup if we're actually
-	     looking at a template arg list.  */
-	  if (!cp_parser_skip_entire_template_parameter_list (parser))
-	    decl = NULL_TREE;
-	  /* And only use the unqualified lookup if we're looking at ::.  */
-	  if (decl
-	      && !cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
-	    decl = NULL_TREE;
-	}
 
       /* If we know we're looking for a type (e.g. A in p->A::x),
 	 mock up a typename.  */
