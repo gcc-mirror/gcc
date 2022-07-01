@@ -42,11 +42,11 @@ main()
   bool b [[maybe_unused]];
   std::uintmax_t size;
 
-  std::filesystem::absolute(p);
-  std::filesystem::absolute(p, ec);
+  p2 = std::filesystem::absolute(p);
+  p2 = std::filesystem::absolute(p, ec);
 
-  std::filesystem::canonical(p);
-  std::filesystem::canonical(p, ec);
+  p2 = std::filesystem::canonical(p);
+  p2 = std::filesystem::canonical(p, ec);
 
   std::filesystem::copy(p, p);
   std::filesystem::copy(p, p, ec);
