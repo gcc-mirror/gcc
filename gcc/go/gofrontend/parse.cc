@@ -1977,7 +1977,11 @@ Parse::init_vars_from_map(const Typed_identifier_list* vars, Type* type,
   else if (!val_no->is_sink())
     {
       if (val_no->is_variable())
-	val_no->var_value()->add_preinit_statement(this->gogo_, s);
+	{
+	  val_no->var_value()->add_preinit_statement(this->gogo_, s);
+	  if (no->is_variable())
+	    this->gogo_->record_var_depends_on(no->var_value(), val_no);
+	}
     }
   else if (!no->is_sink())
     {
@@ -2044,7 +2048,11 @@ Parse::init_vars_from_receive(const Typed_identifier_list* vars, Type* type,
   else if (!val_no->is_sink())
     {
       if (val_no->is_variable())
-	val_no->var_value()->add_preinit_statement(this->gogo_, s);
+	{
+	  val_no->var_value()->add_preinit_statement(this->gogo_, s);
+	  if (no->is_variable())
+	    this->gogo_->record_var_depends_on(no->var_value(), val_no);
+	}
     }
   else if (!no->is_sink())
     {
@@ -2110,7 +2118,11 @@ Parse::init_vars_from_type_guard(const Typed_identifier_list* vars,
   else if (!val_no->is_sink())
     {
       if (val_no->is_variable())
-	val_no->var_value()->add_preinit_statement(this->gogo_, s);
+	{
+	  val_no->var_value()->add_preinit_statement(this->gogo_, s);
+	  if (no->is_variable())
+	    this->gogo_->record_var_depends_on(no->var_value(), val_no);
+	}
     }
   else if (!no->is_sink())
     {
