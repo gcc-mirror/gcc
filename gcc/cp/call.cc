@@ -4675,7 +4675,7 @@ resolve_args (vec<tree, va_gc> *args, tsubst_flags_t complain)
 
       /* Force auto deduction now.  Omit tf_warning to avoid redundant
 	 deprecated warning on deprecated-14.C.  */
-      if (!mark_single_function (arg, tf_error))
+      if (!mark_single_function (arg, complain & ~tf_warning))
 	return NULL;
     }
   return args;
