@@ -758,7 +758,7 @@ package Exp_Util is
 
    function Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id;
    --  Return a suitable standard integer type containing at least S bits and
-   --  of the signedness given by Uns.
+   --  of the signedness given by Uns. See also Small_Integer_Type_For.
 
    function Is_Displacement_Of_Object_Or_Function_Result
      (Obj_Id : Entity_Id) return Boolean;
@@ -1193,7 +1193,7 @@ package Exp_Util is
 
    function Small_Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id;
    --  Return the smallest standard integer type containing at least S bits and
-   --  of the signedness given by Uns.
+   --  of the signedness given by Uns. See also Integer_Type_For.
 
    function Thunk_Target (Thunk : Entity_Id) return Entity_Id;
    --  Return the entity ultimately called by the thunk, that is to say return
