@@ -1,3 +1,46 @@
+2022-07-01  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* parser.cc (cp_token_is_module_directive): New function
+	refactoring common code.
+	(cp_parser_skip_to_closing_parenthesis_1): Use the new function.
+	(cp_parser_skip_to_end_of_statement): Likewise.
+	(cp_parser_skip_to_end_of_block_or_statement): Likewise.
+	(cp_parser_declaration): Likewise.
+
+2022-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105550
+	* constexpr.cc (cxx_eval_conditional_expression): Strip TARGET_EXPRs.
+
+2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_target_enter_data,
+	cp_parser_omp_target_exit_data): Accept tofrom
+	map-type modifier but use 'to' / 'from' internally.
+
+2022-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106111
+	* parser.cc (cp_lexer_get_preprocessor_token): Also warn about
+	RID_ALIGNOF, RID_ALIGNAS, RID_THREAD.
+
+2022-07-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105779
+	* call.cc (resolve_args): Use complain.
+
+2022-07-01  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (missing_template_diag): Split out...
+	(cp_parser_id_expression): ...from here.
+
+2022-07-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106024
+	* parser.cc (missing_template_diag): Factor out...
+	(cp_parser_id_expression): ...from here.
+	(cp_parser_lookup_name): Don't look in dependent object_type.
+
 2022-06-30  Nathan Sidwell  <nathan@acm.org>
 
 	* module.cc (module_state::write_define): Drop located param.

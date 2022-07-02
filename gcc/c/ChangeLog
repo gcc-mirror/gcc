@@ -1,3 +1,9 @@
+2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_target_enter_data,
+	c_parser_omp_target_exit_data): Accept tofrom
+	map-type modifier but use 'to' / 'from' internally.
+
 2022-06-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.cc (implicitly_declare): Add auto_diagnostic_group to

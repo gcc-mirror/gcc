@@ -1,3 +1,50 @@
+2022-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106162
+	* include/Makefile.am (largefile-config.h): Add
+	stamp-${host_alias} prerequisite.
+	* include/Makefile.in: Regenerate.
+
+2022-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_ops.h: Add nodiscard to all pure functions.
+	* include/experimental/bits/fs_ops.h: Likewise.
+	* testsuite/27_io/filesystem/operations/all.cc: Do not discard
+	results of absolute and canonical.
+	* testsuite/27_io/filesystem/operations/absolute.cc: Cast
+	discarded result to void.
+	* testsuite/27_io/filesystem/operations/canonical.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/exists.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/is_empty.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/read_symlink.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/status.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/symlink_status.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/canonical.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/exists.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/is_empty.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/read_symlink.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+
+2022-07-01  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* configure: Regnerate.
+	* configure.ac (newlib, *-rtems*): Enable TLS support for all RTEMS
+	targets except bfin, lm32, mips, moxie, or1k, and v850.
+	For all RTEMS targets, define HAVE_ALIGNED_ALLOC, HAVE_AT_QUICK_EXIT,
+	HAVE_LINK, HAVE_POLL, HAVE_QUICK_EXIT, HAVE_READLINK, HAVE_SETENV,
+	HAVE_SLEEP, HAVE_SOCKATMARK, HAVE_STRERROR_L, HAVE_SYMLINK,
+	HAVE_TRUNCATE, and HAVE_USLEEP.
+	* crossconfig.m4 (*-rtems*): Remove.
+
 2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/utility.h: Fix comment typos.

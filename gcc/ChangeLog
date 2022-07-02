@@ -1,3 +1,115 @@
+2022-07-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int.h (struct trailing_wide_ints): Add m_num_elements.
+	(trailing_wide_ints::set_precision): Add num_elements argument.
+	(trailing_wide_ints::extra_size): Same.
+
+2022-07-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*andn<mode>3_doubleword_bmi):
+	Use "r" constraint for operand 1.
+
+2022-07-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-into-ssa.cc (rewrite_update_dom_walker::before_dom_children):
+	Do not look at interesting_blocks which is a copy of
+	blocks_to_update.
+	(update_ssa): Do not initialize it.
+	(pass_build_ssa::execute): Set interesting_blocks to NULL
+	after releasing it.
+
+2022-07-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Revert
+	back to using maybe_ne (off, -1).
+
+2022-07-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.cc (vn_nary_op_insert_into): Make
+	checking dominance check conditional on flag_checking.
+
+2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/gcn-protos.h (print_operand_address): Remove register
+	keyword on 'rtx addr' argument.
+
+2022-07-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*andn<mode>3_doubleword_bmi): Add constraints
+	to post-reload define_insn_and_split.
+
+2022-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106144
+	* wide-int.cc (wi::shifted_mask): If end >= prec, return right after
+	emitting element for shift or if shift is 0 first element after start.
+	(wide_int_cc_tests): Add tests for equivalency of wi::mask and
+	wi::shifted_mask with 0 start.
+
+2022-07-01  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106122
+	* config/i386/i386.md (peephole2): Avoid generating pop %esp
+	when optimizing for size.
+
+2022-07-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (general_szext_operand): Add TImode
+	support using x86_64_hilo_general_operand predicate.
+	(*cmp<dwi>_doubleword): Use x86_64_hilo_general_operand predicate.
+	(*add<dwi>3_doubleword): Improved optimization of zero addition.
+	(and<mode>3): Use SDWIM mode iterator to add support for double
+	word bit-wise AND in TImode.  Use force_reg when double word
+	immediate operand isn't x86_64_hilo_general_operand.
+	(and<dwi>3_doubleword): Generalized from anddi3_doubleword and
+	converted into a post-reload splitter.
+	(*andndi3_doubleword): Previous define_insn deleted.
+	(*andn<mode>3_doubleword_bmi): New define_insn_and_split for
+	TARGET_BMI that splits post-reload.
+	(*andn<mode>3_doubleword): New define_insn_and_split for
+	!TARGET_BMI, that lowers/splits before reload.
+	(<any_or><mode>3): Use SDWIM mode iterator to add suppport for
+	double word bit-wise XOR and bit-wise IOR in TImode.  Use
+	force_reg when double word immediate operand isn't
+	x86_64_hilo_general_operand.
+	(*<any_or>di3_doubleword): Generalized from <any_or>di3_doubleword.
+	(one_cmpl<mode>2): Use SDWIM mode iterator to add support for
+	double word bit-wise NOT in TImode.
+	(one_cmpl<dwi>2_doubleword): Generalize from one_cmpldi2_doubleword
+	and converted into a post-reload splitter.
+
+2022-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/105874
+	* expr.cc (expand_expr_real_1) <normal_inner_ref>: Force
+	EXPAND_MEMORY for the expansion of the inner reference only
+	in the usual cases where a memory reference is required.
+
+2022-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106131
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Force alias-set
+	zero when offsetting the read looking through an aggregate
+	copy.
+
+2022-07-01  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/106126
+	* gimple-if-to-switch.cc (struct condition_info): Save
+	has_side_effect.
+	(find_conditions): Parse all BBs.
+	(pass_if_to_switch::execute): Allow only side effects for first
+	BB.
+
+2022-07-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_AVX512F_UNSET):
+	Add OPTION_MASK_ISA2_AVX512BW_UNSET, remove
+	OPTION_MASK_ISA2_AVX512BF16_UNSET and
+	OPTION_MASK_ISA2_AVX512FP16_UNSET.
+
 2022-06-30  Joseph Myers  <joseph@codesourcery.com>
 
 	PR lto/106129

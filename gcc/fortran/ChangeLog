@@ -1,3 +1,11 @@
+2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_namelist): For the map-type,
+	also handle the always modifer and release/delete.
+	* openmp.cc (resolve_omp_clauses): Accept tofrom
+	map-type modifier for target enter/exit data,
+	but use 'to' / 'from' internally.
+
 2022-06-30  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

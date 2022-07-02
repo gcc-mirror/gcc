@@ -1,3 +1,8 @@
+2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark target enter/exit data
+	with fromto as implemented.
+
 2022-06-28  Martin Liska  <mliska@suse.cz>
 
 	* acinclude.m4: Fix typo in mold linker detection.
