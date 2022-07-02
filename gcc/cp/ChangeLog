@@ -1,3 +1,8 @@
+2022-07-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106024
+	* parser.c (cp_parser_lookup_name): Don't look in dependent lambda.
+
 2022-06-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105925
