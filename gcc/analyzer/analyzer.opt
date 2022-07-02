@@ -66,6 +66,26 @@ Wanalyzer-exposure-through-output-file
 Common Var(warn_analyzer_exposure_through_output_file) Init(1) Warning
 Warn about code paths in which sensitive data is written to a file.
 
+Wanalyzer-fd-access-mode-mismatch
+Common Var(warn_analyzer_fd_mode_mismatch) Init(1) Warning
+Warn about code paths in which read on a write-only file descriptor is attempted, or vice versa.
+
+Wanalyzer-fd-double-close
+Common Var(warn_analyzer_fd_double_close) Init(1) Warning
+Warn about code paths in which a file descriptor can be closed more than once.
+
+Wanalyzer-fd-leak
+Common Var(warn_analyzer_fd_leak) Init(1) Warning
+Warn about code paths in which a file descriptor is not closed.
+
+Wanalyzer-fd-use-after-close
+Common Var(warn_analyzer_fd_use_after_close) Init(1) Warning
+Warn about code paths in which a read or write is performed on a closed file descriptor.
+
+Wanalyzer-fd-use-without-check
+Common Var(warn_analyzer_fd_use_without_check) Init(1) Warning
+Warn about code paths in which a file descriptor is used without being checked for validity.
+
 Wanalyzer-file-leak
 Common Var(warn_analyzer_file_leak) Init(1) Warning
 Warn about code paths in which a stdio FILE is not closed.

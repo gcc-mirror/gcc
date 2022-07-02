@@ -301,6 +301,7 @@ extern state_machine *make_sensitive_state_machine (logger *logger);
 extern state_machine *make_signal_state_machine (logger *logger);
 extern state_machine *make_pattern_test_state_machine (logger *logger);
 extern state_machine *make_va_list_state_machine (logger *logger);
+extern state_machine *make_fd_state_machine (logger *logger);
 
 } // namespace ana
 
