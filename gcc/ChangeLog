@@ -1,3 +1,12 @@
+2022-07-01  Vladimir Makarov  <vmakarov@gcc.gnu.org>
+
+	Backported from master:
+	2022-05-28  Vladimir Makarov  <vmakarov@gcc.gnu.org>
+
+	PR target/103722
+	* config/sh/sh.cc (sh_register_move_cost): Avoid cost "2" (which
+	is special) for various scenarios.
+
 2022-06-29  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

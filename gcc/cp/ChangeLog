@@ -1,3 +1,28 @@
+2022-07-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106024
+	* parser.cc (cp_parser_lookup_name): Limit previous change to
+	lambdas.
+
+2022-07-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105541
+	* cp-tree.h (TMPL_ARGS_DEPTH): 0 for null args.
+	* parser.cc (cp_parser_enclosed_template_argument_list):
+	Use 0-length TREE_VEC for <>.
+
+2022-07-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105779
+	* call.cc (resolve_args): Use complain.
+
+2022-07-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106024
+	* parser.cc (missing_template_diag): Factor out...
+	(cp_parser_id_expression): ...from here.
+	(cp_parser_lookup_name): Don't look in dependent object_type.
+
 2022-06-24  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
