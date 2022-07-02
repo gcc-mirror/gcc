@@ -24806,7 +24806,8 @@ Set the cost of branches to roughly @var{n} instructions.
 @itemx -mno-check-zero-divison
 @opindex -mcheck-zero-division
 Trap (do not trap) on integer division by zero.  The default is
-@option{-mcheck-zero-division}.
+@option{-mcheck-zero-division} for @option{-O0} or @option{-Og}, and
+@option{-mno-check-zero-division} for other optimization levels.
 
 @item -mcond-move-int
 @itemx -mno-cond-move-int
