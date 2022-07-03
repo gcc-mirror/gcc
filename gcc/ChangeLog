@@ -1,3 +1,16 @@
+2022-07-02  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/105900
+	* doc/invoke.texi: Added Wanalyzer-allocation-size.
+
+2022-07-02  Immad Mir  <mirimmad17@gmail.com>
+
+	PR analyzer/106003
+	* Makefile.in (ANALYZER_OBJS): Add sm-fd.o.
+	* doc/invoke.texi:  Add -Wanalyzer-fd-double-close, -Wanalyzer-fd-leak,
+	-Wanalyzer-fd-access-mode-mismatch, -Wanalyzer-fd-use-without-check,
+	-Wanalyzer-fd-use-after-close.
+
 2022-07-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* wide-int.h (struct trailing_wide_ints): Add m_num_elements.

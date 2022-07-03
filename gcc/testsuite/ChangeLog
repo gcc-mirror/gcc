@@ -1,3 +1,21 @@
+2022-07-02  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/105900
+	* gcc.dg/analyzer/pr96639.c: Changed buffer size to omit warning.
+	* gcc.dg/analyzer/allocation-size-1.c: New test.
+	* gcc.dg/analyzer/allocation-size-2.c: New test.
+	* gcc.dg/analyzer/allocation-size-3.c: New test.
+	* gcc.dg/analyzer/allocation-size-4.c: New test.
+	* gcc.dg/analyzer/allocation-size-5.c: New test.
+
+2022-07-02  Immad Mir  <mirimmad17@gmail.com>
+
+	PR analyzer/106003
+	* gcc.dg/analyzer/fd-1.c: New test.
+	* gcc.dg/analyzer/fd-2.c: New test.
+	* gcc.dg/analyzer/fd-3.c: New test.
+	* gcc.dg/analyzer/fd-4.c: New test.
+
 2022-07-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/105550

@@ -1,3 +1,52 @@
+2022-07-02  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/105900
+	* analyzer.opt: Added Wanalyzer-allocation-size.
+	* checker-path.cc (region_creation_event::get_desc): Added call to new
+	virtual function pending_diagnostic::describe_region_creation_event.
+	* checker-path.h: Added region_creation_event::get_desc.
+	* diagnostic-manager.cc (diagnostic_manager::add_event_on_final_node):
+	New function.
+	* diagnostic-manager.h:
+	Added diagnostic_manager::add_event_on_final_node.
+	* pending-diagnostic.h (struct region_creation): New event_desc struct.
+	(pending_diagnostic::describe_region_creation_event): Added virtual
+	function to overwrite description of a region creation.
+	* region-model.cc (class dubious_allocation_size): New class.
+	(capacity_compatible_with_type): New helper function.
+	(class size_visitor): New class.
+	(struct_or_union_with_inheritance_p): New helper function.
+	(is_any_cast_p): New helper function.
+	(region_model::check_region_size): New function.
+	(region_model::set_value): Added call to
+	region_model::check_region_size.
+	* region-model.h (class region_model): New function check_region_size.
+	* svalue.cc (region_svalue::accept): Changed to post-order traversal.
+	(initial_svalue::accept): Likewise.
+	(unaryop_svalue::accept): Likewise.
+	(binop_svalue::accept): Likewise.
+	(sub_svalue::accept): Likewise.
+	(repeated_svalue::accept): Likewise.
+	(bits_within_svalue::accept): Likewise.
+	(widening_svalue::accept): Likewise.
+	(unmergeable_svalue::accept): Likewise.
+	(compound_svalue::accept): Likewise.
+	(conjured_svalue::accept): Likewise.
+	(asm_output_svalue::accept): Likewise.
+	(const_fn_result_svalue::accept): Likewise.
+
+2022-07-02  Immad Mir  <mirimmad17@gmail.com>
+
+	PR analyzer/106003
+	* analyzer.opt (Wanalyzer-fd-leak): New option.
+	(Wanalyzer-fd-access-mode-mismatch): New option.
+	(Wanalyzer-fd-use-without-check): New option.
+	(Wanalyzer-fd-double-close): New option.
+	(Wanalyzer-fd-use-after-close): New option.
+	* sm.h (make_fd_state_machine): New decl.
+	* sm.cc (make_checkers): Call make_fd_state_machine.
+	* sm-fd.cc: New file.
+
 2022-06-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* call-string.cc: Add includes of "analyzer/analyzer.h"
