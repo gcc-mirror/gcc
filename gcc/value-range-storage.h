@@ -21,6 +21,27 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_VALUE_RANGE_STORAGE_H
 #define GCC_VALUE_RANGE_STORAGE_H
 
+// This class is used to allocate the minimum amount of storage needed
+// for a given range.  Storage is automatically freed at destruction
+// of the class.
+
+class vrange_allocator
+{
+public:
+  vrange_allocator () { }
+  virtual ~vrange_allocator () { }
+  // Allocate a range of TYPE.
+  vrange *alloc_vrange (tree type);
+  // Allocate a memory block of BYTES.
+  virtual void *alloc (unsigned bytes) = 0;
+  virtual void free (void *p) = 0;
+  // Return a clone of SRC.
+  template <typename T> T *clone (const T &src);
+private:
+  irange *alloc_irange (unsigned pairs);
+  void operator= (const vrange_allocator &) = delete;
+};
+
 // This class is used to allocate chunks of memory that can store
 // ranges as memory efficiently as possible.  It is meant to be used
 // when long term storage of a range is needed.  The class can be used
@@ -39,10 +60,6 @@ private:
   DISABLE_COPY_AND_ASSIGN (vrange_storage);
   vrange_allocator *m_alloc;
 };
-
-
-// INTERNAL USE ONLY.  The remaining interfaces are only exposed for
-// the GTY machinery to play nice with tree_ssa_name.
 
 // A chunk of memory pointing to an irange storage.
 
@@ -81,5 +98,93 @@ private:
 
   trailing_wide_ints<MAX_INTS> m_ints;
 };
+
+class obstack_vrange_allocator : public vrange_allocator
+{
+public:
+  obstack_vrange_allocator ()
+  {
+    obstack_init (&m_obstack);
+  }
+  virtual ~obstack_vrange_allocator () final override
+  {
+    obstack_free (&m_obstack, NULL);
+  }
+  virtual void *alloc (unsigned bytes) final override
+  {
+    return obstack_alloc (&m_obstack, bytes);
+  }
+  virtual void free (void *) final override { }
+private:
+  obstack m_obstack;
+};
+
+class ggc_vrange_allocator : public vrange_allocator
+{
+public:
+  ggc_vrange_allocator () { }
+  virtual ~ggc_vrange_allocator () final override { }
+  virtual void *alloc (unsigned bytes) final override
+  {
+    return ggc_internal_alloc (bytes);
+  }
+  virtual void free (void *p) final override
+  {
+    return ggc_free (p);
+  }
+};
+
+// Return a new range to hold ranges of TYPE.  The newly allocated
+// range is initialized to VR_UNDEFINED.
+
+inline vrange *
+vrange_allocator::alloc_vrange (tree type)
+{
+  if (irange::supports_p (type))
+    return alloc_irange (2);
+
+  gcc_unreachable ();
+}
+
+// Return a new range with NUM_PAIRS.
+
+inline irange *
+vrange_allocator::alloc_irange (unsigned num_pairs)
+{
+  // Never allocate 0 pairs.
+  // Don't allocate 1 either, or we get legacy value_range's.
+  if (num_pairs < 2)
+    num_pairs = 2;
+
+  size_t nbytes = sizeof (tree) * 2 * num_pairs;
+
+  // Allocate the irange and required memory for the vector.
+  void *r = alloc (sizeof (irange));
+  tree *mem = static_cast <tree *> (alloc (nbytes));
+  return new (r) irange (mem, num_pairs);
+}
+
+// Return a clone of an irange.
+
+template <>
+inline irange *
+vrange_allocator::clone <irange> (const irange &src)
+{
+  irange *r = alloc_irange (src.num_pairs ());
+  *r = src;
+  return r;
+}
+
+// Return a clone of a vrange.
+
+template <>
+inline vrange *
+vrange_allocator::clone <vrange> (const vrange &src)
+{
+  if (is_a <irange> (src))
+    return clone <irange> (as_a <irange> (src));
+
+  gcc_unreachable ();
+}
 
 #endif // GCC_VALUE_RANGE_STORAGE_H

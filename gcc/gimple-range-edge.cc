@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "gimple-range.h"
+#include "value-range-storage.h"
 
 // If there is a range control statment at the end of block BB, return it.
 // Otherwise return NULL.
@@ -68,6 +69,7 @@ gimple_outgoing_range::gimple_outgoing_range (int max_sw_edges)
 {
   m_edge_table = NULL;
   m_max_edges = max_sw_edges;
+  m_range_allocator = new obstack_vrange_allocator;
 }
 
 
@@ -75,6 +77,7 @@ gimple_outgoing_range::~gimple_outgoing_range ()
 {
   if (m_edge_table)
     delete m_edge_table;
+  delete m_range_allocator;
 }
 
 
@@ -162,13 +165,13 @@ gimple_outgoing_range::calc_switch_ranges (gswitch *sw)
       // If there was an existing range and it doesn't fit, we lose the memory.
       // It'll get reclaimed when the obstack is freed.  This seems less
       // intrusive than allocating max ranges for each case.
-      slot = m_range_allocator.clone <irange> (case_range);
+      slot = m_range_allocator->clone <irange> (case_range);
     }
 
   irange *&slot = m_edge_table->get_or_insert (default_edge, &existed);
   // This should be the first call into this switch.
   gcc_checking_assert (!existed);
-  irange *dr = m_range_allocator.clone <irange> (default_range);
+  irange *dr = m_range_allocator->clone <irange> (default_range);
   slot = dr;
 }
 

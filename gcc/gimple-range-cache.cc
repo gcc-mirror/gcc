@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "gimple-range.h"
+#include "value-range-storage.h"
 #include "tree-cfg.h"
 #include "target.h"
 #include "attribs.h"

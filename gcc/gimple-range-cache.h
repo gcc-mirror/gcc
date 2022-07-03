@@ -44,7 +44,7 @@ private:
   vec<class ssa_block_ranges *> m_ssa_ranges;
   ssa_block_ranges &get_block_ranges (tree name);
   ssa_block_ranges *query_block_ranges (tree name);
-  vrange_allocator *m_range_allocator;
+  class vrange_allocator *m_range_allocator;
   bitmap_obstack m_bitmaps;
 };
 
