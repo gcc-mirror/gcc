@@ -8486,6 +8486,11 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
 	     pa != this->args()->end();
 	     ++pa)
 	  {
+	    if ((*pa)->is_error_expression())
+	      {
+		go_assert(saw_errors());
+		return Expression::make_error(loc);
+	      }
 	    if ((*pa)->is_nil_expression())
 	      {
 		Expression* nil = Expression::make_nil(loc);
@@ -13391,6 +13396,7 @@ Array_index_expression::do_check_types(Gogo*)
   if (array_type == NULL)
     {
       go_assert(this->array_->type()->is_error());
+      this->set_is_error();
       return;
     }
 

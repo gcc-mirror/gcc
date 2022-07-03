@@ -7429,7 +7429,10 @@ bool
 Array_type::do_verify()
 {
   if (this->element_type()->is_error_type())
-    return false;
+    {
+      this->set_is_error();
+      return false;
+    }
   if (!this->verify_length())
     {
       this->length_ = Expression::make_error(this->length_->location());
