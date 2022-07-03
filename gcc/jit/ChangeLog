@@ -1,3 +1,14 @@
+2022-07-02  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2022-06-29  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* jit-playback.cc: Include <pthread.h> via "system.h" to avoid calloc()
+	poisoning.
+	* jit-recording.cc: Ditto.
+	* libgccjit.cc: Ditto.
+
 2022-05-06  Release Manager
 
 	* GCC 12.1.0 released.

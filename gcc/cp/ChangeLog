@@ -1,3 +1,13 @@
+2022-07-02  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2022-06-27  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* mapper-client.cc: Include <memory> via "system.h".
+	* mapper-resolver.cc: Ditto.
+	* module.cc: Ditto.
+
 2022-07-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/106024

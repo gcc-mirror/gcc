@@ -1,3 +1,11 @@
+2022-07-02  Sergei Trofimovich  <siarheit@google.com>
+
+	Backported from master:
+	2022-06-29  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* system.h: Introduce INCLUDE_PTHREAD_H macros to include <pthread.h>.
+
 2022-07-01  Vladimir Makarov  <vmakarov@gcc.gnu.org>
 
 	Backported from master:
