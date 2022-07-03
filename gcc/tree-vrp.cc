@@ -1024,7 +1024,8 @@ range_fold_unary_symbolics_p (value_range *vr,
 	{
 	  /* ~X is simply -1 - X.  */
 	  value_range minusone;
-	  minusone.set (build_int_cst (vr0->type (), -1));
+	  tree t = build_int_cst (vr0->type (), -1);
+	  minusone.set (t, t);
 	  range_fold_binary_expr (vr, MINUS_EXPR, expr_type, &minusone, vr0);
 	  return true;
 	}

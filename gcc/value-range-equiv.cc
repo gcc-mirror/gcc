@@ -162,7 +162,7 @@ bool
 value_range_equiv::equal_p (const value_range_equiv &other,
 			    bool ignore_equivs) const
 {
-  return (value_range::equal_p (other)
+  return (value_range::operator== (other)
 	  && (ignore_equivs || vr_bitmap_equal_p (m_equiv, other.m_equiv)));
 }
 

@@ -157,8 +157,6 @@ public:
   void normalize_symbolics ();			// DEPRECATED
   void normalize_addresses ();			// DEPRECATED
   bool may_contain_p (tree) const;		// DEPRECATED
-  void set (tree);				// DEPRECATED
-  bool equal_p (const irange &) const;		// DEPRECATED
   bool legacy_verbose_union_ (const class irange *);	// DEPRECATED
   bool legacy_verbose_intersect (const irange *);	// DEPRECATED
 
@@ -720,12 +718,6 @@ int_range<N>::operator= (const int_range &src)
 }
 
 inline void
-irange::set (tree val)
-{
-  set (val, val);
-}
-
-inline void
 irange::set_undefined ()
 {
   m_kind = VR_UNDEFINED;
@@ -763,12 +755,6 @@ irange::set_varying (tree type)
     }
   else
     m_base[0] = m_base[1] = error_mark_node;
-}
-
-inline bool
-irange::operator== (const irange &r) const
-{
-  return equal_p (r);
 }
 
 // Return the lower bound of a sub-range.  PAIR is the sub-range in
@@ -846,7 +832,7 @@ irange::set_zero (tree type)
 {
   tree z = build_int_cst (type, 0);
   if (legacy_mode_p ())
-    set (z);
+    set (z, z);
   else
     irange_set (z, z);
 }

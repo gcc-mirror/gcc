@@ -688,7 +688,7 @@ irange::legacy_equal_p (const irange &other) const
 }
 
 bool
-irange::equal_p (const irange &other) const
+irange::operator== (const irange &other) const
 {
   if (legacy_mode_p ())
     {

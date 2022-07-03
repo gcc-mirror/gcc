@@ -139,7 +139,7 @@ struct unswitch_predicate
 	auto range_op = range_op_handler (code, TREE_TYPE (lhs));
 	int_range<2> rhs_range (TREE_TYPE (rhs));
 	if (CONSTANT_CLASS_P (rhs))
-	  rhs_range.set (rhs);
+	  rhs_range.set (rhs, rhs);
 	if (!range_op.op1_range (true_range, TREE_TYPE (lhs),
 				 int_range<2> (boolean_true_node,
 					       boolean_true_node), rhs_range)
@@ -535,7 +535,7 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	  else
 	    {
 	      cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx, low);
-	      lab_range.set (low);
+	      lab_range.set (low, low);
 	    }
 
 	  /* Combine the expression with the existing one.  */
