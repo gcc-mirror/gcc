@@ -1,3 +1,4 @@
 include $(srcdir)/config/riscv/t-softfp32
 
 softfp_int_modes += ti
+softfp_extras += fixhfti fixunshfti floattihf floatuntihf
