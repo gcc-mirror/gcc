@@ -307,17 +307,18 @@
 
 ;; Iterator for hardware-supported floating-point modes.
 (define_mode_iterator ANYF [(SF "TARGET_HARD_FLOAT")
-			    (DF "TARGET_DOUBLE_FLOAT")])
+			    (DF "TARGET_DOUBLE_FLOAT")
+			    (HF "TARGET_ZFH")])
 
 ;; Iterator for floating-point modes that can be loaded into X registers.
-(define_mode_iterator SOFTF [SF (DF "TARGET_64BIT")])
+(define_mode_iterator SOFTF [SF (DF "TARGET_64BIT") (HF "TARGET_ZFHMIN")])
 
 ;; This attribute gives the length suffix for a sign- or zero-extension
 ;; instruction.
 (define_mode_attr size [(QI "b") (HI "h")])
 
 ;; Mode attributes for loads.
-(define_mode_attr load [(QI "lb") (HI "lh") (SI "lw") (DI "ld") (SF "flw") (DF "fld")])
+(define_mode_attr load [(QI "lb") (HI "lh") (SI "lw") (DI "ld") (HF "flh") (SF "flw") (DF "fld")])
 
 ;; Instruction names for integer loads that aren't explicitly sign or zero
 ;; extended.  See riscv_output_move and LOAD_EXTEND_OP.
@@ -327,7 +328,7 @@
 (define_mode_attr softload [(HF "lh") (SF "lw") (DF "ld")])
 
 ;; Instruction names for stores.
-(define_mode_attr store [(QI "sb") (HI "sh") (SI "sw") (DI "sd") (SF "fsw") (DF "fsd")])
+(define_mode_attr store [(QI "sb") (HI "sh") (SI "sw") (DI "sd") (HF "fsh") (SF "fsw") (DF "fsd")])
 
 ;; Instruction names for FP stores from integer registers.
 (define_mode_attr softstore [(HF "sh") (SF "sw") (DF "sd")])
@@ -1324,6 +1325,24 @@
   [(set_attr "type" "fcvt")
    (set_attr "mode" "SF")])
 
+(define_insn "truncsfhf2"
+  [(set (match_operand:HF     0 "register_operand" "=f")
+       (float_truncate:HF
+           (match_operand:SF 1 "register_operand" " f")))]
+  "TARGET_ZFHMIN"
+  "fcvt.h.s\t%0,%1"
+  [(set_attr "type" "fcvt")
+   (set_attr "mode" "HF")])
+
+(define_insn "truncdfhf2"
+  [(set (match_operand:HF     0 "register_operand" "=f")
+       (float_truncate:HF
+           (match_operand:DF 1 "register_operand" " f")))]
+  "TARGET_ZFHMIN && TARGET_DOUBLE_FLOAT"
+  "fcvt.h.d\t%0,%1"
+  [(set_attr "type" "fcvt")
+   (set_attr "mode" "HF")])
+
 ;;
 ;;  ....................
 ;;
@@ -1441,12 +1460,30 @@
   [(set_attr "move_type" "shift_shift,load")
    (set_attr "mode" "SI")])
 
+(define_insn "extendhfsf2"
+  [(set (match_operand:SF     0 "register_operand" "=f")
+       (float_extend:SF
+           (match_operand:HF 1 "register_operand" " f")))]
+  "TARGET_ZFHMIN"
+  "fcvt.s.h\t%0,%1"
+  [(set_attr "type" "fcvt")
+   (set_attr "mode" "SF")])
+
 (define_insn "extendsfdf2"
   [(set (match_operand:DF     0 "register_operand" "=f")
 	(float_extend:DF
 	    (match_operand:SF 1 "register_operand" " f")))]
   "TARGET_DOUBLE_FLOAT"
   "fcvt.d.s\t%0,%1"
+  [(set_attr "type" "fcvt")
+   (set_attr "mode" "DF")])
+
+(define_insn "extendhfdf2"
+  [(set (match_operand:DF     0 "register_operand" "=f")
+       (float_extend:DF
+           (match_operand:HF 1 "register_operand" " f")))]
+  "TARGET_ZFHMIN && TARGET_DOUBLE_FLOAT"
+  "fcvt.d.h\t%0,%1"
   [(set_attr "type" "fcvt")
    (set_attr "mode" "DF")])
 
@@ -1460,12 +1497,22 @@
     DONE;
 })
 
+(define_insn "*movhf_hardfloat"
+  [(set (match_operand:HF 0 "nonimmediate_operand" "=f,f,f,m,m,*f,*r,  *r,*r,*m")
+	(match_operand:HF 1 "move_operand"         " f,G,m,f,G,*r,*f,*G*r,*m,*r"))]
+  "TARGET_ZFHMIN
+   && (register_operand (operands[0], HFmode)
+       || reg_or_0_operand (operands[1], HFmode))"
+  { return riscv_output_move (operands[0], operands[1]); }
+  [(set_attr "move_type" "fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
+   (set_attr "mode" "HF")])
 
 (define_insn "*movhf_softfloat"
   [(set (match_operand:HF 0 "nonimmediate_operand" "=f, r,r,m,*f,*r")
 	(match_operand:HF 1 "move_operand"         " f,Gr,m,r,*r,*f"))]
-  "(register_operand (operands[0], HFmode)
-    || reg_or_0_operand (operands[1], HFmode))"
+  "!TARGET_ZFHMIN
+   && (register_operand (operands[0], HFmode)
+       || reg_or_0_operand (operands[1], HFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,move,load,store,mtc,mfc")
    (set_attr "mode" "HF")])
