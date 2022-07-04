@@ -9024,9 +9024,16 @@ vectorizable_load (vec_info *vinfo,
 			     "hoisting out of the vectorized loop: %G", stmt);
 	  scalar_dest = copy_ssa_name (scalar_dest);
 	  tree rhs = unshare_expr (gimple_assign_rhs1 (stmt));
-	  gsi_insert_on_edge_immediate
-	    (loop_preheader_edge (loop),
-	     gimple_build_assign (scalar_dest, rhs));
+	  edge pe = loop_preheader_edge (loop);
+	  gphi *vphi = get_virtual_phi (loop->header);
+	  tree vuse;
+	  if (vphi)
+	    vuse = PHI_ARG_DEF_FROM_EDGE (vphi, pe);
+	  else
+	    vuse = gimple_vuse (gsi_stmt (*gsi));
+	  gimple *new_stmt = gimple_build_assign (scalar_dest, rhs);
+	  gimple_set_vuse (new_stmt, vuse);
+	  gsi_insert_on_edge_immediate (pe, new_stmt);
 	}
       /* These copies are all equivalent, but currently the representation
 	 requires a separate STMT_VINFO_VEC_STMT for each one.  */
@@ -9769,6 +9776,8 @@ vectorizable_load (vec_info *vinfo,
 			    tree ref = build2 (MEM_REF, ltype, ptr,
 					       build_int_cst (ref_type, 0));
 			    new_stmt = gimple_build_assign (elt, ref);
+			    gimple_set_vuse (new_stmt,
+					     gimple_vuse (gsi_stmt (*gsi)));
 			    gimple_seq_add_stmt (&stmts, new_stmt);
 			    CONSTRUCTOR_APPEND_ELT (ctor_elts, NULL_TREE, elt);
 			  }

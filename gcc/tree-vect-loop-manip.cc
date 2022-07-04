@@ -2683,14 +2683,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   class loop *first_loop = loop;
   bool irred_flag = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
 
-  /* We might have a queued need to update virtual SSA form.  As we
-     delete the update SSA machinery below after doing a regular
+  /* Historically we might have a queued need to update virtual SSA form.
+     As we delete the update SSA machinery below after doing a regular
      incremental SSA update during loop copying make sure we don't
-     lose that fact.
-     ???  Needing to update virtual SSA form by renaming is unfortunate
-     but not all of the vectorizer code inserting new loads / stores
-     properly assigns virtual operands to those statements.  */
-  update_ssa (TODO_update_ssa_only_virtuals);
+     lose that fact.  */
+  gcc_assert (!need_ssa_update_p (cfun));
 
   create_lcssa_for_virtual_phi (loop);
 
