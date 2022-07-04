@@ -274,7 +274,7 @@ The OpenMP 4.5 specification is fully supported.
 @multitable @columnfractions .60 .10 .25
 @headitem Description @tab Status @tab Comments
 @item OpenMP directive as C++ attribute specifiers @tab Y @tab
-@item @code{omp_all_memory} reserved locator @tab N @tab
+@item @code{omp_all_memory} reserved locator @tab Y @tab
 @item @emph{target_device trait} in OpenMP Context @tab N @tab
 @item @code{target_device} selector set in context selectors @tab N @tab
 @item C/C++'s @code{declare variant} directive: elision support of
@@ -283,7 +283,7 @@ The OpenMP 4.5 specification is fully supported.
       @code{append_args} @tab N @tab
 @item @code{dispatch} construct @tab N @tab
 @item device-specific ICV settings the environment variables @tab N @tab
-@item assume directive @tab N @tab
+@item @code{assume} directive @tab N @tab
 @item @code{nothing} directive @tab Y @tab
 @item @code{error} directive @tab Y @tab
 @item @code{masked} construct @tab Y @tab
