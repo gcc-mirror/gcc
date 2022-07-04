@@ -776,6 +776,32 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
   convert_move (temp, x, unsignedp);
   return temp;
 }
+
+/* Variant of convert_modes for ABI parameter passing/return.
+   Return an rtx for a value that would result from converting X from
+   a floating point mode FMODE to wider integer mode MODE.  */
+
+rtx
+convert_float_to_wider_int (machine_mode mode, machine_mode fmode, rtx x)
+{
+  gcc_assert (SCALAR_INT_MODE_P (mode) && SCALAR_FLOAT_MODE_P (fmode));
+  scalar_int_mode tmp_mode = int_mode_for_mode (fmode).require ();
+  rtx tmp = force_reg (tmp_mode, gen_lowpart (tmp_mode, x));
+  return convert_modes (mode, tmp_mode, tmp, 1);
+}
+
+/* Variant of convert_modes for ABI parameter passing/return.
+   Return an rtx for a value that would result from converting X from
+   an integer mode IMODE to a narrower floating point mode MODE.  */
+ 
+rtx
+convert_wider_int_to_float (machine_mode mode, machine_mode imode, rtx x)
+{
+  gcc_assert (SCALAR_FLOAT_MODE_P (mode) && SCALAR_INT_MODE_P (imode));
+  scalar_int_mode tmp_mode = int_mode_for_mode (mode).require ();
+  rtx tmp = force_reg (tmp_mode, gen_lowpart (tmp_mode, x));
+  return gen_lowpart_SUBREG (mode, tmp);
+}
 
 /* Return the largest alignment we can use for doing a move (or store)
    of MAX_PIECES.  ALIGN is the largest alignment we could use.  */
@@ -10770,6 +10796,15 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  else
 	    pmode = promote_ssa_mode (ssa_name, &unsignedp);
 	  gcc_assert (GET_MODE (decl_rtl) == pmode);
+
+	  /* Some ABIs require scalar floating point modes to be passed
+	     in a wider scalar integer mode.  We need to explicitly
+	     truncate to an integer mode of the correct precision before
+	     using a SUBREG to reinterpret as a floating point value.  */
+	  if (SCALAR_FLOAT_MODE_P (mode)
+	      && SCALAR_INT_MODE_P (pmode)
+	      && known_lt (GET_MODE_SIZE (mode), GET_MODE_SIZE (pmode)))
+	    return convert_wider_int_to_float (mode, pmode, decl_rtl);
 
 	  temp = gen_lowpart_SUBREG (mode, decl_rtl);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
