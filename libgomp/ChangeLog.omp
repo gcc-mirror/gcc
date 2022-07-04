@@ -1,6 +1,14 @@
 2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Offload-Target Specifics): New chapter; add section
+	to document OpenMP context selectors.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.h (struct gomp_task_depend_entry): Change is_in type
