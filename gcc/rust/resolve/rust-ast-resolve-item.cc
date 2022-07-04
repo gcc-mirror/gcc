@@ -46,8 +46,7 @@ ResolveTraitItems::visit (AST::TraitItemType &type)
     = CanonicalPath::new_seg (type.get_node_id (), type.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   type.get_node_id (), cpath);
+  mappings->insert_canonical_path (type.get_node_id (), cpath);
 
   for (auto &bound : type.get_type_param_bounds ())
     ResolveTypeBound::go (bound.get ());
@@ -60,8 +59,7 @@ ResolveTraitItems::visit (AST::TraitItemFunc &func)
     func.get_node_id (), func.get_trait_function_decl ().get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   func.get_node_id (), cpath);
+  mappings->insert_canonical_path (func.get_node_id (), cpath);
 
   NodeId scope_node_id = func.get_node_id ();
   resolver->get_name_scope ().push (scope_node_id);
@@ -107,8 +105,7 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
 			      func.get_trait_method_decl ().get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   func.get_node_id (), cpath);
+  mappings->insert_canonical_path (func.get_node_id (), cpath);
 
   NodeId scope_node_id = func.get_node_id ();
   resolver->get_name_scope ().push (scope_node_id);
@@ -170,8 +167,7 @@ ResolveTraitItems::visit (AST::TraitItemConst &constant)
 				      constant.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   constant.get_node_id (), cpath);
+  mappings->insert_canonical_path (constant.get_node_id (), cpath);
 
   ResolveType::go (constant.get_type ().get ());
 
@@ -199,8 +195,7 @@ ResolveItem::visit (AST::TypeAlias &alias)
     = CanonicalPath::new_seg (alias.get_node_id (), alias.get_new_type_name ());
   auto path = prefix.append (talias);
   auto cpath = canonical_prefix.append (talias);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   alias.get_node_id (), cpath);
+  mappings->insert_canonical_path (alias.get_node_id (), cpath);
 
   NodeId scope_node_id = alias.get_node_id ();
   resolver->get_type_scope ().push (scope_node_id);
@@ -223,8 +218,7 @@ ResolveItem::visit (AST::Module &module)
   auto mod = CanonicalPath::new_seg (module.get_node_id (), module.get_name ());
   auto path = prefix.append (mod);
   auto cpath = canonical_prefix.append (mod);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   module.get_node_id (), cpath);
+  mappings->insert_canonical_path (module.get_node_id (), cpath);
 
   resolve_visibility (module.get_visibility ());
 
@@ -259,8 +253,7 @@ ResolveItem::visit (AST::TupleStruct &struct_decl)
 				      struct_decl.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   struct_decl.get_node_id (), cpath);
+  mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
 
   resolve_visibility (struct_decl.get_visibility ());
 
@@ -294,8 +287,7 @@ ResolveItem::visit (AST::Enum &enum_decl)
 				      enum_decl.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   enum_decl.get_node_id (), cpath);
+  mappings->insert_canonical_path (enum_decl.get_node_id (), cpath);
 
   resolve_visibility (enum_decl.get_visibility ());
 
@@ -327,8 +319,7 @@ ResolveItem::visit (AST::EnumItem &item)
     = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   item.get_node_id (), cpath);
+  mappings->insert_canonical_path (item.get_node_id (), cpath);
 }
 
 void
@@ -338,8 +329,7 @@ ResolveItem::visit (AST::EnumItemTuple &item)
     = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   item.get_node_id (), cpath);
+  mappings->insert_canonical_path (item.get_node_id (), cpath);
 
   for (auto &field : item.get_tuple_fields ())
     {
@@ -357,8 +347,7 @@ ResolveItem::visit (AST::EnumItemStruct &item)
     = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   item.get_node_id (), cpath);
+  mappings->insert_canonical_path (item.get_node_id (), cpath);
 
   for (auto &field : item.get_struct_fields ())
     {
@@ -377,8 +366,7 @@ ResolveItem::visit (AST::EnumItemDiscriminant &item)
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
 
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   item.get_node_id (), cpath);
+  mappings->insert_canonical_path (item.get_node_id (), cpath);
 }
 
 void
@@ -388,8 +376,7 @@ ResolveItem::visit (AST::StructStruct &struct_decl)
 				      struct_decl.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   struct_decl.get_node_id (), cpath);
+  mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
 
   resolve_visibility (struct_decl.get_visibility ());
 
@@ -423,8 +410,7 @@ ResolveItem::visit (AST::Union &union_decl)
 				      union_decl.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   union_decl.get_node_id (), cpath);
+  mappings->insert_canonical_path (union_decl.get_node_id (), cpath);
 
   resolve_visibility (union_decl.get_visibility ());
 
@@ -456,8 +442,7 @@ ResolveItem::visit (AST::StaticItem &var)
     = CanonicalPath::new_seg (var.get_node_id (), var.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   var.get_node_id (), cpath);
+  mappings->insert_canonical_path (var.get_node_id (), cpath);
 
   ResolveType::go (var.get_type ().get ());
   ResolveExpr::go (var.get_expr ().get (), path, cpath);
@@ -470,8 +455,7 @@ ResolveItem::visit (AST::ConstantItem &constant)
 				      constant.get_identifier ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   constant.get_node_id (), cpath);
+  mappings->insert_canonical_path (constant.get_node_id (), cpath);
 
   resolve_visibility (constant.get_visibility ());
 
@@ -487,8 +471,7 @@ ResolveItem::visit (AST::Function &function)
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
 
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   function.get_node_id (), cpath);
+  mappings->insert_canonical_path (function.get_node_id (), cpath);
 
   resolve_visibility (function.get_visibility ());
 
@@ -614,8 +597,7 @@ ResolveItem::visit (AST::Method &method)
     = CanonicalPath::new_seg (method.get_node_id (), method.get_method_name ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
-  mappings->insert_canonical_path (mappings->get_current_crate (),
-				   method.get_node_id (), cpath);
+  mappings->insert_canonical_path (method.get_node_id (), cpath);
 
   NodeId scope_node_id = method.get_node_id ();
 

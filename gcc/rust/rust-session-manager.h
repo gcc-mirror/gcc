@@ -22,6 +22,7 @@
 
 #include "rust-linemap.h"
 #include "rust-backend.h"
+#include "rust-hir-map.h"
 #include "safe-ctype.h"
 
 #include "config.h"
@@ -225,6 +226,12 @@ struct CompileOptions
     crate_name = std::move (name);
   }
 
+  const std::string &get_crate_name () const
+  {
+    rust_assert (!crate_name.empty ());
+    return crate_name;
+  }
+
   void set_edition (int raw_edition)
   {
     edition = static_cast<Edition> (raw_edition);
@@ -250,15 +257,14 @@ struct Session
   // backend linemap
   Linemap *linemap;
 
+  // mappings
+  Analysis::Mappings *mappings;
+
 public:
   /* Get a reference to the static session instance */
-  static Session &get_instance ()
-  {
-    static Session instance;
+  static Session &get_instance ();
 
-    return instance;
-  }
-
+  Session () = default;
   ~Session () = default;
 
   /* This initializes the compiler session. Corresponds to langhook
@@ -275,7 +281,7 @@ public:
 		      const struct cl_option_handlers *handlers);
   void parse_files (int num_files, const char **files);
   void init_options ();
-  void handle_crate_name (AST::Crate parsed_crate);
+  void handle_crate_name (const AST::Crate &parsed_crate);
 
   /* This function saves the filename data into the session manager using the
    * `move` semantics, and returns a C-style string referencing the input
@@ -286,8 +292,9 @@ public:
     return extra_files.back ().c_str ();
   }
 
+  NodeId load_extern_crate (const std::string &crate_name);
+
 private:
-  Session () = default;
   void parse_file (const char *filename);
   bool enable_dump (std::string arg);
 
@@ -298,8 +305,6 @@ private:
   void dump_hir (HIR::Crate &crate) const;
   void dump_hir_pretty (HIR::Crate &crate) const;
   void dump_type_resolution (HIR::Crate &crate) const;
-
-  void debug_dump_load_crates (Parser<Lexer> &parser);
 
   void implicitly_enable_feature (std::string feature_name);
   void enable_features ();
@@ -324,6 +329,7 @@ private:
   // handle cfg_option
   bool handle_cfg_option (std::string &data);
 };
+
 } // namespace Rust
 
 #if CHECKING_P

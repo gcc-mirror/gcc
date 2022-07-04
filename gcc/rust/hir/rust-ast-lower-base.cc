@@ -527,8 +527,7 @@ ASTLoweringBase::lower_lifetime (AST::Lifetime &lifetime)
   Analysis::NodeMapping mapping (crate_num, lifetime.get_node_id (),
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
-  mappings->insert_node_to_hir (mapping.get_crate_num (), mapping.get_nodeid (),
-				mapping.get_hirid ());
+  mappings->insert_node_to_hir (mapping.get_nodeid (), mapping.get_hirid ());
 
   return HIR::Lifetime (mapping, lifetime.get_lifetime_type (),
 			lifetime.get_lifetime_name (), lifetime.get_locus ());
@@ -543,8 +542,7 @@ ASTLoweringBase::lower_loop_label (AST::LoopLabel &loop_label)
   Analysis::NodeMapping mapping (crate_num, loop_label.get_node_id (),
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
-  mappings->insert_node_to_hir (mapping.get_crate_num (), mapping.get_nodeid (),
-				mapping.get_hirid ());
+  mappings->insert_node_to_hir (mapping.get_nodeid (), mapping.get_hirid ());
 
   return HIR::LoopLabel (mapping, std::move (life), loop_label.get_locus ());
 }
@@ -734,13 +732,11 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
 
   Analysis::NodeMapping mapping (crate_num, path.get_node_id (), hirid,
 				 mappings->get_next_localdef_id (crate_num));
-
   translated = new HIR::QualifiedPathInType (std::move (mapping),
 					     std::move (qual_path_type),
 					     std::move (associated_segment),
 					     std::move (translated_segments),
 					     path.get_locus ());
-  mappings->insert_hir_type (crate_num, hirid, translated);
 }
 
 void
@@ -758,9 +754,6 @@ ASTLoweringType::visit (AST::TraitObjectTypeOneBound &type)
 
   translated = new HIR::TraitObjectType (mapping, std::move (bounds),
 					 type.get_locus (), type.is_dyn ());
-
-  mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
 }
 
 void
@@ -783,9 +776,6 @@ ASTLoweringType::visit (AST::TraitObjectType &type)
 
   translated = new HIR::TraitObjectType (mapping, std::move (bounds),
 					 type.get_locus (), type.is_dyn ());
-
-  mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
 }
 
 HIR::Type *
@@ -1083,12 +1073,6 @@ ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
 			    std::move (vis), extern_block.get_inner_attrs (),
 			    extern_block.get_outer_attrs (),
 			    extern_block.get_locus ());
-
-  mappings->insert_defid_mapping (mapping.get_defid (), hir_extern_block);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     hir_extern_block);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     extern_block.get_locus ());
 
   return hir_extern_block;
 }

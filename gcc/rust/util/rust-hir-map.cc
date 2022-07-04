@@ -20,6 +20,7 @@
 #include "rust-ast-full.h"
 #include "rust-hir-full.h"
 #include "rust-macro-builtins.h"
+#include "rust-mapping-common.h"
 
 namespace Rust {
 namespace Analysis {
@@ -87,8 +88,14 @@ NodeMapping::as_string () const
 }
 
 // Mappings Class now
+static const HirId kDefaultNodeIdBegin = 1;
+static const HirId kDefaultHirIdBegin = 1;
+static const HirId kDefaultCrateNumBegin = 0;
 
-Mappings::Mappings () {}
+Mappings::Mappings ()
+  : crateNumItr (kDefaultCrateNumBegin), currentCrateNum (UNKNOWN_CREATENUM),
+    hirIdIter (kDefaultHirIdBegin), nodeIdIter (kDefaultNodeIdBegin)
+{}
 
 Mappings::~Mappings () {}
 
@@ -103,9 +110,12 @@ Mappings::get ()
 }
 
 CrateNum
-Mappings::get_next_crate_num ()
+Mappings::get_next_crate_num (const std::string &name)
 {
-  return crateNumItr++;
+  auto id = crateNumItr;
+  crateNumItr++;
+  set_crate_name (id, name);
+  return id;
 }
 
 void
@@ -115,48 +125,31 @@ Mappings::set_current_crate (CrateNum crateNum)
 }
 
 CrateNum
-Mappings::setup_crate_mappings (std::string crate_name)
-{
-  CrateNum crate_num = get_next_crate_num ();
-
-  hirIdIter[crate_num] = UNKNOWN_HIRID;
-  nodeIdIter[crate_num] = UNKNOWN_NODEID;
-  localIdIter[crate_num] = UNKNOWN_LOCAL_DEFID;
-  nodeIdToHirMappings[crate_num] = {};
-  locations[crate_num] = {};
-  crate_names[crate_num] = crate_name;
-
-  return crate_num;
-}
-
-CrateNum
 Mappings::get_current_crate () const
 {
   return currentCrateNum;
 }
 
 NodeId
-Mappings::get_next_node_id (CrateNum crateNum)
+Mappings::get_next_node_id ()
 {
-  auto it = nodeIdIter.find (crateNum);
-  // We're probably *not* parsing actual rust code... but mostly reusing
-  // the parser in another way. Return 0
-  if (it == nodeIdIter.end ())
-    return 0;
-
-  auto id = it->second + 1;
-  nodeIdIter[crateNum] = id;
-  return id;
+  auto it = nodeIdIter;
+  nodeIdIter++;
+  return it;
 }
 
 HirId
 Mappings::get_next_hir_id (CrateNum crateNum)
 {
-  auto it = hirIdIter.find (crateNum);
-  rust_assert (it != hirIdIter.end ());
+  auto id = hirIdIter;
+  hirIdIter++;
 
-  auto id = it->second + 1;
-  hirIdIter[crateNum] = id;
+  auto it = hirNodesWithinCrate.find (crateNum);
+  if (it == hirNodesWithinCrate.end ())
+    {
+      hirNodesWithinCrate.insert ({crateNum, {}});
+    }
+
   hirNodesWithinCrate[crateNum].insert (id);
   return id;
 }
@@ -165,64 +158,89 @@ LocalDefId
 Mappings::get_next_localdef_id (CrateNum crateNum)
 {
   auto it = localIdIter.find (crateNum);
+  if (it == localIdIter.end ())
+    {
+      localIdIter.insert ({crateNum, 1});
+    }
+
+  it = localIdIter.find (crateNum);
   rust_assert (it != localIdIter.end ());
 
-  auto id = it->second + 1;
-  localIdIter[crateNum] = id;
+  LocalDefId id = it->second;
+  localIdIter[crateNum] = id + 1;
   return id;
 }
 
-AST::Crate *
+AST::Crate &
 Mappings::get_ast_crate (CrateNum crateNum)
 {
-  auto it = astCrateMappings.find (crateNum);
-  if (it == astCrateMappings.end ())
-    return nullptr;
-
-  return it->second;
+  auto it = ast_crate_mappings.find (crateNum);
+  rust_assert (it != ast_crate_mappings.end ());
+  return *it->second;
 }
 
-void
-Mappings::insert_ast_crate (AST::Crate *crate)
+AST::Crate &
+Mappings::get_ast_crate_by_node_id (NodeId id)
 {
-  CrateNum crateNum = get_current_crate ();
-  rust_assert (get_ast_crate (crateNum) == nullptr);
+  auto i = crate_node_to_crate_num.find (id);
+  rust_assert (i != crate_node_to_crate_num.end ());
 
-  astCrateMappings[crateNum] = crate;
+  CrateNum crateNum = i->second;
+  auto it = ast_crate_mappings.find (crateNum);
+  rust_assert (it != ast_crate_mappings.end ());
+  return *it->second;
 }
 
-HIR::Crate *
+AST::Crate &
+Mappings::insert_ast_crate (std::unique_ptr<AST::Crate> &&crate,
+			    CrateNum crate_num)
+{
+  auto it = ast_crate_mappings.find (crate_num);
+  rust_assert (it == ast_crate_mappings.end ());
+
+  // store it
+  ast_crate_mappings.insert ({crate_num, crate.get ()});
+
+  // return the reference to it
+  it = ast_crate_mappings.find (crate_num);
+  rust_assert (it != ast_crate_mappings.end ());
+  return *it->second;
+}
+
+HIR::Crate &
 Mappings::get_hir_crate (CrateNum crateNum)
 {
-  auto it = hirCrateMappings.find (crateNum);
-  if (it == hirCrateMappings.end ())
-    return nullptr;
-
-  return it->second;
+  auto it = hir_crate_mappings.find (crateNum);
+  rust_assert (it != hir_crate_mappings.end ());
+  return *it->second;
 }
 
 bool
 Mappings::is_local_hirid_crate (HirId crateNum)
 {
-  for (const auto &it : hirCrateMappings)
+  for (const auto &it : hir_crate_mappings)
     {
-      const HIR::Crate *crate = it.second;
+      const auto &crate = it.second;
       if (crate->get_mappings ().get_hirid () == crateNum)
 	return true;
     }
   return false;
 }
 
-void
-Mappings::insert_hir_crate (HIR::Crate *crate)
+HIR::Crate &
+Mappings::insert_hir_crate (std::unique_ptr<HIR::Crate> &&crate)
 {
   CrateNum crateNum = crate->get_mappings ().get_crate_num ();
-  rust_assert (get_hir_crate (crateNum) == nullptr);
+  auto it = hir_crate_mappings.find (crateNum);
+  rust_assert (it == hir_crate_mappings.end ());
 
-  hirCrateMappings[crateNum] = crate;
-  insert_node_to_hir (crate->get_mappings ().get_crate_num (),
-		      crate->get_mappings ().get_nodeid (),
+  insert_node_to_hir (crate->get_mappings ().get_nodeid (),
 		      crate->get_mappings ().get_hirid ());
+  hir_crate_mappings.insert ({crateNum, crate.get ()});
+
+  it = hir_crate_mappings.find (crateNum);
+  rust_assert (it != hir_crate_mappings.end ());
+  return *it->second;
 }
 
 void
@@ -249,145 +267,124 @@ Mappings::lookup_defid (DefId id)
 }
 
 void
-Mappings::insert_hir_item (CrateNum crateNum, HirId id, HIR::Item *item)
+Mappings::insert_hir_item (HIR::Item *item)
 {
-  rust_assert (lookup_hir_item (crateNum, id) == nullptr);
+  auto id = item->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_item (id) == nullptr);
 
-  hirItemMappings[crateNum][id] = item;
-  insert_node_to_hir (crateNum, item->get_mappings ().get_nodeid (), id);
+  hirItemMappings[id] = item;
+  insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
 }
 
 HIR::Item *
-Mappings::lookup_hir_item (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_item (HirId id)
 {
-  auto it = hirItemMappings.find (crateNum);
+  auto it = hirItemMappings.find (id);
   if (it == hirItemMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_hir_trait_item (CrateNum crateNum, HirId id,
-				 HIR::TraitItem *item)
+Mappings::insert_hir_trait_item (HIR::TraitItem *item)
 {
-  rust_assert (lookup_hir_trait_item (crateNum, id) == nullptr);
+  auto id = item->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_trait_item (id) == nullptr);
 
-  hirTraitItemMappings[crateNum][id] = item;
-  insert_node_to_hir (crateNum, item->get_mappings ().get_nodeid (), id);
+  hirTraitItemMappings[id] = item;
+  insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
 }
 
 HIR::TraitItem *
-Mappings::lookup_hir_trait_item (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_trait_item (HirId id)
 {
-  auto it = hirTraitItemMappings.find (crateNum);
+  auto it = hirTraitItemMappings.find (id);
   if (it == hirTraitItemMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_hir_extern_item (CrateNum crateNum, HirId id,
-				  HIR::ExternalItem *item)
+Mappings::insert_hir_extern_item (HIR::ExternalItem *item)
 {
-  rust_assert (lookup_hir_extern_item (crateNum, id) == nullptr);
+  auto id = item->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_extern_item (id) == nullptr);
 
-  hirExternItemMappings[crateNum][id] = item;
-  insert_node_to_hir (crateNum, item->get_mappings ().get_nodeid (), id);
+  hirExternItemMappings[id] = item;
+  insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
 }
 
 HIR::ExternalItem *
-Mappings::lookup_hir_extern_item (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_extern_item (HirId id)
 {
-  auto it = hirExternItemMappings.find (crateNum);
+  auto it = hirExternItemMappings.find (id);
   if (it == hirExternItemMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_hir_impl_block (CrateNum crateNum, HirId id,
-				 HIR::ImplBlock *item)
+Mappings::insert_hir_impl_block (HIR::ImplBlock *item)
 {
-  rust_assert (lookup_hir_impl_block (crateNum, id) == nullptr);
+  auto id = item->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_impl_block (id) == nullptr);
 
-  hirImplBlockMappings[crateNum][id] = item;
-  insert_node_to_hir (crateNum, item->get_mappings ().get_nodeid (), id);
+  hirImplBlockMappings[id] = item;
+  insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
 }
 
 HIR::ImplBlock *
-Mappings::lookup_hir_impl_block (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_impl_block (HirId id)
 {
-  auto it = hirImplBlockMappings.find (crateNum);
+  auto it = hirImplBlockMappings.find (id);
   if (it == hirImplBlockMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_module (CrateNum crateNum, HirId id, HIR::Module *module)
+Mappings::insert_module (HIR::Module *module)
 {
-  rust_assert (lookup_module (crateNum, id) == nullptr);
+  auto id = module->get_mappings ().get_hirid ();
+  rust_assert (lookup_module (id) == nullptr);
 
-  hirModuleMappings[crateNum][id] = module;
+  hirModuleMappings[id] = module;
+  insert_node_to_hir (module->get_mappings ().get_nodeid (), id);
 }
 
 HIR::Module *
-Mappings::lookup_module (CrateNum crateNum, HirId id)
+Mappings::lookup_module (HirId id)
 {
-  auto it = hirModuleMappings.find (crateNum);
+  auto it = hirModuleMappings.find (id);
   if (it == hirModuleMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_hir_implitem (CrateNum crateNum, HirId id,
-			       HirId parent_impl_id, HIR::ImplItem *item)
+Mappings::insert_hir_implitem (HirId parent_impl_id, HIR::ImplItem *item)
 {
-  rust_assert (lookup_hir_implitem (crateNum, id, nullptr) == nullptr);
-  hirImplItemMappings[crateNum][id]
+  auto id = item->get_impl_mappings ().get_hirid ();
+  rust_assert (lookup_hir_implitem (id, nullptr) == nullptr);
+
+  hirImplItemMappings[id]
     = std::pair<HirId, HIR::ImplItem *> (parent_impl_id, item);
-  insert_node_to_hir (crateNum, item->get_impl_mappings ().get_nodeid (), id);
+  insert_node_to_hir (item->get_impl_mappings ().get_nodeid (), id);
 }
 
 HIR::ImplItem *
-Mappings::lookup_hir_implitem (CrateNum crateNum, HirId id,
-			       HirId *parent_impl_id)
+Mappings::lookup_hir_implitem (HirId id, HirId *parent_impl_id)
 {
-  auto it = hirImplItemMappings.find (crateNum);
+  auto it = hirImplItemMappings.find (id);
   if (it == hirImplItemMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  std::pair<HirId, HIR::ImplItem *> &ref = iy->second;
+  std::pair<HirId, HIR::ImplItem *> &ref = it->second;
   if (parent_impl_id != nullptr)
     *parent_impl_id = ref.first;
 
@@ -395,266 +392,185 @@ Mappings::lookup_hir_implitem (CrateNum crateNum, HirId id,
 }
 
 void
-Mappings::insert_hir_expr (CrateNum crateNum, HirId id, HIR::Expr *expr)
+Mappings::insert_hir_expr (HIR::Expr *expr)
 {
-  hirExprMappings[crateNum][id] = expr;
-  insert_node_to_hir (crateNum, expr->get_mappings ().get_nodeid (), id);
-  insert_location (crateNum, id, expr->get_locus ());
+  auto id = expr->get_mappings ().get_hirid ();
+  hirExprMappings[id] = expr;
+
+  insert_node_to_hir (expr->get_mappings ().get_nodeid (), id);
+  insert_location (id, expr->get_locus ());
 }
 
 HIR::Expr *
-Mappings::lookup_hir_expr (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_expr (HirId id)
 {
-  auto it = hirExprMappings.find (crateNum);
+  auto it = hirExprMappings.find (id);
   if (it == hirExprMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_hir_path_expr_seg (CrateNum crateNum, HirId id,
-				    HIR::PathExprSegment *expr)
+Mappings::insert_hir_path_expr_seg (HIR::PathExprSegment *expr)
 {
-  rust_assert (lookup_hir_path_expr_seg (crateNum, id) == nullptr);
+  auto id = expr->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_path_expr_seg (id) == nullptr);
 
-  hirPathSegMappings[crateNum][id] = expr;
-  insert_node_to_hir (crateNum, expr->get_mappings ().get_nodeid (), id);
-  insert_location (crateNum, id, expr->get_locus ());
+  hirPathSegMappings[id] = expr;
+  insert_node_to_hir (expr->get_mappings ().get_nodeid (), id);
+  insert_location (id, expr->get_locus ());
 }
 
 HIR::PathExprSegment *
-Mappings::lookup_hir_path_expr_seg (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_path_expr_seg (HirId id)
 {
-  auto it = hirPathSegMappings.find (crateNum);
+  auto it = hirPathSegMappings.find (id);
   if (it == hirPathSegMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_simple_path_segment (CrateNum crateNum, HirId id,
-				      const AST::SimplePathSegment *path)
+Mappings::insert_hir_generic_param (HIR::GenericParam *param)
 {
-  rust_assert (lookup_simple_path_segment (crateNum, id) == nullptr);
+  auto id = param->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_generic_param (id) == nullptr);
 
-  astSimplePathSegmentMappings[crateNum][id] = path;
-  insert_node_to_hir (crateNum, path->get_node_id (), id);
-  insert_location (crateNum, id, path->get_locus ());
-}
-
-const AST::SimplePathSegment *
-Mappings::lookup_simple_path_segment (CrateNum crateNum, HirId id)
-{
-  auto it = astSimplePathSegmentMappings.find (crateNum);
-  if (it == astSimplePathSegmentMappings.end ())
-    return nullptr;
-
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
-}
-
-void
-Mappings::insert_simple_path (CrateNum crateNum, HirId id,
-			      const AST::SimplePath *path)
-{
-  rust_assert (lookup_simple_path (crateNum, id) == nullptr);
-
-  astSimplePathMappings[crateNum][id] = path;
-  insert_node_to_hir (crateNum, path->get_node_id (), id);
-  insert_location (crateNum, id, path->get_locus ());
-}
-
-const AST::SimplePath *
-Mappings::lookup_simple_path (CrateNum crateNum, HirId id)
-{
-  auto it = astSimplePathMappings.find (crateNum);
-  if (it == astSimplePathMappings.end ())
-    return nullptr;
-
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
-}
-
-void
-Mappings::insert_hir_generic_param (CrateNum crateNum, HirId id,
-				    HIR::GenericParam *param)
-{
-  rust_assert (lookup_hir_generic_param (crateNum, id) == nullptr);
-
-  hirGenericParamMappings[crateNum][id] = param;
-  insert_node_to_hir (crateNum, param->get_mappings ().get_nodeid (), id);
-  insert_location (crateNum, id, param->get_locus ());
+  hirGenericParamMappings[id] = param;
+  insert_node_to_hir (param->get_mappings ().get_nodeid (), id);
+  insert_location (id, param->get_locus ());
 }
 
 HIR::GenericParam *
-Mappings::lookup_hir_generic_param (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_generic_param (HirId id)
 {
-  auto it = hirGenericParamMappings.find (crateNum);
+  auto it = hirGenericParamMappings.find (id);
   if (it == hirGenericParamMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_hir_type (CrateNum crateNum, HirId id, HIR::Type *type)
+Mappings::insert_hir_type (HIR::Type *type)
 {
-  rust_assert (lookup_hir_type (crateNum, id) == nullptr);
+  auto id = type->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_type (id) == nullptr);
 
-  hirTypeMappings[crateNum][id] = type;
-  insert_node_to_hir (crateNum, type->get_mappings ().get_nodeid (), id);
+  hirTypeMappings[id] = type;
+  insert_node_to_hir (type->get_mappings ().get_nodeid (), id);
 }
 
 HIR::Type *
-Mappings::lookup_hir_type (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_type (HirId id)
 {
-  auto it = hirTypeMappings.find (crateNum);
+  auto it = hirTypeMappings.find (id);
   if (it == hirTypeMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_hir_stmt (CrateNum crateNum, HirId id, HIR::Stmt *stmt)
+Mappings::insert_hir_stmt (HIR::Stmt *stmt)
 {
-  rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
+  auto id = stmt->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_stmt (id) == nullptr);
 
-  hirStmtMappings[crateNum][id] = stmt;
-  insert_node_to_hir (crateNum, stmt->get_mappings ().get_nodeid (), id);
+  hirStmtMappings[id] = stmt;
+  insert_node_to_hir (stmt->get_mappings ().get_nodeid (), id);
 }
 
 HIR::Stmt *
-Mappings::lookup_hir_stmt (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_stmt (HirId id)
 {
-  auto it = hirStmtMappings.find (crateNum);
+  auto it = hirStmtMappings.find (id);
   if (it == hirStmtMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_hir_param (CrateNum crateNum, HirId id,
-			    HIR::FunctionParam *param)
+Mappings::insert_hir_param (HIR::FunctionParam *param)
 {
-  rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
+  auto id = param->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_param (id) == nullptr);
 
-  hirParamMappings[crateNum][id] = param;
-  insert_node_to_hir (crateNum, param->get_mappings ().get_nodeid (), id);
+  hirParamMappings[id] = param;
+  insert_node_to_hir (param->get_mappings ().get_nodeid (), id);
 }
 
 HIR::FunctionParam *
-Mappings::lookup_hir_param (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_param (HirId id)
 {
-  auto it = hirParamMappings.find (crateNum);
+  auto it = hirParamMappings.find (id);
   if (it == hirParamMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_hir_self_param (CrateNum crateNum, HirId id,
-				 HIR::SelfParam *param)
+Mappings::insert_hir_self_param (HIR::SelfParam *param)
 {
-  rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
+  auto id = param->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_self_param (id) == nullptr);
 
-  hirSelfParamMappings[crateNum][id] = param;
-  insert_node_to_hir (crateNum, param->get_mappings ().get_nodeid (), id);
+  hirSelfParamMappings[id] = param;
+  insert_node_to_hir (param->get_mappings ().get_nodeid (), id);
 }
 
 HIR::SelfParam *
-Mappings::lookup_hir_self_param (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_self_param (HirId id)
 {
-  auto it = hirSelfParamMappings.find (crateNum);
+  auto it = hirSelfParamMappings.find (id);
   if (it == hirSelfParamMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_hir_struct_field (CrateNum crateNum, HirId id,
-				   HIR::StructExprField *field)
+Mappings::insert_hir_struct_field (HIR::StructExprField *field)
 {
-  rust_assert (lookup_hir_stmt (crateNum, id) == nullptr);
+  auto id = field->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_struct_field (id) == nullptr);
 
-  hirStructFieldMappings[crateNum][id] = field;
-  insert_node_to_hir (crateNum, field->get_mappings ().get_nodeid (), id);
+  hirStructFieldMappings[id] = field;
+  insert_node_to_hir (field->get_mappings ().get_nodeid (), id);
 }
 
 HIR::StructExprField *
-Mappings::lookup_hir_struct_field (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_struct_field (HirId id)
 {
-  auto it = hirStructFieldMappings.find (crateNum);
+  auto it = hirStructFieldMappings.find (id);
   if (it == hirStructFieldMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
-Mappings::insert_hir_pattern (CrateNum crateNum, HirId id,
-			      HIR::Pattern *pattern)
+Mappings::insert_hir_pattern (HIR::Pattern *pattern)
 {
-  hirPatternMappings[crateNum][id] = pattern;
-  insert_node_to_hir (crateNum, pattern->get_pattern_mappings ().get_nodeid (),
-		      id);
+  auto id = pattern->get_pattern_mappings ().get_hirid ();
+  rust_assert (lookup_hir_pattern (id) == nullptr);
+
+  hirPatternMappings[id] = pattern;
+  insert_node_to_hir (pattern->get_pattern_mappings ().get_nodeid (), id);
 }
 
 HIR::Pattern *
-Mappings::lookup_hir_pattern (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_pattern (HirId id)
 {
-  auto it = hirPatternMappings.find (crateNum);
+  auto it = hirPatternMappings.find (id);
   if (it == hirPatternMappings.end ())
     return nullptr;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return nullptr;
-
-  return iy->second;
+  return it->second;
 }
 
 void
@@ -662,7 +578,6 @@ Mappings::insert_local_defid_mapping (CrateNum crateNum, LocalDefId id,
 				      HIR::Item *item)
 {
   rust_assert (lookup_local_defid (crateNum, id) == nullptr);
-
   localDefIdMappings[crateNum][id] = item;
 }
 
@@ -696,75 +611,59 @@ Mappings::walk_local_defids_for_crate (CrateNum crateNum,
 }
 
 void
-Mappings::insert_node_to_hir (CrateNum crate, NodeId id, HirId ref)
+Mappings::insert_node_to_hir (NodeId id, HirId ref)
 {
-  nodeIdToHirMappings[crate][id] = ref;
-  hirIdToNodeMappings[crate][ref] = id;
+  nodeIdToHirMappings[id] = ref;
+  hirIdToNodeMappings[ref] = id;
 }
 
 bool
-Mappings::lookup_node_to_hir (CrateNum crate, NodeId id, HirId *ref)
+Mappings::lookup_node_to_hir (NodeId id, HirId *ref)
 {
-  auto it = nodeIdToHirMappings.find (crate);
+  auto it = nodeIdToHirMappings.find (id);
   if (it == nodeIdToHirMappings.end ())
     return false;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return false;
-
-  *ref = iy->second;
+  *ref = it->second;
   return true;
 }
 
 bool
-Mappings::lookup_hir_to_node (CrateNum crate, HirId id, NodeId *ref)
+Mappings::lookup_hir_to_node (HirId id, NodeId *ref)
 {
-  auto it = hirIdToNodeMappings.find (crate);
+  auto it = hirIdToNodeMappings.find (id);
   if (it == hirIdToNodeMappings.end ())
     return false;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return false;
-
-  *ref = iy->second;
+  *ref = it->second;
   return true;
 }
 
 void
-Mappings::insert_location (CrateNum crate, HirId id, Location locus)
+Mappings::insert_location (HirId id, Location locus)
 {
-  locations[crate][id] = locus;
+  locations[id] = locus;
 }
 
 Location
-Mappings::lookup_location (CrateNum crate, HirId id)
+Mappings::lookup_location (HirId id)
 {
-  auto it = locations.find (crate);
+  auto it = locations.find (id);
   if (it == locations.end ())
     return Location ();
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return Location ();
-
-  return iy->second;
+  return it->second;
 }
 
 bool
-Mappings::resolve_nodeid_to_stmt (CrateNum crate, NodeId id, HIR::Stmt **stmt)
+Mappings::resolve_nodeid_to_stmt (NodeId id, HIR::Stmt **stmt)
 {
-  auto it = nodeIdToHirMappings.find (crate);
+  auto it = nodeIdToHirMappings.find (id);
   if (it == nodeIdToHirMappings.end ())
     return false;
 
-  auto iy = it->second.find (id);
-  if (iy == it->second.end ())
-    return false;
-
-  HirId resolved = iy->second;
-  auto resolved_stmt = lookup_hir_stmt (crate, resolved);
+  HirId resolved = it->second;
+  auto resolved_stmt = lookup_hir_stmt (resolved);
   *stmt = resolved_stmt;
   return resolved_stmt != nullptr;
 }
@@ -776,15 +675,12 @@ Mappings::iterate_impl_items (
   for (auto it = hirImplItemMappings.begin (); it != hirImplItemMappings.end ();
        it++)
     {
-      for (auto iy = it->second.begin (); iy != it->second.end (); iy++)
-	{
-	  auto id = iy->first;
-	  auto impl_item = iy->second.second;
-	  auto impl = lookup_associated_impl (
-	    impl_item->get_impl_mappings ().get_hirid ());
-	  if (!cb (id, impl_item, impl))
-	    return;
-	}
+      auto id = it->first;
+      auto impl_item = it->second.second;
+      auto impl
+	= lookup_associated_impl (impl_item->get_impl_mappings ().get_hirid ());
+      if (!cb (id, impl_item, impl))
+	return;
     }
 }
 
@@ -794,13 +690,10 @@ Mappings::iterate_impl_blocks (std::function<bool (HirId, HIR::ImplBlock *)> cb)
   for (auto it = hirImplBlockMappings.begin ();
        it != hirImplBlockMappings.end (); it++)
     {
-      for (auto iy = it->second.begin (); iy != it->second.end (); iy++)
-	{
-	  HirId id = iy->first;
-	  HIR::ImplBlock *impl_block = iy->second;
-	  if (!cb (id, impl_block))
-	    return;
-	}
+      HirId id = it->first;
+      HIR::ImplBlock *impl_block = it->second;
+      if (!cb (id, impl_block))
+	return;
     }
 }
 
@@ -811,15 +704,12 @@ Mappings::iterate_trait_items (
   for (auto it = hirTraitItemMappings.begin ();
        it != hirTraitItemMappings.end (); it++)
     {
-      for (auto iy = it->second.begin (); iy != it->second.end (); iy++)
-	{
-	  HirId trait_item_id = iy->first;
-	  HIR::TraitItem *trait_item = iy->second;
-	  HIR::Trait *trait = lookup_trait_item_mapping (trait_item_id);
+      HirId trait_item_id = it->first;
+      HIR::TraitItem *trait_item = it->second;
+      HIR::Trait *trait = lookup_trait_item_mapping (trait_item_id);
 
-	  if (!cb (trait_item, trait))
-	    return;
-	}
+      if (!cb (trait_item, trait))
+	return;
     }
 }
 
@@ -964,6 +854,26 @@ bool
 Mappings::node_is_module (NodeId query)
 {
   return module_child_items.find (query) != module_child_items.end ();
+}
+
+void
+Mappings::insert_ast_item (AST::Item *item)
+{
+  auto it = ast_item_mappings.find (item->get_node_id ());
+  rust_assert (it == ast_item_mappings.end ());
+
+  ast_item_mappings[item->get_node_id ()] = item;
+}
+
+bool
+Mappings::lookup_ast_item (NodeId id, AST::Item **result)
+{
+  auto it = ast_item_mappings.find (id);
+  if (it == ast_item_mappings.end ())
+    return false;
+
+  *result = it->second;
+  return true;
 }
 
 } // namespace Analysis

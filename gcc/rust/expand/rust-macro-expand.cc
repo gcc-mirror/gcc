@@ -142,7 +142,7 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc)
     &resolved_node);
   if (!found)
     {
-      rust_error_at (invoc.get_locus (), "unknown macro");
+      rust_error_at (invoc.get_locus (), "unknown macro 1");
       return;
     }
 
@@ -177,13 +177,14 @@ MacroExpander::expand_invoc_semi (AST::MacroInvocation &invoc)
 
   // lookup the rules for this macro
   NodeId resolved_node = UNKNOWN_NODEID;
-  bool found = resolver->get_macro_scope ().lookup (
-    Resolver::CanonicalPath::new_seg (invoc.get_macro_node_id (),
-				      invoc_data.get_path ().as_string ()),
-    &resolved_node);
+  auto seg
+    = Resolver::CanonicalPath::new_seg (invoc.get_macro_node_id (),
+					invoc_data.get_path ().as_string ());
+  bool found = resolver->get_macro_scope ().lookup (seg, &resolved_node);
   if (!found)
     {
-      rust_error_at (invoc.get_locus (), "unknown macro");
+      rust_error_at (invoc.get_locus (), "unknown macro 2: [%s]",
+		     seg.get ().c_str ());
       return;
     }
 

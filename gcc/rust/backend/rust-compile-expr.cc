@@ -985,8 +985,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 
   // reverse lookup
   HirId ref;
-  if (!ctx->get_mappings ()->lookup_node_to_hir (
-	expr.get_mappings ().get_crate_num (), resolved_node_id, &ref))
+  if (!ctx->get_mappings ()->lookup_node_to_hir (resolved_node_id, &ref))
     {
       rust_fatal_error (expr.get_locus (), "reverse lookup failure");
       return;
@@ -1188,8 +1187,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
   // declared function, generic function which has not be compiled yet or
   // its an not yet trait bound function
   HIR::ImplItem *resolved_item
-    = ctx->get_mappings ()->lookup_hir_implitem (expr_mappings.get_crate_num (),
-						 ref, nullptr);
+    = ctx->get_mappings ()->lookup_hir_implitem (ref, nullptr);
   if (resolved_item != nullptr)
     {
       if (!fntype->has_subsititions_defined ())
@@ -1199,8 +1197,8 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
     }
 
   // it might be resolved to a trait item
-  HIR::TraitItem *trait_item = ctx->get_mappings ()->lookup_hir_trait_item (
-    expr_mappings.get_crate_num (), ref);
+  HIR::TraitItem *trait_item
+    = ctx->get_mappings ()->lookup_hir_trait_item (ref);
   HIR::Trait *trait = ctx->get_mappings ()->lookup_trait_item_mapping (
     trait_item->get_mappings ().get_hirid ());
 
@@ -1284,8 +1282,7 @@ CompileExpr::resolve_operator_overload (
 
   // reverse lookup
   HirId ref;
-  ok = ctx->get_mappings ()->lookup_node_to_hir (
-    expr.get_mappings ().get_crate_num (), resolved_node_id, &ref);
+  ok = ctx->get_mappings ()->lookup_node_to_hir (resolved_node_id, &ref);
   rust_assert (ok);
 
   TyTy::BaseType *receiver = nullptr;
@@ -1874,8 +1871,7 @@ CompileExpr::visit (HIR::IdentifierExpr &expr)
 
   // node back to HIR
   HirId ref;
-  if (!ctx->get_mappings ()->lookup_node_to_hir (
-	expr.get_mappings ().get_crate_num (), ref_node_id, &ref))
+  if (!ctx->get_mappings ()->lookup_node_to_hir (ref_node_id, &ref))
     {
       rust_error_at (expr.get_locus (), "reverse lookup failure");
       return;
@@ -1939,8 +1935,7 @@ CompileExpr::visit (HIR::IdentifierExpr &expr)
   else
     {
       // lets try and query compile it to an item/impl item
-      HIR::Item *resolved_item = ctx->get_mappings ()->lookup_hir_item (
-	expr.get_mappings ().get_crate_num (), ref);
+      HIR::Item *resolved_item = ctx->get_mappings ()->lookup_hir_item (ref);
       bool is_hir_item = resolved_item != nullptr;
       if (!is_hir_item)
 	{

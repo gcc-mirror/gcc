@@ -404,19 +404,16 @@ std::vector<Bvariable *>
 HIRCompileBase::compile_locals_for_block (Context *ctx, Resolver::Rib &rib,
 					  tree fndecl)
 {
-  CrateNum crate = ctx->get_mappings ()->get_current_crate ();
-
   std::vector<Bvariable *> locals;
   for (auto it : rib.get_declarations ())
     {
       NodeId node_id = it.first;
       HirId ref = UNKNOWN_HIRID;
-      if (!ctx->get_mappings ()->lookup_node_to_hir (crate, node_id, &ref))
+      if (!ctx->get_mappings ()->lookup_node_to_hir (node_id, &ref))
 	continue;
 
       // we only care about local patterns
-      HIR::Pattern *pattern
-	= ctx->get_mappings ()->lookup_hir_pattern (crate, ref);
+      HIR::Pattern *pattern = ctx->get_mappings ()->lookup_hir_pattern (ref);
       if (pattern == nullptr)
 	continue;
 

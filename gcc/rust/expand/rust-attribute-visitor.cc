@@ -2864,6 +2864,8 @@ AttrVisitor::visit (AST::MacroRulesDefinition &rules_def)
   expander.resolver->get_macro_scope ().insert (path, rules_def.get_node_id (),
 						rules_def.get_locus ());
   expander.mappings->insert_macro_def (&rules_def);
+  rust_debug_loc (rules_def.get_locus (), "inserting macro def: [%s]",
+		  path.get ().c_str ());
 }
 
 void

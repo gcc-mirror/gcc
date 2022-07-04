@@ -65,8 +65,7 @@ public:
     context->insert_type (mapping, isize);
 
     const CanonicalPath *canonical_path = nullptr;
-    ok = mappings->lookup_canonical_path (item.get_mappings ().get_crate_num (),
-					  item.get_mappings ().get_nodeid (),
+    ok = mappings->lookup_canonical_path (item.get_mappings ().get_nodeid (),
 					  &canonical_path);
     rust_assert (ok);
 
@@ -95,8 +94,7 @@ public:
 
     const CanonicalPath *canonical_path = nullptr;
     bool ok
-      = mappings->lookup_canonical_path (item.get_mappings ().get_crate_num (),
-					 item.get_mappings ().get_nodeid (),
+      = mappings->lookup_canonical_path (item.get_mappings ().get_nodeid (),
 					 &canonical_path);
     rust_assert (ok);
 
@@ -143,8 +141,7 @@ public:
     context->insert_type (mapping, isize);
 
     const CanonicalPath *canonical_path = nullptr;
-    ok = mappings->lookup_canonical_path (item.get_mappings ().get_crate_num (),
-					  item.get_mappings ().get_nodeid (),
+    ok = mappings->lookup_canonical_path (item.get_mappings ().get_nodeid (),
 					  &canonical_path);
     rust_assert (ok);
 
@@ -190,8 +187,7 @@ public:
     context->insert_type (mapping, isize);
 
     const CanonicalPath *canonical_path = nullptr;
-    ok = mappings->lookup_canonical_path (item.get_mappings ().get_crate_num (),
-					  item.get_mappings ().get_nodeid (),
+    ok = mappings->lookup_canonical_path (item.get_mappings ().get_nodeid (),
 					  &canonical_path);
     rust_assert (ok);
 

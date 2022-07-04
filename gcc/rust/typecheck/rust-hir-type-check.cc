@@ -313,10 +313,8 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 
   auto mappings = Analysis::Mappings::get ();
   const CanonicalPath *canonical_path = nullptr;
-  bool ok
-    = mappings->lookup_canonical_path (fn.get_mappings ().get_crate_num (),
-				       fn.get_mappings ().get_nodeid (),
-				       &canonical_path);
+  bool ok = mappings->lookup_canonical_path (fn.get_mappings ().get_nodeid (),
+					     &canonical_path);
   rust_assert (ok);
 
   RustIdent ident{*canonical_path, fn.get_locus ()};

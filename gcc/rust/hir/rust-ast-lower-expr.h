@@ -87,11 +87,8 @@ public:
 	return nullptr;
       }
 
-    resolver.mappings->insert_hir_expr (
-      resolver.translated->get_mappings ().get_crate_num (),
-      resolver.translated->get_mappings ().get_hirid (), resolver.translated);
+    resolver.mappings->insert_hir_expr (resolver.translated);
     resolver.mappings->insert_location (
-      resolver.translated->get_mappings ().get_crate_num (),
       resolver.translated->get_mappings ().get_hirid (), expr->get_locus ());
 
     if (terminated != nullptr)

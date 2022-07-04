@@ -273,8 +273,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 
       // node back to HIR
       HirId ref = UNKNOWN_HIRID;
-      if (!mappings->lookup_node_to_hir (path.get_mappings ().get_crate_num (),
-					 ref_node_id, &ref))
+      if (!mappings->lookup_node_to_hir (ref_node_id, &ref))
 	{
 	  if (is_root)
 	    {
@@ -291,10 +290,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	  return root_tyty;
 	}
 
-      auto seg_is_module
-	= (nullptr
-	   != mappings->lookup_module (path.get_mappings ().get_crate_num (),
-				       ref));
+      auto seg_is_module = (nullptr != mappings->lookup_module (ref));
       auto seg_is_crate = mappings->is_local_hirid_crate (ref);
       if (seg_is_module || seg_is_crate)
 	{

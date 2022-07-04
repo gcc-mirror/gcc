@@ -177,7 +177,6 @@ public:
     // get the path
     const CanonicalPath *canonical_path = nullptr;
     bool ok = mappings->lookup_canonical_path (
-      struct_decl.get_mappings ().get_crate_num (),
       struct_decl.get_mappings ().get_nodeid (), &canonical_path);
     rust_assert (ok);
     RustIdent ident{*canonical_path, struct_decl.get_locus ()};
@@ -251,7 +250,6 @@ public:
     // get the path
     const CanonicalPath *canonical_path = nullptr;
     bool ok = mappings->lookup_canonical_path (
-      enum_decl.get_mappings ().get_crate_num (),
       enum_decl.get_mappings ().get_nodeid (), &canonical_path);
     rust_assert (ok);
     RustIdent ident{*canonical_path, enum_decl.get_locus ()};
@@ -313,7 +311,6 @@ public:
     // get the path
     const CanonicalPath *canonical_path = nullptr;
     bool ok = mappings->lookup_canonical_path (
-      struct_decl.get_mappings ().get_crate_num (),
       struct_decl.get_mappings ().get_nodeid (), &canonical_path);
     rust_assert (ok);
     RustIdent ident{*canonical_path, struct_decl.get_locus ()};
@@ -389,7 +386,6 @@ public:
     // get the path
     const CanonicalPath *canonical_path = nullptr;
     bool ok = mappings->lookup_canonical_path (
-      union_decl.get_mappings ().get_crate_num (),
       union_decl.get_mappings ().get_nodeid (), &canonical_path);
     rust_assert (ok);
     RustIdent ident{*canonical_path, union_decl.get_locus ()};
@@ -478,9 +474,9 @@ public:
 
     // get the path
     const CanonicalPath *canonical_path = nullptr;
-    bool ok = mappings->lookup_canonical_path (
-      function.get_mappings ().get_crate_num (),
-      function.get_mappings ().get_nodeid (), &canonical_path);
+    bool ok
+      = mappings->lookup_canonical_path (function.get_mappings ().get_nodeid (),
+					 &canonical_path);
     rust_assert (ok);
 
     RustIdent ident{*canonical_path, function.get_locus ()};

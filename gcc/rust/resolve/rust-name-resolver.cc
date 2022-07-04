@@ -34,11 +34,10 @@
       _R.push_back (builtin_type);                                             \
       tyctx->insert_builtin (_TY->get_ref (), builtin_type->get_node_id (),    \
 			     _TY);                                             \
-      mappings->insert_node_to_hir (mappings->get_current_crate (),            \
-				    builtin_type->get_node_id (),              \
+      mappings->insert_node_to_hir (builtin_type->get_node_id (),              \
 				    _TY->get_ref ());                          \
       mappings->insert_canonical_path (                                        \
-	mappings->get_current_crate (), builtin_type->get_node_id (),          \
+	builtin_type->get_node_id (),                                          \
 	CanonicalPath::new_seg (builtin_type->get_node_id (), _X));            \
     }                                                                          \
   while (0)
@@ -127,6 +126,24 @@ Rib::decl_was_declared_here (NodeId def) const
 	return true;
     }
   return false;
+}
+
+void
+Rib::debug () const
+{
+  fprintf (stderr, "%s\n", debug_str ().c_str ());
+}
+
+std::string
+Rib::debug_str () const
+{
+  std::string buffer;
+  for (const auto &it : path_mappings)
+    {
+      buffer += it.first.get () + "=" + std::to_string (it.second);
+      buffer += ",";
+    }
+  return "{" + buffer + "}";
 }
 
 Scope::Scope (CrateNum crate_num) : crate_num (crate_num) {}

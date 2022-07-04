@@ -84,7 +84,6 @@ public:
       = new HIR::TypePath (std::move (mapping), std::move (translated_segments),
 			   path.get_locus (),
 			   path.has_opening_scope_resolution_op ());
-    mappings->insert_hir_type (crate_num, hirid, translated);
   }
 
 protected:
@@ -124,9 +123,10 @@ public:
     type->accept_vis (resolver);
 
     rust_assert (resolver.translated != nullptr);
+    resolver.mappings->insert_hir_type (resolver.translated);
     resolver.mappings->insert_location (
-      resolver.translated->get_mappings ().get_crate_num (),
-      resolver.translated->get_mappings ().get_hirid (), type->get_locus ());
+      resolver.translated->get_mappings ().get_hirid (),
+      resolver.translated->get_locus ());
 
     return resolver.translated;
   }
@@ -229,8 +229,6 @@ public:
 			    std::unique_ptr<HIR::Type> (translated_type),
 			    std::unique_ptr<HIR::Expr> (array_size),
 			    type.get_locus ());
-    mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
   }
 
   void visit (AST::ReferenceType &type) override
@@ -250,9 +248,6 @@ public:
 							     : Mutability::Imm,
 					 std::unique_ptr<HIR::Type> (base_type),
 					 type.get_locus (), lifetime);
-
-    mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
   }
 
   void visit (AST::RawPointerType &type) override
@@ -273,9 +268,6 @@ public:
 				   : Mutability::Imm,
 				 std::unique_ptr<HIR::Type> (base_type),
 				 type.get_locus ());
-
-    mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
   }
 
   void visit (AST::SliceType &type) override
@@ -291,9 +283,6 @@ public:
     translated
       = new HIR::SliceType (mapping, std::unique_ptr<HIR::Type> (base_type),
 			    type.get_locus ());
-
-    mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
   }
 
   void visit (AST::InferredType &type) override
@@ -304,9 +293,6 @@ public:
 				   mappings->get_next_localdef_id (crate_num));
 
     translated = new HIR::InferredType (mapping, type.get_locus ());
-
-    mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
   }
 
   void visit (AST::NeverType &type) override
@@ -317,9 +303,6 @@ public:
 				   mappings->get_next_localdef_id (crate_num));
 
     translated = new HIR::NeverType (mapping, type.get_locus ());
-
-    mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
   }
 
   void visit (AST::TraitObjectTypeOneBound &type) override;
@@ -344,11 +327,8 @@ public:
 
     rust_assert (resolver.translated != nullptr);
     resolver.mappings->insert_location (
-      resolver.translated->get_mappings ().get_crate_num (),
       resolver.translated->get_mappings ().get_hirid (), param->get_locus ());
-    resolver.mappings->insert_hir_generic_param (
-      resolver.translated->get_mappings ().get_crate_num (),
-      resolver.translated->get_mappings ().get_hirid (), resolver.translated);
+    resolver.mappings->insert_hir_generic_param (resolver.translated);
 
     return resolver.translated;
   }
@@ -440,7 +420,6 @@ public:
 
     rust_assert (resolver.translated != nullptr);
     resolver.mappings->insert_location (
-      resolver.translated->get_mappings ().get_crate_num (),
       resolver.translated->get_mappings ().get_hirid (),
       resolver.translated->get_locus ());
 
@@ -486,7 +465,13 @@ public:
   {
     ASTLowerWhereClauseItem compiler;
     item.accept_vis (compiler);
+
     rust_assert (compiler.translated != nullptr);
+    // FIXME
+    // compiler.mappings->insert_location (
+    //   compiler.translated->get_mappings ().get_hirid (),
+    //   compiler.translated->get_locus ());
+
     return compiler.translated;
   }
 

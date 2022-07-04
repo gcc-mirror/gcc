@@ -47,8 +47,7 @@ CompileItem::visit (HIR::StaticItem &var)
 
   const Resolver::CanonicalPath *canonical_path = nullptr;
   ok = ctx->get_mappings ()->lookup_canonical_path (
-    var.get_mappings ().get_crate_num (), var.get_mappings ().get_nodeid (),
-    &canonical_path);
+    var.get_mappings ().get_nodeid (), &canonical_path);
   rust_assert (ok);
 
   std::string name = canonical_path->get ();
@@ -87,7 +86,6 @@ CompileItem::visit (HIR::ConstantItem &constant)
   // canonical path
   const Resolver::CanonicalPath *canonical_path = nullptr;
   ok = ctx->get_mappings ()->lookup_canonical_path (
-    constant.get_mappings ().get_crate_num (),
     constant.get_mappings ().get_nodeid (), &canonical_path);
   rust_assert (ok);
 
@@ -162,7 +160,6 @@ CompileItem::visit (HIR::Function &function)
 
   const Resolver::CanonicalPath *canonical_path = nullptr;
   bool ok = ctx->get_mappings ()->lookup_canonical_path (
-    function.get_mappings ().get_crate_num (),
     function.get_mappings ().get_nodeid (), &canonical_path);
   rust_assert (ok);
 

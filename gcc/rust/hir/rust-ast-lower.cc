@@ -58,14 +58,14 @@ ASTLowering::ASTLowering (AST::Crate &astCrate) : astCrate (astCrate) {}
 
 ASTLowering::~ASTLowering () {}
 
-HIR::Crate
+std::unique_ptr<HIR::Crate>
 ASTLowering::Resolve (AST::Crate &astCrate)
 {
   ASTLowering resolver (astCrate);
   return resolver.go ();
 }
 
-HIR::Crate
+std::unique_ptr<HIR::Crate>
 ASTLowering::go ()
 {
   std::vector<std::unique_ptr<HIR::Item> > items;
@@ -83,7 +83,8 @@ ASTLowering::go ()
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
-  return HIR::Crate (std::move (items), astCrate.get_inner_attrs (), mapping);
+  return std::unique_ptr<HIR::Crate> (
+    new HIR::Crate (std::move (items), astCrate.get_inner_attrs (), mapping));
 }
 
 // rust-ast-lower-block.h
@@ -413,9 +414,7 @@ ASTLowerPathInExpression::visit (AST::PathInExpression &expr)
 
       // insert the mappings for the segment
       HIR::PathExprSegment *lowered_seg = &path_segments.back ();
-      mappings->insert_hir_path_expr_seg (
-	lowered_seg->get_mappings ().get_crate_num (),
-	lowered_seg->get_mappings ().get_hirid (), lowered_seg);
+      mappings->insert_hir_path_expr_seg (lowered_seg);
     }
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -461,9 +460,7 @@ ASTLowerQualPathInExpression::visit (AST::QualifiedPathInExpression &expr)
 
       // insert the mappings for the segment
       HIR::PathExprSegment *lowered_seg = &path_segments.back ();
-      mappings->insert_hir_path_expr_seg (
-	lowered_seg->get_mappings ().get_crate_num (),
-	lowered_seg->get_mappings ().get_hirid (), lowered_seg);
+      mappings->insert_hir_path_expr_seg (lowered_seg);
     }
 
   auto crate_num = mappings->get_current_crate ();

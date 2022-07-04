@@ -39,6 +39,17 @@ public:
   {
     ASTLoweringEnumItem resolver;
     item->accept_vis (resolver);
+
+    rust_assert (resolver.translated != nullptr);
+
+    auto hirid = resolver.translated->get_mappings ().get_hirid ();
+    auto defid = resolver.translated->get_mappings ().get_defid ();
+
+    resolver.mappings->insert_defid_mapping (defid, resolver.translated);
+    resolver.mappings->insert_hir_item (resolver.translated);
+    resolver.mappings->insert_location (hirid,
+					resolver.translated->get_locus ());
+
     return resolver.translated;
   }
 
@@ -53,15 +64,8 @@ public:
       rust_error_at (item.get_locus (),
 		     "visibility qualifier %qs not allowed on enum item",
 		     item.get_visibility ().as_string ().c_str ());
-
     translated = new HIR::EnumItem (mapping, item.get_identifier (),
 				    item.get_outer_attrs (), item.get_locus ());
-
-    mappings->insert_defid_mapping (mapping.get_defid (), translated);
-    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       item.get_locus ());
   }
 
   void visit (AST::EnumItemTuple &item) override
@@ -100,12 +104,6 @@ public:
       = new HIR::EnumItemTuple (mapping, item.get_identifier (),
 				std::move (fields), item.get_outer_attrs (),
 				item.get_locus ());
-
-    mappings->insert_defid_mapping (mapping.get_defid (), translated);
-    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       item.get_locus ());
   }
 
   void visit (AST::EnumItemStruct &item) override
@@ -149,13 +147,8 @@ public:
       = new HIR::EnumItemStruct (mapping, item.get_identifier (),
 				 std::move (fields), item.get_outer_attrs (),
 				 item.get_locus ());
-
-    mappings->insert_defid_mapping (mapping.get_defid (), translated);
-    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       item.get_locus ());
   }
+
   void visit (AST::EnumItemDiscriminant &item) override
   {
     auto crate_num = mappings->get_current_crate ();
@@ -174,16 +167,11 @@ public:
 				       std::unique_ptr<HIR::Expr> (expr),
 				       item.get_outer_attrs (),
 				       item.get_locus ());
-
-    mappings->insert_defid_mapping (mapping.get_defid (), translated);
-    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       item.get_locus ());
   }
 
 private:
   ASTLoweringEnumItem () : translated (nullptr) {}
+
   HIR::EnumItem *translated;
 };
 
