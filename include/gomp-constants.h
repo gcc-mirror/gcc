@@ -355,6 +355,7 @@ enum gomp_map_kind
 #define GOMP_DEPEND_OUT			2
 #define GOMP_DEPEND_INOUT		3
 #define GOMP_DEPEND_MUTEXINOUTSET	4
+#define GOMP_DEPEND_INOUTSET		5
 
 /* Flag values for requires-directive features, must match corresponding
    OMP_REQUIRES_* values in gcc/omp-general.h.  */

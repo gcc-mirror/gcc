@@ -1,6 +1,17 @@
 2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_depend): Parse
+	inoutset depend-kind.
+	(cp_parser_omp_depobj): Likewise.
+	* cxx-pretty-print.cc (cxx_pretty_printer::statement): Handle
+	OMP_CLAUSE_DEPEND_INOUTSET.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-16  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* pt.cc (tsubst_omp_clauses): Added OMP_CLAUSE_HAS_DEVICE_ADDR.

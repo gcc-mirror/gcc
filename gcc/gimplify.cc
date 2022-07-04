@@ -8302,9 +8302,9 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 {
   tree c;
   gimple *g;
-  size_t n[4] = { 0, 0, 0, 0 };
-  bool unused[4];
-  tree counts[4] = { NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE };
+  size_t n[5] = { 0, 0, 0, 0, 0 };
+  bool unused[5];
+  tree counts[5] = { NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE };
   tree last_iter = NULL_TREE, last_count = NULL_TREE;
   size_t i, j;
   location_t first_loc = UNKNOWN_LOCATION;
@@ -8326,6 +8326,9 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	    break;
 	  case OMP_CLAUSE_DEPEND_DEPOBJ:
 	    i = 3;
+	    break;
+	  case OMP_CLAUSE_DEPEND_INOUTSET:
+	    i = 4;
 	    break;
 	  case OMP_CLAUSE_DEPEND_SOURCE:
 	  case OMP_CLAUSE_DEPEND_SINK:
@@ -8432,14 +8435,14 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	else
 	  n[i]++;
       }
-  for (i = 0; i < 4; i++)
+  for (i = 0; i < 5; i++)
     if (counts[i])
       break;
-  if (i == 4)
+  if (i == 5)
     return 0;
 
   tree total = size_zero_node;
-  for (i = 0; i < 4; i++)
+  for (i = 0; i < 5; i++)
     {
       unused[i] = counts[i] == NULL_TREE && n[i] == 0;
       if (counts[i] == NULL_TREE)
@@ -8455,9 +8458,12 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
   if (gimplify_expr (&total, pre_p, NULL, is_gimple_val, fb_rvalue)
       == GS_ERROR)
     return 2;
-  bool is_old = unused[1] && unused[3];
+  bool is_old = unused[1] && unused[3] && unused[4];
   tree totalpx = size_binop (PLUS_EXPR, unshare_expr (total),
 			     size_int (is_old ? 1 : 4));
+  if (!unused[4])
+    totalpx = size_binop (PLUS_EXPR, totalpx,
+			  size_binop (MULT_EXPR, counts[4], size_int (2)));
   tree type = build_array_type (ptr_type_node, build_index_type (totalpx));
   tree array = create_tmp_var_raw (type);
   TREE_ADDRESSABLE (array) = 1;
@@ -8503,11 +8509,11 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
       gimplify_and_add (tem, pre_p);
     }
 
-  tree cnts[4];
-  for (j = 4; j; j--)
+  tree cnts[6];
+  for (j = 5; j; j--)
     if (!unused[j - 1])
       break;
-  for (i = 0; i < 4; i++)
+  for (i = 0; i < 5; i++)
     {
       if (i && (i >= j || unused[i - 1]))
 	{
@@ -8531,6 +8537,15 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	}
       gimple_seq_add_stmt (pre_p, g);
     }
+  if (unused[4])
+    cnts[5] = NULL_TREE;
+  else
+    {
+      tree t = size_binop (PLUS_EXPR, total, size_int (5));
+      cnts[5] = create_tmp_var (sizetype);
+      g = gimple_build_assign (cnts[i], t);
+      gimple_seq_add_stmt (pre_p, g);
+    }
 
   last_iter = NULL_TREE;
   tree last_bind = NULL_TREE;
@@ -8552,6 +8567,9 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	    break;
 	  case OMP_CLAUSE_DEPEND_DEPOBJ:
 	    i = 3;
+	    break;
+	  case OMP_CLAUSE_DEPEND_INOUTSET:
+	    i = 4;
 	    break;
 	  case OMP_CLAUSE_DEPEND_SOURCE:
 	  case OMP_CLAUSE_DEPEND_SINK:
@@ -8657,14 +8675,42 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	      return 2;
 	    if (TREE_VALUE (t) != null_pointer_node)
 	      TREE_VALUE (t) = build_fold_addr_expr (TREE_VALUE (t));
+	    if (i == 4)
+	      {
+		r = build4 (ARRAY_REF, ptr_type_node, array, cnts[i],
+			    NULL_TREE, NULL_TREE);
+		tree r2 = build4 (ARRAY_REF, ptr_type_node, array, cnts[5],
+				  NULL_TREE, NULL_TREE);
+		r2 = build_fold_addr_expr_with_type (r2, ptr_type_node);
+		tem = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
+				  void_type_node, r, r2);
+		append_to_statement_list_force (tem, last_body);
+		tem = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
+				  void_type_node, cnts[i],
+				  size_binop (PLUS_EXPR, cnts[i],
+					      size_int (1)));
+		append_to_statement_list_force (tem, last_body);
+		i = 5;
+	      }
 	    r = build4 (ARRAY_REF, ptr_type_node, array, cnts[i],
 			NULL_TREE, NULL_TREE);
 	    tem = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
 			      void_type_node, r, TREE_VALUE (t));
 	    append_to_statement_list_force (tem, last_body);
+	    if (i == 5)
+	      {
+		r = build4 (ARRAY_REF, ptr_type_node, array,
+			    size_binop (PLUS_EXPR, cnts[i], size_int (1)),
+			    NULL_TREE, NULL_TREE);
+		tem = build_int_cst (ptr_type_node, GOMP_DEPEND_INOUTSET);
+		tem = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
+				  void_type_node, r, tem);
+		append_to_statement_list_force (tem, last_body);
+	      }
 	    tem = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
 			      void_type_node, cnts[i],
-			      size_binop (PLUS_EXPR, cnts[i], size_int (1)));
+			      size_binop (PLUS_EXPR, cnts[i],
+					  size_int (1 + (i == 5))));
 	    append_to_statement_list_force (tem, last_body);
 	    TREE_VALUE (t) = null_pointer_node;
 	  }
@@ -8688,12 +8734,38 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	    if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
 			       is_gimple_val, fb_rvalue) == GS_ERROR)
 	      return 2;
+	    if (i == 4)
+	      {
+		r = build4 (ARRAY_REF, ptr_type_node, array, cnts[i],
+			    NULL_TREE, NULL_TREE);
+		tree r2 = build4 (ARRAY_REF, ptr_type_node, array, cnts[5],
+				  NULL_TREE, NULL_TREE);
+		r2 = build_fold_addr_expr_with_type (r2, ptr_type_node);
+		tem = build2 (MODIFY_EXPR, void_type_node, r, r2);
+		gimplify_and_add (tem, pre_p);
+		g = gimple_build_assign (cnts[i], size_binop (PLUS_EXPR,
+							      cnts[i],
+							      size_int (1)));
+		gimple_seq_add_stmt (pre_p, g);
+		i = 5;
+	      }
 	    r = build4 (ARRAY_REF, ptr_type_node, array, cnts[i],
 			NULL_TREE, NULL_TREE);
 	    tem = build2 (MODIFY_EXPR, void_type_node, r, OMP_CLAUSE_DECL (c));
 	    gimplify_and_add (tem, pre_p);
-	    g = gimple_build_assign (cnts[i], size_binop (PLUS_EXPR, cnts[i],
-							  size_int (1)));
+	    if (i == 5)
+	      {
+		r = build4 (ARRAY_REF, ptr_type_node, array,
+			    size_binop (PLUS_EXPR, cnts[i], size_int (1)),
+			    NULL_TREE, NULL_TREE);
+		tem = build_int_cst (ptr_type_node, GOMP_DEPEND_INOUTSET);
+		tem = build2 (MODIFY_EXPR, void_type_node, r, tem);
+		append_to_statement_list_force (tem, last_body);
+		gimplify_and_add (tem, pre_p);
+	      }
+	    g = gimple_build_assign (cnts[i],
+				     size_binop (PLUS_EXPR, cnts[i],
+						 size_int (1 + (i == 5))));
 	    gimple_seq_add_stmt (pre_p, g);
 	  }
       }
@@ -8717,7 +8789,7 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
   else
     {
       tree prev = size_int (5);
-      for (i = 0; i < 4; i++)
+      for (i = 0; i < 5; i++)
 	{
 	  if (unused[i])
 	    continue;

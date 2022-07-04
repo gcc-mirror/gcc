@@ -1,3 +1,15 @@
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_depend_kind): Add
+	OMP_CLAUSE_DEPEND_INOUTSET.
+	* tree-pretty-print.cc (dump_omp_clause): Handle
+	OMP_CLAUSE_DEPEND_INOUTSET.
+	* gimplify.cc (gimplify_omp_depend): Likewise.
+	* omp-low.cc (lower_depend_clauses): Likewise.
+
 2022-06-17  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.c (unified_shared_memory_enabled): New variable.

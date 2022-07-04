@@ -1,3 +1,10 @@
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gomp-constants.h (GOMP_DEPEND_INOUTSET): Define.
+
 2022-06-21  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* cuda/cuda.h (CUdevice_attribute): Add definitions for
@@ -19,7 +26,7 @@
 	* dwarf2.def (DW_OP_LLVM_piece_end): New extension operator.
 
 2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
-            Julian Brown  <julian@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
 
 	* gomp-constants.h (enum gomp_map_kind): Define
 	GOMP_MAP_DECLARE_{ALLOCATE,DEALLOCATE} and GOMP_MAP_FLAG_SPECIAL_4.

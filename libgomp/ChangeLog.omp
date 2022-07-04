@@ -1,6 +1,28 @@
 2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_task_depend_entry): Change is_in type
+	from bool to unsigned char.
+	* task.c (gomp_task_handle_depend): Handle GOMP_DEPEND_INOUTSET.
+	Ignore dependencies where
+	task->depend[i].is_in && task->depend[i].is_in == ent->is_in
+	rather than just task->depend[i].is_in && ent->is_in.  Remember
+	whether GOMP_DEPEND_IN loop is needed and guard the loop with that
+	conditional.
+	(gomp_task_maybe_wait_for_dependencies): Handle GOMP_DEPEND_INOUTSET.
+	Ignore dependencies where elem.is_in && elem.is_in == ent->is_in
+	rather than just elem.is_in && ent->is_in.
+	* testsuite/libgomp.c-c++-common/depend-1.c (test): Add task with
+	inoutset depend-kind.
+	* testsuite/libgomp.c-c++-common/depend-2.c (test): Likewise.
+	* testsuite/libgomp.c-c++-common/depend-3.c (test): Likewise.
+	* testsuite/libgomp.c-c++-common/depend-inoutset-1.c: New test.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP Implementation Status): Add 5.2 table.

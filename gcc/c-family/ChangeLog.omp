@@ -1,3 +1,11 @@
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.cc (c_finish_omp_depobj): Handle
+	OMP_CLAUSE_DEPEND_INOUTSET.
+
 2022-04-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	gcc/c-family/
@@ -44,7 +52,7 @@
 	(check_and_annotate_for_loop): Use the new helper function.
 
 2020-08-30  Sandra Loosemore  <sandra@codesourcery.com>
-    
+
 	* c-omp.cc (annotate_for_loop): Move initializer processing...
 	(check_and_annotate_for_loop): ... to here.  Allow the loop
 	variable as either operand to the condition.

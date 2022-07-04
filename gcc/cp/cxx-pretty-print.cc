@@ -2139,6 +2139,9 @@ cxx_pretty_printer::statement (tree t)
 	      case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
 		pp_cxx_ws_string (this, " update(mutexinoutset)");
 		break;
+	      case OMP_CLAUSE_DEPEND_INOUTSET:
+		pp_cxx_ws_string (this, " update(inoutset)");
+		break;
 	      case OMP_CLAUSE_DEPEND_LAST:
 		pp_cxx_ws_string (this, " destroy");
 		break;

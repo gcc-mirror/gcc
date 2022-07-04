@@ -1,6 +1,18 @@
 2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/all-memory-1.c (boo): Add test with
+	inoutset depend-kind.
+	* c-c++-common/gomp/all-memory-2.c (boo): Likewise.
+	* c-c++-common/gomp/depobj-1.c (f1): Likewise.
+	(f2): Adjusted expected diagnostics.
+	* g++.dg/gomp/depobj-1.C (f4): Adjust expected diagnostics.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/all-memory-1.f90: New test.

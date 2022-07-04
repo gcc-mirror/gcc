@@ -52,6 +52,11 @@ test (int ifval)
       usleep (5000);
       b[4] = 48;
     }
+    #pragma omp task shared(b) depend(inoutset: b[5])
+    {
+      usleep (5000);
+      b[5] = 49;
+    }
     /* None of the above tasks depend on each other.
        The following task depends on all but the a[4] = 46; one.  */
     #pragma omp task shared(a, b) depend(depobj: d1) private(i) if(ifval)
@@ -59,7 +64,7 @@ test (int ifval)
       if (a[0] != 42 || a[1] != 43 || a[2] != 44 || a[3] != 45
 	  || a[5] != 5 || a[6] != 6 || a[7] != 7
 	  || b[0] != 47 || b[1] != 2 || b[2] != 4 || b[3] != 6
-	  || b[4] != 48 || b[5] != 10 || b[6] != 12 || b[7] != 14)
+	  || b[4] != 48 || b[5] != 49 || b[6] != 12 || b[7] != 14)
 	abort ();
       for (i = 0; i < 8; ++i)
 	if (i != 4)

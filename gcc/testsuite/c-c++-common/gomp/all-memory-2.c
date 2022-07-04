@@ -52,4 +52,6 @@ boo (void)
   ;
   #pragma omp task depend(mutexinoutset: omp_all_memory)
   ;
+  #pragma omp task depend(inoutset: omp_all_memory)
+  ;
 }
