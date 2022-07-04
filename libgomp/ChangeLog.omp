@@ -5,6 +5,13 @@
 
 	* testsuite/libgomp.fortran/target-nowait-array-section.f90: New test.
 
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-nowait-array-section.f90: New test.
+
 2022-06-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-gcn.c (struct usm_splay_tree_key_s): New.

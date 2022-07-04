@@ -1,6 +1,6 @@
 ! Runs the the target region asynchrolously and checks for it
 !
-! Note that  map(alloc: work(:, i)) + nowait  should be save
+! Note that  map(alloc: work(:, i)) + nowait  should be safe
 ! given that a nondescriptor array is used. However, it still
 ! violates a map clause restriction, added in OpenMP 5.1 [354:10-13].
 
