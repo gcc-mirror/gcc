@@ -1168,7 +1168,8 @@ decode_omp_directive (void)
     }
   switch (ret)
     {
-    case ST_OMP_DECLARE_TARGET:
+    /* Set omp_target_seen; exclude ST_OMP_DECLARE_TARGET.
+       FIXME: Get clarification, cf. OpenMP Spec Issue #3240.  */
     case ST_OMP_TARGET:
     case ST_OMP_TARGET_DATA:
     case ST_OMP_TARGET_ENTER_DATA:
@@ -6879,11 +6880,14 @@ done:
 
   /* Fixup for external procedures and resolve 'omp requires'.  */
   int omp_requires;
+  bool omp_target_seen;
   omp_requires = 0;
+  omp_target_seen = false;
   for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
        gfc_current_ns = gfc_current_ns->sibling)
     {
       omp_requires |= gfc_current_ns->omp_requires;
+      omp_target_seen |= gfc_current_ns->omp_target_seen;
       gfc_check_externals (gfc_current_ns);
     }
   for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
@@ -6908,6 +6912,22 @@ done:
       break;
     }
 
+  if (omp_target_seen)
+    omp_requires_mask = (enum omp_requires) (omp_requires_mask
+					     | OMP_REQUIRES_TARGET_USED);
+  if (omp_requires & OMP_REQ_REVERSE_OFFLOAD)
+    omp_requires_mask = (enum omp_requires) (omp_requires_mask
+					     | OMP_REQUIRES_REVERSE_OFFLOAD);
+  if (omp_requires & OMP_REQ_UNIFIED_ADDRESS)
+    omp_requires_mask = (enum omp_requires) (omp_requires_mask
+					     | OMP_REQUIRES_UNIFIED_ADDRESS);
+  if (omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY)
+    omp_requires_mask
+	  = (enum omp_requires) (omp_requires_mask
+				 | OMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+  if (omp_requires & OMP_REQ_DYNAMIC_ALLOCATORS)
+    omp_requires_mask = (enum omp_requires) (omp_requires_mask
+					     | OMP_REQUIRES_DYNAMIC_ALLOCATORS);
   /* Do the parse tree dump.  */
   gfc_current_ns = flag_dump_fortran_original ? gfc_global_ns_list : NULL;
 

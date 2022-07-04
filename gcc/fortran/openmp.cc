@@ -5488,10 +5488,6 @@ gfc_match_omp_requires (void)
       else
 	goto error;
 
-      if (requires_clause & ~(OMP_REQ_ATOMIC_MEM_ORDER_MASK
-			      | OMP_REQ_DYNAMIC_ALLOCATORS))
-	gfc_error_now ("Sorry, %qs clause at %L on REQUIRES directive is not "
-		       "yet supported", clause, &old_loc);
       if (!gfc_omp_requires_add_clause (requires_clause, clause, &old_loc, NULL))
 	goto error;
       requires_clauses |= requires_clause;
