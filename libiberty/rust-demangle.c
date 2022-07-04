@@ -1082,6 +1082,18 @@ demangle_path_maybe_open_generics (struct rust_demangler *rdm)
   if (rdm->errored)
     return open;
 
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    {
+      ++ rdm->recursion;
+      if (rdm->recursion > RUST_MAX_RECURSION_COUNT)
+	{
+	  /* FIXME: There ought to be a way to report
+	     that the recursion limit has been reached.  */
+	  rdm->errored = 1;
+	  goto end_of_func;
+	}
+    }
+
   if (eat (rdm, 'B'))
     {
       backref = parse_integer_62 (rdm);
@@ -1107,6 +1119,11 @@ demangle_path_maybe_open_generics (struct rust_demangler *rdm)
     }
   else
     demangle_path (rdm, 0);
+
+ end_of_func:
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    -- rdm->recursion;
+
   return open;
 }
 
