@@ -1837,7 +1837,7 @@ cprop_operand (gimple *stmt, use_operand_p op_p, range_query *query)
   val = SSA_NAME_VALUE (op);
   if (!val)
     {
-      int_range<2> r;
+      Value_Range r (TREE_TYPE (op));
       tree single;
       if (query->range_of_expr (r, op, stmt) && r.singleton_p (&single))
 	val = single;

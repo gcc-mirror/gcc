@@ -1006,19 +1006,21 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
   switch (func)
     {
     case CFN_BUILT_IN_CONSTANT_P:
-      arg = gimple_call_arg (call, 0);
-      if (src.get_operand (r, arg) && r.singleton_p ())
-	{
-	  r.set (build_one_cst (type), build_one_cst (type));
-	  return true;
-	}
-      if (cfun->after_inlining)
-	{
-	  r.set_zero (type);
-	  // r.equiv_clear ();
-	  return true;
-	}
-      break;
+      {
+	arg = gimple_call_arg (call, 0);
+	Value_Range tmp (TREE_TYPE (arg));
+	if (src.get_operand (tmp, arg) && tmp.singleton_p ())
+	  {
+	    r.set (build_one_cst (type), build_one_cst (type));
+	    return true;
+	  }
+	if (cfun->after_inlining)
+	  {
+	    r.set_zero (type);
+	    return true;
+	  }
+	break;
+      }
 
     case CFN_BUILT_IN_TOUPPER:
       {
@@ -1335,7 +1337,9 @@ fold_using_range::range_of_ssa_name_with_loop_info (irange &r, tree name,
 {
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
   tree min, max, type = TREE_TYPE (name);
-  if (bounds_of_var_in_loop (&min, &max, src.query (), l, phi, name))
+  // FIXME: Remove the supports_p() once all this can handle floats, etc.
+  if (irange::supports_p (type)
+      && bounds_of_var_in_loop (&min, &max, src.query (), l, phi, name))
     {
       if (TREE_CODE (min) != INTEGER_CST)
 	{
