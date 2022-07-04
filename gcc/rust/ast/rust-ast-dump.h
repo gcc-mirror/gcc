@@ -50,6 +50,7 @@ public:
    * Run the visitor on an entire crate and its items
    */
   void go (AST::Crate &crate);
+  void go (AST::Item &item);
 
 private:
   std::ostream &stream;
