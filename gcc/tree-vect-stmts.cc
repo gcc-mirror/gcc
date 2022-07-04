@@ -8979,6 +8979,9 @@ vectorizable_load (vec_info *vinfo,
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Vectorizing an unaligned access.\n");
 
+      if (memory_access_type == VMAT_LOAD_STORE_LANES)
+	vinfo->any_known_not_updated_vssa = true;
+
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
       vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,
 			    alignment_support_scheme, misalignment,
