@@ -1234,6 +1234,7 @@ demangle_const (struct rust_demangler *rdm)
       PRINT (": ");
       PRINT (basic_type (ty_tag));
     }
+  goto pass_return;
 
  fail_return:
   rdm->errored = 1;
