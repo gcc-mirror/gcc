@@ -16,7 +16,7 @@ int32_t *test_1 (void)
   return ptr;
 
   /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } assign1 } */
-  /* { dg-message "'int32_t \\*' (\\\{aka 'int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka int\\\})?\\)' is '4'" "note" { target *-*-* } assign1 } */
+  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4'" "note" { target *-*-* } assign1 } */
 }
 
 int32_t *test2 (void)
@@ -33,5 +33,5 @@ int32_t *test3 (void)
   return ptr;
 
   /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } assign3 } */
-  /* { dg-message "'int32_t \\*' (\\\{aka 'int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka int\\\})?\\)' is '4'" "note" { target *-*-* } assign3 } */
+  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4'" "note" { target *-*-* } assign3 } */
 }

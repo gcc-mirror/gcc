@@ -16,7 +16,7 @@ void test_1 (void)
 
   /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } malloc1 } */
   /* { dg-message "3 bytes" "note" { target *-*-* } malloc1 } */
-  /* { dg-message "'int32_t \\*' (\\\{aka 'int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka int\\\})?\\)' is '4'" "note" { target *-*-* } malloc1 } */
+  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4'" "note" { target *-*-* } malloc1 } */
 }
 
 void test_2 (void)
@@ -26,7 +26,7 @@ void test_2 (void)
 
   /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } malloc2 } */
   /* { dg-message "14 bytes" "note" { target *-*-* } malloc2 } */
-  /* { dg-message "'int32_t \\*' (\\\{aka 'int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka int\\\})?\\)' is '4'" "note" { target *-*-* } malloc2 } */
+  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4'" "note" { target *-*-* } malloc2 } */
 }
 
 void test_3 (int32_t n)
@@ -36,7 +36,7 @@ void test_3 (int32_t n)
 
   /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } malloc3 } */
   /* { dg-message "'\[a-z0-9\\+\\(\\)\\s\]*' bytes" "note" { target *-*-* } malloc3 } */
-  /* { dg-message "'int32_t \\*' (\\\{aka 'int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka int\\\})?\\)' is '4'" "note" { target *-*-* } malloc3 } */
+  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4'" "note" { target *-*-* } malloc3 } */
 }
 
 void test_4 (int32_t n, int32_t m)

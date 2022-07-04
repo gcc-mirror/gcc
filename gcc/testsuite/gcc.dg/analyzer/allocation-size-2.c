@@ -17,7 +17,7 @@ void test_2 (int32_t n)
 
   /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } malloc2 } */
   /* { dg-message "'\[a-z0-9\\*\\(\\)\\s\]*' bytes" "note" { target *-*-* } malloc2 } */
-  /* { dg-message "'int32_t \\*' (\\\{aka 'int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka int\\\})?\\)' is '4" "note" { target *-*-* } malloc2 } */
+  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4" "note" { target *-*-* } malloc2 } */
 }
 
 void test_3 (int32_t n)
@@ -34,7 +34,7 @@ void test_4 (int32_t n)
   free (iptr);
 
   /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } assign4 } */
-  /* { dg-message "'int32_t \\*' (\\\{aka 'int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka int\\\})?\\)' is '4'" "note" { target *-*-* } assign4 } */
+  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4'" "note" { target *-*-* } assign4 } */
 }
 
 void test_5 (void)
@@ -101,7 +101,7 @@ void test_9 (void)
   free (iptr);
 
   /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } assign9 } */
-  /* { dg-message "'int32_t \\*' (\\\{aka 'int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka int\\\})?\\)' is '4'" "note" { target *-*-* } assign9 } */
+  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4'" "note" { target *-*-* } assign9 } */
 }
 
 void test_11 (void)
@@ -135,7 +135,7 @@ void test_12 (void)
   else
     free (ptr);
   /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } assign12 } */
-  /* { dg-message "'int32_t \\*' (\\\{aka 'int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka int\\\})?\\)' is '4'" "note" { target *-*-* } assign12 } */
+  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4'" "note" { target *-*-* } assign12 } */
 }
 
 void test_13 (void)
