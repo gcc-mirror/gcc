@@ -440,12 +440,13 @@
 (define_insn "vec_scatter_element<V_HW_4:mode>_DI"
   [(set (mem:<non_vec>
 	 (plus:DI (zero_extend:DI
-		   (unspec:SI [(match_operand:V4SI 1 "register_operand"   "v")
-			       (match_operand:QI   3 "const_mask_operand" "C")]
-			      UNSPEC_VEC_EXTRACT))
-		  (match_operand:SI                2 "address_operand"   "ZQ")))
-	(unspec:<non_vec> [(match_operand:V_HW_4          0 "register_operand"   "v")
-			   (match_dup 3)] UNSPEC_VEC_EXTRACT))]
+		   (vec_select:SI
+		    (match_operand:V4SI           1 "register_operand"   "v")
+		    (parallel [(match_operand:QI  3 "const_mask_operand" "C")])))
+	  (match_operand:SI                       2 "address_operand"    "ZQ")))
+	(vec_select:<non_vec>
+	 (match_operand:V_HW_4                    0 "register_operand"   "v")
+	 (parallel [(match_dup 3)])))]
   "TARGET_VX && TARGET_64BIT && UINTVAL (operands[3]) < 4"
   "vscef\t%v0,%O2(%v1,%R2),%3"
   [(set_attr "op_type" "VRV")])
@@ -455,12 +456,13 @@
 (define_insn "vec_scatter_element<V_HW_2:mode>_SI"
   [(set (mem:<non_vec>
 	 (plus:SI (subreg:SI
-		   (unspec:<non_vec_int> [(match_operand:V_HW_2 1 "register_operand"   "v")
-					  (match_operand:QI     3 "const_mask_operand" "C")]
-					 UNSPEC_VEC_EXTRACT) 4)
-		  (match_operand:SI                             2 "address_operand"   "ZQ")))
-	(unspec:<non_vec> [(match_operand:V_HW_2                0 "register_operand"   "v")
-			   (match_dup 3)] UNSPEC_VEC_EXTRACT))]
+		   (vec_select:<non_vec_int>
+		    (match_operand:<TOINTVEC>     1 "register_operand"   "v")
+		    (parallel [(match_operand:QI  3 "const_mask_operand" "C")])) 4)
+	  (match_operand:SI                       2 "address_operand"    "ZQ")))
+    (vec_select:<non_vec>
+     (match_operand:V_HW_2                        0 "register_operand"   "v")
+     (parallel [(match_dup 3)])))]
   "TARGET_VX && !TARGET_64BIT && UINTVAL (operands[3]) < GET_MODE_NUNITS (<V_HW_2:MODE>mode)"
   "vsce<V_HW_2:bhfgq>\t%v0,%O2(%v1,%R2),%3"
   [(set_attr "op_type" "VRV")])
@@ -469,13 +471,14 @@
 ; vscef, vsceg
 (define_insn "vec_scatter_element<mode>_<non_vec_int>"
   [(set (mem:<non_vec>
-	 (plus:<non_vec_int> (unspec:<non_vec_int>
-			      [(match_operand:<TOINTVEC> 1 "register_operand"   "v")
-			       (match_operand:QI         3 "const_mask_operand" "C")]
-			      UNSPEC_VEC_EXTRACT)
-			     (match_operand:DI           2 "address_operand"   "ZQ")))
-	(unspec:<non_vec> [(match_operand:V_HW_32_64     0 "register_operand"   "v")
-			   (match_dup 3)] UNSPEC_VEC_EXTRACT))]
+	 (plus:<non_vec_int>
+	  (vec_select:<non_vec_int>
+	   (match_operand:<TOINTVEC>      1 "register_operand"   "v")
+	    (parallel [(match_operand:QI  3 "const_mask_operand" "C")]))
+	  (match_operand:DI               2 "address_operand"   "ZQ")))
+	(vec_select:<non_vec>
+	 (match_operand:V_HW_32_64        0 "register_operand"   "v")
+	 (parallel [(match_dup 3)])))]
   "TARGET_VX && UINTVAL (operands[3]) < GET_MODE_NUNITS (<V_HW_32_64:MODE>mode)"
   "vsce<bhfgq>\t%v0,%O2(%v1,%R2),%3"
   [(set_attr "op_type" "VRV")])
@@ -1889,9 +1892,11 @@
 		      (const_int VEC_RND_CURRENT)]
 		     UNSPEC_VEC_VFLR))
    (set (match_operand:SF 1 "memory_operand" "")
-	(unspec:SF [(match_dup 2) (const_int 0)] UNSPEC_VEC_EXTRACT))
+	(vec_select:SF (match_dup 2)
+	 (parallel [(const_int 0)])))
    (set (match_dup 3)
-	(unspec:SF [(match_dup 2) (const_int 2)] UNSPEC_VEC_EXTRACT))]
+	(vec_select:SF (match_dup 2)
+	 (parallel [(const_int 2)])))]
   "TARGET_VX"
 {
   operands[2] = gen_reg_rtx (V4SFmode);
@@ -2300,10 +2305,10 @@
 ; *a = vec_revb (b)[1];                            get-element-bswap-4.c
 ; vstebrh, vstebrf, vstebrg
 (define_insn "*vec_extract_bswap_vec<mode>"
-  [(set (match_operand:<non_vec>                                    0 "memory_operand"   "=R")
-	(unspec:<non_vec> [(bswap:V_HW_HSD (match_operand:V_HW_HSD  1 "register_operand"  "v"))
-			   (match_operand:SI                        2 "const_int_operand" "C")]
-			   UNSPEC_VEC_EXTRACT))]
+  [(set (match_operand:<non_vec>                  0 "memory_operand"   "=R")
+	(vec_select:<non_vec>
+	 (bswap:V_HW_HSD (match_operand:V_HW_HSD  1 "register_operand"  "v"))
+	 (parallel [(match_operand:SI             2 "const_int_operand" "C")])))]
   "TARGET_VXE2 && UINTVAL (operands[2]) < GET_MODE_NUNITS (<V_HW_HSD:MODE>mode)"
   "vstebr<bhfgq>\t%v1,%0,%2"
   [(set_attr "op_type" "VRX")])
@@ -2312,11 +2317,11 @@
 ; *a = __builtin_bswap32 (b[1]);                   get-element-bswap-2.c
 ; vstebrh, vstebrf, vstebrg
 (define_insn "*vec_extract_bswap_elem<mode>"
-  [(set (match_operand:<non_vec>                     0 "memory_operand"   "=R")
+  [(set (match_operand:<non_vec>                  0 "memory_operand"   "=R")
 	(bswap:<non_vec>
-	 (unspec:<non_vec> [(match_operand:V_HW_HSD  1 "register_operand"  "v")
-			    (match_operand:SI        2 "const_int_operand" "C")]
-			   UNSPEC_VEC_EXTRACT)))]
+	 (vec_select:<non_vec>
+	  (match_operand:V_HW_HSD                 1 "register_operand"  "v")
+	  (parallel [(match_operand:SI            2 "const_int_operand" "C")]))))]
   "TARGET_VXE2 && UINTVAL (operands[2]) < GET_MODE_NUNITS (<V_HW_HSD:MODE>mode)"
   "vstebr<bhfgq>\t%v1,%0,%2"
   [(set_attr "op_type" "VRX")])
