@@ -194,7 +194,7 @@ loop_fini_done:
    If CHANGED_BBS is not NULL, basic blocks whose loop depth has changed are
    marked in it.
 
-   Returns the number of new discovered loops.  */
+   Returns the number of new discovered plus the number of removed loops.  */
 
 unsigned
 fix_loop_structure (bitmap changed_bbs)
@@ -277,7 +277,7 @@ fix_loop_structure (bitmap changed_bbs)
     }
 
   /* Finally free deleted loops.  */
-  bool any_deleted = false;
+  unsigned n_deleted = 0;
   class loop *loop;
   FOR_EACH_VEC_ELT (*get_loops (cfun), i, loop)
     if (loop && loop->header == NULL)
@@ -311,12 +311,12 @@ fix_loop_structure (bitmap changed_bbs)
 	  }
 	(*get_loops (cfun))[i] = NULL;
 	flow_loop_free (loop);
-	any_deleted = true;
+	n_deleted++;
       }
 
   /* If we deleted loops then the cached scalar evolutions refering to
      those loops become invalid.  */
-  if (any_deleted && scev_initialized_p ())
+  if (n_deleted > 0 && scev_initialized_p ())
     scev_reset_htab ();
 
   loops_state_clear (LOOPS_NEED_FIXUP);
@@ -328,7 +328,7 @@ fix_loop_structure (bitmap changed_bbs)
 
   timevar_pop (TV_LOOP_INIT);
 
-  return number_of_loops (cfun) - old_nloops;
+  return number_of_loops (cfun) - old_nloops + n_deleted;
 }
 
 /* The RTL loop superpass.  The actual passes are subpasses.  See passes.cc for
