@@ -1,6 +1,15 @@
 2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/105602
+	* config/gcn/t-omp-device (arch): Add 'amdgcn' besides existing 'gcn'.
+	* config/gcn/gcn.cc (gcn_omp_device_kind_arch_isa): Likewise.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-core.h (enum omp_clause_depend_kind): Add
