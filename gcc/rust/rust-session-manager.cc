@@ -32,6 +32,7 @@
 #include "rust-lint-scan-deadcode.h"
 #include "rust-lint-unused-var.h"
 #include "rust-hir-dump.h"
+#include "rust-ast-dump.h"
 
 #include "diagnostic.h"
 #include "input.h"
@@ -51,6 +52,7 @@ namespace Rust {
 
 const char *kLexDumpFile = "gccrs.lex.dump";
 const char *kASTDumpFile = "gccrs.ast.dump";
+const char *kASTPrettyDumpFile = "gccrs.ast-pretty.dump";
 const char *kASTExpandedDumpFile = "gccrs.ast-expanded.dump";
 const char *kHIRDumpFile = "gccrs.hir.dump";
 const char *kHIRPrettyDumpFile = "gccrs.hir-pretty.dump";
@@ -506,6 +508,10 @@ Session::enable_dump (std::string arg)
     {
       options.enable_dump_option (CompileOptions::PARSER_AST_DUMP);
     }
+  else if (arg == "ast-pretty")
+    {
+      options.enable_dump_option (CompileOptions::AST_DUMP_PRETTY);
+    }
   else if (arg == "register_plugins")
     {
       options.enable_dump_option (CompileOptions::REGISTER_PLUGINS_DUMP);
@@ -666,6 +672,10 @@ Session::parse_file (const char *filename)
   if (options.dump_option_enabled (CompileOptions::PARSER_AST_DUMP))
     {
       dump_ast (parser, parsed_crate);
+    }
+  if (options.dump_option_enabled (CompileOptions::AST_DUMP_PRETTY))
+    {
+      dump_ast_pretty (parsed_crate);
     }
   if (options.dump_option_enabled (CompileOptions::TARGET_OPTION_DUMP))
     {
@@ -1036,6 +1046,23 @@ Session::dump_ast (Parser<Lexer> &parser, AST::Crate &crate) const
     }
 
   parser.debug_dump_ast_output (crate, out);
+  out.close ();
+}
+
+void
+Session::dump_ast_pretty (AST::Crate &crate) const
+{
+  std::ofstream out;
+  out.open (kASTPrettyDumpFile);
+  if (out.fail ())
+    {
+      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
+		     kASTDumpFile);
+      return;
+    }
+
+  AST::Dump (out).go (crate);
+
   out.close ();
 }
 
