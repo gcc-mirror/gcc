@@ -1,3 +1,9 @@
+2022-07-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106122
+	* config/i386/i386.md (peephole2): Avoid generating pop %esp
+	when optimizing for size.
+
 2022-07-02  Sergei Trofimovich  <siarheit@google.com>
 
 	Backported from master:
