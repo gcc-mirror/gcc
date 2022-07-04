@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Sep 09, 2022
+GNAT User's Guide for Native Platforms , Sep 26, 2022
 
 AdaCore
 
@@ -15317,10 +15317,11 @@ Linker switches can be specified after @code{-largs} builder switch.
 
 @item @code{-fuse-ld=`name'}
 
-Linker to be used. The default is @code{bfd} for @code{ld.bfd},
-the alternative being @code{gold} for @code{ld.gold}. The later is
-a more recent and faster linker, but only available on GNU/Linux
+Linker to be used. The default is @code{bfd} for @code{ld.bfd}; @code{gold}
+(for @code{ld.gold}) and @code{mold} (for @code{ld.mold}) are more
+recent and faster alternatives, but only available on GNU/Linux
 platforms.
+
 @end table
 
 @node Binding with gnatbind,Linking with gnatlink,Linker Switches,Building Executable Programs with GNAT
@@ -17926,7 +17927,6 @@ instr.ads
 /home/comar/local/adainclude/unchconv.ads
 @end example
 @end quotation
-
 
 
 
