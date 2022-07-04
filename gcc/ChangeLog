@@ -1,3 +1,67 @@
+2022-07-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106022
+	* config/i386/i386-protos.h (ix86_convert_const_vector_to_integer):
+	New.
+	* config/i386/i386.cc (ix86_convert_const_vector_to_integer):
+	New.
+	* config/i386/mmx.md (V_16_32_64): New.
+	(*mov<mode>_imm): New patterns for stores with 16-bit, 32-bit
+	and 64-bit constant vector.
+	* config/i386/predicates.md (x86_64_const_vector_operand): New.
+
+2022-07-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc: Include value-range-storage.h.
+	* gimple-range-cache.h (class block_range_cache): Add "class" to
+	m_range_allocator.
+	* gimple-range-edge.cc
+	(gimple_outgoing_range::gimple_outgoing_range): Allocate allocator.
+	(gimple_outgoing_range::~gimple_outgoing_range): Free allocator.
+	(gimple_outgoing_range::calc_switch_ranges): Dereference allocator.
+	* gimple-range-edge.h: Add "class" to m_range_allocator.
+	* gimple-range-infer.cc
+	(infer_range_manager::infer_range_manager): Allocate allocator.
+	(infer_range_manager::~infer_range_manager): Free allocator.
+	(infer_range_manager::get_nonzero): Dereference allocator.
+	(infer_range_manager::add_range): Same.
+	* gimple-range-infer.h (class vrange_allocator): Add "class" to
+	m_range_allocator.
+	* value-range-storage.h (class vrange_allocator): Move from
+	value-range.h.
+	(class obstack_vrange_allocator): Same.
+	(class ggc_vrange_allocator): Same.
+	(vrange_allocator::alloc_vrange): Same.
+	(vrange_allocator::alloc_irange): Same.
+	* value-range.h (class vrange_allocator): Move to value-range-storage.h.
+	(class obstack_vrange_allocator): Same.
+	(class ggc_vrange_allocator): Same.
+
+2022-07-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (OBJS): Add value-range-storage.o.
+	(GTFILES): Add value-range-storage.h.
+	* gengtype.cc (open_base_files): Add value-range-storage.h.
+	* value-range-storage.cc: New file.
+	* value-range-storage.h: New file.
+
+2022-07-03  Xi Ruoyao  <xry111@xry111.site>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_check_zero_div_p):
+	New static function.
+	(loongarch_idiv_insns): Use loongarch_check_zero_div_p instead
+	of TARGET_CHECK_ZERO_DIV.
+	(loongarch_output_division): Likewise.
+	* common/config/loongarch/loongarch-common.cc
+	(TARGET_DEFAULT_TARGET_FLAGS): Remove unneeded hook.
+	* doc/invoke.texi: Update to match the new behavior.
+
+2022-07-03  Ian Lance Taylor  <iant@golang.org>
+
+	* tree-ssa-dse.cc (dse_optimize_stmt): Only delete a trapping
+	statement if -fdelete-dead-exceptions.
+
 2022-07-02  Tim Lange  <mail@tim-lange.me>
 
 	PR analyzer/105900

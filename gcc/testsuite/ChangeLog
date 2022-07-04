@@ -1,3 +1,29 @@
+2022-07-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106022
+	* gcc.target/i386/pr106022-1.c: New test.
+	* gcc.target/i386/pr106022-2.c: Likewise.
+	* gcc.target/i386/pr106022-3.c: Likewise.
+	* gcc.target/i386/pr106022-4.c: Likewise.
+
+2022-07-03  Xi Ruoyao  <xry111@xry111.site>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.c-torture/execute/20101011-1.c (dg-additional-options):
+	add -mcheck-zero-division for LoongArch targets.
+
+2022-07-03  Tim Lange  <mail@tim-lange.me>
+
+	* gcc.dg/analyzer/allocation-size-1.c: Use fixed-length types.
+	* gcc.dg/analyzer/allocation-size-2.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-3.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-4.c: Likewise.
+	* gcc.dg/analyzer/allocation-size-5.c: Likewise.
+
+2022-07-03  Ian Lance Taylor  <iant@golang.org>
+
+	* g++.dg/torture/except-1.C: New test.
+
 2022-07-02  Tim Lange  <mail@tim-lange.me>
 
 	PR analyzer/105900
