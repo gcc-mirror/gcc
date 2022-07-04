@@ -191,7 +191,11 @@ Parse::qualified_ident(std::string* pname, Named_object** ppackage)
   Named_object* package = this->gogo_->lookup(name, NULL);
   if (package == NULL || !package->is_package())
     {
-      go_error_at(this->location(), "expected package");
+      if (package == NULL)
+	go_error_at(this->location(), "reference to undefined name %qs",
+		    Gogo::message_name(name).c_str());
+      else
+	go_error_at(this->location(), "expected package");
       // We expect . IDENTIFIER; skip both.
       if (this->advance_token()->is_identifier())
 	this->advance_token();
