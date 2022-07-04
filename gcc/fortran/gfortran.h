@@ -1345,7 +1345,11 @@ typedef struct gfc_omp_namelist
       gfc_omp_reduction_op reduction_op;
       gfc_omp_depend_op depend_op;
       gfc_omp_map_op map_op;
-      gfc_omp_linear_op linear_op;
+      struct
+	{
+	  ENUM_BITFIELD (gfc_omp_linear_op) op:4;
+	  bool old_modifier;
+	} linear;
       struct gfc_common_head *common;
       bool lastprivate_conditional;
     } u;

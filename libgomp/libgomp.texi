@@ -363,7 +363,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Clauses on @code{end} directive can be on directive @tab N @tab
 @item Deprecation of no-argument @code{destroy} clause on @code{depobj}
       @tab N @tab
-@item @code{linear} clause syntax changes and @code{step} modifier @tab P @tab only C/C++
+@item @code{linear} clause syntax changes and @code{step} modifier @tab Y @tab
 @item Deprecation of minus operator for reductions @tab N @tab
 @item Deprecation of separating @code{map} modifiers without comma @tab N @tab
 @item @code{declare mapper} with iterator and @code{present} modifiers

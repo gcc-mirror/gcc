@@ -1421,8 +1421,8 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_MAP_RELEASE: fputs ("release:", dumpfile); break;
 	  default: break;
 	  }
-      else if (list_type == OMP_LIST_LINEAR)
-	switch (n->u.linear_op)
+      else if (list_type == OMP_LIST_LINEAR && n->u.linear.old_modifier)
+	switch (n->u.linear.op)
 	  {
 	  case OMP_LINEAR_REF: fputs ("ref(", dumpfile); break;
 	  case OMP_LINEAR_VAL: fputs ("val(", dumpfile); break;
@@ -1430,7 +1430,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  default: break;
 	  }
       fprintf (dumpfile, "%s", n->sym ? n->sym->name : "omp_all_memory");
-      if (list_type == OMP_LIST_LINEAR && n->u.linear_op != OMP_LINEAR_DEFAULT)
+      if (list_type == OMP_LIST_LINEAR && n->u.linear.op != OMP_LINEAR_DEFAULT)
 	fputc (')', dumpfile);
       if (n->expr)
 	{

@@ -2324,6 +2324,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  if ((mask & OMP_CLAUSE_LINEAR)
 	      && gfc_match ("linear (") == MATCH_YES)
 	    {
+	      bool old_linear_modifier = false;
 	      gfc_omp_linear_op linear_op = OMP_LINEAR_DEFAULT;
 	      gfc_expr *step = NULL;
 
@@ -2331,17 +2332,26 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					       &c->lists[OMP_LIST_LINEAR],
 					       false, NULL, &head)
 		  == MATCH_YES)
-		linear_op = OMP_LINEAR_REF;
+		{
+		  linear_op = OMP_LINEAR_REF;
+		  old_linear_modifier = true;
+		}
 	      else if (gfc_match_omp_variable_list (" val (",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, NULL, &head)
 		       == MATCH_YES)
-		linear_op = OMP_LINEAR_VAL;
+		{
+		  linear_op = OMP_LINEAR_VAL;
+		  old_linear_modifier = true;
+		}
 	      else if (gfc_match_omp_variable_list (" uval (",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, NULL, &head)
 		       == MATCH_YES)
-		linear_op = OMP_LINEAR_UVAL;
+		{
+		  linear_op = OMP_LINEAR_UVAL;
+		  old_linear_modifier = true;
+		}
 	      else if (gfc_match_omp_variable_list ("",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, &end_colon, &head)
@@ -2364,14 +2374,114 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      break;
 		    }
 		}
-	      if (end_colon && gfc_match (" %e )", &step) != MATCH_YES)
+	      gfc_gobble_whitespace ();
+	      if (old_linear_modifier && end_colon)
 		{
-		  gfc_free_omp_namelist (*head, false);
-		  gfc_current_locus = old_loc;
-		  *head = NULL;
-		  break;
+		  if (gfc_match (" %e )", &step) != MATCH_YES)
+		    {
+		      gfc_free_omp_namelist (*head, false);
+		      gfc_current_locus = old_loc;
+		      *head = NULL;
+		      goto error;
+		    }
 		}
-	      else if (!end_colon)
+	      else if (end_colon)
+		{
+		  bool has_error = false;
+		  bool has_modifiers = false;
+		  bool has_step = false;
+		  bool duplicate_step = false;
+		  bool duplicate_mod = false;
+		  while (true)
+		    {
+		      old_loc = gfc_current_locus;
+		      bool close_paren = gfc_match ("val )") == MATCH_YES;
+		      if (close_paren || gfc_match ("val , ") == MATCH_YES)
+			{
+			  if (linear_op != OMP_LINEAR_DEFAULT)
+			    {
+			      duplicate_mod = true;
+			      break;
+			    }
+			  linear_op = OMP_LINEAR_VAL;
+			  has_modifiers = true;
+			  if (close_paren)
+			    break;
+			  continue;
+			}
+		      close_paren = gfc_match ("uval )") == MATCH_YES;
+		      if (close_paren || gfc_match ("uval , ") == MATCH_YES)
+			{
+			  if (linear_op != OMP_LINEAR_DEFAULT)
+			    {
+			      duplicate_mod = true;
+			      break;
+			    }
+			  linear_op = OMP_LINEAR_UVAL;
+			  has_modifiers = true;
+			  if (close_paren)
+			    break;
+			  continue;
+			}
+		      close_paren = gfc_match ("ref )") == MATCH_YES;
+		      if (close_paren || gfc_match ("ref , ") == MATCH_YES)
+			{
+			  if (linear_op != OMP_LINEAR_DEFAULT)
+			    {
+			      duplicate_mod = true;
+			      break;
+			    }
+			  linear_op = OMP_LINEAR_REF;
+			  has_modifiers = true;
+			  if (close_paren)
+			    break;
+			  continue;
+			}
+		      close_paren = (gfc_match ("step ( %e ) )", &step)
+				     == MATCH_YES);
+		      if (close_paren
+			  || gfc_match ("step ( %e ) , ", &step) == MATCH_YES)
+			{
+			  if (has_step)
+			    {
+			      duplicate_step = true;
+			      break;
+			    }
+			  has_modifiers = has_step = true;
+			  if (close_paren)
+			    break;
+			  continue;
+			}
+		      if (!has_modifiers
+			  && gfc_match ("%e )", &step) == MATCH_YES)
+			{
+			  if ((step->expr_type == EXPR_FUNCTION
+				|| step->expr_type == EXPR_VARIABLE)
+			      && strcmp (step->symtree->name, "step") == 0)
+			    {
+			      gfc_current_locus = old_loc;
+			      gfc_match ("step (");
+			      has_error = true;
+			    }
+			  break;
+			}
+		      has_error = true;
+		      break;
+		    }
+		  if (duplicate_mod || duplicate_step)
+		    {
+		      gfc_error ("Multiple %qs modifiers specified at %C",
+				 duplicate_mod ? "linear" : "step");
+		      has_error = true;
+		    }
+		  if (has_error)
+		    {
+		      gfc_free_omp_namelist (*head, false);
+		      *head = NULL;
+		      goto error;
+		    }
+		}
+	      else
 		{
 		  step = gfc_get_constant_expr (BT_INTEGER,
 						gfc_default_integer_kind,
@@ -2379,9 +2489,12 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		  mpz_set_si (step->value.integer, 1);
 		}
 	      (*head)->expr = step;
-	      if (linear_op != OMP_LINEAR_DEFAULT)
+	      if (linear_op != OMP_LINEAR_DEFAULT || old_linear_modifier)
 		for (gfc_omp_namelist *n = *head; n; n = n->next)
-		  n->u.linear_op = linear_op;
+		  {
+		    n->u.linear.op = linear_op;
+		    n->u.linear.old_modifier = old_linear_modifier;
+		  }
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_LINK)
@@ -7439,28 +7552,38 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    break;
 		  case OMP_LIST_LINEAR:
 		    if (code
-			&& n->u.linear_op != OMP_LINEAR_DEFAULT
-			&& n->u.linear_op != linear_op)
+			&& n->u.linear.op != OMP_LINEAR_DEFAULT
+			&& n->u.linear.op != linear_op)
 		      {
-			gfc_error ("LINEAR clause modifier used on DO or SIMD"
-				   " construct at %L", &n->where);
-			linear_op = n->u.linear_op;
+			if (n->u.linear.old_modifier)
+			  {
+			    gfc_error ("LINEAR clause modifier used on DO or "
+				       "SIMD construct at %L", &n->where);
+			    linear_op = n->u.linear.op;
+			  }
+			else if (n->u.linear.op != OMP_LINEAR_VAL)
+			  {
+			    gfc_error ("LINEAR clause modifier other than VAL "
+				       "used on DO or SIMD construct at %L",
+				       &n->where);
+			    linear_op = n->u.linear.op;
+			  }
 		      }
 		    else if (omp_clauses->orderedc)
 		      gfc_error ("LINEAR clause specified together with "
 				 "ORDERED clause with argument at %L",
 				 &n->where);
-		    else if (n->u.linear_op != OMP_LINEAR_REF
+		    else if (n->u.linear.op != OMP_LINEAR_REF
 			     && n->sym->ts.type != BT_INTEGER)
 		      gfc_error ("LINEAR variable %qs must be INTEGER "
 				 "at %L", n->sym->name, &n->where);
-		    else if ((n->u.linear_op == OMP_LINEAR_REF
-			      || n->u.linear_op == OMP_LINEAR_UVAL)
+		    else if ((n->u.linear.op == OMP_LINEAR_REF
+			      || n->u.linear.op == OMP_LINEAR_UVAL)
 			     && n->sym->attr.value)
 		      gfc_error ("LINEAR dummy argument %qs with VALUE "
 				 "attribute with %s modifier at %L",
 				 n->sym->name,
-				 n->u.linear_op == OMP_LINEAR_REF
+				 n->u.linear.op == OMP_LINEAR_REF
 				 ? "REF" : "UVAL", &n->where);
 		    else if (n->expr)
 		      {
