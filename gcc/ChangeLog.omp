@@ -1,3 +1,11 @@
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.cc (check_omp_nesting_restrictions): Skip warning for
+	target inside target if inner is reverse offload.
+
 2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
