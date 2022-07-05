@@ -1,6 +1,15 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-06-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (*movbi): Remove assembler bug workarounds.
+	(jump): Likewise.
+	(movdi_symbol_save_scc): Likewise.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-expand.cc (expand_omp_target): Remap user provided
