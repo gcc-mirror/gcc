@@ -2909,7 +2909,7 @@ proc check_effective_target_le { } {
 
 proc check_effective_target_two_plus_gigs { } {
     return [check_no_compiler_messages two_plus_gigs executable {
-	int dummy[0x80000000];
+	char dummy[0x80000000];
 	int main () { return 0; }
     }]
 }
