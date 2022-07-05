@@ -1,3 +1,7 @@
+2022-07-04  Martin Liska  <mliska@suse.cz>
+
+	* git-descr.sh: By default print revision for HEAD.
+
 2022-06-28  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* unicode/README: Added instructions for updating ucnid.h.

@@ -1,3 +1,251 @@
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Call): Merge the two special cases
+	where there are no controlling actuals but tag-indeternminate ones.
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_disp.adb (Expand_Dispatching_Call): Fix detection of calls
+	that are dispatching on tagged result.
+
+2022-07-04  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl (ADA_EXCLUDE_SRCS): Add s-qnx.ads.
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration) <OK_To_Rename_Ref>: New
+	local function.
+	<Rewrite_As_Renaming>: Change to a local variable whose value is
+	computed once and generate a call to Finalize after this is done.
+	Simplify the code creating the renaming at the end.
+
+2022-07-04  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl (GCC_SPEC_FILES): Remove vxworks cert files.
+
+2022-07-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Refactor duplicated code for
+	Count and Index attributes.
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Length_Check_On_Assignment): Return early if
+	the Suppress_Assignment_Checks flag is set.
+	(Selected_Range_Checks): Deal with conditional expressions.
+	* exp_ch4.adb (Too_Large_Length_For_Array): New constant.
+	(Expand_Concatenate): Use it in lieu of Too_Large_Max_Length.
+	(Expand_N_If_Expression): If the result has a unidimensional array
+	type but the dependent expressions have constrained subtypes with
+	known bounds, create a static temporary on the stack with a subtype
+	covering the result.
+	(Get_First_Index_Bounds): Deal with string literals.
+	* uintp.ads (Uint_256): New deferred constant.
+	* sinfo.ads (Suppress_Assignment_Checks): Document new usage.
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration.Rewrite_As_Renaming):
+	Do not rewrite if the declaration has got constraints.
+	* sinfo.ads (Case Expression Alternative): Fix typo.
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration.Rewrite_As_Renaming):
+	Be prepared for slices.
+	* exp_ch4.adb (Get_First_Index_Bounds): New procedure.
+	(Expand_Array_Comparison.Length_Less_Than_4): Call it.
+	(Expand_Concatenate): Try to compute a maximum length for
+	operands with variable length and a maximum total length at the
+	end.  If the concatenation is dynamic, but a sensible maximum
+	total length has been computed, use this length to create a
+	static array subtype for the temporary and return a slice of it.
+
+2022-07-04  Steve Baird  <baird@adacore.com>
+
+	* sem_ch3.adb (Check_Possible_Deferred_Completion): Delete
+	Prev_Obj_Def formal parameter.  Reorganize code so that
+	statically matching check is also performed in the case where
+	the subtype given in the initial declaration is constrained and
+	the subtype given in the completion is not.
+
+2022-07-04  Bob Duff  <duff@adacore.com>
+
+	* einfo-utils.ads, einfo-utils.adb: Add predicates on subtypes E
+	and N.  Change some parameters to use the unpredicated subtypes,
+	because they sometimes return e.g. Empty.  Note that N_Entity_Id
+	has a predicate; Entity_Id does not.
+	* exp_tss.adb (Base_Init_Proc): Use Entity_Id instead of E,
+	because otherwise we fail the predicate. We shouldn't be
+	referring to single-letter names from far away anyway.
+	* sem_aux.adb (Is_Derived_Type): Likewise.
+	* sem_res.adb (Is_Definite_Access_Type): Use N_Entity_Id for
+	predicate.
+	* types.ads (Entity_Id): Add comment explaining the difference
+	between Entity_Id and N_Entity_Id.
+
+2022-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Combine identical
+	branches.
+	* sem_attr.adb (Analyze_Attribute): Combine identical cases
+	Attribute_Has_Same_Storage and Attribute_Overlaps_Storage.
+	* sem_prag.adb (Check_Role): Combine E_Out_Parameter case with
+	general case for parameters.
+	* sem_util.adb (Accessibility_Level): Combine identical
+	branches.
+	* sprint.adb (Sprint_Node_Actual): Combine cases for
+	N_Real_Range_Specification and N_Signed_Integer_Type_Definition.
+
+2022-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* libgnat/s-os_lib.adb (Quote_Argument): Modify the result
+	buffer size calculation to handle the case where Arg'Length is
+	1.
+
+2022-07-04  Bob Duff  <duff@adacore.com>
+
+	* exp_util.adb (Expand_Subtype_From_Expr): Generate a new
+	subtype when Is_Constr_Subt_For_UN_Aliased is True, so the
+	Is_Constr_Subt_For_U_Nominal flag will not be set on the
+	preexisting subtype.
+	* sem_attr.adb, sem_ch3.adb: Minor.
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* debug.adb (d.9): Remove usage.
+	* exp_ch6.adb (Expand_Simple_Function_Return): Remove redundant
+	test on Debug_Flag_Dot_L.
+	(Is_Build_In_Place_Result_Type): Return false for nonlimited types.
+	(Is_Build_In_Place_Function): Tidy up and remove redundant test on
+	Debug_Flag_Dot_L.
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Don't adjust the object
+	if the expression is a function call.
+	<Rewrite_As_Renaming>: Return true if the object needs finalization
+	and is initialized  with the result of a function call returned on
+	the secondary stack.
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Add Use_Sec_Stack boolean
+	parameter.  Early return if the parent is an object declaration and
+	Use_Sec_Stack is false.
+	(Expand_Call_Helper): Adjust call to Expand_Ctrl_Function_Call.
+	* exp_ch7.adb (Find_Last_Init): Be prepared for initialization still
+	present in the object declaration.
+	* sem_ch3.adb (Analyze_Object_Declaration): Call the predicates
+	Needs_Secondary_Stack and Needs_Finalization to guard the renaming
+	optimization.
+
+2022-07-04  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-cbhase.ads, libgnat/a-cborse.ads,
+	libgnat/a-cihase.ads, libgnat/a-ciorse.ads,
+	libgnat/a-cohase.ads, libgnat/a-coorse.ads (Key): New function
+	that takes a Container parameter, implemented as an expression
+	function, so it is self explanatory (doesn't need a comment).
+
+2022-07-04  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* doc/gnat_rm/the_gnat_library.rst: Fix length of title
+	underlines.
+
+2022-07-04  Steve Baird  <baird@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): After calling Insert_Action
+	to insert a subtype declaration associated with an allocator,
+	the subtype declaration will usually be analyzed. But not
+	always. Add an explicit call to Preanalyze to cope with the
+	unusual case. The subtype declaration must be at least
+	preanalyzed before the call to Sem_Ch3.Process_Subtype a little
+	while later, during which we analyze an identifier that refers
+	to the subtype.
+
+2022-07-04  Steve Baird  <baird@adacore.com>
+
+	* sem_warn.adb (Warn_On_Constant_Valid_Condition): Do not
+	generate a warning if the expression in question is an assertion
+	expression, or a subexpression thereof. But do call
+	Test_Comparison so that it can generate warnings for the cases
+	that it generates warnings for.
+	* sem_prag.ads: Modify Assertion_Expression_Pragma constant so
+	that the predicate Sem_Util.In_Assertion_Expression_Pragma
+	returns True for the expression of a Compile_Time_Error pragma.
+
+2022-07-04  Julien Bortolussi  <bortolussi@adacore.com>
+
+	* doc/gnat_rm/the_gnat_library.rst: Add the new entry.
+	* gnat_rm.texi: Regenerate.
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Comparison_Op): Deal with ambiguous operands
+	in all cases.
+	(Resolve_Equality_Op): Likewise, except for the case of the implicit
+	inequality operator created for a user-defined operator that is not
+	an intrinsic subprogram.
+
+2022-07-04  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-cbhase.adb, libgnat/a-cbhase.ads,
+	libgnat/a-cborse.adb, libgnat/a-cborse.ads,
+	libgnat/a-cihase.adb, libgnat/a-cihase.ads,
+	libgnat/a-ciorse.adb, libgnat/a-ciorse.ads,
+	libgnat/a-cohase.adb, libgnat/a-cohase.ads,
+	libgnat/a-conhel.adb, libgnat/a-conhel.ads,
+	libgnat/a-coorse.adb, libgnat/a-coorse.ads: Add Has_Element,
+	Element, Query_Element, and Next subprograms that take a Set
+	parameter. Add Tampering_With_Cursors_Prohibited function. These
+	are all new in Ada 2022.
+
+2022-07-04  Claire Dross  <dross@adacore.com>
+
+	* doc/gnat_rm/the_gnat_library.rst: Functional vectors, sets,
+	and maps are now controlled.
+	* gnat_rm.texi: Regenerate.
+
+2022-07-04  Claire Dross  <dross@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(Debugging and Assertion Control): Add GNAT specific assertion
+	pragmas to the equivalent Assertion_Policy for the -gnata
+	option.
+	* gnat_ugn.texi: Regenerate.
+
+2022-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* sem_disp.adb (Most_Descendant_Use_Clause): Remove call to
+	deprecated Is_Internal.
+	* sem_util.adb (Innermost_Master_Scope_Depth): Use
+	Find_Enclosing_Scope instead of Nearest_Dynamic_Scope to avoid
+	cases where relevant scopes get skipped leading to an incorrect
+	scope depth calculation.
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Build_In_Place_Formal): Also compute Returns_By_Ref
+	for the function if the extra formals were not built initially.
+
+2022-07-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Resolve_Iterable_Operation): Add guard to
+	prevent crash when the examined function has no formal
+	parameters and Etype is called on Empty entity.
+
+2022-07-04  Julien Bortolussi  <bortolussi@adacore.com>
+
+	* libgnat/a-cfinse.adb, libgnat/a-cfinse.ads: Implementation
+	files of the sequence.
+	* Makefile.rtl, impunit.adb: Take into account the add of the
+	new files
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst (Pure_Function):
+	Fix ambiguous wording about context dependence.
+	* gnat_rm.texi: Regenerate.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-interface/misc.cc (gnat_get_sarif_source_language): New.

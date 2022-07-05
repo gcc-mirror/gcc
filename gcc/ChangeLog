@@ -1,3 +1,174 @@
+2022-07-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc
+	(fold_using_range::range_of_ssa_name_with_loop_info): Restrict the
+	call to SCEV for irange supported types.
+	(fold_using_range::range_of_builtin_int_call): Convert to vrange.
+	* gimple-range.cc (gimple_ranger::prefill_stmt_dependencies): Same.
+	* tree-ssa-dom.cc (cprop_operand): Same.
+
+2022-07-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/104489
+	* calls.cc (precompute_register_parameters): Allow promotion
+	of floating point values to be passed in wider integer modes
+	by calling new convert_float_to_wider_int.
+	(expand_call): Allow floating point results to be returned in
+	wider integer modes by calling new convert wider_int_to_float.
+	* cfgexpand.cc (expand_value_return): Allow backends to promote
+	a scalar floating point return value to a wider integer mode
+	by calling new convert_float_to_wider_int.
+	* expr.cc (convert_float_to_wider_int): New function.
+	(convert_wider_int_to_float): Likewise.
+	(expand_expr_real_1) <expand_decl_rtl>: Allow backends to promote
+	scalar FP PARM_DECLs to wider integer modes, by calling new
+	convert_wider_int_to_float.
+	* expr.h (convert_modes): Name arguments for improved documentation.
+	(convert_float_to_wider_int): Prototype new function here.
+	(convert_wider_int_to_float): Likewise.
+	* function.cc (assign_parm_setup_stack): Allow floating point
+	values to be passed on the stack as wider integer modes by
+	calling new convert_wider_int_to_float.
+
+2022-07-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/105860
+	* tree-sra.cc (build_reconstructed_reference): Start expr
+	traversal only just below the outermost union.
+
+2022-07-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.cc (vect_do_peeling): Revert assert
+	and update virtual SSA form again.  Assert we do so for
+	a known set of transforms only.
+	* tree-vectorizer.h (vec_info::any_known_not_updated_vssa): New.
+	* tree-vect-stmts.cc (vectorizable_load): When vectorizing
+	using load-lanes allow virtual SSA update.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (process_asm): Write '#include <stdint.h>'.
+	(process_obj): Pass omp_requires_mask to GOMP_offload_register_ver.
+	(main): Ask lto1 to obtain omp_requires_mask and pass it on.
+	* config/nvptx/mkoffload.cc (process, main): Likewise.
+	* lto-cgraph.cc (omp_requires_to_name): New.
+	(input_offload_tables): Save omp_requires_mask.
+	(output_offload_tables): Read it, check for consistency,
+	save value for mkoffload.
+	* omp-low.cc (lower_omp_target): Force output_offloadtables
+	call for OMP_REQUIRES_TARGET_USED.
+
+2022-07-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.cc (vect_do_peeling): Assert that
+	no SSA update is needed instead of updating virtual SSA
+	form.
+	* tree-vect-stmts.cc (vectorizable_load): For hoisted
+	invariant load use the loop entry virtual use.
+	For emulated gather loads use the virtual use of the
+	original stmt like vect_finish_stmt_generation would do.
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-pretty-print.cc (dump_generic_node) <ARRAY_TYPE>: Add guard
+	for direct circularity.
+
+2022-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.cc (gen_array_type_die): Use the default lower bound of
+	the language for vector types.
+
+2022-07-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-storage.cc (irange_storage_slot::set_irange): Set
+	nonzero bits in irange.
+	(irange_storage_slot::get_irange): Get nonzero bits from irange.
+	* value-range.cc (irange::operator=): Set nonzero bits.
+	(irange::irange_set): Same.
+	(irange::irange_set_anti_range): Same.
+	(irange::set): Same.
+	(irange::verify_range): Same.
+	(irange::legacy_equal_p): Check nonzero bits.
+	(irange::equal_p): Same.
+	(irange::contains_p): Handle nonzero bits.
+	(irange::irange_union): Same.
+	(irange::irange_intersect): Same.
+	(irange::dump): Same.
+	(irange::set_nonzero_bits): New.
+	(irange::get_nonzero_bits): New.
+	(irange::intersect_nonzero_bits): New.
+	(irange::union_nonzero_bits): New.
+	(irange::dump_bitmasks): New.
+	* value-range.h (class irange): Add m_nonzero_mask.
+	(gt_ggc_mx): Handle nonzero bits.
+	(gt_pch_nx): Same.
+	(irange::set_undefined): Set nonzero bits.
+	(irange::set_varying): Same.
+	(irange::normalize_kind): Call set_undefined.
+
+2022-07-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-manip.h
+	(rewrite_virtuals_into_loop_closed_ssa): Remove.
+	(rewrite_into_loop_closed_ssa_1): Likewise.
+	* tree-ssa-loop-manip.cc (rewrite_into_loop_closed_ssa_1):
+	Make static.
+	(rewrite_into_loop_closed_ssa): Remove loop overload,
+	always rewrite virtuals into LC SSA.
+	(check_loop_closed_ssa_bb): Also check virtuals.
+	* tree-ssa-dce.cc (remove_dead_phis): Preserve virtual
+	LC PHIs when in LC SSA.
+	* gimple-loop-jam.cc (fuse_loops): Do not rewrite into
+	loop-closed SSA here, but ...
+	(tree_loop_unroll_and_jam): ... here once.
+	* tree-if-conv.cc (version_loop_for_if_conversion): Use
+	the cheaper TODO_update_ssa_no_phi.
+	* tree-loop-distribution.cc (version_loop_by_alias_check):
+	Likewise.
+	* tree-ssa-loop-unswitch.cc (tree_unswitch_single_loop):
+	Likewise.
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Likewise.
+	(tree_unswitch_outer_loop): Do not rewrite virtuals into
+	LC ssa.
+	* tree-parloops.cc (transform_to_exit_first_loop_alt):
+	Likewise.
+	(pass_parallelize_loops::execute): After finishing rewrite
+	into LC SSA again because we do not maintain it properly.
+
+2022-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106055
+	* graphite.cc (canonicalize_loop_closed_ssa): Check whether
+	we can propagate.
+
+2022-07-04  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/43618
+	* config/i386/sse.md (extendv2sfv2df2): New define_expand.
+	(sse2_cvtps2pd_<mask_name>): Change constraint of operands[1].
+	(*sse2_cvtps2pd_<mask_name>_1): Rename from extendvsdfv2df2.
+
+2022-07-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-cp.cc (ipcp_vr_lattice::meet_with_1): Use operator!=.
+	* ipa-prop.cc (struct ipa_vr_ggc_hash_traits): Same.
+	* tree-ssa-loop-unswitch.cc (struct unswitch_predicate): Use set
+	with two arguments.
+	(find_unswitching_predicates_for_bb): Same.
+	* tree-vrp.cc (range_fold_unary_symbolics_p): Same.
+	* value-range-equiv.cc (value_range_equiv::equal_p): Use operator==.
+	* value-range.cc (irange::equal_p): Rename to...
+	(irange::operator==): ...this.
+	* value-range.h (irange::set): Remove.
+	(irange::operator==): Remove.
+	(irange::set_zero): Use set with two arguments.
+	* vr-values.cc (vr_values::extract_range_from_binary_expr): Same.
+	(vr_values::extract_range_from_unary_expr): Same.
+	(check_for_binary_op_overflow): Same.
+	(bounds_of_var_in_loop): Same.
+
 2022-07-03  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/106022

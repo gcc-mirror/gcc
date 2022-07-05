@@ -1,3 +1,58 @@
+2022-07-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/analyzer/allocation-size-1.c,
+	gcc.dg/analyzer/allocation-size-2.c,
+	gcc.dg/analyzer/allocation-size-3.c,
+	gcc.dg/analyzer/allocation-size-4.c,
+	gcc.dg/analyzer/allocation-size-5.c: Handle int32_t being "long int".
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/linear-4.c: New test.
+	* gfortran.dg/gomp/linear-2.f90: New test.
+	* gfortran.dg/gomp/linear-3.f90: New test.
+	* gfortran.dg/gomp/linear-4.f90: New test.
+	* gfortran.dg/gomp/linear-5.f90: New test.
+	* gfortran.dg/gomp/linear-6.f90: New test.
+	* gfortran.dg/gomp/linear-7.f90: New test.
+	* gfortran.dg/gomp/linear-8.f90: New test.
+
+2022-07-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/105860
+	* gcc.dg/tree-ssa/alias-access-path-13.c: New test.
+	* gcc.dg/tree-ssa/pr105860.c: Likewise.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/gomp/requires-4.c: Update dg-*.
+	* c-c++-common/gomp/reverse-offload-1.c: Likewise.
+	* c-c++-common/gomp/target-device-ancestor-2.c: Likewise.
+	* c-c++-common/gomp/target-device-ancestor-3.c: Likewise.
+	* c-c++-common/gomp/target-device-ancestor-4.c: Likewise.
+	* c-c++-common/gomp/target-device-ancestor-5.c: Likewise.
+	* gfortran.dg/gomp/target-device-ancestor-3.f90: Likewise.
+	* gfortran.dg/gomp/target-device-ancestor-4.f90: Likewise.
+	* gfortran.dg/gomp/target-device-ancestor-5.f90: Likewise.
+	* gfortran.dg/gomp/target-device-ancestor-2.f90: Likewise. Move
+	post-FE checks to ...
+	* gfortran.dg/gomp/target-device-ancestor-2a.f90: ... this new file.
+	* gfortran.dg/gomp/requires-8.f90: Update as we don't regard
+	'declare target' for the 'requires' usage requirement.
+
+2022-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106055
+	* gcc.dg/graphite/pr106055.c: New testcase.
+
+2022-07-04  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/43618
+	* gcc.target/i386/pr43618-1.c: New test.
+
 2022-07-03  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/106022

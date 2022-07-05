@@ -1,3 +1,12 @@
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION): Bump to 2.
+	(GOMP_REQUIRES_UNIFIED_ADDRESS, GOMP_REQUIRES_UNIFIED_SHARED_MEMORY,
+	GOMP_REQUIRES_REVERSE_OFFLOAD, GOMP_REQUIRES_TARGET_USED):
+	New defines.
+
 2022-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* gomp-constants.h (GOMP_DEVICE_INVALID): Define.

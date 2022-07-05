@@ -1,3 +1,12 @@
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_target_data,
+	cp_parser_omp_target_enter_data, cp_parser_omp_target_exit_data,
+	cp_parser_omp_target_update): Set OMP_REQUIRES_TARGET_USED.
+	(cp_parser_omp_requires): Remove sorry.
+
 2022-07-01  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* parser.cc (cp_token_is_module_directive): New function

@@ -1,3 +1,7 @@
+2022-07-04  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: fix sorting of names
+
 2022-07-03  Immad Mir  <mirimmad17@gmail.com>
 
 	* MAINTAINERS: add myself.

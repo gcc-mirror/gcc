@@ -1,3 +1,13 @@
+2022-07-04  Nick Clifton  <nickc@redhat.com>
+
+	* rust-demangle.c (demangle_const): Add a missing goto pass_return
+	at the end of the function.
+
+2022-07-04  Nick Clifton  <nickc@redhat.com>
+
+	* rust-demangle.c (demangle_path_maybe_open_generics): Add
+	recursion limit.
+
 2022-07-01  Nick Clifton  <nickc@redhat.com>
 
 	PR demangler/105039

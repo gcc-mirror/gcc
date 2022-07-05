@@ -1,3 +1,12 @@
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_target_data, c_parser_omp_target_update,
+	c_parser_omp_target_enter_data, c_parser_omp_target_exit_data): Set
+	OMP_REQUIRES_TARGET_USED.
+	(c_parser_omp_requires): Remove sorry.
+
 2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_target_enter_data,

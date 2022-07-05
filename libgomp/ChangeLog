@@ -1,3 +1,45 @@
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark linear-clause change as 'Y'.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_get_num_devices): Add
+	omp_requires_mask arg.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices): Likewise;
+	return -1 when device available but omp_requires_mask != 0.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_num_devices): Likewise.
+	* oacc-host.c (host_get_num_devices, host_openacc_get_property):
+	Update call.
+	* oacc-init.c (resolve_device, acc_init_1, acc_shutdown_1,
+	goacc_attach_host_thread_to_device, acc_get_num_devices,
+	acc_set_device_num, get_property_any): Likewise.
+	* target.c (omp_requires_mask): New global var.
+	(gomp_requires_to_name): New.
+	(GOMP_offload_register_ver): Handle passed omp_requires_mask.
+	(gomp_target_init): Handle omp_requires_mask.
+	* libgomp.texi (OpenMP 5.0): Update requires impl. status.
+	(OpenMP 5.1): Add a missed item.
+	(OpenMP 5.2): Mark linear-clause change as supported in C/C++.
+	* testsuite/libgomp.c-c++-common/requires-1-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-1.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-2-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-2.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-3-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-3.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-4-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-4.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-5-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-5.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-6.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-7-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-7.c: New test.
+	* testsuite/libgomp.fortran/requires-1-aux.f90: New test.
+	* testsuite/libgomp.fortran/requires-1.f90: New test.
+
 2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.2): Mark target enter/exit data
