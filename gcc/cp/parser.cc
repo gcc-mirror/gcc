@@ -30738,10 +30738,6 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	     looking at a template arg list.  */
 	  if (!cp_parser_skip_entire_template_parameter_list (parser))
 	    decl = NULL_TREE;
-	  /* And only use the unqualified lookup if we're looking at ::.  */
-	  if (decl
-	      && !cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
-	    decl = NULL_TREE;
 	}
 
       /* If we know we're looking for a type (e.g. A in p->A::x),
