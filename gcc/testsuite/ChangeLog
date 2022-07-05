@@ -1,3 +1,23 @@
+2022-07-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2022-03-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/104869
+	* g++.dg/pr104869.C: New test.
+
+2022-07-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106139
+	* gdc.dg/pr106139a.d: New test.
+	* gdc.dg/pr106139b.d: New test.
+	* gdc.dg/pr106139c.d: New test.
+	* gdc.dg/pr106139d.d: New test.
+	* gdc.test/fail_compilation/ice20264.d: New test.
+
 2022-07-03  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

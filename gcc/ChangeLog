@@ -1,3 +1,39 @@
+2022-07-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2022-03-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/104869
+	* rtl-ssa/accesses.h (clobber_group::prev_clobber): Declare.
+	(clobber_group::next_clobber): Likewise.
+	(def_lookup::prev_def): Rename to...
+	(def_lookup::last_def_of_prev_group): ...this.
+	(def_lookup::next_def): Rename to...
+	(def_lookup::first_def_of_next_group): ...this.
+	(def_lookup::matching_or_prev_def): Rename to...
+	(def_lookup::matching_set_or_last_def_of_prev_group): ...this.
+	(def_lookup::matching_or_next_def): Rename to...
+	(def_lookup::matching_set_or_first_def_of_next_group): ...this.
+	(def_lookup::prev_def): New function, taking the lookup insn as
+	argument.
+	(def_lookup::next_def): Likewise.
+	* rtl-ssa/member-fns.inl (def_lookup::prev_def): Rename to...
+	(def_lookup::last_def_of_prev_group): ...this.
+	(def_lookup::next_def): Rename to...
+	(def_lookup::first_def_of_next_group): ...this.
+	(def_lookup::matching_or_prev_def): Rename to...
+	(def_lookup::matching_set_or_last_def_of_prev_group): ...this.
+	(def_lookup::matching_or_next_def): Rename to...
+	(def_lookup::matching_set_or_first_def_of_next_group): ...this.
+	* rtl-ssa/movement.h (restrict_movement_for_dead_range): Update after
+	above renaming.
+	* rtl-ssa/accesses.cc (clobber_group::prev_clobber): New function.
+	(clobber_group::next_clobber): Likewise.
+	(def_lookup::prev_def): Likewise.
+	(def_lookup::next_def): Likewise.
+	(function_info::make_use_available): Pass the lookup insn to
+	def_lookup::prev_def and def_lookup::next_def.
+
 2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
