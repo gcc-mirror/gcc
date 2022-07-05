@@ -1,6 +1,14 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/gcn-protos.h (print_operand_address): Remove register
+	keyword on 'rtx addr' argument.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-06-27  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.md (*movbi): Remove assembler bug workarounds.
