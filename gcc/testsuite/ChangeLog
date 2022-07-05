@@ -1,3 +1,36 @@
+2022-07-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106114
+	* gcc.dg/pr106114.c: New.
+
+2022-07-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106139
+	* gdc.dg/pr106139a.d: New test.
+	* gdc.dg/pr106139b.d: New test.
+	* gdc.dg/pr106139c.d: New test.
+	* gdc.dg/pr106139d.d: New test.
+
+2022-07-04  Roger Sayle  <roger@nextmovesoftware.com>
+	    Marek Polacek  <polacek@redhat.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+	    Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105991
+	* gcc.target/powerpc/pr105991.c: New test case.
+
+2022-07-04  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2022-07-03  Xi Ruoyao  <xry111@xry111.site>
+		    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.c-torture/execute/20101011-1.c (dg-additional-options):
+	add -mcheck-zero-division for LoongArch targets.
+
 2022-07-03  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

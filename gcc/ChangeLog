@@ -1,3 +1,35 @@
+2022-07-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106114
+	* gimple-range-fold.cc (fold_using_range::relation_fold_and_or): Check
+	statement operands instead of GORI cache.
+
+2022-07-04  Roger Sayle  <roger@nextmovesoftware.com>
+	    Marek Polacek  <polacek@redhat.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+	    Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/105991
+	* config/rs6000/rs6000.md (rotl<mode>3_insert_3): Check that
+	exact_log2 doesn't return -1 (or zero).
+	(plus_xor): New code iterator.
+	(*rotl<mode>3_insert_3_<code>): New define_insn_and_split.
+
+2022-07-04  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2022-07-03  Xi Ruoyao  <xry111@xry111.site>
+		    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_check_zero_div_p):
+	New static function.
+	(loongarch_idiv_insns): Use loongarch_check_zero_div_p instead
+	of TARGET_CHECK_ZERO_DIV.
+	(loongarch_output_division): Likewise.
+	* common/config/loongarch/loongarch-common.cc
+	(TARGET_DEFAULT_TARGET_FLAGS): Remove unneeded hook.
+	* doc/invoke.texi: Update to match the new behavior.
+
 2022-07-03  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/106122
