@@ -1022,6 +1022,7 @@ public:
 	    /* Generate: (<retval> = expr, return <retval>);  */
 	    tree expr = build_expr_dtor (s->exp);
 	    tree init = stabilize_expr (&expr);
+	    expr = convert_for_rvalue (expr, s->exp->type, type);
 	    expr = build_assign (INIT_EXPR, this->func_->shidden, expr);
 	    add_stmt (compound_expr (init, expr));
 	  }
