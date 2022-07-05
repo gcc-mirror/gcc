@@ -639,8 +639,61 @@ cp_token_is_module_directive (cp_token *token)
     || token->keyword == RID__IMPORT;
 }
 
+/* Return TOKEN's pragma_kind if it is CPP_PRAGMA, otherwise
+   PRAGMA_NONE.  */
+
+static enum pragma_kind
+cp_parser_pragma_kind (cp_token *token)
+{
+  if (token->type != CPP_PRAGMA)
+    return PRAGMA_NONE;
+  /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
+  return (enum pragma_kind) TREE_INT_CST_LOW (token->u.value);
+}
+
+/* Handle early pragmas such as #pragma GCC diagnostic, which needs to be done
+   during preprocessing for the case of preprocessing-related diagnostics.  This
+   is called immediately after pushing the CPP_PRAGMA_EOL token onto
+   lexer->buffer.  */
+
+static void
+cp_lexer_handle_early_pragma (cp_lexer *lexer)
+{
+  const auto first_token = lexer->buffer->address ();
+  const auto last_token = first_token + lexer->buffer->length () - 1;
+
+  /* Back up to the start of the pragma so pragma_lex () can parse it when
+     c-pragma lib asks it to.  */
+  auto begin = last_token;
+  gcc_assert (begin->type == CPP_PRAGMA_EOL);
+  while (begin->type != CPP_PRAGMA)
+    {
+      if (cp_token_is_module_directive (begin))
+	return;
+      gcc_assert (begin != first_token);
+      --begin;
+    }
+  gcc_assert (!lexer->next_token);
+  gcc_assert (!lexer->last_token);
+  lexer->next_token = begin;
+  lexer->last_token = last_token;
+
+  /* Dispatch it.  */
+  const unsigned int id
+    = cp_parser_pragma_kind (cp_lexer_consume_token (lexer));
+  if (id >= PRAGMA_FIRST_EXTERNAL)
+    c_invoke_early_pragma_handler (id);
+
+  /* Reset to normal state.  */
+  lexer->next_token = lexer->last_token = nullptr;
+}
+
+/* The parser.  */
+static cp_parser *cp_parser_new (cp_lexer *);
+static GTY (()) cp_parser *the_parser;
+
 /* Create a new main C++ lexer, the lexer that gets tokens from the
-   preprocessor.  */
+   preprocessor, and also create the main parser.  */
 
 static cp_lexer *
 cp_lexer_new_main (void)
@@ -662,6 +715,10 @@ cp_lexer_new_main (void)
   if (modules_p ())
     filter = module_token_cdtor (parse_in, filter);
 
+  /* Create the parser now, so we can use it to handle early pragmas.  */
+  gcc_assert (!the_parser);
+  the_parser = cp_parser_new (lexer);
+
   /* Get the remaining tokens from the preprocessor.  */
   while (tok->type != CPP_EOF)
     {
@@ -669,6 +726,11 @@ cp_lexer_new_main (void)
 	/* Process the previous token.  */
 	module_token_lang (tok->type, tok->keyword, tok->u.value,
 			   tok->location, filter);
+
+      /* Check for early pragmas that need to be handled now.  */
+      if (tok->type == CPP_PRAGMA_EOL)
+	cp_lexer_handle_early_pragma (lexer);
+
       tok = vec_safe_push (lexer->buffer, cp_token ());
       cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
     }
@@ -2131,11 +2193,6 @@ pop_unparsed_function_queues (cp_parser *parser)
 
 /* Prototypes.  */
 
-/* Constructors and destructors.  */
-
-static cp_parser *cp_parser_new
-  (cp_lexer *);
-
 /* Routines to parse various constructs.
 
    Those that return `tree' will return the error_mark_node (rather
@@ -2896,18 +2953,6 @@ static bool
 cp_parser_is_keyword (cp_token* token, enum rid keyword)
 {
   return token->keyword == keyword;
-}
-
-/* Return TOKEN's pragma_kind if it is CPP_PRAGMA, otherwise
-   PRAGMA_NONE.  */
-
-static enum pragma_kind
-cp_parser_pragma_kind (cp_token *token)
-{
-  if (token->type != CPP_PRAGMA)
-    return PRAGMA_NONE;
-  /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
-  return (enum pragma_kind) TREE_INT_CST_LOW (token->u.value);
 }
 
 /* Helper function for cp_parser_error.
@@ -47936,11 +47981,7 @@ cp_parser_transaction_cancel (cp_parser *parser)
   return stmt;
 }
 
-/* The parser.  */
 
-static GTY (()) cp_parser *the_parser;
-
-
 /* Special handling for the first token or line in the file.  The first
    thing in the file might be #pragma GCC pch_preprocess, which loads a
    PCH file, which is a GC collection point.  So we need to handle this
@@ -48435,9 +48476,7 @@ c_parse_file (void)
 
   /* cp_lexer_new_main is called before doing any GC allocation
      because tokenization might load a PCH file.  */
-  cp_lexer *lexer = cp_lexer_new_main ();
-
-  the_parser = cp_parser_new (lexer);
+  cp_lexer_new_main ();
 
   cp_parser_translation_unit (the_parser);
   class_decl_loc_t::diag_mismatched_tags ();

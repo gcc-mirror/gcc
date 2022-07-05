@@ -6611,6 +6611,20 @@ c_option_controlling_cpp_diagnostic (enum cpp_warning_reason reason)
   return 0;
 }
 
+/* Return TRUE if the given option index corresponds to a diagnostic
+   issued by libcpp.  Linear search seems fine for now.  */
+bool
+c_option_is_from_cpp_diagnostics (int option_index)
+{
+  for (auto entry = cpp_reason_option_codes; entry->reason != CPP_W_NONE;
+       ++entry)
+    {
+      if (entry->option_code == option_index)
+	return true;
+    }
+  return false;
+}
+
 /* Callback from cpp_diagnostic for PFILE to print diagnostics from the
    preprocessor.  The diagnostic is of type LEVEL, with REASON set
    to the reason code if LEVEL is represents a warning, at location
