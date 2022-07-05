@@ -1272,7 +1272,21 @@ clean_up_loop_closed_phi (function *fun)
 	      rhs = gimple_phi_arg_def (phi, 0);
 	      lhs = gimple_phi_result (phi);
 
-	      if (rhs && may_propagate_copy (lhs, rhs))
+	      if (virtual_operand_p (rhs))
+		{
+		  imm_use_iterator iter;
+		  use_operand_p use_p;
+		  gimple *stmt;
+
+		  FOR_EACH_IMM_USE_STMT (stmt, iter, lhs)
+		    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		      SET_USE (use_p, rhs);
+
+		  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+		    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs) = 1;
+		  remove_phi_node (&gsi, true);
+		}
+	      else if (may_propagate_copy (lhs, rhs))
 		{
 		  /* Dump details.  */
 		  if (dump_file && (dump_flags & TDF_DETAILS))
