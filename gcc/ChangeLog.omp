@@ -1,6 +1,13 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/invoke.texi (AMD GCN Options): Add gfx908/gfx90a.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/105378
