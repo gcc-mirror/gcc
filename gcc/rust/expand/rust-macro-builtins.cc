@@ -70,7 +70,7 @@ parse_single_string_literal (AST::DelimTokenTree &invoc_token_tree,
 			     Location invoc_locus)
 {
   MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
-  Parser<MacroInvocLexer> parser (std::move (lex));
+  Parser<MacroInvocLexer> parser (lex);
 
   auto last_token_id = macro_end_token (invoc_token_tree, parser);
 
@@ -270,7 +270,8 @@ MacroBuiltin::concat (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto invoc_token_tree = invoc.get_delim_tok_tree ();
   MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
-  Parser<MacroInvocLexer> parser (std::move (lex));
+  Parser<MacroInvocLexer> parser (lex);
+
   auto str = std::string ();
   bool has_error = false;
 
@@ -313,7 +314,7 @@ MacroBuiltin::env (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto invoc_token_tree = invoc.get_delim_tok_tree ();
   MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
-  Parser<MacroInvocLexer> parser (std::move (lex));
+  Parser<MacroInvocLexer> parser (lex);
 
   auto last_token_id = macro_end_token (invoc_token_tree, parser);
 
@@ -432,7 +433,7 @@ MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
   RAIIFile target_file (target_filename);
   Linemap *linemap = Session::get_instance ().linemap;
 
-  if (target_file.get_raw () == nullptr)
+  if (!target_file.ok ())
     {
       rust_error_at (lit_expr->get_locus (),
 		     "cannot open included file %qs: %m", target_filename);
@@ -442,7 +443,7 @@ MacroBuiltin::include (Location invoc_locus, AST::MacroInvocData &invoc)
   rust_debug ("Attempting to parse included file %s", target_filename);
 
   Lexer lex (target_filename, std::move (target_file), linemap);
-  Parser<Lexer> parser (std::move (lex));
+  Parser<Lexer> parser (lex);
 
   auto parsed_items = parser.parse_items ();
   bool has_error = !parser.get_errors ().empty ();

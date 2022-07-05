@@ -4058,8 +4058,7 @@ Module::load_items ()
 
   RAIIFile file_wrap (module_file.c_str ());
   Linemap *linemap = Session::get_instance ().linemap;
-
-  if (file_wrap.get_raw () == nullptr)
+  if (!file_wrap.ok ())
     {
       rust_error_at (get_locus (), "cannot open module file %s: %m",
 		     module_file.c_str ());
@@ -4069,10 +4068,9 @@ Module::load_items ()
   rust_debug ("Attempting to parse file %s", module_file.c_str ());
 
   Lexer lex (module_file.c_str (), std::move (file_wrap), linemap);
-  Parser<Lexer> parser (std::move (lex));
+  Parser<Lexer> parser (lex);
 
   auto parsed_items = parser.parse_items ();
-
   for (const auto &error : parser.get_errors ())
     error.emit_error ();
 

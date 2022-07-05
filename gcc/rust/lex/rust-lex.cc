@@ -116,14 +116,17 @@ is_non_decimal_int_literal_separator (char character)
   return character == 'x' || character == 'o' || character == 'b';
 }
 
-// this compiles fine, so any intellisense saying otherwise is fake news
+Lexer::Lexer (const std::string &input)
+  : input (RAIIFile::create_error ()), current_line (1), current_column (1),
+    line_map (nullptr), raw_input_source (new BufferInputSource (input, 0)),
+    input_queue{*raw_input_source}, token_queue (TokenSource (this))
+{}
+
 Lexer::Lexer (const char *filename, RAIIFile file_input, Linemap *linemap)
   : input (std::move (file_input)), current_line (1), current_column (1),
     line_map (linemap),
-    /*input_source (input.get_raw ()), */
-    input_queue{InputSource (input.get_raw ())},
-    /*token_source (this),*/
-    token_queue (TokenSource (this))
+    raw_input_source (new FileInputSource (input.get_raw ())),
+    input_queue{*raw_input_source}, token_queue (TokenSource (this))
 {
   // inform line_table that file is being entered and is in line 1
   if (linemap)
@@ -138,6 +141,7 @@ Lexer::~Lexer ()
    * mentioned in GCC docs as being useful for "just leaving an included header"
    * and stuff like that, so this line mapping functionality may need fixing.
    * FIXME: find out whether this occurs. */
+
   // line_map->stop();
 }
 

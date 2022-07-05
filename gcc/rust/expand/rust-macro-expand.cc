@@ -375,7 +375,7 @@ MacroExpander::try_match_rule (AST::MacroRule &match_rule,
 			       AST::DelimTokenTree &invoc_token_tree)
 {
   MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
-  Parser<MacroInvocLexer> parser (std::move (lex));
+  Parser<MacroInvocLexer> parser (lex);
 
   AST::MacroMatcher &matcher = match_rule.get_matcher ();
 
@@ -975,7 +975,7 @@ MacroExpander::transcribe_rule (
 
   // parse it to an ASTFragment
   MacroInvocLexer lex (std::move (substituted_tokens));
-  Parser<MacroInvocLexer> parser (std::move (lex));
+  Parser<MacroInvocLexer> parser (lex);
 
   auto last_token_id = TokenId::RIGHT_CURLY;
 

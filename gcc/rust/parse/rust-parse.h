@@ -662,7 +662,7 @@ private:
 
 public:
   // Construct parser with specified "managed" token source.
-  Parser (ManagedTokenSource tokenSource) : lexer (std::move (tokenSource)) {}
+  Parser (ManagedTokenSource &tokenSource) : lexer (tokenSource) {}
 
   // Parse items without parsing an entire crate. This function is the main
   // parsing loop of AST::Crate::parse_crate().
@@ -689,7 +689,7 @@ public:
 
 private:
   // The token source (usually lexer) associated with the parser.
-  ManagedTokenSource lexer;
+  ManagedTokenSource &lexer;
   // The error list.
   std::vector<Error> error_table;
   // The names of inline modules while parsing.

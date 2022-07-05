@@ -11,8 +11,8 @@ parse_cfg_option (std::string &input, std::string &key, std::string &value)
   key.clear ();
   value.clear ();
 
-  auto lexer = Lexer::lex_string (input);
-  auto parser = Parser<Lexer> (std::move (lexer));
+  auto lexer = Lexer (input);
+  auto parser = Parser<Lexer> (lexer);
 
   auto token = parser.peek_current_token ();
   if (token->get_id () != IDENTIFIER)

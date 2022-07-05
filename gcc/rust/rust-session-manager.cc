@@ -643,17 +643,17 @@ void
 Session::parse_file (const char *filename)
 {
   RAIIFile file_wrap (filename);
-
-  if (file_wrap.get_raw () == nullptr)
+  if (!file_wrap.ok ())
     {
-      rust_fatal_error (Location (), "cannot open filename %s: %m", filename);
+      rust_error_at (Location (), "cannot open filename %s: %m", filename);
+      return;
     }
 
   // parse file here
   /* create lexer and parser - these are file-specific and so aren't instance
    * variables */
   Lexer lex (filename, std::move (file_wrap), linemap);
-  Parser<Lexer> parser (std::move (lex));
+  Parser<Lexer> parser (lex);
 
   // generate crate from parser
   auto parsed_crate = parser.parse_crate ();
