@@ -1,6 +1,15 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.cc (expand_omp_target): Remap user provided
+	device clause arguments, -1 to -2 and -2 to -3, either
+	at compile time if constant, or at runtime.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-offload.cc (omp_discover_declare_target_tgt_fn_r,

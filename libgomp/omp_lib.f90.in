@@ -178,6 +178,8 @@
                  parameter :: omp_unified_shared_mem_space = 5
         integer (omp_memspace_handle_kind), &
                  parameter :: omp_host_mem_space = 6
+        integer, parameter :: omp_initial_device = -1
+        integer, parameter :: omp_invalid_device = -4
 
         type omp_alloctrait
           integer (kind=omp_alloctrait_key_kind) key

@@ -174,6 +174,9 @@
       parameter (omp_const_mem_space = 2)
       parameter (omp_high_bw_mem_space = 3)
       parameter (omp_low_lat_mem_space = 4)
+      integer omp_initial_device, omp_invalid_device
+      parameter (omp_initial_device = -1)
+      parameter (omp_invalid_device = -4)
 
       type omp_alloctrait
         integer (omp_alloctrait_key_kind) key
