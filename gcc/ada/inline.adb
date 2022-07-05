@@ -4648,6 +4648,7 @@ package body Inline is
          return
            Present (Declarations (N))
              and then Present (First (Declarations (N)))
+             and then Nkind (First (Declarations (N))) = N_Object_Declaration
              and then Entity (Expression (Return_Statement)) =
                         Defining_Identifier (First (Declarations (N)));
       end if;
