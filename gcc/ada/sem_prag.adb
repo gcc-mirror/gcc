@@ -16999,6 +16999,16 @@ package body Sem_Prag is
                   then
                      Id := Defining_Entity (Stmt);
                      exit;
+
+                  --  When pragma Ghost applies to a generic formal type, the
+                  --  type declaration in the instantiation is a generated
+                  --  subtype declaration.
+
+                  elsif Nkind (Stmt) = N_Subtype_Declaration
+                    and then Present (Generic_Parent_Type (Stmt))
+                  then
+                     Id := Defining_Entity (Stmt);
+                     exit;
                   end if;
 
                --  The pragma applies to a legal construct, stop the traversal
