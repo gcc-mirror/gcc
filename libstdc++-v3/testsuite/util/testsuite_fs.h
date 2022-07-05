@@ -163,7 +163,7 @@ namespace __gnu_test
       file.resize(64);
     // The combination of random counter and PID should be unique for a given
     // run of the testsuite.
-    file += std::to_string(::getpid());
+    file += std::to_string((unsigned long) ::getpid());
     p = std::move(file);
     if (test_fs::exists(p))
       throw test_fs::filesystem_error("Failed to generate unique pathname", p,
