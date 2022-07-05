@@ -1,6 +1,15 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Other new OpenMP 5.1 features): Add
+	'begin declare target'.
+	(Other new OpenMP 5.2 features): New.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* task.c (gomp_task_run_post_handle_dependers): If empty_task
