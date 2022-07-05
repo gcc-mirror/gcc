@@ -1,6 +1,17 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/linear-2.c: New test.
+	* c-c++-common/gomp/linear-3.c: New test.
+	* g++.dg/gomp/linear-3.C: New test.
+	* g++.dg/gomp/linear-4.C: New test.
+	* g++.dg/gomp/linear-5.C: New test.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/scope-6.f90: Fix dg-final scan-tree-dump.

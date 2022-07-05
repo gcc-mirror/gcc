@@ -1,6 +1,16 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER): Define.
+	* tree-pretty-print.cc (dump_omp_clause) <case OMP_CLAUSE_LINEAR>:
+	Adjust clause printing style depending on
+	OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-06-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config.in: Regenerate.

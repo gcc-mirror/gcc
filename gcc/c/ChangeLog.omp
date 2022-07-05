@@ -1,6 +1,19 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_linear): Parse OpenMP 5.2
+	style linear clause modifiers.  Set
+	OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER flag on the clauses when
+	old style modifiers are used.
+	* c-typeck.cc (c_finish_omp_clauses): Only reject linear clause
+	with val modifier on simd or for if the old style modifiers are
+	used.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.cc (OMP_SCOPE_CLAUSE_MASK): Add firstprivate and allocate
