@@ -1414,6 +1414,11 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_MAP_TO: fputs ("to:", dumpfile); break;
 	  case OMP_MAP_FROM: fputs ("from:", dumpfile); break;
 	  case OMP_MAP_TOFROM: fputs ("tofrom:", dumpfile); break;
+	  case OMP_MAP_ALWAYS_TO: fputs ("always,to:", dumpfile); break;
+	  case OMP_MAP_ALWAYS_FROM: fputs ("always,from:", dumpfile); break;
+	  case OMP_MAP_ALWAYS_TOFROM: fputs ("always,tofrom:", dumpfile); break;
+	  case OMP_MAP_DELETE: fputs ("delete:", dumpfile); break;
+	  case OMP_MAP_RELEASE: fputs ("release:", dumpfile); break;
 	  default: break;
 	  }
       else if (list_type == OMP_LIST_LINEAR)

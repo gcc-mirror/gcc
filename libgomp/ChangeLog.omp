@@ -1,6 +1,14 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark target enter/exit data
+	with fromto as implemented.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/get-mapped-ptr-1.c (main): Initialize
