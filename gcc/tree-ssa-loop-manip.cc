@@ -498,94 +498,6 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis,
       find_uses_to_rename_bb (bb, use_blocks, need_phis, use_flags);
 }
 
-/* Mark uses of DEF that are used outside of the loop they are defined in for
-   rewrite.  Record the set of blocks in which the ssa names are used to
-   USE_BLOCKS.  Record the SSA names that will need exit PHIs in NEED_PHIS.  */
-
-static void
-find_uses_to_rename_def (tree def, bitmap *use_blocks, bitmap need_phis)
-{
-  gimple *use_stmt;
-  imm_use_iterator imm_iter;
-
-  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    {
-      if (is_gimple_debug (use_stmt))
-	continue;
-
-      basic_block use_bb = gimple_bb (use_stmt);
-
-      use_operand_p use_p;
-      FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	{
-	  if (gimple_code (use_stmt) == GIMPLE_PHI)
-	    {
-	      edge e = gimple_phi_arg_edge (as_a <gphi *> (use_stmt),
-					    PHI_ARG_INDEX_FROM_USE (use_p));
-	      use_bb = e->src;
-	    }
-	  find_uses_to_rename_use (use_bb, USE_FROM_PTR (use_p), use_blocks,
-				   need_phis);
-	}
-    }
-}
-
-/* Marks names matching USE_FLAGS that are defined in LOOP and used outside of
-   it for rewrite.  Records the set of blocks in which the ssa names are used to
-   USE_BLOCKS.  Record the SSA names that will need exit PHIs in NEED_PHIS.  */
-
-static void
-find_uses_to_rename_in_loop (class loop *loop, bitmap *use_blocks,
-			     bitmap need_phis, int use_flags)
-{
-  bool do_virtuals = (use_flags & SSA_OP_VIRTUAL_USES) != 0;
-  bool do_nonvirtuals = (use_flags & SSA_OP_USE) != 0;
-  int def_flags = ((do_virtuals ? SSA_OP_VIRTUAL_DEFS : 0)
-		   | (do_nonvirtuals ? SSA_OP_DEF : 0));
-
-
-  basic_block *bbs = get_loop_body (loop);
-
-  for (unsigned int i = 0; i < loop->num_nodes; i++)
-    {
-      basic_block bb = bbs[i];
-
-      for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);
-	   gsi_next (&bsi))
-	{
-	  gphi *phi = bsi.phi ();
-	  tree res = gimple_phi_result (phi);
-	  bool virtual_p = virtual_operand_p (res);
-	  if ((virtual_p && do_virtuals)
-	      || (!virtual_p && do_nonvirtuals))
-	    find_uses_to_rename_def (res, use_blocks, need_phis);
-      }
-
-      for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
-	   gsi_next (&bsi))
-	{
-	  gimple *stmt = gsi_stmt (bsi);
-	  /* FOR_EACH_SSA_TREE_OPERAND iterator does not allows
-	     SSA_OP_VIRTUAL_DEFS only.  */
-	  if (def_flags == SSA_OP_VIRTUAL_DEFS)
-	    {
-	      tree vdef = gimple_vdef (stmt);
-	      if (vdef != NULL)
-		find_uses_to_rename_def (vdef, use_blocks, need_phis);
-	    }
-	  else
-	    {
-	      tree var;
-	      ssa_op_iter iter;
-	      FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, def_flags)
-		find_uses_to_rename_def (var, use_blocks, need_phis);
-	    }
-	}
-    }
-
-  XDELETEVEC (bbs);
-}
-
 /* Rewrites the program into a loop closed ssa form -- i.e. inserts extra
    phi nodes to ensure that no variable is used outside the loop it is
    defined in.
@@ -615,8 +527,7 @@ find_uses_to_rename_in_loop (class loop *loop, bitmap *use_blocks,
       is not well-behaved, while the second one is an induction variable with
       base 99 and step 1.
 
-      If LOOP is non-null, only rewrite uses that have defs in LOOP.  Otherwise,
-      if CHANGED_BBS is not NULL, we look for uses outside loops only in the
+      If CHANGED_BBS is not NULL, we look for uses outside loops only in the
       basic blocks in this set.
 
       USE_FLAGS allows us to specify whether we want virtual, non-virtual or
@@ -627,7 +538,7 @@ find_uses_to_rename_in_loop (class loop *loop, bitmap *use_blocks,
 
 static void
 rewrite_into_loop_closed_ssa_1 (bitmap changed_bbs, unsigned update_flag,
-				int use_flags, class loop *loop)
+				int use_flags)
 {
   bitmap *use_blocks;
   bitmap names_to_rename;
@@ -651,18 +562,7 @@ rewrite_into_loop_closed_ssa_1 (bitmap changed_bbs, unsigned update_flag,
      because we know that we will only have entries for the SSA names
      in NAMES_TO_RENAME.  */
   use_blocks = XNEWVEC (bitmap, num_ssa_names);
-
-  if (loop != NULL)
-    {
-      gcc_assert (changed_bbs == NULL);
-      find_uses_to_rename_in_loop (loop, use_blocks, names_to_rename,
-				   use_flags);
-    }
-  else
-    {
-      gcc_assert (loop == NULL);
-      find_uses_to_rename (changed_bbs, use_blocks, names_to_rename, use_flags);
-    }
+  find_uses_to_rename (changed_bbs, use_blocks, names_to_rename, use_flags);
 
   if (!bitmap_empty_p (names_to_rename))
     {
@@ -694,8 +594,7 @@ rewrite_into_loop_closed_ssa_1 (bitmap changed_bbs, unsigned update_flag,
 void
 rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
 {
-  rewrite_into_loop_closed_ssa_1 (changed_bbs, update_flag,
-				  SSA_OP_ALL_USES, NULL);
+  rewrite_into_loop_closed_ssa_1 (changed_bbs, update_flag, SSA_OP_ALL_USES);
 }
 
 /* Check invariants of the loop closed ssa form for the def in DEF_BB.  */
