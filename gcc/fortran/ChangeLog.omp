@@ -1,6 +1,13 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (OMP_SCOPE_CLAUSES): Add firstprivate and allocate.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.cc (show_omp_clauses): Handle OMP_LIST_ENTER.

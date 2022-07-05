@@ -386,7 +386,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Deprecation of delimited form of @code{declare target} @tab N @tab
 @item Reproducible semantics changed for @code{order(concurrent)} @tab N @tab
 @item @code{allocate} and @code{firstprivate} clauses on @code{scope}
-      @tab N @tab
+      @tab Y @tab
 @item @code{ompt_callback_work} @tab N @tab
 @item Default map-type for @code{map} clause in @code{target enter/exit data}
       @tab N @tab
