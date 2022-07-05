@@ -1,6 +1,14 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark linear-clause change as 'Y'.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.2): Mark target enter/exit data

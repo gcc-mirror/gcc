@@ -360,7 +360,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Clauses on @code{end} directive can be on directive @tab N @tab
 @item Deprecation of no-argument @code{destroy} clause on @code{depobj}
       @tab N @tab
-@item @code{linear} clause syntax changes and @code{step} modifier @tab N @tab
+@item @code{linear} clause syntax changes and @code{step} modifier @tab Y @tab
 @item Deprecation of minus operator for reductions @tab N @tab
 @item Deprecation of separating @code{map} modifiers without comma @tab N @tab
 @item @code{declare mapper} with iterator and @code{present} modifiers

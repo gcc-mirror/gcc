@@ -4146,7 +4146,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 						      OMP_CLAUSE_LINEAR);
 			OMP_CLAUSE_DECL (node) = t;
 			omp_clause_linear_kind kind;
-			switch (n->u.linear_op)
+			switch (n->u.linear.op)
 			  {
 			  case OMP_LINEAR_DEFAULT:
 			    kind = OMP_CLAUSE_LINEAR_DEFAULT;
@@ -4164,7 +4164,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			    gcc_unreachable ();
 			  }
 			OMP_CLAUSE_LINEAR_KIND (node) = kind;
-			OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (node) = 1;
+			OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (node)
+			  = n->u.linear.old_modifier;
 			if (last_step_expr && last_step == NULL_TREE)
 			  {
 			    if (!declare_simd)

@@ -1,6 +1,21 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/linear-4.c: New test.
+	* gfortran.dg/gomp/linear-2.f90: New test.
+	* gfortran.dg/gomp/linear-3.f90: New test.
+	* gfortran.dg/gomp/linear-4.f90: New test.
+	* gfortran.dg/gomp/linear-5.f90: New test.
+	* gfortran.dg/gomp/linear-6.f90: New test.
+	* gfortran.dg/gomp/linear-7.f90: New test.
+	* gfortran.dg/gomp/linear-8.f90: New test.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-c++-common/gomp/target-data-2.c: New test.
