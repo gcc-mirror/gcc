@@ -1,6 +1,15 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-06-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Reinstate HAVE_GAS_ARM_EXTENDED_ARCH test.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.cc (build_outer_var_ref): For code == OMP_CLAUSE_ALLOCATE
