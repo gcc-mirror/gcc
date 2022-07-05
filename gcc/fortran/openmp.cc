@@ -6427,7 +6427,8 @@ gfc_match_omp_taskwait (void)
       new_st.ext.omp_clauses = NULL;
       return MATCH_YES;
     }
-  return match_omp (EXEC_OMP_TASKWAIT, omp_mask (OMP_CLAUSE_DEPEND));
+  return match_omp (EXEC_OMP_TASKWAIT,
+		    omp_mask (OMP_CLAUSE_DEPEND) | OMP_CLAUSE_NOWAIT);
 }
 
 
