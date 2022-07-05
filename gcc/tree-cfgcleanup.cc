@@ -1183,9 +1183,9 @@ repair_loop_structures (void)
      become unreachable by back edges from latch).  Also a former
      irreducible loop can become reducible - in this case force a full
      rewrite into loop-closed SSA form.  */
-  if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
-    rewrite_into_loop_closed_ssa (n_new_or_deleted_loops ? NULL : changed_bbs,
-				  TODO_update_ssa);
+  if (loops_state_satisfies_p (LOOP_CLOSED_SSA)
+      && (!bitmap_empty_p (changed_bbs) || n_new_or_deleted_loops))
+    rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
 
   BITMAP_FREE (changed_bbs);
 
