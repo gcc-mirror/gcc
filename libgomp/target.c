@@ -2334,23 +2334,29 @@ gomp_requires_to_name (char *buf, size_t size, int requires_mask)
 
 /* This function should be called from every offload image while loading.
    It gets the descriptor of the host func and var tables HOST_TABLE, TYPE of
-   the target, and TARGET_DATA needed by target plugin.  */
+   the target, and DATA.  */
 
 void
 GOMP_offload_register_ver (unsigned version, const void *host_table,
-			   int target_type, const void *target_data)
+			   int target_type, const void *data)
 {
   int i;
-  int omp_req = 0;
 
   if (GOMP_VERSION_LIB (version) > GOMP_VERSION)
     gomp_fatal ("Library too old for offload (version %u < %u)",
 		GOMP_VERSION, GOMP_VERSION_LIB (version));
 
+  int omp_req;
+  const void *target_data;
   if (GOMP_VERSION_LIB (version) > 1)
     {
-      omp_req = (int) (size_t) ((void **) target_data)[0];
-      target_data = &((void **) target_data)[1];
+      omp_req = (int) (size_t) ((void **) data)[0];
+      target_data = &((void **) data)[1];
+    }
+  else
+    {
+      omp_req = 0;
+      target_data = data;
     }
 
   gomp_mutex_lock (&register_lock);
@@ -2413,13 +2419,23 @@ GOMP_offload_register (const void *host_table, int target_type,
 
 /* This function should be called from every offload image while unloading.
    It gets the descriptor of the host func and var tables HOST_TABLE, TYPE of
-   the target, and TARGET_DATA needed by target plugin.  */
+   the target, and DATA.  */
 
 void
 GOMP_offload_unregister_ver (unsigned version, const void *host_table,
-			     int target_type, const void *target_data)
+			     int target_type, const void *data)
 {
   int i;
+
+  if (GOMP_VERSION_LIB (version) > GOMP_VERSION)
+    gomp_fatal ("Library too old for offload (version %u < %u)",
+		GOMP_VERSION, GOMP_VERSION_LIB (version));
+
+  const void *target_data;
+  if (GOMP_VERSION_LIB (version) > 1)
+    target_data = &((void **) data)[1];
+  else
+    target_data = data;
 
   gomp_mutex_lock (&register_lock);
 
