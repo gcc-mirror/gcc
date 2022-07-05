@@ -1,6 +1,19 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/clauses-3.c: Add tests with enter clause instead
+	of to or modify some existing to clauses to enter.
+	* c-c++-common/gomp/declare-target-1.c: Likewise.
+	* c-c++-common/gomp/declare-target-2.c: Likewise.
+	* c-c++-common/gomp/declare-target-3.c: Likewise.
+	* g++.dg/gomp/attrs-9.C: Likewise.
+	* g++.dg/gomp/declare-target-1.C: Likewise.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR c/105378

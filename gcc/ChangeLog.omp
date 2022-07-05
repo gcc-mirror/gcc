@@ -1,6 +1,23 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_code): Rename OMP_CLAUSE_TO_DECLARE
+	to OMP_CLAUSE_ENTER.
+	* tree.h (OMP_CLAUSE_ENTER_TO): Define.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Rename
+	OMP_CLAUSE_TO_DECLARE to OMP_CLAUSE_ENTER.
+	* tree-pretty-print.cc (dump_omp_clause): Handle OMP_CLAUSE_ENTER
+	instead of OMP_CLAUSE_TO_DECLARE, if OMP_CLAUSE_ENTER_TO, print
+	"to" instead of "enter".
+	* tree-nested.cc (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_ENTER instead of
+	OMP_CLAUSE_TO_DECLARE.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	* doc/invoke.texi (AMD GCN Options): Add gfx908/gfx90a.

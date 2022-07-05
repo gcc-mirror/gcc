@@ -7,6 +7,7 @@ extern int a;
 #pragma omp end declare target
 int b;
 #pragma omp declare target to (b) link (b)	/* { dg-error "appears more than once on the same .declare target. directive" } */
+#pragma omp declare target enter (b) link (b)	/* { dg-error "appears more than once on the same .declare target. directive" } */
 int c;
 #pragma omp declare target (c)
 #pragma omp declare target link (c)		/* { dg-error "specified both in declare target" } */
@@ -32,9 +33,13 @@ int m;
 #pragma omp declare target to (k)
 #pragma omp declare target (k)
 #pragma omp declare target to (k, m) link (l)
+#pragma omp declare target enter (k, m) link (l)
 #pragma omp declare target link (l)
 int n, o, s, t;
 #pragma omp declare target to (n) to (n)	/* { dg-error "appears more than once on the same .declare target. directive" } */
+#pragma omp declare target enter (n) enter (n)	/* { dg-error "appears more than once on the same .declare target. directive" } */
+#pragma omp declare target enter (n) to (n)	/* { dg-error "appears more than once on the same .declare target. directive" } */
+#pragma omp declare target to (n) enter (n)	/* { dg-error "appears more than once on the same .declare target. directive" } */
 #pragma omp declare target link (o, o)		/* { dg-error "appears more than once on the same .declare target. directive" } */
 #pragma omp declare target (s, t, s)		/* { dg-error "appears more than once on the same .declare target. directive" } */
 int p, q, r;
