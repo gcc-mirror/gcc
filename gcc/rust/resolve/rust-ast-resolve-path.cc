@@ -99,9 +99,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 
       // resolve any generic args
       if (segment.has_generic_args ())
-	{
-	  ResolveType::type_resolve_generic_args (segment.get_generic_args ());
-	}
+	ResolveGenericArgs::go (segment.get_generic_args ());
 
       // logic is awkward here there are a few cases
       //
@@ -252,9 +250,7 @@ ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
       // the job of the type system to figure it out but we can resolve any
       // generic arguments used
       if (segment.has_generic_args ())
-	{
-	  ResolveType::type_resolve_generic_args (segment.get_generic_args ());
-	}
+	ResolveGenericArgs::go (segment.get_generic_args ());
     }
 }
 

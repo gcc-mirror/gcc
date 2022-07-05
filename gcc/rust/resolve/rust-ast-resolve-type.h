@@ -64,12 +64,6 @@ public:
     return resolver.resolved_node;
   }
 
-  static void type_resolve_generic_args (AST::GenericArgs &args)
-  {
-    for (auto &gt : args.get_type_args ())
-      ResolveType::go (gt.get ());
-  }
-
   void visit (AST::BareFunctionType &fntype) override
   {
     for (auto &param : fntype.get_function_params ())
@@ -253,6 +247,14 @@ private:
   ResolveTypeToCanonicalPath ();
 
   CanonicalPath result;
+};
+
+class ResolveGenericArgs : public ResolverBase
+{
+  using Rust::Resolver::ResolverBase::visit;
+
+public:
+  static void go (AST::GenericArgs &generic_args);
 };
 
 } // namespace Resolver
