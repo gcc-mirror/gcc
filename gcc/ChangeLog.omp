@@ -1,6 +1,15 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-offload.cc (omp_discover_declare_target_tgt_fn_r,
+	omp_discover_declare_target_fn_r): Don't walk reverse-offload
+	target regions.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-06-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER): Define.
