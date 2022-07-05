@@ -4566,6 +4566,31 @@ have_whole_vector_shift (machine_mode mode)
   return true;
 }
 
+/* Return true if (a) STMT_INFO is a DOT_PROD_EXPR reduction whose
+   multiplication operands have differing signs and (b) we intend
+   to emulate the operation using a series of signed DOT_PROD_EXPRs.
+   See vect_emulate_mixed_dot_prod for the actual sequence used.  */
+
+static bool
+vect_is_emulated_mixed_dot_prod (loop_vec_info loop_vinfo,
+				 stmt_vec_info stmt_info)
+{
+  gassign *assign = dyn_cast<gassign *> (stmt_info->stmt);
+  if (!assign || gimple_assign_rhs_code (assign) != DOT_PROD_EXPR)
+    return false;
+
+  tree rhs1 = gimple_assign_rhs1 (assign);
+  tree rhs2 = gimple_assign_rhs2 (assign);
+  if (TYPE_SIGN (TREE_TYPE (rhs1)) == TYPE_SIGN (TREE_TYPE (rhs2)))
+    return false;
+
+  stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
+  gcc_assert (reduc_info->is_reduc_info);
+  return !directly_supported_p (DOT_PROD_EXPR,
+				STMT_VINFO_REDUC_VECTYPE_IN (reduc_info),
+				optab_vector_mixed_sign);
+}
+
 /* TODO: Close dependency between vect_model_*_cost and vectorizable_*
    functions. Design better to avoid maintenance issues.  */
 
@@ -4601,6 +4626,8 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
   if (!gimple_extract_op (orig_stmt_info->stmt, &op))
     gcc_unreachable ();
 
+  bool emulated_mixed_dot_prod
+    = vect_is_emulated_mixed_dot_prod (loop_vinfo, stmt_info);
   if (reduction_type == EXTRACT_LAST_REDUCTION)
     /* No extra instructions are needed in the prologue.  The loop body
        operations are costed in vectorizable_condition.  */
@@ -4628,11 +4655,20 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
     }
   else
     {
-      /* Add in cost for initial definition.
-	 For cond reduction we have four vectors: initial index, step,
-	 initial result of the data reduction, initial value of the index
-	 reduction.  */
-      int prologue_stmts = reduction_type == COND_REDUCTION ? 4 : 1;
+      /* Add in the cost of the initial definitions.  */
+      int prologue_stmts;
+      if (reduction_type == COND_REDUCTION)
+	/* For cond reductions we have four vectors: initial index, step,
+	   initial result of the data reduction, initial value of the index
+	   reduction.  */
+	prologue_stmts = 4;
+      else if (emulated_mixed_dot_prod)
+	/* We need the initial reduction value and two invariants:
+	   one that contains the minimum signed value and one that
+	   contains half of its negative.  */
+	prologue_stmts = 3;
+      else
+	prologue_stmts = 1;
       prologue_cost += record_stmt_cost (cost_vec, prologue_stmts,
 					 scalar_to_vec, stmt_info, 0,
 					 vect_prologue);
@@ -6797,11 +6833,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   bool lane_reduc_code_p = (op.code == DOT_PROD_EXPR
 			    || op.code == WIDEN_SUM_EXPR
 			    || op.code == SAD_EXPR);
-  enum optab_subtype optab_query_kind = optab_vector;
-  if (op.code == DOT_PROD_EXPR
-      && (TYPE_SIGN (TREE_TYPE (op.ops[0]))
-	  != TYPE_SIGN (TREE_TYPE (op.ops[1]))))
-    optab_query_kind = optab_vector_mixed_sign;
 
   if (!POINTER_TYPE_P (op.type) && !INTEGRAL_TYPE_P (op.type)
       && !SCALAR_FLOAT_TYPE_P (op.type))
@@ -7328,9 +7359,17 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       /* 4. Supportable by target?  */
       bool ok = true;
 
-      /* 4.1. check support for the operation in the loop  */
+      /* 4.1. check support for the operation in the loop
+
+	 This isn't necessary for the lane reduction codes, since they
+	 can only be produced by pattern matching, and it's up to the
+	 pattern matcher to test for support.  The main reason for
+	 specifically skipping this step is to avoid rechecking whether
+	 mixed-sign dot-products can be implemented using signed
+	 dot-products.  */
       machine_mode vec_mode = TYPE_MODE (vectype_in);
-      if (!directly_supported_p (op.code, vectype_in, optab_query_kind))
+      if (!lane_reduc_code_p
+	  && !directly_supported_p (op.code, vectype_in))
         {
           if (dump_enabled_p ())
             dump_printf (MSG_NOTE, "op not supported by target.\n");
@@ -7398,7 +7437,14 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
      vect_transform_reduction.  Otherwise this is costed by the
      separate vectorizable_* routines.  */
   if (single_defuse_cycle || lane_reduc_code_p)
-    record_stmt_cost (cost_vec, ncopies, vector_stmt, stmt_info, 0, vect_body);
+    {
+      int factor = 1;
+      if (vect_is_emulated_mixed_dot_prod (loop_vinfo, stmt_info))
+	/* Three dot-products and a subtraction.  */
+	factor = 4;
+      record_stmt_cost (cost_vec, ncopies * factor, vector_stmt,
+			stmt_info, 0, vect_body);
+    }
 
   if (dump_enabled_p ()
       && reduction_type == FOLD_LEFT_REDUCTION)
@@ -7455,6 +7501,81 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 			       vectype_in, NULL);
     }
   return true;
+}
+
+/* STMT_INFO is a dot-product reduction whose multiplication operands
+   have different signs.  Emit a sequence to emulate the operation
+   using a series of signed DOT_PROD_EXPRs and return the last
+   statement generated.  VEC_DEST is the result of the vector operation
+   and VOP lists its inputs.  */
+
+static gassign *
+vect_emulate_mixed_dot_prod (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
+			     gimple_stmt_iterator *gsi, tree vec_dest,
+			     tree vop[3])
+{
+  tree wide_vectype = signed_type_for (TREE_TYPE (vec_dest));
+  tree narrow_vectype = signed_type_for (TREE_TYPE (vop[0]));
+  tree narrow_elttype = TREE_TYPE (narrow_vectype);
+  gimple *new_stmt;
+
+  /* Make VOP[0] the unsigned operand VOP[1] the signed operand.  */
+  if (!TYPE_UNSIGNED (TREE_TYPE (vop[0])))
+    std::swap (vop[0], vop[1]);
+
+  /* Convert all inputs to signed types.  */
+  for (int i = 0; i < 3; ++i)
+    if (TYPE_UNSIGNED (TREE_TYPE (vop[i])))
+      {
+	tree tmp = make_ssa_name (signed_type_for (TREE_TYPE (vop[i])));
+	new_stmt = gimple_build_assign (tmp, NOP_EXPR, vop[i]);
+	vect_finish_stmt_generation (loop_vinfo, stmt_info, new_stmt, gsi);
+	vop[i] = tmp;
+      }
+
+  /* In the comments below we assume 8-bit inputs for simplicity,
+     but the approach works for any full integer type.  */
+
+  /* Create a vector of -128.  */
+  tree min_narrow_elttype = TYPE_MIN_VALUE (narrow_elttype);
+  tree min_narrow = build_vector_from_val (narrow_vectype,
+					   min_narrow_elttype);
+
+  /* Create a vector of 64.  */
+  auto half_wi = wi::lrshift (wi::to_wide (min_narrow_elttype), 1);
+  tree half_narrow = wide_int_to_tree (narrow_elttype, half_wi);
+  half_narrow = build_vector_from_val (narrow_vectype, half_narrow);
+
+  /* Emit: SUB_RES = VOP[0] - 128.  */
+  tree sub_res = make_ssa_name (narrow_vectype);
+  new_stmt = gimple_build_assign (sub_res, PLUS_EXPR, vop[0], min_narrow);
+  vect_finish_stmt_generation (loop_vinfo, stmt_info, new_stmt, gsi);
+
+  /* Emit:
+
+       STAGE1 = DOT_PROD_EXPR <VOP[1], 64, VOP[2]>;
+       STAGE2 = DOT_PROD_EXPR <VOP[1], 64, STAGE1>;
+       STAGE3 = DOT_PROD_EXPR <SUB_RES, -128, STAGE2>;
+
+     on the basis that x * y == (x - 128) * y + 64 * y + 64 * y
+     Doing the two 64 * y steps first allows more time to compute x.  */
+  tree stage1 = make_ssa_name (wide_vectype);
+  new_stmt = gimple_build_assign (stage1, DOT_PROD_EXPR,
+				  vop[1], half_narrow, vop[2]);
+  vect_finish_stmt_generation (loop_vinfo, stmt_info, new_stmt, gsi);
+
+  tree stage2 = make_ssa_name (wide_vectype);
+  new_stmt = gimple_build_assign (stage2, DOT_PROD_EXPR,
+				  vop[1], half_narrow, stage1);
+  vect_finish_stmt_generation (loop_vinfo, stmt_info, new_stmt, gsi);
+
+  tree stage3 = make_ssa_name (wide_vectype);
+  new_stmt = gimple_build_assign (stage3, DOT_PROD_EXPR,
+				  sub_res, vop[1], stage2);
+  vect_finish_stmt_generation (loop_vinfo, stmt_info, new_stmt, gsi);
+
+  /* Convert STAGE3 to the reduction type.  */
+  return gimple_build_assign (vec_dest, CONVERT_EXPR, stage3);
 }
 
 /* Transform the definition stmt STMT_INFO of a reduction PHI backedge
@@ -7563,12 +7684,17 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 					: &vec_oprnds2));
     }
 
+  bool emulated_mixed_dot_prod
+    = vect_is_emulated_mixed_dot_prod (loop_vinfo, stmt_info);
   FOR_EACH_VEC_ELT (vec_oprnds0, i, def0)
     {
       gimple *new_stmt;
       tree vop[3] = { def0, vec_oprnds1[i], NULL_TREE };
       if (masked_loop_p && !mask_by_cond_expr)
 	{
+	  /* No conditional ifns have been defined for dot-product yet.  */
+	  gcc_assert (code != DOT_PROD_EXPR);
+
 	  /* Make sure that the reduction accumulator is vop[0].  */
 	  if (reduc_index == 1)
 	    {
@@ -7597,8 +7723,12 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	      build_vect_cond_expr (code, vop, mask, gsi);
 	    }
 
-	  new_stmt = gimple_build_assign (vec_dest, code,
-					  vop[0], vop[1], vop[2]);
+	  if (emulated_mixed_dot_prod)
+	    new_stmt = vect_emulate_mixed_dot_prod (loop_vinfo, stmt_info, gsi,
+						    vec_dest, vop);
+	  else
+	    new_stmt = gimple_build_assign (vec_dest, code,
+					    vop[0], vop[1], vop[2]);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  gimple_assign_set_lhs (new_stmt, new_temp);
 	  vect_finish_stmt_generation (loop_vinfo, stmt_info, new_stmt, gsi);

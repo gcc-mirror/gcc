@@ -760,12 +760,16 @@ vect_convert_input (vec_info *vinfo, stmt_vec_info stmt_info, tree type,
 		    vect_unpromoted_value *unprom, tree vectype,
 		    enum optab_subtype subtype = optab_default)
 {
-
   /* Update the type if the signs differ.  */
-  if (subtype == optab_vector_mixed_sign
-      && TYPE_SIGN (type) != TYPE_SIGN (TREE_TYPE (unprom->op)))
-    type = build_nonstandard_integer_type (TYPE_PRECISION (type),
-					   TYPE_SIGN (unprom->type));
+  if (subtype == optab_vector_mixed_sign)
+    {
+      gcc_assert (!TYPE_UNSIGNED (type));
+      if (TYPE_UNSIGNED (TREE_TYPE (unprom->op)))
+	{
+	  type = unsigned_type_for (type);
+	  vectype = unsigned_type_for (vectype);
+	}
+    }
 
   /* Check for a no-op conversion.  */
   if (types_compatible_p (type, TREE_TYPE (unprom->op)))
@@ -1139,16 +1143,34 @@ vect_recog_dot_prod_pattern (vec_info *vinfo,
      is signed; otherwise, the result has the same sign as the operands.  */
   if (TYPE_PRECISION (unprom_mult.type) != TYPE_PRECISION (type)
       && (subtype == optab_vector_mixed_sign
-	? TYPE_UNSIGNED (unprom_mult.type)
-	: TYPE_SIGN (unprom_mult.type) != TYPE_SIGN (half_type)))
+	  ? TYPE_UNSIGNED (unprom_mult.type)
+	  : TYPE_SIGN (unprom_mult.type) != TYPE_SIGN (half_type)))
     return NULL;
 
   vect_pattern_detected ("vect_recog_dot_prod_pattern", last_stmt);
 
+  /* If the inputs have mixed signs, canonicalize on using the signed
+     input type for analysis.  This also helps when emulating mixed-sign
+     operations using signed operations.  */
+  if (subtype == optab_vector_mixed_sign)
+    half_type = signed_type_for (half_type);
+
   tree half_vectype;
   if (!vect_supportable_direct_optab_p (vinfo, type, DOT_PROD_EXPR, half_type,
 					type_out, &half_vectype, subtype))
-    return NULL;
+    {
+      /* We can emulate a mixed-sign dot-product using a sequence of
+	 signed dot-products; see vect_emulate_mixed_dot_prod for details.  */
+      if (subtype != optab_vector_mixed_sign
+	  || !vect_supportable_direct_optab_p (vinfo, signed_type_for (type),
+					       DOT_PROD_EXPR, half_type,
+					       type_out, &half_vectype,
+					       optab_vector))
+	return NULL;
+
+      *type_out = signed_or_unsigned_type_for (TYPE_UNSIGNED (type),
+					       *type_out);
+    }
 
   /* Get the inputs in the appropriate types.  */
   tree mult_oprnd[2];
