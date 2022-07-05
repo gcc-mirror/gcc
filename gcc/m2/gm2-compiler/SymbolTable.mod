@@ -3073,11 +3073,12 @@ BEGIN
    IF IsDefImp (moduleSym)
    THEN
       InitCtorFields (moduleTok, beginTok, finallyTok,
-                      pSym^.DefImp.ctors, GetSymName (moduleSym), FALSE)
+                      pSym^.DefImp.ctors, GetSymName (moduleSym),
+                      FALSE, TRUE)
    ELSE
       InitCtorFields (moduleTok, beginTok, finallyTok,
                       pSym^.Module.ctors, GetSymName (moduleSym),
-                      IsInnerModule (moduleSym))
+                      IsInnerModule (moduleSym), TRUE)
    END
 END MakeModuleCtor ;
 
@@ -3088,14 +3089,16 @@ END MakeModuleCtor ;
 *)
 
 PROCEDURE InitCtorFields (moduleTok, beginTok, finallyTok: CARDINAL;
-                          VAR ctor: ModuleCtor; name: Name; inner: BOOLEAN) ;
+                          VAR ctor: ModuleCtor; name: Name;
+                          inner, pub: BOOLEAN) ;
 BEGIN
    IF ScaffoldDynamic AND (NOT inner)
    THEN
       (* The ctor procedure must be public.  *)
       ctor.ctor := MakeProcedure (moduleTok, GenName ("_M2_", name, "_ctor")) ;
-      PutCtor (ctor.ctor, TRUE) ;
-      PutPublic (ctor.ctor, TRUE) ;
+      PutCtor (ctor.ctor, pub) ;
+      PutPublic (ctor.ctor, pub) ;
+      PutExtern (ctor.ctor, NOT pub) ;
       (* The dep procedure is local to the module.  *)
       ctor.dep := MakeProcedure (moduleTok, GenName ("_M2_", name, "_dep")) ;
    ELSE
@@ -3104,10 +3107,12 @@ BEGIN
    END ;
    (* The init/fini procedures must be public.  *)
    ctor.init := MakeProcedure (beginTok, GenName ("_M2_", name, "_init")) ;
-   PutPublic (ctor.init, TRUE) ;
+   PutPublic (ctor.init, pub) ;
+   PutExtern (ctor.init, NOT pub) ;
    DeclareArgEnvParams (beginTok, ctor.init) ;
    ctor.fini := MakeProcedure (finallyTok, GenName ("_M2_", name, "_fini")) ;
-   PutPublic (ctor.fini, TRUE) ;
+   PutPublic (ctor.fini, pub) ;
+   PutExtern (ctor.fini, NOT pub) ;
    DeclareArgEnvParams (beginTok, ctor.fini)
 END InitCtorFields ;
 
@@ -3139,7 +3144,7 @@ BEGIN
          InternalError ('expecting Module or DefImp symbol')
       END
    END
-END GetModCtors ;
+END GetModuleCtors ;
 
 
 (*
@@ -3465,14 +3470,91 @@ BEGIN
          InitList(ListOfProcs) ;      (* List of all procedures        *)
                                       (* declared within this module.  *)
          InitList(ListOfModules) ;    (* List of all inner modules.    *)
-         InitWhereDeclaredTok(tok, At) ;  (* Where symbol declared.        *)
-         InitWhereFirstUsedTok(tok, At) ; (* Where symbol first used.      *)
+         InitWhereDeclaredTok(tok, At) ;  (* Where symbol declared.    *)
+         InitWhereFirstUsedTok(tok, At) ; (* Where symbol first used.  *)
          errorScope := GetCurrentErrorScope () ; (* Title error scope. *)
       END
    END ;
    PutSymKey(ModuleTree, DefImpName, Sym) ;
    RETURN Sym
 END MakeDefImp ;
+
+
+(*
+   PutProcedureExternPublic - if procedure is not NulSym set extern
+                              and public booleans.
+*)
+
+PROCEDURE PutProcedureExternPublic (procedure: CARDINAL; extern, pub: BOOLEAN) ;
+BEGIN
+   IF procedure # NulSym
+   THEN
+      PutExtern (procedure, extern) ;
+      PutPublic (procedure, pub)
+   END
+END PutProcedureExternPublic ;
+
+
+(*
+   PutCtorExtern -
+*)
+
+PROCEDURE PutCtorExtern (tok: CARDINAL; sym: CARDINAL;
+                         VAR ctor: ModuleCtor; extern: BOOLEAN) ;
+BEGIN
+   (* If the ctor does not exist then make it extern/ (~extern) public.  *)
+   IF ctor.ctor = NulSym
+   THEN
+      ctor.ctor := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_ctor"))
+   END ;
+   PutProcedureExternPublic (ctor.ctor, extern, NOT extern) ;
+   PutCtor (ctor.ctor, NOT extern) ;
+   (* If the ctor does not exist then make it extern/ (~extern) public.  *)
+   IF ctor.dep = NulSym
+   THEN
+      ctor.dep := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_dep"))
+   END ;
+   PutProcedureExternPublic (ctor.dep, extern, NOT extern) ;
+   (* If init/fini do not exist then create them.  *)
+   IF ctor.init = NulSym
+   THEN
+      ctor.init := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_init")) ;
+      DeclareArgEnvParams (tok, ctor.init)
+   END ;
+   PutProcedureExternPublic (ctor.init, extern, NOT extern) ;
+   IF ctor.fini = NulSym
+   THEN
+      ctor.fini := MakeProcedure (tok, GenName ("_M2_", GetSymName (sym), "_fini")) ;
+      DeclareArgEnvParams (tok, ctor.fini)
+   END ;
+   PutProcedureExternPublic (ctor.fini, extern, NOT extern)
+END PutCtorExtern ;
+
+
+(*
+   PutModuleCtorExtern - for every ctor related procedure in module sym.
+                         Make it external.  It will create any missing
+                         init/fini procedures but not any missing dep/ctor
+                         procedures.
+*)
+
+PROCEDURE PutModuleCtorExtern (tok: CARDINAL; sym: CARDINAL) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   Assert (IsModule (sym) OR IsDefImp (sym)) ;
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      DefImpSym:  PutCtorExtern (tok, sym, DefImp.ctors, TRUE) |
+      ModuleSym:  PutCtorExtern (tok, sym, Module.ctors, TRUE)
+
+      ELSE
+         InternalError ('expecting DefImp or Module symbol')
+      END
+   END
+END PutModuleCtorExtern ;
 
 
 (*

@@ -52,7 +52,7 @@ _M2_errno_init (int, char *[], char *[])
 }
 
 extern "C" void
-_M2_errno_finish (int, char *[], char *[])
+_M2_errno_fini (int, char *[], char *[])
 {
 }
 
@@ -65,6 +65,6 @@ struct _M2_errno_ctor { _M2_errno_ctor (); } _M2_errno_ctor;
 
 _M2_errno_ctor::_M2_errno_ctor (void)
 {
-  M2RTS_RegisterModule ("errno", _M2_errno_init, _M2_errno_finish,
+  M2RTS_RegisterModule ("errno", _M2_errno_init, _M2_errno_fini,
 			_M2_errno_dep);
 }

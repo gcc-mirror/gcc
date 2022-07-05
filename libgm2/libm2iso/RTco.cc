@@ -106,7 +106,7 @@ _M2_RTco_init (int argc, char *argv[], char *envp[])
 }
 
 extern "C" void
-_M2_RTco_finish (int argc, char *argv[], char *envp[])
+_M2_RTco_fini (int argc, char *argv[], char *envp[])
 {
 }
 
@@ -462,6 +462,6 @@ struct _M2_RTco_ctor { _M2_RTco_ctor (); } _M2_RTco_ctor;
 
 _M2_RTco_ctor::_M2_RTco_ctor (void)
 {
-  M2RTS_RegisterModule ("RTco", _M2_RTco_init, _M2_RTco_finish,
+  M2RTS_RegisterModule ("RTco", _M2_RTco_init, _M2_RTco_fini,
 			_M2_RTco_dep);
 }

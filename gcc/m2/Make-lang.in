@@ -2092,7 +2092,7 @@ m2/gm2-pge-boot/$(SRC_PREFIX)UnixArgs.o:  $(srcdir)/m2/mc-boot-ch/GUnixArgs.cc
 m2/gm2-pge-boot/$(SRC_PREFIX)Selective.o:  $(srcdir)/m2/mc-boot-ch/GSelective.c m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) -Im2/gm2-libs -g -c $< -o $@
 
-m2/gm2-pge-boot/$(SRC_PREFIX)termios.o:  $(srcdir)/m2/mc-boot-ch/Gtermios.c m2/gm2-libs/gm2-libs-host.h
+m2/gm2-pge-boot/$(SRC_PREFIX)termios.o:  $(srcdir)/m2/mc-boot-ch/Gtermios.cc m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs $(INCLUDES) -g -c $< -o $@
 
 m2/gm2-pge-boot/$(SRC_PREFIX)SysExceptions.o:  $(srcdir)/m2/mc-boot-ch/GSysExceptions.c m2/gm2-libs/gm2-libs-host.h

@@ -538,8 +538,8 @@ You can compile and link it by: @samp{gm2 -g hello.mod}.
 The result will be an @samp{a.out} file created in your directory.
 
 You can split this command into two steps if you prefer.  The compile
-step can be achieved by: @samp{gm2 -g -c hello.mod} and the link via:
-@samp{gm2 -g -fonlylink hello.mod}.
+step can be achieved by: @samp{gm2 -g -c -fscaffold-main hello.mod}
+and the link via: @samp{gm2 -g hello.o}.
 
 @footnote{To see all the compile actions taken by @samp{gm2} users can also
 add the @samp{-v} flag at the command line, for example:
@@ -606,11 +606,11 @@ generate a shared library from the module.
 @item -fruntime-modules=
 specify, using a comma separated list, the runtime modules and their
 order.  These modules will initialized first before any other modules
-in the application dependancy.  By default the runtime modules list is
+in the application dependency.  By default the runtime modules list is
 set to @code{Storage,SYSTEM,M2RTS,RTExceptions,IOLink}.  Note that
 these modules will only be linked into your executable if they are
 required.  So adding a long list of dependant modules will not effect
-the size of the executable it merely states the initialisation order
+the size of the executable it merely states the initialization order
 should they be required.
 
 @item -fnil
@@ -737,16 +737,6 @@ infastructure when compiling implementation and program modules.
 By default this option is on.  Use @samp{-fno-scaffold-dynamic}
 to turn it off or select @samp{-fno-scaffold-dynamic}.
 
-@item -fscaffold-c
-this option generates a C source scaffold file for the program module.
-This file can be compiled and linked with the module objects to
-produce the application.
-
-@item -fscaffold-c++
-this option generates a C++ source scaffold file for the program module.
-This file can be compiled and linked with the module objects to
-produce the application.
-
 @item -fcpp
 preprocess the source with @samp{cpp -lang-asm -traditional-cpp}
 For further details about these options @xref{Invocation, , ,cpp}.
@@ -814,11 +804,6 @@ displays the path to the source of each module.  This option
 can be used at compile time to check the correct definition module
 is being used.
 
-@item -fmodules
-displays the path to each modules object file.  This option
-can only be invoked with the @code{-c} option.
-It is used to see the location of objects when linking occurs.
-
 @item -fdef=
 recognise the specified suffix as a definition module filename.
 The default implmentation and module filename suffix is @file{.def}.
@@ -834,10 +819,6 @@ suffixed filename does not exist.
 
 @item -fxcode
 issues all errors and warnings in the @file{Xcode} format.
-
-@item -fonlylink
-only link the modula-2 application, do not compile the program module
-beforehand.
 
 @item -funbounded-by-reference
 enable optimization of unbounded parameters by attempting to pass non

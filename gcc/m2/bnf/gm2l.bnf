@@ -24,7 +24,6 @@
    are the top two lines in the file.
 
 Copyright (C) 2001-2022 Free Software Foundation, Inc.
-Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
 
@@ -44,22 +43,6 @@ see <https://www.gnu.org/licenses/>.  *)
 
 MODULE gm2l ;
 
-(*
-   Author     : Gaius Mulley
-   Title      : gm2l
-   Date       : Date: Sat 16-09-1989 Time: 17:49:34.18
-              : [$Date: 2013/07/20 12:33:01 $]
-   SYSTEM     : UNIX (GNU Modula-2)
-   Description: generates the list of initialization order for the modules.
-                The initialization module list is used for two purposes.
-                (i)  for linking all the objects or archives
-                (ii) for creating the initialization call sequence for each module.
-                If a definition module contains EXPORT UNQUALIFIED and there is no
-                implementation module found then we assume this definition module
-                will match a foreign language, therefore we do not create an
-                initialization call but we do link this object/archive.
-                This allows us to write definition modules for C libraries.
-*)
 
 IMPORT Break ;
 IMPORT M2Search ;
@@ -87,10 +70,12 @@ IMPORT m2flex ;
 FROM SYSTEM IMPORT ADDRESS ;
 FROM M2DriverOptions IMPORT ScanCppArgs ;
 FROM DynamicStrings IMPORT String, InitString, KillString, Slice, InitStringCharStar,
-                           Mark, EqualArray, string, ConCat, ConCatChar, Dup ;
+                           Mark, EqualArray, string, ConCat, ConCatChar, Dup, Length,
+                           char ;
 FROM Lists IMPORT List, InitList, KillList, IncludeItemIntoList, GetItemFromList,
                   RemoveItemFromList, NoOfItemsInList, IsItemInList ;
 FROM M2Options IMPORT SetVerbose, Verbose ;
+(* FROM GccInstall IMPORT GetInstalledIncludeDir, GetDirSeparator ; *)
 
 
 CONST
@@ -103,6 +88,8 @@ TYPE
                           name       : Name ;
                           fullpath   : String ;
                           Depth      : CARDINAL ;
+                          userExclude,
+                          userInclude,
                           OnlyDef    ,
                           ForC       : BOOLEAN ;
                           next       : Source ;
@@ -121,10 +108,11 @@ VAR
    MainSrc,
    MainName       : Name ;
    Head, Tail     : Source ;    (* Head source list *)
-   IncludeM2RTS   : BOOLEAN ;   (* Do we automatically include M2RTS into the top module? *)
    pSource        : Source ;    (* Current module being parsed *)
    CommentChar    : CHAR ;
    pBlock         : BlockInfoPtr ;
+   includeModules,
+   excludeModules : List ;
 
 
 (*
@@ -187,7 +175,9 @@ BEGIN
       n := NoOfItemsInList (ImportedModules) ;
       WHILE i<=n DO
          modname := GetItemFromList (ImportedModules, i) ;
-         MakeModule (modname) ;
+         IF MakeModule (modname)
+         THEN
+         END ;
          MakeDependant (pSource^.name, modname) ;
          INC (i)
       END ;
@@ -230,6 +220,31 @@ END RegisterImport ;
 
 
 (*
+   AddUserInclude - if any module in includeModules does not exist in the graph
+                    add it as a dependant to the mainName.
+*)
+
+PROCEDURE AddUserInclude (mainName: Name) ;
+VAR
+   i, n: CARDINAL ;
+   name: Name ;
+BEGIN
+   i := 1 ;
+   n := NoOfItemsInList (includeModules) ;
+   WHILE i <= n DO
+      name := GetItemFromList (includeModules, i) ;
+      IF MakeModule (name)
+      THEN
+         Tail^.userInclude := TRUE ;
+         (* Not seen this module therefore add it as a dependant to the mainName.  *)
+         MakeDependant (mainName, name)
+      END ;
+      INC (i)
+   END
+END AddUserInclude ;
+
+
+(*
    ScanSources - scans all the source files for IMPORTs and places all
                  imports into the Sources array.
 *)
@@ -250,14 +265,8 @@ BEGIN
       ExamineCompilationUnit (MainName, isdefimp) ;
       CloseSource ;
       ReInitialize ;
-      MakeModule (MainName) ;  (* Head now contains a reference to MainName.  *)
-      IF IncludeM2RTS
+      IF MakeModule (MainName)  (* Head now contains a reference to MainName.  *)
       THEN
-         (*
-            we should include M2RTS as a dependant module otherwise it simply wont link
-         *)
-         MakeModule (MakeKey ('M2RTS')) ;  (* Tail now contains a reference to M2RTS.  *)
-         MakeDependant (MainName, MakeKey ('M2RTS'))
       END ;
       pSource := Head ;
       WHILE pSource # NIL DO
@@ -597,10 +606,11 @@ END Real ;
 
 % module gm2l end
 (*
-   MakeModule - makes a module for ModuleName.
+   MakeModule - makes a module for ModuleName.  It returns TRUE if a new
+                module entry is created.
 *)
 
-PROCEDURE MakeModule (ModuleName: Name) ;
+PROCEDURE MakeModule (ModuleName: Name) : BOOLEAN ;
 VAR
    s: Source ;
 BEGIN
@@ -609,7 +619,7 @@ BEGIN
       WITH s^ DO
          IF name = ModuleName
          THEN
-            RETURN
+            RETURN FALSE
          ELSE
             s := s^.next
          END
@@ -630,8 +640,11 @@ BEGIN
       Depth       := 0 ;
       ForC        := FALSE ;
       OnlyDef     := FALSE ;
+      userExclude := FALSE ;
+      userInclude := FALSE ;
       next        := NIL
-   END
+   END ;
+   RETURN TRUE
 END MakeModule ;
 
 
@@ -761,7 +774,14 @@ BEGIN
    WHILE p # NIL DO
       WITH p^ DO
          fprintf3 (fo, '%c %a %4d ', CommentChar, name, Depth) ;
-         IF p^.fullpath = NIL
+         IF IsItemInList (excludeModules, name)
+         THEN
+            fprintf0 (fo, 'excluded via command line\n') ;
+            userExclude := TRUE
+         ELSIF p^.userInclude
+         THEN
+            fprintf0 (fo, 'included via command line\n')
+         ELSIF p^.fullpath = NIL
          THEN
             fprintf1 (fo, 'no source file found for module %a\n', p^.name) ;
             fprintf1 (StdErr, 'no source file found for module %a\n', p^.name) ;
@@ -778,17 +798,15 @@ BEGIN
       END ;
       p := p^.next
    END ;
-   fprintf3 (fo, '%c\n%c Initialization order\n%c\n', CommentChar, CommentChar, CommentChar) ;
+   fprintf3 (fo, '%c\n%c Initialization order\n%c\n',
+             CommentChar, CommentChar, CommentChar) ;
    p := Head ;
    WHILE p # NIL DO
       WITH p^ DO
-         (*
-            do not automatically link ForC modules,
-	    the user must specify them either as -lmodule or module.o
-         *)
-         IF (NOT ForC) OR (name = MakeKey ('SYSTEM'))
+         (* Do not automatically include ForC modules.  *)
+         IF (NOT ForC) AND (NOT userExclude)
          THEN
-            fprintf1(fo, '%a\n', name)
+            fprintf1 (fo, '%a\n', name)
          END
       END ;
       p := p^.next
@@ -818,11 +836,124 @@ END OpenOutputFile ;
 
 PROCEDURE DisplayUsage ;
 BEGIN
-   printf0 ('Usage: gm2l [-fdef=extension][-fmod=extension][-h][--help]\n');
-   printf0 ('            [-Isearchpath][--M2RTS][-M2RTS][-v][--verbose]\n');
+   printf0 ('Usage: gm2l [-fdef=extension][-flibs=list][-fmod=extension][-h][--help]\n');
+   printf0 ('            [-Isearchpath][--exclude=list][--include=list][-v][--verbose]\n');
    printf0 ('            [-o outputfile] modulefile\n');
    exit (0)
 END DisplayUsage ;
+
+
+(*
+   PopulateList - creates a list of namekey entries from a comma separated string s.
+*)
+
+PROCEDURE PopulateList (VAR list: List; s: String) ;
+VAR
+   word : String ;
+   start,
+   i, n : INTEGER ;
+BEGIN
+   n := Length (s) ;
+   i := 0 ;
+   start := 0 ;
+   WHILE i < n DO
+      IF char (s, i) = ','
+      THEN
+         IF i > start
+         THEN
+            word := Slice (s, start, i) ;
+            IncludeItemIntoList (list, makekey (string (word))) ;
+            word := KillString (word) ;
+            start := i + 1
+         END
+      END ;
+      INC (i)
+   END ;
+   IF i > start
+   THEN
+      word := Slice (s, start, 0) ;
+      IncludeItemIntoList (list, makekey (string (word))) ;
+      word := KillString (word)
+   END
+END PopulateList ;
+
+
+(*
+   addInclude - adds include path for
+*)
+
+PROCEDURE addInclude (name: Name) ;
+VAR
+   s: String ;
+BEGIN
+(*
+   s := ConCat (InitStringCharStar (GetInstalledIncludeDir ()),
+                InitStringCharStar (GetDirSeparator ())) ;
+   s := ConCat (s, Mark (InitStringCharStar (KeyToCharStar (name)))) ;
+   PrependSearchPath (s)
+*)
+END addInclude ;
+
+
+(*
+   SetLibs - configures the include paths from the libraries shortcuts.
+*)
+
+PROCEDURE SetLibs (s: String) ;
+VAR
+   libs: List ;
+   n, i: CARDINAL ;
+   name: Name ;
+BEGIN
+   InitList (libs) ;
+   PopulateList (libs, s) ;
+   n := NoOfItemsInList (libs) ;
+   i := 1 ;
+   WHILE i <= n DO
+      name := GetItemFromList (libs, i) ;
+      IF name = MakeKey ('pim')
+      THEN
+         addInclude (MakeKey ('m2pim'))
+      ELSIF name = MakeKey ('min')
+      THEN
+         addInclude (MakeKey ('m2min'))
+      ELSIF name = MakeKey ('iso')
+      THEN
+         addInclude (MakeKey ('m2iso'))
+      ELSIF name = MakeKey ('log')
+      THEN
+         addInclude (MakeKey ('m2log'))
+      ELSIF name = MakeKey ('cor')
+      THEN
+         addInclude (MakeKey ('m2cor'))
+      ELSE
+         (* Third party library.  *)
+         addInclude (name)
+      END ;
+      INC (i)
+   END ;
+   KillList (libs)
+END SetLibs ;
+
+
+(*
+   SetExclude - populates the excludeModules with the list specified in s.
+*)
+
+PROCEDURE SetExclude (s: String) ;
+BEGIN
+   PopulateList (excludeModules, s)
+END SetExclude ;
+
+
+(*
+   SetInclude - populates the includeModules with the list specified in s.
+*)
+
+PROCEDURE SetInclude (s: String) ;
+BEGIN
+   PopulateList (includeModules, s)
+END SetInclude ;
 
 
 (*
@@ -835,7 +966,6 @@ VAR
    i, n: CARDINAL ;
    s   : String ;
 BEGIN
-   IncludeM2RTS := TRUE ;
    MainName := NulName ;
    n := SArgs.Narg () ;
    IF n=1
@@ -867,13 +997,18 @@ BEGIN
             ELSIF EqualArray(Mark (Slice (s, 0, 6)), '-fmod=')
             THEN
                SetModExtension (Slice (s, 6, 0))
+            ELSIF EqualArray(Mark (Slice (s, 0, 6)), '-flibs=')
+            THEN
+               SetLibs (Slice (s, 7, 0))
             ELSIF EqualArray (s, '-fcpp-begin')
             THEN
                i := ScanCppArgs (i)
-            ELSIF EqualArray (s, '--M2RTS') OR EqualArray (s, '-M2RTS')
+            ELSIF EqualArray(Mark (Slice (s, 0, 10)), '--exclude=')
             THEN
-               (* no M2RTS to be automatically linked imported from the main module *)
-               IncludeM2RTS := FALSE
+               SetExclude (Slice (s, 10, 0))
+            ELSIF EqualArray(Mark (Slice (s, 0, 10)), '--include=')
+            THEN
+               SetInclude (Slice (s, 10, 0))
             ELSIF EqualArray (s, '-h') OR EqualArray (s, '--help')
 	    THEN
 	       DisplayUsage
@@ -884,8 +1019,20 @@ BEGIN
                THEN
                   OpenOutputFile (s)
                END
+            ELSIF MainSrc = NulName
+            THEN
+               IF (Length (s) > 0) AND (char (s, 0) = '-')
+               THEN
+                  fprintf1 (StdErr, 'unknown option: %s\n', s) ;
+                  exit (1)
+               ELSE
+                  MainSrc := makekey (string (s))
+               END
             ELSE
-               MainSrc := makekey (string (s))
+               fprintf2 (StdErr,
+                         'only one application module can be specified, application module was set to %a it is now being set to %s\n',
+                         MainSrc, s) ;
+               exit (1)
             END
          END ;
          INC (i)
@@ -897,9 +1044,12 @@ END ScanArgs ;
 
 BEGIN
    fo := StdOut ;
+   InitList (includeModules) ;
+   InitList (excludeModules) ;
    IF ScanArgs ()
    THEN
       ScanSources (MainSrc) ;
+      AddUserInclude (MainSrc) ;
       CalculateDepth ;
       SortSources ;
       DisplaySources

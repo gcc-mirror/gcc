@@ -55,7 +55,7 @@ EXPORT QUALIFIED NulSym,
                  SetMainModule,
                  SetFileModule,
                  MakeModule, MakeDefImp,
-                 MakeInnerModule, MakeModuleCtor,
+                 MakeInnerModule, MakeModuleCtor, PutModuleCtorExtern,
                  MakeProcedure,
                  MakeProcedureCtorExtern,
                  MakeConstant,
@@ -639,6 +639,16 @@ PROCEDURE GetModuleCtors (mod: CARDINAL; VAR ctor, init, fini, dep: CARDINAL) ;
 
 PROCEDURE MakeModuleCtor (moduleTok, beginTok, finallyTok: CARDINAL;
                           moduleSym: CARDINAL) ;
+
+
+(*
+   PutModuleCtorExtern - for every ctor related procedure in module sym.
+                         Make it external.  It will create any missing
+                         init/fini procedures but not any missing dep/ctor
+                         procedures.
+*)
+
+PROCEDURE PutModuleCtorExtern (tok: CARDINAL; sym: CARDINAL) ;
 
 
 (*

@@ -1969,7 +1969,7 @@ _M2_termios_init (int, char *[], char *[])
 }
 
 extern "C" void
-_M2_termios_finish (int, char *[], char *[])
+_M2_termios_fini (int, char *[], char *[])
 {
 }
 
@@ -1982,6 +1982,6 @@ struct _M2_termios_ctor { _M2_termios_ctor (); } _M2_termios_ctor;
 
 _M2_termios_ctor::_M2_termios_ctor (void)
 {
-  M2RTS_RegisterModule ("termios", _M2_termios_init, _M2_termios_finish,
+  M2RTS_RegisterModule ("termios", _M2_termios_init, _M2_termios_fini,
 			_M2_termios_dep);
 }

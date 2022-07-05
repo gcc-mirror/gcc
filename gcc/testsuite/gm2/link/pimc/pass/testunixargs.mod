@@ -9,6 +9,6 @@ VAR
    ptr: ADDRESS ;
    num: CARDINAL ;
 BEGIN
-   ptr := ArgV ;
-   num := ArgC
+   ptr := GetArgV () ;
+   num := GetArgC ()
 END testunixargs.

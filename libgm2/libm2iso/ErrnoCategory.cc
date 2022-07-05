@@ -162,7 +162,7 @@ _M2_ErrnoCategory_init (int, char *argv[], char *env[])
 }
 
 extern "C" void
-_M2_ErrnoCategory_finish (int, char *argv[], char *env[])
+_M2_ErrnoCategory_fini (int, char *argv[], char *env[])
 {
 }
 
@@ -175,6 +175,6 @@ struct _M2_ErrnoCategory_ctor { _M2_ErrnoCategory_ctor (); } _M2_ErrnoCategory_c
 
 _M2_ErrnoCategory_ctor::_M2_ErrnoCategory_ctor (void)
 {
-  M2RTS_RegisterModule ("ErrnoCategory", _M2_ErrnoCategory_init, _M2_ErrnoCategory_finish,
+  M2RTS_RegisterModule ("ErrnoCategory", _M2_ErrnoCategory_init, _M2_ErrnoCategory_fini,
 			_M2_ErrnoCategory_dep);
 }

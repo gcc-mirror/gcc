@@ -241,7 +241,7 @@ _M2_SysExceptions_init (int, char *[], char *[])
 }
 
 extern "C" void
-_M2_SysExceptions_finish (int, char *[], char *[])
+_M2_SysExceptions_fini (int, char *[], char *[])
 {
 }
 
@@ -254,6 +254,6 @@ struct _M2_SysExceptions_ctor { _M2_SysExceptions_ctor (); } _M2_SysExceptions_c
 
 _M2_SysExceptions_ctor::_M2_SysExceptions_ctor (void)
 {
-  M2RTS_RegisterModule ("SysExceptions", _M2_SysExceptions_init, _M2_SysExceptions_finish,
+  M2RTS_RegisterModule ("SysExceptions", _M2_SysExceptions_init, _M2_SysExceptions_fini,
 			_M2_SysExceptions_dep);
 }

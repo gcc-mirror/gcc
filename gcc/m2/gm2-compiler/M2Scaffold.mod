@@ -27,7 +27,8 @@ FROM SymbolTable IMPORT NulSym, MakeProcedure, PutFunction,
                         MakeSubrange, PutSubrange,
                         MakeSubscript, PutSubscript, PutArraySubscript,
                         MakeVar, PutVar, MakeProcedureCtorExtern,
-                        GetMainModule,
+                        GetMainModule, GetModuleCtors, MakeDefImp,
+                        PutModuleCtorExtern,
                         GetSymName, StartScope, EndScope ;
 
 FROM NameKey IMPORT NulName, Name, MakeKey, makekey, KeyToCharStar ;
@@ -40,9 +41,13 @@ FROM M2MetaError IMPORT MetaErrorT0 ;
 
 FROM SFIO IMPORT OpenToWrite, WriteS, ReadS, OpenToRead, Exists ;
 FROM FIO IMPORT File, EOF, IsNoError, Close ;
-FROM M2Options IMPORT GetUselist ;
+FROM M2Options IMPORT GetUselist, ScaffoldStatic ;
 FROM M2Base IMPORT Proc ;
-FROM M2Quads IMPORT PushTFtok, PushTtok, BuildDesignatorArray, BuildAssignment ;
+
+FROM M2Quads IMPORT PushTFtok, PushTtok, PushT, BuildDesignatorArray, BuildAssignment,
+                    BuildProcedureCall ;
+
+FROM M2Batch IMPORT IsModuleKnown, Get ;
 
 FROM DynamicStrings IMPORT String, InitString, KillString, ConCat, RemoveWhitePrefix,
                     EqualArray, Mark, Assign, Fin, InitStringChar, Length, Slice, Equal,
@@ -52,10 +57,11 @@ CONST
    Comment = '#'  ; (* Comment leader      *)
 
 VAR
+   uselistModules,
    ctorModules,
-   ctorGlobals  : List ;
+   ctorGlobals   : List ;
    ctorArray,
-   ctorArrayType: CARDINAL ;
+   ctorArrayType : CARDINAL ;
 
 
 (* The dynamic scaffold takes the form:
@@ -123,6 +129,76 @@ END DeclareCtorGlobal ;
 
 
 (*
+   ForeachModuleCallInit - is only called when -fscaffold-static is enabled.
+                           precondition: the module list will be ordered.
+                           postcondition: foreach module in the application universe
+                                             call _M2_module_init (argc, argv, envp);
+*)
+
+PROCEDURE ForeachModuleCallInit (tok: CARDINAL; argc, argv, envp: CARDINAL) ;
+VAR
+   module    : CARDINAL ;
+   i, n      : CARDINAL ;
+   ctor, init,
+   fini, dep : CARDINAL ;
+BEGIN
+   i := 1 ;
+   n := NoOfItemsInList (uselistModules) ;
+   WHILE i <= n DO
+      module := GetItemFromList (uselistModules, i) ;
+      IF module # NulSym
+      THEN
+         GetModuleCtors (module, ctor, init, fini, dep) ;
+         IF init # NulSym
+         THEN
+            PushTtok (init, tok) ;
+            PushTtok (argc, tok) ;
+            PushTtok (argv, tok) ;
+            PushTtok (envp, tok) ;
+            PushT (3) ;
+            BuildProcedureCall (tok)
+         END
+      END ;
+      INC (i)
+   END
+END ForeachModuleCallInit ;
+
+
+(*
+   ForeachModuleCallFinish - precondition: the module list will be ordered.
+                             postcondition: foreach module in the application universe
+                                               call _M2_module_finish (argc, argv, envp);
+*)
+
+PROCEDURE ForeachModuleCallFinish (tok: CARDINAL; argc, argv, envp: CARDINAL) ;
+VAR
+   module    : CARDINAL ;
+   i         : CARDINAL ;
+   ctor, init,
+   fini, dep : CARDINAL ;
+BEGIN
+   i := NoOfItemsInList (uselistModules) ;
+   WHILE i >= 1 DO
+      module := GetItemFromList (uselistModules, i) ;
+      IF module # NulSym
+      THEN
+         GetModuleCtors (module, ctor, init, fini, dep) ;
+         IF fini # NulSym
+         THEN
+            PushTtok (fini, tok) ;
+            PushTtok (argc, tok) ;
+            PushTtok (argv, tok) ;
+            PushTtok (envp, tok) ;
+            PushT (3) ;
+            BuildProcedureCall (tok)
+         END
+      END ;
+      DEC (i)
+   END
+END ForeachModuleCallFinish ;
+
+
+(*
    PopulateCtorArray - assign each element of the ctorArray to the external module ctor.
                        This is only used to force the linker to pull in the ctors from
                        a library.
@@ -146,15 +222,39 @@ END PopulateCtorArray ;
 
 
 (*
+   LookupModuleSym - returns a defimp module.  It looks up an existing
+                     module and if this does not exist creates a new one.
+*)
+
+PROCEDURE LookupModuleSym (tok: CARDINAL; name: Name) : CARDINAL ;
+VAR
+   sym: CARDINAL ;
+BEGIN
+   sym := Get (name) ;
+   IF sym = NulSym
+   THEN
+      sym := MakeDefImp (tok, name)
+   END ;
+   IF sym # GetMainModule ()
+   THEN
+      PutModuleCtorExtern (tok, sym)
+   END ;
+   RETURN sym
+END LookupModuleSym ;
+
+
+(*
    ReadModules - populate ctorGlobals with the modules specified by -fuselist=filename.
 *)
 
-PROCEDURE ReadModules (filename: String) ;
+PROCEDURE ReadModules (tok: CARDINAL; filename: String) ;
 VAR
-   f: File ;
-   s: String ;
+   f   : File ;
+   s   : String ;
+   name: Name ;
 BEGIN
    InitList (ctorGlobals) ;
+   InitList (uselistModules) ;
    f := OpenToRead (filename) ;
    WHILE NOT EOF (f) DO
       s := ReadS (f) ;
@@ -163,7 +263,9 @@ BEGIN
                      Mark (Slice (s, 0, Length (Mark (InitStringChar (Comment)))-1)))) AND
          (NOT EqualArray (s, ''))
       THEN
-         IncludeItemIntoList (ctorGlobals, makekey (string (s)))
+         name := makekey (string (s)) ;
+         IncludeItemIntoList (ctorGlobals, name) ;
+         IncludeItemIntoList (uselistModules, LookupModuleSym (tok, name))
       END ;
       s := KillString (s)
    END ;
@@ -186,7 +288,7 @@ BEGIN
    ELSE
       IF Exists (filename)
       THEN
-         ReadModules (filename)
+         ReadModules (tok, filename)
       ELSE
          MetaErrorT0 (tok,
                       '{%E}the filename specified by the -fuselist= option does not exist') ;
@@ -198,26 +300,33 @@ END CreateCtorList ;
 
 
 (*
-   DeclareCtorModuleExtern - declare an extern _M2_modulename_ctor procedure for each module.
+   DeclareModuleExtern - declare the extern _M2_modulename_ctor, _M2_modulename_init,
+                         _M2_modulename_fini, _M2_modulename_dep for each external module.
 *)
 
-PROCEDURE DeclareCtorModuleExtern (tokenno: CARDINAL) ;
+PROCEDURE DeclareModuleExtern (tokenno: CARDINAL) ;
 VAR
-   name: Name ;
-   n, i: CARDINAL ;
+   init,
+   fini,
+   dep,
+   ctor,
+   module: CARDINAL ;
+   n, i : CARDINAL ;
 BEGIN
    InitList (ctorModules) ;
    i := 1 ;
-   n := NoOfItemsInList (ctorGlobals) ;
+   n := NoOfItemsInList (uselistModules) ;
    WHILE i <= n DO
-      name := GetItemFromList (ctorGlobals, i) ;
-      IF name # GetSymName (GetMainModule ())
+      module := GetItemFromList (uselistModules, i) ;
+      IF module # GetMainModule ()
       THEN
-         IncludeItemIntoList (ctorModules, MakeProcedureCtorExtern (tokenno, name))
+         PutModuleCtorExtern (tokenno, module)
       END ;
+      GetModuleCtors (module, ctor, init, fini, dep) ;
+      IncludeItemIntoList (ctorModules, ctor) ;
       INC (i)
    END
-END DeclareCtorModuleExtern ;
+END DeclareModuleExtern ;
 
 
 (*
@@ -231,7 +340,7 @@ BEGIN
    IF CreateCtorList (tokenno)
    THEN
       DeclareCtorGlobal (tokenno) ;
-      DeclareCtorModuleExtern (tokenno) ;
+      DeclareModuleExtern (tokenno) ;
       linkFunction := MakeProcedure (tokenno, MakeKey ("_M2_link"))
    END ;
 
@@ -281,5 +390,6 @@ BEGIN
    mainFunction := NulSym ;
    linkFunction := NulSym ;
    ctorGlobals := NIL ;
-   ctorModules := NIL
+   ctorModules := NIL ;
+   uselistModules := NIL
 END M2Scaffold.
