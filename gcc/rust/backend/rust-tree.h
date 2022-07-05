@@ -433,6 +433,237 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 /* std::source_location::__impl class.  */
 #define source_location_impl cp_global_trees[CPTI_SOURCE_LOCATION_IMPL]
 
+/* These two accessors should only be used by OVL manipulators.
+   Other users should use iterators and convenience functions.  */
+#define OVL_FUNCTION(NODE)                                                     \
+  (((struct tree_overload *) OVERLOAD_CHECK (NODE))->function)
+#define OVL_CHAIN(NODE)                                                        \
+  (((struct tree_overload *) OVERLOAD_CHECK (NODE))->common.chain)
+
+/* If set, this or a subsequent overload contains decls that need deduping.  */
+#define OVL_DEDUP_P(NODE) TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
+/* If set, this was imported in a using declaration.   */
+#define OVL_USING_P(NODE) TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
+/* If set, this overload is a hidden decl.  */
+#define OVL_HIDDEN_P(NODE) TREE_LANG_FLAG_2 (OVERLOAD_CHECK (NODE))
+/* If set, this overload contains a nested overload.  */
+#define OVL_NESTED_P(NODE) TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
+/* If set, this overload was constructed during lookup.  */
+#define OVL_LOOKUP_P(NODE) TREE_LANG_FLAG_4 (OVERLOAD_CHECK (NODE))
+/* If set, this OVL_USING_P overload is exported.  */
+#define OVL_EXPORT_P(NODE) TREE_LANG_FLAG_5 (OVERLOAD_CHECK (NODE))
+
+/* The first decl of an overload.  */
+#define OVL_FIRST(NODE) ovl_first (NODE)
+/* The name of the overload set.  */
+#define OVL_NAME(NODE) DECL_NAME (OVL_FIRST (NODE))
+
+/* Whether this is a set of overloaded functions.  TEMPLATE_DECLS are
+   always wrapped in an OVERLOAD, so we don't need to check them
+   here.  */
+#define OVL_P(NODE)                                                            \
+  (TREE_CODE (NODE) == FUNCTION_DECL || TREE_CODE (NODE) == OVERLOAD)
+/* Whether this is a single member overload.  */
+#define OVL_SINGLE_P(NODE) (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
+
+/* Nonzero means that this type has an X() constructor.  */
+#define TYPE_HAS_DEFAULT_CONSTRUCTOR(NODE)                                     \
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_default_ctor)
+
+/* Nonzero means that NODE (a class type) has a default constructor --
+   but that it has not yet been declared.  */
+#define CLASSTYPE_LAZY_DEFAULT_CTOR(NODE)                                      \
+  (LANG_TYPE_CLASS_CHECK (NODE)->lazy_default_ctor)
+
+/* A FUNCTION_DECL or OVERLOAD for the constructors for NODE.  These
+   are the constructors that take an in-charge parameter.  */
+#define CLASSTYPE_CONSTRUCTORS(NODE)                                           \
+  (get_class_binding_direct (NODE, ctor_identifier))
+
+/* In a TREE_LIST in an attribute list, indicates that the attribute
+   must be applied at instantiation time.  */
+#define ATTR_IS_DEPENDENT(NODE) TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
+
+/* In a TREE_LIST in the argument of attribute abi_tag, indicates that the tag
+   was inherited from a template parameter, not explicitly indicated.  */
+#define ABI_TAG_IMPLICIT(NODE) TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
+
+/* In a TREE_LIST for a parameter-declaration-list, indicates that all the
+   parameters in the list have declarators enclosed in ().  */
+#define PARENTHESIZED_LIST_P(NODE) TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
+
+/* Non zero if this is a using decl for a dependent scope. */
+#define DECL_DEPENDENT_P(NODE) DECL_LANG_FLAG_0 (USING_DECL_CHECK (NODE))
+
+/* The scope named in a using decl.  */
+#define USING_DECL_SCOPE(NODE) DECL_RESULT_FLD (USING_DECL_CHECK (NODE))
+
+/* The decls named by a using decl.  */
+#define USING_DECL_DECLS(NODE) DECL_INITIAL (USING_DECL_CHECK (NODE))
+
+/* Non zero if the using decl refers to a dependent type.  */
+#define USING_DECL_TYPENAME_P(NODE) DECL_LANG_FLAG_1 (USING_DECL_CHECK (NODE))
+
+/* True if member using decl NODE refers to a non-inherited NODE.  */
+#define USING_DECL_UNRELATED_P(NODE) DECL_LANG_FLAG_2 (USING_DECL_CHECK (NODE))
+
+/* Nonzero if NODE declares a function.  */
+#define DECL_DECLARES_FUNCTION_P(NODE) (TREE_CODE (NODE) == FUNCTION_DECL)
+
+/* Nonzero for a NODE which declares a type.  */
+#define DECL_DECLARES_TYPE_P(NODE) (TREE_CODE (NODE) == TYPE_DECL)
+
+/* Kind bits.  */
+#define IDENTIFIER_KIND_BIT_0(NODE)                                            \
+  TREE_LANG_FLAG_0 (IDENTIFIER_NODE_CHECK (NODE))
+#define IDENTIFIER_KIND_BIT_1(NODE)                                            \
+  TREE_LANG_FLAG_1 (IDENTIFIER_NODE_CHECK (NODE))
+#define IDENTIFIER_KIND_BIT_2(NODE)                                            \
+  TREE_LANG_FLAG_2 (IDENTIFIER_NODE_CHECK (NODE))
+
+/* Used by various search routines.  */
+#define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_4 (IDENTIFIER_NODE_CHECK (NODE))
+
+/* Nonzero if this identifier is used as a virtual function name somewhere
+   (optimizes searches).  */
+#define IDENTIFIER_VIRTUAL_P(NODE)                                             \
+  TREE_LANG_FLAG_5 (IDENTIFIER_NODE_CHECK (NODE))
+
+/* True if this identifier is a reserved word.  C_RID_CODE (node) is
+   then the RID_* value of the keyword.  Value 1.  */
+#define IDENTIFIER_KEYWORD_P(NODE)                                             \
+  ((!IDENTIFIER_KIND_BIT_2 (NODE)) & (!IDENTIFIER_KIND_BIT_1 (NODE))           \
+   & IDENTIFIER_KIND_BIT_0 (NODE))
+
+/* True if this identifier is the name of a constructor or
+   destructor.  Value 2 or 3.  */
+#define IDENTIFIER_CDTOR_P(NODE)                                               \
+  ((!IDENTIFIER_KIND_BIT_2 (NODE)) & IDENTIFIER_KIND_BIT_1 (NODE))
+
+/* True if this identifier is the name of a constructor.  Value 2.  */
+#define IDENTIFIER_CTOR_P(NODE)                                                \
+  (IDENTIFIER_CDTOR_P (NODE) & (!IDENTIFIER_KIND_BIT_0 (NODE)))
+
+/* True if this identifier is the name of a destructor.  Value 3.  */
+#define IDENTIFIER_DTOR_P(NODE)                                                \
+  (IDENTIFIER_CDTOR_P (NODE) & IDENTIFIER_KIND_BIT_0 (NODE))
+
+/* True if this identifier is for any operator name (including
+   conversions).  Value 4, 5, 6 or 7.  */
+#define IDENTIFIER_ANY_OP_P(NODE) (IDENTIFIER_KIND_BIT_2 (NODE))
+
+/* True if this identifier is for an overloaded operator. Values 4, 5.  */
+#define IDENTIFIER_OVL_OP_P(NODE)                                              \
+  (IDENTIFIER_ANY_OP_P (NODE) & (!IDENTIFIER_KIND_BIT_1 (NODE)))
+
+/* True if this identifier is for any assignment. Values 5.  */
+#define IDENTIFIER_ASSIGN_OP_P(NODE)                                           \
+  (IDENTIFIER_OVL_OP_P (NODE) & IDENTIFIER_KIND_BIT_0 (NODE))
+
+/* True if this identifier is the name of a type-conversion
+   operator.  Value 7.  */
+#define IDENTIFIER_CONV_OP_P(NODE)                                             \
+  (IDENTIFIER_ANY_OP_P (NODE) & IDENTIFIER_KIND_BIT_1 (NODE)                   \
+   & (!IDENTIFIER_KIND_BIT_0 (NODE)))
+
+/* True if this identifier is a new or delete operator.  */
+#define IDENTIFIER_NEWDEL_OP_P(NODE)                                           \
+  (IDENTIFIER_OVL_OP_P (NODE)                                                  \
+   && IDENTIFIER_OVL_OP_FLAGS (NODE) & OVL_OP_FLAG_ALLOC)
+
+/* True if this identifier is a new operator.  */
+#define IDENTIFIER_NEW_OP_P(NODE)                                              \
+  (IDENTIFIER_OVL_OP_P (NODE)                                                  \
+   && (IDENTIFIER_OVL_OP_FLAGS (NODE)                                          \
+       & (OVL_OP_FLAG_ALLOC | OVL_OP_FLAG_DELETE))                             \
+	== OVL_OP_FLAG_ALLOC)
+
+/* Nonzero if the class NODE has multiple paths to the same (virtual)
+   base object.  */
+#define CLASSTYPE_DIAMOND_SHAPED_P(NODE)                                       \
+  (LANG_TYPE_CLASS_CHECK (NODE)->diamond_shaped)
+
+/* Nonzero if the class NODE has multiple instances of the same base
+   type.  */
+#define CLASSTYPE_REPEATED_BASE_P(NODE)                                        \
+  (LANG_TYPE_CLASS_CHECK (NODE)->repeated_base)
+
+/* The member function with which the vtable will be emitted:
+   the first noninline non-pure-virtual member function.  NULL_TREE
+   if there is no key function or if this is a class template */
+#define CLASSTYPE_KEY_METHOD(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->key_method)
+
+/* Vector of members.  During definition, it is unordered and only
+   member functions are present.  After completion it is sorted and
+   contains both member functions and non-functions.  STAT_HACK is
+   involved to preserve oneslot per name invariant.  */
+#define CLASSTYPE_MEMBER_VEC(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->members)
+
+/* For class templates, this is a TREE_LIST of all member data,
+   functions, types, and friends in the order of declaration.
+   The TREE_PURPOSE of each TREE_LIST is NULL_TREE for a friend,
+   and the RECORD_TYPE for the class template otherwise.  */
+#define CLASSTYPE_DECL_LIST(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->decl_list)
+
+/* A FUNCTION_DECL or OVERLOAD for the constructors for NODE.  These
+   are the constructors that take an in-charge parameter.  */
+#define CLASSTYPE_CONSTRUCTORS(NODE)                                           \
+  (get_class_binding_direct (NODE, ctor_identifier))
+
+/* A FUNCTION_DECL for the destructor for NODE.  This is the
+   destructors that take an in-charge parameter.  If
+   CLASSTYPE_LAZY_DESTRUCTOR is true, then this entry will be NULL
+   until the destructor is created with lazily_declare_fn.  */
+#define CLASSTYPE_DESTRUCTOR(NODE)                                             \
+  (get_class_binding_direct (NODE, dtor_identifier))
+
+/* Nonzero if NODE has a primary base class, i.e., a base class with
+   which it shares the virtual function table pointer.  */
+#define CLASSTYPE_HAS_PRIMARY_BASE_P(NODE)                                     \
+  (CLASSTYPE_PRIMARY_BINFO (NODE) != NULL_TREE)
+
+/* If non-NULL, this is the binfo for the primary base class, i.e.,
+   the base class which contains the virtual function table pointer
+   for this class.  */
+#define CLASSTYPE_PRIMARY_BINFO(NODE)                                          \
+  (LANG_TYPE_CLASS_CHECK (NODE)->primary_base)
+
+/* A vector of BINFOs for the direct and indirect virtual base classes
+   that this type uses in a post-order depth-first left-to-right
+   order.  (In other words, these bases appear in the order that they
+   should be initialized.)  */
+#define CLASSTYPE_VBASECLASSES(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vbases)
+
+/* The type corresponding to NODE when NODE is used as a base class,
+   i.e., NODE without virtual base classes or tail padding.  */
+#define CLASSTYPE_AS_BASE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->as_base)
+
+/* Nonzero if NODE is a user-defined conversion operator.  */
+#define DECL_CONV_FN_P(NODE) IDENTIFIER_CONV_OP_P (DECL_NAME (NODE))
+
+/* The type to which conversion operator FN converts to.   */
+#define DECL_CONV_FN_TYPE(FN)                                                  \
+  TREE_TYPE ((gcc_checking_assert (DECL_CONV_FN_P (FN)), DECL_NAME (FN)))
+
+/* Returns nonzero iff TYPE1 and TYPE2 are the same type, in the usual
+   sense of `same'.  */
+#define same_type_p(TYPE1, TYPE2) comptypes ((TYPE1), (TYPE2), COMPARE_STRICT)
+
+/* Nonzero if T is a type that could resolve to any kind of concrete type
+   at instantiation time.  */
+#define WILDCARD_TYPE_P(T)                                                     \
+  (TREE_CODE (T) == TEMPLATE_TYPE_PARM || TREE_CODE (T) == TYPENAME_TYPE       \
+   || TREE_CODE (T) == TYPEOF_TYPE                                             \
+   || TREE_CODE (T) == BOUND_TEMPLATE_TEMPLATE_PARM                            \
+   || TREE_CODE (T) == DECLTYPE_TYPE                                           \
+   || TREE_CODE (T) == DEPENDENT_OPERATOR_TYPE)
+
+/* Nonzero if T is a class (or struct or union) type.  Also nonzero
+   for template type parameters, typename types, and instantiated
+   template template parameters.  Keep these checks in ascending code
+   order.  */
+#define MAYBE_CLASS_TYPE_P(T) (WILDCARD_TYPE_P (T) || CLASS_TYPE_P (T))
+
 // Below macros are copied from gcc/c-family/c-common.h
 
 /* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
@@ -480,6 +711,126 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
   (TREE_LANG_FLAG_2 (VAR_DECL_CHECK (NODE)))
 
 // Above macros are copied from gcc/c-family/c-common.h
+
+// Below macros are copied from gcc/cp/name-lookup.cc
+
+/* Create an overload suitable for recording an artificial TYPE_DECL
+   and another decl.  We use this machanism to implement the struct
+   stat hack.  */
+
+#define STAT_HACK_P(N) ((N) && TREE_CODE (N) == OVERLOAD && OVL_LOOKUP_P (N))
+#define STAT_TYPE_VISIBLE_P(N) TREE_USED (OVERLOAD_CHECK (N))
+#define STAT_TYPE(N) TREE_TYPE (N)
+#define STAT_DECL(N) OVL_FUNCTION (N)
+#define STAT_VISIBLE(N) OVL_CHAIN (N)
+#define MAYBE_STAT_DECL(N) (STAT_HACK_P (N) ? STAT_DECL (N) : N)
+#define MAYBE_STAT_TYPE(N) (STAT_HACK_P (N) ? STAT_TYPE (N) : NULL_TREE)
+
+/* When a STAT_HACK_P is true, OVL_USING_P and OVL_EXPORT_P are valid
+   and apply to the hacked type.  */
+
+/* For regular (maybe) overloaded functions, we have OVL_HIDDEN_P.
+   But we also need to indicate hiddenness on implicit type decls
+   (injected friend classes), and (coming soon) decls injected from
+   block-scope externs.  It is too awkward to press the existing
+   overload marking for that.  If we have a hidden non-function, we
+   always create a STAT_HACK, and use these two markers as needed.  */
+#define STAT_TYPE_HIDDEN_P(N) OVL_HIDDEN_P (N)
+#define STAT_DECL_HIDDEN_P(N) OVL_DEDUP_P (N)
+
+// Above macros are copied from gcc/cp/name-lookup.cc
+
+// forked from gcc/cp/cp-tree.h tree_overload
+
+/* OVL_HIDDEN_P nodes come before other nodes.  */
+
+struct GTY (()) tree_overload
+{
+  struct tree_common common;
+  tree function;
+};
+
+// forked from gcc/cp/cp-tree.h ovl_iterator
+
+class ovl_iterator
+{
+  tree ovl;
+  const bool allow_inner; /* Only used when checking.  */
+
+public:
+  explicit ovl_iterator (tree o, bool allow = false)
+    : ovl (o), allow_inner (allow)
+  {}
+
+public:
+  operator bool () const { return ovl; }
+  ovl_iterator &operator++ ()
+  {
+    ovl = TREE_CODE (ovl) != OVERLOAD ? NULL_TREE : OVL_CHAIN (ovl);
+    return *this;
+  }
+  tree operator* () const
+  {
+    tree fn = TREE_CODE (ovl) != OVERLOAD ? ovl : OVL_FUNCTION (ovl);
+
+    /* Check this is not an unexpected 2-dimensional overload.  */
+    gcc_checking_assert (allow_inner || TREE_CODE (fn) != OVERLOAD);
+
+    return fn;
+  }
+  bool operator== (const ovl_iterator &o) const { return ovl == o.ovl; }
+  tree get_using () const
+  {
+    gcc_checking_assert (using_p ());
+    return ovl;
+  }
+
+public:
+  /* Whether this overload was introduced by a using decl.  */
+  bool using_p () const
+  {
+    return (TREE_CODE (ovl) == USING_DECL
+	    || (TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl)));
+  }
+  /* Whether this using is being exported.  */
+  bool exporting_p () const { return OVL_EXPORT_P (get_using ()); }
+
+  bool hidden_p () const
+  {
+    return TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
+  }
+
+public:
+  tree remove_node (tree head) { return remove_node (head, ovl); }
+  tree reveal_node (tree head) { return reveal_node (head, ovl); }
+
+protected:
+  /* If we have a nested overload, point at the inner overload and
+     return the next link on the outer one.  */
+  tree maybe_push ()
+  {
+    tree r = NULL_TREE;
+
+    if (ovl && TREE_CODE (ovl) == OVERLOAD && OVL_NESTED_P (ovl))
+      {
+	r = OVL_CHAIN (ovl);
+	ovl = OVL_FUNCTION (ovl);
+      }
+    return r;
+  }
+  /* Restore an outer nested overload.  */
+  void pop (tree outer)
+  {
+    gcc_checking_assert (!ovl);
+    ovl = outer;
+  }
+
+private:
+  /* We make these static functions to avoid the address of the
+     iterator escaping the local context.  */
+  static tree remove_node (tree head, tree node);
+  static tree reveal_node (tree ovl, tree node);
+};
 
 // forked from gcc/cp/cp-tree.h treee_pair_s
 
@@ -601,6 +952,71 @@ struct GTY (()) lang_type
 };
 
 namespace Rust {
+
+// forked from gcc/cp/cp-tree.h tsubst_flags
+
+/* Bitmask flags to control type substitution.  */
+enum tsubst_flags
+{
+  tf_none = 0,			/* nothing special */
+  tf_error = 1 << 0,		/* give error messages  */
+  tf_warning = 1 << 1,		/* give warnings too  */
+  tf_ignore_bad_quals = 1 << 2, /* ignore bad cvr qualifiers */
+  tf_keep_type_decl = 1 << 3,	/* retain typedef type decls
+				   (make_typename_type use) */
+  tf_ptrmem_ok = 1 << 4,	/* pointers to member ok (internal
+				   instantiate_type use) */
+  tf_user = 1 << 5,		/* found template must be a user template
+				   (lookup_template_class use) */
+  tf_conv = 1 << 6,		/* We are determining what kind of
+				   conversion might be permissible,
+				   not actually performing the
+				   conversion.  */
+  tf_decltype = 1 << 7,		/* We are the operand of decltype.
+				   Used to implement the special rules
+				   for calls in decltype (5.2.2/11).  */
+  tf_partial = 1 << 8,		/* Doing initial explicit argument
+				   substitution in fn_type_unification.  */
+  tf_fndecl_type = 1 << 9,	/* Substituting the type of a function
+				   declaration.  */
+  tf_no_cleanup = 1 << 10,	/* Do not build a cleanup
+				   (build_target_expr and friends) */
+  tf_norm = 1 << 11,		/* Build diagnostic information during
+				   constraint normalization.  */
+  /* Convenient substitution flags combinations.  */
+  tf_warning_or_error = tf_warning | tf_error
+};
+
+// forked from gcc/cp/cp-tree.h cp_identifier_kind
+
+/* Kinds of identifiers.  Values are carefully chosen.  */
+enum cp_identifier_kind
+{
+  cik_normal = 0,	      /* Not a special identifier.  */
+  cik_keyword = 1,	      /* A keyword.  */
+  cik_ctor = 2,		      /* Constructor (in-chg, complete or base).  */
+  cik_dtor = 3,		      /* Destructor (in-chg, deleting, complete or
+				 base).  */
+  cik_simple_op = 4,	      /* Non-assignment operator name.  */
+  cik_assign_op = 5,	      /* An assignment operator name.  */
+  cik_conv_op = 6,	      /* Conversion operator name.  */
+  cik_reserved_for_udlit = 7, /* Not yet in use  */
+  cik_max
+};
+
+// forked from gcc/cp/cp-tree.h tag_types
+
+/* An enumeration of the kind of tags that C++ accepts.  */
+enum tag_types
+{
+  none_type = 0, /* Not a tag type.  */
+  record_type,	 /* "struct" types.  */
+  class_type,	 /* "class" types.  */
+  union_type,	 /* "union" types.  */
+  enum_type,	 /* "enum" types.  */
+  typename_type, /* "typename" types.  */
+  scope_type	 /* namespace or tagged type name followed by :: */
+};
 
 // forked from gcc/cp/cp-tree.h tsubst_flags_t
 
@@ -752,10 +1168,18 @@ extern bool var_in_maybe_constexpr_fn (tree);
 extern int
 rs_type_quals (const_tree type);
 
+inline bool type_unknown_p (const_tree);
+
 extern bool decl_maybe_constant_var_p (tree);
 
 extern void
 init_modules ();
+
+extern bool var_in_constexpr_fn (tree);
+
+inline tree ovl_first (tree) ATTRIBUTE_PURE;
+
+inline bool type_unknown_p (const_tree);
 
 extern tree
 rs_walk_subtrees (tree *, int *, walk_tree_fn, void *, hash_set<tree> *);
@@ -781,6 +1205,26 @@ inline location_t
 rs_expr_loc_or_input_loc (const_tree t)
 {
   return rs_expr_loc_or_loc (t, input_location);
+}
+
+// forked from gcc/cp/cp-tree.h type_unknown_p
+
+inline bool
+type_unknown_p (const_tree expr)
+{
+  return TREE_TYPE (expr) == unknown_type_node;
+}
+
+// forked from gcc/cp/cp-tree.h ovl_first
+
+/* Inline bodies.  */
+
+inline tree
+ovl_first (tree node)
+{
+  while (TREE_CODE (node) == OVERLOAD)
+    node = OVL_FUNCTION (node);
+  return node;
 }
 
 } // namespace Rust

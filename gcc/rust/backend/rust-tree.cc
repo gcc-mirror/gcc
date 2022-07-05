@@ -1048,4 +1048,121 @@ init_modules ()
     }
 }
 
+// forked from gcc/cp/constexpr.cc var_in_constexpr_fn
+
+/* True if T was declared in a function declared to be constexpr, and
+   therefore potentially constant in C++14.  */
+
+bool
+var_in_constexpr_fn (tree t)
+{
+  tree ctx = DECL_CONTEXT (t);
+  return (ctx && TREE_CODE (ctx) == FUNCTION_DECL
+	  && DECL_DECLARED_CONSTEXPR_P (ctx));
+}
+
+// forked from gcc/cp/name-lookup.cc member_vec_linear_search
+
+/* Linear search of (unordered) MEMBER_VEC for NAME.  */
+
+static tree
+member_vec_linear_search (vec<tree, va_gc> *member_vec, tree name)
+{
+  for (int ix = member_vec->length (); ix--;)
+    if (tree binding = (*member_vec)[ix])
+      if (OVL_NAME (binding) == name)
+	return binding;
+
+  return NULL_TREE;
+}
+
+// forked from gcc/cp/name-lookup.cc member_vec_binary_search
+
+/* Binary search of (ordered) MEMBER_VEC for NAME.  */
+
+static tree
+member_vec_binary_search (vec<tree, va_gc> *member_vec, tree name)
+{
+  for (unsigned lo = 0, hi = member_vec->length (); lo < hi;)
+    {
+      unsigned mid = (lo + hi) / 2;
+      tree binding = (*member_vec)[mid];
+      tree binding_name = OVL_NAME (binding);
+
+      if (binding_name > name)
+	hi = mid;
+      else if (binding_name < name)
+	lo = mid + 1;
+      else
+	return binding;
+    }
+
+  return NULL_TREE;
+}
+
+// forked from gcc/cp/tree.cc is_overloaded_fn
+
+/* Returns nonzero if X is an expression for a (possibly overloaded)
+   function.  If "f" is a function or function template, "f", "c->f",
+   "c.f", "C::f", and "f<int>" will all be considered possibly
+   overloaded functions.  Returns 2 if the function is actually
+   overloaded, i.e., if it is impossible to know the type of the
+   function without performing overload resolution.  */
+
+int
+is_overloaded_fn (tree x)
+{
+  STRIP_ANY_LOCATION_WRAPPER (x);
+
+  if (TREE_CODE (x) == COMPONENT_REF)
+    x = TREE_OPERAND (x, 1);
+
+  if ((TREE_CODE (x) == OVERLOAD && !OVL_SINGLE_P (x)))
+    return 2;
+
+  return OVL_P (x);
+}
+
+// forked from gcc/cp/tree.cc ovl_make
+
+/* Make a raw overload node containing FN.  */
+
+tree
+ovl_make (tree fn, tree next)
+{
+  tree result = make_node (OVERLOAD);
+
+  if (TREE_CODE (fn) == OVERLOAD)
+    OVL_NESTED_P (result) = true;
+
+  TREE_TYPE (result)
+    = (next || TREE_CODE (fn) == TEMPLATE_DECL ? unknown_type_node
+					       : TREE_TYPE (fn));
+  if (next && TREE_CODE (next) == OVERLOAD && OVL_DEDUP_P (next))
+    OVL_DEDUP_P (result) = true;
+  OVL_FUNCTION (result) = fn;
+  OVL_CHAIN (result) = next;
+  return result;
+}
+
+// forked from gcc/cp/name-lookup.cc lookup_add
+
+/* Add a set of new FNS into a lookup.  */
+
+tree
+lookup_add (tree fns, tree lookup)
+{
+  if (fns == error_mark_node || lookup == error_mark_node)
+    return error_mark_node;
+
+  if (lookup || TREE_CODE (fns) == TEMPLATE_DECL)
+    {
+      lookup = ovl_make (fns, lookup);
+      OVL_LOOKUP_P (lookup) = true;
+    }
+  else
+    lookup = fns;
+
+  return lookup;
+}
 } // namespace Rust
