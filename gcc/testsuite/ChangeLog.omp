@@ -1,6 +1,14 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-06-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_global_constructor):
+	Remove amdgcn.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/reverse-offload-1.c: New.
