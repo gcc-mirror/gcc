@@ -2410,6 +2410,8 @@ GOMP_offload_register_ver (unsigned version, const void *host_table,
   gomp_mutex_unlock (&register_lock);
 }
 
+/* Legacy entry point.  */
+
 void
 GOMP_offload_register (const void *host_table, int target_type,
 		       const void *target_data)
@@ -2461,6 +2463,8 @@ GOMP_offload_unregister_ver (unsigned version, const void *host_table,
 
   gomp_mutex_unlock (&register_lock);
 }
+
+/* Legacy entry point.  */
 
 void
 GOMP_offload_unregister (const void *host_table, int target_type,

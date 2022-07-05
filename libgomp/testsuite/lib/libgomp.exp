@@ -348,6 +348,11 @@ proc libgomp_check_effective_target_offload_target { target_name } {
     return 0
 }
 
+# Return 1 if compiling for any offload target.
+proc check_effective_target_offload_target_any { } {
+    return [libgomp_check_effective_target_offload_target ""]
+}
+
 # Return 1 if compiling for offload target nvptx.
 proc check_effective_target_offload_target_nvptx { } {
     return [libgomp_check_effective_target_offload_target "nvptx"]

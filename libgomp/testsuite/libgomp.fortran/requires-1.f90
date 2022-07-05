@@ -1,4 +1,4 @@
-! { dg-do link { target { offload_target_nvptx || offload_target_amdgcn } } }
+! { dg-do link { target offload_target_any } }
 ! { dg-additional-sources requires-1-aux.f90 }
 
 ! Check diagnostic by device-compiler's lto1.
