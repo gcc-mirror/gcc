@@ -20982,6 +20982,19 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	  return true;
 	}
 
+      if (SCALAR_INT_MODE_P (GET_MODE (op0))
+	  && GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
+	{
+	  if (op1 == const0_rtx)
+	    *total = cost->add
+		     + rtx_cost (op0, GET_MODE (op0), outer_code, opno, speed);
+	  else
+	    *total = 3*cost->add
+		     + rtx_cost (op0, GET_MODE (op0), outer_code, opno, speed)
+		     + rtx_cost (op1, GET_MODE (op0), outer_code, opno, speed);
+	  return true;
+	}
+
       /* The embedded comparison operand is completely free.  */
       if (!general_operand (op0, GET_MODE (op0)) && op1 == const0_rtx)
 	*total = 0;
