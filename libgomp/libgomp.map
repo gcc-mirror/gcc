@@ -230,6 +230,8 @@ OMP_5.1.1 {
   global:
 	omp_get_mapped_ptr;
 	omp_target_is_accessible;
+	omp_target_memcpy_async;
+	omp_target_memcpy_rect_async;
 } OMP_5.1;
 
 GOMP_1.0 {

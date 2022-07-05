@@ -315,7 +315,7 @@ The OpenMP 4.5 specification is fully supported.
       routines @tab Y @tab
 @item @code{omp_target_is_accessible} runtime routine @tab Y @tab
 @item @code{omp_target_memcpy_async} and @code{omp_target_memcpy_rect_async}
-      runtime routines @tab N @tab
+      runtime routines @tab Y @tab
 @item @code{omp_get_mapped_ptr} runtime routine @tab Y @tab
 @item @code{omp_calloc}, @code{omp_realloc}, @code{omp_aligned_alloc} and
       @code{omp_aligned_calloc} runtime routines @tab Y @tab
