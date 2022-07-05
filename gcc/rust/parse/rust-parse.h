@@ -177,7 +177,7 @@ private:
   AST::TypePath parse_type_path ();
   std::unique_ptr<AST::TypePathSegment> parse_type_path_segment ();
   AST::PathIdentSegment parse_path_ident_segment ();
-  AST::ConstGenericArg parse_const_generic_expression ();
+  AST::GenericArg parse_generic_arg ();
   AST::GenericArgs parse_path_generic_args ();
   AST::GenericArgsBinding parse_generic_args_binding ();
   AST::TypePathFunction parse_type_path_function (Location locus);

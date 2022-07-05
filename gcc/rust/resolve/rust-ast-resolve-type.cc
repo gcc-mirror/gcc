@@ -384,12 +384,35 @@ ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
 	    std::vector<CanonicalPath> args;
 	    if (s->has_generic_args ())
 	      {
-		for (auto &gt : s->get_generic_args ().get_type_args ())
+		for (auto &generic : s->get_generic_args ().get_generic_args ())
 		  {
-		    CanonicalPath arg = CanonicalPath::create_empty ();
-		    bool ok = ResolveTypeToCanonicalPath::go (gt.get (), arg);
-		    if (ok)
-		      args.push_back (std::move (arg));
+		    // FIXME: What do we want to do here in case there is a
+		    // constant or an ambiguous const generic?
+		    // TODO: At that point, will all generics have been
+		    // disambiguated? Can we thus canonical resolve types and
+		    // const and `gcc_unreachable` on ambiguous types?
+		    //
+		    // FIXME: Arthur: This is an ugly hack to resolve just as
+		    // much as before despite not handling ambiguity yet. The
+		    // calls to `clone_type` will be removed.
+		    std::unique_ptr<AST::Type> gt = nullptr;
+
+		    if (generic.get_kind () == AST::GenericArg::Kind::Type)
+		      gt = generic.get_type ()->clone_type ();
+		    else if (generic.get_kind ()
+			     == AST::GenericArg::Kind::Either)
+		      gt = generic.disambiguate_to_type ()
+			     .get_type ()
+			     ->clone_type ();
+
+		    if (gt)
+		      {
+			CanonicalPath arg = CanonicalPath::create_empty ();
+			bool ok
+			  = ResolveTypeToCanonicalPath::go (gt.get (), arg);
+			if (ok)
+			  args.push_back (std::move (arg));
+		      }
 		  }
 	      }
 
@@ -472,8 +495,18 @@ ResolveTypeToCanonicalPath::ResolveTypeToCanonicalPath ()
 void
 ResolveGenericArgs::go (AST::GenericArgs &args)
 {
-  for (auto &gt : args.get_type_args ())
-    ResolveType::go (gt.get ());
+  for (auto &arg : args.get_generic_args ())
+    {
+      // FIXME: Arthur: Ugly hack while waiting for disambiguation
+      if (arg.get_kind () == AST::GenericArg::Kind::Either)
+	arg = arg.disambiguate_to_type ();
+
+      if (arg.get_kind () == AST::GenericArg::Kind::Type)
+	ResolveType::go (arg.get_type ().get ());
+
+      // else...
+      // We need to use a switch instead
+    }
 }
 
 } // namespace Resolver

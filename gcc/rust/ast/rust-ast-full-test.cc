@@ -2598,28 +2598,14 @@ GenericArgs::as_string () const
     }
 
   // type args
-  if (!type_args.empty ())
+  if (!generic_args.empty ())
     {
-      auto i = type_args.begin ();
-      auto e = type_args.end ();
+      auto i = generic_args.begin ();
+      auto e = generic_args.end ();
 
       for (; i != e; i++)
 	{
-	  args += (*i)->as_string ();
-	  if (e != i + 1)
-	    args += ", ";
-	}
-    }
-
-  // const args
-  if (!const_args.empty ())
-    {
-      auto i = const_args.begin ();
-      auto e = const_args.end ();
-
-      for (; i != e; i++)
-	{
-	  args += i->as_string ();
+	  args += (*i).as_string ();
 	  if (e != i + 1)
 	    args += ", ";
 	}
@@ -5800,15 +5786,28 @@ MetaWord::accept_vis (ASTVisitor &vis)
   vis.visit (*this);
 }
 
-ConstGenericArg
-ConstGenericArg::disambiguate_to_const () const
+GenericArg
+GenericArg::disambiguate_to_const () const
 {
-  rust_assert (get_kind () == Kind::Ambiguous);
+  rust_assert (get_kind () == Kind::Either);
 
   // FIXME: is it fine to have no outer attributes?
-  return ConstGenericArg (std::unique_ptr<Expr> (
-			    new IdentifierExpr (path, {}, locus)),
-			  locus);
+  return GenericArg::create_const (
+    std::unique_ptr<Expr> (new IdentifierExpr (path, {}, locus)));
+}
+
+GenericArg
+GenericArg::disambiguate_to_type () const
+{
+  rust_assert (get_kind () == Kind::Either);
+
+  auto segment = std::unique_ptr<TypePathSegment> (
+    new TypePathSegment (path, false, locus));
+  auto segments = std::vector<std::unique_ptr<TypePathSegment>> ();
+  segments.emplace_back (std::move (segment));
+
+  return GenericArg::create_type (
+    std::unique_ptr<Type> (new TypePath (std::move (segments), locus)));
 }
 
 } // namespace AST
