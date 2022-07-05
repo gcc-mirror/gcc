@@ -1638,8 +1638,10 @@ vect_finish_stmt_generation (vec_info *vinfo,
 	      && ((is_gimple_assign (vec_stmt)
 		   && !is_gimple_reg (gimple_assign_lhs (vec_stmt)))
 		  || (is_gimple_call (vec_stmt)
-		      && !(gimple_call_flags (vec_stmt)
-			   & (ECF_CONST|ECF_PURE|ECF_NOVOPS)))))
+		      && (!(gimple_call_flags (vec_stmt)
+			    & (ECF_CONST|ECF_PURE|ECF_NOVOPS))
+			  || (gimple_call_lhs (vec_stmt)
+			      && !is_gimple_reg (gimple_call_lhs (vec_stmt)))))))
 	    {
 	      tree new_vdef = copy_ssa_name (vuse, vec_stmt);
 	      gimple_set_vdef (vec_stmt, new_vdef);
