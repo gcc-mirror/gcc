@@ -254,6 +254,30 @@ class ResolveGenericArgs : public ResolverBase
 
 public:
   static void go (AST::GenericArgs &generic_args);
+  static void go (AST::GenericArgs &generic_args, const CanonicalPath &prefix,
+		  const CanonicalPath &canonical_prefix);
+
+private:
+  ResolveGenericArgs (const CanonicalPath &prefix,
+		      const CanonicalPath &canonical_prefix)
+    : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix)
+  {}
+
+  bool is_type_name (const CanonicalPath &path);
+  bool is_const_value_name (const CanonicalPath &path);
+
+  /**
+   * Resolve a disambiguated generic arg
+   */
+  void disambiguate (AST::GenericArg &arg);
+
+  /**
+   * Resolve a disambiguated generic arg
+   */
+  void resolve_disambiguated_generic (AST::GenericArg &arg);
+
+  const CanonicalPath &prefix;
+  const CanonicalPath &canonical_prefix;
 };
 
 } // namespace Resolver

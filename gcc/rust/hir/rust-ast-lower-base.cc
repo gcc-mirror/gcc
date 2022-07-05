@@ -623,13 +623,6 @@ ASTLoweringBase::lower_generic_args (AST::GenericArgs &args)
 				    expr->get_locus ()));
 	    break;
 	  }
-	  // FIXME: Arthur: Other horrible hack waiting for disambiguation
-	  case AST::GenericArg::Kind::Either: {
-	    arg = arg.disambiguate_to_type ();
-	    auto type = ASTLoweringType::translate (arg.get_type ().get ());
-	    type_args.emplace_back (std::unique_ptr<HIR::Type> (type));
-	    break;
-	  }
 	default:
 	  gcc_unreachable ();
 	}

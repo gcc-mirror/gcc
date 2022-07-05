@@ -134,20 +134,35 @@ AttrVisitor::expand_generic_args (AST::GenericArgs &args)
   // expand type args - strip sub-types only
   for (auto &arg : args.get_generic_args ())
     {
-      // FIXME: Arthur: Another ugly hack while waiting for disambiguation
-      if (arg.get_kind () == AST::GenericArg::Kind::Either)
-	arg = arg.disambiguate_to_type ();
-
-      if (arg.get_kind () == AST::GenericArg::Kind::Type)
+      switch (arg.get_kind ())
 	{
-	  auto &type = arg.get_type ();
+	  case AST::GenericArg::Kind::Type: {
+	    auto &type = arg.get_type ();
+	    type->accept_vis (*this);
+	    maybe_expand_type (type);
 
-	  type->accept_vis (*this);
-	  maybe_expand_type (type);
+	    if (type->is_marked_for_strip ())
+	      rust_error_at (type->get_locus (),
+			     "cannot strip type in this position");
+	    break;
+	  }
+	  case AST::GenericArg::Kind::Const: {
+	    auto &expr = arg.get_expression ();
+	    expr->accept_vis (*this);
+	    maybe_expand_expr (expr);
 
-	  if (type->is_marked_for_strip ())
-	    rust_error_at (type->get_locus (),
-			   "cannot strip type in this position");
+	    if (expr->is_marked_for_strip ())
+	      rust_error_at (expr->get_locus (),
+			     "cannot strip expression in this position");
+	    break;
+	  }
+	default:
+	  break;
+	  // FIXME: Figure out what to do here if there is ambiguity. Since the
+	  // resolver comes after the expansion, we need to figure out a way to
+	  // strip ambiguous values here
+	  // TODO: Arthur: Probably add a `mark_as_strip` method to `GenericArg`
+	  // or something. This would clean up this whole thing
 	}
     }
 
