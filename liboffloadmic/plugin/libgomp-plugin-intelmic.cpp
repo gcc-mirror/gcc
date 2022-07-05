@@ -168,8 +168,12 @@ GOMP_OFFLOAD_get_type (void)
 }
 
 extern "C" int
-GOMP_OFFLOAD_get_num_devices (void)
+GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
 {
+  /* Return -1 if no omp_requires_mask cannot be fulfilled but
+     devices were present.  */
+  if (num_devices > 0 && omp_requires_mask != 0)
+    return -1;
   TRACE ("(): return %d", num_devices);
   return num_devices;
 }
@@ -231,14 +235,6 @@ GOMP_OFFLOAD_fini_device (int device)
   /* liboffloadmic will finalize target processes on all available devices.  */
   __offload_unregister_image (&main_target_image);
   return true;
-}
-
-/* Indicate which GOMP_REQUIRES_* features are supported, currently none.  */
-
-extern "C" bool
-GOMP_OFFLOAD_supported_features (unsigned int *mask)
-{
-  return (*mask == 0);
 }
 
 static bool

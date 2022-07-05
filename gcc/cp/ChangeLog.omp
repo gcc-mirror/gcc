@@ -1,6 +1,27 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+		    Chung-Lin Tang  <cltang@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_target_data,
+	cp_parser_omp_target_enter_data, cp_parser_omp_target_exit_data,
+	cp_parser_omp_target_update): Set OMP_REQUIRES_TARGET_USED.
+	(cp_parser_omp_requires): Remove sorry.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Reverted:
+	2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* parser.cc (cp_parser_simple_declaration): Set
+	OMP_REQUIRES_TARGET_USED in omp_requires_mask if function has
+	"omp declare target" attribute.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* parser.cc (cp_parser_omp_target_enter_data,

@@ -2,6 +2,18 @@
 
 	Backport from mainline:
 	2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+		    Chung-Lin Tang  <cltang@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.cc (gfc_match_omp_requires): Remove sorry.
+	* parse.cc (decode_omp_directive): Don't regard 'declare target'
+	as target usage for 'omp requires'; add more flags to
+	omp_requires_mask.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
 		    Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.h (gfc_omp_namelist): Update by creating 'linear' struct,

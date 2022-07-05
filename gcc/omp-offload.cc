@@ -440,24 +440,6 @@ omp_finish_file (void)
 
       varpool_node::finalize_decl (vars_decl);
       varpool_node::finalize_decl (funcs_decl);
-
-      if (flag_openmp && (omp_requires_mask & OMP_REQUIRES_TARGET_USED) != 0)
-	{
-	  const char *requires_section = ".gnu.gomp_requires";
-	  tree maskvar = build_decl (UNKNOWN_LOCATION, VAR_DECL,
-				     get_identifier (".gomp_requires_mask"),
-				     unsigned_type_node);
-	  SET_DECL_ALIGN (maskvar, TYPE_ALIGN (unsigned_type_node));
-	  TREE_STATIC (maskvar) = 1;
-	  DECL_INITIAL (maskvar)
-	    = build_int_cst (unsigned_type_node,
-			     ((unsigned int) omp_requires_mask
-			      & (OMP_REQUIRES_UNIFIED_ADDRESS
-				 | OMP_REQUIRES_UNIFIED_SHARED_MEMORY
-				 | OMP_REQUIRES_REVERSE_OFFLOAD)));
-	  set_decl_section_name (maskvar, requires_section);
-	  varpool_node::finalize_decl (maskvar);
-	}
     }
   else
     {

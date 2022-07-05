@@ -15376,11 +15376,6 @@ cp_parser_simple_declaration (cp_parser* parser,
 	  /* Otherwise, we're done with the list of declarators.  */
 	  else
 	    {
-	      if (flag_openmp && lookup_attribute ("omp declare target",
-						   DECL_ATTRIBUTES (decl)))
-		omp_requires_mask
-		  = (enum omp_requires) (omp_requires_mask
-					 | OMP_REQUIRES_TARGET_USED);
 	      pop_deferring_access_checks ();
 	      cp_finalize_omp_declare_simd (parser, &odsd);
 	      return;
@@ -44711,6 +44706,10 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
 		"%<from%> or %<to%> clauses");
       return true;
     }
+
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
 
   tree stmt = make_node (OMP_TARGET_UPDATE);
   TREE_TYPE (stmt) = void_type_node;

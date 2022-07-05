@@ -2503,12 +2503,6 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  break;
 	}
 
-      if (flag_openmp
-	  && lookup_attribute ("omp declare target",
-			       DECL_ATTRIBUTES (current_function_decl)))
-	omp_requires_mask
-	  = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
-
       if (DECL_DECLARED_INLINE_P (current_function_decl))
         tv = TV_PARSE_INLINE;
       else
@@ -21259,6 +21253,10 @@ c_parser_omp_target_update (location_t loc, c_parser *parser,
 		"%<from%> or %<to%> clauses");
       return false;
     }
+
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
 
   tree stmt = make_node (OMP_TARGET_UPDATE);
   TREE_TYPE (stmt) = void_type_node;

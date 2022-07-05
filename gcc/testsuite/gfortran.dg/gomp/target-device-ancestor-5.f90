@@ -6,7 +6,7 @@
 !
 
 module m
-  !$omp requires reverse_offload  ! { dg-error "REQUIRES directive is not yet supported" }
+  !$omp requires reverse_offload
 contains
   subroutine foo()
     !$omp target device(ancestor:1)
@@ -17,7 +17,7 @@ contains
     block
       block
         block
-          !$omp target device(ancestor:1)
+          !$omp target device(ancestor:1)  ! { dg-message "sorry, unimplemented: 'ancestor' not yet supported" }
           !$omp end target
         end block
       end block
@@ -26,7 +26,7 @@ contains
 end module m
 
 subroutine foo()
-  !$omp requires reverse_offload  ! { dg-error "REQUIRES directive is not yet supported" }
+  !$omp requires reverse_offload
   block
     block
       block
@@ -49,7 +49,7 @@ contains
 end subroutine foo
 
 program main
-  !$omp requires reverse_offload  ! { dg-error "REQUIRES directive is not yet supported" }
+  !$omp requires reverse_offload
 contains
   subroutine foo()
     !$omp target device(ancestor:1)

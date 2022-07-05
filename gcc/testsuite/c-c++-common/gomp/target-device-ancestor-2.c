@@ -5,9 +5,7 @@
 void
 foo (int n)
 {
-  /* The following test is marked with 'xfail' because a previous 'sorry' from
-     'reverse_offload' suppresses the 'sorry' for 'ancestor'.  */
-  #pragma omp target device (ancestor: 1) /* { dg-message "" "sorry, unimplemented: 'ancestor' not yet supported" { xfail *-*-* } } */
+  #pragma omp target device (ancestor: 1)
   ;
 
 
@@ -19,9 +17,9 @@ foo (int n)
   #pragma omp target device (ancestor : 42) /* { dg-error "the 'device' clause expression must evaluate to '1'" } */
   ;
 
-  #pragma omp target device (ancestor : n) /* { dg-message "" "sorry, unimplemented: 'ancestor' not yet supported" { xfail *-*-* } } */
+  #pragma omp target device (ancestor : n)
   ;
-  #pragma omp target device (ancestor : n + 1) /* { dg-message "" "sorry, unimplemented: 'ancestor' not yet supported" { xfail *-*-* } } */
+  #pragma omp target device (ancestor : n + 1)
   ;
 
 

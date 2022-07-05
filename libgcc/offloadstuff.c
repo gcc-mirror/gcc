@@ -54,9 +54,6 @@ const void *const __offload_var_table[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_VAR_TABLE_SECTION_NAME))) = { };
 
-const unsigned int const __requires_mask_table[0]
-  __attribute__ ((__used__, section (".gnu.gomp_requires"))) = { };
-
 #elif defined CRT_END
 
 const void *const __offload_funcs_end[0]
@@ -65,9 +62,6 @@ const void *const __offload_funcs_end[0]
 const void *const __offload_vars_end[0]
   __attribute__ ((__used__, visibility ("hidden"),
 		  section (OFFLOAD_VAR_TABLE_SECTION_NAME))) = { };
-
-const unsigned int const __requires_mask_table_end[0]
-  __attribute__ ((__used__, section (".gnu.gomp_requires"))) = { };
 
 #elif defined CRT_TABLE
 
@@ -82,9 +76,6 @@ const void *const __OFFLOAD_TABLE__[]
   &__offload_func_table, &__offload_funcs_end,
   &__offload_var_table, &__offload_vars_end
 };
-
-extern const unsigned int const __requires_mask_table[];
-extern const unsigned int const __requires_mask_table_end[];
 
 #else /* ! CRT_BEGIN && ! CRT_END && ! CRT_TABLE  */
 #error "One of CRT_BEGIN, CRT_END or CRT_TABLE must be defined."

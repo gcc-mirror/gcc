@@ -1,10 +1,10 @@
-/* { dg-do link { target { offload_target_nvptx || offload_target_amdgcn } } } */
-/* { dg-additional-sources requires-1-aux.c } */
+/* { dg-do link { target offloading_enabled } } */
+/* { dg-additional-sources requires-3-aux.c } */
 
 /* Check diagnostic by device-compiler's lto1.
    Other file uses: 'requires unified_address'.  */
 
-#pragma omp requires unified_shared_memory
+#pragma omp requires unified_address,unified_shared_memory
 
 int a[10];
 extern void foo (void);
@@ -20,5 +20,5 @@ main (void)
   return 0;
 }
 
-/* { dg-error "OpenMP 'requires' directive with non-identical clauses in multiple compilation units: 'unified_shared_memory' vs. 'unified_address'" "" { target *-*-* } 0 }  */
+/* { dg-error "OpenMP 'requires' directive with non-identical clauses in multiple compilation units: 'unified_address, unified_shared_memory' vs. 'unified_address'" "" { target *-*-* } 0 }  */
 /* { dg-excess-errors "Ignore messages like: errors during merging of translation units|mkoffload returned 1 exit status" } */

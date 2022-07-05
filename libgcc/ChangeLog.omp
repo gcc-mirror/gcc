@@ -1,3 +1,13 @@
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Reverted:
+	2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* offloadstuff.c (__requires_mask_table): New symbol to mark start of
+	.gnu.gomp_requires section.
+	(__requires_mask_table_end): New symbol to mark end of
+	.gnu.gomp_requires section.
+
 2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* offloadstuff.c (__requires_mask_table): New symbol to mark start of

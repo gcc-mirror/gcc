@@ -1,5 +1,5 @@
 /* { dg-do link { target { offload_target_nvptx || offload_target_amdgcn } } } */
-/* { dg-additional-sources requires-1-aux.c } */
+/* { dg-additional-sources requires-7-aux.c } */
 
 /* Check diagnostic by device-compiler's lto1.
    Other file uses: 'requires unified_address'.  */

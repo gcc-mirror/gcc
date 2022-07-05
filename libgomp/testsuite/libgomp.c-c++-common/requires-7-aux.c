@@ -6,6 +6,6 @@ int x;
 
 void foo (void)
 {
-  #pragma omp target
   x = 1;
+  #pragma omp target enter data map(always,to: x)
 }

@@ -231,7 +231,7 @@ access_check (const char *name, int mode)
 }
 
 static void
-process (FILE *in, FILE *out)
+process (FILE *in, FILE *out, uint32_t omp_requires)
 {
   size_t len = 0;
   const char *input = read_file (in, &len);
@@ -239,6 +239,8 @@ process (FILE *in, FILE *out)
   id_map const *id;
   unsigned obj_count = 0;
   unsigned ix;
+
+  fprintf (out, "#include <stdint.h>\n\n");
 
   /* Dump out char arrays for each PTX object file.  These are
      terminated by a NUL.  */
@@ -309,6 +311,7 @@ process (FILE *in, FILE *out)
 
   fprintf (out,
 	   "static const struct nvptx_tdata {\n"
+	   "  uintptr_t omp_requires_mask;\n"
 	   "  const struct ptx_obj *ptx_objs;\n"
 	   "  unsigned ptx_num;\n"
 	   "  const char *const *var_names;\n"
@@ -316,12 +319,12 @@ process (FILE *in, FILE *out)
 	   "  const struct nvptx_fn *fn_names;\n"
 	   "  unsigned fn_num;\n"
 	   "} target_data = {\n"
-	   "  ptx_objs, sizeof (ptx_objs) / sizeof (ptx_objs[0]),\n"
+	   "  %d, ptx_objs, sizeof (ptx_objs) / sizeof (ptx_objs[0]),\n"
 	   "  var_mappings,"
 	   "  sizeof (var_mappings) / sizeof (var_mappings[0]),\n"
 	   "  func_mappings,"
 	   "  sizeof (func_mappings) / sizeof (func_mappings[0])\n"
-	   "};\n\n");
+	   "};\n\n", omp_requires);
 
   fprintf (out, "#ifdef __cplusplus\n"
 	   "extern \"C\" {\n"
@@ -583,19 +586,37 @@ main (int argc, char **argv)
       unsetenv ("COMPILER_PATH");
       unsetenv ("LIBRARY_PATH");
 
+      char *omp_requires_file;
+      if (save_temps)
+	omp_requires_file = concat (dumppfx, ".mkoffload.omp_requires", NULL);
+      else
+	omp_requires_file = make_temp_file (".mkoffload.omp_requires");
+
+      xputenv (concat ("GCC_OFFLOAD_OMP_REQUIRES_FILE=", omp_requires_file, NULL));
       fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true,
 		    ".gcc_args");
       obstack_free (&argv_obstack, NULL);
+      unsetenv("GCC_OFFLOAD_OMP_REQUIRES_FILE");
 
       xputenv (concat ("GCC_EXEC_PREFIX=", execpath, NULL));
       xputenv (concat ("COMPILER_PATH=", cpath, NULL));
       xputenv (concat ("LIBRARY_PATH=", lpath, NULL));
 
+      in = fopen (omp_requires_file, "rb");
+      if (!in)
+	fatal_error (input_location, "cannot open omp_requires file %qs",
+		     omp_requires_file);
+      uint32_t omp_requires;
+      if (fread (&omp_requires, sizeof (omp_requires), 1, in) != 1)
+	fatal_error (input_location, "cannot read omp_requires file %qs",
+		     omp_requires_file);
+      fclose (in);
+
       in = fopen (ptx_name, "r");
       if (!in)
 	fatal_error (input_location, "cannot open intermediate ptx file");
 
-      process (in, out);
+      process (in, out, omp_requires);
       fclose (in);
     }
 

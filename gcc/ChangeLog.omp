@@ -1,6 +1,32 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+		    Chung-Lin Tang  <cltang@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (process_asm): Write '#include <stdint.h>'.
+	(process_obj): Pass omp_requires_mask to GOMP_offload_register_ver.
+	(main): Ask lto1 to obtain omp_requires_mask and pass it on.
+	* config/nvptx/mkoffload.cc (process, main): Likewise.
+	* lto-cgraph.cc (omp_requires_to_name): New.
+	(input_offload_tables): Save omp_requires_mask.
+	(output_offload_tables): Read it, check for consistency,
+	save value for mkoffload.
+	* omp-low.cc (lower_omp_target): Force output_offloadtables
+	call for OMP_REQUIRES_TARGET_USED.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Reverted:
+	2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* omp-offload.cc (omp_finish_file): Add code to create OpenMP requires
+	mask variable in .gnu.gomp_requires section if needed.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* config/gcn/gcn-protos.h (print_operand_address): Remove register

@@ -1,6 +1,16 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+		    Chung-Lin Tang  <cltang@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION): Bump to 2.
+	(GOMP_REQUIRES_TARGET_USED): New defines.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* gomp-constants.h (GOMP_DEVICE_INVALID): Define.

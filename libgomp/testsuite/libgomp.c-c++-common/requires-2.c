@@ -1,6 +1,11 @@
+/* { dg-do link { target offloading_enabled } } */
+/* { dg-additional-options "-foffload=disable -flto" } */
 /* { dg-additional-sources requires-2-aux.c } */
 
-#pragma omp requires reverse_offload
+/* Check diagnostic by host's lto1.
+   Other file does not have any 'omp requires'. */
+
+#pragma omp requires unified_shared_memory
 
 int a[10];
 extern void foo (void);
@@ -16,4 +21,5 @@ main (void)
   return 0;
 }
 
-/* { dg-output "libgomp: device does not support required features: reverse_offload" } */
+/* { dg-error "OpenMP 'requires' directive with 'unified_shared_memory' specified only in some compilation units" "" { target *-*-* } 0 }  */
+/* { dg-excess-errors "Ignore messages like: errors during merging of translation units|mkoffload returned 1 exit status" } */

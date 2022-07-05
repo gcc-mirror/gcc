@@ -1,3 +1,21 @@
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+		    Chung-Lin Tang  <cltang@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_get_num_devices):
+	Return -1 when device available but omp_requires_mask != 0.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Reverted:
+	2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_supported_features):
+	New function.
+
 2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_supported_features):

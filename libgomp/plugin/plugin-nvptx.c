@@ -1191,9 +1191,16 @@ GOMP_OFFLOAD_get_type (void)
 }
 
 int
-GOMP_OFFLOAD_get_num_devices (void)
+GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
 {
-  return nvptx_get_num_devices ();
+  int num_devices = nvptx_get_num_devices ();
+  /* Return -1 if no omp_requires_mask cannot be fulfilled but
+     devices were present.  */
+  if (num_devices > 0
+      && (omp_requires_mask & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+				| GOMP_REQUIRES_UNIFIED_SHARED_MEMORY)))
+    return -1;
+  return num_devices;
 }
 
 bool
@@ -1262,17 +1269,6 @@ GOMP_OFFLOAD_fini_device (int n)
 
   pthread_mutex_unlock (&ptx_dev_lock);
   return true;
-}
-
-/* Indicate which GOMP_REQUIRES_* features are supported.  */
-
-bool
-GOMP_OFFLOAD_supported_features (unsigned int *mask)
-{
-  *mask &= ~(GOMP_REQUIRES_UNIFIED_ADDRESS
-             | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY);
-
-  return (*mask == 0);
 }
 
 /* Return the libgomp version number we're compatible with.  There is

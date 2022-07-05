@@ -31,12 +31,12 @@
 #include "gomp-constants.h"
 #include <limits.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #ifdef HAVE_INTTYPES_H
 # include <inttypes.h>  /* For PRIu64.  */
 #endif
 #include <string.h>
+#include <stdio.h>  /* For snprintf. */
 #include <assert.h>
 #include <errno.h>
 
@@ -99,17 +99,8 @@ static int num_devices;
 /* Number of GOMP_OFFLOAD_CAP_OPENMP_400 devices.  */
 static int num_devices_openmp;
 
-/* Mask of requires directive clause values, summarized from .gnu.gomp.requires
-   section. Offload plugins are queried with this mask to see if all required
-   features are supported.  */
-static unsigned int gomp_requires_mask;
-
-/* Start/end of .gnu.gomp.requires section of program, defined in
-   crtoffloadbegin/end.o.  */
-__attribute__((weak))
-extern const unsigned int __requires_mask_table[];
-__attribute__((weak))
-extern const unsigned int __requires_mask_table_end[];
+/* OpenMP requires mask.  */
+static int omp_requires_mask;
 
 /* Similar to gomp_realloc, but release register_lock before gomp_fatal.  */
 
@@ -2517,6 +2508,20 @@ gomp_unload_image_from_device (struct gomp_device_descr *devicep,
     }
 }
 
+static void
+gomp_requires_to_name (char *buf, size_t size, int requires_mask)
+{
+  char *end = buf + size, *p = buf;
+  if (requires_mask & GOMP_REQUIRES_UNIFIED_ADDRESS)
+    p += snprintf (p, end - p, "unified_address");
+  if (requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY)
+    p += snprintf (p, end - p, "%sunified_shared_memory",
+		   (p == buf ? "" : ", "));
+  if (requires_mask & GOMP_REQUIRES_REVERSE_OFFLOAD)
+    p += snprintf (p, end - p, "%sreverse_offload",
+		   (p == buf ? "" : ", "));
+}
+
 /* This function should be called from every offload image while loading.
    It gets the descriptor of the host func and var tables HOST_TABLE, TYPE of
    the target, and TARGET_DATA needed by target plugin.  */
@@ -2526,12 +2531,42 @@ GOMP_offload_register_ver (unsigned version, const void *host_table,
 			   int target_type, const void *target_data)
 {
   int i;
+  int omp_req = 0;
 
   if (GOMP_VERSION_LIB (version) > GOMP_VERSION)
     gomp_fatal ("Library too old for offload (version %u < %u)",
 		GOMP_VERSION, GOMP_VERSION_LIB (version));
-  
+
+  if (GOMP_VERSION_LIB (version) > 1)
+    {
+      omp_req = (int) (size_t) ((void **) target_data)[0];
+      target_data = &((void **) target_data)[1];
+    }
+
   gomp_mutex_lock (&register_lock);
+
+  if (omp_req && omp_requires_mask && omp_requires_mask != omp_req)
+    {
+      char buf1[sizeof ("unified_address, unified_shared_memory, "
+			"reverse_offload")];
+      char buf2[sizeof ("unified_address, unified_shared_memory, "
+			"reverse_offload")];
+      gomp_requires_to_name (buf2, sizeof (buf2),
+			     omp_req != GOMP_REQUIRES_TARGET_USED
+			     ? omp_req : omp_requires_mask);
+      if (omp_req != GOMP_REQUIRES_TARGET_USED
+	  && omp_requires_mask != GOMP_REQUIRES_TARGET_USED)
+	{
+	  gomp_requires_to_name (buf1, sizeof (buf1), omp_requires_mask);
+	  gomp_fatal ("OpenMP 'requires' directive with non-identical clauses "
+		      "in multiple compilation units: '%s' vs. '%s'",
+		      buf1, buf2);
+	}
+      else
+	gomp_fatal ("OpenMP 'requires' directive with '%s' specified only in "
+		    "some compilation units", buf2);
+    }
+  omp_requires_mask = omp_req;
 
   /* Load image to all initialized devices.  */
   for (i = 0; i < num_devices; i++)
@@ -2619,20 +2654,6 @@ gomp_init_device (struct gomp_device_descr *devicep)
     {
       gomp_mutex_unlock (&devicep->lock);
       gomp_fatal ("device initialization failed");
-    }
-
-  unsigned int features = gomp_requires_mask;
-  if (!devicep->supported_features_func (&features))
-    {
-      char buf[64], *end = buf + sizeof (buf), *p = buf;
-      if (features & GOMP_REQUIRES_UNIFIED_ADDRESS)
-	p += snprintf (p, end - p, "unified_address");
-      if (features & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY)
-	p += snprintf (p, end - p, "%sunified_shared_memory",
-		       (p == buf ? "" : ", "));
-      if (features & GOMP_REQUIRES_REVERSE_OFFLOAD)
-	p += snprintf (p, end - p, "%sreverse_offload", (p == buf ? "" : ", "));
-      gomp_error ("device does not support required features: %s", buf);
     }
 
   /* Load to device all images registered by the moment.  */
@@ -4298,7 +4319,6 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (get_num_devices);
   DLSYM (init_device);
   DLSYM (fini_device);
-  DLSYM (supported_features);
   DLSYM (load_image);
   DLSYM (unload_image);
   DLSYM (alloc);
@@ -4413,28 +4433,6 @@ gomp_target_init (void)
   if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_DISABLED)
     return;
 
-  gomp_requires_mask = 0;
-  const unsigned int *mask_ptr = __requires_mask_table;
-  bool error_emitted = false;
-  while (mask_ptr != __requires_mask_table_end)
-    {
-      if (gomp_requires_mask == 0)
-	gomp_requires_mask = *mask_ptr;
-      else if (gomp_requires_mask != *mask_ptr)
-	{
-	  if (!error_emitted)
-	    {
-	      gomp_error ("requires-directive clause inconsistency between "
-			  "compilation units detected");
-	      error_emitted = true;
-	    }
-	  /* This is inconsistent, but still merge to query for all features
-	     later.  */
-	  gomp_requires_mask |= *mask_ptr;
-	}
-      mask_ptr++;
-    }
-
   cur = OFFLOAD_PLUGINS;
   if (*cur)
     do
@@ -4461,8 +4459,30 @@ gomp_target_init (void)
 
 	if (gomp_load_plugin_for_device (&current_device, plugin_name))
 	  {
-	    new_num_devs = current_device.get_num_devices_func ();
-	    if (new_num_devs >= 1)
+	    int omp_req = omp_requires_mask & ~GOMP_REQUIRES_TARGET_USED;
+	    new_num_devs = current_device.get_num_devices_func (omp_req);
+	    if (gomp_debug_var > 0 && new_num_devs < 0)
+	      {
+		bool found = false;
+		int type = current_device.get_type_func ();
+		for (int img = 0; img < num_offload_images; img++)
+		  if (type == offload_images[img].type)
+		    found = true;
+		if (found)
+		  {
+		    char buf[sizeof ("unified_address, unified_shared_memory, "
+				     "reverse_offload")];
+		    gomp_requires_to_name (buf, sizeof (buf), omp_req);
+		    char *name = (char *) malloc (cur_len + 1);
+		    memcpy (name, cur, cur_len);
+		    name[cur_len] = '\0';
+		    gomp_debug (1,
+				"%s devices present but 'omp requires %s' "
+			        "cannot be fulfilled", name, buf);
+		    free (name);
+		  }
+	      }
+	    else if (new_num_devs >= 1)
 	      {
 		/* Augment DEVICES and NUM_DEVICES.  */
 
