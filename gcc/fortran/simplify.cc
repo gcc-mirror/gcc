@@ -233,6 +233,18 @@ is_constant_array_expr (gfc_expr *e)
   if (e->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (e))
     return false;
 
+  /* A non-zero-sized constant array shall have a non-empty constructor.  */
+  if (e->rank > 0 && e->shape != NULL && e->value.constructor == NULL)
+    {
+      mpz_init_set_ui (size, 1);
+      for (int j = 0; j < e->rank; j++)
+	mpz_mul (size, size, e->shape[j]);
+      bool not_size0 = (mpz_cmp_si (size, 0) != 0);
+      mpz_clear (size);
+      if (not_size0)
+	return false;
+    }
+
   for (c = gfc_constructor_first (e->value.constructor);
        c; c = gfc_constructor_next (c))
     if (c->expr->expr_type != EXPR_CONSTANT
