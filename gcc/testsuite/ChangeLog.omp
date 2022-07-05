@@ -1,6 +1,16 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/all-memory-1.f90: Add inoutset test.
+	* gfortran.dg/gomp/all-memory-2.f90: Likewise.
+	* gfortran.dg/gomp/depobj-1.f90: Likewise.
+	* gfortran.dg/gomp/depobj-2.f90: Likewise.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-c++-common/gomp/target-device-ancestor-5.c: New test.

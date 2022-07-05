@@ -59,6 +59,12 @@ subroutine test (ifval)
       call usleep (5000)
       b(4) = 48
     end block
+    !$omp task shared(b) depend(inoutset: b(5))
+    block
+      call usleep (5000)
+      b(5) = 49
+    end block
+
     ! None of the above tasks depend on each other.
     ! The following task depends on all but the a(4) = 46; one.
     !$omp task shared(a, b) depend(out: omp_all_memory) private(i) if(ifval)
@@ -66,7 +72,7 @@ subroutine test (ifval)
       if (a(0) /= 42 .or. a(1) /= 43 .or. a(2) /= 44 .or. a(3) /= 45       &
           .or. a(5) /= 5 .or. a(6) /= 6 .or. a(7) /= 7                     &
           .or. b(0) /= 47 .or. b(1) /= 2 .or. b(2) /= 4 .or. b(3) /= 6     &
-          .or. b(4) /= 48 .or. b(5) /= 10 .or. b(6) /= 12 .or. b(7) /= 14) &
+          .or. b(4) /= 48 .or. b(5) /= 49 .or. b(6) /= 12 .or. b(7) /= 14) &
         error stop
       do i = 0, 7
         if (i /= 4) &

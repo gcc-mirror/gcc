@@ -44,6 +44,9 @@ subroutine f6
   !$omp target depend(mutexinoutset : omp_all_memory )  ! { dg-error "'omp_all_memory' used with DEPEND kind other than OUT or INOUT" }
   ! !$omp end target
 
+  !$omp target depend(inoutset : omp_all_memory )  ! { dg-error "'omp_all_memory' used with DEPEND kind other than OUT or INOUT" }
+  ! !$omp end target
+
   !$omp target depend ( depobj : omp_all_memory)  ! { dg-error "'omp_all_memory' used with DEPEND kind other than OUT or INOUT" }
   !!$omp end target
 
