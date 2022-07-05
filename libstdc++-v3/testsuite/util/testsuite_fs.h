@@ -162,7 +162,8 @@ namespace __gnu_test
     if (file.length() > 64)
       file.resize(64);
     // The combination of random counter and PID should be unique for a given
-    // run of the testsuite.
+    // run of the testsuite.  N.B. getpid() returns a pointer type on vxworks
+    // in kernel mode.
     file += std::to_string((unsigned long) ::getpid());
     p = std::move(file);
     if (test_fs::exists(p))
