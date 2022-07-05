@@ -368,7 +368,7 @@ The OpenMP 4.5 specification is fully supported.
 @item If a matching mapped list item is not found in the data environment, the
       pointer retains its original value @tab N @tab
 @item New @code{enter} clause as alias for @code{to} on declare target directive
-      @tab N @tab
+      @tab Y @tab
 @item Deprecation of @code{to} clause on declare target directive @tab N @tab
 @item Extended list of directives permitted in Fortran pure procedures
       @tab N @tab

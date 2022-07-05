@@ -1,6 +1,16 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark 'enter' clause as supported.
+	* testsuite/libgomp.fortran/declare-target-1.f90: Extend to test
+	explicit 'to' and 'enter' clause.
+	* testsuite/libgomp.fortran/declare-target-2.f90: Update accordingly.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/target-40.c: Modify some existing to
