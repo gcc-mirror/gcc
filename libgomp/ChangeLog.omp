@@ -1,6 +1,23 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* libgomp_g.h (GOMP_taskwait_depend_nowait): Declare.
+	* libgomp.map (GOMP_taskwait_depend_nowait): Export at GOMP_5.1.1.
+	* task.c (empty_task): New function.
+	(gomp_task_run_post_handle_depend_hash): Declare earlier.
+	(gomp_task_run_post_handle_depend): Declare.
+	(GOMP_task): Optimize fn == empty_task if there is nothing to wait
+	for.
+	(gomp_task_run_post_handle_dependers): Optimize task->fn == empty_task.
+	(GOMP_taskwait_depend_nowait): New function.
+	* testsuite/libgomp.c-c++-common/taskwait-depend-nowait-1.c: New test.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-20  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* libgomp.map: Added omp_target_memcpy_async and

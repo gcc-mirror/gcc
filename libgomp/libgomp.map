@@ -413,6 +413,7 @@ GOMP_5.1 {
 
 GOMP_5.1.1 {
   global:
+	GOMP_taskwait_depend_nowait;
 	GOMP_enable_pinned_mode;
 } GOMP_5.1;
 

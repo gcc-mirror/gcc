@@ -1,6 +1,14 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* c-c++-common/gomp/taskwait-depend-nowait-1.c: New test.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/all-memory-1.f90: Add inoutset test.
