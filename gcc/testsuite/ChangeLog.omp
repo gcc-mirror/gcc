@@ -1,6 +1,14 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/declare-target-2.c: Add further tests for mixing of
+	link and to/enter clauses on separate directives.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/clauses-3.c: Add tests with enter clause instead
