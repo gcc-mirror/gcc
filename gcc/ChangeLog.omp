@@ -1,6 +1,16 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.cc (build_outer_var_ref): For code == OMP_CLAUSE_ALLOCATE
+	allow var to be private in the outer context.
+	(lower_private_allocate): Pass OMP_CLAUSE_ALLOCATE as last argument
+	to build_outer_var_ref.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-core.h (enum omp_clause_code): Rename OMP_CLAUSE_TO_DECLARE

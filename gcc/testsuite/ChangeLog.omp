@@ -1,6 +1,17 @@
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/scope-5.c: New test.
+	* c-c++-common/gomp/scope-6.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Add firstprivate and allocate clauses
+	to scope construct.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+
+2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/declare-target-2.f90: Add 'enter' clause test.

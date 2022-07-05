@@ -593,9 +593,11 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
       [[omp::directive (cancellation point, parallel)]];
     }
   }
-  [[omp::directive (scope, private (p), reduction(+:r), nowait)]]
+  [[omp::directive (scope, private (p), firstprivate (f), reduction(+:r), nowait,
+    allocate(omp_default_mem_alloc: r))]]
     ;
-  [[using omp:directive (scope, private (p), reduction(task, +:r))]]
+  [[using omp:directive (scope, private (p), firstprivate (f), reduction(task, +:r),
+    allocate (omp_default_mem_alloc: f))]]
     ;
   extern int t2;
   [[omp::directive (threadprivate (t2))]];
