@@ -148,7 +148,7 @@ resolve_device (acc_device_t d, bool fail_is_error)
 	      if (dispatchers[d]
 		  && !strcasecmp (goacc_device_type,
 				  get_openacc_name (dispatchers[d]->name))
-		  && dispatchers[d]->get_num_devices_func () > 0)
+		  && dispatchers[d]->get_num_devices_func (0) > 0)
 		goto found;
 
 	    if (fail_is_error)
@@ -169,7 +169,7 @@ resolve_device (acc_device_t d, bool fail_is_error)
     case acc_device_not_host:
       /* Find the first available device after acc_device_not_host.  */
       while (known_device_type_p (++d))
-	if (dispatchers[d] && dispatchers[d]->get_num_devices_func () > 0)
+	if (dispatchers[d] && dispatchers[d]->get_num_devices_func (0) > 0)
 	  goto found;
       if (d_arg == acc_device_default)
 	{
@@ -302,7 +302,7 @@ acc_init_1 (acc_device_t d, acc_construct_t parent_construct, int implicit)
 
   base_dev = resolve_device (d, true);
 
-  ndevs = base_dev->get_num_devices_func ();
+  ndevs = base_dev->get_num_devices_func (0);
 
   if (ndevs <= 0 || goacc_device_num >= ndevs)
     acc_dev_num_out_of_range (d, goacc_device_num, ndevs);
@@ -351,7 +351,7 @@ acc_shutdown_1 (acc_device_t d)
   /* Get the base device for this device type.  */
   base_dev = resolve_device (d, true);
 
-  ndevs = base_dev->get_num_devices_func ();
+  ndevs = base_dev->get_num_devices_func (0);
 
   /* Unload all the devices of this type that have been opened.  */
   for (i = 0; i < ndevs; i++)
@@ -520,7 +520,7 @@ goacc_attach_host_thread_to_device (int ord)
       base_dev = cached_base_dev;
     }
   
-  num_devices = base_dev->get_num_devices_func ();
+  num_devices = base_dev->get_num_devices_func (0);
   if (num_devices <= 0 || ord >= num_devices)
     acc_dev_num_out_of_range (acc_device_type (base_dev->type), ord,
 			      num_devices);
@@ -599,7 +599,7 @@ acc_get_num_devices (acc_device_t d)
   if (!acc_dev)
     return 0;
 
-  n = acc_dev->get_num_devices_func ();
+  n = acc_dev->get_num_devices_func (0);
   if (n < 0)
     n = 0;
 
@@ -779,7 +779,7 @@ acc_set_device_num (int ord, acc_device_t d)
 
       cached_base_dev = base_dev = resolve_device (d, true);
 
-      num_devices = base_dev->get_num_devices_func ();
+      num_devices = base_dev->get_num_devices_func (0);
 
       if (num_devices <= 0 || ord >= num_devices)
         acc_dev_num_out_of_range (d, ord, num_devices);
@@ -814,7 +814,7 @@ get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
 
   struct gomp_device_descr *dev = resolve_device (d, true);
 
-  int num_devices = dev->get_num_devices_func ();
+  int num_devices = dev->get_num_devices_func (0);
 
   if (num_devices <= 0 || ord >= num_devices)
     acc_dev_num_out_of_range (d, ord, num_devices);

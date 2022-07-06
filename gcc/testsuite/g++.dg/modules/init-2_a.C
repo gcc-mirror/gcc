@@ -2,6 +2,11 @@
 export module Foo;
 // { dg-module-cmi Foo }
 
+static int init ()
+{
+  return 1;
+}
+
+int var = init ();
+
 // { dg-final { scan-assembler {_ZGIW3Foo:} } }
-// But it is empty, and so no idempotency bool
-// { dg-final { scan-assembler-not {_ZZ9_ZGIW3FooE9__in_chrg} } }

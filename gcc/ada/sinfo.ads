@@ -2299,7 +2299,7 @@ package Sinfo is
    --    can be set in N_Object_Declaration nodes, to similarly suppress any
    --    checks on the initializing value. In assignment statements it also
    --    suppresses access checks in the generated code for out- and in-out
-   --    parameters in entry calls.
+   --    parameters in entry calls, as well as length checks.
 
    --  Suppress_Loop_Warnings
    --    Used in N_Loop_Statement node to indicate that warnings within the
@@ -4651,7 +4651,7 @@ package Sinfo is
 
       --  Note: The Actions field temporarily holds any actions associated with
       --  evaluation of the Expression. During expansion of the case expression
-      --  these actions are wrapped into an N_Expressions_With_Actions node
+      --  these actions are wrapped into an N_Expression_With_Actions node
       --  replacing the original expression.
 
       --  Note: this node never appears in the tree passed to the back end,

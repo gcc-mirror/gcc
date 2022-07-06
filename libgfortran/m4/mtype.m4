@@ -15,12 +15,18 @@ ifelse(kind,17,`1 /* FIXME: figure this out later.  */',dnl
 define(mathfunc_macro,`ifelse(kind,17,dnl
 `#if defined(POWER_IEEE128)
 #define MATHFUNC(funcname) __ ## funcname ## ieee128
+#elif defined(GFC_REAL_17_USE_IEC_60559)
+#define MATHFUNC(funcname) funcname ## f128
 #else
 #define MATHFUNC(funcname) funcname ## q
 #endif',dnl
 `ifelse(kind,16,dnl
 `#if defined(GFC_REAL_16_IS_FLOAT128)
+#if defined(GFC_REAL_16_USE_IEC_60559)
+#define MATHFUNC(funcname) funcname ## f128
+#else
 #define MATHFUNC(funcname) funcname ## q
+#endif
 #else
 #define MATHFUNC(funcname) funcname ## l
 #endif',dnl

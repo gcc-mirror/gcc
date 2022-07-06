@@ -529,7 +529,6 @@ extern (C++) abstract class Type : ASTNode
      * Returns:
      *     An enum value of either `Covariant.yes` or a reason it's not covariant.
      */
-    extern (D)
     final Covariant covariant(Type t, StorageClass* pstc = null, bool cppCovariant = false)
     {
         version (none)
@@ -4361,7 +4360,7 @@ extern (C++) final class TypeFunction : TypeNext
     {
         foreach (i, fparam; parameterList)
         {
-            if (fparam.storageClass & STC.lazy_)
+            if (fparam.isLazy())
                 return true;
         }
         return false;
@@ -4675,7 +4674,7 @@ extern (C++) final class TypeFunction : TypeNext
             Type tprm = p.type;
             Type targ = arg.type;
 
-            if (!(p.storageClass & STC.lazy_ && tprm.ty == Tvoid && targ.ty != Tvoid))
+            if (!(p.isLazy() && tprm.ty == Tvoid && targ.ty != Tvoid))
             {
                 const isRef = p.isReference();
                 wildmatch |= targ.deduceWild(tprm, isRef);
@@ -4718,7 +4717,7 @@ extern (C++) final class TypeFunction : TypeNext
                 Type targ = arg.type;
                 Type tprm = wildmatch ? p.type.substWildTo(wildmatch) : p.type;
 
-                if (p.storageClass & STC.lazy_ && tprm.ty == Tvoid && targ.ty != Tvoid)
+                if (p.isLazy() && tprm.ty == Tvoid && targ.ty != Tvoid)
                     m = MATCH.convert;
                 else
                 {
@@ -6823,6 +6822,12 @@ extern (C++) final class Parameter : ASTNode
             }
         }
         return null;
+    }
+
+    /// Returns: Whether the function parameter is lazy
+    bool isLazy() const @safe pure nothrow @nogc
+    {
+        return (this.storageClass & (STC.lazy_)) != 0;
     }
 
     /// Returns: Whether the function parameter is a reference (out / ref)

@@ -4007,14 +4007,24 @@ struct typename_hasher : ggc_ptr_hash<tree_node>
   /* Hash a TYPENAME_TYPE.  */
 
   static hashval_t
+  hash (tree context, tree fullname)
+  {
+    hashval_t hash = 0;
+    hash = iterative_hash_object (context, hash);
+    hash = iterative_hash_object (fullname, hash);
+    return hash;
+  }
+
+  static hashval_t
+  hash (const typename_info *ti)
+  {
+    return typename_hasher::hash (ti->scope, ti->template_id);
+  }
+
+  static hashval_t
   hash (tree t)
   {
-    hashval_t hash;
-
-    hash = (htab_hash_pointer (TYPE_CONTEXT (t))
-	    ^ htab_hash_pointer (TYPE_IDENTIFIER (t)));
-
-    return hash;
+    return typename_hasher::hash (TYPE_CONTEXT (t), TYPENAME_TYPE_FULLNAME (t));
   }
 
   /* Compare two TYPENAME_TYPEs.  */
@@ -4053,8 +4063,7 @@ build_typename_type (tree context, tree name, tree fullname,
   ti.class_p = (tag_type == class_type
 		|| tag_type == record_type
 		|| tag_type == union_type);
-  hashval_t hash =  (htab_hash_pointer (ti.scope)
-		     ^ htab_hash_pointer (ti.name));
+  hashval_t hash = typename_hasher::hash (&ti);
 
   /* See if we already have this type.  */
   tree *e = typename_htab->find_slot_with_hash (&ti, hash, INSERT);
@@ -6496,6 +6505,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       tree elt_init;
       constructor_elt *old_cur = d->cur;
 
+      if (d->cur->index)
+	CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
       check_array_designated_initializer (d->cur, index);
       elt_init = reshape_init_r (elt_type, d,
 				 /*first_initializer_p=*/NULL_TREE,
@@ -6665,6 +6676,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	    }
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
 	    {
+	      CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
 	      field = get_class_binding (type, d->cur->index);
 	      direct_desig = true;
 	    }
@@ -7149,7 +7161,8 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
     CONSTRUCTOR_IS_DIRECT_INIT (new_init) = true;
   if (CONSTRUCTOR_IS_DESIGNATED_INIT (init)
       && BRACE_ENCLOSED_INITIALIZER_P (new_init))
-    CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
+    gcc_checking_assert (CONSTRUCTOR_IS_DESIGNATED_INIT (new_init)
+			 || seen_error ());
 
   return new_init;
 }

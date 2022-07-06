@@ -40,9 +40,11 @@ private
     }
 }
 
-extern (C) void lifetime_init()
+// Now-removed symbol, kept around for ABI
+// Some programs are dynamically linked, so best to err on the side of keeping symbols around for a while (especially extern(C) ones)
+// https://github.com/dlang/druntime/pull/3361
+deprecated extern (C) void lifetime_init()
 {
-    // this is run before static ctors, so it is safe to modify immutables
 }
 
 /**

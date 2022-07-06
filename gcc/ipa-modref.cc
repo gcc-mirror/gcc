@@ -3508,15 +3508,15 @@ class pass_modref : public gimple_opt_pass
 	: gimple_opt_pass (pass_data_modref, ctxt) {}
 
     /* opt_pass methods: */
-    opt_pass *clone ()
+    opt_pass *clone () final override
     {
       return new pass_modref (m_ctxt);
     }
-    virtual bool gate (function *)
+    bool gate (function *) final override
     {
       return flag_ipa_modref;
     }
-    virtual unsigned int execute (function *);
+    unsigned int execute (function *) final override;
 };
 
 /* Encode TT to the output block OB using the summary streaming API.  */
@@ -4170,12 +4170,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass *clone () { return new pass_ipa_modref (m_ctxt); }
-  virtual bool gate (function *)
+  opt_pass *clone () final override { return new pass_ipa_modref (m_ctxt); }
+  bool gate (function *) final override
   {
     return true;
   }
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 };
 

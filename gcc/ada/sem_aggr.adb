@@ -849,8 +849,80 @@ package body Sem_Aggr is
       --  Set to True if N represents a simple aggregate with only
       --  (others => <>), not nested as part of another aggregate.
 
+      function Is_Full_Access_Aggregate (N : Node_Id) return Boolean;
+      --  If a full access object is initialized with an aggregate or is
+      --  assigned an aggregate, we have to prevent a piecemeal access or
+      --  assignment to the object, even if the aggregate is to be expanded.
+      --  We create a temporary for the aggregate, and assign the temporary
+      --  instead, so that the back end can generate an atomic move for it.
+      --  This is only done in the context of an object declaration or an
+      --  assignment. Function is a noop and returns false in other contexts.
+
       function Within_Aggregate (N : Node_Id) return Boolean;
       --  Return True if N is part of an N_Aggregate
+
+      ------------------------------
+      -- Is_Full_Access_Aggregate --
+      ------------------------------
+
+      function Is_Full_Access_Aggregate (N : Node_Id) return Boolean is
+         Loc : constant Source_Ptr := Sloc (N);
+
+         New_N : Node_Id;
+         Par   : Node_Id;
+         Temp  : Entity_Id;
+         Typ   : Entity_Id;
+
+      begin
+         Par := Parent (N);
+
+         --  Aggregate may be qualified, so find outer context
+
+         if Nkind (Par) = N_Qualified_Expression then
+            Par := Parent (Par);
+         end if;
+
+         if not Comes_From_Source (Par) then
+            return False;
+         end if;
+
+         case Nkind (Par) is
+            when N_Assignment_Statement =>
+               Typ := Etype (Name (Par));
+
+               if not Is_Full_Access (Typ)
+                 and then not Is_Full_Access_Object (Name (Par))
+               then
+                  return False;
+               end if;
+
+            when N_Object_Declaration =>
+               Typ := Etype (Defining_Identifier (Par));
+
+               if not Is_Full_Access (Typ)
+                 and then not Is_Full_Access (Defining_Identifier (Par))
+               then
+                  return False;
+               end if;
+
+            when others =>
+               return False;
+         end case;
+
+         Temp := Make_Temporary (Loc, 'T', N);
+         New_N :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Temp,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Typ, Loc),
+             Expression          => Relocate_Node (N));
+         Insert_Action (Par, New_N);
+
+         Rewrite (N, New_Occurrence_Of (Temp, Loc));
+         Analyze_And_Resolve (N, Typ);
+
+         return True;
+      end Is_Full_Access_Aggregate;
 
       ----------------------
       -- Within_Aggregate --
@@ -879,6 +951,16 @@ package body Sem_Aggr is
         and then No (Component_Associations (N))
         and then not Null_Record_Present (N)
       then
+         return;
+
+      --  If the aggregate is assigned to a full access variable, we have
+      --  to prevent a piecemeal assignment even if the aggregate is to be
+      --  expanded. We create a temporary for the aggregate, and assign the
+      --  temporary instead, so that the back end can generate an atomic move
+      --  for it. This is properly an expansion activity but it must be done
+      --  before resolution because aggregate resolution cannot be done twice.
+
+      elsif Expander_Active and then Is_Full_Access_Aggregate (N) then
          return;
       end if;
 

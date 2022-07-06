@@ -741,8 +741,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return optimize > 0; }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return optimize > 0; }
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_df_initialize ();
     }
@@ -781,8 +781,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return optimize == 0; }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return optimize == 0; }
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_df_initialize ();
     }
@@ -848,7 +848,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_df_finish ();
     }

@@ -29,9 +29,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "function.h"
 #include "tree.h"
+#include "diagnostic.h"
+#include "langhooks.h"
 #include "fold-const.h"
 #include "stringpool.h"
 #include "builtins.h"
+#include "vec-perm-indices.h"
 
 #include "d-tree.h"
 
@@ -161,6 +164,16 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 	    case INTRINSIC_MULUL:
 	    case INTRINSIC_NEGS:
 	    case INTRINSIC_NEGSL:
+	    case INTRINSIC_LOADUNALIGNED:
+	    case INTRINSIC_STOREUNALIGNED:
+	    case INTRINSIC_SHUFFLE:
+	    case INTRINSIC_SHUFFLEVECTOR:
+	    case INTRINSIC_CONVERTVECTOR:
+	    case INTRINSIC_BLENDVECTOR:
+	    case INTRINSIC_EQUALMASK:
+	    case INTRINSIC_NOTEQUALMASK:
+	    case INTRINSIC_GREATERMASK:
+	    case INTRINSIC_GREATEREQUALMASK:
 	    case INTRINSIC_VLOAD8:
 	    case INTRINSIC_VLOAD16:
 	    case INTRINSIC_VLOAD32:
@@ -169,6 +182,8 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 	    case INTRINSIC_VSTORE16:
 	    case INTRINSIC_VSTORE32:
 	    case INTRINSIC_VSTORE64:
+	      /* Cannot interpret function during CTFE.  If the library
+		 provides a definition, its body will be used instead.  */
 	      break;
 
 	    case INTRINSIC_POW:
@@ -194,6 +209,313 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 	  break;
 	}
     }
+}
+
+/* Helper function for maybe_warn_intrinsic_mismatch.  Issue warning about
+   mismatch in the EXPECTED return type in call to the intrinsic function in
+   CALLEXP, and return TRUE.  */
+
+static bool
+warn_mismatched_return_type (tree callexp, const char *expected)
+{
+  warning_at (EXPR_LOCATION (callexp), OPT_Wbuiltin_declaration_mismatch,
+	      "mismatch in return type of intrinsic function %qD "
+	      "(%qT, should be %qs)", get_callee_fndecl (callexp),
+	      TREE_TYPE (callexp), expected);
+  return true;
+}
+
+/* Helper function for maybe_warn_intrinsic_mismatch.  Issue warning or error
+   about mismatch in the EXPECTED argument type at ARGNO in call to the
+   intrinsic function in CALLEXP, and return TRUE.  */
+
+static bool
+warn_mismatched_argument (tree callexp, unsigned argno, const char *expected)
+{
+  warning_at (EXPR_LOCATION (callexp), OPT_Wbuiltin_declaration_mismatch,
+	      "mismatch in argument %u type of intrinsic function %qD "
+	      "(%qT, should be %qs)", argno + 1, get_callee_fndecl (callexp),
+	      TREE_TYPE (CALL_EXPR_ARG (callexp, argno)), expected);
+  return true;
+}
+
+static bool
+warn_mismatched_argument (tree callexp, unsigned argno, tree expected,
+			  bool error_p = false)
+{
+  if (error_p)
+    error_at (EXPR_LOCATION (callexp),
+	      "mismatch in argument %u type of intrinsic function %qD "
+	      "(%qT, should be %qT)", argno + 1, get_callee_fndecl (callexp),
+	      TREE_TYPE (CALL_EXPR_ARG (callexp, argno)), expected);
+  else
+    warning_at (EXPR_LOCATION (callexp), OPT_Wbuiltin_declaration_mismatch,
+		"mismatch in argument %u type of intrinsic function %qD "
+		"(%qT, should be %qT)", argno + 1, get_callee_fndecl (callexp),
+		TREE_TYPE (CALL_EXPR_ARG (callexp, argno)), expected);
+
+  return true;
+}
+
+/* Helper function for maybe_warn_intrinsic_mismatch.  Builds a vector integer
+   type suitable for the mask argument of INTRINSIC_SHUFFLE from the given
+   input argument TYPE.  */
+
+static tree
+build_shuffle_mask_type (tree type)
+{
+  const unsigned bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (type)));
+  const int unsignedp = TYPE_UNSIGNED (TREE_TYPE (type));
+  tree inner = lang_hooks.types.type_for_size (bits, unsignedp);
+  gcc_assert (inner && TREE_CODE (inner) == INTEGER_TYPE);
+
+  /* %% Get the front-end type for the vector so the D type will be
+     printed (this should really be handled by a D tree printer).  */
+  Type *t = build_frontend_type (inner);
+  gcc_assert (t != NULL);
+  unsigned HOST_WIDE_INT nunits = TYPE_VECTOR_SUBPARTS (type).to_constant ();
+
+  return build_ctype (TypeVector::create (t->sarrayOf (nunits)));
+}
+
+/* Checks if call to intrinsic FUNCTION in CALLEXP matches the internal
+   type and value constraints that we expect from the library definitions.
+   Returns TRUE and issues a warning if there is a mismatch.
+
+   Note: The return type and parameters are encoded into the signature `deco'
+   string that we match on in maybe_set_intrinsic(), so if the deco mangle
+   string has 'i' in the part that specifies the return type, then the matched
+   intrinsic will always have the return type `int'.
+
+   For templated intrinsics however, we rely on template constraints to ensure
+   that the generic type matches what we expect it to be.  There is still an
+   enforced relationship between a template argument and its instantiated type.
+   For example: `T func(T)(T*)' would have the generic return type `@1T' and
+   generic parameter type `@1PT', so it can be assumed that if the return type
+   matches what we expect then all parameters are fine as well.  Otherwise it
+   can be assumed that some internal_error has occurred for this to be the case.
+   Where a templated intrinsic has multiple template arguments, each generic
+   type will need to be checked for its validity.  */
+
+static bool
+maybe_warn_intrinsic_mismatch (tree function, tree callexp)
+{
+  switch (DECL_INTRINSIC_CODE (function))
+    {
+    case INTRINSIC_NONE:
+    default:
+      return false;
+
+    case INTRINSIC_LOADUNALIGNED:
+      {
+	/* Expects the signature:
+	   vector(T) loadUnaligned (vector(T)*);  */
+	gcc_assert (call_expr_nargs (callexp) == 1);
+
+	tree ptr = TREE_TYPE (CALL_EXPR_ARG (callexp, 0));
+	if (!VECTOR_TYPE_P (TREE_TYPE (callexp))
+	    || !POINTER_TYPE_P (ptr) || !VECTOR_TYPE_P (TREE_TYPE (ptr)))
+	  return warn_mismatched_return_type (callexp, "__vector(T)");
+
+	return false;
+      }
+
+    case INTRINSIC_STOREUNALIGNED:
+      {
+	/* Expects the signature:
+	   vector(T) storeUnaligned (vector(T)*, vector(T));  */
+	gcc_assert (call_expr_nargs (callexp) == 2);
+
+	tree ptr = TREE_TYPE (CALL_EXPR_ARG (callexp, 0));
+	tree val = TREE_TYPE (CALL_EXPR_ARG (callexp, 1));
+	if (!VECTOR_TYPE_P (TREE_TYPE (callexp))
+	    || !POINTER_TYPE_P (ptr) || !VECTOR_TYPE_P (TREE_TYPE (ptr))
+	    || !VECTOR_TYPE_P (val))
+	  return warn_mismatched_return_type (callexp, "__vector(T)");
+
+	return false;
+      }
+
+    case INTRINSIC_SHUFFLE:
+    case INTRINSIC_BLENDVECTOR:
+      {
+	/* Expects the signature:
+	   vector(T) shuffle (vector(T), vector(U), vector(V));
+	   vector(T) blendvector (vector(T), vector(U), vector(V));  */
+	gcc_assert (call_expr_nargs (callexp) == 3);
+
+	tree vec0 = TREE_TYPE (CALL_EXPR_ARG (callexp, 0));
+	if (!VECTOR_TYPE_P (TREE_TYPE (callexp))
+	    || !VECTOR_TYPE_P (vec0))
+	  return warn_mismatched_return_type (callexp, "__vector(T)");
+
+	tree vec1 = TREE_TYPE (CALL_EXPR_ARG (callexp, 1));
+	if (!VECTOR_TYPE_P (vec1))
+	  return warn_mismatched_argument (callexp, 1, vec0);
+
+	tree mask = TREE_TYPE (CALL_EXPR_ARG (callexp, 2));
+	if (!VECTOR_TYPE_P (mask) || !VECTOR_INTEGER_TYPE_P (mask))
+	  {
+	    tree expected = build_shuffle_mask_type (vec0);
+	    return warn_mismatched_argument (callexp, 2, expected,
+					     VECTOR_TYPE_P (mask));
+	  }
+
+	/* Types have been validated, now issue errors about violations on the
+	   constraints of the intrinsic.  */
+	if (TYPE_MAIN_VARIANT (vec0) != TYPE_MAIN_VARIANT (vec1))
+	  return warn_mismatched_argument (callexp, 1, vec0, true);
+
+	/* Vector element sizes should be equal between arguments and mask.  */
+	if (GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (vec0)))
+	    != GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (mask)))
+	    || maybe_ne (TYPE_VECTOR_SUBPARTS (vec0),
+			 TYPE_VECTOR_SUBPARTS (mask))
+	    || maybe_ne (TYPE_VECTOR_SUBPARTS (vec1),
+			 TYPE_VECTOR_SUBPARTS (mask)))
+	  {
+	    tree expected = build_shuffle_mask_type (vec0);
+	    return warn_mismatched_argument (callexp, 2, expected, true);
+	  }
+
+	return false;
+      }
+
+    case INTRINSIC_SHUFFLEVECTOR:
+      {
+	/* Expects the signature:
+	   vector(T[N]) shufflevector (vector(T), vector(U), N...);  */
+	gcc_assert (call_expr_nargs (callexp) >= 3);
+	gcc_assert (VECTOR_TYPE_P (TREE_TYPE (callexp)));
+
+	tree vec0 = TREE_TYPE (CALL_EXPR_ARG (callexp, 0));
+	if (!VECTOR_TYPE_P (vec0))
+	  return warn_mismatched_argument (callexp, 0, "__vector(T)");
+
+	tree vec1 = TREE_TYPE (CALL_EXPR_ARG (callexp, 1));
+	if (!VECTOR_TYPE_P (vec1))
+	  return warn_mismatched_argument (callexp, 1, vec0);
+
+	for (int i = 2; i < call_expr_nargs (callexp); i++)
+	  {
+	    tree idx = TREE_TYPE (CALL_EXPR_ARG (callexp, i));
+	    if (TREE_CODE (idx) != INTEGER_TYPE)
+	      return warn_mismatched_argument (callexp, i, d_int_type);
+	  }
+
+	/* Types have been validated, now issue errors about violations on the
+	   constraints of the intrinsic.  */
+	if (TYPE_MAIN_VARIANT (TREE_TYPE (vec0))
+	    != TYPE_MAIN_VARIANT (TREE_TYPE (vec1)))
+	  {
+	    /* %% Get the front-end type for the vector so the D type will be
+	       printed (this should really be handled by a D tree printer).  */
+	    unsigned HOST_WIDE_INT nunits;
+	    if (!TYPE_VECTOR_SUBPARTS (vec1).is_constant (&nunits))
+	      break;
+
+	    Type *inner = build_frontend_type (TREE_TYPE (vec0));
+	    Type *vector = TypeVector::create (inner->sarrayOf (nunits));
+	    return warn_mismatched_argument (callexp, 1,
+					     build_ctype (vector), true);
+	  }
+
+	/* Vector sizes should be known, and number of indices a power of 2.  */
+	unsigned HOST_WIDE_INT vec0_length;
+	unsigned HOST_WIDE_INT vec1_length;
+	if (!TYPE_VECTOR_SUBPARTS (vec0).is_constant (&vec0_length)
+	    || !TYPE_VECTOR_SUBPARTS (vec1).is_constant (&vec1_length)
+	    || !pow2p_hwi (call_expr_nargs (callexp) - 2))
+	  break;
+
+	/* All index arguments must be valid constants as well.  */
+	for (int i = 2; i < call_expr_nargs (callexp); i++)
+	  {
+	    tree idx = CALL_EXPR_ARG (callexp, i);
+	    if (!tree_fits_shwi_p (idx))
+	      {
+		error_at (EXPR_LOCATION (callexp),
+			  "argument %qE cannot be read at compile time", idx);
+		return true;
+	      }
+
+	    HOST_WIDE_INT iidx = tree_to_shwi (idx);
+	    if (iidx < 0
+		|| (unsigned HOST_WIDE_INT) iidx >= vec0_length + vec1_length)
+	      {
+		error_at (EXPR_LOCATION (callexp),
+			  "element index %qE is out of bounds %<[0 .. %E]%>",
+			  idx, build_integer_cst (vec0_length + vec1_length));
+		return true;
+	      }
+	  }
+
+	return false;
+      }
+
+    case INTRINSIC_CONVERTVECTOR:
+      {
+	/* Expects the signature:
+	   vector(T) convertvector (vector(U));  */
+	gcc_assert (call_expr_nargs (callexp) == 1);
+
+	tree ret = TREE_TYPE (callexp);
+	if (!VECTOR_TYPE_P (ret)
+	    || (!VECTOR_INTEGER_TYPE_P (ret) && !VECTOR_FLOAT_TYPE_P (ret)))
+	  return warn_mismatched_return_type (callexp, "__vector(T)");
+
+	tree arg = TREE_TYPE (CALL_EXPR_ARG (callexp, 0));
+	if (!VECTOR_TYPE_P (arg)
+	    || (!VECTOR_INTEGER_TYPE_P (arg) && !VECTOR_FLOAT_TYPE_P (arg)))
+	  return warn_mismatched_argument (callexp, 0, "__vector(T)");
+
+	/* Types have been validated, now issue errors about violations on the
+	   constraints of the intrinsic.  */
+	if (maybe_ne (TYPE_VECTOR_SUBPARTS (ret), TYPE_VECTOR_SUBPARTS (arg)))
+	  {
+	    /* %% Get the front-end type for the vector so the D type will be
+	       printed (this should really be handled by a D tree printer).  */
+	    unsigned HOST_WIDE_INT nunits;
+	    if (!TYPE_VECTOR_SUBPARTS (ret).is_constant (&nunits))
+	      break;
+
+	    Type *inner = build_frontend_type (TREE_TYPE (arg));
+	    Type *vector = TypeVector::create (inner->sarrayOf (nunits));
+	    return warn_mismatched_argument (callexp, 0,
+					     build_ctype (vector), true);
+	  }
+
+	return false;
+      }
+
+    case INTRINSIC_EQUALMASK:
+    case INTRINSIC_NOTEQUALMASK:
+    case INTRINSIC_GREATERMASK:
+    case INTRINSIC_GREATEREQUALMASK:
+      {
+	/* Expects the signature:
+	   vector(T) equalMask(vector(T), vector(T));
+	   vector(T) notEqualMask(vector(T), vector(T));
+	   vector(T) greaterMask(vector(T), vector(T));
+	   vector(T) greateOrEqualMask(vector(T), vector(T));  */
+	gcc_assert (call_expr_nargs (callexp) == 2);
+
+	tree vec0 = TREE_TYPE (CALL_EXPR_ARG (callexp, 0));
+	tree vec1 = TREE_TYPE (CALL_EXPR_ARG (callexp, 1));
+	if (!VECTOR_TYPE_P (TREE_TYPE (callexp))
+	    || !VECTOR_TYPE_P (vec0)
+	    || !VECTOR_TYPE_P (vec1)
+	    || TYPE_MAIN_VARIANT (vec0) != TYPE_MAIN_VARIANT (vec1))
+	  return warn_mismatched_return_type (callexp, "__vector(T)");
+
+	return false;
+      }
+    }
+
+  /* Generic mismatch warning if it hasn't already been handled.  */
+  warning_at (EXPR_LOCATION (callexp), OPT_Wbuiltin_declaration_mismatch,
+	      "mismatch in call of intrinsic function %qD",  function);
+  return true;
 }
 
 /* Construct a function call to the built-in function CODE, N is the number of
@@ -306,8 +628,8 @@ expand_intrinsic_bt (intrinsic_code intrinsic, tree callexp)
   tree bitsize = fold_convert (type, TYPE_SIZE (TREE_TYPE (ptr)));
 
   /* ptr[bitnum / bitsize]  */
-  ptr = build_array_index (ptr, fold_build2 (TRUNC_DIV_EXPR, type,
-					     bitnum, bitsize));
+  ptr = build_pointer_index (ptr, fold_build2 (TRUNC_DIV_EXPR, type,
+					       bitnum, bitsize));
   ptr = indirect_ref (type, ptr);
 
   /* mask = 1 << (bitnum % bitsize);  */
@@ -421,12 +743,8 @@ expand_intrinsic_rotate (intrinsic_code intrinsic, tree callexp)
     count = CALL_EXPR_ARG (callexp, 1);
   else
     {
-      tree callee = CALL_EXPR_FN (callexp);
-
-      if (TREE_CODE (callee) == ADDR_EXPR)
-	callee = TREE_OPERAND (callee, 0);
-
       /* Retrieve from the encoded template instantation.  */
+      tree callee = get_callee_fndecl (callexp);
       TemplateInstance *ti = DECL_LANG_FRONTEND (callee)->isInstantiated ();
       gcc_assert (ti && ti->tiargs && ti->tiargs->length == 2);
 
@@ -754,6 +1072,232 @@ expand_volatile_store (tree callexp)
   return modify_expr (result, value);
 }
 
+/* Expand a front-end intrinsic call to a vector comparison intrinsic, which is
+   either a call to equalMask(), notEqualMask(), greaterMask(), or
+   greaterOrEqualMask().  These intrinsics take two arguments, the signature to
+   which can be either:
+
+	vector(T) equalMask(vector(T) vec0, vector(T) vec1);
+	vector(T) notEqualMask(vector(T) vec0, vector(T) vec1);
+	vector(T) greaterMask(vector(T) vec0, vector(T) vec1);
+	vector(T) greaterOrEqualMask(vector(T) vec0, vector(T) vec1);
+
+   This performs an element-wise comparison between two vectors VEC0 and VEC1,
+   returning a vector with signed integral elements.  */
+
+static tree
+expand_intrinsic_vec_cond (tree_code code, tree callexp)
+{
+  tree vec0 = CALL_EXPR_ARG (callexp, 0);
+  tree vec1 = CALL_EXPR_ARG (callexp, 1);
+  tree type = TREE_TYPE (callexp);
+
+  tree cmp = fold_build2_loc (EXPR_LOCATION (callexp), code,
+			      truth_type_for (type), vec0, vec1);
+  return fold_build3_loc (EXPR_LOCATION (callexp), VEC_COND_EXPR, type, cmp,
+			  build_minus_one_cst (type), build_zero_cst (type));
+}
+
+/* Expand a front-end instrinsic call to convertvector().  This takes one
+   argument, the signature to which is:
+
+	vector(T) convertvector (vector(F) vec);
+
+   This converts a vector VEC to TYPE by casting every element in VEC to the
+   element type of TYPE.  The original call expression is held in CALLEXP.  */
+
+static tree
+expand_intrinsic_vec_convert (tree callexp)
+{
+  tree vec = CALL_EXPR_ARG (callexp, 0);
+  tree type = TREE_TYPE (callexp);
+
+  /* Use VIEW_CONVERT for simple vector conversions.  */
+  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (vec)))
+       == TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+      || (VECTOR_INTEGER_TYPE_P (TREE_TYPE (vec))
+	  && VECTOR_INTEGER_TYPE_P (type)
+	  && (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (vec)))
+	      == TYPE_PRECISION (TREE_TYPE (type)))))
+    return build1_loc (EXPR_LOCATION (callexp), VIEW_CONVERT_EXPR, type, vec);
+
+  return build_call_expr_internal_loc (EXPR_LOCATION (callexp), IFN_VEC_CONVERT,
+				       type, 1, vec);
+}
+
+/* Expand a front-end instrinsic call to blendvector().  This expects to take
+   three arguments, the signature to which is:
+
+	vector(T) blendvector (vector(T) vec0, vector(U) vec1, vector(M) mask);
+
+   This builds a VEC_COND_EXPR if VEC0, VEC1, and MASK are vector types, VEC0
+   has the same type as VEC1, and the number of elements of VEC0, VEC1, and MASK
+   are the same.  The original call expression is held in CALLEXP.  */
+
+static tree
+expand_intrinsic_vec_blend (tree callexp)
+{
+  tree vec0 = CALL_EXPR_ARG (callexp, 0);
+  tree vec1 = CALL_EXPR_ARG (callexp, 1);
+  tree mask = CALL_EXPR_ARG (callexp, 2);
+
+  tree cmp = fold_build2_loc (EXPR_LOCATION (callexp), NE_EXPR,
+			      truth_type_for (TREE_TYPE (mask)),
+			      mask, build_zero_cst (TREE_TYPE (mask)));
+
+  tree ret = fold_build3_loc (EXPR_LOCATION (callexp), VEC_COND_EXPR,
+			      TREE_TYPE (callexp), cmp, vec0, vec1);
+
+  if (!CONSTANT_CLASS_P (vec0) || !CONSTANT_CLASS_P (vec1))
+    ret = force_target_expr (ret);
+
+  return ret;
+}
+
+/* Expand a front-end instrinsic call to shuffle().  This expects to take three
+   arguments, the signature to which is:
+
+	vector(T) shuffle (vector(T) vec0, vector(T) vec1, vector(M) mask);
+
+   This builds a VEC_PERM_EXPR if VEC0, VEC1, and MASK are vector types, VEC0
+   has the same type as VEC1, and the number of elements of VEC0, VEC1, and MASK
+   are the same.  The original call expression is held in CALLEXP.  */
+
+static tree
+expand_intrinsic_vec_shuffle (tree callexp)
+{
+  tree vec0 = CALL_EXPR_ARG (callexp, 0);
+  tree vec1 = CALL_EXPR_ARG (callexp, 1);
+  tree mask = CALL_EXPR_ARG (callexp, 2);
+
+  return build3_loc (EXPR_LOCATION (callexp), VEC_PERM_EXPR,
+		     TREE_TYPE (callexp), vec0, vec1, mask);
+}
+
+/* Expand a front-end instrinsic call to shufflevector().  This takes two
+   positional arguments and a variadic list, the signature to which is:
+
+	vector(TM) shuffle (vector(T) vec1, vector(T) vec2, index...);
+
+   This builds a VEC_PERM_EXPR if VEC0 and VEC1 are vector types, VEC0 has the
+   same element type as VEC1, and the number of elements in INDEX is a valid
+   power of two.  The original call expression is held in CALLEXP.  */
+
+static tree
+expand_intrinsic_vec_shufflevector (tree callexp)
+{
+  tree vec0 = CALL_EXPR_ARG (callexp, 0);
+  tree vec1 = CALL_EXPR_ARG (callexp, 1);
+
+  unsigned HOST_WIDE_INT v0elems =
+    TYPE_VECTOR_SUBPARTS (TREE_TYPE (vec0)).to_constant ();
+  unsigned HOST_WIDE_INT v1elems =
+    TYPE_VECTOR_SUBPARTS (TREE_TYPE (vec1)).to_constant ();
+
+  unsigned HOST_WIDE_INT num_indices = call_expr_nargs (callexp) - 2;
+  unsigned HOST_WIDE_INT masklen = MAX (num_indices, MAX (v0elems, v1elems));
+  unsigned HOST_WIDE_INT pad_size = (v0elems < masklen ? masklen - v0elems : 0);
+  vec_perm_builder sel (masklen, masklen, 1);
+
+  unsigned n = 0;
+  for (; n < num_indices; ++n)
+    {
+      tree idx = CALL_EXPR_ARG (callexp, n + 2);
+      HOST_WIDE_INT iidx = tree_to_shwi (idx);
+      /* VEC_PERM_EXPR does not allow different sized inputs.  */
+      if ((unsigned HOST_WIDE_INT) iidx >= v0elems)
+	iidx += pad_size;
+
+      sel.quick_push (iidx);
+    }
+
+  /* VEC_PERM_EXPR does not support a result that is smaller than the inputs.  */
+  for (; n < masklen; ++n)
+    sel.quick_push (n);
+
+  vec_perm_indices indices (sel, 2, masklen);
+
+  /* Pad out arguments to the common vector size.  */
+  tree ret_type = build_vector_type (TREE_TYPE (TREE_TYPE (vec0)), masklen);
+  if (v0elems < masklen)
+    {
+      constructor_elt elt = { NULL_TREE, build_zero_cst (TREE_TYPE (vec0)) };
+      vec0 = build_constructor_single (ret_type, NULL_TREE, vec0);
+      for (unsigned i = 1; i < masklen / v0elems; ++i)
+        vec_safe_push (CONSTRUCTOR_ELTS (vec0), elt);
+    }
+
+  if (v1elems < masklen)
+    {
+      constructor_elt elt = { NULL_TREE, build_zero_cst (TREE_TYPE (vec1)) };
+      vec1 = build_constructor_single (ret_type, NULL_TREE, vec1);
+      for (unsigned i = 1; i < masklen / v1elems; ++i)
+        vec_safe_push (CONSTRUCTOR_ELTS (vec1), elt);
+    }
+
+  tree mask_type = build_vector_type (build_nonstandard_integer_type
+                (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (ret_type))), 1),
+                masklen);
+  tree ret = build3_loc (EXPR_LOCATION (callexp), VEC_PERM_EXPR, ret_type, vec0,
+			 vec1, vec_perm_indices_to_tree (mask_type, indices));
+
+  /* Get the low part we are interested in.  */
+  if (num_indices < masklen)
+    {
+      ret = build3_loc (EXPR_LOCATION (callexp), BIT_FIELD_REF,
+			TREE_TYPE (callexp), ret,
+			TYPE_SIZE (TREE_TYPE (callexp)), bitsize_zero_node);
+      /* Wrap the low part operation in a TARGET_EXPR so it gets a separate
+         temporary during gimplification.  */
+      ret = force_target_expr (ret);
+    }
+
+  return ret;
+}
+
+/* Expand a front-end instrinsic call to loadUnaligned().  This takes one
+   argument, the signature to which is:
+
+	vector(T) loadUnaligned (vector(T)* ptr)
+
+   This generates a load of a vector from an unaligned address PTR.
+   The original call expression is held in CALLEXP.  */
+
+static tree
+expand_intrinsic_vec_load_unaligned (tree callexp)
+{
+  tree ptr = CALL_EXPR_ARG (callexp, 0);
+
+  tree unaligned_type = build_variant_type_copy (TREE_TYPE (TREE_TYPE (ptr)));
+  SET_TYPE_ALIGN (unaligned_type, 1 * BITS_PER_UNIT);
+  TYPE_USER_ALIGN (unaligned_type) = 1;
+
+  tree load = indirect_ref (unaligned_type, ptr);
+  return convert (TREE_TYPE (callexp), load);
+}
+
+/* Expand a front-end instrinsic call to storeUnaligned().  This takes two
+   arguments, the signature to which is:
+
+	vector(T) storeUnaligned (vector(T)* ptr, vector(T) value)
+
+   This generates an assignment of a vector VALUE to an unaligned address PTR.
+   The original call expression is held in CALLEXP.  */
+
+static tree
+expand_intrinsic_vec_store_unaligned (tree callexp)
+{
+  tree ptr = CALL_EXPR_ARG (callexp, 0);
+  tree vec = CALL_EXPR_ARG (callexp, 1);
+
+  tree unaligned_type = build_variant_type_copy (TREE_TYPE (TREE_TYPE (ptr)));
+  SET_TYPE_ALIGN (unaligned_type, 1 * BITS_PER_UNIT);
+  TYPE_USER_ALIGN (unaligned_type) = 1;
+
+  tree load = indirect_ref (unaligned_type, ptr);
+  return build_assign (MODIFY_EXPR, load, vec);
+}
+
 /* If CALLEXP is for an intrinsic , expand and return inlined compiler
    generated instructions.  Most map directly to GCC builtins, others
    require a little extra work around them.  */
@@ -761,17 +1305,23 @@ expand_volatile_store (tree callexp)
 tree
 maybe_expand_intrinsic (tree callexp)
 {
-  tree callee = CALL_EXPR_FN (callexp);
+  tree callee = get_callee_fndecl (callexp);
 
-  if (TREE_CODE (callee) == ADDR_EXPR)
-    callee = TREE_OPERAND (callee, 0);
-
-  if (TREE_CODE (callee) != FUNCTION_DECL)
+  if (callee == NULL_TREE || TREE_CODE (callee) != FUNCTION_DECL)
     return callexp;
 
   /* Don't expand CTFE-only intrinsics outside of semantic processing.  */
   if (DECL_BUILT_IN_CTFE (callee) && !doing_semantic_analysis_p)
     return callexp;
+
+  /* Gate the expansion of the intrinsic with constraint checks, if any fail
+     then bail out without any lowering.  */
+  if (maybe_warn_intrinsic_mismatch (callee, callexp))
+    {
+      /* Reset the built-in flag so that we don't trip fold_builtin.  */
+      set_decl_built_in_function (callee, NOT_BUILT_IN, 0);
+      return callexp;
+    }
 
   intrinsic_code intrinsic = DECL_INTRINSIC_CODE (callee);
   built_in_function code;
@@ -919,6 +1469,36 @@ maybe_expand_intrinsic (tree callexp)
     case INTRINSIC_VSTORE32:
     case INTRINSIC_VSTORE64:
       return expand_volatile_store (callexp);
+
+    case INTRINSIC_LOADUNALIGNED:
+      return expand_intrinsic_vec_load_unaligned (callexp);
+
+    case INTRINSIC_STOREUNALIGNED:
+      return expand_intrinsic_vec_store_unaligned (callexp);
+
+    case INTRINSIC_SHUFFLE:
+      return expand_intrinsic_vec_shuffle (callexp);
+
+    case INTRINSIC_SHUFFLEVECTOR:
+      return expand_intrinsic_vec_shufflevector (callexp);
+
+    case INTRINSIC_CONVERTVECTOR:
+      return expand_intrinsic_vec_convert (callexp);
+
+    case INTRINSIC_BLENDVECTOR:
+      return expand_intrinsic_vec_blend (callexp);
+
+    case INTRINSIC_EQUALMASK:
+      return expand_intrinsic_vec_cond (EQ_EXPR, callexp);
+
+    case INTRINSIC_NOTEQUALMASK:
+      return expand_intrinsic_vec_cond (NE_EXPR, callexp);
+
+    case INTRINSIC_GREATERMASK:
+      return expand_intrinsic_vec_cond (GT_EXPR, callexp);
+
+    case INTRINSIC_GREATEREQUALMASK:
+      return expand_intrinsic_vec_cond (GE_EXPR, callexp);
 
     default:
       gcc_unreachable ();

@@ -41,9 +41,7 @@ test01()
   VERIFY( !ec );
   VERIFY( !n );
 
-#if defined(__MINGW32__) || defined(__MINGW64__)
-  // No symlink support
-#else
+#ifndef NO_SYMLINKS
   auto link = __gnu_test::nonexistent_path();
   create_symlink(p, link);  // dangling symlink
   ec = bad_ec;

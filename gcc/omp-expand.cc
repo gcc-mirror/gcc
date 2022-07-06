@@ -3120,8 +3120,7 @@ extract_omp_for_update_vars (struct omp_for_data *fd, tree *nonrect_bounds,
       if (i < fd->collapse - 1)
 	{
 	  e = make_edge (last_bb, bb, EDGE_FALSE_VALUE);
-	  e->probability
-	    = profile_probability::guessed_always ().apply_scale (1, 8);
+	  e->probability = profile_probability::guessed_always () / 8;
 
 	  struct omp_for_data_loop *l = &fd->loops[i + 1];
 	  if (l->m1 == NULL_TREE || l->outer != 1)
@@ -3240,8 +3239,7 @@ extract_omp_for_update_vars (struct omp_for_data *fd, tree *nonrect_bounds,
 		if (update_bb == NULL)
 		  update_bb = this_bb;
 		e = make_edge (this_bb, bb, EDGE_FALSE_VALUE);
-		e->probability
-		  = profile_probability::guessed_always ().apply_scale (1, 8);
+		e->probability = profile_probability::guessed_always () / 8;
 		if (prev_bb == NULL)
 		  set_immediate_dominator (CDI_DOMINATORS, this_bb, bb);
 		prev_bb = this_bb;
@@ -3533,7 +3531,7 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 				   GSI_CONTINUE_LINKING);
   gsi_insert_after (gsi, gimple_build_cond_empty (cond), GSI_NEW_STMT);
   edge e3 = make_edge (e1->src, e2->dest, EDGE_FALSE_VALUE);
-  e3->probability = profile_probability::guessed_always ().apply_scale (1, 8);
+  e3->probability = profile_probability::guessed_always () / 8;
   e1->probability = e3->probability.invert ();
   e1->flags = EDGE_TRUE_VALUE;
   set_immediate_dominator (CDI_DOMINATORS, e2->dest, e1->src);
@@ -3687,7 +3685,7 @@ expand_omp_for_ordered_loops (struct omp_for_data *fd, tree *counts,
       remove_edge (e1);
       make_edge (body_bb, new_header, EDGE_FALLTHRU);
       e3->flags = EDGE_FALSE_VALUE;
-      e3->probability = profile_probability::guessed_always ().apply_scale (1, 8);
+      e3->probability = profile_probability::guessed_always () / 8;
       e1 = make_edge (new_header, new_body, EDGE_TRUE_VALUE);
       e1->probability = e3->probability.invert ();
 
@@ -5484,16 +5482,14 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   ep->probability = profile_probability::guessed_always ().apply_scale (3, 4);
   ep = find_edge (entry_bb, second_bb);
   ep->flags = EDGE_TRUE_VALUE;
-  ep->probability = profile_probability::guessed_always ().apply_scale (1, 4);
+  ep->probability = profile_probability::guessed_always () / 4;
   if (fourth_bb)
     {
       ep = make_edge (third_bb, fifth_bb, EDGE_FALSE_VALUE);
-      ep->probability
-	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep->probability = profile_probability::guessed_always () / 2;
       ep = find_edge (third_bb, fourth_bb);
       ep->flags = EDGE_TRUE_VALUE;
-      ep->probability
-	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep->probability = profile_probability::guessed_always () / 2;
       ep = find_edge (fourth_bb, fifth_bb);
       redirect_edge_and_branch (ep, sixth_bb);
     }
@@ -5504,12 +5500,10 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   if (exit1_bb)
     {
       ep = make_edge (exit_bb, exit2_bb, EDGE_FALSE_VALUE);
-      ep->probability
-	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep->probability = profile_probability::guessed_always () / 2;
       ep = find_edge (exit_bb, exit1_bb);
       ep->flags = EDGE_TRUE_VALUE;
-      ep->probability
-	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep->probability = profile_probability::guessed_always () / 2;
       ep = find_edge (exit1_bb, exit2_bb);
       redirect_edge_and_branch (ep, exit3_bb);
     }
@@ -9983,6 +9977,8 @@ expand_omp_target (struct omp_region *region)
   tree device = NULL_TREE;
   location_t device_loc = UNKNOWN_LOCATION;
   tree goacc_flags = NULL_TREE;
+  bool need_device_adjustment = false;
+  gimple_stmt_iterator adj_gsi;
   if (is_gimple_omp_oacc (entry_stmt))
     {
       /* By default, no GOACC_FLAGs are set.  */
@@ -9994,6 +9990,19 @@ expand_omp_target (struct omp_region *region)
       if (c)
 	{
 	  device = OMP_CLAUSE_DEVICE_ID (c);
+	  /* Ensure 'device' is of the correct type.  */
+	  device = fold_convert_loc (device_loc, integer_type_node, device);
+	  if (TREE_CODE (device) == INTEGER_CST)
+	    {
+	      if (wi::to_wide (device) == GOMP_DEVICE_ICV)
+		device = build_int_cst (integer_type_node,
+					GOMP_DEVICE_HOST_FALLBACK);
+	      else if (wi::to_wide (device) == GOMP_DEVICE_HOST_FALLBACK)
+		device = build_int_cst (integer_type_node,
+					GOMP_DEVICE_HOST_FALLBACK - 1);
+	    }
+	  else
+	    need_device_adjustment = true;
 	  device_loc = OMP_CLAUSE_LOCATION (c);
 	  if (OMP_CLAUSE_DEVICE_ANCESTOR (c))
 	    sorry_at (device_loc, "%<ancestor%> not yet supported");
@@ -10021,7 +10030,8 @@ expand_omp_target (struct omp_region *region)
   if (c)
     cond = OMP_CLAUSE_IF_EXPR (c);
   /* If we found the clause 'if (cond)', build:
-     OpenACC: goacc_flags = (cond ? goacc_flags : flags | GOACC_FLAG_HOST_FALLBACK)
+     OpenACC: goacc_flags = (cond ? goacc_flags
+				  : goacc_flags | GOACC_FLAG_HOST_FALLBACK)
      OpenMP: device = (cond ? device : GOMP_DEVICE_HOST_FALLBACK) */
   if (cond)
     {
@@ -10029,20 +10039,13 @@ expand_omp_target (struct omp_region *region)
       if (is_gimple_omp_oacc (entry_stmt))
 	tp = &goacc_flags;
       else
-	{
-	  /* Ensure 'device' is of the correct type.  */
-	  device = fold_convert_loc (device_loc, integer_type_node, device);
-
-	  tp = &device;
-	}
+	tp = &device;
 
       cond = gimple_boolify (cond);
 
       basic_block cond_bb, then_bb, else_bb;
       edge e;
-      tree tmp_var;
-
-      tmp_var = create_tmp_var (TREE_TYPE (*tp));
+      tree tmp_var = create_tmp_var (TREE_TYPE (*tp));
       if (offloaded)
 	e = split_block_after_labels (new_bb);
       else
@@ -10067,6 +10070,7 @@ expand_omp_target (struct omp_region *region)
       gsi = gsi_start_bb (then_bb);
       stmt = gimple_build_assign (tmp_var, *tp);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+      adj_gsi = gsi;
 
       gsi = gsi_start_bb (else_bb);
       if (is_gimple_omp_oacc (entry_stmt))
@@ -10099,6 +10103,50 @@ expand_omp_target (struct omp_region *region)
       if (device != NULL_TREE)
 	device = force_gimple_operand_gsi (&gsi, device, true, NULL_TREE,
 					   true, GSI_SAME_STMT);
+      if (need_device_adjustment)
+	{
+	  tree tmp_var = create_tmp_var (TREE_TYPE (device));
+	  stmt = gimple_build_assign (tmp_var, device);
+	  gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+	  adj_gsi = gsi_for_stmt (stmt);
+	  device = tmp_var;
+	}
+    }
+
+  if (need_device_adjustment)
+    {
+      tree uns = fold_convert (unsigned_type_node, device);
+      uns = force_gimple_operand_gsi (&adj_gsi, uns, true, NULL_TREE,
+				      false, GSI_CONTINUE_LINKING);
+      edge e = split_block (gsi_bb (adj_gsi), gsi_stmt (adj_gsi));
+      basic_block cond_bb = e->src;
+      basic_block else_bb = e->dest;
+      if (gsi_bb (adj_gsi) == new_bb)
+	{
+	  new_bb = else_bb;
+	  gsi = gsi_last_nondebug_bb (new_bb);
+	}
+
+      basic_block then_bb = create_empty_bb (cond_bb);
+      set_immediate_dominator (CDI_DOMINATORS, then_bb, cond_bb);
+
+      cond = build2 (GT_EXPR, boolean_type_node, uns,
+		     build_int_cst (unsigned_type_node,
+				    GOMP_DEVICE_HOST_FALLBACK - 1));
+      stmt = gimple_build_cond_empty (cond);
+      adj_gsi = gsi_last_bb (cond_bb);
+      gsi_insert_after (&adj_gsi, stmt, GSI_CONTINUE_LINKING);
+
+      adj_gsi = gsi_start_bb (then_bb);
+      tree add = build2 (PLUS_EXPR, integer_type_node, device,
+			 build_int_cst (integer_type_node, -1));
+      stmt = gimple_build_assign (device, add);
+      gsi_insert_after (&adj_gsi, stmt, GSI_CONTINUE_LINKING);
+
+      make_edge (cond_bb, then_bb, EDGE_TRUE_VALUE);
+      e->flags = EDGE_FALSE_VALUE;
+      add_bb_to_loop (then_bb, cond_bb->loop_father);
+      make_edge (then_bb, else_bb, EDGE_FALLTHRU);
     }
 
   t = gimple_omp_target_data_arg (entry_stmt);
@@ -10577,7 +10625,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       bool gate = ((flag_openacc != 0 || flag_openmp != 0
 		    || flag_openmp_simd != 0)
@@ -10624,12 +10672,18 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  bool gate (function *fun) final override
     {
       return !(fun->curr_properties & PROP_gimple_eomp);
     }
-  virtual unsigned int execute (function *) { return execute_expand_omp (); }
-  opt_pass * clone () { return new pass_expand_omp_ssa (m_ctxt); }
+  unsigned int execute (function *) final override
+  {
+    return execute_expand_omp ();
+  }
+  opt_pass * clone () final override
+  {
+    return new pass_expand_omp_ssa (m_ctxt);
+  }
 
 }; // class pass_expand_omp_ssa
 

@@ -1015,6 +1015,15 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 	}
     }
 
+  if (decl && ix86_use_pseudo_pic_reg ())
+    {
+      /* When PIC register is used, it must be restored after ifunc
+	 function returns.  */
+       cgraph_node *node = cgraph_node::get (decl);
+       if (node && node->ifunc_resolver)
+	 return false;
+    }
+
   /* Otherwise okay.  That also includes certain types of indirect calls.  */
   return true;
 }
@@ -3348,7 +3357,7 @@ ix86_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
       if (POINTER_TYPE_P (arg.type))
 	{
 	  /* This is the pointer argument.  */
-	  gcc_assert (TYPE_MODE (arg.type) == Pmode);
+	  gcc_assert (TYPE_MODE (arg.type) == ptr_mode);
 	  /* It is at -WORD(AP) in the current frame in interrupt and
 	     exception handlers.  */
 	  reg = plus_constant (Pmode, arg_pointer_rtx, -UNITS_PER_WORD);
@@ -15714,6 +15723,53 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
   return force_reg (vec_mode, v);
 }
 
+/* Return HOST_WIDE_INT for const vector OP in MODE.  */
+
+HOST_WIDE_INT
+ix86_convert_const_vector_to_integer (rtx op, machine_mode mode)
+{
+  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+    gcc_unreachable ();
+
+  int nunits = GET_MODE_NUNITS (mode);
+  wide_int val = wi::zero (GET_MODE_BITSIZE (mode));
+  machine_mode innermode = GET_MODE_INNER (mode);
+  unsigned int innermode_bits = GET_MODE_BITSIZE (innermode);
+
+  switch (mode)
+    {
+    case E_V2QImode:
+    case E_V4QImode:
+    case E_V2HImode:
+    case E_V8QImode:
+    case E_V4HImode:
+    case E_V2SImode:
+      for (int i = 0; i < nunits; ++i)
+	{
+	  int v = INTVAL (XVECEXP (op, 0, i));
+	  wide_int wv = wi::shwi (v, innermode_bits);
+	  val = wi::insert (val, wv, innermode_bits * i, innermode_bits);
+	}
+      break;
+    case E_V2HFmode:
+    case E_V4HFmode:
+    case E_V2SFmode:
+      for (int i = 0; i < nunits; ++i)
+	{
+	  rtx x = XVECEXP (op, 0, i);
+	  int v = real_to_target (NULL, CONST_DOUBLE_REAL_VALUE (x),
+				  REAL_MODE_FORMAT (innermode));
+	  wide_int wv = wi::shwi (v, innermode_bits);
+	  val = wi::insert (val, wv, innermode_bits * i, innermode_bits);
+	}
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  return val.to_shwi ();
+}
+
 /* Return TRUE or FALSE depending on whether the first SET in INSN
    has source and destination with matching CC modes, and that the
    CC mode is at least as constrained as REQ_MODE.  */
@@ -20923,6 +20979,19 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	{
 	  /* This is *setcc_qi_addqi3_cconly_overflow_1_* patterns, a nop.  */
 	  *total = 0;
+	  return true;
+	}
+
+      if (SCALAR_INT_MODE_P (GET_MODE (op0))
+	  && GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
+	{
+	  if (op1 == const0_rtx)
+	    *total = cost->add
+		     + rtx_cost (op0, GET_MODE (op0), outer_code, opno, speed);
+	  else
+	    *total = 3*cost->add
+		     + rtx_cost (op0, GET_MODE (op0), outer_code, opno, speed)
+		     + rtx_cost (op1, GET_MODE (op0), outer_code, opno, speed);
 	  return true;
 	}
 

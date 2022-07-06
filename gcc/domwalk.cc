@@ -191,7 +191,8 @@ dom_walker::dom_walker (cdi_direction direction,
     m_reachability (reachability),
     m_user_bb_to_rpo (bb_index_to_rpo != NULL),
     m_unreachable_dom (NULL),
-    m_bb_to_rpo (bb_index_to_rpo)
+    m_bb_to_rpo (bb_index_to_rpo == (int *)(uintptr_t)-1
+		 ? NULL : bb_index_to_rpo)
 {
 }
 
@@ -272,7 +273,8 @@ void
 dom_walker::walk (basic_block bb)
 {
   /* Compute the basic-block index to RPO mapping lazily.  */
-  if (!m_bb_to_rpo
+  if (!m_user_bb_to_rpo
+      && !m_bb_to_rpo
       && m_dom_direction == CDI_DOMINATORS)
     {
       int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));

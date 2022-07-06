@@ -54,8 +54,7 @@ entry_loop_condition_is_static (class loop *l, path_range_query *query)
   edge e = loop_preheader_edge (l);
   gcond *last = safe_dyn_cast <gcond *> (last_stmt (e->dest));
 
-  if (!last
-      || !irange::supports_p (TREE_TYPE (gimple_cond_lhs (last))))
+  if (!last)
     return false;
 
   edge true_e, false_e;
@@ -311,16 +310,16 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_ch != 0; }
+  bool gate (function *) final override { return flag_tree_ch != 0; }
   
   /* Initialize and finalize loop structures, copying headers inbetween.  */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
-  opt_pass * clone () { return new pass_ch (m_ctxt); }
+  opt_pass * clone () final override { return new pass_ch (m_ctxt); }
 
 protected:
   /* ch_base method: */
-  virtual bool process_loop_p (class loop *loop);
+  bool process_loop_p (class loop *loop) final override;
 }; // class pass_ch
 
 const pass_data pass_data_ch_vect =
@@ -347,18 +346,18 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  bool gate (function *fun) final override
   {
     return flag_tree_ch != 0
 	   && (flag_tree_loop_vectorize != 0 || fun->has_force_vectorize_loops);
   }
   
   /* Just copy headers, no initialization/finalization of loop structures.  */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 protected:
   /* ch_base method: */
-  virtual bool process_loop_p (class loop *loop);
+  bool process_loop_p (class loop *loop) final override;
 }; // class pass_ch_vect
 
 /* For all loops, copy the condition at the end of the loop body in front

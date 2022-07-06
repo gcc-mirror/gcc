@@ -31,6 +31,7 @@
 #undef PACKAGE_TARNAME
 #undef PACKAGE_VERSION
 
+#define INCLUDE_MEMORY
 #include "gcc-plugin.h"
 #include "system.h"
 #include "coretypes.h"

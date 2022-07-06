@@ -28,7 +28,6 @@ with Elists;         use Elists;
 with Nlists;         use Nlists;
 with Output;         use Output;
 with Sinfo;          use Sinfo;
-with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 
 package body Einfo.Utils is
@@ -307,7 +306,7 @@ package body Einfo.Utils is
       return Ekind (Id) in Generic_Unit_Kind;
    end Is_Generic_Unit;
 
-   function Is_Ghost_Entity (Id : Entity_Id) return Boolean is
+   function Is_Ghost_Entity                     (Id : E) return Boolean is
    begin
       return Is_Checked_Ghost_Entity (Id) or else Is_Ignored_Ghost_Entity (Id);
    end Is_Ghost_Entity;
@@ -593,7 +592,7 @@ package body Einfo.Utils is
    -- Address_Clause --
    --------------------
 
-   function Address_Clause (Id : E) return N is
+   function Address_Clause (Id : E) return Node_Id is
    begin
       return Get_Attribute_Definition_Clause (Id, Attribute_Address);
    end Address_Clause;
@@ -618,7 +617,7 @@ package body Einfo.Utils is
    -- Alignment_Clause --
    ----------------------
 
-   function Alignment_Clause (Id : E) return N is
+   function Alignment_Clause (Id : E) return Node_Id is
    begin
       return Get_Attribute_Definition_Clause (Id, Attribute_Alignment);
    end Alignment_Clause;
@@ -672,7 +671,7 @@ package body Einfo.Utils is
    -- Declaration_Node --
    ----------------------
 
-   function Declaration_Node (Id : E) return N is
+   function Declaration_Node (Id : E) return Node_Id is
       P : Node_Id;
 
    begin
@@ -771,7 +770,7 @@ package body Einfo.Utils is
    -- First_Component --
    ---------------------
 
-   function First_Component (Id : E) return E is
+   function First_Component (Id : E) return Entity_Id is
       Comp_Id : Entity_Id;
 
    begin
@@ -793,7 +792,7 @@ package body Einfo.Utils is
    -- First_Component_Or_Discriminant --
    -------------------------------------
 
-   function First_Component_Or_Discriminant (Id : E) return E is
+   function First_Component_Or_Discriminant (Id : E) return Entity_Id is
       Comp_Id : Entity_Id;
 
    begin
@@ -816,7 +815,7 @@ package body Einfo.Utils is
    -- First_Formal --
    ------------------
 
-   function First_Formal (Id : E) return E is
+   function First_Formal (Id : E) return Entity_Id is
       Formal : Entity_Id;
 
    begin
@@ -857,7 +856,7 @@ package body Einfo.Utils is
    -- First_Formal_With_Extras --
    ------------------------------
 
-   function First_Formal_With_Extras (Id : E) return E is
+   function First_Formal_With_Extras (Id : E) return Entity_Id is
       Formal : Entity_Id;
 
    begin
@@ -1383,7 +1382,7 @@ package body Einfo.Utils is
    -- Invariant_Procedure --
    -------------------------
 
-   function Invariant_Procedure (Id : E) return E is
+   function Invariant_Procedure (Id : E) return Entity_Id is
       Subp_Elmt : Elmt_Id;
       Subp_Id   : Entity_Id;
       Subps     : Elist_Id;
@@ -1525,7 +1524,7 @@ package body Einfo.Utils is
    -- Is_Elaboration_Target --
    ---------------------------
 
-   function Is_Elaboration_Target (Id : Entity_Id) return Boolean is
+   function Is_Elaboration_Target (Id : E) return Boolean is
    begin
       return
         Ekind (Id) in E_Constant | E_Package | E_Variable
@@ -1768,7 +1767,7 @@ package body Einfo.Utils is
    -- Last_Formal --
    -----------------
 
-   function Last_Formal (Id : E) return E is
+   function Last_Formal (Id : E) return Entity_Id is
       Formal : Entity_Id;
 
    begin
@@ -1911,7 +1910,7 @@ package body Einfo.Utils is
    -- Next_Component --
    --------------------
 
-   function Next_Component (Id : E) return E is
+   function Next_Component (Id : E) return Entity_Id is
       Comp_Id : Entity_Id;
 
    begin
@@ -1928,7 +1927,7 @@ package body Einfo.Utils is
    -- Next_Component_Or_Discriminant --
    ------------------------------------
 
-   function Next_Component_Or_Discriminant (Id : E) return E is
+   function Next_Component_Or_Discriminant (Id : E) return Entity_Id is
       Comp_Id : Entity_Id;
 
    begin
@@ -1949,7 +1948,7 @@ package body Einfo.Utils is
    --  Next_Stored_Discriminant by making sure that the Discriminant
    --  returned is of the same variety as Id.
 
-   function Next_Discriminant (Id : E) return E is
+   function Next_Discriminant (Id : E) return Entity_Id is
 
       --  Derived Tagged types with private extensions look like this...
 
@@ -1962,7 +1961,7 @@ package body Einfo.Utils is
 
       --  so it is critical not to go past the leading discriminants
 
-      D : E := Id;
+      D : Entity_Id := Id;
 
    begin
       pragma Assert (Ekind (Id) = E_Discriminant);
@@ -1987,7 +1986,7 @@ package body Einfo.Utils is
    -- Next_Formal --
    -----------------
 
-   function Next_Formal (Id : E) return E is
+   function Next_Formal (Id : E) return Entity_Id is
       P : Entity_Id;
 
    begin
@@ -2012,7 +2011,7 @@ package body Einfo.Utils is
    -- Next_Formal_With_Extras --
    -----------------------------
 
-   function Next_Formal_With_Extras (Id : E) return E is
+   function Next_Formal_With_Extras (Id : E) return Entity_Id is
    begin
       if Present (Extra_Formal (Id)) then
          return Extra_Formal (Id);
@@ -2025,7 +2024,7 @@ package body Einfo.Utils is
    -- Next_Index --
    ----------------
 
-   function Next_Index (Id : Node_Id) return Node_Id is
+   function Next_Index (Id : N) return Node_Id is
    begin
       pragma Assert (Nkind (Id) in N_Is_Index);
       pragma Assert (No (Next (Id)) or else Nkind (Next (Id)) in N_Is_Index);
@@ -2036,7 +2035,7 @@ package body Einfo.Utils is
    -- Next_Literal --
    ------------------
 
-   function Next_Literal (Id : E) return E is
+   function Next_Literal (Id : E) return Entity_Id is
    begin
       pragma Assert (Nkind (Id) in N_Entity);
       return Next (Id);
@@ -2046,7 +2045,7 @@ package body Einfo.Utils is
    -- Next_Stored_Discriminant --
    ------------------------------
 
-   function Next_Stored_Discriminant (Id : E) return E is
+   function Next_Stored_Discriminant (Id : E) return Entity_Id is
    begin
       --  See comment in Next_Discriminant
 
@@ -2124,7 +2123,7 @@ package body Einfo.Utils is
    -- Object_Size_Clause --
    ------------------------
 
-   function Object_Size_Clause (Id : E) return N is
+   function Object_Size_Clause (Id : E) return Node_Id is
    begin
       return Get_Attribute_Definition_Clause (Id, Attribute_Object_Size);
    end Object_Size_Clause;
@@ -2142,7 +2141,7 @@ package body Einfo.Utils is
    -- DIC_Procedure --
    -------------------
 
-   function DIC_Procedure (Id : E) return E is
+   function DIC_Procedure (Id : E) return Entity_Id is
       Subp_Elmt : Elmt_Id;
       Subp_Id   : Entity_Id;
       Subps     : Elist_Id;
@@ -2174,7 +2173,7 @@ package body Einfo.Utils is
       return Empty;
    end DIC_Procedure;
 
-   function Partial_DIC_Procedure (Id : E) return E is
+   function Partial_DIC_Procedure (Id : E) return Entity_Id is
       Subp_Elmt : Elmt_Id;
       Subp_Id   : Entity_Id;
       Subps     : Elist_Id;
@@ -2227,7 +2226,7 @@ package body Einfo.Utils is
    -- Partial_Invariant_Procedure --
    ---------------------------------
 
-   function Partial_Invariant_Procedure (Id : E) return E is
+   function Partial_Invariant_Procedure (Id : E) return Entity_Id is
       Subp_Elmt : Elmt_Id;
       Subp_Id   : Entity_Id;
       Subps     : Elist_Id;
@@ -2340,7 +2339,7 @@ package body Einfo.Utils is
    -- Predicate_Function --
    ------------------------
 
-   function Predicate_Function (Id : E) return E is
+   function Predicate_Function (Id : E) return Entity_Id is
       Subp_Elmt : Elmt_Id;
       Subp_Id   : Entity_Id;
       Subps     : Elist_Id;
@@ -2835,8 +2834,8 @@ package body Einfo.Utils is
    -- Size_Clause --
    -----------------
 
-   function Size_Clause (Id : E) return N is
-      Result : N := Get_Attribute_Definition_Clause (Id, Attribute_Size);
+   function Size_Clause (Id : E) return Node_Id is
+      Result : Node_Id := Get_Attribute_Definition_Clause (Id, Attribute_Size);
    begin
       if No (Result) then
          Result := Get_Attribute_Definition_Clause (Id, Attribute_Value_Size);
@@ -2938,7 +2937,7 @@ package body Einfo.Utils is
    -- Type_High_Bound --
    ---------------------
 
-   function Type_High_Bound (Id : E) return Node_Id is
+   function Type_High_Bound (Id : E) return N is
       Rng : constant Node_Id := Scalar_Range (Id);
    begin
       if Nkind (Rng) = N_Subtype_Indication then
@@ -2952,7 +2951,7 @@ package body Einfo.Utils is
    -- Type_Low_Bound --
    --------------------
 
-   function Type_Low_Bound (Id : E) return Node_Id is
+   function Type_Low_Bound (Id : E) return N is
       Rng : constant Node_Id := Scalar_Range (Id);
    begin
       if Nkind (Rng) = N_Subtype_Indication then
@@ -2966,7 +2965,7 @@ package body Einfo.Utils is
    -- Underlying_Type --
    ---------------------
 
-   function Underlying_Type (Id : E) return E is
+   function Underlying_Type (Id : E) return Entity_Id is
    begin
       --  For record_with_private the underlying type is always the direct full
       --  view. Never try to take the full view of the parent it does not make

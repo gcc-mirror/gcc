@@ -36,25 +36,25 @@ public:
 
   pretty_printer *clone () const override;
 
-  void constant (tree);
-  void id_expression (tree);
-  void primary_expression (tree);
-  void postfix_expression (tree);
-  void unary_expression (tree);
-  void multiplicative_expression (tree);
-  void conditional_expression (tree);
-  void assignment_expression (tree);
-  void expression (tree);
-  void type_id (tree);
-  void statement (tree);
-  void declaration (tree);
-  void declaration_specifiers (tree);
-  void simple_type_specifier (tree);
-  void function_specifier (tree);
-  void declarator (tree);
-  void direct_declarator (tree);
-  void abstract_declarator (tree);
-  void direct_abstract_declarator (tree);
+  void constant (tree) final override;
+  void id_expression (tree) final override;
+  void primary_expression (tree) final override;
+  void postfix_expression (tree) final override;
+  void unary_expression (tree) final override;
+  void multiplicative_expression (tree) final override;
+  void conditional_expression (tree) final override;
+  void assignment_expression (tree) final override;
+  void expression (tree) final override;
+  void type_id (tree) final override;
+  void statement (tree) final override;
+  void declaration (tree) final override;
+  void declaration_specifiers (tree) final override;
+  void simple_type_specifier (tree) final override;
+  void function_specifier (tree) final override;
+  void declarator (tree) final override;
+  void direct_declarator (tree) final override;
+  void abstract_declarator (tree) final override;
+  void direct_abstract_declarator (tree) final override;
 
   /* This is the enclosing scope of the entity being pretty-printed.  */
   tree enclosing_scope;

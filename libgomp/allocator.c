@@ -99,7 +99,7 @@ static pthread_once_t memkind_data_once = PTHREAD_ONCE_INIT;
 static void
 gomp_init_memkind (void)
 {
-  void *handle = dlopen ("libmemkind.so", RTLD_LAZY);
+  void *handle = dlopen ("libmemkind.so.0", RTLD_LAZY);
   struct gomp_memkind_data *data;
   int i;
   static const char *kinds[] = {

@@ -489,6 +489,87 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (!overflow || TYPE_OVERFLOW_WRAPS (type))
    (mult @0 { wide_int_to_tree (type, mul); }))))
 
+/* Similar to above, but there could be an extra add/sub between
+   successive multuiplications.  */
+(simplify
+ (mult (plus:s (mult:s@4 @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
+ (with {
+   bool overflowed = true;
+   wi::overflow_type ovf1, ovf2;
+   wide_int mul = wi::mul (wi::to_wide (@1), wi::to_wide (@3),
+			   TYPE_SIGN (type), &ovf1);
+   wide_int add = wi::mul (wi::to_wide (@2), wi::to_wide (@3),
+			   TYPE_SIGN (type), &ovf2);
+  if (TYPE_OVERFLOW_UNDEFINED (type))
+    {
+#if GIMPLE
+      value_range vr0;
+      if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE
+	  && get_global_range_query ()->range_of_expr (vr0, @4)
+	  && vr0.kind () == VR_RANGE)
+	{
+	  wide_int wmin0 = vr0.lower_bound ();
+	  wide_int wmax0 = vr0.upper_bound ();
+	  wmin0 = wi::mul (wmin0, wi::to_wide (@3), TYPE_SIGN (type), &ovf1);
+	  wmax0 = wi::mul (wmax0, wi::to_wide (@3), TYPE_SIGN (type), &ovf2);
+	  if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE)
+	    {
+	      wi::add (wmin0, add, TYPE_SIGN (type), &ovf1);
+	      wi::add (wmax0, add, TYPE_SIGN (type), &ovf2);
+	      if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE)
+		overflowed = false;
+	    }
+	}
+#endif
+    }
+  else
+   overflowed = false;
+ }
+  /* Skip folding on overflow.  */
+  (if (!overflowed)
+   (plus (mult @0 { wide_int_to_tree (type, mul); })
+	 { wide_int_to_tree (type, add); }))))
+
+/* Similar to above, but a multiplication between successive additions.  */
+(simplify
+ (plus (mult:s (plus:s @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
+ (with {
+   bool overflowed = true;
+   wi::overflow_type ovf1;
+   wi::overflow_type ovf2;
+   wide_int mul = wi::mul (wi::to_wide (@1), wi::to_wide (@2),
+			   TYPE_SIGN (type), &ovf1);
+   wide_int add = wi::add (mul, wi::to_wide (@3),
+			   TYPE_SIGN (type), &ovf2);
+  if (TYPE_OVERFLOW_UNDEFINED (type))
+    {
+#if GIMPLE
+      value_range vr0;
+      if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE
+	  && get_global_range_query ()->range_of_expr (vr0, @0)
+	  && vr0.kind () == VR_RANGE)
+	{
+	  wide_int wmin0 = vr0.lower_bound ();
+	  wide_int wmax0 = vr0.upper_bound ();
+	  wmin0 = wi::mul (wmin0, wi::to_wide (@2), TYPE_SIGN (type), &ovf1);
+	  wmax0 = wi::mul (wmax0, wi::to_wide (@2), TYPE_SIGN (type), &ovf2);
+	  if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE)
+	    {
+	      wi::add (wmin0, mul, TYPE_SIGN (type), &ovf1);
+	      wi::add (wmax0, mul, TYPE_SIGN (type), &ovf2);
+	      if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE)
+		overflowed = false;
+	    }
+	}
+#endif
+    }
+  else
+   overflowed = false;
+ }
+  /* Skip folding on overflow.  */
+  (if (!overflowed)
+   (plus (mult @0 @2) { wide_int_to_tree (type, add); }))))
+
 /* Optimize A / A to 1.0 if we don't care about
    NaNs or Infinities.  */
 (simplify
@@ -1800,6 +1881,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && !TYPE_UNSIGNED (TREE_TYPE (@0)))
   (mult (convert @0) @1)))
 
+/* Narrow integer multiplication by a zero_one_valued_p operand.
+   Multiplication by [0,1] is guaranteed not to overflow.  */
+(simplify
+ (convert (mult@0 zero_one_valued_p@1 INTEGER_CST@2))
+ (if (INTEGRAL_TYPE_P (type)
+      && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0)))
+  (mult (convert @1) (convert @2))))
+
 /* Convert ~ (-A) to A - 1.  */
 (simplify
  (bit_not (convert? (negate @0)))
@@ -1999,6 +2089,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
        && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
    (op @0 @1))))
+
+/* As a special case, X + C < Y + C is the same as (signed) X < (signed) Y
+   when C is an unsigned integer constant with only the MSB set, and X and
+   Y have types of equal or lower integer conversion rank than C's.  */
+(for op (lt le ge gt)
+ (simplify
+  (op (plus @1 INTEGER_CST@0) (plus @2 @0))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_UNSIGNED (TREE_TYPE (@0))
+       && wi::only_sign_bit_p (wi::to_wide (@0)))
+   (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
+    (op (convert:stype @1) (convert:stype @2))))))
+
 /* For equality and subtraction, this is also true with wrapping overflow.  */
 (for op (eq ne minus)
  (simplify
@@ -2379,14 +2482,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* y == XXX_MIN || x < y --> x <= y - 1 */
 (simplify
- (bit_ior:c (eq:s @1 min_value) (lt:s @0 @1))
+ (bit_ior:c (eq:s @1 min_value) (lt:cs @0 @1))
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
        && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@1)))
   (le @0 (minus @1 { build_int_cst (TREE_TYPE (@1), 1); }))))
 
 /* y != XXX_MIN && x >= y --> x > y - 1 */
 (simplify
- (bit_and:c (ne:s @1 min_value) (ge:s @0 @1))
+ (bit_and:c (ne:s @1 min_value) (ge:cs @0 @1))
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
        && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@1)))
   (gt @0 (minus @1 { build_int_cst (TREE_TYPE (@1), 1); }))))
@@ -3469,6 +3572,29 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && wi::lshift (wi::to_wide (@0), cand) == wi::to_wide (@2))
      (cmp @1 { build_int_cst (TREE_TYPE (@1), cand); }))))))
 
+/* Fold ((X << C1) & C2) cmp C3 into (X & (C2 >> C1)) cmp (C3 >> C1)
+	((X >> C1) & C2) cmp C3 into (X & (C2 << C1)) cmp (C3 << C1).  */
+(for cmp (ne eq)
+ (simplify
+  (cmp (bit_and:s (lshift:s @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
+  (if (tree_fits_shwi_p (@1)
+       && tree_to_shwi (@1) > 0
+       && tree_to_shwi (@1) < TYPE_PRECISION (TREE_TYPE (@0))
+       && tree_to_shwi (@1) <= wi::ctz (wi::to_wide (@3)))
+   (with { wide_int c1 = wi::to_wide (@1);
+	   wide_int c2 = wi::lrshift (wi::to_wide (@2), c1);
+	   wide_int c3 = wi::lrshift (wi::to_wide (@3), c1); }
+    (cmp (bit_and @0 { wide_int_to_tree (TREE_TYPE (@0), c2); })
+	 { wide_int_to_tree (TREE_TYPE (@0), c3); }))))
+ (simplify
+  (cmp (bit_and:s (rshift:s @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
+  (if (tree_fits_shwi_p (@1)
+       && tree_to_shwi (@1) > 0
+       && tree_to_shwi (@1) < TYPE_PRECISION (TREE_TYPE (@0))
+       && tree_to_shwi (@1) <= wi::clz (wi::to_wide (@2))
+       && tree_to_shwi (@1) <= wi::clz (wi::to_wide (@3)))
+   (cmp (bit_and @0 (lshift @2 @1)) (lshift @3 @1)))))
+
 /* Fold (X << C1) & C2 into (X << C1) & (C2 | ((1 << C1) - 1))
         (X >> C1) & C2 into (X >> C1) & (C2 | ~((type) -1 >> C1))
    if the new mask might be further optimized.  */
@@ -3621,17 +3747,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (integer_zerop (@2) || integer_all_onesp (@2))
      (cmp @0 @2)))))
 
-/* Both signed and unsigned lshift produce the same result, so use
-   the form that minimizes the number of conversions.  Postpone this
-   transformation until after shifts by zero have been folded.  */
+/* Narrow a lshift by constant.  */
 (simplify
- (convert (lshift:s@0 (convert:s@1 @2) INTEGER_CST@3))
+ (convert (lshift:s@0 @1 INTEGER_CST@2))
  (if (INTEGRAL_TYPE_P (type)
-      && tree_nop_conversion_p (type, TREE_TYPE (@0))
-      && INTEGRAL_TYPE_P (TREE_TYPE (@2))
-      && TYPE_PRECISION (TREE_TYPE (@2)) <= TYPE_PRECISION (type)
-      && !integer_zerop (@3))
-  (lshift (convert @2) @3)))
+      && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && !integer_zerop (@2)
+      && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0)))
+  (if (TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (@0))
+       || wi::ltu_p (wi::to_wide (@2), TYPE_PRECISION (type)))
+   (lshift (convert @1) @2)
+   (if (wi::ltu_p (wi::to_wide (@2), TYPE_PRECISION (TREE_TYPE (@0))))
+    { build_zero_cst (type); }))))
 
 /* Simplifications of conversions.  */
 
@@ -3669,12 +3796,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	       && TYPE_UNSIGNED (TREE_TYPE (@1)))))
    (view_convert @1)))
 
-/* Simplify a view-converted empty constructor.  */
+/* Simplify a view-converted empty or single-element constructor.  */
 (simplify
   (view_convert CONSTRUCTOR@0)
-  (if (TREE_CODE (@0) != SSA_NAME
-       && CONSTRUCTOR_NELTS (@0) == 0)
-   { build_zero_cst (type); }))
+  (with
+   { tree ctor = (TREE_CODE (@0) == SSA_NAME
+		  ? gimple_assign_rhs1 (SSA_NAME_DEF_STMT (@0)) : @0); }
+   (switch
+    (if (CONSTRUCTOR_NELTS (ctor) == 0)
+     { build_zero_cst (type); })
+    (if (CONSTRUCTOR_NELTS (ctor) == 1
+	 && VECTOR_TYPE_P (TREE_TYPE (ctor))
+	 && operand_equal_p (TYPE_SIZE (type),
+			     TYPE_SIZE (TREE_TYPE
+			       (CONSTRUCTOR_ELT (ctor, 0)->value))))
+     (view_convert { CONSTRUCTOR_ELT (ctor, 0)->value; })))))
 
 /* Re-association barriers around constants and other re-association
    barriers can be removed.  */
@@ -4265,6 +4401,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 )
 #endif
 
+(simplify
+ (convert (cond@0 @1 INTEGER_CST@2 INTEGER_CST@3))
+ (if (INTEGRAL_TYPE_P (type)
+      && INTEGRAL_TYPE_P (TREE_TYPE (@0)))
+  (cond @1 (convert @2) (convert @3))))
+
 /* Simplification moved from fold_cond_expr_with_comparison.  It may also
    be extended.  */
 /* This pattern implements two kinds simplification:
@@ -4455,12 +4597,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cond (cmp:c (nop_convert1?@c0 @0) (nop_convert2?@c1 @1))
         (convert3? @0) (convert4? @1))
   (if (!HONOR_SIGNED_ZEROS (type)
-       && ((INTEGRAL_TYPE_P (type)
-	    /* Allow widening conversions of the data.  */
+       && (/* Allow widening conversions of the compare operands as data.  */
+	   (INTEGRAL_TYPE_P (type)
+	    && types_match (TREE_TYPE (@c0), TREE_TYPE (@0))
+	    && types_match (TREE_TYPE (@c1), TREE_TYPE (@1))
 	    && TYPE_PRECISION (TREE_TYPE (@0)) <= TYPE_PRECISION (type)
 	    && TYPE_PRECISION (TREE_TYPE (@1)) <= TYPE_PRECISION (type))
-	   || (tree_nop_conversion_p (type, TREE_TYPE (@0))
-	       && tree_nop_conversion_p (type, TREE_TYPE (@1)))))
+	   /* Or sign conversions for the comparison.  */
+	   || (types_match (type, TREE_TYPE (@0))
+	       && types_match (type, TREE_TYPE (@1)))))
    (switch
     (if (cmp == EQ_EXPR)
      (if (VECTOR_TYPE_P (type))
@@ -5397,7 +5542,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& (TYPE_UNSIGNED (TREE_TYPE (@00)) == TYPE_UNSIGNED (TREE_TYPE (@0))
 	    || cmp == NE_EXPR
 	    || cmp == EQ_EXPR)
-	&& !POINTER_TYPE_P (TREE_TYPE (@00)))
+	&& !POINTER_TYPE_P (TREE_TYPE (@00))
+	/* (int)bool:32 != (int)uint is not the same as
+	   bool:32 != (bool:32)uint since boolean types only have two valid
+	   values independent of their precision.  */
+	&& (TREE_CODE (TREE_TYPE (@00)) != BOOLEAN_TYPE
+	    || TREE_CODE (TREE_TYPE (@10)) == BOOLEAN_TYPE))
     /* ???  The special-casing of INTEGER_CST conversion was in the original
        code and here to avoid a spurious overflow flag on the resulting
        constant which fold_convert produces.  */
@@ -5985,16 +6135,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (convert (eq @0 { TYPE_MIN_VALUE (TREE_TYPE (@0)); }))
       (with
        {
+	 tree div = fold_convert (TREE_TYPE (@0), @1);
 	 tree lo = int_const_binop (TRUNC_DIV_EXPR,
-				    TYPE_MIN_VALUE (TREE_TYPE (@0)),
-				    fold_convert (TREE_TYPE (@0), @1));
+				    TYPE_MIN_VALUE (TREE_TYPE (@0)), div);
 	 tree hi = int_const_binop (TRUNC_DIV_EXPR,
-				    TYPE_MAX_VALUE (TREE_TYPE (@0)),
-				    fold_convert (TREE_TYPE (@0), @1));
+				    TYPE_MAX_VALUE (TREE_TYPE (@0)), div);
 	 tree etype = range_check_type (TREE_TYPE (@0));
 	 if (etype)
 	   {
-	     if (wi::neg_p (wi::to_wide (@1)))
+	     if (wi::neg_p (wi::to_wide (div)))
 	       std::swap (lo, hi);
 	     lo = fold_convert (etype, lo);
 	     hi = fold_convert (etype, hi);

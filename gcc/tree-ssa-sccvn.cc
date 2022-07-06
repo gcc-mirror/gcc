@@ -2493,8 +2493,8 @@ public:
   eliminate_dom_walker (cdi_direction, bitmap);
   ~eliminate_dom_walker ();
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
   virtual tree eliminate_avail (basic_block, tree op);
   virtual void eliminate_push_avail (basic_block, tree op);
@@ -2534,9 +2534,9 @@ public:
     : eliminate_dom_walker (CDI_DOMINATORS, NULL), entry (entry_),
       m_avail_freelist (NULL) {}
 
-  virtual tree eliminate_avail (basic_block, tree op);
+  tree eliminate_avail (basic_block, tree op) final override;
 
-  virtual void eliminate_push_avail (basic_block, tree);
+  void eliminate_push_avail (basic_block, tree) final override;
 
   basic_block entry;
   /* Freelist of avail entries which are allocated from the vn_ssa_aux
@@ -3275,6 +3275,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       copy_reference_ops_from_ref (rhs1, &rhs);
 
       /* Apply an extra offset to the inner MEM_REF of the RHS.  */
+      bool force_no_tbaa = false;
       if (maybe_ne (extra_off, 0))
 	{
 	  if (rhs.length () < 2)
@@ -3287,6 +3288,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  rhs[ix].op0 = int_const_binop (PLUS_EXPR, rhs[ix].op0,
 					 build_int_cst (TREE_TYPE (rhs[ix].op0),
 							extra_off));
+	  /* When we have offsetted the RHS, reading only parts of it,
+	     we can no longer use the original TBAA type, force alias-set
+	     zero.  */
+	  force_no_tbaa = true;
 	}
 
       /* Save the operands since we need to use the original ones for
@@ -3339,8 +3344,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* Adjust *ref from the new operands.  */
       ao_ref rhs1_ref;
       ao_ref_init (&rhs1_ref, rhs1);
-      if (!ao_ref_init_from_vn_reference (&r, ao_ref_alias_set (&rhs1_ref),
-					  ao_ref_base_alias_set (&rhs1_ref),
+      if (!ao_ref_init_from_vn_reference (&r,
+					  force_no_tbaa ? 0
+					  : ao_ref_alias_set (&rhs1_ref),
+					  force_no_tbaa ? 0
+					  : ao_ref_base_alias_set (&rhs1_ref),
 					  vr->type, vr->operands))
 	return (void *)-1;
       /* This can happen with bitfields.  */
@@ -4235,9 +4243,10 @@ vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table)
 		      if (dominated_by_p (CDI_DOMINATORS, vno_bb, val_bb))
 			/* Value registered with more generic predicate.  */
 			return *slot;
-		      else if (dominated_by_p (CDI_DOMINATORS, val_bb, vno_bb))
+		      else if (flag_checking)
 			/* Shouldn't happen, we insert in RPO order.  */
-			gcc_unreachable ();
+			gcc_assert (!dominated_by_p (CDI_DOMINATORS,
+						     val_bb, vno_bb));
 		    }
 		  /* Append value.  */
 		  *next = (vn_pval *) obstack_alloc (&vn_tables_obstack,
@@ -4983,7 +4992,7 @@ valueized_wider_op (tree wide_type, tree op, bool allow_truncate)
 
   /* For constants simply extend it.  */
   if (TREE_CODE (op) == INTEGER_CST)
-    return wide_int_to_tree (wide_type, wi::to_wide (op));
+    return wide_int_to_tree (wide_type, wi::to_widest (op));
 
   return NULL_TREE;
 }
@@ -6807,7 +6816,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	      if (targets.length () == 1)
 		fn = targets[0]->decl;
 	      else
-		fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		fn = builtin_decl_unreachable ();
 	      if (dump_enabled_p ())
 		{
 		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
@@ -8295,17 +8304,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_fre (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass * clone () final override { return new pass_fre (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       may_iterate = param;
     }
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return flag_tree_fre != 0 && (may_iterate || optimize > 1);
     }
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 private:
   bool may_iterate;

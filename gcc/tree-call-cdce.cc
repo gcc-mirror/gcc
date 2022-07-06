@@ -1171,7 +1171,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* The limit constants used in the implementation
 	 assume IEEE floating point format.  Other formats
@@ -1179,7 +1179,7 @@ public:
       return flag_tree_builtin_call_dce != 0;
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_call_cdce
 

@@ -178,9 +178,12 @@ public:
 
   bool emit (rich_location *rich_loc) final override
   {
-    return warning_at (rich_loc, get_controlling_option (),
-		       "double %<fclose%> of FILE %qE",
-		       m_arg);
+    diagnostic_metadata m;
+    /* CWE-1341: Multiple Releases of Same Resource or Handle.  */
+    m.add_cwe (1341);
+    return warning_meta (rich_loc, m, get_controlling_option (),
+			 "double %<fclose%> of FILE %qE",
+			 m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)

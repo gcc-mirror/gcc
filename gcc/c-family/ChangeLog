@@ -1,3 +1,40 @@
+2022-07-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105626
+	* c-format.cc (check_format_arg): Don't emit -Wformat warnings with
+	u8 strings.
+
+2022-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106111
+	* c-common.h (enum rid): Update RID_LAST_CXX20.
+
+2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* known-headers.cc (get_stdlib_header_for_name): Add <time.h>
+	names.
+
+2022-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	PR c++/20423
+	* c.opt (Woverloaded-virtual): Add levels, include in -Wall.
+
+2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.cc (ubsan_instrument_division, ubsan_instrument_shift):
+	Use flag_sanitize_trap & SANITIZE_??? instead of
+	flag_sanitize_undefined_trap_on_error.  If 2 sanitizers are involved
+	and flag_sanitize_trap differs for them, emit __builtin_trap only
+	for the comparison where trap is requested.
+	(ubsan_instrument_vla, ubsan_instrument_return): Use
+	lag_sanitize_trap & SANITIZE_??? instead of
+	flag_sanitize_undefined_trap_on_error.
+
+2022-06-13  Jason Merrill  <jason@redhat.com>
+
+	* c-ubsan.cc (ubsan_instrument_return): Use BUILTINS_LOCATION.
+
 2022-05-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/90658

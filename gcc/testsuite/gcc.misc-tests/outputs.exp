@@ -116,8 +116,23 @@ if [info exists env(MAKEFLAGS)] {
 # it weren't for
 # https://core.tcl-lang.org/tcl/tktview?name=5bbd044812), but .{i,s,o}
 # and .[iso] will pass even if only the .o is present.
+
+# Return a list containing two lists, the first naming the passes, the
+# second naming the fails.  If test ends with a question mark, the
+# test is taken as a preparatory test or cleanup, and no pass or fail
+# results will be logged, though the lists will still be built and
+# returned.
 array unset outests *
 proc outest { test sources opts dirs outputs } {
+    if { [string index $test end] == "?" } {
+	set quiet 1
+    } else {
+	set quiet 0
+    }
+
+    set passes {}
+    set fails {}
+
     global b srcdir subdir
     global outests
 
@@ -182,15 +197,15 @@ proc outest { test sources opts dirs outputs } {
 		set o "$og"
 	    }
 	    if { [file exists $d$o] } then {
-		pass "$test: $d$o"
+		lappend passes "$d$o"
 		file delete $d$o
 	    } else {
 	        set ogl [glob -nocomplain -path $d -- $o]
 		if { $ogl != {} } {
-		    pass "$test: $d$o"
+		    lappend passes "$d$o"
 		    file delete $ogl
 		} else {
-		    fail "$test: $d$o"
+		    lappend fails "$d$o"
 		}
 	    }
 	}
@@ -219,17 +234,27 @@ proc outest { test sources opts dirs outputs } {
     }
 
     if { [llength $outb] == 0 } then {
-	pass "$test: extra"
+	lappend passes "extra"
     } else {
-	fail "$test: extra\n$outb"
+	lappend fails "extra\n$outb"
     }
 
     if { [string equal "$gcc_output" ""] } then {
-	pass "$test: std out"
+	lappend passes "std out"
     } else {
-	fail "$test: std out\n$gcc_output"
+	lappend fails "std out\n$gcc_output"
     }
 
+    if !$quiet {
+	foreach p $passes {
+	    pass "$test: $p"
+	}
+	foreach f $fails {
+	    fail "$test: $f"
+	}
+    }
+
+    return [list $passes $fails]
 }
 
 set sing {-0.c}
@@ -277,6 +302,19 @@ if { "$aout" != "" } then {
 } else {
     set aout a.out
     set oaout "-o $aout"
+}
+
+# Clean up any left-overs from an earlier interrupted run.
+outest "$b-cleanup?" $sing "$oaout" {alt/ dir/ o/ od/ obj/} {{} {} {} {} {} {$aout}}
+
+# Sometimes the -I or -L flags that cause the compiler driver to save
+# .args.[01], instead of leaving it for the linker to save .ld1_args,
+# is hiding in driver self specs.
+if !$skip_atsave {
+    set atsave_test_out [outest "$b-skip-atsave?" $sing "@/dev/null -o $b.exe -save-temps" {} {{.args.1}}]
+    if { [lindex [lindex $atsave_test_out 0] 0] == "$b.args.1" } {
+	set skip_atsave 1
+    }
 }
 
 # Driver-chosen outputs.

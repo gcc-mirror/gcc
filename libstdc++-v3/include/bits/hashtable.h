@@ -899,8 +899,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Arg, typename _NodeGenerator>
 	std::pair<iterator, bool>
-	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
-		  true_type /* __uks */)
+	_M_insert_unique_aux(_Arg&& __arg, const _NodeGenerator& __node_gen)
 	{
 	  return _M_insert_unique(
 	    _S_forward_key(_ExtractKey{}(std::forward<_Arg>(__arg))),
@@ -908,12 +907,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Arg, typename _NodeGenerator>
+	std::pair<iterator, bool>
+	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
+		  true_type /* __uks */)
+	{
+	  using __to_value
+	    = __detail::_ConvertToValueType<_ExtractKey, value_type>;
+	  return _M_insert_unique_aux(
+	    __to_value{}(std::forward<_Arg>(__arg)), __node_gen);
+	}
+
+      template<typename _Arg, typename _NodeGenerator>
 	iterator
 	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
 		  false_type __uks)
 	{
-	  return _M_insert(cend(), std::forward<_Arg>(__arg), __node_gen,
-			   __uks);
+	  using __to_value
+	    = __detail::_ConvertToValueType<_ExtractKey, value_type>;
+	  return _M_insert(cend(),
+	    __to_value{}(std::forward<_Arg>(__arg)), __node_gen, __uks);
 	}
 
       // Insert with hint, not used when keys are unique.
@@ -1185,10 +1197,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 const _Hash& __h, const _Equal& __eq,
 		 const allocator_type& __a, true_type /* __uks */)
       : _Hashtable(__bkt_count_hint, __h, __eq, __a)
-      {
-	for (; __f != __l; ++__f)
-	  this->insert(*__f);
-      }
+      { this->insert(__f, __l); }
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -1200,7 +1209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Hashtable(_InputIterator __f, _InputIterator __l,
 		 size_type __bkt_count_hint,
 		 const _Hash& __h, const _Equal& __eq,
-		 const allocator_type& __a, false_type /* __uks */)
+		 const allocator_type& __a, false_type __uks)
       : _Hashtable(__h, __eq, __a)
       {
 	auto __nb_elems = __detail::__distance_fw(__f, __l);
@@ -1215,8 +1224,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_bucket_count = __bkt_count;
 	  }
 
+	__alloc_node_gen_t __node_gen(*this);
 	for (; __f != __l; ++__f)
-	  this->insert(*__f);
+	  _M_insert(*__f, __node_gen, __uks);
       }
 
   template<typename _Key, typename _Value, typename _Alloc,

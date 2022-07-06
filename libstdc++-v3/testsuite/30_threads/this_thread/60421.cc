@@ -59,6 +59,7 @@ test02()
   while (!sleeping)
   {
     // Wait for the thread to start sleeping.
+    sched_yield ();
   }
   while (sleeping)
   {

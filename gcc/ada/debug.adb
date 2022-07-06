@@ -211,7 +211,7 @@ package body Debug is
    --  d.6  Do not avoid declaring unreferenced types in C code
    --  d.7  Disable unsound heuristics in gnat2scil (for CP as SPARK prover)
    --  d.8  Disable unconditional inlining of expression functions
-   --  d.9  Disable build-in-place for nonlimited types
+   --  d.9
 
    --  d_1
    --  d_2
@@ -1124,9 +1124,6 @@ package body Debug is
    --  d.8  By default calls to expression functions are always inlined.
    --       This debug flag turns off this behavior, making them subject
    --       to the usual inlining heuristics of the code generator.
-
-   --  d.9  Disable build-in-place for function calls returning nonlimited
-   --       types.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

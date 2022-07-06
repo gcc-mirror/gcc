@@ -1,3 +1,27 @@
+2022-07-01  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
+
+	PR lto/106118
+	* configure.ac: Move -pthread from here...
+	* Makefile.am: ...to here.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+
+2022-06-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (plugin_lock): New lock.
+	(claim_file_handler): Use mutex for critical section.
+	(onload): Initialize mutex.
+	* configure.ac: Check for pthread.h.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2022-06-20  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (struct plugin_file_info): Add skip_file flag.
+	(write_resolution): Write resolution only if get_symbols != LDPS_NO_SYMS.
+	(all_symbols_read_handler): Ignore file if skip_file is true.
+	(onload): Handle LDPT_GET_SYMBOLS_V3.
+
 2022-05-04  Martin Liska  <mliska@suse.cz>
 
 	* lto-plugin.c (struct plugin_objfile): Use bool for offset

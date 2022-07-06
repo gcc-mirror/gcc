@@ -1024,7 +1024,8 @@ range_fold_unary_symbolics_p (value_range *vr,
 	{
 	  /* ~X is simply -1 - X.  */
 	  value_range minusone;
-	  minusone.set (build_int_cst (vr0->type (), -1));
+	  tree t = build_int_cst (vr0->type (), -1);
+	  minusone.set (t, t);
 	  range_fold_binary_expr (vr, MINUS_EXPR, expr_type, &minusone, vr0);
 	  return true;
 	}
@@ -4388,25 +4389,42 @@ const pass_data pass_data_vrp =
   ( TODO_cleanup_cfg | TODO_update_ssa ), /* todo_flags_finish */
 };
 
+const pass_data pass_data_early_vrp =
+{
+  GIMPLE_PASS, /* type */
+  "evrp", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_TREE_EARLY_VRP, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_update_ssa | TODO_verify_all ),
+};
+
 static int vrp_pass_num = 0;
 class pass_vrp : public gimple_opt_pass
 {
 public:
-  pass_vrp (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_vrp, ctxt), warn_array_bounds_p (false),
-      my_pass (++vrp_pass_num)
+  pass_vrp (gcc::context *ctxt, const pass_data &data_)
+    : gimple_opt_pass (data_, ctxt), data (data_), warn_array_bounds_p (false),
+      my_pass (vrp_pass_num++)
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_vrp (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass * clone () final override { return new pass_vrp (m_ctxt, data); }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       warn_array_bounds_p = param;
     }
-  virtual bool gate (function *) { return flag_tree_vrp != 0; }
-  virtual unsigned int execute (function *fun)
+  bool gate (function *) final override { return flag_tree_vrp != 0; }
+  unsigned int execute (function *fun) final override
     {
+      // Early VRP pass.
+      if (my_pass == 0)
+	return execute_ranger_vrp (fun, /*warn_array_bounds_p=*/false);
+
       if ((my_pass == 1 && param_vrp1_mode == VRP_MODE_RANGER)
 	  || (my_pass == 2 && param_vrp2_mode == VRP_MODE_RANGER))
 	return execute_ranger_vrp (fun, warn_array_bounds_p);
@@ -4414,6 +4432,7 @@ public:
     }
 
  private:
+  const pass_data &data;
   bool warn_array_bounds_p;
   int my_pass;
 }; // class pass_vrp
@@ -4423,5 +4442,11 @@ public:
 gimple_opt_pass *
 make_pass_vrp (gcc::context *ctxt)
 {
-  return new pass_vrp (ctxt);
+  return new pass_vrp (ctxt, pass_data_vrp);
+}
+
+gimple_opt_pass *
+make_pass_early_vrp (gcc::context *ctxt)
+{
+  return new pass_vrp (ctxt, pass_data_early_vrp);
 }

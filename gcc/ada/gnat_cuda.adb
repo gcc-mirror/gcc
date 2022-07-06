@@ -165,16 +165,19 @@ package body GNAT_CUDA is
 
       Kernel_Elm := First_Elmt (Kernels);
       while Present (Kernel_Elm) loop
-         Kernel := Node (Kernel_Elm);
+         Kernel      := Node (Kernel_Elm);
          Kernel_Body := Subprogram_Body (Kernel);
-         Loc := Sloc (Kernel_Body);
+         Loc         := Sloc (Kernel_Body);
 
          Null_Body := Make_Subprogram_Body (Loc,
-           Specification              => Subprogram_Specification (Kernel),
+           Specification              => Specification (Kernel_Body),
            Declarations               => New_List,
            Handled_Statement_Sequence =>
              Make_Handled_Sequence_Of_Statements (Loc,
                Statements => New_List (Make_Null_Statement (Loc))));
+
+         Set_Corresponding_Spec (Null_Body,
+           Corresponding_Spec (Kernel_Body));
 
          Rewrite (Kernel_Body, Null_Body);
 

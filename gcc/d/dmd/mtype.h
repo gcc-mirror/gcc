@@ -128,6 +128,14 @@ enum VarArgValues
 };
 typedef unsigned char VarArg;
 
+enum class Covariant
+{
+    distinct = 0, /// types are distinct
+    yes = 1,      /// types are covariant
+    no = 2,       /// arguments match as far as overloading goes, but types are not covariant
+    fwdref = 3,   /// cannot determine covariance because of forward references
+};
+
 class Type : public ASTNode
 {
 public:
@@ -218,6 +226,7 @@ public:
     // kludge for template.isType()
     DYNCAST dyncast() const override final { return DYNCAST_TYPE; }
     size_t getUniqueID() const;
+    Covariant covariant(Type *, StorageClass * = NULL, bool = false);
     const char *toChars() const override;
     char *toPrettyChars(bool QualifyTypes = false);
     static void _init();
@@ -560,6 +569,8 @@ public:
                              Expression *defaultArg, UserAttributeDeclaration *userAttribDecl);
     Parameter *syntaxCopy();
     Type *isLazyArray();
+    bool isLazy() const;
+    bool isReference() const;
     // kludge for template.isType()
     DYNCAST dyncast() const override { return DYNCAST_PARAMETER; }
     void accept(Visitor *v) override { v->visit(this); }

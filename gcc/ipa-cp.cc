@@ -1020,7 +1020,7 @@ ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
 
   value_range save (m_vr);
   m_vr.union_ (*other_vr);
-  return !m_vr.equal_p (save);
+  return m_vr != save;
 }
 
 /* Return true if value range information in the lattice is yet unknown.  */
@@ -4652,8 +4652,7 @@ update_counts_for_self_gen_clones (cgraph_node *orig_node,
     {
       profile_count orig_count = n->count;
       profile_count new_count
-	= (redist_sum.apply_scale (1, self_gen_clones.length ())
-	   + other_edges_count[i]);
+	= (redist_sum / self_gen_clones.length () + other_edges_count[i]);
       new_count = lenient_count_portion_handling (new_count, orig_node);
       n->count = new_count;
       profile_count::adjust_for_ipa_scaling (&new_count, &orig_count);
@@ -4685,7 +4684,7 @@ update_counts_for_self_gen_clones (cgraph_node *orig_node,
 	    for (cgraph_edge *e = cs; e; e = get_next_cgraph_edge_clone (e))
 	      if (e->callee->ultimate_alias_target () == orig_node
 		  && processed_edges.contains (e))
-		e->count = e->count.apply_scale (1, den);
+		e->count /= den;
 	}
     }
 
@@ -4713,8 +4712,7 @@ update_counts_for_self_gen_clones (cgraph_node *orig_node,
 	      && desc.unproc_orig_rec_edges > 0)
 	    {
 	      desc.count = n->count - desc.count;
-	      desc.count
-		= desc.count.apply_scale (1, desc.unproc_orig_rec_edges);
+	      desc.count = desc.count /= desc.unproc_orig_rec_edges;
 	      adjust_clone_incoming_counts (n, &desc);
 	    }
 	  else if (dump_file)
@@ -6084,7 +6082,7 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
       if (node->count.ipa ().nonzero_p ())
 	{
 	  unsigned dem = self_gen_clones->length () + 1;
-	  rec_count_sum = node->count.ipa ().apply_scale (1, dem);
+	  rec_count_sum = node->count.ipa () / dem;
 	}
       else
 	rec_count_sum = profile_count::zero ();
@@ -6659,14 +6657,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* FIXME: We should remove the optimize check after we ensure we never run
 	 IPA passes when not optimizing.  */
       return (flag_ipa_cp && optimize) || in_lto_p;
     }
 
-  virtual unsigned int execute (function *) { return ipcp_driver (); }
+  unsigned int execute (function *) final override { return ipcp_driver (); }
 
 }; // class pass_ipa_cp
 

@@ -56,9 +56,8 @@ struct F {
   A a = true ? A{x} : A{x};
 };
 
-// FIXME: Doesn't work due to PR105550.
-//constexpr F f;
-//SA (f.a.p == &f.a);
+constexpr F f;
+SA (f.a.p == &f.a);
 SA (e.x == 42);
 F f2 = { };
 F f3 = { 42 };

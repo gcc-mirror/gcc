@@ -7180,7 +7180,7 @@ extern module_state *get_module (tree name, module_state *parent = NULL,
 extern bool module_may_redeclare (tree decl);
 
 extern bool module_global_init_needed ();
-extern bool module_has_import_inits ();
+extern bool module_determine_import_inits ();
 extern void module_add_import_initializers ();
 
 /* Where the namespace-scope decl was originally declared.  */
@@ -7209,9 +7209,9 @@ extern void import_module (module_state *, location_t, bool export_p,
 extern void declare_module (module_state *, location_t, bool export_p,
 			    tree attr, cpp_reader *);
 extern void init_modules (cpp_reader *);
-extern void fini_modules ();
+extern void fini_modules (cpp_reader *, void *cookie, bool);
 extern void maybe_check_all_macros (cpp_reader *);
-extern void finish_module_processing (cpp_reader *);
+extern void *finish_module_processing (cpp_reader *);
 extern char const *module_name (unsigned, bool header_ok);
 extern bitmap get_import_bitmap ();
 extern bitmap visible_instantiation_path (bitmap *);

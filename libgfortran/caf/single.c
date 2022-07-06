@@ -478,12 +478,11 @@ convert_type (void *dst, int dst_type, int dst_kind, void *src, int src_type,
   typedef long double real128t;
   typedef _Complex long double complex128t;
 #elif defined(HAVE_GFC_REAL_16)
-  typedef _Complex float __attribute__((mode(TC))) __complex128;
-  typedef __float128 real128t;
-  typedef __complex128 complex128t;
+  typedef _Float128 real128t;
+  typedef _Complex _Float128 complex128t;
 #elif defined(HAVE_GFC_REAL_10)
   typedef long double real128t;
-  typedef long double complex128t;
+  typedef _Complex long double complex128t;
 #else
   typedef double real128t;
   typedef _Complex double complex128t;

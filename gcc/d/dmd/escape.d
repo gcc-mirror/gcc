@@ -328,12 +328,12 @@ bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Parameter par, STC
         else if (par)
         {
             result |= sc.setUnsafeDIP1000(gag, arg.loc,
-                desc ~ " `%s` assigned to non-scope parameter `%s`", v, par);
+                desc ~ " `%s` assigned to non-scope parameter `%s` calling `%s`", v, par, fdc);
         }
         else
         {
             result |= sc.setUnsafeDIP1000(gag, arg.loc,
-                desc ~ " `%s` assigned to non-scope parameter `this`", v);
+                desc ~ " `%s` assigned to non-scope parameter `this` calling `%s`", v, fdc);
         }
     }
 
@@ -1230,9 +1230,24 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
                 !(!refs && sc.func.isFuncDeclaration().getLevel(pfunc, sc.intypeof) > 0)
                )
             {
-                // https://issues.dlang.org/show_bug.cgi?id=17029
-                result |= sc.setUnsafeDIP1000(gag, e.loc, "scope variable `%s` may not be returned", v);
-                continue;
+                if (v.isParameter() && !(v.storage_class & STC.return_))
+                {
+                    // https://issues.dlang.org/show_bug.cgi?id=23191
+                    if (!gag)
+                    {
+                        previewErrorFunc(sc.isDeprecated(), global.params.useDIP1000)(e.loc,
+                            "scope parameter `%s` may not be returned", v.toChars()
+                        );
+                        result = true;
+                        continue;
+                    }
+                }
+                else
+                {
+                    // https://issues.dlang.org/show_bug.cgi?id=17029
+                    result |= sc.setUnsafeDIP1000(gag, e.loc, "scope variable `%s` may not be returned", v);
+                    continue;
+                }
             }
         }
         else if (v.storage_class & STC.variadic && p == sc.func)
@@ -2492,9 +2507,11 @@ private void addMaybe(VarDeclaration va, VarDeclaration v)
  *   fmt = printf-style format string
  *   arg0  = (optional) argument for first %s format specifier
  *   arg1  = (optional) argument for second %s format specifier
+ *   arg2  = (optional) argument for third %s format specifier
  * Returns: whether an actual safe error (not deprecation) occured
  */
-private bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* msg, RootObject arg0 = null, RootObject arg1 = null)
+private bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* msg,
+    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
 {
     if (fs == FeatureState.disabled)
     {
@@ -2502,7 +2519,7 @@ private bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, con
     }
     else if (fs == FeatureState.enabled)
     {
-        return sc.setUnsafe(gag, loc, msg, arg0, arg1);
+        return sc.setUnsafe(gag, loc, msg, arg0, arg1, arg2);
     }
     else
     {
@@ -2510,22 +2527,23 @@ private bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, con
         {
             if (!gag)
                 previewErrorFunc(sc.isDeprecated(), fs)(
-                    loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : ""
+                    loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : ""
                 );
         }
         else if (!sc.func.safetyViolation)
         {
             import dmd.func : AttributeViolation;
-            sc.func.safetyViolation = new AttributeViolation(loc, msg, arg0, arg1);
+            sc.func.safetyViolation = new AttributeViolation(loc, msg, arg0, arg1, arg2);
         }
         return false;
     }
 }
 
 // `setUnsafePreview` partially evaluated for dip1000
-private bool setUnsafeDIP1000(Scope* sc, bool gag, Loc loc, const(char)* msg, RootObject arg0 = null, RootObject arg1 = null)
+private bool setUnsafeDIP1000(Scope* sc, bool gag, Loc loc, const(char)* msg,
+    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
 {
-    return setUnsafePreview(sc, global.params.useDIP1000, gag, loc, msg, arg0, arg1);
+    return setUnsafePreview(sc, global.params.useDIP1000, gag, loc, msg, arg0, arg1, arg2);
 }
 
 /***************************************

@@ -1376,11 +1376,7 @@ package body Sem_Ch5 is
          --  Initialize unblocked exit count for statements of begin block
          --  plus one for each exception handler that is present.
 
-         Unblocked_Exit_Count := 1;
-
-         if Present (EH) then
-            Unblocked_Exit_Count := Unblocked_Exit_Count + List_Length (EH);
-         end if;
+         Unblocked_Exit_Count := 1 + List_Length (EH);
 
          --  If a label is present analyze it and mark it as referenced
 
@@ -4402,7 +4398,7 @@ package body Sem_Ch5 is
       P          : Node_Id;
 
    begin
-      if Is_List_Member (N) and then Comes_From_Source (N) then
+      if Comes_From_Source (N) then
          Nxt := Original_Node (Next (N));
 
          --  Skip past pragmas
@@ -4419,8 +4415,7 @@ package body Sem_Ch5 is
 
          --  Otherwise see if we have a real statement following us
 
-         elsif Present (Nxt)
-           and then Comes_From_Source (Nxt)
+         elsif Comes_From_Source (Nxt)
            and then Is_Statement (Nxt)
          then
             --  Special very annoying exception. If we have a return that
@@ -4473,8 +4468,7 @@ package body Sem_Ch5 is
                   end loop;
                end if;
 
-               Error_Msg
-                 ("??unreachable code!", Sloc (Error_Node), Error_Node);
+               Error_Msg_N ("??unreachable code!", Error_Node);
             end if;
 
          --  If the unconditional transfer of control instruction is the

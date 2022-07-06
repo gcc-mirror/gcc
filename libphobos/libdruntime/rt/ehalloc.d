@@ -18,51 +18,6 @@ debug(PRINTF)
     import core.stdc.stdio;
 }
 
-/**********************************************
- * Allocate an exception of type `ci` from the exception pool.
- * It has the same interface as `rt.lifetime._d_newclass()`.
- * The class type must be Throwable or derived from it,
- * and cannot be a COM or C++ class. The compiler must enforce
- * this.
- * Returns:
- *      default initialized instance of the type
- */
-
-extern (C) Throwable _d_newThrowable(const TypeInfo_Class ci)
-{
-    debug(PRINTF) printf("_d_newThrowable(ci = %p, %s)\n", ci, cast(char *)ci.name);
-
-    assert(!(ci.m_flags & TypeInfo_Class.ClassFlags.isCOMclass));
-    assert(!(ci.m_flags & TypeInfo_Class.ClassFlags.isCPPclass));
-
-    import core.stdc.stdlib : malloc;
-    auto init = ci.initializer;
-    void* p = malloc(init.length);
-    if (!p)
-    {
-        import core.exception : onOutOfMemoryError;
-        onOutOfMemoryError();
-    }
-
-    debug(PRINTF) printf(" p = %p\n", p);
-
-    // initialize it
-    p[0 .. init.length] = init[];
-
-    if (!(ci.m_flags & TypeInfo_Class.ClassFlags.noPointers))
-    {
-        // Inform the GC about the pointers in the object instance
-        import core.memory : GC;
-
-        GC.addRange(p, init.length, ci);
-    }
-
-    debug(PRINTF) printf("initialization done\n");
-    Throwable t = cast(Throwable)p;
-    t.refcount() = 1;
-    return t;
-}
-
 
 /********************************************
  * Delete exception instance `t` from the exception pool.

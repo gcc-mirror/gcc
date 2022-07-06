@@ -169,18 +169,18 @@ class general_scalar_chain : public scalar_chain
  public:
   general_scalar_chain (enum machine_mode smode_, enum machine_mode vmode_);
   ~general_scalar_chain ();
-  int compute_convert_gain ();
+  int compute_convert_gain () final override;
  private:
   hash_map<rtx, rtx> defs_map;
   bitmap insns_conv;
   unsigned n_sse_to_integer;
   unsigned n_integer_to_sse;
-  void mark_dual_mode_def (df_ref def);
-  void convert_insn (rtx_insn *insn);
+  void mark_dual_mode_def (df_ref def) final override;
+  void convert_insn (rtx_insn *insn) final override;
   void convert_op (rtx *op, rtx_insn *insn);
   void convert_reg (rtx_insn *insn, rtx dst, rtx src);
   void make_vector_copies (rtx_insn *, rtx);
-  void convert_registers ();
+  void convert_registers () final override;
   rtx convert_compare (rtx op1, rtx op2, rtx_insn *insn);
   int vector_const_cost (rtx exp);
 };
@@ -191,14 +191,14 @@ class timode_scalar_chain : public scalar_chain
   timode_scalar_chain () : scalar_chain (TImode, V1TImode) {}
 
   /* Convert from TImode to V1TImode is always faster.  */
-  int compute_convert_gain () { return 1; }
+  int compute_convert_gain () final override { return 1; }
 
  private:
-  void mark_dual_mode_def (df_ref def);
+  void mark_dual_mode_def (df_ref def) final override;
   void fix_debug_reg_uses (rtx reg);
-  void convert_insn (rtx_insn *insn);
+  void convert_insn (rtx_insn *insn) final override;
   /* We don't convert registers to difference size.  */
-  void convert_registers () {}
+  void convert_registers () final override {}
 };
 
 } // anon namespace

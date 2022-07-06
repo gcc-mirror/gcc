@@ -40,7 +40,11 @@ along with this program; see the file COPYING3.  If not see
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#if !HAVE_PTHREAD_H
+#error POSIX threads are mandatory dependency
 #endif
+#endif
+
 #if HAVE_STDINT_H
 #include <stdint.h>
 #endif
@@ -55,6 +59,7 @@ along with this program; see the file COPYING3.  If not see
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <pthread.h>
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
@@ -136,6 +141,7 @@ struct plugin_file_info
   void *handle;
   struct plugin_symtab symtab;
   struct plugin_symtab conflicts;
+  bool skip_file;
 };
 
 /* List item with name of the file with offloading.  */
@@ -156,10 +162,13 @@ enum symbol_style
   ss_uscore,	/* Underscore prefix all symbols.  */
 };
 
+/* Plug-in mutex.  */
+static pthread_mutex_t plugin_lock;
+
 static char *arguments_file_name;
 static ld_plugin_register_claim_file register_claim_file;
 static ld_plugin_register_all_symbols_read register_all_symbols_read;
-static ld_plugin_get_symbols get_symbols, get_symbols_v2;
+static ld_plugin_get_symbols get_symbols, get_symbols_v2, get_symbols_v3;
 static ld_plugin_register_cleanup register_cleanup;
 static ld_plugin_add_input_file add_input_file;
 static ld_plugin_add_input_library add_input_library;
@@ -547,14 +556,12 @@ free_symtab (struct plugin_symtab *symtab)
 static void
 write_resolution (void)
 {
-  unsigned int i;
+  unsigned int i, included_files = 0;
   FILE *f;
 
   check (resolution_file, LDPL_FATAL, "resolution file not specified");
   f = fopen (resolution_file, "w");
   check (f, LDPL_FATAL, "could not open file");
-
-  fprintf (f, "%d\n", num_claimed_files);
 
   for (i = 0; i < num_claimed_files; i++)
     {
@@ -563,13 +570,38 @@ write_resolution (void)
       struct ld_plugin_symbol *syms = symtab->syms;
 
       /* Version 2 of API supports IRONLY_EXP resolution that is
-         accepted by GCC-4.7 and newer.  */
-      if (get_symbols_v2)
+	 accepted by GCC-4.7 and newer.
+	 Version 3 can return LDPS_NO_SYMS that means the object
+	 will not be used at all.  */
+      if (get_symbols_v3)
+	{
+	  enum ld_plugin_status status
+	    = get_symbols_v3 (info->handle, symtab->nsyms, syms);
+	  if (status == LDPS_NO_SYMS)
+	    {
+	      info->skip_file = true;
+	      continue;
+	    }
+	}
+      else if (get_symbols_v2)
         get_symbols_v2 (info->handle, symtab->nsyms, syms);
       else
         get_symbols (info->handle, symtab->nsyms, syms);
 
+      ++included_files;
+
       finish_conflict_resolution (symtab, &info->conflicts);
+    }
+
+  fprintf (f, "%d\n", included_files);
+
+  for (i = 0; i < num_claimed_files; i++)
+    {
+      struct plugin_file_info *info = &claimed_files[i];
+      struct plugin_symtab *symtab = &info->symtab;
+
+      if (info->skip_file)
+	continue;
 
       fprintf (f, "%s %d\n", info->name, symtab->nsyms + info->conflicts.nsyms);
       dump_symtab (f, symtab);
@@ -833,7 +865,8 @@ all_symbols_read_handler (void)
     {
       struct plugin_file_info *info = &claimed_files[i];
 
-      *lto_arg_ptr++ = info->name;
+      if (!info->skip_file)
+	*lto_arg_ptr++ = info->name;
     }
 
   *lto_arg_ptr++ = NULL;
@@ -1237,15 +1270,18 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
 			      lto_file.symtab.syms);
       check (status == LDPS_OK, LDPL_FATAL, "could not add symbols");
 
+      pthread_mutex_lock (&plugin_lock);
       num_claimed_files++;
       claimed_files =
 	xrealloc (claimed_files,
 		  num_claimed_files * sizeof (struct plugin_file_info));
       claimed_files[num_claimed_files - 1] = lto_file;
+      pthread_mutex_unlock (&plugin_lock);
 
       *claimed = 1;
     }
 
+  pthread_mutex_lock (&plugin_lock);
   if (offload_files == NULL)
     {
       /* Add dummy item to the start of the list.  */
@@ -1308,11 +1344,14 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
 	offload_files_last_lto = ofld;
       num_offload_files++;
     }
+  pthread_mutex_unlock (&plugin_lock);
 
   goto cleanup;
 
  err:
+  pthread_mutex_lock (&plugin_lock);
   non_claimed_files++;
+  pthread_mutex_unlock (&plugin_lock);
   free (lto_file.name);
 
  cleanup:
@@ -1390,6 +1429,12 @@ onload (struct ld_plugin_tv *tv)
   struct ld_plugin_tv *p;
   enum ld_plugin_status status;
 
+  if (pthread_mutex_init (&plugin_lock, NULL) != 0)
+    {
+      fprintf (stderr, "mutex init failed\n");
+      abort ();
+    }
+
   p = tv;
   while (p->tv_tag)
     {
@@ -1409,6 +1454,9 @@ onload (struct ld_plugin_tv *tv)
 	  break;
 	case LDPT_REGISTER_ALL_SYMBOLS_READ_HOOK:
 	  register_all_symbols_read = p->tv_u.tv_register_all_symbols_read;
+	  break;
+	case LDPT_GET_SYMBOLS_V3:
+	  get_symbols_v3 = p->tv_u.tv_get_symbols;
 	  break;
 	case LDPT_GET_SYMBOLS_V2:
 	  get_symbols_v2 = p->tv_u.tv_get_symbols;

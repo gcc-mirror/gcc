@@ -3034,6 +3034,7 @@ warn_hidden (tree t)
 	  continue;
 
 	/* Remove any overridden functions.  */
+	bool seen_non_override = false;
 	for (tree fndecl : ovl_range (fns))
 	  {
 	    if (TREE_CODE (fndecl) == FUNCTION_DECL
@@ -3045,20 +3046,28 @@ warn_hidden (tree t)
 		for (size_t k = 0; k < base_fndecls.length (); k++)
 		  if (base_fndecls[k]
 		      && same_signature_p (fndecl, base_fndecls[k]))
-		    base_fndecls[k] = NULL_TREE;
+		    {
+		      base_fndecls[k] = NULL_TREE;
+		      goto next;
+		    }
 	      }
+	    seen_non_override = true;
+	  next:;
 	  }
+
+	if (!seen_non_override && warn_overloaded_virtual == 1)
+	  /* All the derived fns override base virtuals.  */
+	  return;
 
 	/* Now give a warning for all base functions without overriders,
 	   as they are hidden.  */
-	tree base_fndecl;
-	FOR_EACH_VEC_ELT (base_fndecls, j, base_fndecl)
+	for (tree base_fndecl : base_fndecls)
 	  if (base_fndecl)
 	    {
 	      auto_diagnostic_group d;
 	      /* Here we know it is a hider, and no overrider exists.  */
 	      if (warning_at (location_of (base_fndecl),
-			      OPT_Woverloaded_virtual,
+			      OPT_Woverloaded_virtual_,
 			      "%qD was hidden", base_fndecl))
 		inform (location_of (fns), "  by %qD", fns);
 	    }

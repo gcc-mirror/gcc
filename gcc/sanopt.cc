@@ -392,11 +392,11 @@ maybe_optimize_ubsan_null_ifn (class sanopt_ctx *ctx, gimple *stmt)
      stmts have same location.  */
   else if (integer_zerop (align))
     remove = (flag_sanitize_recover & SANITIZE_NULL) == 0
-	      || flag_sanitize_undefined_trap_on_error
+	      || (flag_sanitize_trap & SANITIZE_NULL) != 0
 	      || gimple_location (g) == gimple_location (stmt);
   else if (tree_int_cst_le (cur_align, align))
     remove = (flag_sanitize_recover & SANITIZE_ALIGNMENT) == 0
-	      || flag_sanitize_undefined_trap_on_error
+	      || (flag_sanitize_trap & SANITIZE_ALIGNMENT) != 0
 	      || gimple_location (g) == gimple_location (stmt);
 
   if (!remove && gimple_bb (g) == gimple_bb (stmt)
@@ -942,8 +942,16 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_sanitize; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override
+  {
+    /* SANITIZE_RETURN is handled in the front-end.  When trapping,
+       SANITIZE_UNREACHABLE is handled by builtin_decl_unreachable.  */
+    unsigned int mask = SANITIZE_RETURN;
+    if (flag_sanitize_trap & SANITIZE_UNREACHABLE)
+      mask |= SANITIZE_UNREACHABLE;
+    return flag_sanitize & ~mask;
+  }
+  unsigned int execute (function *) final override;
 
 }; // class pass_sanopt
 

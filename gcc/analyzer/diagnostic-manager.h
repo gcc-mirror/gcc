@@ -46,6 +46,9 @@ public:
 
   json::object *to_json () const;
 
+  void dump_dot_id (pretty_printer *pp) const;
+  void dump_as_dot_node (pretty_printer *pp) const;
+
   const feasibility_problem *get_feasibility_problem () const
   {
     return m_problem;
@@ -145,6 +148,10 @@ private:
   void build_emission_path (const path_builder &pb,
 			    const exploded_path &epath,
 			    checker_path *emission_path) const;
+
+  void add_event_on_final_node (const exploded_node *final_enode,
+				checker_path *emission_path,
+				interesting_t *interest) const;
 
   void add_events_for_eedge (const path_builder &pb,
 			     const exploded_edge &eedge,

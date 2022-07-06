@@ -289,12 +289,14 @@ package body Exp_Imgv is
          --  If the unit where the type is declared is the main unit, and the
          --  number of literals is greater than Threshold_For_Size when we are
          --  optimizing for size, and the restriction No_Implicit_Loops is not
-         --  active, and -gnatd_h is not specified, generate the hash function.
+         --  active, and -gnatd_h is not specified, and not GNAT_Mode, generate
+         --  the hash function.
 
          if In_Main_Unit
            and then (Optimize_Size = 0 or else Nlit > Threshold_For_Size)
            and then not Restriction_Active (No_Implicit_Loops)
            and then not Debug_Flag_Underscore_H
+           and then not GNAT_Mode
          then
             declare
                LB : constant Positive := 2 * Positive (Nlit) + 1;

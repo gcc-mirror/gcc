@@ -660,8 +660,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 like variables.  */
       if (definition
 	  && !gnu_expr
-	  && No (Address_Clause (gnat_entity))
 	  && !No_Initialization (gnat_decl)
+	  && No (Address_Clause (gnat_entity))
 	  && No (gnat_renamed_obj))
 	{
 	  gnu_decl = error_mark_node;
@@ -711,6 +711,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
     case E_Variable:
       {
 	const Entity_Id gnat_type = Etype (gnat_entity);
+	const Entity_Id gnat_und_type = Underlying_Type (gnat_type);
 	/* Always create a variable for volatile objects and variables seen
 	   constant but with a Linker_Section pragma.  */
 	bool const_flag
@@ -749,7 +750,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* Get the type after elaborating the renamed object.  */
-	if (foreign && Is_Descendant_Of_Address (Underlying_Type (gnat_type)))
+	if (foreign && Is_Descendant_Of_Address (gnat_und_type))
 	  gnu_type = ptr_type_node;
 	else
 	  gnu_type = gnat_to_gnu_type (gnat_type);
@@ -779,6 +780,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   of the subtype is smaller than the type.  */
 	if (kind == E_Loop_Parameter)
 	  gnu_type = get_base_type (gnu_type);
+
+	/* If this is a simple constant, strip the qualifiers from its type,
+	   since the constant represents only its value.  */
+	else if (simple_constant_p (gnat_entity))
+	  gnu_type = TYPE_MAIN_VARIANT (gnu_type);
 
 	/* Reject non-renamed objects whose type is an unconstrained array or
 	   any object whose type is a dummy type or void.  */
@@ -947,7 +953,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   subtype, make a type that includes the template.  We will either
 	   allocate or create a variable of that type, see below.  */
 	if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
-	    && Is_Array_Type (Underlying_Type (gnat_type))
+	    && Is_Array_Type (gnat_und_type)
 	    && !type_annotate_only)
 	  {
 	    tree gnu_array = gnat_to_gnu_type (Base_Type (gnat_type));
@@ -996,8 +1002,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* If the object is aliased, of a constrained nominal subtype and its
 	   size might be zero at run time, we force at least the unit size.  */
 	if (Is_Aliased (gnat_entity)
+	    && Is_Constrained (gnat_type)
 	    && !Is_Constr_Subt_For_UN_Aliased (gnat_type)
-	    && Is_Array_Type (Underlying_Type (gnat_type))
+	    && Is_Array_Type (gnat_und_type)
 	    && !TREE_CONSTANT (gnu_object_size))
 	  gnu_size = size_binop (MAX_EXPR, gnu_object_size, bitsize_unit_node);
 
@@ -1246,7 +1253,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	       subtype, then it can overlay only another aliased object with an
 	       unconstrained array nominal subtype and compatible template.  */
 	    if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
-		&& Is_Array_Type (Underlying_Type (gnat_type))
+		&& Is_Array_Type (gnat_und_type)
 		&& !type_annotate_only)
 	      {
 		tree rec_type = TREE_TYPE (gnu_type);
@@ -1487,7 +1494,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   object.  Note that we have to do it this late because of the
 	   couple of allocation adjustments that might be made above.  */
 	if (Is_Constr_Subt_For_UN_Aliased (gnat_type)
-	    && Is_Array_Type (Underlying_Type (gnat_type))
+	    && Is_Array_Type (gnat_und_type)
 	    && !type_annotate_only)
 	  {
 	    /* In case the object with the template has already been allocated
@@ -5777,10 +5784,9 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 			  bool debug_info_p, tree *param_list)
 {
   const Entity_Kind kind = Ekind (gnat_subprog);
+  const Entity_Id gnat_return_type = Etype (gnat_subprog);
   const bool method_p = is_cplusplus_method (gnat_subprog);
   const bool variadic = IN (Convention (gnat_subprog), Convention_C_Variadic);
-  Entity_Id gnat_return_type = Etype (gnat_subprog);
-  Entity_Id gnat_param;
   tree gnu_type = present_gnu_tree (gnat_subprog)
 		  ? TREE_TYPE (get_gnu_tree (gnat_subprog)) : NULL_TREE;
   tree gnu_return_type;
@@ -5810,7 +5816,6 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   bool return_by_direct_ref_p = false;
   bool return_by_invisi_ref_p = false;
   bool incomplete_profile_p = false;
-  int num;
 
   /* Look into the return type and get its associated GCC tree if it is not
      void, and then compute various flags for the subprogram type.  But make
@@ -5944,6 +5949,8 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
   /* Loop over the parameters and get their associated GCC tree.  While doing
      this, build a copy-in copy-out structure if we need one.  */
+  Entity_Id gnat_param;
+  int num;
   for (gnat_param = First_Formal_With_Extras (gnat_subprog), num = 0;
        Present (gnat_param);
        gnat_param = Next_Formal_With_Extras (gnat_param), num++)
@@ -9537,6 +9544,19 @@ promote_object_alignment (tree gnu_type, tree gnu_size, Entity_Id gnat_entity)
 #endif
 
   return align;
+}
+
+/* Return whether GNAT_ENTITY is a simple constant, i.e. it represents only
+   its value and reading it has no side effects.  */
+
+bool
+simple_constant_p (Entity_Id gnat_entity)
+{
+  return Ekind (gnat_entity) == E_Constant
+	 && Present (Constant_Value (gnat_entity))
+	 && !No_Initialization (gnat_entity)
+	 && No (Address_Clause (gnat_entity))
+	 && No (Renamed_Object (gnat_entity));
 }
 
 /* Verify that TYPE is something we can implement atomically.  If not, issue

@@ -46,9 +46,9 @@ struct fs::_Dir : _Dir_base
 {
   _Dir(const fs::path& p, bool skip_permission_denied, bool nofollow,
        [[maybe_unused]] bool filename_only, error_code& ec)
-  : _Dir_base(fdcwd(), p.c_str(), skip_permission_denied, nofollow, ec)
+  : _Dir_base(p.c_str(), skip_permission_denied, nofollow, ec)
   {
-#if _GLIBCXX_HAVE_DIRFD
+#if _GLIBCXX_HAVE_DIRFD && _GLIBCXX_HAVE_OPENAT && _GLIBCXX_HAVE_UNLINKAT
     if (filename_only)
       return; // Do not store path p when we aren't going to use it.
 #endif
@@ -117,18 +117,19 @@ struct fs::_Dir : _Dir_base
     return false;
   }
 
-  // Return a file descriptor for the directory and current entry's path.
-  // If dirfd is available, use it and return only the filename.
-  // Otherwise, return AT_FDCWD and return the full path.
-  pair<int, const posix::char_type*>
-  dir_and_pathname() const noexcept
+  // Return a pathname for the current directory entry, as an _At_path.
+  _Dir_base::_At_path
+  current() const noexcept
   {
     const fs::path& p = entry.path();
 #if _GLIBCXX_HAVE_DIRFD
-    if (!p.empty())
-      return {::dirfd(this->dirp), std::prev(p.end())->c_str()};
+    if (!p.empty()) [[__likely__]]
+      {
+	auto len = std::prev(p.end())->native().size();
+	return {::dirfd(this->dirp), p.c_str(), p.native().size() - len};
+      }
 #endif
-    return {this->fdcwd(), p.c_str()};
+    return p.c_str();
   }
 
   // Create a new _Dir for the directory this->entry.path().
@@ -136,8 +137,7 @@ struct fs::_Dir : _Dir_base
   open_subdir(bool skip_permission_denied, bool nofollow,
 	      error_code& ec) const noexcept
   {
-    auto [dirfd, pathname] = dir_and_pathname();
-    _Dir_base d(dirfd, pathname, skip_permission_denied, nofollow, ec);
+    _Dir_base d(current(), skip_permission_denied, nofollow, ec);
     // If this->path is empty, the new _Dir should have an empty path too.
     const fs::path& p = this->path.empty() ? this->path : this->entry.path();
     return _Dir(std::move(d), p);
@@ -147,8 +147,9 @@ struct fs::_Dir : _Dir_base
   do_unlink(bool is_directory, error_code& ec) const noexcept
   {
 #if _GLIBCXX_HAVE_UNLINKAT
-    auto [dirfd, pathname] = dir_and_pathname();
-    if (::unlinkat(dirfd, pathname, is_directory ? AT_REMOVEDIR : 0) == -1)
+    const auto atp = current();
+    if (::unlinkat(atp.dir(), atp.path_at_dir(),
+		   is_directory ? AT_REMOVEDIR : 0) == -1)
       {
 	ec.assign(errno, std::generic_category());
 	return false;

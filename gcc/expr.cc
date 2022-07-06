@@ -776,6 +776,32 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
   convert_move (temp, x, unsignedp);
   return temp;
 }
+
+/* Variant of convert_modes for ABI parameter passing/return.
+   Return an rtx for a value that would result from converting X from
+   a floating point mode FMODE to wider integer mode MODE.  */
+
+rtx
+convert_float_to_wider_int (machine_mode mode, machine_mode fmode, rtx x)
+{
+  gcc_assert (SCALAR_INT_MODE_P (mode) && SCALAR_FLOAT_MODE_P (fmode));
+  scalar_int_mode tmp_mode = int_mode_for_mode (fmode).require ();
+  rtx tmp = force_reg (tmp_mode, gen_lowpart (tmp_mode, x));
+  return convert_modes (mode, tmp_mode, tmp, 1);
+}
+
+/* Variant of convert_modes for ABI parameter passing/return.
+   Return an rtx for a value that would result from converting X from
+   an integer mode IMODE to a narrower floating point mode MODE.  */
+ 
+rtx
+convert_wider_int_to_float (machine_mode mode, machine_mode imode, rtx x)
+{
+  gcc_assert (SCALAR_FLOAT_MODE_P (mode) && SCALAR_INT_MODE_P (imode));
+  scalar_int_mode tmp_mode = int_mode_for_mode (mode).require ();
+  rtx tmp = force_reg (tmp_mode, gen_lowpart (tmp_mode, x));
+  return gen_lowpart_SUBREG (mode, tmp);
+}
 
 /* Return the largest alignment we can use for doing a move (or store)
    of MAX_PIECES.  ALIGN is the largest alignment we could use.  */
@@ -1355,8 +1381,8 @@ op_by_pieces_d::run ()
 class move_by_pieces_d : public op_by_pieces_d
 {
   insn_gen_fn m_gen_fun;
-  void generate (rtx, rtx, machine_mode);
-  bool prepare_mode (machine_mode, unsigned int);
+  void generate (rtx, rtx, machine_mode) final override;
+  bool prepare_mode (machine_mode, unsigned int) final override;
 
  public:
   move_by_pieces_d (rtx to, rtx from, unsigned HOST_WIDE_INT len,
@@ -1451,8 +1477,8 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 class store_by_pieces_d : public op_by_pieces_d
 {
   insn_gen_fn m_gen_fun;
-  void generate (rtx, rtx, machine_mode);
-  bool prepare_mode (machine_mode, unsigned int);
+  void generate (rtx, rtx, machine_mode) final override;
+  bool prepare_mode (machine_mode, unsigned int) final override;
 
  public:
   store_by_pieces_d (rtx to, by_pieces_constfn cfn, void *cfn_data,
@@ -1648,9 +1674,9 @@ class compare_by_pieces_d : public op_by_pieces_d
   rtx m_accumulator;
   int m_count, m_batch;
 
-  void generate (rtx, rtx, machine_mode);
-  bool prepare_mode (machine_mode, unsigned int);
-  void finish_mode (machine_mode);
+  void generate (rtx, rtx, machine_mode) final override;
+  bool prepare_mode (machine_mode, unsigned int) final override;
+  void finish_mode (machine_mode) final override;
  public:
   compare_by_pieces_d (rtx op0, rtx op1, by_pieces_constfn op1_cfn,
 		       void *op1_cfn_data, HOST_WIDE_INT len, int align,
@@ -2801,10 +2827,26 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	    {
 	      machine_mode dest_mode = GET_MODE (dest);
 	      machine_mode tmp_mode = GET_MODE (tmps[i]);
+	      scalar_int_mode imode;
 
 	      gcc_assert (known_eq (bytepos, 0) && XVECLEN (src, 0));
 
-	      if (GET_MODE_ALIGNMENT (dest_mode)
+	      if (finish == 1
+		  && REG_P (tmps[i])
+		  && COMPLEX_MODE_P (dest_mode)
+		  && SCALAR_INT_MODE_P (tmp_mode)
+		  && int_mode_for_mode (dest_mode).exists (&imode))
+		{
+		  if (tmp_mode != imode)
+		    {
+		      rtx tmp = gen_reg_rtx (imode);
+		      emit_move_insn (tmp, gen_lowpart (imode, tmps[i]));
+		      dst = gen_lowpart (dest_mode, tmp);
+		    }
+		  else
+		    dst = gen_lowpart (dest_mode, tmps[i]);
+		}
+	      else if (GET_MODE_ALIGNMENT (dest_mode)
 		  >= GET_MODE_ALIGNMENT (tmp_mode))
 		{
 		  dest = assign_stack_temp (dest_mode,
@@ -8816,7 +8858,8 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
   expanding_cond_expr_using_cmove = true;
   start_sequence ();
   expand_operands (treeop1, treeop2,
-		   temp, &op1, &op2, EXPAND_NORMAL);
+		   mode == orig_mode ? temp : NULL_RTX, &op1, &op2,
+		   EXPAND_NORMAL);
 
   if (TREE_CODE (treeop0) == SSA_NAME
       && (srcstmt = get_def_for_expr_class (treeop0, tcc_comparison)))
@@ -10754,6 +10797,15 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    pmode = promote_ssa_mode (ssa_name, &unsignedp);
 	  gcc_assert (GET_MODE (decl_rtl) == pmode);
 
+	  /* Some ABIs require scalar floating point modes to be passed
+	     in a wider scalar integer mode.  We need to explicitly
+	     truncate to an integer mode of the correct precision before
+	     using a SUBREG to reinterpret as a floating point value.  */
+	  if (SCALAR_FLOAT_MODE_P (mode)
+	      && SCALAR_INT_MODE_P (pmode)
+	      && known_lt (GET_MODE_SIZE (mode), GET_MODE_SIZE (pmode)))
+	    return convert_wider_int_to_float (mode, pmode, decl_rtl);
+
 	  temp = gen_lowpart_SUBREG (mode, decl_rtl);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
 	  SUBREG_PROMOTED_SET (temp, unsignedp);
@@ -11169,37 +11221,58 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	machine_mode mode1, mode2;
 	poly_int64 bitsize, bitpos, bytepos;
 	tree offset;
-	int reversep, volatilep = 0, must_force_mem;
+	int reversep, volatilep = 0;
 	tree tem
 	  = get_inner_reference (exp, &bitsize, &bitpos, &offset, &mode1,
 				 &unsignedp, &reversep, &volatilep);
 	rtx orig_op0, memloc;
 	bool clear_mem_expr = false;
+	bool must_force_mem;
 
 	/* If we got back the original object, something is wrong.  Perhaps
 	   we are evaluating an expression too early.  In any event, don't
 	   infinitely recurse.  */
 	gcc_assert (tem != exp);
 
-	/* If tem is a VAR_DECL, we need a memory reference.  */
-	enum expand_modifier tem_modifier = modifier;
-	if (tem_modifier == EXPAND_SUM)
-	  tem_modifier = EXPAND_NORMAL;
-	if (TREE_CODE (tem) == VAR_DECL)
-	  tem_modifier = EXPAND_MEMORY;
+	/* Make sure bitpos is not negative, this can wreak havoc later.  */
+	if (maybe_lt (bitpos, 0))
+	  {
+	    gcc_checking_assert (offset == NULL_TREE);
+	    offset = size_int (bits_to_bytes_round_down (bitpos));
+	    bitpos = num_trailing_bits (bitpos);
+	  }
+
+	/* If we have either an offset, a BLKmode result, or a reference
+	   outside the underlying object, we must force it to memory.
+	   Such a case can occur in Ada if we have unchecked conversion
+	   of an expression from a scalar type to an aggregate type or
+	   for an ARRAY_RANGE_REF whose type is BLKmode, or if we were
+	   passed a partially uninitialized object or a view-conversion
+	   to a larger size.  */
+	must_force_mem = offset != NULL_TREE
+			 || mode1 == BLKmode
+			 || (mode == BLKmode
+			     && !int_mode_for_size (bitsize, 1).exists ());
+
+	const enum expand_modifier tem_modifier
+	  = must_force_mem
+	    ? EXPAND_MEMORY
+	    : modifier == EXPAND_SUM ? EXPAND_NORMAL : modifier;
 
 	/* If TEM's type is a union of variable size, pass TARGET to the inner
 	   computation, since it will need a temporary and TARGET is known
 	   to have to do.  This occurs in unchecked conversion in Ada.  */
+	const rtx tem_target
+	  = TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
+	    && COMPLETE_TYPE_P (TREE_TYPE (tem))
+	    && TREE_CODE (TYPE_SIZE (TREE_TYPE (tem))) != INTEGER_CST
+	    && modifier != EXPAND_STACK_PARM
+	    ? target
+	    : NULL_RTX;
+
 	orig_op0 = op0
-	  = expand_expr_real (tem,
-			      (TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
-			       && COMPLETE_TYPE_P (TREE_TYPE (tem))
-			       && (TREE_CODE (TYPE_SIZE (TREE_TYPE (tem)))
-				   != INTEGER_CST)
-			       && modifier != EXPAND_STACK_PARM
-			       ? target : NULL_RTX),
-			      VOIDmode, tem_modifier, NULL, true);
+	  = expand_expr_real (tem, tem_target, VOIDmode, tem_modifier, NULL,
+			      true);
 
 	/* If the field has a mode, we want to access it in the
 	   field's mode, not the computed mode.
@@ -11216,27 +11289,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	mode2
 	  = CONSTANT_P (op0) ? TYPE_MODE (TREE_TYPE (tem)) : GET_MODE (op0);
 
-	/* Make sure bitpos is not negative, it can wreak havoc later.  */
-	if (maybe_lt (bitpos, 0))
-	  {
-	    gcc_checking_assert (offset == NULL_TREE);
-	    offset = size_int (bits_to_bytes_round_down (bitpos));
-	    bitpos = num_trailing_bits (bitpos);
-	  }
-
-	/* If we have either an offset, a BLKmode result, or a reference
-	   outside the underlying object, we must force it to memory.
-	   Such a case can occur in Ada if we have unchecked conversion
-	   of an expression from a scalar type to an aggregate type or
-	   for an ARRAY_RANGE_REF whose type is BLKmode, or if we were
-	   passed a partially uninitialized object or a view-conversion
-	   to a larger size.  */
-	must_force_mem = (offset
-			  || mode1 == BLKmode
-			  || (mode == BLKmode
-			      && !int_mode_for_size (bitsize, 1).exists ())
-			  || maybe_gt (bitpos + bitsize,
-				       GET_MODE_BITSIZE (mode2)));
+	/* See above for the rationale.  */
+	if (maybe_gt (bitpos + bitsize, GET_MODE_BITSIZE (mode2)))
+	  must_force_mem = true;
 
 	/* Handle CONCAT first.  */
 	if (GET_CODE (op0) == CONCAT && !must_force_mem)
@@ -11294,7 +11349,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	      }
 	    else
 	      /* Otherwise force into memory.  */
-	      must_force_mem = 1;
+	      must_force_mem = true;
 	  }
 
 	/* If this is a constant, put it in a register if it is a legitimate

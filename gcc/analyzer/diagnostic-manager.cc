@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
+#include "inlining-iterator.h"
 #include "cgraph.h"
 #include "digraph.h"
 #include "analyzer/supergraph.h"
@@ -742,6 +743,68 @@ saved_diagnostic::to_json () const
   return sd_obj;
 }
 
+/* Dump this to PP in a form suitable for use as an id in .dot output.  */
+
+void
+saved_diagnostic::dump_dot_id (pretty_printer *pp) const
+{
+  pp_printf (pp, "sd_%i", m_idx);
+}
+
+/* Dump this to PP in a form suitable for use as a node in .dot output.  */
+
+void
+saved_diagnostic::dump_as_dot_node (pretty_printer *pp) const
+{
+  dump_dot_id (pp);
+  pp_printf (pp,
+	     " [shape=none,margin=0,style=filled,fillcolor=\"red\",label=\"");
+  pp_write_text_to_stream (pp);
+
+  /* Node label.  */
+  pp_printf (pp, "DIAGNOSTIC: %s (sd: %i)\n",
+	     m_d->get_kind (), m_idx);
+  if (m_sm)
+    {
+      pp_printf (pp, "sm: %s", m_sm->get_name ());
+      if (m_state)
+	{
+	  pp_printf (pp, "; state: ");
+	  m_state->dump_to_pp (pp);
+	}
+      pp_newline (pp);
+    }
+  if (m_stmt)
+    {
+      pp_string (pp, "stmt: ");
+      pp_gimple_stmt_1 (pp, m_stmt, 0, (dump_flags_t)0);
+      pp_newline (pp);
+    }
+  if (m_var)
+    pp_printf (pp, "var: %qE\n", m_var);
+  if (m_sval)
+    {
+      pp_string (pp, "sval: ");
+      m_sval->dump_to_pp (pp, true);
+      pp_newline (pp);
+    }
+  if (m_best_epath)
+    pp_printf (pp, "path length: %i\n", get_epath_length ());
+
+  pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+  pp_string (pp, "\"];\n\n");
+
+  /* Show links to duplicates.  */
+  for (auto iter : m_duplicates)
+    {
+      dump_dot_id (pp);
+      pp_string (pp, " -> ");
+      iter->dump_dot_id (pp);
+      pp_string (pp, " [style=\"dotted\" arrowhead=\"none\"];");
+      pp_newline (pp);
+    }
+}
+
 /* Use PF to find the best exploded_path for this saved_diagnostic,
    and store it in m_best_epath.
    If m_stmt is still NULL, use m_stmt_finder on the epath to populate
@@ -1328,6 +1391,8 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
   if (sd.m_trailing_eedge)
     add_events_for_eedge (pb, *sd.m_trailing_eedge, &emission_path, NULL);
 
+  emission_path.inject_any_inlined_call_events (get_logger ());
+
   emission_path.prepare_for_emission (sd.m_d);
 
   location_t loc
@@ -1411,6 +1476,67 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
       const exploded_edge *eedge = epath.m_edges[i];
       add_events_for_eedge (pb, *eedge, emission_path, &interest);
     }
+  add_event_on_final_node (epath.get_final_enode (), emission_path, &interest);
+}
+
+/* Emit a region_creation_event when requested on the last statement in
+   the path.
+
+   If a region_creation_event should be emitted on the last statement of the
+   path, we need to peek to the successors to get whether the final enode
+   created a region.
+*/
+
+void
+diagnostic_manager::add_event_on_final_node (const exploded_node *final_enode,
+					     checker_path *emission_path,
+					     interesting_t *interest) const
+{
+  const program_point &src_point = final_enode->get_point ();
+  const int src_stack_depth = src_point.get_stack_depth ();
+  const program_state &src_state = final_enode->get_state ();
+  const region_model *src_model = src_state.m_region_model;
+
+  unsigned j;
+  exploded_edge *e;
+  FOR_EACH_VEC_ELT (final_enode->m_succs, j, e)
+  {
+    exploded_node *dst = e->m_dest;
+    const program_state &dst_state = dst->get_state ();
+    const region_model *dst_model = dst_state.m_region_model;
+    if (src_model->get_dynamic_extents ()
+	!= dst_model->get_dynamic_extents ())
+      {
+	unsigned i;
+	const region *reg;
+	bool emitted = false;
+	FOR_EACH_VEC_ELT (interest->m_region_creation, i, reg)
+	  {
+	    const region *base_reg = reg->get_base_region ();
+	    const svalue *old_extents
+	= src_model->get_dynamic_extents (base_reg);
+	    const svalue *new_extents
+	= dst_model->get_dynamic_extents (base_reg);
+	    if (old_extents == NULL && new_extents != NULL)
+	      switch (base_reg->get_kind ())
+		{
+		default:
+		  break;
+		case RK_HEAP_ALLOCATED:
+		case RK_ALLOCA:
+		  emission_path->add_region_creation_event
+		    (reg,
+		    src_point.get_location (),
+		    src_point.get_fndecl (),
+		    src_stack_depth);
+		  emitted = true;
+		  break;
+		}
+	  }
+	if (emitted)
+	  break;
+      }
+  }
 }
 
 /* Subclass of state_change_visitor that creates state_change_event
@@ -2390,6 +2516,11 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		  }
 	      }
 	  }
+	  break;
+
+	case EK_INLINED_CALL:
+	  /* We don't expect to see these yet, as they're added later.
+	     We'd want to keep them around.  */
 	  break;
 
 	case EK_SETJMP:

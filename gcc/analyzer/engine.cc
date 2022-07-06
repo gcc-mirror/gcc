@@ -1209,6 +1209,27 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
 
   pp_string (pp, "\"];\n\n");
+
+  /* It can be hard to locate the saved diagnostics as text within the
+     enode nodes, so add extra nodes to the graph for each saved_diagnostic,
+     highlighted in red.
+     Compare with dump_saved_diagnostics.  */
+  {
+    unsigned i;
+    const saved_diagnostic *sd;
+    FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
+      {
+	sd->dump_as_dot_node (pp);
+
+	/* Add edge connecting this enode to the saved_diagnostic.  */
+	dump_dot_id (pp);
+	pp_string (pp, " -> ");
+	sd->dump_dot_id (pp);
+	pp_string (pp, " [style=\"dotted\" arrowhead=\"none\"];");
+	pp_newline (pp);
+      }
+  }
+
   pp_flush (pp);
 }
 
@@ -1832,18 +1853,19 @@ dynamic_call_info_t::add_events_to_path (checker_path *emission_path,
   const int dest_stack_depth = dest_point.get_stack_depth ();
 
   if (m_is_returning_call)
-    emission_path->add_event (new return_event (eedge, (m_dynamic_call
-	                   			        ? m_dynamic_call->location
-	           	   		                : UNKNOWN_LOCATION),
-	          	      dest_point.get_fndecl (),
-	          	      dest_stack_depth));
+    emission_path->add_event (new return_event (eedge,
+						(m_dynamic_call
+						 ? m_dynamic_call->location
+						 : UNKNOWN_LOCATION),
+						dest_point.get_fndecl (),
+						dest_stack_depth));
   else
-    emission_path->add_event (new call_event (eedge, (m_dynamic_call
-	                   			      ? m_dynamic_call->location
-	           	   		              : UNKNOWN_LOCATION),
-	          	      src_point.get_fndecl (),
-	          	      src_stack_depth));
-
+    emission_path->add_event (new call_event (eedge,
+					      (m_dynamic_call
+					       ? m_dynamic_call->location
+					       : UNKNOWN_LOCATION),
+					      src_point.get_fndecl (),
+					      src_stack_depth));
 }
 
 /* class rewind_info_t : public custom_edge_info.  */
@@ -2352,8 +2374,9 @@ exploded_graph::exploded_graph (const supergraph &sg, logger *logger,
   m_functionless_stats (m_sg.num_nodes ()),
   m_PK_AFTER_SUPERNODE_per_snode (m_sg.num_nodes ())
 {
-  m_origin = get_or_create_node (program_point::origin (),
-				 program_state (ext_state), NULL);
+  m_origin = get_or_create_node
+    (program_point::origin (*ext_state.get_model_manager ()),
+     program_state (ext_state), NULL);
   for (int i = 0; i < m_sg.num_nodes (); i++)
     m_PK_AFTER_SUPERNODE_per_snode.quick_push (i);
 }
@@ -2504,7 +2527,9 @@ exploded_graph::add_function_entry (function *fun)
       return NULL;
     }
 
-  program_point point = program_point::from_function_entry (m_sg, fun);
+  program_point point
+    = program_point::from_function_entry (*m_ext_state.get_model_manager (),
+					  m_sg, fun);
   program_state state (m_ext_state);
   state.push_frame (m_ext_state, fun);
 
@@ -2804,7 +2829,7 @@ per_function_data *
 exploded_graph::get_per_function_data (function *fun) const
 {
   if (per_function_data **slot
-        = const_cast <per_function_data_t &> (m_per_function_data).get (fun))
+	= const_cast <per_function_data_t &> (m_per_function_data).get (fun))
     return *slot;
 
   return NULL;
@@ -2883,7 +2908,7 @@ public:
     return make_label_text (can_colorize,
 			    "function %qE used as initializer for field %qE"
 			    " marked with %<__attribute__((tainted_args))%>",
-			    m_fndecl, m_field);
+			    get_fndecl (), m_field);
   }
 
 private:
@@ -2957,7 +2982,8 @@ add_tainted_args_callback (exploded_graph *eg, tree field, tree fndecl,
   gcc_assert (fun);
 
   program_point point
-    = program_point::from_function_entry (eg->get_supergraph (), fun);
+    = program_point::from_function_entry (*ext_state.get_model_manager (),
+					  eg->get_supergraph (), fun);
   program_state state (ext_state);
   state.push_frame (ext_state, fun);
 
@@ -3319,7 +3345,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
 
       if (point_2.get_kind () == PK_BEFORE_SUPERNODE
 	  && point_2.get_supernode () == snode
-	  && point_2.get_call_string () == point.get_call_string ())
+	  && &point_2.get_call_string () == &point.get_call_string ())
 	{
 	  enodes.safe_push (enode_2);
 	  m_worklist.take_next ();
@@ -3516,7 +3542,7 @@ state_change_requires_new_enode_p (const program_state &old_state,
   return false;
 }
 
-/* Create enodes and eedges for the function calls that doesn't have an 
+/* Create enodes and eedges for the function calls that doesn't have an
    underlying call superedge.
 
    Such case occurs when GCC's middle end didn't know which function to
@@ -3527,12 +3553,12 @@ state_change_requires_new_enode_p (const program_state &old_state,
 
 bool
 exploded_graph::maybe_create_dynamic_call (const gcall *call,
-                                           tree fn_decl,
-                                           exploded_node *node,
-                                           program_state next_state,
-                                           program_point &next_point,
-                                           uncertainty_t *uncertainty,
-                                           logger *logger)
+					   tree fn_decl,
+					   exploded_node *node,
+					   program_state next_state,
+					   program_point &next_point,
+					   uncertainty_t *uncertainty,
+					   logger *logger)
 {
   LOG_FUNC (logger);
 
@@ -3545,44 +3571,44 @@ exploded_graph::maybe_create_dynamic_call (const gcall *call,
       supernode *sn_exit = sg.get_node_for_function_exit (fun);
 
       program_point new_point
-        = program_point::before_supernode (sn_entry,
-                                           NULL,
-                                           this_point->get_call_string ());
+	= program_point::before_supernode (sn_entry,
+					   NULL,
+					   this_point->get_call_string ());
 
       new_point.push_to_call_stack (sn_exit,
-                                    next_point.get_supernode());
+				    next_point.get_supernode());
 
       /* Impose a maximum recursion depth and don't analyze paths
-         that exceed it further.
-         This is something of a blunt workaround, but it only
-         applies to recursion (and mutual recursion), not to
-         general call stacks.  */
+	 that exceed it further.
+	 This is something of a blunt workaround, but it only
+	 applies to recursion (and mutual recursion), not to
+	 general call stacks.  */
       if (new_point.get_call_string ().calc_recursion_depth ()
-          > param_analyzer_max_recursion_depth)
+	  > param_analyzer_max_recursion_depth)
       {
-        if (logger)
-          logger->log ("rejecting call edge: recursion limit exceeded");
-        return false;
+	if (logger)
+	  logger->log ("rejecting call edge: recursion limit exceeded");
+	return false;
       }
 
       next_state.push_call (*this, node, call, uncertainty);
 
       if (next_state.m_valid)
-        {
-          if (logger)
-            logger->log ("Discovered call to %s [SN: %i -> SN: %i]",
-                          function_name(fun),
-                          this_point->get_supernode ()->m_index,
-                          sn_entry->m_index);
+	{
+	  if (logger)
+	    logger->log ("Discovered call to %s [SN: %i -> SN: %i]",
+			 function_name(fun),
+			 this_point->get_supernode ()->m_index,
+			 sn_entry->m_index);
 
-          exploded_node *enode = get_or_create_node (new_point,
-                                                     next_state,
-                                                     node);
-          if (enode)
-            add_edge (node,enode, NULL,
-                      new dynamic_call_info_t (call));
-          return true;
-        }
+	  exploded_node *enode = get_or_create_node (new_point,
+						     next_state,
+						     node);
+	  if (enode)
+	    add_edge (node,enode, NULL,
+		      new dynamic_call_info_t (call));
+	  return true;
+	}
     }
   return false;
 }
@@ -3912,8 +3938,8 @@ exploded_graph::process_node (exploded_node *node)
       break;
     case PK_AFTER_SUPERNODE:
       {
-        bool found_a_superedge = false;
-        bool is_an_exit_block = false;
+	bool found_a_superedge = false;
+	bool is_an_exit_block = false;
 	/* If this is an EXIT BB, detect leaks, and potentially
 	   create a function summary.  */
 	if (point.get_supernode ()->return_p ())
@@ -3957,54 +3983,54 @@ exploded_graph::process_node (exploded_node *node)
 	    program_state next_state (state);
 	    uncertainty_t uncertainty;
 
-            /* Make use the current state and try to discover and analyse
-               indirect function calls (a call that doesn't have an underlying
-               cgraph edge representing call).
+	    /* Make use the current state and try to discover and analyse
+	       indirect function calls (a call that doesn't have an underlying
+	       cgraph edge representing call).
 
-               Some examples of such calls are virtual function calls
-               and calls that happen via a function pointer.  */
-            if (succ->m_kind == SUPEREDGE_INTRAPROCEDURAL_CALL
-            	&& !(succ->get_any_callgraph_edge ()))
-              {
-                const gcall *call
-                  = point.get_supernode ()->get_final_call ();
+	       Some examples of such calls are virtual function calls
+	       and calls that happen via a function pointer.  */
+	    if (succ->m_kind == SUPEREDGE_INTRAPROCEDURAL_CALL
+		&& !(succ->get_any_callgraph_edge ()))
+	      {
+		const gcall *call
+		  = point.get_supernode ()->get_final_call ();
 
-                impl_region_model_context ctxt (*this,
-                                                node,
-                                                &state,
-                                                &next_state,
-                                                &uncertainty,
+		impl_region_model_context ctxt (*this,
+						node,
+						&state,
+						&next_state,
+						&uncertainty,
 						NULL,
-                                                point.get_stmt());
+						point.get_stmt());
 
-                region_model *model = state.m_region_model;
-                bool call_discovered = false;
+		region_model *model = state.m_region_model;
+		bool call_discovered = false;
 
-                if (tree fn_decl = model->get_fndecl_for_call(call,&ctxt))
-                  call_discovered = maybe_create_dynamic_call (call,
-                                                               fn_decl,
-                                                               node,
-                                                               next_state,
-                                                               next_point,
-                                                               &uncertainty,
-                                                               logger);
-                if (!call_discovered)
-                  {
-                     /* An unknown function or a special function was called 
-                        at this point, in such case, don't terminate the 
-                        analysis of the current function.
+		if (tree fn_decl = model->get_fndecl_for_call (call, &ctxt))
+		  call_discovered = maybe_create_dynamic_call (call,
+							       fn_decl,
+							       node,
+							       next_state,
+							       next_point,
+							       &uncertainty,
+							       logger);
+		if (!call_discovered)
+		  {
+		    /* An unknown function or a special function was called
+		       at this point, in such case, don't terminate the
+		       analysis of the current function.
 
-                        The analyzer handles calls to such functions while
-                        analysing the stmt itself, so the function call
-                        must have been handled by the anlyzer till now.  */
-                     exploded_node *next
-                       = get_or_create_node (next_point,
-                                             next_state,
-                                             node);
-                     if (next)
-                       add_edge (node, next, succ);
-                  }
-              }
+		       The analyzer handles calls to such functions while
+		       analysing the stmt itself, so the function call
+		       must have been handled by the anlyzer till now.  */
+		    exploded_node *next
+		      = get_or_create_node (next_point,
+					    next_state,
+					    node);
+		    if (next)
+		      add_edge (node, next, succ);
+		  }
+	      }
 
 	    if (!node->on_edge (*this, succ, &next_point, &next_state,
 				&uncertainty))
@@ -4020,37 +4046,37 @@ exploded_graph::process_node (exploded_node *node)
 	      add_edge (node, next, succ);
 	  }
 
-        /* Return from the calls which doesn't have a return superedge.
-    	   Such case occurs when GCC's middle end didn't knew which function to
-    	   call but analyzer did.  */
-        if((is_an_exit_block && !found_a_superedge)
-           && (!point.get_call_string ().empty_p ()))
-          {
-            const call_string cs = point.get_call_string ();
-            program_point next_point
-              = program_point::before_supernode (cs.get_caller_node (),
-                                                 NULL,
-                                                 cs);
-            program_state next_state (state);
-            uncertainty_t uncertainty;
+	/* Return from the calls which doesn't have a return superedge.
+	   Such case occurs when GCC's middle end didn't knew which function to
+	   call but analyzer did.  */
+	if ((is_an_exit_block && !found_a_superedge)
+	    && (!point.get_call_string ().empty_p ()))
+	  {
+	    const call_string &cs = point.get_call_string ();
+	    program_point next_point
+	      = program_point::before_supernode (cs.get_caller_node (),
+						 NULL,
+						 cs);
+	    program_state next_state (state);
+	    uncertainty_t uncertainty;
 
-            const gcall *call
-              = next_point.get_supernode ()->get_returning_call ();
+	    const gcall *call
+	      = next_point.get_supernode ()->get_returning_call ();
 
-            if(call)
-              next_state.returning_call (*this, node, call, &uncertainty);
+	    if (call)
+	      next_state.returning_call (*this, node, call, &uncertainty);
 
-            if (next_state.m_valid)
-              {
-                next_point.pop_from_call_stack ();
-                exploded_node *enode = get_or_create_node (next_point,
-                                                           next_state,
-                                                           node);
-                if (enode)
-                  add_edge (node, enode, NULL,
-                            new dynamic_call_info_t (call, true));
-              }
-          }
+	    if (next_state.m_valid)
+	      {
+		next_point.pop_from_call_stack ();
+		exploded_node *enode = get_or_create_node (next_point,
+							   next_state,
+							   node);
+		if (enode)
+		  add_edge (node, enode, NULL,
+			    new dynamic_call_info_t (call, true));
+	      }
+	  }
       }
       break;
     }
@@ -4714,7 +4740,7 @@ private:
 class function_call_string_cluster : public exploded_cluster
 {
 public:
-  function_call_string_cluster (function *fun, call_string cs)
+  function_call_string_cluster (function *fun, const call_string &cs)
   : m_fun (fun), m_cs (cs) {}
 
   ~function_call_string_cluster ()
@@ -4789,7 +4815,7 @@ public:
 
 private:
   function *m_fun;
-  call_string m_cs;
+  const call_string &m_cs;
   typedef ordered_hash_map<const supernode *, supernode_cluster *> map_t;
   map_t m_map;
 };
@@ -4798,14 +4824,15 @@ private:
 
 struct function_call_string
 {
-  function_call_string (function *fun, call_string cs)
+  function_call_string (function *fun, const call_string *cs)
   : m_fun (fun), m_cs (cs)
   {
     gcc_assert (fun);
+    gcc_assert (cs);
   }
 
   function *m_fun;
-  call_string m_cs;
+  const call_string *m_cs;
 };
 
 } // namespace ana
@@ -4820,7 +4847,8 @@ template <>
 inline hashval_t
 pod_hash_traits<function_call_string>::hash (value_type v)
 {
-  return pointer_hash <function>::hash (v.m_fun) ^ v.m_cs.hash ();
+  return (pointer_hash <function>::hash (v.m_fun)
+	  ^ pointer_hash <const call_string>::hash (v.m_cs));
 }
 
 template <>
@@ -4828,7 +4856,7 @@ inline bool
 pod_hash_traits<function_call_string>::equal (const value_type &existing,
 					      const value_type &candidate)
 {
-  return existing.m_fun == candidate.m_fun && existing.m_cs == candidate.m_cs;
+  return existing.m_fun == candidate.m_fun && &existing.m_cs == &candidate.m_cs;
 }
 template <>
 inline void
@@ -4903,7 +4931,7 @@ public:
       }
 
     const call_string &cs = en->get_point ().get_call_string ();
-    function_call_string key (fun, cs);
+    function_call_string key (fun, &cs);
     function_call_string_cluster **slot = m_map.get (key);
     if (slot)
       (*slot)->add_node (en);
@@ -4917,11 +4945,6 @@ public:
   }
 
 private:
-  /* This can't be an ordered_hash_map, as we can't store vec<call_string>,
-     since it's not a POD; vec<>::quick_push has:
-       *slot = obj;
-     and the slot isn't initialized, so the assignment op dies when cleaning up
-     un-inited *slot (within the truncate call).  */
   typedef hash_map<function_call_string, function_call_string_cluster *> map_t;
   map_t m_map;
 
@@ -5297,7 +5320,7 @@ public:
 	    FOR_EACH_VEC_ELT (args.m_eg->m_nodes, i, enode)
 	      {
 		if (enode->get_point ().get_function () == m_fun
-		    && enode->get_point ().get_call_string () == *cs)
+		    && &enode->get_point ().get_call_string () == cs)
 		  num_enodes++;
 	      }
 	    if (num_enodes > 0)

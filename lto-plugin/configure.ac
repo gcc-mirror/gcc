@@ -87,6 +87,10 @@ AM_CONDITIONAL(LTO_PLUGIN_USE_SYMVER, [test "x$lto_plugin_use_symver" != xno])
 AM_CONDITIONAL(LTO_PLUGIN_USE_SYMVER_GNU, [test "x$lto_plugin_use_symver" = xgnu])
 AM_CONDITIONAL(LTO_PLUGIN_USE_SYMVER_SUN, [test "x$lto_plugin_use_symver" = xsun])
 
+# Check for thread headers.
+AC_CHECK_HEADER(pthread.h,
+  [AC_DEFINE(HAVE_PTHREAD_H, 1, [Define to 1 if pthread.h is present.])])
+
 AM_PROG_LIBTOOL
 ACX_LT_HOST_FLAGS
 AC_SUBST(target_noncanonical)

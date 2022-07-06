@@ -797,6 +797,9 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
     {
       ++argno;
 
+      if (argno > nargs)
+	break;
+
       if (!POINTER_TYPE_P (argtype))
 	continue;
 
@@ -1317,9 +1320,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass *clone () { return new pass_late_warn_uninitialized (m_ctxt); }
-  virtual bool gate (function *) { return gate_warn_uninitialized (); }
-  virtual unsigned int execute (function *);
+  opt_pass *clone () final override
+  {
+    return new pass_late_warn_uninitialized (m_ctxt);
+  }
+  bool gate (function *) final override { return gate_warn_uninitialized (); }
+  unsigned int execute (function *) final override;
 
 }; // class pass_late_warn_uninitialized
 
@@ -1459,8 +1465,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_warn_uninitialized (); }
-  virtual unsigned int execute (function *fun)
+  bool gate (function *) final override { return gate_warn_uninitialized (); }
+  unsigned int execute (function *fun) final override
   {
     return execute_early_warn_uninitialized (fun);
   }

@@ -5504,9 +5504,9 @@ overloaded declaration exists, in which case the pragma applies
 to all entities).  It specifies that the function ``Entity`` is
 to be considered pure for the purposes of code generation.  This means
 that the compiler can assume that there are no side effects, and
-in particular that two calls with identical arguments produce the
-same result.  It also means that the function can be used in an
-address clause.
+in particular that two identical calls produce the same result in
+the same context. It also means that the function can be used in
+an address clause.
 
 Note that, quite deliberately, there are no static checks to try
 to ensure that this promise is met, so ``Pure_Function`` can be used

@@ -403,10 +403,11 @@ package System.Regpat is
    --  (e.g. case sensitivity,...).
 
    procedure Compile
-     (Matcher         : out Pattern_Matcher;
-      Expression      : String;
-      Final_Code_Size : out Program_Size;
-      Flags           : Regexp_Flags := No_Flags);
+     (Matcher              : out Pattern_Matcher;
+      Expression           : String;
+      Final_Code_Size      : out Program_Size;
+      Flags                : Regexp_Flags := No_Flags;
+      Error_When_Too_Small : Boolean := True);
    --  Compile a regular expression into internal code
 
    --  This procedure is significantly faster than the Compile function since
@@ -426,7 +427,25 @@ package System.Regpat is
    --  expression.
    --
    --  This function raises Storage_Error if Matcher is too small to hold
-   --  the resulting code (i.e. Matcher.Size has too small a value).
+   --  the resulting code (i.e. Matcher.Size has too small a value) only when
+   --  the paramter Error_When_Too_Small is set to True. Otherwise, no error
+   --  will be raised and the required size will be placed in the
+   --  Final_Code_Size parameter.
+   --
+   --  Thus when Error_When_Too_Small is specified as false a check will need
+   --  to be made to ensure successful compilation - as in:
+   --
+   --     ...
+   --     Compile
+   --       (Matcher, Expr, Code_Size, Flags, Error_When_Too_Small => False);
+   --
+   --     if Matcher.Size < Code_Size then
+   --        declare
+   --           New_Matcher : Pattern_Matcher (1..Code_Size);
+   --        begin
+   --           Compile (New_Matcher, Expr, Code_Size, Flags);
+   --        end;
+   --     end if;
    --
    --  Expression_Error is raised if the string Expression does not contain
    --  a valid regular expression.

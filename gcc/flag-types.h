@@ -479,15 +479,6 @@ enum threader_debug
   THREADER_DEBUG_ALL = 1
 };
 
-/* EVRP mode.  */
-enum evrp_mode
-{
-  EVRP_MODE_RVRP_ONLY,
-  EVRP_MODE_EVRP_ONLY,
-  EVRP_MODE_EVRP_FIRST,
-  EVRP_MODE_RVRP_FIRST
-};
-
 /* VRP modes.  */
 enum vrp_mode
 {

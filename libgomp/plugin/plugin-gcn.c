@@ -3221,10 +3221,14 @@ GOMP_OFFLOAD_version (void)
 /* Return the number of GCN devices on the system.  */
 
 int
-GOMP_OFFLOAD_get_num_devices (void)
+GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
 {
   if (!init_hsa_context ())
     return 0;
+  /* Return -1 if no omp_requires_mask cannot be fulfilled but
+     devices were present.  */
+  if (hsa_context.agent_count > 0 && omp_requires_mask != 0)
+    return -1;
   return hsa_context.agent_count;
 }
 

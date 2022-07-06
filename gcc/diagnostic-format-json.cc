@@ -345,6 +345,7 @@ diagnostic_output_format_init_json (diagnostic_context *context)
 
   /* The metadata is handled in JSON format, rather than as text.  */
   context->show_cwe = false;
+  context->show_rules = false;
 
   /* The option is handled in JSON format, rather than as text.  */
   context->show_option_requested = false;

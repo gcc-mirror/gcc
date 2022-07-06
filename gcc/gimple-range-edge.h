@@ -47,7 +47,7 @@ private:
 
   int m_max_edges;
   hash_map<edge, irange *> *m_edge_table;
-  vrange_allocator m_range_allocator;
+  class obstack_vrange_allocator *m_range_allocator;
 };
 
 // If there is a range control statement at the end of block BB, return it.

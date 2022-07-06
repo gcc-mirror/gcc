@@ -483,7 +483,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_free_cfg
 
@@ -1686,8 +1686,8 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	 add also edge from asm goto bb to target.  */
       if (asm_goto_edge)
 	{
-	  new_edge->probability = new_edge->probability.apply_scale (1, 2);
-	  jump_block->count = jump_block->count.apply_scale (1, 2);
+	  new_edge->probability /= 2;
+	  jump_block->count /= 2;
 	  edge new_edge2 = make_edge (new_edge->src, target,
 				      e->flags & ~EDGE_FALLTHRU);
 	  new_edge2->probability = probability - new_edge->probability;
@@ -3698,7 +3698,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       cfg_layout_initialize (0);
       return 0;
@@ -3737,7 +3737,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_outof_cfg_layout_mode
 

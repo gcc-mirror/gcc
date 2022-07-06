@@ -146,6 +146,9 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   if (only_check_syntax)
     return;
 
+  // Record global variable initializer dependencies.
+  ::gogo->record_global_init_refs();
+
   // Do simple deadcode elimination.
   ::gogo->remove_deadcode();
 

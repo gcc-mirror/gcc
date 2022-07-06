@@ -24,10 +24,7 @@ typedef void (*transform_callback)(class loop *, void *);
 
 extern void create_iv (tree, tree, tree, class loop *, gimple_stmt_iterator *,
 		       bool, tree *, tree *);
-extern void rewrite_into_loop_closed_ssa_1 (bitmap, unsigned, int,
-					    class loop *);
 extern void rewrite_into_loop_closed_ssa (bitmap, unsigned);
-extern void rewrite_virtuals_into_loop_closed_ssa (class loop *);
 extern void verify_loop_closed_ssa (bool, class loop * = NULL);
 
 static inline void

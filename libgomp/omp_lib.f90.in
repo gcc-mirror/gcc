@@ -168,6 +168,8 @@
                  parameter :: omp_high_bw_mem_space = 3
         integer (omp_memspace_handle_kind), &
                  parameter :: omp_low_lat_mem_space = 4
+        integer, parameter :: omp_initial_device = -1
+        integer, parameter :: omp_invalid_device = -4
 
         type omp_alloctrait
           integer (kind=omp_alloctrait_key_kind) key

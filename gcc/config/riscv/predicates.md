@@ -243,3 +243,14 @@
 (define_predicate "imm5_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) < 5")))
+
+;; A CONST_INT operand that consists of a single run of consecutive set bits.
+(define_predicate "consecutive_bits_operand"
+  (match_code "const_int")
+{
+	unsigned HOST_WIDE_INT val = UINTVAL (op);
+	if (exact_log2 ((val >> ctz_hwi (val)) + 1) < 0)
+	        return false;
+
+	return true;
+})

@@ -635,9 +635,19 @@ public:
 
                 this.match!destroyIfOwner;
 
-                mixin("Storage newStorage = { ",
-                    Storage.memberName!T, ": forward!rhs",
-                " };");
+                static if (isCopyable!T)
+                {
+                    // Workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                    mixin("Storage newStorage = { ",
+                        Storage.memberName!T, ": __ctfe ? rhs : forward!rhs",
+                    " };");
+                }
+                else
+                {
+                    mixin("Storage newStorage = { ",
+                        Storage.memberName!T, ": forward!rhs",
+                    " };");
+                }
 
                 storage = newStorage;
                 tag = tid;
@@ -678,7 +688,17 @@ public:
         {
             import core.lifetime : move;
 
-            rhs.match!((ref value) { this = move(value); });
+            rhs.match!((ref value) {
+                static if (isCopyable!(typeof(value)))
+                {
+                    // Workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                    this = __ctfe ? value : move(value);
+                }
+                else
+                {
+                    this = move(value);
+                }
+            });
             return this;
         }
     }
@@ -1313,6 +1333,7 @@ version (D_BetterC) {} else
 // Types with invariants
 // Disabled in BetterC due to use of exceptions
 version (D_BetterC) {} else
+version (D_Invariants)
 @system unittest
 {
     import std.exception : assertThrown;
@@ -1330,22 +1351,13 @@ version (D_BetterC) {} else
         invariant { assert(i >= 0); }
     }
 
-    // Only run test if contract checking is enabled
-    try
-    {
-        S probe = S(-1);
-        assert(&probe);
-    }
-    catch (AssertError _)
-    {
-        SumType!S x;
-        x.match!((ref v) { v.i = -1; });
-        assertThrown!AssertError(assert(&x));
+    SumType!S x;
+    x.match!((ref v) { v.i = -1; });
+    assertThrown!AssertError(assert(&x));
 
-        SumType!C y = new C();
-        y.match!((ref v) { v.i = -1; });
-        assertThrown!AssertError(assert(&y));
-    }
+    SumType!C y = new C();
+    y.match!((ref v) { v.i = -1; });
+    assertThrown!AssertError(assert(&y));
 }
 
 // Calls value postblit on self-assignment
@@ -1575,6 +1587,28 @@ version (D_BetterC) {} else
     {
         return inout(SumType!(int[]))(arr);
     }
+}
+
+// Assignment of struct with overloaded opAssign in CTFE
+// https://issues.dlang.org/show_bug.cgi?id=23182
+@safe unittest
+{
+    static struct HasOpAssign
+    {
+        void opAssign(HasOpAssign rhs) {}
+    }
+
+    static SumType!HasOpAssign test()
+    {
+        SumType!HasOpAssign s;
+        // Test both overloads
+        s = HasOpAssign();
+        s = SumType!HasOpAssign();
+        return s;
+    }
+
+    // Force CTFE
+    enum result = test();
 }
 
 /// True if `T` is an instance of the `SumType` template, otherwise false.

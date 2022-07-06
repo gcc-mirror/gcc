@@ -2413,11 +2413,19 @@ final class CParser(AST) : Parser!AST
                 if (scw & scwx)
                     error("duplicate storage class");
                 scw |= scwx;
+                // C11 6.7.1-2 At most one storage-class may be given, except that
+                // _Thread_local may appear with static or extern.
                 const scw2 = scw & (SCW.xstatic | SCW.xextern | SCW.xauto | SCW.xregister | SCW.xtypedef);
                 if (scw2 & (scw2 - 1) ||
-                    scw & (SCW.xauto | SCW.xregister) && scw & (SCW.xinline | SCW.x_Noreturn))
+                    scw & (SCW.x_Thread_local) && scw & (SCW.xauto | SCW.xregister | SCW.xtypedef))
                 {
-                    error("conflicting storage class");
+                    error("multiple storage classes in declaration specifiers");
+                    scw &= ~scwx;
+                }
+                if (level == LVL.local &&
+                    scw & (SCW.x_Thread_local) && scw & (SCW.xinline | SCW.x_Noreturn))
+                {
+                    error("`inline` and `_Noreturn` function specifiers not allowed for `_Thread_local`");
                     scw &= ~scwx;
                 }
                 if (level & (LVL.parameter | LVL.prototype) &&
@@ -2964,7 +2972,8 @@ final class CParser(AST) : Parser!AST
                 cparseGnuAttributes(specifier);
             if (specifier.mod & MOD.xconst)
                 t = toConst(t);
-            auto param = new AST.Parameter(STC.parameter, t, id, null, null);
+            auto param = new AST.Parameter(specifiersToSTC(LVL.parameter, specifier),
+                                           t, id, null, null);
             parameters.push(param);
             if (token.value == TOK.rightParenthesis)
                 break;
@@ -4630,6 +4639,15 @@ final class CParser(AST) : Parser!AST
                     stc = AST.STC.extern_ | AST.STC.gshared;
                 else if (specifier.scw & SCW.xstatic)
                     stc = AST.STC.gshared;
+                else if (specifier.scw & SCW.xregister)
+                    stc = AST.STC.register;
+            }
+            else if (level == LVL.parameter)
+            {
+                if (specifier.scw & SCW.xregister)
+                    stc = AST.STC.register | AST.STC.parameter;
+                else
+                    stc = AST.STC.parameter;
             }
             else if (level == LVL.member)
             {
@@ -5138,6 +5156,7 @@ final class CParser(AST) : Parser!AST
         if (!defines || defines.length < 10)  // minimum length of a #define line
             return;
         const length = defines.length;
+        defines.writeByte(0);
         auto slice = defines.peekChars()[0 .. length];
         resetDefineLines(slice);                // reset lexer
 
@@ -5156,36 +5175,93 @@ final class CParser(AST) : Parser!AST
                 {
                     auto id = n.ident;
                     scan(&n);
-                    if (n.value == TOK.endOfLine)       // #define identifier
+
+                    AST.Type t;
+
+                    switch (n.value)
                     {
-                        nextDefineLine();
-                        continue;
-                    }
-                    if (n.value == TOK.int32Literal)
-                    {
-                        const value = n.intvalue;
-                        scan(&n);
-                        if (n.value == TOK.endOfLine)
-                        {
-                            /* Declare manifest constant:
-                             *  enum id = value;
-                             */
-                            AST.Expression e = new AST.IntegerExp(scanloc, value, AST.Type.tint32);
-                            auto v = new AST.VarDeclaration(scanloc, AST.Type.tint32, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
-                            symbols.push(v);
+                        case TOK.endOfLine:     // #define identifier
                             nextDefineLine();
                             continue;
-                        }
+
+                        case TOK.int32Literal:
+                        case TOK.charLiteral:       t = AST.Type.tint32;    goto Linteger;
+                        case TOK.uns32Literal:      t = AST.Type.tuns32;    goto Linteger;
+                        case TOK.int64Literal:      t = AST.Type.tint64;    goto Linteger;
+                        case TOK.uns64Literal:      t = AST.Type.tuns64;    goto Linteger;
+
+                        Linteger:
+                            const intvalue = n.intvalue;
+                            scan(&n);
+                            if (n.value == TOK.endOfLine)
+                            {
+                                /* Declare manifest constant:
+                                 *  enum id = intvalue;
+                                 */
+                                AST.Expression e = new AST.IntegerExp(scanloc, intvalue, t);
+                                auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
+                                symbols.push(v);
+                                nextDefineLine();
+                                continue;
+                            }
+                            break;
+
+                        case TOK.float32Literal:      t = AST.Type.tfloat32;     goto Lfloat;
+                        case TOK.float64Literal:      t = AST.Type.tfloat64;     goto Lfloat;
+                        case TOK.float80Literal:      t = AST.Type.tfloat80;     goto Lfloat;
+                        case TOK.imaginary32Literal:  t = AST.Type.timaginary32; goto Lfloat;
+                        case TOK.imaginary64Literal:  t = AST.Type.timaginary64; goto Lfloat;
+                        case TOK.imaginary80Literal:  t = AST.Type.timaginary80; goto Lfloat;
+
+                        Lfloat:
+                            const floatvalue = n.floatvalue;
+                            scan(&n);
+                            if (n.value == TOK.endOfLine)
+                            {
+                                /* Declare manifest constant:
+                                 *  enum id = floatvalue;
+                                 */
+                                AST.Expression e = new AST.RealExp(scanloc, floatvalue, t);
+                                auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
+                                symbols.push(v);
+                                nextDefineLine();
+                                continue;
+                            }
+                            break;
+
+                        case TOK.string_:
+                            const str = n.ustring;
+                            const len = n.len;
+                            const postfix = n.postfix;
+                            scan(&n);
+                            if (n.value == TOK.endOfLine)
+                            {
+                                /* Declare manifest constant:
+                                 *  enum id = "string";
+                                 */
+                                AST.Expression e = new AST.StringExp(scanloc, str[0 .. len], len, 1, postfix);
+                                auto v = new AST.VarDeclaration(scanloc, null, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
+                                symbols.push(v);
+                                nextDefineLine();
+                                continue;
+                            }
+                            break;
+
+                        default:
+                            break;
                     }
                 }
                 skipToNextLine();
             }
-            else if (n.value != TOK.endOfLine)
+            else
             {
-                skipToNextLine();
+                scan(&n);
+                if (n.value != TOK.endOfLine)
+                {
+                    skipToNextLine();
+                }
             }
             nextDefineLine();
-            assert(p - slice.ptr <= length);
         }
     }
 

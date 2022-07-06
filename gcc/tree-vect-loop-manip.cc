@@ -920,9 +920,22 @@ vect_set_loop_condition_normal (class loop *loop, tree niters, tree step,
 
   if (final_iv)
     {
-      gassign *assign = gimple_build_assign (final_iv, MINUS_EXPR,
-					     indx_after_incr, init);
-      gsi_insert_on_edge_immediate (single_exit (loop), assign);
+      gassign *assign;
+      edge exit = single_exit (loop);
+      gcc_assert (single_pred_p (exit->dest));
+      tree phi_dest
+	= integer_zerop (init) ? final_iv : copy_ssa_name (indx_after_incr);
+      /* Make sure to maintain LC SSA form here and elide the subtraction
+	 if the value is zero.  */
+      gphi *phi = create_phi_node (phi_dest, exit->dest);
+      add_phi_arg (phi, indx_after_incr, exit, UNKNOWN_LOCATION);
+      if (!integer_zerop (init))
+	{
+	  assign = gimple_build_assign (final_iv, MINUS_EXPR,
+					phi_dest, init);
+	  gimple_stmt_iterator gsi = gsi_after_labels (exit->dest);
+	  gsi_insert_before (&gsi, assign, GSI_SAME_STMT);
+	}
     }
 
   return cond_stmt;
@@ -2683,13 +2696,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   class loop *first_loop = loop;
   bool irred_flag = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
 
-  /* We might have a queued need to update virtual SSA form.  As we
-     delete the update SSA machinery below after doing a regular
-     incremental SSA update during loop copying make sure we don't
-     lose that fact.
-     ???  Needing to update virtual SSA form by renaming is unfortunate
-     but not all of the vectorizer code inserting new loads / stores
-     properly assigns virtual operands to those statements.  */
+  /* We should not have to update virtual SSA form here but some
+     transforms involve creating new virtual definitions which makes
+     updating difficult.  */
+  gcc_assert (!need_ssa_update_p (cfun)
+	      || loop_vinfo->any_known_not_updated_vssa);
   update_ssa (TODO_update_ssa_only_virtuals);
 
   create_lcssa_for_virtual_phi (loop);
@@ -3696,7 +3707,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 	    }
 	}
 
-      update_ssa (TODO_update_ssa);
+      update_ssa (TODO_update_ssa_no_phi);
     }
 
   /* Split the cost model check off to a separate BB.  Costing assumes

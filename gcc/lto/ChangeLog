@@ -1,3 +1,8 @@
+2022-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* lto-dump.cc: Add "final" and "override" to various vfunc
+	implementations, removing redundant "virtual" as appropriate.
+
 2022-05-16  Martin Liska  <mliska@suse.cz>
 
 	* lto-common.cc (lto_resolution_read): Use ARRAY_SIZE.

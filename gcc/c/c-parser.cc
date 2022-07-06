@@ -20915,6 +20915,10 @@ c_parser_omp_teams (location_t loc, c_parser *parser,
 static tree
 c_parser_omp_target_data (location_t loc, c_parser *parser, bool *if_p)
 {
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_DATA_CLAUSE_MASK,
 				"#pragma omp target data");
@@ -21010,6 +21014,10 @@ c_parser_omp_target_update (location_t loc, c_parser *parser,
       return false;
     }
 
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   tree stmt = make_node (OMP_TARGET_UPDATE);
   TREE_TYPE (stmt) = void_type_node;
   OMP_TARGET_UPDATE_CLAUSES (stmt) = clauses;
@@ -21057,6 +21065,10 @@ c_parser_omp_target_enter_data (location_t loc, c_parser *parser,
       return true;
     }
 
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
 				"#pragma omp target enter data");
@@ -21072,6 +21084,14 @@ c_parser_omp_target_enter_data (location_t loc, c_parser *parser,
 	  case GOMP_MAP_ALLOC:
 	    map_seen = 3;
 	    break;
+	  case GOMP_MAP_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_TO);
+	    map_seen = 3;
+	    break;
+	  case GOMP_MAP_ALWAYS_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_TO);
+	    map_seen = 3;
+	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_ALWAYS_POINTER:
 	  case GOMP_MAP_ATTACH_DETACH:
@@ -21080,7 +21100,7 @@ c_parser_omp_target_enter_data (location_t loc, c_parser *parser,
 	    map_seen |= 1;
 	    error_at (OMP_CLAUSE_LOCATION (*pc),
 		      "%<#pragma omp target enter data%> with map-type other "
-		      "than %<to%> or %<alloc%> on %<map%> clause");
+		      "than %<to%>, %<tofrom%> or %<alloc%> on %<map%> clause");
 	    *pc = OMP_CLAUSE_CHAIN (*pc);
 	    continue;
 	  }
@@ -21143,6 +21163,10 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
       return true;
     }
 
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_EXIT_DATA_CLAUSE_MASK,
 				"#pragma omp target exit data");
@@ -21159,6 +21183,14 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
 	  case GOMP_MAP_DELETE:
 	    map_seen = 3;
 	    break;
+	  case GOMP_MAP_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_FROM);
+	    map_seen = 3;
+	    break;
+	  case GOMP_MAP_ALWAYS_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_FROM);
+	    map_seen = 3;
+	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_ALWAYS_POINTER:
 	  case GOMP_MAP_ATTACH_DETACH:
@@ -21167,8 +21199,8 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
 	    map_seen |= 1;
 	    error_at (OMP_CLAUSE_LOCATION (*pc),
 		      "%<#pragma omp target exit data%> with map-type other "
-		      "than %<from%>, %<release%> or %<delete%> on %<map%>"
-		      " clause");
+		      "than %<from%>, %<tofrom%>, %<release%> or %<delete%> "
+		      "on %<map%> clause");
 	    *pc = OMP_CLAUSE_CHAIN (*pc);
 	    continue;
 	  }
@@ -22763,9 +22795,6 @@ c_parser_omp_requires (c_parser *parser)
 	      c_parser_skip_to_pragma_eol (parser, false);
 	      return;
 	    }
-	  if (p && this_req != OMP_REQUIRES_DYNAMIC_ALLOCATORS)
-	    sorry_at (cloc, "%qs clause on %<requires%> directive not "
-			    "supported yet", p);
 	  if (p)
 	    c_parser_consume_token (parser);
 	  if (this_req)

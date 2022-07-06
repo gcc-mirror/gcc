@@ -1782,8 +1782,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_version_loops_for_strides; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override
+  {
+    return flag_version_loops_for_strides;
+  }
+  unsigned int execute (function *) final override;
 };
 
 unsigned int

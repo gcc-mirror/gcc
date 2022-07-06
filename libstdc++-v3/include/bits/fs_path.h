@@ -102,19 +102,16 @@ namespace __detail
 #endif
 
   template<typename _Iter_traits, typename = void>
-    struct __is_path_iter_src
-    : false_type
-    { };
+    inline constexpr bool __is_path_iter_src = false;
 
   template<typename _Iter_traits>
-    struct __is_path_iter_src<_Iter_traits,
-			      void_t<typename _Iter_traits::value_type>>
-    : bool_constant<__is_encoded_char<typename _Iter_traits::value_type>>
-    { };
+    inline constexpr bool
+    __is_path_iter_src<_Iter_traits, void_t<typename _Iter_traits::value_type>>
+      = __is_encoded_char<typename _Iter_traits::value_type>;
 
   template<typename _Source>
     inline constexpr bool __is_path_src
-      = __is_path_iter_src<iterator_traits<decay_t<_Source>>>::value;
+      = __is_path_iter_src<iterator_traits<decay_t<_Source>>>;
 
   template<>
     inline constexpr bool __is_path_src<path> = false;
@@ -150,7 +147,7 @@ namespace __detail
 
   // SFINAE constraint for InputIterator parameters as required by [fs.req].
   template<typename _Iter, typename _Tr = __safe_iterator_traits<_Iter>>
-    using _Path2 = enable_if_t<__is_path_iter_src<_Tr>::value, path>;
+    using _Path2 = enable_if_t<__is_path_iter_src<_Tr>, path>;
 
 #if __cpp_lib_concepts
   template<typename _Iter>

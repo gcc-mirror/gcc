@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "gimple-range.h"
+#include "value-range-storage.h"
 #include "tree-cfg.h"
 #include "target.h"
 #include "attribs.h"
@@ -320,7 +321,7 @@ block_range_cache::block_range_cache ()
   bitmap_obstack_initialize (&m_bitmaps);
   m_ssa_ranges.create (0);
   m_ssa_ranges.safe_grow_cleared (num_ssa_names);
-  m_range_allocator = new vrange_allocator;
+  m_range_allocator = new obstack_vrange_allocator;
 }
 
 // Remove any m_block_caches which have been created.
@@ -478,7 +479,7 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
 ssa_global_cache::ssa_global_cache ()
 {
   m_tab.create (0);
-  m_range_allocator = new vrange_allocator;
+  m_range_allocator = new obstack_vrange_allocator;
 }
 
 // Deconstruct a global cache.
@@ -1474,7 +1475,12 @@ ranger_cache::apply_inferred_ranges (gimple *s)
 	  if (!m_on_entry.get_bb_range (r, name, bb))
 	    exit_range (r, name, bb, RFD_READ_ONLY);
 	  if (r.intersect (infer.range (x)))
-	    m_on_entry.set_bb_range (name, bb, r);
+	    {
+	      m_on_entry.set_bb_range (name, bb, r);
+	      // If this range was invariant before, remove invariance.
+	      if (!m_gori.has_edge_range_p (name))
+		m_gori.set_range_invariant (name, false);
+	    }
 	}
     }
 }

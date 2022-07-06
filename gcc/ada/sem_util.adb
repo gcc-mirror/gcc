@@ -275,9 +275,9 @@ package body Sem_Util is
       --  with its type set to Natural.
 
       function Innermost_Master_Scope_Depth (N : Node_Id) return Uint;
-      --  Returns the scope depth of the given node's innermost
-      --  enclosing dynamic scope (effectively the accessibility
-      --  level of the innermost enclosing master).
+      --  Returns the scope depth of the given node's innermost enclosing
+      --  scope (effectively the accessibility level of the innermost
+      --  enclosing master).
 
       function Function_Call_Or_Allocator_Level (N : Node_Id) return Node_Id;
       --  Centralized processing of subprogram calls which may appear in
@@ -301,7 +301,7 @@ package body Sem_Util is
       begin
          --  Locate the nearest enclosing node (by traversing Parents)
          --  that Defining_Entity can be applied to, and return the
-         --  depth of that entity's nearest enclosing dynamic scope.
+         --  depth of that entity's nearest enclosing scope.
 
          --  The rules that define what a master are defined in
          --  RM 7.6.1 (3), and include statements and conditions for loops
@@ -311,13 +311,13 @@ package body Sem_Util is
             Ent := Defining_Entity_Or_Empty (Node_Par);
 
             if Present (Ent) then
-               Encl_Scop := Nearest_Dynamic_Scope (Ent);
+               Encl_Scop := Find_Enclosing_Scope (Ent);
 
                --  Ignore transient scopes made during expansion
 
                if Comes_From_Source (Node_Par) then
                   return
-                    Scope_Depth_Default_0 (Encl_Scop) + Master_Lvl_Modifier;
+                    Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
                end if;
 
             --  For a return statement within a function, return
@@ -798,44 +798,30 @@ package body Sem_Util is
             --  in effect we treat discriminant components as regular
             --  components.
 
-            elsif Nkind (E) = N_Selected_Component
-              and then Ekind (Etype (E))   =  E_Anonymous_Access_Type
-              and then Ekind (Etype (Pre)) /= E_Anonymous_Access_Type
-              and then (not (Nkind (Selector_Name (E)) in N_Has_Entity
-                              and then Ekind (Entity (Selector_Name (E)))
-                                         = E_Discriminant)
+            elsif
+              (Nkind (E) = N_Selected_Component
+                and then Ekind (Etype (E))   =  E_Anonymous_Access_Type
+                and then Ekind (Etype (Pre)) /= E_Anonymous_Access_Type
+                and then (not (Nkind (Selector_Name (E)) in N_Has_Entity
+                                and then Ekind (Entity (Selector_Name (E)))
+                                           = E_Discriminant)
 
-                        --  The alternative accessibility models both treat
-                        --  discriminants as regular components.
+                           --  The alternative accessibility models both treat
+                           --  discriminants as regular components.
 
-                        or else (No_Dynamic_Accessibility_Checks_Enabled (E)
-                                  and then Allow_Alt_Model))
-            then
-               --  When restriction No_Dynamic_Accessibility_Checks is active
-               --  and -gnatd_b set, the level is that of the designated type.
+                           or else (No_Dynamic_Accessibility_Checks_Enabled (E)
+                                     and then Allow_Alt_Model)))
 
-               if Allow_Alt_Model
-                 and then No_Dynamic_Accessibility_Checks_Enabled (E)
-                 and then Debug_Flag_Underscore_B
-               then
-                  return Make_Level_Literal
-                           (Typ_Access_Level (Etype (E)));
-               end if;
+              --  Arrays featuring components of anonymous access components
+              --  get their corresponding level from their containing type's
+              --  declaration.
 
-               --  Otherwise proceed normally
-
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (Prefix (E))));
-
-            --  Similar to the previous case - arrays featuring components of
-            --  anonymous access components get their corresponding level from
-            --  their containing type's declaration.
-
-            elsif Nkind (E) = N_Indexed_Component
-              and then Ekind (Etype (E)) = E_Anonymous_Access_Type
-              and then Ekind (Etype (Pre)) in Array_Kind
-              and then Ekind (Component_Type (Base_Type (Etype (Pre))))
-                         = E_Anonymous_Access_Type
+              or else
+                (Nkind (E) = N_Indexed_Component
+                  and then Ekind (Etype (E)) = E_Anonymous_Access_Type
+                  and then Ekind (Etype (Pre)) in Array_Kind
+                  and then Ekind (Component_Type (Base_Type (Etype (Pre))))
+                             = E_Anonymous_Access_Type)
             then
                --  When restriction No_Dynamic_Accessibility_Checks is active
                --  and -gnatd_b set, the level is that of the designated type.
@@ -1167,7 +1153,7 @@ package body Sem_Util is
      (Exp       : Node_Id;
       Check_Typ : Entity_Id)
    is
-      Exp_Typ : constant Entity_Id  := Etype (Exp);
+      Exp_Typ : constant Entity_Id := Etype (Exp);
 
    begin
       if Raises_Constraint_Error (Exp) then
@@ -1250,12 +1236,12 @@ package body Sem_Util is
         and then Is_Scalar_Type (Check_Typ)
         and then Exp_Typ /= Check_Typ
       then
+         --  If expression is a constant, it is worthwhile checking whether it
+         --  is a bound of the type.
+
          if Is_Entity_Name (Exp)
            and then Ekind (Entity (Exp)) = E_Constant
          then
-            --  If expression is a constant, it is worthwhile checking whether
-            --  it is a bound of the type.
-
             if (Is_Entity_Name (Type_Low_Bound (Check_Typ))
                  and then Entity (Exp) = Entity (Type_Low_Bound (Check_Typ)))
               or else
@@ -1263,20 +1249,15 @@ package body Sem_Util is
                  and then Entity (Exp) = Entity (Type_High_Bound (Check_Typ)))
             then
                return;
-
-            else
-               Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
-               Analyze_And_Resolve (Exp, Check_Typ);
-               Check_Unset_Reference (Exp);
             end if;
-
-         --  Could use a comment on this case ???
-
-         else
-            Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
-            Analyze_And_Resolve (Exp, Check_Typ);
-            Check_Unset_Reference (Exp);
          end if;
+
+         --  Change Exp into Check_Typ'(Exp) to ensure that range checks are
+         --  performed at run time.
+
+         Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
+         Analyze_And_Resolve (Exp, Check_Typ);
+         Check_Unset_Reference (Exp);
 
       end if;
    end Aggregate_Constraint_Checks;
@@ -7043,6 +7024,25 @@ package body Sem_Util is
       return Comps;
    end Copy_Component_List;
 
+   -----------------------
+   -- Copy_Ghost_Aspect --
+   -----------------------
+
+   procedure Copy_Ghost_Aspect (From : Node_Id; To : Node_Id) is
+      pragma Assert (not Has_Aspects (To));
+      Asp : Node_Id;
+
+   begin
+      if Has_Aspects (From) then
+         Asp := Find_Aspect (Defining_Entity (From), Aspect_Ghost);
+
+         if Present (Asp) then
+            Set_Aspect_Specifications (To, New_List (New_Copy_Tree (Asp)));
+            Set_Has_Aspects (To, True);
+         end if;
+      end if;
+   end Copy_Ghost_Aspect;
+
    -------------------------
    -- Copy_Parameter_List --
    -------------------------
@@ -11022,6 +11022,32 @@ package body Sem_Util is
          end case;
       end if;
    end Get_Enclosing_Object;
+
+   -------------------------------
+   -- Get_Enclosing_Deep_Object --
+   -------------------------------
+
+   function Get_Enclosing_Deep_Object (N : Node_Id) return Entity_Id is
+   begin
+      if Is_Entity_Name (N) then
+         return Entity (N);
+      else
+         case Nkind (N) is
+            when N_Explicit_Dereference
+               | N_Indexed_Component
+               | N_Selected_Component
+               | N_Slice
+            =>
+               return Get_Enclosing_Deep_Object (Prefix (N));
+
+            when N_Type_Conversion =>
+               return Get_Enclosing_Deep_Object (Expression (N));
+
+            when others =>
+               return Empty;
+         end case;
+      end if;
+   end Get_Enclosing_Deep_Object;
 
    ---------------------------
    -- Get_Enum_Lit_From_Pos --
@@ -18926,8 +18952,9 @@ package body Sem_Util is
                if Has_Init_Expression (Nod) then
                   Visit (Expression (Nod));
 
-               elsif not Has_Preelaborable_Initialization
-                           (Etype (Defining_Entity (Nod)))
+               elsif not Constant_Present (Nod)
+                 and then not Has_Preelaborable_Initialization
+                                (Etype (Defining_Entity (Nod)))
                then
                   raise Non_Preelaborable;
                end if;
@@ -25165,8 +25192,7 @@ package body Sem_Util is
          end if;
 
          --  If a record subtype is simply copied, the entity list will be
-         --  shared. Thus cloned_Subtype must be set to indicate the sharing.
-         --  ??? What does this do?
+         --  shared, so Cloned_Subtype must be set to indicate this.
 
          if Ekind (Itype) in E_Class_Wide_Subtype | E_Record_Subtype then
             Set_Cloned_Subtype (New_Itype, Itype);

@@ -206,6 +206,7 @@ Classes used:
 
 #define _DEFAULT_SOURCE 1 /* To get TZ field of struct tm, if available.  */
 #include "config.h"
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "system.h"
@@ -1483,10 +1484,10 @@ private:
 
 protected:
   using allocator::grow;
-  virtual char *grow (char *, unsigned needed);
+  char *grow (char *, unsigned needed) final override;
 #if MAPPED_WRITING
   using allocator::shrink;
-  virtual void shrink (char *);
+  void shrink (char *) final override;
 #endif
 
 public:
@@ -2280,7 +2281,7 @@ public:
     EK_EXPLICIT_HWM,  
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
     EK_FOR_BINDING,	/* A decl being inserted for a binding.  */
-    EK_INNER_DECL,	/* A decl defined outside of it's imported
+    EK_INNER_DECL,	/* A decl defined outside of its imported
 			   context.  */
     EK_DIRECT_HWM = EK_PARTIAL + 1,
 
@@ -2829,24 +2830,10 @@ struct merge_key {
   }
 };
 
-struct duplicate_hash : nodel_ptr_hash<tree_node>
-{
-#if 0
-  /* This breaks variadic bases in the xtreme_header tests.  Since ::equal is
-     the default pointer_hash::equal, let's use the default hash as well.  */
-  inline static hashval_t hash (value_type decl)
-  {
-    if (TREE_CODE (decl) == TREE_BINFO)
-      decl = TYPE_NAME (BINFO_TYPE (decl));
-    return hashval_t (DECL_UID (decl));
-  }
-#endif
-};
-
 /* Hashmap of merged duplicates.  Usually decls, but can contain
    BINFOs.  */
 typedef hash_map<tree,uintptr_t,
-		 simple_hashmap_traits<duplicate_hash,uintptr_t> >
+		 simple_hashmap_traits<nodel_ptr_hash<tree_node>,uintptr_t> >
 duplicate_hash_map;
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
@@ -3252,6 +3239,125 @@ public:
 };
 
 static loc_spans spans;
+
+/* Information about ordinary locations we stream out.  */
+struct ord_loc_info
+{
+  const line_map_ordinary *src; // line map we're based on
+  unsigned offset;	// offset to this line
+  unsigned span;	// number of locs we span
+  unsigned remap;	// serialization
+
+  static int compare (const void *a_, const void *b_)
+  {
+    auto *a = static_cast<const ord_loc_info *> (a_);
+    auto *b = static_cast<const ord_loc_info *> (b_);
+
+    if (a->src != b->src)
+      return a->src < b->src ? -1 : +1;
+
+    // Ensure no overlap
+    gcc_checking_assert (a->offset + a->span <= b->offset
+			 || b->offset + b->span <= a->offset);
+
+    gcc_checking_assert (a->offset != b->offset);
+    return a->offset < b->offset ? -1 : +1;
+  }
+};
+struct ord_loc_traits
+{
+  typedef ord_loc_info value_type;
+  typedef value_type compare_type;
+
+  static const bool empty_zero_p = false;
+
+  static hashval_t hash (const value_type &v)
+  {
+    auto h = pointer_hash<const line_map_ordinary>::hash (v.src);
+    return iterative_hash_hashval_t (v.offset, h);
+  }
+  static bool equal (const value_type &v, const compare_type p)
+  {
+    return v.src == p.src && v.offset == p.offset;
+  }
+
+  static void mark_empty (value_type &v)
+  {
+    v.src = nullptr;
+  }
+  static bool is_empty (value_type &v)
+  {
+    return !v.src;
+  }
+
+  static bool is_deleted (value_type &) { return false; }
+  static void mark_deleted (value_type &) { gcc_unreachable (); }
+  
+  static void remove (value_type &) {}
+};
+/* Table keyed by ord_loc_info, used for noting.  */
+static  hash_table<ord_loc_traits> *ord_loc_table;
+/* Sorted vector, used for writing.  */
+static vec<ord_loc_info> *ord_loc_remap;
+
+/* Information about macro locations we stream out.  */
+struct macro_loc_info
+{
+  const line_map_macro *src;    // original expansion
+  unsigned remap;	  // serialization
+
+  static int compare (const void *a_, const void *b_)
+  {
+    auto *a = static_cast<const macro_loc_info *> (a_);
+    auto *b = static_cast<const macro_loc_info *> (b_);
+
+    gcc_checking_assert (MAP_START_LOCATION (a->src)
+			 != MAP_START_LOCATION (b->src));
+    if (MAP_START_LOCATION (a->src) < MAP_START_LOCATION (b->src))
+      return -1;
+    else
+      return +1;
+  }
+};
+struct macro_loc_traits
+{
+  typedef macro_loc_info value_type;
+  typedef const line_map_macro *compare_type;
+
+  static const bool empty_zero_p = false;
+
+  static hashval_t hash (compare_type p)
+  {
+    return pointer_hash<const line_map_macro>::hash (p);
+  }
+  static hashval_t hash (const value_type &v)
+  {
+    return hash (v.src);
+  }
+  static bool equal (const value_type &v, const compare_type p)
+  {
+    return v.src == p;
+  }
+
+  static void mark_empty (value_type &v)
+  {
+    v.src = nullptr;
+  }
+  static bool is_empty (value_type &v)
+  {
+    return !v.src;
+  }
+
+  static bool is_deleted (value_type &) { return false; }
+  static void mark_deleted (value_type &) { gcc_unreachable (); }
+  
+  static void remove (value_type &) {}
+};
+/* Table keyed by line_map_macro, used for noting.  */
+static  hash_table<macro_loc_traits> *macro_loc_table;
+/* Sorted vector, used for writing.  */
+static vec<macro_loc_info> *macro_loc_remap;
+
 /* Indirection to allow bsearching imports by ordinary location.  */
 static vec<module_state *> *ool;
 
@@ -3355,15 +3461,7 @@ void slurping::release_macros ()
     elf_in::release (from, macro_tbl);
 }
 
-/* Information about location maps used during writing.  */
-
-struct location_map_info {
-  range_t num_maps;
-
-  unsigned max_range;
-};
-
-/* Flage for extensions that end up being streamed.  */
+/* Flags for extensions that end up being streamed.  */
 
 enum streamed_extensions {
   SE_OPENMP = 1 << 0,
@@ -3412,7 +3510,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   /* Location ranges for this module.  adhoc-locs are decomposed, so
      don't have a range.  */
   loc_range_t GTY((skip)) ordinary_locs;
-  loc_range_t GTY((skip)) macro_locs;
+  loc_range_t GTY((skip)) macro_locs; // [lwm,num)
 
   /* LOC is first set too the importing location.  When initially
      loaded it refers to a module loc whose parent is the importing
@@ -3439,7 +3537,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool exported_p : 1;	/* directness != MD_NONE && exported.  */
   bool cmi_noted_p : 1; /* We've told the user about the CMI, don't
 			   do it again  */
-  bool call_init_p : 1; /* This module's global initializer needs
+  bool active_init_p : 1; /* This module's global initializer needs
 			   calling.  */
   bool inform_cmi_p : 1; /* Inform of a read/write.  */
   bool visited_p : 1;    /* A walk-once flag. */
@@ -3523,7 +3621,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   /* Read and write module.  */
-  void write (elf_out *to, cpp_reader *);
+  void write_begin (elf_out *to, cpp_reader *,
+		    module_state_config &, unsigned &crc);
+  void write_end (elf_out *to, cpp_reader *,
+		  module_state_config &, unsigned &crc);
   bool read_initial (cpp_reader *);
   bool read_preprocessor (bool);
   bool read_language (bool);
@@ -3545,8 +3646,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   /* The README, for human consumption.  */
-  void write_readme (elf_out *to, cpp_reader *,
-		     const char *dialect, unsigned extensions);
+  void write_readme (elf_out *to, cpp_reader *, const char *dialect);
   void write_env (elf_out *to);
 
  private:
@@ -3603,20 +3703,21 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_entities (unsigned count, unsigned lwm, unsigned hwm);
 
  private:
-  location_map_info write_prepare_maps (module_state_config *);
+  void write_init_maps ();
+  range_t write_prepare_maps (module_state_config *, bool);
   bool read_prepare_maps (const module_state_config *);
 
-  void write_ordinary_maps (elf_out *to, location_map_info &,
-			    module_state_config *, bool, unsigned *crc_ptr);
-  bool read_ordinary_maps ();
-  void write_macro_maps (elf_out *to, location_map_info &,
-			 module_state_config *, unsigned *crc_ptr);
-  bool read_macro_maps ();
+  void write_ordinary_maps (elf_out *to, range_t &,
+			    bool, unsigned *crc_ptr);
+  bool read_ordinary_maps (unsigned, unsigned);
+  void write_macro_maps (elf_out *to, range_t &, unsigned *crc_ptr);
+  bool read_macro_maps (unsigned);
 
  private:
-  void write_define (bytes_out &, const cpp_macro *, bool located = true);
-  cpp_macro *read_define (bytes_in &, cpp_reader *, bool located = true) const;
-  unsigned write_macros (elf_out *to, cpp_reader *, unsigned *crc_ptr);
+  void write_define (bytes_out &, const cpp_macro *);
+  cpp_macro *read_define (bytes_in &, cpp_reader *) const;
+  vec<cpp_hashnode *> *prepare_macros (cpp_reader *);
+  unsigned write_macros (elf_out *to, vec<cpp_hashnode *> *, unsigned *crc_ptr);
   bool read_macros ();
   void install_macros ();
 
@@ -3628,6 +3729,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   static cpp_macro *deferred_macro (cpp_reader *, location_t, cpp_hashnode *);
 
  public:
+  static bool note_location (location_t);
   static void write_location (bytes_out &, location_t);
   location_t read_location (bytes_in &) const;
 
@@ -3675,7 +3777,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
   exported_p = false;
 
   cmi_noted_p = false;
-  call_init_p = false;
+  active_init_p = false;
 
   partition_p = partition;
 
@@ -3782,9 +3884,6 @@ static unsigned loaded_clusters;
 
 /* What the current TU is.  */
 unsigned module_kind;
-
-/* Number of global init calls needed.  */
-unsigned num_init_calls_needed = 0;
 
 /* Global trees.  */
 static const std::pair<tree *, unsigned> global_tree_arys[] =
@@ -7089,7 +7188,7 @@ trees_in::tree_node_vals (tree t)
 }
 
 
-/* If T is a back reference, fixed reference or NULL, write out it's
+/* If T is a back reference, fixed reference or NULL, write out its
    code and return WK_none.  Otherwise return WK_value if we must write
    by value, or WK_normal otherwise.  */
 
@@ -10558,7 +10657,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
 /* DECL is a new declaration that may be duplicated in OVL.  Use RET &
    ARGS to find its clone, or NULL.  If DECL's DECL_NAME is NULL, this
-   has been found by a proxy.  It will be an enum type located by it's
+   has been found by a proxy.  It will be an enum type located by its
    first member.
 
    We're conservative with matches, so ambiguous decls will be
@@ -11568,7 +11667,7 @@ trees_in::read_var_def (tree decl, tree maybe_template)
 }
 
 /* If MEMBER doesn't have an independent life outside the class,
-   return it (or it's TEMPLATE_DECL).  Otherwise NULL.  */
+   return it (or its TEMPLATE_DECL).  Otherwise NULL.  */
 
 static tree
 member_owned_by_class (tree member)
@@ -13121,7 +13220,10 @@ depset::hash::find_dependencies (module_state *module)
 	      else if (TREE_VISITED (decl))
 		/* A global tree.  */;
 	      else if (item->get_entity_kind () == EK_NAMESPACE)
-		add_namespace_context (current, CP_DECL_CONTEXT (decl));
+		{
+		  module->note_location (DECL_SOURCE_LOCATION (decl));
+		  add_namespace_context (current, CP_DECL_CONTEXT (decl));
+		}
 	      else
 		{
 		  walker.mark_declaration (decl, current->has_defn ());
@@ -13957,18 +14059,17 @@ module_state::announce (const char *what) const
      readelf -pgnu.c++.README $(module).gcm */
 
 void
-module_state::write_readme (elf_out *to, cpp_reader *reader,
-			    const char *dialect, unsigned extensions)
+module_state::write_readme (elf_out *to, cpp_reader *reader, const char *dialect)
 {
   bytes_out readme (to);
 
   readme.begin (false);
 
-  readme.printf ("GNU C++ %smodule%s%s",
-		 is_header () ? "header " : is_partition () ? "" : "primary ",
-		 is_header () ? ""
-		 : is_interface () ? " interface" : " implementation",
-		 is_partition () ? " partition" : "");
+  readme.printf ("GNU C++ %s",
+		 is_header () ? "header unit"
+		 : !is_partition () ? "primary interface"
+		 : is_interface () ? "interface partition"
+		 : "internal partition");
 
   /* Compiler's version.  */
   readme.printf ("compiler: %s", version_string);
@@ -14394,13 +14495,15 @@ struct module_state_config {
   unsigned num_entities;
   unsigned ordinary_locs;
   unsigned macro_locs;
-  unsigned ordinary_loc_align;
+  unsigned loc_range_bits;
+  unsigned active_init;
 
 public:
   module_state_config ()
     :dialect_str (get_dialect ()),
      num_imports (0), num_partitions (0), num_entities (0),
-     ordinary_locs (0), macro_locs (0), ordinary_loc_align (0)
+     ordinary_locs (0), macro_locs (0), loc_range_bits (0),
+     active_init (0)
   {
   }
 
@@ -15354,7 +15457,7 @@ module_state::read_entities (unsigned count, unsigned lwm, unsigned hwm)
    sure the specified entities are loaded.
 
    An optimization might be to have a flag in each key-entity saying
-   that it's top key might be in the entity table.  It's not clear to
+   that its top key might be in the entity table.  It's not clear to
    me how to set that flag cheaply -- cheaper than just looking.
 
    FIXME: It'd be nice to have a bit in decls to tell us whether to
@@ -15510,7 +15613,7 @@ module_for_ordinary_loc (location_t loc)
       module_state *probe = (*ool)[pos + half];
       if (loc < probe->ordinary_locs.first)
 	len = half;
-      else if (loc < probe->ordinary_locs.second)
+      else if (loc < probe->ordinary_locs.first + probe->ordinary_locs.second)
 	return probe;
       else
 	{
@@ -15532,15 +15635,15 @@ module_for_macro_loc (location_t loc)
     {
       unsigned half = len / 2;
       module_state *probe = (*modules)[pos + half];
-      if (loc >= probe->macro_locs.second)
-	len = half;
-      else if (loc >= probe->macro_locs.first)
-	return probe;
-      else
+      if (loc < probe->macro_locs.first)
 	{
 	  pos += half + 1;
 	  len = len - (half + 1);
 	}
+      else if (loc >= probe->macro_locs.first + probe->macro_locs.second)
+	len = half;
+      else
+	return probe;
     }
 
   return NULL;
@@ -15559,6 +15662,79 @@ module_state::imported_from () const
   return from;
 }
 
+/* Note that LOC will need writing.  This allows us to prune locations
+   that are not needed.  */
+
+bool
+module_state::note_location (location_t loc)
+{
+  bool added = false;
+  if (!macro_loc_table && !ord_loc_table)
+    ;
+  else if (loc < RESERVED_LOCATION_COUNT)
+    ;
+  else if (IS_ADHOC_LOC (loc))
+    {
+      location_t locus = get_location_from_adhoc_loc (line_table, loc);
+      note_location (locus);
+      source_range range = get_range_from_loc (line_table, loc);
+      if (range.m_start != locus)
+	note_location (range.m_start);
+      note_location (range.m_finish);
+    }
+  else if (loc >= LINEMAPS_MACRO_LOWEST_LOCATION (line_table))
+    {
+      if (spans.macro (loc))
+	{
+	  const line_map *map = linemap_lookup (line_table, loc);
+	  const line_map_macro *mac_map = linemap_check_macro (map);
+	  hashval_t hv = macro_loc_traits::hash (mac_map);
+	  macro_loc_info *slot
+	    = macro_loc_table->find_slot_with_hash (mac_map, hv, INSERT);
+	  if (!slot->src)
+	    {
+	      slot->src = mac_map;
+	      slot->remap = 0;
+	      // Expansion locations could themselves be from a
+	      // macro, we need to note them all.
+	      note_location (mac_map->expansion);
+	      gcc_checking_assert (mac_map->n_tokens);
+	      location_t tloc = UNKNOWN_LOCATION;
+	      for (unsigned ix = mac_map->n_tokens * 2; ix--;)
+		if (mac_map->macro_locations[ix] != tloc)
+		  {
+		    tloc = mac_map->macro_locations[ix];
+		    note_location (tloc);
+		  }
+	      added = true;
+	    }
+	}				       
+    }
+  else if (IS_ORDINARY_LOC (loc))
+    {
+      if (spans.ordinary (loc))
+	{
+	  const line_map *map = linemap_lookup (line_table, loc);
+	  const line_map_ordinary *ord_map = linemap_check_ordinary (map);
+	  ord_loc_info lkup;
+	  lkup.src = ord_map;
+	  lkup.span = 1 << ord_map->m_column_and_range_bits;
+	  lkup.offset = (loc - MAP_START_LOCATION (ord_map)) & ~(lkup.span - 1);
+	  lkup.remap = 0;
+	  ord_loc_info *slot = (ord_loc_table->find_slot_with_hash
+				(lkup, ord_loc_traits::hash (lkup), INSERT));
+	  if (!slot->src)
+	    {
+	      *slot = lkup;
+	      added = true;
+	    }
+	}
+    }
+  else
+    gcc_unreachable ();
+  return added;
+}
+
 /* If we're not streaming, record that we need location LOC.
    Otherwise stream it.  */
 
@@ -15566,9 +15742,10 @@ void
 module_state::write_location (bytes_out &sec, location_t loc)
 {
   if (!sec.streaming_p ())
-    /* This is where we should note we use this location.  See comment
-       about write_ordinary_maps.  */
-    return;
+    {
+      note_location (loc);
+      return;
+    }
 
   if (loc < RESERVED_LOCATION_COUNT)
     {
@@ -15590,20 +15767,40 @@ module_state::write_location (bytes_out &sec, location_t loc)
     }
   else if (loc >= LINEMAPS_MACRO_LOWEST_LOCATION (line_table))
     {
-      if (const loc_spans::span *span = spans.macro (loc))
+      const macro_loc_info *info = nullptr;
+      unsigned offset = 0;
+      if (unsigned hwm = macro_loc_remap->length ())
 	{
-	  unsigned off = MAX_LOCATION_T - loc;
+	  info = macro_loc_remap->begin ();
+	  while (hwm != 1)
+	    {
+	      unsigned mid = hwm / 2;
+	      if (MAP_START_LOCATION (info[mid].src) <= loc)
+		{
+		  info += mid;
+		  hwm -= mid;
+		}
+	      else
+		hwm = mid;
+	    }
+	  offset = loc - MAP_START_LOCATION (info->src);
+	  if (offset > info->src->n_tokens)
+	    info = nullptr;
+	}
 
-	  off -= span->macro_delta;
+      gcc_checking_assert (bool (info) == bool (spans.macro (loc)));
 
+      if (info)
+	{
+	  offset += info->remap;
 	  sec.u (LK_MACRO);
-	  sec.u (off);
+	  sec.u (offset);
 	  dump (dumper::LOCATION)
-	    && dump ("Macro location %u output %u", loc, off);
+	    && dump ("Macro location %u output %u", loc, offset);
 	}
       else if (const module_state *import = module_for_macro_loc (loc))
 	{
-	  unsigned off = import->macro_locs.second - loc - 1;
+	  unsigned off = loc - import->macro_locs.first;
 	  sec.u (LK_IMPORT_MACRO);
 	  sec.u (import->remap);
 	  sec.u (off);
@@ -15616,16 +15813,37 @@ module_state::write_location (bytes_out &sec, location_t loc)
     }
   else if (IS_ORDINARY_LOC (loc))
     {
-      if (const loc_spans::span *span = spans.ordinary (loc))
+      const ord_loc_info *info = nullptr;
+      unsigned offset = 0;
+      if (unsigned hwm = ord_loc_remap->length ())
 	{
-	  unsigned off = loc;
+	  info = ord_loc_remap->begin ();
+	  while (hwm != 1)
+	    {
+	      unsigned mid = hwm / 2;
+	      if (MAP_START_LOCATION (info[mid].src) + info[mid].offset <= loc)
+		{
+		  info += mid;
+		  hwm -= mid;
+		}
+	      else
+		hwm = mid;
+	    }
+	  offset = loc - MAP_START_LOCATION (info->src) - info->offset;
+	  if (offset > info->span)
+	    info = nullptr;
+	}
 
-	  off += span->ordinary_delta;
+      gcc_checking_assert (bool (info) == bool (spans.ordinary (loc)));
+
+      if (info)
+	{
+	  offset += info->remap;
 	  sec.u (LK_ORDINARY);
-	  sec.u (off);
+	  sec.u (offset);
 
 	  dump (dumper::LOCATION)
-	    && dump ("Ordinary location %u output %u", loc, off);
+	    && dump ("Ordinary location %u output %u", loc, offset);
 	}
       else if (const module_state *import = module_for_ordinary_loc (loc))
 	{
@@ -15680,14 +15898,10 @@ module_state::read_location (bytes_in &sec) const
       {
 	unsigned off = sec.u ();
 
-	if (macro_locs.first)
+	if (macro_locs.second)
 	  {
-	    location_t adjusted = MAX_LOCATION_T - off;
-	    adjusted -= slurp->loc_deltas.second;
-	    if (adjusted < macro_locs.first)
-	      sec.set_overrun ();
-	    else if (adjusted < macro_locs.second)
-	      locus = adjusted;
+	    if (off < macro_locs.second)
+	      locus = off + macro_locs.first;
 	    else
 	      sec.set_overrun ();
 	  }
@@ -15703,15 +15917,10 @@ module_state::read_location (bytes_in &sec) const
 	unsigned off = sec.u ();
 	if (ordinary_locs.second)
 	  {
-	    location_t adjusted = off;
-
-	    adjusted += slurp->loc_deltas.first;
-	    if (adjusted >= ordinary_locs.second)
+	    if (off < ordinary_locs.second)
+	      locus = off + ordinary_locs.first;
+	    else
 	      sec.set_overrun ();
-	    else if (adjusted >= ordinary_locs.first)
-	      locus = adjusted;
-	    else if (adjusted < spans.main_start ())
-	      locus = off;
 	  }
 	else
 	  locus = loc;
@@ -15745,10 +15954,10 @@ module_state::read_location (bytes_in &sec) const
 	   {
 	     if (kind == LK_IMPORT_MACRO)
 	       {
-		 if (!import->macro_locs.first)
+		 if (!import->macro_locs.second)
 		   locus = import->loc;
-		 else if (off < import->macro_locs.second - macro_locs.first)
-		   locus = import->macro_locs.second - off - 1;
+		 else if (off < import->macro_locs.second)
+		   locus = off + import->macro_locs.first;
 		 else
 		   sec.set_overrun ();
 	       }
@@ -15756,8 +15965,7 @@ module_state::read_location (bytes_in &sec) const
 	       {
 		 if (!import->ordinary_locs.second)
 		   locus = import->loc;
-		 else if (off < (import->ordinary_locs.second
-			    - import->ordinary_locs.first))
+		 else if (off < import->ordinary_locs.second)
 		   locus = import->ordinary_locs.first + off;
 		 else
 		   sec.set_overrun ();
@@ -15770,20 +15978,21 @@ module_state::read_location (bytes_in &sec) const
   return locus;
 }
 
-/* Prepare the span adjustments.  */
+/* Allocate hash tables to record needed locations.  */
 
-// FIXME:QOI I do not prune the unreachable locations.  Modules with
-// textually-large GMFs could well cause us to run out of locations.
-// Regular single-file modules could also be affected.  We should
-// determine which locations we need to represent, so that we do not
-// grab more locations than necessary.  An example is in
-// write_macro_maps where we work around macro expansions that are not
-// covering any locations -- the macro expands to nothing.  Perhaps we
-// should decompose locations so that we can have a more graceful
-// degradation upon running out?
+void
+module_state::write_init_maps ()
+{
+  macro_loc_table = new hash_table<macro_loc_traits> (EXPERIMENT (1, 400));
+  ord_loc_table = new hash_table<ord_loc_traits> (EXPERIMENT (1, 400));
+}
 
-location_map_info
-module_state::write_prepare_maps (module_state_config *)
+/* Prepare the span adjustments.  We prune unneeded locations -- at
+   this point every needed location must have been seen by
+   note_location.  */
+
+range_t
+module_state::write_prepare_maps (module_state_config *cfg, bool has_partitions)
 {
   dump () && dump ("Preparing locations");
   dump.indent ();
@@ -15794,122 +16003,124 @@ module_state::write_prepare_maps (module_state_config *)
 		   spans[loc_spans::SPAN_RESERVED].macro.first,
 		   spans[loc_spans::SPAN_RESERVED].macro.second);
 
-  location_map_info info;
+  range_t info {0, 0};
 
-  info.num_maps.first = info.num_maps.second = 0;
+  // Sort the noted lines.
+  vec_alloc (ord_loc_remap, ord_loc_table->size ());
+  for (auto iter = ord_loc_table->begin (), end = ord_loc_table->end ();
+       iter != end; ++iter)
+    ord_loc_remap->quick_push (*iter);
+  ord_loc_remap->qsort (&ord_loc_info::compare);
 
-  /* Figure the alignment of ordinary location spans.  */
-  unsigned max_range = 0;
-  for (unsigned ix = loc_spans::SPAN_FIRST; ix != spans.length (); ix++)
+  // Note included-from maps.
+  bool added = false;
+  const line_map_ordinary *current = nullptr;
+  for (auto iter = ord_loc_remap->begin (), end = ord_loc_remap->end ();
+       iter != end; ++iter)
+    if (iter->src != current)
+      {
+	current = iter->src;
+	for (auto probe = current;
+	     auto from = linemap_included_from (probe);
+	     probe = linemap_check_ordinary (linemap_lookup (line_table, from)))
+	  {
+	    if (has_partitions)
+	      {
+		// Partition locations need to elide their module map
+		// entry.
+		probe
+		  = linemap_check_ordinary (linemap_lookup (line_table, from));
+		if (MAP_MODULE_P (probe))
+		  from = linemap_included_from (probe);
+	      }
+
+	    if (!note_location (from))
+	      break;
+	    added = true;
+	  }
+      }
+  if (added)
     {
-      loc_spans::span &span = spans[ix];
-
-      if (span.ordinary.first != span.ordinary.second)
-	{
-	  line_map_ordinary const *omap
-	    = linemap_check_ordinary (linemap_lookup (line_table,
-						      span.ordinary.first));
-
-	  /* We should exactly match up.  */
-	  gcc_checking_assert (MAP_START_LOCATION (omap) == span.ordinary.first);
-
-	  line_map_ordinary const *fmap = omap;
-	  for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
-	    {
-	      /* We should never find a module linemap in an interval.  */
-	      gcc_checking_assert (!MAP_MODULE_P (omap));
-
-	      if (max_range < omap->m_range_bits)
-		max_range = omap->m_range_bits;
-	    }
-
-	  info.num_maps.first += omap - fmap;
-	}
-
-      if (span.macro.first != span.macro.second)
-	{
-	  /* Iterate over the span's macros, to elide the empty
-	     expansions.  */
-	  unsigned count = 0;
-	  for (unsigned macro
-		 = linemap_lookup_macro_index (line_table,
-					       span.macro.second - 1);
-	       macro < LINEMAPS_MACRO_USED (line_table);
-	       macro++)
-	    {
-	      line_map_macro const *mmap
-		= LINEMAPS_MACRO_MAP_AT (line_table, macro);
-	      if (MAP_START_LOCATION (mmap) < span.macro.first)
-		/* Fallen out of the span.  */
-		break;
-
-	      if (mmap->n_tokens)
-		count++;
-	    }
-	  dump (dumper::LOCATION) && dump ("Span:%u %u macro maps", ix, count);
-	  info.num_maps.second += count;
-	}
+      // Reconstruct the line array as we added items to the hash table.
+      vec_free (ord_loc_remap);
+      vec_alloc (ord_loc_remap, ord_loc_table->size ());
+      for (auto iter = ord_loc_table->begin (), end = ord_loc_table->end ();
+	   iter != end; ++iter)
+	ord_loc_remap->quick_push (*iter);
+      ord_loc_remap->qsort (&ord_loc_info::compare);
     }
+  delete ord_loc_table;
+  ord_loc_table = nullptr;
 
-  /* Adjust the maps.  Ordinary ones ascend, and we must maintain
-     alignment.  Macro ones descend, but are unaligned.  */
-  location_t ord_off = spans[loc_spans::SPAN_FIRST].ordinary.first;
-  location_t mac_off = spans[loc_spans::SPAN_FIRST].macro.second;
-  location_t range_mask = (1u << max_range) - 1;
+  // Merge (sufficiently) adjacent spans, and calculate remapping.
+  constexpr unsigned adjacency = 2; // Allow 2 missing lines.
+  auto begin = ord_loc_remap->begin (), end = ord_loc_remap->end ();
+  auto dst = begin;
+  unsigned offset = 0, range_bits = 0;
+  ord_loc_info *base = nullptr;
+  for (auto iter = begin; iter != end; ++iter)
+    {    
+      if (base && iter->src == base->src)
+	{
+	  if (base->offset + base->span +
+	      ((adjacency << base->src->m_column_and_range_bits)
+	       // If there are few c&r bits, allow further separation.
+	       | (adjacency << 4))
+	      >= iter->offset)
+	    {
+	      // Merge.
+	      offset -= base->span;
+	      base->span = iter->offset + iter->span - base->offset;
+	      offset += base->span;
+	      continue;
+	    }
+	}
+      else if (range_bits < iter->src->m_range_bits)
+	range_bits = iter->src->m_range_bits;
 
-  dump () && dump ("Ordinary maps range bits:%u, preserve:%x, zero:%u",
-		   max_range, ord_off & range_mask, ord_off & ~range_mask);
+      offset += ((1u << iter->src->m_range_bits) - 1);
+      offset &= ~((1u << iter->src->m_range_bits) - 1);
+      iter->remap = offset;
+      offset += iter->span;
+      base = dst;
+      *dst++ = *iter;
+    }
+  ord_loc_remap->truncate (dst - begin);
 
-  for (unsigned ix = loc_spans::SPAN_FIRST; ix != spans.length (); ix++)
+  info.first = ord_loc_remap->length ();
+  cfg->ordinary_locs = offset;
+  cfg->loc_range_bits = range_bits;
+  dump () && dump ("Ordinary maps:%u locs:%u range_bits:%u",
+		   info.first, cfg->ordinary_locs,
+		   cfg->loc_range_bits);
+
+  // Remap the macro locations.
+  vec_alloc (macro_loc_remap, macro_loc_table->size ());
+  for (auto iter = macro_loc_table->begin (), end = macro_loc_table->end ();
+       iter != end; ++iter)
+    macro_loc_remap->quick_push (*iter);
+  delete macro_loc_table;
+  macro_loc_table = nullptr;
+
+  macro_loc_remap->qsort (&macro_loc_info::compare);
+  offset = 0;
+  for (auto iter = macro_loc_remap->begin (), end = macro_loc_remap->end ();
+       iter != end; ++iter)
     {
-      loc_spans::span &span = spans[ix];
-
-      span.macro_delta = mac_off - span.macro.second;
-      mac_off -= span.macro.second - span.macro.first;
-      dump () && dump ("Macro span:%u [%u,%u):%u->%d(%u)", ix,
-		       span.macro.first, span.macro.second,
-		       span.macro.second - span.macro.first,
-		       span.macro_delta, span.macro.first + span.macro_delta);
-
-      line_map_ordinary const *omap
-	= linemap_check_ordinary (linemap_lookup (line_table,
-						      span.ordinary.first));
-      location_t base = MAP_START_LOCATION (omap);
-
-      /* Preserve the low MAX_RANGE bits of base by incrementing ORD_OFF.  */
-      unsigned low_bits = base & range_mask;
-      if ((ord_off & range_mask) > low_bits)
-	low_bits += range_mask + 1;
-      ord_off = (ord_off & ~range_mask) + low_bits;
-      span.ordinary_delta = ord_off - base;
-
-      for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
-	{
-	  location_t start_loc = MAP_START_LOCATION (omap);
-	  unsigned to = start_loc + span.ordinary_delta;
-	  location_t end_loc = MAP_START_LOCATION (omap + 1);
-
-	  dump () && dump ("Ordinary span:%u [%u,%u):%u->%d(%u)",
-			   ix, start_loc,
-			   end_loc, end_loc - start_loc,
-			   span.ordinary_delta, to);
-
-	  /* There should be no change in the low order bits.  */
-	  gcc_checking_assert (((start_loc ^ to) & range_mask) == 0);
-	}
-
-      /* The ending serialized value.  */
-      ord_off = span.ordinary.second + span.ordinary_delta;
+      auto mac = iter->src;
+      iter->remap = offset;
+      offset += mac->n_tokens;
     }
+  info.second = macro_loc_remap->length ();
+  cfg->macro_locs = offset;
 
-  dump () && dump ("Ordinary:%u maps hwm:%u macro:%u maps lwm:%u ",
-		   info.num_maps.first, ord_off,
-		   info.num_maps.second, mac_off);
+  dump () && dump ("Macro maps:%u locs:%u", info.second, cfg->macro_locs);
 
   dump.outdent ();
 
-  info.max_range = max_range;
-  
+  // If we have no ordinary locs, we must also have no macro locs.
+  gcc_checking_assert (cfg->ordinary_locs || !cfg->macro_locs);
+
   return info;
 }
 
@@ -15917,8 +16128,6 @@ bool
 module_state::read_prepare_maps (const module_state_config *cfg)
 {
   location_t ordinary = line_table->highest_location + 1;
-  ordinary = ((ordinary + (1u << cfg->ordinary_loc_align))
-	      & ~((1u << cfg->ordinary_loc_align) - 1));
   ordinary += cfg->ordinary_locs;
 
   location_t macro = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
@@ -15943,13 +16152,12 @@ module_state::read_prepare_maps (const module_state_config *cfg)
   return false;
 }
 
-/* Write the location maps.  This also determines the shifts for the
-   location spans.  */
+/* Write & read the location maps. Not called if there are no
+   locations.   */
 
 void
-module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
-				   module_state_config *cfg, bool has_partitions,
-				   unsigned *crc_p)
+module_state::write_ordinary_maps (elf_out *to, range_t &info,
+				   bool has_partitions, unsigned *crc_p)
 {
   dump () && dump ("Writing ordinary location maps");
   dump.indent ();
@@ -15958,45 +16166,36 @@ module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
   filenames.create (20);
 
   /* Determine the unique filenames.  */
-  // FIXME:QOI We should find the set of filenames when working out
-  // which locations we actually need.  See write_prepare_maps.
-  for (unsigned ix = loc_spans::SPAN_FIRST; ix != spans.length (); ix++)
-    {
-      loc_spans::span &span = spans[ix];
-      line_map_ordinary const *omap
-	= linemap_check_ordinary (linemap_lookup (line_table,
-						  span.ordinary.first));
+  const line_map_ordinary *current = nullptr;
+  for (auto iter = ord_loc_remap->begin (), end = ord_loc_remap->end ();
+       iter != end; ++iter)
+    if (iter->src != current)
+      {
+	current = iter->src;
+	const char *fname = ORDINARY_MAP_FILE_NAME (iter->src);
 
-      /* We should exactly match up.  */
-      gcc_checking_assert (MAP_START_LOCATION (omap) == span.ordinary.first);
+	/* We should never find a module linemap in an interval.  */
+	gcc_checking_assert (!MAP_MODULE_P (iter->src));
 
-      for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
-	{
-	  const char *fname = ORDINARY_MAP_FILE_NAME (omap);
-
-	  /* We should never find a module linemap in an interval.  */
-	  gcc_checking_assert (!MAP_MODULE_P (omap));
-
-	  /* We expect very few filenames, so just an array.
-	     (Not true when headers are still in play :()  */
-	  for (unsigned jx = filenames.length (); jx--;)
-	    {
-	      const char *name = filenames[jx];
-	      if (0 == strcmp (name, fname))
-		{
-		  /* Reset the linemap's name, because for things like
-		     preprocessed input we could have multiple
-		     instances of the same name, and we'd rather not
-		     percolate that.  */
-		  const_cast<line_map_ordinary *> (omap)->to_file = name;
-		  fname = NULL;
-		  break;
-		}
-	    }
-	  if (fname)
-	    filenames.safe_push (fname);
-	}
-    }
+	/* We expect very few filenames, so just an array.
+	   (Not true when headers are still in play :()  */
+	for (unsigned jx = filenames.length (); jx--;)
+	  {
+	    const char *name = filenames[jx];
+	    if (0 == strcmp (name, fname))
+	      {
+		/* Reset the linemap's name, because for things like
+		   preprocessed input we could have multiple instances
+		   of the same name, and we'd rather not percolate
+		   that.  */
+		const_cast<line_map_ordinary *> (iter->src)->to_file = name;
+		fname = NULL;
+		break;
+	      }
+	  }
+	if (fname)
+	  filenames.safe_push (fname);
+      }
 
   bytes_out sec (to);
   sec.begin ();
@@ -16012,56 +16211,45 @@ module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
       sec.str (fname);
     }
 
-  location_t offset = spans[loc_spans::SPAN_FIRST].ordinary.first;
-  location_t range_mask = (1u << info.max_range) - 1;
-
-  dump () && dump ("Ordinary maps:%u, range bits:%u, preserve:%x, zero:%u",
-		   info.num_maps.first, info.max_range, offset & range_mask,
-		   offset & ~range_mask);
-  sec.u (info.num_maps.first);	/* Num maps.  */
-  sec.u (info.max_range);		/* Maximum range bits  */
-  sec.u (offset & range_mask);	/* Bits to preserve.  */
-  sec.u (offset & ~range_mask);
-
-  for (unsigned ix = loc_spans::SPAN_FIRST; ix != spans.length (); ix++)
+  sec.u (info.first);	/* Num maps.  */
+  const ord_loc_info *base = nullptr;
+  for (auto iter = ord_loc_remap->begin (), end = ord_loc_remap->end ();
+       iter != end; ++iter)
     {
-      loc_spans::span &span = spans[ix];
-      line_map_ordinary const *omap
-	= linemap_check_ordinary (linemap_lookup (line_table,
-						  span.ordinary.first));
-      for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
+      dump (dumper::LOCATION)
+	&& dump ("Span:%u ordinary [%u+%u,+%u)->[%u,+%u)",
+		 iter - ord_loc_remap->begin (),
+		 MAP_START_LOCATION (iter->src), iter->offset, iter->span,
+		 iter->remap, iter->span);
+
+      if (!base || iter->src != base->src)
+	base = iter;
+      sec.u (iter->offset - base->offset);
+      if (base == iter)
 	{
-	  location_t start_loc = MAP_START_LOCATION (omap);
-	  unsigned to = start_loc + span.ordinary_delta;
+	  sec.u (iter->src->sysp);
+	  sec.u (iter->src->m_range_bits);
+	  sec.u (iter->src->m_column_and_range_bits - iter->src->m_range_bits);
 
-	  dump (dumper::LOCATION)
-	    && dump ("Span:%u ordinary [%u,%u)->%u", ix, start_loc,
-		     MAP_START_LOCATION (omap + 1), to);
-
-	  /* There should be no change in the low order bits.  */
-	  gcc_checking_assert (((start_loc ^ to) & range_mask) == 0);
-	  sec.u (to);
-
-	  /* Making accessors just for here, seems excessive.  */
-	  sec.u (omap->reason);
-	  sec.u (omap->sysp);
-	  sec.u (omap->m_range_bits);
-	  sec.u (omap->m_column_and_range_bits - omap->m_range_bits);
-
-	  const char *fname = ORDINARY_MAP_FILE_NAME (omap);
+	  const char *fname = ORDINARY_MAP_FILE_NAME (iter->src);
 	  for (unsigned ix = 0; ix != filenames.length (); ix++)
 	    if (filenames[ix] == fname)
 	      {
 		sec.u (ix);
 		break;
 	      }
-	  sec.u (ORDINARY_MAP_STARTING_LINE_NUMBER (omap));
-
+	  unsigned line = ORDINARY_MAP_STARTING_LINE_NUMBER (iter->src);
+	  line += iter->offset >> iter->src->m_column_and_range_bits;
+	  sec.u (line);
+	}
+      sec.u (iter->remap);
+      if (base == iter)
+	{
 	  /* Write the included from location, which means reading it
 	     while reading in the ordinary maps.  So we'd better not
 	     be getting ahead of ourselves.  */
-	  location_t from = linemap_included_from (omap);
-	  gcc_checking_assert (from < MAP_START_LOCATION (omap));
+	  location_t from = linemap_included_from (iter->src);
+	  gcc_checking_assert (from < MAP_START_LOCATION (iter->src));
 	  if (from != UNKNOWN_LOCATION && has_partitions)
 	    {
 	      /* A partition's span will have a from pointing at a
@@ -16073,15 +16261,7 @@ module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
 	    }
 	  write_location (sec, from);
 	}
-      /* The ending serialized value.  */
-      offset = MAP_START_LOCATION (omap) + span.ordinary_delta;
     }
-  dump () && dump ("Ordinary location hwm:%u", offset);
-  sec.u (offset);
-
-  // Record number of locations and alignment.
-  cfg->ordinary_loc_align = info.max_range;
-  cfg->ordinary_locs = offset;
 
   filenames.release ();
 
@@ -16090,8 +16270,7 @@ module_state::write_ordinary_maps (elf_out *to, location_map_info &info,
 }
 
 void
-module_state::write_macro_maps (elf_out *to, location_map_info &info,
-				module_state_config *cfg, unsigned *crc_p)
+module_state::write_macro_maps (elf_out *to, range_t &info, unsigned *crc_p)
 {
   dump () && dump ("Writing macro location maps");
   dump.indent ();
@@ -16099,83 +16278,55 @@ module_state::write_macro_maps (elf_out *to, location_map_info &info,
   bytes_out sec (to);
   sec.begin ();
 
-  dump () && dump ("Macro maps:%u", info.num_maps.second);
-  sec.u (info.num_maps.second);
-
-  location_t offset = spans[loc_spans::SPAN_FIRST].macro.second;
-  sec.u (offset);
+  dump () && dump ("Macro maps:%u", info.second);
+  sec.u (info.second);
 
   unsigned macro_num = 0;
-  for (unsigned ix = loc_spans::SPAN_FIRST; ix != spans.length (); ix++)
+  for (auto iter = macro_loc_remap->end (), begin = macro_loc_remap->begin ();
+       iter-- != begin;)
     {
-      loc_spans::span &span = spans[ix];
-      if (span.macro.first == span.macro.second)
-	/* Empty span.  */
-	continue;
-
-      for (unsigned macro
-	     = linemap_lookup_macro_index (line_table, span.macro.second - 1);
-	   macro < LINEMAPS_MACRO_USED (line_table);
-	   macro++)
+      auto mac = iter->src;
+      sec.u (iter->remap);
+      sec.u (mac->n_tokens);
+      sec.cpp_node (mac->macro);
+      write_location (sec, mac->expansion);
+      const location_t *locs = mac->macro_locations;
+      /* There are lots of identical runs.  */
+      location_t prev = UNKNOWN_LOCATION;
+      unsigned count = 0;
+      unsigned runs = 0;
+      for (unsigned jx = mac->n_tokens * 2; jx--;)
 	{
-	  line_map_macro const *mmap
-	    = LINEMAPS_MACRO_MAP_AT (line_table, macro);
-	  location_t start_loc = MAP_START_LOCATION (mmap);
-	  if (start_loc < span.macro.first)
-	    /* Fallen out of the span.  */
-	    break;
-
-	  if (!mmap->n_tokens)
-	    /* Empty expansion.  */
-	    continue;
-
-	  sec.u (offset);
-	  sec.u (mmap->n_tokens);
-	  sec.cpp_node (mmap->macro);
-	  write_location (sec, mmap->expansion);
-	  const location_t *locs = mmap->macro_locations;
-	  /* There are lots of identical runs.  */
-	  location_t prev = UNKNOWN_LOCATION;
-	  unsigned count = 0;
-	  unsigned runs = 0;
-	  for (unsigned jx = mmap->n_tokens * 2; jx--;)
+	  location_t tok_loc = locs[jx];
+	  if (tok_loc == prev)
 	    {
-	      location_t tok_loc = locs[jx];
-	      if (tok_loc == prev)
-		{
-		  count++;
-		  continue;
-		}
-	      runs++;
-	      sec.u (count);
-	      count = 1;
-	      prev = tok_loc;
-	      write_location (sec, tok_loc);
+	      count++;
+	      continue;
 	    }
+	  runs++;
 	  sec.u (count);
-	  dump (dumper::LOCATION)
-	    && dump ("Span:%u macro:%u %I %u/%u*2 locations [%u,%u)->%u",
-		     ix, macro_num, identifier (mmap->macro),
-		     runs, mmap->n_tokens,
-		     start_loc, start_loc + mmap->n_tokens,
-		     start_loc + span.macro_delta);
-	  macro_num++;
-	  offset -= mmap->n_tokens;
-	  gcc_checking_assert (offset == start_loc + span.macro_delta);
+	  count = 1;
+	  prev = tok_loc;
+	  write_location (sec, tok_loc);
 	}
+      sec.u (count);
+      dump (dumper::LOCATION)
+	&& dump ("Macro:%u %I %u/%u*2 locations [%u,%u)->%u",
+		 macro_num, identifier (mac->macro),
+		 runs, mac->n_tokens,
+		 MAP_START_LOCATION (mac),
+		 MAP_START_LOCATION (mac) + mac->n_tokens,
+		 iter->remap);
+      macro_num++;
     }
-  dump () && dump ("Macro location lwm:%u", offset);
-  sec.u (offset);
-  gcc_assert (macro_num == info.num_maps.second);
-
-  cfg->macro_locs = MAX_LOCATION_T + 1 - offset;
+  gcc_assert (macro_num == info.second);
 
   sec.end (to, to->name (MOD_SNAME_PFX ".mlm"), crc_p);
   dump.outdent ();
 }
 
 bool
-module_state::read_ordinary_maps ()
+module_state::read_ordinary_maps (unsigned num_ord_locs, unsigned range_bits)
 {
   bytes_in sec;
 
@@ -16201,70 +16352,62 @@ module_state::read_ordinary_maps ()
       filenames.quick_push (fname);
     }
 
-  unsigned num_ordinary = sec.u (); 
-  unsigned max_range = sec.u ();
-  unsigned low_bits = sec.u ();
-  location_t zero = sec.u ();
-  location_t range_mask = (1u << max_range) - 1;
-
-  dump () && dump ("Ordinary maps:%u, range bits:%u, preserve:%x, zero:%u",
-		   num_ordinary, max_range, low_bits, zero);
+  unsigned num_ordinary = sec.u ();
+  dump () && dump ("Ordinary maps:%u, range_bits:%u", num_ordinary, range_bits);
 
   location_t offset = line_table->highest_location + 1;
-  /* Ensure offset doesn't go backwards at the start.  */
-  if ((offset & range_mask) > low_bits)
-    offset += range_mask + 1;
-  offset = (offset & ~range_mask);
+  offset += ((1u << range_bits) - 1);
+  offset &= ~((1u << range_bits) - 1);
+  ordinary_locs.first = offset;
 
-  bool propagated = spans.maybe_propagate (this, offset + low_bits);
-
+  bool propagated = spans.maybe_propagate (this, offset);
   line_map_ordinary *maps = static_cast<line_map_ordinary *>
     (line_map_new_raw (line_table, false, num_ordinary));
 
-  location_t lwm = offset;
-  slurp->loc_deltas.first = offset - zero;
-  ordinary_locs.first = zero + low_bits + slurp->loc_deltas.first;
-  dump () && dump ("Ordinary loc delta %d", slurp->loc_deltas.first);
-
+  const line_map_ordinary *base = nullptr;
   for (unsigned ix = 0; ix != num_ordinary && !sec.get_overrun (); ix++)
     {
       line_map_ordinary *map = &maps[ix];
-      unsigned hwm = sec.u ();
 
-      /* Record the current HWM so that the below read_location is
-	 ok.  */
-      ordinary_locs.second = hwm + slurp->loc_deltas.first;
-      map->start_location = hwm + (offset - zero);
-      if (map->start_location < lwm)
-	sec.set_overrun ();
-      lwm = map->start_location;
-      dump (dumper::LOCATION) && dump ("Map:%u %u->%u", ix, hwm, lwm);
-      map->reason = lc_reason (sec.u ());
-      map->sysp = sec.u ();
-      map->m_range_bits = sec.u ();
-      map->m_column_and_range_bits = map->m_range_bits + sec.u ();
-
-      unsigned fnum = sec.u ();
-      map->to_file = (fnum < filenames.length () ? filenames[fnum] : "");
-      map->to_line = sec.u ();
-
-      /* Root the outermost map at our location.  */
-      location_t from = read_location (sec);
-      map->included_from = from != UNKNOWN_LOCATION ? from : loc;
+      unsigned offset = sec.u ();
+      if (!offset)
+	{
+	  map->reason = LC_RENAME;
+	  map->sysp = sec.u ();
+	  map->m_range_bits = sec.u ();
+	  map->m_column_and_range_bits = sec.u () + map->m_range_bits;
+	  unsigned fnum = sec.u ();
+	  map->to_file = (fnum < filenames.length () ? filenames[fnum] : "");
+	  map->to_line = sec.u ();
+	  base = map;
+	}
+      else
+	{
+	  *map = *base;
+	  map->to_line += offset >> map->m_column_and_range_bits;
+	}
+      unsigned remap = sec.u ();
+      map->start_location = remap + ordinary_locs.first;
+      if (base == map)
+	{
+	  /* Root the outermost map at our location.  */
+	  ordinary_locs.second = remap;
+	  location_t from = read_location (sec);
+	  map->included_from = from != UNKNOWN_LOCATION ? from : loc;
+	}
     }
 
-  location_t hwm = sec.u ();
-  ordinary_locs.second = hwm + slurp->loc_deltas.first;
-
+  ordinary_locs.second = num_ord_locs;
   /* highest_location is the one handed out, not the next one to
      hand out.  */
-  line_table->highest_location = ordinary_locs.second - 1;
+  line_table->highest_location = ordinary_locs.first + ordinary_locs.second - 1;
 
   if (line_table->highest_location >= LINE_MAP_MAX_LOCATION_WITH_COLS)
     /* We shouldn't run out of locations, as we checked before
        starting.  */
     sec.set_overrun ();
-  dump () && dump ("Ordinary location hwm:%u", ordinary_locs.second);
+  dump () && dump ("Ordinary location [%u,+%u)",
+		   ordinary_locs.first, ordinary_locs.second);
 
   if (propagated)
     spans.close ();
@@ -16279,7 +16422,7 @@ module_state::read_ordinary_maps ()
 }
 
 bool
-module_state::read_macro_maps ()
+module_state::read_macro_maps (unsigned num_macro_locs)
 {
   bytes_in sec;
 
@@ -16289,24 +16432,22 @@ module_state::read_macro_maps ()
   dump.indent ();
 
   unsigned num_macros = sec.u ();
-  location_t zero = sec.u ();
-  dump () && dump ("Macro maps:%u zero:%u", num_macros, zero);
+  dump () && dump ("Macro maps:%u locs:%u", num_macros, num_macro_locs);
 
   bool propagated = spans.maybe_propagate (this,
 					   line_table->highest_location + 1);
 
   location_t offset = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
-  slurp->loc_deltas.second = zero - offset;
-  macro_locs.second = zero - slurp->loc_deltas.second;
-  dump () && dump ("Macro loc delta %d", slurp->loc_deltas.second);
+  macro_locs.second = num_macro_locs;
+  macro_locs.first = offset - num_macro_locs;
+
+  dump () && dump ("Macro loc delta %d", offset);
+  dump () && dump ("Macro locations [%u,%u)",
+		   macro_locs.first, macro_locs.second);
 
   for (unsigned ix = 0; ix != num_macros && !sec.get_overrun (); ix++)
     {
-      unsigned lwm = sec.u ();
-      /* Record the current LWM so that the below read_location is
-	 ok.  */
-      macro_locs.first = lwm - slurp->loc_deltas.second;
-
+      unsigned offset = sec.u ();
       unsigned n_tokens = sec.u ();
       cpp_hashnode *node = sec.cpp_node ();
       location_t exp_loc = read_location (sec);
@@ -16317,6 +16458,8 @@ module_state::read_macro_maps ()
 	/* We shouldn't run out of locations, as we checked that we
 	   had enough before starting.  */
 	break;
+      gcc_checking_assert (MAP_START_LOCATION (macro)
+			   == offset + macro_locs.first);
 
       location_t *locs = macro->macro_locations;
       location_t tok_loc = UNKNOWN_LOCATION;
@@ -16340,11 +16483,8 @@ module_state::read_macro_maps ()
 		 MAP_START_LOCATION (macro),
 		 MAP_START_LOCATION (macro) + n_tokens);
     }
-  location_t lwm = sec.u ();
-  macro_locs.first = lwm - slurp->loc_deltas.second;
 
   dump () && dump ("Macro location lwm:%u", macro_locs.first);
-
   if (propagated)
     spans.close ();
 
@@ -16358,7 +16498,7 @@ module_state::read_macro_maps ()
 /* Serialize the definition of MACRO.  */
 
 void
-module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located)
+module_state::write_define (bytes_out &sec, const cpp_macro *macro)
 {
   sec.u (macro->count);
 
@@ -16367,8 +16507,7 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located
   sec.b (macro->syshdr);
   sec.bflush ();
 
-  if (located)
-    write_location (sec, macro->line);
+  write_location (sec, macro->line);
   if (macro->fun_like)
     {
       sec.u (macro->paramc);
@@ -16381,8 +16520,7 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located
   for (unsigned ix = 0; ix != macro->count; ix++)
     {
       const cpp_token *token = &macro->exp.tokens[ix];
-      if (located)
-	write_location (sec, token->src_loc);
+      write_location (sec, token->src_loc);
       sec.u (token->type);
       sec.u (token->flags);
       switch (cpp_token_val_index (token))
@@ -16447,11 +16585,11 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located
 /* Read a macro definition.  */
 
 cpp_macro *
-module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) const
+module_state::read_define (bytes_in &sec, cpp_reader *reader) const
 {
   unsigned count = sec.u ();
   /* We rely on knowing cpp_reader's hash table is ident_hash, and
-     it's subobject allocator is stringpool_ggc_alloc and that is just
+     its subobject allocator is stringpool_ggc_alloc and that is just
      a wrapper for ggc_alloc_atomic.  */
   cpp_macro *macro
     = (cpp_macro *)ggc_alloc_atomic (sizeof (cpp_macro)
@@ -16467,7 +16605,7 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) cons
   macro->syshdr = sec.b ();
   sec.bflush ();
 
-  macro->line = located ? read_location (sec) : loc;
+  macro->line = read_location (sec);
 
   if (macro->fun_like)
     {
@@ -16484,7 +16622,7 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) cons
   for (unsigned ix = 0; ix != count && !sec.get_overrun (); ix++)
     {
       cpp_token *token = &macro->exp.tokens[ix];
-      token->src_loc = located ? read_location (sec) : loc;
+      token->src_loc = read_location (sec);
       token->type = cpp_ttype (sec.u ());
       token->flags = sec.u ();
       switch (cpp_token_val_index (token))
@@ -16813,31 +16951,62 @@ macro_loc_cmp (const void *a_, const void *b_)
     return 0;
 }
 
+/* Gather the macro definitions and undefinitions that we will need to
+   write out.   */
+
+vec<cpp_hashnode *> *
+module_state::prepare_macros (cpp_reader *reader)
+{
+  vec<cpp_hashnode *> *macros;
+  vec_alloc (macros, 100);
+
+  cpp_forall_identifiers (reader, maybe_add_macro, macros);
+
+  dump (dumper::MACRO) && dump ("No more than %u macros", macros->length ());
+
+  macros->qsort (macro_loc_cmp);
+
+  // Note the locations.
+  for (unsigned ix = macros->length (); ix--;)
+    {
+      cpp_hashnode *node = (*macros)[ix];
+      macro_import::slot &slot = (*macro_imports)[node->deferred - 1][0];
+      macro_export &mac = (*macro_exports)[slot.offset];
+
+      if (IDENTIFIER_KEYWORD_P (identifier (node)))
+	continue;
+
+      if (mac.undef_loc != UNKNOWN_LOCATION)
+	note_location (mac.undef_loc);
+      if (mac.def)
+	{
+	  note_location (mac.def->line);
+	  for (unsigned ix = 0; ix != mac.def->count; ix++)
+	    note_location (mac.def->exp.tokens[ix].src_loc);
+	}
+    }
+
+  return macros;
+}
+
 /* Write out the exported defines.  This is two sections, one
    containing the definitions, the other a table of node names.  */
 
 unsigned
-module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
+module_state::write_macros (elf_out *to, vec<cpp_hashnode *> *macros,
+			    unsigned *crc_p)
 {
   dump () && dump ("Writing macros");
   dump.indent ();
-
-  vec<cpp_hashnode *> macros;
-  macros.create (100);
-  cpp_forall_identifiers (reader, maybe_add_macro, &macros);
-
-  dump (dumper::MACRO) && dump ("No more than %u macros", macros.length ());
-
-  macros.qsort (macro_loc_cmp);
 
   /* Write the defs */
   bytes_out sec (to);
   sec.begin ();
 
   unsigned count = 0;
-  for (unsigned ix = macros.length (); ix--;)
+  for (unsigned ix = macros->length (); ix--;)
     {
-      cpp_hashnode *node = macros[ix];
+      cpp_hashnode *node = (*macros)[ix];
       macro_import::slot &slot = (*macro_imports)[node->deferred - 1][0];
       gcc_assert (!slot.get_module () && slot.get_defness ());
 
@@ -16872,6 +17041,10 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
       if (mac.def)
 	write_define (sec, mac.def);
     }
+  if (count)
+    // We may have ended on a tokenless macro with a very short
+    // location, that will cause problems reading its bit flags.
+    sec.u (0);
   sec.end (to, to->name (MOD_SNAME_PFX ".def"), crc_p);
 
   if (count)
@@ -16881,9 +17054,9 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
       sec.begin ();
       sec.u (count);
 
-      for (unsigned ix = macros.length (); ix--;)
+      for (unsigned ix = macros->length (); ix--;)
 	{
-	  const cpp_hashnode *node = macros[ix];
+	  const cpp_hashnode *node = (*macros)[ix];
 	  macro_import::slot &slot = (*macro_imports)[node->deferred - 1][0];
 
 	  if (slot.offset)
@@ -16896,7 +17069,6 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
       sec.end (to, to->name (MOD_SNAME_PFX ".mac"), crc_p);
     }
 
-  macros.release ();
   dump.outdent ();
   return count;
 }
@@ -17338,7 +17510,9 @@ module_state::write_config (elf_out *to, module_state_config &config,
 
   cfg.u (config.ordinary_locs);
   cfg.u (config.macro_locs);
-  cfg.u (config.ordinary_loc_align);  
+  cfg.u (config.loc_range_bits);
+
+  cfg.u (config.active_init);
 
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
@@ -17522,7 +17696,9 @@ module_state::read_config (module_state_config &config)
 
   config.ordinary_locs = cfg.u ();
   config.macro_locs = cfg.u ();
-  config.ordinary_loc_align = cfg.u ();
+  config.loc_range_bits = cfg.u ();
+
+  config.active_init = cfg.u ();
 
  done:
   return cfg.end (from ());
@@ -17537,7 +17713,7 @@ ool_cmp (const void *a_, const void *b_)
   auto *b = *static_cast<const module_state *const *> (b_);
   if (a == b)
     return 0;
-  else if (a->ordinary_locs.first < b->ordinary_locs.second)
+  else if (a->ordinary_locs.first < b->ordinary_locs.first)
     return -1;
   else
     return +1;
@@ -17563,13 +17739,15 @@ ool_cmp (const void *a_, const void *b_)
 */
 
 void
-module_state::write (elf_out *to, cpp_reader *reader)
+module_state::write_begin (elf_out *to, cpp_reader *reader,
+			   module_state_config &config, unsigned &crc)
 {
   /* Figure out remapped module numbers, which might elide
      partitions.  */
   bitmap partitions = NULL;
   if (!is_header () && !is_partition ())
     partitions = BITMAP_GGC_ALLOC ();
+  write_init_maps ();
 
   unsigned mod_hwm = 1;
   for (unsigned ix = 1; ix != modules->length (); ix++)
@@ -17607,6 +17785,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
 		gcc_checking_assert (!slot->is_lazy ());
 	      }
 	}
+
+      if (imp->is_direct () && (imp->remap || imp->is_partition ()))
+	note_location (imp->imported_from ());
     }
 
   if (partitions && bitmap_empty_p (partitions))
@@ -17659,13 +17840,14 @@ module_state::write (elf_out *to, cpp_reader *reader)
     }
   ool->qsort (ool_cmp);
 
-  unsigned crc = 0;
-  module_state_config config;
-  location_map_info map_info = write_prepare_maps (&config);
-  unsigned counts[MSC_HWM];
+  vec<cpp_hashnode *> *macros = nullptr;
+  if (is_header ())
+    macros = prepare_macros (reader);
 
   config.num_imports = mod_hwm;
   config.num_partitions = modules->length () - mod_hwm;
+  auto map_info = write_prepare_maps (&config, bool (config.num_partitions));
+  unsigned counts[MSC_HWM];
   memset (counts, 0, sizeof (counts));
 
   /* depset::cluster is the cluster number,
@@ -17802,31 +17984,31 @@ module_state::write (elf_out *to, cpp_reader *reader)
     write_partitions (to, config.num_partitions, &crc);
 
   /* Write the line maps.  */
-  write_ordinary_maps (to, map_info, &config, config.num_partitions, &crc);
-  write_macro_maps (to, map_info, &config, &crc);
+  if (config.ordinary_locs)
+    write_ordinary_maps (to, map_info, bool (config.num_partitions), &crc);
+  if (config.macro_locs)
+    write_macro_maps (to, map_info, &crc);
 
   if (is_header ())
     {
-      counts[MSC_macros] = write_macros (to, reader, &crc);
+      counts[MSC_macros] = write_macros (to, macros, &crc);
       counts[MSC_inits] = write_inits (to, table, &crc);
+      vec_free (macros);
     }
 
   unsigned clusters = counts[MSC_sec_hwm] - counts[MSC_sec_lwm];
   dump () && dump ("Wrote %u clusters, average %u bytes/cluster",
 		   clusters, (bytes + clusters / 2) / (clusters + !clusters));
+  trees_out::instrument ();
 
   write_counts (to, counts, &crc);
-
-  /* And finish up.  */
-  write_config (to, config, crc);
 
   spaces.release ();
   sccs.release ();
 
+  vec_free (macro_loc_remap);
+  vec_free (ord_loc_remap);
   vec_free (ool);
-
-  /* Human-readable info.  */
-  write_readme (to, reader, config.dialect_str, extensions);
 
   // FIXME:QOI:  Have a command line switch to control more detailed
   // information (which might leak data you do not want to leak).
@@ -17834,8 +18016,20 @@ module_state::write (elf_out *to, cpp_reader *reader)
   // so-controlled.
   if (false)
     write_env (to);
+}
 
-  trees_out::instrument ();
+// Finish module writing after we've emitted all dynamic initializers. 
+
+void
+module_state::write_end (elf_out *to, cpp_reader *reader,
+			 module_state_config &config, unsigned &crc)
+{
+  /* And finish up.  */
+  write_config (to, config, crc);
+
+  /* Human-readable info.  */
+  write_readme (to, reader, config.dialect_str);
+
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
 }
 
@@ -17857,7 +18051,9 @@ module_state::read_initial (cpp_reader *reader)
   bool have_locs = ok && read_prepare_maps (&config);
 
   /* Ordinary maps before the imports.  */
-  if (have_locs && !read_ordinary_maps ())
+  if (!(have_locs && config.ordinary_locs))
+    ordinary_locs.first = line_table->highest_location + 1;
+  else if (!read_ordinary_maps (config.ordinary_locs, config.loc_range_bits))
     ok = false;
 
   /* Allocate the REMAP vector.  */
@@ -17884,7 +18080,7 @@ module_state::read_initial (cpp_reader *reader)
 
   {
     /* Allocate space in the entities array now -- that array must be
-       monotionically in step with the modules array.  */
+       monotonically in step with the modules array.  */
     entity_lwm = vec_safe_length (entity_ary);
     entity_num = config.num_entities;
     gcc_checking_assert (modules->length () == 1
@@ -17915,8 +18111,13 @@ module_state::read_initial (cpp_reader *reader)
   gcc_assert (!from ()->is_frozen ());
 
   /* Macro maps after the imports.  */
-  if (ok && have_locs && !read_macro_maps ())
+  if (!(ok && have_locs && config.macro_locs))
+    macro_locs.first = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
+  else if (!read_macro_maps (config.macro_locs))
     ok = false;
+
+  /* Note whether there's an active initializer.  */
+  active_init_p = !is_header () && bool (config.active_init);
 
   gcc_assert (slurp->current == ~0u);
   return ok;
@@ -19035,12 +19236,42 @@ module_global_init_needed ()
   return module_has_cmi_p () && !header_module_p ();
 }
 
-/* Return true IFF we have import global inits to call.  */
+/* Calculate which, if any, import initializers need calling.  */
 
 bool
-module_has_import_inits ()
+module_determine_import_inits ()
 {
-  return bool (num_init_calls_needed);
+  if (!modules || header_module_p ())
+    return false;
+
+  /* Prune active_init_p.  We need the same bitmap allocation
+     scheme as for the imports member.  */
+  function_depth++; /* Disable GC.  */
+  bitmap covered_imports (BITMAP_GGC_ALLOC ());
+
+  bool any = false;
+
+  /* Because indirect imports are before their direct import, and
+     we're scanning the array backwards, we only need one pass!  */
+  for (unsigned ix = modules->length (); --ix;)
+    {
+      module_state *import = (*modules)[ix];
+
+      if (!import->active_init_p)
+	;
+      else if (bitmap_bit_p (covered_imports, ix))
+	import->active_init_p = false;
+      else
+	{
+	  /* Everything this imports is therefore handled by its
+	     initializer, so doesn't need initializing by us.  */
+	  bitmap_ior_into (covered_imports, import->imports);
+	  any = true;
+	}
+    }
+  function_depth--;
+
+  return any;
 }
 
 /* Emit calls to each direct import's global initializer.  Including
@@ -19054,35 +19285,30 @@ module_has_import_inits ()
 void
 module_add_import_initializers ()
 {
-  unsigned calls = 0;
-  if (modules)
+  if (!modules || header_module_p ())
+    return;
+
+  tree fntype = build_function_type (void_type_node, void_list_node);
+  releasing_vec args;  // There are no args
+
+  for (unsigned ix = modules->length (); --ix;)
     {
-      tree fntype = build_function_type (void_type_node, void_list_node);
-      releasing_vec args;  // There are no args
-
-      for (unsigned ix = modules->length (); --ix;)
+      module_state *import = (*modules)[ix];
+      if (import->active_init_p)
 	{
-	  module_state *import = (*modules)[ix];
-	  if (import->call_init_p)
-	    {
-	      tree name = mangle_module_global_init (ix);
-	      tree fndecl = build_lang_decl (FUNCTION_DECL, name, fntype);
+	  tree name = mangle_module_global_init (ix);
+	  tree fndecl = build_lang_decl (FUNCTION_DECL, name, fntype);
 
-	      DECL_CONTEXT (fndecl) = FROB_CONTEXT (global_namespace);
-	      SET_DECL_ASSEMBLER_NAME (fndecl, name);
-	      TREE_PUBLIC (fndecl) = true;
-	      determine_visibility (fndecl);
+	  DECL_CONTEXT (fndecl) = FROB_CONTEXT (global_namespace);
+	  SET_DECL_ASSEMBLER_NAME (fndecl, name);
+	  TREE_PUBLIC (fndecl) = true;
+	  determine_visibility (fndecl);
 
-	      tree call = cp_build_function_call_vec (fndecl, &args,
-						      tf_warning_or_error);
-	      finish_expr_stmt (call);
-	      
-	      calls++;
-	    }
+	  tree call = cp_build_function_call_vec (fndecl, &args,
+						  tf_warning_or_error);
+	  finish_expr_stmt (call);
 	}
     }
-
-  gcc_checking_assert (calls == num_init_calls_needed);
 }
 
 /* NAME & LEN are a preprocessed header name, possibly including the
@@ -19831,11 +20057,35 @@ maybe_check_all_macros (cpp_reader *reader)
   dump.pop (n);
 }
 
+// State propagated from finish_module_processing to fini_modules
+
+struct module_processing_cookie
+{
+  elf_out out;
+  module_state_config config;
+  char *cmi_name;
+  char *tmp_name;
+  unsigned crc;
+  bool began;
+
+  module_processing_cookie (char *cmi, char *tmp, int fd, int e)
+    : out (fd, e), cmi_name (cmi), tmp_name (tmp), crc (0), began (false)
+  {
+  }
+  ~module_processing_cookie ()
+  {
+    XDELETEVEC (tmp_name);
+    XDELETEVEC (cmi_name);
+  }
+};
+
 /* Write the CMI, if we're a module interface.  */
 
-void
+void *
 finish_module_processing (cpp_reader *reader)
 {
+  module_processing_cookie *cookie = nullptr;
+
   if (header_module_p ())
     module_kind &= ~MK_EXPORTING;
 
@@ -19847,7 +20097,7 @@ finish_module_processing (cpp_reader *reader)
   else if (!flag_syntax_only)
     {
       int fd = -1;
-      int e = ENOENT;
+      int e = -1;
 
       timevar_start (TV_MODULE_EXPORT);
 
@@ -19856,7 +20106,7 @@ finish_module_processing (cpp_reader *reader)
       linemap_add (line_table, LC_ENTER, false, "", 0);
 
       /* We write to a tmpname, and then atomically rename.  */
-      const char *path = NULL;
+      char *cmi_name = NULL;
       char *tmp_name = NULL;
       module_state *state = (*modules)[0];
 
@@ -19865,9 +20115,9 @@ finish_module_processing (cpp_reader *reader)
       if (state->filename)
 	{
 	  size_t len = 0;
-	  path = maybe_add_cmi_prefix (state->filename, &len);
+	  cmi_name = xstrdup (maybe_add_cmi_prefix (state->filename, &len));
 	  tmp_name = XNEWVEC (char, len + 3);
-	  memcpy (tmp_name, path, len);
+	  memcpy (tmp_name, cmi_name, len);
 	  strcpy (&tmp_name[len], "~");
 
 	  if (!errorcount)
@@ -19882,57 +20132,23 @@ finish_module_processing (cpp_reader *reader)
 		create_dirs (tmp_name);
 	      }
 	  if (note_module_cmi_yes || state->inform_cmi_p)
-	    inform (state->loc, "writing CMI %qs", path);
-	  dump () && dump ("CMI is %s", path);
+	    inform (state->loc, "writing CMI %qs", cmi_name);
+	  dump () && dump ("CMI is %s", cmi_name);
 	}
+
+      cookie = new module_processing_cookie (cmi_name, tmp_name, fd, e);
 
       if (errorcount)
 	warning_at (state->loc, 0, "not writing module %qs due to errors",
 		    state->get_flatname ());
-      else
+      else if (cookie->out.begin ())
 	{
-	  elf_out to (fd, e);
-	  if (to.begin ())
-	    {
-	      auto loc = input_location;
-	      /* So crashes finger-point the module decl.  */
-	      input_location = state->loc;
-	      state->write (&to, reader);
-	      input_location = loc;
-	    }
-	  if (to.end ())
-	    {
-	      /* Some OS's do not replace NEWNAME if it already
-		 exists.  This'll have a race condition in erroneous
-		 concurrent builds.  */
-	      unlink (path);
-	      if (rename (tmp_name, path))
-		{
-		  dump () && dump ("Rename ('%s','%s') errno=%u", errno);
-		  to.set_error (errno);
-		}
-	    }
-
-	  if (to.get_error ())
-	    {
-	      error_at (state->loc, "failed to write compiled module: %s",
-			to.get_error (state->filename));
-	      state->note_cmi_name ();
-	    }
-	}
-
-      if (!errorcount)
-	{
-	  auto *mapper = get_mapper (cpp_main_loc (reader));
-
-	  mapper->ModuleCompiled (state->get_flatname ());
-	}
-      else if (path)
-	{
-	  /* We failed, attempt to erase all evidence we even tried.  */
-	  unlink (tmp_name);
-	  unlink (path);
-	  XDELETEVEC (tmp_name);
+	  cookie->began = true;
+	  auto loc = input_location;
+	  /* So crashes finger-point the module decl.  */
+	  input_location = state->loc;
+	  state->write_begin (&cookie->out, reader, cookie->config, cookie->crc);
+	  input_location = loc;
 	}
 
       dump.pop (n);
@@ -19952,39 +20168,72 @@ finish_module_processing (cpp_reader *reader)
       dump.pop (n);
     }
 
-  if (modules && !header_module_p ())
+  return cookie;
+}
+
+// Do the final emission of a module.  At this point we know whether
+// the module static initializer is a NOP or not.
+
+static void
+late_finish_module (cpp_reader *reader,  module_processing_cookie *cookie,
+		    bool init_fn_non_empty)
+{
+  timevar_start (TV_MODULE_EXPORT);
+
+  module_state *state = (*modules)[0];
+  unsigned n = dump.push (state);
+  state->announce ("finishing");
+
+  cookie->config.active_init = init_fn_non_empty;
+  if (cookie->began)
+    state->write_end (&cookie->out, reader, cookie->config, cookie->crc);
+
+  if (cookie->out.end () && cookie->cmi_name)
     {
-      /* Determine call_init_p.  We need the same bitmap allocation
-         scheme as for the imports member.  */
-      function_depth++; /* Disable GC.  */
-      bitmap indirect_imports (BITMAP_GGC_ALLOC ());
-
-      /* Because indirect imports are before their direct import, and
-	 we're scanning the array backwards, we only need one pass!  */
-      for (unsigned ix = modules->length (); --ix;)
+      /* Some OS's do not replace NEWNAME if it already exists.
+	 This'll have a race condition in erroneous concurrent
+	 builds.  */
+      unlink (cookie->cmi_name);
+      if (rename (cookie->tmp_name, cookie->cmi_name))
 	{
-	  module_state *import = (*modules)[ix];
-
-	  if (!import->is_header ()
-	      && !bitmap_bit_p (indirect_imports, ix))
-	    {
-	      /* Everything this imports is therefore indirectly
-		 imported.  */
-	      bitmap_ior_into (indirect_imports, import->imports);
-	      /* We don't have to worry about the self-import bit,
-		 because of the single pass.  */
-
-	      import->call_init_p = true;
-	      num_init_calls_needed++;
-	    }
+	  dump () && dump ("Rename ('%s','%s') errno=%u",
+			   cookie->tmp_name, cookie->cmi_name, errno);
+	  cookie->out.set_error (errno);
 	}
-      function_depth--;
     }
+
+  if (cookie->out.get_error () && cookie->began)
+    {
+      error_at (state->loc, "failed to write compiled module: %s",
+		cookie->out.get_error (state->filename));
+      state->note_cmi_name ();
+    }
+
+  if (!errorcount)
+    {
+      auto *mapper = get_mapper (cpp_main_loc (reader));
+      mapper->ModuleCompiled (state->get_flatname ());
+    }
+  else if (cookie->cmi_name)
+    {
+      /* We failed, attempt to erase all evidence we even tried.  */
+      unlink (cookie->tmp_name);
+      unlink (cookie->cmi_name);
+    }
+
+  delete cookie;
+  dump.pop (n);
+  timevar_stop (TV_MODULE_EXPORT);
 }
 
 void
-fini_modules ()
+fini_modules (cpp_reader *reader, void *cookie, bool has_inits)
 {
+  if (cookie)
+    late_finish_module (reader,
+			static_cast<module_processing_cookie *> (cookie),
+			has_inits);
+
   /* We're done with the macro tables now.  */
   vec_free (macro_exports);
   vec_free (macro_imports);

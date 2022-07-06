@@ -49,7 +49,7 @@ package body Exp_Tss is
      (Typ : Entity_Id;
       Ref : Entity_Id := Empty) return Entity_Id
    is
-      Full_Type : E;
+      Full_Type : Entity_Id;
       Proc      : Entity_Id;
 
    begin

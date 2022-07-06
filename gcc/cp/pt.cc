@@ -106,6 +106,7 @@ static bool excessive_deduction_depth;
 
 struct spec_hasher : ggc_ptr_hash<spec_entry>
 {
+  static hashval_t hash (tree, tree);
   static hashval_t hash (spec_entry *);
   static bool equal (spec_entry *, spec_entry *);
 };
@@ -1768,13 +1769,22 @@ hash_tmpl_and_args (tree tmpl, tree args)
   return iterative_hash_template_arg (args, val);
 }
 
+hashval_t
+spec_hasher::hash (tree tmpl, tree args)
+{
+  ++comparing_specializations;
+  hashval_t val = hash_tmpl_and_args (tmpl, args);
+  --comparing_specializations;
+  return val;
+}
+
 /* Returns a hash for a spec_entry node based on the TMPL and ARGS members,
    ignoring SPEC.  */
 
 hashval_t
 spec_hasher::hash (spec_entry *e)
 {
-  return hash_tmpl_and_args (e->tmpl, e->args);
+  return spec_hasher::hash (e->tmpl, e->args);
 }
 
 /* Recursively calculate a hash value for a template argument ARG, for use
@@ -1958,6 +1968,21 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 
 	case  DECLTYPE_TYPE:
 	  val = iterative_hash_template_arg (DECLTYPE_TYPE_EXPR (arg), val);
+	  break;
+
+	case TYPENAME_TYPE:
+	  if (comparing_specializations)
+	    {
+	      /* Hash the components that are relevant to TYPENAME_TYPE
+		 equivalence as determined by structural_comptypes.  We
+		 can only coherently do this when comparing_specializations
+		 is set, because otherwise structural_comptypes tries
+		 resolving TYPENAME_TYPE via the current instantiation.  */
+	      tree context = TYPE_MAIN_VARIANT (TYPE_CONTEXT (arg));
+	      tree fullname = TYPENAME_TYPE_FULLNAME (arg);
+	      val = iterative_hash_template_arg (context, val);
+	      val = iterative_hash_template_arg (fullname, val);
+	    }
 	  break;
 
 	default:
@@ -9840,8 +9865,6 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 	  if (context)
 	    pop_decl_namespace ();
 	}
-      if (templ)
-	context = DECL_CONTEXT (templ);
     }
   else if (TREE_CODE (d1) == TYPE_DECL && MAYBE_CLASS_TYPE_P (TREE_TYPE (d1)))
     {
@@ -9868,7 +9891,6 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
     {
       templ = d1;
       d1 = DECL_NAME (templ);
-      context = DECL_CONTEXT (templ);
     }
   else if (DECL_TEMPLATE_TEMPLATE_PARM_P (d1))
     {
@@ -10059,8 +10081,29 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
       context = DECL_CONTEXT (gen_tmpl);
       if (context && TYPE_P (context))
 	{
-	  context = tsubst_aggr_type (context, arglist, complain, in_decl, true);
-	  context = complete_type (context);
+	  if (!uses_template_parms (DECL_CONTEXT (templ)))
+	    /* If the context of the partially instantiated template is
+	       already non-dependent, then we might as well use it.  */
+	    context = DECL_CONTEXT (templ);
+	  else
+	    {
+	      context = tsubst_aggr_type (context, arglist,
+					  complain, in_decl, true);
+	      /* Try completing the enclosing context if it's not already so.  */
+	      if (context != error_mark_node
+		  && !COMPLETE_TYPE_P (context))
+		{
+		  context = complete_type (context);
+		  if (COMPLETE_TYPE_P (context))
+		    {
+		      /* Completion could have caused us to register the desired
+			 specialization already, so check the table again.  */
+		      entry = type_specializations->find_with_hash (&elt, hash);
+		      if (entry)
+			return entry->spec;
+		    }
+		}
+	    }
 	}
       else
 	context = tsubst (context, arglist, complain, in_decl);
@@ -13739,25 +13782,12 @@ tsubst_aggr_type (tree t,
       if (TYPE_TEMPLATE_INFO (t) && uses_template_parms (t))
 	{
 	  tree argvec;
-	  tree context;
 	  tree r;
 
 	  /* In "sizeof(X<I>)" we need to evaluate "I".  */
 	  cp_evaluated ev;
 
-	  /* First, determine the context for the type we are looking
-	     up.  */
-	  context = TYPE_CONTEXT (t);
-	  if (context && TYPE_P (context))
-	    {
-	      context = tsubst_aggr_type (context, args, complain,
-					  in_decl, /*entering_scope=*/1);
-	      /* If context is a nested class inside a class template,
-	         it may still need to be instantiated (c++/33959).  */
-	      context = complete_type (context);
-	    }
-
-	  /* Then, figure out what arguments are appropriate for the
+	  /* Figure out what arguments are appropriate for the
 	     type we are trying to find.  For example, given:
 
 	       template <class T> struct S;
@@ -13772,7 +13802,7 @@ tsubst_aggr_type (tree t,
 	    r = error_mark_node;
 	  else
 	    {
-	      r = lookup_template_class (t, argvec, in_decl, context,
+	      r = lookup_template_class (t, argvec, in_decl, NULL_TREE,
 					 entering_scope, complain);
 	      r = cp_build_qualified_type (r, cp_type_quals (t), complain);
 	    }
@@ -14114,7 +14144,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
       /* Check to see if we already have this specialization.  */
       if (!lambda_fntype)
 	{
-	  hash = hash_tmpl_and_args (gen_tmpl, argvec);
+	  hash = spec_hasher::hash (gen_tmpl, argvec);
 	  if (tree spec = retrieve_specialization (gen_tmpl, argvec, hash))
 	    /* The spec for these args might be a partial instantiation of the
 	       template, but here what we want is the FUNCTION_DECL.  */
@@ -14417,7 +14447,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
       if (full_args == tmpl_args)
 	return t;
 
-      hash = hash_tmpl_and_args (t, full_args);
+      hash = spec_hasher::hash (t, full_args);
       spec = retrieve_specialization (t, full_args, hash);
       if (spec != NULL_TREE)
 	{
@@ -14913,6 +14943,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		ctx = tsubst_aggr_type (ctx, args,
 					complain,
 					in_decl, /*entering_scope=*/1);
+		if (DECL_SELF_REFERENCE_P (t))
+		  /* The context and type of an injected-class-name are
+		     the same, so we don't need to substitute both.  */
+		  type = ctx;
 		/* If CTX is unchanged, then T is in fact the
 		   specialization we want.  That situation occurs when
 		   referencing a static data member within in its own
@@ -14931,17 +14965,33 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	    if (!spec)
 	      {
+		int args_depth = TMPL_ARGS_DEPTH (args);
+		int parms_depth = TMPL_ARGS_DEPTH (DECL_TI_ARGS (t));
 		tmpl = DECL_TI_TEMPLATE (t);
 		gen_tmpl = most_general_template (tmpl);
-		argvec = tsubst (DECL_TI_ARGS (t), args, complain, in_decl);
-		if (argvec != error_mark_node)
-		  argvec = (coerce_innermost_template_parms
-			    (DECL_TEMPLATE_PARMS (gen_tmpl),
-			     argvec, t, complain,
-			     /*all*/true, /*defarg*/true));
-		if (argvec == error_mark_node)
-		  RETURN (error_mark_node);
-		hash = hash_tmpl_and_args (gen_tmpl, argvec);
+		if (args_depth == parms_depth
+		    && !PRIMARY_TEMPLATE_P (gen_tmpl))
+		  /* The DECL_TI_ARGS in this case are the generic template
+		     arguments for the enclosing class template, so we can
+		     shortcut substitution (which would just be the identity
+		     mapping).  */
+		  argvec = args;
+		else
+		  {
+		    argvec = tsubst (DECL_TI_ARGS (t), args, complain, in_decl);
+		    /* Coerce the innermost arguments again if necessary.  If
+		       there's fewer levels of args than of parms, then the
+		       substitution could not have changed the innermost args
+		       (modulo level lowering).  */
+		    if (args_depth >= parms_depth && argvec != error_mark_node)
+		      argvec = (coerce_innermost_template_parms
+				(DECL_TEMPLATE_PARMS (gen_tmpl),
+				 argvec, t, complain,
+				 /*all*/true, /*defarg*/true));
+		    if (argvec == error_mark_node)
+		      RETURN (error_mark_node);
+		  }
+		hash = spec_hasher::hash (gen_tmpl, argvec);
 		spec = retrieve_specialization (gen_tmpl, argvec, hash);
 	      }
 	  }
@@ -18500,6 +18550,29 @@ lookup_init_capture_pack (tree decl)
   return r;
 }
 
+/* T is an operand of a template tree being substituted.  Return whether
+   T is dependent such that we should suppress some warnings that would
+   make sense if the substituted expression were written directly, like
+     template <int I> bool f() { return I == 2; }
+   We don't want to warn when instantiating f that comparing two constants
+   always has the same value.
+
+   This is a more limited concept of dependence than instantiation-dependent;
+   here we don't care whether substitution could fail.  */
+
+static bool
+dependent_operand_p (tree t)
+{
+  while (TREE_CODE (t) == IMPLICIT_CONV_EXPR)
+    t = TREE_OPERAND (t, 0);
+  ++processing_template_decl;
+  bool r = (potential_constant_expression (t)
+	    ? value_dependent_expression_p (t)
+	    : type_dependent_expression_p (t));
+  --processing_template_decl;
+  return r;
+}
+
 /* Like tsubst_copy for expressions, etc. but also does semantic
    processing.  */
 
@@ -18825,8 +18898,13 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       IF_STMT_CONSTEVAL_P (stmt) = IF_STMT_CONSTEVAL_P (t);
       if (IF_STMT_CONSTEXPR_P (t))
 	args = add_extra_args (IF_STMT_EXTRA_ARGS (t), args, complain, in_decl);
-      tmp = RECUR (IF_COND (t));
-      tmp = finish_if_stmt_cond (tmp, stmt);
+      {
+	tree cond = IF_COND (t);
+	bool was_dep = dependent_operand_p (cond);
+	cond = RECUR (cond);
+	warning_sentinel s1(warn_address, was_dep);
+	tmp = finish_if_stmt_cond (cond, stmt);
+      }
       if (IF_STMT_CONSTEXPR_P (t)
 	  && instantiation_dependent_expression_p (tmp))
 	{
@@ -20375,15 +20453,8 @@ tsubst_copy_and_build (tree t,
 	   warnings that depend on the range of the types involved.  */
 	tree op0 = TREE_OPERAND (t, 0);
 	tree op1 = TREE_OPERAND (t, 1);
-	auto dep_p = [](tree t) {
-	  ++processing_template_decl;
-	  bool r = (potential_constant_expression (t)
-		    ? value_dependent_expression_p (t)
-		    : type_dependent_expression_p (t));
-	  --processing_template_decl;
-	  return r;
-	};
-	const bool was_dep = dep_p (op0) || dep_p (op1);
+	const bool was_dep = (dependent_operand_p (op0)
+			      || dependent_operand_p (op1));
 	op0 = RECUR (op0);
 	op1 = RECUR (op1);
 
@@ -20391,6 +20462,7 @@ tsubst_copy_and_build (tree t,
 	warning_sentinel s2(warn_div_by_zero, was_dep);
 	warning_sentinel s3(warn_logical_op, was_dep);
 	warning_sentinel s4(warn_tautological_compare, was_dep);
+	warning_sentinel s5(warn_address, was_dep);
 
 	tree r = build_x_binary_op
 	  (input_location, TREE_CODE (t),
@@ -21692,8 +21764,14 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
     ++processing_template_decl;
   if (DECL_CLASS_SCOPE_P (gen_tmpl))
     {
-      tree ctx = tsubst_aggr_type (DECL_CONTEXT (gen_tmpl), targ_ptr,
-				   complain, gen_tmpl, true);
+      tree ctx;
+      if (!uses_template_parms (DECL_CONTEXT (tmpl)))
+	/* If the context of the partially instantiated template is
+	   already non-dependent, then we might as well use it.  */
+	ctx = DECL_CONTEXT (tmpl);
+      else
+	ctx = tsubst_aggr_type (DECL_CONTEXT (gen_tmpl), targ_ptr,
+				complain, gen_tmpl, true);
       push_nested_class (ctx);
     }
 
@@ -22929,6 +23007,7 @@ type_unification_real (tree tparms,
 	     deduced from a later argument than the one from which
 	     this parameter can be deduced.  */
 	  if (TREE_CODE (tparm) == PARM_DECL
+	      && !is_auto (TREE_TYPE (tparm))
 	      && uses_template_parms (TREE_TYPE (tparm))
 	      && saw_undeduced < 2)
 	    {
@@ -22989,6 +23068,7 @@ type_unification_real (tree tparms,
 
 	  if (saw_undeduced == 1
 	      && TREE_CODE (parm) == PARM_DECL
+	      && !is_auto (TREE_TYPE (parm))
 	      && uses_template_parms (TREE_TYPE (parm)))
 	    {
 	      /* The type of this non-type parameter depends on undeduced
@@ -27906,6 +27986,15 @@ type_dependent_expression_p (tree expression)
       && !TYPE_DOMAIN (TREE_TYPE (expression))
       && DECL_INITIAL (expression))
    return true;
+
+  /* Pull a FUNCTION_DECL out of a BASELINK if we can.  */
+  if (BASELINK_P (expression))
+    {
+      if (BASELINK_OPTYPE (expression)
+	  && dependent_type_p (BASELINK_OPTYPE (expression)))
+	return true;
+      expression = BASELINK_FUNCTIONS (expression);
+    }
 
   /* A function or variable template-id is type-dependent if it has any
      dependent template arguments.  */

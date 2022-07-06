@@ -3132,7 +3132,9 @@ package body Sprint is
          when N_Real_Literal =>
             Write_Ureal_With_Col_Check_Sloc (Realval (Node));
 
-         when N_Real_Range_Specification =>
+         when N_Real_Range_Specification
+            | N_Signed_Integer_Type_Definition
+         =>
             Write_Str_With_Col_Check_Sloc ("range ");
             Sprint_Node (Low_Bound (Node));
             Write_Str (" .. ");
@@ -3247,12 +3249,6 @@ package body Sprint is
             end if;
 
             Write_Indent_Str ("end select;");
-
-         when N_Signed_Integer_Type_Definition =>
-            Write_Str_With_Col_Check_Sloc ("range ");
-            Sprint_Node (Low_Bound (Node));
-            Write_Str (" .. ");
-            Sprint_Node (High_Bound (Node));
 
          when N_Single_Protected_Declaration =>
             Write_Indent_Str_Sloc ("protected ");

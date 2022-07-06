@@ -2029,7 +2029,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return instantiate_virtual_regs ();
     }
@@ -3471,6 +3471,17 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
       rtx tempreg = gen_reg_rtx (GET_MODE (data->entry_parm));
 
       emit_move_insn (tempreg, validize_mem (copy_rtx (data->entry_parm)));
+
+      /* Some ABIs require scalar floating point modes to be passed
+	 in a wider scalar integer mode.  We need to explicitly
+	 truncate to an integer mode of the correct precision before
+	 using a SUBREG to reinterpret as a floating point value.  */
+      if (SCALAR_FLOAT_MODE_P (data->nominal_mode)
+	  && SCALAR_INT_MODE_P (data->arg.mode)
+	  && known_lt (GET_MODE_SIZE (data->nominal_mode),
+		       GET_MODE_SIZE (data->arg.mode)))
+	tempreg = convert_wider_int_to_float (data->nominal_mode,
+					      data->arg.mode, tempreg);
 
       push_to_sequence2 (all->first_conversion_insn, all->last_conversion_insn);
       to_conversion = true;
@@ -6516,7 +6527,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_check_leaf_regs ();
     }
@@ -6617,7 +6628,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_thread_prologue_and_epilogue ();
     }
@@ -6655,7 +6666,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_zero_call_used_regs
 
@@ -6926,7 +6937,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_match_asm_constraints
 

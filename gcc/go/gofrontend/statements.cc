@@ -1594,9 +1594,9 @@ Tuple_map_assignment_statement::do_lower(Gogo* gogo, Named_object*,
 
   // var present_temp bool
   Temporary_statement* present_temp =
-    Statement::make_temporary((this->present_->type()->is_sink_type())
-			      ? Type::make_boolean_type()
-			      : this->present_->type(),
+    Statement::make_temporary((this->present_->type()->is_boolean_type()
+			       ? this->present_->type()
+			       : Type::lookup_bool_type()),
 			      NULL, loc);
   b->add_statement(present_temp);
 
@@ -1789,9 +1789,9 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
 
   // var closed_temp bool
   Temporary_statement* closed_temp =
-    Statement::make_temporary((this->closed_->type()->is_sink_type())
-			      ? Type::make_boolean_type()
-			      : this->closed_->type(),
+    Statement::make_temporary((this->closed_->type()->is_boolean_type()
+			       ? this->closed_->type()
+			       : Type::lookup_bool_type()),
 			      NULL, loc);
   b->add_statement(closed_temp);
 
@@ -1965,6 +1965,8 @@ Tuple_type_guard_assignment_statement::do_lower(Gogo*, Named_object*,
       b->add_statement(s);
 
       res = Expression::make_call_result(call, 1);
+      if (!this->ok_->type()->is_boolean_type())
+	res = Expression::make_cast(Type::lookup_bool_type(), res, loc);
       s = Statement::make_assignment(this->ok_, res, loc);
       b->add_statement(s);
     }
@@ -2001,7 +2003,9 @@ Tuple_type_guard_assignment_statement::lower_to_object_type(
   Temporary_statement* ok_temp = NULL;
   if (!this->ok_->is_sink_expression())
     {
-      ok_temp = Statement::make_temporary(this->ok_->type(),
+      ok_temp = Statement::make_temporary((this->ok_->type()->is_boolean_type()
+					   ? this->ok_->type()
+					   : Type::lookup_bool_type()),
 					  NULL, loc);
       b->add_statement(ok_temp);
     }

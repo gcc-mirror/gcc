@@ -3610,7 +3610,7 @@ version (StdDdoc)
             Throws:
                 $(LREF FileException) if the file does not exist.
         +/
-        this(string path);
+        this(return scope string path);
 
         version (Windows)
         {
@@ -3772,7 +3772,7 @@ else version (Windows)
     public:
         alias name this;
 
-        this(string path)
+        this(return scope string path)
         {
             import std.datetime.systime : FILETIMEToSysTime;
 
@@ -3881,7 +3881,7 @@ else version (Posix)
     public:
         alias name this;
 
-        this(string path)
+        this(return scope string path)
         {
             if (!path.exists)
                 throw new FileException(path, "File does not exist");
@@ -4424,7 +4424,7 @@ void rmdirRecurse(scope const(char)[] pathname) @safe
 }
 
 /// ditto
-void rmdirRecurse(ref DirEntry de) @safe
+void rmdirRecurse(ref scope DirEntry de) @safe
 {
     if (!de.isDir)
         throw new FileException(de.name, "Not a directory");
@@ -4459,7 +4459,7 @@ void rmdirRecurse(ref DirEntry de) @safe
 //"rmdirRecurse(in char[] pathname)" implementation. That is needlessly
 //expensive.
 //A DirEntry is a bit big (72B), so keeping the "by ref" signature is desirable.
-void rmdirRecurse(DirEntry de) @safe
+void rmdirRecurse(scope DirEntry de) @safe
 {
     rmdirRecurse(de);
 }
@@ -4511,22 +4511,20 @@ version (Posix) @system unittest
     enforce(!exists(deleteme));
 }
 
-@system unittest
+@safe unittest
 {
-    void[] buf;
-
-    buf = new void[10];
-    (cast(byte[]) buf)[] = 3;
+    ubyte[] buf = new ubyte[10];
+    buf[] = 3;
     string unit_file = deleteme ~ "-unittest_write.tmp";
     if (exists(unit_file)) remove(unit_file);
-    write(unit_file, buf);
+    write(unit_file, cast(void[]) buf);
     void[] buf2 = read(unit_file);
-    assert(buf == buf2);
+    assert(cast(void[]) buf == buf2);
 
     string unit2_file = deleteme ~ "-unittest_write2.tmp";
     copy(unit_file, unit2_file);
     buf2 = read(unit2_file);
-    assert(buf == buf2);
+    assert(cast(void[]) buf == buf2);
 
     remove(unit_file);
     assert(!exists(unit_file));
@@ -5042,7 +5040,7 @@ auto dirEntries(string path, string pattern, SpanMode mode,
     return filter!f(DirIterator(path, mode, followSymlink));
 }
 
-@system unittest
+@safe unittest
 {
     import std.stdio : writefln;
     immutable dpath = deleteme ~ "_dir";
@@ -5059,11 +5057,11 @@ auto dirEntries(string path, string pattern, SpanMode mode,
 
     mkdir(dpath);
     write(fpath, "hello world");
-    version (Posix)
+    version (Posix) () @trusted
     {
         core.sys.posix.unistd.symlink((dpath ~ '\0').ptr, (sdpath ~ '\0').ptr);
         core.sys.posix.unistd.symlink((fpath ~ '\0').ptr, (sfpath ~ '\0').ptr);
-    }
+    } ();
 
     static struct Flags { bool dir, file, link; }
     auto tests = [dpath : Flags(true), fpath : Flags(false, true)];

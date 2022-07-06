@@ -4222,9 +4222,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_asan (m_ctxt); }
-  virtual bool gate (function *) { return gate_asan () || gate_hwasan (); }
-  virtual unsigned int execute (function *) { return asan_instrument (); }
+  opt_pass * clone () final override { return new pass_asan (m_ctxt); }
+  bool gate (function *) final override
+  {
+    return gate_asan () || gate_hwasan ();
+  }
+  unsigned int execute (function *) final override
+  {
+    return asan_instrument ();
+  }
 
 }; // class pass_asan
 
@@ -4259,11 +4265,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return !optimize && (gate_asan () || gate_hwasan ());
     }
-  virtual unsigned int execute (function *) { return asan_instrument (); }
+  unsigned int execute (function *) final override
+  {
+    return asan_instrument ();
+  }
 
 }; // class pass_asan_O0
 

@@ -113,6 +113,40 @@ namespace __detail
       { return std::forward<_Tp>(__x).first; }
   };
 
+  template<typename _ExKey, typename _Value>
+    struct _ConvertToValueType;
+
+  template<typename _Value>
+    struct _ConvertToValueType<_Identity, _Value>
+    {
+      template<typename _Kt>
+	constexpr _Kt&&
+	operator()(_Kt&& __k) const noexcept
+	{ return std::forward<_Kt>(__k); }
+    };
+
+  template<typename _Value>
+    struct _ConvertToValueType<_Select1st, _Value>
+    {
+      constexpr _Value&&
+      operator()(_Value&& __x) const noexcept
+      { return std::move(__x); }
+
+      constexpr const _Value&
+      operator()(const _Value& __x) const noexcept
+      { return __x; }
+
+      template<typename _Kt, typename _Val>
+	constexpr std::pair<_Kt, _Val>&&
+	operator()(std::pair<_Kt, _Val>&& __x) const noexcept
+	{ return std::move(__x); }
+
+      template<typename _Kt, typename _Val>
+	constexpr const std::pair<_Kt, _Val>&
+	operator()(const std::pair<_Kt, _Val>& __x) const noexcept
+	{ return __x; }
+    };
+
   template<typename _ExKey>
     struct _NodeBuilder;
 

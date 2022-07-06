@@ -32,7 +32,7 @@ void
 omp_set_default_device (int device_num)
 {
   struct gomp_task_icv *icv = gomp_icv (true);
-  icv->default_device_var = device_num >= 0 ? device_num : 0;
+  icv->default_device_var = device_num;
 }
 
 ialias (omp_set_default_device)

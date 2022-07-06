@@ -20,30 +20,51 @@
 #include <unordered_map>
 #include <utility>
 
+#include <testsuite_hooks.h>
+
 struct Key
 {
   explicit Key(const int* p) : value(p) { }
   ~Key() { value = nullptr; }
 
-  bool operator==(const Key& k) const { return *value == *k.value; }
+  bool operator==(const Key& k) const
+  { return *value == *k.value; }
 
   const int* value;
 };
 
 struct hash
 {
-  std::size_t operator()(const Key& k) const noexcept { return *k.value; }
+  std::size_t operator()(const Key& k) const noexcept
+  { return *k.value; }
 };
 
 struct S
 {
+  static int _count;
+
   int value;
-  operator std::pair<const Key, int>() const { return {Key(&value), value}; }
+  operator std::pair<const Key, int>() const
+  {
+    ++_count;
+    return { Key(&value), value };
+  }
 };
+
+int S::_count = 0;
+
+void test01()
+{
+    S s[1] = { {2} };
+    std::unordered_map<Key, int, hash> m(s, s + 1);
+    VERIFY( S::_count == 1 );
+
+    std::unordered_multimap<Key, int, hash> mm(s, s + 1);
+    VERIFY( S::_count == 2 );
+}
 
 int main()
 {
-    S s[1] = { {2} };
-    std::unordered_map<Key, int, hash> m(s, s+1);
-    std::unordered_multimap<Key, int, hash> mm(s, s+1);
+  test01();
+  return 0;
 }

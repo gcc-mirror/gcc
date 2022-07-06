@@ -105,6 +105,8 @@ test03()
   if (!__gnu_test::permissions_are_testable())
     return;
 
+  clean_env();
+
   auto p = __gnu_test::nonexistent_path();
   create_directories(p/"tmp");
   permissions(p, fs::perms::none);
@@ -116,7 +118,7 @@ test03()
 
   std::error_code ec2;
   try {
-    fs::temp_directory_path();
+    (void) fs::temp_directory_path();
   } catch (const fs::filesystem_error& e) {
     ec2 = e.code();
   }
@@ -129,20 +131,27 @@ test03()
 void
 test04()
 {
+  clean_env();
+
   __gnu_test::scoped_file f;
-  set_env("TMPDIR", f.path.string());
+  set_env("TMP", f.path.string());
   std::error_code ec;
   auto r = fs::temp_directory_path(ec);
   VERIFY( ec == std::make_error_code(std::errc::not_a_directory) );
   VERIFY( r == fs::path() );
 
   std::error_code ec2;
+  std::string failed_path;
   try {
-    fs::temp_directory_path();
+    (void) fs::temp_directory_path();
   } catch (const fs::filesystem_error& e) {
     ec2 = e.code();
+    // On Windows the returned path will be in preferred form, i.e. using L'\\'
+    // and will have a trailing slash, so compare generic forms.
+    failed_path = e.path1().generic_string();
   }
   VERIFY( ec2 == ec );
+  VERIFY( failed_path.find(f.path.generic_string()) != std::string::npos );
 }
 
 int

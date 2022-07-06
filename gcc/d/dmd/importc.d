@@ -81,10 +81,14 @@ Expression arrayFuncConv(Expression e, Scope* sc)
     auto t = e.type.toBasetype();
     if (auto ta = t.isTypeDArray())
     {
+        if (!checkAddressable(e, sc))
+            return ErrorExp.get();
         e = e.castTo(sc, ta.next.pointerTo());
     }
     else if (auto ts = t.isTypeSArray())
     {
+        if (!checkAddressable(e, sc))
+            return ErrorExp.get();
         e = e.castTo(sc, ts.next.pointerTo());
     }
     else if (t.isTypeFunction())

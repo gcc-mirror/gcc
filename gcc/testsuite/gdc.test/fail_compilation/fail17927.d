@@ -1,10 +1,10 @@
 /* REQUIRED_ARGS: -preview=dip1000
  * TEST_OUTPUT:
 ---
-fail_compilation/fail17927.d(13): Error: scope variable `this` may not be returned
-fail_compilation/fail17927.d(15): Error: scope variable `this` may not be returned
-fail_compilation/fail17927.d(21): Error: scope variable `ptr` may not be returned
-fail_compilation/fail17927.d(23): Error: scope variable `ptr` may not be returned
+fail_compilation/fail17927.d(13): Error: scope parameter `this` may not be returned
+fail_compilation/fail17927.d(15): Error: scope parameter `this` may not be returned
+fail_compilation/fail17927.d(21): Error: scope parameter `ptr` may not be returned
+fail_compilation/fail17927.d(23): Error: scope parameter `ptr` may not be returned
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=17927

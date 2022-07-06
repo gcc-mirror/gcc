@@ -66,9 +66,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_laddress (m_ctxt); }
-  virtual bool gate (function *) { return optimize != 0; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_laddress (m_ctxt); }
+  bool gate (function *) final override { return optimize != 0; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_laddress
 

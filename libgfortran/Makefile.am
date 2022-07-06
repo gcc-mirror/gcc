@@ -1167,7 +1167,9 @@ I_M4_DEPS8=$(I_M4_DEPS) m4/ifindloc1.m4
 I_M4_DEPS9=$(I_M4_DEPS) m4/ifindloc2.m4
 
 kinds.h: $(srcdir)/mk-kinds-h.sh
-	$(SHELL) $(srcdir)/mk-kinds-h.sh '@LIBGOMP_CHECKED_INT_KINDS@' '@LIBGOMP_CHECKED_REAL_KINDS@' '$(FCCOMPILE)' > $@ || rm $@
+	$(SHELL) $(srcdir)/mk-kinds-h.sh '@LIBGOMP_CHECKED_INT_KINDS@' \
+					 '@LIBGOMP_CHECKED_REAL_KINDS@' \
+					 '$(FCCOMPILE)' '@USE_IEC_60559@' > $@ || rm $@
 
 kinds.inc: kinds.h $(srcdir)/kinds-override.h
 	cat kinds.h $(srcdir)/kinds-override.h | grep '^#' | grep -v include > $@

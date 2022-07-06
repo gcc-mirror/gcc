@@ -116,3 +116,21 @@ pragma(msg, __traits(hasCopyConstructor));
 pragma(msg, __traits(hasCopyConstructor, S()));
 pragma(msg, __traits(hasPostblit));
 pragma(msg, __traits(hasPostblit, S()));
+
+/********************************************
+https://issues.dlang.org/show_bug.cgi?id=23178
+
+TEST_OUTPUT:
+---
+fail_compilation/traits.d(701): Error: alias `traits.a` cannot alias an expression `true`
+fail_compilation/traits.d(702): Error: alias `traits.b` cannot alias an expression `false`
+fail_compilation/traits.d(703): Error: alias `traits.c` cannot alias an expression `"Object"`
+fail_compilation/traits.d(704):        while evaluating `pragma(msg, a)`
+---
+*/
+#line 700
+
+alias a = __traits(compiles, 1);
+alias b = __traits(isIntegral, 1.1);
+alias c = __traits(identifier, Object);
+pragma(msg, a, b, c);

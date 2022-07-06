@@ -71,13 +71,13 @@ class MmFile
      *  - On POSIX, $(REF ErrnoException, std, exception).
      *  - On Windows, $(REF WindowsException, std, windows, syserror).
      */
-    this(string filename)
+    this(string filename) scope
     {
         this(filename, Mode.read, 0, null);
     }
 
     version (linux) this(File file, Mode mode = Mode.read, ulong size = 0,
-            void* address = null, size_t window = 0)
+            void* address = null, size_t window = 0) scope
     {
         // Save a copy of the File to make sure the fd stays open.
         this.file = file;
@@ -85,7 +85,7 @@ class MmFile
     }
 
     version (linux) private this(int fildes, Mode mode, ulong size,
-            void* address, size_t window)
+            void* address, size_t window) scope
     {
         int oflag;
         int fmode;
@@ -169,7 +169,7 @@ class MmFile
      *  - On Windows, $(REF WindowsException, std, windows, syserror).
      */
     this(string filename, Mode mode, ulong size, void* address,
-            size_t window = 0)
+            size_t window = 0) scope
     {
         this.filename = filename;
         this.mMode = mode;
@@ -364,7 +364,7 @@ class MmFile
     /**
      * Flushes pending output and closes the memory mapped file.
      */
-    ~this()
+    ~this() scope
     {
         debug (MMFILE) printf("MmFile.~this()\n");
         unmap();

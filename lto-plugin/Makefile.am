@@ -9,7 +9,8 @@ libexecsubdir := $(libexecdir)/gcc/$(real_target_noncanonical)/$(gcc_version)$(a
 
 AM_CPPFLAGS = -I$(top_srcdir)/../include $(DEFS)
 AM_CFLAGS = @ac_lto_plugin_warn_cflags@ $(CET_HOST_FLAGS)
-AM_LDFLAGS = @ac_lto_plugin_ldflags@
+# The plug-in depends on pthreads.
+AM_LDFLAGS = -pthread @ac_lto_plugin_ldflags@
 AM_LIBTOOLFLAGS = --tag=disable-static
 override CFLAGS := $(filter-out -fsanitize=address -fsanitize=hwaddress,$(CFLAGS))
 override LDFLAGS := $(filter-out -fsanitize=address -fsanitize=hwaddress,$(LDFLAGS))

@@ -479,6 +479,20 @@ test_loop (int *obj, size_t sz, size_t start, size_t end, int incr)
   return __builtin_dynamic_object_size (ptr, 0);
 }
 
+/* Other tests.  */
+
+struct TV4
+{
+  __attribute__((vector_size (sizeof (int) * 4))) int v;
+};
+
+struct TV4 val3;
+int *
+test_pr105736 (struct TV4 *a)
+{
+  return &a->v[0];
+}
+
 unsigned nfails = 0;
 
 #define FAIL() ({ \
@@ -632,6 +646,10 @@ main (int argc, char **argv)
   if (test_loop (arr, 42, 44, 0, -1) != 0)
     FAIL ();
   if (test_loop (arr, 42, 20, 52, 1) != 0)
+    FAIL ();
+  /* pr105736.  */
+  int *t = test_pr105736 (&val3);
+  if (__builtin_dynamic_object_size (t, 0) != -1)
     FAIL ();
 
   if (nfails > 0)

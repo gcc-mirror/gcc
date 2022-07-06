@@ -1126,7 +1126,11 @@ C ObjC C++ ObjC++ Var(warn_overlength_strings) Warning LangEnabledBy(C ObjC C++ 
 Warn if a string is longer than the maximum portable length specified by the standard.
 
 Woverloaded-virtual
-C++ ObjC++ Var(warn_overloaded_virtual) Warning
+C++ ObjC++ Warning Alias(Woverloaded-virtual=,2,0)
+Warn about overloaded virtual function names.
+
+Woverloaded-virtual=
+C++ ObjC++ Joined UInteger IntegerRange(0,2) Var(warn_overloaded_virtual) Warning LangEnabledBy(C++ ObjC++,Wall,1,0)
 Warn about overloaded virtual function names.
 
 Woverride-init

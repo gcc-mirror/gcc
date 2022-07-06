@@ -266,11 +266,13 @@ public:
     function *handler_fun = DECL_STRUCT_FUNCTION (m_fndecl);
     if (!handler_fun)
       return;
+    const extrinsic_state &ext_state = eg->get_ext_state ();
     program_point entering_handler
-      = program_point::from_function_entry (eg->get_supergraph (),
+      = program_point::from_function_entry (*ext_state.get_model_manager (),
+					    eg->get_supergraph (),
 					    handler_fun);
 
-    program_state state_entering_handler (eg->get_ext_state ());
+    program_state state_entering_handler (ext_state);
     update_model_for_signal_handler (state_entering_handler.m_region_model,
 				     handler_fun);
     state_entering_handler.m_checker_states[sm_idx]->set_global_state

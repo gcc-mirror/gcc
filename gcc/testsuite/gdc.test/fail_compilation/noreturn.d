@@ -118,3 +118,21 @@ enum forceInClassRef = inClassRef();
 */
 
 enum throwEnum = throw new Exception("");
+
+
+/*
+https://issues.dlang.org/show_bug.cgi?id=23063
+
+TEST_OUTPUT:
+---
+fail_compilation/noreturn.d(135): Error: `"Accessed expression of type `noreturn`"`
+fail_compilation/noreturn.d(138):        called from here: `func()`
+---
+*/
+noreturn func()
+{
+    noreturn a;
+    return a;
+}
+
+enum f = func();

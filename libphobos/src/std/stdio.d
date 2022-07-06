@@ -498,17 +498,21 @@ struct File
     private Impl* _p;
     private string _name;
 
-    package this(FILE* handle, string name, uint refs = 1, bool isPopened = false) @trusted
+    package this(FILE* handle, string name, uint refs = 1, bool isPopened = false) @trusted @nogc nothrow
     {
         import core.stdc.stdlib : malloc;
-        import std.exception : enforce;
 
         assert(!_p);
-        _p = cast(Impl*) enforce(malloc(Impl.sizeof), "Out of memory");
+        _p = cast(Impl*) malloc(Impl.sizeof);
+        if (!_p)
+        {
+            import core.exception : onOutOfMemoryError;
+            onOutOfMemoryError();
+        }
         initImpl(handle, name, refs, isPopened);
     }
 
-    private void initImpl(FILE* handle, string name, uint refs = 1, bool isPopened = false)
+    private void initImpl(FILE* handle, string name, uint refs = 1, bool isPopened = false) @nogc nothrow pure @safe
     {
         assert(_p);
         _p.handle = handle;

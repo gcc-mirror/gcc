@@ -1,3 +1,328 @@
+2022-07-05  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc
+	(struct ord_loc_info, ord_loc_traits): New.
+	(ord_loc_tabke, ord_loc_remap): New globals.
+	(struct location_map_info): Delete.
+	(struct module_state_config): Rename ordinary_loc_align to
+	loc_range_bits.
+	(module_for_ordinary_loc): Adjust.
+	(module_state::note_location): Note ordinary locations,
+	return bool.
+	(module_state::write_location): Adjust ordinary location
+	streaming.
+	(module_state::read_location): Likewise.
+	(module_state::write_init_maps): Allocate ord_loc_table.
+	(module_state::write_prepare_maps): Reimplement ordinary
+	map preparation.
+	(module_state::read_prepare_maps): Adjust.
+	(module_state::write_ordinary_maps): Reimplement.
+	(module_state::write_macro_maps): Adjust.
+	(module_state::read_ordinary_maps): Reimplement.
+	(module_state::write_macros): Adjust.
+	(module_state::write_config): Adjust.
+	(module_state::read_config): Adjust.
+	(module_state::write_begin): Adjust.
+	(module_state::read_initial): Adjust.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_target_data,
+	cp_parser_omp_target_enter_data, cp_parser_omp_target_exit_data,
+	cp_parser_omp_target_update): Set OMP_REQUIRES_TARGET_USED.
+	(cp_parser_omp_requires): Remove sorry.
+
+2022-07-01  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* parser.cc (cp_token_is_module_directive): New function
+	refactoring common code.
+	(cp_parser_skip_to_closing_parenthesis_1): Use the new function.
+	(cp_parser_skip_to_end_of_statement): Likewise.
+	(cp_parser_skip_to_end_of_block_or_statement): Likewise.
+	(cp_parser_declaration): Likewise.
+
+2022-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105550
+	* constexpr.cc (cxx_eval_conditional_expression): Strip TARGET_EXPRs.
+
+2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_target_enter_data,
+	cp_parser_omp_target_exit_data): Accept tofrom
+	map-type modifier but use 'to' / 'from' internally.
+
+2022-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106111
+	* parser.cc (cp_lexer_get_preprocessor_token): Also warn about
+	RID_ALIGNOF, RID_ALIGNAS, RID_THREAD.
+
+2022-07-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105779
+	* call.cc (resolve_args): Use complain.
+
+2022-07-01  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (missing_template_diag): Split out...
+	(cp_parser_id_expression): ...from here.
+
+2022-07-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106024
+	* parser.cc (missing_template_diag): Factor out...
+	(cp_parser_id_expression): ...from here.
+	(cp_parser_lookup_name): Don't look in dependent object_type.
+
+2022-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (module_state::write_define): Drop located param.
+	(module_state::read_define): Likewise.
+	(module_state::prepare_macros): New, broken out of ...
+	(module_state::write_macros): ... here.  Adjust.
+	(module_state::write_begin): Adjust.
+
+2022-06-29  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (macro_info, macro_traits, macro_table,
+	macro_remap): Rename to ...
+	(macro_loc_info, macro_loc_traits, macro_loc_table,
+	macro_loc_remap): ... these.  Update all uses.
+	(module_state::write_prepare_maps): Remove unneeded macro checking.
+	(module_state::write_begin): Free macro_loc_remap.
+
+2022-06-27  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* mapper-client.cc: Include <memory> via "system.h".
+	* mapper-resolver.cc: Ditto.
+	* module.cc: Ditto.
+
+2022-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* cxx-pretty-print.h: Add "final" and "override" to various vfunc
+	implementations, removing redundant "virtual" as appropriate.
+	* module.cc: Likewise.
+
+2022-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	PR c++/20423
+	* class.cc (warn_hidden): Handle -Woverloaded-virtual=1.
+
+2022-06-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++spec.cc (lang_specific_driver): Implement -nostdlib++.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105925
+	* call.cc (build_aggr_conv): Don't depend on
+	CONSTRUCTOR_IS_DESIGNATED_INIT.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105925
+	* decl.cc (reshape_init_array_1): Set
+	CONSTRUCTOR_IS_DESIGNATED_INIT here.
+	(reshape_init_class): And here.
+	(reshape_init): Not here.
+
+2022-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105931
+	* expr.cc (fold_for_warn): Don't fold when in an unevaluated
+	context.
+
+2022-06-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105982
+	* pt.cc (lookup_template_class): After calling complete_type for
+	the substituted context, check the table again iff the type was
+	previously incomplete and complete_type made it complete.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94554
+	* pt.cc (dependent_operand_p): Split out from...
+	(tsubst_copy_and_build): ...here.
+	(tsubst_expr) [IF_STMT]: Use it.
+	* semantics.cc (finish_if_stmt_cond): Keep the pre-conversion
+	condition in the template tree.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105885
+	* pt.cc (tsubst_copy_and_build): Also suppress -Waddress for
+	comparison of dependent operands.
+
+2022-06-23  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (struct macro_info): New.
+	(struct macro_traits): New.
+	(macro_remap, macro_table): New globals.
+	(depset::hash::find_dependencies): Note namespace location.
+	(module_for_macro_loc): Adjust.
+	(module_state::note_location): New.
+	(module_state::Write_location): Note location when not
+	streaming. Adjust macro location streaming.
+	(module_state::read_location): Adjust macro location
+	streaming.
+	(module_state::write_init_maps): New.
+	(module_state::write_prepare_maps): Reimplement macro map
+	preparation.
+	(module_state::write_macro_maps): Reimplement.
+	(module_state::read_macro_maps): Likewise.
+	(module_state::write_begin): Adjust.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (type_unification_real): An auto tparm can't
+	be affected by other deductions.
+
+2022-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105964
+	* pt.cc (type_dependent_expression_p): Look through BASELINK.
+
+2022-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105908
+	* name-lookup.cc (outer_binding): Strip BASELINK.
+
+2022-06-22  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (struct duplicate_hash): Remove.
+	(duplicate_hash_map): Adjust.
+
+2022-06-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104642
+	* constexpr.cc (cxx_eval_builtin_function_call): Handle
+	unreachable/trap earlier.
+	* cp-gimplify.cc (cp_maybe_instrument_return): Use
+	build_builtin_unreachable.
+
+2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-ubsan.cc (cp_ubsan_instrument_vptr_p): Use
+	flag_sanitize_trap & SANITIZE_VPTR instead of
+	flag_sanitize_undefined_trap_on_error.
+
+2022-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106001
+	* typeck.cc (build_x_shufflevector): Use fold_non_dependent_expr
+	instead of maybe_constant_value.
+
+2022-06-16  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.cc (finish_objects): Add startp parameter, adjust.
+	(generate_ctor_or_dtor_function): Detect empty fn, and don't
+	generate unnecessary code.  Remove objc startup here ...
+	(c_parse_final_cleanyps): ... do it here.
+
+2022-06-16  Martin Liska  <mliska@suse.cz>
+
+	* decl2.cc (struct priority_map_traits): Remove unused param.
+
+2022-06-15  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (module_state::write_readme): Use less confusing
+	importable unit names.
+
+2022-06-14  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (fini_modules): Add has_inits parm.
+	* decl2.cc (c_parse_final_cleanups): Check for
+	inits, adjust fini_modules flags.
+	* module.cc (module_state): Rename call_init_p to
+	active_init_p.
+	(module_state::write_config): Write active_init.
+	(module_state::read_config): Read it.
+	(module_determine_import_inits): Clear active_init_p
+	of covered inits.
+	(late_finish_module): Add has_init parm.  Record it.
+	(fini_modules): Adjust.
+
+2022-06-13  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (module_state::write): Separate to ...
+	(module_state::write_begin, module_state::write_end): ...
+	these.
+	(module_state::write_readme): Drop extensions parameter.
+	(struct module_processing_cookie): Add more fields.
+	(finish_module_processing): Adjust state writing call.
+	(late_finish_module): Call write_end.
+
+2022-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/65328
+	* decl.cc (typename_hasher::hash): Add extra overloads.
+	Use iterative_hash_object instead of htab_hash_pointer.
+	Hash TYPENAME_TYPE_FULLNAME instead of TYPE_IDENTIFIER.
+	(build_typename_type): Use typename_hasher::hash.
+	* pt.cc (spec_hasher::hash): Add two-parameter overload.
+	Set comparing_specializations around the call to
+	hash_tmpl_and_args.
+	(iterative_hash_template_arg) <case TYPENAME_TYPE>:
+	When comparing_specializations, hash the TYPE_CONTEXT
+	and TYPENAME_TYPE_FULLNAME.
+	(tsubst_function_decl): Use spec_hasher::hash instead of
+	hash_tmpl_and_args.
+	(tsubst_template_decl): Likewise.
+	(tsubst_decl): Likewise.
+
+2022-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (instantiate_template): Don't substitute the context
+	of the most general template if that of the partially
+	instantiated template is already non-dependent.
+
+2022-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (lookup_template_class): Remove dead stores to
+	context parameter.  Don't substitute the context of the
+	most general template if that of the partially instantiated
+	template is already non-dependent.  Check the specializations
+	table again after completing the context of a nested dependent
+	specialization.
+	(tsubst_aggr_type) <case RECORD_TYPE>: Don't substitute
+	TYPE_CONTEXT or pass it to lookup_template_class.
+	(tsubst_decl) <case TYPE_DECL, case TYPE_DECL>: Avoid substituting
+	the TREE_TYPE for DECL_SELF_REFERENCE_P.  Avoid template argument
+	substitution or coercion in some cases.
+
+2022-06-10  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (fini_modules): Add some parameters.
+	(finish_module_processing): Return an opaque pointer.
+	* decl2.cc (c_parse_final_cleanups): Propagate a cookie from
+	finish_module_processing to fini_modules.
+	* module.cc (struct module_processing_cookie): New.
+	(finish_module_processing): Return a heap-allocated cookie.
+	(late_finish_module): New.  Finish out the module writing.
+	(fini_modules): Adjust.
+
+2022-06-10  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (module_has_import_init): Rename to ...
+	(module_determined_import_inits): ... here.
+	* decl2.cc (start_objects): Do not handle module initializers
+	here.
+	(c_parse_final_cleanups): Generate a separate module
+	initializer calling function and add it to the list.  Shrink
+	the c-lang region.
+	* module.cc (num_init_calls_needed): Delete.
+	 (module_has_import_init): Rename to ...
+	(module_determined_import_inits): ... here. Do the
+	calculation here ...
+	(finish_module_processing): ... rather than here.
+	(module_add_import_initializers): Reformat.
+
 2022-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/105871

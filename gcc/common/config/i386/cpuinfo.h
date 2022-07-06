@@ -651,8 +651,6 @@ get_available_features (struct __processor_model *cpu_model,
     set_feature (FEATURE_MOVBE);
   if (ecx & bit_AES)
     set_feature (FEATURE_AES);
-  if (ecx & bit_F16C)
-    set_feature (FEATURE_F16C);
   if (ecx & bit_RDRND)
     set_feature (FEATURE_RDRND);
   if (ecx & bit_XSAVE)
@@ -663,6 +661,8 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_AVX);
       if (ecx & bit_FMA)
 	set_feature (FEATURE_FMA);
+      if (ecx & bit_F16C)
+	set_feature (FEATURE_F16C);
     }
 
   /* Get Advanced Features at level 7 (eax = 7, ecx = 0/1). */
@@ -683,6 +683,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX2);
 	  if (ecx & bit_VPCLMULQDQ)
 	    set_feature (FEATURE_VPCLMULQDQ);
+	  if (ecx & bit_VAES)
+	    set_feature (FEATURE_VAES);
 	}
       if (ebx & bit_BMI2)
 	set_feature (FEATURE_BMI2);
@@ -705,8 +707,6 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_PKU);
       if (ecx & bit_RDPID)
 	set_feature (FEATURE_RDPID);
-      if (ecx & bit_VAES)
-	set_feature (FEATURE_VAES);
       if (ecx & bit_GFNI)
 	set_feature (FEATURE_GFNI);
       if (ecx & bit_MOVDIRI)

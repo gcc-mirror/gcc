@@ -348,14 +348,16 @@ int expandAliasThisTuples(Expressions* exps, size_t starti = 0)
         if (TupleDeclaration td = exp.isAliasThisTuple)
         {
             exps.remove(u);
-            foreach (i, o; *td.objects)
+            size_t i;
+            td.foreachVar((s)
             {
-                auto d = o.isExpression().isDsymbolExp().s.isDeclaration();
+                auto d = s.isDeclaration();
                 auto e = new DotVarExp(exp.loc, exp, d);
                 assert(d.type);
                 e.type = d.type;
                 exps.insert(u + i, e);
-            }
+                ++i;
+            });
             version (none)
             {
                 printf("expansion ->\n");
@@ -1438,7 +1440,7 @@ extern (C++) abstract class Expression : ASTNode
             else if (!sc.func.safetyViolation)
             {
                 import dmd.func : AttributeViolation;
-                sc.func.safetyViolation = new AttributeViolation(this.loc, null, f, null);
+                sc.func.safetyViolation = new AttributeViolation(this.loc, null, f, null, null);
             }
         }
         return false;

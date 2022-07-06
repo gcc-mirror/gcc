@@ -189,8 +189,8 @@ The OpenMP 4.5 specification is fully supported.
       env variable @tab Y @tab
 @item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
 @item @code{requires} directive @tab P
-      @tab Only fulfillable requirement are @code{atomic_default_mem_order}
-      and @code{dynamic_allocators}
+      @tab complete but no non-host devices provides @code{unified_address},
+      @code{unified_shared_memory} or @code{reverse_offload}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
 @item Non-rectangular loop nests @tab Y @tab
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
@@ -344,6 +344,8 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{unconstrained} and @code{reproducible} modifiers on @code{order}
       clause @tab Y @tab
 @item Support @code{begin/end declare target} syntax in C/C++ @tab N @tab
+@item Pointer predetermined firstprivate getting initialized
+to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @end multitable
 
 
@@ -353,6 +355,7 @@ The OpenMP 4.5 specification is fully supported.
 @unnumberedsubsec New features listed in Appendix B of the OpenMP specification
 
 @multitable @columnfractions .60 .10 .25
+@headitem Description @tab Status @tab Comments
 @item @code{omp_in_explicit_task} routine and @emph{implicit-task-var} ICV
       @tab N @tab
 @item @code{omp}/@code{ompx}/@code{omx} sentinels and @code{omp_}/@code{ompx_}
@@ -360,7 +363,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Clauses on @code{end} directive can be on directive @tab N @tab
 @item Deprecation of no-argument @code{destroy} clause on @code{depobj}
       @tab N @tab
-@item @code{linear} clause syntax changes and @code{step} modifier @tab N @tab
+@item @code{linear} clause syntax changes and @code{step} modifier @tab Y @tab
 @item Deprecation of minus operator for reductions @tab N @tab
 @item Deprecation of separating @code{map} modifiers without comma @tab N @tab
 @item @code{declare mapper} with iterator and @code{present} modifiers
@@ -389,7 +392,7 @@ The OpenMP 4.5 specification is fully supported.
       @tab Y @tab
 @item @code{ompt_callback_work} @tab N @tab
 @item Default map-type for @code{map} clause in @code{target enter/exit data}
-      @tab N @tab
+      @tab Y @tab
 @item New @code{doacross} clause as alias for @code{depend} with
       @code{source}/@code{sink} modifier @tab N @tab
 @item Deprecation of @code{depend} with @code{source}/@code{sink} modifier
@@ -403,7 +406,7 @@ The OpenMP 4.5 specification is fully supported.
 @headitem Description @tab Status @tab Comments
 @item For Fortran, optional comma between directive and clause @tab N @tab
 @item Conforming device numbers and @code{omp_initial_device} and
-      @code{omp_invalid_device} enum/PARAMETER @tab N @tab
+      @code{omp_invalid_device} enum/PARAMETER @tab Y @tab
 @item Initial value of @emph{default-device-var} ICV with
       @code{OMP_TARGET_OFFLOAD=mandatory} @tab N @tab
 @item @emph{interop_types} in any position of the modifier list for the @code{init} clause

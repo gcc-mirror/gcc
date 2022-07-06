@@ -629,6 +629,16 @@ cp_lexer_alloc (void)
   return lexer;
 }
 
+/* Return TRUE if token is the start of a module declaration that will be
+   terminated by a CPP_PRAGMA_EOL token.  */
+static inline bool
+cp_token_is_module_directive (cp_token *token)
+{
+  return token->keyword == RID__EXPORT
+    || token->keyword == RID__MODULE
+    || token->keyword == RID__IMPORT;
+}
+
 /* Create a new main C++ lexer, the lexer that gets tokens from the
    preprocessor.  */
 
@@ -890,10 +900,14 @@ cp_lexer_get_preprocessor_token (unsigned flags, cp_token *token)
       else
 	{
           if (warn_cxx11_compat
-              && C_RID_CODE (token->u.value) >= RID_FIRST_CXX11
-              && C_RID_CODE (token->u.value) <= RID_LAST_CXX11)
+	      && ((C_RID_CODE (token->u.value) >= RID_FIRST_CXX11
+		   && C_RID_CODE (token->u.value) <= RID_LAST_CXX11)
+		  /* These are outside the CXX11 range.  */
+		  || C_RID_CODE (token->u.value) == RID_ALIGNOF
+		  || C_RID_CODE (token->u.value) == RID_ALIGNAS
+		  || C_RID_CODE (token->u.value)== RID_THREAD))
             {
-              /* Warn about the C++0x keyword (but still treat it as
+	      /* Warn about the C++11 keyword (but still treat it as
                  an identifier).  */
 	      warning_at (token->location, OPT_Wc__11_compat,
 			  "identifier %qE is a keyword in C++11",
@@ -3829,9 +3843,7 @@ cp_parser_skip_to_closing_parenthesis_1 (cp_parser *parser,
 	  break;
 
 	case CPP_KEYWORD:
-	  if (token->keyword != RID__EXPORT
-	      && token->keyword != RID__MODULE
-	      && token->keyword != RID__IMPORT)
+	  if (!cp_token_is_module_directive (token))
 	    break;
 	  /* FALLTHROUGH  */
 
@@ -3932,9 +3944,7 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 	  break;
 
 	case CPP_KEYWORD:
-	  if (token->keyword != RID__EXPORT
-	      && token->keyword != RID__MODULE
-	      && token->keyword != RID__IMPORT)
+	  if (!cp_token_is_module_directive (token))
 	    break;
 	  /* FALLTHROUGH  */
 
@@ -4021,9 +4031,7 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 	  break;
 
 	case CPP_KEYWORD:
-	  if (token->keyword != RID__EXPORT
-	      && token->keyword != RID__MODULE
-	      && token->keyword != RID__IMPORT)
+	  if (!cp_token_is_module_directive (token))
 	    break;
 	  /* FALLTHROUGH  */
 
@@ -6093,6 +6101,23 @@ cp_parser_primary_expression (cp_parser *parser,
 				       /*decltype*/false, idk);
 }
 
+/* Complain about missing template keyword when naming a dependent
+   member template.  */
+
+static void
+missing_template_diag (location_t loc, diagnostic_t diag_kind = DK_WARNING)
+{
+  if (warning_suppressed_at (loc, OPT_Wmissing_template_keyword))
+    return;
+
+  gcc_rich_location richloc (loc);
+  richloc.add_fixit_insert_before ("template");
+  emit_diagnostic (diag_kind, &richloc, OPT_Wmissing_template_keyword,
+		   "expected %qs keyword before dependent "
+		   "template name", "template");
+  suppress_warning_at (loc, OPT_Wmissing_template_keyword);
+}
+
 /* Parse an id-expression.
 
    id-expression:
@@ -6268,9 +6293,7 @@ cp_parser_id_expression (cp_parser *parser,
 	     operator.  */
 	  && (cp_lexer_peek_token (parser->lexer)->type
 	      <= CPP_LAST_PUNCTUATOR))
-	warning_at (token->location, OPT_Wmissing_template_keyword,
-		    "expected %qs keyword before dependent "
-		    "template name", "template");
+	missing_template_diag (token->location);
     }
 
   return id;
@@ -14939,9 +14962,7 @@ cp_parser_declaration (cp_parser* parser, tree prefix_attrs)
       else
 	cp_parser_module_export (parser);
     }
-  else if (token1->keyword == RID__EXPORT
-	   || token1->keyword == RID__IMPORT
-	   || token1->keyword == RID__MODULE)
+  else if (cp_token_is_module_directive (token1))
     {
       bool exporting = token1->keyword == RID__EXPORT;
       cp_token *next = exporting ? token2 : token1;
@@ -30676,9 +30697,11 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
     }
   else if (object_type)
     {
+      bool dep = dependent_scope_p (object_type);
+
       /* Look up the name in the scope of the OBJECT_TYPE, unless the
 	 OBJECT_TYPE is not a class.  */
-      if (CLASS_TYPE_P (object_type))
+      if (!dep && CLASS_TYPE_P (object_type))
 	/* If the OBJECT_TYPE is a template specialization, it may
 	   be instantiated during name lookup.  In that case, errors
 	   may be issued.  Even if we rollback the current tentative
@@ -30701,6 +30724,21 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 			       consider class templates.  */
 			    : is_template ? LOOK_want::TYPE
 			    : prefer_type_arg (tag_type));
+
+      /* If we did unqualified lookup of a dependent member-qualified name and
+	 found something, do we want to use it?  P1787 clarified that we need
+	 to look in the object scope first even if it's dependent, but for now
+	 let's still use it in some cases.
+	 FIXME remember unqualified lookup result to use if member lookup fails
+	 at instantiation time.	 */
+      if (decl && dep && is_template)
+	{
+	  saved_token_sentinel toks (parser->lexer, STS_ROLLBACK);
+	  /* Only use the unqualified class template lookup if we're actually
+	     looking at a template arg list.  */
+	  if (!cp_parser_skip_entire_template_parameter_list (parser))
+	    decl = NULL_TREE;
+	}
 
       /* If we know we're looking for a type (e.g. A in p->A::x),
 	 mock up a typename.  */
@@ -44287,6 +44325,10 @@ cp_parser_omp_teams (cp_parser *parser, cp_token *pragma_tok,
 static tree
 cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 {
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_DATA_CLAUSE_MASK,
 				 "#pragma omp target data", pragma_tok);
@@ -44390,6 +44432,10 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
       return true;
     }
 
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_ENTER_DATA_CLAUSE_MASK,
 				 "#pragma omp target enter data", pragma_tok);
@@ -44405,6 +44451,14 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
 	  case GOMP_MAP_ALLOC:
 	    map_seen = 3;
 	    break;
+	  case GOMP_MAP_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_TO);
+	    map_seen = 3;
+	    break;
+	  case GOMP_MAP_ALWAYS_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_TO);
+	    map_seen = 3;
+	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_ALWAYS_POINTER:
@@ -44414,7 +44468,7 @@ cp_parser_omp_target_enter_data (cp_parser *parser, cp_token *pragma_tok,
 	    map_seen |= 1;
 	    error_at (OMP_CLAUSE_LOCATION (*pc),
 		      "%<#pragma omp target enter data%> with map-type other "
-		      "than %<to%> or %<alloc%> on %<map%> clause");
+		      "than %<to%>, %<tofrom%> or %<alloc%> on %<map%> clause");
 	    *pc = OMP_CLAUSE_CHAIN (*pc);
 	    continue;
 	  }
@@ -44481,6 +44535,10 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
       return true;
     }
 
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
+
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_TARGET_EXIT_DATA_CLAUSE_MASK,
 				 "#pragma omp target exit data", pragma_tok);
@@ -44497,6 +44555,14 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
 	  case GOMP_MAP_DELETE:
 	    map_seen = 3;
 	    break;
+	  case GOMP_MAP_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_FROM);
+	    map_seen = 3;
+	    break;
+	  case GOMP_MAP_ALWAYS_TOFROM:
+	    OMP_CLAUSE_SET_MAP_KIND (*pc, GOMP_MAP_ALWAYS_FROM);
+	    map_seen = 3;
+	    break;
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	  case GOMP_MAP_ALWAYS_POINTER:
@@ -44506,8 +44572,8 @@ cp_parser_omp_target_exit_data (cp_parser *parser, cp_token *pragma_tok,
 	    map_seen |= 1;
 	    error_at (OMP_CLAUSE_LOCATION (*pc),
 		      "%<#pragma omp target exit data%> with map-type other "
-		      "than %<from%>, %<release%> or %<delete%> on %<map%>"
-		      " clause");
+		      "than %<from%>, %<tofrom%>, %<release%> or %<delete%> "
+		      "on %<map%> clause");
 	    *pc = OMP_CLAUSE_CHAIN (*pc);
 	    continue;
 	  }
@@ -44566,6 +44632,10 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
 		"%<from%> or %<to%> clauses");
       return true;
     }
+
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
 
   tree stmt = make_node (OMP_TARGET_UPDATE);
   TREE_TYPE (stmt) = void_type_node;
@@ -46861,9 +46931,6 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 	      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
 	      return false;
 	    }
-	  if (p && this_req != OMP_REQUIRES_DYNAMIC_ALLOCATORS)
-	    sorry_at (cloc, "%qs clause on %<requires%> directive not "
-			    "supported yet", p);
 	  if (p)
 	    cp_lexer_consume_token (parser->lexer);
 	  if (this_req)

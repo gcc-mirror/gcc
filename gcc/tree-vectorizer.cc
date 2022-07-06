@@ -1193,12 +1193,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  bool gate (function *fun) final override
     {
       return flag_tree_loop_vectorize || fun->has_force_vectorize_loops;
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_vectorize
 
@@ -1405,9 +1405,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_simduid_cleanup (m_ctxt); }
-  virtual bool gate (function *fun) { return fun->has_simduid_loops; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override
+  {
+    return new pass_simduid_cleanup (m_ctxt);
+  }
+  bool gate (function *fun) final override { return fun->has_simduid_loops; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_simduid_cleanup
 
@@ -1463,9 +1466,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_slp_vectorize (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_slp_vectorize != 0; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_slp_vectorize (m_ctxt); }
+  bool gate (function *) final override { return flag_tree_slp_vectorize != 0; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_slp_vectorize
 
@@ -1696,12 +1699,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return flag_section_anchors && flag_tree_loop_vectorize;
     }
 
-  virtual unsigned int execute (function *) { return increase_alignment (); }
+  unsigned int execute (function *) final override
+  {
+    return increase_alignment ();
+  }
 
 }; // class pass_ipa_increase_alignment
 

@@ -80,6 +80,7 @@ func runtime_AfterFork()
 func runtime_AfterForkInChild()
 
 // Implemented in clone_linux.c
+//
 //go:noescape
 func rawClone(flags _C_ulong, child_stack *byte, ptid *Pid_t, ctid *Pid_t, regs unsafe.Pointer) _C_long
 
@@ -92,6 +93,7 @@ func rawClone(flags _C_ulong, child_stack *byte, ptid *Pid_t, ctid *Pid_t, regs 
 // For the same reason compiler does not race instrument it.
 // The calls to RawSyscall are okay because they are assembly
 // functions that do not grow the stack.
+//
 //go:norace
 func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr *ProcAttr, sys *SysProcAttr, pipe int) (pid int, err Errno) {
 	// Set up and fork. This returns immediately in the parent or

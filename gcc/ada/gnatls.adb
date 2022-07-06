@@ -319,7 +319,6 @@ procedure Gnatls is
       Write_Eol;
       Error_Msg ("wrong ALI format, can't find dependency line for $ in {");
       Exit_Program (E_Fatal);
-      return No_Sdep_Id;
    end Corresponding_Sdep_Entry;
 
    -------------------------
@@ -2051,7 +2050,6 @@ begin
    if License then
       if Arg_Count = 2 then
          Output_License_Information;
-         Exit_Program (E_Success);
 
       else
          Set_Standard_Error;

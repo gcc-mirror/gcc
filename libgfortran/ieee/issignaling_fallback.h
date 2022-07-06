@@ -197,11 +197,11 @@ __issignalingl (long double x)
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
 
-/* We have a __float128 type.  */
+/* We have a _Float128 type.  */
 
 typedef union
 {
-  __float128 value;
+  _Float128 value;
   struct
   {
 #if __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -215,7 +215,7 @@ typedef union
 } ieee854_float128_shape_type;
 
 static inline int
-__issignalingf128 (__float128 x)
+__issignalingf128 (_Float128 x)
 {
   uint64_t hxi, lxi;
   ieee854_float128_shape_type u;
@@ -237,7 +237,7 @@ __issignalingf128 (__float128 x)
 #if defined(GFC_REAL_16_IS_FLOAT128)
 # define issignaling(X) \
   _Generic ((X), \
-	    __float128: __issignalingf128, \
+	    _Float128: __issignalingf128, \
 	    float: __issignalingf, \
 	    double: __issignaling, \
 	    long double: __issignalingl)(X)

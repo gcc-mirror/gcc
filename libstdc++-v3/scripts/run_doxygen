@@ -291,7 +291,7 @@ cxxflags="-Og -g -std=gnu++23"
 $gxx $cppflags $cxxflags ${srcdir}/doc/doxygen/stdheader.cc -o ./stdheader || exit 1
 # Doxygen outputs something like "\fC#include <unique_lock\&.h>\fP" and
 # we want that internal header to be replaced with something like <mutex>.
-problematic=`egrep -l '#include <.*h>' [a-z]*.3`
+problematic=`grep -E -l '#include <.*h>' [a-z]*.3`
 for f in $problematic; do
     # this is also slow, but safe and easy to debug
     oldh=`sed -n '/fC#include </s/.*<\(.*\)>.*/\1/p' $f`
@@ -303,7 +303,7 @@ rm stdheader
 # Some of the pages for generated modules have text that confuses certain
 # implementations of man(1), e.g. on GNU/Linux.  We need to have another
 # top-level *roff tag to /stop/ the .SH NAME entry.
-problematic=`egrep --files-without-match '^\.SH SYNOPSIS' [A-Z]*.3`
+problematic=`grep -E --files-without-match '^\.SH SYNOPSIS' [A-Z]*.3`
 #problematic='Containers.3 Sequences.3 Assoc_containers.3 Iterator_types.3'
 
 for f in $problematic; do

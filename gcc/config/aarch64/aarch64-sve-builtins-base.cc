@@ -44,6 +44,7 @@
 #include "aarch64-sve-builtins-shapes.h"
 #include "aarch64-sve-builtins-base.h"
 #include "aarch64-sve-builtins-functions.h"
+#include "ssa.h"
 
 using namespace aarch64_sve;
 
@@ -1206,6 +1207,64 @@ public:
   {
     insn_code icode = code_for_aarch64_sve_ld1rq (e.vector_mode (0));
     return e.use_contiguous_load_insn (icode);
+  }
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    tree arg0 = gimple_call_arg (f.call, 0);
+    tree arg1 = gimple_call_arg (f.call, 1);
+
+    /* Transform:
+       lhs = svld1rq ({-1, -1, ... }, arg1)
+       into:
+       tmp = mem_ref<vectype> [(elem * {ref-all}) arg1]
+       lhs = vec_perm_expr<tmp, tmp, {0, 1, 2, 3, ...}>.
+       on little endian target.
+       vectype is the corresponding ADVSIMD type.  */
+
+    if (!BYTES_BIG_ENDIAN
+	&& integer_all_onesp (arg0))
+      {
+	tree lhs = gimple_call_lhs (f.call);
+	tree lhs_type = TREE_TYPE (lhs);
+	poly_uint64 lhs_len = TYPE_VECTOR_SUBPARTS (lhs_type);
+	tree eltype = TREE_TYPE (lhs_type);
+
+	scalar_mode elmode = GET_MODE_INNER (TYPE_MODE (lhs_type));
+	machine_mode vq_mode = aarch64_vq_mode (elmode).require ();
+	tree vectype = build_vector_type_for_mode (eltype, vq_mode);
+
+	tree elt_ptr_type
+	  = build_pointer_type_for_mode (eltype, VOIDmode, true);
+	tree zero = build_zero_cst (elt_ptr_type);
+
+	/* Use element type alignment.  */
+	tree access_type
+	  = build_aligned_type (vectype, TYPE_ALIGN (eltype));
+
+	tree mem_ref_lhs = make_ssa_name_fn (cfun, access_type, 0);
+	tree mem_ref_op = fold_build2 (MEM_REF, access_type, arg1, zero);
+	gimple *mem_ref_stmt
+	  = gimple_build_assign (mem_ref_lhs, mem_ref_op);
+	gsi_insert_before (f.gsi, mem_ref_stmt, GSI_SAME_STMT);
+
+	int source_nelts = TYPE_VECTOR_SUBPARTS (access_type).to_constant ();
+	vec_perm_builder sel (lhs_len, source_nelts, 1);
+	for (int i = 0; i < source_nelts; i++)
+	  sel.quick_push (i);
+
+	vec_perm_indices indices (sel, 1, source_nelts);
+	gcc_checking_assert (can_vec_perm_const_p (TYPE_MODE (lhs_type),
+						   TYPE_MODE (access_type),
+						   indices));
+	tree mask_type = build_vector_type (ssizetype, lhs_len);
+	tree mask = vec_perm_indices_to_tree (mask_type, indices);
+	return gimple_build_assign (lhs, VEC_PERM_EXPR,
+				    mem_ref_lhs, mem_ref_lhs, mask);
+      }
+
+    return NULL;
   }
 };
 

@@ -1,6 +1,6 @@
 /* Limit this to known non-strict alignment targets.  */
 /* { dg-do run { target { i?86-*-linux* x86_64-*-linux* } } } */
-/* { dg-options "-O -fsanitize=alignment -fsanitize-undefined-trap-on-error -Wno-address-of-packed-member -fdump-tree-sanopt-details" } */
+/* { dg-options "-O -fsanitize=alignment -fsanitize-trap=alignment -Wno-address-of-packed-member -fdump-tree-sanopt-details" } */
 /* { dg-skip-if "" { *-*-* } { "-flto -fno-fat-lto-objects" } } */
 /* { dg-shouldfail "ubsan" } */
 

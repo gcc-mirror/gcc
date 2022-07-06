@@ -502,10 +502,10 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
     override void visit(ForwardingStatement ss)
     {
         assert(ss.sym);
-        for (Scope* csc = sc; !ss.sym.forward; csc = csc.enclosing)
+        for (Scope* csc = sc; !ss.sym.parent; csc = csc.enclosing)
         {
             assert(csc);
-            ss.sym.forward = csc.scopesym;
+            ss.sym.parent = csc.scopesym;
         }
         sc = sc.push(ss.sym);
         sc.sbreak = ss;
@@ -2891,7 +2891,8 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             /* Void-return function can have void / noreturn typed expression
              * on return statement.
              */
-            const convToVoid = rs.exp.type.ty == Tvoid || rs.exp.type.ty == Tnoreturn;
+            auto texp = rs.exp.type;
+            const convToVoid = texp.ty == Tvoid || texp.ty == Tnoreturn;
 
             if (tbret && tbret.ty == Tvoid || convToVoid)
             {
@@ -2901,6 +2902,15 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                     errors = true;
                     rs.exp = new CastExp(rs.loc, rs.exp, Type.tvoid);
                     rs.exp = rs.exp.expressionSemantic(sc);
+                }
+
+                // https://issues.dlang.org/show_bug.cgi?id=23063
+                if (texp.isTypeNoreturn() && !rs.exp.isAssertExp() && !rs.exp.isThrowExp() && !rs.exp.isCallExp())
+                {
+                    auto msg = new StringExp(rs.exp.loc, "Accessed expression of type `noreturn`");
+                    msg.type = Type.tstring;
+                    rs.exp = new AssertExp(rs.loc, IntegerExp.literal!0, msg);
+                    rs.exp.type = texp;
                 }
 
                 /* Replace:
@@ -3698,6 +3708,13 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 
         if (oss.tok != TOK.onScopeExit)
         {
+            // https://issues.dlang.org/show_bug.cgi?id=23159
+            if (!global.params.useExceptions)
+            {
+                oss.error("`%s` cannot be used with -betterC", Token.toChars(oss.tok));
+                return setError();
+            }
+
             // scope(success) and scope(failure) are rewritten to try-catch(-finally) statement,
             // so the generated catch block cannot be placed in finally block.
             // See also Catch::semantic.
@@ -4312,7 +4329,7 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
         if (!skip && dim == 2)
         {
             // Declare key
-            if (p.storageClass & (STC.out_ | STC.ref_ | STC.lazy_))
+            if (p.isReference() || p.isLazy())
             {
                 fs.error("no storage class for key `%s`", p.ident.toChars());
                 return returnEarly();
@@ -4384,19 +4401,21 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
                 Dsymbol ds = null;
                 if (!(storageClass & STC.manifest))
                 {
-                    if ((isStatic || tb.ty == Tfunction || storageClass&STC.alias_) && e.op == EXP.variable)
-                        ds = (cast(VarExp)e).var;
-                    else if (e.op == EXP.template_)
-                        ds = (cast(TemplateExp)e).td;
-                    else if (e.op == EXP.scope_)
-                        ds = (cast(ScopeExp)e).sds;
-                    else if (e.op == EXP.function_)
+                    if (isStatic || tb.ty == Tfunction || storageClass & STC.alias_)
                     {
-                        auto fe = cast(FuncExp)e;
-                        ds = fe.td ? cast(Dsymbol)fe.td : fe.fd;
+                        if (auto ve = e.isVarExp())
+                            ds = ve.var;
+                        else if (auto dve = e.isDotVarExp())
+                            ds = dve.var;
                     }
-                    else if (e.op == EXP.overloadSet)
-                        ds = (cast(OverExp)e).vars;
+                    if (auto te = e.isTemplateExp())
+                        ds = te.td;
+                    else if (auto se = e.isScopeExp())
+                        ds = se.sds;
+                    else if (auto fe = e.isFuncExp())
+                        ds = fe.td ? fe.td : fe.fd;
+                    else if (auto oe = e.isOverExp())
+                        ds = oe.vars;
                 }
                 else if (storageClass & STC.alias_)
                 {
@@ -4513,6 +4532,7 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
                 auto field = Identifier.idPool(StaticForeach.tupleFieldName.ptr,StaticForeach.tupleFieldName.length);
                 Expression access = new DotIdExp(loc, e, field);
                 access = expressionSemantic(access, sc);
+                access = access.optimize(WANTvalue);
                 if (!tuple) return returnEarly();
                 //printf("%s\n",tuple.toChars());
                 foreach (l; 0 .. dim)

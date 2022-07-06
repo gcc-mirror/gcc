@@ -16586,6 +16586,51 @@ flag_instrument_functions_exclude_p (tree fndecl)
   return false;
 }
 
+/* Build a call to the instrumentation function FNCODE and add it to SEQ.
+   If COND_VAR is not NULL, it is a boolean variable guarding the call to
+   the instrumentation function.  IF STMT is not NULL, it is a statement
+   to be executed just before the call to the instrumentation function.  */
+
+static void
+build_instrumentation_call (gimple_seq *seq, enum built_in_function fncode,
+			    tree cond_var, gimple *stmt)
+{
+  /* The instrumentation hooks aren't going to call the instrumented
+     function and the address they receive is expected to be matchable
+     against symbol addresses.  Make sure we don't create a trampoline,
+     in case the current function is nested.  */
+  tree this_fn_addr = build_fold_addr_expr (current_function_decl);
+  TREE_NO_TRAMPOLINE (this_fn_addr) = 1;
+
+  tree label_true, label_false;
+  if (cond_var)
+    {
+      label_true = create_artificial_label (UNKNOWN_LOCATION);
+      label_false = create_artificial_label (UNKNOWN_LOCATION);
+      gcond *cond = gimple_build_cond (EQ_EXPR, cond_var, boolean_false_node,
+				      label_true, label_false);
+      gimplify_seq_add_stmt (seq, cond);
+      gimplify_seq_add_stmt (seq, gimple_build_label (label_true));
+      gimplify_seq_add_stmt (seq, gimple_build_predict (PRED_COLD_LABEL,
+							NOT_TAKEN));
+    }
+
+  if (stmt)
+    gimplify_seq_add_stmt (seq, stmt);
+
+  tree x = builtin_decl_implicit (BUILT_IN_RETURN_ADDRESS);
+  gcall *call = gimple_build_call (x, 1, integer_zero_node);
+  tree tmp_var = create_tmp_var (ptr_type_node, "return_addr");
+  gimple_call_set_lhs (call, tmp_var);
+  gimplify_seq_add_stmt (seq, call);
+  x = builtin_decl_implicit (fncode);
+  call = gimple_build_call (x, 2, this_fn_addr, tmp_var);
+  gimplify_seq_add_stmt (seq, call);
+
+  if (cond_var)
+    gimplify_seq_add_stmt (seq, gimple_build_label (label_false));
+}
+
 /* Entry point to the gimplification pass.  FNDECL is the FUNCTION_DECL
    node for the function we want to gimplify.
 
@@ -16636,40 +16681,66 @@ gimplify_function_tree (tree fndecl)
 	   && DECL_DISREGARD_INLINE_LIMITS (fndecl))
       && !flag_instrument_functions_exclude_p (fndecl))
     {
-      tree x;
-      gbind *new_bind;
-      gimple *tf;
-      gimple_seq cleanup = NULL, body = NULL;
-      tree tmp_var, this_fn_addr;
-      gcall *call;
+      gimple_seq body = NULL, cleanup = NULL;
+      gassign *assign;
+      tree cond_var;
 
-      /* The instrumentation hooks aren't going to call the instrumented
-	 function and the address they receive is expected to be matchable
-	 against symbol addresses.  Make sure we don't create a trampoline,
-	 in case the current function is nested.  */
-      this_fn_addr = build_fold_addr_expr (current_function_decl);
-      TREE_NO_TRAMPOLINE (this_fn_addr) = 1;
+      /* If -finstrument-functions-once is specified, generate:
 
-      x = builtin_decl_implicit (BUILT_IN_RETURN_ADDRESS);
-      call = gimple_build_call (x, 1, integer_zero_node);
-      tmp_var = create_tmp_var (ptr_type_node, "return_addr");
-      gimple_call_set_lhs (call, tmp_var);
-      gimplify_seq_add_stmt (&cleanup, call);
-      x = builtin_decl_implicit (BUILT_IN_PROFILE_FUNC_EXIT);
-      call = gimple_build_call (x, 2, this_fn_addr, tmp_var);
-      gimplify_seq_add_stmt (&cleanup, call);
-      tf = gimple_build_try (seq, cleanup, GIMPLE_TRY_FINALLY);
+	   static volatile bool C.0 = false;
+	   bool tmp_called;
 
-      x = builtin_decl_implicit (BUILT_IN_RETURN_ADDRESS);
-      call = gimple_build_call (x, 1, integer_zero_node);
-      tmp_var = create_tmp_var (ptr_type_node, "return_addr");
-      gimple_call_set_lhs (call, tmp_var);
-      gimplify_seq_add_stmt (&body, call);
-      x = builtin_decl_implicit (BUILT_IN_PROFILE_FUNC_ENTER);
-      call = gimple_build_call (x, 2, this_fn_addr, tmp_var);
-      gimplify_seq_add_stmt (&body, call);
+	   tmp_called = C.0;
+	   if (!tmp_called)
+	     {
+	       C.0 = true;
+	       [call profiling enter function]
+	     }
+
+	 without specific protection for data races.  */
+      if (flag_instrument_function_entry_exit > 1)
+	{
+	  tree first_var
+	    = build_decl (DECL_SOURCE_LOCATION (current_function_decl),
+			  VAR_DECL,
+			  create_tmp_var_name ("C"),
+			  boolean_type_node);
+	  DECL_ARTIFICIAL (first_var) = 1;
+	  DECL_IGNORED_P (first_var) = 1;
+	  TREE_STATIC (first_var) = 1;
+	  TREE_THIS_VOLATILE (first_var) = 1;
+	  TREE_USED (first_var) = 1;
+	  DECL_INITIAL (first_var) = boolean_false_node;
+	  varpool_node::add (first_var);
+
+	  cond_var = create_tmp_var (boolean_type_node, "tmp_called");
+	  assign = gimple_build_assign (cond_var, first_var);
+	  gimplify_seq_add_stmt (&body, assign);
+
+	  assign = gimple_build_assign (first_var, boolean_true_node);
+	}
+
+      else
+	{
+	  cond_var = NULL_TREE;
+	  assign = NULL;
+	}
+
+      build_instrumentation_call (&body, BUILT_IN_PROFILE_FUNC_ENTER,
+				  cond_var, assign);
+
+      /* If -finstrument-functions-once is specified, generate:
+
+	   if (!tmp_called)
+	     [call profiling exit function]
+
+	 without specific protection for data races.  */
+      build_instrumentation_call (&cleanup, BUILT_IN_PROFILE_FUNC_EXIT,
+				  cond_var, NULL);
+
+      gimple *tf = gimple_build_try (seq, cleanup, GIMPLE_TRY_FINALLY);
       gimplify_seq_add_stmt (&body, tf);
-      new_bind = gimple_build_bind (NULL, body, NULL);
+      gbind *new_bind = gimple_build_bind (NULL, body, NULL);
 
       /* Replace the current function body with the body
          wrapped in the try/finally TF.  */

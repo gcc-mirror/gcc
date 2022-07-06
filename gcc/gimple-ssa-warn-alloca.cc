@@ -58,8 +58,8 @@ public:
   pass_walloca (gcc::context *ctxt)
     : gimple_opt_pass(pass_data_walloca, ctxt), xlimit_certain_p (false)
   {}
-  opt_pass *clone () { return new pass_walloca (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass *clone () final override { return new pass_walloca (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       // Set to true to enable only warnings for alloca calls that
@@ -69,8 +69,8 @@ public:
       // the "may be too large" kind.
       xlimit_certain_p = param;
     }
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 
  private:
   // Set to TRUE the first time we run this pass on a function.

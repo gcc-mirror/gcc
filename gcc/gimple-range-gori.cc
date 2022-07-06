@@ -499,12 +499,16 @@ gori_map::is_export_p (tree name, basic_block bb)
   return bitmap_bit_p (exports (bb), SSA_NAME_VERSION (name));
 }
 
-// Clear the m_maybe_variant bit so ranges will not be tracked for NAME.
+// Set or clear the m_maybe_variant bit to determine if ranges will be tracked
+// for NAME.  A clear bit means they will NOT be tracked.
 
 void
-gori_map::set_range_invariant (tree name)
+gori_map::set_range_invariant (tree name, bool invariant)
 {
-  bitmap_clear_bit (m_maybe_variant, SSA_NAME_VERSION (name));
+  if (invariant)
+    bitmap_clear_bit (m_maybe_variant, SSA_NAME_VERSION (name));
+  else
+    bitmap_set_bit (m_maybe_variant, SSA_NAME_VERSION (name));
 }
 
 // Return true if NAME is an import to block BB.

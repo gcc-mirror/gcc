@@ -130,19 +130,19 @@ public:
   {}
 
   cluster_type
-  get_type ()
+  get_type () final override
   {
     return SIMPLE_CASE;
   }
 
   tree
-  get_low ()
+  get_low () final override
   {
     return m_low;
   }
 
   tree
-  get_high ()
+  get_high () final override
   {
     return m_high;
   }
@@ -153,13 +153,13 @@ public:
   }
 
   void
-  debug ()
+  debug () final override
   {
     dump (stderr);
   }
 
   void
-  dump (FILE *f, bool details ATTRIBUTE_UNUSED = false)
+  dump (FILE *f, bool details ATTRIBUTE_UNUSED = false) final override
   {
     PRINT_CASE (f, get_low ());
     if (get_low () != get_high ())
@@ -170,12 +170,12 @@ public:
     fprintf (f, " ");
   }
 
-  void emit (tree, tree, tree, basic_block, location_t)
+  void emit (tree, tree, tree, basic_block, location_t) final override
   {
     gcc_unreachable ();
   }
 
-  bool is_single_value_p ()
+  bool is_single_value_p () final override
   {
     return tree_int_cst_equal (get_low (), get_high ());
   }
@@ -224,24 +224,24 @@ public:
   ~group_cluster ();
 
   tree
-  get_low ()
+  get_low () final override
   {
     return m_cases[0]->get_low ();
   }
 
   tree
-  get_high ()
+  get_high () final override
   {
     return m_cases[m_cases.length () - 1]->get_high ();
   }
 
   void
-  debug ()
+  debug () final override
   {
     dump (stderr);
   }
 
-  void dump (FILE *f, bool details = false);
+  void dump (FILE *f, bool details = false) final override;
 
   /* List of simple clusters handled by the group.  */
   vec<simple_cluster *> m_cases;
@@ -249,7 +249,7 @@ public:
 
 /* Concrete subclass of group_cluster representing a collection
    of cases to be implemented as a jump table.
-   The "emit" vfunc gernerates a nested switch statement which
+   The "emit" vfunc generates a nested switch statement which
    is later lowered to a jump table.  */
 
 class jump_table_cluster: public group_cluster
@@ -261,13 +261,14 @@ public:
   {}
 
   cluster_type
-  get_type ()
+  get_type () final override
   {
     return JUMP_TABLE;
   }
 
   void emit (tree index_expr, tree index_type,
-	     tree default_label_expr, basic_block default_bb, location_t loc);
+	     tree default_label_expr, basic_block default_bb, location_t loc)
+    final override;
 
   /* Find jump tables of given CLUSTERS, where all members of the vector
      are of type simple_cluster.  New clusters are returned.  */
@@ -366,7 +367,7 @@ public:
   {}
 
   cluster_type
-  get_type ()
+  get_type () final override
   {
     return BIT_TEST;
   }
@@ -388,7 +389,8 @@ public:
     There *MUST* be max_case_bit_tests or less unique case
     node targets.  */
   void emit (tree index_expr, tree index_type,
-	     tree default_label_expr, basic_block default_bb, location_t loc);
+	     tree default_label_expr, basic_block default_bb, location_t loc)
+     final override;
 
   /* Find bit tests of given CLUSTERS, where all members of the vector
      are of type simple_cluster.  New clusters are returned.  */

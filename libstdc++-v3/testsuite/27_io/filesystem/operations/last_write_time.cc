@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
+// { dg-require-target-fs-lwt "" }
 
 // 15.25 Permissions [fs.op.last_write_time]
 

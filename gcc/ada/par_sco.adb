@@ -480,13 +480,11 @@ package body Par_SCO is
       N : Node_Id;
 
    begin
-      if L /= No_List then
-         N := First (L);
-         while Present (N) loop
-            Process_Decisions (N, T, Pragma_Sloc);
-            Next (N);
-         end loop;
-      end if;
+      N := First (L);
+      while Present (N) loop
+         Process_Decisions (N, T, Pragma_Sloc);
+         Next (N);
+      end loop;
    end Process_Decisions;
 
    --  Version taking a node

@@ -109,13 +109,6 @@ package body Stream_Attributes is
          Raise_Exception
            (Program_Error'Identity,
             "bad exception occurrence in stream input");
-
-         --  The following junk raise of Program_Error is required because
-         --  this is a No_Return procedure, and unfortunately Raise_Exception
-         --  can return (this particular call can't, but the back end is not
-         --  clever enough to know that).
-
-         raise Program_Error;
       end Bad_EO;
 
       procedure Next_String is

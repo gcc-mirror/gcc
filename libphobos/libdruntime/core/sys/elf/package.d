@@ -617,26 +617,6 @@ enum PF_R =            (1 << 2);
 enum PF_MASKOS =       0x0ff00000;
 enum PF_MASKPROC =     0xf0000000;
 
-struct Elf32_Dyn
-{
-  Elf32_Sword   d_tag;
-  union _d_un
-  {
-      Elf32_Word d_val;
-      Elf32_Addr d_ptr;
-  } _d_un d_un;
-}
-
-struct Elf64_Dyn
-{
-  Elf64_Sxword  d_tag;
-  union _d_un
-  {
-      Elf64_Xword d_val;
-      Elf64_Addr d_ptr;
-  } _d_un d_un;
-}
-
 enum DT_NULL =         0;
 enum DT_NEEDED =       1;
 enum DT_PLTRELSZ =     2;
@@ -2530,3 +2510,66 @@ enum R_TILEGX_GNU_VTINHERIT =  128;
 enum R_TILEGX_GNU_VTENTRY =    129;
 
 enum R_TILEGX_NUM =            130;
+
+enum EF_RISCV_RVC =              0x0001;
+enum EF_RISCV_FLOAT_ABI =        0x0006;
+enum EF_RISCV_FLOAT_ABI_SOFT =   0x0000;
+enum EF_RISCV_FLOAT_ABI_SINGLE = 0x0002;
+enum EF_RISCV_FLOAT_ABI_DOUBLE = 0x0004;
+enum EF_RISCV_FLOAT_ABI_QUAD =   0x0006;
+enum R_RISCV_NONE =            0;
+enum R_RISCV_32 =              1;
+enum R_RISCV_64 =              2;
+enum R_RISCV_RELATIVE =        3;
+enum R_RISCV_COPY =            4;
+enum R_RISCV_JUMP_SLOT =       5;
+enum R_RISCV_TLS_DTPMOD32 =    6;
+enum R_RISCV_TLS_DTPMOD64 =    7;
+enum R_RISCV_TLS_DTPREL32 =    8;
+enum R_RISCV_TLS_DTPREL64 =    9;
+enum R_RISCV_TLS_TPREL32 =     10;
+enum R_RISCV_TLS_TPREL64 =     11;
+enum R_RISCV_BRANCH =          16;
+enum R_RISCV_JAL =             17;
+enum R_RISCV_CALL =            18;
+enum R_RISCV_CALL_PLT =        19;
+enum R_RISCV_GOT_HI20 =        20;
+enum R_RISCV_TLS_GOT_HI20 =    21;
+enum R_RISCV_TLS_GD_HI20 =     22;
+enum R_RISCV_PCREL_HI20 =      23;
+enum R_RISCV_PCREL_LO12_I =    24;
+enum R_RISCV_PCREL_LO12_S =    25;
+enum R_RISCV_HI20 =            26;
+enum R_RISCV_LO12_I =          27;
+enum R_RISCV_LO12_S =          28;
+enum R_RISCV_TPREL_HI20 =      29;
+enum R_RISCV_TPREL_LO12_I =    30;
+enum R_RISCV_TPREL_LO12_S =    31;
+enum R_RISCV_TPREL_ADD =       32;
+enum R_RISCV_ADD8 =            33;
+enum R_RISCV_ADD16 =           34;
+enum R_RISCV_ADD32 =           35;
+enum R_RISCV_ADD64 =           36;
+enum R_RISCV_SUB8 =            37;
+enum R_RISCV_SUB16 =           38;
+enum R_RISCV_SUB32 =           39;
+enum R_RISCV_SUB64 =           40;
+enum R_RISCV_GNU_VTINHERIT =   41;
+enum R_RISCV_GNU_VTENTRY =     42;
+enum R_RISCV_ALIGN =           43;
+enum R_RISCV_RVC_BRANCH =      44;
+enum R_RISCV_RVC_JUMP =        45;
+enum R_RISCV_RVC_LUI =         46;
+enum R_RISCV_GPREL_I =         47;
+enum R_RISCV_GPREL_S =         48;
+enum R_RISCV_TPREL_I =         49;
+enum R_RISCV_TPREL_S =         50;
+enum R_RISCV_RELAX =           51;
+enum R_RISCV_SUB6 =            52;
+enum R_RISCV_SET6 =            53;
+enum R_RISCV_SET8 =            54;
+enum R_RISCV_SET16 =           55;
+enum R_RISCV_SET32 =           56;
+enum R_RISCV_32_PCREL =        57;
+enum R_RISCV_IRELATIVE =       58;
+enum R_RISCV_NUM =             59;
