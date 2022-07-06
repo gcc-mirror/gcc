@@ -142,8 +142,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     }
 
-    constexpr auto __atomic_spin_count_1 = 12;
-    constexpr auto __atomic_spin_count_2 = 4;
+    constexpr auto __atomic_spin_count_relax = 12;
+    constexpr auto __atomic_spin_count = 16;
 
     struct __default_spin_policy
     {
@@ -157,18 +157,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       __atomic_spin(_Pred& __pred, _Spin __spin = _Spin{ }) noexcept
       {
-	for (auto __i = 0; __i < __atomic_spin_count_1; ++__i)
+	for (auto __i = 0; __i < __atomic_spin_count; ++__i)
 	  {
 	    if (__pred())
 	      return true;
-	    __detail::__thread_relax();
-	  }
 
-	for (auto __i = 0; __i < __atomic_spin_count_2; ++__i)
-	  {
-	    if (__pred())
-	      return true;
-	    __detail::__thread_yield();
+	    if (__i < __atomic_spin_count_relax)
+	      __detail::__thread_relax();
+	    else
+	      __detail::__thread_yield();
 	  }
 
 	while (__spin())
