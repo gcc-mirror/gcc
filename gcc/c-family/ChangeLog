@@ -1,3 +1,9 @@
+2022-07-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105626
+	* c-format.cc (check_format_arg): Don't emit -Wformat warnings with
+	u8 strings.
+
 2022-07-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106111

@@ -1,3 +1,96 @@
+2022-07-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (relation_to_code): New vector.
+	(relation_oracle::validate_relation): New.
+	(set_relation): Allow ssa1 == ssa2 to be registered.
+	* value-relation.h (validate_relation): New prototype.
+	(query_relation): Make internal variant protected.
+
+2022-07-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.cc (ix86_rtx_costs) <COMPARE>: Provide costs
+	for double word comparisons and tests (comparisons against zero).
+	* config/i386/i386.md (*test<mode>_not_doubleword): Split DWI
+	and;cmp into andn;cmp $0 as a pre-reload splitter.
+	(*andn<dwi>3_doubleword_bmi): Use <dwi> instead of <mode> in name.
+	(*<any_or><dwi>3_doubleword): Likewise.
+
+2022-07-05  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386-builtin.def (__builtin_ia32_palignr128): Change
+	CODE_FOR_ssse3_palignrti to CODE_FOR_ssse3_palignrv1ti.
+	* config/i386/i386-expand.cc (expand_vec_perm_palignr): Use V1TImode
+	and gen_ssse3_palignv1ti instead of TImode.
+	* config/i386/sse.md (SSESCALARMODE): Delete.
+	(define_mode_attr ssse3_avx2): Handle V1TImode instead of TImode.
+	(<ssse3_avx2>_palignr<mode>): Use VIMAX_AVX2_AVX512BW as a mode
+	iterator instead of SSESCALARMODE.
+	(ssse3_palignrdi): Optimize cases where operands[3] is 0 or 64,
+	using a single move instruction (if required).
+
+2022-07-05  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/96692
+	* config/i386/i386.md (define_split): Split ((A | B) ^ C) ^ D
+	as (X & ~Y) ^ Z on target BMI when either C or D is A or B.
+
+2022-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106198
+	* tree-cfgcleanup.cc (repair_loop_structures): Always do a
+	full LC SSA rewrite but only if any blocks changed loop
+	depth.
+
+2022-07-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-manip.cc (find_uses_to_rename_def): Remove.
+	(find_uses_to_rename_in_loop): Likewise.
+	(rewrite_into_loop_closed_ssa_1): Remove loop parameter and
+	uses.
+	(rewrite_into_loop_closed_ssa): Adjust.
+
+2022-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106186
+	* tree-ssa-propagate.cc (clean_up_loop_closed_phi):
+	Properly handle virtual PHI nodes.
+
+2022-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106196
+	* tree-vect-stmts.cc (vect_finish_stmt_generation): Properly
+	handle aggregate returns of calls for VDEF updates.
+
+2022-07-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.cc (vect_set_loop_condition_normal):
+	Maintain LC SSA.
+
+2022-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-patterns.cc (vect_convert_input): Expect the input
+	type to be signed for optab_vector_mixed_sign.  Update the vectype
+	at the same time as type.
+	(vect_recog_dot_prod_pattern): Update accordingly.  If usdot isn't
+	available, try sdot instead.
+	* tree-vect-loop.cc (vect_is_emulated_mixed_dot_prod): New function.
+	(vect_model_reduction_cost): Model the cost of implementing usdot
+	using sdot.
+	(vectorizable_reduction): Likewise.  Skip target support test
+	for lane reductions.
+	(vect_emulate_mixed_dot_prod): New function.
+	(vect_transform_reduction): Use it to emulate usdot via sdot.
+
+2022-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106182
+	* loop-init.cc (fix_loop_structure): Return the number
+	of newly discovered plus the number of deleted loops.
+	* tree-cfgcleanup.cc (repair_loop_structures): Adjust
+	variable name.
+
 2022-07-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-range-fold.cc

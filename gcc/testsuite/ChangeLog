@@ -1,3 +1,75 @@
+2022-07-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105626
+	* g++.dg/warn/Wformat-char8_t-1.C: New test.
+
+2022-07-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/testnot-3.c: New test case.
+
+2022-07-05  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/ssse3-palignr-2.c: New test case.
+
+2022-07-05  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/96692
+	* gcc.target/i386/bmi-andn-4.c: New test case.
+
+2022-07-05  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/loc-prune-1.C: Adjust.
+	* g++.dg/modules/loc-prune-4.C: New.
+	* g++.dg/modules/pr98718_a.C: Adjust.
+	* g++.dg/modules/pr98718_b.C: Adjust.
+	* g++.dg/modules/pr99072.H: Adjust.
+
+2022-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106198
+	* gcc.dg/pr106198.c: New testcase.
+
+2022-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106196
+	* gcc.dg/torture/pr106196.c: New testcase.
+
+2022-07-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp (check_effective_target_two_plus_gigs):
+	Fix array element type.  Reported by Hans-Peter Nilsson.
+
+2022-07-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gnat.dg/renaming1.adb: Update WITH clause.
+	* gnat.dg/renaming1.ads: Likewise.
+	* gnat.dg/warn29.adb: Likewise.
+
+2022-07-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-reduc-dot-9.c: Reduce target requirements
+	from i8mm to dotprod.
+	* gcc.dg/vect/vect-reduc-dot-10.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-11.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-12.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-13.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-14.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-15.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-16.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-17.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-18.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-19.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-20.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-21.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-22.c: Likewise.
+
+2022-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106182
+	* gcc.dg/torture/pr106182.c: New testcase.
+
 2022-07-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/analyzer/allocation-size-1.c,

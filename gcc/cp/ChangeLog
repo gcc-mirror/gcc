@@ -1,3 +1,30 @@
+2022-07-05  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc
+	(struct ord_loc_info, ord_loc_traits): New.
+	(ord_loc_tabke, ord_loc_remap): New globals.
+	(struct location_map_info): Delete.
+	(struct module_state_config): Rename ordinary_loc_align to
+	loc_range_bits.
+	(module_for_ordinary_loc): Adjust.
+	(module_state::note_location): Note ordinary locations,
+	return bool.
+	(module_state::write_location): Adjust ordinary location
+	streaming.
+	(module_state::read_location): Likewise.
+	(module_state::write_init_maps): Allocate ord_loc_table.
+	(module_state::write_prepare_maps): Reimplement ordinary
+	map preparation.
+	(module_state::read_prepare_maps): Adjust.
+	(module_state::write_ordinary_maps): Reimplement.
+	(module_state::write_macro_maps): Adjust.
+	(module_state::read_ordinary_maps): Reimplement.
+	(module_state::write_macros): Adjust.
+	(module_state::write_config): Adjust.
+	(module_state::read_config): Adjust.
+	(module_state::write_begin): Adjust.
+	(module_state::read_initial): Adjust.
+
 2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>

@@ -1,3 +1,13 @@
+2022-07-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/util/testsuite_fs.h (nonexistent_path): Explain
+	why we need the typecast.
+
+2022-07-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/util/testsuite_fs.h (nonexistent_path): Convert
+	the getpid result to an integral type.
+
 2022-07-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/106162
