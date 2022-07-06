@@ -551,11 +551,12 @@ fd_state_machine::fd_state_machine (logger *logger)
       m_unchecked_read_write (add_state ("fd-unchecked-read-write")),
       m_unchecked_read_only (add_state ("fd-unchecked-read-only")),
       m_unchecked_write_only (add_state ("fd-unchecked-write-only")),
-      m_invalid (add_state ("fd-invalid")),
       m_valid_read_write (add_state ("fd-valid-read-write")),
       m_valid_read_only (add_state ("fd-valid-read-only")),
       m_valid_write_only (add_state ("fd-valid-write-only")),
-      m_closed (add_state ("fd-closed")), m_stop (add_state ("fd-stop"))
+      m_invalid (add_state ("fd-invalid")),
+      m_closed (add_state ("fd-closed")),
+      m_stop (add_state ("fd-stop"))
 {
 }
 
