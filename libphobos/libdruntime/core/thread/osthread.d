@@ -2130,6 +2130,15 @@ extern (C) void thread_init() @nogc nothrow
     }
     else version (Posix)
     {
+        version (OpenBSD)
+        {
+            // OpenBSD does not support SIGRTMIN or SIGRTMAX
+            // Use SIGUSR1 for SIGRTMIN, SIGUSR2 for SIGRTMIN + 1
+            // And use 32 for SIGRTMAX (32 is the max signal number on OpenBSD)
+            enum SIGRTMIN = SIGUSR1;
+            enum SIGRTMAX = 32;
+        }
+
         if ( suspendSignalNumber == 0 )
         {
             suspendSignalNumber = SIGRTMIN;
