@@ -896,17 +896,9 @@ region_model::get_gassign_result (const gassign *assign,
 
 static bool
 within_short_circuited_stmt_p (const region_model *model,
-			       region_model_context *ctxt)
+			       const gassign *assign_stmt)
 {
-  gcc_assert (ctxt);
-  const gimple *curr_stmt = ctxt->get_stmt ();
-  if (curr_stmt == NULL)
-    return false;
-
   /* We must have an assignment to a temporary of _Bool type.  */
-  const gassign *assign_stmt = dyn_cast <const gassign *> (curr_stmt);
-  if (!assign_stmt)
-    return false;
   tree lhs = gimple_assign_lhs (assign_stmt);
   if (TREE_TYPE (lhs) != boolean_type_node)
     return false;
@@ -959,6 +951,47 @@ within_short_circuited_stmt_p (const region_model *model,
   return true;
 }
 
+/* Workaround for discarding certain false positives from
+   -Wanalyzer-use-of-uninitialized-value
+   seen with -ftrivial-auto-var-init=.
+
+   -ftrivial-auto-var-init= will generate calls to IFN_DEFERRED_INIT.
+
+   If the address of the var is taken, gimplification will give us
+   something like:
+
+     _1 = .DEFERRED_INIT (4, 2, &"len"[0]);
+     len = _1;
+
+   The result of DEFERRED_INIT will be an uninit value; we don't
+   want to emit a false positive for "len = _1;"
+
+   Return true if ASSIGN_STMT is such a stmt.  */
+
+static bool
+due_to_ifn_deferred_init_p (const gassign *assign_stmt)
+
+{
+  /* We must have an assignment to a decl from an SSA name that's the
+     result of a IFN_DEFERRED_INIT call.  */
+  if (gimple_assign_rhs_code (assign_stmt) != SSA_NAME)
+    return false;
+  tree lhs = gimple_assign_lhs (assign_stmt);
+  if (TREE_CODE (lhs) != VAR_DECL)
+    return false;
+  tree rhs = gimple_assign_rhs1 (assign_stmt);
+  if (TREE_CODE (rhs) != SSA_NAME)
+    return false;
+  const gimple *def_stmt = SSA_NAME_DEF_STMT (rhs);
+  const gcall *call = dyn_cast <const gcall *> (def_stmt);
+  if (!call)
+    return false;
+  if (gimple_call_internal_p (call)
+      && gimple_call_internal_fn (call) == IFN_DEFERRED_INIT)
+    return true;
+  return false;
+}
+
 /* Check for SVAL being poisoned, adding a warning to CTXT.
    Return SVAL, or, if a warning is added, another value, to avoid
    repeatedly complaining about the same poisoned value in followup code.  */
@@ -982,10 +1015,20 @@ region_model::check_for_poison (const svalue *sval,
 	  && is_empty_type (sval->get_type ()))
 	return sval;
 
-      /* Special case to avoid certain false positives.  */
-      if (pkind == POISON_KIND_UNINIT
-	  && within_short_circuited_stmt_p (this, ctxt))
-	  return sval;
+      if (pkind == POISON_KIND_UNINIT)
+	if (const gimple *curr_stmt = ctxt->get_stmt ())
+	  if (const gassign *assign_stmt
+		= dyn_cast <const gassign *> (curr_stmt))
+	    {
+	      /* Special case to avoid certain false positives.  */
+	      if (within_short_circuited_stmt_p (this, assign_stmt))
+		return sval;
+
+	      /* Special case to avoid false positive on
+		 -ftrivial-auto-var-init=.  */
+	      if (due_to_ifn_deferred_init_p (assign_stmt))
+		return sval;
+	  }
 
       /* If we have an SSA name for a temporary, we don't want to print
 	 '<unknown>'.
