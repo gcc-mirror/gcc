@@ -1508,9 +1508,9 @@ package body Sem_Attr is
            and then Chars (Spec_Id) = Name_uParent
            and then Chars (Scope (Spec_Id)) = Name_uPostconditions
          then
-            --  This situation occurs only when preanalyzing the inlined body
+            --  This situation occurs only when analyzing the body-to-inline
 
-            pragma Assert (not Full_Analysis);
+            pragma Assert (Inside_A_Generic);
 
             Spec_Id := Scope (Spec_Id);
             pragma Assert (Is_Inlined (Spec_Id));
