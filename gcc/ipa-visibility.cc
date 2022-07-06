@@ -873,6 +873,25 @@ function_and_variable_visibility (bool whole_program)
 	}
     }
 
+  if (symtab->state >= IPA_SSA)
+    {
+      FOR_EACH_VARIABLE (vnode)
+	{
+	  tree decl = vnode->decl;
+
+	  /* Upgrade TLS access model based on optimized visibility status,
+	     unless it was specified explicitly or no references remain.  */
+	  if (DECL_THREAD_LOCAL_P (decl)
+	      && !lookup_attribute ("tls_model", DECL_ATTRIBUTES (decl))
+	      && vnode->ref_list.referring.length ())
+	    {
+	      enum tls_model new_model = decl_default_tls_model (decl);
+	      gcc_checking_assert (new_model >= decl_tls_model (decl));
+	      set_decl_tls_model (decl, new_model);
+	    }
+	}
+    }
+
   if (dump_file)
     {
       fprintf (dump_file, "\nMarking local functions:");
