@@ -50,6 +50,8 @@ public:
 
   std::string as_string () const { return segment_name; }
 
+  Location get_locus () const { return locus; }
+
   bool is_super_segment () const { return as_string ().compare ("super") == 0; }
   bool is_crate_segment () const { return as_string ().compare ("crate") == 0; }
   bool is_lower_self () const { return as_string ().compare ("self") == 0; }
@@ -691,6 +693,10 @@ public:
     return get_ident_segment ().is_super_segment ();
   }
   bool is_big_self_seg () const { return get_ident_segment ().is_big_self (); }
+  bool is_lower_self_seg () const
+  {
+    return get_ident_segment ().is_lower_self ();
+  }
 };
 
 // Segment used in type path with generic args
