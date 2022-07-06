@@ -2110,7 +2110,7 @@ loongarch_load_store_insns (rtx mem, rtx_insn *insn)
 
 /* Return true if we need to trap on division by zero.  */
 
-static bool
+bool
 loongarch_check_zero_div_p (void)
 {
   /* if -m[no-]check-zero-division is given explicitly.  */

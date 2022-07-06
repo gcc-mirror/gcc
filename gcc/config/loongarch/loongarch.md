@@ -110,6 +110,8 @@
 ;;
 ;; ....................
 
+(define_attr "enabled" "no,yes" (const_string "yes"))
+
 (define_attr "got" "unset,load"
   (const_string "unset"))
 
@@ -763,26 +765,36 @@
 })
 
 (define_insn "*<optab><mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=&r")
-	(any_div:GPR (match_operand:GPR 1 "register_operand" "r")
-		     (match_operand:GPR 2 "register_operand" "r")))]
+  [(set (match_operand:GPR 0 "register_operand" "=r,&r,&r")
+	(any_div:GPR (match_operand:GPR 1 "register_operand" "r,r,0")
+		     (match_operand:GPR 2 "register_operand" "r,r,r")))]
   ""
 {
   return loongarch_output_division ("<insn>.<d><u>\t%0,%1,%2", operands);
 }
   [(set_attr "type" "idiv")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "enabled")
+      (if_then_else
+	(match_test "!!which_alternative == loongarch_check_zero_div_p()")
+	(const_string "yes")
+	(const_string "no")))])
 
 (define_insn "<optab>di3_fake"
-  [(set (match_operand:SI 0 "register_operand" "=&r")
-	(any_div:SI (match_operand:DI 1 "register_operand" "r")
-		    (match_operand:DI 2 "register_operand" "r")))]
+  [(set (match_operand:SI 0 "register_operand" "=r,&r,&r")
+	(any_div:SI (match_operand:DI 1 "register_operand" "r,r,0")
+		    (match_operand:DI 2 "register_operand" "r,r,r")))]
   ""
 {
   return loongarch_output_division ("<insn>.w<u>\t%0,%1,%2", operands);
 }
   [(set_attr "type" "idiv")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "SI")
+   (set (attr "enabled")
+      (if_then_else
+	(match_test "!!which_alternative == loongarch_check_zero_div_p()")
+	(const_string "yes")
+	(const_string "no")))])
 
 ;; Floating point multiply accumulate instructions.
 
