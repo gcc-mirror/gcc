@@ -1,3 +1,18 @@
+2022-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/spellcheck-stdlib.C: Check <ctime> types and functions.
+
+2022-07-06  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-07-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105626
+	* g++.dg/warn/Wformat-char8_t-1.C: New test.
+
 2022-07-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/106114

@@ -1,3 +1,20 @@
+2022-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* known-headers.cc (get_stdlib_header_for_name): Add <time.h>
+	names.
+
+2022-07-06  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-07-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105626
+	* c-format.cc (check_format_arg): Don't emit -Wformat warnings with
+	u8 strings.
+
 2022-05-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.cc (dump_ada_node) <COMPLEX_TYPE>: Deal with usual
