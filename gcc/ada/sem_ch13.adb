@@ -23,59 +23,60 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;        use Aspects;
-with Atree;          use Atree;
-with Checks;         use Checks;
-with Contracts;      use Contracts;
-with Debug;          use Debug;
-with Einfo;          use Einfo;
-with Einfo.Entities; use Einfo.Entities;
-with Einfo.Utils;    use Einfo.Utils;
-with Elists;         use Elists;
-with Errout;         use Errout;
-with Exp_Ch3;        use Exp_Ch3;
-with Exp_Disp;       use Exp_Disp;
-with Exp_Tss;        use Exp_Tss;
-with Exp_Util;       use Exp_Util;
-with Freeze;         use Freeze;
-with Ghost;          use Ghost;
-with Lib;            use Lib;
-with Lib.Xref;       use Lib.Xref;
-with Namet;          use Namet;
-with Nlists;         use Nlists;
-with Nmake;          use Nmake;
-with Opt;            use Opt;
-with Par_SCO;        use Par_SCO;
-with Restrict;       use Restrict;
-with Rident;         use Rident;
-with Rtsfind;        use Rtsfind;
-with Sem;            use Sem;
-with Sem_Aux;        use Sem_Aux;
-with Sem_Case;       use Sem_Case;
-with Sem_Cat;        use Sem_Cat;
-with Sem_Ch3;        use Sem_Ch3;
-with Sem_Ch6;        use Sem_Ch6;
-with Sem_Ch7;        use Sem_Ch7;
-with Sem_Ch8;        use Sem_Ch8;
-with Sem_Dim;        use Sem_Dim;
-with Sem_Eval;       use Sem_Eval;
-with Sem_Prag;       use Sem_Prag;
-with Sem_Res;        use Sem_Res;
-with Sem_Type;       use Sem_Type;
-with Sem_Util;       use Sem_Util;
-with Sem_Warn;       use Sem_Warn;
-with Sinfo;          use Sinfo;
-with Sinfo.Nodes;    use Sinfo.Nodes;
-with Sinfo.Utils;    use Sinfo.Utils;
-with Sinput;         use Sinput;
-with Snames;         use Snames;
-with Stand;          use Stand;
+with Aspects;          use Aspects;
+with Atree;            use Atree;
+with Checks;           use Checks;
+with Contracts;        use Contracts;
+with Debug;            use Debug;
+with Einfo;            use Einfo;
+with Einfo.Entities;   use Einfo.Entities;
+with Einfo.Utils;      use Einfo.Utils;
+with Elists;           use Elists;
+with Errout;           use Errout;
+with Exp_Ch3;          use Exp_Ch3;
+with Exp_Disp;         use Exp_Disp;
+with Exp_Tss;          use Exp_Tss;
+with Exp_Util;         use Exp_Util;
+with Freeze;           use Freeze;
+with Ghost;            use Ghost;
+with Lib;              use Lib;
+with Lib.Xref;         use Lib.Xref;
+with Namet;            use Namet;
+with Nlists;           use Nlists;
+with Nmake;            use Nmake;
+with Opt;              use Opt;
+with Par_SCO;          use Par_SCO;
+with Restrict;         use Restrict;
+with Rident;           use Rident;
+with Rtsfind;          use Rtsfind;
+with Sem;              use Sem;
+with Sem_Aux;          use Sem_Aux;
+with Sem_Case;         use Sem_Case;
+with Sem_Cat;          use Sem_Cat;
+with Sem_Ch3;          use Sem_Ch3;
+with Sem_Ch6;          use Sem_Ch6;
+with Sem_Ch7;          use Sem_Ch7;
+with Sem_Ch8;          use Sem_Ch8;
+with Sem_Dim;          use Sem_Dim;
+with Sem_Eval;         use Sem_Eval;
+with Sem_Prag;         use Sem_Prag;
+with Sem_Res;          use Sem_Res;
+with Sem_Type;         use Sem_Type;
+with Sem_Util;         use Sem_Util;
+with Sem_Warn;         use Sem_Warn;
+with Sinfo;            use Sinfo;
+with Sinfo.Nodes;      use Sinfo.Nodes;
+with Sinfo.Utils;      use Sinfo.Utils;
+with Sinput;           use Sinput;
+with Snames;           use Snames;
+with Stand;            use Stand;
+with System.Case_Util; use System.Case_Util;
 with Table;
-with Targparm;       use Targparm;
-with Ttypes;         use Ttypes;
-with Tbuild;         use Tbuild;
-with Urealp;         use Urealp;
-with Warnsw;         use Warnsw;
+with Targparm;         use Targparm;
+with Ttypes;           use Ttypes;
+with Tbuild;           use Tbuild;
+with Urealp;           use Urealp;
+with Warnsw;           use Warnsw;
 
 with GNAT.Heap_Sort_G;
 
@@ -11356,6 +11357,16 @@ package body Sem_Ch13 is
             return;
 
          when Aspect_Storage_Model_Type =>
+
+            --  The aggregate argument of Storage_Model_Type is optional, and
+            --  when not present the aspect defaults to the native storage
+            --  model (where the address type is System.Address, and other
+            --  arguments default to corresponding native storage operations).
+
+            if No (Expression (ASN)) then
+               return;
+            end if;
+
             T := Entity (ASN);
 
             declare
@@ -16559,12 +16570,14 @@ package body Sem_Ch13 is
 
          return;
 
-      elsif not Present (Addr_Type) then
-         Error_Msg_N ("argument association for Address_Type missing; "
-                         & "must be specified as first aspect argument", N);
-         return;
+      --  If Addr_Type is not present as the first association, then we default
+      --  it to System.Address.
 
-      elsif Nam = Name_Null_Address then
+      elsif not Present (Addr_Type) then
+         Addr_Type := RTE (RE_Address);
+      end if;
+
+      if Nam = Name_Null_Address then
          if not Is_Entity_Name (N)
            or else not Is_Constant_Object (Entity (N))
            or else
@@ -17335,9 +17348,10 @@ package body Sem_Ch13 is
    procedure Validate_Storage_Model_Type_Aspect
      (Typ : Entity_Id; ASN : Node_Id)
    is
-      Assoc  : Node_Id;
-      Choice : Entity_Id;
-      Expr   : Node_Id;
+      Assoc       : Node_Id;
+      Choice      : Entity_Id;
+      Choice_Name : Name_Id;
+      Expr        : Node_Id;
 
       Address_Type_Id : Entity_Id := Empty;
       Null_Address_Id : Entity_Id := Empty;
@@ -17347,7 +17361,47 @@ package body Sem_Ch13 is
       Copy_To_Id      : Entity_Id := Empty;
       Storage_Size_Id : Entity_Id := Empty;
 
+      procedure Check_And_Resolve_Storage_Model_Type_Argument
+        (Expr        : Node_Id;
+         Typ         : Entity_Id;
+         Argument_Id : in out Entity_Id;
+         Nam         : Name_Id);
+      --  Checks that the subaspect for Nam has not already been specified for
+      --  Typ's Storage_Model_Type aspect (i.e., checks Argument_Id = Empty),
+      --  resolves Expr, and sets Argument_Id to the entity resolved for Expr.
+
+      procedure Check_And_Resolve_Storage_Model_Type_Argument
+        (Expr        : Node_Id;
+         Typ         : Entity_Id;
+         Argument_Id : in out Entity_Id;
+         Nam         : Name_Id)
+      is
+         Name_String : constant String := To_Mixed (Get_Name_String (Nam));
+
+      begin
+         if Present (Argument_Id) then
+            Error_Msg_String (1 .. Name_String'Length) := Name_String;
+            Error_Msg_Strlen := Name_String'Length;
+
+            Error_Msg_N ("~ already specified", Expr);
+         end if;
+
+         Resolve_Storage_Model_Type_Argument (Expr, Typ, Address_Type_Id, Nam);
+         Argument_Id := Entity (Expr);
+      end Check_And_Resolve_Storage_Model_Type_Argument;
+
+   --  Start of processing for Validate_Storage_Model_Type_Aspect
+
    begin
+      --  The aggregate argument of Storage_Model_Type is optional, and when
+      --  not present the aspect defaults to the native storage model (where
+      --  the address type is System.Address, and other arguments default to
+      --  the corresponding native storage operations).
+
+      if No (Expression (ASN)) then
+         return;
+      end if;
+
       --  Each expression must resolve to an entity of the right kind or proper
       --  profile.
 
@@ -17358,65 +17412,67 @@ package body Sem_Ch13 is
 
          Choice := First (Choices (Assoc));
 
+         Choice_Name := Chars (Choice);
+
          if Nkind (Choice) /= N_Identifier or else Present (Next (Choice)) then
             Error_Msg_N ("illegal name in association", Choice);
 
-         elsif Chars (Choice) = Name_Address_Type then
+         elsif Choice_Name = Name_Address_Type then
             if Assoc /= First (Component_Associations (Expression (ASN))) then
                Error_Msg_N ("Address_Type must be first association", Choice);
             end if;
 
-            Resolve_Storage_Model_Type_Argument
+            Check_And_Resolve_Storage_Model_Type_Argument
               (Expr, Typ, Address_Type_Id, Name_Address_Type);
-            Address_Type_Id := Entity (Expr);
-
-         --  Shouldn't we check for duplicates of the same subaspect name,
-         --  and issue an error in such cases???
-
-         elsif not Present (Address_Type_Id) then
-            Error_Msg_N
-              ("Address_Type missing, must be first association", Choice);
-
-         elsif Chars (Choice) = Name_Null_Address then
-            Resolve_Storage_Model_Type_Argument
-              (Expr, Typ, Address_Type_Id, Name_Null_Address);
-            Null_Address_Id := Entity (Expr);
-
-         elsif Chars (Choice) = Name_Allocate then
-            Resolve_Storage_Model_Type_Argument
-              (Expr, Typ, Address_Type_Id, Name_Allocate);
-            Allocate_Id := Entity (Expr);
-
-         elsif Chars (Choice) = Name_Deallocate then
-            Resolve_Storage_Model_Type_Argument
-              (Expr, Typ, Address_Type_Id, Name_Deallocate);
-            Deallocate_Id := Entity (Expr);
-
-         elsif Chars (Choice) = Name_Copy_From then
-            Resolve_Storage_Model_Type_Argument
-              (Expr, Typ, Address_Type_Id, Name_Copy_From);
-            Copy_From_Id := Entity (Expr);
-
-         elsif Chars (Choice) = Name_Copy_To then
-            Resolve_Storage_Model_Type_Argument
-              (Expr, Typ, Address_Type_Id, Name_Copy_To);
-            Copy_To_Id := Entity (Expr);
-
-         elsif Chars (Choice) = Name_Storage_Size then
-            Resolve_Storage_Model_Type_Argument
-              (Expr, Typ, Address_Type_Id, Name_Storage_Size);
-            Storage_Size_Id := Entity (Expr);
 
          else
-            Error_Msg_N
-              ("invalid name for Storage_Model_Type argument", Choice);
+            --  It's allowed to leave out the Address_Type argument, in which
+            --  case the address type is defined to default to System.Address.
+
+            if No (Address_Type_Id) then
+               Address_Type_Id := RTE (RE_Address);
+            end if;
+
+            if Choice_Name = Name_Null_Address then
+               Check_And_Resolve_Storage_Model_Type_Argument
+                 (Expr, Typ, Null_Address_Id, Name_Null_Address);
+
+            elsif Choice_Name = Name_Allocate then
+               Check_And_Resolve_Storage_Model_Type_Argument
+                 (Expr, Typ, Allocate_Id, Name_Allocate);
+
+            elsif Choice_Name = Name_Deallocate then
+               Check_And_Resolve_Storage_Model_Type_Argument
+                 (Expr, Typ, Deallocate_Id, Name_Deallocate);
+
+            elsif Choice_Name = Name_Copy_From then
+               Check_And_Resolve_Storage_Model_Type_Argument
+                 (Expr, Typ, Copy_From_Id, Name_Copy_From);
+
+            elsif Choice_Name = Name_Copy_To then
+               Check_And_Resolve_Storage_Model_Type_Argument
+                 (Expr, Typ, Copy_To_Id, Name_Copy_To);
+
+            elsif Choice_Name = Name_Storage_Size then
+               Check_And_Resolve_Storage_Model_Type_Argument
+                 (Expr, Typ, Storage_Size_Id, Name_Storage_Size);
+
+            else
+               Error_Msg_N
+                 ("invalid name for Storage_Model_Type argument", Choice);
+            end if;
          end if;
 
          Next (Assoc);
       end loop;
 
-      if No (Address_Type_Id) then
-         Error_Msg_N ("match for Address_Type not found", ASN);
+      --  If Address_Type has been specified as or defaults to System.Address,
+      --  then other "subaspect" arguments can be specified, but are optional.
+      --  Otherwise, all other arguments are required and an error is flagged
+      --  about any that are missing.
+
+      if Address_Type_Id = RTE (RE_Address) then
+         return;
 
       elsif No (Null_Address_Id) then
          Error_Msg_N ("match for Null_Address primitive not found", ASN);

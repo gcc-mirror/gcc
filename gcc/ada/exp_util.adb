@@ -6406,16 +6406,7 @@ package body Exp_Util is
 
    begin
       if Has_Storage_Model_Type_Aspect (Typ) then
-         declare
-            SMT_Op : constant Entity_Id :=
-                       Get_Storage_Model_Type_Entity (Typ, Nam);
-         begin
-            if not Present (SMT_Op) then
-               raise Program_Error;
-            else
-               return SMT_Op;
-            end if;
-         end;
+         return Get_Storage_Model_Type_Entity (Typ, Nam);
 
       --  Otherwise we assume that Typ is a descendant of Root_Storage_Pool
 

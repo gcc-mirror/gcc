@@ -32575,18 +32575,37 @@ package body Sem_Util is
            Find_Value_Of_Aspect (Typ, Aspect_Storage_Model_Type);
 
       begin
-         pragma Assert (Present (SMT_Aspect_Value));
+         --  When the aspect has an aggregate expression, search through it
+         --  to locate a match for the name of the given "subaspect" and return
+         --  the entity of the aggregate association's expression.
 
-         Assoc := First (Component_Associations (SMT_Aspect_Value));
-         while Present (Assoc) loop
-            if Chars (First (Choices (Assoc))) = Nam then
-               return Entity (Expression (Assoc));
-            end if;
+         if Present (SMT_Aspect_Value) then
+            Assoc := First (Component_Associations (SMT_Aspect_Value));
+            while Present (Assoc) loop
+               if Chars (First (Choices (Assoc))) = Nam then
+                  return Entity (Expression (Assoc));
+               end if;
 
-            Next (Assoc);
-         end loop;
+               Next (Assoc);
+            end loop;
+         end if;
 
-         return Empty;
+         --  The aggregate argument of Storage_Model_Type is optional, and when
+         --  not present the aspect defaults to the native storage model, where
+         --  the address type is System.Address. In that case, we return
+         --  System.Address for Name_Address_Type and System.Null_Address for
+         --  Name_Null_Address, but return Empty for other cases, and leave it
+         --  to the back end to map those to the appropriate native operations.
+
+         if Nam = Name_Address_Type then
+            return RTE (RE_Address);
+
+         elsif Nam = Name_Null_Address then
+            return RTE (RE_Null_Address);
+
+         else
+            return Empty;
+         end if;
       end Get_Storage_Model_Type_Entity;
 
       --------------------------------

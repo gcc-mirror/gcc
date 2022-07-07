@@ -3680,21 +3680,26 @@ package Sem_Util is
       --  Given a type with aspect Storage_Model_Type or an object of such a
       --  type, and Nam denoting the name of one of the argument kinds allowed
       --  for that aspect, returns the Entity_Id corresponding to the entity
-      --  associated with Nam in the aspect. If such an entity is not present,
-      --  then returns Empty. (Note: This function is modeled on function
-      --  Get_Iterable_Type_Primitive.)
+      --  associated with Nam in the aspect. If an entity was not explicitly
+      --  specified for Nam, then returns Empty, except that in the defaulted
+      --  Address_Type case, System.Address will be returned, and in the
+      --  defaulted Null_Address case, System.Null_Address will be returned.
+      --  (Note: This function is modeled on Get_Iterable_Type_Primitive.)
 
       function Storage_Model_Address_Type
         (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
       --  Given a type with aspect Storage_Model_Type or an object of such a
       --  type, returns the type specified for the Address_Type choice in that
-      --  aspect; returns Empty if the type isn't specified.
+      --  aspect; returns type System.Address if the address type was not
+      --  explicitly specified (indicating use of the native memory model).
 
       function Storage_Model_Null_Address
         (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
       --  Given a type with aspect Storage_Model_Type or an object of such a
       --  type, returns the constant specified for the Null_Address choice in
-      --  that aspect; returns Empty if the constant object isn't specified.
+      --  that aspect; returns Empty if the constant object isn't specified,
+      --  unless the native memory model is in use (System.Address), in which
+      --  case it returns System.Null_Address.
 
       function Storage_Model_Allocate
         (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
