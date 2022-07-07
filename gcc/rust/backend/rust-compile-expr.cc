@@ -181,6 +181,54 @@ CompileExpr::visit (HIR::DereferenceExpr &expr)
 						known_valid, expr.get_locus ());
 }
 
+
+// Helper for CompileExpr::visit (HIR::MatchExpr).
+// Check that the scrutinee of EXPR is a valid kind of expression to match on.
+// Return the TypeKind of the scrutinee if it is valid, or TyTy::TypeKind::ERROR
+// if not.
+static TyTy::TypeKind
+check_match_scrutinee (HIR::MatchExpr &expr, Context *ctx)
+{
+  TyTy::BaseType *scrutinee_expr_tyty = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (
+	expr.get_scrutinee_expr ()->get_mappings ().get_hirid (),
+	&scrutinee_expr_tyty))
+    {
+      return TyTy::TypeKind::ERROR;
+    }
+
+  TyTy::TypeKind scrutinee_kind = scrutinee_expr_tyty->get_kind ();
+  rust_assert ((TyTy::is_primitive_type_kind (scrutinee_kind)
+		&& scrutinee_kind != TyTy::TypeKind::NEVER)
+	       || scrutinee_kind == TyTy::TypeKind::ADT
+	       || scrutinee_kind == TyTy::TypeKind::TUPLE);
+
+  if (scrutinee_kind == TyTy::TypeKind::ADT)
+    {
+      // this will need to change but for now the first pass implementation,
+      // lets assert this is the case
+      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (scrutinee_expr_tyty);
+      rust_assert (adt->is_enum ());
+      rust_assert (adt->number_of_variants () > 0);
+    }
+  else if (scrutinee_kind == TyTy::TypeKind::FLOAT)
+    {
+      // FIXME: CASE_LABEL_EXPR does not support floating point types.
+      // Find another way to compile these.
+      rust_sorry_at (expr.get_locus (),
+		     "match on floating-point types is not yet supported");
+    }
+
+  TyTy::BaseType *expr_tyty = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+				       &expr_tyty))
+    {
+      return TyTy::TypeKind::ERROR;
+    }
+
+  return scrutinee_kind;
+}
+
 void
 CompileExpr::visit (HIR::MatchExpr &expr)
 {
@@ -213,34 +261,11 @@ CompileExpr::visit (HIR::MatchExpr &expr)
        the control flow graph.  */
   // DEFTREECODE (CASE_LABEL_EXPR, "case_label_expr", tcc_statement, 4)
 
-  TyTy::BaseType *scrutinee_expr_tyty = nullptr;
-  if (!ctx->get_tyctx ()->lookup_type (
-	expr.get_scrutinee_expr ()->get_mappings ().get_hirid (),
-	&scrutinee_expr_tyty))
+  TyTy::TypeKind scrutinee_kind = check_match_scrutinee (expr, ctx);
+  if (scrutinee_kind == TyTy::TypeKind::ERROR)
     {
       translated = error_mark_node;
       return;
-    }
-
-  TyTy::TypeKind scrutinee_kind = scrutinee_expr_tyty->get_kind ();
-  rust_assert ((TyTy::is_primitive_type_kind (scrutinee_kind)
-		&& scrutinee_kind != TyTy::TypeKind::NEVER)
-	       || scrutinee_kind == TyTy::TypeKind::ADT);
-
-  if (scrutinee_kind == TyTy::TypeKind::ADT)
-    {
-      // this will need to change but for now the first pass implementation,
-      // lets assert this is the case
-      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (scrutinee_expr_tyty);
-      rust_assert (adt->is_enum ());
-      rust_assert (adt->number_of_variants () > 0);
-    }
-  else if (scrutinee_kind == TyTy::TypeKind::FLOAT)
-    {
-      // FIXME: CASE_LABEL_EXPR does not support floating point types.
-      // Find another way to compile these.
-      rust_sorry_at (expr.get_locus (),
-		     "match on floating-point types is not yet supported");
     }
 
   TyTy::BaseType *expr_tyty = nullptr;
