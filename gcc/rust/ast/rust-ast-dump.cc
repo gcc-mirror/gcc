@@ -52,6 +52,12 @@ Dump::go (AST::Crate &crate)
 }
 
 void
+Dump::go (AST::Item &item)
+{
+  item.accept_vis (*this);
+}
+
+void
 Dump::format_function_param (FunctionParam &param)
 {
   param.get_pattern ()->accept_vis (*this);
@@ -73,7 +79,9 @@ Dump::visit (AttrInputMetaItemContainer &input)
 
 void
 Dump::visit (IdentifierExpr &ident_expr)
-{}
+{
+  stream << ident_expr.get_ident ();
+}
 
 void
 Dump::visit (Lifetime &lifetime)
@@ -121,7 +129,9 @@ Dump::visit (QualifiedPathInType &path)
 // rust-expr.h
 void
 Dump::visit (LiteralExpr &expr)
-{}
+{
+  stream << expr.as_string ();
+}
 
 void
 Dump::visit (AttrInputLiteral &attr_input)
@@ -153,7 +163,24 @@ Dump::visit (NegationExpr &expr)
 
 void
 Dump::visit (ArithmeticOrLogicalExpr &expr)
-{}
+{
+  expr.get_left_expr ()->accept_vis (*this);
+  stream << " ";
+
+  switch (expr.get_expr_type ())
+    {
+    case ArithmeticOrLogicalOperator::ADD:
+      stream << "+";
+      break;
+
+    default:
+      gcc_unreachable ();
+      break;
+    }
+
+  stream << " ";
+  expr.get_right_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ComparisonExpr &expr)
@@ -257,7 +284,10 @@ Dump::visit (BlockExpr &expr)
     }
 
   if (expr.has_tail_expr ())
-    expr.get_tail_expr ()->accept_vis (*this);
+    {
+      stream << indentation;
+      expr.get_tail_expr ()->accept_vis (*this);
+    }
 
   indentation.decrement ();
   stream << "\n" << indentation << "}\n";
@@ -649,12 +679,55 @@ Dump::visit (ExternalStaticItem &item)
 {}
 
 void
-Dump::visit (ExternalFunctionItem &item)
-{}
+Dump::visit (ExternalFunctionItem &function)
+{
+  stream << "fn " << function.get_identifier () << '(';
+
+  for (size_t i = 0; i < function.get_function_params ().size (); i++)
+    {
+      auto &param = function.get_function_params ().at (i);
+      bool has_next = (i + 1) < function.get_function_params ().size ();
+
+      stream << param.get_name () << ": ";
+      param.get_type ()->accept_vis (*this);
+
+      if (has_next)
+	stream << ", ";
+    }
+
+  stream << ')';
+  if (function.has_return_type ())
+    {
+      stream << "-> ";
+      function.get_return_type ()->accept_vis (*this);
+    }
+}
 
 void
 Dump::visit (ExternBlock &block)
-{}
+{
+  stream << "extern ";
+
+  if (block.has_abi ())
+    {
+      stream << "\"";
+      stream << block.get_abi ();
+      stream << "\" ";
+    }
+
+  stream << "{\n";
+  indentation.increment ();
+
+  for (auto &item : block.get_extern_items ())
+    {
+      stream << indentation;
+      item->accept_vis (*this);
+      stream << ";\n";
+    }
+
+  indentation.decrement ();
+  stream << "\n" << indentation << "}\n";
+}
 
 // rust-macro.h
 void

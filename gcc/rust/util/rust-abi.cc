@@ -22,7 +22,7 @@ Rust::ABI
 get_abi_from_string (const std::string &abi)
 {
   if (abi.compare ("rust") == 0)
-    return Rust::ABI::C;
+    return Rust::ABI::RUST;
   else if (abi.compare ("rust-intrinsic") == 0)
     return Rust::ABI::INTRINSIC;
   else if (abi.compare ("C") == 0)

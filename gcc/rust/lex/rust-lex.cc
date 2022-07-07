@@ -347,7 +347,7 @@ Lexer::build_token ()
 		  current_line++;
 		  current_column = 1;
 		  // tell line_table that new line starts
-		  line_map->start_line (current_line, max_column_hint);
+		  start_line (current_line, max_column_hint);
 		  break;
 		}
 	      else
@@ -368,7 +368,7 @@ Lexer::build_token ()
 	  current_line++;
 	  current_column = 1;
 	  // tell line_table that new line starts
-	  line_map->start_line (current_line, max_column_hint);
+	  start_line (current_line, max_column_hint);
 	  continue;
 	case '\r': // cr
 	  // Ignore, we expect a newline (lf) soon.
@@ -540,7 +540,7 @@ Lexer::build_token ()
 	      current_line++;
 	      current_column = 1;
 	      // tell line_table that new line starts
-	      line_map->start_line (current_line, max_column_hint);
+	      start_line (current_line, max_column_hint);
 
 	      str.shrink_to_fit ();
 	      if (is_inner)
@@ -617,7 +617,7 @@ Lexer::build_token ()
 		      current_line++;
 		      current_column = 1;
 		      // tell line_table that new line starts
-		      line_map->start_line (current_line, max_column_hint);
+		      start_line (current_line, max_column_hint);
 		      continue;
 		    }
 
@@ -686,7 +686,7 @@ Lexer::build_token ()
 		      current_line++;
 		      current_column = 1;
 		      // tell line_table that new line starts
-		      line_map->start_line (current_line, max_column_hint);
+		      start_line (current_line, max_column_hint);
 		      str += '\n';
 		      continue;
 		    }
@@ -1400,7 +1400,7 @@ Lexer::parse_partial_string_continue ()
 	  current_line++;
 	  current_column = 1;
 	  // tell line_table that new line starts
-	  line_map->start_line (current_line, max_column_hint);
+	  start_line (current_line, max_column_hint);
 
 	  // reset "length"
 	  additional_length_offset = 1;
@@ -2688,4 +2688,12 @@ Lexer::split_current_token (TokenId new_left, TokenId new_right)
   token_queue.replace_current_value (std::move (new_left_tok));
   token_queue.insert (1, std::move (new_right_tok));
 }
+
+void
+Lexer::start_line (int current_line, int current_column)
+{
+  if (line_map)
+    line_map->start_line (current_line, current_column);
+}
+
 } // namespace Rust

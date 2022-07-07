@@ -205,6 +205,8 @@ public:
   std::string get_filename () { return std::string (input.get_filename ()); }
 
 private:
+  void start_line (int current_line, int current_column);
+
   // File for use as input.
   RAIIFile input;
   // TODO is this actually required? could just have file storage in InputSource
