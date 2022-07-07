@@ -66,20 +66,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #define LIBRARY_PATH_ENV "LIBRARY_PATH"
 #endif
 
-#ifndef GM2_PREFIX_ENV
-#define GM2_PREFIX_ENV "GM2_PREFIX"
-#endif
-
 #ifndef GM2_LIBEXEC_ENV
 #define GM2_LIBEXEC_ENV "GM2_LIBEXEC"
-#endif
-
-#ifndef GM2IPATH_ENV
-#define GM2IPATH_ENV "GM2IPATH"
-#endif
-
-#ifndef GM2OPATH_ENV
-#define GM2OPATH_ENV "GM2OPATH"
 #endif
 
 int lang_specific_extra_outfiles = 0;
@@ -123,51 +111,18 @@ static const char *library_abbrev[maxlib]
    the dialect of Modula-2 and the library set.  */
 
 int lang_specific_pre_link (void);
-static void add_exec_prefix (void);
-#if defined(LOCAL_DEBUGGING)
-static void add_B_prefix (unsigned int *in_decoded_options_count,
-                          struct cl_decoded_option **in_decoded_options);
-#endif
-static const char *get_objects (int argc, const char *argv[]);
-static const char *get_link_args (int argc, const char *argv[]);
-static const char *add_exec_dir (int argc, const char *argv[]);
-static const char *add_exec_name (int argc, const char *argv[]);
-static int is_object (const char *s);
-static void remember_object (const char *s);
-static void remember_link_arg (const char *opt, const char *s);
-static void scan_for_link_args (unsigned int *in_decoded_options_count,
-                                struct cl_decoded_option **in_decoded_options);
-static void add_link_from_include (struct cl_decoded_option **in_options,
-                                   int include);
 static void add_lib (size_t opt_index, const char *lib, int joined);
-static void check_gm2_root (void);
 static const char *add_include (const char *libpath, const char *library);
-static const char *gen_gm2_prefix (const char *gm2_root);
-static const char *gen_gm2_libexec (const char *path);
-static const char *get_libexec (void);
 static void insert_option (unsigned int *in_decoded_options_count,
                            struct cl_decoded_option **in_decoded_options,
                            unsigned int position);
 static const char *gen_link_path (const char *libpath, const char *dialect);
 
-typedef struct object_list
-{
-  char *name;
-  struct object_list *next;
-} object_list;
-
-static object_list *head_objects = NULL;
-static object_list *head_link_args = NULL;
-static int inclPos = -1;
-static int linkPos = -1;
-static bool seen_fonlylink = false;
-static bool seen_fmakeall0 = false;
-static bool seen_fmakeall = false;
 static bool seen_B = false;
 static const char *B_path = NULL;
 static const char *multilib_dir = NULL;
 
-/* By default, the suffix for target object files is ".o".  */
+/* By default the suffix for target object files is ".o".  */
 #ifdef TARGET_OBJECT_SUFFIX
 #define HAVE_TARGET_OBJECT_SUFFIX
 #else
@@ -175,7 +130,7 @@ static const char *multilib_dir = NULL;
 #endif
 
 
-/* fe_generate_option, wrap up arg and pass it to fe_save_switch.  */
+/* fe_generate_option wrap up arg and pass it to fe_save_switch.  */
 
 static void
 fe_generate_option (size_t opt_index, const char *arg, bool joined)
@@ -207,138 +162,7 @@ fe_generate_option (size_t opt_index, const char *arg, bool joined)
     }
 }
 
-#if defined(LOCAL_DEBUGGING)
-/* Find_executable_path, if argv0 references an executable filename
-   then use this path.  */
-
-static const char *
-find_executable_path (const char *argv0)
-{
-  if (access (argv0, X_OK) == 0)
-    {
-      const char *n = strrchr (argv0, DIR_SEPARATOR);
-
-      /* Strip off the program name from argv0, but leave the DIR_SEPARATOR.  */
-      if (n != NULL)
-        {
-          char *copy = xstrdup (argv0);
-          char *n = strrchr (copy, DIR_SEPARATOR);
-          n[1] = (char)0;
-          return copy;
-        }
-    }
-  return NULL;
-}
-
-/* add_B_prefix, adds the -Bprefix option so that we can tell
-   subcomponents of gm2 where to pick up its executables.  But we can
-   only do this if the user explicitly gives the path to argv[0].  */
-
-static void
-add_B_prefix (unsigned int *in_decoded_options_count ATTRIBUTE_UNUSED,
-              struct cl_decoded_option **in_decoded_options)
-{
-  if ((*in_decoded_options)[0].arg != NULL)
-    {
-      const char *arg = (*in_decoded_options)[0].arg;
-      const char *path = find_executable_path (arg);
-
-      if (path == NULL || (strcmp (path, "") == 0))
-        path = gen_gm2_libexec (get_libexec ());
-
-      if (path != NULL && (strcmp (path, "") != 0))
-        {
-#if defined(DEBUGGING)
-          unsigned int i;
-
-          printf ("going to add -B%s\n", path);
-          for (i = 0; i < *in_decoded_options_count; i++)
-            print_option ("before add -B", i, *in_decoded_options);
-#endif
-          fe_handle_opt_b (xstrdup (path));
-          fe_generate_option (OPT_B, xstrdup (path), 1);
-
-#if defined(DEBUGGING)
-          for (i = 0; i < *in_decoded_options_count; i++)
-            print_option ("after add -B", i, *in_decoded_options);
-#endif
-        }
-    }
-}
-#endif
-
-
-#if 0
-/* add_exec_prefix, adds the -ftarget-ar= option so that we can tell
-   gm2lcc where to pick up the `ar' utility.  */
-
-static void
-add_exec_prefix (void)
-{
-  const char *ar = AR_PATH;
-  const char *ranlib = RANLIB_PATH;
-
-  fe_generate_option (OPT_ftarget_ar_, ar, true);
-  fe_generate_option (OPT_ftarget_ranlib_, ranlib, true);
-}
-#endif
-
-static const char *
-get_libexec (void)
-{
-  const char *libexec = getenv (GM2_LIBEXEC_ENV);
-
-  if (libexec == NULL || (strcmp (libexec, "") == 0))
-    return STANDARD_LIBEXEC_PREFIX;
-  else
-    return libexec;
-}
-
-static int
-is_object (const char *s)
-{
-  return (strlen (s) > strlen (TARGET_OBJECT_SUFFIX)
-          && (strcmp (s + strlen (s) - strlen (TARGET_OBJECT_SUFFIX),
-                      TARGET_OBJECT_SUFFIX)
-              == 0));
-}
-
-static void
-remember_object (const char *s)
-{
-  object_list *n = (object_list *)xmalloc (sizeof (object_list));
-  n->name = xstrdup (s);
-  n->next = head_objects;
-  head_objects = n;
-#if defined(DEBUGGING)
-  fprintf (stderr, "remembering object: %s\n", s);
-#endif
-}
-
-static void
-remember_link_arg (const char *opt, const char *s)
-{
-  object_list *n = (object_list *)xmalloc (sizeof (object_list));
-  n->name = (char *)xmalloc (strlen (opt) + strlen (s) + 1);
-  strcpy (n->name, opt);
-  strcat (n->name, s);
-  n->next = head_link_args;
-  head_link_args = n;
-}
-
-/* add_link_from_include, adds option to (**in_argv)[pos] using the
-   include path.  */
-
-static void
-add_link_from_include (struct cl_decoded_option **in_options, int include)
-{
-  struct cl_decoded_option *options = *in_options;
-  const char *arg = options[include].arg;
-
-  fe_generate_option (OPT_fobject_path_, arg, true);
-}
-
-/* add_lib, add lib to the end of the command line.  */
+/* add_lib add lib to the end of the command line.  */
 
 static void
 add_lib (size_t opt_index, const char *lib, int joined)
@@ -349,7 +173,7 @@ add_lib (size_t opt_index, const char *lib, int joined)
   fe_generate_option (opt_index, lib, joined);
 }
 
-/* insert_option, inserts an option at position on the command line.  */
+/* insert_option inserts an option at position on the command line.  */
 
 static void
 insert_option (unsigned int *in_decoded_options_count,
@@ -375,7 +199,7 @@ insert_option (unsigned int *in_decoded_options_count,
   *in_decoded_options = new_decoded_options;
 }
 
-/* add_library, adds a library to the command line at arg position.
+/* add_library adds a library to the command line at arg position.
    It returns the number of arguments added.  If libraryname is NULL or
    empty then zero is returned.  */
 
@@ -398,7 +222,8 @@ add_library (const char *libraryname, unsigned int *in_decoded_options_count,
   generate_option (OPT_l, libraryname, 1, CL_DRIVER,
                    &(*in_decoded_options)[position]);
 
-#if defined(DEBUGGING)
+#if 0
+  // defined(DEBUGGING)
   print_options ("after add_library", *in_decoded_options_count, *in_decoded_options);
 #endif
   return 1;
@@ -448,7 +273,7 @@ build_archive_path (const char *libpath, const char *library)
   return NULL;
 }
 
-/* safe_strdup, safely duplicates a string.  */
+/* safe_strdup safely duplicates a string.  */
 
 static char *
 safe_strdup (const char *s)
@@ -458,7 +283,7 @@ safe_strdup (const char *s)
   return NULL;
 }
 
-/* add_default_combination, adds the correct link path and then the
+/* add_default_combination adds the correct link path and then the
    library name.  */
 
 static void
@@ -475,7 +300,7 @@ add_default_combination (const char *libpath, const char *library,
     }
 }
 
-/* gen_link_path, generates a link path for the chosen dialect.  */
+/* gen_link_path generates a link path for the chosen dialect.  */
 
 static const char *
 gen_link_path (const char *libpath, const char *dialect)
@@ -483,7 +308,7 @@ gen_link_path (const char *libpath, const char *dialect)
   return add_include (libpath, dialect);
 }
 
-/* add_default_archives, adds the default archives to the end of the
+/* add_default_archives adds the default archives to the end of the
    current command line.  */
 
 static int
@@ -528,8 +353,8 @@ add_default_archives (const char *libpath, const char *libraries,
   return libcount;
 }
 
-/* build_include_path, builds the component of the include path
-   referenced by the, which, libs.  */
+/* build_include_path builds the component of the include path
+   referenced by the library.  */
 
 static const char *
 build_include_path (const char *libpath, const char *library)
@@ -576,7 +401,7 @@ add_include (const char *libpath, const char *library)
     return build_include_path (libpath, library);
 }
 
-/* add_default_includes, add the appropriate default include paths
+/* add_default_includes add the appropriate default include paths
    depending upon the style of libraries chosen.  */
 
 static void
@@ -606,121 +431,7 @@ add_default_includes (const char *libpath, const char *libraries)
   while ((l != NULL) && (l[0] != (char)0));
 }
 
-/* build_fobject_path, returns a string containing the a path to the
-   objects defined by libpath and dialectLib.  */
-
-static char *
-build_fobject_path (const char *prev, const char *libpath, const char *library)
-{
-  char sepstr[2];
-  char *gm2objs;
-  const char *libName = library;
-  unsigned int machine_length = 0;
-
-  sepstr[0] = DIR_SEPARATOR;
-  sepstr[1] = (char)0;
-
-  if (multilib_dir != NULL)
-    {
-      machine_length = strlen (multilib_dir);
-      if (machine_length > 0)
-	machine_length += strlen (sepstr);
-    }
-
-  if (prev == NULL)
-    {
-      gm2objs = (char *)alloca (
-          strlen (libpath) + strlen (sepstr)
-	  + machine_length
-	  + strlen ("m2") + strlen (sepstr)
-          + strlen (libName) + 1 + strlen (libpath) + strlen (sepstr)
-          + strlen ("m2") + strlen (sepstr) + strlen (libName) + 1);
-      strcpy (gm2objs, "");
-    }
-  else
-    {
-      gm2objs = (char *)alloca (
-          strlen (prev) + strlen (":") + strlen (libpath) + strlen (sepstr)
-	  + machine_length
-          + strlen ("m2") + strlen (sepstr) + strlen (libName) + 1
-          + strlen (libpath) + strlen (sepstr) + strlen ("m2")
-          + strlen (sepstr) + strlen (libName) + 1);
-      strcpy (gm2objs, prev);
-      strcat (gm2objs, ":");
-    }
-  strcat (gm2objs, libpath);
-  strcat (gm2objs, sepstr);
-  if (machine_length > 0)
-    {
-      strcat (gm2objs, multilib_dir);
-      strcat (gm2objs, sepstr);
-    }
-  strcat (gm2objs, "m2");
-  strcat (gm2objs, sepstr);
-  strcat (gm2objs, libName);
-
-  return xstrdup (gm2objs);
-}
-
-/* add_fobject_path, add all required path to satisfy the link for library.  */
-
-static void
-add_fobject_path (const char *prev, const char *libpath, const char *library)
-{
-  if (library != NULL)
-    fe_generate_option (OPT_fobject_path_,
-                        build_fobject_path (prev, libpath, library), true);
-}
-
-/* add_default_fobjects, add the appropriate default include paths
-   depending upon the libraries chosen.  */
-
-static void
-add_default_fobjects (const char *prev, const char *libpath,
-                      const char *libraries)
-{
-  const char *l = libraries;
-  const char *e;
-  const char *c;
-
-  do
-    {
-      e = index (l, ',');
-      if (e == NULL)
-        {
-          c = xstrdup (l);
-          l = NULL;
-        }
-      else
-        {
-          c = xstrndup (l, e - l);
-          l = e + 1;
-        }
-      add_fobject_path (prev, libpath, c);
-    }
-  while ((l != NULL) && (l[0] != (char)0));
-}
-
-static void
-scan_for_link_args (unsigned int *in_decoded_options_count,
-                    struct cl_decoded_option **in_decoded_options)
-{
-  struct cl_decoded_option *decoded_options = *in_decoded_options;
-  unsigned int i;
-
-  for (i = 0; i < *in_decoded_options_count; i++)
-    {
-      const char *arg = decoded_options[i].arg;
-      size_t opt = decoded_options[i].opt_index;
-
-      if (opt == OPT_l)
-        remember_link_arg ("-l", arg);
-      else if (opt == OPT_L)
-        remember_link_arg ("-L", arg);
-    }
-}
-
-/* purge_include_options, remove any -I option found from
+/* purge_include_options remove any -I option found from
    in_decoded_options.  */
 
 static void
@@ -741,185 +452,6 @@ purge_include_options (unsigned int *in_decoded_options_count,
           (*in_decoded_options_count)--;
         }
     }
-}
-
-/* convert_include_into_link, convert the include path options into
-   link path options.  */
-
-static void
-convert_include_into_link (struct cl_decoded_option **in_decoded_options,
-                           unsigned int *in_decoded_options_count)
-{
-  unsigned int i;
-
-  for (i = 1; i < *in_decoded_options_count; i++)
-    {
-      size_t opt = (*in_decoded_options)[i].opt_index;
-
-      if (opt == OPT_I)
-        add_link_from_include (in_decoded_options, i);
-    }
-}
-
-/* build_path, implements export PATH=$(prefix)/bin:$PATH.  */
-
-static void
-build_path (const char *prefix)
-{
-  int l = strlen ("PATH=") + strlen (prefix) + 1 + strlen ("bin") + 1;
-  char *s;
-  char dir_sep[2];
-  const char *path;
-
-  path = getenv ("PATH");
-  if (path != NULL && (strcmp (path, "") != 0))
-    l += strlen (":") + strlen (path);
-  s = (char *)xmalloc (l);
-  dir_sep[0] = DIR_SEPARATOR;
-  dir_sep[1] = (char)0;
-
-  strcpy (s, "PATH=");
-  strcat (s, prefix);
-  strcat (s, dir_sep);
-  strcat (s, "bin");
-  if (path != NULL && (strcmp (path, "") != 0))
-    {
-      strcat (s, ":");
-      strcat (s, path);
-    }
-  fe_putenv (s);
-}
-
-/* gen_gm2_prefix, return the prefix string.  */
-
-static const char *
-gen_gm2_prefix (const char *prefix)
-{
-  int l = strlen (prefix) + 1 + strlen ("lib") + 1 + strlen ("gcc") + 1
-          + strlen (DEFAULT_TARGET_MACHINE) + 1
-          + strlen (DEFAULT_TARGET_VERSION) + 1;
-  char *s = (char *)xmalloc (l);
-  char dir_sep[2];
-
-  dir_sep[0] = DIR_SEPARATOR;
-  dir_sep[1] = (char)0;
-
-  strcpy (s, prefix);
-  strcat (s, dir_sep);
-  strcat (s, "lib");
-  strcat (s, dir_sep);
-  strcat (s, "gcc");
-  strcat (s, dir_sep);
-  strcat (s, DEFAULT_TARGET_MACHINE);
-  strcat (s, dir_sep);
-  strcat (s, DEFAULT_TARGET_VERSION);
-  return s;
-}
-
-/* gen_gm2_libexec, return a libexec string.  */
-
-static const char *
-gen_gm2_libexec (const char *libexec)
-{
-  int l = strlen (libexec) + 1 + strlen (DEFAULT_TARGET_MACHINE) + 1
-          + strlen (DEFAULT_TARGET_VERSION) + 1;
-  char *s = (char *)xmalloc (l);
-  char dir_sep[2];
-
-  dir_sep[0] = DIR_SEPARATOR;
-  dir_sep[1] = (char)0;
-
-  strcpy (s, libexec);
-  strcat (s, dir_sep);
-  strcat (s, DEFAULT_TARGET_MACHINE);
-  strcat (s, dir_sep);
-  strcat (s, DEFAULT_TARGET_VERSION);
-  return s;
-}
-
-/* build_library_path, implements export
-   LIBRARY_PATH=$(gm2_root)/lib/gcc/\ $(default_target_machine)/\
-   $(default_target_version)
-   where gm2_root, default_target_machine and default_target_version
-   are C strings.  */
-
-static void
-build_library_path (const char *prefix)
-{
-  const char *path = gen_gm2_prefix (prefix);
-  int l = strlen ("LIBRARY_PATH=") + strlen (prefix) + 1;
-  char *s = (char *)xmalloc (l);
-
-  strcpy (s, "LIBRARY_PATH=");
-  strcat (s, path);
-  fe_putenv (s);
-}
-
-/* build_compiler_path, implements export
-   COMPILER_PATH=$(GM2_LIBEXEC)/libexec/gcc/\
-   $(default_target_machine)/\ $(default_target_version).  */
-
-static void
-build_compiler_path (const char *path)
-{
-  const char *libexec = gen_gm2_libexec (path);
-  int l = strlen ("COMPILER_PATH=") + strlen (libexec) + 1;
-  char *s = (char *)xmalloc (l);
-
-  strcpy (s, "COMPILER_PATH=");
-  strcat (s, libexec);
-  fe_putenv (s);
-}
-
-/* check_gm2_root, checks to see whether GM2_PREFIX or GM2_LIBEXEC
-   has been defined, if it has and also COMPILER_PATH and LIBRARY_PATH
-   are both unset then it sets COMPILER_PATH and LIBRARY_PATH using
-   GM2_PREFIX and GM2_LIBEXEC as its prefix.  */
-
-static void
-check_gm2_root (void)
-{
-  const char *library_path;
-  const char *compiler_path;
-  const char *gm2_prefix;
-  const char *gm2_libexec;
-
-  library_path = fe_getenv (LIBRARY_PATH_ENV);
-  compiler_path = fe_getenv ("COMPILER_PATH");
-  gm2_prefix = fe_getenv (GM2_PREFIX_ENV);
-  gm2_libexec = fe_getenv (GM2_LIBEXEC_ENV);
-
-  if ((library_path == NULL || (strcmp (library_path, "") == 0))
-      && (compiler_path == NULL || (strcmp (compiler_path, "") == 0)))
-    {
-#if defined(DEBUGGING)
-      fprintf (stderr, "STANDARD_LIBEXEC_PREFIX = %s\n",
-               STANDARD_LIBEXEC_PREFIX);
-      fprintf (stderr, "STANDARD_BINDIR_PREFIX = %s\n",
-               STANDARD_BINDIR_PREFIX);
-      fprintf (stderr, "TOOLDIR_BASE_PREFIX = %s\n", TOOLDIR_BASE_PREFIX);
-      fprintf (stderr, "DEFAULT_TARGET_VERSION = %s\n",
-               DEFAULT_TARGET_VERSION);
-      fprintf (stderr, "DEFAULT_TARGET_MACHINE = %s\n",
-               DEFAULT_TARGET_MACHINE);
-#endif
-
-      if (gm2_prefix != NULL && (strcmp (gm2_prefix, "") != 0))
-        {
-          build_path (gm2_prefix);
-          build_library_path (gm2_prefix);
-        }
-      if (gm2_libexec != NULL && (strcmp (gm2_libexec, "") != 0))
-        build_compiler_path (gm2_libexec);
-    }
-  else if (gm2_prefix != NULL && !seen_fmakeall0)
-
-    /* No need to issue a warning if seen_fmakeall0 as the parent will
-       have set COMPILER_PATH and LIBRARY_PATH because of GM2_ROOT.
-       Also users should not be using -fmakeall0 as it is an internal
-       option.  */
-    error ("it is not advisible to set %qs as well as either %qs or %qs",
-           GM2_PREFIX_ENV, LIBRARY_PATH_ENV, "COMPILER_PATH");
 }
 
 /* library_installed returns true if directory library is found under
@@ -949,12 +481,12 @@ library_installed (const char *libpath, const char *library)
 static bool
 check_valid_library (const char *libpath, const char *library)
 {
-  /* firstly check against the default libraries (which might not be
+  /* Firstly check against the default libraries (which might not be
      installed yet).  */
   for (int i = 0; i < maxlib; i++)
     if (strcmp (library, library_name[i]) == 0)
       return true;
-  /* secondly check whether it is installed (a third party library).  */
+  /* Secondly check whether it is installed (a third party library).  */
   return library_installed (libpath, library);
 }
 
@@ -993,50 +525,6 @@ check_valid_list (const char *libpath, const char *libraries)
   return true;
 }
 
-
-/* add_env_option append multiple options, one for each element in
-   the path.  */
-
-static void
-add_env_option (const char *path, size_t option)
-{
-  if (path != NULL)
-    {
-      const char *p = path;
-      const char *s = path;
-      char *arg;
-      int i, l, n;
-
-      l = strlen (path);
-      i = 0;
-      n = 0;
-      while (i < l)
-        {
-          if (path[i] == ':')
-            {
-              arg = (char *)xmalloc (n + 1);
-              strncpy (arg, s, n);
-              arg[n] = (char)0;
-              fe_generate_option (option, arg, true);
-              n++;
-              s = &p[i];
-              n = 0;
-            }
-          else
-            {
-              n++;
-              i++;
-            }
-        }
-      if (n > 0)
-        {
-          arg = (char *)xmalloc (n + 1);
-          strncpy (arg, s, n);
-          arg[n] = (char)0;
-          fe_generate_option (option, arg, true);
-        }
-    }
-}
 
 /* add_word returns a new string which has the contents of lib
    appended to list.  If list is NULL then lib is duplicated and
@@ -1123,11 +611,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   bool seen_module_extension = -1;
   bool linking = true;
-  bool seen_source = false;
   bool seen_fexceptions = true;
   const char *libpath;
-  const char *gm2ipath;
-  const char *gm2opath;
 
   /* By default, we add the math library if we have one.  */
   bool need_math = (strcmp (MATH_LIBRARY, "") == 0);
@@ -1158,17 +643,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
         case OPT_fexceptions:
           seen_fexceptions = ((*in_decoded_options)[i].value);
           break;
-#if 0
-        case OPT_fonlylink:
-          seen_fonlylink = true;
-          break;
-        case OPT_fmakeall:
-          seen_fmakeall = true;
-          break;
-        case OPT_fmakeall0:
-          seen_fmakeall0 = true;
-          break;
-#endif
         case OPT_B:
           seen_B = true;
           B_path = (*in_decoded_options)[i].arg;
@@ -1188,21 +662,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	}
     }
 
-#if 0
-  /* -fmakeall implies that the first invoked driver only does the link
-     and should leave all compiles to the makefile otherwise we will try
-     and link two main applications.  */
-  if (seen_fmakeall && (!seen_fonlylink))
-    fe_generate_option (OPT_fonlylink, NULL, false);
-
-  check_gm2_root ();
-#endif
   libpath = fe_getenv (LIBRARY_PATH_ENV);
   if (libpath == NULL || (strcmp (libpath, "") == 0))
     libpath = LIBSUBDIR;
-
-  gm2ipath = fe_getenv (GM2IPATH_ENV);
-  gm2opath = fe_getenv (GM2OPATH_ENV);
 
 #if defined(DEBUGGING)
   print_options ("at beginning", *in_decoded_options_count, *in_decoded_options);
@@ -1220,12 +682,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       if ((opt == OPT_c) || (opt == OPT_S))
         linking = false;
       if (opt == OPT_I)
-        {
-          fe_generate_option (OPT_I, arg, true);
-          inclPos = i;
-        }
-      if (opt == OPT_fobject_path_)
-        linkPos = i;
+	fe_generate_option (OPT_I, arg, true);
       if (opt == OPT_fiso)
         dialect = "iso";
       if (opt == OPT_fpim2)
@@ -1249,17 +706,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
           seen_x_flag = true;
           language = arg;
         }
-      if (opt == OPT_SPECIAL_input_file)
-        {
-          if (is_object (arg))
-            remember_object (arg);
-          else
-	    seen_source = true;
-        }
     }
-  if (linking && (!seen_source))
-    linking = false;
-
   if (language != NULL && (strcmp (language, "modula-2") != 0))
     return;
 #if defined(DEBUGGING)
@@ -1271,53 +718,17 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   if (libraries == NULL)
     {
-      if (strncmp (dialect, "pim", 3) == 0)
-        libraries = xstrdup ("m2pim");
-      else if (strcmp (dialect, "iso") == 0)
+      if (strcmp (dialect, "iso") == 0)
         libraries = xstrdup ("m2iso,m2pim");
+      else
+        libraries = xstrdup ("m2pim");  /* Always require m2pim for dynamic scaffold.  */
     }
 
   libraries = convert_abbreviations (libraries);
   if (! check_valid_list (libpath, libraries))
     return;
 
-  if (inclPos != -1 && linkPos == -1)
-    {
-#if defined(DEBUGGING)
-      printf ("inclPos = %d,  linkPos = %d\n", inclPos, linkPos);
-#endif
-      linkPos = 1;
-      convert_include_into_link (in_decoded_options, in_decoded_options_count);
-    }
-  add_env_option (gm2ipath, OPT_I);
   add_default_includes (libpath, libraries);
-#if 0
-  add_exec_prefix ();
-#endif
-
-#if defined(LOCAL_DEBUGGING)
-  if (!seen_B)
-    add_B_prefix (in_decoded_options_count, in_decoded_options);
-#endif
-
-#if defined(DEBUGGING)
-  print_options ("after B prefix", *in_decoded_options_count, *in_decoded_options);
-#endif
-
-  if (linkPos == -1)
-    {
-      linkPos = 1;
-      if (inclPos == -1)
-        add_default_fobjects (NULL, libpath, libraries);
-      else
-        {
-          struct cl_decoded_option *options = *in_decoded_options;
-          const char *prev = options[inclPos].arg;
-
-          add_default_fobjects (prev, libpath, libraries);
-        }
-    }
-
   if ((!seen_x_flag) && seen_module_extension)
     fe_generate_option (OPT_x, "modula-2", false);
 
@@ -1326,10 +737,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   if (linking)
     {
-      add_env_option (gm2opath, OPT_fobject_path_);
       (*in_added_libraries) += add_default_archives (
-          libpath, libraries, in_decoded_options_count, in_decoded_options,
-          *in_decoded_options_count);
+        libpath, libraries, in_decoded_options_count, in_decoded_options,
+	*in_decoded_options_count);
 
       if (need_math)
         (*in_added_libraries)
@@ -1359,8 +769,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
                               in_decoded_options, *in_decoded_options_count);
         }
     }
-  scan_for_link_args (in_decoded_options_count, in_decoded_options);
-
 #if defined(DEBUGGING)
   print_options ("before include purge", *in_decoded_options_count, *in_decoded_options);
 #endif
@@ -1378,143 +786,10 @@ lang_specific_pre_link (void)
   return 0;
 }
 
-/* get_objects returns a string containing all objects specified on
-   the command line.  */
-
-static const char *
-get_objects (int argc ATTRIBUTE_UNUSED, const char *argv[] ATTRIBUTE_UNUSED)
-{
-  char *result = (char *)xmalloc (1);
-  int len = 0;
-  int flen;
-  object_list *o;
-
-  *result = (char)0;
-
-  for (o = head_objects; o != NULL; o = o->next)
-    {
-      len = strlen (result);
-      flen = strlen (o->name);
-      result = (char *)xrealloc (result, len + flen + 1 + 1);
-      strcat (result, o->name);
-      strcat (result, " ");
-    }
-  return result;
-}
-
-/* remove_objects return an empty string, but also remove all objects
-   from the command line.  */
-
-extern void fe_mark_compiled (const char *);
-
-static const char *
-remove_objects (int argc ATTRIBUTE_UNUSED, const char *argv[] ATTRIBUTE_UNUSED)
-{
-  object_list *o;
-
-  for (o = head_objects; o != NULL; o = o->next)
-    fe_mark_compiled (o->name);
-
-  return NULL;
-}
-
-/* get_link_args returns a string containing all arguments related to
-   the link stage.  */
-
-static const char *
-get_link_args (int argc ATTRIBUTE_UNUSED, const char *argv[] ATTRIBUTE_UNUSED)
-{
-  char *result = (char *)xmalloc (1);
-  int len = 0;
-  int alen;
-  object_list *o;
-
-  *result = (char)0;
-
-  for (o = head_link_args; o != NULL; o = o->next)
-    {
-      len = strlen (result);
-      alen = strlen (o->name);
-      result = (char *)xrealloc (result, len + alen + 1 + 1);
-      strcat (result, o->name);
-      strcat (result, " ");
-    }
-  return result;
-}
-
-/* add_exec_dir prepends the exec path to the given executable filename.  */
-
-static const char *
-add_exec_dir (int argc, const char *argv[])
-{
-  if (argc == 1 && argv[0] != NULL)
-    {
-      const char *path;
-
-      if (seen_B)
-        path = xstrdup (B_path);
-      else
-        path = gen_gm2_libexec (get_libexec ());
-
-      if (path != NULL)
-        {
-          char *opt = (char *)xmalloc (strlen ("-fcppprog=") + strlen (path)
-                                       + 1 + strlen (argv[0]) + 1);
-          char *sep = (char *)alloca (2);
-
-          sep[0] = DIR_SEPARATOR;
-          sep[1] = (char)0;
-
-          strcpy (opt, "-fcppprog=");
-          strcat (opt, path);
-          strcat (opt, sep);
-          strcat (opt, argv[0]);
-          return opt;
-        }
-    }
-  return "-fcppprog=none";
-}
-
-/* add_exec_name generate binary name.  */
-
-static const char *
-add_exec_name (int argc, const char *argv[])
-{
-  if (argc == 1 && argv[0] != NULL)
-    return argv[0];
-  return xstrdup ("");
-}
-
-/* no_link tell gcc.c not to invoke its linker.  */
-
-static const char *
-no_link (int argc ATTRIBUTE_UNUSED, const char *argv[] ATTRIBUTE_UNUSED)
-{
-  allow_linker = false;
-  return xstrdup ("");
-}
-
-/* exit_callback invoke exit.  */
-
-static const char *
-exit_callback (int argc ATTRIBUTE_UNUSED, const char *argv[] ATTRIBUTE_UNUSED)
-{
-  exit (0);
-}
-
 /* lang_register_spec_functions register the Modula-2 associated spec
    functions.  */
 
 void
 lang_register_spec_functions (void)
 {
-#if 0
-  fe_add_spec_function ("objects", get_objects);
-  fe_add_spec_function ("nolink", no_link);
-  fe_add_spec_function ("noobjects", remove_objects);
-  fe_add_spec_function ("linkargs", get_link_args);
-  fe_add_spec_function ("exec_prefix", add_exec_dir);
-  fe_add_spec_function ("exec_name", add_exec_name);
-  fe_add_spec_function ("exit", exit_callback);
-#endif
 }

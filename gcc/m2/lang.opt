@@ -254,14 +254,6 @@ fshared
 Modula-2
 generate a shared library from the module
 
-fmakeinit
-Modula-2
-generate the start up C code for the module, a file _m2_modulename.c is created
-
-fobject-path=
-Modula-2 Joined
-set the object path
-
 fm2-whole-program
 Modula-2
 compile all implementation modules and program module at once
