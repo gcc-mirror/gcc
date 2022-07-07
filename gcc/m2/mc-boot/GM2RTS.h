@@ -72,13 +72,6 @@ EXTERN void M2RTS_RegisterModule (void * name, M2RTS_ArgCVEnvP init, M2RTS_ArgCV
 EXTERN void M2RTS_RequestDependant (void * modulename, void * dependantmodule);
 
 /*
-   ExecuteTerminationProcedures - calls each installed termination
-                                  procedure in reverse order.
-*/
-
-EXTERN void M2RTS_ExecuteTerminationProcedures (void);
-
-/*
    InstallTerminationProcedure - installs a procedure, p, which will
                                  be called when the procedure
                                  ExecuteTerminationProcedures
@@ -102,6 +95,13 @@ EXTERN void M2RTS_ExecuteInitialProcedures (void);
 */
 
 EXTERN unsigned int M2RTS_InstallInitialProcedure (PROC p);
+
+/*
+   ExecuteTerminationProcedures - calls each installed termination procedure
+                                  in reverse order.
+*/
+
+EXTERN void M2RTS_ExecuteTerminationProcedures (void);
 
 /*
    Terminate - provides compatibility for pim.  It call exit with

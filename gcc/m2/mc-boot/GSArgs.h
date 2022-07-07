@@ -56,7 +56,7 @@ extern "C" {
             new string, otherwise s is set to NIL.
 */
 
-EXTERN unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int i);
+EXTERN unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int n);
 
 /*
    Narg - returns the number of arguments available from

@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 IMPLEMENTATION MODULE Args ;
 
 
-FROM UnixArgs IMPORT ArgC, ArgV ;
+FROM UnixArgs IMPORT GetArgC, GetArgV ;
 FROM ASCII IMPORT nul ;
 
 
@@ -50,16 +50,18 @@ VAR
             The success of the operation is returned.
 *)
 
-PROCEDURE GetArg (VAR a: ARRAY OF CHAR; i: CARDINAL) : BOOLEAN ;
+PROCEDURE GetArg (VAR a: ARRAY OF CHAR; n: CARDINAL) : BOOLEAN ;
 VAR
+   i   : INTEGER ;
    High,
    j   : CARDINAL ;
 BEGIN
+   i := VAL (INTEGER, n) ;
    j := 0 ;
    High := HIGH(a) ;
-   IF i<ArgC
+   IF i < GetArgC ()
    THEN
-      Source := ArgV ;
+      Source := GetArgV () ;
       WHILE (Source^[i]^[j]#nul) AND (j<High) DO
          a[j] := Source^[i]^[j] ;
          INC(j)
@@ -69,7 +71,7 @@ BEGIN
    THEN
       a[j] := nul
    END ;
-   RETURN( i<ArgC )
+   RETURN i < GetArgC ()
 END GetArg ;
 
 
@@ -80,7 +82,7 @@ END GetArg ;
 
 PROCEDURE Narg () : CARDINAL ;
 BEGIN
-   RETURN( ArgC )
+   RETURN GetArgC ()
 END Narg ;
 
 

@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "ansidecl.h"
 
 #include "gm2-libs-host.h"
+#include "m2rts.h"
 
 #   ifdef __cplusplus
 extern "C" {
@@ -100,15 +101,35 @@ ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
 /* GNU Modula-2 hooks */
 
 void
-_M2_ldtoa_init (void)
+_M2_ldtoa_init (int, char **, char **)
 {
 }
 
 void
-_M2_ldtoa_finish (void)
+_M2_ldtoa_finish (int, char **, char **)
+{
+}
+
+void
+_M2_ldtoa_dep (void)
 {
 }
 
 #   ifdef __cplusplus
 }
+
+struct _M2_ldtoa_ctor { _M2_ldtoa_ctor (); } _M2_ldtoa_ctor;
+
+_M2_ldtoa_ctor::_M2_ldtoa_ctor (void)
+{
+  M2RTS_RegisterModule ("ldtoa", _M2_ldtoa_init, _M2_ldtoa_finish,
+			_M2_ldtoa_dep);
+}
+
+#else
+void
+_M2_ldtoa_ctor (void)
+{
+}
+
 #   endif

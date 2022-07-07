@@ -56,7 +56,7 @@ static _T1 Source;
             The success of the operation is returned.
 */
 
-extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int i);
+extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int n);
 
 /*
    Narg - returns the number of arguments available from
@@ -71,16 +71,18 @@ extern "C" unsigned int Args_Narg (void);
             The success of the operation is returned.
 */
 
-extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int i)
+extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int n)
 {
+  int i;
   unsigned int High;
   unsigned int j;
 
+  i = (int ) (n);
   j = 0;
   High = _a_high;
-  if (i < UnixArgs_ArgC)
+  if (i < (UnixArgs_GetArgC ()))
     {
-      Source = static_cast<_T1> (UnixArgs_ArgV);
+      Source = static_cast<_T1> (UnixArgs_GetArgV ());
       while (((*(*Source).array[i]).array[j] != ASCII_nul) && (j < High))
         {
           a[j] = (*(*Source).array[i]).array[j];
@@ -91,7 +93,7 @@ extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int
     {
       a[j] = ASCII_nul;
     }
-  return i < UnixArgs_ArgC;
+  return i < (UnixArgs_GetArgC ());
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -104,7 +106,7 @@ extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int
 
 extern "C" unsigned int Args_Narg (void)
 {
-  return UnixArgs_ArgC;
+  return UnixArgs_GetArgC ();
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

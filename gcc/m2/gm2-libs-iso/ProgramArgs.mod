@@ -30,7 +30,7 @@ FROM RTgen IMPORT ChanDev, InitChanDev, DeviceType, doLook, doSkip, doSkipLook,
                   doReadText, doReadLocs ;
 
 FROM SYSTEM IMPORT ADDRESS, ADR ;
-FROM UnixArgs IMPORT ArgC, ArgV ;
+FROM UnixArgs IMPORT GetArgC, GetArgV ;
 FROM RTgenif IMPORT GenDevIF, InitGenDevIF ;
 FROM RTdata IMPORT ModuleId, MakeModuleId, InitData, GetData ;
 FROM IOLink IMPORT DeviceId, DeviceTablePtr, DeviceTablePtrValue, AllocateDeviceId, MakeChan, RAISEdevException ;
@@ -127,7 +127,7 @@ BEGIN
       currentPos := 0 ;
       currentArg := 0 ;
       argLength := strlen(currentPtr)+1 ;
-      argc := ArgC
+      argc := GetArgC ()
    END
 END reset ;
 
@@ -382,15 +382,16 @@ END NextArg ;
 
 PROCEDURE collectArgs ;
 VAR
-   i, n: CARDINAL ;
+   i   : INTEGER ;
+   n   : CARDINAL ;
    pp  : POINTER TO PtrToChar ;
    p, q: PtrToChar ;
 BEGIN
    (* count the number of bytes necessary to remember all arg data *)
    n := 0 ;
    i := 0 ;
-   pp := ArgV ;
-   WHILE i<ArgC DO
+   pp := GetArgV () ;
+   WHILE i < GetArgC () DO
       p := pp^ ;
       WHILE p^#nul DO
          INC(p) ;
@@ -404,9 +405,9 @@ BEGIN
    (* now allocate correct amount of memory and copy the data *)
    ALLOCATE(ArgData, ArgLength) ;
    i := 0 ;
-   pp := ArgV ;
+   pp := GetArgV () ;
    q := ArgData ;
-   WHILE i<ArgC DO
+   WHILE i < GetArgC () DO
       p := pp^ ;
       WHILE p^#nul DO
          q^ := p^ ;
@@ -450,7 +451,7 @@ BEGIN
       currentPos := 0 ;
       currentArg := 0 ;
       argLength := strlen(currentPtr)+1 ;
-      argc := ArgC
+      argc := GetArgC ()
    END ;
    d := DeviceTablePtrValue(cid, did) ;
    InitData(d, mid, a, freeData) ;

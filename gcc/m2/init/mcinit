@@ -20,6 +20,7 @@
 #
 Storage
 SYSTEM
+# M2Dependent
 M2RTS
 RTExceptions
 # SYSTEM    9 /opt/gm2/lib/gcc/x86_64-linux-gnu/4.7.4/m2/pim/SYSTEM.mod

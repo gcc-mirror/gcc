@@ -747,3 +747,6 @@ int yywrap (void)
 
 void _M2_mcflex_init (void) {}
 void _M2_mcflex_finish (void) {}
+
+/* This is a gross hack to satisfy linking.  */
+void _M2_mcflex_ctor (void) {}

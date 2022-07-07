@@ -34,7 +34,7 @@ EXPORT QUALIFIED GetArg, Narg ;
             The success of the operation is returned.
 *)
 
-PROCEDURE GetArg (VAR a: ARRAY OF CHAR; i: CARDINAL) : BOOLEAN ;
+PROCEDURE GetArg (VAR a: ARRAY OF CHAR; n: CARDINAL) : BOOLEAN ;
 
 
 (*
