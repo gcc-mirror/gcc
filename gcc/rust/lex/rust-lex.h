@@ -72,10 +72,14 @@ public:
     return *this;
   }
 
+  static RAIIFile create_error () { return RAIIFile (nullptr, nullptr); }
+
   ~RAIIFile () { close (); }
 
   FILE *get_raw () { return file; }
   const char *get_filename () { return filename; }
+
+  bool ok () const { return file; }
 };
 
 class Lexer
@@ -136,43 +140,12 @@ private:
 public:
   // Construct lexer with input file and filename provided
   Lexer (const char *filename, RAIIFile input, Linemap *linemap);
+
+  // Lex the contents of a string instead of a file
+  Lexer (const std::string &input);
+
+  // dtor
   ~Lexer ();
-
-  /**
-   * Lex the contents of a string instead of a file
-   */
-  // FIXME: This is unsafe!
-  // Since we are taking a reference to the string's internal buffer, we must
-  // ensure that the lexer does not outlive the string, which might not always
-  // be the case.
-  //
-  // We could have a fix, which would include using fmemopen() to allocate a
-  // buffer and copy the string inside it.
-  // ```
-  // // There will be an extra nul-terminator byte written on fclose(), so
-  // // account for that
-  // auto string_file = fmemopen(NULL, input.length() + 1, "wr");
-  // fwrite(input.c_str(), sizeof(char), input.length(), string_file);
-  // auto wrapper = RAIIFile(string_file);
-  // ```
-  // But sadly our RAIIFile does not support moving really well... And the
-  // destructor, which calls fclose(), gets called, triggering a lack of a
-  // buffer to parse :)
-  //
-  // We need to look into fixing the RAIIFile so that it supports this
-  // behaviour. I'm assuming this will be something like fixing one of the copy
-  // or move constructors, but is outside of the scope of this fix. For now,
-  // make sure your lexers don't live longer than the strings they're trying
-  // to lex
-  static Lexer lex_string (std::string &input)
-  {
-    // We can perform this ugly cast to a non-const char* since we're only
-    // *reading* the string. This would not be valid if we were doing any
-    // modification to it.
-    auto string_file = fmemopen (&input[0], input.length (), "r");
-
-    return Lexer (nullptr, RAIIFile (string_file), nullptr);
-  }
 
   // don't allow copy semantics (for now, at least)
   Lexer (const Lexer &other) = delete;
@@ -225,22 +198,54 @@ private:
   static const int max_column_hint = 80;
 
   // Input source wrapper thing.
-  struct InputSource
+  class InputSource
   {
+  public:
+    virtual ~InputSource () {}
+
+    // Overload operator () to return next char from input stream.
+    virtual int next () = 0;
+  };
+
+  class FileInputSource : public InputSource
+  {
+  private:
     // Input source file.
     FILE *input;
 
+  public:
     // Create new input source from file.
-    InputSource (FILE *input) : input (input) {}
+    FileInputSource (FILE *input) : input (input) {}
 
-    // Overload operator () to return next char from input stream.
-    int operator() () { return fgetc (input); }
+    int next () override { return fgetc (input); }
+  };
+
+  class BufferInputSource : public InputSource
+  {
+  private:
+    const std::string &buffer;
+    size_t offs;
+
+  public:
+    // Create new input source from file.
+    BufferInputSource (const std::string &b, size_t offset)
+      : buffer (b), offs (offset)
+    {}
+
+    int next () override
+    {
+      if (offs >= buffer.size ())
+	return EOF;
+
+      return buffer.at (offs++);
+    }
   };
 
   // The input source for the lexer.
   // InputSource input_source;
   // Input file queue.
-  buffered_queue<int, InputSource> input_queue;
+  std::unique_ptr<InputSource> raw_input_source;
+  buffered_queue<int, InputSource &> input_queue;
 
   // Token source wrapper thing.
   struct TokenSource
@@ -252,7 +257,7 @@ private:
     TokenSource (Lexer *parLexer) : lexer (parLexer) {}
 
     // Overload operator () to build token in lexer.
-    TokenPtr operator() () { return lexer->build_token (); }
+    TokenPtr next () { return lexer->build_token (); }
   };
 
   // The token source for the lexer.
