@@ -140,9 +140,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	    AST::TypePathSegmentGeneric *s
 	      = static_cast<AST::TypePathSegmentGeneric *> (segment.get ());
 	    if (s->has_generic_args ())
-	      {
-		ResolveType::type_resolve_generic_args (s->get_generic_args ());
-	      }
+	      ResolveGenericArgs::go (s->get_generic_args ());
 	  }
 	  break;
 
@@ -334,7 +332,7 @@ ResolveRelativeQualTypePath::visit (AST::TypePathSegmentGeneric &seg)
       return;
     }
 
-  ResolveType::type_resolve_generic_args (seg.get_generic_args ());
+  ResolveGenericArgs::go (seg.get_generic_args ());
 }
 
 void
@@ -470,6 +468,13 @@ ResolveTypeToCanonicalPath::visit (AST::SliceType &type)
 ResolveTypeToCanonicalPath::ResolveTypeToCanonicalPath ()
   : ResolverBase (), result (CanonicalPath::create_empty ())
 {}
+
+void
+ResolveGenericArgs::go (AST::GenericArgs &args)
+{
+  for (auto &gt : args.get_type_args ())
+    ResolveType::go (gt.get ());
+}
 
 } // namespace Resolver
 } // namespace Rust
