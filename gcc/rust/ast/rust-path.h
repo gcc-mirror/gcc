@@ -164,14 +164,14 @@ public:
 
   static GenericArg create_const (std::unique_ptr<Expr> expression)
   {
-    return GenericArg (std::move (expression), nullptr, "", Kind::Const,
-		       expression->get_locus ());
+    auto locus = expression->get_locus ();
+    return GenericArg (std::move (expression), nullptr, "", Kind::Const, locus);
   }
 
   static GenericArg create_type (std::unique_ptr<Type> type)
   {
-    return GenericArg (nullptr, std::move (type), "", Kind::Type,
-		       type->get_locus ());
+    auto locus = type->get_locus ();
+    return GenericArg (nullptr, std::move (type), "", Kind::Type, locus);
   }
 
   static GenericArg create_ambiguous (Identifier path, Location locus)
