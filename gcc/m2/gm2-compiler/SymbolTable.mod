@@ -358,6 +358,7 @@ TYPE
                BuiltinName   : Name ;       (* name of equivalent builtin    *)
                IsInline      : BOOLEAN ;    (* Was it declared __INLINE__ ?  *)
                ReturnOptional: BOOLEAN ;    (* Is the return value optional? *)
+               IsExtern      : BOOLEAN ;    (* Make this procedure extern.   *)
                IsPublic      : BOOLEAN ;    (* Make this procedure visible.  *)
                IsCtor        : BOOLEAN ;    (* Is this procedure a ctor?     *)
                Unresolved    : SymbolTree ; (* All symbols currently         *)
@@ -3013,6 +3014,20 @@ END IsImplicityExported ;
 
 
 (*
+   MakeProcedureCtorExtern - creates an extern ctor procedure
+*)
+
+PROCEDURE MakeProcedureCtorExtern (tokenno: CARDINAL; modulename: Name) : CARDINAL ;
+VAR
+   ctor: CARDINAL ;
+BEGIN
+   ctor := MakeProcedure (tokenno, GenName ('_M2_', modulename, '_ctor')) ;
+   PutExtern (ctor, TRUE) ;
+   RETURN ctor
+END MakeProcedureCtorExtern ;
+
+
+(*
    GenName - returns a new name consisting of pre, name, post concatenation.
 *)
 
@@ -3503,6 +3518,7 @@ BEGIN
             BuiltinName := NulName ;     (* name of equivalent builtin    *)
             IsInline := FALSE ;          (* Was is declared __INLINE__ ?  *)
             ReturnOptional := FALSE ;    (* Is the return value optional? *)
+            IsExtern := FALSE ;          (* Make this procedure external. *)
             IsPublic := FALSE ;          (* Make this procedure visible.  *)
             IsCtor := FALSE ;            (* Is this procedure a ctor?     *)
             Scope := GetCurrentScope() ; (* Scope of procedure.           *)
@@ -3547,6 +3563,48 @@ BEGIN
    END ;
    RETURN Sym
 END MakeProcedure ;
+
+
+(*
+   PutExtern - changes the extern boolean inside the procedure.
+*)
+
+PROCEDURE PutExtern (sym: CARDINAL; value: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym: Procedure.IsExtern := value
+
+      ELSE
+         InternalError ('expecting ProcedureSym symbol')
+      END
+   END
+END PutExtern ;
+
+
+(*
+   IsExtern - returns the public boolean associated with a procedure.
+*)
+
+PROCEDURE IsExtern (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym:  RETURN Procedure.IsExtern
+
+      ELSE
+         InternalError ('expecting ProcedureSym symbol')
+      END
+   END
+END IsExtern ;
 
 
 (*
@@ -4265,6 +4323,23 @@ BEGIN
    END
 END PutConstIntoTypeTree ;
 *)
+
+
+(*
+   MakeConstant - create a constant cardinal and return the symbol.
+*)
+
+PROCEDURE MakeConstant (tok: CARDINAL; value: CARDINAL) : CARDINAL ;
+VAR
+   str: String ;
+   sym: CARDINAL ;
+BEGIN
+   str := Sprintf1 (Mark (InitString ("%d")), value) ;
+   sym := MakeConstLit (tok, makekey (string (str)), Cardinal) ;
+   str := KillString (str) ;
+   RETURN sym
+END MakeConstant ;
+
 
 (*
    MakeConstLit - returns a constant literal of type, constType, with a constName,

@@ -41,7 +41,7 @@ TYPE
 
 PROCEDURE InitList (VAR l: List) ;
 BEGIN
-   NEW(l) ;
+   NEW (l) ;
    WITH l^ DO
       NoOfElements := 0 ;
       Next := NIL

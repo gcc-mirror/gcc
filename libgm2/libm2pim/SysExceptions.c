@@ -42,6 +42,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdio.h>
 #endif
 
+#include "m2rts.h"
 
 #if 0
 /* Signals.  */
@@ -91,14 +92,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif
 
-/* Note:
-
-    o  wholeDivException and realDivException are caught by SIGFPE and
-       depatched to the appropriate Modula-2 runtime routine upon testing
-       FPE_INTDIV or FPE_FLTDIV.
-    o  realValueException is also caught by SIGFPE and dispatched by
-       testing FFE_FLTOVF or FPE_FLTUND or FPE_FLTRES or FPE_FLTINV.
-    o  indexException is caught by SIGFPE and dispatched by FPE_FLTSUB.  */
+/* Note: wholeDivException and realDivException are caught by SIGFPE
+   and depatched to the appropriate Modula-2 runtime routine upon
+   testing FPE_INTDIV or FPE_FLTDIV.  realValueException is also
+   caught by SIGFPE and dispatched by testing FFE_FLTOVF or FPE_FLTUND
+   or FPE_FLTRES or FPE_FLTINV.  indexException is caught by SIGFPE
+   and dispatched by FPE_FLTSUB.  */
 
 #if defined(HAVE_SIGNAL_H)
 static struct sigaction sigbus;
@@ -172,7 +171,7 @@ sigfpeDespatcher (int signum, siginfo_t *info, void *ucontext)
     }
 }
 
-void
+extern "C" void
 SysExceptions_InitExceptionHandlers (
     void (*indexf) (void *), void (*range) (void *), void (*casef) (void *),
     void (*invalidloc) (void *), void (*function) (void *),
@@ -223,7 +222,7 @@ SysExceptions_InitExceptionHandlers (
 }
 
 #else
-void
+extern "C" void
 SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
                                      void *invalidloc, void *function,
                                      void *wholevalue, void *wholediv,
@@ -235,14 +234,26 @@ SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
 }
 #endif
 
-/* GNU Modula-2 linking fodder.  */
 
-void
-_M2_SysExceptions_init (void)
+extern "C" void
+_M2_SysExceptions_init (int, char *[], char *[])
 {
 }
 
-void
-_M2_SysExceptions_finish (void)
+extern "C" void
+_M2_SysExceptions_finish (int, char *[], char *[])
 {
+}
+
+extern "C" void
+_M2_SysExceptions_dep (void)
+{
+}
+
+struct _M2_SysExceptions_ctor { _M2_SysExceptions_ctor (); } _M2_SysExceptions_ctor;
+
+_M2_SysExceptions_ctor::_M2_SysExceptions_ctor (void)
+{
+  M2RTS_RegisterModule ("SysExceptions", _M2_SysExceptions_init, _M2_SysExceptions_finish,
+			_M2_SysExceptions_dep);
 }

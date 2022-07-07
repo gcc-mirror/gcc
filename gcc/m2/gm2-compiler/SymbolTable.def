@@ -57,6 +57,8 @@ EXPORT QUALIFIED NulSym,
                  MakeModule, MakeDefImp,
                  MakeInnerModule, MakeModuleCtor,
                  MakeProcedure,
+                 MakeProcedureCtorExtern,
+                 MakeConstant,
                  MakeConstLit,
                  MakeConstVar,
                  MakeConstLitString,
@@ -194,7 +196,7 @@ EXPORT QUALIFIED NulSym,
                  PutAlignment, PutDefaultRecordFieldAlignment,
                  PutUnused, IsUnused,
                  PutVariableSSA, IsVariableSSA,
-                 PutPublic, IsPublic, PutCtor, IsCtor,
+                 PutPublic, IsPublic, PutCtor, IsCtor, PutExtern, IsExtern,
 
                  IsDefImp,
                  IsModule,
@@ -573,6 +575,27 @@ PROCEDURE MakeProcedure (tok: CARDINAL; ProcedureName: Name) : CARDINAL ;
 
 
 (*
+   MakeProcedureCtorExtern - creates an extern ctor procedure
+*)
+
+PROCEDURE MakeProcedureCtorExtern (tokenno: CARDINAL; modulename: Name) : CARDINAL ;
+
+
+(*
+   PutExtern - changes the extern boolean inside the procedure.
+*)
+
+PROCEDURE PutExtern (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsExtern - returns the public boolean associated with a procedure.
+*)
+
+PROCEDURE IsExtern (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
    PutPublic - changes the public boolean inside the procedure.
 *)
 
@@ -674,6 +697,13 @@ PROCEDURE MakeType (tok: CARDINAL; TypeName: Name) : CARDINAL ;
 *)
 
 PROCEDURE MakeHiddenType (tok: CARDINAL; TypeName: Name) : CARDINAL ;
+
+
+(*
+   MakeConstant - create a constant cardinal and return the symbol.
+*)
+
+PROCEDURE MakeConstant (tok: CARDINAL; value: CARDINAL) : CARDINAL ;
 
 
 (*
@@ -1365,7 +1395,7 @@ PROCEDURE IsConstSet (Sym: CARDINAL) : BOOLEAN ;
 
 
 (*
-   PutConstructor - informs the symbol, sym, that this will be
+   PutConstructor - informs the symbol sym that this will be
                     a constructor constant.
 *)
 
@@ -1373,8 +1403,8 @@ PROCEDURE PutConstructor (Sym: CARDINAL) ;
 
 
 (*
-   PutConstructorFrom - sets the from type field in constructor,
-                        Sym, to, from.
+   PutConstructorFrom - sets the from type field in constructor
+                        Sym to from.
 *)
 
 PROCEDURE PutConstructorFrom (Sym: CARDINAL; from: CARDINAL) ;

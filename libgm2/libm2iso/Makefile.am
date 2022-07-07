@@ -179,8 +179,8 @@ M2MODS = ChanConsts.mod  CharClass.mod \
 
 toolexeclib_LTLIBRARIES = libm2iso.la
 libm2iso_la_SOURCES =  $(M2MODS) \
-                     ErrnoCategory.c  wrapsock.c \
-                     wraptime.c RTco.c
+                     ErrnoCategory.cc  wrapsock.c \
+                     wraptime.c RTco.cc
 
 C_INCLUDES = -I.. -I$(toplevel_srcdir)/libiberty -I$(toplevel_srcdir)/include
 
@@ -208,6 +208,9 @@ SYSTEM.def: Makefile
 
 .c.lo:
 	$(LIBTOOL) --tag=CC --mode=compile $(CC) -c $(CFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
+
+.cc.lo:
+	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)

@@ -84,11 +84,11 @@ extern "C" {
 
 #endif
 
-/* note o wholeDivException and realDivException are caught by SIGFPE
+/* note wholeDivException and realDivException are caught by SIGFPE
    and depatched to the appropriate Modula-2 runtime routine upon
-   testing FPE_INTDIV or FPE_FLTDIV.  o realValueException is also
+   testing FPE_INTDIV or FPE_FLTDIV.  realValueException is also
    caught by SIGFPE and dispatched by testing FFE_FLTOVF or
-   FPE_FLTUND or FPE_FLTRES or FPE_FLTINV.  o indexException is
+   FPE_FLTUND or FPE_FLTRES or FPE_FLTINV.  indexException is
    caught by SIGFPE and dispatched by FPE_FLTSUB.  */
 
 #if defined(HAVE_SIGNAL_H)

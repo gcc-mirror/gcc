@@ -51,6 +51,7 @@ CONST
    Debugging = FALSE ;
 
 VAR
+   UselistFilename,
    RuntimeModuleOverride,
    CppProgram,
    CppArgs              : String ;
@@ -403,7 +404,28 @@ END Getc ;
 
 
 (*
-   SetM2g - returns TRUE if the -fm2-g flags was used.
+   SetUselist - set the uselist to filename.
+*)
+
+PROCEDURE SetUselist (filename: ADDRESS) ;
+BEGIN
+   UselistFilename := InitStringCharStar (filename)
+END SetUselist ;
+
+
+(*
+   GetUselist - return the uselist filename as a String.
+*)
+
+PROCEDURE GetUselist () : String ;
+BEGIN
+   RETURN UselistFilename
+END GetUselist ;
+
+
+(*
+   SetM2g - set GenerateStatementNote to value and return value.
+            Corresponds to the -fm2-g flag.
 *)
 
 PROCEDURE SetM2g (value: BOOLEAN) : BOOLEAN ;
@@ -1170,5 +1192,6 @@ BEGIN
    SaveTemps                    := FALSE ;
    ScaffoldDynamic              := TRUE ;
    ScaffoldStatic               := FALSE ;
-   ScaffoldMain                 := FALSE
+   ScaffoldMain                 := FALSE ;
+   UselistFilename              := NIL
 END M2Options.

@@ -286,7 +286,6 @@ proc gm2-torture-execute { sources args success } {
 
 	# now link the test
 	set options ${option};
-        lappend options "-fonlylink"
 
 	if { [llength ${args}] > 0 } {
 	    lappend options "additional_flags=[lindex ${args} 0]"

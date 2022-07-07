@@ -319,14 +319,8 @@ gm2_langhook_handle_option (
     case OPT_fm2_lower_case:
       M2Options_SetLowerCaseKeywords (value);
       return 1;
-    case OPT_fuselist:
-      /* handled in the driver.  */
-      return 1;
-    case OPT_fmakelist:
-      /* handled in the driver.  */
-      return 1;
-    case OPT_fmodules:
-      /* handled in the driver.  */
+    case OPT_fuselist_:
+      M2Options_SetUselist (arg);
       return 1;
     case OPT_fruntime_modules_:
       M2Options_SetRuntimeModuleOverride (arg);

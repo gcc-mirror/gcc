@@ -130,17 +130,9 @@ fextended-opaque
 Modula-2
 allows opaque types to be implemented as any type (a GNU Modula-2 extension)
 
-fuselist
-Modula-2
-use the ordered list of modules to order the initialization/finalialization (--unimplemented--)
-
-fmakelist
-Modula-2
-create a topologically ordered list of modules called modulename.lst (--unimplemented--)
-
-fmodules
-Modula-2
-display the list of modules and their location
+fuselist=
+Modula-2 Joined
+orders the initialization/finalializations for scaffold-static or force linking of modules if scaffold-dynamic
 
 fno-pthread
 Modula-2

@@ -28,7 +28,7 @@ FROM NameKey IMPORT Name, NulName, MakeKey, GetKey, makekey, KeyToCharStar, Writ
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
 FROM M2DebugStack IMPORT DebugStack ;
 FROM M2Scaffold IMPORT DeclareScaffold, mainFunction, initFunction,
-                       finiFunction ;
+                       finiFunction, linkFunction, PopulateCtorArray ;
 
 FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaError3,
                         MetaErrors1, MetaErrors2, MetaErrors3,
@@ -49,7 +49,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         MakeTemporaryFromExpression,
                         MakeTemporaryFromExpressions,
                         MakeConstLit, MakeConstLitString,
-                        MakeConstString,
+                        MakeConstString, MakeConstant,
                         Make2Tuple,
                         RequestSym, MakePointer, PutPointer,
                         SkipType,
@@ -2352,6 +2352,34 @@ END BuildM2DepFunction ;
 
 
 (*
+   BuildM2LinkFunction - creates the _M2_link procedure which will
+                         cause the linker to pull in all the module ctors.
+*)
+
+PROCEDURE BuildM2LinkFunction (tokno: CARDINAL; modulesym: CARDINAL) ;
+BEGIN
+   IF ScaffoldDynamic AND (linkFunction # NulSym)
+   THEN
+      (* void
+         _M2_link (void)
+         {
+            for each module in uselist do
+               PROC foo_%d = _M2_module_ctor
+            done
+         }.  *)
+      PushT (linkFunction) ;
+      BuildProcedureStart ;
+      BuildProcedureBegin ;
+      StartScope (linkFunction) ;
+      PopulateCtorArray (tokno) ;
+      EndScope ;
+      BuildProcedureEnd ;
+      PopN (1)
+   END
+END BuildM2LinkFunction ;
+
+
+(*
    BuildM2MainFunction - creates the main function with appropriate calls to the scaffold.
 *)
 
@@ -2421,6 +2449,15 @@ BEGIN
       StartScope (initFunction) ;
       IF ScaffoldDynamic
       THEN
+         IF linkFunction # NulSym
+         THEN
+            (* _M2_link ();  *)
+            PushTtok (linkFunction, tok) ;
+            PushT (0) ;
+            BuildProcedureCall (tok)
+         END ;
+
+         (* Lookup ConstructModules and call it.  *)
          constructModules := GetQualidentImport (tok,
                                                  MakeKey ("ConstructModules"),
                                                  MakeKey ("M2RTS")) ;
@@ -2571,6 +2608,7 @@ BEGIN
          (* There are module init/fini functions and
             application init/fini functions.
             Here we create the application pair.  *)
+         BuildM2LinkFunction (tok, moduleSym) ;
          BuildM2MainFunction (tok, moduleSym) ;
          BuildM2InitFunction (tok, moduleSym) ;  (* Application init.  *)
          BuildM2FiniFunction (tok, moduleSym) ;  (* Application fini.  *)
@@ -7989,16 +8027,8 @@ END GetQualidentImport ;
 *)
 
 PROCEDURE MakeLengthConst (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
-VAR
-   l: CARDINAL ;
-   s: String ;
-   c: CARDINAL ;
 BEGIN
-   l := GetStringLength (sym) ;
-   s := Sprintf1 (Mark (InitString("%d")), l) ;
-   c := MakeConstLit (tok, makekey (string (s)), Cardinal) ;
-   s := KillString (s) ;
-   RETURN c
+   RETURN MakeConstant (tok, GetStringLength (sym))
 END MakeLengthConst ;
 
 

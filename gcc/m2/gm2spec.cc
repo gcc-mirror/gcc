@@ -636,10 +636,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
         continue;  /* Avoid examining arguments of options missing them.  */
       switch ((*in_decoded_options)[i].opt_index)
         {
-	case OPT_fuselist:
-	  /* Modula-2 link time option, which is used to direct the specs.  */
-	  (*in_decoded_options)[i].errors = 0;
-	  break;
         case OPT_fexceptions:
           seen_fexceptions = ((*in_decoded_options)[i].value);
           break;
@@ -737,6 +733,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   if (linking)
     {
+      if (strcmp (dialect, "iso") == 0)
+        (*in_added_libraries)
+            += add_library ("m2pim", in_decoded_options_count,
+                            in_decoded_options, *in_decoded_options_count);
+
       (*in_added_libraries) += add_default_archives (
         libpath, libraries, in_decoded_options_count, in_decoded_options,
 	*in_decoded_options_count);
