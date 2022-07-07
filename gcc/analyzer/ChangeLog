@@ -1,3 +1,25 @@
+2022-07-06  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106184
+	* sm-fd.cc (fd_state_machine): Change ordering of initialization
+	of state m_invalid so that the order of initializers is same as
+	the ordering of the fields in the class decl.
+
+2022-07-06  Immad Mir  <mirimmad@outlook.com>
+
+	* sm-fd.cc (use_after_close): save the "close" event and
+	show it where possible.
+
+2022-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106204
+	* region-model.cc (within_short_circuited_stmt_p): Move extraction
+	of assign_stmt to caller.
+	(due_to_ifn_deferred_init_p): New.
+	(region_model::check_for_poison): Move extraction of assign_stmt
+	from within_short_circuited_stmt_p to here.  Share logic with
+	call to due_to_ifn_deferred_init_p.
+
 2022-07-02  Tim Lange  <mail@tim-lange.me>
 
 	PR analyzer/105900

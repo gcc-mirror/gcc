@@ -1,3 +1,18 @@
+2022-07-06  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/53431
+	* parser.cc (cp_parser_pragma_kind): Move earlier in the file.
+	(cp_lexer_handle_early_pragma): New function.
+	(cp_lexer_new_main): Support parsing and handling early pragmas.
+	(c_parse_file): Adapt to changes in cp_lexer_new_main.
+
+2022-07-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106179
+	PR c++/106024
+	* parser.cc (cp_parser_lookup_name): Remove :: requirement
+	for using unqualified lookup result.
+
 2022-07-05  Nathan Sidwell  <nathan@acm.org>
 
 	* module.cc

@@ -1,3 +1,13 @@
+2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (process_obj): Clarify 'target_data' ->
+	'[...]_data'.
+	* config/nvptx/mkoffload.cc (process): Likewise.
+
+2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-general.h (enum omp_requires): Use 'GOMP_REQUIRES_[...]'.
+
 2022-07-05  Andrew MacLeod  <amacleod@redhat.com>
 
 	* value-relation.cc (relation_to_code): New vector.

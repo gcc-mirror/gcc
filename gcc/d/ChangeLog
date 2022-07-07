@@ -1,3 +1,12 @@
+2022-07-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 56589f0f4.
+
+2022-07-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (NOEXCEPTION_DFLAGS): Define.
+	(ALL_DFLAGS): Add NO_EXCEPTION_DFLAGS.
+
 2022-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/106139

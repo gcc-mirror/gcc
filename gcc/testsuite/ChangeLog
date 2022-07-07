@@ -1,3 +1,35 @@
+2022-07-06  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/53920
+	PR c++/53431
+	* c-c++-common/pragma-diag-11.c: New test.
+	* c-c++-common/pragma-diag-12.c: New test.
+	* c-c++-common/pragma-diag-13.c: New test.
+
+2022-07-06  Immad Mir  <mirimmad@outlook.com>
+
+	* gcc.dg/analyzer/fd-4.c: Add a new testcase to demonstrate
+	passsing of a closed file descriptor to a function that does
+	not emit any warning.
+
+2022-07-06  Immad Mir  <mirimmad@outlook.com>
+
+	* gcc.dg/analyzer/fd-4.c (test_3): change the message note to conform to the
+	changes in analyzer/sm-fd.cc
+	(test_4): Likewise.
+
+2022-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106204
+	* gcc.dg/analyzer/torture/uninit-pr106204.c: New test.
+	* gcc.dg/analyzer/uninit-pr106204.c: New test.
+
+2022-07-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106179
+	PR c++/106024
+	* g++.dg/template/operator16.C: New test.
+
 2022-07-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/105626

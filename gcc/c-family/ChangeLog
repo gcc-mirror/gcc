@@ -1,3 +1,43 @@
+2022-07-06  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/53920
+	PR c++/53431
+	* c-common.cc (c_option_is_from_cpp_diagnostics): New function.
+	* c-common.h (c_option_is_from_cpp_diagnostics): Declare.
+	(c_pp_stream_token): Declare.
+	* c-ppoutput.cc (init_pp_output): Refactor logic about skipping
+	pragmas to...
+	(should_output_pragmas): ...here. New function.
+	(token_streamer::stream): Support handling early pragmas.
+	(do_line_change): Likewise.
+	(c_pp_stream_token): New function.
+	* c-pragma.cc (struct pragma_diagnostic_data): New helper class.
+	(pragma_diagnostic_lex_normal): New function. Moved logic for
+	interpreting GCC diagnostic pragmas here.
+	(pragma_diagnostic_lex_pp): New function for parsing diagnostic pragmas
+	directly from libcpp.
+	(handle_pragma_diagnostic): Refactor into helper function...
+	(handle_pragma_diagnostic_impl): ...here.  New function.
+	(handle_pragma_diagnostic_early): New function.
+	(handle_pragma_diagnostic_early_pp): New function.
+	(struct pragma_ns_name): Renamed to...
+	(struct pragma_pp_data): ...this.  Add new "early_handler" member.
+	(c_register_pragma_1): Support early pragmas in the preprocessor.
+	(c_register_pragma_with_early_handler): New function.
+	(c_register_pragma): Support the new early handlers in struct
+	internal_pragma_handler.
+	(c_register_pragma_with_data): Likewise.
+	(c_register_pragma_with_expansion): Likewise.
+	(c_register_pragma_with_expansion_and_data): Likewise.
+	(c_invoke_early_pragma_handler): New function.
+	(c_pp_invoke_early_pragma_handler): New function.
+	(init_pragma): Add early pragma support for diagnostic pragmas.
+	* c-pragma.h (struct internal_pragma_handler): Add new early handler
+	members.
+	(c_register_pragma_with_early_handler): Declare.
+	(c_invoke_early_pragma_handler): Declare.
+	(c_pp_invoke_early_pragma_handler): Declare.
+
 2022-07-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/105626
