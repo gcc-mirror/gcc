@@ -331,7 +331,7 @@ class superedge : public dedge<supergraph_traits>
   ::edge get_any_cfg_edge () const;
   cgraph_edge *get_any_callgraph_edge () const;
 
-  char *get_description (bool user_facing) const;
+  label_text get_description (bool user_facing) const;
 
  protected:
   superedge (supernode *src, supernode *dest, enum edge_kind kind)

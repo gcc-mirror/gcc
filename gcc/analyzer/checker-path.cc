@@ -594,8 +594,7 @@ label_text
 start_cfg_edge_event::get_desc (bool can_colorize) const
 {
   bool user_facing = !flag_analyzer_verbose_edges;
-  label_text edge_desc
-    = label_text::take (m_sedge->get_description (user_facing));
+  label_text edge_desc (m_sedge->get_description (user_facing));
   if (user_facing)
     {
       if (edge_desc.m_buffer && strlen (edge_desc.m_buffer) > 0)
