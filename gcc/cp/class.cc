@@ -3020,6 +3020,9 @@ warn_hidden (tree t)
 	tree binfo;
 	unsigned j;
 
+	if (IDENTIFIER_CDTOR_P (name))
+	  continue;
+
 	/* Iterate through all of the base classes looking for possibly
 	   hidden functions.  */
 	for (binfo = TYPE_BINFO (t), j = 0;
