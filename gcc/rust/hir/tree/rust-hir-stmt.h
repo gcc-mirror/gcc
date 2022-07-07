@@ -91,19 +91,40 @@ public:
   // Copy constructor with clone
   LetStmt (LetStmt const &other)
     : Stmt (other.mappings), outer_attrs (other.outer_attrs),
-      variables_pattern (other.variables_pattern->clone_pattern ()),
-      type (other.type->clone_type ()),
-      init_expr (other.init_expr->clone_expr ()), locus (other.locus)
-  {}
+      locus (other.locus)
+  {
+    // guard to prevent null dereference (only required if error state)
+    if (other.variables_pattern != nullptr)
+      variables_pattern = other.variables_pattern->clone_pattern ();
+
+    // guard to prevent null dereference (always required)
+    if (other.init_expr != nullptr)
+      init_expr = other.init_expr->clone_expr ();
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+  }
 
   // Overloaded assignment operator to clone
   LetStmt &operator= (LetStmt const &other)
   {
-    variables_pattern = other.variables_pattern->clone_pattern ();
-    init_expr = other.init_expr->clone_expr ();
-    type = other.type->clone_type ();
     outer_attrs = other.outer_attrs;
     locus = other.locus;
+
+    // guard to prevent null dereference (only required if error state)
+    if (other.variables_pattern != nullptr)
+      variables_pattern = other.variables_pattern->clone_pattern ();
+    else
+      variables_pattern = nullptr;
+
+    // guard to prevent null dereference (always required)
+    if (other.init_expr != nullptr)
+      init_expr = other.init_expr->clone_expr ();
+    else
+      init_expr = nullptr;
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    else
+      type = nullptr;
 
     return *this;
   }
