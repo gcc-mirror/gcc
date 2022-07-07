@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUN-TIME COMPONENTS                         --
+--                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                       S Y S T E M . I M G _ U N S                        --
+--                   S Y S T E M . V A L U E _ I _ S P E C                  --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2022-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,48 +29,59 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  modular integer types up to Unsigned, and also for conversion operations
---  required in Text_IO.Modular_IO for such types.
-
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore. Postconditions and
---  contract cases should not be executed at runtime as well, in order not to
---  slow down the execution of these functions.
-
 pragma Assertion_Policy (Pre                => Ignore,
                          Post               => Ignore,
                          Contract_Cases     => Ignore,
                          Ghost              => Ignore,
                          Subprogram_Variant => Ignore);
 
-with System.Image_U;
-with System.Unsigned_Types;
-with System.Val_Uns;
-with System.Wid_Uns;
+package body System.Value_I_Spec is
 
-package System.Img_Uns
-  with SPARK_Mode
-is
-   subtype Unsigned is Unsigned_Types.Unsigned;
+   -----------------------------------
+   -- Prove_Scan_Only_Decimal_Ghost --
+   -----------------------------------
 
-   package Impl is new Image_U
-     (Uns                  => Unsigned,
-      Unsigned_Width_Ghost =>
-         Wid_Uns.Width_Unsigned (0, Unsigned'Last),
-      Uns_Params           => System.Val_Uns.Impl.Spec.Uns_Params);
+   procedure Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int) is
+      Non_Blank : constant Positive := First_Non_Space_Ghost
+        (Str, Str'First, Str'Last);
+      pragma Assert (Str (Str'First + 1) /= ' ');
+      pragma Assert
+        (if Val < 0 then Non_Blank = Str'First
+         else
+           Str (Str'First) = ' '
+            and then Non_Blank = Str'First + 1);
+      Minus     : constant Boolean := Str (Non_Blank) = '-';
+      Fst_Num   : constant Positive :=
+        (if Minus then Non_Blank + 1 else Non_Blank);
+      pragma Assert (Fst_Num = Str'First + 1);
+      Uval      : constant Uns := Abs_Uns_Of_Int (Val);
 
-   procedure Image_Unsigned
-     (V : Unsigned;
-      S : in out String;
-      P : out Natural)
-     renames Impl.Image_Unsigned;
+      procedure Prove_Conversion_Is_Identity (Val : Int; Uval : Uns)
+      with
+        Pre  => Minus = (Val < 0)
+          and then Uval = Abs_Uns_Of_Int (Val),
+        Post => Uns_Is_Valid_Int (Minus, Uval)
+          and then Is_Int_Of_Uns (Minus, Uval, Val);
+      --  Local proof of the unicity of the signed representation
 
-   procedure Set_Image_Unsigned
-     (V : Unsigned;
-      S : in out String;
-      P : in out Natural)
-     renames Impl.Set_Image_Unsigned;
+      procedure Prove_Conversion_Is_Identity (Val : Int; Uval : Uns) is null;
 
-end System.Img_Uns;
+   --  Start of processing for Prove_Scan_Only_Decimal_Ghost
+
+   begin
+      Prove_Conversion_Is_Identity (Val, Uval);
+      pragma Assert
+        (Uns_Params.Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Str'Last)));
+      pragma Assert
+        (Uns_Params.Scan_Split_No_Overflow_Ghost (Str, Fst_Num, Str'Last));
+      Uns_Params.Lemma_Exponent_Unsigned_Ghost_Base (Uval, 0, 10);
+      pragma Assert
+        (Uns_Params.Raw_Unsigned_No_Overflow_Ghost (Str, Fst_Num, Str'Last));
+      pragma Assert (Only_Space_Ghost
+        (Str, Uns_Params.Raw_Unsigned_Last_Ghost
+                        (Str, Fst_Num, Str'Last), Str'Last));
+      pragma Assert (Is_Integer_Ghost (Str));
+      pragma Assert (Is_Value_Integer_Ghost (Str, Val));
+   end Prove_Scan_Only_Decimal_Ghost;
+
+end System.Value_I_Spec;

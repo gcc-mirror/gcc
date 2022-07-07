@@ -46,42 +46,6 @@ package body System.Image_I is
                             Post               => Ignore,
                             Subprogram_Variant => Ignore);
 
-   --  As a use_clause for Int_Params cannot be used for instances of this
-   --  generic in System specs, rename all constants and subprograms.
-
-   Unsigned_Width_Ghost : constant Natural := Int_Params.Unsigned_Width_Ghost;
-
-   function Wrap_Option (Value : Uns) return Uns_Option
-     renames Int_Params.Wrap_Option;
-   function Only_Decimal_Ghost
-     (Str      : String;
-      From, To : Integer)
-      return Boolean
-      renames Int_Params.Only_Decimal_Ghost;
-   function Hexa_To_Unsigned_Ghost (X : Character) return Uns
-     renames Int_Params.Hexa_To_Unsigned_Ghost;
-   function Scan_Based_Number_Ghost
-     (Str      : String;
-      From, To : Integer;
-      Base     : Uns := 10;
-      Acc      : Uns := 0)
-      return Uns_Option
-      renames Int_Params.Scan_Based_Number_Ghost;
-   function Is_Integer_Ghost (Str : String) return Boolean
-     renames Int_Params.Is_Integer_Ghost;
-   procedure Prove_Iter_Scan_Based_Number_Ghost
-     (Str1, Str2 : String;
-      From, To : Integer;
-      Base     : Uns := 10;
-      Acc      : Uns := 0)
-      renames Int_Params.Prove_Iter_Scan_Based_Number_Ghost;
-   procedure Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int)
-     renames Int_Params.Prove_Scan_Only_Decimal_Ghost;
-   function Abs_Uns_Of_Int (Val : Int) return Uns
-     renames Int_Params.Abs_Uns_Of_Int;
-   function Value_Integer (Str : String) return Int
-     renames Int_Params.Value_Integer;
-
    subtype Non_Positive is Int range Int'First .. 0;
 
    function Uns_Of_Non_Positive (T : Non_Positive) return Uns is
@@ -99,9 +63,9 @@ package body System.Image_I is
        and then P <= S'Last - Unsigned_Width_Ghost + 1,
      Post => S (S'First .. P'Old) = S'Old (S'First .. P'Old)
        and then P in P'Old + 1 .. S'Last
-       and then Only_Decimal_Ghost (S, From => P'Old + 1, To => P)
-       and then Scan_Based_Number_Ghost (S, From => P'Old + 1, To => P)
-         = Wrap_Option (Uns_Of_Non_Positive (T));
+       and then UP.Only_Decimal_Ghost (S, From => P'Old + 1, To => P)
+       and then UP.Scan_Based_Number_Ghost (S, From => P'Old + 1, To => P)
+         = UP.Wrap_Option (Uns_Of_Non_Positive (T));
    --  Set digits of absolute value of T, which is zero or negative. We work
    --  with the negative of the value so that the largest negative number is
    --  not a special case.
@@ -182,11 +146,12 @@ package body System.Image_I is
           and then P in 2 .. S'Last
           and then S (1) in ' ' | '-'
           and then (S (1) = '-') = (V < 0)
-          and then Only_Decimal_Ghost (S, From => 2, To => P)
-          and then Scan_Based_Number_Ghost (S, From => 2, To => P)
-            = Wrap_Option (Abs_Uns_Of_Int (V)),
-        Post => Is_Integer_Ghost (S (1 .. P))
-          and then Value_Integer (S (1 .. P)) = V;
+          and then UP.Only_Decimal_Ghost (S, From => 2, To => P)
+          and then UP.Scan_Based_Number_Ghost (S, From => 2, To => P)
+            = UP.Wrap_Option (IP.Abs_Uns_Of_Int (V)),
+        Post => not System.Val_Util.Only_Space_Ghost (S, 1, P)
+          and then IP.Is_Integer_Ghost (S (1 .. P))
+          and then IP.Is_Value_Integer_Ghost (S (1 .. P), V);
       --  Ghost lemma to prove the value of Value_Integer from the value of
       --  Scan_Based_Number_Ghost and the sign on a decimal string.
 
@@ -198,11 +163,14 @@ package body System.Image_I is
          Str : constant String := S (1 .. P);
       begin
          pragma Assert (Str'First = 1);
-         pragma Assert (Only_Decimal_Ghost (Str, From => 2, To => P));
-         Prove_Iter_Scan_Based_Number_Ghost (S, Str, From => 2, To => P);
-         pragma Assert (Scan_Based_Number_Ghost (Str, From => 2, To => P)
-            = Wrap_Option (Abs_Uns_Of_Int (V)));
-         Prove_Scan_Only_Decimal_Ghost (Str, V);
+         pragma Assert (Str (2) /= ' ');
+         pragma Assert
+           (UP.Only_Decimal_Ghost (Str, From => 2, To => P));
+         UP.Prove_Scan_Based_Number_Ghost_Eq (S, Str, From => 2, To => P);
+         pragma Assert
+           (UP.Scan_Based_Number_Ghost (Str, From => 2, To => P)
+            = UP.Wrap_Option (IP.Abs_Uns_Of_Int (V)));
+         IP.Prove_Scan_Only_Decimal_Ghost (Str, V);
       end Prove_Value_Integer;
 
    --  Start of processing for Image_Integer
@@ -226,6 +194,8 @@ package body System.Image_I is
 
          pragma Assert (P_Prev + Offset = 2);
       end;
+      pragma Assert (if V >= 0 then S (1) = ' ');
+      pragma Assert (S (1) in ' ' | '-');
 
       Prove_Value_Integer;
    end Image_Integer;
@@ -248,42 +218,78 @@ package body System.Image_I is
       S_Init     : constant String := S with Ghost;
       Uns_T      : constant Uns := Uns_Of_Non_Positive (T) with Ghost;
       Uns_Value  : Uns := Uns_Of_Non_Positive (Value) with Ghost;
-      Prev, Cur  : Uns_Option with Ghost;
       Prev_Value : Uns with Ghost;
       Prev_S     : String := S with Ghost;
 
       --  Local ghost lemmas
 
-      procedure Prove_Character_Val (RU : Uns; RI : Int)
+      procedure Prove_Character_Val (RU : Uns; RI : Non_Positive)
       with
         Ghost,
-        Pre  => RU in 0 .. 9
-          and then RI in 0 .. 9,
-        Post => Character'Val (48 + RU) in '0' .. '9'
-          and then Character'Val (48 + RI) in '0' .. '9';
+        Post => RU rem 10 in 0 .. 9
+          and then -(RI rem 10) in 0 .. 9
+          and then Character'Val (48 + RU rem 10) in '0' .. '9'
+          and then Character'Val (48 - RI rem 10) in '0' .. '9';
       --  Ghost lemma to prove the value of a character corresponding to the
       --  next figure.
+
+      procedure Prove_Euclidian (Val, Quot, Rest : Uns)
+      with
+        Ghost,
+        Pre  => Quot = Val / 10
+          and then Rest = Val rem 10,
+        Post => Uns'Last - Rest >= 10 * Quot and then Val = 10 * Quot + Rest;
+      --  Ghost lemma to prove the relation between the quotient/remainder of
+      --  division by 10 and the initial value.
 
       procedure Prove_Hexa_To_Unsigned_Ghost (RU : Uns; RI : Int)
       with
         Ghost,
         Pre  => RU in 0 .. 9
           and then RI in 0 .. 9,
-        Post => Hexa_To_Unsigned_Ghost (Character'Val (48 + RU)) = RU
-          and then Hexa_To_Unsigned_Ghost (Character'Val (48 + RI)) = Uns (RI);
+        Post => UP.Hexa_To_Unsigned_Ghost
+            (Character'Val (48 + RU)) = RU
+          and then UP.Hexa_To_Unsigned_Ghost
+            (Character'Val (48 + RI)) = Uns (RI);
       --  Ghost lemma to prove that Hexa_To_Unsigned_Ghost returns the source
       --  figure when applied to the corresponding character.
 
-      procedure Prove_Unchanged
-      with
-        Ghost,
-        Pre  => P <= S'Last
-          and then S_Init'First = S'First
-          and then S_Init'Last = S'Last
-          and then (for all K in S'First .. P => S (K) = S_Init (K)),
-        Post => S (S'First .. P) = S_Init (S'First .. P);
-      --  Ghost lemma to prove that the part of string S before P has not been
-      --  modified.
+      procedure Prove_Scan_Iter
+        (S, Prev_S      : String;
+         V, Prev_V, Res : Uns;
+         P, Max         : Natural)
+        with
+          Ghost,
+          Pre =>
+            S'First = Prev_S'First and then S'Last = Prev_S'Last
+            and then S'Last < Natural'Last and then
+            Max in S'Range and then P in S'First .. Max and then
+            (for all I in P + 1 .. Max => Prev_S (I) in '0' .. '9')
+            and then (for all I in P + 1 .. Max => Prev_S (I) = S (I))
+            and then S (P) in '0' .. '9'
+            and then V <= Uns'Last / 10
+            and then Uns'Last - UP.Hexa_To_Unsigned_Ghost (S (P))
+              >= 10 * V
+            and then Prev_V =
+              V * 10 + UP.Hexa_To_Unsigned_Ghost (S (P))
+            and then
+              (if P = Max then Prev_V = Res
+               else UP.Scan_Based_Number_Ghost
+                 (Str  => Prev_S,
+                  From => P + 1,
+                  To   => Max,
+                  Base => 10,
+                  Acc  => Prev_V) = UP.Wrap_Option (Res)),
+          Post =>
+            (for all I in P .. Max => S (I) in '0' .. '9')
+            and then UP.Scan_Based_Number_Ghost
+              (Str  => S,
+               From => P,
+               To   => Max,
+               Base => 10,
+               Acc  => V) = UP.Wrap_Option (Res);
+      --  Ghost lemma to prove that Scan_Based_Number_Ghost is preserved
+      --  through an iteration of the loop.
 
       procedure Prove_Uns_Of_Non_Positive_Value
       with
@@ -294,50 +300,44 @@ package body System.Image_I is
       --  Ghost lemma to prove that the relation between Value and its unsigned
       --  version is preserved.
 
-      procedure Prove_Iter_Scan
-        (Str1, Str2 : String;
-         From, To : Integer;
-         Base     : Uns := 10;
-         Acc      : Uns := 0)
-      with
-        Ghost,
-        Pre  => Str1'Last /= Positive'Last
-          and then
-            (From > To or else (From >= Str1'First and then To <= Str1'Last))
-          and then Only_Decimal_Ghost (Str1, From, To)
-          and then Str1'First = Str2'First
-          and then Str1'Last = Str2'Last
-          and then (for all J in From .. To => Str1 (J) = Str2 (J)),
-        Post =>
-          Scan_Based_Number_Ghost (Str1, From, To, Base, Acc)
-            = Scan_Based_Number_Ghost (Str2, From, To, Base, Acc);
-      --  Ghost lemma to prove that the result of Scan_Based_Number_Ghost only
-      --  depends on the value of the argument string in the (From .. To) range
-      --  of indexes. This is a wrapper on Prove_Iter_Scan_Based_Number_Ghost
-      --  so that we can call it here on ghost arguments.
-
       -----------------------------
       -- Local lemma null bodies --
       -----------------------------
 
-      procedure Prove_Character_Val (RU : Uns; RI : Int) is null;
+      procedure Prove_Character_Val (RU : Uns; RI : Non_Positive) is null;
+      procedure Prove_Euclidian (Val, Quot, Rest : Uns) is null;
       procedure Prove_Hexa_To_Unsigned_Ghost (RU : Uns; RI : Int) is null;
-      procedure Prove_Unchanged is null;
       procedure Prove_Uns_Of_Non_Positive_Value is null;
 
       ---------------------
-      -- Prove_Iter_Scan --
+      -- Prove_Scan_Iter --
       ---------------------
 
-      procedure Prove_Iter_Scan
-        (Str1, Str2 : String;
-         From, To : Integer;
-         Base     : Uns := 10;
-         Acc      : Uns := 0)
+      procedure Prove_Scan_Iter
+        (S, Prev_S      : String;
+         V, Prev_V, Res : Uns;
+         P, Max         : Natural)
       is
+         pragma Unreferenced (Res);
       begin
-         Prove_Iter_Scan_Based_Number_Ghost (Str1, Str2, From, To, Base, Acc);
-      end Prove_Iter_Scan;
+         UP.Lemma_Scan_Based_Number_Ghost_Step
+           (Str  => S,
+            From => P,
+            To   => Max,
+            Base => 10,
+            Acc  => V);
+         if P < Max then
+            UP.Prove_Scan_Based_Number_Ghost_Eq
+              (Prev_S, S, P + 1, Max, 10, Prev_V);
+         else
+            UP.Lemma_Scan_Based_Number_Ghost_Base
+              (Str  => S,
+               From => P + 1,
+               To   => Max,
+               Base => 10,
+               Acc  => Prev_V);
+         end if;
+      end Prove_Scan_Iter;
 
    --  Start of processing for Set_Digits
 
@@ -383,13 +383,9 @@ package body System.Image_I is
       for J in reverse  1 .. Nb_Digits loop
          Lemma_Div_Commutation (Uns_Value, 10);
          Lemma_Div_Twice (Big (Uns_T), Big_10 ** (Nb_Digits - J), Big_10);
-         Prove_Character_Val (Uns_Value rem 10, -(Value rem 10));
+         Prove_Character_Val (Uns_Value, Value);
          Prove_Hexa_To_Unsigned_Ghost (Uns_Value rem 10, -(Value rem 10));
          Prove_Uns_Of_Non_Positive_Value;
-         pragma Assert (Uns_Value rem 10 = Uns_Of_Non_Positive (Value rem 10));
-         pragma Assert (Uns_Value rem 10 = Uns (-(Value rem 10)));
-         pragma Assert
-           (Uns_Value = From_Big (Big (Uns_T) / Big_10 ** (Nb_Digits - J)));
 
          Prev_Value := Uns_Value;
          Prev_S := S;
@@ -399,68 +395,44 @@ package body System.Image_I is
          S (P + J) := Character'Val (48 - (Value rem 10));
          Value := Value / 10;
 
-         pragma Assert (S (P + J) in '0' .. '9');
-         pragma Assert (Hexa_To_Unsigned_Ghost (S (P + J)) =
-           From_Big (Big (Uns_T) / Big_10 ** (Nb_Digits - J)) rem 10);
-         pragma Assert
-           (for all K in P + J + 1 .. P + Nb_Digits => S (K) in '0' .. '9');
+         Prove_Euclidian
+           (Val  => Prev_Value,
+            Quot => Uns_Value,
+            Rest => UP.Hexa_To_Unsigned_Ghost (S (P + J)));
 
-         Prev := Scan_Based_Number_Ghost
-           (Str  => S,
-            From => P + J + 1,
-            To   => P + Nb_Digits,
-            Base => 10,
-            Acc  => Prev_Value);
-         Cur := Scan_Based_Number_Ghost
-           (Str  => S,
-            From => P + J,
-            To   => P + Nb_Digits,
-            Base => 10,
-            Acc  => Uns_Value);
-         pragma Assert (Prev_Value = 10 * Uns_Value + (Prev_Value rem 10));
-         pragma Assert
-           (Prev_Value rem 10 = Hexa_To_Unsigned_Ghost (S (P + J)));
-         pragma Assert
-           (Prev_Value = 10 * Uns_Value + Hexa_To_Unsigned_Ghost (S (P + J)));
-
-         if J /= Nb_Digits then
-            Prove_Iter_Scan
-              (Prev_S, S, P + J + 1, P + Nb_Digits, 10, Prev_Value);
-         end if;
-
-         pragma Assert (Prev = Cur);
-         pragma Assert (Prev = Wrap_Option (Uns_T));
+         Prove_Scan_Iter
+           (S, Prev_S, Uns_Value, Prev_Value, Uns_T, P + J, P + Nb_Digits);
 
          pragma Loop_Invariant (Uns_Value = Uns_Of_Non_Positive (Value));
          pragma Loop_Invariant (Uns_Value <= Uns'Last / 10);
          pragma Loop_Invariant
            (for all K in S'First .. P => S (K) = S_Init (K));
-         pragma Loop_Invariant (Only_Decimal_Ghost (S, P + J, P + Nb_Digits));
+         pragma Loop_Invariant
+           (UP.Only_Decimal_Ghost (S, P + J, P + Nb_Digits));
          pragma Loop_Invariant
            (for all K in P + J .. P + Nb_Digits => S (K) in '0' .. '9');
          pragma Loop_Invariant (Pow = Big_10 ** (Nb_Digits - J + 1));
          pragma Loop_Invariant (Big (Uns_Value) = Big (Uns_T) / Pow);
          pragma Loop_Invariant
-           (Scan_Based_Number_Ghost
+           (UP.Scan_Based_Number_Ghost
               (Str  => S,
                From => P + J,
                To   => P + Nb_Digits,
                Base => 10,
                Acc  => Uns_Value)
-              = Wrap_Option (Uns_T));
+              = UP.Wrap_Option (Uns_T));
       end loop;
 
       pragma Assert (Big (Uns_Value) = Big (Uns_T) / Big_10 ** (Nb_Digits));
       pragma Assert (Uns_Value = 0);
-      Prove_Unchanged;
       pragma Assert
-        (Scan_Based_Number_Ghost
+        (UP.Scan_Based_Number_Ghost
            (Str  => S,
             From => P + 1,
             To   => P + Nb_Digits,
             Base => 10,
             Acc  => Uns_Value)
-         = Wrap_Option (Uns_T));
+         = UP.Wrap_Option (Uns_T));
 
       P := P + Nb_Digits;
    end Set_Digits;

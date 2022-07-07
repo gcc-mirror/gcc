@@ -32,6 +32,8 @@ package Ada.Numerics.Big_Numbers.Big_Integers_Ghost with
    Ghost,
    Pure
 is
+   pragma Annotate (GNATprove, Always_Return, Big_Integers_Ghost);
+
    type Big_Integer is private
      with Integer_Literal => From_Universal_Image;
 
