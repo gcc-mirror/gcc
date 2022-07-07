@@ -120,7 +120,6 @@ RTco_turnInterrupts (unsigned int newLevel)
   return 0;
 }
 
-#if 0
 void
 _M2_RTco_init (void)
 {
@@ -130,7 +129,6 @@ void
 _M2_RTco_finish (void)
 {
 }
-#endif
 
 
 #ifdef __cplusplus

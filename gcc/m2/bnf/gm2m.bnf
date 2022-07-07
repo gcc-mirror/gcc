@@ -118,7 +118,7 @@ TYPE
 
 VAR
    Verbose        : BOOLEAN ;
-   main           : PtrToNode ;
+   mainModule     : PtrToNode ;
    DefExistsTree  : SymbolTree ; (* Table of definition modules found or not   *)
    ModExistsTree  : SymbolTree ; (* Table of imp/program modules found or not  *)
    Files          : PtrToSource ;
@@ -390,7 +390,8 @@ BEGIN
          using a tree strategy. We must ensure that the objects are
          also included.
       *)
-      MakeObject(son^.Source^.ModName, main, 1) ;   (* attach the object to the executable.  *)
+      MakeObject(son^.Source^.ModName, mainModule, 1) ;
+      (* attach the object to the executable.  *)
 
       name := KillString(name) ;
       IF Debugging
@@ -1882,20 +1883,20 @@ BEGIN
                CloseSource ;
                ReInitialize ;
 
-               main := NewNode() ;
-               main^.Father := NIL ;
-               main^.Source := NewSource() ;
-               Files := main^.Source ;
-               WITH main^.Source^ DO
-                  SourceNode := main ;
+               mainModule := NewNode() ;
+               mainModule^.Father := NIL ;
+               mainModule^.Source := NewSource() ;
+               Files := mainModule^.Source ;
+               WITH mainModule^.Source^ DO
+                  SourceNode := mainModule ;
                   ModName := MainName ;
 
-                  main^.Source^.Ext := ExeExtn ;
+                  Ext := ExeExtn ;
                   (* .exe is never written out, it is just a unique extension
                      representing not matching .o .mod or .def *)
                   e := CalculateFileName(s, Mark(InitString('exe'))) ;
-                  MakeExe(ModName, main, 0) ;
-                  UnixMake(main) ;
+                  MakeExe(ModName, mainModule, 0) ;
+                  UnixMake(mainModule) ;
                   IF EnableRuntimeDebugging
                   THEN
                      DisplaySource

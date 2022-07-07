@@ -1,15 +1,15 @@
-.TH gm2l "1" "June 2021" "Modula-2" "User Commands"
+.TH gm2l "1" "July 2022" "Modula-2" "User Commands"
 .SH NAME
 gm2l \- generate an initialization sequence by analyzing module imports.
 .SH SYNOPSIS
 .B gm2l
 .RB [ -fdef= extension ]
+.RB [ -flibs= list ]
 .RB [ -fmod= extension ]
 .RB [ -h ]
 .RB [ --help ]
 .RB [ -I searchpath ]
-.RB [ --M2RTS ]
-.RB [ -M2RTS ]
+.RB [ --exclude= list ]
 .RB [ -v ]
 .RB [ --verbose ]
 .RB [ -o " outputfile" ]
@@ -17,19 +17,14 @@ gm2l \- generate an initialization sequence by analyzing module imports.
 .SH DESCRIPTION
 .PP
 A tool for generating a static initialization sequence by analyzing
-module imports.  This tool will generate a textual list of modules in
-an order which satisfies a topological order of an import graph.  The
-textual list of modules can be manipulated and used by the other
-Modula-2 link tools:
+module imports from source files.  It also generates a list of all
+dependent modules for an application.  This tool will generate a
+textual list of modules in an order which satisfies a topological
+order of an import graph.  The textual list of modules can be used by
+the other Modula-2 tools:
 .IR gm2lcc (1)
-.IR gm2lgen (1)
-.IR gm2lorder (1).
-The command line program
-.IR gm2
-can be instructed to automatically invoke
-.IR gm2l (1)
-and the above programs to construct a C++ scaffold for a Modula-2
-application.
+and
+.IR gm2 (1).
 .SH OPTIONS
 .TP
 .B -fdef= extension
@@ -37,6 +32,22 @@ assume that definition modules have the posfix \fIextension\fP.  If
 this option is not specified then an extension of
 .B .def
 is assumed.
+.TP
+.B -flibs= list
+add include paths for the named libraries in the list.
+The shorthand names
+.B pim ,
+.B iso ,
+.B cor ,
+.B log ,
+expand to the installed library paths:
+.B m2pim ,
+.B m2iso ,
+.B m2cor
+and
+.B m2log .
+Any other names in the list
+are treated as the base directory name in the installed library path.
 .TP
 .B -fmod= extension
 assume that program and implementation modules have the posfix
@@ -55,12 +66,18 @@ equivalent to
 specifies the search path used to find definition, implementation and
 program modules.
 .TP
-.B --M2RTS
-do not include the module M2RTS even if it is a dependant module.
-.TP
-.B -M2RTS
-equivalent to
-.B --M2RTS\fR.
+.B --exclude= module1,module2
+do not include module1 and module2 in the textual list output.
+The string after the
+.B --exclude=
+should be a comma separated list of module names.
+.B --include= module1,module2
+include module1 and module2 in the textual list output.
+The string after the
+.B --include=
+should be a comma separated list of module names.  Any included
+modules which are not found by traversing the import graph are added
+as dependants to the main program.
 .TP
 .B -v
 turn on the verbose flag.  This will display the module name and
@@ -71,7 +88,5 @@ equivalent to
 .B -v\fR.
 .SH "SEE ALSO"
 .IR gm2lcc (1),
-.IR gm2lgen (1),
-.IR gm2lorder (1)
 and
 .IR gm2 (1).

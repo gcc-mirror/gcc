@@ -66,10 +66,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #define LIBRARY_PATH_ENV "LIBRARY_PATH"
 #endif
 
-#ifndef GM2_LIBEXEC_ENV
-#define GM2_LIBEXEC_ENV "GM2_LIBEXEC"
-#endif
-
 int lang_specific_extra_outfiles = 0;
 
 /* DEBUGGING will print all the options at various stages with their
@@ -119,8 +115,11 @@ static void insert_option (unsigned int *in_decoded_options_count,
 static const char *gen_link_path (const char *libpath, const char *dialect);
 static const char *add_exec_dir (int argc, const char *argv[]);
 static const char *gen_gm2_libexec (const char *path);
-static const char *get_libexec (void);
 
+static bool seen_scaffold_static = false;
+static bool seen_scaffold_dynamic = false;
+static bool scaffold_static = false;
+static bool scaffold_dynamic = true;  // Default uses -fscaffold-dynamic.
 static bool seen_B = false;
 static const char *B_path = NULL;
 static const char *multilib_dir = NULL;
@@ -132,17 +131,6 @@ static const char *multilib_dir = NULL;
 #define TARGET_OBJECT_SUFFIX ".o"
 #endif
 
-
-static const char *
-get_libexec (void)
-{
-  const char *libexec = getenv (GM2_LIBEXEC_ENV);
-
-  if (libexec == NULL || (strcmp (libexec, "") == 0))
-    return STANDARD_LIBEXEC_PREFIX;
-  else
-    return libexec;
-}
 
 /* gen_gm2_libexec, return a libexec string.  */
 
@@ -165,7 +153,7 @@ gen_gm2_libexec (const char *libexec)
   return s;
 }
 
-/* add_exec_dir prepends the exec path to the given executable filename.  */
+/* add_exec_dir wraps the exec path with the -fcpp-prog= option.  */
 
 static const char *
 add_exec_dir (int argc, const char *argv[])
@@ -177,7 +165,7 @@ add_exec_dir (int argc, const char *argv[])
       if (seen_B)
         path = xstrdup (B_path);
       else
-        path = gen_gm2_libexec (get_libexec ());
+        path = gen_gm2_libexec (STANDARD_LIBEXEC_PREFIX);
 
       if (path != NULL)
         {
@@ -241,7 +229,7 @@ add_lib (size_t opt_index, const char *lib, int joined)
   fe_generate_option (opt_index, lib, joined);
 }
 
-/* insert_option inserts an option at position on the command line.  */
+/* insert_option inserts an option at position index on the command line.  */
 
 static void
 insert_option (unsigned int *in_decoded_options_count,
@@ -267,8 +255,8 @@ insert_option (unsigned int *in_decoded_options_count,
   *in_decoded_options = new_decoded_options;
 }
 
-/* add_library adds a library to the command line at arg position.
-   It returns the number of arguments added.  If libraryname is NULL or
+/* add_library adds a library to the command line at arg position.  It
+   returns the number of arguments added.  If libraryname is NULL or
    empty then zero is returned.  */
 
 static int
@@ -290,8 +278,7 @@ add_library (const char *libraryname, unsigned int *in_decoded_options_count,
   generate_option (OPT_l, libraryname, 1, CL_DRIVER,
                    &(*in_decoded_options)[position]);
 
-#if 0
-  // defined(DEBUGGING)
+#if defined(DEBUGGING)
   print_options ("after add_library", *in_decoded_options_count, *in_decoded_options);
 #endif
   return 1;
@@ -717,6 +704,14 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
         case OPT_fno_m2_plugin:
           need_plugin = false;
           break;
+	case OPT_fscaffold_dynamic:
+	  seen_scaffold_dynamic = true;
+	  scaffold_dynamic = (*in_decoded_options)[i].value;
+	  break;
+	case OPT_fscaffold_static:
+	  seen_scaffold_static = true;
+	  scaffold_static = (*in_decoded_options)[i].value;
+	  break;
 	default:
 	  if (((*in_decoded_options)[i].orig_option_with_args_text != NULL)
 	      && (strncmp ((*in_decoded_options)[i].orig_option_with_args_text,
@@ -726,12 +721,20 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	}
     }
 
+  if (scaffold_static && scaffold_dynamic)
+    {
+      if (! seen_scaffold_dynamic)
+	scaffold_dynamic = false;
+      if (scaffold_dynamic && scaffold_static)
+	error ("%qs and %qs cannot both be enabled",
+	       "-fscaffold-dynamic", "-fscaffold-static");
+    }
   libpath = fe_getenv (LIBRARY_PATH_ENV);
   if (libpath == NULL || (strcmp (libpath, "") == 0))
     libpath = LIBSUBDIR;
 
 #if defined(DEBUGGING)
-  print_options ("at beginning", *in_decoded_options_count, *in_decoded_options);
+  print_options ("after scaffold checking", *in_decoded_options_count, *in_decoded_options);
 #endif
   i = 1;
   for (i = 1; i < *in_decoded_options_count; i++)
@@ -774,7 +777,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   if (language != NULL && (strcmp (language, "modula-2") != 0))
     return;
 #if defined(DEBUGGING)
-  print_options ("in the middle", *in_decoded_options_count, *in_decoded_options);
+  print_options ("after dialect detection", *in_decoded_options_count, *in_decoded_options);
 #endif
 
   /* If the libraries have not been specified by the user and the
@@ -785,7 +788,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       if (strcmp (dialect, "iso") == 0)
         libraries = xstrdup ("m2iso,m2pim");
       else
-        libraries = xstrdup ("m2pim");  /* Always require m2pim for dynamic scaffold.  */
+        libraries = xstrdup ("m2pim");  /* Default to pim libraries if none specified.  */
     }
 
   libraries = convert_abbreviations (libraries);
@@ -802,6 +805,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   if (linking)
     {
       if (strcmp (dialect, "iso") == 0)
+	/* We need the pim libraries even if using iso.  */
         (*in_added_libraries)
             += add_library ("m2pim", in_decoded_options_count,
                             in_decoded_options, *in_decoded_options_count);
@@ -839,16 +843,16 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
         }
     }
 #if defined(DEBUGGING)
-  print_options ("before include purge", *in_decoded_options_count, *in_decoded_options);
+  print_options ("before include options purge", *in_decoded_options_count, *in_decoded_options);
 #endif
   purge_include_options (in_decoded_options_count, in_decoded_options);
 #if defined(DEBUGGING)
-  print_options ("after include purge", *in_decoded_options_count, *in_decoded_options);
+  print_options ("after include options purge", *in_decoded_options_count, *in_decoded_options);
 #endif
 }
 
 /* lang_specific_pre_link - does nothing.  */
-
+// --fixme-- remove lang_specific_pre_link here and all other drivers.
 int
 lang_specific_pre_link (void)
 {

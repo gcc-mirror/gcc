@@ -28,7 +28,8 @@ FROM NameKey IMPORT Name, NulName, MakeKey, GetKey, makekey, KeyToCharStar, Writ
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
 FROM M2DebugStack IMPORT DebugStack ;
 FROM M2Scaffold IMPORT DeclareScaffold, mainFunction, initFunction,
-                       finiFunction, linkFunction, PopulateCtorArray ;
+                       finiFunction, linkFunction, PopulateCtorArray,
+                       ForeachModuleCallInit, ForeachModuleCallFinish ;
 
 FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaError3,
                         MetaErrors1, MetaErrors2, MetaErrors3,
@@ -2479,7 +2480,10 @@ BEGIN
          END
       ELSIF ScaffoldStatic
       THEN
-
+         ForeachModuleCallInit (tok,
+                                RequestSym (tok, MakeKey ("argc")),
+                                RequestSym (tok, MakeKey ("argv")),
+                                RequestSym (tok, MakeKey ("envp")))
       END ;
       EndScope ;
       BuildProcedureEnd ;
@@ -2531,7 +2535,10 @@ BEGIN
          END
       ELSIF ScaffoldStatic
       THEN
-
+         ForeachModuleCallFinish (tok,
+                                  RequestSym (tok, MakeKey ("argc")),
+                                  RequestSym (tok, MakeKey ("argv")),
+                                  RequestSym (tok, MakeKey ("envp")))
       END ;
       EndScope ;
       BuildProcedureEnd ;

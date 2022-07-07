@@ -37,7 +37,7 @@ EXPORT QUALIFIED MakeDefinitionSource,
                  MakeProgramSource,
                  GetSource, GetModuleNo, IsModuleKnown,
                  AssociateDefinition, GetDefinitionModuleFile,
-                 AssociateModule, GetModuleFile,
+                 AssociateModule, GetModuleFile, Get,
                  ForeachSourceModuleDo, IsSourceSeen, IsModuleSeen,
                  LookupModule, LookupOuterModule, DisplayModules ;
 
@@ -175,6 +175,13 @@ PROCEDURE LookupModule (tok: CARDINAL; n: Name) : CARDINAL ;
 *)
 
 PROCEDURE LookupOuterModule (tok: CARDINAL; n: Name) : CARDINAL ;
+
+
+(*
+   Get - returns the module symbol matching name, n.
+*)
+
+PROCEDURE Get (n: Name) : CARDINAL ;
 
 
 (*

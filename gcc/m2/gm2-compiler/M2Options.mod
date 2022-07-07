@@ -1064,7 +1064,11 @@ END SetSaveTempsDir ;
 
 PROCEDURE SetScaffoldDynamic (value: BOOLEAN) ;
 BEGIN
-   ScaffoldDynamic := value
+   ScaffoldDynamic := value ;
+   IF ScaffoldDynamic
+   THEN
+      ScaffoldStatic := FALSE
+   END
 END SetScaffoldDynamic ;
 
 
@@ -1074,7 +1078,11 @@ END SetScaffoldDynamic ;
 
 PROCEDURE SetScaffoldStatic (value: BOOLEAN) ;
 BEGIN
-   ScaffoldStatic := value
+   ScaffoldStatic := value ;
+   IF ScaffoldStatic
+   THEN
+      ScaffoldDynamic := FALSE
+   END
 END SetScaffoldStatic ;
 
 
