@@ -1111,11 +1111,16 @@ public:
     : VisItem (other), qualifiers (other.qualifiers),
       function_name (other.function_name),
       function_params (other.function_params),
-      return_type (other.return_type->clone_type ()),
       where_clause (other.where_clause),
       function_body (other.function_body->clone_block_expr ()),
       self (other.self), locus (other.locus)
   {
+    // guard to prevent null dereference (always required)
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    else
+      return_type = nullptr;
+
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
@@ -1128,7 +1133,13 @@ public:
     function_name = other.function_name;
     qualifiers = other.qualifiers;
     function_params = other.function_params;
-    return_type = other.return_type->clone_type ();
+
+    // guard to prevent null dereference (always required)
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    else
+      return_type = nullptr;
+
     where_clause = other.where_clause;
     function_body = other.function_body->clone_block_expr ();
     locus = other.locus;
