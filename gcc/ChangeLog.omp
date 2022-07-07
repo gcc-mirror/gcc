@@ -1,6 +1,16 @@
 2022-07-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/i386/intelmic-mkoffload.cc (generate_host_descr_file)
+	(prepare_target_image, main): Handle OpenMP 'requires'.
+	(generate_host_descr_file): Switch to 'GOMP_offload_register_ver',
+	'GOMP_offload_unregister_ver'.
+
+2022-07-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/gcn/mkoffload.cc (process_obj): Clarify 'target_data' ->

@@ -3,6 +3,21 @@
 	Backport from mainline:
 	2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* target.c (GOMP_offload_register, GOMP_offload_unregister):
+	Denote as legacy entry points.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_target_any): New proc.
+	* testsuite/libgomp.c-c++-common/requires-1.c: Enable for
+	'offload_target_any'.
+	* testsuite/libgomp.c-c++-common/requires-3.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-7.c: Likewise.
+	* testsuite/libgomp.fortran/requires-1.f90: Likewise.
+
+2022-07-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* testsuite/libgomp.c-c++-common/requires-4.c: Enhance testing.
 	* testsuite/libgomp.c-c++-common/requires-5.c: Likewise.
 
