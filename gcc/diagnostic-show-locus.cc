@@ -5533,7 +5533,7 @@ test_tab_expansion (const line_table_case &case_)
 static void
 test_escaping_bytes_1 (const line_table_case &case_)
 {
-  const char content[] = "before\0\1\2\3\r\x80\xff""after\n";
+  const char content[] = "before\0\1\2\3\v\x80\xff""after\n";
   const size_t sz = sizeof (content);
   temp_source_file tmp (SELFTEST_LOCATION, ".c", content, sz);
   line_table_test ltt (case_);
@@ -5548,18 +5548,18 @@ test_escaping_bytes_1 (const line_table_case &case_)
   if (finish > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
-  /* Locations of the NUL and \r bytes.  */
+  /* Locations of the NUL and \v bytes.  */
   location_t nul_loc
     = linemap_position_for_line_and_column (line_table, ord_map, 1, 7);
-  location_t r_loc
+  location_t v_loc
     = linemap_position_for_line_and_column (line_table, ord_map, 1, 11);
   gcc_rich_location richloc (nul_loc);
-  richloc.add_range (r_loc);
+  richloc.add_range (v_loc);
 
   {
     test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ (" before \1\2\3 \x80\xff""after\n"
+    ASSERT_STREQ (" before \1\2\3\v\x80\xff""after\n"
 		  "       ^   ~\n",
 		  pp_formatted_text (dc.printer));
   }
@@ -5569,7 +5569,7 @@ test_escaping_bytes_1 (const line_table_case &case_)
     dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ
-      (" before<U+0000><U+0001><U+0002><U+0003><U+000D><80><ff>after\n"
+      (" before<U+0000><U+0001><U+0002><U+0003><U+000B><80><ff>after\n"
        "       ^~~~~~~~                        ~~~~~~~~\n",
        pp_formatted_text (dc.printer));
   }
@@ -5577,7 +5577,7 @@ test_escaping_bytes_1 (const line_table_case &case_)
     test_diagnostic_context dc;
     dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_BYTES;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
-    ASSERT_STREQ (" before<00><01><02><03><0d><80><ff>after\n"
+    ASSERT_STREQ (" before<00><01><02><03><0b><80><ff>after\n"
 		  "       ^~~~            ~~~~\n",
 		  pp_formatted_text (dc.printer));
   }
