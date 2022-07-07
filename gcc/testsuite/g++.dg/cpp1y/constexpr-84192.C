@@ -20,7 +20,7 @@ f3 (int n)
 {
   bool b = false;
   for (int i = 0; i < n; i++)
-    b = ({ break; });	// { dg-error "void value not ignored as it ought to be" }
+    b = ({ break; });	// { dg-error "invalid use of void expression" }
   return b;
 }
 

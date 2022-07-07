@@ -2343,7 +2343,7 @@ decay_conversion (tree exp,
   if (code == VOID_TYPE)
     {
       if (complain & tf_error)
-	error_at (loc, "void value not ignored as it ought to be");
+	error_at (loc, "invalid use of void expression");
       return error_mark_node;
     }
   if (invalid_nonstatic_memfn_p (loc, exp, complain))
@@ -9006,8 +9006,12 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	if (VOID_TYPE_P (TREE_TYPE (rhs)))
 	  {
 	    if (complain & tf_error)
-	      error_at (cp_expr_loc_or_loc (rhs, loc),
-			"void value not ignored as it ought to be");
+	      {
+		error_at (cp_expr_loc_or_loc (rhs, loc),
+			  "invalid use of void expression");
+		inform (cp_expr_loc_or_loc (lhs, loc),
+			"assigning to %qT expression", lhstype);
+	      }
 	    return error_mark_node;
 	  }
 
@@ -9809,7 +9813,32 @@ convert_for_assignment (tree type, tree rhs,
   if (coder == VOID_TYPE)
     {
       if (complain & tf_error)
-	error_at (rhs_loc, "void value not ignored as it ought to be");
+	{
+	  error_at (rhs_loc, "invalid use of void expression");
+	  switch (errtype)
+	    {
+	    case ICR_DEFAULT_ARGUMENT:
+	      inform_at (rhs_loc, "initializing %qT default argument", type);
+	      break;
+	    case ICR_ARGPASS:
+	      inform_at (rhs_loc, "passing %qT argument", type);
+	      break;
+	    case ICR_CONVERTING:
+	      inform_at (rhs_loc, "converting to %qT", type);
+	      break;
+	    case ICR_INIT:
+	      inform_at (rhs_loc, "initializing %qT object", type);
+	      break;
+	    case ICR_RETURN:
+	      inform_at (rhs_loc, "returning %qT", type);
+	      break;
+	    case ICR_ASSIGN:
+	      inform_at (rhs_loc, "assigning to %qT expression", type);
+	      break;
+	    default:
+	      gcc_unreachable();
+	    }
+	}
       return error_mark_node;
     }
 
