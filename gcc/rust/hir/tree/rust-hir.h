@@ -122,6 +122,12 @@ public:
 
   // Returns whether literal is in an invalid state.
   bool is_error () const { return value_as_string == ""; }
+
+  bool is_equal (Literal &other)
+  {
+    return value_as_string == other.value_as_string && type == other.type
+	   && type_hint == other.type_hint;
+  }
 };
 
 /* Base statement abstract class. Note that most "statements" are not allowed in
