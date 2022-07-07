@@ -75,9 +75,12 @@ public:
   // Copy constructor uses clone
   TypeParam (TypeParam const &other)
     : GenericParam (other.mappings), outer_attr (other.outer_attr),
-      type_representation (other.type_representation),
-      type (other.type->clone_type ()), locus (other.locus)
+      type_representation (other.type_representation), locus (other.locus)
   {
+    // guard to prevent null pointer dereference
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
       type_param_bounds.push_back (e->clone_type_param_bound ());
@@ -87,11 +90,15 @@ public:
   TypeParam &operator= (TypeParam const &other)
   {
     type_representation = other.type_representation;
-    // type_param_bounds = other.type_param_bounds;
-    type = other.type->clone_type ();
     outer_attr = other.outer_attr;
     locus = other.locus;
     mappings = other.mappings;
+
+    // guard to prevent null pointer dereference
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    else
+      type = nullptr;
 
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
@@ -99,7 +106,6 @@ public:
 
     return *this;
   }
-
   // move constructors
   TypeParam (TypeParam &&other) = default;
   TypeParam &operator= (TypeParam &&other) = default;
