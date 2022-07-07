@@ -5732,14 +5732,17 @@ package body Exp_Util is
       then
          if Is_Itype (Exp_Typ)
 
-           --  If Exp_Typ was created for a previous declaration whose nominal
-           --  subtype is unconstrained, and that declaration is aliased,
-           --  we need to generate a new subtype, because otherwise the
-           --  Is_Constr_Subt_For_U_Nominal flag will be set on the wrong
-           --  subtype, causing failure to detect non-statically-matching
-           --  subtypes on 'Access of the previously-declared object.
+           --  When this is for an object declaration, the caller may want to
+           --  set Is_Constr_Subt_For_U_Nominal on the subtype, so we must make
+           --  sure that either the subtype has been built for the expression,
+           --  typically for an aggregate, or the flag is already set on it;
+           --  otherwise it could end up being set on the nominal constrained
+           --  subtype of an object and thus later cause the failure to detect
+           --  non-statically-matching subtypes on 'Access of this object.
 
-           and then not Is_Constr_Subt_For_UN_Aliased (Exp_Typ)
+           and then (Nkind (N) /= N_Object_Declaration
+                      or else Nkind (Exp) = N_Aggregate
+                      or else Is_Constr_Subt_For_U_Nominal (Exp_Typ))
          then
             --  Within an initialization procedure, a selected component
             --  denotes a component of the enclosing record, and it appears as
