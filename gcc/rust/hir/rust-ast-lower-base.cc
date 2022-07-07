@@ -606,21 +606,36 @@ ASTLoweringBase::lower_generic_args (AST::GenericArgs &args)
     }
 
   std::vector<std::unique_ptr<HIR::Type>> type_args;
-  for (auto &type : args.get_type_args ())
-    {
-      HIR::Type *t = ASTLoweringType::translate (type.get ());
-      type_args.push_back (std::unique_ptr<HIR::Type> (t));
-    }
-
   std::vector<HIR::ConstGenericArg> const_args;
-  for (auto &const_arg : args.get_const_args ())
-    const_args.emplace_back (HIR::ConstGenericArg (
-      std::unique_ptr<HIR::Expr> (
-	ASTLoweringExpr::translate (const_arg.get_expression ().get ())),
-      Location ()));
 
-  // FIXME:
-  // const_arg.get_locus ());
+  for (auto &arg : args.get_generic_args ())
+    {
+      switch (arg.get_kind ())
+	{
+	  case AST::GenericArg::Kind::Type: {
+	    auto type = ASTLoweringType::translate (arg.get_type ().get ());
+	    type_args.emplace_back (std::unique_ptr<HIR::Type> (type));
+	    break;
+	  }
+	  case AST::GenericArg::Kind::Const: {
+	    auto expr
+	      = ASTLoweringExpr::translate (arg.get_expression ().get ());
+	    const_args.emplace_back (
+	      HIR::ConstGenericArg (std::unique_ptr<HIR::Expr> (expr),
+				    expr->get_locus ()));
+	    break;
+	  }
+	  // FIXME: Arthur: Other horrible hack waiting for disambiguation
+	  case AST::GenericArg::Kind::Either: {
+	    arg = arg.disambiguate_to_type ();
+	    auto type = ASTLoweringType::translate (arg.get_type ().get ());
+	    type_args.emplace_back (std::unique_ptr<HIR::Type> (type));
+	    break;
+	  }
+	default:
+	  gcc_unreachable ();
+	}
+    }
 
   return HIR::GenericArgs (std::move (lifetime_args), std::move (type_args),
 			   std::move (binding_args), std::move (const_args),

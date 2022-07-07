@@ -130,14 +130,23 @@ AttrVisitor::expand_generic_args (AST::GenericArgs &args)
   expander.push_context (MacroExpander::ContextType::TYPE);
 
   // expand type args - strip sub-types only
-  for (auto &type : args.get_type_args ())
+  for (auto &arg : args.get_generic_args ())
     {
-      type->accept_vis (*this);
-      maybe_expand_type (type);
+      // FIXME: Arthur: Another ugly hack while waiting for disambiguation
+      if (arg.get_kind () == AST::GenericArg::Kind::Either)
+	arg = arg.disambiguate_to_type ();
 
-      if (type->is_marked_for_strip ())
-	rust_error_at (type->get_locus (),
-		       "cannot strip type in this position");
+      if (arg.get_kind () == AST::GenericArg::Kind::Type)
+	{
+	  auto &type = arg.get_type ();
+
+	  type->accept_vis (*this);
+	  maybe_expand_type (type);
+
+	  if (type->is_marked_for_strip ())
+	    rust_error_at (type->get_locus (),
+			   "cannot strip type in this position");
+	}
     }
 
   expander.pop_context ();

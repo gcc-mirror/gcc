@@ -2878,12 +2878,12 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 	  return nullptr;
 
 	// optional default value
-	auto default_expr = AST::ConstGenericArg::create_error ();
+	auto default_expr = AST::GenericArg::create_error ();
 	if (lexer.peek_token ()->get_id () == EQUAL)
 	  {
 	    lexer.skip_token ();
 	    auto tok = lexer.peek_token ();
-	    default_expr = parse_const_generic_expression ();
+	    default_expr = parse_generic_arg ();
 
 	    if (default_expr.is_error ())
 	      rust_error_at (tok->get_locus (),
@@ -2894,8 +2894,7 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 
 	    // At this point, we *know* that we are parsing a const
 	    // expression
-	    if (default_expr.get_kind ()
-		== AST::ConstGenericArg::Kind::Ambiguous)
+	    if (default_expr.get_kind () == AST::GenericArg::Kind::Either)
 	      default_expr = default_expr.disambiguate_to_const ();
 	  }
 
@@ -6167,23 +6166,31 @@ Parser<ManagedTokenSource>::parse_type_path ()
 }
 
 template <typename ManagedTokenSource>
-AST::ConstGenericArg
-Parser<ManagedTokenSource>::parse_const_generic_expression ()
+AST::GenericArg
+Parser<ManagedTokenSource>::parse_generic_arg ()
 {
   auto tok = lexer.peek_token ();
   std::unique_ptr<AST::Expr> expr = nullptr;
 
   switch (tok->get_id ())
     {
-    case IDENTIFIER:
-      lexer.skip_token ();
-
-      // TODO: This is ambiguous with regular generic types. We probably need
-      // to differentiate later on during type checking, and thus keep a
-      // special variant here
-
-      // FIXME: We need locus here as well
-      return AST::ConstGenericArg (tok->get_str (), tok->get_locus ());
+      case IDENTIFIER: {
+	// This is a bit of a weird situation: With an identifier token, we
+	// could either have a valid type or a macro (FIXME: anything else?). So
+	// we need one bit of lookahead to differentiate if this is really
+	auto next_tok = lexer.peek_token (1);
+	if (next_tok->get_id () == EXCLAM)
+	  {
+	    auto type = parse_type ();
+	    if (type)
+	      return AST::GenericArg::create_type (std::move (type));
+	    else
+	      return AST::GenericArg::create_error ();
+	  }
+	lexer.skip_token ();
+	return AST::GenericArg::create_ambiguous (tok->get_str (),
+						  tok->get_locus ());
+      }
     case LEFT_CURLY:
       expr = parse_block_expr ();
       break;
@@ -6196,14 +6203,22 @@ Parser<ManagedTokenSource>::parse_const_generic_expression ()
     case FALSE_LITERAL:
       expr = parse_literal_expr ();
       break;
-    default:
-      expr = nullptr;
+      // FIXME: Because of this, error reporting is garbage for const generic
+      // parameter's default values
+      default: {
+	auto type = parse_type ();
+	// FIXME: Find a better way to do this?
+	if (type)
+	  return AST::GenericArg::create_type (std::move (type));
+	else
+	  return AST::GenericArg::create_error ();
+      }
     }
 
   if (!expr)
-    return AST::ConstGenericArg::create_error ();
+    return AST::GenericArg::create_error ();
 
-  return AST::ConstGenericArg (std::move (expr), tok->get_locus ());
+  return AST::GenericArg::create_const (std::move (expr));
 }
 
 // Parses the generic arguments in each path segment.
@@ -6247,11 +6262,8 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
       t = lexer.peek_token ();
     }
 
-  // try to parse types second
-  std::vector<std::unique_ptr<AST::Type>> type_args;
-  std::vector<AST::ConstGenericArg> const_args;
-
-  // TODO: Keep list of const expressions as well
+  // try to parse types and const generics second
+  std::vector<AST::GenericArg> generic_args;
 
   // TODO: think of better control structure
   t = lexer.peek_token ();
@@ -6265,19 +6277,13 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
 	  && lexer.peek_token (1)->get_id () == EQUAL)
 	break;
 
-      auto type = parse_type (false);
-      if (type)
+      auto arg = parse_generic_arg ();
+      if (!arg.is_error ())
 	{
-	  type_args.emplace_back (std::move (type));
+	  generic_args.emplace_back (std::move (arg));
 	}
-      else
-	{
-	  auto const_generic_expr = parse_const_generic_expression ();
-	  if (const_generic_expr.is_error ())
-	    break;
-	  else
-	    const_args.emplace_back (std::move (const_generic_expr));
-	}
+
+      // FIXME: Do we need to break if we encounter an error?
 
       // if next token isn't comma, then it must be end of list
       if (lexer.peek_token ()->get_id () != COMMA)
@@ -6323,12 +6329,11 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
     return AST::GenericArgs::create_empty ();
 
   lifetime_args.shrink_to_fit ();
-  type_args.shrink_to_fit ();
+  generic_args.shrink_to_fit ();
   binding_args.shrink_to_fit ();
 
-  return AST::GenericArgs (std::move (lifetime_args), std::move (type_args),
-			   std::move (binding_args), std::move (const_args),
-			   locus);
+  return AST::GenericArgs (std::move (lifetime_args), std::move (generic_args),
+			   std::move (binding_args), locus);
 }
 
 // Parses a binding in a generic args path segment.

@@ -381,7 +381,7 @@ public:
     HIR::Expr *default_expr = nullptr;
     if (param.has_default_value ()
 	&& param.get_default_value ().get_kind ()
-	     == AST::ConstGenericArg::Kind::Clear)
+	     == AST::GenericArg::Kind::Const)
       default_expr = ASTLoweringExpr::translate (
 	param.get_default_value ().get_expression ().get ());
 

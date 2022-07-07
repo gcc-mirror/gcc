@@ -132,7 +132,7 @@ public:
 };
 
 /* Class representing a const generic application */
-class ConstGenericArg
+class GenericArg
 {
 public:
   /**
@@ -152,32 +152,43 @@ public:
   enum class Kind
   {
     Error,
-    Clear,
-    Ambiguous,
+    Const,  // A const value
+    Type,   // A type argument (not discernable during parsing)
+    Either, // Either a type or a const value, cleared up during resolving
   };
 
-  static ConstGenericArg create_error ()
+  static GenericArg create_error ()
   {
-    return ConstGenericArg (nullptr, "", Kind::Error, Location ());
+    return GenericArg (nullptr, nullptr, "", Kind::Error, Location ());
   }
 
-  ConstGenericArg (std::unique_ptr<Expr> expression, Location locus)
-    : expression (std::move (expression)), path (""), kind (Kind::Clear),
-      locus (locus)
-  {}
+  static GenericArg create_const (std::unique_ptr<Expr> expression)
+  {
+    return GenericArg (std::move (expression), nullptr, "", Kind::Const,
+		       expression->get_locus ());
+  }
 
-  ConstGenericArg (Identifier path, Location locus)
-    : expression (nullptr), path (path), kind (Kind::Ambiguous), locus (locus)
-  {}
+  static GenericArg create_type (std::unique_ptr<Type> type)
+  {
+    return GenericArg (nullptr, std::move (type), "", Kind::Type,
+		       type->get_locus ());
+  }
 
-  ConstGenericArg (const ConstGenericArg &other)
+  static GenericArg create_ambiguous (Identifier path, Location locus)
+  {
+    return GenericArg (nullptr, nullptr, std::move (path), Kind::Either, locus);
+  }
+
+  GenericArg (const GenericArg &other)
     : path (other.path), kind (other.kind), locus (other.locus)
   {
     if (other.expression)
       expression = other.expression->clone_expr ();
+    if (other.type)
+      type = other.type->clone_type ();
   }
 
-  ConstGenericArg operator= (const ConstGenericArg &other)
+  GenericArg operator= (const GenericArg &other)
   {
     kind = other.kind;
     path = other.path;
@@ -185,6 +196,8 @@ public:
 
     if (other.expression)
       expression = other.expression->clone_expr ();
+    if (other.type)
+      type = other.type->clone_type ();
 
     return *this;
   }
@@ -192,12 +205,27 @@ public:
   bool is_error () const { return kind == Kind::Error; }
 
   Kind get_kind () const { return kind; }
+  const Location &get_locus () const { return locus; }
 
-  const std::unique_ptr<AST::Expr> &get_expression () const
+  std::unique_ptr<Expr> &get_expression ()
   {
-    rust_assert (kind == Kind::Clear);
+    rust_assert (kind == Kind::Const);
 
     return expression;
+  }
+
+  std::unique_ptr<Type> &get_type ()
+  {
+    rust_assert (kind == Kind::Type);
+
+    return type;
+  }
+
+  const std::string &get_path () const
+  {
+    rust_assert (kind == Kind::Either);
+
+    return path;
   }
 
   std::string as_string () const
@@ -206,26 +234,34 @@ public:
       {
       case Kind::Error:
 	gcc_unreachable ();
-      case Kind::Ambiguous:
+      case Kind::Either:
 	return "Ambiguous: " + path;
-      case Kind::Clear:
-	return "Clear: { " + expression->as_string () + " }";
+      case Kind::Const:
+	return "Const: { " + expression->as_string () + " }";
+      case Kind::Type:
+	return "Type: " + type->as_string ();
       }
 
     return "";
   }
 
   /**
-   * Disambiguate an amibguous const generic argument or generic type argument
-   * to a const generic argument, unequivocally
+   * Disambiguate an ambiguous generic argument to a const generic argument,
+   * unequivocally
    */
-  ConstGenericArg disambiguate_to_const () const;
+  GenericArg disambiguate_to_const () const;
+
+  /**
+   * Disambiguate an ambiguous generic argument to a type argument,
+   * unequivocally
+   */
+  GenericArg disambiguate_to_type () const;
 
 private:
-  ConstGenericArg (std::unique_ptr<AST::Expr> expression, Identifier path,
-		   Kind kind, Location locus)
-    : expression (std::move (expression)), path (std::move (path)), kind (kind),
-      locus (locus)
+  GenericArg (std::unique_ptr<Expr> expression, std::unique_ptr<Type> type,
+	      Identifier path, Kind kind, Location locus)
+    : expression (std::move (expression)), type (std::move (type)),
+      path (std::move (path)), kind (kind), locus (locus)
   {}
 
   /**
@@ -236,8 +272,14 @@ private:
   std::unique_ptr<Expr> expression;
 
   /**
+   * If the argument ends up being a type argument instead. A null pointer will
+   * be present here until the resolving phase.
+   */
+  std::unique_ptr<Type> type;
+
+  /**
    * Optional path which cannot be differentiated between a constant item and
-   * a type. Only used for `Ambiguous` const generic arguments, otherwise
+   * a type. Only used for ambiguous const generic arguments, otherwise
    * empty.
    */
   Identifier path;
@@ -262,14 +304,14 @@ class ConstGenericParam : public GenericParam
   /**
    * Default value for the const generic parameter
    */
-  ConstGenericArg default_value;
+  GenericArg default_value;
 
   Attribute outer_attr;
   Location locus;
 
 public:
   ConstGenericParam (Identifier name, std::unique_ptr<AST::Type> type,
-		     ConstGenericArg default_value, Attribute outer_attr,
+		     GenericArg default_value, Attribute outer_attr,
 		     Location locus)
     : name (name), type (std::move (type)),
       default_value (std::move (default_value)), outer_attr (outer_attr),
@@ -294,7 +336,14 @@ public:
     return type;
   }
 
-  const ConstGenericArg &get_default_value () const
+  GenericArg &get_default_value ()
+  {
+    rust_assert (has_default_value ());
+
+    return default_value;
+  }
+
+  const GenericArg &get_default_value () const
   {
     rust_assert (has_default_value ());
 
@@ -322,39 +371,32 @@ protected:
 struct GenericArgs
 {
   std::vector<Lifetime> lifetime_args;
-  std::vector<std::unique_ptr<Type> > type_args;
+  std::vector<GenericArg> generic_args;
   std::vector<GenericArgsBinding> binding_args;
-  std::vector<ConstGenericArg> const_args;
   Location locus;
 
 public:
   // Returns true if there are any generic arguments
   bool has_generic_args () const
   {
-    return !(lifetime_args.empty () && type_args.empty ()
-	     && binding_args.empty () && const_args.empty ());
+    return !(lifetime_args.empty () && generic_args.empty ()
+	     && binding_args.empty ());
   }
 
   GenericArgs (std::vector<Lifetime> lifetime_args,
-	       std::vector<std::unique_ptr<Type> > type_args,
+	       std::vector<GenericArg> generic_args,
 	       std::vector<GenericArgsBinding> binding_args,
-	       std::vector<ConstGenericArg> const_args,
 	       Location locus = Location ())
     : lifetime_args (std::move (lifetime_args)),
-      type_args (std::move (type_args)),
-      binding_args (std::move (binding_args)),
-      const_args (std::move (const_args)), locus (locus)
+      generic_args (std::move (generic_args)),
+      binding_args (std::move (binding_args)), locus (locus)
   {}
 
   // copy constructor with vector clone
   GenericArgs (GenericArgs const &other)
-    : lifetime_args (other.lifetime_args), binding_args (other.binding_args),
-      const_args (other.const_args), locus (other.locus)
-  {
-    type_args.reserve (other.type_args.size ());
-    for (const auto &e : other.type_args)
-      type_args.push_back (e->clone_type ());
-  }
+    : lifetime_args (other.lifetime_args), generic_args (other.generic_args),
+      binding_args (other.binding_args), locus (other.locus)
+  {}
 
   ~GenericArgs () = default;
 
@@ -362,13 +404,9 @@ public:
   GenericArgs &operator= (GenericArgs const &other)
   {
     lifetime_args = other.lifetime_args;
+    generic_args = other.generic_args;
     binding_args = other.binding_args;
-    const_args = other.const_args;
     locus = other.locus;
-
-    type_args.reserve (other.type_args.size ());
-    for (const auto &e : other.type_args)
-      type_args.push_back (e->clone_type ());
 
     return *this;
   }
@@ -378,25 +416,17 @@ public:
   GenericArgs &operator= (GenericArgs &&other) = default;
 
   // Creates an empty GenericArgs (no arguments)
-  static GenericArgs create_empty ()
-  {
-    return GenericArgs (std::vector<Lifetime> (),
-			std::vector<std::unique_ptr<Type> > (),
-			std::vector<GenericArgsBinding> (),
-			std::vector<ConstGenericArg> ());
-  }
+  static GenericArgs create_empty () { return GenericArgs ({}, {}, {}); }
 
   std::string as_string () const;
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  std::vector<std::unique_ptr<Type> > &get_type_args () { return type_args; }
+  std::vector<GenericArg> &get_generic_args () { return generic_args; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
   std::vector<GenericArgsBinding> &get_binding_args () { return binding_args; }
 
   std::vector<Lifetime> &get_lifetime_args () { return lifetime_args; };
-
-  std::vector<ConstGenericArg> &get_const_args () { return const_args; };
 
   Location get_locus () { return locus; }
 };
@@ -427,13 +457,12 @@ public:
    * args) */
   PathExprSegment (std::string segment_name, Location locus,
 		   std::vector<Lifetime> lifetime_args = {},
-		   std::vector<std::unique_ptr<Type> > type_args = {},
-		   std::vector<GenericArgsBinding> binding_args = {},
-		   std::vector<ConstGenericArg> const_args = {})
+		   std::vector<GenericArg> generic_args = {},
+		   std::vector<GenericArgsBinding> binding_args = {})
     : segment_name (PathIdentSegment (std::move (segment_name), locus)),
-      generic_args (
-	GenericArgs (std::move (lifetime_args), std::move (type_args),
-		     std::move (binding_args), std::move (const_args))),
+      generic_args (GenericArgs (std::move (lifetime_args),
+				 std::move (generic_args),
+				 std::move (binding_args))),
       locus (locus), node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
@@ -724,15 +753,14 @@ public:
   TypePathSegmentGeneric (std::string segment_name,
 			  bool has_separating_scope_resolution,
 			  std::vector<Lifetime> lifetime_args,
-			  std::vector<std::unique_ptr<Type> > type_args,
+			  std::vector<GenericArg> generic_args,
 			  std::vector<GenericArgsBinding> binding_args,
-			  std::vector<ConstGenericArg> const_args,
 			  Location locus)
     : TypePathSegment (std::move (segment_name),
 		       has_separating_scope_resolution, locus),
-      generic_args (
-	GenericArgs (std::move (lifetime_args), std::move (type_args),
-		     std::move (binding_args), std::move (const_args)))
+      generic_args (GenericArgs (std::move (lifetime_args),
+				 std::move (generic_args),
+				 std::move (binding_args)))
   {}
 
   std::string as_string () const override;
