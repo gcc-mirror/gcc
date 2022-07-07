@@ -82,7 +82,7 @@ proc gm2_target_compile_options_optimize { source dest type options } {
 set gm2src ${srcdir}/../m2
 
 gm2_init_pim "${srcdir}/gm2/pim/options/optimize/run/pass"
-# gm2_link_with "-lm2pim -lm2iso -lpthread"
+gm2_link_with "addition.o"
 
 #
 #  compile library file

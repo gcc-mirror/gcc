@@ -37,7 +37,7 @@ BEGIN
       IF x=1000
       THEN
          printf ("finished!\n") ;
-         TRANSFER (c1, main)
+         TRANSFER (c1, mainc)
       ELSE
          TRANSFER (c1, c2)
       END ;
@@ -56,7 +56,7 @@ END second ;
 
 
 VAR
-   main,
+   mainc,
    c1, c2: COROUTINE ;
    w1, w2: ADDRESS ;
 BEGIN
@@ -65,6 +65,6 @@ BEGIN
    ALLOCATE (w2, Workspace) ;
    NEWCOROUTINE (second, w2, Workspace, c2) ;
    printf ("first context switch to c1\n") ;
-   TRANSFER (main, c1) ;
-   printf ("back to main and all done\n\n")
+   TRANSFER (mainc, c1) ;
+   printf ("back to mainc and all done\n\n")
 END coroutine.

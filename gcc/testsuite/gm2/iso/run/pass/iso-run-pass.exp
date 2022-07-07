@@ -33,6 +33,8 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
 	continue
     }
 
-    gm2_target_compile $srcdir/$subdir/fileio.mod fileio.o object "-g"
-    gm2-torture-execute $testcase "" "pass"
+    if { $testcase != "$srcdir/$subdir/fileio.mod" } {
+        gm2_target_compile $srcdir/$subdir/fileio.mod fileio.o object "-g"
+	gm2-torture-execute $testcase "" "pass"
+    }
 }

@@ -27,7 +27,8 @@ load_lib gm2-torture.exp
 set gm2src ${srcdir}/../m2
 
 gm2_init_cor "${srcdir}/gm2/pim/run/pass"
-gm2_link_with "-lm2cor"
+# gm2_link_with "-flibs=cor,pim,iso"
+gm2_link_with "-lm2cor -lm2pim -lm2iso"
 
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
@@ -38,5 +39,7 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
 	continue
     }
 
-    gm2-torture-execute $testcase "" "pass"
+    if { $testcase != "$srcdir/$subdir/sys.mod" } {
+	gm2-torture-execute $testcase "" "pass"
+    }
 }
