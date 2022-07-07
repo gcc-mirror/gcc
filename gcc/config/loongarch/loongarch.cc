@@ -917,8 +917,12 @@ loongarch_compute_frame_info (void)
   frame->frame_pointer_offset = offset;
   /* Next are the callee-saved FPRs.  */
   if (frame->fmask)
-    offset += LARCH_STACK_ALIGN (num_f_saved * UNITS_PER_FP_REG);
-  frame->fp_sp_offset = offset - UNITS_PER_FP_REG;
+    {
+      offset += LARCH_STACK_ALIGN (num_f_saved * UNITS_PER_FP_REG);
+      frame->fp_sp_offset = offset - UNITS_PER_FP_REG;
+    }
+  else
+    frame->fp_sp_offset = offset;
   /* Next are the callee-saved GPRs.  */
   if (frame->mask)
     {
@@ -931,8 +935,10 @@ loongarch_compute_frame_info (void)
 	frame->save_libcall_adjustment = x_save_size;
 
       offset += x_save_size;
+      frame->gp_sp_offset = offset - UNITS_PER_WORD;
     }
-  frame->gp_sp_offset = offset - UNITS_PER_WORD;
+  else
+    frame->gp_sp_offset = offset;
   /* The hard frame pointer points above the callee-saved GPRs.  */
   frame->hard_frame_pointer_offset = offset;
   /* Above the hard frame pointer is the callee-allocated varags save area.  */
