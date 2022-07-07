@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/svalue.h"
+#include "analyzer/program-state.h"
 
 #if ENABLE_ANALYZER
 
@@ -157,6 +158,17 @@ state_machine::to_json () const
   }
 
   return sm_obj;
+}
+
+/* class sm_context.  */
+
+const region_model *
+sm_context::get_old_region_model () const
+{
+  if (const program_state *old_state = get_old_program_state ())
+    return old_state->m_region_model;
+  else
+    return NULL;
 }
 
 /* Create instances of the various state machines, each using LOGGER,
