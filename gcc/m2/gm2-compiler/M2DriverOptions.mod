@@ -70,11 +70,11 @@ PROCEDURE ScanCppArgs (i: CARDINAL) : CARDINAL ;
 VAR
    option: String ;
 BEGIN
-   IF GetArg (option, i) AND EqualArray (option, '-fcppbegin')
+   IF GetArg (option, i) AND EqualArray (option, '-fcpp-begin')
    THEN
       INC (i) ;
       WHILE GetArg (option, i) DO
-         IF EqualArray (option, '-fcppend')
+         IF EqualArray (option, '-fcpp-end')
          THEN
             RETURN i
          ELSE
