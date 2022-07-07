@@ -1650,6 +1650,18 @@ package body Sem_Ch13 is
       --  pragma of the same kind. Flag Is_Generic should be set when the
       --  context denotes a generic instance.
 
+      function Relocate_Expression (Source : Node_Id) return Node_Id;
+      --  Outside of a generic this function is equivalent to Relocate_Node.
+      --  Inside a generic it is an identity function, because Relocate_Node
+      --  would create a new node that is not associated with the generic
+      --  template. This association is needed to save references to entities
+      --  that are global to the generic (and might be not visible from where
+      --  the generic is instantiated).
+      --
+      --  Inside a generic the original tree is shared between aspect and
+      --  a corresponding pragma (or an attribute definition clause). This
+      --  parallels what is done in sem_prag.adb (see Get_Argument).
+
       --------------
       -- Decorate --
       --------------
@@ -1834,6 +1846,19 @@ package body Sem_Ch13 is
             Insert_After (N, Prag);
          end if;
       end Insert_Pragma;
+
+      -------------------------
+      -- Relocate_Expression --
+      -------------------------
+
+      function Relocate_Expression (Source : Node_Id) return Node_Id is
+      begin
+         if Inside_A_Generic then
+            return Source;
+         else
+            return Atree.Relocate_Node (Source);
+         end if;
+      end Relocate_Expression;
 
       --  Local variables
 
@@ -3229,7 +3254,7 @@ package body Sem_Ch13 is
                     Make_Attribute_Definition_Clause (Loc,
                       Name       => Ent,
                       Chars      => Nam,
-                      Expression => Relocate_Node (Expr));
+                      Expression => Relocate_Expression (Expr));
 
                   --  If the address is specified, then we treat the entity as
                   --  referenced, to avoid spurious warnings. This is analogous
@@ -3293,7 +3318,7 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Sloc (Ent),
                          Expression => Ent),
                        Make_Pragma_Argument_Association (Sloc (Expr),
-                         Expression => Relocate_Node (Expr))),
+                         Expression => Relocate_Expression (Expr))),
                      Pragma_Name                  => Name_Attach_Handler);
 
                   --  We need to insert this pragma into the tree to get proper
@@ -3335,7 +3360,7 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Sloc (Ent),
                          Expression => Ent),
                        Make_Pragma_Argument_Association (Sloc (Expr),
-                         Expression => Relocate_Node (Expr))),
+                         Expression => Relocate_Expression (Expr))),
                      Pragma_Name => Name_Predicate);
 
                   --  Mark type has predicates, and remember what kind of
@@ -3580,7 +3605,7 @@ package body Sem_Ch13 is
                        Make_Attribute_Definition_Clause (Loc,
                          Name       => Ent,
                          Chars      => Nam,
-                         Expression => Relocate_Node (Expr));
+                         Expression => Relocate_Expression (Expr));
                   end if;
 
                --  Suppress/Unsuppress
@@ -4599,32 +4624,12 @@ package body Sem_Ch13 is
 
                   --  Build the precondition/postcondition pragma
 
-                  --  We use Relocate_Node here rather than New_Copy_Tree
-                  --  because subsequent visibility analysis of the aspect
-                  --  depends on this sharing. This should be cleaned up???
-
-                  --  If the context is generic, we want to preserve the
-                  --  original tree, and simply share it between aspect and
-                  --  generated attribute. This parallels what is done in
-                  --  sem_prag.adb (see Get_Argument).
-
-                  declare
-                     New_Expr : Node_Id;
-
-                  begin
-                     if Inside_A_Generic then
-                        New_Expr := Expr;
-                     else
-                        New_Expr := Relocate_Node (Expr);
-                     end if;
-
-                     Aitem := Make_Aitem_Pragma
-                       (Pragma_Argument_Associations => New_List (
-                          Make_Pragma_Argument_Association (Eloc,
-                            Chars      => Name_Check,
-                            Expression => New_Expr)),
-                          Pragma_Name                => Pname);
-                  end;
+                  Aitem := Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Eloc,
+                         Chars      => Name_Check,
+                         Expression => Relocate_Expression (Expr))),
+                       Pragma_Name                => Pname);
 
                   --  Add message unless exception messages are suppressed
 
