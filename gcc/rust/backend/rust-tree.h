@@ -22,6 +22,7 @@
 #include "rust-system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "cpplib.h"
 
 /* Returns true if NODE is a pointer.  */
 #define TYPE_PTR_P(NODE) (TREE_CODE (NODE) == POINTER_TYPE)
@@ -664,6 +665,74 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
    order.  */
 #define MAYBE_CLASS_TYPE_P(T) (WILDCARD_TYPE_P (T) || CLASS_TYPE_P (T))
 
+/* 1 iff FUNCTION_TYPE or METHOD_TYPE has a ref-qualifier (either & or &&). */
+#define FUNCTION_REF_QUALIFIED(NODE)                                           \
+  TREE_LANG_FLAG_4 (FUNC_OR_METHOD_CHECK (NODE))
+
+/* 1 iff FUNCTION_TYPE or METHOD_TYPE has &&-ref-qualifier.  */
+#define FUNCTION_RVALUE_QUALIFIED(NODE)                                        \
+  TREE_LANG_FLAG_5 (FUNC_OR_METHOD_CHECK (NODE))
+
+/* Get the POINTER_TYPE to the METHOD_TYPE associated with this
+   pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
+   before using this macro.  */
+#define TYPE_PTRMEMFUNC_FN_TYPE(NODE)                                          \
+  (cp_build_qualified_type (TREE_TYPE (TYPE_FIELDS (NODE)),                    \
+			    rs_type_quals (NODE)))
+
+/* As above, but can be used in places that want an lvalue at the expense
+   of not necessarily having the correct cv-qualifiers.  */
+#define TYPE_PTRMEMFUNC_FN_TYPE_RAW(NODE) (TREE_TYPE (TYPE_FIELDS (NODE)))
+
+/* True if this type is dependent.  This predicate is only valid if
+   TYPE_DEPENDENT_P_VALID is true.  */
+#define TYPE_DEPENDENT_P(NODE) TYPE_LANG_FLAG_0 (NODE)
+
+/* True if dependent_type_p has been called for this type, with the
+   result that TYPE_DEPENDENT_P is valid.  */
+#define TYPE_DEPENDENT_P_VALID(NODE) TYPE_LANG_FLAG_6 (NODE)
+
+/* Nonzero for _TYPE node means that this type does not have a trivial
+   destructor.  Therefore, destroying an object of this type will
+   involve a call to a destructor.  This can apply to objects of
+   ARRAY_TYPE if the type of the elements needs a destructor.  */
+#define TYPE_HAS_NONTRIVIAL_DESTRUCTOR(NODE) (TYPE_LANG_FLAG_4 (NODE))
+
+/* For FUNCTION_TYPE or METHOD_TYPE, a list of the exceptions that
+   this type can raise.  Each TREE_VALUE is a _TYPE.  The TREE_VALUE
+   will be NULL_TREE to indicate a throw specification of `()', or
+   no exceptions allowed.  For a noexcept specification, TREE_VALUE
+   is NULL_TREE and TREE_PURPOSE is the constant-expression.  For
+   a deferred noexcept-specification, TREE_PURPOSE is a DEFERRED_NOEXCEPT
+   (for templates) or an OVERLOAD list of functions (for implicitly
+   declared functions).  */
+#define TYPE_RAISES_EXCEPTIONS(NODE)                                           \
+  TYPE_LANG_SLOT_1 (FUNC_OR_METHOD_CHECK (NODE))
+
+/* Identifiers map directly to block or class-scope bindings.
+   Namespace-scope bindings are held in hash tables on the respective
+   namespaces.  The identifier bindings are the innermost active
+   binding, from whence you can get the decl and/or implicit-typedef
+   of an elaborated type.   When not bound to a local entity the
+   values are NULL.  */
+#define IDENTIFIER_BINDING(NODE) (LANG_IDENTIFIER_CAST (NODE)->bindings)
+
+#define LANG_IDENTIFIER_CAST(NODE)                                             \
+  ((struct lang_identifier *) IDENTIFIER_NODE_CHECK (NODE))
+
+/* IF_STMT accessors. These give access to the condition of the if
+   statement, the then block of the if statement, and the else block
+   of the if statement if it exists.  */
+#define IF_COND(NODE) TREE_OPERAND (IF_STMT_CHECK (NODE), 0)
+#define THEN_CLAUSE(NODE) TREE_OPERAND (IF_STMT_CHECK (NODE), 1)
+#define ELSE_CLAUSE(NODE) TREE_OPERAND (IF_STMT_CHECK (NODE), 2)
+#define IF_SCOPE(NODE) TREE_OPERAND (IF_STMT_CHECK (NODE), 3)
+#define IF_STMT_CONSTEXPR_P(NODE) TREE_LANG_FLAG_0 (IF_STMT_CHECK (NODE))
+#define IF_STMT_CONSTEVAL_P(NODE) TREE_LANG_FLAG_2 (IF_STMT_CHECK (NODE))
+
+/* The expression in question for a DECLTYPE_TYPE.  */
+#define DECLTYPE_TYPE_EXPR(NODE) (TYPE_VALUES_RAW (DECLTYPE_TYPE_CHECK (NODE)))
+
 // Below macros are copied from gcc/c-family/c-common.h
 
 /* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
@@ -688,17 +757,6 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define RS_TYPE_CONST_NON_VOLATILE_P(NODE)                                     \
   ((rs_type_quals (NODE) & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE))             \
    == TYPE_QUAL_CONST)
-
-/* [basic.fundamental]
-
-   Types  bool, char, wchar_t, and the signed and unsigned integer types
-   are collectively called integral types.
-
-   Note that INTEGRAL_TYPE_P, as defined in tree.h, allows enumeration
-   types as well, which is incorrect in C++.  Keep these checks in
-   ascending code order.  */
-#define RS_INTEGRAL_TYPE_P(TYPE)                                               \
-  (TREE_CODE (TYPE) == BOOLEAN_TYPE || TREE_CODE (TYPE) == INTEGER_TYPE)
 
 /* Returns true if TYPE is an integral or enumeration name.  Keep
    these checks in ascending code order.  */
@@ -739,6 +797,44 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define STAT_DECL_HIDDEN_P(N) OVL_DEDUP_P (N)
 
 // Above macros are copied from gcc/cp/name-lookup.cc
+
+// forked from gcc/cp/name-lookup.h
+
+/* Datatype that represents binding established by a declaration between
+   a name and a C++ entity.  */
+struct GTY (()) cxx_binding
+{
+  /* Link to chain together various bindings for this name.  */
+  cxx_binding *previous;
+  /* The non-type entity this name is bound to.  */
+  tree value;
+  /* The type entity this name is bound to.  */
+  tree type;
+
+  bool value_is_inherited : 1;
+  bool is_local : 1;
+  bool type_is_hidden : 1;
+};
+
+// forked from gcc/c-family/c-common.h c_common_identifier
+
+/* Identifier part common to the C front ends.  Inherits from
+   tree_identifier, despite appearances.  */
+struct GTY (()) c_common_identifier
+{
+  struct tree_common common;
+  struct cpp_hashnode node; // from cpplib.h
+};
+
+// forked from gcc/cp/cp-tree.h lang_identifier
+
+/* Language-dependent contents of an identifier.  */
+
+struct GTY (()) lang_identifier
+{
+  struct c_common_identifier c_common;
+  cxx_binding *bindings;
+};
 
 // forked from gcc/cp/cp-tree.h tree_overload
 
@@ -952,6 +1048,15 @@ struct GTY (()) lang_type
 };
 
 namespace Rust {
+
+// forked from gcc/cp/cp-tree.h cp_ref_qualifier
+
+enum rs_ref_qualifier
+{
+  REF_QUAL_NONE = 0,
+  REF_QUAL_LVALUE = 1,
+  REF_QUAL_RVALUE = 2
+};
 
 // forked from gcc/cp/cp-tree.h tsubst_flags
 
@@ -1227,6 +1332,28 @@ ovl_first (tree node)
   return node;
 }
 
+// forked from gcc/cp/cp-tree.h type_of_this_parm
+
+/* Return the type of the `this' parameter of FNTYPE.  */
+
+inline tree
+type_of_this_parm (const_tree fntype)
+{
+  function_args_iterator iter;
+  gcc_assert (TREE_CODE (fntype) == METHOD_TYPE);
+  function_args_iter_init (&iter, fntype);
+  return function_args_iter_cond (&iter);
+}
+
+// forked from gcc/cp/cp-tree.h class_of_this_parm
+
+/* Return the class of the `this' parameter of FNTYPE.  */
+
+inline tree
+class_of_this_parm (const_tree fntype)
+{
+  return TREE_TYPE (type_of_this_parm (fntype));
+}
 } // namespace Rust
 
 #endif // RUST_TREE

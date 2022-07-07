@@ -1117,9 +1117,6 @@ is_overloaded_fn (tree x)
   if (TREE_CODE (x) == COMPONENT_REF)
     x = TREE_OPERAND (x, 1);
 
-  if ((TREE_CODE (x) == OVERLOAD && !OVL_SINGLE_P (x)))
-    return 2;
-
   return OVL_P (x);
 }
 
@@ -1165,4 +1162,305 @@ lookup_add (tree fns, tree lookup)
 
   return lookup;
 }
+
+// forked from gcc/cp/typeck.cc type_memfn_quals
+
+/* Returns the function-cv-quals for TYPE, which must be a FUNCTION_TYPE or
+   METHOD_TYPE.  */
+
+int
+type_memfn_quals (const_tree type)
+{
+  if (TREE_CODE (type) == FUNCTION_TYPE)
+    return TYPE_QUALS (type);
+  else if (TREE_CODE (type) == METHOD_TYPE)
+    return rs_type_quals (class_of_this_parm (type));
+  else
+    gcc_unreachable ();
+}
+
+// forked from gcc/cp/pt.cc find_parameter_pack_data
+
+/* Structure used to track the progress of find_parameter_packs_r.  */
+struct find_parameter_pack_data
+{
+  /* TREE_LIST that will contain all of the parameter packs found by
+     the traversal.  */
+  tree *parameter_packs;
+
+  /* Set of AST nodes that have been visited by the traversal.  */
+  hash_set<tree> *visited;
+
+  /* True iff we're making a type pack expansion.  */
+  bool type_pack_expansion_p;
+
+  /* True iff we found a subtree that has the extra args mechanism.  */
+  bool found_extra_args_tree_p = false;
+};
+
+// forked from gcc/cp/lex.cc conv_type_hasher
+
+/* Hasher for the conversion operator name hash table.  */
+struct conv_type_hasher : ggc_ptr_hash<tree_node>
+{
+  /* Hash NODE, an identifier node in the table.  TYPE_UID is
+     suitable, as we're not concerned about matching canonicalness
+     here.  */
+  static hashval_t hash (tree node)
+  {
+    return (hashval_t) TYPE_UID (TREE_TYPE (node));
+  }
+
+  /* Compare NODE, an identifier node in the table, against TYPE, an
+     incoming TYPE being looked up.  */
+  static bool equal (tree node, tree type) { return TREE_TYPE (node) == type; }
+};
+
+static GTY (()) hash_table<conv_type_hasher> *conv_type_names;
+
+// forked from gcc/cp/lex.cc make_conv_op_name
+
+/* Return an identifier for a conversion operator to TYPE.  We can get
+   from the returned identifier to the type.  We store TYPE, which is
+   not necessarily the canonical type,  which allows us to report the
+   form the user used in error messages.  All these identifiers are
+   not in the identifier hash table, and have the same string name.
+   These IDENTIFIERS are not in the identifier hash table, and all
+   have the same IDENTIFIER_STRING.  */
+
+tree
+make_conv_op_name (tree type)
+{
+  if (type == error_mark_node)
+    return error_mark_node;
+
+  if (conv_type_names == NULL)
+    conv_type_names = hash_table<conv_type_hasher>::create_ggc (31);
+
+  tree *slot
+    = conv_type_names->find_slot_with_hash (type, (hashval_t) TYPE_UID (type),
+					    INSERT);
+  tree identifier = *slot;
+  if (!identifier)
+    {
+      /* Create a raw IDENTIFIER outside of the identifier hash
+	 table.  */
+      identifier = copy_node (conv_op_identifier);
+
+      /* Just in case something managed to bind.  */
+      IDENTIFIER_BINDING (identifier) = NULL;
+
+      /* Hang TYPE off the identifier so it can be found easily later
+	 when performing conversions.  */
+      TREE_TYPE (identifier) = type;
+
+      *slot = identifier;
+    }
+
+  return identifier;
+}
+
+// forked from gcc/cp/pt.cc builtin_pack_fn_p
+
+/* True iff FN is a function representing a built-in variadic parameter
+   pack.  */
+
+bool
+builtin_pack_fn_p (tree fn)
+{
+  if (!fn || TREE_CODE (fn) != FUNCTION_DECL
+      || !DECL_IS_UNDECLARED_BUILTIN (fn))
+    return false;
+
+  if (id_equal (DECL_NAME (fn), "__integer_pack"))
+    return true;
+
+  return false;
+}
+
+// forked from gcc/cp/pt.cc builtin_pack_call_p
+
+/* True iff CALL is a call to a function representing a built-in variadic
+   parameter pack.  */
+
+static bool
+builtin_pack_call_p (tree call)
+{
+  if (TREE_CODE (call) != CALL_EXPR)
+    return false;
+  return builtin_pack_fn_p (CALL_EXPR_FN (call));
+}
+
+// forked from gcc/cp/pt.cc has_extra_args_mechanism_p
+
+/* Return true if the tree T has the extra args mechanism for
+   avoiding partial instantiation.  */
+
+static bool
+has_extra_args_mechanism_p (const_tree t)
+{
+  return false;
+}
+
+// forked from gcc/cp/pt.cc find_parameter_packs_r
+
+/* Identifies all of the argument packs that occur in a template
+   argument and appends them to the TREE_LIST inside DATA, which is a
+   find_parameter_pack_data structure. This is a subroutine of
+   make_pack_expansion and uses_parameter_packs.  */
+static tree
+find_parameter_packs_r (tree *tp, int *walk_subtrees, void *data)
+{
+  tree t = *tp;
+  struct find_parameter_pack_data *ppd
+    = (struct find_parameter_pack_data *) data;
+  bool parameter_pack_p = false;
+
+#define WALK_SUBTREE(NODE)                                                     \
+  rs_walk_tree (&(NODE), &find_parameter_packs_r, ppd, ppd->visited)
+
+  /* Don't look through typedefs; we are interested in whether a
+     parameter pack is actually written in the expression/type we're
+     looking at, not the target type.  */
+  if (TYPE_P (t) && typedef_variant_p (t))
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  /* Identify whether this is a parameter pack or not.  */
+  switch (TREE_CODE (t))
+    {
+    case FIELD_DECL:
+    case PARM_DECL:
+      break;
+
+    case VAR_DECL:
+      break;
+
+    case CALL_EXPR:
+      if (builtin_pack_call_p (t))
+	parameter_pack_p = true;
+      break;
+
+    case BASES:
+      parameter_pack_p = true;
+      break;
+    default:
+      /* Not a parameter pack.  */
+      break;
+    }
+
+  if (parameter_pack_p)
+    {
+      /* Add this parameter pack to the list.  */
+      *ppd->parameter_packs = tree_cons (NULL_TREE, t, *ppd->parameter_packs);
+    }
+
+  if (TYPE_P (t))
+    rs_walk_tree (&TYPE_CONTEXT (t), &find_parameter_packs_r, ppd,
+		  ppd->visited);
+
+  /* This switch statement will return immediately if we don't find a
+     parameter pack.  ??? Should some of these be in cp_walk_subtrees?  */
+  switch (TREE_CODE (t))
+    {
+      case DECL_EXPR: {
+	tree decl = DECL_EXPR_DECL (t);
+	if (is_typedef_decl (decl))
+	  /* Since we stop at typedefs above, we need to look through them at
+	     the point of the DECL_EXPR.  */
+	  rs_walk_tree (&DECL_ORIGINAL_TYPE (decl), &find_parameter_packs_r,
+			ppd, ppd->visited);
+	return NULL_TREE;
+      }
+
+    case INTEGER_TYPE:
+      rs_walk_tree (&TYPE_MAX_VALUE (t), &find_parameter_packs_r, ppd,
+		    ppd->visited);
+      *walk_subtrees = 0;
+      return NULL_TREE;
+
+    case IDENTIFIER_NODE:
+      rs_walk_tree (&TREE_TYPE (t), &find_parameter_packs_r, ppd, ppd->visited);
+      *walk_subtrees = 0;
+      return NULL_TREE;
+
+      case DECLTYPE_TYPE: {
+	/* When traversing a DECLTYPE_TYPE_EXPR, we need to set
+	   type_pack_expansion_p to false so that any placeholders
+	   within the expression don't get marked as parameter packs.  */
+	bool type_pack_expansion_p = ppd->type_pack_expansion_p;
+	ppd->type_pack_expansion_p = false;
+	rs_walk_tree (&DECLTYPE_TYPE_EXPR (t), &find_parameter_packs_r, ppd,
+		      ppd->visited);
+	ppd->type_pack_expansion_p = type_pack_expansion_p;
+	*walk_subtrees = 0;
+	return NULL_TREE;
+      }
+
+    case IF_STMT:
+      rs_walk_tree (&IF_COND (t), &find_parameter_packs_r, ppd, ppd->visited);
+      rs_walk_tree (&THEN_CLAUSE (t), &find_parameter_packs_r, ppd,
+		    ppd->visited);
+      rs_walk_tree (&ELSE_CLAUSE (t), &find_parameter_packs_r, ppd,
+		    ppd->visited);
+      /* Don't walk into IF_STMT_EXTRA_ARGS.  */
+      *walk_subtrees = 0;
+      return NULL_TREE;
+
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      WALK_SUBTREE (TYPE_RAISES_EXCEPTIONS (t));
+      break;
+
+    default:
+      return NULL_TREE;
+    }
+
+#undef WALK_SUBTREE
+
+  return NULL_TREE;
+}
+
+// forked from gcc/cp/typeck.cc type_memfn_rqual
+
+/* Returns the function-ref-qualifier for TYPE */
+
+rs_ref_qualifier
+type_memfn_rqual (const_tree type)
+{
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (type));
+
+  if (!FUNCTION_REF_QUALIFIED (type))
+    return REF_QUAL_NONE;
+  else if (FUNCTION_RVALUE_QUALIFIED (type))
+    return REF_QUAL_RVALUE;
+  else
+    return REF_QUAL_LVALUE;
+}
+
+// forked from gcc/cp/lex.cc maybe_add_lang_type_raw
+
+/* Add a raw lang_type to T, a type, should it need one.  */
+
+bool
+maybe_add_lang_type_raw (tree t)
+{
+  if (!RECORD_OR_UNION_CODE_P (TREE_CODE (t)))
+    return false;
+
+  auto *lt = (struct lang_type *) (ggc_internal_cleared_alloc (
+    sizeof (struct lang_type)));
+  TYPE_LANG_SPECIFIC (t) = lt;
+
+  if (GATHER_STATISTICS)
+    {
+      tree_node_counts[(int) lang_type] += 1;
+      tree_node_sizes[(int) lang_type] += sizeof (struct lang_type);
+    }
+
+  return true;
+}
+
 } // namespace Rust
