@@ -1,3 +1,10 @@
+2022-07-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-general.h (enum omp_requires): Use 'GOMP_REQUIRES_[...]'.
+
 2022-07-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
