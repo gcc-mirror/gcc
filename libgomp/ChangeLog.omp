@@ -1,6 +1,13 @@
 2022-07-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/requires-3.c: Adjust.
+
+2022-07-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* target.c (GOMP_offload_register_ver): Clarify 'target_data' ->
