@@ -1867,6 +1867,31 @@ layout::print_annotation_line (linenum_type row, const line_bounds lbounds)
   print_newline ();
 }
 
+/* A version of label_text that can live inside a vec.
+   Requires manual cleanup via maybe_free.  */
+
+struct pod_label_text
+{
+  pod_label_text ()
+  : m_buffer (NULL), m_caller_owned (false)
+  {}
+
+  pod_label_text (label_text &&other)
+  : m_buffer (other.m_buffer), m_caller_owned (other.m_owned)
+  {
+    other.moved_from ();
+  }
+
+  void maybe_free ()
+  {
+    if (m_caller_owned)
+      free (m_buffer);
+  }
+
+  char *m_buffer;
+  bool m_caller_owned;
+};
+
 /* Implementation detail of layout::print_any_labels.
 
    A label within the given row of source.  */
@@ -1878,10 +1903,10 @@ public:
 	      int state_idx, int column,
 	      label_text text)
   : m_state_idx (state_idx), m_column (column),
-    m_text (text), m_label_line (0), m_has_vbar (true)
+    m_text (std::move (text)), m_label_line (0), m_has_vbar (true)
   {
-    const int bytes = strlen (text.m_buffer);
-    m_display_width = cpp_display_width (text.m_buffer, bytes, policy);
+    const int bytes = strlen (m_text.m_buffer);
+    m_display_width = cpp_display_width (m_text.m_buffer, bytes, policy);
   }
 
   /* Sorting is primarily by column, then by state index.  */
@@ -1900,7 +1925,7 @@ public:
 
   int m_state_idx;
   int m_column;
-  label_text m_text;
+  pod_label_text m_text;
   size_t m_display_width;
   int m_label_line;
   bool m_has_vbar;
@@ -1941,7 +1966,7 @@ layout::print_any_labels (linenum_type row)
 	if (text.m_buffer == NULL)
 	  continue;
 
-	labels.safe_push (line_label (m_policy, i, disp_col, text));
+	labels.safe_push (line_label (m_policy, i, disp_col, std::move (text)));
       }
   }
 

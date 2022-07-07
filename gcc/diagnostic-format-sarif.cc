@@ -584,7 +584,6 @@ sarif_builder::make_location_object (const diagnostic_event &event)
   label_text ev_desc = event.get_desc (false);
   json::object *message_obj = make_message_object (ev_desc.m_buffer);
   location_obj->set ("message", message_obj);
-  ev_desc.maybe_free ();
 
   return location_obj;
 }

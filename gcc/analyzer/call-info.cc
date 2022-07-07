@@ -76,7 +76,6 @@ call_info::print (pretty_printer *pp) const
 {
   label_text desc (get_desc (pp_show_color (pp)));
   pp_string (pp, desc.m_buffer);
-  desc.maybe_free ();
 }
 
 /* Implementation of custom_edge_info::add_events_to_path vfunc for

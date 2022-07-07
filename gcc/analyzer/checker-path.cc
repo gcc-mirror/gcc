@@ -196,7 +196,6 @@ checker_event::dump (pretty_printer *pp) const
   label_text event_desc (get_desc (false));
   pp_printf (pp, "\"%s\" (depth %i",
 	     event_desc.m_buffer, m_effective_depth);
-  event_desc.maybe_free ();
 
   if (m_effective_depth != m_original_depth)
     pp_printf (pp, " corrected from %i",
@@ -235,7 +234,6 @@ checker_event::prepare_for_emission (checker_path *,
   m_emission_id = emission_id;
 
   label_text desc = get_desc (false);
-  desc.maybe_free ();
 }
 
 /* class debug_event : public checker_event.  */
@@ -402,9 +400,8 @@ state_change_event::get_desc (bool can_colorize) const
 	      meaning.dump_to_pp (&meaning_pp);
 
 	      /* Append debug version.  */
-	      label_text result;
 	      if (m_origin)
-		result = make_label_text
+		return make_label_text
 		  (can_colorize,
 		   "%s (state of %qE: %qs -> %qs, origin: %qE, meaning: %s)",
 		   custom_desc.m_buffer,
@@ -414,7 +411,7 @@ state_change_event::get_desc (bool can_colorize) const
 		   origin,
 		   pp_formatted_text (&meaning_pp));
 	      else
-		result = make_label_text
+		return make_label_text
 		  (can_colorize,
 		   "%s (state of %qE: %qs -> %qs, NULL origin, meaning: %s)",
 		   custom_desc.m_buffer,
@@ -422,9 +419,6 @@ state_change_event::get_desc (bool can_colorize) const
 		   m_from->get_name (),
 		   m_to->get_name (),
 		   pp_formatted_text (&meaning_pp));
-
-	      custom_desc.maybe_free ();
-	      return result;
 	    }
 	  else
 	    return custom_desc;
@@ -435,28 +429,24 @@ state_change_event::get_desc (bool can_colorize) const
   if (m_sval)
     {
       label_text sval_desc = m_sval->get_desc ();
-      label_text result;
       if (m_origin)
 	{
 	  label_text origin_desc = m_origin->get_desc ();
-	  result = make_label_text
+	  return make_label_text
 	    (can_colorize,
 	     "state of %qs: %qs -> %qs (origin: %qs)",
 	     sval_desc.m_buffer,
 	     m_from->get_name (),
 	     m_to->get_name (),
 	     origin_desc.m_buffer);
-	  origin_desc.maybe_free ();
 	}
       else
-	result = make_label_text
+	return make_label_text
 	  (can_colorize,
 	   "state of %qs: %qs -> %qs (NULL origin)",
 	   sval_desc.m_buffer,
 	   m_from->get_name (),
 	   m_to->get_name ());
-      sval_desc.maybe_free ();
-      return result;
     }
   else
     {
@@ -522,7 +512,6 @@ superedge_event::should_filter_p (int verbosity) const
 	    gcc_assert (desc.m_buffer);
 	    if (desc.m_buffer[0] == '\0')
 	      return true;
-	    desc.maybe_free ();
 	  }
       }
       break;
@@ -605,56 +594,39 @@ label_text
 start_cfg_edge_event::get_desc (bool can_colorize) const
 {
   bool user_facing = !flag_analyzer_verbose_edges;
-  char *edge_desc = m_sedge->get_description (user_facing);
+  label_text edge_desc
+    = label_text::take (m_sedge->get_description (user_facing));
   if (user_facing)
     {
-      if (edge_desc && strlen (edge_desc) > 0)
+      if (edge_desc.m_buffer && strlen (edge_desc.m_buffer) > 0)
 	{
 	  label_text cond_desc = maybe_describe_condition (can_colorize);
 	  label_text result;
 	  if (cond_desc.m_buffer)
-	    {
-	      result = make_label_text (can_colorize,
-					"following %qs branch (%s)...",
-					edge_desc, cond_desc.m_buffer);
-	      cond_desc.maybe_free ();
-	    }
+	    return make_label_text (can_colorize,
+				    "following %qs branch (%s)...",
+				    edge_desc.m_buffer, cond_desc.m_buffer);
 	  else
-	    {
-	      result = make_label_text (can_colorize,
-					"following %qs branch...",
-					edge_desc);
-	    }
-	  free (edge_desc);
-	  return result;
+	    return make_label_text (can_colorize,
+				    "following %qs branch...",
+				    edge_desc.m_buffer);
 	}
       else
-	{
-	  free (edge_desc);
-	  return label_text::borrow ("");
-	}
+	return label_text::borrow ("");
     }
   else
     {
-      if (strlen (edge_desc) > 0)
-	{
-	  label_text result
-	    = make_label_text (can_colorize,
-			       "taking %qs edge SN:%i -> SN:%i",
-			       edge_desc,
-			       m_sedge->m_src->m_index,
-			       m_sedge->m_dest->m_index);
-	  free (edge_desc);
-	  return result;
-	}
+      if (strlen (edge_desc.m_buffer) > 0)
+	return make_label_text (can_colorize,
+				"taking %qs edge SN:%i -> SN:%i",
+				edge_desc.m_buffer,
+				m_sedge->m_src->m_index,
+				m_sedge->m_dest->m_index);
       else
-	{
-	  free (edge_desc);
-	  return make_label_text (can_colorize,
-				  "taking edge SN:%i -> SN:%i",
-				  m_sedge->m_src->m_index,
-				  m_sedge->m_dest->m_index);
-	}
+	return make_label_text (can_colorize,
+				"taking edge SN:%i -> SN:%i",
+				m_sedge->m_src->m_index,
+				m_sedge->m_dest->m_index);
     }
 }
 
@@ -1138,19 +1110,16 @@ warning_event::get_desc (bool can_colorize) const
 	{
 	  if (m_sm && flag_analyzer_verbose_state_changes)
 	    {
-	      label_text result;
 	      if (var)
-		result = make_label_text (can_colorize,
-					  "%s (%qE is in state %qs)",
-					  ev_desc.m_buffer,
-					  var, m_state->get_name ());
+		return make_label_text (can_colorize,
+					"%s (%qE is in state %qs)",
+					ev_desc.m_buffer,
+					var, m_state->get_name ());
 	      else
-		result = make_label_text (can_colorize,
-					  "%s (in global state %qs)",
-					  ev_desc.m_buffer,
-					  m_state->get_name ());
-	      ev_desc.maybe_free ();
-	      return result;
+		return make_label_text (can_colorize,
+					"%s (in global state %qs)",
+					ev_desc.m_buffer,
+					m_state->get_name ());
 	    }
 	  else
 	    return ev_desc;
@@ -1196,7 +1165,6 @@ checker_path::dump (pretty_printer *pp) const
 	pp_string (pp, ", ");
       label_text event_desc (e->get_desc (false));
       pp_printf (pp, "\"%s\"", event_desc.m_buffer);
-      event_desc.maybe_free ();
     }
   pp_character (pp, ']');
 }
@@ -1237,7 +1205,6 @@ checker_path::debug () const
 	       i,
 	       event_kind_to_string (m_events[i]->m_kind),
 	       event_desc.m_buffer);
-      event_desc.maybe_free ();
     }
 }
 
