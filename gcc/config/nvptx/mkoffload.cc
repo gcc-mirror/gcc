@@ -310,7 +310,7 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
   fprintf (out, "\n};\n\n");
 
   fprintf (out,
-	   "static const struct nvptx_tdata {\n"
+	   "static const struct nvptx_data {\n"
 	   "  uintptr_t omp_requires_mask;\n"
 	   "  const struct ptx_obj *ptx_objs;\n"
 	   "  unsigned ptx_num;\n"
@@ -318,7 +318,7 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 	   "  unsigned var_num;\n"
 	   "  const struct nvptx_fn *fn_names;\n"
 	   "  unsigned fn_num;\n"
-	   "} target_data = {\n"
+	   "} nvptx_data = {\n"
 	   "  %d, ptx_objs, sizeof (ptx_objs) / sizeof (ptx_objs[0]),\n"
 	   "  var_mappings,"
 	   "  sizeof (var_mappings) / sizeof (var_mappings[0]),\n"
@@ -344,7 +344,7 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
   fprintf (out, "static __attribute__((constructor)) void init (void)\n"
 	   "{\n"
 	   "  GOMP_offload_register_ver (%#x, __OFFLOAD_TABLE__,"
-	   " %d/*NVIDIA_PTX*/, &target_data);\n"
+	   " %d/*NVIDIA_PTX*/, &nvptx_data);\n"
 	   "};\n",
 	   GOMP_VERSION_PACK (GOMP_VERSION, GOMP_VERSION_NVIDIA_PTX),
 	   GOMP_DEVICE_NVIDIA_PTX);
@@ -352,7 +352,7 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
   fprintf (out, "static __attribute__((destructor)) void fini (void)\n"
 	   "{\n"
 	   "  GOMP_offload_unregister_ver (%#x, __OFFLOAD_TABLE__,"
-	   " %d/*NVIDIA_PTX*/, &target_data);\n"
+	   " %d/*NVIDIA_PTX*/, &nvptx_data);\n"
 	   "};\n",
 	   GOMP_VERSION_PACK (GOMP_VERSION, GOMP_VERSION_NVIDIA_PTX),
 	   GOMP_DEVICE_NVIDIA_PTX);
