@@ -42,6 +42,10 @@ O
 Modula-2
 ; Documented in c.opt
 
+c
+Modula-2
+; Documented in c.opt
+
 fiso
 Modula-2
 use ISO dialect of Modula-2

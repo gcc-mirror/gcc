@@ -52,6 +52,7 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
 		 SetWholeValueCheck, GetWholeValueCheck,
                  SetLowerCaseKeywords,
                  SetIndex, SetRange, SetWholeDiv, SetStrictTypeChecking,
+                 Setc, Getc,
 
                  Iso, Pim, Pim2, Pim3, Pim4,
                  PositiveModFloorDiv,
@@ -86,6 +87,7 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
 
 
 VAR
+   cflag,                        (* -c flag present?                         *)
    Iso,                          (* -fiso use ISO SYSTEM.def                 *)
    Pim,                          (* -fpim use PIM [234] SYSTEM.def           *)
    Pim2,                         (* -fpim2 use strict rules.                 *)
@@ -161,6 +163,20 @@ VAR
 *)
 
 PROCEDURE DisplayVersion (mustExit: BOOLEAN) ;
+
+
+(*
+   Setc - set the cflag (compile only flag -c) to value.
+*)
+
+PROCEDURE Setc (value: BOOLEAN) ;
+
+
+(*
+   Getc - get the cflag (compile only flag -c).
+*)
+
+PROCEDURE Getc () : BOOLEAN ;
 
 
 (*
