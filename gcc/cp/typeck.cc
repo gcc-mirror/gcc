@@ -9818,22 +9818,22 @@ convert_for_assignment (tree type, tree rhs,
 	  switch (errtype)
 	    {
 	    case ICR_DEFAULT_ARGUMENT:
-	      inform_at (rhs_loc, "initializing %qT default argument", type);
+	      inform (rhs_loc, "initializing %qT default argument", type);
 	      break;
 	    case ICR_ARGPASS:
-	      inform_at (rhs_loc, "passing %qT argument", type);
+	      inform (rhs_loc, "passing %qT argument", type);
 	      break;
 	    case ICR_CONVERTING:
-	      inform_at (rhs_loc, "converting to %qT", type);
+	      inform (rhs_loc, "converting to %qT", type);
 	      break;
 	    case ICR_INIT:
-	      inform_at (rhs_loc, "initializing %qT object", type);
+	      inform (rhs_loc, "initializing %qT object", type);
 	      break;
 	    case ICR_RETURN:
-	      inform_at (rhs_loc, "returning %qT", type);
+	      inform (rhs_loc, "returning %qT", type);
 	      break;
 	    case ICR_ASSIGN:
-	      inform_at (rhs_loc, "assigning to %qT expression", type);
+	      inform (rhs_loc, "assigning to %qT expression", type);
 	      break;
 	    default:
 	      gcc_unreachable();
