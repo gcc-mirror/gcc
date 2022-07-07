@@ -651,9 +651,11 @@ GM2-LIBS-BOOT-MODS = ASCII.mod       IO.mod          Args.mod        Assertion.m
                      M2EXCEPTION.mod RTExceptions.mod \
                      Indexing.mod    M2Dependent.mod
 
-GM2-LIBS-BOOT-C    = wrapc.c         UnixArgs.c      StdIO.c                         \
-                     choosetemp.c    dtoa.c          ldtoa.c         termios.c       \
+GM2-LIBS-BOOT-C    = wrapc.c         StdIO.c                         \
+                     choosetemp.c    termios.c       \
                      errno.c         SysExceptions.c
+
+GM2-LIBS-BOOT-CC   = UnixArgs.cc     dtoa.cc         ldtoa.cc
 
 GM2-COMP-BOOT-DEFS = FifoQueue.def   M2Debug.def     M2Optimize.def  M2Defaults.def  \
                      M2Options.def   P3SymBuild.def  M2ALU.def       M2Depth.def     \
@@ -740,9 +742,11 @@ GM2-LIBS-MODS      = ASCII.mod         IO.mod          Args.mod        M2RTS.mod
                      Indexing.mod      LMathLib0.mod   LegacyReal.mod  MemUtils.mod    \
                      GetOpt.mod        M2Dependent.mod
 
-GM2-LIBS-C         = wrapc.c           UnixArgs.c      Selective.c     choosetemp.c    \
-                     errno.c           dtoa.c          ldtoa.c         \
+GM2-LIBS-C         = wrapc.c           Selective.c     choosetemp.c    \
+                     errno.c           \
                      termios.c         SysExceptions.c host.c          cgetopt.c
+
+GM2-LIBS-CC        = UnixArgs.cc       dtoa.cc         ldtoa.cc
 
 GM2-COMP-DEFS      = FifoQueue.def     M2Debug.def     M2Optimize.def  M2Defaults.def  \
                      M2Options.def     P3SymBuild.def  M2ALU.def       M2Depth.def     \
@@ -896,6 +900,7 @@ BUILD-LIBS-BOOT-H = $(GM2-LIBS-BOOT-DEFS:%.def=m2/gm2-libs-boot/$(SRC_PREFIX)%.h
 
 BUILD-LIBS-BOOT = $(BUILD-LIBS-BOOT-H) \
                   $(GM2-LIBS-BOOT-MODS:%.mod=m2/gm2-libs-boot/%.o) \
+                  $(GM2-LIBS-BOOT-CC:%.cc=m2/gm2-libs-boot/%.o) \
                   $(GM2-LIBS-BOOT-C:%.c=m2/gm2-libs-boot/%.o)
 
 BUILD-COMPILER-BOOT-H = $(GM2-COMP-BOOT-DEFS:%.def=m2/gm2-compiler-boot/$(SRC_PREFIX)%.h) \
@@ -942,7 +947,7 @@ m2/gm2-libs-boot/wrapc.o: $(srcdir)/m2/gm2-libs-ch/wrapc.c m2/gm2-libs-boot/$(SR
 m2/gm2-libs-boot/M2LINK.o: $(srcdir)/m2/gm2-libs-ch/M2LINK.c m2/gm2-libs-boot/$(SRC_PREFIX)M2LINK.h m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -c -DHAVE_CONFIG_H $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libs $(INCLUDES) $< -o $@
 
-m2/gm2-libs-boot/UnixArgs.o: $(srcdir)/m2/gm2-libs-ch/UnixArgs.c m2/gm2-libs-boot/$(SRC_PREFIX)UnixArgs.h m2/gm2-libs/gm2-libs-host.h
+m2/gm2-libs-boot/UnixArgs.o: $(srcdir)/m2/gm2-libs-ch/UnixArgs.cc m2/gm2-libs-boot/$(SRC_PREFIX)UnixArgs.h m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -c -DIN_GCC $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/choosetemp.o: m2/gm2-libs-ch/choosetemp.c m2/gm2-libiberty/Gchoosetemp.h m2/gm2-libs/gm2-libs-host.h
@@ -951,10 +956,10 @@ m2/gm2-libs-boot/choosetemp.o: m2/gm2-libs-ch/choosetemp.c m2/gm2-libiberty/Gcho
 m2/gm2-libs-boot/errno.o: $(srcdir)/m2/gm2-libs-ch/errno.c m2/gm2-libs-boot/$(SRC_PREFIX)errno.h m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
-m2/gm2-libs-boot/dtoa.o: $(srcdir)/m2/gm2-libs-ch/dtoa.c m2/gm2-libs/gm2-libs-host.h
+m2/gm2-libs-boot/dtoa.o: $(srcdir)/m2/gm2-libs-ch/dtoa.cc m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
-m2/gm2-libs-boot/ldtoa.o: $(srcdir)/m2/gm2-libs-ch/ldtoa.c m2/gm2-libs/gm2-libs-host.h
+m2/gm2-libs-boot/ldtoa.o: $(srcdir)/m2/gm2-libs-ch/ldtoa.cc m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/termios.o: $(srcdir)/m2/gm2-libs-ch/termios.c m2/gm2-libs-boot/$(SRC_PREFIX)termios.h m2/gm2-libs/gm2-libs-host.h
@@ -1271,6 +1276,7 @@ m2/gm2-compiler/gm2.a: build-compiler gm2$(exeext)
 
 m2/gm2-libs-boot/libgm2.a: m2/boot-bin/mc$(exeext) $(BUILD-LIBS-BOOT)
 	$(AR) cr $@ $(GM2-LIBS-BOOT-MODS:%.mod=m2/gm2-libs-boot/%.o) \
+                    $(GM2-LIBS-BOOT-CC:%.cc=m2/gm2-libs-boot/%.o) \
                     $(GM2-LIBS-BOOT-C:%.c=m2/gm2-libs-boot/%.o)
 	$(RANLIB) $@
 
@@ -1546,40 +1552,44 @@ m2/boot-bin/mc-devel$(exeext): $(objdir)/m2/gm2-auto/mcp1.mod \
                                 $(objdir)/m2/gm2-auto/mcp3.mod \
                                 $(objdir)/m2/gm2-auto/mcp4.mod \
                                 $(objdir)/m2/gm2-auto/mcp5.mod \
-                                mcflex.c
-	$(CC) -I$(srcdir)/m2/mc -c -g mcflex.c
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/decl.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcStream.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcPretty.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/top.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcStack.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/varargs.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcMetaError.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcOptions.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcComp.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp1.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp2.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp3.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp4.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp5.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/wlists.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/alists.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/symbolKey.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcReserved.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/nameKey.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcSearch.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcFileName.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcLexBuf.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcQuiet.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcError.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcDebug.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcPrintf.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/Indexing.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcPreprocess.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/keyc.mod
-	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcComment.mod
-	cp $(srcdir)/m2/init/mcinit top.lst
-	$(BOOTGM2) $(MCLINK) -I. -fonlylink -I$(GM2PATH) -fuselist $(srcdir)/m2/mc/top.mod -o mc m2/gm2-libs-boot/RTcodummy.o
+                                mcflex.c \
+                                m2/mc-boot-ch/Gabort.o
+	$(RM) -rf mc-obj
+	mkdir mc-obj
+	$(CC) -I$(srcdir)/m2/mc -c -g mcflex.c -o mc-obj/mcflex.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/decl.mod -o mc-obj/decl.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcStream.mod -o mc-obj/mcStream.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcPretty.mod -o mc-obj/mcPretty.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcStack.mod -o mc-obj/mcStack.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/varargs.mod -o mc-obj/varargs.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcMetaError.mod -o mc-obj/mcMetaError.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcOptions.mod -o mc-obj/mcOptions.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcComp.mod -o mc-obj/mcComp.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp1.mod -o mc-obj/mcp1.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp2.mod -o mc-obj/mcp2.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp3.mod -o mc-obj/mcp3.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp4.mod -o mc-obj/mcp4.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) m2/gm2-auto/mcp5.mod -o mc-obj/mcp5.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/wlists.mod -o mc-obj/wlists.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/alists.mod -o mc-obj/alists.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/symbolKey.mod -o mc-obj/symbolKey.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcReserved.mod -o mc-obj/mcReserved.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/nameKey.mod -o mc-obj/nameKey.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcSearch.mod -o mc-obj/mcSearch.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcFileName.mod -o mc-obj/mcFileName.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcLexBuf.mod -o mc-obj/mcLexBuf.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcQuiet.mod -o mc-obj/mcQuiet.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcError.mod -o mc-obj/mcError.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcDebug.mod -o mc-obj/mcDebug.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcPrintf.mod -o mc-obj/mcPrintf.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/Indexing.mod -o mc-obj/Indexing.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcPreprocess.mod -o mc-obj/mcPreprocess.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/keyc.mod -o mc-obj/keyc.o
+	$(BOOTGM2) $(MCOPTIONS) -I$(GM2PATH) $(srcdir)/m2/mc/mcComment.mod -o mc-obj/mcComment.o
+	$(BOOTGM2) $(MCLINK) -I. -fscaffold-main -I$(GM2PATH) \
+            -fuselist=$(srcdir)/m2/init/mcinit $(srcdir)/m2/mc/top.mod -o mc \
+            m2/gm2-libs-boot/RTcodummy.o \
+            m2/gm2-libs-boot/dtoa.o m2/gm2-libs-boot/ldtoa.o mc-obj/*o m2/mc-boot-ch/Gabort.o
 
 m2/boot-bin/mc-opt$(exeext): $(objdir)/m2/gm2-auto/mcp1.mod \
                                 $(objdir)/m2/gm2-auto/mcp2.mod \
@@ -1624,7 +1634,7 @@ MC-LIB-DEFS = Args.def ASCII.def Assertion.def Break.def  \
               dtoa.def DynamicStrings.def Environment.def \
               errno.def FIO.def FormatStrings.def FpuIO.def \
               IO.def ldtoa.def libc.def \
-              libm.def M2EXCEPTION.def M2RTS.def \
+              libm.def M2EXCEPTION.def M2RTS.def M2Dependent.def \
               MemUtils.def NumberIO.def PushBackInput.def \
               RTExceptions.def RTint.def SArgs.def \
               SFIO.def StdIO.def Storage.def StrCase.def \
@@ -1641,7 +1651,7 @@ MC-LIB-MODS = Args.mod ASCII.mod Assertion.mod Break.mod  \
               FIO.mod FormatStrings.mod FpuIO.mod \
               IO.mod \
               RTExceptions.mod RTint.mod \
-              M2EXCEPTION.mod M2RTS.mod \
+              M2EXCEPTION.mod M2RTS.mod M2Dependent.mod \
               MemUtils.mod NumberIO.mod PushBackInput.mod \
               SArgs.mod \
               SFIO.mod StdIO.mod Storage.mod StrCase.mod \
@@ -1676,9 +1686,11 @@ MC-AUTO-MODS = mcp1.mod  mcp2.mod  mcp3.mod  mcp4.mod  mcp5.mod
 
 MC-BOOT-C = $(MC-MODS:%.mod=%.c) $(MC-AUTO-MODS:%.mod=%.c)
 
-MC-INTERFACE-C = libc.c mcrts.c UnixArgs.c Selective.c termios.c \
-                 SysExceptions.c ldtoa.c dtoa.c wrapc.c \
+MC-INTERFACE-C = libc.c mcrts.c Selective.c termios.c \
+                 SysExceptions.c wrapc.c \
                  SYSTEM.c errno.c abort.c M2LINK.c
+
+MC-INTERFACE-CC = UnixArgs.cc ldtoa.cc dtoa.cc
 
 BUILD-MC-BOOT-H =  $(MC-LIB-DEFS:%.def=m2/mc-boot-gen/$(SRC_PREFIX)%.h) \
                    $(MC-DEFS:%.def=m2/mc-boot-gen/$(SRC_PREFIX)%.h)
@@ -1691,7 +1703,8 @@ BUILD-MC-BOOT-AUTO-C = $(MC-AUTO-MODS:%.mod=m2/mc-boot-gen/$(SRC_PREFIX)%.c)
 BUILD-MC-BOOT-O =  $(MC-LIB-BOOT-C:%.c=m2/mc-boot/$(SRC_PREFIX)%.o) \
                    $(MC-BOOT-C:%.c=m2/mc-boot/$(SRC_PREFIX)%.o)
 
-BUILD-MC-INTERFACE-O = $(MC-INTERFACE-C:%.c=m2/mc-boot-ch/$(SRC_PREFIX)%.o)
+BUILD-MC-INTERFACE-O = $(MC-INTERFACE-C:%.c=m2/mc-boot-ch/$(SRC_PREFIX)%.o) \
+                       $(MC-INTERFACE-CC:%.cc=m2/mc-boot-ch/$(SRC_PREFIX)%.o)
 
 
 $(objdir)/plugin:
@@ -1749,6 +1762,9 @@ m2/mc-boot/$(SRC_PREFIX)%.o: m2/mc-boot/$(SRC_PREFIX)%.c
 m2/mc-boot-ch/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.c m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
 
+m2/mc-boot-ch/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-libs-host.h
+	$(CXX) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
+
 # mc-bootstrap compiles mc using the C version previously generated by mc-autogen.
 # These autogenerated files will be checked into git by the maintainer.
 
@@ -1756,7 +1772,8 @@ mc-bootstrap: mc-clean m2/boot-bin/mc$(exeext)
 
 m2/boot-bin/mc$(exeext): $(BUILD-MC-BOOT-O) $(BUILD-MC-INTERFACE-O) m2/mc-boot/main.o mcflex.o m2/gm2-libs-boot/RTcodummy.o
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-MC-BOOT-O) \
-         $(BUILD-MC-INTERFACE-O) m2/mc-boot/main.o mcflex.o m2/gm2-libs-boot/RTcodummy.o -lm
+         $(BUILD-MC-INTERFACE-O) m2/mc-boot/main.o \
+         mcflex.o m2/gm2-libs-boot/RTcodummy.o -lm
 
 m2/mc-boot/main.o: $(M2LINK) $(srcdir)/m2/init/mcinit
 	unset CC ; $(M2LINK) -s --langc++ --exit --name mainmcinit.c $(srcdir)/m2/init/mcinit
@@ -1807,7 +1824,7 @@ m2/gm2-libs-paranoid/host.o: $(srcdir)/m2/gm2-libs-ch/host.c m2/gm2-libs/gm2-lib
 m2/gm2-libs-paranoid/wrapc.o: $(srcdir)/m2/gm2-libs-ch/wrapc.c m2/gm2-libs-boot/$(SRC_PREFIX)wrapc.h m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -c -DIN_GCC $(GM2_O_S3) $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
-m2/gm2-libs-paranoid/UnixArgs.o: $(srcdir)/m2/gm2-libs-ch/UnixArgs.c \
+m2/gm2-libs-paranoid/UnixArgs.o: $(srcdir)/m2/gm2-libs-ch/UnixArgs.cc \
                                   m2/gm2-libs-boot/$(SRC_PREFIX)UnixArgs.h
 	$(CXX) -c -DIN_GCC $(GM2_O_S3) $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
@@ -1831,12 +1848,12 @@ m2/gm2-compiler-paranoid/m2flex.o: m2/gm2-compiler/m2flex.c $(TIMEVAR_H)
 	$(COMPILER) -c $(GM2_O_S3) -g $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           $(GM2GCC) -Im2/gm2-compiler-boot -Im2/gm2-libs-boot $< -o $@
 
-m2/gm2-libs-paranoid/dtoa.o: $(srcdir)/m2/gm2-libs-ch/dtoa.c \
+m2/gm2-libs-paranoid/dtoa.o: $(srcdir)/m2/gm2-libs-ch/dtoa.cc \
                               m2/gm2-libs-boot/$(SRC_PREFIX)dtoa.h \
                               m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -c $(GM2_O_S3) $(CFLAGS) -I$(srcdir)/m2 -Im2/gm2-libs-boot -Im2/gm2-libs $(INCLUDES) $< -o $@
 
-m2/gm2-libs-paranoid/ldtoa.o: $(srcdir)/m2/gm2-libs-ch/ldtoa.c \
+m2/gm2-libs-paranoid/ldtoa.o: $(srcdir)/m2/gm2-libs-ch/ldtoa.cc \
                                m2/gm2-libs-boot/$(SRC_PREFIX)ldtoa.h \
                                m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -c $(GM2_O_S3) $(CFLAGS) -I$(srcdir)/m2 -Im2/gm2-libs-boot -Im2/gm2-libs $(INCLUDES) $< -o $@
@@ -1853,10 +1870,12 @@ BUILD-LIBS-PARANOID-H = $(GM2-LIBS-BOOT-DEFS:%.def=m2/gm2-libs-boot/$(SRC_PREFIX
 
 BUILD-LIBS-PARANOID = $(BUILD-LIBS-PARANOID-H) \
                       $(GM2-LIBS-MODS:%.mod=m2/gm2-libs-paranoid/%.o) \
+                      $(GM2-LIBS-CC:%.cc=m2/gm2-libs-paranoid/%.o) \
                       $(GM2-LIBS-C:%.c=m2/gm2-libs-paranoid/%.o)
 
 m2/gm2-libs-paranoid/libgm2.a: m2/boot-bin/mc$(exeext) $(BUILD-LIBS-PARANOID)
 	$(AR) cr $@ $(GM2-LIBS-MODS:%.mod=m2/gm2-libs-paranoid/%.o) \
+                    $(GM2-LIBS-CC:%.cc=m2/gm2-libs-paranoid/%.o) \
                     $(GM2-LIBS-C:%.c=m2/gm2-libs-paranoid/%.o)
 	$(RANLIB) $@
 
@@ -1878,9 +1897,11 @@ m2/gm2-compiler-paranoid/M2Version.o: m2/gm2-compiler-paranoid/M2Version.mod
 
 # m2/ppg$(exeext)  is the recursive descent parser generator.
 
-PPG-INTERFACE-C = libc.c mcrts.c UnixArgs.c Selective.c termios.c \
-                  SysExceptions.c ldtoa.c dtoa.c wrapc.c \
+PPG-INTERFACE-C = libc.c mcrts.c Selective.c termios.c \
+                  SysExceptions.c wrapc.c \
                   SYSTEM.c errno.c
+
+PPG-INTERFACE-CC = UnixArgs.cc ldtoa.cc dtoa.cc
 
 PPG-MODS         =  SymbolKey.mod   NameKey.mod  Lists.mod  bnflex.mod  Output.mod
 
@@ -1919,6 +1940,7 @@ PPG-LIB-MODS     = ASCII.mod \
 PPG-SRC          = ppg.mod
 
 BUILD-PPG-O = $(PPG-INTERFACE-C:%.c=m2/gm2-ppg-boot/$(SRC_PREFIX)%.o) \
+              $(PPG-INTERFACE-CC:%.cc=m2/gm2-ppg-boot/$(SRC_PREFIX)%.o) \
               $(PPG-MODS:%.mod=m2/gm2-ppg-boot/$(SRC_PREFIX)%.o) \
               $(PPG-LIB-MODS:%.mod=m2/gm2-ppg-boot/$(SRC_PREFIX)%.o) \
               $(PPG-SRC:%.mod=m2/gm2-ppg-boot/$(SRC_PREFIX)%.o)
@@ -1941,6 +1963,9 @@ m2/gm2-ppg-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libs/%.def $(MCDEPS)
 	$(MCC) -o=$@ $(srcdir)/m2/gm2-libs/$*.def
 
 m2/gm2-ppg-boot/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.c m2/gm2-libs/gm2-libs-host.h
+	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs $(INCLUDES) -g -c $< -o $@
+
+m2/gm2-ppg-boot/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs $(INCLUDES) -g -c $< -o $@
 
 m2/gm2-ppg-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-libs/%.mod $(MCDEPS) $(BUILD-BOOT-H)
@@ -1976,6 +2001,7 @@ m2/gm2-auto:
 PG-SRC = pg.mod
 
 BUILD-PG-O = $(PPG-INTERFACE-C:%.c=m2/gm2-pg-boot/$(SRC_PREFIX)%.o) \
+             $(PPG-INTERFACE-CC:%.cc=m2/gm2-pg-boot/$(SRC_PREFIX)%.o) \
              $(PPG-MODS:%.mod=m2/gm2-pg-boot/$(SRC_PREFIX)%.o) \
              $(PPG-LIB-MODS:%.mod=m2/gm2-pg-boot/$(SRC_PREFIX)%.o) \
              $(PG-SRC:%.mod=m2/gm2-pg-boot/$(SRC_PREFIX)%.o)
@@ -1984,6 +2010,9 @@ m2/gm2-pg-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libs/%.def $(MCDEPS)
 	$(MCC) -o=$@ $(srcdir)/m2/gm2-libs/$*.def
 
 m2/gm2-pg-boot/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.c m2/gm2-libs/gm2-libs-host.h
+	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs $(INCLUDES) -g -c $< -o $@
+
+m2/gm2-pg-boot/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs $(INCLUDES) -g -c $< -o $@
 
 m2/gm2-pg-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-libs/%.mod $(MCDEPS) $(BUILD-BOOT-H)
@@ -2039,6 +2068,7 @@ m2/gm2-auto/pg.mod: m2/ppg$(exeext)
 PGE-SRC = pge.mod
 
 BUILD-PGE-O = $(PPG-INTERFACE-C:%.c=m2/gm2-pge-boot/$(SRC_PREFIX)%.o) \
+              $(PPG-INTERFACE-CC:%.cc=m2/gm2-pge-boot/$(SRC_PREFIX)%.o) \
               $(PPG-MODS:%.mod=m2/gm2-pge-boot/$(SRC_PREFIX)%.o) \
               $(PPG-LIB-MODS:%.mod=m2/gm2-pge-boot/$(SRC_PREFIX)%.o) \
               $(PGE-SRC:%.mod=m2/gm2-pge-boot/$(SRC_PREFIX)%.o)
@@ -2056,7 +2086,7 @@ m2/gm2-pge-boot/$(SRC_PREFIX)libc.o: $(srcdir)/m2/mc-boot-ch/Glibc.c m2/gm2-libs
 m2/gm2-pge-boot/$(SRC_PREFIX)mcrts.o:  $(srcdir)/m2/mc-boot-ch/Gmcrts.c m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs -g -c $< -o $@
 
-m2/gm2-pge-boot/$(SRC_PREFIX)UnixArgs.o:  $(srcdir)/m2/mc-boot-ch/GUnixArgs.c
+m2/gm2-pge-boot/$(SRC_PREFIX)UnixArgs.o:  $(srcdir)/m2/mc-boot-ch/GUnixArgs.cc
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) -g -c $< -o $@
 
 m2/gm2-pge-boot/$(SRC_PREFIX)Selective.o:  $(srcdir)/m2/mc-boot-ch/GSelective.c m2/gm2-libs/gm2-libs-host.h
