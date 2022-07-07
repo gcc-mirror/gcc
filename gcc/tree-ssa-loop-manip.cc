@@ -314,9 +314,10 @@ add_exit_phi (basic_block exit, tree var)
 }
 
 /* Add exit phis for VAR that is used in LIVEIN.
-   Exits of the loops are stored in LOOP_EXITS.  */
+   Exits of the loops are stored in LOOP_EXITS.  Returns the number
+   of PHIs added for VAR.  */
 
-static void
+static unsigned
 add_exit_phis_var (tree var, bitmap use_blocks, bitmap def_loop_exits)
 {
   unsigned index;
@@ -328,10 +329,13 @@ add_exit_phis_var (tree var, bitmap use_blocks, bitmap def_loop_exits)
   auto_bitmap live_exits (&loop_renamer_obstack);
   compute_live_loop_exits (live_exits, use_blocks, def_bb, def_loop_exits);
 
+  unsigned cnt = 0;
   EXECUTE_IF_SET_IN_BITMAP (live_exits, 0, index, bi)
     {
       add_exit_phi (BASIC_BLOCK_FOR_FN (cfun, index), var);
+      cnt++;
     }
+  return cnt;
 }
 
 static int
@@ -348,13 +352,15 @@ loop_name_cmp (const void *p1, const void *p2)
 
 /* Add exit phis for the names marked in NAMES_TO_RENAME.
    Exits of the loops are stored in EXITS.  Sets of blocks where the ssa
-   names are used are stored in USE_BLOCKS.  */
+   names are used are stored in USE_BLOCKS.  Returns whether any name
+   required multiple LC PHI nodes.  */
 
-static void
+static bool
 add_exit_phis (bitmap names_to_rename, bitmap *use_blocks)
 {
   unsigned i;
   bitmap_iterator bi;
+  bool multiple_p = false;
 
   /* Sort names_to_rename after definition loop so we can avoid re-computing
      def_loop_exits.  */
@@ -381,9 +387,12 @@ add_exit_phis (bitmap names_to_rename, bitmap *use_blocks)
 	    for (auto exit = loop->exits->next; exit->e; exit = exit->next)
 	      bitmap_set_bit (def_loop_exits, exit->e->dest->index);
 	}
-      add_exit_phis_var (ssa_name (p.second), use_blocks[p.second],
-			 def_loop_exits);
+      if (add_exit_phis_var (ssa_name (p.second), use_blocks[p.second],
+			     def_loop_exits) > 1)
+	multiple_p = true;
     }
+
+  return multiple_p;
 }
 
 /* For USE in BB, if it is used outside of the loop it is defined in,
@@ -588,15 +597,18 @@ rewrite_into_loop_closed_ssa_1 (bitmap changed_bbs, unsigned update_flag,
 	}
 
       /* Add the PHI nodes on exits of the loops for the names we need to
-	 rewrite.  */
-      add_exit_phis (names_to_rename, use_blocks);
+	 rewrite.  When no variable required multiple LC PHI nodes to be
+	 inserted then we know that all uses outside of the loop are
+	 dominated by the single LC SSA definition and no further PHI
+	 node insertions are required.  */
+      bool need_phis_p = add_exit_phis (names_to_rename, use_blocks);
 
       if (release_recorded_exits_p)
 	release_recorded_exits (cfun);
 
       /* Fix up all the names found to be used outside their original
 	 loops.  */
-      update_ssa (TODO_update_ssa);
+      update_ssa (need_phis_p ? TODO_update_ssa : TODO_update_ssa_no_phi);
     }
 
   bitmap_obstack_release (&loop_renamer_obstack);
