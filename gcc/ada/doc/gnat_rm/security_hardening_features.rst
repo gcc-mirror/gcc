@@ -18,9 +18,10 @@ Register Scrubbing
 GNAT can generate code to zero-out hardware registers before returning
 from a subprogram.
 
-It can be enabled with the :switch:`-fzero-call-used-regs` command-line
-option, to affect all subprograms in a compilation, and with a
-:samp:`Machine_Attribute` pragma, to affect only specific subprograms.
+It can be enabled with the :switch:`-fzero-call-used-regs={choice}`
+command-line option, to affect all subprograms in a compilation, and
+with a :samp:`Machine_Attribute` pragma, to affect only specific
+subprograms.
 
 .. code-block:: ada
 
@@ -73,11 +74,11 @@ or a variable.)
      --  scrubbing of the stack space used by that subprogram.
 
 
-There are also :switch:`-fstrub` command-line options to control
-default settings.  For usage and more details on the command-line
-option, on the ``strub`` attribute, and their use with other
-programming languages, see :title:`Using the GNU Compiler Collection
-(GCC)`.
+There are also :switch:`-fstrub={choice}` command-line options to
+control default settings.  For usage and more details on the
+command-line options, on the ``strub`` attribute, and their use with
+other programming languages, see :title:`Using the GNU Compiler
+Collection (GCC)`.
 
 Note that Ada secondary stacks are not scrubbed.  The restriction
 ``No_Secondary_Stack`` avoids their use, and thus their accidental
