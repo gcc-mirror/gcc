@@ -3,6 +3,14 @@
 	Backport from mainline:
 	2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.c-c++-common/requires-4.c: Enhance testing.
+	* testsuite/libgomp.c-c++-common/requires-5.c: Likewise.
+
+2022-07-07  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* testsuite/libgomp.c-c++-common/requires-3.c: Adjust.
 
 2022-07-07  Tobias Burnus  <tobias@codesourcery.com>
