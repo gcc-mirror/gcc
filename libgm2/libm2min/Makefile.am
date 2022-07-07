@@ -106,7 +106,8 @@ toolexeclib_LTLIBRARIES = libm2min.la
 libm2min_la_SOURCES = $(M2MODS) libc.c
 libm2min_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2min_la_SOURCES)))
 libm2min_la_CFLAGS = -I. -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs
-libm2min_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs -fno-exceptions -fno-m2-plugin
+libm2min_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs -fno-exceptions \
+   -fno-m2-plugin -fno-scaffold-dynamic -fno-scaffold-main
 libm2min_la_LINK = $(LINK) -version-info $(libtool_VERSION)
 BUILT_SOURCES = SYSTEM.def
 CLEANFILES = SYSTEM.def

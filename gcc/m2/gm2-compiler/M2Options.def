@@ -55,6 +55,7 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  Setc, Getc,
 
                  Iso, Pim, Pim2, Pim3, Pim4,
+                 cflag,
                  PositiveModFloorDiv,
                  Pedantic, Verbose, Statistics,
                  UnboundedByReference, VerboseUnbounded,
@@ -83,7 +84,11 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  SaveTemps,
                  CppProg, CppArg, CppCommandLine, CppRemember,
 		 SetDebugFunctionLineNumbers, DebugFunctionLineNumbers,
-		 SetGenerateStatementNote, GenerateStatementNote ;
+		 SetGenerateStatementNote, GenerateStatementNote,
+                 ScaffoldDynamic, ScaffoldStatic,
+                 SetScaffoldDynamic, SetScaffoldStatic,
+                 SetScaffoldMain, ScaffoldMain,
+                 SetRuntimeModuleOverride, GetRuntimeModuleOverride ;
 
 
 VAR
@@ -93,7 +98,7 @@ VAR
    Pim2,                         (* -fpim2 use strict rules.                 *)
    Pim3,                         (* -fpim3 use strict rules.                 *)
    Pim4,                         (* -fpim4 use strict rules.                 *)
-   PositiveModFloorDiv,          (* force PIM4 behaviour for DIV and MOD     *)
+   PositiveModFloorDiv,          (* Force PIM4 behaviour for DIV and MOD     *)
    CompilerDebugging,            (* -fd internal debugging messages          *)
    DebugTraceQuad,               (* -fdebug-trace-quad                       *)
    DebugTraceAPI,                (* -fdebug-trace-api                        *)
@@ -113,7 +118,7 @@ VAR
    OptimizeCommonSubExpressions, (* -Ocse optimize common subexpressions     *)
    WholeProgram,                 (* -fwhole-program optimization.            *)
    NilChecking,                  (* -fnil makes compiler test for pointer    *)
-                                 (* NIL                                      *)
+                                 (* NIL.                                     *)
    WholeDivChecking,             (* -fwholediv produces code to raise an     *)
                                  (* exception if a whole number divide by    *)
                                  (* zero occurs.                             *)
@@ -131,31 +136,34 @@ VAR
    CaseElseChecking,             (* -fcase checks program does not need an   *)
                                  (* else statement within an case statement  *)
                                  (* when the user omits one                  *)
-   VariantValueChecking,         (* should we check all values are present   *)
+   VariantValueChecking,         (* Should we check all values are present   *)
                                  (* in a variant record?  True for ISO and   *)
                                  (* false for PIM.                           *)
    Quiet,                        (* -fquiet option specified.                *)
-   LineDirectives,               (* should compiler understand preprocessor  *)
+   LineDirectives,               (* Should compiler understand preprocessor  *)
                                  (* # linenumber "filename" markers?         *)
    StrictTypeChecking,           (* -fm2-strict-type experimental checker.   *)
-   CPreProcessor,                (* must we run the cpp on the source?       *)
-   Xcode,                        (* should errors follow Xcode format?       *)
-   ExtendedOpaque,               (* do we allow non pointer opaque types?    *)
-   DumpSystemExports,            (* print all inbuilt system items?          *)
-   GenerateSwig,                 (* should we generate a swig interface file?*)
-   Exceptions,                   (* should we generate exception code?       *)
-   UnusedVariableChecking,       (* should we warn about unused variables?   *)
-   UnusedParameterChecking,      (* should we warn about unused parameters?  *)
-   LowerCaseKeywords,            (* should keywords in errors be in lower?   *)
-   DebugBuiltins,                (* should we always call a real function?   *)
+   CPreProcessor,                (* Must we run the cpp on the source?       *)
+   Xcode,                        (* Should errors follow Xcode format?       *)
+   ExtendedOpaque,               (* Do we allow non pointer opaque types?    *)
+   DumpSystemExports,            (* Print all inbuilt system items?          *)
+   GenerateSwig,                 (* Should we generate a swig interface file?*)
+   Exceptions,                   (* Should we generate exception code?       *)
+   UnusedVariableChecking,       (* Should we warn about unused variables?   *)
+   UnusedParameterChecking,      (* Should we warn about unused parameters?  *)
+   LowerCaseKeywords,            (* Should keywords in errors be in lower?   *)
+   DebugBuiltins,                (* Should we always call a real function?   *)
    AutoInit,                     (* -fauto-init assigns pointers to NIL.     *)
    SaveTemps,                    (* -save-temps save all temporary files.    *)
+   ScaffoldDynamic,              (* Should we generate a dynamic scaffold?   *)
+   ScaffoldStatic,               (* Should we generate a static scaffold?    *)
+   ScaffoldMain,                 (* Should we generate a main function?      *)
    ForcedLocation,
    DebugFunctionLineNumbers,
    GenerateStatementNote,
    Optimizing,
    Coding,
-   Profiling         : BOOLEAN ;
+   Profiling               : BOOLEAN ;
 
 
 (*
@@ -177,6 +185,58 @@ PROCEDURE Setc (value: BOOLEAN) ;
 *)
 
 PROCEDURE Getc () : BOOLEAN ;
+
+
+(*
+   SetScaffoldDynamic - set the -fscaffold-dynamic flag.
+*)
+
+PROCEDURE SetScaffoldDynamic (value: BOOLEAN) ;
+
+
+(*
+   SetScaffoldStatic - set the -fscaffold-static flag.
+*)
+
+PROCEDURE SetScaffoldStatic (value: BOOLEAN) ;
+
+
+(*
+   GetScaffoldDynamic - get the -fscaffold-dynamic flag.
+*)
+
+PROCEDURE GetScaffoldDynamic () : BOOLEAN ;
+
+
+(*
+   GetScaffoldStatic - get the -fscaffold-static flag.
+*)
+
+PROCEDURE GetScaffoldStatic () : BOOLEAN ;
+
+
+(*
+   SetScaffoldMain - set the -fscaffold-main flag.
+*)
+
+PROCEDURE SetScaffoldMain (value: BOOLEAN) ;
+
+
+(*
+   SetRuntimeModuleOverride - set the override sequence used for module
+                              initialization and finialization.
+*)
+
+PROCEDURE SetRuntimeModuleOverride (override: ADDRESS) ;
+
+
+(*
+   GetRuntimeModuleOverride - return a string containing any user override
+                              or the default module initialization override
+                              sequence.
+*)
+
+PROCEDURE GetRuntimeModuleOverride () : ADDRESS ;
 
 
 (*

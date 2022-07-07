@@ -737,12 +737,11 @@ compiler will generate a @file{modulename.lst} file which contains a
 list indicating the initialisation order of all modules which are to
 be linked. The actual link does not occur.  The GNU Modula-2 linker
 scans all @code{IMPORT}s, generates a list of dependencies and
-produces an ordered list for initialisation. It will probably get the
-order wrong if your project has cyclic dependencies, but the
+produces an ordered list for initialization.
+This might be useful should your project has cyclic dependencies as the
 @file{.lst} file is plain text and can be modified if required.  Once
 the @file{.lst} file is created it can be used by the compiler to link
-your project via the @samp{-fuselist} option.  It has no effect if the
-@samp{-c} option is present.
+your project via the @samp{-fuselist} option.
 
 @item fno-pthread
 do not automatically link against the pthread library.  This option is
@@ -753,8 +752,30 @@ module).
 
 @item -fuselist
 providing @samp{gm2} has been told to link the program module this
-option uses the file @file{modulename.lst} for the initialisation
+option uses the file @file{modulename.lst} for the initialization
 order of modules.
+
+@item -fscaffold-static
+the option ensures that @samp{gm2} will generate a static scaffold
+within the program module.  The static scaffold is useful for
+debugging and single stepping the initialization blocks of
+implementation modules.
+
+@item -fscaffold-dynamic
+the option ensures that @samp{gm2} will generate a dynamic scaffold
+infastructure when compiling implementation and program modules.
+By default this option is on.  Use @samp{-fno-scaffold-dynamic}
+to turn it off or select @samp{-fno-scaffold-dynamic}.
+
+@item -fscaffold-c
+this option generates a C source scaffold file for the program module.
+This file can be compiled and linked with the module objects to
+produce the application.
+
+@item -fscaffold-c++
+this option generates a C++ source scaffold file for the program module.
+This file can be compiled and linked with the module objects to
+produce the application.
 
 @item -fcpp
 preprocess the source with @samp{cpp -lang-asm -traditional-cpp}

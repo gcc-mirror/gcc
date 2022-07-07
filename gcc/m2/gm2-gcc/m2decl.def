@@ -27,6 +27,34 @@ FROM m2linemap IMPORT location_t ;
 
 
 (*
+   BuildModuleCtor creates the per module constructor used as part of
+   the dynamic linking scaffold.
+*)
+
+PROCEDURE BuildModuleCtor (moduleCtor: Tree) ;
+
+
+(*
+   DeclareModuleCtor configures the function to be used as a ctor.
+*)
+
+PROCEDURE DeclareModuleCtor (decl: Tree) : Tree ;
+
+
+(*
+   DeclareM2linkGlobals creates the following code in the application
+   module globals:
+
+   int StaticInitialization = ScaffoldStatic;
+   const char *ForcedModuleInitOrder = RuntimeOverride;
+*)
+
+PROCEDURE DeclareM2linkGlobals (location: location_t;
+                                ScaffoldStatic: INTEGER;
+                                RuntimeOverride: ADDRESS) ;
+
+
+(*
     GetBitsPerBitset - returns the number of bits in a BITSET.
 *)
 

@@ -27,28 +27,36 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 DEFINITION MODULE M2RTS ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-EXPORT QUALIFIED HALT, Halt,
-                 InstallTerminationProcedure, ExecuteTerminationProcedures,
-                 InstallInitialProcedure, ExecuteInitialProcedures,
-                 ExitOnHalt, Terminate, Length, ErrorMessage,
-                 AssignmentException, ReturnException,
-                 IncException, DecException, InclException, ExclException,
-                 ShiftException, RotateException,
-                 StaticArraySubscriptException, DynamicArraySubscriptException,
-                 ForLoopBeginException, ForLoopToException, ForLoopEndException,
-                 PointerNilException, NoReturnException,
-                 WholeNonPosDivException, WholeNonPosModException,
-                 WholeZeroDivException, WholeZeroRemException,
-		 WholeValueException, RealValueException,
-                 CaseException, ParameterException, NoException ;
+
+
+TYPE
+   ArgCVEnvP = PROCEDURE (INTEGER, ADDRESS, ADDRESS) ;
+
+
+PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+                            argc: INTEGER; argv, envp: ADDRESS) ;
+
+PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+                              argc: INTEGER; argv, envp: ADDRESS) ;
 
 
 (*
-   ExecuteTerminationProcedures - calls each installed termination
-                                  procedure in reverse order.
+   RegisterModule - adds module name to the list of outstanding
+                    modules which need to have their dependencies
+                    explored to determine initialization order.
 *)
 
-PROCEDURE ExecuteTerminationProcedures ;
+PROCEDURE RegisterModule (name: ADDRESS;
+                          init, fini:  ArgCVEnvP;
+                          dependencies: PROC) ;
+
+
+(*
+   RequestDependant - used to specify that modulename is dependant upon
+                      module dependantmodule.
+*)
+
+PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
 
 
 (*
@@ -77,6 +85,14 @@ PROCEDURE ExecuteInitialProcedures ;
 *)
 
 PROCEDURE InstallInitialProcedure (p: PROC) : BOOLEAN ;
+
+
+(*
+   ExecuteTerminationProcedures - calls each installed termination procedure
+                                  in reverse order.
+*)
+
+PROCEDURE ExecuteTerminationProcedures ;
 
 
 (*

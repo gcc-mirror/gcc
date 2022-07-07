@@ -35,9 +35,8 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         GetGnuAsm, IsGnuAsmVolatile, IsGnuAsmSimple,
                         GetGnuAsmInput, GetGnuAsmOutput, GetGnuAsmTrash,
                         GetLowestType,
-                        GetModuleFinallyFunction, PutModuleFinallyFunction,
                         GetLocalSym, GetVarWritten,
-                        GetVarient, GetVarBackEndType,
+                        GetVarient, GetVarBackEndType, GetModuleCtors,
                         NoOfVariables,
                         NoOfParam, GetParent, GetDimension, IsAModula2Type,
                         IsModule, IsDefImp, IsType, IsModuleWithinProcedure,
@@ -56,7 +55,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         IsParameter, IsParameterVar,
                         IsValueSolved, IsSizeSolved,
                         IsProcedureNested, IsInnerModule, IsArrayLarge,
-                        IsComposite, IsVariableSSA,
+                        IsComposite, IsVariableSSA, IsPublic, IsCtor,
                         ForeachExportedDo,
                         ForeachImportedDo,
                         ForeachProcedureDo,
@@ -89,10 +88,12 @@ FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3, Meta
 
 FROM M2Options IMPORT DisplayQuadruples, UnboundedByReference, PedanticCast,
                       VerboseUnbounded, Iso, Pim, DebugBuiltins, WholeProgram,
-                      StrictTypeChecking, AutoInit,
+                      StrictTypeChecking, AutoInit, cflag, ScaffoldMain,
+                      ScaffoldDynamic, ScaffoldStatic, GetRuntimeModuleOverride,
                       DebugTraceQuad, DebugTraceAPI ;
 
 FROM M2Printf IMPORT printf0, printf1, printf2, printf4 ;
+FROM M2Quiet IMPORT qprintf0 ;
 
 FROM M2Base IMPORT MixTypes, NegateType, ActivationPointer, IsMathType,
                    IsRealType, IsComplexType, IsBaseType,
@@ -201,12 +202,14 @@ FROM m2tree IMPORT Tree, debug_tree ;
 FROM m2linemap IMPORT location_t ;
 
 FROM m2decl IMPORT BuildStringConstant, DeclareKnownConstant, GetBitsPerBitset,
-                   BuildIntegerConstant ;
+                   BuildIntegerConstant, DeclareM2linkGlobals,
+                   BuildModuleCtor, DeclareModuleCtor ;
 
 FROM m2statement IMPORT BuildAsm, BuildProcedureCallTree, BuildParam, BuildFunctValue,
                         DoJump, BuildUnaryForeachWordDo, BuildGoto, BuildCall2, BuildCall3,
                         BuildStart, BuildEnd, BuildCallInner, BuildStartFunctionCode,
-                        BuildEndFunctionCode, BuildAssignmentTree, DeclareLabel,
+                        BuildEndFunctionCode,
+                        BuildAssignmentTree, DeclareLabel,
                         BuildFunctionCallTree,
                         BuildAssignmentStatement,
                         BuildIndirectProcedureCallTree,
@@ -364,6 +367,12 @@ PROCEDURE IsExportedGcc (sym: CARDINAL) : BOOLEAN ;
 VAR
    scope: CARDINAL ;
 BEGIN
+   (* Has a procedure been overridden as public?  *)
+   IF IsProcedure (sym) AND IsPublic (sym)
+   THEN
+      RETURN TRUE
+   END ;
+   (* Check for whole program.  *)
    IF WholeProgram
    THEN
       scope := GetScope (sym) ;
@@ -379,6 +388,7 @@ BEGIN
       END ;
       Assert (FALSE)
    ELSE
+      (* Otherwise it is public if it were exported.  *)
       RETURN IsExported (GetMainModule (), sym)
    END
 END IsExportedGcc ;
@@ -444,13 +454,13 @@ BEGIN
    ModuleScopeOp      : CodeModuleScope (op3) |
    EndFileOp          : CodeEndFile |
    InitStartOp        : CodeInitStart (op2, op3, IsCompilingMainModule (op3)) |
-   InitEndOp          : CodeInitEnd (op3, IsCompilingMainModule(op3)) |
+   InitEndOp          : CodeInitEnd (op3, IsCompilingMainModule (op3)) |
    FinallyStartOp     : CodeFinallyStart (op2, op3, IsCompilingMainModule (op3)) |
-   FinallyEndOp       : CodeFinallyEnd (op3, IsCompilingMainModule(op3)) |
+   FinallyEndOp       : CodeFinallyEnd (op3, IsCompilingMainModule (op3)) |
    NewLocalVarOp      : CodeNewLocalVar (op1, op3) |
    KillLocalVarOp     : CodeKillLocalVar (op3) |
    ProcedureScopeOp   : CodeProcedureScope (op3) |
-   ReturnOp           : (* not used as return is achieved by KillLocalVar.  *)  |
+   ReturnOp           : (* Not used as return is achieved by KillLocalVar.  *)  |
    ReturnValueOp      : CodeReturnValue (op1, op3) |
    TryOp              : CodeTry |
    ThrowOp            : CodeThrow (op3) |
@@ -522,7 +532,7 @@ BEGIN
    RestoreExceptionOp : CodeRestoreException (op1, op3)
 
    ELSE
-      WriteFormat1('quadruple %d not yet implemented', q) ;
+      WriteFormat1 ('quadruple %d not yet implemented', q) ;
       InternalError ('quadruple not implemented yet')
    END ;
    LastOperator := op
@@ -971,9 +981,9 @@ END CodeModuleScope ;
 
                       StartModFileOp  _  _  moduleSym
 
-                      Its function is to reset the source file to another
-                      file, hence all line numbers emitted with the
-                      generated code will be relative to this source file.
+                      A new source file has been encountered therefore
+                      set LastLine to 1.
+                      Call pushGlobalScope.
 *)
 
 PROCEDURE CodeStartModFile (moduleSym: CARDINAL) ;
@@ -985,14 +995,14 @@ END CodeStartModFile ;
 
 
 (*
-   CodeStartDefFile - StartDefFileOp is a quadruple which has the following
+   CodeStartDefFile - StartDefFileOp is a quadruple with the following
                       format:
 
                       StartDefFileOp  _  _  moduleSym
 
-                      Its function is to reset the source file to another
-                      file, hence all line numbers emitted with the
-                      generated code will be relative to this source file.
+                      A new source file has been encountered therefore
+                      set LastLine to 1.
+                      Call pushGlobalScope.
 *)
 
 PROCEDURE CodeStartDefFile (moduleSym: CARDINAL) ;
@@ -1004,13 +1014,7 @@ END CodeStartDefFile ;
 
 
 (*
-   CodeEndFile - FileOp is a quadruple which has the following format:
-
-                 EndFileOp
-
-                 Its function is to reset the source file to another
-                 file, hence all line numbers emitted with the
-                 generated code will be relative to this source file.
+   CodeEndFile - pops the GlobalScope.
 *)
 
 PROCEDURE CodeEndFile ;
@@ -1023,12 +1027,14 @@ END CodeEndFile ;
    CallInnerInit - produce a call to inner module initialization routine.
 *)
 
-PROCEDURE CallInnerInit (Sym: WORD) ;
+PROCEDURE CallInnerInit (moduleSym: WORD) ;
 VAR
-   location: location_t;
+   location             : location_t;
+   ctor, init, fini, dep: CARDINAL ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-   BuildCallInner(location, Mod2Gcc(Sym))
+   location := TokenToLocation (CurrentQuadToken) ;
+   GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
+   BuildCallInner (location, Mod2Gcc (init))
 END CallInnerInit ;
 
 
@@ -1036,12 +1042,14 @@ END CallInnerInit ;
    CallInnerFinally - produce a call to inner module finalization routine.
 *)
 
-PROCEDURE CallInnerFinally (Sym: WORD) ;
+PROCEDURE CallInnerFinally (moduleSym: WORD) ;
 VAR
-   location: location_t;
+   location             : location_t;
+   ctor, init, fini, dep: CARDINAL ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-   BuildCallInner(location, GetModuleFinallyFunction(Sym))
+   location := TokenToLocation (CurrentQuadToken) ;
+   GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
+   BuildCallInner (location, Mod2Gcc (fini))
 END CallInnerFinally ;
 
 
@@ -1053,46 +1061,21 @@ END CallInnerFinally ;
 PROCEDURE CodeInitStart (currentScope, moduleSym: CARDINAL;
                          CompilingMainModule: BOOLEAN) ;
 VAR
-   CurrentModuleInitFunction: Tree ;
-   location                 : location_t;
+   location  : location_t;
+   ctor, init,
+   fini, dep : CARDINAL ;
 BEGIN
    IF CompilingMainModule OR WholeProgram
    THEN
-      (* SetFileNameAndLineNo(string(FileName), op1) ; *)
+      (* SetFileNameAndLineNo (string (FileName), op1) ;  *)
       location := TokenToLocation (CurrentQuadToken) ;
-      IF IsModuleWithinProcedure (moduleSym)
-      THEN
-         CurrentModuleInitFunction := Mod2Gcc (moduleSym) ;
-         BuildStartFunctionCode (location, CurrentModuleInitFunction, FALSE, FALSE)
-      ELSE
-         CurrentModuleInitFunction := BuildStart (location, KeyToCharStar (GetModuleInitName (moduleSym)), currentScope#moduleSym) ;
-         AddModGcc (moduleSym, CurrentModuleInitFunction)
-      END ;
-      (* EmitLineNote(string(FileName), op1) ; *)
+      GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
+      BuildStartFunctionCode (location, Mod2Gcc (init),
+                              IsExportedGcc (init), FALSE) ;
       ForeachInnerModuleDo (moduleSym, CallInnerInit)
    END
 END CodeInitStart ;
 
-
-(*
-   BuildTerminationCall - generates a call to the termination handler.
-                          After checking that, module, is a MODULE and
-                          is also the main module.
-*)
-
-(*
-PROCEDURE BuildTerminationCall (module: CARDINAL) ;
-BEGIN
-   IF (GetMainModule()=module) AND IsModule(module)
-   THEN
-      IF Pim
-      THEN
-         CodeDirectCall(FromModuleGetSym(MakeKey('Terminate'),
-                                         GetModule(MakeKey('M2RTS'))))
-      END
-   END
-END BuildTerminationCall ;
-*)
 
 (*
    CodeInitEnd - emits terminating code after the main BEGIN END of the
@@ -1102,8 +1085,9 @@ END BuildTerminationCall ;
 PROCEDURE CodeInitEnd (moduleSym: CARDINAL;
                        CompilingMainModule: BOOLEAN) ;
 VAR
-   moduleTree: Tree ;
-   location  : location_t ;
+   location  : location_t;
+   ctor, init,
+   fini, dep : CARDINAL ;
 BEGIN
    IF CompilingMainModule OR WholeProgram
    THEN
@@ -1113,15 +1097,10 @@ BEGIN
       *)
 
       location := TokenToLocation (GetDeclaredMod (moduleSym)) ;
-      moduleTree := Mod2Gcc (moduleSym) ;
-      finishFunctionDecl (location, moduleTree) ;
-
-      IF IsModuleWithinProcedure (moduleSym)
-      THEN
-         BuildEndFunctionCode (location, moduleTree, TRUE)
-      ELSE
-         BuildEnd (location, moduleTree, FALSE)
-      END
+      GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
+      finishFunctionDecl (location, Mod2Gcc (init)) ;
+      BuildEndFunctionCode (location, Mod2Gcc (init),
+                            IsModuleWithinProcedure (moduleSym))
    END
 END CodeInitEnd ;
 
@@ -1134,23 +1113,17 @@ END CodeInitEnd ;
 PROCEDURE CodeFinallyStart (outerModule, moduleSym: CARDINAL;
                             CompilingMainModule: BOOLEAN) ;
 VAR
-   CurrentModuleFinallyFunction: Tree ;
-   location                    : location_t;
+   location  : location_t;
+   ctor, init,
+   fini, dep : CARDINAL ;
 BEGIN
    IF CompilingMainModule OR WholeProgram
    THEN
-      (* SetFileNameAndLineNo(string(FileName), op1) ; *)
+      (* SetFileNameAndLineNo (string (FileName), op1) ;  *)
       location := TokenToLocation (CurrentQuadToken) ;
-      IF IsModuleWithinProcedure (moduleSym)
-      THEN
-         CurrentModuleFinallyFunction := GetModuleFinallyFunction (moduleSym) ;
-         BuildStartFunctionCode (location, CurrentModuleFinallyFunction, FALSE, FALSE)
-      ELSE
-         CurrentModuleFinallyFunction := BuildStart (location,
-                                                     KeyToCharStar(GetModuleFinallyName (moduleSym)), outerModule#moduleSym) ;
-         PutModuleFinallyFunction (moduleSym, CurrentModuleFinallyFunction)
-      END ;
-      (* EmitLineNote(string(FileName), op1) ; *)
+      GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
+      BuildStartFunctionCode (location, Mod2Gcc (fini),
+                              IsExportedGcc (fini), FALSE) ;
       ForeachInnerModuleDo (moduleSym, CallInnerFinally)
    END
 END CodeFinallyStart ;
@@ -1158,14 +1131,16 @@ END CodeFinallyStart ;
 
 (*
    CodeFinallyEnd - emits terminating code after the main BEGIN END of the
-                    current module.
+                    current module.  It also creates the scaffold if the
+                    cflag was not present.
 *)
 
 PROCEDURE CodeFinallyEnd (moduleSym: CARDINAL;
                           CompilingMainModule: BOOLEAN) ;
 VAR
-   moduleTree: Tree ;
-   location  : location_t ;
+   location  : location_t;
+   ctor, init,
+   fini, dep : CARDINAL ;
 BEGIN
    IF CompilingMainModule OR WholeProgram
    THEN
@@ -1175,14 +1150,17 @@ BEGIN
       *)
 
       location := TokenToLocation (GetDeclaredMod (moduleSym)) ;
-      moduleTree := GetModuleFinallyFunction (moduleSym) ;
-      finishFunctionDecl (TokenToLocation (GetDeclaredMod (moduleSym)), moduleTree) ;
-
-      IF IsModuleWithinProcedure (moduleSym)
+      GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
+      finishFunctionDecl (location, Mod2Gcc (fini)) ;
+      BuildEndFunctionCode (location, Mod2Gcc (fini),
+                            IsModuleWithinProcedure (moduleSym)) ;
+      IF ScaffoldMain OR (NOT cflag)
       THEN
-         BuildEndFunctionCode (location, moduleTree, TRUE)
-      ELSE
-         BuildEnd (location, moduleTree, FALSE)
+         IF CompilingMainModule AND (ScaffoldDynamic OR ScaffoldStatic OR ScaffoldMain)
+         THEN
+            qprintf0 ("generating scaffold m2link information\n");
+            DeclareM2linkGlobals (location, VAL (INTEGER, ScaffoldStatic), GetRuntimeModuleOverride ())
+         END
       END
    END
 END CodeFinallyEnd ;
@@ -1801,12 +1779,22 @@ END CodeNewLocalVar ;
 PROCEDURE CodeKillLocalVar (CurrentProcedure: CARDINAL) ;
 VAR
    begin, end: CARDINAL ;
+   proc      : Tree ;
 BEGIN
    GetProcedureBeginEnd (CurrentProcedure, begin, end) ;
    CurrentQuadToken := end ;
+   proc := NIL ;
+   IF IsCtor (CurrentProcedure)
+   THEN
+      proc := DeclareModuleCtor (Mod2Gcc (CurrentProcedure))
+   END ;
    BuildEndFunctionCode (TokenToLocation (end),
                          Mod2Gcc (CurrentProcedure),
                          IsProcedureGccNested (CurrentProcedure)) ;
+   IF IsCtor (CurrentProcedure) AND (proc # NIL)
+   THEN
+      BuildModuleCtor (proc)
+   END ;
    PoisonSymbols (CurrentProcedure) ;
    removeStmtNote () ;
    PopScope
@@ -2086,45 +2074,6 @@ BEGIN
    t := StringToChar (Mod2Gcc (rhs), type, rhs) ;
    RETURN ConvertTo (t, type, rhs)
 END ConvertRHS ;
-
-
-(*
-   ConvertForComparison - converts, sym, into a tree which is type compatible with, with.
-*)
-
-(*
-PROCEDURE ConvertForComparison (tokenno: CARDINAL; sym, with: CARDINAL) : Tree ;
-VAR
-   symType,
-   withType: CARDINAL ;
-   t       : Tree ;
-   location: location_t ;
-BEGIN
-   location := TokenToLocation(tokenno) ;
-   symType := SkipType(GetType(sym)) ;
-   withType := SkipType(GetType(with)) ;
-   IF (symType#NulSym) AND IsPointer(symType) AND (symType#withType)
-   THEN
-      RETURN( BuildConvert(location, GetPointerType (), Mod2Gcc(sym), FALSE) )
-   ELSIF IsProcedure(sym)
-   THEN
-      RETURN( BuildConvert(location, GetPointerType (), BuildAddr(location, Mod2Gcc(sym), FALSE), FALSE) )
-   ELSIF (symType#NulSym) AND IsProcType(symType)
-   THEN
-      RETURN( BuildConvert(location, GetPointerType (), Mod2Gcc(sym), FALSE) )
-   ELSIF (symType#NulSym) AND IsSubrange(symType) AND (symType#withType) AND (withType#NulSym)
-   THEN
-      RETURN( BuildConvert(location, Mod2Gcc(withType), Mod2Gcc(sym), FALSE) )
-   END ;
-   t := StringToChar(NIL, GetType(with), sym) ;
-   IF t=NIL
-   THEN
-      RETURN( ZConstToTypedConst(LValueToGenericPtr(location, sym), sym, with) )
-   ELSE
-      RETURN( t )
-   END
-END ConvertForComparison ;
-*)
 
 
 (*
@@ -3018,16 +2967,16 @@ PROCEDURE CodeInitAddress (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
    location: location_t ;
 BEGIN
-   DeclareConstant(CurrentQuadToken, op3) ;  (* checks to see whether it is a constant and declares it *)
-   DeclareConstructor(CurrentQuadToken, quad, op3) ;
+   DeclareConstant (CurrentQuadToken, op3) ;  (* checks to see whether it is a constant and declares it *)
+   DeclareConstructor (CurrentQuadToken, quad, op3) ;
 
-   location := TokenToLocation(CurrentQuadToken) ;
+   location := TokenToLocation (CurrentQuadToken) ;
 
-   Assert(op2=NulSym) ;
-   Assert(GetMode(op1)=LeftValue) ;
+   Assert (op2 = NulSym) ;
+   Assert (GetMode (op1) = LeftValue) ;
    BuildAssignmentStatement (location,
-                            Mod2Gcc(op1),
-                            BuildConvert(location, GetPointerType(), Mod2Gcc(op3), FALSE))
+                             Mod2Gcc (op1),
+                             BuildConvert (location, GetPointerType (), Mod2Gcc (op3), FALSE))
 END CodeInitAddress ;
 
 
@@ -5336,60 +5285,6 @@ END CodeSize ;
 
 
 (*
-   DetermineFieldOf - is sadly complicated by the way varient records are encoded in the front end
-                      symbol table. The symbol, sym, is a RecordField which is either in the structure:
-
-                      RecordSym
-                         RecordField: Type ;
-                         RecordField: Type ;
-                      End
-
-                      or alternatively:
-
-                      RecordSym
-                         Varient:  VarientField: RecordField: Type ;
-                                                 RecordField: Type ;
-                                   VarientField: RecordField: Type ;
-                                                 RecordField: Type ;
-                         Varient:  VarientField: RecordField: Type ;
-                                                 RecordField: Type ;
-                                   VarientField: RecordField: Type ;
-                                                 RecordField: Type ;
-                      End
-
-                      Thus when we are asked to calculate Offset RecordField
-                      we need to know which of the two alternatives we are dealing with.
-                      The GCC BuildOffset calculates the offset between RecordField its
-                      Varient parent. We need to add the offset between varient parent and
-                      the RecordSym. This code is bridging the difference in symbol table
-                      construction between the front end and GCC.
-
-                      We return the Varient symbol if sym was declared in the second method.
-*)
-
-(*
-PROCEDURE DetermineFieldOf (parent, sym: CARDINAL) : CARDINAL ;
-VAR
-   varient: CARDINAL ;
-BEGIN
-   Assert(IsRecordField(sym)) ;
-   varient := GetVarient(sym) ;
-   IF (varient=NulSym) OR IsRecord(varient)
-   THEN
-      RETURN( NulSym )
-   ELSE
-      sym := NulSym ;
-      WHILE (varient#NulSym) AND (IsVarient(varient) OR IsFieldVarient(varient)) DO
-         sym := varient ;
-         varient := GetVarient(varient)
-      END ;
-      RETURN( sym )
-   END
-END DetermineFieldOf ;
-*)
-
-
-(*
    FoldRecordField - check whether we can fold an RecordFieldOp quadruple.
                      Very similar to FoldBinary, except that we need to
                      hard code a few parameters to the gcc backend.
@@ -7204,5 +7099,5 @@ END CodeXIndr ;
 BEGIN
    UnboundedLabelNo := 0 ;
    CurrentQuadToken := 0 ;
-   ScopeStack := InitStackWord()
+   ScopeStack := InitStackWord ()
 END M2GenGCC.

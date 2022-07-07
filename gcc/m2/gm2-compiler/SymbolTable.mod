@@ -31,7 +31,7 @@ IMPORT Indexing ;
 FROM Indexing IMPORT InitIndex, InBounds, LowIndice, HighIndice, PutIndice, GetIndice ;
 FROM Sets IMPORT Set, InitSet, IncludeElementIntoSet, IsElementInSet ;
 
-FROM M2Options IMPORT Pedantic, ExtendedOpaque, DebugFunctionLineNumbers ;
+FROM M2Options IMPORT Pedantic, ExtendedOpaque, DebugFunctionLineNumbers, ScaffoldDynamic ;
 FROM M2LexBuf IMPORT UnknownTokenNo, TokenToLineNo, FindFileNameFromToken ;
 
 FROM M2ALU IMPORT InitValue, PtrToValue, PushCard, PopInto,
@@ -82,6 +82,7 @@ FROM M2Comp IMPORT CompilingDefinitionModule,
                    CompilingImplementationModule ;
 
 FROM FormatStrings IMPORT HandleEscape ;
+FROM M2Scaffold IMPORT DeclareArgEnvParams ;
 
 IMPORT Indexing ;
 
@@ -115,6 +116,7 @@ TYPE
                    DefImpSym, ModuleSym, SetSym, ProcedureSym, ProcTypeSym,
                    SubscriptSym, UnboundedSym, GnuAsmSym, InterfaceSym,
                    ObjectSym, PartialUnboundedSym, TupleSym, OAFamilySym,
+                   ImportSym, ImportStatementSym,
                    EquivSym, ErrorSym) ;
 
    Where = RECORD
@@ -128,12 +130,34 @@ TYPE
                    PackedEquiv : CARDINAL ;   (* the equivalent packed type  *)
                 END ;
 
-   PtrToAsmConstraint = POINTER TO AsmConstraint ;
-   AsmConstraint = RECORD
-                      name: Name ;
-                      str : CARDINAL ;   (* regnames or constraints     *)
-                      obj : CARDINAL ;   (* list of M2 syms             *)
-                   END ;
+   PtrToAsmConstraint = POINTER TO RECORD
+                                      name: Name ;
+                                      str : CARDINAL ;   (* regnames or constraints     *)
+                                      obj : CARDINAL ;   (* list of M2 syms             *)
+                                   END ;
+
+   ModuleCtor = RECORD
+                   ctor: CARDINAL ;      (* Procedure which will become a ctor.  *)
+                   init: CARDINAL ;      (* Module initialization block proc.    *)
+                   fini: CARDINAL ;      (* Module Finalization block proc.      *)
+                   dep : CARDINAL ;      (* Module dependency proc.              *)
+                END ;
+
+   (* Each import list has a import statement symbol.  *)
+
+   SymImportStatement = RECORD
+                           listNo       : CARDINAL ;  (* The import list no.     *)
+                           ListOfImports: List ;   (* Vector of SymImports.      *)
+                           at           : Where ;  (* The FROM or IMPORT token.  *)
+                        END ;
+
+   SymImport = RECORD
+                  module   : CARDINAL ;     (* The module imported.              *)
+                  listNo   : CARDINAL ;     (* The import list no.               *)
+                  qualified: BOOLEAN ;      (* Is the complete module imported?  *)
+                  at       : Where ;        (* token corresponding to the        *)
+                                            (* module name in the import.        *)
+               END ;
 
    SymEquiv = RECORD
                  packedInfo: PackedInfo ;
@@ -332,8 +356,10 @@ TYPE
                OptArgInit    : CARDINAL ;   (* The optarg initial value.     *)
                IsBuiltin     : BOOLEAN ;    (* Was it declared __BUILTIN__ ? *)
                BuiltinName   : Name ;       (* name of equivalent builtin    *)
-               IsInline      : BOOLEAN ;    (* Was is declared __INLINE__ ?  *)
+               IsInline      : BOOLEAN ;    (* Was it declared __INLINE__ ?  *)
                ReturnOptional: BOOLEAN ;    (* Is the return value optional? *)
+               IsPublic      : BOOLEAN ;    (* Make this procedure visible.  *)
+               IsCtor        : BOOLEAN ;    (* Is this procedure a ctor?     *)
                Unresolved    : SymbolTree ; (* All symbols currently         *)
                                             (* unresolved in this procedure. *)
                ScopeQuad     : CARDINAL ;   (* Index into quads for scope    *)
@@ -579,6 +605,9 @@ TYPE
             RECORD
                name          : Name ;       (* Index into name array, name   *)
                                             (* of record field.              *)
+               ctors         : ModuleCtor ; (* All the ctor functions.       *)
+               DefListOfDep,
+               ModListOfDep  : List ;       (* Vector of SymDependency.      *)
                ExportQualifiedTree: SymbolTree ;
                                             (* Holds all the export          *)
                                             (* Qualified identifiers.        *)
@@ -672,6 +701,8 @@ TYPE
             RECORD
                name          : Name ;       (* Index into name array, name   *)
                                             (* of record field.              *)
+               ctors         : ModuleCtor ; (* All the ctor functions.       *)
+               ModListOfDep  : List ;       (* Vector of SymDependency.      *)
                LocalSymbols  : SymbolTree ; (* The LocalSymbols hold all the *)
                                             (* variables declared local to   *)
                                             (* the block. It contains the    *)
@@ -770,6 +801,8 @@ TYPE
                SetSym              : Set              : SymSet |
                ProcedureSym        : Procedure        : SymProcedure |
                ProcTypeSym         : ProcType         : SymProcType |
+               ImportStatementSym        : ImportStatement        : SymImportStatement |
+               ImportSym           : Import           : SymImport |
                GnuAsmSym           : GnuAsm           : SymGnuAsm |
                InterfaceSym        : Interface        : SymInterface |
                TupleSym            : Tuple            : SymTuple |
@@ -883,7 +916,7 @@ END IsNameAnonymous ;
 PROCEDURE InitWhereDeclaredTok (tok: CARDINAL; VAR at: Where) ;
 BEGIN
    WITH at DO
-      IF CompilingDefinitionModule()
+      IF CompilingDefinitionModule ()
       THEN
          DefDeclared := tok ;
          ModDeclared := UnknownTokenNo
@@ -947,10 +980,6 @@ VAR
    pSym: PtrToSymbol ;
 BEGIN
    sym := FreeSymbol ;
-   IF sym=12066
-   THEN
-      stop
-   END ;
    NEW(pSym) ;
    WITH pSym^ DO
       SymbolType := DummySym
@@ -994,6 +1023,262 @@ BEGIN
       InternalError ('symbol out of bounds')
    END
 END GetPcall ;
+
+
+(*
+   MakeImport - create and return an import symbol.
+                moduleSym is the symbol being imported.
+                isqualified is FALSE if it were IMPORT modulename and
+                TRUE for the qualified FROM modulename IMPORT etc.
+                listno is the import list count for this module.
+                tok should match this modulename position.
+*)
+
+PROCEDURE MakeImport (tok: CARDINAL;
+                      moduleSym: CARDINAL;
+                      listno: CARDINAL;
+                      isqualified: BOOLEAN) : CARDINAL ;
+VAR
+   importSym: CARDINAL ;
+   pSym     : PtrToSymbol ;
+BEGIN
+   NewSym (importSym) ;
+   pSym := GetPsym (importSym) ;
+   WITH pSym^ DO
+      SymbolType := ImportSym ;
+      WITH Import DO
+         module := moduleSym ;
+         listNo := listno ;
+         qualified := isqualified ;
+         InitWhereDeclaredTok (tok, at)
+      END
+   END ;
+   RETURN importSym
+END MakeImport ;
+
+
+(*
+   MakeImportStatement - return a dependent symbol which represents an import statement
+                   or a qualified import statement.  The tok should either match
+                   the FROM token or the IMPORT token.  listno is the import list
+                   count for the module.
+*)
+
+PROCEDURE MakeImportStatement (tok: CARDINAL; listno: CARDINAL) : CARDINAL ;
+VAR
+   dependentSym: CARDINAL ;
+   pSym        : PtrToSymbol ;
+BEGIN
+   NewSym (dependentSym) ;
+   pSym := GetPsym (dependentSym) ;
+   WITH pSym^ DO
+      SymbolType := ImportStatementSym ;
+      WITH ImportStatement DO
+         listNo := listno ;
+         InitList (ListOfImports) ;
+         InitWhereDeclaredTok (tok, at)
+      END
+   END ;
+   RETURN dependentSym
+END MakeImportStatement ;
+
+
+(*
+   AppendModuleImportStatement - appends the ImportStatement symbol onto the
+                                 module import list.
+
+                                 For example:
+
+                                 FROM x IMPORT y, z ;
+                                 ^^^^
+
+                                 also:
+
+                                 IMPORT p, q, r;
+                                 ^^^^^^
+                                 will result in a new ImportStatement symbol added
+                                 to the current module import list.
+                                 The statement symbol is expected to be created
+                                 by MakeImportStatement using the token positions
+                                 outlined above.
+*)
+
+PROCEDURE AppendModuleImportStatement (module, statement: CARDINAL) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsDefImp (module)
+   THEN
+      pSym := GetPsym (module) ;
+      IF CompilingDefinitionModule ()
+      THEN
+         IncludeItemIntoList (pSym^.DefImp.DefListOfDep, statement)
+      ELSE
+         IncludeItemIntoList (pSym^.DefImp.ModListOfDep, statement)
+      END
+   ELSIF IsModule (module)
+   THEN
+      pSym := GetPsym (module) ;
+      IncludeItemIntoList (pSym^.Module.ModListOfDep, statement)
+   ELSE
+      InternalError ('expecting DefImp or Module symbol')
+   END
+END AppendModuleImportStatement ;
+
+
+(*
+   AppendModuleOnImportStatement - appends the import symbol onto the
+                                   dependent list (chain).
+
+                                   For example each:
+
+                                   FROM x IMPORT y, z ;
+                                        ^
+                                   x are added to the dependent list.
+
+                                   also:
+
+                                   IMPORT p, q, r;
+                                          ^  ^  ^
+                                   will result in p, q and r added to
+                                   to the dependent list.
+
+                                   The import symbol is created by MakeImport
+                                   and the token is expected to match the module
+                                   name position outlined above.
+*)
+
+PROCEDURE AppendModuleOnImportStatement (module, import: CARDINAL) ;
+VAR
+   l                  : List ;
+   lastImportStatement: CARDINAL ;
+BEGIN
+   Assert (IsImport (import)) ;
+   IF CompilingDefinitionModule ()
+   THEN
+      l := GetModuleDefImportStatementList (module)
+   ELSE
+      l := GetModuleModImportStatementList (module)
+   END ;
+   Assert (l # NIL) ;
+   Assert (NoOfItemsInList (l) > 0) ;  (* There should always be one on the list.  *)
+   lastImportStatement := GetItemFromList (l, NoOfItemsInList (l)) ;
+   Assert (IsImportStatement (lastImportStatement)) ;
+   l := GetImportStatementList (lastImportStatement) ;
+   IncludeItemIntoList (l, import)
+END AppendModuleOnImportStatement ;
+
+
+(*
+   IsImport - returns TRUE if sym is an import symbol.
+*)
+
+PROCEDURE IsImport (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   RETURN pSym^.SymbolType=ImportSym
+END IsImport ;
+
+
+(*
+   IsImportStatement - returns TRUE if sym is a dependent symbol.
+*)
+
+PROCEDURE IsImportStatement (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   RETURN pSym^.SymbolType=ImportStatementSym
+END IsImportStatement ;
+
+
+(*
+   GetImportModule - returns the module associated with the import symbol.
+*)
+
+PROCEDURE GetImportModule (sym: CARDINAL) : CARDINAL ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   Assert (IsImport (sym)) ;
+   pSym := GetPsym (sym) ;
+   RETURN pSym^.Import.module
+END GetImportModule ;
+
+
+(*
+   GetImportDeclared - returns the token associated with the import symbol.
+*)
+
+PROCEDURE GetImportDeclared (sym: CARDINAL) : CARDINAL ;
+VAR
+   tok : CARDINAL ;
+BEGIN
+   Assert (IsImport (sym)) ;
+   tok := GetDeclaredDefinition (sym) ;
+   IF tok = UnknownTokenNo
+   THEN
+      RETURN GetDeclaredModule (sym)
+   END ;
+   RETURN tok
+END GetImportDeclared ;
+
+
+(*
+   GetImportStatementList - returns the list of imports for this dependent.
+                            Each import symbol corresponds to a module.
+*)
+
+PROCEDURE GetImportStatementList (sym: CARDINAL) : List ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   Assert (IsImportStatement (sym)) ;
+   pSym := GetPsym (sym) ;
+   RETURN pSym^.ImportStatement.ListOfImports
+END GetImportStatementList ;
+
+
+(*
+   GetModuleDefImportStatementList - returns the list of dependents associated with
+                               the definition module.
+*)
+
+PROCEDURE GetModuleDefImportStatementList (sym: CARDINAL) : List ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   Assert (IsModule (sym) OR IsDefImp (sym)) ;
+   IF IsDefImp (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      RETURN pSym^.DefImp.DefListOfDep
+   END ;
+   RETURN NIL
+END GetModuleDefImportStatementList ;
+
+
+(*
+   GetModuleModImportStatementList - returns the list of dependents associated with
+                               the implementation or program module.
+*)
+
+PROCEDURE GetModuleModImportStatementList (sym: CARDINAL) : List ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   Assert (IsModule (sym) OR IsDefImp (sym)) ;
+   pSym := GetPsym (sym) ;
+   IF IsDefImp (sym)
+   THEN
+      RETURN pSym^.DefImp.ModListOfDep
+   ELSE
+      RETURN pSym^.Module.ModListOfDep
+   END
+END GetModuleModImportStatementList ;
 
 
 (*
@@ -2728,6 +3013,121 @@ END IsImplicityExported ;
 
 
 (*
+   GenName - returns a new name consisting of pre, name, post concatenation.
+*)
+
+PROCEDURE GenName (pre: ARRAY OF CHAR; name: Name; post: ARRAY OF CHAR) : Name ;
+VAR
+   str   : String ;
+   result: Name ;
+BEGIN
+   str := InitString (pre) ;
+   str := ConCat (str, Mark (InitStringCharStar (KeyToCharStar (name)))) ;
+   str := ConCat (str, InitString (post)) ;
+   result := makekey (string (str)) ;
+   str := KillString (str) ;
+   RETURN result
+END GenName ;
+
+
+(*
+   InitCtor - initialize the ModuleCtor fields to NulSym.
+*)
+
+PROCEDURE InitCtor (VAR ctor: ModuleCtor) ;
+BEGIN
+   ctor.ctor := NulSym ;
+   ctor.dep := NulSym ;
+   ctor.init := NulSym ;
+   ctor.fini := NulSym
+END InitCtor ;
+
+
+(*
+   MakeModuleCtor - for a defimp or module symbol create all the ctor
+                    related procedures.
+*)
+
+PROCEDURE MakeModuleCtor (moduleTok, beginTok, finallyTok: CARDINAL;
+                          moduleSym: CARDINAL) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   Assert (IsDefImp (moduleSym) OR IsModule (moduleSym)) ;
+   pSym := GetPsym (moduleSym) ;
+   IF IsDefImp (moduleSym)
+   THEN
+      InitCtorFields (moduleTok, beginTok, finallyTok,
+                      pSym^.DefImp.ctors, GetSymName (moduleSym), FALSE)
+   ELSE
+      InitCtorFields (moduleTok, beginTok, finallyTok,
+                      pSym^.Module.ctors, GetSymName (moduleSym),
+                      IsInnerModule (moduleSym))
+   END
+END MakeModuleCtor ;
+
+
+(*
+   InitCtorFields - initialize the ModuleCtor fields.  An inner module has no
+                    ctor procedure.
+*)
+
+PROCEDURE InitCtorFields (moduleTok, beginTok, finallyTok: CARDINAL;
+                          VAR ctor: ModuleCtor; name: Name; inner: BOOLEAN) ;
+BEGIN
+   IF ScaffoldDynamic AND (NOT inner)
+   THEN
+      (* The ctor procedure must be public.  *)
+      ctor.ctor := MakeProcedure (moduleTok, GenName ("_M2_", name, "_ctor")) ;
+      PutCtor (ctor.ctor, TRUE) ;
+      PutPublic (ctor.ctor, TRUE) ;
+      (* The dep procedure is local to the module.  *)
+      ctor.dep := MakeProcedure (moduleTok, GenName ("_M2_", name, "_dep")) ;
+   ELSE
+      ctor.ctor := NulSym ;
+      ctor.dep := NulSym
+   END ;
+   (* The init/fini procedures must be public.  *)
+   ctor.init := MakeProcedure (beginTok, GenName ("_M2_", name, "_init")) ;
+   PutPublic (ctor.init, TRUE) ;
+   DeclareArgEnvParams (beginTok, ctor.init) ;
+   ctor.fini := MakeProcedure (finallyTok, GenName ("_M2_", name, "_fini")) ;
+   PutPublic (ctor.fini, TRUE) ;
+   DeclareArgEnvParams (beginTok, ctor.fini)
+END InitCtorFields ;
+
+
+(*
+   GetModuleCtors - mod can be a DefImp or Module symbol.  ctor, init and fini
+                    are assigned for this module.  An inner module ctor value will
+                    be NulSym.
+*)
+
+PROCEDURE GetModuleCtors (mod: CARDINAL; VAR ctor, init, fini, dep: CARDINAL) ;
+VAR
+   pSym : PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (mod) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ModuleSym:  ctor := Module.ctors.ctor ;
+                  init := Module.ctors.init ;
+                  fini := Module.ctors.fini ;
+                  dep := Module.ctors.dep |
+      DefImpSym:  ctor := DefImp.ctors.ctor ;
+                  init := DefImp.ctors.init ;
+                  fini := DefImp.ctors.fini ;
+                  dep := DefImp.ctors.dep
+
+      ELSE
+         InternalError ('expecting Module or DefImp symbol')
+      END
+   END
+END GetModCtors ;
+
+
+(*
    MakeModule - creates a module sym with ModuleName. It returns the
                 symbol index.
 *)
@@ -2752,6 +3152,8 @@ BEGIN
       WITH Module DO
          name := ModuleName ;               (* Index into name array, name   *)
                                             (* of record field.              *)
+         InitCtor (ctors) ;                 (* Init all ctor functions.      *)
+         InitList(ModListOfDep) ;           (* Vector of SymDependency.      *)
          InitTree(LocalSymbols) ;           (* The LocalSymbols hold all the *)
                                             (* variables declared local to   *)
                                             (* the block. It contains the    *)
@@ -2865,6 +3267,7 @@ BEGIN
          WITH Module DO
             name := ModuleName ;            (* Index into name array, name   *)
                                             (* of record field.              *)
+            InitCtor (ctors) ;              (* Init all ctor functions.      *)
             InitTree(LocalSymbols) ;        (* The LocalSymbols hold all the *)
                                             (* variables declared local to   *)
                                             (* the block. It contains the    *)
@@ -2938,7 +3341,7 @@ END MakeInnerModule ;
 
 (*
    MakeDefImp - creates a definition and implementation module sym
-                with name DefImpName. It returns the symbol index.
+                with name DefImpName.  It returns the symbol index.
 *)
 
 PROCEDURE MakeDefImp (tok: CARDINAL; DefImpName: Name) : CARDINAL ;
@@ -2946,13 +3349,11 @@ VAR
    pSym: PtrToSymbol ;
    Sym : CARDINAL ;
 BEGIN
-   (*
-      Make a new symbol since we are at the outer scope level.
-      DeclareSym examines the current scope level for any symbols
-      that have the correct name, but are yet undefined.
-      Therefore we must not call DeclareSym but create a symbol
-      directly.
-   *)
+   (* Make a new symbol since we are at the outer scope level.  *)
+   (* We cannot use DeclareSym as it examines the current scope *)
+   (* for any symbols which have the correct name, but are yet  *)
+   (* undefined.  *)
+
    NewSym(Sym) ;
    pSym := GetPsym(Sym) ;
    WITH pSym^ DO
@@ -2960,6 +3361,10 @@ BEGIN
       WITH DefImp DO
          name := DefImpName ;         (* Index into name array, name   *)
                                       (* of record field.              *)
+         InitCtor (ctors) ;
+                                      (* Init all ctor functions.      *)
+         InitList(DefListOfDep) ;     (* Vector of SymDependency.      *)
+         InitList(ModListOfDep) ;     (* Vector of SymDependency.      *)
          InitTree(ExportQualifiedTree) ;
                                       (* Holds all the EXPORT          *)
                                       (* QUALIFIED identifiers.        *)
@@ -3098,6 +3503,8 @@ BEGIN
             BuiltinName := NulName ;     (* name of equivalent builtin    *)
             IsInline := FALSE ;          (* Was is declared __INLINE__ ?  *)
             ReturnOptional := FALSE ;    (* Is the return value optional? *)
+            IsPublic := FALSE ;          (* Make this procedure visible.  *)
+            IsCtor := FALSE ;            (* Is this procedure a ctor?     *)
             Scope := GetCurrentScope() ; (* Scope of procedure.           *)
             InitTree(Unresolved) ;       (* All symbols currently         *)
                                          (* unresolved in this procedure. *)
@@ -3140,6 +3547,90 @@ BEGIN
    END ;
    RETURN Sym
 END MakeProcedure ;
+
+
+(*
+   PutPublic - changes the public boolean inside the procedure.
+*)
+
+PROCEDURE PutPublic (sym: CARDINAL; value: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym   : Procedure.IsPublic := value
+
+      ELSE
+         InternalError ('expecting ProcedureSym symbol')
+      END
+   END
+END PutPublic ;
+
+
+(*
+   IsPublic - returns the public boolean associated with a procedure.
+*)
+
+PROCEDURE IsPublic (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym   :  RETURN Procedure.IsPublic
+
+      ELSE
+         InternalError ('expecting ProcedureSym symbol')
+      END
+   END
+END IsPublic ;
+
+
+(*
+   PutCtor - changes the ctor boolean inside the procedure.
+*)
+
+PROCEDURE PutCtor (sym: CARDINAL; value: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym   : Procedure.IsCtor := value
+
+      ELSE
+         InternalError ('expecting ProcedureSym symbol')
+      END
+   END
+END PutCtor ;
+
+
+(*
+   IsCtor - returns the ctor boolean associated with a procedure.
+*)
+
+PROCEDURE IsCtor (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym   :  RETURN Procedure.IsCtor
+
+      ELSE
+         InternalError ('expecting ProcedureSym symbol')
+      END
+   END
+END IsCtor ;
 
 
 (*
@@ -11970,6 +12461,8 @@ BEGIN
       DefImpSym          : RETURN( DefImp.At.DefDeclared ) |
       ModuleSym          : RETURN( Module.At.DefDeclared ) |
       UndefinedSym       : RETURN( GetFirstUsed(Sym) ) |
+      ImportSym          : RETURN( Import.at.DefDeclared ) |
+      ImportStatementSym : RETURN( ImportStatement.at.DefDeclared ) |
       PartialUnboundedSym: RETURN( GetDeclaredDefinition(PartialUnbounded.Type) )
 
       ELSE
@@ -12018,6 +12511,8 @@ BEGIN
       DefImpSym          : RETURN( DefImp.At.ModDeclared ) |
       ModuleSym          : RETURN( Module.At.ModDeclared ) |
       UndefinedSym       : RETURN( GetFirstUsed(Sym) ) |
+      ImportSym          : RETURN( Import.at.ModDeclared ) |
+      ImportStatementSym : RETURN( ImportStatement.at.ModDeclared ) |
       PartialUnboundedSym: RETURN( GetDeclaredModule(PartialUnbounded.Type) )
 
       ELSE

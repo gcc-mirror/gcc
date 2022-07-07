@@ -85,10 +85,10 @@ BEGIN
       IF isImp (n)
       THEN
          qprintf0 ('Parse implementation module\n') ;
-         doPass (FALSE, TRUE, 5, p5, '[implementation module] build code tree for all procedures and module initialisations')
+         doPass (FALSE, TRUE, 5, p5, '[implementation module] build code tree for all procedures and module initializations')
       ELSE
          qprintf0 ('Parse program module\n') ;
-         doPass (FALSE, TRUE, 5, p5, '[program module] build code tree for all procedures and module initialisations')
+         doPass (FALSE, TRUE, 5, p5, '[program module] build code tree for all procedures and module initializations')
       END ;
    END ;
 

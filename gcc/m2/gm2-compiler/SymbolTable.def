@@ -35,12 +35,16 @@ FROM NameKey IMPORT Name ;
 FROM m2tree IMPORT Tree ;
 FROM DynamicStrings IMPORT String ;
 FROM M2Error IMPORT ErrorScope ;
+FROM Lists IMPORT List ;
 
 EXPORT QUALIFIED NulSym,
                  FinalSymbol,
 
                  ModeOfAddr,
                  GetMode, PutMode,
+
+                 AppendModuleOnImportStatement,
+                 AppendModuleImportStatement,
 
                  StartScope, EndScope, PseudoScope,
                  GetCurrentScope,
@@ -51,7 +55,7 @@ EXPORT QUALIFIED NulSym,
                  SetMainModule,
                  SetFileModule,
                  MakeModule, MakeDefImp,
-                 MakeInnerModule,
+                 MakeInnerModule, MakeModuleCtor,
                  MakeProcedure,
                  MakeConstLit,
                  MakeConstVar,
@@ -77,6 +81,7 @@ EXPORT QUALIFIED NulSym,
                  MakeUnbounded,
                  MakeOAFamily,
                  MakeProcType,
+                 MakeImport, MakeImportStatement,
                  Make2Tuple,
                  MakeGnuAsm,
                  MakeRegInterface,
@@ -134,6 +139,9 @@ EXPORT QUALIFIED NulSym,
                  PutDeclaredPacked, IsDeclaredPacked, IsDeclaredPackedResolved,
                  GetPackedEquivalent, GetNonPackedEquivalent,
                  GetConstStringM2, GetConstStringC, GetConstStringM2nul, GetConstStringCnul,
+                 GetModuleCtors,
+                 GetImportModule, GetImportDeclared,
+                 GetImportStatementList, GetModuleDefImportStatementList, GetModuleModImportStatementList,
 
                  PutVar,
                  PutLeftValueFrontBackType,
@@ -186,6 +194,7 @@ EXPORT QUALIFIED NulSym,
                  PutAlignment, PutDefaultRecordFieldAlignment,
                  PutUnused, IsUnused,
                  PutVariableSSA, IsVariableSSA,
+                 PutPublic, IsPublic, PutCtor, IsCtor,
 
                  IsDefImp,
                  IsModule,
@@ -209,6 +218,8 @@ EXPORT QUALIFIED NulSym,
                  IsArray,
                  IsRecordField,
                  IsProcType,
+                 IsImport,
+                 IsImportStatement,
                  IsVar,
                  IsConst,
                  IsConstString,
@@ -562,6 +573,52 @@ PROCEDURE MakeProcedure (tok: CARDINAL; ProcedureName: Name) : CARDINAL ;
 
 
 (*
+   PutPublic - changes the public boolean inside the procedure.
+*)
+
+PROCEDURE PutPublic (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsPublic - returns the public boolean associated with a procedure.
+*)
+
+PROCEDURE IsPublic (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutCtor - changes the ctor boolean inside the procedure.
+*)
+
+PROCEDURE PutCtor (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsCtor - returns the ctor boolean associated with a procedure.
+*)
+
+PROCEDURE IsCtor (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetModuleCtors - mod can be a DefImp or Module symbol.  ctor, init and fini
+                    are assigned for this module.  An inner module ctor value will
+                    be NulSym.
+*)
+
+PROCEDURE GetModuleCtors (mod: CARDINAL; VAR ctor, init, fini, dep: CARDINAL) ;
+
+
+(*
+   MakeModuleCtor - for a defimp or module symbol create all the ctor
+                    related procedures.
+*)
+
+PROCEDURE MakeModuleCtor (moduleTok, beginTok, finallyTok: CARDINAL;
+                          moduleSym: CARDINAL) ;
+
+
+(*
    MakeVar - creates a variable sym with VarName. It returns the
              symbol index.
 *)
@@ -637,8 +694,7 @@ PROCEDURE MakeConstVar (tok: CARDINAL; ConstVarName: Name) : CARDINAL ;
 
 (*
    MakeConstLitString - put a constant which has the string described by
-                        ConstName into the ConstantTree.
-                        The symbol number is returned.
+                        ConstName into the ConstantTree and return a symbol.
                         This symbol is known as a String Constant rather than a
                         ConstLit which indicates a number.
                         If the constant already exits
@@ -646,7 +702,6 @@ PROCEDURE MakeConstVar (tok: CARDINAL; ConstVarName: Name) : CARDINAL ;
                         All values of constant strings
                         are ignored in Pass 1 and evaluated in Pass 2 via
                         character manipulation.
-                        In this procedure ConstName is the string.
 *)
 
 PROCEDURE MakeConstLitString (tok: CARDINAL; ConstName: Name) : CARDINAL ;
@@ -3220,6 +3275,131 @@ PROCEDURE GetErrorScope (sym: CARDINAL) : ErrorScope ;
 
 PROCEDURE PutErrorScope (sym: CARDINAL; errorScope: ErrorScope) ;
 *)
+
+
+(*
+   MakeImport - create and return an import symbol.
+                moduleSym is the symbol being imported.
+                isqualified is FALSE if it were IMPORT modulename and
+                TRUE for the qualified FROM modulename IMPORT etc.
+                listno is the import list count for this module.
+                tok should match this modulename position.
+*)
+
+PROCEDURE MakeImport (tok: CARDINAL;
+                      moduleSym: CARDINAL;
+                      listno: CARDINAL;
+                      isqualified: BOOLEAN) : CARDINAL ;
+
+
+(*
+   MakeImportStatement - return a dependent symbol which represents an import statement
+                         or a qualified import statement.  The tok should either match
+                         the FROM token or the IMPORT token.  listno is the import list
+                         count for the module.
+*)
+
+PROCEDURE MakeImportStatement (tok: CARDINAL; listno: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsImport - returns TRUE if sym is an import symbol.
+*)
+
+PROCEDURE IsImport (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsImportStatement - returns TRUE if sym is a dependent symbol.
+*)
+
+PROCEDURE IsImportStatement (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetImportModule - returns the module associated with the import symbol.
+*)
+
+PROCEDURE GetImportModule (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetImportDeclared - returns the token associated with the import symbol.
+*)
+
+PROCEDURE GetImportDeclared (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetImportStatementList - returns the list of imports for this dependent.
+                            Each import symbol corresponds to a module.
+*)
+
+PROCEDURE GetImportStatementList (sym: CARDINAL) : List ;
+
+
+(*
+   GetModuleDefImportStatementList - returns the list of dependents associated with
+                                     the definition module.
+*)
+
+PROCEDURE GetModuleDefImportStatementList (sym: CARDINAL) : List ;
+
+
+(*
+   GetModuleModImportStatementList - returns the list of dependents associated with
+                                     the implementation or program module.
+*)
+
+PROCEDURE GetModuleModImportStatementList (sym: CARDINAL) : List ;
+
+
+(*
+   AppendModuleImportStatement - appends the ImportStatement symbol onto the
+                                 module import list.
+
+                                 For example:
+
+                                 FROM x IMPORT y, z ;
+                                 ^^^^
+
+                                 also:
+
+                                 IMPORT p, q, r;
+                                 ^^^^^^
+                                 will result in a new ImportStatement symbol added
+                                 to the current module import list.
+                                 The ImportStatement symbol is expected to be created
+                                 by MakeImportStatement using the token positions
+                                 outlined above.
+*)
+
+PROCEDURE AppendModuleImportStatement (module, statement: CARDINAL) ;
+
+
+(*
+   AppendModuleOnImportStatement - appends the import symbol onto the
+                                   dependent list (chain).
+
+                                   For example each:
+
+                                   FROM x IMPORT y, z ;
+                                        ^
+                                   x are added to the dependent list.
+
+                                   also:
+
+                                   IMPORT p, q, r;
+                                          ^  ^  ^
+                                   will result in p, q and r added to
+                                   to the dependent list.
+
+                                   The import symbol is created by MakeImport
+                                   and the token is expected to match the module
+                                   name outlined above.
+*)
+
+PROCEDURE AppendModuleOnImportStatement (module, import: CARDINAL) ;
 
 
 END SymbolTable.

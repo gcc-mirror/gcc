@@ -113,6 +113,7 @@ FROM SymbolTable IMPORT NulSym,
                         GetPackedEquivalent,
                         GetParameterShadowVar,
                         GetUnboundedRecordType,
+                        GetModuleCtors,
 			ForeachOAFamily, GetOAFamily,
                         IsModuleWithinProcedure, IsVariableSSA,
                         IsVariableAtAddress, IsConstructorConstant,
@@ -554,20 +555,20 @@ END Chained ;
 
 (*
    DoStartDeclaration - returns a tree representing a symbol which has
-                        not yet been finished. (Useful when declaring
-                        recursive types).
+                        not yet been finished.  Used when declaring
+                        recursive types.
 *)
 
 PROCEDURE DoStartDeclaration (sym: CARDINAL; p: StartProcedure) : Tree ;
 VAR
    location: location_t ;
 BEGIN
-   IF NOT GccKnowsAbout(sym)
+   IF NOT GccKnowsAbout (sym)
    THEN
-      location := TokenToLocation(GetDeclaredMod(sym)) ;
-      PreAddModGcc(sym, p(location, KeyToCharStar(GetFullSymName(sym))))
+      location := TokenToLocation (GetDeclaredMod (sym)) ;
+      PreAddModGcc(sym, p (location, KeyToCharStar (GetFullSymName (sym))))
    END ;
-   RETURN( Mod2Gcc(sym) )
+   RETURN Mod2Gcc (sym)
 END DoStartDeclaration ;
 
 
@@ -636,7 +637,7 @@ BEGIN
    WatchIncludeList(sym, finishedalignment) ;
    IF AllDependantsFullyDeclared(sym)
    THEN
-      (* ready to be solved.. *)
+      (* All good and ready to be solved. *)
    END
 END DeclareRecordKind ;
 
@@ -1307,7 +1308,7 @@ END ForeachTryDeclare ;
                             all outstanding types have been written.
 *)
 
-PROCEDURE DeclaredOutstandingTypes (MustHaveCompleted: BOOLEAN) : BOOLEAN ;
+PROCEDURE DeclaredOutstandingTypes (ForceComplete: BOOLEAN) : BOOLEAN ;
 VAR
    finished        : BOOLEAN ;
    d, a, p, f, n, b: CARDINAL ;
@@ -1396,7 +1397,7 @@ BEGIN
          finished := TRUE
       END
    UNTIL finished ;
-   IF MustHaveCompleted
+   IF ForceComplete
    THEN
       IF ForeachTryDeclare (todolist, ToDoList,
                             circulartodo,
@@ -2484,13 +2485,16 @@ END DeclareProcedureToGccSeparateProgram ;
    DeclareProcedureToGcc - traverses all parameters and interfaces to gm2gcc.
 *)
 
-PROCEDURE DeclareProcedureToGcc (Sym: CARDINAL) ;
+PROCEDURE DeclareProcedureToGcc (sym: CARDINAL) ;
 BEGIN
-   IF WholeProgram
+   IF sym # NulSym
    THEN
-      DeclareProcedureToGccWholeProgram(Sym)
-   ELSE
-      DeclareProcedureToGccSeparateProgram(Sym)
+      IF WholeProgram
+      THEN
+         DeclareProcedureToGccWholeProgram (sym)
+      ELSE
+         DeclareProcedureToGccSeparateProgram (sym)
+      END
    END
 END DeclareProcedureToGcc ;
 
@@ -2657,40 +2661,19 @@ END AssertAllTypesDeclared ;
 
 
 (*
-   DeclareModuleInit - declared the initialization `function' within
+   DeclareModuleInit - declare all the ctor related functions within
                        a module.
 *)
 
-PROCEDURE DeclareModuleInit (sym: WORD) ;
+PROCEDURE DeclareModuleInit (moduleSym: WORD) ;
 VAR
-   t         : Tree ;
-   begin, end,
-   location  : location_t ;
+   ctor, init, fini, dep: CARDINAL ;
 BEGIN
-   IF IsModuleWithinProcedure(sym)
-   THEN
-      location := TokenToLocation(GetDeclaredMod(sym)) ;
-      begin := TokenToLocation(GetDeclaredMod(sym)) ;
-      end := TokenToLocation(GetDeclaredMod(sym)+10) ;
-
-      BuildStartFunctionDeclaration(FALSE) ;
-      t := BuildEndFunctionDeclaration(begin, end,
-                                       KeyToCharStar(GetModuleInitName(sym)),
-                                       NIL, FALSE, TRUE, FALSE) ;
-      pushFunctionScope(t) ;
-      finishFunctionDecl(location, t) ;
-      t := popFunctionScope() ;
-
-      PreAddModGcc(sym, t) ;
-      BuildStartFunctionDeclaration(FALSE) ;
-      t := BuildEndFunctionDeclaration(begin, end,
-                                       KeyToCharStar(GetModuleFinallyName(sym)),
-                                       NIL, FALSE, TRUE, FALSE) ;
-      pushFunctionScope(t) ;
-      finishFunctionDecl(location, t) ;
-      t := popFunctionScope() ;
-      PutModuleFinallyFunction(sym, t)
-   END
+   GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
+   DeclareProcedureToGcc (ctor) ;
+   DeclareProcedureToGcc (init) ;
+   DeclareProcedureToGcc (fini) ;
+   DeclareProcedureToGcc (dep)
 END DeclareModuleInit ;
 
 
@@ -2736,7 +2719,8 @@ BEGIN
       ForeachProcedureDo(scope, DeclareProcedure) ;
       ForeachInnerModuleDo(scope, WalkTypesInModule) ;
       ForeachInnerModuleDo(scope, DeclareTypesConstantsProcedures) ;
-      ForeachInnerModuleDo(scope, StartDeclareScope)
+      ForeachInnerModuleDo(scope, StartDeclareScope) ;
+      DeclareModuleInit(scope)
    ELSE
       DeclareTypesConstantsProcedures(scope) ;
       AssertAllTypesDeclared(scope) ;
@@ -6194,8 +6178,3 @@ BEGIN
    HaveInitDefaultTypes := FALSE ;
    recursionCaught := FALSE
 END M2GCCDeclare.
-(*
- * Local variables:
- *  compile-command: "gm2 -c -g -I.:../gm2-libs:../gm2-libs-ch:../gm2-libiberty/ M2GCCDeclare.mod"
- * End:
- *)

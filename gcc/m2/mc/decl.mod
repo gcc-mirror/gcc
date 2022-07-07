@@ -11700,7 +11700,10 @@ PROCEDURE isLastStatement (n: node; q: isNodeF) : BOOLEAN ;
 VAR
    ret: BOOLEAN ;
 BEGIN
-   IF isStatementSequence (n)
+   IF n = NIL
+   THEN
+      RETURN FALSE
+   ELSIF isStatementSequence (n)
    THEN
       RETURN isLastStatementSequence (n, q)
    ELSIF isProcedure (n)

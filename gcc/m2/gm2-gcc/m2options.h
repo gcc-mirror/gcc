@@ -113,6 +113,10 @@ EXTERN void M2Options_SetSaveTemps (int value);
 EXTERN void M2Options_SetSaveTempsDir (const char *arg);
 EXTERN int M2Options_GetSaveTemps (void);
 EXTERN void M2Options_DisplayVersion (int mustExit);
+EXTERN void M2Options_SetScaffoldStatic (int value);
+EXTERN void M2Options_SetScaffoldDynamic (int value);
+EXTERN void M2Options_SetScaffoldMain (int value);
+EXTERN void M2Options_SetRuntimeModuleOverride (const char *override);
 
 #undef EXTERN
 #endif /* m2options_h.  */

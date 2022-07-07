@@ -39,6 +39,10 @@ FROM P0SymBuild IMPORT EnterBlock, LeaveBlock ;
 
 FROM SymbolTable IMPORT NulSym,
                         ModeOfAddr,
+                        AppendModuleOnImportStatement,
+                        AppendModuleImportStatement,
+                        MakeImportStatement, MakeImport,
+
                         StartScope, EndScope, PseudoScope,
                         GetScope, GetCurrentScope,
                         IsDeclaredIn,
@@ -49,7 +53,7 @@ FROM SymbolTable IMPORT NulSym,
                         MakeHiddenType,
                         PutMode,
                         PutFieldEnumeration, PutSubrange, PutVar,
-                        IsDefImp, IsModule, IsType,
+                        IsDefImp, IsModule, IsInnerModule, IsType,
                         GetCurrentModule,
                         AddSymToModuleScope,
                         AddNameToImportList,
@@ -95,6 +99,9 @@ FROM M2Comp IMPORT CompilingDefinitionModule,
 
 CONST
    Debugging = FALSE ;
+
+VAR
+   importStatementCount: CARDINAL ;
 
 
 (*
@@ -155,6 +162,7 @@ VAR
    language,
    ModuleSym: CARDINAL ;
 BEGIN
+   importStatementCount := 0 ;
    PopT(name) ;
    (* CheckFileName(name, 'definition') ; *)
    ModuleSym := MakeDefinitionSource(GetTokenNo(), name) ;
@@ -242,6 +250,7 @@ VAR
    name     : Name ;
    ModuleSym: CARDINAL ;
 BEGIN
+   importStatementCount := 0 ;
    PopTtok (name, tok) ;
    (* CheckFileName(name, 'implementation') ; *)
    ModuleSym := MakeImplementationSource (tok, name) ;
@@ -315,6 +324,7 @@ VAR
    name     : Name ;
    ModuleSym: CARDINAL ;
 BEGIN
+   importStatementCount := 0 ;
    PopTtok(name, tok) ;
    (* CheckFileName(name, 'main') ; *)
    ModuleSym := MakeProgramSource(tok, name) ;
@@ -1087,8 +1097,69 @@ VAR
    Type: CARDINAL ;
    name: Name ;
 BEGIN
-   PopTF(Type, name)
+   PopTF (Type, name)
 END BuildTypeEnd ;
+
+
+(*
+   BuildImportStatement - create a new import statement in the current module.
+                          It ignores local modules.
+
+                          The quadruple stack is not used.
+*)
+
+PROCEDURE BuildImportStatement (tok: CARDINAL) ;
+VAR
+   scope: CARDINAL ;
+BEGIN
+   scope := GetCurrentScope () ;
+   IF IsDefImp (scope) OR (IsModule (scope) AND (NOT IsInnerModule (scope)))
+   THEN
+      IF CompilingDefinitionModule () AND (NOT IsDefImp (scope))
+      THEN
+         MetaError1 ('module scope should be a definition module rather than {%1EDa}', scope)
+      ELSE
+         INC (importStatementCount) ;
+         AppendModuleImportStatement (scope, MakeImportStatement (tok, importStatementCount))
+      END
+   END
+END BuildImportStatement ;
+
+
+(*
+   AddImportToImportStatement - the top of stack is expected to be a module name.
+                                This is looked up from the module universe and
+                                wrapped in an import symbol and placed into the
+                                current import statement.
+
+                                The quadruple stack is unchanged.
+
+                                Entry                      Exit
+
+
+                         Ptr ->                                                   <- Ptr
+                                +---------------------+    +---------------------+
+                                | ImportedModuleName  |    | ImportedModuleName  |
+                                |---------------------|    |---------------------|
+*)
+
+PROCEDURE AddImportToImportStatement (qualified: BOOLEAN) ;
+VAR
+   scope: CARDINAL ;
+BEGIN
+   scope := GetCurrentScope () ;
+   IF IsDefImp (scope) OR (IsModule (scope) AND (NOT IsInnerModule (scope)))
+   THEN
+      IF CompilingDefinitionModule () AND (NOT IsDefImp (scope))
+      THEN
+         MetaError1 ('module scope should be a definition module rather than {%1EDa}', scope) ;
+      ELSE
+         AppendModuleOnImportStatement (scope, MakeImport (OperandTok (1),
+                                                           LookupModule (OperandTok (1), OperandT (1)),
+                                                           importStatementCount, qualified))
+      END
+   END
+END AddImportToImportStatement ;
 
 
 END P1SymBuild.

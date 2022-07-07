@@ -211,12 +211,12 @@ static void doCompile (DynamicStrings_String s)
       if (decl_isImp (n))
         {
           mcQuiet_qprintf0 ((const char *) "Parse implementation module\\n", 29);
-          doPass (FALSE, TRUE, 5, (symbolKey_performOperation) {(symbolKey_performOperation_t) p5}, (const char *) "[implementation module] build code tree for all procedures and module initialisations", 85);
+          doPass (FALSE, TRUE, 5, (symbolKey_performOperation) {(symbolKey_performOperation_t) p5}, (const char *) "[implementation module] build code tree for all procedures and module initializations", 85);
         }
       else
         {
           mcQuiet_qprintf0 ((const char *) "Parse program module\\n", 22);
-          doPass (FALSE, TRUE, 5, (symbolKey_performOperation) {(symbolKey_performOperation_t) p5}, (const char *) "[program module] build code tree for all procedures and module initialisations", 78);
+          doPass (FALSE, TRUE, 5, (symbolKey_performOperation) {(symbolKey_performOperation_t) p5}, (const char *) "[program module] build code tree for all procedures and module initializations", 78);
         }
     }
   mcQuiet_qprintf0 ((const char *) "walk tree converting it to C/C++\\n", 34);
@@ -294,7 +294,7 @@ static decl_node examineCompilationUnit (void)
     }
   mcflex_mcError (DynamicStrings_string (DynamicStrings_InitString ((const char *) "failed to find module name", 26)));
   libc_exit (1);
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/mcComp.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/mcComp.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -324,7 +324,7 @@ static decl_node peepInto (DynamicStrings_String s)
       mcPrintf_fprintf1 (FIO_StdErr, (const char *) "failed to open %s\\n", 19, (const unsigned char *) &s, (sizeof (s)-1));
       libc_exit (1);
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/mcComp.def", 20, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/mc/mcComp.def", 20, 1);
   __builtin_unreachable ();
 }
 

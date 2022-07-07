@@ -41,28 +41,116 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
+#   include "GStorage.h"
+#if defined(__cplusplus)
+#   undef NULL
+#   define NULL 0
+#endif
 #define _M2RTS_H
 #define _M2RTS_C
 
 #   include "Glibc.h"
+#   include "GM2LINK.h"
 #   include "GNumberIO.h"
 #   include "GStrLib.h"
 #   include "GSYSTEM.h"
 #   include "GASCII.h"
+#   include "GStorage.h"
 #   include "GRTExceptions.h"
 #   include "GM2EXCEPTION.h"
 
-#   define MaxProcedures 1024
-typedef struct _T1_a _T1;
+typedef struct M2RTS_ArgCVEnvP_p M2RTS_ArgCVEnvP;
 
-struct _T1_a { PROC array[MaxProcedures+1]; };
-static unsigned int iPtr;
-static unsigned int tPtr;
-static _T1 InitialProc;
-static _T1 TerminateProc;
+typedef struct ProcedureList_r ProcedureList;
+
+typedef char *PtrToChar;
+
+typedef struct DependencyList_r DependencyList;
+
+typedef struct _T2_r _T2;
+
+typedef _T2 *ProcedureChain;
+
+typedef struct _T3_r _T3;
+
+typedef _T3 *ModuleChain;
+
+typedef struct _T4_a _T4;
+
+typedef enum {unregistered, unordered, started, ordered} DependencyState;
+
+typedef void (*M2RTS_ArgCVEnvP_t) (int, void *, void *);
+struct M2RTS_ArgCVEnvP_p { M2RTS_ArgCVEnvP_t proc; };
+
+struct ProcedureList_r {
+                         ProcedureChain head;
+                         ProcedureChain tail;
+                       };
+
+struct DependencyList_r {
+                          PROC proc;
+                          unsigned int forced;
+                          unsigned int forc;
+                          DependencyState state;
+                        };
+
+struct _T2_r {
+               PROC p;
+               ProcedureChain prev;
+               ProcedureChain next;
+             };
+
+struct _T4_a { ModuleChain array[ordered-unregistered+1]; };
+struct _T3_r {
+               void *name;
+               M2RTS_ArgCVEnvP init;
+               M2RTS_ArgCVEnvP fini;
+               DependencyList dependency;
+               ModuleChain prev;
+               ModuleChain next;
+             };
+
+static ProcedureList InitialProc;
+static ProcedureList TerminateProc;
 static int ExitValue;
+static _T4 Modules;
 static unsigned int isHalting;
 static unsigned int CallExit;
+static unsigned int ModuleTrace;
+static unsigned int DependencyTrace;
+static unsigned int PreTrace;
+static unsigned int PostTrace;
+static unsigned int ForceTrace;
+
+/*
+   ConstructModules - resolve dependencies and then call each
+                      module constructor in turn.
+*/
+
+extern "C" void M2RTS_ConstructModules (void * applicationmodule, int argc, void * argv, void * envp);
+
+/*
+   DeconstructModules - resolve dependencies and then call each
+                        module constructor in turn.
+*/
+
+extern "C" void M2RTS_DeconstructModules (void * applicationmodule, int argc, void * argv, void * envp);
+
+/*
+   RegisterModule - adds module name to the list of outstanding
+                    modules which need to have their dependencies
+                    explored to determine initialization order.
+*/
+
+extern "C" void M2RTS_RegisterModule (void * name, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies);
+
+/*
+   RequestDependant - used to specify that modulename is dependant upon
+                      module dependantmodule.  It only takes effect
+                      if we are not using StaticInitialization.
+*/
+
+extern "C" void M2RTS_RequestDependant (void * modulename, void * dependantmodule);
 
 /*
    ExecuteTerminationProcedures - calls each installed termination procedure
@@ -75,7 +163,7 @@ extern "C" void M2RTS_ExecuteTerminationProcedures (void);
    InstallTerminationProcedure - installs a procedure, p, which will
                                  be called when the procedure
                                  ExecuteTerminationProcedures
-                                 is invoked.  It returns TRUE is the
+                                 is invoked.  It returns TRUE if the
                                  procedure is installed.
 */
 
@@ -89,8 +177,9 @@ extern "C" unsigned int M2RTS_InstallTerminationProcedure (PROC p);
 extern "C" void M2RTS_ExecuteInitialProcedures (void);
 
 /*
-   InstallInitialProcedure - installs a procedure to be executed just before the
-                             BEGIN code section of the main program module.
+   InstallInitialProcedure - installs a procedure to be executed just
+                             before the BEGIN code section of the
+                             main program module.
 */
 
 extern "C" unsigned int M2RTS_InstallInitialProcedure (PROC p);
@@ -169,10 +258,642 @@ extern "C" void M2RTS_ParameterException (void * filename, unsigned int line, un
 extern "C" void M2RTS_NoException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
 
 /*
+   CreateModule - creates a new module entry and returns the
+                  ModuleChain.
+*/
+
+static ModuleChain CreateModule (void * name, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies);
+
+/*
+   AppendModule - append chain to head.
+*/
+
+static void AppendModule (ModuleChain *head, ModuleChain chain);
+
+/*
+   RemoveModule - remove chain from double linked list head.
+*/
+
+static void RemoveModule (ModuleChain *head, ModuleChain chain);
+
+/*
+   onChain - returns TRUE if mptr is on the Modules[state] list.
+*/
+
+static unsigned int onChain (DependencyState state, ModuleChain mptr);
+
+/*
+   LookupModule - lookup and return the ModuleChain pointer containing
+                  module name from a particular list.
+*/
+
+static ModuleChain LookupModule (DependencyState state, void * name);
+
+/*
+   toCString - replace any character sequence
+ into a newline.
+*/
+
+static void toCString (char *str, unsigned int _str_high);
+
+/*
+   strcmp - return 1 if both strings are equal.
+            We cannot use Builtins.def during bootstrap.
+*/
+
+static int strcmp (PtrToChar a, PtrToChar b);
+
+/*
+   strncmp - return 1 if both strings are equal.
+             We cannot use Builtins.def during bootstrap.
+*/
+
+static int strncmp (PtrToChar a, PtrToChar b, unsigned int n);
+
+/*
+   traceprintf - wrap printf with a boolean flag.
+*/
+
+static void traceprintf (unsigned int flag, const char *str_, unsigned int _str_high);
+
+/*
+   traceprintf2 - wrap printf with a boolean flag.
+*/
+
+static void traceprintf2 (unsigned int flag, const char *str_, unsigned int _str_high, void * arg);
+
+/*
+   moveTo - moves mptr to the new list determined by newstate.
+            It updates the mptr state appropriately.
+*/
+
+static void moveTo (DependencyState newstate, ModuleChain mptr);
+
+/*
+   ResolveDependant -
+*/
+
+static void ResolveDependant (ModuleChain mptr, void * currentmodule);
+
+/*
+   PerformRequestDependant - the current modulename has a dependancy upon
+                             dependantmodule.  If dependantmodule is NIL then
+                             modulename has no further dependants and it can be
+                             resolved.
+*/
+
+static void PerformRequestDependant (void * modulename, void * dependantmodule);
+
+/*
+   ResolveDependencies -
+*/
+
+static void ResolveDependencies (void * currentmodule);
+
+/*
+   DisplayModuleInfo - displays all module in the state.
+*/
+
+static void DisplayModuleInfo (DependencyState state, const char *name_, unsigned int _name_high);
+
+/*
+   DumpModuleData -
+*/
+
+static void DumpModuleData (unsigned int flag);
+
+/*
+   ForceDependencies -
+*/
+
+static void ForceDependencies (void);
+
+/*
+   ExecuteReverse - execute the procedure associated with procptr
+                    and then proceed to try and execute all previous
+                    procedures in the chain.
+*/
+
+static void ExecuteReverse (ProcedureChain procptr);
+
+/*
+   AppendProc - append proc to the end of the procedure list
+                defined by proclist.
+*/
+
+static unsigned int AppendProc (ProcedureList *proclist, PROC proc);
+
+/*
    ErrorString - writes a string to stderr.
 */
 
 static void ErrorString (const char *a_, unsigned int _a_high);
+
+/*
+   InitProcList - initialize the head and tail pointers to NIL.
+*/
+
+static void InitProcList (ProcedureList *p);
+
+/*
+   equal - return TRUE if C string cstr is equal to str.
+*/
+
+static unsigned int equal (void * cstr, const char *str_, unsigned int _str_high);
+
+/*
+   SetupDebugFlags - By default assigns ModuleTrace, DependencyTrace,
+                     DumpPostInit to FALSE.  It checks the environment
+                     GCC_M2LINK_RTFLAG which can contain
+                     "all,module,pre,post,dep,force".  all turns them all on.
+                     The flag meanings are as follows and flags the are in
+                     execution order.
+
+                     module   generate trace info as the modules are registered.
+                     pre      generate a list of all modules seen prior to having
+                              their dependancies resolved.
+                     dep      display a trace as the modules are resolved.
+                     post     generate a list of all modules seen after having
+                              their dependancies resolved.
+                     force    generate a list of all modules seen after having
+                              their dependancies resolved and forced.
+*/
+
+static void SetupDebugFlags (void);
+
+
+/*
+   CreateModule - creates a new module entry and returns the
+                  ModuleChain.
+*/
+
+static ModuleChain CreateModule (void * name, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies)
+{
+  ModuleChain mptr;
+
+  Storage_ALLOCATE ((void **) &mptr, sizeof (_T3));
+  mptr->name = name;
+  mptr->init = init;
+  mptr->fini = fini;
+  mptr->dependency.proc = dependencies;
+  mptr->dependency.state = unregistered;
+  mptr->prev = NULL;
+  mptr->next = NULL;
+  return mptr;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   AppendModule - append chain to head.
+*/
+
+static void AppendModule (ModuleChain *head, ModuleChain chain)
+{
+  if ((*head) == NULL)
+    {
+      (*head) = chain;
+      chain->prev = chain;
+      chain->next = chain;
+    }
+  else
+    {
+      chain->next = (*head);  /* Add Item to the end of queue  */
+      chain->prev = (*head)->prev;  /* Add Item to the end of queue  */
+      (*head)->prev->next = chain;
+      (*head)->prev = chain;
+    }
+}
+
+
+/*
+   RemoveModule - remove chain from double linked list head.
+*/
+
+static void RemoveModule (ModuleChain *head, ModuleChain chain)
+{
+  if ((chain->next == (*head)) && (chain == (*head)))
+    {
+      (*head) = NULL;
+    }
+  else
+    {
+      if ((*head) == chain)
+        {
+          (*head) = (*head)->next;
+        }
+      chain->prev->next = chain->next;
+      chain->next->prev = chain->prev;
+    }
+}
+
+
+/*
+   onChain - returns TRUE if mptr is on the Modules[state] list.
+*/
+
+static unsigned int onChain (DependencyState state, ModuleChain mptr)
+{
+  ModuleChain ptr;
+
+  if (Modules.array[state-unregistered] != NULL)
+    {
+      ptr = Modules.array[state-unregistered];
+      do {
+        if (ptr == mptr)
+          {
+            return TRUE;
+          }
+        ptr = ptr->next;
+      } while (! (ptr == Modules.array[state-unregistered]));
+    }
+  return FALSE;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   LookupModule - lookup and return the ModuleChain pointer containing
+                  module name from a particular list.
+*/
+
+static ModuleChain LookupModule (DependencyState state, void * name)
+{
+  ModuleChain ptr;
+
+  if (Modules.array[state-unregistered] != NULL)
+    {
+      ptr = Modules.array[state-unregistered];
+      do {
+        if ((strcmp (reinterpret_cast<PtrToChar> (ptr->name), reinterpret_cast<PtrToChar> (name))) == 0)
+          {
+            return ptr;
+          }
+        ptr = ptr->next;
+      } while (! (ptr == Modules.array[state-unregistered]));
+    }
+  return NULL;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   toCString - replace any character sequence
+ into a newline.
+*/
+
+static void toCString (char *str, unsigned int _str_high)
+{
+  unsigned int high;
+  unsigned int i;
+  unsigned int j;
+
+  i = 0;
+  high = _str_high;
+  while (i < high)
+    {
+      if ((str[i] == '\\') && (i < high))
+        {
+          if (str[i+1] == 'n')
+            {
+              str[i] = ASCII_nl;
+              j = i+1;
+              while (j < high)
+                {
+                  str[j] = str[j+1];
+                  j += 1;
+                }
+            }
+        }
+      i += 1;
+    }
+}
+
+
+/*
+   strcmp - return 1 if both strings are equal.
+            We cannot use Builtins.def during bootstrap.
+*/
+
+static int strcmp (PtrToChar a, PtrToChar b)
+{
+  if ((a != NULL) && (b != NULL))
+    {
+      /* avoid gcc warning by using compound statement even if not strictly necessary.  */
+      if (a == b)
+        {
+          return 1;
+        }
+      else
+        {
+          while ((*a) == (*b))
+            {
+              if ((*a) == ASCII_nul)
+                {
+                  return 1;
+                }
+              a += 1;
+              b += 1;
+            }
+        }
+    }
+  return 0;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   strncmp - return 1 if both strings are equal.
+             We cannot use Builtins.def during bootstrap.
+*/
+
+static int strncmp (PtrToChar a, PtrToChar b, unsigned int n)
+{
+  if (((a != NULL) && (b != NULL)) && (n > 0))
+    {
+      /* avoid gcc warning by using compound statement even if not strictly necessary.  */
+      if (a == b)
+        {
+          return 1;
+        }
+      else
+        {
+          while (((*a) == (*b)) && (n > 0))
+            {
+              if ((*a) == ASCII_nul)
+                {
+                  return 1;
+                }
+              a += 1;
+              b += 1;
+              n -= 1;
+            }
+        }
+    }
+  return 0;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   traceprintf - wrap printf with a boolean flag.
+*/
+
+static void traceprintf (unsigned int flag, const char *str_, unsigned int _str_high)
+{
+  char str[_str_high+1];
+
+  /* make a local copy of each unbounded array.  */
+  memcpy (str, str_, _str_high+1);
+
+  if (flag)
+    {
+      toCString ((char *) str, _str_high);
+      libc_printf ((const char *) str, _str_high);
+    }
+}
+
+
+/*
+   traceprintf2 - wrap printf with a boolean flag.
+*/
+
+static void traceprintf2 (unsigned int flag, const char *str_, unsigned int _str_high, void * arg)
+{
+  char str[_str_high+1];
+
+  /* make a local copy of each unbounded array.  */
+  memcpy (str, str_, _str_high+1);
+
+  if (flag)
+    {
+      toCString ((char *) str, _str_high);
+      libc_printf ((const char *) str, _str_high, arg);
+    }
+}
+
+
+/*
+   moveTo - moves mptr to the new list determined by newstate.
+            It updates the mptr state appropriately.
+*/
+
+static void moveTo (DependencyState newstate, ModuleChain mptr)
+{
+  if (onChain (mptr->dependency.state, mptr))
+    {
+      RemoveModule (&Modules.array[mptr->dependency.state-unregistered], mptr);
+    }
+  mptr->dependency.state = newstate;
+  AppendModule (&Modules.array[mptr->dependency.state-unregistered], mptr);
+}
+
+
+/*
+   ResolveDependant -
+*/
+
+static void ResolveDependant (ModuleChain mptr, void * currentmodule)
+{
+  if (mptr == NULL)
+    {
+      traceprintf (DependencyTrace, (const char *) "   module has not been registered via a global constructor\\n", 60);
+    }
+  else
+    {
+      if (onChain (started, mptr))
+        {
+          traceprintf (DependencyTrace, (const char *) "   processing...\\n", 18);
+        }
+      else
+        {
+          moveTo (started, mptr);
+          traceprintf2 (DependencyTrace, (const char *) "   starting: %s\\n", 17, currentmodule);
+          (*mptr->dependency.proc.proc) ();  /* Invoke and process the dependency graph.  */
+          traceprintf2 (DependencyTrace, (const char *) "   finished: %s\\n", 17, currentmodule);  /* Invoke and process the dependency graph.  */
+        }
+    }
+}
+
+
+/*
+   PerformRequestDependant - the current modulename has a dependancy upon
+                             dependantmodule.  If dependantmodule is NIL then
+                             modulename has no further dependants and it can be
+                             resolved.
+*/
+
+static void PerformRequestDependant (void * modulename, void * dependantmodule)
+{
+  ModuleChain mptr;
+
+  if (dependantmodule == NULL)
+    {
+      mptr = LookupModule (unordered, modulename);
+      if (mptr == NULL)
+        {
+          traceprintf2 (DependencyTrace, (const char *) "internal error module %s is not in the list of unordered modules\\n", 66, modulename);
+        }
+      else
+        {
+          traceprintf2 (DependencyTrace, (const char *) "  module %s dependants all complete\\n", 37, modulename);
+          moveTo (ordered, mptr);
+        }
+    }
+  else
+    {
+      mptr = LookupModule (ordered, dependantmodule);
+      if (mptr == NULL)
+        {
+          traceprintf2 (DependencyTrace, (const char *) "   module %s ", 13, dependantmodule);
+          mptr = LookupModule (unordered, dependantmodule);
+          if (mptr == NULL)
+            {
+              mptr = LookupModule (started, dependantmodule);
+              if (mptr == NULL)
+                {
+                  traceprintf2 (DependencyTrace, (const char *) "   unknown dependancies in module %s ", 37, modulename);
+                }
+              else
+                {
+                  traceprintf2 (DependencyTrace, (const char *) "   dependant %s started\\n", 25, dependantmodule);
+                }
+            }
+          else
+            {
+              ResolveDependant (mptr, dependantmodule);
+            }
+        }
+      else
+        {
+          traceprintf2 (DependencyTrace, (const char *) "   module %s ", 13, modulename);
+          traceprintf2 (DependencyTrace, (const char *) " dependant upon %s completed\\n", 30, dependantmodule);
+        }
+    }
+}
+
+
+/*
+   ResolveDependencies -
+*/
+
+static void ResolveDependencies (void * currentmodule)
+{
+  ModuleChain mptr;
+
+  mptr = LookupModule (unordered, currentmodule);
+  while (mptr != NULL)
+    {
+      traceprintf2 (DependencyTrace, (const char *) "   attempting to resolve the dependants for %s\\n", 48, currentmodule);
+      ResolveDependant (mptr, currentmodule);
+      mptr = Modules.array[unordered-unregistered];
+    }
+}
+
+
+/*
+   DisplayModuleInfo - displays all module in the state.
+*/
+
+static void DisplayModuleInfo (DependencyState state, const char *name_, unsigned int _name_high)
+{
+  ModuleChain mptr;
+  char name[_name_high+1];
+
+  /* make a local copy of each unbounded array.  */
+  memcpy (name, name_, _name_high+1);
+
+  if (Modules.array[state-unregistered] != NULL)
+    {
+      libc_printf ((const char *) "%s modules\\n", 12, &name);
+      mptr = Modules.array[state-unregistered];
+      do {
+        libc_printf ((const char *) "  %s", 4, mptr->name);
+        if (mptr->dependency.forc)
+          {
+            libc_printf ((const char *) " for C", 6);
+          }
+        if (mptr->dependency.forced)
+          {
+            libc_printf ((const char *) " forced ordering", 16);
+          }
+        libc_printf ((const char *) "\\n", 2);
+        mptr = mptr->next;
+      } while (! (mptr == Modules.array[state-unregistered]));
+    }
+}
+
+
+/*
+   DumpModuleData -
+*/
+
+static void DumpModuleData (unsigned int flag)
+{
+  ModuleChain mptr;
+
+  if (flag)
+    {
+      DisplayModuleInfo (unregistered, (const char *) "unregistered", 12);
+      DisplayModuleInfo (unordered, (const char *) "unordered", 9);
+      DisplayModuleInfo (started, (const char *) "started", 7);
+      DisplayModuleInfo (ordered, (const char *) "ordered", 7);
+    }
+}
+
+
+/*
+   ForceDependencies -
+*/
+
+static void ForceDependencies (void)
+{
+}
+
+
+/*
+   ExecuteReverse - execute the procedure associated with procptr
+                    and then proceed to try and execute all previous
+                    procedures in the chain.
+*/
+
+static void ExecuteReverse (ProcedureChain procptr)
+{
+  while (procptr != NULL)
+    {
+      (*procptr->p.proc) ();  /* Invoke the procedure.  */
+      procptr = procptr->prev;  /* Invoke the procedure.  */
+    }
+}
+
+
+/*
+   AppendProc - append proc to the end of the procedure list
+                defined by proclist.
+*/
+
+static unsigned int AppendProc (ProcedureList *proclist, PROC proc)
+{
+  ProcedureChain pdes;
+
+  Storage_ALLOCATE ((void **) &pdes, sizeof (_T2));
+  pdes->p = proc;
+  pdes->prev = (*proclist).tail;
+  pdes->next = NULL;
+  if ((*proclist).head == NULL)
+    {
+      (*proclist).head = pdes;
+    }
+  (*proclist).tail = pdes;
+  return TRUE;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
 
 
 /*
@@ -192,20 +913,213 @@ static void ErrorString (const char *a_, unsigned int _a_high)
 
 
 /*
+   InitProcList - initialize the head and tail pointers to NIL.
+*/
+
+static void InitProcList (ProcedureList *p)
+{
+  (*p).head = NULL;
+  (*p).tail = NULL;
+}
+
+
+/*
+   equal - return TRUE if C string cstr is equal to str.
+*/
+
+static unsigned int equal (void * cstr, const char *str_, unsigned int _str_high)
+{
+  char str[_str_high+1];
+
+  /* make a local copy of each unbounded array.  */
+  memcpy (str, str_, _str_high+1);
+
+  return (strncmp (reinterpret_cast<PtrToChar> (cstr), reinterpret_cast<PtrToChar> (&str), StrLib_StrLen ((const char *) str, _str_high))) == 0;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   SetupDebugFlags - By default assigns ModuleTrace, DependencyTrace,
+                     DumpPostInit to FALSE.  It checks the environment
+                     GCC_M2LINK_RTFLAG which can contain
+                     "all,module,pre,post,dep,force".  all turns them all on.
+                     The flag meanings are as follows and flags the are in
+                     execution order.
+
+                     module   generate trace info as the modules are registered.
+                     pre      generate a list of all modules seen prior to having
+                              their dependancies resolved.
+                     dep      display a trace as the modules are resolved.
+                     post     generate a list of all modules seen after having
+                              their dependancies resolved.
+                     force    generate a list of all modules seen after having
+                              their dependancies resolved and forced.
+*/
+
+static void SetupDebugFlags (void)
+{
+  typedef char *_T1;
+
+  _T1 pc;
+
+  ModuleTrace = FALSE;
+  DependencyTrace = FALSE;
+  PostTrace = FALSE;
+  PreTrace = FALSE;
+  pc = static_cast<_T1> (libc_getenv (const_cast<void*> (reinterpret_cast<const void*>("GCC_M2LINK_RTFLAG"))));
+  while ((pc != NULL) && ((*pc) != ASCII_nul))
+    {
+      if (equal (reinterpret_cast<void *> (pc), (const char *) "all", 3))
+        {
+          ModuleTrace = TRUE;
+          DependencyTrace = TRUE;
+          PreTrace = TRUE;
+          PostTrace = TRUE;
+          pc += 3;
+        }
+      else if (equal (reinterpret_cast<void *> (pc), (const char *) "module", 6))
+        {
+          /* avoid dangling else.  */
+          ModuleTrace = TRUE;
+          pc += 6;
+        }
+      else if (equal (reinterpret_cast<void *> (pc), (const char *) "dep", 3))
+        {
+          /* avoid dangling else.  */
+          DependencyTrace = TRUE;
+          pc += 3;
+        }
+      else if (equal (reinterpret_cast<void *> (pc), (const char *) "pre", 3))
+        {
+          /* avoid dangling else.  */
+          PreTrace = TRUE;
+          pc += 3;
+        }
+      else if (equal (reinterpret_cast<void *> (pc), (const char *) "post", 4))
+        {
+          /* avoid dangling else.  */
+          PostTrace = TRUE;
+          pc += 4;
+        }
+      else if (equal (reinterpret_cast<void *> (pc), (const char *) "force", 5))
+        {
+          /* avoid dangling else.  */
+          ForceTrace = TRUE;
+          pc += 5;
+        }
+      else
+        {
+          /* avoid dangling else.  */
+          pc += 1;
+        }
+    }
+}
+
+
+/*
+   ConstructModules - resolve dependencies and then call each
+                      module constructor in turn.
+*/
+
+extern "C" void M2RTS_ConstructModules (void * applicationmodule, int argc, void * argv, void * envp)
+{
+  ModuleChain mptr;
+  M2RTS_ArgCVEnvP nulp;
+
+  SetupDebugFlags ();
+  traceprintf2 (ModuleTrace, (const char *) "application module: %s\\n", 24, applicationmodule);
+  DumpModuleData (PreTrace);
+  ResolveDependencies (applicationmodule);
+  DumpModuleData (PostTrace);
+  ForceDependencies ();
+  DumpModuleData (ForceTrace);
+  if (Modules.array[ordered-unregistered] == NULL)
+    {
+      traceprintf2 (ModuleTrace, (const char *) "  module: %s has not registered itself using a global constructor\\n", 67, applicationmodule);
+      traceprintf2 (ModuleTrace, (const char *) "  hint try compile and linking using: gm2 %s.mod\\n", 50, applicationmodule);
+      traceprintf2 (ModuleTrace, (const char *) "  or try using: gm2 -fscaffold-static %s.mod\\n", 46, applicationmodule);
+    }
+  else
+    {
+      mptr = Modules.array[ordered-unregistered];
+      do {
+        if (mptr->dependency.forc)
+          {
+            traceprintf2 (ModuleTrace, (const char *) "initializing module: %s for C\\n", 31, mptr->name);
+          }
+        else
+          {
+            traceprintf2 (ModuleTrace, (const char *) "initializing module: %s\\n", 25, mptr->name);
+          }
+        /*
+         nulp := NIL ;
+         IF mptr^.init = nulp
+         THEN
+            traceprintf (ModuleTrace, "   no initialization section, skipping...
+        ")
+         ELSE
+  */
+        (*mptr->init.proc) (argc, argv, envp);
+        /*
+         END ;
+  */
+        mptr = mptr->prev;
+      } while (! (mptr == Modules.array[ordered-unregistered]));
+    }
+}
+
+
+/*
+   DeconstructModules - resolve dependencies and then call each
+                        module constructor in turn.
+*/
+
+extern "C" void M2RTS_DeconstructModules (void * applicationmodule, int argc, void * argv, void * envp)
+{
+}
+
+
+/*
+   RegisterModule - adds module name to the list of outstanding
+                    modules which need to have their dependencies
+                    explored to determine initialization order.
+*/
+
+extern "C" void M2RTS_RegisterModule (void * name, M2RTS_ArgCVEnvP init, M2RTS_ArgCVEnvP fini, PROC dependencies)
+{
+  if (! M2LINK_StaticInitialization)
+    {
+      traceprintf2 (ModuleTrace, (const char *) "module: %s registering\\n", 24, name);
+      moveTo (unordered, CreateModule (name, init, fini, dependencies));
+    }
+}
+
+
+/*
+   RequestDependant - used to specify that modulename is dependant upon
+                      module dependantmodule.  It only takes effect
+                      if we are not using StaticInitialization.
+*/
+
+extern "C" void M2RTS_RequestDependant (void * modulename, void * dependantmodule)
+{
+  if (! M2LINK_StaticInitialization)
+    {
+      PerformRequestDependant (modulename, dependantmodule);
+    }
+}
+
+
+/*
    ExecuteTerminationProcedures - calls each installed termination procedure
                                   in reverse order.
 */
 
 extern "C" void M2RTS_ExecuteTerminationProcedures (void)
 {
-  unsigned int i;
-
-  i = tPtr;
-  while (i > 0)
-    {
-      i -= 1;
-      (*TerminateProc.array[i].proc) ();
-    }
+  ExecuteReverse (TerminateProc.tail);
 }
 
 
@@ -213,22 +1127,13 @@ extern "C" void M2RTS_ExecuteTerminationProcedures (void)
    InstallTerminationProcedure - installs a procedure, p, which will
                                  be called when the procedure
                                  ExecuteTerminationProcedures
-                                 is invoked.  It returns TRUE is the
+                                 is invoked.  It returns TRUE if the
                                  procedure is installed.
 */
 
 extern "C" unsigned int M2RTS_InstallTerminationProcedure (PROC p)
 {
-  if (tPtr > MaxProcedures)
-    {
-      return FALSE;
-    }
-  else
-    {
-      TerminateProc.array[tPtr] = p;
-      tPtr += 1;
-      return TRUE;
-    }
+  return AppendProc (&TerminateProc, p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -241,34 +1146,19 @@ extern "C" unsigned int M2RTS_InstallTerminationProcedure (PROC p)
 
 extern "C" void M2RTS_ExecuteInitialProcedures (void)
 {
-  unsigned int i;
-
-  i = iPtr;
-  while (i > 0)
-    {
-      i -= 1;
-      (*InitialProc.array[i].proc) ();
-    }
+  ExecuteReverse (InitialProc.tail);
 }
 
 
 /*
-   InstallInitialProcedure - installs a procedure to be executed just before the
-                             BEGIN code section of the main program module.
+   InstallInitialProcedure - installs a procedure to be executed just
+                             before the BEGIN code section of the
+                             main program module.
 */
 
 extern "C" unsigned int M2RTS_InstallInitialProcedure (PROC p)
 {
-  if (iPtr > MaxProcedures)
-    {
-      return FALSE;
-    }
-  else
-    {
-      InitialProc.array[iPtr] = p;
-      iPtr += 1;
-      return TRUE;
-    }
+  return AppendProc (&InitialProc, p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -365,10 +1255,10 @@ extern "C" void M2RTS_ExitOnHalt (int e)
 
 extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high)
 {
-  typedef struct _T2_a _T2;
+  typedef struct _T5_a _T5;
 
-  struct _T2_a { char array[10+1]; };
-  _T2 LineNo;
+  struct _T5_a { char array[10+1]; };
+  _T5 LineNo;
   char message[_message_high+1];
   char file[_file_high+1];
   char function[_function_high+1];
@@ -548,8 +1438,8 @@ extern "C" void M2RTS_NoException (void * filename, unsigned int line, unsigned 
 
 extern "C" void _M2_M2RTS_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
-  iPtr = 0;
-  tPtr = 0;
+  InitProcList (&InitialProc);
+  InitProcList (&TerminateProc);
   ExitValue = 0;
   isHalting = FALSE;
   CallExit = FALSE;  /* default by calling abort  */

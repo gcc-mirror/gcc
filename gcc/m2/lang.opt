@@ -132,11 +132,11 @@ allows opaque types to be implemented as any type (a GNU Modula-2 extension)
 
 fuselist
 Modula-2
-use ordered list of modules when linking
+use the ordered list of modules to order the initialization/finalialization (--unimplemented--)
 
 fmakelist
 Modula-2
-create a topologically ordered list of modules
+create a topologically ordered list of modules called modulename.lst (--unimplemented--)
 
 fmodules
 Modula-2
@@ -154,17 +154,25 @@ fno-m2-plugin
 Modula-2
 do not insert plugin to identify runtime errors at compiletime
 
-fonlylink
+fscaffold-static
 Modula-2
-only link the module and do not compile module
+generate static scaffold initialization and finalization for every module inside main
 
-ftarget-ar=
-Modula-2 Joined
-full path to target archiver
+fscaffold-dynamic
+Modula-2
+the modules initialization order is dynamically determined by M2RTS and application dependancies
 
-ftarget-ranlib=
-Modula-2 Joined
-full path to target ranlib
+fscaffold-c
+Modula-2
+generate a C source scaffold for the current module being compiled
+
+fscaffold-c++
+Modula-2
+generate a C++ source scaffold for the current module being compiled
+
+fscaffold-main
+Modula-2
+generate the main function
 
 fruntime-modules=
 Modula-2 Joined

@@ -187,7 +187,7 @@ BEGIN
    IF DebugBuiltins
    THEN
       (* we will need to parse this module as functions alloca/memcpy will be used *)
-      builtins := MakeDefinitionSource(BuiltinTokenNo, MakeKey('Builtins')) ;
+      builtins := MakeDefinitionSource (BuiltinTokenNo, MakeKey ('Builtins')) ;
       IF builtins = NulSym
       THEN
          MetaError0 ('unable to find core module Builtins')
@@ -209,10 +209,11 @@ BEGIN
 
    InitBaseSimpleTypes(location) ;
 
-   (* initialise the SYSTEM module before we used CARDINAL and ADDRESS! *)
+   (* Initialise the SYSTEM module before we ADDRESS.  *)
    InitSystem ;
 
-   MakeBitset ; (* we do this after SYSTEM has been created as BITSET is dependant upon WORD *)
+   MakeBitset ;  (* We do this after SYSTEM has been created as BITSET
+                    is dependant upon WORD *)
 
    InitBaseConstants ;
    InitBaseFunctions ;
@@ -231,9 +232,10 @@ END InitBase ;
 
 (*
    IsNeededAtRunTime - returns TRUE if procedure, sym, is a
-                       runtime procedure. Ie a procedure which is
-                       not a pseudo procedure and which is implemented
-                       in M2RTS or SYSTEM and also exported.
+                       runtime procedure.  A runtime procedure is
+                       not a pseudo procedure (like NEW/DISPOSE)
+                       and it is implemented in M2RTS or SYSTEM
+                       and also exported.
 *)
 
 PROCEDURE IsNeededAtRunTime (tok: CARDINAL; sym: CARDINAL) : BOOLEAN ;

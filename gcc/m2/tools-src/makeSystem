@@ -89,8 +89,11 @@ displayEnd () {
    sed -e "1,/@SYSTEM_TYPES@/d" < ${SYSTEMDEF} >> ${OUTPUTFILE}
 }
 
+MINIMAL="-fno-scaffold-main -fno-scaffold-dynamic -fno-scaffold-static -fno-m2-plugin"
+
 rm -f ${OUTPUTFILE}
-if ${COMPILER} ${DIALECT} ${LIBRARY} -fno-m2-plugin -c -fdump-system-exports ${SYSTEMMOD} -o /dev/null 2>&1 > /dev/null ; then
+if ${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} \
+	       -c -fdump-system-exports ${SYSTEMMOD} -o /dev/null 2>&1 > /dev/null ; then
     types=`${COMPILER} ${DIALECT} ${LIBRARY} -fno-m2-plugin -c -fdump-system-exports ${SYSTEMMOD} -o /dev/null | cut -f5 -d' '`
     touch ${OUTPUTFILE}
     displayStart
@@ -99,6 +102,7 @@ if ${COMPILER} ${DIALECT} ${LIBRARY} -fno-m2-plugin -c -fdump-system-exports ${S
     displayBuiltinTypes
     displayEnd
 else
-    ${COMPILER} ${DIALECT} ${LIBRARY} -fno-m2-plugin -c -fdump-system-exports ${SYSTEMMOD} -o /dev/null
+    ${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} \
+		-c -fdump-system-exports ${SYSTEMMOD} -o /dev/null
     exit $?
 fi

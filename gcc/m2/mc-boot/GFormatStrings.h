@@ -58,8 +58,9 @@ extern "C" {
 EXTERN DynamicStrings_String FormatStrings_Sprintf0 (DynamicStrings_String fmt);
 
 /*
-   Sprintf1 - returns a String containing, fmt, together with encapsulated
-              entity, w. It only formats the first %s or %d with n.
+   Sprintf1 - returns a String containing, fmt, together with
+              encapsulated entity, w. It only formats the
+              first %s or %d with n.
 */
 
 EXTERN DynamicStrings_String FormatStrings_Sprintf1 (DynamicStrings_String fmt, const unsigned char *w_, unsigned int _w_high);
@@ -84,9 +85,9 @@ EXTERN DynamicStrings_String FormatStrings_Sprintf4 (DynamicStrings_String fmt, 
 
 /*
    HandleEscape - translates \a, \b, \e, \f, 
-, \r, \x[hex] \[octal] into
-                  their respective ascii codes.  It also converts \[any] into
-                  a single [any] character.
+, \r, \x[hex] \[octal]
+                  into their respective ascii codes.  It also converts
+                  \[any] into a single [any] character.
 */
 
 EXTERN DynamicStrings_String FormatStrings_HandleEscape (DynamicStrings_String s);

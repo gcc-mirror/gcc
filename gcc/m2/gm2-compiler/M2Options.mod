@@ -51,11 +51,12 @@ CONST
    Debugging = FALSE ;
 
 VAR
+   RuntimeModuleOverride,
    CppProgram,
-   CppArgs            : String ;
+   CppArgs              : String ;
    CC1Quiet,
-   SeenSources        : BOOLEAN ;
-   ForcedLocationValue: location_t ;
+   SeenSources          : BOOLEAN ;
+   ForcedLocationValue  : location_t ;
 
 
 (* String garbage collection debugging routines.
@@ -250,7 +251,7 @@ END SetWholeProgram ;
 PROCEDURE SetReturnCheck (value: BOOLEAN) : BOOLEAN ;
 BEGIN
    ReturnChecking := value ;
-   RETURN( TRUE )
+   RETURN TRUE
 END SetReturnCheck ;
 
 
@@ -1035,8 +1036,83 @@ BEGIN
 END SetSaveTempsDir ;
 
 
+(*
+   SetScaffoldDynamic - set the -fscaffold-dynamic flag.
+*)
+
+PROCEDURE SetScaffoldDynamic (value: BOOLEAN) ;
+BEGIN
+   ScaffoldDynamic := value
+END SetScaffoldDynamic ;
+
+
+(*
+   SetScaffoldStatic - set the -fscaffold-static flag.
+*)
+
+PROCEDURE SetScaffoldStatic (value: BOOLEAN) ;
+BEGIN
+   ScaffoldStatic := value
+END SetScaffoldStatic ;
+
+
+(*
+   GetScaffoldDynamic - get the -fscaffold-dynamic flag.
+*)
+
+PROCEDURE GetScaffoldDynamic () : BOOLEAN ;
+BEGIN
+   RETURN ScaffoldDynamic
+END GetScaffoldDynamic ;
+
+
+(*
+   GetScaffoldStatic - get the -fscaffold-static flag.
+*)
+
+PROCEDURE GetScaffoldStatic () : BOOLEAN ;
+BEGIN
+   RETURN ScaffoldStatic
+END GetScaffoldStatic ;
+
+
+(*
+   SetScaffoldMain - set the -fscaffold-main flag.
+*)
+
+PROCEDURE SetScaffoldMain (value: BOOLEAN) ;
+BEGIN
+   ScaffoldMain := value
+END SetScaffoldMain ;
+
+
+(*
+   SetRuntimeModuleOverride - set the override sequence used for module
+                              initialization and finialization.
+*)
+
+PROCEDURE SetRuntimeModuleOverride (override: ADDRESS) ;
+BEGIN
+   RuntimeModuleOverride := KillString (RuntimeModuleOverride) ;
+   RuntimeModuleOverride := InitStringCharStar (override)
+END SetRuntimeModuleOverride ;
+
+
+(*
+   GetRuntimeModuleOverride - return a string containing any user override
+                              or the default module initialization override
+                              sequence.
+*)
+
+PROCEDURE GetRuntimeModuleOverride () : ADDRESS ;
+BEGIN
+   RETURN RuntimeModuleOverride
+END GetRuntimeModuleOverride ;
+
+
 BEGIN
    cflag                        := FALSE ;  (* -c.  *)
+   RuntimeModuleOverride        := NIL ;
    CppArgs                      := InitString ('') ;
    CppProgram                   := InitString ('') ;
    Pim                          :=  TRUE ;
@@ -1091,5 +1167,8 @@ BEGIN
    UnusedParameterChecking      := FALSE ;
    StrictTypeChecking           := TRUE ;
    AutoInit                     := FALSE ;
-   SaveTemps                    := FALSE
+   SaveTemps                    := FALSE ;
+   ScaffoldDynamic              := TRUE ;
+   ScaffoldStatic               := FALSE ;
+   ScaffoldMain                 := FALSE
 END M2Options.

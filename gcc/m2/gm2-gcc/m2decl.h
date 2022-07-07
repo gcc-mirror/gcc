@@ -36,6 +36,10 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* !__GNUG__.  */
 #endif /* !m2decl_c.  */
 
+EXTERN void m2decl_DeclareM2linkGlobals (location_t location,
+					 int ScaffoldStatic, const char *RuntimeOverride);
+EXTERN void m2decl_BuildModuleCtor (tree module_ctor);
+EXTERN tree m2decl_DeclareModuleCtor (tree decl);
 EXTERN tree m2decl_GetDeclContext (tree t);
 EXTERN tree m2decl_BuildStringConstant (location_t location, const char *string, int length);
 EXTERN tree m2decl_BuildCStringConstant (const char *string, int length);

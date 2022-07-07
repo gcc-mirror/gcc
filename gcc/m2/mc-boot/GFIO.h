@@ -97,9 +97,10 @@ EXTERN FIO_File FIO_OpenToWrite (const char *fname_, unsigned int _fname_high);
                    calling IsNoError.
                    towrite, determines whether the file should be
                    opened for writing or reading.
-                   newfile, determines whether a file should be created
-                   if towrite is TRUE or whether the previous file should
-                   be left alone, allowing this descriptor to seek
+                   newfile, determines whether a file should be
+                   created if towrite is TRUE or whether the
+                   previous file should be left alone,
+                   allowing this descriptor to seek
                    and modify an existing file.
 */
 
@@ -124,13 +125,13 @@ EXTERN FIO_File FIO_openForRandom (void * fname, unsigned int flength, unsigned 
 EXTERN void FIO_FlushBuffer (FIO_File f);
 
 /*
-   ReadNBytes - reads nBytes of a file into memory area, a, returning
+   ReadNBytes - reads nBytes of a file into memory area, dest, returning
                 the number of bytes actually read.
                 This function will consume from the buffer and then
                 perform direct libc reads. It is ideal for large reads.
 */
 
-EXTERN unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * a);
+EXTERN unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * dest);
 
 /*
    ReadAny - reads HIGH(a) bytes into, a. All input
@@ -141,14 +142,14 @@ EXTERN unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * a);
 EXTERN void FIO_ReadAny (FIO_File f, unsigned char *a, unsigned int _a_high);
 
 /*
-   WriteNBytes - writes nBytes of a file into memory area, a, returning
-                 the number of bytes actually written.
+   WriteNBytes - writes nBytes from memory area src to a file
+                 returning the number of bytes actually written.
                  This function will flush the buffer and then
                  write the nBytes using a direct write from libc.
                  It is ideal for large writes.
 */
 
-EXTERN unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void * a);
+EXTERN unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void * src);
 
 /*
    WriteAny - writes HIGH(a) bytes onto, file, f. All output
@@ -249,7 +250,8 @@ EXTERN unsigned int FIO_ReadCardinal (FIO_File f);
 EXTERN int FIO_GetUnixFileDescriptor (FIO_File f);
 
 /*
-   SetPositionFromBeginning - sets the position from the beginning of the file.
+   SetPositionFromBeginning - sets the position from the beginning
+                              of the file.
 */
 
 EXTERN void FIO_SetPositionFromBeginning (FIO_File f, long int pos);
@@ -279,7 +281,8 @@ EXTERN void FIO_GetFileName (FIO_File f, char *a, unsigned int _a_high);
 EXTERN void * FIO_getFileName (FIO_File f);
 
 /*
-   getFileNameLength - returns the number of characters associated with filename, f.
+   getFileNameLength - returns the number of characters associated with
+                       filename, f.
 */
 
 EXTERN unsigned int FIO_getFileNameLength (FIO_File f);

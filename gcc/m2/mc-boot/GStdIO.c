@@ -193,7 +193,7 @@ extern "C" StdIO_ProcWrite StdIO_GetCurrentOutput (void)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/StdIO.def", 25, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/StdIO.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -252,7 +252,7 @@ extern "C" StdIO_ProcRead StdIO_GetCurrentInput (void)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/StdIO.def", 25, 1);
+  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-m2link/gcc/m2/gm2-libs/StdIO.def", 25, 1);
   __builtin_unreachable ();
 }
 

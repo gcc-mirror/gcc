@@ -79,6 +79,7 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     BuildProcedureStart,
                     BuildProcedureBegin,
                     BuildProcedureEnd,
+                    BuildScaffold,
       	       	    BuildStmtNote,
                     BuildFunctionCall, BuildConstFunctionCall,
                     BuildBinaryOp, BuildUnaryOp, BuildRelOp, BuildNot,
@@ -158,6 +159,7 @@ FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput
                         MakeRegInterface,
                         PutRegInterface,
                         IsRegInterface, IsGnuAsmVolatile, IsGnuAsm,
+                        GetCurrentModule,
                         GetSymName, GetType, SkipType,
                         NulSym,
                         StartScope, EndScope,
@@ -579,7 +581,8 @@ ProgramModule := "MODULE"                                                  % M2E
                                                                            % PushAutoOff %
                   [ Priority
                   ]
-                  ";"
+                  ";"                                                      % BuildScaffold (GetTokenNo () -1,
+                                                                                            GetCurrentModule ()) %
                   { Import }
                   Block                                                    % PushAutoOn %
                   Ident                                                    % EndBuildFile %
@@ -594,7 +597,8 @@ ImplementationModule := "IMPLEMENTATION"                                   % M2E
                                                                            % BuildModuleStart %
                                                                            % PushAutoOff %
                          [ Priority
-                         ] ";"
+                         ] ";"                                             % BuildScaffold (GetTokenNo () -1,
+                                                                                            GetCurrentModule ()) %
                          { Import }
                          Block                                             % PushAutoOn %
 

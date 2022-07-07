@@ -21,11 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 /* This is the contribution to the `default_compilers' array in gcc.c for
    GNU Modula-2.  */
 
-#include "m2-link-support.h"
+/* Pass the preprocessor options on the command line together with
+   the exec prefix.  */
 
-#if !defined(M2CPP)
-# define M2CPP " "
-#endif
+#define M2CPP "%{fcpp:-fcppbegin %:exec_prefix(cc1)" \
+              "      -E -lang-asm -traditional-cpp " \
+              "      %(cpp_unique_options) -fcppend}"
 
   {".mod", "@modula-2", 0, 0, 0},
   {"@modula-2",

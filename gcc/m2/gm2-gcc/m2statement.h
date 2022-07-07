@@ -35,8 +35,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* !__GNUG__.  */
 #endif /* !m2statement_c.  */
 
-EXTERN void m2statement_BuildEndMainModule (void);
-EXTERN void m2statement_BuildStartMainModule (void);
 EXTERN void m2statement_BuildCallInner (location_t location, tree fndecl);
 EXTERN void m2statement_BuildEnd (location_t location, tree fndecl,
                                   int nested);
