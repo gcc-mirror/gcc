@@ -587,6 +587,8 @@ add_to_repl_tbl (tree new_tree, tree old)
   bitmap_set_bit (*set, SSA_NAME_VERSION (old));
 }
 
+/* Debugging aid to fence old_ssa_names changes when iterating over it.  */
+static bool iterating_old_ssa_names;
 
 /* Add a new mapping NEW_TREE -> OLD REPL_TBL.  Every entry N_i in REPL_TBL
    represents the set of names O_1 ... O_j replaced by N_i.  This is
@@ -602,10 +604,15 @@ add_new_name_mapping (tree new_tree, tree old)
 
   /* We may need to grow NEW_SSA_NAMES and OLD_SSA_NAMES because our
      caller may have created new names since the set was created.  */
-  if (SBITMAP_SIZE (new_ssa_names) <= num_ssa_names - 1)
+  if (SBITMAP_SIZE (new_ssa_names) <= SSA_NAME_VERSION (new_tree))
     {
       unsigned int new_sz = num_ssa_names + NAME_SETS_GROWTH_FACTOR;
       new_ssa_names = sbitmap_resize (new_ssa_names, new_sz, 0);
+    }
+  if (SBITMAP_SIZE (old_ssa_names) <= SSA_NAME_VERSION (old))
+    {
+      gcc_assert (!iterating_old_ssa_names);
+      unsigned int new_sz = num_ssa_names + NAME_SETS_GROWTH_FACTOR;
       old_ssa_names = sbitmap_resize (old_ssa_names, new_sz, 0);
     }
 
@@ -619,8 +626,11 @@ add_new_name_mapping (tree new_tree, tree old)
 
   /* Register NEW_TREE and OLD in NEW_SSA_NAMES and OLD_SSA_NAMES,
      respectively.  */
+  if (iterating_old_ssa_names)
+    gcc_assert (bitmap_bit_p (old_ssa_names, SSA_NAME_VERSION (old)));
+  else
+    bitmap_set_bit (old_ssa_names, SSA_NAME_VERSION (old));
   bitmap_set_bit (new_ssa_names, SSA_NAME_VERSION (new_tree));
-  bitmap_set_bit (old_ssa_names, SSA_NAME_VERSION (old));
 }
 
 
@@ -3460,20 +3470,14 @@ update_ssa (unsigned update_flags)
 	bitmap_initialize (&dfs[bb->index], &bitmap_default_obstack);
       compute_dominance_frontiers (dfs);
 
-      if (bitmap_first_set_bit (old_ssa_names) >= 0)
-	{
-	  sbitmap_iterator sbi;
-
-	  /* insert_update_phi_nodes_for will call add_new_name_mapping
-	     when inserting new PHI nodes, so the set OLD_SSA_NAMES
-	     will grow while we are traversing it (but it will not
-	     gain any new members).  Copy OLD_SSA_NAMES to a temporary
-	     for traversal.  */
-	  auto_sbitmap tmp (SBITMAP_SIZE (old_ssa_names));
-	  bitmap_copy (tmp, old_ssa_names);
-	  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, sbi)
-	    insert_updated_phi_nodes_for (ssa_name (i), dfs, update_flags);
-	}
+      /* insert_update_phi_nodes_for will call add_new_name_mapping
+	 when inserting new PHI nodes, but it will not add any
+	 new members to OLD_SSA_NAMES.  */
+      iterating_old_ssa_names = true;
+      sbitmap_iterator sbi;
+      EXECUTE_IF_SET_IN_BITMAP (old_ssa_names, 0, i, sbi)
+	insert_updated_phi_nodes_for (ssa_name (i), dfs, update_flags);
+      iterating_old_ssa_names = false;
 
       symbols_to_rename.qsort (insert_updated_phi_nodes_compare_uids);
       FOR_EACH_VEC_ELT (symbols_to_rename, i, sym)
