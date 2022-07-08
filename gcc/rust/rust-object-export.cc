@@ -86,20 +86,6 @@ rust_field_alignment (tree t)
   return v / BITS_PER_UNIT;
 }
 
-/* This is called by the Rust frontend proper if the unsafe package was
-   imported.  When that happens we cannot do type-based alias
-   analysis.  */
-// TODO: this should be removed, as it only pertains to Go, not Rust
-void
-rust_imported_unsafe (void)
-{
-  flag_strict_aliasing = false;
-  TREE_OPTIMIZATION (optimization_default_node)->x_flag_strict_aliasing = false;
-
-  /* Let the backend know that the options have changed.  */
-  targetm.override_options_after_change ();
-}
-
 /* This is called by the Rust frontend proper to add data to the
    section containing Rust export data.  */
 
