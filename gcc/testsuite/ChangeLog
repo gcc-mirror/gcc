@@ -1,3 +1,29 @@
+2022-07-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105956
+	* g++.dg/cpp0x/variadic183.C: New test.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106225
+	* gcc.dg/analyzer/taint-divisor-1.c: Add test coverage for various
+	correct and incorrect checks against zero.
+
+2022-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	* g++.dg/warn/Woverloaded-virt3.C: New test.
+
+2022-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR target/106219
+	* g++.dg/pr106219.C: New testcase.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc.target/powerpc/ppc-fortran/pr80108-1.f90: Change
+	-mfloat128-type to -mfloat128.
+
 2022-07-06  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/53920

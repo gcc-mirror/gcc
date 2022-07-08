@@ -1,3 +1,25 @@
+2022-07-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105956
+	* pt.cc (template_arg_to_parm): Define.
+	(tsubst_argument_pack): Try to reuse the corresponding
+	ARGUMENT_PACK from 'args' when substituting into a generic
+	ARGUMENT_PACK for a variadic template parameter.
+	(tsubst_template_args): Move variable declarations closer to
+	their first use.  Replace 'orig_t' with 'r'.  Rename 'need_new'
+	to 'const_subst_p'.  Heuristically detect if the substituted
+	elements are identical to that of a level from 'args' and avoid
+	allocating a new TREE_VEC if so.  Add sanity check for the
+	length of the new TREE_VEC, and remove dead ARGUMENT_PACK_P test.
+	(tsubst_decl) <case TYPE_DECL, case VAR_DECL>: Revert
+	r13-1045-gcb7fd1ea85feea change for avoiding substitution into
+	DECL_TI_ARGS, but still avoid coercion in this case.
+
+2022-07-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	* class.cc (warn_hidden): Ignore [cd]tors.
+
 2022-07-06  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR c++/53431

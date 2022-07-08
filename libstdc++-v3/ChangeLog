@@ -1,3 +1,9 @@
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/89074
+	* include/bits/char_traits.h (__gnu_cxx::char_traits::move):
+	Remove workaround for front-end bug.
+
 2022-07-05  Alexandre Oliva  <oliva@adacore.com>
 
 	* testsuite/util/testsuite_fs.h (nonexistent_path): Explain

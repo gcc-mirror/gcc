@@ -1,3 +1,77 @@
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc (json_from_location_range): Update for
+	removal of label_text::maybe_free in favor of automatic memory
+	management.
+	* diagnostic-format-sarif.cc
+	(sarif_builder::make_location_object): Likewise.
+	* diagnostic-show-locus.cc (struct pod_label_text): New.
+	(class line_label): Convert m_text from label_text to pod_label_text.
+	(layout::print_any_labels): Move "text" to the line_label.
+	* tree-diagnostic-path.cc (path_label::get_text): Update for
+	removal of label_text::maybe_free in favor of automatic memory
+	management.
+	(event_range::print): Likewise.
+	(default_tree_diagnostic_path_printer): Likewise.
+	(default_tree_make_json_for_path): Likewise.
+
+2022-07-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* statistics.cc (get_function_name): Add check to see if fn is not NULL.
+
+2022-07-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-into-ssa.cc (iterating_old_ssa_names): New.
+	(add_new_name_mapping): Grow {new,old}_ssa_names separately
+	and only when actually needed.  Assert we are not growing
+	the old_ssa_names set when iterating over it.
+	(update_ssa): Remove old_ssa_names copying and empty_p
+	query, note we are iterating over it and expect no set changes.
+
+2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/i386/intelmic-mkoffload.cc (generate_host_descr_file)
+	(prepare_target_image, main): Handle OpenMP 'requires'.
+	(generate_host_descr_file): Switch to 'GOMP_offload_register_ver',
+	'GOMP_offload_unregister_ver'.
+
+2022-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR target/106219
+	* config/i386/i386-builtins.cc (ix86_add_new_builtins): Properly
+	set DECL_PURE_P.
+
+2022-07-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-manip.cc (add_exit_phis_var): Return the
+	number of LC PHIs inserted.
+	(add_exit_phis): Return whether any variable required
+	multiple LC PHI nodes.
+	(rewrite_into_loop_closed_ssa_1): Use TODO_update_ssa_no_phi
+	when possible.
+
+2022-07-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-manip.cc (compute_live_loop_exits): Take
+	the def loop exit block bitmap as argument instead of
+	re-computing it here.
+	(add_exit_phis_var): Adjust.
+	(loop_name_cmp): New function.
+	(add_exit_phis): Sort variables to insert LC PHI nodes
+	after definition loop, for each definition loop compute
+	the exit block bitmap once.
+	(get_loops_exit): Remove.
+	(rewrite_into_loop_closed_ssa_1): Do not pre-record
+	all loop exit blocks into bitmaps.  Record loop exits
+	if required.
+
+2022-07-07  Dimitrije Milosevic  <Dimitrije.Milosevic@Syrmia.com>
+
+	* config/mips/mips.cc (mips_asan_shadow_offset): Reformat
+	to handle the N32 ABI.
+	* config/mips/mips.h (SUBTARGET_SHADOW_OFFSET): Remove
+	the macro, as it is not needed anymore.
+
 2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/gcn/mkoffload.cc (process_obj): Clarify 'target_data' ->

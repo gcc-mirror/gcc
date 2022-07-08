@@ -1,3 +1,14 @@
+2022-07-07  Ian Lance Taylor  <iant@golang.org>
+
+	* macho.c (backtrace_initialize) [HAVE_MACH_O_DYLD_H]: Don't exit
+	loop if we can't find debug info for one shared library.
+
+2022-07-07  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (MAKETESTS): New variable split out of TESTS.
+	(CLEANFILES): Replace TESTS with BUILDTESTS and MAKETESTS.
+	* Makefile.in: Regenerate.
+
 2022-06-27  Ian Lance Taylor  <iant@golang.org>
 
 	* configure.ac: Use grep instead of fgrep.

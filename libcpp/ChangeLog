@@ -1,3 +1,12 @@
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h: Include <utility>.
+	(class label_text): Delete maybe_free method in favor of a
+	destructor.  Add move ctor and assignment operator.  Add deletion
+	of the copy ctor and copy-assignment operator.  Rename field
+	m_caller_owned to m_owned.  Add std::move where necessary; add
+	moved_from member function.
+
 2022-06-28  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* ucnid.h: Regenerated for Unicode 14.0.

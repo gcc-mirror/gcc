@@ -1,3 +1,46 @@
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (start_cfg_edge_event::get_desc): Update for
+	superedge::get_description returning a label_text.
+	* engine.cc (feasibility_state::maybe_update_for_edge): Likewise.
+	* supergraph.cc (superedge::dump): Likewise.
+	(superedge::get_description): Convert return type from char * to
+	label_text.
+	* supergraph.h (superedge::get_description): Likewise.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-info.cc (call_info::print): Update for removal of
+	label_text::maybe_free in favor of automatic memory management.
+	* checker-path.cc (checker_event::dump): Likewise.
+	(checker_event::prepare_for_emission): Likewise.
+	(state_change_event::get_desc): Likewise.
+	(superedge_event::should_filter_p): Likewise.
+	(start_cfg_edge_event::get_desc): Likewise.
+	(warning_event::get_desc): Likewise.
+	(checker_path::dump): Likewise.
+	(checker_path::debug): Likewise.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Likewise.
+	(diagnostic_manager::prune_interproc_events): Likewise.
+	* program-state.cc (sm_state_map::to_json): Likewise.
+	* region.cc (region::to_json): Likewise.
+	* sm-malloc.cc (inform_nonnull_attribute): Likewise.
+	* store.cc (binding_map::to_json): Likewise.
+	(store::to_json): Likewise.
+	* svalue.cc (svalue::to_json): Likewise.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106225
+	* sm-taint.cc (taint_state_machine::on_stmt): Move handling of
+	assignments from division to...
+	(taint_state_machine::check_for_tainted_divisor): ...this new
+	function.  Reject warning when the divisor is known to be non-zero.
+	* sm.cc: Include "analyzer/program-state.h".
+	(sm_context::get_old_region_model): New.
+	* sm.h (sm_context::get_old_region_model): New decl.
+
 2022-07-06  Immad Mir  <mirimmad@outlook.com>
 
 	PR analyzer/106184
