@@ -644,6 +644,7 @@ gen_ctf_function_type (ctf_container_ref ctfc, dw_die_ref function,
 
   ctf_funcinfo_t func_info;
   uint32_t num_args = 0;
+  int linkage = get_AT_flag (function, DW_AT_external);
 
   ctf_id_t return_type_id;
   ctf_id_t function_type_id;
@@ -687,7 +688,8 @@ gen_ctf_function_type (ctf_container_ref ctfc, dw_die_ref function,
 				       function_name,
 				       (const ctf_funcinfo_t *)&func_info,
 				       function,
-				       from_global_func);
+				       from_global_func,
+                                       linkage);
 
   /* Second pass on formals: generate the CTF types corresponding to
      them and add them as CTF function args.  */
