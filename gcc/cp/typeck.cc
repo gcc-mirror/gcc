@@ -9265,7 +9265,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	      if (modifycode == INIT_EXPR)
 		error_at (loc, "array used as initializer");
 	      else
-		error_at (loc, "cannot assignment");
+		error_at (loc, "invalid array assignment");
 	    }
 	  return error_mark_node;
 	}
