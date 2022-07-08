@@ -621,7 +621,7 @@
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (sign_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
   "TARGET_64BIT"
-  "mul.d\t%0,%1,%2"
+  "mulw.d.w\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "DI")])
 
