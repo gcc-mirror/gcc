@@ -43,12 +43,12 @@ translate_visibility (const AST::Visibility &vis);
 class ASTLowering
 {
 public:
-  static HIR::Crate Resolve (AST::Crate &astCrate);
+  static std::unique_ptr<HIR::Crate> Resolve (AST::Crate &astCrate);
   ~ASTLowering ();
 
 private:
   ASTLowering (AST::Crate &astCrate);
-  HIR::Crate go ();
+  std::unique_ptr<HIR::Crate> go ();
 
   AST::Crate &astCrate;
 };

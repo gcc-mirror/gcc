@@ -147,8 +147,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_canonical_path (mappings->get_current_crate (),
-				     function.get_node_id (), cpath);
+    mappings->insert_canonical_path (function.get_node_id (), cpath);
   }
 
   void visit (AST::TraitItemMethod &method) override
@@ -166,8 +165,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_canonical_path (mappings->get_current_crate (),
-				     method.get_node_id (), cpath);
+    mappings->insert_canonical_path (method.get_node_id (), cpath);
   }
 
   void visit (AST::TraitItemConst &constant) override
@@ -185,8 +183,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_canonical_path (mappings->get_current_crate (),
-				     constant.get_node_id (), cpath);
+    mappings->insert_canonical_path (constant.get_node_id (), cpath);
   }
 
   void visit (AST::TraitItemType &type) override
@@ -204,8 +201,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_canonical_path (mappings->get_current_crate (),
-				     type.get_node_id (), cpath);
+    mappings->insert_canonical_path (type.get_node_id (), cpath);
   }
 
 private:

@@ -72,14 +72,9 @@ VisibilityResolver::resolve_module_path (const HIR::SimplePath &restriction,
   // present?
 
   HirId ref;
-  rust_assert (
-    mappings.lookup_node_to_hir (restriction.get_mappings ().get_crate_num (),
-				 ref_node_id, &ref));
+  rust_assert (mappings.lookup_node_to_hir (ref_node_id, &ref));
 
-  auto module
-    = mappings.lookup_module (restriction.get_mappings ().get_crate_num (),
-			      ref);
-
+  auto module = mappings.lookup_module (ref);
   if (!module)
     {
       invalid_path.emit_error ();

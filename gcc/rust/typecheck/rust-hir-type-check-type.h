@@ -291,9 +291,7 @@ public:
 
     // node back to HIR
     HirId ref;
-    if (!mappings->lookup_node_to_hir (
-	  binding_type_path->get_mappings ().get_crate_num (), ref_node_id,
-	  &ref))
+    if (!mappings->lookup_node_to_hir (ref_node_id, &ref))
       {
 	// FIXME
 	rust_error_at (Location (), "where-clause reverse lookup failure");

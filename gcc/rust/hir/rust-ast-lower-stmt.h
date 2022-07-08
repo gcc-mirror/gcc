@@ -40,8 +40,24 @@ public:
   {
     ASTLoweringStmt resolver;
     stmt->accept_vis (resolver);
+
     rust_assert (resolver.translated != nullptr);
     *terminated = resolver.terminated;
+    resolver.mappings->insert_location (
+      resolver.translated->get_mappings ().get_hirid (),
+      resolver.translated->get_locus ());
+    resolver.mappings->insert_hir_stmt (resolver.translated);
+    if (resolver.translated->is_item ())
+      {
+	HIR::Item *i = static_cast<HIR::Item *> (resolver.translated);
+
+	auto defid = resolver.translated->get_mappings ().get_defid ();
+
+	resolver.handle_outer_attributes (*i);
+	resolver.mappings->insert_hir_item (i);
+	resolver.mappings->insert_defid_mapping (defid, i);
+      }
+
     return resolver.translated;
   }
 
@@ -60,9 +76,6 @@ public:
 				    std::unique_ptr<HIR::ExprWithBlock> (expr),
 				    stmt.get_locus (),
 				    !stmt.is_semicolon_followed ());
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       stmt.get_locus ());
-    mappings->insert_hir_stmt (crate_num, mapping.get_hirid (), translated);
   }
 
   void visit (AST::ExprStmtWithoutBlock &stmt) override
@@ -78,9 +91,6 @@ public:
       = new HIR::ExprStmtWithoutBlock (mapping,
 				       std::unique_ptr<HIR::Expr> (expr),
 				       stmt.get_locus ());
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       stmt.get_locus ());
-    mappings->insert_hir_stmt (crate_num, mapping.get_hirid (), translated);
   }
 
   void visit (AST::ConstantItem &constant) override
@@ -95,20 +105,11 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    HIR::ConstantItem *constant_item
-      = new HIR::ConstantItem (mapping, constant.get_identifier (), vis,
-			       std::unique_ptr<HIR::Type> (type),
-			       std::unique_ptr<HIR::Expr> (expr),
-			       constant.get_outer_attrs (),
-			       constant.get_locus ());
-    translated = constant_item;
-
-    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			       constant_item);
-    mappings->insert_hir_stmt (mapping.get_crate_num (), mapping.get_hirid (),
-			       constant_item);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       constant.get_locus ());
+    translated = new HIR::ConstantItem (mapping, constant.get_identifier (),
+					vis, std::unique_ptr<HIR::Type> (type),
+					std::unique_ptr<HIR::Expr> (expr),
+					constant.get_outer_attrs (),
+					constant.get_locus ());
   }
 
   void visit (AST::LetStmt &stmt) override
@@ -132,9 +133,6 @@ public:
 			  std::unique_ptr<HIR::Expr> (init_expression),
 			  std::unique_ptr<HIR::Type> (type),
 			  stmt.get_outer_attrs (), stmt.get_locus ());
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       stmt.get_locus ());
-    mappings->insert_hir_stmt (crate_num, mapping.get_hirid (), translated);
   }
 
   void visit (AST::TupleStruct &struct_decl) override
@@ -181,11 +179,6 @@ public:
 				       std::move (where_clause), vis,
 				       struct_decl.get_outer_attrs (),
 				       struct_decl.get_locus ());
-
-    mappings->insert_hir_stmt (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       struct_decl.get_locus ());
   }
 
   void visit (AST::StructStruct &struct_decl) override
@@ -237,11 +230,6 @@ public:
 					std::move (where_clause), is_unit, vis,
 					struct_decl.get_outer_attrs (),
 					struct_decl.get_locus ());
-
-    mappings->insert_hir_stmt (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       struct_decl.get_locus ());
   }
 
   void visit (AST::Union &union_decl) override
@@ -291,11 +279,6 @@ public:
 			std::move (generic_params), std::move (where_clause),
 			std::move (variants), union_decl.get_outer_attrs (),
 			union_decl.get_locus ());
-
-    mappings->insert_hir_stmt (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       union_decl.get_locus ());
   }
 
   void visit (AST::Enum &enum_decl) override
@@ -329,11 +312,6 @@ public:
 				std::move (where_clause), /* is_unit, */
 				std::move (items), enum_decl.get_outer_attrs (),
 				enum_decl.get_locus ());
-
-    mappings->insert_hir_stmt (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       enum_decl.get_locus ());
   }
 
   void visit (AST::EmptyStmt &empty) override
@@ -344,11 +322,6 @@ public:
 				   mappings->get_next_localdef_id (crate_num));
 
     translated = new HIR::EmptyStmt (mapping, empty.get_locus ());
-
-    mappings->insert_hir_stmt (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       empty.get_locus ());
   }
 
   void visit (AST::Function &function) override
@@ -406,8 +379,7 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    mappings->insert_location (crate_num,
-			       function_body->get_mappings ().get_hirid (),
+    mappings->insert_location (function_body->get_mappings ().get_hirid (),
 			       function.get_locus ());
 
     auto fn
@@ -418,20 +390,11 @@ public:
 			   std::move (vis), function.get_outer_attrs (),
 			   HIR::SelfParam::error (), locus);
 
-    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			       fn);
-    mappings->insert_hir_stmt (mapping.get_crate_num (), mapping.get_hirid (),
-			       fn);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       function.get_locus ());
-
     // add the mappings for the function params at the end
     for (auto &param : fn->get_function_params ())
       {
-	mappings->insert_hir_param (mapping.get_crate_num (),
-				    param.get_mappings ().get_hirid (), &param);
-	mappings->insert_location (crate_num, mapping.get_hirid (),
-				   param.get_locus ());
+	mappings->insert_hir_param (&param);
+	mappings->insert_location (mapping.get_hirid (), param.get_locus ());
       }
 
     translated = fn;

@@ -36,11 +36,8 @@ public:
     field->accept_vis (compiler);
     rust_assert (compiler.translated != nullptr);
 
-    compiler.mappings->insert_hir_struct_field (
-      compiler.translated->get_mappings ().get_crate_num (),
-      compiler.translated->get_mappings ().get_hirid (), compiler.translated);
+    compiler.mappings->insert_hir_struct_field (compiler.translated);
     compiler.mappings->insert_location (
-      compiler.translated->get_mappings ().get_crate_num (),
       compiler.translated->get_mappings ().get_hirid (), field->get_locus ());
 
     return compiler.translated;

@@ -62,6 +62,13 @@ const char *kTargetOptionsDumpFile = "gccrs.target-options.dump";
 const std::string kDefaultCrateName = "rust_out";
 const size_t kMaxNameLength = 64;
 
+Session &
+Session::get_instance ()
+{
+  static Session instance;
+  return instance;
+}
+
 static std::string
 infer_crate_name (const std::string &filename)
 {
@@ -374,6 +381,9 @@ Session::init ()
 
   // setup backend to GCC GIMPLE
   backend = rust_get_backend ();
+
+  // setup mappings class
+  mappings = Analysis::Mappings::get ();
 }
 
 /* Initialise default options. Actually called before handle_option, unlike init
@@ -574,10 +584,8 @@ Session::parse_files (int num_files, const char **files)
       options.set_crate_name (crate_name);
     }
 
-  auto mappings = Analysis::Mappings::get ();
-  CrateNum crate_num = mappings->setup_crate_mappings (options.crate_name);
+  CrateNum crate_num = mappings->get_next_crate_num (options.get_crate_name ());
   mappings->set_current_crate (crate_num);
-
   for (int i = 0; i < num_files; i++)
     {
       rust_debug ("Attempting to parse file: %s", files[i]);
@@ -588,7 +596,7 @@ Session::parse_files (int num_files, const char **files)
 }
 
 void
-Session::handle_crate_name (AST::Crate parsed_crate)
+Session::handle_crate_name (const AST::Crate &parsed_crate)
 {
   auto mappings = Analysis::Mappings::get ();
   auto crate_name_changed = false;
@@ -656,26 +664,23 @@ Session::parse_file (const char *filename)
   Parser<Lexer> parser (lex);
 
   // generate crate from parser
-  auto parsed_crate = parser.parse_crate ();
-
-  // setup the mappings for this AST
-  auto mappings = Analysis::Mappings::get ();
-  mappings->insert_ast_crate (&parsed_crate);
+  std::unique_ptr<AST::Crate> ast_crate = parser.parse_crate ();
 
   // handle crate name
-  handle_crate_name (parsed_crate);
+  handle_crate_name (*ast_crate.get ());
 
+  // dump options
   if (options.dump_option_enabled (CompileOptions::LEXER_DUMP))
     {
       dump_lex (parser);
     }
   if (options.dump_option_enabled (CompileOptions::PARSER_AST_DUMP))
     {
-      dump_ast (parser, parsed_crate);
+      dump_ast (parser, *ast_crate.get ());
     }
   if (options.dump_option_enabled (CompileOptions::AST_DUMP_PRETTY))
     {
-      dump_ast_pretty (parsed_crate);
+      dump_ast_pretty (*ast_crate.get ());
     }
   if (options.dump_option_enabled (CompileOptions::TARGET_OPTION_DUMP))
     {
@@ -684,6 +689,11 @@ Session::parse_file (const char *filename)
 
   if (saw_errors ())
     return;
+
+  // setup the mappings for this AST
+  CrateNum current_crate = mappings->get_current_crate ();
+  AST::Crate &parsed_crate
+    = mappings->insert_ast_crate (std::move (ast_crate), current_crate);
 
   /* basic pipeline:
    *  - lex
@@ -744,22 +754,21 @@ Session::parse_file (const char *filename)
     return;
 
   // lower AST to HIR
-  HIR::Crate hir = HIR::ASTLowering::Resolve (parsed_crate);
-  if (options.dump_option_enabled (CompileOptions::HIR_DUMP))
-    {
-      dump_hir (hir);
-    }
-
-  if (options.dump_option_enabled (CompileOptions::HIR_DUMP_PRETTY))
-    {
-      dump_hir_pretty (hir);
-    }
-
+  std::unique_ptr<HIR::Crate> lowered
+    = HIR::ASTLowering::Resolve (parsed_crate);
   if (saw_errors ())
     return;
 
   // add the mappings to it
-  mappings->insert_hir_crate (&hir);
+  HIR::Crate &hir = mappings->insert_hir_crate (std::move (lowered));
+  if (options.dump_option_enabled (CompileOptions::HIR_DUMP))
+    {
+      dump_hir (hir);
+    }
+  if (options.dump_option_enabled (CompileOptions::HIR_DUMP_PRETTY))
+    {
+      dump_hir_pretty (hir);
+    }
 
   // type resolve
   Resolver::TypeResolution::Resolve (hir);
@@ -781,6 +790,7 @@ Session::parse_file (const char *filename)
   // we can't do static analysis if there are errors to worry about
   if (!saw_errors ())
     {
+      // lints
       Analysis::ScanDeadcode::Scan (hir);
       Analysis::UnusedVariables::Lint (ctx);
     }
@@ -788,52 +798,6 @@ Session::parse_file (const char *filename)
   // pass to GCC middle-end
   ctx.write_to_backend ();
 }
-
-// TODO: actually implement method
-void
-load_extern_crate (std::string crate_name ATTRIBUTE_UNUSED)
-{}
-// TODO: deprecated - don't use
-
-// Parses up to the "load (external) crates" part of the frontend.
-// TODO: lots of this code is probably actually useful outside of dumping, so
-// maybe split off function
-void
-Session::debug_dump_load_crates (Parser<Lexer> &parser)
-{
-  // parse crate as AST
-  AST::Crate crate = parser.parse_crate ();
-
-  /* TODO: search through inner attrs and see whether any of those attr paths
-   * contain "no_core", "no_std", "compiler_builtins". If so/not, save certain
-   * crate names. In these names, insert items at beginning of crate items.
-   * This is crate injection. Also, inject prelude use decl at beginning
-   * (first name is assumed to be prelude - prelude is a use decl
-   * automatically generated to enable using Option and Copy without
-   * qualifying it or importing it via 'use' manually) */
-
-  std::vector<std::string> crate_names;
-  for (const auto &item : crate.items)
-    {
-      // if item is extern crate, add name? to list of stuff ONLY IF config is
-      // checked if item is module, iterate this loop inside it as well
-      // (recursive?) ONLY IF config is checked
-
-      // TODO: actually do the checks somewhere - probably in the items
-
-      item->add_crate_name (crate_names);
-    }
-
-  /* loop through list of crate names/paths/whatever, attempting to load each
-   * one. save loaded crates to a Session variable? Or save to current
-   * AST::Crate? */
-  for (const auto &name : crate_names)
-    {
-      load_extern_crate (name /*, basename = ""?*/);
-    }
-  //  for each loaded crate, load dependencies of it as well
-}
-// TODO: deprecated - don't use
 
 void
 Session::register_plugins (AST::Crate &crate ATTRIBUTE_UNUSED)
@@ -951,7 +915,7 @@ Session::injection (AST::Crate &crate)
 			      Linemap::unknown_location ()));
 
       // insert at beginning
-      crate.items.insert (crate.items.begin (), std::move (extern_crate));
+      // crate.items.insert (crate.items.begin (), std::move (extern_crate));
     }
 
   // create use tree path
@@ -1129,6 +1093,21 @@ Session::dump_type_resolution (HIR::Crate &hir) const
   Resolver::TypeResolverDump::go (hir, out);
   out.close ();
 }
+
+// imports
+
+NodeId
+Session::load_extern_crate (const std::string &crate_name)
+{
+  // check if it was already loaded
+  // ....
+
+  rust_debug ("load_extern_crate: %s", crate_name.c_str ());
+  gcc_unreachable ();
+
+  return UNKNOWN_NODEID;
+}
+//
 
 void
 TargetOptions::dump_target_options () const

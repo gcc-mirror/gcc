@@ -35,6 +35,13 @@ public:
   {
     ASTLoweringExternItem resolver;
     item->accept_vis (resolver);
+
+    rust_assert (resolver.translated != nullptr);
+    resolver.mappings->insert_hir_extern_item (resolver.translated);
+    resolver.mappings->insert_location (
+      resolver.translated->get_mappings ().get_hirid (),
+      resolver.translated->get_locus ());
+
     return resolver.translated;
   }
 
@@ -49,17 +56,10 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    HIR::ExternalStaticItem *static_item = new HIR::ExternalStaticItem (
+    translated = new HIR::ExternalStaticItem (
       mapping, item.get_identifier (), std::unique_ptr<HIR::Type> (static_type),
       item.is_mut () ? Mutability::Mut : Mutability::Imm, std::move (vis),
       item.get_outer_attrs (), item.get_locus ());
-
-    translated = static_item;
-
-    mappings->insert_hir_extern_item (crate_num, mapping.get_hirid (),
-				      translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       item.get_locus ());
   }
 
   void visit (AST::ExternalFunctionItem &function) override
@@ -100,18 +100,11 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    HIR::ExternalFunctionItem *function_item = new HIR::ExternalFunctionItem (
+    translated = new HIR::ExternalFunctionItem (
       mapping, function.get_identifier (), std::move (generic_params),
       std::unique_ptr<HIR::Type> (return_type), std::move (where_clause),
       std::move (function_params), function.is_variadic (), std::move (vis),
       function.get_outer_attrs (), function.get_locus ());
-
-    translated = function_item;
-
-    mappings->insert_hir_extern_item (crate_num, mapping.get_hirid (),
-				      translated);
-    mappings->insert_location (crate_num, mapping.get_hirid (),
-			       function.get_locus ());
   }
 
 private:

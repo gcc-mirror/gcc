@@ -35,6 +35,7 @@ static const BuiltinAttrDefinition __definitions[] = {
   {"link_section", CODE_GENERATION},
   {"no_mangle", CODE_GENERATION},
   {"repr", CODE_GENERATION},
+  {"path", EXPANSION},
 };
 
 BuiltinAttributeMappings *

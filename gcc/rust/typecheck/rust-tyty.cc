@@ -329,8 +329,7 @@ TyVar::get_implicit_infer_var (Location locus)
 					       infer->get_ref (),
 					       UNKNOWN_LOCAL_DEFID),
 			infer);
-  mappings->insert_location (mappings->get_current_crate (), infer->get_ref (),
-			     locus);
+  mappings->insert_location (infer->get_ref (), locus);
 
   return TyVar (infer->get_ref ());
 }
@@ -457,7 +456,7 @@ InferType::clone () const
 					       clone->get_ref (),
 					       UNKNOWN_LOCAL_DEFID),
 			clone);
-  mappings->insert_location (mappings->get_current_crate (), clone->get_ref (),
+  mappings->insert_location (clone->get_ref (),
 			     mappings->lookup_location (get_ref ()));
 
   // setup the chain to reference this

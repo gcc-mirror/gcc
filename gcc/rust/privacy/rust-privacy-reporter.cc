@@ -129,8 +129,8 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
 	auto ref_id = ty->get_ref ();
 	NodeId lookup_id;
 
-	mappings.lookup_hir_to_node (node_mappings.get_crate_num (), ref_id,
-				     &lookup_id);
+	bool ok = mappings.lookup_hir_to_node (ref_id, &lookup_id);
+	rust_assert (ok);
 
 	return check_for_privacy_violation (lookup_id, locus);
       }

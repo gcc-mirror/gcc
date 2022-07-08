@@ -133,11 +133,10 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
 	}
 
       // insert the reverse mappings and locations
-      auto crate_num = f->get_mappings ().get_crate_num ();
       auto field_id = f->get_mappings ().get_hirid ();
       auto field_node_id = f->get_mappings ().get_nodeid ();
-      mappings->insert_location (crate_num, field_id, f->get_locus ());
-      mappings->insert_node_to_hir (crate_num, field_node_id, field_id);
+      mappings->insert_location (field_id, f->get_locus ());
+      mappings->insert_node_to_hir (field_node_id, field_id);
 
       // add it to the lowered fields list
       fields.push_back (std::unique_ptr<HIR::StructPatternField> (f));

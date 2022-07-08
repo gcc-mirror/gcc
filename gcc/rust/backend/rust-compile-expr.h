@@ -715,8 +715,7 @@ public:
 	  }
 
 	HirId ref = UNKNOWN_HIRID;
-	if (!ctx->get_mappings ()->lookup_node_to_hir (
-	      expr.get_mappings ().get_crate_num (), resolved_node_id, &ref))
+	if (!ctx->get_mappings ()->lookup_node_to_hir (resolved_node_id, &ref))
 	  {
 	    rust_fatal_error (expr.get_locus (),
 			      "reverse lookup label failure");
@@ -762,8 +761,7 @@ public:
 	  }
 
 	HirId ref = UNKNOWN_HIRID;
-	if (!ctx->get_mappings ()->lookup_node_to_hir (
-	      expr.get_mappings ().get_crate_num (), resolved_node_id, &ref))
+	if (!ctx->get_mappings ()->lookup_node_to_hir (resolved_node_id, &ref))
 	  {
 	    rust_fatal_error (expr.get_locus (),
 			      "reverse lookup label failure");

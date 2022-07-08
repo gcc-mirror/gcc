@@ -107,15 +107,13 @@ TraitResolver::resolve_path (HIR::TypePath &path)
     }
 
   HirId hir_node = UNKNOWN_HIRID;
-  if (!mappings->lookup_node_to_hir (mappings->get_current_crate (), ref,
-				     &hir_node))
+  if (!mappings->lookup_node_to_hir (ref, &hir_node))
     {
       rust_error_at (path.get_locus (), "Failed to resolve path to hir-id");
       return &TraitReference::error_node ();
     }
 
-  HIR::Item *resolved_item
-    = mappings->lookup_hir_item (mappings->get_current_crate (), hir_node);
+  HIR::Item *resolved_item = mappings->lookup_hir_item (hir_node);
 
   rust_assert (resolved_item != nullptr);
   resolved_item->accept_vis (*this);
@@ -248,15 +246,13 @@ TraitResolver::lookup_path (HIR::TypePath &path)
     }
 
   HirId hir_node = UNKNOWN_HIRID;
-  if (!mappings->lookup_node_to_hir (mappings->get_current_crate (), ref,
-				     &hir_node))
+  if (!mappings->lookup_node_to_hir (ref, &hir_node))
     {
       rust_error_at (path.get_locus (), "Failed to resolve path to hir-id");
       return &TraitReference::error_node ();
     }
 
-  HIR::Item *resolved_item
-    = mappings->lookup_hir_item (mappings->get_current_crate (), hir_node);
+  HIR::Item *resolved_item = mappings->lookup_hir_item (hir_node);
 
   rust_assert (resolved_item != nullptr);
   resolved_item->accept_vis (*this);

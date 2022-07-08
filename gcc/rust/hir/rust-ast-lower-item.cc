@@ -28,7 +28,17 @@ ASTLoweringItem::translate (AST::Item *item)
   item->accept_vis (resolver);
 
   if (resolver.translated != nullptr)
-    resolver.handle_outer_attributes (*resolver.translated);
+    {
+      auto id = resolver.translated->get_mappings ().get_hirid ();
+      auto defid = resolver.translated->get_mappings ().get_defid ();
+      auto locus = resolver.translated->get_locus ();
+
+      resolver.handle_outer_attributes (*resolver.translated);
+      resolver.mappings->insert_ast_item (item);
+      resolver.mappings->insert_hir_item (resolver.translated);
+      resolver.mappings->insert_location (id, locus);
+      resolver.mappings->insert_defid_mapping (defid, resolver.translated);
+    }
 
   return resolver.translated;
 }
@@ -53,21 +63,14 @@ ASTLoweringItem::visit (AST::Module &module)
     }
 
   // should be lowered/copied from module.get_in/outer_attrs()
-  AST::AttrVec inner_attrs;
-  AST::AttrVec outer_attrs;
+  AST::AttrVec inner_attrs = module.get_inner_attrs ();
+  AST::AttrVec outer_attrs = module.get_outer_attrs ();
 
   translated
     = new HIR::Module (mapping, module.get_name (), module.get_locus (),
 		       std::move (items), std::move (vis),
 		       std::move (inner_attrs), std::move (outer_attrs));
-
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_module (mapping.get_crate_num (), mapping.get_hirid (),
-			   static_cast<Module *> (translated));
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     module.get_locus ());
+  mappings->insert_module (static_cast<Module *> (translated));
 }
 
 void
@@ -102,12 +105,6 @@ ASTLoweringItem::visit (AST::TypeAlias &alias)
 			  std::unique_ptr<HIR::Type> (existing_type),
 			  std::move (vis), alias.get_outer_attrs (),
 			  alias.get_locus ());
-
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     alias.get_locus ());
 }
 
 void
@@ -165,12 +162,6 @@ ASTLoweringItem::visit (AST::TupleStruct &struct_decl)
 				     std::move (where_clause), vis,
 				     struct_decl.get_outer_attrs (),
 				     struct_decl.get_locus ());
-
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     struct_decl.get_locus ());
 }
 
 void
@@ -233,12 +224,6 @@ ASTLoweringItem::visit (AST::StructStruct &struct_decl)
 				      std::move (where_clause), is_unit, vis,
 				      struct_decl.get_outer_attrs (),
 				      struct_decl.get_locus ());
-
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     struct_decl.get_locus ());
 }
 
 void
@@ -282,12 +267,6 @@ ASTLoweringItem::visit (AST::Enum &enum_decl)
 			      std::move (where_clause), /* is_unit, */
 			      std::move (items), enum_decl.get_outer_attrs (),
 			      enum_decl.get_locus ());
-
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     enum_decl.get_locus ());
 }
 
 void
@@ -347,12 +326,6 @@ ASTLoweringItem::visit (AST::Union &union_decl)
 		      std::move (generic_params), std::move (where_clause),
 		      std::move (variants), union_decl.get_outer_attrs (),
 		      union_decl.get_locus ());
-
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     union_decl.get_locus ());
 }
 
 void
@@ -374,11 +347,6 @@ ASTLoweringItem::visit (AST::StaticItem &var)
 				    std::unique_ptr<HIR::Type> (type),
 				    std::unique_ptr<HIR::Expr> (expr), vis,
 				    var.get_outer_attrs (), var.get_locus ());
-
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_location (crate_num, mapping.get_hirid (), var.get_locus ());
 }
 
 void
@@ -399,12 +367,6 @@ ASTLoweringItem::visit (AST::ConstantItem &constant)
 				      std::unique_ptr<HIR::Expr> (expr),
 				      constant.get_outer_attrs (),
 				      constant.get_locus ());
-
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     constant.get_locus ());
 }
 
 void
@@ -470,8 +432,7 @@ ASTLoweringItem::visit (AST::Function &function)
 				 mappings->get_next_hir_id (crate_num),
 				 mappings->get_next_localdef_id (crate_num));
 
-  mappings->insert_location (crate_num,
-			     function_body->get_mappings ().get_hirid (),
+  mappings->insert_location (function_body->get_mappings ().get_hirid (),
 			     function.get_locus ());
 
   auto fn
@@ -482,19 +443,11 @@ ASTLoweringItem::visit (AST::Function &function)
 			 std::move (vis), function.get_outer_attrs (),
 			 HIR::SelfParam::error (), locus);
 
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     fn);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     function.get_locus ());
-
   // add the mappings for the function params at the end
   for (auto &param : fn->get_function_params ())
     {
-      mappings->insert_hir_param (mapping.get_crate_num (),
-				  param.get_mappings ().get_hirid (), &param);
-      mappings->insert_location (crate_num, mapping.get_hirid (),
-				 param.get_locus ());
+      mappings->insert_hir_param (&param);
+      mappings->insert_location (mapping.get_hirid (), param.get_locus ());
     }
 
   translated = fn;
@@ -573,14 +526,7 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
     impl_block.get_locus ());
   translated = hir_impl_block;
 
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_hir_impl_block (mapping.get_crate_num (),
-				   mapping.get_hirid (), hir_impl_block);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     impl_block.get_locus ());
-
+  mappings->insert_hir_impl_block (hir_impl_block);
   for (auto &impl_item_id : impl_item_ids)
     {
       mappings->insert_impl_item_mapping (impl_item_id, hir_impl_block);
@@ -647,12 +593,6 @@ ASTLoweringItem::visit (AST::Trait &trait)
 		      where_clause, std::move (trait_items), vis,
 		      trait.get_outer_attrs (), trait.get_locus ());
   translated = hir_trait;
-
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     trait.get_locus ());
 
   for (auto trait_item_id : trait_item_ids)
     {
@@ -735,14 +675,7 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
     impl_block.get_locus ());
   translated = hir_impl_block;
 
-  mappings->insert_defid_mapping (mapping.get_defid (), translated);
-  mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
-			     translated);
-  mappings->insert_hir_impl_block (mapping.get_crate_num (),
-				   mapping.get_hirid (), hir_impl_block);
-  mappings->insert_location (crate_num, mapping.get_hirid (),
-			     impl_block.get_locus ());
-
+  mappings->insert_hir_impl_block (hir_impl_block);
   for (auto &impl_item_id : impl_item_ids)
     {
       mappings->insert_impl_item_mapping (impl_item_id, hir_impl_block);
@@ -775,8 +708,8 @@ ASTLoweringSimplePath::lower (const AST::SimplePathSegment &segment)
 
   auto hir_seg = HIR::SimplePathSegment (mapping);
 
-  mappings->insert_node_to_hir (crate_num, node_id, mapping.get_hirid ());
-  mappings->insert_simple_path_segment (crate_num, node_id, &segment);
+  mappings->insert_node_to_hir (node_id, mapping.get_hirid ());
+  // mappings->insert_simple_path_segment (crate_num, node_id, &segment);
 
   return hir_seg;
 }
@@ -798,8 +731,8 @@ ASTLoweringSimplePath::lower (const AST::SimplePath &path)
   auto lowered
     = HIR::SimplePath (std::move (segments), mapping, path.get_locus ());
 
-  mappings->insert_node_to_hir (crate_num, node_id, mapping.get_hirid ());
-  mappings->insert_simple_path (crate_num, node_id, &path);
+  mappings->insert_node_to_hir (node_id, mapping.get_hirid ());
+  // mappings->insert_simple_path (crate_num, node_id, &path);
 
   return lowered;
 }

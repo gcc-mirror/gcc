@@ -438,8 +438,7 @@ public:
 
     // node back to HIR
     HirId ref;
-    if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
-				       ref_node_id, &ref))
+    if (!mappings->lookup_node_to_hir (ref_node_id, &ref))
       {
 	// FIXME
 	// this is an internal error

@@ -1001,6 +1001,8 @@ public:
 			    Location ());
   }
 
+  bool is_error () const { return segments.empty (); }
+
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
   const Location &get_locus () const { return locus; }
 };

@@ -1153,6 +1153,9 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  const std::string &get_referenced_crate () const { return referenced_crate; }
+  const std::string &get_as_clause () const { return as_clause_name; }
+
   // Override that adds extern crate name in decl to passed list of names.
   void add_crate_name (std::vector<std::string> &names) const override
   {

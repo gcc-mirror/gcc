@@ -371,8 +371,7 @@ ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
     return;
 
   const CanonicalPath *type_path = nullptr;
-  if (mappings->lookup_canonical_path (mappings->get_current_crate (),
-				       resolved_node, &type_path))
+  if (mappings->lookup_canonical_path (resolved_node, &type_path))
     {
       auto &final_seg = path.get_segments ().back ();
       switch (final_seg->get_type ())

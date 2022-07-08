@@ -669,7 +669,7 @@ public:
   std::vector<std::unique_ptr<AST::Item> > parse_items ();
 
   // Main entry point for parser.
-  AST::Crate parse_crate ();
+  std::unique_ptr<AST::Crate> parse_crate ();
 
   // Dumps all lexer output.
   void debug_dump_lex_output (std::ostream &out);

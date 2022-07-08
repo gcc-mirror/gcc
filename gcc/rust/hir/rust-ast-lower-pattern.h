@@ -36,12 +36,8 @@ public:
 
     rust_assert (resolver.translated != nullptr);
 
-    resolver.mappings->insert_hir_pattern (
-      resolver.translated->get_pattern_mappings ().get_crate_num (),
-      resolver.translated->get_pattern_mappings ().get_hirid (),
-      resolver.translated);
+    resolver.mappings->insert_hir_pattern (resolver.translated);
     resolver.mappings->insert_location (
-      resolver.translated->get_pattern_mappings ().get_crate_num (),
       resolver.translated->get_pattern_mappings ().get_hirid (),
       pattern->get_locus ());
 

@@ -75,9 +75,12 @@ public:
   // Copy constructor uses clone
   TypeParam (TypeParam const &other)
     : GenericParam (other.mappings), outer_attr (other.outer_attr),
-      type_representation (other.type_representation),
-      type (other.type->clone_type ()), locus (other.locus)
+      type_representation (other.type_representation), locus (other.locus)
   {
+    // guard to prevent null pointer dereference
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
       type_param_bounds.push_back (e->clone_type_param_bound ());
@@ -87,11 +90,15 @@ public:
   TypeParam &operator= (TypeParam const &other)
   {
     type_representation = other.type_representation;
-    // type_param_bounds = other.type_param_bounds;
-    type = other.type->clone_type ();
     outer_attr = other.outer_attr;
     locus = other.locus;
     mappings = other.mappings;
+
+    // guard to prevent null pointer dereference
+    if (other.type != nullptr)
+      type = other.type->clone_type ();
+    else
+      type = nullptr;
 
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
@@ -99,7 +106,6 @@ public:
 
     return *this;
   }
-
   // move constructors
   TypeParam (TypeParam &&other) = default;
   TypeParam &operator= (TypeParam &&other) = default;
@@ -1111,11 +1117,16 @@ public:
     : VisItem (other), qualifiers (other.qualifiers),
       function_name (other.function_name),
       function_params (other.function_params),
-      return_type (other.return_type->clone_type ()),
       where_clause (other.where_clause),
       function_body (other.function_body->clone_block_expr ()),
       self (other.self), locus (other.locus)
   {
+    // guard to prevent null dereference (always required)
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    else
+      return_type = nullptr;
+
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
@@ -1128,7 +1139,13 @@ public:
     function_name = other.function_name;
     qualifiers = other.qualifiers;
     function_params = other.function_params;
-    return_type = other.return_type->clone_type ();
+
+    // guard to prevent null dereference (always required)
+    if (other.return_type != nullptr)
+      return_type = other.return_type->clone_type ();
+    else
+      return_type = nullptr;
+
     where_clause = other.where_clause;
     function_body = other.function_body->clone_block_expr ();
     locus = other.locus;

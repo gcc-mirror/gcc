@@ -36,10 +36,7 @@ public:
     expr->accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
-	resolver.mappings->insert_hir_expr (
-	  resolver.translated->get_mappings ().get_crate_num (),
-	  resolver.translated->get_mappings ().get_hirid (),
-	  resolver.translated);
+	resolver.mappings->insert_hir_expr (resolver.translated);
       }
 
     *terminated = resolver.terminated;
@@ -65,9 +62,7 @@ public:
 				  std::unique_ptr<HIR::BlockExpr> (block),
 				  expr->get_outer_attrs (), expr->get_locus ());
 
-    resolver.mappings->insert_hir_expr (
-      translated->get_mappings ().get_crate_num (),
-      translated->get_mappings ().get_hirid (), translated);
+    resolver.mappings->insert_hir_expr (translated);
 
     return translated;
   }
@@ -94,10 +89,7 @@ public:
     expr->accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
-	resolver.mappings->insert_hir_expr (
-	  resolver.translated->get_mappings ().get_crate_num (),
-	  resolver.translated->get_mappings ().get_hirid (),
-	  resolver.translated);
+	resolver.mappings->insert_hir_expr (resolver.translated);
       }
     *terminated = resolver.terminated;
     return resolver.translated;
@@ -131,10 +123,7 @@ public:
     expr->accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
-	resolver.mappings->insert_hir_expr (
-	  resolver.translated->get_mappings ().get_crate_num (),
-	  resolver.translated->get_mappings ().get_hirid (),
-	  resolver.translated);
+	resolver.mappings->insert_hir_expr (resolver.translated);
       }
     return resolver.translated;
   }
@@ -161,10 +150,7 @@ public:
     expr->accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
-	resolver.mappings->insert_hir_expr (
-	  resolver.translated->get_mappings ().get_crate_num (),
-	  resolver.translated->get_mappings ().get_hirid (),
-	  resolver.translated);
+	resolver.mappings->insert_hir_expr (resolver.translated);
       }
 
     *terminated = resolver.terminated;

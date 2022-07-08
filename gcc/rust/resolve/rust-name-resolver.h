@@ -45,6 +45,8 @@ public:
   void append_reference_for_def (NodeId def, NodeId ref);
   bool have_references_for_node (NodeId def) const;
   bool decl_was_declared_here (NodeId def) const;
+  void debug () const;
+  std::string debug_str () const;
 
   CrateNum get_crate_num () const { return crate_num; }
   NodeId get_node_id () const { return node_id; }

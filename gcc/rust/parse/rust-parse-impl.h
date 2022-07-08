@@ -424,7 +424,7 @@ Parser<ManagedTokenSource>::parse_items ()
 
 // Parses a crate (compilation unit) - entry point
 template <typename ManagedTokenSource>
-AST::Crate
+std::unique_ptr<AST::Crate>
 Parser<ManagedTokenSource>::parse_crate ()
 {
   // parse inner attributes
@@ -437,7 +437,8 @@ Parser<ManagedTokenSource>::parse_crate ()
   for (const auto &error : error_table)
     error.emit_error ();
 
-  return AST::Crate (std::move (items), std::move (inner_attrs));
+  return std::unique_ptr<AST::Crate> (
+    new AST::Crate (std::move (items), std::move (inner_attrs)));
 }
 
 // Parse a contiguous block of inner attributes.

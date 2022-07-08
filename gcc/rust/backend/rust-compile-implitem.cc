@@ -31,7 +31,6 @@ CompileTraitItem::visit (HIR::TraitItemConst &constant)
 
   const Resolver::CanonicalPath *canonical_path = nullptr;
   bool ok = ctx->get_mappings ()->lookup_canonical_path (
-    constant.get_mappings ().get_crate_num (),
     constant.get_mappings ().get_nodeid (), &canonical_path);
   rust_assert (ok);
 
@@ -84,8 +83,7 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
 
   const Resolver::CanonicalPath *canonical_path = nullptr;
   bool ok = ctx->get_mappings ()->lookup_canonical_path (
-    func.get_mappings ().get_crate_num (), func.get_mappings ().get_nodeid (),
-    &canonical_path);
+    func.get_mappings ().get_nodeid (), &canonical_path);
   rust_assert (ok);
 
   // FIXME: How do we get the proper visibility here?
