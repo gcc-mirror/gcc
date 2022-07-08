@@ -199,7 +199,7 @@ Mappings::insert_ast_crate (std::unique_ptr<AST::Crate> &&crate,
   rust_assert (it == ast_crate_mappings.end ());
 
   // store it
-  ast_crate_mappings.insert ({crate_num, crate.get ()});
+  ast_crate_mappings.insert ({crate_num, crate.release ()});
 
   // return the reference to it
   it = ast_crate_mappings.find (crate_num);
@@ -236,7 +236,7 @@ Mappings::insert_hir_crate (std::unique_ptr<HIR::Crate> &&crate)
 
   insert_node_to_hir (crate->get_mappings ().get_nodeid (),
 		      crate->get_mappings ().get_hirid ());
-  hir_crate_mappings.insert ({crateNum, crate.get ()});
+  hir_crate_mappings.insert ({crateNum, crate.release ()});
 
   it = hir_crate_mappings.find (crateNum);
   rust_assert (it != hir_crate_mappings.end ());
