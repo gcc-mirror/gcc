@@ -1027,6 +1027,12 @@ void
 ResolveExternItem::visit (AST::ExternalFunctionItem &function)
 {
   NodeId scope_node_id = function.get_node_id ();
+  auto decl = CanonicalPath::new_seg (function.get_node_id (),
+				      function.get_identifier ());
+  auto path = prefix.append (decl);
+  auto cpath = canonical_prefix.append (decl);
+
+  mappings->insert_canonical_path (function.get_node_id (), cpath);
 
   resolve_visibility (function.get_visibility ());
 

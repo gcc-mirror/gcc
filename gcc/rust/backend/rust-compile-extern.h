@@ -130,6 +130,17 @@ public:
     tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
     std::string ir_symbol_name = function.get_item_name ();
     std::string asm_name = function.get_item_name ();
+    if (fntype->get_abi () == ABI::RUST)
+      {
+	// then we need to get the canonical path of it and mangle it
+	const Resolver::CanonicalPath *canonical_path = nullptr;
+	bool ok = ctx->get_mappings ()->lookup_canonical_path (
+	  function.get_mappings ().get_nodeid (), &canonical_path);
+	rust_assert (ok);
+
+	ir_symbol_name = canonical_path->get () + fntype->subst_as_string ();
+	asm_name = ctx->mangle_item (fntype, *canonical_path);
+      }
 
     const unsigned int flags = Backend::function_is_declaration;
     tree fndecl
