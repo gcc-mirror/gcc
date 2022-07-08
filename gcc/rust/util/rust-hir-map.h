@@ -77,30 +77,13 @@ public:
   CrateNum get_next_crate_num (const std::string &name);
   void set_current_crate (CrateNum crateNum);
   CrateNum get_current_crate () const;
-
-  bool get_crate_name (CrateNum crate_num, std::string &name) const
-  {
-    auto it = crate_names.find (crate_num);
-    if (it == crate_names.end ())
-      return false;
-
-    name.assign (it->second);
-    return true;
-  }
-
-  // set crate name mid-compilation
-  void set_crate_name (CrateNum crate_num, const std::string &name)
-  {
-    crate_names[crate_num] = name;
-  }
-
-  std::string get_current_crate_name () const
-  {
-    std::string name;
-    bool ok = get_crate_name (get_current_crate (), name);
-    rust_assert (ok);
-    return name;
-  }
+  bool get_crate_name (CrateNum crate_num, std::string &name) const;
+  void set_crate_name (CrateNum crate_num, const std::string &name);
+  std::string get_current_crate_name () const;
+  bool lookup_crate_name (const std::string &crate_name,
+			  CrateNum &resolved_crate_num) const;
+  bool crate_num_to_nodeid (const CrateNum &crate_num, NodeId &node_id) const;
+  bool node_is_crate (NodeId node_id) const;
 
   NodeId get_next_node_id ();
   HirId get_next_hir_id () { return get_next_hir_id (get_current_crate ()); }

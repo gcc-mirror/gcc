@@ -199,7 +199,8 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
       bool did_resolve_segment = resolved_node_id != UNKNOWN_NODEID;
       if (did_resolve_segment)
 	{
-	  if (mappings->node_is_module (resolved_node_id))
+	  if (mappings->node_is_module (resolved_node_id)
+	      || mappings->node_is_crate (resolved_node_id))
 	    {
 	      module_scope_id = resolved_node_id;
 	    }
