@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opt-problem.h"
 #include "internal-fn.h"
 #include "tree-ssa-sccvn.h"
+#include "tree-into-ssa.h"
 
 /* Loop or bb location, with hotness information.  */
 dump_user_location_t vect_location;
@@ -982,7 +983,7 @@ set_uid_loop_bbs (loop_vec_info loop_vinfo, gimple *loop_vectorized_call,
 
 /* Generate vectorized code for LOOP and its epilogues.  */
 
-static void
+static unsigned
 vect_transform_loops (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 		      loop_p loop, gimple *loop_vectorized_call,
 		      function *fun)
@@ -1020,9 +1021,25 @@ vect_transform_loops (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	  = simduid_to_vf_data;
     }
 
+  /* We should not have to update virtual SSA form here but some
+     transforms involve creating new virtual definitions which makes
+     updating difficult.
+     We delay the actual update to the end of the pass but avoid
+     confusing ourselves by forcing need_ssa_update_p () to false.  */
+  unsigned todo = 0;
+  if (need_ssa_update_p (cfun))
+    {
+      gcc_assert (loop_vinfo->any_known_not_updated_vssa);
+      fun->gimple_df->ssa_renaming_needed = false;
+      todo |= TODO_update_ssa_only_virtuals;
+    }
+  gcc_assert (!need_ssa_update_p (cfun));
+
   /* Epilogue of vectorized loop must be vectorized too.  */
   if (new_loop)
-    vect_transform_loops (simduid_to_vf_htab, new_loop, NULL, fun);
+    todo |= vect_transform_loops (simduid_to_vf_htab, new_loop, NULL, fun);
+
+  return todo;
 }
 
 /* Try to vectorize LOOP.  */
@@ -1133,7 +1150,8 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 
   (*num_vectorized_loops)++;
   /* Transform LOOP and its epilogues.  */
-  vect_transform_loops (simduid_to_vf_htab, loop, loop_vectorized_call, fun);
+  ret |= vect_transform_loops (simduid_to_vf_htab, loop,
+			       loop_vectorized_call, fun);
 
   if (loop_vectorized_call)
     {
@@ -1332,6 +1350,11 @@ pass_vectorize::execute (function *fun)
 
   if (num_vectorized_loops > 0)
     {
+      /* We are collecting some corner cases where we need to update
+	 virtual SSA form via the TODO but delete the queued update-SSA
+	 state.  Force renaming if we think that might be necessary.  */
+      if (ret & TODO_update_ssa_only_virtuals)
+	mark_virtual_operands_for_renaming (cfun);
       /* If we vectorized any loop only virtual SSA form needs to be updated.
 	 ???  Also while we try hard to update loop-closed SSA form we fail
 	 to properly do this in some corner-cases (see PR56286).  */
