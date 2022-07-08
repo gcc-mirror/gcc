@@ -1100,6 +1100,16 @@ proc check_effective_target_offloading_enabled {} {
     return [check_configured_with "--enable-offload-targets"]
 }
 
+# Return 1 if compiled with --enable-offload-targets=amdgcn
+proc check_effective_target_amdgcn_offloading_enabled {} {
+    return [check_configured_with {--enable-offload-targets=[^ ]*amdgcn}]
+}
+
+# Return 1 if compiled with --enable-offload-targets=amdgcn
+proc check_effective_target_nvptx_offloading_enabled {} {
+    return [check_configured_with {--enable-offload-targets=[^ ]*nvptx}]
+}
+
 # Return 1 if compilation with -fopenacc is error-free for trivial
 # code, 0 otherwise.
 

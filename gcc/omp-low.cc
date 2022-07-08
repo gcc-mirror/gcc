@@ -5174,7 +5174,14 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx,
 {
   if (known_eq (sctx->max_vf, 0U))
     {
-      sctx->max_vf = sctx->is_simt ? omp_max_simt_vf () : omp_max_vf ();
+      /* If we are compiling for multiple devices choose the largest VF.  */
+      sctx->max_vf = omp_max_vf ();
+      if (omp_maybe_offloaded_ctx (ctx))
+	{
+	  if (sctx->is_simt)
+	    sctx->max_vf = ordered_max (sctx->max_vf, (unsigned) omp_max_simt_vf ());
+	  sctx->max_vf = ordered_max (sctx->max_vf, (unsigned) omp_max_simd_vf ());
+	}
       if (maybe_gt (sctx->max_vf, 1U))
 	{
 	  tree c = omp_find_clause (gimple_omp_for_clauses (ctx->stmt),

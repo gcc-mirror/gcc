@@ -1031,6 +1031,24 @@ omp_max_simt_vf (void)
   return 0;
 }
 
+/* Return maximum SIMD width if offloading may target SIMD hardware.  */
+
+int
+omp_max_simd_vf (void)
+{
+  if (!optimize)
+    return 0;
+  if (ENABLE_OFFLOADING)
+    for (const char *c = getenv ("OFFLOAD_TARGET_NAMES"); c;)
+      {
+	if (startswith (c, "amdgcn"))
+	  return 64;
+	else if ((c = strchr (c, ':')))
+	  c++;
+      }
+  return 0;
+}
+
 /* Store the construct selectors as tree codes from last to first,
    return their number.  */
 

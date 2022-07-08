@@ -555,7 +555,10 @@ loop_versioning::loop_versioning (function *fn)
      unvectorizable code, since it is the largest size that can be
      handled efficiently by scalar code.  omp_max_vf calculates the
      maximum number of bytes in a vector, when such a value is relevant
-     to loop optimization.  */
+     to loop optimization.
+     FIXME: this probably needs to use omp_max_simd_vf when in a target
+     region, but how to tell? (And MAX_FIXED_MODE_SIZE is large enough that
+     it doesn't actually matter.)  */
   m_maximum_scale = estimated_poly_value (omp_max_vf ());
   m_maximum_scale = MAX (m_maximum_scale, MAX_FIXED_MODE_SIZE);
 }

@@ -1,3 +1,12 @@
+2022-07-12  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gimple-loop-versioning.cc (loop_versioning::loop_versioning): Add
+	comment.
+	* omp-general.cc (omp_max_simd_vf): New function.
+	* omp-general.h (omp_max_simd_vf): New prototype.
+	* omp-low.cc (lower_rec_simd_input_clauses): Select largest from
+	  omp_max_vf, omp_max_simt_vf, and omp_max_simd_vf.
+
 2022-06-17  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.c (unified_shared_memory_enabled): New variable.
