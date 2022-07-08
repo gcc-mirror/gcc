@@ -359,6 +359,13 @@ cxx_pretty_printer::constant (tree t)
       }
       break;
 
+    case VOID_CST:
+      /* c_pretty_printer spells it "(void)0", but C++ prefers "void()". */
+      pp_cxx_type_specifier_seq (this, void_type_node);
+      pp_cxx_left_paren (this);
+      pp_cxx_right_paren (this);
+      break;
+
     case INTEGER_CST:
       if (NULLPTR_TYPE_P (TREE_TYPE (t)))
 	{

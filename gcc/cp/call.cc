@@ -4473,17 +4473,19 @@ implicit_conversion_error (location_t loc, tree type, tree expr)
      Call instantiate_type to get good error messages.  */
   if (TREE_TYPE (expr) == unknown_type_node)
     instantiate_type (type, expr, complain);
-  else if (invalid_nonstatic_memfn_p (loc, expr, complain))
+  else if (invalid_nonstatic_memfn_p (loc_or_input_loc (loc), expr, complain))
     /* We gave an error.  */;
   else if (BRACE_ENCLOSED_INITIALIZER_P (expr)
 	   && CONSTRUCTOR_IS_DESIGNATED_INIT (expr)
 	   && !CP_AGGREGATE_TYPE_P (type))
-    error_at (loc, "designated initializers cannot be used with a "
-	      "non-aggregate type %qT", type);
+    error_at (loc_or_input_loc (loc), "designated initializers cannot be used "
+	      "with a non-aggregate type %qT", type);
   else
     {
       range_label_for_type_mismatch label (TREE_TYPE (expr), type);
-      gcc_rich_location rich_loc (loc, &label);
+      /* Omit range label if loc is unknown (e.g. if expr is void_node). */
+      gcc_rich_location rich_loc (loc_or_input_loc (loc),
+				  loc == UNKNOWN_LOCATION ? NULL : &label);
       error_at (&rich_loc, "could not convert %qE from %qH to %qI",
 		expr, TREE_TYPE (expr), type);
     }
@@ -4498,7 +4500,7 @@ build_converted_constant_expr_internal (tree type, tree expr,
   conversion *conv;
   void *p;
   tree t;
-  location_t loc = cp_expr_loc_or_input_loc (expr);
+  location_t loc = cp_expr_location (expr);
 
   if (error_operand_p (expr))
     return error_mark_node;
@@ -4551,9 +4553,9 @@ build_converted_constant_expr_internal (tree type, tree expr,
 	  if (c->need_temporary_p)
 	    {
 	      if (complain & tf_error)
-		error_at (loc, "initializing %qH with %qI in converted "
-			  "constant expression does not bind directly",
-			  type, next_conversion (c)->type);
+		error_at (loc_or_input_loc (loc), "initializing %qH with %qI "
+			  "in converted constant expression does not bind "
+			  "directly", type, next_conversion (c)->type);
 	      conv = NULL;
 	    }
 	  break;
@@ -4572,7 +4574,7 @@ build_converted_constant_expr_internal (tree type, tree expr,
 	    break;
 
 	  if (complain & tf_error)
-	    error_at (loc, "conversion from %qH to %qI in a "
+	    error_at (loc_or_input_loc (loc), "conversion from %qH to %qI in a "
 		      "converted constant expression", t, type);
 	  /* fall through.  */
 
@@ -12715,7 +12717,7 @@ perform_implicit_conversion_flags (tree type, tree expr,
 {
   conversion *conv;
   void *p;
-  location_t loc = cp_expr_loc_or_input_loc (expr);
+  location_t loc = cp_expr_location (expr);
 
   if (TYPE_REF_P (type))
     expr = mark_lvalue_use (expr);
@@ -12743,7 +12745,7 @@ perform_implicit_conversion_flags (tree type, tree expr,
   else
     {
       /* Give a conversion call the same location as expr.  */
-      iloc_sentinel il (loc);
+      iloc_sentinel il (loc_or_input_loc (loc));
       expr = convert_like (conv, expr, complain);
     }
 

@@ -9006,12 +9006,9 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	if (VOID_TYPE_P (TREE_TYPE (rhs)))
 	  {
 	    if (complain & tf_error)
-	      {
-		error_at (cp_expr_loc_or_loc (rhs, loc),
-			  "invalid use of void expression");
-		inform (cp_expr_loc_or_loc (lhs, loc),
-			"assigning to %qT expression", lhstype);
-	      }
+	      error_at (cp_expr_loc_or_loc (rhs, loc),
+			"cannot convert %qE from %<void%> to %qT for "
+			"assignment", rhs, lhstype);
 	    return error_mark_node;
 	  }
 
@@ -9268,7 +9265,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	      if (modifycode == INIT_EXPR)
 		error_at (loc, "array used as initializer");
 	      else
-		error_at (loc, "invalid array assignment");
+		error_at (loc, "cannot assignment");
 	    }
 	  return error_mark_node;
 	}
@@ -9813,32 +9810,34 @@ convert_for_assignment (tree type, tree rhs,
   if (coder == VOID_TYPE)
     {
       if (complain & tf_error)
-	{
-	  error_at (rhs_loc, "invalid use of void expression");
-	  switch (errtype)
-	    {
-	    case ICR_DEFAULT_ARGUMENT:
-	      inform (rhs_loc, "initializing %qT default argument", type);
-	      break;
-	    case ICR_ARGPASS:
-	      inform (rhs_loc, "passing %qT argument", type);
-	      break;
-	    case ICR_CONVERTING:
-	      inform (rhs_loc, "converting to %qT", type);
-	      break;
-	    case ICR_INIT:
-	      inform (rhs_loc, "initializing %qT object", type);
-	      break;
-	    case ICR_RETURN:
-	      inform (rhs_loc, "returning %qT", type);
-	      break;
-	    case ICR_ASSIGN:
-	      inform (rhs_loc, "assigning to %qT expression", type);
-	      break;
-	    default:
-	      gcc_unreachable();
-	    }
-	}
+	switch (errtype)
+	  {
+	  case ICR_DEFAULT_ARGUMENT:
+	    error_at (rhs_loc, "cannot convert %<void%> to %qT "
+		      "in default argument", type);
+	    break;
+	  case ICR_ARGPASS:
+	    error_at (rhs_loc, "cannot convert %<void%> to %qT "
+		      "in argument passing", type);
+	    break;
+	  case ICR_CONVERTING:
+	    error_at (rhs_loc, "cannot convert %<void%> to %qT", type);
+	    break;
+	  case ICR_INIT:
+	    error_at (rhs_loc, "cannot convert %<void%> to %qT "
+		      "in initialization", type);
+	    break;
+	  case ICR_RETURN:
+	    error_at (rhs_loc, "cannot convert %<void%> to %qT "
+		      "in return", type);
+	    break;
+	  case ICR_ASSIGN:
+	    error_at (rhs_loc, "cannot convert %<void%> to %qT "
+		      "in assignment", type);
+	    break;
+	  default:
+	    gcc_unreachable();
+	  }
       return error_mark_node;
     }
 
