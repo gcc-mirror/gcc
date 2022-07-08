@@ -108,6 +108,7 @@ private:
   virtual void visit (AsyncBlockExpr &) override;
 
   virtual void visit (TypeParam &) override;
+  virtual void visit (ConstGenericParam &) override;
 
   virtual void visit (LifetimeWhereClauseItem &) override;
   virtual void visit (TypeBoundWhereClauseItem &) override;

@@ -239,6 +239,10 @@ Dump::visit (TypeParam &)
 {}
 
 void
+Dump::visit (ConstGenericParam &)
+{}
+
+void
 Dump::visit (LifetimeWhereClauseItem &)
 {}
 void

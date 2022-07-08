@@ -93,6 +93,7 @@ public:
   virtual void visit (AwaitExpr &expr) = 0;
   virtual void visit (AsyncBlockExpr &expr) = 0;
   virtual void visit (TypeParam &param) = 0;
+  virtual void visit (ConstGenericParam &param) = 0;
   virtual void visit (LifetimeWhereClauseItem &item) = 0;
   virtual void visit (TypeBoundWhereClauseItem &item) = 0;
   virtual void visit (Module &module) = 0;
@@ -238,6 +239,7 @@ public:
   virtual void visit (AsyncBlockExpr &) override {}
 
   virtual void visit (TypeParam &) override {}
+  virtual void visit (ConstGenericParam &) override {}
 
   virtual void visit (LifetimeWhereClauseItem &) override {}
   virtual void visit (TypeBoundWhereClauseItem &) override {}
