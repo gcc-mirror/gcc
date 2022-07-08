@@ -17,17 +17,20 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-base.h"
+#include "rust-abi.h"
 #include "rust-compile-item.h"
 #include "rust-compile-stmt.h"
 #include "rust-compile-fnparam.h"
 #include "rust-compile-var-decl.h"
 
+#include "rust-diagnostics.h"
 #include "rust-expr.h"	// for AST::AttrInputLiteral
 #include "rust-macro.h" // for AST::MetaNameValueStr
 
 #include "fold-const.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree.h"
 
 namespace Rust {
 namespace Compile {
@@ -293,6 +296,8 @@ HIRCompileBase::handle_must_use_attribute_on_fndecl (tree fndecl,
 void
 HIRCompileBase::setup_abi_options (tree fndecl, ABI abi)
 {
+  tree abi_tree = NULL_TREE;
+
   switch (abi)
     {
     case Rust::ABI::RUST:
@@ -301,22 +306,34 @@ HIRCompileBase::setup_abi_options (tree fndecl, ABI abi)
     case Rust::ABI::CDECL:
       DECL_ATTRIBUTES (fndecl)
 	= tree_cons (get_identifier ("cdecl"), NULL, DECL_ATTRIBUTES (fndecl));
-      break;
+
+      return;
 
     case Rust::ABI::STDCALL:
-      DECL_ATTRIBUTES (fndecl) = tree_cons (get_identifier ("stdcall"), NULL,
-					    DECL_ATTRIBUTES (fndecl));
+      abi_tree = get_identifier ("stdcall");
+
       break;
 
     case Rust::ABI::FASTCALL:
-      DECL_ATTRIBUTES (fndecl) = tree_cons (get_identifier ("fastcall"), NULL,
-					    DECL_ATTRIBUTES (fndecl));
+      abi_tree = get_identifier ("fastcall");
+
+      break;
+
+    case Rust::ABI::SYSV64:
+      abi_tree = get_identifier ("sysv_abi");
+
+      break;
+
+    case Rust::ABI::WIN64:
+      abi_tree = get_identifier ("ms_abi");
 
       break;
 
     default:
       break;
     }
+
+  decl_attributes (&fndecl, build_tree_list (abi_tree, NULL_TREE), 0);
 }
 
 // ported from gcc/c/c-typecheck.c
@@ -497,7 +514,7 @@ HIRCompileBase::compile_function (
 
   setup_fndecl (fndecl, is_main_fn, fntype->has_subsititions_defined (),
 		visibility, qualifiers, outer_attrs);
-  setup_abi_options (fndecl, fntype->get_abi ());
+  setup_abi_options (fndecl, qualifiers.get_abi ());
 
   // conditionally mangle the function name
   bool should_mangle = should_mangle_item (fndecl);

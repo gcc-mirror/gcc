@@ -30,6 +30,8 @@ enum ABI
   CDECL,
   STDCALL,
   FASTCALL,
+  WIN64,
+  SYSV64
 };
 
 extern Rust::ABI
