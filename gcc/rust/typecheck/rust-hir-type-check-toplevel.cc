@@ -38,9 +38,25 @@ TypeCheckTopLevel::resolve_generic_params (
       switch (generic_param.get ()->get_kind ())
 	{
 	case HIR::GenericParam::GenericKind::LIFETIME:
-	case HIR::GenericParam::GenericKind::CONST:
-	  // FIXME: Skipping Lifetime and Const completely until better
+	  // FIXME: Skipping Lifetime completely until better
 	  // handling.
+	  break;
+	  case HIR::GenericParam::GenericKind::CONST: {
+	    auto param
+	      = static_cast<HIR::ConstGenericParam *> (generic_param.get ());
+	    auto specified_type
+	      = TypeCheckType::Resolve (param->get_type ().get ());
+
+	    if (param->has_default_expression ())
+	      {
+		auto expr_type = TypeCheckExpr::Resolve (
+		  param->get_default_expression ().get ());
+		specified_type->coerce (expr_type);
+	      }
+
+	    context->insert_type (generic_param->get_mappings (),
+				  specified_type);
+	  }
 	  break;
 
 	  case HIR::GenericParam::GenericKind::TYPE: {
