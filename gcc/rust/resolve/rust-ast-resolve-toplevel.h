@@ -392,21 +392,31 @@ public:
     NodeId resolved_crate = UNKNOWN_NODEID;
     if (extern_crate.references_self ())
       {
-	// FIXME
-	// then this resolves to current crate_node_id
-	// need to expose on the session object a reference to the current
-	// AST::Crate& to get node_id
-	gcc_unreachable ();
-	return;
+	CrateNum crate_num = mappings->get_current_crate ();
+	bool ok = mappings->crate_num_to_nodeid (crate_num, resolved_crate);
+	rust_assert (ok);
       }
     else
       {
-	rust_debug_loc (extern_crate.get_locus (), "load extern crate: [%s]",
-			extern_crate.as_string ().c_str ());
+	CrateNum found_crate_num = UNKNOWN_CREATENUM;
+	bool found
+	  = mappings->lookup_crate_name (extern_crate.get_referenced_crate (),
+					 found_crate_num);
+	if (!found)
+	  {
+	    rust_error_at (extern_crate.get_locus (), "unknown crate %<%s%>",
+			   extern_crate.get_referenced_crate ().c_str ());
+	    return;
+	  }
 
-	Session &session = Session::get_instance ();
-	resolved_crate
-	  = session.load_extern_crate (extern_crate.get_referenced_crate ());
+	bool ok
+	  = mappings->crate_num_to_nodeid (found_crate_num, resolved_crate);
+	if (!ok)
+	  {
+	    rust_internal_error_at (extern_crate.get_locus (),
+				    "failed to resolve crate to nodeid");
+	    return;
+	  }
       }
 
     if (resolved_crate == UNKNOWN_NODEID)
@@ -418,20 +428,20 @@ public:
     // mark the node as resolved
     resolver->insert_resolved_name (extern_crate.get_node_id (),
 				    resolved_crate);
+    CanonicalPath decl
+      = extern_crate.has_as_clause ()
+	  ? CanonicalPath::new_seg (extern_crate.get_node_id (),
+				    extern_crate.get_as_clause ())
+	  : CanonicalPath::new_seg (extern_crate.get_node_id (),
+				    extern_crate.get_referenced_crate ());
 
-    // does it has an as clause
-    if (extern_crate.has_as_clause ())
-      {
-	auto decl = CanonicalPath::new_seg (extern_crate.get_node_id (),
-					    extern_crate.get_as_clause ());
-	resolver->get_type_scope ().insert (
-	  decl, extern_crate.get_node_id (), extern_crate.get_locus (), false,
-	  [&] (const CanonicalPath &, NodeId, Location locus) -> void {
-	    RichLocation r (extern_crate.get_locus ());
-	    r.add_range (locus);
-	    rust_error_at (r, "redefined multiple times");
-	  });
-      }
+    resolver->get_type_scope ().insert (
+      decl, resolved_crate, extern_crate.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (extern_crate.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
   }
 
 private:

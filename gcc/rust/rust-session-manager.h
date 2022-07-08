@@ -292,7 +292,7 @@ public:
     return extra_files.back ().c_str ();
   }
 
-  NodeId load_extern_crate (const std::string &crate_name);
+  NodeId load_extern_crate (const std::string &crate_name, Location locus);
 
 private:
   void parse_file (const char *filename);
