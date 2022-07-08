@@ -1879,7 +1879,7 @@ input_offload_tables (bool do_force_output)
 			     && TREE_CODE (tmp_decl) != TRANSLATION_UNIT_DECL)
 			tmp_decl = DECL_CONTEXT (tmp_decl);
 		      if (tmp_decl != NULL_TREE)
-			fn2 = IDENTIFIER_POINTER (DECL_NAME (requires_decl));
+			fn2 = IDENTIFIER_POINTER (DECL_NAME (tmp_decl));
 		    }
 
 		  char buf1[sizeof ("unified_address, unified_shared_memory, "

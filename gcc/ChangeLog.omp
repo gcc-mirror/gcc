@@ -1,3 +1,11 @@
+2022-07-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-07-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-cgraph.cc (input_offload_tables) <LTO_symtab_edge>: Correct
+	'fn2' computation.
+
 2022-07-07  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

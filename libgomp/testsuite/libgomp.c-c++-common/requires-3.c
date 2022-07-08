@@ -20,5 +20,7 @@ main (void)
   return 0;
 }
 
-/* { dg-error "OpenMP 'requires' directive with non-identical clauses in multiple compilation units: 'unified_address, unified_shared_memory' vs. 'unified_address'" "" { target *-*-* } 0 }  */
+/* { dg-error "OpenMP 'requires' directive with non-identical clauses in multiple compilation units: 'unified_address, unified_shared_memory' vs. 'unified_address'" "" { target *-*-* } 0 }
+     { dg-note {requires-3\.c' has 'unified_address, unified_shared_memory'} {} { target *-*-* } 0 }
+     { dg-note {requires-3-aux\.c' has 'unified_address'} {} { target *-*-* } 0 } */
 /* { dg-excess-errors "Ignore messages like: errors during merging of translation units|mkoffload returned 1 exit status" } */
