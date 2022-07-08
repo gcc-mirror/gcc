@@ -20,7 +20,7 @@ f3 (int n)
 {
   bool b = false;
   for (int i = 0; i < n; i++)
-    b = ({ break; });	// { dg-error "invalid use of void expression" }
+    b = ({ break; });	// { dg-error "cannot convert" }
   return b;
 }
 

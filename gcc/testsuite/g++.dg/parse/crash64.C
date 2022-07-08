@@ -3,5 +3,5 @@
 
 void foo()
 {
-  int i = ({ L: ; });  // { dg-error "void value not ignored" }
+  int i = ({ L: ; });  // { dg-error "cannot convert" }
 }

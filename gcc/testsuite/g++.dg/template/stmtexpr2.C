@@ -7,14 +7,14 @@ template<int>
 void
 foo()
 {
-  int i = ({ }); // { dg-error "void value not ignored" }
+  int i = ({ }); // { dg-error "cannot convert" }
 }
 
 template<int>
 void
 bar()
 {
-  int i = ({ ({}); }); // { dg-error "void value not ignored" }
+  int i = ({ ({}); }); // { dg-error "cannot convert" }
 }
 
 int
