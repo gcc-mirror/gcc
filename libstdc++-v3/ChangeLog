@@ -1,3 +1,297 @@
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106162
+	* include/Makefile.am (largefile-config.h): Add
+	stamp-${host_alias} prerequisite.
+	* include/Makefile.in: Regenerate.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/iterators/error_reporting.cc: Use
+	rmdir to remove directories.
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc:
+	Likewise.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (counted_iterator::operator++(int)):
+	Add 'constexpr' as per LWG 3643.
+	* testsuite/24_iterators/counted_iterator/lwg3643.cc: New test.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105671
+	* include/std/sstream (basic_stringbuf::_M_high_mark): Add
+	always_inline attribute.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (launch): Make operators noexcept.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::size, ranges::empty): Add
+	explicit check for unbounded arrays before using ranges::begin.
+	* testsuite/std/ranges/access/empty.cc: Check handling of unbounded
+	arrays.
+	* testsuite/std/ranges/access/size.cc: Likewise.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_automaton.h (_NFA_base::_SizeT): Remove.
+	* include/bits/regex_compiler.h (_Compiler::_IterT): Remove.
+	* include/bits/regex_compiler.tcc: Likewise.
+	* include/bits/regex_scanner.h (_Scanner::_IterT): Remove.
+	* include/bits/regex_scanner.tcc: Likewise.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex, swap): Add noexcept to
+	non-throwing functions.
+	* include/bits/regex_automaton.h (_State_base, _State)
+	(_NFA_base): Likewise.
+	* include/bits/regex_compiler.h (_Compiler): Likewise.
+	* include/bits/regex_error.h (regex_error::code()): Likewise.
+	* include/bits/regex_scanner.h (_Scanner): Likewise.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102447
+	* include/bits/regex_compiler.h (_Compiler::_BracketState): New
+	class.
+	(_Compiler::_BrackeyMatcher): New alias template.
+	(_Compiler::_M_expression_term): Change pair<bool, CharT>
+	parameter to _BracketState. Process first character for
+	ECMAScript syntax as well as POSIX.
+	* include/bits/regex_compiler.tcc
+	(_Compiler::_M_insert_bracket_matcher): Pass _BracketState.
+	(_Compiler::_M_expression_term): Use _BracketState to store
+	state between calls. Improve handling of dashes in ranges.
+	* testsuite/28_regex/algorithms/regex_match/cstring_bracket_01.cc:
+	Add more tests for ranges containing dashes. Check invalid
+	ranges with character class at the beginning.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.h (_Compiler::_S_validate): New
+	function.
+	* include/bits/regex_compiler.tcc (_Compiler::_Compiler): Use
+	_S_validate to check flags.
+	* include/bits/regex_error.h (_S_grammar): New error code for
+	internal use.
+	* testsuite/28_regex/basic_regex/ctors/grammar.cc: New test.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.tcc: Add line break in empty while
+	statement.
+	* include/bits/regex_executor.tcc: Avoid unused parameter
+	warning.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/28_regex/algorithms/regex_replace/char/103664.cc:
+	Add dg-timeout-factor directive.
+	* testsuite/28_regex/basic_regex/84110.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/char/other.cc: Likewise.
+	* testsuite/28_regex/match_results/102667.cc: Likewise.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (__detail::__is_contiguous_iter): Move
+	here from <bits/regex_compiler.h>.
+	(basic_regex::_M_compile): New function to compile an NFA from
+	a regular expression string.
+	(basic_regex::basic_regex): Use _M_compile instead of delegating
+	to other constructors.
+	(basic_regex::operator=(const basic_regex&)): Define as
+	defaulted.
+	(basic_regex::operator=(initializer_list<C>)): Use _M_compile.
+	(basic_regex::assign(const basic_regex&)): Use copy assignment.
+	(basic_regex::assign(basic_regex&&)): Use move assignment.
+	(basic_regex::assign(const C*, flag_type)): Use _M_compile
+	instead of constructing a temporary string.
+	(basic_regex::assign(const C*, size_t, flag_type)): Likewise.
+	(basic_regex::assign(const basic_string<C,T,A>&, flag_type)):
+	Use _M_compile instead of constructing a temporary basic_regex.
+	(basic_regex::assign(InputIter, InputIter, flag_type)): Avoid
+	constructing a temporary string for contiguous iterators of the
+	right value type.
+	* include/bits/regex_compiler.h (__is_contiguous_iter): Move to
+	<bits/regex.h>.
+	(__enable_if_contiguous_iter, __disable_if_contiguous_iter)
+	(__compile_nfa): Remove.
+	* testsuite/28_regex/basic_regex/assign/exception_safety.cc: New
+	test.
+	* testsuite/28_regex/basic_regex/ctors/char/other.cc: New test.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103664
+	* include/bits/regex.h (__regex_replace): Declare.
+	(regex_replace): Use it.
+	* include/bits/regex.tcc (__regex_replace): Replace regex_replace
+	definition with __regex_replace.
+	* testsuite/28_regex/algorithms/regex_replace/char/103664.cc: New test.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__detail::__variant::__get_storage):
+	Remove unused function.
+	(__variant_construct_by_index): Set index after construction is
+	complete. Rename to ...
+	(__detail::__variant::__construct_by_index): ... this.
+	(variant): Use new name for __variant_construct_by_index friend
+	declaration. Remove __get_storage friend declaration.
+	(variant::emplace): Use new name and remove try-blocks.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/list.tcc (list::merge): Remove call to size() and
+	try-catch block. Use _Finalize_merge instead.
+	* include/bits/stl_list.h (list::_Finalize_merge): New
+	scope guard type to update _M_size members after a merge.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex::multiline): Define for
+	non-strict C++11 and C++14 modes.
+	* include/bits/regex_constants.h (regex_constants::multiline):
+	Add _GLIBCXX_RESOLVE_LIB_DEFECTS comment.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex::multiline): Fix #if
+	condition.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex::multiline): Define constant
+	for C++17.
+	* include/bits/regex_constants.h (regex_constants::multiline):
+	Define constant for C++17.
+	(regex_constants::__multiline): Define duplicate constant for
+	internal use in C++11 and C++14.
+	* include/bits/regex_executor.h (_Executor::_M_match_multiline()):
+	New member function.
+	(_Executor::_M_is_line_terminator(_CharT)): New member function.
+	(_Executor::_M_at_begin(), _Executor::_M_at_end()): Use new
+	member functions to support multiline matches.
+	* testsuite/28_regex/algorithms/regex_match/multiline.cc: New test.
+
+2022-07-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backported from master:
+	2021-10-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/28_regex/basic_regex/84110.cc (test01)
+	[__cpp_exceptions]: Disambiguate extended.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84110
+	* include/bits/regex_error.h (regex_constants::_S_null): New
+	error code for internal use.
+	* include/bits/regex_scanner.tcc (_Scanner::_M_scan_normal()):
+	Check for null character.
+	* testsuite/28_regex/basic_regex/84110.cc: New test.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_Variant_storage::_M_storage()): Remove.
+	(__detail::__variant::__get_storage): Remove.
+	(variant): Remove friend declaration of __get_storage.
+
+2022-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/105128
+	* include/std/source_location (std::source_location::__impl): Move
+	definition before using __builtin_ret_type.
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104602
+	* include/std/source_location (source_location::current): Use
+	deduced type of __builtin_source_location().
+
+2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (hash<filesystem::path>): Define.
+	* testsuite/27_io/filesystem/path/nonmember/hash_value.cc:
+	Check std::hash specialization.
+
 2022-06-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
