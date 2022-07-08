@@ -947,9 +947,11 @@ validate_subreg (machine_mode omode, machine_mode imode,
 	   && GET_MODE_INNER (omode) == GET_MODE_INNER (imode))
     ;
   /* Subregs involving floating point modes are not allowed to
-     change size.  Therefore (subreg:DI (reg:DF) 0) is fine, but
+     change size unless it's an insert into a complex mode.
+     Therefore (subreg:DI (reg:DF) 0) and (subreg:CS (reg:SF) 0) are fine, but
      (subreg:SI (reg:DF) 0) isn't.  */
-  else if (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))
+  else if ((FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))
+	   && !COMPLEX_MODE_P (omode))
     {
       if (! (known_eq (isize, osize)
 	     /* LRA can use subreg to store a floating point value in

@@ -2891,7 +2891,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	  store_bit_field (dest,
 			   adj_bytelen * BITS_PER_UNIT, bytepos * BITS_PER_UNIT,
 			   bytepos * BITS_PER_UNIT, ssize * BITS_PER_UNIT - 1,
-			   VOIDmode, tmps[i], false);
+			   VOIDmode, tmps[i], false, false);
 	}
 
       /* Optimize the access just a bit.  */
@@ -2905,7 +2905,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 
       else
 	store_bit_field (dest, bytelen * BITS_PER_UNIT, bytepos * BITS_PER_UNIT,
-			 0, 0, mode, tmps[i], false);
+			 0, 0, mode, tmps[i], false, false);
     }
 
   /* Copy from the pseudo into the (probable) hard reg.  */
@@ -3038,7 +3038,7 @@ copy_blkmode_from_reg (rtx target, rtx srcreg, tree type)
 					  xbitpos % BITS_PER_WORD, 1,
 					  NULL_RTX, copy_mode, copy_mode,
 					  false, NULL),
-		       false);
+		       false, false);
     }
 }
 
@@ -3140,7 +3140,7 @@ copy_blkmode_to_reg (machine_mode mode_in, tree src)
 					  bitpos % BITS_PER_WORD, 1,
 					  NULL_RTX, word_mode, word_mode,
 					  false, NULL),
-		       false);
+		       false, false);
     }
 
   if (mode == BLKmode)
@@ -3308,8 +3308,8 @@ clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
 	  zero = CONST0_RTX (GET_MODE_INNER (mode));
 	  if (zero != NULL)
 	    {
-	      write_complex_part (object, zero, 0);
-	      write_complex_part (object, zero, 1);
+	      write_complex_part (object, zero, 0, true);
+	      write_complex_part (object, zero, 1, false);
 	      return NULL;
 	    }
 	}
@@ -3470,10 +3470,11 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 
 
 /* Write to one of the components of the complex value CPLX.  Write VAL to
-   the real part if IMAG_P is false, and the imaginary part if its true.  */
+   the real part if IMAG_P is false, and the imaginary part if its true.
+   If UNDEFINED_P then the value in CPLX is currently undefined.  */
 
 void
-write_complex_part (rtx cplx, rtx val, bool imag_p)
+write_complex_part (rtx cplx, rtx val, bool imag_p, bool undefined_p)
 {
   machine_mode cmode;
   scalar_mode imode;
@@ -3528,7 +3529,7 @@ write_complex_part (rtx cplx, rtx val, bool imag_p)
     }
 
   store_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0, 0, 0, imode, val,
-		   false);
+		   false, undefined_p);
 }
 
 /* Extract one of the components of the complex value CPLX.  Extract the
@@ -3781,8 +3782,8 @@ emit_move_complex_parts (rtx x, rtx y)
       && REG_P (x) && !reg_overlap_mentioned_p (x, y))
     emit_clobber (x);
 
-  write_complex_part (x, read_complex_part (y, false), false);
-  write_complex_part (x, read_complex_part (y, true), true);
+  write_complex_part (x, read_complex_part (y, false), false, true);
+  write_complex_part (x, read_complex_part (y, true), true, false);
 
   return get_last_insn ();
 }
@@ -5441,7 +5442,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	}
       else
 	store_bit_field (mem, GET_MODE_BITSIZE (mode), 0, 0, 0, mode, reg,
-			 false);
+			 false, false);
       return;
     }
 
@@ -5663,8 +5664,8 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    concat_store_slow:;
 	      rtx temp = assign_stack_temp (GET_MODE (to_rtx),
 					    GET_MODE_SIZE (GET_MODE (to_rtx)));
-	      write_complex_part (temp, XEXP (to_rtx, 0), false);
-	      write_complex_part (temp, XEXP (to_rtx, 1), true);
+	      write_complex_part (temp, XEXP (to_rtx, 0), false, true);
+	      write_complex_part (temp, XEXP (to_rtx, 1), true, false);
 	      result = store_field (temp, bitsize, bitpos,
 				    bitregion_start, bitregion_end,
 				    mode1, from, get_alias_set (to),
@@ -6222,7 +6223,8 @@ store_expr (tree exp, rtx target, int call_param_p,
 		store_bit_field (target,
 				 rtx_to_poly_int64 (expr_size (exp))
 				 * BITS_PER_UNIT,
-				 0, 0, 0, GET_MODE (temp), temp, reverse);
+				 0, 0, 0, GET_MODE (temp), temp, reverse,
+				 false);
 	    }
 	  else
 	    convert_move (target, temp, TYPE_UNSIGNED (TREE_TYPE (exp)));
@@ -7631,7 +7633,7 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
       gcc_checking_assert (known_ge (bitpos, 0));
       store_bit_field (target, bitsize, bitpos,
 		       bitregion_start, bitregion_end,
-		       mode, temp, reverse);
+		       mode, temp, reverse, false);
 
       return const0_rtx;
     }
@@ -10120,8 +10122,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	      complex_expr_swap_order:
 		/* Move the imaginary (op1) and real (op0) parts to their
 		   location.  */
-		write_complex_part (target, op1, true);
-		write_complex_part (target, op0, false);
+		write_complex_part (target, op1, true, true);
+		write_complex_part (target, op0, false, false);
 
 		return target;
 	      }
@@ -10150,8 +10152,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  }
 
       /* Move the real (op0) and imaginary (op1) parts to their location.  */
-      write_complex_part (target, op0, false);
-      write_complex_part (target, op1, true);
+      write_complex_part (target, op0, false, true);
+      write_complex_part (target, op1, true, false);
 
       return target;
 
@@ -10390,7 +10392,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	rtx dst = gen_reg_rtx (mode);
 	emit_move_insn (dst, op0);
 	store_bit_field (dst, bitsize, bitpos, 0, 0,
-			 TYPE_MODE (TREE_TYPE (treeop1)), op1, false);
+			 TYPE_MODE (TREE_TYPE (treeop1)), op1, false, false);
 	return dst;
       }
 
