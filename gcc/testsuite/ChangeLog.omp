@@ -1,3 +1,10 @@
+2022-07-12  Andrew Stubbs  <ams@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_amdgcn_offloading_enabled): New.
+	(check_effective_target_nvptx_offloading_enabled): New.
+	* gcc.dg/gomp/target-vf.c: New test.
+
 2022-06-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/num-teams-2.f90: Use dg-error not dg-warning.
