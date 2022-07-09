@@ -938,10 +938,10 @@ general_scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 {
   rtx tmp = gen_reg_rtx (vmode);
   rtx src;
-  convert_op (&op1, insn);
   /* Comparison against anything other than zero, requires an XOR.  */
   if (op2 != const0_rtx)
     {
+      convert_op (&op1, insn);
       convert_op (&op2, insn);
       /* If both operands are MEMs, explicitly load the OP1 into TMP.  */
       if (MEM_P (op1) && MEM_P (op2))
@@ -953,8 +953,25 @@ general_scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 	src = op1;
       src = gen_rtx_XOR (vmode, src, op2);
     }
+  else if (GET_CODE (op1) == AND
+	   && GET_CODE (XEXP (op1, 0)) == NOT)
+    {
+      rtx op11 = XEXP (XEXP (op1, 0), 0);
+      rtx op12 = XEXP (op1, 1);
+      convert_op (&op11, insn);
+      convert_op (&op12, insn);
+      if (MEM_P (op11))
+	{
+	  emit_insn_before (gen_rtx_SET (tmp, op11), insn);
+	  op11 = tmp;
+	}
+      src = gen_rtx_AND (vmode, gen_rtx_NOT (vmode, op11), op12);
+    }
   else
-    src = op1;
+    {
+      convert_op (&op1, insn);
+      src = op1;
+    }
   emit_insn_before (gen_rtx_SET (tmp, src), insn);
 
   if (vmode == V2DImode)
@@ -1399,17 +1416,29 @@ convertible_comparison_p (rtx_insn *insn, enum machine_mode mode)
   rtx op1 = XEXP (src, 0);
   rtx op2 = XEXP (src, 1);
 
-  if (!CONST_INT_P (op1)
-      && ((!REG_P (op1) && !MEM_P (op1))
-	  || GET_MODE (op1) != mode))
-    return false;
+  /* *cmp<dwi>_doubleword.  */
+  if ((CONST_INT_P (op1)
+       || ((REG_P (op1) || MEM_P (op1))
+           && GET_MODE (op1) == mode))
+      && (CONST_INT_P (op2)
+	  || ((REG_P (op2) || MEM_P (op2))
+	      && GET_MODE (op2) == mode)))
+    return true;
 
-  if (!CONST_INT_P (op2)
-      && ((!REG_P (op2) && !MEM_P (op2))
-	  || GET_MODE (op2) != mode))
-    return false;
+  /* *test<dwi>_not_doubleword.  */
+  if (op2 == const0_rtx
+      && GET_CODE (op1) == AND
+      && GET_CODE (XEXP (op1, 0)) == NOT)
+    {
+      rtx op11 = XEXP (XEXP (op1, 0), 0);
+      rtx op12 = XEXP (op1, 1);
+      return (REG_P (op11) || MEM_P (op11))
+	     && (REG_P (op12) || MEM_P (op12))
+	     && GET_MODE (op11) == mode
+	     && GET_MODE (op12) == mode;
+    }
 
-  return true;
+  return false;
 }
 
 /* The general version of scalar_to_vector_candidate_p.  */
