@@ -12328,6 +12328,7 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
   unsigned int id;
   const char *construct = NULL;
 
+  input_location = c_parser_peek_token (parser)->location;
   id = c_parser_peek_token (parser)->pragma_kind;
   gcc_assert (id != PRAGMA_NONE);
 
