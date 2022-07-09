@@ -1,3 +1,43 @@
+2022-07-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR testsuite/106216
+	* gcc.dg/tree-ssa/alias-access-path-13.c (union foo): Replace a long
+	int field with a struct that is larger than an int also on 32bit
+	platforms.
+
+2022-07-08  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/91733
+	* c-c++-common/pr91733.c: New test.
+
+2022-07-08  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/106132
+	* c-c++-common/hwasan/arguments-3.c: Cover new ICE.
+
+2022-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106226
+	* gfortran.dg/pr106226.f: New testcase.
+
+2022-07-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/106063
+	* gcc.dg/pr106063.c: New test.
+
+2022-07-08  Tamar Christina  <tamar.christina@arm.com>
+
+	* g++.target/aarch64/complex-init.C: New test.
+
+2022-07-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/106180
+	* g++.target/i386/pr106180-1.C: New test.
+
+2022-07-08  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/prolog-opt.c: New test.
+
 2022-07-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105956

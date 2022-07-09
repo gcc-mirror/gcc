@@ -1,3 +1,91 @@
+2022-07-08  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/91733
+	* input.cc (find_end_of_line): New helper function.
+	(file_cache_slot::get_next_line): Recognize \r as a line ending.
+	* diagnostic-show-locus.cc (test_escaping_bytes_1): Adapt selftest
+	since \r will now be interpreted as a line-ending.
+
+2022-07-08  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/106132
+	* opts.cc (finish_options): Use 2 calls to
+	report_conflicting_sanitizer_options.
+
+2022-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106226
+	* tree-vect-loop-manip.cc (vect_do_peeling): Assert that
+	no SSA update is needed.  Move virtual SSA update ...
+	* tree-vectorizer.cc (pass_vectorize::execute): ... here,
+	via forced virtual renaming when TODO_update_ssa_only_virtuals
+	is queued.
+	(vect_transform_loops): Return TODO_update_ssa_only_virtuals
+	when virtual SSA update is required.
+	(try_vectorize_loop_1): Adjust.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Allow
+	virtual renaming if the ABI forces an aggregate return
+	but the original call did not have a virtual definition.
+
+2022-07-08  Martin Liska  <mliska@suse.cz>
+
+	* toplev.cc (init_asm_output): Do not init asm_out_file.
+
+2022-07-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/106063
+	* match.pd: Do not apply pattern after veclower is not supported.
+
+2022-07-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-cgraph.cc (input_offload_tables) <LTO_symtab_edge>: Correct
+	'fn2' computation.
+
+2022-07-08  Tamar Christina  <tamar.christina@arm.com>
+
+	* expmed.cc (store_bit_field_1): Add parameter that indicates if value is
+	still undefined and if so emit a subreg move instead.
+	(store_integral_bit_field): Likewise.
+	(store_bit_field): Likewise.
+	* expr.h (write_complex_part): Likewise.
+	* expmed.h (store_bit_field): Add new parameter.
+	* builtins.cc (expand_ifn_atomic_compare_exchange_into_call): Use new
+	parameter.
+	(expand_ifn_atomic_compare_exchange): Likewise.
+	* calls.cc (store_unaligned_arguments_into_pseudos): Likewise.
+	* emit-rtl.cc (validate_subreg): Likewise.
+	* expr.cc (emit_group_store): Likewise.
+	(copy_blkmode_from_reg): Likewise.
+	(copy_blkmode_to_reg): Likewise.
+	(clear_storage_hints): Likewise.
+	(write_complex_part):  Likewise.
+	(emit_move_complex_parts): Likewise.
+	(expand_assignment): Likewise.
+	(store_expr): Likewise.
+	(store_field): Likewise.
+	(expand_expr_real_2): Likewise.
+	* ifcvt.cc (noce_emit_move_insn): Likewise.
+	* internal-fn.cc (expand_arith_set_overflow): Likewise.
+	(expand_arith_overflow_result_store): Likewise.
+	(expand_addsub_overflow): Likewise.
+	(expand_neg_overflow): Likewise.
+	(expand_mul_overflow): Likewise.
+	(expand_arith_overflow): Likewise.
+
+2022-07-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/106180
+	* config/i386/sse.md (sse2_cvtps2pd<mask_name>_1):
+	Rename from *sse2_cvtps2pd<mask_name>_1.
+	(vec_unpacks_lo_v4sf): Add handler for memory operand.
+
+2022-07-08  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_compute_frame_info):
+	Modify fp_sp_offset and gp_sp_offset's calculation method,
+	when frame->mask or frame->fmask is zero, don't minus UNITS_PER_WORD
+	or UNITS_PER_FP_REG.
+
 2022-07-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-format-json.cc (json_from_location_range): Update for

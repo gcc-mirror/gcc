@@ -1,3 +1,11 @@
+2022-07-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/requires-1.c: Add 'dg-note's.
+	* testsuite/libgomp.c-c++-common/requires-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-3.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-7.c: Likewise.
+	* testsuite/libgomp.fortran/requires-1.f90: Likewise.
+
 2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* target.c (GOMP_offload_register, GOMP_offload_unregister):
