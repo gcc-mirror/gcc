@@ -6088,6 +6088,17 @@ store_expr (tree exp, rtx target, int call_param_p,
 	}
 
       str_copy_len = TREE_STRING_LENGTH (str);
+
+      /* Trailing NUL bytes in EXP will be handled by the call to
+	 clear_storage, which is more efficient than copying them from
+	 the STRING_CST, so trim those from STR_COPY_LEN.  */
+      while (str_copy_len)
+	{
+	  if (TREE_STRING_POINTER (str)[str_copy_len - 1])
+	    break;
+	  str_copy_len--;
+	}
+
       if ((STORE_MAX_PIECES & (STORE_MAX_PIECES - 1)) == 0)
 	{
 	  str_copy_len += STORE_MAX_PIECES - 1;
