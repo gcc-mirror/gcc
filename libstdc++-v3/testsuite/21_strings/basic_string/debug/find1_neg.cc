@@ -1,37 +1,31 @@
-// 2017-01-06  Jonathan Wakely  <jwakely@redhat.com>
-
-// Copyright (C) 2017-2022 Free Software Foundation, Inc.
+// Copyright (C) 2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the
 // Free Software Foundation; either version 3, or (at your option)
 // any later version.
-
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-
+//
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+//
+// { dg-do run { xfail *-*-* } }
 
-// C++11 21.4.7.2 [string::find] basic_string find
+#define _GLIBCXX_DEBUG_PEDANTIC
 
-#include <testsuite_string.h>
-#include <testsuite_hooks.h>
+#include <debug/string>
 
-// https://gcc.gnu.org/ml/libstdc++/2017-01/msg00021.html
 void test01()
 {
-  typedef __gnu_test::string string_type;
-  string_type::size_type npos = string_type::npos;
-
-  string_type use = "aaa";
-  string_type::size_type pos1 = use.find("ab");
-
-  VERIFY( pos1 == npos );
+  const char* __null_str = 0;
+  __gnu_debug::string str;
+  str.find(__null_str);
 }
 
 int main()

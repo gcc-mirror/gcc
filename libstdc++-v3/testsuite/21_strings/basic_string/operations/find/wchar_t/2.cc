@@ -19,23 +19,23 @@
 
 // 21.3.6.3 basic_string find_first_of
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 void test02(void)
 {
-  typedef std::wstring::size_type csize_type;
-  csize_type npos = std::wstring::npos;
+  typedef __gnu_test::wstring::size_type csize_type;
+  csize_type npos = __gnu_test::wstring::npos;
   csize_type csz01, csz02;
 
   const wchar_t str_lit01[] = L"mave";
-  const std::wstring str01(L"mavericks, santa cruz");
-  std::wstring str02(str_lit01);
-  std::wstring str03(L"s, s");
-  std::wstring str04;
+  const __gnu_test::wstring str01(L"mavericks, santa cruz");
+  __gnu_test::wstring str02(str_lit01);
+  __gnu_test::wstring str03(L"s, s");
+  __gnu_test::wstring str04;
 
   // size_type find_first_of(const wstring&, size_type pos = 0) const;
-  std::wstring str05(L"xena rulez");
+  __gnu_test::wstring str05(L"xena rulez");
   csz01 = str01.find_first_of(str01);
   VERIFY( csz01 == 0 );
   csz01 = str01.find_first_of(str01, 4);

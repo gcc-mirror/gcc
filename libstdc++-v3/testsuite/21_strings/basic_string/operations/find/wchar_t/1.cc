@@ -19,22 +19,22 @@
 
 // 21.3.6.1 basic_string find
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 void test01(void)
 {
-  typedef std::wstring::size_type csize_type;
-  typedef std::wstring::const_reference cref;
-  typedef std::wstring::reference ref;
-  csize_type npos = std::wstring::npos;
+  typedef __gnu_test::wstring::size_type csize_type;
+  typedef __gnu_test::wstring::const_reference cref;
+  typedef __gnu_test::wstring::reference ref;
+  csize_type npos = __gnu_test::wstring::npos;
   csize_type csz01, csz02;
 
   const wchar_t str_lit01[] = L"mave";
-  const std::wstring str01(L"mavericks, santa cruz");
-  std::wstring str02(str_lit01);
-  std::wstring str03(L"s, s");
-  std::wstring str04;
+  const __gnu_test::wstring str01(L"mavericks, santa cruz");
+  __gnu_test::wstring str02(str_lit01);
+  __gnu_test::wstring str03(L"s, s");
+  __gnu_test::wstring str04;
 
   // size_type find(const wstring&, size_type pos = 0) const;
   csz01 = str01.find(str01);
