@@ -17376,9 +17376,11 @@ package body Sem_Ch13 is
          Argument_Id : in out Entity_Id;
          Nam         : Name_Id)
       is
-         Name_String : constant String := To_Mixed (Get_Name_String (Nam));
+         Name_String : String := Get_Name_String (Nam);
 
       begin
+         To_Mixed (Name_String);
+
          if Present (Argument_Id) then
             Error_Msg_String (1 .. Name_String'Length) := Name_String;
             Error_Msg_Strlen := Name_String'Length;
