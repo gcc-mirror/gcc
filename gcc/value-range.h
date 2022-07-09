@@ -201,7 +201,7 @@ private:
 
   void irange_set_1bit_anti_range (tree, tree);
   bool varying_compatible_p () const;
-  void set_nonzero_bits (tree bits) { m_nonzero_mask = bits; }
+  void set_nonzero_bits (tree mask);
   bool intersect_nonzero_bits (const irange &r);
   bool union_nonzero_bits (const irange &r);
   void dump_bitmasks (FILE *) const;
@@ -555,7 +555,8 @@ irange::varying_compatible_p () const
   signop sign = TYPE_SIGN (t);
   if (INTEGRAL_TYPE_P (t))
     return (wi::to_wide (l) == wi::min_value (prec, sign)
-	    && wi::to_wide (u) == wi::max_value (prec, sign));
+	    && wi::to_wide (u) == wi::max_value (prec, sign)
+	    && !m_nonzero_mask);
   if (POINTER_TYPE_P (t))
     return (wi::to_wide (l) == 0
 	    && wi::to_wide (u) == wi::max_value (prec, sign));
