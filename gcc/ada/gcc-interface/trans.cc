@@ -7181,7 +7181,7 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Assignment_Statement:
-      /* Get the LHS and RHS of the statement and convert any reference to an
+      /* First get the LHS of the statement and convert any reference to an
 	 unconstrained array into a reference to the underlying array.  */
       gnu_lhs = maybe_unconstrained_array (gnat_to_gnu (Name (gnat_node)));
 
@@ -7191,6 +7191,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	   && !valid_constant_size_p (TYPE_SIZE_UNIT (TREE_TYPE (gnu_lhs))))
 	gnu_result = build_call_raise (SE_Object_Too_Large, gnat_node,
 				       N_Raise_Storage_Error);
+
+      /* If the RHS is a function call, let Call_to_gnu do the entire work.  */
       else if (Nkind (Expression (gnat_node)) == N_Function_Call)
 	{
 	  get_atomic_access (Name (gnat_node), &aa_type, &aa_sync);
@@ -7198,6 +7200,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	    = Call_to_gnu (Expression (gnat_node), &gnu_result_type, gnu_lhs,
 			   aa_type, aa_sync);
 	}
+
+      /* Otherwise we need to build the assignment statement manually.  */
       else
 	{
 	  const Node_Id gnat_expr = Expression (gnat_node);
@@ -7223,6 +7227,9 @@ gnat_to_gnu (Node_Id gnat_node)
 		       && Is_Single_Aggregate (gnat_temp));
 	      gnu_rhs = gnat_to_gnu (gnat_temp);
 	    }
+
+	  /* Otherwise get the RHS of the statement and do the same processing
+	     as for the LHS above.  */
 	  else
 	    gnu_rhs = maybe_unconstrained_array (gnat_to_gnu (gnat_expr));
 
