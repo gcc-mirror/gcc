@@ -1777,11 +1777,7 @@ irange::irange_single_pair_union (const irange &r)
       // Check for overlap/touching ranges, or single target range.
       if (m_max_ranges == 1
 	  || wi::to_widest (m_base[1]) + 1 >= wi::to_widest (r.m_base[0]))
-	{
-	  m_base[1] = r.m_base[1];
-	  if (varying_compatible_p ())
-	    m_kind = VR_VARYING;
-	}
+	m_base[1] = r.m_base[1];
       else
 	{
 	  // This is a dual range result.
@@ -1789,8 +1785,8 @@ irange::irange_single_pair_union (const irange &r)
 	  m_base[3] = r.m_base[1];
 	  m_num_ranges = 2;
 	}
-      if (flag_checking)
-	verify_range ();
+      if (varying_compatible_p ())
+	m_kind = VR_VARYING;
       return true;
     }
 
@@ -1817,8 +1813,8 @@ irange::irange_single_pair_union (const irange &r)
       m_base[3] = m_base[1];
       m_base[1] = r.m_base[1];
     }
-  if (flag_checking)
-    verify_range ();
+  if (varying_compatible_p ())
+    m_kind = VR_VARYING;
   return true;
 }
 
@@ -1857,6 +1853,8 @@ irange::irange_union (const irange &r)
     {
       bool ret = irange_single_pair_union (r);
       set_nonzero_bits (saved_nz);
+      if (flag_checking)
+	verify_range ();
       return ret || ret_nz;
     }
 
