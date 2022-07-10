@@ -215,14 +215,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  if (__s1 == __s2) // unlikely, but saves a lot of work
 	    return __s1;
-#if __cpp_constexpr_dynamic_alloc
-	  // The overlap detection below fails due to PR c++/89074,
-	  // so use a temporary buffer instead.
-	  char_type* __tmp = new char_type[__n];
-	  copy(__tmp, __s2, __n);
-	  copy(__s1, __tmp, __n);
-	  delete[] __tmp;
-#else
 	  const auto __end = __s2 + __n - 1;
 	  bool __overlap = false;
 	  for (std::size_t __i = 0; __i < __n - 1; ++__i)
@@ -244,7 +236,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  else
 	    copy(__s1, __s2, __n);
-#endif
 	  return __s1;
 	}
 #endif

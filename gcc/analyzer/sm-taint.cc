@@ -109,6 +109,9 @@ private:
 				   const supernode *node,
 				   const gcall *call,
 				   tree callee_fndecl) const;
+  void check_for_tainted_divisor (sm_context *sm_ctxt,
+				  const supernode *node,
+				  const gassign *assign) const;
 
 public:
   /* State for a "tainted" value: unsanitized data potentially under an
@@ -803,18 +806,7 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	case ROUND_MOD_EXPR:
 	case RDIV_EXPR:
 	case EXACT_DIV_EXPR:
-	  {
-	    tree divisor = gimple_assign_rhs2 (assign);;
-	    state_t state = sm_ctxt->get_state (stmt, divisor);
-	    enum bounds b;
-	    if (get_taint (state, TREE_TYPE (divisor), &b))
-	      {
-		tree diag_divisor = sm_ctxt->get_diagnostic_tree (divisor);
-		sm_ctxt->warn  (node, stmt, divisor,
-				new tainted_divisor (*this, diag_divisor, b));
-		sm_ctxt->set_next_state (stmt, divisor, m_stop);
-	      }
-	  }
+	  check_for_tainted_divisor (sm_ctxt, node, assign);
 	  break;
 	}
     }
@@ -986,6 +978,41 @@ taint_state_machine::check_for_tainted_size_arg (sm_context *sm_ctxt,
 							 access->sizarg,
 							 access_str));
 	}
+    }
+}
+
+/* Complain if ASSIGN (a division operation) has a tainted divisor
+   that could be zero.  */
+
+void
+taint_state_machine::check_for_tainted_divisor (sm_context *sm_ctxt,
+						const supernode *node,
+						const gassign *assign) const
+{
+  const region_model *old_model = sm_ctxt->get_old_region_model ();
+  if (!old_model)
+    return;
+
+  tree divisor_expr = gimple_assign_rhs2 (assign);;
+  const svalue *divisor_sval = old_model->get_rvalue (divisor_expr, NULL);
+
+  state_t state = sm_ctxt->get_state (assign, divisor_sval);
+  enum bounds b;
+  if (get_taint (state, TREE_TYPE (divisor_expr), &b))
+    {
+      const svalue *zero_sval
+	= old_model->get_manager ()->get_or_create_int_cst
+	    (TREE_TYPE (divisor_expr), 0);
+      tristate ts
+	= old_model->eval_condition (divisor_sval, NE_EXPR, zero_sval);
+      if (ts.is_true ())
+	/* The divisor is known to not equal 0: don't warn.  */
+	return;
+
+      tree diag_divisor = sm_ctxt->get_diagnostic_tree (divisor_expr);
+      sm_ctxt->warn (node, assign, divisor_expr,
+		     new tainted_divisor (*this, diag_divisor, b));
+      sm_ctxt->set_next_state (assign, divisor_sval, m_stop);
     }
 }
 

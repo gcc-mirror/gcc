@@ -384,7 +384,7 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	TARGET_DEFAULT macro is defined to equal zero, and
 	TARGET_POWERPC64 and
 	a) BYTES_BIG_ENDIAN and the flag to be enabled is either
-	   MASK_PPC_GFXOPT or MASK_POWERPC64 (flags for "powerpc64"
+	   OPTION_MASK_PPC_GFXOPT or MASK_POWERPC64 (flags for "powerpc64"
 	   target), or
 	b) !BYTES_BIG_ENDIAN and the flag to be enabled is either
 	   MASK_POWERPC64 or it is one of the flags included in
@@ -596,9 +596,9 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "__FLOAT128_HARDWARE__");
 
   /* options from the builtin masks.  */
-  /* Note that RS6000_BTM_CELL is enabled only if (rs6000_cpu ==
-     PROCESSOR_CELL) (e.g. -mcpu=cell).  */
-  if ((bu_mask & RS6000_BTM_CELL) != 0)
+  /* Note that OPTION_MASK_FPRND is enabled only if
+     (rs6000_cpu == PROCESSOR_CELL) (e.g. -mcpu=cell).  */
+  if ((bu_mask & OPTION_MASK_FPRND) != 0)
     rs6000_define_or_undefine_macro (define_p, "__PPU__");
 
   /* Tell the user if we support the MMA instructions.  */

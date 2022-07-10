@@ -974,13 +974,16 @@ proc v3_try_preprocess { name code flags } {
 }
 
 # Return 1 if COND evaluates to true in the preprocessor, 0 otherwise.
-# The <bits/c++config.h> config header is included.
-proc v3_check_preprocessor_condition { name cond } {
+# The <bits/c++config.h> config header is included, and INC, if given,
+# is pasted between it and the condition evaluation, so it can be used
+# for additional #include's.
+proc v3_check_preprocessor_condition { name cond { inc "" } } {
     global cxxflags
     global DEFAULT_CXXFLAGS
 
     set code "
 	#include <bits/c++config.h>
+	$inc
 	#if ! ($cond)
 	#error '$cond' is false
 	#endif
@@ -1265,6 +1268,30 @@ proc check_v3_target_filesystem_ts { } {
 	}
 	return 0
     }]
+}
+
+# Return 1 if the libstdc++ filesystem create_symlinks implementation
+# is not an always-failing dummy.
+proc check_v3_target_fs_symlinks { } {
+    set inc "#include <testsuite_fs.h>"
+    set cond "!defined NO_SYMLINKS"
+    return [v3_check_preprocessor_condition fs_symlinks $cond $inc]
+}
+
+# Return 1 if the libstdc++ filesystem implementation of space is not an
+# always-failing dummy.
+proc check_v3_target_fs_space { } {
+    set inc "#include <testsuite_fs.h>"
+    set cond "!defined NO_SPACE"
+    return [v3_check_preprocessor_condition fs_space $cond $inc]
+}
+
+# Return 1 if the libstdc++ filesystem implementation of
+# last_write_time is not an always-failing dummy.
+proc check_v3_target_fs_last_write_time { } {
+    set inc "#include <testsuite_fs.h>"
+    set cond "!defined NO_LAST_WRITE_TIME"
+    return [v3_check_preprocessor_condition fs_last_write_time $cond $inc]
 }
 
 # Return 1 if the "cxx11" ABI is in use using the current flags, 0 otherwise.

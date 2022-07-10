@@ -58,6 +58,17 @@ struct event_desc
   bool m_colorize;
 };
 
+/* For use by pending_diagnostic::describe_region_creation.  */
+
+struct region_creation : public event_desc
+{
+  region_creation (bool colorize, const region *reg)
+  : event_desc (colorize), m_reg (reg)
+  {}
+
+  const region *m_reg;
+};
+
 /* For use by pending_diagnostic::describe_state_change.  */
 
 struct state_change : public event_desc
@@ -214,6 +225,15 @@ class pending_diagnostic
      In each case, return a non-NULL label_text to give the event a custom
      description; NULL otherwise (falling back on a more generic
      description).  */
+
+  /* Precision-of-wording vfunc for describing a region creation event
+     triggered by the mark_interesting_stuff vfunc.  */
+  virtual label_text
+  describe_region_creation_event (const evdesc::region_creation &)
+  {
+    /* Default no-op implementation.  */
+    return label_text ();
+  }
 
   /* Precision-of-wording vfunc for describing a critical state change
      within the diagnostic_path.

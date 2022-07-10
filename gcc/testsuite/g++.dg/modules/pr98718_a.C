@@ -14,5 +14,5 @@ namespace std _GLIBCXX_VISIBILITY(default)
 export  module  hello:format;
 // { dg-module-cmi hello:format }
 
-// { dg-final { scan-lang-dump { Ordinary:4 maps hwm:[0-9]* macro:1 maps lwm:214[0-9]*} module } }
-// { dg-final { scan-lang-dump { Span:2 macro:0 _GLIBCXX_VISIBILITY 10/11\*2 locations } module } }
+// { dg-final { scan-lang-dump { Macro maps:0 locs:0} module } }
+// { dg-final { scan-lang-dump-not { Macro:. _GLIBCXX_VISIBILITY} module } }

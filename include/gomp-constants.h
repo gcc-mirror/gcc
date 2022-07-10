@@ -282,7 +282,7 @@ enum gomp_map_kind
 /* Versions of libgomp and device-specific plugins.  GOMP_VERSION
    should be incremented whenever an ABI-incompatible change is introduced
    to the plugin interface defined in libgomp/libgomp.h.  */
-#define GOMP_VERSION	1
+#define GOMP_VERSION	2
 #define GOMP_VERSION_NVIDIA_PTX 1
 #define GOMP_VERSION_INTEL_MIC 0
 #define GOMP_VERSION_GCN 2
@@ -340,6 +340,12 @@ enum gomp_map_kind
 #define GOMP_DEPEND_INOUT		3
 #define GOMP_DEPEND_MUTEXINOUTSET	4
 #define GOMP_DEPEND_INOUTSET		5
+
+/* Flag values for OpenMP 'requires' directive features.  */
+#define GOMP_REQUIRES_UNIFIED_ADDRESS       0x10
+#define GOMP_REQUIRES_UNIFIED_SHARED_MEMORY 0x20
+#define GOMP_REQUIRES_REVERSE_OFFLOAD       0x80
+#define GOMP_REQUIRES_TARGET_USED           0x200
 
 /* HSA specific data structures.  */
 

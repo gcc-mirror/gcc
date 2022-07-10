@@ -3401,9 +3401,14 @@ package body Sem_Warn is
             False_Result => False_Result);
 
          --  Warn on a possible evaluation to False / True in the presence of
-         --  invalid values.
+         --  invalid values. But issue no warning for an assertion expression
+         --  (or a subexpression thereof); in particular, we don't want a
+         --  warning about an assertion that will always succeed.
 
-         if True_Result then
+         if In_Assertion_Expression_Pragma (Op) then
+            null;
+
+         elsif True_Result then
             Error_Msg_N
               ("condition can only be False if invalid values present?c?", Op);
 

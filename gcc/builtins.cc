@@ -5184,6 +5184,9 @@ expand_builtin_trap (void)
 static void
 expand_builtin_unreachable (void)
 {
+  /* Use gimple_build_builtin_unreachable or builtin_decl_unreachable
+     to avoid this.  */
+  gcc_checking_assert (!sanitize_flags_p (SANITIZE_UNREACHABLE));
   emit_barrier ();
 }
 
@@ -6026,8 +6029,8 @@ expand_ifn_atomic_compare_exchange_into_call (gcall *call, machine_mode mode)
       if (GET_MODE (boolret) != mode)
 	boolret = convert_modes (mode, GET_MODE (boolret), boolret, 1);
       x = force_reg (mode, x);
-      write_complex_part (target, boolret, true);
-      write_complex_part (target, x, false);
+      write_complex_part (target, boolret, true, true);
+      write_complex_part (target, x, false, false);
     }
 }
 
@@ -6082,8 +6085,8 @@ expand_ifn_atomic_compare_exchange (gcall *call)
       rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
       if (GET_MODE (boolret) != mode)
 	boolret = convert_modes (mode, GET_MODE (boolret), boolret, 1);
-      write_complex_part (target, boolret, true);
-      write_complex_part (target, oldval, false);
+      write_complex_part (target, boolret, true, true);
+      write_complex_part (target, oldval, false, false);
     }
 }
 
@@ -9260,6 +9263,12 @@ fold_builtin_0 (location_t loc, tree fndecl)
 
     case BUILT_IN_CLASSIFY_TYPE:
       return fold_builtin_classify_type (NULL_TREE);
+
+    case BUILT_IN_UNREACHABLE:
+      /* Rewrite any explicit calls to __builtin_unreachable.  */
+      if (sanitize_flags_p (SANITIZE_UNREACHABLE))
+	return build_builtin_unreachable (loc);
+      break;
 
     default:
       break;

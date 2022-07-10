@@ -6082,7 +6082,7 @@ package body Sem_Ch8 is
                --  If not that special case, then just reset the Etype
 
                else
-                  Set_Etype (N, Etype (Entity (N)));
+                  Set_Etype (N, Entyp);
                end if;
             end;
          end if;

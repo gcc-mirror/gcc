@@ -317,16 +317,18 @@ public:
 
   ~sem_function ();
 
-  virtual void init (ipa_icf_gimple::func_checker *);
-  virtual bool equals_wpa (sem_item *item,
-			   hash_map <symtab_node *, sem_item *> &ignored_nodes);
-  virtual hashval_t get_hash (void);
-  virtual bool equals (sem_item *item,
-		       hash_map <symtab_node *, sem_item *> &ignored_nodes);
-  virtual bool merge (sem_item *alias_item);
+  void init (ipa_icf_gimple::func_checker *) final override;
+  bool equals_wpa (sem_item *item,
+		   hash_map <symtab_node *, sem_item *> &ignored_nodes)
+    final override;
+  hashval_t get_hash (void) final override;
+  bool equals (sem_item *item,
+	       hash_map <symtab_node *, sem_item *> &ignored_nodes)
+    final override;
+  bool merge (sem_item *alias_item) final override;
 
   /* Dump symbol to FILE.  */
-  virtual void dump_to_file (FILE *file)
+  void dump_to_file (FILE *file) final override
   {
     gcc_assert (file);
     dump_function_to_file (decl, file, TDF_DETAILS);
@@ -426,17 +428,19 @@ public:
   sem_variable (varpool_node *_node, bitmap_obstack *stack);
 
   /* Semantic variable initialization function.  */
-  virtual void init (ipa_icf_gimple::func_checker *);
+  void init (ipa_icf_gimple::func_checker *) final override;
 
-  virtual hashval_t get_hash (void);
-  virtual bool merge (sem_item *alias_item);
-  virtual void dump_to_file (FILE *file);
-  virtual bool equals (sem_item *item,
-		       hash_map <symtab_node *, sem_item *> &ignored_nodes);
+  hashval_t get_hash (void) final override;
+  bool merge (sem_item *alias_item) final override;
+  void dump_to_file (FILE *file) final override;
+  bool equals (sem_item *item,
+	       hash_map <symtab_node *, sem_item *> &ignored_nodes)
+    final override;
 
   /* Fast equality variable based on knowledge known in WPA.  */
-  virtual bool equals_wpa (sem_item *item,
-			   hash_map <symtab_node *, sem_item *> &ignored_nodes);
+  bool equals_wpa (sem_item *item,
+		   hash_map <symtab_node *, sem_item *> &ignored_nodes)
+     final override;
 
   /* Returns varpool_node.  */
   inline varpool_node *get_node (void)

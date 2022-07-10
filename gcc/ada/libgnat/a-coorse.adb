@@ -643,6 +643,61 @@ is
       end if;
    end Free;
 
+   --  Ada 2022 features:
+
+   function Has_Element (Container : Set; Position : Cursor) return Boolean is
+   begin
+      pragma Assert
+        (Vet (Container.Tree, Position.Node), "bad cursor in Has_Element");
+      pragma Assert ((Position.Container = null) = (Position.Node = null),
+                     "bad nullity in Has_Element");
+      return Position.Container = Container'Unrestricted_Access;
+   end Has_Element;
+
+   function Tampering_With_Cursors_Prohibited
+     (Container : Set) return Boolean
+   is
+   begin
+      return Is_Busy (Container.Tree.TC);
+   end Tampering_With_Cursors_Prohibited;
+
+   function Element (Container : Set; Position : Cursor) return Element_Type is
+   begin
+      if Checks and then not Has_Element (Container, Position) then
+         raise Program_Error with "Position for wrong Container";
+      end if;
+
+      return Element (Position);
+   end Element;
+
+   procedure Query_Element
+     (Container : Set;
+      Position  : Cursor;
+      Process   : not null access procedure (Element : Element_Type)) is
+   begin
+      if Checks and then not Has_Element (Container, Position) then
+         raise Program_Error with "Position for wrong Container";
+      end if;
+
+      Query_Element (Position, Process);
+   end Query_Element;
+
+   function Next (Container : Set; Position : Cursor) return Cursor is
+   begin
+      if Checks and then
+        not (Position = No_Element or else Has_Element (Container, Position))
+      then
+         raise Program_Error with "Position for wrong Container";
+      end if;
+
+      return Next (Position);
+   end Next;
+
+   procedure Next (Container : Set; Position : in out Cursor) is
+   begin
+      Position := Next (Container, Position);
+   end Next;
+
    ------------------
    -- Generic_Keys --
    ------------------

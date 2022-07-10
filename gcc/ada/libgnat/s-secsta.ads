@@ -69,11 +69,13 @@ package System.Secondary_Stack is
 
    procedure SS_Allocate
      (Addr         : out Address;
-      Storage_Size : SSE.Storage_Count);
+      Storage_Size : SSE.Storage_Count;
+      Alignment    : SSE.Storage_Count := Standard'Maximum_Alignment);
    --  Allocate enough space on the secondary stack of the invoking task to
-   --  accommodate an alloction of size Storage_Size. Return the address of the
-   --  first byte of the allocation in Addr. The routine may carry out one or
-   --  more of the following actions:
+   --  accommodate an allocation of size Storage_Size. Return the address of
+   --  the first byte of the allocation in Addr, which is a multiple of
+   --  Alignment. The routine may carry out one or more of the following
+   --  actions:
    --
    --    * Reuse an existing chunk that is big enough to accommodate the
    --      requested Storage_Size.
@@ -259,22 +261,8 @@ private
    subtype Memory_Index is Memory_Size;
    --  Index into the memory storage of a single chunk
 
-   Memory_Alignment : constant := Standard'Maximum_Alignment * 2;
-   --  The memory alignment we will want to honor on every allocation.
-   --
-   --  At this stage, gigi assumes we can accommodate any alignment requirement
-   --  there might be on the data type for which the memory gets allocated (see
-   --  build_call_alloc_dealloc).
-   --
-   --  The multiplication factor is intended to account for requirements
-   --  by user code compiled with specific arch/cpu options such as -mavx
-   --  on X86[_64] targets, which Standard'Maximum_Alignment doesn't convey
-   --  without such compilation options. * 4 would actually be needed to
-   --  support -mavx512f on X86, but this would incur more annoying memory
-   --  consumption overheads.
-
    type Chunk_Memory is array (Memory_Size range <>) of SSE.Storage_Element;
-   for Chunk_Memory'Alignment use Memory_Alignment;
+   for Chunk_Memory'Alignment use Standard'Maximum_Alignment;
    --  The memory storage of a single chunk
 
    --------------

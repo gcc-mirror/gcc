@@ -920,8 +920,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return optimize && flag_reciprocal_math; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override
+  {
+    return optimize && flag_reciprocal_math;
+  }
+  unsigned int execute (function *) final override;
 
 }; // class pass_cse_reciprocals
 
@@ -2249,14 +2252,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* We no longer require either sincos or cexp, since powi expansion
 	 piggybacks on this pass.  */
       return optimize;
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_cse_sincos
 
@@ -4892,12 +4895,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return flag_expensive_optimizations && optimize;
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_optimize_widening_mul
 
@@ -4915,7 +4918,7 @@ public:
 
   /* The actual actions performed in the walk.  */
 
-  virtual void after_dom_children (basic_block);
+  void after_dom_children (basic_block) final override;
 
   /* Set of results of chains of multiply and add statement combinations that
      were not transformed into FMAs because of active deferring.  */

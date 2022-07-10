@@ -1476,17 +1476,19 @@ extern (C++) class FuncDeclaration : Declaration
      *   fmt = printf-style format string
      *   arg0  = (optional) argument for first %s format specifier
      *   arg1  = (optional) argument for second %s format specifier
+     *   arg2  = (optional) argument for third %s format specifier
      * Returns: whether there's a safe error
      */
     extern (D) final bool setUnsafe(
-        bool gag = false, Loc loc = Loc.init, const(char)* fmt = null, RootObject arg0 = null, RootObject arg1 = null)
+        bool gag = false, Loc loc = Loc.init, const(char)* fmt = null,
+        RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
     {
         if (flags & FUNCFLAG.safetyInprocess)
         {
             flags &= ~FUNCFLAG.safetyInprocess;
             type.toTypeFunction().trust = TRUST.system;
             if (fmt || arg0)
-                safetyViolation = new AttributeViolation(loc, fmt, arg0, arg1);
+                safetyViolation = new AttributeViolation(loc, fmt, arg0, arg1, arg2);
 
             if (fes)
                 fes.func.setUnsafe();
@@ -1494,7 +1496,7 @@ extern (C++) class FuncDeclaration : Declaration
         else if (isSafe())
         {
             if (!gag && fmt)
-                .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "");
+                .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
 
             return true;
         }
@@ -4370,10 +4372,12 @@ extern (C++) final class NewDeclaration : FuncDeclaration
  *   fmt = printf-style format string
  *   arg0  = (optional) argument for first %s format specifier
  *   arg1  = (optional) argument for second %s format specifier
+ *   arg2  = (optional) argument for third %s format specifier
  * Returns: whether there's a safe error
  */
 bool setUnsafe(Scope* sc,
-    bool gag = false, Loc loc = Loc.init, const(char)* fmt = null, RootObject arg0 = null, RootObject arg1 = null)
+    bool gag = false, Loc loc = Loc.init, const(char)* fmt = null,
+    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
 {
     // TODO:
     // For @system variables, unsafe initializers at global scope should mark
@@ -4394,13 +4398,13 @@ bool setUnsafe(Scope* sc,
         {
             // Message wil be gagged, but still call error() to update global.errors and for
             // -verrors=spec
-            .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "");
+            .error(loc, fmt, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : "");
             return true;
         }
         return false;
     }
 
-    return sc.func.setUnsafe(gag, loc, fmt, arg0, arg1);
+    return sc.func.setUnsafe(gag, loc, fmt, arg0, arg1, arg2);
 }
 
 /// Stores a reason why a function failed to infer a function attribute like `@safe` or `pure`
@@ -4421,6 +4425,8 @@ struct AttributeViolation
     RootObject arg0 = null;
     /// ditto
     RootObject arg1 = null;
+    /// ditto
+    RootObject arg2 = null;
 }
 
 /// Print the reason why `fd` was inferred `@system` as a supplemental error
@@ -4438,7 +4444,8 @@ void errorSupplementalInferredSafety(FuncDeclaration fd, int maxDepth, bool depr
             errorFunc(s.loc, deprecation ?
                 "which would be `@system` because of:" :
                 "which was inferred `@system` because of:");
-            errorFunc(s.loc, s.fmtStr, s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "");
+            errorFunc(s.loc, s.fmtStr,
+                s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "", s.arg2 ? s.arg2.toChars() : "");
         }
         else if (FuncDeclaration fd2 = cast(FuncDeclaration) s.arg0)
         {

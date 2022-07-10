@@ -935,7 +935,7 @@ Complex!(CommonType!(T, U)) fromPolar(T, U)(const T modulus, const U argument)
     import std.math.operations : isClose;
     import std.math.algebraic : sqrt;
     import std.math.constants : PI_4;
-    auto z = fromPolar(core.math.sqrt(2.0), PI_4);
+    auto z = fromPolar(core.math.sqrt(2.0L), PI_4);
     assert(isClose(z.re, 1.0L));
     assert(isClose(z.im, 1.0L));
 }
@@ -1695,9 +1695,9 @@ Complex!T log(T)(Complex!T x) @safe pure nothrow @nogc
  */
 Complex!T log10(T)(Complex!T x) @safe pure nothrow @nogc
 {
-    static import std.math;
+    import std.math.constants : LN10;
 
-    return log(x) / Complex!T(std.math.log(10.0));
+    return log(x) / Complex!T(LN10);
 }
 
 ///

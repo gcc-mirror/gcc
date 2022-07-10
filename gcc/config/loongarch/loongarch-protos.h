@@ -130,6 +130,7 @@ extern bool loongarch_symbol_binds_local_p (const_rtx);
 extern const char *current_section_name (void);
 extern unsigned int current_section_flags (void);
 extern bool loongarch_use_ins_ext_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
+extern bool loongarch_check_zero_div_p (void);
 
 union loongarch_gen_fn_ptrs
 {

@@ -4,7 +4,7 @@
 
 short=no
 long=no
-c=master
+c=HEAD
 
 for arg in "$@"
 do

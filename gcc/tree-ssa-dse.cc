@@ -1463,7 +1463,8 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
       gimple_call_set_lhs (stmt, NULL_TREE);
       update_stmt (stmt);
     }
-  else
+  else if (!stmt_could_throw_p (fun, stmt)
+	   || fun->can_delete_dead_exceptions)
     delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup,
 					 need_ab_cleanup);
 }
@@ -1491,9 +1492,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dse (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_dse != 0; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_dse (m_ctxt); }
+  bool gate (function *) final override { return flag_tree_dse != 0; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_dse
 

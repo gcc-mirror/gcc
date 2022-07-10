@@ -14218,8 +14218,10 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	      gcc_assert (from_insn == i3);
 	    /* We are making sure there is a single effective REG_EH_REGION
 	       note and it's valid to put it on i3.  */
-	    if (!insn_could_throw_p (from_insn))
-	      /* Throw away stra notes on insns that can never throw.  */
+	    if (!insn_could_throw_p (from_insn)
+		&& !(lp_nr == INT_MIN && can_nonlocal_goto (from_insn)))
+	      /* Throw away stray notes on insns that can never throw or
+		 make a nonlocal goto.  */
 	      ;
 	    else
 	      {
@@ -15015,8 +15017,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return (optimize > 0); }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return (optimize > 0); }
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_combine ();
     }

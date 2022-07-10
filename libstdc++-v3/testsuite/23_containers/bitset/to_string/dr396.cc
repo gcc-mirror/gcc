@@ -26,6 +26,7 @@
 void test01()
 {
   using namespace std;
+  using std::bitset; // Work around struct ::bitset on rtems.
 
   bitset<5> b5;
   string s0 = b5.to_string<char, char_traits<char>, allocator<char> >('a', 'b');

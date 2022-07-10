@@ -4,10 +4,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <unistd.h>
+#ifdef __linux__
+#include <sys/syscall.h>
+#endif
 #ifdef DEBUG
 #include <stdio.h>
 #endif
 #include "cpuid.h"
+
+#define XFEATURE_XTILECFG	17
+#define XFEATURE_XTILEDATA	18
+#define XFEATURE_MASK_XTILECFG	(1 << XFEATURE_XTILECFG)
+#define XFEATURE_MASK_XTILEDATA	(1 << XFEATURE_XTILEDATA)
+#define XFEATURE_MASK_XTILE	(XFEATURE_MASK_XTILECFG | XFEATURE_MASK_XTILEDATA)
+
+#define ARCH_GET_XCOMP_PERM	0x1022
+#define ARCH_REQ_XCOMP_PERM	0x1023
 
 /* TODO: The tmm emulation is temporary for current
    AMX implementation with no tmm regclass, should
@@ -43,6 +56,20 @@ typedef struct __tile
 
 /* Stride (colum width in byte) used for tileload/store */
 #define _STRIDE 64
+
+#ifdef __linux__
+/* We need syscall to use amx functions */
+int request_perm_xtile_data()
+{
+  unsigned long bitmask;
+
+  if (syscall (SYS_arch_prctl, ARCH_REQ_XCOMP_PERM, XFEATURE_XTILEDATA) ||
+      syscall (SYS_arch_prctl, ARCH_GET_XCOMP_PERM, &bitmask))
+    return 0;
+
+  return (bitmask & XFEATURE_MASK_XTILE) != 0;
+}
+#endif
 
 /* Initialize tile config by setting all tmm size to 16x64 */
 void init_tile_config (__tilecfg_u *dst)
@@ -185,6 +212,9 @@ main ()
 #endif
 #ifdef AMX_BF16
       && __builtin_cpu_supports ("amx-bf16")
+#endif
+#ifdef __linux__
+      && request_perm_xtile_data ()
 #endif
       )
     {

@@ -1006,19 +1006,21 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
   switch (func)
     {
     case CFN_BUILT_IN_CONSTANT_P:
-      arg = gimple_call_arg (call, 0);
-      if (src.get_operand (r, arg) && r.singleton_p ())
-	{
-	  r.set (build_one_cst (type), build_one_cst (type));
-	  return true;
-	}
-      if (cfun->after_inlining)
-	{
-	  r.set_zero (type);
-	  // r.equiv_clear ();
-	  return true;
-	}
-      break;
+      {
+	arg = gimple_call_arg (call, 0);
+	Value_Range tmp (TREE_TYPE (arg));
+	if (src.get_operand (tmp, arg) && tmp.singleton_p ())
+	  {
+	    r.set (build_one_cst (type), build_one_cst (type));
+	    return true;
+	  }
+	if (cfun->after_inlining)
+	  {
+	    r.set_zero (type);
+	    return true;
+	  }
+	break;
+      }
 
     case CFN_BUILT_IN_TOUPPER:
       {
@@ -1335,7 +1337,9 @@ fold_using_range::range_of_ssa_name_with_loop_info (irange &r, tree name,
 {
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
   tree min, max, type = TREE_TYPE (name);
-  if (bounds_of_var_in_loop (&min, &max, src.query (), l, phi, name))
+  // FIXME: Remove the supports_p() once all this can handle floats, etc.
+  if (irange::supports_p (type)
+      && bounds_of_var_in_loop (&min, &max, src.query (), l, phi, name))
     {
       if (TREE_CODE (min) != INTEGER_CST)
 	{
@@ -1397,27 +1401,31 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
   // Ideally we search dependencies for common names, and see what pops out.
   // until then, simply try to resolve direct dependencies.
 
-  // Both names will need to have 2 direct dependencies.
-  tree ssa1_dep2 = src.gori ()->depend2 (ssa1);
-  tree ssa2_dep2 = src.gori ()->depend2 (ssa2);
-  if (!ssa1_dep2 || !ssa2_dep2)
+  gimple *ssa1_stmt = SSA_NAME_DEF_STMT (ssa1);
+  gimple *ssa2_stmt = SSA_NAME_DEF_STMT (ssa2);
+
+  range_op_handler handler1 (SSA_NAME_DEF_STMT (ssa1));
+  range_op_handler handler2 (SSA_NAME_DEF_STMT (ssa2));
+
+  // If either handler is not present, no relation can be found.
+  if (!handler1 || !handler2)
     return;
 
-  tree ssa1_dep1 = src.gori ()->depend1 (ssa1);
-  tree ssa2_dep1 = src.gori ()->depend1 (ssa2);
+  // Both stmts will need to have 2 ssa names in the stmt.
+  tree ssa1_dep1 = gimple_range_ssa_p (gimple_range_operand1 (ssa1_stmt));
+  tree ssa1_dep2 = gimple_range_ssa_p (gimple_range_operand2 (ssa1_stmt));
+  tree ssa2_dep1 = gimple_range_ssa_p (gimple_range_operand1 (ssa2_stmt));
+  tree ssa2_dep2 = gimple_range_ssa_p (gimple_range_operand2 (ssa2_stmt));
+
+  if (!ssa1_dep1 || !ssa1_dep2 || !ssa2_dep1 || !ssa2_dep2)
+    return;
+
   // Make sure they are the same dependencies, and detect the order of the
   // relationship.
   bool reverse_op2 = true;
   if (ssa1_dep1 == ssa2_dep1 && ssa1_dep2 == ssa2_dep2)
     reverse_op2 = false;
   else if (ssa1_dep1 != ssa2_dep2 || ssa1_dep2 != ssa2_dep1)
-    return;
-
-  range_op_handler handler1 (SSA_NAME_DEF_STMT (ssa1));
-  range_op_handler handler2 (SSA_NAME_DEF_STMT (ssa2));
-
-  // If either handler is not present, no relation is found.
-  if (!handler1 || !handler2)
     return;
 
   int_range<2> bool_one (boolean_true_node, boolean_true_node);

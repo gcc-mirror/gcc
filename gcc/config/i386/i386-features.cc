@@ -938,10 +938,10 @@ general_scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 {
   rtx tmp = gen_reg_rtx (vmode);
   rtx src;
-  convert_op (&op1, insn);
   /* Comparison against anything other than zero, requires an XOR.  */
   if (op2 != const0_rtx)
     {
+      convert_op (&op1, insn);
       convert_op (&op2, insn);
       /* If both operands are MEMs, explicitly load the OP1 into TMP.  */
       if (MEM_P (op1) && MEM_P (op2))
@@ -953,8 +953,25 @@ general_scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 	src = op1;
       src = gen_rtx_XOR (vmode, src, op2);
     }
+  else if (GET_CODE (op1) == AND
+	   && GET_CODE (XEXP (op1, 0)) == NOT)
+    {
+      rtx op11 = XEXP (XEXP (op1, 0), 0);
+      rtx op12 = XEXP (op1, 1);
+      convert_op (&op11, insn);
+      convert_op (&op12, insn);
+      if (MEM_P (op11))
+	{
+	  emit_insn_before (gen_rtx_SET (tmp, op11), insn);
+	  op11 = tmp;
+	}
+      src = gen_rtx_AND (vmode, gen_rtx_NOT (vmode, op11), op12);
+    }
   else
-    src = op1;
+    {
+      convert_op (&op1, insn);
+      src = op1;
+    }
   emit_insn_before (gen_rtx_SET (tmp, src), insn);
 
   if (vmode == V2DImode)
@@ -1399,17 +1416,29 @@ convertible_comparison_p (rtx_insn *insn, enum machine_mode mode)
   rtx op1 = XEXP (src, 0);
   rtx op2 = XEXP (src, 1);
 
-  if (!CONST_INT_P (op1)
-      && ((!REG_P (op1) && !MEM_P (op1))
-	  || GET_MODE (op1) != mode))
-    return false;
+  /* *cmp<dwi>_doubleword.  */
+  if ((CONST_INT_P (op1)
+       || ((REG_P (op1) || MEM_P (op1))
+           && GET_MODE (op1) == mode))
+      && (CONST_INT_P (op2)
+	  || ((REG_P (op2) || MEM_P (op2))
+	      && GET_MODE (op2) == mode)))
+    return true;
 
-  if (!CONST_INT_P (op2)
-      && ((!REG_P (op2) && !MEM_P (op2))
-	  || GET_MODE (op2) != mode))
-    return false;
+  /* *test<dwi>_not_doubleword.  */
+  if (op2 == const0_rtx
+      && GET_CODE (op1) == AND
+      && GET_CODE (XEXP (op1, 0)) == NOT)
+    {
+      rtx op11 = XEXP (XEXP (op1, 0), 0);
+      rtx op12 = XEXP (op1, 1);
+      return (REG_P (op11) || MEM_P (op11))
+	     && (REG_P (op12) || MEM_P (op12))
+	     && GET_MODE (op11) == mode
+	     && GET_MODE (op12) == mode;
+    }
 
-  return true;
+  return false;
 }
 
 /* The general version of scalar_to_vector_candidate_p.  */
@@ -1880,13 +1909,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return TARGET_AVX && TARGET_VZEROUPPER
 	&& flag_expensive_optimizations && !optimize_size;
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_insert_vzeroupper ();
     }
@@ -1915,23 +1944,23 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return ((!timode_p || TARGET_64BIT)
 	      && TARGET_STV && TARGET_SSE2 && optimize > 1);
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return convert_scalars_to_vector (timode_p);
     }
 
-  opt_pass *clone ()
+  opt_pass *clone () final override
     {
       return new pass_stv (m_ctxt);
     }
 
-  void set_pass_param (unsigned int n, bool param)
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       timode_p = param;
@@ -2142,14 +2171,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       need_endbr = (flag_cf_protection & CF_BRANCH) != 0;
       patchable_area_size = crtl->patch_area_size - crtl->patch_area_entry;
       return need_endbr || patchable_area_size;
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       timevar_push (TV_MACH_DEP);
       rest_of_insert_endbr_and_patchable_area (need_endbr,
@@ -2406,7 +2435,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return (TARGET_AVX
 	      && TARGET_SSE_PARTIAL_REG_DEPENDENCY
@@ -2415,7 +2444,7 @@ public:
 	      && optimize_function_for_speed_p (cfun));
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return remove_partial_avx_dependency ();
     }

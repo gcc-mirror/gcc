@@ -12135,24 +12135,22 @@ package body Sem_Ch13 is
             begin
                --  Gather discriminants into Comp
 
-               if DS /= No_List then
-                  Citem := First (DS);
-                  while Present (Citem) loop
-                     if Nkind (Citem) = N_Discriminant_Specification then
-                        declare
-                           Ent : constant Entity_Id :=
-                                   Defining_Identifier (Citem);
-                        begin
-                           if Ekind (Ent) = E_Discriminant then
-                              Ncomps := Ncomps + 1;
-                              Comps (Ncomps) := Ent;
-                           end if;
-                        end;
-                     end if;
+               Citem := First (DS);
+               while Present (Citem) loop
+                  if Nkind (Citem) = N_Discriminant_Specification then
+                     declare
+                        Ent : constant Entity_Id :=
+                                Defining_Identifier (Citem);
+                     begin
+                        if Ekind (Ent) = E_Discriminant then
+                           Ncomps := Ncomps + 1;
+                           Comps (Ncomps) := Ent;
+                        end if;
+                     end;
+                  end if;
 
-                     Next (Citem);
-                  end loop;
-               end if;
+                  Next (Citem);
+               end loop;
 
                --  Gather component entities into Comp
 
@@ -15943,6 +15941,7 @@ package body Sem_Ch13 is
             while Present (It.Typ) loop
                if Ekind (It.Nam) = E_Function
                   and then Scope (It.Nam) = Scope (Typ)
+                  and then Present (First_Formal (It.Nam))
                   and then Etype (First_Formal (It.Nam)) = Typ
                then
                   F1 := First_Formal (It.Nam);

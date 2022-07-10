@@ -969,8 +969,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_isolate_erroneous_paths (m_ctxt); }
-  virtual bool gate (function *)
+  opt_pass * clone () final override
+  {
+    return new pass_isolate_erroneous_paths (m_ctxt);
+  }
+  bool gate (function *) final override
     {
       /* If we do not have a suitable builtin function for the trap statement,
 	 then do not perform the optimization.  */
@@ -979,7 +982,7 @@ public:
 	      || warn_null_dereference);
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return gimple_ssa_isolate_erroneous_paths ();
     }

@@ -2681,6 +2681,9 @@ Target supports @code{sysconf}.
 @item trampolines
 Target supports trampolines.
 
+@item two_plus_gigs
+Target supports linking programs with 2+GiB of data.
+
 @item uclibc
 Target supports uClibc.
 
@@ -2713,6 +2716,7 @@ Target supports @option{-branch-cost=N}.
 Target uses @code{__cxa_atexit}.
 
 @item default_packed
+@anchor{default_packed}
 Target has packed layout of structure members by default.
 
 @item exceptions
@@ -2782,6 +2786,14 @@ Target uses natural alignment (aligned to type size) for types of
 @item target_natural_alignment_64
 Target uses natural alignment (aligned to type size) for types of
 64 bits or less.
+
+@item no_alignment_constraints
+Target defines __BIGGEST_ALIGNMENT__=1.  Hence target imposes
+no alignment constraints.  This is similar, but not necessarily
+the same as @ref{default_packed}.  Although @code{BIGGEST_FIELD_ALIGNMENT}
+defaults to @code{BIGGEST_ALIGNMENT} for most targets, it is possible
+for a target to set those two with different values and have different
+alignment constraints for aggregate and non-aggregate types.
 
 @item noinit
 Target supports the @code{noinit} variable attribute.

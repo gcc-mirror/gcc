@@ -16027,7 +16027,7 @@ with_gnu_ld=$lt_cv_prog_gnu_ld
   if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
     libgomp_ld_is_gold=yes
   elif $LD --version 2>/dev/null | grep 'mold'> /dev/null 2>&1; then
-    libat_ld_is_mold=yes
+    libgomp_ld_is_mold=yes
   fi
 
   ldver=`$LD --version 2>/dev/null |

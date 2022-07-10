@@ -752,7 +752,7 @@ gen_int_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
     }
 
   /* See if we need to invert the result.  */
-  invert = ((GET_CODE (cmp1) == CONST_INT)
+  invert = (CONST_INT_P (cmp1)
 	    ? p_info->invert_const
 	    : p_info->invert_reg);
 
@@ -1182,7 +1182,8 @@ xtensa_emit_move_sequence (rtx *operands, machine_mode mode)
 	  return 1;
 	}
 
-      if (! TARGET_AUTO_LITPOOLS && ! TARGET_CONST16)
+      if (! TARGET_AUTO_LITPOOLS && ! TARGET_CONST16
+	  && ! (CONST_INT_P (src) && can_create_pseudo_p ()))
 	{
 	  src = force_const_mem (SImode, src);
 	  operands[1] = src;
@@ -1208,7 +1209,7 @@ xtensa_emit_move_sequence (rtx *operands, machine_mode mode)
 	}
     }
 
-  if (!(reload_in_progress | reload_completed)
+  if (can_create_pseudo_p ()
       && !xtensa_valid_move (mode, operands))
     operands[1] = force_reg (mode, operands[1]);
 
@@ -1611,7 +1612,7 @@ xtensa_expand_block_set_small_loop (rtx *operands)
 	 thus limited to only offset to the end address for ADDI/ADDMI
 	 instruction.  */
       if (align == 4
-	  && ! (bytes <= 127 || (bytes <= 32512 && bytes % 256 == 0)))
+	  && ! (bytes <= 127 || xtensa_simm8x256 (bytes)))
 	return 0;
 
       /* If no 4-byte aligned, loop count should be treated as the
@@ -2168,7 +2169,7 @@ xtensa_emit_sibcall (int callop, rtx *operands)
   static char result[64];
   rtx tgt = operands[callop];
 
-  if (GET_CODE (tgt) == CONST_INT)
+  if (CONST_INT_P (tgt))
     sprintf (result, "j.l\t" HOST_WIDE_INT_PRINT_HEX ", a9",
 	     INTVAL (tgt));
   else if (register_operand (tgt, VOIDmode))
@@ -4281,20 +4282,26 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
 }
 
 static bool
-xtensa_is_insn_L32R_p(const rtx_insn *insn)
+xtensa_is_insn_L32R_p (const rtx_insn *insn)
 {
   rtx x = PATTERN (insn);
 
-  if (GET_CODE (x) == SET)
+  if (GET_CODE (x) != SET)
+    return false;
+
+  x = XEXP (x, 1);
+  if (MEM_P (x))
     {
-      x = XEXP (x, 1);
-      if (GET_CODE (x) == MEM)
-	{
-	  x = XEXP (x, 0);
-	  return (GET_CODE (x) == SYMBOL_REF || CONST_INT_P (x))
-		 && CONSTANT_POOL_ADDRESS_P (x);
-	}
+      x = XEXP (x, 0);
+      return (SYMBOL_REF_P (x) || CONST_INT_P (x))
+	     && CONSTANT_POOL_ADDRESS_P (x);
     }
+
+  /* relaxed MOVI instructions, that will be converted to L32R by the
+     assembler.  */
+  if (CONST_INT_P (x)
+      && ! xtensa_simm12b (INTVAL (x)))
+    return true;
 
   return false;
 }

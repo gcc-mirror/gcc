@@ -135,6 +135,7 @@ package Sem_Prag is
       Pragma_Assert_And_Cut            => True,
       Pragma_Assume                    => True,
       Pragma_Check                     => True,
+      Pragma_Compile_Time_Error        => True,
       Pragma_Contract_Cases            => True,
       Pragma_Default_Initial_Condition => True,
       Pragma_Initial_Condition         => True,

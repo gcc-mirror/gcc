@@ -113,8 +113,10 @@
 
 (define_constraint "Y"
  "A constant that can be used in relaxed MOVI instructions."
- (and (match_code "const_int,const_double,const,symbol_ref,label_ref")
-      (match_test "TARGET_AUTO_LITPOOLS")))
+ (ior (and (match_code "const_int,const_double,const,symbol_ref,label_ref")
+	   (match_test "TARGET_AUTO_LITPOOLS"))
+      (and (match_code "const_int")
+	   (match_test "can_create_pseudo_p ()"))))
 
 ;; Memory constraints.  Do not use define_memory_constraint here.  Doing so
 ;; causes reload to force some constants into the constant pool, but since

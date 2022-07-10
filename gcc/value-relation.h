@@ -95,15 +95,19 @@ public:
   virtual void register_relation (basic_block, relation_kind, tree, tree) = 0;
   // Query for a relation between two ssa names in a basic block.
   virtual relation_kind query_relation (basic_block, tree, tree) = 0;
-  // Query for a relation between two equivalency stes in a basic block.
-  virtual relation_kind query_relation (basic_block, const_bitmap,
-					const_bitmap) = 0;
+
+  relation_kind validate_relation (relation_kind, tree, tree);
+  relation_kind validate_relation (relation_kind, vrange &, vrange &);
 
   virtual void dump (FILE *, basic_block) const = 0;
   virtual void dump (FILE *) const = 0;
   void debug () const;
 protected:
   void valid_equivs (bitmap b, const_bitmap equivs, basic_block bb);
+  // Query for a relation between two equivalency sets in a basic block.
+  virtual relation_kind query_relation (basic_block, const_bitmap,
+					const_bitmap) = 0;
+  friend class path_oracle;
 };
 
 // This class represents an equivalency set, and contains a link to the next

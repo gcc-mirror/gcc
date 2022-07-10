@@ -54,7 +54,7 @@ host_get_type (void)
 }
 
 static int
-host_get_num_devices (void)
+host_get_num_devices (unsigned int omp_requires_mask __attribute__((unused)))
 {
   return 1;
 }
@@ -229,7 +229,7 @@ host_openacc_get_property (int n, enum goacc_property prop)
 {
   union goacc_property_value nullval = { .val = 0 };
 
-  if (n >= host_get_num_devices ())
+  if (n >= host_get_num_devices (0))
     return nullval;
 
   switch (prop)

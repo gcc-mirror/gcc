@@ -896,8 +896,14 @@ package body Exp_Disp is
       Copy_Strub_Mode (Subp_Typ, Subp);
       Set_Convention  (Subp_Typ, Convention (Subp));
 
-      if Etype (Subp) = Typ then
-         Set_Etype          (Subp_Typ, CW_Typ);
+      --  If this is a function and it has a controlling tagged result, then
+      --  the call is dispatching on result and returns the class-wide type.
+
+      if Ekind (Subp) = E_Function
+        and then Has_Controlling_Result (Subp)
+        and then Is_Tagged_Type (Etype (Subp))
+      then
+         Set_Etype          (Subp_Typ, Class_Wide_Type (Etype (Subp)));
          Set_Returns_By_Ref (Subp_Typ, True);
       else
          Set_Etype          (Subp_Typ, Etype (Subp));

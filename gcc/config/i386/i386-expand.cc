@@ -19548,9 +19548,11 @@ expand_vec_perm_palignr (struct expand_vec_perm_d *d, bool single_insn_only_p)
   shift = GEN_INT (min * GET_MODE_UNIT_BITSIZE (d->vmode));
   if (GET_MODE_SIZE (d->vmode) == 16)
     {
-      target = gen_reg_rtx (TImode);
-      emit_insn (gen_ssse3_palignrti (target, gen_lowpart (TImode, dcopy.op1),
-				      gen_lowpart (TImode, dcopy.op0), shift));
+      target = gen_reg_rtx (V1TImode);
+      emit_insn (gen_ssse3_palignrv1ti (target,
+					gen_lowpart (V1TImode, dcopy.op1),
+					gen_lowpart (V1TImode, dcopy.op0),
+					shift));
     }
   else
     {

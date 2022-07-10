@@ -1403,8 +1403,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return (optimize > 0 && flag_ree); }
-  virtual unsigned int execute (function *) { return rest_of_handle_ree (); }
+  bool gate (function *) final override { return (optimize > 0 && flag_ree); }
+  unsigned int execute (function *) final override
+  {
+    return rest_of_handle_ree ();
+  }
 
 }; // class pass_ree
 

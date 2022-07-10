@@ -18,6 +18,7 @@
 // { dg-do run { target c++14 } }
 // { dg-require-effective-target net_ts_ip }
 // { dg-add-options net_ts }
+// { dg-xfail-run-if "io_context requires a working pipe" { *-*-rtems* } }
 
 #include <experimental/internet>
 #include <testsuite_hooks.h>

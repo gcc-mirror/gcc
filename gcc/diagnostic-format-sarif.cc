@@ -584,7 +584,6 @@ sarif_builder::make_location_object (const diagnostic_event &event)
   label_text ev_desc = event.get_desc (false);
   json::object *message_obj = make_message_object (ev_desc.m_buffer);
   location_obj->set ("message", message_obj);
-  ev_desc.maybe_free ();
 
   return location_obj;
 }
@@ -1556,6 +1555,7 @@ diagnostic_output_format_init_sarif (diagnostic_context *context)
 
   /* The metadata is handled in SARIF format, rather than as text.  */
   context->show_cwe = false;
+  context->show_rules = false;
 
   /* The option is handled in SARIF format, rather than as text.  */
   context->show_option_requested = false;

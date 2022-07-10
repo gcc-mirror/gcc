@@ -664,6 +664,7 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+USE_IEC_60559 = @USE_IEC_60559@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -7674,7 +7675,9 @@ ieee_arithmetic.mod: ieee_arithmetic.lo
 @onestep_TRUE@	$(LTCOMPILE) -c -o $@ $^ -combine
 
 kinds.h: $(srcdir)/mk-kinds-h.sh
-	$(SHELL) $(srcdir)/mk-kinds-h.sh '@LIBGOMP_CHECKED_INT_KINDS@' '@LIBGOMP_CHECKED_REAL_KINDS@' '$(FCCOMPILE)' > $@ || rm $@
+	$(SHELL) $(srcdir)/mk-kinds-h.sh '@LIBGOMP_CHECKED_INT_KINDS@' \
+					 '@LIBGOMP_CHECKED_REAL_KINDS@' \
+					 '$(FCCOMPILE)' '@USE_IEC_60559@' > $@ || rm $@
 
 kinds.inc: kinds.h $(srcdir)/kinds-override.h
 	cat kinds.h $(srcdir)/kinds-override.h | grep '^#' | grep -v include > $@

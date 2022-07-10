@@ -953,7 +953,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return reginfo_init (); }
+  unsigned int execute (function *) final override { return reginfo_init (); }
 
 }; // class pass_reginfo_init
 

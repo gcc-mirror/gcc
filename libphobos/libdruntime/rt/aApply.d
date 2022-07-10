@@ -1,7 +1,5 @@
 /**
- * This code handles decoding UTF strings for foreach loops.  There are 6
- * combinations of conversions between char, wchar, and dchar, and 2 of each
- * of those.
+ * This code handles decoding UTF strings for foreach loops.
  *
  * Copyright: Copyright Digital Mars 2004 - 2010.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -15,9 +13,64 @@ import core.internal.utf : decode, toUTF8;
 /**********************************************/
 /* 1 argument versions */
 
-// dg is D, but _aApplycd() is C
-extern (D) alias int delegate(void *) dg_t;
+/**
+Delegate type corresponding to transformed loop body
 
+The parameter is a pointer to the current `char`, `wchar` or `dchar`
+
+Returns: non-zero when a `break` statement is hit
+*/
+extern (D) alias dg_t = int delegate(void* c);
+
+// Note: dg is extern(D), but _aApplycd() is extern(C)
+
+/**
+Loop over a string while changing the UTF encoding
+
+There are 6 combinations of conversions between `char`, `wchar`, and `dchar`,
+and 2 of each of those.
+
+The naming convention is as follows:
+
+_aApply{c,d,w}{c,d,w}{1,2}
+
+The first letter corresponds to the input string encoding, and the second letter corresponds to the target character type.
+
+- c = `char`
+- w = `wchar`
+- d = `dchar`
+
+The `1` variant only produces the character, the `2` variant also produces a loop index.
+
+Examples:
+---
+void main()
+{
+    string str;
+    wtring wstr;
+    dstring dstr;
+
+    foreach (dchar c; str) {}
+    // _aApplycd1
+
+    foreach (wchar c; dstr) {}
+    // _aApplydw1
+
+    foreach (i, wchar c; str) {}
+    // _aApplycw2
+
+    foreach (wchar w; wstr) {}
+    // no conversion
+}
+---
+
+Params:
+    aa = input string
+    dg = foreach body transformed into a delegate, similar to `opApply`
+
+Returns:
+    non-zero when the loop was exited through a `break`
+*/
 extern (C) int _aApplycd1(in char[] aa, dg_t dg)
 {
     int result;
@@ -78,8 +131,7 @@ unittest
     assert(i == 4);
 }
 
-/*****************************/
-
+/// ditto
 extern (C) int _aApplywd1(in wchar[] aa, dg_t dg)
 {
     int result;
@@ -140,8 +192,7 @@ unittest
     assert(i == 4);
 }
 
-/*****************************/
-
+/// ditto
 extern (C) int _aApplycw1(in char[] aa, dg_t dg)
 {
     int result;
@@ -215,8 +266,7 @@ unittest
     assert(i == 5);
 }
 
-/*****************************/
-
+/// ditto
 extern (C) int _aApplywc1(in wchar[] aa, dg_t dg)
 {
     int result;
@@ -296,8 +346,7 @@ unittest
     assert(i == 9);
 }
 
-/*****************************/
-
+/// ditto
 extern (C) int _aApplydc1(in dchar[] aa, dg_t dg)
 {
     int result;
@@ -373,8 +422,7 @@ unittest
     assert(i == 9);
 }
 
-/*****************************/
-
+/// ditto
 extern (C) int _aApplydw1(in dchar[] aa, dg_t dg)
 {
     int result;
@@ -446,9 +494,20 @@ unittest
 /****************************************************************************/
 /* 2 argument versions */
 
-// dg is D, but _aApplycd2() is C
-extern (D) alias int delegate(void *, void *) dg2_t;
+/**
+Delegate type corresponding to transformed loop body
 
+Parameters are pointers to a `size_t` loop index, and the current `char`, `wchar` or `dchar`.
+
+Returns: non-zero when a `break` statement is hit
+*/
+extern (D) alias dg2_t = int delegate(void* i, void* c);
+
+// Note: dg is extern(D), but _aApplycd2() is extern(C)
+
+/**
+Variants of _aApplyXXX that include a loop index.
+*/
 extern (C) int _aApplycd2(in char[] aa, dg2_t dg)
 {
     int result;
@@ -516,8 +575,7 @@ unittest
     assert(i == 4);
 }
 
-/*****************************/
-
+/// ditto
 extern (C) int _aApplywd2(in wchar[] aa, dg2_t dg)
 {
     int result;
@@ -585,8 +643,7 @@ unittest
     assert(i == 4);
 }
 
-/*****************************/
-
+/// ditto
 extern (C) int _aApplycw2(in char[] aa, dg2_t dg)
 {
     int result;
@@ -665,8 +722,7 @@ unittest
     assert(i == 5);
 }
 
-/*****************************/
-
+/// ditto
 extern (C) int _aApplywc2(in wchar[] aa, dg2_t dg)
 {
     int result;
@@ -751,8 +807,7 @@ unittest
     assert(i == 9);
 }
 
-/*****************************/
-
+/// ditto
 extern (C) int _aApplydc2(in dchar[] aa, dg2_t dg)
 {
     int result;
@@ -832,8 +887,7 @@ unittest
     assert(i == 9);
 }
 
-/*****************************/
-
+/// ditto
 extern (C) int _aApplydw2(in dchar[] aa, dg2_t dg)
 {   int result;
 

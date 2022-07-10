@@ -992,11 +992,21 @@ precompute_register_parameters (int num_actuals, struct arg_data *args,
 	/* If we are to promote the function arg to a wider mode,
 	   do it now.  */
 
-	if (args[i].mode != TYPE_MODE (TREE_TYPE (args[i].tree_value)))
-	  args[i].value
-	    = convert_modes (args[i].mode,
-			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
-			     args[i].value, args[i].unsignedp);
+	machine_mode old_mode = TYPE_MODE (TREE_TYPE (args[i].tree_value));
+
+	/* Some ABIs require scalar floating point modes to be returned
+	   in a wider scalar integer mode.  We need to explicitly
+	   reinterpret to an integer mode of the correct precision
+	   before extending to the desired result.  */
+	if (SCALAR_INT_MODE_P (args[i].mode)
+	    && SCALAR_FLOAT_MODE_P (old_mode)
+	    && known_gt (GET_MODE_SIZE (args[i].mode),
+			 GET_MODE_SIZE (old_mode)))
+	  args[i].value = convert_float_to_wider_int (args[i].mode, old_mode,
+						      args[i].value);
+	else if (args[i].mode != old_mode)
+	  args[i].value = convert_modes (args[i].mode, old_mode,
+					 args[i].value, args[i].unsignedp);
 
 	/* If the value is a non-legitimate constant, force it into a
 	   pseudo now.  TLS symbols sometimes need a call to resolve.  */
@@ -1216,7 +1226,7 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 
 	    bytes -= bitsize / BITS_PER_UNIT;
 	    store_bit_field (reg, bitsize, endian_correction, 0, 0,
-			     word_mode, word, false);
+			     word_mode, word, false, false);
 	  }
       }
 }
@@ -3825,18 +3835,24 @@ expand_call (tree exp, rtx target, int ignore)
 	{
 	  tree type = rettype;
 	  int unsignedp = TYPE_UNSIGNED (type);
+	  machine_mode ret_mode = TYPE_MODE (type);
 	  machine_mode pmode;
 
 	  /* Ensure we promote as expected, and get the new unsignedness.  */
-	  pmode = promote_function_mode (type, TYPE_MODE (type), &unsignedp,
+	  pmode = promote_function_mode (type, ret_mode, &unsignedp,
 					 funtype, 1);
 	  gcc_assert (GET_MODE (target) == pmode);
 
-	  poly_uint64 offset = subreg_lowpart_offset (TYPE_MODE (type),
-						      GET_MODE (target));
-	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
-	  SUBREG_PROMOTED_VAR_P (target) = 1;
-	  SUBREG_PROMOTED_SET (target, unsignedp);
+	  if (SCALAR_INT_MODE_P (pmode)
+	      && SCALAR_FLOAT_MODE_P (ret_mode)
+	      && known_gt (GET_MODE_SIZE (pmode), GET_MODE_SIZE (ret_mode)))
+	    target = convert_wider_int_to_float (ret_mode, pmode, target);
+	  else
+	    {
+	      target = gen_lowpart_SUBREG (ret_mode, target);
+	      SUBREG_PROMOTED_VAR_P (target) = 1;
+	      SUBREG_PROMOTED_SET (target, unsignedp);
+	    }
 	}
 
       /* If size of args is variable or this was a constructor call for a stack

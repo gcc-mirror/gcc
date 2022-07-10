@@ -13,7 +13,7 @@ void nested()
 }
 
 @attribute("visibility", 123)
-int not_a_string(); // { dg-error "visibility argument not a string" }
+int not_a_string(); // { dg-error ".visibility. attribute argument not a string constant" }
 
 @attribute("visibility", "invalid argument")
 int invalid_argument(); // { dg-error ".visibility. argument must be one of" }

@@ -1953,15 +1953,18 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_rtl_cprop (m_ctxt); }
-  virtual bool gate (function *fun)
+  opt_pass * clone () final override { return new pass_rtl_cprop (m_ctxt); }
+  bool gate (function *fun) final override
     {
       return optimize > 0 && flag_gcse
 	&& !fun->calls_setjmp
 	&& dbg_cnt (cprop);
     }
 
-  virtual unsigned int execute (function *) { return execute_rtl_cprop (); }
+  unsigned int execute (function *) final override
+  {
+    return execute_rtl_cprop ();
+  }
 
 }; // class pass_rtl_cprop
 

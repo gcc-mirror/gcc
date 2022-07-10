@@ -74,7 +74,7 @@ test03()
   std::error_code ec2;
   fs::path p, p2;
   try {
-    fs::symlink_status(f.path);
+    (void) fs::symlink_status(f.path);
   } catch (const fs::filesystem_error& e) {
     caught = true;
     p = e.path1();

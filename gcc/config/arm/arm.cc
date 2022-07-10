@@ -24199,7 +24199,8 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	    return;
 	  }
 
-	unsigned HOST_WIDE_INT val = ~XUINT (x, 0);
+	unsigned HOST_WIDE_INT val
+	  = ~UINTVAL (x) & HOST_WIDE_INT_UC (0xffffffff);
 	int lsb = exact_log2 (val & -val);
 	asm_fprintf (stream, "#%d, #%d", lsb,
 		     (exact_log2 (val + (val & -val)) - lsb));

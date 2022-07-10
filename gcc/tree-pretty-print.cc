@@ -2077,7 +2077,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	for (tmp = TREE_TYPE (node); TREE_CODE (tmp) == ARRAY_TYPE;
 	     tmp = TREE_TYPE (tmp))
 	  ;
-	dump_generic_node (pp, tmp, spc, flags, false);
+
+	/* Avoid to print recursively the array.  */
+	/* FIXME : Not implemented correctly, see print_struct_decl.  */
+	if (TREE_CODE (tmp) != POINTER_TYPE || TREE_TYPE (tmp) != node)
+	  dump_generic_node (pp, tmp, spc, flags, false);
 
 	/* Print the dimensions.  */
 	for (tmp = node; TREE_CODE (tmp) == ARRAY_TYPE; tmp = TREE_TYPE (tmp))

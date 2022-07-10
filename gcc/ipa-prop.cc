@@ -126,7 +126,7 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
   static bool
   equal (const value_range *a, const value_range *b)
     {
-      return (a->equal_p (*b)
+      return (*a == *b
 	      && types_compatible_p (a->type (), b->type ()));
     }
   static const bool empty_zero_p = true;
@@ -3008,7 +3008,7 @@ public:
   analysis_dom_walker (struct ipa_func_body_info *fbi)
     : dom_walker (CDI_DOMINATORS), m_fbi (fbi) {}
 
-  virtual edge before_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
 
 private:
   struct ipa_func_body_info *m_fbi;
@@ -3410,7 +3410,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 			       ie->caller->dump_name ());
 	    }
 
-	  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+	  target = builtin_decl_unreachable ();
 	  callee = cgraph_node::get_create (target);
 	  unreachable = true;
 	}
@@ -3821,7 +3821,7 @@ ipa_impossible_devirt_target (struct cgraph_edge *ie, tree target)
 		 "No devirtualization target in %s\n",
 		 ie->caller->dump_name ());
     }
-  tree new_target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+  tree new_target = builtin_decl_unreachable ();
   cgraph_node::get_create (new_target);
   return new_target;
 }
@@ -5655,7 +5655,7 @@ public:
     : dom_walker (CDI_DOMINATORS), m_fbi (fbi), m_descriptors (descs),
       m_aggval (av), m_something_changed (sc) {}
 
-  virtual edge before_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
   bool cleanup_eh ()
     { return gimple_purge_all_dead_eh_edges (m_need_eh_cleanup); }
 

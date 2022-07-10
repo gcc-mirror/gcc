@@ -964,7 +964,7 @@ package body Sem_Aux is
    -- Is_Derived_Type --
    ---------------------
 
-   function Is_Derived_Type (Ent : E) return B is
+   function Is_Derived_Type (Ent : Entity_Id) return B is
       Par : Node_Id;
 
    begin
@@ -1130,10 +1130,8 @@ package body Sem_Aux is
 
          else
             declare
-               C : E;
-
+               C : Entity_Id := First_Component (Btype);
             begin
-               C := First_Component (Btype);
                while Present (C) loop
                   if Is_Limited_Type (Etype (C)) then
                      return True;

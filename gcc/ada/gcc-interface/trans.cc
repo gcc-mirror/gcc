@@ -4111,9 +4111,11 @@ node_is_atomic (Node_Id gnat_node)
     case N_Identifier:
     case N_Expanded_Name:
       gnat_entity = Entity (gnat_node);
-      if (Ekind (gnat_entity) != E_Variable)
+      if (!Is_Object (gnat_entity))
 	break;
-      return Is_Atomic (gnat_entity) || Is_Atomic (Etype (gnat_entity));
+      return Is_Atomic (gnat_entity)
+	     || (Is_Atomic (Etype (gnat_entity))
+		 && !simple_constant_p (gnat_entity));
 
     case N_Selected_Component:
       return Is_Atomic (Etype (gnat_node))
@@ -4152,7 +4154,8 @@ node_is_volatile_full_access (Node_Id gnat_node)
       if (!Is_Object (gnat_entity))
 	break;
       return Is_Volatile_Full_Access (gnat_entity)
-	     || Is_Volatile_Full_Access (Etype (gnat_entity));
+	     || (Is_Volatile_Full_Access (Etype (gnat_entity))
+		 && !simple_constant_p (gnat_entity));
 
     case N_Selected_Component:
       return Is_Volatile_Full_Access (Etype (gnat_node))
@@ -7384,9 +7387,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		    gnu_ret_val = maybe_unconstrained_array (gnu_ret_val);
 
 		    /* And find out whether it is a candidate for Named Return
-		       Value.  If so, record it.  Note that we disable this NRV
-		       optimization when we're preserving the control flow as
-		       it entails hoisting the allocation done below.  */
+		       Value.  If so, record it.  */
 		    if (optimize
 			&& !optimize_debug
 			&& !TYPE_CI_CO_LIST (gnu_subprog_type))
@@ -8730,6 +8731,17 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 
       gimplify_and_add (TREE_OPERAND (expr, 0), pre_p);
       return GS_OK;
+
+    case SAVE_EXPR:
+      op = TREE_OPERAND (expr, 0);
+
+      /* Propagate TREE_NO_WARNING from expression to temporary by using the
+	 SAVE_EXPR itself as an intermediate step.  See gimplify_save_expr.  */
+      if (SAVE_EXPR_RESOLVED_P (expr))
+	TREE_NO_WARNING (op) = TREE_NO_WARNING (expr);
+      else
+	TREE_NO_WARNING (expr) = TREE_NO_WARNING (op);
+      break;
 
     case UNCONSTRAINED_ARRAY_REF:
       /* We should only do this if we are just elaborating for side effects,

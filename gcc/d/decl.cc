@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "symtab-thunks.h"
+#include "gimple-expr.h"
 
 #include "d-tree.h"
 #include "d-target.h"
@@ -225,9 +226,9 @@ public:
 	RootObject *o = (*d->objects)[i];
 	if (o->dyncast () == DYNCAST_EXPRESSION)
 	  {
-	    DsymbolExp *de = ((Expression *) o)->isDsymbolExp ();
-	    if (de != NULL && de->s->isDeclaration ())
-	      this->build_dsymbol (de->s);
+	    VarExp *ve = ((Expression *) o)->isVarExp ();
+	    if (ve)
+	      this->build_dsymbol (ve->var);
 	  }
       }
   }
@@ -670,9 +671,13 @@ public:
 	    rest_of_decl_compilation (decl, 1, 0);
 	  }
       }
-    else if (d->isDataseg () && !(d->storage_class & STCextern))
+    else if (d->isDataseg ())
       {
 	tree decl = get_symbol_decl (d);
+
+	/* Only need to build the VAR_DECL for extern declarations.  */
+	if (d->storage_class & STCextern)
+	  return;
 
 	/* Duplicated VarDeclarations map to the same symbol.  Check if this
 	   is the one declaration which will be emitted.  */
@@ -1343,7 +1348,11 @@ get_symbol_decl (Declaration *decl)
   if (decl->storage_class & STCvolatile)
     TREE_THIS_VOLATILE (decl->csym) = 1;
 
-  /* Likewise, so could the deprecated attribute.  */
+  /* Symbol was marked register.  */
+  if (decl->storage_class & STCregister)
+    DECL_REGISTER (decl->csym) = 1;
+
+  /* Symbol was declared with deprecated attribute.  */
   if (decl->storage_class & STCdeprecated)
     TREE_DEPRECATED (decl->csym) = 1;
 
@@ -1375,6 +1384,18 @@ get_symbol_decl (Declaration *decl)
 
   /* Apply any user attributes that may affect semantic meaning.  */
   apply_user_attributes (decl, decl->csym);
+
+  /* Handle any conflicts between D language attributes and compiler-recognized
+   * user attributes.  */
+  if (VAR_P (decl->csym) && DECL_HARD_REGISTER (decl->csym))
+    {
+      if (decl->storage_class & STCextern)
+	error_at (make_location_t (decl->loc), "explicit register variable "
+		  "%qs declared %<extern%>", decl->toChars ());
+      else if (decl->isThreadlocal ())
+	error_at (make_location_t (decl->loc), "explicit register variable "
+		  "%qs declared thread local", decl->toChars ());
+    }
 
   /* %% Probably should be a little more intelligent about setting this.  */
   TREE_USED (decl->csym) = 1;
@@ -1445,11 +1466,7 @@ declare_local_var (VarDeclaration *var)
 tree
 build_local_temp (tree type)
 {
-  tree decl = build_decl (input_location, VAR_DECL, NULL_TREE, type);
-
-  DECL_CONTEXT (decl) = current_function_decl;
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
+  tree decl = create_tmp_var_raw (type);
   d_pushdecl (decl);
 
   return decl;

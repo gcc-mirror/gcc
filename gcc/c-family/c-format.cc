@@ -1742,7 +1742,8 @@ check_format_arg (void *ctx, tree format_tree,
     }
   tree underlying_type
     = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (format_tree)));
-  if (underlying_type != char_type_node)
+  if (underlying_type != char_type_node
+      && !(flag_char8_t && underlying_type == char8_type_node))
     {
       if (underlying_type == char16_type_node
 	  || underlying_type == char32_type_node
@@ -4624,7 +4625,6 @@ class range_label_for_format_type_mismatch
     suffix.fill_buffer (p);
 
     char *result = concat (text.m_buffer, p, NULL);
-    text.maybe_free ();
     return label_text::take (result);
   }
 

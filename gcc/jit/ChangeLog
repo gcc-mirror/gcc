@@ -1,3 +1,17 @@
+2022-06-29  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/105812
+	* jit-playback.cc: Use the correct return type when folding in
+	as_truth_value.
+
+2022-06-29  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* jit-playback.cc: Include <pthread.h> via "system.h" to avoid calloc()
+	poisoning.
+	* jit-recording.cc: Ditto.
+	* libgccjit.cc: Ditto.
+
 2022-06-10  Antoni Boucher  <bouanto@zoho.com>
 
 	PR jit/105829

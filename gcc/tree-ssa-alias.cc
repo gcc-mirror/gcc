@@ -87,10 +87,11 @@ along with GCC; see the file COPYING3.  If not see
 
      This function tries to disambiguate two reference trees.
 
-   bool ptr_deref_may_alias_global_p (tree)
+   bool ptr_deref_may_alias_global_p (tree, bool)
 
      This function queries if dereferencing a pointer variable may
-     alias global memory.
+     alias global memory.  If bool argument is true, global memory
+     is considered to also include function local memory that escaped.
 
    More low-level disambiguators are available and documented in
    this file.  Low-level disambiguators dealing with points-to
@@ -3333,11 +3334,18 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
       && TREE_CODE (gimple_get_lhs (stmt)) != SSA_NAME
       /* The assignment is not necessarily carried out if it can throw
 	 and we can catch it in the current function where we could inspect
-	 the previous value.
+	 the previous value.  Similarly if the function can throw externally
+	 and the ref does not die on the function return.
 	 ???  We only need to care about the RHS throwing.  For aggregate
 	 assignments or similar calls and non-call exceptions the LHS
-	 might throw as well.  */
-      && !stmt_can_throw_internal (cfun, stmt))
+	 might throw as well.
+	 ???  We also should care about possible longjmp, but since we
+	 do not understand that longjmp is not using global memory we will
+	 not consider a kill here since the function call will be considered
+	 as possibly using REF.	 */
+      && !stmt_can_throw_internal (cfun, stmt)
+      && (!stmt_can_throw_external (cfun, stmt)
+	  || !ref_may_alias_global_p (ref, false)))
     {
       tree lhs = gimple_get_lhs (stmt);
       /* If LHS is literally a base of the access we are done.  */
@@ -3434,8 +3442,12 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	  && node->binds_to_current_def_p ()
 	  && (summary = get_modref_function_summary (node)) != NULL
 	  && summary->kills.length ()
+	  /* Check that we can not trap while evaulating function
+	     parameters.  This check is overly conservative.  */
 	  && (!cfun->can_throw_non_call_exceptions
-	      || !stmt_can_throw_internal (cfun, stmt)))
+	      || (!stmt_can_throw_internal (cfun, stmt)
+		  && (!stmt_can_throw_external (cfun, stmt)
+		      || !ref_may_alias_global_p (ref, false)))))
 	{
 	  for (auto kill : summary->kills)
 	    {

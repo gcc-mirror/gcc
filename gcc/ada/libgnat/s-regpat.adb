@@ -359,10 +359,11 @@ package body System.Regpat is
    -------------
 
    procedure Compile
-     (Matcher         : out Pattern_Matcher;
-      Expression      : String;
-      Final_Code_Size : out Program_Size;
-      Flags           : Regexp_Flags := No_Flags)
+     (Matcher              : out Pattern_Matcher;
+      Expression           : String;
+      Final_Code_Size      : out Program_Size;
+      Flags                : Regexp_Flags := No_Flags;
+      Error_When_Too_Small : Boolean := True)
    is
       --  We can't allocate space until we know how big the compiled form
       --  will be, but we can't compile it (and thus know how big it is)
@@ -1994,6 +1995,12 @@ package body System.Regpat is
       end if;
 
       PM.Flags := Flags;
+
+      --  Raise the appropriate error when Matcher does not have enough space
+
+      if Error_When_Too_Small and then Matcher.Size < Final_Code_Size then
+         raise Expression_Error with "Pattern_Matcher is too small";
+      end if;
    end Compile;
 
    function Compile
@@ -2009,7 +2016,7 @@ package body System.Regpat is
       Size  : Program_Size;
 
    begin
-      Compile (Dummy, Expression, Size, Flags);
+      Compile (Dummy, Expression, Size, Flags, Error_When_Too_Small => False);
 
       if Size <= Dummy.Size then
          return Pattern_Matcher'
@@ -2023,17 +2030,13 @@ package body System.Regpat is
             Program          =>
               Dummy.Program
                 (Dummy.Program'First .. Dummy.Program'First + Size - 1));
-      else
-         --  We have to recompile now that we know the size
-         --  ??? Can we use Ada 2005's return construct ?
-
-         declare
-            Result : Pattern_Matcher (Size);
-         begin
-            Compile (Result, Expression, Size, Flags);
-            return Result;
-         end;
       end if;
+
+      return
+         Result : Pattern_Matcher (Size)
+      do
+         Compile (Result, Expression, Size, Flags);
+      end return;
    end Compile;
 
    procedure Compile

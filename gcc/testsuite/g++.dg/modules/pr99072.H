@@ -7,4 +7,6 @@
 # 1 "REALNAME"
 
 // { dg-additional-options {-fmodule-header -fpreprocessed -fdump-lang-module-lineno} }
-// { dg-final { scan-lang-dump { 4 source file names\n Source file\[0\]=REALNAME\n Source file\[1\]=<built-in>\n Source file\[2\]=<command-line>\n Source file\[3\]=/usr/include/stdc-predef.h\n} module } }
+// All locations are pruned.
+// { dg-final { scan-lang-dump-not {Writing ordinary location maps} module } }
+// { dg-final { scan-lang-dump-not {  Span:. ordinary } module } }

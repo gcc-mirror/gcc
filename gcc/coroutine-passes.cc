@@ -213,9 +213,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_coroutines; };
+  bool gate (function *) final override { return flag_coroutines; };
 
-  virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)
+  unsigned int execute (function *f ATTRIBUTE_UNUSED) final override
   {
     return execute_lower_coro_builtins ();
   }
@@ -511,12 +511,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *f)
+  bool gate (function *f) final override
     {
       return flag_coroutines && f->coroutine_component;
     }
 
-  virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)
+  unsigned int execute (function *f ATTRIBUTE_UNUSED) final override
   {
     return execute_early_expand_coro_ifns ();
   }

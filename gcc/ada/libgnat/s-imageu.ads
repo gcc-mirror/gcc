@@ -54,27 +54,34 @@ generic
 
    Unsigned_Width_Ghost : Natural;
 
-   with function Wrap_Option (Value : Uns) return Uns_Option;
+   with function Wrap_Option (Value : Uns) return Uns_Option
+      with Ghost;
    with function Only_Decimal_Ghost
      (Str      : String;
       From, To : Integer)
-      return Boolean;
-   with function Hexa_To_Unsigned_Ghost (X : Character) return Uns;
+      return Boolean
+      with Ghost;
+   with function Hexa_To_Unsigned_Ghost (X : Character) return Uns
+      with Ghost;
    with function Scan_Based_Number_Ghost
      (Str      : String;
       From, To : Integer;
       Base     : Uns := 10;
-      Acc      : Uns := 0) return Uns_Option;
-   with function Is_Unsigned_Ghost (Str : String) return Boolean;
+      Acc      : Uns := 0) return Uns_Option
+      with Ghost;
+   with function Is_Unsigned_Ghost (Str : String) return Boolean
+      with Ghost;
    with function Value_Unsigned (Str : String) return Uns;
    with procedure Prove_Iter_Scan_Based_Number_Ghost
      (Str1, Str2 : String;
       From, To : Integer;
       Base     : Uns := 10;
-      Acc      : Uns := 0);
+      Acc      : Uns := 0)
+      with Ghost;
    with procedure Prove_Scan_Only_Decimal_Ghost
      (Str : String;
-      Val : Uns);
+      Val : Uns)
+      with Ghost;
 
 package System.Image_U is
 

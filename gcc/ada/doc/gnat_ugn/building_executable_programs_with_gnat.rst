@@ -3277,8 +3277,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   If this warning option is activated, then warnings are generated for
   calls to subprograms marked with ``pragma Obsolescent`` and
   for use of features in Annex J of the Ada Reference Manual. In the
-  case of Annex J, not all features are flagged. In particular use
-  of the renamed packages (like ``Text_IO``) and use of package
+  case of Annex J, not all features are flagged. In particular, uses of package
   ``ASCII`` are not flagged, since these are very common and
   would generate many annoying positive warnings. The default is that
   such warnings are not generated.
@@ -4331,15 +4330,31 @@ Debugging and Assertion Control
   Which is a shorthand for::
 
        pragma Assertion_Policy
-         (Assert               => Check,
-          Static_Predicate     => Check,
-          Dynamic_Predicate    => Check,
-          Pre                  => Check,
-          Pre'Class            => Check,
-          Post                 => Check,
-          Post'Class           => Check,
-          Type_Invariant       => Check,
-          Type_Invariant'Class => Check);
+       --  Ada RM assertion pragmas
+         (Assert                    => Check,
+          Static_Predicate          => Check,
+          Dynamic_Predicate         => Check,
+          Pre                       => Check,
+          Pre'Class                 => Check,
+          Post                      => Check,
+          Post'Class                => Check,
+          Type_Invariant            => Check,
+          Type_Invariant'Class      => Check,
+          Default_Initial_Condition => Check,
+       --  GNAT specific assertion pragmas
+          Assert_And_Cut            => Check,
+          Assume                    => Check,
+          Contract_Cases            => Check,
+          Debug                     => Check,
+          Ghost                     => Check,
+          Initial_Condition         => Check,
+          Loop_Invariant            => Check,
+          Loop_Variant              => Check,
+          Postcondition             => Check,
+          Precondition              => Check,
+          Predicate                 => Check,
+          Refined_Post              => Check,
+          Subprogram_Variant        => Check);
 
   The pragmas ``Assert`` and ``Debug`` normally have no effect and
   are ignored. This switch, where ``a`` stands for 'assert', causes

@@ -1,3 +1,240 @@
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (start_cfg_edge_event::get_desc): Update for
+	superedge::get_description returning a label_text.
+	* engine.cc (feasibility_state::maybe_update_for_edge): Likewise.
+	* supergraph.cc (superedge::dump): Likewise.
+	(superedge::get_description): Convert return type from char * to
+	label_text.
+	* supergraph.h (superedge::get_description): Likewise.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-info.cc (call_info::print): Update for removal of
+	label_text::maybe_free in favor of automatic memory management.
+	* checker-path.cc (checker_event::dump): Likewise.
+	(checker_event::prepare_for_emission): Likewise.
+	(state_change_event::get_desc): Likewise.
+	(superedge_event::should_filter_p): Likewise.
+	(start_cfg_edge_event::get_desc): Likewise.
+	(warning_event::get_desc): Likewise.
+	(checker_path::dump): Likewise.
+	(checker_path::debug): Likewise.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Likewise.
+	(diagnostic_manager::prune_interproc_events): Likewise.
+	* program-state.cc (sm_state_map::to_json): Likewise.
+	* region.cc (region::to_json): Likewise.
+	* sm-malloc.cc (inform_nonnull_attribute): Likewise.
+	* store.cc (binding_map::to_json): Likewise.
+	(store::to_json): Likewise.
+	* svalue.cc (svalue::to_json): Likewise.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106225
+	* sm-taint.cc (taint_state_machine::on_stmt): Move handling of
+	assignments from division to...
+	(taint_state_machine::check_for_tainted_divisor): ...this new
+	function.  Reject warning when the divisor is known to be non-zero.
+	* sm.cc: Include "analyzer/program-state.h".
+	(sm_context::get_old_region_model): New.
+	* sm.h (sm_context::get_old_region_model): New decl.
+
+2022-07-06  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106184
+	* sm-fd.cc (fd_state_machine): Change ordering of initialization
+	of state m_invalid so that the order of initializers is same as
+	the ordering of the fields in the class decl.
+
+2022-07-06  Immad Mir  <mirimmad@outlook.com>
+
+	* sm-fd.cc (use_after_close): save the "close" event and
+	show it where possible.
+
+2022-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106204
+	* region-model.cc (within_short_circuited_stmt_p): Move extraction
+	of assign_stmt to caller.
+	(due_to_ifn_deferred_init_p): New.
+	(region_model::check_for_poison): Move extraction of assign_stmt
+	from within_short_circuited_stmt_p to here.  Share logic with
+	call to due_to_ifn_deferred_init_p.
+
+2022-07-02  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/105900
+	* analyzer.opt: Added Wanalyzer-allocation-size.
+	* checker-path.cc (region_creation_event::get_desc): Added call to new
+	virtual function pending_diagnostic::describe_region_creation_event.
+	* checker-path.h: Added region_creation_event::get_desc.
+	* diagnostic-manager.cc (diagnostic_manager::add_event_on_final_node):
+	New function.
+	* diagnostic-manager.h:
+	Added diagnostic_manager::add_event_on_final_node.
+	* pending-diagnostic.h (struct region_creation): New event_desc struct.
+	(pending_diagnostic::describe_region_creation_event): Added virtual
+	function to overwrite description of a region creation.
+	* region-model.cc (class dubious_allocation_size): New class.
+	(capacity_compatible_with_type): New helper function.
+	(class size_visitor): New class.
+	(struct_or_union_with_inheritance_p): New helper function.
+	(is_any_cast_p): New helper function.
+	(region_model::check_region_size): New function.
+	(region_model::set_value): Added call to
+	region_model::check_region_size.
+	* region-model.h (class region_model): New function check_region_size.
+	* svalue.cc (region_svalue::accept): Changed to post-order traversal.
+	(initial_svalue::accept): Likewise.
+	(unaryop_svalue::accept): Likewise.
+	(binop_svalue::accept): Likewise.
+	(sub_svalue::accept): Likewise.
+	(repeated_svalue::accept): Likewise.
+	(bits_within_svalue::accept): Likewise.
+	(widening_svalue::accept): Likewise.
+	(unmergeable_svalue::accept): Likewise.
+	(compound_svalue::accept): Likewise.
+	(conjured_svalue::accept): Likewise.
+	(asm_output_svalue::accept): Likewise.
+	(const_fn_result_svalue::accept): Likewise.
+
+2022-07-02  Immad Mir  <mirimmad17@gmail.com>
+
+	PR analyzer/106003
+	* analyzer.opt (Wanalyzer-fd-leak): New option.
+	(Wanalyzer-fd-access-mode-mismatch): New option.
+	(Wanalyzer-fd-use-without-check): New option.
+	(Wanalyzer-fd-double-close): New option.
+	(Wanalyzer-fd-use-after-close): New option.
+	* sm.h (make_fd_state_machine): New decl.
+	* sm.cc (make_checkers): Call make_fd_state_machine.
+	* sm-fd.cc: New file.
+
+2022-06-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-string.cc: Add includes of "analyzer/analyzer.h"
+	and "analyzer/analyzer-logging.h".
+	(call_string::call_string): Delete copy ctor.
+	(call_string::operator=): Delete.
+	(call_string::operator==): Delete.
+	(call_string::hash): Delete.
+	(call_string::push_call): Make const, returning the resulting
+	call_string.
+	(call_string::pop): Delete.
+	(call_string::cmp_ptr_ptr): New.
+	(call_string::validate): Assert that m_parent is non-NULL, or
+	m_elements is empty.
+	(call_string::call_string): Move default ctor here from
+	call-string.h and reimplement.  Add ctor taking a parent
+	and an element.
+	(call_string::~call_string): New.
+	(call_string::recursive_log): New.
+	* call-string.h (call_string::call_string): Move default ctor's
+	defn to call-string.cc.  Delete copy ctor.  Add ctor taking a
+	parent and an element.
+	(call_string::operator=): Delete.
+	(call_string::operator==): Delete.
+	(call_string::hash): Delete.
+	(call_string::push_call): Make const, returning the resulting
+	call_string.
+	(call_string::pop): Delete decl.
+	(call_string::get_parent): New.
+	(call_string::cmp_ptr_ptr): New decl.
+	(call_string::get_top_of_stack): New.
+	(struct call_string::hashmap_traits_t): New.
+	(class call_string): Add friend class region_model_manager.  Add
+	DISABLE_COPY_AND_ASSIGN.
+	(call_string::~call_string): New decl.
+	(call_string::recursive_log): New decl.
+	(call_string::m_parent): New field.
+	(call_string::m_children): New field.
+	* constraint-manager.cc (selftest::test_many_constants): Pass
+	model manager to program_point::origin.
+	* engine.cc (exploded_graph::exploded_graph): Likewise.
+	(exploded_graph::add_function_entry): Likewise for
+	program_point::from_function_entry.
+	(add_tainted_args_callback): Likewise.
+	(exploded_graph::maybe_process_run_of_before_supernode_enodes):
+	Update for change to program_point.get_call_string.
+	(exploded_graph::process_node): Likewise.
+	(class function_call_string_cluster): Convert m_cs from a
+	call_string to a const call_string &.
+	(struct function_call_string): Likewise.
+	(pod_hash_traits<function_call_string>::hash): Use pointer_hash
+	for m_cs.
+	(pod_hash_traits<function_call_string>::equal): Update for change
+	to m_cs.
+	(root_cluster::add_node): Update for change to
+	function_call_string.
+	(viz_callgraph_node::dump_dot): Update for change to call_string.
+	* exploded-graph.h (per_call_string_data::m_key): Convert to a
+	reference.
+	(struct eg_call_string_hash_map_traits): Delete.
+	(exploded_graph::call_string_data_map_t): Remove traits class.
+	* program-point.cc: Move include of "analyzer/call-string.h" to
+	after "analyzer/analyzer-logging.h".
+	(program_point::print): Update for conversion of m_call_string to
+	a pointer.
+	(program_point::to_json): Likewise.
+	(program_point::push_to_call_stack): Update for immutability of
+	call strings.
+	(program_point::pop_from_call_stack): Likewise.
+	(program_point::hash): Use pointer hashing for m_call_string.
+	(program_point::get_function_at_depth): Update for change to
+	m_call_string.
+	(program_point::validate): Update for changes to call_string.
+	(program_point::on_edge): Likewise.
+	(program_point::origin): Move here from call-string.h.  Add
+	region_model_manager param and use it to get empty call string.
+	(program_point::from_function_entry): Likewise.
+	(selftest::test_function_point_ordering): Likewise.
+	(selftest::test_function_point_ordering): Likewise.
+	* program-point.h (program_point::program_point): Update for
+	change to m_call_string.
+	(program_point::get_call_string): Likewise.
+	(program_point::get_stack_depth): Likewise.
+	(program_point::origin): Add region_model_manager param, and move
+	defn to call-string.cc.
+	(program_point::from_function_entry): Likewise.
+	(program_point::empty): Drop call_string.
+	(program_point::deleted): Likewise.
+	(program_point::program_point): New private ctor.
+	(program_point::m_call_string): Convert from call_string to const
+	call_string *.
+	* program-state.cc (selftest::test_program_state_merging): Update
+	for call_string changes.
+	(selftest::test_program_state_merging_2): Likewise.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Construct
+	m_empty_call_string.
+	(region_model_manager::log_stats): Log the call strings.
+	* region-model.cc (assert_region_models_merge): Pass the
+	region_model_manager when creating program_point instances.
+	(selftest::test_state_merging): Likewise.
+	(selftest::test_constraint_merging): Likewise.
+	(selftest::test_widening_constraints): Likewise.
+	(selftest::test_iteration_1): Likewise.
+	* region-model.h (region_model_manager::get_empty_call_string):
+	New.
+	(region_model_manager::m_empty_call_string): New.
+	* sm-signal.cc (register_signal_handler::impl_transition): Update
+	for changes to call_string.
+
+2022-06-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-string.cc (call_string::calc_recursion_depth): Whitespace
+	cleanups.
+	(call_string::cmp): Likewise.
+	(call_string::get_caller_node): Likewise.
+	(call_string::validate): Likewise.
+	* engine.cc (dynamic_call_info_t::add_events_to_path): Likewise.
+	(exploded_graph::get_per_function_data): Likewise.
+	(exploded_graph::maybe_create_dynamic_call): Likewise.
+	(exploded_graph::maybe_create_dynamic_call): Likewise.
+	(exploded_graph::process_node): Likewise.
+
 2022-06-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* varargs.cc (va_arg_type_mismatch::emit): Associate the warning

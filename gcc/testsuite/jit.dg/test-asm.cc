@@ -1,5 +1,6 @@
 /* { dg-do compile { target x86_64-*-* } } */
 
+#include <stdint.h>
 #include "libgccjit++.h"
 
 #include "harness.h"

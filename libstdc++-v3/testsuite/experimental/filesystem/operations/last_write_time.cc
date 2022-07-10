@@ -18,6 +18,7 @@
 // { dg-options "-DUSE_FILESYSTEM_TS -lstdc++fs" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
+// { dg-require-target-fs-lwt "" }
 
 // 15.25 Permissions [fs.op.last_write_time]
 

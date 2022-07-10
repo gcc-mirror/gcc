@@ -113,13 +113,6 @@ package Exp_Ch3 is
    --  Build the body of the equality function Body_Id for the untagged variant
    --  record Typ with the given parameters specification list.
 
-   procedure Ensure_Activation_Chain_And_Master (Obj_Decl : Node_Id);
-   --  If tasks are being declared (or might be declared) by the given object
-   --  declaration then ensure to have an activation chain defined for the
-   --  tasks (has no effect if we already have one), and also that a Master
-   --  variable is established (and that the appropriate enclosing construct
-   --  is established as a task master).
-
    function Freeze_Type (N : Node_Id) return Boolean;
    --  This function executes the freezing actions associated with the given
    --  freeze type node N and returns True if the node is to be deleted. We

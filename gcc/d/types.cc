@@ -392,10 +392,10 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 		  RootObject *ro = (*td->objects)[j];
 		  gcc_assert (ro->dyncast () == DYNCAST_EXPRESSION);
 		  Expression *e = (Expression *) ro;
-		  gcc_assert (e->op == EXP::dSymbol);
-		  DsymbolExp *se = e->isDsymbolExp ();
+		  gcc_assert (e->op == EXP::variable);
+		  VarExp *ve = e->isVarExp ();
 
-		  tmembers.push (se->s);
+		  tmembers.push (ve->var);
 		}
 
 	      fields += layout_aggregate_members (&tmembers, context,

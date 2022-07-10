@@ -282,6 +282,7 @@ enum class TOK : unsigned char
     cdecl_,
     declspec,
     stdcall,
+    pragma,
     attribute__,
 
     MAX,

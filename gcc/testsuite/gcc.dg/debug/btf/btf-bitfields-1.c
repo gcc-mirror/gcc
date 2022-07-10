@@ -5,16 +5,19 @@
      (bit_size << 24) | bit_offset
      - (0xa  << 24) | 0x20
      - (0x7  << 24) | 0x2a
-     - (0x13 << 24) | 0x40 - note that this is aligned to 0x40.  */
+     - (0x13 << 24) | 0x40 - note that this is aligned to 0x40.
+     - (0x13 << 24) | 0x31 - in case structures are packed.  */
 
 /* { dg-do compile )  */
 /* { dg-options "-O0 -gbtf -dA" } */
+/* { dg-require-effective-target int32plus } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0x84000004\[\t \]+\[^\n\]*btt_info" 1 } } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0xa000020\[\t \]+\[^\n\]*btm_offset" 1 } } */
 /* { dg-final { scan-assembler-times "\[\t \]0x700002a\[\t \]+\[^\n\]*btm_offset" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0x13000040\[\t \]+\[^\n\]*btm_offset" 1 } } */
+/* { dg-final { scan-assembler-times "\[\t \]0x13000040\[\t \]+\[^\n\]*btm_offset" 1 { target { ! default_packed } } } } */
+/* { dg-final { scan-assembler-times "\[\t \]0x13000031\[\t \]+\[^\n\]*btm_offset" 1 { target { default_packed } } } } */
 
 struct bitt {
   int a;

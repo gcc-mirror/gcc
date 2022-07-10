@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Einfo.Entities; use Einfo.Entities;
+with Sinfo.Nodes;    use Sinfo.Nodes;
 
 package Einfo.Utils is
 
@@ -73,14 +74,16 @@ package Einfo.Utils is
    -------------------
 
    --  The following type synonyms are used to tidy up the function and
-   --  procedure declarations that follow.
+   --  procedure declarations that follow. Note that E and N have predicates
+   --  ensuring the correct kind; we use Entity_Id or Node_Id when the
+   --  predicates can't be satisfied.
 
    subtype B is Boolean;
    subtype C is Component_Alignment_Kind;
-   subtype E is Entity_Id;
+   subtype E is N_Entity_Id;
    subtype F is Float_Rep_Kind;
    subtype M is Mechanism_Type;
-   subtype N is Node_Id;
+   subtype N is Node_Id with Predicate => N /= Empty and then N not in E;
    subtype U is Uint;
    subtype R is Ureal;
    subtype L is Elist_Id;
@@ -199,17 +202,17 @@ package Einfo.Utils is
    --  The functions in this section synthesize attributes from the tree,
    --  so they do not correspond to defined fields in the entity itself.
 
-   function Address_Clause                      (Id : E) return N;
+   function Address_Clause                      (Id : E) return Node_Id;
    function Aft_Value                           (Id : E) return U;
-   function Alignment_Clause                    (Id : E) return N;
+   function Alignment_Clause                    (Id : E) return Node_Id;
    function Base_Type                           (Id : E) return E;
-   function Declaration_Node                    (Id : E) return N;
+   function Declaration_Node                    (Id : E) return Node_Id;
    function Designated_Type                     (Id : E) return E;
    function Entry_Index_Type                    (Id : E) return E;
-   function First_Component                     (Id : E) return E;
-   function First_Component_Or_Discriminant     (Id : E) return E;
-   function First_Formal                        (Id : E) return E;
-   function First_Formal_With_Extras            (Id : E) return E;
+   function First_Component                     (Id : E) return Entity_Id;
+   function First_Component_Or_Discriminant     (Id : E) return Entity_Id;
+   function First_Formal                        (Id : E) return Entity_Id;
+   function First_Formal_With_Extras            (Id : E) return Entity_Id;
 
    function Float_Rep
      (N : Entity_Id) return F with Inline, Pre =>
@@ -260,7 +263,7 @@ package Einfo.Utils is
    function Is_Task_Interface                   (Id : E) return B;
    function Is_Task_Record_Type                 (Id : E) return B;
    function Is_Wrapper_Package                  (Id : E) return B;
-   function Last_Formal                         (Id : E) return E;
+   function Last_Formal                         (Id : E) return Entity_Id;
    function Machine_Emax_Value                  (Id : E) return U;
    function Machine_Emin_Value                  (Id : E) return U;
    function Machine_Mantissa_Value              (Id : E) return U;
@@ -269,18 +272,18 @@ package Einfo.Utils is
    function Model_Epsilon_Value                 (Id : E) return R;
    function Model_Mantissa_Value                (Id : E) return U;
    function Model_Small_Value                   (Id : E) return R;
-   function Next_Component                      (Id : E) return E;
-   function Next_Component_Or_Discriminant      (Id : E) return E;
-   function Next_Discriminant                   (Id : E) return E;
-   function Next_Formal                         (Id : E) return E;
-   function Next_Formal_With_Extras             (Id : E) return E;
-   function Next_Index                          (Id : N) return N;
-   function Next_Literal                        (Id : E) return E;
-   function Next_Stored_Discriminant            (Id : E) return E;
+   function Next_Component                      (Id : E) return Entity_Id;
+   function Next_Component_Or_Discriminant      (Id : E) return Entity_Id;
+   function Next_Discriminant                   (Id : E) return Entity_Id;
+   function Next_Formal                         (Id : E) return Entity_Id;
+   function Next_Formal_With_Extras             (Id : E) return Entity_Id;
+   function Next_Index                          (Id : N) return Node_Id;
+   function Next_Literal                        (Id : E) return Entity_Id;
+   function Next_Stored_Discriminant            (Id : E) return Entity_Id;
    function Number_Dimensions                   (Id : E) return Pos;
    function Number_Entries                      (Id : E) return Nat;
    function Number_Formals                      (Id : E) return Pos;
-   function Object_Size_Clause                  (Id : E) return N;
+   function Object_Size_Clause                  (Id : E) return Node_Id;
    function Parameter_Mode                      (Id : E) return Formal_Kind;
    function Partial_Refinement_Constituents     (Id : E) return L;
    function Primitive_Operations                (Id : E) return L;
@@ -288,11 +291,11 @@ package Einfo.Utils is
    function Safe_Emax_Value                     (Id : E) return U;
    function Safe_First_Value                    (Id : E) return R;
    function Safe_Last_Value                     (Id : E) return R;
-   function Size_Clause                         (Id : E) return N;
+   function Size_Clause                         (Id : E) return Node_Id;
    function Stream_Size_Clause                  (Id : E) return N;
    function Type_High_Bound                     (Id : E) return N;
    function Type_Low_Bound                      (Id : E) return N;
-   function Underlying_Type                     (Id : E) return E;
+   function Underlying_Type                     (Id : E) return Entity_Id;
 
    function Scope_Depth                         (Id : E) return U;
    function Scope_Depth_Set                     (Id : E) return B;
@@ -432,11 +435,11 @@ package Einfo.Utils is
 
    function Is_Partial_DIC_Procedure             (Id : E) return B;
 
-   function DIC_Procedure                        (Id : E) return E;
-   function Partial_DIC_Procedure                (Id : E) return E;
-   function Invariant_Procedure                  (Id : E) return E;
-   function Partial_Invariant_Procedure          (Id : E) return E;
-   function Predicate_Function                   (Id : E) return E;
+   function DIC_Procedure                        (Id : E) return Entity_Id;
+   function Partial_DIC_Procedure                (Id : E) return Entity_Id;
+   function Invariant_Procedure                  (Id : E) return Entity_Id;
+   function Partial_Invariant_Procedure          (Id : E) return Entity_Id;
+   function Predicate_Function                   (Id : E) return Entity_Id;
 
    procedure Set_DIC_Procedure                   (Id : E; V : E);
    procedure Set_Partial_DIC_Procedure           (Id : E; V : E);

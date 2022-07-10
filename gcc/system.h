@@ -753,6 +753,10 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #endif
 #endif
 
+#ifdef INCLUDE_PTHREAD_H
+#include <pthread.h>
+#endif
+
 #ifdef INCLUDE_ISL
 #ifdef HAVE_isl
 #include <isl/options.h>

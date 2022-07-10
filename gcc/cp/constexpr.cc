@@ -1438,6 +1438,20 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 	/* These builtins shall be ignored during constant expression
 	   evaluation.  */
 	return void_node;
+      case BUILT_IN_UNREACHABLE:
+      case BUILT_IN_TRAP:
+	if (!*non_constant_p && !ctx->quiet)
+	  {
+	    /* Do not allow__builtin_unreachable in constexpr function.
+	       The __builtin_unreachable call with BUILTINS_LOCATION
+	       comes from cp_maybe_instrument_return.  */
+	    if (EXPR_LOCATION (t) == BUILTINS_LOCATION)
+	      error ("%<constexpr%> call flows off the end of the function");
+	    else
+	      error ("%q+E is not a constant expression", t);
+	  }
+	*non_constant_p = true;
+	return t;
       default:
 	break;
       }
@@ -1531,18 +1545,9 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
     {
       if (!*non_constant_p && !ctx->quiet)
 	{
-	  /* Do not allow__builtin_unreachable in constexpr function.
-	     The __builtin_unreachable call with BUILTINS_LOCATION
-	     comes from cp_maybe_instrument_return.  */
-	  if (fndecl_built_in_p (fun, BUILT_IN_UNREACHABLE)
-	      && EXPR_LOCATION (t) == BUILTINS_LOCATION)
-	    error ("%<constexpr%> call flows off the end of the function");
-	  else
-	    {
-	      new_call = build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
-					       CALL_EXPR_FN (t), nargs, args);
-	      error ("%q+E is not a constant expression", new_call);
-	    }
+	  new_call = build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
+					   CALL_EXPR_FN (t), nargs, args);
+	  error ("%q+E is not a constant expression", new_call);
 	}
       *non_constant_p = true;
       return t;
@@ -3502,6 +3507,13 @@ cxx_eval_conditional_expression (const constexpr_ctx *ctx, tree t,
     val = TREE_OPERAND (t, 1);
   if (TREE_CODE (t) == IF_STMT && !val)
     val = void_node;
+  /* A TARGET_EXPR may be nested inside another TARGET_EXPR, but still
+     serve as the initializer for the same object as the outer TARGET_EXPR,
+     as in
+       A a = true ? A{} : A{};
+     so strip the inner TARGET_EXPR so we don't materialize a temporary.  */
+  if (TREE_CODE (val) == TARGET_EXPR)
+    val = TARGET_EXPR_INITIAL (val);
   return cxx_eval_constant_expression (ctx, val, lval, non_constant_p,
 				       overflow_p, jump_target);
 }

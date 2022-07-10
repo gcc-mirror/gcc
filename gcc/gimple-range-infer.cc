@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "gimple-range.h"
+#include "value-range-storage.h"
 #include "tree-cfg.h"
 #include "target.h"
 #include "attribs.h"
@@ -166,6 +167,7 @@ infer_range_manager::infer_range_manager (bool do_search)
   // Non-zero elements are very common, so cache them for each ssa-name.
   m_nonzero.create (0);
   m_nonzero.safe_grow_cleared (num_ssa_names + 1);
+  m_range_allocator = new obstack_vrange_allocator;
 }
 
 // Destruct a range infer manager.
@@ -176,6 +178,7 @@ infer_range_manager::~infer_range_manager ()
   obstack_free (&m_list_obstack, NULL);
   m_on_exit.release ();
   bitmap_obstack_release (&m_bitmaps);
+  delete m_range_allocator;
 }
 
 // Return a non-zero range value of the appropriate type for NAME from
@@ -189,7 +192,7 @@ infer_range_manager::get_nonzero (tree name)
     m_nonzero.safe_grow_cleared (num_ssa_names + 20);
   if (!m_nonzero[v])
     {
-      m_nonzero[v] = m_range_allocator.alloc_vrange (TREE_TYPE (name));
+      m_nonzero[v] = m_range_allocator->alloc_vrange (TREE_TYPE (name));
       m_nonzero[v]->set_nonzero (TREE_TYPE (name));
     }
   return *(m_nonzero[v]);
@@ -261,7 +264,7 @@ infer_range_manager::add_range (tree name, basic_block bb, const vrange &r)
       else
 	{
 	  vrange &v = cur;
-	  ptr->range = m_range_allocator.clone (v);
+	  ptr->range = m_range_allocator->clone (v);
 	}
       return;
     }
@@ -269,7 +272,7 @@ infer_range_manager::add_range (tree name, basic_block bb, const vrange &r)
   // Otherwise create a record.
   bitmap_set_bit (m_on_exit[bb->index].m_names, SSA_NAME_VERSION (name));
   ptr = (exit_range *)obstack_alloc (&m_list_obstack, sizeof (exit_range));
-  ptr->range = m_range_allocator.clone (r);
+  ptr->range = m_range_allocator->clone (r);
   ptr->name = name;
   ptr->next = m_on_exit[bb->index].head;
   m_on_exit[bb->index].head = ptr;

@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa.h"
 #include "tree-into-ssa.h"
+#include "tree-ssa-propagate.h"
 #include "graphite.h"
 
 /* Print global statistics to FILE.  */
@@ -337,7 +338,9 @@ canonicalize_loop_closed_ssa (loop_p loop, edge e)
       /* Iterate over the next phis and remove duplicates.  */
       gsi_next (&gsi);
       while (!gsi_end_p (gsi))
-	if (gimple_phi_arg_def (phi, 0) == gimple_phi_arg_def (gsi.phi (), 0))
+	if (gimple_phi_arg_def (phi, 0) == gimple_phi_arg_def (gsi.phi (), 0)
+	    && may_propagate_copy (gimple_phi_result (gsi.phi ()),
+				   gimple_phi_result (phi)))
 	  {
 	    replace_uses_by (gimple_phi_result (gsi.phi ()),
 			     gimple_phi_result (phi));
@@ -574,7 +577,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_graphite_transforms (); }
+  bool gate (function *) final override { return gate_graphite_transforms (); }
 
 }; // class pass_graphite
 
@@ -609,8 +612,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_graphite_transforms (); }
-  virtual unsigned int execute (function *fun) { return graphite_transforms (fun); }
+  bool gate (function *) final override { return gate_graphite_transforms (); }
+  unsigned int execute (function *fun) final override
+  {
+    return graphite_transforms (fun);
+  }
 
 }; // class pass_graphite_transforms
 

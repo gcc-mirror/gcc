@@ -302,6 +302,34 @@ auto optimize(A...)(A arguments)
 }
 
 /**
+ * The `@register` attribute specifies that a local or `__gshared` variable
+ * is to be given a register storage-class in the C99 sense of the term, and
+ * will be placed into a register named `registerName`.
+ *
+ * The variable needs to boiled down to a data type that fits the target
+ * register.  It also cannot have either thread-local or `extern` storage.
+ * It is an error to take the address of a register variable.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @register("ebx") __gshared int ebx = void;
+ *
+ * void func() { @register("r10") long r10 = 0x2a; }
+ * ---
+ */
+auto register(string registerName)
+{
+    return attribute("register", registerName);
+}
+
+auto register(A...)(A arguments)
+{
+    assert(false, "register attribute argument not a string constant");
+}
+
+/**
  * The `@restrict` attribute specifies that a function parameter is to be
  * restrict-qualified in the C99 sense of the term.  The parameter needs to
  * boil down to either a pointer or reference type, such as a D pointer,
@@ -341,6 +369,46 @@ auto section(string sectionName)
 auto section(A...)(A arguments)
 {
     assert(false, "section attribute argument not a string constant");
+}
+
+/**
+ * The `@simd` attribute enables creation of one or more function versions that
+ * can process multiple arguments using SIMD instructions from a single
+ * invocation. Specifying this attribute allows compiler to assume that such
+ * versions are available at link time (provided in the same or another module).
+ * Generated versions are target-dependent and described in the corresponding
+ * Vector ABI document. For x86_64 target this document can be found here.
+ * https://sourceware.org/glibc/wiki/libmvec?action=AttachFile&do=view&target=VectorABI.txt
+ * 
+ * The `@simd_clones` attribute is the same as `@simd`, but also includes a
+ * `mask` argument.  Valid masks values are `notinbranch` or `inbranch`, and
+ * instructs the compiler to generate non-masked or masked clones
+ * correspondingly.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @simd double sqrt(double x);
+ * @simd("notinbranch") double atan2(double y, double x);
+ * ---
+ */
+enum simd = attribute("simd");
+
+auto simd_clones(string mask)
+{
+    if (mask == "notinbranch" || mask == "inbranch")
+        return attribute("simd", mask);
+    else
+    {
+        assert(false, "unrecognized parameter `" ~ mask
+               ~ "` for `gcc.attribute.simd_clones`");
+    }
+}
+
+auto simd_clones(A...)(A arguments)
+{
+    assert(false, "simd_clones attribute argument not a string constant");
 }
 
 /**

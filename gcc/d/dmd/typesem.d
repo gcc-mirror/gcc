@@ -119,7 +119,7 @@ private void resolveTupleIndex(const ref Loc loc, Scope* sc, Dsymbol s, out Expr
     const(uinteger_t) d = eindex.toUInteger();
     if (d >= tup.objects.dim)
     {
-        .error(loc, "tuple index `%llu` exceeds length %llu", d, cast(ulong)tup.objects.dim);
+        .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", d, cast(ulong)tup.objects.dim);
         pt = Type.terror;
         return;
     }
@@ -554,7 +554,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             uinteger_t d = mtype.dim.toUInteger();
             if (d >= tup.objects.dim)
             {
-                .error(loc, "tuple index %llu exceeds %llu", cast(ulong)d, cast(ulong)tup.objects.dim);
+                .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", cast(ulong)d, cast(ulong)tup.objects.dim);
                 return error();
             }
 
@@ -649,7 +649,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 uinteger_t d = mtype.dim.toUInteger();
                 if (d >= tt.arguments.dim)
                 {
-                    .error(loc, "tuple index %llu exceeds %llu", cast(ulong)d, cast(ulong)tt.arguments.dim);
+                    .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", cast(ulong)d, cast(ulong)tt.arguments.dim);
                     return error();
                 }
                 Type telem = (*tt.arguments)[cast(size_t)d].type;
@@ -1224,6 +1224,25 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                     continue;
                 }
 
+                // -preview=in: Always add `ref` when used with `extern(C++)` functions
+                // Done here to allow passing opaque types with `in`
+                if (global.params.previewIn && (fparam.storageClass & (STC.in_ | STC.ref_)) == STC.in_)
+                {
+                    switch (tf.linkage)
+                    {
+                    case LINK.cpp:
+                        fparam.storageClass |= STC.ref_;
+                        break;
+                    case LINK.default_, LINK.d:
+                        break;
+                    default:
+                        .error(loc, "cannot use `in` parameters with `extern(%s)` functions",
+                               linkageToChars(tf.linkage));
+                        .errorSupplemental(loc, "parameter `%s` declared as `in` here", fparam.toChars());
+                        break;
+                    }
+                }
+
                 if (t.ty == Tfunction)
                 {
                     .error(loc, "cannot have parameter of function type `%s`", fparam.type.toChars());
@@ -1759,8 +1778,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         {
             /* struct S s, *p;
              */
-            //printf("already resolved\n");
-            return mtype.resolved;
+            return mtype.resolved.addSTC(mtype.mod);
         }
 
         /* Find the current scope by skipping tag scopes.
@@ -1831,7 +1849,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         {
             mtype.id = Identifier.generateId("__tag"[]);
             declareTag();
-            return mtype.resolved;
+            return mtype.resolved.addSTC(mtype.mod);
         }
 
         /* look for pre-existing declaration
@@ -1844,7 +1862,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             if (mtype.tok == TOK.enum_ && !mtype.members)
                 .error(mtype.loc, "`enum %s` is incomplete without members", mtype.id.toChars()); // C11 6.7.2.3-3
             declareTag();
-            return mtype.resolved;
+            return mtype.resolved.addSTC(mtype.mod);
         }
 
         /* A redeclaration only happens if both declarations are in
@@ -1944,7 +1962,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 declareTag();
             }
         }
-        return mtype.resolved;
+        return mtype.resolved.addSTC(mtype.mod);
     }
 
     switch (type.ty)
@@ -2572,7 +2590,7 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
                 const d = mt.dim.toUInteger();
                 if (d >= tup.objects.dim)
                 {
-                    error(loc, "tuple index `%llu` exceeds length %llu", d, cast(ulong) tup.objects.dim);
+                    error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", d, cast(ulong) tup.objects.dim);
                     return returnError();
                 }
 
@@ -4891,9 +4909,9 @@ Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identifier id)
              */
             Expression e = em.value;
             Expression ec = new CmpExp(id == Id.max ? EXP.greaterThan : EXP.lessThan, em.loc, e, *pval);
-            ed.inuse++;
+            ed.inuse = true;
             ec = ec.expressionSemantic(em._scope);
-            ed.inuse--;
+            ed.inuse = false;
             ec = ec.ctfeInterpret();
             if (ec.op == EXP.error)
             {

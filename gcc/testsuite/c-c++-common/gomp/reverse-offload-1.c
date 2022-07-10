@@ -43,7 +43,7 @@ tg_fn (int *x, int *y)
   x2 = x2 + 2 + called_in_target1 ();
   y2 = y2 + 7;
 
-  #pragma omp target device(ancestor : 1) map(tofrom: x2)
+  #pragma omp target device(ancestor : 1) map(tofrom: x2)  /* { dg-message "sorry, unimplemented: 'ancestor' not yet supported" } */
     check_offload(&x2, &y2);
 
   if (x2 != 2+2+3+42 || y2 != 3 + 7)

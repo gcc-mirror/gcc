@@ -54,6 +54,10 @@ The minimum number of supernodes within a function for the analyzer to consider 
 Common Joined UInteger Var(param_analyzer_max_enodes_for_full_dump) Init(200) Param
 The maximum depth of exploded nodes that should appear in a dot dump before switching to a less verbose format.
 
+Wanalyzer-allocation-size
+Common Var(warn_analyzer_allocation_size) Init(1) Warning
+Warn about code paths in which a pointer to a buffer is assigned to an incompatible type.
+
 Wanalyzer-double-fclose
 Common Var(warn_analyzer_double_fclose) Init(1) Warning
 Warn about code paths in which a stdio FILE can be closed more than once.
@@ -65,6 +69,26 @@ Warn about code paths in which a pointer can be freed more than once.
 Wanalyzer-exposure-through-output-file
 Common Var(warn_analyzer_exposure_through_output_file) Init(1) Warning
 Warn about code paths in which sensitive data is written to a file.
+
+Wanalyzer-fd-access-mode-mismatch
+Common Var(warn_analyzer_fd_mode_mismatch) Init(1) Warning
+Warn about code paths in which read on a write-only file descriptor is attempted, or vice versa.
+
+Wanalyzer-fd-double-close
+Common Var(warn_analyzer_fd_double_close) Init(1) Warning
+Warn about code paths in which a file descriptor can be closed more than once.
+
+Wanalyzer-fd-leak
+Common Var(warn_analyzer_fd_leak) Init(1) Warning
+Warn about code paths in which a file descriptor is not closed.
+
+Wanalyzer-fd-use-after-close
+Common Var(warn_analyzer_fd_use_after_close) Init(1) Warning
+Warn about code paths in which a read or write is performed on a closed file descriptor.
+
+Wanalyzer-fd-use-without-check
+Common Var(warn_analyzer_fd_use_without_check) Init(1) Warning
+Warn about code paths in which a file descriptor is used without being checked for validity.
 
 Wanalyzer-file-leak
 Common Var(warn_analyzer_file_leak) Init(1) Warning

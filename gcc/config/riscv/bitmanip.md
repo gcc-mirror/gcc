@@ -102,7 +102,7 @@
 {
 	unsigned HOST_WIDE_INT mask = UINTVAL (operands[3]);
 	/* scale: shift within the sh[123]add.uw */
-	int scale = 32 - clz_hwi (mask);
+	unsigned HOST_WIDE_INT scale = 32 - clz_hwi (mask);
 	/* bias:  pre-scale amount (i.e. the prior shift amount) */
 	int bias = ctz_hwi (mask) - scale;
 

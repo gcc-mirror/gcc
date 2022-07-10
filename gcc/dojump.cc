@@ -1131,7 +1131,7 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	      profile_probability cprob
 		= profile_probability::guessed_always ();
 	      if (first_code == UNORDERED)
-		cprob = cprob.apply_scale (1, 100);
+		cprob /= 100;
 	      else if (first_code == ORDERED)
 		cprob = cprob.apply_scale (99, 100);
 	      else

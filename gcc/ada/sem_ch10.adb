@@ -2597,10 +2597,18 @@ package body Sem_Ch10 is
       --  Note: this is not quite right if the user defines one of these units
       --  himself, but that's a marginal case, and fixing it is hard ???
 
-      if Restriction_Check_Required (No_Obsolescent_Features) then
-         if In_Predefined_Renaming (U) then
+      if Ada_Version >= Ada_95
+        and then In_Predefined_Renaming (U)
+      then
+         if Restriction_Check_Required (No_Obsolescent_Features) then
             Check_Restriction (No_Obsolescent_Features, N);
             Restriction_Violation := True;
+         end if;
+
+         if Warn_On_Obsolescent_Feature then
+            Error_Msg_N
+              ("renamed predefined unit is an obsolescent feature "
+               & "(RM J.1)?j?", N);
          end if;
       end if;
 

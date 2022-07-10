@@ -69,6 +69,12 @@
 ;; 4-byte and 2-byte QImode vector modes
 (define_mode_iterator VI1_16_32 [V4QI V2QI])
 
+;; All 2-byte, 4-byte and 8-byte vector modes with more than 1 element
+(define_mode_iterator V_16_32_64
+   [V2QI V4QI V2HI V2HF
+    (V8QI "TARGET_64BIT") (V4HI "TARGET_64BIT") (V4HF "TARGET_64BIT")
+    (V2SI "TARGET_64BIT") (V2SF "TARGET_64BIT")])
+
 ;; V2S* modes
 (define_mode_iterator V2FI [V2SF V2SI])
 
@@ -330,6 +336,37 @@
 	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
 	   ]
 	   (symbol_ref "true")))])
+
+;; 16-bit, 32-bit and 64-bit constant vector stores.  After reload,
+;; convert them to immediate integer stores.
+(define_insn_and_split "*mov<mode>_imm"
+  [(set (match_operand:V_16_32_64 0 "memory_operand" "=m")
+	(match_operand:V_16_32_64 1 "x86_64_const_vector_operand" "i"))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+{
+  HOST_WIDE_INT val = ix86_convert_const_vector_to_integer (operands[1],
+							    <MODE>mode);
+  operands[1] = GEN_INT (val);
+  machine_mode mode;
+  switch (GET_MODE_SIZE (<MODE>mode))
+    {
+    case 2:
+      mode = HImode;
+      break;
+    case 4:
+      mode = SImode;
+      break;
+    case 8:
+      mode = DImode;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  operands[0] = lowpart_subreg (mode, operands[0], <MODE>mode);
+})
 
 ;; For TARGET_64BIT we always round up to 8 bytes.
 (define_insn "*push<mode>2_rex64"

@@ -61,9 +61,11 @@ struct condition_info
 {
   typedef auto_vec<std::pair<gphi *, tree>> mapping_vec;
 
-  condition_info (gcond *cond): m_cond (cond), m_bb (gimple_bb (cond)),
-    m_forwarder_bb (NULL), m_ranges (), m_true_edge (NULL), m_false_edge (NULL),
-    m_true_edge_phi_mapping (), m_false_edge_phi_mapping ()
+  condition_info (gcond *cond, bool has_side_effect): m_cond (cond),
+    m_bb (gimple_bb (cond)), m_forwarder_bb (NULL), m_ranges (),
+    m_true_edge (NULL), m_false_edge (NULL),
+    m_true_edge_phi_mapping (), m_false_edge_phi_mapping (),
+    m_has_side_effect (has_side_effect)
   {
     m_ranges.create (0);
   }
@@ -80,6 +82,7 @@ struct condition_info
   edge m_false_edge;
   mapping_vec m_true_edge_phi_mapping;
   mapping_vec m_false_edge_phi_mapping;
+  bool m_has_side_effect;
 };
 
 /* Recond PHI mapping for an original edge E and save these into vector VEC.  */
@@ -389,14 +392,11 @@ find_conditions (basic_block bb,
   if (cond == NULL)
     return;
 
-  if (!no_side_effect_bb (bb))
-    return;
-
   tree lhs = gimple_cond_lhs (cond);
   tree rhs = gimple_cond_rhs (cond);
   tree_code code = gimple_cond_code (cond);
 
-  condition_info *info = new condition_info (cond);
+  condition_info *info = new condition_info (cond, !no_side_effect_bb (bb));
 
   gassign *def;
   if (code == NE_EXPR
@@ -478,13 +478,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
   {
     return (jump_table_cluster::is_enabled ()
 	    || bit_test_cluster::is_enabled ());
   }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_if_to_switch
 
@@ -532,6 +532,10 @@ pass_if_to_switch::execute (function *fun)
 		 For an expression of index != VALUE, true and false edges
 		 are flipped.  */
 	      if ((*info2)->m_false_edge != e)
+		break;
+
+	      /* Only the first BB in a chain can have a side effect.  */
+	      if (info->m_has_side_effect)
 		break;
 
 	      chain->m_entries.safe_push (*info2);
