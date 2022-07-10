@@ -1,3 +1,11 @@
+2022-07-09  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/105930
+	* config/i386/i386.md (*<any_or>di3_doubleword): Split after
+	reload.  Use rtx_equal_p to avoid creating memory-to-memory moves,
+	and emit NOTE_INSN_DELETED if operand[2] is zero (i.e. with -O0).
+
 2022-07-08  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:
