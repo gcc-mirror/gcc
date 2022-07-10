@@ -745,6 +745,106 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define TYPE_NAME_STRING(NODE) (IDENTIFIER_POINTER (TYPE_IDENTIFIER (NODE)))
 #define TYPE_NAME_LENGTH(NODE) (IDENTIFIER_LENGTH (TYPE_IDENTIFIER (NODE)))
 
+/* Whether a PARM_DECL represents a local parameter in a
+   requires-expression.  */
+#define CONSTRAINT_VAR_P(NODE) DECL_LANG_FLAG_2 (TREE_CHECK (NODE, PARM_DECL))
+
+/* In a CALL_EXPR appearing in a template, true if Koenig lookup
+   should be performed at instantiation time.  */
+#define KOENIG_LOOKUP_P(NODE) TREE_LANG_FLAG_0 (CALL_EXPR_CHECK (NODE))
+
+/* The index of a user-declared parameter in its function, starting at 1.
+   All artificial parameters will have index 0.  */
+#define DECL_PARM_INDEX(NODE) (LANG_DECL_PARM_CHECK (NODE)->index)
+
+/* The level of a user-declared parameter in its function, starting at 1.
+   A parameter of the function will have level 1; a parameter of the first
+   nested function declarator (i.e. t in void f (void (*p)(T t))) will have
+   level 2.  */
+#define DECL_PARM_LEVEL(NODE) (LANG_DECL_PARM_CHECK (NODE)->level)
+
+#define LANG_DECL_PARM_CHECK(NODE) (&DECL_LANG_SPECIFIC (NODE)->u.parm)
+
+/* These flags are used by the conversion code.
+   CONV_IMPLICIT   :  Perform implicit conversions (standard and user-defined).
+   CONV_STATIC     :  Perform the explicit conversions for static_cast.
+   CONV_CONST      :  Perform the explicit conversions for const_cast.
+   CONV_REINTERPRET:  Perform the explicit conversions for reinterpret_cast.
+   CONV_PRIVATE    :  Perform upcasts to private bases.
+   CONV_FORCE_TEMP :  Require a new temporary when converting to the same
+		      aggregate type.  */
+
+#define CONV_IMPLICIT 1
+#define CONV_STATIC 2
+#define CONV_CONST 4
+#define CONV_REINTERPRET 8
+#define CONV_PRIVATE 16
+#define CONV_FORCE_TEMP 32
+#define CONV_FOLD 64
+#define CONV_OLD_CONVERT                                                       \
+  (CONV_IMPLICIT | CONV_STATIC | CONV_CONST | CONV_REINTERPRET)
+#define CONV_C_CAST                                                            \
+  (CONV_IMPLICIT | CONV_STATIC | CONV_CONST | CONV_REINTERPRET | CONV_PRIVATE  \
+   | CONV_FORCE_TEMP)
+#define CONV_BACKEND_CONVERT (CONV_OLD_CONVERT | CONV_FOLD)
+
+/* Used by build_expr_type_conversion to indicate which types are
+   acceptable as arguments to the expression under consideration.  */
+
+#define WANT_INT 1		  /* integer types, including bool */
+#define WANT_FLOAT 2		  /* floating point types */
+#define WANT_ENUM 4		  /* enumerated types */
+#define WANT_POINTER 8		  /* pointer types */
+#define WANT_NULL 16		  /* null pointer constant */
+#define WANT_VECTOR_OR_COMPLEX 32 /* vector or complex types */
+#define WANT_ARITH (WANT_INT | WANT_FLOAT | WANT_VECTOR_OR_COMPLEX)
+
+/* Used with comptypes, and related functions, to guide type
+   comparison.  */
+
+#define COMPARE_STRICT                                                         \
+  0 /* Just check if the types are the                                         \
+       same.  */
+#define COMPARE_BASE                                                           \
+  1 /* Check to see if the second type is                                      \
+       derived from the first.  */
+#define COMPARE_DERIVED                                                        \
+  2 /* Like COMPARE_BASE, but in                                               \
+       reverse.  */
+#define COMPARE_REDECLARATION                                                  \
+  4 /* The comparison is being done when                                       \
+       another declaration of an existing                                      \
+       entity is seen.  */
+#define COMPARE_STRUCTURAL                                                     \
+  8 /* The comparison is intended to be                                        \
+       structural. The actual comparison                                       \
+       will be identical to                                                    \
+       COMPARE_STRICT.  */
+
+/* Used with start function.  */
+#define SF_DEFAULT 0 /* No flags.  */
+#define SF_PRE_PARSED                                                          \
+  1 /* The function declaration has                                            \
+       already been parsed.  */
+#define SF_INCLASS_INLINE                                                      \
+  2 /* The function is an inline, defined                                      \
+       in the class body.  */
+
+/* Used with start_decl's initialized parameter.  */
+#define SD_UNINITIALIZED 0
+#define SD_INITIALIZED 1
+/* Like SD_INITIALIZED, but also mark the new decl as DECL_DECOMPOSITION_P.  */
+#define SD_DECOMPOSITION 2
+#define SD_DEFAULTED 3
+#define SD_DELETED 4
+
+/* Returns nonzero iff TYPE1 and TYPE2 are the same type, in the usual
+   sense of `same'.  */
+#define same_type_p(TYPE1, TYPE2) comptypes ((TYPE1), (TYPE2), COMPARE_STRICT)
+
+/* Returns true if NODE is a pointer-to-data-member.  */
+#define TYPE_PTRDATAMEM_P(NODE) (TREE_CODE (NODE) == OFFSET_TYPE)
+
 // Below macros are copied from gcc/c-family/c-common.h
 
 /* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
@@ -809,6 +909,234 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define STAT_DECL_HIDDEN_P(N) OVL_DEDUP_P (N)
 
 // Above macros are copied from gcc/cp/name-lookup.cc
+
+/* hash traits for declarations.  Hashes potential overload sets via
+   DECL_NAME.  */
+
+struct named_decl_hash : ggc_remove<tree>
+{
+  typedef tree value_type;   /* A DECL or OVERLOAD  */
+  typedef tree compare_type; /* An identifier.  */
+
+  inline static hashval_t hash (const value_type decl);
+  inline static bool equal (const value_type existing, compare_type candidate);
+
+  static const bool empty_zero_p = true;
+  static inline void mark_empty (value_type &p) { p = NULL_TREE; }
+  static inline bool is_empty (value_type p) { return !p; }
+
+  /* Nothing is deletable.  Everything is insertable.  */
+  static bool is_deleted (value_type) { return false; }
+  static void mark_deleted (value_type) { gcc_unreachable (); }
+};
+
+// forked from gcc/cp/cp-tree.h lang_decl_selector
+
+/* Discriminator values for lang_decl.  */
+
+enum lang_decl_selector
+{
+  lds_min,
+  lds_fn,
+  lds_ns,
+  lds_parm,
+  lds_decomp
+};
+
+// forked from gcc/cp/cp-tree.h lang_decl_base
+
+/* Flags shared by all forms of DECL_LANG_SPECIFIC.
+
+   Some of the flags live here only to make lang_decl_min/fn smaller.  Do
+   not make this struct larger than 32 bits.  */
+
+struct GTY (()) lang_decl_base
+{
+  ENUM_BITFIELD (lang_decl_selector) selector : 3;
+  unsigned use_template : 2;
+  unsigned not_really_extern : 1;    /* var or fn */
+  unsigned initialized_in_class : 1; /* var or fn */
+
+  unsigned threadprivate_or_deleted_p : 1; /* var or fn */
+  /* anticipated_p is no longer used for anticipated_decls (fn, type
+     or template).  It is used as DECL_OMP_PRIVATIZED_MEMBER in
+     var.  */
+  unsigned anticipated_p : 1;
+  unsigned friend_or_tls : 1;	      /* var, fn, type or template */
+  unsigned unknown_bound_p : 1;	      /* var */
+  unsigned odr_used : 1;	      /* var or fn */
+  unsigned concept_p : 1;	      /* applies to vars and functions */
+  unsigned var_declared_inline_p : 1; /* var */
+  unsigned dependent_init_p : 1;      /* var */
+
+  /* The following apply to VAR, FUNCTION, TYPE, CONCEPT, & NAMESPACE
+     decls.  */
+  unsigned module_purview_p : 1; /* in module purview (not GMF) */
+  unsigned module_import_p : 1;	 /* from an import */
+  unsigned module_entity_p : 1;	 /* is in the entitity ary &
+				    hash.  */
+  /* VAR_DECL or FUNCTION_DECL has attached decls.     */
+  unsigned module_attached_p : 1;
+
+  /* 12 spare bits.  */
+};
+
+/* True for DECL codes which have template info and access.  */
+#define LANG_DECL_HAS_MIN(NODE)                                                \
+  (VAR_OR_FUNCTION_DECL_P (NODE) || TREE_CODE (NODE) == FIELD_DECL             \
+   || TREE_CODE (NODE) == CONST_DECL || TREE_CODE (NODE) == TYPE_DECL          \
+   || TREE_CODE (NODE) == TEMPLATE_DECL || TREE_CODE (NODE) == USING_DECL      \
+   || TREE_CODE (NODE) == CONCEPT_DECL)
+
+// forked from gcc/cp/cp-tree.h lang_decl_min
+
+/* DECL_LANG_SPECIFIC for the above codes.  */
+
+struct GTY (()) lang_decl_min
+{
+  struct lang_decl_base base; /* 32-bits.  */
+
+  /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
+     THUNK_ALIAS.
+     In a FUNCTION_DECL for which DECL_THUNK_P does not hold,
+     VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this is
+     DECL_TEMPLATE_INFO.  */
+  tree template_info;
+
+  /* In a DECL_THUNK_P FUNCTION_DECL, this is THUNK_VIRTUAL_OFFSET.
+     In a lambda-capture proxy VAR_DECL, this is DECL_CAPTURED_VARIABLE.
+     In a function-scope TREE_STATIC VAR_DECL or IMPLICIT_TYPEDEF_P TYPE_DECL,
+     this is DECL_DISCRIMINATOR.
+     In a DECL_LOCAL_DECL_P decl, this is the namespace decl it aliases.
+     Otherwise, in a class-scope DECL, this is DECL_ACCESS.   */
+  tree access;
+};
+
+// forked from gcc/cp/cp-tree.h lang_decl_fn
+
+/* Additional DECL_LANG_SPECIFIC information for functions.  */
+
+struct GTY (()) lang_decl_fn
+{
+  struct lang_decl_min min;
+
+  /* In a overloaded operator, this is the compressed operator code.  */
+  unsigned ovl_op_code : 6;
+  unsigned global_ctor_p : 1;
+  unsigned global_dtor_p : 1;
+
+  unsigned static_function : 1;
+  unsigned pure_virtual : 1;
+  unsigned defaulted_p : 1;
+  unsigned has_in_charge_parm_p : 1;
+  unsigned has_vtt_parm_p : 1;
+  unsigned pending_inline_p : 1;
+  unsigned nonconverting : 1;
+  unsigned thunk_p : 1;
+
+  unsigned this_thunk_p : 1;
+  unsigned omp_declare_reduction_p : 1;
+  unsigned has_dependent_explicit_spec_p : 1;
+  unsigned immediate_fn_p : 1;
+  unsigned maybe_deleted : 1;
+  unsigned coroutine_p : 1;
+  unsigned implicit_constexpr : 1;
+
+  unsigned spare : 9;
+
+  /* 32-bits padding on 64-bit host.  */
+
+  /* For a non-thunk function decl, this is a tree list of
+     friendly classes. For a thunk function decl, it is the
+     thunked to function decl.  */
+  tree befriending_classes;
+
+  /* For a virtual FUNCTION_DECL for which
+     DECL_THIS_THUNK_P does not hold, this is DECL_THUNKS. Both
+     this pointer and result pointer adjusting thunks are
+     chained here.  This pointer thunks to return pointer thunks
+     will be chained on the return pointer thunk.
+     For a DECL_CONSTUCTOR_P FUNCTION_DECL, this is the base from
+     whence we inherit.  Otherwise, it is the class in which a
+     (namespace-scope) friend is defined (if any).   */
+  tree context;
+
+  union lang_decl_u5
+  {
+    /* In a non-thunk FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
+    tree GTY ((tag ("0"))) cloned_function;
+
+    /* In a FUNCTION_DECL for which THUNK_P holds this is the
+       THUNK_FIXED_OFFSET.  */
+    HOST_WIDE_INT GTY ((tag ("1"))) fixed_offset;
+  } GTY ((desc ("%1.thunk_p"))) u5;
+
+  union lang_decl_u3
+  {
+    struct cp_token_cache *GTY ((tag ("1"))) pending_inline_info;
+    tree GTY ((tag ("0"))) saved_auto_return_type;
+  } GTY ((desc ("%1.pending_inline_p"))) u;
+};
+
+// forked from gcc/cp/cp-tree.h lang_decl_ns
+
+/* DECL_LANG_SPECIFIC for namespaces.  */
+
+struct GTY (()) lang_decl_ns
+{
+  struct lang_decl_base base; /* 32 bits.  */
+
+  /* Inline children.  Needs to be va_gc, because of PCH.  */
+  vec<tree, va_gc> *inlinees;
+
+  /* Hash table of bound decls. It'd be nice to have this inline, but
+     as the hash_map has a dtor, we can't then put this struct into a
+     union (until moving to c++11).  */
+  hash_table<named_decl_hash> *bindings;
+};
+
+// forked from gcc/cp/cp-tree.h lang_decl_parm
+
+/* DECL_LANG_SPECIFIC for parameters.  */
+
+struct GTY (()) lang_decl_parm
+{
+  struct lang_decl_base base; /* 32 bits.  */
+  int level;
+  int index;
+};
+
+// forked from gcc/cp/cp-tree.h lang_decl_decomp
+
+/* Additional DECL_LANG_SPECIFIC information for structured bindings.  */
+
+struct GTY (()) lang_decl_decomp
+{
+  struct lang_decl_min min;
+  /* The artificial underlying "e" variable of the structured binding
+     variable.  */
+  tree base;
+};
+
+// forked from gcc/cp/cp-tree.h lang_decl
+
+/* DECL_LANG_SPECIFIC for all types.  It would be nice to just make this a
+   union rather than a struct containing a union as its only field, but
+   tree.h declares it as a struct.  */
+
+struct GTY (()) lang_decl
+{
+  union GTY ((desc ("%h.base.selector"))) lang_decl_u
+  {
+    /* Nothing of only the base type exists.  */
+    struct lang_decl_base GTY ((default)) base;
+    struct lang_decl_min GTY ((tag ("lds_min"))) min;
+    struct lang_decl_fn GTY ((tag ("lds_fn"))) fn;
+    struct lang_decl_ns GTY ((tag ("lds_ns"))) ns;
+    struct lang_decl_parm GTY ((tag ("lds_parm"))) parm;
+    struct lang_decl_decomp GTY ((tag ("lds_decomp"))) decomp;
+  } u;
+};
 
 // forked from gcc/c-family/c-common.h c_fileinfo
 
@@ -956,6 +1284,38 @@ private:
      iterator escaping the local context.  */
   static tree remove_node (tree head, tree node);
   static tree reveal_node (tree ovl, tree node);
+};
+
+// forked from gcc/cp/cp-tree.h lkp_iterator
+
+/* Iterator over a (potentially) 2 dimensional overload, which is
+   produced by name lookup.  */
+
+class lkp_iterator : public ovl_iterator
+{
+  typedef ovl_iterator parent;
+
+  tree outer;
+
+public:
+  explicit lkp_iterator (tree o) : parent (o, true), outer (maybe_push ()) {}
+
+public:
+  lkp_iterator &operator++ ()
+  {
+    bool repush = !outer;
+
+    if (!parent::operator++ () && !repush)
+      {
+	pop (outer);
+	repush = true;
+      }
+
+    if (repush)
+      outer = maybe_push ();
+
+    return *this;
+  }
 };
 
 // forked from gcc/cp/cp-tree.h treee_pair_s
@@ -1203,6 +1563,18 @@ enum rs_built_in_function
   RS_BUILT_IN_LAST
 };
 
+// forked from gcc/cp/cp-tree.h compare_bounds_t
+
+/* in typeck.cc */
+/* Says how we should behave when comparing two arrays one of which
+   has unknown bounds.  */
+enum compare_bounds_t
+{
+  bounds_none,
+  bounds_either,
+  bounds_first
+};
+
 extern tree
 convert_to_void (tree expr, impl_conv_void implicit);
 
@@ -1345,6 +1717,33 @@ build_cplus_array_type (tree, tree, int is_dep = -1);
 
 extern bool is_byte_access_type (tree);
 
+extern bool
+comptypes (tree, tree, int);
+
+extern tree canonical_eh_spec			(tree);
+
+extern int cp_tree_operand_length		(const_tree);
+
+extern bool rs_tree_equal			(tree, tree);
+
+extern bool compparms				(const_tree, const_tree);
+
+extern tree
+rs_build_qualified_type_real (tree, int, tsubst_flags_t);
+#define rs_build_qualified_type(TYPE, QUALS)                                   \
+  rs_build_qualified_type_real ((TYPE), (QUALS), tf_warning_or_error)
+extern bool cv_qualified_p (const_tree);
+
+extern bool similar_type_p (tree, tree);
+
+extern bool rs_tree_equal (tree, tree);
+
+extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
+
+extern bool same_type_ignoring_top_level_qualifiers_p (tree, tree);
+
+extern bool comp_ptr_ttypes_const		(tree, tree, compare_bounds_t);
+
 // forked from gcc/cp/cp-tree.h
 
 enum
@@ -1439,6 +1838,18 @@ identifier_p (tree t)
   if (TREE_CODE (t) == IDENTIFIER_NODE)
     return (lang_identifier *) t;
   return NULL;
+}
+
+// forked from gcc/c-family/c-common.h gnu_vector_type_p
+
+/* Return true if TYPE is a vector type that should be subject to the GNU
+   vector extensions (as opposed to a vector type that is used only for
+   the purposes of defining target-specific built-in functions).  */
+
+inline bool
+gnu_vector_type_p (const_tree type)
+{
+  return TREE_CODE (type) == VECTOR_TYPE && !TYPE_INDIVISIBLE_P (type);
 }
 
 } // namespace Rust

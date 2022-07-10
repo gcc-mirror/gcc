@@ -22,6 +22,7 @@
 #include "attribs.h"
 #include "escaped_string.h"
 #include "libiberty.h"
+#include "stor-layout.h"
 
 namespace Rust {
 
@@ -1523,6 +1524,1302 @@ build_min_array_type (tree elt_type, tree index_type)
   TREE_TYPE (t) = elt_type;
   TYPE_DOMAIN (t) = index_type;
   return t;
+}
+
+// forked from gcc/cp/name-lookup.cc fields_linear_search
+
+/* Linear search of (partially ordered) fields of KLASS for NAME.  */
+
+static tree
+fields_linear_search (tree klass, tree name, bool want_type)
+{
+  for (tree fields = TYPE_FIELDS (klass); fields; fields = DECL_CHAIN (fields))
+    {
+      tree decl = fields;
+
+      if (DECL_NAME (decl) != name)
+	continue;
+
+      if (DECL_DECLARES_FUNCTION_P (decl))
+	/* Functions are found separately.  */
+	continue;
+
+      if (!want_type || DECL_DECLARES_TYPE_P (decl))
+	return decl;
+    }
+}
+
+// forked from gcc/cp/except.cc canonnothrow_spec_pical_eh_spec
+
+/* Return true iff SPEC is throw() or noexcept(true).  */
+
+bool
+nothrow_spec_p (const_tree spec)
+{
+  if (spec == empty_except_spec || spec == noexcept_true_spec)
+    return true;
+
+  gcc_assert (!spec || TREE_VALUE (spec) || spec == noexcept_false_spec
+	      || TREE_PURPOSE (spec) == error_mark_node);
+
+  return false;
+}
+
+// forked from gcc/cp/tree.cc may_get_fns
+
+/* Get the overload set FROM refers to.  Returns NULL if it's not an
+   overload set.  */
+
+tree
+maybe_get_fns (tree from)
+{
+  STRIP_ANY_LOCATION_WRAPPER (from);
+
+  /* A baselink is also considered an overloaded function.  */
+  if (TREE_CODE (from) == COMPONENT_REF)
+    from = TREE_OPERAND (from, 1);
+
+  if (OVL_P (from))
+    return from;
+
+  return NULL;
+}
+
+// forked from gcc/cp/tree.cc get_fns
+
+/* FROM refers to an overload set.  Return that set (or die).  */
+
+tree
+get_fns (tree from)
+{
+  tree res = maybe_get_fns (from);
+
+  gcc_assert (res);
+  return res;
+}
+
+// forked from gcc/cp/tree.cc get_first_fn
+
+/* Return the first function of the overload set FROM refers to.  */
+
+tree
+get_first_fn (tree from)
+{
+  return OVL_FIRST (get_fns (from));
+}
+
+// forked from gcc/cp/tree.cc dependent_name
+
+/* X is the CALL_EXPR_FN of a CALL_EXPR.  If X represents a dependent name
+   (14.6.2), return the IDENTIFIER_NODE for that name.  Otherwise, return
+   NULL_TREE.  */
+
+tree
+dependent_name (tree x)
+{
+  /* FIXME a dependent name must be unqualified, but this function doesn't
+     distinguish between qualified and unqualified identifiers.  */
+  if (identifier_p (x))
+    return x;
+
+  if (OVL_P (x))
+    return OVL_NAME (x);
+  return NULL_TREE;
+}
+
+// forked from gcc/cp/tree.cc called_fns_equal
+
+/* Subroutine of rs_tree_equal: t1 and t2 are the CALL_EXPR_FNs of two
+   CALL_EXPRS.  Return whether they are equivalent.  */
+
+static bool
+called_fns_equal (tree t1, tree t2)
+{
+  /* Core 1321: dependent names are equivalent even if the overload sets
+     are different.  But do compare explicit template arguments.  */
+  tree name1 = dependent_name (t1);
+  tree name2 = dependent_name (t2);
+  if (name1 || name2)
+    {
+      tree targs1 = NULL_TREE, targs2 = NULL_TREE;
+
+      if (name1 != name2)
+	return false;
+
+      /* FIXME dependent_name currently returns an unqualified name regardless
+	 of whether the function was named with a qualified- or unqualified-id.
+	 Until that's fixed, check that we aren't looking at overload sets from
+	 different scopes.  */
+      if (is_overloaded_fn (t1) && is_overloaded_fn (t2)
+	  && (DECL_CONTEXT (get_first_fn (t1))
+	      != DECL_CONTEXT (get_first_fn (t2))))
+	return false;
+
+      if (TREE_CODE (t1) == TEMPLATE_ID_EXPR)
+	targs1 = TREE_OPERAND (t1, 1);
+      if (TREE_CODE (t2) == TEMPLATE_ID_EXPR)
+	targs2 = TREE_OPERAND (t2, 1);
+      return rs_tree_equal (targs1, targs2);
+    }
+  else
+    return rs_tree_equal (t1, t2);
+}
+
+// forked from gcc/cp/tree.cc canonical_eh_spec
+
+/* Return the canonical version of exception-specification RAISES for a C++17
+   function type, for use in type comparison and building TYPE_CANONICAL.  */
+
+tree
+canonical_eh_spec (tree raises)
+{
+  if (raises == NULL_TREE)
+    return raises;
+  else if (nothrow_spec_p (raises))
+    /* throw() -> noexcept.  */
+    return noexcept_true_spec;
+  else
+    /* For C++17 type matching, anything else -> nothing.  */
+    return NULL_TREE;
+}
+
+/* Like cp_tree_operand_length, but takes a tree_code CODE.  */
+
+int
+rs_tree_code_length (enum tree_code code)
+{
+  gcc_assert (TREE_CODE_CLASS (code) != tcc_vl_exp);
+
+  switch (code)
+    {
+    case PREINCREMENT_EXPR:
+    case PREDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+      return 1;
+
+    case ARRAY_REF:
+      return 2;
+
+    default:
+      return TREE_CODE_LENGTH (code);
+    }
+}
+
+// forked from gcc/cp/tree.cc rs_tree_operand_length
+
+/* Return the number of operands in T that we care about for things like
+   mangling.  */
+
+int
+rs_tree_operand_length (const_tree t)
+{
+  enum tree_code code = TREE_CODE (t);
+
+  if (TREE_CODE_CLASS (code) == tcc_vl_exp)
+    return VL_EXP_OPERAND_LENGTH (t);
+
+  return rs_tree_code_length (code);
+}
+
+// forked from gcc/cp/tree.cc cp_tree_equal
+
+/* Return truthvalue of whether T1 is the same tree structure as T2.
+   Return 1 if they are the same. Return 0 if they are different.  */
+
+bool
+rs_tree_equal (tree t1, tree t2)
+{
+  enum tree_code code1, code2;
+
+  if (t1 == t2)
+    return true;
+  if (!t1 || !t2)
+    return false;
+
+  code1 = TREE_CODE (t1);
+  code2 = TREE_CODE (t2);
+
+  if (code1 != code2)
+    return false;
+
+  if (CONSTANT_CLASS_P (t1) && !same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+    return false;
+
+  switch (code1)
+    {
+    case VOID_CST:
+      /* There's only a single VOID_CST node, so we should never reach
+	 here.  */
+      gcc_unreachable ();
+
+    case INTEGER_CST:
+      return tree_int_cst_equal (t1, t2);
+
+    case REAL_CST:
+      return real_identical (&TREE_REAL_CST (t1), &TREE_REAL_CST (t2));
+
+    case STRING_CST:
+      return TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
+	     && !memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
+			 TREE_STRING_LENGTH (t1));
+
+    case FIXED_CST:
+      return FIXED_VALUES_IDENTICAL (TREE_FIXED_CST (t1), TREE_FIXED_CST (t2));
+
+    case COMPLEX_CST:
+      return rs_tree_equal (TREE_REALPART (t1), TREE_REALPART (t2))
+	     && rs_tree_equal (TREE_IMAGPART (t1), TREE_IMAGPART (t2));
+
+    case VECTOR_CST:
+      return operand_equal_p (t1, t2, OEP_ONLY_CONST);
+
+    case CONSTRUCTOR:
+      /* We need to do this when determining whether or not two
+	 non-type pointer to member function template arguments
+	 are the same.  */
+      if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2))
+	  || CONSTRUCTOR_NELTS (t1) != CONSTRUCTOR_NELTS (t2))
+	return false;
+      {
+	tree field, value;
+	unsigned int i;
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t1), i, field, value)
+	  {
+	    constructor_elt *elt2 = CONSTRUCTOR_ELT (t2, i);
+	    if (!rs_tree_equal (field, elt2->index)
+		|| !rs_tree_equal (value, elt2->value))
+	      return false;
+	  }
+      }
+      return true;
+
+    case TREE_LIST:
+      if (!rs_tree_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2)))
+	return false;
+      if (!rs_tree_equal (TREE_VALUE (t1), TREE_VALUE (t2)))
+	return false;
+      return rs_tree_equal (TREE_CHAIN (t1), TREE_CHAIN (t2));
+
+    case SAVE_EXPR:
+      return rs_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+
+      case CALL_EXPR: {
+	if (KOENIG_LOOKUP_P (t1) != KOENIG_LOOKUP_P (t2))
+	  return false;
+
+	if (!called_fns_equal (CALL_EXPR_FN (t1), CALL_EXPR_FN (t2)))
+	  return false;
+
+	call_expr_arg_iterator iter1, iter2;
+	init_call_expr_arg_iterator (t1, &iter1);
+	init_call_expr_arg_iterator (t2, &iter2);
+	if (iter1.n != iter2.n)
+	  return false;
+
+	while (more_call_expr_args_p (&iter1))
+	  {
+	    tree arg1 = next_call_expr_arg (&iter1);
+	    tree arg2 = next_call_expr_arg (&iter2);
+
+	    gcc_checking_assert (arg1 && arg2);
+	    if (!rs_tree_equal (arg1, arg2))
+	      return false;
+	  }
+
+	return true;
+      }
+
+      case TARGET_EXPR: {
+	tree o1 = TREE_OPERAND (t1, 0);
+	tree o2 = TREE_OPERAND (t2, 0);
+
+	/* Special case: if either target is an unallocated VAR_DECL,
+	   it means that it's going to be unified with whatever the
+	   TARGET_EXPR is really supposed to initialize, so treat it
+	   as being equivalent to anything.  */
+	if (VAR_P (o1) && DECL_NAME (o1) == NULL_TREE && !DECL_RTL_SET_P (o1))
+	  /*Nop*/;
+	else if (VAR_P (o2) && DECL_NAME (o2) == NULL_TREE
+		 && !DECL_RTL_SET_P (o2))
+	  /*Nop*/;
+	else if (!rs_tree_equal (o1, o2))
+	  return false;
+
+	return rs_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1));
+      }
+
+    case PARM_DECL:
+      /* For comparing uses of parameters in late-specified return types
+	 with an out-of-class definition of the function, but can also come
+	 up for expressions that involve 'this' in a member function
+	 template.  */
+
+      if (same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	{
+	  if (DECL_ARTIFICIAL (t1) ^ DECL_ARTIFICIAL (t2))
+	    return false;
+	  if (CONSTRAINT_VAR_P (t1) ^ CONSTRAINT_VAR_P (t2))
+	    return false;
+	  if (DECL_ARTIFICIAL (t1)
+	      || (DECL_PARM_LEVEL (t1) == DECL_PARM_LEVEL (t2)
+		  && DECL_PARM_INDEX (t1) == DECL_PARM_INDEX (t2)))
+	    return true;
+	}
+      return false;
+
+    case VAR_DECL:
+    case CONST_DECL:
+    case FIELD_DECL:
+    case FUNCTION_DECL:
+    case IDENTIFIER_NODE:
+    case SSA_NAME:
+      return false;
+
+    case TREE_VEC:
+      return true;
+
+    case NON_LVALUE_EXPR:
+    case VIEW_CONVERT_EXPR:
+      /* Used for location wrappers with possibly NULL types.  */
+      if (!TREE_TYPE (t1) || !TREE_TYPE (t2))
+	{
+	  if (TREE_TYPE (t1) || TREE_TYPE (t2))
+	    return false;
+	  break;
+	}
+
+    default:
+      break;
+    }
+
+  switch (TREE_CODE_CLASS (code1))
+    {
+    case tcc_unary:
+    case tcc_binary:
+    case tcc_comparison:
+    case tcc_expression:
+    case tcc_vl_exp:
+    case tcc_reference:
+      case tcc_statement: {
+	int n = rs_tree_operand_length (t1);
+	if (TREE_CODE_CLASS (code1) == tcc_vl_exp
+	    && n != TREE_OPERAND_LENGTH (t2))
+	  return false;
+
+	for (int i = 0; i < n; ++i)
+	  if (!rs_tree_equal (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i)))
+	    return false;
+
+	return true;
+      }
+
+    case tcc_type:
+      return same_type_p (t1, t2);
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* We can get here with --disable-checking.  */
+  return false;
+}
+
+// forked from gcc/cp/class.cc publicly_uniquely_derived_p
+
+/* TRUE iff TYPE is publicly & uniquely derived from PARENT.  */
+
+bool
+publicly_uniquely_derived_p (tree parent, tree type)
+{
+  return false;
+}
+
+// forked from gcc/cp/typeck.cc comp_except_types
+
+/* Compare two exception specifier types for exactness or subsetness, if
+   allowed. Returns false for mismatch, true for match (same, or
+   derived and !exact).
+
+   [except.spec] "If a class X ... objects of class X or any class publicly
+   and unambiguously derived from X. Similarly, if a pointer type Y * ...
+   exceptions of type Y * or that are pointers to any type publicly and
+   unambiguously derived from Y. Otherwise a function only allows exceptions
+   that have the same type ..."
+   This does not mention cv qualifiers and is different to what throw
+   [except.throw] and catch [except.catch] will do. They will ignore the
+   top level cv qualifiers, and allow qualifiers in the pointer to class
+   example.
+
+   We implement the letter of the standard.  */
+
+static bool
+comp_except_types (tree a, tree b, bool exact)
+{
+  if (same_type_p (a, b))
+    return true;
+  else if (!exact)
+    {
+      if (rs_type_quals (a) || rs_type_quals (b))
+	return false;
+
+      if (TYPE_PTR_P (a) && TYPE_PTR_P (b))
+	{
+	  a = TREE_TYPE (a);
+	  b = TREE_TYPE (b);
+	  if (rs_type_quals (a) || rs_type_quals (b))
+	    return false;
+	}
+
+      if (TREE_CODE (a) != RECORD_TYPE || TREE_CODE (b) != RECORD_TYPE)
+	return false;
+
+      if (publicly_uniquely_derived_p (a, b))
+	return true;
+    }
+  return false;
+}
+
+// forked from gcc/cp/typeck.cc comp_except_specs
+
+/* Return true if TYPE1 and TYPE2 are equivalent exception specifiers.
+   If EXACT is ce_derived, T2 can be stricter than T1 (according to 15.4/5).
+   If EXACT is ce_type, the C++17 type compatibility rules apply.
+   If EXACT is ce_normal, the compatibility rules in 15.4/3 apply.
+   If EXACT is ce_exact, the specs must be exactly the same. Exception lists
+   are unordered, but we've already filtered out duplicates. Most lists will
+   be in order, we should try to make use of that.  */
+
+bool
+comp_except_specs (const_tree t1, const_tree t2, int exact)
+{
+  const_tree probe;
+  const_tree base;
+  int length = 0;
+
+  if (t1 == t2)
+    return true;
+
+  /* First handle noexcept.  */
+  if (exact < ce_exact)
+    {
+      if (exact == ce_type
+	  && (canonical_eh_spec (CONST_CAST_TREE (t1))
+	      == canonical_eh_spec (CONST_CAST_TREE (t2))))
+	return true;
+
+      /* noexcept(false) is compatible with no exception-specification,
+	 and less strict than any spec.  */
+      if (t1 == noexcept_false_spec)
+	return t2 == NULL_TREE || exact == ce_derived;
+      /* Even a derived noexcept(false) is compatible with no
+	 exception-specification.  */
+      if (t2 == noexcept_false_spec)
+	return t1 == NULL_TREE;
+
+      /* Otherwise, if we aren't looking for an exact match, noexcept is
+	 equivalent to throw().  */
+      if (t1 == noexcept_true_spec)
+	t1 = empty_except_spec;
+      if (t2 == noexcept_true_spec)
+	t2 = empty_except_spec;
+    }
+
+  /* If any noexcept is left, it is only comparable to itself;
+     either we're looking for an exact match or we're redeclaring a
+     template with dependent noexcept.  */
+  if ((t1 && TREE_PURPOSE (t1)) || (t2 && TREE_PURPOSE (t2)))
+    return (t1 && t2 && rs_tree_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2)));
+
+  if (t1 == NULL_TREE) /* T1 is ...  */
+    return t2 == NULL_TREE || exact == ce_derived;
+  if (!TREE_VALUE (t1)) /* t1 is EMPTY */
+    return t2 != NULL_TREE && !TREE_VALUE (t2);
+  if (t2 == NULL_TREE) /* T2 is ...  */
+    return false;
+  if (TREE_VALUE (t1) && !TREE_VALUE (t2)) /* T2 is EMPTY, T1 is not */
+    return exact == ce_derived;
+
+  /* Neither set is ... or EMPTY, make sure each part of T2 is in T1.
+     Count how many we find, to determine exactness. For exact matching and
+     ordered T1, T2, this is an O(n) operation, otherwise its worst case is
+     O(nm).  */
+  for (base = t1; t2 != NULL_TREE; t2 = TREE_CHAIN (t2))
+    {
+      for (probe = base; probe != NULL_TREE; probe = TREE_CHAIN (probe))
+	{
+	  tree a = TREE_VALUE (probe);
+	  tree b = TREE_VALUE (t2);
+
+	  if (comp_except_types (a, b, exact))
+	    {
+	      if (probe == base && exact > ce_derived)
+		base = TREE_CHAIN (probe);
+	      length++;
+	      break;
+	    }
+	}
+      if (probe == NULL_TREE)
+	return false;
+    }
+  return exact == ce_derived || base == NULL_TREE || length == list_length (t1);
+}
+
+// forked from gcc/cp/typeck.cc compparms
+
+/* Subroutines of `comptypes'.  */
+
+/* Return true if two parameter type lists PARMS1 and PARMS2 are
+   equivalent in the sense that functions with those parameter types
+   can have equivalent types.  The two lists must be equivalent,
+   element by element.  */
+
+bool
+compparms (const_tree parms1, const_tree parms2)
+{
+  const_tree t1, t2;
+
+  /* An unspecified parmlist matches any specified parmlist
+     whose argument types don't need default promotions.  */
+
+  for (t1 = parms1, t2 = parms2; t1 || t2;
+       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
+    {
+      /* If one parmlist is shorter than the other,
+	 they fail to match.  */
+      if (!t1 || !t2)
+	return false;
+      if (!same_type_p (TREE_VALUE (t1), TREE_VALUE (t2)))
+	return false;
+    }
+  return true;
+}
+
+/* Set TYPE_CANONICAL like build_array_type_1, but using
+   build_cplus_array_type.  */
+
+static void
+set_array_type_canon (tree t, tree elt_type, tree index_type, bool dep)
+{
+  /* Set the canonical type for this new node.  */
+  if (TYPE_STRUCTURAL_EQUALITY_P (elt_type)
+      || (index_type && TYPE_STRUCTURAL_EQUALITY_P (index_type)))
+    SET_TYPE_STRUCTURAL_EQUALITY (t);
+  else if (TYPE_CANONICAL (elt_type) != elt_type
+	   || (index_type && TYPE_CANONICAL (index_type) != index_type))
+    TYPE_CANONICAL (t)
+      = build_cplus_array_type (TYPE_CANONICAL (elt_type),
+				index_type
+				? TYPE_CANONICAL (index_type) : index_type,
+				dep);
+  else
+    TYPE_CANONICAL (t) = t;
+}
+
+// forked from gcc/cp/tree.cc cplus_array_info
+
+struct cplus_array_info
+{
+  tree type;
+  tree domain;
+};
+
+// forked from gcc/cp/tree.cc cplus_array_hasher
+
+struct cplus_array_hasher : ggc_ptr_hash<tree_node>
+{
+  typedef cplus_array_info *compare_type;
+
+  static hashval_t hash (tree t);
+  static bool equal (tree, cplus_array_info *);
+};
+
+/* Hash an ARRAY_TYPE.  K is really of type `tree'.  */
+
+hashval_t
+cplus_array_hasher::hash (tree t)
+{
+  hashval_t hash;
+
+  hash = TYPE_UID (TREE_TYPE (t));
+  if (TYPE_DOMAIN (t))
+    hash ^= TYPE_UID (TYPE_DOMAIN (t));
+  return hash;
+}
+
+/* Compare two ARRAY_TYPEs.  K1 is really of type `tree', K2 is really
+   of type `cplus_array_info*'. */
+
+bool
+cplus_array_hasher::equal (tree t1, cplus_array_info *t2)
+{
+  return (TREE_TYPE (t1) == t2->type && TYPE_DOMAIN (t1) == t2->domain);
+}
+
+// forked from gcc/cp/tree.cc cplus_array_htab
+
+/* Hash table containing dependent array types, which are unsuitable for
+   the language-independent type hash table.  */
+static GTY (()) hash_table<cplus_array_hasher> *cplus_array_htab;
+
+// forked from gcc/cp/tree.cc is_byte_access_type
+
+/* Returns true if TYPE is char, unsigned char, or std::byte.  */
+
+bool
+is_byte_access_type (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  if (type == char_type_node
+      || type == unsigned_char_type_node)
+    return true;
+
+  return (TREE_CODE (type) == ENUMERAL_TYPE
+	  && TYPE_CONTEXT (type) == std_node
+	  && !strcmp ("byte", TYPE_NAME_STRING (type)));
+}
+
+// forked from gcc/cp/tree.cc build_cplus_array_type
+
+/* Like build_array_type, but handle special C++ semantics: an array of a
+   variant element type is a variant of the array of the main variant of
+   the element type.  IS_DEPENDENT is -ve if we should determine the
+   dependency.  Otherwise its bool value indicates dependency.  */
+
+tree
+build_cplus_array_type (tree elt_type, tree index_type, int dependent)
+{
+  tree t;
+
+  if (elt_type == error_mark_node || index_type == error_mark_node)
+    return error_mark_node;
+
+  if (dependent < 0)
+    dependent = 0;
+
+  if (elt_type != TYPE_MAIN_VARIANT (elt_type))
+    /* Start with an array of the TYPE_MAIN_VARIANT.  */
+    t = build_cplus_array_type (TYPE_MAIN_VARIANT (elt_type),
+				index_type, dependent);
+  else if (dependent)
+    {
+      /* Since type_hash_canon calls layout_type, we need to use our own
+	 hash table.  */
+      cplus_array_info cai;
+      hashval_t hash;
+
+      if (cplus_array_htab == NULL)
+	cplus_array_htab = hash_table<cplus_array_hasher>::create_ggc (61);
+      
+      hash = TYPE_UID (elt_type);
+      if (index_type)
+	hash ^= TYPE_UID (index_type);
+      cai.type = elt_type;
+      cai.domain = index_type;
+
+      tree *e = cplus_array_htab->find_slot_with_hash (&cai, hash, INSERT); 
+      if (*e)
+	/* We have found the type: we're done.  */
+	return (tree) *e;
+      else
+	{
+	  /* Build a new array type.  */
+	  t = build_min_array_type (elt_type, index_type);
+
+	  /* Store it in the hash table. */
+	  *e = t;
+
+	  /* Set the canonical type for this new node.  */
+	  set_array_type_canon (t, elt_type, index_type, dependent);
+
+	  /* Mark it as dependent now, this saves time later.  */
+	  TYPE_DEPENDENT_P_VALID (t) = true;
+	  TYPE_DEPENDENT_P (t) = true;
+	}
+    }
+  else
+    {
+      bool typeless_storage = is_byte_access_type (elt_type);
+      t = build_array_type (elt_type, index_type, typeless_storage);
+
+      /* Mark as non-dependenty now, this will save time later.  */
+      TYPE_DEPENDENT_P_VALID (t) = true;
+    }
+
+  /* Now check whether we already have this array variant.  */
+  if (elt_type != TYPE_MAIN_VARIANT (elt_type))
+    {
+      tree m = t;
+      for (t = m; t; t = TYPE_NEXT_VARIANT (t))
+	if (TREE_TYPE (t) == elt_type
+	    && TYPE_NAME (t) == NULL_TREE
+	    && TYPE_ATTRIBUTES (t) == NULL_TREE)
+	  break;
+      if (!t)
+	{
+	  t = build_min_array_type (elt_type, index_type);
+	  /* Mark dependency now, this saves time later.  */
+	  TYPE_DEPENDENT_P_VALID (t) = true;
+	  TYPE_DEPENDENT_P (t) = dependent;
+	  set_array_type_canon (t, elt_type, index_type, dependent);
+	  if (!dependent)
+	    {
+	      layout_type (t);
+	      /* Make sure sizes are shared with the main variant.
+		 layout_type can't be called after setting TYPE_NEXT_VARIANT,
+		 as it will overwrite alignment etc. of all variants.  */
+	      TYPE_SIZE (t) = TYPE_SIZE (m);
+	      TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (m);
+	      TYPE_TYPELESS_STORAGE (t) = TYPE_TYPELESS_STORAGE (m);
+	    }
+
+	  TYPE_MAIN_VARIANT (t) = m;
+	  TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
+	  TYPE_NEXT_VARIANT (m) = t;
+	}
+    }
+
+  /* Avoid spurious warnings with VLAs (c++/54583).  */
+  if (TYPE_SIZE (t) && EXPR_P (TYPE_SIZE (t)))
+    suppress_warning (TYPE_SIZE (t), OPT_Wunused);
+
+  /* Push these needs up to the ARRAY_TYPE so that initialization takes
+     place more easily.  */
+  bool needs_ctor = (TYPE_NEEDS_CONSTRUCTING (t)
+		     = TYPE_NEEDS_CONSTRUCTING (elt_type));
+  bool needs_dtor = (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
+		     = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (elt_type));
+
+  if (!dependent && t == TYPE_MAIN_VARIANT (t)
+      && !COMPLETE_TYPE_P (t) && COMPLETE_TYPE_P (elt_type))
+    {
+      /* The element type has been completed since the last time we saw
+	 this array type; update the layout and 'tor flags for any variants
+	 that need it.  */
+      layout_type (t);
+      for (tree v = TYPE_NEXT_VARIANT (t); v; v = TYPE_NEXT_VARIANT (v))
+	{
+	  TYPE_NEEDS_CONSTRUCTING (v) = needs_ctor;
+	  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (v) = needs_dtor;
+	}
+    }
+
+  return t;
+}
+
+// forked from gcc/cp/tree.cc cp_build_qualified_type_real
+
+/* Make a variant of TYPE, qualified with the TYPE_QUALS.  Handles
+   arrays correctly.  In particular, if TYPE is an array of T's, and
+   TYPE_QUALS is non-empty, returns an array of qualified T's.
+
+   FLAGS determines how to deal with ill-formed qualifications. If
+   tf_ignore_bad_quals is set, then bad qualifications are dropped
+   (this is permitted if TYPE was introduced via a typedef or template
+   type parameter). If bad qualifications are dropped and tf_warning
+   is set, then a warning is issued for non-const qualifications.  If
+   tf_ignore_bad_quals is not set and tf_error is not set, we
+   return error_mark_node. Otherwise, we issue an error, and ignore
+   the qualifications.
+
+   Qualification of a reference type is valid when the reference came
+   via a typedef or template type argument. [dcl.ref] No such
+   dispensation is provided for qualifying a function type.  [dcl.fct]
+   DR 295 queries this and the proposed resolution brings it into line
+   with qualifying a reference.  We implement the DR.  We also behave
+   in a similar manner for restricting non-pointer types.  */
+
+tree
+rs_build_qualified_type_real (tree type, int type_quals,
+			      tsubst_flags_t complain)
+{
+  tree result;
+  int bad_quals = TYPE_UNQUALIFIED;
+
+  if (type == error_mark_node)
+    return type;
+
+  if (type_quals == rs_type_quals (type))
+    return type;
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      /* In C++, the qualification really applies to the array element
+	 type.  Obtain the appropriately qualified element type.  */
+      tree t;
+      tree element_type
+	= rs_build_qualified_type_real (TREE_TYPE (type), type_quals, complain);
+
+      if (element_type == error_mark_node)
+	return error_mark_node;
+
+      /* See if we already have an identically qualified type.  Tests
+	 should be equivalent to those in check_qualified_type.  */
+      for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+	if (TREE_TYPE (t) == element_type && TYPE_NAME (t) == TYPE_NAME (type)
+	    && TYPE_CONTEXT (t) == TYPE_CONTEXT (type)
+	    && attribute_list_equal (TYPE_ATTRIBUTES (t),
+				     TYPE_ATTRIBUTES (type)))
+	  break;
+
+      if (!t)
+	{
+	  /* If we already know the dependentness, tell the array type
+	     constructor.  This is important for module streaming, as we cannot
+	     dynamically determine that on read in.  */
+	  t = build_cplus_array_type (element_type, TYPE_DOMAIN (type),
+				      TYPE_DEPENDENT_P_VALID (type)
+					? int (TYPE_DEPENDENT_P (type))
+					: -1);
+
+	  /* Keep the typedef name.  */
+	  if (TYPE_NAME (t) != TYPE_NAME (type))
+	    {
+	      t = build_variant_type_copy (t);
+	      TYPE_NAME (t) = TYPE_NAME (type);
+	      SET_TYPE_ALIGN (t, TYPE_ALIGN (type));
+	      TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (type);
+	    }
+	}
+
+      /* Even if we already had this variant, we update
+	 TYPE_NEEDS_CONSTRUCTING and TYPE_HAS_NONTRIVIAL_DESTRUCTOR in case
+	 they changed since the variant was originally created.
+
+	 This seems hokey; if there is some way to use a previous
+	 variant *without* coming through here,
+	 TYPE_NEEDS_CONSTRUCTING will never be updated.  */
+      TYPE_NEEDS_CONSTRUCTING (t)
+	= TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (element_type));
+      TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
+	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TYPE_MAIN_VARIANT (element_type));
+      return t;
+    }
+
+  /* A reference or method type shall not be cv-qualified.
+     [dcl.ref], [dcl.fct].  This used to be an error, but as of DR 295
+     (in CD1) we always ignore extra cv-quals on functions.  */
+
+  /* [dcl.ref/1] Cv-qualified references are ill-formed except when
+     the cv-qualifiers are introduced through the use of a typedef-name
+     ([dcl.typedef], [temp.param]) or decltype-specifier
+     ([dcl.type.decltype]),in which case the cv-qualifiers are
+     ignored.  */
+  if (type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)
+      && (TYPE_REF_P (type) || FUNC_OR_METHOD_TYPE_P (type)))
+    {
+      if (TYPE_REF_P (type)
+	  && (!typedef_variant_p (type) || FUNC_OR_METHOD_TYPE_P (type)))
+	bad_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+      type_quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+    }
+
+  /* But preserve any function-cv-quals on a FUNCTION_TYPE.  */
+  if (TREE_CODE (type) == FUNCTION_TYPE)
+    type_quals |= type_memfn_quals (type);
+
+  /* A restrict-qualified type must be a pointer (or reference)
+     to object or incomplete type. */
+  if ((type_quals & TYPE_QUAL_RESTRICT)
+      && TREE_CODE (type) != TEMPLATE_TYPE_PARM
+      && TREE_CODE (type) != TYPENAME_TYPE && !INDIRECT_TYPE_P (type))
+    {
+      bad_quals |= TYPE_QUAL_RESTRICT;
+      type_quals &= ~TYPE_QUAL_RESTRICT;
+    }
+
+  if (bad_quals == TYPE_UNQUALIFIED || (complain & tf_ignore_bad_quals))
+    /*OK*/;
+  else if (!(complain & tf_error))
+    return error_mark_node;
+  else
+    {
+      tree bad_type = build_qualified_type (ptr_type_node, bad_quals);
+      error ("%qV qualifiers cannot be applied to %qT", bad_type, type);
+    }
+
+  /* Retrieve (or create) the appropriately qualified variant.  */
+  result = build_qualified_type (type, type_quals);
+
+  return result;
+}
+
+// forked from gcc/cp/c-common.cc vector_targets_convertible_p
+
+/* vector_targets_convertible_p is used for vector pointer types.  The
+   callers perform various checks that the qualifiers are satisfactory,
+   while OTOH vector_targets_convertible_p ignores the number of elements
+   in the vectors.  That's fine with vector pointers as we can consider,
+   say, a vector of 8 elements as two consecutive vectors of 4 elements,
+   and that does not require and conversion of the pointer values.
+   In contrast, vector_types_convertible_p and
+   vector_types_compatible_elements_p are used for vector value types.  */
+/* True if pointers to distinct types T1 and T2 can be converted to
+   each other without an explicit cast.  Only returns true for opaque
+   vector types.  */
+bool
+vector_targets_convertible_p (const_tree t1, const_tree t2)
+{
+  if (VECTOR_TYPE_P (t1) && VECTOR_TYPE_P (t2)
+      && (TYPE_VECTOR_OPAQUE (t1) || TYPE_VECTOR_OPAQUE (t2))
+      && tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2)))
+    return true;
+
+  return false;
+}
+
+// forked from gcc/cp/typeck.cc comp_array_types
+
+/* Compare the array types T1 and T2.  CB says how we should behave when
+   comparing array bounds: bounds_none doesn't allow dimensionless arrays,
+   bounds_either says than any array can be [], bounds_first means that
+   onlt T1 can be an array with unknown bounds.  STRICT is true if
+   qualifiers must match when comparing the types of the array elements.  */
+
+static bool
+comp_array_types (const_tree t1, const_tree t2, compare_bounds_t cb,
+		  bool strict)
+{
+  tree d1;
+  tree d2;
+  tree max1, max2;
+
+  if (t1 == t2)
+    return true;
+
+  /* The type of the array elements must be the same.  */
+  if (strict ? !same_type_p (TREE_TYPE (t1), TREE_TYPE (t2))
+	     : !similar_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+    return false;
+
+  d1 = TYPE_DOMAIN (t1);
+  d2 = TYPE_DOMAIN (t2);
+
+  if (d1 == d2)
+    return true;
+
+  /* If one of the arrays is dimensionless, and the other has a
+     dimension, they are of different types.  However, it is valid to
+     write:
+
+       extern int a[];
+       int a[3];
+
+     by [basic.link]:
+
+       declarations for an array object can specify
+       array types that differ by the presence or absence of a major
+       array bound (_dcl.array_).  */
+  if (!d1 && d2)
+    return cb >= bounds_either;
+  else if (d1 && !d2)
+    return cb == bounds_either;
+
+  /* Check that the dimensions are the same.  */
+
+  if (!rs_tree_equal (TYPE_MIN_VALUE (d1), TYPE_MIN_VALUE (d2)))
+    return false;
+  max1 = TYPE_MAX_VALUE (d1);
+  max2 = TYPE_MAX_VALUE (d2);
+
+  if (!rs_tree_equal (max1, max2))
+    return false;
+
+  return true;
+}
+
+// forked from gcc/cp/typeck.cc same_type_ignoring_top_level_qualifiers_p
+
+/* Returns nonzero iff TYPE1 and TYPE2 are the same type, ignoring
+   top-level qualifiers.  */
+
+bool
+same_type_ignoring_top_level_qualifiers_p (tree type1, tree type2)
+{
+  if (type1 == error_mark_node || type2 == error_mark_node)
+    return false;
+  if (type1 == type2)
+    return true;
+
+  type1 = rs_build_qualified_type (type1, TYPE_UNQUALIFIED);
+  type2 = rs_build_qualified_type (type2, TYPE_UNQUALIFIED);
+  return same_type_p (type1, type2);
+}
+
+// forked from gcc/cp/typeck.cc comp_ptr_ttypes_const
+
+/* Return true if TO and FROM (both of which are POINTER_TYPEs or
+   pointer-to-member types) are the same, ignoring cv-qualification at
+   all levels.  CB says how we should behave when comparing array bounds.  */
+
+bool
+comp_ptr_ttypes_const (tree to, tree from, compare_bounds_t cb)
+{
+  bool is_opaque_pointer = false;
+
+  for (;; to = TREE_TYPE (to), from = TREE_TYPE (from))
+    {
+      if (TREE_CODE (to) != TREE_CODE (from))
+	return false;
+
+      if (TREE_CODE (from) == OFFSET_TYPE
+	  && same_type_p (TYPE_OFFSET_BASETYPE (from),
+			  TYPE_OFFSET_BASETYPE (to)))
+	continue;
+
+      if (VECTOR_TYPE_P (to))
+	is_opaque_pointer = vector_targets_convertible_p (to, from);
+
+      if (TREE_CODE (to) == ARRAY_TYPE
+	  /* Ignore cv-qualification, but if we see e.g. int[3] and int[4],
+	     we must fail.  */
+	  && !comp_array_types (to, from, cb, /*strict=*/false))
+	return false;
+
+      /* CWG 330 says we need to look through arrays.  */
+      if (!TYPE_PTR_P (to) && TREE_CODE (to) != ARRAY_TYPE)
+	return (is_opaque_pointer
+		|| same_type_ignoring_top_level_qualifiers_p (to, from));
+    }
+}
+
+// forked from gcc/cp/typeck.cc similar_type_p
+
+/* Returns nonzero iff TYPE1 and TYPE2 are similar, as per [conv.qual].  */
+
+bool
+similar_type_p (tree type1, tree type2)
+{
+  if (type1 == error_mark_node || type2 == error_mark_node)
+    return false;
+
+  /* Informally, two types are similar if, ignoring top-level cv-qualification:
+     * they are the same type; or
+     * they are both pointers, and the pointed-to types are similar; or
+     * they are both pointers to member of the same class, and the types of
+       the pointed-to members are similar; or
+     * they are both arrays of the same size or both arrays of unknown bound,
+       and the array element types are similar.  */
+
+  if (same_type_ignoring_top_level_qualifiers_p (type1, type2))
+    return true;
+
+  if ((TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
+      || (TYPE_PTRDATAMEM_P (type1) && TYPE_PTRDATAMEM_P (type2))
+      || (TREE_CODE (type1) == ARRAY_TYPE && TREE_CODE (type2) == ARRAY_TYPE))
+    return comp_ptr_ttypes_const (type1, type2, bounds_either);
+
+  return false;
+}
+
+// forked from gcc/cp/typeck.cc structural_comptypes
+// note: this fork only handles strict == COMPARE_STRICT
+// if you pass in any other value for strict i.e. COMPARE_BASE,
+// COMPARE_DERIVED, COMPARE_REDECLARATION or COMPARE_STRUCTURAL
+// see the original function in gcc/cp/typeck.cc and port the required bits
+// specifically under case UNION_TYPE.
+
+/* Subroutine in comptypes.  */
+
+static bool
+structural_comptypes (tree t1, tree t2, int strict)
+{
+  /* Both should be types that are not obviously the same.  */
+  gcc_checking_assert (t1 != t2 && TYPE_P (t1) && TYPE_P (t2));
+
+  if (TYPE_PTRMEMFUNC_P (t1))
+    t1 = TYPE_PTRMEMFUNC_FN_TYPE (t1);
+  if (TYPE_PTRMEMFUNC_P (t2))
+    t2 = TYPE_PTRMEMFUNC_FN_TYPE (t2);
+
+  /* Different classes of types can't be compatible.  */
+  if (TREE_CODE (t1) != TREE_CODE (t2))
+    return false;
+
+  /* Qualifiers must match.  For array types, we will check when we
+     recur on the array element types.  */
+  if (TREE_CODE (t1) != ARRAY_TYPE && rs_type_quals (t1) != rs_type_quals (t2))
+    return false;
+  if (TREE_CODE (t1) == FUNCTION_TYPE
+      && type_memfn_quals (t1) != type_memfn_quals (t2))
+    return false;
+  /* Need to check this before TYPE_MAIN_VARIANT.
+     FIXME function qualifiers should really change the main variant.  */
+  if (FUNC_OR_METHOD_TYPE_P (t1))
+    {
+      if (type_memfn_rqual (t1) != type_memfn_rqual (t2))
+	return false;
+      if (/* cxx_dialect >= cxx17 && */
+	  !comp_except_specs (TYPE_RAISES_EXCEPTIONS (t1),
+			      TYPE_RAISES_EXCEPTIONS (t2), ce_type))
+	return false;
+    }
+
+  /* Allow for two different type nodes which have essentially the same
+     definition.  Note that we already checked for equality of the type
+     qualifiers (just above).  */
+  if (TREE_CODE (t1) != ARRAY_TYPE
+      && TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
+    return true;
+
+  /* Compare the types.  Return false on known not-same. Break on not
+     known.   Never return true from this switch -- you'll break
+     specialization comparison.    */
+  switch (TREE_CODE (t1))
+    {
+    case VOID_TYPE:
+    case BOOLEAN_TYPE:
+      /* All void and bool types are the same.  */
+      break;
+
+    case OPAQUE_TYPE:
+    case INTEGER_TYPE:
+    case FIXED_POINT_TYPE:
+    case REAL_TYPE:
+      /* With these nodes, we can't determine type equivalence by
+	 looking at what is stored in the nodes themselves, because
+	 two nodes might have different TYPE_MAIN_VARIANTs but still
+	 represent the same type.  For example, wchar_t and int could
+	 have the same properties (TYPE_PRECISION, TYPE_MIN_VALUE,
+	 TYPE_MAX_VALUE, etc.), but have different TYPE_MAIN_VARIANTs
+	 and are distinct types. On the other hand, int and the
+	 following typedef
+
+	   typedef int INT __attribute((may_alias));
+
+	 have identical properties, different TYPE_MAIN_VARIANTs, but
+	 represent the same type.  The canonical type system keeps
+	 track of equivalence in this case, so we fall back on it.  */
+      if (TYPE_CANONICAL (t1) != TYPE_CANONICAL (t2))
+	return false;
+
+      /* We don't need or want the attribute comparison.  */
+      return true;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      return false;
+
+    case OFFSET_TYPE:
+      if (!comptypes (TYPE_OFFSET_BASETYPE (t1), TYPE_OFFSET_BASETYPE (t2),
+		      strict & ~COMPARE_REDECLARATION))
+	return false;
+      if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return false;
+      break;
+
+    case REFERENCE_TYPE:
+      if (TYPE_REF_IS_RVALUE (t1) != TYPE_REF_IS_RVALUE (t2))
+	return false;
+      /* fall through to checks for pointer types */
+      gcc_fallthrough ();
+
+    case POINTER_TYPE:
+      if (TYPE_MODE (t1) != TYPE_MODE (t2)
+	  || !same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return false;
+      break;
+
+    case METHOD_TYPE:
+    case FUNCTION_TYPE:
+      /* Exception specs and memfn_rquals were checked above.  */
+      if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return false;
+      if (!compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2)))
+	return false;
+      break;
+
+    case ARRAY_TYPE:
+      /* Target types must match incl. qualifiers.  */
+      if (!comp_array_types (t1, t2,
+			     ((strict & COMPARE_REDECLARATION) ? bounds_either
+							       : bounds_none),
+			     /*strict=*/true))
+	return false;
+      break;
+
+    case COMPLEX_TYPE:
+      if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return false;
+      break;
+
+    case VECTOR_TYPE:
+      if (gnu_vector_type_p (t1) != gnu_vector_type_p (t2)
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (t1), TYPE_VECTOR_SUBPARTS (t2))
+	  || !same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	return false;
+      break;
+
+    default:
+      return false;
+    }
+
+  /* If we get here, we know that from a target independent POV the
+     types are the same.  Make sure the target attributes are also
+     the same.  */
+  if (!comp_type_attributes (t1, t2))
+    return false;
+
+  return true;
+}
+
+// forked from gcc/cp/typeck.cc comptypes
+
+/* Return true if T1 and T2 are related as allowed by STRICT.  STRICT
+   is a bitwise-or of the COMPARE_* flags.  */
+
+bool
+comptypes (tree t1, tree t2, int strict)
+{
+  gcc_checking_assert (t1 && t2);
+
+  /* TYPE_ARGUMENT_PACKS are not really types.  */
+  gcc_checking_assert (TREE_CODE (t1) != TYPE_ARGUMENT_PACK
+		       && TREE_CODE (t2) != TYPE_ARGUMENT_PACK);
+
+  if (t1 == t2)
+    return true;
+
+  /* Suppress errors caused by previously reported errors.  */
+  if (t1 == error_mark_node || t2 == error_mark_node)
+    return false;
+
+  if (strict == COMPARE_STRICT)
+    {
+      if (TYPE_STRUCTURAL_EQUALITY_P (t1) || TYPE_STRUCTURAL_EQUALITY_P (t2))
+	/* At least one of the types requires structural equality, so
+	   perform a deep check. */
+	return structural_comptypes (t1, t2, strict);
+
+      if (flag_checking && param_use_canonical_types)
+	{
+	  bool result = structural_comptypes (t1, t2, strict);
+
+	  if (result && TYPE_CANONICAL (t1) != TYPE_CANONICAL (t2))
+	    /* The two types are structurally equivalent, but their
+	       canonical types were different. This is a failure of the
+	       canonical type propagation code.*/
+	    internal_error (
+	      "canonical types differ for identical types %qT and %qT", t1, t2);
+	  else if (!result && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
+	    /* Two types are structurally different, but the canonical
+	       types are the same. This means we were over-eager in
+	       assigning canonical types. */
+	    internal_error (
+	      "same canonical type node for different types %qT and %qT", t1,
+	      t2);
+
+	  return result;
+	}
+      if (!flag_checking && param_use_canonical_types)
+	return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
+      else
+	return structural_comptypes (t1, t2, strict);
+    }
+  else if (strict == COMPARE_STRUCTURAL)
+    return structural_comptypes (t1, t2, COMPARE_STRICT);
+  else
+    return structural_comptypes (t1, t2, strict);
 }
 
 } // namespace Rust
