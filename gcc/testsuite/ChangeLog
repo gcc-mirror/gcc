@@ -1,3 +1,18 @@
+2022-07-09  Vit Kabele  <vit.kabele@sysgo.com>
+
+	* c-c++-common/Wpadded.c: New test.
+
+2022-07-09  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/98304
+	* gcc.c-torture/execute/pr98304-2.c: New test.
+	* gcc.dg/pr98304-1.c: New test.
+
+2022-07-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106087
+	* gcc.c-torture/compile/inline-asm-1.c: New test.
+
 2022-07-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR testsuite/106216

@@ -1,3 +1,8 @@
+2022-07-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/string: Remove obsolete comment about char_traits.h including
+	stl_algobase.h.
+
 2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/89074

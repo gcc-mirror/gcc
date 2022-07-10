@@ -1,3 +1,49 @@
+2022-07-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::irange_single_pair_union): Set
+	VR_VARYING when appropriate.
+
+2022-07-09  Vit Kabele  <vit.kabele@sysgo.com>
+
+	* stor-layout.cc (finalize_record_size): Extend warning message.
+
+2022-07-09  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/98304
+	* match.pd (n - (((n > C1) ? n : C1) & -C2)): New simplification.
+
+2022-07-09  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* expr.cc (store_expr): Identify trailing NULs in a STRING_CST
+	initializer and use clear_storage rather than copying the
+	NULs to the destination array.
+
+2022-07-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (define_peephole2): Use match_operand of
+	flags_reg_operand to capture and preserve the mode of FLAGS_REG.
+	(define_peephole2): Likewise.
+	(define_peephole2): Likewise...
+
+2022-07-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (convert_compare): Add support
+	for *testdi_not_doubleword pattern, "(compare (and (not ...)))"
+	by generating a pandn followed by ptest.
+	(convertible_comparison_p): Recognize both *cmpdi_doubleword and
+	recent *testdi_not_doubleword comparison patterns.
+
+2022-07-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/s390/s390.cc (s390_expand_atomic): Pass false to store_bit_field to
+	indicate that the value is not undefined.
+
+2022-07-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106087
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Check
+	to make sure the statement is only defining one operand.
+
 2022-07-08  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/91733
