@@ -21,6 +21,7 @@
 #include "stringpool.h"
 #include "attribs.h"
 #include "escaped_string.h"
+#include "libiberty.h"
 
 namespace Rust {
 
@@ -1461,6 +1462,67 @@ maybe_add_lang_type_raw (tree t)
     }
 
   return true;
+}
+
+// forked from gcc/c-family/c-lex.cc get_fileinfo
+
+static splay_tree file_info_tree;
+
+struct c_fileinfo *
+get_fileinfo (const char *name)
+{
+  splay_tree_node n;
+  struct c_fileinfo *fi;
+
+  if (!file_info_tree)
+    file_info_tree = splay_tree_new (splay_tree_compare_strings, 0,
+				     splay_tree_delete_pointers);
+
+  n = splay_tree_lookup (file_info_tree, (splay_tree_key) name);
+  if (n)
+    return (struct c_fileinfo *) n->value;
+
+  fi = XNEW (struct c_fileinfo);
+  fi->time = 0;
+  fi->interface_only = 0;
+  fi->interface_unknown = 1;
+  splay_tree_insert (file_info_tree, (splay_tree_key) name,
+		     (splay_tree_value) fi);
+  return fi;
+}
+
+// forked from gcc/cp/lex.cc cxx_make_type
+
+tree
+cxx_make_type (enum tree_code code MEM_STAT_DECL)
+{
+  tree t = make_node (code PASS_MEM_STAT);
+
+  if (maybe_add_lang_type_raw (t))
+    {
+      /* Set up some flags that give proper default behavior.  */
+      struct c_fileinfo *finfo = get_fileinfo (LOCATION_FILE (input_location));
+      SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, finfo->interface_unknown);
+      CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;
+    }
+
+  if (code == RECORD_TYPE || code == UNION_TYPE)
+    TYPE_CXX_ODR_P (t) = 1;
+
+  return t;
+}
+
+// forked from gcc/cp/tree.cc build_min_array_type
+
+/* Build an ARRAY_TYPE without laying it out.  */
+
+static tree
+build_min_array_type (tree elt_type, tree index_type)
+{
+  tree t = cxx_make_type (ARRAY_TYPE);
+  TREE_TYPE (t) = elt_type;
+  TYPE_DOMAIN (t) = index_type;
+  return t;
 }
 
 } // namespace Rust

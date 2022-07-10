@@ -23,6 +23,7 @@
 #include "coretypes.h"
 #include "tree.h"
 #include "cpplib.h"
+#include "splay-tree.h"
 
 /* Returns true if NODE is a pointer.  */
 #define TYPE_PTR_P(NODE) (TREE_CODE (NODE) == POINTER_TYPE)
@@ -677,7 +678,7 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
    pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
    before using this macro.  */
 #define TYPE_PTRMEMFUNC_FN_TYPE(NODE)                                          \
-  (cp_build_qualified_type (TREE_TYPE (TYPE_FIELDS (NODE)),                    \
+  (rs_build_qualified_type (TREE_TYPE (TYPE_FIELDS (NODE)),                    \
 			    rs_type_quals (NODE)))
 
 /* As above, but can be used in places that want an lvalue at the expense
@@ -732,6 +733,17 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 
 /* The expression in question for a DECLTYPE_TYPE.  */
 #define DECLTYPE_TYPE_EXPR(NODE) (TYPE_VALUES_RAW (DECLTYPE_TYPE_CHECK (NODE)))
+
+#define SET_CLASSTYPE_INTERFACE_UNKNOWN_X(NODE, X)                             \
+  (LANG_TYPE_CLASS_CHECK (NODE)->interface_unknown = !!(X))
+
+/* Nonzero if this class is included from a header file which employs
+   `#pragma interface', and it is not included in its implementation file.  */
+#define CLASSTYPE_INTERFACE_ONLY(NODE)                                         \
+  (LANG_TYPE_CLASS_CHECK (NODE)->interface_only)
+
+#define TYPE_NAME_STRING(NODE) (IDENTIFIER_POINTER (TYPE_IDENTIFIER (NODE)))
+#define TYPE_NAME_LENGTH(NODE) (IDENTIFIER_LENGTH (TYPE_IDENTIFIER (NODE)))
 
 // Below macros are copied from gcc/c-family/c-common.h
 
@@ -797,6 +809,24 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define STAT_DECL_HIDDEN_P(N) OVL_DEDUP_P (N)
 
 // Above macros are copied from gcc/cp/name-lookup.cc
+
+// forked from gcc/c-family/c-common.h c_fileinfo
+
+/* Information recorded about each file examined during compilation.  */
+
+struct c_fileinfo
+{
+  int time; /* Time spent in the file.  */
+
+  /* Flags used only by C++.
+     INTERFACE_ONLY nonzero means that we are in an "interface" section
+     of the compiler.  INTERFACE_UNKNOWN nonzero means we cannot trust
+     the value of INTERFACE_ONLY.  If INTERFACE_UNKNOWN is zero and
+     INTERFACE_ONLY is zero, it means that we are responsible for
+     exporting definitions that others might need.  */
+  short interface_only;
+  short interface_unknown;
+};
 
 // forked from gcc/cp/name-lookup.h
 
@@ -1287,6 +1317,50 @@ inline tree ovl_first (tree) ATTRIBUTE_PURE;
 inline bool type_unknown_p (const_tree);
 
 extern tree
+lookup_add (tree fns, tree lookup);
+
+extern tree
+ovl_make (tree fn, tree next = NULL_TREE);
+
+extern int is_overloaded_fn (tree) ATTRIBUTE_PURE;
+
+extern bool maybe_add_lang_type_raw (tree);
+
+extern rs_ref_qualifier type_memfn_rqual (const_tree);
+
+extern bool builtin_pack_fn_p (tree);
+
+extern tree make_conv_op_name (tree);
+
+extern int type_memfn_quals (const_tree);
+
+struct c_fileinfo *
+get_fileinfo (const char *);
+
+extern tree
+cxx_make_type (enum tree_code CXX_MEM_STAT_INFO);
+
+extern tree
+build_cplus_array_type (tree, tree, int is_dep = -1);
+
+extern bool is_byte_access_type (tree);
+
+// forked from gcc/cp/cp-tree.h
+
+enum
+{
+  ce_derived,
+  ce_type,
+  ce_normal,
+  ce_exact
+};
+
+extern tree
+rs_build_qualified_type_real (tree, int, tsubst_flags_t);
+#define rs_build_qualified_type(TYPE, QUALS)                                   \
+  rs_build_qualified_type_real ((TYPE), (QUALS), tf_warning_or_error)
+
+extern tree
 rs_walk_subtrees (tree *, int *, walk_tree_fn, void *, hash_set<tree> *);
 #define rs_walk_tree(tp, func, data, pset)                                     \
   walk_tree_1 (tp, func, data, pset, rs_walk_subtrees)
@@ -1354,6 +1428,19 @@ class_of_this_parm (const_tree fntype)
 {
   return TREE_TYPE (type_of_this_parm (fntype));
 }
+
+// forked from gcc/cp/cp-tree.h identifier_p
+
+/* Return a typed pointer version of T if it designates a
+   C++ front-end identifier.  */
+inline lang_identifier *
+identifier_p (tree t)
+{
+  if (TREE_CODE (t) == IDENTIFIER_NODE)
+    return (lang_identifier *) t;
+  return NULL;
+}
+
 } // namespace Rust
 
 #endif // RUST_TREE
