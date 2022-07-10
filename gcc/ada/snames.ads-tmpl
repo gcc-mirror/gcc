@@ -280,6 +280,10 @@ package Snames is
    Name_Finalization                   : constant Name_Id := N + $;
    Name_Interfaces                     : constant Name_Id := N + $;
    Name_Memory                         : constant Name_Id := N + $;
+   Name_Memory_Compare                 : constant Name_Id := N + $;
+   Name_Memory_Copy                    : constant Name_Id := N + $;
+   Name_Memory_Move                    : constant Name_Id := N + $;
+   Name_Memory_Set                     : constant Name_Id := N + $;
    Name_Most_Recent_Exception          : constant Name_Id := N + $;
    Name_Stack_Checking                 : constant Name_Id := N + $;
    Name_Standard                       : constant Name_Id := N + $;
