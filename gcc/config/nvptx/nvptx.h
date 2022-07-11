@@ -379,10 +379,6 @@ struct GTY(()) machine_function
 /* See 'libgcc/config/nvptx/crt0.c' for wrapping of 'main'.  */
 #define HAS_INIT_SECTION
 
-/* The C++ front end insists to link against libstdc++ -- which we don't build.
-   Tell it to instead link against the innocuous libgcc.  */
-#define LIBSTDCXX "gcc"
-
 /* The default doesn't fly ('internal compiler error: in simplify_subreg' when
    'dw2_assemble_integer' -> 'assemble_integer' attempts to simplify
    '(minus:DI (symbol_ref:DI ("$LEHB0")) (symbol_ref:DI ("$LFB3")))', for

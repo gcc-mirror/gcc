@@ -3431,10 +3431,6 @@ if test "${ENABLE_LIBSTDCXX}" = "default" ; then
       # VxWorks uses the Dinkumware C++ library.
       noconfigdirs="$noconfigdirs target-libstdc++-v3"
       ;;
-    amdgcn*-*-*)
-      # Not ported/fails to build when using newlib.
-      noconfigdirs="$noconfigdirs target-libstdc++-v3"
-      ;;
     arm*-wince-pe*)
       # the C++ libraries don't build on top of CE's C libraries
       noconfigdirs="$noconfigdirs target-libstdc++-v3"
@@ -4148,7 +4144,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gprof"
     ;;
   nvptx*-*-*)
-    noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3"
+    noconfigdirs="$noconfigdirs target-libssp"
     ;;
   sh-*-*)
     case "${target}" in
@@ -10395,6 +10391,16 @@ case ,${enable_languages}, in
         # Disable target libgrust if we're not building target libstdc++.
         noconfigdirs="$noconfigdirs target-libgrust"
         ;;
+      *)
+	case "${target}" in
+	  amdgcn*-*-* \
+	  | nvptx*-*-* )
+	    # Build fails in 'libgrust/libproc_macro_internal/':
+	    #     sorry, unimplemented: exception handling not supported
+	    noconfigdirs="$noconfigdirs target-libgrust"
+	    ;;
+	esac
+	;;
     esac
     ;;
 esac
