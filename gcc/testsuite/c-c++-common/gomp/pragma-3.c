@@ -2,13 +2,15 @@
 /* PR preprocessor/103165  */
 
 #define inner(...) #__VA_ARGS__ ; _Pragma("omp error severity(warning) message (\"Test\") at(compilation)") /* { dg-line inner_location } */
-#define outer(...) inner(__VA_ARGS__)
+#define outer(...) inner(__VA_ARGS__) /* { dg-line outer_location } */
 
 void
 f (void)
 {
-  const char *str = outer(inner(1,2));
-  /* { dg-warning "'pragma omp error' encountered: Test" "inner expansion" { target *-*-* } inner_location } */
+  const char *str = outer(inner(1,2)); /* { dg-line str_location } */
+  /* { dg-warning "35:'pragma omp error' encountered: Test" "" { target *-*-* } inner_location }
+     { dg-note "20:in expansion of macro 'inner'" "" { target *-*-* } outer_location }
+     { dg-note "21:in expansion of macro 'outer'" "" { target *-*-* } str_location } */
 }
 
 #if 0
