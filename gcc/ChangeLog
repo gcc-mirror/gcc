@@ -1,3 +1,47 @@
+2022-07-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::operator=): Call verify_range.
+	(irange::irange_set): Normalize kind after everything else has
+	been set.
+	(irange::irange_set_anti_range): Same.
+	(irange::set): Same.
+	(irange::verify_range): Disallow nonzero masks for VARYING.
+	(irange::irange_union): Call verify_range.
+	Handle nonzero masks better.
+	(irange::irange_intersect): Same.
+	(irange::set_nonzero_bits): Calculate mask if either range has an
+	explicit mask.
+	(irange::intersect_nonzero_bits): Same.
+	(irange::union_nonzero_bits): Same.
+	(range_tests_nonzero_bits): New.
+	(range_tests): Call range_tests_nonzero_bits.
+	* value-range.h (class irange): Remove set_nonzero_bits method
+	with trees.
+	(irange::varying_compatible_p): Set nonzero mask.
+
+2022-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (<any_div>di3_fake): Describe
+	the sign-extend of result in the RTL template.
+	(<any_div><mode>3): Adjust for <any_div>di3_fake change.
+
+2022-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_check_zero_div_p):
+	Remove static, for use in the machine description file.
+	* config/loongarch/loongarch-protos.h:
+	(loongarch_check_zero_div_p): Add prototype.
+	* config/loongarch/loongarch.md (enabled): New attr.
+	(*<optab><mode>3): Add (=r,r,r) and (=&r,0,r) alternatives for
+	idiv.  Conditionally enable the alternatives using
+	loongarch_check_zero_div_p.
+	(<optab>di3_fake): Likewise.
+
+2022-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (mulsidi3_64bit): Use mulw.d.w
+	instead of mul.d.
+
 2022-07-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	* value-range.cc (irange::irange_single_pair_union): Set

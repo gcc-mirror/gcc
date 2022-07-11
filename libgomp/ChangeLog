@@ -1,3 +1,9 @@
+2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Adapt for
+	improved warning locations.
+	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: Likewise.
+
 2022-07-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/requires-1.c: Add 'dg-note's.

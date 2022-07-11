@@ -1,3 +1,9 @@
+2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/97498
+	* c-parser.cc (c_parser_pragma): Set input_location to the
+	location of the pragma, rather than the start of the line.
+
 2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
