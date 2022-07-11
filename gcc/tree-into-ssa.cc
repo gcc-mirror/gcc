@@ -3451,10 +3451,12 @@ update_ssa (unsigned update_flags)
     phis_to_rewrite.create (last_basic_block_for_fn (cfun) + 1);
   blocks_to_update = BITMAP_ALLOC (NULL);
 
-  /* Ensure that the dominance information is up-to-date.  */
-  calculate_dominance_info (CDI_DOMINATORS);
-
   insert_phi_p = (update_flags != TODO_update_ssa_no_phi);
+
+  /* Ensure that the dominance information is up-to-date and when we
+     are going to compute dominance frontiers fast queries are possible.  */
+  if (insert_phi_p || dom_info_state (CDI_DOMINATORS) == DOM_NONE)
+    calculate_dominance_info (CDI_DOMINATORS);
 
   /* If there are names defined in the replacement table, prepare
      definition and use sites for all the names in NEW_SSA_NAMES and
