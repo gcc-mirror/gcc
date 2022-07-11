@@ -9,8 +9,8 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define to 1 if pthread.h is present. */
-#undef HAVE_PTHREAD_H
+/* Define if the system provides pthread locking mechanism. */
+#undef HAVE_PTHREAD_LOCKING
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H

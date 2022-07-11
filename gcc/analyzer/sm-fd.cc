@@ -454,7 +454,10 @@ public:
       return label_text::borrow ("opened here");
 
     if (change.m_new_state == m_sm.m_closed)
-      return change.formatted_print ("closed here");
+      {
+        m_first_close_event = change.m_event_id;
+        return change.formatted_print ("closed here");
+      }
 
     return fd_diagnostic::describe_state_change (change);
   }
@@ -462,11 +465,17 @@ public:
   label_text
   describe_final_event (const evdesc::final_event &ev) final override
   {
-    return ev.formatted_print ("%qE on closed file descriptor %qE here",
-                               m_callee_fndecl, m_arg);
+    if (m_first_close_event.known_p ())
+      return ev.formatted_print (
+          "%qE on closed file descriptor %qE; %qs was at %@", m_callee_fndecl,
+          m_arg, "close", &m_first_close_event);
+    else
+      return ev.formatted_print ("%qE on closed file descriptor %qE",
+                                 m_callee_fndecl, m_arg);
   }
 
 private:
+  diagnostic_event_id_t m_first_close_event;
   const tree m_callee_fndecl;
 };
 
@@ -542,11 +551,12 @@ fd_state_machine::fd_state_machine (logger *logger)
       m_unchecked_read_write (add_state ("fd-unchecked-read-write")),
       m_unchecked_read_only (add_state ("fd-unchecked-read-only")),
       m_unchecked_write_only (add_state ("fd-unchecked-write-only")),
-      m_invalid (add_state ("fd-invalid")),
       m_valid_read_write (add_state ("fd-valid-read-write")),
       m_valid_read_only (add_state ("fd-valid-read-only")),
       m_valid_write_only (add_state ("fd-valid-write-only")),
-      m_closed (add_state ("fd-closed")), m_stop (add_state ("fd-stop"))
+      m_invalid (add_state ("fd-invalid")),
+      m_closed (add_state ("fd-closed")),
+      m_stop (add_state ("fd-stop"))
 {
 }
 

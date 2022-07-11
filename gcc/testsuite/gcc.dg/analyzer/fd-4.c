@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 int open(const char *, int mode);
 void close(int fd);
 int write (int fd, void *buf, int nbytes);
@@ -45,7 +47,7 @@ test_3 (const char *path, void *buf)
     {
         close(fd); /* {dg-message "\\(2\\) closed here"} */
         read(fd, buf, 1); /* { dg-warning "'read' on closed file descriptor 'fd'" }  */
-        /* {dg-message "\\(3\\) 'read' on closed file descriptor 'fd' here" "" {target *-*-*} .-1 } */
+        /* {dg-message "\\(3\\) 'read' on closed file descriptor 'fd'; 'close' was at \\(2\\)" "" {target *-*-*} .-1 } */
     }
 }
 
@@ -57,6 +59,14 @@ test_4 (const char *path, void *buf)
     {
         close(fd); /* {dg-message "\\(2\\) closed here"} */
         write(fd, buf, 1); /* { dg-warning "'write' on closed file descriptor 'fd'" }  */
-        /* {dg-message "\\(3\\) 'write' on closed file descriptor 'fd' here" "" {target *-*-*} .-1 } */
+        /* {dg-message "\\(3\\) 'write' on closed file descriptor 'fd'; 'close' was at \\(2\\)" "" {target *-*-*} .-1 } */
     }
+}
+
+void
+test_5 (const char *path)
+{
+    int fd = open (path, O_RDWR);
+    close(fd);
+    printf("%d", fd); /* { dg-bogus "'printf' on a closed file descriptor 'fd'" } */
 }

@@ -7369,7 +7369,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	 dot-products.  */
       machine_mode vec_mode = TYPE_MODE (vectype_in);
       if (!lane_reduc_code_p
-	  && !directly_supported_p (op.code, vectype_in))
+	  && !directly_supported_p (op.code, vectype_in, optab_vector))
         {
           if (dump_enabled_p ())
             dump_printf (MSG_NOTE, "op not supported by target.\n");

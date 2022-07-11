@@ -676,7 +676,6 @@ binding_map::to_json () const
       const svalue *value = *const_cast <map_t &> (m_map).get (key);
       label_text key_desc = key->get_desc ();
       map_obj->set (key_desc.m_buffer, value->to_json ());
-      key_desc.maybe_free ();
     }
 
   return map_obj;
@@ -2405,11 +2404,9 @@ store::to_json () const
 	  label_text base_reg_desc = base_reg->get_desc ();
 	  clusters_in_parent_reg_obj->set (base_reg_desc.m_buffer,
 					   cluster->to_json ());
-	  base_reg_desc.maybe_free ();
 	}
       label_text parent_reg_desc = parent_reg->get_desc ();
       store_obj->set (parent_reg_desc.m_buffer, clusters_in_parent_reg_obj);
-      parent_reg_desc.maybe_free ();
     }
 
   store_obj->set ("called_unknown_fn", new json::literal (m_called_unknown_fn));

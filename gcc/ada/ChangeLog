@@ -1,3 +1,174 @@
+2022-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gcc-interface/Make-lang.in (ada/generated/gnatvsn.ads):
+	Simplify regular expression. The "interval expression",
+	i.e. \{8\} is part of the POSIX regular expressions, so it
+	should not be a problem for modern implementations of sed.
+
+2022-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu): Update comment.
+
+2022-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (simple_constant_p): Declare.
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Variable>: Strip
+	the qualifiers from the type of a simple constant.
+	(simple_constant_p): New predicate.
+	* gcc-interface/trans.cc (node_is_atomic): Return true for objects
+	with atomic type except for simple constants.
+	(node_is_volatile_full_access): Return false for simple constants
+	with VFA type.
+
+2022-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Variable>: Create a
+	local constant holding the underlying GNAT type of the object.  Do
+	not fiddle with the object size for an unconstrained array.
+
+2022-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_subprog_type): Constify a
+	local variable and move a couple of others around.
+
+2022-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_gimplify_expr) <SAVE_EXPR>: New case.
+
+2022-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Function return mechanisms): New paragraph.
+
+2022-07-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Is_Non_Preelaborable_Construct): Fix for
+	deferred constants.
+
+2022-07-06  Justin Squirek  <squirek@adacore.com>
+
+	* libgnat/s-regpat.adb, libgnat/s-regpat.ads (Compile): Add a
+	new defaulted parameter Error_When_Too_Small to trigger an
+	error, if specified true, when Matcher is too small to hold the
+	compiled regex program.
+
+2022-07-06  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Add condition to
+	avoid interpreting derived type components as candidates for
+	selected components in preanalysis of inherited class
+	conditions.
+
+2022-07-06  Yannick Moy  <moy@adacore.com>
+
+	* ghost.adb (Check_Ghost_Context): Delay checking for generic
+	associations.
+	(Check_Ghost_Context_In_Generic_Association): Perform ghost
+	checking in analyzed generic associations.
+	(Check_Ghost_Formal_Procedure_Or_Package): Check SPARK RM
+	6.9(13-14) for formal procedures and packages.
+	(Check_Ghost_Formal_Variable): Check SPARK RM 6.9(13-14) for
+	variables.
+	* ghost.ads: Declarations for the above.
+	* sem_ch12.adb (Analyze_Associations): Apply delayed checking
+	for generic associations.
+	(Analyze_Formal_Object_Declaration): Same.
+	(Analyze_Formal_Subprogram_Declaration): Same.
+	(Instantiate_Formal_Package): Same.
+	(Instantiate_Formal_Subprogram): Same.
+	(Instantiate_Object): Same.  Copy ghost aspect to newly declared
+	object for actual for IN formal object. Use new function
+	Get_Enclosing_Deep_Object to retrieve root object.
+	(Instantiate_Type): Copy ghost aspect to declared subtype for
+	actual for formal type.
+	* sem_prag.adb (Analyze_Pragma): Recognize new allowed
+	declarations.
+	* sem_util.adb (Copy_Ghost_Aspect): Copy the ghost aspect
+	between nodes.
+	(Get_Enclosing_Deep_Object): New function to return enclosing
+	deep object (or root for reachable part).
+	* sem_util.ads (Copy_Ghost_Aspect): Same.
+	(Get_Enclosing_Deep_Object): Same.
+	* libgnat/s-imageu.ads: Declare formal subprograms as ghost.
+	* libgnat/s-valuei.ads: Same.
+	* libgnat/s-valuti.ads: Same.
+
+2022-07-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Code cleanup since the
+	previous static check has been moved to Valid_Tagged_Conversion.
+	(Valid_Tagged_Conversion): Fix the code checking conversion
+	to/from interface types since incorrectly returns True when the
+	parent type of the operand type (or the target type) is an
+	interface type; add missing static checks on interface type
+	conversions.
+
+2022-07-06  Marc Poulhiès  <poulhies@adacore.com>
+
+	* libgnat/s-secsta.ads (SS_Allocate): Add new Alignment
+	parameter.
+	(Memory_Alignment): Remove.
+	* libgnat/s-secsta.adb (Align_Addr): New.
+	(SS_Allocate): Add new Alignment parameter. Realign pointer if
+	needed. Don't allocate anything for 0-sized allocations.
+	* gcc-interface/utils2.cc (build_call_alloc_dealloc_proc): Add
+	allocated object's alignment as last parameter to allocation
+	invocation.
+
+2022-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/g-socket.adb (Get_Address_Info): Reduce scope of the
+	Found variable; avoid repeated assignment inside the loop.
+
+2022-07-06  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl [arm,aarch64 vxworks7]: Remove rtp and kernel
+	build macros and set an error variable if needed.
+	[x86,x86_vxworks7]: Likewise.
+	[ppc,ppc64]: Set an error variable if needed.
+	(rts-err): New phony Makefile target.
+	(setup-rts): Depend on rts-err.
+
+2022-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Make_Allocator_For_BIP_Return): New local function.
+	(Expand_N_Object_Declaration): Use it to build the three allocators
+	for a Build-In-Place return with an unconstrained type.  Update the
+	head comment after other recent changes.
+
+2022-07-06  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/system-vxworks7-e500-kernel.ads: Remove.
+	* libgnat/system-vxworks7-e500-rtp-smp.ads: Likewise.
+	* libgnat/system-vxworks7-e500-rtp.ads: Likewise.
+
+2022-07-06  Justin Squirek  <squirek@adacore.com>
+
+	* gnat_cuda.adb (Empty_CUDA_Global_Subprogram): Set
+	Specification and Corresponding_Spec to match the original
+	Kernel_Body.
+
+2022-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch6.adb (Build_Static_Check_Helper_Call): Replace explicit
+	call to Make_Unchecked_Type_Conversion with a call to
+	Unchecked_Convert_To.
+	* tbuild.adb (Unchecked_Convert_To): Fix whitespace.
+
+2022-07-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Restore first sentence of a
+	comment.
+
+2022-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Expand_Record_Aggregate): Do not call
+	Is_Full_Access_Aggregate here.
+	* freeze.ads (Is_Full_Access_Aggregate): Delete.
+	* freeze.adb (Is_Full_Access_Aggregate): Move to...
+	(Freeze_Entity): Do not call Is_Full_Access_Aggregate here.
+	* sem_aggr.adb (Is_Full_Access_Aggregate): ...here
+	(Resolve_Aggregate): Call Is_Full_Access_Aggregate here.
+
 2022-07-05  Piotr Trojanek  <trojanek@adacore.com>
 
 	* doc/gnat_ugn/building_executable_programs_with_gnat.rst

@@ -4586,12 +4586,11 @@ feasibility_state::maybe_update_for_edge (logger *logger,
     {
       if (logger)
 	{
-	  char *desc = sedge->get_description (false);
+	  label_text desc (sedge->get_description (false));
 	  logger->log ("  sedge: SN:%i -> SN:%i %s",
 		       sedge->m_src->m_index,
 		       sedge->m_dest->m_index,
-		       desc);
-	  free (desc);
+		       desc.m_buffer);
 	}
 
       const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();

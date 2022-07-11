@@ -11689,6 +11689,14 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         case Terror:
             return setError();
 
+        case Tarray, Tsarray:
+            result = exp.incompatibleTypes();
+            exp.errorSupplemental("`in` is only allowed on associative arrays");
+            const(char)* slice = (t2b.ty == Tsarray) ? "[]" : "";
+            exp.errorSupplemental("perhaps use `std.algorithm.find(%s, %s%s)` instead",
+                exp.e1.toChars(), exp.e2.toChars(), slice);
+            return;
+
         default:
             result = exp.incompatibleTypes();
             return;

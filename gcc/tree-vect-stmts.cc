@@ -4247,6 +4247,14 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (!vec_stmt) /* transformation not required.  */
     {
+      /* When the original call is pure or const but the SIMD ABI dictates
+	 an aggregate return we will have to use a virtual definition and
+	 in a loop eventually even need to add a virtual PHI.  That's
+	 not straight-forward so allow to fix this up via renaming.  */
+      if (gimple_call_lhs (stmt)
+	  && !gimple_vdef (stmt)
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (bestn->decl))) == ARRAY_TYPE)
+	vinfo->any_known_not_updated_vssa = true;
       STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_push (bestn->decl);
       for (i = 0; i < nargs; i++)
 	if ((bestn->simdclone->args[i].arg_type

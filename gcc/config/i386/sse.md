@@ -9204,7 +9204,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "V2DF")])
 
-(define_insn "*sse2_cvtps2pd<mask_name>_1"
+(define_insn "sse2_cvtps2pd<mask_name>_1"
   [(set (match_operand:V2DF 0 "register_operand" "=v")
 	(float_extend:V2DF
 	  (match_operand:V2SF 1 "memory_operand" "m")))]
@@ -9266,7 +9266,15 @@
 	  (vec_select:V2SF
 	    (match_operand:V4SF 1 "vector_operand")
 	    (parallel [(const_int 0) (const_int 1)]))))]
-  "TARGET_SSE2")
+  "TARGET_SSE2"
+{
+  if (MEM_P (operands[1]))
+    {
+      operands[1] = adjust_address_nv (operands[1], V2SFmode, 0);
+      emit_insn (gen_sse2_cvtps2pd_1 (operands[0], operands[1]));
+      DONE;
+    }
+})
 
 (define_expand "vec_unpacks_lo_v8sf"
   [(set (match_operand:V4DF 0 "register_operand")

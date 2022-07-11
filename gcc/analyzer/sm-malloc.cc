@@ -1008,7 +1008,6 @@ inform_nonnull_attribute (tree fndecl, int arg_idx)
   inform (DECL_SOURCE_LOCATION (fndecl),
 	  "argument %s of %qD must be non-null",
 	  arg_desc.m_buffer, fndecl);
-  arg_desc.maybe_free ();
   /* Ideally we would use the location of the parm and underline the
      attribute also - but we don't have the location_t values at this point
      in the middle-end.
@@ -1072,7 +1071,6 @@ public:
       result = ev.formatted_print ("argument %s (%qE) could be NULL"
 				   " where non-null expected",
 				   arg_desc.m_buffer, ev.m_expr);
-    arg_desc.maybe_free ();
     return result;
   }
 
@@ -1180,7 +1178,6 @@ public:
       result = ev.formatted_print ("argument %s (%qE) NULL"
 				   " where non-null expected",
 				   arg_desc.m_buffer, ev.m_expr);
-    arg_desc.maybe_free ();
     return result;
   }
 

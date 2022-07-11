@@ -468,22 +468,12 @@ gimple_ranger::register_inferred_ranges (gimple *s)
     {
       Value_Range tmp (TREE_TYPE (lhs));
       if (range_of_stmt (tmp, s, lhs) && !tmp.varying_p ()
-	  && update_global_range (tmp, lhs) && dump_file)
+	  && set_range_info (lhs, tmp) && dump_file)
 	{
-	  // ?? This section should be adjusted when non-iranges can
-	  // be exported.  For now, the only way update_global_range
-	  // above can succeed is with an irange so this is safe.
-	  value_range vr = as_a <irange> (tmp);
 	  fprintf (dump_file, "Global Exported: ");
 	  print_generic_expr (dump_file, lhs, TDF_SLIM);
 	  fprintf (dump_file, " = ");
-	  vr.dump (dump_file);
-	  int_range_max same = vr;
-	  if (same != as_a <irange> (tmp))
-	    {
-	      fprintf (dump_file, " ...  irange was : ");
-	      tmp.dump (dump_file);
-	    }
+	  tmp.dump (dump_file);
 	  fputc ('\n', dump_file);
 	}
     }
@@ -509,7 +499,7 @@ gimple_ranger::export_global_ranges ()
 	  && m_cache.get_global_range (r, name)
 	  && !r.varying_p())
 	{
-	  bool updated = update_global_range (r, name);
+	  bool updated = set_range_info (name, r);
 	  if (!updated || !dump_file)
 	    continue;
 
@@ -522,22 +512,10 @@ gimple_ranger::export_global_ranges ()
 	      print_header = false;
 	    }
 
-	  if (!irange::supports_p (TREE_TYPE (name)))
-	    continue;
-
-	  vrange &v = r;
-	  value_range vr = as_a <irange> (v);
 	  print_generic_expr (dump_file, name , TDF_SLIM);
 	  fprintf (dump_file, "  : ");
-	  vr.dump (dump_file);
+	  r.dump (dump_file);
 	  fprintf (dump_file, "\n");
-	  int_range_max same = vr;
-	  if (same != as_a <irange> (v))
-	    {
-	      fprintf (dump_file, "         irange : ");
-	      r.dump (dump_file);
-	      fprintf (dump_file, "\n");
-	    }
 	}
     }
 }

@@ -1,3 +1,265 @@
+2022-07-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::operator=): Call verify_range.
+	(irange::irange_set): Normalize kind after everything else has
+	been set.
+	(irange::irange_set_anti_range): Same.
+	(irange::set): Same.
+	(irange::verify_range): Disallow nonzero masks for VARYING.
+	(irange::irange_union): Call verify_range.
+	Handle nonzero masks better.
+	(irange::irange_intersect): Same.
+	(irange::set_nonzero_bits): Calculate mask if either range has an
+	explicit mask.
+	(irange::intersect_nonzero_bits): Same.
+	(irange::union_nonzero_bits): Same.
+	(range_tests_nonzero_bits): New.
+	(range_tests): Call range_tests_nonzero_bits.
+	* value-range.h (class irange): Remove set_nonzero_bits method
+	with trees.
+	(irange::varying_compatible_p): Set nonzero mask.
+
+2022-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (<any_div>di3_fake): Describe
+	the sign-extend of result in the RTL template.
+	(<any_div><mode>3): Adjust for <any_div>di3_fake change.
+
+2022-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_check_zero_div_p):
+	Remove static, for use in the machine description file.
+	* config/loongarch/loongarch-protos.h:
+	(loongarch_check_zero_div_p): Add prototype.
+	* config/loongarch/loongarch.md (enabled): New attr.
+	(*<optab><mode>3): Add (=r,r,r) and (=&r,0,r) alternatives for
+	idiv.  Conditionally enable the alternatives using
+	loongarch_check_zero_div_p.
+	(<optab>di3_fake): Likewise.
+
+2022-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (mulsidi3_64bit): Use mulw.d.w
+	instead of mul.d.
+
+2022-07-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::irange_single_pair_union): Set
+	VR_VARYING when appropriate.
+
+2022-07-09  Vit Kabele  <vit.kabele@sysgo.com>
+
+	* stor-layout.cc (finalize_record_size): Extend warning message.
+
+2022-07-09  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/98304
+	* match.pd (n - (((n > C1) ? n : C1) & -C2)): New simplification.
+
+2022-07-09  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* expr.cc (store_expr): Identify trailing NULs in a STRING_CST
+	initializer and use clear_storage rather than copying the
+	NULs to the destination array.
+
+2022-07-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (define_peephole2): Use match_operand of
+	flags_reg_operand to capture and preserve the mode of FLAGS_REG.
+	(define_peephole2): Likewise.
+	(define_peephole2): Likewise...
+
+2022-07-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (convert_compare): Add support
+	for *testdi_not_doubleword pattern, "(compare (and (not ...)))"
+	by generating a pandn followed by ptest.
+	(convertible_comparison_p): Recognize both *cmpdi_doubleword and
+	recent *testdi_not_doubleword comparison patterns.
+
+2022-07-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/s390/s390.cc (s390_expand_atomic): Pass false to store_bit_field to
+	indicate that the value is not undefined.
+
+2022-07-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106087
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Check
+	to make sure the statement is only defining one operand.
+
+2022-07-08  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/91733
+	* input.cc (find_end_of_line): New helper function.
+	(file_cache_slot::get_next_line): Recognize \r as a line ending.
+	* diagnostic-show-locus.cc (test_escaping_bytes_1): Adapt selftest
+	since \r will now be interpreted as a line-ending.
+
+2022-07-08  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/106132
+	* opts.cc (finish_options): Use 2 calls to
+	report_conflicting_sanitizer_options.
+
+2022-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106226
+	* tree-vect-loop-manip.cc (vect_do_peeling): Assert that
+	no SSA update is needed.  Move virtual SSA update ...
+	* tree-vectorizer.cc (pass_vectorize::execute): ... here,
+	via forced virtual renaming when TODO_update_ssa_only_virtuals
+	is queued.
+	(vect_transform_loops): Return TODO_update_ssa_only_virtuals
+	when virtual SSA update is required.
+	(try_vectorize_loop_1): Adjust.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Allow
+	virtual renaming if the ABI forces an aggregate return
+	but the original call did not have a virtual definition.
+
+2022-07-08  Martin Liska  <mliska@suse.cz>
+
+	* toplev.cc (init_asm_output): Do not init asm_out_file.
+
+2022-07-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/106063
+	* match.pd: Do not apply pattern after veclower is not supported.
+
+2022-07-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lto-cgraph.cc (input_offload_tables) <LTO_symtab_edge>: Correct
+	'fn2' computation.
+
+2022-07-08  Tamar Christina  <tamar.christina@arm.com>
+
+	* expmed.cc (store_bit_field_1): Add parameter that indicates if value is
+	still undefined and if so emit a subreg move instead.
+	(store_integral_bit_field): Likewise.
+	(store_bit_field): Likewise.
+	* expr.h (write_complex_part): Likewise.
+	* expmed.h (store_bit_field): Add new parameter.
+	* builtins.cc (expand_ifn_atomic_compare_exchange_into_call): Use new
+	parameter.
+	(expand_ifn_atomic_compare_exchange): Likewise.
+	* calls.cc (store_unaligned_arguments_into_pseudos): Likewise.
+	* emit-rtl.cc (validate_subreg): Likewise.
+	* expr.cc (emit_group_store): Likewise.
+	(copy_blkmode_from_reg): Likewise.
+	(copy_blkmode_to_reg): Likewise.
+	(clear_storage_hints): Likewise.
+	(write_complex_part):  Likewise.
+	(emit_move_complex_parts): Likewise.
+	(expand_assignment): Likewise.
+	(store_expr): Likewise.
+	(store_field): Likewise.
+	(expand_expr_real_2): Likewise.
+	* ifcvt.cc (noce_emit_move_insn): Likewise.
+	* internal-fn.cc (expand_arith_set_overflow): Likewise.
+	(expand_arith_overflow_result_store): Likewise.
+	(expand_addsub_overflow): Likewise.
+	(expand_neg_overflow): Likewise.
+	(expand_mul_overflow): Likewise.
+	(expand_arith_overflow): Likewise.
+
+2022-07-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/106180
+	* config/i386/sse.md (sse2_cvtps2pd<mask_name>_1):
+	Rename from *sse2_cvtps2pd<mask_name>_1.
+	(vec_unpacks_lo_v4sf): Add handler for memory operand.
+
+2022-07-08  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_compute_frame_info):
+	Modify fp_sp_offset and gp_sp_offset's calculation method,
+	when frame->mask or frame->fmask is zero, don't minus UNITS_PER_WORD
+	or UNITS_PER_FP_REG.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc (json_from_location_range): Update for
+	removal of label_text::maybe_free in favor of automatic memory
+	management.
+	* diagnostic-format-sarif.cc
+	(sarif_builder::make_location_object): Likewise.
+	* diagnostic-show-locus.cc (struct pod_label_text): New.
+	(class line_label): Convert m_text from label_text to pod_label_text.
+	(layout::print_any_labels): Move "text" to the line_label.
+	* tree-diagnostic-path.cc (path_label::get_text): Update for
+	removal of label_text::maybe_free in favor of automatic memory
+	management.
+	(event_range::print): Likewise.
+	(default_tree_diagnostic_path_printer): Likewise.
+	(default_tree_make_json_for_path): Likewise.
+
+2022-07-07  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* statistics.cc (get_function_name): Add check to see if fn is not NULL.
+
+2022-07-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-into-ssa.cc (iterating_old_ssa_names): New.
+	(add_new_name_mapping): Grow {new,old}_ssa_names separately
+	and only when actually needed.  Assert we are not growing
+	the old_ssa_names set when iterating over it.
+	(update_ssa): Remove old_ssa_names copying and empty_p
+	query, note we are iterating over it and expect no set changes.
+
+2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/i386/intelmic-mkoffload.cc (generate_host_descr_file)
+	(prepare_target_image, main): Handle OpenMP 'requires'.
+	(generate_host_descr_file): Switch to 'GOMP_offload_register_ver',
+	'GOMP_offload_unregister_ver'.
+
+2022-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR target/106219
+	* config/i386/i386-builtins.cc (ix86_add_new_builtins): Properly
+	set DECL_PURE_P.
+
+2022-07-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-manip.cc (add_exit_phis_var): Return the
+	number of LC PHIs inserted.
+	(add_exit_phis): Return whether any variable required
+	multiple LC PHI nodes.
+	(rewrite_into_loop_closed_ssa_1): Use TODO_update_ssa_no_phi
+	when possible.
+
+2022-07-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-manip.cc (compute_live_loop_exits): Take
+	the def loop exit block bitmap as argument instead of
+	re-computing it here.
+	(add_exit_phis_var): Adjust.
+	(loop_name_cmp): New function.
+	(add_exit_phis): Sort variables to insert LC PHI nodes
+	after definition loop, for each definition loop compute
+	the exit block bitmap once.
+	(get_loops_exit): Remove.
+	(rewrite_into_loop_closed_ssa_1): Do not pre-record
+	all loop exit blocks into bitmaps.  Record loop exits
+	if required.
+
+2022-07-07  Dimitrije Milosevic  <Dimitrije.Milosevic@Syrmia.com>
+
+	* config/mips/mips.cc (mips_asan_shadow_offset): Reformat
+	to handle the N32 ABI.
+	* config/mips/mips.h (SUBTARGET_SHADOW_OFFSET): Remove
+	the macro, as it is not needed anymore.
+
+2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (process_obj): Clarify 'target_data' ->
+	'[...]_data'.
+	* config/nvptx/mkoffload.cc (process): Likewise.
+
+2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-general.h (enum omp_requires): Use 'GOMP_REQUIRES_[...]'.
+
 2022-07-05  Andrew MacLeod  <amacleod@redhat.com>
 
 	* value-relation.cc (relation_to_code): New vector.

@@ -1,3 +1,8 @@
+2022-07-08  Martin Liska  <mliska@suse.cz>
+
+	* lto-dump.cc (lto_main): Exit in the function
+	as we don't want any LTO bytecode processing.
+
 2022-06-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* lto-dump.cc: Add "final" and "override" to various vfunc

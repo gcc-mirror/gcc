@@ -3463,10 +3463,3 @@ struct GTY(())  machine_function {
    && !TARGET_MICROMIPS && !TARGET_FIX_24K)
 
 #define NEED_INDICATE_EXEC_STACK 0
-
-/* Define the shadow offset for asan. Other OS's can override in the
-   respective tm.h files.  */
-#ifndef SUBTARGET_SHADOW_OFFSET
-#define SUBTARGET_SHADOW_OFFSET \
-  (POINTER_SIZE == 64 ? HOST_WIDE_INT_1 << 37 : HOST_WIDE_INT_C (0x0aaa0000))
-#endif

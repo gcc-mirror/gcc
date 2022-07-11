@@ -66,7 +66,6 @@ class path_label : public range_label
     pp_show_color (&pp) = pp_show_color (global_dc->printer);
     diagnostic_event_id_t event_id (event_idx);
     pp_printf (&pp, "%@ %s", &event_id, event_text.m_buffer);
-    event_text.maybe_free ();
     label_text result = label_text::take (xstrdup (pp_formatted_text (&pp)));
     return result;
   }
@@ -176,7 +175,6 @@ struct event_range
 	    pretty_printer *pp = dc->printer;
 	    pp_printf (pp, " %@: %s", &event_id, event_text.m_buffer);
 	    pp_newline (pp);
-	    event_text.maybe_free ();
 	  }
 	return;
       }
@@ -484,7 +482,6 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 	    else
 	      inform (event.get_location (),
 		      "%@ %s", &event_id, event_text.m_buffer);
-	    event_text.maybe_free ();
 	  }
       }
       break;
@@ -523,7 +520,6 @@ default_tree_make_json_for_path (diagnostic_context *context,
 						     event.get_location ()));
       label_text event_text (event.get_desc (false));
       event_obj->set ("description", new json::string (event_text.m_buffer));
-      event_text.maybe_free ();
       if (tree fndecl = event.get_fndecl ())
 	{
 	  const char *function

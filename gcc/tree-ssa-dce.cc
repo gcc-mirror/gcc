@@ -2061,6 +2061,13 @@ simple_dce_from_worklist (bitmap worklist)
       if (gimple_has_side_effects (t))
 	continue;
 
+      /* The defining statement needs to be defining only this name.
+	 ASM is the only statement that can define more than one
+	 (non-virtual) name. */
+      if (is_a<gasm *>(t)
+	  && !single_ssa_def_operand (t, SSA_OP_DEF))
+	continue;
+
       /* Don't remove statements that are needed for non-call
 	 eh to work.  */
       if (stmt_unremovable_because_of_non_call_eh_p (cfun, t))

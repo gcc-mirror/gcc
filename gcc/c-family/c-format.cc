@@ -4625,7 +4625,6 @@ class range_label_for_format_type_mismatch
     suffix.fill_buffer (p);
 
     char *result = concat (text.m_buffer, p, NULL);
-    text.maybe_free ();
     return label_text::take (result);
   }
 

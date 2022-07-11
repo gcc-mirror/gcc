@@ -121,7 +121,7 @@ static const char *
 get_function_name (struct function *fn)
 {
   if ((statistics_dump_flags & TDF_ASMNAME)
-      && DECL_ASSEMBLER_NAME_SET_P (fn->decl))
+      && fn && DECL_ASSEMBLER_NAME_SET_P (fn->decl))
     {
       tree asmname = decl_assembler_name (fn->decl);
       if (asmname)

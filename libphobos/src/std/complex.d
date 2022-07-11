@@ -1695,9 +1695,9 @@ Complex!T log(T)(Complex!T x) @safe pure nothrow @nogc
  */
 Complex!T log10(T)(Complex!T x) @safe pure nothrow @nogc
 {
-    static import std.math;
+    import std.math.constants : LN10;
 
-    return log(x) / Complex!T(std.math.log(10.0));
+    return log(x) / Complex!T(LN10);
 }
 
 ///

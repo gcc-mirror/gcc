@@ -999,7 +999,8 @@ noce_emit_move_insn (rtx x, rtx y)
 		}
 
 	      gcc_assert (start < (MEM_P (op) ? BITS_PER_UNIT : BITS_PER_WORD));
-	      store_bit_field (op, size, start, 0, 0, GET_MODE (x), y, false);
+	      store_bit_field (op, size, start, 0, 0, GET_MODE (x), y, false,
+			       false);
 	      return;
 	    }
 
@@ -1056,7 +1057,7 @@ noce_emit_move_insn (rtx x, rtx y)
   outmode = GET_MODE (outer);
   bitpos = SUBREG_BYTE (outer) * BITS_PER_UNIT;
   store_bit_field (inner, GET_MODE_BITSIZE (outmode), bitpos,
-		   0, 0, outmode, y, false);
+		   0, 0, outmode, y, false, false);
 }
 
 /* Return the CC reg if it is used in COND.  */

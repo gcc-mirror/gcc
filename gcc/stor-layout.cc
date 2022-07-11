@@ -1781,7 +1781,12 @@ finalize_record_size (record_layout_info rli)
       && simple_cst_equal (unpadded_size, TYPE_SIZE (rli->t)) == 0
       && input_location != BUILTINS_LOCATION
       && !TYPE_ARTIFICIAL (rli->t))
-    warning (OPT_Wpadded, "padding struct size to alignment boundary");
+  {
+	tree pad_size
+	  = size_binop (MINUS_EXPR, TYPE_SIZE_UNIT (rli->t), unpadded_size_unit);
+	  warning (OPT_Wpadded,
+		"padding struct size to alignment boundary with %E bytes", pad_size);
+  }
 
   if (warn_packed && TREE_CODE (rli->t) == RECORD_TYPE
       && TYPE_PACKED (rli->t) && ! rli->packed_maybe_necessary

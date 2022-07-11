@@ -301,7 +301,6 @@ sm_state_map::to_json () const
 
       label_text sval_desc = sval->get_desc ();
       map_obj->set (sval_desc.m_buffer, e.m_state->to_json ());
-      sval_desc.maybe_free ();
 
       /* This doesn't yet JSONify e.m_origin.  */
     }

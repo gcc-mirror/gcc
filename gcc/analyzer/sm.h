@@ -279,6 +279,8 @@ public:
   virtual const program_state *get_old_program_state () const = 0;
   virtual const program_state *get_new_program_state () const = 0;
 
+  const region_model *get_old_region_model () const;
+
 protected:
   sm_context (int sm_idx, const state_machine &sm)
   : m_sm_idx (sm_idx), m_sm (sm) {}

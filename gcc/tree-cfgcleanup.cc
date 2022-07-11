@@ -1095,7 +1095,11 @@ cleanup_tree_cfg_noloop (unsigned ssa_update_flags)
   /* After doing the above SSA form should be valid (or an update SSA
      should be required).  */
   if (ssa_update_flags)
-    update_ssa (ssa_update_flags);
+    {
+      timevar_pop (TV_TREE_CLEANUP_CFG);
+      update_ssa (ssa_update_flags);
+      timevar_push (TV_TREE_CLEANUP_CFG);
+    }
 
   /* Compute dominator info which we need for the iterative process below.  */
   if (!dom_info_available_p (CDI_DOMINATORS))

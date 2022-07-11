@@ -57,8 +57,12 @@ CHECKING_DFLAGS =
 endif
 WARN_DFLAGS = -Wall -Wdeprecated $(NOCOMMON_FLAG)
 
+# D front-end doesn't use exceptions, but it does require RTTI.
+NOEXCEPTION_DFLAGS = $(filter-out -fno-rtti, $(NOEXCEPTION_FLAGS))
+
 ALL_DFLAGS = $(DFLAGS-$@) $(GDCFLAGS) -fversion=IN_GCC $(CHECKING_DFLAGS) \
-	$(PICFLAG) $(ALIASING_FLAGS) $(COVERAGE_FLAGS) $(WARN_DFLAGS)
+	$(PICFLAG) $(ALIASING_FLAGS) $(NOEXCEPTION_DFLAGS) $(COVERAGE_FLAGS) \
+	$(WARN_DFLAGS)
 
 DCOMPILE.base = $(GDC) $(NO_PIE_CFLAGS) -c $(ALL_DFLAGS) -o $@
 DCOMPILE = $(DCOMPILE.base) -MT $@ -MMD -MP -MF $(@D)/$(DEPDIR)/$(*F).TPo

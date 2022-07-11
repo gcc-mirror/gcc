@@ -1,3 +1,14 @@
+2022-07-07  Martin Liska  <mliska@suse.cz>
+
+	PR lto/106170
+	* configure.ac: Configure HAVE_PTHREAD_LOCKING.
+	* lto-plugin.c (LOCK_SECTION): New.
+	(UNLOCK_SECTION): New.
+	(claim_file_handler): Use the newly added macros.
+	(onload): Likewise.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2022-07-01  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
 
 	PR lto/106118

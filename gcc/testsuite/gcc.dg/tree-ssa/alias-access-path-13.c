@@ -6,10 +6,15 @@ struct inn
   int val;
 };
 
+struct biggerstruct
+{
+  int a, b;
+};
+
 union foo
 {
   struct inn inn;
-  long int baz;
+  struct biggerstruct baz;
 } *fooptr;
 
 struct bar

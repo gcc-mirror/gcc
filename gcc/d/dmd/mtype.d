@@ -4437,15 +4437,7 @@ extern (C++) final class TypeFunction : TypeNext
             // Check escaping through `this`
             if (tthis && tthis.isMutable())
             {
-                auto tb = tthis.toBasetype();
-                AggregateDeclaration ad;
-                if (auto tc = tb.isTypeClass())
-                    ad = tc.sym;
-                else if (auto ts = tb.isTypeStruct())
-                    ad = ts.sym;
-                else
-                    assert(0);
-                foreach (VarDeclaration v; ad.fields)
+                foreach (VarDeclaration v; isAggregate(tthis).fields)
                 {
                     if (v.hasPointers())
                         return stc;
@@ -6655,16 +6647,18 @@ extern (C++) final class TypeTag : Type
     Type resolved;          /// type after semantic() in case there are more others
                             /// pointing to this instance, which can happen with
                             ///   struct S { int a; } s1, *s2;
+    MOD mod;                /// modifiers to apply after type is resolved (only MODFlags.const_ at the moment)
 
     extern (D) this(const ref Loc loc, TOK tok, Identifier id, Type base, Dsymbols* members)
     {
-        //printf("TypeTag %p\n", this);
+        //printf("TypeTag ctor %s %p\n", id ? id.toChars() : "null".ptr, this);
         super(Ttag);
         this.loc = loc;
         this.tok = tok;
         this.id = id;
         this.base = base;
         this.members = members;
+        this.mod = 0;
     }
 
     override const(char)* kind() const
@@ -6674,6 +6668,7 @@ extern (C++) final class TypeTag : Type
 
     override TypeTag syntaxCopy()
     {
+        //printf("TypeTag syntaxCopy()\n");
         // No semantic analysis done, no need to copy
         return this;
     }

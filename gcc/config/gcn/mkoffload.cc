@@ -692,13 +692,13 @@ process_obj (FILE *in, FILE *cfile, uint32_t omp_requires)
 	   len);
 
   fprintf (cfile,
-	   "static const struct gcn_image_desc {\n"
+	   "static const struct gcn_data {\n"
 	   "  uintptr_t omp_requires_mask;\n"
 	   "  const struct gcn_image *gcn_image;\n"
 	   "  unsigned kernel_count;\n"
 	   "  const struct hsa_kernel_description *kernel_infos;\n"
 	   "  unsigned global_variable_count;\n"
-	   "} target_data = {\n"
+	   "} gcn_data = {\n"
 	   "  %d,\n"
 	   "  &gcn_image,\n"
 	   "  sizeof (gcn_kernels) / sizeof (gcn_kernels[0]),\n"
@@ -723,7 +723,7 @@ process_obj (FILE *in, FILE *cfile, uint32_t omp_requires)
   fprintf (cfile, "static __attribute__((constructor)) void init (void)\n"
 	   "{\n"
 	   "  GOMP_offload_register_ver (%#x, __OFFLOAD_TABLE__,"
-	   " %d/*GCN*/, &target_data);\n"
+	   " %d/*GCN*/, &gcn_data);\n"
 	   "};\n",
 	   GOMP_VERSION_PACK (GOMP_VERSION, GOMP_VERSION_GCN),
 	   GOMP_DEVICE_GCN);
@@ -731,7 +731,7 @@ process_obj (FILE *in, FILE *cfile, uint32_t omp_requires)
   fprintf (cfile, "static __attribute__((destructor)) void fini (void)\n"
 	   "{\n"
 	   "  GOMP_offload_unregister_ver (%#x, __OFFLOAD_TABLE__,"
-	   " %d/*GCN*/, &target_data);\n"
+	   " %d/*GCN*/, &gcn_data);\n"
 	   "};\n",
 	   GOMP_VERSION_PACK (GOMP_VERSION, GOMP_VERSION_GCN),
 	   GOMP_DEVICE_GCN);

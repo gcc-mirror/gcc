@@ -176,9 +176,9 @@ class FileException : Exception
     private this(scope const(char)[] name, scope const(char)[] msg, string file, size_t line, uint errno) @safe pure
     {
         if (msg.empty)
-            super(name.idup, file, line);
+            super(name is null ? "(null)" : name.idup, file, line);
         else
-            super(text(name, ": ", msg), file, line);
+            super(text(name is null ? "(null)" : name, ": ", msg), file, line);
 
         this.errno = errno;
     }
@@ -1067,11 +1067,38 @@ private void removeImpl(scope const(char)[] name, scope const(FSChar)* namez) @t
         if (!name)
         {
             import core.stdc.string : strlen;
-            auto len = strlen(namez);
+
+            auto len = namez ? strlen(namez) : 0;
             name = namez[0 .. len];
         }
         cenforce(core.stdc.stdio.remove(namez) == 0,
-            "Failed to remove file " ~ name);
+            "Failed to remove file " ~ (name is null ? "(null)" : name));
+    }
+}
+
+@safe unittest
+{
+    import std.exception : collectExceptionMsg, assertThrown;
+
+    string filename = null; // e.g. as returned by File.tmpfile.name
+
+    version (linux)
+    {
+        // exact exception message is OS-dependent
+        auto msg = filename.remove.collectExceptionMsg!FileException;
+        assert("Failed to remove file (null): Bad address" == msg, msg);
+    }
+    else version (Windows)
+    {
+        import std.algorithm.searching : startsWith;
+
+        // don't test exact message on windows, it's language dependent
+        auto msg = filename.remove.collectExceptionMsg!FileException;
+        assert(msg.startsWith("(null):"), msg);
+    }
+    else
+    {
+        assertThrown!FileException(filename.remove);
     }
 }
 

@@ -6011,14 +6011,27 @@ fi
 
 
 # Check for thread headers.
-ac_fn_c_check_header_mongrel "$LINENO" "pthread.h" "ac_cv_header_pthread_h" "$ac_includes_default"
+use_locking=no
+
+case $target in
+  riscv*)
+    # do not use locking as pthread depends on libatomic
+    ;;
+  *-linux*)
+    use_locking=yes
+    ;;
+esac
+
+if test x$use_locking = xyes; then
+  ac_fn_c_check_header_mongrel "$LINENO" "pthread.h" "ac_cv_header_pthread_h" "$ac_includes_default"
 if test "x$ac_cv_header_pthread_h" = xyes; then :
 
-$as_echo "#define HAVE_PTHREAD_H 1" >>confdefs.h
+$as_echo "#define HAVE_PTHREAD_LOCKING 1" >>confdefs.h
 
 fi
 
 
+fi
 
 case `pwd` in
   *\ * | *\	*)
@@ -12091,7 +12104,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12094 "configure"
+#line 12107 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12197,7 +12210,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12200 "configure"
+#line 12213 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

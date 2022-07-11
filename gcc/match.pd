@@ -6008,10 +6008,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (cmp (bit_and:c@2 @0 cst@1) integer_zerop)
     (with { tree csts = bitmask_inv_cst_vector_p (@1); }
      (if (csts && (VECTOR_TYPE_P (TREE_TYPE (@1)) || single_use (@2)))
-      (if (TYPE_UNSIGNED (TREE_TYPE (@1)))
-       (icmp @0 { csts; })
-       (with { tree utype = unsigned_type_for (TREE_TYPE (@1)); }
-	 (icmp (view_convert:utype @0) { csts; }))))))))
+      (with { auto optab = VECTOR_TYPE_P (TREE_TYPE (@1))
+			 ? optab_vector : optab_default;
+	      tree utype = unsigned_type_for (TREE_TYPE (@1)); }
+       (if (target_supports_op_p (utype, icmp, optab)
+	    || (optimize_vectors_before_lowering_p ()
+		&& (!target_supports_op_p (type, cmp, optab)
+		    || !target_supports_op_p (type, BIT_AND_EXPR, optab))))
+	(if (TYPE_UNSIGNED (TREE_TYPE (@1)))
+	 (icmp @0 { csts; })
+	 (icmp (view_convert:utype @0) { csts; })))))))))
 
 /* When one argument is a constant, overflow detection can be simplified.
    Currently restricted to single use so as not to interfere too much with
@@ -8020,3 +8026,15 @@ and,
 (match (bitwise_induction_p @0 @2 @3)
  (bit_not
   (nop_convert1? (bit_xor@0 (convert2? (lshift integer_onep@1 @2)) @3))))
+
+/* n - (((n > C1) ? n : C1) & -C2) ->  n & C1 for unsigned case.
+   n - (((n > C1) ? n : C1) & -C2) ->  (n <= C1) ? n : (n & C1) for signed case.  */
+(simplify
+  (minus @0 (bit_and (max @0 INTEGER_CST@1) INTEGER_CST@2))
+  (with { auto i = wi::neg (wi::to_wide (@2)); }
+  /* Check if -C2 is a power of 2 and C1 = -C2 - 1.  */
+    (if (wi::popcount (i) == 1
+         && (wi::to_wide (@1)) == (i - 1))
+      (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
+        (bit_and @0 @1)
+      (cond (le @0 @1) @0 (bit_and @0 @1))))))
