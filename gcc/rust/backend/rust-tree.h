@@ -763,8 +763,6 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
    level 2.  */
 #define DECL_PARM_LEVEL(NODE) (LANG_DECL_PARM_CHECK (NODE)->level)
 
-#define LANG_DECL_PARM_CHECK(NODE) (&DECL_LANG_SPECIFIC (NODE)->u.parm)
-
 /* These flags are used by the conversion code.
    CONV_IMPLICIT   :  Perform implicit conversions (standard and user-defined).
    CONV_STATIC     :  Perform the explicit conversions for static_cast.
@@ -844,6 +842,133 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 
 /* Returns true if NODE is a pointer-to-data-member.  */
 #define TYPE_PTRDATAMEM_P(NODE) (TREE_CODE (NODE) == OFFSET_TYPE)
+
+/* Nonzero if this type is const-qualified.  */
+#define RS_TYPE_CONST_P(NODE) ((rs_type_quals (NODE) & TYPE_QUAL_CONST) != 0)
+
+/* The _DECL for this _TYPE.  */
+#define TYPE_MAIN_DECL(NODE) (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
+
+/* Nonzero for a VAR_DECL iff an explicit initializer was provided
+   or a non-trivial constructor is called.  */
+#define DECL_NONTRIVIALLY_INITIALIZED_P(NODE)                                  \
+  (TREE_LANG_FLAG_6 (VAR_DECL_CHECK (NODE)))
+
+/* Nonzero if DECL was declared with '= default' (maybe implicitly).  */
+#define DECL_DEFAULTED_FN(DECL) (LANG_DECL_FN_CHECK (DECL)->defaulted_p)
+
+/* Nonzero for a class type means that the class type has a
+   user-declared constructor.  */
+#define TYPE_HAS_USER_CONSTRUCTOR(NODE) (TYPE_LANG_FLAG_1 (NODE))
+
+/* A FUNCTION_DECL or OVERLOAD for the constructors for NODE.  These
+   are the constructors that take an in-charge parameter.  */
+#define CLASSTYPE_CONSTRUCTORS(NODE)                                           \
+  (get_class_binding_direct (NODE, ctor_identifier))
+
+/* Nonzero if the DECL was initialized in the class definition itself,
+   rather than outside the class.  This is used for both static member
+   VAR_DECLS, and FUNCTION_DECLS that are defined in the class.  */
+#define DECL_INITIALIZED_IN_CLASS_P(DECL)                                      \
+  (DECL_LANG_SPECIFIC (VAR_OR_FUNCTION_DECL_CHECK (DECL))                      \
+     ->u.base.initialized_in_class)
+
+/* Nonzero if DECL is explicitly defaulted in the class body.  */
+#define DECL_DEFAULTED_IN_CLASS_P(DECL)                                        \
+  (DECL_DEFAULTED_FN (DECL) && DECL_INITIALIZED_IN_CLASS_P (DECL))
+
+/* Nonzero for FUNCTION_DECL means that this decl is a non-static
+   member function.  */
+#define DECL_NONSTATIC_MEMBER_FUNCTION_P(NODE)                                 \
+  (TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE)
+
+/* For FUNCTION_DECLs: nonzero means that this function is a
+   constructor or a destructor with an extra in-charge parameter to
+   control whether or not virtual bases are constructed.  */
+#define DECL_HAS_IN_CHARGE_PARM_P(NODE)                                        \
+  (LANG_DECL_FN_CHECK (NODE)->has_in_charge_parm_p)
+
+/* Nonzero if the VTT parm has been added to NODE.  */
+#define DECL_HAS_VTT_PARM_P(NODE) (LANG_DECL_FN_CHECK (NODE)->has_vtt_parm_p)
+
+/* Given a FUNCTION_DECL, returns the first TREE_LIST out of TYPE_ARG_TYPES
+   which refers to a user-written parameter.  */
+#define FUNCTION_FIRST_USER_PARMTYPE(NODE)                                     \
+  skip_artificial_parms_for ((NODE), TYPE_ARG_TYPES (TREE_TYPE (NODE)))
+
+/* Similarly, but for DECL_ARGUMENTS.  */
+#define FUNCTION_FIRST_USER_PARM(NODE)                                         \
+  skip_artificial_parms_for ((NODE), DECL_ARGUMENTS (NODE))
+
+/* For FUNCTION_DECLs and TEMPLATE_DECLs: nonzero means that this function
+   is a constructor.  */
+#define DECL_CONSTRUCTOR_P(NODE) DECL_CXX_CONSTRUCTOR_P (NODE)
+
+/* Nonzero if DECL was declared with '= delete'.  */
+#define DECL_DELETED_FN(DECL)                                                  \
+  (LANG_DECL_FN_CHECK (DECL)->min.base.threadprivate_or_deleted_p)
+
+/* Nonzero if DECL was declared with '= default' (maybe implicitly).  */
+#define DECL_DEFAULTED_FN(DECL) (LANG_DECL_FN_CHECK (DECL)->defaulted_p)
+
+#if defined ENABLE_TREE_CHECKING
+
+#define LANG_DECL_MIN_CHECK(NODE)                                              \
+  __extension__({                                                              \
+    struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);                          \
+    if (!LANG_DECL_HAS_MIN (NODE))                                             \
+      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);                    \
+    &lt->u.min;                                                                \
+  })
+
+/* We want to be able to check DECL_CONSTRUCTOR_P and such on a function
+   template, not just on a FUNCTION_DECL.  So when looking for things in
+   lang_decl_fn, look down through a TEMPLATE_DECL into its result.  */
+#define LANG_DECL_FN_CHECK(NODE)                                               \
+  __extension__({                                                              \
+    struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);                          \
+    if (!DECL_DECLARES_FUNCTION_P (NODE) || lt->u.base.selector != lds_fn)     \
+      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);                    \
+    &lt->u.fn;                                                                 \
+  })
+
+#define LANG_DECL_NS_CHECK(NODE)                                               \
+  __extension__({                                                              \
+    struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);                          \
+    if (TREE_CODE (NODE) != NAMESPACE_DECL || lt->u.base.selector != lds_ns)   \
+      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);                    \
+    &lt->u.ns;                                                                 \
+  })
+
+#define LANG_DECL_PARM_CHECK(NODE)                                             \
+  __extension__({                                                              \
+    struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);                          \
+    if (TREE_CODE (NODE) != PARM_DECL || lt->u.base.selector != lds_parm)      \
+      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);                    \
+    &lt->u.parm;                                                               \
+  })
+
+#define LANG_DECL_DECOMP_CHECK(NODE)                                           \
+  __extension__({                                                              \
+    struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);                          \
+    if (!VAR_P (NODE) || lt->u.base.selector != lds_decomp)                    \
+      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);                    \
+    &lt->u.decomp;                                                             \
+  })
+
+#else
+
+#define LANG_DECL_MIN_CHECK(NODE) (&DECL_LANG_SPECIFIC (NODE)->u.min)
+
+#define LANG_DECL_FN_CHECK(NODE) (&DECL_LANG_SPECIFIC (NODE)->u.fn)
+
+#define LANG_DECL_NS_CHECK(NODE) (&DECL_LANG_SPECIFIC (NODE)->u.ns)
+
+#define LANG_DECL_PARM_CHECK(NODE) (&DECL_LANG_SPECIFIC (NODE)->u.parm)
+
+#define LANG_DECL_DECOMP_CHECK(NODE) (&DECL_LANG_SPECIFIC (NODE)->u.decomp)
+
+#endif /* ENABLE_TREE_CHECKING */
 
 // Below macros are copied from gcc/c-family/c-common.h
 
@@ -1743,6 +1868,38 @@ extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool same_type_ignoring_top_level_qualifiers_p (tree, tree);
 
 extern bool comp_ptr_ttypes_const		(tree, tree, compare_bounds_t);
+
+extern tree
+get_class_binding_direct (tree, tree, bool want_type = false);
+
+extern tree skip_artificial_parms_for (const_tree, tree);
+
+extern void
+lang_check_failed (const char *, int,
+		   const char *) ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
+
+extern tree default_init_uninitialized_part (tree);
+
+extern bool type_has_non_user_provided_default_constructor (tree);
+
+extern bool default_ctor_p (const_tree);
+
+extern bool user_provided_p (tree);
+
+extern bool sufficient_parms_p (const_tree);
+
+extern tree next_initializable_field (tree);
+
+extern tree in_class_defaulted_default_constructor (tree);
+
+extern bool is_instantiation_of_constexpr (tree);
+
+extern bool
+check_for_uninitialized_const_var (tree, bool, tsubst_flags_t);
+
+extern bool reduced_constant_expression_p (tree);
+
+extern tree cv_unqualified (tree);
 
 // forked from gcc/cp/cp-tree.h
 

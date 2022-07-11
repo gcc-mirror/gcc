@@ -23,6 +23,9 @@
 #include "escaped_string.h"
 #include "libiberty.h"
 #include "stor-layout.h"
+#include "hash-map.h"
+#include "diagnostic.h"
+#include "timevar.h"
 
 namespace Rust {
 
@@ -1134,9 +1137,7 @@ ovl_make (tree fn, tree next)
   if (TREE_CODE (fn) == OVERLOAD)
     OVL_NESTED_P (result) = true;
 
-  TREE_TYPE (result)
-    = (next || TREE_CODE (fn) == TEMPLATE_DECL ? unknown_type_node
-					       : TREE_TYPE (fn));
+  TREE_TYPE (result) = (next ? unknown_type_node : TREE_TYPE (fn));
   if (next && TREE_CODE (next) == OVERLOAD && OVL_DEDUP_P (next))
     OVL_DEDUP_P (result) = true;
   OVL_FUNCTION (result) = fn;
@@ -1154,13 +1155,7 @@ lookup_add (tree fns, tree lookup)
   if (fns == error_mark_node || lookup == error_mark_node)
     return error_mark_node;
 
-  if (lookup || TREE_CODE (fns) == TEMPLATE_DECL)
-    {
-      lookup = ovl_make (fns, lookup);
-      OVL_LOOKUP_P (lookup) = true;
-    }
-  else
-    lookup = fns;
+  lookup = fns;
 
   return lookup;
 }
@@ -1655,10 +1650,6 @@ called_fns_equal (tree t1, tree t2)
 	      != DECL_CONTEXT (get_first_fn (t2))))
 	return false;
 
-      if (TREE_CODE (t1) == TEMPLATE_ID_EXPR)
-	targs1 = TREE_OPERAND (t1, 1);
-      if (TREE_CODE (t2) == TEMPLATE_ID_EXPR)
-	targs2 = TREE_OPERAND (t2, 1);
       return rs_tree_equal (targs1, targs2);
     }
   else
@@ -2421,7 +2412,6 @@ rs_build_qualified_type_real (tree type, int type_quals,
   /* A restrict-qualified type must be a pointer (or reference)
      to object or incomplete type. */
   if ((type_quals & TYPE_QUAL_RESTRICT)
-      && TREE_CODE (type) != TEMPLATE_TYPE_PARM
       && TREE_CODE (type) != TYPENAME_TYPE && !INDIRECT_TYPE_P (type))
     {
       bad_quals |= TYPE_QUAL_RESTRICT;
@@ -2822,4 +2812,346 @@ comptypes (tree t1, tree t2, int strict)
     return structural_comptypes (t1, t2, strict);
 }
 
+// forked from gcc/cp/decl.cc next_initializable_field
+
+/* FIELD is an element of TYPE_FIELDS or NULL.  In the former case, the value
+   returned is the next FIELD_DECL (possibly FIELD itself) that can be
+   initialized.  If there are no more such fields, the return value
+   will be NULL.  */
+
+tree
+next_initializable_field (tree field)
+{
+  while (field
+	 && (TREE_CODE (field) != FIELD_DECL || DECL_UNNAMED_BIT_FIELD (field)
+	     || (DECL_ARTIFICIAL (field)
+		 /* Don't skip vptr fields.  We might see them when we're
+		    called from reduced_constant_expression_p.  */
+		 && !DECL_VIRTUAL_P (field))))
+    field = DECL_CHAIN (field);
+
+  return field;
+}
+
+// forked from gcc/cp/call.cc sufficient_parms_p
+
+/* Returns nonzero if PARMLIST consists of only default parms,
+   ellipsis, and/or undeduced parameter packs.  */
+
+bool
+sufficient_parms_p (const_tree parmlist)
+{
+  for (; parmlist && parmlist != void_list_node;
+       parmlist = TREE_CHAIN (parmlist))
+    if (!TREE_PURPOSE (parmlist))
+      return false;
+  return true;
+}
+
+// forked from gcc/cp/class.cc default_ctor_p
+
+/* Returns true if FN is a default constructor.  */
+
+bool
+default_ctor_p (const_tree fn)
+{
+  return (DECL_CONSTRUCTOR_P (fn)
+	  && sufficient_parms_p (FUNCTION_FIRST_USER_PARMTYPE (fn)));
+}
+
+// forked from gcc/cp/class.cc user_provided_p
+
+/* Returns true iff FN is a user-provided function, i.e. user-declared
+   and not defaulted at its first declaration.  */
+
+bool
+user_provided_p (tree fn)
+{
+  return (!DECL_ARTIFICIAL (fn)
+	  && !(DECL_INITIALIZED_IN_CLASS_P (fn)
+	       && (DECL_DEFAULTED_FN (fn) || DECL_DELETED_FN (fn))));
+}
+
+// forked from gcc/cp/class.cc type_has_non_user_provided_default_constructor
+
+/* Returns true iff class T has a non-user-provided (i.e. implicitly
+   declared or explicitly defaulted in the class body) default
+   constructor.  */
+
+bool
+type_has_non_user_provided_default_constructor (tree t)
+{
+  if (!TYPE_HAS_DEFAULT_CONSTRUCTOR (t))
+    return false;
+  if (CLASSTYPE_LAZY_DEFAULT_CTOR (t))
+    return true;
+
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    {
+      tree fn = *iter;
+      if (TREE_CODE (fn) == FUNCTION_DECL && default_ctor_p (fn)
+	  && !user_provided_p (fn))
+	return true;
+    }
+
+  return false;
+}
+
+// forked from gcc/cp/class.cc default_init_uninitialized_part
+
+/* If default-initialization leaves part of TYPE uninitialized, returns
+   a DECL for the field or TYPE itself (DR 253).  */
+
+tree
+default_init_uninitialized_part (tree type)
+{
+  tree t, r, binfo;
+  int i;
+
+  type = strip_array_types (type);
+  if (!CLASS_TYPE_P (type))
+    return type;
+  if (!type_has_non_user_provided_default_constructor (type))
+    return NULL_TREE;
+  for (binfo = TYPE_BINFO (type), i = 0; BINFO_BASE_ITERATE (binfo, i, t); ++i)
+    {
+      r = default_init_uninitialized_part (BINFO_TYPE (t));
+      if (r)
+	return r;
+    }
+  for (t = next_initializable_field (TYPE_FIELDS (type)); t;
+       t = next_initializable_field (DECL_CHAIN (t)))
+    if (!DECL_INITIAL (t) && !DECL_ARTIFICIAL (t))
+      {
+	r = default_init_uninitialized_part (TREE_TYPE (t));
+	if (r)
+	  return DECL_P (r) ? r : t;
+      }
+
+  return NULL_TREE;
+}
+
+// forked from gcc/cp/name-lookup.cc extract_conversion_operator
+
+/* FNS is an overload set of conversion functions.  Return the
+   overloads converting to TYPE.  */
+
+static tree
+extract_conversion_operator (tree fns, tree type)
+{
+  tree convs = NULL_TREE;
+  tree tpls = NULL_TREE;
+
+  for (ovl_iterator iter (fns); iter; ++iter)
+    {
+      if (same_type_p (DECL_CONV_FN_TYPE (*iter), type))
+	convs = lookup_add (*iter, convs);
+    }
+
+  if (!convs)
+    convs = tpls;
+
+  return convs;
+}
+
+// forked from gcc/cp/name-lookup.cc
+
+/* Look for NAME as an immediate member of KLASS (including
+   anon-members or unscoped enum member).  TYPE_OR_FNS is zero for
+   regular search.  >0 to get a type binding (if there is one) and <0
+   if you want (just) the member function binding.
+
+   Use this if you do not want lazy member creation.  */
+
+tree
+get_class_binding_direct (tree klass, tree name, bool want_type)
+{
+  gcc_checking_assert (RECORD_OR_UNION_TYPE_P (klass));
+
+  /* Conversion operators can only be found by the marker conversion
+     operator name.  */
+  bool conv_op = IDENTIFIER_CONV_OP_P (name);
+  tree lookup = conv_op ? conv_op_identifier : name;
+  tree val = NULL_TREE;
+  vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
+
+  if (COMPLETE_TYPE_P (klass) && member_vec)
+    {
+      val = member_vec_binary_search (member_vec, lookup);
+      if (!val)
+	;
+      else if (STAT_HACK_P (val))
+	val = want_type ? STAT_TYPE (val) : STAT_DECL (val);
+      else if (want_type && !DECL_DECLARES_TYPE_P (val))
+	val = NULL_TREE;
+    }
+  else
+    {
+      if (member_vec && !want_type)
+	val = member_vec_linear_search (member_vec, lookup);
+
+      if (!val || (TREE_CODE (val) == OVERLOAD && OVL_DEDUP_P (val)))
+	/* Dependent using declarations are a 'field', make sure we
+	   return that even if we saw an overload already.  */
+	if (tree field_val = fields_linear_search (klass, lookup, want_type))
+	  {
+	    if (!val)
+	      val = field_val;
+	    else if (TREE_CODE (field_val) == USING_DECL)
+	      val = ovl_make (field_val, val);
+	  }
+    }
+
+  /* Extract the conversion operators asked for, unless the general
+     conversion operator was requested.   */
+  if (val && conv_op)
+    {
+      gcc_checking_assert (OVL_FUNCTION (val) == conv_op_marker);
+      val = OVL_CHAIN (val);
+      if (tree type = TREE_TYPE (name))
+	val = extract_conversion_operator (val, type);
+    }
+
+  return val;
+}
+
+#if defined ENABLE_TREE_CHECKING
+
+// forked from gcc/cp/tree.cc lang_check_failed
+
+/* Complain that some language-specific thing hanging off a tree
+   node has been accessed improperly.  */
+
+void
+lang_check_failed (const char *file, int line, const char *function)
+{
+  internal_error ("%<lang_*%> check: failed in %s, at %s:%d", function,
+		  trim_filename (file), line);
+}
+#endif /* ENABLE_TREE_CHECKING */
+
+// forked from gcc/cp/tree.cc skip_artificial_parms_for
+
+/* Given a FUNCTION_DECL FN and a chain LIST, skip as many elements of LIST
+   as there are artificial parms in FN.  */
+
+tree
+skip_artificial_parms_for (const_tree fn, tree list)
+{
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+    list = TREE_CHAIN (list);
+  else
+    return list;
+
+  if (DECL_HAS_IN_CHARGE_PARM_P (fn))
+    list = TREE_CHAIN (list);
+  if (DECL_HAS_VTT_PARM_P (fn))
+    list = TREE_CHAIN (list);
+  return list;
+}
+
+// forked from gcc/cp/class.cc in_class_defaulted_default_constructor
+
+/* Returns the defaulted constructor if T has one. Otherwise, returns
+   NULL_TREE.  */
+
+tree
+in_class_defaulted_default_constructor (tree t)
+{
+  if (!TYPE_HAS_USER_CONSTRUCTOR (t))
+    return NULL_TREE;
+
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    {
+      tree fn = *iter;
+
+      if (DECL_DEFAULTED_IN_CLASS_P (fn) && default_ctor_p (fn))
+	return fn;
+    }
+
+  return NULL_TREE;
+}
+
+// forked from gcc/cp/constexpr.cc
+
+/* Returns true iff FUN is an instantiation of a constexpr function
+   template or a defaulted constexpr function.  */
+
+bool
+is_instantiation_of_constexpr (tree fun)
+{
+  return ((DECL_DEFAULTED_FN (fun) && DECL_DECLARED_CONSTEXPR_P (fun)));
+}
+
+// forked from gcc/cp/decl.cc check_for_uninitialized_const_var
+
+/* Issue an error message if DECL is an uninitialized const variable.
+   CONSTEXPR_CONTEXT_P is true when the function is called in a constexpr
+   context from potential_constant_expression.  Returns true if all is well,
+   false otherwise.  */
+
+bool
+check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
+				   tsubst_flags_t complain)
+{
+  tree type = strip_array_types (TREE_TYPE (decl));
+
+  /* ``Unless explicitly declared extern, a const object does not have
+     external linkage and must be initialized. ($8.4; $12.1)'' ARM
+     7.1.6 */
+  if (VAR_P (decl) && !TYPE_REF_P (type) && (RS_TYPE_CONST_P (type))
+      && !DECL_NONTRIVIALLY_INITIALIZED_P (decl))
+    {
+      tree field = default_init_uninitialized_part (type);
+      if (!field)
+	return true;
+
+      bool show_notes = true;
+
+      if (!constexpr_context_p)
+	{
+	  if (RS_TYPE_CONST_P (type))
+	    {
+	      if (complain & tf_error)
+		show_notes = permerror (DECL_SOURCE_LOCATION (decl),
+					"uninitialized %<const %D%>", decl);
+	    }
+	  else
+	    {
+	      if (!is_instantiation_of_constexpr (current_function_decl)
+		  && (complain & tf_error))
+		error_at (DECL_SOURCE_LOCATION (decl),
+			  "uninitialized variable %qD in %<constexpr%> "
+			  "function",
+			  decl);
+	      else
+		show_notes = false;
+	    }
+	}
+      else if (complain & tf_error)
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "uninitialized variable %qD in %<constexpr%> context", decl);
+
+      if (show_notes && CLASS_TYPE_P (type) && (complain & tf_error))
+	{
+	  tree defaulted_ctor;
+
+	  inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
+		  "%q#T has no user-provided default constructor", type);
+	  defaulted_ctor = in_class_defaulted_default_constructor (type);
+	  if (defaulted_ctor)
+	    inform (DECL_SOURCE_LOCATION (defaulted_ctor),
+		    "constructor is not user-provided because it is "
+		    "explicitly defaulted in the class body");
+	  inform (DECL_SOURCE_LOCATION (field),
+		  "and the implicitly-defined constructor does not "
+		  "initialize %q#D",
+		  field);
+	}
+
+      return false;
+    }
+
+  return true;
+}
 } // namespace Rust
