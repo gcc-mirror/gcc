@@ -53,4 +53,21 @@ BEGIN
 END NoException ;
 
 
+PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
+BEGIN
+END RequestDependant ;
+
+
+PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+                            argc: INTEGER; argv, envp: ADDRESS) ;
+BEGIN
+END ConstructModules ;
+
+
+PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+                              argc: INTEGER; argv, envp: ADDRESS) ;
+BEGIN
+END DeconstructModules ;
+
+
 END M2RTS.

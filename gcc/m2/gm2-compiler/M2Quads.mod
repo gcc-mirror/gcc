@@ -37,7 +37,7 @@ FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaError3,
                         MetaErrorStringT0, MetaErrorStringT1,
                         MetaErrorString1, MetaErrorString2,
                         MetaErrorN1, MetaErrorN2,
-                        MetaErrorNT1, MetaErrorNT2 ;
+                        MetaErrorNT0, MetaErrorNT1, MetaErrorNT2 ;
 
 FROM DynamicStrings IMPORT String, string, InitString, KillString,
                            ConCat, InitStringCharStar, Dup, Mark,
@@ -8013,14 +8013,14 @@ BEGIN
    IF ModSym=NulSym
    THEN
       MetaErrorNT2 (tokno,
-                    'module {%E%a} cannot be found and is needed to import {%E%a}', module, n) ;
+                    'module {%a} cannot be found and is needed to import {%a}', module, n) ;
       FlushErrors ;
       RETURN NulSym
    END ;
    Assert(IsDefImp(ModSym)) ;
    IF (GetExported (tokno, ModSym, n)=NulSym) OR IsUnknown (GetExported (tokno, ModSym, n))
    THEN
-      MetaErrorN2 ('module {%1a} does not export procedure {%2a} which is a necessary component of the runtime system, hint check the path and library/language variant',
+      MetaErrorN2 ('module {%a} does not export procedure {%a} which is a necessary component of the runtime system, hint check the path and library/language variant',
                    module, n) ;
       FlushErrors ;
       RETURN NulSym
@@ -9744,8 +9744,8 @@ BEGIN
    combinedTok := MakeVirtualTok (procTok, procTok, endtok) ;
    IF noOfParameters # 1
    THEN
-      MetaErrorNT1 (combinedTok,
-                    'SYSTEM procedure ADR expects 1 parameter', procTok) ;
+      MetaErrorNT0 (combinedTok,
+                    'SYSTEM procedure ADR expects 1 parameter') ;
       PopN (noOfParameters + 1) ;    (* destroy the arguments and function *)
       PushTF (Nil, Address)
    ELSIF IsConstString (OperandT (1))
@@ -9756,8 +9756,8 @@ BEGIN
       PushTFtok (returnVar, GetSType (returnVar), combinedTok)
    ELSIF (NOT IsVar(OperandT(1))) AND (NOT IsProcedure(OperandT(1)))
    THEN
-      MetaErrorNT1 (combinedTok,
-                    'SYSTEM procedure ADR expects a variable, procedure or a constant string as its parameter', procTok) ;
+      MetaErrorNT0 (combinedTok,
+                    'SYSTEM procedure ADR expects a variable, procedure or a constant string as its parameter') ;
       PopN (noOfParameters + 1) ;    (* destroy the arguments and function *)
       PushTFtok (Nil, Address, combinedTok)
    ELSIF IsProcedure (OperandT (1))

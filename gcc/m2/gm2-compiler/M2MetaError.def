@@ -45,7 +45,7 @@ EXPORT QUALIFIED MetaError0, MetaError1, MetaError2, MetaError3, MetaError4,
                  MetaErrorString4,
                  MetaErrorStringT0, MetaErrorStringT1, MetaErrorStringT2,
                  MetaErrorStringT3, MetaErrorStringT4,
-                 MetaErrorN1, MetaErrorN2, MetaErrorNT1, MetaErrorNT2,
+                 MetaErrorN1, MetaErrorN2, MetaErrorNT0, MetaErrorNT1, MetaErrorNT2,
                  MetaString0, MetaString1, MetaString2, MetaString3, MetaString4 ;
 
 
@@ -172,8 +172,9 @@ PROCEDURE MetaErrorStringT4 (tok: CARDINAL; m: String; s1, s2, s3, s4: CARDINAL)
 
 PROCEDURE MetaErrorN1 (m: ARRAY OF CHAR; n: Name) ;
 PROCEDURE MetaErrorN2 (m: ARRAY OF CHAR; n1, n2: Name) ;
-PROCEDURE MetaErrorNT1 (tok: CARDINAL; m: ARRAY OF CHAR; n: Name) ;
-PROCEDURE MetaErrorNT2 (tok: CARDINAL; m: ARRAY OF CHAR; n1, n2: Name) ;
+PROCEDURE MetaErrorNT0 (tok: CARDINAL; format: ARRAY OF CHAR) ;
+PROCEDURE MetaErrorNT1 (tok: CARDINAL; format: ARRAY OF CHAR; name: Name) ;
+PROCEDURE MetaErrorNT2 (tok: CARDINAL; format: ARRAY OF CHAR; name1, name2: Name) ;
 
 PROCEDURE MetaString0 (m: String) : String ;
 PROCEDURE MetaString1 (m: String; s: CARDINAL) : String ;

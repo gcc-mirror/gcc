@@ -2314,19 +2314,30 @@ END translate ;
 
 
 (*
-   MetaErrorNT1 -
+   MetaErrorNT0 - generate an error message at tok using format.
 *)
 
-PROCEDURE MetaErrorNT1 (tok: CARDINAL; m: ARRAY OF CHAR; n: Name) ;
+PROCEDURE MetaErrorNT0 (tok: CARDINAL; format: ARRAY OF CHAR) ;
+BEGIN
+   MetaErrorStringT0 (tok, InitString (format))
+END MetaErrorNT0 ;
+
+
+(*
+   MetaErrorNT1 - generate an error message at tok using format and name.
+                  The format should contain %a for name substitution.
+*)
+
+PROCEDURE MetaErrorNT1 (tok: CARDINAL; format: ARRAY OF CHAR; name: Name) ;
 VAR
    i  : INTEGER ;
    s,
    fmt: String ;
 BEGIN
    i := 0 ;
-   fmt := InitString (m) ;
+   fmt := InitString (format) ;
    s := InitString ('') ;
-   s := translate (fmt, s, i, n) ;
+   s := translate (fmt, s, i, name) ;
    MetaErrorStringT0 (tok, s) ;
    fmt := KillString (fmt) ;
 END MetaErrorNT1 ;
@@ -2343,20 +2354,22 @@ END MetaErrorN1 ;
 
 
 (*
-   MetaErrorNT2 -
+   MetaErrorNT1 - generate an error message at tok using format, name1
+                  and name2.  The format should contain two occurances of %a
+                  for name substitution.
 *)
 
-PROCEDURE MetaErrorNT2 (tok: CARDINAL; m: ARRAY OF CHAR; n1, n2: Name) ;
+PROCEDURE MetaErrorNT2 (tok: CARDINAL; format: ARRAY OF CHAR; name1, name2: Name) ;
 VAR
    i  : INTEGER ;
    s,
    fmt: String ;
 BEGIN
    i := 0 ;
-   fmt := InitString (m) ;
+   fmt := InitString (format) ;
    s := InitString ('') ;
-   s := translate (fmt, s, i, n1) ;
-   s := translate (fmt, s, i, n2) ;
+   s := translate (fmt, s, i, name1) ;
+   s := translate (fmt, s, i, name2) ;
    MetaErrorStringT0 (tok, s) ;
    fmt := KillString (fmt) ;
 END MetaErrorNT2 ;
