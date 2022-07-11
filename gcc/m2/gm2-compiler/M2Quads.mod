@@ -8013,14 +8013,14 @@ BEGIN
    IF ModSym=NulSym
    THEN
       MetaErrorNT2 (tokno,
-                    'module {%a} cannot be found and is needed to import {%a}', module, n) ;
+                    'module %a cannot be found and is needed to import %a', module, n) ;
       FlushErrors ;
       RETURN NulSym
    END ;
    Assert(IsDefImp(ModSym)) ;
    IF (GetExported (tokno, ModSym, n)=NulSym) OR IsUnknown (GetExported (tokno, ModSym, n))
    THEN
-      MetaErrorN2 ('module {%a} does not export procedure {%a} which is a necessary component of the runtime system, hint check the path and library/language variant',
+      MetaErrorN2 ('module %a does not export procedure %a which is a necessary component of the runtime system, hint check the path and library/language variant',
                    module, n) ;
       FlushErrors ;
       RETURN NulSym
