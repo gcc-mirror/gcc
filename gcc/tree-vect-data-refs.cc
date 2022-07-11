@@ -5777,14 +5777,14 @@ vect_setup_realignment (vec_info *vinfo, stmt_vec_info stmt_info,
   if (at_loop)
     *at_loop = loop_for_initial_load;
 
+  tree vuse = NULL_TREE;
   if (loop_for_initial_load)
-    pe = loop_preheader_edge (loop_for_initial_load);
-
-  tree vuse;
-  gphi *vphi = get_virtual_phi (loop_for_initial_load->header);
-  if (vphi)
-    vuse = PHI_ARG_DEF_FROM_EDGE (vphi, pe);
-  else
+    {
+      pe = loop_preheader_edge (loop_for_initial_load);
+      if (gphi *vphi = get_virtual_phi (loop_for_initial_load->header))
+	vuse = PHI_ARG_DEF_FROM_EDGE (vphi, pe);
+    }
+  if (!vuse)
     vuse = gimple_vuse (gsi_stmt (*gsi));
 
   /* 3. For the case of the optimized realignment, create the first vector
