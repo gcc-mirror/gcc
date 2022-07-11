@@ -1,3 +1,11 @@
+2022-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2022-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/mulw_d_w.c: New test.
+	* gcc.c-torture/execute/mul-sext.c: New test.
+
 2022-07-08  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:

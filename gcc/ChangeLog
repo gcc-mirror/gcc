@@ -1,3 +1,11 @@
+2022-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2022-07-10  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (mulsidi3_64bit): Use mulw.d.w
+	instead of mul.d.
+
 2022-07-09  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 
