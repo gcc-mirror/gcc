@@ -45,10 +45,11 @@ main (void)
 
   /* Nvptx targets require a vector_length or 32 in to allow spinlocks with
      gangs.  */
-  check_reduction (num_workers (nw) vector_length (vl), worker); /* { dg-line check_reduction_loc }
+  check_reduction (num_workers (nw) vector_length (vl), worker); /* { dg-line check_reduction_loc } */
   /* { dg-warning "22:region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } pragma_loc }
-     { dg-note "1:in expansion of macro 'DO_PRAGMA'" "" { target *-*-* } DO_PRAGMA_loc }
-     { dg-note "3:in expansion of macro 'check_reduction'" "" { target *-*-* } check_reduction_loc } */
+     { dg-note "1:in expansion of macro 'DO_PRAGMA'" "" { target *-*-* xfail offloading_enabled } DO_PRAGMA_loc }
+     { dg-note "3:in expansion of macro 'check_reduction'" "" { target *-*-* xfail offloading_enabled } check_reduction_loc }
+     TODO See PR101551 for 'offloading_enabled' XFAILs.  */
   check_reduction (vector_length (vl), vector);
   check_reduction (num_gangs (ng) num_workers (nw) vector_length (vl), gang
 		   worker vector);
