@@ -33,6 +33,10 @@ get_abi_from_string (const std::string &abi)
     return Rust::ABI::STDCALL;
   else if (abi.compare ("fastcall") == 0)
     return Rust::ABI::FASTCALL;
+  else if (abi.compare ("sysv64") == 0)
+    return Rust::ABI::SYSV64;
+  else if (abi.compare ("win64") == 0)
+    return Rust::ABI::WIN64;
 
   return Rust::ABI::UNKNOWN;
 }
@@ -54,6 +58,10 @@ get_string_from_abi (Rust::ABI abi)
       return "stdcall";
     case Rust::ABI::FASTCALL:
       return "fastcall";
+    case Rust::ABI::SYSV64:
+      return "sysv64";
+    case Rust::ABI::WIN64:
+      return "win64";
 
     case Rust::ABI::UNKNOWN:
       return "unknown";
