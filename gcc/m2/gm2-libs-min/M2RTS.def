@@ -31,11 +31,17 @@ DEFINITION MODULE M2RTS ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 
+TYPE
+   ArgCVEnvP = PROCEDURE (INTEGER, ADDRESS, ADDRESS) ;
 
 (*
    all these procedures do nothing except satisfy the linker.
 *)
 
+PROCEDURE RegisterModule (name: ADDRESS;
+                          init, fini:  ArgCVEnvP;
+                          dependencies: PROC) ;
+PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
 PROCEDURE ExecuteTerminationProcedures ;
 PROCEDURE ExecuteInitialProcedures ;
 PROCEDURE HALT ;

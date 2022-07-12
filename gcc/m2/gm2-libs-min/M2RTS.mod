@@ -70,4 +70,10 @@ BEGIN
 END DeconstructModules ;
 
 
+PROCEDURE RegisterModule (name: ADDRESS;
+                          init, fini:  ArgCVEnvP;
+                          dependencies: PROC) ;
+BEGIN
+END RegisterModule ;
+
 END M2RTS.

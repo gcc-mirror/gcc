@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 # Makefile for libm2iso.
-#   Copyright 2013-2021  Free Software Foundation, Inc.
+#   Copyright 2013-2022  Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -179,9 +179,8 @@ libm2iso_la_LIBADD =
 @BUILD_ISOLIB_TRUE@	TextIO.lo WholeConv.lo WholeIO.lo \
 @BUILD_ISOLIB_TRUE@	WholeStr.lo
 @BUILD_ISOLIB_TRUE@am_libm2iso_la_OBJECTS = $(am__objects_1) \
-@BUILD_ISOLIB_TRUE@	libm2iso_la-ErrnoCategory.lo \
-@BUILD_ISOLIB_TRUE@	libm2iso_la-wrapsock.lo \
-@BUILD_ISOLIB_TRUE@	libm2iso_la-wraptime.lo libm2iso_la-RTco.lo
+@BUILD_ISOLIB_TRUE@	ErrnoCategory.lo libm2iso_la-wrapsock.lo \
+@BUILD_ISOLIB_TRUE@	libm2iso_la-wraptime.lo RTco.lo
 libm2iso_la_OBJECTS = $(am_libm2iso_la_OBJECTS)
 @BUILD_ISOLIB_TRUE@am_libm2iso_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -222,6 +221,24 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
+CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CXXFLAGS) $(CXXFLAGS)
+AM_V_CXX = $(am__v_CXX_@AM_V@)
+am__v_CXX_ = $(am__v_CXX_@AM_DEFAULT_V@)
+am__v_CXX_0 = @echo "  CXX     " $@;
+am__v_CXX_1 = 
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
+am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
+am__v_CXXLD_0 = @echo "  CXXLD   " $@;
+am__v_CXXLD_1 = 
 SOURCES = $(libm2iso_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -539,8 +556,8 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 
 @BUILD_ISOLIB_TRUE@toolexeclib_LTLIBRARIES = libm2iso.la
 @BUILD_ISOLIB_TRUE@libm2iso_la_SOURCES = $(M2MODS) \
-@BUILD_ISOLIB_TRUE@                     ErrnoCategory.c  wrapsock.c \
-@BUILD_ISOLIB_TRUE@                     wraptime.c RTco.c
+@BUILD_ISOLIB_TRUE@                     ErrnoCategory.cc  wrapsock.c \
+@BUILD_ISOLIB_TRUE@                     wraptime.c RTco.cc
 
 @BUILD_ISOLIB_TRUE@C_INCLUDES = -I.. -I$(toplevel_srcdir)/libiberty -I$(toplevel_srcdir)/include
 @BUILD_ISOLIB_TRUE@libm2isodir = libm2iso
@@ -555,7 +572,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .mod .def .o .obj .lo .a .la
+.SUFFIXES: .c .mod .def .o .obj .lo .a .la .cc
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -630,8 +647,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2iso_la-ErrnoCategory.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2iso_la-RTco.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ErrnoCategory.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RTco.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2iso_la-wrapsock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2iso_la-wraptime.Plo@am__quote@
 
@@ -656,13 +673,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-libm2iso_la-ErrnoCategory.lo: ErrnoCategory.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2iso_la_CFLAGS) $(CFLAGS) -MT libm2iso_la-ErrnoCategory.lo -MD -MP -MF $(DEPDIR)/libm2iso_la-ErrnoCategory.Tpo -c -o libm2iso_la-ErrnoCategory.lo `test -f 'ErrnoCategory.c' || echo '$(srcdir)/'`ErrnoCategory.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2iso_la-ErrnoCategory.Tpo $(DEPDIR)/libm2iso_la-ErrnoCategory.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ErrnoCategory.c' object='libm2iso_la-ErrnoCategory.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2iso_la_CFLAGS) $(CFLAGS) -c -o libm2iso_la-ErrnoCategory.lo `test -f 'ErrnoCategory.c' || echo '$(srcdir)/'`ErrnoCategory.c
-
 libm2iso_la-wrapsock.lo: wrapsock.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2iso_la_CFLAGS) $(CFLAGS) -MT libm2iso_la-wrapsock.lo -MD -MP -MF $(DEPDIR)/libm2iso_la-wrapsock.Tpo -c -o libm2iso_la-wrapsock.lo `test -f 'wrapsock.c' || echo '$(srcdir)/'`wrapsock.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2iso_la-wrapsock.Tpo $(DEPDIR)/libm2iso_la-wrapsock.Plo
@@ -677,12 +687,26 @@ libm2iso_la-wraptime.lo: wraptime.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2iso_la_CFLAGS) $(CFLAGS) -c -o libm2iso_la-wraptime.lo `test -f 'wraptime.c' || echo '$(srcdir)/'`wraptime.c
 
-libm2iso_la-RTco.lo: RTco.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2iso_la_CFLAGS) $(CFLAGS) -MT libm2iso_la-RTco.lo -MD -MP -MF $(DEPDIR)/libm2iso_la-RTco.Tpo -c -o libm2iso_la-RTco.lo `test -f 'RTco.c' || echo '$(srcdir)/'`RTco.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2iso_la-RTco.Tpo $(DEPDIR)/libm2iso_la-RTco.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='RTco.c' object='libm2iso_la-RTco.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2iso_la_CFLAGS) $(CFLAGS) -c -o libm2iso_la-RTco.lo `test -f 'RTco.c' || echo '$(srcdir)/'`RTco.c
+.cc.o:
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ $<
+
+.cc.obj:
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+@BUILD_ISOLIB_FALSE@.cc.lo:
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -886,6 +910,9 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 @BUILD_ISOLIB_TRUE@.c.lo:
 @BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) -c $(CFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
+
+@BUILD_ISOLIB_TRUE@.cc.lo:
+@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 @BUILD_ISOLIB_TRUE@install-data-local: force
 @BUILD_ISOLIB_TRUE@	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)

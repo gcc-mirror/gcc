@@ -136,7 +136,7 @@ dtoa_calcmaxsig (char *p, int ndigits)
   char *o;
   int x;
 
-  e = index (p, 'E');
+  e = strchr (p, 'E');
   if (e == NULL)
     x = 0;
   else
@@ -145,7 +145,7 @@ dtoa_calcmaxsig (char *p, int ndigits)
       x = atoi (e + 1);
     }
 
-  o = index (p, '.');
+  o = strchr (p, '.');
   if (o == NULL)
     return strlen (p) + x;
   else
@@ -168,7 +168,7 @@ dtoa_calcdecimal (char *p, int str_size, int ndigits)
   int x;
   int l;
 
-  e = index (p, 'E');
+  e = strchr (p, 'E');
   if (e == NULL)
     x = 0;
   else
@@ -178,7 +178,7 @@ dtoa_calcdecimal (char *p, int str_size, int ndigits)
     }
 
   l = strlen (p);
-  o = index (p, '.');
+  o = strchr (p, '.');
   if (o == NULL)
     x += strlen (p);
   else

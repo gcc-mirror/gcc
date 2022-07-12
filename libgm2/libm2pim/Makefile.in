@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 # Makefile for libm2pim.
-#   Copyright 2013-2021  Free Software Foundation, Inc.
+#   Copyright 2013-2022  Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -154,11 +154,11 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libm2pim_la_LIBADD =
 @BUILD_PIMLIB_TRUE@am__objects_1 = ASCII.lo IO.lo Args.lo M2RTS.lo \
-@BUILD_PIMLIB_TRUE@	Assertion.lo NumberIO.lo Break.lo SYSTEM.lo \
-@BUILD_PIMLIB_TRUE@	CmdArgs.lo Scan.lo StrCase.lo FIO.lo \
-@BUILD_PIMLIB_TRUE@	StrIO.lo StrLib.lo TimeString.lo \
-@BUILD_PIMLIB_TRUE@	Environment.lo FpuIO.lo Debug.lo \
-@BUILD_PIMLIB_TRUE@	SysStorage.lo Storage.lo StdIO.lo \
+@BUILD_PIMLIB_TRUE@	M2Dependent.lo Assertion.lo NumberIO.lo \
+@BUILD_PIMLIB_TRUE@	Break.lo SYSTEM.lo CmdArgs.lo Scan.lo \
+@BUILD_PIMLIB_TRUE@	StrCase.lo FIO.lo StrIO.lo StrLib.lo \
+@BUILD_PIMLIB_TRUE@	TimeString.lo Environment.lo FpuIO.lo \
+@BUILD_PIMLIB_TRUE@	Debug.lo SysStorage.lo Storage.lo StdIO.lo \
 @BUILD_PIMLIB_TRUE@	SEnvironment.lo DynamicStrings.lo SFIO.lo \
 @BUILD_PIMLIB_TRUE@	SArgs.lo SCmdArgs.lo PushBackInput.lo \
 @BUILD_PIMLIB_TRUE@	StringConvert.lo FormatStrings.lo \
@@ -168,14 +168,10 @@ libm2pim_la_LIBADD =
 @BUILD_PIMLIB_TRUE@	LegacyReal.lo MemUtils.lo gdbif.lo \
 @BUILD_PIMLIB_TRUE@	GetOpt.lo OptLib.lo
 @BUILD_PIMLIB_TRUE@am_libm2pim_la_OBJECTS = $(am__objects_1) \
-@BUILD_PIMLIB_TRUE@	libm2pim_la-UnixArgs.lo \
-@BUILD_PIMLIB_TRUE@	libm2pim_la-Selective.lo \
-@BUILD_PIMLIB_TRUE@	libm2pim_la-sckt.lo libm2pim_la-errno.lo \
-@BUILD_PIMLIB_TRUE@	libm2pim_la-dtoa.lo libm2pim_la-ldtoa.lo \
-@BUILD_PIMLIB_TRUE@	libm2pim_la-termios.lo \
-@BUILD_PIMLIB_TRUE@	libm2pim_la-SysExceptions.lo \
-@BUILD_PIMLIB_TRUE@	libm2pim_la-target.lo libm2pim_la-wrapc.lo \
-@BUILD_PIMLIB_TRUE@	libm2pim_la-cgetopt.lo
+@BUILD_PIMLIB_TRUE@	UnixArgs.lo Selective.lo sckt.lo errno.lo \
+@BUILD_PIMLIB_TRUE@	dtoa.lo ldtoa.lo termios.lo \
+@BUILD_PIMLIB_TRUE@	SysExceptions.lo libm2pim_la-target.lo \
+@BUILD_PIMLIB_TRUE@	libm2pim_la-wrapc.lo libm2pim_la-cgetopt.lo
 libm2pim_la_OBJECTS = $(am_libm2pim_la_OBJECTS)
 @BUILD_PIMLIB_TRUE@am_libm2pim_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -216,6 +212,24 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
+CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CXXFLAGS) $(CXXFLAGS)
+AM_V_CXX = $(am__v_CXX_@AM_V@)
+am__v_CXX_ = $(am__v_CXX_@AM_DEFAULT_V@)
+am__v_CXX_0 = @echo "  CXX     " $@;
+am__v_CXX_1 = 
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
+am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
+am__v_CXXLD_0 = @echo "  CXXLD   " $@;
+am__v_CXXLD_1 = 
 SOURCES = $(libm2pim_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -455,6 +469,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@toolexeclib_LTLIBRARIES = libm2pim.la
 @BUILD_PIMLIB_TRUE@M2MODS = ASCII.mod IO.mod \
 @BUILD_PIMLIB_TRUE@       Args.mod M2RTS.mod \
+@BUILD_PIMLIB_TRUE@       M2Dependent.mod \
 @BUILD_PIMLIB_TRUE@       Assertion.mod NumberIO.mod \
 @BUILD_PIMLIB_TRUE@       Break.mod SYSTEM.mod \
 @BUILD_PIMLIB_TRUE@       CmdArgs.mod Scan.mod \
@@ -489,7 +504,9 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@         IO.def  ldtoa.def \
 @BUILD_PIMLIB_TRUE@         LegacyReal.def  libc.def \
 @BUILD_PIMLIB_TRUE@         libm.def  LMathLib0.def \
-@BUILD_PIMLIB_TRUE@         M2EXCEPTION.def  M2RTS.def \
+@BUILD_PIMLIB_TRUE@         M2Dependent.def \
+@BUILD_PIMLIB_TRUE@         M2EXCEPTION.def  M2LINK.def \
+@BUILD_PIMLIB_TRUE@         M2RTS.def \
 @BUILD_PIMLIB_TRUE@         MathLib0.def  MemUtils.def \
 @BUILD_PIMLIB_TRUE@         NumberIO.def  PushBackInput.def \
 @BUILD_PIMLIB_TRUE@         RTExceptions.def  RTint.def \
@@ -508,16 +525,16 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@         cgetopt.def
 
 @BUILD_PIMLIB_TRUE@libm2pim_la_SOURCES = $(M2MODS) \
-@BUILD_PIMLIB_TRUE@                      UnixArgs.c \
-@BUILD_PIMLIB_TRUE@                      Selective.c sckt.c \
-@BUILD_PIMLIB_TRUE@                      errno.c dtoa.c \
-@BUILD_PIMLIB_TRUE@                      ldtoa.c termios.c \
-@BUILD_PIMLIB_TRUE@                      SysExceptions.c target.c \
+@BUILD_PIMLIB_TRUE@                      UnixArgs.cc \
+@BUILD_PIMLIB_TRUE@                      Selective.cc sckt.cc \
+@BUILD_PIMLIB_TRUE@                      errno.cc dtoa.cc \
+@BUILD_PIMLIB_TRUE@                      ldtoa.cc termios.cc \
+@BUILD_PIMLIB_TRUE@                      SysExceptions.cc target.c \
 @BUILD_PIMLIB_TRUE@                      wrapc.c cgetopt.c
 
 @BUILD_PIMLIB_TRUE@libm2pimdir = libm2pim
 @BUILD_PIMLIB_TRUE@libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
-@BUILD_PIMLIB_TRUE@libm2pim_la_CFLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../
+@BUILD_PIMLIB_TRUE@libm2pim_la_CFLAGS = -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
 @BUILD_PIMLIB_TRUE@libm2pim_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g
 @BUILD_PIMLIB_TRUE@libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION)
 @BUILD_PIMLIB_TRUE@BUILT_SOURCES = SYSTEM.def
@@ -527,7 +544,7 @@ all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .mod .def .o .obj .lo .a .la
+.SUFFIXES: .c .mod .def .o .obj .lo .a .la .cc
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -602,17 +619,17 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-Selective.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-SysExceptions.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-UnixArgs.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Selective.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SysExceptions.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UnixArgs.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dtoa.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/errno.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ldtoa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-cgetopt.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-dtoa.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-errno.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-ldtoa.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-sckt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-target.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-termios.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-wrapc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sckt.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/termios.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -635,62 +652,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-libm2pim_la-UnixArgs.lo: UnixArgs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-UnixArgs.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-UnixArgs.Tpo -c -o libm2pim_la-UnixArgs.lo `test -f 'UnixArgs.c' || echo '$(srcdir)/'`UnixArgs.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-UnixArgs.Tpo $(DEPDIR)/libm2pim_la-UnixArgs.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='UnixArgs.c' object='libm2pim_la-UnixArgs.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-UnixArgs.lo `test -f 'UnixArgs.c' || echo '$(srcdir)/'`UnixArgs.c
-
-libm2pim_la-Selective.lo: Selective.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-Selective.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-Selective.Tpo -c -o libm2pim_la-Selective.lo `test -f 'Selective.c' || echo '$(srcdir)/'`Selective.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-Selective.Tpo $(DEPDIR)/libm2pim_la-Selective.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='Selective.c' object='libm2pim_la-Selective.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-Selective.lo `test -f 'Selective.c' || echo '$(srcdir)/'`Selective.c
-
-libm2pim_la-sckt.lo: sckt.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-sckt.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-sckt.Tpo -c -o libm2pim_la-sckt.lo `test -f 'sckt.c' || echo '$(srcdir)/'`sckt.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-sckt.Tpo $(DEPDIR)/libm2pim_la-sckt.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sckt.c' object='libm2pim_la-sckt.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-sckt.lo `test -f 'sckt.c' || echo '$(srcdir)/'`sckt.c
-
-libm2pim_la-errno.lo: errno.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-errno.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-errno.Tpo -c -o libm2pim_la-errno.lo `test -f 'errno.c' || echo '$(srcdir)/'`errno.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-errno.Tpo $(DEPDIR)/libm2pim_la-errno.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='errno.c' object='libm2pim_la-errno.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-errno.lo `test -f 'errno.c' || echo '$(srcdir)/'`errno.c
-
-libm2pim_la-dtoa.lo: dtoa.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-dtoa.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-dtoa.Tpo -c -o libm2pim_la-dtoa.lo `test -f 'dtoa.c' || echo '$(srcdir)/'`dtoa.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-dtoa.Tpo $(DEPDIR)/libm2pim_la-dtoa.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dtoa.c' object='libm2pim_la-dtoa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-dtoa.lo `test -f 'dtoa.c' || echo '$(srcdir)/'`dtoa.c
-
-libm2pim_la-ldtoa.lo: ldtoa.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-ldtoa.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-ldtoa.Tpo -c -o libm2pim_la-ldtoa.lo `test -f 'ldtoa.c' || echo '$(srcdir)/'`ldtoa.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-ldtoa.Tpo $(DEPDIR)/libm2pim_la-ldtoa.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ldtoa.c' object='libm2pim_la-ldtoa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-ldtoa.lo `test -f 'ldtoa.c' || echo '$(srcdir)/'`ldtoa.c
-
-libm2pim_la-termios.lo: termios.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-termios.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-termios.Tpo -c -o libm2pim_la-termios.lo `test -f 'termios.c' || echo '$(srcdir)/'`termios.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-termios.Tpo $(DEPDIR)/libm2pim_la-termios.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='termios.c' object='libm2pim_la-termios.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-termios.lo `test -f 'termios.c' || echo '$(srcdir)/'`termios.c
-
-libm2pim_la-SysExceptions.lo: SysExceptions.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-SysExceptions.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-SysExceptions.Tpo -c -o libm2pim_la-SysExceptions.lo `test -f 'SysExceptions.c' || echo '$(srcdir)/'`SysExceptions.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-SysExceptions.Tpo $(DEPDIR)/libm2pim_la-SysExceptions.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='SysExceptions.c' object='libm2pim_la-SysExceptions.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-SysExceptions.lo `test -f 'SysExceptions.c' || echo '$(srcdir)/'`SysExceptions.c
-
 libm2pim_la-target.lo: target.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-target.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-target.Tpo -c -o libm2pim_la-target.lo `test -f 'target.c' || echo '$(srcdir)/'`target.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-target.Tpo $(DEPDIR)/libm2pim_la-target.Plo
@@ -711,6 +672,27 @@ libm2pim_la-cgetopt.lo: cgetopt.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cgetopt.c' object='libm2pim_la-cgetopt.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-cgetopt.lo `test -f 'cgetopt.c' || echo '$(srcdir)/'`cgetopt.c
+
+.cc.o:
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ $<
+
+.cc.obj:
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+@BUILD_PIMLIB_FALSE@.cc.lo:
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -911,6 +893,9 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 @BUILD_PIMLIB_TRUE@.mod.lo: SYSTEM.def
 @BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2pim_la_M2FLAGS) $< -o $@
+
+@BUILD_PIMLIB_TRUE@.cc.lo:
+@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2pim_la_CFLAGS) $< -o $@
 
 @BUILD_PIMLIB_TRUE@install-data-local: force
 @BUILD_PIMLIB_TRUE@	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
