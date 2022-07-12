@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp" } */
+/* { dg-options "-O2 -fdump-tree-evrp -fno-tree-ccp" } */
 void foo(void);
 
 static int a = 1;

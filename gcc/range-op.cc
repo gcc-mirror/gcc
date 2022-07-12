@@ -803,6 +803,9 @@ operator_lt::fold_range (irange &r, tree type,
     r = range_true (type);
   else if (!wi::lt_p (op1.lower_bound (), op2.upper_bound (), sign))
     r = range_false (type);
+  // Use nonzero bits to determine if < 0 is false.
+  else if (op2.zero_p () && !wi::neg_p (op1.get_nonzero_bits (), sign))
+    r = range_false (type);
   else
     r = range_true_and_false (type);
   return true;
