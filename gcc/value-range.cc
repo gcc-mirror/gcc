@@ -2388,10 +2388,6 @@ wide_int
 irange::get_nonzero_bits () const
 {
   gcc_checking_assert (!undefined_p ());
-  // Nonzero bits are unsupported in legacy mode.  The mask may be set
-  // as a consequence of propagation or reading global ranges, but no
-  // one from legacy land should be querying this.
-  gcc_checking_assert (!legacy_mode_p ());
 
   // Calculate the nonzero bits inherent in the range.
   wide_int min = lower_bound ();
@@ -2509,7 +2505,7 @@ irange::dump (FILE *file) const
 void
 irange::dump_bitmasks (FILE *file) const
 {
-  if (m_nonzero_mask && !legacy_mode_p ())
+  if (m_nonzero_mask)
     {
       wide_int nz = get_nonzero_bits ();
       if (nz != -1)
