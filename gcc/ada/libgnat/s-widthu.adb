@@ -73,6 +73,14 @@ package body System.Width_U is
         Ghost,
         Post => X / Y / Z = X / (Y * Z);
 
+      procedure Lemma_Euclidian (V, Q, F, R : Big_Integer)
+      with
+        Ghost,
+        Pre  => F > 0 and then Q = V / F and then R = V rem F,
+        Post => V = Q * F + R;
+      --  Ghost lemma to prove the relation between the quotient/remainder of
+      --  division by F and the value V.
+
       ----------------------
       -- Lemma_Lower_Mult --
       ----------------------
@@ -103,6 +111,12 @@ package body System.Width_U is
          pragma Assert (X / YZ = (XYZ * YZ + R) / YZ);
          pragma Assert (X / YZ = XYZ + R / YZ);
       end Lemma_Div_Twice;
+
+      ---------------------
+      -- Lemma_Euclidian --
+      ---------------------
+
+      procedure Lemma_Euclidian (V, Q, F, R : Big_Integer) is null;
 
       --  Local variables
 
@@ -152,7 +166,7 @@ package body System.Width_U is
             R : constant Big_Integer := Big (T_Init) rem F with Ghost;
          begin
             pragma Assert (Q < Big_10);
-            pragma Assert (Big (T_Init) = Q * F + R);
+            Lemma_Euclidian (Big (T_Init), Q, F, R);
             Lemma_Lower_Mult (Q, Big (9), F);
             pragma Assert (Big (T_Init) <= Big (9) * F + F - 1);
             pragma Assert (Big (T_Init) < Big_10 * F);
