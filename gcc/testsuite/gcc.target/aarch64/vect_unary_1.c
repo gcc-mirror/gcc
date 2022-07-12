@@ -1,4 +1,4 @@
-/* { dg-options "-O3 --save-temps" } */
+/* { dg-options "-O3 -fno-math-errno --save-temps" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include <stdint.h>
@@ -184,3 +184,66 @@ TEST2 (int, ctz, int)
 **	ret
 */
 TEST4 (int, ctz, int)
+
+/*
+** test2_int_iroundf_float:
+**	fcvtas	v0.2s, v1.2s
+**	ret
+*/
+TEST2 (int, iroundf, float)
+
+/*
+** test2_int64_t_llround_double:
+**	fcvtas	v0.2d, v1.2d
+**	ret
+*/
+TEST2 (int64_t, llround, double)
+
+/*
+** test4_int_iroundf_float:
+**	fcvtas	v0.4s, v1.4s
+**	ret
+*/
+TEST4 (int, iroundf, float)
+
+/*
+** test2_int_ifloorf_float:
+**	fcvtms	v0.2s, v1.2s
+**	ret
+*/
+TEST2 (int, ifloorf, float)
+
+/*
+** test2_int64_t_llfloor_double:
+**	fcvtms	v0.2d, v1.2d
+**	ret
+*/
+TEST2 (int64_t, llfloor, double)
+
+/*
+** test4_int_ifloorf_float:
+**	fcvtms	v0.4s, v1.4s
+**	ret
+*/
+TEST4 (int, ifloorf, float)
+
+/*
+** test2_int_iceilf_float:
+**	fcvtps	v0.2s, v1.2s
+**	ret
+*/
+TEST2 (int, iceilf, float)
+
+/*
+** test2_int64_t_llceil_double:
+**	fcvtps	v0.2d, v1.2d
+**	ret
+*/
+TEST2 (int64_t, llceil, double)
+
+/*
+** test4_int_iceilf_float:
+**	fcvtps	v0.4s, v1.4s
+**	ret
+*/
+TEST4 (int, iceilf, float)
