@@ -1281,6 +1281,12 @@ c_common_finish (void)
 	}
     }
 
+  /* When we call cpp_finish (), it may generate some diagnostics using
+     locations it remembered from the preprocessing phase, e.g. for
+     -Wunused-macros.  So inform c_cpp_diagnostic () not to override those
+     locations with input_location, which would be incorrect now.  */
+  override_libcpp_locations = false;
+
   /* For performance, avoid tearing down cpplib's internal structures
      with cpp_destroy ().  */
   cpp_finish (parse_in, deps_stream);

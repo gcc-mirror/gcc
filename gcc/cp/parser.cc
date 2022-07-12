@@ -755,7 +755,7 @@ cp_lexer_new_main (void)
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
-  done_lexing = true;
+  override_libcpp_locations = true;
 
   maybe_check_all_macros (parse_in);
 
