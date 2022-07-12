@@ -1,3 +1,10 @@
+2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/97498
+	* directives.cc (destringize_and_run): Override the location of
+	the CPP_PRAGMA token from a _Pragma directive to the location of
+	the expansion point, as is done for the tokens lexed from it.
+
 2022-07-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h: Include <utility>.

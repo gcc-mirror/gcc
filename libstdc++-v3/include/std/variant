@@ -107,15 +107,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<size_t _Np, typename _Variant>
     struct variant_alternative<_Np, const _Variant>
-    { using type = add_const_t<variant_alternative_t<_Np, _Variant>>; };
+    { using type = const variant_alternative_t<_Np, _Variant>; };
 
   template<size_t _Np, typename _Variant>
     struct variant_alternative<_Np, volatile _Variant>
-    { using type = add_volatile_t<variant_alternative_t<_Np, _Variant>>; };
+    { using type = volatile variant_alternative_t<_Np, _Variant>; };
 
   template<size_t _Np, typename _Variant>
     struct variant_alternative<_Np, const volatile _Variant>
-    { using type = add_cv_t<variant_alternative_t<_Np, _Variant>>; };
+    { using type = const volatile variant_alternative_t<_Np, _Variant>; };
 
   inline constexpr size_t variant_npos = -1;
 

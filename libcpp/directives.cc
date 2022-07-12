@@ -1930,6 +1930,7 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in,
       maxcount = 50;
       toks = XNEWVEC (cpp_token, maxcount);
       toks[0] = pfile->directive_result;
+      toks[0].src_loc = expansion_loc;
 
       do
 	{

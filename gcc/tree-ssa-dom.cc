@@ -1255,7 +1255,7 @@ dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
       && !r.varying_p ()
       && !r.undefined_p ())
     {
-      update_global_range (r, name);
+      set_range_info (name, r);
       maybe_set_nonzero_bits (pred_e, name);
     }
 }

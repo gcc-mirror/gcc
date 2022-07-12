@@ -86,19 +86,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<size_t __i, typename _Tp>
     struct tuple_element<__i, const _Tp>
     {
-      typedef typename add_const<__tuple_element_t<__i, _Tp>>::type type;
+      using type = const __tuple_element_t<__i, _Tp>;
     };
 
   template<size_t __i, typename _Tp>
     struct tuple_element<__i, volatile _Tp>
     {
-      typedef typename add_volatile<__tuple_element_t<__i, _Tp>>::type type;
+      using type = volatile __tuple_element_t<__i, _Tp>;
     };
 
   template<size_t __i, typename _Tp>
     struct tuple_element<__i, const volatile _Tp>
     {
-      typedef typename add_cv<__tuple_element_t<__i, _Tp>>::type type;
+      using type = const volatile __tuple_element_t<__i, _Tp>;
     };
 
 #if __cplusplus >= 201402L

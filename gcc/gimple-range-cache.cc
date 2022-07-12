@@ -1359,10 +1359,11 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 	    m_workback.quick_push (prev_bb);
 	  else if (mode == RFD_FILL)
 	    {
-	      // Multiple incoming edges, so recursively satisfy this block,
-	      // store the range, then calculate the incoming range for PREV_BB.
-	      if (def_bb != bb)
+	      // Multiple incoming edges, so recursively satisfy this block
+	      // if it doesn't already have a value, and store the range.
+	      if (!m_on_entry.bb_range_p (name, bb) && def_bb != bb)
 		{
+		  // If the dominator has not been set, look it up.
 		  range_from_dom (r, name, bb, RFD_FILL);
 		  // If the range can't be store, don't try to accumulate
 		  // the range in PREV_BB due to excessive recalculations.

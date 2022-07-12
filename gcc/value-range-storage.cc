@@ -30,7 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "value-range-storage.h"
 
-// Return a newly allocated slot holding R.
+// Return a newly allocated slot holding R, or NULL if storing a range
+// of R's type is not supported.
 
 void *
 vrange_storage::alloc_slot (const vrange &r)
@@ -40,7 +41,6 @@ vrange_storage::alloc_slot (const vrange &r)
   if (is_a <irange> (r))
     return irange_storage_slot::alloc_slot (*m_alloc, as_a <irange> (r));
 
-  gcc_unreachable ();
   return NULL;
 }
 

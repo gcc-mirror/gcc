@@ -1009,10 +1009,6 @@ handle_pragma_diagnostic_impl ()
   if (early && !c_option_is_from_cpp_diagnostics (option_index))
     return;
 
-  const char *arg = NULL;
-  if (cl_options[option_index].flags & CL_JOINED)
-    arg = data.option_str + 1 + cl_options[option_index].opt_len;
-
   if (option_index == OPT_SPECIAL_unknown)
     {
       if (want_diagnostics)
@@ -1051,6 +1047,10 @@ handle_pragma_diagnostic_impl ()
 	}
       return;
     }
+
+  const char *arg = NULL;
+  if (cl_options[option_index].flags & CL_JOINED)
+    arg = data.option_str + 1 + cl_options[option_index].opt_len;
 
   struct cl_option_handlers handlers;
   set_default_handlers (&handlers, NULL);
