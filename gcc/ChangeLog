@@ -1,3 +1,140 @@
+2022-07-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106234
+	* gimple-range-cache.cc (ranger_cache::range_from_dom): Check dominator
+	cache value before recursively resolving it.
+
+2022-07-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.h (scalar_chain): Add fields
+	insns_conv, n_sse_to_integer and n_integer_to_sse to this
+	parent class, moved from general_scalar_chain.
+	(scalar_chain::convert_compare): Protected method moved
+	from general_scalar_chain.
+	(mark_dual_mode_def): Make protected, not private virtual.
+	(scalar_chain:convert_op): New private virtual method.
+	(general_scalar_chain::general_scalar_chain): Simplify constructor.
+	(general_scalar_chain::~general_scalar_chain): Delete destructor.
+	(general_scalar_chain): Move insns_conv, n_sse_to_integer and
+	n_integer_to_sse fields to parent class, scalar_chain.
+	(general_scalar_chain::mark_dual_mode_def): Delete prototype.
+	(general_scalar_chain::convert_compare): Delete prototype.
+	(timode_scalar_chain::compute_convert_gain): Remove simplistic
+	implementation, convert to a method prototype.
+	(timode_scalar_chain::mark_dual_mode_def): Delete prototype.
+	(timode_scalar_chain::convert_op): Prototype new virtual method.
+	* config/i386/i386-features.cc (scalar_chain::scalar_chain):
+	Allocate insns_conv and initialize n_sse_to_integer and
+	n_integer_to_sse fields in constructor.
+	(scalar_chain::scalar_chain): Free insns_conv in destructor.
+	(general_scalar_chain::general_scalar_chain): Delete
+	constructor, now defined in the class declaration.
+	(general_scalar_chain::~general_scalar_chain): Delete destructor.
+	(scalar_chain::mark_dual_mode_def): Renamed from
+	general_scalar_chain::mark_dual_mode_def.
+	(timode_scalar_chain::mark_dual_mode_def): Delete.
+	(scalar_chain::convert_compare): Renamed from
+	general_scalar_chain::convert_compare.
+	(timode_scalar_chain::compute_convert_gain): New method to
+	determine the gain from converting a TImode chain to V1TImode.
+	(timode_scalar_chain::convert_op): New method to convert an
+	operand from TImode to V1TImode.
+	(timode_scalar_chain::convert_insn) <case REG>: Only PUT_MODE
+	on REG_EQUAL notes that were originally TImode (not CONST_INT).
+	Handle AND, ANDN, XOR, IOR, NOT and COMPARE.
+	(timode_mem_p): Helper predicate to check where operand is
+	memory reference with sufficient alignment for TImode STV.
+	(timode_scalar_to_vector_candidate_p): Use convertible_comparison_p
+	to check whether COMPARE is convertible.  Handle SET_DESTs that
+	that are REG_P or MEM_P and SET_SRCs that are REG, CONST_INT,
+	CONST_WIDE_INT, MEM, AND, ANDN, IOR, XOR or NOT.
+
+2022-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/106250
+	* tree-vect-loop.cc (vectorizable_reduction): Reinstate final
+	argument to directly_supported_p.
+
+2022-07-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-into-ssa.cc (update_ssa): Do not forcefully
+	re-compute dominance fast queries for TODO_update_ssa_no_phi.
+
+2022-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106228
+	* tree-vect-data-refs.cc (vect_setup_realignment): Adjust
+	VUSE compute for the non-loop case.
+
+2022-07-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-into-ssa.cc (rewrite_mode::REWRITE_UPDATE_REGION): New.
+	(rewrite_update_dom_walker::rewrite_update_dom_walker): Update.
+	(rewrite_update_dom_walker::m_in_region_flag): New.
+	(rewrite_update_dom_walker::before_dom_children): If the region
+	to update is marked, STOP at exits.
+	(rewrite_blocks): For REWRITE_UPDATE_REGION mark the region
+	to be updated.
+	(dump_update_ssa): Use bitmap_empty_p.
+	(update_ssa): Likewise.  Use REWRITE_UPDATE_REGION when
+	TODO_update_ssa_no_phi.
+	* tree-cfgcleanup.cc (cleanup_tree_cfg_noloop): Account
+	pending update_ssa to the caller.
+
+2022-07-11  Richard Biener  <rguenthert@suse.de>
+
+	PR target/105459
+	* config/i386/i386-options.cc (ix86_set_current_function):
+	Rebuild the target optimization node whenever necessary,
+	not only when the optimization node didn't change.
+
+2022-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106228
+	* tree-vect-data-refs.cc (vect_setup_realignment): Properly
+	set a VUSE operand on the emitted load.
+
+2022-07-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::export_global_ranges): Remove
+	verification against legacy value_range.
+	(gimple_ranger::register_inferred_ranges): Same.
+	(gimple_ranger::export_global_ranges): Rename update_global_range
+	to set_range_info.
+	* tree-core.h (struct range_info_def): Remove.
+	(struct irange_storage_slot): New.
+	(struct tree_base): Remove SSA_NAME_ANTI_RANGE_P documentation.
+	(struct tree_ssa_name): Add vrange_storage support.
+	* tree-ssanames.cc (range_info_p): New.
+	(range_info_fits_p): New.
+	(range_info_alloc): New.
+	(range_info_free): New.
+	(range_info_get_range): New.
+	(range_info_set_range): New.
+	(set_range_info_raw): Remove.
+	(set_range_info): Adjust to use vrange_storage.
+	(set_nonzero_bits): Same.
+	(get_nonzero_bits): Same.
+	(duplicate_ssa_name_range_info): Remove overload taking
+	value_range_kind.
+	Rewrite tree overload to use vrange_storage.
+	(duplicate_ssa_name_fn): Adjust to use vrange_storage.
+	* tree-ssanames.h (struct range_info_def): Remove.
+	(set_range_info): Adjust prototype to take vrange.
+	* tree-vrp.cc (vrp_asserts::remove_range_assertions): Call
+	duplicate_ssa_name_range_info.
+	* tree.h (SSA_NAME_ANTI_RANGE_P): Remove.
+	(SSA_NAME_RANGE_TYPE): Remove.
+	* value-query.cc (get_ssa_name_range_info): Adjust to use
+	vrange_storage.
+	(update_global_range): Remove.
+	(get_range_global): Remove as_a<irange>.
+	* value-query.h (update_global_range): Remove.
+	* tree-ssa-dom.cc (set_global_ranges_from_unreachable_edges):
+	Rename update_global_range to set_range_info.
+	* value-range-storage.cc (vrange_storage::alloc_slot): Remove
+	gcc_unreachable.
+
 2022-07-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* value-range.cc (irange::operator=): Call verify_range.

@@ -1,3 +1,8 @@
+2022-07-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Enhance
+	'_Pragma' diagnostics verification.
+
 2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Adapt for

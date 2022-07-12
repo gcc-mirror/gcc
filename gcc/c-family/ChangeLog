@@ -1,3 +1,9 @@
+2022-07-11  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/106252
+	* c-pragma.cc (handle_pragma_diagnostic_impl): Don't look up the
+	option argument prior to verifying the option was found.
+
 2022-07-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-format.cc (range_label_for_format_type_mismatch::get_text):

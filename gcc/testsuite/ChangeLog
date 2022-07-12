@@ -1,3 +1,27 @@
+2022-07-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse4_1-stv-2.c: New test case, pand.
+	* gcc.target/i386/sse4_1-stv-3.c: New test case, por.
+	* gcc.target/i386/sse4_1-stv-4.c: New test case, pxor.
+	* gcc.target/i386/sse4_1-stv-5.c: New test case, pandn.
+	* gcc.target/i386/sse4_1-stv-6.c: New test case, ptest.
+
+2022-07-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/106250
+	* gcc.dg/vect/pr106250.c: New file.
+
+2022-07-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/gomp/pragma-3.c: Enhance '_Pragma' diagnostics
+	verification.
+	* c-c++-common/gomp/pragma-5.c: Likewise.
+
+2022-07-11  Richard Biener  <rguenthert@suse.de>
+
+	PR target/105459
+	* gcc.dg/lto/pr105459_0.c: New testcase.
+
 2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/97498
