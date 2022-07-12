@@ -3365,9 +3365,7 @@ package body Sem_Ch5 is
          declare
             Flist : constant List_Id := Freeze_Entity (Id, N);
          begin
-            if Is_Non_Empty_List (Flist) then
-               Insert_Actions (N, Flist);
-            end if;
+            Insert_Actions (N, Flist);
          end;
       end if;
 

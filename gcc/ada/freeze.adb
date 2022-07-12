@@ -9653,9 +9653,7 @@ package body Freeze is
       Set_Has_Delayed_Freeze (T);
       L := Freeze_Entity (T, N);
 
-      if Is_Non_Empty_List (L) then
-         Insert_Actions (N, L);
-      end if;
+      Insert_Actions (N, L);
    end Freeze_Itype;
 
    --------------------------
