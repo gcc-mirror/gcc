@@ -1341,9 +1341,13 @@ package body Sprint is
          when N_Iterated_Component_Association =>
             Set_Debug_Sloc;
             Write_Str (" for ");
-            Write_Id (Defining_Identifier (Node));
-            Write_Str (" in ");
-            Sprint_Bar_List (Discrete_Choices (Node));
+            if Present (Iterator_Specification (Node)) then
+               Sprint_Node (Iterator_Specification (Node));
+            else
+               Write_Id (Defining_Identifier (Node));
+               Write_Str (" in ");
+               Sprint_Bar_List (Discrete_Choices (Node));
+            end if;
             Write_Str (" => ");
             Sprint_Node (Expression (Node));
 
@@ -2306,6 +2310,11 @@ package body Sprint is
             end if;
 
             Sprint_Node (Name (Node));
+
+            if Present (Iterator_Filter (Node)) then
+               Write_Str (" when ");
+               Sprint_Node (Iterator_Filter (Node));
+            end if;
 
          when N_Itype_Reference =>
             Write_Indent_Str_Sloc ("reference ");
