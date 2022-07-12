@@ -6864,6 +6864,11 @@ gnat_to_gnu (Node_Id gnat_node)
 				    : (Rounded_Result (gnat_node)
 				       ? ROUND_DIV_EXPR : TRUNC_DIV_EXPR),
 				    gnu_result_type, gnu_lhs, gnu_rhs);
+      /* If the result type is larger than a word, then declare the dependence
+	 on the libgcc routine.  */
+      if (INTEGRAL_TYPE_P (gnu_result_type)
+	  && TYPE_PRECISION (gnu_result_type) > BITS_PER_WORD)
+	Check_Restriction_No_Dependence_On_System (Name_Gcc, gnat_node);
       break;
 
     case N_Op_Eq:
@@ -6923,6 +6928,10 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_rhs = convert (gnu_count_type, gnu_rhs);
 	    gnu_max_shift
 	      = convert (TREE_TYPE (gnu_rhs), TYPE_SIZE (gnu_type));
+	    /* If the result type is larger than a word, then declare the dependence
+	       on the libgcc routine.  */
+	    if (TYPE_PRECISION (gnu_result_type) > BITS_PER_WORD)
+	      Check_Restriction_No_Dependence_On_System (Name_Gcc, gnat_node);
 	  }
 
 	/* If this is a comparison between (potentially) large aggregates, then
@@ -6934,6 +6943,12 @@ gnat_to_gnu (Node_Id gnat_node)
 					  2 * BITS_PER_WORD) > 0))
 	  Check_Restriction_No_Dependence_On_System (Name_Memory_Compare,
 						     gnat_node);
+
+	/* If this is a modulo/remainder and the result type is larger than a
+	   word, then declare the dependence on the libgcc routine.  */
+	else if ((kind == N_Op_Mod ||kind == N_Op_Rem)
+		 && TYPE_PRECISION (gnu_result_type) > BITS_PER_WORD)
+	  Check_Restriction_No_Dependence_On_System (Name_Gcc, gnat_node);
 
 	/* Pending generic support for efficient vector logical operations in
 	   GCC, convert vectors to their representative array type view.  */
@@ -9748,6 +9763,16 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflow_p,
     gnu_result = unchecked_convert (gnu_base_type, gnu_result, false);
   else
     gnu_result = convert (gnu_base_type, gnu_result);
+
+  /* If this is a conversion between an integer type larger than a word and a
+     floating-point type, then declare the dependence on the libgcc routine.  */
+  if ((INTEGRAL_TYPE_P (gnu_in_base_type)
+       && TYPE_PRECISION (gnu_in_base_type) > BITS_PER_WORD
+       && FLOAT_TYPE_P (gnu_base_type))
+      || (FLOAT_TYPE_P (gnu_in_base_type)
+	  && INTEGRAL_TYPE_P (gnu_base_type)
+	  && TYPE_PRECISION (gnu_base_type) > BITS_PER_WORD))
+    Check_Restriction_No_Dependence_On_System (Name_Gcc, gnat_node);
 
   return convert (gnu_type, gnu_result);
 }
