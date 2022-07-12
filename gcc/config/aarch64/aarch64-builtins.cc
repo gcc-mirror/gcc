@@ -2582,38 +2582,6 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
     {
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == V##C##N##Fmode && in_mode == V##C##N##Fmode)
-    CASE_CFN_FLOOR:
-      return AARCH64_FIND_FRINT_VARIANT (floor);
-    CASE_CFN_CEIL:
-      return AARCH64_FIND_FRINT_VARIANT (ceil);
-    CASE_CFN_TRUNC:
-      return AARCH64_FIND_FRINT_VARIANT (btrunc);
-    CASE_CFN_ROUND:
-      return AARCH64_FIND_FRINT_VARIANT (round);
-    CASE_CFN_NEARBYINT:
-      return AARCH64_FIND_FRINT_VARIANT (nearbyint);
-    CASE_CFN_SQRT:
-      return AARCH64_FIND_FRINT_VARIANT (sqrt);
-#undef AARCH64_CHECK_BUILTIN_MODE
-#define AARCH64_CHECK_BUILTIN_MODE(C, N) \
-  (out_mode == V##C##SImode && in_mode == V##C##N##Imode)
-    CASE_CFN_CLZ:
-      {
-	if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-	  return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_clzv4si];
-	return NULL_TREE;
-      }
-    CASE_CFN_CTZ:
-      {
-	if (AARCH64_CHECK_BUILTIN_MODE (2, S))
-	  return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_ctzv2si];
-	else if (AARCH64_CHECK_BUILTIN_MODE (4, S))
-	  return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_UNOP_ctzv4si];
-	return NULL_TREE;
-      }
-#undef AARCH64_CHECK_BUILTIN_MODE
-#define AARCH64_CHECK_BUILTIN_MODE(C, N) \
   (out_mode == V##C##N##Imode && in_mode == V##C##N##Fmode)
     CASE_CFN_IFLOOR:
     CASE_CFN_LFLOOR:
