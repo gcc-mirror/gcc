@@ -1,3 +1,12 @@
+2022-07-11  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2022-07-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/105860
+	* gcc.dg/tree-ssa/alias-access-path-13.c: New test.
+	* gcc.dg/tree-ssa/pr105860.c: Likewise.
+
 2022-07-10  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:
