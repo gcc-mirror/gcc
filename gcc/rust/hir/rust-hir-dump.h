@@ -34,6 +34,8 @@ public:
 
 private:
   std::ostream &stream;
+  std::size_t indent; // current indentation level
+  char indent_char = '\t';
 
   virtual void visit (IdentifierExpr &) override;
   virtual void visit (Lifetime &) override;
