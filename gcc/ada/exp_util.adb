@@ -5741,7 +5741,7 @@ package body Exp_Util is
            --  non-statically-matching subtypes on 'Access of this object.
 
            and then (Nkind (N) /= N_Object_Declaration
-                      or else Nkind (Exp) = N_Aggregate
+                      or else Nkind (Original_Node (Exp)) = N_Aggregate
                       or else Is_Constr_Subt_For_U_Nominal (Exp_Typ))
          then
             --  Within an initialization procedure, a selected component
