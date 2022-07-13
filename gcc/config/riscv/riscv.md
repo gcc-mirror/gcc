@@ -743,7 +743,7 @@
   [(set (match_operand:SI          0 "register_operand" "=r")
 	(mult:SI (match_operand:SI 1 "register_operand" " r")
 		 (match_operand:SI 2 "register_operand" " r")))]
-  "TARGET_MUL"
+  "TARGET_ZMMUL || TARGET_MUL"
   "mul%~\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
@@ -752,7 +752,7 @@
   [(set (match_operand:DI          0 "register_operand" "=r")
 	(mult:DI (match_operand:DI 1 "register_operand" " r")
 		 (match_operand:DI 2 "register_operand" " r")))]
-  "TARGET_MUL && TARGET_64BIT"
+  "TARGET_ZMMUL || TARGET_MUL && TARGET_64BIT"
   "mul\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "DI")])
@@ -762,7 +762,7 @@
 	(mult:GPR (match_operand:GPR 1 "register_operand" " r")
 		  (match_operand:GPR 2 "register_operand" " r")))
    (label_ref (match_operand 3 "" ""))]
-  "TARGET_MUL"
+  "TARGET_ZMMUL || TARGET_MUL"
 {
   if (TARGET_64BIT && <MODE>mode == SImode)
     {
@@ -807,7 +807,7 @@
 	(mult:GPR (match_operand:GPR 1 "register_operand" " r")
 		  (match_operand:GPR 2 "register_operand" " r")))
    (label_ref (match_operand 3 "" ""))]
-  "TARGET_MUL"
+  "TARGET_ZMMUL || TARGET_MUL"
 {
   if (TARGET_64BIT && <MODE>mode == SImode)
     {
@@ -853,7 +853,7 @@
 	(sign_extend:DI
 	    (mult:SI (match_operand:SI 1 "register_operand" " r")
 		     (match_operand:SI 2 "register_operand" " r"))))]
-  "TARGET_MUL && TARGET_64BIT"
+  "(TARGET_ZMMUL || TARGET_MUL) && TARGET_64BIT"
   "mulw\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
@@ -864,7 +864,7 @@
 	  (match_operator:SI 3 "subreg_lowpart_operator"
 	    [(mult:DI (match_operand:DI 1 "register_operand" " r")
 		      (match_operand:DI 2 "register_operand" " r"))])))]
-  "TARGET_MUL && TARGET_64BIT"
+  "(TARGET_ZMMUL || TARGET_MUL) && TARGET_64BIT"
   "mulw\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
@@ -882,7 +882,7 @@
   [(set (match_operand:TI                         0 "register_operand")
 	(mult:TI (any_extend:TI (match_operand:DI 1 "register_operand"))
 		 (any_extend:TI (match_operand:DI 2 "register_operand"))))]
-  "TARGET_MUL && TARGET_64BIT"
+  "(TARGET_ZMMUL || TARGET_MUL) && TARGET_64BIT"
 {
   rtx low = gen_reg_rtx (DImode);
   emit_insn (gen_muldi3 (low, operands[1], operands[2]));
@@ -904,7 +904,7 @@
 		     (any_extend:TI
 		       (match_operand:DI 2 "register_operand" " r")))
 	    (const_int 64))))]
-  "TARGET_MUL && TARGET_64BIT"
+  "(TARGET_ZMMUL || TARGET_MUL) && TARGET_64BIT"
   "mulh<u>\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "DI")])
@@ -913,7 +913,7 @@
   [(set (match_operand:TI                          0 "register_operand")
 	(mult:TI (zero_extend:TI (match_operand:DI 1 "register_operand"))
 		 (sign_extend:TI (match_operand:DI 2 "register_operand"))))]
-  "TARGET_MUL && TARGET_64BIT"
+  "(TARGET_ZMMUL || TARGET_MUL) && TARGET_64BIT"
 {
   rtx low = gen_reg_rtx (DImode);
   emit_insn (gen_muldi3 (low, operands[1], operands[2]));
@@ -935,7 +935,7 @@
 		     (sign_extend:TI
 		       (match_operand:DI 2 "register_operand" " r")))
 	    (const_int 64))))]
-  "TARGET_MUL && TARGET_64BIT"
+  "(TARGET_ZMMUL || TARGET_MUL) && TARGET_64BIT"
   "mulhsu\t%0,%2,%1"
   [(set_attr "type" "imul")
    (set_attr "mode" "DI")])
@@ -946,7 +946,7 @@
 		   (match_operand:SI 1 "register_operand" " r"))
 		 (any_extend:DI
 		   (match_operand:SI 2 "register_operand" " r"))))]
-  "TARGET_MUL && !TARGET_64BIT"
+  "(TARGET_ZMMUL || TARGET_MUL) && !TARGET_64BIT"
 {
   rtx temp = gen_reg_rtx (SImode);
   emit_insn (gen_mulsi3 (temp, operands[1], operands[2]));
@@ -965,7 +965,7 @@
 		     (any_extend:DI
 		       (match_operand:SI 2 "register_operand" " r")))
 	    (const_int 32))))]
-  "TARGET_MUL && !TARGET_64BIT"
+  "(TARGET_ZMMUL || TARGET_MUL) && !TARGET_64BIT"
   "mulh<u>\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
@@ -977,7 +977,7 @@
 		   (match_operand:SI 1 "register_operand" " r"))
 		 (sign_extend:DI
 		   (match_operand:SI 2 "register_operand" " r"))))]
-  "TARGET_MUL && !TARGET_64BIT"
+  "(TARGET_ZMMUL || TARGET_MUL) && !TARGET_64BIT"
 {
   rtx temp = gen_reg_rtx (SImode);
   emit_insn (gen_mulsi3 (temp, operands[1], operands[2]));
@@ -996,7 +996,7 @@
 		     (sign_extend:DI
 		       (match_operand:SI 2 "register_operand" " r")))
 	    (const_int 32))))]
-  "TARGET_MUL && !TARGET_64BIT"
+  "(TARGET_ZMMUL || TARGET_MUL) && !TARGET_64BIT"
   "mulhsu\t%0,%2,%1"
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
