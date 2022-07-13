@@ -112,7 +112,8 @@ static void record_equality (tree, tree, class const_and_copies *);
 static void record_equivalences_from_phis (basic_block);
 static void record_equivalences_from_incoming_edge (basic_block,
 						    class const_and_copies *,
-						    class avail_exprs_stack *);
+						    class avail_exprs_stack *,
+						    bitmap blocks_on_stack);
 static void eliminate_redundant_computations (gimple_stmt_iterator *,
 					      class const_and_copies *,
 					      class avail_exprs_stack *);
@@ -120,6 +121,8 @@ static void record_equivalences_from_stmt (gimple *, int,
 					   class avail_exprs_stack *);
 static void dump_dominator_optimization_stats (FILE *file,
 					       hash_table<expr_elt_hasher> *);
+static void record_temporary_equivalences (edge, class const_and_copies *,
+					   class avail_exprs_stack *, bitmap);
 
 /* Constructor for EDGE_INFO.  An EDGE_INFO instance is always
    associated with an edge E.  */
@@ -591,6 +594,7 @@ public:
   dom_jt_state (const_and_copies *copies, avail_exprs_stack *avails)
     : m_copies (copies), m_avails (avails)
   {
+    bitmap_tree_view (m_blocks_on_stack);
   }
   void push (edge e) override
   {
@@ -606,12 +610,16 @@ public:
   }
   void register_equivs_edge (edge e) override
   {
-    record_temporary_equivalences (e, m_copies, m_avails);
+    record_temporary_equivalences (e, m_copies, m_avails, m_blocks_on_stack);
   }
   void register_equiv (tree dest, tree src, bool update) override;
+  bitmap get_blocks_on_stack () { return m_blocks_on_stack; }
 private:
   const_and_copies *m_copies;
   avail_exprs_stack *m_avails;
+  /* Set of blocks on the stack, to be used for medium-fast
+     dominance queries in back_propagate_equivalences.  */
+  auto_bitmap m_blocks_on_stack;
 };
 
 void
@@ -653,7 +661,7 @@ class dom_opt_dom_walker : public dom_walker
 public:
   dom_opt_dom_walker (cdi_direction direction,
 		      jump_threader *threader,
-		      jt_state *state,
+		      dom_jt_state *state,
 		      gimple_ranger *ranger,
 		      const_and_copies *const_and_copies,
 		      avail_exprs_stack *avail_exprs_stack)
@@ -693,7 +701,7 @@ private:
 
   jump_threader *m_threader;
   gimple_ranger *m_ranger;
-  jt_state *m_state;
+  dom_jt_state *m_state;
 };
 
 /* Jump threading, redundancy elimination and const/copy propagation.
@@ -962,7 +970,7 @@ dom_valueize (tree t)
 static void
 back_propagate_equivalences (tree lhs, edge e,
 			     class const_and_copies *const_and_copies,
-			     bitmap *domby)
+			     bitmap domby)
 {
   use_operand_p use_p;
   imm_use_iterator iter;
@@ -997,29 +1005,12 @@ back_propagate_equivalences (tree lhs, edge e,
 	}
       else
 	{
-	  /* Profiling has shown the domination tests here can be fairly
-	     expensive when the fast indexes are not computed.
-	     We get significant improvements by building the
-	     set of blocks that dominate BB.  We can then just test
-	     for set membership below.
-
-	     We also initialize the set lazily since often the only uses
-	     are going to be in the same block as DEST.  */
-
-	  if (!*domby)
-	    {
-	      *domby = BITMAP_ALLOC (NULL);
-	      bitmap_tree_view (*domby);
-	      basic_block bb = get_immediate_dominator (CDI_DOMINATORS, dest);
-	      while (bb)
-		{
-		  bitmap_set_bit (*domby, bb->index);
-		  bb = get_immediate_dominator (CDI_DOMINATORS, bb);
-		}
-	    }
-
+	  /* We can use the set of BBs on the stack from a domwalk
+	     for a medium fast way to query dominance.  Profiling
+	     has shown non-fast query dominance tests here can be fairly
+	     expensive.  */
 	  /* This tests if USE_STMT does not dominate DEST.  */
-	  if (!bitmap_bit_p (*domby, gimple_bb (use_stmt)->index))
+	  if (!bitmap_bit_p (domby, gimple_bb (use_stmt)->index))
 	    continue;
 	}
 
@@ -1037,10 +1028,11 @@ back_propagate_equivalences (tree lhs, edge e,
    by traversing edge E (which are cached in E->aux).
 
    Callers are responsible for managing the unwinding markers.  */
-void
+static void
 record_temporary_equivalences (edge e,
 			       class const_and_copies *const_and_copies,
-			       class avail_exprs_stack *avail_exprs_stack)
+			       class avail_exprs_stack *avail_exprs_stack,
+			       bitmap blocks_on_stack)
 {
   int i;
   class edge_info *edge_info = (class edge_info *) e->aux;
@@ -1055,7 +1047,6 @@ record_temporary_equivalences (edge e,
       for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
 	avail_exprs_stack->record_cond (eq);
 
-      bitmap domby = NULL;
       edge_info::equiv_pair *seq;
       for (i = 0; edge_info->simple_equivalences.iterate (i, &seq); ++i)
 	{
@@ -1092,10 +1083,9 @@ record_temporary_equivalences (edge e,
 	  /* Any equivalence found for LHS may result in additional
 	     equivalences for other uses of LHS that we have already
 	     processed.  */
-	  back_propagate_equivalences (lhs, e, const_and_copies, &domby);
+	  back_propagate_equivalences (lhs, e, const_and_copies,
+				       blocks_on_stack);
 	}
-      if (domby)
-	BITMAP_FREE (domby);
     }
 }
 
@@ -1267,7 +1257,8 @@ dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
 static void
 record_equivalences_from_incoming_edge (basic_block bb,
     class const_and_copies *const_and_copies,
-    class avail_exprs_stack *avail_exprs_stack)
+    class avail_exprs_stack *avail_exprs_stack,
+    bitmap blocks_on_stack)
 {
   edge e;
   basic_block parent;
@@ -1282,7 +1273,8 @@ record_equivalences_from_incoming_edge (basic_block bb,
   /* If we had a single incoming edge from our parent block, then enter
      any data associated with the edge into our tables.  */
   if (e && e->src == parent)
-    record_temporary_equivalences (e, const_and_copies, avail_exprs_stack);
+    record_temporary_equivalences (e, const_and_copies, avail_exprs_stack,
+				   blocks_on_stack);
 }
 
 /* Dump statistics for the hash table HTAB.  */
@@ -1517,9 +1509,11 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
      far to unwind when we finalize this block.  */
   m_avail_exprs_stack->push_marker ();
   m_const_and_copies->push_marker ();
+  bitmap_set_bit (m_state->get_blocks_on_stack (), bb->index);
 
   record_equivalences_from_incoming_edge (bb, m_const_and_copies,
-					  m_avail_exprs_stack);
+					  m_avail_exprs_stack,
+					  m_state->get_blocks_on_stack ());
   set_global_ranges_from_unreachable_edges (bb);
 
   /* PHI nodes can create equivalences too.  */
@@ -1594,6 +1588,7 @@ void
 dom_opt_dom_walker::after_dom_children (basic_block bb)
 {
   m_threader->thread_outgoing_edges (bb);
+  bitmap_clear_bit (m_state->get_blocks_on_stack (), bb->index);
   m_avail_exprs_stack->pop_to_marker ();
   m_const_and_copies->pop_to_marker ();
 }
