@@ -6632,7 +6632,7 @@ package body Exp_Ch6 is
 
          begin
             if not Exp_Is_Function_Call
-              and then Has_Discriminants (Ubt)
+              and then Has_Defaulted_Discriminants (Ubt)
               and then not Is_Constrained (Ubt)
               and then not Has_Unchecked_Union (Ubt)
             then
