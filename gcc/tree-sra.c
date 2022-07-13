@@ -1647,7 +1647,18 @@ build_ref_for_offset (location_t loc, tree base, poly_int64 offset,
 static tree
 build_reconstructed_reference (location_t, tree base, struct access *model)
 {
-  tree expr = model->expr, prev_expr = NULL;
+  tree expr = model->expr;
+  /* We have to make sure to start just below the outermost union.  */
+  tree start_expr = expr;
+  while (handled_component_p (expr))
+    {
+      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == UNION_TYPE)
+	start_expr = expr;
+      expr = TREE_OPERAND (expr, 0);
+    }
+
+  expr = start_expr;
+  tree prev_expr = NULL_TREE;
   while (!types_compatible_p (TREE_TYPE (expr), TREE_TYPE (base)))
     {
       if (!handled_component_p (expr))
