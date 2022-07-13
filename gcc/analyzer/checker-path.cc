@@ -195,7 +195,7 @@ checker_event::dump (pretty_printer *pp) const
 {
   label_text event_desc (get_desc (false));
   pp_printf (pp, "\"%s\" (depth %i",
-	     event_desc.m_buffer, m_effective_depth);
+	     event_desc.get (), m_effective_depth);
 
   if (m_effective_depth != m_original_depth)
     pp_printf (pp, " corrected from %i",
@@ -307,7 +307,7 @@ region_creation_event::get_desc (bool can_colorize) const
       label_text custom_desc
 	    = m_pending_diagnostic->describe_region_creation_event
 		(evdesc::region_creation (can_colorize, m_reg));
-      if (custom_desc.m_buffer)
+      if (custom_desc.get ())
 	return custom_desc;
     }
 
@@ -390,7 +390,7 @@ state_change_event::get_desc (bool can_colorize) const
 	= m_pending_diagnostic->describe_state_change
 	    (evdesc::state_change (can_colorize, var, origin,
 				   m_from, m_to, m_emission_id, *this));
-      if (custom_desc.m_buffer)
+      if (custom_desc.get ())
 	{
 	  if (flag_analyzer_verbose_state_changes)
 	    {
@@ -404,7 +404,7 @@ state_change_event::get_desc (bool can_colorize) const
 		return make_label_text
 		  (can_colorize,
 		   "%s (state of %qE: %qs -> %qs, origin: %qE, meaning: %s)",
-		   custom_desc.m_buffer,
+		   custom_desc.get (),
 		   var,
 		   m_from->get_name (),
 		   m_to->get_name (),
@@ -414,7 +414,7 @@ state_change_event::get_desc (bool can_colorize) const
 		return make_label_text
 		  (can_colorize,
 		   "%s (state of %qE: %qs -> %qs, NULL origin, meaning: %s)",
-		   custom_desc.m_buffer,
+		   custom_desc.get (),
 		   var,
 		   m_from->get_name (),
 		   m_to->get_name (),
@@ -435,16 +435,16 @@ state_change_event::get_desc (bool can_colorize) const
 	  return make_label_text
 	    (can_colorize,
 	     "state of %qs: %qs -> %qs (origin: %qs)",
-	     sval_desc.m_buffer,
+	     sval_desc.get (),
 	     m_from->get_name (),
 	     m_to->get_name (),
-	     origin_desc.m_buffer);
+	     origin_desc.get ());
 	}
       else
 	return make_label_text
 	  (can_colorize,
 	   "state of %qs: %qs -> %qs (NULL origin)",
-	   sval_desc.m_buffer,
+	   sval_desc.get (),
 	   m_from->get_name (),
 	   m_to->get_name ());
     }
@@ -509,8 +509,8 @@ superedge_event::should_filter_p (int verbosity) const
 	    /* Filter events with empty descriptions.  This ought to filter
 	       FALLTHRU, but retain true/false/switch edges.  */
 	    label_text desc = get_desc (false);
-	    gcc_assert (desc.m_buffer);
-	    if (desc.m_buffer[0] == '\0')
+	    gcc_assert (desc.get ());
+	    if (desc.get ()[0] == '\0')
 	      return true;
 	  }
       }
@@ -597,28 +597,28 @@ start_cfg_edge_event::get_desc (bool can_colorize) const
   label_text edge_desc (m_sedge->get_description (user_facing));
   if (user_facing)
     {
-      if (edge_desc.m_buffer && strlen (edge_desc.m_buffer) > 0)
+      if (edge_desc.get () && strlen (edge_desc.get ()) > 0)
 	{
 	  label_text cond_desc = maybe_describe_condition (can_colorize);
 	  label_text result;
-	  if (cond_desc.m_buffer)
+	  if (cond_desc.get ())
 	    return make_label_text (can_colorize,
 				    "following %qs branch (%s)...",
-				    edge_desc.m_buffer, cond_desc.m_buffer);
+				    edge_desc.get (), cond_desc.get ());
 	  else
 	    return make_label_text (can_colorize,
 				    "following %qs branch...",
-				    edge_desc.m_buffer);
+				    edge_desc.get ());
 	}
       else
 	return label_text::borrow ("");
     }
   else
     {
-      if (strlen (edge_desc.m_buffer) > 0)
+      if (strlen (edge_desc.get ()) > 0)
 	return make_label_text (can_colorize,
 				"taking %qs edge SN:%i -> SN:%i",
-				edge_desc.m_buffer,
+				edge_desc.get (),
 				m_sedge->m_src->m_index,
 				m_sedge->m_dest->m_index);
       else
@@ -798,7 +798,7 @@ call_event::get_desc (bool can_colorize) const
 				      m_dest_snode->m_fun->decl,
 				      var,
 				      m_critical_state));
-      if (custom_desc.m_buffer)
+      if (custom_desc.get ())
 	return custom_desc;
     }
 
@@ -878,7 +878,7 @@ return_event::get_desc (bool can_colorize) const
 				      m_dest_snode->m_fun->decl,
 				      m_src_snode->m_fun->decl,
 				      m_critical_state));
-      if (custom_desc.m_buffer)
+      if (custom_desc.get ())
 	return custom_desc;
     }
   return make_label_text (can_colorize,
@@ -1105,19 +1105,19 @@ warning_event::get_desc (bool can_colorize) const
       label_text ev_desc
 	= m_pending_diagnostic->describe_final_event
 	    (evdesc::final_event (can_colorize, var, m_state));
-      if (ev_desc.m_buffer)
+      if (ev_desc.get ())
 	{
 	  if (m_sm && flag_analyzer_verbose_state_changes)
 	    {
 	      if (var)
 		return make_label_text (can_colorize,
 					"%s (%qE is in state %qs)",
-					ev_desc.m_buffer,
+					ev_desc.get (),
 					var, m_state->get_name ());
 	      else
 		return make_label_text (can_colorize,
 					"%s (in global state %qs)",
-					ev_desc.m_buffer,
+					ev_desc.get (),
 					m_state->get_name ());
 	    }
 	  else
@@ -1163,7 +1163,7 @@ checker_path::dump (pretty_printer *pp) const
       if (i > 0)
 	pp_string (pp, ", ");
       label_text event_desc (e->get_desc (false));
-      pp_printf (pp, "\"%s\"", event_desc.m_buffer);
+      pp_printf (pp, "\"%s\"", event_desc.get ());
     }
   pp_character (pp, ']');
 }
@@ -1203,7 +1203,7 @@ checker_path::debug () const
 	       "[%i]: %s \"%s\"\n",
 	       i,
 	       event_kind_to_string (m_events[i]->m_kind),
-	       event_desc.m_buffer);
+	       event_desc.get ());
     }
 }
 

@@ -96,7 +96,7 @@ json::value *
 svalue::to_json () const
 {
   label_text desc = get_desc (true);
-  json::value *sval_js = new json::string (desc.m_buffer);
+  json::value *sval_js = new json::string (desc.get ());
   return sval_js;
 }
 

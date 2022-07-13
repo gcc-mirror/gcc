@@ -2297,7 +2297,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		  label_text sval_desc = sval->get_desc ();
 		  log ("considering event %i (%s), with sval: %qs, state: %qs",
 		       idx, event_kind_to_string (base_event->m_kind),
-		       sval_desc.m_buffer, state->get_name ());
+		       sval_desc.get (), state->get_name ());
 		}
 	      else
 		log ("considering event %i (%s), with global state: %qs",
@@ -2363,8 +2363,8 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			  = state_change->m_origin->get_desc ();
 			log ("event %i:"
 			     " switching var of interest from %qs to %qs",
-			     idx, sval_desc.m_buffer,
-			     origin_sval_desc.m_buffer);
+			     idx, sval_desc.get (),
+			     origin_sval_desc.get ());
 		      }
 		    sval = state_change->m_origin;
 		  }
@@ -2386,12 +2386,12 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			    label_text sval_desc = sval->get_desc ();
 			    log ("filtering event %i:"
 				 " state change to %qs unrelated to %qs",
-				 idx, change_sval_desc.m_buffer,
-				 sval_desc.m_buffer);
+				 idx, change_sval_desc.get (),
+				 sval_desc.get ());
 			  }
 			else
 			  log ("filtering event %i: state change to %qs",
-			       idx, change_sval_desc.m_buffer);
+			       idx, change_sval_desc.get ());
 		      }
 		    else
 		      log ("filtering event %i: global state change", idx);
@@ -2460,7 +2460,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		    log ("event %i:"
 			 " recording critical state for %qs at call"
 			 " from %qE in callee to %qE in caller",
-			 idx, sval_desc.m_buffer, callee_var, caller_var);
+			 idx, sval_desc.get (), callee_var, caller_var);
 		  }
 		if (expr.param_p ())
 		  event->record_critical_state (caller_var, state);
@@ -2503,7 +2503,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			log ("event %i:"
 			     " recording critical state for %qs at return"
 			     " from %qE in caller to %qE in callee",
-			     idx, sval_desc.m_buffer, callee_var, callee_var);
+			     idx, sval_desc.get (), callee_var, callee_var);
 		      }
 		    if (expr.return_value_p ())
 		      event->record_critical_state (callee_var, state);
@@ -2586,7 +2586,7 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
 		    (path->get_checker_event (idx)->get_desc (false));
 		  log ("filtering events %i-%i:"
 		       " irrelevant call/entry/return: %s",
-		       idx, idx + 2, desc.m_buffer);
+		       idx, idx + 2, desc.get ());
 		}
 	      path->delete_event (idx + 2);
 	      path->delete_event (idx + 1);
@@ -2608,7 +2608,7 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
 		    (path->get_checker_event (idx)->get_desc (false));
 		  log ("filtering events %i-%i:"
 		       " irrelevant call/return: %s",
-		       idx, idx + 1, desc.m_buffer);
+		       idx, idx + 1, desc.get ());
 		}
 	      path->delete_event (idx + 1);
 	      path->delete_event (idx);
