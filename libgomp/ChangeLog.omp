@@ -1,3 +1,10 @@
+2022-07-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-07-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_target_init): Added tailing '\n' to gomp_debug.
+
 2022-07-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

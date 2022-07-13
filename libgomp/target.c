@@ -4498,7 +4498,7 @@ gomp_target_init (void)
 		    name[cur_len] = '\0';
 		    gomp_debug (1,
 				"%s devices present but 'omp requires %s' "
-			        "cannot be fulfilled", name, buf);
+				"cannot be fulfilled\n", name, buf);
 		    free (name);
 		  }
 	      }
