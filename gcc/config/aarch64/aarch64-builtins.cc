@@ -2907,6 +2907,16 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
     default:
       break;
     }
+
+  /* GIMPLE assign statements (unlike calls) require a non-null lhs. If we
+     created an assign statement with a null lhs, then fix this by assigning
+     to a new (and subsequently unused) variable. */
+  if (new_stmt && is_gimple_assign (new_stmt) && !gimple_assign_lhs (new_stmt))
+    {
+      tree new_lhs = make_ssa_name (gimple_call_return_type (stmt));
+      gimple_assign_set_lhs (new_stmt, new_lhs);
+    }
+
   return new_stmt;
 }
 
