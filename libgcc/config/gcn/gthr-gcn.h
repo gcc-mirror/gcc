@@ -87,7 +87,7 @@ __gthread_key_delete (__gthread_key_t __key __attribute__ ((__unused__)))
 static inline void *
 __gthread_getspecific (__gthread_key_t __key __attribute__((unused)))
 {
-  return NULL;
+  return 0;
 }
 
 static inline int
