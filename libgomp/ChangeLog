@@ -1,3 +1,13 @@
+2022-07-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_target_init): Added tailing '\n' to gomp_debug.
+
+2022-07-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/101551
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: XFAIL
+	'offloading_enabled' diagnostics issue.
+
 2022-07-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Enhance

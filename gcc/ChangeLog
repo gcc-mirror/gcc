@@ -1,3 +1,48 @@
+2022-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (unsigned_singleton_p): Remove.
+	(operator_bitwise_and::remove_impossible_ranges): Remove.
+	(operator_bitwise_and::fold_range): Set nonzero bits.  *
+	* value-range.cc (irange::get_nonzero_bits): Remove
+	legacy_mode_p assert.
+	(irange::dump_bitmasks): Remove legacy_mode_p check.
+
+2022-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106253
+	* predict.h (insn_optimization_type): Declare.
+	* predict.cc (insn_optimization_type): New function.
+	* internal-fn.def (IFN_ICEIL, IFN_IFLOOR, IFN_IRINT, IFN_IROUND)
+	(IFN_LCEIL, IFN_LFLOOR, IFN_LRINT, IFN_LROUND, IFN_LLCEIL)
+	(IFN_LLFLOOR, IFN_LLRINT, IFN_LLROUND): New internal functions.
+	* internal-fn.cc (unary_convert_direct): New macro.
+	(expand_convert_optab_fn): New function.
+	(expand_unary_convert_optab_fn): New macro.
+	(direct_unary_convert_optab_supported_p): Likewise.
+	* optabs.cc (expand_sfix_optab): Pass insn_optimization_type to
+	convert_optab_handler.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_builtin_vectorized_function): Delete.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_builtin_vectorized_function): Delete.
+	* config/aarch64/aarch64.cc
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION): Delete.
+	* config/i386/i386.cc (ix86_optab_supported_p): Handle lround_optab.
+	* config/i386/i386.md (lround<X87MODEF:mode><SWI248x:mode>2): Remove
+	optimize_insn_for_size_p test.
+
+2022-07-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.cc (create_lcssa_for_virtual_phi):
+	Remove.
+	(vect_do_peeling): Do not call it, adjust comment.
+
+2022-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_builtin_vectorized_function): Remove handling of
+	floor, ceil, trunc, round, nearbyint, sqrt, clz and ctz.
+
 2022-07-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/106234

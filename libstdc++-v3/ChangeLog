@@ -1,3 +1,25 @@
+2022-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106248
+	* include/std/istream [C++17] (operator>>(istream&, char*)):
+	Set eofbit if we stopped extracting at EOF.
+	* testsuite/27_io/basic_istream/extractors_character/char/pr106248.cc:
+	New test.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/pr106248.cc:
+	New test.
+
+2022-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (__iter_to_alloc_t): Replace
+	add_const_t with const-qualifier.
+	* include/bits/utility.h (tuple_element<N, cv T>): Likewise for
+	all cv-qualifiers.
+	* include/std/type_traits (add_const, add_volatile): Replace
+	typedef-declaration with using-declaration.
+	(add_cv): Replace add_const and add_volatile with cv-qualifiers.
+	* include/std/variant (variant_alternative<N, cv T>): Replace
+	add_const_t, add_volatile_t and add_cv_t etc. with cv-qualifiers.
+
 2022-07-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/std/string: Remove obsolete comment about char_traits.h including

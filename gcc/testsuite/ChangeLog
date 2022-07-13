@@ -1,3 +1,36 @@
+2022-07-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106049
+	* gfortran.dg/pack_simplify_1.f90: New test.
+
+2022-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106253
+	* gcc.target/aarch64/vect_unary_1.c: Add tests for iroundf,
+	llround, iceilf, llceil, ifloorf, llfloor, irintf and llrint.
+	* gfortran.dg/vect/pr106253.f: New test.
+
+2022-07-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gnat.dg/specs/discr5.ads: Expect new warnings.
+	* gnat.dg/specs/empty_variants.ads: Likewise.
+	* gnat.dg/specs/pack13.ads: Likewise.
+
+2022-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vect_unary_1.c: New test.
+
+2022-07-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/cet-sjlj-6a.c: Cope with --enable-default-pie.
+	* gcc.target/i386/cet-sjlj-6b.c: Likewise.
+	* gcc.target/i386/fentryname3.c: Likewise.
+	* gcc.target/i386/mvc7.c: Likewise.
+	* gcc.target/i386/pr24414.c: Likewise.
+	* gcc.target/i386/pr93492-3.c: Likewise.
+	* gcc.target/i386/pr93492-5.c: Likewise.
+	* gcc.target/i386/pr98482-1.c: Likewise.
+
 2022-07-11  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/i386/sse4_1-stv-2.c: New test case, pand.
