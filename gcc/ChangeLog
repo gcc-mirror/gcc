@@ -1,3 +1,12 @@
+2022-07-13  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2022-07-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/105860
+	* tree-sra.c (build_reconstructed_reference): Start expr
+	traversal only just below the outermost union.
+
 2022-06-28  Release Manager
 
 	* GCC 10.4.0 released.
