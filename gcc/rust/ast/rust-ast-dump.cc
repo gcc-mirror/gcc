@@ -173,8 +173,40 @@ Dump::visit (ArithmeticOrLogicalExpr &expr)
       stream << "+";
       break;
 
-    default:
-      gcc_unreachable ();
+    case ArithmeticOrLogicalOperator::SUBTRACT:
+      stream << "-";
+      break;
+
+    case ArithmeticOrLogicalOperator::MULTIPLY:
+      stream << "*";
+      break;
+
+    case ArithmeticOrLogicalOperator::DIVIDE:
+      stream << "/";
+      break;
+
+    case ArithmeticOrLogicalOperator::MODULUS:
+      stream << "%";
+      break;
+
+    case ArithmeticOrLogicalOperator::BITWISE_AND:
+      stream << "&";
+      break;
+
+    case ArithmeticOrLogicalOperator::BITWISE_OR:
+      stream << "|";
+      break;
+
+    case ArithmeticOrLogicalOperator::BITWISE_XOR:
+      stream << "^";
+      break;
+
+    case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+      stream << "<<";
+      break;
+
+    case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+      stream << ">>";
       break;
     }
 
