@@ -967,8 +967,12 @@ dom_oracle::register_relation (basic_block bb, relation_kind k, tree op1,
     equiv_oracle::register_relation (bb, k, op1, op2);
   else
     {
+      // if neither op1 nor op2 are in a relation before this is registered,
+      // there will be no transitive.
+      bool check = bitmap_bit_p (m_relation_set, SSA_NAME_VERSION (op1))
+		   || bitmap_bit_p (m_relation_set, SSA_NAME_VERSION (op2));
       relation_chain *ptr = set_one_relation (bb, k, op1, op2);
-      if (ptr)
+      if (ptr && check)
 	register_transitives (bb, *ptr);
     }
 }
@@ -1010,13 +1014,16 @@ dom_oracle::set_one_relation (basic_block bb, relation_kind k, tree op1,
       // Check into whether we can simply replace the relation rather than
       // intersecting it.  THis may help with some optimistic iterative
       // updating algorithms.
-      ptr->intersect (vr);
+      bool new_rel = ptr->intersect (vr);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, " to produce ");
 	  ptr->dump (dump_file);
-	  fprintf (dump_file, "\n");
+	  fprintf (dump_file, " %s.\n", new_rel ? "Updated" : "No Change");
 	}
+      // If there was no change, return no record..
+      if (!new_rel)
+	return NULL;
     }
   else
     {
