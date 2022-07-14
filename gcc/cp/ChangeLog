@@ -1,3 +1,22 @@
+2022-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105912
+	* pt.cc (tsubst_copy_and_build) <case CALL_EXPR>: Guard against
+	NULL_TREE extract_call_expr result.
+
+2022-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105842
+	* constraint.cc (satisfy_declaration_constraints): Refine early
+	exit test for argument dependence.
+	* cp-tree.h (uses_outer_template_parms_in_constraints): Declare.
+	* pt.cc (template_class_depth): Handle TI_TEMPLATE being a
+	FIELD_DECL.
+	(usse_outer_template_parms): Factor out constraint dependence
+	test into ...
+	(uses_outer_template_parms_in_constraints): ... here.
+	(type_dependent_expression_p): Use it for FUNCTION_DECL.
+
 2022-07-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105956

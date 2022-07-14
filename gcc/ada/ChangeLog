@@ -1,3 +1,243 @@
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu) <N_Assignment_Statement>: Fix
+	a couple of minor issues in the commentary.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gigi): Report a violation of No_Dependence
+	on System.Stack_Checking if Stack_Check_Probes_On_Target is not set
+	and -fstack-check is specified.
+	(build_binary_op_trapv): Report violatiosn of No_Dependence on both
+	System.Arith_64 and System.Arith_128.
+	(add_decl_expr): If an initialized variable, report a violation of
+	No_Dependence on System.Memory_Copy for large aggregate types.
+	(gnat_to_gnu) <N_Op_Eq>: Report a violation
+	of No_Dependence on System.Memory_Compare for large aggregate types.
+	<N_Assignment_Statement>! Report a violation of No_Dependence on
+	System.Memory_Set, System.Memory_Move or else System.Memory_Copy for
+	large aggregate types.
+	* gcc-interface/utils2.cc (maybe_wrap_malloc): Report a violation of
+	No_Dependence on System.Memory.
+	(maybe_wrap_free): Add GNAT_NODE parameter and report a violation of
+	No_Dependence on System.Memory.
+	(build_call_alloc_dealloc): Adjust call to maybe_wrap_free.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Do not set the debug
+	type for vector types.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Access_Subtype>:
+	Undo questionable renaming.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (Gigi_Cloned_Subtype): Handle private case.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gigi): Add one more leading underscore to
+	name of stack checking function.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (Gigi_Cloned_Subtype): New function.
+	(gnat_to_gnu_entity) <E_Signed_Integer_Subtype>: Call it to get the
+	cloned subtype, if any.
+	<E_Floating_Point_Subtype>: Likewise.
+	<E_Array_Subtype>: Likewise.
+	<E_Record_Subtype>: Likewise.
+	<E_Access_Subtype>: Likewise.
+	Deal with all cloned subtypes on the main path.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Access_Subtype>: Do
+	not reuse the TYPE_DECL of the base type.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (gnat_pushdecl): Build DECL_ORIGINAL_TYPE
+	only for pointer types.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.cc (build_binary_op) <EQ_EXPR>: Also accept
+	pointer-to-function types that are not variant of each other.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (unchecked_convert): Also pad in most cases
+	if the source is not a scalar type but the destination is.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Array_Type>: Save
+	and restore the alias set of the dummy pointer-to-array type.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* snames.ads-tmpl (Name_Memory_Compare): New package name.
+	(Name_Memory_Copy): Likewise.
+	(Name_Memory_Move): Likewise.
+	(Name_Memory_Set): Likewise.
+
+2022-07-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch13.adb (Check_And_Resolve_Storage_Model_Type_Argument):
+	Call the System.Case_Util.To_Mixed procedure rather than the
+	function, to avoid bootstrap problems.
+
+2022-07-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* aspects.ads (Aspect_Argument): Change the association for
+	Aspect_Storage_Model_Type from Expression to
+	Optional_Expression.
+	* exp_util.ads (Find_Storage_Op): Update comment to indicate
+	that Empty can be returned in the case where a storage-model
+	operation is defaulted.
+	* exp_util.adb (Find_Storage_Op): Allow the function to return
+	Empty in Storage_Model_Type case rather than raising
+	Program_Error, so that Procedure_To_Call fields in N_Allocator
+	and N_Free_Statement nodes will be set to Empty in the defaulted
+	native storage-model case.
+	* sem_ch13.adb: Add with and use of System.Case_Util (and
+	reformat context_clause).
+	(Check_Aspect_At_Freeze_Point): Return with no action for a
+	Storage_Model_Type aspect with no expression (fully-defaulted
+	native memory-model case).
+	(Resolve_Storage_Model_Type_Argument): If an Address_Type has
+	not been explicitly specified, then set Addr_Type to denote type
+	System.Address.
+	(Validate_Storage_Model_Type_Aspect): Return immediately in the
+	case where the aspect has no Expression (fully-defaulted native
+	memory-model case).  No longer issue an error when Address_Type
+	isn't specified, and instead use type System.Address as the
+	default address type. When the address type is
+	System.Address (whether specified or defaulted), no longer issue
+	errors for any other "subaspects" that aren't specified, since
+	in that case those are allowed to default as well. Remove ???
+	comment about needing to check for duplicates, which is now
+	addressed.
+	(Check_And_Resolve_Storage_Model_Type_Argument): New procedure
+	to check that an association for a storage-model subaspect in
+	the aggregate has not been specified earlier in the aggregate,
+	and to then resolve the expression of the association and save
+	the resolved entity. Called by
+	Validate_Storage_Model_Type_Aspect.
+	* sem_util.ads (Storage_Model_Support): Update comments on specs
+	of the functions Get_Storage_Model_Type_Entity,
+	Storage_Model_Address_Type, and Storage_Model_Null_Address to
+	indicate the behavior when the address type is System.Address
+	(the native memory-model case).
+	* sem_util.adb
+	(Storage_Model_Support.Get_Storage_Model_Type_Entity): Suppress
+	the search for the given subaspect name (Nam) when the
+	Storage_Model_Type aspect is fully defaulted (i.e., no
+	Expression is present) and simply return. In cases where the
+	search is done, but no association that matches Nam is found,
+	return System.Address for the Name_Address_Type case, return
+	System.Null_Address for the Name_Null_Address case, and return
+	Empty for all other cases.
+
+2022-07-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Relocate_Expression): New routine with code that
+	previously was only applied to Pre and Post aspects.
+	(Analyze_Aspect_Specifications): Apply the above routine to
+	other aspects, in particular to aspects Address, Attach_Handler,
+	Predicate and Interrupt_Priority.
+
+2022-07-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Build_Body_To_Inline): Instead of manipulating the
+	Full_Analysis flag, use the Inside_A_Generic flag (which is
+	conveniently manipulated by Start_Generic/End_Generic, together
+	with Expander_Active).
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Adapt comment and
+	assertion to different flag that is set while building
+	body-to-inline.
+
+2022-07-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/gnat_rm/security_hardening_features.rst: Clarify the need
+	for choices after -fzero-call-used-regs and -fstrub.
+	* gnat_rm.texi: Regenerate.
+
+2022-07-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Recognize a generated subtype
+	with Ghost pragma for generic instantiations.
+
+2022-07-13  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb (Lemma_Mult_Div, Lemma_Powers): New
+	lemmas.
+	(Prove_Sign_Quotient): New local lemma.
+	(Prove_Signs): Expand definition of Big_R and Big_Q in the
+	postcondition. Add intermediate assertions.
+	(Double_Divide): Call new lemma.
+	(Lemma_Div_Eq): Provide body for proving lemma.
+	(Lemma_Powers_Of_2, Lemma_Shift_Without_Drop,
+	Prove_Dividend_Scaling, Prove_Multiplication, Prove_Z_Low): Call
+	lemmas, add intermediate assertions.
+
+2022-07-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Has_Single_Return): Add guard for the subsequent
+	call to Expression.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Set Acts_As_Spec
+	earlier if the body is not the completion of a declaration.
+	(Check_Untagged_Equality): Deal with subprogram bodies that are
+	not the completion of a declaration and make sure that they are
+	not flagged when they cause the freezing of the type themselves.
+	Give a warning on the freezing point of the type in more cases.
+	* sem_res.adb (Resolve_Equality_Op): Revert latest change.
+
+2022-07-13  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-arit32.adb (Scaled_Divide32): Add an assertion, move
+	the call of Prove_Sign_R around.
+
+2022-07-13  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_ch4.adb (Expand_N_If_Expression): Test for compile time
+	known bounds when handling slices.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.ads (Integer_Type_For): Mention Small_Integer_Type_For.
+	(Small_Integer_Type_For): Mention Integer_Type_For.
+
+2022-07-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Equality_Op): Make sure that the user-defined
+	operator of an untagged record type is declared ahead of an instance
+	before using it to resolve the equality operator in the instance.
+
+2022-07-13  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Add default
+	initialization for Stmts.
+	* sem_ch12.adb (Analyze_Associations): Add default
+	initialization for Match.
+	* libgnat/a-ztenau.adb (Scan_Enum_Lit): Remove duplicated
+	boolean test.
+	* libgnat/g-spipat.adb (XMatch): Combine duplicated cases.
+
+2022-07-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-prag.adb (Check_Arg_Count): Change parameter type from Int
+	to Nat, because this parameter is compared to Arg_Count variable
+	which is of type Nat. Also, it wouldn't make sense to check for
+	negative number of pragma arguments.
+
 2022-07-12  Piotr Trojanek  <trojanek@adacore.com>
 
 	* exp_ch11.adb (Expand_N_Exception_Declaration): Sync comment

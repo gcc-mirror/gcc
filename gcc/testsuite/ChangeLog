@@ -1,3 +1,27 @@
+2022-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105912
+	* g++.dg/cpp2a/consteval31.C: New test.
+
+2022-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105842
+	* g++.dg/cpp2a/concepts-memtmpl6.C: New test.
+
+2022-07-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/ipa/pure-const-3.C: Adjust.
+	* gcc.dg/pr102983.c: Adjust.
+
+2022-07-13  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/ignored_return_1.c: New test.
+
+2022-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106249
+	* gcc.dg/pr106249.c: New testcase.
+
 2022-07-12  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/106049

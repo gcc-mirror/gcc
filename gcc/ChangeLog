@@ -1,3 +1,41 @@
+2022-07-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_lt::fold_range): Use nonzero bits.
+
+2022-07-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::copy_to_legacy): Set nonzero mask.
+	(irange::legacy_intersect): Clear nonzero mask.
+	(irange::legacy_union): Same.
+	(irange::invert): Same.
+
+2022-07-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dom.h (record_temporary_equivalences): Remove.
+	* tree-ssa-dom.cc (dom_jt_state::m_blocks_on_stack): New.
+	(dom_jt_state::get_blocks_on_stack): Likewise.
+	(dom_opt_dom_walker::dom_opt_dom_walker): Take dom_jt_state.
+	(back_propagate_equivalences): Remove dominator bitmap
+	compute and instead use passed in m_blocks_on_stack.
+	(record_temporary_equivalences): Likewise.
+	(record_equivalences_from_incoming_edge): Likewise.
+	(dom_opt_dom_walker::before_dom_children): Maintain and
+	pass down blocks on stack.
+	(dom_opt_dom_walker::after_dom_children): Likewise.
+
+2022-07-13  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_general_gimple_fold_builtin): Add fixup for invalid GIMPLE.
+
+2022-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106249
+	* tree-ssa-loop-manip.cc (tree_transform_and_unroll_loop):
+	Only verify LC SSA of the new_loop if we created it.
+	Use TODO_update_ssa_nophi for the SSA update after versioning
+	the loop.
+
 2022-07-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* range-op.cc (unsigned_singleton_p): Remove.
