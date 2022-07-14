@@ -79,7 +79,6 @@ public:
   virtual bool supports_type_p (tree type) const;
   virtual void set_varying (tree type);
   virtual void set_undefined ();
-  virtual void dump (FILE * = stderr) const = 0;
   virtual bool union_ (const vrange &);
   virtual bool intersect (const vrange &);
   virtual bool singleton_p (tree *result = NULL) const;
@@ -96,9 +95,9 @@ public:
   vrange& operator= (const vrange &);
   bool operator== (const vrange &) const;
   bool operator!= (const vrange &r) const { return !(*this == r); }
+  void dump (FILE *) const;
 
   enum value_range_kind kind () const;		// DEPRECATED
-  void debug () const;
 
 protected:
   ENUM_BITFIELD(value_range_kind) m_kind : 8;
@@ -149,7 +148,6 @@ public:
 
   // Misc methods.
   virtual bool fits_p (const vrange &r) const override;
-  virtual void dump (FILE * = stderr) const override;
   virtual void accept (const vrange_visitor &v) const override;
 
   // Nonzero masks.
@@ -206,7 +204,6 @@ private:
   void set_nonzero_bits (tree mask);
   bool intersect_nonzero_bits (const irange &r);
   bool union_nonzero_bits (const irange &r);
-  void dump_bitmasks (FILE *) const;
 
   bool intersect (const wide_int& lb, const wide_int& ub);
   unsigned char m_num_ranges;
@@ -252,7 +249,6 @@ class unsupported_range : public vrange
 {
 public:
   unsupported_range ();
-  virtual void dump (FILE *) const override;
   virtual void accept (const vrange_visitor &v) const override;
 };
 
@@ -339,7 +335,7 @@ public:
   bool operator!= (const Value_Range &r) const;
   operator vrange &();
   operator const vrange &() const;
-  void dump (FILE *out = stderr) const;
+  void dump (FILE *) const;
   static bool supports_type_p (tree type);
 
   // Convenience methods for vrange compatability.

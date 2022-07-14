@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "ssa.h"
 #include "tree-pretty-print.h"
+#include "value-range-pretty-print.h"
 #include "fold-const.h"
 #include "gimple-range.h"
 
@@ -212,6 +213,19 @@ vrange::operator== (const vrange &src) const
   gcc_unreachable ();
 }
 
+// Wrapper for vrange_printer to dump a range to a file.
+
+void
+vrange::dump (FILE *file) const
+{
+  pretty_printer buffer;
+  pp_needs_newline (&buffer) = true;
+  buffer.buffer->stream = file;
+  vrange_printer vrange_pp (&buffer);
+  this->accept (vrange_pp);
+  pp_flush (&buffer);
+}
+
 bool
 irange::supports_type_p (tree type) const
 {
@@ -236,23 +250,6 @@ unsupported_range::unsupported_range ()
 {
   m_discriminator = VR_UNKNOWN;
   set_undefined ();
-}
-
-void
-unsupported_range::dump (FILE *file) const
-{
-  fprintf (file, "[unsupported_range] ");
-  if (undefined_p ())
-    {
-      fprintf (file, "UNDEFINED");
-      return;
-    }
-  if (varying_p ())
-    {
-      fprintf (file, "VARYING");
-      return;
-    }
-  gcc_unreachable ();
 }
 
 // Here we copy between any two irange's.  The ranges can be legacy or
@@ -2459,88 +2456,6 @@ irange::union_nonzero_bits (const irange &r)
       return true;
     }
   return false;
-}
-
-static void
-dump_bound_with_infinite_markers (FILE *file, tree bound)
-{
-  tree type = TREE_TYPE (bound);
-  wide_int type_min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-  wide_int type_max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-
-  if (INTEGRAL_TYPE_P (type)
-      && !TYPE_UNSIGNED (type)
-      && TREE_CODE (bound) == INTEGER_CST
-      && wi::to_wide (bound) == type_min
-      && TYPE_PRECISION (type) != 1)
-    fprintf (file, "-INF");
-  else if (TREE_CODE (bound) == INTEGER_CST
-	   && wi::to_wide (bound) == type_max
-	   && TYPE_PRECISION (type) != 1)
-    fprintf (file, "+INF");
-  else
-    print_generic_expr (file, bound);
-}
-
-void
-irange::dump (FILE *file) const
-{
-  fprintf (file, "[irange] ");
-  if (undefined_p ())
-    {
-      fprintf (file, "UNDEFINED");
-      return;
-    }
-  print_generic_expr (file, type ());
-  fprintf (file, " ");
-  if (varying_p ())
-    {
-      fprintf (file, "VARYING");
-      dump_bitmasks (file);
-      return;
-    }
- if (legacy_mode_p ())
-    {
-      fprintf (file, "%s[", (m_kind == VR_ANTI_RANGE) ? "~" : "");
-      dump_bound_with_infinite_markers (file, min ());
-      fprintf (file, ", ");
-      dump_bound_with_infinite_markers (file, max ());
-      fprintf (file, "]");
-      dump_bitmasks (file);
-      return;
-    }
-  for (unsigned i = 0; i < m_num_ranges; ++i)
-    {
-      tree lb = m_base[i * 2];
-      tree ub = m_base[i * 2 + 1];
-      fprintf (file, "[");
-      dump_bound_with_infinite_markers (file, lb);
-      fprintf (file, ", ");
-      dump_bound_with_infinite_markers (file, ub);
-      fprintf (file, "]");
-    }
-  dump_bitmasks (file);
-}
-
-void
-irange::dump_bitmasks (FILE *file) const
-{
-  if (m_nonzero_mask)
-    {
-      wide_int nz = get_nonzero_bits ();
-      if (nz != -1)
-	{
-	  fprintf (file, " NONZERO ");
-	  print_hex (nz, file);
-	}
-    }
-}
-
-void
-vrange::debug () const
-{
-  dump (stderr);
-  fprintf (stderr, "\n");
 }
 
 void
