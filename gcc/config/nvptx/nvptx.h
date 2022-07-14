@@ -319,6 +319,9 @@ struct GTY(()) machine_function
 
 #define SUPPORTS_WEAK 1
 
+#define MAKE_DECL_ONE_ONLY(DECL) \
+  (DECL_WEAK (DECL) = 1)
+
 /* The documentation states that ASM_OUTPUT_DEF_FROM_DECLS is used in
    preference to ASM_OUTPUT_DEF if the tree nodes are available.  However, we
    need the tree nodes to emit the prototype, so at this point it's not clear
