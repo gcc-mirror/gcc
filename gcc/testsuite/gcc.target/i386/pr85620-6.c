@@ -1,12 +1,12 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fcf-protection" } */
-/* { dg-final { scan-assembler-times {\mendbr} 2 } } */
-/* { dg-final { scan-assembler-not "jmp" } } */
+/* { dg-final { scan-assembler "jmp" } } */
 
 struct ucontext;
 
 extern int bar (struct ucontext *) __attribute__((__indirect_return__));
 
+__attribute__((__indirect_return__))
 int
 foo (struct ucontext *oucp)
 {

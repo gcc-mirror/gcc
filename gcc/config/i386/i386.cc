@@ -1024,6 +1024,16 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 	 return false;
     }
 
+  /* Disable sibcall if callee has indirect_return attribute and
+     caller doesn't since callee will return to the caller's caller
+     via an indirect jump.  */
+  if (((flag_cf_protection & (CF_RETURN | CF_BRANCH))
+       == (CF_RETURN | CF_BRANCH))
+      && lookup_attribute ("indirect_return", TYPE_ATTRIBUTES (type))
+      && !lookup_attribute ("indirect_return",
+			    TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl))))
+    return false;
+
   /* Otherwise okay.  That also includes certain types of indirect calls.  */
   return true;
 }
