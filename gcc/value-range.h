@@ -73,6 +73,7 @@ class vrange
   template <typename T> friend bool is_a (vrange &);
   friend class Value_Range;
 public:
+  virtual void accept (const class vrange_visitor &v) const = 0;
   virtual void set (tree, tree, value_range_kind = VR_RANGE);
   virtual tree type () const;
   virtual bool supports_type_p (tree type) const;
@@ -149,6 +150,7 @@ public:
   // Misc methods.
   virtual bool fits_p (const vrange &r) const override;
   virtual void dump (FILE * = stderr) const override;
+  virtual void accept (const vrange_visitor &v) const override;
 
   // Nonzero masks.
   wide_int get_nonzero_bits () const;
@@ -251,6 +253,7 @@ class unsupported_range : public vrange
 public:
   unsupported_range ();
   virtual void dump (FILE *) const override;
+  virtual void accept (const vrange_visitor &v) const override;
 };
 
 // is_a<> and as_a<> implementation for vrange.
@@ -297,6 +300,13 @@ is_a <irange> (vrange &v)
 {
   return v.m_discriminator == VR_IRANGE;
 }
+
+class vrange_visitor
+{
+public:
+  virtual void visit (const irange &) const { }
+  virtual void visit (const unsupported_range &) const { }
+};
 
 // This is a special int_range<1> with only one pair, plus
 // VR_ANTI_RANGE magic to describe slightly more than can be described
@@ -348,6 +358,7 @@ public:
   bool zero_p () const { return m_vrange->zero_p (); }
   wide_int lower_bound () const; // For irange/prange compatability.
   wide_int upper_bound () const; // For irange/prange compatability.
+  void accept (const vrange_visitor &v) const { m_vrange->accept (v); }
 private:
   void init (tree type);
   unsupported_range m_unsupported;

@@ -30,6 +30,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "gimple-range.h"
 
+void
+irange::accept (const vrange_visitor &v) const
+{
+  v.visit (*this);
+}
+
+void
+unsupported_range::accept (const vrange_visitor &v) const
+{
+  v.visit (*this);
+}
+
 // Convenience function only available for integers and pointers.
 
 wide_int
