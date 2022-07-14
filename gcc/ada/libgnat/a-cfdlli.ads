@@ -37,8 +37,10 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Formal_Doubly_Linked_Lists with
-  SPARK_Mode
+  SPARK_Mode,
+  Annotate => (GNATprove, Always_Return)
 is
+
    --  Contracts in this unit are meant for analysis only, not for run-time
    --  checking.
 

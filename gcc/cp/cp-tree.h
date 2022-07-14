@@ -7297,6 +7297,7 @@ extern tree lookup_template_function		(tree, tree);
 extern tree lookup_template_variable		(tree, tree);
 extern bool uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
+extern bool uses_outer_template_parms_in_constraints (tree);
 extern bool in_template_function		(void);
 extern bool need_generic_capture		(void);
 extern tree instantiate_class_template		(tree);

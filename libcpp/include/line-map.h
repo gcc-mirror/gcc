@@ -1873,13 +1873,13 @@ public:
      longer-lived owner.  */
   static label_text borrow (const char *buffer)
   {
-    return std::move (label_text (const_cast <char *> (buffer), false));
+    return label_text (const_cast <char *> (buffer), false);
   }
 
   /* Create a label_text instance that takes ownership of BUFFER.  */
   static label_text take (char *buffer)
   {
-    return std::move (label_text (buffer, true));
+    return label_text (buffer, true);
   }
 
   /* Take ownership of the buffer, copying if necessary.  */

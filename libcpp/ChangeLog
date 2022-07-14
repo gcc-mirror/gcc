@@ -1,3 +1,9 @@
+2022-07-13  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/106272
+	* include/line-map.h (class label_text): Don't std::move in a return
+	statement.
+
 2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/97498

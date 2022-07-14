@@ -139,6 +139,17 @@ You may specify any of the following switches to ``gnatmake``:
   all other options.
 
 
+.. index:: -P  (gnatmake)
+
+:switch:`-P{project}`
+  Build GNAT project file ``project`` using GPRbuild. When this switch is
+  present, all other command-line switches are treated as GPRbuild switches
+  and not ``gnatmake`` switches.
+
+.. -- Comment:
+  :ref:`gnatmake_and_Project_Files`.
+
+
 .. index:: --GCC=compiler_name  (gnatmake)
 
 :switch:`--GCC={compiler_name}`
@@ -521,15 +532,6 @@ You may specify any of the following switches to ``gnatmake``:
 
 :switch:`-p`
   Same as :switch:`--create-missing-dirs`
-
-.. index:: -P  (gnatmake)
-
-:switch:`-P{project}`
-  Use project file ``project``. Only one such switch can be used.
-
-.. -- Comment:
-  :ref:`gnatmake_and_Project_Files`.
-
 
 .. index:: -q  (gnatmake)
 

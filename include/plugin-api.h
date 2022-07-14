@@ -483,6 +483,37 @@ enum ld_plugin_level
   LDPL_FATAL
 };
 
+/* Contract between a plug-in and a linker.  */
+
+enum linker_api_version
+{
+   /* The linker/plugin do not implement any of the API levels below, the API
+       is determined solely via the transfer vector.  */
+   LAPI_V0,
+
+   /* API level v1.  The linker provides get_symbols_v3, add_symbols_v2,
+      the plugin will use that and not any lower versions.
+      claim_file is thread-safe on the plugin side and
+      add_symbols on the linker side.  */
+   LAPI_V1
+};
+
+/* The linker's interface for API version negotiation.  A plug-in calls
+  the function (with its IDENTIFIER and VERSION), plus minimal and maximal
+  version of linker_api_version is provided.  Linker then returns selected
+  API version and provides its IDENTIFIER and VERSION.  The returned value
+  by linker must be in range [MINIMAL_API_SUPPORTED, MAXIMAL_API_SUPPORTED].
+  Identifier pointers remain valid as long as the plugin is loaded.  */
+
+typedef
+int
+(*ld_plugin_get_api_version) (const char *plugin_identifier,
+			      const char *plugin_version,
+			      int minimal_api_supported,
+			      int maximal_api_supported,
+			      const char **linker_identifier,
+			      const char **linker_version);
+
 /* Values for the tv_tag field of the transfer vector.  */
 
 enum ld_plugin_tag
@@ -521,6 +552,7 @@ enum ld_plugin_tag
   LDPT_REGISTER_NEW_INPUT_HOOK,
   LDPT_GET_WRAP_SYMBOLS,
   LDPT_ADD_SYMBOLS_V2,
+  LDPT_GET_API_VERSION,
 };
 
 /* The plugin transfer vector.  */
@@ -556,6 +588,7 @@ struct ld_plugin_tv
     ld_plugin_get_input_section_size tv_get_input_section_size;
     ld_plugin_register_new_input tv_register_new_input;
     ld_plugin_get_wrap_symbols tv_get_wrap_symbols;
+    ld_plugin_get_api_version tv_get_api_version;
   } tv_u;
 };
 

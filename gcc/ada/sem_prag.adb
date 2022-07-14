@@ -6694,7 +6694,7 @@ package body Sem_Prag is
                if Loc not in Source_First (Sindex) .. Source_Last (Sindex) then
                   --  We do not want to raise an exception here since this code
                   --  is part of the bootstrap path where we cannot rely on
-                  --  exception proapgation working.
+                  --  exception propagation working.
                   --  Instead the caller should check for N being rewritten as
                   --  a null statement.
                   --  This code triggers when compiling a-except.adb.
@@ -10561,7 +10561,7 @@ package body Sem_Prag is
 
                   --  Check for possible misspelling
 
-                  for J in Restriction_Id loop
+                  for J in All_Restrictions loop
                      declare
                         Rnm : constant String := Restriction_Id'Image (J);
 
@@ -10792,13 +10792,15 @@ package body Sem_Prag is
 
             else
                R_Id := Get_Restriction_Id (Process_Restriction_Synonyms (Arg));
-               Analyze_And_Resolve (Expr, Any_Integer);
 
                if R_Id not in All_Parameter_Restrictions then
                   Error_Pragma_Arg
                     ("invalid restriction parameter identifier", Arg);
+               end if;
 
-               elsif not Is_OK_Static_Expression (Expr) then
+               Analyze_And_Resolve (Expr, Any_Integer);
+
+               if not Is_OK_Static_Expression (Expr) then
                   Flag_Non_Static_Expr
                     ("value must be static expression!", Expr);
                   raise Pragma_Exit;
@@ -16994,6 +16996,16 @@ package body Sem_Prag is
                   elsif Nkind (Stmt) = N_Subprogram_Declaration
                     and then Comes_From_Source (Orig_Stmt)
                     and then Nkind (Orig_Stmt) = N_Expression_Function
+                  then
+                     Id := Defining_Entity (Stmt);
+                     exit;
+
+                  --  When pragma Ghost applies to a generic formal type, the
+                  --  type declaration in the instantiation is a generated
+                  --  subtype declaration.
+
+                  elsif Nkind (Stmt) = N_Subtype_Declaration
+                    and then Present (Generic_Parent_Type (Stmt))
                   then
                      Id := Defining_Entity (Stmt);
                      exit;

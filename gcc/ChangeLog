@@ -1,3 +1,86 @@
+2022-07-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_lt::fold_range): Use nonzero bits.
+
+2022-07-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::copy_to_legacy): Set nonzero mask.
+	(irange::legacy_intersect): Clear nonzero mask.
+	(irange::legacy_union): Same.
+	(irange::invert): Same.
+
+2022-07-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dom.h (record_temporary_equivalences): Remove.
+	* tree-ssa-dom.cc (dom_jt_state::m_blocks_on_stack): New.
+	(dom_jt_state::get_blocks_on_stack): Likewise.
+	(dom_opt_dom_walker::dom_opt_dom_walker): Take dom_jt_state.
+	(back_propagate_equivalences): Remove dominator bitmap
+	compute and instead use passed in m_blocks_on_stack.
+	(record_temporary_equivalences): Likewise.
+	(record_equivalences_from_incoming_edge): Likewise.
+	(dom_opt_dom_walker::before_dom_children): Maintain and
+	pass down blocks on stack.
+	(dom_opt_dom_walker::after_dom_children): Likewise.
+
+2022-07-13  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_general_gimple_fold_builtin): Add fixup for invalid GIMPLE.
+
+2022-07-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106249
+	* tree-ssa-loop-manip.cc (tree_transform_and_unroll_loop):
+	Only verify LC SSA of the new_loop if we created it.
+	Use TODO_update_ssa_nophi for the SSA update after versioning
+	the loop.
+
+2022-07-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (unsigned_singleton_p): Remove.
+	(operator_bitwise_and::remove_impossible_ranges): Remove.
+	(operator_bitwise_and::fold_range): Set nonzero bits.  *
+	* value-range.cc (irange::get_nonzero_bits): Remove
+	legacy_mode_p assert.
+	(irange::dump_bitmasks): Remove legacy_mode_p check.
+
+2022-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106253
+	* predict.h (insn_optimization_type): Declare.
+	* predict.cc (insn_optimization_type): New function.
+	* internal-fn.def (IFN_ICEIL, IFN_IFLOOR, IFN_IRINT, IFN_IROUND)
+	(IFN_LCEIL, IFN_LFLOOR, IFN_LRINT, IFN_LROUND, IFN_LLCEIL)
+	(IFN_LLFLOOR, IFN_LLRINT, IFN_LLROUND): New internal functions.
+	* internal-fn.cc (unary_convert_direct): New macro.
+	(expand_convert_optab_fn): New function.
+	(expand_unary_convert_optab_fn): New macro.
+	(direct_unary_convert_optab_supported_p): Likewise.
+	* optabs.cc (expand_sfix_optab): Pass insn_optimization_type to
+	convert_optab_handler.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_builtin_vectorized_function): Delete.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_builtin_vectorized_function): Delete.
+	* config/aarch64/aarch64.cc
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION): Delete.
+	* config/i386/i386.cc (ix86_optab_supported_p): Handle lround_optab.
+	* config/i386/i386.md (lround<X87MODEF:mode><SWI248x:mode>2): Remove
+	optimize_insn_for_size_p test.
+
+2022-07-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.cc (create_lcssa_for_virtual_phi):
+	Remove.
+	(vect_do_peeling): Do not call it, adjust comment.
+
+2022-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_builtin_vectorized_function): Remove handling of
+	floor, ceil, trunc, round, nearbyint, sqrt, clz and ctz.
+
 2022-07-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/106234

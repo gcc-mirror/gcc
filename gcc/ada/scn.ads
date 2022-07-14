@@ -29,7 +29,7 @@
 with Casing; use Casing;
 with Errout; use Errout;
 with Scng;
-with Style;  --  use Style;
+with Style;
 with Types;  use Types;
 
 package Scn is
@@ -75,9 +75,5 @@ package Scn is
       Style        => Style.Style_Inst);
 
    procedure Scan renames Scanner.Scan;
-   --  Scan scans out the next token, and advances the scan state accordingly
-   --  (see package Scans for details). If the scan encounters an illegal
-   --  token, then an error message is issued pointing to the bad character,
-   --  and Scan returns a reasonable substitute token of some kind.
 
 end Scn;

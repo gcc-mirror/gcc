@@ -38,7 +38,10 @@ generic
    type Element_Type (<>) is private;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
-package Ada.Containers.Functional_Infinite_Sequences with SPARK_Mode is
+package Ada.Containers.Functional_Infinite_Sequences with
+  SPARK_Mode,
+  Annotate => (GNATprove, Always_Return)
+is
 
    type Sequence is private
      with Default_Initial_Condition => Length (Sequence) = 0,

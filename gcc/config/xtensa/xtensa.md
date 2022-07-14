@@ -1244,35 +1244,16 @@
   "! optimize_debug && reload_completed"
   [(const_int 0)]
 {
-  int i = 0;
-  rtx x = XEXP (operands[1], 0);
-  long l[2];
-  if (SYMBOL_REF_P (x)
-      && CONSTANT_POOL_ADDRESS_P (x))
-    x = get_pool_constant (x);
-  else if (GET_CODE (x) == CONST)
-    {
-      x = XEXP (x, 0);
-      gcc_assert (GET_CODE (x) == PLUS
-		  && SYMBOL_REF_P (XEXP (x, 0))
-		  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0))
-		  && CONST_INT_P (XEXP (x, 1)));
-      i = INTVAL (XEXP (x, 1));
-      gcc_assert (i == 0 || i == 4);
-      i /= 4;
-      x = get_pool_constant (XEXP (x, 0));
-    }
-  else
-    gcc_unreachable ();
-  if (GET_MODE (x) == SFmode)
-    REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l[0]);
-  else if (GET_MODE (x) == DFmode)
-    REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), l);
-  else
+  rtx x = avoid_constant_pool_reference (operands[1]);
+  long l;
+  HOST_WIDE_INT value;
+  if (! CONST_DOUBLE_P (x) || GET_MODE (x) != SFmode)
     FAIL;
+  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
   x = gen_rtx_REG (SImode, REGNO (operands[0]));
-  if (! xtensa_constantsynth (x, l[i]))
-    emit_move_insn (x, GEN_INT (l[i]));
+  value = (int32_t)l;
+  if (! xtensa_constantsynth (x, value))
+    emit_move_insn (x, GEN_INT (value));
   DONE;
 })
 

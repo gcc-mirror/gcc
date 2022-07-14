@@ -61,7 +61,8 @@ package body Ch11 is
       Handled_Stmt_Seq_Node :=
         New_Node (N_Handled_Sequence_Of_Statements, Token_Ptr);
       Set_Statements
-        (Handled_Stmt_Seq_Node, P_Sequence_Of_Statements (SS_Extm_Sreq));
+        (Handled_Stmt_Seq_Node,
+         P_Sequence_Of_Statements (SS_Extm_Sreq, Handled => True));
 
       if Token = Tok_Exception then
          Scan; -- past EXCEPTION

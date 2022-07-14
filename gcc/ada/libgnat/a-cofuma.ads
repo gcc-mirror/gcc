@@ -49,7 +49,10 @@ generic
    --  of equivalence over keys is needed, that is, Equivalent_Keys defines a
    --  key uniquely.
 
-package Ada.Containers.Functional_Maps with SPARK_Mode is
+package Ada.Containers.Functional_Maps with
+  SPARK_Mode,
+  Annotate => (GNATprove, Always_Return)
+is
 
    type Map is private with
      Default_Initial_Condition => Is_Empty (Map) and Length (Map) = 0,

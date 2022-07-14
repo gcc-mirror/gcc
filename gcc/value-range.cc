@@ -331,6 +331,7 @@ irange::copy_to_legacy (const irange &src)
       m_base[0] = src.m_base[0];
       m_base[1] = src.m_base[1];
       m_kind = src.m_kind;
+      m_nonzero_mask = src.m_nonzero_mask;
       return;
     }
   // Copy multi-range to legacy.
@@ -1336,6 +1337,9 @@ irange::legacy_intersect (irange *vr0, const irange *vr1)
   intersect_ranges (&vr0kind, &vr0min, &vr0max,
 		    vr1->kind (), vr1->min (), vr1->max ());
 
+  // Pessimize nonzero masks, as we don't support them.
+  m_nonzero_mask = NULL;
+
   /* Make sure to canonicalize the result though as the inversion of a
      VR_RANGE can still be a VR_RANGE.  */
   if (vr0kind == VR_UNDEFINED)
@@ -1656,6 +1660,9 @@ irange::legacy_union (irange *vr0, const irange *vr1)
 
   union_ranges (&vr0kind, &vr0min, &vr0max,
 		vr1->kind (), vr1->min (), vr1->max ());
+
+  // Pessimize nonzero masks, as we don't support them.
+  m_nonzero_mask = NULL;
 
   if (vr0kind == VR_UNDEFINED)
     vr0->set_undefined ();
@@ -2253,6 +2260,7 @@ irange::invert ()
     }
 
   gcc_checking_assert (!undefined_p () && !varying_p ());
+  m_nonzero_mask = NULL;
 
   // We always need one more set of bounds to represent an inverse, so
   // if we're at the limit, we can't properly represent things.
@@ -2388,10 +2396,6 @@ wide_int
 irange::get_nonzero_bits () const
 {
   gcc_checking_assert (!undefined_p ());
-  // Nonzero bits are unsupported in legacy mode.  The mask may be set
-  // as a consequence of propagation or reading global ranges, but no
-  // one from legacy land should be querying this.
-  gcc_checking_assert (!legacy_mode_p ());
 
   // Calculate the nonzero bits inherent in the range.
   wide_int min = lower_bound ();
@@ -2509,7 +2513,7 @@ irange::dump (FILE *file) const
 void
 irange::dump_bitmasks (FILE *file) const
 {
-  if (m_nonzero_mask && !legacy_mode_p ())
+  if (m_nonzero_mask)
     {
       wide_int nz = get_nonzero_bits ();
       if (nz != -1)

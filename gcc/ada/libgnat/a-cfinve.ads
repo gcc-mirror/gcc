@@ -53,8 +53,10 @@ generic
    --  grow via heap allocation.
 
 package Ada.Containers.Formal_Indefinite_Vectors with
-  SPARK_Mode => On
+  SPARK_Mode,
+  Annotate => (GNATprove, Always_Return)
 is
+
    --  Contracts in this unit are meant for analysis only, not for run-time
    --  checking.
 

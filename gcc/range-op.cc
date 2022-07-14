@@ -803,6 +803,9 @@ operator_lt::fold_range (irange &r, tree type,
     r = range_true (type);
   else if (!wi::lt_p (op1.lower_bound (), op2.upper_bound (), sign))
     r = range_false (type);
+  // Use nonzero bits to determine if < 0 is false.
+  else if (op2.zero_p () && !wi::neg_p (op1.get_nonzero_bits (), sign))
+    r = range_false (type);
   else
     r = range_true_and_false (type);
   return true;
@@ -2604,71 +2607,7 @@ private:
   void simple_op1_range_solver (irange &r, tree type,
 				const irange &lhs,
 				const irange &op2) const;
-  void remove_impossible_ranges (irange &r, const irange &rh) const;
 } op_bitwise_and;
-
-static bool
-unsigned_singleton_p (const irange &op)
-{
-  tree mask;
-  if (op.singleton_p (&mask))
-    {
-      wide_int x = wi::to_wide (mask);
-      return wi::ge_p (x, 0, TYPE_SIGN (op.type ()));
-    }
-  return false;
-}
-
-// Remove any ranges from R that are known to be impossible when an
-// range is ANDed with MASK.
-
-void
-operator_bitwise_and::remove_impossible_ranges (irange &r,
-						const irange &rmask) const
-{
-  if (r.undefined_p () || !unsigned_singleton_p (rmask))
-    return;
-
-  wide_int mask = rmask.lower_bound ();
-  tree type = r.type ();
-  int prec = TYPE_PRECISION (type);
-  int leading_zeros = wi::clz (mask);
-  int_range_max impossible_ranges;
-
-  /* We know that starting at the most significant bit, any 0 in the
-     mask means the resulting range cannot contain a 1 in that same
-     position.  This means the following ranges are impossible:
-
-	x & 0b1001 1010
-			  IMPOSSIBLE RANGES
-	      01xx xxxx   [0100 0000, 0111 1111]
-	      001x xxxx   [0010 0000, 0011 1111]
-	      0000 01xx   [0000 0100, 0000 0111]
-	      0000 0001   [0000 0001, 0000 0001]
-  */
-  wide_int one = wi::one (prec);
-  for (int i = 0; i < prec - leading_zeros - 1; ++i)
-    if (wi::bit_and (mask, wi::lshift (one, wi::uhwi (i, prec))) == 0)
-      {
-	tree lb = fold_build2 (LSHIFT_EXPR, type,
-			       build_one_cst (type),
-			       build_int_cst (type, i));
-	tree ub_left = fold_build1 (BIT_NOT_EXPR, type,
-				    fold_build2 (LSHIFT_EXPR, type,
-						 build_minus_one_cst (type),
-						 build_int_cst (type, i)));
-	tree ub_right = fold_build2 (LSHIFT_EXPR, type,
-				     build_one_cst (type),
-				     build_int_cst (type, i));
-	tree ub = fold_build2 (BIT_IOR_EXPR, type, ub_left, ub_right);
-	impossible_ranges.union_ (int_range<1> (lb, ub));
-      }
-  if (!impossible_ranges.undefined_p ())
-    {
-      impossible_ranges.invert ();
-      r.intersect (impossible_ranges);
-    }
-}
 
 bool
 operator_bitwise_and::fold_range (irange &r, tree type,
@@ -2678,9 +2617,9 @@ operator_bitwise_and::fold_range (irange &r, tree type,
 {
   if (range_operator::fold_range (r, type, lh, rh))
     {
-      // FIXME: This is temporarily disabled because, though it
-      // generates better ranges, it's noticeably slower for evrp.
-      // remove_impossible_ranges (r, rh);
+      if (!lh.undefined_p () && !rh.undefined_p ())
+	r.set_nonzero_bits (wi::bit_and (lh.get_nonzero_bits (),
+					 rh.get_nonzero_bits ()));
       return true;
     }
   return false;

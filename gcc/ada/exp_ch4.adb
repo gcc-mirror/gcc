@@ -4177,43 +4177,82 @@ package body Exp_Ch4 is
       -----------------------
 
       procedure Expand_Modular_Op is
+         --   We will convert to another type (not a nonbinary-modulus modular
+         --   type), evaluate the op in that representation, reduce the result,
+         --   and convert back to the original type. This means that the
+         --   backend does not have to deal with nonbinary-modulus ops.
+
          Op_Expr  : constant Node_Id := New_Op_Node (Nkind (N), Loc);
          Mod_Expr : constant Node_Id := New_Op_Node (N_Op_Mod, Loc);
 
-         Target_Type   : Entity_Id;
-
+         Target_Type : Entity_Id;
       begin
-         --  Convert nonbinary modular type operands into integer values. Thus
-         --  we avoid never-ending loops expanding them, and we also ensure
-         --  the back end never receives nonbinary modular type expressions.
+         --  Select a target type that is large enough to avoid spurious
+         --  intermediate overflow on pre-reduction computation (for
+         --  correctness) but is no larger than is needed (for performance).
 
-         if Nkind (N) in N_Op_And | N_Op_Or | N_Op_Xor then
-            Set_Left_Opnd (Op_Expr,
-              Unchecked_Convert_To (Standard_Unsigned,
-                New_Copy_Tree (Left_Opnd (N))));
-            Set_Right_Opnd (Op_Expr,
-              Unchecked_Convert_To (Standard_Unsigned,
-                New_Copy_Tree (Right_Opnd (N))));
-            Set_Left_Opnd (Mod_Expr,
-              Unchecked_Convert_To (Standard_Integer, Op_Expr));
+         declare
+            Required_Size : Uint := RM_Size (Etype (N));
+            Use_Unsigned  : Boolean := True;
+         begin
+            case Nkind (N) is
+               when N_Op_Add =>
+                  --  For example, if modulus is 255 then RM_Size will be 8
+                  --  and the range of possible values (before reduction) will
+                  --  be 0 .. 508; that range requires 9 bits.
+                  Required_Size := Required_Size + 1;
 
-         else
-            --  If the modulus of the type is larger than Integer'Last use a
-            --  larger type for the operands, to prevent spurious constraint
-            --  errors on large legal literals of the type.
+               when N_Op_Subtract =>
+                  --  For example, if modulus is 255 then RM_Size will be 8
+                  --  and the range of possible values (before reduction) will
+                  --  be -254 .. 254; that range requires 9 bits, signed.
+                  Use_Unsigned := False;
+                  Required_Size := Required_Size + 1;
 
-            if Modulus (Etype (N)) > Int (Integer'Last) then
-               Target_Type := Standard_Long_Long_Integer;
+               when N_Op_Multiply =>
+                  --  For example, if modulus is 255 then RM_Size will be 8
+                  --  and the range of possible values (before reduction) will
+                  --  be 0 .. 64,516; that range requires 16 bits.
+                  Required_Size := Required_Size * 2;
+
+               when others =>
+                  null;
+            end case;
+
+            if Use_Unsigned then
+               if Required_Size <= Standard_Short_Short_Integer_Size then
+                  Target_Type := Standard_Short_Short_Unsigned;
+               elsif Required_Size <= Standard_Short_Integer_Size then
+                  Target_Type := Standard_Short_Unsigned;
+               elsif Required_Size <= Standard_Integer_Size then
+                  Target_Type := Standard_Unsigned;
+               else
+                  pragma Assert (Required_Size <= 64);
+                  Target_Type := Standard_Unsigned_64;
+               end if;
+            elsif Required_Size <= 8 then
+               Target_Type := Standard_Integer_8;
+            elsif Required_Size <= 16 then
+               Target_Type := Standard_Integer_16;
+            elsif Required_Size <= 32 then
+               Target_Type := Standard_Integer_32;
             else
-               Target_Type := Standard_Integer;
+               pragma Assert (Required_Size <= 64);
+               Target_Type := Standard_Integer_64;
             end if;
 
-            Set_Left_Opnd (Op_Expr,
-              Unchecked_Convert_To (Target_Type,
-                New_Copy_Tree (Left_Opnd (N))));
-            Set_Right_Opnd (Op_Expr,
-              Unchecked_Convert_To (Target_Type,
-                New_Copy_Tree (Right_Opnd (N))));
+            pragma Assert (Present (Target_Type));
+         end;
+
+         Set_Left_Opnd (Op_Expr,
+           Unchecked_Convert_To (Target_Type,
+             New_Copy_Tree (Left_Opnd (N))));
+         Set_Right_Opnd (Op_Expr,
+           Unchecked_Convert_To (Target_Type,
+             New_Copy_Tree (Right_Opnd (N))));
+
+         --  ??? Why do this stuff for some ops and not others?
+         if Nkind (N) not in N_Op_And | N_Op_Or | N_Op_Xor then
 
             --  Link this node to the tree to analyze it
 
@@ -4237,9 +4276,9 @@ package body Exp_Ch4 is
             --  several times.
 
             Force_Evaluation (Op_Expr, Mode => Strict);
-
-            Set_Left_Opnd (Mod_Expr, Op_Expr);
          end if;
+
+         Set_Left_Opnd (Mod_Expr, Op_Expr);
 
          Set_Right_Opnd (Mod_Expr,
            Make_Integer_Literal (Loc, Modulus (Typ)));
@@ -6135,7 +6174,13 @@ package body Exp_Ch4 is
                Slice_Bnd : Node_Id) return Node_Id is
 
             begin
-               if Nkind (Elsex) = N_Slice then
+               --  We need to use the special processing for slices only if
+               --  they do not have compile-time known bounds; if they do, they
+               --  can be treated like any other expressions.
+
+               if Nkind (Elsex) = N_Slice
+                 and then not Compile_Time_Known_Bounds (Etype (Elsex))
+               then
                   if Compile_Time_Known_Value (Slice_Bnd)
                     and then Expr_Value (Slice_Bnd) = Then_Bnd
                   then
@@ -6191,7 +6236,11 @@ package body Exp_Ch4 is
          begin
             Get_First_Index_Bounds (Etype (Thenx), Then_Lo, Then_Hi);
 
-            if Nkind (Elsex) = N_Slice then
+            --  See the rationale in Build_New_Bound
+
+            if Nkind (Elsex) = N_Slice
+              and then not Compile_Time_Known_Bounds (Etype (Elsex))
+            then
                Slice_Lo := Low_Bound (Discrete_Range (Elsex));
                Slice_Hi := High_Bound (Discrete_Range (Elsex));
                Get_First_Index_Bounds
@@ -6250,7 +6299,11 @@ package body Exp_Ch4 is
 
             Set_Suppress_Assignment_Checks (Last (Then_List));
 
-            if Nkind (Elsex) = N_Slice then
+            --  See the rationale in Build_New_Bound
+
+            if Nkind (Elsex) = N_Slice
+              and then not Compile_Time_Known_Bounds (Etype (Elsex))
+            then
                Else_List := New_List (
                  Make_Assignment_Statement (Loc,
                    Name       =>

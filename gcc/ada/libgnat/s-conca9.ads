@@ -38,15 +38,8 @@ package System.Concat_9 is
      (R                                  : out String;
       S1, S2, S3, S4, S5, S6, S7, S8, S9 : String);
    --  Performs the operation R := S1 & S2 & S3 & S4 & S5 & S6 & S7 & S8 & S9.
-   --  The bounds of R are known to be correct (usually set by a call to the
-   --  Str_Concat_Bounds_9 procedure below), so no bounds checks are required,
-   --  and it is known that none of the input operands overlaps R. No
+   --  The bounds of R are known to be sufficient so no bound checks are
+   --  required, and it is known that none of the input operands overlaps R. No
    --  assumptions can be made about the lower bounds of any of the operands.
-
-   procedure Str_Concat_Bounds_9
-     (Lo, Hi                             : out Natural;
-      S1, S2, S3, S4, S5, S6, S7, S8, S9 : String);
-   --  Assigns to Lo..Hi the bounds of the result of concatenating the nine
-   --  given strings, following the rules in the RM regarding null operands.
 
 end System.Concat_9;

@@ -36,15 +36,8 @@ package System.Concat_3 is
 
    procedure Str_Concat_3 (R : out String; S1, S2, S3 : String);
    --  Performs the operation R := S1 & S2 & S3. The bounds of R are known to
-   --  be correct (usually set by a call to the Str_Concat_Bounds_3 procedure
-   --  below), so no bounds checks are required, and it is known that none of
-   --  the input operands overlaps R. No assumptions can be made about the
+   --  be sufficient so no bound checks are required, and it is known that none
+   --  of the input operands overlaps R. No assumptions can be made about the
    --  lower bounds of any of the operands.
-
-   procedure Str_Concat_Bounds_3
-     (Lo, Hi     : out Natural;
-      S1, S2, S3 : String);
-   --  Assigns to Lo..Hi the bounds of the result of concatenating the three
-   --  given strings, following the rules in the RM regarding null operands.
 
 end System.Concat_3;

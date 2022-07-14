@@ -1208,7 +1208,7 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 			       profile_probability::guessed_always (),
 			       true);
       gcc_assert (new_loop != NULL);
-      update_ssa (TODO_update_ssa);
+      update_ssa (TODO_update_ssa_no_phi);
 
       /* Prepare the cfg and update the phi nodes.  Move the loop exit to the
 	 loop latch (and make its condition dummy, for the moment).  */
@@ -1428,7 +1428,8 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
   checking_verify_flow_info ();
   checking_verify_loop_structure ();
   checking_verify_loop_closed_ssa (true, loop);
-  checking_verify_loop_closed_ssa (true, new_loop);
+  if (new_loop)
+    checking_verify_loop_closed_ssa (true, new_loop);
 }
 
 /* Wrapper over tree_transform_and_unroll_loop for case we do not

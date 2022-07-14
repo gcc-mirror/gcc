@@ -113,6 +113,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-cfdlli$(objext) \
   a-cfhama$(objext) \
   a-cfhase$(objext) \
+  a-cfidll$(objext) \
   a-cfinve$(objext) \
   a-cfinse$(objext) \
   a-cforma$(objext) \

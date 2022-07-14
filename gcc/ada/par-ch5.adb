@@ -144,8 +144,9 @@ package body Ch5 is
    --  parsing a statement, then the scan pointer is advanced past the next
    --  semicolon and the parse continues.
 
-   function P_Sequence_Of_Statements (SS_Flags : SS_Rec) return List_Id is
-
+   function P_Sequence_Of_Statements
+     (SS_Flags : SS_Rec; Handled : Boolean := False) return List_Id
+   is
       Statement_Required : Boolean;
       --  This flag indicates if a subsequent statement (other than a pragma)
       --  is required. It is initialized from the Sreq flag, and modified as
@@ -158,11 +159,6 @@ package body Ch5 is
       --  sequence cannot contain only labels. This flag is set whenever a
       --  label is encountered, to enforce this rule at the end of a sequence.
 
-      Declaration_Found : Boolean := False;
-      --  This flag is set True if a declaration is encountered, so that the
-      --  error message about declarations in the statement part is only
-      --  given once for a given sequence of statements.
-
       Scan_State_Label : Saved_Scan_State;
       Scan_State       : Saved_Scan_State;
 
@@ -171,27 +167,11 @@ package body Ch5 is
       Id_Node        : Node_Id;
       Name_Node      : Node_Id;
 
-      procedure Junk_Declaration;
-      --  Procedure called to handle error of declaration encountered in
-      --  statement sequence.
+      Decl_Loc, Label_Loc : Source_Ptr := No_Location;
+      --  Sloc of the first declaration/label encountered, if any.
 
       procedure Test_Statement_Required;
       --  Flag error if Statement_Required flag set
-
-      ----------------------
-      -- Junk_Declaration --
-      ----------------------
-
-      procedure Junk_Declaration is
-      begin
-         if (not Declaration_Found) or All_Errors_Mode then
-            Error_Msg_SC -- CODEFIX
-              ("declarations must come before BEGIN");
-            Declaration_Found := True;
-         end if;
-
-         Skip_Declaration (Statement_List);
-      end Junk_Declaration;
 
       -----------------------------
       -- Test_Statement_Required --
@@ -243,9 +223,10 @@ package body Ch5 is
                   Append_To (Statement_List, Null_Stm);
                end;
 
-            --  If not Ada 2012, or not special case above, give error message
+            --  If not Ada 2012, or not special case above, and no declaration
+            --  seen (as allowed in Ada 2020), give error message.
 
-            else
+            elsif No (Decl_Loc) then
                Error_Msg_BC -- CODEFIX
                  ("statement expected");
             end if;
@@ -259,8 +240,44 @@ package body Ch5 is
       Statement_Required := SS_Flags.Sreq;
       Statement_Seen     := False;
 
+      --  In Ada 2022, we allow declarative items to be mixed with
+      --  statements. The loop below alternates between calling
+      --  P_Declarative_Items to parse zero or more declarative items, and
+      --  parsing a statement.
+
       loop
          Ignore (Tok_Semicolon);
+
+         declare
+            Num_Statements : constant Nat := List_Length (Statement_List);
+         begin
+            P_Declarative_Items
+              (Statement_List, Declare_Expression => False,
+               In_Spec => False, In_Statements => True);
+
+            --  Use the length of the list to determine whether we parsed any
+            --  declarative items. If so, it's an error pre-2022. ???We should
+            --  be calling Error_Msg_Ada_2022_Feature below, to advertise the
+            --  new feature, but that causes a lot of test diffs, so for now,
+            --  we mimic the old "...before begin" message.
+
+            if List_Length (Statement_List) > Num_Statements then
+               if All_Errors_Mode or else No (Decl_Loc) then
+                  Decl_Loc := Sloc (Pick (Statement_List, Num_Statements + 1));
+
+                  if False then
+                     Error_Msg_Ada_2022_Feature
+                       ("declarations mixed with statements",
+                        Sloc (Pick (Statement_List, Num_Statements + 1)));
+                  else
+                     if Ada_Version < Ada_2022 then
+                        Error_Msg
+                          ("declarations must come before BEGIN", Decl_Loc);
+                     end if;
+                  end if;
+               end if;
+            end if;
+         end;
 
          begin
             if Style_Check then
@@ -613,14 +630,6 @@ package body Ch5 is
                         Append_To (Statement_List,
                           P_For_Statement (Id_Node));
 
-                     --  Improper statement follows label. If we have an
-                     --  expression token, then assume the colon was part
-                     --  of a misplaced declaration.
-
-                     elsif Token not in Token_Class_Eterm then
-                        Restore_Scan_State (Scan_State_Label);
-                        Junk_Declaration;
-
                      --  Otherwise complain we have inappropriate statement
 
                      else
@@ -811,6 +820,10 @@ package body Ch5 is
                   Append_To (Statement_List, P_Label);
                   Statement_Required := True;
 
+                  if No (Label_Loc) then
+                     Label_Loc := Sloc (Last (Statement_List));
+                  end if;
+
                --  Pragma appearing as a statement in a statement sequence
 
                when Tok_Pragma =>
@@ -941,14 +954,9 @@ package body Ch5 is
                --  handling of a bad statement.
 
                when others =>
-                  if Token in Token_Class_Declk then
-                     Junk_Declaration;
-
-                  else
-                     Error_Msg_BC -- CODEFIX
-                       ("statement expected");
-                     raise Error_Resync;
-                  end if;
+                  Error_Msg_BC -- CODEFIX
+                    ("statement expected");
+                  raise Error_Resync;
             end case;
 
          --  On error resynchronization, skip past next semicolon, and, since
@@ -966,7 +974,96 @@ package body Ch5 is
          exit when SS_Flags.Unco;
       end loop;
 
-      return Statement_List;
+      --  If there are no declarative items in the list, or if the list is part
+      --  of a handled sequence of statements, we just return the list.
+      --  Otherwise, we wrap the list in a block statement, so the declarations
+      --  will have a proper scope. In the Handled case, it would be wrong to
+      --  wrap, because we want the code before and after "begin" to be in the
+      --  same scope. Example:
+      --
+      --     if ... then
+      --        use Some_Package;
+      --        Do_Something (...);
+      --     end if;
+      --
+      --  is tranformed into:
+      --
+      --     if ... then
+      --        begin
+      --           use Some_Package;
+      --           Do_Something (...);
+      --        end;
+      --     end if;
+      --
+      --  But we don't wrap this:
+      --
+      --     declare
+      --        X : Integer;
+      --     begin
+      --        X : Integer;
+      --
+      --  Otherwise, we would fail to detect the error (conflicting X's).
+      --  Similarly, if a representation clause appears in the statement
+      --  part, we don't want it to appear more nested than the declarative
+      --  part -- that would cause an unwanted error.
+
+      if Present (Decl_Loc) then
+         --  Forbid labels and declarative items from coexisting. Otherwise,
+         --  one could jump past a declaration, leading to chaos. Jumping
+         --  backward past a declaration is also questionable -- does the
+         --  declaration get elaborated again? Is secondary stack storage
+         --  reclaimed? (A more liberal rule was proposed, but this is what
+         --  we're doing for now.)
+
+         if Present (Label_Loc) then
+            Error_Msg ("declarative item in same list as label", Decl_Loc);
+            Error_Msg ("label in same list as declarative item", Label_Loc);
+         end if;
+
+         --  Forbid exception handlers and declarative items from
+         --  coexisting. Example:
+         --
+         --     X : Integer := 123;
+         --     procedure P is
+         --     begin
+         --        X : Integer := 456;
+         --     exception
+         --        when Cain =>
+         --           Put(X);
+         --     end P;
+         --
+         --  It was proposed that in the handler, X should refer to the outer
+         --  X, but that's just confusing.
+
+         if Token = Tok_Exception then
+            Error_Msg
+              ("declarative item in statements conflicts with " &
+               "exception handler below",
+               Decl_Loc);
+            Error_Msg
+              ("exception handler conflicts with " &
+               "declarative item in statements above",
+               Token_Ptr);
+         end if;
+
+         if Handled then
+            return Statement_List;
+         else
+            declare
+               Loc : constant Source_Ptr := Sloc (First (Statement_List));
+               Block : constant Node_Id :=
+                 Make_Block_Statement
+                   (Loc,
+                    Handled_Statement_Sequence =>
+                      Make_Handled_Sequence_Of_Statements
+                        (Loc, Statements => Statement_List));
+            begin
+               return New_List (Block);
+            end;
+         end if;
+      else
+         return Statement_List;
+      end if;
    end P_Sequence_Of_Statements;
 
    --------------------

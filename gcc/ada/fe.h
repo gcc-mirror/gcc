@@ -252,6 +252,8 @@ extern Boolean SJLJ_Exceptions		(void);
   restrict__check_no_implicit_protected_alloc
 #define Check_No_Implicit_Task_Alloc	\
   restrict__check_no_implicit_task_alloc
+#define Check_Restriction_No_Dependence_On_System \
+  restrict__check_restriction_no_dependence_on_system
 #define No_Exception_Handlers_Set	\
   restrict__no_exception_handlers_set
 #define No_Exception_Propagation_Active	\
@@ -262,6 +264,7 @@ extern void Check_Implicit_Dynamic_Code_Allowed	(Node_Id);
 extern void Check_No_Implicit_Heap_Alloc	(Node_Id);
 extern void Check_No_Implicit_Protected_Alloc	(Node_Id);
 extern void Check_No_Implicit_Task_Alloc	(Node_Id);
+extern void Check_Restriction_No_Dependence_On_System (Name_Id, Node_Id);
 extern Boolean No_Exception_Handlers_Set	(void);
 extern Boolean No_Exception_Propagation_Active	(void);
 

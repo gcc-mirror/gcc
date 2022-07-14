@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Jun 24, 2022
+GNAT Reference Manual , Jul 11, 2022
 
 AdaCore
 
@@ -28922,9 +28922,10 @@ change.
 GNAT can generate code to zero-out hardware registers before returning
 from a subprogram.
 
-It can be enabled with the @code{-fzero-call-used-regs} command-line
-option, to affect all subprograms in a compilation, and with a
-@code{Machine_Attribute} pragma, to affect only specific subprograms.
+It can be enabled with the @code{-fzero-call-used-regs=@emph{choice}}
+command-line option, to affect all subprograms in a compilation, and
+with a @code{Machine_Attribute} pragma, to affect only specific
+subprograms.
 
 @example
 procedure Foo;
@@ -28975,10 +28976,10 @@ pragma Machine_Attribute (Var, "strub");
 --  scrubbing of the stack space used by that subprogram.
 @end example
 
-There are also @code{-fstrub} command-line options to control
-default settings.  For usage and more details on the command-line
-option, on the @code{strub} attribute, and their use with other
-programming languages, see @cite{Using the GNU Compiler Collection (GCC)}.
+There are also @code{-fstrub=@emph{choice}} command-line options to
+control default settings.  For usage and more details on the
+command-line options, on the @code{strub} attribute, and their use with
+other programming languages, see @cite{Using the GNU Compiler Collection (GCC)}.
 
 Note that Ada secondary stacks are not scrubbed.  The restriction
 @code{No_Secondary_Stack} avoids their use, and thus their accidental

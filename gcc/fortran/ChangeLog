@@ -1,3 +1,10 @@
+2022-07-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106049
+	* simplify.cc (is_constant_array_expr): A non-zero-sized constant
+	array shall have a non-empty constructor.  When the constructor is
+	empty or missing, treat as non-constant.
+
 2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

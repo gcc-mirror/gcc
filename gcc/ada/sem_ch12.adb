@@ -1113,7 +1113,7 @@ package body Sem_Ch12 is
       Analyzed_Formal : Node_Id;
       First_Named     : Node_Id := Empty;
       Formal          : Node_Id;
-      Match           : Node_Id;
+      Match           : Node_Id := Empty;
       Named           : Node_Id;
       Saved_Formal    : Node_Id;
 
@@ -4297,7 +4297,6 @@ package body Sem_Ch12 is
 
       if Nkind (N) = N_Package_Instantiation then
          Act_Decl_Id := New_Copy (Defining_Entity (N));
-         Set_Comes_From_Source (Act_Decl_Id, True);
 
          if Nkind (Defining_Unit_Name (N)) = N_Defining_Program_Unit_Name then
             Act_Decl_Name :=

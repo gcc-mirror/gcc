@@ -247,6 +247,10 @@ package Types is
    --  (very often we conditionalize so that we set No_Location in normal mode
    --  and the corresponding source line in -gnatD mode).
 
+   function No (Loc : Source_Ptr) return Boolean is (Loc = No_Location);
+   function Present (Loc : Source_Ptr) return Boolean is (not No (Loc));
+   --  Tests for No_Location / not No_Location
+
    Standard_Location : constant Source_Ptr := -2;
    --  Used for all nodes in the representation of package Standard other than
    --  nodes representing the contents of Standard.ASCII. Note that testing for

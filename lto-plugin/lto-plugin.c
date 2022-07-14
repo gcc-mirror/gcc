@@ -180,6 +180,10 @@ static ld_plugin_add_input_file add_input_file;
 static ld_plugin_add_input_library add_input_library;
 static ld_plugin_message message;
 static ld_plugin_add_symbols add_symbols, add_symbols_v2;
+static ld_plugin_get_api_version get_api_version;
+
+/* By default, use version LAPI_V0 if there is not negotiation.  */
+static enum linker_api_version api_version = LAPI_V0;
 
 static struct plugin_file_info *claimed_files = NULL;
 static unsigned int num_claimed_files = 0;
@@ -1428,6 +1432,43 @@ process_option (const char *option)
   verbose = verbose || debug;
 }
 
+/* Negotiate linker API version.  */
+
+static void
+negotiate_api_version (void)
+{
+  const char *linker_identifier;
+  const char *linker_version;
+
+  enum linker_api_version supported_api = LAPI_V0;
+#if HAVE_PTHREAD_LOCKING
+  supported_api = LAPI_V1;
+#endif
+
+  api_version = get_api_version ("GCC", BASE_VERSION, LAPI_V0,
+				 supported_api, &linker_identifier, &linker_version);
+  if (api_version > supported_api)
+    {
+      fprintf (stderr, "requested an unsupported API version (%d)\n", api_version);
+      abort ();
+    }
+
+  switch (api_version)
+    {
+    case LAPI_V0:
+      break;
+    case LAPI_V1:
+      check (get_symbols_v3, LDPL_FATAL,
+	     "get_symbols_v3 required for API version 1");
+      check (add_symbols_v2, LDPL_FATAL,
+	     "add_symbols_v2 required for API version 1");
+      break;
+    default:
+      fprintf (stderr, "unsupported API version (%d)\n", api_version);
+      abort ();
+    }
+}
+
 /* Called by a linker after loading the plugin. TV is the transfer vector. */
 
 enum ld_plugin_status
@@ -1496,11 +1537,17 @@ onload (struct ld_plugin_tv *tv)
 	  /* We only use this to make user-friendly temp file names.  */
 	  link_output_name = p->tv_u.tv_string;
 	  break;
+	case LDPT_GET_API_VERSION:
+	  get_api_version = p->tv_u.tv_get_api_version;
+	  break;
 	default:
 	  break;
 	}
       p++;
     }
+
+  if (get_api_version)
+    negotiate_api_version ();
 
   check (register_claim_file, LDPL_FATAL, "register_claim_file not found");
   check (add_symbols, LDPL_FATAL, "add_symbols not found");
