@@ -1,6 +1,16 @@
 2022-09-01  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
+	* config/gcn/gcn.cc (gcn_simd_clone_compute_vecsize_and_simdlen): New.
+	(gcn_simd_clone_adjust): New.
+	(gcn_simd_clone_usable): New.
+	(TARGET_SIMD_CLONE_ADJUST): New.
+	(TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN): New.
+	(TARGET_SIMD_CLONE_USABLE): New.
+
+2022-09-01  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
 	2022-08-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 		    Jakub Jelinek  <jakub@redhat.com>
 

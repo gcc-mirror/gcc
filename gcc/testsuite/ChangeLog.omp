@@ -1,3 +1,12 @@
+2022-09-01  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/vect/vect-simd-clone-1.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-2.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-3.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-4.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-5.c: Add dg-warning.
+	* gcc.dg/vect/vect-simd-clone-8.c: Add dg-warning.
+
 2022-08-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

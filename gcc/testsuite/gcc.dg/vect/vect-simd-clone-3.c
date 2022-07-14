@@ -43,3 +43,4 @@ main ()
   return 0;
 }
 
+/* { dg-warning {unsupported simdlen 4 \(amdgcn\)} "" { target amdgcn*-*-* } 15 } */
