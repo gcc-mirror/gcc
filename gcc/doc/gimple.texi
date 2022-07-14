@@ -1965,11 +1965,10 @@ statements to be executed by just the master.
 
 @deftypefn {GIMPLE function} gimple gimple_build_omp_ordered (gimple_seq body)
 Build a @code{GIMPLE_OMP_ORDERED} statement.
-@end deftypefn
 
 @code{BODY} is the sequence of statements inside a loop that will
 executed in sequence.
-
+@end deftypefn
 
 @node @code{GIMPLE_OMP_PARALLEL}
 @subsection @code{GIMPLE_OMP_PARALLEL}
