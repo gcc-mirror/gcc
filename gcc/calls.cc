@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attr-fnspec.h"
 #include "value-query.h"
 #include "tree-pretty-print.h"
+#include "tree-eh.h"
 
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
@@ -3154,7 +3155,10 @@ expand_call (tree exp, rtx target, int ignore)
       if (pass && (flags & ECF_MALLOC))
 	start_sequence ();
 
-      if (pass == 0
+      /* Check the canary value for sibcall or function which doesn't
+	 return and could throw.  */
+      if ((pass == 0
+	   || ((flags & ECF_NORETURN) != 0 && tree_could_throw_p (exp)))
 	  && crtl->stack_protect_guard
 	  && targetm.stack_protect_runtime_enabled_p ())
 	stack_protect_epilogue ();
