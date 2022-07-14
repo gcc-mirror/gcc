@@ -402,10 +402,7 @@ AttrVisitor::visit (AST::MacroInvocation &macro_invoc)
   // I don't think any macro token trees can be stripped in any way
 
   // TODO: maybe have cfg! macro stripping behaviour here?
-  if (macro_invoc.has_semicolon ())
-    expander.expand_invoc_semi (macro_invoc);
-  else
-    expander.expand_invoc (macro_invoc);
+  expander.expand_invoc (macro_invoc, macro_invoc.has_semicolon ());
 }
 
 void

@@ -106,7 +106,7 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
 }
 
 void
-MacroExpander::expand_invoc (AST::MacroInvocation &invoc)
+MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
 {
   if (depth_exceeds_recursion_limit ())
     {
@@ -136,54 +136,19 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc)
 
   // lookup the rules for this macro
   NodeId resolved_node = UNKNOWN_NODEID;
-  bool found = resolver->get_macro_scope ().lookup (
-    Resolver::CanonicalPath::new_seg (invoc.get_pattern_node_id (),
-				      invoc_data.get_path ().as_string ()),
-    &resolved_node);
-  if (!found)
-    {
-      rust_error_at (invoc.get_locus (), "unknown macro 1");
-      return;
-    }
-
-  // lookup the rules
-  AST::MacroRulesDefinition *rules_def = nullptr;
-  bool ok = mappings->lookup_macro_def (resolved_node, &rules_def);
-  rust_assert (ok);
-
-  auto fragment = AST::ASTFragment::create_error ();
-
-  if (rules_def->is_builtin ())
-    fragment
-      = rules_def->get_builtin_transcriber () (invoc.get_locus (), invoc_data);
+  NodeId source_node = UNKNOWN_NODEID;
+  if (has_semicolon)
+    source_node = invoc.get_macro_node_id ();
   else
-    fragment
-      = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, false);
-
-  set_expanded_fragment (std::move (fragment));
-}
-
-// FIXME: Arthur: Refactor these two functions, they're really similar
-void
-MacroExpander::expand_invoc_semi (AST::MacroInvocation &invoc)
-{
-  if (depth_exceeds_recursion_limit ())
-    {
-      rust_error_at (invoc.get_locus (), "reached recursion limit");
-      return;
-    }
-
-  AST::MacroInvocData &invoc_data = invoc.get_invoc_data ();
-
-  // lookup the rules for this macro
-  NodeId resolved_node = UNKNOWN_NODEID;
+    source_node = invoc.get_pattern_node_id ();
   auto seg
-    = Resolver::CanonicalPath::new_seg (invoc.get_macro_node_id (),
+    = Resolver::CanonicalPath::new_seg (source_node,
 					invoc_data.get_path ().as_string ());
+
   bool found = resolver->get_macro_scope ().lookup (seg, &resolved_node);
   if (!found)
     {
-      rust_error_at (invoc.get_locus (), "unknown macro 2: [%s]",
+      rust_error_at (invoc.get_locus (), "unknown macro: [%s]",
 		     seg.get ().c_str ());
       return;
     }
@@ -199,8 +164,8 @@ MacroExpander::expand_invoc_semi (AST::MacroInvocation &invoc)
     fragment
       = rules_def->get_builtin_transcriber () (invoc.get_locus (), invoc_data);
   else
-    fragment
-      = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, true);
+    fragment = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def,
+				  has_semicolon);
 
   set_expanded_fragment (std::move (fragment));
 }
