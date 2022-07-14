@@ -542,9 +542,19 @@ transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
 
   // BUILTIN transmute FN BODY BEGIN
   tree result_type_tree = TREE_TYPE (DECL_RESULT (fndecl));
-  tree result_expr
-    = ctx->get_backend ()->convert_expression (result_type_tree,
-					       convert_me_expr, Location ());
+  tree result_expr = error_mark_node;
+  if (AGGREGATE_TYPE_P (TREE_TYPE (convert_me_expr)))
+    {
+      result_expr = fold_build1_loc (Location ().gcc_location (), CONVERT_EXPR,
+				     result_type_tree, convert_me_expr);
+    }
+  else
+    {
+      result_expr = ctx->get_backend ()->convert_expression (result_type_tree,
+							     convert_me_expr,
+							     Location ());
+    }
+
   auto return_statement
     = ctx->get_backend ()->return_statement (fndecl, {result_expr},
 					     Location ());
