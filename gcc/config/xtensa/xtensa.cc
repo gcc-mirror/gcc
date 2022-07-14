@@ -191,6 +191,15 @@ static bool xtensa_can_eliminate (const int from ATTRIBUTE_UNUSED,
 static HOST_WIDE_INT xtensa_starting_frame_offset (void);
 static unsigned HOST_WIDE_INT xtensa_asan_shadow_offset (void);
 static bool xtensa_function_ok_for_sibcall (tree, tree);
+static bool xtensa_can_output_mi_thunk (const_tree thunk_fndecl ATTRIBUTE_UNUSED,
+					HOST_WIDE_INT delta ATTRIBUTE_UNUSED,
+					HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
+					const_tree function ATTRIBUTE_UNUSED);
+static void xtensa_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
+				    HOST_WIDE_INT delta,
+				    HOST_WIDE_INT vcall_offset,
+				    tree function);
+
 static rtx xtensa_delegitimize_address (rtx);
 
 
@@ -350,6 +359,12 @@ static rtx xtensa_delegitimize_address (rtx);
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL xtensa_function_ok_for_sibcall
+
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK xtensa_can_output_mi_thunk
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK xtensa_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2173,7 +2188,16 @@ xtensa_prepare_expand_call (int callop, rtx *operands)
     addr = gen_sym_PLT (addr);
 
   if (!call_insn_operand (addr, VOIDmode))
-    XEXP (operands[callop], 0) = copy_to_mode_reg (Pmode, addr);
+    {
+      /* This may be called while generating MI thunk when we pretend
+	 that reload is over.  Use a8 as a temporary register in that case.  */
+      rtx reg = can_create_pseudo_p ()
+	? copy_to_mode_reg (Pmode, addr)
+	: copy_to_suggested_reg (addr,
+				 gen_rtx_REG (Pmode, A8_REG),
+				 Pmode);
+      XEXP (operands[callop], 0) = reg;
+    }
 }
 
 
@@ -4981,6 +5005,96 @@ xtensa_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED, tree exp ATTRIBUTE_U
     return false;
 
   return true;
+}
+
+static bool
+xtensa_can_output_mi_thunk (const_tree thunk_fndecl ATTRIBUTE_UNUSED,
+			    HOST_WIDE_INT delta ATTRIBUTE_UNUSED,
+			    HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
+			    const_tree function ATTRIBUTE_UNUSED)
+{
+  if (TARGET_WINDOWED_ABI)
+    return false;
+
+  return true;
+}
+
+/* Output code to add DELTA to the first argument, and then jump
+   to FUNCTION.  Used for C++ multiple inheritance.  */
+static void
+xtensa_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
+			HOST_WIDE_INT delta,
+			HOST_WIDE_INT vcall_offset,
+			tree function)
+{
+  rtx this_rtx;
+  rtx funexp;
+  rtx_insn *insn;
+  int this_reg_no;
+  rtx temp0 = gen_rtx_REG (Pmode, A9_REG);
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
+
+  reload_completed = 1;
+
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
+    this_reg_no = 3;
+  else
+    this_reg_no = 2;
+
+  this_rtx = gen_rtx_REG (Pmode, A0_REG + this_reg_no);
+
+  if (delta)
+    {
+      if (xtensa_simm8 (delta))
+	emit_insn (gen_addsi3 (this_rtx, this_rtx, GEN_INT (delta)));
+      else
+	{
+	  emit_move_insn (temp0, GEN_INT (delta));
+	  emit_insn (gen_addsi3 (this_rtx, this_rtx, temp0));
+	}
+    }
+
+  if (vcall_offset)
+    {
+      rtx temp1 = gen_rtx_REG (Pmode, A0_REG + 10);
+      rtx addr = temp1;
+
+      emit_move_insn (temp0, gen_rtx_MEM (Pmode, this_rtx));
+      if (xtensa_uimm8x4 (vcall_offset))
+	addr = plus_constant (Pmode, temp0, vcall_offset);
+      else if (xtensa_simm8 (vcall_offset))
+	emit_insn (gen_addsi3 (temp1, temp0, GEN_INT (vcall_offset)));
+      else
+	{
+	  emit_move_insn (temp1, GEN_INT (vcall_offset));
+	  emit_insn (gen_addsi3 (temp1, temp0, temp1));
+	}
+      emit_move_insn (temp1, gen_rtx_MEM (Pmode, addr));
+      emit_insn (gen_add2_insn (this_rtx, temp1));
+    }
+
+  /* Generate a tail call to the target function.  */
+  if (!TREE_USED (function))
+    {
+      assemble_external (function);
+      TREE_USED (function) = 1;
+    }
+
+  funexp = XEXP (DECL_RTL (function), 0);
+  funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
+  insn = emit_call_insn (gen_sibcall (funexp, const0_rtx));
+  SIBLING_CALL_P (insn) = 1;
+
+  insn = get_insns ();
+  shorten_branches (insn);
+  assemble_start_function (thunk, fnname);
+  final_start_function (insn, file, 1);
+  final (insn, file, 1);
+  final_end_function ();
+  assemble_end_function (thunk, fnname);
+
+  /* Stop pretending to be a post-reload pass.  */
+  reload_completed = 0;
 }
 
 static rtx
