@@ -48,7 +48,11 @@ void
 Dump::go (AST::Crate &crate)
 {
   for (auto &item : crate.items)
-    item->accept_vis (*this);
+    {
+      stream << indentation;
+      item->accept_vis (*this);
+      stream << "\n";
+    }
 }
 
 void
@@ -173,8 +177,40 @@ Dump::visit (ArithmeticOrLogicalExpr &expr)
       stream << "+";
       break;
 
-    default:
-      gcc_unreachable ();
+    case ArithmeticOrLogicalOperator::SUBTRACT:
+      stream << "-";
+      break;
+
+    case ArithmeticOrLogicalOperator::MULTIPLY:
+      stream << "*";
+      break;
+
+    case ArithmeticOrLogicalOperator::DIVIDE:
+      stream << "/";
+      break;
+
+    case ArithmeticOrLogicalOperator::MODULUS:
+      stream << "%";
+      break;
+
+    case ArithmeticOrLogicalOperator::BITWISE_AND:
+      stream << "&";
+      break;
+
+    case ArithmeticOrLogicalOperator::BITWISE_OR:
+      stream << "|";
+      break;
+
+    case ArithmeticOrLogicalOperator::BITWISE_XOR:
+      stream << "^";
+      break;
+
+    case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+      stream << "<<";
+      break;
+
+    case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+      stream << ">>";
       break;
     }
 
@@ -401,8 +437,12 @@ Dump::visit (AsyncBlockExpr &expr)
 void
 Dump::visit (TypeParam &param)
 {
-  // Is it possible to have a null type here?
-  param.get_type ()->accept_vis (*this);
+  stream << param.get_type_representation ();
+  if (param.has_type ())
+    {
+      stream << ": ";
+      param.get_type ()->accept_vis (*this);
+    }
 }
 
 void
@@ -473,8 +513,24 @@ Dump::visit (UseDeclaration &use_decl)
 void
 Dump::visit (Function &function)
 {
-  stream << indentation << "fn " << function.get_function_name () << '(';
+  stream << "fn " << function.get_function_name ();
 
+  if (function.has_generics ())
+    {
+      stream << "<";
+      for (size_t i = 0; i < function.get_generic_params ().size (); i++)
+	{
+	  auto &param = function.get_generic_params ().at (i);
+	  param->accept_vis (*this);
+
+	  bool has_next = (i + 1) < function.get_generic_params ().size ();
+	  if (has_next)
+	    stream << ", ";
+	}
+      stream << ">";
+    }
+
+  stream << '(';
   auto &params = function.get_function_params ();
   if (params.size () >= 1)
     {
