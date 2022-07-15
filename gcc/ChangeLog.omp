@@ -1,3 +1,8 @@
+2022-08-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	* config/gcn/gcn.md (one_cmpldi2): New.
+
 2022-08-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
