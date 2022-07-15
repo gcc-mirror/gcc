@@ -1054,13 +1054,13 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
   else if (REG_P (dst) && GET_MODE (dst) == smode)
     {
       /* Replace the definition with a SUBREG to the definition we
-         use inside the chain.  */
+	 use inside the chain.  */
       rtx *vdef = defs_map.get (dst);
       if (vdef)
 	dst = *vdef;
       dst = gen_rtx_SUBREG (vmode, dst, 0);
       /* IRA doesn't like to have REG_EQUAL/EQUIV notes when the SET_DEST
-         is a non-REG_P.  So kill those off.  */
+	 is a non-REG_P.  So kill those off.  */
       rtx note = find_reg_equal_equiv_note (insn);
       if (note)
 	remove_note (insn, note);
@@ -1246,7 +1246,7 @@ timode_scalar_chain::fix_debug_reg_uses (rtx reg)
     {
       rtx_insn *insn = DF_REF_INSN (ref);
       /* Make sure the next ref is for a different instruction,
-         so that we're not affected by the rescan.  */
+	 so that we're not affected by the rescan.  */
       next = DF_REF_NEXT_REG (ref);
       while (next && DF_REF_INSN (next) == insn)
 	next = DF_REF_NEXT_REG (next);
@@ -1336,21 +1336,19 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
   rtx dst = SET_DEST (def_set);
   rtx tmp;
 
-  if (MEM_P (dst) && !REG_P (src))
-    {
-      /* There are no scalar integer instructions and therefore
-	 temporary register usage is required.  */
-    }
   switch (GET_CODE (dst))
     {
     case REG:
       if (GET_MODE (dst) == TImode)
 	{
+	  PUT_MODE (dst, V1TImode);
+	  fix_debug_reg_uses (dst);
+	}
+      if (GET_MODE (dst) == V1TImode)
+	{
 	  tmp = find_reg_equal_equiv_note (insn);
 	  if (tmp && GET_MODE (XEXP (tmp, 0)) == TImode)
 	    PUT_MODE (XEXP (tmp, 0), V1TImode);
-	  PUT_MODE (dst, V1TImode);
-	  fix_debug_reg_uses (dst);
 	}
       break;
     case MEM:
@@ -1410,8 +1408,8 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
       if (MEM_P (dst))
 	{
 	  tmp = gen_reg_rtx (V1TImode);
-          emit_insn_before (gen_rtx_SET (tmp, src), insn);
-          src = tmp;
+	  emit_insn_before (gen_rtx_SET (tmp, src), insn);
+	  src = tmp;
 	}
       break;
 
@@ -1434,8 +1432,8 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
       if (MEM_P (dst))
 	{
 	  tmp = gen_reg_rtx (V1TImode);
-          emit_insn_before (gen_rtx_SET (tmp, src), insn);
-          src = tmp;
+	  emit_insn_before (gen_rtx_SET (tmp, src), insn);
+	  src = tmp;
 	}
       break;
 
@@ -1448,8 +1446,8 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
       if (MEM_P (dst))
 	{
 	  tmp = gen_reg_rtx (V1TImode);
-          emit_insn_before (gen_rtx_SET (tmp, src), insn);
-          src = tmp;
+	  emit_insn_before (gen_rtx_SET (tmp, src), insn);
+	  src = tmp;
 	}
       break;
 
@@ -1585,7 +1583,7 @@ convertible_comparison_p (rtx_insn *insn, enum machine_mode mode)
   /* *cmp<dwi>_doubleword.  */
   if ((CONST_INT_P (op1)
        || ((REG_P (op1) || MEM_P (op1))
-           && GET_MODE (op1) == mode))
+	   && GET_MODE (op1) == mode))
       && (CONST_INT_P (op2)
 	  || ((REG_P (op2) || MEM_P (op2))
 	      && GET_MODE (op2) == mode)))
@@ -1745,7 +1743,7 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
 
   if (GET_MODE (dst) != TImode
       || (GET_MODE (src) != TImode
-          && !CONST_SCALAR_INT_P (src)))
+	  && !CONST_SCALAR_INT_P (src)))
     return false;
 
   if (!REG_P (dst) && !MEM_P (dst))
