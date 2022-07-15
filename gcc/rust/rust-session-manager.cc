@@ -461,6 +461,10 @@ Session::handle_option (
       options.set_edition (flag_rust_edition);
       break;
 
+    case OPT_frust_metadata_output_:
+      options.set_metadata_output (arg);
+      break;
+
     default:
       break;
     }
@@ -796,8 +800,22 @@ Session::parse_file (const char *filename)
       Analysis::ScanDeadcode::Scan (hir);
       Analysis::UnusedVariables::Lint (ctx);
 
-      // emit metadata
-      Metadata::PublicInterface::Export (hir);
+      // metadata
+      bool specified_emit_metadata
+	= flag_rust_embed_metadata || options.metadata_output_path_set ();
+      if (!specified_emit_metadata)
+	{
+	  Metadata::PublicInterface::ExportTo (
+	    hir, Metadata::PublicInterface::expected_metadata_filename ());
+	}
+      else
+	{
+	  if (flag_rust_embed_metadata)
+	    Metadata::PublicInterface::Export (hir);
+	  if (options.metadata_output_path_set ())
+	    Metadata::PublicInterface::ExportTo (
+	      hir, options.get_metadata_output ());
+	}
     }
 
   // pass to GCC middle-end
@@ -951,6 +969,8 @@ Session::injection (AST::Crate &crate)
    * checking the linkage info by "crate_type". It also seems to ensure that
    * an invalid crate type is not specified, so maybe just do that. Valid
    * crate types: bin lib dylib staticlib cdylib rlib proc-macro */
+
+  // this crate type will have options affecting the metadata ouput
 
   rust_debug ("finished injection");
 }

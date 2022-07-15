@@ -29,127 +29,126 @@
 namespace Rust {
 namespace Metadata {
 
-class ExportContext
+static const std::string extension_path = ".rox";
+
+ExportContext::ExportContext () : mappings (Analysis::Mappings::get ()) {}
+
+ExportContext::~ExportContext () {}
+
+void
+ExportContext::push_module_scope (const HIR::Module &module)
 {
-public:
-  ExportContext () : mappings (Analysis::Mappings::get ()) {}
+  module_stack.push_back (module);
+}
 
-  ~ExportContext () {}
+const HIR::Module &
+ExportContext::pop_module_scope ()
+{
+  rust_assert (!module_stack.empty ());
+  const HIR::Module &poped = module_stack.back ();
+  module_stack.pop_back ();
+  return poped;
+}
 
-  void push_module_scope (const HIR::Module &module)
-  {
-    module_stack.push_back (module);
-  }
+void
+ExportContext::emit_trait (const HIR::Trait &trait)
+{
+  // lookup the AST node for this
+  AST::Item *item = nullptr;
+  bool ok
+    = mappings->lookup_ast_item (trait.get_mappings ().get_nodeid (), &item);
+  rust_assert (ok);
 
-  const HIR::Module &pop_module_scope ()
-  {
-    rust_assert (!module_stack.empty ());
+  std::stringstream oss;
+  AST::Dump dumper (oss);
+  dumper.go (*item);
 
-    const HIR::Module &poped = module_stack.back ();
-    module_stack.pop_back ();
-    return poped;
-  }
+  public_interface_buffer += oss.str ();
+}
 
-  void emit_trait (const HIR::Trait &trait)
-  {
-    // lookup the AST node for this
-    AST::Item *item = nullptr;
-    bool ok
-      = mappings->lookup_ast_item (trait.get_mappings ().get_nodeid (), &item);
-    rust_assert (ok);
+void
+ExportContext::emit_function (const HIR::Function &fn)
+{
+  // lookup the AST node for this
+  AST::Item *item = nullptr;
+  bool ok = mappings->lookup_ast_item (fn.get_mappings ().get_nodeid (), &item);
+  rust_assert (ok);
 
-    std::stringstream oss;
-    AST::Dump dumper (oss);
-    dumper.go (*item);
+  // is this a CFG macro or not
+  if (item->is_marked_for_strip ())
+    return;
 
-    public_interface_buffer += oss.str ();
-  }
+  // FIXME add assertion that item must be a vis_item;
+  AST::VisItem &vis_item = static_cast<AST::VisItem &> (*item);
 
-  void emit_function (const HIR::Function &fn)
-  {
-    // lookup the AST node for this
-    AST::Item *item = nullptr;
-    bool ok
-      = mappings->lookup_ast_item (fn.get_mappings ().get_nodeid (), &item);
-    rust_assert (ok);
+  // if its a generic function we need to output the full declaration
+  // otherwise we can let people link against this
 
-    // FIXME add assertion that item must be a vis_item;
-    AST::VisItem &vis_item = static_cast<AST::VisItem &> (*item);
+  std::stringstream oss;
+  AST::Dump dumper (oss);
+  if (!fn.has_generics ())
+    {
+      // FIXME assert that this is actually an AST::Function
+      AST::Function &function = static_cast<AST::Function &> (vis_item);
 
-    // if its a generic function we need to output the full declaration
-    // otherwise we can let people link against this
+      // we can emit an extern block with abi of "rust"
+      Identifier item_name = function.get_function_name ();
 
-    std::stringstream oss;
-    AST::Dump dumper (oss);
-    if (!fn.has_generics ())
-      {
-	// FIXME assert that this is actually an AST::Function
-	AST::Function &function = static_cast<AST::Function &> (vis_item);
+      // always empty for extern linkage
+      AST::WhereClause where_clause = AST::WhereClause::create_empty ();
+      std::vector<std::unique_ptr<AST::GenericParam>> generic_params;
 
-	// we can emit an extern block with abi of "rust"
-	Identifier item_name = function.get_function_name ();
+      AST::Visibility vis = function.get_visibility ();
+      std::unique_ptr<AST::Type> return_type
+	= std::unique_ptr<AST::Type> (nullptr);
+      if (function.has_return_type ())
+	{
+	  return_type = function.get_return_type ()->clone_type ();
+	}
 
-	// always empty for extern linkage
-	AST::WhereClause where_clause = AST::WhereClause::create_empty ();
-	std::vector<std::unique_ptr<AST::GenericParam>> generic_params;
+      std::vector<AST::NamedFunctionParam> function_params;
+      for (AST::FunctionParam &param : function.get_function_params ())
+	{
+	  std::string name = param.get_pattern ()->as_string ();
+	  std::unique_ptr<AST::Type> param_type
+	    = param.get_type ()->clone_type ();
 
-	AST::Visibility vis = function.get_visibility ();
-	std::unique_ptr<AST::Type> return_type
-	  = std::unique_ptr<AST::Type> (nullptr);
-	if (function.has_return_type ())
-	  {
-	    return_type = function.get_return_type ()->clone_type ();
-	  }
+	  AST::NamedFunctionParam p (name, std::move (param_type), {},
+				     param.get_locus ());
+	  function_params.push_back (std::move (p));
+	}
 
-	std::vector<AST::NamedFunctionParam> function_params;
-	for (AST::FunctionParam &param : function.get_function_params ())
-	  {
-	    std::string name = param.get_pattern ()->as_string ();
-	    std::unique_ptr<AST::Type> param_type
-	      = param.get_type ()->clone_type ();
+      AST::ExternalItem *external_item = new AST::ExternalFunctionItem (
+	item_name, {} /* generic_params */, std::move (return_type),
+	where_clause, std::move (function_params), false /* has_variadics */,
+	{} /* variadic_outer_attrs */, vis, function.get_outer_attrs (),
+	function.get_locus ());
 
-	    AST::NamedFunctionParam p (name, std::move (param_type), {},
-				       param.get_locus ());
-	    function_params.push_back (std::move (p));
-	  }
+      std::vector<std::unique_ptr<AST::ExternalItem>> external_items;
+      external_items.push_back (
+	std::unique_ptr<AST::ExternalItem> (external_item));
 
-	AST::ExternalItem *external_item = new AST::ExternalFunctionItem (
-	  item_name, {} /* generic_params */, std::move (return_type),
-	  where_clause, std::move (function_params), false /* has_variadics */,
-	  {} /* variadic_outer_attrs */, vis, function.get_outer_attrs (),
-	  function.get_locus ());
+      AST::ExternBlock extern_block (get_string_from_abi (Rust::ABI::RUST),
+				     std::move (external_items),
+				     vis_item.get_visibility (), {}, {},
+				     fn.get_locus ());
 
-	std::vector<std::unique_ptr<AST::ExternalItem>> external_items;
-	external_items.push_back (
-	  std::unique_ptr<AST::ExternalItem> (external_item));
+      dumper.go (extern_block);
+    }
+  else
+    {
+      dumper.go (*item);
+    }
 
-	AST::ExternBlock extern_block (get_string_from_abi (Rust::ABI::RUST),
-				       std::move (external_items),
-				       vis_item.get_visibility (), {}, {},
-				       fn.get_locus ());
+  // store the dump
+  public_interface_buffer += oss.str ();
+}
 
-	dumper.go (extern_block);
-      }
-    else
-      {
-	dumper.go (*item);
-      }
-
-    // store the dump
-    public_interface_buffer += oss.str ();
-  }
-
-  const std::string &get_interface_buffer () const
-  {
-    return public_interface_buffer;
-  }
-
-private:
-  Analysis::Mappings *mappings;
-
-  std::vector<std::reference_wrapper<const HIR::Module>> module_stack;
-  std::string public_interface_buffer;
-};
+const std::string &
+ExportContext::get_interface_buffer () const
+{
+  return public_interface_buffer;
+}
 
 // implicitly by using HIR nodes we know that these have passed CFG expansion
 // and they exist in the compilation unit
@@ -183,20 +182,28 @@ private:
 };
 
 PublicInterface::PublicInterface (HIR::Crate &crate)
-  : crate (crate), mappings (*Analysis::Mappings::get ())
+  : crate (crate), mappings (*Analysis::Mappings::get ()), context ()
 {}
 
 void
 PublicInterface::Export (HIR::Crate &crate)
 {
   PublicInterface interface (crate);
-  interface.go ();
+  interface.gather_export_data ();
+  interface.write_to_object_file ();
 }
 
 void
-PublicInterface::go ()
+PublicInterface::ExportTo (HIR::Crate &crate, const std::string &output_path)
 {
-  ExportContext context;
+  PublicInterface interface (crate);
+  interface.gather_export_data ();
+  interface.write_to_path (output_path);
+}
+
+void
+PublicInterface::gather_export_data ()
+{
   ExportVisItems visitor (context);
   for (auto &item : crate.items)
     {
@@ -208,7 +215,11 @@ PublicInterface::go ()
       if (is_crate_public (vis_item))
 	vis_item.accept_vis (visitor);
     }
+}
 
+void
+PublicInterface::write_to_object_file () const
+{
   // done
   const auto &buf = context.get_interface_buffer ();
   std::string size_buffer = std::to_string (buf.size ());
@@ -236,6 +247,116 @@ PublicInterface::go ()
   rust_write_export_data (buf.c_str (), buf.size ());
 }
 
+void
+PublicInterface::write_to_path (const std::string &path) const
+{
+  // validate path contains correct extension
+  const std::string expected_file_name = expected_metadata_filename ();
+  const char *path_base_name = basename (path.c_str ());
+  if (strcmp (path_base_name, expected_file_name.c_str ()) != 0)
+    {
+      rust_error_at (Location (),
+		     "expected metadata-output path to have base file name of: "
+		     "%<%s%> got %<%s%>",
+		     expected_file_name.c_str (), path_base_name);
+      return;
+    }
+
+  // done
+  const auto &buf = context.get_interface_buffer ();
+  std::string size_buffer = std::to_string (buf.size ());
+
+  // md5 this
+  struct md5_ctx chksm;
+  unsigned char checksum[16];
+
+  md5_init_ctx (&chksm);
+  md5_process_bytes (buf.c_str (), buf.size (), &chksm);
+  md5_finish_ctx (&chksm, checksum);
+
+  // MAGIC MD5 DLIM  DLIM buffer-size DELIM contents
+  const std::string current_crate_name = mappings.get_current_crate_name ();
+
+  // write to path
+  FILE *nfd = fopen (path.c_str (), "wb");
+  if (nfd == NULL)
+    {
+      rust_error_at (Location (), "failed to open file %<%s%> for writing: %s",
+		     path.c_str (), xstrerror (errno));
+      return;
+    }
+
+  // write data
+  if (fwrite (kMagicHeader, sizeof (kMagicHeader), 1, nfd) < 1)
+    {
+      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+		     path.c_str (), xstrerror (errno));
+      fclose (nfd);
+      return;
+    }
+
+  if (fwrite (checksum, sizeof (checksum), 1, nfd) < 1)
+    {
+      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+		     path.c_str (), xstrerror (errno));
+      fclose (nfd);
+      return;
+    }
+
+  if (fwrite (kSzDelim, sizeof (kSzDelim), 1, nfd) < 1)
+    {
+      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+		     path.c_str (), xstrerror (errno));
+      fclose (nfd);
+      return;
+    }
+
+  if (fwrite (current_crate_name.c_str (), current_crate_name.size (), 1, nfd)
+      < 1)
+    {
+      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+		     path.c_str (), xstrerror (errno));
+      fclose (nfd);
+      return;
+    }
+
+  if (fwrite (kSzDelim, sizeof (kSzDelim), 1, nfd) < 1)
+    {
+      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+		     path.c_str (), xstrerror (errno));
+      fclose (nfd);
+      return;
+    }
+
+  if (fwrite (size_buffer.c_str (), size_buffer.size (), 1, nfd) < 1)
+    {
+      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+		     path.c_str (), xstrerror (errno));
+      fclose (nfd);
+      return;
+    }
+
+  if (fwrite (kSzDelim, sizeof (kSzDelim), 1, nfd) < 1)
+    {
+      rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+		     path.c_str (), xstrerror (errno));
+      fclose (nfd);
+      return;
+    }
+
+  if (!buf.empty ())
+    if (fwrite (buf.c_str (), buf.size (), 1, nfd) < 1)
+      {
+	rust_error_at (Location (), "failed to write to file %<%s%>: %s",
+		       path.c_str (), xstrerror (errno));
+	fclose (nfd);
+	return;
+      }
+
+  // done
+  fclose (nfd);
+}
+
 bool
 PublicInterface::is_crate_public (const HIR::VisItem &item)
 {
@@ -249,6 +370,15 @@ PublicInterface::is_crate_public (const HIR::VisItem &item)
   // Arthur magic required here
 
   return is_public && !has_path;
+}
+
+std::string
+PublicInterface::expected_metadata_filename ()
+{
+  auto mappings = Analysis::Mappings::get ();
+
+  const std::string current_crate_name = mappings->get_current_crate_name ();
+  return current_crate_name + extension_path;
 }
 
 } // namespace Metadata

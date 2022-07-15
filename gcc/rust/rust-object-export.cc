@@ -17,9 +17,6 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-// FIXME: doesn't this duplicate lots of code from rust-backend.c? Is one meant
-// to be a replacement?
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -53,9 +50,6 @@
 #ifndef TARGET_AIX
 #define TARGET_AIX 0
 #endif
-
-/* This file holds all the cases where the Rust frontend needs
-   information from gcc's backend.  */
 
 /* Return whether or not GCC has reported any errors.  */
 

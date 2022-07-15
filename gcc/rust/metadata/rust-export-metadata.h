@@ -29,19 +29,54 @@ namespace Metadata {
 static const char kMagicHeader[4] = {'G', 'R', 'S', 'T'};
 static const char kSzDelim[1] = {'$'};
 
+class ExportContext
+{
+public:
+  ExportContext ();
+
+  ~ExportContext ();
+
+  void push_module_scope (const HIR::Module &module);
+
+  const HIR::Module &pop_module_scope ();
+
+  void emit_trait (const HIR::Trait &trait);
+
+  void emit_function (const HIR::Function &fn);
+
+  const std::string &get_interface_buffer () const;
+
+private:
+  Analysis::Mappings *mappings;
+
+  std::vector<std::reference_wrapper<const HIR::Module>> module_stack;
+  std::string public_interface_buffer;
+};
+
 class PublicInterface
 {
 public:
   static void Export (HIR::Crate &crate);
 
+  static void ExportTo (HIR::Crate &crate, const std::string &output_path);
+
   static bool is_crate_public (const HIR::VisItem &item);
+
+  static std::string expected_metadata_filename ();
+
+protected:
+  void gather_export_data ();
+
+  void write_to_object_file () const;
+
+  void write_to_path (const std::string &path) const;
 
 private:
   PublicInterface (HIR::Crate &crate);
-  void go ();
 
   HIR::Crate &crate;
   Analysis::Mappings &mappings;
+  ExportContext context;
 };
 
 } // namespace Metadata
