@@ -1,3 +1,39 @@
+2022-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/103798
+	* tree-ssa-forwprop.cc: Include "tree-ssa-strlen.h".
+	(simplify_builtin_call): Inline memchr with constant strings of
+	no more than the bytes of a word.
+	* tree-ssa-strlen.cc (use_in_zero_equality): Make it global.
+	* tree-ssa-strlen.h (use_in_zero_equality): New.
+
+2022-07-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.cc (lookup_tmp_var): Add NOT_GIMPLE_REG boolean parameter
+	and set DECL_NOT_GIMPLE_REG_P on the variable according to it.
+	(internal_get_tmp_var): Add NOT_GIMPLE_REG boolean parameter and
+	pass it in the call to lookup_tmp_var.
+	(get_formal_tmp_var): Pass false in the call to lookup_tmp_var.
+	(get_initialized_tmp_var): Likewise.
+	(prepare_gimple_addressable): Call internal_get_tmp_var instead of
+	get_initialized_tmp_var with NOT_GIMPLE_REG set to true.
+
+2022-07-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/gimple.texi: Close properly a deftypefn.
+
+2022-07-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/gimple.texi: Close properly a deftypefn.
+
+2022-07-14  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md:
+	In FP constant synthesis split pattern, subcontract to
+	avoid_constant_pool_reference() as in the case of integer,
+	because it can handle well too.  And cast to int32_t before
+	calling xtensa_constantsynth() in order to ignore upper 32-bit.
+
 2022-07-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* range-op.cc (operator_lt::fold_range): Use nonzero bits.

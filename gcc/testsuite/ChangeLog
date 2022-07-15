@@ -1,3 +1,32 @@
+2022-07-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/103798
+	* c-c++-common/pr103798-1.c: New test.
+	* c-c++-common/pr103798-2.c: Likewise.
+	* c-c++-common/pr103798-3.c: Likewise.
+	* c-c++-common/pr103798-4.c: Likewise.
+	* c-c++-common/pr103798-5.c: Likewise.
+	* c-c++-common/pr103798-6.c: Likewise.
+	* c-c++-common/pr103798-7.c: Likewise.
+	* c-c++-common/pr103798-8.c: Likewise.
+	* c-c++-common/pr103798-9.c: Likewise.
+	* c-c++-common/pr103798-10.c: Likewise.
+
+2022-07-14  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/106209
+	* gfortran.dg/pr106209.f90: New test.
+
+2022-07-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt98.ads, gnat.dg/opt98.adb: New test.
+
+2022-07-14  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/constsynth_double.c:
+	Modify in order to catch the issue.
+
 2022-07-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105912
