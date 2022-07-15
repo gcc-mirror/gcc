@@ -1035,35 +1035,35 @@ xtensa_split_operand_pair (rtx operands[4], machine_mode mode)
    load-immediate / arithmetic ones, instead of a L32R instruction
    (plus a constant in litpool).  */
 
-static void
-xtensa_emit_constantsynth (rtx dst, enum rtx_code code,
-			   HOST_WIDE_INT imm0, HOST_WIDE_INT imm1,
-			   rtx (*gen_op)(rtx, HOST_WIDE_INT),
-			   HOST_WIDE_INT imm2)
-{
-  gcc_assert (REG_P (dst));
-  emit_move_insn (dst, GEN_INT (imm0));
-  emit_move_insn (dst, gen_rtx_fmt_ee (code, SImode,
-				       dst, GEN_INT (imm1)));
-  if (gen_op)
-    emit_move_insn (dst, gen_op (dst, imm2));
-}
-
 static int
 xtensa_constantsynth_2insn (rtx dst, HOST_WIDE_INT srcval,
 			    rtx (*gen_op)(rtx, HOST_WIDE_INT),
 			    HOST_WIDE_INT op_imm)
 {
-  int shift = exact_log2 (srcval + 1);
+  HOST_WIDE_INT imm = INT_MAX;
+  rtx x = NULL_RTX;
+  int shift;
 
+  gcc_assert (REG_P (dst));
+
+  shift = exact_log2 (srcval + 1);
   if (IN_RANGE (shift, 1, 31))
     {
-      xtensa_emit_constantsynth (dst, LSHIFTRT, -1, 32 - shift,
-				 gen_op, op_imm);
-      return 1;
+      imm = -1;
+      x = gen_lshrsi3 (dst, dst, GEN_INT (32 - shift));
     }
 
-  if (IN_RANGE (srcval, (-2048 - 32768), (2047 + 32512)))
+
+  shift = ctz_hwi (srcval);
+  if ((!x || (TARGET_DENSITY && ! IN_RANGE (imm, -32, 95)))
+      && xtensa_simm12b (srcval >> shift))
+    {
+      imm = srcval >> shift;
+      x = gen_ashlsi3 (dst, dst, GEN_INT (shift));
+    }
+
+  if ((!x || (TARGET_DENSITY && ! IN_RANGE (imm, -32, 95)))
+      && IN_RANGE (srcval, (-2048 - 32768), (2047 + 32512)))
     {
       HOST_WIDE_INT imm0, imm1;
 
@@ -1076,19 +1076,19 @@ xtensa_constantsynth_2insn (rtx dst, HOST_WIDE_INT srcval,
       imm0 = srcval - imm1;
       if (TARGET_DENSITY && imm1 < 32512 && IN_RANGE (imm0, 224, 255))
 	imm0 -= 256, imm1 += 256;
-      xtensa_emit_constantsynth (dst, PLUS, imm0, imm1, gen_op, op_imm);
-	return 1;
+      imm = imm0;
+      x = gen_addsi3 (dst, dst, GEN_INT (imm1));
     }
 
-  shift = ctz_hwi (srcval);
-  if (xtensa_simm12b (srcval >> shift))
-    {
-      xtensa_emit_constantsynth (dst, ASHIFT, srcval >> shift, shift,
-				 gen_op, op_imm);
-      return 1;
-    }
+  if (!x)
+    return 0;
 
-  return 0;
+  emit_move_insn (dst, GEN_INT (imm));
+  emit_insn (x);
+  if (gen_op)
+    emit_move_insn (dst, gen_op (dst, op_imm));
+
+  return 1;
 }
 
 static rtx
