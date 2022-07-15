@@ -3552,7 +3552,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V8QImode:
     case E_V4HImode:
     case E_V2SImode:
-    /* ...E_V1DImode doesn't exist.  */
+    case E_V1DImode:
     case E_V4HFmode:
     case E_V4BFmode:
     case E_V2SFmode:

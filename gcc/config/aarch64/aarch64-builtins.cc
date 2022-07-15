@@ -55,6 +55,7 @@
 #define v2si_UP  E_V2SImode
 #define v2sf_UP  E_V2SFmode
 #define v1df_UP  E_V1DFmode
+#define v1di_UP  E_V1DImode
 #define di_UP    E_DImode
 #define df_UP    E_DFmode
 #define v16qi_UP E_V16QImode
