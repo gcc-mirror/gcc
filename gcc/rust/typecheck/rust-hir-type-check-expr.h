@@ -1060,9 +1060,11 @@ private:
 			 Location expr_locus);
 
   bool
-  validate_arithmetic_type (TyTy::BaseType *type,
+  validate_arithmetic_type (const TyTy::BaseType *tyty,
 			    HIR::ArithmeticOrLogicalExpr::ExprType expr_type)
   {
+    const TyTy::BaseType *type = tyty->destructure ();
+
     // https://doc.rust-lang.org/reference/expressions/operator-expr.html#arithmetic-and-logical-binary-operators
     // this will change later when traits are added
     switch (expr_type)
@@ -1078,10 +1080,10 @@ private:
 	       || (type->get_kind () == TyTy::TypeKind::USIZE)
 	       || (type->get_kind () == TyTy::TypeKind::ISIZE)
 	       || (type->get_kind () == TyTy::TypeKind::INFER
-		   && (((TyTy::InferType *) type)->get_infer_kind ()
+		   && (((const TyTy::InferType *) type)->get_infer_kind ()
 		       == TyTy::InferType::INTEGRAL))
 	       || (type->get_kind () == TyTy::TypeKind::INFER
-		   && (((TyTy::InferType *) type)->get_infer_kind ()
+		   && (((const TyTy::InferType *) type)->get_infer_kind ()
 		       == TyTy::InferType::FLOAT));
 
 	// integers or bools
@@ -1094,7 +1096,7 @@ private:
 	       || (type->get_kind () == TyTy::TypeKind::ISIZE)
 	       || (type->get_kind () == TyTy::TypeKind::BOOL)
 	       || (type->get_kind () == TyTy::TypeKind::INFER
-		   && (((TyTy::InferType *) type)->get_infer_kind ()
+		   && (((const TyTy::InferType *) type)->get_infer_kind ()
 		       == TyTy::InferType::INTEGRAL));
 
 	// integers only
@@ -1105,10 +1107,12 @@ private:
 	       || (type->get_kind () == TyTy::TypeKind::USIZE)
 	       || (type->get_kind () == TyTy::TypeKind::ISIZE)
 	       || (type->get_kind () == TyTy::TypeKind::INFER
-		   && (((TyTy::InferType *) type)->get_infer_kind ()
+		   && (((const TyTy::InferType *) type)->get_infer_kind ()
 		       == TyTy::InferType::INTEGRAL));
       }
+
     gcc_unreachable ();
+    return false;
   }
 
   /* The return value of TypeCheckExpr::Resolve */
