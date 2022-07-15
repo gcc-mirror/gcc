@@ -1,3 +1,9 @@
+2022-07-14   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Do
+	not generate block copies with vector pair instructions if we are
+	tuning for power10.  Back port from master branch.
+
 2022-07-12  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
