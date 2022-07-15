@@ -848,6 +848,48 @@ taint_state_machine::on_condition (sm_context *sm_ctxt,
     case LE_EXPR:
     case LT_EXPR:
       {
+	/* Detect where build_range_check has optimized
+	   (c>=low) && (c<=high)
+	   into
+	   (c-low>=0) && (c-low<=high-low)
+	   and thus into:
+	   (unsigned)(c - low) <= (unsigned)(high-low).  */
+	if (const binop_svalue *binop_sval
+	      = lhs->dyn_cast_binop_svalue ())
+	  {
+	    const svalue *inner_lhs = binop_sval->get_arg0 ();
+	    enum tree_code inner_op = binop_sval->get_op ();
+	    const svalue *inner_rhs = binop_sval->get_arg1 ();
+	    if (const svalue *before_cast = inner_lhs->maybe_undo_cast ())
+	      inner_lhs = before_cast;
+	    if (tree outer_rhs_cst = rhs->maybe_get_constant ())
+	      if (tree inner_rhs_cst = inner_rhs->maybe_get_constant ())
+		if (inner_op == PLUS_EXPR
+		    && TREE_CODE (inner_rhs_cst) == INTEGER_CST
+		    && TREE_CODE (outer_rhs_cst) == INTEGER_CST
+		    && TYPE_UNSIGNED (TREE_TYPE (inner_rhs_cst))
+		    && TYPE_UNSIGNED (TREE_TYPE (outer_rhs_cst)))
+		  {
+		    /* We have
+		       (unsigned)(INNER_LHS + CST_A) </<= UNSIGNED_CST_B
+		       and thus an optimized test of INNER_LHS (before any
+		       cast to unsigned) against a range.
+		       Transition any of the tainted states to the stop state.
+		       We have to special-case this here rather than in
+		       region_model::on_condition since we can't apply
+		       both conditions simultaneously (we'd have a transition
+		       from the old state to has_lb, then a transition from
+		       the old state *again* to has_ub).  */
+		    state_t old_state
+		      = sm_ctxt->get_state (stmt, inner_lhs);
+		    if (old_state == m_tainted
+			|| old_state == m_has_lb
+			|| old_state == m_has_ub)
+		      sm_ctxt->set_next_state (stmt, inner_lhs, m_stop);
+		    return;
+		  }
+	  }
+
 	sm_ctxt->on_transition (node, stmt, lhs, m_tainted,
 				m_has_ub);
 	sm_ctxt->on_transition (node, stmt, lhs, m_has_lb,
