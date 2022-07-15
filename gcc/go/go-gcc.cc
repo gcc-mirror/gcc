@@ -2112,6 +2112,19 @@ Gcc_backend::call_expression(Bfunction*, // containing fcn for call
       args[i] = fn_args.at(i)->get_tree();
       if (args[i] == error_mark_node)
         return this->error_expression();
+      if (TREE_TYPE(args[i]) == void_type_node)
+	{
+	  // This can happen for a case like f(g()) where g returns a
+	  // zero-sized type, because in that case we've changed g to
+	  // return void.
+	  tree t = TYPE_ARG_TYPES(TREE_TYPE(TREE_TYPE(fn)));
+	  for (size_t j = 0; j < i; ++j)
+	    t = TREE_CHAIN(t);
+	  tree arg_type = TREE_TYPE(TREE_VALUE(t));
+	  args[i] = fold_build2_loc(EXPR_LOCATION(args[i]), COMPOUND_EXPR,
+				    arg_type, args[i],
+				    build_zero_cst(arg_type));
+	}
     }
 
   tree fndecl = fn;
