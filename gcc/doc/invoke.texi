@@ -446,6 +446,11 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-double-fclose @gol
 -Wno-analyzer-double-free @gol
 -Wno-analyzer-exposure-through-output-file @gol
+-Wno-analyzer-fd-access-mode-mismatch @gol
+-Wno-analyzer-fd-double-close @gol
+-Wno-analyzer-fd-leak @gol
+-Wno-analyzer-fd-use-after-close @gol
+-Wno-analyzer-fd-use-without-check @gol
 -Wno-analyzer-file-leak @gol
 -Wno-analyzer-free-of-non-heap @gol
 -Wno-analyzer-malloc-leak @gol
@@ -10231,6 +10236,11 @@ following warnings from @option{-fanalyzer}:
 -Wanalyzer-double-fclose @gol
 -Wanalyzer-double-free @gol
 -Wanalyzer-exposure-through-output-file @gol
+-Wanalyzer-fd-access-mode-mismatch @gol
+-Wanalyzer-fd-double-close @gol
+-Wanalyzer-fd-leak @gol
+-Wanalyzer-fd-use-after-close @gol
+-Wanalyzer-fd-use-without-check @gol
 -Wanalyzer-file-leak @gol
 -Wanalyzer-free-of-non-heap @gol
 -Wanalyzer-malloc-leak @gol
