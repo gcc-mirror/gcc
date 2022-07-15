@@ -130,6 +130,70 @@ Mappings::get_current_crate () const
   return currentCrateNum;
 }
 
+bool
+Mappings::get_crate_name (CrateNum crate_num, std::string &name) const
+{
+  auto it = crate_names.find (crate_num);
+  if (it == crate_names.end ())
+    return false;
+
+  name.assign (it->second);
+  return true;
+}
+
+void
+Mappings::set_crate_name (CrateNum crate_num, const std::string &name)
+{
+  crate_names[crate_num] = name;
+}
+
+std::string
+Mappings::get_current_crate_name () const
+{
+  std::string name;
+  bool ok = get_crate_name (get_current_crate (), name);
+  rust_assert (ok);
+  return name;
+}
+
+bool
+Mappings::lookup_crate_name (const std::string &crate_name,
+			     CrateNum &resolved_crate_num) const
+{
+  for (const auto &it : crate_names)
+    {
+      if (it.second.compare (crate_name) == 0)
+	{
+	  resolved_crate_num = it.first;
+	  return true;
+	}
+    }
+  return false;
+}
+
+bool
+Mappings::crate_num_to_nodeid (const CrateNum &crate_num, NodeId &node_id) const
+{
+  auto it = ast_crate_mappings.find (crate_num);
+  if (it == ast_crate_mappings.end ())
+    return false;
+
+  node_id = it->second->get_node_id ();
+  return true;
+}
+
+bool
+Mappings::node_is_crate (NodeId node_id) const
+{
+  for (const auto &it : ast_crate_mappings)
+    {
+      NodeId crate_node_id = it.second->get_node_id ();
+      if (crate_node_id == node_id)
+	return true;
+    }
+  return false;
+}
+
 NodeId
 Mappings::get_next_node_id ()
 {
@@ -199,7 +263,7 @@ Mappings::insert_ast_crate (std::unique_ptr<AST::Crate> &&crate,
   rust_assert (it == ast_crate_mappings.end ());
 
   // store it
-  ast_crate_mappings.insert ({crate_num, crate.get ()});
+  ast_crate_mappings.insert ({crate_num, crate.release ()});
 
   // return the reference to it
   it = ast_crate_mappings.find (crate_num);
@@ -236,7 +300,7 @@ Mappings::insert_hir_crate (std::unique_ptr<HIR::Crate> &&crate)
 
   insert_node_to_hir (crate->get_mappings ().get_nodeid (),
 		      crate->get_mappings ().get_hirid ());
-  hir_crate_mappings.insert ({crateNum, crate.get ()});
+  hir_crate_mappings.insert ({crateNum, crate.release ()});
 
   it = hir_crate_mappings.find (crateNum);
   rust_assert (it != hir_crate_mappings.end ());

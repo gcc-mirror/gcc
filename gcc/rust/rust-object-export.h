@@ -19,6 +19,8 @@
 #ifndef RUST_OBJECT_EXPORT_H
 #define RUST_OBJECT_EXPORT_H
 
+#include "rust-system.h"
+
 extern unsigned int
 rust_field_alignment (tree t);
 
