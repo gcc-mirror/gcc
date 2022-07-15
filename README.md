@@ -20,12 +20,16 @@ of when it comes to a modern language.
 
 ## Build Farm Status
 
+- [Debian i386](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-i386) [![Debian i386](https://builder.sourceware.org/buildbot/badges/gccrust-debian-i386.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-i386)
+- [Debian ppc64](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-ppc64) [![Debian ppc64](https://builder.sourceware.org/buildbot/badges/gccrust-debian-ppc64.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-ppc64)
+- [Debian testing-x86_64](https://builder.sourceware.org/buildbot/#/builders/146) [![Debian testing-x86_64](https://builder.sourceware.org/buildbot/badges/gccrust-debian-testing-x86_64.svg)](https://builder.sourceware.org/buildbot/#/builders/146)
+- [Fedora arm64](https://builder.sourceware.org/buildbot/#/builders/179) [![Fedora arm64](https://builder.sourceware.org/buildbot/badges/gccrust-fedora-arm64.svg)](https://builder.sourceware.org/buildbot/#/builders/179)
+- [Fedora ppc64le](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-ppc64le) [![Fedora ppc64le](https://builder.sourceware.org/buildbot/badges/gccrust-fedora-ppc64le.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-ppc64le)
+- [Fedora s390x](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-s390x) [![Fedora s390x](https://builder.sourceware.org/buildbot/badges/gccrust-fedora-s390x.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-s390x)
 - [Fedora X86_64](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-x86_64) [![Fedora X86-64](https://builder.sourceware.org/buildbot/badges/gccrust-fedora-x86_64.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-x86_64)
-- [Debian i386](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-i386) [![Fedora X86-64](https://builder.sourceware.org/buildbot/badges/gccrust-debian-i386.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-i386)
-- [Fedora s390x](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-s390x) [![Fedora X86-64](https://builder.sourceware.org/buildbot/badges/gccrust-fedora-s390x.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-s390x)
-- [Debian ppc64](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-ppc64) [![Fedora X86-64](https://builder.sourceware.org/buildbot/badges/gccrust-debian-ppc64.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-debian-ppc64)
-- [Fedora ppc64le](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-ppc64le) [![Fedora
-X86-64](https://builder.sourceware.org/buildbot/badges/gccrust-fedora-ppc64le.svg)](https://builder.sourceware.org/buildbot/#/builders/gccrust-fedora-ppc64le)
+- [OpenSUSE Leap X86_64](https://builder.sourceware.org/buildbot/#/builders/104) [![OpenSUSE Leap X86_64](https://builder.sourceware.org/buildbot/badges/gccrust-opensuseleap-x86_64.svg)](https://builder.sourceware.org/buildbot/#/builders/104)
+- [OpenSUSE tw X86_64](https://builder.sourceware.org/buildbot/#/builders/103) [![OpenSUSE tw X86_64](https://builder.sourceware.org/buildbot/badges/gccrust-opensusetw-x86_64.svg)](https://builder.sourceware.org/buildbot/#/builders/103)
+- [Rawhide X86_64](https://builder.sourceware.org/buildbot/#/builders/132) [![Rawhide X86_64](https://builder.sourceware.org/buildbot/badges/gccrust-rawhide-x86_64.svg)](https://builder.sourceware.org/buildbot/#/builders/132)
 
 ## FAQ
 
