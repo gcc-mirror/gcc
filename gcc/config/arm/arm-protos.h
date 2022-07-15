@@ -210,6 +210,22 @@ extern opt_machine_mode arm_get_mask_mode (machine_mode mode);
 
 #endif /* RTX_CODE */
 
+/* It's convenient to divide the built-in function codes into groups,
+   rather than having everything in a single enum.  This type enumerates
+   those groups.  */
+enum arm_builtin_class
+{
+  ARM_BUILTIN_GENERAL
+};
+
+/* Built-in function codes are structured so that the low
+   ARM_BUILTIN_SHIFT bits contain the arm_builtin_class
+   and the upper bits contain a group-specific subcode.  */
+const unsigned int ARM_BUILTIN_SHIFT = 1;
+
+/* Mask that selects the arm part of a function code.  */
+const unsigned int ARM_BUILTIN_CLASS = (1 << ARM_BUILTIN_SHIFT) - 1;
+
 /* MVE functions.  */
 namespace arm_mve {
   void handle_arm_mve_types_h ();
