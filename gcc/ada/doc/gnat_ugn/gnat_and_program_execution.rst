@@ -844,9 +844,7 @@ assorted runtime routines and the output will vary from platform to platform.
 
 It is also possible to use ``GDB`` with these traceback addresses to debug
 the program. For example, we can break at a given code location, as reported
-in the stack traceback:
-
-  ::
+in the stack traceback::
 
      $ gdb -nw stb
 
@@ -870,9 +868,8 @@ Executables on recent Windows versions, in other words without using the switch
 with :switch:`--load` instead of the ``addr2line`` tool. The main difference
 is that you need to copy the Load Address output in the traceback ahead of the
 sequence of addresses. And the default mode of ``gnatsymbolize`` is equivalent
-to that of ``addr2line`` with the above switches, so none of them is needed:
+to that of ``addr2line`` with the above switches, so none of them is needed::
 
-  ::
      $ gnatmake stb -g -bargs -E
      $ stb
 
