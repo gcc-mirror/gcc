@@ -138,7 +138,7 @@
 #define LINK_REGNUM		  18
 #define EXEC_SAVE_REG		  20
 #define CC_SAVE_REG		  22
-#define RETURN_VALUE_REG	  24	/* Must be divisible by 4.  */
+#define RETURN_VALUE_REG	  168	/* Must be divisible by 4.  */
 #define STATIC_CHAIN_REGNUM	  30
 #define WORK_ITEM_ID_Z_REG	  162
 #define SOFT_ARG_REG		  416
@@ -146,7 +146,8 @@
 #define DWARF_LINK_REGISTER	  420
 #define FIRST_PSEUDO_REGISTER	  421
 
-#define FIRST_PARM_REG 24
+#define FIRST_PARM_REG (FIRST_SGPR_REG + 24)
+#define FIRST_VPARM_REG (FIRST_VGPR_REG + 8)
 #define NUM_PARM_REGS  6
 
 /* There is no arg pointer.  Just choose random fixed register that does
@@ -164,7 +165,8 @@
 #define CC_REG_P(X)		(REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define CC_REGNO_P(X)		((X) == SCC_REG || (X) == VCC_REG)
 #define FUNCTION_ARG_REGNO_P(N) \
-  ((N) >= FIRST_PARM_REG && (N) < (FIRST_PARM_REG + NUM_PARM_REGS))
+  (((N) >= FIRST_PARM_REG && (N) < (FIRST_PARM_REG + NUM_PARM_REGS)) \
+   || ((N) >= FIRST_VPARM_REG && (N) < (FIRST_VPARM_REG + NUM_PARM_REGS)))
 
 
 #define FIXED_REGISTERS {			    \
@@ -550,6 +552,7 @@ typedef struct gcn_args
   tree fntype;
   struct gcn_kernel_args args;
   int num;
+  int vnum;
   int offset;
   int alignment;
 } CUMULATIVE_ARGS;
@@ -653,7 +656,7 @@ enum gcn_builtin_codes
     }
 
 /* This needs to match gcn_function_value.  */
-#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, SGPR_REGNO (RETURN_VALUE_REG))
+#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, RETURN_VALUE_REG)
 
 /* The s_ff0 and s_flbit instructions return -1 if no input bits are set.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = -1, 2)

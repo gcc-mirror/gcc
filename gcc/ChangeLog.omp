@@ -1,3 +1,22 @@
+2022-09-01  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	* config/gcn/gcn.cc (gcn_function_value): Allow vector return values.
+	(num_arg_regs): Allow vector arguments.
+	(gcn_function_arg): Likewise.
+	(gcn_function_arg_advance): Likewise.
+	(gcn_arg_partial_bytes): Likewise.
+	(gcn_return_in_memory): Likewise.
+	(gcn_expand_epilogue): Get return value from v8.
+	* config/gcn/gcn.h (RETURN_VALUE_REG): Set to v8.
+	(FIRST_PARM_REG): USE FIRST_SGPR_REG for clarity.
+	(FIRST_VPARM_REG): New.
+	(FUNCTION_ARG_REGNO_P): Allow vector parameters.
+	(struct gcn_args): Add vnum field.
+	(LIBCALL_VALUE): All vector return values.
+	* config/gcn/gcn.md (gcn_call_value): Add vector constraints.
+	(gcn_call_value_indirect): Likewise.
+
 2022-08-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	Revert:
