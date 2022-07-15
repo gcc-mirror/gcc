@@ -9770,47 +9770,121 @@ ix86_expand_sse_compare (const struct builtin_description *d,
   return target;
 }
 
+/* Subroutine of ix86_sse_comi and ix86_sse_comi_round to take care of
+ * ordered EQ or unordered NE, generate PF jump.  */
+
+static rtx
+ix86_ssecom_setcc (const enum rtx_code comparison,
+		   bool check_unordered, machine_mode mode,
+		   rtx set_dst, rtx target)
+{
+
+  rtx_code_label *label = NULL;
+
+  /* NB: For ordered EQ or unordered NE, check ZF alone isn't sufficient
+     with NAN operands.  */
+  if (check_unordered)
+    {
+      gcc_assert (comparison == EQ || comparison == NE);
+
+      rtx flag = gen_rtx_REG (CCFPmode, FLAGS_REG);
+      label = gen_label_rtx ();
+      rtx tmp = gen_rtx_fmt_ee (UNORDERED, VOIDmode, flag, const0_rtx);
+      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
+				  gen_rtx_LABEL_REF (VOIDmode, label),
+				  pc_rtx);
+      emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+    }
+
+  /* NB: Set CCFPmode and check a different CCmode which is in subset
+     of CCFPmode.  */
+  if (GET_MODE (set_dst) != mode)
+    {
+      gcc_assert (mode == CCAmode || mode == CCCmode
+		  || mode == CCOmode || mode == CCPmode
+		  || mode == CCSmode || mode == CCZmode);
+      set_dst = gen_rtx_REG (mode, FLAGS_REG);
+    }
+
+  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
+			  gen_rtx_fmt_ee (comparison, QImode,
+					  set_dst,
+					  const0_rtx)));
+
+  if (label)
+    emit_label (label);
+
+  return SUBREG_REG (target);
+}
+
 /* Subroutine of ix86_expand_builtin to take care of comi insns.  */
 
 static rtx
 ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
 		      rtx target)
 {
-  rtx pat;
+  rtx pat, set_dst;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
   tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
-  machine_mode mode0 = insn_data[d->icode].operand[0].mode;
-  machine_mode mode1 = insn_data[d->icode].operand[1].mode;
-  enum rtx_code comparison = d->comparison;
+  enum insn_code icode = d->icode;
+  const struct insn_data_d *insn_p = &insn_data[icode];
+  machine_mode mode0 = insn_p->operand[0].mode;
+  machine_mode mode1 = insn_p->operand[1].mode;
 
   if (VECTOR_MODE_P (mode0))
     op0 = safe_vector_operand (op0, mode0);
   if (VECTOR_MODE_P (mode1))
     op1 = safe_vector_operand (op1, mode1);
 
+  enum rtx_code comparison = d->comparison;
+  rtx const_val = const0_rtx;
+
+  bool check_unordered = false;
+  machine_mode mode = CCFPmode;
+  switch (comparison)
+    {
+    case LE:	/* -> GE  */
+    case LT:	/* -> GT  */
+      std::swap (op0, op1);
+      comparison = swap_condition (comparison);
+      /* FALLTHRU */
+    case GT:
+    case GE:
+      break;
+    case EQ:
+      check_unordered = true;
+      mode = CCZmode;
+      break;
+    case NE:
+      check_unordered = true;
+      mode = CCZmode;
+      const_val = const1_rtx;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
   target = gen_reg_rtx (SImode);
-  emit_move_insn (target, const0_rtx);
+  emit_move_insn (target, const_val);
   target = gen_rtx_SUBREG (QImode, target, 0);
 
   if ((optimize && !register_operand (op0, mode0))
-      || !insn_data[d->icode].operand[0].predicate (op0, mode0))
+      || !insn_p->operand[0].predicate (op0, mode0))
     op0 = copy_to_mode_reg (mode0, op0);
   if ((optimize && !register_operand (op1, mode1))
-      || !insn_data[d->icode].operand[1].predicate (op1, mode1))
+      || !insn_p->operand[1].predicate (op1, mode1))
     op1 = copy_to_mode_reg (mode1, op1);
 
-  pat = GEN_FCN (d->icode) (op0, op1);
+  pat = GEN_FCN (icode) (op0, op1);
   if (! pat)
     return 0;
-  emit_insn (pat);
-  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
-			  gen_rtx_fmt_ee (comparison, QImode,
-					  SET_DEST (pat),
-					  const0_rtx)));
 
-  return SUBREG_REG (target);
+  set_dst = SET_DEST (pat);
+  emit_insn (pat);
+  return ix86_ssecom_setcc (comparison, check_unordered, mode,
+			    set_dst, target);
 }
 
 /* Subroutines of ix86_expand_args_builtin to take care of round insns.  */
@@ -11410,42 +11484,8 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
 
   emit_insn (pat);
 
-  rtx_code_label *label = NULL;
-
-  /* NB: For ordered EQ or unordered NE, check ZF alone isn't sufficient
-     with NAN operands.  */
-  if (check_unordered)
-    {
-      gcc_assert (comparison == EQ || comparison == NE);
-
-      rtx flag = gen_rtx_REG (CCFPmode, FLAGS_REG);
-      label = gen_label_rtx ();
-      rtx tmp = gen_rtx_fmt_ee (UNORDERED, VOIDmode, flag, const0_rtx);
-      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
-				  gen_rtx_LABEL_REF (VOIDmode, label),
-				  pc_rtx);
-      emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
-    }
-
-  /* NB: Set CCFPmode and check a different CCmode which is in subset
-     of CCFPmode.  */
-  if (GET_MODE (set_dst) != mode)
-    {
-      gcc_assert (mode == CCAmode || mode == CCCmode
-		  || mode == CCOmode || mode == CCPmode
-		  || mode == CCSmode || mode == CCZmode);
-      set_dst = gen_rtx_REG (mode, FLAGS_REG);
-    }
-
-  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
-			  gen_rtx_fmt_ee (comparison, QImode,
-					  set_dst,
-					  const0_rtx)));
-
-  if (label)
-    emit_label (label);
-
-  return SUBREG_REG (target);
+  return ix86_ssecom_setcc (comparison, check_unordered, mode,
+			    set_dst, target);
 }
 
 static rtx
