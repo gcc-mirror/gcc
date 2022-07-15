@@ -362,7 +362,7 @@ arc*-*-*)
 	;;
 arm*-*-*)
 	cpu_type=arm
-	extra_objs="arm-builtins.o arm-mve-builtins.o aarch-common.o aarch-bti-insert.o"
+	extra_objs="arm-builtins.o arm-mve-builtins.o arm-mve-builtins-shapes.o arm-mve-builtins-base.o aarch-common.o aarch-bti-insert.o"
 	extra_headers="mmintrin.h arm_neon.h arm_acle.h arm_fp16.h arm_cmse.h arm_bf16.h arm_mve_types.h arm_mve.h arm_cde.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"

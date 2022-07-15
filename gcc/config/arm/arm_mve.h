@@ -34,6 +34,12 @@
 #endif
 #include "arm_mve_types.h"
 
+#ifdef __ARM_MVE_PRESERVE_USER_NAMESPACE
+#pragma GCC arm "arm_mve.h" true
+#else
+#pragma GCC arm "arm_mve.h" false
+#endif
+
 #ifndef __ARM_MVE_PRESERVE_USER_NAMESPACE
 #define vst4q(__addr, __value) __arm_vst4q(__addr, __value)
 #define vdupq_n(__a) __arm_vdupq_n(__a)

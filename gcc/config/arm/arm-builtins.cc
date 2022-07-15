@@ -2712,6 +2712,7 @@ arm_general_builtin_decl (unsigned code)
   return arm_builtin_decls[code];
 }
 
+/* Implement TARGET_BUILTIN_DECL.  */
 /* Return the ARM builtin for CODE.  */
 tree
 arm_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
@@ -2721,6 +2722,8 @@ arm_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
     {
     case ARM_BUILTIN_GENERAL:
       return arm_general_builtin_decl (subcode);
+    case ARM_BUILTIN_MVE:
+      return error_mark_node;
     default:
       gcc_unreachable ();
     }
@@ -4087,6 +4090,8 @@ arm_expand_builtin (tree exp,
     {
     case ARM_BUILTIN_GENERAL:
       return arm_general_expand_builtin (subcode, exp, target, ignore);
+    case ARM_BUILTIN_MVE:
+      return arm_mve::expand_builtin (subcode, exp, target);
     default:
       gcc_unreachable ();
     }
@@ -4188,8 +4193,9 @@ arm_general_check_builtin_call (unsigned int code)
 
 /* Implement TARGET_CHECK_BUILTIN_CALL.  */
 bool
-arm_check_builtin_call (location_t, vec<location_t>, tree fndecl, tree,
-			unsigned int, tree *)
+arm_check_builtin_call (location_t loc, vec<location_t> arg_loc,
+			tree fndecl, tree orig_fndecl,
+			unsigned int nargs, tree *args)
 {
   unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
   unsigned int subcode = code >> ARM_BUILTIN_SHIFT;
@@ -4197,6 +4203,9 @@ arm_check_builtin_call (location_t, vec<location_t>, tree fndecl, tree,
     {
     case ARM_BUILTIN_GENERAL:
       return arm_general_check_builtin_call (subcode);
+    case ARM_BUILTIN_MVE:
+      return arm_mve::check_builtin_call (loc, arg_loc, subcode,
+					  orig_fndecl, nargs, args);
     default:
       gcc_unreachable ();
     }
@@ -4215,6 +4224,8 @@ arm_describe_resolver (tree fndecl)
 	&& subcode < ARM_BUILTIN_MVE_BASE)
 	return arm_cde_resolver;
       return arm_no_resolver;
+    case ARM_BUILTIN_MVE:
+      return arm_mve_resolver;
     default:
       gcc_unreachable ();
     }
