@@ -189,6 +189,8 @@ struct CompileOptions
   bool enable_test = false;
   bool debug_assertions = false;
   bool proc_macro = false;
+  std::string metadata_output_path;
+
   enum Edition
   {
     E2015 = 0,
@@ -235,6 +237,21 @@ struct CompileOptions
   void set_edition (int raw_edition)
   {
     edition = static_cast<Edition> (raw_edition);
+  }
+
+  void set_metadata_output (const std::string &path)
+  {
+    metadata_output_path = path;
+  }
+
+  const std::string &get_metadata_output () const
+  {
+    return metadata_output_path;
+  }
+
+  bool metadata_output_path_set () const
+  {
+    return !metadata_output_path.empty ();
   }
 };
 
@@ -292,7 +309,7 @@ public:
     return extra_files.back ().c_str ();
   }
 
-  NodeId load_extern_crate (const std::string &crate_name);
+  NodeId load_extern_crate (const std::string &crate_name, Location locus);
 
 private:
   void parse_file (const char *filename);

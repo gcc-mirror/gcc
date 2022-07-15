@@ -17,8 +17,10 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-attribute-visitor.h"
+#include "rust-session-manager.h"
 
 namespace Rust {
+
 // Visitor used to expand attributes.
 void
 AttrVisitor::expand_struct_fields (std::vector<AST::StructField> &fields)
@@ -2147,14 +2149,21 @@ AttrVisitor::visit (AST::Module &module)
   expand_pointer_allow_strip (module.get_items ());
 }
 void
-AttrVisitor::visit (AST::ExternCrate &crate)
+AttrVisitor::visit (AST::ExternCrate &extern_crate)
 {
   // strip test based on outer attrs
-  expander.expand_cfg_attrs (crate.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (crate.get_outer_attrs ()))
+  expander.expand_cfg_attrs (extern_crate.get_outer_attrs ());
+  if (expander.fails_cfg_with_expand (extern_crate.get_outer_attrs ()))
     {
-      crate.mark_for_strip ();
+      extern_crate.mark_for_strip ();
       return;
+    }
+
+  if (!extern_crate.references_self ())
+    {
+      Session &session = Session::get_instance ();
+      session.load_extern_crate (extern_crate.get_referenced_crate (),
+				 extern_crate.get_locus ());
     }
 }
 void

@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
-// #include "rust-session-manager.h"
 
 #include "rust-session-manager.h"
 #include "rust-diagnostics.h"
@@ -33,6 +32,9 @@
 #include "rust-lint-unused-var.h"
 #include "rust-hir-dump.h"
 #include "rust-ast-dump.h"
+#include "rust-export-metadata.h"
+#include "rust-imports.h"
+#include "rust-extern-crate.h"
 
 #include "diagnostic.h"
 #include "input.h"
@@ -406,11 +408,11 @@ Session::handle_option (
   switch (code)
     {
     case OPT_I:
-      // TODO: add search path
-      break;
-
-    case OPT_L:
-      // TODO: add library link path or something
+      case OPT_L: {
+	// TODO: add search path
+	const std::string p = std::string (arg);
+	add_search_path (p);
+      }
       break;
 
     case OPT_frust_crate_:
@@ -457,6 +459,10 @@ Session::handle_option (
 
     case OPT_frust_edition_:
       options.set_edition (flag_rust_edition);
+      break;
+
+    case OPT_frust_metadata_output_:
+      options.set_metadata_output (arg);
       break;
 
     default:
@@ -793,6 +799,23 @@ Session::parse_file (const char *filename)
       // lints
       Analysis::ScanDeadcode::Scan (hir);
       Analysis::UnusedVariables::Lint (ctx);
+
+      // metadata
+      bool specified_emit_metadata
+	= flag_rust_embed_metadata || options.metadata_output_path_set ();
+      if (!specified_emit_metadata)
+	{
+	  Metadata::PublicInterface::ExportTo (
+	    hir, Metadata::PublicInterface::expected_metadata_filename ());
+	}
+      else
+	{
+	  if (flag_rust_embed_metadata)
+	    Metadata::PublicInterface::Export (hir);
+	  if (options.metadata_output_path_set ())
+	    Metadata::PublicInterface::ExportTo (
+	      hir, options.get_metadata_output ());
+	}
     }
 
   // pass to GCC middle-end
@@ -947,6 +970,8 @@ Session::injection (AST::Crate &crate)
    * an invalid crate type is not specified, so maybe just do that. Valid
    * crate types: bin lib dylib staticlib cdylib rlib proc-macro */
 
+  // this crate type will have options affecting the metadata ouput
+
   rust_debug ("finished injection");
 }
 
@@ -1097,15 +1122,76 @@ Session::dump_type_resolution (HIR::Crate &hir) const
 // imports
 
 NodeId
-Session::load_extern_crate (const std::string &crate_name)
+Session::load_extern_crate (const std::string &crate_name, Location locus)
 {
-  // check if it was already loaded
-  // ....
+  // has it already been loaded?
+  CrateNum found_crate_num = UNKNOWN_CREATENUM;
+  bool found = mappings->lookup_crate_name (crate_name, found_crate_num);
+  if (found)
+    {
+      NodeId resolved_node_id = UNKNOWN_NODEID;
+      bool resolved
+	= mappings->crate_num_to_nodeid (found_crate_num, resolved_node_id);
+      rust_assert (resolved);
 
-  rust_debug ("load_extern_crate: %s", crate_name.c_str ());
-  gcc_unreachable ();
+      return resolved_node_id;
+    }
 
-  return UNKNOWN_NODEID;
+  std::string relative_import_path = "";
+  Import::Stream *s
+    = Import::open_package (crate_name, locus, relative_import_path);
+  if (s == NULL)
+    {
+      rust_error_at (locus, "failed to locate crate %<%s%>",
+		     crate_name.c_str ());
+      return UNKNOWN_NODEID;
+    }
+
+  Imports::ExternCrate extern_crate (*s);
+  bool ok = extern_crate.load (locus);
+  if (!ok)
+    {
+      rust_error_at (locus, "failed to load crate metadata");
+      return UNKNOWN_NODEID;
+    }
+
+  // ensure the current vs this crate name don't collide
+  const std::string current_crate_name = mappings->get_current_crate_name ();
+  if (current_crate_name.compare (extern_crate.get_crate_name ()) == 0)
+    {
+      rust_error_at (locus, "current crate name %<%s%> collides with this",
+		     current_crate_name.c_str ());
+      return UNKNOWN_NODEID;
+    }
+
+  // setup mappings
+  CrateNum saved_crate_num = mappings->get_current_crate ();
+  CrateNum crate_num
+    = mappings->get_next_crate_num (extern_crate.get_crate_name ());
+  mappings->set_current_crate (crate_num);
+
+  // then lets parse this as a 2nd crate
+  Lexer lex (extern_crate.get_metadata ());
+  Parser<Lexer> parser (lex);
+  std::unique_ptr<AST::Crate> metadata_crate = parser.parse_crate ();
+  AST::Crate &parsed_crate
+    = mappings->insert_ast_crate (std::move (metadata_crate), crate_num);
+
+  // name resolve it
+  Resolver::NameResolution::Resolve (parsed_crate);
+
+  // perform hir lowering
+  std::unique_ptr<HIR::Crate> lowered
+    = HIR::ASTLowering::Resolve (parsed_crate);
+  HIR::Crate &hir = mappings->insert_hir_crate (std::move (lowered));
+
+  // perform type resolution
+  Resolver::TypeResolution::Resolve (hir);
+
+  // always restore the crate_num
+  mappings->set_current_crate (saved_crate_num);
+
+  return parsed_crate.get_node_id ();
 }
 //
 

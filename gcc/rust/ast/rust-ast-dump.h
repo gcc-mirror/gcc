@@ -64,6 +64,7 @@ private:
    * Format a function's definition parameter
    */
   void format_function_param (FunctionParam &param);
+  void emit_attrib (const Attribute &attrib);
 
   // rust-ast.h
   void visit (Token &tok);

@@ -70,6 +70,45 @@ Dump::format_function_param (FunctionParam &param)
 }
 
 void
+Dump::emit_attrib (const Attribute &attrib)
+{
+  stream << "#";
+  stream << "[";
+
+  for (size_t i = 0; i < attrib.get_path ().get_segments ().size (); i++)
+    {
+      const auto &seg = attrib.get_path ().get_segments ().at (i);
+      bool has_next = (i + 1) < attrib.get_path ().get_segments ().size ();
+
+      stream << seg.get_segment_name ();
+      if (has_next)
+	stream << "::";
+    }
+
+  if (attrib.has_attr_input ())
+    {
+      stream << " = ";
+
+      bool is_literal = attrib.get_attr_input ().get_attr_input_type ()
+			== AST::AttrInput::AttrInputType::LITERAL;
+      if (is_literal)
+	{
+	  auto &literal
+	    = static_cast<AST::AttrInputLiteral &> (attrib.get_attr_input ());
+	  const auto &value = literal.get_literal ().as_string ();
+
+	  stream << "\"" << value << "\"";
+	}
+      else
+	{
+	  stream << "FIXME";
+	}
+    }
+
+  stream << "]";
+}
+
+void
 Dump::visit (Token &tok)
 {}
 
@@ -440,7 +479,7 @@ Dump::visit (TypeParam &param)
   stream << param.get_type_representation ();
   if (param.has_type ())
     {
-      stream << ": ";
+      stream << " = ";
       param.get_type ()->accept_vis (*this);
     }
 }
@@ -680,7 +719,33 @@ Dump::visit (TraitItemType &item)
 void
 Dump::visit (Trait &trait)
 {
-  stream << "trait " << trait.get_identifier () << " {\n";
+  for (const auto &attr : trait.get_outer_attrs ())
+    {
+      emit_attrib (attr);
+      stream << "\n" << indentation;
+    }
+
+  stream << "trait " << trait.get_identifier ();
+
+  // Traits actually have an implicit Self thrown at the start so we must expect
+  // the number of generic params to be > 1
+  if (trait.get_generic_params ().size () > 1)
+    {
+      stream << "<";
+      for (size_t i = 1; i < trait.get_generic_params ().size (); i++)
+	{
+	  auto &param = trait.get_generic_params ().at (i);
+	  param->accept_vis (*this);
+
+	  bool has_next = (i + 1) < trait.get_generic_params ().size ();
+	  if (has_next)
+	    stream << ", ";
+	}
+      stream << ">";
+    }
+
+  stream << " {\n";
+
   indentation.increment ();
 
   for (auto &item : trait.get_trait_items ())

@@ -103,6 +103,14 @@ Enum(frust_edition) String(2018) Value(1)
 EnumValue
 Enum(frust_edition) String(2021) Value(2)
 
+frust-embed-metadata
+Rust Var(flag_rust_embed_metadata)
+Flag to enable embeding metadata directly into object files
+
+frust-metadata-output=
+Rust Joined RejectNegative
+-frust-metadata-output=<path.rox>  Path to output crate metadata
+
 o
 Rust Joined Separate
 ; Documented in common.opt
