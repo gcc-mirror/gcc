@@ -2009,6 +2009,59 @@ gnu_vector_type_p (const_tree type)
   return TREE_CODE (type) == VECTOR_TYPE && !TYPE_INDIVISIBLE_P (type);
 }
 
+extern vec<tree, va_gc> *
+make_tree_vector (void);
+
+extern void
+release_tree_vector (vec<tree, va_gc> *);
+
+/* Simplified unique_ptr clone to release a tree vec on exit.  */
+
+class releasing_vec
+{
+public:
+  typedef vec<tree, va_gc> vec_t;
+
+  releasing_vec (vec_t *v) : v (v) {}
+  releasing_vec () : v (make_tree_vector ()) {}
+
+  /* Copy ops are deliberately declared but not defined,
+     copies must always be elided.  */
+  releasing_vec (const releasing_vec &);
+  releasing_vec &operator= (const releasing_vec &);
+
+  vec_t &operator* () const { return *v; }
+  vec_t *operator-> () const { return v; }
+  vec_t *get () const { return v; }
+  operator vec_t * () const { return v; }
+  vec_t **operator& () { return &v; }
+
+  /* Breaks pointer/value consistency for convenience.  This takes ptrdiff_t
+     rather than unsigned to avoid ambiguity with the built-in operator[]
+     (bootstrap/91828).  */
+  tree &operator[] (ptrdiff_t i) const { return (*v)[i]; }
+
+  tree *begin () { return ::begin (v); }
+  tree *end () { return ::end (v); }
+
+  void release ()
+  {
+    release_tree_vector (v);
+    v = NULL;
+  }
+
+  ~releasing_vec () { release_tree_vector (v); }
+
+private:
+  vec_t *v;
+};
+
+inline tree *
+vec_safe_push (releasing_vec &r, const tree &t CXX_MEM_STAT_INFO)
+{
+  return vec_safe_push (*&r, t PASS_MEM_STAT);
+}
+
 } // namespace Rust
 
 #endif // RUST_TREE

@@ -3154,4 +3154,72 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
 
   return true;
 }
+
+// forked from gcc/cp/tree.cc cv_unqualified
+
+/* Return TYPE with const and volatile removed.  */
+
+tree
+cv_unqualified (tree type)
+{
+  int quals;
+
+  if (type == error_mark_node)
+    return type;
+
+  quals = rs_type_quals (type);
+  quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+  return rs_build_qualified_type (type, quals);
+}
+
+/* The C and C++ parsers both use vectors to hold function arguments.
+   For efficiency, we keep a cache of unused vectors.  This is the
+   cache.  */
+
+typedef vec<tree, va_gc> *tree_gc_vec;
+static GTY ((deletable)) vec<tree_gc_vec, va_gc> *tree_vector_cache;
+
+// forked from gcc/c-family/c-common.c make_tree_vector
+
+/* Return a new vector from the cache.  If the cache is empty,
+   allocate a new vector.  These vectors are GC'ed, so it is OK if the
+   pointer is not released..  */
+
+vec<tree, va_gc> *
+make_tree_vector (void)
+{
+  if (tree_vector_cache && !tree_vector_cache->is_empty ())
+    return tree_vector_cache->pop ();
+  else
+    {
+      /* Passing 0 to vec::alloc returns NULL, and our callers require
+	 that we always return a non-NULL value.  The vector code uses
+	 4 when growing a NULL vector, so we do too.  */
+      vec<tree, va_gc> *v;
+      vec_alloc (v, 4);
+      return v;
+    }
+}
+
+// forked from gcc/c-family/c-common.c release_tree_vector
+
+/* Release a vector of trees back to the cache.  */
+
+void
+release_tree_vector (vec<tree, va_gc> *vec)
+{
+  if (vec != NULL)
+    {
+      if (vec->allocated () >= 16)
+	/* Don't cache vecs that have expanded more than once.  On a p64
+	   target, vecs double in alloc size with each power of 2 elements, e.g
+	   at 16 elements the alloc increases from 128 to 256 bytes.  */
+	vec_free (vec);
+      else
+	{
+	  vec->truncate (0);
+	  vec_safe_push (tree_vector_cache, vec);
+	}
+    }
+}
 } // namespace Rust
