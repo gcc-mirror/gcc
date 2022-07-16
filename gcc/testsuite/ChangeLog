@@ -1,3 +1,52 @@
+2022-07-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/85620
+	* gcc.target/i386/pr85620-2.c: Updated.
+	* gcc.target/i386/pr85620-5.c: New test.
+	* gcc.target/i386/pr85620-6.c: Likewise.
+	* gcc.target/i386/pr85620-7.c: Likewise.
+
+2022-07-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106273
+	* gcc.target/i386/pr106273.c: New test case.
+
+2022-07-15  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104313
+	* gfortran.dg/pr104313.f: New test.
+
+2022-07-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104477
+	* g++.dg/ext/reference_constructs_from_temporary1.C: New test.
+	* g++.dg/ext/reference_converts_from_temporary1.C: New test.
+
+2022-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106284
+	* gcc.dg/analyzer/torture/taint-read-index-2.c: New test.
+
+2022-07-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/pr106278.c: New test case.
+
+2022-07-15  konglin1  <lingling.kong@intel.com>
+
+	PR target/106113
+	* gcc.target/i386/avx-vcomisd-pr106113-2.c: New test.
+	* gcc.target/i386/avx-vcomiss-pr106113-2.c: Ditto.
+	* gcc.target/i386/avx-vucomisd-pr106113-2.c: Ditto.
+	* gcc.target/i386/avx-vucomiss-pr106113-2.c: Ditto.
+	* gcc.target/i386/sse-comiss-pr106113-1.c: Ditto.
+	* gcc.target/i386/sse-comiss-pr106113-2.c: Ditto.
+	* gcc.target/i386/sse-ucomiss-pr106113-1.c: Ditto.
+	* gcc.target/i386/sse-ucomiss-pr106113-2.c: Ditto.
+	* gcc.target/i386/sse2-comisd-pr106113-1.c: Ditto.
+	* gcc.target/i386/sse2-comisd-pr106113-2.c: Ditto.
+	* gcc.target/i386/sse2-ucomisd-pr106113-1.c: Ditto.
+	* gcc.target/i386/sse2-ucomisd-pr106113-2.c: Ditto.
+
 2022-07-14  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR tree-optimization/103798

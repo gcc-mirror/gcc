@@ -1,3 +1,37 @@
+2022-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106284
+	* sm-taint.cc (taint_state_machine::on_condition): Handle range
+	checks optimized by build_range_check.
+
+2022-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* call-info.cc (call_info::print): Adjust to new label_text API.
+	* checker-path.cc (checker_event::dump): Likewise.
+	(region_creation_event::get_desc): Likewise.
+	(state_change_event::get_desc): Likewise.
+	(superedge_event::should_filter_p): Likewise.
+	(start_cfg_edge_event::get_desc): Likewise.
+	(call_event::get_desc): Likewise.
+	(return_event::get_desc): Likewise.
+	(warning_event::get_desc): Likewise.
+	(checker_path::dump): Likewise.
+	(checker_path::debug): Likewise.
+	* diagnostic-manager.cc (diagnostic_manager::prune_for_sm_diagnostic):
+	Likewise.
+	(diagnostic_manager::prune_interproc_events): Likewise.
+	* engine.cc (feasibility_state::maybe_update_for_edge):
+	Likewise.
+	* program-state.cc (sm_state_map::to_json): Likewise.
+	* region-model-impl-calls.cc (region_model::impl_call_analyzer_describe): Likewise.
+	(region_model::impl_call_analyzer_dump_capacity): Likewise.
+	* region.cc (region::to_json): Likewise.
+	* sm-malloc.cc (inform_nonnull_attribute): Likewise.
+	* store.cc (binding_map::to_json): Likewise.
+	(store::to_json): Likewise.
+	* supergraph.cc (superedge::dump): Likewise.
+	* svalue.cc (svalue::to_json): Likewise.
+
 2022-07-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-path.cc (start_cfg_edge_event::get_desc): Update for

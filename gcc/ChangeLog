@@ -1,3 +1,114 @@
+2022-07-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/85620
+	* config/i386/i386.cc (ix86_function_ok_for_sibcall): Return
+	false if callee has indirect_return attribute and caller
+	doesn't.
+
+2022-07-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106273
+	* config/i386/i386.md (*andn<dwi>3_doubleword_bmi): Update the
+	constraints to reflect the output is earlyclobber, unless it is
+	the same register (pair) as one of the operands.
+
+2022-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (Static Analyzer Options): Add the new fd
+	warnings to the initial gccoptlist, and to the list of those
+	disabled by -fanalyzer-checker=taint.
+
+2022-07-15  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(enum aarch64_type_qualifiers): Remove qualifier_internal.
+	(aarch64_init_simd_builtin_functions): Remove qualifier_internal check.
+
+2022-07-15  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(v1di_UP): Add V1DI mode to _UP macros.
+	* config/aarch64/aarch64-modes.def (VECTOR_MODE): Add V1DI mode.
+	* config/aarch64/aarch64-simd-builtin-types.def: Use V1DI mode.
+	* config/aarch64/aarch64-simd.md
+	(vec_extractv2dfv1df): Replace with...
+	(vec_extract<mode><V1half>): ...this.
+	* config/aarch64/aarch64.cc
+	(aarch64_classify_vector_mode): Add V1DI mode.
+	* config/aarch64/iterators.md
+	(VQ_2E, V1HALF, V1half): New.
+	(nunits): Add V1DI mode.
+
+2022-07-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106278
+	* config/i386/i386-features.cc (general_scalar_chain::convert_insn):
+	Fix indentation whitespace.
+	(timode_scalar_chain::fix_debug_reg_uses): Likewise.
+	(timode_scalar_chain::convert_insn): Delete dead code.
+	Update TImode REG_EQUAL_NOTE even if the SET_DEST is already V1TI.
+	Fix indentation whitespace.
+	(convertible_comparison_p): Likewise.
+	(timode_scalar_to_vector_candidate_p): Likewise.
+
+2022-07-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-pretty-print.cc (dump_ssaname_info): Use pp_vrange.
+
+2022-07-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (OBJS): Add value-range-pretty-print.o.
+	* pretty-print.h (pp_vrange): New.
+	* value-range.cc (vrange::dump): Call pp version.
+	(unsupported_range::dump): Move to its own file.
+	(dump_bound_with_infinite_markers): Same.
+	(irange::dump): Same.
+	(irange::dump_bitmasks): Same.
+	(vrange::debug): Remove.
+	* value-range.h: Remove virtual designation for dump methods.
+	Remove dump_bitmasks method.
+	* value-range-pretty-print.cc: New file.
+	* value-range-pretty-print.h: New file.
+
+2022-07-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::accept): New.
+	(unsupported_range::accept): New.
+	* value-range.h (class vrange_visitor): New.
+	(class vrange): Add accept method.
+	(class unsupported_range): Same.
+	(class Value_Range): Same.
+
+2022-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* diagnostic-format-json.cc (json_from_location_range): Adjust
+	to new label_text API.
+	* diagnostic-format-sarif.cc (sarif_builder::make_location_object):
+	Likewise.
+	* diagnostic-show-locus.cc (struct pod_label_text): Likewise.
+	(layout::print_any_labels): Likewise.
+	* tree-diagnostic-path.cc (class path_label): Likewise.
+	(struct event_range): Likewise.
+	(default_tree_diagnostic_path_printer): Likewise.
+	(default_tree_make_json_for_path): Likewise.
+
+2022-07-15  konglin1  <lingling.kong@intel.com>
+
+	PR target/106113
+	* config/i386/i386-builtin.def (BDESC): Fix [u]comi{ss,sd}
+	comparison due to intrinsics changed over time.
+	* config/i386/i386-expand.cc (ix86_ssecom_setcc):
+	Add unordered check and mode for sse comi codegen.
+	(ix86_expand_sse_comi): Add unordered check and check a different
+	CCmode.
+	(ix86_expand_sse_comi_round):Extract unordered check and mode part
+	in ix86_ssecom_setcc.
+
+2022-07-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64.cc (aarch64_vectorize_vec_perm_const): Use
+	op_mode instead of vmode in calls to force_reg for op0 and op1.
+
 2022-07-14  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR tree-optimization/103798

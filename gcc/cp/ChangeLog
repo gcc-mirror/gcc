@@ -1,3 +1,28 @@
+2022-07-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104477
+	* call.cc (ref_conv_binds_directly_p): Rename to ...
+	(ref_conv_binds_directly): ... this.  Add a new bool parameter.  Change
+	the return type to tristate.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_REF_CONSTRUCTS_FROM_TEMPORARY and CPTK_REF_CONVERTS_FROM_TEMPORARY.
+	* cp-tree.h: Include "tristate.h".
+	(enum cp_trait_kind): Add CPTK_REF_CONSTRUCTS_FROM_TEMPORARY
+	and CPTK_REF_CONVERTS_FROM_TEMPORARY.
+	(ref_conv_binds_directly_p): Rename to ...
+	(ref_conv_binds_directly): ... this.
+	(ref_xes_from_temporary): Declare.
+	* cxx-pretty-print.cc (pp_cxx_trait_expression): Handle
+	CPTK_REF_CONSTRUCTS_FROM_TEMPORARY and CPTK_REF_CONVERTS_FROM_TEMPORARY.
+	* method.cc (ref_xes_from_temporary): New.
+	* parser.cc (cp_parser_primary_expression): Handle
+	RID_REF_CONSTRUCTS_FROM_TEMPORARY and RID_REF_CONVERTS_FROM_TEMPORARY.
+	(cp_parser_trait_expr): Likewise.
+	(warn_for_range_copy): Adjust to call ref_conv_binds_directly.
+	* semantics.cc (trait_expr_value): Handle
+	CPTK_REF_CONSTRUCTS_FROM_TEMPORARY and CPTK_REF_CONVERTS_FROM_TEMPORARY.
+	(finish_trait_expr): Likewise.
+
 2022-07-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/105912

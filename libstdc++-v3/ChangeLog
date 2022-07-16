@@ -1,3 +1,20 @@
+2022-07-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104477
+	* include/std/type_traits (reference_constructs_from_temporary,
+	reference_converts_from_temporary): New class templates.
+	(reference_constructs_from_temporary_v,
+	reference_converts_from_temporary_v): New variable templates.
+	(__cpp_lib_reference_from_temporary): Define for C++23.
+	* include/std/version (__cpp_lib_reference_from_temporary): Define for
+	C++23.
+	* testsuite/20_util/variable_templates_for_traits.cc: Test
+	reference_constructs_from_temporary_v and
+	reference_converts_from_temporary_v.
+	* testsuite/20_util/reference_from_temporary/value.cc: New test.
+	* testsuite/20_util/reference_from_temporary/value2.cc: New test.
+	* testsuite/20_util/reference_from_temporary/version.cc: New test.
+
 2022-07-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/106248

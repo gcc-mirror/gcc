@@ -1,3 +1,10 @@
+2022-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/line-map.h (label_text::take_or_copy): Remove.
+	(label_text::moved_from): Rename to release.
+	(label_text::m_buffer, label_text::m_owned): Make private.
+	(label_text::get, label_text::is_owned): New accessors.
+
 2022-07-13  Marek Polacek  <polacek@redhat.com>
 
 	PR preprocessor/106272

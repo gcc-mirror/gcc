@@ -1,3 +1,9 @@
+2022-07-15  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104313
+	* trans-decl.cc (gfc_generate_return): Do not generate conflicting
+	fake results for functions with no result variable under -ff2c.
+
 2022-07-14  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

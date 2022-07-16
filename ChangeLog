@@ -1,3 +1,7 @@
+2022-07-15  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* MAINTAINERS: Add myself to Write After Approval.
+
 2022-07-04  Martin Liska  <mliska@suse.cz>
 
 	* MAINTAINERS: fix sorting of names
