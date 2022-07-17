@@ -2550,6 +2550,18 @@ m68k_adjust_decorated_operand (rtx op)
     }
 }
 
+/* Prescan insn before outputing assembler for it.  */
+
+void
+m68k_final_prescan_insn (rtx_insn *insn ATTRIBUTE_UNUSED,
+			 rtx *operands, int n_operands)
+{
+  int i;
+
+  for (i = 0; i < n_operands; ++i)
+    m68k_adjust_decorated_operand (operands[i]);
+}
+
 /* Move X to a register and add REG_EQUAL note pointing to ORIG.
    If REG is non-null, use it; generate new pseudo otherwise.  */
 
@@ -3658,6 +3670,7 @@ handle_move_double (rtx operands[2],
 
   /* Normal case: do the two words, low-numbered first.  */
 
+  m68k_final_prescan_insn (NULL, operands, 2);
   handle_movsi (operands);
 
   /* Do the middle one of the three words for long double */
@@ -3668,6 +3681,7 @@ handle_move_double (rtx operands[2],
       if (addreg1)
 	handle_reg_adjust (addreg1, 4);
 
+      m68k_final_prescan_insn (NULL, middlehalf, 2);
       handle_movsi (middlehalf);
     }
 
@@ -3678,6 +3692,7 @@ handle_move_double (rtx operands[2],
     handle_reg_adjust (addreg1, 4);
 
   /* Do that word.  */
+  m68k_final_prescan_insn (NULL, latehalf, 2);
   handle_movsi (latehalf);
 
   /* Undo the adds we just did.  */
