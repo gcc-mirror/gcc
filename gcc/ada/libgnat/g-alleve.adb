@@ -3779,7 +3779,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
          return D;
       end Saturate;
 
-      --  Start of processing for vpksxus
+   --  Start of processing for vpksxus
 
    begin
       for J in 0 .. N - 1 loop

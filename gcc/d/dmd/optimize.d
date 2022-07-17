@@ -558,6 +558,41 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
         }
         else if (auto ae = e.e1.isIndexExp())
         {
+            if (ae.e2.isIntegerExp() && ae.e1.isIndexExp())
+            {
+                /* Rewrite `(a[i])[index]` to `(&a[i]) + index*size`
+                 */
+                sinteger_t index = ae.e2.toInteger();
+                auto ae1 = ae.e1.isIndexExp();          // ae1 is a[i]
+                if (auto ts = ae1.type.isTypeSArray())
+                {
+                    sinteger_t dim = ts.dim.toInteger();
+
+                    if (index < 0 || index > dim)
+                    {
+                        e.error("array index %lld is out of bounds `[0..%lld]`", index, dim);
+                        return error();
+                    }
+
+                    import core.checkedint : mulu;
+                    bool overflow;
+                    const offset = mulu(index, ts.nextOf().size(e.loc), overflow); // offset = index*size
+                    if (overflow)
+                    {
+                        e.error("array offset overflow");
+                        return error();
+                    }
+
+                    Expression ex = new AddrExp(ae1.loc, ae1);  // &a[i]
+                    ex.type = ae1.type.pointerTo();
+
+                    Expression add = new AddExp(ae.loc, ex, new IntegerExp(ae.loc, offset, e.type));
+                    add.type = e.type;
+                    ret = Expression_optimize(add, result, keepLvalue);
+                    return;
+                }
+            }
+
             // Convert &array[n] to &array+n
             if (ae.e2.isIntegerExp() && ae.e1.isVarExp())
             {
@@ -593,7 +628,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     return;
                 }
             }
-            // Convert &((a.b)[n]) to (&a.b)+n
+            // Convert &((a.b)[index]) to (&a.b)+index*elementsize
             else if (ae.e2.isIntegerExp() && ae.e1.isDotVarExp())
             {
                 sinteger_t index = ae.e2.toInteger();
@@ -614,9 +649,18 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                         }
                     }
 
+                    import core.checkedint : mulu;
+                    bool overflow;
+                    const offset = mulu(index, ts.nextOf().size(e.loc), overflow); // index*elementsize
+                    if (overflow)
+                    {
+                        e.error("array offset overflow");
+                        return error();
+                    }
+
                     auto pe = new AddrExp(e.loc, ve);
                     pe.type = e.type;
-                    ret = new AddExp(e.loc, pe, ae.e2);
+                    ret = new AddExp(e.loc, pe, new IntegerExp(e.loc, offset, Type.tsize_t));
                     ret.type = e.type;
                     return;
                 }

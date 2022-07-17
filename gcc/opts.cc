@@ -35,6 +35,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "version.h"
 #include "selftest.h"
 
+/* In this file all option sets are explicit.  */
+#undef OPTION_SET_P
+
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
 /* Names of fundamental debug info formats indexed by enum
@@ -154,9 +157,9 @@ ctf_debuginfo_p ()
 /* Return TRUE iff dwarf2 debug info is enabled.  */
 
 bool
-dwarf_debuginfo_p ()
+dwarf_debuginfo_p (struct gcc_options *opts)
 {
-  return (write_symbols & DWARF2_DEBUG);
+  return (opts->x_write_symbols & DWARF2_DEBUG);
 }
 
 /* Return true iff the debug info format is to be generated based on DWARF
@@ -167,6 +170,11 @@ bool dwarf_based_debuginfo_p ()
   return ((write_symbols & CTF_DEBUG)
 	  || (write_symbols & BTF_DEBUG));
 }
+
+/* All flag uses below need to explicitely reference the option sets
+   to operate on.  */
+#define global_options DO_NOT_USE
+#define global_options_set DO_NOT_USE
 
 /* Parse the -femit-struct-debug-detailed option value
    and set the flag variables. */
@@ -1114,6 +1122,10 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_flag_no_inline = 1;
     }
 
+  /* At -O0 or -Og, turn __builtin_unreachable into a trap.  */
+  if (!opts->x_optimize || opts->x_optimize_debug)
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_unreachable_traps, true);
+
   /* Pipelining of outer loops is only possible when general pipelining
      capabilities are requested.  */
   if (!opts->x_flag_sel_sched_pipelining)
@@ -1202,7 +1214,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   /* Address sanitizers conflict with the thread sanitizer.  */
   report_conflicting_sanitizer_options (opts, loc, SANITIZE_THREAD,
-					SANITIZE_ADDRESS | SANITIZE_HWADDRESS);
+					SANITIZE_ADDRESS);
+  report_conflicting_sanitizer_options (opts, loc, SANITIZE_THREAD,
+					SANITIZE_HWADDRESS);
   /* The leak sanitizer conflicts with the thread sanitizer.  */
   report_conflicting_sanitizer_options (opts, loc, SANITIZE_LEAK,
 					SANITIZE_THREAD);
@@ -1222,6 +1236,18 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     if ((opts->x_flag_sanitize_recover & sanitizer_opts[i].flag)
 	&& !sanitizer_opts[i].can_recover)
       error_at (loc, "%<-fsanitize-recover=%s%> is not supported",
+		sanitizer_opts[i].name);
+
+  /* Check -fsanitize-trap option.  */
+  for (int i = 0; sanitizer_opts[i].name != NULL; ++i)
+    if ((opts->x_flag_sanitize_trap & sanitizer_opts[i].flag)
+	&& !sanitizer_opts[i].can_trap
+	/* Allow -fsanitize-trap=all or -fsanitize-trap=undefined
+	   to set flag_sanitize_trap & SANITIZE_VPTR bit which will
+	   effectively disable -fsanitize=vptr, just disallow
+	   explicit -fsanitize-trap=vptr.  */
+	&& sanitizer_opts[i].flag != SANITIZE_VPTR)
+      error_at (loc, "%<-fsanitize-trap=%s%> is not supported",
 		sanitizer_opts[i].name);
 
   /* When instrumenting the pointers, we don't want to remove
@@ -1302,58 +1328,84 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     SET_OPTION_IF_UNSET (opts, opts_set, flag_vect_cost_model,
 			 VECT_COST_MODEL_CHEAP);
 
-  if (flag_gtoggle)
+  if (opts->x_flag_gtoggle)
     {
       /* Make sure to process -gtoggle only once.  */
-      flag_gtoggle = false;
-      if (debug_info_level == DINFO_LEVEL_NONE)
+      opts->x_flag_gtoggle = false;
+      if (opts->x_debug_info_level == DINFO_LEVEL_NONE)
 	{
-	  debug_info_level = DINFO_LEVEL_NORMAL;
+	  opts->x_debug_info_level = DINFO_LEVEL_NORMAL;
 
-	  if (write_symbols == NO_DEBUG)
-	    write_symbols = PREFERRED_DEBUGGING_TYPE;
+	  if (opts->x_write_symbols == NO_DEBUG)
+	    opts->x_write_symbols = PREFERRED_DEBUGGING_TYPE;
 	}
       else
-	debug_info_level = DINFO_LEVEL_NONE;
+	opts->x_debug_info_level = DINFO_LEVEL_NONE;
     }
 
-  if (!OPTION_SET_P (debug_nonbind_markers_p))
-    debug_nonbind_markers_p
-      = (optimize
-	 && debug_info_level >= DINFO_LEVEL_NORMAL
-	 && dwarf_debuginfo_p ()
-	 && !(flag_selective_scheduling || flag_selective_scheduling2));
+  if (!opts_set->x_debug_nonbind_markers_p)
+    opts->x_debug_nonbind_markers_p
+      = (opts->x_optimize
+	 && opts->x_debug_info_level >= DINFO_LEVEL_NORMAL
+	 && dwarf_debuginfo_p (opts)
+	 && !(opts->x_flag_selective_scheduling
+	      || opts->x_flag_selective_scheduling2));
 
-  /* Note -fvar-tracking is enabled automatically with OPT_LEVELS_1_PLUS and
-     so we need to drop it if we are called from optimize attribute.  */
-  if (debug_info_level == DINFO_LEVEL_NONE
-      && !OPTION_SET_P (flag_var_tracking))
-    flag_var_tracking = false;
+  /* We know which debug output will be used so we can set flag_var_tracking
+     and flag_var_tracking_uninit if the user has not specified them.  */
+  if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL
+      || !dwarf_debuginfo_p (opts)
+      /* We have not yet initialized debug hooks so match that to check
+	 whether we're only doing DWARF2_LINENO_DEBUGGING_INFO.  */
+#ifndef DWARF2_DEBUGGING_INFO
+      || true
+#endif
+     )
+    {
+      if ((opts_set->x_flag_var_tracking && opts->x_flag_var_tracking == 1)
+	  || (opts_set->x_flag_var_tracking_uninit
+	      && opts->x_flag_var_tracking_uninit == 1))
+	{
+	  if (opts->x_debug_info_level < DINFO_LEVEL_NORMAL)
+	    warning_at (UNKNOWN_LOCATION, 0,
+			"variable tracking requested, but useless unless "
+			"producing debug info");
+	  else
+	    warning_at (UNKNOWN_LOCATION, 0,
+			"variable tracking requested, but not supported "
+			"by this debug format");
+	}
+      opts->x_flag_var_tracking = 0;
+      opts->x_flag_var_tracking_uninit = 0;
+    }
 
   /* One could use EnabledBy, but it would lead to a circular dependency.  */
-  if (!OPTION_SET_P (flag_var_tracking_uninit))
-     flag_var_tracking_uninit = flag_var_tracking;
+  if (!opts_set->x_flag_var_tracking_uninit)
+    opts->x_flag_var_tracking_uninit = opts->x_flag_var_tracking;
 
-  if (!OPTION_SET_P (flag_var_tracking_assignments))
-    flag_var_tracking_assignments
-      = (flag_var_tracking
-	 && !(flag_selective_scheduling || flag_selective_scheduling2));
+  if (!opts_set->x_flag_var_tracking_assignments)
+    opts->x_flag_var_tracking_assignments
+      = (opts->x_flag_var_tracking
+	 && !(opts->x_flag_selective_scheduling
+	      || opts->x_flag_selective_scheduling2));
 
-  if (flag_var_tracking_assignments_toggle)
-    flag_var_tracking_assignments = !flag_var_tracking_assignments;
+  if (opts->x_flag_var_tracking_assignments_toggle)
+    opts->x_flag_var_tracking_assignments
+      = !opts->x_flag_var_tracking_assignments;
 
-  if (flag_var_tracking_assignments && !flag_var_tracking)
-    flag_var_tracking = flag_var_tracking_assignments = -1;
+  if (opts->x_flag_var_tracking_assignments && !opts->x_flag_var_tracking)
+    opts->x_flag_var_tracking = opts->x_flag_var_tracking_assignments = -1;
 
-  if (flag_var_tracking_assignments
-      && (flag_selective_scheduling || flag_selective_scheduling2))
+  if (opts->x_flag_var_tracking_assignments
+      && (opts->x_flag_selective_scheduling
+	  || opts->x_flag_selective_scheduling2))
     warning_at (loc, 0,
 		"var-tracking-assignments changes selective scheduling");
 
-  if (flag_syntax_only)
+  if (opts->x_flag_syntax_only)
     {
-      write_symbols = NO_DEBUG;
-      profile_flag = 0;
+      opts->x_write_symbols = NO_DEBUG;
+      opts->x_profile_flag = 0;
     }
 
 
@@ -1986,48 +2038,50 @@ enable_fdo_optimizations (struct gcc_options *opts,
 /* -f{,no-}sanitize{,-recover}= suboptions.  */
 const struct sanitizer_opts_s sanitizer_opts[] =
 {
-#define SANITIZER_OPT(name, flags, recover) \
-    { #name, flags, sizeof #name - 1, recover }
-  SANITIZER_OPT (address, (SANITIZE_ADDRESS | SANITIZE_USER_ADDRESS), true),
+#define SANITIZER_OPT(name, flags, recover, trap) \
+    { #name, flags, sizeof #name - 1, recover, trap }
+  SANITIZER_OPT (address, (SANITIZE_ADDRESS | SANITIZE_USER_ADDRESS), true,
+		 false),
   SANITIZER_OPT (hwaddress, (SANITIZE_HWADDRESS | SANITIZE_USER_HWADDRESS),
-		 true),
+		 true, false),
   SANITIZER_OPT (kernel-address, (SANITIZE_ADDRESS | SANITIZE_KERNEL_ADDRESS),
-		 true),
+		 true, false),
   SANITIZER_OPT (kernel-hwaddress,
 		 (SANITIZE_HWADDRESS | SANITIZE_KERNEL_HWADDRESS),
+		 true, false),
+  SANITIZER_OPT (pointer-compare, SANITIZE_POINTER_COMPARE, true, false),
+  SANITIZER_OPT (pointer-subtract, SANITIZE_POINTER_SUBTRACT, true, false),
+  SANITIZER_OPT (thread, SANITIZE_THREAD, false, false),
+  SANITIZER_OPT (leak, SANITIZE_LEAK, false, false),
+  SANITIZER_OPT (shift, SANITIZE_SHIFT, true, true),
+  SANITIZER_OPT (shift-base, SANITIZE_SHIFT_BASE, true, true),
+  SANITIZER_OPT (shift-exponent, SANITIZE_SHIFT_EXPONENT, true, true),
+  SANITIZER_OPT (integer-divide-by-zero, SANITIZE_DIVIDE, true, true),
+  SANITIZER_OPT (undefined, SANITIZE_UNDEFINED, true, true),
+  SANITIZER_OPT (unreachable, SANITIZE_UNREACHABLE, false, true),
+  SANITIZER_OPT (vla-bound, SANITIZE_VLA, true, true),
+  SANITIZER_OPT (return, SANITIZE_RETURN, false, true),
+  SANITIZER_OPT (null, SANITIZE_NULL, true, true),
+  SANITIZER_OPT (signed-integer-overflow, SANITIZE_SI_OVERFLOW, true, true),
+  SANITIZER_OPT (bool, SANITIZE_BOOL, true, true),
+  SANITIZER_OPT (enum, SANITIZE_ENUM, true, true),
+  SANITIZER_OPT (float-divide-by-zero, SANITIZE_FLOAT_DIVIDE, true, true),
+  SANITIZER_OPT (float-cast-overflow, SANITIZE_FLOAT_CAST, true, true),
+  SANITIZER_OPT (bounds, SANITIZE_BOUNDS, true, true),
+  SANITIZER_OPT (bounds-strict, SANITIZE_BOUNDS | SANITIZE_BOUNDS_STRICT, true,
 		 true),
-  SANITIZER_OPT (pointer-compare, SANITIZE_POINTER_COMPARE, true),
-  SANITIZER_OPT (pointer-subtract, SANITIZE_POINTER_SUBTRACT, true),
-  SANITIZER_OPT (thread, SANITIZE_THREAD, false),
-  SANITIZER_OPT (leak, SANITIZE_LEAK, false),
-  SANITIZER_OPT (shift, SANITIZE_SHIFT, true),
-  SANITIZER_OPT (shift-base, SANITIZE_SHIFT_BASE, true),
-  SANITIZER_OPT (shift-exponent, SANITIZE_SHIFT_EXPONENT, true),
-  SANITIZER_OPT (integer-divide-by-zero, SANITIZE_DIVIDE, true),
-  SANITIZER_OPT (undefined, SANITIZE_UNDEFINED, true),
-  SANITIZER_OPT (unreachable, SANITIZE_UNREACHABLE, false),
-  SANITIZER_OPT (vla-bound, SANITIZE_VLA, true),
-  SANITIZER_OPT (return, SANITIZE_RETURN, false),
-  SANITIZER_OPT (null, SANITIZE_NULL, true),
-  SANITIZER_OPT (signed-integer-overflow, SANITIZE_SI_OVERFLOW, true),
-  SANITIZER_OPT (bool, SANITIZE_BOOL, true),
-  SANITIZER_OPT (enum, SANITIZE_ENUM, true),
-  SANITIZER_OPT (float-divide-by-zero, SANITIZE_FLOAT_DIVIDE, true),
-  SANITIZER_OPT (float-cast-overflow, SANITIZE_FLOAT_CAST, true),
-  SANITIZER_OPT (bounds, SANITIZE_BOUNDS, true),
-  SANITIZER_OPT (bounds-strict, SANITIZE_BOUNDS | SANITIZE_BOUNDS_STRICT, true),
-  SANITIZER_OPT (alignment, SANITIZE_ALIGNMENT, true),
-  SANITIZER_OPT (nonnull-attribute, SANITIZE_NONNULL_ATTRIBUTE, true),
+  SANITIZER_OPT (alignment, SANITIZE_ALIGNMENT, true, true),
+  SANITIZER_OPT (nonnull-attribute, SANITIZE_NONNULL_ATTRIBUTE, true, true),
   SANITIZER_OPT (returns-nonnull-attribute, SANITIZE_RETURNS_NONNULL_ATTRIBUTE,
-		 true),
-  SANITIZER_OPT (object-size, SANITIZE_OBJECT_SIZE, true),
-  SANITIZER_OPT (vptr, SANITIZE_VPTR, true),
-  SANITIZER_OPT (pointer-overflow, SANITIZE_POINTER_OVERFLOW, true),
-  SANITIZER_OPT (builtin, SANITIZE_BUILTIN, true),
-  SANITIZER_OPT (shadow-call-stack, SANITIZE_SHADOW_CALL_STACK, false),
-  SANITIZER_OPT (all, ~0U, true),
+		 true, true),
+  SANITIZER_OPT (object-size, SANITIZE_OBJECT_SIZE, true, true),
+  SANITIZER_OPT (vptr, SANITIZE_VPTR, true, false),
+  SANITIZER_OPT (pointer-overflow, SANITIZE_POINTER_OVERFLOW, true, true),
+  SANITIZER_OPT (builtin, SANITIZE_BUILTIN, true, true),
+  SANITIZER_OPT (shadow-call-stack, SANITIZE_SHADOW_CALL_STACK, false, false),
+  SANITIZER_OPT (all, ~0U, true, true),
 #undef SANITIZER_OPT
-  { NULL, 0U, 0UL, false }
+  { NULL, 0U, 0UL, false, false }
 };
 
 /* -fzero-call-used-regs= suboptions.  */
@@ -2080,7 +2134,7 @@ struct edit_distance_traits<const string_fragment &>
 /* Given ARG, an unrecognized sanitizer option, return the best
    matching sanitizer option, or NULL if there isn't one.
    OPTS is array of candidate sanitizer options.
-   CODE is OPT_fsanitize_ or OPT_fsanitize_recover_.
+   CODE is OPT_fsanitize_, OPT_fsanitize_recover_ or OPT_fsanitize_trap_.
    VALUE is non-zero for the regular form of the option, zero
    for the "no-" form (e.g. "-fno-sanitize-recover=").  */
 
@@ -2102,6 +2156,13 @@ get_closest_sanitizer_option (const string_fragment &arg,
 	 don't offer the non-recoverable options.  */
       if (code == OPT_fsanitize_recover_
 	  && !opts[i].can_recover
+	  && value)
+	continue;
+
+      /* For -fsanitize-trap= (and not -fno-sanitize-trap=),
+	 don't offer the non-trapping options.  */
+      if (code == OPT_fsanitize_trap_
+	  && !opts[i].can_trap
 	  && value)
 	continue;
 
@@ -2149,10 +2210,13 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 		    if (complain)
 		      error_at (loc, "%<-fsanitize=all%> option is not valid");
 		  }
-		else
+		else if (code == OPT_fsanitize_recover_)
 		  flags |= ~(SANITIZE_THREAD | SANITIZE_LEAK
 			     | SANITIZE_UNREACHABLE | SANITIZE_RETURN
 			     | SANITIZE_SHADOW_CALL_STACK);
+		else /* if (code == OPT_fsanitize_trap_) */
+		  flags |= (SANITIZE_UNDEFINED
+			    | SANITIZE_UNDEFINED_NONDEFAULT);
 	      }
 	    else if (value)
 	      {
@@ -2163,6 +2227,10 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 		    && sanitizer_opts[i].flag == SANITIZE_UNDEFINED)
 		  flags |= (SANITIZE_UNDEFINED
 			    & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN));
+		else if (code == OPT_fsanitize_trap_
+			 && sanitizer_opts[i].flag == SANITIZE_VPTR)
+		  error_at (loc, "%<-fsanitize-trap=%s%> is not supported",
+			    sanitizer_opts[i].name);
 		else
 		  flags |= sanitizer_opts[i].flag;
 	      }
@@ -2181,6 +2249,8 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 	  const char *suffix;
 	  if (code == OPT_fsanitize_recover_)
 	    suffix = "-recover";
+	  else if (code == OPT_fsanitize_trap_)
+	    suffix = "-trap";
 	  else
 	    suffix = "";
 
@@ -2579,6 +2649,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fsanitize_:
+      opts_set->x_flag_sanitize = true;
       opts->x_flag_sanitize
 	= parse_sanitizer_options (arg, loc, code,
 				   opts->x_flag_sanitize, value, true);
@@ -2612,6 +2683,12 @@ common_handle_option (struct gcc_options *opts,
 				   opts->x_flag_sanitize_recover, value, true);
       break;
 
+    case OPT_fsanitize_trap_:
+      opts->x_flag_sanitize_trap
+	= parse_sanitizer_options (arg, loc, code,
+				   opts->x_flag_sanitize_trap, value, true);
+      break;
+
     case OPT_fasan_shadow_offset_:
       /* Deferred.  */
       break;
@@ -2627,6 +2704,15 @@ common_handle_option (struct gcc_options *opts,
 	     & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN);
       else
 	opts->x_flag_sanitize_recover
+	  &= ~(SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT);
+      break;
+
+    case OPT_fsanitize_trap:
+      if (value)
+	opts->x_flag_sanitize_trap
+	  |= (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT);
+      else
+	opts->x_flag_sanitize_trap
 	  &= ~(SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT);
       break;
 
@@ -2766,7 +2852,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_format_:
-      diagnostic_output_format_init (dc,
+      diagnostic_output_format_init (dc, opts->x_dump_base_name,
 				     (enum diagnostics_output_format)value);
       break;
 
@@ -2790,6 +2876,10 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fdiagnostics_show_cwe:
       dc->show_cwe = value;
+      break;
+
+    case OPT_fdiagnostics_show_rules:
+      dc->show_rules = value;
       break;
 
     case OPT_fdiagnostics_path_format_:
@@ -3609,7 +3699,7 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_SPECIAL_input_file:
       case OPT_grecord_gcc_switches:
       case OPT_frecord_gcc_switches:
-      case OPT__output_pch_:
+      case OPT__output_pch:
       case OPT_fdiagnostics_show_location_:
       case OPT_fdiagnostics_show_option:
       case OPT_fdiagnostics_show_caret:

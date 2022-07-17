@@ -25,8 +25,8 @@ not in any particular release.
 </para>
 
 <para>
-The following table lists new library features that have been accepted into
-the C++20 working draft. The "Proposal" column provides a link to the
+The following table lists new library features that are included in
+the C++20 standard. The "Proposal" column provides a link to the
 ISO C++ committee proposal that describes the feature, while the "Status"
 column indicates the first version of GCC that contains an implementation of
 this feature (if it has been implemented).
@@ -359,7 +359,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0053r7.pdf">
         P0053R7 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry> <code>__cpp_lib_syncbuf &gt;= 201711L</code> </entry>
     </row>
 
@@ -369,7 +369,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0753r2.pdf">
         P0753R2 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry> <code>__cpp_lib_syncbuf &gt;= 201803L</code> </entry>
     </row>
 
@@ -643,7 +643,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0966r1.html">
         P0966R1 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry />
     </row>
 
@@ -1039,7 +1039,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0476r2.html">
         P0476R2 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry> <code>__cpp_lib_bit_cast &gt;= 201806L</code> </entry>
     </row>
 
@@ -1394,7 +1394,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0553r4.html">
         P0553R4 </link>
       </entry>
-      <entry align="center"> 10.1 </entry>
+      <entry align="center"> 9.1 </entry>
       <entry> <code>__cpp_lib_bitops &gt;= 201907L</code> (since 9.4, see Note 1) </entry>
     </row>
 
@@ -1424,7 +1424,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1208r6.pdf">
         P1208R6 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry>
         <code>__cpp_lib_source_location &gt;= 201907L</code>
       </entry>
@@ -1436,7 +1436,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0408r7.pdf">
         P0408R7 </link>
       </entry>
-      <entry align="center"> 11 </entry>
+      <entry align="center"> 11.1 </entry>
       <entry />
     </row>
 

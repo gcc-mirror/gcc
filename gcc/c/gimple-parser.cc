@@ -1800,7 +1800,7 @@ c_parser_gimple_postfix_expression_after_primary (gimple_parser &parser,
 	    finish = c_parser_peek_token (parser)->get_finish ();
 	    c_parser_consume_token (parser);
 	    expr.value = build_component_ref (op_loc, expr.value, ident,
-					      comp_loc);
+					      comp_loc, UNKNOWN_LOCATION);
 	    set_c_expr_source_range (&expr, start, finish);
 	    expr.original_code = ERROR_MARK;
 	    if (TREE_CODE (expr.value) != COMPONENT_REF)
@@ -1848,7 +1848,8 @@ c_parser_gimple_postfix_expression_after_primary (gimple_parser &parser,
 	    expr.value = build_component_ref (op_loc,
 					      build_simple_mem_ref_loc
 					        (op_loc, expr.value),
-					      ident, comp_loc);
+					      ident, comp_loc,
+					      expr.get_location ());
 	    set_c_expr_source_range (&expr, start, finish);
 	    expr.original_code = ERROR_MARK;
 	    if (TREE_CODE (expr.value) != COMPONENT_REF)

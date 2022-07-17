@@ -446,7 +446,7 @@ public:
             return;
         jsonProperties(cast(Dsymbol)d);
         propertyStorageClass("storageClass", d.storage_class);
-        property("linkage", d.linkage);
+        property("linkage", d._linkage);
         property("type", "deco", d.type);
         // Emit originalType if it differs from type
         if (d.type != d.originalType && d.originalType)
@@ -934,7 +934,7 @@ public:
 
         propertyStart("ddocFiles");
         arrayStart();
-        foreach (ddocFile; global.params.ddocfiles)
+        foreach (ddocFile; global.params.ddoc.files)
         {
             item(ddocFile.toDString);
         }

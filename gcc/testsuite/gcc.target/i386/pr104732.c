@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2 -m32 -msse -march=pentiumpro" } */
+/* { dg-options "-O2 -msse -march=pentiumpro" } */
 
 typedef long long v2di __attribute__((vector_size (16)));
 

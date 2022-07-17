@@ -347,7 +347,7 @@ public:
   concrete_binding (bit_offset_t start_bit_offset, bit_size_t size_in_bits)
   : m_bit_range (start_bit_offset, size_in_bits)
   {}
-  bool concrete_p () const FINAL OVERRIDE { return true; }
+  bool concrete_p () const final override { return true; }
 
   hashval_t hash () const
   {
@@ -361,9 +361,9 @@ public:
     return m_bit_range == other.m_bit_range;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
-  const concrete_binding *dyn_cast_concrete_binding () const FINAL OVERRIDE
+  const concrete_binding *dyn_cast_concrete_binding () const final override
   { return this; }
 
   const bit_range &get_bit_range () const { return m_bit_range; }
@@ -415,7 +415,7 @@ public:
   typedef symbolic_binding key_t;
 
   symbolic_binding (const region *region) : m_region (region) {}
-  bool concrete_p () const FINAL OVERRIDE { return false; }
+  bool concrete_p () const final override { return false; }
 
   hashval_t hash () const
   {
@@ -426,9 +426,9 @@ public:
     return m_region == other.m_region;
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
-  const symbolic_binding *dyn_cast_symbolic_binding () const FINAL OVERRIDE
+  const symbolic_binding *dyn_cast_symbolic_binding () const final override
   { return this; }
 
   const region *get_region () const { return m_region; }

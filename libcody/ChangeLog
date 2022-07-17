@@ -1,3 +1,8 @@
+2022-06-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (revision.stamp): Replace $() and += with more
+	portable shell constructs.
+
 2022-03-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* netclient.cc (OpenInet6): Do not provide a dummy port number

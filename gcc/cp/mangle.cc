@@ -916,7 +916,10 @@ maybe_write_module (tree decl)
   if (!DECL_NAMESPACE_SCOPE_P (decl))
     return;
 
-  if (TREE_CODE (decl) == NAMESPACE_DECL && DECL_NAME (decl))
+  if (!TREE_PUBLIC (STRIP_TEMPLATE (decl)))
+    return;
+
+  if (TREE_CODE (decl) == NAMESPACE_DECL)
     return;
 
   int m = get_originating_module (decl, true);

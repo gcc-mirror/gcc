@@ -39,6 +39,7 @@ template<std::size_t Nb, typename CharT>
 void test01()
 {
   using namespace std;
+  using std::bitset; // Work around struct ::bitset on rtems.
 
   const char s1[4] = { '0', '1', '0', '1' };
   VERIFY( bitset<4>(s1, 4) == test01_ref<4>(s1, 4) );

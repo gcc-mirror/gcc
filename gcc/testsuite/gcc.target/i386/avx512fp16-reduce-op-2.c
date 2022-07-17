@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mprefer-vector-width=512 -fdump-tree-optimized" } */
+/* { dg-additional-options "-msse2" { target i?86-*-* } } */
 
 /* { dg-final { scan-tree-dump-times "\.REDUC_PLUS" 3 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "\.REDUC_MIN" 3 "optimized" } } */

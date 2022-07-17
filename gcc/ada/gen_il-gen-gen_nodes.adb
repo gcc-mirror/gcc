@@ -509,6 +509,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Delta_Aggregate, N_Subexpr,
        (Sy (Expression, Node_Id, Default_Empty),
+        Sy (Is_Homogeneous_Aggregate, Flag),
         Sy (Component_Associations, List_Id, Default_No_List)));
 
    Cc (N_Extension_Aggregate, N_Subexpr,
@@ -522,8 +523,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Raise_Expression, N_Subexpr,
        (Sy (Name, Node_Id, Default_Empty),
-        Sy (Expression, Node_Id, Default_Empty),
-        Sm (Convert_To_Return_False, Flag)));
+        Sy (Expression, Node_Id, Default_Empty)));
 
    Cc (N_Range, N_Subexpr,
        (Sy (Low_Bound, Node_Id),
@@ -1043,8 +1043,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Raise_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Name, Node_Id, Default_Empty),
-        Sy (Expression, Node_Id, Default_Empty),
-        Sm (From_At_End, Flag)));
+        Sy (Expression, Node_Id, Default_Empty)));
 
    Cc (N_Raise_When_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Name, Node_Id, Default_Empty),
@@ -1060,7 +1059,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Simple_Return_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Expression, Node_Id, Default_Empty),
-        Sm (By_Ref, Flag),
         Sm (Comes_From_Extended_Return_Statement, Flag),
         Sm (Procedure_To_Call, Node_Id),
         Sm (Return_Statement_Entity, Node_Id),
@@ -1069,7 +1067,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Extended_Return_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Return_Object_Declarations, List_Id),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
-        Sm (By_Ref, Flag),
         Sm (Procedure_To_Call, Node_Id),
         Sm (Return_Statement_Entity, Node_Id),
         Sm (Storage_Pool, Node_Id)));

@@ -76,14 +76,14 @@ else
  *      The attribute can only be attached to methods or constructors which
  *      have Objective-C linkage. That is, a method or a constructor in a
  *      class or interface declared as $(D_CODE extern(Objective-C)).
- *  ),
+ *  )
  *
- *  $(LI It cannot be attached to a method or constructor that is a template),
+ *  $(LI It cannot be attached to a method or constructor that is a template)
  *
  *  $(LI
  *      The number of colons in the string need to match the number of
  *      arguments the method accept.
- *  ),
+ *  )
  *
  *  $(LI It can only be used once in a method declaration)
  * )
@@ -181,21 +181,21 @@ version (UdaOptional)
  * $(UL
  *  $(LI
  *      There can only be one such attribute per symbol.
- *  ),
+ *  )
  *  $(LI
  *      The attribute can only be attached to an `extern(C++)` symbol
  *      (`struct`, `class`, `enum`, function, and their templated counterparts).
- *  ),
+ *  )
  *  $(LI
  *      The attribute cannot be applied to C++ namespaces.
  *      This is to prevent confusion with the C++ semantic, which allows it to
  *      be applied to namespaces.
- *  ),
+ *  )
  *  $(LI
  *      The string arguments must only contain valid characters
  *      for C++ name mangling which currently include alphanumerics
  *      and the underscore character.
- *  ),
+ *  )
  * )
  *
  * This UDA is not transitive, and inner scope do not inherit outer scopes'
@@ -252,11 +252,11 @@ version (UdaGNUAbiTag) struct gnuAbiTag
  *  $(LI
  *      the expression is the top-level expression in a statement or the
  *      left-hand expression in a comma expression, and
- *  ),
+ *  )
  *  $(LI
  *      the expression is not an assignment (`=`, `+=`, etc.), increment
  *      (`++`), or decrement (`--`) expression.
- *  ),
+ *  )
  * )
  *
  * If the declaration of a `struct` or `union` type has the `@mustuse`

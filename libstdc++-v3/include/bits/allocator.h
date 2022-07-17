@@ -67,7 +67,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // explicit specialization, with the historical ABI properties, but with
   // the same members that are present in the primary template.
 
-  /// allocator<void> specialization.
+  /** std::allocator<void> specialization.
+   *
+   * @headerfile memory
+   */
   template<>
     class allocator<void>
     {
@@ -119,6 +122,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  for further details.
    *
    *  @tparam  _Tp  Type of allocated object.
+   *
+   *  @headerfile memory
    */
   template<typename _Tp>
     class allocator : public __allocator_base<_Tp>
@@ -179,7 +184,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       allocate(size_t __n)
       {
 	if (std::__is_constant_evaluated())
-	  return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
+	  {
+	    if (__builtin_mul_overflow(__n, sizeof(_Tp), &__n))
+	      std::__throw_bad_array_new_length();
+	    return static_cast<_Tp*>(::operator new(__n));
+	  }
+
 	return __allocator_base<_Tp>::allocate(__n, 0);
       }
 
@@ -209,6 +219,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Inherit everything else.
     };
 
+  /** Equality comparison for std::allocator objects
+   *
+   * @return true, for all std::allocator objects.
+   * @relates std::allocator
+   */
   template<typename _T1, typename _T2>
     inline _GLIBCXX20_CONSTEXPR bool
     operator==(const allocator<_T1>&, const allocator<_T2>&)
@@ -222,6 +237,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NOTHROW
     { return false; }
 #endif
+
+  /// @cond undocumented
 
   // Invalid allocator<cv T> partial specializations.
   // allocator_traits::rebind_alloc can be used to form a valid allocator type.
@@ -325,6 +342,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 #endif
+  /// @endcond
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

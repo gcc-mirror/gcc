@@ -41,7 +41,9 @@ test01()
   test_type c(&r2);
   VERIFY( c.resource() == &r2 );
   VERIFY( c.resource() != a.resource() );
+#if __cpp_rtti
   VERIFY( c == a );
+#endif
 }
 
 void

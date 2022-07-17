@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "gimplify.h"
 #include "target.h"
+#include "decl.h"
 
 /* Constructor for a lambda expression.  */
 
@@ -195,10 +196,9 @@ type_deducible_expression_p (tree expr)
       || TREE_CODE (expr) == EXPR_PACK_EXPANSION)
     return false;
   tree t = non_reference (TREE_TYPE (expr));
-  if (!t) return false;
-  while (TREE_CODE (t) == POINTER_TYPE)
-    t = TREE_TYPE (t);
-  return currently_open_class (t);
+  return (t && TREE_CODE (t) != TYPE_PACK_EXPANSION
+	  && !WILDCARD_TYPE_P (t) && !LAMBDA_TYPE_P (t)
+	  && !type_uses_auto (t));
 }
 
 /* Returns the type to use for the FIELD_DECL corresponding to the
@@ -425,9 +425,9 @@ build_capture_proxy (tree member, tree init)
   if (DECL_VLA_CAPTURE_P (member))
     {
       /* Rebuild the VLA type from the pointer and maxindex.  */
-      tree field = next_initializable_field (TYPE_FIELDS (type));
+      tree field = next_aggregate_field (TYPE_FIELDS (type));
       tree ptr = build_simple_component_ref (object, field);
-      field = next_initializable_field (DECL_CHAIN (field));
+      field = next_aggregate_field (DECL_CHAIN (field));
       tree max = build_simple_component_ref (object, field);
       type = build_cplus_array_type (TREE_TYPE (TREE_TYPE (ptr)),
 				     build_index_type (max));
@@ -1193,9 +1193,14 @@ maybe_add_lambda_conv_op (tree type)
 	}
     }
   else
-    call = build_call_a (callop,
-			 direct_argvec->length (),
-			 direct_argvec->address ());
+    {
+      /* Don't warn on deprecated or unavailable lambda declarations, unless
+	 the lambda is actually called.  */
+      auto du = make_temp_override (deprecated_state,
+				    UNAVAILABLE_DEPRECATED_SUPPRESS);
+      call = build_call_a (callop, direct_argvec->length (),
+			   direct_argvec->address ());
+    }
 
   CALL_FROM_THUNK_P (call) = 1;
   SET_EXPR_LOCATION (call, UNKNOWN_LOCATION);
@@ -1426,7 +1431,7 @@ record_lambda_scope (tree lambda)
     {
       tree closure = LAMBDA_EXPR_CLOSURE (lambda);
       gcc_checking_assert (closure);
-      maybe_attach_decl (lambda_scope, TYPE_NAME (closure));
+      maybe_key_decl (lambda_scope, TYPE_NAME (closure));
     }
 }
 

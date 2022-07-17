@@ -410,6 +410,24 @@ dump_counter (gcov_type counter,
     dump_unsigned (0, dump_fn, arg);
 }
 
+/* Dump the STRING using the DUMP handler called with ARG.  */
+
+static inline void
+ATTRIBUTE_UNUSED
+dump_string (const char *string,
+	     void (*dump_fn) (const void *, unsigned, void *),
+	     void *arg)
+{
+  unsigned length = 0;
+
+  if (string)
+    length = strlen (string) + 1;
+
+  dump_unsigned (length, dump_fn, arg);
+  if (string)
+    (*dump_fn) (string, length, arg);
+}
+
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 /* Store all TOP N counters where each has a dynamic length.  */
@@ -595,14 +613,14 @@ write_one_data (const struct gcov_info *gi_ptr,
 static void
 dump_one_gcov (struct gcov_info *gi_ptr, struct gcov_filename *gf,
 	       unsigned run_counted ATTRIBUTE_UNUSED,
-	       gcov_type run_max ATTRIBUTE_UNUSED)
+	       gcov_type run_max ATTRIBUTE_UNUSED, int mode)
 {
   struct gcov_summary summary = {};
   int error;
   gcov_unsigned_t tag;
   fn_buffer = 0;
 
-  error = gcov_exit_open_gcda_file (gi_ptr, gf);
+  error = gcov_exit_open_gcda_file (gi_ptr, gf, mode);
   if (error == -1)
     return;
 
@@ -649,13 +667,13 @@ read_fatal:;
 
 /* Dump all the coverage counts for the program. It first computes program
    summary and then traverses gcov_list list and dumps the gcov_info
-   objects one by one.  */
+   objects one by one.  Use MODE to open files.  */
 
 #if !IN_GCOV_TOOL
 static
 #endif
 void
-gcov_do_dump (struct gcov_info *list, int run_counted)
+gcov_do_dump (struct gcov_info *list, int run_counted, int mode)
 {
   struct gcov_info *gi_ptr;
   struct gcov_filename gf;
@@ -678,7 +696,7 @@ gcov_do_dump (struct gcov_info *list, int run_counted)
   /* Now merge each file.  */
   for (gi_ptr = list; gi_ptr; gi_ptr = gi_ptr->next)
     {
-      dump_one_gcov (gi_ptr, &gf, run_counted, run_max);
+      dump_one_gcov (gi_ptr, &gf, run_counted, run_max, mode);
       free (gf.filename);
     }
 
@@ -701,7 +719,7 @@ __gcov_dump_one (struct gcov_root *root)
   if (root->dumped)
     return;
 
-  gcov_do_dump (root->list, root->run_counted);
+  gcov_do_dump (root->list, root->run_counted, 0);
   
   root->dumped = 1;
   root->run_counted = 1;
@@ -768,7 +786,7 @@ __gcov_init (struct gcov_info *info)
 
 #ifdef NEED_L_GCOV_INFO_TO_GCDA
 /* Convert the gcov info to a gcda data stream.  It is intended for
-   free-standing environments which do not support the C library file I/O.  */
+   freestanding environments which do not support the C library file I/O.  */
 
 void
 __gcov_info_to_gcda (const struct gcov_info *gi_ptr,
@@ -779,5 +797,18 @@ __gcov_info_to_gcda (const struct gcov_info *gi_ptr,
 {
   (*filename_fn) (gi_ptr->filename, arg);
   write_one_data (gi_ptr, NULL, dump_fn, allocate_fn, arg);
+}
+
+/* Convert the filename to a gcfn data stream.  It is intended for
+   freestanding environments which do not support the C library file I/O.  */
+
+void
+__gcov_filename_to_gcfn (const char *filename,
+			 void (*dump_fn) (const void *, unsigned, void *),
+			 void *arg)
+{
+  dump_unsigned (GCOV_FILENAME_MAGIC, dump_fn, arg);
+  dump_unsigned (GCOV_VERSION, dump_fn, arg);
+  dump_string (filename, dump_fn, arg);
 }
 #endif /* NEED_L_GCOV_INFO_TO_GCDA */

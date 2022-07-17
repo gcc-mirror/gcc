@@ -984,7 +984,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
             auto var = new VarDeclaration(loc, vtype, Identifier.idPool("__vtbl"), null, STC.immutable_ | STC.static_);
             var.addMember(null, this);
             var.isdataseg = 1;
-            var.linkage = LINK.d;
+            var._linkage = LINK.d;
             var.semanticRun = PASS.semanticdone; // no more semantic wanted
             vtblsym = var;
         }

@@ -110,6 +110,8 @@
 ;;
 ;; ....................
 
+(define_attr "enabled" "no,yes" (const_string "yes"))
+
 (define_attr "got" "unset,load"
   (const_string "unset"))
 
@@ -621,7 +623,7 @@
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (sign_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
   "TARGET_64BIT"
-  "mul.d\t%0,%1,%2"
+  "mulw.d.w\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "DI")])
 
@@ -713,6 +715,12 @@
 ;;
 
 ;; Float division and modulus.
+(define_expand "div<mode>3"
+  [(set (match_operand:ANYF 0 "register_operand")
+	(div:ANYF (match_operand:ANYF 1 "reg_or_1_operand")
+		  (match_operand:ANYF 2 "register_operand")))]
+  "")
+
 (define_insn "*div<mode>3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(div:ANYF (match_operand:ANYF 1 "register_operand" "f")
@@ -744,6 +752,7 @@
   {
     rtx reg1 = gen_reg_rtx (DImode);
     rtx reg2 = gen_reg_rtx (DImode);
+    rtx rd = gen_reg_rtx (DImode);
 
     operands[1] = gen_rtx_SIGN_EXTEND (word_mode, operands[1]);
     operands[2] = gen_rtx_SIGN_EXTEND (word_mode, operands[2]);
@@ -751,32 +760,45 @@
     emit_insn (gen_rtx_SET (reg1, operands[1]));
     emit_insn (gen_rtx_SET (reg2, operands[2]));
 
-    emit_insn (gen_<optab>di3_fake (operands[0], reg1, reg2));
+    emit_insn (gen_<optab>di3_fake (rd, reg1, reg2));
+    emit_insn (gen_rtx_SET (operands[0],
+			    simplify_gen_subreg (SImode, rd, DImode, 0)));
     DONE;
   }
 })
 
 (define_insn "*<optab><mode>3"
-  [(set (match_operand:GPR 0 "register_operand" "=&r")
-	(any_div:GPR (match_operand:GPR 1 "register_operand" "r")
-		     (match_operand:GPR 2 "register_operand" "r")))]
+  [(set (match_operand:GPR 0 "register_operand" "=r,&r,&r")
+	(any_div:GPR (match_operand:GPR 1 "register_operand" "r,r,0")
+		     (match_operand:GPR 2 "register_operand" "r,r,r")))]
   ""
 {
   return loongarch_output_division ("<insn>.<d><u>\t%0,%1,%2", operands);
 }
   [(set_attr "type" "idiv")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set (attr "enabled")
+      (if_then_else
+	(match_test "!!which_alternative == loongarch_check_zero_div_p()")
+	(const_string "yes")
+	(const_string "no")))])
 
 (define_insn "<optab>di3_fake"
-  [(set (match_operand:SI 0 "register_operand" "=&r")
-	(any_div:SI (match_operand:DI 1 "register_operand" "r")
-		    (match_operand:DI 2 "register_operand" "r")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,&r,&r")
+	(sign_extend:DI
+	  (any_div:SI (match_operand:DI 1 "register_operand" "r,r,0")
+		      (match_operand:DI 2 "register_operand" "r,r,r"))))]
   ""
 {
   return loongarch_output_division ("<insn>.w<u>\t%0,%1,%2", operands);
 }
   [(set_attr "type" "idiv")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "SI")
+   (set (attr "enabled")
+      (if_then_else
+	(match_test "!!which_alternative == loongarch_check_zero_div_p()")
+	(const_string "yes")
+	(const_string "no")))])
 
 ;; Floating point multiply accumulate instructions.
 
@@ -2047,13 +2069,17 @@
 
 (define_insn "loongarch_ibar"
   [(unspec_volatile:SI
-      [(match_operand 0 "const_uimm15_operand")] UNSPECV_IBAR)]
+      [(match_operand 0 "const_uimm15_operand")]
+       UNSPECV_IBAR)
+   (clobber (mem:BLK (scratch)))]
   ""
   "ibar\t%0")
 
 (define_insn "loongarch_dbar"
   [(unspec_volatile:SI
-      [(match_operand 0 "const_uimm15_operand")] UNSPECV_DBAR)]
+      [(match_operand 0 "const_uimm15_operand")]
+       UNSPECV_DBAR)
+   (clobber (mem:BLK (scratch)))]
   ""
   "dbar\t%0")
 
@@ -2072,13 +2098,17 @@
 
 (define_insn "loongarch_syscall"
   [(unspec_volatile:SI
-      [(match_operand 0 "const_uimm15_operand")] UNSPECV_SYSCALL)]
+      [(match_operand 0 "const_uimm15_operand")]
+       UNSPECV_SYSCALL)
+   (clobber (mem:BLK (scratch)))]
   ""
   "syscall\t%0")
 
 (define_insn "loongarch_break"
   [(unspec_volatile:SI
-      [(match_operand 0 "const_uimm15_operand")] UNSPECV_BREAK)]
+      [(match_operand 0 "const_uimm15_operand")]
+       UNSPECV_BREAK)
+   (clobber (mem:BLK (scratch)))]
   ""
   "break\t%0")
 
@@ -2103,7 +2133,8 @@
 (define_insn "loongarch_csrrd_<d>"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(unspec_volatile:GPR [(match_operand  1 "const_uimm14_operand")]
-			      UNSPECV_CSRRD))]
+			      UNSPECV_CSRRD))
+   (clobber (mem:BLK (scratch)))]
   ""
   "csrrd\t%0,%1"
   [(set_attr "type" "load")
@@ -2114,7 +2145,8 @@
 	  (unspec_volatile:GPR
 	    [(match_operand:GPR 1 "register_operand" "0")
 	     (match_operand 2 "const_uimm14_operand")]
-	     UNSPECV_CSRWR))]
+	     UNSPECV_CSRWR))
+   (clobber (mem:BLK (scratch)))]
   ""
   "csrwr\t%0,%2"
   [(set_attr "type" "store")
@@ -2126,7 +2158,8 @@
 	    [(match_operand:GPR 1 "register_operand" "0")
 	     (match_operand:GPR 2 "register_operand" "q")
 	     (match_operand 3 "const_uimm14_operand")]
-	     UNSPECV_CSRXCHG))]
+	     UNSPECV_CSRXCHG))
+   (clobber (mem:BLK (scratch)))]
   ""
   "csrxchg\t%0,%2,%3"
   [(set_attr "type" "load")
@@ -2135,7 +2168,8 @@
 (define_insn "loongarch_iocsrrd_<size>"
   [(set (match_operand:QHWD 0 "register_operand" "=r")
 	(unspec_volatile:QHWD [(match_operand:SI 1 "register_operand" "r")]
-			      UNSPECV_IOCSRRD))]
+			      UNSPECV_IOCSRRD))
+   (clobber (mem:BLK (scratch)))]
   ""
   "iocsrrd.<size>\t%0,%1"
   [(set_attr "type" "load")
@@ -2144,7 +2178,8 @@
 (define_insn "loongarch_iocsrwr_<size>"
   [(unspec_volatile:QHWD [(match_operand:QHWD 0 "register_operand" "r")
 			  (match_operand:SI 1 "register_operand" "r")]
-			  UNSPECV_IOCSRWR)]
+			  UNSPECV_IOCSRWR)
+   (clobber (mem:BLK (scratch)))]
   ""
   "iocsrwr.<size>\t%0,%1"
   [(set_attr "type" "load")
@@ -2154,7 +2189,8 @@
   [(unspec_volatile:X [(match_operand 0 "const_uimm5_operand")
 		       (match_operand:X 1 "register_operand" "r")
 		       (match_operand 2 "const_imm12_operand")]
-		       UNSPECV_CACOP)]
+		       UNSPECV_CACOP)
+   (clobber (mem:BLK (scratch)))]
   ""
   "cacop\t%0,%1,%2"
   [(set_attr "type" "load")
@@ -2164,7 +2200,8 @@
   [(unspec_volatile:X [(match_operand:X 0 "register_operand" "r")
 		       (match_operand:X 1 "register_operand" "r")
 		       (match_operand 2 "const_uimm5_operand")]
-		       UNSPECV_LDDIR)]
+		       UNSPECV_LDDIR)
+   (clobber (mem:BLK (scratch)))]
   ""
   "lddir\t%0,%1,%2"
   [(set_attr "type" "load")
@@ -2173,7 +2210,8 @@
 (define_insn "loongarch_ldpte_<d>"
   [(unspec_volatile:X [(match_operand:X 0 "register_operand" "r")
 		       (match_operand 1 "const_uimm5_operand")]
-		       UNSPECV_LDPTE)]
+		       UNSPECV_LDPTE)
+   (clobber (mem:BLK (scratch)))]
   ""
   "ldpte\t%0,%1"
   [(set_attr "type" "load")

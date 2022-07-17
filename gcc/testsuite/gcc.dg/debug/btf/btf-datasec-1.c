@@ -12,6 +12,7 @@
 /* { dg-do compile )  */
 /* { dg-options "-O0 -gbtf -dA" } */
 /* { dg-options "-O0 -gbtf -dA -msdata=none" { target { { powerpc*-*-* } && ilp32 } } } */
+/* { dg-options "-O0 -gbtf -dA -msmall-data-limit=0" { target { riscv*-*-* } } } */
 /* { dg-options "-O0 -gbtf -dA -G0" { target { nios2-*-* } } } */
 
 /* Check for two DATASEC entries with vlen 3, and one with vlen 1.  */

@@ -589,8 +589,7 @@ json::value *
 region::to_json () const
 {
   label_text desc = get_desc (true);
-  json::value *reg_js = new json::string (desc.m_buffer);
-  desc.maybe_free ();
+  json::value *reg_js = new json::string (desc.get ());
   return reg_js;
 }
 
@@ -1541,9 +1540,9 @@ void
 alloca_region::dump_to_pp (pretty_printer *pp, bool simple) const
 {
   if (simple)
-    pp_string (pp, "ALLOCA_REGION");
+    pp_printf (pp, "ALLOCA_REGION(%i)", get_id ());
   else
-    pp_string (pp, "alloca_region()");
+    pp_printf (pp, "alloca_region(%i)", get_id ());
 }
 
 /* class string_region : public region.  */
@@ -1635,6 +1634,34 @@ bit_range_region::get_relative_concrete_offset (bit_offset_t *out) const
 {
   *out = m_bits.get_start_bit_offset ();
   return true;
+}
+
+/* class var_arg_region : public region.  */
+
+void
+var_arg_region::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  if (simple)
+    {
+      pp_string (pp, "VAR_ARG_REG(");
+      get_parent_region ()->dump_to_pp (pp, simple);
+      pp_printf (pp, ", arg_idx: %d)", m_idx);
+    }
+  else
+    {
+      pp_string (pp, "var_arg_region(");
+      get_parent_region ()->dump_to_pp (pp, simple);
+      pp_printf (pp, ", arg_idx: %d)", m_idx);
+    }
+}
+
+/* Get the frame_region for this var_arg_region.  */
+
+const frame_region *
+var_arg_region::get_frame_region () const
+{
+  gcc_assert (get_parent_region ());
+  return as_a <const frame_region *> (get_parent_region ());
 }
 
 /* class unknown_region : public region.  */

@@ -1,3 +1,229 @@
+2022-07-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104477
+	* c-common.cc (c_common_reswords): Add
+	__reference_constructs_from_temporary and
+	__reference_converts_from_temporary.
+	* c-common.h (enum rid): Add RID_REF_CONSTRUCTS_FROM_TEMPORARY and
+	RID_REF_CONVERTS_FROM_TEMPORARY.
+
+2022-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-format.cc (class range_label_for_format_type_mismatch):
+	Adjust to new label_text API.
+
+2022-07-11  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/106252
+	* c-pragma.cc (handle_pragma_diagnostic_impl): Don't look up the
+	option argument prior to verifying the option was found.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.cc (range_label_for_format_type_mismatch::get_text):
+	Update for removal of label_text::maybe_free in favor of automatic
+	memory management.
+
+2022-07-06  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/53920
+	PR c++/53431
+	* c-common.cc (c_option_is_from_cpp_diagnostics): New function.
+	* c-common.h (c_option_is_from_cpp_diagnostics): Declare.
+	(c_pp_stream_token): Declare.
+	* c-ppoutput.cc (init_pp_output): Refactor logic about skipping
+	pragmas to...
+	(should_output_pragmas): ...here. New function.
+	(token_streamer::stream): Support handling early pragmas.
+	(do_line_change): Likewise.
+	(c_pp_stream_token): New function.
+	* c-pragma.cc (struct pragma_diagnostic_data): New helper class.
+	(pragma_diagnostic_lex_normal): New function. Moved logic for
+	interpreting GCC diagnostic pragmas here.
+	(pragma_diagnostic_lex_pp): New function for parsing diagnostic pragmas
+	directly from libcpp.
+	(handle_pragma_diagnostic): Refactor into helper function...
+	(handle_pragma_diagnostic_impl): ...here.  New function.
+	(handle_pragma_diagnostic_early): New function.
+	(handle_pragma_diagnostic_early_pp): New function.
+	(struct pragma_ns_name): Renamed to...
+	(struct pragma_pp_data): ...this.  Add new "early_handler" member.
+	(c_register_pragma_1): Support early pragmas in the preprocessor.
+	(c_register_pragma_with_early_handler): New function.
+	(c_register_pragma): Support the new early handlers in struct
+	internal_pragma_handler.
+	(c_register_pragma_with_data): Likewise.
+	(c_register_pragma_with_expansion): Likewise.
+	(c_register_pragma_with_expansion_and_data): Likewise.
+	(c_invoke_early_pragma_handler): New function.
+	(c_pp_invoke_early_pragma_handler): New function.
+	(init_pragma): Add early pragma support for diagnostic pragmas.
+	* c-pragma.h (struct internal_pragma_handler): Add new early handler
+	members.
+	(c_register_pragma_with_early_handler): Declare.
+	(c_invoke_early_pragma_handler): Declare.
+	(c_pp_invoke_early_pragma_handler): Declare.
+
+2022-07-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105626
+	* c-format.cc (check_format_arg): Don't emit -Wformat warnings with
+	u8 strings.
+
+2022-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106111
+	* c-common.h (enum rid): Update RID_LAST_CXX20.
+
+2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* known-headers.cc (get_stdlib_header_for_name): Add <time.h>
+	names.
+
+2022-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	PR c++/20423
+	* c.opt (Woverloaded-virtual): Add levels, include in -Wall.
+
+2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.cc (ubsan_instrument_division, ubsan_instrument_shift):
+	Use flag_sanitize_trap & SANITIZE_??? instead of
+	flag_sanitize_undefined_trap_on_error.  If 2 sanitizers are involved
+	and flag_sanitize_trap differs for them, emit __builtin_trap only
+	for the comparison where trap is requested.
+	(ubsan_instrument_vla, ubsan_instrument_return): Use
+	lag_sanitize_trap & SANITIZE_??? instead of
+	flag_sanitize_undefined_trap_on_error.
+
+2022-06-13  Jason Merrill  <jason@redhat.com>
+
+	* c-ubsan.cc (ubsan_instrument_return): Use BUILTINS_LOCATION.
+
+2022-05-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/90658
+	* c-attribs.cc (get_priority): Check FUNCTION_DECL.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_ENTER.
+
+2022-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.cc: Replace uses of "FINAL" and "OVERRIDE" with "final"
+	and "override".
+	* c-pretty-print.h: Likewise.
+
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/105131
+	* c.opt (Wenum-int-mismatch): New.
+
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105497
+	* c-warn.cc (c_do_switch_warnings): Don't warn about unhandled
+	enumerator when it was marked with attribute unused.
+
+2022-05-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (dump_ada_node) <COMPLEX_TYPE>: Deal with usual
+	floating-point complex types.
+	<POINTER_TYPE>: Do not use limited_with clause if the designated
+	type is a scalar type.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.cc (c_finish_omp_depobj): Handle
+	OMP_CLAUSE_DEPEND_INOUTSET.
+
+2022-05-16  Jason Merrill  <jason@redhat.com>
+
+	PR c/105492
+	* c-attribs.cc (handle_mode_attribute): Don't fix broken typedefs
+	here.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* c-common.cc (ARRAY_SIZE): Use ARRAY_SIZE.
+	(c_common_nodes_and_builtins): Likewise.
+	* c-format.cc (check_tokens): Likewise.
+	(check_plain): Likewise.
+	* c-pragma.cc (c_pp_lookup_pragma): Likewise.
+	(init_pragma): Likewise.
+	* known-headers.cc (get_string_macro_hint): Likewise.
+	(get_stdlib_header_for_name): Likewise.
+	* c-attribs.cc: Likewise.
+
+2022-05-13  Richard Biener  <rguenther@suse.de>
+
+	* c-omp.cc: Remove gimple-fold.h include.
+
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum rid): Add RID_OMP_ALL_MEMORY.
+	* c-omp.cc (c_finish_omp_depobj): Don't build_fold_addr_expr
+	if null_pointer_node.
+
+2022-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR target/105355
+	* c-opts.cc (c_common_handle_option): Change option name.
+	* c.opt: Remove Joined and use Separate option.
+
+2022-05-09  Alex Coplan  <alex.coplan@arm.com>
+
+	* c-common.h (get_dump_info): Delete.
+	* c-gimplify.cc (c_genericize): Get TDI_original dump file info
+	from the global dump_manager instead of the (now obsolete)
+	get_dump_info.
+	* c-opts.cc (original_dump_file): Delete.
+	(original_dump_flags): Delete.
+	(c_common_parse_file): Switch to using global dump_manager to
+	manage the original dump file; fix leak of dump file.
+	(get_dump_info): Delete.
+
+2022-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101833
+	PR c++/47634
+	* c-attribs.cc (positional_argument): Pass POS by reference.  Deal
+	with FN being either a function declaration or function type.  Use
+	maybe_adjust_arg_pos_for_attribute.
+	* c-common.cc (check_function_arguments): Maybe pass FNDECL down to
+	check_function_format.
+	* c-common.h (maybe_adjust_arg_pos_for_attribute): Declare.
+	(positional_argument): Adjust.
+	* c-format.cc (get_constant): Rename to ...
+	(validate_constant): ... this.  Take EXPR by reference.  Return bool
+	instead of tree.
+	(handle_format_arg_attribute): Don't overwrite FORMAT_NUM_EXPR by the
+	return value of validate_constant.
+	(decode_format_attr): Don't overwrite FORMAT_NUM_EXPR and
+	FIRST_ARG_NUM_EXPR by the return value of validate_constant.
+	(check_function_format): Adjust a parameter name.
+	(handle_format_attribute): Maybe pass FNDECL down to decode_format_attr.
+
+2022-05-04  Marek Polacek  <polacek@redhat.com>
+
+	* c-warn.cc (warnings_for_convert_and_check): Convert constants of type
+	char to int.
+
+2022-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c/100545
+	* c-attribs.cc (handle_mode_attribute): Copy attributes, aligned,
+	and typedef.
+	* c-common.cc (set_underlying_type): Add assert.
+
+2022-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105304
+	* c-common.cc (verify_tree) [restart]: Move up to before the
+	NULL test.
+
 2022-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/105186

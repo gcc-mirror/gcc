@@ -8,4 +8,4 @@ foo (void)
 {
 }
 
-/* { dg-final { scan-assembler "\t\.cfi_startproc\n.*\.LPFE1:\n\tnop\n1:\tcall\t__fentry__\n\tret\n" } } */
+/* { dg-final { scan-assembler "\t\.cfi_startproc\n.*\.LPFE1:\n\tnop\n1:\tcall\t\[^\n\]*__fentry__\[^\n\]*\n\tret\n" } } */

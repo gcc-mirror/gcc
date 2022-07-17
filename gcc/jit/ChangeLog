@@ -1,3 +1,53 @@
+2022-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* jit-recording.h (recording::memento): Define copy constructor
+	and copy assignment operator as deleted.
+	(recording::string): Likewise.
+	(recording::string::c_str): Add const qualifier.
+
+2022-06-29  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/105812
+	* jit-playback.cc: Use the correct return type when folding in
+	as_truth_value.
+
+2022-06-29  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* jit-playback.cc: Include <pthread.h> via "system.h" to avoid calloc()
+	poisoning.
+	* jit-recording.cc: Ditto.
+	* libgccjit.cc: Ditto.
+
+2022-06-10  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/105829
+	* libgccjit.cc: Add support for floating-point types in
+	gcc_jit_type_get_size.
+
+2022-06-08  Yang Yujie  <yangyujie@loongson.cn>
+
+	* Make-lang.in: only link objects from $(EXTRA_GCC_OBJS)
+	that's not in $(EXTRA_OBJS) into libgccjit.
+
+2022-05-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.h: Add "final" and "override" to all vfunc
+	implementations that were missing them, as appropriate.
+
+2022-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.h: Replace uses of "FINAL" and "OVERRIDE" with
+	"final" and "override".
+	* jit-recording.cc: Likewise.
+	* jit-recording.h: Likewise.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* jit-builtins.cc (find_builtin_by_name): Use ARRAY_SIZE.
+	(get_string_for_type_id): Likewise.
+	* jit-recording.cc (recording::context::context): Likewise.
+
 2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* jit-playback.cc (new_bitcast): Cast values returned by tree_to_uhwi

@@ -31,7 +31,7 @@ with Output;   use Output;
 with System;        use System;
 with System.OS_Lib; use System.OS_Lib;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body Set_Targ is
 
@@ -404,7 +404,7 @@ package body Set_Targ is
       --  Pointer to Nat or Pos value (it is harmless to treat Pos values and
       --  Nat values as Natural via Unchecked_Conversion).
 
-      function To_ANat is new Unchecked_Conversion (Address, ANat);
+      function To_ANat is new Ada.Unchecked_Conversion (Address, ANat);
 
       procedure AddC (C : Character);
       --  Add one character to buffer
@@ -566,7 +566,7 @@ package body Set_Targ is
       --  Pointer to Nat or Pos value (it is harmless to treat Pos values
       --  as Nat via Unchecked_Conversion).
 
-      function To_ANat is new Unchecked_Conversion (Address, ANat);
+      function To_ANat is new Ada.Unchecked_Conversion (Address, ANat);
 
       VP : ANat;
 

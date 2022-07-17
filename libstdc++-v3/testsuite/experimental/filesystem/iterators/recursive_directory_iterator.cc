@@ -188,7 +188,7 @@ test05()
 void
 test06()
 {
-#if !(defined __MINGW32__ || defined __MINGW64__)
+#ifndef NO_SYMLINKS
   auto p = __gnu_test::nonexistent_path();
   create_directories(p/"d1/d2");
   create_directory_symlink("d1", p/"link");

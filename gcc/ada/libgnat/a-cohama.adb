@@ -80,7 +80,7 @@ is
    procedure Set_Next (Node : Node_Access; Next : Node_Access);
    pragma Inline (Set_Next);
 
-   function Vet (Position : Cursor) return Boolean;
+   function Vet (Position : Cursor) return Boolean with Inline;
 
    procedure Write_Node
      (Stream : not null access Root_Stream_Type'Class;
@@ -1156,6 +1156,10 @@ is
 
    function Vet (Position : Cursor) return Boolean is
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if Position.Node = null then
          return Position.Container = null;
       end if;

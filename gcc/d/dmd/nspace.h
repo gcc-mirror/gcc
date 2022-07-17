@@ -16,17 +16,17 @@
  * Implies extern(C++).
  */
 
-class Nspace : public ScopeDsymbol
+class Nspace final : public ScopeDsymbol
 {
   public:
     Expression *identExp;
-    Nspace *syntaxCopy(Dsymbol *s);
-    void addMember(Scope *sc, ScopeDsymbol *sds);
-    void setScope(Scope *sc);
-    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
-    bool hasPointers();
-    void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion);
-    const char *kind() const;
-    Nspace *isNspace() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    Nspace *syntaxCopy(Dsymbol *s) override;
+    void addMember(Scope *sc, ScopeDsymbol *sds) override;
+    void setScope(Scope *sc) override;
+    Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly) override;
+    bool hasPointers() override;
+    void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion) override;
+    const char *kind() const override;
+    Nspace *isNspace() override { return this; }
+    void accept(Visitor *v) override { v->visit(this); }
 };

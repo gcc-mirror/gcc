@@ -33,8 +33,8 @@ struct S {
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test17450.d(103): Error: scope variable `c` may not be returned
-fail_compilation/test17450.d(106): Error: scope variable `this` may not be returned
+fail_compilation/test17450.d(103): Error: scope parameter `c` may not be returned
+fail_compilation/test17450.d(106): Error: scope parameter `this` may not be returned
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=17450

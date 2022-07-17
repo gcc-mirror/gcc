@@ -75,8 +75,7 @@ void
 call_info::print (pretty_printer *pp) const
 {
   label_text desc (get_desc (pp_show_color (pp)));
-  pp_string (pp, desc.m_buffer);
-  desc.maybe_free ();
+  pp_string (pp, desc.get ());
 }
 
 /* Implementation of custom_edge_info::add_events_to_path vfunc for
@@ -96,7 +95,7 @@ call_info::add_events_to_path (checker_path *emission_path,
 	m_call_info (call_info)
     {}
 
-    label_text get_desc (bool can_colorize) const
+    label_text get_desc (bool can_colorize) const final override
     {
       return m_call_info->get_desc (can_colorize);
     }

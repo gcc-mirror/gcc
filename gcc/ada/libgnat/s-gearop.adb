@@ -32,7 +32,8 @@
 --  Preconditions, postconditions, ghost code, loop invariants and assertions
 --  in this unit are meant for analysis only, not for run-time checking, as it
 --  would be too costly otherwise. This is enforced by setting the assertion
---  policy to Ignore.
+--  policy to Ignore, here for non-generic code, and inside the generic for
+--  generic code.
 
 pragma Assertion_Policy (Pre            => Ignore,
                          Post           => Ignore,
@@ -72,6 +73,12 @@ is
    --------------
 
    function Diagonal (A : Matrix) return Vector is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
+
       N : constant Natural := Natural'Min (A'Length (1), A'Length (2));
    begin
       return R : Vector (A'First (1) .. A'First (1) + (N - 1))
@@ -126,6 +133,11 @@ is
    ---------------------
 
    procedure Back_Substitute (M, N : in out Matrix) is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
       pragma Assert (M'First (1) = N'First (1)
                        and then
                      M'Last  (1) = N'Last (1));
@@ -215,6 +227,11 @@ is
       N   : in out Matrix;
       Det : out Scalar)
    is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
       pragma Assert (M'First (1) = N'First (1)
                        and then
                      M'Last  (1) = N'Last (1));
@@ -460,6 +477,11 @@ is
    -------------
 
    function L2_Norm (X : X_Vector) return Result_Real'Base is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
       Sum : Result_Real'Base := 0.0;
 
    begin
@@ -479,6 +501,11 @@ is
    ----------------------------------
 
    function Matrix_Elementwise_Operation (X : X_Matrix) return Result_Matrix is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
    begin
       return R : Result_Matrix (X'Range (1), X'Range (2))
         with Relaxed_Initialization
@@ -524,6 +551,11 @@ is
      (Left  : Left_Matrix;
       Right : Right_Matrix) return Result_Matrix
    is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
    begin
       return R : Result_Matrix (Left'Range (1), Left'Range (2))
         with Relaxed_Initialization
@@ -570,6 +602,11 @@ is
       Y : Y_Matrix;
       Z : Z_Scalar) return Result_Matrix
    is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
    begin
       return R : Result_Matrix (X'Range (1), X'Range (2))
         with Relaxed_Initialization
@@ -657,6 +694,11 @@ is
      (Left  : Left_Matrix;
       Right : Right_Scalar) return Result_Matrix
    is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
    begin
       return R : Result_Matrix (Left'Range (1), Left'Range (2))
         with Relaxed_Initialization
@@ -705,6 +747,11 @@ is
      (Left  : Left_Scalar;
       Right : Right_Matrix) return Result_Matrix
    is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
    begin
       return R : Result_Matrix (Right'Range (1), Right'Range (2))
         with Relaxed_Initialization
@@ -811,6 +858,11 @@ is
      (Left  : Left_Matrix;
       Right : Right_Matrix) return Result_Matrix
    is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
    begin
       return R : Result_Matrix (Left'Range (1), Right'Range (2))
         with Relaxed_Initialization
@@ -856,6 +908,11 @@ is
    ----------------------------
 
    function Matrix_Vector_Solution (A : Matrix; X : Vector) return Vector is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
 
       procedure Ignore (M : Matrix)
       with
@@ -917,6 +974,11 @@ is
    ----------------------------
 
    function Matrix_Matrix_Solution (A, X : Matrix) return Matrix is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
 
       procedure Ignore (M : Matrix)
       with
@@ -1035,6 +1097,11 @@ is
      (Left  : Left_Vector;
       Right : Right_Vector) return Matrix
    is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
    begin
       return R : Matrix (Left'Range, Right'Range)
         with Relaxed_Initialization
@@ -1078,6 +1145,11 @@ is
    ---------------
 
    procedure Transpose (A : Matrix; R : out Matrix) is
+      pragma Assertion_Policy (Pre            => Ignore,
+                               Post           => Ignore,
+                               Ghost          => Ignore,
+                               Loop_Invariant => Ignore,
+                               Assert         => Ignore);
    begin
       for J in R'Range (1) loop
          for K in R'Range (2) loop

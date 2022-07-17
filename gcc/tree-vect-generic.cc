@@ -54,10 +54,7 @@ gimplify_build3 (gimple_stmt_iterator *gsi, enum tree_code code,
 		 tree type, tree a, tree b, tree c)
 {
   location_t loc = gimple_location (gsi_stmt (*gsi));
-  gimple_seq stmts = NULL;
-  tree ret = gimple_build (&stmts, loc, code, type, a, b, c);
-  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-  return ret;
+  return gimple_build (gsi, true, GSI_SAME_STMT, loc, code, type, a, b, c);
 }
 
 /* Build a binary operation and gimplify it.  Emit code before GSI.
@@ -68,10 +65,7 @@ gimplify_build2 (gimple_stmt_iterator *gsi, enum tree_code code,
 		 tree type, tree a, tree b)
 {
   location_t loc = gimple_location (gsi_stmt (*gsi));
-  gimple_seq stmts = NULL;
-  tree ret = gimple_build (&stmts, loc, code, type, a, b);
-  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-  return ret;
+  return gimple_build (gsi, true, GSI_SAME_STMT, loc, code, type, a, b);
 }
 
 /* Build a unary operation and gimplify it.  Emit code before GSI.
@@ -82,10 +76,7 @@ gimplify_build1 (gimple_stmt_iterator *gsi, enum tree_code code, tree type,
 		 tree a)
 {
   location_t loc = gimple_location (gsi_stmt (*gsi));
-  gimple_seq stmts = NULL;
-  tree ret = gimple_build (&stmts, loc, code, type, a);
-  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-  return ret;
+  return gimple_build (gsi, true, GSI_SAME_STMT, loc, code, type, a);
 }
 
 
@@ -1122,6 +1113,9 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
       tree atype = build_nonstandard_integer_type (prec, 1);
       a = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, atype, a);
     }
+  else if (!a_is_comparison
+	   && VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (a)))
+    comp_width = vector_element_bits_tree (TREE_TYPE (a));
 
   int nunits = nunits_for_known_piecewise_op (type);
   vec_alloc (v, nunits);
@@ -1137,18 +1131,18 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
 				       comp_width, comp_index);
 	  tree aa2 = tree_vec_extract (gsi, comp_inner_type, a2,
 				       comp_width, comp_index);
-	  aa = build2 (code, cond_type, aa1, aa2);
+	  aa = gimplify_build2 (gsi, code, cond_type, aa1, aa2);
 	}
       else if (a_is_scalar_bitmask)
 	{
 	  wide_int w = wi::set_bit_in_zero (i, TYPE_PRECISION (TREE_TYPE (a)));
 	  result = gimplify_build2 (gsi, BIT_AND_EXPR, TREE_TYPE (a),
 				    a, wide_int_to_tree (TREE_TYPE (a), w));
-	  aa = build2 (NE_EXPR, boolean_type_node, result,
-		       build_zero_cst (TREE_TYPE (a)));
+	  aa = gimplify_build2 (gsi, NE_EXPR, boolean_type_node, result,
+				build_zero_cst (TREE_TYPE (a)));
 	}
       else
-	aa = tree_vec_extract (gsi, cond_type, a, width, index);
+	aa = tree_vec_extract (gsi, cond_type, a, comp_width, comp_index);
       result = gimplify_build3 (gsi, COND_EXPR, inner_type, aa, bb, cc);
       if (!CONSTANT_CLASS_P (result))
 	constant_p = false;
@@ -1533,7 +1527,10 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
       && tree_to_vec_perm_builder (&sel_int, mask))
     {
       vec_perm_indices indices (sel_int, 2, elements);
-      if (can_vec_perm_const_p (TYPE_MODE (vect_type), indices))
+      machine_mode vmode = TYPE_MODE (vect_type);
+      tree lhs_type = TREE_TYPE (gimple_assign_lhs (stmt));
+      machine_mode lhs_mode = TYPE_MODE (lhs_type);
+      if (can_vec_perm_const_p (lhs_mode, vmode, indices))
 	{
 	  gimple_assign_set_rhs3 (stmt, mask);
 	  update_stmt (stmt);
@@ -2421,12 +2418,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  bool gate (function *fun) final override
     {
       return !(fun->curr_properties & PROP_gimple_lvec);
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return expand_vector_operations ();
     }
@@ -2465,8 +2462,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_lower_vector_ssa (m_ctxt); }
-  virtual unsigned int execute (function *)
+  opt_pass * clone () final override
+  {
+    return new pass_lower_vector_ssa (m_ctxt);
+  }
+  unsigned int execute (function *) final override
     {
       return expand_vector_operations ();
     }

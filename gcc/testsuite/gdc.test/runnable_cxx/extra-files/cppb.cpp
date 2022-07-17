@@ -4,29 +4,7 @@
 #include <exception>
 #include <cstdarg>
 
-#if _WIN32 // otherwise defined in C header files!
-// https://issues.dlang.org/show_bug.cgi?id=18955
-namespace std
-{
-    template<typename Char>
-    struct char_traits
-    {
-    };
-    template<typename Char>
-    class allocator
-    {
-    };
-    template<typename Char, typename Traits, typename Alloc>
-    class basic_string
-    {
-    };
-    typedef basic_string<char, char_traits<char>, allocator<char> > string;
-}
-#else // if POSIX
-
 #include <string>
-
-#endif // _WIN32
 
 #include "cppb.h"
 
@@ -935,4 +913,12 @@ void test18955()
 #if !__APPLE__ && !__FreeBSD__
     callback18955(s);
 #endif
+}
+
+void previewInFunction(const int& a, const std::string& b, const std::string& c);
+
+void testPreviewIn()
+{
+    std::string s = "Hello World";
+    previewInFunction(42, s, s);
 }

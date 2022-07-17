@@ -57,7 +57,7 @@ package Uname is
 
    --  For display purposes, unit names are printed out with the suffix
    --  " (body)" for a body and " (spec)" for a spec. These formats are
-   --  used for the Write_Unit_Name and Get_Unit_Name_String subprograms.
+   --  used for Write_Unit_Name and Get_Unit_Name_String.
 
    -----------------
    -- Subprograms --
@@ -111,13 +111,11 @@ package Uname is
    --    N_Subunit
 
    procedure Get_Unit_Name_String
-     (N      : Unit_Name_Type;
+     (Buf    : in out Bounded_String;
+      N      : Unit_Name_Type;
       Suffix : Boolean := True);
-   --  Places the display name of the unit in Name_Buffer and sets Name_Len to
-   --  the length of the stored name, i.e. it uses the same interface as the
-   --  Get_Name_String routine in the Namet package. The name is decoded and
-   --  contains an indication of spec or body if Boolean parameter Suffix is
-   --  True.
+   --  Puts the display name for N in Buf. The name is decoded and contains an
+   --  indication of spec or body if Suffix is True.
 
    function Is_Body_Name (N : Unit_Name_Type) return Boolean;
    --  Returns True iff the given name is the unit name of a body (i.e. if
@@ -161,7 +159,7 @@ package Uname is
    --     result = A.R.C (body)
    --
    --   See spec of Load_Unit for extensive discussion of why this routine
-   --   needs to be used (the call in the body of Load_Unit is the only one).
+   --   needs to be used (the calls in Load_Unit are the only ones).
 
    function Uname_Ge (Left, Right : Unit_Name_Type) return Boolean;
    function Uname_Gt (Left, Right : Unit_Name_Type) return Boolean;
@@ -175,8 +173,10 @@ package Uname is
    --  are the same, they always have the same Name_Id value.
 
    procedure Write_Unit_Name (N : Unit_Name_Type);
-   --  Given a unit name, this procedure writes the display name to the
-   --  standard output file. Name_Buffer and Name_Len are set as described
-   --  above for the Get_Unit_Name_String call on return.
+   --  Writes the display form of N to standard output
+
+   procedure Write_Unit_Name_For_Debug (N : Unit_Name_Type);
+   --  Like Write_Unit_Name, except it tries to be robust in the presence of
+   --  invalid data.
 
 end Uname;

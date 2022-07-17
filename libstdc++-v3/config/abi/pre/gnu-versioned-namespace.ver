@@ -28,7 +28,6 @@ GLIBCXX_8.0 {
     {
       std::*;
       std::__8::*;
-      std::random_device::*
     };
 
     # operator new(size_t)

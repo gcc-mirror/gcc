@@ -916,11 +916,11 @@ vec<T, A, vl_embed>::space (unsigned nelems) const
 }
 
 
-/* Return iteration condition and update PTR to point to the IX'th
+/* Return iteration condition and update *PTR to (a copy of) the IX'th
    element of this vector.  Use this to iterate over the elements of a
    vector as follows,
 
-     for (ix = 0; vec<T, A>::iterate (v, ix, &ptr); ix++)
+     for (ix = 0; v->iterate (ix, &val); ix++)
        continue;  */
 
 template<typename T, typename A>

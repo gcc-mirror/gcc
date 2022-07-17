@@ -145,6 +145,14 @@ enum stack_protector_guard {
 #define TARGET_ZVL32768B ((riscv_zvl_flags & MASK_ZVL32768B) != 0)
 #define TARGET_ZVL65536B ((riscv_zvl_flags & MASK_ZVL65536B) != 0)
 
+#define MASK_ZICBOZ   (1 << 0)
+#define MASK_ZICBOM   (1 << 1)
+#define MASK_ZICBOP   (1 << 2)
+
+#define TARGET_ZICBOZ ((riscv_zicmo_subext & MASK_ZICBOZ) != 0)
+#define TARGET_ZICBOM ((riscv_zicmo_subext & MASK_ZICBOM) != 0)
+#define TARGET_ZICBOP ((riscv_zicmo_subext & MASK_ZICBOP) != 0)
+
 /* Bit of riscv_zvl_flags will set contintuly, N-1 bit will set if N-bit is
    set, e.g. MASK_ZVL64B has set then MASK_ZVL32B is set, so we can use
    popcount to caclulate the minimal VLEN.  */

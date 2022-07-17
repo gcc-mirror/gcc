@@ -301,10 +301,11 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
--fdiagnostics-format=@r{[}text@r{|}json@r{]}  @gol
+-fdiagnostics-format=@r{[}text@r{|}sarif-stderr@r{|}sarif-file@r{|}json@r{|}json-stderr@r{|}json-file@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers @gol
 -fno-diagnostics-show-cwe  @gol
+-fno-diagnostics-show-rule  @gol
 -fdiagnostics-minimum-margin-width=@var{width} @gol
 -fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch @gol
 -fdiagnostics-show-template-tree  -fno-elide-type @gol
@@ -349,6 +350,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-div-by-zero  -Wdouble-promotion @gol
 -Wduplicated-branches  -Wduplicated-cond @gol
 -Wempty-body  -Wno-endif-labels  -Wenum-compare  -Wenum-conversion @gol
+-Wenum-int-mismatch @gol
 -Werror  -Werror=*  -Wexpansion-to-defined  -Wfatal-errors @gol
 -Wfloat-conversion  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul  -Wno-format-extra-args  @gol
@@ -424,6 +426,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-analyzer-state-merge @gol
 -fno-analyzer-state-purge @gol
 -fanalyzer-transitivity @gol
+-fno-analyzer-undo-inlining @gol
 -fanalyzer-verbose-edges @gol
 -fanalyzer-verbose-state-changes @gol
 -fanalyzer-verbosity=@var{level} @gol
@@ -443,6 +446,11 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-double-fclose @gol
 -Wno-analyzer-double-free @gol
 -Wno-analyzer-exposure-through-output-file @gol
+-Wno-analyzer-fd-access-mode-mismatch @gol
+-Wno-analyzer-fd-double-close @gol
+-Wno-analyzer-fd-leak @gol
+-Wno-analyzer-fd-use-after-close @gol
+-Wno-analyzer-fd-use-without-check @gol
 -Wno-analyzer-file-leak @gol
 -Wno-analyzer-free-of-non-heap @gol
 -Wno-analyzer-malloc-leak @gol
@@ -464,6 +472,10 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-use-after-free @gol
 -Wno-analyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wno-analyzer-use-of-uninitialized-value @gol
+-Wno-analyzer-va-arg-type-mismatch @gol
+-Wno-analyzer-va-list-exhausted @gol
+-Wno-analyzer-va-list-leak @gol
+-Wno-analyzer-va-list-use-after-va-end @gol
 -Wno-analyzer-write-to-const @gol
 -Wno-analyzer-write-to-string-literal @gol
 }
@@ -603,6 +615,7 @@ Objective-C and Objective-C++ Dialects}.
 -fprofile-exclude-files=@var{regex} @gol
 -fprofile-reproducible=@r{[}multithreaded@r{|}parallel-runs@r{|}serial@r{]} @gol
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
+-fsanitize-trap   -fsanitize-trap=@var{style}  @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
 -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]} @gol
@@ -613,7 +626,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-stack-limit  -fsplit-stack @gol
 -fvtable-verify=@r{[}std@r{|}preinit@r{|}none@r{]} @gol
 -fvtv-counts  -fvtv-debug @gol
--finstrument-functions @gol
+-finstrument-functions  -finstrument-functions-once @gol
 -finstrument-functions-exclude-function-list=@var{sym},@var{sym},@dots{} @gol
 -finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{}} @gol
 -fprofile-prefix-map=@var{old}=@var{new}
@@ -645,7 +658,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library} @gol
--nostartfiles  -nodefaultlibs  -nolibc  -nostdlib @gol
+-nostartfiles  -nodefaultlibs  -nolibc  -nostdlib  -nostdlib++ @gol
 -e @var{entry}  --entry=@var{entry} @gol
 -pie  -pthread  -r  -rdynamic @gol
 -s  -static  -static-pie  -static-libgcc  -static-libstdc++ @gol
@@ -854,12 +867,12 @@ Objective-C and Objective-C++ Dialects}.
 -msim  -msdata=@var{sdata-type}}
 
 @emph{CRIS Options}
-@gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}  -mtune=@var{cpu} @gol
--mmax-stack-frame=@var{n}  -melinux-stacksize=@var{n} @gol
+@gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}
+-mtune=@var{cpu} -mmax-stack-frame=@var{n} @gol
 -metrax4  -metrax100  -mpdebug  -mcc-init  -mno-side-effects @gol
 -mstack-align  -mdata-align  -mconst-align @gol
--m32-bit  -m16-bit  -m8-bit  -mno-prologue-epilogue  -mno-gotplt @gol
--melf  -maout  -melinux  -mlinux  -sim  -sim2 @gol
+-m32-bit  -m16-bit  -m8-bit  -mno-prologue-epilogue @gol
+-melf  -maout  -sim  -sim2 @gol
 -mmul-bug-workaround  -mno-mul-bug-workaround}
 
 @emph{CR16 Options}
@@ -1360,13 +1373,6 @@ See RS/6000 and PowerPC Options.
 @emph{System V Options}
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
 
-@emph{TILE-Gx Options}
-@gccoptlist{-mcpu=CPU  -m32  -m64  -mbig-endian  -mlittle-endian @gol
--mcmodel=@var{code-model}}
-
-@emph{TILEPro Options}
-@gccoptlist{-mcpu=@var{cpu}  -m32}
-
 @emph{V850 Options}
 @gccoptlist{-mlong-calls  -mno-long-calls  -mep  -mno-ep @gol
 -mprolog-function  -mno-prolog-function  -mspace @gol
@@ -1420,7 +1426,8 @@ See RS/6000 and PowerPC Options.
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -madx  -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mhle  -mlwp @gol
 -mmwaitx  -mclzero  -mpku  -mthreads  -mgfni  -mvaes  -mwaitpkg @gol
--mshstk -mmanual-endbr -mforce-indirect-call  -mavx512vbmi2 -mavx512bf16 -menqcmd @gol
+-mshstk -mmanual-endbr -mcet-switch -mforce-indirect-call @gol
+-mavx512vbmi2 -mavx512bf16 -menqcmd @gol
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq @gol
 -mavx5124fmaps  -mavx512vnni  -mavx5124vnniw  -mprfchw  -mrdpid @gol
 -mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk@gol
@@ -1467,7 +1474,8 @@ See RS/6000 and PowerPC Options.
 -mauto-litpools  -mno-auto-litpools @gol
 -mtarget-align  -mno-target-align @gol
 -mlongcalls  -mno-longcalls @gol
--mabi=@var{abi-type}}
+-mabi=@var{abi-type} @gol
+-mextra-l32r-costs=@var{cycles}}
 
 @emph{zSeries Options}
 See S/390 and zSeries Options.
@@ -4029,6 +4037,7 @@ a C++ program.  The new-style casts (@code{dynamic_cast},
 less vulnerable to unintended effects and much easier to search for.
 
 @item -Woverloaded-virtual @r{(C++ and Objective-C++ only)}
+@itemx -Woverloaded-virtual=@var{n}
 @opindex Woverloaded-virtual
 @opindex Wno-overloaded-virtual
 @cindex overloaded virtual function, warning
@@ -4042,7 +4051,7 @@ struct A @{
 @};
 
 struct B: public A @{
-  void f(int);
+  void f(int); // does not override
 @};
 @end smallexample
 
@@ -4056,6 +4065,29 @@ b->f();
 
 @noindent
 fails to compile.
+
+The optional level suffix controls the behavior when all the
+declarations in the derived class override virtual functions in the
+base class, even if not all of the base functions are overridden:
+
+@smallexample
+struct C @{
+  virtual void f();
+  virtual void f(int);
+@};
+
+struct D: public C @{
+  void f(int); // does override
+@}
+@end smallexample
+
+This pattern is less likely to be a mistake; if D is only used
+virtually, the user might have decided that the base class semantics
+for some of the overloads are fine.
+
+At level 1, this case does not warn; at level 2, it does.
+@option{-Woverloaded-virtual} by itself selects level 2.  Level 1 is
+included in @option{-Wall}.
 
 @item -Wno-pmf-conversions @r{(C++ and Objective-C++ only)}
 @opindex Wno-pmf-conversions
@@ -4845,7 +4877,7 @@ The default @env{GCC_COLORS} is
 error=01;31:warning=01;35:note=01;36:range1=32:range2=34:locus=01:\
 quote=01:path=01;36:fixit-insert=32:fixit-delete=31:\
 diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32:\
-type-diff=01;32
+type-diff=01;32:fnname=01;32:targs=35
 @end smallexample
 @noindent
 where @samp{01;31} is bold red, @samp{01;35} is bold magenta,
@@ -4889,6 +4921,14 @@ SGR substring for location information, @samp{file:line} or
 @item quote=
 @vindex quote GCC_COLORS @r{capability}
 SGR substring for information printed within quotes.
+
+@item fnname=
+@vindex fnname GCC_COLORS @r{capability}
+SGR substring for names of C++ functions.
+
+@item targs=
+@vindex targs GCC_COLORS @r{capability}
+SGR substring for C++ function template parameter bindings.
 
 @item fixit-insert=
 @vindex fixit-insert GCC_COLORS @r{capability}
@@ -5008,6 +5048,15 @@ Diagnostic messages can optionally have an associated
 @url{https://cwe.mitre.org/index.html, CWE} identifier.
 GCC itself only provides such metadata for some of the @option{-fanalyzer}
 diagnostics.  GCC plugins may also provide diagnostics with such metadata.
+By default, if this information is present, it will be printed with
+the diagnostic.  This option suppresses the printing of this metadata.
+
+@item -fno-diagnostics-show-rules
+@opindex fno-diagnostics-show-rules
+@opindex fdiagnostics-show-rules
+Diagnostic messages can optionally have rules associated with them, such
+as from a coding standard, or a specification.
+GCC itself does not do this for any of its diagnostics, but plugins may do so.
 By default, if this information is present, it will be printed with
 the diagnostic.  This option suppresses the printing of this metadata.
 
@@ -5219,7 +5268,10 @@ This option provides additional information when printing control-flow paths
 associated with a diagnostic.
 
 If this is option is provided then the stack depth will be printed for
-each run of events within @option{-fdiagnostics-path-format=separate-events}.
+each run of events within @option{-fdiagnostics-path-format=inline-events}.
+If provided with @option{-fdiagnostics-path-format=separate-events}, then
+the stack depth and function declaration will be appended when printing
+each event.
 
 This is intended for use by GCC developers and plugin developers when
 debugging diagnostics that report interprocedural control flow.
@@ -5291,14 +5343,23 @@ Unicode characters.  For the example above, the following will be printed:
 @item -fdiagnostics-format=@var{FORMAT}
 @opindex fdiagnostics-format
 Select a different format for printing diagnostics.
-@var{FORMAT} is @samp{text} or @samp{json}.
+@var{FORMAT} is @samp{text}, @samp{sarif-stderr}, @samp{sarif-file},
+@samp{json}, @samp{json-stderr}, or @samp{json-file}.
+
 The default is @samp{text}.
 
-The @samp{json} format consists of a top-level JSON array containing JSON
-objects representing the diagnostics.
+The @samp{sarif-stderr} and @samp{sarif-file} formats both emit
+diagnostics in SARIF Version 2.1.0 format, either to stderr, or to a file
+named @file{@var{source}.sarif}, respectively.
 
-The JSON is emitted as one line, without formatting; the examples below
-have been formatted for clarity.
+The @samp{json} format is a synonym for @samp{json-stderr}.
+The @samp{json-stderr} and @samp{json-file} formats are identical, apart from
+where the JSON is emitted to - with the former, the JSON is emitted to stderr,
+whereas with @samp{json-file} it is written to @file{@var{source}.gcc.json}.
+
+The emitted JSON consists of a top-level JSON array containing JSON objects
+representing the diagnostics.  The JSON is emitted as one line, without
+formatting; the examples below have been formatted for clarity.
 
 Diagnostics can have child diagnostics.  For example, this error and note:
 
@@ -5747,6 +5808,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wdangling-pointer=2  @gol
 -Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
+-Wenum-int-mismatch @r{(C and Objective-C only)} @gol
 -Wformat   @gol
 -Wformat-overflow  @gol
 -Wformat-truncation  @gol
@@ -8723,6 +8785,25 @@ Warn when a value of enumerated type is implicitly converted to a
 different enumerated type.  This warning is enabled by @option{-Wextra}
 in C@.
 
+@item -Wenum-int-mismatch @r{(C and Objective-C only)}
+@opindex Wenum-int-mismatch
+@opindex Wno-enum-int-mismatch
+Warn about mismatches between an enumerated type and an integer type in
+declarations.  For example:
+
+@smallexample
+enum E @{ l = -1, z = 0, g = 1 @};
+int foo(void);
+enum E foo(void);
+@end smallexample
+
+In C, an enumerated type is compatible with @code{char}, a signed
+integer type, or an unsigned integer type.  However, since the choice
+of the underlying type of an enumerated type is implementation-defined,
+such mismatches may cause portability issues.  In C++, such mismatches
+are an error.  In C, this warning is enabled by @option{-Wall} and
+@option{-Wc++-compat}.
+
 @item -Wjump-misses-init @r{(C, Objective-C only)}
 @opindex Wjump-misses-init
 @opindex Wno-jump-misses-init
@@ -8858,7 +8939,7 @@ such as in
 void f (void);
 void g (void)
 @{
-  if (!func)   // warning: expression evaluates to false
+  if (!f)   // warning: expression evaluates to false
     abort ();
 @}
 @end smallexample
@@ -8884,7 +8965,7 @@ weak symbols), so their use in a conditional might indicate missing
 parentheses in a function call or a missing dereference in an array
 expression.  The subset of the warning for object pointers can be
 suppressed by casting the pointer operand to an integer type such
-as @code{inptr_t} or @code{uinptr_t}.
+as @code{intptr_t} or @code{uintptr_t}.
 Comparisons against string literals result in unspecified behavior
 and are not portable, and suggest the intent was to call @code{strcmp}.
 The warning is suppressed if the suspicious expression is the result
@@ -9663,9 +9744,15 @@ This analysis is much more expensive than other GCC warnings.
 Enabling this option effectively enables the following warnings:
 
 @gccoptlist{ @gol
+-Wanalyzer-allocation-size @gol
 -Wanalyzer-double-fclose @gol
 -Wanalyzer-double-free @gol
 -Wanalyzer-exposure-through-output-file @gol
+-Wanalyzer-fd-access-mode-mismatch @gol
+-Wanalyzer-fd-double-close @gol
+-Wanalyzer-fd-leak @gol
+-Wanalyzer-fd-use-after-close @gol
+-Wanalyzer-fd-use-without-check @gol
 -Wanalyzer-file-leak @gol
 -Wanalyzer-free-of-non-heap @gol
 -Wanalyzer-malloc-leak @gol
@@ -9681,6 +9768,10 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-use-after-free @gol
 -Wanalyzer-use-of-pointer-in-stale-stack-frame @gol
 -Wanalyzer-use-of-uninitialized-value @gol
+-Wanalyzer-va-arg-type-mismatch @gol
+-Wanalyzer-va-list-exhausted @gol
+-Wanalyzer-va-list-leak @gol
+-Wanalyzer-va-list-use-after-va-end @gol
 -Wanalyzer-write-to-const @gol
 -Wanalyzer-write-to-string-literal @gol
 }
@@ -9705,6 +9796,19 @@ but these can be defeated by sufficiently complicated code.
 By default, the analysis silently stops if the code is too
 complicated for the analyzer to fully explore and it reaches an internal
 limit.  The @option{-Wanalyzer-too-complex} option warns if this occurs.
+
+@item -Wno-analyzer-allocation-size
+@opindex Wanalyzer-allocation-size
+@opindex Wno-analyzer-allocation-size
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-allocation-size}
+to disable it.
+
+This diagnostic warns for paths through the code in which a pointer to
+a buffer is assigned to point at a buffer with a size that is not a
+multiple of @code{sizeof (*pointer)}.
+
+See @url{https://cwe.mitre.org/data/definitions/131.html, CWE-131: Incorrect Calculation of Buffer Size}.
 
 @item -Wno-analyzer-double-fclose
 @opindex Wanalyzer-double-fclose
@@ -9735,6 +9839,56 @@ to disable it.
 This diagnostic warns for paths through the code in which a
 security-sensitive value is written to an output file
 (such as writing a password to a log file).
+
+@item -Wno-analyzer-fd-access-mode-mismatch
+@opindex Wanalyzer-fd-access-mode-mismatch
+@opindex Wno-analyzer-fd-access-mode-mismatch
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-fd-access-mode-mismatch}
+to disable it.
+
+This diagnostic warns for paths through code in which a 
+@code{read} on a write-only file descriptor is attempted, or vice versa
+
+@item -Wno-analyzer-fd-double-close
+@opindex Wanalyzer-fd-double-close
+@opindex Wno-analyzer-fd-double-close
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-fd-double-close}
+to disable it.
+
+This diagnostic warns for paths through code in which a 
+file descriptor can be closed more than once.
+
+@item -Wno-analyzer-fd-leak
+@opindex Wanalyzer-fd-leak
+@opindex Wno-analyzer-fd-leak
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-fd-leak}
+to disable it.
+
+This diagnostic warns for paths through code in which an 
+open file descriptor is leaked.
+
+@item -Wno-analyzer-fd-use-after-close
+@opindex Wanalyzer-fd-use-after-close
+@opindex Wno-analyzer-fd-use-after-close
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-fd-use-after-close}
+to disable it.
+
+This diagnostic warns for paths through code in which a 
+read or write is called on a closed file descriptor.
+
+@item -Wno-analyzer-fd-use-without-check
+@opindex Wanalyzer-fd-use-without-check
+@opindex Wno-analyzer-fd-use-without-check
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-fd-use-without-check}
+to disable it.
+
+This diagnostic warns for paths through code in which a 
+file descriptor is used without being checked for validity.
 
 @item -Wno-analyzer-file-leak
 @opindex Wanalyzer-file-leak
@@ -9963,6 +10117,53 @@ to disable it.
 This diagnostic warns for paths through the code in which a pointer
 is dereferenced that points to a variable in a stale stack frame.
 
+@item -Wno-analyzer-va-arg-type-mismatch
+@opindex Wanalyzer-va-arg-type-mismatch
+@opindex Wno-analyzer-va-arg-type-mismatch
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-arg-type-mismatch}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects an attempt to use @code{va_arg} to extract a value
+passed to a variadic call, but uses a type that does not match that of
+the expression passed to the call.
+
+@item -Wno-analyzer-va-list-exhausted
+@opindex Wanalyzer-va-list-exhausted
+@opindex Wno-analyzer-va-list-exhausted
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-list-exhausted}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects an attempt to use @code{va_arg} to access the next
+value passed to a variadic call, but all of the values in the
+@code{va_list} have already been consumed.
+
+@item -Wno-analyzer-va-list-leak
+@opindex Wanalyzer-va-list-leak
+@opindex Wno-analyzer-va-list-leak
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-list-leak}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects that @code{va_start} or @code{va_copy} has been called
+on a @code{va_list} without a corresponding call to @code{va_end}.
+
+@item -Wno-analyzer-va-list-use-after-va-end
+@opindex Wanalyzer-va-list-use-after-va-end
+@opindex Wno-analyzer-va-list-use-after-va-end
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-va-list-use-after-va-end}
+to disable it.
+
+This diagnostic warns for interprocedural paths through the code for which
+the analyzer detects an attempt to use a @code{va_list}  after
+@code{va_end} has been called on it.
+@code{va_list}.
+
 @item -Wno-analyzer-write-to-const
 @opindex Wanalyzer-write-to-const
 @opindex Wno-analyzer-write-to-const
@@ -10035,6 +10236,11 @@ following warnings from @option{-fanalyzer}:
 -Wanalyzer-double-fclose @gol
 -Wanalyzer-double-free @gol
 -Wanalyzer-exposure-through-output-file @gol
+-Wanalyzer-fd-access-mode-mismatch @gol
+-Wanalyzer-fd-double-close @gol
+-Wanalyzer-fd-leak @gol
+-Wanalyzer-fd-use-after-close @gol
+-Wanalyzer-fd-use-without-check @gol
 -Wanalyzer-file-leak @gol
 -Wanalyzer-free-of-non-heap @gol
 -Wanalyzer-malloc-leak @gol
@@ -10045,6 +10251,8 @@ following warnings from @option{-fanalyzer}:
 -Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
+-Wanalyzer-va-list-leak @gol
+-Wanalyzer-va-list-use-after-va-end @gol
 }
 
 @item -fno-analyzer-feasibility
@@ -10105,6 +10313,25 @@ be suppressed, for debugging state-handling issues.
 @opindex fanalyzer-transitivity
 @opindex fno-analyzer-transitivity
 This option enables transitivity of constraints within the analyzer.
+
+@item -fno-analyzer-undo-inlining
+@opindex fanalyzer-undo-inlining
+@opindex fno-analyzer-undo-inlining
+This option is intended for analyzer developers.
+
+@option{-fanalyzer} runs relatively late compared to other code analysis
+tools, and some optimizations have already been applied to the code.  In
+particular function inlining may have occurred, leading to the
+interprocedural execution paths emitted by the analyzer containing
+function frames that don't correspond to those in the original source
+code.
+
+By default the analyzer attempts to reconstruct the original function
+frames, and to emit events showing the inlined calls.
+
+With @option{-fno-analyzer-undo-inlining} this attempt to reconstruct
+the original frame information can be be disabled, which may be of help
+when debugging issues in the analyzer.
 
 @item -fanalyzer-verbose-edges
 This option is intended for analyzer developers.  It enables more
@@ -10198,8 +10425,8 @@ diagnostic to @file{@var{file}.@var{idx}.@var{kind}.epath.txt}.
 @opindex dump-analyzer-feasibility
 Dump internal details about the analyzer's search for feasible paths.
 The details are written in a form suitable for viewing with GraphViz
-to filenames of the form @file{@var{file}.*.fg.dot} and
-@file{@var{file}.*.tg.dot}.
+to filenames of the form @file{@var{file}.*.fg.dot},
+@file{@var{file}.*.tg.dot}, and @file{@var{file}.*.fpath.txt}.
 
 @item -fdump-analyzer-json
 @opindex fdump-analyzer-json
@@ -12818,6 +13045,20 @@ also at @option{-O0} if @option{-fsection-anchors} is explicitly requested.
 Additionally @option{-fno-toplevel-reorder} implies
 @option{-fno-section-anchors}.
 
+@item -funreachable-traps
+@opindex funreachable-traps
+With this option, the compiler turns calls to
+@code{__builtin_unreachable} into traps, instead of using them for
+optimization.  This also affects any such calls implicitly generated
+by the compiler.
+
+This option has the same effect as @option{-fsanitize=unreachable
+-fsanitize-trap=unreachable}, but does not affect the values of those
+options.  If @option{-fsanitize=unreachable} is enabled, that option
+takes priority over this one.
+
+This option is enabled by default at @option{-O0} and @option{-Og}.
+
 @item -fweb
 @opindex fweb
 Constructs webs as commonly used for register allocation purposes and assign
@@ -14117,9 +14358,6 @@ The maximum depth of a loop nest suitable for complete peeling.
 @item max-unswitch-insns
 The maximum number of insns of an unswitched loop.
 
-@item max-unswitch-level
-The maximum number of branches unswitched in a single loop.
-
 @item lim-expensive
 The minimum cost of an expensive expression in the loop invariant motion.
 
@@ -14965,9 +15203,6 @@ statement during VRP.
 @item evrp-sparse-threshold
 Maximum number of basic blocks before EVRP uses a sparse cache.
 
-@item evrp-mode
-Specifies the mode Early VRP should operate in.
-
 @item vrp1-mode
 Specifies the mode VRP pass 1 should operate in.
 
@@ -15462,7 +15697,7 @@ profile information generated by @option{-fprofile-arcs} is placed in the
 specified section for each translation unit.  This option disables the profile
 information registration through a constructor and it disables the profile
 information processing through a destructor.  This option is not intended to be
-used in hosted environments such as GNU/Linux.  It targets free-standing
+used in hosted environments such as GNU/Linux.  It targets freestanding
 environments (for example embedded systems) with limited resources which do not
 support constructors/destructors or the C library file I/O.
 
@@ -15487,14 +15722,8 @@ for example like this:
 #include <stdio.h>
 #include <stdlib.h>
 
-extern const struct gcov_info *__gcov_info_start[];
-extern const struct gcov_info *__gcov_info_end[];
-
-static void
-filename (const char *f, void *arg)
-@{
-  puts (f);
-@}
+extern const struct gcov_info *const __gcov_info_start[];
+extern const struct gcov_info *const __gcov_info_end[];
 
 static void
 dump (const void *d, unsigned n, void *arg)
@@ -15503,6 +15732,12 @@ dump (const void *d, unsigned n, void *arg)
 
   for (unsigned i = 0; i < n; ++i)
     printf ("%02x", c[i]);
+@}
+
+static void
+filename (const char *f, void *arg)
+@{
+  __gcov_filename_to_gcfn (f, dump, arg );
 @}
 
 static void *
@@ -15514,8 +15749,8 @@ allocate (unsigned length, void *arg)
 static void
 dump_gcov_info (void)
 @{
-  const struct gcov_info **info = __gcov_info_start;
-  const struct gcov_info **end = __gcov_info_end;
+  const struct gcov_info *const *info = __gcov_info_start;
+  const struct gcov_info *const *end = __gcov_info_end;
 
   /* Obfuscate variable to prevent compiler optimizations.  */
   __asm__ ("" : "+r" (info));
@@ -15530,12 +15765,17 @@ dump_gcov_info (void)
 @}
 
 int
-main()
+main (void)
 @{
-  dump_gcov_info();
+  dump_gcov_info ();
   return 0;
 @}
 @end smallexample
+
+The @command{merge-stream} subcommand of @command{gcov-tool} may be used to
+deserialize the data stream generated by the @code{__gcov_filename_to_gcfn} and
+@code{__gcov_info_to_gcda} functions and merge the profile information into
+@file{.gcda} files on the host filesystem.
 
 @item -fprofile-note=@var{path}
 @opindex fprofile-note
@@ -15994,13 +16234,37 @@ undefined,float-cast-overflow,float-divide-by-zero,bounds-strict
 Enable sanitization of local variables to detect use-after-scope bugs.
 The option sets @option{-fstack-reuse} to @samp{none}.
 
+@item -fsanitize-trap@r{[}=@var{opts}@r{]}
+@opindex fsanitize-trap
+@opindex fno-sanitize-trap
+The @option{-fsanitize-trap=} option instructs the compiler to
+report for sanitizers mentioned in comma-separated list of @var{opts}
+undefined behavior using @code{__builtin_trap} rather than a @code{libubsan}
+library routine.  If this option is enabled for certain sanitizer,
+it takes precedence over the @option{-fsanitizer-recover=} for that
+sanitizer, @code{__builtin_trap} will be emitted and be fatal regardless
+of whether recovery is enabled or disabled using @option{-fsanitize-recover=}.
+
+The advantage of this is that the @code{libubsan} library is not needed
+and is not linked in, so this is usable even in freestanding environments.
+
+Currently this feature works with @option{-fsanitize=undefined} (and its suboptions
+except for @option{-fsanitize=vptr}), @option{-fsanitize=float-cast-overflow},
+@option{-fsanitize=float-divide-by-zero} and
+@option{-fsanitize=bounds-strict}.  @code{-fsanitize-trap=all} can be also
+specified, which enables it for @code{undefined} suboptions,
+@option{-fsanitize=float-cast-overflow},
+@option{-fsanitize=float-divide-by-zero} and
+@option{-fsanitize=bounds-strict}.
+If @code{-fsanitize-trap=undefined} or @code{-fsanitize-trap=all} is used
+and @code{-fsanitize=vptr} is enabled on the command line, the
+instrumentation is silently ignored as the instrumentation always needs
+@code{libubsan} support, @option{-fsanitize-trap=vptr} is not allowed.
+
 @item -fsanitize-undefined-trap-on-error
 @opindex fsanitize-undefined-trap-on-error
-The @option{-fsanitize-undefined-trap-on-error} option instructs the compiler to
-report undefined behavior using @code{__builtin_trap} rather than
-a @code{libubsan} library routine.  The advantage of this is that the
-@code{libubsan} library is not needed and is not linked in, so this
-is usable even in freestanding environments.
+The @option{-fsanitize-undefined-trap-on-error} option is deprecated
+equivalent of @option{-fsanitize-trap=all}.
 
 @item -fsanitize-coverage=trace-pc
 @opindex fsanitize-coverage=trace-pc
@@ -16296,6 +16560,22 @@ interrupt routines, and any functions from which the profiling functions
 cannot safely be called (perhaps signal handlers, if the profiling
 routines generate output or allocate memory).
 @xref{Common Function Attributes}.
+
+@item -finstrument-functions-once
+@opindex -finstrument-functions-once
+This is similar to @option{-finstrument-functions}, but the profiling
+functions are called only once per instrumented function, i.e. the first
+profiling function is called after the first entry into the instrumented
+function and the second profiling function is called before the exit
+corresponding to this first entry.
+
+The definition of @code{once} for the purpose of this option is a little
+vague because the implementation is not protected against data races.
+As a result, the implementation only guarantees that the profiling
+functions are called at @emph{least} once per process and at @emph{most}
+once per thread, but the calls are always paired, that is to say, if a
+thread calls the first function, then it will call the second function,
+unless it never reaches the exit of the instrumented function.
 
 @item -finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{}
 @opindex finstrument-functions-exclude-file-list
@@ -16658,6 +16938,10 @@ library subroutines.
 (An example of such an internal subroutine is @code{__main}, used to ensure C++
 constructors are called; @pxref{Collect2,,@code{collect2}, gccint,
 GNU Compiler Collection (GCC) Internals}.)
+
+@item -nostdlib++
+@opindex nostdlib++
+Do not implicitly link with standard C++ libraries.
 
 @item -e @var{entry}
 @itemx --entry=@var{entry}
@@ -18959,8 +19243,6 @@ platform.
 * Solaris 2 Options::
 * SPARC Options::
 * System V Options::
-* TILE-Gx Options::
-* TILEPro Options::
 * V850 Options::
 * VAX Options::
 * Visium Options::
@@ -19648,7 +19930,6 @@ Set architecture type or tuning for @var{gpu}. Supported values for @var{gpu}
 are
 
 @table @samp
-@opindex fiji
 @item fiji
 Compile for GCN3 Fiji devices (gfx803).
 
@@ -19657,6 +19938,12 @@ Compile for GCN5 Vega 10 devices (gfx900).
 
 @item gfx906
 Compile for GCN5 Vega 20 devices (gfx906).
+
+@item gfx908
+Compile for CDNA1 Instinct MI100 series devices (gfx908).
+
+@item gfx90a
+Compile for CDNA2 Instinct MI200 series devices (gfx90a).
 
 @end table
 
@@ -21087,7 +21374,8 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
 @samp{neoverse-n1}, @samp{neoverse-n2}, @samp{neoverse-v1}, @samp{xscale},
 @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312}, @samp{fa526}, @samp{fa626},
-@samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}, @samp{xgene1}.
+@samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}, @samp{star-mc1},
+@samp{xgene1}.
 
 Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible names are:
@@ -21493,8 +21781,9 @@ Development Tools Engineering Specification", which can be found on
 Mitigate against a potential security issue with the @code{VLLDM} instruction
 in some M-profile devices when using CMSE (CVE-2021-365465).  This option is
 enabled by default when the option @option{-mcpu=} is used with
-@code{cortex-m33}, @code{cortex-m35p} or @code{cortex-m55}.  The option
-@option{-mno-fix-cmse-cve-2021-35465} can be used to disable the mitigation.
+@code{cortex-m33}, @code{cortex-m35p}, @code{cortex-m55} or @code{star-mc1}.
+The option @option{-mno-fix-cmse-cve-2021-35465} can be used to disable
+the mitigation.
 
 @item -mstack-protector-guard=@var{guard}
 @itemx -mstack-protector-guard-offset=@var{offset}
@@ -22365,8 +22654,7 @@ These options are defined specifically for the CRIS ports.
 Generate code for the specified architecture.  The choices for
 @var{architecture-type} are @samp{v3}, @samp{v8} and @samp{v10} for
 respectively ETRAX@w{ }4, ETRAX@w{ }100, and ETRAX@w{ }100@w{ }LX@.
-Default is @samp{v0} except for cris-axis-linux-gnu, where the default is
-@samp{v10}.
+Default is @samp{v0}.
 
 @item -mtune=@var{architecture-type}
 @opindex mtune
@@ -22450,27 +22738,13 @@ option only together with visual inspection of the compiled code: no
 warnings or errors are generated when call-saved registers must be saved,
 or storage for local variables needs to be allocated.
 
-@item -mno-gotplt
-@itemx -mgotplt
-@opindex mno-gotplt
-@opindex mgotplt
-With @option{-fpic} and @option{-fPIC}, don't generate (do generate)
-instruction sequences that load addresses for functions from the PLT part
-of the GOT rather than (traditional on other architectures) calls to the
-PLT@.  The default is @option{-mgotplt}.
-
 @item -melf
 @opindex melf
-Legacy no-op option only recognized with the cris-axis-elf and
-cris-axis-linux-gnu targets.
-
-@item -mlinux
-@opindex mlinux
-Legacy no-op option only recognized with the cris-axis-linux-gnu target.
+Legacy no-op option.
 
 @item -sim
 @opindex sim
-This option, recognized for the cris-axis-elf, arranges
+This option arranges
 to link with input-output functions from a simulator library.  Code,
 initialized data and zero-initialized data are allocated consecutively.
 
@@ -24542,7 +24816,8 @@ Set the cost of branches to roughly @var{n} instructions.
 @itemx -mno-check-zero-divison
 @opindex -mcheck-zero-division
 Trap (do not trap) on integer division by zero.  The default is
-@option{-mcheck-zero-division}.
+@option{-mcheck-zero-division} for @option{-O0} or @option{-Og}, and
+@option{-mno-check-zero-division} for other optimization levels.
 
 @item -mcond-move-int
 @itemx -mno-cond-move-int
@@ -28009,7 +28284,7 @@ Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
 Optimize the output for the given processor, specified by microarchitecture or
 particular CPU name.  Permissible values for this option are: @samp{rocket},
 @samp{sifive-3-series}, @samp{sifive-5-series}, @samp{sifive-7-series},
-@samp{size}, and all valid options for @option{-mcpu=}.
+@samp{thead-c906}, @samp{size}, and all valid options for @option{-mcpu=}.
 
 When @option{-mtune=} is not specified, use the setting from @option{-mcpu},
 the default is @samp{rocket} if both are not specified.
@@ -30861,63 +31136,6 @@ The assembler uses this option.
 @c the generic assembler that comes with Solaris takes just -Ym.
 @end table
 
-@node TILE-Gx Options
-@subsection TILE-Gx Options
-@cindex TILE-Gx options
-
-These @samp{-m} options are supported on the TILE-Gx:
-
-@table @gcctabopt
-@item -mcmodel=small
-@opindex mcmodel=small
-Generate code for the small model.  The distance for direct calls is
-limited to 500M in either direction.  PC-relative addresses are 32
-bits.  Absolute addresses support the full address range.
-
-@item -mcmodel=large
-@opindex mcmodel=large
-Generate code for the large model.  There is no limitation on call
-distance, pc-relative addresses, or absolute addresses.
-
-@item -mcpu=@var{name}
-@opindex mcpu
-Selects the type of CPU to be targeted.  Currently the only supported
-type is @samp{tilegx}.
-
-@item -m32
-@itemx -m64
-@opindex m32
-@opindex m64
-Generate code for a 32-bit or 64-bit environment.  The 32-bit
-environment sets int, long, and pointer to 32 bits.  The 64-bit
-environment sets int to 32 bits and long and pointer to 64 bits.
-
-@item -mbig-endian
-@itemx -mlittle-endian
-@opindex mbig-endian
-@opindex mlittle-endian
-Generate code in big/little endian mode, respectively.
-@end table
-
-@node TILEPro Options
-@subsection TILEPro Options
-@cindex TILEPro options
-
-These @samp{-m} options are supported on the TILEPro:
-
-@table @gcctabopt
-@item -mcpu=@var{name}
-@opindex mcpu
-Selects the type of CPU to be targeted.  Currently the only supported
-type is @samp{tilepro}.
-
-@item -m32
-@opindex m32
-Generate code for a 32-bit environment, which sets int, long, and
-pointer to 32 bits.  This is the only supported behavior so the flag
-is essentially ignored.
-@end table
-
 @node V850 Options
 @subsection V850 Options
 @cindex V850 Options
@@ -31739,6 +31957,11 @@ instruction set support.
 VIA Nano Quad Core CPU with x86-64, MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1
 instruction set support.
 (No scheduling is implemented for this chip.)
+
+@item lujiazui
+ZHAOXIN lujiazui CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
+SSE4.2, AVX, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
+ABM, BMI, BMI2, F16C, FXSR, RDSEED instruction set support.
 
 @item geode
 AMD Geode embedded processor with MMX and 3DNow!@: instruction set support.
@@ -32643,6 +32866,17 @@ function attribute. This is useful when used with the option
 @option{-fcf-protection=branch} to control ENDBR insertion at the
 function entry.
 
+@item -mcet-switch
+@opindex mcet-switch
+By default, CET instrumentation is turned off on switch statements that
+use a jump table and indirect branch track is disabled.  Since jump
+tables are stored in read-only memory, this does not result in a direct
+loss of hardening.  But if the jump table index is attacker-controlled,
+the indirect jump may not be constrained by CET.  This option turns on
+CET instrumentation to enable indirect branch track for switch statements
+with jump tables which leads to the jump targets reachable via any indirect
+jumps.
+
 @item -mcall-ms2sysv-xlogues
 @opindex mcall-ms2sysv-xlogues
 @opindex mno-call-ms2sysv-xlogues
@@ -33404,6 +33638,14 @@ by 8 registers on entry so that its arguments are found in registers
 pointer.  Register window is rotated 8 registers back upon return.
 When this version of the ABI is enabled the C preprocessor symbol
 @code{__XTENSA_WINDOWED_ABI__} is defined.
+
+@item -mextra-l32r-costs=@var{n}
+@opindex mextra-l32r-costs
+Specify an extra cost of instruction RAM/ROM access for @code{L32R}
+instructions, in clock cycles.  This affects, when optimizing for speed,
+whether loading a constant from literal pool using @code{L32R} or
+synthesizing the constant from a small one with a couple of arithmetic
+instructions.  The default value is 0.
 @end table
 
 @node zSeries Options
@@ -34459,13 +34701,6 @@ Papers p1815 (@uref{https://wg21.link/p1815}) and p2003
 (@uref{https://wg21.link/p2003}) add limitations on which entities an
 exported region may reference (for instance, the entities an exported
 template definition may reference).  These are not fully implemented.
-
-@item Language-linkage module attachment
-Declarations with explicit language linkage (@code{extern "C"} or
-@code{extern "C++"}) are attached to the global module, even when in
-the purview of a named module.  This is not implemented.  Such
-declarations will be attached to the module, if any, in which they are
-declared.
 
 @item Standard Library Header Units
 The Standard Library is not provided as importable header units.  If

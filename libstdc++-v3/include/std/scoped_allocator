@@ -24,7 +24,6 @@
 
 /** @file include/scoped_allocator
  *  This is a Standard C++ Library header.
- *  @ingroup allocators
  */
 
 #ifndef _SCOPED_ALLOCATOR

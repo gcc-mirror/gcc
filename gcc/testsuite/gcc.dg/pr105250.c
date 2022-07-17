@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-w -Wno-psabi -O2" } */
+/* { dg-skip-if "PR105266" { powerpc*-*-* s390*-*-* } } */
 
 typedef int __attribute__((__vector_size__(4))) T;
 typedef int __attribute__((__vector_size__(8))) U;

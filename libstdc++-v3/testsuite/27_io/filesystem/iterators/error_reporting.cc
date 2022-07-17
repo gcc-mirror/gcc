@@ -28,35 +28,44 @@
 
 int choice;
 
-struct dirent global_dirent;
-
 extern "C" struct dirent* readdir(DIR*)
 {
+  // On some targets dirent::d_name is very small, but the OS allocates
+  // a trailing char array after the dirent struct. Emulate that here.
+  union State
+  {
+    struct dirent d;
+    char buf[sizeof(struct dirent) + 16] = {};
+  };
+
+  static State state;
+  char* d_name = state.buf + offsetof(struct dirent, d_name);
+
   switch (choice)
   {
   case 1:
-    global_dirent.d_ino = 999;
+    state.d.d_ino = 999;
 #if defined _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE && defined DT_REG
-    global_dirent.d_type = DT_REG;
+    state.d.d_type = DT_REG;
 #endif
-    global_dirent.d_reclen = 0;
-    std::char_traits<char>::copy(global_dirent.d_name, "file", 5);
+    state.d.d_reclen = 0;
+    std::char_traits<char>::copy(d_name, "file", 5);
     choice = 0;
-    return &global_dirent;
+    return &state.d;
   case 2:
-    global_dirent.d_ino = 111;
+    state.d.d_ino = 111;
 #if defined _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE && defined DT_DIR
-    global_dirent.d_type = DT_DIR;
+    state.d.d_type = DT_DIR;
 #endif
-    global_dirent.d_reclen = 60;
-    std::char_traits<char>::copy(global_dirent.d_name, "subdir", 7);
+    state.d.d_reclen = 60;
+    std::char_traits<char>::copy(d_name, "subdir", 7);
     choice = 1;
-    return &global_dirent;
+    return &state.d;
   default:
     errno = EIO;
     return nullptr;
   }
-  return &global_dirent;
+  return &state.d;
 }
 
 void
@@ -98,7 +107,7 @@ void
 test02()
 {
   namespace fs = std::filesystem;
-  auto dir = __gnu_test::nonexistent_path();
+  const auto dir = __gnu_test::nonexistent_path();
   fs::create_directories(dir/"subdir");
 
   std::error_code ec;
@@ -128,7 +137,12 @@ test02()
   }
 #endif
 
-  fs::remove_all(dir, ec);
+  // Cannot use fs::remove_all here because that uses
+  // recursive_directory_iterator which would use the fake readdir above.
+#ifndef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  ::rmdir((dir/"subdir").c_str());
+  ::rmdir(dir.c_str());
+#endif
 }
 
 int

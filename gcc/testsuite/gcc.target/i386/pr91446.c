@@ -21,4 +21,4 @@ foo (unsigned long long width, unsigned long long height,
   bar (&t);
 }
 
-/* { dg-final { scan-assembler-times "xmm\[0-9\]" 0 } } */
+/* { dg-final { scan-assembler-times "vmovdqa\[^\n\r\]*xmm\[0-9\]" 2 } } */

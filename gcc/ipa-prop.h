@@ -1004,10 +1004,10 @@ public:
   }
 
   /* Hook that is called by summary when a node is duplicated.  */
-  virtual void duplicate (cgraph_node *node,
-			  cgraph_node *node2,
-			  ipa_node_params *data,
-			  ipa_node_params *data2);
+  void duplicate (cgraph_node *node,
+		  cgraph_node *node2,
+		  ipa_node_params *data,
+		  ipa_node_params *data2) final override;
 };
 
 /* Summary to manange ipa_edge_args structures.  */
@@ -1024,12 +1024,12 @@ class GTY((user)) ipa_edge_args_sum_t : public call_summary <ipa_edge_args *>
   }
 
   /* Hook that is called by summary when an edge is removed.  */
-  virtual void remove (cgraph_edge *cs, ipa_edge_args *args);
+  void remove (cgraph_edge *cs, ipa_edge_args *args) final override;
   /* Hook that is called by summary when an edge is duplicated.  */
-  virtual void duplicate (cgraph_edge *src,
-			  cgraph_edge *dst,
-			  ipa_edge_args *old_args,
-			  ipa_edge_args *new_args);
+  void duplicate (cgraph_edge *src,
+		  cgraph_edge *dst,
+		  ipa_edge_args *old_args,
+		  ipa_edge_args *new_args) final override;
 };
 
 /* Function summary where the parameter infos are actually stored. */
@@ -1055,10 +1055,10 @@ public:
     return summary;
   }
   /* Hook that is called by summary when a node is duplicated.  */
-  virtual void duplicate (cgraph_node *node,
-			  cgraph_node *node2,
-			  ipcp_transformation *data,
-			  ipcp_transformation *data2);
+  void duplicate (cgraph_node *node,
+		  cgraph_node *node2,
+		  ipcp_transformation *data,
+		  ipcp_transformation *data2) final override;
 };
 
 /* Function summary where the IPA CP transformations are actually stored.  */

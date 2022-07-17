@@ -30,9 +30,9 @@ namespace ana {
 class call_info : public custom_edge_info
 {
 public:
-  void print (pretty_printer *pp) const FINAL OVERRIDE;
+  void print (pretty_printer *pp) const final override;
   void add_events_to_path (checker_path *emission_path,
-			   const exploded_edge &eedge) const FINAL OVERRIDE;
+			   const exploded_edge &eedge) const final override;
 
   const gcall *get_call_stmt () const { return m_call_stmt; }
   tree get_fndecl () const { return m_fndecl; }
@@ -58,7 +58,7 @@ private:
 class success_call_info : public call_info
 {
 public:
-  label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
+  label_text get_desc (bool can_colorize) const final override;
 
 protected:
   success_call_info (const call_details &cd) : call_info (cd) {}
@@ -72,7 +72,7 @@ protected:
 class failed_call_info : public call_info
 {
 public:
-  label_text get_desc (bool can_colorize) const FINAL OVERRIDE;
+  label_text get_desc (bool can_colorize) const final override;
 
 protected:
   failed_call_info (const call_details &cd) : call_info (cd) {}

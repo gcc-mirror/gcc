@@ -75,7 +75,7 @@ extern bool gcn_valid_move_p (machine_mode, rtx, rtx);
 extern rtx gcn_vec_constant (machine_mode, int);
 extern rtx gcn_vec_constant (machine_mode, rtx);
 extern bool gcn_vgpr_move_p (rtx, rtx);
-extern void print_operand_address (FILE *file, register rtx addr);
+extern void print_operand_address (FILE *file, rtx addr);
 extern void print_operand (FILE *file, rtx x, int code);
 extern bool regno_ok_for_index_p (int);
 

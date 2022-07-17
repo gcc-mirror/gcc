@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "tree-inline.h"
 #include "internal-fn.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimplify.h"
@@ -56,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-cfg.h"
 #include "domwalk.h"
-#include "gimple-iterator.h"
 #include "gimple-match.h"
 #include "stringpool.h"
 #include "attribs.h"
@@ -1799,11 +1799,13 @@ struct pd_data
 struct vn_walk_cb_data
 {
   vn_walk_cb_data (vn_reference_t vr_, tree orig_ref_, tree *last_vuse_ptr_,
-		   vn_lookup_kind vn_walk_kind_, bool tbaa_p_, tree mask_)
+		   vn_lookup_kind vn_walk_kind_, bool tbaa_p_, tree mask_,
+		   bool redundant_store_removal_p_)
     : vr (vr_), last_vuse_ptr (last_vuse_ptr_), last_vuse (NULL_TREE),
       mask (mask_), masked_result (NULL_TREE), vn_walk_kind (vn_walk_kind_),
-      tbaa_p (tbaa_p_), saved_operands (vNULL), first_set (-2),
-      first_base_set (-2), known_ranges (NULL)
+      tbaa_p (tbaa_p_), redundant_store_removal_p (redundant_store_removal_p_),
+      saved_operands (vNULL), first_set (-2), first_base_set (-2),
+      known_ranges (NULL)
   {
     if (!last_vuse_ptr)
       last_vuse_ptr = &last_vuse;
@@ -1862,6 +1864,7 @@ struct vn_walk_cb_data
   tree masked_result;
   vn_lookup_kind vn_walk_kind;
   bool tbaa_p;
+  bool redundant_store_removal_p;
   vec<vn_reference_op_s> saved_operands;
 
   /* The VDEFs of partial defs we come along.  */
@@ -2490,8 +2493,8 @@ public:
   eliminate_dom_walker (cdi_direction, bitmap);
   ~eliminate_dom_walker ();
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
   virtual tree eliminate_avail (basic_block, tree op);
   virtual void eliminate_push_avail (basic_block, tree op);
@@ -2531,9 +2534,9 @@ public:
     : eliminate_dom_walker (CDI_DOMINATORS, NULL), entry (entry_),
       m_avail_freelist (NULL) {}
 
-  virtual tree eliminate_avail (basic_block, tree op);
+  tree eliminate_avail (basic_block, tree op) final override;
 
-  virtual void eliminate_push_avail (basic_block, tree);
+  void eliminate_push_avail (basic_block, tree) final override;
 
   basic_block entry;
   /* Freelist of avail entries which are allocated from the vn_ssa_aux
@@ -2617,6 +2620,19 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  && !refs_may_alias_p_1 (ref, &lhs_ref, data->tbaa_p))
 	{
 	  *disambiguate_only = TR_VALUEIZE_AND_DISAMBIGUATE;
+	  return NULL;
+	}
+
+      /* When the def is a CLOBBER we can optimistically disambiguate
+	 against it since any overlap it would be undefined behavior.
+	 Avoid this for obvious must aliases to save compile-time though.
+	 We also may not do this when the query is used for redundant
+	 store removal.  */
+      if (!data->redundant_store_removal_p
+	  && gimple_clobber_p (def_stmt)
+	  && !operand_equal_p (ao_ref_base (&lhs_ref), base, OEP_ADDRESS_OF))
+	{
+	  *disambiguate_only = TR_DISAMBIGUATE;
 	  return NULL;
 	}
 
@@ -3259,6 +3275,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       copy_reference_ops_from_ref (rhs1, &rhs);
 
       /* Apply an extra offset to the inner MEM_REF of the RHS.  */
+      bool force_no_tbaa = false;
       if (maybe_ne (extra_off, 0))
 	{
 	  if (rhs.length () < 2)
@@ -3271,6 +3288,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  rhs[ix].op0 = int_const_binop (PLUS_EXPR, rhs[ix].op0,
 					 build_int_cst (TREE_TYPE (rhs[ix].op0),
 							extra_off));
+	  /* When we have offsetted the RHS, reading only parts of it,
+	     we can no longer use the original TBAA type, force alias-set
+	     zero.  */
+	  force_no_tbaa = true;
 	}
 
       /* Save the operands since we need to use the original ones for
@@ -3323,8 +3344,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* Adjust *ref from the new operands.  */
       ao_ref rhs1_ref;
       ao_ref_init (&rhs1_ref, rhs1);
-      if (!ao_ref_init_from_vn_reference (&r, ao_ref_alias_set (&rhs1_ref),
-					  ao_ref_base_alias_set (&rhs1_ref),
+      if (!ao_ref_init_from_vn_reference (&r,
+					  force_no_tbaa ? 0
+					  : ao_ref_alias_set (&rhs1_ref),
+					  force_no_tbaa ? 0
+					  : ao_ref_base_alias_set (&rhs1_ref),
 					  vr->type, vr->operands))
 	return (void *)-1;
       /* This can happen with bitfields.  */
@@ -3604,7 +3628,8 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
     {
       ao_ref r;
       unsigned limit = param_sccvn_max_alias_queries_per_access;
-      vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true, NULL_TREE);
+      vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true, NULL_TREE,
+			    false);
       vec<vn_reference_op_s> ops_for_ref;
       if (!valueized_p)
 	ops_for_ref = vr1.operands;
@@ -3649,12 +3674,14 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
    MASK is either NULL_TREE, or can be an INTEGER_CST if the result of the
    load is bitwise anded with MASK and so we are only interested in a subset
    of the bits and can ignore if the other bits are uninitialized or
-   not initialized with constants.  */
+   not initialized with constants.  When doing redundant store removal
+   the caller has to set REDUNDANT_STORE_REMOVAL_P.  */
 
 tree
 vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 		     vn_reference_t *vnresult, bool tbaa_p,
-		     tree *last_vuse_ptr, tree mask)
+		     tree *last_vuse_ptr, tree mask,
+		     bool redundant_store_removal_p)
 {
   vec<vn_reference_op_s> operands;
   struct vn_reference_s vr1;
@@ -3666,6 +3693,43 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   vr1.vuse = vuse_ssa_val (vuse);
   vr1.operands = operands
     = valueize_shared_reference_ops_from_ref (op, &valueized_anything);
+
+  /* Handle &MEM[ptr + 5].b[1].c as POINTER_PLUS_EXPR.  Avoid doing
+     this before the pass folding __builtin_object_size had a chance to run.  */
+  if ((cfun->curr_properties & PROP_objsz)
+      && operands[0].opcode == ADDR_EXPR
+      && operands.last ().opcode == SSA_NAME)
+    {
+      poly_int64 off = 0;
+      vn_reference_op_t vro;
+      unsigned i;
+      for (i = 1; operands.iterate (i, &vro); ++i)
+	{
+	  if (vro->opcode == SSA_NAME)
+	    break;
+	  else if (known_eq (vro->off, -1))
+	    break;
+	  off += vro->off;
+	}
+      if (i == operands.length () - 1
+	  /* Make sure we the offset we accumulated in a 64bit int
+	     fits the address computation carried out in target
+	     offset precision.  */
+	  && (off.coeffs[0]
+	      == sext_hwi (off.coeffs[0], TYPE_PRECISION (sizetype))))
+	{
+	  gcc_assert (operands[i-1].opcode == MEM_REF);
+	  tree ops[2];
+	  ops[0] = operands[i].op0;
+	  ops[1] = wide_int_to_tree (sizetype, off);
+	  tree res = vn_nary_op_lookup_pieces (2, POINTER_PLUS_EXPR,
+					       TREE_TYPE (op), ops, NULL);
+	  if (res)
+	    return res;
+	  return NULL_TREE;
+	}
+    }
+
   vr1.type = TREE_TYPE (op);
   ao_ref op_ref;
   ao_ref_init (&op_ref, op);
@@ -3695,7 +3759,8 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 					     vr1.type, ops_for_ref))
 	ao_ref_init (&r, op);
       vn_walk_cb_data data (&vr1, r.ref ? NULL_TREE : op,
-			    last_vuse_ptr, kind, tbaa_p, mask);
+			    last_vuse_ptr, kind, tbaa_p, mask,
+			    redundant_store_removal_p);
 
       wvnresult
 	= ((vn_reference_t)
@@ -3757,13 +3822,50 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
   vn_reference_t vr1;
   bool tem;
 
+  vec<vn_reference_op_s> operands
+    = valueize_shared_reference_ops_from_ref (op, &tem);
+  /* Handle &MEM[ptr + 5].b[1].c as POINTER_PLUS_EXPR.  Avoid doing this
+     before the pass folding __builtin_object_size had a chance to run.  */
+  if ((cfun->curr_properties & PROP_objsz)
+      && operands[0].opcode == ADDR_EXPR
+      && operands.last ().opcode == SSA_NAME)
+    {
+      poly_int64 off = 0;
+      vn_reference_op_t vro;
+      unsigned i;
+      for (i = 1; operands.iterate (i, &vro); ++i)
+	{
+	  if (vro->opcode == SSA_NAME)
+	    break;
+	  else if (known_eq (vro->off, -1))
+	    break;
+	  off += vro->off;
+	}
+      if (i == operands.length () - 1
+	  /* Make sure we the offset we accumulated in a 64bit int
+	     fits the address computation carried out in target
+	     offset precision.  */
+	  && (off.coeffs[0]
+	      == sext_hwi (off.coeffs[0], TYPE_PRECISION (sizetype))))
+	{
+	  gcc_assert (operands[i-1].opcode == MEM_REF);
+	  tree ops[2];
+	  ops[0] = operands[i].op0;
+	  ops[1] = wide_int_to_tree (sizetype, off);
+	  vn_nary_op_insert_pieces (2, POINTER_PLUS_EXPR,
+				    TREE_TYPE (op), ops, result,
+				    VN_INFO (result)->value_id);
+	  return;
+	}
+    }
+
   vr1 = XOBNEW (&vn_tables_obstack, vn_reference_s);
   if (TREE_CODE (result) == SSA_NAME)
     vr1->value_id = VN_INFO (result)->value_id;
   else
     vr1->value_id = get_or_alloc_constant_value_id (result);
   vr1->vuse = vuse_ssa_val (vuse);
-  vr1->operands = valueize_shared_reference_ops_from_ref (op, &tem).copy ();
+  vr1->operands = operands.copy ();
   vr1->type = TREE_TYPE (op);
   vr1->punned = false;
   ao_ref op_ref;
@@ -4141,9 +4243,10 @@ vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table)
 		      if (dominated_by_p (CDI_DOMINATORS, vno_bb, val_bb))
 			/* Value registered with more generic predicate.  */
 			return *slot;
-		      else if (dominated_by_p (CDI_DOMINATORS, val_bb, vno_bb))
+		      else if (flag_checking)
 			/* Shouldn't happen, we insert in RPO order.  */
-			gcc_unreachable ();
+			gcc_assert (!dominated_by_p (CDI_DOMINATORS,
+						     val_bb, vno_bb));
 		    }
 		  /* Append value.  */
 		  *next = (vn_pval *) obstack_alloc (&vn_tables_obstack,
@@ -4889,7 +4992,7 @@ valueized_wider_op (tree wide_type, tree op, bool allow_truncate)
 
   /* For constants simply extend it.  */
   if (TREE_CODE (op) == INTEGER_CST)
-    return wide_int_to_tree (wide_type, wi::to_wide (op));
+    return wide_int_to_tree (wide_type, wi::to_widest (op));
 
   return NULL_TREE;
 }
@@ -6304,9 +6407,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 		   && SSA_NAME_RANGE_INFO (lhs)
 		   && ! SSA_NAME_RANGE_INFO (sprime)
 		   && b == sprime_b)
-	    duplicate_ssa_name_range_info (sprime,
-					   SSA_NAME_RANGE_TYPE (lhs),
-					   SSA_NAME_RANGE_INFO (lhs));
+	    duplicate_ssa_name_range_info (sprime, lhs);
 	}
 
       /* Inhibit the use of an inserted PHI on a loop header when
@@ -6520,7 +6621,8 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
       tree val = NULL_TREE;
       if (lookup_lhs)
 	val = vn_reference_lookup (lookup_lhs, gimple_vuse (stmt),
-				   VN_WALKREWRITE, &vnresult, false);
+				   VN_WALKREWRITE, &vnresult, false,
+				   NULL, NULL_TREE, true);
       if (TREE_CODE (rhs) == SSA_NAME)
 	rhs = VN_INFO (rhs)->valnum;
       if (val
@@ -6714,7 +6816,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	      if (targets.length () == 1)
 		fn = targets[0]->decl;
 	      else
-		fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		fn = builtin_decl_unreachable ();
 	      if (dump_enabled_p ())
 		{
 		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
@@ -8202,17 +8304,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_fre (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass * clone () final override { return new pass_fre (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       may_iterate = param;
     }
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return flag_tree_fre != 0 && (may_iterate || optimize > 1);
     }
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 private:
   bool may_iterate;

@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "builtins.h"
 #include "generic-match.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-into-ssa.h"
 #include "md5.h"
@@ -7529,7 +7530,7 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1)
 static tree
 fold_to_nonsharp_ineq_using_bound (location_t loc, tree ineq, tree bound)
 {
-  tree a, typea, type = TREE_TYPE (ineq), a1, diff, y;
+  tree a, typea, type = TREE_TYPE (bound), a1, diff, y;
 
   if (TREE_CODE (bound) == LT_EXPR)
     a = TREE_OPERAND (bound, 0);
@@ -9513,6 +9514,16 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	      && sanitize_flags_p (SANITIZE_ALIGNMENT)
 	      && (min_align_of_type (TREE_TYPE (type))
 		  > min_align_of_type (TREE_TYPE (TREE_TYPE (arg00)))))
+	    return NULL_TREE;
+
+	  /* Similarly, avoid this optimization in GENERIC for -fsanitize=null
+	     when type is a reference type and arg00's type is not,
+	     because arg00 could be validly nullptr and if arg01 doesn't return,
+	     we don't want false positive binding of reference to nullptr.  */
+	  if (TREE_CODE (type) == REFERENCE_TYPE
+	      && !in_gimple_form
+	      && sanitize_flags_p (SANITIZE_NULL)
+	      && TREE_CODE (TREE_TYPE (arg00)) != REFERENCE_TYPE)
 	    return NULL_TREE;
 
 	  arg00 = fold_convert_loc (loc, type, arg00);
@@ -12026,11 +12037,15 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	{
 	  tem = fold_to_nonsharp_ineq_using_bound (loc, arg0, arg1);
 	  if (tem && !operand_equal_p (tem, arg0, 0))
-	    return fold_build2_loc (loc, code, type, tem, arg1);
+	    return fold_convert (type,
+				 fold_build2_loc (loc, code, TREE_TYPE (arg1),
+						  tem, arg1));
 
 	  tem = fold_to_nonsharp_ineq_using_bound (loc, arg1, arg0);
 	  if (tem && !operand_equal_p (tem, arg1, 0))
-	    return fold_build2_loc (loc, code, type, arg0, tem);
+	    return fold_convert (type,
+				 fold_build2_loc (loc, code, TREE_TYPE (arg0),
+						  arg0, tem));
 	}
 
       if ((tem = fold_truth_andor (loc, code, type, arg0, arg1, op0, op1))

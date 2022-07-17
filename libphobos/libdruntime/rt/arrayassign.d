@@ -19,8 +19,10 @@ private
     debug(PRINTF) import core.stdc.stdio;
 }
 
-/**
- * Keep for backward binary compatibility. This function can be removed in the future.
+/*
+ * Superseded array assignment hook. Does not take into account destructors:
+ * https://issues.dlang.org/show_bug.cgi?id=13661
+ * Kept for backward binary compatibility. This function can be removed in the future.
  */
 extern (C) void[] _d_arrayassign(TypeInfo ti, void[] from, void[] to)
 {
@@ -40,15 +42,44 @@ extern (C) void[] _d_arrayassign(TypeInfo ti, void[] from, void[] to)
 }
 
 /**
- * Does array assignment (not construction) from another
- * lvalue array of the same element type.
- * Handles overlapping copies.
- * Input:
- *      ti      TypeInfo of the element type.
- *      dst     Points target memory. Its .length is equal to the element count, not byte length.
- *      src     Points source memory. Its .length is equal to the element count, not byte length.
- *      ptmp    Temporary memory for element swapping.
- */
+Does array assignment (not construction) from another array of the same
+element type.
+
+Handles overlapping copies.
+
+The `_d_arrayassign_l` variant assumes the right hand side is an lvalue,
+while `_d_arrayassign_r` assumes it's an rvalue, which means it doesn't have to call copy constructors.
+
+Used for static array assignment with non-POD element types:
+---
+struct S
+{
+    ~this() {} // destructor, so not Plain Old Data
+}
+
+void main()
+{
+    S[3] arr;
+    S[3] lvalue;
+
+    arr = lvalue;
+    // Generates:
+    // S _tmp;
+    // _d_arrayassign_l(typeid(S), (cast(void*) lvalue.ptr)[0..lvalue.length], (cast(void*) arr.ptr)[0..arr.length], &_tmp);
+
+    S[3] getRvalue() {return lvalue;}
+    arr = getRvalue();
+    // Similar, but `_d_arrayassign_r`
+}
+---
+
+Params:
+    ti = `TypeInfo` of the array element type.
+    dst = target memory. Its `.length` is equal to the element count, not byte length.
+    src = source memory. Its `.length` is equal to the element count, not byte length.
+    ptmp =  Temporary memory for element swapping, must have capacity of `ti.tsize` bytes.
+Returns: `dst`
+*/
 extern (C) void[] _d_arrayassign_l(TypeInfo ti, void[] src, void[] dst, void* ptmp)
 {
     debug(PRINTF) printf("_d_arrayassign_l(src = %p,%d, dst = %p,%d) size = %d\n", src.ptr, src.length, dst.ptr, dst.length, ti.tsize);
@@ -131,16 +162,7 @@ unittest    // Bugzilla 14024
     assert(op == "YzXy", op);
 }
 
-/**
- * Does array assignment (not construction) from another
- * rvalue array of the same element type.
- * Input:
- *      ti      TypeInfo of the element type.
- *      dst     Points target memory. Its .length is equal to the element count, not byte length.
- *      src     Points source memory. Its .length is equal to the element count, not byte length.
- *              It is always allocated on stack and never overlapping with dst.
- *      ptmp    Temporary memory for element swapping.
- */
+/// ditto
 extern (C) void[] _d_arrayassign_r(TypeInfo ti, void[] src, void[] dst, void* ptmp)
 {
     debug(PRINTF) printf("_d_arrayassign_r(src = %p,%d, dst = %p,%d) size = %d\n", src.ptr, src.length, dst.ptr, dst.length, ti.tsize);
@@ -163,48 +185,22 @@ extern (C) void[] _d_arrayassign_r(TypeInfo ti, void[] src, void[] dst, void* pt
 }
 
 /**
- * Does array initialization (not assignment) from another
- * array of the same element type.
- * ti is the element type.
- */
-extern (C) void[] _d_arrayctor(TypeInfo ti, void[] from, void[] to)
-{
-    debug(PRINTF) printf("_d_arrayctor(from = %p,%d, to = %p,%d) size = %d\n", from.ptr, from.length, to.ptr, to.length, ti.tsize);
+Set all elements of an array to a single value.
 
+---
+p[0 .. count] = value;
+---
 
-    auto element_size = ti.tsize;
+Takes into account postblits and destructors, for Plain Old Data elements,
+`rt/memset.d` is used.
 
-    enforceRawArraysConformable("initialization", element_size, from, to);
-
-    size_t i;
-    try
-    {
-        for (i = 0; i < to.length; i++)
-        {
-            // Copy construction is defined as bit copy followed by postblit.
-            memcpy(to.ptr + i * element_size, from.ptr + i * element_size, element_size);
-            ti.postblit(to.ptr + i * element_size);
-        }
-    }
-    catch (Throwable o)
-    {
-        /* Destroy, in reverse order, what we've constructed so far
-         */
-        while (i--)
-        {
-            ti.destroy(to.ptr + i * element_size);
-        }
-
-        throw o;
-    }
-    return to;
-}
-
-
-/**
- * Do assignment to an array.
- *      p[0 .. count] = value;
- */
+Params:
+    p = pointer to start of array
+    value = bytes of the element to set. Size is derived from `ti`.
+    count = amount of array elements to set
+    ti = type info of the array element type / `value`
+Returns: `p`
+*/
 extern (C) void* _d_arraysetassign(void* p, void* value, int count, TypeInfo ti)
 {
     void* pstart = p;
@@ -225,38 +221,5 @@ extern (C) void* _d_arraysetassign(void* p, void* value, int count, TypeInfo ti)
     }
     if (element_size > maxAllocaSize)
         free(ptmp);
-    return pstart;
-}
-
-/**
- * Do construction of an array.
- *      ti[count] p = value;
- */
-extern (C) void* _d_arraysetctor(void* p, void* value, int count, TypeInfo ti)
-{
-    void* pstart = p;
-    auto element_size = ti.tsize;
-
-    try
-    {
-        foreach (i; 0 .. count)
-        {
-            // Copy construction is defined as bit copy followed by postblit.
-            memcpy(p, value, element_size);
-            ti.postblit(p);
-            p += element_size;
-        }
-    }
-    catch (Throwable o)
-    {
-        // Destroy, in reverse order, what we've constructed so far
-        while (p > pstart)
-        {
-            p -= element_size;
-            ti.destroy(p);
-        }
-
-        throw o;
-    }
     return pstart;
 }

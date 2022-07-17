@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-url.h"
 #include "diagnostic-metadata.h"
 #include "diagnostic-path.h"
+#include "diagnostic-client-data-hooks.h"
 #include "edit-context.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
@@ -189,6 +190,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   for (i = 0; i < rich_location::STATICALLY_ALLOCATED_RANGES; i++)
     context->caret_chars[i] = '^';
   context->show_cwe = false;
+  context->show_rules = false;
   context->path_format = DPF_NONE;
   context->show_path_depths = false;
   context->show_option_requested = false;
@@ -240,6 +242,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->end_group_cb = NULL;
   context->final_cb = default_diagnostic_final_cb;
   context->includes_seen = NULL;
+  context->m_client_data_hooks = NULL;
 }
 
 /* Maybe initialize the color support. We require clients to do this
@@ -337,6 +340,12 @@ diagnostic_finish (diagnostic_context *context)
     {
       delete context->includes_seen;
       context->includes_seen = nullptr;
+    }
+
+  if (context->m_client_data_hooks)
+    {
+      delete context->m_client_data_hooks;
+      context->m_client_data_hooks = NULL;
     }
 }
 
@@ -820,6 +829,116 @@ diagnostic_show_any_path (diagnostic_context *context,
     context->print_path (context, path);
 }
 
+/* class diagnostic_event.  */
+
+/* struct diagnostic_event::meaning.  */
+
+void
+diagnostic_event::meaning::dump_to_pp (pretty_printer *pp) const
+{
+  bool need_comma = false;
+  pp_character (pp, '{');
+  if (const char *verb_str = maybe_get_verb_str (m_verb))
+    {
+      pp_printf (pp, "verb: %qs", verb_str);
+      need_comma = true;
+    }
+  if (const char *noun_str = maybe_get_noun_str (m_noun))
+    {
+      if (need_comma)
+	pp_string (pp, ", ");
+      pp_printf (pp, "noun: %qs", noun_str);
+      need_comma = true;
+    }
+  if (const char *property_str = maybe_get_property_str (m_property))
+    {
+      if (need_comma)
+	pp_string (pp, ", ");
+      pp_printf (pp, "property: %qs", property_str);
+      need_comma = true;
+    }
+  pp_character (pp, '}');
+}
+
+/* Get a string (or NULL) for V suitable for use within a SARIF
+   threadFlowLocation "kinds" property (SARIF v2.1.0 section 3.38.8).  */
+
+const char *
+diagnostic_event::meaning::maybe_get_verb_str (enum verb v)
+{
+  switch (v)
+    {
+    default:
+      gcc_unreachable ();
+    case VERB_unknown:
+      return NULL;
+    case VERB_acquire:
+      return "acquire";
+    case VERB_release:
+      return "release";
+    case VERB_enter:
+      return "enter";
+    case VERB_exit:
+      return "exit";
+    case VERB_call:
+      return "call";
+    case VERB_return:
+      return "return";
+    case VERB_branch:
+      return "branch";
+    case VERB_danger:
+      return "danger";
+    }
+}
+
+/* Get a string (or NULL) for N suitable for use within a SARIF
+   threadFlowLocation "kinds" property (SARIF v2.1.0 section 3.38.8).  */
+
+const char *
+diagnostic_event::meaning::maybe_get_noun_str (enum noun n)
+{
+  switch (n)
+    {
+    default:
+      gcc_unreachable ();
+    case NOUN_unknown:
+      return NULL;
+    case NOUN_taint:
+      return "taint";
+    case NOUN_sensitive:
+      return "sensitive";
+    case NOUN_function:
+      return "function";
+    case NOUN_lock:
+      return "lock";
+    case NOUN_memory:
+      return "memory";
+    case NOUN_resource:
+      return "resource";
+    }
+}
+
+/* Get a string (or NULL) for P suitable for use within a SARIF
+   threadFlowLocation "kinds" property (SARIF v2.1.0 section 3.38.8).  */
+
+const char *
+diagnostic_event::meaning::maybe_get_property_str (enum property p)
+{
+  switch (p)
+    {
+    default:
+      gcc_unreachable ();
+    case PROPERTY_unknown:
+      return NULL;
+    case PROPERTY_true:
+      return "true";
+    case PROPERTY_false:
+      return "false";
+    }
+}
+
+/* class diagnostic_path.  */
+
 /* Return true if the events in this path involve more than one
    function, or false if it is purely intraprocedural.  */
 
@@ -1131,7 +1250,7 @@ update_effective_level_from_pragmas (diagnostic_context *context,
 /* Generate a URL string describing CWE.  The caller is responsible for
    freeing the string.  */
 
-static char *
+char *
 get_cwe_url (int cwe)
 {
   return xasprintf ("https://cwe.mitre.org/data/definitions/%i.html", cwe);
@@ -1170,6 +1289,51 @@ print_any_cwe (diagnostic_context *context,
 	pp_end_url (pp);
       pp_string (pp, colorize_stop (pp_show_color (pp)));
       pp_character (pp, ']');
+    }
+}
+
+/* If DIAGNOSTIC has any rules associated with it, print them.
+
+   For example, if the diagnostic metadata associates it with a rule
+   named "STR34-C", then " [STR34-C]" will be printed, suitably colorized,
+   with any URL provided by the rule.  */
+
+static void
+print_any_rules (diagnostic_context *context,
+		const diagnostic_info *diagnostic)
+{
+  if (diagnostic->metadata == NULL)
+    return;
+
+  for (unsigned idx = 0; idx < diagnostic->metadata->get_num_rules (); idx++)
+    {
+      const diagnostic_metadata::rule &rule
+	= diagnostic->metadata->get_rule (idx);
+      if (char *desc = rule.make_description ())
+	{
+	  pretty_printer *pp = context->printer;
+	  char *saved_prefix = pp_take_prefix (context->printer);
+	  pp_string (pp, " [");
+	  pp_string (pp,
+		     colorize_start (pp_show_color (pp),
+				     diagnostic_kind_color[diagnostic->kind]));
+	  char *url = NULL;
+	  if (pp->url_format != URL_FORMAT_NONE)
+	    {
+	      url = rule.make_url ();
+	      if (url)
+		pp_begin_url (pp, url);
+	    }
+	  pp_string (pp, desc);
+	  pp_set_prefix (context->printer, saved_prefix);
+	  if (pp->url_format != URL_FORMAT_NONE)
+	    if (url)
+	      pp_end_url (pp);
+	  free (url);
+	  pp_string (pp, colorize_stop (pp_show_color (pp)));
+	  pp_character (pp, ']');
+	  free (desc);
+	}
     }
 }
 
@@ -1386,6 +1550,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   pp_output_formatted_text (context->printer);
   if (context->show_cwe)
     print_any_cwe (context, diagnostic);
+  if (context->show_rules)
+    print_any_rules (context, diagnostic);
   if (context->show_option_requested)
     print_option_information (context, diagnostic, orig_diag_kind);
   (*diagnostic_finalizer (context)) (context, diagnostic, orig_diag_kind);
@@ -1935,9 +2101,7 @@ fatal_error (location_t loc, const char *gmsgid, ...)
 }
 
 /* An internal consistency check has failed.  We make no attempt to
-   continue.  Note that unless there is debugging value to be had from
-   a more specific message, or some other good reason, you should use
-   abort () instead of calling this function directly.  */
+   continue.  */
 void
 internal_error (const char *gmsgid, ...)
 {
@@ -2071,6 +2235,40 @@ auto_diagnostic_group::~auto_diagnostic_group ()
 	    global_dc->end_group_cb (global_dc);
 	}
       global_dc->diagnostic_group_emission_count = 0;
+    }
+}
+
+/* Set the output format for CONTEXT to FORMAT, using BASE_FILE_NAME for
+   file-based output formats.  */
+
+void
+diagnostic_output_format_init (diagnostic_context *context,
+			       const char *base_file_name,
+			       enum diagnostics_output_format format)
+{
+  switch (format)
+    {
+    default:
+      gcc_unreachable ();
+    case DIAGNOSTICS_OUTPUT_FORMAT_TEXT:
+      /* The default; do nothing.  */
+      break;
+
+    case DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR:
+      diagnostic_output_format_init_json_stderr (context);
+      break;
+
+    case DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE:
+      diagnostic_output_format_init_json_file (context, base_file_name);
+      break;
+
+    case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR:
+      diagnostic_output_format_init_sarif_stderr (context);
+      break;
+
+    case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE:
+      diagnostic_output_format_init_sarif_file (context, base_file_name);
+      break;
     }
 }
 

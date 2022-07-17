@@ -3961,7 +3961,7 @@ package body GNAT.Spitbol.Patterns is
 
          --  Any (one character case)
 
-         when PC_Any_CH =>
+         when PC_Any_CH | PC_Char =>
             if Cursor < Length
               and then Subject (Cursor + 1) = Node.Char
             then
@@ -4103,9 +4103,10 @@ package body GNAT.Spitbol.Patterns is
             Pop_Region;
             goto Succeed;
 
-         --  Assign on match. This node sets up for the eventual assignment
+         --  Write/assign on match. This node sets up for the eventual write
+         --  or assignment.
 
-         when PC_Assign_OnM =>
+         when PC_Assign_OnM | PC_Write_OnM =>
             Stack (Stack_Base - 1).Node := Node;
             Push (CP_Assign'Access);
             Pop_Region;
@@ -4144,9 +4145,9 @@ package body GNAT.Spitbol.Patterns is
             Push (Node);
             goto Succeed;
 
-         --  Break (one character case)
+         --  Break & BreakX (one character case)
 
-         when PC_Break_CH =>
+         when PC_Break_CH | PC_BreakX_CH =>
             while Cursor < Length loop
                if Subject (Cursor + 1) = Node.Char then
                   goto Succeed;
@@ -4157,9 +4158,9 @@ package body GNAT.Spitbol.Patterns is
 
             goto Fail;
 
-         --  Break (character set case)
+         --  Break & BreakX (character set case)
 
-         when PC_Break_CS =>
+         when PC_Break_CS | PC_BreakX_CS =>
             while Cursor < Length loop
                if Is_In (Subject (Cursor + 1), Node.CS) then
                   goto Succeed;
@@ -4170,9 +4171,9 @@ package body GNAT.Spitbol.Patterns is
 
             goto Fail;
 
-         --  Break (string function case)
+         --  Break & BreakX (string function case)
 
-         when PC_Break_VF => declare
+         when PC_Break_VF | PC_BreakX_VF => declare
             U : constant VString := Node.VF.all;
             S : Big_String_Access;
             L : Natural;
@@ -4191,77 +4192,9 @@ package body GNAT.Spitbol.Patterns is
             goto Fail;
          end;
 
-         --  Break (string pointer case)
+         --  Break & BreakX (string pointer case)
 
-         when PC_Break_VP => declare
-            U : constant VString := Node.VP.all;
-            S : Big_String_Access;
-            L : Natural;
-
-         begin
-            Get_String (U, S, L);
-
-            while Cursor < Length loop
-               if Is_In (Subject (Cursor + 1), S (1 .. L)) then
-                  goto Succeed;
-               else
-                  Cursor := Cursor + 1;
-               end if;
-            end loop;
-
-            goto Fail;
-         end;
-
-         --  BreakX (one character case)
-
-         when PC_BreakX_CH =>
-            while Cursor < Length loop
-               if Subject (Cursor + 1) = Node.Char then
-                  goto Succeed;
-               else
-                  Cursor := Cursor + 1;
-               end if;
-            end loop;
-
-            goto Fail;
-
-         --  BreakX (character set case)
-
-         when PC_BreakX_CS =>
-            while Cursor < Length loop
-               if Is_In (Subject (Cursor + 1), Node.CS) then
-                  goto Succeed;
-               else
-                  Cursor := Cursor + 1;
-               end if;
-            end loop;
-
-            goto Fail;
-
-         --  BreakX (string function case)
-
-         when PC_BreakX_VF => declare
-            U : constant VString := Node.VF.all;
-            S : Big_String_Access;
-            L : Natural;
-
-         begin
-            Get_String (U, S, L);
-
-            while Cursor < Length loop
-               if Is_In (Subject (Cursor + 1), S (1 .. L)) then
-                  goto Succeed;
-               else
-                  Cursor := Cursor + 1;
-               end if;
-            end loop;
-
-            goto Fail;
-         end;
-
-         --  BreakX (string pointer case)
-
-         when PC_BreakX_VP => declare
+         when PC_Break_VP | PC_BreakX_VP => declare
             U : constant VString := Node.VP.all;
             S : Big_String_Access;
             L : Natural;
@@ -4287,18 +4220,6 @@ package body GNAT.Spitbol.Patterns is
          when PC_BreakX_X =>
             Cursor := Cursor + 1;
             goto Succeed;
-
-         --  Character (one character string)
-
-         when PC_Char =>
-            if Cursor < Length
-              and then Subject (Cursor + 1) = Node.Char
-            then
-               Cursor := Cursor + 1;
-               goto Succeed;
-            else
-               goto Fail;
-            end if;
 
          --  End of Pattern
 
@@ -4941,15 +4862,6 @@ package body GNAT.Spitbol.Patterns is
                Subject (Stack (Stack_Base - 1).Cursor + 1 .. Cursor));
             Pop_Region;
             goto Succeed;
-
-         --  Write on match. This node sets up for the eventual write
-
-         when PC_Write_OnM =>
-            Stack (Stack_Base - 1).Node := Node;
-            Push (CP_Assign'Access);
-            Pop_Region;
-            Assign_OnM := True;
-            goto Succeed;
       end case;
 
       --  We are NOT allowed to fall though this case statement, since every
@@ -5445,20 +5357,10 @@ package body GNAT.Spitbol.Patterns is
                goto Fail;
             end if;
 
-         --  Arbno_S (simple Arbno initialize). This is the node that
-         --  initiates the match of a simple Arbno structure.
+         --  Arbno_S/X (simple and complex Arbno initialize). This is the node
+         --  that initiates the match of a simple or complex Arbno structure.
 
-         when PC_Arbno_S =>
-            Dout (Img (Node) &
-                  "setting up Arbno alternative " & Img (Node.Alt));
-            Push (Node.Alt);
-            Node := Node.Pthen;
-            goto Match;
-
-         --  Arbno_X (Arbno initialize). This is the node that initiates
-         --  the match of a complex Arbno structure.
-
-         when PC_Arbno_X =>
+         when PC_Arbno_S | PC_Arbno_X =>
             Dout (Img (Node) &
                   "setting up Arbno alternative " & Img (Node.Alt));
             Push (Node.Alt);

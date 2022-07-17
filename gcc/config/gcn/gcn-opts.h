@@ -23,16 +23,30 @@ enum processor_type
   PROCESSOR_FIJI,    // gfx803
   PROCESSOR_VEGA10,  // gfx900
   PROCESSOR_VEGA20,  // gfx906
-  PROCESSOR_GFX908   // as yet unnamed
+  PROCESSOR_GFX908,
+  PROCESSOR_GFX90a
 };
 
 /* Set in gcn_option_override.  */
-extern int gcn_isa;
+extern enum gcn_isa {
+  ISA_UNKNOWN,
+  ISA_GCN3,
+  ISA_GCN5,
+  ISA_CDNA1,
+  ISA_CDNA2
+} gcn_isa;
 
-#define TARGET_GCN3 (gcn_isa == 3)
-#define TARGET_GCN3_PLUS (gcn_isa >= 3)
-#define TARGET_GCN5 (gcn_isa == 5)
-#define TARGET_GCN5_PLUS (gcn_isa >= 5)
+#define TARGET_GCN3 (gcn_isa == ISA_GCN3)
+#define TARGET_GCN3_PLUS (gcn_isa >= ISA_GCN3)
+#define TARGET_GCN5 (gcn_isa == ISA_GCN5)
+#define TARGET_GCN5_PLUS (gcn_isa >= ISA_GCN5)
+#define TARGET_CDNA1 (gcn_isa == ISA_CDNA1)
+#define TARGET_CDNA1_PLUS (gcn_isa >= ISA_CDNA1)
+#define TARGET_CDNA2 (gcn_isa == ISA_CDNA2)
+#define TARGET_CDNA2_PLUS (gcn_isa >= ISA_CDNA2)
+
+#define TARGET_M0_LDS_LIMIT (TARGET_GCN3)
+#define TARGET_PACKED_WORK_ITEMS (TARGET_CDNA2_PLUS)
 
 enum sram_ecc_type
 {

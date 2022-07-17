@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jan 03, 2022
+GNAT User's Guide for Native Platforms , Jul 11, 2022
 
 AdaCore
 
@@ -2807,6 +2807,8 @@ Ada_05
 Ada_2005
 Ada_12
 Ada_2012
+Ada_2022
+Aggregate_Individually_Assign
 Allow_Integer_Address
 Annotate
 Assertion_Policy
@@ -3195,8 +3197,7 @@ if any of these units are modified.
 
 @item 
 Cross-reference data. Contains information on all entities referenced
-in the unit. Used by tools like @code{gnatxref} and @code{gnatfind} to
-provide cross-reference information.
+in the unit. Used by some tools to provide cross-reference information.
 @end itemize
 
 For a full detailed description of the format of the @code{ALI} file,
@@ -3503,8 +3504,8 @@ be @code{adalib}).
 You can also specify a new default path to the run-time library at compilation
 time with the switch @code{--RTS=rts-path}. You can thus choose / change
 the run-time library you want your program to be compiled with. This switch is
-recognized by @code{gcc}, @code{gnatmake}, @code{gnatbind},
-@code{gnatls}, @code{gnatfind} and @code{gnatxref}.
+recognized by @code{gcc}, @code{gnatmake}, @code{gnatbind}, @code{gnatls}, and all
+project aware tools.
 
 It is possible to install a library before or after the standard GNAT
 library, by reordering the lines in the configuration files. In general, a
@@ -5667,7 +5668,7 @@ challenge.  This section gives a few hints that should make this task easier.
 
 GNAT supports interfacing with the G++ compiler (or any C++ compiler
 generating code that is compatible with the G++ Application Binary
-Interface —see @indicateurl{http://www.codesourcery.com/archives/cxx-abi}).
+Interface —see @indicateurl{http://itanium-cxx-abi.github.io/cxx-abi/abi.html}).
 
 Interfacing can be done at 3 levels: simple data, subprograms, and
 classes. In the first two cases, GNAT offers a specific @code{Convention C_Plus_Plus}
@@ -6462,8 +6463,8 @@ can use instead the @code{-fdump-ada-spec-slim} switch.
 You can optionally specify a parent unit, of which all generated units will
 be children, using @code{-fada-spec-parent=@emph{unit}}.
 
-The simple @code{gcc`}-based command works only for C headers. For C++ headers
-you need to use either the @code{g++} command or the combination @code{gcc -x c++`}.
+The simple @code{gcc}-based command works only for C headers. For C++ headers
+you need to use either the @code{g++} command or the combination @code{gcc -x c++}.
 
 In some cases, the generated bindings will be more complete or more meaningful
 when defining some macros, which you can do via the @code{-D} switch. This
@@ -7119,6 +7120,21 @@ If @code{--version} was not used, display usage, then exit disregarding
 all other options.
 @end table
 
+@geindex -P (gnatmake)
+
+
+@table @asis
+
+@item @code{-P@emph{project}}
+
+Build GNAT project file @code{project} using GPRbuild. When this switch is
+present, all other command-line switches are treated as GPRbuild switches
+and not @code{gnatmake} switches.
+@end table
+
+@c -- Comment:
+@c :ref:`gnatmake_and_Project_Files`.
+
 @geindex --GCC=compiler_name (gnatmake)
 
 
@@ -7618,19 +7634,6 @@ This switch cannot be used when invoking @code{gnatmake} with several
 
 Same as @code{--create-missing-dirs}
 @end table
-
-@geindex -P (gnatmake)
-
-
-@table @asis
-
-@item @code{-P@emph{project}}
-
-Use project file @code{project}. Only one such switch can be used.
-@end table
-
-@c -- Comment:
-@c :ref:`gnatmake_and_Project_Files`.
 
 @geindex -q (gnatmake)
 
@@ -8551,7 +8554,8 @@ dynamically allocated objects.
 
 Makes GNAT emit warning and error messages as JSON. Inhibits printing of
 text warning and errors messages except if @code{-gnatv} or
-@code{-gnatl} are present.
+@code{-gnatl} are present. Uses absolute file paths when used along
+@code{-gnatef}.
 @end table
 
 @geindex -fdump-scos (gcc)
@@ -8864,7 +8868,7 @@ Assume no invalid (bad) values except for ‘Valid attribute use
 Check syntax and semantics only (no code generation attempted). When the
 compiler is invoked by @code{gnatmake}, if the switch @code{-gnatc} is
 only given to the compiler (after @code{-cargs} or in package Compiler of
-the project file, @code{gnatmake} will fail because it will not find the
+the project file), @code{gnatmake} will fail because it will not find the
 object file after compilation. If @code{gnatmake} is called with
 @code{-gnatc} as a builder switch (before @code{-cargs} or in package
 Builder of the project file) then @code{gnatmake} will not fail because
@@ -9036,7 +9040,8 @@ produced at run time.
 
 @item @code{-gnatef}
 
-Display full source path name in brief error messages.
+Display full source path name in brief error messages and absolute paths in
+@code{-fdiagnostics-format=json}’s output.
 @end table
 
 @geindex -gnateF (gcc)
@@ -9280,7 +9285,7 @@ name  digs float_rep size alignment
 @end example
 
 where @code{name} is the string name of the type (which can have
-single spaces embedded in the name (e.g. long double), @code{digs} is
+single spaces embedded in the name, e.g. long double), @code{digs} is
 the number of digits for the floating-point type, @code{float_rep} is
 the float representation (I for IEEE-754-Binary, which is
 the only one supported at this time),
@@ -10216,7 +10221,7 @@ format:
 
 The @code{v} stands for verbose.
 The effect of this setting is to write long-format error
-messages to @code{stdout} (the standard output file.
+messages to @code{stdout} (the standard output file).
 The same program compiled with the
 @code{-gnatv} switch would generate:
 
@@ -10332,7 +10337,7 @@ This switch causes GNAT to generate the
 brief format error messages to @code{stderr} (the standard error
 file) as well as the verbose
 format message or full listing (which as usual is written to
-@code{stdout} (the standard output file).
+@code{stdout}, the standard output file).
 @end table
 
 @geindex -gnatm (gcc)
@@ -11380,8 +11385,7 @@ This switch disables warnings on overlapping actuals in a call.
 If this warning option is activated, then warnings are generated for
 calls to subprograms marked with @code{pragma Obsolescent} and
 for use of features in Annex J of the Ada Reference Manual. In the
-case of Annex J, not all features are flagged. In particular use
-of the renamed packages (like @code{Text_IO}) and use of package
+case of Annex J, not all features are flagged. In particular, uses of package
 @code{ASCII} are not flagged, since these are very common and
 would generate many annoying positive warnings. The default is that
 such warnings are not generated.
@@ -12850,15 +12854,31 @@ Which is a shorthand for:
 
 @example
 pragma Assertion_Policy
-  (Assert               => Check,
-   Static_Predicate     => Check,
-   Dynamic_Predicate    => Check,
-   Pre                  => Check,
-   Pre'Class            => Check,
-   Post                 => Check,
-   Post'Class           => Check,
-   Type_Invariant       => Check,
-   Type_Invariant'Class => Check);
+--  Ada RM assertion pragmas
+  (Assert                    => Check,
+   Static_Predicate          => Check,
+   Dynamic_Predicate         => Check,
+   Pre                       => Check,
+   Pre'Class                 => Check,
+   Post                      => Check,
+   Post'Class                => Check,
+   Type_Invariant            => Check,
+   Type_Invariant'Class      => Check,
+   Default_Initial_Condition => Check,
+--  GNAT specific assertion pragmas
+   Assert_And_Cut            => Check,
+   Assume                    => Check,
+   Contract_Cases            => Check,
+   Debug                     => Check,
+   Ghost                     => Check,
+   Initial_Condition         => Check,
+   Loop_Invariant            => Check,
+   Loop_Variant              => Check,
+   Postcondition             => Check,
+   Precondition              => Check,
+   Predicate                 => Check,
+   Refined_Post              => Check,
+   Subprogram_Variant        => Check);
 @end example
 
 The pragmas @code{Assert} and @code{Debug} normally have no effect and
@@ -13908,7 +13928,7 @@ if any.
 
 @c end of switch description (leave this comment to ease automatic parsing for
 
-@c GNAT Studio
+@c GNAT Studio)
 
 In the above rules, appearing in column one is always permitted, that is,
 counts as meeting either a requirement for a required preceding space,
@@ -15075,10 +15095,10 @@ types in package Standard.
 @item @code{-gnatx}
 
 Normally the compiler generates full cross-referencing information in
-the @code{ALI} file. This information is used by a number of tools,
-including @code{gnatfind} and @code{gnatxref}. The @code{-gnatx} switch
-suppresses this information. This saves some space and may slightly
-speed up compilation, but means that these tools cannot be used.
+the @code{ALI} file. This information is used by a number of tools.
+The @code{-gnatx} switch suppresses this information. This saves some space
+and may slightly speed up compilation, but means that tools depending
+on this information cannot be used.
 @end table
 
 @geindex -fgnat-encodings (gcc)
@@ -17007,9 +17027,9 @@ which might help you in case your project has a lot of subdirectories.
 ##    Each of these csc is put in its own directory.
 ##    Their name are referenced by the directory names.
 ##    They will be compiled into shared library (although this would also work
-##    with static libraries
+##    with static libraries)
 ##  - The main program (and possibly other packages that do not belong to any
-##    csc is put in the top level directory (where the Makefile is).
+##    csc) is put in the top level directory (where the Makefile is).
 ##       toplevel_dir __ first_csc  (sources) __ lib (will contain the library)
 ##                    \\_ second_csc (sources) __ lib (will contain the library)
 ##                    \\_ ...
@@ -17890,7 +17910,6 @@ instr.ads
 
 
 
-
 @c -- Example: A |withing| unit has a |with| clause, it |withs| a |withed| unit
 
 @node GNAT and Program Execution,Platform-Specific Information,GNAT Utility Programs,Top
@@ -18498,7 +18517,7 @@ to refer to tasks in the following commands.
 @itemize *
 
 @item 
-@code{break`@w{`}*linespec* `@w{`}task} @emph{taskid}, @code{break} @emph{linespec} @code{task} @emph{taskid} @code{if} …
+@code{break} @emph{linespec} @code{task} @emph{taskid}, @code{break} @emph{linespec} @code{task} @emph{taskid} @code{if} …
 
 @quotation
 
@@ -19517,7 +19536,7 @@ or simply:
 @quotation
 
 @example
-$  gprof my_prog
+$ gprof my_prog
 @end example
 @end quotation
 
@@ -19770,7 +19789,7 @@ checks) in the program source.
 The use of pragma Restrictions allows you to control which features are
 permitted in your program. Apart from the obvious point that if you avoid
 relatively expensive features like finalization (enforceable by the use
-of pragma Restrictions (No_Finalization), the use of this pragma does not
+of pragma Restrictions (No_Finalization)), the use of this pragma does not
 affect the generated code in most cases.
 
 One notable exception to this rule is that the possibility of task abort
@@ -20477,11 +20496,11 @@ package p2 is
    function to_a2 (Input : a1) return a2;
 end p2;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 package body p2 is
    function to_a2 (Input : a1) return a2 is
       function to_a2u is
-        new Unchecked_Conversion (a1, a2);
+        new Ada.Unchecked_Conversion (a1, a2);
    begin
       return to_a2u (Input);
    end to_a2;
@@ -20580,7 +20599,7 @@ the warning off:
 @example
 pragma Warnings (Off);
 function to_a2u is
-  new Unchecked_Conversion (a1, a2);
+  new Ada.Unchecked_Conversion (a1, a2);
 pragma Warnings (On);
 @end example
 @end quotation
@@ -20844,7 +20863,7 @@ If @code{Text_IO} must be used, note that by default output to the standard
 output and standard error files is unbuffered (this provides better
 behavior when output statements are used for debugging, or if the
 progress of a program is observed by tracking the output, e.g. by
-using the Unix @emph{tail -f} command to watch redirected output.
+using the Unix @emph{tail -f} command to watch redirected output).
 
 If you are generating large volumes of output with @code{Text_IO} and
 performance is an important factor, use a designated file instead
@@ -22220,9 +22239,9 @@ properly allocated memory location. Here is a complete example of use of
 @quotation
 
 @example
-with Gnat.Io; use Gnat.Io;
-with Unchecked_Deallocation;
-with Unchecked_Conversion;
+with GNAT.IO; use GNAT.IO;
+with Ada.Unchecked_Deallocation;
+with Ada.Unchecked_Conversion;
 with GNAT.Debug_Pools;
 with System.Storage_Elements;
 with Ada.Exceptions; use Ada.Exceptions;
@@ -22234,8 +22253,8 @@ procedure Debug_Pool_Test is
    P : GNAT.Debug_Pools.Debug_Pool;
    for T'Storage_Pool use P;
 
-   procedure Free is new Unchecked_Deallocation (Integer, T);
-   function UC is new Unchecked_Conversion (U, T);
+   procedure Free is new Ada.Unchecked_Deallocation (Integer, T);
+   function UC is new Ada.Unchecked_Conversion (U, T);
    A, B : aliased T;
 
    procedure Info is new GNAT.Debug_Pools.Print_Info(Put_Line);
@@ -22654,7 +22673,7 @@ have sufficient priviledge for running the container image.
 
 
 This section describes topics that are specific to GNU/Linux platforms.
-@anchor{gnat_ugn/platform_specific_information required-packages-on-gnu-linux}@anchor{1bd}
+
 @menu
 * Required Packages on GNU/Linux:: 
 * A GNU/Linux Debug Quirk:: 
@@ -22662,7 +22681,7 @@ This section describes topics that are specific to GNU/Linux platforms.
 @end menu
 
 @node Required Packages on GNU/Linux,A GNU/Linux Debug Quirk,,GNU/Linux Topics
-@anchor{gnat_ugn/platform_specific_information a-gnu-linux-debug-quirk}@anchor{1be}@anchor{gnat_ugn/platform_specific_information id7}@anchor{1bf}
+@anchor{gnat_ugn/platform_specific_information id7}@anchor{1bd}@anchor{gnat_ugn/platform_specific_information required-packages-on-gnu-linux}@anchor{1be}
 @subsection Required Packages on GNU/Linux
 
 
@@ -22689,6 +22708,9 @@ you’ll need the 32-bit version of the following packages:
 RedHat, SUSE: @code{glibc.i686}, @code{glibc-devel.i686}, @code{ncurses-libs.i686}
 
 @item 
+SUSE: @code{glibc-locale-base-32bit}
+
+@item 
 Debian, Ubuntu: @code{libc6:i386}, @code{libc6-dev:i386}, @code{lib32ncursesw5}
 @end itemize
 
@@ -22696,7 +22718,7 @@ Other GNU/Linux distributions might be choosing a different name
 for those packages.
 
 @node A GNU/Linux Debug Quirk,,Required Packages on GNU/Linux,GNU/Linux Topics
-@anchor{gnat_ugn/platform_specific_information id8}@anchor{1c0}
+@anchor{gnat_ugn/platform_specific_information a-gnu-linux-debug-quirk}@anchor{1bf}@anchor{gnat_ugn/platform_specific_information id8}@anchor{1c0}
 @subsection A GNU/Linux Debug Quirk
 
 
@@ -24421,7 +24443,7 @@ DLL in the static import library generated by @code{dlltool} with switch
 
 Kill @code{@@@emph{nn}} from exported names
 (@ref{1d2,,Windows Calling Conventions}
-for a discussion about @code{Stdcall}-style symbols.
+for a discussion about @code{Stdcall}-style symbols).
 @end table
 
 @geindex --help (dlltool)
@@ -28015,7 +28037,7 @@ To see this output, invoke the compiler as follows:
 @quotation
 
 @example
-$  gcc -c -S -fomit-frame-pointer -gnatp nothing.adb
+$ gcc -c -S -fomit-frame-pointer -gnatp nothing.adb
 @end example
 @end quotation
 

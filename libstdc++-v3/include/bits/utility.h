@@ -86,19 +86,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<size_t __i, typename _Tp>
     struct tuple_element<__i, const _Tp>
     {
-      typedef typename add_const<__tuple_element_t<__i, _Tp>>::type type;
+      using type = const __tuple_element_t<__i, _Tp>;
     };
 
   template<size_t __i, typename _Tp>
     struct tuple_element<__i, volatile _Tp>
     {
-      typedef typename add_volatile<__tuple_element_t<__i, _Tp>>::type type;
+      using type = volatile __tuple_element_t<__i, _Tp>;
     };
 
   template<size_t __i, typename _Tp>
     struct tuple_element<__i, const volatile _Tp>
     {
-      typedef typename add_cv<__tuple_element_t<__i, _Tp>>::type type;
+      using type = const volatile __tuple_element_t<__i, _Tp>;
     };
 
 #if __cplusplus >= 201402L
@@ -125,7 +125,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 // The standard says this macro and alias template should be in <tuple> but we
-// we define them here, to be available in <array>, <utility> and <ranges> too.
+// define them here, to be available in <array>, <utility> and <ranges> too.
 // _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 3378. tuple_size_v/tuple_element_t should be available when
 //       tuple_size/tuple_element are
@@ -190,7 +190,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
 
-  //
   struct in_place_t {
     explicit in_place_t() = default;
   };

@@ -721,7 +721,7 @@ procedure Gnatchop is
       begin
          Parse_Token (Source, Parse_Ptr, Token_Ptr);
 
-         if Source'Last  + 1 - Token_Ptr < Literal'Length
+         if Source'Last + 1 - Token_Ptr < Literal'Length
            or else
              Source (Token_Ptr .. Token_Ptr + Literal'Length - 1) /= Literal
          then

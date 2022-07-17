@@ -42,9 +42,11 @@
 #pragma message ("Okay " THREE)  /* { dg-message "Okay 3" } */
 
 /* Create a TODO() that prints a message on compilation.  */
-#define DO_PRAGMA(x) _Pragma (#x)
-#define TODO(x) DO_PRAGMA(message ("TODO - " #x))
-TODO(Okay 4)                     /* { dg-message "TODO - Okay 4" } */
+#define DO_PRAGMA(x) _Pragma (#x) /* { dg-line pragma_loc1 } */
+#define TODO(x) DO_PRAGMA(message ("TODO - " #x)) /* { dg-line pragma_loc2 } */
+TODO(Okay 4) /* { dg-message "in expansion of macro 'TODO'" } */
+/* { dg-message "TODO - Okay 4" "test4.1" { target *-*-* } pragma_loc1 } */
+/* { dg-message "in expansion of macro 'DO_PRAGMA'" "test4.2" { target *-*-* } pragma_loc2 } */
 
 #if 0
 #pragma message ("Not printed")

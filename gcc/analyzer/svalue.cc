@@ -59,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+static int cmp_csts_and_types (const_tree cst1, const_tree cst2);
+
 /* class svalue and its various subclasses.  */
 
 /* class svalue.  */
@@ -94,8 +96,7 @@ json::value *
 svalue::to_json () const
 {
   label_text desc = get_desc (true);
-  json::value *sval_js = new json::string (desc.m_buffer);
-  desc.maybe_free ();
+  json::value *sval_js = new json::string (desc.get ());
   return sval_js;
 }
 
@@ -304,7 +305,7 @@ svalue::implicitly_live_p (const svalue_set *, const region_model *) const
    of the same type.  */
 
 static int
-cmp_cst (const_tree cst1, const_tree cst2)
+cmp_csts_same_type (const_tree cst1, const_tree cst2)
 {
   gcc_assert (TREE_TYPE (cst1) == TREE_TYPE (cst2));
   gcc_assert (TREE_CODE (cst1) == TREE_CODE (cst2));
@@ -323,9 +324,10 @@ cmp_cst (const_tree cst1, const_tree cst2)
 		     TREE_REAL_CST_PTR (cst2),
 		     sizeof (real_value));
     case COMPLEX_CST:
-      if (int cmp_real = cmp_cst (TREE_REALPART (cst1), TREE_REALPART (cst2)))
+      if (int cmp_real = cmp_csts_and_types (TREE_REALPART (cst1),
+					     TREE_REALPART (cst2)))
 	return cmp_real;
-      return cmp_cst (TREE_IMAGPART (cst1), TREE_IMAGPART (cst2));
+      return cmp_csts_and_types (TREE_IMAGPART (cst1), TREE_IMAGPART (cst2));
     case VECTOR_CST:
       if (int cmp_log2_npatterns
 	    = ((int)VECTOR_CST_LOG2_NPATTERNS (cst1)
@@ -340,15 +342,24 @@ cmp_cst (const_tree cst1, const_tree cst2)
 	{
 	  const_tree elt1 = VECTOR_CST_ENCODED_ELT (cst1, i);
 	  const_tree elt2 = VECTOR_CST_ENCODED_ELT (cst2, i);
-	  int t1 = TYPE_UID (TREE_TYPE (elt1));
-	  int t2 = TYPE_UID (TREE_TYPE (elt2));
-	  if (int cmp_type = t1 - t2)
-	    return cmp_type;
-	  if (int el_cmp = cmp_cst (elt1, elt2))
+	  if (int el_cmp = cmp_csts_and_types (elt1, elt2))
 	    return el_cmp;
 	}
       return 0;
     }
+}
+
+/* Comparator for imposing a deterministic order on constants that might
+   not be of the same type.  */
+
+static int
+cmp_csts_and_types (const_tree cst1, const_tree cst2)
+{
+  int t1 = TYPE_UID (TREE_TYPE (cst1));
+  int t2 = TYPE_UID (TREE_TYPE (cst2));
+  if (int cmp_type = t1 - t2)
+    return cmp_type;
+  return cmp_csts_same_type (cst1, cst2);
 }
 
 /* Comparator for imposing a deterministic order on svalues.  */
@@ -382,7 +393,7 @@ svalue::cmp_ptr (const svalue *sval1, const svalue *sval2)
 	const constant_svalue *constant_sval2 = (const constant_svalue *)sval2;
 	const_tree cst1 = constant_sval1->get_constant ();
 	const_tree cst2 = constant_sval2->get_constant ();
-	return cmp_cst (cst1, cst2);
+	return cmp_csts_same_type (cst1, cst2);
       }
       break;
     case SK_UNKNOWN:
@@ -588,13 +599,13 @@ public:
   involvement_visitor (const svalue *needle)
   : m_needle (needle), m_found (false) {}
 
-  void visit_initial_svalue (const initial_svalue *candidate)
+  void visit_initial_svalue (const initial_svalue *candidate) final override
   {
     if (candidate == m_needle)
       m_found = true;
   }
 
-  void visit_conjured_svalue (const conjured_svalue *candidate)
+  void visit_conjured_svalue (const conjured_svalue *candidate) final override
   {
     if (candidate == m_needle)
       m_found = true;
@@ -720,8 +731,8 @@ region_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 region_svalue::accept (visitor *v) const
 {
-  v->visit_region_svalue (this);
   m_reg->accept (v);
+  v->visit_region_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for region_svalue.  */
@@ -1019,8 +1030,8 @@ initial_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 initial_svalue::accept (visitor *v) const
 {
-  v->visit_initial_svalue (this);
   m_reg->accept (v);
+  v->visit_initial_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for initial_svalue.  */
@@ -1111,8 +1122,8 @@ unaryop_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 unaryop_svalue::accept (visitor *v) const
 {
-  v->visit_unaryop_svalue (this);
   m_arg->accept (v);
+  v->visit_unaryop_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for unaryop_svalue.  */
@@ -1213,9 +1224,9 @@ binop_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 binop_svalue::accept (visitor *v) const
 {
-  v->visit_binop_svalue (this);
   m_arg0->accept (v);
   m_arg1->accept (v);
+  v->visit_binop_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for binop_svalue.  */
@@ -1271,9 +1282,9 @@ sub_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 sub_svalue::accept (visitor *v) const
 {
-  v->visit_sub_svalue (this);
   m_parent_svalue->accept (v);
   m_subregion->accept (v);
+  v->visit_sub_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for sub_svalue.  */
@@ -1340,8 +1351,8 @@ repeated_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 repeated_svalue::accept (visitor *v) const
 {
-  v->visit_repeated_svalue (this);
   m_inner_svalue->accept (v);
+  v->visit_repeated_svalue (this);
 }
 
 /* Implementation of svalue::all_zeroes_p for repeated_svalue.  */
@@ -1482,8 +1493,8 @@ bits_within_svalue::maybe_fold_bits_within (tree type,
 void
 bits_within_svalue::accept (visitor *v) const
 {
-  v->visit_bits_within_svalue (this);
   m_inner_svalue->accept (v);
+  v->visit_bits_within_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for bits_within_svalue.  */
@@ -1532,9 +1543,9 @@ widening_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 widening_svalue::accept (visitor *v) const
 {
-  v->visit_widening_svalue (this);
   m_base_sval->accept (v);
   m_iter_sval->accept (v);
+  v->visit_widening_svalue (this);
 }
 
 /* Attempt to determine in which direction this value is changing
@@ -1699,8 +1710,8 @@ unmergeable_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 unmergeable_svalue::accept (visitor *v) const
 {
-  v->visit_unmergeable_svalue (this);
   m_arg->accept (v);
+  v->visit_unmergeable_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for unmergeable_svalue.  */
@@ -1764,13 +1775,13 @@ compound_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 compound_svalue::accept (visitor *v) const
 {
-  v->visit_compound_svalue (this);
   for (binding_map::iterator_t iter = m_map.begin ();
        iter != m_map.end (); ++iter)
     {
       //(*iter).first.accept (v);
       (*iter).second->accept (v);
     }
+  v->visit_compound_svalue (this);
 }
 
 /* Calculate what the complexity of a compound_svalue instance for MAP
@@ -1891,8 +1902,8 @@ conjured_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 conjured_svalue::accept (visitor *v) const
 {
-  v->visit_conjured_svalue (this);
   m_id_reg->accept (v);
+  v->visit_conjured_svalue (this);
 }
 
 /* class asm_output_svalue : public svalue.  */
@@ -1956,9 +1967,9 @@ asm_output_svalue::input_idx_to_asm_idx (unsigned input_idx) const
 void
 asm_output_svalue::accept (visitor *v) const
 {
-  v->visit_asm_output_svalue (this);
   for (unsigned i = 0; i < m_num_inputs; i++)
     m_input_arr[i]->accept (v);
+  v->visit_asm_output_svalue (this);
 }
 
 /* class const_fn_result_svalue : public svalue.  */
@@ -2009,9 +2020,9 @@ const_fn_result_svalue::dump_input (pretty_printer *pp,
 void
 const_fn_result_svalue::accept (visitor *v) const
 {
-  v->visit_const_fn_result_svalue (this);
   for (unsigned i = 0; i < m_num_inputs; i++)
     m_input_arr[i]->accept (v);
+  v->visit_const_fn_result_svalue (this);
 }
 
 } // namespace ana

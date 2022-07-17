@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-msse -fdump-tree-slp2-details" } */
+/* { dg-additional-options "-msse -mtune=generic -fdump-tree-slp2-details" } */
 
 struct S { unsigned long a, b; } s;
 

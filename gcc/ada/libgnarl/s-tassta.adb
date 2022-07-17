@@ -1307,10 +1307,8 @@ package body System.Tasking.Stages is
       if TH /= null then
          begin
             TH.all (Cause, Self_ID, EO);
-
          exception
-
-            --  RM-C.7.3 requires all exceptions raised here to be ignored
+            --  RM-C.7.3(16) requires all exceptions raised here to be ignored
 
             when others =>
                null;

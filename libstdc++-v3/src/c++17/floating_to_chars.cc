@@ -22,9 +22,6 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-// Activate __glibcxx_assert within this file to shake out any bugs.
-#define _GLIBCXX_ASSERTIONS 1
-
 #include <charconv>
 
 #include <bit>
@@ -87,6 +84,8 @@ using F128_type = __float128;
 #else
 using F128_type = void;
 #endif
+
+#include <stdint.h>
 
 namespace
 {
@@ -1114,6 +1113,7 @@ template<typename T>
       }
 
     __glibcxx_assert(false);
+    __builtin_unreachable();
   }
 
 template<typename T>
@@ -1202,6 +1202,8 @@ template<typename T>
 	    effective_precision = min(precision, max_eff_scientific_precision);
 	    output_specifier = "%.*Lg";
 	  }
+	else
+	  __builtin_unreachable();
 	const int excess_precision = (fmt != chars_format::general
 				      ? precision - effective_precision : 0);
 
@@ -1234,6 +1236,8 @@ template<typename T>
 	      output_length_upper_bound = sign + strlen("0");
 	    output_length_upper_bound += sizeof(radix) + effective_precision;
 	  }
+	else
+	  __builtin_unreachable();
 
 	// Do the sprintf into the local buffer.
 	char buffer[output_length_upper_bound+1];
@@ -1570,6 +1574,7 @@ template<typename T>
       }
 
     __glibcxx_assert(false);
+    __builtin_unreachable();
   }
 
 // Define the overloads for float.

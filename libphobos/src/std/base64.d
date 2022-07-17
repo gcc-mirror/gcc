@@ -63,7 +63,7 @@ import std.range.primitives : empty, front, isInputRange, isOutputRange,
 import std.traits : isArray;
 
 // Make sure module header code examples work correctly.
-@safe unittest
+pure @safe unittest
 {
     ubyte[] data = [0x14, 0xfb, 0x9c, 0x03, 0xd9, 0x7e];
 
@@ -82,7 +82,7 @@ import std.traits : isArray;
 alias Base64 = Base64Impl!('+', '/');
 
 ///
-@safe unittest
+pure @safe unittest
 {
     ubyte[] data = [0x83, 0xd7, 0x30, 0x7a, 0x01, 0x3f];
     assert(Base64.encode(data) == "g9cwegE/");
@@ -98,7 +98,7 @@ alias Base64 = Base64Impl!('+', '/');
 alias Base64URL = Base64Impl!('-', '_');
 
 ///
-@safe unittest
+pure @safe unittest
 {
     ubyte[] data = [0x83, 0xd7, 0x30, 0x7a, 0x01, 0x3f];
     assert(Base64URL.encode(data) == "g9cwegE_");
@@ -114,7 +114,7 @@ alias Base64URL = Base64Impl!('-', '_');
 alias Base64URLNoPadding = Base64Impl!('-', '_', Base64.NoPadding);
 
 ///
-@safe unittest
+pure @safe unittest
 {
     ubyte[] data = [0x83, 0xd7, 0x30, 0x7b, 0xef];
     assert(Base64URLNoPadding.encode(data) == "g9cwe-8");
@@ -180,7 +180,7 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      * Returns:
      *  The length of a Base64 encoding of an array of the given length.
      */
-    @safe
+    @safe @nogc
     pure nothrow size_t encodeLength(in size_t sourceLength)
     {
         static if (Padding == NoPadding)
@@ -218,8 +218,8 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
      *  The slice of $(D_PARAM buffer) that contains the encoded string.
      */
     @trusted
-    pure char[] encode(R1, R2)(in R1 source, return scope R2 buffer) if (isArray!R1 && is(ElementType!R1 : ubyte) &&
-                                                            is(R2 == char[]))
+    pure char[] encode(R1, R2)(const scope R1 source, return scope R2 buffer)
+    if (isArray!R1 && is(ElementType!R1 : ubyte) && is(R2 == char[]))
     in
     {
         assert(buffer.length >= encodeLength(source.length), "Insufficient buffer for encoding");
@@ -277,9 +277,9 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
     }
 
     ///
-    @safe unittest
+    @nogc nothrow @safe unittest
     {
-        ubyte[] data = [0x83, 0xd7, 0x30, 0x7a, 0x01, 0x3f];
+        ubyte[6] data = [0x83, 0xd7, 0x30, 0x7a, 0x01, 0x3f];
         char[32] buffer;    // much bigger than necessary
 
         // Just to be sure...
@@ -287,7 +287,7 @@ template Base64Impl(char Map62th, char Map63th, char Padding = '=')
         assert(buffer.length >= encodedLength);
 
         // encode() returns a slice to the provided buffer.
-        auto encoded = Base64.encode(data, buffer[]);
+        auto encoded = Base64.encode(data[], buffer[]);
         assert(encoded is buffer[0 .. encodedLength]);
         assert(encoded == "g9cwegE/");
     }

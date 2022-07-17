@@ -248,8 +248,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-  tile*-*-*				\
- | cr16-*-*				\
+ cr16-*-*				\
  | hppa[12]*-*-hpux10*			\
  | hppa[12]*-*-hpux11*			\
  | m32c-*-rtems*			\
@@ -557,12 +556,6 @@ tic6x-*-*)
 xtensa*-*-*)
 	extra_options="${extra_options} fused-madd.opt"
 	;;
-tilegx*-*-*)
-	cpu_type=tilegx
-	;;
-tilepro*-*-*)
-	cpu_type=tilepro
-	;;
 esac
 
 tm_file=${cpu_type}/${cpu_type}.h
@@ -665,7 +658,7 @@ slm nehalem westmere sandybridge ivybridge haswell broadwell bonnell \
 silvermont knl knm skylake-avx512 cannonlake icelake-client icelake-server \
 skylake goldmont goldmont-plus tremont cascadelake tigerlake cooperlake \
 sapphirerapids alderlake rocketlake eden-x2 nano nano-1000 nano-2000 nano-3000 \
-nano-x2 eden-x4 nano-x4 x86-64 x86-64-v2 x86-64-v3 x86-64-v4 native"
+nano-x2 eden-x4 nano-x4 lujiazui x86-64 x86-64-v2 x86-64-v3 x86-64-v4 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -3477,27 +3470,6 @@ tic6x-*-uclinux)
 	tmake_file="${tmake_file} c6x/t-c6x c6x/t-c6x-elf c6x/t-c6x-uclinux"
 	use_collect2=no
 	;;
-tilegx*-*-linux*)
-	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilegx/linux.h ${tm_file}"
-        tmake_file="${tmake_file} tilegx/t-tilegx"
-	extra_objs="${extra_objs} mul-tables.o"
-	c_target_objs="${c_target_objs} tilegx-c.o"
-	cxx_target_objs="${cxx_target_objs} tilegx-c.o"
-	extra_headers="feedback.h"
-	case $target in
-	tilegxbe-*)
-		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
- 		;;
-	esac
-	;;
-tilepro*-*-linux*)
-	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilepro/linux.h ${tm_file}"
-        tmake_file="${tmake_file} tilepro/t-tilepro"
-	extra_objs="${extra_objs} mul-tables.o"
-	c_target_objs="${c_target_objs} tilepro-c.o"
-	cxx_target_objs="${cxx_target_objs} tilepro-c.o"
-	extra_headers="feedback.h"
-	;;
 v850-*-rtems*)
 	target_cpu_default="TARGET_CPU_generic"
 	tm_file="elfos.h v850/v850.h"
@@ -3790,6 +3762,10 @@ case ${target} in
 	cpu=geode
 	arch_without_sse2=yes
 	;;
+      lujiazui-*)
+	arch=lujiazui
+	cpu=lujiazui
+	;;
       pentium2-*)
 	arch=pentium2
 	cpu=pentium2
@@ -3898,6 +3874,10 @@ case ${target} in
       k8-*|opteron-*|athlon_64-*)
 	arch=k8
 	cpu=k8
+	;;
+    lujiazui-*)
+	arch=lujiazui
+	cpu=lujiazui
 	;;
       nocona-*)
 	arch=nocona
@@ -4178,31 +4158,12 @@ case "${target}" in
 			  pattern=AARCH64_CORE
 			fi
 
-			ext_mask=AARCH64_CPU_DEFAULT_FLAGS
-
 			# Find the base CPU or ARCH id in aarch64-cores.def or
 			# aarch64-arches.def
 			if [ x"$base_val" = x ] \
 			    || grep "^$pattern(\"$base_val\"," \
 				    ${srcdir}/config/aarch64/$def \
 				    > /dev/null; then
-
-			  if [ $which = arch ]; then
-				base_id=`grep "^$pattern(\"$base_val\"," \
-				  ${srcdir}/config/aarch64/$def | \
-				  sed -e 's/^[^,]*,[ 	]*//' | \
-				  sed -e 's/,.*$//'`
-				# Extract the architecture flags from aarch64-arches.def
-				ext_mask=`grep "^$pattern(\"$base_val\"," \
-				   ${srcdir}/config/aarch64/$def | \
-				   sed -e 's/)$//' | \
-				   sed -e 's/^.*,//'`
-			  else
-				base_id=`grep "^$pattern(\"$base_val\"," \
-				  ${srcdir}/config/aarch64/$def | \
-				  sed -e 's/^[^,]*,[ 	]*//' | \
-				  sed -e 's/,.*$//'`
-			  fi
 
 			  # Disallow extensions in --with-tune=cortex-a53+crc.
 			  if [ $which = tune ] && [ x"$ext_val" != x ]; then
@@ -4234,25 +4195,7 @@ case "${target}" in
 					grep "^\"$base_ext\""`
 
 				if [ x"$base_ext" = x ] \
-				    || [[ -n $opt_line ]]; then
-
-				  # These regexp extract the elements based on
-				  # their group match index in the regexp.
-				  ext_canon=`echo -e "$opt_line" | \
-					sed -e "s/$sed_patt/\2/"`
-				  ext_on=`echo -e "$opt_line" | \
-					sed -e "s/$sed_patt/\3/"`
-				  ext_off=`echo -e "$opt_line" | \
-					sed -e "s/$sed_patt/\4/"`
-
-				  if [ $ext = $base_ext ]; then
-					# Adding extension
-					ext_mask="("$ext_mask") | ("$ext_on" | "$ext_canon")"
-				  else
-					# Removing extension
-					ext_mask="("$ext_mask") & ~("$ext_off" | "$ext_canon")"
-				  fi
-
+				    || [ x"$opt_line" != x ]; then
 				  true
 				else
 				  echo "Unknown extension used in --with-$which=$val" 1>&2
@@ -4261,10 +4204,6 @@ case "${target}" in
 				ext_val=`echo $ext_val | sed -e 's/[a-z0-9]\+//'`
 			  done
 
-			  ext_mask="(("$ext_mask") << TARGET_CPU_NBITS)"
-			  if [ x"$base_id" != x ]; then
-				target_cpu_cname="TARGET_CPU_$base_id | $ext_mask"
-			  fi
 			  true
 			else
 			  # Allow --with-$which=native.
@@ -4555,7 +4494,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | fiji | gfx900 | gfx906 )
+			"" | fiji | gfx900 | gfx906 | gfx908 | gfx90a)
 				# OK
 				;;
 			*)

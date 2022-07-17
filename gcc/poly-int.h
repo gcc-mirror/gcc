@@ -1178,6 +1178,19 @@ lshift (const poly_int_pod<N, Ca> &a, const Cb &b)
 }
 }
 
+/* Poly version of sext_hwi, with the same interface.  */
+
+template<unsigned int N, typename C>
+inline poly_int<N, HOST_WIDE_INT>
+sext_hwi (const poly_int<N, C> &a, unsigned int precision)
+{
+  poly_int_pod<N, HOST_WIDE_INT> r;
+  for (unsigned int i = 0; i < N; i++)
+    r.coeffs[i] = sext_hwi (a.coeffs[i], precision);
+  return r;
+}
+
+
 /* Return true if a0 + a1 * x might equal b0 + b1 * x for some nonnegative
    integer x.  */
 

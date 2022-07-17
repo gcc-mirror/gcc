@@ -1519,7 +1519,7 @@ if (isSomeChar!C)
     import std.range;
     // ir() wraps an array in a plain (i.e. non-forward) input range, so that
     // we can test both code paths
-    InputRange!(C[]) ir(C)(C[][] p...) { return inputRangeObject(p); }
+    InputRange!(C[]) ir(C)(C[][] p...) { return inputRangeObject(p.dup); }
     version (Posix)
     {
         assert(buildPath("foo") == "foo");

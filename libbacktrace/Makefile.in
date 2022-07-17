@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 # Makefile.am -- Backtrace Makefile.
-# Copyright (C) 2012-2021 Free Software Foundation, Inc.
+# Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -122,9 +122,7 @@ host_triplet = @host@
 target_triplet = @target@
 check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
 	$(am__EXEEXT_14)
-TESTS = $(am__append_4) $(am__append_7) $(am__append_9) \
-	$(am__append_12) $(am__append_13) $(am__append_20) \
-	$(am__append_26) $(am__EXEEXT_14)
+TESTS = $(am__append_4) $(MAKETESTS) $(am__EXEEXT_14)
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_1 = libbacktrace_elf_for_test.la
 @NATIVE_TRUE@am__append_2 = test_elf_32 test_elf_64 test_macho \
 @NATIVE_TRUE@	test_xcoff_32 test_xcoff_64 test_pecoff \
@@ -988,7 +986,13 @@ libbacktrace_la_LIBADD = \
 
 libbacktrace_la_DEPENDENCIES = $(libbacktrace_la_LIBADD)
 
-# Add a test to this variable if you want it to be built and run.
+# Add a test to this variable if you want it to be built as a Makefile
+# target and run.
+MAKETESTS = $(am__append_7) $(am__append_9) $(am__append_12) \
+	$(am__append_13) $(am__append_20) $(am__append_26)
+
+# Add a test to this variable if you want it to be built as a program,
+# with SOURCES, etc., and run.
 BUILDTESTS = $(am__append_2) $(am__append_10) $(am__append_11) \
 	$(am__append_16) $(am__append_17) $(am__append_18) \
 	$(am__append_21) $(am__append_22) $(am__append_24) \
@@ -1130,7 +1134,8 @@ libbacktrace_TEST_CFLAGS = $(EXTRA_FLAGS) $(WARN_FLAGS) -g
 @HAVE_ELF_TRUE@xztest_alloc_LDADD = libbacktrace_alloc.la \
 @HAVE_ELF_TRUE@	$(am__append_28) $(CLOCK_GETTIME_LINK)
 CLEANFILES = \
-	$(TESTS) *.debug elf_for_test.c edtest2_build.c gen_edtest2_build \
+	$(MAKETESTS) $(BUILDTESTS) *.debug elf_for_test.c edtest2_build.c \
+	gen_edtest2_build \
 	*.dsyms *.fsyms *.keepsyms *.dbg *.mdbg *.mdbg.xz *.strip
 
 

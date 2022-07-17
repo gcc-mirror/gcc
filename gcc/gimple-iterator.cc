@@ -632,7 +632,7 @@ gsi_for_stmt (gimple *stmt)
 gimple_stmt_iterator
 gsi_for_stmt (gimple *stmt, gimple_seq *seq)
 {
-  gimple_stmt_iterator i = gsi_start_1 (seq);
+  gimple_stmt_iterator i = gsi_start (*seq);
   i.ptr = stmt;
   return i;
 }
@@ -934,7 +934,7 @@ gsi_start_phis (basic_block bb)
 {
   gimple_seq *pseq = phi_nodes_ptr (bb);
 
-  /* Adapted from gsi_start_1. */
+  /* Adapted from gsi_start. */
   gphi_iterator i;
 
   i.ptr = gimple_seq_first (*pseq);

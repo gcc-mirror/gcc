@@ -8,11 +8,11 @@ class C { int v; }
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13902.d(45): Error: Using the result of a comma expression is not allowed
+fail_compilation/fail13902.d(45): Error: using the result of a comma expression is not allowed
 fail_compilation/fail13902.d(32): Error: returning `& x` escapes a reference to local variable `x`
 fail_compilation/fail13902.d(33): Error: returning `&s1.v` escapes a reference to local variable `s1`
 fail_compilation/fail13902.d(38): Error: returning `& sa1` escapes a reference to local variable `sa1`
-fail_compilation/fail13902.d(39): Error: returning `&sa2[0][0]` escapes a reference to local variable `sa2`
+fail_compilation/fail13902.d(39): Error: returning `& sa2` escapes a reference to local variable `sa2`
 fail_compilation/fail13902.d(40): Error: returning `& x` escapes a reference to local variable `x`
 fail_compilation/fail13902.d(41): Error: returning `(& x+4)` escapes a reference to local variable `x`
 fail_compilation/fail13902.d(42): Error: returning `& x + cast(long)x * 4L` escapes a reference to local variable `x`
@@ -53,11 +53,11 @@ int* testEscape1()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13902.d(88): Error: Using the result of a comma expression is not allowed
+fail_compilation/fail13902.d(88): Error: using the result of a comma expression is not allowed
 fail_compilation/fail13902.d(75): Error: returning `& x` escapes a reference to parameter `x`
 fail_compilation/fail13902.d(76): Error: returning `&s1.v` escapes a reference to parameter `s1`
 fail_compilation/fail13902.d(81): Error: returning `& sa1` escapes a reference to parameter `sa1`
-fail_compilation/fail13902.d(82): Error: returning `&sa2[0][0]` escapes a reference to parameter `sa2`
+fail_compilation/fail13902.d(82): Error: returning `& sa2` escapes a reference to parameter `sa2`
 fail_compilation/fail13902.d(83): Error: returning `& x` escapes a reference to parameter `x`
 fail_compilation/fail13902.d(84): Error: returning `(& x+4)` escapes a reference to parameter `x`
 fail_compilation/fail13902.d(85): Error: returning `& x + cast(long)x * 4L` escapes a reference to parameter `x`
@@ -98,7 +98,7 @@ int* testEscape2(
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13902.d(123): Error: Using the result of a comma expression is not allowed
+fail_compilation/fail13902.d(123): Error: using the result of a comma expression is not allowed
 ---
 */
 int* testEscape3(

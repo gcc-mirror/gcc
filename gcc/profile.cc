@@ -716,7 +716,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	      FOR_EACH_EDGE (e, ei, bb->succs)
 		if (!(e->flags & (EDGE_COMPLEX | EDGE_FAKE)))
 		  e->probability
-		    = profile_probability::guessed_always ().apply_scale (1, total);
+		    = profile_probability::guessed_always () / total;
 		else
 		  e->probability = profile_probability::never ();
 	    }
@@ -724,8 +724,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	    {
 	      total += EDGE_COUNT (bb->succs);
 	      FOR_EACH_EDGE (e, ei, bb->succs)
-		e->probability
-		 = profile_probability::guessed_always ().apply_scale (1, total);
+		e->probability = profile_probability::guessed_always () / total;
 	    }
 	  if (bb->index >= NUM_FIXED_BLOCKS
 	      && block_ends_with_condjump_p (bb)

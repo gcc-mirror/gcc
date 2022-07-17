@@ -27,7 +27,9 @@
 # <http://www.gnu.org/licenses/>.
 
 plugin_support=yes
-AC_CHECK_LIB(dl, dlsym, , [plugin_support=no])
+DL_LIBS=
+AC_SUBST(DL_LIBS)
+AC_CHECK_LIB(dl, dlsym, [DL_LIBS=-ldl], [plugin_support=no])
 if test x"$plugin_support" = xyes; then
   AC_DEFINE(PLUGIN_SUPPORT, 1,
     [Define if all infrastructure, needed for plugins, is supported.])
@@ -38,105 +40,8 @@ AC_CHECK_HEADERS_ONCE(unistd.h)
 AC_CHECK_FUNCS_ONCE(secure_getenv __secure_getenv getuid geteuid getgid getegid)
 
 
-# Look for the CUDA driver package.
-CUDA_DRIVER_INCLUDE=
-CUDA_DRIVER_LIB=
-AC_SUBST(CUDA_DRIVER_INCLUDE)
-AC_SUBST(CUDA_DRIVER_LIB)
-CUDA_DRIVER_CPPFLAGS=
-CUDA_DRIVER_LDFLAGS=
-AC_ARG_WITH(cuda-driver,
-	[AS_HELP_STRING([--with-cuda-driver=PATH],
-		[specify prefix directory for installed CUDA driver package.
-		 Equivalent to --with-cuda-driver-include=PATH/include
-		 plus --with-cuda-driver-lib=PATH/lib])])
-AC_ARG_WITH(cuda-driver-include,
-	[AS_HELP_STRING([--with-cuda-driver-include=PATH],
-		[specify directory for installed CUDA driver include files])])
-AC_ARG_WITH(cuda-driver-lib,
-	[AS_HELP_STRING([--with-cuda-driver-lib=PATH],
-		[specify directory for the installed CUDA driver library])])
-case "x$with_cuda_driver" in
-  x) ;;
-  xno)
-    CUDA_DRIVER_INCLUDE=no
-    CUDA_DRIVER_LIB=no
-    ;;
-  *) CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
-     CUDA_DRIVER_LIB=$with_cuda_driver/lib
-     ;;
-esac
-if test "x$with_cuda_driver_include" != x; then
-  CUDA_DRIVER_INCLUDE=$with_cuda_driver_include
-fi
-if test "x$with_cuda_driver_lib" != x; then
-  CUDA_DRIVER_LIB=$with_cuda_driver_lib
-fi
-if test "x$CUDA_DRIVER_INCLUDE" != x \
-   && test "x$CUDA_DRIVER_INCLUDE" != xno; then
-  CUDA_DRIVER_CPPFLAGS=-I$CUDA_DRIVER_INCLUDE
-fi
-if test "x$CUDA_DRIVER_LIB" != x \
-   && test "x$CUDA_DRIVER_LIB" != xno; then
-  CUDA_DRIVER_LDFLAGS=-L$CUDA_DRIVER_LIB
-fi
-
 PLUGIN_NVPTX=0
-PLUGIN_NVPTX_CPPFLAGS=
-PLUGIN_NVPTX_LDFLAGS=
-PLUGIN_NVPTX_LIBS=
-PLUGIN_NVPTX_DYNAMIC=0
-AC_SUBST(PLUGIN_NVPTX)
-AC_SUBST(PLUGIN_NVPTX_CPPFLAGS)
-AC_SUBST(PLUGIN_NVPTX_LDFLAGS)
-AC_SUBST(PLUGIN_NVPTX_LIBS)
-
-# Look for HSA run-time, its includes and libraries
-
-HSA_RUNTIME_INCLUDE=
-HSA_RUNTIME_LIB=
-AC_SUBST(HSA_RUNTIME_INCLUDE)
-AC_SUBST(HSA_RUNTIME_LIB)
-HSA_RUNTIME_CPPFLAGS=
-HSA_RUNTIME_LDFLAGS=
-
-AC_ARG_WITH(hsa-runtime,
-	[AS_HELP_STRING([--with-hsa-runtime=PATH],
-		[specify prefix directory for installed HSA run-time package.
-		 Equivalent to --with-hsa-runtime-include=PATH/include
-		 plus --with-hsa-runtime-lib=PATH/lib])])
-AC_ARG_WITH(hsa-runtime-include,
-	[AS_HELP_STRING([--with-hsa-runtime-include=PATH],
-		[specify directory for installed HSA run-time include files])])
-AC_ARG_WITH(hsa-runtime-lib,
-	[AS_HELP_STRING([--with-hsa-runtime-lib=PATH],
-		[specify directory for the installed HSA run-time library])])
-if test "x$with_hsa_runtime" != x; then
-  HSA_RUNTIME_INCLUDE=$with_hsa_runtime/include
-  HSA_RUNTIME_LIB=$with_hsa_runtime/lib
-fi
-if test "x$with_hsa_runtime_include" != x; then
-  HSA_RUNTIME_INCLUDE=$with_hsa_runtime_include
-fi
-if test "x$with_hsa_runtime_lib" != x; then
-  HSA_RUNTIME_LIB=$with_hsa_runtime_lib
-fi
-if test "x$HSA_RUNTIME_INCLUDE" != x; then
-  HSA_RUNTIME_CPPFLAGS=-I$HSA_RUNTIME_INCLUDE
-fi
-if test "x$HSA_RUNTIME_LIB" != x; then
-  HSA_RUNTIME_LDFLAGS=-L$HSA_RUNTIME_LIB
-fi
-
 PLUGIN_GCN=0
-PLUGIN_GCN_CPPFLAGS=
-PLUGIN_GCN_LDFLAGS=
-PLUGIN_GCN_LIBS=
-AC_SUBST(PLUGIN_GCN)
-AC_SUBST(PLUGIN_GCN_CPPFLAGS)
-AC_SUBST(PLUGIN_GCN_LDFLAGS)
-AC_SUBST(PLUGIN_GCN_LIBS)
-
 # Parse '--enable-offload-targets', figure out the corresponding libgomp
 # plugins, and configure to find the corresponding offload compilers.
 # 'offload_plugins' and 'offload_targets' will be populated in the same order.
@@ -168,43 +73,7 @@ if test x"$enable_offload_targets" != x; then
 		;;
 	      *)
 		tgt_plugin=nvptx
-		PLUGIN_NVPTX=$tgt
-		if test "x$CUDA_DRIVER_LIB" != xno \
-		   && test "x$CUDA_DRIVER_LIB" != xno; then
-		  PLUGIN_NVPTX_CPPFLAGS=$CUDA_DRIVER_CPPFLAGS
-		  PLUGIN_NVPTX_LDFLAGS=$CUDA_DRIVER_LDFLAGS
-		  PLUGIN_NVPTX_LIBS='-lcuda'
-
-		  PLUGIN_NVPTX_save_CPPFLAGS=$CPPFLAGS
-		  CPPFLAGS="$PLUGIN_NVPTX_CPPFLAGS $CPPFLAGS"
-		  PLUGIN_NVPTX_save_LDFLAGS=$LDFLAGS
-		  LDFLAGS="$PLUGIN_NVPTX_LDFLAGS $LDFLAGS"
-		  PLUGIN_NVPTX_save_LIBS=$LIBS
-		  LIBS="$PLUGIN_NVPTX_LIBS $LIBS"
-		  AC_LINK_IFELSE(
-		    [AC_LANG_PROGRAM(
-		      [#include "cuda.h"],
-			[CUresult r = cuCtxPushCurrent (NULL);])],
-		    [PLUGIN_NVPTX=1])
-		  CPPFLAGS=$PLUGIN_NVPTX_save_CPPFLAGS
-		  LDFLAGS=$PLUGIN_NVPTX_save_LDFLAGS
-		  LIBS=$PLUGIN_NVPTX_save_LIBS
-		fi
-		case $PLUGIN_NVPTX in
-		  nvptx*)
-		    if (test "x$CUDA_DRIVER_INCLUDE" = x \
-			|| test "x$CUDA_DRIVER_INCLUDE" = xno) \
-		       && (test "x$CUDA_DRIVER_LIB" = x \
-			   || test "x$CUDA_DRIVER_LIB" = xno); then
-		      PLUGIN_NVPTX=1
-		      PLUGIN_NVPTX_LIBS='-ldl'
-		      PLUGIN_NVPTX_DYNAMIC=1
-		    else
-		      PLUGIN_NVPTX=0
-		      AC_MSG_ERROR([CUDA driver package required for nvptx support])
-		    fi
-		    ;;
-		esac
+		PLUGIN_NVPTX=1
 		;;
 	    esac
 	    ;;
@@ -223,10 +92,6 @@ if test x"$enable_offload_targets" != x; then
 		;;
 	      *)
 		tgt_plugin=gcn
-		PLUGIN_GCN=$tgt
-		PLUGIN_GCN_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
-		PLUGIN_GCN_LDFLAGS="$HSA_RUNTIME_LDFLAGS"
-		PLUGIN_GCN_LIBS="-ldl"
 		PLUGIN_GCN=1
 		;;
 	      esac
@@ -264,10 +129,4 @@ fi
 AC_DEFINE_UNQUOTED(OFFLOAD_PLUGINS, "$offload_plugins",
   [Define to offload plugins, separated by commas.])
 AM_CONDITIONAL([PLUGIN_NVPTX], [test $PLUGIN_NVPTX = 1])
-AC_DEFINE_UNQUOTED([PLUGIN_NVPTX], [$PLUGIN_NVPTX],
-  [Define to 1 if the NVIDIA plugin is built, 0 if not.])
-AC_DEFINE_UNQUOTED([PLUGIN_NVPTX_DYNAMIC], [$PLUGIN_NVPTX_DYNAMIC],
-  [Define to 1 if the NVIDIA plugin should dlopen libcuda.so.1, 0 if it should be linked against it.])
 AM_CONDITIONAL([PLUGIN_GCN], [test $PLUGIN_GCN = 1])
-AC_DEFINE_UNQUOTED([PLUGIN_GCN], [$PLUGIN_GCN],
-  [Define to 1 if the GCN plugin is built, 0 if not.])

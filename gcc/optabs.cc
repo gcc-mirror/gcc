@@ -264,10 +264,8 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
   bool sbool = false;
 
   oprnd0 = ops->op0;
-  if (nops >= 2)
-    oprnd1 = ops->op1;
-  if (nops >= 3)
-    oprnd2 = ops->op2;
+  oprnd1 = nops >= 2 ? ops->op1 : NULL_TREE;
+  oprnd2 = nops >= 3 ? ops->op2 : NULL_TREE;
 
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
   if (ops->code == VEC_UNPACK_FIX_TRUNC_HI_EXPR
@@ -5830,7 +5828,8 @@ expand_sfix_optab (rtx to, rtx from, convert_optab tab)
   FOR_EACH_MODE_FROM (fmode, GET_MODE (from))
     FOR_EACH_MODE_FROM (imode, GET_MODE (to))
       {
-	icode = convert_optab_handler (tab, imode, fmode);
+	icode = convert_optab_handler (tab, imode, fmode,
+				       insn_optimization_type ());
 	if (icode != CODE_FOR_nothing)
 	  {
 	    rtx_insn *last = get_last_insn ();
@@ -6250,7 +6249,10 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
       if (single_arg_p)
 	v1 = v0;
 
-      if (targetm.vectorize.vec_perm_const (mode, target, v0, v1, indices))
+      gcc_checking_assert (GET_MODE (v0) == GET_MODE (v1));
+      machine_mode op_mode = GET_MODE (v0);
+      if (targetm.vectorize.vec_perm_const (mode, op_mode, target, v0, v1,
+					    indices))
 	return target;
     }
 
@@ -6264,7 +6266,7 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
       v0_qi = gen_lowpart (qimode, v0);
       v1_qi = gen_lowpart (qimode, v1);
       if (targetm.vectorize.vec_perm_const != NULL
-	  && targetm.vectorize.vec_perm_const (qimode, target_qi, v0_qi,
+	  && targetm.vectorize.vec_perm_const (qimode, qimode, target_qi, v0_qi,
 					       v1_qi, qimode_indices))
 	return gen_lowpart (mode, target_qi);
     }

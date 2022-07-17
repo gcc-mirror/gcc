@@ -489,4 +489,7 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
     CHECK (gcc_jit_compatible_types (
       gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_LONG),
       gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT64_T)));
+
+  CHECK_VALUE (gcc_jit_type_get_size (gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_FLOAT)), sizeof (float));
+  CHECK_VALUE (gcc_jit_type_get_size (gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_DOUBLE)), sizeof (double));
 }

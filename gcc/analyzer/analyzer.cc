@@ -446,4 +446,42 @@ make_label_text (bool can_colorize, const char *fmt, ...)
   return result;
 }
 
+/* As above, but with singular vs plural.  */
+
+label_text
+make_label_text_n (bool can_colorize, int n,
+		   const char *singular_fmt,
+		   const char *plural_fmt, ...)
+{
+  pretty_printer *pp = global_dc->printer->clone ();
+  pp_clear_output_area (pp);
+
+  if (!can_colorize)
+    pp_show_color (pp) = false;
+
+  text_info ti;
+  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
+
+  va_list ap;
+
+  va_start (ap, plural_fmt);
+
+  const char *fmt = ngettext (singular_fmt, plural_fmt, n);
+
+  ti.format_spec = fmt;
+  ti.args_ptr = &ap;
+  ti.err_no = 0;
+  ti.x_data = NULL;
+  ti.m_richloc = &rich_loc;
+
+  pp_format (pp, &ti);
+  pp_output_formatted_text (pp);
+
+  va_end (ap);
+
+  label_text result = label_text::take (xstrdup (pp_formatted_text (pp)));
+  delete pp;
+  return result;
+}
+
 #endif /* #if ENABLE_ANALYZER */

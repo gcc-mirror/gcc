@@ -8267,7 +8267,7 @@ if (is(T == class))
 {
     // _d_newclass now use default GC alignment (looks like (void*).sizeof * 2 for
     // small objects). We will just use the maximum of filed alignments.
-    alias alignment = classInstanceAlignment!T;
+    enum alignment = __traits(classInstanceAlignment, T);
     alias aligned = _alignUp!alignment;
 
     static struct Scoped
@@ -9418,6 +9418,8 @@ private template replaceTypeInFunctionTypeUnless(alias pred, From, To, fun)
             result ~= " shared";
         static if (attributes & FunctionAttribute.return_)
             result ~= " return";
+        static if (attributes & FunctionAttribute.live)
+            result ~= " @live";
 
         return result;
     }

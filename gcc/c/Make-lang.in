@@ -109,7 +109,7 @@ c.srcinfo:
 c.srcextra: gengtype-lex.cc
 	-cp -p $^ $(srcdir)
 c.tags: force
-	cd $(srcdir)/c; $(ETAGS) -o TAGS.sub *.c *.h; \
+	cd $(srcdir)/c; $(ETAGS) -o TAGS.sub *.cc *.h; \
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 c.man:
 c.srcman:

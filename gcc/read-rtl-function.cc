@@ -77,13 +77,13 @@ class function_reader : public rtx_reader
   ~function_reader ();
 
   /* Overridden vfuncs of class md_reader.  */
-  void handle_unknown_directive (file_location, const char *) FINAL OVERRIDE;
+  void handle_unknown_directive (file_location, const char *) final override;
 
   /* Overridden vfuncs of class rtx_reader.  */
-  rtx read_rtx_operand (rtx x, int idx) FINAL OVERRIDE;
-  void handle_any_trailing_information (rtx x) FINAL OVERRIDE;
-  rtx postprocess (rtx) FINAL OVERRIDE;
-  const char *finalize_string (char *stringbuf) FINAL OVERRIDE;
+  rtx read_rtx_operand (rtx x, int idx) final override;
+  void handle_any_trailing_information (rtx x) final override;
+  rtx postprocess (rtx) final override;
+  const char *finalize_string (char *stringbuf) final override;
 
   rtx_insn **get_insn_by_uid (int uid);
   tree parse_mem_expr (const char *desc);
@@ -188,7 +188,7 @@ class fixup_insn_uid : public operand_fixup
       m_insn_uid (insn_uid)
   {}
 
-  void apply (function_reader *reader) const;
+  void apply (function_reader *reader) const final override;
 
  private:
   int m_insn_uid;
@@ -206,7 +206,7 @@ class fixup_note_insn_basic_block : public operand_fixup
       m_bb_idx (bb_idx)
   {}
 
-  void apply (function_reader *reader) const;
+  void apply (function_reader *reader) const final override;
 
  private:
   int m_bb_idx;
@@ -225,7 +225,7 @@ class fixup_expr : public fixup
 
   ~fixup_expr () { free (m_desc); }
 
-  void apply (function_reader *reader) const;
+  void apply (function_reader *reader) const final override;
 
  private:
   char *m_desc;

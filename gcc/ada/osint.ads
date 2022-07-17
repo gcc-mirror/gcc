@@ -237,8 +237,11 @@ package Osint is
    --  replace the Prefix substring with the root installation directory.
    --  By default, try to compute the root installation directory by looking
    --  at the executable name as it was typed on the command line and, if
-   --  needed, use the PATH environment variable. If the above computation
-   --  fails, return Path. This function assumes Prefix'First = Path'First.
+   --  needed, use the PATH environment variable. If the GNSA_ROOT environment
+   --  variable is set, then the content of this variable is used as the root
+   --  installation directory.
+   --  If the above computation fails, return Path. This function assumes
+   --  Prefix'First = Path'First.
 
    function Shared_Lib (Name : String) return String;
    --  Returns the runtime shared library in the form -l<name>-<version> where

@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "c-ubsan.h"
 #include "tree-nested.h"
+#include "context.h"
 
 /*  The gimplification pass converts the language-dependent trees
     (ld-trees) emitted by the parser into language-independent trees
@@ -552,6 +553,7 @@ c_genericize_control_r (tree *stmt_p, int *walk_subtrees, void *data)
 void
 c_genericize (tree fndecl)
 {
+  dump_file_info *dfi;
   FILE *dump_orig;
   dump_flags_t local_dump_flags;
   struct cgraph_node *cgn;
@@ -581,7 +583,9 @@ c_genericize (tree fndecl)
 				  do_warn_duplicated_branches_r, NULL);
 
   /* Dump the C-specific tree IR.  */
-  dump_orig = get_dump_info (TDI_original, &local_dump_flags);
+  dfi = g->get_dumps ()->get_dump_file_info (TDI_original);
+  dump_orig = dfi->pstream;
+  local_dump_flags = dfi->pflags;
   if (dump_orig)
     {
       fprintf (dump_orig, "\n;; Function %s",

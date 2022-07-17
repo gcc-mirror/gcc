@@ -198,9 +198,9 @@ public:
   {}
 
   /* Duplicate info when an edge is cloned.  */
-  virtual void duplicate (cgraph_edge *, cgraph_edge *,
-			  speculative_call_summary *old_sum,
-			  speculative_call_summary *new_sum);
+  void duplicate (cgraph_edge *, cgraph_edge *,
+		  speculative_call_summary *old_sum,
+		  speculative_call_summary *new_sum) final override;
 };
 
 static ipa_profile_call_summaries *call_sums = NULL;
@@ -481,7 +481,6 @@ ipa_profile_read_summary_section (struct lto_file_decl_data *file_data,
   for (i = 0; i < count; i++)
     {
       index = streamer_read_uhwi (ib);
-      encoder = file_data->symtab_node_encoder;
       node
 	= dyn_cast<cgraph_node *> (lto_symtab_encoder_deref (encoder, index));
 
@@ -1054,8 +1053,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_ipa_profile || in_lto_p; }
-  virtual unsigned int execute (function *) { return ipa_profile (); }
+  bool gate (function *) final override { return flag_ipa_profile || in_lto_p; }
+  unsigned int execute (function *) final override { return ipa_profile (); }
 
 }; // class pass_ipa_profile
 

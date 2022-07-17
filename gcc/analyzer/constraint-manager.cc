@@ -2905,7 +2905,7 @@ public:
   {}
 
   void on_fact (const svalue *lhs, enum tree_code code, const svalue *rhs)
-    FINAL OVERRIDE
+    final override
   {
     /* Special-case for widening.  */
     if (lhs->get_kind () == SK_WIDENING)
@@ -2933,7 +2933,7 @@ public:
   }
 
   void on_ranges (const svalue *lhs_sval,
-		  const bounded_ranges *ranges) FINAL OVERRIDE
+		  const bounded_ranges *ranges) final override
   {
     for (const auto &iter : m_cm_b->m_bounded_ranges_constraints)
       {
@@ -3923,10 +3923,10 @@ test_equality ()
 static void
 test_many_constants ()
 {
-  program_point point (program_point::origin ());
+  region_model_manager mgr;
+  program_point point (program_point::origin (mgr));
   tree a = build_global_decl ("a", integer_type_node);
 
-  region_model_manager mgr;
   region_model model (&mgr);
   auto_vec<tree> constants;
   for (int i = 0; i < 20; i++)

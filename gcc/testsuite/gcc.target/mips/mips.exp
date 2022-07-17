@@ -335,6 +335,7 @@ foreach option {
     split-wide-types
     tree-vectorize
     tree-vrp
+    tree-dominator-opts
     unroll-all-loops
     unroll-loops
     ipa-ra

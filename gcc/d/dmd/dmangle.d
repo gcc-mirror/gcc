@@ -371,10 +371,20 @@ public:
         if (ta.isnogc)
             buf.writestring("Ni");
 
-        if (ta.isreturn && !ta.isreturninferred)
-            buf.writestring("Nj");
-        else if (ta.isScopeQual && !ta.isscopeinferred)
-            buf.writestring("Nl");
+        // `return scope` must be in that order
+        if (ta.isreturnscope && !ta.isreturninferred)
+        {
+            buf.writestring("NjNl");
+        }
+        else
+        {
+            // when return ref, the order is `scope return`
+            if (ta.isScopeQual && !ta.isscopeinferred)
+                buf.writestring("Nl");
+
+            if (ta.isreturn && !ta.isreturninferred)
+                buf.writestring("Nj");
+        }
 
         if (ta.islive)
             buf.writestring("Nm");
@@ -1335,15 +1345,19 @@ void realToMangleBuffer(OutBuffer* buf, real_t value)
 private
 extern (D) const(char)[] externallyMangledIdentifier(Declaration d)
 {
+    assert(!d.mangleOverride, "mangle overrides should have been handled earlier");
+
+    const linkage = d.resolvedLinkage();
     const par = d.toParent(); //toParent() skips over mixin templates
-    if (!par || par.isModule() || d.linkage == LINK.cpp ||
-        (d.linkage == LINK.c && d.isCsymbol() && d.isFuncDeclaration()))
+    if (!par || par.isModule() || linkage == LINK.cpp ||
+        (linkage == LINK.c && d.isCsymbol() &&
+         (d.isFuncDeclaration() ||
+          (d.isVarDeclaration() && d.isDataseg() && d.storage_class & STC.extern_))))
     {
-        if (d.linkage != LINK.d && d.localNum)
+        if (linkage != LINK.d && d.localNum)
             d.error("the same declaration cannot be in multiple scopes with non-D linkage");
 
-        const l = d.linkage == LINK.system ? target.systemLinkage() : d.linkage;
-        final switch (l)
+        final switch (linkage)
         {
             case LINK.d:
                 break;

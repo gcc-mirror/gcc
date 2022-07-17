@@ -1178,7 +1178,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
   hash_set<tree> *p_set = wtd->p_set;
 
   /* If in an OpenMP context, note var uses.  */
-  if (__builtin_expect (wtd->omp_ctx != NULL, 0)
+  if (UNLIKELY (wtd->omp_ctx != NULL)
       && (VAR_P (stmt)
 	  || TREE_CODE (stmt) == PARM_DECL
 	  || TREE_CODE (stmt) == RESULT_DECL)
@@ -1242,7 +1242,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       if (is_invisiref_parm (TREE_OPERAND (stmt, 0)))
 	{
 	  /* If in an OpenMP context, note var uses.  */
-	  if (__builtin_expect (wtd->omp_ctx != NULL, 0)
+	  if (UNLIKELY (wtd->omp_ctx != NULL)
 	      && omp_var_to_track (TREE_OPERAND (stmt, 0)))
 	    omp_cxx_notice_variable (wtd->omp_ctx, TREE_OPERAND (stmt, 0));
 	  *stmt_p = fold_convert (TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
@@ -1369,7 +1369,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       break;
 
     case BIND_EXPR:
-      if (__builtin_expect (wtd->omp_ctx != NULL, 0))
+      if (UNLIKELY (wtd->omp_ctx != NULL))
 	{
 	  tree decl;
 	  for (decl = BIND_EXPR_VARS (stmt); decl; decl = DECL_CHAIN (decl))
@@ -1814,7 +1814,7 @@ cp_maybe_instrument_return (tree fndecl)
 	 information is provided, while the __builtin_unreachable () below
 	 if return sanitization is disabled will just result in hard to
 	 understand runtime error without location.  */
-      && (!optimize
+      && ((!optimize && !flag_unreachable_traps)
 	  || sanitize_flags_p (SANITIZE_UNREACHABLE, fndecl)))
     return;
 
@@ -1864,10 +1864,7 @@ cp_maybe_instrument_return (tree fndecl)
   if (sanitize_flags_p (SANITIZE_RETURN, fndecl))
     t = ubsan_instrument_return (loc);
   else
-    {
-      tree fndecl = builtin_decl_explicit (BUILT_IN_UNREACHABLE);
-      t = build_call_expr_loc (BUILTINS_LOCATION, fndecl, 0);
-    }
+    t = build_builtin_unreachable (BUILTINS_LOCATION);
 
   append_to_statement_list (t, p);
 }
@@ -2451,9 +2448,8 @@ cp_fold (tree x)
     case VIEW_CONVERT_EXPR:
       rval_ops = false;
       /* FALLTHRU */
-    case CONVERT_EXPR:
-    case NOP_EXPR:
     case NON_LVALUE_EXPR:
+    CASE_CONVERT:
 
       if (VOID_TYPE_P (TREE_TYPE (x)))
 	{
@@ -3107,7 +3103,7 @@ get_source_location_impl_type (location_t loc)
 
   int cnt = 0;
   for (tree field = TYPE_FIELDS (type);
-       (field = next_initializable_field (field)) != NULL_TREE;
+       (field = next_aggregate_field (field)) != NULL_TREE;
        field = DECL_CHAIN (field))
     {
       if (DECL_NAME (field) != NULL_TREE)
@@ -3282,7 +3278,7 @@ fold_builtin_source_location (location_t loc)
       vec<constructor_elt, va_gc> *v = NULL;
       vec_alloc (v, 4);
       for (tree field = TYPE_FIELDS (source_location_impl);
-	   (field = next_initializable_field (field)) != NULL_TREE;
+	   (field = next_aggregate_field (field)) != NULL_TREE;
 	   field = DECL_CHAIN (field))
 	{
 	  const char *n = IDENTIFIER_POINTER (DECL_NAME (field));

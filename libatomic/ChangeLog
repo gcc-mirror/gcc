@@ -1,3 +1,7 @@
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libatomic.exp: Add load_gcc_lib of scansarif.exp.
+
 2022-03-24  Tom de Vries  <tdevries@suse.de>
 
 	PR target/105011

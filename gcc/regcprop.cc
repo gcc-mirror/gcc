@@ -1293,12 +1293,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return (optimize > 0 && (flag_cprop_registers));
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_cprop_hardreg
 
@@ -1383,7 +1383,9 @@ pass_cprop_hardreg::execute (function *fun)
   auto_sbitmap visited (last_basic_block_for_fn (fun));
   bitmap_clear (visited);
 
-  auto_vec<int> worklist;
+  auto_vec<int> worklist1, worklist2;
+  auto_vec<int> *curr = &worklist1;
+  auto_vec<int> *next = &worklist2;
   bool any_debug_changes = false;
 
   /* We need accurate notes.  Earlier passes such as if-conversion may
@@ -1404,7 +1406,7 @@ pass_cprop_hardreg::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       if (cprop_hardreg_bb (bb, all_vd, visited))
-	worklist.safe_push (bb->index);
+	curr->safe_push (bb->index);
       if (all_vd[bb->index].n_debug_insn_changes)
 	any_debug_changes = true;
     }
@@ -1416,16 +1418,22 @@ pass_cprop_hardreg::execute (function *fun)
   if (MAY_HAVE_DEBUG_BIND_INSNS && any_debug_changes)
     cprop_hardreg_debug (fun, all_vd);
 
-  /* Second pass if we've changed anything, only for the bbs where we have
-     changed anything though.  */
-  if (!worklist.is_empty ())
+  /* Repeat pass up to PASSES times, but only processing basic blocks
+     that have changed on the previous iteration.  CURR points to the
+     current worklist, and each iteration populates the NEXT worklist,
+     swapping pointers after each cycle.  */
+
+  unsigned int passes = optimize > 1 ? 3 : 2;
+  for (unsigned int pass = 2; pass <= passes && !curr->is_empty (); pass++)
     {
       any_debug_changes = false;
       bitmap_clear (visited);
-      for (int index : worklist)
+      next->truncate (0);
+      for (int index : *curr)
 	{
 	  bb = BASIC_BLOCK_FOR_FN (fun, index);
-	  cprop_hardreg_bb (bb, all_vd, visited);
+          if (cprop_hardreg_bb (bb, all_vd, visited))
+	    next->safe_push (bb->index);
 	  if (all_vd[bb->index].n_debug_insn_changes)
 	    any_debug_changes = true;
 	}
@@ -1433,6 +1441,7 @@ pass_cprop_hardreg::execute (function *fun)
       df_analyze ();
       if (MAY_HAVE_DEBUG_BIND_INSNS && any_debug_changes)
 	cprop_hardreg_debug (fun, all_vd);
+      std::swap (curr, next);
     }
 
   free (all_vd);

@@ -26,3 +26,10 @@ void issue19234()
     A[10] b;
     b[] = a[];
 }
+
+/**********************************************/
+// https://issues.dlang.org/show_bug.cgi?id=22922
+void issue22922()
+{
+    int[] x = [];
+}

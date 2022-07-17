@@ -279,7 +279,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
     /* The option machinery will define this.  */
 #endif
 
-#define TARGET_DEFAULT (MASK_MULTIPLE)
+#define TARGET_DEFAULT (OPTION_MASK_MULTIPLE)
 
 /* Define generic processor types based upon current deployment.  */
 #define PROCESSOR_COMMON    PROCESSOR_PPC601
@@ -505,41 +505,11 @@ extern int rs6000_vector_align[];
 			 && (TARGET_P9_MINMAX || !flag_trapping_math))
 
 /* In switching from using target_flags to using rs6000_isa_flags, the options
-   machinery creates OPTION_MASK_<xxx> instead of MASK_<xxx>.  For now map
-   OPTION_MASK_<xxx> back into MASK_<xxx>.  */
-#define MASK_ALTIVEC			OPTION_MASK_ALTIVEC
-#define MASK_CMPB			OPTION_MASK_CMPB
-#define MASK_CRYPTO			OPTION_MASK_CRYPTO
-#define MASK_DFP			OPTION_MASK_DFP
-#define MASK_DIRECT_MOVE		OPTION_MASK_DIRECT_MOVE
-#define MASK_DLMZB			OPTION_MASK_DLMZB
-#define MASK_EABI			OPTION_MASK_EABI
-#define MASK_FLOAT128_KEYWORD		OPTION_MASK_FLOAT128_KEYWORD
-#define MASK_FLOAT128_HW		OPTION_MASK_FLOAT128_HW
-#define MASK_FPRND			OPTION_MASK_FPRND
-#define MASK_P8_FUSION			OPTION_MASK_P8_FUSION
-#define MASK_HARD_FLOAT			OPTION_MASK_HARD_FLOAT
-#define MASK_HTM			OPTION_MASK_HTM
-#define MASK_ISEL			OPTION_MASK_ISEL
-#define MASK_MFCRF			OPTION_MASK_MFCRF
-#define MASK_MMA			OPTION_MASK_MMA
-#define MASK_MULHW			OPTION_MASK_MULHW
-#define MASK_MULTIPLE			OPTION_MASK_MULTIPLE
-#define MASK_NO_UPDATE			OPTION_MASK_NO_UPDATE
-#define MASK_P8_VECTOR			OPTION_MASK_P8_VECTOR
-#define MASK_P9_VECTOR			OPTION_MASK_P9_VECTOR
-#define MASK_P9_MISC			OPTION_MASK_P9_MISC
-#define MASK_POPCNTB			OPTION_MASK_POPCNTB
-#define MASK_POPCNTD			OPTION_MASK_POPCNTD
-#define MASK_PPC_GFXOPT			OPTION_MASK_PPC_GFXOPT
-#define MASK_PPC_GPOPT			OPTION_MASK_PPC_GPOPT
-#define MASK_RECIP_PRECISION		OPTION_MASK_RECIP_PRECISION
-#define MASK_SOFT_FLOAT			OPTION_MASK_SOFT_FLOAT
+   machinery creates OPTION_MASK_<xxx> instead of MASK_<xxx>.  The MASK_<xxxx>
+   options that have not yet been replaced by their OPTION_MASK_<xxx>
+   equivalents are defined here.  */
+
 #define MASK_STRICT_ALIGN		OPTION_MASK_STRICT_ALIGN
-#define MASK_UPDATE			OPTION_MASK_UPDATE
-#define MASK_VSX			OPTION_MASK_VSX
-#define MASK_POWER10			OPTION_MASK_POWER10
-#define MASK_P10_FUSION			OPTION_MASK_P10_FUSION
 
 #ifndef IN_LIBGCC2
 #define MASK_POWERPC64			OPTION_MASK_POWERPC64
@@ -552,19 +522,6 @@ extern int rs6000_vector_align[];
 #ifdef TARGET_LITTLE_ENDIAN
 #define MASK_LITTLE_ENDIAN		OPTION_MASK_LITTLE_ENDIAN
 #endif
-
-#ifdef TARGET_REGNAMES
-#define MASK_REGNAMES			OPTION_MASK_REGNAMES
-#endif
-
-#ifdef TARGET_PROTOTYPE
-#define MASK_PROTOTYPE			OPTION_MASK_PROTOTYPE
-#endif
-
-#ifdef TARGET_MODULO
-#define RS6000_BTM_MODULO		OPTION_MASK_MODULO
-#endif
-
 
 /* For power systems, we want to enable Altivec and VSX builtins even if the
    user did not use -maltivec or -mvsx to allow the builtins to be used inside
@@ -1240,8 +1197,7 @@ extern enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 /* Register classes for various constraints that are based on the target
    switches.  */
 enum r6000_reg_class_enum {
-  RS6000_CONSTRAINT_d,		/* fpr registers for double values */
-  RS6000_CONSTRAINT_f,		/* fpr registers for single values */
+  RS6000_CONSTRAINT_d,		/* FPR registers */
   RS6000_CONSTRAINT_v,		/* Altivec registers */
   RS6000_CONSTRAINT_wa,		/* Any VSX register */
   RS6000_CONSTRAINT_we,		/* VSX register if ISA 3.0 vector. */
@@ -2248,106 +2204,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 
 /* General flags.  */
 extern int frame_pointer_needed;
-
-/* Classification of the builtin functions as to which switches enable the
-   builtin, and what attributes it should have.  We used to use the target
-   flags macros, but we've run out of bits, so we now map the options into new
-   settings used here.  */
-
-/* Builtin operand count.  */
-#define RS6000_BTC_UNARY	0x00000001	/* normal unary function.  */
-#define RS6000_BTC_BINARY	0x00000002	/* normal binary function.  */
-#define RS6000_BTC_TERNARY	0x00000003	/* normal ternary function.  */
-#define RS6000_BTC_QUATERNARY	0x00000004	/* normal quaternary
-						   function. */
-#define RS6000_BTC_QUINARY	0x00000005	/* normal quinary function.  */
-#define RS6000_BTC_SENARY	0x00000006	/* normal senary function.  */
-#define RS6000_BTC_OPND_MASK	0x00000007	/* Mask to isolate operands. */
-
-/* Builtin attributes.  */
-#define RS6000_BTC_SPECIAL	0x00000000	/* Special function.  */
-#define RS6000_BTC_PREDICATE	0x00000008	/* predicate function.  */
-#define RS6000_BTC_ABS		0x00000010	/* Altivec/VSX ABS
-						   function.  */
-#define RS6000_BTC_DST		0x00000020	/* Altivec DST function.  */
-
-#define RS6000_BTC_TYPE_MASK	0x0000003f	/* Mask to isolate types */
-
-#define RS6000_BTC_MISC		0x00000000	/* No special attributes.  */
-#define RS6000_BTC_CONST	0x00000100	/* Neither uses, nor
-						   modifies global state.  */
-#define RS6000_BTC_PURE		0x00000200	/* reads global
-						   state/mem and does
-						   not modify global state.  */
-#define RS6000_BTC_FP		0x00000400	/* depends on rounding mode.  */
-#define RS6000_BTC_QUAD		0x00000800	/* Uses a register quad.  */
-#define RS6000_BTC_PAIR		0x00001000	/* Uses a register pair.  */
-#define RS6000_BTC_QUADPAIR	0x00001800	/* Uses a quad and a pair.  */
-#define RS6000_BTC_ATTR_MASK	0x00001f00	/* Mask of the attributes.  */
-
-/* Miscellaneous information.  */
-#define RS6000_BTC_SPR		0x01000000	/* function references SPRs.  */
-#define RS6000_BTC_VOID		0x02000000	/* function has no return value.  */
-#define RS6000_BTC_CR		0x04000000	/* function references a CR.  */
-#define RS6000_BTC_OVERLOADED	0x08000000	/* function is overloaded.  */
-#define RS6000_BTC_GIMPLE	0x10000000	/* function should be expanded
-						   into gimple.  */
-#define RS6000_BTC_MISC_MASK	0x1f000000	/* Mask of the misc info.  */
-
-/* Convenience macros to document the instruction type.  */
-#define RS6000_BTC_MEM		RS6000_BTC_MISC	/* load/store touches mem.  */
-#define RS6000_BTC_SAT		RS6000_BTC_MISC	/* saturate sets VSCR.  */
-
-/* Builtin targets.  For now, we reuse the masks for those options that are in
-   target flags, and pick a random bit for ldbl128, which isn't in
-   target_flags.  */
-#define RS6000_BTM_ALWAYS	0		/* Always enabled.  */
-#define RS6000_BTM_ALTIVEC	MASK_ALTIVEC	/* VMX/altivec vectors.  */
-#define RS6000_BTM_CMPB		MASK_CMPB	/* ISA 2.05: compare bytes.  */
-#define RS6000_BTM_VSX		MASK_VSX	/* VSX (vector/scalar).  */
-#define RS6000_BTM_P8_VECTOR	MASK_P8_VECTOR	/* ISA 2.07 vector.  */
-#define RS6000_BTM_P9_VECTOR	MASK_P9_VECTOR	/* ISA 3.0 vector.  */
-#define RS6000_BTM_P9_MISC	MASK_P9_MISC	/* ISA 3.0 misc. non-vector */
-#define RS6000_BTM_CRYPTO	MASK_CRYPTO	/* crypto funcs.  */
-#define RS6000_BTM_HTM		MASK_HTM	/* hardware TM funcs.  */
-#define RS6000_BTM_FRE		MASK_POPCNTB	/* FRE instruction.  */
-#define RS6000_BTM_FRES		MASK_PPC_GFXOPT	/* FRES instruction.  */
-#define RS6000_BTM_FRSQRTE	MASK_PPC_GFXOPT	/* FRSQRTE instruction.  */
-#define RS6000_BTM_FRSQRTES	MASK_POPCNTB	/* FRSQRTES instruction.  */
-#define RS6000_BTM_POPCNTD	MASK_POPCNTD	/* Target supports ISA 2.06.  */
-#define RS6000_BTM_CELL		MASK_FPRND	/* Target is cell powerpc.  */
-#define RS6000_BTM_DFP		MASK_DFP	/* Decimal floating point.  */
-#define RS6000_BTM_HARD_FLOAT	MASK_SOFT_FLOAT	/* Hardware floating point.  */
-#define RS6000_BTM_LDBL128	MASK_MULTIPLE	/* 128-bit long double.  */
-#define RS6000_BTM_64BIT	MASK_64BIT	/* 64-bit addressing.  */
-#define RS6000_BTM_POWERPC64	MASK_POWERPC64	/* 64-bit registers.  */
-#define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
-#define RS6000_BTM_FLOAT128_HW	MASK_FLOAT128_HW /* IEEE 128-bit float h/w.  */
-#define RS6000_BTM_MMA		MASK_MMA	/* ISA 3.1 MMA.  */
-#define RS6000_BTM_P10		MASK_POWER10
-
-#define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
-				 | RS6000_BTM_VSX			\
-				 | RS6000_BTM_P8_VECTOR			\
-				 | RS6000_BTM_P9_VECTOR			\
-				 | RS6000_BTM_P9_MISC			\
-				 | RS6000_BTM_MODULO                    \
-				 | RS6000_BTM_CRYPTO			\
-				 | RS6000_BTM_FRE			\
-				 | RS6000_BTM_FRES			\
-				 | RS6000_BTM_FRSQRTE			\
-				 | RS6000_BTM_FRSQRTES			\
-				 | RS6000_BTM_HTM			\
-				 | RS6000_BTM_POPCNTD			\
-				 | RS6000_BTM_CELL			\
-				 | RS6000_BTM_DFP			\
-				 | RS6000_BTM_HARD_FLOAT		\
-				 | RS6000_BTM_LDBL128			\
-				 | RS6000_BTM_POWERPC64			\
-				 | RS6000_BTM_FLOAT128			\
-				 | RS6000_BTM_FLOAT128_HW		\
-				 | RS6000_BTM_MMA			\
-				 | RS6000_BTM_P10)
 
 enum rs6000_builtin_type_index
 {

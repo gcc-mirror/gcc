@@ -38,6 +38,7 @@
 package Interfaces is
    pragma No_Elaboration_Code_All;
    pragma Pure;
+   pragma Annotate (GNATprove, Always_Return, Interfaces);
 
    --  All identifiers in this unit are implementation defined
 

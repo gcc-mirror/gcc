@@ -2267,12 +2267,20 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 
   /* Handle special case - vector comparsion with boolean result, transform
      it using ptest instruction.  */
-  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+      || mode == OImode)
     {
       rtx flag = gen_rtx_REG (CCZmode, FLAGS_REG);
       machine_mode p_mode = GET_MODE_SIZE (mode) == 32 ? V4DImode : V2DImode;
 
       gcc_assert (code == EQ || code == NE);
+
+      if (mode == OImode)
+	{
+	  op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
+	  op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);
+	  mode = p_mode;
+	}
       /* Generate XOR since we can't check that one operand is zero vector.  */
       tmp = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (tmp, gen_rtx_XOR (mode, op0, op1)));
@@ -2309,21 +2317,15 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
     case E_DImode:
       if (TARGET_64BIT)
 	goto simple;
-      /* For 32-bit target DI comparison may be performed on
-	 SSE registers.  To allow this we should avoid split
-	 to SI mode which is achieved by doing xor in DI mode
-	 and then comparing with zero (which is recognized by
-	 STV pass).  We don't compare using xor when optimizing
-	 for size.  */
-      if (!optimize_insn_for_size_p ()
-	  && TARGET_STV
-	  && (code == EQ || code == NE))
-	{
-	  op0 = force_reg (mode, gen_rtx_XOR (mode, op0, op1));
-	  op1 = const0_rtx;
-	}
       /* FALLTHRU */
     case E_TImode:
+      /* DI and TI mode equality/inequality comparisons may be performed
+         on SSE registers.  Avoid splitting them, except when optimizing
+	 for size.  */
+      if ((code == EQ || code == NE)
+	  && !optimize_insn_for_size_p ())
+	goto simple;
+
       /* Expand DImode branch into multiple compare+branch.  */
       {
 	rtx lo[2], hi[2];
@@ -2342,34 +2344,7 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 
 	submode = mode == DImode ? SImode : DImode;
 
-	/* When comparing for equality, we can use (hi0^hi1)|(lo0^lo1) to
-	   avoid two branches.  This costs one extra insn, so disable when
-	   optimizing for size.  */
-
-	if ((code == EQ || code == NE)
-	    && (!optimize_insn_for_size_p ()
-	        || hi[1] == const0_rtx || lo[1] == const0_rtx))
-	  {
-	    rtx xor0, xor1;
-
-	    xor1 = hi[0];
-	    if (hi[1] != const0_rtx)
-	      xor1 = expand_binop (submode, xor_optab, xor1, hi[1],
-				   NULL_RTX, 0, OPTAB_WIDEN);
-
-	    xor0 = lo[0];
-	    if (lo[1] != const0_rtx)
-	      xor0 = expand_binop (submode, xor_optab, xor0, lo[1],
-				   NULL_RTX, 0, OPTAB_WIDEN);
-
-	    tmp = expand_binop (submode, ior_optab, xor1, xor0,
-				NULL_RTX, 0, OPTAB_WIDEN);
-
-	    ix86_expand_branch (code, tmp, const0_rtx, label);
-	    return;
-	  }
-
-	/* Otherwise, if we are doing less-than or greater-or-equal-than,
+	/* If we are doing less-than or greater-or-equal-than,
 	   op1 is a constant and the low word is zero, then we can just
 	   examine the high word.  Similarly for low word -1 and
 	   less-or-equal-than or greater-than.  */
@@ -3134,8 +3109,11 @@ ix86_expand_int_movcc (rtx operands[])
   rtx compare_op;
   machine_mode mode = GET_MODE (operands[0]);
   bool sign_bit_compare_p = false;
+  bool negate_cc_compare_p = false;
   rtx op0 = XEXP (operands[1], 0);
   rtx op1 = XEXP (operands[1], 1);
+  rtx op2 = operands[2];
+  rtx op3 = operands[3];
 
   if (GET_MODE (op0) == TImode
       || (GET_MODE (op0) == DImode
@@ -3153,29 +3131,73 @@ ix86_expand_int_movcc (rtx operands[])
       || (op1 == constm1_rtx && (code == GT || code == LE)))
     sign_bit_compare_p = true;
 
+  /* op0 == op1 ? op0 : op3 is equivalent to op0 == op1 ? op1 : op3,
+     but if op1 is a constant, the latter form allows more optimizations,
+     either through the last 2 ops being constant handling, or the one
+     constant and one variable cases.  On the other side, for cmov the
+     former might be better as we don't need to load the constant into
+     another register.  */
+  if (code == EQ && CONST_INT_P (op1) && rtx_equal_p (op0, op2))
+    op2 = op1;
+  /* Similarly for op0 != op1 ? op2 : op0 and op0 != op1 ? op2 : op1.  */
+  else if (code == NE && CONST_INT_P (op1) && rtx_equal_p (op0, op3))
+    op3 = op1;
+
   /* Don't attempt mode expansion here -- if we had to expand 5 or 6
      HImode insns, we'd be swallowed in word prefix ops.  */
 
   if ((mode != HImode || TARGET_FAST_PREFIX)
       && (mode != (TARGET_64BIT ? TImode : DImode))
-      && CONST_INT_P (operands[2])
-      && CONST_INT_P (operands[3]))
+      && CONST_INT_P (op2)
+      && CONST_INT_P (op3))
     {
       rtx out = operands[0];
-      HOST_WIDE_INT ct = INTVAL (operands[2]);
-      HOST_WIDE_INT cf = INTVAL (operands[3]);
+      HOST_WIDE_INT ct = INTVAL (op2);
+      HOST_WIDE_INT cf = INTVAL (op3);
       HOST_WIDE_INT diff;
+
+      if ((mode == SImode
+	   || (TARGET_64BIT && mode == DImode))
+	  && (GET_MODE (op0) == SImode
+	      || (TARGET_64BIT && GET_MODE (op0) == DImode)))
+	{
+	  /* Special case x != 0 ? -1 : y.  */
+	  if (code == NE && op1 == const0_rtx && ct == -1)
+	    {
+	      negate_cc_compare_p = true;
+	      std::swap (ct, cf);
+	      code = EQ;
+	    }
+	  else if (code == EQ && op1 == const0_rtx && cf == -1)
+	    negate_cc_compare_p = true;
+	}
 
       diff = ct - cf;
       /*  Sign bit compares are better done using shifts than we do by using
 	  sbb.  */
       if (sign_bit_compare_p
+	  || negate_cc_compare_p
 	  || ix86_expand_carry_flag_compare (code, op0, op1, &compare_op))
 	{
 	  /* Detect overlap between destination and compare sources.  */
 	  rtx tmp = out;
 
-          if (!sign_bit_compare_p)
+	  if (negate_cc_compare_p)
+	    {
+	      if (GET_MODE (op0) == DImode)
+		emit_insn (gen_x86_negdi_ccc (gen_reg_rtx (DImode), op0));
+	      else
+		emit_insn (gen_x86_negsi_ccc (gen_reg_rtx (SImode),
+					      gen_lowpart (SImode, op0)));
+
+	      tmp = gen_reg_rtx (mode);
+	      if (mode == DImode)
+		emit_insn (gen_x86_movdicc_0_m1_neg (tmp));
+	      else
+		emit_insn (gen_x86_movsicc_0_m1_neg (gen_lowpart (SImode,
+								  tmp)));
+	    }
+	  else if (!sign_bit_compare_p)
 	    {
 	      rtx flags;
 	      bool fpcmp = false;
@@ -3210,8 +3232,7 @@ ix86_expand_int_movcc (rtx operands[])
 		}
 	      diff = ct - cf;
 
-	      if (reg_overlap_mentioned_p (out, op0)
-		  || reg_overlap_mentioned_p (out, op1))
+	      if (reg_overlap_mentioned_p (out, compare_op))
 		tmp = gen_reg_rtx (mode);
 
 	      if (mode == DImode)
@@ -3558,6 +3579,9 @@ ix86_expand_int_movcc (rtx operands[])
 
       if (BRANCH_COST (optimize_insn_for_speed_p (), false) <= 2)
 	return false;
+
+      operands[2] = op2;
+      operands[3] = op3;
 
       /* If one of the two operands is an interesting constant, load a
 	 constant with the above and mask it in with a logical operation.  */
@@ -4002,6 +4026,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     case E_V8HFmode:
     case E_V4SImode:
     case E_V2DImode:
+    case E_V1TImode:
       if (TARGET_SSE4_1)
 	{
 	  gen = gen_sse4_1_pblendvb;
@@ -9745,47 +9770,121 @@ ix86_expand_sse_compare (const struct builtin_description *d,
   return target;
 }
 
+/* Subroutine of ix86_sse_comi and ix86_sse_comi_round to take care of
+ * ordered EQ or unordered NE, generate PF jump.  */
+
+static rtx
+ix86_ssecom_setcc (const enum rtx_code comparison,
+		   bool check_unordered, machine_mode mode,
+		   rtx set_dst, rtx target)
+{
+
+  rtx_code_label *label = NULL;
+
+  /* NB: For ordered EQ or unordered NE, check ZF alone isn't sufficient
+     with NAN operands.  */
+  if (check_unordered)
+    {
+      gcc_assert (comparison == EQ || comparison == NE);
+
+      rtx flag = gen_rtx_REG (CCFPmode, FLAGS_REG);
+      label = gen_label_rtx ();
+      rtx tmp = gen_rtx_fmt_ee (UNORDERED, VOIDmode, flag, const0_rtx);
+      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
+				  gen_rtx_LABEL_REF (VOIDmode, label),
+				  pc_rtx);
+      emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+    }
+
+  /* NB: Set CCFPmode and check a different CCmode which is in subset
+     of CCFPmode.  */
+  if (GET_MODE (set_dst) != mode)
+    {
+      gcc_assert (mode == CCAmode || mode == CCCmode
+		  || mode == CCOmode || mode == CCPmode
+		  || mode == CCSmode || mode == CCZmode);
+      set_dst = gen_rtx_REG (mode, FLAGS_REG);
+    }
+
+  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
+			  gen_rtx_fmt_ee (comparison, QImode,
+					  set_dst,
+					  const0_rtx)));
+
+  if (label)
+    emit_label (label);
+
+  return SUBREG_REG (target);
+}
+
 /* Subroutine of ix86_expand_builtin to take care of comi insns.  */
 
 static rtx
 ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
 		      rtx target)
 {
-  rtx pat;
+  rtx pat, set_dst;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
   tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
-  machine_mode mode0 = insn_data[d->icode].operand[0].mode;
-  machine_mode mode1 = insn_data[d->icode].operand[1].mode;
-  enum rtx_code comparison = d->comparison;
+  enum insn_code icode = d->icode;
+  const struct insn_data_d *insn_p = &insn_data[icode];
+  machine_mode mode0 = insn_p->operand[0].mode;
+  machine_mode mode1 = insn_p->operand[1].mode;
 
   if (VECTOR_MODE_P (mode0))
     op0 = safe_vector_operand (op0, mode0);
   if (VECTOR_MODE_P (mode1))
     op1 = safe_vector_operand (op1, mode1);
 
+  enum rtx_code comparison = d->comparison;
+  rtx const_val = const0_rtx;
+
+  bool check_unordered = false;
+  machine_mode mode = CCFPmode;
+  switch (comparison)
+    {
+    case LE:	/* -> GE  */
+    case LT:	/* -> GT  */
+      std::swap (op0, op1);
+      comparison = swap_condition (comparison);
+      /* FALLTHRU */
+    case GT:
+    case GE:
+      break;
+    case EQ:
+      check_unordered = true;
+      mode = CCZmode;
+      break;
+    case NE:
+      check_unordered = true;
+      mode = CCZmode;
+      const_val = const1_rtx;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
   target = gen_reg_rtx (SImode);
-  emit_move_insn (target, const0_rtx);
+  emit_move_insn (target, const_val);
   target = gen_rtx_SUBREG (QImode, target, 0);
 
   if ((optimize && !register_operand (op0, mode0))
-      || !insn_data[d->icode].operand[0].predicate (op0, mode0))
+      || !insn_p->operand[0].predicate (op0, mode0))
     op0 = copy_to_mode_reg (mode0, op0);
   if ((optimize && !register_operand (op1, mode1))
-      || !insn_data[d->icode].operand[1].predicate (op1, mode1))
+      || !insn_p->operand[1].predicate (op1, mode1))
     op1 = copy_to_mode_reg (mode1, op1);
 
-  pat = GEN_FCN (d->icode) (op0, op1);
+  pat = GEN_FCN (icode) (op0, op1);
   if (! pat)
     return 0;
-  emit_insn (pat);
-  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
-			  gen_rtx_fmt_ee (comparison, QImode,
-					  SET_DEST (pat),
-					  const0_rtx)));
 
-  return SUBREG_REG (target);
+  set_dst = SET_DEST (pat);
+  emit_insn (pat);
+  return ix86_ssecom_setcc (comparison, check_unordered, mode,
+			    set_dst, target);
 }
 
 /* Subroutines of ix86_expand_args_builtin to take care of round insns.  */
@@ -10342,6 +10441,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8SI_FTYPE_V16HI_V16HI:
     case V4DI_FTYPE_V4DI_V4DI:
     case V4DI_FTYPE_V8SI_V8SI:
+    case V4DI_FTYPE_V32QI_V32QI:
     case V8DI_FTYPE_V64QI_V64QI:
       if (comparison == UNKNOWN)
 	return ix86_expand_binop_builtin (icode, exp, target);
@@ -11384,42 +11484,8 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
 
   emit_insn (pat);
 
-  rtx_code_label *label = NULL;
-
-  /* NB: For ordered EQ or unordered NE, check ZF alone isn't sufficient
-     with NAN operands.  */
-  if (check_unordered)
-    {
-      gcc_assert (comparison == EQ || comparison == NE);
-
-      rtx flag = gen_rtx_REG (CCFPmode, FLAGS_REG);
-      label = gen_label_rtx ();
-      rtx tmp = gen_rtx_fmt_ee (UNORDERED, VOIDmode, flag, const0_rtx);
-      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
-				  gen_rtx_LABEL_REF (VOIDmode, label),
-				  pc_rtx);
-      emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
-    }
-
-  /* NB: Set CCFPmode and check a different CCmode which is in subset
-     of CCFPmode.  */
-  if (GET_MODE (set_dst) != mode)
-    {
-      gcc_assert (mode == CCAmode || mode == CCCmode
-		  || mode == CCOmode || mode == CCPmode
-		  || mode == CCSmode || mode == CCZmode);
-      set_dst = gen_rtx_REG (mode, FLAGS_REG);
-    }
-
-  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
-			  gen_rtx_fmt_ee (comparison, QImode,
-					  set_dst,
-					  const0_rtx)));
-
-  if (label)
-    emit_label (label);
-
-  return SUBREG_REG (target);
+  return ix86_ssecom_setcc (comparison, check_unordered, mode,
+			    set_dst, target);
 }
 
 static rtx
@@ -19522,9 +19588,11 @@ expand_vec_perm_palignr (struct expand_vec_perm_d *d, bool single_insn_only_p)
   shift = GEN_INT (min * GET_MODE_UNIT_BITSIZE (d->vmode));
   if (GET_MODE_SIZE (d->vmode) == 16)
     {
-      target = gen_reg_rtx (TImode);
-      emit_insn (gen_ssse3_palignrti (target, gen_lowpart (TImode, dcopy.op1),
-				      gen_lowpart (TImode, dcopy.op0), shift));
+      target = gen_reg_rtx (V1TImode);
+      emit_insn (gen_ssse3_palignrv1ti (target,
+					gen_lowpart (V1TImode, dcopy.op1),
+					gen_lowpart (V1TImode, dcopy.op0),
+					shift));
     }
   else
     {
@@ -20925,6 +20993,101 @@ expand_vec_perm_vpshufb2_vpermq_even_odd (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Implement permutation with pslldq + psrldq + por when pshufb is not
+   available.  */
+static bool
+expand_vec_perm_pslldq_psrldq_por (struct expand_vec_perm_d *d, bool pandn)
+{
+  unsigned i, nelt = d->nelt;
+  unsigned start1, end1 = -1;
+  machine_mode vmode = d->vmode, imode;
+  int start2 = -1;
+  bool clear_op0, clear_op1;
+  unsigned inner_size;
+  rtx op0, op1, dop1;
+  rtx (*gen_vec_shr) (rtx, rtx, rtx);
+  rtx (*gen_vec_shl) (rtx, rtx, rtx);
+
+  /* pshufd can be used for V4SI/V2DI under TARGET_SSE2.  */
+  if (!TARGET_SSE2 || (vmode != E_V16QImode && vmode != E_V8HImode))
+    return false;
+
+  start1 = d->perm[0];
+  for (i = 1; i < nelt; i++)
+    {
+      if (d->perm[i] != d->perm[i-1] + 1
+	  || d->perm[i] == nelt)
+	{
+	  if (start2 == -1)
+	    {
+	      start2 = d->perm[i];
+	      end1 = d->perm[i-1];
+	    }
+	  else
+	    return false;
+	}
+    }
+
+  clear_op0 = end1 != nelt - 1;
+  clear_op1 = start2 % nelt != 0;
+  /* pandn/pand is needed to clear upper/lower bits of op0/op1.  */
+  if (!pandn && (clear_op0 || clear_op1))
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  gen_vec_shr = vmode == E_V16QImode ? gen_vec_shr_v16qi : gen_vec_shr_v8hi;
+  gen_vec_shl = vmode == E_V16QImode ? gen_vec_shl_v16qi : gen_vec_shl_v8hi;
+  imode = GET_MODE_INNER (vmode);
+  inner_size = GET_MODE_BITSIZE (imode);
+  op0 = gen_reg_rtx (vmode);
+  op1 = gen_reg_rtx (vmode);
+
+  if (start1)
+    emit_insn (gen_vec_shr (op0, d->op0, GEN_INT (start1 * inner_size)));
+  else
+    emit_move_insn (op0, d->op0);
+
+  dop1 = d->op1;
+  if (d->one_operand_p)
+    dop1 = d->op0;
+
+  int shl_offset = end1 - start1 + 1 - start2 % nelt;
+  if (shl_offset)
+    emit_insn (gen_vec_shl (op1, dop1, GEN_INT (shl_offset * inner_size)));
+  else
+    emit_move_insn (op1, dop1);
+
+  /* Clear lower/upper bits for op0/op1.  */
+  if (clear_op0 || clear_op1)
+    {
+      rtx vec[16];
+      rtx const_vec;
+      rtx clear;
+      for (i = 0; i != nelt; i++)
+	{
+	  if (i < (end1 - start1 + 1))
+	    vec[i] = gen_int_mode ((HOST_WIDE_INT_1U << inner_size) - 1, imode);
+	  else
+	    vec[i] = CONST0_RTX (imode);
+	}
+      const_vec = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, vec));
+      const_vec = validize_mem (force_const_mem (vmode, const_vec));
+      clear = force_reg (vmode, const_vec);
+
+      if (clear_op0)
+	emit_move_insn (op0, gen_rtx_AND (vmode, op0, clear));
+      if (clear_op1)
+	emit_move_insn (op1, gen_rtx_AND (vmode,
+					  gen_rtx_NOT (vmode, clear),
+					  op1));
+    }
+
+  emit_move_insn (d->target, gen_rtx_IOR (vmode, op0, op1));
+  return true;
+}
+
 /* A subroutine of expand_vec_perm_even_odd_1.  Implement extract-even
    and extract-odd permutations of two V8QI, V8HI, V16QI, V16HI or V32QI
    operands with two "and" and "pack" or two "shift" and "pack" insns.
@@ -21837,6 +22000,9 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   if (expand_vec_perm_pshufb2 (d))
     return true;
 
+  if (expand_vec_perm_pslldq_psrldq_por (d, false))
+    return true;
+
   if (expand_vec_perm_interleave3 (d))
     return true;
 
@@ -21873,6 +22039,10 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
      The combinatorics of punpck[lh] get pretty ugly... */
 
   if (expand_vec_perm_even_odd (d))
+    return true;
+
+  /* Generate four or five instructions.  */
+  if (expand_vec_perm_pslldq_psrldq_por (d, true))
     return true;
 
   /* Even longer sequences.  */
@@ -21942,9 +22112,13 @@ canonicalize_perm (struct expand_vec_perm_d *d)
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
 bool
-ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
-			       rtx op1, const vec_perm_indices &sel)
+ix86_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+			       rtx target, rtx op0, rtx op1,
+			       const vec_perm_indices &sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   struct expand_vec_perm_d d;
   unsigned char perm[MAX_VECT_LEN];
   unsigned int i, nelt, which;

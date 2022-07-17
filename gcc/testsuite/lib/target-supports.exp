@@ -851,7 +851,6 @@ proc check_effective_target_nonlocal_goto {} {
 
 proc check_effective_target_global_constructor {} {
     if { [istarget nvptx-*-*]
-	 || [istarget amdgcn-*-*]
 	 || [istarget bpf-*-*] } {
 	return 0
     }
@@ -1687,6 +1686,36 @@ proc check_linker_plugin_available { } {
   return [check_no_compiler_messages_nocache linker_plugin executable {
      int main() { return 0; }
   } "-flto -fuse-linker-plugin"]
+}
+
+# Return 1 if the target is RV32, 0 otherwise.  Cache the result.
+
+proc check_effective_target_rv32 { } {
+    # Check that we are compiling for RV32 by checking the xlen size.
+    return [check_no_compiler_messages riscv_rv32 assembly {
+       #if !defined(__riscv_xlen)
+       #error "__riscv_xlen not defined!"
+       #else
+       #if __riscv_xlen != 32
+       #error "Not RV32"
+       #endif
+       #endif
+    }]
+}
+
+# Return 1 if the target is RV64, 0 otherwise.  Cache the result.
+
+proc check_effective_target_rv64 { } {
+    # Check that we are compiling for RV64 by checking the xlen size.
+    return [check_no_compiler_messages riscv_rv64 assembly {
+       #if !defined(__riscv_xlen)
+       #error "__riscv_xlen not defined!"
+       #else
+       #if __riscv_xlen != 64
+       #error "Not RV64"
+       #endif
+       #endif
+    }]
 }
 
 # Return 1 if the target OS supports running SSE executables, 0
@@ -2876,6 +2905,15 @@ proc check_effective_target_le { } {
     }]
 }
 
+# Return 1 if we can link a program with 2+GB of data.
+
+proc check_effective_target_two_plus_gigs { } {
+    return [check_no_compiler_messages two_plus_gigs executable {
+	char dummy[0x80000000];
+	int main () { return 0; }
+    }]
+}
+
 # Return 1 if we're generating 32-bit code using default options, 0
 # otherwise.
 
@@ -3395,6 +3433,17 @@ proc check_effective_target_dfprt { } {
     return [check_cached_effective_target dfprt {
 	check_effective_target_dfprt_nocache
     }]
+}
+
+# Return 1 if the target uses the BID format for Decimal Floating
+# Point, 0 otherwise.
+
+proc check_effective_target_dfp_bid { } {
+    if { [istarget aarch64*-*-*]
+	 || [istarget i?86-*-*] || [istarget x86_64-*-*]} {
+	return 1
+    }
+    return 0
 }
 
 # Return 1 iff target has unsigned plain 'char' by default.
@@ -6319,63 +6368,73 @@ proc check_effective_target_powerpc_p9modulo_ok { } {
 # return 1 if our compiler returns the ARCH_PWR defines with the options
 # as provided by the test.
 proc check_effective_target_has_arch_pwr5 { } {
-	return [check_no_compiler_messages arch_pwr5 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr5 assembly {
 		#ifndef _ARCH_PWR5
 		#error does not have power5 support.
 		#else
 		/* "has power5 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr6 { } {
-	return [check_no_compiler_messages arch_pwr6 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr6 assembly {
 		#ifndef _ARCH_PWR6
 		#error does not have power6 support.
 		#else
 		/* "has power6 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr7 { } {
-	return [check_no_compiler_messages arch_pwr7 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr7 assembly {
 		#ifndef _ARCH_PWR7
 		#error does not have power7 support.
 		#else
 		/* "has power7 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr8 { } {
-	return [check_no_compiler_messages arch_pwr8 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr8 assembly {
 		#ifndef _ARCH_PWR8
 		#error does not have power8 support.
 		#else
 		/* "has power8 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr9 { } {
-	return [check_no_compiler_messages arch_pwr9 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr9 assembly {
 		#ifndef _ARCH_PWR9
 		#error does not have power9 support.
 		#else
 		/* "has power9 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
 }
 
 proc check_effective_target_has_arch_pwr10 { } {
-	return [check_no_compiler_messages arch_pwr10 assembly {
+	return [check_no_compiler_messages_nocache arch_pwr10 assembly {
 		#ifndef _ARCH_PWR10
 		#error does not have power10 support.
 		#else
 		/* "has power10 support" */
 		#endif
-	}]
+	} [current_compiler_flags]]
+}
+
+proc check_effective_target_has_arch_ppc64 { } {
+	return [check_no_compiler_messages_nocache arch_ppc64 assembly {
+		#ifndef _ARCH_PPC64
+		#error does not have ppc64 support.
+		#else
+		/* "has ppc64 support" */
+		#endif
+	} [current_compiler_flags]]
 }
 
 # Return 1 if this is a PowerPC target supporting -mcpu=power10.
@@ -7488,6 +7547,19 @@ proc check_effective_target_vect_aligned_arrays { } {
     verbose "check_effective_target_vect_aligned_arrays:\
 	     returning $et_vect_aligned_arrays" 2
     return $et_vect_aligned_arrays
+}
+
+# Return 1 if the biggest alignment required by target is 1 * BITS_PER_UNIT.
+# In such case the target does not impose any alignment constraints.
+
+proc check_effective_target_no_alignment_constraints { } {
+    return [check_runtime_nocache no_alignment_constraints {
+        int
+        main (void)
+        {
+          return __BIGGEST_ALIGNMENT__ == 1 ? 0 : 1;
+        }
+    }]
 }
 
 # Return 1 if types of size 32 bit or less are naturally aligned
@@ -11760,6 +11832,8 @@ proc check_effective_target___OPTIMIZE__ {} {
 	#ifndef __OPTIMIZE__
 	# error nein
 	#endif
+	/* Avoid pedwarn about empty TU.  */
+	int dummy;
     } [current_compiler_flags]]
 }
 

@@ -236,14 +236,15 @@ public:
   /* Remove ipa_fn_summary for all callees of NODE.  */
   void remove_callees (cgraph_node *node);
 
-  virtual void insert (cgraph_node *, ipa_fn_summary *);
-  virtual void remove (cgraph_node *node, ipa_fn_summary *)
+  void insert (cgraph_node *, ipa_fn_summary *) final override;
+  void remove (cgraph_node *node, ipa_fn_summary *) final override
   {
     remove_callees (node);
   }
 
-  virtual void duplicate (cgraph_node *src, cgraph_node *dst,
-			  ipa_fn_summary *src_data, ipa_fn_summary *dst_data);
+  void duplicate (cgraph_node *src, cgraph_node *dst,
+		  ipa_fn_summary *src_data, ipa_fn_summary *dst_data)
+    final override;
 };
 
 extern GTY(()) fast_function_summary <ipa_fn_summary *, va_gc>
@@ -259,9 +260,9 @@ public:
     disable_insertion_hook ();
   }
 
-  virtual void duplicate (cgraph_node *, cgraph_node *,
-			  ipa_size_summary *src_data,
-			  ipa_size_summary *dst_data)
+  void duplicate (cgraph_node *, cgraph_node *,
+		  ipa_size_summary *src_data,
+		  ipa_size_summary *dst_data) final override
   {
     *dst_data = *src_data;
   }
@@ -311,9 +312,9 @@ public:
     fast_call_summary <ipa_call_summary *, va_heap> (symtab) {}
 
   /* Hook that is called by summary when an edge is duplicated.  */
-  virtual void duplicate (cgraph_edge *src, cgraph_edge *dst,
-			  ipa_call_summary *src_data,
-			  ipa_call_summary *dst_data);
+  void duplicate (cgraph_edge *src, cgraph_edge *dst,
+		  ipa_call_summary *src_data,
+		  ipa_call_summary *dst_data) final override;
 };
 
 /* Estimated execution times, code sizes and other information about the

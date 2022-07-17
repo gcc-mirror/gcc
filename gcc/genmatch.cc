@@ -723,9 +723,9 @@ public:
   bool force_leaf;
   /* If non-zero, the group for optional handling.  */
   unsigned char opt_grp;
-  virtual void gen_transform (FILE *f, int, const char *, bool, int,
-			      const char *, capture_info *,
-			      dt_operand ** = 0, int = 0);
+  void gen_transform (FILE *f, int, const char *, bool, int,
+		      const char *, capture_info *,
+		      dt_operand ** = 0, int = 0) override;
 };
 
 /* An operator that is represented by native C code.  This is always
@@ -757,9 +757,9 @@ public:
   unsigned nr_stmts;
   /* The identifier replacement vector.  */
   vec<id_tab> ids;
-  virtual void gen_transform (FILE *f, int, const char *, bool, int,
-			      const char *, capture_info *,
-			      dt_operand ** = 0, int = 0);
+  void gen_transform (FILE *f, int, const char *, bool, int,
+		      const char *, capture_info *,
+		      dt_operand ** = 0, int = 0) final override;
 };
 
 /* A wrapper around another operand that captures its value.  */
@@ -778,9 +778,9 @@ public:
   bool value_match;
   /* The captured value.  */
   operand *what;
-  virtual void gen_transform (FILE *f, int, const char *, bool, int,
-			      const char *, capture_info *,
-			      dt_operand ** = 0, int = 0);
+  void gen_transform (FILE *f, int, const char *, bool, int,
+		      const char *, capture_info *,
+		      dt_operand ** = 0, int = 0) final override;
 };
 
 /* if expression.  */
@@ -1655,7 +1655,7 @@ public:
       : dt_node (type, parent_), op (op_), match_dop (match_dop_),
       pos (pos_), value_match (false), for_id (current_id) {}
 
-  void gen (FILE *, int, bool, int);
+  void gen (FILE *, int, bool, int) final override;
   unsigned gen_predicate (FILE *, int, const char *, bool);
   unsigned gen_match_op (FILE *, int, const char *, bool);
 
@@ -1681,7 +1681,7 @@ public:
 	  indexes (indexes_), info (NULL)  {}
 
   void gen_1 (FILE *, int, bool, operand *);
-  void gen (FILE *f, int, bool, int);
+  void gen (FILE *f, int, bool, int) final override;
 };
 
 template<>
@@ -3358,9 +3358,9 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
     }
 
   if (s->kind == simplify::SIMPLIFY)
-    fprintf_indent (f, indent, "if (__builtin_expect (!dbg_cnt (match), 0)) goto %s;\n", fail_label);
+    fprintf_indent (f, indent, "if (UNLIKELY (!dbg_cnt (match))) goto %s;\n", fail_label);
 
-  fprintf_indent (f, indent, "if (__builtin_expect (dump_file && (dump_flags & TDF_FOLDING), 0)) "
+  fprintf_indent (f, indent, "if (UNLIKELY (dump_file && (dump_flags & TDF_FOLDING))) "
 	   "fprintf (dump_file, \"%s ",
 	   s->kind == simplify::SIMPLIFY
 	   ? "Applying pattern" : "Matching expression");

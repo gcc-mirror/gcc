@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-operands.h"
 #include "ssa-iterators.h"
 #include "calls.h"
+#include "is-a.h"
 
 #if ENABLE_ANALYZER
 
@@ -465,9 +466,9 @@ public:
     m_src_region (src_region)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "poisoned_value_diagnostic"; }
+  const char *get_kind () const final override { return "poisoned_value_diagnostic"; }
 
-  bool use_of_uninit_p () const FINAL OVERRIDE
+  bool use_of_uninit_p () const final override
   {
     return m_pkind == POISON_KIND_UNINIT;
   }
@@ -479,7 +480,7 @@ public:
 	    && m_src_region == other.m_src_region);
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     switch (m_pkind)
       {
@@ -494,7 +495,7 @@ public:
       }
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     switch (m_pkind)
       {
@@ -530,7 +531,7 @@ public:
       }
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     switch (m_pkind)
       {
@@ -549,7 +550,7 @@ public:
       }
   }
 
-  void mark_interesting_stuff (interesting_t *interest) FINAL OVERRIDE
+  void mark_interesting_stuff (interesting_t *interest) final override
   {
     if (m_src_region)
       interest->add_region_creation (m_src_region);
@@ -572,7 +573,7 @@ public:
   : m_assign (assign), m_count_cst (count_cst)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "shift_count_negative_diagnostic";
   }
@@ -583,18 +584,18 @@ public:
 	    && same_tree_p (m_count_cst, other.m_count_cst));
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_shift_count_negative;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     return warning_at (rich_loc, get_controlling_option (),
 		       "shift by negative count (%qE)", m_count_cst);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("shift by negative amount here (%qE)", m_count_cst);
   }
@@ -618,7 +619,7 @@ public:
     m_count_cst (count_cst)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "shift_count_overflow_diagnostic";
   }
@@ -630,19 +631,19 @@ public:
 	    && same_tree_p (m_count_cst, other.m_count_cst));
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_shift_count_overflow;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     return warning_at (rich_loc, get_controlling_option (),
 		       "shift by count (%qE) >= precision of type (%qi)",
 		       m_count_cst, m_operand_precision);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("shift by count %qE here", m_count_cst);
   }
@@ -895,17 +896,9 @@ region_model::get_gassign_result (const gassign *assign,
 
 static bool
 within_short_circuited_stmt_p (const region_model *model,
-			       region_model_context *ctxt)
+			       const gassign *assign_stmt)
 {
-  gcc_assert (ctxt);
-  const gimple *curr_stmt = ctxt->get_stmt ();
-  if (curr_stmt == NULL)
-    return false;
-
   /* We must have an assignment to a temporary of _Bool type.  */
-  const gassign *assign_stmt = dyn_cast <const gassign *> (curr_stmt);
-  if (!assign_stmt)
-    return false;
   tree lhs = gimple_assign_lhs (assign_stmt);
   if (TREE_TYPE (lhs) != boolean_type_node)
     return false;
@@ -958,6 +951,47 @@ within_short_circuited_stmt_p (const region_model *model,
   return true;
 }
 
+/* Workaround for discarding certain false positives from
+   -Wanalyzer-use-of-uninitialized-value
+   seen with -ftrivial-auto-var-init=.
+
+   -ftrivial-auto-var-init= will generate calls to IFN_DEFERRED_INIT.
+
+   If the address of the var is taken, gimplification will give us
+   something like:
+
+     _1 = .DEFERRED_INIT (4, 2, &"len"[0]);
+     len = _1;
+
+   The result of DEFERRED_INIT will be an uninit value; we don't
+   want to emit a false positive for "len = _1;"
+
+   Return true if ASSIGN_STMT is such a stmt.  */
+
+static bool
+due_to_ifn_deferred_init_p (const gassign *assign_stmt)
+
+{
+  /* We must have an assignment to a decl from an SSA name that's the
+     result of a IFN_DEFERRED_INIT call.  */
+  if (gimple_assign_rhs_code (assign_stmt) != SSA_NAME)
+    return false;
+  tree lhs = gimple_assign_lhs (assign_stmt);
+  if (TREE_CODE (lhs) != VAR_DECL)
+    return false;
+  tree rhs = gimple_assign_rhs1 (assign_stmt);
+  if (TREE_CODE (rhs) != SSA_NAME)
+    return false;
+  const gimple *def_stmt = SSA_NAME_DEF_STMT (rhs);
+  const gcall *call = dyn_cast <const gcall *> (def_stmt);
+  if (!call)
+    return false;
+  if (gimple_call_internal_p (call)
+      && gimple_call_internal_fn (call) == IFN_DEFERRED_INIT)
+    return true;
+  return false;
+}
+
 /* Check for SVAL being poisoned, adding a warning to CTXT.
    Return SVAL, or, if a warning is added, another value, to avoid
    repeatedly complaining about the same poisoned value in followup code.  */
@@ -981,10 +1015,20 @@ region_model::check_for_poison (const svalue *sval,
 	  && is_empty_type (sval->get_type ()))
 	return sval;
 
-      /* Special case to avoid certain false positives.  */
-      if (pkind == POISON_KIND_UNINIT
-	  && within_short_circuited_stmt_p (this, ctxt))
-	  return sval;
+      if (pkind == POISON_KIND_UNINIT)
+	if (const gimple *curr_stmt = ctxt->get_stmt ())
+	  if (const gassign *assign_stmt
+		= dyn_cast <const gassign *> (curr_stmt))
+	    {
+	      /* Special case to avoid certain false positives.  */
+	      if (within_short_circuited_stmt_p (this, assign_stmt))
+		return sval;
+
+	      /* Special case to avoid false positive on
+		 -ftrivial-auto-var-init=.  */
+	      if (due_to_ifn_deferred_init_p (assign_stmt))
+		return sval;
+	  }
 
       /* If we have an SSA name for a temporary, we don't want to print
 	 '<unknown>'.
@@ -1117,18 +1161,18 @@ class dump_path_diagnostic
   : public pending_diagnostic_subclass<dump_path_diagnostic>
 {
 public:
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return 0;
   }
 
-  bool emit (rich_location *richloc) FINAL OVERRIDE
+  bool emit (rich_location *richloc) final override
   {
     inform (richloc, "path");
     return true;
   }
 
-  const char *get_kind () const FINAL OVERRIDE { return "dump_path_diagnostic"; }
+  const char *get_kind () const final override { return "dump_path_diagnostic"; }
 
   bool operator== (const dump_path_diagnostic &) const
   {
@@ -1342,6 +1386,9 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	 return false;
        case IFN_UBSAN_BOUNDS:
 	 return false;
+       case IFN_VA_ARG:
+	 impl_call_va_arg (cd);
+	 return false;
        }
     }
 
@@ -1428,6 +1475,13 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	       on the return value.  */
 	    check_call_args (cd);
 	    break;
+
+	  case BUILT_IN_VA_START:
+	    impl_call_va_start (cd);
+	    return false;
+	  case BUILT_IN_VA_COPY:
+	    impl_call_va_copy (cd);
+	    return false;
 	  }
       else if (is_named_call_p (callee_fndecl, "malloc", call, 1))
 	{
@@ -1570,6 +1624,10 @@ region_model::on_call_post (const gcall *call,
 	  case BUILT_IN_REALLOC:
 	    impl_call_realloc (cd);
 	    return;
+
+	  case BUILT_IN_VA_END:
+	    impl_call_va_end (cd);
+	    return;
 	  }
     }
 
@@ -1624,9 +1682,9 @@ public:
   {
   }
 
-  const char *get_kind () const FINAL OVERRIDE { return "reason_attr_access"; }
+  const char *get_kind () const final override { return "reason_attr_access"; }
 
-  void emit () const
+  void emit () const final override
   {
     inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
 	    "parameter %i of %qD marked with attribute %qs",
@@ -1705,7 +1763,7 @@ check_external_function_for_access_attr (const gcall *call,
 	      m_access (access)
 	    {
 	    }
-	    pending_note *make_note () FINAL OVERRIDE
+	    pending_note *make_note () final override
 	    {
 	      return new reason_attr_access (m_callee_fndecl, m_access);
 	    }
@@ -2552,7 +2610,7 @@ public:
   : m_reg (reg), m_decl (decl)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "write_to_const_diagnostic";
   }
@@ -2563,12 +2621,12 @@ public:
 	    && m_decl == other.m_decl);
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_write_to_const;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
     bool warned;
@@ -2592,7 +2650,7 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     switch (m_reg->get_kind ())
       {
@@ -2621,7 +2679,7 @@ public:
   : m_reg (reg)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "write_to_string_literal_diagnostic";
   }
@@ -2631,12 +2689,12 @@ public:
     return m_reg == other.m_reg;
   }
 
-  int get_controlling_option () const FINAL OVERRIDE
+  int get_controlling_option () const final override
   {
     return OPT_Wanalyzer_write_to_string_literal;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     return warning_at (rich_loc, get_controlling_option (),
 		       "write to string literal");
@@ -2644,7 +2702,7 @@ public:
        but it is not available at this point.  */
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("write to string literal here");
   }
@@ -2785,6 +2843,373 @@ region_model::check_region_for_read (const region *src_reg,
   check_region_access (src_reg, DIR_READ, ctxt);
 }
 
+/* Concrete subclass for casts of pointers that lead to trailing bytes.  */
+
+class dubious_allocation_size
+: public pending_diagnostic_subclass<dubious_allocation_size>
+{
+public:
+  dubious_allocation_size (const region *lhs, const region *rhs)
+  : m_lhs (lhs), m_rhs (rhs), m_expr (NULL_TREE)
+  {}
+
+  dubious_allocation_size (const region *lhs, const region *rhs,
+			   tree expr)
+  : m_lhs (lhs), m_rhs (rhs), m_expr (expr)
+  {}
+
+  const char *get_kind () const final override
+  {
+    return "dubious_allocation_size";
+  }
+
+  bool operator== (const dubious_allocation_size &other) const
+  {
+    return m_lhs == other.m_lhs && m_rhs == other.m_rhs
+	   && pending_diagnostic::same_tree_p (m_expr, other.m_expr);
+  }
+
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_allocation_size;
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    diagnostic_metadata m;
+    m.add_cwe (131);
+
+    return warning_meta (rich_loc, m, get_controlling_option (),
+	       "allocated buffer size is not a multiple of the pointee's size");
+  }
+
+  label_text
+  describe_region_creation_event (const evdesc::region_creation &ev) final
+  override
+  {
+    m_allocation_event = &ev;
+    if (m_expr)
+      {
+	if (TREE_CODE (m_expr) == INTEGER_CST)
+	  return ev.formatted_print ("allocated %E bytes here", m_expr);
+	else
+	  return ev.formatted_print ("allocated %qE bytes here", m_expr);
+      }
+
+    return ev.formatted_print ("allocated here");
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) final
+  override
+  {
+    tree pointee_type = TREE_TYPE (m_lhs->get_type ());
+    if (m_allocation_event)
+      /* Fallback: Typically, we should always
+	 see an m_allocation_event before.  */
+      return ev.formatted_print ("assigned to %qT here;"
+				 " %<sizeof (%T)%> is %qE",
+				 m_lhs->get_type (), pointee_type,
+				 size_in_bytes (pointee_type));
+
+    if (m_expr)
+      {
+	if (TREE_CODE (m_expr) == INTEGER_CST)
+	  return ev.formatted_print ("allocated %E bytes and assigned to"
+				    " %qT here; %<sizeof (%T)%> is %qE",
+				    m_expr, m_lhs->get_type (), pointee_type,
+				    size_in_bytes (pointee_type));
+	else
+	  return ev.formatted_print ("allocated %qE bytes and assigned to"
+				    " %qT here; %<sizeof (%T)%> is %qE",
+				    m_expr, m_lhs->get_type (), pointee_type,
+				    size_in_bytes (pointee_type));
+      }
+
+    return ev.formatted_print ("allocated and assigned to %qT here;"
+			       " %<sizeof (%T)%> is %qE",
+			       m_lhs->get_type (), pointee_type,
+			       size_in_bytes (pointee_type));
+  }
+
+  void mark_interesting_stuff (interesting_t *interest) final override
+  {
+    interest->add_region_creation (m_rhs);
+  }
+
+private:
+  const region *m_lhs;
+  const region *m_rhs;
+  const tree m_expr;
+  const evdesc::region_creation *m_allocation_event;
+};
+
+/* Return true on dubious allocation sizes for constant sizes.  */
+
+static bool
+capacity_compatible_with_type (tree cst, tree pointee_size_tree,
+			       bool is_struct)
+{
+  gcc_assert (TREE_CODE (cst) == INTEGER_CST);
+  gcc_assert (TREE_CODE (pointee_size_tree) == INTEGER_CST);
+
+  unsigned HOST_WIDE_INT pointee_size = TREE_INT_CST_LOW (pointee_size_tree);
+  unsigned HOST_WIDE_INT alloc_size = TREE_INT_CST_LOW (cst);
+
+  if (is_struct)
+    return alloc_size >= pointee_size;
+  return alloc_size % pointee_size == 0;
+}
+
+static bool
+capacity_compatible_with_type (tree cst, tree pointee_size_tree)
+{
+  return capacity_compatible_with_type (cst, pointee_size_tree, false);
+}
+
+/* Checks whether SVAL could be a multiple of SIZE_CST.
+
+   It works by visiting all svalues inside SVAL until it reaches
+   atomic nodes.  From those, it goes back up again and adds each
+   node that might be a multiple of SIZE_CST to the RESULT_SET.  */
+
+class size_visitor : public visitor
+{
+public:
+  size_visitor (tree size_cst, const svalue *sval, constraint_manager *cm)
+  : m_size_cst (size_cst), m_sval (sval), m_cm (cm)
+  {
+    sval->accept (this);
+  }
+
+  bool get_result ()
+  {
+    return result_set.contains (m_sval);
+  }
+
+  void visit_constant_svalue (const constant_svalue *sval) final override
+  {
+    if (capacity_compatible_with_type (sval->get_constant (), m_size_cst))
+      result_set.add (sval);
+  }
+
+  void visit_unknown_svalue (const unknown_svalue *sval ATTRIBUTE_UNUSED)
+    final override
+  {
+    result_set.add (sval);
+  }
+
+  void visit_poisoned_svalue (const poisoned_svalue *sval ATTRIBUTE_UNUSED)
+    final override
+  {
+    result_set.add (sval);
+  }
+
+  void visit_unaryop_svalue (const unaryop_svalue *sval)
+  {
+    const svalue *arg = sval->get_arg ();
+    if (result_set.contains (arg))
+      result_set.add (sval);
+  }
+
+  void visit_binop_svalue (const binop_svalue *sval) final override
+  {
+    const svalue *arg0 = sval->get_arg0 ();
+    const svalue *arg1 = sval->get_arg1 ();
+
+    if (sval->get_op () == MULT_EXPR)
+      {
+	if (result_set.contains (arg0) || result_set.contains (arg1))
+	  result_set.add (sval);
+      }
+    else
+      {
+	if (result_set.contains (arg0) && result_set.contains (arg1))
+	  result_set.add (sval);
+      }
+  }
+
+  void visit_repeated_svalue (const repeated_svalue *sval)
+  {
+    sval->get_inner_svalue ()->accept (this);
+    if (result_set.contains (sval->get_inner_svalue ()))
+      result_set.add (sval);
+  }
+
+  void visit_unmergeable_svalue (const unmergeable_svalue *sval) final override
+  {
+    sval->get_arg ()->accept (this);
+    if (result_set.contains (sval->get_arg ()))
+      result_set.add (sval);
+  }
+
+  void visit_widening_svalue (const widening_svalue *sval) final override
+  {
+    const svalue *base = sval->get_base_svalue ();
+    const svalue *iter = sval->get_iter_svalue ();
+
+    if (result_set.contains (base) && result_set.contains (iter))
+      result_set.add (sval);
+  }
+
+  void visit_conjured_svalue (const conjured_svalue *sval ATTRIBUTE_UNUSED)
+    final override
+  {
+    equiv_class_id id (-1);
+    if (m_cm->get_equiv_class_by_svalue (sval, &id))
+      {
+	if (tree cst_val = id.get_obj (*m_cm).get_any_constant ())
+	  {
+	    if (capacity_compatible_with_type (cst_val, m_size_cst))
+	      result_set.add (sval);
+	  }
+	else
+	  {
+	    result_set.add (sval);
+	  }
+      }
+  }
+
+  void visit_asm_output_svalue (const asm_output_svalue *sval ATTRIBUTE_UNUSED)
+    final override
+  {
+    result_set.add (sval);
+  }
+
+  void visit_const_fn_result_svalue (const const_fn_result_svalue
+				      *sval ATTRIBUTE_UNUSED) final override
+  {
+    result_set.add (sval);
+  }
+
+private:
+  tree m_size_cst;
+  const svalue *m_sval;
+  constraint_manager *m_cm;
+  svalue_set result_set; /* Used as a mapping of svalue*->bool.  */
+};
+
+/* Return true if a struct or union either uses the inheritance pattern,
+   where the first field is a base struct, or the flexible array member
+   pattern, where the last field is an array without a specified size.  */
+
+static bool
+struct_or_union_with_inheritance_p (tree struc)
+{
+  tree iter = TYPE_FIELDS (struc);
+  if (iter == NULL_TREE)
+	  return false;
+  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (iter)))
+	  return true;
+
+  tree last_field;
+  while (iter != NULL_TREE)
+    {
+      last_field = iter;
+      iter = DECL_CHAIN (iter);
+    }
+
+  if (last_field != NULL_TREE
+      && TREE_CODE (TREE_TYPE (last_field)) == ARRAY_TYPE)
+	  return true;
+
+  return false;
+}
+
+/* Return true if the lhs and rhs of an assignment have different types.  */
+
+static bool
+is_any_cast_p (const gimple *stmt)
+{
+  if (const gassign *assign = dyn_cast<const gassign *>(stmt))
+    return gimple_assign_cast_p (assign)
+	   || !pending_diagnostic::same_tree_p (
+		  TREE_TYPE (gimple_assign_lhs (assign)),
+		  TREE_TYPE (gimple_assign_rhs1 (assign)));
+  else if (const gcall *call = dyn_cast<const gcall *>(stmt))
+    {
+      tree lhs = gimple_call_lhs (call);
+      return lhs != NULL_TREE && !pending_diagnostic::same_tree_p (
+				    TREE_TYPE (gimple_call_lhs (call)),
+				    gimple_call_return_type (call));
+    }
+
+  return false;
+}
+
+/* On pointer assignments, check whether the buffer size of
+   RHS_SVAL is compatible with the type of the LHS_REG.
+   Use a non-null CTXT to report allocation size warnings.  */
+
+void
+region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
+				 region_model_context *ctxt) const
+{
+  if (!ctxt || ctxt->get_stmt () == NULL)
+    return;
+  /* Only report warnings on assignments that actually change the type.  */
+  if (!is_any_cast_p (ctxt->get_stmt ()))
+    return;
+
+  const region_svalue *reg_sval = dyn_cast <const region_svalue *> (rhs_sval);
+  if (!reg_sval)
+    return;
+
+  tree pointer_type = lhs_reg->get_type ();
+  if (pointer_type == NULL_TREE || !POINTER_TYPE_P (pointer_type))
+    return;
+
+  tree pointee_type = TREE_TYPE (pointer_type);
+  /* Make sure that the type on the left-hand size actually has a size.  */
+  if (pointee_type == NULL_TREE || VOID_TYPE_P (pointee_type)
+      || TYPE_SIZE_UNIT (pointee_type) == NULL_TREE)
+    return;
+
+  /* Bail out early on pointers to structs where we can
+     not deduce whether the buffer size is compatible.  */
+  bool is_struct = RECORD_OR_UNION_TYPE_P (pointee_type);
+  if (is_struct && struct_or_union_with_inheritance_p (pointee_type))
+    return;
+
+  tree pointee_size_tree = size_in_bytes (pointee_type);
+  /* We give up if the type size is not known at compile-time or the
+     type size is always compatible regardless of the buffer size.  */
+  if (TREE_CODE (pointee_size_tree) != INTEGER_CST
+      || integer_zerop (pointee_size_tree)
+      || integer_onep (pointee_size_tree))
+    return;
+
+  const region *rhs_reg = reg_sval->get_pointee ();
+  const svalue *capacity = get_capacity (rhs_reg);
+  switch (capacity->get_kind ())
+    {
+    case svalue_kind::SK_CONSTANT:
+      {
+	const constant_svalue *cst_cap_sval
+		= as_a <const constant_svalue *> (capacity);
+	tree cst_cap = cst_cap_sval->get_constant ();
+	if (!capacity_compatible_with_type (cst_cap, pointee_size_tree,
+					    is_struct))
+	  ctxt->warn (new dubious_allocation_size (lhs_reg, rhs_reg,
+						   cst_cap));
+      }
+      break;
+    default:
+      {
+	if (!is_struct)
+	  {
+	    size_visitor v (pointee_size_tree, capacity, m_constraints);
+	    if (!v.get_result ())
+	      {
+		tree expr = get_representative_tree (capacity);
+		ctxt->warn (new dubious_allocation_size (lhs_reg, rhs_reg,
+			    expr));
+	      }
+	  }
+      break;
+      }
+    }
+}
+
 /* Set the value of the region given by LHS_REG to the value given
    by RHS_SVAL.
    Use CTXT to report any warnings associated with writing to LHS_REG.  */
@@ -2795,6 +3220,8 @@ region_model::set_value (const region *lhs_reg, const svalue *rhs_sval,
 {
   gcc_assert (lhs_reg);
   gcc_assert (rhs_sval);
+
+  check_region_size (lhs_reg, rhs_sval, ctxt);
 
   check_region_for_write (lhs_reg, ctxt);
 
@@ -3520,6 +3947,7 @@ region_model::get_representative_path_var_1 (const region *reg,
 	return path_var (string_reg->get_string_cst (), 0);
       }
 
+    case RK_VAR_ARG:
     case RK_UNKNOWN:
       return path_var (NULL_TREE, 0);
     }
@@ -3887,6 +4315,17 @@ region_model::push_frame (function *fun, const vec<const svalue *> *arg_svals,
 	  const region *parm_reg = get_lvalue (parm_lval, ctxt);
 	  const svalue *arg_sval = (*arg_svals)[idx];
 	  set_value (parm_reg, arg_sval, ctxt);
+	}
+
+      /* Handle any variadic args.  */
+      unsigned va_arg_idx = 0;
+      for (; idx < arg_svals->length (); idx++, va_arg_idx++)
+	{
+	  const svalue *arg_sval = (*arg_svals)[idx];
+	  const region *var_arg_reg
+	    = m_mgr->get_var_arg_region (m_current_frame,
+					 va_arg_idx);
+	  set_value (var_arg_reg, arg_sval, ctxt);
 	}
     }
   else
@@ -5434,9 +5873,9 @@ assert_region_models_merge (tree expr, tree val_a, tree val_b,
 			     region_model *out_merged_model,
 			     const svalue **out_merged_svalue)
 {
-  program_point point (program_point::origin ());
-  test_region_model_context ctxt;
   region_model_manager *mgr = out_merged_model->get_manager ();
+  program_point point (program_point::origin (*mgr));
+  test_region_model_context ctxt;
   region_model model0 (mgr);
   region_model model1 (mgr);
   if (val_a)
@@ -5485,8 +5924,8 @@ test_state_merging ()
 		       ptr_type_node);
   DECL_CONTEXT (q) = test_fndecl;
 
-  program_point point (program_point::origin ());
   region_model_manager mgr;
+  program_point point (program_point::origin (mgr));
 
   {
     region_model model0 (&mgr);
@@ -5826,7 +6265,7 @@ test_constraint_merging ()
 
   /* They should be mergeable; the merged constraints should
      be: (0 <= x < n).  */
-  program_point point (program_point::origin ());
+  program_point point (program_point::origin (mgr));
   region_model merged (&mgr);
   ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
 
@@ -5847,12 +6286,12 @@ test_constraint_merging ()
 static void
 test_widening_constraints ()
 {
-  program_point point (program_point::origin ());
+  region_model_manager mgr;
+  program_point point (program_point::origin (mgr));
   tree int_0 = build_int_cst (integer_type_node, 0);
   tree int_m1 = build_int_cst (integer_type_node, -1);
   tree int_1 = build_int_cst (integer_type_node, 1);
   tree int_256 = build_int_cst (integer_type_node, 256);
-  region_model_manager mgr;
   test_region_model_context ctxt;
   const svalue *int_0_sval = mgr.get_or_create_constant_svalue (int_0);
   const svalue *int_1_sval = mgr.get_or_create_constant_svalue (int_1);
@@ -5962,7 +6401,8 @@ test_widening_constraints ()
 static void
 test_iteration_1 ()
 {
-  program_point point (program_point::origin ());
+  region_model_manager mgr;
+  program_point point (program_point::origin (mgr));
 
   tree int_0 = build_int_cst (integer_type_node, 0);
   tree int_1 = build_int_cst (integer_type_node, 1);
@@ -5970,7 +6410,6 @@ test_iteration_1 ()
   tree int_257 = build_int_cst (integer_type_node, 257);
   tree i = build_global_decl ("i", integer_type_node);
 
-  region_model_manager mgr;
   test_region_model_context ctxt;
 
   /* model0: i: 0.  */

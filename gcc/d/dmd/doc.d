@@ -384,11 +384,11 @@ extern(C++) void gendocfile(Module m)
         // Override with DDOCFILE specified in the sc.ini file
         char* p = getenv("DDOCFILE");
         if (p)
-            global.params.ddocfiles.shift(p);
+            global.params.ddoc.files.shift(p);
         // Override with the ddoc macro files from the command line
-        for (size_t i = 0; i < global.params.ddocfiles.dim; i++)
+        for (size_t i = 0; i < global.params.ddoc.files.dim; i++)
         {
-            auto buffer = readFile(m.loc, global.params.ddocfiles[i]);
+            auto buffer = readFile(m.loc, global.params.ddoc.files[i]);
             // BUG: convert file contents to UTF-8 before use
             const data = buffer.data;
             //printf("file: '%.*s'\n", cast(int)data.length, data.ptr);
@@ -628,7 +628,7 @@ private void escapeStrayParenthesis(Loc loc, OutBuffer* buf, size_t start, bool 
             break;
         case '\\':
             // replace backslash-escaped parens with their macros
-            if (!inCode && respectBackslashEscapes && u+1 < buf.length && global.params.markdown)
+            if (!inCode && respectBackslashEscapes && u+1 < buf.length)
             {
                 if ((*buf)[u+1] == '(' || (*buf)[u+1] == ')')
                 {
@@ -2317,8 +2317,6 @@ private void removeBlankLineMacro(ref OutBuffer buf, ref size_t iAt, ref size_t 
  */
 private bool replaceMarkdownThematicBreak(ref OutBuffer buf, ref size_t i, size_t iLineStart, const ref Loc loc)
 {
-    if (!global.params.markdown)
-        return false;
 
     const slice = buf[];
     const c = buf[i];
@@ -2335,12 +2333,6 @@ private bool replaceMarkdownThematicBreak(ref OutBuffer buf, ref size_t i, size_
     {
         if (j >= buf.length || buf[j] == '\n' || buf[j] == '\r')
         {
-            if (global.params.vmarkdown)
-            {
-                const s = buf[][i..j];
-                message(loc, "Ddoc: converted '%.*s' to a thematic break", cast(int)s.length, s.ptr);
-            }
-
             buf.remove(iLineStart, j - iLineStart);
             i = buf.insert(iLineStart, "$(HR)") - 1;
             return true;
@@ -2361,9 +2353,6 @@ private bool replaceMarkdownThematicBreak(ref OutBuffer buf, ref size_t i, size_
  */
 private int detectAtxHeadingLevel(ref OutBuffer buf, const size_t i)
 {
-    if (!global.params.markdown)
-        return 0;
-
     const iHeadingStart = i;
     const iAfterHashes = skipChars(buf, i, "#");
     const headingLevel = cast(int) (iAfterHashes - iHeadingStart);
@@ -2433,14 +2422,6 @@ private void removeAnyAtxHeadingSuffix(ref OutBuffer buf, size_t i)
  */
 private void endMarkdownHeading(ref OutBuffer buf, size_t iStart, ref size_t iEnd, const ref Loc loc, ref int headingLevel)
 {
-    if (!global.params.markdown)
-        return;
-    if (global.params.vmarkdown)
-    {
-        const s = buf[][iStart..iEnd];
-        message(loc, "Ddoc: added heading '%.*s'", cast(int)s.length, s.ptr);
-    }
-
     char[5] heading = "$(H0 ";
     heading[3] = cast(char) ('0' + headingLevel);
     buf.insert(iStart, heading);
@@ -2503,9 +2484,6 @@ private size_t endAllListsAndQuotes(ref OutBuffer buf, ref size_t i, ref Markdow
  */
 private size_t replaceMarkdownEmphasis(ref OutBuffer buf, const ref Loc loc, ref MarkdownDelimiter[] inlineDelimiters, int downToLevel = 0)
 {
-    if (!global.params.markdown)
-        return 0;
-
     size_t replaceEmphasisPair(ref MarkdownDelimiter start, ref MarkdownDelimiter end)
     {
         immutable count = start.count == 1 || end.count == 1 ? 1 : 2;
@@ -2520,12 +2498,6 @@ private size_t replaceMarkdownEmphasis(ref OutBuffer buf, const ref Loc loc, ref
             start.type = 0;
         if (!end.count)
             end.type = 0;
-
-        if (global.params.vmarkdown)
-        {
-            const s = buf[][iStart + count..iEnd];
-            message(loc, "Ddoc: emphasized text '%.*s'", cast(int)s.length, s.ptr);
-        }
 
         buf.remove(iStart, count);
         iEnd -= count;
@@ -2857,9 +2829,6 @@ private struct MarkdownList
      */
     static MarkdownList parseItem(ref OutBuffer buf, size_t iLineStart, size_t i)
     {
-        if (!global.params.markdown)
-            return MarkdownList();
-
         if (buf[i] == '+' || buf[i] == '-' || buf[i] == '*')
             return parseUnorderedListItem(buf, iLineStart, i);
         else
@@ -2930,15 +2899,6 @@ private struct MarkdownList
         iStart = buf.insert(iStart, "$(LI\n");
         i = iStart - 1;
         iLineStart = i;
-
-        if (global.params.vmarkdown)
-        {
-            size_t iEnd = iStart;
-            while (iEnd < buf.length && buf[iEnd] != '\r' && buf[iEnd] != '\n')
-                ++iEnd;
-            const s = buf[][iStart..iEnd];
-            message(loc, "Ddoc: starting list item '%.*s'", cast(int)s.length, s.ptr);
-        }
 
         return true;
     }
@@ -3122,13 +3082,6 @@ private struct MarkdownLink
         immutable delta = replaceMarkdownEmphasis(buf, loc, inlineDelimiters, delimiterIndex);
         iEnd += delta;
         i += delta;
-
-        if (global.params.vmarkdown)
-        {
-            const s = buf[][delimiter.iStart..iEnd];
-            message(loc, "Ddoc: linking '%.*s' to '%.*s'", cast(int)s.length, s.ptr, cast(int)link.href.length, link.href.ptr);
-        }
-
         link.replaceLink(buf, i, iEnd, delimiter);
         return true;
     }
@@ -3532,9 +3485,6 @@ private struct MarkdownLink
      */
     private void storeAndReplaceDefinition(ref OutBuffer buf, ref size_t i, size_t iEnd, ref MarkdownLinkReferences linkReferences, const ref Loc loc)
     {
-        if (global.params.vmarkdown)
-            message(loc, "Ddoc: found link reference '%.*s' to '%.*s'", cast(int)label.length, label.ptr, cast(int)href.length, href.ptr);
-
         // Remove the definition and trailing whitespace
         iEnd = skipChars(buf, iEnd, " \t\r\n");
         buf.remove(i, iEnd - i);
@@ -4050,12 +4000,6 @@ private bool replaceTableRow(ref OutBuffer buf, size_t iStart, size_t iEnd, cons
     if (headerRow && cellCount != columnAlignments.length)
         return false;
 
-    if (headerRow && global.params.vmarkdown)
-    {
-        const s = buf[][iStart..iEnd];
-        message(loc, "Ddoc: formatting table '%.*s'", cast(int)s.length, s.ptr);
-    }
-
     void replaceTableCell(size_t iCellStart, size_t iCellEnd, int cellIndex, int di)
     {
         const eDelta = replaceMarkdownEmphasis(buf, loc, inlineDelimiters, di);
@@ -4378,17 +4322,8 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
 
         case '>':
             {
-                if (leadingBlank && (!inCode || quoteLevel) && global.params.markdown)
+                if (leadingBlank && (!inCode || quoteLevel))
                 {
-                    if (!quoteLevel && global.params.vmarkdown)
-                    {
-                        size_t iEnd = i + 1;
-                        while (iEnd < buf.length && buf[iEnd] != '\n')
-                            ++iEnd;
-                        const s = buf[][i .. iEnd];
-                        message(loc, "Ddoc: starting quote block with '%.*s'", cast(int)s.length, s.ptr);
-                    }
-
                     lineQuoted = true;
                     int lineQuoteLevel = 1;
                     size_t iAfterDelimiters = i + 1;
@@ -4488,7 +4423,7 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
                 }
 
                 // Perhaps we're starting or ending a Markdown code block
-                if (leadingBlank && global.params.markdown && count >= 3)
+                if (leadingBlank && count >= 3)
                 {
                     bool moreBackticks = false;
                     for (size_t j = iAfterDelimiter; !moreBackticks && j < buf.length; ++j)
@@ -4548,7 +4483,7 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
 
         case '~':
             {
-                if (leadingBlank && global.params.markdown)
+                if (leadingBlank)
                 {
                     // Perhaps we're starting or ending a Markdown code block
                     const iAfterDelimiter = skipChars(buf, i, "~");
@@ -4613,7 +4548,7 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
                     // BUG: handle UTF PS and LS too
                     if (c != c0 || iInfoString)
                     {
-                        if (global.params.markdown && !iInfoString && !inCode && i - istart >= 3)
+                        if (!iInfoString && !inCode && i - istart >= 3)
                         {
                             // Start a Markdown info string, like ```ruby
                             codeFenceLength = i - istart;
@@ -4711,9 +4646,6 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
                             if (codeLanguage[j] == '\\' && ispunct(codeLanguage[j + 1]))
                                 codeLanguage = codeLanguage[0..j] ~ codeLanguage[j + 1..$];
 
-                        if (global.params.vmarkdown)
-                            message(loc, "Ddoc: adding code block for language '%.*s'", cast(int)codeLanguage.length, codeLanguage.ptr);
-
                         i = buf.insert(i, "$(OTHER_CODE ");
                         i = buf.insert(i, codeLanguage);
                         i = buf.insert(i, ",");
@@ -4779,7 +4711,7 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
 
         case '*':
         {
-            if (inCode || inBacktick || !global.params.markdown)
+            if (inCode || inBacktick)
             {
                 leadingBlank = false;
                 break;
@@ -4829,7 +4761,7 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
         {
             leadingBlank = false;
 
-            if (inCode || !global.params.markdown)
+            if (inCode)
                 break;
 
             if (i < buf.length-1 && buf[i+1] == '[')
@@ -4842,7 +4774,7 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
         }
         case '[':
         {
-            if (inCode || !global.params.markdown)
+            if (inCode)
             {
                 leadingBlank = false;
                 break;
@@ -4860,7 +4792,7 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
         {
             leadingBlank = false;
 
-            if (inCode || !global.params.markdown)
+            if (inCode)
                 break;
 
             for (int d = cast(int) inlineDelimiters.length - 1; d >= 0; --d)
@@ -4894,7 +4826,7 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
 
         case '|':
         {
-            if (inCode || !global.params.markdown)
+            if (inCode)
             {
                 leadingBlank = false;
                 break;
@@ -4909,16 +4841,13 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
         case '\\':
         {
             leadingBlank = false;
-            if (inCode || i+1 >= buf.length || !global.params.markdown)
+            if (inCode || i+1 >= buf.length)
                 break;
 
             /* Escape Markdown special characters */
             char c1 = buf[i+1];
             if (ispunct(c1))
             {
-                if (global.params.vmarkdown)
-                    message(loc, "Ddoc: backslash-escaped %c", c1);
-
                 buf.remove(i, 1);
 
                 auto se = sc._module.escapetable.escapeChar(c1);

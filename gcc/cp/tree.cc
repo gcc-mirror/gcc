@@ -1359,9 +1359,8 @@ c_build_qualified_type (tree type, int type_quals, tree /* orig_qual_type */,
    in a similar manner for restricting non-pointer types.  */
 
 tree
-cp_build_qualified_type_real (tree type,
-			      int type_quals,
-			      tsubst_flags_t complain)
+cp_build_qualified_type (tree type, int type_quals,
+			 tsubst_flags_t complain /* = tf_warning_or_error */)
 {
   tree result;
   int bad_quals = TYPE_UNQUALIFIED;
@@ -1378,9 +1377,7 @@ cp_build_qualified_type_real (tree type,
 	 type.  Obtain the appropriately qualified element type.  */
       tree t;
       tree element_type
-	= cp_build_qualified_type_real (TREE_TYPE (type),
-					type_quals,
-					complain);
+	= cp_build_qualified_type (TREE_TYPE (type), type_quals, complain);
 
       if (element_type == error_mark_node)
 	return error_mark_node;
@@ -1431,7 +1428,7 @@ cp_build_qualified_type_real (tree type,
     {
       tree t = PACK_EXPANSION_PATTERN (type);
 
-      t = cp_build_qualified_type_real (t, type_quals, complain);
+      t = cp_build_qualified_type (t, type_quals, complain);
       return make_pack_expansion (t, complain);
     }
 
@@ -1583,7 +1580,8 @@ apply_identity_attributes (tree result, tree attribs, bool *remove_attributes)
    stripped.  */
 
 tree
-strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
+strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
+		unsigned int flags /* = 0 */)
 {
   tree result = NULL, type = NULL, t0 = NULL;
 
@@ -2900,7 +2898,11 @@ bind_template_template_parm (tree t, tree newargs)
   TYPE_NAME (t2) = decl;
   TYPE_STUB_DECL (t2) = decl;
   TYPE_SIZE (t2) = 0;
-  SET_TYPE_STRUCTURAL_EQUALITY (t2);
+
+  if (any_template_arguments_need_structural_equality_p (newargs))
+    SET_TYPE_STRUCTURAL_EQUALITY (t2);
+  else
+    TYPE_CANONICAL (t2) = canonical_type_parameter (t2);
 
   return t2;
 }
@@ -4317,15 +4319,31 @@ maybe_dummy_object (tree type, tree* binfop)
   if (binfop)
     *binfop = binfo;
 
-  if (current_class_ref
-      /* current_class_ref might not correspond to current_class_type if
-	 we're in tsubst_default_argument or a lambda-declarator; in either
-	 case, we want to use current_class_ref if it matches CONTEXT.  */
-      && (same_type_ignoring_top_level_qualifiers_p
-	  (TREE_TYPE (current_class_ref), context)))
+  /* current_class_ref might not correspond to current_class_type if
+     we're in tsubst_default_argument or a lambda-declarator; in either
+     case, we want to use current_class_ref if it matches CONTEXT.  */
+  tree ctype = current_class_ref ? TREE_TYPE (current_class_ref) : NULL_TREE;
+  if (ctype
+      && same_type_ignoring_top_level_qualifiers_p (ctype, context))
     decl = current_class_ref;
   else
-    decl = build_dummy_object (context);
+    {
+      /* Return a dummy object whose cv-quals are consistent with (the
+	 non-lambda) 'this' if available.  */
+      if (ctype)
+	{
+	  int quals = TYPE_UNQUALIFIED;
+	  if (tree lambda = CLASSTYPE_LAMBDA_EXPR (ctype))
+	    {
+	      if (tree cap = lambda_expr_this_capture (lambda, false))
+		quals = cp_type_quals (TREE_TYPE (TREE_TYPE (cap)));
+	    }
+	  else
+	    quals = cp_type_quals (ctype);
+	  context = cp_build_qualified_type (context, quals);
+	}
+      decl = build_dummy_object (context);
+    }
 
   return decl;
 }
@@ -4851,8 +4869,8 @@ structural_type_p (tree t, bool explain)
 	explain_non_literal_class (t);
       return false;
     }
-  for (tree m = next_initializable_field (TYPE_FIELDS (t)); m;
-       m = next_initializable_field (DECL_CHAIN (m)))
+  for (tree m = next_aggregate_field (TYPE_FIELDS (t)); m;
+       m = next_aggregate_field (DECL_CHAIN (m)))
     {
       if (TREE_PRIVATE (m) || TREE_PROTECTED (m))
 	{
@@ -5413,9 +5431,8 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case NONTYPE_ARGUMENT_PACK:
       {
         tree args = ARGUMENT_PACK_ARGS (*tp);
-        int i, len = TREE_VEC_LENGTH (args);
-        for (i = 0; i < len; i++)
-          WALK_SUBTREE (TREE_VEC_ELT (args, i));
+	for (tree arg : tree_vec_range (args))
+	  WALK_SUBTREE (arg);
       }
       break;
 
@@ -6118,6 +6135,25 @@ maybe_warn_zero_as_null_pointer_constant (tree expr, location_t loc)
     }
   return false;
 }
+
+/* FNDECL is a function declaration whose type may have been altered by
+   adding extra parameters such as this, in-charge, or VTT.  When this
+   takes place, the positional arguments supplied by the user (as in the
+   'format' attribute arguments) may refer to the wrong argument.  This
+   function returns an integer indicating how many arguments should be
+   skipped.  */
+
+int
+maybe_adjust_arg_pos_for_attribute (const_tree fndecl)
+{
+  if (!fndecl)
+    return 0;
+  int n = num_artificial_parms_for (fndecl);
+  /* The manual states that it's the user's responsibility to account
+     for the implicit this parameter.  */
+  return n > 0 ? n - 1 : 0;
+}
+
 
 /* Release memory we no longer need after parsing.  */
 void

@@ -30,5 +30,5 @@ func (char *cp1, char *cp2, char *cp3, char *cp4)
 __attribute__((nonnull (1))) int
 func2 (char *cp)
 {
-  return (cp != NULL) ? 1 : 0; /* { dg-warning "'nonnull' argument" "cp compared to NULL" { xfail c++ } } */
+  return (cp != NULL) ? 1 : 0; /* { dg-warning "'nonnull' argument" "cp compared to NULL" } */
 }

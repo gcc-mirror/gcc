@@ -1878,12 +1878,16 @@ access using @var{type} is known to be naturally aligned.",
 DEFHOOK
 (vec_perm_const,
  "This hook is used to test whether the target can permute up to two\n\
-vectors of mode @var{mode} using the permutation vector @code{sel}, and\n\
-also to emit such a permutation.  In the former case @var{in0}, @var{in1}\n\
-and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are\n\
-the source vectors and @var{out} is the destination vector; all three are\n\
-operands of mode @var{mode}.  @var{in1} is the same as @var{in0} if\n\
-@var{sel} describes a permutation on one vector instead of two.\n\
+vectors of mode @var{op_mode} using the permutation vector @code{sel},\n\
+producing a vector of mode @var{mode}.  The hook is also used to emit such\n\
+a permutation.\n\
+\n\
+When the hook is being used to test whether the target supports a permutation,\n\
+@var{in0}, @var{in1}, and @var{out} are all null.  When the hook is being used\n\
+to emit a permutation, @var{in0} and @var{in1} are the source vectors of mode\n\
+@var{op_mode} and @var{out} is the destination vector of mode @var{mode}.\n\
+@var{in1} is the same as @var{in0} if @var{sel} describes a permutation on one\n\
+vector instead of two.\n\
 \n\
 Return true if the operation is possible, emitting instructions for it\n\
 if rtxes are provided.\n\
@@ -1894,7 +1898,7 @@ try the equivalent byte operation.  If that also fails, it will try forcing\n\
 the selector into a register and using the @var{vec_perm@var{mode}}\n\
 instruction pattern.  There is no need for the hook to handle these two\n\
 implementation approaches itself.",
- bool, (machine_mode mode, rtx output, rtx in0, rtx in1,
+ bool, (machine_mode mode, machine_mode op_mode, rtx output, rtx in0, rtx in1,
 	const vec_perm_indices &sel),
  NULL)
 

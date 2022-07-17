@@ -268,17 +268,10 @@ read_gcda_file (const char *filename)
     k_ctrs_mask[i] = 0;
   k_ctrs_types = 0;
 
-  if (!gcov_open (filename))
-    {
-      fnotice (stderr, "%s:cannot open\n", filename);
-      return NULL;
-    }
-
   /* Read magic.  */
   if (!gcov_magic (gcov_read_unsigned (), GCOV_DATA_MAGIC))
     {
       fnotice (stderr, "%s:not a gcov data file\n", filename);
-      gcov_close ();
       return NULL;
     }
 
@@ -287,7 +280,6 @@ read_gcda_file (const char *filename)
   if (version != GCOV_VERSION)
     {
       fnotice (stderr, "%s:incorrect gcov version %d vs %d \n", filename, version, GCOV_VERSION);
-      gcov_close ();
       return NULL;
     }
 
@@ -296,16 +288,14 @@ read_gcda_file (const char *filename)
              sizeof (struct gcov_ctr_info) * GCOV_COUNTERS, 1);
 
   obj_info->version = version;
+  obj_info->filename = filename;
   obstack_init (&fn_info);
   num_fn_info = 0;
   curr_fn_info = 0;
-  {
-    size_t len = strlen (filename) + 1;
-    char *str_dup = (char*) xmalloc (len);
 
-    memcpy (str_dup, filename, len);
-    obj_info->filename = str_dup;
-  }
+  /* Prepend to global gcov info list.  */
+  obj_info->next = gcov_info_head;
+  gcov_info_head = obj_info;
 
   /* Read stamp.  */
   obj_info->stamp = gcov_read_unsigned ();
@@ -381,7 +371,6 @@ read_gcda_file (const char *filename)
     }
 
   read_gcda_finalize (obj_info);
-  gcov_close ();
 
   return obj_info;
 }
@@ -395,9 +384,8 @@ ftw_read_file (const char *filename,
                const struct stat *status ATTRIBUTE_UNUSED,
                int type)
 {
-  int filename_len;
-  int suffix_len;
-  struct gcov_info *obj_info;
+  size_t filename_len;
+  size_t suffix_len;
 
   /* Only read regular files.  */
   if (type != FTW_F)
@@ -415,12 +403,14 @@ ftw_read_file (const char *filename,
   if (verbose)
     fnotice (stderr, "reading file: %s\n", filename);
 
-  obj_info = read_gcda_file (filename);
-  if (!obj_info)
-    return 0;
+  if (!gcov_open (filename, 1))
+    {
+      fnotice (stderr, "%s:cannot open:%s\n", filename, xstrerror (errno));
+      return 0;
+    }
 
-  obj_info->next = gcov_info_head;
-  gcov_info_head = obj_info;
+  (void)read_gcda_file (xstrdup (filename));
+  gcov_close ();
 
   return 0;
 }
@@ -674,16 +664,16 @@ find_match_gcov_info (struct gcov_info **array, int size,
 }
 
 /* Merge the list of gcov_info objects from SRC_PROFILE to TGT_PROFILE.
-   Return 0 on success: without mismatch.
-   Reutrn 1 on error.  */
+   Return the list of merged gcov_info objects.  Return NULL if the list is
+   empty.  */
 
-int
+struct gcov_info *
 gcov_profile_merge (struct gcov_info *tgt_profile, struct gcov_info *src_profile,
                     int w1, int w2)
 {
   struct gcov_info *gi_ptr;
   struct gcov_info **tgt_infos;
-  struct gcov_info *tgt_tail;
+  struct gcov_info **tgt_tail;
   struct gcov_info **in_src_not_tgt;
   unsigned tgt_cnt = 0, src_cnt = 0;
   unsigned unmatch_info_cnt = 0;
@@ -703,7 +693,10 @@ gcov_profile_merge (struct gcov_info *tgt_profile, struct gcov_info *src_profile
   for (gi_ptr = tgt_profile, i = 0; gi_ptr; gi_ptr = gi_ptr->next, i++)
     tgt_infos[i] = gi_ptr;
 
-  tgt_tail = tgt_infos[tgt_cnt - 1];
+  if (tgt_cnt)
+     tgt_tail = &tgt_infos[tgt_cnt - 1]->next;
+  else
+     tgt_tail = &tgt_profile;
 
   /* First pass on tgt_profile, we multiply w1 to all counters.  */
   if (w1 > 1)
@@ -732,14 +725,109 @@ gcov_profile_merge (struct gcov_info *tgt_profile, struct gcov_info *src_profile
       gi_ptr = in_src_not_tgt[i];
       gcov_merge (gi_ptr, gi_ptr, w2 - 1);
       gi_ptr->next = NULL;
-      tgt_tail->next = gi_ptr;
-      tgt_tail = gi_ptr;
+      *tgt_tail = gi_ptr;
+      tgt_tail = &gi_ptr->next;
     }
 
   free (in_src_not_tgt);
   free (tgt_infos);
 
-  return 0;
+  return tgt_profile;
+}
+
+/* Deserialize gcov_info objects and associated filenames from the file
+   specified by FILENAME to create a profile list.  When FILENAME is NULL, read
+   from stdin.  Return the profile list.  */
+
+struct gcov_info *
+deserialize_profiles (const char *filename)
+{
+  read_profile_dir_init ();
+
+  while (true)
+    {
+      unsigned version;
+      const char *filename_of_info;
+      struct gcov_info *obj_info;
+
+      if (!gcov_magic (gcov_read_unsigned (), GCOV_FILENAME_MAGIC))
+	{
+	  if (gcov_is_error () != 2)
+	    fnotice (stderr, "%s:not a gcfn stream\n", filename);
+	  break;
+	}
+
+      version = gcov_read_unsigned ();
+      if (version != GCOV_VERSION)
+	{
+	  fnotice (stderr, "%s:incorrect gcov version %d vs %d \n",
+		   filename, version, GCOV_VERSION);
+	  break;
+	}
+
+      filename_of_info = gcov_read_string ();
+      if (!filename_of_info)
+	{
+	  fnotice (stderr, "%s:no filename in gcfn stream\n",
+		   filename);
+	  break;
+	}
+
+      obj_info = read_gcda_file (filename);
+      if (!obj_info)
+	break;
+
+      obj_info->filename = filename_of_info;
+    }
+
+  return gcov_info_head;
+}
+
+/* For each profile of the list specified by SRC_PROFILE, read the GCDA file of
+   the profile.  If a GCDA file exists, add the profile to a list.  Return the
+   profile list.  */
+
+struct gcov_info *
+get_target_profiles_for_merge (struct gcov_info *src_profile)
+{
+  struct gcov_info *gi_ptr;
+
+  read_profile_dir_init ();
+
+  for (gi_ptr = src_profile; gi_ptr; gi_ptr = gi_ptr->next)
+    if (gcov_open (gi_ptr->filename, 1))
+      {
+	(void)read_gcda_file (gi_ptr->filename);
+	gcov_close ();
+      }
+
+  return gcov_info_head;
+}
+
+/* Deserialize gcov_info objects and associated filenames from the file
+   specified by FILENAME to create a source profile list.  When FILENAME is
+   NULL, read from stdin.  Use the filenames of the source profile list to get
+   a target profile list.  Merge the source profile list into the target
+   profile list using weights W1 and W2.  Return the list of merged gcov_info
+   objects.  Return NULL if the list is empty.  */
+
+struct gcov_info *
+gcov_profile_merge_stream (const char *filename, int w1, int w2)
+{
+  struct gcov_info *tgt_profile;
+  struct gcov_info *src_profile;
+
+  if (!gcov_open (filename, 1))
+    {
+      fnotice (stderr, "%s:cannot open:%s\n", filename, xstrerror (errno));
+      return NULL;
+    }
+
+  src_profile = deserialize_profiles (filename ? filename : "<stdin>");
+  gcov_close ();
+  tgt_profile = get_target_profiles_for_merge (src_profile);
+
+  return gcov_profile_merge (tgt_profile, src_profile, w1, w2);
 }
 
 typedef gcov_type (*counter_op_fn) (gcov_type, void*, void*);

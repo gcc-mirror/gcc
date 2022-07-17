@@ -67,13 +67,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "intl.h"
 #include "file-prefix-map.h" /* remap_macro_filename()  */
 #include "gomp-constants.h"
 #include "omp-general.h"
 #include "tree-dfa.h"
-#include "gimple-iterator.h"
 #include "gimple-ssa.h"
 #include "tree-ssa-live.h"
 #include "tree-outof-ssa.h"
@@ -613,7 +613,7 @@ c_strlen (tree arg, int only_value, c_strlen_data *data, unsigned eltsize)
   if (eltsize != tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (src)))))
     return NULL_TREE;
 
-  /* Set MAXELTS to sizeof (SRC) / sizeof (*SRC) - 1, the maximum possible
+  /* Set MAXELTS to ARRAY_SIZE (SRC) - 1, the maximum possible
      length of SRC.  Prefer TYPE_SIZE() to TREE_STRING_LENGTH() if possible
      in case the latter is less than the size of the array, such as when
      SRC refers to a short string literal used to initialize a large array.
@@ -5184,6 +5184,9 @@ expand_builtin_trap (void)
 static void
 expand_builtin_unreachable (void)
 {
+  /* Use gimple_build_builtin_unreachable or builtin_decl_unreachable
+     to avoid this.  */
+  gcc_checking_assert (!sanitize_flags_p (SANITIZE_UNREACHABLE));
   emit_barrier ();
 }
 
@@ -6026,8 +6029,8 @@ expand_ifn_atomic_compare_exchange_into_call (gcall *call, machine_mode mode)
       if (GET_MODE (boolret) != mode)
 	boolret = convert_modes (mode, GET_MODE (boolret), boolret, 1);
       x = force_reg (mode, x);
-      write_complex_part (target, boolret, true);
-      write_complex_part (target, x, false);
+      write_complex_part (target, boolret, true, true);
+      write_complex_part (target, x, false, false);
     }
 }
 
@@ -6082,8 +6085,8 @@ expand_ifn_atomic_compare_exchange (gcall *call)
       rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
       if (GET_MODE (boolret) != mode)
 	boolret = convert_modes (mode, GET_MODE (boolret), boolret, 1);
-      write_complex_part (target, boolret, true);
-      write_complex_part (target, oldval, false);
+      write_complex_part (target, boolret, true, true);
+      write_complex_part (target, oldval, false, false);
     }
 }
 
@@ -6224,7 +6227,7 @@ expand_ifn_atomic_bit_test_and (gcall *call)
 
   gcc_assert (flag_inline_atomics);
 
-  if (gimple_call_num_args (call) == 4)
+  if (gimple_call_num_args (call) == 5)
     model = get_memmodel (gimple_call_arg (call, 3));
 
   rtx mem = get_builtin_sync_mem (ptr, mode);
@@ -6250,15 +6253,19 @@ expand_ifn_atomic_bit_test_and (gcall *call)
 
   if (lhs == NULL_TREE)
     {
-      val = expand_simple_binop (mode, ASHIFT, const1_rtx,
-				 val, NULL_RTX, true, OPTAB_DIRECT);
+      rtx val2 = expand_simple_binop (mode, ASHIFT, const1_rtx,
+				      val, NULL_RTX, true, OPTAB_DIRECT);
       if (code == AND)
-	val = expand_simple_unop (mode, NOT, val, NULL_RTX, true);
-      expand_atomic_fetch_op (const0_rtx, mem, val, code, model, false);
-      return;
+	val2 = expand_simple_unop (mode, NOT, val2, NULL_RTX, true);
+      if (expand_atomic_fetch_op (const0_rtx, mem, val2, code, model, false))
+	return;
     }
 
-  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx target;
+  if (lhs)
+    target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  else
+    target = gen_reg_rtx (mode);
   enum insn_code icode = direct_optab_handler (optab, mode);
   gcc_assert (icode != CODE_FOR_nothing);
   create_output_operand (&ops[0], target, mode);
@@ -6277,6 +6284,22 @@ expand_ifn_atomic_bit_test_and (gcall *call)
     val = expand_simple_unop (mode, NOT, val, NULL_RTX, true);
   rtx result = expand_atomic_fetch_op (gen_reg_rtx (mode), mem, val,
 				       code, model, false);
+  if (!result)
+    {
+      bool is_atomic = gimple_call_num_args (call) == 5;
+      tree tcall = gimple_call_arg (call, 3 + is_atomic);
+      tree fndecl = gimple_call_addr_fndecl (tcall);
+      tree type = TREE_TYPE (TREE_TYPE (fndecl));
+      tree exp = build_call_nary (type, tcall, 2 + is_atomic, ptr,
+				  make_tree (type, val),
+				  is_atomic
+				  ? gimple_call_arg (call, 3)
+				  : integer_zero_node);
+      result = expand_builtin (exp, gen_reg_rtx (mode), NULL_RTX,
+			       mode, !lhs);
+    }
+  if (!lhs)
+    return;
   if (integer_onep (flag))
     {
       result = expand_simple_binop (mode, ASHIFTRT, result, bitval,
@@ -6308,7 +6331,7 @@ expand_ifn_atomic_op_fetch_cmp_0 (gcall *call)
 
   gcc_assert (flag_inline_atomics);
 
-  if (gimple_call_num_args (call) == 4)
+  if (gimple_call_num_args (call) == 5)
     model = get_memmodel (gimple_call_arg (call, 3));
 
   rtx mem = get_builtin_sync_mem (ptr, mode);
@@ -6369,6 +6392,21 @@ expand_ifn_atomic_op_fetch_cmp_0 (gcall *call)
 
   rtx result = expand_atomic_fetch_op (gen_reg_rtx (mode), mem, op,
 				       code, model, true);
+  if (!result)
+    {
+      bool is_atomic = gimple_call_num_args (call) == 5;
+      tree tcall = gimple_call_arg (call, 3 + is_atomic);
+      tree fndecl = gimple_call_addr_fndecl (tcall);
+      tree type = TREE_TYPE (TREE_TYPE (fndecl));
+      tree exp = build_call_nary (type, tcall,
+				  2 + is_atomic, ptr, arg,
+				  is_atomic
+				  ? gimple_call_arg (call, 3)
+				  : integer_zero_node);
+      result = expand_builtin (exp, gen_reg_rtx (mode), NULL_RTX,
+			       mode, !lhs);
+    }
+
   if (lhs)
     {
       result = emit_store_flag_force (target, comp, result, const0_rtx, mode,
@@ -9225,6 +9263,12 @@ fold_builtin_0 (location_t loc, tree fndecl)
 
     case BUILT_IN_CLASSIFY_TYPE:
       return fold_builtin_classify_type (NULL_TREE);
+
+    case BUILT_IN_UNREACHABLE:
+      /* Rewrite any explicit calls to __builtin_unreachable.  */
+      if (sanitize_flags_p (SANITIZE_UNREACHABLE))
+	return build_builtin_unreachable (loc);
+      break;
 
     default:
       break;

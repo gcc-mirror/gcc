@@ -454,13 +454,13 @@ long_type_suffix (function_resolver &r, type_suffix_index type)
 struct nonoverloaded_base : public function_shape
 {
   bool
-  explicit_type_suffix_p (unsigned int) const OVERRIDE
+  explicit_type_suffix_p (unsigned int) const override
   {
     return true;
   }
 
   tree
-  resolve (function_resolver &) const OVERRIDE
+  resolve (function_resolver &) const override
   {
     gcc_unreachable ();
   }
@@ -472,7 +472,7 @@ template<unsigned int EXPLICIT_MASK>
 struct overloaded_base : public function_shape
 {
   bool
-  explicit_type_suffix_p (unsigned int i) const OVERRIDE
+  explicit_type_suffix_p (unsigned int i) const override
   {
     return (EXPLICIT_MASK >> i) & 1;
   }
@@ -484,7 +484,7 @@ struct adr_base : public overloaded_base<0>
   /* The function takes two arguments: a vector base and a vector displacement
      (either an index or an offset).  Resolve based on them both.  */
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     mode_suffix_index mode;
@@ -503,7 +503,7 @@ template<type_class_index CLASS = function_resolver::SAME_TYPE_CLASS>
 struct binary_imm_narrowb_base : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_n);
     STATIC_ASSERT (CLASS == function_resolver::SAME_TYPE_CLASS
@@ -515,7 +515,7 @@ struct binary_imm_narrowb_base : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (1, 1);
   }
@@ -528,7 +528,7 @@ template<type_class_index CLASS = function_resolver::SAME_TYPE_CLASS>
 struct binary_imm_narrowt_base : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_n);
     STATIC_ASSERT (CLASS == function_resolver::SAME_TYPE_CLASS
@@ -540,7 +540,7 @@ struct binary_imm_narrowt_base : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -560,14 +560,14 @@ struct binary_imm_narrowt_base : public overloaded_base<0>
 struct binary_imm_long_base : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_n);
     build_all (b, "v0,vh0,su64", group, MODE_n);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type, result_type;
@@ -623,7 +623,7 @@ struct inc_dec_base : public overloaded_base<0>
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return c.require_immediate_range (m_pat_p ? 2 : 1, 1, 16);
   }
@@ -637,7 +637,7 @@ struct load_contiguous_base : public overloaded_base<0>
   /* Resolve a call based purely on a pointer argument.  The other arguments
      are a governing predicate and (for MODE_vnum) a vnum offset.  */
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     bool vnum_p = r.mode_suffix_id == MODE_vnum;
     gcc_assert (r.mode_suffix_id == MODE_none || vnum_p);
@@ -658,7 +658,7 @@ struct load_contiguous_base : public overloaded_base<0>
 struct load_gather_sv_base : public overloaded_base<0>
 {
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     mode_suffix_index mode;
@@ -686,7 +686,7 @@ struct load_ext_gather_base : public overloaded_base<1>
      The function has an explicit type suffix that determines the type
      of the loaded data.  */
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     /* No resolution is needed for a vector base with no displacement;
        there's a one-to-one mapping between short and long names.  */
@@ -713,7 +713,7 @@ struct load_ext_gather_base : public overloaded_base<1>
 struct mmla_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     /* svmmla is distributed over several extensions.  Allow the common
@@ -729,7 +729,7 @@ struct mmla_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -769,7 +769,7 @@ struct prefetch_gather_base : public overloaded_base<0>
      The prefetch operation is the final argument.  This is purely a
      mode-based resolution; there are no type suffixes.  */
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     bool has_displacement_p = r.displacement_units () != UNITS_none;
 
@@ -791,7 +791,7 @@ template<typename BASE, unsigned int N>
 struct shift_right_imm_narrow_wrapper : public BASE
 {
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     unsigned int bits = c.type_suffix (0).element_bits / 2;
     return c.require_immediate_range (N, 1, bits);
@@ -811,7 +811,7 @@ struct store_scatter_base : public overloaded_base<0>
      The stored data is the final argument, and it determines the
      type suffix.  */
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     bool has_displacement_p = r.displacement_units () != UNITS_none;
 
@@ -832,14 +832,14 @@ struct store_scatter_base : public overloaded_base<0>
 struct ternary_shift_imm_base : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_n);
     build_all (b, "v0,v0,v0,su64", group, MODE_n);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (2, 1);
   }
@@ -862,7 +862,7 @@ template<unsigned int MODIFIER,
 struct ternary_resize2_opt_n_base : public overloaded_base<0>
 {
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -884,7 +884,7 @@ template<unsigned int MODIFIER,
 struct ternary_resize2_base : public overloaded_base<0>
 {
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -908,7 +908,7 @@ template<unsigned int MODIFIER,
 struct ternary_resize2_lane_base : public overloaded_base<0>
 {
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -932,14 +932,14 @@ struct ternary_bfloat_lane_base
   : public ternary_resize2_lane_base<16, TYPE_bfloat, TYPE_bfloat>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vB,vB,su64", group, MODE_none);
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return c.require_immediate_lane_index (3, N);
   }
@@ -954,7 +954,7 @@ struct ternary_qq_lane_base
 				     TYPE_CLASS2, TYPE_CLASS3>
 {
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return c.require_immediate_lane_index (3, 4);
   }
@@ -966,7 +966,7 @@ template<type_class_index CLASS = function_resolver::SAME_TYPE_CLASS>
 struct unary_narrowb_base : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     STATIC_ASSERT (CLASS == function_resolver::SAME_TYPE_CLASS
@@ -978,7 +978,7 @@ struct unary_narrowb_base : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_unary (CLASS, r.HALF_SIZE);
   }
@@ -991,7 +991,7 @@ template<type_class_index CLASS = function_resolver::SAME_TYPE_CLASS>
 struct unary_narrowt_base : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     STATIC_ASSERT (CLASS == function_resolver::SAME_TYPE_CLASS
@@ -1003,7 +1003,7 @@ struct unary_narrowt_base : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1023,7 +1023,7 @@ struct unary_narrowt_base : public overloaded_base<0>
 struct adr_index_def : public adr_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_index);
     build_all (b, "b,b,d", group, MODE_u32base_s32index);
@@ -1041,7 +1041,7 @@ SHAPE (adr_index)
 struct adr_offset_def : public adr_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_offset);
     build_all (b, "b,b,d", group, MODE_u32base_s32offset);
@@ -1058,14 +1058,14 @@ SHAPE (adr_offset)
 struct binary_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (2);
   }
@@ -1080,7 +1080,7 @@ SHAPE (binary)
 struct binary_int_opt_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vs0", group, MODE_none);
@@ -1088,7 +1088,7 @@ struct binary_int_opt_n_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1108,20 +1108,20 @@ SHAPE (binary_int_opt_n)
 struct binary_lane_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (2, 1);
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return c.require_immediate_lane_index (2);
   }
@@ -1135,14 +1135,14 @@ SHAPE (binary_lane)
 struct binary_long_lane_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,vh0,vh0,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type, result_type;
@@ -1160,7 +1160,7 @@ struct binary_long_lane_def : public overloaded_base<0>
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return c.require_immediate_lane_index (2);
   }
@@ -1172,7 +1172,7 @@ SHAPE (binary_long_lane)
 struct binary_long_opt_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,vh0,vh0", group, MODE_none);
@@ -1180,7 +1180,7 @@ struct binary_long_opt_n_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type, result_type;
@@ -1202,14 +1202,14 @@ SHAPE (binary_long_opt_n)
 struct binary_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_n);
     build_all (b, "v0,v0,s0", group, MODE_n);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1231,7 +1231,7 @@ SHAPE (binary_n)
 struct binary_narrowb_opt_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "vh0,v0,v0", group, MODE_none);
@@ -1239,7 +1239,7 @@ struct binary_narrowb_opt_n_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform_opt_n (2);
   }
@@ -1253,7 +1253,7 @@ SHAPE (binary_narrowb_opt_n)
 struct binary_narrowt_opt_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "vh0,vh0,v0,v0", group, MODE_none);
@@ -1261,7 +1261,7 @@ struct binary_narrowt_opt_n_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1284,7 +1284,7 @@ SHAPE (binary_narrowt_opt_n)
 struct binary_opt_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0", group, MODE_none);
@@ -1298,7 +1298,7 @@ struct binary_opt_n_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform_opt_n (2);
   }
@@ -1309,7 +1309,7 @@ SHAPE (binary_opt_n)
 struct binary_pred_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "v0,v0,v0", group, MODE_none);
   }
@@ -1322,20 +1322,20 @@ SHAPE (binary_pred)
 struct binary_rotate_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (2, 1);
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return c.require_immediate_either_or (2, 90, 270);
   }
@@ -1349,7 +1349,7 @@ SHAPE (binary_rotate)
 struct binary_scalar_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "v0,s0,s0", group, MODE_none);
   }
@@ -1362,14 +1362,14 @@ SHAPE (binary_scalar)
 struct binary_to_uint_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "vu0,v0,v0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (2);
   }
@@ -1383,14 +1383,14 @@ SHAPE (binary_to_uint)
 struct binary_uint_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vu0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1411,14 +1411,14 @@ SHAPE (binary_uint)
 struct binary_uint_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,su0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1440,7 +1440,7 @@ SHAPE (binary_uint_n)
 struct binary_uint_opt_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vu0", group, MODE_none);
@@ -1448,7 +1448,7 @@ struct binary_uint_opt_n_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1468,14 +1468,14 @@ SHAPE (binary_uint_opt_n)
 struct binary_uint64_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1497,7 +1497,7 @@ SHAPE (binary_uint64_n)
 struct binary_uint64_opt_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vu64", group, MODE_none);
@@ -1505,7 +1505,7 @@ struct binary_uint64_opt_n_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1522,14 +1522,14 @@ SHAPE (binary_uint64_opt_n)
 struct binary_wide_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vh0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1549,7 +1549,7 @@ SHAPE (binary_wide)
 struct binary_wide_opt_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vh0", group, MODE_none);
@@ -1557,7 +1557,7 @@ struct binary_wide_opt_n_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1576,7 +1576,7 @@ SHAPE (binary_wide_opt_n)
 struct clast_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0", group, MODE_none);
@@ -1584,7 +1584,7 @@ struct clast_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     if (!r.check_gp_argument (2, i, nargs)
@@ -1615,14 +1615,14 @@ SHAPE (clast)
 struct compare_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "vp,v0,v0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (2);
   }
@@ -1636,7 +1636,7 @@ SHAPE (compare)
 struct compare_opt_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "vp,v0,v0", group, MODE_none);
@@ -1644,7 +1644,7 @@ struct compare_opt_n_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform_opt_n (2);
   }
@@ -1655,14 +1655,14 @@ SHAPE (compare_opt_n)
 struct compare_ptr_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "vp,al,al", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1684,14 +1684,14 @@ SHAPE (compare_ptr)
 struct compare_scalar_def : public overloaded_base<1>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "vp,s1,s1", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1714,7 +1714,7 @@ SHAPE (compare_scalar)
 struct compare_wide_opt_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "vp,v0,vw0", group, MODE_none);
@@ -1722,7 +1722,7 @@ struct compare_wide_opt_n_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1739,7 +1739,7 @@ SHAPE (compare_wide_opt_n)
 struct count_inherent_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "su64", group, MODE_none);
   }
@@ -1750,7 +1750,7 @@ SHAPE (count_inherent)
 struct count_pat_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "su64,epattern", group, MODE_none);
   }
@@ -1761,7 +1761,7 @@ SHAPE (count_pat)
 struct count_pred_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "su64,vp", group, MODE_none);
   }
@@ -1772,14 +1772,14 @@ SHAPE (count_pred)
 struct count_vector_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "su64,v0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (1);
   }
@@ -1792,14 +1792,14 @@ SHAPE (count_vector)
 struct create_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "t0,v0*t", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (r.vectors_per_tuple ());
   }
@@ -1813,7 +1813,7 @@ SHAPE (create)
 struct dupq_def : public overloaded_base<1>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     /* The "_n" suffix is optional; the full name has it, but the short
        name doesn't.  */
@@ -1821,7 +1821,7 @@ struct dupq_def : public overloaded_base<1>
   }
 
   tree
-  resolve (function_resolver &) const OVERRIDE
+  resolve (function_resolver &) const override
   {
     /* The short forms just make "_n" implicit, so no resolution is needed.  */
     gcc_unreachable ();
@@ -1836,20 +1836,20 @@ SHAPE (dupq)
 struct ext_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (2, 1);
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     unsigned int bytes = c.type_suffix (0).element_bytes;
     return c.require_immediate_range (2, 0, 256 / bytes - 1);
@@ -1861,14 +1861,14 @@ SHAPE (ext)
 struct fold_left_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "s0,s0,v0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1889,14 +1889,14 @@ SHAPE (fold_left)
 struct get_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,t0,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1909,7 +1909,7 @@ struct get_def : public overloaded_base<0>
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     unsigned int nvectors = c.vectors_per_tuple ();
     return c.require_immediate_range (1, 0, nvectors - 1);
@@ -1927,7 +1927,7 @@ struct inc_dec_def : public inc_dec_base
   CONSTEXPR inc_dec_def () : inc_dec_base (false) {}
 
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     /* These functions are unusual in that the type suffixes for
@@ -1952,7 +1952,7 @@ struct inc_dec_pat_def : public inc_dec_base
   CONSTEXPR inc_dec_pat_def () : inc_dec_base (true) {}
 
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     /* These functions are unusual in that the type suffixes for
@@ -1971,14 +1971,14 @@ SHAPE (inc_dec_pat)
 struct inc_dec_pred_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vp", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -1998,14 +1998,14 @@ SHAPE (inc_dec_pred)
 struct inc_dec_pred_scalar_def : public overloaded_base<2>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_n);
     build_all (b, "s0,s0,vp", group, MODE_n);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -2023,7 +2023,7 @@ SHAPE (inc_dec_pred_scalar)
 struct inherent_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "t0", group, MODE_none);
   }
@@ -2034,7 +2034,7 @@ SHAPE (inherent)
 struct inherent_b_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     /* The "_b" suffix is optional; the full name has it, but the short
        name doesn't.  */
@@ -2042,7 +2042,7 @@ struct inherent_b_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &) const OVERRIDE
+  resolve (function_resolver &) const override
   {
     /* The short forms just make "_b" implicit, so no resolution is needed.  */
     gcc_unreachable ();
@@ -2055,7 +2055,7 @@ SHAPE (inherent_b)
 struct load_def : public load_contiguous_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     b.add_overloaded_functions (group, MODE_vnum);
@@ -2072,7 +2072,7 @@ SHAPE (load)
 struct load_ext_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "t0,al", group, MODE_none);
     build_all (b, "t0,al,ss64", group, MODE_vnum);
@@ -2092,7 +2092,7 @@ SHAPE (load_ext)
 struct load_ext_gather_index_def : public load_ext_gather_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_index);
     build_sv_index (b, "t0,al,d", group);
@@ -2112,7 +2112,7 @@ SHAPE (load_ext_gather_index)
 struct load_ext_gather_index_restricted_def : public load_ext_gather_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_index);
     build_sv_index64 (b, "t0,al,d", group);
@@ -2136,7 +2136,7 @@ SHAPE (load_ext_gather_index_restricted)
 struct load_ext_gather_offset_def : public load_ext_gather_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_offset);
     build_sv_offset (b, "t0,al,d", group);
@@ -2161,7 +2161,7 @@ SHAPE (load_ext_gather_offset)
 struct load_ext_gather_offset_restricted_def : public load_ext_gather_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_offset);
     build_sv_uint_offset (b, "t0,al,d", group);
@@ -2183,7 +2183,7 @@ SHAPE (load_ext_gather_offset_restricted)
 struct load_gather_sv_def : public load_gather_sv_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_index);
     b.add_overloaded_functions (group, MODE_offset);
@@ -2205,7 +2205,7 @@ SHAPE (load_gather_sv)
 struct load_gather_sv_restricted_def : public load_gather_sv_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_index);
     b.add_overloaded_functions (group, MODE_offset);
@@ -2226,7 +2226,7 @@ SHAPE (load_gather_sv_restricted)
 struct load_gather_vs_def : public overloaded_base<1>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     /* The base vector mode is optional; the full name has it but the
        short name doesn't.  There is no ambiguity with SHAPE_load_gather_sv
@@ -2237,7 +2237,7 @@ struct load_gather_vs_def : public overloaded_base<1>
   }
 
   tree
-  resolve (function_resolver &) const OVERRIDE
+  resolve (function_resolver &) const override
   {
     /* The short name just makes the base vector mode implicit;
        no resolution is needed.  */
@@ -2252,7 +2252,7 @@ SHAPE (load_gather_vs)
 struct load_replicate_def : public load_contiguous_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "t0,al", group, MODE_none);
@@ -2264,7 +2264,7 @@ SHAPE (load_replicate)
 struct pattern_pred_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "vp,epattern", group, MODE_none);
   }
@@ -2276,7 +2276,7 @@ SHAPE (pattern_pred)
 struct prefetch_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "_,ap,eprfop", group, MODE_none);
     build_all (b, "_,ap,ss64,eprfop", group, MODE_vnum);
@@ -2297,7 +2297,7 @@ SHAPE (prefetch)
 struct prefetch_gather_index_def : public prefetch_gather_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     b.add_overloaded_functions (group, MODE_index);
@@ -2321,7 +2321,7 @@ SHAPE (prefetch_gather_index)
 struct prefetch_gather_offset_def : public prefetch_gather_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     b.add_overloaded_functions (group, MODE_offset);
@@ -2336,7 +2336,7 @@ SHAPE (prefetch_gather_offset)
 struct ptest_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "sp,vp", group, MODE_none);
   }
@@ -2347,7 +2347,7 @@ SHAPE (ptest)
 struct rdffr_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "vp", group, MODE_none);
   }
@@ -2358,14 +2358,14 @@ SHAPE (rdffr)
 struct reduction_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "s0,v0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (1);
   }
@@ -2381,14 +2381,14 @@ SHAPE (reduction)
 struct reduction_wide_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "sw0,v0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (1);
   }
@@ -2402,14 +2402,14 @@ SHAPE (reduction_wide)
 struct set_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "t0,t0,su64,v0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -2423,7 +2423,7 @@ struct set_def : public overloaded_base<0>
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     unsigned int nvectors = c.vectors_per_tuple ();
     return c.require_immediate_range (1, 0, nvectors - 1);
@@ -2435,7 +2435,7 @@ SHAPE (set)
 struct setffr_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "_", group, MODE_none);
   }
@@ -2449,20 +2449,20 @@ SHAPE (setffr)
 struct shift_left_imm_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_n);
     build_all (b, "v0,v0,su64", group, MODE_n);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (1, 1);
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     unsigned int bits = c.type_suffix (0).element_bits;
     return c.require_immediate_range (1, 0, bits - 1);
@@ -2477,7 +2477,7 @@ SHAPE (shift_left_imm)
 struct shift_left_imm_long_def : public binary_imm_long_base
 {
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     unsigned int bits = c.type_suffix (0).element_bits / 2;
     return c.require_immediate_range (1, 0, bits - 1);
@@ -2492,7 +2492,7 @@ SHAPE (shift_left_imm_long)
 struct shift_left_imm_to_uint_def : public shift_left_imm_def
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_n);
     build_all (b, "vu0,v0,su64", group, MODE_n);
@@ -2507,20 +2507,20 @@ SHAPE (shift_left_imm_to_uint)
 struct shift_right_imm_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_n);
     build_all (b, "v0,v0,su64", group, MODE_n);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (1, 1);
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     unsigned int bits = c.type_suffix (0).element_bits;
     return c.require_immediate_range (1, 1, bits);
@@ -2572,7 +2572,7 @@ SHAPE (shift_right_imm_narrowt_to_uint)
 struct store_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     b.add_overloaded_functions (group, MODE_vnum);
@@ -2581,7 +2581,7 @@ struct store_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     bool vnum_p = r.mode_suffix_id == MODE_vnum;
     gcc_assert (r.mode_suffix_id == MODE_none || vnum_p);
@@ -2612,7 +2612,7 @@ SHAPE (store)
 struct store_scatter_index_def : public store_scatter_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_index);
     build_sv_index (b, "_,as,d,t0", group);
@@ -2632,7 +2632,7 @@ SHAPE (store_scatter_index)
 struct store_scatter_index_restricted_def : public store_scatter_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_index);
     build_sv_index64 (b, "_,as,d,t0", group);
@@ -2657,7 +2657,7 @@ SHAPE (store_scatter_index_restricted)
 struct store_scatter_offset_def : public store_scatter_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     b.add_overloaded_functions (group, MODE_offset);
@@ -2683,7 +2683,7 @@ SHAPE (store_scatter_offset)
 struct store_scatter_offset_restricted_def : public store_scatter_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     b.add_overloaded_functions (group, MODE_offset);
@@ -2698,14 +2698,14 @@ SHAPE (store_scatter_offset_restricted)
 struct tbl_tuple_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,t0,vu0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -2724,7 +2724,7 @@ struct ternary_bfloat_def
   : public ternary_resize2_base<16, TYPE_bfloat, TYPE_bfloat>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vB,vB", group, MODE_none);
@@ -2752,7 +2752,7 @@ struct ternary_bfloat_opt_n_def
   : public ternary_resize2_opt_n_base<16, TYPE_bfloat, TYPE_bfloat>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vB,vB", group, MODE_none);
@@ -2770,7 +2770,7 @@ struct ternary_intq_uintq_lane_def
   : public ternary_qq_lane_base<TYPE_signed, TYPE_unsigned>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vqs0,vqu0,su64", group, MODE_none);
@@ -2786,7 +2786,7 @@ struct ternary_intq_uintq_opt_n_def
 				      TYPE_signed, TYPE_unsigned>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vqs0,vqu0", group, MODE_none);
@@ -2802,20 +2802,20 @@ SHAPE (ternary_intq_uintq_opt_n)
 struct ternary_lane_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0,v0,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (3, 1);
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return c.require_immediate_lane_index (3);
   }
@@ -2830,20 +2830,20 @@ SHAPE (ternary_lane)
 struct ternary_lane_rotate_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0,v0,su64,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (3, 2);
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return (c.require_immediate_lane_index (3, 2)
 	    && c.require_immediate_one_of (4, 0, 90, 180, 270));
@@ -2859,14 +2859,14 @@ struct ternary_long_lane_def
   : public ternary_resize2_lane_base<function_resolver::HALF_SIZE>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vh0,vh0,su64", group, MODE_none);
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return c.require_immediate_lane_index (3);
   }
@@ -2883,7 +2883,7 @@ struct ternary_long_opt_n_def
   : public ternary_resize2_opt_n_base<function_resolver::HALF_SIZE>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vh0,vh0", group, MODE_none);
@@ -2900,7 +2900,7 @@ SHAPE (ternary_long_opt_n)
 struct ternary_opt_n_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0,v0", group, MODE_none);
@@ -2908,7 +2908,7 @@ struct ternary_opt_n_def : public overloaded_base<0>
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform_opt_n (3);
   }
@@ -2922,7 +2922,7 @@ SHAPE (ternary_opt_n)
 struct ternary_qq_lane_def : public ternary_qq_lane_base<>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vq0,vq0,su64", group, MODE_none);
@@ -2938,14 +2938,14 @@ SHAPE (ternary_qq_lane)
 struct ternary_qq_lane_rotate_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vq0,vq0,su64,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -2963,7 +2963,7 @@ struct ternary_qq_lane_rotate_def : public overloaded_base<0>
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return (c.require_immediate_lane_index (3, 4)
 	    && c.require_immediate_one_of (4, 0, 90, 180, 270));
@@ -2981,7 +2981,7 @@ struct ternary_qq_opt_n_def
   : public ternary_resize2_opt_n_base<function_resolver::QUARTER_SIZE>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vq0,vq0", group, MODE_none);
@@ -2998,14 +2998,14 @@ SHAPE (ternary_qq_opt_n)
 struct ternary_qq_rotate_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vq0,vq0,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -3022,7 +3022,7 @@ struct ternary_qq_rotate_def : public overloaded_base<0>
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return c.require_immediate_one_of (3, 0, 90, 180, 270);
   }
@@ -3036,20 +3036,20 @@ SHAPE (ternary_qq_rotate)
 struct ternary_rotate_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0,v0,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (3, 1);
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return c.require_immediate_one_of (3, 0, 90, 180, 270);
   }
@@ -3063,7 +3063,7 @@ SHAPE (ternary_rotate)
 struct ternary_shift_left_imm_def : public ternary_shift_imm_base
 {
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     unsigned int bits = c.type_suffix (0).element_bits;
     return c.require_immediate_range (2, 0, bits - 1);
@@ -3078,7 +3078,7 @@ SHAPE (ternary_shift_left_imm)
 struct ternary_shift_right_imm_def : public ternary_shift_imm_base
 {
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     unsigned int bits = c.type_suffix (0).element_bits;
     return c.require_immediate_range (2, 1, bits);
@@ -3090,14 +3090,14 @@ SHAPE (ternary_shift_right_imm)
 struct ternary_uint_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0,vu0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -3119,7 +3119,7 @@ struct ternary_uintq_intq_def
 				TYPE_unsigned, TYPE_signed>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vqu0,vqs0", group, MODE_none);
@@ -3136,7 +3136,7 @@ struct ternary_uintq_intq_lane_def
   : public ternary_qq_lane_base<TYPE_unsigned, TYPE_signed>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vqu0,vqs0,su64", group, MODE_none);
@@ -3152,7 +3152,7 @@ struct ternary_uintq_intq_opt_n_def
 				      TYPE_unsigned, TYPE_signed>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,vqu0,vqs0", group, MODE_none);
@@ -3168,20 +3168,20 @@ SHAPE (ternary_uintq_intq_opt_n)
 struct tmad_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0,v0,su64", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_uniform (2, 1);
   }
 
   bool
-  check (function_checker &c) const OVERRIDE
+  check (function_checker &c) const override
   {
     return c.require_immediate_range (2, 0, 7);
   }
@@ -3195,14 +3195,14 @@ SHAPE (tmad)
 struct unary_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_unary ();
   }
@@ -3216,14 +3216,14 @@ SHAPE (unary)
 struct unary_convert_def : public overloaded_base<1>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v1", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_unary (r.type_suffix (0).tclass,
 			    r.type_suffix (0).element_bits);
@@ -3239,14 +3239,14 @@ SHAPE (unary_convert)
 struct unary_convert_narrowt_def : public overloaded_base<1>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,v1", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_unary (r.type_suffix (0).tclass,
 			    r.type_suffix (0).element_bits, true);
@@ -3258,14 +3258,14 @@ SHAPE (unary_convert_narrowt)
 struct unary_long_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,vh0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type, result_type;
@@ -3286,7 +3286,7 @@ SHAPE (unary_long)
 struct unary_n_def : public overloaded_base<1>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     /* The "_n" suffix is optional; the full name has it, but the short
        name doesn't.  */
@@ -3294,7 +3294,7 @@ struct unary_n_def : public overloaded_base<1>
   }
 
   tree
-  resolve (function_resolver &) const OVERRIDE
+  resolve (function_resolver &) const override
   {
     /* The short forms just make "_n" implicit, so no resolution is needed.  */
     gcc_unreachable ();
@@ -3322,7 +3322,7 @@ SHAPE (unary_narrowt_to_uint)
 struct unary_pred_def : public nonoverloaded_base
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     build_all (b, "v0,v0", group, MODE_none);
   }
@@ -3336,14 +3336,14 @@ SHAPE (unary_pred)
 struct unary_to_int_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "vs0,v0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_unary (TYPE_signed);
   }
@@ -3357,14 +3357,14 @@ SHAPE (unary_to_int)
 struct unary_to_uint_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "vu0,v0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     return r.resolve_unary (TYPE_unsigned);
   }
@@ -3378,14 +3378,14 @@ SHAPE (unary_to_uint)
 struct unary_uint_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,vu0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;
@@ -3414,14 +3414,14 @@ SHAPE (unary_uint)
 struct unary_widen_def : public overloaded_base<0>
 {
   void
-  build (function_builder &b, const function_group_info &group) const OVERRIDE
+  build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
     build_all (b, "v0,vh0", group, MODE_none);
   }
 
   tree
-  resolve (function_resolver &r) const OVERRIDE
+  resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
     type_suffix_index type;

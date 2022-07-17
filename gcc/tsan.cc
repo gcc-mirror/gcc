@@ -909,13 +909,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_tsan (m_ctxt); }
-  virtual bool gate (function *)
+  opt_pass * clone () final override { return new pass_tsan (m_ctxt); }
+  bool gate (function *) final override
 {
   return sanitize_flags_p (SANITIZE_THREAD);
 }
 
-  virtual unsigned int execute (function *) { return tsan_pass (); }
+  unsigned int execute (function *) final override { return tsan_pass (); }
 
 }; // class pass_tsan
 
@@ -950,12 +950,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return (sanitize_flags_p (SANITIZE_THREAD) && !optimize);
     }
 
-  virtual unsigned int execute (function *) { return tsan_pass (); }
+  unsigned int execute (function *) final override { return tsan_pass (); }
 
 }; // class pass_tsan_O0
 

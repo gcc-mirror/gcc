@@ -606,7 +606,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 				  : TYPE_FIELDS (type));
 		     ; prev = DECL_CHAIN (prev))
 		  {
-		    prev = next_initializable_field (prev);
+		    prev = next_aggregate_field (prev);
 		    if (prev == field_index)
 		      break;
 		    tree ptype = TREE_TYPE (prev);
@@ -1304,7 +1304,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
 	    the first element of d, which is the B base subobject.  The base
 	    of type B is copy-initialized from the D temporary, causing
 	    object slicing.  */
-	  tree field = next_initializable_field (TYPE_FIELDS (type));
+	  tree field = next_aggregate_field (TYPE_FIELDS (type));
 	  if (field && DECL_FIELD_IS_BASE (field))
 	    {
 	      if (warning_at (loc, 0, "initializing a base class of type %qT "
@@ -1371,6 +1371,71 @@ digest_init_flags (tree type, tree init, int flags, tsubst_flags_t complain)
   return digest_init_r (type, init, 0, flags, complain);
 }
 
+/* Return true if SUBOB initializes the same object as FULL_EXPR.
+   For instance:
+
+     A a = A{};		      // initializer
+     A a = (A{});	      // initializer
+     A a = (1, A{});	      // initializer
+     A a = true ? A{} : A{};  // initializer
+     auto x = A{}.x;	      // temporary materialization
+     auto x = foo(A{});	      // temporary materialization
+
+   FULL_EXPR is the whole expression, SUBOB is its TARGET_EXPR subobject.  */
+
+static bool
+potential_prvalue_result_of (tree subob, tree full_expr)
+{
+  if (subob == full_expr)
+    return true;
+  else if (TREE_CODE (full_expr) == TARGET_EXPR)
+    {
+      tree init = TARGET_EXPR_INITIAL (full_expr);
+      if (TREE_CODE (init) == COND_EXPR)
+	return (potential_prvalue_result_of (subob, TREE_OPERAND (init, 1))
+		|| potential_prvalue_result_of (subob, TREE_OPERAND (init, 2)));
+      else if (TREE_CODE (init) == COMPOUND_EXPR)
+	return potential_prvalue_result_of (subob, TREE_OPERAND (init, 1));
+      /* ??? I don't know if this can be hit.  */
+      else if (TREE_CODE (init) == PAREN_EXPR)
+	{
+	  gcc_checking_assert (false);
+	  return potential_prvalue_result_of (subob, TREE_OPERAND (init, 0));
+	}
+    }
+  return false;
+}
+
+/* Callback to replace PLACEHOLDER_EXPRs in a TARGET_EXPR (which isn't used
+   in the context of guaranteed copy elision).  */
+
+static tree
+replace_placeholders_for_class_temp_r (tree *tp, int *, void *data)
+{
+  tree t = *tp;
+  tree full_expr = *static_cast<tree *>(data);
+
+  /* We're looking for a TARGET_EXPR nested in the whole expression.  */
+  if (TREE_CODE (t) == TARGET_EXPR
+      && !potential_prvalue_result_of (t, full_expr))
+    {
+      tree init = TARGET_EXPR_INITIAL (t);
+      while (TREE_CODE (init) == COMPOUND_EXPR)
+	init = TREE_OPERAND (init, 1);
+      if (TREE_CODE (init) == CONSTRUCTOR
+	  && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init))
+	{
+	  tree obj = TARGET_EXPR_SLOT (t);
+	  replace_placeholders (init, obj);
+	  /* We should have dealt with all PLACEHOLDER_EXPRs.  */
+	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = false;
+	  gcc_checking_assert (!find_placeholders (init));
+	}
+    }
+
+  return NULL_TREE;
+}
+
 /* Process the initializer INIT for an NSDMI DECL (a FIELD_DECL).  */
 tree
 digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
@@ -1390,6 +1455,32 @@ digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
       && CP_AGGREGATE_TYPE_P (type))
     init = reshape_init (type, init, complain);
   init = digest_init_flags (type, init, flags, complain);
+
+  /* We may have temporary materialization in a NSDMI, if the initializer
+     has something like A{} in it.  Digesting the {} could have introduced
+     a PLACEHOLDER_EXPR referring to A.  Now that we've got a TARGET_EXPR,
+     we have an object we can refer to.  The reason we bother doing this
+     here is for code like
+
+       struct A {
+	 int x;
+	 int y = x;
+       };
+
+       struct B {
+	 int x = 0;
+	 int y = A{x}.y; // #1
+       };
+
+     where in #1 we don't want to end up with two PLACEHOLDER_EXPRs for
+     different types on the same level in a {} when lookup_placeholder
+     wouldn't find a named object for the PLACEHOLDER_EXPR for A.  Note,
+     temporary materialization does not occur when initializing an object
+     from a prvalue of the same type, therefore we must not replace the
+     placeholder with a temporary object so that it can be elided.  */
+  cp_walk_tree (&init, replace_placeholders_for_class_temp_r, &init,
+		nullptr);
+
   return init;
 }
 
@@ -1515,6 +1606,14 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 	      strip_array_types (TREE_TYPE (ce->value)))));
 
       picflags |= picflag_from_initializer (ce->value);
+      /* Propagate CONSTRUCTOR_PLACEHOLDER_BOUNDARY to outer
+	 CONSTRUCTOR.  */
+      if (TREE_CODE (ce->value) == CONSTRUCTOR
+	  && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value))
+	{
+	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
+	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value) = 0;
+	}
     }
 
   /* No more initializers. If the array is unbounded, we are done. Otherwise,
@@ -1560,6 +1659,14 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 	      }
 
 	    picflags |= picflag_from_initializer (next);
+	    /* Propagate CONSTRUCTOR_PLACEHOLDER_BOUNDARY to outer
+	       CONSTRUCTOR.  */
+	    if (TREE_CODE (next) == CONSTRUCTOR
+		&& CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next))
+	      {
+		CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
+		CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next) = 0;
+	      }
 	    if (len > i+1)
 	      {
 		tree range = build2 (RANGE_EXPR, size_type_node,
@@ -1754,6 +1861,13 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
       if (fldtype != TREE_TYPE (field))
 	next = cp_convert_and_check (TREE_TYPE (field), next, complain);
       picflags |= picflag_from_initializer (next);
+      /* Propagate CONSTRUCTOR_PLACEHOLDER_BOUNDARY to outer CONSTRUCTOR.  */
+      if (TREE_CODE (next) == CONSTRUCTOR
+	  && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next))
+	{
+	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
+	  CONSTRUCTOR_PLACEHOLDER_BOUNDARY (next) = 0;
+	}
       CONSTRUCTOR_APPEND_ELT (v, field, next);
     }
 
@@ -1894,6 +2008,14 @@ process_init_constructor_union (tree type, tree init, int nested, int flags,
     ce->value = massage_init_elt (TREE_TYPE (ce->index), ce->value, nested,
 				  flags, complain);
 
+  /* Propagate CONSTRUCTOR_PLACEHOLDER_BOUNDARY to outer CONSTRUCTOR.  */
+  if (ce->value
+      && TREE_CODE (ce->value) == CONSTRUCTOR
+      && CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value))
+    {
+      CONSTRUCTOR_PLACEHOLDER_BOUNDARY (init) = 1;
+      CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ce->value) = 0;
+    }
   return picflag_from_initializer (ce->value);
 }
 

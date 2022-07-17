@@ -642,8 +642,7 @@ compute_alignments (void)
       flow_loops_dump (dump_file, NULL, 1);
     }
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
-  profile_count count_threshold = cfun->cfg->count_max.apply_scale
-		 (1, param_align_threshold);
+  profile_count count_threshold = cfun->cfg->count_max / param_align_threshold;
 
   if (dump_file)
     {
@@ -710,10 +709,9 @@ compute_alignments (void)
 
       if (!has_fallthru
 	  && (branch_count > count_threshold
-	      || (bb->count > bb->prev_bb->count.apply_scale (10, 1)
+	      || (bb->count > bb->prev_bb->count * 10
 		  && (bb->prev_bb->count
-		      <= ENTRY_BLOCK_PTR_FOR_FN (cfun)
-			   ->count.apply_scale (1, 2)))))
+		      <= ENTRY_BLOCK_PTR_FOR_FN (cfun)->count / 2))))
 	{
 	  align_flags alignment = JUMP_ALIGN (label);
 	  if (dump_file)
@@ -727,9 +725,7 @@ compute_alignments (void)
 	       && single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  && optimize_bb_for_speed_p (bb)
 	  && branch_count + fallthru_count > count_threshold
-	  && (branch_count
-	      > fallthru_count.apply_scale
-		    (param_align_loop_iterations, 1)))
+	  && (branch_count > fallthru_count * param_align_loop_iterations))
 	{
 	  align_flags alignment = LOOP_ALIGN (label);
 	  if (dump_file)
@@ -808,7 +804,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return compute_alignments (); }
+  unsigned int execute (function *) final override
+  {
+    return compute_alignments ();
+  }
 
 }; // class pass_compute_alignments
 
@@ -4360,7 +4359,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return rest_of_handle_final (); }
+  unsigned int execute (function *) final override
+  {
+    return rest_of_handle_final ();
+  }
 
 }; // class pass_final
 
@@ -4404,7 +4406,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_handle_shorten_branches ();
     }
@@ -4579,7 +4581,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return rest_of_clean_state ();
     }

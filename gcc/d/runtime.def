@@ -61,7 +61,6 @@ DEF_D_RUNTIME (ARRAYBOUNDS_INDEXP, "_d_arraybounds_indexp", RT(VOID),
 
 /* Used when calling new on a class.  */
 DEF_D_RUNTIME (NEWCLASS, "_d_newclass", RT(OBJECT), P1(CONST_CLASSINFO), 0)
-DEF_D_RUNTIME (NEWTHROW, "_d_newThrowable", RT(OBJECT), P1(CONST_CLASSINFO), 0)
 
 /* Used when calling delete on a stack-allocated class or interface.  */
 DEF_D_RUNTIME (CALLFINALIZER, "_d_callfinalizer", RT(VOID), P1(VOIDPTR), 0)
@@ -144,10 +143,6 @@ DEF_D_RUNTIME (ARRAYAPPENDCD, "_d_arrayappendcd", RT(ARRAY_VOID),
 	       P2(ARRAYPTR_BYTE, DCHAR), 0)
 DEF_D_RUNTIME (ARRAYAPPENDWD, "_d_arrayappendwd", RT(ARRAY_VOID),
 	       P2(ARRAYPTR_BYTE, DCHAR), 0)
-
-/* Used for appending an existing array to another.  */
-DEF_D_RUNTIME (ARRAYAPPENDT, "_d_arrayappendT", RT(ARRAY_VOID),
-	       P3(TYPEINFO, ARRAYPTR_BYTE, ARRAY_BYTE), 0)
 
 /* Used for allocating a new associative array.  */
 DEF_D_RUNTIME (ASSOCARRAYLITERALTX, "_d_assocarrayliteralTX", RT(VOIDPTR),

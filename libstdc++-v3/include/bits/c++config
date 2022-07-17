@@ -345,13 +345,16 @@ namespace __gnu_cxx
 # define _GLIBCXX_DEFAULT_ABI_TAG
 #endif
 
-// Defined if inline namespaces are used for versioning.
+// Non-zero if inline namespaces are used for versioning the entire library.
 #define _GLIBCXX_INLINE_VERSION 
 
-// Inline namespace for symbol versioning.
 #if _GLIBCXX_INLINE_VERSION
+// Inline namespace for symbol versioning of (nearly) everything in std.
 # define _GLIBCXX_BEGIN_NAMESPACE_VERSION namespace __8 {
 # define _GLIBCXX_END_NAMESPACE_VERSION }
+// Unused when everything in std is versioned anyway.
+# define _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(X)
+# define _GLIBCXX_END_INLINE_ABI_NAMESPACE(X)
 
 namespace std
 {
@@ -376,8 +379,12 @@ _GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #else
+// Unused.
 # define _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_END_NAMESPACE_VERSION
+// Used to version individual components, e.g. std::_V2::error_category.
+# define _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(X) inline namespace X {
+# define _GLIBCXX_END_INLINE_ABI_NAMESPACE(X)   } // inline namespace X
 #endif
 
 // Inline namespaces for special modes: debug, parallel.
@@ -815,6 +822,9 @@ namespace std
 #endif
 
 #undef _GLIBCXX_HAS_BUILTIN
+
+// Mark code that should be ignored by the compiler, but seen by Doxygen.
+#define _GLIBCXX_DOXYGEN_ONLY(X)
 
 // PSTL configuration
 

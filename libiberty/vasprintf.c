@@ -33,7 +33,7 @@ Floor, Boston, MA 02110-1301, USA.  */
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #else
-extern PTR malloc ();
+extern void *malloc ();
 #endif
 #include "libiberty.h"
 #include "vprintf-support.h"

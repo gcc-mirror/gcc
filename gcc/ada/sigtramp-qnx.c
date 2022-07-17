@@ -49,7 +49,7 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 void __gnat_sigtramp (int signo, void *si, void *ucontext,
                       __sigtramphandler_t * handler)
 {
-  struct sigcontext *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
+  mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
 
   __gnat_sigtramp_common (signo, si, mcontext, handler);
 }

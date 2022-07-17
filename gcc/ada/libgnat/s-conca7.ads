@@ -38,15 +38,8 @@ package System.Concat_7 is
      (R                          : out String;
       S1, S2, S3, S4, S5, S6, S7 : String);
    --  Performs the operation R := S1 & S2 & S3 & S4 & S5 & S6 & S7. The
-   --  bounds of R are known to be correct (usually set by a call to the
-   --  Str_Concat_Bounds_8 procedure below), so no bounds checks are required,
+   --  bounds of R are known to be sufficient so no bound checks are required,
    --  and it is known that none of the input operands overlaps R. No
    --  assumptions can be made about the lower bounds of any of the operands.
-
-   procedure Str_Concat_Bounds_7
-     (Lo, Hi                     : out Natural;
-      S1, S2, S3, S4, S5, S6, S7 : String);
-   --  Assigns to Lo..Hi the bounds of the result of concatenating the seven
-   --  given strings, following the rules in the RM regarding null operands.
 
 end System.Concat_7;

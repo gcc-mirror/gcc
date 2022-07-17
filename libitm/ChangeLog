@@ -1,3 +1,7 @@
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libitm.exp: Add load_gcc_lib of scansarif.exp.
+
 2022-02-03  David Seifert  <soap@gentoo.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

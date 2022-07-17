@@ -41,7 +41,12 @@ test01()
 
   check_ret_type<shared_ptr<void>>(static_pointer_cast<void>(spd));
   check_ret_type<shared_ptr<int>>(const_pointer_cast<int>(spci));
+  // Non-polymorphic dynamic_cast works without RTTI.
+  check_ret_type<shared_ptr<MyP>>(dynamic_pointer_cast<MyP>(spa));
+#if __cpp_rtti
+  // But polymorphic dynamic_cast needs RTTI.
   check_ret_type<shared_ptr<MyDP>>(dynamic_pointer_cast<MyDP>(spa));
+#endif
 }
 
 void
@@ -65,6 +70,7 @@ test02()
   VERIFY(pi.get() == ptr);
   VERIFY(pci.get() == ptr);
 
+#if __cpp_rtti
   MyP* pptr = new MyP;
   shared_ptr<MyP> pp(pptr);
   auto pdp = dynamic_pointer_cast<MyDP>(pp);
@@ -79,6 +85,7 @@ test02()
   VERIFY(pdp.use_count() == 2);
   VERIFY(pdp.get() == pptr);
   VERIFY(pp.get() == pptr);
+#endif
 }
 
 int main()

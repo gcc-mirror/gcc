@@ -12,5 +12,5 @@ template<class U> struct Ptr<U*> {}; // { dg-error "specialization" }
 
 struct A {
     using A = int;  // { dg-error "11:ISO C\\+\\+ forbids nested type .A." }
-// { dg-error "11:.using A = int. has the same name as" "" { target c++11 } .-1 }  
+// { dg-error "11:.using A::A = int. has the same name as" "" { target c++11 } .-1 }  
 };

@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 #define GCC_ANALYZER_PENDING_DIAGNOSTIC_H
 
+#include "diagnostic-path.h"
+
 namespace ana {
 
 /* A bundle of information about things that are of interest to a
@@ -54,6 +56,17 @@ struct event_desc
     ATTRIBUTE_GCC_DIAG(2,3);
 
   bool m_colorize;
+};
+
+/* For use by pending_diagnostic::describe_region_creation.  */
+
+struct region_creation : public event_desc
+{
+  region_creation (bool colorize, const region *reg)
+  : event_desc (colorize), m_reg (reg)
+  {}
+
+  const region *m_reg;
 };
 
 /* For use by pending_diagnostic::describe_state_change.  */
@@ -203,10 +216,7 @@ class pending_diagnostic
   /* A vfunc for fixing up locations (both the primary location for the
      diagnostic, and for events in their paths), e.g. to avoid unwinding
      inside specific macros.  */
-  virtual location_t fixup_location (location_t loc) const
-  {
-    return loc;
-  }
+  virtual location_t fixup_location (location_t loc) const;
 
   /* For greatest precision-of-wording, the various following "describe_*"
      virtual functions give the pending diagnostic a way to describe events
@@ -215,6 +225,15 @@ class pending_diagnostic
      In each case, return a non-NULL label_text to give the event a custom
      description; NULL otherwise (falling back on a more generic
      description).  */
+
+  /* Precision-of-wording vfunc for describing a region creation event
+     triggered by the mark_interesting_stuff vfunc.  */
+  virtual label_text
+  describe_region_creation_event (const evdesc::region_creation &)
+  {
+    /* Default no-op implementation.  */
+    return label_text ();
+  }
 
   /* Precision-of-wording vfunc for describing a critical state change
      within the diagnostic_path.
@@ -233,6 +252,15 @@ class pending_diagnostic
   {
     /* Default no-op implementation.  */
     return label_text ();
+  }
+
+  /* Vfunc for implementing diagnostic_event::get_meaning for
+     state_change_event.  */
+  virtual diagnostic_event::meaning
+  get_meaning_for_state_change (const evdesc::state_change &) const
+  {
+    /* Default no-op implementation.  */
+    return diagnostic_event::meaning ();
   }
 
   /* Precision-of-wording vfunc for describing an interprocedural call
@@ -295,6 +323,12 @@ class pending_diagnostic
     return false;
   }
 
+  /* Vfunc for adding a call_event to a checker_path, so that e.g.
+     the varargs diagnostics can add a custom event subclass that annotates
+     the variadic arguments.  */
+  virtual void add_call_event (const exploded_edge &,
+			       checker_path *);
+
   /* Vfunc for determining that this pending_diagnostic supercedes OTHER,
      and that OTHER should therefore not be emitted.
      They have already been tested for being at the same stmt.  */
@@ -328,7 +362,7 @@ class pending_diagnostic_subclass : public pending_diagnostic
 {
  public:
   bool subclass_equal_p (const pending_diagnostic &base_other) const
-    FINAL OVERRIDE
+    final override
   {
     const Subclass &other = (const Subclass &)base_other;
     return *(const Subclass*)this == other;
@@ -371,7 +405,7 @@ class pending_note_subclass : public pending_note
 {
  public:
   bool subclass_equal_p (const pending_note &base_other) const
-    FINAL OVERRIDE
+    final override
   {
     const Subclass &other = (const Subclass &)base_other;
     return *(const Subclass*)this == other;

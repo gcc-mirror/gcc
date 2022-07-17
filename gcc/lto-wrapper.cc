@@ -170,13 +170,14 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
   return decoded;
 }
 
-/* Find option in OPTIONS based on OPT_INDEX.  -1 value is returned
-   if the option is not present.  */
+/* Find option in OPTIONS based on OPT_INDEX, starting at START.  -1
+   value is returned if the option is not present.  */
 
 static int
-find_option (vec<cl_decoded_option> &options, size_t opt_index)
+find_option (vec<cl_decoded_option> &options, size_t opt_index,
+	     unsigned start = 0)
 {
-  for (unsigned i = 0; i < options.length (); ++i)
+  for (unsigned i = start; i < options.length (); ++i)
     if (options[i].opt_index == opt_index)
       return i;
 
@@ -575,13 +576,16 @@ merge_and_complain (vec<cl_decoded_option> &decoded_options,
    else
      j++;
 
+  int existing_opt_index, existing_opt2_index;
   if (!xassembler_options_error)
-    for (i = j = 0; ; i++, j++)
+    for (existing_opt_index = existing_opt2_index = 0; ;
+	 existing_opt_index++, existing_opt2_index++)
       {
-	int existing_opt_index
-	  = find_option (decoded_options, OPT_Xassembler);
-	int existing_opt2_index
-	  = find_option (fdecoded_options, OPT_Xassembler);
+	existing_opt_index
+	  = find_option (decoded_options, OPT_Xassembler, existing_opt_index);
+	existing_opt2_index
+	  = find_option (fdecoded_options, OPT_Xassembler,
+			 existing_opt2_index);
 
 	cl_decoded_option *existing_opt = NULL;
 	cl_decoded_option *existing_opt2 = NULL;
@@ -1100,7 +1104,7 @@ find_crtoffloadtable (int save_temps, const char *dumppfx)
 
 static bool
 find_and_merge_options (int fd, off_t file_offset, const char *prefix,
-			vec<cl_decoded_option> decoded_cl_options,
+			vec<cl_decoded_option> decoded_cl_options, bool first,
 			vec<cl_decoded_option> *opts, const char *collect_gcc)
 {
   off_t offset, length;
@@ -1109,6 +1113,9 @@ find_and_merge_options (int fd, off_t file_offset, const char *prefix,
   const char *errmsg;
   int err;
   vec<cl_decoded_option> fdecoded_options;
+
+  if (!first)
+    fdecoded_options = *opts;
 
   simple_object_read *sobj;
   sobj = simple_object_start_read (fd, file_offset, "__GNU_LTO",
@@ -1130,7 +1137,6 @@ find_and_merge_options (int fd, off_t file_offset, const char *prefix,
   data = (char *)xmalloc (length);
   read (fd, data, length);
   fopts = data;
-  bool first = true;
   do
     {
       vec<cl_decoded_option> f2decoded_options
@@ -1364,14 +1370,17 @@ jobserver_active_p (void)
 void
 print_lto_docs_link ()
 {
-  const char *url = get_option_url (NULL, OPT_flto);
+  bool print_url = global_dc->printer->url_format != URL_FORMAT_NONE;
+  const char *url = global_dc->get_option_url (global_dc, OPT_flto);
 
   pretty_printer pp;
   pp.url_format = URL_FORMAT_DEFAULT;
   pp_string (&pp, "see the ");
-  pp_begin_url (&pp, url);
+  if (print_url)
+    pp_begin_url (&pp, url);
   pp_string (&pp, "%<-flto%> option documentation");
-  pp_end_url (&pp);
+  if (print_url)
+    pp_end_url (&pp);
   pp_string (&pp, " for more information");
   inform (UNKNOWN_LOCATION, pp_formatted_text (&pp));
 }
@@ -1414,8 +1423,10 @@ run_gcc (unsigned argc, char *argv[])
   int auto_parallel = 0;
   bool no_partition = false;
   const char *jobserver_error = NULL;
+  bool fdecoded_options_first = true;
   vec<cl_decoded_option> fdecoded_options;
   fdecoded_options.create (16);
+  bool offload_fdecoded_options_first = true;
   vec<cl_decoded_option> offload_fdecoded_options = vNULL;
   struct obstack argv_obstack;
   int new_head_argc;
@@ -1425,7 +1436,6 @@ run_gcc (unsigned argc, char *argv[])
   char **lto_argv, **ltoobj_argv;
   bool linker_output_rel = false;
   bool skip_debug = false;
-  unsigned n_debugobj;
   const char *incoming_dumppfx = dumppfx = NULL;
   static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
 
@@ -1508,11 +1518,13 @@ run_gcc (unsigned argc, char *argv[])
 	}
 
       if (find_and_merge_options (fd, file_offset, LTO_SECTION_NAME_PREFIX,
-				  decoded_options, &fdecoded_options,
+				  decoded_options, fdecoded_options_first,
+				  &fdecoded_options,
 				  collect_gcc))
 	{
 	  have_lto = true;
 	  ltoobj_argv[ltoobj_argc++] = argv[i];
+	  fdecoded_options_first = false;
 	}
       close (fd);
     }
@@ -1571,6 +1583,14 @@ run_gcc (unsigned argc, char *argv[])
 
 	case OPT_dumpdir:
 	  incoming_dumppfx = dumppfx = option->arg;
+	  break;
+
+	case OPT_fdiagnostics_urls_:
+	  diagnostic_urls_init (global_dc, option->value);
+	  break;
+
+	case OPT_fdiagnostics_color_:
+	  diagnostic_color_init (global_dc, option->value);
 	  break;
 
 	default:
@@ -1763,9 +1783,12 @@ cont1:
 	    fatal_error (input_location, "cannot open %s: %m", filename);
 	  if (!find_and_merge_options (fd, file_offset,
 				       OFFLOAD_SECTION_NAME_PREFIX,
-				       decoded_options, &offload_fdecoded_options,
+				       decoded_options,
+				       offload_fdecoded_options_first,
+				       &offload_fdecoded_options,
 				       collect_gcc))
 	    fatal_error (input_location, "cannot read %s: %m", filename);
+	  offload_fdecoded_options_first = false;
 	  close (fd);
 	  if (filename != offload_argv[i])
 	    XDELETEVEC (filename);
@@ -1860,7 +1883,6 @@ cont1:
 
   /* Copy the early generated debug info from the objects to temporary
      files and append those to the partial link commandline.  */
-  n_debugobj = 0;
   early_debug_object_names = NULL;
   if (! skip_debug)
     {
@@ -1870,10 +1892,7 @@ cont1:
 	{
 	  const char *tem;
 	  if ((tem = debug_objcopy (ltoobj_argv[i], !linker_output_rel)))
-	    {
-	      early_debug_object_names[i] = tem;
-	      n_debugobj++;
-	    }
+	    early_debug_object_names[i] = tem;
 	}
     }
 
@@ -2130,6 +2149,9 @@ main (int argc, char *argv[])
   gcc_init_libintl ();
 
   diagnostic_initialize (global_dc, 0);
+  diagnostic_color_init (global_dc);
+  diagnostic_urls_init (global_dc);
+  global_dc->get_option_url = get_option_url;
 
   if (atexit (lto_wrapper_cleanup) != 0)
     fatal_error (input_location, "%<atexit%> failed");

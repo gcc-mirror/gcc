@@ -1404,8 +1404,14 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
     result = TREE_OPERAND (result, 1);
 
   bool cst = TREE_CODE_CLASS (TREE_CODE (result)) == tcc_constant;
-
   tree exprtype = TREE_TYPE (expr);
+  tree result_diag;
+  /* We're interested in the actual numerical value here, not its ASCII
+     representation.  */
+  if (cst && TYPE_MAIN_VARIANT (TREE_TYPE (result)) == char_type_node)
+    result_diag = fold_convert (integer_type_node, result);
+  else
+    result_diag = result;
 
   if (TREE_CODE (expr) == INTEGER_CST
       && (TREE_CODE (type) == INTEGER_TYPE
@@ -1430,7 +1436,7 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 				  "changes value from %qE to %qE")
 			     : G_("unsigned conversion from %qT to %qT "
 				  "changes value from %qE to %qE")),
-			    exprtype, type, expr, result);
+			    exprtype, type, expr, result_diag);
 	      else
 		warning_at (loc, OPT_Woverflow,
 			    (TYPE_UNSIGNED (exprtype)
@@ -1449,7 +1455,7 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 	    warning_at (loc, OPT_Woverflow,
 			"overflow in conversion from %qT to %qT "
 			"changes value from %qE to %qE",
-			exprtype, type, expr, result);
+			exprtype, type, expr, result_diag);
 	  else
 	    warning_at (loc, OPT_Woverflow,
 			"overflow in conversion from %qT to %qT "
@@ -1466,7 +1472,7 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 	    warning_at (loc, OPT_Woverflow,
 			"overflow in conversion from %qT to %qT "
 			"changes value from %qE to %qE",
-			exprtype, type, expr, result);
+			exprtype, type, expr, result_diag);
 	  else
 	    warning_at (loc, OPT_Woverflow,
 			"overflow in conversion from %qT to %qT "
@@ -1483,7 +1489,7 @@ warnings_for_convert_and_check (location_t loc, tree type, tree expr,
 	warning_at (loc, OPT_Woverflow,
 		    "overflow in conversion from %qT to %qT "
 		    "changes value from %qE to %qE",
-		    exprtype, type, expr, result);
+		    exprtype, type, expr, result_diag);
       else
 	warning_at (loc, OPT_Woverflow,
 		    "overflow in conversion from %qT to %qT "
@@ -1732,8 +1738,8 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
   for (chain = TYPE_VALUES (type); chain; chain = TREE_CHAIN (chain))
     {
       tree value = TREE_VALUE (chain);
-      if (TREE_CODE (value) == CONST_DECL)
-	value = DECL_INITIAL (value);
+      tree attrs = DECL_ATTRIBUTES (value);
+      value = DECL_INITIAL (value);
       node = splay_tree_lookup (cases, (splay_tree_key) value);
       if (node)
 	{
@@ -1762,6 +1768,13 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 
       /* We've now determined that this enumerated literal isn't
 	 handled by the case labels of the switch statement.  */
+
+      /* Don't warn if the enumerator was marked as unused.  We can't use
+	 TREE_USED here: it could have been set on the enumerator if the
+	 enumerator was used earlier.  */
+      if (lookup_attribute ("unused", attrs)
+	  || lookup_attribute ("maybe_unused", attrs))
+	continue;
 
       /* If the switch expression is a constant, we only really care
 	 about whether that constant is handled by the switch.  */

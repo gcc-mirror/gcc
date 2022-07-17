@@ -58,6 +58,28 @@ enum ClassKind : ubyte
 }
 
 /**
+ * Give a nice string for a class kind for error messages
+ * Params:
+ *     c = class kind
+ * Returns:
+ *     0-terminated string for `c`
+ */
+const(char)* toChars(ClassKind c)
+{
+    final switch (c)
+    {
+        case ClassKind.d:
+            return "D";
+        case ClassKind.cpp:
+            return "C++";
+        case ClassKind.objc:
+            return "Objective-C";
+        case ClassKind.c:
+            return "C";
+    }
+}
+
+/**
  * If an aggregate has a pargma(mangle, ...) this holds the information
  * to mangle.
  */

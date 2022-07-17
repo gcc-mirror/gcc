@@ -25,6 +25,7 @@
 #ifndef _GLIBCXX_DIR_COMMON_H
 #define _GLIBCXX_DIR_COMMON_H 1
 
+#include <stdint.h>  // uint32_t
 #include <string.h>  // strcmp
 #include <errno.h>
 #if _GLIBCXX_FILESYSTEM_IS_WINDOWS
@@ -91,12 +92,54 @@ is_permission_denied_error(int e)
 
 struct _Dir_base
 {
+  // As well as the full pathname (including the directory iterator's path)
+  // this type contains a file descriptor for a directory and a second pathname
+  // relative to that directory. The file descriptor and relative pathname
+  // can be used with POSIX openat and unlinkat.
+  struct _At_path
+  {
+    // No file descriptor given, so interpret the pathname relative to the CWD.
+    _At_path(const posix::char_type* p) noexcept
+    : pathname(p), dir_fd(fdcwd()), offset(0)
+    { }
+
+    _At_path(int fd, const posix::char_type* p, size_t offset) noexcept
+    : pathname(p), dir_fd(fd), offset(offset)
+    { }
+
+    const posix::char_type*
+    path() const noexcept { return pathname; }
+
+    int
+    dir() const noexcept { return dir_fd; }
+
+    const posix::char_type*
+    path_at_dir() const noexcept { return pathname + offset; }
+
+  private:
+    const posix::char_type* pathname; // Full path relative to CWD.
+    int dir_fd; // A directory descriptor (either the parent dir, or AT_FDCWD).
+    uint32_t offset; // Offset into pathname for the part relative to dir_fd.
+
+    // Special value representing the current working directory.
+    // Not a valid file descriptor for an open directory stream.
+    static constexpr int
+    fdcwd() noexcept
+    {
+#ifdef AT_FDCWD
+      return AT_FDCWD;
+#else
+      return -1; // Use invalid fd if AT_FDCWD isn't supported.
+#endif
+    }
+  };
+
   // If no error occurs then dirp is non-null,
   // otherwise null (even if a permission denied error is ignored).
-  _Dir_base(int fd, const posix::char_type* pathname,
+  _Dir_base(const _At_path& atp,
 	    bool skip_permission_denied, bool nofollow,
 	    error_code& ec) noexcept
-  : dirp(_Dir_base::openat(fd, pathname, nofollow))
+  : dirp(_Dir_base::openat(atp, nofollow))
   {
     if (dirp)
       ec.clear();
@@ -143,16 +186,6 @@ struct _Dir_base
       }
   }
 
-  static constexpr int
-  fdcwd() noexcept
-  {
-#ifdef AT_FDCWD
-    return AT_FDCWD;
-#else
-    return -1; // Use invalid fd if AT_FDCWD isn't supported.
-#endif
-  }
-
   static bool is_dot_or_dotdot(const char* s) noexcept
   { return !strcmp(s, ".") || !strcmp(s, ".."); }
 
@@ -174,7 +207,7 @@ struct _Dir_base
   }
 
   static posix::DIR*
-  openat(int fd, const posix::char_type* pathname, bool nofollow)
+  openat(const _At_path& atp, bool nofollow)
   {
 #if _GLIBCXX_HAVE_FDOPENDIR && defined O_RDONLY && defined O_DIRECTORY \
     && ! _GLIBCXX_FILESYSTEM_IS_WINDOWS
@@ -198,16 +231,17 @@ struct _Dir_base
     nofollow = false;
 #endif
 
+    int fd;
 
-#ifdef AT_FDCWD
-    fd = ::openat(fd, pathname, flags);
+#if _GLIBCXX_HAVE_OPENAT
+    fd = ::openat(atp.dir(), atp.path_at_dir(), flags);
 #else
     // If we cannot use openat, there's no benefit to using posix::open unless
     // we will use O_NOFOLLOW, so just use the simpler posix::opendir.
     if (!nofollow)
-      return posix::opendir(pathname);
+      return posix::opendir(atp.path());
 
-    fd = ::open(pathname, flags);
+    fd = ::open(atp.path(), flags);
 #endif
 
     if (fd == -1)
@@ -220,7 +254,7 @@ struct _Dir_base
     errno = err;
     return nullptr;
 #else
-    return posix::opendir(pathname);
+    return posix::opendir(atp.path());
 #endif
   }
 

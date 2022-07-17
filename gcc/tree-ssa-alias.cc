@@ -87,10 +87,11 @@ along with GCC; see the file COPYING3.  If not see
 
      This function tries to disambiguate two reference trees.
 
-   bool ptr_deref_may_alias_global_p (tree)
+   bool ptr_deref_may_alias_global_p (tree, bool)
 
      This function queries if dereferencing a pointer variable may
-     alias global memory.
+     alias global memory.  If bool argument is true, global memory
+     is considered to also include function local memory that escaped.
 
    More low-level disambiguators are available and documented in
    this file.  Low-level disambiguators dealing with points-to
@@ -2397,15 +2398,6 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
       || CONSTANT_CLASS_P (base2))
     return false;
 
-  /* We can end up referring to code via function and label decls.
-     As we likely do not properly track code aliases conservatively
-     bail out.  */
-  if (TREE_CODE (base1) == FUNCTION_DECL
-      || TREE_CODE (base1) == LABEL_DECL
-      || TREE_CODE (base2) == FUNCTION_DECL
-      || TREE_CODE (base2) == LABEL_DECL)
-    return true;
-
   /* Two volatile accesses always conflict.  */
   if (ref1->volatile_p
       && ref2->volatile_p)
@@ -2431,6 +2423,15 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 				  ref1->size,
 				  ref2ref, base2, offset2, max_size2,
 				  ref2->size);
+
+  /* We can end up referring to code via function and label decls.
+     As we likely do not properly track code aliases conservatively
+     bail out.  */
+  if (TREE_CODE (base1) == FUNCTION_DECL
+      || TREE_CODE (base1) == LABEL_DECL
+      || TREE_CODE (base2) == FUNCTION_DECL
+      || TREE_CODE (base2) == LABEL_DECL)
+    return true;
 
   /* Handle restrict based accesses.
      ???  ao_ref_base strips inner MEM_REF [&decl], recover from that
@@ -3333,11 +3334,18 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
       && TREE_CODE (gimple_get_lhs (stmt)) != SSA_NAME
       /* The assignment is not necessarily carried out if it can throw
 	 and we can catch it in the current function where we could inspect
-	 the previous value.
+	 the previous value.  Similarly if the function can throw externally
+	 and the ref does not die on the function return.
 	 ???  We only need to care about the RHS throwing.  For aggregate
 	 assignments or similar calls and non-call exceptions the LHS
-	 might throw as well.  */
-      && !stmt_can_throw_internal (cfun, stmt))
+	 might throw as well.
+	 ???  We also should care about possible longjmp, but since we
+	 do not understand that longjmp is not using global memory we will
+	 not consider a kill here since the function call will be considered
+	 as possibly using REF.	 */
+      && !stmt_can_throw_internal (cfun, stmt)
+      && (!stmt_can_throw_external (cfun, stmt)
+	  || !ref_may_alias_global_p (ref, false)))
     {
       tree lhs = gimple_get_lhs (stmt);
       /* If LHS is literally a base of the access we are done.  */
@@ -3434,8 +3442,12 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	  && node->binds_to_current_def_p ()
 	  && (summary = get_modref_function_summary (node)) != NULL
 	  && summary->kills.length ()
+	  /* Check that we can not trap while evaulating function
+	     parameters.  This check is overly conservative.  */
 	  && (!cfun->can_throw_non_call_exceptions
-	      || !stmt_can_throw_internal (cfun, stmt)))
+	      || (!stmt_can_throw_internal (cfun, stmt)
+		  && (!stmt_can_throw_external (cfun, stmt)
+		      || !ref_may_alias_global_p (ref, false)))))
 	{
 	  for (auto kill : summary->kills)
 	    {

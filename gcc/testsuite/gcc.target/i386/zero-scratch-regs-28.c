@@ -10,9 +10,9 @@ __v2si ret_mmx (void)
 }
 
 /* { dg-final { scan-assembler "pxor\[ \t\]+%mm1, %mm1" } } */
-/* { dg-final { scan-assembler "movq\[ \t\]+%mm1, %mm2" } } */
-/* { dg-final { scan-assembler "movq\[ \t\]+%mm1, %mm3" } } */
-/* { dg-final { scan-assembler "movq\[ \t\]+%mm1, %mm4" } } */
-/* { dg-final { scan-assembler "movq\[ \t\]+%mm1, %mm5" } } */
-/* { dg-final { scan-assembler "movq\[ \t\]+%mm1, %mm6" } } */
-/* { dg-final { scan-assembler "movq\[ \t\]+%mm1, %mm7" } } */
+/* { dg-final { scan-assembler "pxor\[ \t\]+%mm2, %mm2" } } */
+/* { dg-final { scan-assembler "pxor\[ \t\]+%mm3, %mm3" } } */
+/* { dg-final { scan-assembler "pxor\[ \t\]+%mm4, %mm4" } } */
+/* { dg-final { scan-assembler "pxor\[ \t\]+%mm5, %mm5" } } */
+/* { dg-final { scan-assembler "pxor\[ \t\]+%mm6, %mm6" } } */
+/* { dg-final { scan-assembler "pxor\[ \t\]+%mm7, %mm7" } } */

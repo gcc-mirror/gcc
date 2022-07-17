@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "attribs.h"
 #include "function.h"
+#include "gimple-expr.h"
 
 #include "d-tree.h"
 
@@ -76,7 +77,7 @@ d_decl_context (Dsymbol *dsym)
 	 but only for extern(D) symbols.  */
       if (parent->isModule ())
 	{
-	  if ((decl != NULL && decl->linkage != LINK::d)
+	  if ((decl != NULL && decl->resolvedLinkage () != LINK::d)
 	      || (ad != NULL && ad->classKind != ClassKind::d))
 	    return NULL_TREE;
 
@@ -115,6 +116,7 @@ tree
 copy_aggregate_type (tree type)
 {
   tree newtype = build_distinct_type_copy (type);
+  TYPE_STUB_DECL (newtype) = TYPE_NAME (newtype);
   TYPE_FIELDS (newtype) = copy_list (TYPE_FIELDS (type));
 
   for (tree f = TYPE_FIELDS (newtype); f; f = DECL_CHAIN (f))
@@ -622,11 +624,8 @@ build_target_expr (tree decl, tree exp)
 tree
 force_target_expr (tree exp)
 {
-  tree decl = build_decl (input_location, VAR_DECL, NULL_TREE,
-			  TREE_TYPE (exp));
+  tree decl = create_tmp_var_raw (TREE_TYPE (exp));
   DECL_CONTEXT (decl) = current_function_decl;
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
   layout_decl (decl, 0);
 
   return build_target_expr (decl, exp);
@@ -696,11 +695,12 @@ build_address (tree exp)
   return compound_expr (init, exp);
 }
 
-/* Mark EXP saying that we need to be able to take the
-   address of it; it should not be allocated in a register.  */
+/* Mark EXP saying that we need to be able to take the address of it; it should
+   not be allocated in a register.  When COMPLAIN is true, issue an error if we
+   are marking a register variable.  */
 
 tree
-d_mark_addressable (tree exp)
+d_mark_addressable (tree exp, bool complain)
 {
   switch (TREE_CODE (exp))
     {
@@ -712,12 +712,22 @@ d_mark_addressable (tree exp)
       d_mark_addressable (TREE_OPERAND (exp, 0));
       break;
 
-    case PARM_DECL:
     case VAR_DECL:
+      if (complain && DECL_REGISTER (exp))
+	{
+	  if (DECL_HARD_REGISTER (exp) || DECL_EXTERNAL (exp))
+	    error ("address of explicit register variable %qD requested", exp);
+	  else
+	    error ("address of register variable %qD requested", exp);
+	}
+
+      /* Fall through.  */
+    case PARM_DECL:
     case RESULT_DECL:
     case CONST_DECL:
     case FUNCTION_DECL:
-      TREE_ADDRESSABLE (exp) = 1;
+      if (!VAR_P (exp) || !DECL_HARD_REGISTER (exp))
+	TREE_ADDRESSABLE (exp) = 1;
       break;
 
     case CONSTRUCTOR:
@@ -1165,7 +1175,7 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
     }
 
   vec <constructor_elt, va_gc> *ve = NULL;
-  HOST_WIDE_INT offset = 0;
+  HOST_WIDE_INT bitoffset = 0;
   bool constant_p = true;
   bool finished = false;
 
@@ -1210,11 +1220,11 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
 
       if (is_initialized)
 	{
-	  HOST_WIDE_INT fieldpos = int_byte_position (field);
+	  HOST_WIDE_INT fieldpos = int_bit_position (field);
 	  gcc_assert (value != NULL_TREE);
 
 	  /* Must not initialize fields that overlap.  */
-	  if (fieldpos < offset)
+	  if (fieldpos < bitoffset)
 	    {
 	      /* Find the nearest user defined type and field.  */
 	      tree vtype = type;
@@ -1243,12 +1253,9 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
 	    finished = true;
 	}
 
-      /* Move offset to the next position in the struct.  */
-      if (TREE_CODE (type) == RECORD_TYPE)
-	{
-	  offset = int_byte_position (field)
-	    + int_size_in_bytes (TREE_TYPE (field));
-	}
+      /* Move bit offset to the next position in the struct.  */
+      if (TREE_CODE (type) == RECORD_TYPE && DECL_SIZE (field))
+	bitoffset = int_bit_position (field) + tree_to_shwi (DECL_SIZE (field));
 
       /* If all initializers have been assigned, there's nothing else to do.  */
       if (vec_safe_is_empty (init))
@@ -1628,7 +1635,7 @@ build_deref (tree exp)
 /* Builds pointer offset expression PTR[INDEX].  */
 
 tree
-build_array_index (tree ptr, tree index)
+build_pointer_index (tree ptr, tree index)
 {
   if (error_operand_p (ptr) || error_operand_p (index))
     return error_mark_node;
@@ -2706,7 +2713,16 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
 	  if ((v->edtor && (v->storage_class & STCparameter))
 	      || v->needsScopeDtor ())
 	    error_at (make_location_t (v->loc),
-		      "has scoped destruction, cannot build closure");
+		      "variable %qs has scoped destruction, "
+		      "cannot build closure", v->toChars ());
+	}
+
+      if (DECL_REGISTER (vsym))
+	{
+	  /* Because the value will be in memory, not a register.  */
+	  error_at (make_location_t (v->loc),
+		    "explicit register variable %qs cannot be used in nested "
+		    "function", v->toChars ());
 	}
     }
 

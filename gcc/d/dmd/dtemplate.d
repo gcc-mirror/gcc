@@ -1632,7 +1632,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                             if (farg.op == EXP.error || farg.type.ty == Terror)
                                 return nomatch();
 
-                            if (!(fparam.storageClass & STC.lazy_) && farg.type.ty == Tvoid)
+                            if (!fparam.isLazy() && farg.type.ty == Tvoid)
                                 return nomatch();
 
                             Type tt;
@@ -1837,7 +1837,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                     }
                     Type argtype = farg.type;
 
-                    if (!(fparam.storageClass & STC.lazy_) && argtype.ty == Tvoid && farg.op != EXP.function_)
+                    if (!fparam.isLazy() && argtype.ty == Tvoid && farg.op != EXP.function_)
                         return nomatch();
 
                     // https://issues.dlang.org/show_bug.cgi?id=12876
@@ -1958,7 +1958,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                         if (!farg.type.isMutable()) // https://issues.dlang.org/show_bug.cgi?id=11916
                             return nomatch();
                     }
-                    if (m == MATCH.nomatch && (fparam.storageClass & STC.lazy_) && prmtype.ty == Tvoid && farg.type.ty != Tvoid)
+                    if (m == MATCH.nomatch && fparam.isLazy() && prmtype.ty == Tvoid && farg.type.ty != Tvoid)
                         m = MATCH.convert;
                     if (m != MATCH.nomatch)
                     {
@@ -2777,7 +2777,7 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
             fd.storage_class == m.lastf.storage_class &&
             fd.parent == m.lastf.parent &&
             fd.visibility == m.lastf.visibility &&
-            fd.linkage == m.lastf.linkage)
+            fd._linkage == m.lastf._linkage)
         {
             if (fd.fbody && !m.lastf.fbody)
                 goto LfIsBetter;
@@ -5352,7 +5352,7 @@ extern (C++) class TemplateParameter : ASTNode
         return this.ident.toChars();
     }
 
-    override DYNCAST dyncast() const pure @nogc nothrow @safe
+    override DYNCAST dyncast() const
     {
         return DYNCAST.templateparameter;
     }
@@ -7723,7 +7723,7 @@ extern (C++) final class TemplateMixin : TemplateInstance
             }
             if (!tempdecl)
             {
-                error("`%s` isn't a template", s.toChars());
+                error("- `%s` is a %s, not a template", s.toChars(), s.kind());
                 return false;
             }
         }

@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "langhooks.h"
 #include "bitmap.h"
-#include "gimple-fold.h"
 
 
 /* Complete a #pragma oacc wait construct.  LOC is the location of
@@ -739,6 +738,7 @@ c_finish_omp_depobj (location_t loc, tree depobj,
 	case OMP_CLAUSE_DEPEND_OUT:
 	case OMP_CLAUSE_DEPEND_INOUT:
 	case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
+	case OMP_CLAUSE_DEPEND_INOUTSET:
 	  kind = OMP_CLAUSE_DEPEND_KIND (clause);
 	  t = OMP_CLAUSE_DECL (clause);
 	  gcc_assert (t);
@@ -757,7 +757,7 @@ c_finish_omp_depobj (location_t loc, tree depobj,
 	      t = build2 (COMPOUND_EXPR, TREE_TYPE (t1), TREE_OPERAND (t, 0),
 			  t1);
 	    }
-	  else
+	  else if (t != null_pointer_node)
 	    t = build_fold_addr_expr (t);
 	  break;
 	default:
@@ -796,6 +796,9 @@ c_finish_omp_depobj (location_t loc, tree depobj,
       break;
     case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
       k = GOMP_DEPEND_MUTEXINOUTSET;
+      break;
+    case OMP_CLAUSE_DEPEND_INOUTSET:
+      k = GOMP_DEPEND_INOUTSET;
       break;
     case OMP_CLAUSE_DEPEND_LAST:
       k = -1;

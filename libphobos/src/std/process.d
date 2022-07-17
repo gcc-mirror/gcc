@@ -613,7 +613,7 @@ private:
  * writefln("Current process ID: %d", thisProcessID);
  * ---
  */
-@property int thisProcessID() @trusted nothrow //TODO: @safe
+@property int thisProcessID() @trusted nothrow @nogc //TODO: @safe
 {
     version (Windows)    return GetCurrentProcessId();
     else version (Posix) return core.sys.posix.unistd.getpid();
@@ -632,7 +632,7 @@ private:
  * writefln("Current thread ID: %s", thisThreadID);
  * ---
  */
-@property ThreadID thisThreadID() @trusted nothrow //TODO: @safe
+@property ThreadID thisThreadID() @trusted nothrow @nogc //TODO: @safe
 {
     version (Windows)
         return GetCurrentThreadId();

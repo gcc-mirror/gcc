@@ -96,9 +96,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "fold-const.h"
 #include "stor-layout.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
@@ -244,8 +244,8 @@ static inline void
 set_bb_predicate (basic_block bb, tree cond)
 {
   gcc_assert ((TREE_CODE (cond) == TRUTH_NOT_EXPR
-	       && is_gimple_condexpr (TREE_OPERAND (cond, 0)))
-	      || is_gimple_condexpr (cond));
+	       && is_gimple_val (TREE_OPERAND (cond, 0)))
+	      || is_gimple_val (cond));
   ((struct bb_predicate *) bb->aux)->predicate = cond;
 }
 
@@ -459,8 +459,6 @@ fold_or_predicates (location_t loc, tree c1, tree c2)
 static tree
 fold_build_cond_expr (tree type, tree cond, tree rhs, tree lhs)
 {
-  tree rhs1, lhs1, cond_expr;
-
   /* If COND is comparison r != 0 and r has boolean type, convert COND
      to SSA_NAME to accept by vect bool pattern.  */
   if (TREE_CODE (cond) == NE_EXPR)
@@ -472,34 +470,20 @@ fold_build_cond_expr (tree type, tree cond, tree rhs, tree lhs)
 	  && (integer_zerop (op1)))
 	cond = op0;
     }
-  cond_expr = fold_ternary (COND_EXPR, type, cond, rhs, lhs);
 
-  if (cond_expr == NULL_TREE)
-    return build3 (COND_EXPR, type, cond, rhs, lhs);
-
-  STRIP_USELESS_TYPE_CONVERSION (cond_expr);
-
-  if (is_gimple_val (cond_expr))
-    return cond_expr;
-
-  if (TREE_CODE (cond_expr) == ABS_EXPR)
+  gimple_match_op cexpr (gimple_match_cond::UNCOND, COND_EXPR,
+			 type, cond, rhs, lhs);
+  if (cexpr.resimplify (NULL, follow_all_ssa_edges))
     {
-      rhs1 = TREE_OPERAND (cond_expr, 1);
-      STRIP_USELESS_TYPE_CONVERSION (rhs1);
-      if (is_gimple_val (rhs1))
-	return build1 (ABS_EXPR, type, rhs1);
+      if (gimple_simplified_result_is_gimple_val (&cexpr))
+	return cexpr.ops[0];
+      else if (cexpr.code == ABS_EXPR)
+	return build1 (ABS_EXPR, type, cexpr.ops[0]);
+      else if (cexpr.code == MIN_EXPR
+	       || cexpr.code == MAX_EXPR)
+	return build2 ((tree_code)cexpr.code, type, cexpr.ops[0], cexpr.ops[1]);
     }
 
-  if (TREE_CODE (cond_expr) == MIN_EXPR
-      || TREE_CODE (cond_expr) == MAX_EXPR)
-    {
-      lhs1 = TREE_OPERAND (cond_expr, 0);
-      STRIP_USELESS_TYPE_CONVERSION (lhs1);
-      rhs1 = TREE_OPERAND (cond_expr, 1);
-      STRIP_USELESS_TYPE_CONVERSION (rhs1);
-      if (is_gimple_val (rhs1) && is_gimple_val (lhs1))
-	return build2 (TREE_CODE (cond_expr), type, lhs1, rhs1);
-    }
   return build3 (COND_EXPR, type, cond, rhs, lhs);
 }
 
@@ -560,10 +544,10 @@ add_to_predicate_list (class loop *loop, basic_block bb, tree nc)
     tp = &TREE_OPERAND (bc, 0);
   else
     tp = &bc;
-  if (!is_gimple_condexpr (*tp))
+  if (!is_gimple_val (*tp))
     {
       gimple_seq stmts;
-      *tp = force_gimple_operand_1 (*tp, &stmts, is_gimple_condexpr, NULL_TREE);
+      *tp = force_gimple_operand (*tp, &stmts, true, NULL_TREE);
       add_bb_predicate_gimplified_stmts (bb, stmts);
     }
   set_bb_predicate (bb, bc);
@@ -1314,10 +1298,31 @@ predicate_bbs (loop_p loop)
 	  tree c2;
 	  edge true_edge, false_edge;
 	  location_t loc = gimple_location (stmt);
-	  tree c = build2_loc (loc, gimple_cond_code (stmt),
-				    boolean_type_node,
-				    gimple_cond_lhs (stmt),
-				    gimple_cond_rhs (stmt));
+	  tree c;
+	  /* gcc.dg/fold-bopcond-1.c shows that despite all forwprop passes
+	     conditions can remain unfolded because of multiple uses so
+	     try to re-fold here, especially to get precision changing
+	     conversions sorted out.  Do not simply fold the stmt since
+	     this is analysis only.  When conditions were embedded in
+	     COND_EXPRs those were folded separately before folding the
+	     COND_EXPR but as they are now outside we have to make sure
+	     to fold them.  Do it here - another opportunity would be to
+	     fold predicates as they are inserted.  */
+	  gimple_match_op cexpr (gimple_match_cond::UNCOND,
+				 gimple_cond_code (stmt),
+				 boolean_type_node,
+				 gimple_cond_lhs (stmt),
+				 gimple_cond_rhs (stmt));
+	  if (cexpr.resimplify (NULL, follow_all_ssa_edges)
+	      && cexpr.code.is_tree_code ()
+	      && TREE_CODE_CLASS ((tree_code)cexpr.code) == tcc_comparison)
+	    c = build2_loc (loc, (tree_code)cexpr.code, boolean_type_node,
+			    cexpr.ops[0], cexpr.ops[1]);
+	  else
+	    c = build2_loc (loc, gimple_cond_code (stmt),
+			    boolean_type_node,
+			    gimple_cond_lhs (stmt),
+			    gimple_cond_rhs (stmt));
 
 	  /* Add new condition into destination's predicate list.  */
 	  extract_true_false_edges_from_block (gimple_bb (stmt),
@@ -1879,30 +1884,20 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
 	  cond = c;
 	  break;
 	}
-      c = force_gimple_operand_gsi_1 (gsi, unshare_expr (c),
-				      is_gimple_condexpr, NULL_TREE,
-				      true, GSI_SAME_STMT);
+      c = force_gimple_operand_gsi (gsi, unshare_expr (c),
+				    true, NULL_TREE, true, GSI_SAME_STMT);
       if (cond != NULL_TREE)
 	{
 	  /* Must build OR expression.  */
 	  cond = fold_or_predicates (EXPR_LOCATION (c), c, cond);
-	  cond = force_gimple_operand_gsi_1 (gsi, unshare_expr (cond),
-					     is_gimple_condexpr, NULL_TREE,
-					     true, GSI_SAME_STMT);
+	  cond = force_gimple_operand_gsi (gsi, unshare_expr (cond), true,
+					   NULL_TREE, true, GSI_SAME_STMT);
 	}
       else
 	cond = c;
     }
   gcc_assert (cond != NULL_TREE);
   return cond;
-}
-
-/* Local valueization callback that follows all-use SSA edges.  */
-
-static tree
-ifcvt_follow_ssa_use_edges (tree val)
-{
-  return val;
 }
 
 /* Replace a scalar PHI node with a COND_EXPR using COND as condition.
@@ -1976,9 +1971,8 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
       else
 	cond = bb_predicate (first_edge->src);
       /* Gimplify the condition to a valid cond-expr conditonal operand.  */
-      cond = force_gimple_operand_gsi_1 (gsi, unshare_expr (cond),
-					 is_gimple_condexpr, NULL_TREE,
-					 true, GSI_SAME_STMT);
+      cond = force_gimple_operand_gsi (gsi, unshare_expr (cond), true,
+				       NULL_TREE, true, GSI_SAME_STMT);
       true_bb = first_edge->src;
       if (EDGE_PRED (bb, 1)->src == true_bb)
 	{
@@ -2007,7 +2001,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
       new_stmt = gimple_build_assign (res, rhs);
       gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
       gimple_stmt_iterator new_gsi = gsi_for_stmt (new_stmt);
-      if (fold_stmt (&new_gsi, ifcvt_follow_ssa_use_edges))
+      if (fold_stmt (&new_gsi, follow_all_ssa_edges))
 	{
 	  new_stmt = gsi_stmt (new_gsi);
 	  update_stmt (new_stmt);
@@ -2077,9 +2071,8 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
 	  cond = TREE_OPERAND (cond, 0);
 	}
       /* Gimplify the condition to a valid cond-expr conditonal operand.  */
-      cond = force_gimple_operand_gsi_1 (gsi, unshare_expr (cond),
-					 is_gimple_condexpr, NULL_TREE,
-					 true, GSI_SAME_STMT);
+      cond = force_gimple_operand_gsi (gsi, unshare_expr (cond), true,
+				       NULL_TREE, true, GSI_SAME_STMT);
       if (!(is_cond_scalar_reduction (phi, &reduc, arg0 , arg1,
 				      &op0, &op1, true, &has_nop, &nop_reduc)))
 	rhs = fold_build_cond_expr (TREE_TYPE (res), unshare_expr (cond),
@@ -2615,9 +2608,8 @@ predicate_statements (loop_p loop)
 	      rhs = ifc_temp_var (type, unshare_expr (rhs), &gsi);
 	      if (swap)
 		std::swap (lhs, rhs);
-	      cond = force_gimple_operand_gsi_1 (&gsi, unshare_expr (cond),
-						 is_gimple_condexpr, NULL_TREE,
-						 true, GSI_SAME_STMT);
+	      cond = force_gimple_operand_gsi (&gsi, unshare_expr (cond), true,
+					       NULL_TREE, true, GSI_SAME_STMT);
 	      rhs = fold_build_cond_expr (type, unshare_expr (cond), rhs, lhs);
 	      gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
 	      update_stmt (stmt);
@@ -2942,7 +2934,7 @@ version_loop_for_if_conversion (class loop *loop, vec<gimple *> *preds)
   if (preds)
     preds->safe_push (g);
   gsi_insert_before (&gsi, g, GSI_SAME_STMT);
-  update_ssa (TODO_update_ssa);
+  update_ssa (TODO_update_ssa_no_phi);
   return new_loop;
 }
 
@@ -3432,8 +3424,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 
 }; // class pass_if_conversion
 

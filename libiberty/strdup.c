@@ -13,8 +13,8 @@ Returns a pointer to a copy of @var{s} in memory obtained from
 #include <stddef.h>
 
 extern size_t	strlen (const char*);
-extern PTR	malloc (size_t);
-extern PTR	memcpy (PTR, const PTR, size_t);
+extern void *malloc (size_t);
+extern void *memcpy (void *, const void *, size_t);
 
 char *
 strdup(const char *s)

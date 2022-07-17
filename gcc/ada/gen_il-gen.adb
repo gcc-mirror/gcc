@@ -1425,7 +1425,7 @@ package body Gen_IL.Gen is
         (S : in out Sink; T : Type_Enum)
       is
          Pre : constant String :=
-           "function Cast is new Unchecked_Conversion (";
+           "function Cast is new Ada.Unchecked_Conversion (";
          Lo_Type : constant String := "Field_Size_" & Image (Field_Size (T)) & "_Bit";
          Hi_Type : constant String := Get_Set_Id_Image (T);
       begin
@@ -2338,7 +2338,7 @@ package body Gen_IL.Gen is
          Decrease_Indent (S, 3);
          Put (S, LF & "end Sinfo.Nodes;" & LF);
 
-         Put (B, "with Unchecked_Conversion;" & LF);
+         Put (B, "with Ada.Unchecked_Conversion;" & LF);
          Put (B, "with Atree; use Atree; use Atree.Atree_Private_Part;" & LF);
          Put (B, "with Nlists; use Nlists;" & LF);
          Put (B, "pragma Warnings (Off);" & LF);
@@ -2394,7 +2394,7 @@ package body Gen_IL.Gen is
          Decrease_Indent (S, 3);
          Put (S, LF & "end Einfo.Entities;" & LF);
 
-         Put (B, "with Unchecked_Conversion;" & LF);
+         Put (B, "with Ada.Unchecked_Conversion;" & LF);
          Put (B, "with Atree; use Atree; use Atree.Atree_Private_Part;" & LF);
          Put (B, "with Einfo.Utils; use Einfo.Utils;" & LF);
          --  This forms a cycle between packages (via bodies, which is OK)

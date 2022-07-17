@@ -1251,7 +1251,7 @@ version (CoreDdoc)
 {
     /**
      * Instruct the thread module, when initialized, to use a different set of
-     * signals besides SIGUSR1 and SIGUSR2 for suspension and resumption of threads.
+     * signals besides SIGRTMIN and SIGRTMIN + 1 for suspension and resumption of threads.
      * This function should be called at most once, prior to thread_init().
      * This function is Posix-only.
      */
@@ -1281,8 +1281,8 @@ else version (Posix)
 
 version (Posix)
 {
-    private __gshared int suspendSignalNumber = SIGUSR1;
-    private __gshared int resumeSignalNumber  = SIGUSR2;
+    private __gshared int suspendSignalNumber;
+    private __gshared int resumeSignalNumber;
 }
 
 private extern (D) ThreadBase attachThread(ThreadBase _thisThread) @nogc nothrow
@@ -1333,6 +1333,9 @@ private extern (D) ThreadBase attachThread(ThreadBase _thisThread) @nogc nothrow
  *       must be called after thread_attachThis:
  *
  *       extern (C) void rt_moduleTlsCtor();
+ *
+ * See_Also:
+ *     $(REF thread_detachThis, core,thread,threadbase)
  */
 extern(C) Thread thread_attachThis()
 {
@@ -2101,7 +2104,7 @@ private extern (D) void resume(ThreadBase _t) nothrow @nogc
  * garbage collector on startup and before any other thread routines
  * are called.
  */
-extern (C) void thread_init() @nogc
+extern (C) void thread_init() @nogc nothrow
 {
     // NOTE: If thread_init itself performs any allocations then the thread
     //       routines reserved for garbage collector use may be called while
@@ -2111,11 +2114,6 @@ extern (C) void thread_init() @nogc
 
     initLowlevelThreads();
     Thread.initLocks();
-
-    // The Android VM runtime intercepts SIGUSR1 and apparently doesn't allow
-    // its signal handler to run, so swap the two signals on Android, since
-    // thread_resumeHandler does nothing.
-    version (Android) thread_setGCSignals(SIGUSR2, SIGUSR1);
 
     version (Darwin)
     {
@@ -2132,6 +2130,25 @@ extern (C) void thread_init() @nogc
     }
     else version (Posix)
     {
+        version (OpenBSD)
+        {
+            // OpenBSD does not support SIGRTMIN or SIGRTMAX
+            // Use SIGUSR1 for SIGRTMIN, SIGUSR2 for SIGRTMIN + 1
+            // And use 32 for SIGRTMAX (32 is the max signal number on OpenBSD)
+            enum SIGRTMIN = SIGUSR1;
+            enum SIGRTMAX = 32;
+        }
+
+        if ( suspendSignalNumber == 0 )
+        {
+            suspendSignalNumber = SIGRTMIN;
+        }
+
+        if ( resumeSignalNumber == 0 )
+        {
+            resumeSignalNumber = SIGRTMIN + 1;
+            assert(resumeSignalNumber <= SIGRTMAX);
+        }
         int         status;
         sigaction_t suspend = void;
         sigaction_t resume = void;
@@ -2177,13 +2194,13 @@ extern (C) void thread_init() @nogc
 }
 
 private alias MainThreadStore = void[__traits(classInstanceSize, Thread)];
-package __gshared align(Thread.alignof) MainThreadStore _mainThreadStore;
+package __gshared align(__traits(classInstanceAlignment, Thread)) MainThreadStore _mainThreadStore;
 
 /**
  * Terminates the thread module. No other thread routine may be called
  * afterwards.
  */
-extern (C) void thread_term() @nogc
+extern (C) void thread_term() @nogc nothrow
 {
     thread_term_tpl!(Thread)(_mainThreadStore);
 }

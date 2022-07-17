@@ -61,7 +61,8 @@ enum region_kind
   RK_ALLOCA,
   RK_STRING,
   RK_BIT_RANGE,
-  RK_UNKNOWN
+  RK_VAR_ARG,
+  RK_UNKNOWN,
 };
 
 /* Region and its subclasses.
@@ -90,6 +91,7 @@ enum region_kind
      alloca_region (RK_ALLOCA)
      string_region (RK_STRING)
      bit_range_region (RK_BIT_RANGE)
+     var_arg_region (RK_VAR_ARG)
      unknown_region (RK_UNKNOWN).  */
 
 /* Abstract base class for representing ways of accessing chunks of memory.
@@ -131,6 +133,8 @@ public:
   dyn_cast_string_region () const { return NULL; }
   virtual const bit_range_region *
   dyn_cast_bit_range_region () const { return NULL; }
+  virtual const var_arg_region *
+  dyn_cast_var_arg_region () const { return NULL; }
 
   virtual void accept (visitor *v) const;
 
@@ -302,13 +306,13 @@ public:
   ~frame_region ();
 
   /* region vfuncs.  */
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_FRAME; }
-  const frame_region * dyn_cast_frame_region () const FINAL OVERRIDE
+  enum region_kind get_kind () const final override { return RK_FRAME; }
+  const frame_region * dyn_cast_frame_region () const final override
   {
     return this;
   }
-  void accept (visitor *v) const FINAL OVERRIDE;
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void accept (visitor *v) const final override;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
   /* Accessors.  */
   const frame_region *get_calling_frame () const { return m_calling_frame; }
@@ -367,8 +371,8 @@ class globals_region : public space_region
   {}
 
   /* region vfuncs.  */
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_GLOBALS; }
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  enum region_kind get_kind () const final override { return RK_GLOBALS; }
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 };
 
 } // namespace ana
@@ -394,8 +398,8 @@ public:
   {}
 
   /* region vfuncs.  */
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_CODE; }
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  enum region_kind get_kind () const final override { return RK_CODE; }
 
   const region *get_element (region_model *model,
 			const svalue *index,
@@ -428,10 +432,10 @@ public:
   }
 
   /* region vfuncs.  */
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_FUNCTION; }
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  enum region_kind get_kind () const final override { return RK_FUNCTION; }
   const function_region *
-  dyn_cast_function_region () const FINAL OVERRIDE{ return this; }
+  dyn_cast_function_region () const final override{ return this; }
 
   tree get_fndecl () const { return m_fndecl; }
 
@@ -468,8 +472,8 @@ public:
   }
 
   /* region vfuncs.  */
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_LABEL; }
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  enum region_kind get_kind () const final override { return RK_LABEL; }
 
   tree get_label () const { return m_label; }
 
@@ -499,9 +503,9 @@ public:
   : space_region (id, parent)
   {}
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_STACK; }
+  enum region_kind get_kind () const final override { return RK_STACK; }
 };
 
 } // namespace ana
@@ -526,8 +530,8 @@ public:
   : space_region (id, parent)
   {}
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_HEAP; }
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  enum region_kind get_kind () const final override { return RK_HEAP; }
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 };
 
 } // namespace ana
@@ -551,8 +555,8 @@ class root_region : public region
 public:
   root_region (unsigned id);
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_ROOT; }
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  enum region_kind get_kind () const final override { return RK_ROOT; }
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 };
 
 } // namespace ana
@@ -610,11 +614,11 @@ public:
   symbolic_region (unsigned id, region *parent, const svalue *sval_ptr);
 
   const symbolic_region *
-  dyn_cast_symbolic_region () const FINAL OVERRIDE { return this; }
+  dyn_cast_symbolic_region () const final override { return this; }
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_SYMBOLIC; }
-  void accept (visitor *v) const FINAL OVERRIDE;
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  enum region_kind get_kind () const final override { return RK_SYMBOLIC; }
+  void accept (visitor *v) const final override;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
   const svalue *get_pointer () const { return m_sval_ptr; }
 
@@ -652,13 +656,13 @@ public:
     m_tracked (calc_tracked_p (decl))
   {}
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_DECL; }
+  enum region_kind get_kind () const final override { return RK_DECL; }
   const decl_region *
-  dyn_cast_decl_region () const FINAL OVERRIDE { return this; }
+  dyn_cast_decl_region () const final override { return this; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
-  bool tracked_p () const FINAL OVERRIDE { return m_tracked; }
+  bool tracked_p () const final override { return m_tracked; }
 
   tree get_decl () const { return m_decl; }
   int get_stack_depth () const;
@@ -734,15 +738,15 @@ public:
     m_field (field)
   {}
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_FIELD; }
+  enum region_kind get_kind () const final override { return RK_FIELD; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
   const field_region *
-  dyn_cast_field_region () const FINAL OVERRIDE { return this; }
+  dyn_cast_field_region () const final override { return this; }
 
   tree get_field () const { return m_field; }
 
-  bool get_relative_concrete_offset (bit_offset_t *out) const FINAL OVERRIDE;
+  bool get_relative_concrete_offset (bit_offset_t *out) const final override;
 
 private:
   tree m_field;
@@ -815,18 +819,18 @@ public:
     m_index (index)
   {}
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_ELEMENT; }
+  enum region_kind get_kind () const final override { return RK_ELEMENT; }
   const element_region *
-  dyn_cast_element_region () const FINAL OVERRIDE { return this; }
+  dyn_cast_element_region () const final override { return this; }
 
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void accept (visitor *v) const final override;
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
   const svalue *get_index () const { return m_index; }
 
   virtual bool
-  get_relative_concrete_offset (bit_offset_t *out) const FINAL OVERRIDE;
+  get_relative_concrete_offset (bit_offset_t *out) const final override;
 
 private:
   const svalue *m_index;
@@ -900,17 +904,17 @@ public:
     m_byte_offset (byte_offset)
   {}
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_OFFSET; }
+  enum region_kind get_kind () const final override { return RK_OFFSET; }
   const offset_region *
-  dyn_cast_offset_region () const FINAL OVERRIDE { return this; }
+  dyn_cast_offset_region () const final override { return this; }
 
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void accept (visitor *v) const final override;
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
   const svalue *get_byte_offset () const { return m_byte_offset; }
 
-  bool get_relative_concrete_offset (bit_offset_t *out) const FINAL OVERRIDE;
+  bool get_relative_concrete_offset (bit_offset_t *out) const final override;
 
 private:
   const svalue *m_byte_offset;
@@ -988,19 +992,19 @@ public:
     m_byte_size_sval (byte_size_sval)
   {}
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_SIZED; }
+  enum region_kind get_kind () const final override { return RK_SIZED; }
   const sized_region *
-  dyn_cast_sized_region () const FINAL OVERRIDE { return this; }
+  dyn_cast_sized_region () const final override { return this; }
 
-  void accept (visitor *v) const FINAL OVERRIDE;
+  void accept (visitor *v) const final override;
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
-  bool get_byte_size (byte_size_t *out) const FINAL OVERRIDE;
-  bool get_bit_size (bit_size_t *out) const FINAL OVERRIDE;
+  bool get_byte_size (byte_size_t *out) const final override;
+  bool get_bit_size (bit_size_t *out) const final override;
 
   const svalue *
-  get_byte_size_sval (region_model_manager *) const FINAL OVERRIDE
+  get_byte_size_sval (region_model_manager *) const final override
   {
     return m_byte_size_sval;
   }
@@ -1070,11 +1074,11 @@ public:
     m_original_region (original_region)
   {}
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_CAST; }
+  enum region_kind get_kind () const final override { return RK_CAST; }
   const cast_region *
-  dyn_cast_cast_region () const FINAL OVERRIDE { return this; }
-  void accept (visitor *v) const FINAL OVERRIDE;
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  dyn_cast_cast_region () const final override { return this; }
+  void accept (visitor *v) const final override;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
   const region *get_original_region () const { return m_original_region; }
 
@@ -1111,9 +1115,9 @@ public:
   {}
 
   enum region_kind
-  get_kind () const FINAL OVERRIDE { return RK_HEAP_ALLOCATED; }
+  get_kind () const final override { return RK_HEAP_ALLOCATED; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 };
 
 /* An untyped region dynamically allocated on the stack via "alloca".  */
@@ -1125,9 +1129,9 @@ public:
   : region (complexity (parent), id, parent, NULL_TREE)
   {}
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_ALLOCA; }
+  enum region_kind get_kind () const final override { return RK_ALLOCA; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 };
 
 /* A region for a STRING_CST.  */
@@ -1141,11 +1145,11 @@ public:
   {}
 
   const string_region *
-  dyn_cast_string_region () const FINAL OVERRIDE { return this; }
+  dyn_cast_string_region () const final override { return this; }
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_STRING; }
+  enum region_kind get_kind () const final override { return RK_STRING; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
   tree get_string_cst () const { return m_string_cst; }
 
@@ -1216,18 +1220,18 @@ public:
   {}
 
   const bit_range_region *
-  dyn_cast_bit_range_region () const FINAL OVERRIDE { return this; }
+  dyn_cast_bit_range_region () const final override { return this; }
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_BIT_RANGE; }
+  enum region_kind get_kind () const final override { return RK_BIT_RANGE; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
   const bit_range &get_bits () const { return m_bits; }
 
-  bool get_byte_size (byte_size_t *out) const FINAL OVERRIDE;
-  bool get_bit_size (bit_size_t *out) const FINAL OVERRIDE;
-  const svalue *get_byte_size_sval (region_model_manager *mgr) const FINAL OVERRIDE;
-  bool get_relative_concrete_offset (bit_offset_t *out) const FINAL OVERRIDE;
+  bool get_byte_size (byte_size_t *out) const final override;
+  bool get_bit_size (bit_size_t *out) const final override;
+  const svalue *get_byte_size_sval (region_model_manager *mgr) const final override;
+  bool get_relative_concrete_offset (bit_offset_t *out) const final override;
 
 private:
   bit_range m_bits;
@@ -1251,6 +1255,87 @@ template <> struct default_hash_traits<bit_range_region::key_t>
 
 namespace ana {
 
+/* A region for the N-th vararg within a frame_region for a variadic call.  */
+
+class var_arg_region : public region
+{
+public:
+  /* A support class for uniquifying instances of var_arg_region.  */
+  struct key_t
+  {
+    key_t (const frame_region *parent, unsigned idx)
+    : m_parent (parent), m_idx (idx)
+    {
+      gcc_assert (parent);
+    }
+
+    hashval_t hash () const
+    {
+      inchash::hash hstate;
+      hstate.add_ptr (m_parent);
+      hstate.add_int (m_idx);
+      return hstate.end ();
+    }
+
+    bool operator== (const key_t &other) const
+    {
+      return (m_parent == other.m_parent
+	      && m_idx == other.m_idx);
+    }
+
+    void mark_deleted ()
+    {
+      m_parent = reinterpret_cast<const frame_region *> (1);
+    }
+    void mark_empty () { m_parent = NULL; }
+    bool is_deleted () const
+    {
+      return m_parent == reinterpret_cast<const frame_region *> (1);
+    }
+    bool is_empty () const { return m_parent == NULL; }
+
+    const frame_region *m_parent;
+    unsigned m_idx;
+  };
+
+  var_arg_region (unsigned id, const frame_region *parent,
+		  unsigned idx)
+  : region (complexity (parent), id, parent, NULL_TREE),
+    m_idx (idx)
+  {}
+
+  const var_arg_region *
+  dyn_cast_var_arg_region () const final override { return this; }
+
+  enum region_kind get_kind () const final override { return RK_VAR_ARG; }
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  const frame_region *get_frame_region () const;
+  unsigned get_index () const { return m_idx; }
+
+private:
+  unsigned m_idx;
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const var_arg_region *>::test (const region *reg)
+{
+  return reg->get_kind () == RK_VAR_ARG;
+}
+
+template <> struct default_hash_traits<var_arg_region::key_t>
+: public member_function_hash_traits<var_arg_region::key_t>
+{
+  static const bool empty_zero_p = true;
+};
+
+namespace ana {
+
 /* An unknown region, for handling unimplemented tree codes.  */
 
 class unknown_region : public region
@@ -1260,9 +1345,9 @@ public:
   : region (complexity (parent), id, parent, type)
   {}
 
-  enum region_kind get_kind () const FINAL OVERRIDE { return RK_UNKNOWN; }
+  enum region_kind get_kind () const final override { return RK_UNKNOWN; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 };
 
 } // namespace ana

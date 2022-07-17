@@ -2751,7 +2751,7 @@ version_loop_by_alias_check (vec<struct partition *> *partitions,
       gimple_stmt_iterator cond_gsi = gsi_last_bb (cond_bb);
       gsi_insert_seq_before (&cond_gsi, cond_stmts, GSI_SAME_STMT);
     }
-  update_ssa (TODO_update_ssa);
+  update_ssa (TODO_update_ssa_no_phi);
 }
 
 /* Return true if loop versioning is needed to distrubute PARTITIONS.
@@ -3658,6 +3658,7 @@ loop_distribution::transform_reduction_loop (loop_p loop)
   /* Handle strlen like loops.  */
   if (store_dr == NULL
       && integer_zerop (pattern)
+      && INTEGRAL_TYPE_P (TREE_TYPE (reduction_var))
       && TREE_CODE (reduction_iv.base) == INTEGER_CST
       && TREE_CODE (reduction_iv.step) == INTEGER_CST
       && integer_onep (reduction_iv.step))
@@ -3896,13 +3897,13 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return flag_tree_loop_distribution
 	|| flag_tree_loop_distribute_patterns;
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_loop_distribution
 

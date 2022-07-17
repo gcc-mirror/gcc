@@ -1,6 +1,6 @@
 /* { dg-require-effective-target vect_int } */
-/* { dg-require-effective-target arm_v8_2a_i8mm_neon_hw { target { aarch64*-*-* || arm*-*-* } } } */
-/* { dg-add-options arm_v8_2a_i8mm }  */
+/* { dg-require-effective-target arm_v8_2a_dotprod_neon_hw { target { aarch64*-*-* || arm*-*-* } } } */
+/* { dg-add-options arm_v8_2a_dotprod_neon }  */
 
 #include "tree-vect.h"
 

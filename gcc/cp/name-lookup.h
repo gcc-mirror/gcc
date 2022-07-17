@@ -471,7 +471,7 @@ extern void pop_from_top_level (void);
 extern void push_using_decl_bindings (tree, tree);
 
 /* Lower level interface for modules. */
-extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_global,
+extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_attached,
 					tree *mvec);
 extern void add_mergeable_namespace_entity (tree *slot, tree decl);
 extern tree lookup_class_binding (tree ctx, tree name);

@@ -34,7 +34,6 @@
 with System.Img_LLF;
 
 package System.Img_Real is
-   pragma Pure;
 
    procedure Set_Image_Real
      (V    : Long_Long_Float;

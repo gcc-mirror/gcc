@@ -416,9 +416,7 @@ replace_phi_edge_with_variable (basic_block cond_block,
       && SSA_NAME_RANGE_INFO (phi_result)
       && gimple_bb (SSA_NAME_DEF_STMT (new_tree)) == cond_block
       && dbg_cnt (phiopt_edge_range))
-    duplicate_ssa_name_range_info (new_tree,
-				   SSA_NAME_RANGE_TYPE (phi_result),
-				   SSA_NAME_RANGE_INFO (phi_result));
+    duplicate_ssa_name_range_info (new_tree, phi_result);
 
   /* Change the PHI argument to new.  */
   SET_USE (PHI_ARG_DEF_PTR (phi, e->dest_idx), new_tree);
@@ -2219,7 +2217,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 
       if (!TYPE_UNSIGNED (ty2) || !INTEGRAL_TYPE_P (ty2))
 	return false;
-      if (TYPE_PRECISION (ty1) != TYPE_PRECISION (ty2))
+      if (TYPE_PRECISION (ty1) > TYPE_PRECISION (ty2))
 	return false;
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig_use_lhs))
 	return false;
@@ -2980,8 +2978,8 @@ public:
     : dom_walker (direction), m_nontrapping (ps), m_seen_refs (128)
   {}
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
 private:
 
@@ -3962,14 +3960,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_phiopt (m_ctxt); }
-  void set_pass_param (unsigned n, bool param)
+  opt_pass * clone () final override { return new pass_phiopt (m_ctxt); }
+  void set_pass_param (unsigned n, bool param) final override
     {
       gcc_assert (n == 0);
       early_p = param;
     }
-  virtual bool gate (function *) { return flag_ssa_phiopt; }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return flag_ssa_phiopt; }
+  unsigned int execute (function *) final override
     {
       return tree_ssa_phiopt_worker (false,
 				     !early_p ? gate_hoist_loads () : false,
@@ -4011,8 +4009,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_cselim; }
-  virtual unsigned int execute (function *) { return tree_ssa_cs_elim (); }
+  bool gate (function *) final override { return flag_tree_cselim; }
+  unsigned int execute (function *) final override
+  {
+    return tree_ssa_cs_elim ();
+  }
 
 }; // class pass_cselim
 

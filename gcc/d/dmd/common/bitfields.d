@@ -30,7 +30,7 @@ if (__traits(isUnsigned, T))
         enum mask = "(1 << "~i.stringof~")";
         result ~= "
         /// set or get the corresponding "~structName~" member
-        bool "~mem~"() const { return !!(bitFields & "~mask~"); }
+        bool "~mem~"() const scope { return !!(bitFields & "~mask~"); }
         /// ditto
         bool "~mem~"(bool v)
         {

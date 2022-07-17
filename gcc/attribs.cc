@@ -499,7 +499,7 @@ diag_attr_exclusions (tree last_decl, tree node, tree attrname,
 
   /* Iterate over the mutually exclusive attribute names and verify
      that the symbol doesn't contain it.  */
-  for (unsigned i = 0; i != sizeof attrs / sizeof *attrs; ++i)
+  for (unsigned i = 0; i != ARRAY_SIZE (attrs); ++i)
     {
       if (!attrs[i])
 	continue;
@@ -871,6 +871,21 @@ decl_attributes (tree *node, tree attributes, int flags,
 
 	  tree ret = (spec->handler) (cur_and_last_decl, name, args,
 				      flags|cxx11_flag, &no_add_attrs);
+
+	  /* Fix up typedefs clobbered by attribute handlers.  */
+	  if (TREE_CODE (*node) == TYPE_DECL
+	      && anode == &TREE_TYPE (*node)
+	      && DECL_ORIGINAL_TYPE (*node)
+	      && TYPE_NAME (*anode) == *node
+	      && TYPE_NAME (cur_and_last_decl[0]) != *node)
+	    {
+	      tree t = cur_and_last_decl[0];
+	      DECL_ORIGINAL_TYPE (*node) = t;
+	      tree tt = build_variant_type_copy (t);
+	      cur_and_last_decl[0] = tt;
+	      TREE_TYPE (*node) = tt;
+	      TYPE_NAME (tt) = *node;
+	    }
 
 	  *anode = cur_and_last_decl[0];
 	  if (ret == error_mark_node)
@@ -2106,7 +2121,7 @@ decls_mismatched_attributes (tree tmpl, tree decl, tree attrlist,
   };
 
   for (unsigned i = 0; i != 2; ++i)
-    for (unsigned j = 0; j != sizeof whitelist / sizeof *whitelist; ++j)
+    for (unsigned j = 0; j != ARRAY_SIZE (whitelist); ++j)
       if (lookup_attribute (whitelist[j], tmpl_attrs[i])
 	  || lookup_attribute (whitelist[j], decl_attrs[i]))
 	return 0;

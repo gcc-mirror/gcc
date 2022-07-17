@@ -99,6 +99,7 @@ else version (Solaris) enum RAND_MAX = 0x7fff;
 else version (CRuntime_Bionic) enum RAND_MAX = 0x7fffffff;
 else version (CRuntime_Musl) enum RAND_MAX = 0x7fffffff;
 else version (CRuntime_UClibc) enum RAND_MAX = 0x7fffffff;
+else version (WASI) enum RAND_MAX = 0x7fffffff;
 else static assert( false, "Unsupported platform" );
 
 ///

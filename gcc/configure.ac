@@ -4082,33 +4082,6 @@ foo:	.long	25
 	xor	%l1, %tle_lox10(foo), %o5
 	ld	[%g7 + %o5], %o1"
 	;;
-  tilepro*-*-*)
-      conftest_s='
-	.section ".tdata","awT",@progbits
-foo:	.long	25
-	.text
-	addli	r0, zero, tls_gd(foo)
-	auli	r0, zero, tls_gd_ha16(foo)
-	addli	r0, r0, tls_gd_lo16(foo)
-	jal	__tls_get_addr
-	addli	r0, zero, tls_ie(foo)
-	auli	r0, r0, tls_ie_ha16(foo)
-	addli	r0, r0, tls_ie_lo16(foo)'
-	tls_as_opt="--fatal-warnings"
-	;;
-  tilegx*-*-*)
-      conftest_s='
-	.section ".tdata","awT",@progbits
-foo:	.long	25
-	.text
-	shl16insli r0, zero, hw0_last_tls_gd(foo)
-	shl16insli r0, zero, hw1_last_tls_gd(foo)
-	shl16insli r0, r0,   hw0_tls_gd(foo)
-	jal	   __tls_get_addr
-	shl16insli r0, zero, hw1_last_tls_ie(foo)
-	shl16insli r0, r0,   hw0_tls_ie(foo)'
-	tls_as_opt="--fatal-warnings"
-	;;
   xtensa*-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
@@ -5375,131 +5348,29 @@ case "$target" in
     ;;
 esac
 
-# This tests if the assembler supports two registers for global_load functions
-# (like in LLVM versions <12) or one register (like in LLVM 12).
+# AMD GCN needs the LLVM assembler and linker.
+# Test that LLVM is at least 13.0.1.
 case "$target" in
   amdgcn-* | gcn-*)
-    AC_MSG_CHECKING(assembler fix for global_load functions)
-    gcc_cv_as_gcn_global_load_fixed=yes
+    AC_MSG_CHECKING(llvm assembler version)
+    gcc_cv_as_version="unknown"
     if test x$gcc_cv_as != x; then
-      cat > conftest.s <<EOF
-	global_store_dwordx2    v[[1:2]], v[[4:5]], s[[14:15]]
-EOF
-      if $gcc_cv_as -triple=amdgcn--amdhsa -filetype=obj -mcpu=gfx900 -o conftest.o conftest.s > /dev/null 2>&1; then
-        gcc_cv_as_gcn_global_load_fixed=no
-      fi
-      rm -f conftest.s conftest.o conftest
+      gcc_cv_as_version=`$gcc_cv_as --version 2>&1 | sed -ne '/version/s/.* \([[0-9]]\)/\1/p' || echo error`
+      case "$gcc_cv_as_version" in
+	13.0.[[1-9]]*) ;;          # 13.0.1+
+	13.[[1-9]]*) ;;            # 13.1+
+	1[[4-9]]*) ;;              # 14..19
+	[[2-9]][[0-9]]*) ;;        # 20..99
+	[[1-9]][[0-9]][[0-9]]*) ;; # 100+
+	error) AC_MSG_ERROR([cannot determine LLVM version]) ;;
+	*) AC_MSG_ERROR([LLVM 13.0.1 or later is required (found LLVM $gcc_cv_as_version)]) ;;
+      esac
     fi
-    global_load_fixed=`if test x$gcc_cv_as_gcn_global_load_fixed = xyes; then echo 1; else echo 0; fi`
-    AC_DEFINE_UNQUOTED(HAVE_GCN_ASM_GLOBAL_LOAD_FIXED, $global_load_fixed,
-      [Define if your assembler has fixed global_load functions.])
-    AC_MSG_RESULT($gcc_cv_as_gcn_global_load_fixed)
+    AC_MSG_RESULT([$gcc_cv_as_version, ok])
     ;;
 esac
 
 case "$target" in
-  amdgcn-* | gcn-*)
-    # Test the LLVM assembler syntax dialect; they have made a number of
-    # changes between LLVM 12 & 13 without any backward compatibility.
-    gcc_GAS_CHECK_FEATURE([assembler amdgcn_target v2/3 syntax],
-      gcc_cv_as_gcn_asm_v3_syntax,
-      [-triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=+xnack],
-      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx906+xnack"],,
-      [AC_DEFINE(HAVE_GCN_ASM_V3_SYNTAX, 1,
-       [Define if your assembler expects amdgcn_target gfx908+xnack syntax.])])
-    gcc_GAS_CHECK_FEATURE([assembler amdgcn_target v4 syntax],
-      gcc_cv_as_gcn_asm_v4_syntax,
-      [-triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=+xnack],
-      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx908:xnack+"],,
-      [AC_DEFINE(HAVE_GCN_ASM_V4_SYNTAX, 1,
-       [Define if your assembler expects amdgcn_target gfx908:xnack+ syntax.])])
-
-    # Some attribute names changed in the move to v4 ...
-    if test $gcc_cv_as_gcn_asm_v3_syntax = yes; then
-	sramopt="+sram-ecc"
-	sramattr="+sram-ecc"
-	xnackattr="+xnack"
-    elif test $gcc_cv_as_gcn_asm_v4_syntax = yes; then
-	sramopt="+sramecc"
-	sramattr=":sramecc+"
-	xnackattr=":xnack+"
-    else
-	AC_MSG_ERROR([Unrecognised assembler version])
-    fi
-
-    # Test whether the LLVM assembler accepts -mattr=+xnack without any
-    # diagnostic. LLVM 9 & 10 accept the option whether it makes sense or not,
-    # LLVM 12+ throws a warning for GPUs without support.
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for fiji],
-      gcc_cv_as_gcn_xnack_ecc_fiji,
-      [-triple=amdgcn--amdhsa -mcpu=fiji -mattr=+xnack 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_xnack_ecc_fiji=yes],
-      [AC_DEFINE(HAVE_GCN_XNACK_FIJI, 1,
-       [Define if your assembler allows -mattr=+xnack for fiji.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for gfx900],
-      gcc_cv_as_gcn_xnack_ecc_gfx900,
-      [-triple=amdgcn--amdhsa -mcpu=gfx900 -mattr=+xnack 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_xnack_ecc_gfx900=yes],
-      [AC_DEFINE(HAVE_GCN_XNACK_GFX900, 1,
-       [Define if your assembler allows -mattr=+xnack for gfx900.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for gfx906],
-      gcc_cv_as_gcn_xnack_ecc_gfx906,
-      [-triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=+xnack 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_xnack_ecc_gfx906=yes],
-      [AC_DEFINE(HAVE_GCN_XNACK_GFX906, 1,
-       [Define if your assembler allows -mattr=+xnack for gfx906.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for gfx908],
-      gcc_cv_as_gcn_xnack_ecc_gfx908,
-      [-triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=+xnack 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_xnack_ecc_gfx908=yes],
-      [AC_DEFINE(HAVE_GCN_XNACK_GFX908, 1,
-       [Define if your assembler allows -mattr=+xnack for gfx908.])])
-    rm -f conftest.err
-
-    # Test whether the LLVM assembler accepts -mattr=+sramecc without any
-    # diagnostic. LLVM 9 & 10 accept the option whether it makes sense or not,
-    # (some?) LLVM 12 rejects it for all GPUs, and LLVM13 throws a warning
-    # for GPUs without support.
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for fiji],
-      gcc_cv_as_gcn_sram_ecc_fiji,
-      [-triple=amdgcn--amdhsa -mcpu=fiji -mattr=$sramopt 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_sram_ecc_fiji=yes],
-      [AC_DEFINE(HAVE_GCN_SRAM_ECC_FIJI, 1,
-       [Define if your assembler allows -mattr=+sramecc for fiji.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for gfx900],
-      gcc_cv_as_gcn_sram_ecc_gfx900,
-      [-triple=amdgcn--amdhsa -mcpu=gfx900 -mattr=$sramopt 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_sram_ecc_gfx900=yes],
-      [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX900, 1,
-       [Define if your assembler allows -mattr=+sramecc for gfx900.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for gfx906],
-      gcc_cv_as_gcn_sram_ecc_gfx906,
-      [-triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=$sramopt 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_sram_ecc_gfx906=yes],
-      [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX906, 1,
-       [Define if your assembler allows -mattr=+sramecc for gfx906.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for gfx908],
-      gcc_cv_as_gcn_sram_ecc_gfx908,
-      [-triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=$sramopt 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_sram_ecc_gfx908=yes],
-      [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX908, 1,
-       [Define if your assembler allows -mattr=+sramecc for gfx908.])])
-    rm -f conftest.err
-    ;;
   arm*)
     gcc_GAS_CHECK_FEATURE([assembler for arm accepts context-specific architecture extensions],
       gcc_cv_as_arm_option_extensions,
@@ -5521,7 +5392,7 @@ esac
 case "$cpu_type" in
   aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
   | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
-  | tilegx | tilepro | visium | xstormy16 | xtensa)
+  | visium | xstormy16 | xtensa)
     insn="nop"
     ;;
   ia64 | s390)
@@ -6264,7 +6135,10 @@ AC_MSG_CHECKING(linker for compressed debug sections)
 # In binutils 2.26, gld gained support for the ELF gABI format.
 if test $in_tree_ld = yes ; then
   gcc_cv_ld_compress_debug=0
-  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 19 -o "$gcc_cv_gld_major_version" -gt 2 \
+  if test $ld_is_mold = yes; then
+    gcc_cv_ld_compress_debug=3
+    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
+  elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 19 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes && test $ld_is_gold = yes; then
     gcc_cv_ld_compress_debug=2
     gcc_cv_ld_compress_debug_option="--compress-debug-sections"
@@ -6277,7 +6151,10 @@ if test $in_tree_ld = yes ; then
     gcc_cv_ld_compress_debug=1
   fi
 elif echo "$ld_ver" | grep GNU > /dev/null; then
-  if test "$ld_vers_major" -lt 2 \
+  if test $ld_is_mold = yes; then
+    gcc_cv_ld_compress_debug=3
+    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
+  elif test "$ld_vers_major" -lt 2 \
      || test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 21; then
     gcc_cv_ld_compress_debug=0
   elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 26; then

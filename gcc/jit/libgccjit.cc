@@ -19,12 +19,12 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_PTHREAD_H
 #include "system.h"
 #include "coretypes.h"
 #include "timevar.h"
 #include "typed-splay-tree.h"
 #include "cppbuiltin.h"
-#include <pthread.h>
 
 #include "libgccjit.h"
 #include "jit-recording.h"
@@ -545,8 +545,8 @@ gcc_jit_type_get_size (gcc_jit_type *type)
 {
   RETURN_VAL_IF_FAIL (type, -1, NULL, NULL, "NULL type");
   RETURN_VAL_IF_FAIL
-    (type->is_int (), -1, NULL, NULL,
-     "only getting the size of an integer type is supported for now");
+    (type->is_int () || type->is_float (), -1, NULL, NULL,
+     "only getting the size of integer or floating-point types is supported for now");
   return type->get_size ();
 }
 

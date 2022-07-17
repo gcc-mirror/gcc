@@ -53,7 +53,7 @@ aarch64 port		Richard Earnshaw	<richard.earnshaw@arm.com>
 aarch64 port		Richard Sandiford	<richard.sandiford@arm.com>
 aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
 aarch64 port		Kyrylo Tkachov		<kyrylo.tkachov@arm.com>
-alpha port		Richard Henderson	<rth@twiddle.net>
+alpha port		Richard Henderson	<rth@gcc.gnu.org>
 amdgcn port		Julian Brown		<julian@codesourcery.com>
 amdgcn port		Andrew Stubbs		<ams@codesourcery.com>
 arc port		Joern Rennecke		<gnu@amylaar.uk>
@@ -112,6 +112,7 @@ riscv port		Andrew Waterman		<andrew@sifive.com>
 riscv port		Jim Wilson		<jim.wilson.gcc@gmail.com>
 rs6000/powerpc port	David Edelsohn		<dje.gcc@gmail.com>
 rs6000/powerpc port	Segher Boessenkool	<segher@kernel.crashing.org>
+rs6000/powerpc port	Kewen Lin		<linkw@gcc.gnu.org>
 rs6000 vector extns	Aldy Hernandez		<aldyh@redhat.com>
 rx port			Nick Clifton		<nickc@redhat.com>
 s390 port		Ulrich Weigand		<uweigand@de.ibm.com>
@@ -120,8 +121,6 @@ sh port			Alexandre Oliva		<aoliva@gcc.gnu.org>
 sh port			Oleg Endo		<olegendo@gcc.gnu.org>
 sparc port		David S. Miller		<davem@redhat.com>
 sparc port		Eric Botcazou		<ebotcazou@libertysurf.fr>
-tilegx port		Walter Lee		<walt@tilera.com>
-tilepro port		Walter Lee		<walt@tilera.com>
 v850 port		Nick Clifton		<nickc@redhat.com>
 vax port		Matt Thomas		<matt@3am-software.com>
 vax port		Maciej W. Rozycki	<macro@embecosm.com>
@@ -353,13 +352,14 @@ Kevin Buettner					<kevinb@redhat.com>
 Andrew Burgess					<aburgess@redhat.com>
 Adam Butcher					<adam@jessamine.co.uk>
 Andrew Cagney					<cagney@gnu.org>
+Andrew Carlotti					<andrew.carlotti@arm.com>
 Daniel Carrera					<dcarrera@gmail.com>
 Stephane Carrez					<stcarrez@nerim.fr>
 Gabriel Charette				<gchare@google.com>
 Chandra Chavva					<cchavva@redhat.com>
 Dehao Chen					<dehao@google.com>
 Fabien Chêne					<fabien@gcc.gnu.org>
-Clément Chigot					<clement.chigot@atos.net>
+Clément Chigot					<chigot@adacore.com>
 Harshit Chopra					<harshit@google.com>
 Tamar Christina					<tamar.christina@arm.com>
 Eric Christopher				<echristo@gmail.com>
@@ -463,6 +463,8 @@ Daniel Jacobowitz				<drow@false.org>
 Andreas Jaeger					<aj@suse.de>
 Harsha Jagasia					<harsha.jagasia@amd.com>
 Fariborz Jahanian				<fjahanian@apple.com>
+Surya Kumari Jangala				<jskumari@linux.ibm.com>
+Haochen Jiang					<haochen.jiang@intel.com>
 Qian Jianhua					<qianjh@fujitsu.com>
 Janis Johnson					<janis.marie.johnson@gmail.com>
 Teresa Johnson					<tejohnson@google.com>
@@ -478,6 +480,7 @@ Jeff Knaggs					<jknaggs@redhat.com>
 Michael Koch					<konqueror@gmx.de>
 Nicolas Koenig					<koenigni@student.ethz.ch>
 Boris Kolpackov					<boris@codesynthesis.com>
+Lingling Kong					<lingling.kong@intel.com>
 Dave Korn					<dave.korn.cygwin@gmail.com>
 Julia Koval					<julia.koval@intel.com>
 Matt Kraai					<kraai@ftbfs.org>
@@ -493,6 +496,7 @@ Razya Ladelsky					<razya@gcc.gnu.org>
 Thierry Lafage					<thierry.lafage@inria.fr>
 Rask Ingemann Lambertsen			<ccc94453@vip.cybercity.dk>
 Jerome Lambourg					<lambourg@adacore.com>
+Tim Lange					<mail@tim-lange.me>
 Asher Langton					<langton2@llnl.gov>
 Chris Lattner					<sabre@nondot.org>
 Terry Laurenzo					<tlaurenzo@gmail.com>
@@ -506,7 +510,6 @@ Ilya Leoshkevich				<iii@linux.ibm.com>
 Kriang Lerdsuwanakij				<lerdsuwa@users.sourceforge.net>
 Renlin Li					<renlin.li@arm.com>
 Xinliang David Li				<davidxl@google.com>
-Kewen Lin					<linkw@gcc.gnu.org>
 Chen Liqin					<liqin.gcc@gmail.com>
 Jiangning Liu					<jiangning.liu@arm.com>
 Sa Liu						<saliu@de.ibm.com>
@@ -540,6 +543,7 @@ Bingfeng Mei					<bmei@broadcom.com>
 Jim Meyering					<jim@meyering.net>
 Martin Michlmayr				<tbm@cyrius.com>
 Lee Millward					<lee.millward@gmail.com>
+Immad Mir					<mir@sourceware.org>
 Dragan Mladjenovic				<Dragan.Mladjenovic@syrmia.com>
 Alan Modra					<amodra@gmail.com>
 Catherine Moore					<clm@codesourcery.com>
@@ -681,7 +685,7 @@ Przemyslaw Wirkus				<przemyslaw.wirkus@arm.com>
 Carlo Wood					<carlo@alinoe.com>
 Jackson Woodruff				<jackson.woodruff@arm.com>
 Jonathan Wright					<jonathan.wright@arm.com>
-Ruoyao Xi					<xry111@mengyan1223.wang>
+Ruoyao Xi					<xry111@xry111.site>
 Mingjie Xing					<mingjie.xing@gmail.com>
 Chenghua Xu					<paul.hua.gm@gmail.com>
 Canqun Yang					<canqun@nudt.edu.cn>
@@ -715,8 +719,10 @@ information.
 
 
 Matthias Kretz					<m.kretz@gsi.de>
+Tim Lange					<mail@tim-lange.me>
 Jeff Law					<jeffreyalaw@gmail.com>
 Jeff Law					<jlaw@tachyum.com>
+Immad Mir					<mir@sourceware.org>
 Gaius Mulley					<gaiusmod2@gmail.com>
 Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Navid Rahimi					<navidrahimi@microsoft.com>

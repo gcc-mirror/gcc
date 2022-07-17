@@ -589,27 +589,30 @@ else version (Darwin)
 
     struct cmsghdr
     {
-         socklen_t cmsg_len;
-         int       cmsg_level;
-         int       cmsg_type;
+        socklen_t  cmsg_len;
+        int        cmsg_level;
+        int        cmsg_type;
+    }
+
+
+    extern (D)
+    {
+        socklen_t CMSG_ALIGN(socklen_t len) pure nothrow @nogc { return (len + socklen_t.sizeof - 1) & cast(socklen_t) (~(socklen_t.sizeof - 1)); }
+        socklen_t CMSG_SPACE(socklen_t len) pure nothrow @nogc { return CMSG_ALIGN(len) + CMSG_ALIGN(cmsghdr.sizeof); }
+        socklen_t CMSG_LEN(socklen_t len) pure nothrow @nogc { return CMSG_ALIGN(cmsghdr.sizeof) + len; }
+
+        inout(ubyte)*   CMSG_DATA( return scope inout(cmsghdr)* cmsg ) pure nothrow @nogc { return cast(ubyte*)( cmsg + 1 ); }
+
+        inout(cmsghdr)* CMSG_FIRSTHDR( inout(msghdr)* mhdr ) pure nothrow @nogc
+        {
+            return ( cast(socklen_t)mhdr.msg_controllen >= cmsghdr.sizeof ? cast(inout(cmsghdr)*) mhdr.msg_control : cast(inout(cmsghdr)*) null );
+        }
     }
 
     enum : uint
     {
         SCM_RIGHTS = 0x01
     }
-
-    /+
-    CMSG_DATA(cmsg)     ((unsigned char *)(cmsg) + \
-                         ALIGN(sizeof(struct cmsghdr)))
-    CMSG_NXTHDR(mhdr, cmsg) \
-                        (((unsigned char *)(cmsg) + ALIGN((cmsg)->cmsg_len) + \
-                         ALIGN(sizeof(struct cmsghdr)) > \
-                         (unsigned char *)(mhdr)->msg_control +(mhdr)->msg_controllen) ? \
-                         (struct cmsghdr *)0 /* NULL */ : \
-                         (struct cmsghdr *)((unsigned char *)(cmsg) + ALIGN((cmsg)->cmsg_len)))
-    CMSG_FIRSTHDR(mhdr) ((struct cmsghdr *)(mhdr)->msg_control)
-    +/
 
     struct linger
     {

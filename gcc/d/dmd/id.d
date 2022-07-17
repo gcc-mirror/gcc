@@ -311,6 +311,7 @@ immutable Msgtable[] msgtable =
     { "__ArrayPostblit" },
     { "__ArrayDtor" },
     { "_d_delThrowable" },
+    { "_d_newThrowable" },
     { "_d_assert_fail" },
     { "dup" },
     { "_aaApply" },
@@ -349,6 +350,11 @@ immutable Msgtable[] msgtable =
     { "_d_arraysetlengthTImpl"},
     { "_d_arraysetlengthT"},
     { "_d_arraysetlengthTTrace"},
+    { "_d_arrayappendT" },
+    { "_d_arrayappendTTrace" },
+    { "_d_arrayappendcTXImpl" },
+    { "_d_arrayappendcTX" },
+    { "_d_arrayappendcTXTrace" },
 
     // varargs implementation
     { "stdc" },
@@ -454,6 +460,7 @@ immutable Msgtable[] msgtable =
     { "getVirtualFunctions" },
     { "getVirtualMethods" },
     { "classInstanceSize" },
+    { "classInstanceAlignment" },
     { "allMembers" },
     { "derivedMembers" },
     { "isSame" },
@@ -517,6 +524,8 @@ immutable Msgtable[] msgtable =
     { "show" },
     { "push" },
     { "pop" },
+    { "define" },
+    { "undef" },
 ];
 
 

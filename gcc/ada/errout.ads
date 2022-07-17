@@ -468,6 +468,9 @@ package Errout is
    Error_Msg_Name_1 : Name_Id renames Err_Vars.Error_Msg_Name_1;
    Error_Msg_Name_2 : Name_Id renames Err_Vars.Error_Msg_Name_2;
    Error_Msg_Name_3 : Name_Id renames Err_Vars.Error_Msg_Name_3;
+   Error_Msg_Name_4 : Name_Id renames Err_Vars.Error_Msg_Name_4;
+   Error_Msg_Name_5 : Name_Id renames Err_Vars.Error_Msg_Name_5;
+   Error_Msg_Name_6 : Name_Id renames Err_Vars.Error_Msg_Name_6;
    --  Name_Id values for % insertion characters in message
 
    Error_Msg_File_1 : File_Name_Type renames Err_Vars.Error_Msg_File_1;
@@ -481,6 +484,10 @@ package Errout is
 
    Error_Msg_Node_1 : Node_Id renames Err_Vars.Error_Msg_Node_1;
    Error_Msg_Node_2 : Node_Id renames Err_Vars.Error_Msg_Node_2;
+   Error_Msg_Node_3 : Node_Id renames Err_Vars.Error_Msg_Node_3;
+   Error_Msg_Node_4 : Node_Id renames Err_Vars.Error_Msg_Node_4;
+   Error_Msg_Node_5 : Node_Id renames Err_Vars.Error_Msg_Node_5;
+   Error_Msg_Node_6 : Node_Id renames Err_Vars.Error_Msg_Node_6;
    --  Node_Id values for & insertion characters in message
 
    Error_Msg_Qual_Level : Nat renames Err_Vars.Error_Msg_Qual_Level;
@@ -851,11 +858,6 @@ package Errout is
    --  Remove warnings on all elements of a list (Calls Remove_Warning_Messages
    --  on each element of the list, see above).
 
-   procedure Reset_Warnings;
-   --  Reset the counts related to warnings. This is used both to initialize
-   --  these counts and to reset them after each phase of analysis for a given
-   --  value of Opt.Warning_Mode in gnat2why.
-
    procedure Set_Ignore_Errors (To : Boolean);
    --  Following a call to this procedure with To=True, all error calls are
    --  ignored. A call with To=False restores the default treatment in which
@@ -903,11 +905,10 @@ package Errout is
    --  matching Warnings Off pragma preceding this one.
 
    function Compilation_Errors return Boolean;
-   --  Returns True if errors have been detected, or warnings in -gnatwe (treat
-   --  warnings as errors) mode. Note that it is mandatory to call Finalize
-   --  before calling this routine. To account for changes to Warning_Mode in
-   --  gnat2why between phases, the past or current presence of an error is
-   --  recorded in a global variable at each call.
+   --  Returns True if errors have been detected, or warnings when they are
+   --  treated as errors, which corresponds to switch -gnatwe in the compiler,
+   --  and other switches in other tools. Note that it is mandatory to call
+   --  Finalize before calling this routine.
 
    procedure Error_Msg_CRT (Feature : String; N : Node_Id);
    --  Posts a non-fatal message on node N saying that the feature identified
@@ -936,10 +937,11 @@ package Errout is
    procedure Error_Msg_Ada_2022_Feature (Feature : String; Loc : Source_Ptr);
    --  Analogous to Error_Msg_Ada_2012_Feature, for Ada 2022
 
-   procedure Error_Msg_GNAT_Extension (Extension : String);
+   procedure Error_Msg_GNAT_Extension (Extension : String; Loc : Source_Ptr);
    --  If not operating with extensions allowed, posts errors complaining
-   --  that Extension is only supported when the -gnatX switch is enabled,
-   --  with appropriate suggestions to fix it.
+   --  that Extension is only supported when the -gnatX switch is enabled
+   --  or pragma Extensions_Allowed (On) is used. Loc indicates the source
+   --  location of the extension construct.
 
    procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message

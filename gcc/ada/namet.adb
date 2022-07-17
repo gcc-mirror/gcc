@@ -170,39 +170,39 @@ package body Namet is
      (Buf : in out Bounded_String;
       Id  : Valid_Name_Id)
    is
-      C    : Character;
-      P    : Natural;
       Temp : Bounded_String;
+
+      function Has_Encodings (Temp : Bounded_String) return Boolean;
+      --  True if Temp contains encoded characters. If not, we can set
+      --  Name_Has_No_Encodings to True below, and never call this again
+      --  on the same Name_Id.
+
+      function Has_Encodings (Temp : Bounded_String) return Boolean is
+      begin
+         for J in 1 .. Temp.Length loop
+            if Temp.Chars (J) in 'U' | 'W' | 'Q' | 'O' then
+               return True;
+            end if;
+         end loop;
+
+         return False;
+      end Has_Encodings;
 
    begin
       Append (Temp, Id);
 
-      --  Skip scan if we already know there are no encodings
+      --  Skip scan if we already know there are no encodings (i.e. the first
+      --  time this was called on Id, the Has_Encodings call below returned
+      --  False).
 
       if Name_Entries.Table (Id).Name_Has_No_Encodings then
          goto Done;
       end if;
 
-      --  Quick loop to see if there is anything special to do
-
-      P := 1;
-      loop
-         if P = Temp.Length then
-            Name_Entries.Table (Id).Name_Has_No_Encodings := True;
-            goto Done;
-
-         else
-            C := Temp.Chars (P);
-
-            exit when
-              C = 'U' or else
-              C = 'W' or else
-              C = 'Q' or else
-              C = 'O';
-
-            P := P + 1;
-         end if;
-      end loop;
+      if not Has_Encodings (Temp) then
+         Name_Entries.Table (Id).Name_Has_No_Encodings := True;
+         goto Done;
+      end if;
 
       --  Here we have at least some encoding that we must decode
 
@@ -235,8 +235,7 @@ package body Namet is
 
             if C = 'U'
               and then Old < Temp.Length
-              and then Temp.Chars (Old + 1) not in 'A' .. 'Z'
-              and then Temp.Chars (Old + 1) /= '_'
+              and then Temp.Chars (Old + 1) not in 'A' .. 'Z' | '_'
             then
                Old := Old + 1;
 
@@ -274,8 +273,7 @@ package body Namet is
 
             elsif C = 'W'
               and then Old < Temp.Length
-              and then Temp.Chars (Old + 1) not in 'A' .. 'Z'
-              and then Temp.Chars (Old + 1) /= '_'
+              and then Temp.Chars (Old + 1) not in 'A' .. 'Z' | '_'
             then
                Old := Old + 1;
                Widechar.Set_Wide (Char_Code (Hex (4)), New_Buf, New_Len);
@@ -301,7 +299,7 @@ package body Namet is
                C := Temp.Chars (Old);
                Old := Old + 1;
 
-               pragma Assert (C in '0' .. '9' or else C in 'a' .. 'f');
+               pragma Assert (C in '0' .. '9' | 'a' .. 'f');
 
                if C <= '9' then
                   T := 16 * T + Character'Pos (C) - Character'Pos ('0');
@@ -347,8 +345,7 @@ package body Namet is
 
             elsif Temp.Chars (Old) = 'O'
               and then Old < Temp.Length
-              and then Temp.Chars (Old + 1) not in 'A' .. 'Z'
-              and then Temp.Chars (Old + 1) /= '_'
+              and then Temp.Chars (Old + 1) not in 'A' .. 'Z' | '_'
             then
                Old := Old + 1;
 
@@ -501,8 +498,7 @@ package body Namet is
                elsif Temp.Chars (P) = 'W'
                  and then P + 9 <= Temp.Length
                  and then Temp.Chars (P + 1) = 'W'
-                 and then Temp.Chars (P + 2) not in 'A' .. 'Z'
-                 and then Temp.Chars (P + 2) /= '_'
+                 and then Temp.Chars (P + 2) not in 'A' .. 'Z' | '_'
                then
                   Temp.Chars (P + 12 .. Temp.Length + 2) :=
                     Temp.Chars (P + 10 .. Temp.Length);
@@ -517,8 +513,7 @@ package body Namet is
 
                elsif Temp.Chars (P) = 'W'
                  and then P < Temp.Length
-                 and then Temp.Chars (P + 1) not in 'A' .. 'Z'
-                 and then Temp.Chars (P + 1) /= '_'
+                 and then Temp.Chars (P + 1) not in 'A' .. 'Z' | '_'
                then
                   Temp.Chars (P + 8 .. P + Temp.Length + 3) :=
                     Temp.Chars (P + 5 .. Temp.Length);
@@ -571,7 +566,7 @@ package body Namet is
          declare
             CC : constant Character := Get_Character (C);
          begin
-            if CC in 'a' .. 'z' or else CC in '0' .. '9' then
+            if CC in 'a' .. 'z' | '0' .. '9' then
                Buf.Chars (Buf.Length) := CC;
             else
                Buf.Chars (Buf.Length) := 'U';
@@ -624,6 +619,25 @@ package body Namet is
       Strip_Qualification_And_Suffixes (Temp);
       Append (Buf, Temp);
    end Append_Unqualified_Decoded;
+
+   --------------------------------
+   -- Destroy_Global_Name_Buffer --
+   --------------------------------
+
+   procedure Destroy_Global_Name_Buffer is
+      procedure Do_It;
+      --  Do the work. Needed only for "pragma Debug" below, so we don't do
+      --  anything in production mode.
+
+      procedure Do_It is
+      begin
+         Global_Name_Buffer.Length := Global_Name_Buffer.Max_Length;
+         Global_Name_Buffer.Chars := (others => '!');
+      end Do_It;
+      pragma Debug (Do_It);
+   begin
+      null;
+   end Destroy_Global_Name_Buffer;
 
    --------------
    -- Finalize --
@@ -990,9 +1004,7 @@ package body Namet is
    begin
       --  Any name starting or ending with underscore is internal
 
-      if Buf.Chars (1) = '_'
-        or else Buf.Chars (Buf.Length) = '_'
-      then
+      if Buf.Chars (1) = '_' or else Buf.Chars (Buf.Length) = '_' then
          return True;
 
       --  Allow quoted character
@@ -1059,12 +1071,7 @@ package body Namet is
 
    function Is_OK_Internal_Letter (C : Character) return Boolean is
    begin
-      return C in 'A' .. 'Z'
-        and then C /= 'O'
-        and then C /= 'Q'
-        and then C /= 'U'
-        and then C /= 'W'
-        and then C /= 'X';
+      return C in 'A' .. 'Z' and then C not in 'O' | 'Q' | 'U' | 'W' | 'X';
    end Is_OK_Internal_Letter;
 
    ----------------------
@@ -1450,9 +1457,7 @@ package body Namet is
             exit;
          end if;
 
-         exit when Buf.Chars (J) /= 'b'
-           and then Buf.Chars (J) /= 'n'
-           and then Buf.Chars (J) /= 'p';
+         exit when Buf.Chars (J) not in 'b' | 'n' | 'p';
       end loop;
 
       --  Find rightmost __ or $ separator if one exists. First we position
@@ -1535,25 +1540,7 @@ package body Namet is
 
    procedure wn (Id : Name_Id) is
    begin
-      if Is_Valid_Name (Id) then
-         declare
-            Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
-         begin
-            Append (Buf, Id);
-            Write_Str (Buf.Chars (1 .. Buf.Length));
-         end;
-
-      elsif Id = No_Name then
-         Write_Str ("<No_Name>");
-
-      elsif Id = Error_Name then
-         Write_Str ("<Error_Name>");
-
-      else
-         Write_Str ("<invalid name_id>");
-         Write_Int (Int (Id));
-      end if;
-
+      Write_Name_For_Debug (Id);
       Write_Eol;
    end wn;
 
@@ -1578,6 +1565,37 @@ package body Namet is
       Append_Decoded (Buf, Id);
       Write_Str (Buf.Chars (1 .. Buf.Length));
    end Write_Name_Decoded;
+
+   --------------------------
+   -- Write_Name_For_Debug --
+   --------------------------
+
+   procedure Write_Name_For_Debug (Id : Name_Id; Quote : String := "") is
+   begin
+      if Is_Valid_Name (Id) then
+         Write_Str (Quote);
+
+         declare
+            Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
+         begin
+            Append (Buf, Id);
+            Write_Str (Buf.Chars (1 .. Buf.Length));
+         end;
+
+         Write_Str (Quote);
+
+      elsif Id = No_Name then
+         Write_Str ("<No_Name>");
+
+      elsif Id = Error_Name then
+         Write_Str ("<Error_Name>");
+
+      else
+         Write_Str ("<invalid name ");
+         Write_Int (Int (Id));
+         Write_Str (">");
+      end if;
+   end Write_Name_For_Debug;
 
 --  Package initialization, initialize tables
 

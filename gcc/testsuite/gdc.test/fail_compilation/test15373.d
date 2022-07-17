@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test15373.d(21): Error: Runtime type information is not supported for `extern(C++)` classes
+fail_compilation/test15373.d(21): Error: runtime type information is not supported for `extern(C++)` classes
 ---
 */
 

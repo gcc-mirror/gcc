@@ -43,8 +43,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace chrono
   {
-    // XXX GLIBCXX_ABI Deprecated
-    inline namespace _V2 {
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 
     constexpr bool system_clock::is_steady;
 
@@ -94,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     }
 
-  } // end inline namespace _V2
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
   } // namespace chrono
 
 _GLIBCXX_END_NAMESPACE_VERSION

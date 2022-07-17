@@ -675,8 +675,7 @@ binding_map::to_json () const
     {
       const svalue *value = *const_cast <map_t &> (m_map).get (key);
       label_text key_desc = key->get_desc ();
-      map_obj->set (key_desc.m_buffer, value->to_json ());
-      key_desc.maybe_free ();
+      map_obj->set (key_desc.get (), value->to_json ());
     }
 
   return map_obj;
@@ -1518,6 +1517,18 @@ binding_cluster::get_any_binding (store_manager *mgr,
   if (const svalue *direct_sval
       = get_binding_recursive (mgr, reg))
     return direct_sval;
+
+  /* If we had a write to a cluster of unknown size, we might
+     have a self-binding of the whole base region with an svalue,
+     where the base region is symbolic.
+     Handle such cases by returning sub_svalue instances.  */
+  if (const svalue *cluster_sval = maybe_get_simple_value (mgr))
+    {
+      /* Extract child svalue from parent svalue.  */
+      region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
+      return rmm_mgr->get_or_create_sub_svalue (reg->get_type (),
+						cluster_sval, reg);
+    }
 
   /* If this cluster has been touched by a symbolic write, then the content
      of any subregion not currently specifically bound is "UNKNOWN".  */
@@ -2391,13 +2402,11 @@ store::to_json () const
 	  binding_cluster *cluster
 	    = *const_cast<cluster_map_t &> (m_cluster_map).get (base_reg);
 	  label_text base_reg_desc = base_reg->get_desc ();
-	  clusters_in_parent_reg_obj->set (base_reg_desc.m_buffer,
+	  clusters_in_parent_reg_obj->set (base_reg_desc.get (),
 					   cluster->to_json ());
-	  base_reg_desc.maybe_free ();
 	}
       label_text parent_reg_desc = parent_reg->get_desc ();
-      store_obj->set (parent_reg_desc.m_buffer, clusters_in_parent_reg_obj);
-      parent_reg_desc.maybe_free ();
+      store_obj->set (parent_reg_desc.get (), clusters_in_parent_reg_obj);
     }
 
   store_obj->set ("called_unknown_fn", new json::literal (m_called_unknown_fn));
@@ -2921,7 +2930,7 @@ store::remove_overlapping_bindings (store_manager *mgr, const region *reg,
 
 struct region_finder : public visitor
 {
-  void visit_region (const region *reg) FINAL OVERRIDE
+  void visit_region (const region *reg) final override
   {
     m_regs.add (reg);
   }

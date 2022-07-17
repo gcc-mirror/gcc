@@ -55,9 +55,8 @@
 #define EF_AMDGPU_MACH_AMDGCN_GFX906 0x2f
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX908
 #define EF_AMDGPU_MACH_AMDGCN_GFX908 0x30
-
-#define EF_AMDGPU_XNACK_V3    0x100
-#define EF_AMDGPU_SRAM_ECC_V3 0x200
+#undef  EF_AMDGPU_MACH_AMDGCN_GFX90a
+#define EF_AMDGPU_MACH_AMDGCN_GFX90a 0x3f
 
 #define EF_AMDGPU_FEATURE_XNACK_V4	0x300  /* Mask.  */
 #define EF_AMDGPU_FEATURE_XNACK_UNSUPPORTED_V4	0x000
@@ -71,19 +70,6 @@
 #define EF_AMDGPU_FEATURE_SRAMECC_OFF_V4	0x800
 #define EF_AMDGPU_FEATURE_SRAMECC_ON_V4		0xc00
 
-#ifdef HAVE_GCN_ASM_V3_SYNTAX
-#define SET_XNACK_ON(VAR) VAR |= EF_AMDGPU_XNACK_V3
-#define SET_XNACK_OFF(VAR) VAR &= ~EF_AMDGPU_XNACK_V3
-#define TEST_XNACK(VAR) (VAR & EF_AMDGPU_XNACK_V3)
-
-#define SET_SRAM_ECC_ON(VAR) VAR |= EF_AMDGPU_SRAM_ECC_V3
-#define SET_SRAM_ECC_ANY(VAR) SET_SRAM_ECC_ON (VAR)
-#define SET_SRAM_ECC_OFF(VAR) VAR &= ~EF_AMDGPU_SRAM_ECC_V3
-#define SET_SRAM_ECC_UNSUPPORTED(VAR) SET_SRAM_ECC_OFF (VAR)
-#define TEST_SRAM_ECC_ANY(VAR) 0 /* Not supported.  */
-#define TEST_SRAM_ECC_ON(VAR) (VAR & EF_AMDGPU_SRAM_ECC_V3)
-#endif
-#ifdef HAVE_GCN_ASM_V4_SYNTAX
 #define SET_XNACK_ON(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_XNACK_V4) \
 				 | EF_AMDGPU_FEATURE_XNACK_ON_V4)
 #define SET_XNACK_OFF(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_XNACK_V4) \
@@ -104,7 +90,6 @@
 				== EF_AMDGPU_FEATURE_SRAMECC_ANY_V4)
 #define TEST_SRAM_ECC_ON(VAR) ((VAR & EF_AMDGPU_FEATURE_SRAMECC_V4) \
 			       == EF_AMDGPU_FEATURE_SRAMECC_ON_V4)
-#endif
 
 #ifndef R_AMDGPU_NONE
 #define R_AMDGPU_NONE		0
@@ -130,12 +115,7 @@ static struct obstack files_to_cleanup;
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
 uint32_t elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX803;  // Default GPU architecture.
 uint32_t elf_flags =
-#ifdef HAVE_GCN_ASM_V3_SYNTAX
-    0;
-#endif
-#ifdef HAVE_GCN_ASM_V4_SYNTAX
     (EF_AMDGPU_FEATURE_XNACK_ANY_V4 | EF_AMDGPU_FEATURE_SRAMECC_ANY_V4);
-#endif
 
 /* Delete tempfiles.  */
 
@@ -362,14 +342,9 @@ copy_early_debug_info (const char *infile, const char *outfile)
 
   /* Patch the correct elf architecture flag into the file.  */
   ehdr.e_ident[7] = ELFOSABI_AMDGPU_HSA;
-#ifdef HAVE_GCN_ASM_V3_SYNTAX
-  ehdr.e_ident[8] = ELFABIVERSION_AMDGPU_HSA_V3;
-#endif
-#ifdef HAVE_GCN_ASM_V4_SYNTAX
   ehdr.e_ident[8] = (elf_arch == EF_AMDGPU_MACH_AMDGCN_GFX803
 		     ? ELFABIVERSION_AMDGPU_HSA_V3
 		     : ELFABIVERSION_AMDGPU_HSA_V4);
-#endif
   ehdr.e_type = ET_REL;
   ehdr.e_machine = EM_AMDGPU;
   ehdr.e_flags = elf_arch | elf_flags_actual;
@@ -636,6 +611,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   struct regcount *regcounts = XOBFINISH (&regcounts_os, struct regcount *);
 
   fprintf (cfile, "#include <stdlib.h>\n");
+  fprintf (cfile, "#include <stdint.h>\n");
   fprintf (cfile, "#include <stdbool.h>\n\n");
 
   fprintf (cfile, "static const int gcn_num_vars = %d;\n\n", var_count);
@@ -689,7 +665,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 /* Embed an object file into a C source file.  */
 
 static void
-process_obj (FILE *in, FILE *cfile)
+process_obj (FILE *in, FILE *cfile, uint32_t omp_requires)
 {
   size_t len = 0;
   const char *input = read_file (in, &len);
@@ -716,17 +692,19 @@ process_obj (FILE *in, FILE *cfile)
 	   len);
 
   fprintf (cfile,
-	   "static const struct gcn_image_desc {\n"
+	   "static const struct gcn_data {\n"
+	   "  uintptr_t omp_requires_mask;\n"
 	   "  const struct gcn_image *gcn_image;\n"
 	   "  unsigned kernel_count;\n"
 	   "  const struct hsa_kernel_description *kernel_infos;\n"
 	   "  unsigned global_variable_count;\n"
-	   "} target_data = {\n"
+	   "} gcn_data = {\n"
+	   "  %d,\n"
 	   "  &gcn_image,\n"
 	   "  sizeof (gcn_kernels) / sizeof (gcn_kernels[0]),\n"
 	   "  gcn_kernels,\n"
 	   "  gcn_num_vars\n"
-	   "};\n\n");
+	   "};\n\n", omp_requires);
 
   fprintf (cfile,
 	   "#ifdef __cplusplus\n"
@@ -745,7 +723,7 @@ process_obj (FILE *in, FILE *cfile)
   fprintf (cfile, "static __attribute__((constructor)) void init (void)\n"
 	   "{\n"
 	   "  GOMP_offload_register_ver (%#x, __OFFLOAD_TABLE__,"
-	   " %d/*GCN*/, &target_data);\n"
+	   " %d/*GCN*/, &gcn_data);\n"
 	   "};\n",
 	   GOMP_VERSION_PACK (GOMP_VERSION, GOMP_VERSION_GCN),
 	   GOMP_DEVICE_GCN);
@@ -753,7 +731,7 @@ process_obj (FILE *in, FILE *cfile)
   fprintf (cfile, "static __attribute__((destructor)) void fini (void)\n"
 	   "{\n"
 	   "  GOMP_offload_unregister_ver (%#x, __OFFLOAD_TABLE__,"
-	   " %d/*GCN*/, &target_data);\n"
+	   " %d/*GCN*/, &gcn_data);\n"
 	   "};\n",
 	   GOMP_VERSION_PACK (GOMP_VERSION, GOMP_VERSION_GCN),
 	   GOMP_DEVICE_GCN);
@@ -884,7 +862,6 @@ main (int argc, char **argv)
   bool fopenacc = false;
   bool fPIC = false;
   bool fpic = false;
-  bool sram_seen = false;
   for (int i = 1; i < argc; i++)
     {
 #define STR "-foffload-abi="
@@ -912,20 +889,11 @@ main (int argc, char **argv)
       else if (strcmp (argv[i], "-mno-xnack") == 0)
 	SET_XNACK_OFF (elf_flags);
       else if (strcmp (argv[i], "-msram-ecc=on") == 0)
-	{
-	  SET_SRAM_ECC_ON (elf_flags);
-	  sram_seen = true;
-	}
+	SET_SRAM_ECC_ON (elf_flags);
       else if (strcmp (argv[i], "-msram-ecc=any") == 0)
-	{
-	  SET_SRAM_ECC_ANY (elf_flags);
-	  sram_seen = true;
-	}
+	SET_SRAM_ECC_ANY (elf_flags);
       else if (strcmp (argv[i], "-msram-ecc=off") == 0)
-	{
-	  SET_SRAM_ECC_OFF (elf_flags);
-	  sram_seen = true;
-	}
+	SET_SRAM_ECC_OFF (elf_flags);
       else if (strcmp (argv[i], "-save-temps") == 0)
 	save_temps = true;
       else if (strcmp (argv[i], "-v") == 0)
@@ -941,32 +909,12 @@ main (int argc, char **argv)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX906;
       else if (strcmp (argv[i], "-march=gfx908") == 0)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX908;
+      else if (strcmp (argv[i], "-march=gfx90a") == 0)
+	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX90a;
     }
 
   if (!(fopenacc ^ fopenmp))
     fatal_error (input_location, "either -fopenacc or -fopenmp must be set");
-
-  if (!sram_seen)
-    {
-#ifdef HAVE_GCN_ASM_V3_SYNTAX
-      /* For HSACOv3, the SRAM-ECC feature defaults to "on" on GPUs where the
-	 feature is available.
-	 (HSACOv4 has elf_flags initialsed to "any" in all cases.)  */
-      switch (elf_arch)
-	{
-	case EF_AMDGPU_MACH_AMDGCN_GFX803:
-	case EF_AMDGPU_MACH_AMDGCN_GFX900:
-	case EF_AMDGPU_MACH_AMDGCN_GFX906:
-#ifndef HAVE_GCN_SRAM_ECC_GFX908
-	case EF_AMDGPU_MACH_AMDGCN_GFX908:
-#endif
-	  break;
-	default:
-	  SET_SRAM_ECC_ON (elf_flags);
-	  break;
-	}
-#endif
-    }
 
   const char *abi;
   switch (offload_abi)
@@ -1132,9 +1080,27 @@ main (int argc, char **argv)
       unsetenv ("COMPILER_PATH");
       unsetenv ("LIBRARY_PATH");
 
+      char *omp_requires_file;
+      if (save_temps)
+	omp_requires_file = concat (dumppfx, ".mkoffload.omp_requires", NULL);
+      else
+	omp_requires_file = make_temp_file (".mkoffload.omp_requires");
+
       /* Run the compiler pass.  */
+      xputenv (concat ("GCC_OFFLOAD_OMP_REQUIRES_FILE=", omp_requires_file, NULL));
       fork_execute (cc_argv[0], CONST_CAST (char **, cc_argv), true, ".gcc_args");
       obstack_free (&cc_argv_obstack, NULL);
+      unsetenv("GCC_OFFLOAD_OMP_REQUIRES_FILE");
+
+      in = fopen (omp_requires_file, "rb");
+      if (!in)
+	fatal_error (input_location, "cannot open omp_requires file %qs",
+		     omp_requires_file);
+      uint32_t omp_requires;
+      if (fread (&omp_requires, sizeof (omp_requires), 1, in) != 1)
+	fatal_error (input_location, "cannot read omp_requires file %qs",
+		     omp_requires_file);
+      fclose (in);
 
       in = fopen (gcn_s1_name, "r");
       if (!in)
@@ -1157,7 +1123,7 @@ main (int argc, char **argv)
       if (!in)
 	fatal_error (input_location, "cannot open intermediate gcn obj file");
 
-      process_obj (in, cfile);
+      process_obj (in, cfile, omp_requires);
 
       fclose (in);
 

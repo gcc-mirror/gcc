@@ -464,8 +464,13 @@ namespace pmr {
       virtual bool
       do_is_equal(const memory_resource& __other) const noexcept override
       {
+#if __cpp_rtti
 	if (auto __p = dynamic_cast<const __resource_adaptor_imp*>(&__other))
 	  return _M_alloc == __p->_M_alloc;
+#else
+	if (this == &__other) // Need RTTI to do better than this.
+	  return true;
+#endif
 	return false;
       }
 

@@ -12916,7 +12916,7 @@ output_one_line_info_table (dw_line_info_table *table)
   char line_label[MAX_ARTIFICIAL_LABEL_BYTES];
   unsigned int current_line = 1;
   bool current_is_stmt = DWARF_LINE_DEFAULT_IS_STMT_START;
-  dw_line_info_entry *ent, *prev_addr;
+  dw_line_info_entry *ent, *prev_addr = NULL;
   size_t i;
   unsigned int view;
 
@@ -13532,8 +13532,7 @@ static const dwarf_qual_info_t dwarf_qual_info[] =
   { TYPE_QUAL_RESTRICT, DW_TAG_restrict_type },
   { TYPE_QUAL_ATOMIC, DW_TAG_atomic_type }
 };
-static const unsigned int dwarf_qual_info_size
-  = sizeof (dwarf_qual_info) / sizeof (dwarf_qual_info[0]);
+static const unsigned int dwarf_qual_info_size = ARRAY_SIZE (dwarf_qual_info);
 
 /* If DIE is a qualified DIE of some base DIE with the same parent,
    return the base DIE, otherwise return NULL.  Set MASK to the
@@ -19449,6 +19448,14 @@ loc_list_from_tree_1 (tree loc, int want_address,
       break;
 
     case TRUTH_NOT_EXPR:
+      list_ret = loc_list_from_tree_1 (TREE_OPERAND (loc, 0), 0, context);
+      if (list_ret == 0)
+	return 0;
+
+      add_loc_descr_to_each (list_ret, new_loc_descr (DW_OP_lit0, 0, 0));
+      add_loc_descr_to_each (list_ret, new_loc_descr (DW_OP_eq, 0, 0));
+      break;
+
     case BIT_NOT_EXPR:
       op = DW_OP_not;
       goto do_unop;
@@ -19497,6 +19504,15 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	  list_ret
 	    = loc_list_from_tree_1 (TREE_OPERAND (TREE_OPERAND (loc, 0), 0),
 				    0, context);
+	/* Likewise, swap the operands for a logically negated condition.  */
+	else if (TREE_CODE (TREE_OPERAND (loc, 0)) == TRUTH_NOT_EXPR)
+	  {
+	    lhs = loc_descriptor_from_tree (TREE_OPERAND (loc, 2), 0, context);
+	    rhs = loc_list_from_tree_1 (TREE_OPERAND (loc, 1), 0, context);
+	    list_ret
+	      = loc_list_from_tree_1 (TREE_OPERAND (TREE_OPERAND (loc, 0), 0),
+				      0, context);
+	  }
 	else
 	  list_ret = loc_list_from_tree_1 (TREE_OPERAND (loc, 0), 0, context);
 	if (list_ret == 0 || lhs == 0 || rhs == 0)
@@ -22523,11 +22539,14 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      /* For VECTOR_TYPEs we use an array die with appropriate bounds.  */
+      /* For VECTOR_TYPEs we use an array DIE with appropriate bounds.  */
       dw_die_ref subrange_die = new_die (DW_TAG_subrange_type, array_die, NULL);
-      add_bound_info (subrange_die, DW_AT_lower_bound, size_zero_node, NULL);
+      int lb = lower_bound_default ();
+      if (lb == -1)
+	lb = 0;
+      add_bound_info (subrange_die, DW_AT_lower_bound, size_int (lb), NULL);
       add_bound_info (subrange_die, DW_AT_upper_bound,
-		      size_int (TYPE_VECTOR_SUBPARTS (type) - 1), NULL);
+		      size_int (lb + TYPE_VECTOR_SUBPARTS (type) - 1), NULL);
     }
   else
     add_subscript_info (array_die, type, collapse_nested_arrays);
@@ -27463,7 +27482,7 @@ gen_namelist_decl (tree name, dw_die_ref scope_die, tree item_decls)
 	nml_item_ref_die = force_decl_die (value);
 
       nml_item_die = new_die (DW_TAG_namelist_item, nml_die, NULL);
-      add_AT_die_ref (nml_item_die, DW_AT_namelist_items, nml_item_ref_die);
+      add_AT_die_ref (nml_item_die, DW_AT_namelist_item, nml_item_ref_die);
     }
   return nml_die;
 }

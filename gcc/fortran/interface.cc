@@ -618,6 +618,14 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
   if (!derived1 || !derived2)
     gfc_internal_error ("gfc_compare_derived_types: invalid derived type");
 
+  if (derived1->attr.unlimited_polymorphic
+      && derived2->attr.unlimited_polymorphic)
+    return true;
+
+  if (derived1->attr.unlimited_polymorphic
+      != derived2->attr.unlimited_polymorphic)
+    return false;
+
   /* Compare UNION types specially.  */
   if (derived1->attr.flavor == FL_UNION || derived2->attr.flavor == FL_UNION)
     return compare_union_types (derived1, derived2);
@@ -630,10 +638,11 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
       && strcmp (derived1->module, derived2->module) == 0)
     return true;
 
-  /* Compare type via the rules of the standard.  Both types must have
-     the SEQUENCE or BIND(C) attribute to be equal. STRUCTUREs are special
-     because they can be anonymous; therefore two structures with different
-     names may be equal.  */
+  /* Compare type via the rules of the standard.  Both types must have the
+     SEQUENCE or BIND(C) attribute to be equal.  We also compare types
+     recursively if they are class descriptors types or virtual tables types.
+     STRUCTUREs are special because they can be anonymous; therefore two
+     structures with different names may be equal.  */
 
   /* Compare names, but not for anonymous types such as UNION or MAP.  */
   if (!is_anonymous_dt (derived1) && !is_anonymous_dt (derived2)
@@ -646,6 +655,8 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
 
   if (!(derived1->attr.sequence && derived2->attr.sequence)
       && !(derived1->attr.is_bind_c && derived2->attr.is_bind_c)
+      && !(derived1->attr.is_class && derived2->attr.is_class)
+      && !(derived1->attr.vtype && derived2->attr.vtype)
       && !(derived1->attr.pdt_type && derived2->attr.pdt_type))
     return false;
 

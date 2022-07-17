@@ -614,22 +614,56 @@ is_gimple_condexpr_1 (tree t, bool allow_traps, bool allow_cplx)
 	      && is_gimple_val (TREE_OPERAND (t, 1))));
 }
 
-/* Return true if T is a GIMPLE condition.  */
-
-bool
-is_gimple_condexpr (tree t)
-{
-  /* Always split out _Complex type compares since complex lowering
-     doesn't handle this case.  */
-  return is_gimple_condexpr_1 (t, true, false);
-}
-
 /* Like is_gimple_condexpr, but does not allow T to trap.  */
 
 bool
 is_gimple_condexpr_for_cond (tree t)
 {
   return is_gimple_condexpr_1 (t, false, true);
+}
+
+/* Canonicalize a tree T for use in a COND_EXPR as conditional.  Returns
+   a canonicalized tree that is valid for a COND_EXPR or NULL_TREE, if
+   we failed to create one.  */
+
+tree
+canonicalize_cond_expr_cond (tree t)
+{
+  /* Strip conversions around boolean operations.  */
+  if (CONVERT_EXPR_P (t)
+      && (truth_value_p (TREE_CODE (TREE_OPERAND (t, 0)))
+	  || TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0)))
+	     == BOOLEAN_TYPE))
+    t = TREE_OPERAND (t, 0);
+
+  /* For !x use x == 0.  */
+  if (TREE_CODE (t) == TRUTH_NOT_EXPR)
+    {
+      tree top0 = TREE_OPERAND (t, 0);
+      t = build2 (EQ_EXPR, TREE_TYPE (t),
+		  top0, build_int_cst (TREE_TYPE (top0), 0));
+    }
+  /* For cmp ? 1 : 0 use cmp.  */
+  else if (TREE_CODE (t) == COND_EXPR
+	   && COMPARISON_CLASS_P (TREE_OPERAND (t, 0))
+	   && integer_onep (TREE_OPERAND (t, 1))
+	   && integer_zerop (TREE_OPERAND (t, 2)))
+    {
+      tree top0 = TREE_OPERAND (t, 0);
+      t = build2 (TREE_CODE (top0), TREE_TYPE (t),
+		  TREE_OPERAND (top0, 0), TREE_OPERAND (top0, 1));
+    }
+  /* For x ^ y use x != y.  */
+  else if (TREE_CODE (t) == BIT_XOR_EXPR)
+    t = build2 (NE_EXPR, TREE_TYPE (t),
+		TREE_OPERAND (t, 0), TREE_OPERAND (t, 1));
+
+  /* We don't know where this will be used so allow both traps and
+     _Complex.  The caller is responsible for more precise checking.  */
+  if (is_gimple_condexpr_1 (t, true, true))
+    return t;
+
+  return NULL_TREE;
 }
 
 /* Return true if T is a gimple address.  */

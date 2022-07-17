@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "cgraph.h"
 #include "gimple-pretty-print.h"
+#include "value-range-pretty-print.h"
 #include "internal-fn.h"
 #include "tree-eh.h"
 #include "gimple-iterator.h"
@@ -2335,35 +2336,10 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
   if (!POINTER_TYPE_P (TREE_TYPE (node))
       && SSA_NAME_RANGE_INFO (node))
     {
-      wide_int min, max, nonzero_bits;
-      value_range r;
-
+      Value_Range r (TREE_TYPE (node));
       get_global_range_query ()->range_of_expr (r, node);
-      value_range_kind range_type = r.kind ();
-      if (!r.undefined_p ())
-	{
-	  min = wi::to_wide (r.min ());
-	  max = wi::to_wide (r.max ());
-	}
-
-      // FIXME: Use irange::dump() instead.
-      if (range_type == VR_VARYING)
-	pp_printf (buffer, "# RANGE VR_VARYING");
-      else if (range_type == VR_RANGE || range_type == VR_ANTI_RANGE)
-	{
-	  pp_printf (buffer, "# RANGE ");
-	  pp_printf (buffer, "%s[", range_type == VR_RANGE ? "" : "~");
-	  pp_wide_int (buffer, min, TYPE_SIGN (TREE_TYPE (node)));
-	  pp_printf (buffer, ", ");
-	  pp_wide_int (buffer, max, TYPE_SIGN (TREE_TYPE (node)));
-	  pp_printf (buffer, "]");
-	}
-      nonzero_bits = get_nonzero_bits (node);
-      if (nonzero_bits != -1)
-	{
-	  pp_string (buffer, " NONZERO ");
-	  pp_wide_int (buffer, nonzero_bits, UNSIGNED);
-	}
+      pp_string (buffer, "# RANGE ");
+      pp_vrange (buffer, &r);
       newline_and_indent (buffer, spc);
     }
 }

@@ -114,7 +114,7 @@ inline generic_subrtx_iterator <T>::array_type::array_type () : heap (0) {}
 template <typename T>
 inline generic_subrtx_iterator <T>::array_type::~array_type ()
 {
-  if (__builtin_expect (heap != 0, false))
+  if (UNLIKELY (heap != 0))
     free_array (*this);
 }
 
@@ -172,7 +172,7 @@ generic_subrtx_iterator <T>::next ()
     {
       /* Add the subrtxes of M_CURRENT.  */
       rtx_type x = T::get_rtx (m_current);
-      if (__builtin_expect (x != 0, true))
+      if (LIKELY (x != 0))
 	{
 	  enum rtx_code code = GET_CODE (x);
 	  ssize_t count = m_bounds[code].count;
@@ -180,12 +180,12 @@ generic_subrtx_iterator <T>::next ()
 	    {
 	      /* Handle the simple case of a single "e" block that is known
 		 to fit into the current array.  */
-	      if (__builtin_expect (m_end + count <= LOCAL_ELEMS + 1, true))
+	      if (LIKELY (m_end + count <= LOCAL_ELEMS + 1))
 		{
 		  /* Set M_CURRENT to the first subrtx and queue the rest.  */
 		  ssize_t start = m_bounds[code].start;
 		  rtunion_type *src = &x->u.fld[start];
-		  if (__builtin_expect (count > 2, false))
+		  if (UNLIKELY (count > 2))
 		    m_base[m_end++] = T::get_value (src[2].rt_rtx);
 		  if (count > 1)
 		    m_base[m_end++] = T::get_value (src[1].rt_rtx);

@@ -17,7 +17,9 @@ import core.stdc.stdio;
 extern(C++) class ParseTimeTransitiveVisitor(AST) : PermissiveVisitor!AST
 {
     alias visit = PermissiveVisitor!AST.visit;
-    mixin ParseVisitMethods!AST;
+
+    mixin ParseVisitMethods!AST __methods;
+    alias visit = __methods.visit;
 }
 
 /* This mixin implements the AST traversal logic for parse time AST nodes. The same code
@@ -421,12 +423,20 @@ package mixin template ParseVisitMethods(AST)
         //printf("Visiting TypeQualified\n");
         foreach (id; t.idents)
         {
-            if (id.dyncast() == DYNCAST.dsymbol)
+            switch(id.dyncast()) with(DYNCAST)
+            {
+            case dsymbol:
                 (cast(AST.TemplateInstance)id).accept(this);
-            else if (id.dyncast() == DYNCAST.expression)
+                break;
+            case expression:
                 (cast(AST.Expression)id).accept(this);
-            else if (id.dyncast() == DYNCAST.type)
+                break;
+            case type:
                 (cast(AST.Type)id).accept(this);
+                break;
+            default:
+                break;
+            }
         }
     }
 

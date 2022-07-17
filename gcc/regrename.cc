@@ -324,8 +324,7 @@ static bool
 check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 		 class du_head *this_head, HARD_REG_SET this_unavailable)
 {
-  machine_mode mode = GET_MODE (*this_head->first->loc);
-  int nregs = hard_regno_nregs (new_reg, mode);
+  int nregs = this_head->nregs;
   int i;
   struct du_chain *tmp;
 
@@ -2013,12 +2012,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return (optimize > 0 && (flag_rename_registers));
     }
 
-  virtual unsigned int execute (function *) { return regrename_optimize (); }
+  unsigned int execute (function *) final override
+  {
+    return regrename_optimize ();
+  }
 
 }; // class pass_regrename
 

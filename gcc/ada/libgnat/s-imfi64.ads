@@ -37,11 +37,11 @@ with System.Arith_64;
 with System.Image_F;
 
 package System.Img_Fixed_64 is
-   pragma Pure;
 
    subtype Int64 is Interfaces.Integer_64;
+   subtype Uns64 is Interfaces.Unsigned_64;
 
-   package Impl is new Image_F (Int64, Arith_64.Scaled_Divide64);
+   package Impl is new Image_F (Int64, Uns64, Arith_64.Scaled_Divide64);
 
    procedure Image_Fixed64
      (V    : Int64;

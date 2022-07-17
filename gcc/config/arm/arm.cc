@@ -296,8 +296,8 @@ static int arm_cortex_a5_branch_cost (bool, bool);
 static int arm_cortex_m_branch_cost (bool, bool);
 static int arm_cortex_m7_branch_cost (bool, bool);
 
-static bool arm_vectorize_vec_perm_const (machine_mode, rtx, rtx, rtx,
-					  const vec_perm_indices &);
+static bool arm_vectorize_vec_perm_const (machine_mode, machine_mode, rtx, rtx,
+					  rtx, const vec_perm_indices &);
 
 static bool aarch_macro_fusion_pair_p (rtx_insn*, rtx_insn*);
 
@@ -10201,6 +10201,61 @@ arm_mem_costs (rtx x, const struct cpu_cost_table *extra_cost,
   return true;
 }
 
+/* Helper for arm_bfi_p.  */
+static bool
+arm_bfi_1_p (rtx op0, rtx op1, rtx *sub0, rtx *sub1)
+{
+  unsigned HOST_WIDE_INT const1;
+  unsigned HOST_WIDE_INT const2 = 0;
+
+  if (!CONST_INT_P (XEXP (op0, 1)))
+    return false;
+
+  const1 = UINTVAL (XEXP (op0, 1));
+  if (!CONST_INT_P (XEXP (op1, 1))
+      || ~UINTVAL (XEXP (op1, 1)) != const1)
+    return false;
+
+  if (GET_CODE (XEXP (op0, 0)) == ASHIFT
+      && CONST_INT_P (XEXP (XEXP (op0, 0), 1)))
+    {
+      const2 = UINTVAL (XEXP (XEXP (op0, 0), 1));
+      *sub0 = XEXP (XEXP (op0, 0), 0);
+    }
+  else
+    *sub0 = XEXP (op0, 0);
+
+  if (const2 >= GET_MODE_BITSIZE (GET_MODE (op0)))
+    return false;
+
+  *sub1 = XEXP (op1, 0);
+  return exact_log2 (const1 + (HOST_WIDE_INT_1U << const2)) >= 0;
+}
+
+/* Recognize a BFI idiom.  Helper for arm_rtx_costs_internal.  The
+   format looks something like:
+
+   (IOR (AND (reg1) (~const1))
+	(AND (ASHIFT (reg2) (const2))
+	     (const1)))
+
+   where const1 is a consecutive sequence of 1-bits with the
+   least-significant non-zero bit starting at bit position const2.  If
+   const2 is zero, then the shift will not appear at all, due to
+   canonicalization.  The two arms of the IOR expression may be
+   flipped.  */
+static bool
+arm_bfi_p (rtx x, rtx *sub0, rtx *sub1)
+{
+  if (GET_CODE (x) != IOR)
+    return false;
+  if (GET_CODE (XEXP (x, 0)) != AND
+      || GET_CODE (XEXP (x, 1)) != AND)
+    return false;
+  return (arm_bfi_1_p (XEXP (x, 0), XEXP (x, 1), sub0, sub1)
+	  || arm_bfi_1_p (XEXP (x, 1), XEXP (x, 0), sub1, sub0));
+}
+
 /* RTX costs.  Make an estimate of the cost of executing the operation
    X, which is contained within an operation with code OUTER_CODE.
    SPEED_P indicates whether the cost desired is the performance cost,
@@ -10959,14 +11014,28 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
       *cost = LIBCALL_COST (2);
       return false;
     case IOR:
-      if (mode == SImode && arm_arch6 && aarch_rev16_p (x))
-        {
-          if (speed_p)
-            *cost += extra_cost->alu.rev;
+      {
+	rtx sub0, sub1;
+	if (mode == SImode && arm_arch6 && aarch_rev16_p (x))
+	  {
+	    if (speed_p)
+	      *cost += extra_cost->alu.rev;
 
-          return true;
-        }
-    /* Fall through.  */
+	    return true;
+	  }
+	else if (mode == SImode && arm_arch_thumb2
+		 && arm_bfi_p (x, &sub0, &sub1))
+	  {
+	    *cost += rtx_cost (sub0, mode, ZERO_EXTRACT, 1, speed_p);
+	    *cost += rtx_cost (sub1, mode, ZERO_EXTRACT, 0, speed_p);
+	    if (speed_p)
+	      *cost += extra_cost->alu.bfi;
+
+	    return true;
+	  }
+      }
+
+      /* Fall through.  */
     case AND: case XOR:
       if (mode == SImode)
 	{
@@ -12849,6 +12918,9 @@ simd_valid_immediate (rtx op, machine_mode mode, int inverse,
 	  || n_elts * innersize != 16))
     return -1;
 
+  if (!TARGET_HAVE_MVE && GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+    return -1;
+
   /* Vectors of float constants.  */
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
     {
@@ -13524,7 +13596,7 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
       int reg_no = REGNO (op);
       return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
 	       ? reg_no <= LAST_LO_REGNUM
-	       :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
+	       : reg_no < LAST_ARM_REGNUM)
 	      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
     }
   code = GET_CODE (op);
@@ -13533,10 +13605,10 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
       || code == PRE_INC || code == POST_DEC)
     {
       reg_no = REGNO (XEXP (op, 0));
-      return ((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
-	      ? reg_no <= LAST_LO_REGNUM
-	      :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
-	|| reg_no >= FIRST_PSEUDO_REGISTER;
+      return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
+	       ? reg_no <= LAST_LO_REGNUM
+	       :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
+	      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
     }
   else if (((code == POST_MODIFY || code == PRE_MODIFY)
 	    && GET_CODE (XEXP (op, 1)) == PLUS
@@ -13577,10 +13649,11 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
 	  default:
 	    return FALSE;
 	}
-      return reg_no >= FIRST_PSEUDO_REGISTER
-	|| (MVE_STN_LDW_MODE (mode)
-	    ? reg_no <= LAST_LO_REGNUM
-	    : (reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM));
+      return ((!strict && reg_no >= FIRST_PSEUDO_REGISTER)
+	      || (MVE_STN_LDW_MODE (mode)
+		  ? reg_no <= LAST_LO_REGNUM
+		  : (reg_no < LAST_ARM_REGNUM
+		     && (code == PLUS || reg_no != SP_REGNUM))));
     }
   return FALSE;
 }
@@ -15671,13 +15744,21 @@ gen_cpymem_ldrd_strd (rtx *operands)
     {
       len -= 8;
       reg0 = gen_reg_rtx (DImode);
-      rtx low_reg = NULL_RTX;
-      rtx hi_reg = NULL_RTX;
+      rtx first_reg = NULL_RTX;
+      rtx second_reg = NULL_RTX;
 
       if (!src_aligned || !dst_aligned)
 	{
-	  low_reg = gen_lowpart (SImode, reg0);
-	  hi_reg = gen_highpart_mode (SImode, DImode, reg0);
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      second_reg = gen_lowpart (SImode, reg0);
+	      first_reg = gen_highpart_mode (SImode, DImode, reg0);
+	    }
+	  else
+	    {
+	      first_reg = gen_lowpart (SImode, reg0);
+	      second_reg = gen_highpart_mode (SImode, DImode, reg0);
+	    }
 	}
       if (MEM_ALIGN (src) >= 2 * BITS_PER_WORD)
 	emit_move_insn (reg0, src);
@@ -15685,9 +15766,9 @@ gen_cpymem_ldrd_strd (rtx *operands)
 	emit_insn (gen_unaligned_loaddi (reg0, src));
       else
 	{
-	  emit_insn (gen_unaligned_loadsi (low_reg, src));
+	  emit_insn (gen_unaligned_loadsi (first_reg, src));
 	  src = next_consecutive_mem (src);
-	  emit_insn (gen_unaligned_loadsi (hi_reg, src));
+	  emit_insn (gen_unaligned_loadsi (second_reg, src));
 	}
 
       if (MEM_ALIGN (dst) >= 2 * BITS_PER_WORD)
@@ -15696,9 +15777,9 @@ gen_cpymem_ldrd_strd (rtx *operands)
 	emit_insn (gen_unaligned_storedi (dst, reg0));
       else
 	{
-	  emit_insn (gen_unaligned_storesi (dst, low_reg));
+	  emit_insn (gen_unaligned_storesi (dst, first_reg));
 	  dst = next_consecutive_mem (dst);
-	  emit_insn (gen_unaligned_storesi (dst, hi_reg));
+	  emit_insn (gen_unaligned_storesi (dst, second_reg));
 	}
 
       src = next_consecutive_mem (src);
@@ -23776,8 +23857,8 @@ arm_print_condition (FILE *stream)
 /* Globally reserved letters: acln
    Puncutation letters currently used: @_|?().!#
    Lower case letters currently used: bcdefhimpqtvwxyz
-   Upper case letters currently used: ABCDEFGHIJKLMNOPQRSTU
-   Letters previously used, but now deprecated/obsolete: sVWXYZ.
+   Upper case letters currently used: ABCDEFGHIJKLMNOPQRSTUV
+   Letters previously used, but now deprecated/obsolete: sWXYZ.
 
    Note that the global reservation for 'c' is only for CONSTANT_ADDRESS_P.
 
@@ -23793,7 +23874,10 @@ arm_print_condition (FILE *stream)
    If CODE is 'N' then X is a floating point operand that must be negated
    before output.
    If CODE is 'B' then output a bitwise inverted value of X (a const int).
-   If X is a REG and CODE is `M', output a ldm/stm style multi-reg.  */
+   If X is a REG and CODE is `M', output a ldm/stm style multi-reg.
+   If CODE is 'V', then the operand must be a CONST_INT representing
+   the bits to preserve in the modified register (Rd) of a BFI or BFC
+   instruction: print out both the width and lsb (shift) fields.  */
 static void
 arm_print_operand (FILE *stream, rtx x, int code)
 {
@@ -24102,8 +24186,28 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	     stream);
       return;
 
-    case 's':
     case 'V':
+      {
+	/* Output the LSB (shift) and width for a bitmask instruction
+	   based on a literal mask.  The LSB is printed first,
+	   followed by the width.
+
+	   Eg. For 0b1...1110001, the result is #1, #3.  */
+	if (!CONST_INT_P (x))
+	  {
+	    output_operand_lossage ("invalid operand for code '%c'", code);
+	    return;
+	  }
+
+	unsigned HOST_WIDE_INT val
+	  = ~UINTVAL (x) & HOST_WIDE_INT_UC (0xffffffff);
+	int lsb = exact_log2 (val & -val);
+	asm_fprintf (stream, "#%d, #%d", lsb,
+		     (exact_log2 (val + (val & -val)) - lsb));
+      }
+      return;
+
+    case 's':
     case 'W':
     case 'X':
     case 'Y':
@@ -31809,9 +31913,13 @@ arm_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
 static bool
-arm_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
+arm_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+			      rtx target, rtx op0, rtx op1,
 			      const vec_perm_indices &sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   struct expand_vec_perm_d d;
   int i, nelt, which;
 

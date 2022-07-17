@@ -39,7 +39,36 @@ void test19479()
     }
 }
 
+/**********************************/
+// https://issues.dlang.org/show_bug.cgi?id=23192
+
+alias AliasSeq(Args...) = Args;
+
+struct S23192
+{
+    int x;
+    int y;
+
+    int fun()
+    {
+        static foreach (sym; AliasSeq!(S23192.x))
+            int i = sym;
+
+        static foreach (sym; AliasSeq!(this.y))
+            int j = sym;
+
+        return i + j;
+    }
+}
+
+void test23192()
+{
+    assert(S23192(1, 2).fun() == 3);
+    static assert(S23192(1, 2).fun() == 3);
+}
+
 void main()
 {
     test19479();
+    test23192();
 }

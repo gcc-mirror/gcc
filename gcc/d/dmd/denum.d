@@ -54,9 +54,17 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
     Expression maxval;
     Expression minval;
     Expression defaultval;  // default initializer
-    bool isdeprecated;
-    bool added;
-    int inuse;
+
+    // `bool` fields that are compacted into bit fields in a string mixin
+    private extern (D) static struct BitFields
+    {
+        bool isdeprecated;
+        bool added;
+        bool inuse;
+    }
+
+    import dmd.common.bitfields : generateBitFields;
+    mixin(generateBitFields!(BitFields, ubyte));
 
     extern (D) this(const ref Loc loc, Identifier ident, Type memtype)
     {

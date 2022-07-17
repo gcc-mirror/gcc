@@ -192,7 +192,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return lower_function_body (); }
+  unsigned int execute (function *) final override
+  {
+    return lower_function_body ();
+  }
 
 }; // class pass_lower_cf
 

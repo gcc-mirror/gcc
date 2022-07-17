@@ -148,7 +148,7 @@ public:
   class loop *next;
 
   /* Auxiliary info specific to a pass.  */
-  PTR GTY ((skip (""))) aux;
+  void *GTY ((skip (""))) aux;
 
   /* The number of times the latch of the loop is executed.  This can be an
      INTEGER_CST, or a symbolic expression representing the number of

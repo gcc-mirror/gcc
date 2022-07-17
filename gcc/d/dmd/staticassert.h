@@ -20,10 +20,10 @@ public:
     Expression *exp;
     Expression *msg;
 
-    StaticAssert *syntaxCopy(Dsymbol *s);
-    void addMember(Scope *sc, ScopeDsymbol *sds);
-    bool oneMember(Dsymbol **ps, Identifier *ident);
-    const char *kind() const;
-    StaticAssert *isStaticAssert() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
+    StaticAssert *syntaxCopy(Dsymbol *s) override;
+    void addMember(Scope *sc, ScopeDsymbol *sds) override;
+    bool oneMember(Dsymbol **ps, Identifier *ident) override;
+    const char *kind() const override;
+    StaticAssert *isStaticAssert() override { return this; }
+    void accept(Visitor *v) override { v->visit(this); }
 };

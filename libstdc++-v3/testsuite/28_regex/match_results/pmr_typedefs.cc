@@ -20,7 +20,8 @@
 // { dg-require-effective-target cxx11_abi }
 
 #include <regex>
-#include <memory_resource>
+
+std::pmr::match_results<const char*> m;
 
 struct X;
 static_assert(std::is_same_v<std::pmr::match_results<X*>,

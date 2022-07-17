@@ -2,7 +2,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/fail196.d(27): Error: delimited string must end in `)"`
-fail_compilation/fail196.d(27): Error: Implicit string concatenation is error-prone and disallowed in D
+fail_compilation/fail196.d(27): Error: implicit string concatenation is error-prone and disallowed in D
 fail_compilation/fail196.d(27):        Use the explicit syntax instead (concatenating literals is `@nogc`): "foo(xxx)" ~ ";\n    assert(s == "
 fail_compilation/fail196.d(28): Error: semicolon needed to end declaration of `s`, instead of `foo`
 fail_compilation/fail196.d(27):        `s` declared here

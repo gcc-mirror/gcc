@@ -1,4 +1,4 @@
-/* REQUIRED_ARGS: -preview=dip1000
+/* REQUIRED_ARGS: -preview=fixImmutableConv
 TEST_OUTPUT:
 ---
 fail_compilation/test15660.d(20): Error: cannot implicitly convert expression `f(v)` of type `int[]` to `immutable(int[])`

@@ -348,14 +348,16 @@ int expandAliasThisTuples(Expressions* exps, size_t starti = 0)
         if (TupleDeclaration td = exp.isAliasThisTuple)
         {
             exps.remove(u);
-            foreach (i, o; *td.objects)
+            size_t i;
+            td.foreachVar((s)
             {
-                auto d = o.isExpression().isDsymbolExp().s.isDeclaration();
+                auto d = s.isDeclaration();
                 auto e = new DotVarExp(exp.loc, exp, d);
                 assert(d.type);
                 e.type = d.type;
                 exps.insert(u + i, e);
-            }
+                ++i;
+            });
             version (none)
             {
                 printf("expansion ->\n");
@@ -967,11 +969,6 @@ extern (C++) abstract class Expression : ASTNode
         return null;
     }
 
-    TupleExp toTupleExp()
-    {
-        return null;
-    }
-
     /***************************************
      * Return !=0 if expression is an lvalue.
      */
@@ -1375,10 +1372,9 @@ extern (C++) abstract class Expression : ASTNode
          */
         if (v.storage_class & STC.gshared)
         {
-            if (sc.func.setUnsafe())
+            if (sc.setUnsafe(false, this.loc,
+                "`@safe` function `%s` cannot access `__gshared` data `%s`", sc.func, v))
             {
-                error("`@safe` %s `%s` cannot access `__gshared` data `%s`",
-                    sc.func.kind(), sc.func.toChars(), v.toChars());
                 err = true;
             }
         }
@@ -1416,7 +1412,7 @@ extern (C++) abstract class Expression : ASTNode
 
         if (!f.isSafe() && !f.isTrusted())
         {
-            if (sc.flags & SCOPE.compile ? sc.func.isSafeBypassingInference() : sc.func.setUnsafe())
+            if (sc.flags & SCOPE.compile ? sc.func.isSafeBypassingInference() : sc.func.setUnsafeCall(f))
             {
                 if (!loc.isValid()) // e.g. implicitly generated dtor
                     loc = sc.func.loc;
@@ -1425,11 +1421,26 @@ extern (C++) abstract class Expression : ASTNode
                 error("`@safe` %s `%s` cannot call `@system` %s `%s`",
                     sc.func.kind(), sc.func.toPrettyChars(), f.kind(),
                     prettyChars);
+                f.errorSupplementalInferredSafety(/*max depth*/ 10, /*deprecation*/ false);
                 .errorSupplemental(f.loc, "`%s` is declared here", prettyChars);
 
                 checkOverridenDtor(sc, f, dd => dd.type.toTypeFunction().trust > TRUST.system, "@system");
 
                 return true;
+            }
+        }
+        else if (f.isSafe() && f.safetyViolation)
+        {
+            // for dip1000 by default transition, print deprecations for calling functions that will become `@system`
+            if (sc.func.isSafeBypassingInference())
+            {
+                .deprecation(this.loc, "`@safe` function `%s` calling `%s`", sc.func.toChars(), f.toChars());
+                errorSupplementalInferredSafety(f, 10, true);
+            }
+            else if (!sc.func.safetyViolation)
+            {
+                import dmd.func : AttributeViolation;
+                sc.func.safetyViolation = new AttributeViolation(this.loc, null, f, null, null);
             }
         }
         return false;
@@ -1461,7 +1472,8 @@ extern (C++) abstract class Expression : ASTNode
 
                 // Lowered non-@nogc'd hooks will print their own error message inside of nogc.d (NOGCVisitor.visit(CallExp e)),
                 // so don't print anything to avoid double error messages.
-                if (!(f.ident == Id._d_HookTraceImpl || f.ident == Id._d_arraysetlengthT))
+                if (!(f.ident == Id._d_HookTraceImpl || f.ident == Id._d_arraysetlengthT
+                    || f.ident == Id._d_arrayappendT || f.ident == Id._d_arrayappendcTX))
                     error("`@nogc` %s `%s` cannot call non-@nogc %s `%s`",
                         sc.func.kind(), sc.func.toPrettyChars(), f.kind(), f.toPrettyChars());
 
@@ -1746,6 +1758,7 @@ extern (C++) abstract class Expression : ASTNode
         inout(ModuleInitExp)     isModuleInitExp() { return op == EXP.moduleString ? cast(typeof(return))this : null; }
         inout(FuncInitExp)       isFuncInitExp() { return op == EXP.functionString ? cast(typeof(return))this : null; }
         inout(PrettyFuncInitExp) isPrettyFuncInitExp() { return op == EXP.prettyFunction ? cast(typeof(return))this : null; }
+        inout(ObjcClassReferenceExp) isObjcClassReferenceExp() { return op == EXP.objcClassReference ? cast(typeof(return))this : null; }
         inout(ClassReferenceExp) isClassReferenceExp() { return op == EXP.classReference ? cast(typeof(return))this : null; }
         inout(ThrownExceptionExp) isThrownExceptionExp() { return op == EXP.thrownException ? cast(typeof(return))this : null; }
 
@@ -2886,11 +2899,6 @@ extern (C++) final class TupleExp : Expression
     static TupleExp create(const ref Loc loc, Expressions* exps)
     {
         return new TupleExp(loc, exps);
-    }
-
-    override TupleExp toTupleExp()
-    {
-        return this;
     }
 
     override TupleExp syntaxCopy()
@@ -5769,9 +5777,8 @@ extern (C++) final class DelegatePtrExp : UnaExp
 
     override Expression modifiableLvalue(Scope* sc, Expression e)
     {
-        if (sc.func.setUnsafe())
+        if (sc.setUnsafe(false, this.loc, "cannot modify delegate pointer in `@safe` code `%s`", this))
         {
-            error("cannot modify delegate pointer in `@safe` code `%s`", toChars());
             return ErrorExp.get();
         }
         return Expression.modifiableLvalue(sc, e);
@@ -5808,9 +5815,8 @@ extern (C++) final class DelegateFuncptrExp : UnaExp
 
     override Expression modifiableLvalue(Scope* sc, Expression e)
     {
-        if (sc.func.setUnsafe())
+        if (sc.setUnsafe(false, this.loc, "cannot modify delegate function pointer in `@safe` code `%s`", this))
         {
-            error("cannot modify delegate function pointer in `@safe` code `%s`", toChars());
             return ErrorExp.get();
         }
         return Expression.modifiableLvalue(sc, e);

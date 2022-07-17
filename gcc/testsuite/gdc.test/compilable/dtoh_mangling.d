@@ -7,9 +7,9 @@ TEST_OUTPUT:
 #pragma once
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <math.h>
 
 #ifdef CUSTOM_D_ARRAY_TYPE
 #define _d_dynamicArray CUSTOM_D_ARRAY_TYPE
@@ -64,9 +64,15 @@ struct HasMangleMember final
     int32_t someAttrC;
     int32_t someAttrCpp;
     void hasDefaultVar(int32_t i = someAttrC);
-    HasMangleMember()
+    HasMangleMember() :
+        someAttrC(),
+        someAttrCpp()
     {
     }
+    HasMangleMember(int32_t someAttrC, int32_t someAttrCpp = 0) :
+        someAttrC(someAttrC),
+        someAttrCpp(someAttrCpp)
+        {}
 };
 
 extern "C" void hasDefaultVar(int32_t i = someVarC);

@@ -165,6 +165,10 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zksh",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkt",   ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"zicboz",ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zicbom",ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zicbop",ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"zk",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkn",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"zks",   ISA_SPEC_CLASS_NONE, 1, 0},
@@ -594,7 +598,7 @@ riscv_subset_list::lookup (const char *subset, int major_version,
 static const char *
 riscv_supported_std_ext (void)
 {
-  return "mafdqlcbjktpvn";
+  return "mafdqlcbkjtpvn";
 }
 
 /* Parsing subset version.
@@ -1109,6 +1113,10 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zksed",  &gcc_options::x_riscv_zk_subext, MASK_ZKSED},
   {"zksh",   &gcc_options::x_riscv_zk_subext, MASK_ZKSH},
   {"zkt",    &gcc_options::x_riscv_zk_subext, MASK_ZKT},
+
+  {"zicboz", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOZ},
+  {"zicbom", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOM},
+  {"zicbop", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOP},
 
   {"zve32x",   &gcc_options::x_target_flags, MASK_VECTOR},
   {"zve32f",   &gcc_options::x_target_flags, MASK_VECTOR},

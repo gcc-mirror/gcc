@@ -21790,9 +21790,13 @@ mips_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
 static bool
-mips_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
-			       rtx op1, const vec_perm_indices &sel)
+mips_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+			       rtx target, rtx op0, rtx op1,
+			       const vec_perm_indices &sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   struct expand_vec_perm_d d;
   int i, nelt, which;
   unsigned char orig_perm[MAX_VECT_LEN];
@@ -22739,7 +22743,12 @@ mips_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 static unsigned HOST_WIDE_INT
 mips_asan_shadow_offset (void)
 {
-  return SUBTARGET_SHADOW_OFFSET;
+  if (mips_abi == ABI_N32)
+    return (HOST_WIDE_INT_1 << 29);
+  if (POINTER_SIZE == 64)
+    return (HOST_WIDE_INT_1 << 37);
+  else
+    return HOST_WIDE_INT_C (0x0aaa0000);
 }
 
 /* Implement TARGET_STARTING_FRAME_OFFSET.  See mips_compute_frame_info

@@ -6,7 +6,7 @@
     *PINDEX:   C1 + (C2 * C3) + C4  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-slsr-details" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-slsr-details" } */
 
 typedef int arr_2[50][50];
 

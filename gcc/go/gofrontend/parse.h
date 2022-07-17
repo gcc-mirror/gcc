@@ -185,6 +185,7 @@ class Parse
   void list(void (Parse::*)(), bool);
   void const_decl();
   void const_spec(int, Type**, Expression_list**);
+  void update_references(Expression**);
   void type_decl();
   void type_spec();
   void var_decl();

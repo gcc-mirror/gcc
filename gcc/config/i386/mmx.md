@@ -69,6 +69,12 @@
 ;; 4-byte and 2-byte QImode vector modes
 (define_mode_iterator VI1_16_32 [V4QI V2QI])
 
+;; All 2-byte, 4-byte and 8-byte vector modes with more than 1 element
+(define_mode_iterator V_16_32_64
+   [V2QI V4QI V2HI V2HF
+    (V8QI "TARGET_64BIT") (V4HI "TARGET_64BIT") (V4HF "TARGET_64BIT")
+    (V2SI "TARGET_64BIT") (V2SF "TARGET_64BIT")])
+
 ;; V2S* modes
 (define_mode_iterator V2FI [V2SF V2SI])
 
@@ -330,6 +336,37 @@
 	      (symbol_ref "TARGET_INTER_UNIT_MOVES_TO_VEC")
 	   ]
 	   (symbol_ref "true")))])
+
+;; 16-bit, 32-bit and 64-bit constant vector stores.  After reload,
+;; convert them to immediate integer stores.
+(define_insn_and_split "*mov<mode>_imm"
+  [(set (match_operand:V_16_32_64 0 "memory_operand" "=m")
+	(match_operand:V_16_32_64 1 "x86_64_const_vector_operand" "i"))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+{
+  HOST_WIDE_INT val = ix86_convert_const_vector_to_integer (operands[1],
+							    <MODE>mode);
+  operands[1] = GEN_INT (val);
+  machine_mode mode;
+  switch (GET_MODE_SIZE (<MODE>mode))
+    {
+    case 2:
+      mode = HImode;
+      break;
+    case 4:
+      mode = SImode;
+      break;
+    case 8:
+      mode = DImode;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  operands[0] = lowpart_subreg (mode, operands[0], <MODE>mode);
+})
 
 ;; For TARGET_64BIT we always round up to 8 bytes.
 (define_insn "*push<mode>2_rex64"
@@ -3454,7 +3491,7 @@
   [(set (match_operand:HI 0 "register_sse4nonimm_operand" "=r,r,m")
 	(vec_select:HI
 	  (match_operand:V4HI 1 "register_operand" "y,YW,YW")
-	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n,n")])))]
+	  (parallel [(match_operand:SI 2 "const_0_to_3_operand")])))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "@
@@ -3473,7 +3510,7 @@
 	(zero_extend:SWI48
 	  (vec_select:HI
 	    (match_operand:V4HI 1 "register_operand" "y,YW")
-	    (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n")]))))]
+	    (parallel [(match_operand:SI 2 "const_0_to_3_operand")]))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "@
@@ -3490,7 +3527,7 @@
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,m")
 	(vec_select:QI
 	  (match_operand:V8QI 1 "register_operand" "YW,YW")
-	  (parallel [(match_operand:SI 2 "const_0_to_7_operand" "n,n")])))]
+	  (parallel [(match_operand:SI 2 "const_0_to_7_operand")])))]
   "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
   "@
    %vpextrb\t{%2, %1, %k0|%k0, %1, %2}
@@ -3507,7 +3544,7 @@
 	(zero_extend:SWI248
 	  (vec_select:QI
 	    (match_operand:V8QI 1 "register_operand" "YW")
-	    (parallel [(match_operand:SI 2 "const_0_to_7_operand" "n")]))))]
+	    (parallel [(match_operand:SI 2 "const_0_to_7_operand")]))))]
   "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
   "%vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
   [(set_attr "type" "sselog1")
@@ -3630,7 +3667,7 @@
 	(vec_merge:V4HI
 	  (match_operand:V4HI 2 "register_operand" "Yr,*x,x")
 	  (match_operand:V4HI 1 "register_operand" "0,0,x")
-	  (match_operand:SI 3 "const_0_to_15_operand" "n,n,n")))]
+	  (match_operand:SI 3 "const_0_to_15_operand")))]
   "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
   "@
    pblendw\t{%3, %2, %0|%0, %2, %3}
@@ -3648,7 +3685,7 @@
 	(vec_merge:V2HI
 	  (match_operand:V2HI 2 "register_operand" "Yr,*x,x")
 	  (match_operand:V2HI 1 "register_operand" "0,0,x")
-	  (match_operand:SI 3 "const_0_to_7_operand" "n,n,n")))]
+	  (match_operand:SI 3 "const_0_to_7_operand")))]
   "TARGET_SSE4_1"
   "@
    pblendw\t{%3, %2, %0|%0, %2, %3}
@@ -4035,7 +4072,7 @@
   [(set (match_operand:HI 0 "register_sse4nonimm_operand" "=r,m")
 	(vec_select:HI
 	  (match_operand:V2HI 1 "register_operand" "YW,YW")
-	  (parallel [(match_operand:SI 2 "const_0_to_1_operand" "n,n")])))]
+	  (parallel [(match_operand:SI 2 "const_0_to_1_operand")])))]
   "TARGET_SSE2"
   "@
    %vpextrw\t{%2, %1, %k0|%k0, %1, %2}
@@ -4051,7 +4088,7 @@
 	(zero_extend:SWI48
 	  (vec_select:HI
 	    (match_operand:V2HI 1 "register_operand" "YW")
-	    (parallel [(match_operand:SI 2 "const_0_to_1_operand" "n")]))))]
+	    (parallel [(match_operand:SI 2 "const_0_to_1_operand")]))))]
   "TARGET_SSE2"
   "%vpextrw\t{%2, %1, %k0|%k0, %1, %2}"
   [(set_attr "type" "sselog1")
@@ -4063,7 +4100,7 @@
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,m")
 	(vec_select:QI
 	  (match_operand:V4QI 1 "register_operand" "YW,YW")
-	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n")])))]
+	  (parallel [(match_operand:SI 2 "const_0_to_3_operand")])))]
   "TARGET_SSE4_1"
   "@
    %vpextrb\t{%2, %1, %k0|%k0, %1, %2}
@@ -4080,7 +4117,7 @@
 	(zero_extend:SWI248
 	  (vec_select:QI
 	    (match_operand:V4QI 1 "register_operand" "YW")
-	    (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n")]))))]
+	    (parallel [(match_operand:SI 2 "const_0_to_3_operand")]))))]
   "TARGET_SSE4_1"
   "%vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
   [(set_attr "type" "sselog1")
@@ -4405,13 +4442,21 @@
    (set_attr "type" "sseiadd")
    (set_attr "mode" "TI")])
 
-(define_insn "mmx_psadbw"
+(define_expand "mmx_psadbw"
+  [(set (match_operand:V1DI 0 "register_operand")
+	(unspec:V1DI [(match_operand:V8QI 1 "register_mmxmem_operand")
+		      (match_operand:V8QI 2 "register_mmxmem_operand")]
+		     UNSPEC_PSADBW))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && (TARGET_SSE || TARGET_3DNOW_A)"
+  "ix86_fixup_binary_operands_no_copy (PLUS, V8QImode, operands);")
+
+(define_insn "*mmx_psadbw"
   [(set (match_operand:V1DI 0 "register_operand" "=y,x,Yw")
-        (unspec:V1DI [(match_operand:V8QI 1 "register_operand" "0,0,Yw")
+	(unspec:V1DI [(match_operand:V8QI 1 "register_mmxmem_operand" "%0,0,Yw")
 		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yw")]
 		     UNSPEC_PSADBW))]
-  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
-   && (TARGET_SSE || TARGET_3DNOW_A)"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && (TARGET_SSE || TARGET_3DNOW_A)
+   && ix86_binary_operator_ok (PLUS, V8QImode, operands)"
   "@
    psadbw\t{%2, %0|%0, %2}
    psadbw\t{%2, %0|%0, %2}

@@ -1,4 +1,5 @@
 // PR c++/65211
+// { dg-additional-options "-Wno-psabi" }
 // { dg-final { scan-assembler-not "movdqa" } }
 
 typedef unsigned v4ui __attribute__ ((vector_size(16), aligned (16)));

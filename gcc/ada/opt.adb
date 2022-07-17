@@ -23,28 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Csets;          use Csets;
+
 package body Opt is
-
-   -------------------------
-   -- Back_End_Exceptions --
-   -------------------------
-
-   function Back_End_Exceptions return Boolean is
-   begin
-      return
-        Exception_Mechanism = Back_End_SJLJ
-          or else
-        Exception_Mechanism = Back_End_ZCX;
-   end Back_End_Exceptions;
-
-   -------------------------
-   -- Front_End_Exceptions --
-   -------------------------
-
-   function Front_End_Exceptions return Boolean is
-   begin
-      return Exception_Mechanism = Front_End_SJLJ;
-   end Front_End_Exceptions;
 
    --------------------
    -- SJLJ_Exceptions --
@@ -52,10 +33,7 @@ package body Opt is
 
    function SJLJ_Exceptions return Boolean is
    begin
-      return
-        Exception_Mechanism = Back_End_SJLJ
-          or else
-        Exception_Mechanism = Front_End_SJLJ;
+      return Exception_Mechanism = Back_End_SJLJ;
    end SJLJ_Exceptions;
 
    --------------------
@@ -210,6 +188,7 @@ package body Opt is
          Prefix_Exception_Messages   := True;
          Uneval_Old                  := 'E';
          Use_VADS_Size               := False;
+         Identifier_Char ('[')       := False;
 
          --  Note: we do not need to worry about Warnings_As_Errors_Count since
          --  we do not expect to get any warnings from compiling such a unit.

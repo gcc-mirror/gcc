@@ -130,7 +130,7 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
 	std/experimental/typecons.d std/file.d std/format/internal/floats.d \
 	std/format/internal/read.d std/format/internal/write.d \
 	std/format/package.d std/format/read.d std/format/spec.d \
-	std/format/write.d std/functional.d std/getopt.d \
+	std/format/write.d std/functional.d std/getopt.d std/int128.d \
 	std/internal/attributes.d std/internal/cstring.d \
 	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
 	std/internal/math/errorfunction.d std/internal/math/gammafunction.d \

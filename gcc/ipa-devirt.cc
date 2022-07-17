@@ -120,6 +120,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "calls.h"
 #include "ipa-utils.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"
@@ -3968,7 +3969,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* In LTO, always run the IPA passes and decide on function basis if the
 	 pass is enabled.  */
@@ -3981,7 +3982,7 @@ public:
 	      && optimize);
     }
 
-  virtual unsigned int execute (function *) { return ipa_devirt (); }
+  unsigned int execute (function *) final override { return ipa_devirt (); }
 
 }; // class pass_ipa_devirt
 
@@ -4360,12 +4361,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return (in_lto_p || flag_lto);
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return 0;
     }

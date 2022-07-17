@@ -18,6 +18,8 @@
 
 // Check constexpr constructor.
 constinit std::atomic<std::shared_ptr<int>> a;
+// LWG 3661. constinit atomic<shared_ptr<T>> a(nullptr); should work
+constinit std::atomic<std::shared_ptr<int>> a2 = nullptr;
 
 void
 test_is_lock_free()

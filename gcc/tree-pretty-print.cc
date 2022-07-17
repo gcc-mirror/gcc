@@ -517,8 +517,11 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE__SCANTEMP_:
       name = "_scantemp_";
       goto print_remap;
-    case OMP_CLAUSE_TO_DECLARE:
-      name = "to";
+    case OMP_CLAUSE_ENTER:
+      if (OMP_CLAUSE_ENTER_TO (clause))
+	name = "to";
+      else
+	name = "enter";
       goto print_remap;
     case OMP_CLAUSE_LINK:
       name = "link";
@@ -704,29 +707,50 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_LINEAR:
       pp_string (pp, "linear(");
-      switch (OMP_CLAUSE_LINEAR_KIND (clause))
-	{
-	case OMP_CLAUSE_LINEAR_DEFAULT:
-	  break;
-	case OMP_CLAUSE_LINEAR_REF:
-	  pp_string (pp, "ref(");
-	  break;
-	case OMP_CLAUSE_LINEAR_VAL:
-	  pp_string (pp, "val(");
-	  break;
-	case OMP_CLAUSE_LINEAR_UVAL:
-	  pp_string (pp, "uval(");
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
+      if (OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (clause))
+	switch (OMP_CLAUSE_LINEAR_KIND (clause))
+	  {
+	  case OMP_CLAUSE_LINEAR_DEFAULT:
+	    break;
+	  case OMP_CLAUSE_LINEAR_REF:
+	    pp_string (pp, "ref(");
+	    break;
+	  case OMP_CLAUSE_LINEAR_VAL:
+	    pp_string (pp, "val(");
+	    break;
+	  case OMP_CLAUSE_LINEAR_UVAL:
+	    pp_string (pp, "uval(");
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
       dump_generic_node (pp, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
-      if (OMP_CLAUSE_LINEAR_KIND (clause) != OMP_CLAUSE_LINEAR_DEFAULT)
+      if (OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (clause)
+	  && OMP_CLAUSE_LINEAR_KIND (clause) != OMP_CLAUSE_LINEAR_DEFAULT)
 	pp_right_paren (pp);
       pp_colon (pp);
+      if (!OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (clause)
+	  && OMP_CLAUSE_LINEAR_KIND (clause) != OMP_CLAUSE_LINEAR_DEFAULT)
+	switch (OMP_CLAUSE_LINEAR_KIND (clause))
+	  {
+	    case OMP_CLAUSE_LINEAR_REF:
+	      pp_string (pp, "ref,step(");
+	      break;
+	    case OMP_CLAUSE_LINEAR_VAL:
+	      pp_string (pp, "val,step(");
+	      break;
+	    case OMP_CLAUSE_LINEAR_UVAL:
+	      pp_string (pp, "uval,step(");
+	      break;
+	    default:
+	      gcc_unreachable ();
+	  }
       dump_generic_node (pp, OMP_CLAUSE_LINEAR_STEP (clause),
 			 spc, flags, false);
+      if (!OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (clause)
+	  && OMP_CLAUSE_LINEAR_KIND (clause) != OMP_CLAUSE_LINEAR_DEFAULT)
+	pp_right_paren (pp);
       pp_right_paren (pp);
       break;
 
@@ -804,6 +828,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
 	  name = "mutexinoutset";
 	  break;
+	case OMP_CLAUSE_DEPEND_INOUTSET:
+	  name = "inoutset";
+	  break;
 	case OMP_CLAUSE_DEPEND_SOURCE:
 	  pp_string (pp, "source)");
 	  return;
@@ -850,7 +877,10 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	    pp_string (pp, name);
 	    pp_colon (pp);
 	  }
-	dump_generic_node (pp, t, spc, flags, false);
+	if (t == null_pointer_node)
+	  pp_string (pp, "omp_all_memory");
+	else
+	  dump_generic_node (pp, t, spc, flags, false);
 	pp_right_paren (pp);
       }
       break;
@@ -2047,7 +2077,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	for (tmp = TREE_TYPE (node); TREE_CODE (tmp) == ARRAY_TYPE;
 	     tmp = TREE_TYPE (tmp))
 	  ;
-	dump_generic_node (pp, tmp, spc, flags, false);
+
+	/* Avoid to print recursively the array.  */
+	/* FIXME : Not implemented correctly, see print_struct_decl.  */
+	if (TREE_CODE (tmp) != POINTER_TYPE || TREE_TYPE (tmp) != node)
+	  dump_generic_node (pp, tmp, spc, flags, false);
 
 	/* Print the dimensions.  */
 	for (tmp = node; TREE_CODE (tmp) == ARRAY_TYPE; tmp = TREE_TYPE (tmp))

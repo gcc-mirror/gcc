@@ -20,6 +20,6 @@ package Pack13 is
 
   A : Arr;
 
-  package My_G is new G (Boolean, A(True).B);
+  package My_G is new G (Boolean, A(True).B); -- { dg-warning "\"A\" may be referenced before it has a value" }
 
 end Pack13;

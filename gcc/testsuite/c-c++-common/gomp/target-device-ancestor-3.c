@@ -11,7 +11,7 @@ int bar (void);
 
 /* { dg-do compile } */
 
-#pragma omp requires reverse_offload /* { dg-message "sorry, unimplemented: 'reverse_offload' clause on 'requires' directive not supported yet" } */
+#pragma omp requires reverse_offload
 
 void
 foo (void)

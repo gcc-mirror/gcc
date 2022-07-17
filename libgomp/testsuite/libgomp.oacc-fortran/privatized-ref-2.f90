@@ -53,6 +53,9 @@ contains
     integer :: array(nn)
 
     !$acc parallel copyout(array) ! { dg-line l_compute[incr c_compute] }
+    ! { dg-note {variable 'atmp\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'shadow_loopvar\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'offset\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'S\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     array = [(-i, i = 1, nn)]
     !$acc end parallel
@@ -81,6 +84,10 @@ contains
     integer :: array(:)
 
     !$acc parallel copyout(array) ! { dg-line l_compute[incr c_compute] }
+    ! { dg-note {variable 'atmp\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'parm\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'shadow_loopvar\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'offset\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'S\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     array = [(-2*i, i = 1, size(array))]
     !$acc end parallel

@@ -4773,6 +4773,18 @@ dnl
     AC_DEFINE(HAVE_DIRFD, 1, [Define if dirfd is available in <dirent.h>.])
   fi
 dnl
+  AC_CACHE_CHECK([for openat],
+    glibcxx_cv_openat, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <fcntl.h>],
+      [int fd = ::openat(AT_FDCWD, "", 0);],
+      [glibcxx_cv_openat=yes],
+      [glibcxx_cv_openat=no])
+  ])
+  if test $glibcxx_cv_openat = yes; then
+    AC_DEFINE(HAVE_OPENAT, 1, [Define if openat is available in <fcntl.h>.])
+  fi
+dnl
   AC_CACHE_CHECK([for unlinkat],
     glibcxx_cv_unlinkat, [dnl
     GCC_TRY_COMPILE_OR_LINK(
@@ -5007,10 +5019,10 @@ esac
 BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
 
   AC_MSG_CHECKING([whether to build libbacktrace support])
-  if test "$enable_libstdcxx_backtrace" == "auto"; then
+  if test "$enable_libstdcxx_backtrace" = "auto"; then
     enable_libstdcxx_backtrace=no
   fi
-  if test "$enable_libstdcxx_backtrace" == "yes"; then
+  if test "$enable_libstdcxx_backtrace" = "yes"; then
     BACKTRACE_SUPPORTED=1
 
     AC_CHECK_HEADERS(sys/mman.h)
@@ -5057,7 +5069,7 @@ BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
     BACKTRACE_SUPPORTS_THREADS=0
   fi
   AC_MSG_RESULT($enable_libstdcxx_backtrace)
-  GLIBCXX_CONDITIONAL(ENABLE_BACKTRACE, [test "$enable_libstdcxx_backtrace" != no])
+  GLIBCXX_CONDITIONAL(ENABLE_BACKTRACE, [test "$enable_libstdcxx_backtrace" = yes])
 ])
 
 # Macros from the top-level gcc directory.

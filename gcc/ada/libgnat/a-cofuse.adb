@@ -34,6 +34,9 @@ pragma Ada_2012;
 package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    use Containers;
 
+   package Conversions is new Signed_Conversions (Int => Count_Type);
+   use Conversions;
+
    ---------
    -- "=" --
    ---------
@@ -62,6 +65,13 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
 
    function Contains (Container : Set; Item : Element_Type) return Boolean is
      (Find (Container.Content, Item) > 0);
+
+   ---------------
+   -- Empty_Set --
+   ---------------
+
+   function Empty_Set return Set is
+      ((others => <>));
 
    ---------------------
    -- Included_Except --
@@ -128,8 +138,8 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    -- Length --
    ------------
 
-   function Length (Container : Set) return Count_Type is
-     (Length (Container.Content));
+   function Length (Container : Set) return Big_Natural is
+     (To_Big_Integer (Length (Container.Content)));
 
    -----------------
    -- Not_In_Both --
@@ -154,8 +164,8 @@ package body Ada.Containers.Functional_Sets with SPARK_Mode => Off is
    -- Num_Overlaps --
    ------------------
 
-   function Num_Overlaps (Left : Set; Right : Set) return Count_Type is
-     (Num_Overlaps (Left.Content, Right.Content));
+   function Num_Overlaps (Left : Set; Right : Set) return Big_Natural is
+     (To_Big_Integer (Num_Overlaps (Left.Content, Right.Content)));
 
    ------------
    -- Remove --

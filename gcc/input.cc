@@ -646,6 +646,37 @@ file_cache_slot::maybe_read_data ()
   return read_data ();
 }
 
+/* Helper function for file_cache_slot::get_next_line (), to find the end of
+   the next line.  Returns with the memchr convention, i.e. nullptr if a line
+   terminator was not found.  We need to determine line endings in the same
+   manner that libcpp does: any of \n, \r\n, or \r is a line ending.  */
+
+static char *
+find_end_of_line (char *s, size_t len)
+{
+  for (const auto end = s + len; s != end; ++s)
+    {
+      if (*s == '\n')
+	return s;
+      if (*s == '\r')
+	{
+	  const auto next = s + 1;
+	  if (next == end)
+	    {
+	      /* Don't find the line ending if \r is the very last character
+		 in the buffer; we do not know if it's the end of the file or
+		 just the end of what has been read so far, and we wouldn't
+		 want to break in the middle of what's actually a \r\n
+		 sequence.  Instead, we will handle the case of a file ending
+		 in a \r later.  */
+	      break;
+	    }
+	  return (*next == '\n' ? next : s);
+	}
+    }
+  return nullptr;
+}
+
 /* Read a new line from file FP, using C as a cache for the data
    coming from the file.  Upon successful completion, *LINE is set to
    the beginning of the line found.  *LINE points directly in the
@@ -671,17 +702,16 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
 
   char *next_line_start = NULL;
   size_t len = 0;
-  char *line_end = (char *) memchr (line_start, '\n', remaining_size);
+  char *line_end = find_end_of_line (line_start, remaining_size);
   if (line_end == NULL)
     {
-      /* We haven't found the end-of-line delimiter in the cache.
-	 Fill the cache with more data from the file and look for the
-	 '\n'.  */
+      /* We haven't found an end-of-line delimiter in the cache.
+	 Fill the cache with more data from the file and look again.  */
       while (maybe_read_data ())
 	{
 	  line_start = m_data + m_line_start_idx;
 	  remaining_size = m_nb_read - m_line_start_idx;
-	  line_end = (char *) memchr (line_start, '\n', remaining_size);
+	  line_end = find_end_of_line (line_start, remaining_size);
 	  if (line_end != NULL)
 	    {
 	      next_line_start = line_end + 1;
@@ -690,14 +720,22 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
 	}
       if (line_end == NULL)
 	{
-	  /* We've loadded all the file into the cache and still no
-	     '\n'.  Let's say the line ends up at one byte passed the
+	  /* We've loaded all the file into the cache and still no
+	     terminator.  Let's say the line ends up at one byte past the
 	     end of the file.  This is to stay consistent with the case
-	     of when the line ends up with a '\n' and line_end points to
-	     that terminal '\n'.  That consistency is useful below in
-	     the len calculation.  */
-	  line_end = m_data + m_nb_read ;
-	  m_missing_trailing_newline = true;
+	     of when the line ends up with a terminator and line_end points to
+	     that.  That consistency is useful below in the len calculation.
+
+	     If the file ends in a \r, we didn't identify it as a line
+	     terminator above, so do that now instead.  */
+	  line_end = m_data + m_nb_read;
+	  if (m_nb_read && line_end[-1] == '\r')
+	    {
+	      --line_end;
+	      m_missing_trailing_newline = false;
+	    }
+	  else
+	    m_missing_trailing_newline = true;
 	}
       else
 	m_missing_trailing_newline = false;
@@ -711,9 +749,8 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
   if (m_fp && ferror (m_fp))
     return false;
 
-  /* At this point, we've found the end of the of line.  It either
-     points to the '\n' or to one byte after the last byte of the
-     file.  */
+  /* At this point, we've found the end of the of line.  It either points to
+     the line terminator or to one byte after the last byte of the file.  */
   gcc_assert (line_end != NULL);
 
   len = line_end - line_start;
@@ -2310,7 +2347,7 @@ class ebcdic_execution_charset : public lexer_test_options
       s_singleton = NULL;
     }
 
-  void apply (lexer_test &test) FINAL OVERRIDE
+  void apply (lexer_test &test) final override
   {
     cpp_options *cpp_opts = cpp_get_options (test.m_parser);
     cpp_opts->narrow_charset = "IBM1047";
@@ -2375,7 +2412,7 @@ class lexer_diagnostic_sink : public lexer_test_options
       free (str);
   }
 
-  void apply (lexer_test &test) FINAL OVERRIDE
+  void apply (lexer_test &test) final override
   {
     cpp_callbacks *callbacks = cpp_get_callbacks (test.m_parser);
     callbacks->diagnostic = on_diagnostic;
@@ -3724,8 +3761,7 @@ for_each_line_table_case (void (*testcase) (const line_table_case &))
     {
       /* ...and use each of the "interesting" location values as
 	 the starting location within line_table.  */
-      const int num_boundary_locations
-	= sizeof (boundary_locations) / sizeof (boundary_locations[0]);
+      const int num_boundary_locations = ARRAY_SIZE (boundary_locations);
       for (int loc_idx = 0; loc_idx < num_boundary_locations; loc_idx++)
 	{
 	  line_table_case c (default_range_bits, boundary_locations[loc_idx]);

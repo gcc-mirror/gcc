@@ -31,13 +31,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "diagnostic.h"
 #include "fold-const.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "calls.h"
 #include "stor-layout.h"
 #include "print-tree.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-walk.h"
 #include "symbol-summary.h"
@@ -126,7 +126,7 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
   static bool
   equal (const value_range *a, const value_range *b)
     {
-      return (a->equal_p (*b)
+      return (*a == *b
 	      && types_compatible_p (a->type (), b->type ()));
     }
   static const bool empty_zero_p = true;
@@ -1110,6 +1110,10 @@ ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
   tree base = get_ref_base_and_extent_hwi (op, offset_p, &size, &reverse);
 
   if (!base)
+    return false;
+
+  /* We can not propagate across volatile loads.  */
+  if (TREE_THIS_VOLATILE (op))
     return false;
 
   if (DECL_P (base))
@@ -3004,7 +3008,7 @@ public:
   analysis_dom_walker (struct ipa_func_body_info *fbi)
     : dom_walker (CDI_DOMINATORS), m_fbi (fbi) {}
 
-  virtual edge before_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
 
 private:
   struct ipa_func_body_info *m_fbi;
@@ -3406,7 +3410,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
 			       ie->caller->dump_name ());
 	    }
 
-	  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+	  target = builtin_decl_unreachable ();
 	  callee = cgraph_node::get_create (target);
 	  unreachable = true;
 	}
@@ -3817,7 +3821,7 @@ ipa_impossible_devirt_target (struct cgraph_edge *ie, tree target)
 		 "No devirtualization target in %s\n",
 		 ie->caller->dump_name ());
     }
-  tree new_target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+  tree new_target = builtin_decl_unreachable ();
   cgraph_node::get_create (new_target);
   return new_target;
 }
@@ -4187,14 +4191,13 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	{
 	  int d = ipa_get_controlled_uses (old_root_info, i);
 	  int c = rdesc->refcount;
+	  tree cst = ipa_get_jf_constant (jf);
 	  rdesc->refcount = combine_controlled_uses_counters (c, d);
 	  if (rdesc->refcount != IPA_UNDESCRIBED_USE
-	      && ipa_get_param_load_dereferenced (old_root_info, i))
+	      && ipa_get_param_load_dereferenced (old_root_info, i)
+	      && TREE_CODE (cst) == ADDR_EXPR
+	      && TREE_CODE (TREE_OPERAND (cst, 0)) == VAR_DECL)
 	    {
-	      tree cst = ipa_get_jf_constant (jf);
-	      gcc_checking_assert (TREE_CODE (cst) == ADDR_EXPR
-				   && (TREE_CODE (TREE_OPERAND (cst, 0))
-				       == VAR_DECL));
 	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
 	      new_root->create_reference (n, IPA_REF_LOAD, NULL);
 	      if (dump_file)
@@ -4204,7 +4207,6 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	    }
 	  if (rdesc->refcount == 0)
 	    {
-	      tree cst = ipa_get_jf_constant (jf);
 	      gcc_checking_assert (TREE_CODE (cst) == ADDR_EXPR
 				   && ((TREE_CODE (TREE_OPERAND (cst, 0))
 					== FUNCTION_DECL)
@@ -5653,7 +5655,7 @@ public:
     : dom_walker (CDI_DOMINATORS), m_fbi (fbi), m_descriptors (descs),
       m_aggval (av), m_something_changed (sc) {}
 
-  virtual edge before_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
   bool cleanup_eh ()
     { return gimple_purge_all_dead_eh_edges (m_need_eh_cleanup); }
 
@@ -5987,11 +5989,13 @@ ipcp_update_vr (struct cgraph_node *node)
 		  print_decs (vr[i].max, dump_file);
 		  fprintf (dump_file, "]\n");
 		}
-	      set_range_info (ddef, vr[i].type,
-			      wide_int_storage::from (vr[i].min, prec,
-						      TYPE_SIGN (type)),
-			      wide_int_storage::from (vr[i].max, prec,
-						      TYPE_SIGN (type)));
+	      value_range v (type,
+			     wide_int_storage::from (vr[i].min, prec,
+						     TYPE_SIGN (type)),
+			     wide_int_storage::from (vr[i].max, prec,
+						     TYPE_SIGN (type)),
+			     vr[i].type);
+	      set_range_info (ddef, v);
 	    }
 	  else if (POINTER_TYPE_P (TREE_TYPE (ddef))
 		   && vr[i].nonzero_p (TREE_TYPE (ddef)))

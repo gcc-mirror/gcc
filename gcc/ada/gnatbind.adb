@@ -50,6 +50,7 @@ with Switch;   use Switch;
 with Switch.B; use Switch.B;
 with Targparm; use Targparm;
 with Types;    use Types;
+with Uintp;
 
 with System.Case_Util; use System.Case_Util;
 with System.Response_File;
@@ -617,6 +618,7 @@ begin
    --  is in some cases important.
 
    Csets.Initialize;
+   Uintp.Initialize;
    Snames.Initialize;
 
    --  Scan the switches and arguments. Note that Snames must already be

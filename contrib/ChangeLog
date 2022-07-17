@@ -1,3 +1,50 @@
+2022-07-04  Martin Liska  <mliska@suse.cz>
+
+	* git-descr.sh: By default print revision for HEAD.
+
+2022-06-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* unicode/README: Added instructions for updating ucnid.h.
+	* unicode/DerivedCoreProperties.txt: New file added to source
+	control from Unicode 14.0 release.
+	* unicode/DerivedNormalizationProps.txt: Likewise.
+
+2022-06-26  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* unicode/EastAsianWidth.txt: Update to Unicode 14.0.0.
+	* unicode/PropList.txt: Likewise.
+	* unicode/README: Likewise.
+	* unicode/UnicodeData.txt: Likewise.
+
+2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config-list.mk: Remove tilegx and tilepro entries.
+	* gcc_update: Remove tilegx and tilepro entries.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc-changelog/git_update_version.py (active_refs): Remove
+	releases/gcc-9.
+
+2022-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 12.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (active_refs): Add
+	releases/gcc-12.
+
+2022-04-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out
+	-Wc++20-attribute-extensions in lex.cc.
+
+2022-04-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out
+	-Wbitwise-instead-of-logical.
+
 2022-04-04  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_update_version.py: Ignore the revision.

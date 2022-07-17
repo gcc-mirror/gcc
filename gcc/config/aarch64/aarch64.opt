@@ -22,19 +22,19 @@ HeaderInclude
 config/aarch64/aarch64-opts.h
 
 TargetVariable
-enum aarch64_processor explicit_tune_core = aarch64_none
+enum aarch64_processor selected_tune = aarch64_none
 
 TargetVariable
-enum aarch64_arch explicit_arch = aarch64_no_arch
-
-TargetSave
-const char *x_aarch64_override_tune_string
+enum aarch64_arch selected_arch = aarch64_no_arch
 
 TargetVariable
 uint64_t aarch64_isa_flags = 0
 
 TargetVariable
 unsigned aarch64_enable_bti = 2
+
+TargetVariable
+enum aarch64_key_type aarch64_ra_sign_key = AARCH64_KEY_A
 
 ; The TLS dialect names to use with -mtls-dialect.
 
@@ -139,7 +139,7 @@ Target RejectNegative Joined Enum(aarch64_abi) Var(aarch64_abi) Init(AARCH64_ABI
 Generate code that conforms to the specified ABI.
 
 moverride=
-Target RejectNegative ToLower Joined Var(aarch64_override_tune_string)
+Target RejectNegative ToLower Joined Var(aarch64_override_tune_string) Save
 -moverride=<string>	Power users only! Override CPU optimization parameters.
 
 Enum

@@ -79,6 +79,50 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "DI")])
 
+;; During combine, we may encounter an attempt to combine
+;;   slli rtmp, rs, #imm
+;;   zext.w rtmp, rtmp
+;;   sh[123]add rd, rtmp, rs2
+;; which will lead to the immediate not satisfying the above constraints.
+;; By splitting the compound expression, we can simplify to a slli and a
+;; sh[123]add.uw.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (and:DI (ashift:DI (match_operand:DI 1 "register_operand")
+				    (match_operand:QI 2 "immediate_operand"))
+			 (match_operand:DI 3 "consecutive_bits_operand"))
+		 (match_operand:DI 4 "register_operand")))
+   (clobber (match_operand:DI 5 "register_operand"))]
+  "TARGET_64BIT && TARGET_ZBA"
+  [(set (match_dup 5) (ashift:DI (match_dup 1) (match_dup 6)))
+   (set (match_dup 0) (plus:DI (and:DI (ashift:DI (match_dup 5)
+						  (match_dup 7))
+				       (match_dup 8))
+			       (match_dup 4)))]
+{
+	unsigned HOST_WIDE_INT mask = UINTVAL (operands[3]);
+	/* scale: shift within the sh[123]add.uw */
+	unsigned HOST_WIDE_INT scale = 32 - clz_hwi (mask);
+	/* bias:  pre-scale amount (i.e. the prior shift amount) */
+	int bias = ctz_hwi (mask) - scale;
+
+	/* If the bias + scale don't add up to operand[2], reject. */
+	if ((scale + bias) != UINTVAL (operands[2]))
+	   FAIL;
+
+	/* If the shift-amount is out-of-range for sh[123]add.uw, reject. */
+	if ((scale < 1) || (scale > 3))
+	   FAIL;
+
+	/* If there's no bias, the '*shNadduw' pattern should have matched. */
+	if (bias == 0)
+	   FAIL;
+
+	operands[6] = GEN_INT (bias);
+	operands[7] = GEN_INT (scale);
+	operands[8] = GEN_INT (0xffffffffULL << scale);
+})
+
 (define_insn "*add.uw"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (zero_extend:DI

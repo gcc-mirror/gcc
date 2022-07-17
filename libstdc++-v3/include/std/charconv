@@ -412,14 +412,8 @@ namespace __detail
   constexpr auto
   __from_chars_alnum_to_val_table()
   {
-    constexpr unsigned char __lower_letters[]
-      = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-	  'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-	  'u', 'v', 'w', 'x', 'y', 'z' };
-    constexpr unsigned char __upper_letters[]
-      = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-	  'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-	  'U', 'V', 'W', 'X', 'Y', 'Z' };
+    constexpr unsigned char __lower_letters[27] = "abcdefghijklmnopqrstuvwxyz";
+    constexpr unsigned char __upper_letters[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     struct { unsigned char __data[1u << __CHAR_BIT__] = {}; } __table;
     for (auto& __entry : __table.__data)
       __entry = 127;
@@ -437,7 +431,7 @@ namespace __detail
   // return its corresponding base-10 value, otherwise return a value >= 127.
   // If _DecOnly is false: if the character is an alphanumeric digit, then
   // return its corresponding base-36 value, otherwise return a value >= 127.
-  template<bool _DecOnly>
+  template<bool _DecOnly = false>
     unsigned char
     __from_chars_alnum_to_val(unsigned char __c)
     {
@@ -445,7 +439,9 @@ namespace __detail
 	return __c - '0';
       else
 	{
-	  static constexpr auto __table = __from_chars_alnum_to_val_table();
+	  // This initializer is deliberately made dependent in order to work
+	  // around modules bug PR105322.
+	  static constexpr auto __table = (_DecOnly, __from_chars_alnum_to_val_table());
 	  return __table.__data[__c];
 	}
     }
@@ -469,25 +465,37 @@ namespace __detail
       while (__i < __len && __first[__i] == '0')
 	++__i;
       const ptrdiff_t __leading_zeroes = __i;
+      if (__i >= __len) [[__unlikely__]]
+	{
+	  __first += __i;
+	  return true;
+	}
 
+      // Remember the leading significant digit value if necessary.
       unsigned char __leading_c = 0;
+      if (__base != 2)
+	{
+	  __leading_c = __from_chars_alnum_to_val<_DecOnly>(__first[__i]);
+	  // __glibcxx_assert(__leading_c != 0);
+	  if (__leading_c >= __base) [[__unlikely__]]
+	    {
+	      __first += __i;
+	      return true;
+	    }
+	  __val = __leading_c;
+	  ++__i;
+	}
+
       for (; __i < __len; ++__i)
 	{
 	  const unsigned char __c = __from_chars_alnum_to_val<_DecOnly>(__first[__i]);
 	  if (__c >= __base)
 	    break;
 	  __val = (__val << __log2_base) | __c;
-
-	  if (__i == __leading_zeroes)
-	    {
-	      // At the first iteration, remember the leading significant digit.
-	      // __glibcxx_assert(__leading_c == 0 && __c != 0);
-	      __leading_c = __c;
-	    }
 	}
       __first += __i;
       auto __significant_bits = (__i - __leading_zeroes) * __log2_base;
-      if (__base != 2 && __leading_c != 0)
+      if (__base != 2)
 	// Compensate for a leading significant digit that didn't use all
 	// of its available bits.
 	__significant_bits -= __log2_base - __bit_width(__leading_c);

@@ -14,7 +14,7 @@ struct S
     int* y;
 }
 
-int* test(ref return scope S s)
+int* test(ref return scope S s) @safe
 {
     return &s.x;
 }

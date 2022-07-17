@@ -278,7 +278,7 @@ sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
       SANITIZE_POINTER_SUBTRACT
     };
 
-  for (unsigned i = 0; i < sizeof (codes) / sizeof (codes[0]); i++)
+  for (unsigned i = 0; i < ARRAY_SIZE (codes); i++)
     if (sanitize_flags_p (codes[i], caller)
 	!= sanitize_flags_p (codes[i], callee))
       return false;
@@ -3100,7 +3100,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_early_inline
 
@@ -3150,7 +3150,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return ipa_inline (); }
+  unsigned int execute (function *) final override { return ipa_inline (); }
 
 }; // class pass_ipa_inline
 

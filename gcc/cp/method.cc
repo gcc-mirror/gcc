@@ -1465,7 +1465,7 @@ build_comparison_op (tree fndecl, bool defining, tsubst_flags_t complain)
   /* A defaulted comparison operator function for class C is defined as
      deleted if ... C has variant members.  */
   if (TREE_CODE (ctype) == UNION_TYPE
-      && next_initializable_field (TYPE_FIELDS (ctype)))
+      && next_aggregate_field (TYPE_FIELDS (ctype)))
     {
       if (complain & tf_error)
 	inform (info.loc, "cannot default compare union %qT", ctype);
@@ -1518,9 +1518,9 @@ build_comparison_op (tree fndecl, bool defining, tsubst_flags_t complain)
 	}
 
       /* Now compare the field subobjects.  */
-      for (tree field = next_initializable_field (TYPE_FIELDS (ctype));
+      for (tree field = next_aggregate_field (TYPE_FIELDS (ctype));
 	   field;
-	   field = next_initializable_field (DECL_CHAIN (field)))
+	   field = next_aggregate_field (DECL_CHAIN (field)))
 	{
 	  if (DECL_VIRTUAL_P (field) || DECL_FIELD_IS_BASE (field))
 	    /* We ignore the vptr, and we already handled bases.  */
@@ -1542,7 +1542,7 @@ build_comparison_op (tree fndecl, bool defining, tsubst_flags_t complain)
 	      continue;
 	    }
 	  else if (ANON_UNION_TYPE_P (expr_type)
-		   && next_initializable_field (TYPE_FIELDS (expr_type)))
+		   && next_aggregate_field (TYPE_FIELDS (expr_type)))
 	    {
 	      if (complain & tf_error)
 		inform (field_loc, "cannot default compare "
@@ -2209,6 +2209,31 @@ is_xible (enum tree_code code, tree to, tree from)
   if (expr == error_mark_node)
     return false;
   return !!expr;
+}
+
+/* Return true iff conjunction_v<is_reference<T>, is_constructible<T, U>> is
+   true, and the initialization
+     T t(VAL<U>); // DIRECT_INIT_P
+   or
+     T t = VAL<U>; // !DIRECT_INIT_P
+   binds t to a temporary object whose lifetime is extended.
+   VAL<T> is defined in [meta.unary.prop]:
+   -- If T is a reference or function type, VAL<T> is an expression with the
+   same type and value category as declval<T>().
+   -- Otherwise, VAL<T> is a prvalue that initially has type T.   */
+
+bool
+ref_xes_from_temporary (tree to, tree from, bool direct_init_p)
+{
+  /* Check is_reference<T>.  */
+  if (!TYPE_REF_P (to))
+    return false;
+  /* We don't check is_constructible<T, U>: if T isn't constructible
+     from U, we won't be able to create a conversion.  */
+  tree val = build_stub_object (from);
+  if (!TYPE_REF_P (from) && TREE_CODE (from) != FUNCTION_TYPE)
+    val = CLASS_TYPE_P (from) ? force_rvalue (val, tf_none) : rvalue (val);
+  return ref_conv_binds_directly (to, val, direct_init_p).is_false ();
 }
 
 /* Categorize various special_function_kinds.  */

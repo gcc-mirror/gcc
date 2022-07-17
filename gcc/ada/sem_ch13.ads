@@ -130,12 +130,11 @@ package Sem_Ch13 is
    --  clause, T is the component type.
 
    function Has_Compatible_Representation
-     (Target_Type, Operand_Type : Entity_Id) return Boolean;
-   --  Given two types, where the two types are related by possible derivation,
-   --  determines if the two types have compatible representation, or different
-   --  representations, requiring the special processing for representation
-   --  change. A False result is possible only for array, enumeration or
-   --  record types.
+     (Target_Typ, Operand_Typ : Entity_Id) return Boolean;
+   --  Given an explicit or implicit conversion from Operand_Typ to Target_Typ,
+   --  determine whether the types have compatible or different representation,
+   --  thus requiring special processing for the conversion in the latter case.
+   --  A False result is possible only for array, enumeration and record types.
 
    procedure Parse_Aspect_Aggregate
      (N                   : Node_Id;

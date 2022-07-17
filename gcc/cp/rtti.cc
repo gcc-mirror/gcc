@@ -446,9 +446,6 @@ get_tinfo_decl_direct (tree type, tree name, int pseudo_ix)
 
   gcc_checking_assert (TREE_CODE (type) != METHOD_TYPE);
 
-  if (pseudo_ix < 0)
-    type = complete_type (type);
-
   if (CLASS_TYPE_P (type))
     d = CLASSTYPE_TYPEINFO_VAR (TYPE_MAIN_VARIANT (type));
 
@@ -1693,7 +1690,17 @@ emit_tinfo_decl (tree decl)
       tree init;
 
       DECL_EXTERNAL (decl) = 0;
-      init = get_pseudo_ti_init (type, get_pseudo_ti_index (type));
+      int pseudo_ix = get_pseudo_ti_index (type);
+      const tinfo_s *ti = get_tinfo_desc (pseudo_ix);
+      if (TREE_TYPE (decl) != ti->type)
+	{
+	  /* If the class became complete since we first called get_tinfo_decl,
+	     its type_info descriptor may have switched from __class_type_info
+	     to e.g. __si_class_type_info.  */
+	  TREE_TYPE (decl) = ti->type;
+	  relayout_decl (decl);
+	}
+      init = get_pseudo_ti_init (type, pseudo_ix);
       DECL_INITIAL (decl) = init;
       mark_used (decl);
       cp_finish_decl (decl, init, false, NULL_TREE, 0);

@@ -200,12 +200,10 @@ Returns: The newly constructed object.
 T emplace(T, Args...)(void[] chunk, auto ref Args args)
     if (is(T == class))
 {
-    import core.internal.traits : maxAlignment;
-
     enum classSize = __traits(classInstanceSize, T);
     assert(chunk.length >= classSize, "chunk size too small.");
 
-    enum alignment = maxAlignment!(void*, typeof(T.tupleof));
+    enum alignment = __traits(classInstanceAlignment, T);
     assert((cast(size_t) chunk.ptr) % alignment == 0, "chunk is not aligned.");
 
     return emplace!T(cast(T)(chunk.ptr), forward!args);
@@ -242,9 +240,7 @@ T emplace(T, Args...)(void[] chunk, auto ref Args args)
         int virtualGetI() { return i; }
     }
 
-    import core.internal.traits : classInstanceAlignment;
-
-    align(classInstanceAlignment!C) byte[__traits(classInstanceSize, C)] buffer;
+    align(__traits(classInstanceAlignment, C)) byte[__traits(classInstanceSize, C)] buffer;
     C c = emplace!C(buffer[], 42);
     assert(c.virtualGetI() == 42);
 }
@@ -290,7 +286,8 @@ T emplace(T, Args...)(void[] chunk, auto ref Args args)
     }
 
     int var = 6;
-    align(__conv_EmplaceTestClass.alignof) ubyte[__traits(classInstanceSize, __conv_EmplaceTestClass)] buf;
+    align(__traits(classInstanceAlignment, __conv_EmplaceTestClass))
+        ubyte[__traits(classInstanceSize, __conv_EmplaceTestClass)] buf;
     auto support = (() @trusted => cast(__conv_EmplaceTestClass)(buf.ptr))();
 
     auto fromRval = emplace!__conv_EmplaceTestClass(support, 1);
@@ -1198,7 +1195,7 @@ pure nothrow @safe /* @nogc */ unittest
     }
     void[] buf;
 
-    static align(A.alignof) byte[__traits(classInstanceSize, A)] sbuf;
+    static align(__traits(classInstanceAlignment, A)) byte[__traits(classInstanceSize, A)] sbuf;
     buf = sbuf[];
     auto a = emplace!A(buf, 55);
     assert(a.x == 55 && a.y == 55);
@@ -2651,16 +2648,19 @@ if (!Init.length ||
 }
 
 /**
- * Allocate an exception of type `T` from the exception pool and call its constructor.
- * It has the same interface as `rt.lifetime._d_newclass()`.
- * `T` must be Throwable or derived from it, must declare an explicit ctor
- * and cannot be a COM or C++ class.
+ * Allocate an exception of type `T` from the exception pool.
+ * `T` must be `Throwable` or derived from it and cannot be a COM or C++ class.
+ *
+ * Note:
+ *  This function does not call the constructor of `T` because that would require
+ *  `forward!args`, which causes errors with -dip1008. This inconvenience will be
+ *  removed once -dip1008 works as intended.
+ *
  * Returns:
- *      constructed instance of the type
+ *   allocated instance of type `T`
  */
-T _d_newThrowable(T, Args...)(auto ref Args args) @trusted
-    if (is(T : Throwable) && is(typeof(T.__ctor(forward!args))) &&
-        __traits(getLinkage, T) == "D")
+T _d_newThrowable(T)() @trusted
+    if (is(T : Throwable) && __traits(getLinkage, T) == "D")
 {
     debug(PRINTF) printf("_d_newThrowable(%s)\n", cast(char*) T.stringof);
 
@@ -2690,33 +2690,22 @@ T _d_newThrowable(T, Args...)(auto ref Args args) @trusted
 
     (cast(Throwable) p).refcount() = 1;
 
-    auto t = cast(T) p;
-    t.__ctor(forward!args);
-
-    return t;
+    return cast(T) p;
 }
 
 @system unittest
 {
     class E : Exception
     {
-        int x;
-
-        this(int x, string msg = "", Throwable nextInChain = null)
+        this(string msg = "", Throwable nextInChain = null)
         {
             super(msg, nextInChain);
-            this.x = x;
         }
     }
 
-    auto exc = _d_newThrowable!Exception("Exception");
+    Throwable exc = _d_newThrowable!Exception();
+    Throwable e = _d_newThrowable!E();
+
     assert(exc.refcount() == 1);
-    assert(exc.msg == "Exception");
-
-    static assert(!__traits(compiles, _d_newThrowable!E()));
-
-    auto e = _d_newThrowable!E(42, "E", null);
     assert(e.refcount() == 1);
-    assert(e.x == 42);
-    assert(e.msg == "E");
 }

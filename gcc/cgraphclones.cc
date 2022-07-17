@@ -394,6 +394,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   new_node->versionable = versionable;
   new_node->can_change_signature = can_change_signature;
   new_node->redefined_extern_inline = redefined_extern_inline;
+  new_node->semantic_interposition = semantic_interposition;
   new_node->tm_may_enter_irr = tm_may_enter_irr;
   new_node->externally_visible = false;
   new_node->no_reorder = no_reorder;

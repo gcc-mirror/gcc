@@ -306,9 +306,6 @@ static bool aarch64_print_address_internal (FILE*, machine_mode, rtx,
 					    aarch64_addr_query_type);
 static HOST_WIDE_INT aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val);
 
-/* Major revision number of the ARM Architecture implemented by the target.  */
-unsigned aarch64_architecture_version;
-
 /* The processor for which instructions should be scheduled.  */
 enum aarch64_processor aarch64_tune = cortexa53;
 
@@ -2677,7 +2674,6 @@ struct processor
   enum aarch64_processor ident;
   enum aarch64_processor sched_core;
   enum aarch64_arch arch;
-  unsigned architecture_version;
   const uint64_t flags;
   const struct tune_params *const tune;
 };
@@ -2686,9 +2682,9 @@ struct processor
 static const struct processor all_architectures[] =
 {
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
-  {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, ARCH_REV, FLAGS, NULL},
+  {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, FLAGS, NULL},
 #include "aarch64-arches.def"
-  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, 0, NULL}
+  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
 
 /* Processor cores implementing AArch64.  */
@@ -2696,22 +2692,12 @@ static const struct processor all_cores[] =
 {
 #define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   {NAME, IDENT, SCHED, AARCH64_ARCH_##ARCH,				\
-  all_architectures[AARCH64_ARCH_##ARCH].architecture_version,	\
   FLAGS, &COSTS##_tunings},
 #include "aarch64-cores.def"
-  {"generic", generic, cortexa53, AARCH64_ARCH_8A, 8,
+  {"generic", generic, cortexa53, AARCH64_ARCH_8A,
     AARCH64_FL_FOR_ARCH8, &generic_tunings},
-  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, 0, NULL}
+  {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
-
-
-/* Target specification.  These are populated by the -march, -mtune, -mcpu
-   handling code or by target attributes.  */
-static const struct processor *selected_arch;
-static const struct processor *selected_cpu;
-static const struct processor *selected_tune;
-
-enum aarch64_key_type aarch64_ra_sign_key = AARCH64_KEY_A;
 
 /* The current tuning set.  */
 struct tune_params aarch64_tune_params = generic_tunings;
@@ -2759,8 +2745,6 @@ static const struct attribute_spec aarch64_attribute_table[] =
   { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL },
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
 };
-
-#define AARCH64_CPU_DEFAULT_FLAGS ((selected_cpu) ? selected_cpu->flags : 0)
 
 /* An ISA extension in the co-processor and main instruction set space.  */
 struct aarch64_option_extension
@@ -3568,7 +3552,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V8QImode:
     case E_V4HImode:
     case E_V2SImode:
-    /* ...E_V1DImode doesn't exist.  */
+    case E_V1DImode:
     case E_V4HFmode:
     case E_V4BFmode:
     case E_V2SFmode:
@@ -4828,7 +4812,7 @@ aarch64_split_128bit_move (rtx dst, rtx src)
 
   machine_mode mode = GET_MODE (dst);
 
-  gcc_assert (mode == TImode || mode == TFmode);
+  gcc_assert (mode == TImode || mode == TFmode || mode == TDmode);
   gcc_assert (!(side_effects_p (src) || side_effects_p (dst)));
   gcc_assert (mode == GET_MODE (src) || GET_MODE (src) == VOIDmode);
 
@@ -10355,8 +10339,8 @@ aarch64_case_values_threshold (void)
   /* Use the specified limit for the number of cases before using jump
      tables at higher optimization levels.  */
   if (optimize > 2
-      && selected_cpu->tune->max_case_values != 0)
-    return selected_cpu->tune->max_case_values;
+      && aarch64_tune_params.max_case_values != 0)
+    return aarch64_tune_params.max_case_values;
   else
     return optimize_size ? 8 : 11;
 }
@@ -10568,6 +10552,7 @@ aarch64_mode_valid_for_sched_fusion_p (machine_mode mode)
 {
   return mode == SImode || mode == DImode
 	 || mode == SFmode || mode == DFmode
+	 || mode == SDmode || mode == DDmode
 	 || (aarch64_vector_mode_supported_p (mode)
 	     && (known_eq (GET_MODE_SIZE (mode), 8)
 		 || (known_eq (GET_MODE_SIZE (mode), 16)
@@ -10610,12 +10595,13 @@ aarch64_classify_address (struct aarch64_address_info *info,
   vec_flags &= ~VEC_PARTIAL;
 
   /* On BE, we use load/store pair for all large int mode load/stores.
-     TI/TFmode may also use a load/store pair.  */
+     TI/TF/TDmode may also use a load/store pair.  */
   bool advsimd_struct_p = (vec_flags == (VEC_ADVSIMD | VEC_STRUCT));
   bool load_store_pair_p = (type == ADDR_QUERY_LDP_STP
 			    || type == ADDR_QUERY_LDP_STP_N
 			    || mode == TImode
 			    || mode == TFmode
+			    || mode == TDmode
 			    || (BYTES_BIG_ENDIAN && advsimd_struct_p));
   /* If we are dealing with ADDR_QUERY_LDP_STP_N that means the incoming mode
      corresponds to the actual size of the memory being loaded/stored and the
@@ -10689,7 +10675,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  info->offset = op1;
 	  info->const_offset = offset;
 
-	  /* TImode and TFmode values are allowed in both pairs of X
+	  /* TImode, TFmode and TDmode values are allowed in both pairs of X
 	     registers and individual Q registers.  The available
 	     address modes are:
 	     X,X: 7-bit signed scaled offset
@@ -10698,7 +10684,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	     When performing the check for pairs of X registers i.e.  LDP/STP
 	     pass down DImode since that is the natural size of the LDP/STP
 	     instruction memory accesses.  */
-	  if (mode == TImode || mode == TFmode)
+	  if (mode == TImode || mode == TFmode || mode == TDmode)
 	    return (aarch64_offset_7bit_signed_scaled_p (DImode, offset)
 		    && (aarch64_offset_9bit_signed_unscaled_p (mode, offset)
 			|| offset_12bit_unsigned_scaled_p (mode, offset)));
@@ -10821,14 +10807,14 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	  info->offset = XEXP (XEXP (x, 1), 1);
 	  info->const_offset = offset;
 
-	  /* TImode and TFmode values are allowed in both pairs of X
+	  /* TImode, TFmode and TDmode values are allowed in both pairs of X
 	     registers and individual Q registers.  The available
 	     address modes are:
 	     X,X: 7-bit signed scaled offset
 	     Q:   9-bit signed offset
 	     We conservatively require an offset representable in either mode.
 	   */
-	  if (mode == TImode || mode == TFmode)
+	  if (mode == TImode || mode == TFmode || mode == TDmode)
 	    return (aarch64_offset_7bit_signed_scaled_p (mode, offset)
 		    && aarch64_offset_9bit_signed_unscaled_p (mode, offset));
 
@@ -10990,9 +10976,9 @@ aarch64_legitimize_address_displacement (rtx *offset1, rtx *offset2,
 	 offset.  Use 4KB range for 1- and 2-byte accesses and a 16KB
 	 range otherwise to increase opportunities for sharing the base
 	 address of different sizes.  Unaligned accesses use the signed
-	 9-bit range, TImode/TFmode use the intersection of signed
+	 9-bit range, TImode/TFmode/TDmode use the intersection of signed
 	 scaled 7-bit and signed 9-bit offset.  */
-      if (mode == TImode || mode == TFmode)
+      if (mode == TImode || mode == TFmode || mode == TDmode)
 	second_offset = ((const_offset + 0x100) & 0x1f8) - 0x100;
       else if ((const_offset & (size - 1)) != 0)
 	second_offset = ((const_offset + 0x100) & 0x1ff) - 0x100;
@@ -11073,7 +11059,7 @@ aarch64_reinterpret_float_as_int (rtx value, unsigned HOST_WIDE_INT *intval)
 		  CONST_DOUBLE_REAL_VALUE (value),
 		  REAL_MODE_FORMAT (mode));
 
-  if (mode == DFmode)
+  if (mode == DFmode || mode == DDmode)
     {
       int order = BYTES_BIG_ENDIAN ? 1 : 0;
       ival = zext_hwi (res[order], 32);
@@ -11114,11 +11100,15 @@ aarch64_float_const_rtx_p (rtx x)
   return false;
 }
 
-/* Return TRUE if rtx X is immediate constant 0.0 */
+/* Return TRUE if rtx X is immediate constant 0.0 (but not in Decimal
+   Floating Point).  */
 bool
 aarch64_float_const_zero_rtx_p (rtx x)
 {
-  if (GET_MODE (x) == VOIDmode)
+  /* 0.0 in Decimal Floating Point cannot be represented by #0 or
+     zr as our callers expect, so no need to check the actual
+     value if X is of Decimal Floating Point type.  */
+  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_DECIMAL_FLOAT)
     return false;
 
   if (REAL_VALUE_MINUS_ZERO (*CONST_DOUBLE_REAL_VALUE (x)))
@@ -11156,7 +11146,7 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
   else
     return false;
 
-   /* use a 64 bit mode for everything except for DI/DF mode, where we use
+   /* use a 64 bit mode for everything except for DI/DF/DD mode, where we use
      a 128 bit vector mode.  */
   int width = GET_MODE_BITSIZE (imode) == 64 ? 128 : 64;
 
@@ -12356,7 +12346,7 @@ aarch64_anchor_offset (HOST_WIDE_INT offset, HOST_WIDE_INT size,
   if (IN_RANGE (offset, -256, 0))
     return 0;
 
-  if (mode == TImode || mode == TFmode)
+  if (mode == TImode || mode == TFmode || mode == TDmode)
     return (offset + 0x100) & ~0x1ff;
 
   /* Use 12-bit offset by access size.  */
@@ -12465,7 +12455,9 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 
   /* Without the TARGET_SIMD instructions we cannot move a Q register
      to a Q register directly.  We need a scratch.  */
-  if (REG_P (x) && (mode == TFmode || mode == TImode) && mode == GET_MODE (x)
+  if (REG_P (x)
+      && (mode == TFmode || mode == TImode || mode == TDmode)
+      && mode == GET_MODE (x)
       && FP_REGNUM_P (REGNO (x)) && !TARGET_SIMD
       && reg_class_subset_p (rclass, FP_REGS))
     {
@@ -12473,14 +12465,16 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
       return NO_REGS;
     }
 
-  /* A TFmode or TImode memory access should be handled via an FP_REGS
+  /* A TFmode, TImode or TDmode memory access should be handled via an FP_REGS
      because AArch64 has richer addressing modes for LDR/STR instructions
      than LDP/STP instructions.  */
   if (TARGET_FLOAT && rclass == GENERAL_REGS
       && known_eq (GET_MODE_SIZE (mode), 16) && MEM_P (x))
     return FP_REGS;
 
-  if (rclass == FP_REGS && (mode == TImode || mode == TFmode) && CONSTANT_P(x))
+  if (rclass == FP_REGS
+      && (mode == TImode || mode == TFmode || mode == TDmode)
+      && CONSTANT_P(x))
       return GENERAL_REGS;
 
   return NO_REGS;
@@ -13611,9 +13605,9 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 		*cost += extra_cost->ldst.storev;
 	      else if (GET_MODE_CLASS (mode) == MODE_INT)
 		*cost += extra_cost->ldst.store;
-	      else if (mode == SFmode)
+	      else if (mode == SFmode || mode == SDmode)
 		*cost += extra_cost->ldst.storef;
-	      else if (mode == DFmode)
+	      else if (mode == DFmode || mode == DDmode)
 		*cost += extra_cost->ldst.stored;
 
 	      *cost +=
@@ -13737,11 +13731,11 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	  /* mov[df,sf]_aarch64.  */
 	  if (aarch64_float_const_representable_p (x))
 	    /* FMOV (scalar immediate).  */
-	    *cost += extra_cost->fp[mode == DFmode].fpconst;
+	    *cost += extra_cost->fp[mode == DFmode || mode == DDmode].fpconst;
 	  else if (!aarch64_float_const_zero_rtx_p (x))
 	    {
 	      /* This will be a load from memory.  */
-	      if (mode == DFmode)
+	      if (mode == DFmode || mode == DDmode)
 		*cost += extra_cost->ldst.loadd;
 	      else
 		*cost += extra_cost->ldst.loadf;
@@ -13767,9 +13761,9 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	    *cost += extra_cost->ldst.loadv;
 	  else if (GET_MODE_CLASS (mode) == MODE_INT)
 	    *cost += extra_cost->ldst.load;
-	  else if (mode == SFmode)
+	  else if (mode == SFmode || mode == SDmode)
 	    *cost += extra_cost->ldst.loadf;
-	  else if (mode == DFmode)
+	  else if (mode == DFmode || mode == DDmode)
 	    *cost += extra_cost->ldst.loadd;
 
 	  *cost +=
@@ -15637,7 +15631,7 @@ private:
   unsigned int adjust_body_cost (loop_vec_info, const aarch64_vector_costs *,
 				 unsigned int);
   bool prefer_unrolled_loop () const;
-  unsigned int determine_suggested_unroll_factor (loop_vec_info);
+  unsigned int determine_suggested_unroll_factor ();
 
   /* True if we have performed one-time initialization based on the
      vec_info.  */
@@ -16746,8 +16740,7 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
 }
 
 unsigned int
-aarch64_vector_costs::
-determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
+aarch64_vector_costs::determine_suggested_unroll_factor ()
 {
   bool sve = m_vec_flags & VEC_ANY_SVE;
   /* If we are trying to unroll an Advanced SIMD main loop that contains
@@ -16761,7 +16754,6 @@ determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
     return 1;
 
   unsigned int max_unroll_factor = 1;
-  auto vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   for (auto vec_ops : m_ops)
     {
       aarch64_simd_vec_issue_info const *vec_issue
@@ -16770,8 +16762,7 @@ determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
 	return 1;
       /* Limit unroll factor to a value adjustable by the user, the default
 	 value is 4. */
-      unsigned int unroll_factor = MIN (aarch64_vect_unroll_limit,
-					(int) known_alignment (vf));
+      unsigned int unroll_factor = aarch64_vect_unroll_limit;
       unsigned int factor
        = vec_ops.reduction_latency > 1 ? vec_ops.reduction_latency : 1;
       unsigned int temp;
@@ -16949,8 +16940,7 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
     {
       m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
 					     m_costs[vect_body]);
-      m_suggested_unroll_factor
-	= determine_suggested_unroll_factor (loop_vinfo);
+      m_suggested_unroll_factor = determine_suggested_unroll_factor ();
     }
 
   /* Apply the heuristic described above m_stp_sequence_cost.  Prefer
@@ -17417,6 +17407,26 @@ initialize_aarch64_tls_size (struct gcc_options *opts)
   return;
 }
 
+/* Return the CPU corresponding to the enum CPU.  */
+
+static const struct processor *
+aarch64_get_tune_cpu (enum aarch64_processor cpu)
+{
+  gcc_assert (cpu != aarch64_none);
+
+  return &all_cores[cpu];
+}
+
+/* Return the architecture corresponding to the enum ARCH.  */
+
+static const struct processor *
+aarch64_get_arch (enum aarch64_arch arch)
+{
+  gcc_assert (arch != aarch64_no_arch);
+
+  return &all_architectures[arch];
+}
+
 /* Parse STRING looking for options in the format:
      string	:: option:string
      option	:: name=substring
@@ -17527,18 +17537,18 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
 void
 aarch64_override_options_internal (struct gcc_options *opts)
 {
-  aarch64_tune_flags = selected_tune->flags;
-  aarch64_tune = selected_tune->sched_core;
+  const struct processor *tune = aarch64_get_tune_cpu (opts->x_selected_tune);
+  aarch64_tune_flags = tune->flags;
+  aarch64_tune = tune->sched_core;
   /* Make a copy of the tuning parameters attached to the core, which
      we may later overwrite.  */
-  aarch64_tune_params = *(selected_tune->tune);
-  aarch64_architecture_version = selected_arch->architecture_version;
-  if (selected_tune->tune == &generic_tunings)
+  aarch64_tune_params = *(tune->tune);
+  if (tune->tune == &generic_tunings)
     aarch64_adjust_generic_arch_tuning (aarch64_tune_params);
 
   if (opts->x_aarch64_override_tune_string)
     aarch64_parse_override_string (opts->x_aarch64_override_tune_string,
-				  &aarch64_tune_params);
+				   &aarch64_tune_params);
 
   /* This target defaults to strict volatile bitfields.  */
   if (opts->x_flag_strict_volatile_bitfields < 0 && abi_version_at_least (2))
@@ -17698,13 +17708,6 @@ aarch64_override_options_internal (struct gcc_options *opts)
       && aarch64_tune_params.prefetch->default_opt_level >= 0
       && opts->x_optimize >= aarch64_tune_params.prefetch->default_opt_level)
     opts->x_flag_prefetch_loop_arrays = 1;
-
-  if (opts->x_aarch64_arch_string == NULL)
-    opts->x_aarch64_arch_string = selected_arch->name;
-  if (opts->x_aarch64_cpu_string == NULL)
-    opts->x_aarch64_cpu_string = selected_cpu->name;
-  if (opts->x_aarch64_tune_string == NULL)
-    opts->x_aarch64_tune_string = selected_tune->name;
 
   aarch64_override_options_after_change_1 (opts);
 }
@@ -18057,41 +18060,6 @@ aarch64_validate_mtune (const char *str, const struct processor **res)
   return false;
 }
 
-static_assert (TARGET_CPU_generic < TARGET_CPU_MASK,
-	       "TARGET_CPU_NBITS is big enough");
-
-/* Return the CPU corresponding to the enum CPU.
-   If it doesn't specify a cpu, return the default.  */
-
-static const struct processor *
-aarch64_get_tune_cpu (enum aarch64_processor cpu)
-{
-  if (cpu != aarch64_none)
-    return &all_cores[cpu];
-
-  /* The & TARGET_CPU_MASK is to extract the bottom TARGET_CPU_NBITS bits that
-     encode the default cpu as selected by the --with-cpu GCC configure option
-     in config.gcc.
-     ???: The whole TARGET_CPU_DEFAULT and AARCH64_CPU_DEFAULT_FLAGS
-     flags mechanism should be reworked to make it more sane.  */
-  return &all_cores[TARGET_CPU_DEFAULT & TARGET_CPU_MASK];
-}
-
-/* Return the architecture corresponding to the enum ARCH.
-   If it doesn't specify a valid architecture, return the default.  */
-
-static const struct processor *
-aarch64_get_arch (enum aarch64_arch arch)
-{
-  if (arch != aarch64_no_arch)
-    return &all_architectures[arch];
-
-  const struct processor *cpu
-    = &all_cores[TARGET_CPU_DEFAULT & TARGET_CPU_MASK];
-
-  return &all_architectures[cpu->arch];
-}
-
 /* Return the VG value associated with -msve-vector-bits= value VALUE.  */
 
 static poly_uint16
@@ -18127,13 +18095,9 @@ aarch64_override_options (void)
   uint64_t arch_isa = 0;
   aarch64_isa_flags = 0;
 
-  bool valid_cpu = true;
-  bool valid_tune = true;
-  bool valid_arch = true;
-
-  selected_cpu = NULL;
-  selected_arch = NULL;
-  selected_tune = NULL;
+  const struct processor *cpu = NULL;
+  const struct processor *arch = NULL;
+  const struct processor *tune = NULL;
 
   if (aarch64_harden_sls_string)
     aarch64_validate_sls_mitigation (aarch64_harden_sls_string);
@@ -18145,77 +18109,52 @@ aarch64_override_options (void)
      If either of -march or -mtune is given, they override their
      respective component of -mcpu.  */
   if (aarch64_cpu_string)
-    valid_cpu = aarch64_validate_mcpu (aarch64_cpu_string, &selected_cpu,
-					&cpu_isa);
+    aarch64_validate_mcpu (aarch64_cpu_string, &cpu, &cpu_isa);
 
   if (aarch64_arch_string)
-    valid_arch = aarch64_validate_march (aarch64_arch_string, &selected_arch,
-					  &arch_isa);
+    aarch64_validate_march (aarch64_arch_string, &arch, &arch_isa);
 
   if (aarch64_tune_string)
-    valid_tune = aarch64_validate_mtune (aarch64_tune_string, &selected_tune);
+    aarch64_validate_mtune (aarch64_tune_string, &tune);
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
-  /* If the user did not specify a processor, choose the default
-     one for them.  This will be the CPU set during configuration using
-     --with-cpu, otherwise it is "generic".  */
-  if (!selected_cpu)
+  if (cpu && arch)
     {
-      if (selected_arch)
-	{
-	  selected_cpu = &all_cores[selected_arch->ident];
-	  aarch64_isa_flags = arch_isa;
-	  explicit_arch = selected_arch->arch;
-	}
-      else
-	{
-	  /* Get default configure-time CPU.  */
-	  selected_cpu = aarch64_get_tune_cpu (aarch64_none);
-	  aarch64_isa_flags = TARGET_CPU_DEFAULT >> TARGET_CPU_NBITS;
-	}
-
-      if (selected_tune)
-	explicit_tune_core = selected_tune->ident;
-    }
-  /* If both -mcpu and -march are specified check that they are architecturally
-     compatible, warn if they're not and prefer the -march ISA flags.  */
-  else if (selected_arch)
-    {
-      if (selected_arch->arch != selected_cpu->arch)
+      /* If both -mcpu and -march are specified, warn if they are not
+	 architecturally compatible and prefer the -march ISA flags.  */
+      if (arch->arch != cpu->arch)
 	{
 	  warning (0, "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch",
 		       aarch64_cpu_string,
 		       aarch64_arch_string);
 	}
+
+      selected_arch = arch->arch;
       aarch64_isa_flags = arch_isa;
-      explicit_arch = selected_arch->arch;
-      explicit_tune_core = selected_tune ? selected_tune->ident
-					  : selected_cpu->ident;
+    }
+  else if (cpu)
+    {
+      selected_arch = cpu->arch;
+      aarch64_isa_flags = cpu_isa;
+    }
+  else if (arch)
+    {
+      cpu = &all_cores[arch->ident];
+      selected_arch = arch->arch;
+      aarch64_isa_flags = arch_isa;
     }
   else
     {
-      /* -mcpu but no -march.  */
-      aarch64_isa_flags = cpu_isa;
-      explicit_tune_core = selected_tune ? selected_tune->ident
-					  : selected_cpu->ident;
-      gcc_assert (selected_cpu);
-      selected_arch = &all_architectures[selected_cpu->arch];
-      explicit_arch = selected_arch->arch;
+      /* No -mcpu or -march specified, so use the default CPU.  */
+      cpu = &all_cores[TARGET_CPU_DEFAULT];
+      selected_arch = cpu->arch;
+      aarch64_isa_flags = cpu->flags;
     }
 
-  /* Set the arch as well as we will need it when outputing
-     the .arch directive in assembly.  */
-  if (!selected_arch)
-    {
-      gcc_assert (selected_cpu);
-      selected_arch = &all_architectures[selected_cpu->arch];
-    }
-
-  if (!selected_tune)
-    selected_tune = selected_cpu;
+  selected_tune = tune ? tune->ident : cpu->ident;
 
   if (aarch64_enable_bti == 2)
     {
@@ -18250,15 +18189,6 @@ aarch64_override_options (void)
 
   if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE && TARGET_ILP32)
     sorry ("return address signing is only supported for %<-mabi=lp64%>");
-
-  /* Make sure we properly set up the explicit options.  */
-  if ((aarch64_cpu_string && valid_cpu)
-       || (aarch64_tune_string && valid_tune))
-    gcc_assert (explicit_tune_core != aarch64_none);
-
-  if ((aarch64_cpu_string && valid_cpu)
-       || (aarch64_arch_string && valid_arch))
-    gcc_assert (explicit_arch != aarch64_no_arch);
 
   /* The pass to insert speculation tracking runs before
      shrink-wrapping and the latter does not know how to update the
@@ -18343,42 +18273,14 @@ initialize_aarch64_code_model (struct gcc_options *opts)
     }
 }
 
-/* Implement TARGET_OPTION_SAVE.  */
-
-static void
-aarch64_option_save (struct cl_target_option *ptr, struct gcc_options *opts,
-		     struct gcc_options */* opts_set */)
-{
-  ptr->x_aarch64_override_tune_string = opts->x_aarch64_override_tune_string;
-  ptr->x_aarch64_branch_protection_string
-    = opts->x_aarch64_branch_protection_string;
-}
-
 /* Implements TARGET_OPTION_RESTORE.  Restore the backend codegen decisions
    using the information saved in PTR.  */
 
 static void
 aarch64_option_restore (struct gcc_options *opts,
-			struct gcc_options */* opts_set */,
-			struct cl_target_option *ptr)
+			struct gcc_options * /* opts_set */,
+			struct cl_target_option * /* ptr */)
 {
-  opts->x_explicit_arch = ptr->x_explicit_arch;
-  selected_arch = aarch64_get_arch (ptr->x_explicit_arch);
-  opts->x_explicit_tune_core = ptr->x_explicit_tune_core;
-  if (opts->x_explicit_tune_core == aarch64_none
-      && opts->x_explicit_arch != aarch64_no_arch)
-    selected_tune = &all_cores[selected_arch->ident];
-  else
-    selected_tune = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
-  opts->x_aarch64_override_tune_string = ptr->x_aarch64_override_tune_string;
-  opts->x_aarch64_branch_protection_string
-    = ptr->x_aarch64_branch_protection_string;
-  if (opts->x_aarch64_branch_protection_string)
-    {
-      aarch64_parse_branch_protection (opts->x_aarch64_branch_protection_string,
-					NULL);
-    }
-
   aarch64_override_options_internal (opts);
 }
 
@@ -18388,11 +18290,11 @@ static void
 aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
 {
   const struct processor *cpu
-    = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
-  uint64_t isa_flags = ptr->x_aarch64_isa_flags;
-  const struct processor *arch = aarch64_get_arch (ptr->x_explicit_arch);
+    = aarch64_get_tune_cpu (ptr->x_selected_tune);
+  const struct processor *arch = aarch64_get_arch (ptr->x_selected_arch);
   std::string extension
-    = aarch64_get_extension_string_for_isa_flags (isa_flags, arch->flags);
+    = aarch64_get_extension_string_for_isa_flags (ptr->x_aarch64_isa_flags,
+						  arch->flags);
 
   fprintf (file, "%*sselected tune = %s\n", indent, "", cpu->name);
   fprintf (file, "%*sselected arch = %s%s\n", indent, "",
@@ -18505,8 +18407,7 @@ aarch64_handle_attr_arch (const char *str)
   if (parse_res == AARCH64_PARSE_OK)
     {
       gcc_assert (tmp_arch);
-      selected_arch = tmp_arch;
-      explicit_arch = selected_arch->arch;
+      selected_arch = tmp_arch->arch;
       return true;
     }
 
@@ -18544,11 +18445,8 @@ aarch64_handle_attr_cpu (const char *str)
   if (parse_res == AARCH64_PARSE_OK)
     {
       gcc_assert (tmp_cpu);
-      selected_tune = tmp_cpu;
-      explicit_tune_core = selected_tune->ident;
-
-      selected_arch = &all_architectures[tmp_cpu->arch];
-      explicit_arch = selected_arch->arch;
+      selected_tune = tmp_cpu->ident;
+      selected_arch = tmp_cpu->arch;
       return true;
     }
 
@@ -18616,8 +18514,7 @@ aarch64_handle_attr_tune (const char *str)
   if (parse_res == AARCH64_PARSE_OK)
     {
       gcc_assert (tmp_tune);
-      selected_tune = tmp_tune;
-      explicit_tune_core = selected_tune->ident;
+      selected_tune = tmp_tune->ident;
       return true;
     }
 
@@ -19352,7 +19249,7 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
 {
   /* Support CSE and rematerialization of common constants.  */
   if (CONST_INT_P (x)
-      || (CONST_DOUBLE_P (x) && GET_MODE_CLASS (mode) == MODE_FLOAT))
+      || CONST_DOUBLE_P (x))
     return true;
 
   /* Only accept variable-length vector constants if they can be
@@ -19793,6 +19690,18 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  field_t = long_double_type_node;
 	  field_ptr_t = long_double_ptr_type_node;
 	  break;
+	case E_SDmode:
+	  field_t = dfloat32_type_node;
+	  field_ptr_t = build_pointer_type (dfloat32_type_node);
+	  break;
+	case E_DDmode:
+	  field_t = dfloat64_type_node;
+	  field_ptr_t = build_pointer_type (dfloat64_type_node);
+	  break;
+	case E_TDmode:
+	  field_t = dfloat128_type_node;
+	  field_ptr_t = build_pointer_type (dfloat128_type_node);
+	  break;
 	case E_HFmode:
 	  field_t = aarch64_fp16_type_node;
 	  field_ptr_t = aarch64_fp16_ptr_type_node;
@@ -20044,7 +19953,8 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep,
     case REAL_TYPE:
       mode = TYPE_MODE (type);
       if (mode != DFmode && mode != SFmode
-	  && mode != TFmode && mode != HFmode)
+	  && mode != TFmode && mode != HFmode
+	  && mode != SDmode && mode != DDmode && mode != TDmode)
 	return -1;
 
       if (*modep == VOIDmode)
@@ -20360,7 +20270,9 @@ aarch64_vfp_is_call_or_return_candidate (machine_mode mode,
   machine_mode new_mode = VOIDmode;
   bool composite_p = aarch64_composite_type_p (type, mode);
 
-  if ((!composite_p && GET_MODE_CLASS (mode) == MODE_FLOAT)
+  if ((!composite_p
+       && (GET_MODE_CLASS (mode) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode) == MODE_DECIMAL_FLOAT))
       || aarch64_short_vector_p (type, mode))
     {
       *count = 1;
@@ -20755,7 +20667,7 @@ is_madd_op (enum attr_type t1)
     TYPE_SMMLA, TYPE_UMLAL, TYPE_UMLALS,TYPE_SMLSD, TYPE_SMLSDX, TYPE_SMLSLD
   };
 
-  for (i = 0; i < sizeof (mlatypes) / sizeof (enum attr_type); i++)
+  for (i = 0; i < ARRAY_SIZE (mlatypes); i++)
     {
       if (t1 == mlatypes[i])
 	return true;
@@ -22522,7 +22434,7 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   gcc_assert (targ_options);
 
   const struct processor *this_arch
-    = aarch64_get_arch (targ_options->x_explicit_arch);
+    = aarch64_get_arch (targ_options->x_selected_arch);
 
   uint64_t isa_flags = targ_options->x_aarch64_isa_flags;
   std::string extension
@@ -22541,7 +22453,7 @@ aarch64_declare_function_name (FILE *stream, const char* name,
      useful to readers of the generated asm.  Do it only when it changes
      from function to function and verbose assembly is requested.  */
   const struct processor *this_tune
-    = aarch64_get_tune_cpu (targ_options->x_explicit_tune_core);
+    = aarch64_get_tune_cpu (targ_options->x_selected_tune);
 
   if (flag_debug_asm && aarch64_last_printed_tune_string != this_tune->name)
     {
@@ -22627,7 +22539,7 @@ aarch64_start_file (void)
     = TREE_TARGET_OPTION (target_option_default_node);
 
   const struct processor *default_arch
-    = aarch64_get_arch (default_options->x_explicit_arch);
+    = aarch64_get_arch (default_options->x_selected_arch);
   uint64_t default_isa_flags = default_options->x_aarch64_isa_flags;
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (default_isa_flags,
@@ -22678,14 +22590,14 @@ aarch64_emit_unlikely_jump (rtx insn)
   add_reg_br_prob_note (jump, profile_probability::very_unlikely ());
 }
 
-/* We store the names of the various atomic helpers in a 5x4 array.
+/* We store the names of the various atomic helpers in a 5x5 array.
    Return the libcall function given MODE, MODEL and NAMES.  */
 
 rtx
 aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
 			const atomic_ool_names *names)
 {
-  memmodel model = memmodel_base (INTVAL (model_rtx));
+  memmodel model = memmodel_from_int (INTVAL (model_rtx));
   int mode_idx, model_idx;
 
   switch (mode)
@@ -22725,6 +22637,11 @@ aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
     case MEMMODEL_SEQ_CST:
       model_idx = 3;
       break;
+    case MEMMODEL_SYNC_ACQUIRE:
+    case MEMMODEL_SYNC_RELEASE:
+    case MEMMODEL_SYNC_SEQ_CST:
+      model_idx = 4;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -22737,7 +22654,8 @@ aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,
   { "__aarch64_" #B #N "_relax", \
     "__aarch64_" #B #N "_acq", \
     "__aarch64_" #B #N "_rel", \
-    "__aarch64_" #B #N "_acq_rel" }
+    "__aarch64_" #B #N "_acq_rel", \
+    "__aarch64_" #B #N "_sync" }
 
 #define DEF4(B)  DEF0(B, 1), DEF0(B, 2), DEF0(B, 4), DEF0(B, 8), \
 		 { NULL, NULL, NULL, NULL }
@@ -23262,7 +23180,7 @@ aarch64_output_scalar_simd_mov_immediate (rtx immediate, scalar_int_mode mode)
     }
 
   machine_mode vmode;
-  /* use a 64 bit mode for everything except for DI/DF mode, where we use
+  /* use a 64 bit mode for everything except for DI/DF/DD mode, where we use
      a 128 bit vector mode.  */
   int width = GET_MODE_BITSIZE (mode) == 64 ? 128 : 64;
 
@@ -23420,7 +23338,9 @@ struct expand_vec_perm_d
   rtx target, op0, op1;
   vec_perm_indices perm;
   machine_mode vmode;
+  machine_mode op_mode;
   unsigned int vec_flags;
+  unsigned int op_vec_flags;
   bool one_vector_p;
   bool testing_p;
 };
@@ -23655,6 +23575,8 @@ aarch64_evpc_reencode (struct expand_vec_perm_d *d)
 
   newd.vmode = new_mode;
   newd.vec_flags = VEC_ADVSIMD;
+  newd.op_mode = newd.vmode;
+  newd.op_vec_flags = newd.vec_flags;
   newd.target = d->target ? gen_lowpart (new_mode, d->target) : NULL;
   newd.op0 = d->op0 ? gen_lowpart (new_mode, d->op0) : NULL;
   newd.op1 = d->op1 ? gen_lowpart (new_mode, d->op1) : NULL;
@@ -23969,6 +23891,33 @@ aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Try to implement D using SVE dup instruction.  */
+
+static bool
+aarch64_evpc_sve_dup (struct expand_vec_perm_d *d)
+{
+  if (BYTES_BIG_ENDIAN
+      || !d->one_vector_p
+      || d->vec_flags != VEC_SVE_DATA
+      || d->op_vec_flags != VEC_ADVSIMD
+      || d->perm.encoding ().nelts_per_pattern () != 1
+      || !known_eq (d->perm.encoding ().npatterns (),
+		    GET_MODE_NUNITS (d->op_mode))
+      || !known_eq (GET_MODE_BITSIZE (d->op_mode), 128))
+    return false;
+
+  int npatterns = d->perm.encoding ().npatterns ();
+  for (int i = 0; i < npatterns; i++)
+    if (!known_eq (d->perm[i], i))
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  aarch64_expand_sve_dupq (d->target, GET_MODE (d->target), d->op0);
+  return true;
+}
+
 /* Try to implement D using SVE SEL instruction.  */
 
 static bool
@@ -24092,6 +24041,8 @@ aarch64_evpc_ins (struct expand_vec_perm_d *d)
 static bool
 aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 {
+  gcc_assert (d->op_mode != E_VOIDmode);
+
   /* The pattern matching functions above are written to look for a small
      number to begin the sequence (0, 1, N/2).  If we begin with an index
      from the second operand, we can swap the operands.  */
@@ -24108,30 +24059,39 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
        || d->vec_flags == VEC_SVE_PRED)
       && known_gt (nelt, 1))
     {
-      if (aarch64_evpc_rev_local (d))
-	return true;
-      else if (aarch64_evpc_rev_global (d))
-	return true;
-      else if (aarch64_evpc_ext (d))
-	return true;
-      else if (aarch64_evpc_dup (d))
-	return true;
-      else if (aarch64_evpc_zip (d))
-	return true;
-      else if (aarch64_evpc_uzp (d))
-	return true;
-      else if (aarch64_evpc_trn (d))
-	return true;
-      else if (aarch64_evpc_sel (d))
-	return true;
-      else if (aarch64_evpc_ins (d))
-	return true;
-      else if (aarch64_evpc_reencode (d))
-	return true;
-      if (d->vec_flags == VEC_SVE_DATA)
-	return aarch64_evpc_sve_tbl (d);
-      else if (d->vec_flags == VEC_ADVSIMD)
-	return aarch64_evpc_tbl (d);
+      if (d->vmode == d->op_mode)
+	{
+	  if (aarch64_evpc_rev_local (d))
+	    return true;
+	  else if (aarch64_evpc_rev_global (d))
+	    return true;
+	  else if (aarch64_evpc_ext (d))
+	    return true;
+	  else if (aarch64_evpc_dup (d))
+	    return true;
+	  else if (aarch64_evpc_zip (d))
+	    return true;
+	  else if (aarch64_evpc_uzp (d))
+	    return true;
+	  else if (aarch64_evpc_trn (d))
+	    return true;
+	  else if (aarch64_evpc_sel (d))
+	    return true;
+	  else if (aarch64_evpc_ins (d))
+	    return true;
+	  else if (aarch64_evpc_reencode (d))
+	    return true;
+
+	  if (d->vec_flags == VEC_SVE_DATA)
+	    return aarch64_evpc_sve_tbl (d);
+	  else if (d->vec_flags == VEC_ADVSIMD)
+	    return aarch64_evpc_tbl (d);
+	}
+      else
+	{
+	  if (aarch64_evpc_sve_dup (d))
+	    return true;
+	}
     }
   return false;
 }
@@ -24139,8 +24099,9 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
 static bool
-aarch64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
-				  rtx op1, const vec_perm_indices &sel)
+aarch64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+				  rtx target, rtx op0, rtx op1,
+				  const vec_perm_indices &sel)
 {
   struct expand_vec_perm_d d;
 
@@ -24165,12 +24126,14 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
 		     sel.nelts_per_input ());
   d.vmode = vmode;
   d.vec_flags = aarch64_classify_vector_mode (d.vmode);
+  d.op_mode = op_mode;
+  d.op_vec_flags = aarch64_classify_vector_mode (d.op_mode);
   d.target = target;
-  d.op0 = op0 ? force_reg (vmode, op0) : NULL_RTX;
+  d.op0 = op0 ? force_reg (op_mode, op0) : NULL_RTX;
   if (op0 == op1)
     d.op1 = d.op0;
   else
-    d.op1 = op1 ? force_reg (vmode, op1) : NULL_RTX;
+    d.op1 = op1 ? force_reg (op_mode, op1) : NULL_RTX;
   d.testing_p = !target;
 
   if (!d.testing_p)
@@ -26080,7 +26043,7 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
     base_off = (off_val_1 + off_val_3) / 2;
   else
     /* However, due to issues with negative LDP/STP offset generation for
-       larger modes, for DF, DI and vector modes. we must not use negative
+       larger modes, for DF, DD, DI and vector modes. we must not use negative
        addresses smaller than 9 signed unadjusted bits can store.  This
        provides the most range in this case.  */
     base_off = off_val_1;
@@ -26358,6 +26321,9 @@ aarch64_libgcc_floating_mode_supported_p (scalar_float_mode mode)
 static bool
 aarch64_scalar_mode_supported_p (scalar_mode mode)
 {
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    return default_decimal_float_supported_p ();
+
   return (mode == HFmode
 	  ? true
 	  : default_scalar_mode_supported_p (mode));
@@ -27494,9 +27460,6 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_OFFLOAD_OPTIONS
 #define TARGET_OFFLOAD_OPTIONS aarch64_offload_options
 
-#undef TARGET_OPTION_SAVE
-#define TARGET_OPTION_SAVE aarch64_option_save
-
 #undef TARGET_OPTION_RESTORE
 #define TARGET_OPTION_RESTORE aarch64_option_restore
 
@@ -27620,10 +27583,6 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_VECTORIZE_BUILTINS
 #define TARGET_VECTORIZE_BUILTINS
-
-#undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
-#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
-  aarch64_builtin_vectorized_function
 
 #undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \

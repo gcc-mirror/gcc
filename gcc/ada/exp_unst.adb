@@ -856,7 +856,7 @@ package body Exp_Unst is
                      S : Entity_Id := E;
 
                   begin
-                     for J in reverse 1 .. L  - 1 loop
+                     for J in reverse 1 .. L - 1 loop
                         S := Enclosing_Subprogram (S);
                         Subps.Table (Subp_Index (S)).Reachable := True;
                      end loop;

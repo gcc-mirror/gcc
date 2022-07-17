@@ -118,6 +118,10 @@ Wno-alloca-larger-than
 D
 ; Documented in C
 
+Wbuiltin-declaration-mismatch
+D
+; Documented in C
+
 Wcast-result
 D Warning Var(warn_cast_result) LangEnabledBy(D, Wextra)
 Warn about casts that will produce a null result.
@@ -340,6 +344,10 @@ fpreview=all
 D RejectNegative
 Turn on all upcoming D language features.
 
+fpreview=bitfields
+D RejectNegative
+Implement D bit-fields.
+
 fpreview=dip1000
 D RejectNegative
 Implement DIP1000: Scoped pointers.
@@ -367,6 +375,10 @@ Use field-wise comparisons for struct equality.
 fpreview=fixaliasthis
 D RejectNegative
 When a symbol is resolved, check `alias this' scope before going to upper scopes.
+
+fpreview=fiximmutableconv
+D RejectNegative
+Disallow unsound immutable conversions that were formerly incorrectly permitted.
 
 fpreview=in
 D RejectNegative
@@ -396,6 +408,10 @@ frevert=all
 D RejectNegative
 Turn off all revertable D language features.
 
+frevert=dip1000
+D RejectNegative
+Revert DIP1000: Scoped pointers.
+
 frevert=dip25
 D RejectNegative
 Revert DIP25: Sealed references.
@@ -407,10 +423,6 @@ Don't destruct fields of partially constructed objects.
 frevert=intpromote
 D RejectNegative
 Use C-style integral promotion for unary '+', '-' and '~'.
-
-frevert=markdown
-D RejectNegative
-Disable Markdown replacements in Ddoc.
 
 frtti
 D
@@ -447,10 +459,6 @@ List statistics on template instantiations.
 ftransition=tls
 D RejectNegative
 List all variables going into thread local storage.
-
-ftransition=vmarkdown
-D RejectNegative
-List instances of Markdown replacements in Ddoc.
 
 funittest
 D

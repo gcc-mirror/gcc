@@ -1611,7 +1611,6 @@ bool gimple_could_trap_p (const gimple *);
 bool gimple_assign_rhs_could_trap_p (gimple *);
 extern void dump_gimple_statistics (void);
 unsigned get_gimple_rhs_num_ops (enum tree_code);
-extern tree canonicalize_cond_expr_cond (tree);
 gcall *gimple_call_copy_skip_args (gcall *, bitmap);
 extern bool gimple_compare_field_offset (tree, tree);
 extern tree gimple_unsigned_type (tree);
@@ -1639,6 +1638,7 @@ extern void maybe_remove_unused_call_args (struct function *, gimple *);
 extern bool gimple_inexpensive_call_p (gcall *);
 extern bool stmt_can_terminate_bb_p (gimple *);
 extern location_t gimple_or_expr_nonartificial_location (gimple *, tree);
+gcall *gimple_build_builtin_unreachable (location_t);
 
 /* Return the disposition for a warning (or all warnings by default)
    for a statement.  */
@@ -1914,7 +1914,8 @@ static inline void
 gimple_set_location (gimple *g, location_t location)
 {
   /* Copy the no-warning data to the statement location.  */
-  copy_warning (location, g->location);
+  if (g->location != UNKNOWN_LOCATION)
+    copy_warning (location, g->location);
   g->location = location;
 }
 

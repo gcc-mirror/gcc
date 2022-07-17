@@ -9,3 +9,4 @@
 
 #endif
 
+// { dg-final { scan-lang-dump {Wrote section:1 named-by:'::foo'} module } }

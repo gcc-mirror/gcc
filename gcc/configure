@@ -7896,6 +7896,7 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'." "$LINENO" 5 ;;
 else
 
   case $target in
+    aarch64* | \
     powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux* | \
     i?86*-*-elfiamcu | i?86*-*-gnu* | x86_64*-*-gnu* | \
     i?86*-*-mingw* | x86_64*-*-mingw* | \
@@ -7916,7 +7917,7 @@ fi
 case x$enable_decimal_float in
   xyes)
     case $target in
-      i?86*-*-* | x86_64*-*-*)
+      aarch64* | i?86*-*-* | x86_64*-*-*)
 	enable_decimal_float=bid
 	;;
       *)
@@ -19673,7 +19674,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19676 "configure"
+#line 19679 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19779,7 +19780,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19782 "configure"
+#line 19785 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25803,33 +25804,6 @@ foo:	.long	25
 	xor	%l1, %tle_lox10(foo), %o5
 	ld	[%g7 + %o5], %o1"
 	;;
-  tilepro*-*-*)
-      conftest_s='
-	.section ".tdata","awT",@progbits
-foo:	.long	25
-	.text
-	addli	r0, zero, tls_gd(foo)
-	auli	r0, zero, tls_gd_ha16(foo)
-	addli	r0, r0, tls_gd_lo16(foo)
-	jal	__tls_get_addr
-	addli	r0, zero, tls_ie(foo)
-	auli	r0, r0, tls_ie_ha16(foo)
-	addli	r0, r0, tls_ie_lo16(foo)'
-	tls_as_opt="--fatal-warnings"
-	;;
-  tilegx*-*-*)
-      conftest_s='
-	.section ".tdata","awT",@progbits
-foo:	.long	25
-	.text
-	shl16insli r0, zero, hw0_last_tls_gd(foo)
-	shl16insli r0, zero, hw1_last_tls_gd(foo)
-	shl16insli r0, r0,   hw0_tls_gd(foo)
-	jal	   __tls_get_addr
-	shl16insli r0, zero, hw1_last_tls_ie(foo)
-	shl16insli r0, r0,   hw0_tls_ie(foo)'
-	tls_as_opt="--fatal-warnings"
-	;;
   xtensa*-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
@@ -29014,386 +28988,31 @@ case "$target" in
     ;;
 esac
 
-# This tests if the assembler supports two registers for global_load functions
-# (like in LLVM versions <12) or one register (like in LLVM 12).
+# AMD GCN needs the LLVM assembler and linker.
+# Test that LLVM is at least 13.0.1.
 case "$target" in
   amdgcn-* | gcn-*)
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler fix for global_load functions" >&5
-$as_echo_n "checking assembler fix for global_load functions... " >&6; }
-    gcc_cv_as_gcn_global_load_fixed=yes
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking llvm assembler version" >&5
+$as_echo_n "checking llvm assembler version... " >&6; }
+    gcc_cv_as_version="unknown"
     if test x$gcc_cv_as != x; then
-      cat > conftest.s <<EOF
-	global_store_dwordx2    v[1:2], v[4:5], s[14:15]
-EOF
-      if $gcc_cv_as -triple=amdgcn--amdhsa -filetype=obj -mcpu=gfx900 -o conftest.o conftest.s > /dev/null 2>&1; then
-        gcc_cv_as_gcn_global_load_fixed=no
-      fi
-      rm -f conftest.s conftest.o conftest
+      gcc_cv_as_version=`$gcc_cv_as --version 2>&1 | sed -ne '/version/s/.* \([0-9]\)/\1/p' || echo error`
+      case "$gcc_cv_as_version" in
+	13.0.[1-9]*) ;;          # 13.0.1+
+	13.[1-9]*) ;;            # 13.1+
+	1[4-9]*) ;;              # 14..19
+	[2-9][0-9]*) ;;        # 20..99
+	[1-9][0-9][0-9]*) ;; # 100+
+	error) as_fn_error $? "cannot determine LLVM version" "$LINENO" 5 ;;
+	*) as_fn_error $? "LLVM 13.0.1 or later is required (found LLVM $gcc_cv_as_version)" "$LINENO" 5 ;;
+      esac
     fi
-    global_load_fixed=`if test x$gcc_cv_as_gcn_global_load_fixed = xyes; then echo 1; else echo 0; fi`
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_GCN_ASM_GLOBAL_LOAD_FIXED $global_load_fixed
-_ACEOF
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_global_load_fixed" >&5
-$as_echo "$gcc_cv_as_gcn_global_load_fixed" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_version, ok" >&5
+$as_echo "$gcc_cv_as_version, ok" >&6; }
     ;;
 esac
 
 case "$target" in
-  amdgcn-* | gcn-*)
-    # Test the LLVM assembler syntax dialect; they have made a number of
-    # changes between LLVM 12 & 13 without any backward compatibility.
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler amdgcn_target v2/3 syntax" >&5
-$as_echo_n "checking assembler for assembler amdgcn_target v2/3 syntax... " >&6; }
-if ${gcc_cv_as_gcn_asm_v3_syntax+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_gcn_asm_v3_syntax=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '.amdgcn_target "amdgcn-unknown-amdhsa--gfx906+xnack"' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=+xnack -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_gcn_asm_v3_syntax=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_asm_v3_syntax" >&5
-$as_echo "$gcc_cv_as_gcn_asm_v3_syntax" >&6; }
-if test $gcc_cv_as_gcn_asm_v3_syntax = yes; then
-
-$as_echo "#define HAVE_GCN_ASM_V3_SYNTAX 1" >>confdefs.h
-
-fi
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler amdgcn_target v4 syntax" >&5
-$as_echo_n "checking assembler for assembler amdgcn_target v4 syntax... " >&6; }
-if ${gcc_cv_as_gcn_asm_v4_syntax+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_gcn_asm_v4_syntax=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '.amdgcn_target "amdgcn-unknown-amdhsa--gfx908:xnack+"' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=+xnack -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_gcn_asm_v4_syntax=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_asm_v4_syntax" >&5
-$as_echo "$gcc_cv_as_gcn_asm_v4_syntax" >&6; }
-if test $gcc_cv_as_gcn_asm_v4_syntax = yes; then
-
-$as_echo "#define HAVE_GCN_ASM_V4_SYNTAX 1" >>confdefs.h
-
-fi
-
-
-    # Some attribute names changed in the move to v4 ...
-    if test $gcc_cv_as_gcn_asm_v3_syntax = yes; then
-	sramopt="+sram-ecc"
-	sramattr="+sram-ecc"
-	xnackattr="+xnack"
-    elif test $gcc_cv_as_gcn_asm_v4_syntax = yes; then
-	sramopt="+sramecc"
-	sramattr=":sramecc+"
-	xnackattr=":xnack+"
-    else
-	as_fn_error $? "Unrecognised assembler version" "$LINENO" 5
-    fi
-
-    # Test whether the LLVM assembler accepts -mattr=+xnack without any
-    # diagnostic. LLVM 9 & 10 accept the option whether it makes sense or not,
-    # LLVM 12+ throws a warning for GPUs without support.
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=+xnack for fiji" >&5
-$as_echo_n "checking assembler for assembler accepts -mattr=+xnack for fiji... " >&6; }
-if ${gcc_cv_as_gcn_xnack_ecc_fiji+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_gcn_xnack_ecc_fiji=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=fiji -mattr=+xnack 2>conftest.err -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	grep "." conftest.err >&5 \
-       || gcc_cv_as_gcn_xnack_ecc_fiji=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_xnack_ecc_fiji" >&5
-$as_echo "$gcc_cv_as_gcn_xnack_ecc_fiji" >&6; }
-if test $gcc_cv_as_gcn_xnack_ecc_fiji = yes; then
-
-$as_echo "#define HAVE_GCN_XNACK_FIJI 1" >>confdefs.h
-
-fi
-
-    rm -f conftest.err
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=+xnack for gfx900" >&5
-$as_echo_n "checking assembler for assembler accepts -mattr=+xnack for gfx900... " >&6; }
-if ${gcc_cv_as_gcn_xnack_ecc_gfx900+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_gcn_xnack_ecc_gfx900=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=gfx900 -mattr=+xnack 2>conftest.err -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	grep "." conftest.err >&5 \
-       || gcc_cv_as_gcn_xnack_ecc_gfx900=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_xnack_ecc_gfx900" >&5
-$as_echo "$gcc_cv_as_gcn_xnack_ecc_gfx900" >&6; }
-if test $gcc_cv_as_gcn_xnack_ecc_gfx900 = yes; then
-
-$as_echo "#define HAVE_GCN_XNACK_GFX900 1" >>confdefs.h
-
-fi
-
-    rm -f conftest.err
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=+xnack for gfx906" >&5
-$as_echo_n "checking assembler for assembler accepts -mattr=+xnack for gfx906... " >&6; }
-if ${gcc_cv_as_gcn_xnack_ecc_gfx906+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_gcn_xnack_ecc_gfx906=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=+xnack 2>conftest.err -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	grep "." conftest.err >&5 \
-       || gcc_cv_as_gcn_xnack_ecc_gfx906=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_xnack_ecc_gfx906" >&5
-$as_echo "$gcc_cv_as_gcn_xnack_ecc_gfx906" >&6; }
-if test $gcc_cv_as_gcn_xnack_ecc_gfx906 = yes; then
-
-$as_echo "#define HAVE_GCN_XNACK_GFX906 1" >>confdefs.h
-
-fi
-
-    rm -f conftest.err
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=+xnack for gfx908" >&5
-$as_echo_n "checking assembler for assembler accepts -mattr=+xnack for gfx908... " >&6; }
-if ${gcc_cv_as_gcn_xnack_ecc_gfx908+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_gcn_xnack_ecc_gfx908=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=+xnack 2>conftest.err -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	grep "." conftest.err >&5 \
-       || gcc_cv_as_gcn_xnack_ecc_gfx908=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_xnack_ecc_gfx908" >&5
-$as_echo "$gcc_cv_as_gcn_xnack_ecc_gfx908" >&6; }
-if test $gcc_cv_as_gcn_xnack_ecc_gfx908 = yes; then
-
-$as_echo "#define HAVE_GCN_XNACK_GFX908 1" >>confdefs.h
-
-fi
-
-    rm -f conftest.err
-
-    # Test whether the LLVM assembler accepts -mattr=+sramecc without any
-    # diagnostic. LLVM 9 & 10 accept the option whether it makes sense or not,
-    # (some?) LLVM 12 rejects it for all GPUs, and LLVM13 throws a warning
-    # for GPUs without support.
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=$sramopt for fiji" >&5
-$as_echo_n "checking assembler for assembler accepts -mattr=$sramopt for fiji... " >&6; }
-if ${gcc_cv_as_gcn_sram_ecc_fiji+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_gcn_sram_ecc_fiji=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=fiji -mattr=$sramopt 2>conftest.err -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	grep "." conftest.err >&5 \
-       || gcc_cv_as_gcn_sram_ecc_fiji=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_sram_ecc_fiji" >&5
-$as_echo "$gcc_cv_as_gcn_sram_ecc_fiji" >&6; }
-if test $gcc_cv_as_gcn_sram_ecc_fiji = yes; then
-
-$as_echo "#define HAVE_GCN_SRAM_ECC_FIJI 1" >>confdefs.h
-
-fi
-
-    rm -f conftest.err
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=$sramopt for gfx900" >&5
-$as_echo_n "checking assembler for assembler accepts -mattr=$sramopt for gfx900... " >&6; }
-if ${gcc_cv_as_gcn_sram_ecc_gfx900+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_gcn_sram_ecc_gfx900=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=gfx900 -mattr=$sramopt 2>conftest.err -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	grep "." conftest.err >&5 \
-       || gcc_cv_as_gcn_sram_ecc_gfx900=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_sram_ecc_gfx900" >&5
-$as_echo "$gcc_cv_as_gcn_sram_ecc_gfx900" >&6; }
-if test $gcc_cv_as_gcn_sram_ecc_gfx900 = yes; then
-
-$as_echo "#define HAVE_GCN_SRAM_ECC_GFX900 1" >>confdefs.h
-
-fi
-
-    rm -f conftest.err
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=$sramopt for gfx906" >&5
-$as_echo_n "checking assembler for assembler accepts -mattr=$sramopt for gfx906... " >&6; }
-if ${gcc_cv_as_gcn_sram_ecc_gfx906+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_gcn_sram_ecc_gfx906=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=$sramopt 2>conftest.err -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	grep "." conftest.err >&5 \
-       || gcc_cv_as_gcn_sram_ecc_gfx906=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_sram_ecc_gfx906" >&5
-$as_echo "$gcc_cv_as_gcn_sram_ecc_gfx906" >&6; }
-if test $gcc_cv_as_gcn_sram_ecc_gfx906 = yes; then
-
-$as_echo "#define HAVE_GCN_SRAM_ECC_GFX906 1" >>confdefs.h
-
-fi
-
-    rm -f conftest.err
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler accepts -mattr=$sramopt for gfx908" >&5
-$as_echo_n "checking assembler for assembler accepts -mattr=$sramopt for gfx908... " >&6; }
-if ${gcc_cv_as_gcn_sram_ecc_gfx908+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_gcn_sram_ecc_gfx908=no
-  if test x$gcc_cv_as != x; then
-    $as_echo '' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=$sramopt 2>conftest.err -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	grep "." conftest.err >&5 \
-       || gcc_cv_as_gcn_sram_ecc_gfx908=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_gcn_sram_ecc_gfx908" >&5
-$as_echo "$gcc_cv_as_gcn_sram_ecc_gfx908" >&6; }
-if test $gcc_cv_as_gcn_sram_ecc_gfx908 = yes; then
-
-$as_echo "#define HAVE_GCN_SRAM_ECC_GFX908 1" >>confdefs.h
-
-fi
-
-    rm -f conftest.err
-    ;;
   arm*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for assembler for arm accepts context-specific architecture extensions" >&5
 $as_echo_n "checking assembler for assembler for arm accepts context-specific architecture extensions... " >&6; }
@@ -29440,7 +29059,7 @@ esac
 case "$cpu_type" in
   aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
   | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
-  | tilegx | tilepro | visium | xstormy16 | xtensa)
+  | visium | xstormy16 | xtensa)
     insn="nop"
     ;;
   ia64 | s390)
@@ -30623,7 +30242,10 @@ $as_echo_n "checking linker for compressed debug sections... " >&6; }
 # In binutils 2.26, gld gained support for the ELF gABI format.
 if test $in_tree_ld = yes ; then
   gcc_cv_ld_compress_debug=0
-  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 19 -o "$gcc_cv_gld_major_version" -gt 2 \
+  if test $ld_is_mold = yes; then
+    gcc_cv_ld_compress_debug=3
+    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
+  elif test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 19 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes && test $ld_is_gold = yes; then
     gcc_cv_ld_compress_debug=2
     gcc_cv_ld_compress_debug_option="--compress-debug-sections"
@@ -30636,7 +30258,10 @@ if test $in_tree_ld = yes ; then
     gcc_cv_ld_compress_debug=1
   fi
 elif echo "$ld_ver" | grep GNU > /dev/null; then
-  if test "$ld_vers_major" -lt 2 \
+  if test $ld_is_mold = yes; then
+    gcc_cv_ld_compress_debug=3
+    gcc_cv_ld_compress_debug_option="--compress-debug-sections"
+  elif test "$ld_vers_major" -lt 2 \
      || test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 21; then
     gcc_cv_ld_compress_debug=0
   elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 26; then
@@ -32111,7 +31736,7 @@ fi
      ;;
      *)
        if test x$build = x$host; then
-	 export_sym_check="objdump${exeext} -T"
+	 export_sym_check="$ac_cv_prog_OBJDUMP -T"
        elif test x$host = x$target; then
 	 export_sym_check="$gcc_cv_objdump -T"
        else

@@ -898,6 +898,17 @@ dse_optimize_redundant_stores (gimple *stmt)
     }
 }
 
+/* Return whether PHI contains ARG as an argument.  */
+
+static bool
+contains_phi_arg (gphi *phi, tree arg)
+{
+  for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+    if (gimple_phi_arg_def (phi, i) == arg)
+      return true;
+  return false;
+}
+
 /* A helper of dse_optimize_stmt.
    Given a GIMPLE_ASSIGN in STMT that writes to REF, classify it
    according to downstream uses and defs.  Sets *BY_CLOBBER_P to true
@@ -949,8 +960,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	return DSE_STORE_LIVE;
 
       auto_vec<gimple *, 10> defs;
-      gimple *first_phi_def = NULL;
-      gimple *last_phi_def = NULL;
+      gphi *first_phi_def = NULL;
+      gphi *last_phi_def = NULL;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
 	{
 	  /* Limit stmt walking.  */
@@ -973,8 +984,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 		{
 		  defs.safe_push (use_stmt);
 		  if (!first_phi_def)
-		    first_phi_def = use_stmt;
-		  last_phi_def = use_stmt;
+		    first_phi_def = as_a <gphi *> (use_stmt);
+		  last_phi_def = as_a <gphi *> (use_stmt);
 		}
 	    }
 	  /* If the statement is a use the store is not dead.  */
@@ -1046,6 +1057,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	  use_operand_p use_p;
 	  tree vdef = (gimple_code (def) == GIMPLE_PHI
 		       ? gimple_phi_result (def) : gimple_vdef (def));
+	  gphi *phi_def;
 	  /* If the path to check starts with a kill we do not need to
 	     process it further.
 	     ???  With byte tracking we need only kill the bytes currently
@@ -1079,7 +1091,31 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 			   && bitmap_bit_p (visited,
 					    SSA_NAME_VERSION
 					      (PHI_RESULT (use_stmt))))))
-	    defs.unordered_remove (i);
+	    {
+	      defs.unordered_remove (i);
+	      if (def == first_phi_def)
+		first_phi_def = NULL;
+	      else if (def == last_phi_def)
+		last_phi_def = NULL;
+	    }
+	  /* If def is a PHI and one of its arguments is another PHI node still
+	     in consideration we can defer processing it.  */
+	  else if ((phi_def = dyn_cast <gphi *> (def))
+		   && ((last_phi_def
+			&& phi_def != last_phi_def
+			&& contains_phi_arg (phi_def,
+					     gimple_phi_result (last_phi_def)))
+		       || (first_phi_def
+			   && phi_def != first_phi_def
+			   && contains_phi_arg
+				(phi_def, gimple_phi_result (first_phi_def)))))
+	    {
+	      defs.unordered_remove (i);
+	      if (phi_def == first_phi_def)
+		first_phi_def = NULL;
+	      else if (phi_def == last_phi_def)
+		last_phi_def = NULL;
+	    }
 	  else
 	    ++i;
 	}
@@ -1427,7 +1463,8 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
       gimple_call_set_lhs (stmt, NULL_TREE);
       update_stmt (stmt);
     }
-  else
+  else if (!stmt_could_throw_p (fun, stmt)
+	   || fun->can_delete_dead_exceptions)
     delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup,
 					 need_ab_cleanup);
 }
@@ -1455,9 +1492,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dse (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_dse != 0; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_dse (m_ctxt); }
+  bool gate (function *) final override { return flag_tree_dse != 0; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_dse
 

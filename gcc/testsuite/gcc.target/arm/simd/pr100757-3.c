@@ -13,8 +13,11 @@ float fn1(int d) {
   return c;
 }
 
-/* { dg-final { scan-assembler-times {\t.word\t1073741824\n} 4 } } */ /* Constant 2.0f.  */
-/* { dg-final { scan-assembler-times {\t.word\t1084227584\n} 4 } } */ /* Initial value for c (4.0).  */
-/* { dg-final { scan-assembler-times {\t.word\t1082130432\n} 4 } } */ /* Possible value for c (5.0).  */
+/* { dg-final { scan-assembler-times {\tvmov\.f32\tq[0-7], #2\.0e\+0  @ v4sf} 1 } } */
+/* { dg-final { scan-assembler-not {\t.word\t1073741824\n} } } */
+/* { dg-final { scan-assembler-times {\tvmov\.f32\tq[0-7], #4\.0e\+0  @ v4sf} 1 } } */
+/* { dg-final { scan-assembler-not {\t.word\t1084227584\n} } } */
+/* { dg-final { scan-assembler-times {\tvmov\.f32\tq[0-7], #5\.0e\+0  @ v4sf} 1 } } */
+/* { dg-final { scan-assembler-not {\t.word\t1082130432\n} } } */
 /* { dg-final { scan-assembler-not {\t.word\t1\n} } } */ /* 'true' mask.  */
 /* { dg-final { scan-assembler-not {\t.word\t0\n} } } */ /* 'false' mask.  */

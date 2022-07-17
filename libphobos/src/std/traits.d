@@ -788,7 +788,8 @@ private template fqnType(T,
                 ~ (attrs & FA.trusted ? " @trusted" : "")
                 ~ (attrs & FA.safe ? " @safe" : "")
                 ~ (attrs & FA.nogc ? " @nogc" : "")
-                ~ (attrs & FA.return_ ? " return" : "");
+                ~ (attrs & FA.return_ ? " return" : "")
+                ~ (attrs & FA.live ? " @live" : "");
     }
 
     string addQualifiers(string typeString,
@@ -1422,6 +1423,11 @@ if (isCallable!func)
             enum val = "val" ~ (name == "val" ? "_" : "");
             enum ptr = "ptr" ~ (name == "ptr" ? "_" : "");
             mixin("
+                enum hasDefaultArg = (PT[i .. i+1] " ~ args ~ ") { return true; };
+            ");
+            static if (is(typeof(hasDefaultArg())))
+            {
+                mixin("
                 // workaround scope escape check, see
                 // https://issues.dlang.org/show_bug.cgi?id=16582
                 // should use return scope once available
@@ -1432,10 +1438,9 @@ if (isCallable!func)
                     auto " ~ val ~ " = " ~ args ~ "[0];
                     auto " ~ ptr ~ " = &" ~ val ~ ";
                     return *" ~ ptr ~ ";
-                };
-            ");
-            static if (is(typeof(get())))
+                };");
                 enum Get = get();
+            }
             else
                 alias Get = void;
                 // If default arg doesn't exist, returns void instead.
@@ -1481,6 +1486,17 @@ if (isCallable!func)
     alias Voids = ParameterDefaults!func;
     static assert(Voids.length == 12);
     static foreach (V; Voids) static assert(is(V == void));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=20182
+@safe pure nothrow @nogc unittest
+{
+    struct S
+    {
+        this(ref S) {}
+    }
+
+    static assert(__traits(compiles, ParameterDefaults!(S.__ctor)));
 }
 
 /**
@@ -4823,7 +4839,7 @@ Returns class instance alignment.
 template classInstanceAlignment(T)
 if (is(T == class))
 {
-    alias classInstanceAlignment = maxAlignment!(void*, typeof(T.tupleof));
+    enum classInstanceAlignment = __traits(classInstanceAlignment, T);
 }
 
 ///

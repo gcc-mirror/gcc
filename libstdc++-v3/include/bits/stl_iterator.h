@@ -2341,7 +2341,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      decltype(auto)
+      constexpr decltype(auto)
       operator++(int)
       {
 	__glibcxx_assert(_M_length > 0);
@@ -2353,7 +2353,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    ++_M_length;
 	    __throw_exception_again;
 	  }
-
       }
 
       constexpr counted_iterator
@@ -2537,19 +2536,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // of associative containers.
   template<typename _InputIterator>
     using __iter_key_t = remove_const_t<
-    typename iterator_traits<_InputIterator>::value_type::first_type>;
+      typename iterator_traits<_InputIterator>::value_type::first_type>;
 
   template<typename _InputIterator>
-    using __iter_val_t =
-    typename iterator_traits<_InputIterator>::value_type::second_type;
+    using __iter_val_t
+      = typename iterator_traits<_InputIterator>::value_type::second_type;
 
   template<typename _T1, typename _T2>
     struct pair;
 
   template<typename _InputIterator>
-    using __iter_to_alloc_t =
-    pair<add_const_t<__iter_key_t<_InputIterator>>,
-	 __iter_val_t<_InputIterator>>;
+    using __iter_to_alloc_t
+      = pair<const __iter_key_t<_InputIterator>, __iter_val_t<_InputIterator>>;
 #endif // __cpp_deduction_guides
 
 _GLIBCXX_END_NAMESPACE_VERSION

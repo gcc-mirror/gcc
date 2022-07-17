@@ -191,12 +191,14 @@ package body GNAT.Sockets is
        else Value);
    --  Removes dot at the end of error message
 
-   procedure Raise_Host_Error (H_Error : Integer; Name : String);
+   procedure Raise_Host_Error (H_Error : Integer; Name : String)
+   with No_Return;
    --  Raise Host_Error exception with message describing error code (note
    --  hstrerror seems to be obsolete) from h_errno. Name is the name
    --  or address that was being looked up.
 
-   procedure Raise_GAI_Error (RC : C.int; Name : String);
+   procedure Raise_GAI_Error (RC : C.int; Name : String)
+   with No_Return;
    --  Raise Host_Error with exception message in case of errors in
    --  getaddrinfo and getnameinfo.
 
@@ -1034,7 +1036,6 @@ package body GNAT.Sockets is
 
       R     : C.int;
       Iter  : Addrinfo_Access;
-      Found : Boolean;
 
       function To_Array return Address_Info_Array;
       --  Convert taken from OS addrinfo list A into Address_Info_Array
@@ -1044,8 +1045,6 @@ package body GNAT.Sockets is
       --------------
 
       function To_Array return Address_Info_Array is
-         Result : Address_Info_Array (1 .. 8);
-
          procedure Unsupported;
          --  Calls Unknown callback if defiend
 
@@ -1063,6 +1062,9 @@ package body GNAT.Sockets is
                   Integer (Iter.ai_addrlen));
             end if;
          end Unsupported;
+
+         Found  : Boolean;
+         Result : Address_Info_Array (1 .. 8);
 
       --  Start of processing for To_Array
 
@@ -1085,8 +1087,8 @@ package body GNAT.Sockets is
                if Result (J).Addr.Family = Family_Unspec then
                   Unsupported;
                else
+                  Found := False;
                   for M in Modes'Range loop
-                     Found := False;
                      if Modes (M) = Iter.ai_socktype then
                         Result (J).Mode := M;
                         Found := True;

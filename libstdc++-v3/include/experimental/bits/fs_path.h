@@ -140,10 +140,10 @@ namespace __detail
     inline _Source
     _S_range_begin(_Source __begin) { return __begin; }
 
-  struct __null_terminated { };
+  struct __nul_terminated { };
 
   template<typename _Source>
-    inline __null_terminated
+    inline __nul_terminated
     _S_range_end(_Source) { return {}; }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -459,11 +459,11 @@ namespace __detail
       struct _Cvt;
 
     static string_type
-    _S_convert(value_type* __src, __detail::__null_terminated)
+    _S_convert(value_type* __src, __detail::__nul_terminated)
     { return string_type(__src); }
 
     static string_type
-    _S_convert(const value_type* __src, __detail::__null_terminated)
+    _S_convert(const value_type* __src, __detail::__nul_terminated)
     { return string_type(__src); }
 
     template<typename _Iter>
@@ -477,7 +477,7 @@ namespace __detail
 
     template<typename _InputIterator>
       static string_type
-      _S_convert(_InputIterator __src, __detail::__null_terminated)
+      _S_convert(_InputIterator __src, __detail::__nul_terminated)
       {
 	auto __s = _S_string_from_iter(__src);
 	return _S_convert(__s.c_str(), __s.c_str() + __s.size());
@@ -504,7 +504,7 @@ namespace __detail
 
     template<typename _InputIterator>
       static string_type
-      _S_convert_loc(_InputIterator __src, __detail::__null_terminated,
+      _S_convert_loc(_InputIterator __src, __detail::__nul_terminated,
 		     const std::locale& __loc)
       {
 	const std::string __s = _S_string_from_iter(__src);

@@ -824,9 +824,8 @@ MATCH implicitConvTo(Expression e, Type t)
          * convert to immutable
          */
         if (e.f &&
-            // lots of legacy code breaks with the following purity check
-            (global.params.useDIP1000 != FeatureState.enabled || e.f.isPure() >= PURE.const_) &&
-             e.f.isReturnIsolated() // check isReturnIsolated last, because it is potentially expensive.
+            (!global.params.fixImmutableConv || e.f.isPure() >= PURE.const_) &&
+            e.f.isReturnIsolated() // check isReturnIsolated last, because it is potentially expensive.
            )
         {
             result = e.type.immutableOf().implicitConvTo(t);
@@ -917,7 +916,7 @@ MATCH implicitConvTo(Expression e, Type t)
             if (i - j < nparams)
             {
                 Parameter fparam = tf.parameterList[i - j];
-                if (fparam.storageClass & STC.lazy_)
+                if (fparam.isLazy())
                     return result; // not sure what to do with this
                 Type tparam = fparam.type;
                 if (!tparam)
@@ -1225,7 +1224,7 @@ MATCH implicitConvTo(Expression e, Type t)
                 if (i - j < nparams)
                 {
                     Parameter fparam = tf.parameterList[i - j];
-                    if (fparam.storageClass & STC.lazy_)
+                    if (fparam.isLazy())
                         return MATCH.nomatch; // not sure what to do with this
                     Type tparam = fparam.type;
                     if (!tparam)
@@ -1695,14 +1694,6 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             {
                 // T[n] sa;
                 // cast(U[])sa; // ==> cast(U[])sa[];
-                if (global.params.useDIP1000 == FeatureState.enabled)
-                {
-                    if (auto v = expToVariable(e))
-                    {
-                        if (e.type.hasPointers() && !checkAddressVar(sc, e, v))
-                            goto Lfail;
-                    }
-                }
                 const fsize = t1b.nextOf().size();
                 const tsize = tob.nextOf().size();
                 if (fsize == SIZE_INVALID || tsize == SIZE_INVALID)
@@ -2236,7 +2227,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         ArrayLiteralExp ae = e;
 
         Type tb = t.toBasetype();
-        if (tb.ty == Tarray && global.params.useDIP1000 == FeatureState.enabled)
+        if (tb.ty == Tarray)
         {
             if (checkArrayLiteralEscape(sc, ae, false))
             {
@@ -2776,17 +2767,14 @@ Expression scaleFactor(BinExp be, Scope* sc)
     else
         assert(0);
 
-    if (sc.func && !sc.intypeof)
+
+    eoff = eoff.optimize(WANTvalue);
+    if (eoff.op == EXP.int64 && eoff.toInteger() == 0)
     {
-        eoff = eoff.optimize(WANTvalue);
-        if (eoff.op == EXP.int64 && eoff.toInteger() == 0)
-        {
-        }
-        else if (sc.func.setUnsafe())
-        {
-            be.error("pointer arithmetic not allowed in @safe functions");
-            return ErrorExp.get();
-        }
+    }
+    else if (sc.setUnsafe(false, be.loc, "pointer arithmetic not allowed in @safe functions"))
+    {
+        return ErrorExp.get();
     }
 
     return be;

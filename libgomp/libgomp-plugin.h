@@ -125,7 +125,7 @@ extern void GOMP_PLUGIN_fatal (const char *, ...)
 extern const char *GOMP_OFFLOAD_get_name (void);
 extern unsigned int GOMP_OFFLOAD_get_caps (void);
 extern int GOMP_OFFLOAD_get_type (void);
-extern int GOMP_OFFLOAD_get_num_devices (void);
+extern int GOMP_OFFLOAD_get_num_devices (unsigned int);
 extern bool GOMP_OFFLOAD_init_device (int);
 extern bool GOMP_OFFLOAD_fini_device (int);
 extern unsigned GOMP_OFFLOAD_version (void);

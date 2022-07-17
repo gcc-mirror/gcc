@@ -144,13 +144,13 @@ cmp_bb_postorder (const void *a, const void *b, void *data)
 static void
 sort_bbs_postorder (basic_block *bbs, int n, int *bb_postorder)
 {
-  if (__builtin_expect (n == 2, true))
+  if (LIKELY (n == 2))
     {
       basic_block bb0 = bbs[0], bb1 = bbs[1];
       if (bb_postorder[bb0->index] < bb_postorder[bb1->index])
 	bbs[0] = bb1, bbs[1] = bb0;
     }
-  else if (__builtin_expect (n == 3, true))
+  else if (LIKELY (n == 3))
     {
       basic_block bb0 = bbs[0], bb1 = bbs[1], bb2 = bbs[2];
       if (bb_postorder[bb0->index] < bb_postorder[bb1->index])
@@ -191,7 +191,8 @@ dom_walker::dom_walker (cdi_direction direction,
     m_reachability (reachability),
     m_user_bb_to_rpo (bb_index_to_rpo != NULL),
     m_unreachable_dom (NULL),
-    m_bb_to_rpo (bb_index_to_rpo)
+    m_bb_to_rpo (bb_index_to_rpo == (int *)(uintptr_t)-1
+		 ? NULL : bb_index_to_rpo)
 {
 }
 
@@ -272,7 +273,8 @@ void
 dom_walker::walk (basic_block bb)
 {
   /* Compute the basic-block index to RPO mapping lazily.  */
-  if (!m_bb_to_rpo
+  if (!m_user_bb_to_rpo
+      && !m_bb_to_rpo
       && m_dom_direction == CDI_DOMINATORS)
     {
       int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));

@@ -19,3 +19,4 @@ package Ada.Numerics.Short_Elementary_Functions is
   new Ada.Numerics.Generic_Elementary_Functions (Short_Float);
 
 pragma Pure (Short_Elementary_Functions);
+pragma Annotate (GNATprove, Always_Return, Short_Elementary_Functions);

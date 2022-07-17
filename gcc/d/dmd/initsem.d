@@ -197,15 +197,16 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 if (vd.type.hasPointers)
                 {
                     if ((!t.alignment.isDefault() && t.alignment.get() < target.ptrsize ||
-                         (vd.offset & (target.ptrsize - 1))) &&
-                        sc.func && sc.func.setUnsafe())
+                         (vd.offset & (target.ptrsize - 1))))
                     {
-                        error(i.value[j].loc, "field `%s.%s` cannot assign to misaligned pointers in `@safe` code",
-                            sd.toChars(), vd.toChars());
-                        errors = true;
-                        elems[fieldi] = ErrorExp.get(); // for better diagnostics on multiple errors
-                        ++fieldi;
-                        continue;
+                        if (sc.setUnsafe(false, i.value[j].loc,
+                            "field `%s.%s` cannot assign to misaligned pointers in `@safe` code", sd, vd))
+                        {
+                            errors = true;
+                            elems[fieldi] = ErrorExp.get(); // for better diagnostics on multiple errors
+                            ++fieldi;
+                            continue;
+                        }
                     }
                 }
 
@@ -502,6 +503,18 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 i.exp = se.castTo(sc, t);
                 goto L1;
             }
+
+            /* Lop off terminating 0 of initializer for:
+             *  static char s[5] = "hello";
+             */
+            if (sc.flags & SCOPE.Cfile &&
+                typeb.ty == Tsarray &&
+                tynto.isSomeChar &&
+                tb.isTypeSArray().dim.toInteger() + 1 == typeb.isTypeSArray().dim.toInteger())
+            {
+                i.exp = se.castTo(sc, t);
+                goto L1;
+            }
         }
         /* C11 6.7.9-14..15
          * Initialize an array of unknown size with a string.
@@ -573,7 +586,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         }
         else if (sc.flags & SCOPE.Cfile && i.exp.isStringExp() &&
             tta && (tta.next.ty == Tint8 || tta.next.ty == Tuns8) &&
-            ti.ty == Tpointer && ti.nextOf().ty == Tchar)
+            ti.ty == Tsarray && ti.nextOf().ty == Tchar)
         {
             /* unsigned char bbb[1] = "";
              *   signed char ccc[1] = "";
@@ -695,7 +708,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 assert(sc);
                 auto tm = vd.type.addMod(ts.mod);
                 auto iz = di.initializer.initializerSemantic(sc, tm, needInterpret);
-                auto ex = iz.initializerToExpression();
+                auto ex = iz.initializerToExpression(null, true);
                 if (ex.op == EXP.error)
                 {
                     errors = true;
@@ -1100,6 +1113,8 @@ Initializer inferType(Initializer init, Scope* sc)
  */
 extern (C++) Expression initializerToExpression(Initializer init, Type itype = null, const bool isCfile = false)
 {
+    //printf("initializerToExpression() isCfile: %d\n", isCfile);
+
     Expression visitVoid(VoidInitializer)
     {
         return null;
@@ -1197,7 +1212,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
             assert(j < edim);
             if (Initializer iz = init.value[i])
             {
-                if (Expression ex = iz.initializerToExpression())
+                if (Expression ex = iz.initializerToExpression(null, isCfile))
                 {
                     (*elements)[j] = ex;
                     ++j;
@@ -1285,7 +1300,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
 
     Expression visitC(CInitializer i)
     {
-        //printf("CInitializer.initializerToExpression()\n");
+        //printf("CInitializer.initializerToExpression(null, true)\n");
         return null;
     }
 

@@ -20,7 +20,6 @@
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
-#include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimple-expr.h"
 #include "is-a.h"

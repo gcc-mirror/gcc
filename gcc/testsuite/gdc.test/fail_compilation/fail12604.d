@@ -66,8 +66,8 @@ void test12606b()   // ExpInitializer::semantic
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12604.d(77): Error: mismatched array lengths, 4 and 3
-fail_compilation/fail12604.d(78): Error: mismatched array lengths, 4 and 3
+fail_compilation/fail12604.d(77): Error: mismatched array lengths 4 and 3 for assignment `sa1[0..4] = [1, 2, 3]`
+fail_compilation/fail12604.d(78): Error: mismatched array lengths 4 and 3 for assignment `sa1[0..4] = sa2`
 ---
 */
 void testc()

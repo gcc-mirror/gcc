@@ -403,13 +403,13 @@ flip_storage_order (machine_mode mode, rtx x)
       return gen_rtx_CONCAT (mode, real, imag);
     }
 
-  if (__builtin_expect (reverse_storage_order_supported < 0, 0))
+  if (UNLIKELY (reverse_storage_order_supported < 0))
     check_reverse_storage_order_support ();
 
   if (!is_a <scalar_int_mode> (mode, &int_mode))
     {
       if (FLOAT_MODE_P (mode)
-	  && __builtin_expect (reverse_float_storage_order_supported < 0, 0))
+	  && UNLIKELY (reverse_float_storage_order_supported < 0))
 	check_reverse_float_storage_order_support ();
 
       if (!int_mode_for_size (GET_MODE_PRECISION (mode), 0).exists (&int_mode)
@@ -738,13 +738,16 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
 
    If FALLBACK_P is true, fall back to store_fixed_bit_field if we have
    no other way of implementing the operation.  If FALLBACK_P is false,
-   return false instead.  */
+   return false instead.
+
+   if UNDEFINED_P is true then STR_RTX is undefined and may be set using
+   a subreg instead.  */
 
 static bool
 store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 		   poly_uint64 bitregion_start, poly_uint64 bitregion_end,
 		   machine_mode fieldmode,
-		   rtx value, bool reverse, bool fallback_p)
+		   rtx value, bool reverse, bool fallback_p, bool undefined_p)
 {
   rtx op0 = str_rtx;
 
@@ -805,8 +808,9 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	      return true;
 	    }
 	}
-      else if (constant_multiple_p (bitnum, regsize * BITS_PER_UNIT, &regnum)
-	       && multiple_p (bitsize, regsize * BITS_PER_UNIT)
+      else if (((constant_multiple_p (bitnum, regsize * BITS_PER_UNIT, &regnum)
+		 && multiple_p (bitsize, regsize * BITS_PER_UNIT))
+		|| undefined_p)
 	       && known_ge (GET_MODE_BITSIZE (GET_MODE (op0)), bitsize))
 	{
 	  sub = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0),
@@ -869,7 +873,7 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 					GET_MODE_SIZE (GET_MODE (op0)));
 	  emit_move_insn (temp, op0);
 	  store_bit_field_1 (temp, bitsize, bitnum, 0, 0, fieldmode, value,
-			     reverse, fallback_p);
+			     reverse, fallback_p, undefined_p);
 	  emit_move_insn (op0, temp);
 	  return true;
 	}
@@ -994,7 +998,7 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 				  bitnum + bit_offset,
 				  bitregion_start, bitregion_end,
 				  word_mode,
-				  value_word, reverse, fallback_p))
+				  value_word, reverse, fallback_p, false))
 	    {
 	      delete_insns_since (last);
 	      return false;
@@ -1084,7 +1088,7 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	  rtx tempreg = copy_to_reg (xop0);
 	  if (store_bit_field_1 (tempreg, bitsize, bitpos,
 				 bitregion_start, bitregion_end,
-				 fieldmode, orig_value, reverse, false))
+				 fieldmode, orig_value, reverse, false, false))
 	    {
 	      emit_move_insn (xop0, tempreg);
 	      return true;
@@ -1112,13 +1116,15 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 
    FIELDMODE is the machine-mode of the FIELD_DECL node for this field.
 
-   If REVERSE is true, the store is to be done in reverse order.  */
+   If REVERSE is true, the store is to be done in reverse order.
+
+   If UNDEFINED_P is true then STR_RTX is currently undefined.  */
 
 void
 store_bit_field (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 		 poly_uint64 bitregion_start, poly_uint64 bitregion_end,
 		 machine_mode fieldmode,
-		 rtx value, bool reverse)
+		 rtx value, bool reverse, bool undefined_p)
 {
   /* Handle -fstrict-volatile-bitfields in the cases where it applies.  */
   unsigned HOST_WIDE_INT ibitsize = 0, ibitnum = 0;
@@ -1151,7 +1157,7 @@ store_bit_field (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	  gcc_assert (ibitnum + ibitsize <= GET_MODE_BITSIZE (int_mode));
 	  temp = copy_to_reg (str_rtx);
 	  if (!store_bit_field_1 (temp, ibitsize, ibitnum, 0, 0,
-				  int_mode, value, reverse, true))
+				  int_mode, value, reverse, true, undefined_p))
 	    gcc_unreachable ();
 
 	  emit_move_insn (str_rtx, temp);
@@ -1186,7 +1192,7 @@ store_bit_field (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 
   if (!store_bit_field_1 (str_rtx, bitsize, bitnum,
 			  bitregion_start, bitregion_end,
-			  fieldmode, value, reverse, true))
+			  fieldmode, value, reverse, true, undefined_p))
     gcc_unreachable ();
 }
 
@@ -1605,20 +1611,22 @@ extract_bit_field_using_extv (const extraction_insn *extv, rtx op0,
   return NULL_RTX;
 }
 
-/* See whether it would be valid to extract the part of OP0 described
-   by BITNUM and BITSIZE into a value of mode MODE using a subreg
-   operation.  Return the subreg if so, otherwise return null.  */
+/* See whether it would be valid to extract the part of OP0 with
+   mode OP0_MODE described by BITNUM and BITSIZE into a value of
+   mode MODE using a subreg operation.
+   Return the subreg if so, otherwise return null.  */
 
 static rtx
 extract_bit_field_as_subreg (machine_mode mode, rtx op0,
+			     machine_mode op0_mode,
 			     poly_uint64 bitsize, poly_uint64 bitnum)
 {
   poly_uint64 bytenum;
   if (multiple_p (bitnum, BITS_PER_UNIT, &bytenum)
       && known_eq (bitsize, GET_MODE_BITSIZE (mode))
-      && lowpart_bit_field_p (bitnum, bitsize, GET_MODE (op0))
-      && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (op0)))
-    return simplify_gen_subreg (mode, op0, GET_MODE (op0), bytenum);
+      && lowpart_bit_field_p (bitnum, bitsize, op0_mode)
+      && TRULY_NOOP_TRUNCATION_MODES_P (mode, op0_mode))
+    return simplify_gen_subreg (mode, op0, op0_mode, bytenum);
   return NULL_RTX;
 }
 
@@ -1777,7 +1785,8 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	 for valid bitsize and bitnum, so we don't need to do that here.  */
       if (VECTOR_MODE_P (mode))
 	{
-	  rtx sub = extract_bit_field_as_subreg (mode, op0, bitsize, bitnum);
+	  rtx sub = extract_bit_field_as_subreg (mode, op0, outermode,
+						 bitsize, bitnum);
 	  if (sub)
 	    return sub;
 	}
@@ -1824,9 +1833,10 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
   /* Extraction of a full MODE1 value can be done with a subreg as long
      as the least significant bit of the value is the least significant
      bit of either OP0 or a word of OP0.  */
-  if (!MEM_P (op0) && !reverse)
+  if (!MEM_P (op0) && !reverse && op0_mode.exists (&imode))
     {
-      rtx sub = extract_bit_field_as_subreg (mode1, op0, bitsize, bitnum);
+      rtx sub = extract_bit_field_as_subreg (mode1, op0, imode,
+					     bitsize, bitnum);
       if (sub)
 	return convert_extracted_bit_field (sub, mode, tmode, unsignedp);
     }

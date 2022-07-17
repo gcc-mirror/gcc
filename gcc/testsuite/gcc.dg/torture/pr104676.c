@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-ftree-loop-distribution -ftree-parallelize-loops=2" } */
+/* { dg-additional-options "-ftree-loop-distribution -ftree-parallelize-loops=2" { target pthread } } */
 
 struct S {
   int f;

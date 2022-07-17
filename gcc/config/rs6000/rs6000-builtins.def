@@ -1190,9 +1190,6 @@
   const vd __builtin_altivec_neg_v2df (vd);
     NEG_V2DF negv2df2 {}
 
-  const vsll __builtin_altivec_neg_v2di (vsll);
-    NEG_V2DI negv2di2 {}
-
   void __builtin_altivec_stvx_v2df (vd, signed long, void *);
     STVX_V2DF altivec_stvx_v2df {stvec}
 
@@ -1427,9 +1424,10 @@
   pure vsc __builtin_vsx_ld_elemrev_v16qi (signed long, const void *);
     LD_ELEMREV_V16QI vsx_ld_elemrev_v16qi {ldvec,endian}
 
-; TODO: There is apparent intent in rs6000-builtin.def to have
-; RS6000_BTC_SPECIAL processing for LXSDX, LXVDSX, and STXSDX, but there are
-; no def_builtin calls for any of them.  At some point, we may want to add a
+; TODO: There was apparent intent in the rs6000-builtin.def to
+; have SPECIAL processing for LXSDX, LXVDSX, and STXSDX, but there are
+; no def_builtin calls for any of them.  That file was removed as part
+; of the BIF rewrite, but at some point, we may want to add a
 ; set of built-ins for whichever vector types make sense for these.
 
   pure vsq __builtin_vsx_lxvd2x_v1ti (signed long, const void *);
@@ -2135,6 +2133,9 @@
 
   const vus __builtin_altivec_nand_v8hi_uns (vus, vus);
     NAND_V8HI_UNS nandv8hi3 {}
+
+  const vsll __builtin_altivec_neg_v2di (vsll);
+    NEG_V2DI negv2di2 {}
 
   const vsc __builtin_altivec_orc_v16qi (vsc, vsc);
     ORC_V16QI orcv16qi3 {}

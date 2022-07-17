@@ -408,8 +408,12 @@ fs::copy(const path& from, const path& to, copy_options options,
       // set an unused bit in options to disable further recursion
       if (!is_set(options, copy_options::recursive))
 	options |= static_cast<copy_options>(4096);
-      for (const directory_entry& x : directory_iterator(from))
-	copy(x.path(), to/x.path().filename(), options, ec);
+      for (const directory_entry& x : directory_iterator(from, ec))
+	{
+	  copy(x.path(), to/x.path().filename(), options, ec);
+	  if (ec)
+	    return;
+	}
     }
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2683. filesystem::copy() says "no effects"
@@ -1567,25 +1571,37 @@ fs::path
 fs::temp_directory_path()
 {
   error_code ec;
-  path tmp = temp_directory_path(ec);
+  path p = fs::get_temp_directory_from_env(ec);
+  if (!ec)
+    {
+      auto st = status(p, ec);
+      if (!ec && !is_directory(st))
+	ec = std::make_error_code(std::errc::not_a_directory);
+    }
   if (ec)
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error("temp_directory_path", ec));
-  return tmp;
+    {
+      if (p.empty())
+	_GLIBCXX_THROW_OR_ABORT(filesystem_error("temp_directory_path", ec));
+      else
+	_GLIBCXX_THROW_OR_ABORT(filesystem_error("temp_directory_path", p, ec));
+    }
+  return p;
 }
 
 fs::path
 fs::temp_directory_path(error_code& ec)
 {
   path p = fs::get_temp_directory_from_env(ec);
-  if (ec)
-    return p;
-  auto st = status(p, ec);
-  if (ec)
-    p.clear();
-  else if (!is_directory(st))
+  if (!ec)
     {
-      p.clear();
-      ec = std::make_error_code(std::errc::not_a_directory);
+      auto st = status(p, ec);
+      if (ec)
+	p.clear();
+      else if (!is_directory(st))
+	{
+	  p.clear();
+	  ec = std::make_error_code(std::errc::not_a_directory);
+	}
     }
   return p;
 }

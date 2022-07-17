@@ -30,6 +30,7 @@
 // Prefer to use std::pmr::string if possible, which requires the cxx11 ABI.
 #define _GLIBCXX_USE_CXX11_ABI 1
 
+#include <array>
 #include <charconv>
 #include <bit>
 #include <string>
@@ -39,7 +40,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <cctype>
 #include <locale.h>
 #include <bits/functexcept.h>
 #if _GLIBCXX_HAVE_XLOCALE_H
@@ -101,7 +101,6 @@ namespace
 	return m_buf + std::__exchange(m_bytes, m_bytes + bytes);
 
       __glibcxx_assert(m_ptr == nullptr);
-      __glibcxx_assert(alignment != 1);
 
       m_ptr = operator new(bytes);
       m_bytes = bytes;
@@ -142,10 +141,10 @@ namespace
 
   // Find initial portion of [first, last) containing a floating-point number.
   // The string `digits` is either `dec_digits` or `hex_digits`
-  // and `exp` is 'e' or 'p' or '\0'.
+  // and `exp` is "eE", "pP" or NULL.
   const char*
   find_end_of_float(const char* first, const char* last, const char* digits,
-		    char exp)
+		    const char *exp)
   {
     while (first < last && strchr(digits, *first) != nullptr)
       ++first;
@@ -155,7 +154,7 @@ namespace
 	while (first < last && strchr(digits, *first))
 	  ++first;
       }
-    if (first < last && exp != 0 && std::tolower((unsigned char)*first) == exp)
+    if (first < last && exp != nullptr && (*first == exp[0] || *first == exp[1]))
       {
 	++first;
 	if (first < last && (*first == '-' || *first == '+'))
@@ -237,7 +236,7 @@ namespace
 
 	if ((last - first + 2) > buffer_resource::guaranteed_capacity())
 	  {
-	    last = find_end_of_float(first + neg, last, digits, 'p');
+	    last = find_end_of_float(first + neg, last, digits, "pP");
 #ifndef __cpp_exceptions
 	    if ((last - first + 2) > buffer_resource::guaranteed_capacity())
 	      {
@@ -261,7 +260,7 @@ namespace
 	if ((last - first) > buffer_resource::guaranteed_capacity())
 	  {
 	    last = find_end_of_float(first + neg, last, digits,
-				     "e"[fmt == chars_format::fixed]);
+				     fmt == chars_format::fixed ? nullptr : "eE");
 #ifndef __cpp_exceptions
 	    if ((last - first) > buffer_resource::guaranteed_capacity())
 	      {
@@ -452,15 +451,33 @@ namespace
 
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
   // Return true iff [FIRST,LAST) begins with PREFIX, ignoring case.
+  // PREFIX is assumed to not contain any uppercase letters.
   bool
   starts_with_ci(const char* first, const char* last, string_view prefix)
   {
     __glibcxx_requires_valid_range(first, last);
 
-    for (char ch : prefix)
+    // A lookup table that maps uppercase letters to lowercase and
+    // is otherwise the identity mapping.
+    static constexpr auto upper_to_lower_table = [] {
+      constexpr unsigned char lower_letters[27] = "abcdefghijklmnopqrstuvwxyz";
+      constexpr unsigned char upper_letters[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      std::array<unsigned char, (1u << __CHAR_BIT__)> table = {};
+      for (unsigned i = 0; i < table.size(); ++i)
+	table[i] = i;
+      for (unsigned i = 0; i < 26; ++i)
+	table[upper_letters[i]] = lower_letters[i];
+      return table;
+    }();
+
+    if (last - first < static_cast<ptrdiff_t>(prefix.length()))
+      return false;
+
+    for (const unsigned char pch : prefix)
       {
-	__glibcxx_assert(ch >= 'a' && ch <= 'z');
-	if (first == last || (*first != ch && *first != ch - 32))
+	// __glibcxx_assert(pch == upper_to_lower_table[pch]);
+	const unsigned char ch = *first;
+	if (ch != pch && upper_to_lower_table[ch] != pch)
 	  return false;
 	++first;
       }
@@ -536,10 +553,8 @@ namespace
 			  ++first;
 			  break;
 			}
-		      else if ((ch >= '0' && ch <= '9')
-			       || (ch >= 'a' && ch <= 'z')
-			       || (ch >= 'A' && ch <= 'Z')
-			       || ch == '_')
+		      else if (ch == '_'
+			       || __detail::__from_chars_alnum_to_val(ch) < 127)
 			continue;
 		      else
 			{
@@ -600,7 +615,7 @@ namespace
 	    continue;
 	  }
 
-	int hexit = __detail::__from_chars_alnum_to_val<false>(ch);
+	int hexit = __detail::__from_chars_alnum_to_val(ch);
 	if (hexit >= 16)
 	  break;
 	seen_hexit = true;
@@ -648,7 +663,7 @@ namespace
 
     // Parse the written exponent.
     int written_exponent = 0;
-    if (first != last && *first == 'p')
+    if (first != last && (*first == 'p' || *first == 'P'))
       {
 	// Tentatively consume the 'p' and try to parse a decimal number.
 	const char* const fallback_first = first;

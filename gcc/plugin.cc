@@ -128,7 +128,7 @@ static const char *str_license = "plugin_is_GPL_compatible";
    structure to be inserted into the hash table.  */
 
 static hashval_t
-htab_hash_plugin (const PTR p)
+htab_hash_plugin (const void *p)
 {
   const struct plugin_name_args *plugin = (const struct plugin_name_args *) p;
   return htab_hash_string (plugin->base_name);
@@ -813,6 +813,44 @@ finalize_plugins (void)
   /* PLUGIN_NAME_ARGS_TAB is no longer needed, just delete it.  */
   htab_delete (plugin_name_args_tab);
   plugin_name_args_tab = NULL;
+}
+
+/* Implementation detail of for_each_plugin.  */
+
+struct for_each_plugin_closure
+{
+  void (*cb) (const plugin_name_args *,
+	      void *user_data);
+  void *user_data;
+};
+
+/* Implementation detail of for_each_plugin: callback for htab_traverse_noresize
+   that calls the user-provided callback.  */
+
+static int
+for_each_plugin_cb (void **slot, void *info)
+{
+  struct plugin_name_args *plugin = (struct plugin_name_args *) *slot;
+  for_each_plugin_closure *c = (for_each_plugin_closure *)info;
+  c->cb (plugin, c->user_data);
+  return 1;
+}
+
+/* Call CB with USER_DATA on each plugin.  */
+
+void
+for_each_plugin (void (*cb) (const plugin_name_args *,
+			     void *user_data),
+		 void *user_data)
+{
+  if (!plugin_name_args_tab)
+    return;
+
+  for_each_plugin_closure c;
+  c.cb = cb;
+  c.user_data = user_data;
+
+  htab_traverse_noresize (plugin_name_args_tab, for_each_plugin_cb, &c);
 }
 
 /* Used to pass options to htab_traverse callbacks. */

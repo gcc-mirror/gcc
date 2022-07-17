@@ -100,7 +100,7 @@ fi
 
 gobuild() {
     line=$(echo "$1" | sed -e 's|//go:build ||')
-    line=$(echo "$line" | sed -e 's/go1\.[0-9]\+/1/g' -e 's/goexperiment\./goexperiment/')
+    line=$(echo "$line" | sed -e 's/go1\.[0-9][0-9]*/1/g' -e 's/goexperiment\./goexperiment/')
     line=" $line "
     wrap='[ ()!&|]'
     for ones in $goarch $goos $cgotag $cmdlinetag gccgo goexperimentfieldtrack; do

@@ -28,6 +28,7 @@ enum Baseok : ubyte
 
 enum MODFlags : int
 {
+    none         = 0,    // default (mutable)
     const_       = 1,    // type is const
     immutable_   = 4,    // type is immutable
     shared_      = 2,    // type is shared

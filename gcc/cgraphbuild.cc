@@ -26,8 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-pass.h"
 #include "cgraph.h"
-#include "gimple-fold.h"
 #include "gimple-iterator.h"
+#include "gimple-fold.h"
 #include "gimple-walk.h"
 #include "ipa-utils.h"
 #include "except.h"
@@ -290,7 +290,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_build_cgraph_edges
 
@@ -484,8 +484,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_rebuild_cgraph_edges (m_ctxt); }
-  virtual unsigned int execute (function *)
+  opt_pass * clone () final override
+  {
+    return new pass_rebuild_cgraph_edges (m_ctxt);
+  }
+  unsigned int execute (function *) final override
   {
     return cgraph_edge::rebuild_edges ();
   }
@@ -524,10 +527,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () {
+  opt_pass * clone () final override {
     return new pass_remove_cgraph_callee_edges (m_ctxt);
   }
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_remove_cgraph_callee_edges
 

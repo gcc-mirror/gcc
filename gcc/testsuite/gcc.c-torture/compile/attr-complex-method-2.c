@@ -8,4 +8,4 @@ void do_div (_Complex double *a, _Complex double *b)
   *a = *b / (4.0 - 5.0fi);
 }
 
-/* { dg-final { scan-tree-dump "__divdc3" "optimized" } } */
+/* { dg-final { scan-tree-dump "__(?:gnu_)?divdc3" "optimized" } } */

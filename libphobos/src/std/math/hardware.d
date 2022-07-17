@@ -214,12 +214,12 @@ private:
         }
         else version (SPARC)
         {
-           /*
+            /*
                int retval;
                asm pure nothrow @nogc { st %fsr, retval; }
                return retval;
             */
-           assert(0, "Not yet supported");
+            assert(0, "Not yet supported");
         }
         else version (ARM)
         {
@@ -674,9 +674,9 @@ nothrow @nogc:
         enum : ExceptionMask
         {
             inexactException      = 0x01,
-            divByZeroException    = 0x02,
-            underflowException    = 0x04,
-            overflowException     = 0x08,
+            divByZeroException    = 0x08,
+            underflowException    = 0x02,
+            overflowException     = 0x04,
             invalidException      = 0x10,
             severeExceptions   = overflowException | divByZeroException
                                  | invalidException,

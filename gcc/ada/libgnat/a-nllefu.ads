@@ -19,3 +19,4 @@ package Ada.Numerics.Long_Long_Elementary_Functions is
   new Ada.Numerics.Generic_Elementary_Functions (Long_Long_Float);
 
 pragma Pure (Long_Long_Elementary_Functions);
+pragma Annotate (GNATprove, Always_Return, Long_Long_Elementary_Functions);

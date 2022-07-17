@@ -444,6 +444,10 @@ public:
   /* Whether the above mapping is complete.  */
   bool stmt_vec_info_ro;
 
+  /* Whether we've done a transform we think OK to not update virtual
+     SSA form.  */
+  bool any_known_not_updated_vssa;
+
   /* The SLP graph.  */
   auto_vec<slp_instance> slp_instances;
 

@@ -180,6 +180,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @tparam _T2  Type of second object.
    *
    *  <https://gcc.gnu.org/onlinedocs/libstdc++/manual/utilities.html>
+   *
+   * @headerfile utility
    */
   template<typename _T1, typename _T2>
     struct pair
@@ -757,9 +759,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
   // Various functions which give std::pair a tuple-like interface.
 
+  /// @cond undocumented
   template<typename _T1, typename _T2>
     struct __is_tuple_like_impl<pair<_T1, _T2>> : true_type
     { };
+  /// @endcond
 
   /// Partial specialization for std::pair
   template<class _Tp1, class _Tp2>

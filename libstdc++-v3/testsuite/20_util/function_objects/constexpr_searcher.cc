@@ -28,13 +28,13 @@
 
 #include <string_view>
 
-const std::string_view
+constexpr std::string_view
 patt = "World";
 
 constexpr std::string_view
 greet = "Hello, Humongous World of Wonder!!!";
 
-const std::wstring_view
+constexpr std::wstring_view
 wpatt = L"World";
 
 constexpr std::wstring_view

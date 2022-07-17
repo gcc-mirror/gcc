@@ -34,7 +34,9 @@ with System.Storage_Elements; use System.Storage_Elements;
 
 with Ada.Unchecked_Conversion;
 
-package body Interfaces.C.Strings is
+package body Interfaces.C.Strings with
+  SPARK_Mode => Off
+is
 
    --  Note that the type chars_ptr has a pragma No_Strict_Aliasing in the
    --  spec, to prevent any assumptions about aliasing for values of this type,

@@ -98,4 +98,10 @@ enum stack_protector_guard {
   SSP_GLOBAL			/* global canary */
 };
 
+/* The key type that -msign-return-address should use.  */
+enum aarch64_key_type {
+  AARCH64_KEY_A,
+  AARCH64_KEY_B
+};
+
 #endif

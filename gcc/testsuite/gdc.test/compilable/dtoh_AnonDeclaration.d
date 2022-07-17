@@ -8,9 +8,9 @@ TEST_OUTPUT:
 #pragma once
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <math.h>
 
 #ifdef CUSTOM_D_ARRAY_TYPE
 #define _d_dynamicArray CUSTOM_D_ARRAY_TYPE
@@ -61,9 +61,21 @@ struct S final
         int32_t innerPrivate;
         int32_t innerBar;
     };
-    S()
+    S() :
+        y(),
+        z(),
+        outerPrivate(),
+        innerPrivate(),
+        innerBar()
     {
     }
+    S(int32_t y, double z = NAN, int32_t outerPrivate = 0, int32_t innerPrivate = 0, int32_t innerBar = 0) :
+        y(y),
+        z(z),
+        outerPrivate(outerPrivate),
+        innerPrivate(innerPrivate),
+        innerBar(innerBar)
+        {}
 };
 
 extern void foo();
