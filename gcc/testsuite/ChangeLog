@@ -1,3 +1,11 @@
+2022-07-16  Steve Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2022-07-15  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104313
+	* gfortran.dg/pr104313.f: New test.
+
 2022-07-14  Surya Kumari Jangala  <jskumari@linux.vnet.ibm.com>
 
 	Backported from master:
