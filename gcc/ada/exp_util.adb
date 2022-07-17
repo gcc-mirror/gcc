@@ -2042,7 +2042,7 @@ package body Exp_Util is
       elsif Is_Underlying_Full_View (Work_Typ) then
          return;
 
-      --  Use the first subtype when dealing with various base types
+      --  Use the first subtype when dealing with implicit base types
 
       elsif Is_Itype (Work_Typ) then
          Work_Typ := First_Subtype (Work_Typ);
