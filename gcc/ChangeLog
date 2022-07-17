@@ -1,3 +1,24 @@
+2022-07-16  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md
+	(*masktrue_const_pow2_minus_one, *masktrue_const_negative_pow2,
+	*masktrue_const_shifted_mask): If the immediate for bitwise AND is
+	represented as '-(1 << N)', decrease the lower bound of N from 12
+	to 1.  And the other immediate for conditional branch is now no
+	longer limited to zero, but also one of some positive integers.
+	Finally, remove the checks of some conditions, because the comparison
+	expressions that don't satisfy such checks are determined as
+	compile-time constants and thus will be optimized away before
+	RTL expansion.
+
+2022-07-16  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_emit_constantsynth): Remove.
+	(xtensa_constantsynth_2insn): Change to try all three synthetic
+	methods and to use the one that fits the immediate value of
+	the seed into a Narrow Move Immediate instruction "MOVI.N"
+	when the Code Density Option is configured.
+
 2022-07-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/85620
