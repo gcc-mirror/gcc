@@ -46,6 +46,14 @@ public:
 
   void visit (HIR::ExternalStaticItem &item) override
   {
+    // check if its already been compiled
+    Bvariable *lookup = ctx->get_backend ()->error_variable ();
+    if (ctx->lookup_var_decl (item.get_mappings ().get_hirid (), &lookup))
+      {
+	reference = ctx->get_backend ()->var_expression (lookup, ref_locus);
+	return;
+      }
+
     TyTy::BaseType *resolved_type = nullptr;
     bool ok = ctx->get_tyctx ()->lookup_type (item.get_mappings ().get_hirid (),
 					      &resolved_type);
@@ -102,15 +110,11 @@ public:
     if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
 				   fntype->get_id (), fntype))
       {
-	// has this been added to the list then it must be finished
-	if (ctx->function_completed (lookup))
-	  {
-	    tree dummy = NULL_TREE;
-	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	      ctx->insert_function_decl (fntype, lookup);
+	reference
+	  = address_expression (lookup, build_pointer_type (TREE_TYPE (lookup)),
+				ref_locus);
 
-	    return;
-	  }
+	return;
       }
 
     if (fntype->has_subsititions_defined ())
