@@ -4976,7 +4976,7 @@ gfc_resolve_dim_arg (gfc_expr *dim)
 static void
 resolve_assoc_var (gfc_symbol* sym, bool resolve_target);
 
-static void
+static bool
 find_array_spec (gfc_expr *e)
 {
   gfc_array_spec *as;
@@ -5004,7 +5004,11 @@ find_array_spec (gfc_expr *e)
       {
       case REF_ARRAY:
 	if (as == NULL)
-	  gfc_internal_error ("find_array_spec(): Missing spec");
+	  {
+	    gfc_error ("Invalid array reference of a non-array entity at %L",
+		       &ref->u.ar.where);
+	    return false;
+	  }
 
 	ref->u.ar.as = as;
 	as = NULL;
@@ -5028,6 +5032,8 @@ find_array_spec (gfc_expr *e)
 
   if (as != NULL)
     gfc_internal_error ("find_array_spec(): unused as(2)");
+
+  return true;
 }
 
 
@@ -5346,7 +5352,8 @@ gfc_resolve_ref (gfc_expr *expr)
   for (ref = expr->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.as == NULL)
       {
-	find_array_spec (expr);
+	if (!find_array_spec (expr))
+	  return false;
 	break;
       }
 
