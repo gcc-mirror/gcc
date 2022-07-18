@@ -77,7 +77,8 @@ enum arc_tune_attr
     ARC_TUNE_CORE_3,
     ARC_TUNE_ARCHS4X,
     ARC_TUNE_ARCHS4XD,
-    ARC_TUNE_ARCHS4XD_SLOW
+    ARC_TUNE_ARCHS4XD_SLOW,
+    ARC_TUNE_ARCHS4X_REL31A
   };
 
 /* Extra options for a processor template to hold any CPU specific
