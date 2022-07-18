@@ -1926,7 +1926,7 @@ package body Sem_Aggr is
         and then No (Component_Associations (N))
         and then not Null_Record_Present (N)
       then
-         return False;
+         return Failure;
       end if;
 
       --  Disable the warning for GNAT Mode to allow for easier transition.
@@ -1966,7 +1966,7 @@ package body Sem_Aggr is
                   Error_Msg_N ("mixed iterated component association"
                    & " (RM 4.3.3 (17.1/5))",
                       Assoc);
-                  return False;
+                  return Failure;
                end if;
 
                Next (Assoc);
@@ -1985,7 +1985,7 @@ package body Sem_Aggr is
                   Error_Msg_N ("mixed iterated component association"
                     & " (RM 4.3.3 (17.1/5))",
                       Assoc);
-                  return False;
+                  return Failure;
                end if;
 
                Next (Assoc);
