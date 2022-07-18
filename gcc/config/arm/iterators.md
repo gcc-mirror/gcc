@@ -1150,6 +1150,13 @@
                               (UNSPEC_VRINTA "unconditional") (UNSPEC_VRINTM "unconditional")
                               (UNSPEC_VRINTR "nocond") (UNSPEC_VRINTX "nocond")])
 
+(define_int_attr nvrint_pattern [(UNSPEC_NVRINTZ "btrunc")
+				 (UNSPEC_NVRINTP "ceil")
+				 (UNSPEC_NVRINTA "round")
+				 (UNSPEC_NVRINTM "floor")
+				 (UNSPEC_NVRINTX "rint")
+				 (UNSPEC_NVRINTN "roundeven")])
+
 (define_int_attr nvrint_variant [(UNSPEC_NVRINTZ "z") (UNSPEC_NVRINTP "p")
                                 (UNSPEC_NVRINTA "a") (UNSPEC_NVRINTM "m")
                                 (UNSPEC_NVRINTX "x") (UNSPEC_NVRINTN "n")])
