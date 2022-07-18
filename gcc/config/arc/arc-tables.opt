@@ -70,6 +70,9 @@ EnumValue
 Enum(processor_type) String(hs4xd) Value(PROCESSOR_hs4xd)
 
 EnumValue
+Enum(processor_type) String(hs4x_rel31) Value(PROCESSOR_hs4x_rel31)
+
+EnumValue
 Enum(processor_type) String(arc600) Value(PROCESSOR_arc600)
 
 EnumValue

@@ -276,6 +276,9 @@ Enum(arc_tune_attr) String(arc750d) Value(ARC_TUNE_ARC700_4_2_XMAC)
 EnumValue
 Enum(arc_tune_attr) String(core3) Value(ARC_TUNE_CORE_3)
 
+EnumValue
+Enum(arc_tune_attr) String(release31a) Value(ARC_TUNE_ARCHS4X_REL31A)
+
 mindexed-loads
 Target Var(TARGET_INDEXED_LOADS) Init(TARGET_INDEXED_LOADS_DEFAULT)
 Enable the use of indexed loads.
