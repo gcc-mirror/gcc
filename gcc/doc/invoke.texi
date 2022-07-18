@@ -28373,12 +28373,14 @@ limit optimization.
 
 @item -mrelax
 @itemx -mno-relax
+@opindex mrelax
 Take advantage of linker relaxations to reduce the number of instructions
 required to materialize symbol addresses. The default is to take advantage of
 linker relaxations.
 
 @item -mriscv-attribute
 @itemx -mno-riscv-attribute
+@opindex mriscv-attribute
 Emit (do not emit) RISC-V attribute to record extra information into ELF
 objects.  This feature requires at least binutils 2.32.
 
