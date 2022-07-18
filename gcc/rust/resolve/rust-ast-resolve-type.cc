@@ -384,6 +384,7 @@ ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
 	    std::vector<CanonicalPath> args;
 	    if (s->has_generic_args ())
 	      {
+		ResolveGenericArgs::go (s->get_generic_args ());
 		for (auto &generic : s->get_generic_args ().get_generic_args ())
 		  {
 		    // FIXME: What do we want to do here in case there is a
@@ -391,25 +392,13 @@ ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
 		    // TODO: At that point, will all generics have been
 		    // disambiguated? Can we thus canonical resolve types and
 		    // const and `gcc_unreachable` on ambiguous types?
-		    //
-		    // FIXME: Arthur: This is an ugly hack to resolve just as
-		    // much as before despite not handling ambiguity yet. The
-		    // calls to `clone_type` will be removed.
-		    std::unique_ptr<AST::Type> gt = nullptr;
-
+		    // This is probably fine as we just want to canonicalize
+		    // types, right?
 		    if (generic.get_kind () == AST::GenericArg::Kind::Type)
-		      gt = generic.get_type ()->clone_type ();
-		    else if (generic.get_kind ()
-			     == AST::GenericArg::Kind::Either)
-		      gt = generic.disambiguate_to_type ()
-			     .get_type ()
-			     ->clone_type ();
-
-		    if (gt)
 		      {
 			CanonicalPath arg = CanonicalPath::create_empty ();
-			bool ok
-			  = ResolveTypeToCanonicalPath::go (gt.get (), arg);
+			bool ok = ResolveTypeToCanonicalPath::go (
+			  generic.get_type ().get (), arg);
 			if (ok)
 			  args.push_back (std::move (arg));
 		      }
@@ -492,20 +481,79 @@ ResolveTypeToCanonicalPath::ResolveTypeToCanonicalPath ()
   : ResolverBase (), result (CanonicalPath::create_empty ())
 {}
 
-void
-ResolveGenericArgs::go (AST::GenericArgs &args)
+bool
+ResolveGenericArgs::is_const_value_name (const CanonicalPath &path)
 {
-  for (auto &arg : args.get_generic_args ())
+  NodeId resolved;
+  auto found = resolver->get_name_scope ().lookup (path, &resolved);
+
+  return found;
+}
+
+bool
+ResolveGenericArgs::is_type_name (const CanonicalPath &path)
+{
+  NodeId resolved;
+  auto found = resolver->get_type_scope ().lookup (path, &resolved);
+
+  return found;
+}
+
+void
+ResolveGenericArgs::disambiguate (AST::GenericArg &arg)
+{
+  auto path = canonical_prefix.append (
+    CanonicalPath::new_seg (UNKNOWN_NODEID, arg.get_path ()));
+
+  auto is_type = is_type_name (path);
+  auto is_value = is_const_value_name (path);
+
+  // In case we cannot find anything, we resolve the ambiguity to a type.
+  // This causes the typechecker to error out properly and when necessary.
+  // But types also take priority over const values in the case of
+  // ambiguities, hence the weird control flow
+  if (is_type || (!is_type && !is_value))
+    arg = arg.disambiguate_to_type ();
+  else if (is_value)
+    arg = arg.disambiguate_to_const ();
+}
+
+void
+ResolveGenericArgs::resolve_disambiguated_generic (AST::GenericArg &arg)
+{
+  switch (arg.get_kind ())
     {
-      // FIXME: Arthur: Ugly hack while waiting for disambiguation
+    case AST::GenericArg::Kind::Const:
+      ResolveExpr::go (arg.get_expression ().get (), prefix, canonical_prefix);
+      break;
+    case AST::GenericArg::Kind::Type:
+      ResolveType::go (arg.get_type ().get ());
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+void
+ResolveGenericArgs::go (AST::GenericArgs &generic_args)
+{
+  auto empty = CanonicalPath::create_empty ();
+
+  go (generic_args, empty, empty);
+}
+
+void
+ResolveGenericArgs::go (AST::GenericArgs &generic_args,
+			const CanonicalPath &prefix,
+			const CanonicalPath &canonical_prefix)
+{
+  auto resolver = ResolveGenericArgs (prefix, canonical_prefix);
+
+  for (auto &arg : generic_args.get_generic_args ())
+    {
       if (arg.get_kind () == AST::GenericArg::Kind::Either)
-	arg = arg.disambiguate_to_type ();
+	resolver.disambiguate (arg);
 
-      if (arg.get_kind () == AST::GenericArg::Kind::Type)
-	ResolveType::go (arg.get_type ().get ());
-
-      // else...
-      // We need to use a switch instead
+      resolver.resolve_disambiguated_generic (arg);
     }
 }
 
