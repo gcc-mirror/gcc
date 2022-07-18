@@ -26,6 +26,13 @@
 #include "hash-map.h"
 #include "diagnostic.h"
 #include "timevar.h"
+#include "convert.h"
+#include "gimple-expr.h"
+
+// forked from gcc/c-family/c-common.cc c_global_trees
+tree c_global_trees[CTI_MAX];
+// forked from gcc/cp/decl.cc cp_global_trees
+tree cp_global_trees[CPTI_MAX];
 
 namespace Rust {
 
@@ -995,7 +1002,115 @@ rs_type_quals (const_tree type)
 	tree type_info_type_node, tinfo_decl_id, tinfo_decl_type;
 	tree tinfo_var_id;  */
 
-tree cp_global_trees[CPTI_MAX];
+/* The following symbols are subsumed in the c_global_trees array, and
+   listed here individually for documentation purposes.
+
+   INTEGER_TYPE and REAL_TYPE nodes for the standard data types.
+
+	tree short_integer_type_node;
+	tree long_integer_type_node;
+	tree long_long_integer_type_node;
+
+	tree short_unsigned_type_node;
+	tree long_unsigned_type_node;
+	tree long_long_unsigned_type_node;
+
+	tree truthvalue_type_node;
+	tree truthvalue_false_node;
+	tree truthvalue_true_node;
+
+	tree ptrdiff_type_node;
+
+	tree unsigned_char_type_node;
+	tree signed_char_type_node;
+	tree wchar_type_node;
+
+	tree char8_type_node;
+	tree char16_type_node;
+	tree char32_type_node;
+
+	tree float_type_node;
+	tree double_type_node;
+	tree long_double_type_node;
+
+	tree complex_integer_type_node;
+	tree complex_float_type_node;
+	tree complex_double_type_node;
+	tree complex_long_double_type_node;
+
+	tree dfloat32_type_node;
+	tree dfloat64_type_node;
+	tree_dfloat128_type_node;
+
+	tree intQI_type_node;
+	tree intHI_type_node;
+	tree intSI_type_node;
+	tree intDI_type_node;
+	tree intTI_type_node;
+
+	tree unsigned_intQI_type_node;
+	tree unsigned_intHI_type_node;
+	tree unsigned_intSI_type_node;
+	tree unsigned_intDI_type_node;
+	tree unsigned_intTI_type_node;
+
+	tree widest_integer_literal_type_node;
+	tree widest_unsigned_literal_type_node;
+
+   Nodes for types `void *' and `const void *'.
+
+	tree ptr_type_node, const_ptr_type_node;
+
+   Nodes for types `char *' and `const char *'.
+
+	tree string_type_node, const_string_type_node;
+
+   Type `char[SOMENUMBER]'.
+   Used when an array of char is needed and the size is irrelevant.
+
+	tree char_array_type_node;
+
+   Type `wchar_t[SOMENUMBER]' or something like it.
+   Used when a wide string literal is created.
+
+	tree wchar_array_type_node;
+
+   Type `char8_t[SOMENUMBER]' or something like it.
+   Used when a UTF-8 string literal is created.
+
+	tree char8_array_type_node;
+
+   Type `char16_t[SOMENUMBER]' or something like it.
+   Used when a UTF-16 string literal is created.
+
+	tree char16_array_type_node;
+
+   Type `char32_t[SOMENUMBER]' or something like it.
+   Used when a UTF-32 string literal is created.
+
+	tree char32_array_type_node;
+
+   Type `int ()' -- used for implicit declaration of functions.
+
+	tree default_function_type;
+
+   A VOID_TYPE node, packaged in a TREE_LIST.
+
+	tree void_list_node;
+
+  The lazily created VAR_DECLs for __FUNCTION__, __PRETTY_FUNCTION__,
+  and __func__. (C doesn't generate __FUNCTION__ and__PRETTY_FUNCTION__
+  VAR_DECLS, but C++ does.)
+
+	tree function_name_decl_node;
+	tree pretty_function_name_decl_node;
+	tree c99_function_name_decl_node;
+
+  Stack of nested function name VAR_DECLs.
+
+	tree saved_function_name_decls;
+
+*/
 
 // forked from gcc/cp/module.cc fixed_trees
 
@@ -1035,6 +1150,7 @@ maybe_add_global (tree val, unsigned &crc)
 /* Global trees.  */
 static const std::pair<tree *, unsigned> global_tree_arys[] = {
   std::pair<tree *, unsigned> (cp_global_trees, CPTI_MODULE_HWM),
+  std::pair<tree *, unsigned> (c_global_trees, CTI_MODULE_HWM),
 };
 
 // forked from gcc/cp/module.cc init_modules
@@ -1047,6 +1163,13 @@ init_modules ()
 
   const tree *ptr = global_tree_arys[0].first;
   unsigned limit = global_tree_arys[0].second;
+  for (unsigned ix = 0; ix != limit; ix++, ptr++)
+    {
+      maybe_add_global (*ptr, crc);
+    }
+
+  ptr = global_tree_arys[1].first;
+  limit = global_tree_arys[1].second;
   for (unsigned ix = 0; ix != limit; ix++, ptr++)
     {
       maybe_add_global (*ptr, crc);
@@ -3221,5 +3344,381 @@ release_tree_vector (vec<tree, va_gc> *vec)
 	  vec_safe_push (tree_vector_cache, vec);
 	}
     }
+}
+
+// forked from gcc/cp/cvt.cc instantiation_dependent_expression_p
+
+/* As above, but also check value-dependence of the expression as a whole.  */
+
+bool
+instantiation_dependent_expression_p (tree expression)
+{
+  return false;
+}
+
+// forked from gcc/cp/cvt.cc cp_get_callee
+
+/* If CALL is a call, return the callee; otherwise null.  */
+
+tree
+cp_get_callee (tree call)
+{
+  if (call == NULL_TREE)
+    return call;
+  else if (TREE_CODE (call) == CALL_EXPR)
+    return CALL_EXPR_FN (call);
+  return NULL_TREE;
+}
+
+// forked from gcc/cp/typeck.cc build_nop
+
+/* Return a NOP_EXPR converting EXPR to TYPE.  */
+
+tree
+build_nop (tree type, tree expr)
+{
+  if (type == error_mark_node || error_operand_p (expr))
+    return expr;
+  return build1_loc (EXPR_LOCATION (expr), NOP_EXPR, type, expr);
+}
+
+// forked from gcc/cp/tree.cc scalarish_type_p
+
+/* Returns 1 iff type T is something we want to treat as a scalar type for
+   the purpose of deciding whether it is trivial/POD/standard-layout.  */
+
+bool
+scalarish_type_p (const_tree t)
+{
+  if (t == error_mark_node)
+    return 1;
+
+  return (SCALAR_TYPE_P (t) || VECTOR_TYPE_P (t));
+}
+
+// forked from gcc/cp/tree.cc type_has_nontrivial_copy_init
+
+/* Returns true iff copying an object of type T (including via move
+   constructor) is non-trivial.  That is, T has no non-trivial copy
+   constructors and no non-trivial move constructors, and not all copy/move
+   constructors are deleted.  This function implements the ABI notion of
+   non-trivial copy, which has diverged from the one in the standard.  */
+
+bool
+type_has_nontrivial_copy_init (const_tree type)
+{
+  return false;
+}
+
+// forked from gcc/cp/tree.cc build_local_temp
+
+/* Return an undeclared local temporary of type TYPE for use in building a
+   TARGET_EXPR.  */
+
+tree
+build_local_temp (tree type)
+{
+  tree slot = build_decl (input_location, VAR_DECL, NULL_TREE, type);
+  DECL_ARTIFICIAL (slot) = 1;
+  DECL_IGNORED_P (slot) = 1;
+  DECL_CONTEXT (slot) = current_function_decl;
+  layout_decl (slot, 0);
+  return slot;
+}
+
+// forked from gcc/cp/lambda.cc is_normal_capture_proxy
+
+/* Returns true iff DECL is a capture proxy for a normal capture
+   (i.e. without explicit initializer).  */
+
+bool
+is_normal_capture_proxy (tree decl)
+{
+  return false;
+}
+
+// forked from gcc/cp/c-common.cc reject_gcc_builtin
+
+/* For an EXPR of a FUNCTION_TYPE that references a GCC built-in function
+   with no library fallback or for an ADDR_EXPR whose operand is such type
+   issues an error pointing to the location LOC.
+   Returns true when the expression has been diagnosed and false
+   otherwise.  */
+
+bool
+reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
+{
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
+  if (TREE_TYPE (expr) && TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE
+      && TREE_CODE (expr) == FUNCTION_DECL
+      /* The intersection of DECL_BUILT_IN and DECL_IS_UNDECLARED_BUILTIN avoids
+	 false positives for user-declared built-ins such as abs or
+	 strlen, and for C++ operators new and delete.
+	 The c_decl_implicit() test avoids false positives for implicitly
+	 declared built-ins with library fallbacks (such as abs).  */
+      && fndecl_built_in_p (expr) && DECL_IS_UNDECLARED_BUILTIN (expr)
+      && !DECL_ASSEMBLER_NAME_SET_P (expr))
+    {
+      if (loc == UNKNOWN_LOCATION)
+	loc = EXPR_LOC_OR_LOC (expr, input_location);
+
+      /* Reject arguments that are built-in functions with
+	 no library fallback.  */
+      error_at (loc, "built-in function %qE must be directly called", expr);
+
+      return true;
+    }
+
+  return false;
+}
+
+// forked from gcc/cp/typeck.cc is_bitfield_expr_with_lowered_type
+
+/* If EXP is a reference to a bit-field, and the type of EXP does not
+   match the declared type of the bit-field, return the declared type
+   of the bit-field.  Otherwise, return NULL_TREE.  */
+
+tree
+is_bitfield_expr_with_lowered_type (const_tree exp)
+{
+  switch (TREE_CODE (exp))
+    {
+    case COND_EXPR:
+      if (!is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 1)
+						 ? TREE_OPERAND (exp, 1)
+						 : TREE_OPERAND (exp, 0)))
+	return NULL_TREE;
+      return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 2));
+
+    case COMPOUND_EXPR:
+      return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 1));
+
+    case MODIFY_EXPR:
+    case SAVE_EXPR:
+    case UNARY_PLUS_EXPR:
+    case PREDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case NEGATE_EXPR:
+    case NON_LVALUE_EXPR:
+    case BIT_NOT_EXPR:
+      return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 0));
+
+      case COMPONENT_REF: {
+	tree field;
+
+	field = TREE_OPERAND (exp, 1);
+	if (TREE_CODE (field) != FIELD_DECL || !DECL_BIT_FIELD_TYPE (field))
+	  return NULL_TREE;
+	if (same_type_ignoring_top_level_qualifiers_p (
+	      TREE_TYPE (exp), DECL_BIT_FIELD_TYPE (field)))
+	  return NULL_TREE;
+	return DECL_BIT_FIELD_TYPE (field);
+      }
+
+    case VAR_DECL:
+      if (DECL_HAS_VALUE_EXPR_P (exp))
+	return is_bitfield_expr_with_lowered_type (
+	  DECL_VALUE_EXPR (CONST_CAST_TREE (exp)));
+      return NULL_TREE;
+
+    case VIEW_CONVERT_EXPR:
+      if (location_wrapper_p (exp))
+	return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 0));
+      else
+	return NULL_TREE;
+
+    default:
+      return NULL_TREE;
+    }
+}
+
+// forked from gcc/cp/semantics.cc maybe_undo_parenthesized_ref
+
+/* If T is an id-expression obfuscated by force_paren_expr, undo the
+   obfuscation and return the underlying id-expression.  Otherwise
+   return T.  */
+
+tree
+maybe_undo_parenthesized_ref (tree t)
+{
+  if ((TREE_CODE (t) == PAREN_EXPR || TREE_CODE (t) == VIEW_CONVERT_EXPR)
+      && REF_PARENTHESIZED_P (t))
+    t = TREE_OPERAND (t, 0);
+
+  return t;
+}
+
+// forked from gcc/c-family/c-common.cc fold_offsetof
+
+/* Fold an offsetof-like expression.  EXPR is a nested sequence of component
+   references with an INDIRECT_REF of a constant at the bottom; much like the
+   traditional rendering of offsetof as a macro.  TYPE is the desired type of
+   the whole expression.  Return the folded result.  */
+
+tree
+fold_offsetof (tree expr, tree type, enum tree_code ctx)
+{
+  tree base, off, t;
+  tree_code code = TREE_CODE (expr);
+  switch (code)
+    {
+    case ERROR_MARK:
+      return expr;
+
+    case VAR_DECL:
+      error ("cannot apply %<offsetof%> to static data member %qD", expr);
+      return error_mark_node;
+
+    case CALL_EXPR:
+    case TARGET_EXPR:
+      error ("cannot apply %<offsetof%> when %<operator[]%> is overloaded");
+      return error_mark_node;
+
+    case NOP_EXPR:
+    case INDIRECT_REF:
+      if (!TREE_CONSTANT (TREE_OPERAND (expr, 0)))
+	{
+	  error ("cannot apply %<offsetof%> to a non constant address");
+	  return error_mark_node;
+	}
+      return convert (type, TREE_OPERAND (expr, 0));
+
+    case COMPONENT_REF:
+      base = fold_offsetof (TREE_OPERAND (expr, 0), type, code);
+      if (base == error_mark_node)
+	return base;
+
+      t = TREE_OPERAND (expr, 1);
+      if (DECL_C_BIT_FIELD (t))
+	{
+	  error ("attempt to take address of bit-field structure "
+		 "member %qD",
+		 t);
+	  return error_mark_node;
+	}
+      off = size_binop_loc (input_location, PLUS_EXPR, DECL_FIELD_OFFSET (t),
+			    size_int (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (t))
+				      / BITS_PER_UNIT));
+      break;
+
+    case ARRAY_REF:
+      base = fold_offsetof (TREE_OPERAND (expr, 0), type, code);
+      if (base == error_mark_node)
+	return base;
+
+      t = TREE_OPERAND (expr, 1);
+      STRIP_ANY_LOCATION_WRAPPER (t);
+
+      /* Check if the offset goes beyond the upper bound of the array.  */
+      if (TREE_CODE (t) == INTEGER_CST && tree_int_cst_sgn (t) >= 0)
+	{
+	  tree upbound = array_ref_up_bound (expr);
+	  if (upbound != NULL_TREE && TREE_CODE (upbound) == INTEGER_CST
+	      && !tree_int_cst_equal (upbound,
+				      TYPE_MAX_VALUE (TREE_TYPE (upbound))))
+	    {
+	      if (ctx != ARRAY_REF && ctx != COMPONENT_REF)
+		upbound = size_binop (PLUS_EXPR, upbound,
+				      build_int_cst (TREE_TYPE (upbound), 1));
+	      if (tree_int_cst_lt (upbound, t))
+		{
+		  tree v;
+
+		  for (v = TREE_OPERAND (expr, 0);
+		       TREE_CODE (v) == COMPONENT_REF; v = TREE_OPERAND (v, 0))
+		    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
+			== RECORD_TYPE)
+		      {
+			tree fld_chain = DECL_CHAIN (TREE_OPERAND (v, 1));
+			for (; fld_chain; fld_chain = DECL_CHAIN (fld_chain))
+			  if (TREE_CODE (fld_chain) == FIELD_DECL)
+			    break;
+
+			if (fld_chain)
+			  break;
+		      }
+		  /* Don't warn if the array might be considered a poor
+		     man's flexible array member with a very permissive
+		     definition thereof.  */
+		  if (TREE_CODE (v) == ARRAY_REF
+		      || TREE_CODE (v) == COMPONENT_REF)
+		    warning (OPT_Warray_bounds,
+			     "index %E denotes an offset "
+			     "greater than size of %qT",
+			     t, TREE_TYPE (TREE_OPERAND (expr, 0)));
+		}
+	    }
+	}
+
+      t = convert (sizetype, t);
+      off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
+      break;
+
+    case COMPOUND_EXPR:
+      /* Handle static members of volatile structs.  */
+      t = TREE_OPERAND (expr, 1);
+      gcc_checking_assert (VAR_P (get_base_address (t)));
+      return fold_offsetof (t, type);
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (!POINTER_TYPE_P (type))
+    return size_binop (PLUS_EXPR, base, convert (type, off));
+  return fold_build_pointer_plus (base, off);
+}
+
+// forked from gcc/cp/tree.cc char_type_p
+
+/* Returns nonzero if TYPE is a character type, including wchar_t.  */
+
+int
+char_type_p (tree type)
+{
+  return (same_type_p (type, char_type_node)
+	  || same_type_p (type, unsigned_char_type_node)
+	  || same_type_p (type, signed_char_type_node)
+	  || same_type_p (type, char8_type_node)
+	  || same_type_p (type, char16_type_node)
+	  || same_type_p (type, char32_type_node)
+	  || same_type_p (type, wchar_type_node));
+}
+
+// forked from gcc/cp/pt.cc resolve_nondeduced_context
+
+/* Core DR 115: In contexts where deduction is done and fails, or in
+   contexts where deduction is not done, if a template argument list is
+   specified and it, along with any default template arguments, identifies
+   a single function template specialization, then the template-id is an
+   lvalue for the function template specialization.  */
+
+tree
+resolve_nondeduced_context (tree orig_expr, tsubst_flags_t complain)
+{
+  tree expr, offset, baselink;
+  bool addr;
+
+  if (!type_unknown_p (orig_expr))
+    return orig_expr;
+
+  expr = orig_expr;
+  addr = false;
+  offset = NULL_TREE;
+  baselink = NULL_TREE;
+
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    {
+      expr = TREE_OPERAND (expr, 0);
+      addr = true;
+    }
+
+  return orig_expr;
 }
 } // namespace Rust

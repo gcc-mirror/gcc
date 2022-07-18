@@ -158,6 +158,89 @@
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE)                                       \
   TREE_CHECK2 (NODE, VAR_DECL, FUNCTION_DECL)
 
+// forked from gcc/cp/c-common.h c_tree_index
+
+/* Standard named or nameless data types of the C compiler.  */
+
+enum c_tree_index
+{
+  CTI_CHAR8_TYPE,
+  CTI_CHAR16_TYPE,
+  CTI_CHAR32_TYPE,
+  CTI_WCHAR_TYPE,
+  CTI_UNDERLYING_WCHAR_TYPE,
+  CTI_WINT_TYPE,
+  CTI_SIGNED_SIZE_TYPE,	     /* For format checking only.  */
+  CTI_UNSIGNED_PTRDIFF_TYPE, /* For format checking only.  */
+  CTI_INTMAX_TYPE,
+  CTI_UINTMAX_TYPE,
+  CTI_WIDEST_INT_LIT_TYPE,
+  CTI_WIDEST_UINT_LIT_TYPE,
+
+  /* Types for <stdint.h>, that may not be defined on all
+     targets.  */
+  CTI_SIG_ATOMIC_TYPE,
+  CTI_INT8_TYPE,
+  CTI_INT16_TYPE,
+  CTI_INT32_TYPE,
+  CTI_INT64_TYPE,
+  CTI_UINT8_TYPE,
+  CTI_UINT16_TYPE,
+  CTI_UINT32_TYPE,
+  CTI_UINT64_TYPE,
+  CTI_INT_LEAST8_TYPE,
+  CTI_INT_LEAST16_TYPE,
+  CTI_INT_LEAST32_TYPE,
+  CTI_INT_LEAST64_TYPE,
+  CTI_UINT_LEAST8_TYPE,
+  CTI_UINT_LEAST16_TYPE,
+  CTI_UINT_LEAST32_TYPE,
+  CTI_UINT_LEAST64_TYPE,
+  CTI_INT_FAST8_TYPE,
+  CTI_INT_FAST16_TYPE,
+  CTI_INT_FAST32_TYPE,
+  CTI_INT_FAST64_TYPE,
+  CTI_UINT_FAST8_TYPE,
+  CTI_UINT_FAST16_TYPE,
+  CTI_UINT_FAST32_TYPE,
+  CTI_UINT_FAST64_TYPE,
+  CTI_INTPTR_TYPE,
+  CTI_UINTPTR_TYPE,
+
+  CTI_CHAR_ARRAY_TYPE,
+  CTI_CHAR8_ARRAY_TYPE,
+  CTI_CHAR16_ARRAY_TYPE,
+  CTI_CHAR32_ARRAY_TYPE,
+  CTI_WCHAR_ARRAY_TYPE,
+  CTI_STRING_TYPE,
+  CTI_CONST_STRING_TYPE,
+
+  /* Type for boolean expressions (bool in C++, int in C).  */
+  CTI_TRUTHVALUE_TYPE,
+  CTI_TRUTHVALUE_TRUE,
+  CTI_TRUTHVALUE_FALSE,
+
+  CTI_DEFAULT_FUNCTION_TYPE,
+
+  CTI_NULL,
+
+  /* These are not types, but we have to look them up all the time.  */
+  CTI_FUNCTION_NAME_DECL,
+  CTI_PRETTY_FUNCTION_NAME_DECL,
+  CTI_C99_FUNCTION_NAME_DECL,
+
+  CTI_MODULE_HWM,
+  /* Below here entities change during compilation.  */
+
+  CTI_SAVED_FUNCTION_NAME_DECLS,
+
+  CTI_MAX
+};
+
+// forked from gcc/c-family/c-common.h c_tree_index
+
+extern GTY (()) tree c_global_trees[CTI_MAX];
+
 // forked from gcc/cp/cp-tree.h cp_tree_index
 
 enum cp_tree_index
@@ -306,6 +389,71 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define nullptr_type_node cp_global_trees[CPTI_NULLPTR_TYPE]
 /* std::align_val_t */
 #define align_type_node cp_global_trees[CPTI_ALIGN_TYPE]
+
+#define char8_type_node c_global_trees[CTI_CHAR8_TYPE]
+#define char16_type_node c_global_trees[CTI_CHAR16_TYPE]
+#define char32_type_node c_global_trees[CTI_CHAR32_TYPE]
+#define wchar_type_node c_global_trees[CTI_WCHAR_TYPE]
+#define underlying_wchar_type_node c_global_trees[CTI_UNDERLYING_WCHAR_TYPE]
+#define wint_type_node c_global_trees[CTI_WINT_TYPE]
+#define signed_size_type_node c_global_trees[CTI_SIGNED_SIZE_TYPE]
+#define unsigned_ptrdiff_type_node c_global_trees[CTI_UNSIGNED_PTRDIFF_TYPE]
+#define intmax_type_node c_global_trees[CTI_INTMAX_TYPE]
+#define uintmax_type_node c_global_trees[CTI_UINTMAX_TYPE]
+#define widest_integer_literal_type_node c_global_trees[CTI_WIDEST_INT_LIT_TYPE]
+#define widest_unsigned_literal_type_node                                      \
+  c_global_trees[CTI_WIDEST_UINT_LIT_TYPE]
+
+#define sig_atomic_type_node c_global_trees[CTI_SIG_ATOMIC_TYPE]
+#define int8_type_node c_global_trees[CTI_INT8_TYPE]
+#define int16_type_node c_global_trees[CTI_INT16_TYPE]
+#define int32_type_node c_global_trees[CTI_INT32_TYPE]
+#define int64_type_node c_global_trees[CTI_INT64_TYPE]
+#define uint8_type_node c_global_trees[CTI_UINT8_TYPE]
+#define c_uint16_type_node c_global_trees[CTI_UINT16_TYPE]
+#define c_uint32_type_node c_global_trees[CTI_UINT32_TYPE]
+#define c_uint64_type_node c_global_trees[CTI_UINT64_TYPE]
+#define int_least8_type_node c_global_trees[CTI_INT_LEAST8_TYPE]
+#define int_least16_type_node c_global_trees[CTI_INT_LEAST16_TYPE]
+#define int_least32_type_node c_global_trees[CTI_INT_LEAST32_TYPE]
+#define int_least64_type_node c_global_trees[CTI_INT_LEAST64_TYPE]
+#define uint_least8_type_node c_global_trees[CTI_UINT_LEAST8_TYPE]
+#define uint_least16_type_node c_global_trees[CTI_UINT_LEAST16_TYPE]
+#define uint_least32_type_node c_global_trees[CTI_UINT_LEAST32_TYPE]
+#define uint_least64_type_node c_global_trees[CTI_UINT_LEAST64_TYPE]
+#define int_fast8_type_node c_global_trees[CTI_INT_FAST8_TYPE]
+#define int_fast16_type_node c_global_trees[CTI_INT_FAST16_TYPE]
+#define int_fast32_type_node c_global_trees[CTI_INT_FAST32_TYPE]
+#define int_fast64_type_node c_global_trees[CTI_INT_FAST64_TYPE]
+#define uint_fast8_type_node c_global_trees[CTI_UINT_FAST8_TYPE]
+#define uint_fast16_type_node c_global_trees[CTI_UINT_FAST16_TYPE]
+#define uint_fast32_type_node c_global_trees[CTI_UINT_FAST32_TYPE]
+#define uint_fast64_type_node c_global_trees[CTI_UINT_FAST64_TYPE]
+#define intptr_type_node c_global_trees[CTI_INTPTR_TYPE]
+#define uintptr_type_node c_global_trees[CTI_UINTPTR_TYPE]
+
+#define truthvalue_type_node c_global_trees[CTI_TRUTHVALUE_TYPE]
+#define truthvalue_true_node c_global_trees[CTI_TRUTHVALUE_TRUE]
+#define truthvalue_false_node c_global_trees[CTI_TRUTHVALUE_FALSE]
+
+#define char_array_type_node c_global_trees[CTI_CHAR_ARRAY_TYPE]
+#define char8_array_type_node c_global_trees[CTI_CHAR8_ARRAY_TYPE]
+#define char16_array_type_node c_global_trees[CTI_CHAR16_ARRAY_TYPE]
+#define char32_array_type_node c_global_trees[CTI_CHAR32_ARRAY_TYPE]
+#define wchar_array_type_node c_global_trees[CTI_WCHAR_ARRAY_TYPE]
+#define string_type_node c_global_trees[CTI_STRING_TYPE]
+#define const_string_type_node c_global_trees[CTI_CONST_STRING_TYPE]
+
+#define default_function_type c_global_trees[CTI_DEFAULT_FUNCTION_TYPE]
+
+#define function_name_decl_node c_global_trees[CTI_FUNCTION_NAME_DECL]
+#define pretty_function_name_decl_node                                         \
+  c_global_trees[CTI_PRETTY_FUNCTION_NAME_DECL]
+#define c99_function_name_decl_node c_global_trees[CTI_C99_FUNCTION_NAME_DECL]
+#define saved_function_name_decls c_global_trees[CTI_SAVED_FUNCTION_NAME_DECLS]
+
+/* The node for C++ `__null'.  */
+#define null_node c_global_trees[CTI_NULL]
 
 /* We cache these tree nodes so as to call get_identifier less frequently.
    For identifiers for functions, including special member functions such
@@ -911,6 +1059,45 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 /* Nonzero if DECL was declared with '= default' (maybe implicitly).  */
 #define DECL_DEFAULTED_FN(DECL) (LANG_DECL_FN_CHECK (DECL)->defaulted_p)
 
+/* True if NODE is a brace-enclosed initializer.  */
+#define BRACE_ENCLOSED_INITIALIZER_P(NODE)                                     \
+  (TREE_CODE (NODE) == CONSTRUCTOR && TREE_TYPE (NODE) == init_list_type_node)
+
+/* True if FNDECL is an immediate function.  */
+#define DECL_IMMEDIATE_FUNCTION_P(NODE)                                        \
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))                             \
+     ? LANG_DECL_FN_CHECK (NODE)->immediate_fn_p                               \
+     : false)
+#define SET_DECL_IMMEDIATE_FUNCTION_P(NODE)                                    \
+  (retrofit_lang_decl (FUNCTION_DECL_CHECK (NODE)),                            \
+   LANG_DECL_FN_CHECK (NODE)->immediate_fn_p = true)
+
+/* True if this CONSTRUCTOR should not be used as a variable initializer
+   because it was loaded from a constexpr variable with mutable fields.  */
+#define CONSTRUCTOR_MUTABLE_POISON(NODE)                                       \
+  (TREE_LANG_FLAG_2 (CONSTRUCTOR_CHECK (NODE)))
+
+/* For a pointer-to-member constant `X::Y' this is the _DECL for
+   `Y'.  */
+#define PTRMEM_CST_MEMBER(NODE)                                                \
+  (((ptrmem_cst_t) PTRMEM_CST_CHECK (NODE))->member)
+
+/* Indicates whether a COMPONENT_REF or a SCOPE_REF has been parenthesized, an
+   INDIRECT_REF comes from parenthesizing a _DECL, or a PAREN_EXPR identifies a
+   parenthesized initializer relevant for decltype(auto).  Currently only set
+   some of the time in C++14 mode.  */
+
+#define REF_PARENTHESIZED_P(NODE)                                              \
+  TREE_LANG_FLAG_2 (TREE_CHECK5 ((NODE), COMPONENT_REF, INDIRECT_REF,          \
+				 SCOPE_REF, VIEW_CONVERT_EXPR, PAREN_EXPR))
+
+/* Returns true if NODE is a pointer-to-member.  */
+#define TYPE_PTRMEM_P(NODE)                                                    \
+  (TYPE_PTRDATAMEM_P (NODE) || TYPE_PTRMEMFUNC_P (NODE))
+
+/* Returns true if NODE is a pointer or a pointer-to-member.  */
+#define TYPE_PTR_OR_PTRMEM_P(NODE) (TYPE_PTR_P (NODE) || TYPE_PTRMEM_P (NODE))
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
@@ -1034,6 +1221,68 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define STAT_DECL_HIDDEN_P(N) OVL_DEDUP_P (N)
 
 // Above macros are copied from gcc/cp/name-lookup.cc
+
+// forked from gcc/cp/cp-tree.h warning_sentinel
+
+/* RAII sentinel to disable certain warnings during template substitution
+   and elsewhere.  */
+
+class warning_sentinel
+{
+public:
+  int &flag;
+  int val;
+  warning_sentinel (int &flag, bool suppress = true) : flag (flag), val (flag)
+  {
+    if (suppress)
+      flag = 0;
+  }
+  ~warning_sentinel () { flag = val; }
+};
+
+// forked from gcc/cp/cp-tree.h uid_sensitive_constexpr_evaluation_checker
+
+/* Used to determine whether uid_sensitive_constexpr_evaluation_p was
+   called and returned true, indicating that we've restricted constexpr
+   evaluation in order to avoid UID generation.  We use this to control
+   updates to the fold_cache and cv_cache.  */
+
+struct uid_sensitive_constexpr_evaluation_checker
+{
+  const unsigned saved_counter;
+  uid_sensitive_constexpr_evaluation_checker ();
+  bool evaluation_restricted_p () const;
+};
+
+// forked from gcc/cp/cp-tree.h iloc_sentinel
+
+/* RAII sentinel to temporarily override input_location.  This will not set
+   input_location to UNKNOWN_LOCATION or BUILTINS_LOCATION.  */
+
+class iloc_sentinel
+{
+  location_t saved_loc;
+
+public:
+  iloc_sentinel (location_t loc) : saved_loc (input_location)
+  {
+    if (loc >= RESERVED_LOCATION_COUNT)
+      input_location = loc;
+  }
+  ~iloc_sentinel () { input_location = saved_loc; }
+};
+
+// forked from gcc/cp/cp-tree.h ptrmem_cst
+
+struct GTY (()) ptrmem_cst
+{
+  struct tree_common common;
+  tree member;
+  location_t locus;
+};
+typedef struct ptrmem_cst *ptrmem_cst_t;
+
+// forked from gcc/cp/cp-tree.h named_decl_hash
 
 /* hash traits for declarations.  Hashes potential overload sets via
    DECL_NAME.  */
@@ -1736,8 +1985,8 @@ mark_use (tree expr, bool rvalue_p, bool read_p, location_t loc,
 // function with no library fallback (or any of its bits, such as in
 // a conversion to bool).
 extern tree
-mark_rvalue_use (tree e, location_t loc /* = UNKNOWN_LOCATION */,
-		 bool reject_builtin /* = true */);
+mark_rvalue_use (tree, location_t = UNKNOWN_LOCATION,
+		 bool reject_builtin = true);
 
 // Called whenever an expression is used in an lvalue context.
 extern tree
@@ -1901,6 +2150,50 @@ extern bool reduced_constant_expression_p (tree);
 
 extern tree cv_unqualified (tree);
 
+extern tree cp_get_callee (tree);
+extern tree cp_get_callee_fndecl_nofold (tree);
+
+extern bool is_nondependent_static_init_expression (tree);
+
+extern tree
+maybe_constant_init (tree, tree = NULL_TREE, bool = false);
+
+extern tree build_nop (tree, tree);
+
+extern bool scalarish_type_p (const_tree);
+
+extern tree is_bitfield_expr_with_lowered_type (const_tree);
+
+extern tree convert_bitfield_to_declared_type (tree);
+
+extern tree
+cp_fold_maybe_rvalue (tree, bool);
+
+extern tree maybe_undo_parenthesized_ref (tree);
+
+extern tree
+fold_offsetof (tree, tree = size_type_node, tree_code ctx = ERROR_MARK);
+
+extern tree cp_truthvalue_conversion (tree, tsubst_flags_t);
+
+extern tree
+fold_non_dependent_expr (tree, tsubst_flags_t = tf_warning_or_error,
+			 bool = false, tree = NULL_TREE);
+
+extern int char_type_p (tree);
+
+extern bool instantiation_dependent_expression_p (tree);
+
+extern bool type_has_nontrivial_copy_init (const_tree);
+
+extern tree build_local_temp (tree);
+
+extern bool is_normal_capture_proxy (tree);
+
+extern bool reject_gcc_builtin (const_tree, location_t = UNKNOWN_LOCATION);
+
+extern tree resolve_nondeduced_context (tree, tsubst_flags_t);
+
 // forked from gcc/cp/cp-tree.h
 
 enum
@@ -2060,6 +2353,13 @@ inline tree *
 vec_safe_push (releasing_vec &r, const tree &t CXX_MEM_STAT_INFO)
 {
   return vec_safe_push (*&r, t PASS_MEM_STAT);
+}
+
+inline bool
+null_node_p (const_tree expr)
+{
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+  return expr == null_node;
 }
 
 } // namespace Rust

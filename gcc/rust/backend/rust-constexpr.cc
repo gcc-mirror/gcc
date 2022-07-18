@@ -25,7 +25,9 @@
 #include "print-tree.h"
 #include "gimplify.h"
 #include "tree-iterator.h"
+#include "timevar.h"
 #include "varasm.h"
+#include "cgraph.h"
 
 #define VERIFY_CONSTANT(X)                                                     \
   do                                                                           \
@@ -50,6 +52,11 @@ struct constexpr_global_ctx
 {
   HOST_WIDE_INT constexpr_ops_count;
 
+  /* Cleanups that need to be evaluated at the end of CLEANUP_POINT_EXPR.  */
+  vec<tree> *cleanups;
+  /* Heap VAR_DECLs created during the evaluation of the outermost constant
+     expression.  */
+  auto_vec<tree, 16> heap_vars;
   constexpr_global_ctx () : constexpr_ops_count (0) {}
 };
 
@@ -481,6 +488,60 @@ var_in_maybe_constexpr_fn (tree t)
 
 // forked from gcc/cp/constexpr.cc array_index_cmp
 
+/* Some of the expressions fed to the constexpr mechanism are calls to
+   constructors, which have type void.  In that case, return the type being
+   initialized by the constructor.  */
+
+static tree
+initialized_type (tree t)
+{
+  if (TYPE_P (t))
+    return t;
+  tree type = TREE_TYPE (t);
+  if (TREE_CODE (t) == CALL_EXPR)
+    {
+      /* A constructor call has void type, so we need to look deeper.  */
+      tree fn = get_function_named_in_call (t);
+      if (fn && TREE_CODE (fn) == FUNCTION_DECL && DECL_CXX_CONSTRUCTOR_P (fn))
+	type = DECL_CONTEXT (fn);
+    }
+  else if (TREE_CODE (t) == COMPOUND_EXPR)
+    return initialized_type (TREE_OPERAND (t, 1));
+
+  return cv_unqualified (type);
+}
+
+/* P0859: A function is needed for constant evaluation if it is a constexpr
+   function that is named by an expression ([basic.def.odr]) that is
+   potentially constant evaluated.
+
+   So we need to instantiate any constexpr functions mentioned by the
+   expression even if the definition isn't needed for evaluating the
+   expression.  */
+
+static tree
+instantiate_cx_fn_r (tree *tp, int *walk_subtrees, void * /*data*/)
+{
+  if (TREE_CODE (*tp) == CALL_EXPR)
+    {
+      if (EXPR_HAS_LOCATION (*tp))
+	input_location = EXPR_LOCATION (*tp);
+    }
+
+  if (!EXPR_P (*tp))
+    *walk_subtrees = 0;
+
+  return NULL_TREE;
+}
+
+static void
+instantiate_constexpr_fns (tree t)
+{
+  location_t loc = input_location;
+  rs_walk_tree_without_duplicates (&t, instantiate_cx_fn_r, NULL);
+  input_location = loc;
+}
+
 /* Returns less than, equal to, or greater than zero if KEY is found to be
    less than, to match, or to be greater than the constructor_elt's INDEX.  */
 
@@ -507,8 +568,6 @@ array_index_cmp (tree key, tree index)
       gcc_unreachable ();
     }
 }
-
-// forked from gcc/cp/constexpr.cc unshare_constructor
 
 /* If T is a CONSTRUCTOR, return an unshared copy of T and any
    sub-CONSTRUCTORs.  Otherwise return T.
@@ -539,8 +598,6 @@ unshare_constructor (tree t MEM_STAT_DECL)
     }
   return t;
 }
-
-// forked from gcc/cp/constexpr.cc find_array_ctor_elt
 
 /* Returns the index of the constructor_elt of ARY which matches DINDEX, or -1
    if none.  If INSERT is true, insert a matching element rather than fail.  */
@@ -666,8 +723,6 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert)
   return -1;
 }
 
-// forked from gcc/cp/constexpr.cc reduced_constant_expression_p
-
 /* Return true if T is a valid constant initializer.  If a CONSTRUCTOR
    initializes all the members, the CONSTRUCTOR_NO_CLEARING flag will be
    cleared.
@@ -758,8 +813,6 @@ reduced_constant_expression_p (tree t)
     }
 }
 
-// forked from gcc/cp/constexpr.cc verify_constant
-
 /* Some expressions may have constant operands but are not constant
    themselves, such as 1/0.  Call this function to check for that
    condition.
@@ -792,6 +845,42 @@ verify_constant (tree t, bool allow_non_constant, bool *non_constant_p,
       *overflow_p = true;
     }
   return *non_constant_p;
+}
+
+// forked from gcc/cp/constexpr.cc find_heap_var_refs
+
+/* Look for heap variables in the expression *TP.  */
+
+static tree
+find_heap_var_refs (tree *tp, int *walk_subtrees, void * /*data*/)
+{
+  if (VAR_P (*tp)
+      && (DECL_NAME (*tp) == heap_uninit_identifier
+	  || DECL_NAME (*tp) == heap_identifier
+	  || DECL_NAME (*tp) == heap_vec_uninit_identifier
+	  || DECL_NAME (*tp) == heap_vec_identifier
+	  || DECL_NAME (*tp) == heap_deleted_identifier))
+    return *tp;
+
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
+// forked from gcc/cp/constexpr.cc find_immediate_fndecl
+
+/* Find immediate function decls in *TP if any.  */
+
+static tree
+find_immediate_fndecl (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
+{
+  if (TREE_CODE (*tp) == FUNCTION_DECL && DECL_IMMEDIATE_FUNCTION_P (*tp))
+    return *tp;
+  if (TREE_CODE (*tp) == PTRMEM_CST
+      && TREE_CODE (PTRMEM_CST_MEMBER (*tp)) == FUNCTION_DECL
+      && DECL_IMMEDIATE_FUNCTION_P (PTRMEM_CST_MEMBER (*tp)))
+    return PTRMEM_CST_MEMBER (*tp);
+  return NULL_TREE;
 }
 
 // forked in gcc/cp/constexpr.cc diag_array_subscript
