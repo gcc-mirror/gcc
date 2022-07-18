@@ -3090,10 +3090,7 @@ loop_distribution::distribute_loop (class loop *loop,
   for (i = 0; partitions.iterate (i, &into); ++i)
     {
       bool changed = false;
-      if (partition_builtin_p (into) || into->kind == PKIND_PARTIAL_MEMSET)
-	continue;
-      for (int j = i + 1;
-	   partitions.iterate (j, &partition); ++j)
+      for (int j = i + 1; partitions.iterate (j, &partition); ++j)
 	{
 	  if (share_memory_accesses (rdg, into, partition))
 	    {
