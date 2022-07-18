@@ -55,6 +55,7 @@
 #define v2si_UP  E_V2SImode
 #define v2sf_UP  E_V2SFmode
 #define v1df_UP  E_V1DFmode
+#define v1di_UP  E_V1DImode
 #define di_UP    E_DImode
 #define df_UP    E_DFmode
 #define v16qi_UP E_V16QImode
@@ -144,9 +145,7 @@ enum aarch64_type_qualifiers
   qualifier_maybe_immediate = 0x10, /* 1 << 4  */
   /* void foo (...).  */
   qualifier_void = 0x20, /* 1 << 5  */
-  /* Some patterns may have internal operands, this qualifier is an
-     instruction to the initialisation code to skip this operand.  */
-  qualifier_internal = 0x40, /* 1 << 6  */
+  /* 1 << 6 is now unused */
   /* Some builtins should use the T_*mode* encoded in a simd_builtin_datum
      rather than using the type of the operand.  */
   qualifier_map_mode = 0x80, /* 1 << 7  */
@@ -1205,10 +1204,6 @@ aarch64_init_simd_builtin_functions (bool called_from_pragma)
 	    }
 	  else
 	    type_signature[op_num] = 's';
-
-	  /* Skip an internal operand for vget_{low, high}.  */
-	  if (qualifiers & qualifier_internal)
-	    continue;
 
 	  /* Some builtins have different user-facing types
 	     for certain arguments, encoded in d->mode.  */

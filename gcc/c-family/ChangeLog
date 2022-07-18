@@ -1,3 +1,17 @@
+2022-07-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104477
+	* c-common.cc (c_common_reswords): Add
+	__reference_constructs_from_temporary and
+	__reference_converts_from_temporary.
+	* c-common.h (enum rid): Add RID_REF_CONSTRUCTS_FROM_TEMPORARY and
+	RID_REF_CONVERTS_FROM_TEMPORARY.
+
+2022-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-format.cc (class range_label_for_format_type_mismatch):
+	Adjust to new label_text API.
+
 2022-07-11  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/106252

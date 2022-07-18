@@ -3913,8 +3913,8 @@ strlen_pass::handle_builtin_memset (bool *zero_write)
    nonnull if and only RES is used in such expressions exclusively and
    in none other.  */
 
-static gimple *
-use_in_zero_equality (tree res, bool exclusive = true)
+gimple *
+use_in_zero_equality (tree res, bool exclusive)
 {
   gimple *first_use = NULL;
 

@@ -1,3 +1,13 @@
+2022-07-16  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::struct_field_expression): Handle a void
+	expression, as for f().x where f returns a zero-sized type.
+
+2022-07-15  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::call_expression): Handle a void
+	argument, as for f(g()) where g returns a zero-sized type.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* go-lang.cc (go_get_sarif_source_language): New.

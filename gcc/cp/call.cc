@@ -9109,21 +9109,27 @@ conv_binds_ref_to_prvalue (conversion *c)
   return conv_is_prvalue (next_conversion (c));
 }
 
-/* True iff converting EXPR to a reference type TYPE does not involve
-   creating a temporary.  */
+/* Return tristate::TS_TRUE if converting EXPR to a reference type TYPE does
+   not involve creating a temporary.  Return tristate::TS_FALSE if converting
+   EXPR to a reference type TYPE binds the reference to a temporary.  If the
+   conversion is invalid or bad, return tristate::TS_UNKNOWN.  DIRECT_INIT_P
+   says whether the conversion should be done in direct- or copy-initialization
+   context.  */
 
-bool
-ref_conv_binds_directly_p (tree type, tree expr)
+tristate
+ref_conv_binds_directly (tree type, tree expr, bool direct_init_p /*= false*/)
 {
   gcc_assert (TYPE_REF_P (type));
 
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   void *p = conversion_obstack_alloc (0);
 
+  const int flags = direct_init_p ? LOOKUP_NORMAL : LOOKUP_IMPLICIT;
   conversion *conv = implicit_conversion (type, TREE_TYPE (expr), expr,
-					  /*c_cast_p=*/false,
-					  LOOKUP_IMPLICIT, tf_none);
-  bool ret = conv && !conv->bad_p && !conv_binds_ref_to_prvalue (conv);
+					  /*c_cast_p=*/false, flags, tf_none);
+  tristate ret (tristate::TS_UNKNOWN);
+  if (conv && !conv->bad_p)
+    ret = tristate (!conv_binds_ref_to_prvalue (conv));
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);

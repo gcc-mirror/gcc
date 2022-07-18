@@ -1,3 +1,11 @@
+2022-07-14  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/106156
+	* Makefile.am: Use ac_lto_plugin_extra_ldflags for AM_LDFLAGS.
+	* configure.ac: Use AC_SUBST(ac_lto_plugin_extra_ldflags).
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2022-07-12  Martin Liska  <mliska@suse.cz>
 
 	* lto-plugin.c (negotiate_api_version): New.

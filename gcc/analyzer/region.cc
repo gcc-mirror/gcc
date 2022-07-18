@@ -589,7 +589,7 @@ json::value *
 region::to_json () const
 {
   label_text desc = get_desc (true);
-  json::value *reg_js = new json::string (desc.m_buffer);
+  json::value *reg_js = new json::string (desc.get ());
   return reg_js;
 }
 

@@ -2696,6 +2696,12 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
     case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
       pp_cxx_ws_string (pp, "__is_nothrow_constructible");
       break;
+    case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
+      pp_cxx_ws_string (pp, "__reference_constructs_from_temporary");
+      break;
+    case CPTK_REF_CONVERTS_FROM_TEMPORARY:
+      pp_cxx_ws_string (pp, "__reference_converts_from_temporary");
+      break;
 
     default:
       gcc_unreachable ();
