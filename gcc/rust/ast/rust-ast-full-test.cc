@@ -4056,6 +4056,8 @@ Module::load_items ()
   Lexer lex (module_file.c_str (), std::move (file_wrap), linemap);
   Parser<Lexer> parser (lex);
 
+  // we need to parse any possible inner attributes for this module
+  inner_attrs = parser.parse_inner_attributes ();
   auto parsed_items = parser.parse_items ();
   for (const auto &error : parser.get_errors ())
     error.emit_error ();
