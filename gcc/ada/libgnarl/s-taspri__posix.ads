@@ -30,7 +30,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a POSIX-like version of this package
+--  This is the POSIX compliant systems implementation
+
+--  This package and its children provide a binding to the underlying platform.
+--  The base types are defined here while the functional implementations
+--  are in ``Task_Primitives.Operations``.
 
 --  Note: this file can only be used for POSIX compliant systems
 

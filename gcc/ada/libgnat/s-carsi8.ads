@@ -43,12 +43,23 @@ package System.Compare_Array_Signed_8 is
       Right     : System.Address;
       Left_Len  : Natural;
       Right_Len : Natural) return Integer;
-   --  Compare the array starting at address Left of length Left_Len
-   --  with the array starting at address Right of length Right_Len.
+   --  Compare the array starting at address ``Left`` of length ``Left_Len``
+   --  with the array starting at address ``Right`` of length ``Right_Len``.
    --  The comparison is in the normal Ada semantic sense of array
-   --  comparison. The result is -1,0,+1 for Left<Right, Left=Right,
-   --  Left>Right respectively. This function works with 4 byte words
-   --  if the operands are aligned on 4-byte boundaries and long enough.
+   --  comparison.
+   --
+   --  The result is -1, 0, +1 for ``Left`` < ``Right``, ``Left`` = ``Right``,
+   --  ``Left`` > ``Right`` respectively.
+   --
+   --  If addresses are not word aligned or if the length is less than a word,
+   --  then the result of *Compare_Array_S8_Unaligned* is returned.
+   --
+   --  This function iterates on the common number of words, comparing words.
+   --  If two words are not equal, the result of *Compare_Array_S8_Unaligned*
+   --  on these words is returned.
+   --
+   --  Finally, the result of *Compare_Array_S8_Unaligned* on the remaining
+   --  bytes is returned.
 
    function Compare_Array_S8_Unaligned
      (Left      : System.Address;
@@ -58,5 +69,8 @@ package System.Compare_Array_Signed_8 is
    --  Same functionality as Compare_Array_S8 but always proceeds by
    --  bytes. Used when the caller knows that the operands are unaligned,
    --  or short enough that it makes no sense to go by words.
+   --
+   --  This subprogram compares ``Left`` and ``Right`` byte per byte and
+   --  returns immediately when two bytes differ.
 
 end System.Compare_Array_Signed_8;

@@ -29,16 +29,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This function performs exponentiation of unsigned types with binary modulus
---  values exceeding that of System.Unsigned_Types.Unsigned.
---  The result is always full width, the caller must do a masking operation if
---  the modulus is less than 2 ** Long_Long_Unsigned'Size.
+--  This function performs exponentiation of unsigned types (with binary
+--  modulus values exceeding that of Unsigned_Types.Unsigned). The result
+--  is always full width, the caller must do a masking operation if the
+--  modulus is less than 2 ** (Long_Long_Unsigned'Size).
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced
---  by setting the corresponding assertion policy to Ignore. Postconditions
---  and contract cases should not be executed at runtime as well, in order
---  not to slow down the execution of these functions.
+--  Note: preconditions in this unit are meant for analysis only, not for
+--  run-time checking, so that the expected exceptions are raised. This is
+--  enforced by setting the corresponding assertion policy to Ignore.
+--  Postconditions and contract cases should not be executed at run-time as
+--  well, in order not to slow down the execution of these functions.
 
 pragma Assertion_Policy (Pre            => Ignore,
                          Post           => Ignore,
@@ -56,5 +56,13 @@ is
 
    function Exp_Long_Long_Unsigned is new Exponu (Long_Long_Unsigned);
    pragma Pure_Function (Exp_Long_Long_Unsigned);
+   --  Return the power of ``Left`` by ``Right`` where ``Left`` is a
+   --  Long_Long_Unsigned.
+   --
+   --  This function is implemented using the standard logarithmic approach:
+   --  ``Right`` gets shifted right testing successive low order bits, and
+   --  ``Left`` is raised to the next power of 2.
+   --
+   --  In case of overflow, Constraint_Error is raised.
 
 end System.Exp_LLU;

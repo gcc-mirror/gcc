@@ -33,6 +33,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This language package providing support for obtaining the values of its
+--  command line arguments and to set the exit status of the program as defined
+--  by ARM A.15.
+
 package Ada.Command_Line is
    pragma Preelaborate;
 

@@ -30,7 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  This package defines a datatype which is most efficient for performing
---  logical operations on large arrays. See System.Generic_Vector_Operations.
+--  logical operations on large arrays. See
+--  :ref:`System.Generic_Vector_Operations`.
 
 --  In the future this package may also define operations such as element-wise
 --  addition, subtraction, multiplication, minimum and maximum of vector-sized
@@ -45,5 +46,7 @@ package System.Vectors is
    for Vector'Alignment use Integer'Min
      (Standard'Maximum_Alignment, System.Word_Size / System.Storage_Unit);
    for Vector'Size use System.Word_Size;
+   --  The *Vector* type uses an alignment that allows translating it into
+   --  words.
 
 end System.Vectors;

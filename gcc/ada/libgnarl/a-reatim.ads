@@ -33,6 +33,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Package ``Ada.Real_Time`` provides basic definitions and operations related
+--  to the types defined ``Time`` and ``Time_Span`` as defined by ARM D.8. The
+--  types ``Time`` and ``Time_Span`` are implemented by the ``Duration`` type.
+--
+--  This software layer provides the Ada abstraction for time handling and
+--  delays, using the services provided by lower layers.
+
 with System.Task_Primitives.Operations;
 pragma Elaborate_All (System.Task_Primitives.Operations);
 

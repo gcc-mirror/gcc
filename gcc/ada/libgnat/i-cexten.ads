@@ -29,8 +29,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains additional C-related definitions, intended for use
---  with either manually or automatically generated bindings to C libraries.
+--  This package contains additional C type definitions that are not defined
+--  by ARM B.2 and is intended for use with manual or automatically generated
+--  bindings to C libraries. Specifically, it defines types for bitfields,
+--  C void types, incomplete and unknown structs and classes, C bool, 64-bit
+--  and 128-bit types, and 128-bit floating-point types.
 
 with System;
 
@@ -54,39 +57,38 @@ package Interfaces.C.Extensions is
    type incomplete_class_def_ptr is access incomplete_class_def;
    for incomplete_class_def_ptr'Storage_Size use 0;
 
-   --  C bool
-
    subtype bool is Interfaces.C.C_bool;
+   --  C bool
 
    --  64-bit integer types
 
    subtype long_long is Interfaces.C.long_long;
    subtype unsigned_long_long is Interfaces.C.unsigned_long_long;
 
-   --  128-bit integer type available on 64-bit platforms:
-   --  typedef int signed_128 __attribute__ ((mode (TI)));
-
    type Signed_128 is record
       low, high : unsigned_long_long;
    end record;
+   --  128-bit integer type available on 64-bit platforms:
+   --  typedef int signed_128 __attribute__ ((mode (TI)));
+
    pragma Convention (C_Pass_By_Copy, Signed_128);
    for Signed_128'Alignment use unsigned_long_long'Alignment * 2;
-
-   --  128-bit floating-point type available on x86:
-   --  typedef float float_128 __attribute__ ((mode (TF)));
 
    type Float_128 is record
       low, high : unsigned_long_long;
    end record;
+   --  128-bit floating-point type available on x86:
+   --  typedef float float_128 __attribute__ ((mode (TF)));
+
    pragma Convention (C_Pass_By_Copy, Float_128);
    for Float_128'Alignment use unsigned_long_long'Alignment * 2;
-
-   --  128-bit complex floating-point type available on x86:
-   --  typedef _Complex float cfloat_128 __attribute__ ((mode (TC)));
 
    type CFloat_128 is record
       re, im : Float_128;
    end record;
+   --  128-bit complex floating-point type available on x86:
+   --  typedef _Complex float cfloat_128 __attribute__ ((mode (TC)));
+
    pragma Convention (C_Pass_By_Copy, CFloat_128);
 
    --  Types for bitfields

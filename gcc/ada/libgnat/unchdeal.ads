@@ -13,6 +13,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Renaming of :ref:`Ada.Unchecked_Deallocation`
+
 generic
    type Object (<>) is limited private;
    type Name is access Object;

@@ -29,9 +29,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the parent package for a library of useful units provided with GNAT
+--  This is parent package of the GNAT package hierarchy, a collection of
+--  useful packages provided with GNAT. It contains types and exception
+--  definitions that a commonly used by GNAT child packages. As definitions
+--  these do not appear in the runtime code if they are not used.
 
---  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  This unit is used during bootstrap, see ADA_GENERATED_FILES in
 --  gcc-interface/Make-lang.in for details on the constraints.
 
 package GNAT is

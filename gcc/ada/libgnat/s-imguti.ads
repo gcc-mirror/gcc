@@ -29,7 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides some common utilities used by the s-imgxxx files
+--  This package provides some common utilities used by the `System.Img_*`
+--  packages. It contains subprograms to set the decimal digits for a string
+--  and set the string for a floating-point invalid value.
 
 package System.Img_Util is
 

@@ -13,6 +13,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package is a renaming of :ref:`system.machine_code`
+
 with System.Machine_Code;
 
 package Machine_Code renames System.Machine_Code;

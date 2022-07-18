@@ -29,10 +29,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This function performs exponentiation of unsigned types with binary modulus
---  values up to and including that of System.Unsigned_Types.Unsigned.
---  The result is always full width, the caller must do a masking operation if
---  the modulus is less than 2 ** Unsigned'Size.
+--  This function performs exponentiation of unsigned types (with binary
+--  modulus values up to and including that of Unsigned_Types.Unsigned).
+--
+--  The result is always full width, the caller must do a masking operation
+--  the modulus is less than 2 ** (Unsigned'Size).
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced
@@ -56,5 +57,13 @@ is
 
    function Exp_Unsigned is new Exponu (Unsigned);
    pragma Pure_Function (Exp_Unsigned);
+   --  Return the power of ``Left`` by ``Right`` where ``Left`` is an
+   --  Unsigned.
+   --
+   --  This function is implemented using the standard logarithmic approach:
+   --  ``Right`` gets shifted right testing successive low order bits, and
+   --  ``Left`` is raised to the next power of 2.
+   --
+   --  In case of overflow, Constraint_Error is raised.
 
 end System.Exp_Uns;

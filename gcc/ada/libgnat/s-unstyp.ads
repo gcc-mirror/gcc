@@ -45,6 +45,8 @@ package System.Unsigned_Types is
    type Long_Unsigned           is mod 2 ** Long_Integer'Size;
    type Long_Long_Unsigned      is mod 2 ** Long_Long_Integer'Size;
    type Long_Long_Long_Unsigned is mod Max_Binary_Modulus;
+   --  These are modular types that correspon in size to the standard signed
+   --  types declared in Standard.
 
    type Packed_Byte is mod 2 ** 8;
    for Packed_Byte'Size use 8;
@@ -102,6 +104,9 @@ package System.Unsigned_Types is
    --  This is equivalent to Packed_Bytes4, but for packed arrays with reverse
    --  scalar storage order. But the Scalar_Storage_Order attribute cannot be
    --  set directly here, see Exp_Pakd for more details.
+
+   --  Various aligned arrays of bytes. Those types may be unused on limited
+   --  run-times, but are still present for compatibility between run-times.
 
    type Bits_1 is mod 2**1;
    type Bits_2 is mod 2**2;
@@ -230,6 +235,8 @@ package System.Unsigned_Types is
    function Rotate_Right
      (Value  : Long_Long_Long_Unsigned;
       Amount : Natural) return Long_Long_Long_Unsigned;
+   --  The shift and rotate primitives for the unsigned types are intrinsic,
+   --  fully implemented by the compiler.
 
    pragma Import (Intrinsic, Shift_Left);
    pragma Import (Intrinsic, Shift_Right);

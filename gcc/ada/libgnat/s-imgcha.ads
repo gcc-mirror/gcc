@@ -31,6 +31,9 @@
 
 --  Character'Image
 
+--  This package provides support for ``Image`` attribute on ``Character``. The
+--  compiler performs direct calls to this unit to implement the attribute.
+
 package System.Img_Char is
    pragma Pure;
 
@@ -38,18 +41,21 @@ package System.Img_Char is
      (V : Character;
       S : in out String;
       P : out Natural);
-   --  Computes Character'Image (V) and stores the result in S (1 .. P)
-   --  setting the resulting value of P. The caller guarantees that S is
-   --  long enough to hold the result, and that S'First is 1.
+   --  Computes Character'Image (``V``) and stores the result in
+   --  ``S`` (1 .. ``P``) setting the resulting value of ``P``. The caller
+   --  guarantees that ``S`` is long enough to hold the result, and that
+   --  ``S``'First is 1.
 
    procedure Image_Character_05
      (V : Character;
       S : in out String;
       P : out Natural);
-   --  Computes Character'Image (V) and stores the result in S (1 .. P)
-   --  setting the resulting value of P. The caller guarantees that S is
-   --  long enough to hold the result, and that S'First is 1. This version
-   --  is for use in Ada 2005 and beyond, where soft hyphen is a non-graphic
-   --  and results in "SOFT_HYPHEN" as the output.
+   --  Computes Character'Image (``V``) and stores the result in
+   --  ``S`` (1 .. ``P``) setting the resulting value of ``P``. The caller
+   --  guarantees that ``S`` is long enough to hold the result, and that
+   --  ``S``'First is 1.
+   --
+   --  This version is for use in Ada 2005 and beyond, where soft hyphen is
+   --  a non-graphic and results in "SOFT_HYPHEN" as the output.
 
 end System.Img_Char;

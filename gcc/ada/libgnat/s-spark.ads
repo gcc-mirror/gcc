@@ -29,6 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This is the top level unit of the SPARK package. Its children
+--  contain helper functions to aid proofs.
+
 package System.SPARK with
   SPARK_Mode,
   Pure

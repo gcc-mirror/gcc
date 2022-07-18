@@ -43,6 +43,7 @@ is
    --  since arbitrary addresses can be converted, and it is quite likely that
    --  this type will in fact be used for aliasing values of other types.
 
+   --  Convert between chars_ptr and a C pointer
    function To_chars_ptr is
       new Ada.Unchecked_Conversion (System.Parameters.C_Address, chars_ptr);
 
@@ -73,9 +74,12 @@ is
 
    function Memory_Alloc (Size : size_t) return chars_ptr;
    pragma Import (C, Memory_Alloc, System.Parameters.C_Malloc_Linkname);
+   --  Allocate a chunk of memory on the heap
 
    procedure Memory_Free (Address : chars_ptr);
    pragma Import (C, Memory_Free, "__gnat_free");
+   --  Deallocate a previously allocated chunk of memory from the heap. On
+   --  runtimes that do not allow deallocation this is a no-op.
 
    ---------
    -- "+" --

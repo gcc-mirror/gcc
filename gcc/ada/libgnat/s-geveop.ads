@@ -33,7 +33,7 @@
 --  If the arguments are aligned on word boundaries and the word size is a
 --  multiple M of the element size, the operations will be done M elements
 --  at a time using vector operations on a word.
-
+--
 --  All routines assume argument arrays have the same length, and arguments
 --  with mode "in" do not alias arguments with mode "out" or "in out".
 --  If the number N of elements to be processed is not a multiple of M
@@ -56,6 +56,8 @@ package System.Generic_Vector_Operations is
    procedure Binary_Operation
      (R, X, Y : System.Address;
       Length  : System.Storage_Elements.Storage_Count);
+   --  *Binary_Operation* iterates on the elements pointed to by `X` and `Y`
+   --  and places the result in `R`.
 
    generic
       with function Element_Op (X : Element) return Element;
@@ -63,4 +65,7 @@ package System.Generic_Vector_Operations is
    procedure Unary_Operation
      (R, X    : System.Address;
       Length  : System.Storage_Elements.Storage_Count);
+   --  *Unary_Operation* iterates on the elements pointed to by `X`
+   --  and places the result in `R`.
+
 end System.Generic_Vector_Operations;

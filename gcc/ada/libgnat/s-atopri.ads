@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains both atomic primitives defined from GCC built-in
+--  This package contains atomic primitives defined from GCC built-in
 --  functions and operations used by the compiler to generate the lock-free
 --  implementation of protected objects.
 

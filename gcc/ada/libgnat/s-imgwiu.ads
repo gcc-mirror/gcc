@@ -30,8 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  Contains the routine for computing the image  of signed and unsigned
---  integers up to Integer for use by Text_IO.Integer_IO and
---  Text_IO.Modular_IO.
+--  integers up to Integer for use by ``Ada.Text_IO.Integer_IO`` and
+--  ``Ada.Text_IO.Modular_IO``.
 
 with System.Image_W;
 with System.Unsigned_Types;

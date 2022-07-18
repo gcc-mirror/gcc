@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides software routines for doing arithmetic on "double"
---  signed integer values in cases where either overflow checking is required,
---  or intermediate results are longer than the result type.
+--  This generic package provides software routines for doing arithmetic on
+--  double word signed integer values in cases where either overflow checking
+--  is required, or intermediate results are longer than the result type.
 
 with Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
 
@@ -100,24 +100,45 @@ is
    with
      Pre  => In_Double_Int_Range (Big (X) + Big (Y)),
      Post => Add_With_Ovflo_Check'Result = X + Y;
-   --  Raises Constraint_Error if sum of operands overflows Double_Int,
-   --  otherwise returns the signed integer sum.
+   --  Raises Constraint_Error if sum of operands overflows 64 bits,
+   --  otherwise returns the 64-bit signed integer sum.
+   --
+   --  The sum of ``X`` and ``Y`` is first computed using wrap-around
+   --  semantics.
+   --
+   --  If the sign of ``X`` and ``Y`` are opposed, no overflow is possible and
+   --  the result is correct.
+   --
+   --  Otherwise, ``X`` and ``Y`` have the same sign; if the sign of the result
+   --  is not identical to ``X`` (or ``Y``), then an overflow occurred and
+   --  the exception *Constraint_Error* is raised; otherwise the result is
+   --  correct.
 
    function Subtract_With_Ovflo_Check (X, Y : Double_Int) return Double_Int
    with
      Pre  => In_Double_Int_Range (Big (X) - Big (Y)),
      Post => Subtract_With_Ovflo_Check'Result = X - Y;
-   --  Raises Constraint_Error if difference of operands overflows Double_Int,
-   --  otherwise returns the signed integer difference.
+   --  Raises Constraint_Error if difference of operands overflows 64
+   --  bits, otherwise returns the 64-bit signed integer difference.
+   --
+   --  The logic of the implementation is reversed from *Add_With_Ovflo_Check*:
+   --  if ``X`` and ``Y`` have the same sign, no overflow is checked, otherwise
+   --  a sign of the result is compared with the sign of ``X`` to check for
+   --  overflow.
 
    function Multiply_With_Ovflo_Check (X, Y : Double_Int) return Double_Int
    with
      Pre  => In_Double_Int_Range (Big (X) * Big (Y)),
      Post => Multiply_With_Ovflo_Check'Result = X * Y;
    pragma Convention (C, Multiply_With_Ovflo_Check);
-   --  Raises Constraint_Error if product of operands overflows Double_Int,
-   --  otherwise returns the signed integer product. Gigi may also call this
-   --  routine directly.
+   --  Raises Constraint_Error if product of operands overflows 64
+   --  bits, otherwise returns the 64-bit signed integer product.
+   --  GIGI may also call this routine directly.
+   --
+   --  The multiplication is done using pencil and paper algorithm using base
+   --  2**32. The multiplication is done on unsigned values, then the correct
+   --  signed value is returned. Overflow check is performed by looking at
+   --  higher digits.
 
    function Same_Sign (X, Y : Big_Integer) return Boolean is
      (X = Big (Double_Int'(0))
@@ -153,13 +174,32 @@ is
                                       Big (X) * Big (Y) / Big (Z), Big (R))
           else
             Big (Q) = Big (X) * Big (Y) / Big (Z));
-   --  Performs the division of (X * Y) / Z, storing the quotient in Q
-   --  and the remainder in R. Constraint_Error is raised if Z is zero,
-   --  or if the quotient does not fit in Double_Int. Round indicates if
-   --  the result should be rounded. If Round is False, then Q, R are
-   --  the normal quotient and remainder from a truncating division.
-   --  If Round is True, then Q is the rounded quotient. The remainder
-   --  R is not affected by the setting of the Round flag.
+   --  Performs the division of (``X`` * ``Y``) / ``Z``, storing the quotient
+   --  in ``Q`` and the remainder in ``R``.
+   --
+   --  Constraint_Error is raised if ``Z`` is zero, or if the quotient does not
+   --  fit in ``Double_Int``.
+   --
+   --  ``Round`` indicates if the result should be rounded. If ``Round`` is
+   --  False, then ``Q``, ``R`` are the normal quotient and remainder from a
+   --  truncating division. If ``Round`` is True, then ``Q`` is the rounded
+   --  quotient. The remainder ``R`` is not affected by the setting of the
+   --  ``Round`` flag.
+   --
+   --  The multiplication is done using pencil and paper algorithm using base
+   --  2**32. The multiplication is done on unsigned values. The result is a
+   --  128 bit value.
+   --
+   --  The overflow is detected on the intermediate value.
+   --
+   --  If Z is a 32 bit value, the division is done using pencil and paper
+   --  algorithm.
+   --
+   --  Otherwise, the division is performed using the algorithm D from section
+   --  4.3.1 of "The Art of Computer Programming Vol. 2" [TACP2]. Rounding is
+   --  applied on the result.
+   --
+   --  Finally, the sign is applied to the result and returned.
 
    procedure Double_Divide
      (X, Y, Z : Double_Int;
@@ -180,12 +220,26 @@ is
                                       Big (X) / (Big (Y) * Big (Z)), Big (R))
           else
             Big (Q) = Big (X) / (Big (Y) * Big (Z)));
-   --  Performs the division X / (Y * Z), storing the quotient in Q and
-   --  the remainder in R. Constraint_Error is raised if Y or Z is zero,
-   --  or if the quotient does not fit in Double_Int. Round indicates if the
-   --  result should be rounded. If Round is False, then Q, R are the normal
-   --  quotient and remainder from a truncating division. If Round is True,
-   --  then Q is the rounded quotient. The remainder R is not affected by the
-   --  setting of the Round flag.
+   --  Performs the division ``X`` / (``Y`` * ``Z``), storing the quotient in
+   --  ``Q`` and the remainder in ``R``. Constraint_Error is raised if ``Y`` or
+   --  ``Z`` is zero, or if the quotient does not fit in ``Double_Int``.
+   --
+   --  ``Round`` indicates if the result should be rounded. If ``Round`` is
+   --  False, then ``Q``, ``R`` are the normal quotient and remainder from a
+   --  truncating division. If ``Round`` is True, then ``Q`` is the rounded
+   --  quotient. The remainder ``R`` is not affected by the setting of the
+   --  ``Round`` flag.
+   --
+   --  Division by 0 is first detected.
+   --
+   --  The intermediate value ``Y`` * ``Z`` is then computed on 128 bits. The
+   --  multiplication is done on unsigned values.
+   --
+   --  If the high 64 bits of the intermediate value is not 0, then 0 is
+   --  returned. The overflow case of the largest negative number divided by
+   --  -1 is detected here.
+   --
+   --  64-bit division is then performed, the result is rounded, its sign is
+   --  corrected, and then returned.
 
 end System.Arith_Double;

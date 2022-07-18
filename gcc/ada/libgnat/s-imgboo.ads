@@ -31,6 +31,9 @@
 
 --  Boolean'Image
 
+--  This package provides support for ``Image`` attribute on ``Boolean``. The
+--  compiler performs direct calls to this unit to implement the attribute.
+
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by
 --  setting the corresponding assertion policy to Ignore. Postconditions and
@@ -57,8 +60,9 @@ is
        and then (if V then S'Length >= 4 else S'Length >= 5),
      Post => (if V then P = 4 else P = 5)
        and then System.Val_Spec.Is_Boolean_Image_Ghost (S (1 .. P), V);
-   --  Computes Boolean'Image (V) and stores the result in S (1 .. P)
-   --  setting the resulting value of P. The caller guarantees that S
-   --  is long enough to hold the result, and that S'First is 1.
+   --  Computes Boolean'Image (``V``) and stores the result in
+   --  ``S`` (1 .. ``P``) setting the resulting value of ``P``. The caller
+   --  guarantees that ``S`` is long enough to hold the result, and that
+   --  ``S``'First is 1.
 
 end System.Img_Bool;

@@ -30,11 +30,11 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the definitions and routines associated with the
---  implementation and use of the Task_Info pragma. It is specialized
+--  implementation and use of the ``Task_Info`` pragma. It is specialized
 --  appropriately for targets that make use of this pragma.
 
---  Note: the compiler generates direct calls to this interface, via Rtsfind.
---  Any changes to this interface may require corresponding compiler changes.
+--  The compiler generates direct calls to this interface, via Rtsfind. Any
+--  changes to this interface may require corresponding compiler changes.
 
 --  The functionality in this unit is now provided by the predefined package
 --  System.Multiprocessors and the CPU aspect. This package is obsolescent.

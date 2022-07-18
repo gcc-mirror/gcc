@@ -29,8 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  ordinary fixed point types up to 32-bit small and mantissa.
+--  This package contains the routines for supporting the ``Image`` attribute
+--  for ordinary fixed point types up to 32-bit small and mantissa.
 
 with Interfaces;
 with System.Arith_32;
@@ -52,6 +52,16 @@ package System.Img_Fixed_32 is
       For0 : Natural;
       Aft0 : Natural)
      renames Impl.Image_Fixed;
+   --  Computes fixed_type'Image (V), where V is the integer value (in units of
+   --  small) of an ordinary fixed point type with small Num/Den, and stores
+   --  the result in S (1 .. P), updating P on return. The result is computed
+   --  according to the rules for image for fixed-point types (RM 3.5(34)).
+   --  For0 and Aft0 are the values of the Fore and Aft attributes for the
+   --  fixed point type whose mantissa type is Int32 and whose small is
+   --  Num/Den. This function is used only for fixed point whose Small is an
+   --  integer or its reciprocal (see package System.Image_R for the handling
+   --  of other ordinary fixed-point types). The caller guarantees that S is
+   --  long enough to hold the result and has a lower bound of 1.
 
    procedure Set_Image_Fixed32
      (V    : Int32;
@@ -65,5 +75,14 @@ package System.Img_Fixed_32 is
       Aft  : Natural;
       Exp  : Natural)
      renames Impl.Set_Image_Fixed;
+   --  Sets the image of V, where V is the integer value (in units of small)
+   --  of a fixed point type with small Num/Den, starting at S (P + 1) and
+   --  updating P to point to the last character stored, the caller promises
+   --  that the buffer is large enough and no check is made. Constraint_Error
+   --  will not necessarily be raised if this requirement is violated, since
+   --  it is perfectly valid to compile this unit with checks off. For0 and
+   --  Aft0 are the values of the Fore and Aft attributes for the fixed point
+   --  type whose mantissa type is Int32 and whose small is Num/Den. The Fore,
+   --  Aft and Exp can be set to any valid values for use by Text_IO.Fixed_IO.
 
 end System.Img_Fixed_32;

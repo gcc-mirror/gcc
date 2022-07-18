@@ -43,12 +43,16 @@ package System.Compare_Array_Unsigned_8 is
       Right     : System.Address;
       Left_Len  : Natural;
       Right_Len : Natural) return Integer;
-   --  Compare the array starting at address Left of length Left_Len with the
-   --  array starting at address Right of length Right_Len. The comparison is
-   --  in the normal Ada semantic sense of array comparison. The result is -1,
-   --  0, +1 for Left < Right, Left = Right, Left > Right respectively. This
-   --  function works with 4 byte words if the operands are aligned on 4-byte
-   --  boundaries and long enough.
+   --  Compare the array starting at address ``Left`` of length ``Left_Len``
+   --  with the array starting at address ``Right`` of length ``Right_Len``.
+   --  The comparison is in the normal Ada semantic sense of array
+   --  comparison.
+   --
+   --  The result is -1, 0, +1 for ``Left`` < ``Right``, ``Left`` = ``Right``,
+   --  ``Left`` > ``Right`` respectively.
+   --
+   --  The same algorithm is used as in package
+   --  ``System.Compare_Array_Signed_8``.
 
    function Compare_Array_U8_Unaligned
      (Left      : System.Address;
@@ -58,5 +62,8 @@ package System.Compare_Array_Unsigned_8 is
    --  Same functionality as Compare_Array_U8 but always proceeds by bytes.
    --  Used when the caller knows that the operands are unaligned, or short
    --  enough that it makes no sense to go by words.
+   --
+   --  The same algorithm is used as in package
+   --  ``System.Compare_Array_Signed_8``.
 
 end System.Compare_Array_Unsigned_8;

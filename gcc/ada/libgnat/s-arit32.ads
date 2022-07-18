@@ -106,12 +106,31 @@ is
                                       Big (X) * Big (Y) / Big (Z), Big (R))
           else
             Big (Q) = Big (X) * Big (Y) / Big (Z));
-   --  Performs the division of (X * Y) / Z, storing the quotient in Q
-   --  and the remainder in R. Constraint_Error is raised if Z is zero,
-   --  or if the quotient does not fit in 32 bits. Round indicates if
-   --  the result should be rounded. If Round is False, then Q, R are
-   --  the normal quotient and remainder from a truncating division.
-   --  If Round is True, then Q is the rounded quotient. The remainder
-   --  R is not affected by the setting of the Round flag.
+   --  Performs the division of (``X`` * ``Y``) / ``Z``, storing the quotient
+   --  in ``Q`` and the remainder in ``R``.
+   --
+   --  Constraint_Error is raised if ``Z`` is zero, or if the quotient does not
+   --  fit in 32-bits.
+   --
+   --  ``Round`` indicates if the result should be rounded. If ``Round`` is
+   --  False, then ``Q``, ``R`` are the normal quotient and remainder from a
+   --  truncating division. If ``Round`` is True, then ``Q`` is the rounded
+   --  quotient. The remainder ``R`` is not affected by the setting of the
+   --  ``Round`` flag.
+   --
+   --  The multiplication is done using pencil and paper algorithm using base
+   --  2**32. The multiplication is done on unsigned values. The result is a
+   --  128 bit value.
+   --
+   --  The overflow is detected on the intermediate value.
+   --
+   --  If Z is a 32 bit value, the division is done using pencil and paper
+   --  algorithm.
+   --
+   --  Otherwise, the division is performed using the algorithm D from section
+   --  4.3.1 of "The Art of Computer Programming Vol. 2" [TACP2]. Rounding is
+   --  applied on the result.
+   --
+   --  Finally, the sign is applied to the result and returned.
 
 end System.Arith_32;

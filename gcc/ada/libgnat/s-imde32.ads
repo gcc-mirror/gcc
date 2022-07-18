@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  decimal fixed point types up to 32-bit mantissa, and also for conversion
---  operations required in Text_IO.Decimal_IO for such types.
+--  This package provides the subprograms supporting the ``Image`` attribute
+--  and ``Ada.Text_IO.Decimal_IO`` conversions routines for decimal fixed point
+--  types up to 32-bit mantissa.
 
 with Interfaces;
 with System.Image_D;
@@ -49,6 +49,12 @@ package System.Img_Decimal_32 is
       P     : out Natural;
       Scale : Integer)
      renames Impl.Image_Decimal;
+   --  Computes fixed_type'Image (V), where V is the integer value (in units of
+   --  delta) of a decimal type whose Scale is as given and stores the result
+   --  S (1 .. P), updating P on return. The result is computed according to
+   --  the rules for image for fixed-point types (RM 3.5(34)). The caller
+   --  guarantees that S is long enough to hold the result and has a lower
+   --  bound of 1.
 
    procedure Set_Image_Decimal32
      (V     : Int32;
@@ -59,5 +65,13 @@ package System.Img_Decimal_32 is
       Aft   : Natural;
       Exp   : Natural)
      renames Impl.Set_Image_Decimal;
+   --  Sets the image of V, where V is the integer value (in units of delta)
+   --  of a decimal type with the specified Scale, starting at S (P + 1) and
+   --  updating P to point to the last character stored, the caller promises
+   --  that the buffer is large enough and no check is made. Constraint_Error
+   --  will not necessarily be raised if this requirement is violated, since
+   --  it is perfectly valid to compile this unit with checks off. The Fore,
+   --  Aft and Exp values can be set to any valid values for the case of use
+   --  by Text_IO.Decimal_IO.
 
 end System.Img_Decimal_32;

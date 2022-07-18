@@ -30,8 +30,10 @@
 ------------------------------------------------------------------------------
 
 --  This package provides machine code support, both for intrinsic machine
---  operations, and also for machine code statements. See GNAT documentation
---  for full details.
+--  operations, and also for machine code statements. It implements the
+--  *System.Machine_code* package defined in ARM 13.8 and GNAT Reference Manual
+--  (chapter 'Implementation of Specific Ada Features', 'Machine Code
+--  Insertions').
 
 package System.Machine_Code
   with SPARK_Mode => Off
@@ -39,9 +41,8 @@ is
    pragma No_Elaboration_Code_All;
    pragma Pure;
 
-   --  All identifiers in this unit are implementation defined
-
    pragma Implementation_Defined;
+   --  All identifiers in this unit are implementation defined
 
    type Asm_Input_Operand  is private;
    type Asm_Output_Operand is private;
@@ -50,12 +51,17 @@ is
 
    No_Input_Operands  : constant Asm_Input_Operand;
    No_Output_Operands : constant Asm_Output_Operand;
+   --  These constants are used as default value to denote respectively no
+   --  input operands and no output operands.
 
    type Asm_Input_Operand_List  is
      array (Integer range <>) of Asm_Input_Operand;
 
    type Asm_Output_Operand_List is
      array (Integer range <>) of Asm_Output_Operand;
+   --  The types *Asm_Input_Operand_List* and *Asm_Output_Operand_List* are
+   --  arrays of respectively *Asm_Input_Operand* and *Asm_Output_Operand*.
+   --  They are used to describe lists of operands for the Asm subprograms.
 
    type Asm_Insn is private;
    --  This type is not used directly. It is declared only so that the
@@ -116,6 +122,9 @@ is
      Inputs   : Asm_Input_Operand  := No_Input_Operands;
      Clobber  : String  := "";
      Volatile : Boolean := False) return Asm_Insn;
+   --  The parameters are described in the GNAT Reference Manual [GRM].
+   --
+   --  These are intrinsic subprograms, fully implemented by the compiler.
 
    pragma Import (Intrinsic, Asm);
 

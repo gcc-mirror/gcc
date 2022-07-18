@@ -38,6 +38,7 @@ package System.Boolean_Array_Operations is
    pragma Pure;
 
    type Boolean_Array is array (Integer range <>) of Boolean;
+   --  The base type for the boolean array operations
 
    package Boolean_Operations renames System.Vectors.Boolean_Operations;
 
@@ -52,14 +53,27 @@ package System.Boolean_Array_Operations is
 
    procedure Vector_Not is
       new Unary_Operation ("not", Boolean_Operations."not");
+   --  Instantiation of Unary_Operation with function *not*
+
    procedure Vector_And is new Binary_Operation ("and", System.Vectors."and");
+   --  Instantiation of Binary_Operation with function *and*
+
    procedure Vector_Or is new Binary_Operation ("or", System.Vectors."or");
+   --  Instantiation of Binary_Operation with function *or*
+
    procedure Vector_Xor is new Binary_Operation ("xor", System.Vectors."xor");
+   --  Instantiation of Binary_Operation with function *xor*
 
    procedure Vector_Nand is
       new Binary_Operation (Boolean_Operations.Nand, Boolean_Operations.Nand);
+   --  Instantiation of Binary_Operation with function *nand*
+
    procedure Vector_Nor is
       new Binary_Operation (Boolean_Operations.Nor, Boolean_Operations.Nor);
+   --  Instantiation of Binary_Operation with function *nor*
+
    procedure Vector_Nxor is
       new Binary_Operation (Boolean_Operations.Nxor, Boolean_Operations.Nxor);
+   --  Instantiation of Binary_Operation with function *nxor*
+
 end System.Boolean_Array_Operations;

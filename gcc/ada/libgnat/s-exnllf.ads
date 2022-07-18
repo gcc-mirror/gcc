@@ -29,7 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Long_Long_Float exponentiation (checks off)
+--  This package implements ``[Long_[Long_]]Float`` exponentiation
+--  (checks off).
 
 with System.Exponr;
 

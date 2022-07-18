@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  signed integer types up to Integer, and also for conversion operations
---  required in Text_IO.Integer_IO for such types.
+--  This package provides the subprograms supporting the ``Image`` attribute
+--  and ``Ada.Text_IO.Integer_IO`` conversions routines for signed integer
+--  types up to Size ``Integer'Size``.
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by
@@ -66,11 +66,32 @@ is
       S : in out String;
       P : out Natural)
      renames Impl.Image_Integer;
+   --  Computes Integer'Image (``V``) and stores the result in
+   --  ``S`` (1 .. ``P``) setting the resulting value of ``P``.
+   --  The caller guarantees that ``S`` is long enough to hold the result,
+   --  and that ``S``'First is 1.
+   --
+   --  If ``V`` is not negative, the subprogram writes the leading blank in
+   --  ``S``. It then calls *Set_Image_Integer* unconditionally.
 
    procedure Set_Image_Integer
      (V : Integer;
       S : in out String;
       P : in out Natural)
      renames Impl.Set_Image_Integer;
+   --  Stores the image of ``V`` in ``S`` starting at ``S`` (``P`` + 1), ``P``
+   --  is updated to point to the last character stored. The value stored is
+   --  identical to the value of Integer'Image (``V``) except that no leading
+   --  space is stored when ``V`` is non-negative. The caller guarantees that
+   --  ``S`` is long enough to hold the result. ``S`` need not have a lower
+   --  bound of 1.
+   --
+   --  If ``V`` is negative, the subprogram writes the leading '-' character,
+   --  otherwise work with -``V`` (always work with negative value to avoid
+   --  overflow: the largest negative number is not a special case).
+   --
+   --  This subprogram then uses recursion: if the value is equal or less than
+   --  -10, recurse with the value divided by 10. Then add the digit for the
+   --  remainder.
 
 end System.Img_Int;

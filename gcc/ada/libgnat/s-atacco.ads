@@ -33,6 +33,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Provides the means to convert addresses to access types as defined by ARM
+--  13.7.2.
+
 generic
    type Object (<>) is limited private;
 
@@ -46,6 +49,7 @@ package System.Address_To_Access_Conversions is
 
    type Object_Pointer is access all Object;
    for Object_Pointer'Size use Standard'Address_Size;
+   --  Access type definition to the object
 
    pragma No_Strict_Aliasing (Object_Pointer);
    --  Strictly speaking, this routine should not be used to generate pointers
@@ -56,8 +60,15 @@ package System.Address_To_Access_Conversions is
 
    function To_Pointer (Value : Address)        return Object_Pointer with
      Global => null;
+   --  Return ``Value`` as an access to *Object*.
+   --
+   --  This function is an intrinsic so implemented by the compiler.
+
    function To_Address (Value : Object_Pointer) return Address with
      SPARK_Mode => Off;
+   --  Return ``Value`` as an *Address*.
+   --
+   --  This function is an intrinsic so implemented by the compiler.
 
    pragma Import (Intrinsic, To_Pointer);
    pragma Import (Intrinsic, To_Address);

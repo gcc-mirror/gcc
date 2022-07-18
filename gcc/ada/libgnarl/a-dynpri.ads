@@ -13,6 +13,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This unit implements dynamic priority support for Ada tasking as defined
+--  in ARM D.5.1. It allows a tasks priority to be changed after the task has
+--  been created.
+
 with System;
 with Ada.Task_Identification;
 

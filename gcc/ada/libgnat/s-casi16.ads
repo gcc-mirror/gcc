@@ -43,11 +43,26 @@ package System.Compare_Array_Signed_16 is
       Right     : System.Address;
       Left_Len  : Natural;
       Right_Len : Natural) return Integer;
-   --  Compare the array starting at address Left of length Left_Len
-   --  with the array starting at address Right of length Right_Len.
+   --  Compare the array starting at address ``Left`` of length ``Left_Len``
+   --  with the array starting at address ``Right`` of length ``Right_Len``.
    --  The comparison is in the normal Ada semantic sense of array
-   --  comparison. The result is -1,0,+1 for Left<Right, Left=Right,
-   --  Left>Right respectively. This function works with 4 byte words
-   --  if the operands are aligned on 4-byte boundaries and long enough.
+   --  comparison.
+   --
+   --  The result is -1, 0, +1 for ``Left`` < ``Right``, ``Left`` = ``Right``,
+   --  ``Left`` > ``Right`` respectively.
+   --
+   --  If both addresses are word aligned, the function iterates through all
+   --  of the equal words.
+   --
+   --  Then, if the addresses are half word aligned, the function iterates on
+   --  the remaining half words, and returns as soon as two half words are not
+   --  equal.
+   --
+   --  Otherwise, the function iterates on the remaining unaligned half words,
+   --  compares them using unaligned accesses, and returns as soon as two half
+   --  words are not equal.
+   --
+   --  Finally, at this point, all the words are equal. The result is decided
+   --  by comparing their lengths.
 
 end System.Compare_Array_Signed_16;

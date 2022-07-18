@@ -29,6 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package provides primitives used for protected objects on
+--  multiprocessor systems.
+
 package System.Tasking.Protected_Objects.Multiprocessors is
 
    procedure Served (Entry_Call : Entry_Call_Link);

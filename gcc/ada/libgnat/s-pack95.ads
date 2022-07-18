@@ -34,6 +34,8 @@
 package System.Pack_95 is
    pragma Preelaborate;
 
+   --  95-bit element type definition
+
    Bits : constant := 95;
 
    type Bits_95 is mod 2 ** Bits;

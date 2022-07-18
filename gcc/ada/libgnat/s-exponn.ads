@@ -29,7 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Signed integer exponentiation (checks off)
+--  This package provides functions for signed integer exponentiation. This
+--  is the version of the package with checks disabled.
 
 with Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
 
@@ -69,5 +70,12 @@ is
    with
      Pre  => In_Int_Range (Big (Left) ** Right),
      Post => Expon'Result = Left ** Right;
+   --  Calculate ``Left`` ** ``Right``. If ``Left`` is 0 then 0 is returned
+   --  and if ``Right`` is 0 then 1 is returned. In all other cases the result
+   --  is set to 1 and then computed in a loop as follows:
+   --  If ``Right`` is a multiple of 2 then multiply the result with ``Left``.
+   --  Divide ``Right`` by 2.
+   --  If ``Right is 0, return.
+   --  Multiply ``Left`` with itself.
 
 end System.Exponn;

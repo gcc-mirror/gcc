@@ -58,11 +58,15 @@ is
      Import, Convention => Intrinsic;
    --  Return the name of the current file, not including the path information.
    --  The result is considered to be a static string constant.
+   --
+   --  This function is an intrinsic, implemented by the compiler.
 
    function Line return Positive with
      Import, Convention => Intrinsic;
    --  Return the current input line number. The result is considered to be a
    --  static expression.
+   --
+   --  This function is an intrinsic, implemented by the compiler.
 
    function Source_Location return String with
      Volatile_Function,
@@ -74,6 +78,8 @@ is
    --  additional suffixes of the same form are appended after the separating
    --  string " instantiated at ". The result is considered to be a static
    --  string constant.
+   --
+   --  This function is an intrinsic, implemented by the compiler.
 
    function Enclosing_Entity return String with
      Volatile_Function,
@@ -90,12 +96,16 @@ is
    --  the string returned will be the name of the instance, not the generic
    --  package itself. This is useful in identifying and logging information
    --  from within generic templates.
+   --
+   --  This function is an intrinsic, implemented by the compiler.
 
    function Compilation_ISO_Date return String with
      Volatile_Function,
      Global => Source_Code_Information,
      Import, Convention => Intrinsic;
    --  Returns date of compilation as a static string "yyyy-mm-dd".
+   --
+   --  This function is an intrinsic, implemented by the compiler.
 
    function Compilation_Date return String with
      Volatile_Function,
@@ -103,6 +113,8 @@ is
      Import, Convention => Intrinsic;
    --  Returns date of compilation as a static string "mmm dd yyyy". This is
    --  in local time form, and is exactly compatible with C macro __DATE__.
+   --
+   --  This function is an intrinsic, implemented by the compiler.
 
    function Compilation_Time return String with
      Volatile_Function,
@@ -110,5 +122,7 @@ is
      Import, Convention => Intrinsic;
    --  Returns GMT time of compilation as a static string "hh:mm:ss". This is
    --  in local time form, and is exactly compatible with C macro __TIME__.
+   --
+   --  This function is an intrinsic, implemented by the compiler.
 
 end GNAT.Source_Info;

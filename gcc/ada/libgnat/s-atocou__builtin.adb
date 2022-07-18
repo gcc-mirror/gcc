@@ -29,9 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package implements Atomic_Counter and Atomic_Unsigned operations for
---  platforms where GCC supports __atomic_add_fetch and __atomic_sub_fetch
---  builtins.
+--  This package implements unsigned and signed atomic counters using GCC's
+--  __atomic_add_fetch and __atomic_sub_fetch builtins.
 
 with System.Atomic_Primitives; use System.Atomic_Primitives;
 

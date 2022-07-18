@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Contains the routine for computing the image  of signed and unsigned
---  integers up to Integer for use by Text_IO.Integer_IO and
---  Text_IO.Modular_IO.
+--  Contains the routines for computing the image of signed and unsigned
+--  integers up to ``Integer`` for use by ``Ada.Text_IO.Integer_IO`` and
+--  ``Ada.Text_IO.Modular_IO``.
 
 generic
 

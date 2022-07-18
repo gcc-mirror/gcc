@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Long_Long_Integer exponentiation (checks on)
+--  This package implements Long_Long_Integer exponentiation
 
 --  Preconditions, postconditions, ghost code, loop invariants and assertions
 --  in this unit are meant for analysis only, not for run-time checking, as it
@@ -53,5 +53,13 @@ is
    function Exp_Long_Long_Integer
      (Left : Long_Long_Integer; Right : Natural) return Long_Long_Integer
      renames Expont_Integer.Expon;
+   --  Return the power of ``Left`` by ``Right`` where ``Left`` is a
+   --  Long_Long_Integer.
+   --
+   --  This function is implemented using the standard logarithmic approach:
+   --  ``Right`` gets shifted right testing successive low order bits, and
+   --  ``Left`` is raised to the next power of 2.
+   --
+   --  In case of overflow, Constraint_Error is raised.
 
 end System.Exp_LLI;

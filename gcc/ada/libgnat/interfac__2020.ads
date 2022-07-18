@@ -35,15 +35,26 @@
 
 --  This is the runtime version of this unit (not used during GNAT build)
 
+--  ``Interfaces`` is the parent of several library packages that declare types
+--  and other entities useful for interfacing to foreign languages as defined
+--  by ARM B.2.
+--
+--  It defines signed and modular integer types of 8, 16, 32, 64 and 128 bits.
+--  For each such modular type, shifting and rotating intrinsic subprograms
+--  are specified. There is also the definition of IEEE 754 floating point
+--  types (``IEEE_Float_32``, ``IEEE_Float_64``, and ``IEEE_Extended_Float``).
+
 package Interfaces with
   Always_Terminates
 is
    pragma No_Elaboration_Code_All;
    pragma Pure;
 
+   pragma Implementation_Defined;
    --  All identifiers in this unit are implementation defined
 
-   pragma Implementation_Defined;
+   --  Definitions of 8, 16, 24, 32, 64 and 128 bit signed and unsigned integer
+   --  types.
 
    type Integer_8  is range -2 **  7 .. 2 **  7 - 1;
    for Integer_8'Size use  8;
@@ -56,15 +67,15 @@ is
 
    type Integer_64 is new Long_Long_Integer;
    for Integer_64'Size use 64;
-   --  Note: we use Long_Long_Integer'First instead of -2 ** 63 to allow this
-   --  unit to compile when using custom target configuration files where the
-   --  maximum integer is 32 bits. This is useful for static analysis tools
-   --  such as SPARK or CodePeer. In the normal case Long_Long_Integer is
-   --  always 64-bits so we get the desired 64-bit type.
+   --  We use Long_Long_Integer'First instead of -2 ** 63 to allow this unit to
+   --  compile when using custom target configuration files where the maximum
+   --  integer is 32 bits. This is useful for static analysis tools such as
+   --  SPARK or CodePeer. In the normal case Long_Long_Integer is 64-bits so we
+   --  get the desired 64-bit type.
 
    type Integer_128 is new Long_Long_Long_Integer;
-   --  Note: we use Long_Long_Long_Integer instead of literal bounds to allow
-   --  this unit to be compiled with compilers not supporting 128-bit integers.
+   --  We use Long_Long_Long_Integer instead of literal bounds to allow this
+   --  unit to be compiled with compilers not supporting 128-bit integers.
    --  We do not put a confirming size clause of 128 bits for the same reason.
 
    type Unsigned_8 is mod 2 ** 8;
@@ -87,6 +98,8 @@ is
 
    type Unsigned_128 is mod 2 ** Long_Long_Long_Integer'Size;
    --  See comment on Integer_128 above
+
+   --  Compiler intrinsics implemented by the compiler
 
    function Shift_Left
      (Value  : Unsigned_8;
@@ -221,9 +234,9 @@ is
    type IEEE_Float_64 is digits 15;
    for IEEE_Float_64'Size use 64;
 
-   --  If there is an IEEE extended float available on the machine, we assume
-   --  that it is available as Long_Long_Float.
-
+   --  If there is an IEEE extended float available on the machine, we
+   --  assume that it is available as Long_Long_Float.
+   --
    --  Note: it is harmless, and explicitly permitted, to include additional
    --  types in interfaces, so it is not wrong to have IEEE_Extended_Float
    --  defined even if the extended format is not available.

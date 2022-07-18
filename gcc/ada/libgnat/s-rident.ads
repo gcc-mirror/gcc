@@ -30,8 +30,9 @@
 ------------------------------------------------------------------------------
 
 --  This package defines the set of restriction identifiers. It is a generic
---  package that is instantiated by the compiler/binder in package Rident, and
---  is instantiated in package System.Restrictions for use at run-time.
+--  package that is instantiated by the compiler/binder in package ``Rident``,
+--  and is instantiated in package ``System.Restrictions`` for use at
+--  run-time.
 
 --  The reason that we make this a generic package is so that in the case of
 --  the instantiation in Rident for use at compile time and bind time, we can

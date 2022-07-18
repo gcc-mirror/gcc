@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Instantiation of System.Image_N for enumeration types whose names table
+--  Instantiation of ``System.Image_N`` for enumeration types whose names table
 --  has a length that fits in a 16-bit but not a 8-bit integer.
 
 with Interfaces;
@@ -47,5 +47,17 @@ package System.Img_Enum_16 is
       Names   : String;
       Indexes : System.Address)
      renames Impl.Image_Enumeration;
+   --  Used to compute Enum'Image (Str) where Enum is some enumeration type
+   --  other than those defined in package Standard. Names is a string with
+   --  a lower bound of 1 containing the characters of all the enumeration
+   --  literals concatenated together in sequence. Indexes is the address of
+   --  an array of type array (0 .. N) of Interfaces.Integer_16, where N is the
+   --  number of enumeration literals in the type. The Indexes values are the
+   --  starting subscript of each enumeration literal, indexed by Pos values,
+   --  with an extra entry at the end containing Names'Length + 1. The reason
+   --  that Indexes is passed by address is that the actual type is created on
+   --  the fly by the expander. The desired 'Image value is stored in S
+   --  (1 .. P) and P is set on return. The caller guarantees that S is long
+   --  enough to hold the result and that the lower bound is 1.
 
 end System.Img_Enum_16;

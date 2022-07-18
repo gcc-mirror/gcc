@@ -29,8 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides some common specification functions used by the
---  s-valxxx files.
+--  This package is part of a set of Ghost code packages used to proof the
+--  implementations of the Image and Value attributes. It provides some common
+--  specification functions used by the s-valxxx files.
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by

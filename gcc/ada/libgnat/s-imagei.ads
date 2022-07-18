@@ -29,9 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines for supporting the Image attribute for
---  signed integer types, and also for conversion operations required in
---  Text_IO.Integer_IO for such types.
+--  This package provides the subprograms supporting the ``Image`` attribute
+--  and ``Ada.Text_IO.Integer_IO`` conversions routines for signed integer
+--  types.
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by

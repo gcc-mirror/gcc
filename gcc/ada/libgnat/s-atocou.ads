@@ -29,7 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides atomic counter on platforms where it is supported:
+--  This package provides atomic counters routines
+
+--  This package support the following platforms:
 --    - all Alpha platforms
 --    - all AARCH64 platforms
 --    - all ARM platforms

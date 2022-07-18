@@ -32,6 +32,7 @@
 --  This function performs exponentiation of a modular type with nonbinary
 --  modulus values. Arithmetic is done in Long_Long_Unsigned, with explicit
 --  accounting for the modulus value which is passed as the second argument.
+--
 --  Note that 1 is a binary modulus (2**0), so the compiler should not (and
 --  will not) call this function with Modulus equal to 1.
 
@@ -80,5 +81,11 @@ is
    with
      Pre  => Modulus /= 0 and then Modulus not in Power_Of_2,
      Post => Big (Exp_Modular'Result) = Big (Left) ** Right mod Big (Modulus);
+   --  Return the power of ``Left`` by ``Right` modulo ``Modulus``.
+   --
+   --  This function is implemented using the standard logarithmic approach:
+   --  ``Right`` gets shifted right testing successive low order bits, and
+   --  ``Left`` is raised to the next power of 2. The multiplications are
+   --  performed using modular multiplications.
 
 end System.Exp_Mod;

@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains specification functions for scanning signed Integer
---  values for use in Text_IO.Integer_IO, and the Value attribute.
+--  values for use in ``Text_IO.Integer_IO``, and the Value attribute.
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by

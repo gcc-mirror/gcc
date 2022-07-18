@@ -33,6 +33,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package implements functionality defined by ARM D.10.1 to
+--  synchronously release multiple blocked tasks after the number
+--  of blocked tasks has reached a specified threshold.
+
 package Ada.Synchronous_Barriers with SPARK_Mode => Off is
    pragma Preelaborate (Synchronous_Barriers);
 

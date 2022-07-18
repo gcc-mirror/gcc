@@ -33,6 +33,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package provides the assertion feature defined by ARM 11.4.2
+
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised when calling Assert.
 --  This is enforced by setting the corresponding assertion policy to Ignore.

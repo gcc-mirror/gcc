@@ -13,6 +13,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package is provided for compatibility with Ada 83. It renames
+--  :ref:`Ada.Text_IO` and provides the same functionality.
+
 pragma Ada_2012;
 --  Explicit setting of Ada 2012 mode is required here, since we want to with a
 --  child unit (not possible in Ada 83 mode), and Text_IO is not considered to

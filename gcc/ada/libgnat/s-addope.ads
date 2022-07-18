@@ -31,14 +31,14 @@
 
 --  This package provides arithmetic and logical operations on type Address.
 --  It is intended for use by other packages in the System hierarchy. For
---  applications requiring this capability, see System.Storage_Elements or
---  the operations introduced in System.Aux_DEC;
-
---  The reason we need this package is that arithmetic operations may not
---  be available in the case where type Address is non-private and the
---  operations have been made abstract in the spec of System (to avoid
---  inappropriate use by applications programs). In addition, the logical
---  operations may not be available if type Address is a signed integer.
+--  applications requiring this capability, use `System.Storage_Elements`
+--  instead.
+--
+--  The reason for this package is that arithmetic operations may not be
+--  available in the case where type Address is non-private and the operations
+--  have been made abstract in the spec of System (to avoid inappropriate use
+--  by applications programs). In addition, the logical operations may not be
+--  available if type Address is a signed integer.
 
 package System.Address_Operations is
    pragma Pure;
@@ -47,24 +47,29 @@ package System.Address_Operations is
    --  a modular type with the same length as Address, i.e. they provide
    --  twos complement wrap around arithmetic treating the address value
    --  as an unsigned value, with no overflow checking.
-
+   --
    --  Note that we do not use the infix names for these operations to
    --  avoid problems with ambiguities coming from declarations in package
    --  Standard (which may or may not be visible depending on the exact
    --  form of the declaration of type System.Address).
-
+   --
    --  For addition, subtraction, and multiplication, the effect of overflow
    --  is 2's complement wrapping (as though the type Address were unsigned).
-
+   --
    --  For division and modulus operations, the caller is responsible for
    --  ensuring that the Right argument is non-zero, and the effect of the
    --  call is not specified if a zero argument is passed.
 
    function AddA (Left, Right : Address) return Address;
+   --  Computes the sum of ``Left`` and ``Right``
    function SubA (Left, Right : Address) return Address;
+   --  Computes the difference between ``Left`` and ``Right``
    function MulA (Left, Right : Address) return Address;
+   --  Computes the product of ``Left`` and ``Right``
    function DivA (Left, Right : Address) return Address;
+   --  Computes the quotient of ``Left`` and ``Right``
    function ModA (Left, Right : Address) return Address;
+   --  Computes the modulus of ``Left`` and ``Right``
 
    --  The semantics of the logical operations are those that apply to
    --  a modular type with the same length as Address, i.e. they provide
@@ -72,7 +77,9 @@ package System.Address_Operations is
    --  bit if Address is a signed integer type).
 
    function AndA (Left, Right : Address) return Address;
+   --  Computes the bit-wise 'and' mask of ``Left`` and ``Right``
    function OrA  (Left, Right : Address) return Address;
+   --  Computes the bit-wise 'or' mask of ``Left`` and ``Right``
 
    pragma Inline_Always (AddA);
    pragma Inline_Always (SubA);

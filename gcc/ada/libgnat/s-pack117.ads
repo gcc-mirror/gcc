@@ -34,6 +34,8 @@
 package System.Pack_117 is
    pragma Preelaborate;
 
+   --  117-bit element type definition
+
    Bits : constant := 117;
 
    type Bits_117 is mod 2 ** Bits;

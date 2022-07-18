@@ -13,6 +13,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Renaming of :ref:`Ada.Unchecked_Conversion`
+
 generic
    type Source (<>) is limited private;
    type Target (<>) is limited private;
@@ -20,3 +22,4 @@ generic
 function Unchecked_Conversion (S : Source) return Target;
 pragma Import (Intrinsic, Unchecked_Conversion);
 pragma Pure (Unchecked_Conversion);
+--  See ``Ada.Unchecked_Conversion``

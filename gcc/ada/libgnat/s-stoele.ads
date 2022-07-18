@@ -33,6 +33,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package provides the ``Storage_Elements`` package as defined by the
+--  Ada ARM 13.7.1 to allow for arithmetic operations on memory addresses.
+
 --  Warning: declarations in this package are ambiguous with respect to the
 --  extra declarations that can be introduced into System using Extend_System.
 --  It is a good idea to avoid use clauses for this package.
@@ -51,9 +54,12 @@ is
    type Storage_Offset is range -Memory_Size / 2 .. Memory_Size / 2 - 1;
 
    subtype Storage_Count is Storage_Offset range 0 .. Storage_Offset'Last;
+   --  *Storage_Count* is a subtype of *Storage_Offset* with only the null or
+   --  positive values.
 
    type Storage_Element is mod 2 ** Storage_Unit;
    for Storage_Element'Size use Storage_Unit;
+   --  The type *Storage_Element* represents a byte
 
    pragma Universal_Aliasing (Storage_Element);
    --  This type is used by the expander to implement aggregate copy
@@ -61,30 +67,38 @@ is
    type Storage_Array is
      array (Storage_Offset range <>) of aliased Storage_Element;
    for Storage_Array'Component_Size use Storage_Unit;
+   --  The type *Storage_Array* represents a part of the memory
 
    --  Address arithmetic
 
    function "+" (Left : Address; Right : Storage_Offset) return Address;
    function "+" (Left : Storage_Offset; Right : Address) return Address;
    pragma Import (Intrinsic, "+");
+   --   Returns the sum of ``Left`` and ``Right``
 
    function "-" (Left : Address; Right : Storage_Offset) return Address;
    function "-" (Left, Right : Address) return Storage_Offset;
    pragma Import (Intrinsic, "-");
+   --  Returns the difference between ``Left`` and ``Right``
 
    function "mod"
      (Left  : Address;
       Right : Storage_Offset) return Storage_Offset;
    pragma Import (Intrinsic, "mod");
+   --  Returns the modulus between ``Left`` and ``Right``
 
    --  Conversion to/from integers
 
    type Integer_Address is mod Memory_Size;
+   --  Finally, *Integer_Address* is a non-private modular
+   --  type that represents an address.
 
    function To_Address (Value : Integer_Address) return Address;
    pragma Import (Intrinsic, To_Address);
+   --  Converts the *Integer_Address* ``Value`` to an *Address*
 
    function To_Integer (Value : Address) return Integer_Address;
    pragma Import (Intrinsic, To_Integer);
+   --  Converts the *Address* ``Value`` to an *Integer_Address*
 
 end System.Storage_Elements;

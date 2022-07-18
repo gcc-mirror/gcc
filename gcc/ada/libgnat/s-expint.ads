@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Integer exponentiation (checks on)
+--  This package implements Integer exponentiation (checks on)
 
 --  Preconditions, postconditions, ghost code, loop invariants and assertions
 --  in this unit are meant for analysis only, not for run-time checking, as it
@@ -52,5 +52,13 @@ is
 
    function Exp_Integer (Left : Integer; Right : Natural) return Integer
      renames Expont_Integer.Expon;
+   --  Return the power of ``Left`` by ``Right`` where ``Left`` is an
+   --  Integer.
+   --
+   --  This function is implemented using the standard logarithmic approach:
+   --  ``Right`` gets shifted right testing successive low order bits, and
+   --  ``Left`` is raised to the next power of 2.
+   --
+   --  In case of overflow, Constraint_Error is raised.
 
 end System.Exp_Int;

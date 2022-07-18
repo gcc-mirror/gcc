@@ -30,7 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  This package contains an instantiation of the floating-point attribute
---  runtime routines for the type Long_Long_Float.
+--  runtime routines for the type Long_Long_Float. It is an instantiation of
+--  ``System.Fat_Gen`` for Long_Long_Float.
 
 with System.Fat_Gen;
 

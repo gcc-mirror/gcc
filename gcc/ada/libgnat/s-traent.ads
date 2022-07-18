@@ -51,8 +51,8 @@ package System.Traceback_Entries is
 
    function PC_For (TB_Entry : Traceback_Entry) return System.Address;
    pragma Inline (PC_For);
-   --  Returns the address of the call instruction associated with the
-   --  provided entry.
+   --  Returns the address of the call instruction associated with
+   --  the provided entry.
 
    function TB_Entry_For (PC : System.Address) return Traceback_Entry;
    pragma Inline (TB_Entry_For);

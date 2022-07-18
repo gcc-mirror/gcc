@@ -34,6 +34,8 @@
 package System.Pack_38 is
    pragma Preelaborate;
 
+   --  38-bit element type definition
+
    Bits : constant := 38;
 
    type Bits_38 is mod 2 ** Bits;

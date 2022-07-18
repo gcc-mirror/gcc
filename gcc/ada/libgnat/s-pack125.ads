@@ -34,6 +34,8 @@
 package System.Pack_125 is
    pragma Preelaborate;
 
+   --  125-bit element type definition
+
    Bits : constant := 125;
 
    type Bits_125 is mod 2 ** Bits;

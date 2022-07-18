@@ -30,7 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  Contains the routine for computing the image in based format of signed and
---  unsigned integers for use by Text_IO.Integer_IO and Text_IO.Modular_IO.
+--  unsigned integers for use by ``Text_IO.Integer_IO`` and
+--  ``Text_IO.Modular_IO``.
 
 generic
 

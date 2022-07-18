@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains specification functions for scanning modular Unsigned
---  values for use in Text_IO.Modular_IO, and the Value attribute.
+--  values for use in ``Text_IO.Modular_IO``, and the Value attribute.
 
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised. This is enforced by

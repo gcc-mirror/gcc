@@ -33,6 +33,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package implements Ada task identification as defined by ARM C.7.1.
+
 --  Preconditions in this unit are meant for analysis only, not for run-time
 --  checking, so that the expected exceptions are raised.
 --  This is enforced by setting the corresponding assertion policy to Ignore.

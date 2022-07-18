@@ -43,10 +43,22 @@ package System.Compare_Array_Signed_64 is
       Right     : System.Address;
       Left_Len  : Natural;
       Right_Len : Natural) return Integer;
-   --  Compare the array starting at address Left of length Left_Len
-   --  with the array starting at address Right of length Right_Len.
+   --  Compare the array starting at address ``Left`` of length ``Left_Len``
+   --  with the array starting at address ``Right`` of length ``Right_Len``.
    --  The comparison is in the normal Ada semantic sense of array
-   --  comparison. The result is -1,0,+1 for Left<Right, Left=Right,
-   --  Left>Right respectively.
+   --  comparison.
+   --
+   --  The result is -1, 0, +1 for ``Left`` < ``Right``, ``Left`` = ``Right``,
+   --  ``Left`` > ``Right`` respectively.
+   --
+   --  If the addresses are double word aligned, the function iterates on the
+   --  double words, and returns as soon as two double words are not equal.
+   --
+   --  Otherwise, the function iterates on the unaligned double words, compares
+   --  them using unaligned accesses, and returns as soon as two double words
+   --  are not equal.
+   --
+   --  Finally, at this point all the double words are equal. The result is
+   --  decided by comparing their lengths.
 
 end System.Compare_Array_Signed_64;

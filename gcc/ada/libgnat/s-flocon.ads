@@ -56,4 +56,8 @@ package System.Float_Control is
    --
    --  The call to Reset simply has no effect if the target environment
    --  does not give rise to such concerns.
+
+   --  The *Reset* procedure is a no-op on all Bareboard targets, the FPU
+   --  configuration being under full control there.
+
 end System.Float_Control;

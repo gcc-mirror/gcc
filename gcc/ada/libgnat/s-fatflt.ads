@@ -30,7 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  This package contains an instantiation of the floating-point attribute
---  runtime routines for the type Float.
+--  runtime routines for the type Float. It is an instantiation of
+--  ``System.Fat_Gen`` for Float.
 
 with System.Fat_Gen;
 

@@ -34,6 +34,8 @@
 package System.Pack_59 is
    pragma Preelaborate;
 
+   --  59-bit element type definition
+
    Bits : constant := 59;
 
    type Bits_59 is mod 2 ** Bits;

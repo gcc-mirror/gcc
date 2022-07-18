@@ -103,16 +103,6 @@ is
        and then (for all J in 1 .. Vector_Boolean_Size =>
                    Model ("not"'Result) (J) = not Model (Item) (J));
 
-   --  The three boolean operations "nand", "nor" and "nxor" are needed
-   --  for cases where the compiler moves boolean array operations into
-   --  the body of the loop that iterates over the array elements.
-
-   --  Note the following equivalences:
-   --    (not X) or  (not Y)  =  not (X and Y)  =  Nand (X, Y)
-   --    (not X) and (not Y)  =  not (X or Y)   =  Nor  (X, Y)
-   --    (not X) xor (not Y)  =  X xor Y
-   --    X       xor (not Y)  =  not (X xor Y)  =  Nxor (X, Y)
-
    function Nand (Left, Right : Boolean) return Boolean
    with
      Post => Nand'Result = not (Left and Right);
@@ -151,6 +141,15 @@ is
        and then (for all J in 1 .. Vector_Boolean_Size =>
                    Model (Nxor'Result) (J) =
                      Nxor (Model (Left) (J), Model (Right) (J)));
+   --  The three boolean operations "nand", "nor" and "nxor" are needed
+   --  for cases where the compiler moves boolean array operations into
+   --  the body of the loop that iterates over the array elements.
+   --
+   --  Note the following equivalences:
+   --    (not X) or  (not Y)  =  not (X and Y)  =  Nand (X, Y)
+   --    (not X) and (not Y)  =  not (X or Y)   =  Nor  (X, Y)
+   --    (not X) xor (not Y)  =  X xor Y
+   --    X       xor (not Y)  =  not (X xor Y)  =  Nxor (X, Y)
 
    pragma Inline_Always ("not");
    pragma Inline_Always (Nand);
