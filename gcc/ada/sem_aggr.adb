@@ -1748,11 +1748,11 @@ package body Sem_Aggr is
          -- Remove_References --
          -----------------------
 
-         function Remove_Ref (N : Node_Id) return Traverse_Result;
-         --  Remove references to the entity Id after analysis, so it can be
+         function Remove_Reference (N : Node_Id) return Traverse_Result;
+         --  Remove reference to the entity Id after analysis, so it can be
          --  properly reanalyzed after construct is expanded into a loop.
 
-         function Remove_Ref (N : Node_Id) return Traverse_Result is
+         function Remove_Reference (N : Node_Id) return Traverse_Result is
          begin
             if Nkind (N) = N_Identifier
                and then Present (Entity (N))
@@ -1763,15 +1763,15 @@ package body Sem_Aggr is
             end if;
             Set_Analyzed (N, False);
             return OK;
-         end Remove_Ref;
+         end Remove_Reference;
 
-         procedure Remove_References is new Traverse_Proc (Remove_Ref);
+         procedure Remove_References is new Traverse_Proc (Remove_Reference);
 
          --  Local variables
 
          Choice : Node_Id;
          Dummy  : Boolean;
-         Ent    : Entity_Id;
+         Scop   : Entity_Id;
          Expr   : Node_Id;
 
       --  Start of processing for Resolve_Iterated_Component_Association
@@ -1841,10 +1841,10 @@ package body Sem_Aggr is
          --  visible in the expression for the component, and needed for its
          --  analysis.
 
-         Ent := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
-         Set_Etype  (Ent, Standard_Void_Type);
-         Set_Parent (Ent, Parent (N));
-         Push_Scope (Ent);
+         Scop := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
+         Set_Etype  (Scop, Standard_Void_Type);
+         Set_Parent (Scop, Parent (N));
+         Push_Scope (Scop);
 
          --  Insert and decorate the index variable in the current scope.
          --  The expression has to be analyzed once the index variable is
@@ -1853,7 +1853,7 @@ package body Sem_Aggr is
          Enter_Name (Id);
          Set_Etype (Id, Id_Typ);
          Mutate_Ekind (Id, E_Variable);
-         Set_Scope (Id, Ent);
+         Set_Scope (Id, Scop);
 
          --  Analyze  expression without expansion, to verify legality.
          --  When generating code, we then remove references to the index
