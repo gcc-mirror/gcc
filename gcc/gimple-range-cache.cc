@@ -1384,6 +1384,32 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
       // This block has an outgoing range.
       if (m_gori.has_edge_range_p (name, bb))
 	m_workback.quick_push (prev_bb);
+      else
+	{
+	  // Normally join blocks don't carry any new range information on
+	  // incoming edges.  If the first incoming edge to this block does
+	  // generate a range, calculate the ranges if all incoming edges
+	  // are also dominated by the dominator.  (Avoids backedges which
+	  // will break the rule of moving only upward in the domniator tree).
+	  // If the first pred does not generate a range, then we will be
+	  // using the dominator range anyway, so thats all the check needed.
+	  if (EDGE_COUNT (prev_bb->preds) > 1
+	      && m_gori.has_edge_range_p (name, EDGE_PRED (prev_bb, 0)->src))
+	    {
+	      edge e;
+	      edge_iterator ei;
+	      bool all_dom = true;
+	      FOR_EACH_EDGE (e, ei, prev_bb->preds)
+		if (e->src != bb
+		    && !dominated_by_p (CDI_DOMINATORS, e->src, bb))
+		  {
+		    all_dom = false;
+		    break;
+		  }
+	      if (all_dom)
+		m_workback.quick_push (prev_bb);
+	    }
+	}
 
       if (def_bb == bb)
 	break;
