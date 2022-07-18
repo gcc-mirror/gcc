@@ -149,6 +149,7 @@ public:
   std::unique_ptr<AST::IdentifierPattern> parse_identifier_pattern ();
   std::unique_ptr<AST::TokenTree> parse_token_tree ();
   AST::Attribute parse_attribute_body ();
+  AST::AttrVec parse_inner_attributes ();
 
 private:
   void skip_after_semicolon ();
@@ -164,7 +165,6 @@ private:
   void parse_statement_seq (bool (Parser::*done) ());
 
   // AST-related stuff - maybe move or something?
-  AST::AttrVec parse_inner_attributes ();
   AST::Attribute parse_inner_attribute ();
   AST::AttrVec parse_outer_attributes ();
   AST::Attribute parse_outer_attribute ();
