@@ -15724,6 +15724,22 @@ Do not look for sources in the current directory where @code{gnatbind} was
 invoked, and do not look for ALI files in the directory containing the
 ALI file named in the @code{gnatbind} command line.
 
+@geindex -k (gnatbind)
+
+@item @code{-k}
+
+Disable checking of elaboration flags. When using @code{-n}
+either explicitly or implicitly, @code{-F} is also implied,
+unless @code{-k} is used. This switch should be used with care
+and you should ensure manually that elaboration routines are not called
+twice unintentionally.
+
+@geindex -K (gnatbind)
+
+@item @code{-K}
+
+Give list of linker options specified for link.
+
 @geindex -l (gnatbind)
 
 @item @code{-l}
@@ -29292,8 +29308,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{cf}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{cf}@w{                              }
 
 @c %**end of body
 @bye

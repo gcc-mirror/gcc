@@ -379,6 +379,12 @@ package body Switch.B is
                Bad_Switch (Switch_Chars);
             end if;
 
+         --  Processing for k switch
+
+         when 'k' =>
+            Ptr := Ptr + 1;
+            Check_Elaboration_Flags := False;
+
          --  Processing for K switch
 
          when 'K' =>
