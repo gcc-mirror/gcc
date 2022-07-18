@@ -3965,7 +3965,7 @@ arc_expand_epilogue (int sibcall_p)
   if (size)
     emit_insn (gen_blockage ());
 
-  if (ARC_INTERRUPT_P (fn_type) && restore_fp)
+  if (ARC_INTERRUPT_P (fn_type))
     {
       /* We need to restore FP before any SP operation in an
 	 interrupt.  */
