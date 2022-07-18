@@ -141,6 +141,7 @@ class ExprStmtWithBlock;
 
 // rust-item.h
 class TypeParam;
+class ConstGenericParam;
 class WhereClauseItem;
 class LifetimeWhereClauseItem;
 class TypeBoundWhereClauseItem;

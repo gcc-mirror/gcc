@@ -769,6 +769,16 @@ public:
 
   Location get_locus () const override final { return locus; };
 
+  bool has_default_expression () { return default_expression != nullptr; }
+
+  std::unique_ptr<Type> &get_type () { return type; }
+  std::unique_ptr<Expr> &get_default_expression ()
+  {
+    rust_assert (has_default_expression ());
+
+    return default_expression;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
