@@ -1098,6 +1098,148 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 /* Returns true if NODE is a pointer or a pointer-to-member.  */
 #define TYPE_PTR_OR_PTRMEM_P(NODE) (TYPE_PTR_P (NODE) || TYPE_PTRMEM_P (NODE))
 
+/* Nonzero if NODE is an artificial VAR_DECL for a C++17 structured binding
+   declaration or one of VAR_DECLs for the user identifiers in it.  */
+#define DECL_DECOMPOSITION_P(NODE)                                             \
+  (VAR_P (NODE) && DECL_LANG_SPECIFIC (NODE)                                   \
+     ? DECL_LANG_SPECIFIC (NODE)->u.base.selector == lds_decomp                \
+     : false)
+
+/* The underlying artificial VAR_DECL for structured binding.  */
+#define DECL_DECOMP_BASE(NODE) (LANG_DECL_DECOMP_CHECK (NODE)->base)
+
+/* Nonzero if either DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P or
+   DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P is true of NODE.  */
+#define DECL_MAYBE_IN_CHARGE_CDTOR_P(NODE)                                     \
+  (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (NODE)                                   \
+   || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (NODE))
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a destructor, but not the
+   specialized in-charge constructor, in-charge deleting constructor,
+   or the base destructor.  */
+#define DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P(NODE)                                \
+  (DECL_NAME (NODE) == dtor_identifier)
+
+/* Nonzero if NODE (a _DECL) is a cloned constructor or
+   destructor.  */
+#define DECL_CLONED_FUNCTION_P(NODE)                                           \
+  (DECL_NAME (NODE) && IDENTIFIER_CDTOR_P (DECL_NAME (NODE))                   \
+   && !DECL_MAYBE_IN_CHARGE_CDTOR_P (NODE))
+
+/* If DECL_CLONED_FUNCTION_P holds, this is the function that was
+   cloned.  */
+#define DECL_CLONED_FUNCTION(NODE)                                             \
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->u.fn.u5.cloned_function)
+
+/* Nonzero if NODE (a _DECL) is a cloned constructor or
+   destructor.  */
+#define DECL_CLONED_FUNCTION_P(NODE)                                           \
+  (DECL_NAME (NODE) && IDENTIFIER_CDTOR_P (DECL_NAME (NODE))                   \
+   && !DECL_MAYBE_IN_CHARGE_CDTOR_P (NODE))
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a constructor, but not either the
+   specialized in-charge constructor or the specialized not-in-charge
+   constructor.  */
+#define DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P(NODE)                               \
+  (DECL_NAME (NODE) == ctor_identifier)
+
+/* The current C++-specific per-function global variables.  */
+
+#define cp_function_chain (cfun->language)
+
+/* In a constructor destructor, the point at which all derived class
+   destroying/construction has been done.  I.e., just before a
+   constructor returns, or before any base class destroying will be done
+   in a destructor.  */
+
+#define cdtor_label cp_function_chain->x_cdtor_label
+
+/* When we're processing a member function, current_class_ptr is the
+   PARM_DECL for the `this' pointer.  The current_class_ref is an
+   expression for `*this'.  */
+
+#define current_class_ptr                                                      \
+  (*(cfun && cp_function_chain ? &cp_function_chain->x_current_class_ptr       \
+			       : &scope_chain->x_current_class_ptr))
+#define current_class_ref                                                      \
+  (*(cfun && cp_function_chain ? &cp_function_chain->x_current_class_ref       \
+			       : &scope_chain->x_current_class_ref))
+
+/* The EH_SPEC_BLOCK for the exception-specifiers for the current
+   function, if any.  */
+
+#define current_eh_spec_block cp_function_chain->x_eh_spec_block
+
+/* The `__in_chrg' parameter for the current function.  Only used for
+   constructors and destructors.  */
+
+#define current_in_charge_parm cp_function_chain->x_in_charge_parm
+
+/* The `__vtt_parm' parameter for the current function.  Only used for
+   constructors and destructors.  */
+
+#define current_vtt_parm cp_function_chain->x_vtt_parm
+
+/* A boolean flag to control whether we need to clean up the return value if a
+   local destructor throws.  Only used in functions that return by value a
+   class with a destructor.  Which 'tors don't, so we can use the same
+   field as current_vtt_parm.  */
+
+#define current_retval_sentinel current_vtt_parm
+
+/* Set to 0 at beginning of a function definition, set to 1 if
+   a return statement that specifies a return value is seen.  */
+
+#define current_function_returns_value cp_function_chain->returns_value
+
+/* Set to 0 at beginning of a function definition, set to 1 if
+   a return statement with no argument is seen.  */
+
+#define current_function_returns_null cp_function_chain->returns_null
+
+/* Set to 0 at beginning of a function definition, set to 1 if
+   a call to a noreturn function is seen.  */
+
+#define current_function_returns_abnormally                                    \
+  cp_function_chain->returns_abnormally
+
+/* Set to 0 at beginning of a function definition, set to 1 if we see an
+   obvious infinite loop.  This can have false positives and false
+   negatives, so it should only be used as a heuristic.  */
+
+#define current_function_infinite_loop cp_function_chain->infinite_loop
+
+/* Nonzero if we are processing a base initializer.  Zero elsewhere.  */
+#define in_base_initializer cp_function_chain->x_in_base_initializer
+
+#define in_function_try_handler cp_function_chain->x_in_function_try_handler
+
+/* Expression always returned from function, or error_mark_node
+   otherwise, for use by the automatic named return value optimization.  */
+
+#define current_function_return_value (cp_function_chain->x_return_value)
+
+#define current_class_type scope_chain->class_type
+
+/* Nonzero means that this type is being defined.  I.e., the left brace
+   starting the definition of this type has been seen.  */
+#define TYPE_BEING_DEFINED(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->being_defined)
+
+/* Nonzero for FUNCTION_DECL means that this decl is a static
+   member function.  */
+#define DECL_STATIC_FUNCTION_P(NODE)                                           \
+  (LANG_DECL_FN_CHECK (NODE)->static_function)
+
+/* Nonzero for FUNCTION_DECL means that this decl is a non-static
+   member function.  */
+#define DECL_NONSTATIC_MEMBER_FUNCTION_P(NODE)                                 \
+  (TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE)
+
+/* Nonzero for FUNCTION_DECL means that this decl is a member function
+   (static or non-static).  */
+#define DECL_FUNCTION_MEMBER_P(NODE)                                           \
+  (DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE) || DECL_STATIC_FUNCTION_P (NODE))
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
@@ -1362,6 +1504,213 @@ struct GTY (()) lang_decl_base
    || TREE_CODE (NODE) == TEMPLATE_DECL || TREE_CODE (NODE) == USING_DECL      \
    || TREE_CODE (NODE) == CONCEPT_DECL)
 
+// forked from gcc/c-family-common.h stmt_tree_s
+
+/* Information about a statement tree.  */
+
+struct GTY (()) stmt_tree_s
+{
+  /* A stack of statement lists being collected.  */
+  vec<tree, va_gc> *x_cur_stmt_list;
+
+  /* In C++, Nonzero if we should treat statements as full
+     expressions.  In particular, this variable is non-zero if at the
+     end of a statement we should destroy any temporaries created
+     during that statement.  Similarly, if, at the end of a block, we
+     should destroy any local variables in this block.  Normally, this
+     variable is nonzero, since those are the normal semantics of
+     C++.
+
+     This flag has no effect in C.  */
+  int stmts_are_full_exprs_p;
+};
+
+// forked from gcc/c-family-common.h stmt_tree_s
+
+typedef struct stmt_tree_s *stmt_tree;
+
+// forked from gcc/c-family-common.h c_language_function
+
+/* Global state pertinent to the current function.  Some C dialects
+   extend this structure with additional fields.  */
+
+struct GTY (()) c_language_function
+{
+  /* While we are parsing the function, this contains information
+     about the statement-tree that we are building.  */
+  struct stmt_tree_s x_stmt_tree;
+
+  /* Vector of locally defined typedefs, for
+     -Wunused-local-typedefs.  */
+  vec<tree, va_gc> *local_typedefs;
+};
+
+// forked from gcc/cp/cp-tree.h omp_declare_target_attr
+
+struct GTY (()) omp_declare_target_attr
+{
+  bool attr_syntax;
+};
+
+// forked from gcc/cp/name-lookup.h cxx_binding
+
+/* Datatype that represents binding established by a declaration between
+   a name and a C++ entity.  */
+struct GTY (()) cxx_binding
+{
+  /* Link to chain together various bindings for this name.  */
+  cxx_binding *previous;
+  /* The non-type entity this name is bound to.  */
+  tree value;
+  /* The type entity this name is bound to.  */
+  tree type;
+
+  bool value_is_inherited : 1;
+  bool is_local : 1;
+  bool type_is_hidden : 1;
+};
+
+// forked from gcc/cp/name-lookup.h cxx_saved_binding
+
+/* Datatype used to temporarily save C++ bindings (for implicit
+   instantiations purposes and like).  Implemented in decl.cc.  */
+struct GTY (()) cxx_saved_binding
+{
+  /* The name of the current binding.  */
+  tree identifier;
+  /* The binding we're saving.  */
+  cxx_binding *binding;
+  tree real_type_value;
+};
+
+// forked from gcc/cp/cp-tree.h saved_scope
+
+/* Global state.  */
+
+struct GTY (()) saved_scope
+{
+  vec<cxx_saved_binding, va_gc> *old_bindings;
+  tree old_namespace;
+  vec<tree, va_gc> *decl_ns_list;
+  tree class_name;
+  tree class_type;
+  tree access_specifier;
+  tree function_decl;
+  vec<tree, va_gc> *lang_base;
+  tree lang_name;
+  tree template_parms;
+  tree x_saved_tree;
+
+  /* Only used for uses of this in trailing return type.  */
+  tree x_current_class_ptr;
+  tree x_current_class_ref;
+
+  int x_processing_template_decl;
+  int x_processing_specialization;
+  int x_processing_constraint;
+  int suppress_location_wrappers;
+  BOOL_BITFIELD x_processing_explicit_instantiation : 1;
+  BOOL_BITFIELD need_pop_function_context : 1;
+
+  /* Nonzero if we are parsing the discarded statement of a constexpr
+     if-statement.  */
+  BOOL_BITFIELD discarded_stmt : 1;
+  /* Nonzero if we are parsing or instantiating the compound-statement
+     of consteval if statement.  Also set while processing an immediate
+     invocation.  */
+  BOOL_BITFIELD consteval_if_p : 1;
+
+  int unevaluated_operand;
+  int inhibit_evaluation_warnings;
+  int noexcept_operand;
+  int ref_temp_count;
+
+  struct stmt_tree_s x_stmt_tree;
+
+  hash_map<tree, tree> *GTY ((skip)) x_local_specializations;
+  vec<omp_declare_target_attr, va_gc> *omp_declare_target_attribute;
+
+  struct saved_scope *prev;
+};
+
+extern GTY (()) struct saved_scope *scope_chain;
+
+// forked from gcc/cp/cp-tree.h named_label_hash
+
+struct named_label_entry; /* Defined in decl.cc.  */
+
+struct named_label_hash : ggc_remove<named_label_entry *>
+{
+  typedef named_label_entry *value_type;
+  typedef tree compare_type; /* An identifier.  */
+
+  inline static hashval_t hash (value_type);
+  inline static bool equal (const value_type, compare_type);
+
+  static const bool empty_zero_p = true;
+  inline static void mark_empty (value_type &p) { p = NULL; }
+  inline static bool is_empty (value_type p) { return !p; }
+
+  /* Nothing is deletable.  Everything is insertable.  */
+  inline static bool is_deleted (value_type) { return false; }
+  inline static void mark_deleted (value_type) { gcc_unreachable (); }
+};
+
+// forked from gcc/cp/cp-tree.h
+
+/* Global state pertinent to the current function.  */
+
+struct GTY (()) language_function
+{
+  struct c_language_function base;
+
+  tree x_cdtor_label;
+  tree x_current_class_ptr;
+  tree x_current_class_ref;
+  tree x_eh_spec_block;
+  tree x_in_charge_parm;
+  tree x_vtt_parm;
+  tree x_return_value;
+
+  BOOL_BITFIELD returns_value : 1;
+  BOOL_BITFIELD returns_null : 1;
+  BOOL_BITFIELD returns_abnormally : 1;
+  BOOL_BITFIELD infinite_loop : 1;
+  BOOL_BITFIELD x_in_function_try_handler : 1;
+  BOOL_BITFIELD x_in_base_initializer : 1;
+
+  /* True if this function can throw an exception.  */
+  BOOL_BITFIELD can_throw : 1;
+
+  BOOL_BITFIELD invalid_constexpr : 1;
+  BOOL_BITFIELD throwing_cleanup : 1;
+
+  hash_table<named_label_hash> *x_named_labels;
+
+  /* Tracking possibly infinite loops.  This is a vec<tree> only because
+     vec<bool> doesn't work with gtype.  */
+  vec<tree, va_gc> *infinite_loops;
+};
+
+// forked from gcc/c-family/c-common.h ref_operator
+
+/* The various name of operator that appears in error messages. */
+enum ref_operator
+{
+  /* NULL */
+  RO_NULL,
+  /* array indexing */
+  RO_ARRAY_INDEXING,
+  /* unary * */
+  RO_UNARY_STAR,
+  /* -> */
+  RO_ARROW,
+  /* implicit conversion */
+  RO_IMPLICIT_CONVERSION,
+  /* ->* */
+  RO_ARROW_STAR
+};
+
 // forked from gcc/cp/cp-tree.h lang_decl_min
 
 /* DECL_LANG_SPECIFIC for the above codes.  */
@@ -1528,24 +1877,6 @@ struct c_fileinfo
      exporting definitions that others might need.  */
   short interface_only;
   short interface_unknown;
-};
-
-// forked from gcc/cp/name-lookup.h
-
-/* Datatype that represents binding established by a declaration between
-   a name and a C++ entity.  */
-struct GTY (()) cxx_binding
-{
-  /* Link to chain together various bindings for this name.  */
-  cxx_binding *previous;
-  /* The non-type entity this name is bound to.  */
-  tree value;
-  /* The type entity this name is bound to.  */
-  tree type;
-
-  bool value_is_inherited : 1;
-  bool is_local : 1;
-  bool type_is_hidden : 1;
 };
 
 // forked from gcc/c-family/c-common.h c_common_identifier
@@ -2194,6 +2525,23 @@ extern bool reject_gcc_builtin (const_tree, location_t = UNKNOWN_LOCATION);
 
 extern tree resolve_nondeduced_context (tree, tsubst_flags_t);
 
+extern void cxx_incomplete_type_diagnostic (location_t, const_tree, const_tree,
+					    diagnostic_t);
+
+extern void cxx_incomplete_type_error (location_t, const_tree, const_tree);
+
+extern bool invalid_nonstatic_memfn_p (location_t, tree, tsubst_flags_t);
+
+extern bool really_overloaded_fn (tree) ATTRIBUTE_PURE;
+
+extern tree resolve_nondeduced_context_or_error (tree, tsubst_flags_t);
+
+extern tree instantiate_non_dependent_or_null (tree);
+
+extern void cxx_incomplete_type_inform (const_tree);
+
+extern tree strip_top_quals (tree);
+
 // forked from gcc/cp/cp-tree.h
 
 enum
@@ -2360,6 +2708,20 @@ null_node_p (const_tree expr)
 {
   STRIP_ANY_LOCATION_WRAPPER (expr);
   return expr == null_node;
+}
+
+inline void
+cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
+				diagnostic_t diag_kind)
+{
+  cxx_incomplete_type_diagnostic (rs_expr_loc_or_input_loc (value), value, type,
+				  diag_kind);
+}
+
+inline void
+cxx_incomplete_type_error (const_tree value, const_tree type)
+{
+  cxx_incomplete_type_diagnostic (value, type, DK_ERROR);
 }
 
 } // namespace Rust

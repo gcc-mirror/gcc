@@ -28,11 +28,16 @@
 #include "timevar.h"
 #include "convert.h"
 #include "gimple-expr.h"
+#include "gimplify.h"
+#include "function.h"
+#include "gcc-rich-location.h"
 
 // forked from gcc/c-family/c-common.cc c_global_trees
 tree c_global_trees[CTI_MAX];
 // forked from gcc/cp/decl.cc cp_global_trees
 tree cp_global_trees[CPTI_MAX];
+
+struct saved_scope *scope_chain;
 
 namespace Rust {
 
@@ -3721,4 +3726,247 @@ resolve_nondeduced_context (tree orig_expr, tsubst_flags_t complain)
 
   return orig_expr;
 }
+
+// forked from gcc/cp/pt.cc instantiate_non_dependent_or_null
+
+/* Like instantiate_non_dependent_expr, but return NULL_TREE rather than
+   an uninstantiated expression.  */
+
+tree
+instantiate_non_dependent_or_null (tree expr)
+{
+  if (expr == NULL_TREE)
+    return NULL_TREE;
+
+  return expr;
+}
+
+// forked from gcc/cp/pt.cc resolve_nondeduced_context_or_error
+
+/* As above, but error out if the expression remains overloaded.  */
+
+tree
+resolve_nondeduced_context_or_error (tree exp, tsubst_flags_t complain)
+{
+  exp = resolve_nondeduced_context (exp, complain);
+  if (type_unknown_p (exp))
+    {
+      if (complain & tf_error)
+	cxx_incomplete_type_error (exp, TREE_TYPE (exp));
+      return error_mark_node;
+    }
+  return exp;
+}
+
+// forked from gcc/cp/tree.cc really_overloaded_fn
+
+/* Returns true iff X is an expression for an overloaded function
+   whose type cannot be known without performing overload
+   resolution.  */
+
+bool
+really_overloaded_fn (tree x)
+{
+  return is_overloaded_fn (x) == 2;
+}
+
+// forked from gcc/cp/typeck..cc invalid_nonstatic_memfn_p
+
+/* EXPR is being used in a context that is not a function call.
+   Enforce:
+
+     [expr.ref]
+
+     The expression can be used only as the left-hand operand of a
+     member function call.
+
+     [expr.mptr.operator]
+
+     If the result of .* or ->* is a function, then that result can be
+     used only as the operand for the function call operator ().
+
+   by issuing an error message if appropriate.  Returns true iff EXPR
+   violates these rules.  */
+
+bool
+invalid_nonstatic_memfn_p (location_t loc, tree expr, tsubst_flags_t complain)
+{
+  if (expr == NULL_TREE)
+    return false;
+  /* Don't enforce this in MS mode.  */
+  if (flag_ms_extensions)
+    return false;
+  if (is_overloaded_fn (expr) && !really_overloaded_fn (expr))
+    expr = get_first_fn (expr);
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (expr))
+    {
+      if (complain & tf_error)
+	{
+	  if (DECL_P (expr))
+	    {
+	      error_at (loc, "invalid use of non-static member function %qD",
+			expr);
+	      inform (DECL_SOURCE_LOCATION (expr), "declared here");
+	    }
+	  else
+	    error_at (loc,
+		      "invalid use of non-static member function of "
+		      "type %qT",
+		      TREE_TYPE (expr));
+	}
+      return true;
+    }
+  return false;
+}
+
+// forked from gcc/cp/call.cc strip_top_quals
+
+tree
+strip_top_quals (tree t)
+{
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    return t;
+  return rs_build_qualified_type (t, 0);
+}
+
+// forked from gcc/cp/typeck2.cc cxx_incomplete_type_inform
+
+/* Print an inform about the declaration of the incomplete type TYPE.  */
+
+void
+cxx_incomplete_type_inform (const_tree type)
+{
+  if (!TYPE_MAIN_DECL (type))
+    return;
+
+  location_t loc = DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type));
+  tree ptype = strip_top_quals (CONST_CAST_TREE (type));
+
+  if (current_class_type && TYPE_BEING_DEFINED (current_class_type)
+      && same_type_p (ptype, current_class_type))
+    inform (loc,
+	    "definition of %q#T is not complete until "
+	    "the closing brace",
+	    ptype);
+  else
+    inform (loc, "forward declaration of %q#T", ptype);
+}
+
+// forked from gcc/cp/typeck2.cc cxx_incomplete_type_diagnostic
+
+/* Print an error message for invalid use of an incomplete type.
+   VALUE is the expression that was used (or 0 if that isn't known)
+   and TYPE is the type that was invalid.  DIAG_KIND indicates the
+   type of diagnostic (see diagnostic.def).  */
+
+void
+cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
+				const_tree type, diagnostic_t diag_kind)
+{
+  bool is_decl = false, complained = false;
+
+  gcc_assert (diag_kind == DK_WARNING || diag_kind == DK_PEDWARN
+	      || diag_kind == DK_ERROR);
+
+  /* Avoid duplicate error message.  */
+  if (TREE_CODE (type) == ERROR_MARK)
+    return;
+
+  if (value)
+    {
+      STRIP_ANY_LOCATION_WRAPPER (value);
+
+      if (VAR_P (value) || TREE_CODE (value) == PARM_DECL
+	  || TREE_CODE (value) == FIELD_DECL)
+	{
+	  complained = emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (value),
+					0, "%qD has incomplete type", value);
+	  is_decl = true;
+	}
+    }
+retry:
+  /* We must print an error message.  Be clever about what it says.  */
+
+  switch (TREE_CODE (type))
+    {
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case ENUMERAL_TYPE:
+      if (!is_decl)
+	complained
+	  = emit_diagnostic (diag_kind, loc, 0,
+			     "invalid use of incomplete type %q#T", type);
+      if (complained)
+	cxx_incomplete_type_inform (type);
+      break;
+
+    case VOID_TYPE:
+      emit_diagnostic (diag_kind, loc, 0, "invalid use of %qT", type);
+      break;
+
+    case ARRAY_TYPE:
+      if (TYPE_DOMAIN (type))
+	{
+	  type = TREE_TYPE (type);
+	  goto retry;
+	}
+      emit_diagnostic (diag_kind, loc, 0,
+		       "invalid use of array with unspecified bounds");
+      break;
+
+    case OFFSET_TYPE:
+      bad_member : {
+	tree member = TREE_OPERAND (value, 1);
+	if (is_overloaded_fn (member))
+	  member = get_first_fn (member);
+
+	if (DECL_FUNCTION_MEMBER_P (member) && !flag_ms_extensions)
+	  {
+	    gcc_rich_location richloc (loc);
+	    /* If "member" has no arguments (other than "this"), then
+	       add a fix-it hint.  */
+	    if (type_num_arguments (TREE_TYPE (member)) == 1)
+	      richloc.add_fixit_insert_after ("()");
+	    emit_diagnostic (diag_kind, &richloc, 0,
+			     "invalid use of member function %qD "
+			     "(did you forget the %<()%> ?)",
+			     member);
+	  }
+	else
+	  emit_diagnostic (diag_kind, loc, 0,
+			   "invalid use of member %qD "
+			   "(did you forget the %<&%> ?)",
+			   member);
+      }
+      break;
+
+    case LANG_TYPE:
+      if (type == init_list_type_node)
+	{
+	  emit_diagnostic (diag_kind, loc, 0,
+			   "invalid use of brace-enclosed initializer list");
+	  break;
+	}
+      gcc_assert (type == unknown_type_node);
+      if (value && TREE_CODE (value) == COMPONENT_REF)
+	goto bad_member;
+      else if (value && TREE_CODE (value) == ADDR_EXPR)
+	emit_diagnostic (diag_kind, loc, 0,
+			 "address of overloaded function with no contextual "
+			 "type information");
+      else if (value && TREE_CODE (value) == OVERLOAD)
+	emit_diagnostic (
+	  diag_kind, loc, 0,
+	  "overloaded function with no contextual type information");
+      else
+	emit_diagnostic (
+	  diag_kind, loc, 0,
+	  "insufficient contextual information to determine type");
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 } // namespace Rust
