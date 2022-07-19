@@ -3431,8 +3431,17 @@ void
 AttrVisitor::maybe_expand_expr (std::unique_ptr<AST::Expr> &expr)
 {
   auto fragment = expander.take_expanded_fragment (*this);
-  if (fragment.should_expand ())
-    expr = fragment.take_expression_fragment ();
+  unsigned int original_depth = expander.expansion_depth;
+  while (fragment.should_expand ())
+    {
+      expr = fragment.take_expression_fragment ();
+      expander.expansion_depth++;
+      auto new_fragment = expander.take_expanded_fragment (*this);
+      if (new_fragment.is_error ())
+	break;
+      fragment = std::move (new_fragment);
+    }
+  expander.expansion_depth = original_depth;
 }
 
 void
