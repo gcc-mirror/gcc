@@ -191,13 +191,13 @@ struct CompileOptions
   bool proc_macro = false;
   std::string metadata_output_path;
 
-  enum Edition
+  enum class Edition
   {
     E2015 = 0,
     E2018,
     E2021,
   } edition
-    = E2015;
+    = Edition::E2015;
 
   bool dump_option_enabled (DumpOption option) const
   {
@@ -238,6 +238,8 @@ struct CompileOptions
   {
     edition = static_cast<Edition> (raw_edition);
   }
+
+  const Edition &get_edition () { return edition; }
 
   void set_metadata_output (const std::string &path)
   {

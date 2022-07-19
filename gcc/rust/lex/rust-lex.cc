@@ -21,6 +21,7 @@
 #include "rust-system.h"      // for rust_assert and rust_unreachable
 #include "rust-diagnostics.h" // for rust_error_at
 #include "rust-linemap.h"
+#include "rust-session-manager.h"
 #include "safe-ctype.h"
 
 namespace Rust {
@@ -228,10 +229,24 @@ Lexer::classify_keyword (const std::string &str)
 
   if (idx == last || str != *idx)
     return IDENTIFIER;
-  else
-    return keyword_keys[idx - keyword_index];
 
   // TODO: possibly replace this x-macro system with something like hash map?
+
+  // We now have the expected token ID of the reserved keyword. However, some
+  // keywords are reserved starting in certain editions. For example, `try` is
+  // only a reserved keyword in editions >=2018. The language might gain new
+  // reserved keywords in the future.
+  //
+  // https://doc.rust-lang.org/reference/keywords.html#reserved-keywords
+  auto id = keyword_keys[idx - keyword_index];
+
+  // `try` is not a reserved keyword before 2018
+  if (Session::get_instance ().options.get_edition ()
+	== CompileOptions::Edition::E2015
+      && id == TRY)
+    return IDENTIFIER;
+
+  return id;
 }
 
 TokenPtr
