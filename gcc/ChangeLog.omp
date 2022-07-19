@@ -1,3 +1,14 @@
+2025-03-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-03-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR driver/101544
+	* gcc.cc (driver_handle_option): Forward host '-lstdc++' to
+	offloading compilation.
+	* config/gcn/mkoffload.cc (main): Adjust.
+	* config/nvptx/mkoffload.cc (main): Likewise.
+
 2025-03-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:

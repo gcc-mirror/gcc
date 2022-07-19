@@ -4147,7 +4147,8 @@ forward_offload_option (size_t opt_index, const char *arg, bool validated)
 	 are injected by default in offloading compilation, and therefore not
 	 forwarded here.  */
       /* GCC libraries.  */
-      if (/* '-lgfortran' */ strcmp (arg, "gfortran") == 0 )
+      if (/* '-lgfortran' */ strcmp (arg, "gfortran") == 0
+	  || /* '-lstdc++' */ strcmp (arg, "stdc++") == 0)
 	save_switch (concat ("-foffload-options=-l_GCC_", arg, NULL),
 		     0, NULL, validated, true);
       /* Other libraries.  */
