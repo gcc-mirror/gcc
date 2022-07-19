@@ -3974,8 +3974,12 @@ exploded_graph::process_node (exploded_node *node)
 	  {
 	    found_a_superedge = true;
 	    if (logger)
-	      logger->log ("considering SN: %i -> SN: %i",
-			   succ->m_src->m_index, succ->m_dest->m_index);
+	      {
+		label_text succ_desc (succ->get_description (false));
+		logger->log ("considering SN: %i -> SN: %i (%s)",
+			     succ->m_src->m_index, succ->m_dest->m_index,
+			     succ_desc.get ());
+	      }
 
 	    program_point next_point
 	      = program_point::before_supernode (succ->m_dest, succ,
