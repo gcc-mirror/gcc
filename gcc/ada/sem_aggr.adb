@@ -1742,8 +1742,6 @@ package body Sem_Aggr is
          Loc : constant Source_Ptr := Sloc (N);
          Id  : constant Entity_Id  := Defining_Identifier (N);
 
-         Id_Typ : Entity_Id := Any_Type;
-
          -----------------------
          -- Remove_References --
          -----------------------
@@ -1779,37 +1777,29 @@ package body Sem_Aggr is
       begin
          Error_Msg_Ada_2022_Feature ("iterated component", Loc);
 
+         --  Create a scope in which to introduce an index, to make it visible
+         --  for the analysis of component expression.
+
+         Scop := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
+         Set_Etype  (Scop, Standard_Void_Type);
+         Set_Parent (Scop, Parent (N));
+         Push_Scope (Scop);
+
+         --  If there is iterator specification, then its preanalysis will make
+         --  the index visible.
+
          if Present (Iterator_Specification (N)) then
-            Analyze (Name (Iterator_Specification (N)));
+            Preanalyze (Iterator_Specification (N));
 
-            --  We assume that the domain of iteration cannot be overloaded.
-
-            declare
-               Domain : constant Node_Id := Name (Iterator_Specification (N));
-               D_Type : constant Entity_Id := Etype (Domain);
-               Elt    : Entity_Id;
-            begin
-               if Is_Array_Type (D_Type) then
-                  Id_Typ := Component_Type (D_Type);
-
-               else
-                  if Has_Aspect (D_Type, Aspect_Iterable) then
-                     Elt :=
-                       Get_Iterable_Type_Primitive (D_Type, Name_Element);
-                     if No (Elt) then
-                        Error_Msg_N
-                          ("missing Element primitive for iteration", Domain);
-                     else
-                        Id_Typ := Etype (Elt);
-                     end if;
-                  else
-                     Error_Msg_N ("cannot iterate over", Domain);
-                  end if;
-               end if;
-            end;
+         --  Otherwise, analyze discrete choices and make the index visible
 
          else
-            Id_Typ := Index_Typ;
+            --  Insert index name into current scope but don't decorate it yet,
+            --  so that a premature usage of this name in discrete choices will
+            --  be nicely diagnosed.
+
+            Enter_Name (Id);
+
             Choice := First (Discrete_Choices (N));
 
             while Present (Choice) loop
@@ -1835,25 +1825,13 @@ package body Sem_Aggr is
 
                Next (Choice);
             end loop;
+
+            --  Decorate the index variable
+
+            Set_Etype (Id, Index_Typ);
+            Mutate_Ekind (Id, E_Variable);
+            Set_Scope (Id, Scop);
          end if;
-
-         --  Create a scope in which to introduce an index, which is usually
-         --  visible in the expression for the component, and needed for its
-         --  analysis.
-
-         Scop := New_Internal_Entity (E_Loop, Current_Scope, Loc, 'L');
-         Set_Etype  (Scop, Standard_Void_Type);
-         Set_Parent (Scop, Parent (N));
-         Push_Scope (Scop);
-
-         --  Insert and decorate the index variable in the current scope.
-         --  The expression has to be analyzed once the index variable is
-         --  directly visible.
-
-         Enter_Name (Id);
-         Set_Etype (Id, Id_Typ);
-         Mutate_Ekind (Id, E_Variable);
-         Set_Scope (Id, Scop);
 
          --  Analyze  expression without expansion, to verify legality.
          --  When generating code, we then remove references to the index
