@@ -7276,12 +7276,6 @@ Parser<ManagedTokenSource>::parse_expr_without_block (
     case LEFT_SQUARE:
       // array expr (creation, not index)
       return parse_array_expr (std::move (outer_attrs));
-    case LEFT_PAREN:
-      /* either grouped expr or tuple expr - depends on whether there is a
-       * comma
-       * inside the parentheses - if so, tuple expr, otherwise, grouped expr.
-       */
-      return parse_grouped_or_tuple_expr (std::move (outer_attrs));
       default: {
 	/* HACK: piggyback on pratt parsed expr and abuse polymorphism to
 	 * essentially downcast */
