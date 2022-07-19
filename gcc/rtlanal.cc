@@ -2899,6 +2899,7 @@ remove_node_from_insn_list (const rtx_insn *node, rtx_insn_list **listp)
 	  else
 	    *listp = temp->next ();
 
+	  gcc_checking_assert (!in_insn_list_p (temp->next (), node));
 	  return;
 	}
 
