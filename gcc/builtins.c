@@ -1471,7 +1471,7 @@ expand_builtin_prefetch (tree exp)
 static rtx
 get_memory_rtx (tree exp, tree len)
 {
-  tree orig_exp = exp;
+  tree orig_exp = exp, base;
   rtx addr, mem;
 
   /* When EXP is not resolved SAVE_EXPR, MEM_ATTRS can be still derived
@@ -1502,10 +1502,11 @@ get_memory_rtx (tree exp, tree len)
   if (is_gimple_mem_ref_addr (TREE_OPERAND (exp, 0)))
     set_mem_attributes (mem, exp, 0);
   else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
-	   && (exp = get_base_address (TREE_OPERAND (TREE_OPERAND (exp, 0),
-						     0))))
+	   && (base = get_base_address (TREE_OPERAND (TREE_OPERAND (exp, 0),
+						      0))))
     {
-      exp = build_fold_addr_expr (exp);
+      unsigned int align = get_pointer_alignment (TREE_OPERAND (exp, 0));
+      exp = build_fold_addr_expr (base);
       exp = fold_build2 (MEM_REF,
 			 build_array_type (char_type_node,
 					   build_range_type (sizetype,
@@ -1513,6 +1514,10 @@ get_memory_rtx (tree exp, tree len)
 							     NULL)),
 			 exp, build_int_cst (ptr_type_node, 0));
       set_mem_attributes (mem, exp, 0);
+      /* Since we stripped parts make sure the offset is unknown and the
+	 alignment is computed from the original address.  */
+      clear_mem_offset (mem);
+      set_mem_align (mem, align);
     }
   set_mem_alias_set (mem, 0);
   return mem;
