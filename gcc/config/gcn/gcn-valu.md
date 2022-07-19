@@ -60,6 +60,8 @@
 
 (define_mode_iterator V_INT_noQI
 		      [V64HI V64SI V64DI])
+(define_mode_iterator V_INT_noHI
+		      [V64SI V64DI])
 
 ; All of above
 (define_mode_iterator V_ALL
@@ -2086,10 +2088,10 @@
   })
 
 (define_insn "<expander><mode>3<exec>"
-  [(set (match_operand:V_SI 0 "register_operand"  "= v")
-	(shiftop:V_SI
-	  (match_operand:V_SI 1 "gcn_alu_operand" "  v")
-	  (vec_duplicate:V_SI
+  [(set (match_operand:V_INT_noHI 0 "register_operand"  "= v")
+	(shiftop:V_INT_noHI
+	  (match_operand:V_INT_noHI 1 "gcn_alu_operand" "  v")
+	  (vec_duplicate:<VnSI>
 	    (match_operand:SI 2 "gcn_alu_operand"  "SvB"))))]
   ""
   "v_<revmnemonic>0\t%0, %2, %1"
@@ -2117,10 +2119,10 @@
   })
 
 (define_insn "v<expander><mode>3<exec>"
-  [(set (match_operand:V_SI 0 "register_operand"  "=v")
-	(shiftop:V_SI
-	  (match_operand:V_SI 1 "gcn_alu_operand" " v")
-	  (match_operand:V_SI 2 "gcn_alu_operand" "vB")))]
+  [(set (match_operand:V_INT_noHI 0 "register_operand"  "=v")
+	(shiftop:V_INT_noHI
+	  (match_operand:V_INT_noHI 1 "gcn_alu_operand" " v")
+	  (match_operand:<VnSI> 2 "gcn_alu_operand"	"vB")))]
   ""
   "v_<revmnemonic>0\t%0, %2, %1"
   [(set_attr "type" "vop2")
