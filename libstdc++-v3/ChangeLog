@@ -1,3 +1,13 @@
+2022-07-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_algo.h
+	(__merge_adaptive): Adapt to merge only when buffer is large enough..
+	(__merge_adaptive_resize): New, adapt merge when buffer is too small.
+	(__inplace_merge): Adapt, use latter.
+	(__stable_sort_adaptive): Adapt to sort only when buffer is large enough.
+	(__stable_sort_adaptive_resize): New, adapt sort when buffer is too small.
+	(__stable_sort): Adapt, use latter.
+
 2022-07-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/104477

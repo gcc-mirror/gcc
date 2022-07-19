@@ -4073,7 +4073,7 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	case SET:
 	  if (xtensa_simm12b (INTVAL (x)))
 	    {
-	      *total = 4;
+	      *total = speed ? COSTS_N_INSNS (1) : 0;
 	      return true;
 	    }
 	  break;

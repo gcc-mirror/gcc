@@ -1182,10 +1182,10 @@ See RS/6000 and PowerPC Options.
 -mcmodel=medlow  -mcmodel=medany @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol
 -mrelax  -mno-relax @gol
--mriscv-attribute  -mmo-riscv-attribute @gol
+-mriscv-attribute  -mno-riscv-attribute @gol
 -malign-data=@var{type} @gol
 -mbig-endian  -mlittle-endian @gol
--mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
+-mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset}}
 
 @emph{RL78 Options}
@@ -20016,6 +20016,15 @@ Compile for ARC HS38 CPU.
 @item hs38_linux
 Compile for ARC HS38 CPU with all hardware extensions on.
 
+@item hs4x
+Compile for ARC HS4x CPU.
+
+@item hs4xd
+Compile for ARC HS4xD CPU.
+
+@item hs4x_rel31
+Compile for ARC HS4x CPU release 3.10a.
+
 @item arc600_norm
 Compile for ARC 600 CPU with @code{norm} instructions enabled.
 
@@ -20624,6 +20633,13 @@ Tune for ARC725D CPU.
 
 @item ARC750D
 Tune for ARC750D CPU.
+
+@item core3
+Tune for ARCv2 core3 type CPU.  This option enable usage of
+@code{dbnz} instruction.
+
+@item release31a
+Tune for ARC4x release 3.10a.
 
 @end table
 
@@ -28316,12 +28332,14 @@ limit optimization.
 
 @item -mrelax
 @itemx -mno-relax
+@opindex mrelax
 Take advantage of linker relaxations to reduce the number of instructions
 required to materialize symbol addresses. The default is to take advantage of
 linker relaxations.
 
-@item -memit-attribute
-@itemx -mno-emit-attribute
+@item -mriscv-attribute
+@itemx -mno-riscv-attribute
+@opindex mriscv-attribute
 Emit (do not emit) RISC-V attribute to record extra information into ELF
 objects.  This feature requires at least binutils 2.32.
 

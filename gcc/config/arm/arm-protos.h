@@ -103,7 +103,6 @@ extern void neon_pairwise_reduce (rtx, rtx, machine_mode,
 				  rtx (*) (rtx, rtx, rtx));
 extern rtx mve_bool_vec_to_const (rtx const_vec);
 extern rtx neon_make_constant (rtx, bool generate = true);
-extern tree arm_builtin_vectorized_function (unsigned int, tree, tree);
 extern void neon_expand_vector_init (rtx, rtx);
 extern void neon_lane_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT, const_tree);
 extern void arm_const_bounds (rtx, HOST_WIDE_INT, HOST_WIDE_INT);

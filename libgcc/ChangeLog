@@ -1,3 +1,9 @@
+2022-07-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/lib2funcs.c (udivmodsi4): Update AND mask.
+	* config/arc/lib1funcs.S (umodsi3): Don't use it for RF16
+	configurations.
+
 2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* config.host: Removed tilegx and tilepro entries.
