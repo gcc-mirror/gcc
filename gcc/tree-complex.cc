@@ -297,6 +297,11 @@ init_dont_simulate_again (void)
 		break;
 
 	      default:
+		/* When expand_complex_move would trigger make sure we
+		   perform lowering even when there is no actual complex
+		   operation.  This helps consistency and vectorization.  */
+		if (TREE_CODE (TREE_TYPE (gimple_op (stmt, 0))) == COMPLEX_TYPE)
+		  saw_a_complex_op = true;
 		break;
 	      }
 
@@ -869,7 +874,9 @@ expand_complex_move (gimple_stmt_iterator *gsi, tree type)
 	  update_complex_assignment (gsi, r, i);
 	}
     }
-  else if (rhs && TREE_CODE (rhs) == SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
+  else if (rhs
+	   && (TREE_CODE (rhs) == SSA_NAME || TREE_CODE (rhs) == COMPLEX_CST)
+	   && !TREE_SIDE_EFFECTS (lhs))
     {
       tree x;
       gimple *t;
