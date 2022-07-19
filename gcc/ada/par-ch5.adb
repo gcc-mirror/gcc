@@ -242,8 +242,8 @@ package body Ch5 is
 
       --  In Ada 2022, we allow declarative items to be mixed with
       --  statements. The loop below alternates between calling
-      --  P_Declarative_Items to parse zero or more declarative items, and
-      --  parsing a statement.
+      --  P_Declarative_Items to parse zero or more declarative items,
+      --  and parsing a statement.
 
       loop
          Ignore (Tok_Semicolon);
@@ -255,26 +255,17 @@ package body Ch5 is
               (Statement_List, Declare_Expression => False,
                In_Spec => False, In_Statements => True);
 
-            --  Use the length of the list to determine whether we parsed any
-            --  declarative items. If so, it's an error pre-2022. ???We should
-            --  be calling Error_Msg_Ada_2022_Feature below, to advertise the
-            --  new feature, but that causes a lot of test diffs, so for now,
-            --  we mimic the old "...before begin" message.
+            --  Use the length of the list to determine whether we parsed
+            --  any declarative items. If so, it's an error unless language
+            --  extensions are enabled.
 
             if List_Length (Statement_List) > Num_Statements then
                if All_Errors_Mode or else No (Decl_Loc) then
                   Decl_Loc := Sloc (Pick (Statement_List, Num_Statements + 1));
 
-                  if False then
-                     Error_Msg_Ada_2022_Feature
-                       ("declarations mixed with statements",
-                        Sloc (Pick (Statement_List, Num_Statements + 1)));
-                  else
-                     if Ada_Version < Ada_2022 then
-                        Error_Msg
-                          ("declarations must come before BEGIN", Decl_Loc);
-                     end if;
-                  end if;
+                  Error_Msg_GNAT_Extension
+                    ("declarations mixed with statements",
+                     Sloc (Pick (Statement_List, Num_Statements + 1)));
                end if;
             end if;
          end;
