@@ -8625,7 +8625,7 @@ fold_builtin_frexp (location_t loc, tree arg0, tree arg1, tree rettype)
   if (TYPE_MAIN_VARIANT (TREE_TYPE (arg1)) == integer_type_node)
     {
       const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (arg0);
-      tree frac, exp;
+      tree frac, exp, res;
 
       switch (value->cl)
       {
@@ -8656,7 +8656,9 @@ fold_builtin_frexp (location_t loc, tree arg0, tree arg1, tree rettype)
       /* Create the COMPOUND_EXPR (*arg1 = trunc, frac). */
       arg1 = fold_build2_loc (loc, MODIFY_EXPR, rettype, arg1, exp);
       TREE_SIDE_EFFECTS (arg1) = 1;
-      return fold_build2_loc (loc, COMPOUND_EXPR, rettype, arg1, frac);
+      res = fold_build2_loc (loc, COMPOUND_EXPR, rettype, arg1, frac);
+      suppress_warning (res, OPT_Wunused_value);
+      return res;
     }
 
   return NULL_TREE;
@@ -8682,6 +8684,7 @@ fold_builtin_modf (location_t loc, tree arg0, tree arg1, tree rettype)
     {
       const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (arg0);
       REAL_VALUE_TYPE trunc, frac;
+      tree res;
 
       switch (value->cl)
       {
@@ -8711,8 +8714,10 @@ fold_builtin_modf (location_t loc, tree arg0, tree arg1, tree rettype)
       arg1 = fold_build2_loc (loc, MODIFY_EXPR, rettype, arg1,
 			  build_real (rettype, trunc));
       TREE_SIDE_EFFECTS (arg1) = 1;
-      return fold_build2_loc (loc, COMPOUND_EXPR, rettype, arg1,
-			  build_real (rettype, frac));
+      res = fold_build2_loc (loc, COMPOUND_EXPR, rettype, arg1,
+			     build_real (rettype, frac));
+      suppress_warning (res, OPT_Wunused_value);
+      return res;
     }
 
   return NULL_TREE;
@@ -10673,8 +10678,10 @@ do_mpfr_remquo (tree arg0, tree arg1, tree arg_quo)
 						  integer_quo));
 		  TREE_SIDE_EFFECTS (result_quo) = 1;
 		  /* Combine the quo assignment with the rem.  */
-		  result = non_lvalue (fold_build2 (COMPOUND_EXPR, type,
-						    result_quo, result_rem));
+		  result = fold_build2 (COMPOUND_EXPR, type,
+					result_quo, result_rem);
+		  suppress_warning (result, OPT_Wunused_value);
+		  result = non_lvalue (result);
 		}
 	    }
 	}
