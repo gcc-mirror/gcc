@@ -3969,4 +3969,50 @@ retry:
     }
 }
 
+// forked from gcc/cp/decl2.cc decl_constant_var_p
+
+/* Nonzero for a VAR_DECL whose value can be used in a constant expression.
+
+      [expr.const]
+
+      An integral constant-expression can only involve ... const
+      variables of integral or enumeration types initialized with
+      constant expressions ...
+
+      C++0x also allows constexpr variables and temporaries initialized
+      with constant expressions.  We handle the former here, but the latter
+      are just folded away in cxx_eval_constant_expression.
+
+   The standard does not require that the expression be non-volatile.
+   G++ implements the proposed correction in DR 457.  */
+
+bool
+decl_constant_var_p (tree decl)
+{
+  if (!decl_maybe_constant_var_p (decl))
+    return false;
+
+  return DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl);
+}
+
+// forked from gcc/cp/decl.cc undeduced_auto_decl
+
+/* Returns true iff DECL is a variable or function declared with an auto type
+   that has not yet been deduced to a real type.  */
+
+bool
+undeduced_auto_decl (tree decl)
+{
+  return false;
+}
+
+// forked from gcc/cp/decl.cc require_deduced_type
+
+/* Complain if DECL has an undeduced return type.  */
+
+bool
+require_deduced_type (tree decl, tsubst_flags_t complain)
+{
+  return true;
+}
 } // namespace Rust

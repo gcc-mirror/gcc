@@ -2542,6 +2542,12 @@ extern void cxx_incomplete_type_inform (const_tree);
 
 extern tree strip_top_quals (tree);
 
+extern bool undeduced_auto_decl (tree);
+
+extern bool require_deduced_type (tree, tsubst_flags_t = tf_warning_or_error);
+
+extern bool decl_constant_var_p (tree);
+
 // forked from gcc/cp/cp-tree.h
 
 enum
