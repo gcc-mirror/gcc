@@ -9759,8 +9759,11 @@ rs6000_init_stack_protect_guard (void)
 static bool
 rs6000_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
-  if (GET_CODE (x) == HIGH
-      && GET_CODE (XEXP (x, 0)) == UNSPEC)
+  /* If GET_CODE (x) is HIGH, the 'X' represets the high part of a symbol_ref.
+     It can not be put into a constant pool.  e.g.
+     (high:DI (unspec:DI [(symbol_ref/u:DI ("*.LC0")..)
+     (high:DI (symbol_ref:DI ("var")..)).  */
+  if (GET_CODE (x) == HIGH)
     return true;
 
   /* A TLS symbol in the TOC cannot contain a sum.  */
