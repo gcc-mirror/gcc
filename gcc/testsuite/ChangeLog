@@ -1,3 +1,24 @@
+2022-07-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ldist-24.c: XFAIL.
+	* gcc.dg/tree-ssa/ldist-36.c: Adjust expected outcome.
+
+2022-07-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106253
+	* gcc.target/arm/vect_unary_1.c: New test.
+	* gcc.target/arm/vect_binary_1.c: Likewise.
+
+2022-07-18  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/interrupt-13.c: New file.
+
+2022-07-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106231
+	* gcc.target/i386/pr106231-1.c: New test case.
+	* gcc.target/i386/pr106231-2.c: New test case.
+
 2022-07-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/85620

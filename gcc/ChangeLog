@@ -1,3 +1,115 @@
+2022-07-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106280
+	* value-relation.cc (dom_oracle::register_relation): Register
+	transitives only when it is possible for there to be one.
+	(dom_oracle::set_one_relation): Return NULL if this is an
+	existing relation.
+
+2022-07-18  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* doc/invoke.texi (RISC-V Options): Add index references for
+	`mrelax' and `mriscv-attribute'.
+
+2022-07-18  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* doc/invoke.texi (Option Summary): Add missing second space
+	around `-mstack-protector-guard-reg='.
+
+2022-07-18  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* doc/invoke.texi (Option Summary): Fix `-mno-riscv-attribute'.
+	(RISC-V Options): Likewise, and `-mriscv-attribute'.
+
+2022-07-18  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc-arch.h (arc_tune_attr): Add
+	ARC_TUNE_ARCHS4X_REL31A variant.
+	* config/arc/arc.cc (arc_override_options): Tune options for
+	release 310a.
+	(arc_sched_issue_rate): Use correct enum.
+	(arc600_corereg_hazard): Textual change.
+	(arc_hazard): Add release 310a tunning.
+	* config/arc/arc.md (tune): Update and take into consideration new
+	tune option.
+	(tune_dspmpy): Likewise.
+	(tune_store): New attribute.
+	* config/arc/arc.opt (mtune): New tune option.
+	* config/arc/arcHS4x.md (hs4x_brcc0, hs4x_brcc1): New cpu units.
+	(hs4x_brcc_op): New instruction rezervation.
+	(hs4x_data_store_1_op): Likewise.
+	* config/arc/arc-cpus.def (hs4x_rel31): New cpu variant.
+	* config/arc/arc-tables.opt: Regenerate.
+	* config/arc/t-multilib: Likewise.
+	* doc/invoke.texi (ARC): Update mcpu and tune sections.
+
+2022-07-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.cc (loop_distribution::distribute_loop):
+	When computing cost-based merging do not disregard builtin
+	classified partitions in some cases.
+
+2022-07-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106253
+	* config/arm/arm-builtins.cc (arm_builtin_vectorized_function):
+	Delete.
+	* config/arm/arm-protos.h (arm_builtin_vectorized_function): Delete.
+	* config/arm/arm.cc (TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION):
+	Delete.
+	* config/arm/arm_neon_builtins.def (copysignf): Delete.
+	* config/arm/iterators.md (nvrint_pattern): New attribute.
+	* config/arm/neon.md (<NEON_VRINT:nvrint_pattern><VCVTF:mode>2):
+	New pattern.
+	(l<NEON_VCVT:nvrint_pattern><su_optab><VCVTF:mode><v_cmp_result>2):
+	Likewise.
+	(neon_copysignf<mode>): Rename to...
+	(copysign<mode>3): ...this.
+
+2022-07-18  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc.cc (arc_expand_epilogue): Adjust the frame
+	pointer first when in interrupts.
+
+2022-07-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.cc (copy_loop_before): Add
+	the ability to replace the original LC PHI defs.
+	(generate_loops_for_partition): Pass through a flag
+	whether to redirect original LC PHI defs.
+	(generate_code_for_partition): Likewise.
+	(loop_distribution::distribute_loop): Compute the partition
+	that should provide the LC PHI defs for common reductions
+	and pass that down.
+
+2022-07-18  Richard Ball  <richard.ball@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_evpc_trn): Use std:swap.
+	(aarch64_evpc_uzp): Likewise.
+	(aarch64_evpc_zip): Likewise.
+
+2022-07-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106231
+	* config/i386/i386.md (*ctzsidi2_<s>ext): New insn_and_split
+	to recognize any_extend:DI of ctz:SI which is implicitly extended.
+	(*ctzsidi2_<s>ext_falsedep): New define_insn to model a DImode
+	extended ctz:SI that has preceding xor to break false dependency.
+
+2022-07-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/predicates.md (x86_64_const_vector_operand):
+	Check the operand's mode matches the specified mode argument.
+
+2022-07-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/sse.md (kunpckhi): Add UNSPEC_MASKOP unspec.
+	(kunpcksi): Likewise, add UNSPEC_MASKOP unspec.
+	(kunpckdi): Likewise, add UNSPEC_MASKOP unspec.
+	(vec_pack_trunc_qi): Update to specify the now required
+	UNSPEC_MASKOP unspec.
+	(vec_pack_trunc_<mode>): Likewise.
+
 2022-07-16  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.md
