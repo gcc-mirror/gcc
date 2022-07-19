@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/sm.h"
 #include "analyzer/program-state.h"
 #include "analyzer/pending-diagnostic.h"
+#include "analyzer/constraint-manager.h"
 
 #if ENABLE_ANALYZER
 
@@ -97,6 +98,11 @@ public:
 		     const svalue *lhs,
 		     enum tree_code op,
 		     const svalue *rhs) const final override;
+  void on_bounded_ranges (sm_context *sm_ctxt,
+			  const supernode *node,
+			  const gimple *stmt,
+			  const svalue &sval,
+			  const bounded_ranges &ranges) const final override;
 
   bool can_purge_p (state_t s) const final override;
 
@@ -899,6 +905,58 @@ taint_state_machine::on_condition (sm_context *sm_ctxt,
     default:
       break;
     }
+}
+
+/* Implementation of state_machine::on_bounded_ranges vfunc for
+   taint_state_machine, for handling switch statement cases.
+   Potentially transition state 'tainted' to 'has_ub' or 'has_lb',
+   and states 'has_ub' and 'has_lb' to 'stop'.  */
+
+void
+taint_state_machine::on_bounded_ranges (sm_context *sm_ctxt,
+					const supernode *,
+					const gimple *stmt,
+					const svalue &sval,
+					const bounded_ranges &ranges) const
+{
+  gcc_assert (!ranges.empty_p ());
+  gcc_assert (ranges.get_count () > 0);
+
+  /* We have one or more ranges; this could be a "default:", or one or
+     more single or range cases.
+
+     Look at the overall endpoints to see if the ranges impose any lower
+     bounds or upper bounds beyond those of the underlying numeric type.  */
+
+  tree lowest_bound = ranges.get_range (0).m_lower;
+  tree highest_bound = ranges.get_range (ranges.get_count () - 1).m_upper;
+  gcc_assert (lowest_bound);
+  gcc_assert (highest_bound);
+
+  bool ranges_have_lb
+    = (lowest_bound != TYPE_MIN_VALUE (TREE_TYPE (lowest_bound)));
+  bool ranges_have_ub
+    = (highest_bound != TYPE_MAX_VALUE (TREE_TYPE (highest_bound)));
+
+  if (!ranges_have_lb && !ranges_have_ub)
+    return;
+
+  /* We have new bounds from the ranges; combine them with any
+     existing bounds on SVAL.  */
+  state_t old_state = sm_ctxt->get_state (stmt, &sval);
+  if (old_state == m_tainted)
+    {
+      if (ranges_have_lb && ranges_have_ub)
+	sm_ctxt->set_next_state (stmt, &sval, m_stop);
+      else if (ranges_have_lb)
+	sm_ctxt->set_next_state (stmt, &sval, m_has_lb);
+      else if (ranges_have_ub)
+	sm_ctxt->set_next_state (stmt, &sval, m_has_ub);
+    }
+  else if (old_state == m_has_ub && ranges_have_lb)
+    sm_ctxt->set_next_state (stmt, &sval, m_stop);
+  else if (old_state == m_has_lb && ranges_have_ub)
+    sm_ctxt->set_next_state (stmt, &sval, m_stop);
 }
 
 bool

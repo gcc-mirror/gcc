@@ -4228,6 +4228,8 @@ region_model::apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
   bool sat = m_constraints->add_bounded_ranges (index_sval, all_cases_ranges);
   if (!sat && out)
     *out = new rejected_ranges_constraint (*this, index, all_cases_ranges);
+  if (sat && ctxt && !all_cases_ranges->empty_p ())
+    ctxt->on_bounded_ranges (*index_sval, *all_cases_ranges);
   return sat;
 }
 
