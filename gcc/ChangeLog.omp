@@ -1,6 +1,13 @@
 2022-08-02  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
+	* config/gcn/gcn-valu.md (V_INT_noHI): New iterator.
+	(<expander><mode>3<exec>): Use V_INT_noHI.
+	(v<expander><mode>3<exec>): Likewise.
+
+2022-08-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
 	* config/gcn/gcn.md (one_cmpldi2): New.
 
 2022-08-01  Tobias Burnus  <tobias@codesourcery.com>
