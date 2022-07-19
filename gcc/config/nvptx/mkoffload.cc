@@ -741,7 +741,8 @@ main (int argc, char **argv)
 	dumppfx = argv[++i];
       /* Translate host into offloading libraries.  */
       else if (strcmp (argv[i], "-l_GCC_gfortran") == 0
-	       || strcmp (argv[i], "-l_GCC_m") == 0)
+	       || strcmp (argv[i], "-l_GCC_m") == 0
+	       || strcmp (argv[i], "-l_GCC_stdc++") == 0)
 	{
 	  /* Elide '_GCC_'.  */
 	  size_t i_dst = strlen ("-l");

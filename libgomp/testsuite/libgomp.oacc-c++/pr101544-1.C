@@ -1,4 +1,3 @@
-// { dg-additional-options -foffload-options=-lstdc++ }
 // { dg-additional-options -fno-inline } for stable results regarding OpenACC 'routine'.
 // But actually, as none of the '#pragma acc routine' syntax is accepted, force inlining:
 #define ALWAYS_INLINE __attribute__((always_inline))
