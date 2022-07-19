@@ -868,6 +868,13 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	}
     }
 
+/* Pointer types aren't named types in the C sense so we need to generate a
+   typedef in DWARF for them.  Also do that for fat pointer types because,
+   even though they are named types in the C sense, they are still the XUP
+   types created for the base array type at this point.  */
+#define TYPE_IS_POINTER_P(NODE) \
+  (TREE_CODE (NODE) == POINTER_TYPE || TYPE_IS_FAT_POINTER_P (NODE))
+
   /* For the declaration of a type, set its name either if it isn't already
      set or if the previous type name was not derived from a source name.
      We'd rather have the type named with a real name and all the pointer
@@ -877,18 +884,14 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
     {
       tree t = TREE_TYPE (decl);
 
-      /* Pointer types aren't named types in the C sense so we need to generate
-         a typedef in DWARF for them and make sure it is preserved, unless the
-         type is artificial.  */
+      /* For pointer types, make sure the typedef is generated and preserved
+	 in DWARF, unless the type is artificial.  */
       if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
-	  && (TREE_CODE (t) != POINTER_TYPE || DECL_ARTIFICIAL (decl)))
+	  && (!TYPE_IS_POINTER_P (t) || DECL_ARTIFICIAL (decl)))
 	;
       /* For pointer types, create the DECL_ORIGINAL_TYPE that will generate
-	 the typedef in DWARF.  Also do that for fat pointer types because,
-	 even though they are named types in the C sense, they are still the
-	 XUP types created for the base array type at this point.  */
-      else if (!DECL_ARTIFICIAL (decl)
-	       && (TREE_CODE (t) == POINTER_TYPE || TYPE_IS_FAT_POINTER_P (t)))
+	 the typedef in DWARF.  */
+      else if (TYPE_IS_POINTER_P (t) && !DECL_ARTIFICIAL (decl))
 	{
 	  tree tt = build_variant_type_copy (t);
 	  TYPE_NAME (tt) = decl;
@@ -920,9 +923,8 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	 to all parallel types too thanks to gnat_set_type_context.  */
       if (t)
 	for (t = TYPE_MAIN_VARIANT (t); t; t = TYPE_NEXT_VARIANT (t))
-	  /* ??? Because of the previous kludge, we can have variants of fat
-	     pointer types with different names.  */
-	  if (!(TYPE_IS_FAT_POINTER_P (t)
+	  /* Skip it for pointer types to preserve the typedef.  */
+	  if (!(TYPE_IS_POINTER_P (t)
 		&& TYPE_NAME (t)
 		&& TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
 	    {
@@ -932,6 +934,8 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 					 deferred_decl_context);
 	    }
     }
+
+#undef TYPE_IS_POINTER_P
 }
 
 /* Create a record type that contains a SIZE bytes long field of TYPE with a
