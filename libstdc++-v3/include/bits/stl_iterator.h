@@ -1925,9 +1925,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
+    common_iterator(const common_iterator&) = default;
+
     constexpr
     common_iterator(const common_iterator& __x)
     noexcept(_S_noexcept<const _It&, const _Sent&>())
+    requires (!is_trivially_copyable_v<_It> || !is_trivially_copyable_v<_Sent>)
     : _M_valueless(), _M_index(__x._M_index)
     {
       if (_M_index == 0)
@@ -1946,9 +1949,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
+    common_iterator(common_iterator&&) = default;
+
     constexpr
     common_iterator(common_iterator&& __x)
     noexcept(_S_noexcept<_It, _Sent>())
+    requires (!is_trivially_copyable_v<_It> || !is_trivially_copyable_v<_Sent>)
     : _M_valueless(), _M_index(__x._M_index)
     {
       if (_M_index == 0)
@@ -2017,8 +2023,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+#if __cpp_concepts >= 202002L // Constrained special member functions
+    ~common_iterator() = default;
+
     constexpr
     ~common_iterator()
+      requires (!is_trivially_destructible_v<_It>
+		  || !is_trivially_destructible_v<_Sent>)
+#else
+    constexpr
+    ~common_iterator()
+#endif
     {
       if (_M_index == 0)
 	_M_it.~_It();

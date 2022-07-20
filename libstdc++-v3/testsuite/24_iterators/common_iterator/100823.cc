@@ -5,6 +5,21 @@
 #include <testsuite_hooks.h>
 
 void
+test_triviality()
+{
+  using I = std::common_iterator<int*, const int*>;
+
+  // Cannot be trivial, because it has to initialize members.
+  static_assert( ! std::is_trivially_default_constructible_v<I> );
+
+  static_assert( std::is_trivially_destructible_v<I> );
+  static_assert( std::is_trivially_copy_constructible_v<I> );
+  static_assert( std::is_trivially_copy_assignable_v<I> );
+  static_assert( std::is_trivially_move_constructible_v<I> );
+  static_assert( std::is_trivially_move_assignable_v<I> );
+}
+
+void
 test_valueless_assignment()
 {
   int x[1] { };
