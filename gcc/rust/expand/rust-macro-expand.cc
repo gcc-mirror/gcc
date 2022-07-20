@@ -83,15 +83,14 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
 
       if (did_match_rule)
 	{
-	  // FIXME: ARTHUR: Comment
-	  // Debugging
-	  for (auto &kv : matched_fragments)
-	    rust_debug ("[fragment]: %s (%ld - %s)", kv.first.c_str (),
-			kv.second.get_fragments ().size (),
-			kv.second.get_kind ()
-			    == MatchedFragmentContainer::Kind::Repetition
-			  ? "repetition"
-			  : "metavar");
+	  //  // Debugging
+	  //  for (auto &kv : matched_fragments)
+	  //    rust_debug ("[fragment]: %s (%ld - %s)", kv.first.c_str (),
+	  //		kv.second.get_fragments ().size (),
+	  //		kv.second.get_kind ()
+	  //		    == MatchedFragmentContainer::Kind::Repetition
+	  //		  ? "repetition"
+	  //		  : "metavar");
 
 	  matched_rule = &rule;
 	  break;
@@ -521,7 +520,7 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 
 	    // matched fragment get the offset in the token stream
 	    size_t offs_end = source.get_offs ();
-	    sub_stack.insert_fragment (
+	    sub_stack.insert_metavar (
 	      MatchedFragment (fragment->get_ident (), offs_begin, offs_end));
 	  }
 	  break;
@@ -626,7 +625,13 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
 
 		// matched fragment get the offset in the token stream
 		size_t offs_end = source.get_offs ();
-		// FIXME: ARTHUR: Here we want to append?
+
+		// The main difference with match_matcher happens here: Instead
+		// of inserting a new fragment, we append to one. If that
+		// fragment does not exist, then the operation is similar to
+		// `insert_fragment` with the difference that we are not
+		// creating a metavariable, but a repetition of one, which is
+		// really different.
 		sub_stack.append_fragment (
 		  MatchedFragment (fragment->get_ident (), offs_begin,
 				   offs_end));

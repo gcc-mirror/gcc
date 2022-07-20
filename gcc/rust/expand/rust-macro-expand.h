@@ -101,7 +101,7 @@ public:
   /**
    * Create a valid fragment matched one time
    */
-  static MatchedFragmentContainer one (MatchedFragment fragment)
+  static MatchedFragmentContainer metavar (MatchedFragment fragment)
   {
     return MatchedFragmentContainer ({fragment}, Kind::MetaVar);
   }
@@ -111,9 +111,9 @@ public:
    */
   void add_fragment (MatchedFragment fragment)
   {
-    fragments.emplace_back (fragment);
+    rust_assert (!is_single_fragment ());
 
-    kind = Kind::Repetition;
+    fragments.emplace_back (fragment);
   }
 
   size_t get_match_amount () const { return fragments.size (); }
@@ -125,7 +125,6 @@ public:
 
   bool is_single_fragment () const
   {
-    // FIXME: Is that valid?
     return get_match_amount () == 1 && kind == Kind::MetaVar;
   }
 
@@ -167,16 +166,16 @@ public:
   }
 
   /**
-   * Insert a new matched fragment into the current substitution map
+   * Insert a new matched metavar into the current substitution map
    */
-  void insert_fragment (MatchedFragment fragment)
+  void insert_metavar (MatchedFragment fragment)
   {
     auto &current_map = stack.back ();
     auto it = current_map.find (fragment.fragment_ident);
 
     if (it == current_map.end ())
-      current_map.insert (
-	{fragment.fragment_ident, MatchedFragmentContainer::one (fragment)});
+      current_map.insert ({fragment.fragment_ident,
+			   MatchedFragmentContainer::metavar (fragment)});
     else
       gcc_unreachable ();
   }

@@ -155,7 +155,7 @@ SubstituteCtx::substitute_repetition (
 	    sub_fragment = kv_match.second.get_fragments ()[i];
 
 	  sub_map.insert (
-	    {kv_match.first, MatchedFragmentContainer::one (sub_fragment)});
+	    {kv_match.first, MatchedFragmentContainer::metavar (sub_fragment)});
 	}
 
       auto substitute_context = SubstituteCtx (input, new_macro, sub_map);
