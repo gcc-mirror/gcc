@@ -960,7 +960,7 @@ ranger_cache::edge_range (vrange &r, edge e, tree name, enum rfd_mode mode)
   // If this is not an abnormal edge, check for inferred ranges on exit.
   if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
     m_exit.maybe_adjust_range (r, name, e->src);
-  int_range_max er;
+  Value_Range er (TREE_TYPE (name));
   if (m_gori.outgoing_edge_range_p (er, e, name, *this))
     r.intersect (er);
   return true;
@@ -1364,7 +1364,8 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
   basic_block prev_bb = start_bb;
 
   // Track any inferred ranges seen.
-  int_range_max infer (TREE_TYPE (name));
+  Value_Range infer (TREE_TYPE (name));
+  infer.set_varying (TREE_TYPE (name));
 
   // Range on entry to the DEF block should not be queried.
   gcc_checking_assert (start_bb != def_bb);
@@ -1431,7 +1432,7 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
   // Now process any blocks wit incoming edges that nay have adjustemnts.
   while (m_workback.length () > start_limit)
     {
-      int_range_max er;
+      Value_Range er (TREE_TYPE (name));
       prev_bb = m_workback.pop ();
       if (!single_pred_p (prev_bb))
 	{
