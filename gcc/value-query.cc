@@ -280,16 +280,13 @@ get_ssa_name_range_info (vrange &r, const_tree name)
 
   void *ri = SSA_NAME_RANGE_INFO (name);
 
-  // Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
-  // with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.
-  if (!ri || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (name)))
-	      > 2 * HOST_BITS_PER_WIDE_INT))
-    r.set_varying (type);
-  else
+  if (ri)
     {
       vrange_storage vstore (NULL);
       vstore.get_vrange (ri, r, TREE_TYPE (name));
     }
+  else
+    r.set_varying (type);
 }
 
 // Return nonnull attribute of pointer NAME from SSA_NAME_PTR_INFO.
