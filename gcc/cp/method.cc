@@ -2315,8 +2315,19 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 		   bool diag, int flags, tsubst_flags_t complain,
 		   bool dtor_from_ctor)
 {
-  tree field;
-  for (field = fields; field; field = DECL_CHAIN (field))
+  if (!fields)
+    return;
+
+  tree ctx = DECL_CONTEXT (fields);
+
+  /* CWG2084: A defaulted default ctor for a union with a DMI only initializes
+     that member, so don't check other members.  */
+  enum { unknown, no, yes }
+  only_dmi_mem = (sfk == sfk_constructor && TREE_CODE (ctx) == UNION_TYPE
+		  ? unknown : no);
+
+ again:
+  for (tree field = fields; field; field = DECL_CHAIN (field))
     {
       tree mem_type, argtype, rval;
 
@@ -2331,8 +2342,17 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 	 asking if this is deleted, don't even look up the function; we don't
 	 want an error about a deleted function we aren't actually calling.  */
       if (sfk == sfk_destructor && deleted_p == NULL
-	  && TREE_CODE (DECL_CONTEXT (field)) == UNION_TYPE)
+	  && TREE_CODE (ctx) == UNION_TYPE)
 	break;
+
+      if (only_dmi_mem != no)
+	{
+	  if (DECL_INITIAL (field))
+	    only_dmi_mem = yes;
+	  else
+	    /* Don't check this until we know there's no DMI.  */
+	    continue;
+	}
 
       mem_type = strip_array_types (TREE_TYPE (field));
       if (SFK_ASSIGN_P (sfk))
@@ -2416,7 +2436,7 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 	  if (constexpr_p
 	      && cxx_dialect < cxx20
 	      && !CLASS_TYPE_P (mem_type)
-	      && TREE_CODE (DECL_CONTEXT (field)) != UNION_TYPE)
+	      && TREE_CODE (ctx) != UNION_TYPE)
 	    {
 	      *constexpr_p = false;
 	      if (diag)
@@ -2464,6 +2484,13 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 
       process_subob_fn (rval, sfk, spec_p, trivial_p, deleted_p,
 			constexpr_p, diag, field, dtor_from_ctor);
+    }
+
+  /* We didn't find a DMI in this union, now check all the members.  */
+  if (only_dmi_mem == unknown)
+    {
+      only_dmi_mem = no;
+      goto again;
     }
 }
 
