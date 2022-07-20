@@ -1,3 +1,69 @@
+2022-07-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::range_from_dom): Check
+	  for incoming ranges on join nodes and add to worklist.
+
+2022-07-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::resolve_dom): New.
+	(ranger_cache::range_from_dom): Put all nodes to be calculated
+	in the worklist and resolve after the dom walk.
+	* gimple-range-cache.h (resolve_dom): New prototype.
+
+2022-07-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	* tree-cfg.cc (gimple_verify_flow_info): Check placement of
+	returns_twice calls.
+
+2022-07-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	* cfghooks.cc (duplicate_block): Expand comment.
+	* tree-cfg.cc (gimple_can_duplicate_bb_p): Reject blocks with
+	calls that may return twice.
+
+2022-07-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	* tree-ssa-sink.cc (select_best_block): Punt if selected block
+	has incoming abnormal edges.
+
+2022-07-19  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Remove trailing :.
+
+2022-07-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-ssa-forwprop.cc (simplify_permutation): Use lhs type
+	instead of TREE_TYPE (arg0) as result type in folding VEC_PERM_EXPR.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106331
+	* builtins.cc (get_memory_rtx): Compute alignment from
+	the original address and set MEM_OFFSET to unknown when
+	we create a MEM_EXPR from the base object of the address.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR lto/106334
+	* dwarf2out.cc (dwarf2out_register_external_die): Allow
+	map entry re-use during WPA.
+
+2022-07-19  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR c/106264
+	* builtins.cc (fold_builtin_frexp): Call suppress_warning on
+	COMPOUND_EXPR to silence spurious warning if result isn't used.
+	(fold_builtin_modf): Likewise.
+	(do_mpfr_remquo): Likewise.
+
+2022-07-19  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_rtx_costs):
+	Change the relative cost of '(set (reg) (const_int N))' where
+	N fits into signed 12-bit from 4 to 0 if optimizing for size.
+	And use the appropriate macro instead of the bare number 4.
+
 2022-07-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/106280

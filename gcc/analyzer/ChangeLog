@@ -1,3 +1,26 @@
+2022-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106321
+	* constraint-manager.h (bounded_ranges::get_count): New.
+	(bounded_ranges::get_range): New.
+	* engine.cc (impl_region_model_context::on_bounded_ranges): New.
+	* exploded-graph.h (impl_region_model_context::on_bounded_ranges):
+	New decl.
+	* region-model.cc (region_model::apply_constraints_for_gswitch):
+	Potentially call ctxt->on_bounded_ranges.
+	* region-model.h (region_model_context::on_bounded_ranges): New
+	vfunc.
+	(noop_region_model_context::on_bounded_ranges): New.
+	(region_model_context_decorator::on_bounded_ranges): New.
+	* sm-taint.cc: Include "analyzer/constraint-manager.h".
+	(taint_state_machine::on_bounded_ranges): New.
+	* sm.h (state_machine::on_bounded_ranges): New.
+
+2022-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_graph::process_node): Show any description
+	of the out-edge when logging it for consideration.
+
 2022-07-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106284

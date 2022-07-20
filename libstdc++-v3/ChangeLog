@@ -1,3 +1,52 @@
+2022-07-19  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/debug.h [_GLIBCXX_DEBUG](__glibcxx_requires_string): Define
+	using _GLIBCXX_DEBUG_PEDASSERT.
+	[_GLIBCXX_DEBUG](__glibcxx_requires_string_len): Likewise.
+	* include/debug/macros.h
+	(__glibcxx_check_string, __glibcxx_check_string_len): Move...
+	* include/debug/string
+	(__glibcxx_check_string, __glibcxx_check_string_len): ...here. And define depending
+	on _GLIBCXX_DEBUG_PEDANTIC no matter if _GLIBCXX_DEBUG is defined.
+	Add using of std::string find, rfind, find_first_of, find_last_of, find_first_not_of
+	and find_last_not_of. Remove debug implementations having no debug assertion.
+	* testsuite/util/testsuite_string.h: New file. Provides __gnu_test::string and
+	__gnu_test::wtring which definition depends on _GLIBCXX_DEBUG.
+	* testsuite/21_strings/basic_string/debug/find1_neg.cc: New test case.
+	* testsuite/21_strings/basic_string/debug/find2_neg.cc: New test case.
+	* testsuite/21_strings/basic_string/operations/find/char/1.cc:
+	Include <testsuite_string.h> and use __gnu_test::string.
+	* testsuite/21_strings/basic_string/operations/find/char/2.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/find/char/3.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/find/char/4.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/find/char/5.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/find/char/6.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/find/wchar_t/1.cc:
+	Include <testsuite_string.h> and use __gnu_test::wstring.
+	* testsuite/21_strings/basic_string/operations/find/wchar_t/2.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/find/wchar_t/3.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/find/wchar_t/4.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/find/wchar_t/5.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/find/wchar_t/6.cc: Likewise.
+
+2022-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (__cpp_lib_reference_from_temporary)
+	(reference_constructs_from_temporary)
+	(reference_converts_from_temporary): Only define when the
+	built-ins are available.
+
+2022-07-19  Marco Falke  <falke.marco@gmail.com>
+
+	* include/std/charconv (__from_chars_alnum_to_val): Replace
+	implicit conversion from int to unsigned char with explicit
+	cast.
+
+2022-07-19  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* configure: Regnerate.
+	* configure.ac (newlib, *-rtems*): Remove HAVE_POLL.
+
 2022-07-18  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_algo.h

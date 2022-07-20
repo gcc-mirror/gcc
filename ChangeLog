@@ -1,3 +1,7 @@
+2022-07-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	* .gitignore: Do not ignore config.h.
+
 2022-07-15  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* MAINTAINERS: Add myself to Write After Approval.

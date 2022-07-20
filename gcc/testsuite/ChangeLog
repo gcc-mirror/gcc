@@ -1,3 +1,38 @@
+2022-07-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103590
+	* gfortran.dg/associate_54.f90: Adjust.
+	* gfortran.dg/associate_59.f90: New test.
+
+2022-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94894
+	PR c++/105766
+	PR c++/106201
+	* g++.dg/conversion/ref8.C: New test.
+	* g++.dg/conversion/ref9.C: New test.
+
+2022-07-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gcc.dg/setjmp-7.c: New test.
+
+2022-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106321
+	* gcc.dg/analyzer/torture/taint-read-index-2.c: Add test coverage
+	for switch statements.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106331
+	* gfortran.dg/pr106331.f90: New testcase.
+
+2022-07-19  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR c/106264
+	* gcc.dg/pr106264.c: New test case.
+
 2022-07-18  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ldist-24.c: XFAIL.

@@ -1,3 +1,12 @@
+2022-07-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103590
+	* resolve.cc (find_array_spec): Change function result to bool to
+	enable error recovery.  Generate error message for invalid array
+	reference of non-array entity instead of an internal error.
+	(gfc_resolve_ref): Use function result from find_array_spec for
+	error recovery.
+
 2022-07-15  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/104313
