@@ -83,10 +83,15 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
 
       if (did_match_rule)
 	{
+	  // FIXME: ARTHUR: Comment
 	  // Debugging
-	  //   for (auto &kv : matched_fragments)
-	  //     rust_debug ("[fragment]: %s (%ld)", kv.first.c_str (),
-	  // 		kv.second.get_fragments ().size ());
+	  for (auto &kv : matched_fragments)
+	    rust_debug ("[fragment]: %s (%ld - %s)", kv.first.c_str (),
+			kv.second.get_fragments ().size (),
+			kv.second.get_kind ()
+			    == MatchedFragmentContainer::Kind::Repetition
+			  ? "repetition"
+			  : "metavar");
 
 	  matched_rule = &rule;
 	  break;
@@ -621,7 +626,8 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
 
 		// matched fragment get the offset in the token stream
 		size_t offs_end = source.get_offs ();
-		sub_stack.insert_fragment (
+		// FIXME: ARTHUR: Here we want to append?
+		sub_stack.append_fragment (
 		  MatchedFragment (fragment->get_ident (), offs_begin,
 				   offs_end));
 	      }

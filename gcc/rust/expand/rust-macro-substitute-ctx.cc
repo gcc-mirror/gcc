@@ -74,7 +74,9 @@ SubstituteCtx::check_repetition_amount (size_t pattern_start,
 		  is_valid = false;
 		}
 
-	      size_t repeat_amount = it->second.get_match_amount ();
+	      auto &fragment = it->second;
+
+	      size_t repeat_amount = fragment.get_match_amount ();
 	      if (!first_fragment_found)
 		{
 		  first_fragment_found = true;
@@ -82,7 +84,8 @@ SubstituteCtx::check_repetition_amount (size_t pattern_start,
 		}
 	      else
 		{
-		  if (repeat_amount != expected_repetition_amount)
+		  if (repeat_amount != expected_repetition_amount
+		      && !fragment.is_single_fragment ())
 		    {
 		      rust_error_at (
 			frag_token->get_locus (),
