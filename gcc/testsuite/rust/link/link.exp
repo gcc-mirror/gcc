@@ -154,7 +154,16 @@ foreach src [lsort [find $srcdir/$subdir *_0.rs]] {
 	continue
     }
 
+    # To prevent 'runtest_file_p' being tested again (for example, via
+    # 'gcc-dg-runtest'), with undesirable consequences due to its side effects,
+    # interpose a dummy:
+    rename runtest_file_p saved_runtest_file_p
+    proc runtest_file_p { runtests testcase } {
+	return 1
+    }
     rs-link-execute $src
+    rename runtest_file_p {}
+    rename saved_runtest_file_p runtest_file_p
 }
 
 set dg-do-what-default ${saved-dg-do-what-default}
