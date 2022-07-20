@@ -830,12 +830,10 @@ taint_state_machine::on_condition (sm_context *sm_ctxt,
 				   const gimple *stmt,
 				   const svalue *lhs,
 				   enum tree_code op,
-				   const svalue *rhs ATTRIBUTE_UNUSED) const
+				   const svalue *rhs) const
 {
   if (stmt == NULL)
     return;
-
-  // TODO: this doesn't use the RHS; should we make it symmetric?
 
   // TODO
   switch (op)
@@ -845,9 +843,16 @@ taint_state_machine::on_condition (sm_context *sm_ctxt,
     case GE_EXPR:
     case GT_EXPR:
       {
+	/* (LHS >= RHS) or (LHS > RHS)
+	   LHS gains a lower bound
+	   RHS gains an upper bound.  */
 	sm_ctxt->on_transition (node, stmt, lhs, m_tainted,
 				m_has_lb);
 	sm_ctxt->on_transition (node, stmt, lhs, m_has_ub,
+				m_stop);
+	sm_ctxt->on_transition (node, stmt, rhs, m_tainted,
+				m_has_ub);
+	sm_ctxt->on_transition (node, stmt, rhs, m_has_lb,
 				m_stop);
       }
       break;
@@ -896,9 +901,16 @@ taint_state_machine::on_condition (sm_context *sm_ctxt,
 		  }
 	  }
 
+	/* (LHS <= RHS) or (LHS < RHS)
+	   LHS gains an upper bound
+	   RHS gains a lower bound.  */
 	sm_ctxt->on_transition (node, stmt, lhs, m_tainted,
 				m_has_ub);
 	sm_ctxt->on_transition (node, stmt, lhs, m_has_lb,
+				m_stop);
+	sm_ctxt->on_transition (node, stmt, rhs, m_tainted,
+				m_has_lb);
+	sm_ctxt->on_transition (node, stmt, rhs, m_has_ub,
 				m_stop);
       }
       break;
