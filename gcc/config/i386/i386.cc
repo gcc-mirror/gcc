@@ -16070,6 +16070,19 @@ ix86_call_use_plt_p (rtx call_op)
   return true;
 }
 
+/* Implement TARGET_IFUNC_REF_LOCAL_OK.  If this hook returns true,
+   the PLT entry will be used as the function address for local IFUNC
+   functions.  When the PIC register is needed for PLT call, indirect
+   call via the PLT entry will fail since the PIC register may not be
+   set up properly for indirect call.  In this case, we should return
+   false.  */
+
+static bool
+ix86_ifunc_ref_local_ok (void)
+{
+  return !flag_pic || (TARGET_64BIT && ix86_cmodel != CM_LARGE_PIC);
+}
+
 /* Return true if the function being called was marked with attribute
    "noplt" or using -fno-plt and we are compiling for non-PIC.  We need
    to handle the non-PIC case in the backend because there is no easy
@@ -24953,7 +24966,7 @@ ix86_libgcc_floating_mode_supported_p
   ix86_get_multilib_abi_name
 
 #undef TARGET_IFUNC_REF_LOCAL_OK
-#define TARGET_IFUNC_REF_LOCAL_OK hook_bool_void_true
+#define TARGET_IFUNC_REF_LOCAL_OK ix86_ifunc_ref_local_ok
 
 #if !TARGET_MACHO && !TARGET_DLLIMPORT_DECL_ATTRIBUTES
 # undef TARGET_ASM_RELOC_RW_MASK
