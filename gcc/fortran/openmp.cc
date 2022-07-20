@@ -1142,7 +1142,6 @@ gfc_match_iterator (gfc_namespace **ns, bool permit_var)
 	}
       if (':' == gfc_peek_ascii_char ())
 	{
-	  step = gfc_get_expr ();
 	  if (gfc_match (": %e ", &step) != MATCH_YES)
 	    {
 	      gfc_free_expr (begin);
