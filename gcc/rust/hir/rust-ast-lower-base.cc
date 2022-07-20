@@ -872,6 +872,8 @@ ASTLoweringBase::handle_doc_item_attribute (const HIR::Item &item,
   AST::AttrInputMetaItemContainer *meta_item = option.parse_to_meta_item ();
 
   // TODO: add actual and complete checks for the doc attributes
+  //
+  // FIXME: Move this to the AttributeChecker visitor
   rust_assert (meta_item);
 }
 

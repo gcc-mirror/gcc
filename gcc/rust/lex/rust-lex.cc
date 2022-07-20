@@ -1696,7 +1696,7 @@ Lexer::parse_byte_string (Location loc)
   int length = 1;
   current_char = peek_input ();
 
-  while (current_char != '"' && current_char != '\n')
+  while (current_char != '"' && current_char != EOF)
     {
       if (current_char == '\\')
 	{
@@ -1723,16 +1723,17 @@ Lexer::parse_byte_string (Location loc)
 
   current_column += length;
 
-  if (current_char == '\n')
-    {
-      rust_error_at (get_current_location (), "unended byte string literal");
-    }
-  else if (current_char == '"')
+  if (current_char == '"')
     {
       current_column++;
 
       skip_input ();
       current_char = peek_input ();
+    }
+  else if (current_char == EOF)
+    {
+      rust_error_at (get_current_location (), "unended byte string literal");
+      return Token::make (END_OF_FILE, get_current_location ());
     }
   else
     {
@@ -1917,7 +1918,8 @@ Lexer::parse_string (Location loc)
   int length = 1;
   current_char32 = peek_codepoint_input ();
 
-  while (current_char32.value != '\n' && current_char32.value != '"')
+  // FIXME: This fails if the input ends. How do we check for EOF?
+  while (current_char32.value != '"' && !current_char32.is_eof ())
     {
       if (current_char32.value == '\\')
 	{
@@ -1949,19 +1951,17 @@ Lexer::parse_string (Location loc)
 
   current_column += length;
 
-  if (current_char32.value == '\n')
-    {
-      rust_error_at (get_current_location (), "unended string literal");
-      // by this point, the parser will stuck at this position due to
-      // undetermined string termination. we now need to unstuck the parser
-      skip_broken_string_input (current_char32.value);
-    }
-  else if (current_char32.value == '"')
+  if (current_char32.value == '"')
     {
       current_column++;
 
       skip_input ();
       current_char = peek_input ();
+    }
+  else if (current_char32.is_eof ())
+    {
+      rust_error_at (get_current_location (), "unended string literal");
+      return Token::make (END_OF_FILE, get_current_location ());
     }
   else
     {
@@ -2046,7 +2046,7 @@ Lexer::parse_raw_string (Location loc, int initial_hash_count)
   skip_input ();
   Codepoint current_char32 = peek_codepoint_input ();
 
-  while (true)
+  while (!current_char32.is_eof ())
     {
       if (current_char32.value == '"')
 	{
@@ -2318,6 +2318,8 @@ Lexer::parse_char_or_lifetime (Location loc)
   int length = 1;
 
   current_char32 = peek_codepoint_input ();
+  if (current_char32.is_eof ())
+    return nullptr;
 
   // parse escaped char literal
   if (current_char32.value == '\\')
@@ -2398,6 +2400,9 @@ Lexer::get_input_codepoint_length ()
 {
   uint8_t input = peek_input ();
 
+  if ((int8_t) input == EOF)
+    return 0;
+
   if (input < 128)
     {
       // ascii -- 1 byte
@@ -2467,7 +2472,8 @@ Lexer::get_input_codepoint_length ()
     }
   else
     {
-      rust_error_at (get_current_location (), "invalid UTF-8 (too long)");
+      rust_error_at (get_current_location (),
+		     "invalid UTF-8 [FIRST] (too long)");
       return 0;
     }
 }
@@ -2477,6 +2483,9 @@ Codepoint
 Lexer::peek_codepoint_input ()
 {
   uint8_t input = peek_input ();
+
+  if ((int8_t) input == EOF)
+    return Codepoint::eof ();
 
   if (input < 128)
     {
@@ -2534,7 +2543,8 @@ Lexer::peek_codepoint_input ()
     }
   else
     {
-      rust_error_at (get_current_location (), "invalid UTF-8 (too long)");
+      rust_error_at (get_current_location (),
+		     "invalid UTF-8 [SECND] (too long)");
       return {0xFFFE};
     }
 }
@@ -2620,7 +2630,8 @@ Lexer::test_get_input_codepoint_n_length (int n_start_offset)
     }
   else
     {
-      rust_error_at (get_current_location (), "invalid UTF-8 (too long)");
+      rust_error_at (get_current_location (),
+		     "invalid UTF-8 [THIRD] (too long)");
       return 0;
     }
 }

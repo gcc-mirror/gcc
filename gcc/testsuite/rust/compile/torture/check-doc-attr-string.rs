@@ -5,9 +5,14 @@
 pub struct Bar;
 
 #[doc(alias = "
-")] // { dg-error "unended string literal" "" { target *-*-* } .-1 }
+")] // { dg-error "invalid character used" "" { target *-*-* } .-1 }
 pub struct Foo;
 
-#[doc(alias("
-"))] // { dg-error "unended string literal" "" { target *-*-* } .-1 }
+#[doc(alias(
+    "
+"
+))] // ko but unchecked for now
 pub struct Foo2;
+
+#[doc(whatever = "buidule")] // ko as well but unchecked for now
+struct Boo;
