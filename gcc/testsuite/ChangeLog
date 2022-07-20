@@ -1,3 +1,72 @@
+2022-07-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105634
+	* g++.dg/warn/Wclass-memaccess-7.C: New test.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106331
+	* gfortran.dg/pr106331.f90: New testcase.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106131
+	* g++.dg/torture/pr106131.C: New testcase.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106112
+	* gcc.dg/torture/pr106112.c: New testcase.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106027
+	* gcc.dg/pr106027.c: New testcase.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105971
+	* gcc.dg/torture/pr106971.c: New testcase.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105969
+	* gcc.dg/pr105969.c: New testcase.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105965
+	* gcc.target/i386/pr105965.c: New testcase.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-11  Richard Biener  <rguenthert@suse.de>
+
+	PR target/105459
+	* gcc.dg/lto/pr105459_0.c: New testcase.
+
 2022-07-16  Steve Kargl  <kargl@gcc.gnu.org>
 
 	Backported from master:
