@@ -1838,7 +1838,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_noexcept1()
       {
 	if constexpr (is_trivially_default_constructible_v<_Tp>)
-	  return is_nothrow_assignable_v<_Tp, _Up>;
+	  return is_nothrow_assignable_v<_Tp&, _Up>;
 	else
 	  return is_nothrow_constructible_v<_Tp, _Up>;
       }
@@ -1932,14 +1932,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (_M_index == 0)
 	{
 	  if constexpr (is_trivially_default_constructible_v<_It>)
-	    _M_it = std::move(__x._M_it);
+	    _M_it = __x._M_it;
 	  else
 	    std::construct_at(std::__addressof(_M_it), __x._M_it);
 	}
       else if (_M_index == 1)
 	{
 	  if constexpr (is_trivially_default_constructible_v<_Sent>)
-	    _M_sent = std::move(__x._M_sent);
+	    _M_sent = __x._M_sent;
 	  else
 	    std::construct_at(std::__addressof(_M_sent), __x._M_sent);
 	}
@@ -1964,8 +1964,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(const common_iterator<_It2, _Sent2>& __x)
       noexcept(is_nothrow_constructible_v<_It, const _It2&>
 	       && is_nothrow_constructible_v<_Sent, const _Sent2&>
-	       && is_nothrow_assignable_v<_It, const _It2&>
-	       && is_nothrow_assignable_v<_Sent, const _Sent2&>)
+	       && is_nothrow_assignable_v<_It&, const _It2&>
+	       && is_nothrow_assignable_v<_Sent&, const _Sent2&>)
       {
 	switch(_M_index << 2 | __x._M_index)
 	  {
@@ -2164,6 +2164,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   private:
     template<input_or_output_iterator _It2, sentinel_for<_It2> _Sent2>
+      requires (!same_as<_It2, _Sent2>) && copyable<_It2>
       friend class common_iterator;
 
     constexpr bool _M_has_value() const noexcept { return _M_index < 2; }
