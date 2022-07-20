@@ -50,31 +50,108 @@ array_index_cmp (tree key, tree index);
 
 struct constexpr_global_ctx
 {
+  /* Values for any temporaries or local variables within the
+     constant-expression. */
+  hash_map<tree, tree> values;
+  /* Number of cxx_eval_constant_expression calls (except skipped ones,
+     on simple constants or location wrappers) encountered during current
+     cxx_eval_outermost_constant_expr call.  */
   HOST_WIDE_INT constexpr_ops_count;
-
-  /* Cleanups that need to be evaluated at the end of CLEANUP_POINT_EXPR.  */
-  vec<tree> *cleanups;
   /* Heap VAR_DECLs created during the evaluation of the outermost constant
      expression.  */
   auto_vec<tree, 16> heap_vars;
-  constexpr_global_ctx () : constexpr_ops_count (0) {}
+  /* Cleanups that need to be evaluated at the end of CLEANUP_POINT_EXPR.  */
+  vec<tree> *cleanups;
+  /* Number of heap VAR_DECL deallocations.  */
+  unsigned heap_dealloc_count;
+  /* Constructor.  */
+  constexpr_global_ctx ()
+    : constexpr_ops_count (0), cleanups (NULL), heap_dealloc_count (0)
+  {}
+};
+
+/* In constexpr.cc */
+/* Representation of entries in the constexpr function definition table.  */
+
+struct GTY ((for_user)) constexpr_fundef
+{
+  tree decl;
+  tree body;
+  tree parms;
+  tree result;
+};
+
+/* Objects of this type represent calls to constexpr functions
+ along with the bindings of parameters to their arguments, for
+ the purpose of compile time evaluation.  */
+
+struct GTY ((for_user)) constexpr_call
+{
+  /* Description of the constexpr function definition.  */
+  constexpr_fundef *fundef;
+  /* Parameter bindings environment.  A TREE_VEC of arguments.  */
+  tree bindings;
+  /* Result of the call.
+       NULL means the call is being evaluated.
+       error_mark_node means that the evaluation was erroneous;
+       otherwise, the actuall value of the call.  */
+  tree result;
+  /* The hash of this call; we remember it here to avoid having to
+     recalculate it when expanding the hash table.  */
+  hashval_t hash;
+  /* Whether __builtin_is_constant_evaluated() should evaluate to true.  */
+  bool manifestly_const_eval;
+};
+
+struct constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
+{
+  static hashval_t hash (constexpr_call *);
+  static bool equal (constexpr_call *, constexpr_call *);
+};
+
+enum constexpr_switch_state
+{
+  /* Used when processing a switch for the first time by cxx_eval_switch_expr
+     and default: label for that switch has not been seen yet.  */
+  css_default_not_seen,
+  /* Used when processing a switch for the first time by cxx_eval_switch_expr
+     and default: label for that switch has been seen already.  */
+  css_default_seen,
+  /* Used when processing a switch for the second time by
+     cxx_eval_switch_expr, where default: label should match.  */
+  css_default_processing
 };
 
 struct constexpr_ctx
 {
   /* The part of the context that needs to be unique to the whole
-   cxx_eval_outermost_constant_expr invocation.  */
+     cxx_eval_outermost_constant_expr invocation.  */
   constexpr_global_ctx *global;
-
-  /* Whether we should error on a non-constant expression or fail quietly.
-    This flag needs to be here, but some of the others could move to global
-    if they get larger than a word.  */
-  bool quiet;
-  /* The object we're building the CONSTRUCTOR for.  */
-  tree object;
+  /* The innermost call we're evaluating.  */
+  constexpr_call *call;
+  /* SAVE_EXPRs and TARGET_EXPR_SLOT vars of TARGET_EXPRs that we've seen
+     within the current LOOP_EXPR.  NULL if we aren't inside a loop.  */
+  vec<tree> *save_exprs;
   /* The CONSTRUCTOR we're currently building up for an aggregate
      initializer.  */
   tree ctor;
+  /* The object we're building the CONSTRUCTOR for.  */
+  tree object;
+  /* If inside SWITCH_EXPR.  */
+  constexpr_switch_state *css_state;
+  /* The aggregate initialization context inside which this one is nested.  This
+     is used by lookup_placeholder to resolve PLACEHOLDER_EXPRs.  */
+  const constexpr_ctx *parent;
+
+  /* Whether we should error on a non-constant expression or fail quietly.
+     This flag needs to be here, but some of the others could move to global
+     if they get larger than a word.  */
+  bool quiet;
+  /* Whether we are strictly conforming to constant expression rules or
+     trying harder to get a constant value.  */
+  bool strict;
+  /* Whether __builtin_is_constant_evaluated () should be true.  */
+  bool manifestly_const_eval;
 };
 
 static tree
@@ -105,17 +182,34 @@ eval_binary_expression (const constexpr_ctx *ctx, tree r, bool, bool *, bool *);
 static tree
 get_function_named_in_call (tree t);
 
+// this is ported from cxx_eval_outermost_constant_expr
 tree
 fold_expr (tree expr)
 {
+  bool allow_non_constant = false;
+  bool strict = true;
+  bool manifestly_const_eval = false;
+
   constexpr_global_ctx global_ctx;
-  constexpr_ctx ctx = {&global_ctx, false};
+  constexpr_ctx ctx
+    = {&global_ctx, NULL,
+       NULL,	    NULL,
+       NULL,	    NULL,
+       NULL,	    allow_non_constant,
+       strict,	    manifestly_const_eval || !allow_non_constant};
+
+  auto_vec<tree, 16> cleanups;
+  global_ctx.cleanups = &cleanups;
+
   bool non_constant_p = false;
   bool overflow_p = false;
 
   tree folded
     = constexpr_expression (&ctx, expr, false, &non_constant_p, &overflow_p);
   rust_assert (folded != NULL_TREE);
+
+  // more logic here to possibly port
+
   return folded;
 }
 
