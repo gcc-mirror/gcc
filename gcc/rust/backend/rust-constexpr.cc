@@ -47,6 +47,8 @@ static HOST_WIDE_INT
 find_array_ctor_elt (tree ary, tree dindex, bool insert = false);
 static int
 array_index_cmp (tree key, tree index);
+inline tree
+get_nth_callarg (tree t, int n);
 
 struct constexpr_global_ctx
 {
@@ -386,6 +388,138 @@ eval_binary_expression (const constexpr_ctx *ctx, tree t, bool lval,
   tree type = TREE_TYPE (t);
 
   return fold_binary_loc (loc, code, type, lhs, rhs);
+}
+
+/* TEMP is the constant value of a temporary object of type TYPE.  Adjust
+   the type of the value to match.  */
+
+static tree
+adjust_temp_type (tree type, tree temp)
+{
+  if (same_type_p (TREE_TYPE (temp), type))
+    return temp;
+
+  gcc_assert (scalarish_type_p (type));
+  /* Now we know we're dealing with a scalar, and a prvalue of non-class
+     type is cv-unqualified.  */
+  return fold_convert (cv_unqualified (type), temp);
+}
+
+/* Helper function of cxx_bind_parameters_in_call.  Return non-NULL
+   if *TP is address of a static variable (or part of it) currently being
+   constructed or of a heap artificial variable.  */
+
+static tree
+addr_of_non_const_var (tree *tp, int *walk_subtrees, void *data)
+{
+  if (TREE_CODE (*tp) == ADDR_EXPR)
+    if (tree var = get_base_address (TREE_OPERAND (*tp, 0)))
+      if (VAR_P (var) && TREE_STATIC (var))
+	{
+	  if (DECL_NAME (var) == heap_uninit_identifier
+	      || DECL_NAME (var) == heap_identifier
+	      || DECL_NAME (var) == heap_vec_uninit_identifier
+	      || DECL_NAME (var) == heap_vec_identifier)
+	    return var;
+
+	  constexpr_global_ctx *global = (constexpr_global_ctx *) data;
+	  if (global->values.get (var))
+	    return var;
+	}
+  if (TYPE_P (*tp))
+    *walk_subtrees = false;
+  return NULL_TREE;
+}
+
+/* Subroutine of cxx_eval_call_expression.
+   We are processing a call expression (either CALL_EXPR or
+   AGGR_INIT_EXPR) in the context of CTX.  Evaluate
+   all arguments and bind their values to correspondings
+   parameters, making up the NEW_CALL context.  */
+
+static tree
+rs_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
+			    bool *non_constant_p, bool *overflow_p,
+			    bool *non_constant_args)
+{
+  const int nargs = call_expr_nargs (t);
+  tree parms = DECL_ARGUMENTS (fun);
+  int i;
+  /* We don't record ellipsis args below.  */
+  int nparms = list_length (parms);
+  int nbinds = nargs < nparms ? nargs : nparms;
+  tree binds = make_tree_vec (nbinds);
+  for (i = 0; i < nargs; ++i)
+    {
+      tree x, arg;
+      tree type = parms ? TREE_TYPE (parms) : void_type_node;
+      if (parms && DECL_BY_REFERENCE (parms))
+	type = TREE_TYPE (type);
+      x = get_nth_callarg (t, i);
+
+      if (TREE_ADDRESSABLE (type))
+	/* Undo convert_for_arg_passing work here.  */
+	x = convert_from_reference (x);
+      /* Normally we would strip a TARGET_EXPR in an initialization context
+	 such as this, but here we do the elision differently: we keep the
+	 TARGET_EXPR, and use its CONSTRUCTOR as the value of the parm.  */
+      arg = constexpr_expression (ctx, x, /*lval=*/false, non_constant_p,
+				  overflow_p);
+      /* Don't VERIFY_CONSTANT here.  */
+      if (*non_constant_p && ctx->quiet)
+	break;
+      /* Just discard ellipsis args after checking their constantitude.  */
+      if (!parms)
+	continue;
+
+      if (!*non_constant_p)
+	{
+	  /* Make sure the binding has the same type as the parm.  But
+	     only for constant args.  */
+	  if (!TYPE_REF_P (type))
+	    arg = adjust_temp_type (type, arg);
+	  if (!TREE_CONSTANT (arg))
+	    *non_constant_args = true;
+	  else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+	    /* The destructor needs to see any modifications the callee makes
+	       to the argument.  */
+	    *non_constant_args = true;
+	  /* If arg is or contains address of a heap artificial variable or
+	     of a static variable being constructed, avoid caching the
+	     function call, as those variables might be modified by the
+	     function, or might be modified by the callers in between
+	     the cached function and just read by the function.  */
+	  else if (!*non_constant_args
+		   && rs_walk_tree (&arg, addr_of_non_const_var, ctx->global,
+				    NULL))
+	    *non_constant_args = true;
+
+	  // /* For virtual calls, adjust the this argument, so that it is
+	  //    the object on which the method is called, rather than
+	  //    one of its bases.  */
+	  // if (i == 0 && DECL_VIRTUAL_P (fun))
+	  //   {
+	  //     tree addr = arg;
+	  //     STRIP_NOPS (addr);
+	  //     if (TREE_CODE (addr) == ADDR_EXPR)
+	  //       {
+	  //         tree obj = TREE_OPERAND (addr, 0);
+	  //         while (TREE_CODE (obj) == COMPONENT_REF
+	  //       	 && DECL_FIELD_IS_BASE (TREE_OPERAND (obj, 1))
+	  //       	 && !same_type_ignoring_top_level_qualifiers_p (
+	  //       	   TREE_TYPE (obj), DECL_CONTEXT (fun)))
+	  //           obj = TREE_OPERAND (obj, 0);
+	  //         if (obj != TREE_OPERAND (addr, 0))
+	  //           arg = build_fold_addr_expr_with_type (obj, TREE_TYPE
+	  //           (arg));
+	  //       }
+	  //   }
+	  TREE_VEC_ELT (binds, i) = arg;
+	}
+      parms = TREE_CHAIN (parms);
+    }
+
+  return binds;
 }
 
 // Subroutine of cxx_eval_constant_expression.
