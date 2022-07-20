@@ -15,16 +15,16 @@ jobs:
     steps:
     # Setup
     - name: Checkout
-      uses: actions/checkout@v2.3.3
+      uses: actions/checkout@v3
 
     - name: Setup Node.js
-      uses: actions/setup-node@v1.4.4
+      uses: actions/setup-node@v3
       with:
-        node-version: '12.x'
+        node-version: '16.x'
 
     - name: Install remark
       run: npm install remark-cli remark-lint remark-lint-maximum-line-length remark-preset-lint-recommended remark-gfm
 
     # Run
-    # - name: Check *.md files
-    #   run: git ls-files -z *.md | xargs -0 -n 1 npx remark -u lint -f > /dev/null
+    - name: Check *.md files
+      run: git ls-files -z *.md | xargs -0 -n 1 npx remark -u lint -f > /dev/null
