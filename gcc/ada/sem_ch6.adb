@@ -5409,14 +5409,20 @@ package body Sem_Ch6 is
       --  we have a special test to set X as apparently assigned to suppress
       --  the warning.
 
-      declare
-         Stm : Node_Id;
+      --  If X above is controlled, we need to use First_Real_Statement to skip
+      --  generated finalization-related code. Otherwise (First_Real_Statement
+      --  is Empty), we just get the first statement.
 
+      declare
+         Stm : Node_Id := First_Real_Statement (HSS);
       begin
+         if No (Stm) then
+            Stm := First (Statements (HSS));
+         end if;
+
          --  Skip call markers installed by the ABE mechanism, labels, and
          --  Push_xxx_Error_Label to find the first real statement.
 
-         Stm := First (Statements (HSS));
          while Nkind (Stm) in N_Call_Marker | N_Label | N_Push_xxx_Label loop
             Next (Stm);
          end loop;
