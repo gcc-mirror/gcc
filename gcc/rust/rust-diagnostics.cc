@@ -167,6 +167,17 @@ rust_error_at (const Location location, const char *fmt, ...)
 }
 
 void
+rust_error_at (const RichLocation &location, const ErrorCode code,
+	       const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  rust_be_error_at (location, code, expand_message (fmt, ap));
+  va_end (ap);
+}
+
+void
 rust_warning_at (const Location location, int opt, const char *fmt, ...)
 {
   va_list ap;

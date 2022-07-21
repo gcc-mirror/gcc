@@ -50,6 +50,18 @@
 
 // clang-format off
 // simple location
+
+struct ErrorCode
+{
+  explicit ErrorCode (const char *str) : m_str (str)
+  {
+    gcc_assert (str);
+    gcc_assert (str[0] == 'E');
+  }
+
+  const char *m_str;
+};
+
 extern void
 rust_internal_error_at (const Location, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3)
@@ -72,6 +84,9 @@ rust_inform (const Location, const char *fmt, ...)
 extern void
 rust_error_at (const RichLocation &, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
+extern void
+rust_error_at (const RichLocation &, const ErrorCode, const char *fmt, ...)
+  RUST_ATTRIBUTE_GCC_DIAG (3, 4);
 // clang-format on
 
 // These interfaces provide a way for the front end to ask for
@@ -96,6 +111,9 @@ extern void
 rust_be_error_at (const Location, const std::string &errmsg);
 extern void
 rust_be_error_at (const RichLocation &, const std::string &errmsg);
+extern void
+rust_be_error_at (const RichLocation &, const ErrorCode,
+		  const std::string &errmsg);
 extern void
 rust_be_warning_at (const Location, int opt, const std::string &warningmsg);
 extern void

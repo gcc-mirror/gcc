@@ -283,7 +283,7 @@ TypeCastRules::emit_cast_error () const
   RichLocation r (locus);
   r.add_range (from.get_locus ());
   r.add_range (to.get_locus ());
-  rust_error_at (r, "invalid cast %<%s%> to %<%s%>",
+  rust_error_at (r, ErrorCode ("E0054"), "invalid cast %<%s%> to %<%s%>",
 		 from.get_ty ()->get_name ().c_str (),
 		 to.get_ty ()->get_name ().c_str ());
 }
