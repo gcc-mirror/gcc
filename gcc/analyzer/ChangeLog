@@ -1,3 +1,17 @@
+2022-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106373
+	* sm-taint.cc (taint_state_machine::on_condition): Potentially
+	update the state of the RHS as well as the LHS.
+
+2022-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106359
+	* region.h (string_region::tracked_p): New.
+	* store.cc (binding_cluster::binding_cluster): Move here from
+	store.h.  Add assertion that base_region is tracked_p.
+	* store.h (binding_cluster::binding_cluster): Move to store.cc.
+
 2022-07-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106321

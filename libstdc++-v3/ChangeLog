@@ -1,3 +1,31 @@
+2022-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100823
+	* include/bits/stl_iterator.h (common_iterator): Define
+	destructor, copy constructor and move constructor as trivial
+	when the underlying types allow.
+	* testsuite/24_iterators/common_iterator/100823.cc: Check
+	triviality of special members.
+
+2022-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100823
+	* include/bits/stl_iterator.h (common_iterator): Define move
+	constructor and move assignment operator.
+	(common_iterator::_M_assign): New function implementing
+	assignment.
+	(common_iterator::operator=): Use _M_assign.
+	(common_iterator::_S_valueless): New constant.
+	* testsuite/24_iterators/common_iterator/100823.cc: New test.
+
+2022-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (common_iterator): Fix incorrect
+	uses of is_nothrow_assignable_v. Fix inconsistent constraints on
+	friend declaration. Do not move argument in copy constructor.
+	* testsuite/24_iterators/common_iterator/1.cc: Check for
+	noexcept constructibnle/assignable.
+
 2022-07-19  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/debug.h [_GLIBCXX_DEBUG](__glibcxx_requires_string): Define

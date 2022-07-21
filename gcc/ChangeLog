@@ -1,3 +1,43 @@
+2022-07-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/101347
+	* builtins.cc (expand_builtin) [BUILT_IN_SETJMP_SETUP]: Move
+	population of nonlocal_goto_handler_labels from here ...
+	(expand_builtin) [BUILT_IN_SETJMP_RECEIVER]: ... to here.
+	* rtlanal.cc (remove_node_from_insn_list): Verify that a
+	duplicate is not present in the remainder of the list.
+
+2022-07-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	* rtl.h (remove_node_from_expr_list): Remove declaration.
+	* rtlanal.cc (remove_node_from_expr_list): Remove (no uses).
+
+2022-07-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (bump_vector_ptr): Return an
+	invariant updated address when the input was invariant.
+
+2022-07-20  liuhongt  <hongtao.liu@intel.com>
+
+	* passes.def: (Split pass_cse_sincos to pass_expand_powcabs
+	and pass_cse_sincos, and move pass_cse_sincos after vectorizer).
+	* timevar.def (TV_TREE_POWCABS): New timevar.
+	* tree-pass.h (make_pass_expand_powcabs): Split from pass_cse_sincos.
+	* tree-ssa-math-opts.cc (gimple_expand_builtin_cabs): Ditto.
+	(class pass_expand_powcabs): Ditto.
+	(pass_expand_powcabs::execute): Ditto.
+	(make_pass_expand_powcabs): Ditto.
+	(pass_cse_sincos::execute): Remove pow/cabs expand part.
+	(make_pass_cse_sincos): Ditto.
+
+2022-07-20  Richard Biener  <richard.guenther@gmail.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR tree-optimization/106010
+	* tree-complex.cc (init_dont_simulate_again): Lower complex
+	type move.
+	(expand_complex_move): Also expand COMPLEX_CST for rhs.
+
 2022-07-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-cache.cc (ranger_cache::range_from_dom): Check

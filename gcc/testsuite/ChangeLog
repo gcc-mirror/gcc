@@ -1,3 +1,49 @@
+2022-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106373
+	* gcc.dg/analyzer/torture/taint-read-index-3.c: New test.
+
+2022-07-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101330
+	* gfortran.dg/gomp/affinity-clause-7.f90: New test.
+
+2022-07-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/pow-sqrt-synth-1.c: Adjust testcase.
+
+2022-07-20  Richard Biener  <richard.guenther@gmail.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106010-1a.c: New test.
+	* gcc.target/i386/pr106010-1b.c: New test.
+	* gcc.target/i386/pr106010-1c.c: New test.
+	* gcc.target/i386/pr106010-2a.c: New test.
+	* gcc.target/i386/pr106010-2b.c: New test.
+	* gcc.target/i386/pr106010-2c.c: New test.
+	* gcc.target/i386/pr106010-3a.c: New test.
+	* gcc.target/i386/pr106010-3b.c: New test.
+	* gcc.target/i386/pr106010-3c.c: New test.
+	* gcc.target/i386/pr106010-4a.c: New test.
+	* gcc.target/i386/pr106010-4b.c: New test.
+	* gcc.target/i386/pr106010-4c.c: New test.
+	* gcc.target/i386/pr106010-5a.c: New test.
+	* gcc.target/i386/pr106010-5b.c: New test.
+	* gcc.target/i386/pr106010-5c.c: New test.
+	* gcc.target/i386/pr106010-6a.c: New test.
+	* gcc.target/i386/pr106010-6b.c: New test.
+	* gcc.target/i386/pr106010-6c.c: New test.
+	* gcc.target/i386/pr106010-7a.c: New test.
+	* gcc.target/i386/pr106010-7b.c: New test.
+	* gcc.target/i386/pr106010-7c.c: New test.
+	* gcc.target/i386/pr106010-8a.c: New test.
+	* gcc.target/i386/pr106010-8b.c: New test.
+	* gcc.target/i386/pr106010-8c.c: New test.
+	* gcc.target/i386/pr106010-9a.c: New test.
+	* gcc.target/i386/pr106010-9b.c: New test.
+	* gcc.target/i386/pr106010-9c.c: New test.
+	* gcc.target/i386/pr106010-9d.c: New test.
+
 2022-07-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103590

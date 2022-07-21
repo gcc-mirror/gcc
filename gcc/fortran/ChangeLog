@@ -1,3 +1,9 @@
+2022-07-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101330
+	* openmp.cc (gfc_match_iterator): Remove left-over code from
+	development that could lead to a crash on invalid input.
+
 2022-07-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103590
