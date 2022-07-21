@@ -339,6 +339,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@0)))
   (COPYSIGN_ALL (negate @0) @1)))
 
+/* (x >= 0 ? x : 0) + (x <= 0 ? -x : 0) -> abs x.  */
+(simplify
+  (plus:c (max @0 integer_zerop) (max (negate @0) integer_zerop))
+  (abs @0))
+
 /* X * 1, X / 1 -> X.  */
 (for op (mult trunc_div ceil_div floor_div round_div exact_div)
   (simplify
@@ -3424,6 +3429,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type)
       && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
   (cond (convert:boolean_type_node @2) @1 @0)))
+
+/* (x <= 0 ? -x : 0) -> max(-x, 0).  */
+(simplify
+  (cond (le @0 integer_zerop@1) (negate@2 @0) integer_zerop@1)
+  (max @2 @1))
 
 /* Simplifications of shift and rotates.  */
 
