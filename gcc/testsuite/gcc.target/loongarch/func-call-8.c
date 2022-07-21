@@ -1,10 +1,11 @@
 /* { dg-do compile } */
-/* { dg-options "-mabi=lp64d -O0 -fno-pic -fplt -mno-explicit-relocs" } */
-/* { dg-final { scan-assembler "test:.*bl\t%plt\\(g\\)\n" } } */
+/* { dg-options "-mabi=lp64d -O0 -fno-pic -fno-plt -mexplicit-relocs" } */
+/* { dg-final { scan-assembler "test:.*pcalau12i\t.*%got_pc_hi20\\(g\\)\n\tld\.d\t.*%got_pc_lo12\\(g\\)\n\tjirl" } } */
 /* { dg-final { scan-assembler "test1:.*bl\tf\n" } } */
 /* { dg-final { scan-assembler "test2:.*bl\tl\n" } } */
 
 extern void g (void);
+
 void
 f (void)
 {}

@@ -100,6 +100,10 @@ along with GCC; see the file COPYING3.  If not see
    ADDRESS_REG_REG
        A base register indexed by (optionally scaled) register.
 
+   ADDRESS_LO_SUM
+       A LO_SUM rtx.  The first operand is a valid base register and the second
+       operand is a symbolic address.
+
    ADDRESS_CONST_INT
        A signed 16-bit constant address.
 
@@ -109,6 +113,7 @@ enum loongarch_address_type
 {
   ADDRESS_REG,
   ADDRESS_REG_REG,
+  ADDRESS_LO_SUM,
   ADDRESS_CONST_INT,
   ADDRESS_SYMBOLIC
 };
@@ -1641,6 +1646,21 @@ loongarch_classify_symbol (const_rtx x)
   return SYMBOL_PCREL;
 }
 
+/* Classify the base of symbolic expression X, given that X appears in
+   context CONTEXT.  */
+
+static enum loongarch_symbol_type
+loongarch_classify_symbolic_expression (rtx x)
+{
+  rtx offset;
+
+  split_const (x, &x, &offset);
+  if (UNSPEC_ADDRESS_P (x))
+    return UNSPEC_ADDRESS_TYPE (x);
+
+  return loongarch_classify_symbol (x);
+}
+
 /* Return true if X is a symbolic constant.  If it is,
    store the type of the symbol in *SYMBOL_TYPE.  */
 
@@ -1696,7 +1716,7 @@ loongarch_symbol_insns (enum loongarch_symbol_type type, machine_mode mode)
     case SYMBOL_GOT_DISP:
       /* The constant will have to be loaded from the GOT before it
 	 is used in an address.  */
-      if (mode != MAX_MACHINE_MODE)
+      if (!TARGET_EXPLICIT_RELOCS && mode != MAX_MACHINE_MODE)
 	return 0;
 
       return 3;
@@ -1814,6 +1834,84 @@ loongarch_valid_offset_p (rtx x, machine_mode mode)
   return true;
 }
 
+/* Should a symbol of type SYMBOL_TYPE should be split in two?  */
+
+bool
+loongarch_split_symbol_type (enum loongarch_symbol_type symbol_type)
+{
+  switch (symbol_type)
+    {
+    case SYMBOL_PCREL:
+    case SYMBOL_GOT_DISP:
+    case SYMBOL_TLS_IE:
+    case SYMBOL_TLS_LE:
+    case SYMBOL_TLSGD:
+    case SYMBOL_TLSLDM:
+      return true;
+
+    case SYMBOL_TLS:
+      return false;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return true if a LO_SUM can address a value of mode MODE when the
+   LO_SUM symbol has type SYMBOL_TYPE.  */
+
+static bool
+loongarch_valid_lo_sum_p (enum loongarch_symbol_type symbol_type,
+			  machine_mode mode, rtx x)
+{
+  int align, size;
+
+  /* Check that symbols of type SYMBOL_TYPE can be used to access values
+     of mode MODE.  */
+  if (loongarch_symbol_insns (symbol_type, mode) == 0)
+    return false;
+
+  /* Check that there is a known low-part relocation.  */
+  if (!loongarch_split_symbol_type (symbol_type))
+    return false;
+
+  /* We can't tell size or alignment when we have BLKmode, so try extracing a
+     decl from the symbol if possible.  */
+  if (mode == BLKmode)
+    {
+      rtx offset;
+
+      /* Extract the symbol from the LO_SUM operand, if any.  */
+      split_const (x, &x, &offset);
+
+      /* Might be a CODE_LABEL.  We can compute align but not size for that,
+	 so don't bother trying to handle it.  */
+      if (!SYMBOL_REF_P (x))
+	return false;
+
+      /* Use worst case assumptions if we don't have a SYMBOL_REF_DECL.  */
+      align = (SYMBOL_REF_DECL (x)
+	       ? DECL_ALIGN (SYMBOL_REF_DECL (x))
+	       : 1);
+      size = (SYMBOL_REF_DECL (x) && DECL_SIZE (SYMBOL_REF_DECL (x))
+	      ? tree_to_uhwi (DECL_SIZE (SYMBOL_REF_DECL (x)))
+	      : 2*BITS_PER_WORD);
+    }
+  else
+    {
+      align = GET_MODE_ALIGNMENT (mode);
+      size = GET_MODE_BITSIZE (mode);
+    }
+
+  /* We may need to split multiword moves, so make sure that each word
+     can be accessed without inducing a carry.  */
+  if (size > BITS_PER_WORD
+      && (!TARGET_STRICT_ALIGN || size > align))
+    return false;
+
+  return true;
+}
+
 static bool
 loongarch_valid_index_p (struct loongarch_address_info *info, rtx x,
 			  machine_mode mode, bool strict_p)
@@ -1880,6 +1978,26 @@ loongarch_classify_address (struct loongarch_address_info *info, rtx x,
       info->offset = XEXP (x, 1);
       return (loongarch_valid_base_register_p (info->reg, mode, strict_p)
 	      && loongarch_valid_offset_p (info->offset, mode));
+
+    case LO_SUM:
+      info->type = ADDRESS_LO_SUM;
+      info->reg = XEXP (x, 0);
+      info->offset = XEXP (x, 1);
+      /* We have to trust the creator of the LO_SUM to do something vaguely
+	 sane.  Target-independent code that creates a LO_SUM should also
+	 create and verify the matching HIGH.  Target-independent code that
+	 adds an offset to a LO_SUM must prove that the offset will not
+	 induce a carry.  Failure to do either of these things would be
+	 a bug, and we are not required to check for it here.  The MIPS
+	 backend itself should only create LO_SUMs for valid symbolic
+	 constants, with the high part being either a HIGH or a copy
+	 of _gp. */
+      info->symbol_type
+	= loongarch_classify_symbolic_expression (info->offset);
+      return (loongarch_valid_base_register_p (info->reg, mode, strict_p)
+	      && loongarch_valid_lo_sum_p (info->symbol_type, mode,
+					   info->offset));
+
     default:
       return false;
     }
@@ -1940,6 +2058,9 @@ loongarch_address_insns (rtx x, machine_mode mode, bool might_split_p)
       case ADDRESS_CONST_INT:
 	return factor;
 
+      case ADDRESS_LO_SUM:
+	return factor + 1;
+
       case ADDRESS_SYMBOLIC:
 	return factor * loongarch_symbol_insns (addr.symbol_type, mode);
       }
@@ -1967,7 +2088,8 @@ loongarch_signed_immediate_p (unsigned HOST_WIDE_INT x, int bits,
   return loongarch_unsigned_immediate_p (x, bits, shift);
 }
 
-/* Return true if X is a legitimate address with a 12-bit offset.
+/* Return true if X is a legitimate address with a 12-bit offset
+   or addr.type is ADDRESS_LO_SUM.
    MODE is the mode of the value being accessed.  */
 
 bool
@@ -1976,9 +2098,10 @@ loongarch_12bit_offset_address_p (rtx x, machine_mode mode)
   struct loongarch_address_info addr;
 
   return (loongarch_classify_address (&addr, x, mode, false)
-	  && addr.type == ADDRESS_REG
-	  && CONST_INT_P (addr.offset)
-	  && LARCH_12BIT_OFFSET_P (INTVAL (addr.offset)));
+	  && ((addr.type == ADDRESS_REG
+	       && CONST_INT_P (addr.offset)
+	       && LARCH_12BIT_OFFSET_P (INTVAL (addr.offset)))
+	      || addr.type == ADDRESS_LO_SUM));
 }
 
 /* Return true if X is a legitimate address with a 14-bit offset shifted 2.
@@ -2020,6 +2143,14 @@ loongarch_const_insns (rtx x)
 
   switch (GET_CODE (x))
     {
+    case HIGH:
+      if (!loongarch_symbolic_constant_p (XEXP (x, 0), &symbol_type)
+	  || !loongarch_split_symbol_type (symbol_type))
+	return 0;
+
+      /* This is simply a PCALAU12I.  */
+      return 1;
+
     case CONST_INT:
       return loongarch_integer_cost (INTVAL (x));
 
@@ -2079,6 +2210,8 @@ loongarch_split_const_insns (rtx x)
   gcc_assert (low > 0 && high > 0);
   return low + high;
 }
+
+static bool loongarch_split_move_insn_p (rtx dest, rtx src);
 
 /* Return the number of instructions needed to implement INSN,
    given that it loads from or stores to MEM.  */
@@ -2197,6 +2330,15 @@ loongarch_unspec_address (rtx address, enum loongarch_symbol_type symbol_type)
   return loongarch_unspec_address_offset (base, offset, symbol_type);
 }
 
+/* Emit an instruction of the form (set TARGET SRC).  */
+
+static rtx
+loongarch_emit_set (rtx target, rtx src)
+{
+  emit_insn (gen_rtx_SET (target, src));
+  return target;
+}
+
 /* If OP is an UNSPEC address, return the address to which it refers,
    otherwise return OP itself.  */
 
@@ -2278,6 +2420,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 {
   rtx loc, a0;
   rtx_insn *insn;
+  rtx tmp = gen_reg_rtx (Pmode);
 
   a0 = gen_rtx_REG (Pmode, GP_ARG_FIRST);
 
@@ -2288,12 +2431,22 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 
   start_sequence ();
 
-  if (type == SYMBOL_TLSLDM)
-    emit_insn (loongarch_got_load_tls_ld (a0, loc));
-  else if (type == SYMBOL_TLSGD)
-    emit_insn (loongarch_got_load_tls_gd (a0, loc));
+  if (TARGET_EXPLICIT_RELOCS)
+    {
+      /* Split tls symbol to high and low.  */
+      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (loc));
+      high = loongarch_force_temporary (tmp, high);
+      emit_insn (gen_tls_low (Pmode, a0, high, loc));
+    }
   else
-    gcc_unreachable ();
+    {
+      if (type == SYMBOL_TLSLDM)
+	emit_insn (loongarch_got_load_tls_ld (a0, loc));
+      else if (type == SYMBOL_TLSGD)
+	emit_insn (loongarch_got_load_tls_gd (a0, loc));
+      else
+	gcc_unreachable ();
+    }
 
   insn = emit_call_insn (gen_call_value_internal (v0, loongarch_tls_symbol,
 						  const0_rtx));
@@ -2308,12 +2461,12 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 
 /* Generate the code to access LOC, a thread-local SYMBOL_REF, and return
    its address.  The return value will be both a valid address and a valid
-   SET_SRC.  */
+   SET_SRC (either a REG or a LO_SUM).  */
 
 static rtx
 loongarch_legitimize_tls_address (rtx loc)
 {
-  rtx dest, tp, tmp;
+  rtx dest, tp, tmp, tmp1, tmp2, tmp3;
   enum tls_model model = SYMBOL_REF_TLS_MODEL (loc);
   rtx_insn *insn;
 
@@ -2334,21 +2487,45 @@ loongarch_legitimize_tls_address (rtx loc)
       break;
 
     case TLS_MODEL_INITIAL_EXEC:
-      /* la.tls.ie; tp-relative add.  */
-      tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
-      tmp = gen_reg_rtx (Pmode);
-      emit_insn (loongarch_got_load_tls_ie (tmp, loc));
-      dest = gen_reg_rtx (Pmode);
-      emit_insn (gen_add3_insn (dest, tmp, tp));
+	{
+	  /* la.tls.ie; tp-relative add.  */
+	  tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
+	  tmp1 = gen_reg_rtx (Pmode);
+	  dest = gen_reg_rtx (Pmode);
+	  if (TARGET_EXPLICIT_RELOCS)
+	    {
+	      tmp2 = loongarch_unspec_address (loc, SYMBOL_TLS_IE);
+	      tmp3 = gen_reg_rtx (Pmode);
+	      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
+	      high = loongarch_force_temporary (tmp3, high);
+	      emit_insn (gen_ld_from_got (Pmode, tmp1, high, tmp2));
+	    }
+	  else
+	    emit_insn (loongarch_got_load_tls_ie (tmp1, loc));
+	  emit_insn (gen_add3_insn (dest, tmp1, tp));
+	}
       break;
 
     case TLS_MODEL_LOCAL_EXEC:
-      /* la.tls.le; tp-relative add.  */
-      tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
-      tmp = gen_reg_rtx (Pmode);
-      emit_insn (loongarch_got_load_tls_le (tmp, loc));
-      dest = gen_reg_rtx (Pmode);
-      emit_insn (gen_add3_insn (dest, tmp, tp));
+	{
+	  /* la.tls.le; tp-relative add.  */
+	  tp = gen_rtx_REG (Pmode, THREAD_POINTER_REGNUM);
+	  tmp1 = gen_reg_rtx (Pmode);
+	  dest = gen_reg_rtx (Pmode);
+
+	  if (TARGET_EXPLICIT_RELOCS)
+	    {
+	      tmp2 = loongarch_unspec_address (loc, SYMBOL_TLS_LE);
+	      tmp3 = gen_reg_rtx (Pmode);
+	      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
+	      high = loongarch_force_temporary (tmp3, high);
+	      emit_insn (gen_ori_l_lo12 (Pmode, tmp1, high, tmp2));
+	    }
+	  else
+	    emit_insn (loongarch_got_load_tls_le (tmp1, loc));
+	  emit_insn (gen_add3_insn (dest, tmp1, tp));
+
+	}
       break;
 
     default:
@@ -2397,6 +2574,68 @@ loongarch_force_address (rtx x, machine_mode mode)
   return x;
 }
 
+/* If MODE is MAX_MACHINE_MODE, ADDR appears as a move operand, otherwise
+   it appears in a MEM of that mode.  Return true if ADDR is a legitimate
+   constant in that context and can be split into high and low parts.
+   If so, and if LOW_OUT is nonnull, emit the high part and store the
+   low part in *LOW_OUT.  Leave *LOW_OUT unchanged otherwise.
+
+   Return false if build with '-mno-explicit-relocs'.
+
+   TEMP is as for loongarch_force_temporary and is used to load the high
+   part into a register.
+
+   When MODE is MAX_MACHINE_MODE, the low part is guaranteed to be
+   a legitimize SET_SRC for an .md pattern, otherwise the low part
+   is guaranteed to be a legitimate address for mode MODE.  */
+
+bool
+loongarch_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
+{
+  enum loongarch_symbol_type symbol_type;
+  rtx high;
+
+  /* If build with '-mno-explicit-relocs', don't split symbol.  */
+  if (!TARGET_EXPLICIT_RELOCS)
+    return false;
+
+  if ((GET_CODE (addr) == HIGH && mode == MAX_MACHINE_MODE)
+      || !loongarch_symbolic_constant_p (addr, &symbol_type)
+      || loongarch_symbol_insns (symbol_type, mode) == 0
+      || !loongarch_split_symbol_type (symbol_type))
+    return false;
+
+  if (temp == NULL)
+    temp = gen_reg_rtx (Pmode);
+
+  /* Get the 12-31 bits of the address.  */
+  high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
+  high = loongarch_force_temporary (temp, high);
+
+  if (low_out)
+    switch (symbol_type)
+      {
+      case SYMBOL_PCREL:
+	*low_out = gen_rtx_LO_SUM (Pmode, high, addr);
+	break;
+
+      case SYMBOL_GOT_DISP:
+	/* SYMBOL_GOT_DISP symbols are loaded from the GOT.  */
+	{
+	  rtx low = gen_rtx_LO_SUM (Pmode, high, addr);
+	  rtx mem = gen_rtx_MEM (Pmode, low);
+	  *low_out = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, mem),
+				     UNSPEC_LOAD_FROM_GOT);
+	  break;
+	}
+
+      default:
+	gcc_unreachable ();
+      }
+
+  return true;
+}
+
 /* This function is used to implement LEGITIMIZE_ADDRESS.  If X can
    be legitimized in a way that the generic machinery might not expect,
    return a new address, otherwise return NULL.  MODE is the mode of
@@ -2411,6 +2650,10 @@ loongarch_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
   if (loongarch_tls_symbol_p (x))
     return loongarch_legitimize_tls_address (x);
+
+  /* See if the address can split into a high part and a LO_SUM.  */
+  if (loongarch_split_symbol (NULL, x, mode, &addr))
+    return loongarch_force_address (addr, mode);
 
   /* Handle BASE + OFFSET using loongarch_add_offset.  */
   loongarch_split_plus (x, &base, &offset);
@@ -2496,6 +2739,13 @@ loongarch_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
   if (splittable_const_int_operand (src, mode))
     {
       loongarch_move_integer (dest, dest, INTVAL (src));
+      return;
+    }
+
+  /* Split moves of symbolic constants into high and low.  */
+  if (loongarch_split_symbol (dest, src, MAX_MACHINE_MODE, &src))
+    {
+      loongarch_emit_set (dest, src);
       return;
     }
 
@@ -3241,19 +3491,10 @@ loongarch_split_move (rtx dest, rtx src, rtx insn_)
 
 /* Return true if a move from SRC to DEST in INSN should be split.  */
 
-bool
+static bool
 loongarch_split_move_insn_p (rtx dest, rtx src)
 {
   return loongarch_split_move_p (dest, src);
-}
-
-/* Split a move from SRC to DEST in INSN, given that
-   loongarch_split_move_insn_p holds.  */
-
-void
-loongarch_split_move_insn (rtx dest, rtx src, rtx insn)
-{
-  loongarch_split_move (dest, src, insn);
 }
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.  */
@@ -3369,13 +3610,16 @@ loongarch_output_move (rtx dest, rtx src)
 	    case 2:
 	      return "st.h\t%z1,%0";
 	    case 4:
-	      /* Matching address type with a 12bit offset.  */
-	      if (const_arith_operand (offset, Pmode))
+	      /* Matching address type with a 12bit offset and
+		 ADDRESS_LO_SUM.  */
+	      if (const_arith_operand (offset, Pmode)
+		  || GET_CODE (offset) == LO_SUM)
 		return "st.w\t%z1,%0";
 	      else
 		return "stptr.w\t%z1,%0";
 	    case 8:
-	      if (const_arith_operand (offset, Pmode))
+	      if (const_arith_operand (offset, Pmode)
+		  || GET_CODE (offset) == LO_SUM)
 		return "st.d\t%z1,%0";
 	      else
 		return "stptr.d\t%z1,%0";
@@ -3408,19 +3652,37 @@ loongarch_output_move (rtx dest, rtx src)
 	    case 2:
 	      return "ld.hu\t%0,%1";
 	    case 4:
-	      /* Matching address type with a 12bit offset.  */
-	      if (const_arith_operand (offset, Pmode))
+	      /* Matching address type with a 12bit offset and
+		 ADDRESS_LO_SUM.  */
+	      if (const_arith_operand (offset, Pmode)
+		  || GET_CODE (offset) == LO_SUM)
 		return "ld.w\t%0,%1";
 	      else
 		return "ldptr.w\t%0,%1";
 	    case 8:
-	      if (const_arith_operand (offset, Pmode))
+	      if (const_arith_operand (offset, Pmode)
+		  || GET_CODE (offset) == LO_SUM)
 		return "ld.d\t%0,%1";
 	      else
 		return "ldptr.d\t%0,%1";
 	    default:
 	      gcc_unreachable ();
 	    }
+	}
+
+      if (src_code == HIGH)
+	{
+	  rtx offset, x;
+	  split_const (XEXP (src, 0), &x, &offset);
+	  enum loongarch_symbol_type type = SYMBOL_PCREL;
+
+	  if (UNSPEC_ADDRESS_P (x))
+	     type = UNSPEC_ADDRESS_TYPE (x);
+
+	  if (type == SYMBOL_TLS_LE)
+	    return "lu12i.w\t%0,%h1";
+	  else
+	    return "pcalau12i\t%0,%h1";
 	}
 
       if (src_code == CONST_INT)
@@ -3438,7 +3700,8 @@ loongarch_output_move (rtx dest, rtx src)
 	}
     }
 
-  if (dest_code == REG && symbolic_operand (src, VOIDmode))
+  if (!TARGET_EXPLICIT_RELOCS
+      && dest_code == REG && symbolic_operand (src, VOIDmode))
     {
       if (loongarch_classify_symbol (src) == SYMBOL_PCREL)
 	return "la.local\t%0,%1";
@@ -4307,6 +4570,49 @@ loongarch_memmodel_needs_release_fence (enum memmodel model)
     }
 }
 
+/* Print symbolic operand OP, which is part of a HIGH or LO_SUM
+   in context CONTEXT.  HI_RELOC indicates a high-part reloc.  */
+
+static void
+loongarch_print_operand_reloc (FILE *file, rtx op, bool hi_reloc)
+{
+  const char *reloc;
+
+  switch (loongarch_classify_symbolic_expression (op))
+    {
+    case SYMBOL_PCREL:
+      reloc = hi_reloc ? "%pc_hi20" : "%pc_lo12";
+      break;
+
+    case SYMBOL_GOT_DISP:
+      reloc = hi_reloc ? "%got_pc_hi20" : "%got_pc_lo12";
+      break;
+
+    case SYMBOL_TLS_IE:
+      reloc = hi_reloc ? "%ie_pc_hi20" : "%ie_pc_lo12";
+      break;
+
+    case SYMBOL_TLS_LE:
+      reloc = hi_reloc ? "%le_hi20" : "%le_lo12";
+      break;
+
+    case SYMBOL_TLSGD:
+      reloc = hi_reloc ? "%gd_pc_hi20" : "%got_pc_lo12";
+      break;
+
+    case SYMBOL_TLSLDM:
+      reloc = hi_reloc ? "%ld_pc_hi20" : "%got_pc_lo12";
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  fprintf (file, "%s(", reloc);
+  output_addr_const (file, loongarch_strip_unspec_address (op));
+  fputc (')', file);
+}
+
 /* Implement TARGET_PRINT_OPERAND.  The LoongArch-specific operand codes are:
 
    'A'	Print a _DB suffix if the memory model requires a release.
@@ -4315,7 +4621,10 @@ loongarch_memmodel_needs_release_fence (enum memmodel model)
    'd'	Print CONST_INT OP in decimal.
    'F'	Print the FPU branch condition for comparison OP.
    'G'	Print a DBAR insn if the memory model requires a release.
+   'H'  Print address 52-61bit relocation associated with OP.
+   'h'  Print the high-part relocation associated with OP.
    'i'	Print i if the operand is not a register.
+   'L'  Print the low-part relocation associated with OP.
    'm'	Print one less than CONST_INT OP in decimal.
    'N'	Print the inverse of the integer branch condition for comparison OP.
    'T'	Print 'f' for (eq:CC ...), 't' for (ne:CC ...),
@@ -4372,9 +4681,19 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
 	fputs ("dbar\t0", file);
       break;
 
+    case 'h':
+      if (code == HIGH)
+	op = XEXP (op, 0);
+      loongarch_print_operand_reloc (file, op, true /* hi_reloc */);
+      break;
+
     case 'i':
       if (code != REG)
 	fputs ("i", file);
+      break;
+
+    case 'L':
+      loongarch_print_operand_reloc (file, op, false /* lo_reloc */);
       break;
 
     case 'm':
@@ -4515,6 +4834,11 @@ loongarch_print_operand_address (FILE *file, machine_mode /* mode  */, rtx x)
       case ADDRESS_REG_REG:
 	fprintf (file, "%s,%s", reg_names[REGNO (addr.reg)],
 				reg_names[REGNO (addr.offset)]);
+	return;
+
+      case ADDRESS_LO_SUM:
+	fprintf (file, "%s,", reg_names[REGNO (addr.reg)]);
+	loongarch_print_operand_reloc (file, addr.offset, false /* hi_reloc */);
 	return;
 
       case ADDRESS_CONST_INT:
@@ -5890,6 +6214,12 @@ loongarch_starting_frame_offset (void)
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT loongarch_trampoline_init
+
+#undef TARGET_MIN_ANCHOR_OFFSET
+#define TARGET_MIN_ANCHOR_OFFSET (-IMM_REACH/2)
+
+#undef TARGET_MAX_ANCHOR_OFFSET
+#define TARGET_MAX_ANCHOR_OFFSET (IMM_REACH/2-1)
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV loongarch_atomic_assign_expand_fenv

@@ -110,6 +110,10 @@
 (define_predicate "const_call_insn_operand"
   (match_code "const,symbol_ref,label_ref")
 {
+  /* Split symbol to high and low if return false.
+     If defined TARGET_CMODEL_LARGE, all symbol would be splited,
+     else if offset is not zero, the symbol would be splited.  */
+
   enum loongarch_symbol_type symbol_type;
   loongarch_symbolic_constant_p (op, &symbol_type);
 
@@ -125,7 +129,7 @@
       return 1;
 
     case SYMBOL_GOT_DISP:
-      if (!flag_plt)
+      if (TARGET_CMODEL_LARGE || !flag_plt)
 	return false;
       else
 	return 1;
@@ -213,7 +217,19 @@
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
-      return loongarch_symbolic_constant_p (op, &symbol_type);
+      return (loongarch_symbolic_constant_p (op, &symbol_type)
+	      && (!TARGET_EXPLICIT_RELOCS
+		  || !loongarch_split_symbol_type (symbol_type)));
+
+    case HIGH:
+      /* '-mno-explicit-relocs' don't generate high/low pairs.  */
+      if (!TARGET_EXPLICIT_RELOCS)
+	return false;
+
+      op = XEXP (op, 0);
+      return (loongarch_symbolic_constant_p (op, &symbol_type)
+	      && loongarch_split_symbol_type (symbol_type));
+
     default:
       return true;
     }

@@ -57,6 +57,10 @@
   ;; CRC
   UNSPEC_CRC
   UNSPEC_CRCC
+
+  UNSPEC_LOAD_FROM_GOT
+  UNSPEC_ORI_L_LO12
+  UNSPEC_TLS_LOW
 ])
 
 (define_c_enum "unspecv" [
@@ -1743,73 +1747,6 @@
   [(set_attr "move_type" "move,load,store")
    (set_attr "mode" "DF")])
 
-
-;; 128-bit integer moves
-
-(define_expand "movti"
-  [(set (match_operand:TI 0)
-	(match_operand:TI 1))]
-  "TARGET_64BIT"
-{
-  if (loongarch_legitimize_move (TImode, operands[0], operands[1]))
-    DONE;
-})
-
-(define_insn "*movti"
-  [(set (match_operand:TI 0 "nonimmediate_operand" "=r,r,r,m")
-	(match_operand:TI 1 "move_operand" "r,i,m,rJ"))]
-  "TARGET_64BIT
-   && (register_operand (operands[0], TImode)
-       || reg_or_0_operand (operands[1], TImode))"
-  { return loongarch_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store")
-   (set (attr "mode")
-    (if_then_else (eq_attr "move_type" "imul")
-		      (const_string "SI")
-		      (const_string "TI")))])
-
-;; 128-bit floating point moves
-
-(define_expand "movtf"
-  [(set (match_operand:TF 0)
-	(match_operand:TF 1))]
-  "TARGET_64BIT"
-{
-  if (loongarch_legitimize_move (TFmode, operands[0], operands[1]))
-    DONE;
-})
-
-;; This pattern handles both hard- and soft-float cases.
-(define_insn "*movtf"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=r,r,m,f,r,f,m")
-	(match_operand:TF 1 "move_operand" "rG,m,rG,rG,f,m,f"))]
-  "TARGET_64BIT
-   && (register_operand (operands[0], TFmode)
-       || reg_or_0_operand (operands[1], TFmode))"
-  "#"
-  [(set_attr "move_type" "move,load,store,mgtf,mftg,fpload,fpstore")
-   (set_attr "mode" "TF")])
-
-(define_split
-  [(set (match_operand:MOVE64 0 "nonimmediate_operand")
-	(match_operand:MOVE64 1 "move_operand"))]
-  "reload_completed && loongarch_split_move_insn_p (operands[0], operands[1])"
-  [(const_int 0)]
-{
-  loongarch_split_move_insn (operands[0], operands[1], curr_insn);
-  DONE;
-})
-
-(define_split
-  [(set (match_operand:MOVE128 0 "nonimmediate_operand")
-	(match_operand:MOVE128 1 "move_operand"))]
-  "reload_completed && loongarch_split_move_insn_p (operands[0], operands[1])"
-  [(const_int 0)]
-{
-  loongarch_split_move_insn (operands[0], operands[1], curr_insn);
-  DONE;
-})
-
 ;; Emit a doubleword move in which exactly one of the operands is
 ;; a floating-point register.  We can't just emit two normal moves
 ;; because of the constraints imposed by the FPU register model;
@@ -1937,6 +1874,57 @@
   "lu52i.d\t%0,%1,%X3>>52"
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])
+
+;; Instructions for adding the low 12 bits of an address to a register.
+;; Operand 2 is the address: loongarch_print_operand works out which relocation
+;; should be applied.
+
+(define_insn "*low<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+ (lo_sum:P (match_operand:P 1 "register_operand" " r")
+     (match_operand:P 2 "symbolic_operand" "")))]
+  "TARGET_EXPLICIT_RELOCS"
+  "addi.<d>\t%0,%1,%L2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@tls_low<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(mem:P (lo_sum:P (match_operand:P 1 "register_operand" "r")
+				    (match_operand:P 2 "symbolic_operand" "")))]
+	UNSPEC_TLS_LOW))]
+  "TARGET_EXPLICIT_RELOCS"
+  "addi.<d>\t%0,%1,%L2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+
+;; Instructions for loading address from GOT entry.
+;; operands[1] is pc plus the high half of the address difference with the got
+;; entry;
+;; operands[2] is low 12 bits for low 12 bit of the address difference with the
+;; got entry.
+;; loongarch_print_operand works out which relocation should be applied.
+
+(define_insn "@ld_from_got<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(mem:P (lo_sum:P
+				(match_operand:P 1 "register_operand" "r")
+				(match_operand:P 2 "symbolic_operand")))]
+	UNSPEC_LOAD_FROM_GOT))]
+  "TARGET_EXPLICIT_RELOCS"
+  "ld.<d>\t%0,%1,%L2"
+  [(set_attr "type" "move")]
+)
+
+(define_insn "@ori_l_lo12<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand:P 1 "register_operand" "r")
+		    (match_operand:P 2 "symbolic_operand")]
+	UNSPEC_ORI_L_LO12))]
+  ""
+  "ori\t%0,%1,%L2"
+  [(set_attr "type" "move")]
+)
 
 ;; Convert floating-point numbers to integers
 (define_insn "frint_<fmt>"

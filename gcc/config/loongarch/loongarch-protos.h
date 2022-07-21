@@ -77,8 +77,6 @@ extern rtx loongarch_legitimize_call_address (rtx);
 extern rtx loongarch_subword (rtx, bool);
 extern bool loongarch_split_move_p (rtx, rtx);
 extern void loongarch_split_move (rtx, rtx, rtx);
-extern bool loongarch_split_move_insn_p (rtx, rtx);
-extern void loongarch_split_move_insn (rtx, rtx, rtx);
 extern const char *loongarch_output_move (rtx, rtx);
 extern bool loongarch_cfun_has_cprestore_slot_p (void);
 #ifdef RTX_CODE
@@ -160,6 +158,7 @@ extern rtx loongarch_expand_thread_pointer (rtx);
 extern bool loongarch_eh_uses (unsigned int);
 extern bool loongarch_epilogue_uses (unsigned int);
 extern bool loongarch_load_store_bonding_p (rtx *, machine_mode, bool);
+extern bool loongarch_split_symbol_type (enum loongarch_symbol_type);
 
 typedef rtx (*mulsidi3_gen_fn) (rtx, rtx, rtx);
 
