@@ -2425,13 +2425,13 @@ extern bool is_byte_access_type (tree);
 extern bool
 comptypes (tree, tree, int);
 
-extern tree canonical_eh_spec			(tree);
+extern tree canonical_eh_spec (tree);
 
-extern int cp_tree_operand_length		(const_tree);
+extern int cp_tree_operand_length (const_tree);
 
-extern bool rs_tree_equal			(tree, tree);
+extern bool rs_tree_equal (tree, tree);
 
-extern bool compparms				(const_tree, const_tree);
+extern bool compparms (const_tree, const_tree);
 
 extern tree
 rs_build_qualified_type_real (tree, int, tsubst_flags_t);
@@ -2443,11 +2443,12 @@ extern bool similar_type_p (tree, tree);
 
 extern bool rs_tree_equal (tree, tree);
 
-extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
+extern bool
+vector_targets_convertible_p (const_tree t1, const_tree t2);
 
 extern bool same_type_ignoring_top_level_qualifiers_p (tree, tree);
 
-extern bool comp_ptr_ttypes_const		(tree, tree, compare_bounds_t);
+extern bool comp_ptr_ttypes_const (tree, tree, compare_bounds_t);
 
 extern tree
 get_class_binding_direct (tree, tree, bool want_type = false);
@@ -2710,6 +2711,23 @@ vec_safe_push (releasing_vec &r, const tree &t CXX_MEM_STAT_INFO)
 }
 
 inline bool
+vec_safe_reserve (releasing_vec &r, unsigned n,
+		  bool e = false CXX_MEM_STAT_INFO)
+{
+  return vec_safe_reserve (*&r, n, e PASS_MEM_STAT);
+}
+inline unsigned
+vec_safe_length (releasing_vec &r)
+{
+  return r->length ();
+}
+inline void
+vec_safe_splice (releasing_vec &r, vec<tree, va_gc> *p CXX_MEM_STAT_INFO)
+{
+  vec_safe_splice (*&r, p PASS_MEM_STAT);
+}
+
+inline bool
 null_node_p (const_tree expr)
 {
   STRIP_ANY_LOCATION_WRAPPER (expr);
@@ -2729,6 +2747,9 @@ cxx_incomplete_type_error (const_tree value, const_tree type)
 {
   cxx_incomplete_type_diagnostic (value, type, DK_ERROR);
 }
+
+extern location_t
+location_of (tree t);
 
 } // namespace Rust
 

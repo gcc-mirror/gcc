@@ -2228,8 +2228,8 @@ set_array_type_canon (tree t, tree elt_type, tree index_type, bool dep)
 	   || (index_type && TYPE_CANONICAL (index_type) != index_type))
     TYPE_CANONICAL (t)
       = build_cplus_array_type (TYPE_CANONICAL (elt_type),
-				index_type
-				? TYPE_CANONICAL (index_type) : index_type,
+				index_type ? TYPE_CANONICAL (index_type)
+					   : index_type,
 				dep);
   else
     TYPE_CANONICAL (t) = t;
@@ -2289,12 +2289,10 @@ bool
 is_byte_access_type (tree type)
 {
   type = TYPE_MAIN_VARIANT (type);
-  if (type == char_type_node
-      || type == unsigned_char_type_node)
+  if (type == char_type_node || type == unsigned_char_type_node)
     return true;
 
-  return (TREE_CODE (type) == ENUMERAL_TYPE
-	  && TYPE_CONTEXT (type) == std_node
+  return (TREE_CODE (type) == ENUMERAL_TYPE && TYPE_CONTEXT (type) == std_node
 	  && !strcmp ("byte", TYPE_NAME_STRING (type)));
 }
 
@@ -2318,8 +2316,8 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
 
   if (elt_type != TYPE_MAIN_VARIANT (elt_type))
     /* Start with an array of the TYPE_MAIN_VARIANT.  */
-    t = build_cplus_array_type (TYPE_MAIN_VARIANT (elt_type),
-				index_type, dependent);
+    t = build_cplus_array_type (TYPE_MAIN_VARIANT (elt_type), index_type,
+				dependent);
   else if (dependent)
     {
       /* Since type_hash_canon calls layout_type, we need to use our own
@@ -2329,14 +2327,14 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
 
       if (cplus_array_htab == NULL)
 	cplus_array_htab = hash_table<cplus_array_hasher>::create_ggc (61);
-      
+
       hash = TYPE_UID (elt_type);
       if (index_type)
 	hash ^= TYPE_UID (index_type);
       cai.type = elt_type;
       cai.domain = index_type;
 
-      tree *e = cplus_array_htab->find_slot_with_hash (&cai, hash, INSERT); 
+      tree *e = cplus_array_htab->find_slot_with_hash (&cai, hash, INSERT);
       if (*e)
 	/* We have found the type: we're done.  */
 	return (tree) *e;
@@ -2370,8 +2368,7 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
     {
       tree m = t;
       for (t = m; t; t = TYPE_NEXT_VARIANT (t))
-	if (TREE_TYPE (t) == elt_type
-	    && TYPE_NAME (t) == NULL_TREE
+	if (TREE_TYPE (t) == elt_type && TYPE_NAME (t) == NULL_TREE
 	    && TYPE_ATTRIBUTES (t) == NULL_TREE)
 	  break;
       if (!t)
@@ -2404,13 +2401,13 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
 
   /* Push these needs up to the ARRAY_TYPE so that initialization takes
      place more easily.  */
-  bool needs_ctor = (TYPE_NEEDS_CONSTRUCTING (t)
-		     = TYPE_NEEDS_CONSTRUCTING (elt_type));
+  bool needs_ctor
+    = (TYPE_NEEDS_CONSTRUCTING (t) = TYPE_NEEDS_CONSTRUCTING (elt_type));
   bool needs_dtor = (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 		     = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (elt_type));
 
-  if (!dependent && t == TYPE_MAIN_VARIANT (t)
-      && !COMPLETE_TYPE_P (t) && COMPLETE_TYPE_P (elt_type))
+  if (!dependent && t == TYPE_MAIN_VARIANT (t) && !COMPLETE_TYPE_P (t)
+      && COMPLETE_TYPE_P (elt_type))
     {
       /* The element type has been completed since the last time we saw
 	 this array type; update the layout and 'tor flags for any variants
@@ -2539,8 +2536,8 @@ rs_build_qualified_type_real (tree type, int type_quals,
 
   /* A restrict-qualified type must be a pointer (or reference)
      to object or incomplete type. */
-  if ((type_quals & TYPE_QUAL_RESTRICT)
-      && TREE_CODE (type) != TYPENAME_TYPE && !INDIRECT_TYPE_P (type))
+  if ((type_quals & TYPE_QUAL_RESTRICT) && TREE_CODE (type) != TYPENAME_TYPE
+      && !INDIRECT_TYPE_P (type))
     {
       bad_quals |= TYPE_QUAL_RESTRICT;
       type_quals &= ~TYPE_QUAL_RESTRICT;
@@ -4015,4 +4012,25 @@ require_deduced_type (tree decl, tsubst_flags_t complain)
 {
   return true;
 }
+
+/* Return the location of a tree passed to %+ formats.  */
+
+location_t
+location_of (tree t)
+{
+  if (TYPE_P (t))
+    {
+      t = TYPE_MAIN_DECL (t);
+      if (t == NULL_TREE)
+	return input_location;
+    }
+  else if (TREE_CODE (t) == OVERLOAD)
+    t = OVL_FIRST (t);
+
+  if (DECL_P (t))
+    return DECL_SOURCE_LOCATION (t);
+
+  return EXPR_LOCATION (t);
+}
+
 } // namespace Rust
