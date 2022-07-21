@@ -971,7 +971,7 @@ region_model::impl_call_va_arg (const call_details &cd)
 	  const frame_region *frame_reg = arg_reg->get_frame_region ();
 	  unsigned next_arg_idx = arg_reg->get_index ();
 
-	  if (get_stack_depth () > 1)
+	  if (frame_reg->get_stack_depth () > 1)
 	    {
 	      /* The interprocedural case: the called frame will have been
 		 populated with any variadic aruguments.
@@ -1009,7 +1009,7 @@ region_model::impl_call_va_arg (const call_details &cd)
 		 any specific var_arg_regions populated within it.
 		 We already have a conjured_svalue for the result, so leave
 		 it untouched.  */
-	      gcc_assert (get_stack_depth () == 1);
+	      gcc_assert (frame_reg->get_stack_depth () == 1);
 	    }
 
 	  if (saw_problem)
