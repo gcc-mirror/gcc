@@ -1938,6 +1938,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
   (bit_not (bit_xor (view_convert @0) @1))))
 
+/* ~(a ^ b) is a == b for truth valued a and b.  */
+(simplify
+ (bit_not (bit_xor:s truth_valued_p@0 truth_valued_p@1))
+ (if (!VECTOR_TYPE_P (type))
+  (convert (eq @0 @1))))
+
 /* (x & ~m) | (y & m) -> ((x ^ y) & m) ^ x */
 (simplify
  (bit_ior:c (bit_and:cs @0 (bit_not @2)) (bit_and:cs @1 @2))
