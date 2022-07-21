@@ -212,53 +212,96 @@ public:
     diagnostic_metadata m;
     /* CWE-129: "Improper Validation of Array Index".  */
     m.add_cwe (129);
-    switch (m_has_bounds)
-      {
-      default:
-	gcc_unreachable ();
-      case BOUNDS_NONE:
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "use of attacker-controlled value %qE"
-			     " in array lookup without bounds checking",
-			     m_arg);
-	break;
-      case BOUNDS_UPPER:
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "use of attacker-controlled value %qE"
-			     " in array lookup without checking for negative",
-			     m_arg);
-	break;
-      case BOUNDS_LOWER:
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "use of attacker-controlled value %qE"
-			     " in array lookup without upper-bounds checking",
-			     m_arg);
-	break;
-      }
+    if (m_arg)
+      switch (m_has_bounds)
+	{
+	default:
+	  gcc_unreachable ();
+	case BOUNDS_NONE:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value %qE"
+			       " in array lookup without bounds checking",
+			       m_arg);
+	  break;
+	case BOUNDS_UPPER:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value %qE"
+			       " in array lookup without checking for negative",
+			       m_arg);
+	  break;
+	case BOUNDS_LOWER:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value %qE"
+			       " in array lookup without upper-bounds checking",
+			       m_arg);
+	  break;
+	}
+    else
+      switch (m_has_bounds)
+	{
+	default:
+	  gcc_unreachable ();
+	case BOUNDS_NONE:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value"
+			       " in array lookup without bounds checking");
+	  break;
+	case BOUNDS_UPPER:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value"
+			       " in array lookup without checking for"
+			       " negative");
+	  break;
+	case BOUNDS_LOWER:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value"
+			       " in array lookup without upper-bounds"
+			       " checking");
+	  break;
+	}
   }
 
   label_text describe_final_event (const evdesc::final_event &ev) final override
   {
-    switch (m_has_bounds)
-      {
-      default:
-	gcc_unreachable ();
-      case BOUNDS_NONE:
-	return ev.formatted_print
-	  ("use of attacker-controlled value %qE in array lookup"
-	   " without bounds checking",
-	   m_arg);
-      case BOUNDS_UPPER:
-	return ev.formatted_print
-	  ("use of attacker-controlled value %qE"
-	   " in array lookup without checking for negative",
-	   m_arg);
-      case BOUNDS_LOWER:
-	return ev.formatted_print
-	  ("use of attacker-controlled value %qE"
-	   " in array lookup without upper-bounds checking",
-	   m_arg);
-      }
+    if (m_arg)
+      switch (m_has_bounds)
+	{
+	default:
+	  gcc_unreachable ();
+	case BOUNDS_NONE:
+	  return ev.formatted_print
+	    ("use of attacker-controlled value %qE in array lookup"
+	     " without bounds checking",
+	     m_arg);
+	case BOUNDS_UPPER:
+	  return ev.formatted_print
+	    ("use of attacker-controlled value %qE"
+	     " in array lookup without checking for negative",
+	     m_arg);
+	case BOUNDS_LOWER:
+	  return ev.formatted_print
+	    ("use of attacker-controlled value %qE"
+	     " in array lookup without upper-bounds checking",
+	     m_arg);
+	}
+    else
+      switch (m_has_bounds)
+	{
+	default:
+	  gcc_unreachable ();
+	case BOUNDS_NONE:
+	  return ev.formatted_print
+	    ("use of attacker-controlled value in array lookup"
+	     " without bounds checking");
+	case BOUNDS_UPPER:
+	  return ev.formatted_print
+	    ("use of attacker-controlled value"
+	     " in array lookup without checking for negative");
+	case BOUNDS_LOWER:
+	  return ev.formatted_print
+	    ("use of attacker-controlled value"
+	     " in array lookup without upper-bounds checking");
+	}
   }
 };
 
@@ -394,50 +437,88 @@ public:
   {
     diagnostic_metadata m;
     m.add_cwe (129);
-    switch (m_has_bounds)
-      {
-      default:
-	gcc_unreachable ();
-      case BOUNDS_NONE:
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "use of attacker-controlled value %qE as size"
-			     " without bounds checking",
-			     m_arg);
-	break;
-      case BOUNDS_UPPER:
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "use of attacker-controlled value %qE as size"
-			     " without lower-bounds checking",
-			     m_arg);
-	break;
-      case BOUNDS_LOWER:
-	return warning_meta (rich_loc, m, get_controlling_option (),
-			     "use of attacker-controlled value %qE as size"
-			     " without upper-bounds checking",
-			     m_arg);
-	break;
-      }
+    if (m_arg)
+      switch (m_has_bounds)
+	{
+	default:
+	  gcc_unreachable ();
+	case BOUNDS_NONE:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value %qE as size"
+			       " without bounds checking",
+			       m_arg);
+	  break;
+	case BOUNDS_UPPER:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value %qE as size"
+			       " without lower-bounds checking",
+			       m_arg);
+	  break;
+	case BOUNDS_LOWER:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value %qE as size"
+			       " without upper-bounds checking",
+			       m_arg);
+	  break;
+	}
+    else
+      switch (m_has_bounds)
+	{
+	default:
+	  gcc_unreachable ();
+	case BOUNDS_NONE:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value as size"
+			       " without bounds checking");
+	  break;
+	case BOUNDS_UPPER:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value as size"
+			       " without lower-bounds checking");
+	  break;
+	case BOUNDS_LOWER:
+	  return warning_meta (rich_loc, m, get_controlling_option (),
+			       "use of attacker-controlled value as size"
+			       " without upper-bounds checking");
+	  break;
+	}
   }
 
   label_text describe_final_event (const evdesc::final_event &ev) final override
   {
-    switch (m_has_bounds)
-      {
-      default:
-	gcc_unreachable ();
-      case BOUNDS_NONE:
-	return ev.formatted_print ("use of attacker-controlled value %qE"
-				   " as size without bounds checking",
-				   m_arg);
-      case BOUNDS_UPPER:
-	return ev.formatted_print ("use of attacker-controlled value %qE"
-				   " as size without lower-bounds checking",
-				   m_arg);
-      case BOUNDS_LOWER:
-	return ev.formatted_print ("use of attacker-controlled value %qE"
-				   " as size without upper-bounds checking",
-				   m_arg);
-      }
+    if (m_arg)
+      switch (m_has_bounds)
+	{
+	default:
+	  gcc_unreachable ();
+	case BOUNDS_NONE:
+	  return ev.formatted_print ("use of attacker-controlled value %qE"
+				     " as size without bounds checking",
+				     m_arg);
+	case BOUNDS_UPPER:
+	  return ev.formatted_print ("use of attacker-controlled value %qE"
+				     " as size without lower-bounds checking",
+				     m_arg);
+	case BOUNDS_LOWER:
+	  return ev.formatted_print ("use of attacker-controlled value %qE"
+				     " as size without upper-bounds checking",
+				     m_arg);
+	}
+    else
+      switch (m_has_bounds)
+	{
+	default:
+	  gcc_unreachable ();
+	case BOUNDS_NONE:
+	  return ev.formatted_print ("use of attacker-controlled value"
+				     " as size without bounds checking");
+	case BOUNDS_UPPER:
+	  return ev.formatted_print ("use of attacker-controlled value"
+				     " as size without lower-bounds checking");
+	case BOUNDS_LOWER:
+	  return ev.formatted_print ("use of attacker-controlled value"
+				     " as size without upper-bounds checking");
+	}
   }
 };
 
