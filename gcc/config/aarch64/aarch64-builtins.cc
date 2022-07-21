@@ -2808,6 +2808,28 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 	break;
 
+     BUILTIN_VDC (BINOP, combine, 0, AUTO_FP)
+     BUILTIN_VD_I (BINOPU, combine, 0, NONE)
+     BUILTIN_VDC_P (BINOPP, combine, 0, NONE)
+	{
+	  tree first_part, second_part;
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      second_part = args[0];
+	      first_part = args[1];
+	    }
+	  else
+	    {
+	      first_part = args[0];
+	      second_part = args[1];
+	    }
+	  tree ret_type = gimple_call_return_type (stmt);
+	  tree ctor = build_constructor_va (ret_type, 2, NULL_TREE, first_part,
+					    NULL_TREE, second_part);
+	  new_stmt = gimple_build_assign (gimple_call_lhs (stmt), ctor);
+	}
+	break;
+
      /*lower store and load neon builtins to gimple.  */
      BUILTIN_VALL_F16 (LOAD1, ld1, 0, LOAD)
      BUILTIN_VDQ_I (LOAD1_U, ld1, 0, LOAD)
