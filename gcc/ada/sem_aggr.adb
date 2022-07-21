@@ -3182,7 +3182,7 @@ package body Sem_Aggr is
             end if;
          end;
 
-      elsif  Present (Add_Named_Subp) then
+      elsif Present (Add_Named_Subp) then
          declare
             --  Retrieves types of container, key, and element from the
             --  specified insertion procedure.
@@ -5048,9 +5048,7 @@ package body Sem_Aggr is
       --    OTHERS cannot be used.
       --    Positional and named associations cannot be mixed.
 
-      if Present (Component_Associations (N))
-        and then Present (First (Component_Associations (N)))
-      then
+      if Present (Component_Associations (N)) then
          declare
             Assoc : Node_Id;
 
