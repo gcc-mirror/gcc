@@ -7116,9 +7116,10 @@ extract_call_expr (tree call)
       default:;
       }
 
-  gcc_assert (TREE_CODE (call) == CALL_EXPR
-	      || TREE_CODE (call) == AGGR_INIT_EXPR
-	      || call == error_mark_node);
+  if (TREE_CODE (call) != CALL_EXPR
+      && TREE_CODE (call) != AGGR_INIT_EXPR
+      && call != error_mark_node)
+    return NULL_TREE;
   return call;
 }
 
