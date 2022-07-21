@@ -794,12 +794,13 @@ aarch64_general_mangle_builtin_type (const_tree type)
   return NULL;
 }
 
+/* Helper function for aarch64_simd_builtin_type.  */
 static tree
-aarch64_simd_builtin_std_type (machine_mode mode,
-			       enum aarch64_type_qualifiers q)
+aarch64_int_or_fp_type (machine_mode mode,
+			enum aarch64_type_qualifiers qualifiers)
 {
-#define QUAL_TYPE(M)  \
-  ((q == qualifier_none) ? int##M##_type_node : unsigned_int##M##_type_node);
+#define QUAL_TYPE(M) ((qualifiers & qualifier_unsigned) \
+		       ? unsigned_int##M##_type_node : int##M##_type_node);
   switch (mode)
     {
     case E_QImode:
@@ -832,16 +833,14 @@ aarch64_simd_builtin_std_type (machine_mode mode,
 #undef QUAL_TYPE
 }
 
+/* Helper function for aarch64_simd_builtin_type.  */
 static tree
-aarch64_lookup_simd_builtin_type (machine_mode mode,
-				  enum aarch64_type_qualifiers q)
+aarch64_lookup_simd_type_in_table (machine_mode mode,
+				   enum aarch64_type_qualifiers qualifiers)
 {
   int i;
   int nelts = ARRAY_SIZE (aarch64_simd_types);
-
-  /* Non-poly scalar modes map to standard types not in the table.  */
-  if (q != qualifier_poly && !VECTOR_MODE_P (mode))
-    return aarch64_simd_builtin_std_type (mode, q);
+  int q = qualifiers & (qualifier_poly | qualifier_unsigned);
 
   for (i = 0; i < nelts; i++)
     {
@@ -858,16 +857,32 @@ aarch64_lookup_simd_builtin_type (machine_mode mode,
   return NULL_TREE;
 }
 
+/* Return a type for an operand with specified mode and qualifiers.  */
 static tree
 aarch64_simd_builtin_type (machine_mode mode,
-			   bool unsigned_p, bool poly_p)
+			   enum aarch64_type_qualifiers qualifiers)
 {
-  if (poly_p)
-    return aarch64_lookup_simd_builtin_type (mode, qualifier_poly);
-  else if (unsigned_p)
-    return aarch64_lookup_simd_builtin_type (mode, qualifier_unsigned);
+  tree type = NULL_TREE;
+
+  /* For pointers, we want a pointer to the basic type of the vector.  */
+  if ((qualifiers & qualifier_pointer) && VECTOR_MODE_P (mode))
+    mode = GET_MODE_INNER (mode);
+
+  /* Non-poly scalar modes map to standard types not in the table.  */
+  if ((qualifiers & qualifier_poly) || VECTOR_MODE_P (mode))
+    type = aarch64_lookup_simd_type_in_table (mode, qualifiers);
   else
-    return aarch64_lookup_simd_builtin_type (mode, qualifier_none);
+    type = aarch64_int_or_fp_type (mode, qualifiers);
+
+  gcc_assert (type != NULL_TREE);
+
+  /* Add qualifiers.  */
+  if (qualifiers & qualifier_const)
+    type = build_qualified_type (type, TYPE_QUAL_CONST);
+  if (qualifiers & qualifier_pointer)
+    type = build_pointer_type (type);
+
+  return type;
 }
  
 static void
@@ -1116,12 +1131,11 @@ aarch64_init_fcmla_laneq_builtins (void)
     {
       aarch64_fcmla_laneq_builtin_datum* d
 	= &aarch64_fcmla_lane_builtin_data[i];
-      tree argtype = aarch64_lookup_simd_builtin_type (d->mode, qualifier_none);
+      tree argtype = aarch64_simd_builtin_type (d->mode, qualifier_none);
       machine_mode quadmode = GET_MODE_2XWIDER_MODE (d->mode).require ();
-      tree quadtype
-	= aarch64_lookup_simd_builtin_type (quadmode, qualifier_none);
+      tree quadtype = aarch64_simd_builtin_type (quadmode, qualifier_none);
       tree lanetype
-	= aarch64_simd_builtin_std_type (SImode, qualifier_lane_pair_index);
+	= aarch64_simd_builtin_type (SImode, qualifier_lane_pair_index);
       tree ftype = build_function_type_list (argtype, argtype, argtype,
 					     quadtype, lanetype, NULL_TREE);
       tree attrs = aarch64_get_attributes (FLAG_FP, d->mode);
@@ -1216,23 +1230,7 @@ aarch64_init_simd_builtin_functions (bool called_from_pragma)
 	  if (qualifiers & qualifier_map_mode)
 	      op_mode = d->mode;
 
-	  /* For pointers, we want a pointer to the basic type
-	     of the vector.  */
-	  if (qualifiers & qualifier_pointer && VECTOR_MODE_P (op_mode))
-	    op_mode = GET_MODE_INNER (op_mode);
-
-	  eltype = aarch64_simd_builtin_type
-		     (op_mode,
-		      (qualifiers & qualifier_unsigned) != 0,
-		      (qualifiers & qualifier_poly) != 0);
-	  gcc_assert (eltype != NULL);
-
-	  /* Add qualifiers.  */
-	  if (qualifiers & qualifier_const)
-	    eltype = build_qualified_type (eltype, TYPE_QUAL_CONST);
-
-	  if (qualifiers & qualifier_pointer)
-	      eltype = build_pointer_type (eltype);
+	  eltype = aarch64_simd_builtin_type (op_mode, qualifiers);
 
 	  /* If we have reached arg_num == 0, we are at a non-void
 	     return type.  Otherwise, we are still processing
@@ -1389,14 +1387,13 @@ aarch64_init_simd_builtins (void)
 static void
 aarch64_init_crc32_builtins ()
 {
-  tree usi_type = aarch64_simd_builtin_std_type (SImode, qualifier_unsigned);
+  tree usi_type = aarch64_simd_builtin_type (SImode, qualifier_unsigned);
   unsigned int i = 0;
 
   for (i = 0; i < ARRAY_SIZE (aarch64_crc_builtin_data); ++i)
     {
       aarch64_crc_builtin_datum* d = &aarch64_crc_builtin_data[i];
-      tree argtype = aarch64_simd_builtin_std_type (d->mode,
-						    qualifier_unsigned);
+      tree argtype = aarch64_simd_builtin_type (d->mode, qualifier_unsigned);
       tree ftype = build_function_type_list (usi_type, usi_type, argtype, NULL_TREE);
       tree attrs = aarch64_get_attributes (FLAG_NONE, d->mode);
       tree fndecl
