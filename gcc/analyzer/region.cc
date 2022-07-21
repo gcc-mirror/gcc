@@ -1152,6 +1152,11 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
       if (binding->symbolic_p ())
 	return NULL;
 
+      /* If we don't care about tracking the content of this region, then
+	 it's unused, and the value doesn't matter.  */
+      if (!tracked_p ())
+	return NULL;
+
       binding_cluster c (this);
       c.zero_fill_region (mgr->get_store_manager (), this);
       return mgr->get_or_create_compound_svalue (TREE_TYPE (m_decl),
