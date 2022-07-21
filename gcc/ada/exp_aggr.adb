@@ -6536,7 +6536,7 @@ package body Exp_Aggr is
                     Prefix => New_Occurrence_Of (TmpE, Loc),
                     Expressions =>
                       New_List (New_Occurrence_Of (Index_Id, Loc))),
-               Expression => New_Copy_Tree (Expression (Assoc)));
+               Expression => Copy_Separate_Tree (Expression (Assoc)));
 
             --  Advance index position for insertion.
 
@@ -7500,11 +7500,11 @@ package body Exp_Aggr is
 
             --  Iterated_Component_Association.
 
-            Loop_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => Chars (Defining_Identifier (Comp)));
-
             if Present (Iterator_Specification (Comp)) then
+               Loop_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => Chars (Defining_Identifier
+                              (Iterator_Specification (Comp))));
                L_Iteration_Scheme :=
                  Make_Iteration_Scheme (Loc,
                    Iterator_Specification => Iterator_Specification (Comp));
@@ -7513,6 +7513,9 @@ package body Exp_Aggr is
                --  Loop_Parameter_Specification is parsed with a choice list.
                --  where the range is the first (and only) choice.
 
+               Loop_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => Chars (Defining_Identifier (Comp)));
                L_Range := Relocate_Node (First (Discrete_Choices (Comp)));
 
                L_Iteration_Scheme :=

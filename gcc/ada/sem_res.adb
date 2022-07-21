@@ -3163,9 +3163,21 @@ package body Sem_Res is
                    = N_Iterated_Component_Association
                  and then Is_Boolean_Type (Typ)
                then
-                  Error_Msg_N -- CODEFIX
-                    ("missing ALL or SOME in quantified expression",
-                     Defining_Identifier (First (Component_Associations (N))));
+                  if Present
+                       (Iterator_Specification
+                         (First (Component_Associations (N))))
+                  then
+                     Error_Msg_N -- CODEFIX
+                       ("missing ALL or SOME in quantified expression",
+                        Defining_Identifier
+                          (Iterator_Specification
+                            (First (Component_Associations (N)))));
+                  else
+                     Error_Msg_N -- CODEFIX
+                       ("missing ALL or SOME in quantified expression",
+                        Defining_Identifier
+                          (First (Component_Associations (N))));
+                  end if;
 
                --  For an operator with no interpretation, check whether
                --  one of its operands may be a user-defined literal.

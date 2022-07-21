@@ -3339,7 +3339,9 @@ package body Sem_Elab is
                Traverse_List (Else_Actions (Scen));
 
             elsif Nkind (Scen) in
-                    N_Component_Association | N_Iterated_Component_Association
+                    N_Component_Association
+                  | N_Iterated_Component_Association
+                  | N_Iterated_Element_Association
             then
                Traverse_List (Loop_Actions (Scen));
 

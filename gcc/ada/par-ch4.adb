@@ -3554,7 +3554,6 @@ package body Ch4 is
          when Tok_Of =>
             Restore_Scan_State (State);
             Scan;  -- past OF
-            Set_Defining_Identifier (Assoc_Node, Id);
             Iter_Spec := P_Iterator_Specification (Id);
             Set_Iterator_Specification (Assoc_Node, Iter_Spec);
 

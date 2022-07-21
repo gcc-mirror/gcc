@@ -3053,7 +3053,8 @@ package body Sem_Aggr is
 
          elsif Present (Iterator_Specification (Comp)) then
             Copy    := Copy_Separate_Tree (Iterator_Specification (Comp));
-            Id_Name := Chars (Defining_Identifier (Comp));
+            Id_Name :=
+              Chars (Defining_Identifier (Iterator_Specification (Comp)));
 
             Analyze (Copy);
             Typ := Etype (Defining_Identifier (Copy));
