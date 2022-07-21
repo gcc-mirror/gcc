@@ -2108,6 +2108,21 @@ error_at (rich_location *richloc, const char *gmsgid, ...)
   va_end (ap);
 }
 
+/* Same as above, but with metadata.  */
+
+void
+error_meta (rich_location *richloc, const diagnostic_metadata &metadata,
+	    const char *gmsgid, ...)
+{
+  gcc_assert (richloc);
+
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  diagnostic_impl (richloc, &metadata, -1, gmsgid, &ap, DK_ERROR);
+  va_end (ap);
+}
+
 /* "Sorry, not implemented."  Use for a language feature which is
    required by the relevant specification but not implemented by GCC.
    An object file will not be produced.  */
