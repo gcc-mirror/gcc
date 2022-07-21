@@ -107,6 +107,7 @@ private:
       RFD_FILL		// Scan DOM tree, updating important nodes.
     };
   bool range_from_dom (vrange &r, tree name, basic_block bb, enum rfd_mode);
+  void resolve_dom (vrange &r, tree name, basic_block bb);
   void range_of_def (vrange &r, tree name, basic_block bb = NULL);
   void entry_range (vrange &r, tree expr, basic_block bb, enum rfd_mode);
   void exit_range (vrange &r, tree expr, basic_block bb, enum rfd_mode);

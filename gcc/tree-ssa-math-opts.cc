@@ -2226,8 +2226,7 @@ gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, location_t loc, tree arg)
 }
 
 /* Go through all calls to sin, cos and cexpi and call execute_cse_sincos_1
-   on the SSA_NAME argument of each of them.  Also expand powi(x,n) into
-   an optimal number of multiplies, when n is a constant.  */
+   on the SSA_NAME argument of each of them.  */
 
 namespace {
 
@@ -2254,8 +2253,6 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
     {
-      /* We no longer require either sincos or cexp, since powi expansion
-	 piggybacks on this pass.  */
       return optimize;
     }
 
@@ -2275,24 +2272,15 @@ pass_cse_sincos::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator gsi;
-      bool cleanup_eh = false;
 
       for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
         {
 	  gimple *stmt = gsi_stmt (gsi);
 
-	  /* Only the last stmt in a bb could throw, no need to call
-	     gimple_purge_dead_eh_edges if we change something in the middle
-	     of a basic block.  */
-	  cleanup_eh = false;
-
 	  if (is_gimple_call (stmt)
 	      && gimple_call_lhs (stmt))
 	    {
-	      tree arg, arg0, arg1, result;
-	      HOST_WIDE_INT n;
-	      location_t loc;
-
+	      tree arg;
 	      switch (gimple_call_combined_fn (stmt))
 		{
 		CASE_CFN_COS:
@@ -2309,7 +2297,94 @@ pass_cse_sincos::execute (function *fun)
 		  if (TREE_CODE (arg) == SSA_NAME)
 		    cfg_changed |= execute_cse_sincos_1 (arg);
 		  break;
+		default:
+		  break;
+		}
+	    }
+	}
+    }
 
+  statistics_counter_event (fun, "sincos statements inserted",
+			    sincos_stats.inserted);
+  statistics_counter_event (fun, "conv statements removed",
+			    sincos_stats.conv_removed);
+
+  return cfg_changed ? TODO_cleanup_cfg : 0;
+}
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_cse_sincos (gcc::context *ctxt)
+{
+  return new pass_cse_sincos (ctxt);
+}
+
+/* Expand powi(x,n) into an optimal number of multiplies, when n is a constant.
+   Also expand CABS.  */
+namespace {
+
+const pass_data pass_data_expand_powcabs =
+{
+  GIMPLE_PASS, /* type */
+  "powcabs", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_TREE_POWCABS, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_update_ssa, /* todo_flags_finish */
+};
+
+class pass_expand_powcabs : public gimple_opt_pass
+{
+public:
+  pass_expand_powcabs (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_expand_powcabs, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate (function *) final override
+    {
+      return optimize;
+    }
+
+  unsigned int execute (function *) final override;
+
+}; // class pass_expand_powcabs
+
+unsigned int
+pass_expand_powcabs::execute (function *fun)
+{
+  basic_block bb;
+  bool cfg_changed = false;
+
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      gimple_stmt_iterator gsi;
+      bool cleanup_eh = false;
+
+      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+        {
+	  gimple *stmt = gsi_stmt (gsi);
+
+	  /* Only the last stmt in a bb could throw, no need to call
+	     gimple_purge_dead_eh_edges if we change something in the middle
+	     of a basic block.  */
+	  cleanup_eh = false;
+
+	  if (is_gimple_call (stmt)
+	      && gimple_call_lhs (stmt))
+	    {
+	      tree arg0, arg1, result;
+	      HOST_WIDE_INT n;
+	      location_t loc;
+
+	      switch (gimple_call_combined_fn (stmt))
+		{
 		CASE_CFN_POW:
 		  arg0 = gimple_call_arg (stmt, 0);
 		  arg1 = gimple_call_arg (stmt, 1);
@@ -2405,20 +2480,15 @@ pass_cse_sincos::execute (function *fun)
 	cfg_changed |= gimple_purge_dead_eh_edges (bb);
     }
 
-  statistics_counter_event (fun, "sincos statements inserted",
-			    sincos_stats.inserted);
-  statistics_counter_event (fun, "conv statements removed",
-			    sincos_stats.conv_removed);
-
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
 } // anon namespace
 
 gimple_opt_pass *
-make_pass_cse_sincos (gcc::context *ctxt)
+make_pass_expand_powcabs (gcc::context *ctxt)
 {
-  return new pass_cse_sincos (ctxt);
+  return new pass_expand_powcabs (ctxt);
 }
 
 /* Return true if stmt is a type conversion operation that can be stripped

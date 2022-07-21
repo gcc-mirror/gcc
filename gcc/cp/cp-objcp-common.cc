@@ -461,6 +461,8 @@ names_builtin_p (const char *name)
     case RID_IS_ASSIGNABLE:
     case RID_IS_CONSTRUCTIBLE:
     case RID_UNDERLYING_TYPE:
+    case RID_REF_CONSTRUCTS_FROM_TEMPORARY:
+    case RID_REF_CONVERTS_FROM_TEMPORARY:
       return true;
     default:
       break;

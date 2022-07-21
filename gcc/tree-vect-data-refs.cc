@@ -5195,6 +5195,14 @@ bump_vector_ptr (vec_info *vinfo,
 
   if (TREE_CODE (dataref_ptr) == SSA_NAME)
     new_dataref_ptr = copy_ssa_name (dataref_ptr);
+  else if (is_gimple_min_invariant (dataref_ptr))
+    /* When possible avoid emitting a separate increment stmt that will
+       force the addressed object addressable.  */
+    return build1 (ADDR_EXPR, TREE_TYPE (dataref_ptr),
+		   fold_build2 (MEM_REF,
+				TREE_TYPE (TREE_TYPE (dataref_ptr)),
+				dataref_ptr,
+				fold_convert (ptr_type_node, update)));
   else
     new_dataref_ptr = make_ssa_name (TREE_TYPE (dataref_ptr));
   incr_stmt = gimple_build_assign (new_dataref_ptr, POINTER_PLUS_EXPR,

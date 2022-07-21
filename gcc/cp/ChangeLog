@@ -1,3 +1,26 @@
+2022-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94894
+	PR c++/105766
+	PR c++/106201
+	* call.cc (enum conversion_kind): Add ck_deferred_bad enumerator.
+	(has_next): Return false for it.
+	(reference_binding): Return a ck_deferred_bad conversion instead
+	of an actual bad conversion when LOOKUP_SHORTCUT_BAD_CONVS is set.
+	Remove now obsolete early exit for the incomplete TO case.
+	(implicit_conversion_1): Don't mask out LOOKUP_SHORTCUT_BAD_CONVS.
+	(add_function_candidate): Set LOOKUP_SHORTCUT_BAD_CONVS iff
+	shortcut_bad_convs.
+	(missing_conversion_p): Also return true for a ck_deferred_bad
+	conversion.
+	* cp-tree.h (LOOKUP_SHORTCUT_BAD_CONVS): Define.
+
+2022-07-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* cp-objcp-common.cc (names_builtin_p): Return true for
+	RID_REF_CONSTRUCTS_FROM_TEMPORARY and
+	RID_REF_CONVERTS_FROM_TEMPORARY.
+
 2022-07-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/104477

@@ -19,16 +19,16 @@
 
 // 21.3.6.1 basic_string find
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 // libstdc++/31401
 void test01()
 {
-  typedef std::string::size_type csize_type;
-  csize_type npos = std::string::npos;
+  typedef __gnu_test::string::size_type csize_type;
+  csize_type npos = __gnu_test::string::npos;
 
-  std::string use = "anu";
+  __gnu_test::string use = "anu";
   csize_type pos1 = use.find("a", npos);
 
   VERIFY( pos1 == npos );

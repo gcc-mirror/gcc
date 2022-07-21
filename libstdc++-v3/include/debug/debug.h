@@ -118,9 +118,10 @@ namespace __gnu_debug
   __glibcxx_check_heap(_First,_Last)
 # define __glibcxx_requires_heap_pred(_First,_Last,_Pred)	\
   __glibcxx_check_heap_pred(_First,_Last,_Pred)
-# define __glibcxx_requires_string(_String) __glibcxx_check_string(_String)
+# define __glibcxx_requires_string(_String)	\
+  _GLIBCXX_DEBUG_PEDASSERT(_String != 0)
 # define __glibcxx_requires_string_len(_String,_Len)	\
-  __glibcxx_check_string_len(_String,_Len)
+  _GLIBCXX_DEBUG_PEDASSERT(_String != 0 || _Len == 0)
 # define __glibcxx_requires_irreflexive(_First,_Last)	\
   __glibcxx_check_irreflexive(_First,_Last)
 # define __glibcxx_requires_irreflexive2(_First,_Last)	\

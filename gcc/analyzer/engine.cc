@@ -916,6 +916,32 @@ impl_region_model_context::on_condition (const svalue *lhs,
     }
 }
 
+/* Implementation of region_model_context::on_bounded_ranges vfunc.
+   Notify all state machines about the ranges, which could lead to
+   state transitions.  */
+
+void
+impl_region_model_context::on_bounded_ranges (const svalue &sval,
+					      const bounded_ranges &ranges)
+{
+  int sm_idx;
+  sm_state_map *smap;
+  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+    {
+      const state_machine &sm = m_ext_state.get_sm (sm_idx);
+      impl_sm_context sm_ctxt (*m_eg, sm_idx, sm, m_enode_for_diag,
+			       m_old_state, m_new_state,
+			       m_old_state->m_checker_states[sm_idx],
+			       m_new_state->m_checker_states[sm_idx],
+			       m_path_ctxt);
+      sm.on_bounded_ranges (&sm_ctxt,
+			    (m_enode_for_diag
+			     ? m_enode_for_diag->get_supernode ()
+			     : NULL),
+			    m_stmt, sval, ranges);
+    }
+}
+
 /* Implementation of region_model_context::on_phi vfunc.
    Notify all state machines about the phi, which could lead to
    state transitions.  */
@@ -3974,8 +4000,12 @@ exploded_graph::process_node (exploded_node *node)
 	  {
 	    found_a_superedge = true;
 	    if (logger)
-	      logger->log ("considering SN: %i -> SN: %i",
-			   succ->m_src->m_index, succ->m_dest->m_index);
+	      {
+		label_text succ_desc (succ->get_description (false));
+		logger->log ("considering SN: %i -> SN: %i (%s)",
+			     succ->m_src->m_index, succ->m_dest->m_index,
+			     succ_desc.get ());
+	      }
 
 	    program_point next_point
 	      = program_point::before_supernode (succ->m_dest, succ,

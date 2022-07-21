@@ -7472,15 +7472,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	  tree label = TREE_OPERAND (CALL_EXPR_ARG (exp, 1), 0);
 	  rtx_insn *label_r = label_rtx (label);
 
-	  /* This is copied from the handling of non-local gotos.  */
 	  expand_builtin_setjmp_setup (buf_addr, label_r);
-	  nonlocal_goto_handler_labels
-	    = gen_rtx_INSN_LIST (VOIDmode, label_r,
-				 nonlocal_goto_handler_labels);
-	  /* ??? Do not let expand_label treat us as such since we would
-	     not want to be both on the list of non-local labels and on
-	     the list of forced labels.  */
-	  FORCED_LABEL (label) = 0;
 	  return const0_rtx;
 	}
       break;
@@ -7493,6 +7485,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	  rtx_insn *label_r = label_rtx (label);
 
 	  expand_builtin_setjmp_receiver (label_r);
+	  nonlocal_goto_handler_labels
+	    = gen_rtx_INSN_LIST (VOIDmode, label_r,
+				 nonlocal_goto_handler_labels);
+	  /* ??? Do not let expand_label treat us as such since we would
+	     not want to be both on the list of non-local labels and on
+	     the list of forced labels.  */
+	  FORCED_LABEL (label) = 0;
 	  return const0_rtx;
 	}
       break;
