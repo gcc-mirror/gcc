@@ -6,7 +6,7 @@
 2022-07-21  Jason Merrill  <jason@redhat.com>
 
 	DR 2084
-	PR c++/94823
+	PR c++/98423
 	* method.cc (walk_field_subobs): Fix DMI in union case.
 
 2022-07-19  Patrick Palka  <ppalka@redhat.com>
