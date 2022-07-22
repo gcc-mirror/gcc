@@ -3221,11 +3221,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
     {
       gcall *call = as_a <gcall *> (def_stmt);
       internal_fn fn = gimple_call_internal_fn (call);
-      tree def_rhs = gimple_call_arg (call,
-				      internal_fn_stored_value_index (fn));
-      def_rhs = vn_valueize (def_rhs);
-      if (TREE_CODE (def_rhs) != VECTOR_CST)
-	return (void *)-1;
 
       tree mask = NULL_TREE, len = NULL_TREE, bias = NULL_TREE;
       switch (fn)
@@ -3245,6 +3240,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	default:
 	  return (void *)-1;
 	}
+      tree def_rhs = gimple_call_arg (call,
+				      internal_fn_stored_value_index (fn));
+      def_rhs = vn_valueize (def_rhs);
+      if (TREE_CODE (def_rhs) != VECTOR_CST)
+	return (void *)-1;
+
       ao_ref_init_from_ptr_and_size (&lhs_ref,
 				     vn_valueize (gimple_call_arg (call, 0)),
 				     TYPE_SIZE_UNIT (TREE_TYPE (def_rhs)));
