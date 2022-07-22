@@ -2956,7 +2956,7 @@ capacity_compatible_with_type (tree cst, tree pointee_size_tree,
   unsigned HOST_WIDE_INT alloc_size = TREE_INT_CST_LOW (cst);
 
   if (is_struct)
-    return alloc_size >= pointee_size;
+    return alloc_size == 0 || alloc_size >= pointee_size;
   return alloc_size % pointee_size == 0;
 }
 
