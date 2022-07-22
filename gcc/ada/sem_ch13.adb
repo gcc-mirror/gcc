@@ -12901,139 +12901,6 @@ package body Sem_Ch13 is
 
       Inside_Freezing_Actions := Inside_Freezing_Actions - 1;
 
-      --  If we have a type with predicates, build predicate function. This is
-      --  not needed in the generic case, nor within e.g. TSS subprograms and
-      --  other predefined primitives. For a derived type, ensure that the
-      --  parent type is already frozen so that its predicate function has been
-      --  constructed already. This is necessary if the parent is declared
-      --  in a nested package and its own freeze point has not been reached.
-
-      if Is_Type (E)
-        and then Nongeneric_Case
-        and then Has_Predicates (E)
-        and then Predicate_Check_In_Scope (N)
-      then
-         declare
-            Atyp : constant Entity_Id := Nearest_Ancestor (E);
-         begin
-            if Present (Atyp)
-              and then Has_Predicates (Atyp)
-              and then not Is_Frozen (Atyp)
-            then
-               Freeze_Before (N, Atyp);
-            end if;
-         end;
-
-         --  Before we build a predicate function, ensure that discriminant
-         --  checking functions are available. The predicate function might
-         --  need to call these functions if the predicate references
-         --  any components declared in a variant part.
-         if Ekind (E) = E_Record_Type and then Has_Discriminants (E) then
-            Build_Or_Copy_Discr_Checking_Funcs (Parent (E));
-         end if;
-
-         Build_Predicate_Function (E, N);
-      end if;
-
-      --  If type has delayed aspects, this is where we do the preanalysis at
-      --  the freeze point, as part of the consistent visibility check. Note
-      --  that this must be done after calling Build_Predicate_Function or
-      --  Build_Invariant_Procedure since these subprograms fix occurrences of
-      --  the subtype name in the saved expression so that they will not cause
-      --  trouble in the preanalysis.
-
-      --  This is also not needed in the generic case
-
-      if Nongeneric_Case
-        and then Has_Delayed_Aspects (E)
-        and then Scope (E) = Current_Scope
-      then
-         declare
-            Ritem : Node_Id;
-
-         begin
-            --  Look for aspect specification entries for this entity
-
-            Ritem := First_Rep_Item (E);
-            while Present (Ritem) loop
-               if Nkind (Ritem) = N_Aspect_Specification
-                 and then Entity (Ritem) = E
-                 and then Is_Delayed_Aspect (Ritem)
-               then
-                  if Get_Aspect_Id (Ritem) in Aspect_CPU
-                                            | Aspect_Dynamic_Predicate
-                                            | Aspect_Predicate
-                                            | Aspect_Static_Predicate
-                                            | Aspect_Priority
-                  then
-                    --  Retrieve the visibility to components and discriminants
-                    --  in order to properly analyze the aspects.
-
-                     Push_Type (E);
-                     Check_Aspect_At_Freeze_Point (Ritem);
-
-                     --  In the case of predicate aspects, there will be
-                     --  a corresponding Predicate pragma associated with
-                     --  the aspect, and the expression of the pragma also
-                     --  needs to be analyzed at this point, to ensure that
-                     --  Save_Global_References will capture global refs in
-                     --  expressions that occur in generic bodies, for proper
-                     --  later resolution of the pragma in instantiations.
-
-                     if Is_Type (E)
-                       and then Inside_A_Generic
-                       and then Has_Predicates (E)
-                       and then Present (Aspect_Rep_Item (Ritem))
-                     then
-                        declare
-                           Pragma_Args : constant List_Id :=
-                             Pragma_Argument_Associations
-                               (Aspect_Rep_Item (Ritem));
-                           Pragma_Expr : constant Node_Id :=
-                             Expression (Next (First (Pragma_Args)));
-                        begin
-                           if Present (Pragma_Expr) then
-                              Analyze_And_Resolve
-                                (Pragma_Expr, Standard_Boolean);
-                           end if;
-                        end;
-                     end if;
-
-                     Pop_Type (E);
-
-                  else
-                     Check_Aspect_At_Freeze_Point (Ritem);
-                  end if;
-
-               --  A pragma Predicate should be checked like one of the
-               --  corresponding aspects, wrt possible misuse of ghost
-               --  entities.
-
-               elsif Nkind (Ritem) = N_Pragma
-                 and then No (Corresponding_Aspect (Ritem))
-                 and then
-                   Get_Pragma_Id (Pragma_Name (Ritem)) = Pragma_Predicate
-               then
-                  --  Retrieve the visibility to components and discriminants
-                  --  in order to properly analyze the pragma.
-
-                  declare
-                     Arg : constant Node_Id :=
-                        Next (First (Pragma_Argument_Associations (Ritem)));
-                  begin
-                     Push_Type (E);
-                     Preanalyze_Spec_Expression
-                       (Expression (Arg), Standard_Boolean);
-                     Pop_Type (E);
-                  end;
-               end if;
-
-               Next_Rep_Item (Ritem);
-            end loop;
-         end;
-
-      end if;
-
       --  For a record type, deal with variant parts. This has to be delayed to
       --  this point, because of the issue of statically predicated subtypes,
       --  which we have to ensure are frozen before checking choices, since we
@@ -13197,6 +13064,140 @@ package body Sem_Ch13 is
                end if;
             end if;
          end Check_Variant_Part;
+      end if;
+
+      --  If we have a type with predicates, build predicate function. This is
+      --  not needed in the generic case, nor within e.g. TSS subprograms and
+      --  other predefined primitives. For a derived type, ensure that the
+      --  parent type is already frozen so that its predicate function has been
+      --  constructed already. This is necessary if the parent is declared
+      --  in a nested package and its own freeze point has not been reached.
+
+      if Is_Type (E)
+        and then Nongeneric_Case
+        and then Has_Predicates (E)
+        and then Predicate_Check_In_Scope (N)
+      then
+         declare
+            Atyp : constant Entity_Id := Nearest_Ancestor (E);
+
+         begin
+            if Present (Atyp)
+              and then Has_Predicates (Atyp)
+              and then not Is_Frozen (Atyp)
+            then
+               Freeze_Before (N, Atyp);
+            end if;
+         end;
+
+         --  Before we build a predicate function, ensure that discriminant
+         --  checking functions are available. The predicate function might
+         --  need to call these functions if the predicate references any
+         --  components declared in a variant part.
+
+         if Ekind (E) = E_Record_Type and then Has_Discriminants (E) then
+            Build_Or_Copy_Discr_Checking_Funcs (Parent (E));
+         end if;
+
+         Build_Predicate_Function (E, N);
+      end if;
+
+      --  If type has delayed aspects, this is where we do the preanalysis at
+      --  the freeze point, as part of the consistent visibility check. Note
+      --  that this must be done after calling Build_Predicate_Function or
+      --  Build_Invariant_Procedure since these subprograms fix occurrences of
+      --  the subtype name in the saved expression so that they will not cause
+      --  trouble in the preanalysis.
+
+      --  This is also not needed in the generic case
+
+      if Nongeneric_Case
+        and then Has_Delayed_Aspects (E)
+        and then Scope (E) = Current_Scope
+      then
+         declare
+            Ritem : Node_Id;
+
+         begin
+            --  Look for aspect specification entries for this entity
+
+            Ritem := First_Rep_Item (E);
+            while Present (Ritem) loop
+               if Nkind (Ritem) = N_Aspect_Specification
+                 and then Entity (Ritem) = E
+                 and then Is_Delayed_Aspect (Ritem)
+               then
+                  if Get_Aspect_Id (Ritem) in Aspect_CPU
+                                            | Aspect_Dynamic_Predicate
+                                            | Aspect_Predicate
+                                            | Aspect_Static_Predicate
+                                            | Aspect_Priority
+                  then
+                    --  Retrieve the visibility to components and discriminants
+                    --  in order to properly analyze the aspects.
+
+                     Push_Type (E);
+                     Check_Aspect_At_Freeze_Point (Ritem);
+
+                     --  In the case of predicate aspects, there will be
+                     --  a corresponding Predicate pragma associated with
+                     --  the aspect, and the expression of the pragma also
+                     --  needs to be analyzed at this point, to ensure that
+                     --  Save_Global_References will capture global refs in
+                     --  expressions that occur in generic bodies, for proper
+                     --  later resolution of the pragma in instantiations.
+
+                     if Is_Type (E)
+                       and then Inside_A_Generic
+                       and then Has_Predicates (E)
+                       and then Present (Aspect_Rep_Item (Ritem))
+                     then
+                        declare
+                           Pragma_Args : constant List_Id :=
+                             Pragma_Argument_Associations
+                               (Aspect_Rep_Item (Ritem));
+                           Pragma_Expr : constant Node_Id :=
+                             Expression (Next (First (Pragma_Args)));
+                        begin
+                           if Present (Pragma_Expr) then
+                              Analyze_And_Resolve
+                                (Pragma_Expr, Standard_Boolean);
+                           end if;
+                        end;
+                     end if;
+
+                     Pop_Type (E);
+
+                  else
+                     Check_Aspect_At_Freeze_Point (Ritem);
+                  end if;
+
+               --  A pragma Predicate should be checked like one of the
+               --  corresponding aspects, wrt possible misuse of ghost
+               --  entities.
+
+               elsif Nkind (Ritem) = N_Pragma
+                 and then No (Corresponding_Aspect (Ritem))
+                 and then
+                   Get_Pragma_Id (Pragma_Name (Ritem)) = Pragma_Predicate
+               then
+                  --  Retrieve the visibility to components and discriminants
+                  --  in order to properly analyze the pragma.
+
+                  declare
+                     Arg : constant Node_Id :=
+                        Next (First (Pragma_Argument_Associations (Ritem)));
+                  begin
+                     Push_Type (E);
+                     Preanalyze_Spec_Expression
+                       (Expression (Arg), Standard_Boolean);
+                     Pop_Type (E);
+                  end;
+               end if;
+
+               Next_Rep_Item (Ritem);
+            end loop;
+         end;
       end if;
 
       if not In_Generic_Scope (E)
