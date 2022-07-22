@@ -1,3 +1,11 @@
+2022-07-21  Surya Kumari Jangala  <jskumari@linux.vnet.ibm.com>
+
+	Backported from master:
+	2022-06-14  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/105041
+	* gcc.target/powerpc/pr105041.c: New test.
+
 2022-07-16  Steve Kargl  <kargl@gcc.gnu.org>
 
 	Backported from master:
