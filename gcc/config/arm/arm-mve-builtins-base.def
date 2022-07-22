@@ -18,7 +18,9 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define REQUIRES_FLOAT false
+DEF_MVE_FUNCTION (vreinterpretq, unary_convert, reinterpret_integer, none)
 #undef REQUIRES_FLOAT
 
 #define REQUIRES_FLOAT true
+DEF_MVE_FUNCTION (vreinterpretq, unary_convert, reinterpret_float, none)
 #undef REQUIRES_FLOAT

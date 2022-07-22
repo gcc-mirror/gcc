@@ -199,6 +199,52 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
 #define TYPES_signed_32(S, D) \
   S (s32)
 
+#define TYPES_reinterpret_signed1(D, A) \
+  D (A, s8), D (A, s16), D (A, s32), D (A, s64)
+
+#define TYPES_reinterpret_unsigned1(D, A) \
+  D (A, u8), D (A, u16), D (A, u32), D (A, u64)
+
+#define TYPES_reinterpret_integer(S, D) \
+  TYPES_reinterpret_unsigned1 (D, s8), \
+  D (s8, s16), D (s8, s32), D (s8, s64), \
+  TYPES_reinterpret_unsigned1 (D, s16), \
+  D (s16, s8), D (s16, s32), D (s16, s64), \
+  TYPES_reinterpret_unsigned1 (D, s32), \
+  D (s32, s8), D (s32, s16), D (s32, s64), \
+  TYPES_reinterpret_unsigned1 (D, s64), \
+  D (s64, s8), D (s64, s16), D (s64, s32), \
+  TYPES_reinterpret_signed1 (D, u8), \
+  D (u8, u16), D (u8, u32), D (u8, u64), \
+  TYPES_reinterpret_signed1 (D, u16), \
+  D (u16, u8), D (u16, u32), D (u16, u64), \
+  TYPES_reinterpret_signed1 (D, u32), \
+  D (u32, u8), D (u32, u16), D (u32, u64), \
+  TYPES_reinterpret_signed1 (D, u64), \
+  D (u64, u8), D (u64, u16), D (u64, u32)
+
+/* { _s8  _s16 _s32 _s64 } x { _s8  _s16 _s32 _s64 }
+   { _u8  _u16 _u32 _u64 }   { _u8  _u16 _u32 _u64 }.  */
+#define TYPES_reinterpret_integer1(D, A) \
+  TYPES_reinterpret_signed1 (D, A), \
+  TYPES_reinterpret_unsigned1 (D, A)
+
+#define TYPES_reinterpret_float1(D, A) \
+  D (A, f16), D (A, f32)
+
+#define TYPES_reinterpret_float(S, D) \
+  TYPES_reinterpret_float1 (D, s8), \
+  TYPES_reinterpret_float1 (D, s16), \
+  TYPES_reinterpret_float1 (D, s32), \
+  TYPES_reinterpret_float1 (D, s64), \
+  TYPES_reinterpret_float1 (D, u8), \
+  TYPES_reinterpret_float1 (D, u16), \
+  TYPES_reinterpret_float1 (D, u32), \
+  TYPES_reinterpret_float1 (D, u64), \
+  TYPES_reinterpret_integer1 (D, f16), \
+  TYPES_reinterpret_integer1 (D, f32), \
+  D (f16, f32), D (f32, f16)
+
 /* Describe a pair of type suffixes in which only the first is used.  */
 #define DEF_VECTOR_TYPE(X) { TYPE_SUFFIX_ ## X, NUM_TYPE_SUFFIXES }
 
@@ -231,6 +277,8 @@ DEF_MVE_TYPES_ARRAY (integer_16_32);
 DEF_MVE_TYPES_ARRAY (integer_32);
 DEF_MVE_TYPES_ARRAY (signed_16_32);
 DEF_MVE_TYPES_ARRAY (signed_32);
+DEF_MVE_TYPES_ARRAY (reinterpret_integer);
+DEF_MVE_TYPES_ARRAY (reinterpret_float);
 
 /* Used by functions that have no governing predicate.  */
 static const predication_index preds_none[] = { PRED_none, NUM_PREDS };
@@ -251,6 +299,14 @@ static const predication_index preds_mx_or_none[] = {
    an unpredicated form.  */
 static const predication_index preds_p_or_none[] = {
   PRED_p, PRED_none, NUM_PREDS
+};
+
+/* A list of all MVE ACLE functions.  */
+static CONSTEXPR const function_group_info function_groups[] = {
+#define DEF_MVE_FUNCTION(NAME, SHAPE, TYPES, PREDS)			\
+  { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, preds_##PREDS, \
+    REQUIRES_FLOAT },
+#include "arm-mve-builtins.def"
 };
 
 /* The scalar type associated with each vector type.  */
@@ -431,6 +487,10 @@ handle_arm_mve_h (bool preserve_user_namespace)
 
   /* Define MVE functions.  */
   function_table = new hash_table<registered_function_hasher> (1023);
+  function_builder builder;
+  for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
+    builder.register_function_group (function_groups[i],
+				     preserve_user_namespace);
 }
 
 /* Return true if CANDIDATE is equivalent to MODEL_TYPE for overloading

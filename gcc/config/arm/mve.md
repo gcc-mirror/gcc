@@ -10561,3 +10561,21 @@
     }
   DONE;
 })
+
+;; Reinterpret operand 1 in operand 0's mode, without changing its contents.
+(define_expand "@arm_mve_reinterpret<mode>"
+  [(set (match_operand:MVE_vecs 0 "register_operand")
+	(unspec:MVE_vecs
+	  [(match_operand 1 "arm_any_register_operand")]
+	  REINTERPRET))]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+    || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  {
+    machine_mode src_mode = GET_MODE (operands[1]);
+    if (targetm.can_change_mode_class (<MODE>mode, src_mode, VFP_REGS))
+      {
+	emit_move_insn (operands[0], gen_lowpart (<MODE>mode, operands[1]));
+	DONE;
+      }
+  }
+)

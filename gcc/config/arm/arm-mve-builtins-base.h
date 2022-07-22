@@ -23,6 +23,8 @@
 namespace arm_mve {
 namespace functions {
 
+extern const function_base *const vreinterpretq;
+
 } /* end namespace arm_mve::functions */
 } /* end namespace arm_mve */
 

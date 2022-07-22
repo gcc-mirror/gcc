@@ -22,8 +22,16 @@
 
 namespace arm_mve
 {
+  /* The naming convention is:
+
+     - to use names like "unary" etc. if the rules are somewhat generic,
+       especially if there are no ranges involved.  */
+
   namespace shapes
   {
+
+    extern const function_shape *const unary_convert;
+
   } /* end namespace arm_mve::shapes */
 } /* end namespace arm_mve */
 

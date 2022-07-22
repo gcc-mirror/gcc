@@ -38,8 +38,41 @@ using namespace arm_mve;
 
 namespace {
 
+/* Implements vreinterpretq_* intrinsics.  */
+class vreinterpretq_impl : public quiet<function_base>
+{
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    /* We should punt to rtl if the effect of the reinterpret on
+       registers does not conform to GCC's endianness model like we do
+       on aarch64, but MVE intrinsics are not currently supported on
+       big-endian.  For this, we'd need to handle big-endian properly
+       in the .md file, like we do on aarch64 with
+       define_insn_and_split "*aarch64_sve_reinterpret<mode>".  */
+    gcc_assert (targetm.can_change_mode_class (f.vector_mode (0),
+					       f.vector_mode (1),
+					       VFP_REGS));
+
+    /* Otherwise vreinterpret corresponds directly to a VIEW_CONVERT_EXPR
+       reinterpretation.  */
+    tree rhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (f.lhs),
+		       gimple_call_arg (f.call, 0));
+    return gimple_build_assign (f.lhs, VIEW_CONVERT_EXPR, rhs);
+  }
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    machine_mode mode = e.vector_mode (0);
+    return e.use_exact_insn (code_for_arm_mve_reinterpret (mode));
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
+
+FUNCTION (vreinterpretq, vreinterpretq_impl,)
 
 } /* end namespace arm_mve */

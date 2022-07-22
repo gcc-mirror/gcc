@@ -338,6 +338,34 @@ struct overloaded_base : public function_shape
   }
 };
 
+/* <T0>_t foo_t0[_t1](<T1>_t)
+
+   where the target type <t0> must be specified explicitly but the source
+   type <t1> can be inferred.
+
+   Example: vreinterpretq.
+   int16x8_t [__arm_]vreinterpretq_s16[_s8](int8x16_t a)
+   int32x4_t [__arm_]vreinterpretq_s32[_s8](int8x16_t a)
+   int8x16_t [__arm_]vreinterpretq_s8[_s16](int16x8_t a)
+   int8x16_t [__arm_]vreinterpretq_s8[_s32](int32x4_t a)  */
+struct unary_convert_def : public overloaded_base<1>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v1", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_unary ();
+  }
+};
+SHAPE (unary_convert)
+
 } /* end namespace arm_mve */
 
 #undef SHAPE
