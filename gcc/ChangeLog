@@ -2,7 +2,7 @@
 
 	PR tree-optimization/94920
 	* match.pd (x >= 0 ? x : 0) + (x <= 0 ? -x : 0): New simplification.
-	           (x <= 0 ? -x : 0): New simplification.
+	(x <= 0 ? -x : 0): New simplification.
 
 2022-07-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
