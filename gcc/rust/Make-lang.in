@@ -303,8 +303,9 @@ RUST_INCLUDES = -I $(srcdir)/rust \
 	-I $(srcdir)/rust/resolve \
 	-I $(srcdir)/rust/util \
 	-I $(srcdir)/rust/typecheck \
-	-I $(srcdir)/rust/privacy \
-	-I $(srcdir)/rust/lint \
+	-I $(srcdir)/rust/checks/lints \
+	-I $(srcdir)/rust/checks/errors \
+	-I $(srcdir)/rust/checks/errors/privacy \
 	-I $(srcdir)/rust/util \
         -I $(srcdir)/rust/metadata
 
@@ -367,13 +368,18 @@ rust/%.o: rust/typecheck/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
-# build rust/privacy files in rust folder
-rust/%.o: rust/privacy/%.cc
+# build rust/checks/lints files in rust folder
+rust/%.o: rust/checks/lints/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
-# build rust/lint files in rust folder
-rust/%.o: rust/lint/%.cc
+# build rust/checks/errors files in rust folder
+rust/%.o: rust/checks/errors/%.cc
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)
+
+# build privacy pass files in rust folder
+rust/%.o: rust/checks/errors/privacy/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
