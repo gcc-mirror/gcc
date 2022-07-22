@@ -24,6 +24,7 @@
 # to mklog.py script.
 
 import argparse
+import json
 import os
 import subprocess
 
@@ -32,8 +33,7 @@ if __name__ == '__main__':
     myenv = os.environ.copy()
 
     parser = argparse.ArgumentParser(description='git-commit-mklog wrapped')
-    parser.add_argument('-b', '--pr-numbers', action='store',
-                        type=lambda arg: arg.split(','), nargs='?',
+    parser.add_argument('-b', '--pr-numbers',
                         help='Add the specified PRs (comma separated)')
     parser.add_argument('-p', '--fill-up-bug-titles', action='store_true',
                         help='Download title of mentioned PRs')
@@ -44,12 +44,13 @@ if __name__ == '__main__':
     myenv['GCC_FORCE_MKLOG'] = '1'
     mklog_args = []
     if args.pr_numbers:
-        mklog_args.append(f'-b {",".join(args.pr_numbers)}')
+        mklog_args += ['-b', args.pr_numbers]
     if args.fill_up_bug_titles:
         mklog_args.append('-p')
 
     if mklog_args:
-        myenv['GCC_MKLOG_ARGS'] = ' '.join(mklog_args)
+        # wrap mklog arguments with JSON
+        myenv['GCC_MKLOG_ARGS'] = json.dumps(mklog_args)
 
     if args.co:
         for author in args.co.split(','):

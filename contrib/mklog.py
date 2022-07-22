@@ -28,6 +28,7 @@
 
 import argparse
 import datetime
+import json
 import os
 import re
 import subprocess
@@ -332,6 +333,10 @@ def skip_line_in_changelog(line):
 
 
 if __name__ == '__main__':
+    extra_args = os.getenv('GCC_MKLOG_ARGS')
+    if extra_args:
+        sys.argv += json.loads(extra_args)
+
     parser = argparse.ArgumentParser(description=help_message)
     parser.add_argument('input', nargs='?',
                         help='Patch file (or missing, read standard input)')
