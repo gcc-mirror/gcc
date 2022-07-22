@@ -193,6 +193,20 @@ test11()
     ;
 }
 
+void
+test13()
+{
+  // PR libstdc++/106320
+  auto l = std::views::transform([](auto x) {
+    return x | std::views::transform([x=0](auto y) {
+      return y;
+    });
+  });
+  static_assert(!std::default_initializable<decltype(l)>);
+  std::vector<std::vector<int>> v{{5, 6, 7}};
+  v | l | std::views::join;
+}
+
 int
 main()
 {
@@ -207,4 +221,5 @@ main()
   test09();
   test10();
   test11();
+  test13();
 }

@@ -200,7 +200,7 @@ namespace ranges
     class single_view : public view_interface<single_view<_Tp>>
     {
     public:
-      single_view() requires default_initializable<_Tp> = default;
+      single_view() = default;
 
       constexpr explicit
       single_view(const _Tp& __t)
@@ -1463,9 +1463,7 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      filter_view() requires (default_initializable<_Vp>
-			      && default_initializable<_Pred>)
-	= default;
+      filter_view() requires default_initializable<_Vp> = default;
 
       constexpr
       filter_view(_Vp __base, _Pred __pred)
@@ -1829,9 +1827,7 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      transform_view() requires (default_initializable<_Vp>
-				 && default_initializable<_Fp>)
-	= default;
+      transform_view() requires default_initializable<_Vp> = default;
 
       constexpr
       transform_view(_Vp __base, _Fp __fun)
@@ -2150,9 +2146,7 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      take_while_view() requires (default_initializable<_Vp>
-				  && default_initializable<_Pred>)
-	= default;
+      take_while_view() requires default_initializable<_Vp> = default;
 
       constexpr
       take_while_view(_Vp base, _Pred __pred)
@@ -2356,9 +2350,7 @@ namespace views::__adaptor
       _Vp _M_base = _Vp();
 
     public:
-      drop_while_view() requires (default_initializable<_Vp>
-				  && default_initializable<_Pred>)
-	= default;
+      drop_while_view() requires default_initializable<_Vp> = default;
 
       constexpr
       drop_while_view(_Vp __base, _Pred __pred)

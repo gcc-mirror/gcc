@@ -5,8 +5,8 @@
 // Parts of P2325R3 are deliberately omitted in libstdc++ 11, in particular the
 // removal of default ctors for back_/front_insert_iterator, ostream_iterator,
 // ref_view and basic_istream_view/::iterator, so as to maximize backward
-// compatibility with pre-P2325R3 code.  So most static_asserts in this test fail,
-// see the xfails at the end of this file.
+// compatibility with pre-P2325R3 code.  Namely all asserts that verify lack of
+// default constructibility fail; see the xfails at the end of this file.
 
 #include <ranges>
 #include <iterator>
@@ -93,7 +93,7 @@ test06()
   static_assert(default_initializable<decltype(views::single(0) | adaptor(f1))>);
   static_assert(!default_initializable<decltype(views::single(0) | adaptor(f2))>);
 
-  struct S { S() = delete; };
+  struct S { S() = delete; S(const S&) = default; S(S&&) = default; };
   static_assert(!default_initializable<decltype(views::single(declval<S>()) | adaptor(f1))>);
   static_assert(!default_initializable<decltype(views::single(declval<S>()) | adaptor(f2))>);
 }
@@ -109,7 +109,7 @@ void
 test07()
 {
   // Verify join_view is conditionally default constructible.
-  struct S { S() = delete; };
+  struct S { S() = delete; S(const S&) = default; S(S&&) = default; };
   using type1 = ranges::join_view<ranges::single_view<ranges::single_view<S>>>;
   static_assert(!default_initializable<type1>);
   using type2 = ranges::join_view<ranges::single_view<ranges::single_view<int>>>;
@@ -173,6 +173,10 @@ test11()
 // { dg-bogus "static assertion failed" "" { xfail *-*-* } 76 }
 // { dg-bogus "static assertion failed" "" { xfail *-*-* } 77 }
 // { dg-bogus "static assertion failed" "" { xfail *-*-* } 84 }
+// { dg-bogus "static assertion failed" "" { xfail *-*-* } 94 }
+// { dg-bogus "static assertion failed" "" { xfail *-*-* } 97 }
+// { dg-bogus "static assertion failed" "" { xfail *-*-* } 98 }
+// { dg-bogus "static assertion failed" "" { xfail *-*-* } 114 }
 // { dg-bogus "static assertion failed" "" { xfail *-*-* } 124 }
 // { dg-bogus "static assertion failed" "" { xfail *-*-* } 126 }
 // { dg-bogus "static assertion failed" "" { xfail *-*-* } 128 }
