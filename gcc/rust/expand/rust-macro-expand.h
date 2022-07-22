@@ -213,8 +213,7 @@ struct MacroExpander
   /* Expands a macro invocation - possibly make both
    * have similar duck-typed interface and use templates?*/
   // should this be public or private?
-  void expand_invoc (AST::MacroInvocation &invoc);
-  void expand_invoc_semi (AST::MacroInvocation &invoc);
+  void expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon);
 
   // Expands a single declarative macro.
   AST::ASTFragment expand_decl_macro (Location locus,
