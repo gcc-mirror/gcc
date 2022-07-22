@@ -76,8 +76,17 @@ struct MatchedFragment
 class MatchedFragmentContainer
 {
 public:
-  MatchedFragmentContainer (std::vector<MatchedFragment> fragments)
-    : fragments (fragments)
+  // Does the container refer to a simple metavariable, different from a
+  // repetition repeated once
+  enum class Kind
+  {
+    MetaVar,
+    Repetition,
+  };
+
+  MatchedFragmentContainer (std::vector<MatchedFragment> fragments,
+			    Kind kind = Kind::Repetition)
+    : fragments (fragments), kind (kind)
   {}
 
   /**
@@ -92,9 +101,9 @@ public:
   /**
    * Create a valid fragment matched one time
    */
-  static MatchedFragmentContainer one (MatchedFragment fragment)
+  static MatchedFragmentContainer metavar (MatchedFragment fragment)
   {
-    return MatchedFragmentContainer ({fragment});
+    return MatchedFragmentContainer ({fragment}, Kind::MetaVar);
   }
 
   /**
@@ -102,6 +111,8 @@ public:
    */
   void add_fragment (MatchedFragment fragment)
   {
+    rust_assert (!is_single_fragment ());
+
     fragments.emplace_back (fragment);
   }
 
@@ -112,13 +123,19 @@ public:
   }
   // const std::string &get_fragment_name () const { return fragment_name; }
 
-  bool is_single_fragment () const { return get_match_amount () == 1; }
+  bool is_single_fragment () const
+  {
+    return get_match_amount () == 1 && kind == Kind::MetaVar;
+  }
+
   const MatchedFragment get_single_fragment () const
   {
-    rust_assert (get_match_amount () == 1);
+    rust_assert (is_single_fragment ());
 
     return fragments[0];
   }
+
+  const Kind &get_kind () const { return kind; }
 
 private:
   /**
@@ -126,6 +143,7 @@ private:
    * in case having zero matches is allowed (i.e ? or * operators)
    */
   std::vector<MatchedFragment> fragments;
+  Kind kind;
 };
 
 class SubstitutionScope
@@ -148,23 +166,34 @@ public:
   }
 
   /**
-   * Insert a new matched fragment into the current substitution map
+   * Insert a new matched metavar into the current substitution map
    */
-  void insert_fragment (MatchedFragment fragment)
+  void insert_metavar (MatchedFragment fragment)
   {
     auto &current_map = stack.back ();
     auto it = current_map.find (fragment.fragment_ident);
 
     if (it == current_map.end ())
-      {
-	current_map.insert (
-	  {fragment.fragment_ident, MatchedFragmentContainer::one (fragment)});
-      }
+      current_map.insert ({fragment.fragment_ident,
+			   MatchedFragmentContainer::metavar (fragment)});
     else
-      {
-	auto &frags = it->second;
-	frags.add_fragment (fragment);
-      }
+      gcc_unreachable ();
+  }
+
+  /**
+   * Append a new matched fragment to a repetition into the current substitution
+   * map
+   */
+  void append_fragment (MatchedFragment fragment)
+  {
+    auto &current_map = stack.back ();
+    auto it = current_map.find (fragment.fragment_ident);
+
+    if (it == current_map.end ())
+      current_map.insert (
+	{fragment.fragment_ident, MatchedFragmentContainer ({fragment})});
+    else
+      it->second.add_fragment (fragment);
   }
 
   void insert_matches (std::string key, MatchedFragmentContainer matches)
