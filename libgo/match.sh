@@ -111,7 +111,7 @@ gobuild() {
     if test "$goarch" != "386"; then
 	line=$(echo "$line" | sed -e "s/\\(${wrap}\\)386\\(${wrap}\\)/\10\2/g")
     fi
-    (($line))
+    return $((!($line)))
 }
 
 matched=
