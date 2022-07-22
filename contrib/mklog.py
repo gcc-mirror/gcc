@@ -73,8 +73,6 @@ PATCH must be generated using diff(1)'s -up or -cp options
 script_folder = os.path.realpath(__file__)
 root = os.path.dirname(os.path.dirname(script_folder))
 
-firstpr = ''
-
 
 def find_changelog(path):
     folder = os.path.split(path)[0]
@@ -157,12 +155,13 @@ def get_rel_path_if_prefixed(path, folder):
 
 def generate_changelog(data, no_functions=False, fill_pr_titles=False,
                        additional_prs=None):
+    global prs
+    prs = []
+
     changelogs = {}
     changelog_list = []
-    prs = []
     out = ''
     diff = PatchSet(data)
-    global firstpr
 
     if additional_prs:
         for apr in additional_prs:
@@ -211,9 +210,6 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
                 pr2 = 'PR ' + pr
                 if pr not in this_file_prs and pr2 not in prs:
                     prs.append(pr2)
-
-    if prs:
-        firstpr = prs[0]
 
     if fill_pr_titles:
         out += get_pr_titles(prs)
@@ -372,11 +368,12 @@ if __name__ == '__main__':
             end = lines[len(start):]
             with open(args.changelog, 'w') as f:
                 if not start or not start[0]:
-                    # initial commit subject line 'component: [PRnnnnn]'
-                    m = prnum_regex.match(firstpr)
-                    if m:
-                        title = f'{m.group("comp")}: [PR{m.group("num")}]'
-                        start.insert(0, title)
+                    if len(prs) == 1:
+                        # initial commit subject line 'component: [PRnnnnn]'
+                        m = prnum_regex.match(prs[0])
+                        if m:
+                            title = f'{m.group("comp")}: [PR{m.group("num")}]'
+                            start.insert(0, title)
                 if start:
                     # append empty line
                     if start[-1] != '':
