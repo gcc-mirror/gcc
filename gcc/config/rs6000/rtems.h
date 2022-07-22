@@ -23,6 +23,9 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+/* Undef gnu-user.h macro we don't want.  */
+#undef CPLUSPLUS_CPP_SPEC
+
 /* Copy and paste from linux64.h and freebsd64.h */
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
