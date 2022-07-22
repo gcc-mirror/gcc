@@ -1,3 +1,96 @@
+2022-07-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100823
+	* include/bits/stl_iterator.h (common_iterator): Define move
+	constructor and move assignment operator.
+	(common_iterator::_M_assign): New function implementing
+	assignment.
+	(common_iterator::operator=): Use _M_assign.
+	(common_iterator::_S_valueless): New constant.
+	* testsuite/24_iterators/common_iterator/100823.cc: New test.
+
+2022-07-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (common_iterator): Fix incorrect
+	uses of is_nothrow_assignable_v. Fix inconsistent constraints on
+	friend declaration. Do not move argument in copy constructor.
+	* testsuite/24_iterators/common_iterator/1.cc: Check for
+	noexcept constructibnle/assignable.
+
+2022-07-21  Nathan Sidwell  <nathan@acm.org>
+
+	Backported from master:
+	2022-05-26  Nathan Sidwell  <nathan@acm.org>
+
+	* include/bits/hashtable.h: Include required headers.
+	* include/bits/hashtable_policy.h: Likewise.
+	* include/bits/stl_heap.h: Likewise.
+	* include/bits/stl_iterator_base_funcs.h: Likewise.
+
+2022-07-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/utility.h: Fix comment typos.
+
+2022-07-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/from_chars/4.cc: Only use log2 if C99 math
+	functions are available.
+
+2022-07-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/random_device/entropy.cc: Use
+	numeric_limits<unsigned>::digits.
+
+2022-07-21  Marco Falke  <falke.marco@gmail.com>
+
+	Backported from master:
+	2022-07-19  Marco Falke  <falke.marco@gmail.com>
+
+	* include/std/charconv (__from_chars_alnum_to_val): Replace
+	implicit conversion from int to unsigned char with explicit
+	cast.
+
+2022-07-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88881
+	* src/filesystem/ops.cc (has_trailing_slash): New helper
+	function.
+	(fs::status): Strip trailing slashes.
+	(fs::symlink_status): Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Clean the environment before each test and use TMP instead of
+	TMPDIR so the test passes on Windows.
+
+2022-07-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105880
+	* libsupc++/eh_globals.cc (eh_globals): Ensure constant init and
+	prevent destruction during termination.
+	(__eh_globals_init::_M_init): Replace with static member _S_init.
+	(__cxxabiv1::__cxa_get_globals_fast): Update.
+	(__cxxabiv1::__cxa_get_globals): Likewise.
+
 2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

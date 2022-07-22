@@ -1,3 +1,69 @@
+2022-07-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106361
+	* g++.dg/cpp2a/spaceship-eq14.C: New test.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105912
+	* g++.dg/cpp2a/consteval31.C: New test.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105842
+	* g++.dg/cpp2a/concepts-memtmpl6.C: New test.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/53164
+	PR c++/105848
+	* g++.dg/template/fn-ptr3.C: New test.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105637
+	* g++.dg/cpp0x/lambda/lambda-this22.C: New test.
+	* g++.dg/template/non-dependent23.C: New test.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100374
+	* g++.dg/cpp2a/concepts-spec2.C: New test.
+	* g++.dg/cpp2a/concepts-template-parm11.C: New test.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105758
+	* g++.dg/template/non-dependent24.C: New test.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96363
+	* g++.dg/cpp2a/concepts-partial-spec12.C: New test.
+	* g++.dg/cpp2a/concepts-partial-spec12a.C: New test.
+	* g++.dg/cpp2a/concepts-partial-spec13.C: New test.
+
 2022-07-20  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
