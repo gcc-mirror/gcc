@@ -2716,6 +2716,8 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
+  std::unique_ptr<Expr> &get_to_expr () { return to; };
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
