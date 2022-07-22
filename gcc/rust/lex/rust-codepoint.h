@@ -32,11 +32,13 @@ struct Codepoint
   // Creates a codepoint from an encoded UTF-8 value.
   Codepoint (uint32_t value) : value (value) {}
 
+  static Codepoint eof () { return Codepoint (UINT32_MAX); }
+  bool is_eof () const { return value == UINT32_MAX; }
+
   // Returns a C++ string containing string value of codepoint.
   std::string as_string ();
 
   bool operator== (Codepoint other) const { return value == other.value; }
-
   bool operator!= (Codepoint other) const { return !operator== (other); }
 };
 } // namespace Rust

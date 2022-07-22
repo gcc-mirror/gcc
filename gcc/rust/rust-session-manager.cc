@@ -35,6 +35,7 @@
 #include "rust-export-metadata.h"
 #include "rust-imports.h"
 #include "rust-extern-crate.h"
+#include "rust-attributes.h"
 
 #include "diagnostic.h"
 #include "input.h"
@@ -737,6 +738,8 @@ Session::parse_file (const char *filename)
     {
       // TODO: what do I dump here? injected crate names?
     }
+
+  Analysis::AttributeChecker ().go (parsed_crate);
 
   // expansion pipeline stage
   expansion (parsed_crate);
