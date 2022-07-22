@@ -123,6 +123,7 @@ GRS_OBJS = \
     rust/rust-lint-marklive.o \
     rust/rust-lint-unused-var.o \
     rust/rust-hir-type-check-path.o \
+    rust/rust-unsafe-checker.o \
     rust/rust-compile-intrinsic.o \
     rust/rust-compile-pattern.o \
     rust/rust-compile-fnparam.o \
