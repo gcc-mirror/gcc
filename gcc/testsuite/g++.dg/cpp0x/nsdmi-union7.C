@@ -1,4 +1,4 @@
-// PR c++/94823
+// PR c++/98423
 // { dg-do compile { target c++11 } }
 
 struct A{
