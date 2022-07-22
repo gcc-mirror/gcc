@@ -278,7 +278,7 @@ bool cpu_builtin_p = false;
 /* Pointer to function (in rs6000-c.cc) that can define or undefine target
    macros that have changed.  Languages that don't support the preprocessor
    don't link in rs6000-c.cc, so we can't call it directly.  */
-void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT, HOST_WIDE_INT);
+void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT);
 
 /* Simplfy register classes into simpler classifications.  We assume
    GPR_REG_TYPE - FPR_REG_TYPE are ordered so that we can use a simple range
@@ -1171,8 +1171,6 @@ const int INSN_NOT_AVAILABLE = -1;
 
 static void rs6000_print_isa_options (FILE *, int, const char *,
 				      HOST_WIDE_INT);
-static void rs6000_print_builtin_options (FILE *, int, const char *,
-					  HOST_WIDE_INT);
 static HOST_WIDE_INT rs6000_disable_incompatible_switches (void);
 
 static enum rs6000_reg_type register_to_reg_type (rtx, bool *);
@@ -2407,9 +2405,6 @@ rs6000_debug_reg_global (void)
   rs6000_print_isa_options (stderr, 0, "rs6000_isa_flags_explicit",
 			    rs6000_isa_flags_explicit);
 
-  rs6000_print_builtin_options (stderr, 0, "rs6000_builtin_mask",
-				rs6000_builtin_mask);
-
   rs6000_print_isa_options (stderr, 0, "TARGET_DEFAULT", TARGET_DEFAULT);
 
   fprintf (stderr, DEBUG_FMT_S, "--with-cpu default",
@@ -3372,41 +3367,6 @@ darwin_rs6000_override_options (void)
 #define RS6000_DEFAULT_LONG_DOUBLE_SIZE 64
 #endif
 
-/* Return the builtin mask of the various options used that could affect which
-   builtins were used.  In the past we used target_flags, but we've run out of
-   bits, and some options are no longer in target_flags.  */
-
-HOST_WIDE_INT
-rs6000_builtin_mask_calculate (void)
-{
-  return (((TARGET_ALTIVEC)		    ? OPTION_MASK_ALTIVEC    : 0)
-	  | ((TARGET_CMPB)		    ? OPTION_MASK_CMPB	     : 0)
-	  | ((TARGET_VSX)		    ? OPTION_MASK_VSX	     : 0)
-	  | ((TARGET_FRE)		    ? OPTION_MASK_POPCNTB    : 0)
-	  | ((TARGET_FRES)		    ? OPTION_MASK_PPC_GFXOPT : 0)
-	  | ((TARGET_FRSQRTE)		    ? OPTION_MASK_PPC_GFXOPT : 0)
-	  | ((TARGET_FRSQRTES)		    ? OPTION_MASK_POPCNTB    : 0)
-	  | ((TARGET_POPCNTD)		    ? OPTION_MASK_POPCNTD    : 0)
-	  | ((rs6000_cpu == PROCESSOR_CELL) ? OPTION_MASK_FPRND      : 0)
-	  | ((TARGET_P8_VECTOR)		    ? OPTION_MASK_P8_VECTOR  : 0)
-	  | ((TARGET_P9_VECTOR)		    ? OPTION_MASK_P9_VECTOR  : 0)
-	  | ((TARGET_P9_MISC)		    ? OPTION_MASK_P9_MISC    : 0)
-	  | ((TARGET_MODULO)		    ? OPTION_MASK_MODULO     : 0)
-	  | ((TARGET_64BIT)		    ? MASK_64BIT	     : 0)
-	  | ((TARGET_POWERPC64)		    ? MASK_POWERPC64	     : 0)
-	  | ((TARGET_CRYPTO)		    ? OPTION_MASK_CRYPTO     : 0)
-	  | ((TARGET_HTM)		    ? OPTION_MASK_HTM	     : 0)
-	  | ((TARGET_DFP)		    ? OPTION_MASK_DFP	     : 0)
-	  | ((TARGET_HARD_FLOAT)	    ? OPTION_MASK_SOFT_FLOAT : 0)
-	  | ((TARGET_LONG_DOUBLE_128
-	      && TARGET_HARD_FLOAT
-	      && !TARGET_IEEEQUAD)	    ? OPTION_MASK_MULTIPLE   : 0)
-	  | ((TARGET_FLOAT128_TYPE)	    ? OPTION_MASK_FLOAT128_KEYWORD : 0)
-	  | ((TARGET_FLOAT128_HW)	    ? OPTION_MASK_FLOAT128_HW : 0)
-	  | ((TARGET_MMA)		    ? OPTION_MASK_MMA	     : 0)
-	  | ((TARGET_POWER10)		    ? OPTION_MASK_POWER10    : 0));
-}
-
 /* Implement TARGET_MD_ASM_ADJUST.  All asm statements are considered
    to clobber the XER[CA] bit because clobbering that bit without telling
    the compiler worked just fine with versions of GCC before GCC 5, and
@@ -3617,11 +3577,6 @@ glibc_supports_ieee_128bit (void)
      associated TARGET_XXX values since these are macros which are
      generally defined to test the corresponding bit of the
      rs6000_isa_flags variable.
-
-     The variable rs6000_builtin_mask is set to represent the target
-     options for the most current compilation efforts, consistent with
-     the current contents of rs6000_isa_flags.  This variable controls
-     expansion of built-in functions.
 
      Various other global variables and fields of global structures
      (over 50 in all) are initialized to reflect the desired options
@@ -4889,14 +4844,6 @@ rs6000_option_override_internal (bool global_init_p)
 	    rs6000_recip_control |= mask;
 	}
     }
-
-  /* Set the builtin mask of the various options used that could affect which
-     builtins were used.  In the past we used target_flags, but we've run out
-     of bits, and some options are no longer in target_flags.  */
-  rs6000_builtin_mask = rs6000_builtin_mask_calculate ();
-  if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
-    rs6000_print_builtin_options (stderr, 0, "builtin mask",
-				  rs6000_builtin_mask);
 
   /* Initialize all of the registers.  */
   rs6000_init_hard_regno_mode_ok (global_init_p);
@@ -24051,32 +23998,6 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "string",			0,				false, false },
 };
 
-/* Builtin mask mapping for printing the flags.  */
-static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
-{
-  { "altivec",		 OPTION_MASK_ALTIVEC,	false, false },
-  { "vsx",		 OPTION_MASK_VSX,	false, false },
-  { "fre",		 OPTION_MASK_POPCNTB,	false, false },
-  { "fres",		 OPTION_MASK_PPC_GFXOPT, false, false },
-  { "frsqrte",		 OPTION_MASK_PPC_GFXOPT, false, false },
-  { "frsqrtes",		 OPTION_MASK_POPCNTB,	false, false },
-  { "popcntd",		 OPTION_MASK_POPCNTD,	false, false },
-  { "cell",		 OPTION_MASK_FPRND,	false, false },
-  { "power8-vector",	 OPTION_MASK_P8_VECTOR,	false, false },
-  { "power9-vector",	 OPTION_MASK_P9_VECTOR,	false, false },
-  { "power9-misc",	 OPTION_MASK_P9_MISC,	false, false },
-  { "crypto",		 OPTION_MASK_CRYPTO,	false, false },
-  { "htm",		 OPTION_MASK_HTM,	false, false },
-  { "hard-dfp",		 OPTION_MASK_DFP,	false, false },
-  { "hard-float",	 OPTION_MASK_SOFT_FLOAT, false, false },
-  { "long-double-128",	 OPTION_MASK_MULTIPLE,	false, false },
-  { "powerpc64",	 MASK_POWERPC64,  false, false },
-  { "float128",		 OPTION_MASK_FLOAT128_KEYWORD,   false, false },
-  { "float128-hw",	 OPTION_MASK_FLOAT128_HW,false, false },
-  { "mma",		 OPTION_MASK_MMA,	false, false },
-  { "power10",		 OPTION_MASK_POWER10,	false, false },
-};
-
 /* Option variables that we want to support inside attribute((target)) and
    #pragma GCC target operations.  */
 
@@ -24431,7 +24352,6 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
   tree cur_tree;
   struct cl_target_option *prev_opt, *cur_opt;
   HOST_WIDE_INT prev_flags, cur_flags, diff_flags;
-  HOST_WIDE_INT prev_bumask, cur_bumask, diff_bumask;
 
   if (TARGET_DEBUG_TARGET)
     {
@@ -24483,27 +24403,22 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
   if (rs6000_target_modify_macros_ptr)
     {
       prev_opt    = TREE_TARGET_OPTION (prev_tree);
-      prev_bumask = prev_opt->x_rs6000_builtin_mask;
       prev_flags  = prev_opt->x_rs6000_isa_flags;
 
       cur_opt     = TREE_TARGET_OPTION (cur_tree);
       cur_flags   = cur_opt->x_rs6000_isa_flags;
-      cur_bumask  = cur_opt->x_rs6000_builtin_mask;
 
-      diff_bumask = (prev_bumask ^ cur_bumask);
       diff_flags  = (prev_flags ^ cur_flags);
 
-      if ((diff_flags != 0) || (diff_bumask != 0))
+      if (diff_flags != 0)
 	{
 	  /* Delete old macros.  */
 	  rs6000_target_modify_macros_ptr (false,
-					   prev_flags & diff_flags,
-					   prev_bumask & diff_bumask);
+					   prev_flags & diff_flags);
 
 	  /* Define new macros.  */
 	  rs6000_target_modify_macros_ptr (true,
-					   cur_flags & diff_flags,
-					   cur_bumask & diff_bumask);
+					   cur_flags & diff_flags);
 	}
     }
 
@@ -24732,15 +24647,6 @@ rs6000_print_isa_options (FILE *file, int indent, const char *string,
   rs6000_print_options_internal (file, indent, string, flags, "-m",
 				 &rs6000_opt_masks[0],
 				 ARRAY_SIZE (rs6000_opt_masks));
-}
-
-static void
-rs6000_print_builtin_options (FILE *file, int indent, const char *string,
-			      HOST_WIDE_INT flags)
-{
-  rs6000_print_options_internal (file, indent, string, flags, "",
-				 &rs6000_builtin_mask_names[0],
-				 ARRAY_SIZE (rs6000_builtin_mask_names));
 }
 
 /* If the user used -mno-vsx, we need turn off all of the implicit ISA 2.06,
