@@ -918,6 +918,10 @@ output_asm_btf_vlen_bytes (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
       if (dtd->dtd_data.ctti_size < 1)
 	break;
 
+      /* In BTF the CHAR `encoding' seems to not be used, so clear it
+         here.  */
+      dtd->dtd_u.dtu_enc.cte_format &= ~BTF_INT_CHAR;
+
       encoding = BTF_INT_DATA (dtd->dtd_u.dtu_enc.cte_format,
 			       dtd->dtd_u.dtu_enc.cte_offset,
 			       dtd->dtd_u.dtu_enc.cte_bits);
