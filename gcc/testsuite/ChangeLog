@@ -1,3 +1,41 @@
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106383
+	* gcc.dg/analyzer/stdarg-3.c: New test.
+
+2022-07-21  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/94920
+	* g++.dg/pr94920-1.C: New test.
+	* g++.dg/pr94920.C: New test.
+	* gcc.dg/pr94920-2.c: New test.
+
+2022-07-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106361
+	* g++.dg/cpp2a/spaceship-eq14.C: New test.
+
+2022-07-21  Jason Merrill  <jason@redhat.com>
+
+	DR 2084
+	PR c++/94823
+	* g++.dg/cpp0x/nsdmi-union7.C: New test.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106379
+	* gcc.dg/pr106379-1.c: New testcase.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106365
+	* gcc.target/i386/vec-maskstore-vn.c: New testcase.
+
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106374
+	* gcc.dg/analyzer/untracked-2.c: New test.
+
 2022-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106373

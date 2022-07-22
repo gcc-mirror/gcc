@@ -1,3 +1,52 @@
+2022-07-21  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/94920
+	* match.pd (x >= 0 ? x : 0) + (x <= 0 ? -x : 0): New simplification.
+	           (x <= 0 ? -x : 0): New simplification.
+
+2022-07-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	Revert:
+	2022-07-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-ssa-forwprop.cc (simplify_permutation): Use lhs type
+	instead of TREE_TYPE (arg0) as result type in folding VEC_PERM_EXPR.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106379
+	* match.pd (~(a ^ b) -> a == b): New pattern.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106378
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Handle
+	LEN_STORE, add mode to initialize a may-def and handle
+	MASK_STORE that way.
+	(dse_optimize_stmt): Query may-defs.  Handle internal
+	functions LEN_STORE and MASK_STORE similar to how
+	we handle memory builtins but without byte tracking.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106365
+	* tree-ssa-sccvn.cc (pd_data::rhs_off): New field determining
+	the offset to start encoding of RHS from.
+	(vn_walk_cb_data::vn_walk_cb_data): Initialize it.
+	(vn_walk_cb_data::push_partial_def): Allow the first partial
+	definition to be fully providing the def.  Offset RHS
+	before encoding if requested.
+	(vn_reference_lookup_3): Initialize def_rhs everywhere.
+	Add support for .MASK_STORE and .LEN_STORE (partial) definitions.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.cc (ref_maybe_used_by_call_p_1): Special-case
+	store internal functions and IFN_MASK_LOAD, IFN_LEN_LOAD
+	and IFN_MASK_LOAD_LANES.
+	(call_may_clobber_ref_p_1): Special-case IFN_MASK_STORE,
+	IFN_LEN_STORE and IFN_MASK_STORE_LANES.
+
 2022-07-20  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/101347

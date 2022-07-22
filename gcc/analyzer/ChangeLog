@@ -1,3 +1,25 @@
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106383
+	* varargs.cc (region_model::impl_call_va_arg): When determining if
+	we're doing interprocedural analysis, use the stack depth of the
+	frame in which va_start was called, rather than the current stack
+	depth.
+
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-taint.cc (tainted_array_index::emit): Bulletproof against
+	NULL m_arg.
+	(tainted_array_index::describe_final_event): Likewise.
+	(tainted_size::emit): Likewise.
+	(tainted_size::describe_final_event): Likewise.
+
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106374
+	* region.cc (decl_region::get_svalue_for_initializer): Bail out on
+	untracked regions.
+
 2022-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106373
