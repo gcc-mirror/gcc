@@ -3007,6 +3007,43 @@ produced by @command{gold}.
 For other linkers that cannot generate resolution file,
 explicit @code{externally_visible} attributes are still necessary.
 
+@item fd_arg 
+@itemx fd_arg (@var{N})
+@cindex @code{fd_arg} function attribute
+The @code{fd_arg} attribute may be applied to a function that takes an open 
+file descriptor at referenced argument @var{N}.
+
+It indicates that the passed filedescriptor must not have been closed.
+Therefore, when the analyzer is enabled with @option{-fanalyzer}, the 
+analyzer may emit a @option{-Wanalyzer-fd-use-after-close} diagnostic 
+if it detects a code path in which a function with this attribute is
+called with a closed file descriptor.
+
+The attribute also indicates that the file descriptor must have been checked for
+validity before usage. Therefore, analyzer may emit
+@option{-Wanalyzer-fd-use-without-check} diagnostic if it detects a code path in
+which a function with this attribute is called with a file descriptor that has
+not been checked for validity.
+
+@item fd_arg_read
+@itemx fd_arg_read (@var{N})
+@cindex @code{fd_arg_read} function attribute
+The @code{fd_arg_read} is identical to @code{fd_arg}, but with the additional
+requirement that it might read from the file descriptor, and thus, the file
+descriptor must not have been opened as write-only.
+
+The analyzer may emit a @option{-Wanalyzer-access-mode-mismatch}
+diagnostic if it detects a code path in which a function with this
+attribute is called on a file descriptor opened with @code{O_WRONLY}.
+
+@item fd_arg_write
+@itemx fd_arg_write (@var{N})
+@cindex @code{fd_arg_write} function attribute
+The @code{fd_arg_write} is identical to @code{fd_arg_read} except that the
+analyzer may emit a @option{-Wanalyzer-access-mode-mismatch} diagnostic if 
+it detects a code path in which a function with this attribute is called on a 
+file descriptor opened with @code{O_RDONLY}.
+
 @item flatten
 @cindex @code{flatten} function attribute
 Generally, inlining into a function is limited.  For a function marked with
