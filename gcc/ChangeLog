@@ -1,3 +1,11 @@
+2022-07-22  Surya Kumari Jangala  <jskumari@linux.vnet.ibm.com>
+
+	Backported from master:
+	2022-06-14  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/105041
+	* regrename.c (check_new_reg_p): Use nregs value from du chain.
+
 2022-07-13  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

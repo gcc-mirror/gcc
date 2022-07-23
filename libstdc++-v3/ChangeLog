@@ -1,3 +1,24 @@
+2022-07-22  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-07-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/106320
+	* include/std/ranges (single_view): Relax constraints on
+	default constructor so as to preserve pre-P2325R3 behavior.
+	(filter_view): Likewise.
+	(transform_view): Likewise.
+	(take_while_view): Likewise.
+	(drop_while_view): Likewise.
+	* testsuite/std/ranges/adaptors/join.cc (test13): New test.
+	* testsuite/std/ranges/p2325.cc: Fix S to be only non default
+	constructible and not also non copy constructible.  XFAIL the
+	tests that verify a non default constructible functor makes a
+	view non default constructible (lines 94, 97 and 98).  XFAIL
+	the test that effectively verifies a non default constructible
+	element type makes single_view non default constructible (line
+	114).
+
 2022-06-28  Release Manager
 
 	* GCC 10.4.0 released.
