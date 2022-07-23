@@ -1,3 +1,86 @@
+2022-07-22  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*masktrue_const_bitcmpl):
+	Add a new insn_and_split pattern, and a few split patterns for
+	spacial cases.
+
+2022-07-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* graphds.cc (graphds_scc): Fix algorithm attribution.
+
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106403
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Move stored
+	value valueization after check for IFN_MASKED_STORE or
+	IFN_LEN_STORE.
+
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106397
+	* tree-ssa-loop-prefetch.cc (emit_mfence_after_loop): Do
+	not update SSA form here.
+	(mark_nontemporal_stores): Return whether we marked any
+	non-temporal stores and inserted mfence.
+	(loop_prefetch_arrays): Note when we need to update SSA.
+	(tree_ssa_prefetch_arrays): Perform required (LC) SSA update
+	at the end of the pass.
+
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106387
+	* tree-vect-stmts.cc (vectorizable_load): Use make_ssa_name
+	if ptr is not an SSA name.
+
+2022-07-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/106038
+	* config/i386/mmx.md (<code><mode>3): New define_expand, it's
+	original "<code><mode>3".
+	(*<code><mode>3): New define_insn, it's original
+	"<code><mode>3" be extended to handle memory and immediate
+	operand with ix86_binary_operator_ok. Also adjust define_split
+	after it.
+	(mmxinsnmode): New mode attribute.
+	(*mov<mode>_imm): Refactor with mmxinsnmode.
+	* config/i386/predicates.md
+	(register_or_x86_64_const_vector_operand): New predicate.
+
+2022-07-22  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/altivec.md:
+	(vstrir_code_<mode>): Rename to...
+	(vstrir_direct_<mode>): ... this.
+	(vstrir_p_code_<mode>): Rename to...
+	(vstrir_p_direct_<mode>): ... this.
+	(vstril_code_<mode>): Rename to...
+	(vstril_direct_<mode>): ... this.
+	(vstril_p_code_<mode>): Rename to...
+	(vstril_p_direct_<mode>): ... this.
+
+2022-07-22  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.cc: Update comments.
+	(rs6000_target_modify_macros): Remove bu_mask references.
+	(rs6000_define_or_undefine_macro): Replace bu_mask reference
+	with a rs6000_cpu value check.
+	(rs6000_cpu_cpp_builtins): Remove rs6000_builtin_mask_calculate()
+	parameter from call to rs6000_target_modify_macros.
+	* config/rs6000/rs6000-protos.h (rs6000_target_modify_macros,
+	rs6000_target_modify_macros_ptr): Remove parameter from extern
+	for the prototype.
+	* config/rs6000/rs6000.cc (rs6000_target_modify_macros_ptr): Remove
+	parameter from prototype, update calls to this function.
+	(rs6000_print_builtin_options): Remove prototype, call and function.
+	(rs6000_builtin_mask_calculate): Remove function.
+	(rs6000_debug_reg_global): Remove call to rs6000_print_builtin_options.
+	(rs6000_option_override_internal): Remove rs6000_builtin_mask var
+	and builtin_mask debug output.
+	(rs6000_builtin_mask_names): Remove.
+	(rs6000_pragma_target_parse): Remove prev_bumask, cur_bumask,
+	diff_bumask references; Update calls to rs6000_target_modify_ptr.
+	* config/rs6000/rs6000.opt (rs6000_builtin_mask): Remove.
+
 2022-07-21  Sam Feifer  <sfeifer@redhat.com>
 
 	PR tree-optimization/94920

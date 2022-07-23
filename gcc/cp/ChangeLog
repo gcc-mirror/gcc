@@ -1,3 +1,17 @@
+2022-07-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106366
+	* pt.cc (do_class_deduction): Don't consider TYPE_HAS_LIST_CTOR
+	when setting try_list_ctor.  Reset args even when try_list_ctor
+	is true and there are no list candidates.  Call resolve_args on
+	the reset args.  Rename try_list_ctor to try_list_cand.
+
+2022-07-22  Martin Liska  <mliska@suse.cz>
+
+	PR other/106370
+	* init.cc (sort_mem_initializers): Remove continue as last stmt
+	in a loop.
+
 2022-07-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/106361

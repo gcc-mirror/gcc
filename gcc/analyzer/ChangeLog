@@ -1,3 +1,24 @@
+2022-07-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106413
+	* varargs.cc (region_model::impl_call_va_start): Avoid iterating
+	through non-existant variadic arguments by initializing the
+	impl_region to "UNKNOWN" if the va_start occurs in the top-level
+	function to the analysis.
+
+2022-07-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106401
+	* store.cc (binding_cluster::binding_cluster): Remove overzealous
+	assertion; we're checking for tracked_p in
+	store::get_or_create_cluster.
+
+2022-07-22  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106394
+	* region-model.cc (capacity_compatible_with_type): Always return true
+	if alloc_size is zero.
+
 2022-07-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106383

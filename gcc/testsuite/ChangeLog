@@ -1,3 +1,38 @@
+2022-07-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106413
+	* gcc.dg/analyzer/torture/stdarg-4.c: New test.
+
+2022-07-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106401
+	* gcc.dg/analyzer/memcpy-2.c: New test.
+
+2022-07-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106366
+	* g++.dg/cpp1z/class-deduction112.C: New test.
+
+2022-07-22  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106394
+	* gcc.dg/analyzer/pr106394.c: New test.
+
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106397
+	* gcc.dg/pr106397.c: New testcase.
+
+2022-07-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/106010
+	* gcc.dg/pr23911.c: Scan IMAGPART/REALPART_EXPR = ** instead
+	of __complex__ since COMPLEX_CST is lower to scalars.
+
+2022-07-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106038-1.c: New test.
+
 2022-07-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106383
