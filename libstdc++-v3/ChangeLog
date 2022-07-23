@@ -1,3 +1,42 @@
+2022-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (_Dir::_Dir) [!_GLIBCXX_HAVE_OPENAT]:
+	Always store pathname if we don't have openat or unlinkat,
+	because the full path is needed to open sub-directories and
+	remove entries.
+
+2022-07-22  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	* src/c++17/fs_dir.cc (dir_and_pathname): Use dirfd if
+	_GLIBCXX_HAVE_OPENAT.
+
+2022-07-22  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-06-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for
+	openat.
+	* configure, config.h.in: Rebuilt.
+	* src/filesystem/dir-common.h (openat): Use ::openat if
+	_GLIBCXX_HAVE_OPENAT.
+	* src/filesystem/dir.cc (dir_and_pathname): Use dirfd if
+	_GLIBCXX_HAVE_OPENAT.
+
+2022-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace: Do not include <cxxabi.h>.
+	(__cxa_demangle): Declare.
+
 2022-07-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
