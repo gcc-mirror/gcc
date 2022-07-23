@@ -1,3 +1,30 @@
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105618
+	* tree-ssa-sink.c (statement_sink_location): For virtual
+	PHI uses ignore those defining the used virtual operand.
+
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103193
+	* match.pd: Avoid canonicalizing (le/ge @0 @0) to (eq @0 @0)
+	with NaNs and -ftrapping-math.
+
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103116
+	* tree-vect-stmts.c (get_group_load_store_type): Handle the
+	case we need peeling for gaps even though GROUP_GAP is zero.
+
 2022-07-21  Surya Kumari Jangala  <jskumari@linux.vnet.ibm.com>
 
 	Backported from master:

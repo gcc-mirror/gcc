@@ -1,3 +1,8 @@
+2022-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106361
+	* decl.c (move_fn_p): Remove assert.
+
 2022-07-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/106024

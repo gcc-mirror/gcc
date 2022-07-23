@@ -1,3 +1,90 @@
+2022-07-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/106320
+	* include/std/ranges (single_view): Relax constraints on
+	default constructor so as to preserve pre-P2325R3 behavior.
+	(filter_view): Likewise.
+	(transform_view): Likewise.
+	(take_while_view): Likewise.
+	(drop_while_view): Likewise.
+	* testsuite/std/ranges/adaptors/join.cc (test13): New test.
+	* testsuite/std/ranges/p2325.cc: Fix S to be only non default
+	constructible and not also non copy constructible.  XFAIL the
+	tests that verify a non default constructible functor makes a
+	view non default constructible (lines 94, 97 and 98).  XFAIL
+	the test that effectively verifies a non default constructible
+	element type makes single_view non default constructible (line
+	114).
+
+2022-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100823
+	* include/bits/stl_iterator.h (common_iterator): Define move
+	constructor and move assignment operator.
+	(common_iterator::_M_assign): New function implementing
+	assignment.
+	(common_iterator::operator=): Use _M_assign.
+	(common_iterator::_S_valueless): New constant.
+	* testsuite/24_iterators/common_iterator/100823.cc: New test.
+
+2022-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (common_iterator): Fix incorrect
+	uses of is_nothrow_assignable_v. Fix inconsistent constraints on
+	friend declaration. Do not move argument in copy constructor.
+	* testsuite/24_iterators/common_iterator/1.cc: Check for
+	noexcept constructibnle/assignable.
+
+2022-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103992
+	* include/bits/stl_iterator.h (common_iterator): Use
+	std::construct_at instead of placement new.
+	* testsuite/24_iterators/common_iterator/1.cc: Check copy
+	construction is usable in constant expressions.
+
+2022-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (common_iterator): Add constexpr
+	to all member functions (LWG 3574).
+	* testsuite/24_iterators/common_iterator/1.cc: Evaluate some
+	tests as constant expressions.
+	* testsuite/24_iterators/common_iterator/2.cc: Likewise.
+
+2022-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/from_chars/4.cc: Only use log2 if C99 math
+	functions are available.
+
+2022-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88881
+	* src/filesystem/ops.cc (has_trailing_slash): New helper
+	function.
+	(fs::status): Strip trailing slashes.
+	(fs::symlink_status): Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Clean the environment before each test and use TMP instead of
+	TMPDIR so the test passes on Windows.
+
 2022-07-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,25 @@
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105618
+	* gcc.dg/tree-ssa/ssa-sink-19.c: New testcase.
+
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103116
+	* gcc.dg/vect/pr103116-1.c: New testcase.
+	* gcc.dg/vect/pr103116-2.c: Likewise.
+
+2022-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106361
+	* g++.dg/cpp2a/spaceship-eq14.C: New test.
+
 2022-07-21  Surya Kumari Jangala  <jskumari@linux.vnet.ibm.com>
 
 	Backported from master:
