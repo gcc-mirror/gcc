@@ -15,7 +15,7 @@
 # along with this program; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-SUFFIXES = .c .mod .def .o .obj .lo .a .la
+SUFFIXES = .c .cc .mod .def .o .obj .lo .a .la
 
 ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 
@@ -107,12 +107,13 @@ M2MODS = Debug.mod  Executive.mod \
 
 toolexeclib_LTLIBRARIES = libm2cor.la
 
-libm2cor_la_SOURCES = $(M2MODS) KeyBoardLEDs.c
+libm2cor_la_SOURCES = $(M2MODS) KeyBoardLEDs.cc
 
 nodist_EXTRA_libm2cor_la_SOURCES = dummy.c  ## forces automake to generate the LINK definition
 
 libm2cordir = libm2cor
 libm2cor_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2cor_la_SOURCES)))
+libm2cor_la_CFLAGS = -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
 libm2cor_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs-coroutines -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g
 libm2cor_la_LINK = $(LINK) -version-info $(libtool_VERSION)
 BUILT_SOURCES = SYSTEM.def
@@ -129,6 +130,9 @@ SYSTEM.def: Makefile
 
 .mod.lo:
 	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2cor_la_M2FLAGS) $< -o $@
+
+.cc.lo:
+	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2cor_la_CFLAGS) $< -o $@
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)

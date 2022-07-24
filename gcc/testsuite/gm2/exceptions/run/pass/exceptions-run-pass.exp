@@ -29,6 +29,7 @@ load_lib gm2-torture.exp
 
 
 set output [target_compile $srcdir/$subdir/cpp.cpp cpp.o object "-g"]
+set output [target_compile $srcdir/$subdir/mycpp.cpp mycpp.o object "-g"]
 
 #
 #  notice this uses PIM libraries with exceptions - this is a useful test.
@@ -38,13 +39,16 @@ set output [target_compile $srcdir/$subdir/cpp.cpp cpp.o object "-g"]
 set gm2src ${srcdir}/../m2
 
 gm2_init_pim "${srcdir}/gm2/exceptions/run/pass"
-gm2_link_with "cpp.o"
+set output [gm2_target_compile $srcdir/$subdir/m2test.mod m2test.o object "-g"]
+
+gm2_link_obj "cpp.o mycpp.o m2test.o"
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.
     if ![runtest_file_p $runtests $testcase] then {
 	continue
     }
-
-    gm2-torture-execute $testcase "" "pass"
+    if { $testcase ne "$srcdir/$subdir/m2test.mod" } {
+	gm2-torture-execute $testcase "" "pass"
+    }
 }

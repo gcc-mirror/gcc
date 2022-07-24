@@ -24,8 +24,9 @@ if $tracelevel then {
 # load support procs
 load_lib gm2-torture.exp
 
+gm2_link_lib "m2iso m2pim"
 gm2_init_iso "${srcdir}/gm2/iso/run/pass" -fsoft-check-all
-gm2_link_with fileio.o
+gm2_link_obj fileio.o
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.

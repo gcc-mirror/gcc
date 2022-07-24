@@ -38,5 +38,5 @@ END farrayofchar ;
 
 
 BEGIN
-   farrayofchar('hello')
+   farrayofchar ('hello')
 END m.

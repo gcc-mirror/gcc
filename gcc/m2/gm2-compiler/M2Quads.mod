@@ -2359,23 +2359,26 @@ END BuildM2DepFunction ;
 
 PROCEDURE BuildM2LinkFunction (tokno: CARDINAL; modulesym: CARDINAL) ;
 BEGIN
-   IF ScaffoldDynamic AND (linkFunction # NulSym)
+   IF ScaffoldDynamic
    THEN
-      (* void
-         _M2_link (void)
-         {
-            for each module in uselist do
-               PROC foo_%d = _M2_module_ctor
-            done
-         }.  *)
-      PushT (linkFunction) ;
-      BuildProcedureStart ;
-      BuildProcedureBegin ;
-      StartScope (linkFunction) ;
-      PopulateCtorArray (tokno) ;
-      EndScope ;
-      BuildProcedureEnd ;
-      PopN (1)
+      IF linkFunction # NulSym
+      THEN
+         (* void
+           _M2_link (void)
+           {
+              for each module in uselist do
+                 PROC foo_%d = _M2_module_ctor
+              done
+           }.  *)
+         PushT (linkFunction) ;
+         BuildProcedureStart ;
+         BuildProcedureBegin ;
+         StartScope (linkFunction) ;
+         PopulateCtorArray (tokno) ;
+         EndScope ;
+         BuildProcedureEnd ;
+         PopN (1)
+      END
    END
 END BuildM2LinkFunction ;
 

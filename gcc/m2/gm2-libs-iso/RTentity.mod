@@ -42,7 +42,7 @@ PROCEDURE InitGroup () : Group ;
 VAR
    g: Group ;
 BEGIN
-   checkInitialised ;
+   checkInitialized ;
    wait (mutex) ;
    g := malloc (SIZE (g^)) ;
    WITH g^ DO
@@ -89,6 +89,7 @@ VAR
    parent,
    child : Group ;
 BEGIN
+   assert (initialized) ;
    wait (mutex) ;
    findChildAndParent (g, a, child, parent) ;
    signal (mutex) ;
@@ -106,6 +107,7 @@ VAR
    parent,
    child : Group ;
 BEGIN
+   assert (initialized) ;
    wait (mutex) ;
    findChildAndParent (g, a, child, parent) ;
    IF child = NIL
@@ -146,6 +148,7 @@ PROCEDURE IsIn (g: Group; a: SYSTEM.ADDRESS) : BOOLEAN ;
 VAR
    child, parent: Group ;
 BEGIN
+   assert (initialized) ;
    wait (mutex) ;
    findChildAndParent (g, a, child, parent) ;
    signal (mutex) ;
@@ -165,6 +168,7 @@ PROCEDURE DelKey (g: Group; a: SYSTEM.ADDRESS) ;
 VAR
    i, child, parent: Group ;
 BEGIN
+   assert (initialized) ;
    wait (mutex) ;
    (* find parent and child of the node *)
    findChildAndParent (g, a, child, parent) ;
@@ -194,7 +198,7 @@ BEGIN
          END ;
          free (child)
       ELSE
-         (* Assert that parent^.left=child will always be true *)
+         (* assert that parent^.left=child will always be true *)
          (* Perform exactly the mirror image of the above code *)
 
          (* Connect child^.right onto the parent^.left.        *)
@@ -259,10 +263,24 @@ END findChildAndParent ;
 
 
 (*
-   checkInitialised -
+   assert - simple assertion procedure.
 *)
 
-PROCEDURE checkInitialised ;
+PROCEDURE assert (condition: BOOLEAN) ;
+BEGIN
+   IF NOT condition
+   THEN
+      Halt (__FILE__, __LINE__, __FUNCTION__,
+            'internal runtime error, RTentity is either corrupt or the module storage has not been initialized yet')
+   END
+END assert ;
+
+
+(*
+   checkInitialized -
+*)
+
+PROCEDURE checkInitialized ;
 VAR
    result: INTEGER ;
 BEGIN
@@ -272,12 +290,11 @@ BEGIN
       result := init () ;
       mutex := initSemaphore (1)
    END
-END checkInitialised ;
+END checkInitialized ;
 
 
 VAR
-   initialized: BOOLEAN ;
+   initialized: BOOLEAN ;  (* Set to FALSE when the bss is created.  *)
    mutex      : INTEGER ;
-BEGIN
-   initialized := FALSE
+
 END RTentity.

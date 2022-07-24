@@ -25,7 +25,6 @@ if $tracelevel then {
 load_lib gm2-torture.exp
 
 gm2_init_pim "${srcdir}/gm2/switches/whole-program/run/pass" -fm2-whole-program
-gm2_link_with "-lm2pim -lm2iso -lpthread"
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.

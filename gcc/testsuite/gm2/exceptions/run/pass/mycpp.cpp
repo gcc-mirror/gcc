@@ -47,3 +47,7 @@ extern "C" void _M2_mycpp_init (void)
 extern "C" void _M2_mycpp_finish (void)
 {
 }
+
+extern "C" void _M2_mycpp_ctor (void)
+{
+}

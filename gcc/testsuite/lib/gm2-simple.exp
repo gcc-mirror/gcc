@@ -69,6 +69,7 @@ proc gm2-simple-execute { sources args option } {
     global tmpdir tool srcdir output compiler_conditional_xfail_data;
     global gm2_link_libraries;
     global gm2_link_path;
+    global gm2_link_objects;
 
     # Use the first source filename given as the filename under test.
     set src [lindex $sources 0];
@@ -105,10 +106,14 @@ proc gm2-simple-execute { sources args option } {
     remote_file build delete $execname;
     verbose "Testing $testcase, $option" 1
 
-    lappend option "libs=${gm2_link_libraries}";
-    lappend option "ldflags=${gm2_link_path}";
+    # start by setting options with option
+    set options [concat "{additional_flags=$gm2_link_objects} " $option]
+    # now append path -fno-libs=- and objects
+    set options [concat "{additional_flags=$gm2_link_path} " $options]
+    set options [concat "{additional_flags=-fno-libs=-} " $options]
+    set options [concat "{additional_flags=$gm2_link_objects} " $options]
 
-    set comp_output [gm2_target_compile "${sources}" "${execname}" executable ${option}];
+    set comp_output [gm2_target_compile "${sources}" "${execname}" executable ${options}];
 
     if ![gm2_check_compile "${testcase} compilation" ${option} ${execname} $comp_output] {
 	unresolved "${testcase} execution, ${option}"

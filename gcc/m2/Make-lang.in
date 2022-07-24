@@ -1105,7 +1105,7 @@ m2/gm2-compiler-boot/cflex.o: m2/gm2-compiler/cflex.c m2/gm2-compiler-boot/$(SRC
           $(GM2GCC) $(INCLUDES) -I$(srcdir)/m2 \
           -Im2 -Im2/gm2-compiler-boot -Im2/gm2-libs-boot $< -o $@
 
-m2/gm2-compiler/m2flex.c: $(srcdir)/m2/m2.flex $(TIMEVAR_H)
+m2/gm2-compiler/m2flex.c: $(srcdir)/m2/m2.flex $(TIMEVAR_H) insn-attr-common.h
 	flex -t $< | sed -e 's/ malloc/ xmalloc/' | sed -e 's/ realloc/ xrealloc/' > $@
 
 m2/gm2-compiler/cflex.c: $(srcdir)/m2/c.flex

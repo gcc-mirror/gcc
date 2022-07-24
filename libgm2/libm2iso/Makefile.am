@@ -194,6 +194,8 @@ BUILT_SOURCES = SYSTEM.def
 
 M2LIBDIR = /m2/m2iso/
 
+M2HEADER_FILES = m2rts.h
+
 SYSTEM.def: Makefile
 	bash $(GM2_SRC)/tools-src/makeSystem -fiso \
              $(GM2_SRC)/gm2-libs-iso/SYSTEM.def \
@@ -224,6 +226,14 @@ install-data-local: force
               $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
            elif [ -f @srcdir@/../../gcc/m2/gm2-libs-iso/$$i ] ; then \
               $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs-iso/$$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
+           else \
+              echo "cannot find $$i" ; exit 1 ; \
+           fi ; \
+           chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)$$i ; \
+	done
+	for i in $(M2HEADER_FILES) ; do \
+           if [ -f @srcdir@/$$i ] ; then \
+              $(INSTALL_DATA) @srcdir@/$$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
            else \
               echo "cannot find $$i" ; exit 1 ; \
            fi ; \

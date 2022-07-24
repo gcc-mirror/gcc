@@ -56,6 +56,7 @@ FROM SymbolTable IMPORT ModeOfAddr,
                         MakeTemporary,
                         MakeVar, PutVar,
                         MakeSubrange, PutSubrange, IsSubrange,
+                        PutModuleBuiltin,
                         IsEnumeration, IsSet, IsPointer, IsType, IsUnknown,
                         IsHiddenType, IsProcType,
                         GetType, GetLowestType, GetDeclaredMod, SkipType,
@@ -186,7 +187,7 @@ VAR
 BEGIN
    IF DebugBuiltins
    THEN
-      (* we will need to parse this module as functions alloca/memcpy will be used *)
+      (* We will need to parse this module as functions alloca/memcpy will be used.  *)
       builtins := MakeDefinitionSource (BuiltinTokenNo, MakeKey ('Builtins')) ;
       IF builtins = NulSym
       THEN
@@ -203,17 +204,18 @@ END InitBuiltins ;
 
 PROCEDURE InitBase (location: location_t; VAR sym: CARDINAL) ;
 BEGIN
-   sym := MakeModule(BuiltinTokenNo, MakeKey('_BaseTypes')) ;
-   SetCurrentModule(sym) ;
-   StartScope(sym) ;
+   sym := MakeModule (BuiltinTokenNo, MakeKey ('_BaseTypes')) ;
+   PutModuleBuiltin (sym, TRUE) ;
+   SetCurrentModule (sym) ;
+   StartScope (sym) ;
 
-   InitBaseSimpleTypes(location) ;
+   InitBaseSimpleTypes (location) ;
 
-   (* Initialise the SYSTEM module before we ADDRESS.  *)
+   (* Initialize the SYSTEM module before we ADDRESS.  *)
    InitSystem ;
 
    MakeBitset ;  (* We do this after SYSTEM has been created as BITSET
-                    is dependant upon WORD *)
+                    is dependant upon WORD.  *)
 
    InitBaseConstants ;
    InitBaseFunctions ;

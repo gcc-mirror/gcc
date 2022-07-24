@@ -1,4 +1,4 @@
-/* getopt.c provide access to the C getopt library.
+/* cgetopt.cc provide access to the C getopt library.
 
 Copyright (C) 2009-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
@@ -27,13 +27,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <unistd.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <m2rts.h>
 
-char *cgetopt_optarg;
-int cgetopt_optind;
-int cgetopt_opterr;
-int cgetopt_optopt;
+extern "C" {char *cgetopt_optarg;}
+extern "C" {int cgetopt_optind;}
+extern "C" {int cgetopt_opterr;}
+extern "C" {int cgetopt_optopt;}
 
-char
+extern "C" char
 cgetopt_getopt (int argc, char *argv[], char *optstring)
 {
   char r = getopt (argc, argv, optstring);
@@ -48,7 +49,7 @@ cgetopt_getopt (int argc, char *argv[], char *optstring)
   return r;
 }
 
-int
+extern "C" int
 cgetopt_getopt_long (int argc, char *argv[], char *optstring,
                     const struct option *longopts, int *longindex)
 {
@@ -62,7 +63,7 @@ cgetopt_getopt_long (int argc, char *argv[], char *optstring,
   return r;
 }
 
-int
+extern "C" int
 cgetopt_getopt_long_only (int argc, char *argv[], char *optstring,
                          const struct option *longopts, int *longindex)
 {
@@ -84,7 +85,7 @@ typedef struct cgetopt_Options_s
 
 /* InitOptions a constructor for Options.  */
 
-cgetopt_Options *
+extern "C" cgetopt_Options *
 cgetopt_InitOptions (void)
 {
   cgetopt_Options *o = (cgetopt_Options *)malloc (sizeof (cgetopt_Options));
@@ -96,7 +97,7 @@ cgetopt_InitOptions (void)
 /* KillOptions a deconstructor for Options.  Returns NULL after freeing
    up all allocated memory associated with o.  */
 
-cgetopt_Options *
+extern "C" cgetopt_Options *
 cgetopt_KillOptions (cgetopt_Options *o)
 {
   free (o->cinfo);
@@ -106,7 +107,7 @@ cgetopt_KillOptions (cgetopt_Options *o)
 
 /* SetOption set option[index] with {name, has_arg, flag, val}.  */
 
-void
+extern "C" void
 cgetopt_SetOption (cgetopt_Options *o, unsigned int index, char *name,
  		   unsigned int has_arg, int *flag, int val)
 {
@@ -125,7 +126,7 @@ cgetopt_SetOption (cgetopt_Options *o, unsigned int index, char *name,
 /* GetLongOptionArray returns a pointer to the C array containing all
    long options.  */
 
-struct option *
+extern "C" struct option *
 cgetopt_GetLongOptionArray (cgetopt_Options *o)
 {
   return o->cinfo;
@@ -133,12 +134,25 @@ cgetopt_GetLongOptionArray (cgetopt_Options *o)
 
 /* GNU Modula-2 linking fodder.  */
 
-void
-_M2_cgetopt_init (void)
+extern "C" void
+_M2_cgetopt_init (int, char *argv[], char *env[])
 {
 }
 
-void
-_M2_cgetopt_finish (void)
+extern "C" void
+_M2_cgetopt_fini (int, char *argv[], char *env[])
 {
+}
+
+extern "C" void
+_M2_cgetopt_dep (void)
+{
+}
+
+struct _M2_cgetopt_ctor { _M2_cgetopt_ctor (); } _M2_cgetopt_ctor;
+
+_M2_cgetopt_ctor::_M2_cgetopt_ctor (void)
+{
+  M2RTS_RegisterModule ("cgetopt", _M2_cgetopt_init, _M2_cgetopt_fini,
+			_M2_cgetopt_dep);
 }

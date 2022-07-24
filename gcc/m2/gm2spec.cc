@@ -23,6 +23,13 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "opts.h"
+
+#if 1
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "xregex.h"
 #include "obstack.h"
 #include "intl.h"
@@ -30,6 +37,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "opt-suggestions.h"
 #include "gcc.h"
 #include "opts.h"
+#endif
 #include "vec.h"
 
 #include "m2/gm2version.h"
@@ -49,37 +57,59 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif
 #endif
 
+/* This bit is set if we saw a `-xfoo' language specification.  */
+#define LANGSPEC	(1<<1)
+/* This bit is set if they did `-lm' or `-lmath'.  */
+#define MATHLIB		(1<<2)
+/* This bit is set if they did `-lc'.  */
+#define WITHLIBC	(1<<3)
+/* Skip this option.  */
+#define SKIPOPT		(1<<4)
+
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "m"
+#endif
+#ifndef MATH_LIBRARY_PROFILE
+#define MATH_LIBRARY_PROFILE MATH_LIBRARY
 #endif
 
 #ifndef LIBSTDCXX
 #define LIBSTDCXX "stdc++"
 #endif
-
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
+#ifndef LIBSTDCXX_PROFILE
+#define LIBSTDCXX_PROFILE LIBSTDCXX
+#endif
+#ifndef LIBSTDCXX_STATIC
+#define LIBSTDCXX_STATIC NULL
 #endif
 
-/* Most every one is fine with LIBRARY_PATH.  For some, it conflicts.  */
-#ifndef LIBRARY_PATH_ENV
-#define LIBRARY_PATH_ENV "LIBRARY_PATH"
+#ifndef LIBCXX
+#define LIBCXX "c++"
+#endif
+#ifndef LIBCXX_PROFILE
+#define LIBCXX_PROFILE LIBCXX
+#endif
+#ifndef LIBCXX_STATIC
+#define LIBCXX_STATIC NULL
 #endif
 
-int lang_specific_extra_outfiles = 0;
+#ifndef LIBCXXABI
+#define LIBCXXABI "c++abi"
+#endif
+#ifndef LIBCXXABI_PROFILE
+#define LIBCXXABI_PROFILE LIBCXXABI
+#endif
+#ifndef LIBCXXABI_STATIC
+#define LIBCXXABI_STATIC NULL
+#endif
 
-/* DEBUGGING will print all the options at various stages with their
-   error code, full name etc.  */
-#undef DEBUGGING
-
-/* LOCAL_DEBUGGING allows the compiler driver to automatically set a -B
-   prefix (assuming one it not user supplied).  It sets the -Bprefix with
-   the given path to argv[0].  This allows subprograms to be found in the
-   build tree (without having to be installed).  It is only meant as an
-   aid to development, not a user feature :-).  It allows developers to
-   lazily type:  ./gm2 -c hello.c rather than ./gm2 -B./ -c hello.c
-   or /somedirectory/development/build/gcc/gm2 -c hello.c.  */
-#undef LOCAL_DEBUGGING
+/* The values used here must match those of the stdlib_kind enumeration
+   in c.opt.  */
+enum stdcxxlib_kind
+{
+  USE_LIBSTDCXX = 1,
+  USE_LIBCXX = 2
+};
 
 #define DEFAULT_DIALECT "pim"
 
@@ -106,31 +136,108 @@ static const char *library_abbrev[maxlib]
    -flibs=m2pim,m2iso respectively.  This provides a match between
    the dialect of Modula-2 and the library set.  */
 
-int lang_specific_pre_link (void);
-static void add_lib (size_t opt_index, const char *lib, int joined);
+
 static const char *add_include (const char *libpath, const char *library);
-static void insert_option (unsigned int *in_decoded_options_count,
-                           struct cl_decoded_option **in_decoded_options,
-                           unsigned int position);
-static const char *gen_link_path (const char *libpath, const char *dialect);
-static const char *add_exec_dir (int argc, const char *argv[]);
-static const char *gen_gm2_libexec (const char *path);
 
 static bool seen_scaffold_static = false;
 static bool seen_scaffold_dynamic = false;
 static bool scaffold_static = false;
 static bool scaffold_dynamic = true;  // Default uses -fscaffold-dynamic.
+static bool seen_gen_module_list = false;
+static bool seen_uselist = false;
+static bool uselist = false;
+static bool gen_module_list = true;  // Default uses -fgen-module-list=-.
+static const char *gen_module_filename = "-";
 static bool seen_B = false;
 static const char *B_path = NULL;
 static const char *multilib_dir = NULL;
+/* The original argument list and related info is copied here.  */
+static unsigned int gm2_xargc;
+static const struct cl_decoded_option *gm2_x_decoded_options;
+static void append_arg (const struct cl_decoded_option *);
 
-/* By default the suffix for target object files is ".o".  */
-#ifdef TARGET_OBJECT_SUFFIX
-#define HAVE_TARGET_OBJECT_SUFFIX
-#else
-#define TARGET_OBJECT_SUFFIX ".o"
+/* The new argument list will be built here.  */
+static unsigned int gm2_newargc;
+static struct cl_decoded_option *gm2_new_decoded_options;
+
+
+/* Return whether strings S1 and S2 are both NULL or both the same
+   string.  */
+
+static bool
+strings_same (const char *s1, const char *s2)
+{
+  return s1 == s2 || (s1 != NULL && s2 != NULL && strcmp (s1, s2) == 0);
+}
+
+#if 1
+bool
+options_same (const struct cl_decoded_option *opt1,
+	      const struct cl_decoded_option *opt2)
+{
+  return (opt1->opt_index == opt2->opt_index
+	  && strings_same (opt1->arg, opt2->arg)
+	  && strings_same (opt1->orig_option_with_args_text,
+			   opt2->orig_option_with_args_text)
+	  && strings_same (opt1->canonical_option[0],
+			   opt2->canonical_option[0])
+	  && strings_same (opt1->canonical_option[1],
+			   opt2->canonical_option[1])
+	  && strings_same (opt1->canonical_option[2],
+			   opt2->canonical_option[2])
+	  && strings_same (opt1->canonical_option[3],
+			   opt2->canonical_option[3])
+	  && (opt1->canonical_option_num_elements
+	      == opt2->canonical_option_num_elements)
+	  && opt1->value == opt2->value
+	  && opt1->errors == opt2->errors);
+}
+
+/* Append another argument to the list being built.  */
+
+static void
+append_arg (const struct cl_decoded_option *arg)
+{
+  static unsigned int newargsize;
+
+  if (gm2_new_decoded_options == gm2_x_decoded_options
+      && gm2_newargc < gm2_xargc
+      && options_same (arg, &gm2_x_decoded_options[gm2_newargc]))
+    {
+      ++gm2_newargc;
+      return;			/* Nothing new here.  */
+    }
+
+  if (gm2_new_decoded_options == gm2_x_decoded_options)
+    {				/* Make new arglist.  */
+      unsigned int i;
+
+      newargsize = (gm2_xargc << 2) + 20;	/* This should handle all.  */
+      gm2_new_decoded_options = XNEWVEC (struct cl_decoded_option, newargsize);
+
+      /* Copy what has been done so far.  */
+      for (i = 0; i < gm2_newargc; ++i)
+	gm2_new_decoded_options[i] = gm2_x_decoded_options[i];
+    }
+
+  if (gm2_newargc == newargsize)
+    fatal_error (input_location, "overflowed output argument list for %qs",
+		 arg->orig_option_with_args_text);
+
+  gm2_new_decoded_options[gm2_newargc++] = *arg;
+}
+
+/* Append an option described by OPT_INDEX, ARG and VALUE to the list
+   being built.  */
+static void
+append_option (size_t opt_index, const char *arg, int value)
+{
+  struct cl_decoded_option decoded;
+
+  generate_option (opt_index, arg, value, CL_DRIVER, &decoded);
+  append_arg (&decoded);
+}
 #endif
-
 
 /* gen_gm2_libexec, return a libexec string.  */
 
@@ -186,105 +293,7 @@ add_exec_dir (int argc, const char *argv[])
   return "-fcpp-prog=none";
 }
 
-/* fe_generate_option wrap up arg and pass it to fe_save_switch.  */
-
-static void
-fe_generate_option (size_t opt_index, const char *arg, bool joined)
-{
-  const struct cl_option *option = &cl_options[opt_index];
-  char *opt;
-
-  if (joined)
-    {
-      const char *old = option->opt_text;
-      opt = (char *)xmalloc (strlen (old) + strlen (arg) + 1);
-      strcpy (opt, old);
-      strcat (opt, arg);
-    }
-  else
-    opt = xstrdup (option->opt_text);
-
-  if (arg == NULL || joined)
-    fe_save_switch (opt, 0, NULL, true, false);
-  else
-    {
-      const char **x = (const char **)XCNEWVEC (const char **, 2);
-
-      x[0] = xstrdup (arg);
-      x[1] = NULL;
-
-      gcc_assert (opt_index != OPT_l);
-      fe_save_switch (opt, 1, x, true, false);
-    }
-}
-
-/* add_lib add lib to the end of the command line.  */
-
-static void
-add_lib (size_t opt_index, const char *lib, int joined)
-{
-  if (lib == NULL || (strcmp (lib, "") == 0))
-    return;
-
-  fe_generate_option (opt_index, lib, joined);
-}
-
-/* insert_option inserts an option at position index on the command line.  */
-
-static void
-insert_option (unsigned int *in_decoded_options_count,
-               struct cl_decoded_option **in_decoded_options,
-               unsigned int position)
-{
-  struct cl_decoded_option *new_decoded_options;
-  unsigned int i;
-
-  (*in_decoded_options_count)++;
-
-  gcc_assert (position <= (*in_decoded_options_count));
-
-  new_decoded_options
-      = XNEWVEC (struct cl_decoded_option, (*in_decoded_options_count) + 1);
-  for (i = 0; i < position; i++)
-    new_decoded_options[i] = (*in_decoded_options)[i];
-  memset (&new_decoded_options[position], 0,
-          sizeof (struct cl_decoded_option));
-
-  for (i = position; i < (*in_decoded_options_count) - 1; i++)
-    new_decoded_options[i + 1] = (*in_decoded_options)[i];
-  *in_decoded_options = new_decoded_options;
-}
-
-/* add_library adds a library to the command line at arg position.  It
-   returns the number of arguments added.  If libraryname is NULL or
-   empty then zero is returned.  */
-
-static int
-add_library (const char *libraryname, unsigned int *in_decoded_options_count,
-             struct cl_decoded_option **in_decoded_options,
-             unsigned int position)
-{
-  if (libraryname == NULL || (strcmp (libraryname, "") == 0))
-    return 0;
-
-  insert_option (in_decoded_options_count, in_decoded_options, position);
-
-#if defined(DEBUGGING)
-  printf ("going to add -l%s at position=%d  count=%d\n", libraryname,
-            position, *in_decoded_options_count);
-  print_options ("before add_library", *in_decoded_options_count, *in_decoded_options);
-#endif
-
-  generate_option (OPT_l, libraryname, 1, CL_DRIVER,
-                   &(*in_decoded_options)[position]);
-
-#if defined(DEBUGGING)
-  print_options ("after add_library", *in_decoded_options_count, *in_decoded_options);
-#endif
-  return 1;
-}
-
-/* build_archive_path returns a string containing the a path to the
+/* build_archive_path returns a string containing the path to the
    archive defined by libpath and dialectLib.  */
 
 static const char *
@@ -341,68 +350,48 @@ safe_strdup (const char *s)
 /* add_default_combination adds the correct link path and then the
    library name.  */
 
-static void
-add_default_combination (const char *libpath, const char *library,
-                         unsigned int *in_decoded_options_count,
-                         struct cl_decoded_option **in_decoded_options,
-                         unsigned int position)
+static bool
+add_default_combination (const char *libpath, const char *library)
 {
   if (library != NULL)
     {
-      add_lib (OPT_L, build_archive_path (libpath, library), true);
-      add_library (safe_strdup (library), in_decoded_options_count,
-                   in_decoded_options, position);
+      append_option (OPT_L, build_archive_path (libpath, library), 1);
+      append_option (OPT_l, safe_strdup (library), 1);
+      return true;
     }
-}
-
-/* gen_link_path generates a link path for the chosen dialect.  */
-
-static const char *
-gen_link_path (const char *libpath, const char *dialect)
-{
-  return add_include (libpath, dialect);
+  return false;
 }
 
 /* add_default_archives adds the default archives to the end of the
    current command line.  */
 
 static int
-add_default_archives (const char *libpath, const char *libraries,
-                      unsigned int *in_decoded_options_count,
-                      struct cl_decoded_option **in_decoded_options,
-                      unsigned int position)
+add_default_archives (const char *libpath, const char *libraries)
 {
-  const char *prev;
   const char *l = libraries;
   const char *e;
-  char *c;
+  char *libname;
   unsigned int libcount = 0;
 
   do
     {
-      if (libpath == NULL)
-        prev = NULL;
-      else
-        prev = xstrdup (libpath);
-
       e = index (l, ',');
       if (e == NULL)
         {
-          c = xstrdup (l);
+          libname = xstrdup (l);
           l = NULL;
+	  if (add_default_combination (libpath, libname))
+	    libcount++;
+	  free (libname);
         }
       else
         {
-          c = xstrndup (l, e - l);
+          libname = xstrndup (l, e - l);
           l = e + 1;
+	  if (add_default_combination (libpath, libname))
+	    libcount++;
+	  free (libname);
         }
-      add_default_combination (libpath, c, in_decoded_options_count,
-                               in_decoded_options, position + libcount);
-      libcount++;
-      prev = gen_link_path (libpath, c);
-
-      fe_generate_option (OPT_L, prev, true);
-      free (c);
     }
   while ((l != NULL) && (l[0] != (char)0));
   return libcount;
@@ -481,32 +470,9 @@ add_default_includes (const char *libpath, const char *libraries)
           l = e + 1;
         }
       path = add_include (libpath, c);
-      fe_generate_option (OPT_I, path, true);
+      append_option (OPT_I, path, 1);
     }
   while ((l != NULL) && (l[0] != (char)0));
-}
-
-/* purge_include_options remove any -I option found from
-   in_decoded_options.  */
-
-static void
-purge_include_options (unsigned int *in_decoded_options_count,
-                       struct cl_decoded_option **in_decoded_options)
-{
-  struct cl_decoded_option *decoded_options = *in_decoded_options;
-  unsigned int i, j;
-
-  for (i = 0; i < *in_decoded_options_count; i++)
-    {
-      size_t opt = decoded_options[i].opt_index;
-
-      if (opt == OPT_I)
-        {
-          for (j = i; j + 1 < *in_decoded_options_count; j++)
-            decoded_options[j] = decoded_options[j + 1];
-          (*in_decoded_options_count)--;
-        }
-    }
 }
 
 /* library_installed returns true if directory library is found under
@@ -580,7 +546,6 @@ check_valid_list (const char *libpath, const char *libraries)
   return true;
 }
 
-
 /* add_word returns a new string which has the contents of lib
    appended to list.  If list is NULL then lib is duplicated and
    returned otherwise the list is appended by "," and the contents of
@@ -644,82 +609,264 @@ convert_abbreviations (const char *libraries)
   return full_libraries;
 }
 
-/* lang_specific_driver is invoked if we are compiling/linking a
-   Modula-2 file.  It checks for module paths and linking requirements
-   which are language specific.  */
+
+
+void stop (void) {}
 
 void
 lang_specific_driver (struct cl_decoded_option **in_decoded_options,
-                      unsigned int *in_decoded_options_count,
-                      int *in_added_libraries)
+		      unsigned int *in_decoded_options_count,
+		      int *in_added_libraries)
 {
+  unsigned int argc = *in_decoded_options_count;
+  struct cl_decoded_option *decoded_options = *in_decoded_options;
   unsigned int i;
 
-  /* Nonzero if we saw a `-xfoo' language specification on the command
+  /* True if we saw a `-xfoo' language specification on the command
      line.  This function will add a -xmodula-2 if the user has not
      already placed one onto the command line.  */
   bool seen_x_flag = false;
   const char *language = NULL;
 
+  /* If nonzero, the user gave us the `-p' or `-pg' flag.  */
+  int saw_profile_flag = 0;
+
+  /* What action to take for the c++ runtime library:
+    -1  means we should not link it in.
+     0  means we should link it if it is needed.
+     1  means it is needed and should be linked in.
+     2  means it is needed but should be linked statically.  */
+  int library = 0;
+
+  /* Which c++ runtime library to link.  */
+  stdcxxlib_kind which_library = USE_LIBSTDCXX;
+
   const char *libraries = NULL;
   const char *dialect = DEFAULT_DIALECT;
+  const char *libpath = LIBSUBDIR;
 
-  bool seen_module_extension = -1;
+  /* An array used to flag each argument that needs a bit set for
+     LANGSPEC, MATHLIB, or WITHLIBC.  */
+  int *args;
+
+  /* Have we seen -fmod=?  */
+  bool seen_module_extension = false;
+
+  /* Should the driver perform a linl?  */
   bool linking = true;
-  bool seen_fexceptions = true;
-  const char *libpath;
 
-  /* By default, we add the math library if we have one.  */
-  bool need_math = (strcmp (MATH_LIBRARY, "") == 0);
+  /* "-lm" or "-lmath" if it appears on the command line.  */
+  const struct cl_decoded_option *saw_math = NULL;
 
-  /* True if we should add -lpthread to the command-line.  */
-  bool need_pthread = true;
+  /* "-lc" if it appears on the command line.  */
+  const struct cl_decoded_option *saw_libc = NULL;
+
+  /* By default, we throw on the math library if we have one.  */
+  int need_math = (MATH_LIBRARY[0] != '\0');
+
+  /* 1 if we should add -lpthread to the command-line.  */
+  int need_pthread = 1;
+
+  /* True if we saw -static.  */
+  int static_link = 0;
+
+  /* True if we should add -shared-libgcc to the command-line.  */
+  int shared_libgcc = 1;
+
+  /* Have we seen the -v flag?  */
+  bool verbose = false;
+
+  /* The number of libraries added in.  */
+  int added_libraries;
 
   /* True if we should add -fplugin=m2rte to the command-line.  */
   bool need_plugin = true;
 
-  /* True if we should add -shared-libgcc to the command-line.  */
-  bool shared_libgcc = true;
+  /* True if we should set up include paths and library paths.  */
+  bool allow_libraries = true;
 
-  /* The total number of arguments with the new stuff.  */
-  unsigned int argc = *in_decoded_options_count;
+#if 0
+  stop ();
+  printf ("argc = %d\n", argc);
+  fprintf (stderr, "Incoming:");
+  for (i = 0; i < argc; i++)
+    fprintf (stderr, " %s", decoded_options[i].orig_option_with_args_text);
+  fprintf (stderr, "\n");
+#endif
 
-  /* Initially scan the options for key values.  */
+  gm2_xargc = argc;
+  gm2_x_decoded_options = decoded_options;
+  gm2_newargc = 0;
+  gm2_new_decoded_options = decoded_options;
+  added_libraries = *in_added_libraries;
+  args = XCNEWVEC (int, argc);
+
+  /* First pass through arglist.
+
+     If -nostdlib or a "turn-off-linking" option is anywhere in the
+     command line, don't do any library-option processing (except
+     relating to -x).  */
+
   for (i = 1; i < argc; i++)
     {
-      if ((*in_decoded_options)[i].errors & CL_ERR_MISSING_ARG)
-        continue;  /* Avoid examining arguments of options missing them.  */
-      switch ((*in_decoded_options)[i].opt_index)
-        {
+      const char *arg = decoded_options[i].arg;
+      args[i] = 0;
+#if 0
+      printf ("1st pass: %s\n",
+	      decoded_options[i].orig_option_with_args_text);
+#endif
+#if 0
+      if (decoded_options[i].errors & CL_ERR_MISSING_ARG)
+	continue; /* Avoid examining arguments of options missing them.  */
+#endif
+
+      switch (decoded_options[i].opt_index)
+	{
+	case OPT_fiso:
+	  dialect = "iso";
+	  break;
+	case OPT_fpim2:
+	  dialect = "pim2";
+	  break;
+	case OPT_fpim3:
+	  dialect = "pim3";
+	  break;
+	case OPT_fpim4:
+	  dialect = "pim4";
+	  break;
+	case OPT_fpim:
+	  dialect = "pim";
+	  break;
+	case OPT_flibs_:
+	  libraries = xstrdup (arg);
+	  allow_libraries = decoded_options[i].value;
+	  break;
+	case OPT_fmod_:
+	  seen_module_extension = true;
+	  break;
+	case OPT_version:
+	  gm2_version (true);
+	  break;
+	case OPT_fm2_version:
+	  gm2_version (false);
+	  break;
+
+#if 0
         case OPT_fexceptions:
-          seen_fexceptions = ((*in_decoded_options)[i].value);
+          seen_fexceptions = decoded_options[i].value;
           break;
+#endif
         case OPT_B:
           seen_B = true;
-          B_path = (*in_decoded_options)[i].arg;
+          B_path = decoded_options[i].arg;
           break;
-        case OPT_fno_pthread:
-          need_pthread = false;
+        case OPT_fpthread:
+          need_pthread = decoded_options[i].value;
           break;
-        case OPT_fno_m2_plugin:
-          need_plugin = false;
+        case OPT_fm2_plugin:
+          need_plugin = decoded_options[i].value;
           break;
 	case OPT_fscaffold_dynamic:
 	  seen_scaffold_dynamic = true;
-	  scaffold_dynamic = (*in_decoded_options)[i].value;
+	  scaffold_dynamic = decoded_options[i].value;
 	  break;
 	case OPT_fscaffold_static:
 	  seen_scaffold_static = true;
-	  scaffold_static = (*in_decoded_options)[i].value;
+	  scaffold_static = decoded_options[i].value;
 	  break;
+	case OPT_fgen_module_list_:
+	  seen_gen_module_list = true;
+	  gen_module_list = decoded_options[i].value;
+	  if (gen_module_list)
+	    gen_module_filename = decoded_options[i].arg;
+	  break;
+	case OPT_fuse_list_:
+	  seen_uselist = true;
+	  uselist = decoded_options[i].value;
+	  break;
+	  ///////
+
+	case OPT_nostdlib:
+	case OPT_nostdlib__:
+	case OPT_nodefaultlibs:
+	  library = -1;
+	  break;
+
+	case OPT_l:
+	  if (strcmp (arg, MATH_LIBRARY) == 0)
+	    {
+	      args[i] |= MATHLIB;
+	      need_math = 0;
+	    }
+	  else if (strcmp (arg, "c") == 0)
+	    args[i] |= WITHLIBC;
+	  else
+	    /* Unrecognized libraries (e.g. -lfoo) may require libstdc++.  */
+	    library = (library == 0) ? 1 : library;
+	  break;
+
+	case OPT_pg:
+	case OPT_p:
+	  saw_profile_flag++;
+	  break;
+
+	case OPT_x:
+          seen_x_flag = true;
+          language = arg;
+	  break;
+
+	case OPT_v:
+	  verbose = true;
+	  break;
+
+	case OPT_Xlinker:
+	case OPT_Wl_:
+	  /* Arguments that go directly to the linker might be .o files,
+	     or something, and so might cause libstdc++ to be needed.  */
+	  if (library == 0)
+	    library = 1;
+	  break;
+
+	case OPT_c:
+	case OPT_r:
+	case OPT_S:
+	case OPT_E:
+	case OPT_M:
+	case OPT_MM:
+	case OPT_fsyntax_only:
+	  /* Don't specify libraries if we won't link, since that would
+	     cause a warning.  */
+	  linking = false;
+	  library = -1;
+	  break;
+
+	case OPT_static:
+	  static_link = 1;
+	  break;
+
+	case OPT_static_libgcc:
+	  shared_libgcc = 0;
+	  break;
+
+	case OPT_static_libstdc__:
+	  library = library >= 0 ? 2 : library;
+	  args[i] |= SKIPOPT;
+	  break;
+
+	case OPT_stdlib_:
+	  which_library = (stdcxxlib_kind) decoded_options[i].value;
+	  break;
+
 	default:
-	  if (((*in_decoded_options)[i].orig_option_with_args_text != NULL)
-	      && (strncmp ((*in_decoded_options)[i].orig_option_with_args_text,
+	  if ((decoded_options[i].orig_option_with_args_text != NULL)
+	      && (strncmp (decoded_options[i].orig_option_with_args_text,
 			   "-m", 2) == 0))
-	    multilib_dir = xstrdup ((*in_decoded_options)[i].orig_option_with_args_text
+	    multilib_dir = xstrdup (decoded_options[i].orig_option_with_args_text
 				    + 2);
 	}
     }
+  if (language != NULL && (strcmp (language, "modula-2") != 0))
+    return;
 
   if (scaffold_static && scaffold_dynamic)
     {
@@ -729,139 +876,183 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	error ("%qs and %qs cannot both be enabled",
 	       "-fscaffold-dynamic", "-fscaffold-static");
     }
-  libpath = fe_getenv (LIBRARY_PATH_ENV);
-  if (libpath == NULL || (strcmp (libpath, "") == 0))
-    libpath = LIBSUBDIR;
-
-#if defined(DEBUGGING)
-  print_options ("after scaffold checking", *in_decoded_options_count, *in_decoded_options);
-#endif
-  i = 1;
-  for (i = 1; i < *in_decoded_options_count; i++)
+  if (uselist && gen_module_list)
     {
-      const char *arg = (*in_decoded_options)[i].arg;
-      size_t opt = (*in_decoded_options)[i].opt_index;
-
-#if defined(DEBUGGING)
-      print_option ("in for", i, *in_decoded_options);
-      printf ("argument: %s, %ld\n", arg, opt);
-#endif
-      if ((opt == OPT_c) || (opt == OPT_S))
-        linking = false;
-      if (opt == OPT_I)
-	fe_generate_option (OPT_I, arg, true);
-      if (opt == OPT_fiso)
-        dialect = "iso";
-      if (opt == OPT_fpim2)
-        dialect = "pim2";
-      if (opt == OPT_fpim3)
-        dialect = "pim3";
-      if (opt == OPT_fpim4)
-        dialect = "pim4";
-      if (opt == OPT_fpim)
-        dialect = "pim";
-      if (opt == OPT_flibs_)
-        libraries = xstrdup (arg);
-      if (opt == OPT_fmod_)
-        seen_module_extension = true;
-      if (opt == OPT_version)
-        gm2_version (true);
-      if (opt == OPT_fm2_version)
-        gm2_version (false);
-      if (opt == OPT_x)
-        {
-          seen_x_flag = true;
-          language = arg;
-        }
+      if (! seen_gen_module_list)
+	gen_module_list = false;
+      if (uselist && gen_module_list)
+	error ("%qs and %qs cannot both be enabled",
+	       "-fgen-module-list=", "-fuse-list=");
     }
-  if (language != NULL && (strcmp (language, "modula-2") != 0))
-    return;
-#if defined(DEBUGGING)
-  print_options ("after dialect detection", *in_decoded_options_count, *in_decoded_options);
+
+
+  /* There's no point adding -shared-libgcc if we don't have a shared
+     libgcc.  */
+#ifndef ENABLE_SHARED_LIBGCC
+  shared_libgcc = 0;
 #endif
 
-  /* If the libraries have not been specified by the user and the
-     dialect has been specified then select the appropriate libraries.  */
+  /* For libc++, on most platforms, the ABI library (usually called libc++abi)
+     is provided as a separate DSO, which we must also append.
+     However, a platform might have the ability to forward the ABI library
+     from libc++, or combine it in some other way; in that case, LIBCXXABI
+     should be set to NULL to signal that it need not be appended.
 
-  if (libraries == NULL)
+     remove this...
+ */
+
+  /* Second pass through arglist, transforming arguments as appropriate.  */
+
+  append_arg (&decoded_options[0]); /* Start with command name, of course.  */
+  for (i = 1; i < argc; ++i)
     {
-      if (strcmp (dialect, "iso") == 0)
-        libraries = xstrdup ("m2iso,m2pim");
+#if 0
+      printf ("2nd pass: %s\n",
+	      decoded_options[i].orig_option_with_args_text);
+#endif
+
+      if ((args[i] & SKIPOPT) == 0)
+	{
+	  append_arg (&decoded_options[i]);
+	  /* Make sure -lstdc++ is before the math library, since libstdc++
+	     itself uses those math routines.  */
+	  if (!saw_math && (args[i] & MATHLIB) && library > 0)
+	    saw_math = &decoded_options[i];
+
+	  if (!saw_libc && (args[i] & WITHLIBC) && library > 0)
+	    saw_libc = &decoded_options[i];
+	}
+#if 0
       else
-        libraries = xstrdup ("m2pim");  /* Default to pim libraries if none specified.  */
+	printf ("skipping: %s\n",
+		decoded_options[i].orig_option_with_args_text);
+#endif
     }
 
-  libraries = convert_abbreviations (libraries);
-  if (! check_valid_list (libpath, libraries))
-    return;
+  /* We now add in extra arguments to facilitate a successful
+     compile or link.  For example include paths for dialect of Modula-2,
+     library paths and default scaffold linking options.  */
 
-  add_default_includes (libpath, libraries);
-  if ((!seen_x_flag) && seen_module_extension)
-    fe_generate_option (OPT_x, "modula-2", false);
+#if 1
+  /* If we have not seen either uselist or gen_module_list and we need
+     to link then we turn on -fgen_module_list=- as the default.  */
+  if ((! (seen_uselist || seen_gen_module_list)) && linking)
+    append_option (OPT_fgen_module_list_, "-", 1);
+#endif
+
+  if (allow_libraries)
+    {
+      /* If the libraries have not been specified by the user and the
+	 dialect has been specified then select the appropriate libraries.  */
+
+      if (libraries == NULL)
+	{
+	  if (strcmp (dialect, "iso") == 0)
+	    libraries = xstrdup ("m2iso,m2pim");
+	  else
+	    libraries = xstrdup ("m2pim");  /* Default to pim libraries if none
+					       specified.  */
+	}
+
+      libraries = convert_abbreviations (libraries);
+      if (! check_valid_list (libpath, libraries))
+	return;
+
+#if 1
+      add_default_includes (libpath, libraries);
+    }
+  if ((! seen_x_flag) && seen_module_extension)
+    append_option (OPT_x, "modula-2", 1);
 
   if (need_plugin)
-    fe_generate_option (OPT_fplugin_, "m2rte", true);
+    append_option (OPT_fplugin_, "m2rte", 1);
+#endif
 
   if (linking)
     {
-      if (strcmp (dialect, "iso") == 0)
-	/* We need the pim libraries even if using iso.  */
-        (*in_added_libraries)
-            += add_library ("m2pim", in_decoded_options_count,
-                            in_decoded_options, *in_decoded_options_count);
-
-      (*in_added_libraries) += add_default_archives (
-        libpath, libraries, in_decoded_options_count, in_decoded_options,
-	*in_decoded_options_count);
-
-      if (need_math)
-        (*in_added_libraries)
-            += add_library (MATH_LIBRARY, in_decoded_options_count,
-                            in_decoded_options, *in_decoded_options_count);
-
-      if (need_pthread)
-        (*in_added_libraries)
-            += add_library ("pthread", in_decoded_options_count,
-                            in_decoded_options, *in_decoded_options_count);
-
-      if (seen_fexceptions)
-        (*in_added_libraries)
-            += add_library (LIBSTDCXX, in_decoded_options_count,
-                            in_decoded_options, *in_decoded_options_count);
-
-      /* There is no point adding -shared-libgcc if we don't have a shared
-	 libgcc.  */
-#if !defined(ENABLE_SHARED_LIBGCC)
-      shared_libgcc = false;
+#if 1
+      if (allow_libraries)
+	add_default_archives (libpath, libraries);
 #endif
-      if (shared_libgcc)
-        {
-          fe_generate_option (OPT_shared_libgcc, NULL, false);
-          (*in_added_libraries)
-              += add_library ("gcc_eh", in_decoded_options_count,
-                              in_decoded_options, *in_decoded_options_count);
-        }
+      /* Add `-lstdc++' if we haven't already done so.  */
+#ifdef HAVE_LD_STATIC_DYNAMIC
+      if (library > 1 && !static_link)
+	append_option (OPT_Wl_, LD_STATIC_OPTION, 1);
+#endif
+      if (which_library == USE_LIBCXX)
+	{
+	  append_option (OPT_l, saw_profile_flag ? LIBCXX_PROFILE : LIBCXX, 1);
+	  added_libraries++;
+	  if (LIBCXXABI != NULL)
+	    {
+	      append_option (OPT_l, saw_profile_flag ? LIBCXXABI_PROFILE
+			     : LIBCXXABI, 1);
+	      added_libraries++;
+	    }
+	}
+      else
+	{
+	  append_option (OPT_l, saw_profile_flag ? LIBSTDCXX_PROFILE
+			 : LIBSTDCXX, 1);
+	  added_libraries++;
+	}
+      /* Add target-dependent static library, if necessary.  */
+      if ((static_link || library > 1) && LIBSTDCXX_STATIC != NULL)
+	{
+	  append_option (OPT_l, LIBSTDCXX_STATIC, 1);
+	  added_libraries++;
+	}
+#ifdef HAVE_LD_STATIC_DYNAMIC
+      if (library > 1 && !static_link)
+	append_option (OPT_Wl_, LD_DYNAMIC_OPTION, 1);
+#endif
     }
-#if defined(DEBUGGING)
-  print_options ("before include options purge", *in_decoded_options_count, *in_decoded_options);
+  if (need_math)
+    {
+      append_option (OPT_l, saw_profile_flag ? MATH_LIBRARY_PROFILE :
+		     MATH_LIBRARY, 1);
+      added_libraries++;
+    }
+  if (need_pthread)
+    {
+      append_option (OPT_l, "pthread", 1);
+      added_libraries++;
+    }
+#if 0
+  if (saw_time)
+    new_decoded_options[j++] = *saw_time;
+  if (saw_libc)
+    new_decoded_options[j++] = *saw_libc;
 #endif
-  purge_include_options (in_decoded_options_count, in_decoded_options);
-#if defined(DEBUGGING)
-  print_options ("after include options purge", *in_decoded_options_count, *in_decoded_options);
-#endif
+  if (shared_libgcc && !static_link)
+    append_option (OPT_shared_libgcc, NULL, 1);
+
+  if (verbose && gm2_new_decoded_options != gm2_x_decoded_options)
+    {
+      fprintf (stderr, _("Driving:"));
+      for (i = 0; i < gm2_newargc; i++)
+	fprintf (stderr, " %s",
+		 gm2_new_decoded_options[i].orig_option_with_args_text);
+      fprintf (stderr, "\n");
+      fprintf (stderr, "new argc = %d, added_libraries = %d\n",
+	       gm2_newargc, added_libraries);
+    }
+
+  *in_decoded_options_count = gm2_newargc;
+  *in_decoded_options = gm2_new_decoded_options;
+  *in_added_libraries = added_libraries;
 }
 
-/* lang_specific_pre_link - does nothing.  */
-// --fixme-- remove lang_specific_pre_link here and all other drivers.
-int
-lang_specific_pre_link (void)
+/* Called before linking.  Returns 0 on success and -1 on failure.  */
+int lang_specific_pre_link (void)  /* Not used for C++.  */
 {
   return 0;
 }
 
-/* lang_register_spec_functions register the Modula-2 associated spec
-   functions.  */
+/* Number of extra output files that lang_specific_pre_link may generate.  */
+int lang_specific_extra_outfiles = 0;  /* --fixme-- remove me.  */
 
+/* lang_register_spec_functions.   --fixme-- remove me.  */
 void
 lang_register_spec_functions (void)
 {

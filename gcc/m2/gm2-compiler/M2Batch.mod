@@ -37,8 +37,7 @@ FROM M2Pass IMPORT IsPass1, IsPass2, IsPass3, IsPassC ;
 
 
 TYPE
-   Module = POINTER TO module ;
-   module =            RECORD
+   Module = POINTER TO RECORD
                           SymNo  : CARDINAL ;
                           Key    : Name ;
                           DefFile,
@@ -46,7 +45,7 @@ TYPE
                        END ;
 
 VAR
-   DoneQueue   : Index ;
+   SeenList    : Index ;
    PendingQueue: List ;
 
 
@@ -119,7 +118,7 @@ BEGIN
    Sym := Get (n) ;
    IF Sym = NulSym
    THEN
-      Assert ((NOT IsPass1()) AND (NOT IsPass2()) AND (NOT IsPass3()) AND (NOT IsPassC())) ;
+      Assert ((NOT IsPass1 ()) AND (NOT IsPass2 ()) AND (NOT IsPass3 ()) AND (NOT IsPassC ())) ;
       (* Neither been compiled or on the Pending Queue *)
       Sym := MakeDefImp (tok, n) ;
       Put (Sym, n) ;
@@ -144,14 +143,14 @@ END GetSource ;
    GetModuleNo - returns with symbol number of the nth module read during Pass 1.
 *)
 
-PROCEDURE GetModuleNo (n: CARDINAL) : CARDINAL ;
+PROCEDURE GetModuleNo (nth: CARDINAL) : CARDINAL ;
 VAR
    m: Module ;
 BEGIN
-   Assert (n#0) ;
-   IF InBounds (DoneQueue, n)
+   Assert (nth#0) ;
+   IF InBounds (SeenList, nth)
    THEN
-      m := GetIndice (DoneQueue, n) ;
+      m := GetIndice (SeenList, nth) ;
       RETURN m^.SymNo
    ELSE
       RETURN NulSym
@@ -160,7 +159,7 @@ END GetModuleNo ;
 
 
 (*
-   IsModuleKnown - returns TRUE if the Name, n, matches a module.
+   IsModuleKnown - returns TRUE if the Name n matches a module.
 *)
 
 PROCEDURE IsModuleKnown (n: Name) : BOOLEAN ;
@@ -170,7 +169,7 @@ END IsModuleKnown ;
 
 
 (*
-   Get - returns the module symbol matching name, n.
+   Get - returns the module symbol matching name n.
 *)
 
 PROCEDURE Get (n: Name) : CARDINAL ;
@@ -179,9 +178,9 @@ VAR
    m    : Module ;
 BEGIN
    i := 1 ;
-   no := HighIndice (DoneQueue) ;
+   no := HighIndice (SeenList) ;
    WHILE i <= no DO
-      m := GetIndice (DoneQueue, i) ;
+      m := GetIndice (SeenList, i) ;
       WITH m^ DO
          IF Key = n
          THEN
@@ -200,7 +199,7 @@ VAR
    m: Module ;
 BEGIN
    NEW (m) ;
-   IncludeIndiceIntoIndex (DoneQueue, m) ;
+   IncludeIndiceIntoIndex (SeenList, m) ;
    WITH m^ DO
       SymNo   := Sym ;
       Key     := n ;
@@ -234,7 +233,7 @@ END Pop ;
 
 
 (*
-   DisplayModules - a debugging routine to textually emit the names of modules in the DoneQ.
+   DisplayModules - a debugging routine to textually emit the names of modules in the SeenList.
 *)
 
 PROCEDURE DisplayModules ;
@@ -243,13 +242,13 @@ VAR
    n, i: CARDINAL ;
 BEGIN
    i := 1 ;
-   n := HighIndice(DoneQueue) ;
+   n := HighIndice (SeenList) ;
    WHILE i<=n DO
-      m := GetIndice(DoneQueue, i) ;
+      m := GetIndice (SeenList, i) ;
       WITH m^ DO
-         printf2('Module %a %d\n', Key, i)
+         printf2 ('Module %a %d\n', Key, i)
       END ;
-      INC(i)
+      INC (i)
    END
 END DisplayModules ;
 
@@ -265,16 +264,16 @@ VAR
    m    : Module ;
 BEGIN
    i := 1 ;
-   no := HighIndice(DoneQueue) ;
-   WHILE i<=no DO
-      m := GetIndice(DoneQueue, i) ;
+   no := HighIndice (SeenList) ;
+   WHILE i <= no DO
+      m := GetIndice (SeenList, i) ;
       WITH m^ DO
-         IF SymNo=Sym
+         IF SymNo = Sym
          THEN
             DefFile := filename ;
-            RETURN( filename )
+            RETURN filename
          ELSE
-            INC(i)
+            INC (i)
          END
       END
    END ;
@@ -293,19 +292,19 @@ VAR
    m    : Module ;
 BEGIN
    i := 1 ;
-   no := HighIndice(DoneQueue) ;
-   WHILE i<=no DO
-      m := GetIndice(DoneQueue, i) ;
+   no := HighIndice (SeenList) ;
+   WHILE i <= no DO
+      m := GetIndice (SeenList, i) ;
       WITH m^ DO
-         IF SymNo=Sym
+         IF SymNo = Sym
          THEN
-            RETURN( DefFile )
+            RETURN DefFile
          ELSE
-            INC(i)
+            INC (i)
          END
       END
    END ;
-   RETURN( NIL )
+   RETURN NIL
 END GetDefinitionModuleFile ;
 
 
@@ -320,16 +319,16 @@ VAR
    m    : Module ;
 BEGIN
    i := 1 ;
-   no := HighIndice(DoneQueue) ;
+   no := HighIndice (SeenList) ;
    WHILE i<=no DO
-      m := GetIndice(DoneQueue, i) ;
+      m := GetIndice (SeenList, i) ;
       WITH m^ DO
-         IF SymNo=Sym
+         IF SymNo = Sym
          THEN
             ModFile := filename ;
-            RETURN( filename )
+            RETURN filename
          ELSE
-            INC(i)
+            INC (i)
          END
       END
    END ;
@@ -348,25 +347,24 @@ VAR
    m    : Module ;
 BEGIN
    i := 1 ;
-   no := HighIndice(DoneQueue) ;
-   WHILE i<=no DO
-      m := GetIndice(DoneQueue, i) ;
+   no := HighIndice (SeenList) ;
+   WHILE i <= no DO
+      m := GetIndice (SeenList, i) ;
       WITH m^ DO
-         IF SymNo=Sym
+         IF SymNo = Sym
          THEN
-            RETURN( ModFile )
+            RETURN ModFile
          ELSE
-            INC(i)
+            INC (i)
          END
       END
    END ;
-   RETURN( NIL )
+   RETURN NIL
 END GetModuleFile ;
 
 
 (*
-   ForeachSourceModuleDo - call each procedure, p, for which there is a known
-                           source file.
+   ForeachSourceModuleDo - for each source file call procedure, p.
 *)
 
 PROCEDURE ForeachSourceModuleDo (p: DoProcedure) ;
@@ -375,16 +373,16 @@ VAR
    m    : Module ;
 BEGIN
    i := 1 ;
-   no := HighIndice(DoneQueue) ;
+   no := HighIndice (SeenList) ;
    WHILE i<=no DO
-      m := GetIndice(DoneQueue, i) ;
+      m := GetIndice (SeenList, i) ;
       WITH m^ DO
-         IF ModFile#NIL
+         IF ModFile # NIL
          THEN
-            p(SymNo)
+            p (SymNo)
          END
       END ;
-      INC(i)
+      INC (i)
    END
 END ForeachSourceModuleDo ;
 
@@ -467,5 +465,5 @@ END LookupOuterModule ;
 
 BEGIN
    InitList (PendingQueue) ;
-   DoneQueue := InitIndex (1)
+   SeenList := InitIndex (1)
 END M2Batch.

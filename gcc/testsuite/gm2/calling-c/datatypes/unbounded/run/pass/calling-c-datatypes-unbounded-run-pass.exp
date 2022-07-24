@@ -29,7 +29,7 @@ load_lib gm2-torture.exp
 set gm2src ${srcdir}/../m2
 
 gm2_init_pim "${srcdir}/gm2/calling-c/datatypes/unbounded/run/pass"
-gm2_link_with "c.o -lm2pim -lm2iso -lpthread"
+gm2_link_obj "c.o"
 
 set output [target_compile $srcdir/$subdir/c.c c.o object "-g"]
 
@@ -39,6 +39,5 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
 	continue
     }
 
-    gm2_target_compile $srcdir/$subdir/m.mod m.o object "-g"
     gm2-torture-execute $testcase "" "pass"
 }

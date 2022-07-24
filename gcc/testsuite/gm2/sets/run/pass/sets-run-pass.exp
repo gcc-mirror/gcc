@@ -27,6 +27,7 @@ load_lib gm2-torture.exp
 
 set gm2src ${srcdir}/../m2
 
+gm2_link_lib "m2iso m2pim"
 gm2_init_iso "${srcdir}/gm2/sets/run/pass/"
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {

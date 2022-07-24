@@ -32,7 +32,7 @@ FROM DynamicStrings IMPORT String, InitString, KillString, ToUpper, InitStringCh
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2 ;
 FROM M2LexBuf IMPORT GetTokenNo ;
 FROM ASCII IMPORT nul ;
-FROM M2Options IMPORT StudentChecking ;
+FROM M2Options IMPORT StyleChecking ;
 
 
 VAR
@@ -80,7 +80,7 @@ END IsNotADuplicateName ;
 
 PROCEDURE CheckForVariableThatLooksLikeKeyword (name: Name) ;
 BEGIN
-   IF StudentChecking
+   IF StyleChecking
    THEN
       PerformVariableKeywordCheck (name)
    END
@@ -154,7 +154,7 @@ VAR
 BEGIN
    IF p#NulSym
    THEN
-      i := 1 ;   (* I would have used NoOfParam(p)+1 but Stuart wants parameters checked as well - maybe he is right *)
+      i := 1 ;   (* I would have used NoOfParam(p)+1 but Stuart wants parameters checked as well - maybe he is right.  *)
       REPEAT
          n1 := GetNth(p, i) ;
          IF n1#NulSym

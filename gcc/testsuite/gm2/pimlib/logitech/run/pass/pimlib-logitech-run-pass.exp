@@ -27,9 +27,8 @@ load_lib gm2-torture.exp
 
 set gm2src ${srcdir}/../m2
 
+gm2_link_lib "m2log m2pim m2iso"
 gm2_init_log
-
-gm2_link_with "-lm2log"
 
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {

@@ -69,7 +69,7 @@ PROCEDURE RegisterImplementationModule ;
                               It starts a new module scope.
 *)
 
-PROCEDURE RegisterDefinitionModule ;
+PROCEDURE RegisterDefinitionModule (forC: BOOLEAN) ;
 
 
 (*

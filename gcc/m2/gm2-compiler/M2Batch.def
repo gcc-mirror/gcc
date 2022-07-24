@@ -93,11 +93,11 @@ PROCEDURE GetSource () : CARDINAL ;
 
 (*
    GetModuleNo - returns with symbol number of the module which was
-                 the n th module to be read in Pass 1.
+                 the nth module to be read in Pass 1.
                  The modules are numbered from 1..n
 *)
 
-PROCEDURE GetModuleNo (n: CARDINAL) : CARDINAL ;
+PROCEDURE GetModuleNo (nth: CARDINAL) : CARDINAL ;
 
 
 (*

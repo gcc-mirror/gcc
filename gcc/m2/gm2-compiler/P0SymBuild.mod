@@ -25,7 +25,7 @@ FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM M2Printf IMPORT printf0, printf1, printf2 ;
 FROM Lists IMPORT List, InitList, KillList, IncludeItemIntoList, RemoveItemFromList, NoOfItemsInList, GetItemFromList, IsItemInList ;
 FROM M2Batch IMPORT MakeDefinitionSource, MakeProgramSource, MakeImplementationSource ;
-FROM SymbolTable IMPORT NulSym, MakeInnerModule, SetCurrentModule, SetFileModule, MakeError ;
+FROM SymbolTable IMPORT NulSym, MakeInnerModule, SetCurrentModule, SetFileModule, MakeError, PutDefinitionForC ;
 FROM NameKey IMPORT Name, NulName ;
 FROM M2Quads IMPORT PushT, PushTF, PopT, PopTF, PopN, OperandT, PopTtok, PushTtok ;
 FROM M2Reserved IMPORT ImportTok ;
@@ -420,19 +420,23 @@ END RegisterImplementationModule ;
    RegisterDefinitionModule - register the top of stack as a definition module.
 *)
 
-PROCEDURE RegisterDefinitionModule ;
+PROCEDURE RegisterDefinitionModule (forC: BOOLEAN) ;
 VAR
    n  : Name ;
    sym: CARDINAL ;
    tok: CARDINAL ;
 BEGIN
-   Assert(Level=0) ;
-   INC(Level) ;
+   Assert (Level=0) ;
+   INC (Level) ;
    PopTtok (n, tok) ;
    PushTtok (n, tok) ;
    sym := MakeDefinitionSource (tok, n) ;
    SetCurrentModule (sym) ;
    SetFileModule (sym) ;
+   IF forC
+   THEN
+      PutDefinitionForC (sym)
+   END ;
    BeginBlock (n, defimp, sym, tok) ;
    M2Error.EnterDefinitionScope (n)
 END RegisterDefinitionModule ;

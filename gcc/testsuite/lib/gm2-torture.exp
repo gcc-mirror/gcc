@@ -211,6 +211,7 @@ proc gm2-torture-execute { sources args success } {
     global tmpdir tool srcdir output compiler_conditional_xfail_data;
     global TORTURE_OPTIONS;
     global gm2_link_libraries;
+    global gm2_link_objects;
     global gm2_link_path;
 
     # Use the first source filename given as the filename under test.
@@ -280,10 +281,12 @@ proc gm2-torture-execute { sources args success } {
 
 	if ![gm2_check_compile "$testcase compilation" ${options} $objectfile $comp_output] {
 	    unresolved "$testcase execution, ${options}"
+	    send_log "compile failed not attempting link\n"
 	    remote_file build delete $objectfile
 	    continue
 	}
 
+	send_log "finished compile now attempting link\n"
 	# now link the test
 	set options ${option};
 
@@ -291,13 +294,43 @@ proc gm2-torture-execute { sources args success } {
 	    lappend options "additional_flags=[lindex ${args} 0]"
 	}
 
-	lappend options "libs=${gm2_link_libraries}";
-	lappend options "ldflags=${gm2_link_path}";
+	lappend options " additional_flags=${gm2_link_path}"
+
+	if {$gm2_link_path != ""} {
+	    lappend options " ldflags=$gm2_link_path"
+	}
+
+	if {$gm2_link_libraries != ""} {
+	    lappend options " ldflags=$gm2_link_libraries"
+	}
+
+#	lappend options "ldflags=/home/gaius/GM2/graft-combine/build-devel-modula2-enabled/x86_64-pc-linux-gnu/libgm2/libm2pim/.libs/libm2pim.a"
+#	lappend options "ldflags=/home/gaius/GM2/graft-combine/build-devel-modula2-enabled/x86_64-pc-linux-gnu/libgm2/libm2iso/.libs/libm2iso.a"
+#	lappend options "ldflags=-lm2pim -lm2iso"
+#
+	if {$gm2_link_objects != ""} {
+	    lappend options " additional_flags=${gm2_link_objects}"
+	}
+	if {$gm2_link_path != ""} {
+	    lappend options " additional_flags=${gm2_link_path}"
+	}
+
+	# lappend options " additional_flags=${gm2_link_objects}"
+	# lappend options " additional_flags=${gm2_link_path}"
+	# lappend options " additional_flags=${gm2_link_libraries}"
+	set options [concat "{additional_flags=$gm2_link_path} " $options]
+	set options [concat "{additional_flags=-fno-libs=-} " $options]
+	set options [concat "{additional_flags=$gm2_link_objects} " $options]
+	# set options [concat "{additional_flags=$gm2_link_libraries} " $options]
+
+	send_log "gm2_link_path = $gm2_link_path\n"
+	send_log "attempting link\n"
 	set comp_output [gm2_target_compile "${sources}" "${execname}" executable ${options}];
 	# puts "Link libraries are: ${gm2_link_libraries}"
 	# puts "Link path is      : ${gm2_link_path}"
 
 	if ![gm2_check_compile "${testcase} compilation" ${option} ${execname} ${comp_output}] {
+	    send_log "unsuccessful link\n"
 	    unresolved "${testcase} execution, ${option} (link failed)"
             verbose "tried to link ${testcase} ${sources} ${execname} executable ${options}" 1
 	    verbose "Link libraries are: ${gm2_link_libraries}" 1
@@ -316,6 +349,7 @@ proc gm2-torture-execute { sources args success } {
 	    continue
 	}
 
+	send_log "successful link\n"
 	# See if this source file uses "long long" types, if it does, and
 	# no_long_long is set, skip execution of the test.
 	if [target_info exists no_long_long] then {

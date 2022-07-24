@@ -66,7 +66,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
     int              tokenpos;         /* start position of token within line */
     int              toklen;           /* a copy of yylen (length of token) */
     int              nextpos;          /* position after token */
-    int              actualline;       /* line number of this line */
+    int              lineno;           /* line number of this line */
     int              column;           /* first column number of token on this line */
     int              inuse;            /* do we need to keep this line info? */
     location_t       location;         /* the corresponding gcc location_t */
@@ -301,7 +301,7 @@ VOLATILE                   { updatepos(); M2LexBuf_AddTok(M2Reserved_volatiletok
 [0-9]+B                    { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_integertok, yytext); return; }
 [0-9]+C                    { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_integertok, yytext); return; }
 [0-9A-F]+H                 { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_integertok, yytext); return; }
-[\t\r ]+                   { currentLine->tokenpos += yyleng;  /* ignore whitespace */; }
+[\t\r ]+                   { currentLine->tokenpos += yyleng;  /* Ignore space.  */; }
 .                          { updatepos(); m2flex_M2Error("unrecognised symbol"); skippos(); }
 
 %%
@@ -457,15 +457,15 @@ EXTERN void m2flex_M2Error (const char *s)
   if (currentLine->linebuf != NULL) {
     int i=1;
 
-    printf("%s:%d:%s\n", filename, currentLine->actualline, currentLine->linebuf);
-    printf("%s:%d:%*s", filename, currentLine->actualline, 1+currentLine->tokenpos, "^");
+    printf("%s:%d:%s\n", filename, currentLine->lineno, currentLine->linebuf);
+    printf("%s:%d:%*s", filename, currentLine->lineno, 1+currentLine->tokenpos, "^");
     while (i<currentLine->toklen) {
       putchar('^');
       i++;
     }
     putchar('\n');
   }
-  printf("%s:%d:%s\n", filename, currentLine->actualline, s);
+  printf("%s:%d:%s\n", filename, currentLine->lineno, s);
 }
 
 static void poperrorskip (const char *s)
@@ -495,7 +495,7 @@ static void consumeLine (void)
   strcpy(currentLine->linebuf, yytext+1);  /* copy all except the initial \n */
   lineno++;
   totalLines++;
-  currentLine->actualline = lineno;
+  currentLine->lineno = lineno;
   currentLine->tokenpos=0;
   currentLine->nextpos=0;
   currentLine->column=0;
@@ -508,7 +508,7 @@ static void assert_location (location_t location ATTRIBUTE_UNUSED)
 #if 0
   if ((location != BUILTINS_LOCATION) && (location != UNKNOWN_LOCATION) && (! M2Options_GetCpp ())) {
      expanded_location xl = expand_location (location);
-     if (xl.line != currentLine->actualline) {
+     if (xl.line != currentLine->lineno) {
        m2flex_M2Error ("mismatched gcc location and front end token number");
      }
   }
@@ -582,7 +582,7 @@ static void initLine (void)
   currentLine->tokenpos   = 0;
   currentLine->toklen     = 0;
   currentLine->nextpos    = 0;
-  currentLine->actualline = lineno;
+  currentLine->lineno = lineno;
   currentLine->column     = 0;
   currentLine->inuse      = TRUE;
   currentLine->next       = NULL;
@@ -609,7 +609,7 @@ static void pushLine (void)
       l->tokenpos   = currentLine->tokenpos;
       l->toklen     = currentLine->toklen;
       l->nextpos    = currentLine->nextpos;
-      l->actualline = currentLine->actualline;
+      l->lineno = currentLine->lineno;
       l->column     = currentLine->column;
       l->next       = currentLine;
       currentLine   = l;
@@ -678,7 +678,7 @@ EXTERN void m2flex_CloseSource (void)
 }
 
 /*
- *  OpenSource - returns TRUE if file, s, can be opened and
+ *  OpenSource - returns TRUE if file s can be opened and
  *               all tokens are taken from this file.
  */
 
@@ -690,20 +690,24 @@ EXTERN int m2flex_OpenSource (char *s)
     return( FALSE );
   else {
     isDefinitionModule = FALSE;
-    while (currentFunction != NULL) {
-      struct functionInfo *f = currentFunction;
-      currentFunction = f->next;
-      if (f->name != NULL)
-	free(f->name);
-      free(f);
-    }
-    yy_delete_buffer(YY_CURRENT_BUFFER);
-    yy_switch_to_buffer(yy_create_buffer(f, YY_BUF_SIZE));
-    filename = xstrdup(s);
+    while (currentFunction != NULL)
+      {
+	struct functionInfo *f = currentFunction;
+        currentFunction = f->next;
+        if (f->name != NULL)
+  	  free(f->name);
+      	free(f);
+      }
+    yy_delete_buffer (YY_CURRENT_BUFFER);
+    yy_switch_to_buffer (yy_create_buffer(f, YY_BUF_SIZE));
+    filename = xstrdup (s);
     lineno = 1;
-    if (currentLine != NULL)
-      currentLine->actualline = lineno;
+    if (currentLine == NULL)
+      pushLine ();
+    else
+      currentLine->lineno = lineno;
     START_FILE (filename, lineno);
+    BEGIN INITIAL; resetpos ();
     return TRUE;
   }
 }
@@ -715,7 +719,7 @@ EXTERN int m2flex_OpenSource (char *s)
 EXTERN int m2flex_GetLineNo (void)
 {
   if (currentLine != NULL)
-    return currentLine->actualline;
+    return currentLine->lineno;
   else
     return 0;
 }

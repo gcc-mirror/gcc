@@ -22,7 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 IMPLEMENTATION MODULE M2Comp ;
 
 
-FROM M2Options IMPORT Statistics, Quiet, WholeProgram, ExtendedOpaque ;
+FROM M2Options IMPORT Statistics, Quiet, WholeProgram, ExtendedOpaque, GenModuleList ;
 
 FROM M2Pass IMPORT SetPassToPass0, SetPassToPass1, SetPassToPass2, SetPassToPassC, SetPassToPass3,
                    SetPassToNoPass, SetPassToPassHidden ;
@@ -58,7 +58,7 @@ FROM M2Batch IMPORT GetSource, GetModuleNo, GetDefinitionModuleFile, GetModuleFi
 FROM SymbolTable IMPORT GetSymName, IsDefImp, NulSym,
                         IsHiddenTypeDeclared, GetFirstUsed, GetMainModule, SetMainModule,
                         ResolveConstructorTypes, SanityCheckConstants, IsDefinitionForC,
-                        IsBuiltinInModule ;
+                        IsBuiltinInModule, PutModLink, IsDefLink, IsModLink ;
 
 FROM FIO IMPORT StdErr ;
 FROM NameKey IMPORT Name, GetKey, KeyToCharStar, makekey ;
@@ -119,7 +119,7 @@ END NeedToParseImplementation ;
 
 
 (*
-   Compile - compile file, s, using a 6 pass technique.
+   Compile - compile file, s, using a 5 pass technique.
 *)
 
 PROCEDURE Compile (s: String) ;
@@ -242,7 +242,6 @@ BEGIN
       THEN
          IF FindSourceDefFile(SymName, FileName)
          THEN
-            qprintf2('   Module %-20s : %s\n', SymName, FileName) ;
             ModuleType := Definition ;
             IF OpenSource(AssociateDefinition(PreprocessModule(FileName), Sym))
             THEN
@@ -252,6 +251,16 @@ BEGIN
                   CloseSource ;
                   RETURN
                END ;
+               qprintf2 ('   Module %-20s : %s', SymName, FileName) ;
+               IF IsDefinitionForC (Sym)
+               THEN
+                  qprintf0 (' (for C)')
+               END ;
+               IF IsDefLink (Sym)
+               THEN
+                  qprintf0 (' (linking)')
+               END ;
+               qprintf0 ('\n') ;
                CloseSource
             ELSE
                MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUF%s} containing module {%%1a} cannot be found'), FileName), Sym) ;
@@ -276,26 +285,32 @@ BEGIN
          THEN
             FileName := Dup(s)
          ELSE
-            IF FindSourceModFile(SymName, FileName)
+            IF FindSourceModFile (SymName, FileName)
             THEN
             END
          END ;
          IF FileName#NIL
          THEN
-            qprintf2('   Module %-20s : %s\n', SymName, FileName) ;
-            IF OpenSource(AssociateModule(PreprocessModule(FileName), Sym))
+            IF OpenSource (AssociateModule (PreprocessModule (FileName), Sym))
             THEN
                IF NOT P0SyntaxCheck.CompilationUnit()
                THEN
-                  WriteFormat0('compilation failed') ;
+                  WriteFormat0 ('compilation failed') ;
                   CloseSource ;
                   RETURN
                END ;
+               qprintf2 ('   Module %-20s : %s', SymName, FileName) ;
+               IF IsModLink (Sym)
+               THEN
+                  qprintf0 (' (linking)')
+               END ;
+               qprintf0 ('\n') ;
                CloseSource
             ELSE
-               (* quite legitimate to implement a module in C (and pretend it was a M2 implementation
-                  providing that it is not the main program module and the definition module does not
-                 imply that the implementation defines hidden types.  *)
+               (* It is quite legitimate to implement a module in C (and pretend it was a M2
+                  implementation) providing that it is not the main program module and the
+                  definition module do not declare a hidden type when -fextended-opaque
+                  is used.  *)
                IF (NOT WholeProgram) OR (Sym=Main) OR IsHiddenTypeDeclared(Sym)
                THEN
                   MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUF%s} containing module {%%1a} cannot be found'), FileName), Sym) ;
@@ -304,11 +319,33 @@ BEGIN
                END
             END
          END
+      ELSIF GenModuleList
+      THEN
+         IF NOT IsDefinitionForC (Sym)
+         THEN
+            (* The implementation is only useful if -fgen-module-list= is
+               used and we do not insist upon it.  *)
+            IF FindSourceModFile (SymName, FileName)
+            THEN
+               qprintf2 ('   Module %-20s : %s (linking)\n', SymName, FileName) ;
+               IF OpenSource (AssociateModule (PreprocessModule (FileName), Sym))
+               THEN
+                  PutModLink (Sym, TRUE) ;   (* This source is only used to determine link time info.  *)
+                  IF NOT P0SyntaxCheck.CompilationUnit ()
+                  THEN
+                     WriteFormat0 ('compilation failed') ;
+                     CloseSource ;
+                     RETURN
+                  END ;
+                  CloseSource
+               END
+            END
+         END
       END ;
-      SymName := KillString(SymName) ;
-      FileName := KillString(FileName) ;
-      INC(i) ;
-      Sym := GetModuleNo(i)
+      SymName := KillString (SymName) ;
+      FileName := KillString (FileName) ;
+      INC (i) ;
+      Sym := GetModuleNo (i)
    END ;
    SetPassToNoPass
 END DoPass0 ;

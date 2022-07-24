@@ -25,8 +25,9 @@ if $tracelevel then {
 # load support procs
 load_lib gm2-torture.exp
 
+gm2_link_lib "m2pim"
 gm2_init_pim "${srcdir}/gm2/pim/pass" -fscaffold-main -fno-scaffold-dynamic
-gm2_link_with scaffold.o
+gm2_link_obj scaffold.o
 set output [target_compile $srcdir/$subdir/scaffold.c scaffold.o object "-g"]
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {

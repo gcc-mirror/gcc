@@ -154,6 +154,9 @@ EXPORT QUALIFIED NulSym,
                  GetVarWritten,
                  PutConst,
                  PutConstString,
+                 PutDefLink,
+                 PutModLink,
+                 PutModuleBuiltin,
 
                  PutConstSet,
                  PutConstructor,
@@ -252,6 +255,9 @@ EXPORT QUALIFIED NulSym,
                  IsModuleWithinProcedure,
                  IsVariableAtAddress,
                  IsReturnOptional,
+                 IsDefLink,
+                 IsModLink,
+                 IsModuleBuiltin,
 
                  ForeachProcedureDo,
                  ProcedureParametersDefined,
@@ -3440,6 +3446,49 @@ PROCEDURE AppendModuleImportStatement (module, statement: CARDINAL) ;
 *)
 
 PROCEDURE AppendModuleOnImportStatement (module, import: CARDINAL) ;
+
+
+(*
+   PutModLink - assigns link to module sym.
+*)
+
+PROCEDURE PutModLink (sym: CARDINAL; link: BOOLEAN) ;
+
+
+(*
+   IsModLink - returns the ModLink value associated with the module symbol.
+*)
+
+PROCEDURE IsModLink (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutDefLink - assigns link to the definition module sym.
+*)
+
+PROCEDURE PutDefLink (sym: CARDINAL; link: BOOLEAN) ;
+
+
+(*
+   IsDefLink - returns the DefLink value associated with the definition module symbol.
+*)
+
+PROCEDURE IsDefLink (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsModuleBuiltin - returns TRUE if the module is a builtin module.
+                     (For example _BaseTypes).
+*)
+
+PROCEDURE IsModuleBuiltin (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutModuleBuiltin - sets the Builtin flag to value.
+*)
+
+PROCEDURE PutModuleBuiltin (sym: CARDINAL; value: BOOLEAN) ;
 
 
 END SymbolTable.

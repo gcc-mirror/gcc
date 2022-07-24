@@ -23,6 +23,7 @@ DEFINITION MODULE M2Scaffold ;
 
 
 VAR
+   ctorArray,
    linkFunction,
    finiFunction,
    initFunction,

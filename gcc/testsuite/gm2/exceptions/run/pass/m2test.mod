@@ -22,7 +22,7 @@ IMPORT mycpp ;
 
 PROCEDURE try ;
 BEGIN
-   THROW(1)
+   THROW (1)
 END try ;
 
 END m2test.

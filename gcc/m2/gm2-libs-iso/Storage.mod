@@ -40,6 +40,7 @@ FROM EXCEPTIONS IMPORT ExceptionNumber, RAISE,
 
 PROCEDURE ALLOCATE (VAR addr: SYSTEM.ADDRESS; amount: CARDINAL) ;
 BEGIN
+   Init ;
    addr := malloc (amount) ;
    IF addr#NIL
    THEN
@@ -50,6 +51,7 @@ END ALLOCATE ;
 
 PROCEDURE DEALLOCATE (VAR addr: SYSTEM.ADDRESS; amount: CARDINAL) ;
 BEGIN
+   assert (initialized) ;
    IF VerifyDeallocate (addr, amount)
    THEN
       free (addr) ;
@@ -68,7 +70,8 @@ VAR
    newa: SYSTEM.ADDRESS ;
    n   : CARDINAL ;
 BEGIN
-   IF NOT IsIn(storageTree, addr)
+   assert (initialized) ;
+   IF NOT IsIn (storageTree, addr)
    THEN
       RAISE (storageException, ORD(pointerToUnallocatedStorage),
              'trying to reallocate memory which has never been allocated') ;
@@ -88,17 +91,19 @@ END REALLOCATE ;
 
 PROCEDURE IsStorageException () : BOOLEAN;
 BEGIN
+   Init ;
    RETURN( IsCurrentSource (storageException) )
 END IsStorageException ;
 
 
 PROCEDURE StorageException () : StorageExceptions ;
 BEGIN
+   Init ;
    IF NOT IsExceptionalExecution ()
    THEN
       RAISE (storageException, ORD (functionException), 'no storage exception raised')
    END ;
-   RETURN (currentException)
+   RETURN currentException
 END StorageException ;
 
 
@@ -110,26 +115,41 @@ PROCEDURE VerifyDeallocate (addr: SYSTEM.ADDRESS; amount: CARDINAL) : BOOLEAN ;
 VAR
    a: CARDINAL ;
 BEGIN
+
    IF addr=NIL
    THEN
       RAISE (storageException, ORD(nilDeallocation), 'deallocating pointer whose value is NIL') ;
-      RETURN (FALSE)
+      RETURN FALSE
    ELSE
       IF NOT IsIn(storageTree, addr)
       THEN
          RAISE (storageException, ORD(pointerToUnallocatedStorage), 'trying to deallocate memory which has never been allocated') ;
-         RETURN (FALSE)
+         RETURN FALSE
       END ;
       a := GetKey (storageTree, addr) ;
       IF a#amount
       THEN
          RAISE (storageException, ORD(wrongStorageToUnallocate), 'wrong amount of storage being deallocated') ;
-         RETURN (FALSE)
+         RETURN FALSE
       END
    END ;
    DelKey (storageTree, addr) ;
-   RETURN (TRUE)
+   RETURN TRUE
 END VerifyDeallocate ;
+
+
+(*
+   assert - simple assertion procedure.
+*)
+
+PROCEDURE assert (condition: BOOLEAN) ;
+BEGIN
+   IF NOT condition
+   THEN
+      Halt (__FILE__, __LINE__, __FUNCTION__,
+            'internal runtime error, module Storage has not been initialized yet')
+   END
+END assert ;
 
 
 (*
@@ -138,8 +158,12 @@ END VerifyDeallocate ;
 
 PROCEDURE Init ;
 BEGIN
-   storageTree := InitGroup () ;
-   AllocateSource (storageException)
+   IF NOT initialized
+   THEN
+      initialized := TRUE ;
+      storageTree := InitGroup () ;
+      AllocateSource (storageException)
+   END
 END Init ;
 
 
@@ -147,6 +171,6 @@ VAR
    storageException: ExceptionSource ;
    currentException: StorageExceptions ;
    storageTree     : Group ;
-BEGIN
-   Init
+   initialized     : BOOLEAN ;  (* Set to FALSE when the bss is created.  *)
+
 END Storage.

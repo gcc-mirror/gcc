@@ -215,20 +215,21 @@ END localMain ;
 
 
 (*
-   localInit - checks to see whether we need to initialize libpth.
+   localInit - checks to see whether we need to initialize our interface to pthreads.
 *)
 
 PROCEDURE localInit ;
 BEGIN
    IF NOT initCo
    THEN
+      Init ;
       IF init () # 0
       THEN
          Halt (__FILE__, __LINE__, __FUNCTION__,
                'failed to initialize RTco')
       END ;
       RTint.Init ;
-      initCo := TRUE ;
+      initCo := TRUE
    END ;
    localMain
 END localInit ;
@@ -585,18 +586,15 @@ END TurnInterrupts ;
 
 
 (*
-   Init -
+   Init - initialize the global data structures.
 *)
 
 PROCEDURE Init ;
 BEGIN
    freeList := NIL ;
-   initCo := FALSE ;
    initMain := FALSE ;
    currentCoRoutine := NIL
 END Init ;
 
 
-BEGIN
-   Init
 END COROUTINES.

@@ -63,7 +63,7 @@ EXTERN int M2Options_GetWholeValueCheck (void);
 EXTERN void M2Options_Setc (int value);
 EXTERN int M2Options_Getc (void);
 
-EXTERN void M2Options_SetUselist (const char *filename);
+EXTERN void M2Options_SetUselist (int value, const char *filename);
 EXTERN void M2Options_SetAutoInit (int value);
 EXTERN void M2Options_SetPositiveModFloor (int value);
 EXTERN void M2Options_SetNilCheck (int value);
@@ -74,7 +74,7 @@ EXTERN void M2Options_SetReturnCheck (int value);
 EXTERN void M2Options_SetCaseCheck (int value);
 EXTERN void M2Options_SetCheckAll (int value);
 EXTERN void M2Options_SetExceptions (int value);
-EXTERN void M2Options_SetStudents (int value);
+EXTERN void M2Options_SetStyle (int value);
 EXTERN void M2Options_SetPedantic (int value);
 EXTERN void M2Options_SetPedanticParamNames (int value);
 EXTERN void M2Options_SetPedanticCast (int value);
@@ -118,6 +118,7 @@ EXTERN void M2Options_SetScaffoldStatic (int value);
 EXTERN void M2Options_SetScaffoldDynamic (int value);
 EXTERN void M2Options_SetScaffoldMain (int value);
 EXTERN void M2Options_SetRuntimeModuleOverride (const char *override);
+EXTERN void M2Options_SetGenModuleList (int value, const char *filename);
 
 #undef EXTERN
 #endif /* m2options_h.  */

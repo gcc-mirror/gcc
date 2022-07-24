@@ -689,6 +689,9 @@ TYPE
                                             (* builtin procedure?            *)
                ForC          : BOOLEAN ;    (* Is it a definition for "C"    *)
                NeedExportList: BOOLEAN ;    (* Must user supply export list? *)
+               ModLink,                     (* Is the Def/Mod module parsed  *)
+               DefLink       : BOOLEAN ;    (* for linkage only?             *)
+               Builtin       : BOOLEAN ;    (* Is the module builtin?        *)
                ListOfVars    : List ;       (* List of variables in this     *)
                                             (* scope.                        *)
                ListOfProcs   : List ;       (* List of all procedures        *)
@@ -754,6 +757,9 @@ TYPE
                FinallyFunction: Tree ;      (* The GCC function for finally  *)
                ExceptionFinally,
                ExceptionBlock: BOOLEAN ;    (* does it have an exception?    *)
+               ModLink       : BOOLEAN ;    (* Is the module parsed for      *)
+                                            (* linkage only?                 *)
+               Builtin       : BOOLEAN ;    (* Is the module builtin?        *)
                ListOfVars    : List ;       (* List of variables in this     *)
                                             (* scope.                        *)
                ListOfProcs   : List ;       (* List of all procedures        *)
@@ -3223,6 +3229,8 @@ BEGIN
          FinallyFunction := NIL ;           (* The GCC function for finally  *)
          ExceptionFinally := FALSE ;        (* does it have an exception?    *)
          ExceptionBlock := FALSE ;          (* does it have an exception?    *)
+         ModLink := GetLink () ;            (* Is this parsed for linkage?   *)
+         Builtin := FALSE ;                 (* Is the module builtin?        *)
          InitList(ListOfVars) ;             (* List of variables in this     *)
                                             (* scope.                        *)
          InitList(ListOfProcs) ;            (* List of all procedures        *)
@@ -3241,8 +3249,177 @@ BEGIN
       END
    END ;
    PutSymKey(ModuleTree, ModuleName, Sym) ;
-   RETURN( Sym )
+   RETURN Sym
 END MakeModule ;
+
+
+(*
+   PutModLink - assigns link to module sym.
+*)
+
+PROCEDURE PutModLink (sym: CARDINAL; link: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsModule (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      pSym^.Module.ModLink := link
+   ELSIF IsDefImp (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      pSym^.DefImp.ModLink := link
+   ELSE
+      InternalError ('expecting a DefImp or Module symbol')
+   END
+END PutModLink ;
+
+
+(*
+   IsModLink - returns the ModLink value associated with the module symbol.
+*)
+
+PROCEDURE IsModLink (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsModule (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      RETURN pSym^.Module.ModLink
+   ELSIF IsDefImp (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      RETURN pSym^.DefImp.ModLink
+   ELSE
+      InternalError ('expecting a DefImp or Module symbol')
+   END
+END IsModLink ;
+
+
+(*
+   PutDefLink - assigns link to the definition module sym.
+*)
+
+PROCEDURE PutDefLink (sym: CARDINAL; link: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsDefImp (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      pSym^.DefImp.DefLink := link
+   ELSE
+      InternalError ('expecting a DefImp symbol')
+   END
+END PutDefLink ;
+
+
+(*
+   IsDefLink - returns the DefLink value associated with the definition module symbol.
+*)
+
+PROCEDURE IsDefLink (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsDefImp (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      RETURN pSym^.DefImp.DefLink
+   ELSE
+      InternalError ('expecting a DefImp symbol')
+   END
+END IsDefLink ;
+
+
+(*
+   GetOuterModule - returns the outer module or NulSym if there
+                    is no module being compiled.
+*)
+
+PROCEDURE GetOuterModule () : CARDINAL ;
+VAR
+   OuterModule: CARDINAL ;
+BEGIN
+   OuterModule := GetCurrentModule () ;
+   IF OuterModule # NulSym
+   THEN
+      WHILE GetScope (OuterModule) # NulSym DO
+         OuterModule := GetScope (OuterModule)
+      END
+   END ;
+   RETURN OuterModule
+END GetOuterModule ;
+
+
+(*
+   GetLink - returns TRUE if the current module is only used for linkage.
+*)
+
+PROCEDURE GetLink () : BOOLEAN ;
+VAR
+   OuterModule: CARDINAL ;
+BEGIN
+   OuterModule := GetCurrentModule () ;
+   IF OuterModule # NulSym
+   THEN
+      IF CompilingDefinitionModule ()
+      THEN
+         RETURN IsDefLink (OuterModule)
+      ELSE
+         RETURN IsModLink (OuterModule)
+      END
+   END ;
+   (* Default is that the module is for compiling.  *)
+   RETURN FALSE
+END GetLink ;
+
+
+(*
+   IsModuleBuiltin - returns TRUE if the module is a builtin module.
+                     (For example _BaseTypes).
+*)
+
+PROCEDURE IsModuleBuiltin (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsDefImp (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      RETURN pSym^.DefImp.Builtin
+   ELSIF IsModule (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      RETURN pSym^.Module.Builtin
+   END ;
+   RETURN FALSE
+END IsModuleBuiltin ;
+
+
+(*
+   PutModuleBuiltin - sets the Builtin flag to value.
+                      Currently the procedure expects sym to be a DefImp
+                      module only.
+*)
+
+PROCEDURE PutModuleBuiltin (sym: CARDINAL; value: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   IF IsDefImp (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      pSym^.DefImp.Builtin := value
+   ELSIF IsModule (sym)
+   THEN
+      pSym := GetPsym (sym) ;
+      pSym^.Module.Builtin := value
+   ELSE
+      InternalError ('expecting Module or DefImp symbol')
+   END
+END PutModuleBuiltin ;
 
 
 (*
@@ -3336,6 +3513,7 @@ BEGIN
             FinallyFunction := NIL ;        (* The GCC function for finally  *)
             ExceptionFinally := FALSE ;     (* does it have an exception?    *)
             ExceptionBlock := FALSE ;       (* does it have an exception?    *)
+            ModLink := GetLink () ;         (* Is this parsed for linkage?   *)
             InitList(ListOfVars) ;          (* List of variables in this     *)
                                             (* scope.                        *)
             InitList(ListOfProcs) ;         (* List of all procedures        *)
@@ -3465,6 +3643,9 @@ BEGIN
                                       (* procedure?                    *)
          ForC := FALSE ;              (* Is it a definition for "C"    *)
          NeedExportList := FALSE ;    (* Must user supply export list? *)
+         DefLink := GetLink () ;      (* Is the def/mod file only      *)
+         ModLink := GetLink () ;      (* parsed for linkage?           *)
+         Builtin := FALSE ;           (* Is the module builtin?        *)
          InitList(ListOfVars) ;       (* List of variables in this     *)
                                       (* scope.                        *)
          InitList(ListOfProcs) ;      (* List of all procedures        *)
@@ -8746,7 +8927,7 @@ END RemoveExportUndeclared ;
 
 PROCEDURE CheckForExportedDeclaration (Sym: CARDINAL) ;
 BEGIN
-   IF CompilingDefinitionModule()
+   IF CompilingDefinitionModule ()
    THEN
       RemoveExportUndeclared(GetCurrentModule(), Sym)
    END
@@ -12932,7 +13113,7 @@ END ForeachInnerModuleDo ;
 
 PROCEDURE ForeachModuleDo (P: PerformOperation) ;
 BEGIN
-   ForeachNodeDo(ModuleTree, P)
+   ForeachNodeDo (ModuleTree, P)
 END ForeachModuleDo ;
 
 

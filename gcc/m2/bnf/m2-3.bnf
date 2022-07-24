@@ -575,13 +575,15 @@ FileUnit :=                                                                % Pus
 
 ProgramModule := "MODULE"                                                  % M2Error.DefaultProgramModule %
                                                                            % PushAutoOn %
+                                                                           % VAR tokno: CARDINAL ; %
+                                                                           % tokno := GetTokenNo () %
                   Ident                                                    % P3StartBuildProgModule %
                                                                            % StartBuildModFile %
                                                                            % BuildModuleStart %
                                                                            % PushAutoOff %
                   [ Priority
                   ]
-                  ";"                                                      % BuildScaffold (GetTokenNo () -1,
+                  ";"                                                      % BuildScaffold (tokno,
                                                                                             GetCurrentModule ()) %
                   { Import }
                   Block                                                    % PushAutoOn %
@@ -592,12 +594,14 @@ ProgramModule := "MODULE"                                                  % M2E
 
 ImplementationModule := "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
                                          "MODULE"                          % PushAutoOn %
+                                                                           % VAR tokno: CARDINAL ; %
+                                                                           % tokno := GetTokenNo () %
                          Ident                                             % StartBuildModFile %
                                                                            % P3StartBuildImpModule %
                                                                            % BuildModuleStart %
                                                                            % PushAutoOff %
                          [ Priority
-                         ] ";"                                             % BuildScaffold (GetTokenNo () -1,
+                         ] ";"                                             % BuildScaffold (tokno,
                                                                                             GetCurrentModule ()) %
                          { Import }
                          Block                                             % PushAutoOn %

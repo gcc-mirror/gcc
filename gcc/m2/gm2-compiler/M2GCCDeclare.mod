@@ -96,7 +96,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsGnuAsm, IsGnuAsmVolatile, IsObject, IsTuple,
                         IsError, IsHiddenType,
                         IsDefinitionForC, IsHiddenTypeDeclared,
-                        IsComponent,
+                        IsComponent, IsPublic, IsExtern, IsCtor,
       	       	     	GetMainModule, GetBaseModule, GetModule, GetLocalSym,
                         PutModuleFinallyFunction,
                         GetProcedureScope, GetProcedureQuads,
@@ -2408,6 +2408,7 @@ END DeclareProcedureToGccWholeProgram ;
 
 PROCEDURE DeclareProcedureToGccSeparateProgram (Sym: CARDINAL) ;
 VAR
+   returnType,
    GccParam  : Tree ;
    scope,
    Son,
@@ -2420,10 +2421,11 @@ BEGIN
    tok := GetDeclaredMod(Sym) ;
    IF (NOT GccKnowsAbout(Sym)) AND (NOT IsPseudoProcFunc(Sym)) AND
       (IsEffectivelyImported(GetMainModule(), Sym) OR
-       (GetModuleWhereDeclared(Sym)=GetMainModule()) OR
-       IsNeededAtRunTime(tok, Sym) OR
-       IsImported(GetBaseModule(), Sym) OR
-       IsExported(GetModuleWhereDeclared(Sym), Sym))
+       (GetModuleWhereDeclared (Sym) = GetMainModule()) OR
+       IsNeededAtRunTime (tok, Sym) OR
+       IsImported (GetBaseModule (), Sym) OR
+       IsExported(GetModuleWhereDeclared (Sym), Sym) OR
+       IsExtern (Sym))
    THEN
       Assert(PushParametersLeftToRight) ;
       BuildStartFunctionDeclaration(UsesVarArgs(Sym)) ;
@@ -2460,20 +2462,17 @@ BEGIN
       PushBinding(scope) ;
       IF GetSType(Sym)=NulSym
       THEN
-         PreAddModGcc(Sym, BuildEndFunctionDeclaration(begin, end,
-                                                       KeyToCharStar(GetFullSymName(Sym)),
-                                                       NIL,
-                                                       IsExternal(Sym),
-                                                       IsProcedureGccNested(Sym),
-                                                       IsExported(GetModuleWhereDeclared(Sym), Sym)))
+         returnType := NIL
       ELSE
-         PreAddModGcc(Sym, BuildEndFunctionDeclaration(begin, end,
-                                                       KeyToCharStar(GetFullSymName(Sym)),
-                                                       Mod2Gcc(GetSType(Sym)),
-                                                       IsExternal(Sym),
-                                                       IsProcedureGccNested(Sym),
-                                                       IsExported(GetModuleWhereDeclared(Sym), Sym)))
+         returnType := Mod2Gcc(GetSType(Sym))
       END ;
+      PreAddModGcc (Sym, BuildEndFunctionDeclaration (begin, end,
+                                                      KeyToCharStar (GetFullSymName (Sym)),
+                                                      returnType,
+                                                      IsExternal (Sym),  (* Extern relative to the main module.  *)
+                                                      IsProcedureGccNested (Sym),
+                                                      (* Exported from the module where it was declared.  *)
+                                                      IsExported (GetModuleWhereDeclared (Sym), Sym) OR IsExtern (Sym))) ;
       PopBinding(scope) ;
       WatchRemoveList(Sym, todolist) ;
       WatchIncludeList(Sym, fullydeclared)
@@ -3709,13 +3708,46 @@ END PrintDecl ;
 
 PROCEDURE PrintScope (sym: CARDINAL) ;
 VAR
-   name: Name ;
-   line: CARDINAL ;
+   name : Name ;
+   scope,
+   line : CARDINAL ;
 BEGIN
    line := TokenToLineNo (GetDeclaredMod (sym), 0) ;
-   name := GetSymName (GetScope (sym)) ;
-   printf2 ('scope %a:%d\n', name, line)
+   scope := GetScope (sym) ;
+   name := GetSymName (scope) ;
+   printf3 (' scope %a:%d %d', name, line, scope)
 END PrintScope ;
+
+
+(*
+   PrintProcedure -
+*)
+
+PROCEDURE PrintProcedure (sym: CARDINAL) ;
+VAR
+   n: Name ;
+BEGIN
+   n := GetSymName (sym) ;
+   printf2('sym %d IsProcedure (%a)', sym, n);
+   IF IsProcedureReachable(sym)
+   THEN
+      printf0(' IsProcedureReachable')
+   END ;
+   PrintScope (sym) ;
+   IF IsExtern (sym)
+   THEN
+      printf0 (' extern')
+   END ;
+   IF IsPublic (sym)
+   THEN
+      printf0 (' public')
+   END ;
+   IF IsCtor (sym)
+   THEN
+      printf0 (' ctor')
+   END ;
+   PrintDeclared(sym)
+END PrintProcedure ;
 
 
 (*
@@ -3727,8 +3759,8 @@ VAR
    type,
    low,
    high,
-   sym  : CARDINAL ;
-   n, n2: Name ;
+   sym   : CARDINAL ;
+   n, n2 : Name ;
 BEGIN
    sym := GetItemFromList(l, i) ;
    n := GetSymName(sym) ;
@@ -3745,7 +3777,8 @@ BEGIN
       IF IsHiddenTypeDeclared(sym)
       THEN
          printf0(' IsHiddenTypeDeclared')
-      END
+      END ;
+      ForeachProcedureDo (sym, PrintProcedure)
    ELSIF IsModule(sym)
    THEN
       printf2('sym %d IsModule (%a)', sym, n) ;
@@ -3766,12 +3799,7 @@ BEGIN
       PrintAlignment(sym)
    ELSIF IsProcedure(sym)
    THEN
-      printf2('sym %d IsProcedure (%a)', sym, n);
-      IF IsProcedureReachable(sym)
-      THEN
-         printf0(' and IsProcedureReachable')
-      END ;
-      PrintDeclared(sym)
+      PrintProcedure (sym)
    ELSIF IsParameter(sym)
    THEN
       printf2('sym %d IsParameter (%a)', sym, n) ;

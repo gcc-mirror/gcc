@@ -238,6 +238,9 @@ gm2_langhook_handle_option (
     case OPT_flibs_:
       /* handled in the gm2 driver.  */
       return 1;
+    case OPT_fgen_module_list_:
+      M2Options_SetGenModuleList (value, arg);
+      return 1;
     case OPT_fnil:
       M2Options_SetNilCheck (value);
       return 1;
@@ -283,8 +286,8 @@ gm2_langhook_handle_option (
     case OPT_fexceptions:
       M2Options_SetExceptions (value);
       return 1;
-    case OPT_Wstudents:
-      M2Options_SetStudents (value);
+    case OPT_Wstyle:
+      M2Options_SetStyle (value);
       return 1;
     case OPT_Wpedantic:
       M2Options_SetPedantic (value);
@@ -319,16 +322,16 @@ gm2_langhook_handle_option (
     case OPT_fm2_lower_case:
       M2Options_SetLowerCaseKeywords (value);
       return 1;
-    case OPT_fuselist_:
-      M2Options_SetUselist (arg);
+    case OPT_fuse_list_:
+      M2Options_SetUselist (value, arg);
       return 1;
     case OPT_fruntime_modules_:
       M2Options_SetRuntimeModuleOverride (arg);
       return 1;
-    case OPT_fno_pthread:
+    case OPT_fpthread:
       /* handled in the driver.  */
       return 1;
-    case OPT_fno_m2_plugin:
+    case OPT_fm2_plugin:
       /* handled in the driver.  */
       return 1;
     case OPT_fscaffold_dynamic:

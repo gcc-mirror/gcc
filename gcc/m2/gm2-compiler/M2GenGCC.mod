@@ -1160,7 +1160,7 @@ BEGIN
             (ScaffoldDynamic OR ScaffoldStatic OR ScaffoldMain) AND
             (moduleSym = GetMainModule ())
          THEN
-            qprintf0 ("generating scaffold m2link information\n");
+            qprintf0 ("        generating scaffold m2link information\n");
             DeclareM2linkGlobals (location, VAL (INTEGER, ScaffoldStatic), GetRuntimeModuleOverride ())
          END
       END

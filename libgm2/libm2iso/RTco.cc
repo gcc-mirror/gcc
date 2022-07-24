@@ -426,6 +426,7 @@ RTco_transfer (int *p1, int p2)
 extern "C" int
 RTco_select (int p1, fd_set *p2, fd_set *p3, fd_set *p4, const timespec *p5)
 {
+  RTco_init ();
   tprintf ("[%x]  RTco.select (...)\n", pthread_self ());
   return pselect (p1, p2, p3, p4, p5, NULL);
 }
@@ -433,7 +434,7 @@ RTco_select (int p1, fd_set *p2, fd_set *p3, fd_set *p4, const timespec *p5)
 extern "C" int
 RTco_init (void)
 {
-  if (!initialized)
+  if (! initialized)
     {
       int tid;
 
@@ -444,13 +445,13 @@ RTco_init (void)
       threadArray = (threadCB *)malloc (sizeof (threadCB) * THREAD_POOL);
       semArray = (threadSem **)malloc (sizeof (threadSem *) * SEM_POOL);
 #endif
-      tid = newThread (); /* For the current initial thread.  */
+      tid = newThread ();  /* For the current initial thread.  */
       threadArray[tid].tid = tid;
       threadArray[tid].execution = initSemaphore (0);
       threadArray[tid].p = pthread_self ();
       threadArray[tid].interruptLevel = 0;
       threadArray[tid].proc
-          = never; /* This shouldn't happen as we are already running.  */
+          = never;  /* This shouldn't happen as we are already running.  */
       initialized = TRUE;
       tprintf ("RTco initialized completed\n");
       signalSem (&lock);

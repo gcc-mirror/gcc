@@ -81,7 +81,8 @@ proc gcc_version { } {
 set gm2_initialized 0;
 set gm2_compile_method "default";
 set gm2_link_path "";
-
+set gm2_link_libraries "m2pim m2iso";
+set gm2_link_objects "";
 
 proc gm2_set_compile_method { arg } {
     global gm2_compile_method;
@@ -104,13 +105,13 @@ proc gm2_init { args } {
     global GCC_UNDER_TEST;
     global TOOL_EXECUTABLE;
     global gm2_link_libraries;
+    global gm2_link_objects;
     global gm2_link_path;
     global HAVE_LIBSTDCXX_V3;
 
-
     if { $gm2_initialized == 1 } { return; }
 
-    set gm2_link_libraries "";
+    set gm2_link_objects "";
     set GCC_UNDER_TEST [lookfor_file $rootme gm2];
     append GCC_UNDER_TEST " " -B[file dirname $rootme]/gcc " " ${args};
     append GCC_UNDER_TEST " " -fno-diagnostics-show-caret
@@ -135,6 +136,7 @@ proc gm2_init { args } {
     }
 
     set gm2_link_path "[gm2_link_flags [get_multilibs]]";
+    verbose $gm2_link_path 1
 }
 
 #
@@ -146,6 +148,9 @@ proc gm2_target_compile_default { source dest type options } {
     global GCC_UNDER_TEST
     global TOOL_OPTIONS
     global TEST_ALWAYS_FLAGS
+    global gm2_link_objects
+    global gm2_link_libraries
+    global gm2_link_path
 
     if {[target_info needs_status_wrapper] != "" && \
 	    [target_info needs_status_wrapper] != "0" && \
@@ -159,6 +164,11 @@ proc gm2_target_compile_default { source dest type options } {
     # tests to override them.
     if [info exists TEST_ALWAYS_FLAGS] {
 	set options [concat "{additional_flags=$TEST_ALWAYS_FLAGS}" $options]
+    }
+
+    global TEST_EXTRA_LIBS
+    if [info exists TEST_EXTRA_LIBS] {
+	lappend options "ldflags=$TEST_EXTRA_LIBS"
     }
 
     if [target_info exists gcc,stack_size] {
@@ -194,13 +204,25 @@ proc gm2_target_compile { source dest type options } {
 }
 
 #
-#  gm2_link_with - allows tests to specify link arguments, libraries and object files.
+#  gm2_link_lib - allows tests to specify link libraries.
+#                  This _must_ be called before gm2_init.
 #
 
-proc gm2_link_with { libraries } {
+proc gm2_link_lib { libraries } {
     global gm2_link_libraries;
 
     set gm2_link_libraries $libraries;
+}
+
+
+#
+#  gm2_link_obj - allows tests to specify link with objects.
+#
+
+proc gm2_link_obj { objects } {
+    global gm2_link_objects;
+
+    set gm2_link_objects $objects;
 }
 
 
@@ -211,7 +233,8 @@ proc gm2_link_with { libraries } {
 proc gm2_link_flags { paths } {
     global srcdir;
     global ld_library_path;
-    global gccpath
+    global gccpath;
+    global gm2_link_libraries;
 
     set gccpath ${paths}
     set libio_dir ""
@@ -247,20 +270,22 @@ proc gm2_link_flags { paths } {
 	    append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
 	}
 
-	foreach d [list libm2min libm2pim libm2cor libm2log libm2iso] {
+	# puts stderr "${gm2_link_libraries}  before foreach"
+	foreach d [list {*}${gm2_link_libraries}] {
+	    # puts stderr "${d}  XXXX"
 	    send_log "ld_library_path was ${ld_library_path}\n"
-	    send_log "looking for ${gccpath}/${d}/.libs/${d}.a\n"
-	    if [file exists "${gccpath}/libgm2/${d}/.libs/${d}.a"] {
-		send_log "good found ${gccpath}/libgm2/${d}/.libs/${d}.a\n"
-		append flags " -L${gccpath}/libgm2/${d}/.libs "
-		append ld_library_path ":${gccpath}/libgm2/${d}/.libs"
+	    send_log "looking for ${gccpath}/lib${d}/.libs/lib${d}.a\n"
+	    if [file exists "${gccpath}/libgm2/lib${d}/.libs/lib${d}.a"] {
+		send_log "good found ${gccpath}/libgm2/lib${d}/.libs/lib${d}.a\n"
+		# append flags " -L${gccpath}/libgm2/lib${d}/.libs -l${d}"
+		append flags " ${gccpath}/libgm2/lib${d}/.libs/lib${d}.a"
+		append ld_library_path ":${gccpath}/libgm2/lib${d}/.libs"
 	    }
 	    send_log "ld_library_path is ${ld_library_path}\n"
 	}
     }
 
     set_ld_library_path_env_vars
-
     return "$flags"
 }
 
@@ -294,7 +319,6 @@ proc gm2_init_pimx { dialect {path ""} args } {
 	append theIpath " -I"
 	append theIpath ${path}
     }
-
     gm2_init {*}${theIpath} {*}${dialect} {*}${theLpath} {*}${args};
 }
 
@@ -418,7 +442,10 @@ proc gm2_init_log { {path ""} args } {
     set pimIpath "${gccpath}/libgm2/libm2pim:${gm2src}/gm2-libs";
     set pimLpath "${gccpath}/libgm2/libm2pim/.libs";
 
-    set theIpath "-I${logIpath} -I${pimIpath}";
+    set isoIpath "${gccpath}/libgm2/libm2iso:${gm2src}/gm2-libs-iso";
+    set pimIpath "${gccpath}/libgm2/libm2pim:${gm2src}/gm2-libs";
+
+    set theIpath "-I${logIpath} -I${pimIpath} -I${isoIpath}";
     set theLpath "-L${logLpath} -L${pimLpath}";
 
     if { $path != "" } then {
@@ -426,6 +453,7 @@ proc gm2_init_log { {path ""} args } {
 	append theIpath ${path}
     }
 
+    gm2_link_lib "m2log m2pim m2iso"
     gm2_init {*}${theIpath} -fpim {*}${theLpath} {*}${args};
 }
 
@@ -437,6 +465,7 @@ proc gm2_init_log { {path ""} args } {
 proc gm2_init_cor { {path ""} args } {
     global srcdir;
     global gccpath;
+    global gm2_link_libraries;
 
     set gm2src ${srcdir}/../m2;
 
@@ -464,5 +493,6 @@ proc gm2_init_cor { {path ""} args } {
 	append theIpath ${path}
     }
 
+    gm2_link_lib "m2cor m2pim m2iso"
     gm2_init {*}${theIpath} -fpim {*}${theLpath} {*}${args};
 }

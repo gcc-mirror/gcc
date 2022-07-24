@@ -25,7 +25,7 @@ IMPLEMENTATION MODULE M2Code ;
 FROM SYSTEM IMPORT WORD ;
 FROM M2Options IMPORT Statistics, DisplayQuadruples, OptimizeUncalledProcedures,
                       (* OptimizeDynamic, *) OptimizeCommonSubExpressions,
-                      StudentChecking, Optimizing, WholeProgram ;
+                      StyleChecking, Optimizing, WholeProgram ;
 
 FROM M2Error IMPORT InternalError ;
 FROM M2Students IMPORT StudentVariableCheck ;
@@ -243,7 +243,7 @@ BEGIN
    (* now is a suitable time to check for student errors as *)
    (* we know all the front end symbols must be resolved.   *)
 
-   IF StudentChecking
+   IF StyleChecking
    THEN
       StudentVariableCheck
    END ;

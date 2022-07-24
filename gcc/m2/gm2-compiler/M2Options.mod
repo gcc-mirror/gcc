@@ -51,10 +51,13 @@ CONST
    Debugging = FALSE ;
 
 VAR
+   GenModuleListFilename,
    UselistFilename,
    RuntimeModuleOverride,
    CppProgram,
    CppArgs              : String ;
+   UselistFlag,
+   GenModuleListFlag,
    CC1Quiet,
    SeenSources          : BOOLEAN ;
    ForcedLocationValue  : location_t ;
@@ -404,23 +407,38 @@ END Getc ;
 
 
 (*
-   SetUselist - set the uselist to filename.
+   SetUselist - set the uselist flag to value and remember the filename.
 *)
 
-PROCEDURE SetUselist (filename: ADDRESS) ;
+PROCEDURE SetUselist (value: BOOLEAN; filename: ADDRESS) ;
 BEGIN
-   UselistFilename := InitStringCharStar (filename)
+   UselistFlag := value ;
+   UselistFilename := KillString (UselistFilename) ;
+   IF filename # NIL
+   THEN
+      UselistFilename := InitStringCharStar (filename)
+   END
 END SetUselist ;
 
 
 (*
-   GetUselist - return the uselist filename as a String.
+   GetUselist - return the uselist flag.
 *)
 
-PROCEDURE GetUselist () : String ;
+PROCEDURE GetUselist () : BOOLEAN ;
+BEGIN
+   RETURN UselistFlag
+END GetUselist ;
+
+
+(*
+   GetUselistFilename - return the uselist filename as a String.
+*)
+
+PROCEDURE GetUselistFilename () : String ;
 BEGIN
    RETURN UselistFilename
-END GetUselist ;
+END GetUselistFilename ;
 
 
 (*
@@ -654,13 +672,13 @@ END SetExceptions ;
 
 
 (*
-   SetStudents -
+   SetStyle -
 *)
 
-PROCEDURE SetStudents (value: BOOLEAN) ;
+PROCEDURE SetStyle (value: BOOLEAN) ;
 BEGIN
-   StudentChecking := value
-END SetStudents ;
+   StyleChecking := value
+END SetStyle ;
 
 
 (*
@@ -1034,7 +1052,7 @@ BEGIN
    UnusedParameterChecking := value ;
    PedanticCast := value ;
    PedanticParamNames := value ;
-   StudentChecking := value
+   StyleChecking := value
 END SetWall ;
 
 
@@ -1140,6 +1158,32 @@ BEGIN
 END GetRuntimeModuleOverride ;
 
 
+(*
+   SetGenModuleList - set the GenModuleList flag to true and pass
+                      set GenModuleListFilename to filename.
+*)
+
+PROCEDURE SetGenModuleList (value: BOOLEAN; filename: ADDRESS) ;
+BEGIN
+   GenModuleListFilename := KillString (GenModuleListFilename) ;
+   IF filename # NIL
+   THEN
+      GenModuleListFilename := InitStringCharStar (filename)
+   END ;
+   GenModuleList := value
+END SetGenModuleList ;
+
+
+(*
+   GetGenModuleFilename - returns the filename set by SetGenModuleList.
+*)
+
+PROCEDURE GetGenModuleFilename () : String ;
+BEGIN
+   RETURN GenModuleListFilename
+END GetGenModuleFilename ;
+
+
 BEGIN
    cflag                        := FALSE ;  (* -c.  *)
    RuntimeModuleOverride        := NIL ;
@@ -1153,7 +1197,7 @@ BEGIN
    Iso                          := FALSE ;
    SeenSources                  := FALSE ;
    Statistics                   := FALSE ;
-   StudentChecking              := FALSE ;
+   StyleChecking                := FALSE ;
    CompilerDebugging            := FALSE ;
    GenerateDebugging            := FALSE ;
    Optimizing                   := FALSE ;
@@ -1201,5 +1245,7 @@ BEGIN
    ScaffoldDynamic              := TRUE ;
    ScaffoldStatic               := FALSE ;
    ScaffoldMain                 := FALSE ;
-   UselistFilename              := NIL
+   UselistFilename              := NIL ;
+   GenModuleList                := FALSE ;
+   GenModuleListFilename        := NIL
 END M2Options.

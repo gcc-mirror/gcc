@@ -32,25 +32,25 @@ IMPORT SysStorage ;
 
 PROCEDURE ALLOCATE (VAR a: ADDRESS ; Size: CARDINAL) ;
 BEGIN
-   SysStorage.ALLOCATE(a, Size)
+   SysStorage.ALLOCATE (a, Size)
 END ALLOCATE ;
 
 
 PROCEDURE DEALLOCATE (VAR a: ADDRESS; Size: CARDINAL);
 BEGIN
-   SysStorage.DEALLOCATE(a, Size)
+   SysStorage.DEALLOCATE (a, Size)
 END DEALLOCATE ;
 
 
 PROCEDURE REALLOCATE (VAR a: ADDRESS; Size: CARDINAL);
 BEGIN
-   SysStorage.REALLOCATE(a, Size)
+   SysStorage.REALLOCATE (a, Size)
 END REALLOCATE ;
 
 
 PROCEDURE Available (Size: CARDINAL) : BOOLEAN;
 BEGIN
-   RETURN( SysStorage.Available(Size) )
+   RETURN SysStorage.Available (Size)
 END Available ;
 
 

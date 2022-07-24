@@ -549,6 +549,7 @@ BEGIN
             mptr := LookupModuleN (ordered, start, count) ;
             IF mptr # NIL
             THEN
+               mptr^.dependency.forced := TRUE ;
                moveTo (user, mptr)
             END ;
             INC (pc) ;
@@ -564,6 +565,7 @@ BEGIN
          mptr := LookupModuleN (ordered, start, count) ;
          IF mptr # NIL
          THEN
+            mptr^.dependency.forced := TRUE ;
             moveTo (user, mptr)
          END
       END ;
@@ -717,6 +719,7 @@ BEGIN
    DependencyTrace := FALSE ;
    PostTrace := FALSE ;
    PreTrace := FALSE ;
+   ForceTrace := FALSE ;
    pc := getenv (ADR ("GCC_M2LINK_RTFLAG")) ;
    WHILE (pc # NIL) AND (pc^ # nul) DO
       IF equal (pc, "all")

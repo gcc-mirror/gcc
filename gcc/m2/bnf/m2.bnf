@@ -886,9 +886,12 @@ Import :=  "FROM" Ident "IMPORT" IdentList ";" |
                                                                              (* determines whether Ident or Module *) %
             IdentList ";" =:
 
-DefinitionModule := "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
-                                 "MODULE" [ "FOR"  string ]                % PushAutoOn %
-                    Ident                                                  % RegisterDefinitionModule %
+DefinitionModule :=                                                        % VAR forC: BOOLEAN ; %
+                                                                           % forC := FALSE %
+                    "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
+                                 "MODULE" [ "FOR"  string                  % forC := TRUE %
+                                                          ]                % PushAutoOn %
+                    Ident                                                  % RegisterDefinitionModule (forC) %
                     ";"
                     { Import                                               % RegisterImports %
                              }                                             % PushAutoOff %

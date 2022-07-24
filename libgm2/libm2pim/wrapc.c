@@ -286,3 +286,8 @@ void
 _M2_wrapc_finish ()
 {
 }
+
+void
+_M2_wrapc_ctor ()
+{
+}

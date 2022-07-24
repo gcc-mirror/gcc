@@ -719,11 +719,18 @@ embedded systems.  By default GNU Modula-2 uses the GCC pthread
 libraries to implement coroutines (see the SYSTEM implementation
 module).
 
-@item -fuselist=@file{filename}
+@item -fuse-list=@file{filename}
 if @samp{-fscaffold-static} is enabled then use the file
 @file{filename} for the initialization order of modules.  Whereas if
 @samp{-fscaffold-dynamic} is enabled then use this file to force
 linking of all module ctors.
+This option cannot be used if @samp{-fgen-module-list=} is enabled.
+
+@item -fgen-module-list=@file{filename}
+attempt to find all modules when linking and generate a module list.
+If the @file{filename} is @samp{-} then the contents are not written
+and only used to force the linking of all module ctors.
+This option cannot be used if @samp{-fuse-list=} is enabled.
 
 @item -fscaffold-static
 the option ensures that @samp{gm2} will generate a static scaffold
@@ -792,6 +799,8 @@ going to the first in the list.  It is not necessary to use -flibs=m2pim or
 -flibs=m2iso if you also specify -fpim, -fpim2, -fpim3, -fpim4 or
 -fiso.  Unless you are using -flibs=m2min you should include m2pim as
 the they provide the base modules which all other dialects utilize.
+The option @samp{-fno-libs=-} disables the @samp{gm2} driver from
+modifying the search and library paths.
 
 @item -fextended-opaque
 allows opaque types to be implemented as any type. This is a GNU
@@ -841,8 +850,8 @@ inform the user which non @code{VAR} unbounded parameters will be
 passed by reference.  This only produces output if the option
 @samp{-funbounded-by-reference} is also supplied on the command line.
 
-@item -Wstudents
-checks for bad programming style. This option is aimed at new users of
+@item -Wstyle
+checks for poor programming style.  This option is aimed at new users of
 Modula-2 in that it checks for situations which might cause confusion
 and thus mistakes.  It checks whether variables of the same name are
 declared in different scopes and whether variables look like keywords.
@@ -861,14 +870,12 @@ outside the end of this loop without being reset.
 @item -Wpedantic-param-names
 procedure parameter names are checked in the definition module
 against their implementation module counterpart.  This is not
-necessary in ISO or PIM versions of Modula-2, but it can be
-extremely useful, as long as code is intentionally
-written in this way.
+necessary in ISO or PIM versions of Modula-2.
 
 @item -Wpedantic-cast
 warns if the ISO system function is used and if the size of
-the variable is different from that of the type. This is legal
-in ISO Modula-2, however it can be dangerous. Some users may prefer
+the variable is different from that of the type.  This is legal
+in ISO Modula-2, however it can be dangerous.  Some users may prefer
 to use @code{VAL} instead in these situations and use @code{CAST}
 exclusively for changes in type on objects which have the same size.
 
@@ -1972,6 +1979,85 @@ transformation.  Thus the compiler detects that parameters, @code{a}
 and @code{f} are type compatible and will produce runtime checking
 code to test whether the address range of their respective contents
 intersect.
+
+@node Linking, Building a shared library, Unbounded by reference, Using
+
+This section describes the linking related options.  There are three
+linking strategies available which are dynamic scaffold, static
+scaffold and user defined.  The dynamic scaffold is enabled by default
+and each module will register itself to the runtime @samp{M2RTS} via
+a constructor.  The static scaffold mechanism will invoke each modules
+@samp{_init} and @samp{_finish} function in turn via a sequence of
+calls from within @samp{main}.  Lastly the user defined strategy
+can be implemented by turning off the dynamic and static options via
+@samp{-fno-scaffold-dynamic} and @samp{-fno-scaffold-static}.
+
+In the simple test below:
+
+@example
+$ gm2 hello.mod
+@end example
+
+the driver will add the options @samp{-fscaffold-dynamic} and
+@samp{-fgen-module-list=-} which generate a list of application
+modules and also creates the @samp{main} function with calls to
+@samp{M2RTS}.  It can be useful to add the option @samp{-fsources}
+which displays the source files as they are parsed and summarizes
+whether the source file is required for compilation or linking.
+
+If you wish to split the above command line into a compile and link
+then you could use these steps:
+
+@example
+$ gm2 -c -fscaffold-main hello.mod
+$ gm2 hello.o
+@end example
+
+The @samp{-fscaffold-main} informs the compiler to generate the
+@samp{main} function and scaffold.  You can enable the environment
+variable @samp{GCC_M2LINK_RTFLAG} to trace the construction and
+destruction of the application.  The values for
+@samp{GCC_M2LINK_RTFLAG} are shown in the table below:
+
+@example
+value   | meaning
+=================
+all     | turn on all flags below
+module  | trace modules as they register themselves
+pre     | generate module list prior to dependency resolution
+dep     | trace module dependency resolution
+post    | generate module list after dependency resolution
+force   | generate a module list after dependency and forced
+        | ordering is complete
+@end example
+
+The values can be combined using a comma separated list.
+
+One of the advantages of the dynamic scaffold is that the driver
+behaves in a similar way to the other front end drivers.
+For example consider a small project consisting of 4 definition
+implementation modules (@samp{a.def}, @samp{a.mod}, @samp{b.def},
+@samp{b.mod}, @samp{c.def}, @samp{c.mod}, @samp{d.def}, @samp{d.mod})
+and a program module @samp{program.mod}.
+
+To link this project we could:
+
+@example
+$ gm2 -g -c a.mod
+$ gm2 -g -c b.mod
+$ gm2 -g -c c.mod
+$ gm2 -g -c d.mod
+$ gm2 -g program.mod a.o b.o c.o d.o
+@end example
+
+The module initialization sequence is defined by the ISO standard to
+follow the import graph traversal.  The initialization order is the
+order in which the corresponding separate modules finish the
+processing of their import lists.
+
+However, if required, you can override this using
+@samp{-fruntime-modules=a,b,c,d} for example which forces the
+initialization sequence to @samp{a}, @samp{b}, @samp{c} and @samp{d}.
 
 @node Building a shared library, Interface for Python, Unbounded by reference, Using
 @section Building a shared library

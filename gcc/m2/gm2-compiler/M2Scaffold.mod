@@ -28,7 +28,9 @@ FROM SymbolTable IMPORT NulSym, MakeProcedure, PutFunction,
                         MakeSubscript, PutSubscript, PutArraySubscript,
                         MakeVar, PutVar, MakeProcedureCtorExtern,
                         GetMainModule, GetModuleCtors, MakeDefImp,
-                        PutModuleCtorExtern,
+                        PutModuleCtorExtern, IsDefinitionForC,
+                        ForeachModuleDo, IsDefImp, IsModule,
+                        IsModuleBuiltin,
                         GetSymName, StartScope, EndScope ;
 
 FROM NameKey IMPORT NulName, Name, MakeKey, makekey, KeyToCharStar ;
@@ -37,21 +39,26 @@ FROM M2System IMPORT Address ;
 FROM M2LexBuf IMPORT GetTokenNo ;
 FROM Assertion IMPORT Assert ;
 FROM Lists IMPORT List, InitList, IncludeItemIntoList, NoOfItemsInList, GetItemFromList ;
-FROM M2MetaError IMPORT MetaErrorT0 ;
+FROM M2MetaError IMPORT MetaErrorT0, MetaErrorStringT0 ;
 
 FROM SFIO IMPORT OpenToWrite, WriteS, ReadS, OpenToRead, Exists ;
 FROM FIO IMPORT File, EOF, IsNoError, Close ;
-FROM M2Options IMPORT GetUselist, ScaffoldStatic ;
+
+FROM M2Options IMPORT GetUselist, ScaffoldStatic, ScaffoldDynamic, GenModuleList,
+                      GetGenModuleFilename, GetUselistFilename, GetUselist, cflag ;
+
 FROM M2Base IMPORT Proc ;
 
 FROM M2Quads IMPORT PushTFtok, PushTtok, PushT, BuildDesignatorArray, BuildAssignment,
                     BuildProcedureCall ;
 
 FROM M2Batch IMPORT IsModuleKnown, Get ;
+FROM M2Printf IMPORT printf0, printf1, printf2, printf3, printf4 ;
+FROM FormatStrings IMPORT HandleEscape ;
 
 FROM DynamicStrings IMPORT String, InitString, KillString, ConCat, RemoveWhitePrefix,
                     EqualArray, Mark, Assign, Fin, InitStringChar, Length, Slice, Equal,
-                    RemoveComment, string ;
+                    RemoveComment, string, InitStringCharStar ;
 
 CONST
    Comment = '#'  ; (* Comment leader      *)
@@ -60,7 +67,6 @@ VAR
    uselistModules,
    ctorModules,
    ctorGlobals   : List ;
-   ctorArray,
    ctorArrayType : CARDINAL ;
 
 
@@ -244,14 +250,24 @@ END LookupModuleSym ;
 
 
 (*
-   ReadModules - populate ctorGlobals with the modules specified by -fuselist=filename.
+   AddEntry - adds an entry to the ctorGlobals and uselistModules.
+*)
+
+PROCEDURE AddEntry (tok: CARDINAL; name: Name) ;
+BEGIN
+   IncludeItemIntoList (ctorGlobals, name) ;
+   IncludeItemIntoList (uselistModules, LookupModuleSym (tok, name))
+END AddEntry ;
+
+
+(*
+   ReadModules - populate ctorGlobals with the modules specified by -fuse-list=filename.
 *)
 
 PROCEDURE ReadModules (tok: CARDINAL; filename: String) ;
 VAR
-   f   : File ;
-   s   : String ;
-   name: Name ;
+   f: File ;
+   s: String ;
 BEGIN
    InitList (ctorGlobals) ;
    InitList (uselistModules) ;
@@ -263,9 +279,7 @@ BEGIN
                      Mark (Slice (s, 0, Length (Mark (InitStringChar (Comment)))-1)))) AND
          (NOT EqualArray (s, ''))
       THEN
-         name := makekey (string (s)) ;
-         IncludeItemIntoList (ctorGlobals, name) ;
-         IncludeItemIntoList (uselistModules, LookupModuleSym (tok, name))
+         AddEntry (tok, makekey (string (s)))
       END ;
       s := KillString (s)
    END ;
@@ -273,29 +287,116 @@ BEGIN
 END ReadModules ;
 
 
+VAR
+   ctorTok: CARDINAL ;
+
+
 (*
-   CreateCtorList - uses GetUselist as the filename and then reads the list of modules.
+   AddModuleToCtor - adds moduleSym to the ctorGlobals and uselistModules.
+*)
+
+PROCEDURE AddModuleToCtor (moduleSym: CARDINAL) ;
+BEGIN
+   IF IsModule (moduleSym) OR (NOT IsDefinitionForC (moduleSym))
+   THEN
+      IF (moduleSym # GetMainModule ()) AND (NOT IsModuleBuiltin (moduleSym))
+      THEN
+         PutModuleCtorExtern (ctorTok, moduleSym) ;
+         IncludeItemIntoList (ctorGlobals, GetSymName (moduleSym)) ;
+         IncludeItemIntoList (uselistModules, moduleSym)
+      END
+   END
+END AddModuleToCtor ;
+
+
+(*
+   WriteCtorList - writes the ctor list to GetGenModuleFilename
+                   providing the filename is not NIL and not '-'.
+*)
+
+PROCEDURE WriteCtorList (tok: CARDINAL) ;
+VAR
+   fo  : File ;
+   name: Name ;
+   i, n: CARDINAL ;
+   s   : String ;
+BEGIN
+   IF (GetGenModuleFilename () # NIL) AND (NOT EqualArray (GetGenModuleFilename (), '-'))
+   THEN
+      fo := OpenToWrite (GetGenModuleFilename ()) ;
+      IF IsNoError (fo)
+      THEN
+         i := 1 ;
+         n := NoOfItemsInList (ctorGlobals) ;
+         WHILE i <= n DO
+            name := GetItemFromList (ctorGlobals, i) ;
+            s := InitStringCharStar (KeyToCharStar (name)) ;
+            s := ConCat (s, Mark (InitString ('\n'))) ;
+            s := HandleEscape (s) ;
+            s := WriteS (fo, s) ;
+            s := KillString (s) ;
+            INC (i)
+         END ;
+         Close (fo)
+      ELSE
+         s := InitString ("unable to create file containing ctor module list: ") ;
+         s := ConCat (s, GetGenModuleFilename ()) ;
+         MetaErrorStringT0 (tok, s)
+      END
+   END
+END WriteCtorList ;
+
+
+(*
+   CreateCtorListFromImports - if GenModuleList then populate
+                               the ctor list from all modules which are
+                               not FOR 'C'.
+*)
+
+PROCEDURE CreateCtorListFromImports (tok: CARDINAL) : BOOLEAN ;
+BEGIN
+   IF GenModuleList
+   THEN
+      InitList (ctorGlobals) ;
+      InitList (uselistModules) ;
+      ctorTok := tok ;
+      ForeachModuleDo (AddModuleToCtor) ;
+      WriteCtorList (tok) ;
+      RETURN TRUE
+   END ;
+   RETURN FALSE
+END CreateCtorListFromImports ;
+
+
+(*
+   CreateCtorList - uses GetUselistFilename and then reads the list of modules.
 *)
 
 PROCEDURE CreateCtorList (tok: CARDINAL) : BOOLEAN ;
 VAR
    filename: String ;
 BEGIN
-   filename := GetUselist () ;
-   IF filename = NIL
+   IF GetUselist ()
    THEN
+      filename := GetUselistFilename () ;
+      IF filename # NIL
+      THEN
+         IF Exists (filename)
+         THEN
+            ReadModules (tok, filename) ;
+            RETURN TRUE
+         ELSE
+            IF NOT EqualArray (filename, '-')
+            THEN
+               MetaErrorT0 (tok,
+                            '{%E}the filename specified by the -fuse-list= option does not exist') ;
+            END
+         END
+      END ;
       RETURN FALSE
    ELSE
-      IF Exists (filename)
-      THEN
-         ReadModules (tok, filename)
-      ELSE
-         MetaErrorT0 (tok,
-                      '{%E}the filename specified by the -fuselist= option does not exist') ;
-         RETURN FALSE
-      END
-   END ;
-   RETURN TRUE
+      RETURN CreateCtorListFromImports (tok)
+   END
 END CreateCtorList ;
 
 
@@ -342,6 +443,10 @@ BEGIN
       DeclareCtorGlobal (tokenno) ;
       DeclareModuleExtern (tokenno) ;
       linkFunction := MakeProcedure (tokenno, MakeKey ("_M2_link"))
+   ELSIF ScaffoldDynamic AND (NOT cflag)
+   THEN
+      MetaErrorT0 (tokenno,
+                   '{%O}dynamic linking enabled but no module ctor list has been created, hint use -fuse-list=filename or -fgen-module-list=-')
    END ;
 
    mainFunction := MakeProcedure (tokenno, MakeKey ("main")) ;
@@ -389,6 +494,7 @@ BEGIN
    initFunction := NulSym ;
    mainFunction := NulSym ;
    linkFunction := NulSym ;
+   ctorArray := NulSym ;
    ctorGlobals := NIL ;
    ctorModules := NIL ;
    uselistModules := NIL

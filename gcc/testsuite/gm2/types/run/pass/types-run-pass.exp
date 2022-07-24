@@ -28,7 +28,7 @@ load_lib gm2-torture.exp
 set gm2src ${srcdir}/../m2
 
 gm2_init_pim "${srcdir}/gm2/types/run/pass"
-gm2_link_with "d.o"
+gm2_link_obj "d.o"
 
 set output [target_compile $srcdir/$subdir/d.c d.o object "-g"]
 
