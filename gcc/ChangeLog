@@ -1,3 +1,13 @@
+2022-07-23  Immad Mir  <mirimmad@outlook.com>
+
+	* doc/extend.texi: Add fd_arg, fd_arg_read and fd_arg_write under
+	"Common Function Attributes" section.
+	* doc/invoke.texi: Add docs to -Wanalyzer-fd-access-mode-mismatch,
+	-Wanalyzer-use-after-close, -Wanalyzer-fd-use-without-check that these
+	warnings may be emitted through usage of three function attributes used
+	for static analysis of file descriptors namely fd_arg, fd_arg_read and
+	fd_arg_write.
+
 2022-07-22  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.md (*masktrue_const_bitcmpl):

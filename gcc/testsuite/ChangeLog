@@ -1,3 +1,10 @@
+2022-07-23  Immad Mir  <mirimmad@outlook.com>
+
+	* gcc.dg/analyzer/fd-5.c: New test.
+	* gcc.dg/analyzer/fd-4.c: Remove quotes around 'read-only' and
+	'write-only'.
+	* c-c++-common/attr-fd.c: New test.
+
 2022-07-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106413

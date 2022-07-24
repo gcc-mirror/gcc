@@ -1,3 +1,18 @@
+2022-07-23  Immad Mir  <mirimmad@outlook.com>
+
+	* sm-fd.cc (fd_param_diagnostic): New diagnostic class.
+	(fd_access_mode_mismatch): Change inheritance from fd_diagnostic
+	to fd_param_diagnostic. Add new overloaded constructor.
+	(fd_use_after_close): Likewise.
+	(unchecked_use_of_fd): Likewise and also change name to fd_use_without_check.
+	(double_close): Change name to fd_double_close.
+	(enum access_directions): New.
+	(fd_state_machine::on_stmt): Handle calls to function with the
+	new three function attributes.
+	(fd_state_machine::check_for_fd_attrs): New.
+	(fd_state_machine::on_open): Use the new overloaded constructors
+	of diagnostic classes.
+
 2022-07-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106413
