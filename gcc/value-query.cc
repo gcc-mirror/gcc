@@ -167,6 +167,7 @@ range_query::free_value_range_equiv (value_range_equiv *v)
 const class value_range_equiv *
 range_query::get_value_range (const_tree expr, gimple *stmt)
 {
+  gcc_checking_assert (value_range_equiv::supports_p (TREE_TYPE (expr)));
   int_range_max r;
   if (range_of_expr (r, const_cast<tree> (expr), stmt))
     return new (equiv_alloc->allocate ()) value_range_equiv (r);
