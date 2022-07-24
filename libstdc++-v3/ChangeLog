@@ -1,3 +1,21 @@
+2022-07-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106162
+	* include/Makefile.am (largefile-config.h): Add
+	stamp-${host_alias} prerequisite.
+	* include/Makefile.in: Regenerate.
+
+2022-07-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (begin(valarray), end(valarray)):
+	Add noexcept.
+
 2022-07-22  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
