@@ -723,6 +723,8 @@ public:
 
   Location get_locus () const override final { return locus; }
 
+  ItemKind get_item_kind () const override { return ItemKind::Module; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -772,6 +774,8 @@ public:
   {}
 
   Location get_locus () const override final { return locus; }
+
+  ItemKind get_item_kind () const override { return ItemKind::ExternCrate; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -1039,6 +1043,7 @@ public:
   UseDeclaration &operator= (UseDeclaration &&other) = default;
 
   Location get_locus () const override final { return locus; }
+  ItemKind get_item_kind () const override { return ItemKind::UseDeclaration; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -1093,6 +1098,8 @@ public:
   {
     return ImplItem::ImplItemType::FUNCTION;
   }
+
+  ItemKind get_item_kind () const override { return ItemKind::Function; }
 
   // Mega-constructor with all possible fields
   Function (Analysis::NodeMapping mappings, Identifier function_name,
@@ -1329,6 +1336,8 @@ public:
 
   Identifier get_new_type_name () const { return new_type_name; }
 
+  ItemKind get_item_kind () const override { return ItemKind::TypeAlias; }
+
   Analysis::NodeMapping get_impl_mappings () const override
   {
     return get_mappings ();
@@ -1373,6 +1382,7 @@ public:
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
   Location get_locus () const override final { return locus; }
+  ItemKind get_item_kind () const override { return ItemKind::Struct; }
 
   std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
@@ -1709,6 +1719,8 @@ public:
 
   Identifier get_identifier () const { return variant_name; }
 
+  ItemKind get_item_kind () const override { return ItemKind::EnumItem; }
+
 protected:
   EnumItem *clone_item_impl () const override { return new EnumItem (*this); }
 };
@@ -1930,6 +1942,7 @@ public:
   void accept_vis (HIRVisItemVisitor &vis) override;
 
   Identifier get_identifier () const { return enum_name; }
+  ItemKind get_item_kind () const override { return ItemKind::Enum; }
 
   std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
@@ -2037,6 +2050,8 @@ public:
 
   WhereClause &get_where_clause () { return where_clause; }
 
+  ItemKind get_item_kind () const override { return ItemKind::Union; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2110,6 +2125,8 @@ public:
   {
     return ImplItem::ImplItemType::CONSTANT;
   }
+
+  ItemKind get_item_kind () const override { return ItemKind::Constant; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2187,6 +2204,8 @@ public:
   Expr *get_expr () { return expr.get (); }
 
   Type *get_type () { return type.get (); }
+
+  ItemKind get_item_kind () const override { return ItemKind::Static; }
 
 protected:
   StaticItem *clone_item_impl () const override
@@ -2677,6 +2696,8 @@ public:
     return type_param_bounds;
   }
 
+  ItemKind get_item_kind () const override { return ItemKind::Trait; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2796,6 +2817,8 @@ public:
   }
 
   WhereClause &get_where_clause () { return where_clause; }
+
+  ItemKind get_item_kind () const override { return ItemKind::Impl; }
 
 protected:
   ImplBlock *clone_item_impl () const override { return new ImplBlock (*this); }
@@ -3148,6 +3171,8 @@ public:
   {
     return extern_items;
   }
+
+  ItemKind get_item_kind () const override { return ItemKind::ExternBlock; }
 
 protected:
   /* Use covariance to implement clone function as returning this object

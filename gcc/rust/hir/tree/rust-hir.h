@@ -175,6 +175,26 @@ class Item : public Stmt
   // TODO: should outer attrs be defined here or in each derived class?
 
 public:
+  enum class ItemKind
+  {
+    Static,
+    Constant,
+    TypeAlias,
+    Function,
+    UseDeclaration,
+    ExternBlock,
+    ExternCrate,
+    Struct,
+    Union,
+    Enum,
+    EnumItem, // FIXME: ARTHUR: Do we need that?
+    Trait,
+    Impl,
+    Module,
+  };
+
+  virtual ItemKind get_item_kind () const = 0;
+
   // Unique pointer custom clone function
   std::unique_ptr<Item> clone_item () const
   {
