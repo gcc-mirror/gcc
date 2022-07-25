@@ -42,19 +42,30 @@ within the array.
 brainf is hard for humans to read, but it's trivial to write a parser for
 it, as there is no lexing; just a stream of bytes.  The operations are:
 
-====================== =============================
-Character              Meaning
-====================== =============================
-``>``                  ``idx += 1``
-``<``                  ``idx -= 1``
-``+``                  ``data[idx] += 1``
-``-``                  ``data[idx] -= 1``
-``.``                  ``output (data[idx])``
-``,``                  ``data[idx] = input ()``
-``[``                  loop until ``data[idx] == 0``
-``]``                  end of loop
-Anything else          ignored
-====================== =============================
+.. list-table::
+   :header-rows: 1
+
+   * - Character
+     - Meaning
+
+   * - ``>``
+     - ``idx += 1``
+   * - ``<``
+     - ``idx -= 1``
+   * - ``+``
+     - ``data[idx] += 1``
+   * - ``-``
+     - ``data[idx] -= 1``
+   * - ``.``
+     - ``output (data[idx])``
+   * - ``,``
+     - ``data[idx] = input ()``
+   * - ``[``
+     - loop until ``data[idx] == 0``
+   * - ``]``
+     - end of loop
+   * - Anything else
+     - ignored
 
 Unlike the previous example, we'll implement an ahead-of-time compiler,
 which reads ``.bf`` scripts and outputs executables (though it would

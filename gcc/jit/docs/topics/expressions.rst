@@ -313,14 +313,20 @@ Unary Operations
 
 The available unary operations are:
 
-==========================================  ============
-Unary Operation                             C equivalent
-==========================================  ============
-:c:macro:`GCC_JIT_UNARY_OP_MINUS`           `-(EXPR)`
-:c:macro:`GCC_JIT_UNARY_OP_BITWISE_NEGATE`  `~(EXPR)`
-:c:macro:`GCC_JIT_UNARY_OP_LOGICAL_NEGATE`  `!(EXPR)`
-:c:macro:`GCC_JIT_UNARY_OP_ABS`             `abs (EXPR)`
-==========================================  ============
+.. list-table::
+   :header-rows: 1
+
+   * - Unary Operation
+     - C equivalent
+
+   * - :c:macro:`GCC_JIT_UNARY_OP_MINUS`
+     - `-(EXPR)`
+   * - :c:macro:`GCC_JIT_UNARY_OP_BITWISE_NEGATE`
+     - `~(EXPR)`
+   * - :c:macro:`GCC_JIT_UNARY_OP_LOGICAL_NEGATE`
+     - `!(EXPR)`
+   * - :c:macro:`GCC_JIT_UNARY_OP_ABS`
+     - `abs (EXPR)`
 
 .. c:macro:: GCC_JIT_UNARY_OP_MINUS
 
@@ -380,22 +386,36 @@ Binary Operations
 
 The available binary operations are:
 
-========================================  ============
-Binary Operation                          C equivalent
-========================================  ============
-:c:macro:`GCC_JIT_BINARY_OP_PLUS`         `x + y`
-:c:macro:`GCC_JIT_BINARY_OP_MINUS`        `x - y`
-:c:macro:`GCC_JIT_BINARY_OP_MULT`         `x * y`
-:c:macro:`GCC_JIT_BINARY_OP_DIVIDE`       `x / y`
-:c:macro:`GCC_JIT_BINARY_OP_MODULO`       `x % y`
-:c:macro:`GCC_JIT_BINARY_OP_BITWISE_AND`  `x & y`
-:c:macro:`GCC_JIT_BINARY_OP_BITWISE_XOR`  `x ^ y`
-:c:macro:`GCC_JIT_BINARY_OP_BITWISE_OR`   `x | y`
-:c:macro:`GCC_JIT_BINARY_OP_LOGICAL_AND`  `x && y`
-:c:macro:`GCC_JIT_BINARY_OP_LOGICAL_OR`   `x || y`
-:c:macro:`GCC_JIT_BINARY_OP_LSHIFT`       `x << y`
-:c:macro:`GCC_JIT_BINARY_OP_RSHIFT`       `x >> y`
-========================================  ============
+.. list-table::
+   :header-rows: 1
+
+   * - Binary Operation
+     - C equivalent
+
+   * - :c:macro:`GCC_JIT_BINARY_OP_PLUS`
+     - `x + y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_MINUS`
+     - `x - y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_MULT`
+     - `x * y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_DIVIDE`
+     - `x / y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_MODULO`
+     - `x % y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_BITWISE_AND`
+     - `x & y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_BITWISE_XOR`
+     - `x ^ y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_BITWISE_OR`
+     - `x | y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_LOGICAL_AND`
+     - `x && y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_LOGICAL_OR`
+     - `x || y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_LSHIFT`
+     - `x << y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_RSHIFT`
+     - `x >> y`
 
 .. c:macro:: GCC_JIT_BINARY_OP_PLUS
 
@@ -536,17 +556,24 @@ Comparisons
 
 .. enum:: gcc_jit_comparison
 
-=======================================  ============
-Comparison                               C equivalent
-=======================================  ============
-:c:macro:`GCC_JIT_COMPARISON_EQ`         `x == y`
-:c:macro:`GCC_JIT_COMPARISON_NE`         `x != y`
-:c:macro:`GCC_JIT_COMPARISON_LT`         `x < y`
-:c:macro:`GCC_JIT_COMPARISON_LE`         `x <= y`
-:c:macro:`GCC_JIT_COMPARISON_GT`         `x > y`
-:c:macro:`GCC_JIT_COMPARISON_GE`         `x >= y`
-=======================================  ============
+.. list-table::
+   :header-rows: 1
 
+   * - Comparison
+     - C equivalent
+
+   * - :c:macro:`GCC_JIT_COMPARISON_EQ`
+     - `x == y`
+   * - :c:macro:`GCC_JIT_COMPARISON_NE`
+     - `x != y`
+   * - :c:macro:`GCC_JIT_COMPARISON_LT`
+     - `x < y`
+   * - :c:macro:`GCC_JIT_COMPARISON_LE`
+     - `x <= y`
+   * - :c:macro:`GCC_JIT_COMPARISON_GT`
+     - `x > y`
+   * - :c:macro:`GCC_JIT_COMPARISON_GE`
+     - `x >= y`
 
 Function calls
 **************
