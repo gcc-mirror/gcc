@@ -269,6 +269,10 @@ if $GLIBCXX_IS_NATIVE; then
   # For /dev/random and /dev/urandom for std::random_device.
   GLIBCXX_CHECK_DEV_RANDOM
 
+  # Check for other random number APIs
+  GLIBCXX_CHECK_GETENTROPY
+  GLIBCXX_CHECK_ARC4RANDOM
+
   # For TLS support.
   GCC_CHECK_TLS
 
@@ -473,10 +477,6 @@ GCC_CHECK_ASSEMBLER_HWCAP
 GLIBCXX_CHECK_X86_RDRAND
 # Check if assembler supports rdseed opcode.
 GLIBCXX_CHECK_X86_RDSEED
-
-# Check for other random number APIs
-GLIBCXX_CHECK_GETENTROPY
-GLIBCXX_CHECK_ARC4RANDOM
 
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 GLIBCXX_CONFIGURE_TESTSUITE
