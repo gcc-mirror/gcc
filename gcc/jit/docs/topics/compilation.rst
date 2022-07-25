@@ -169,14 +169,20 @@ For linking in object files, use :c:func:`gcc_jit_context_add_driver_option`.
 
 The available kinds of output are:
 
-==============================================  ==============
-Output kind                                     Typical suffix
-==============================================  ==============
-:c:macro:`GCC_JIT_OUTPUT_KIND_ASSEMBLER`        .s
-:c:macro:`GCC_JIT_OUTPUT_KIND_OBJECT_FILE`      .o
-:c:macro:`GCC_JIT_OUTPUT_KIND_DYNAMIC_LIBRARY`  .so or .dll
-:c:macro:`GCC_JIT_OUTPUT_KIND_EXECUTABLE`       None, or .exe
-==============================================  ==============
+.. list-table::
+   :header-rows: 1
+
+   * - Output kind
+     - Typical suffix
+
+   * - :c:macro:`GCC_JIT_OUTPUT_KIND_ASSEMBLER`
+     - .s
+   * - :c:macro:`GCC_JIT_OUTPUT_KIND_OBJECT_FILE`
+     - .o
+   * - :c:macro:`GCC_JIT_OUTPUT_KIND_DYNAMIC_LIBRARY`
+     - .so or .dll
+   * - :c:macro:`GCC_JIT_OUTPUT_KIND_EXECUTABLE`
+     - None, or .exe
 
 .. c:macro:: GCC_JIT_OUTPUT_KIND_ASSEMBLER
 
