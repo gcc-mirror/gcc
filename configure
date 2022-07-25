@@ -809,6 +809,7 @@ enable_ld
 enable_gprofng
 enable_compressed_debug_sections
 enable_default_compressed_debug_sections_algorithm
+enable_year2038
 enable_libquadmath
 enable_libquadmath_support
 enable_libada
@@ -1552,6 +1553,7 @@ Optional Features:
   --enable-default-compressed-debug-sections-algorithm={zlib,zstd}
                           Default compression algorithm for
                           --enable-compressed-debug-sections.
+  --enable-year2038       enable support for timestamps past the year 2038
   --disable-libquadmath   do not build libquadmath directory
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
@@ -3194,6 +3196,20 @@ case "${host}" in
     ;;
 esac
 
+# Default to --disable-year2038 until we can handle differences between
+# projects that use gnulib (which understands year 2038) and projects that
+# do not (like BFD).
+# Check whether --enable-year2038 was given.
+if test "${enable_year2038+set}" = set; then :
+  enableval=$enable_year2038; ENABLE_YEAR2038=$enableval
+else
+  ENABLE_YEAR2038=no
+fi
+
+enable_year2038=
+if test "${ENABLE_YEAR2038}" = "no" ; then
+  enable_year2038=no
+fi
 
 # Check whether --enable-libquadmath was given.
 if test "${enable_libquadmath+set}" = set; then :
@@ -10215,8 +10231,14 @@ if test "$silent" = yes; then
   baseargs="$baseargs --silent"
   tbaseargs="$tbaseargs --silent"
 fi
+
 baseargs="$baseargs --disable-option-checking"
 tbaseargs="$tbaseargs --disable-option-checking"
+
+if test "$enable_year2038" = no; then
+  baseargs="$baseargs --disable-year2038"
+  tbaseargs="$tbaseargs --disable-year2038"
+fi
 
 # Record and document user additions to sub configure arguments.
 
