@@ -338,8 +338,7 @@ public:
   frange (const frange &);
   static bool supports_p (const_tree type)
   {
-    // Disabled until floating point range-ops come live.
-    return 0 && SCALAR_FLOAT_TYPE_P (type);
+    return SCALAR_FLOAT_TYPE_P (type);
   }
   virtual tree type () const override;
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
