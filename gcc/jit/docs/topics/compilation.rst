@@ -20,7 +20,7 @@
 Compiling a context
 ===================
 
-Once populated, a :c:type:`gcc_jit_context *` can be compiled to
+Once populated, a :c:expr:`gcc_jit_context *` can be compiled to
 machine code, either in-memory via :c:func:`gcc_jit_context_compile` or
 to disk via :c:func:`gcc_jit_context_compile_to_file`.
 
@@ -80,7 +80,7 @@ In-memory compilation
 
    Note that the resulting machine code becomes invalid after
    :func:`gcc_jit_result_release` is called on the
-   :type:`gcc_jit_result *`; attempting to call it after that may lead
+   :expr:`gcc_jit_result *`; attempting to call it after that may lead
    to a segmentation fault.
 
 .. function:: void *\
@@ -125,7 +125,7 @@ In-memory compilation
 
    Note that the resulting address becomes invalid after
    :func:`gcc_jit_result_release` is called on the
-   :type:`gcc_jit_result *`; attempting to use it after that may lead
+   :expr:`gcc_jit_result *`; attempting to use it after that may lead
    to a segmentation fault.
 
 .. function:: void\
@@ -153,7 +153,7 @@ For linking in object files, use :c:func:`gcc_jit_context_add_driver_option`.
                                                enum gcc_jit_output_kind output_kind,\
                                                const char *output_path)
 
-   Compile the :c:type:`gcc_jit_context *` to a file of the given
+   Compile the :c:expr:`gcc_jit_context *` to a file of the given
    kind.
 
 :c:func:`gcc_jit_context_compile_to_file` ignores the suffix of

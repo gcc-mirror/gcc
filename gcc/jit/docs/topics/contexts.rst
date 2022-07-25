@@ -39,14 +39,14 @@ cleanup of such objects is done for you when the context is released.
 
 .. function:: gcc_jit_context *gcc_jit_context_acquire (void)
 
-  This function acquires a new :c:type:`gcc_jit_context *` instance,
+  This function acquires a new :c:expr:`gcc_jit_context *` instance,
   which is independent of any others that may be present within this
   process.
 
 .. function:: void gcc_jit_context_release (gcc_jit_context *ctxt)
 
   This function releases all resources associated with the given context.
-  Both the context itself and all of its :c:type:`gcc_jit_object *`
+  Both the context itself and all of its :c:expr:`gcc_jit_object *`
   instances are cleaned up.  It should be called exactly once on a given
   context.
 
@@ -89,7 +89,7 @@ cleanup of such objects is done for you when the context is released.
 
 Thread-safety
 -------------
-Instances of :c:type:`gcc_jit_context *` created via
+Instances of :c:expr:`gcc_jit_context *` created via
 :c:func:`gcc_jit_context_acquire` are independent from each other:
 only one thread may use a given context at once, but multiple threads
 could each have their own contexts without needing locks.

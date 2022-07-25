@@ -55,7 +55,7 @@ Here's what the final control flow graph will look like:
       :alt: image of a control flow graph
 
 As before, we include the libgccjit header and make a
-:c:type:`gcc_jit_context *`.
+:c:expr:`gcc_jit_context *`.
 
 .. code-block:: c
 
@@ -98,14 +98,14 @@ Let's build the function:
 Expressions: lvalues and rvalues
 ********************************
 
-The base class of expression is the :c:type:`gcc_jit_rvalue *`,
+The base class of expression is the :c:expr:`gcc_jit_rvalue *`,
 representing an expression that can be on the *right*-hand side of
 an assignment: a value that can be computed somehow, and assigned
 *to* a storage area (such as a variable).  It has a specific
-:c:type:`gcc_jit_type *`.
+:c:expr:`gcc_jit_type *`.
 
-Anothe important class is :c:type:`gcc_jit_lvalue *`.
-A :c:type:`gcc_jit_lvalue *`. is something that can of the *left*-hand
+Anothe important class is :c:expr:`gcc_jit_lvalue *`.
+A :c:expr:`gcc_jit_lvalue *`. is something that can of the *left*-hand
 side of an assignment: a storage area (such as a variable).
 
 In other words, every assignment can be thought of as:
@@ -114,8 +114,8 @@ In other words, every assignment can be thought of as:
 
    LVALUE = RVALUE;
 
-Note that :c:type:`gcc_jit_lvalue *` is a subclass of
-:c:type:`gcc_jit_rvalue *`, where in an assignment of the form:
+Note that :c:expr:`gcc_jit_lvalue *` is a subclass of
+:c:expr:`gcc_jit_rvalue *`, where in an assignment of the form:
 
 .. code-block:: c
 
@@ -135,10 +135,10 @@ So far the only expressions we've seen are `i * i`:
        gcc_jit_param_as_rvalue (param_i),
        gcc_jit_param_as_rvalue (param_i));
 
-which is a :c:type:`gcc_jit_rvalue *`, and the various function
+which is a :c:expr:`gcc_jit_rvalue *`, and the various function
 parameters: `param_i` and `param_n`, instances of
-:c:type:`gcc_jit_param *`, which is a subclass of
-:c:type:`gcc_jit_lvalue *` (and, in turn, of :c:type:`gcc_jit_rvalue *`):
+:c:expr:`gcc_jit_param *`, which is a subclass of
+:c:expr:`gcc_jit_lvalue *` (and, in turn, of :c:expr:`gcc_jit_rvalue *`):
 we can both read from and write to function parameters within the
 body of a function.
 
@@ -154,7 +154,7 @@ name:
   gcc_jit_lvalue *sum =
     gcc_jit_function_new_local (func, NULL, the_type, "sum");
 
-These are instances of :c:type:`gcc_jit_lvalue *` - they can be read from
+These are instances of :c:expr:`gcc_jit_lvalue *` - they can be read from
 and written to.
 
 Note that there is no precanned way to create *and* initialize a variable
@@ -178,8 +178,8 @@ handle the control flow.  In this case, we need 4 blocks:
 3. the body of the loop
 4. after the loop terminates (`return sum`)
 
-so we create these as :c:type:`gcc_jit_block *` instances within the
-:c:type:`gcc_jit_function *`:
+so we create these as :c:expr:`gcc_jit_block *` instances within the
+:c:expr:`gcc_jit_function *`:
 
 .. code-block:: c
 
@@ -224,7 +224,7 @@ We can then terminate the entry block by jumping to the conditional:
 The conditional block is equivalent to the line `while (i < n)` from our
 C example. It contains a single statement: a conditional, which jumps to
 one of two destination blocks depending on a boolean
-:c:type:`gcc_jit_rvalue *`, in this case the comparison of `i` and `n`.
+:c:expr:`gcc_jit_rvalue *`, in this case the comparison of `i` and `n`.
 We build the comparison using :c:func:`gcc_jit_context_new_comparison`:
 
 .. code-block:: c

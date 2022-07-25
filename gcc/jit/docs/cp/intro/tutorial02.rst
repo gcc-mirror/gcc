@@ -39,7 +39,7 @@ First we need to include the relevant header:
 
 All state associated with compilation is associated with a
 :type:`gccjit::context`, which is a thin C++ wrapper around the C API's
-:c:type:`gcc_jit_context *`.
+:c:expr:`gcc_jit_context *`.
 
 Create one using :func:`gccjit::context::acquire`:
 
@@ -194,7 +194,7 @@ OK, we've populated the context.  We can now compile it using
    gcc_jit_result *result;
    result = ctxt.compile ();
 
-and get a :c:type:`gcc_jit_result *`.
+and get a :c:expr:`gcc_jit_result *`.
 
 We can now use :c:func:`gcc_jit_result_get_code` to look up a specific
 machine code routine within the result, in this case, the function we

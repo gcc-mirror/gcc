@@ -26,7 +26,7 @@ Rvalues
 
 A :class:`gccjit::rvalue` is an expression that can be computed.  It is a
 subclass of :class:`gccjit::object`, and is a thin wrapper around
-:c:type:`gcc_jit_rvalue *` from the C API.
+:c:expr:`gcc_jit_rvalue *` from the C API.
 
 It can be simple, e.g.:
 
@@ -491,7 +491,7 @@ a storage area (such as a variable).  It is a subclass of
 :class:`gccjit::rvalue`, where the rvalue is computed by reading from the
 storage area.
 
-It iss a thin wrapper around :c:type:`gcc_jit_lvalue *` from the C API.
+It iss a thin wrapper around :c:expr:`gcc_jit_lvalue *` from the C API.
 
 .. function:: gccjit::rvalue \
               gccjit::lvalue::get_address (gccjit::location loc)

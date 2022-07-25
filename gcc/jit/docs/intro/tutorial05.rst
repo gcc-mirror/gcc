@@ -95,7 +95,7 @@ Here's what a simple ``.bf`` script looks like:
 Converting a brainf script to libgccjit IR
 ******************************************
 
-As before we write simple code to populate a :c:type:`gcc_jit_context *`.
+As before we write simple code to populate a :c:expr:`gcc_jit_context *`.
 
    .. literalinclude:: ../examples/tut05-bf.c
     :start-after: #define MAX_OPEN_PARENS 16
@@ -261,7 +261,7 @@ state ``idx`` and ``data_cells``:
 Other forms of ahead-of-time-compilation
 ****************************************
 
-The above demonstrates compiling a :c:type:`gcc_jit_context *` directly
+The above demonstrates compiling a :c:expr:`gcc_jit_context *` directly
 to an executable.  It's also possible to compile it to an object file,
 and to a dynamic library.  See the documentation of
 :c:func:`gcc_jit_context_compile_to_file` for more information.
