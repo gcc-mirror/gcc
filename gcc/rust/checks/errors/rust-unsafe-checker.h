@@ -20,6 +20,7 @@
 #define RUST_UNSAFE_CHECKER_H
 
 #include "rust-hir-visitor.h"
+#include "rust-name-resolver.h"
 #include "rust-hir-type-check.h"
 
 namespace Rust {
@@ -51,7 +52,15 @@ private:
    */
   bool is_unsafe_context ();
 
+  /**
+   * Check if a mutable static or external static item is used outside of an
+   * unsafe context
+   */
+  void check_use_of_static (HirId node_id, Location locus);
+
   Resolver::TypeCheckContext &context;
+  Resolver::Resolver resolver;
+  Analysis::Mappings mappings;
 
   virtual void visit (IdentifierExpr &ident_expr) override;
   virtual void visit (Lifetime &lifetime) override;
