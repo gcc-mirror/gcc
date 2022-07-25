@@ -53,7 +53,7 @@ namespace ana {
 
 namespace {
 
-/* An enum for distinguishing between three different access modes. */
+/* An enum for distinguishing between three different access modes.  */
 
 enum access_mode
 {
@@ -85,24 +85,24 @@ public:
   {
     if (tree cst = sval->maybe_get_constant ())
       {
-        if (TREE_CODE (cst) == INTEGER_CST)
-          {
-            int val = TREE_INT_CST_LOW (cst);
-            if (val >= 0)
-              return m_constant_fd;
-            else
-              return m_invalid;
-          }
+	if (TREE_CODE (cst) == INTEGER_CST)
+	  {
+	    int val = TREE_INT_CST_LOW (cst);
+	    if (val >= 0)
+	      return m_constant_fd;
+	    else
+	      return m_invalid;
+	  }
       }
     return m_start;
   }
 
   bool on_stmt (sm_context *sm_ctxt, const supernode *node,
-                const gimple *stmt) const final override;
+		const gimple *stmt) const final override;
 
   void on_condition (sm_context *sm_ctxt, const supernode *node,
-                     const gimple *stmt, const svalue *lhs, const tree_code op,
-                     const svalue *rhs) const final override;
+		     const gimple *stmt, const svalue *lhs, const tree_code op,
+		     const svalue *rhs) const final override;
 
   bool can_purge_p (state_t s) const final override;
   pending_diagnostic *on_leak (tree var) const final override;
@@ -128,7 +128,7 @@ public:
   state_t m_unchecked_write_only;
 
   /* States for representing a file descriptor that is known to be valid (>=
-    0), for three different access modes.*/
+    0), for three different access modes.  */
   state_t m_valid_read_write;
 
   state_t m_valid_read_only;
@@ -138,7 +138,7 @@ public:
   /* State for a file descriptor that is known to be invalid (< 0). */
   state_t m_invalid;
 
-  /* State for a file descriptor that has been closed.*/
+  /* State for a file descriptor that has been closed.  */
   state_t m_closed;
 
   /* State for a file descriptor that we do not want to track anymore . */
@@ -146,33 +146,33 @@ public:
 
 private:
   void on_open (sm_context *sm_ctxt, const supernode *node, const gimple *stmt,
-                const gcall *call) const;
+		const gcall *call) const;
   void on_close (sm_context *sm_ctxt, const supernode *node, const gimple *stmt,
-                 const gcall *call) const;
+		 const gcall *call) const;
   void on_read (sm_context *sm_ctxt, const supernode *node, const gimple *stmt,
-                const gcall *call, const tree callee_fndecl) const;
+		const gcall *call, const tree callee_fndecl) const;
   void on_write (sm_context *sm_ctxt, const supernode *node, const gimple *stmt,
-                 const gcall *call, const tree callee_fndecl) const;
+		 const gcall *call, const tree callee_fndecl) const;
   void check_for_open_fd (sm_context *sm_ctxt, const supernode *node,
-                          const gimple *stmt, const gcall *call,
-                          const tree callee_fndecl,
-                          enum access_directions access_fn) const;
+			  const gimple *stmt, const gcall *call,
+			  const tree callee_fndecl,
+			  enum access_directions access_fn) const;
 
   void make_valid_transitions_on_condition (sm_context *sm_ctxt,
-                                            const supernode *node,
-                                            const gimple *stmt,
-                                            const svalue *lhs) const;
+					    const supernode *node,
+					    const gimple *stmt,
+					    const svalue *lhs) const;
   void make_invalid_transitions_on_condition (sm_context *sm_ctxt,
-                                              const supernode *node,
-                                              const gimple *stmt,
-                                              const svalue *lhs) const;
+					      const supernode *node,
+					      const gimple *stmt,
+					      const svalue *lhs) const;
   void check_for_fd_attrs (sm_context *sm_ctxt, const supernode *node,
-                           const gimple *stmt, const gcall *call,
-                           const tree callee_fndecl, const char *attr_name,
-                           access_directions fd_attr_access_dir) const;
+			   const gimple *stmt, const gcall *call,
+			   const tree callee_fndecl, const char *attr_name,
+			   access_directions fd_attr_access_dir) const;
 };
 
-/* Base diagnostic class relative to fd_state_machine. */
+/* Base diagnostic class relative to fd_state_machine.  */
 class fd_diagnostic : public pending_diagnostic
 {
 public:
@@ -190,40 +190,40 @@ public:
   describe_state_change (const evdesc::state_change &change) override
   {
     if (change.m_old_state == m_sm.get_start_state ()
-        && m_sm.is_unchecked_fd_p (change.m_new_state))
+	&& m_sm.is_unchecked_fd_p (change.m_new_state))
       {
-        if (change.m_new_state == m_sm.m_unchecked_read_write)
-          return change.formatted_print ("opened here as read-write");
+	if (change.m_new_state == m_sm.m_unchecked_read_write)
+	  return change.formatted_print ("opened here as read-write");
 
-        if (change.m_new_state == m_sm.m_unchecked_read_only)
-          return change.formatted_print ("opened here as read-only");
+	if (change.m_new_state == m_sm.m_unchecked_read_only)
+	  return change.formatted_print ("opened here as read-only");
 
-        if (change.m_new_state == m_sm.m_unchecked_write_only)
-          return change.formatted_print ("opened here as write-only");
+	if (change.m_new_state == m_sm.m_unchecked_write_only)
+	  return change.formatted_print ("opened here as write-only");
       }
 
     if (change.m_new_state == m_sm.m_closed)
       return change.formatted_print ("closed here");
 
     if (m_sm.is_unchecked_fd_p (change.m_old_state)
-        && m_sm.is_valid_fd_p (change.m_new_state))
+	&& m_sm.is_valid_fd_p (change.m_new_state))
       {
-        if (change.m_expr)
-          return change.formatted_print (
-              "assuming %qE is a valid file descriptor (>= 0)", change.m_expr);
-        else
-          return change.formatted_print ("assuming a valid file descriptor");
+	if (change.m_expr)
+	  return change.formatted_print (
+	      "assuming %qE is a valid file descriptor (>= 0)", change.m_expr);
+	else
+	  return change.formatted_print ("assuming a valid file descriptor");
       }
 
     if (m_sm.is_unchecked_fd_p (change.m_old_state)
-        && change.m_new_state == m_sm.m_invalid)
+	&& change.m_new_state == m_sm.m_invalid)
       {
-        if (change.m_expr)
-          return change.formatted_print (
-              "assuming %qE is an invalid file descriptor (< 0)",
-              change.m_expr);
-        else
-          return change.formatted_print ("assuming an invalid file descriptor");
+	if (change.m_expr)
+	  return change.formatted_print (
+	      "assuming %qE is an invalid file descriptor (< 0)",
+	      change.m_expr);
+	else
+	  return change.formatted_print ("assuming an invalid file descriptor");
       }
 
     return label_text ();
@@ -238,29 +238,29 @@ class fd_param_diagnostic : public fd_diagnostic
 {
 public:
   fd_param_diagnostic (const fd_state_machine &sm, tree arg, tree callee_fndecl,
-                       const char *attr_name, int arg_idx)
+		       const char *attr_name, int arg_idx)
       : fd_diagnostic (sm, arg), m_callee_fndecl (callee_fndecl),
-        m_attr_name (attr_name), m_arg_idx (arg_idx)
+	m_attr_name (attr_name), m_arg_idx (arg_idx)
   {
   }
 
   fd_param_diagnostic (const fd_state_machine &sm, tree arg, tree callee_fndecl)
       : fd_diagnostic (sm, arg), m_callee_fndecl (callee_fndecl),
-        m_attr_name (NULL), m_arg_idx (-1)
+	m_attr_name (NULL), m_arg_idx (-1)
   {
   }
- 
+
   bool
   subclass_equal_p (const pending_diagnostic &base_other) const override
   {
     const fd_param_diagnostic &sub_other
-        = (const fd_param_diagnostic &)base_other;
+	= (const fd_param_diagnostic &)base_other;
     return (same_tree_p (m_arg, sub_other.m_arg)
-            && same_tree_p (m_callee_fndecl, sub_other.m_callee_fndecl)
-            && m_arg_idx == sub_other.m_arg_idx
-            && ((m_attr_name)
-                    ? (strcmp (m_attr_name, sub_other.m_attr_name) == 0)
-                    : true));
+	    && same_tree_p (m_callee_fndecl, sub_other.m_callee_fndecl)
+	    && m_arg_idx == sub_other.m_arg_idx
+	    && ((m_attr_name)
+		    ? (strcmp (m_attr_name, sub_other.m_attr_name) == 0)
+		    : true));
   }
 
   void
@@ -269,32 +269,32 @@ public:
 
     if (m_attr_name)
       switch (fd_dir)
-        {
-        case DIRS_READ_WRITE:
-          inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
-                  "argument %d of %qD must be an open file descriptor, due to "
-                  "%<__attribute__((%s(%d)))%>",
-                  m_arg_idx + 1, m_callee_fndecl, m_attr_name, m_arg_idx + 1);
-          break;
-        case DIRS_WRITE:
-          inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
-                  "argument %d of %qD must be a readable file descriptor, due "
-                  "to %<__attribute__((%s(%d)))%>",
-                  m_arg_idx + 1, m_callee_fndecl, m_attr_name, m_arg_idx + 1);
-          break;
-        case DIRS_READ:
-          inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
-                  "argument %d of %qD must be a writable file descriptor, due "
-                  "to %<__attribute__((%s(%d)))%>",
-                  m_arg_idx + 1, m_callee_fndecl, m_attr_name, m_arg_idx + 1);
-          break;
-        }
+	{
+	case DIRS_READ_WRITE:
+	  inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
+		  "argument %d of %qD must be an open file descriptor, due to "
+		  "%<__attribute__((%s(%d)))%>",
+		  m_arg_idx + 1, m_callee_fndecl, m_attr_name, m_arg_idx + 1);
+	  break;
+	case DIRS_WRITE:
+	  inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
+		  "argument %d of %qD must be a readable file descriptor, due "
+		  "to %<__attribute__((%s(%d)))%>",
+		  m_arg_idx + 1, m_callee_fndecl, m_attr_name, m_arg_idx + 1);
+	  break;
+	case DIRS_READ:
+	  inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
+		  "argument %d of %qD must be a writable file descriptor, due "
+		  "to %<__attribute__((%s(%d)))%>",
+		  m_arg_idx + 1, m_callee_fndecl, m_attr_name, m_arg_idx + 1);
+	  break;
+	}
   }
 
 protected:
   tree m_callee_fndecl;
   const char *m_attr_name;
-  /* ARG_IDX is 0-based. */
+  /* ARG_IDX is 0-based.  */
   int m_arg_idx;
 };
 
@@ -325,10 +325,10 @@ public:
     m.add_cwe (775);
     if (m_arg)
       return warning_meta (rich_loc, m, get_controlling_option (),
-                           "leak of file descriptor %qE", m_arg);
+			   "leak of file descriptor %qE", m_arg);
     else
       return warning_meta (rich_loc, m, get_controlling_option (),
-                           "leak of file descriptor");
+			   "leak of file descriptor");
   }
 
   label_text
@@ -336,8 +336,8 @@ public:
   {
     if (m_sm.is_unchecked_fd_p (change.m_new_state))
       {
-        m_open_event = change.m_event_id;
-        return label_text::borrow ("opened here");
+	m_open_event = change.m_event_id;
+	return label_text::borrow ("opened here");
       }
 
     return fd_diagnostic::describe_state_change (change);
@@ -348,19 +348,19 @@ public:
   {
     if (m_open_event.known_p ())
       {
-        if (ev.m_expr)
-          return ev.formatted_print ("%qE leaks here; was opened at %@",
-                                     ev.m_expr, &m_open_event);
-        else
-          return ev.formatted_print ("leaks here; was opened at %@",
-                                     &m_open_event);
+	if (ev.m_expr)
+	  return ev.formatted_print ("%qE leaks here; was opened at %@",
+				     ev.m_expr, &m_open_event);
+	else
+	  return ev.formatted_print ("leaks here; was opened at %@",
+				     &m_open_event);
       }
     else
       {
-        if (ev.m_expr)
-          return ev.formatted_print ("%qE leaks here", ev.m_expr);
-        else
-          return ev.formatted_print ("leaks here");
+	if (ev.m_expr)
+	  return ev.formatted_print ("%qE leaks here", ev.m_expr);
+	else
+	  return ev.formatted_print ("leaks here");
       }
   }
 
@@ -372,22 +372,22 @@ class fd_access_mode_mismatch : public fd_param_diagnostic
 {
 public:
   fd_access_mode_mismatch (const fd_state_machine &sm, tree arg,
-                           enum access_directions fd_dir,
-                           const tree callee_fndecl, const char *attr_name,
-                           int arg_idx)
+			   enum access_directions fd_dir,
+			   const tree callee_fndecl, const char *attr_name,
+			   int arg_idx)
       : fd_param_diagnostic (sm, arg, callee_fndecl, attr_name, arg_idx),
-        m_fd_dir (fd_dir)
+	m_fd_dir (fd_dir)
 
   {
   }
 
   fd_access_mode_mismatch (const fd_state_machine &sm, tree arg,
-                           enum access_directions fd_dir,
-                           const tree callee_fndecl)
+			   enum access_directions fd_dir,
+			   const tree callee_fndecl)
       : fd_param_diagnostic (sm, arg, callee_fndecl), m_fd_dir (fd_dir)
   {
   }
-  
+
   const char *
   get_kind () const final override
   {
@@ -407,20 +407,20 @@ public:
     switch (m_fd_dir)
       {
       case DIRS_READ:
-        warned =  warning_at (rich_loc, get_controlling_option (),
-                           "%qE on read-only file descriptor %qE",
-                           m_callee_fndecl, m_arg);
-        break;
+	warned =  warning_at (rich_loc, get_controlling_option (),
+			   "%qE on read-only file descriptor %qE",
+			   m_callee_fndecl, m_arg);
+	break;
       case DIRS_WRITE:
-        warned = warning_at (rich_loc, get_controlling_option (),
-                           "%qE on write-only file descriptor %qE",
-                           m_callee_fndecl, m_arg);
-        break;
+	warned = warning_at (rich_loc, get_controlling_option (),
+			   "%qE on write-only file descriptor %qE",
+			   m_callee_fndecl, m_arg);
+	break;
       default:
-        gcc_unreachable ();
+	gcc_unreachable ();
       }
       if (warned)
-        inform_filedescriptor_attribute (m_fd_dir);
+	inform_filedescriptor_attribute (m_fd_dir);
       return warned;
   }
 
@@ -430,13 +430,13 @@ public:
     switch (m_fd_dir)
       {
       case DIRS_READ:
-        return ev.formatted_print ("%qE on read-only file descriptor %qE",
-                                   m_callee_fndecl, m_arg);
+	return ev.formatted_print ("%qE on read-only file descriptor %qE",
+				   m_callee_fndecl, m_arg);
       case DIRS_WRITE:
-        return ev.formatted_print ("%qE on write-only file descriptor %qE",
-                                   m_callee_fndecl, m_arg);
+	return ev.formatted_print ("%qE on write-only file descriptor %qE",
+				   m_callee_fndecl, m_arg);
       default:
-        gcc_unreachable ();
+	gcc_unreachable ();
       }
   }
 
@@ -469,7 +469,7 @@ public:
     // CWE-1341: Multiple Releases of Same Resource or Handle
     m.add_cwe (1341);
     return warning_meta (rich_loc, m, get_controlling_option (),
-                         "double %<close%> of file descriptor %qE", m_arg);
+			 "double %<close%> of file descriptor %qE", m_arg);
   }
 
   label_text
@@ -480,8 +480,8 @@ public:
 
     if (change.m_new_state == m_sm.m_closed)
       {
-        m_first_close_event = change.m_event_id;
-        return change.formatted_print ("first %qs here", "close");
+	m_first_close_event = change.m_event_id;
+	return change.formatted_print ("first %qs here", "close");
       }
     return fd_diagnostic::describe_state_change (change);
   }
@@ -491,7 +491,7 @@ public:
   {
     if (m_first_close_event.known_p ())
       return ev.formatted_print ("second %qs here; first %qs was at %@",
-                                 "close", "close", &m_first_close_event);
+				 "close", "close", &m_first_close_event);
     return ev.formatted_print ("second %qs here", "close");
   }
 
@@ -503,14 +503,14 @@ class fd_use_after_close : public fd_param_diagnostic
 {
 public:
   fd_use_after_close (const fd_state_machine &sm, tree arg,
-                      const tree callee_fndecl, const char *attr_name,
-                      int arg_idx)
+		      const tree callee_fndecl, const char *attr_name,
+		      int arg_idx)
       : fd_param_diagnostic (sm, arg, callee_fndecl, attr_name, arg_idx)
   {
   }
 
   fd_use_after_close (const fd_state_machine &sm, tree arg,
-                      const tree callee_fndecl)
+		      const tree callee_fndecl)
       : fd_param_diagnostic (sm, arg, callee_fndecl)
   {
   }
@@ -532,8 +532,8 @@ public:
   {
     bool warned;
     warned = warning_at (rich_loc, get_controlling_option (),
-                       "%qE on closed file descriptor %qE", m_callee_fndecl,
-                       m_arg);
+		       "%qE on closed file descriptor %qE", m_callee_fndecl,
+		       m_arg);
     if (warned)
       inform_filedescriptor_attribute (DIRS_READ_WRITE);
     return warned;
@@ -547,8 +547,8 @@ public:
 
     if (change.m_new_state == m_sm.m_closed)
       {
-        m_first_close_event = change.m_event_id;
-        return change.formatted_print ("closed here");
+	m_first_close_event = change.m_event_id;
+	return change.formatted_print ("closed here");
       }
 
     return fd_diagnostic::describe_state_change (change);
@@ -558,12 +558,12 @@ public:
   describe_final_event (const evdesc::final_event &ev) final override
   {
     if (m_first_close_event.known_p ())
-        return ev.formatted_print (
-            "%qE on closed file descriptor %qE; %qs was at %@", m_callee_fndecl,
-            m_arg, "close", &m_first_close_event);
+	return ev.formatted_print (
+	    "%qE on closed file descriptor %qE; %qs was at %@", m_callee_fndecl,
+	    m_arg, "close", &m_first_close_event);
       else
-        return ev.formatted_print ("%qE on closed file descriptor %qE",
-                                  m_callee_fndecl, m_arg);
+	return ev.formatted_print ("%qE on closed file descriptor %qE",
+				  m_callee_fndecl, m_arg);
   }
 
 private:
@@ -574,14 +574,14 @@ class fd_use_without_check : public fd_param_diagnostic
 {
 public:
   fd_use_without_check (const fd_state_machine &sm, tree arg,
-                        const tree callee_fndecl, const char *attr_name,
-                        int arg_idx)
+			const tree callee_fndecl, const char *attr_name,
+			int arg_idx)
       : fd_param_diagnostic (sm, arg, callee_fndecl, attr_name, arg_idx)
   {
   }
 
   fd_use_without_check (const fd_state_machine &sm, tree arg,
-                        const tree callee_fndecl)
+			const tree callee_fndecl)
       : fd_param_diagnostic (sm, arg, callee_fndecl)
   {
   }
@@ -603,8 +603,8 @@ public:
   {
     bool warned;
     warned = warning_at (rich_loc, get_controlling_option (),
-                        "%qE on possibly invalid file descriptor %qE",
-                        m_callee_fndecl, m_arg);
+			"%qE on possibly invalid file descriptor %qE",
+			m_callee_fndecl, m_arg);
     if (warned)
      inform_filedescriptor_attribute (DIRS_READ_WRITE);
     return warned;
@@ -615,8 +615,8 @@ public:
   {
     if (m_sm.is_unchecked_fd_p (change.m_new_state))
       {
-        m_first_open_event = change.m_event_id;
-        return label_text::borrow ("opened here");
+	m_first_open_event = change.m_event_id;
+	return label_text::borrow ("opened here");
       }
 
     return fd_diagnostic::describe_state_change (change);
@@ -627,14 +627,14 @@ public:
   {
     if (m_first_open_event.known_p ())
       return ev.formatted_print (
-          "%qE could be invalid: unchecked value from %@", m_arg,
-          &m_first_open_event);
+	  "%qE could be invalid: unchecked value from %@", m_arg,
+	  &m_first_open_event);
     else
       return ev.formatted_print ("%qE could be invalid", m_arg);
   }
 
 private:
-  diagnostic_event_id_t m_first_open_event;  
+  diagnostic_event_id_t m_first_open_event;
 };
 
 fd_state_machine::fd_state_machine (logger *logger)
@@ -672,7 +672,7 @@ enum access_mode
 fd_state_machine::get_access_mode_from_flag (int flag) const
 {
   /* FIXME: this code assumes the access modes on the host and
-          target are the same, which in practice might not be the case. */
+     target are the same, which in practice might not be the case.  */
 
   if ((flag & O_ACCMODE) == O_RDONLY)
     {
@@ -711,52 +711,52 @@ fd_state_machine::is_constant_fd_p (state_t state) const
 
 bool
 fd_state_machine::on_stmt (sm_context *sm_ctxt, const supernode *node,
-                           const gimple *stmt) const
+			   const gimple *stmt) const
 {
   if (const gcall *call = dyn_cast<const gcall *> (stmt))
     if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
       {
-        if (is_named_call_p (callee_fndecl, "open", call, 2))
-          {
-            on_open (sm_ctxt, node, stmt, call);
-            return true;
-          } //  "open"
+	if (is_named_call_p (callee_fndecl, "open", call, 2))
+	  {
+	    on_open (sm_ctxt, node, stmt, call);
+	    return true;
+	  } //  "open"
 
-        if (is_named_call_p (callee_fndecl, "close", call, 1))
-          {
-            on_close (sm_ctxt, node, stmt, call);
-            return true;
-          } //  "close"
+	if (is_named_call_p (callee_fndecl, "close", call, 1))
+	  {
+	    on_close (sm_ctxt, node, stmt, call);
+	    return true;
+	  } //  "close"
 
-        if (is_named_call_p (callee_fndecl, "write", call, 3))
-          {
-            on_write (sm_ctxt, node, stmt, call, callee_fndecl);
-            return true;
-          } // "write"
+	if (is_named_call_p (callee_fndecl, "write", call, 3))
+	  {
+	    on_write (sm_ctxt, node, stmt, call, callee_fndecl);
+	    return true;
+	  } // "write"
 
-        if (is_named_call_p (callee_fndecl, "read", call, 3))
-          {
-            on_read (sm_ctxt, node, stmt, call, callee_fndecl);
-            return true;
-          } // "read"
+	if (is_named_call_p (callee_fndecl, "read", call, 3))
+	  {
+	    on_read (sm_ctxt, node, stmt, call, callee_fndecl);
+	    return true;
+	  } // "read"
 
-          
-        {
-          // Handle __attribute__((fd_arg))
 
-          check_for_fd_attrs (sm_ctxt, node, stmt, call, callee_fndecl,
-                              "fd_arg", DIRS_READ_WRITE);
+	{
+	  // Handle __attribute__((fd_arg))
 
-          // Handle __attribute__((fd_arg_read))
+	  check_for_fd_attrs (sm_ctxt, node, stmt, call, callee_fndecl,
+			      "fd_arg", DIRS_READ_WRITE);
 
-          check_for_fd_attrs (sm_ctxt, node, stmt, call, callee_fndecl,
-                              "fd_arg_read", DIRS_READ);
+	  // Handle __attribute__((fd_arg_read))
 
-          // Handle __attribute__((fd_arg_write))
+	  check_for_fd_attrs (sm_ctxt, node, stmt, call, callee_fndecl,
+			      "fd_arg_read", DIRS_READ);
 
-          check_for_fd_attrs (sm_ctxt, node, stmt, call, callee_fndecl,
-                              "fd_arg_write", DIRS_WRITE);
-        }          
+	  // Handle __attribute__((fd_arg_write))
+
+	  check_for_fd_attrs (sm_ctxt, node, stmt, call, callee_fndecl,
+			      "fd_arg_write", DIRS_WRITE);
+	}
       }
 
   return false;
@@ -794,90 +794,90 @@ fd_state_machine::check_for_fd_attrs (
       state_t state = sm_ctxt->get_state (stmt, arg);
       bool bit_set = bitmap_bit_p (argmap, arg_idx);
       if (TREE_CODE (TREE_TYPE (arg)) != INTEGER_TYPE)
-        continue;
+	continue;
       if (bit_set) // Check if arg_idx is marked by any of the file descriptor
-                   // attributes
-        {
+		   // attributes
+	{
 
-          if (is_closed_fd_p (state))
-            {
+	  if (is_closed_fd_p (state))
+	    {
 
-              sm_ctxt->warn (node, stmt, arg,
-                             new fd_use_after_close (*this, diag_arg,
-                                                     callee_fndecl, attr_name,
-                                                     arg_idx));
-              continue;
-            }
+	      sm_ctxt->warn (node, stmt, arg,
+			     new fd_use_after_close (*this, diag_arg,
+						     callee_fndecl, attr_name,
+						     arg_idx));
+	      continue;
+	    }
 
-          if (!(is_valid_fd_p (state) || (state == m_stop)))
-            {
-              if (!is_constant_fd_p (state))
-                sm_ctxt->warn (node, stmt, arg,
-                               new fd_use_without_check (*this, diag_arg,
-                                                        callee_fndecl, attr_name,
-                                                        arg_idx));
-            }
+	  if (!(is_valid_fd_p (state) || (state == m_stop)))
+	    {
+	      if (!is_constant_fd_p (state))
+		sm_ctxt->warn (node, stmt, arg,
+			       new fd_use_without_check (*this, diag_arg,
+							callee_fndecl, attr_name,
+							arg_idx));
+	    }
 
-          switch (fd_attr_access_dir)
-            {
-            case DIRS_READ_WRITE:
-              break;
-            case DIRS_READ:
+	  switch (fd_attr_access_dir)
+	    {
+	    case DIRS_READ_WRITE:
+	      break;
+	    case DIRS_READ:
 
-              if (is_writeonly_fd_p (state))
-                {
-                  sm_ctxt->warn (
-                      node, stmt, arg,
-                      new fd_access_mode_mismatch (*this, diag_arg, DIRS_WRITE,
-                                                   callee_fndecl, attr_name, arg_idx));
-                }
+	      if (is_writeonly_fd_p (state))
+		{
+		  sm_ctxt->warn (
+		      node, stmt, arg,
+		      new fd_access_mode_mismatch (*this, diag_arg, DIRS_WRITE,
+						   callee_fndecl, attr_name, arg_idx));
+		}
 
-              break;
-            case DIRS_WRITE:
+	      break;
+	    case DIRS_WRITE:
 
-              if (is_readonly_fd_p (state))
-                {
-                  sm_ctxt->warn (
-                      node, stmt, arg,
-                      new fd_access_mode_mismatch (*this, diag_arg, DIRS_READ,
-                                                   callee_fndecl, attr_name, arg_idx));
-                }
+	      if (is_readonly_fd_p (state))
+		{
+		  sm_ctxt->warn (
+		      node, stmt, arg,
+		      new fd_access_mode_mismatch (*this, diag_arg, DIRS_READ,
+						   callee_fndecl, attr_name, arg_idx));
+		}
 
-              break;
-            }
-        }
+	      break;
+	    }
+	}
     }
 }
 
 
 void
 fd_state_machine::on_open (sm_context *sm_ctxt, const supernode *node,
-                           const gimple *stmt, const gcall *call) const
+			   const gimple *stmt, const gcall *call) const
 {
   tree lhs = gimple_call_lhs (call);
   if (lhs)
     {
       tree arg = gimple_call_arg (call, 1);
       if (TREE_CODE (arg) == INTEGER_CST)
-        {
-          int flag = TREE_INT_CST_LOW (arg);
-          enum access_mode mode = get_access_mode_from_flag (flag);
+	{
+	  int flag = TREE_INT_CST_LOW (arg);
+	  enum access_mode mode = get_access_mode_from_flag (flag);
 
-          switch (mode)
-            {
-            case READ_ONLY:
-              sm_ctxt->on_transition (node, stmt, lhs, m_start,
-                                      m_unchecked_read_only);
-              break;
-            case WRITE_ONLY:
-              sm_ctxt->on_transition (node, stmt, lhs, m_start,
-                                      m_unchecked_write_only);
-              break;
-            default:
-              sm_ctxt->on_transition (node, stmt, lhs, m_start,
-                                      m_unchecked_read_write);
-            }
-        }
+	  switch (mode)
+	    {
+	    case READ_ONLY:
+	      sm_ctxt->on_transition (node, stmt, lhs, m_start,
+				      m_unchecked_read_only);
+	      break;
+	    case WRITE_ONLY:
+	      sm_ctxt->on_transition (node, stmt, lhs, m_start,
+				      m_unchecked_write_only);
+	      break;
+	    default:
+	      sm_ctxt->on_transition (node, stmt, lhs, m_start,
+				      m_unchecked_read_write);
+	    }
+	}
     }
   else
     {
@@ -887,7 +887,7 @@ fd_state_machine::on_open (sm_context *sm_ctxt, const supernode *node,
 
 void
 fd_state_machine::on_close (sm_context *sm_ctxt, const supernode *node,
-                            const gimple *stmt, const gcall *call) const
+			    const gimple *stmt, const gcall *call) const
 {
   tree arg = gimple_call_arg (call, 0);
   state_t state = sm_ctxt->get_state (stmt, arg);
@@ -910,15 +910,15 @@ fd_state_machine::on_close (sm_context *sm_ctxt, const supernode *node,
 }
 void
 fd_state_machine::on_read (sm_context *sm_ctxt, const supernode *node,
-                           const gimple *stmt, const gcall *call,
-                           const tree callee_fndecl) const
+			   const gimple *stmt, const gcall *call,
+			   const tree callee_fndecl) const
 {
   check_for_open_fd (sm_ctxt, node, stmt, call, callee_fndecl, DIRS_READ);
 }
 void
 fd_state_machine::on_write (sm_context *sm_ctxt, const supernode *node,
-                            const gimple *stmt, const gcall *call,
-                            const tree callee_fndecl) const
+			    const gimple *stmt, const gcall *call,
+			    const tree callee_fndecl) const
 {
   check_for_open_fd (sm_ctxt, node, stmt, call, callee_fndecl, DIRS_WRITE);
 }
@@ -936,89 +936,89 @@ fd_state_machine::check_for_open_fd (
   if (is_closed_fd_p (state))
     {
       sm_ctxt->warn (node, stmt, arg,
-                     new fd_use_after_close (*this, diag_arg, callee_fndecl));
+		     new fd_use_after_close (*this, diag_arg, callee_fndecl));
     }
 
   else
     {
       if (!(is_valid_fd_p (state) || (state == m_stop)))
-        {
-          if (!is_constant_fd_p (state))
-            sm_ctxt->warn (
-                node, stmt, arg,
-                new fd_use_without_check (*this, diag_arg, callee_fndecl));
-        }
+	{
+	  if (!is_constant_fd_p (state))
+	    sm_ctxt->warn (
+		node, stmt, arg,
+		new fd_use_without_check (*this, diag_arg, callee_fndecl));
+	}
       switch (callee_fndecl_dir)
-        {
-        case DIRS_READ:
-          if (is_writeonly_fd_p (state))
-            {
-              tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-              sm_ctxt->warn (node, stmt, arg,
-                             new fd_access_mode_mismatch (
-                                 *this, diag_arg, DIRS_WRITE, callee_fndecl));
-            }
+	{
+	case DIRS_READ:
+	  if (is_writeonly_fd_p (state))
+	    {
+	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
+	      sm_ctxt->warn (node, stmt, arg,
+			     new fd_access_mode_mismatch (
+				 *this, diag_arg, DIRS_WRITE, callee_fndecl));
+	    }
 
-          break;
-        case DIRS_WRITE:
+	  break;
+	case DIRS_WRITE:
 
-          if (is_readonly_fd_p (state))
-            {
-              tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-              sm_ctxt->warn (node, stmt, arg,
-                             new fd_access_mode_mismatch (
-                                 *this, diag_arg, DIRS_READ, callee_fndecl));
-            }
-          break;
-        default:
-          gcc_unreachable ();
-        }
+	  if (is_readonly_fd_p (state))
+	    {
+	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
+	      sm_ctxt->warn (node, stmt, arg,
+			     new fd_access_mode_mismatch (
+				 *this, diag_arg, DIRS_READ, callee_fndecl));
+	    }
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
     }
 }
 
 void
 fd_state_machine::on_condition (sm_context *sm_ctxt, const supernode *node,
-                                const gimple *stmt, const svalue *lhs,
-                                enum tree_code op, const svalue *rhs) const
+				const gimple *stmt, const svalue *lhs,
+				enum tree_code op, const svalue *rhs) const
 {
   if (tree cst = rhs->maybe_get_constant ())
     {
       if (TREE_CODE (cst) == INTEGER_CST)
-        {
-          int val = TREE_INT_CST_LOW (cst);
-          if (val == -1)
-            {
-              if (op == NE_EXPR)
-                make_valid_transitions_on_condition (sm_ctxt, node, stmt, lhs);
+	{
+	  int val = TREE_INT_CST_LOW (cst);
+	  if (val == -1)
+	    {
+	      if (op == NE_EXPR)
+		make_valid_transitions_on_condition (sm_ctxt, node, stmt, lhs);
 
-              else if (op == EQ_EXPR)
-                make_invalid_transitions_on_condition (sm_ctxt, node, stmt,
-                                                       lhs);
-            }
-        }
+	      else if (op == EQ_EXPR)
+		make_invalid_transitions_on_condition (sm_ctxt, node, stmt,
+						       lhs);
+	    }
+	}
     }
 
   if (rhs->all_zeroes_p ())
     {
       if (op == GE_EXPR)
-        make_valid_transitions_on_condition (sm_ctxt, node, stmt, lhs);
+	make_valid_transitions_on_condition (sm_ctxt, node, stmt, lhs);
       else if (op == LT_EXPR)
-        make_invalid_transitions_on_condition (sm_ctxt, node, stmt, lhs);
+	make_invalid_transitions_on_condition (sm_ctxt, node, stmt, lhs);
     }
 }
 
 void
 fd_state_machine::make_valid_transitions_on_condition (sm_context *sm_ctxt,
-                                                       const supernode *node,
-                                                       const gimple *stmt,
-                                                       const svalue *lhs) const
+						       const supernode *node,
+						       const gimple *stmt,
+						       const svalue *lhs) const
 {
   sm_ctxt->on_transition (node, stmt, lhs, m_unchecked_read_write,
-                          m_valid_read_write);
+			  m_valid_read_write);
   sm_ctxt->on_transition (node, stmt, lhs, m_unchecked_read_only,
-                          m_valid_read_only);
+			  m_valid_read_only);
   sm_ctxt->on_transition (node, stmt, lhs, m_unchecked_write_only,
-                          m_valid_write_only);
+			  m_valid_write_only);
 }
 
 void
