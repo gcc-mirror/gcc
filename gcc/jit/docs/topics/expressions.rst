@@ -309,7 +309,7 @@ Unary Operations
 
    The parameter ``result_type`` must be a numeric type.
 
-.. type:: enum gcc_jit_unary_op
+.. enum:: gcc_jit_unary_op
 
 The available unary operations are:
 
@@ -376,7 +376,7 @@ Binary Operations
 
    The parameter ``result_type`` must be a numeric type.
 
-.. type:: enum gcc_jit_binary_op
+.. enum:: gcc_jit_binary_op
 
 The available binary operations are:
 
@@ -534,7 +534,7 @@ Comparisons
 
    Build a boolean rvalue out of the comparison of two other rvalues.
 
-.. type:: enum gcc_jit_comparison
+.. enum:: gcc_jit_comparison
 
 =======================================  ============
 Comparison                               C equivalent
@@ -711,7 +711,7 @@ where the rvalue is computed by reading from the storage area.
 
    The "model" parameter determines the thread-local storage model of the "lvalue":
 
-   .. type:: enum gcc_jit_tls_model
+   .. enum:: gcc_jit_tls_model
 
    .. c:macro:: GCC_JIT_TLS_MODEL_NONE
 
@@ -841,7 +841,7 @@ Global variables
    The "kind" parameter determines the visibility of the "global" outside
    of the :c:type:`gcc_jit_result`:
 
-   .. type:: enum gcc_jit_global_kind
+   .. enum:: gcc_jit_global_kind
 
    .. c:macro:: GCC_JIT_GLOBAL_EXPORTED
 
