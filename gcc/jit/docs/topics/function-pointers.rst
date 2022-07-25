@@ -48,7 +48,7 @@ to it in :c:type:`gcc_jit_rvalue` form using
 type obtained using :c:func:`gcc_jit_context_new_function_ptr_type`.
 
 Here's an example of creating a function pointer type corresponding to C's
-:c:type:`void (*) (int, int, int)`:
+:expr:`void (*) (int, int, int)`:
 
 .. code-block:: c
 

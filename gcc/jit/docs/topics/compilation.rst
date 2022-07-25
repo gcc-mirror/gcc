@@ -98,8 +98,8 @@ In-memory compilation
    If the global is found, the result will need to be cast to a
    pointer of the correct type before it can be called.
 
-   This is a *pointer* to the global, so e.g. for an :c:type:`int` this is
-   an :c:type:`int *`.
+   This is a *pointer* to the global, so e.g. for an :expr:`int` this is
+   an :expr:`int *`.
 
    For example, given an ``int foo;`` created this way:
 

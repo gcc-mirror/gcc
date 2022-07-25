@@ -57,14 +57,14 @@ Simple expressions
                                            int value) const
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant :c:type:`int` value.
+   the given constant :expr:`int` value.
 
 .. function:: gccjit::rvalue \
               gccjit::context::new_rvalue (gccjit::type numeric_type, \
                                            long value) const
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant :c:type:`long` value.
+   the given constant :expr:`long` value.
 
 .. function::  gccjit::rvalue \
                gccjit::context::zero (gccjit::type numeric_type) const
@@ -91,7 +91,7 @@ Simple expressions
                                             double value) const
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant :c:type:`double` value.
+   the given constant :expr:`double` value.
 
 .. function:: gccjit::rvalue \
               gccjit::context::new_rvalue (gccjit::type pointer_type, \
