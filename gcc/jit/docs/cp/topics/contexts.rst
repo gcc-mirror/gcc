@@ -141,7 +141,7 @@ Debugging
    If "update_locations" is true, then also set up :class:`gccjit::location`
    information throughout the context, pointing at the dump file as if it
    were a source file.  This may be of use in conjunction with
-   :c:macro:`GCCJIT::BOOL_OPTION_DEBUGINFO` to allow stepping through the
+   :c:macro:`GCC_JIT_BOOL_OPTION_DEBUGINFO` to allow stepping through the
    code in a debugger.
 
 .. function:: void\
