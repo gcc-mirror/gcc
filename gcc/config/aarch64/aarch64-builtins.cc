@@ -612,6 +612,12 @@ enum aarch64_builtins
   AARCH64_LS64_BUILTIN_ST64B,
   AARCH64_LS64_BUILTIN_ST64BV,
   AARCH64_LS64_BUILTIN_ST64BV0,
+  AARCH64_REV16,
+  AARCH64_REV16L,
+  AARCH64_REV16LL,
+  AARCH64_RBIT,
+  AARCH64_RBITL,
+  AARCH64_RBITLL,
   AARCH64_BUILTIN_MAX
 };
 
@@ -1659,6 +1665,36 @@ aarch64_init_ls64_builtins (void)
       = aarch64_general_add_builtin (data[i].name, data[i].type, data[i].code);
 }
 
+static void
+aarch64_init_data_intrinsics (void)
+{
+  tree uint32_fntype = build_function_type_list (uint32_type_node,
+						 uint32_type_node, NULL_TREE);
+  tree ulong_fntype = build_function_type_list (long_unsigned_type_node,
+						long_unsigned_type_node,
+						NULL_TREE);
+  tree uint64_fntype = build_function_type_list (uint64_type_node,
+						 uint64_type_node, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_REV16]
+    = aarch64_general_add_builtin ("__builtin_aarch64_rev16", uint32_fntype,
+				   AARCH64_REV16);
+  aarch64_builtin_decls[AARCH64_REV16L]
+    = aarch64_general_add_builtin ("__builtin_aarch64_rev16l", ulong_fntype,
+				   AARCH64_REV16L);
+  aarch64_builtin_decls[AARCH64_REV16LL]
+    = aarch64_general_add_builtin ("__builtin_aarch64_rev16ll", uint64_fntype,
+				   AARCH64_REV16LL);
+  aarch64_builtin_decls[AARCH64_RBIT]
+    = aarch64_general_add_builtin ("__builtin_aarch64_rbit", uint32_fntype,
+				   AARCH64_RBIT);
+  aarch64_builtin_decls[AARCH64_RBITL]
+    = aarch64_general_add_builtin ("__builtin_aarch64_rbitl", ulong_fntype,
+				   AARCH64_RBITL);
+  aarch64_builtin_decls[AARCH64_RBITLL]
+    = aarch64_general_add_builtin ("__builtin_aarch64_rbitll", uint64_fntype,
+				   AARCH64_RBITLL);
+}
+
 /* Implement #pragma GCC aarch64 "arm_acle.h".  */
 void
 handle_arm_acle_h (void)
@@ -1737,6 +1773,7 @@ aarch64_general_init_builtins (void)
   aarch64_init_crc32_builtins ();
   aarch64_init_builtin_rsqrt ();
   aarch64_init_rng_builtins ();
+  aarch64_init_data_intrinsics ();
 
   tree ftype_jcvt
     = build_function_type_list (intSI_type_node, double_type_node, NULL);
@@ -2389,6 +2426,37 @@ aarch64_expand_builtin_memtag (int fcode, tree exp, rtx target)
   return target;
 }
 
+/* Function to expand an expression EXP which calls one of the ACLE Data
+   Intrinsic builtins FCODE with the result going to TARGET.  */
+static rtx
+aarch64_expand_builtin_data_intrinsic (unsigned int fcode, tree exp, rtx target)
+{
+  expand_operand ops[2];
+  machine_mode mode = GET_MODE (target);
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], expand_normal (CALL_EXPR_ARG (exp, 0)), mode);
+  enum insn_code icode;
+
+  switch (fcode)
+    {
+    case AARCH64_REV16:
+    case AARCH64_REV16L:
+    case AARCH64_REV16LL:
+      icode = code_for_aarch64_rev16 (mode);
+      break;
+    case AARCH64_RBIT:
+    case AARCH64_RBITL:
+    case AARCH64_RBITLL:
+      icode = code_for_aarch64_rbit (mode);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  expand_insn (icode, 2, ops);
+  return ops[0].value;
+}
+
 /* Expand an expression EXP as fpsr or fpcr setter (depending on
    UNSPEC) using MODE.  */
 static void
@@ -2546,6 +2614,9 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
   if (fcode >= AARCH64_MEMTAG_BUILTIN_START
       && fcode <= AARCH64_MEMTAG_BUILTIN_END)
     return aarch64_expand_builtin_memtag (fcode, exp, target);
+  if (fcode >= AARCH64_REV16
+      && fcode <= AARCH64_RBITLL)
+    return aarch64_expand_builtin_data_intrinsic (fcode, exp, target);
 
   gcc_unreachable ();
 }
