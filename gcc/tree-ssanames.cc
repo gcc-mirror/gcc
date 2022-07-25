@@ -489,13 +489,12 @@ get_nonzero_bits (const_tree name)
       return wi::shwi (-1, precision);
     }
 
-  if (!range_info_p (name))
+  if (!range_info_p (name) || !irange::supports_p (TREE_TYPE (name)))
     return wi::shwi (-1, precision);
 
   /* Optimization to get at the nonzero bits because we know the
      storage type.  This saves us measurable time compared to going
      through vrange_storage.  */
-  gcc_checking_assert (irange::supports_p (TREE_TYPE (name)));
   irange_storage_slot *ri
     = static_cast <irange_storage_slot *> (SSA_NAME_RANGE_INFO (name));
   return ri->get_nonzero_bits ();

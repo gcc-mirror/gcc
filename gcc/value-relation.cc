@@ -667,8 +667,6 @@ private:
 inline void
 value_relation::set_relation (relation_kind r, tree n1, tree n2)
 {
-  gcc_checking_assert (SSA_NAME_VERSION (n1) != SSA_NAME_VERSION (n2)
-		       || r == VREL_EQ);
   related = r;
   name1 = n1;
   name2 = n2;
@@ -1449,6 +1447,11 @@ void
 path_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
 				tree ssa2)
 {
+  // If the 2 ssa_names are the same, do nothing.  An equivalence is implied,
+  // and no other relation makes sense.
+  if (ssa1 == ssa2)
+    return;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       value_relation vr (k, ssa1, ssa2);

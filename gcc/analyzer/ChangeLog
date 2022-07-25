@@ -1,3 +1,61 @@
+2022-07-23  Immad Mir  <mirimmad@outlook.com>
+
+	* sm-fd.cc (fd_param_diagnostic): New diagnostic class.
+	(fd_access_mode_mismatch): Change inheritance from fd_diagnostic
+	to fd_param_diagnostic. Add new overloaded constructor.
+	(fd_use_after_close): Likewise.
+	(unchecked_use_of_fd): Likewise and also change name to fd_use_without_check.
+	(double_close): Change name to fd_double_close.
+	(enum access_directions): New.
+	(fd_state_machine::on_stmt): Handle calls to function with the
+	new three function attributes.
+	(fd_state_machine::check_for_fd_attrs): New.
+	(fd_state_machine::on_open): Use the new overloaded constructors
+	of diagnostic classes.
+
+2022-07-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106413
+	* varargs.cc (region_model::impl_call_va_start): Avoid iterating
+	through non-existant variadic arguments by initializing the
+	impl_region to "UNKNOWN" if the va_start occurs in the top-level
+	function to the analysis.
+
+2022-07-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106401
+	* store.cc (binding_cluster::binding_cluster): Remove overzealous
+	assertion; we're checking for tracked_p in
+	store::get_or_create_cluster.
+
+2022-07-22  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106394
+	* region-model.cc (capacity_compatible_with_type): Always return true
+	if alloc_size is zero.
+
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106383
+	* varargs.cc (region_model::impl_call_va_arg): When determining if
+	we're doing interprocedural analysis, use the stack depth of the
+	frame in which va_start was called, rather than the current stack
+	depth.
+
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-taint.cc (tainted_array_index::emit): Bulletproof against
+	NULL m_arg.
+	(tainted_array_index::describe_final_event): Likewise.
+	(tainted_size::emit): Likewise.
+	(tainted_size::describe_final_event): Likewise.
+
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106374
+	* region.cc (decl_region::get_svalue_for_initializer): Bail out on
+	untracked regions.
+
 2022-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106373

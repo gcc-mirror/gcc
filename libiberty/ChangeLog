@@ -1,3 +1,9 @@
+2022-07-22  Martin Liska  <mliska@suse.cz>
+
+	PR other/106370
+	* _doprnt.c: Remove continue as last stmt
+	in a loop.
+
 2022-07-14  Martin Liska  <mliska@suse.cz>
 
 	* functions.texi: Replace strtoul with strtoull.

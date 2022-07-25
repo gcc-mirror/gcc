@@ -1,3 +1,199 @@
+2022-07-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-query.cc (range_query::get_value_range): Add assert.
+	* vr-values.cc (vr_values::range_of_expr): Make sure we don't ICE
+	on unsupported types in vr_values.
+	(simplify_using_ranges::simplify): Same.
+
+2022-07-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssanames.cc (get_nonzero_bits): Return -1 for unsupported
+	types.
+	* value-query.cc (get_ssa_name_range_info): Remove precision check.
+
+2022-07-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-relation.cc (value_relation::set_relation): Remove assert.
+	(path_oracle::register_relation): Exit when trying to register
+	same SSA name relations.
+
+2022-07-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::edge_range): Convert to vrange.
+	(ranger_cache::range_from_dom): Same.
+	* tree-ssa-dom.cc
+	(dom_opt_dom_walker::set_global_ranges_from_unreachable_edges): Same.
+
+2022-07-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106303
+	PR target/106347
+	* config/i386/i386-features.cc (make_vector_copies): Move from
+	general_scalar_chain to scalar_chain.
+	(convert_reg): Likewise.
+	(convert_insn_common): New scalar_chain method split out from
+	general_scalar_chain convert_insn.
+	(convert_registers): Move from general_scalar_chain to
+	scalar_chain.
+	(scalar_chain::convert): Call convert_insn_common before calling
+	convert_insn.
+	(timode_remove_non_convertible_regs): Iterate until there are
+	no further changes to the candidates.
+	* config/i386/i386-features.h (scalar_chain::hash_map): Move
+	from general_scalar_chain.
+	(scalar_chain::convert_reg): Likewise.
+	(scalar_chain::convert_insn_common): New shared method.
+	(scalar_chain::make_vector_copies): Move from general_scalar_chain.
+	(scalar_chain::convert_registers): Likewise.  No longer virtual.
+	(general_scalar_chain::hash_map): Delete.  Moved to scalar_chain.
+	(general_scalar_chain::convert_reg): Likewise.
+	(general_scalar_chain::make_vector_copies): Likewise.
+	(general_scalar_chain::convert_registers): Delete virtual method.
+	(timode_scalar_chain::convert_registers): Likewise.
+
+2022-07-23  Immad Mir  <mirimmad@outlook.com>
+
+	* doc/extend.texi: Add fd_arg, fd_arg_read and fd_arg_write under
+	"Common Function Attributes" section.
+	* doc/invoke.texi: Add docs to -Wanalyzer-fd-access-mode-mismatch,
+	-Wanalyzer-use-after-close, -Wanalyzer-fd-use-without-check that these
+	warnings may be emitted through usage of three function attributes used
+	for static analysis of file descriptors namely fd_arg, fd_arg_read and
+	fd_arg_write.
+
+2022-07-22  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*masktrue_const_bitcmpl):
+	Add a new insn_and_split pattern, and a few split patterns for
+	spacial cases.
+
+2022-07-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* graphds.cc (graphds_scc): Fix algorithm attribution.
+
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106403
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Move stored
+	value valueization after check for IFN_MASKED_STORE or
+	IFN_LEN_STORE.
+
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106397
+	* tree-ssa-loop-prefetch.cc (emit_mfence_after_loop): Do
+	not update SSA form here.
+	(mark_nontemporal_stores): Return whether we marked any
+	non-temporal stores and inserted mfence.
+	(loop_prefetch_arrays): Note when we need to update SSA.
+	(tree_ssa_prefetch_arrays): Perform required (LC) SSA update
+	at the end of the pass.
+
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106387
+	* tree-vect-stmts.cc (vectorizable_load): Use make_ssa_name
+	if ptr is not an SSA name.
+
+2022-07-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/106038
+	* config/i386/mmx.md (<code><mode>3): New define_expand, it's
+	original "<code><mode>3".
+	(*<code><mode>3): New define_insn, it's original
+	"<code><mode>3" be extended to handle memory and immediate
+	operand with ix86_binary_operator_ok. Also adjust define_split
+	after it.
+	(mmxinsnmode): New mode attribute.
+	(*mov<mode>_imm): Refactor with mmxinsnmode.
+	* config/i386/predicates.md
+	(register_or_x86_64_const_vector_operand): New predicate.
+
+2022-07-22  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/altivec.md:
+	(vstrir_code_<mode>): Rename to...
+	(vstrir_direct_<mode>): ... this.
+	(vstrir_p_code_<mode>): Rename to...
+	(vstrir_p_direct_<mode>): ... this.
+	(vstril_code_<mode>): Rename to...
+	(vstril_direct_<mode>): ... this.
+	(vstril_p_code_<mode>): Rename to...
+	(vstril_p_direct_<mode>): ... this.
+
+2022-07-22  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.cc: Update comments.
+	(rs6000_target_modify_macros): Remove bu_mask references.
+	(rs6000_define_or_undefine_macro): Replace bu_mask reference
+	with a rs6000_cpu value check.
+	(rs6000_cpu_cpp_builtins): Remove rs6000_builtin_mask_calculate()
+	parameter from call to rs6000_target_modify_macros.
+	* config/rs6000/rs6000-protos.h (rs6000_target_modify_macros,
+	rs6000_target_modify_macros_ptr): Remove parameter from extern
+	for the prototype.
+	* config/rs6000/rs6000.cc (rs6000_target_modify_macros_ptr): Remove
+	parameter from prototype, update calls to this function.
+	(rs6000_print_builtin_options): Remove prototype, call and function.
+	(rs6000_builtin_mask_calculate): Remove function.
+	(rs6000_debug_reg_global): Remove call to rs6000_print_builtin_options.
+	(rs6000_option_override_internal): Remove rs6000_builtin_mask var
+	and builtin_mask debug output.
+	(rs6000_builtin_mask_names): Remove.
+	(rs6000_pragma_target_parse): Remove prev_bumask, cur_bumask,
+	diff_bumask references; Update calls to rs6000_target_modify_ptr.
+	* config/rs6000/rs6000.opt (rs6000_builtin_mask): Remove.
+
+2022-07-21  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/94920
+	* match.pd (x >= 0 ? x : 0) + (x <= 0 ? -x : 0): New simplification.
+	(x <= 0 ? -x : 0): New simplification.
+
+2022-07-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	Revert:
+	2022-07-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-ssa-forwprop.cc (simplify_permutation): Use lhs type
+	instead of TREE_TYPE (arg0) as result type in folding VEC_PERM_EXPR.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106379
+	* match.pd (~(a ^ b) -> a == b): New pattern.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106378
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Handle
+	LEN_STORE, add mode to initialize a may-def and handle
+	MASK_STORE that way.
+	(dse_optimize_stmt): Query may-defs.  Handle internal
+	functions LEN_STORE and MASK_STORE similar to how
+	we handle memory builtins but without byte tracking.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106365
+	* tree-ssa-sccvn.cc (pd_data::rhs_off): New field determining
+	the offset to start encoding of RHS from.
+	(vn_walk_cb_data::vn_walk_cb_data): Initialize it.
+	(vn_walk_cb_data::push_partial_def): Allow the first partial
+	definition to be fully providing the def.  Offset RHS
+	before encoding if requested.
+	(vn_reference_lookup_3): Initialize def_rhs everywhere.
+	Add support for .MASK_STORE and .LEN_STORE (partial) definitions.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.cc (ref_maybe_used_by_call_p_1): Special-case
+	store internal functions and IFN_MASK_LOAD, IFN_LEN_LOAD
+	and IFN_MASK_LOAD_LANES.
+	(call_may_clobber_ref_p_1): Special-case IFN_MASK_STORE,
+	IFN_LEN_STORE and IFN_MASK_STORE_LANES.
+
 2022-07-20  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/101347

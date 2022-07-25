@@ -1209,6 +1209,10 @@
   return trunc_int_for_mode (val, SImode) == val;
 })
 
+(define_predicate "nonimmediate_or_x86_64_const_vector_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_operand 0 "x86_64_const_vector_operand")))
+
 ;; Return true when OP is nonimmediate or standard SSE constant.
 (define_predicate "nonimmediate_or_sse_const_operand"
   (ior (match_operand 0 "nonimmediate_operand")

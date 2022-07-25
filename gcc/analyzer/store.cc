@@ -1107,7 +1107,6 @@ binding_cluster::binding_cluster (const region *base_region)
 : m_base_region (base_region), m_map (),
   m_escaped (false), m_touched (false)
 {
-  gcc_assert (base_region->tracked_p ());
 }
 
 /* binding_cluster's copy ctor.  */

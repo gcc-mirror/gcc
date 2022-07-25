@@ -109,3 +109,44 @@ vrange_printer::print_irange_bitmasks (const irange &r) const
   print_hex (nz, buf);
   pp_string (pp, buf);
 }
+
+// Print an frange.
+
+void
+vrange_printer::visit (const frange &r) const
+{
+  pp_string (pp, "[frange] ");
+  if (r.undefined_p ())
+    {
+      pp_string (pp, "UNDEFINED");
+      return;
+    }
+  dump_generic_node (pp, r.type (), 0, TDF_NONE, false);
+  pp_string (pp, " ");
+  if (r.varying_p ())
+    {
+      pp_string (pp, "VARYING");
+      return;
+    }
+  print_frange_prop ("NAN", r.get_nan ());
+  print_frange_prop ("INF", r.get_inf ());
+  print_frange_prop ("NINF", r.get_ninf ());
+}
+
+// Print the FP properties in an frange.
+
+void
+vrange_printer::print_frange_prop (const char *str, const fp_prop &prop) const
+{
+  if (prop.varying_p ())
+    return;
+
+  if (prop.yes_p ())
+    pp_string (pp, str);
+  else if (prop.no_p ())
+    {
+      pp_character (pp, '!');
+      pp_string (pp, str);
+    }
+  pp_character (pp, ' ');
+}

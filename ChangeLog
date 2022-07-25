@@ -1,3 +1,11 @@
+2022-07-21  Sam Feifer  <sfeifer@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-07-21  Marc Poulhiès  <poulhies@adacore.com>
+
+	* MAINTAINERS: Add myself as Ada front end co-maintainer.
+
 2022-07-19  Alexander Monakov  <amonakov@ispras.ru>
 
 	* .gitignore: Do not ignore config.h.

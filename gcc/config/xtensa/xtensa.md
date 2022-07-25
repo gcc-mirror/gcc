@@ -1714,6 +1714,90 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
 
+(define_insn_and_split "*masktrue_const_bitcmpl"
+  [(set (pc)
+	(if_then_else (match_operator 3 "boolean_operator"
+			[(and:SI (not:SI (match_operand:SI 0 "register_operand" "r"))
+				 (match_operand:SI 1 "const_int_operand" "i"))
+			 (const_int 0)])
+		      (label_ref (match_operand 2 "" ""))
+		      (pc)))]
+  "exact_log2 (INTVAL (operands[1])) < 0"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 4)
+	(match_dup 1))
+   (set (pc)
+	(if_then_else (match_op_dup 3
+			[(and:SI (not:SI (match_dup 0))
+				 (match_dup 4))
+			 (const_int 0)])
+		      (label_ref (match_dup 2))
+		      (pc)))]
+{
+  operands[4] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY
+				   && IN_RANGE (INTVAL (operands[1]), -32, 95)")
+		      (const_int 5)
+		      (if_then_else (match_test "xtensa_simm12b (INTVAL (operands[1]))")
+				    (const_int 6)
+				    (const_int 10))))])
+
+(define_split
+  [(set (pc)
+	(if_then_else (match_operator 2 "boolean_operator"
+			[(subreg:HQI (not:SI (match_operand:SI 0 "register_operand")) 0)
+			 (const_int 0)])
+		      (label_ref (match_operand 1 ""))
+		      (pc)))]
+  "!BYTES_BIG_ENDIAN"
+  [(set (pc)
+	(if_then_else (match_op_dup 2
+			[(and:SI (not:SI (match_dup 0))
+				 (match_dup 3))
+			 (const_int 0)])
+		      (label_ref (match_dup 1))
+		      (pc)))]
+{
+  operands[3] = GEN_INT ((1 << GET_MODE_BITSIZE (<MODE>mode)) - 1);
+})
+
+(define_split
+  [(set (pc)
+	(if_then_else (match_operator 2 "boolean_operator"
+			[(subreg:HI (not:SI (match_operand:SI 0 "register_operand")) 2)
+			 (const_int 0)])
+		      (label_ref (match_operand 1 ""))
+		      (pc)))]
+  "BYTES_BIG_ENDIAN"
+  [(set (pc)
+	(if_then_else (match_op_dup 2
+			[(and:SI (not:SI (match_dup 0))
+				 (const_int 65535))
+			 (const_int 0)])
+		      (label_ref (match_dup 1))
+		      (pc)))])
+
+(define_split
+  [(set (pc)
+	(if_then_else (match_operator 2 "boolean_operator"
+			[(subreg:QI (not:SI (match_operand:SI 0 "register_operand")) 3)
+			 (const_int 0)])
+		      (label_ref (match_operand 1 ""))
+		      (pc)))]
+  "BYTES_BIG_ENDIAN"
+  [(set (pc)
+	(if_then_else (match_op_dup 2
+			[(and:SI (not:SI (match_dup 0))
+				 (const_int 255))
+			 (const_int 0)])
+		      (label_ref (match_dup 1))
+		      (pc)))])
+
 (define_insn_and_split "*masktrue_const_pow2_minus_one"
   [(set (pc)
 	(if_then_else (match_operator 4 "boolean_operator"

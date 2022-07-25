@@ -188,6 +188,17 @@ vr_values::range_of_expr (vrange &r, tree expr, gimple *stmt)
 	r = *vr;
       else
 	{
+	  if (!vr->supports_type_p (TREE_TYPE (expr)))
+	    {
+	      // vr_values::extract_range_basic() use of ranger's
+	      // fold_range() can create a situation where we are
+	      // asked for the range of an unsupported legacy type.
+	      // Since get_value_range() above will return varying for
+	      // such types, avoid copying incompatible range types.
+	      gcc_checking_assert (vr->varying_p ());
+	      r.set_varying (TREE_TYPE (expr));
+	      return true;
+	    }
 	  value_range tmp = *vr;
 	  tmp.normalize_symbolics ();
 	  r = tmp;
@@ -4375,7 +4386,9 @@ simplify_using_ranges::simplify (gimple_stmt_iterator *gsi)
 
 	case MIN_EXPR:
 	case MAX_EXPR:
-	  return simplify_min_or_max_using_ranges (gsi, stmt);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
+	    return simplify_min_or_max_using_ranges (gsi, stmt);
+	  break;
 
 	case RSHIFT_EXPR:
 	  {
