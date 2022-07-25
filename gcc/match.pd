@@ -1946,7 +1946,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* ~(a ^ b) is a == b for truth valued a and b.  */
 (simplify
  (bit_not (bit_xor:s truth_valued_p@0 truth_valued_p@1))
- (if (!VECTOR_TYPE_P (type))
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && TYPE_PRECISION (TREE_TYPE (@0)) == 1)
   (convert (eq @0 @1))))
 
 /* (x & ~m) | (y & m) -> ((x ^ y) & m) ^ x */
