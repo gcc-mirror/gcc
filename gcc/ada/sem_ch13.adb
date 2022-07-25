@@ -17726,7 +17726,9 @@ package body Sem_Ch13 is
          begin
             --  Skip if function marked as warnings off
 
-            if Warnings_Off (Act_Unit) or else Serious_Errors_Detected > 0 then
+            if Has_Warnings_Off (Act_Unit)
+              or else Serious_Errors_Detected > 0
+            then
                goto Continue;
             end if;
 
