@@ -308,7 +308,7 @@ We can now compile it, and extract machine code from the result:
 
    .. literalinclude:: ../examples/tut04-toyvm/toyvm.c
     :start-after: /* We've now finished populating the context.  Compile it.  */
-    :end-before: /* (this leaks "result" and "funcname") */
+    :end-before: /* (this leaks "jit_result" and "funcname") */
     :language: c
 
 We can now run the result:

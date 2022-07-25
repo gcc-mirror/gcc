@@ -121,7 +121,7 @@ in this case just one:
   params.push_back (param_i);
 
 Now we can create the function, using
-:c:func:`gccjit::context::new_function`:
+:cpp:func:`gccjit::context::new_function`:
 
 .. code-block:: c++
 
