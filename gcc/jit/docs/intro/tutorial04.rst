@@ -126,7 +126,7 @@ then directly executed in-process:
     :end-before: enum opcode
     :language: c
 
-The lifetime of the code is tied to that of a :c:type:`gcc_jit_result *`.
+The lifetime of the code is tied to that of a :c:expr:`gcc_jit_result *`.
 We'll handle this by bundling them up in a structure, so that we can
 clean them up together by calling :c:func:`gcc_jit_result_release`:
 

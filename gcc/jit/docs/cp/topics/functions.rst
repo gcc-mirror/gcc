@@ -36,7 +36,7 @@ Params
 
 :class:`gccjit::param` is a subclass of :class:`gccjit::lvalue` (and thus
 of :class:`gccjit::rvalue` and :class:`gccjit::object`).  It is a thin
-wrapper around the C API's :c:type:`gcc_jit_param *`.
+wrapper around the C API's :c:expr:`gcc_jit_param *`.
 
 Functions
 ---------
