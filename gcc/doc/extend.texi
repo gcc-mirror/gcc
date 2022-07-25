@@ -3007,15 +3007,15 @@ produced by @command{gold}.
 For other linkers that cannot generate resolution file,
 explicit @code{externally_visible} attributes are still necessary.
 
-@item fd_arg 
+@item fd_arg
 @itemx fd_arg (@var{N})
 @cindex @code{fd_arg} function attribute
-The @code{fd_arg} attribute may be applied to a function that takes an open 
+The @code{fd_arg} attribute may be applied to a function that takes an open
 file descriptor at referenced argument @var{N}.
 
 It indicates that the passed filedescriptor must not have been closed.
-Therefore, when the analyzer is enabled with @option{-fanalyzer}, the 
-analyzer may emit a @option{-Wanalyzer-fd-use-after-close} diagnostic 
+Therefore, when the analyzer is enabled with @option{-fanalyzer}, the
+analyzer may emit a @option{-Wanalyzer-fd-use-after-close} diagnostic
 if it detects a code path in which a function with this attribute is
 called with a closed file descriptor.
 
@@ -3040,8 +3040,8 @@ attribute is called on a file descriptor opened with @code{O_WRONLY}.
 @itemx fd_arg_write (@var{N})
 @cindex @code{fd_arg_write} function attribute
 The @code{fd_arg_write} is identical to @code{fd_arg_read} except that the
-analyzer may emit a @option{-Wanalyzer-access-mode-mismatch} diagnostic if 
-it detects a code path in which a function with this attribute is called on a 
+analyzer may emit a @option{-Wanalyzer-access-mode-mismatch} diagnostic if
+it detects a code path in which a function with this attribute is called on a
 file descriptor opened with @code{O_RDONLY}.
 
 @item flatten

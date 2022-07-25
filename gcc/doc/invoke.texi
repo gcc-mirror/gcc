@@ -9847,7 +9847,7 @@ This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-fd-access-mode-mismatch}
 to disable it.
 
-This diagnostic warns for paths through code in which a 
+This diagnostic warns for paths through code in which a
 @code{read} on a write-only file descriptor is attempted, or vice versa.
 
 This diagnostic also warns for code paths in a which a function with attribute
@@ -9863,7 +9863,7 @@ This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-fd-double-close}
 to disable it.
 
-This diagnostic warns for paths through code in which a 
+This diagnostic warns for paths through code in which a
 file descriptor can be closed more than once.
 
 @item -Wno-analyzer-fd-leak
@@ -9873,7 +9873,7 @@ This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-fd-leak}
 to disable it.
 
-This diagnostic warns for paths through code in which an 
+This diagnostic warns for paths through code in which an
 open file descriptor is leaked.
 
 @item -Wno-analyzer-fd-use-after-close
@@ -9883,7 +9883,7 @@ This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-fd-use-after-close}
 to disable it.
 
-This diagnostic warns for paths through code in which a 
+This diagnostic warns for paths through code in which a
 read or write is called on a closed file descriptor.
 
 This diagnostic also warns for paths through code in which
@@ -9898,7 +9898,7 @@ This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-fd-use-without-check}
 to disable it.
 
-This diagnostic warns for paths through code in which a 
+This diagnostic warns for paths through code in which a
 file descriptor is used without being checked for validity.
 
 This diagnostic also warns for paths through code in which
