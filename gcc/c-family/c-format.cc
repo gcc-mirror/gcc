@@ -4617,14 +4617,14 @@ class range_label_for_format_type_mismatch
   label_text get_text (unsigned range_idx) const final override
   {
     label_text text = range_label_for_type_mismatch::get_text (range_idx);
-    if (text.m_buffer == NULL)
+    if (text.get () == NULL)
       return text;
 
     indirection_suffix suffix (m_pointer_count);
     char *p = (char *) alloca (suffix.get_buffer_size ());
     suffix.fill_buffer (p);
 
-    char *result = concat (text.m_buffer, p, NULL);
+    char *result = concat (text.get (), p, NULL);
     return label_text::take (result);
   }
 

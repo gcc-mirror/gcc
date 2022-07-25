@@ -55,9 +55,11 @@ package System.Address_To_Access_Conversions is
    --  of no strict aliasing.
 
    function To_Pointer (Value : Address)        return Object_Pointer with
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
    function To_Address (Value : Object_Pointer) return Address with
-     SPARK_Mode => Off;
+     SPARK_Mode => Off,
+     Annotate => (GNATprove, Always_Return);
 
    pragma Import (Intrinsic, To_Pointer);
    pragma Import (Intrinsic, To_Address);

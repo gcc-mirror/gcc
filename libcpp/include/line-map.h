@@ -1851,7 +1851,7 @@ public:
   label_text (label_text &&other)
   : m_buffer (other.m_buffer), m_owned (other.m_owned)
   {
-    other.moved_from ();
+    other.release ();
   }
 
   /* Move assignment.  */
@@ -1861,7 +1861,7 @@ public:
       free (m_buffer);
     m_buffer = other.m_buffer;
     m_owned = other.m_owned;
-    other.moved_from ();
+    other.release ();
     return *this;
   }
 
@@ -1873,34 +1873,35 @@ public:
      longer-lived owner.  */
   static label_text borrow (const char *buffer)
   {
-    return std::move (label_text (const_cast <char *> (buffer), false));
+    return label_text (const_cast <char *> (buffer), false);
   }
 
   /* Create a label_text instance that takes ownership of BUFFER.  */
   static label_text take (char *buffer)
   {
-    return std::move (label_text (buffer, true));
+    return label_text (buffer, true);
   }
 
-  /* Take ownership of the buffer, copying if necessary.  */
-  char *take_or_copy ()
-  {
-    if (m_owned)
-      return m_buffer;
-    else
-      return xstrdup (m_buffer);
-  }
-
-  void moved_from ()
+  void release ()
   {
     m_buffer = NULL;
     m_owned = false;
   }
 
+  const char *get () const
+  {
+    return m_buffer;
+  }
+
+  bool is_owner () const
+  {
+    return m_owned;
+  }
+
+private:
   char *m_buffer;
   bool m_owned;
 
-private:
   label_text (char *buffer, bool owned)
   : m_buffer (buffer), m_owned (owned)
   {}

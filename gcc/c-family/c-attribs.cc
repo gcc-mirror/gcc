@@ -173,6 +173,7 @@ static tree handle_objc_nullability_attribute (tree *, tree, tree, int, bool *);
 static tree handle_signed_bool_precision_attribute (tree *, tree, tree, int,
 						    bool *);
 static tree handle_retain_attribute (tree *, tree, tree, int, bool *);
+static tree handle_fd_arg_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -555,6 +556,12 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_dealloc_attribute, NULL },
   { "tainted_args",	      0, 0, true,  false, false, false,
 			      handle_tainted_args_attribute, NULL },
+  { "fd_arg",             1, 1, false, true, true, false,
+            handle_fd_arg_attribute, NULL},      
+  { "fd_arg_read",        1, 1, false, true, true, false,
+            handle_fd_arg_attribute, NULL},
+  { "fd_arg_write",       1, 1, false, true, true, false,
+            handle_fd_arg_attribute, NULL},         
   { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -4518,6 +4525,30 @@ handle_nonnull_attribute (tree *node, tree name,
       args = next;
     }
 
+  return NULL_TREE;
+}
+
+/* Handle the "fd_arg", "fd_arg_read" and "fd_arg_write" attributes */
+
+static tree
+handle_fd_arg_attribute (tree *node, tree name, tree args,
+                              int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree type = *node;
+  if (!args)
+    {
+      if (!prototype_p (type))
+        {
+          error ("%qE attribute without arguments on a non-prototype", name);
+          *no_add_attrs = true;
+        }
+      return NULL_TREE;
+    }
+
+  if (positional_argument (*node, name, TREE_VALUE (args), INTEGER_TYPE))
+      return NULL_TREE;
+
+  *no_add_attrs = true;  
   return NULL_TREE;
 }
 

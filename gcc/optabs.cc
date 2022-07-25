@@ -5828,7 +5828,8 @@ expand_sfix_optab (rtx to, rtx from, convert_optab tab)
   FOR_EACH_MODE_FROM (fmode, GET_MODE (from))
     FOR_EACH_MODE_FROM (imode, GET_MODE (to))
       {
-	icode = convert_optab_handler (tab, imode, fmode);
+	icode = convert_optab_handler (tab, imode, fmode,
+				       insn_optimization_type ());
 	if (icode != CODE_FOR_nothing)
 	  {
 	    rtx_insn *last = get_last_insn ();

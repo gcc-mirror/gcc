@@ -19,13 +19,13 @@
 
 // C++11 21.4.7.2 [string::find] basic_string find
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 // https://gcc.gnu.org/ml/libstdc++/2017-01/msg00021.html
 void test01()
 {
-  typedef std::string string_type;
+  typedef __gnu_test::string string_type;
   string_type::size_type npos = string_type::npos;
 
   string_type use = "aaa";

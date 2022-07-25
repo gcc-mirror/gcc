@@ -5917,6 +5917,8 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_CONSTRUCTIBLE:
 	case RID_IS_NOTHROW_ASSIGNABLE:
 	case RID_IS_NOTHROW_CONSTRUCTIBLE:
+	case RID_REF_CONSTRUCTS_FROM_TEMPORARY:
+	case RID_REF_CONVERTS_FROM_TEMPORARY:
 	  return cp_parser_trait_expr (parser, token->keyword);
 
 	// C++ concepts
@@ -10988,6 +10990,14 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
       kind = CPTK_IS_NOTHROW_CONSTRUCTIBLE;
       variadic = true;
       break;
+    case RID_REF_CONSTRUCTS_FROM_TEMPORARY:
+      kind = CPTK_REF_CONSTRUCTS_FROM_TEMPORARY;
+      binary = true;
+      break;
+    case RID_REF_CONVERTS_FROM_TEMPORARY:
+      kind = CPTK_REF_CONVERTS_FROM_TEMPORARY;
+      binary = true;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -13811,7 +13821,7 @@ warn_for_range_copy (tree decl, tree expr)
 
   if (TYPE_REF_P (type))
     {
-      if (glvalue_p (expr) && !ref_conv_binds_directly_p (type, expr))
+      if (glvalue_p (expr) && ref_conv_binds_directly (type, expr).is_false ())
 	{
 	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wrange_loop_construct,
@@ -13839,20 +13849,20 @@ warn_for_range_copy (tree decl, tree expr)
 	  && trivially_copyable_p (type)))
     return;
 
+  /* If we can initialize a reference directly, suggest that to avoid the
+     copy.  */
   tree rtype = cp_build_reference_type (type, /*rval*/false);
-  /* If we could initialize the reference directly, it wouldn't involve any
-     copies.  */
-  if (!ref_conv_binds_directly_p (rtype, expr))
-    return;
-
-  auto_diagnostic_group d;
-  if (warning_at (loc, OPT_Wrange_loop_construct,
-		  "loop variable %qD creates a copy from type %qT",
-		  decl, type))
+  if (ref_conv_binds_directly (rtype, expr).is_true ())
     {
-      gcc_rich_location richloc (loc);
-      richloc.add_fixit_insert_before ("&");
-      inform (&richloc, "use reference type to prevent copying");
+      auto_diagnostic_group d;
+      if (warning_at (loc, OPT_Wrange_loop_construct,
+		      "loop variable %qD creates a copy from type %qT",
+		      decl, type))
+	{
+	  gcc_rich_location richloc (loc);
+	  richloc.add_fixit_insert_before ("&");
+	  inform (&richloc, "use reference type to prevent copying");
+	}
     }
 }
 

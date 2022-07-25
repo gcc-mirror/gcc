@@ -3552,7 +3552,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V8QImode:
     case E_V4HImode:
     case E_V2SImode:
-    /* ...E_V1DImode doesn't exist.  */
+    case E_V1DImode:
     case E_V4HFmode:
     case E_V4BFmode:
     case E_V2SFmode:
@@ -23498,7 +23498,7 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 {
   HOST_WIDE_INT odd;
   poly_uint64 nelt = d->perm.length ();
-  rtx out, in0, in1, x;
+  rtx out, in0, in1;
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -23522,7 +23522,7 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
      at the head of aarch64-sve.md for details.  */
   if (BYTES_BIG_ENDIAN && d->vec_flags == VEC_ADVSIMD)
     {
-      x = in0, in0 = in1, in1 = x;
+      std::swap (in0, in1);
       odd = !odd;
     }
   out = d->target;
@@ -23592,7 +23592,7 @@ static bool
 aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 {
   HOST_WIDE_INT odd;
-  rtx out, in0, in1, x;
+  rtx out, in0, in1;
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -23615,7 +23615,7 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
      at the head of aarch64-sve.md for details.  */
   if (BYTES_BIG_ENDIAN && d->vec_flags == VEC_ADVSIMD)
     {
-      x = in0, in0 = in1, in1 = x;
+      std::swap (in0, in1);
       odd = !odd;
     }
   out = d->target;
@@ -23631,7 +23631,7 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
 {
   unsigned int high;
   poly_uint64 nelt = d->perm.length ();
-  rtx out, in0, in1, x;
+  rtx out, in0, in1;
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -23656,7 +23656,7 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
      at the head of aarch64-sve.md for details.  */
   if (BYTES_BIG_ENDIAN && d->vec_flags == VEC_ADVSIMD)
     {
-      x = in0, in0 = in1, in1 = x;
+      std::swap (in0, in1);
       high = !high;
     }
   out = d->target;
@@ -24129,11 +24129,11 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   d.op_mode = op_mode;
   d.op_vec_flags = aarch64_classify_vector_mode (d.op_mode);
   d.target = target;
-  d.op0 = op0 ? force_reg (vmode, op0) : NULL_RTX;
+  d.op0 = op0 ? force_reg (op_mode, op0) : NULL_RTX;
   if (op0 == op1)
     d.op1 = d.op0;
   else
-    d.op1 = op1 ? force_reg (vmode, op1) : NULL_RTX;
+    d.op1 = op1 ? force_reg (op_mode, op1) : NULL_RTX;
   d.testing_p = !target;
 
   if (!d.testing_p)
@@ -27583,10 +27583,6 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_VECTORIZE_BUILTINS
 #define TARGET_VECTORIZE_BUILTINS
-
-#undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
-#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
-  aarch64_builtin_vectorized_function
 
 #undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \

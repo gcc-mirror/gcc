@@ -1548,6 +1548,7 @@ OBJS = \
 	profile-count.o \
 	range.o \
 	range-op.o \
+	range-op-float.o \
 	read-md.o \
 	read-rtl.o \
 	read-rtl-function.o \
@@ -1711,6 +1712,7 @@ OBJS = \
 	value-query.o \
 	value-range.o \
 	value-range-equiv.o \
+	value-range-pretty-print.o \
 	value-range-storage.o \
 	value-relation.o \
 	value-prof.o \

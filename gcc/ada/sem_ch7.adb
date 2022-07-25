@@ -1253,6 +1253,13 @@ package body Sem_Ch7 is
               (Context      => N,
                Is_Main_Unit => Parent (N) = Cunit (Main_Unit));
          end if;
+
+         --  Warn about references to unset objects, which is straightforward
+         --  for packages with no bodies. For packages with bodies this is more
+         --  complicated, because some of the objects might be set between spec
+         --  and body elaboration, in nested or child packages, etc.
+
+         Check_References (Id);
       end if;
 
       --  Set Body_Required indication on the compilation unit node

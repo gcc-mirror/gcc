@@ -158,9 +158,6 @@
 #if defined(HAVE_LINUX_ETHER_H)
 #include <linux/ether.h>
 #endif
-#if defined(HAVE_LINUX_FS_H)
-#include <linux/fs.h>
-#endif
 #if defined(HAVE_LINUX_REBOOT_H)
 #include <linux/reboot.h>
 #endif

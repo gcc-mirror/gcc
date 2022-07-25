@@ -255,7 +255,7 @@ region_model::impl_call_analyzer_describe (const gcall *call,
   const svalue *sval = get_rvalue (t_val, ctxt);
   bool simple = zerop (t_verbosity);
   label_text desc = sval->get_desc (simple);
-  warning_at (call->location, 0, "svalue: %qs", desc.m_buffer);
+  warning_at (call->location, 0, "svalue: %qs", desc.get ());
 }
 
 /* Handle a call to "__analyzer_dump_capacity".
@@ -274,7 +274,7 @@ region_model::impl_call_analyzer_dump_capacity (const gcall *call,
   const region *base_reg = reg->get_base_region ();
   const svalue *capacity = get_capacity (base_reg);
   label_text desc = capacity->get_desc (true);
-  warning_at (call->location, 0, "capacity: %qs", desc.m_buffer);
+  warning_at (call->location, 0, "capacity: %qs", desc.get ());
 }
 
 /* Compare D1 and D2 using their names, and then IDs to order them.  */

@@ -32,7 +32,6 @@ with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
-with Expander;       use Expander;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch7;        use Exp_Ch7;
 with Exp_Tss;        use Exp_Tss;
@@ -1107,7 +1106,6 @@ package body Inline is
 
    procedure Build_Body_To_Inline (N : Node_Id; Spec_Id : Entity_Id) is
       Decl            : constant Node_Id := Unit_Declaration_Node (Spec_Id);
-      Analysis_Status : constant Boolean := Full_Analysis;
       Original_Body   : Node_Id;
       Body_To_Analyze : Node_Id;
       Max_Size        : constant := 10;
@@ -1419,12 +1417,7 @@ package body Inline is
          Append (Body_To_Analyze, Declarations (N));
       end if;
 
-      --  The body to inline is preanalyzed. In GNATprove mode we must disable
-      --  full analysis as well so that light expansion does not take place
-      --  either, and name resolution is unaffected.
-
-      Expander_Mode_Save_And_Set (False);
-      Full_Analysis := False;
+      Start_Generic;
 
       Analyze (Body_To_Analyze);
       Push_Scope (Defining_Entity (Body_To_Analyze));
@@ -1432,8 +1425,7 @@ package body Inline is
       End_Scope;
       Remove (Body_To_Analyze);
 
-      Expander_Mode_Restore;
-      Full_Analysis := Analysis_Status;
+      End_Generic;
 
       --  Restore environment if previously saved
 
@@ -4648,6 +4640,7 @@ package body Inline is
          return
            Present (Declarations (N))
              and then Present (First (Declarations (N)))
+             and then Nkind (First (Declarations (N))) = N_Object_Declaration
              and then Entity (Expression (Return_Statement)) =
                         Defining_Identifier (First (Declarations (N)));
       end if;

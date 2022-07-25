@@ -346,3 +346,17 @@ static_assert(disjunction_v<false_type, false_type,
               true_type>, "");
 static_assert(!disjunction_v<false_type, false_type,
               false_type>, "");
+#if __cpp_lib_reference_from_temporary >= 202202L
+static_assert(std::reference_converts_from_temporary_v<int&&, int>
+	      && std::reference_converts_from_temporary_v<const int&, int>
+	      && !std::reference_converts_from_temporary_v<int&&, int&&>
+	      && !std::reference_converts_from_temporary_v<const int&, int&&>
+	      && std::reference_converts_from_temporary_v<int&&, long&&>
+	      && std::reference_converts_from_temporary_v<int&&, long>, "");
+static_assert(std::reference_constructs_from_temporary_v<int&&, int>
+	      && std::reference_constructs_from_temporary_v<const int&, int>
+	      && !std::reference_constructs_from_temporary_v<int&&, int&&>
+	      && !std::reference_constructs_from_temporary_v<const int&, int&&>
+	      && std::reference_constructs_from_temporary_v<int&&, long&&>
+	      && std::reference_constructs_from_temporary_v<int&&, long>, "");
+#endif

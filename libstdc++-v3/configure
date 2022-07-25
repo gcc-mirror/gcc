@@ -29254,8 +29254,6 @@ else
 
         $as_echo "#define HAVE_LINK 1" >>confdefs.h
 
-        $as_echo "#define HAVE_POLL 1" >>confdefs.h
-
         $as_echo "#define HAVE_QUICK_EXIT 1" >>confdefs.h
 
         $as_echo "#define HAVE_READLINK 1" >>confdefs.h

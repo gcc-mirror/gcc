@@ -1151,6 +1151,10 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
+  /* We assume string literals are immutable, so we don't track them in
+     the store.  */
+  bool tracked_p () const final override { return false; }
+
   tree get_string_cst () const { return m_string_cst; }
 
 private:

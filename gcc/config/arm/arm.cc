@@ -739,10 +739,6 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_VECTORIZE_BUILTINS
 #define TARGET_VECTORIZE_BUILTINS
 
-#undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
-#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
-  arm_builtin_vectorized_function
-
 #undef TARGET_VECTOR_ALIGNMENT
 #define TARGET_VECTOR_ALIGNMENT arm_vector_alignment
 

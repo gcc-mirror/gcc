@@ -8026,16 +8026,16 @@
 })
 
 ;; Extract a single-element 64-bit vector from one half of a 128-bit vector.
-(define_expand "vec_extractv2dfv1df"
-  [(match_operand:V1DF 0 "register_operand")
-   (match_operand:V2DF 1 "register_operand")
+(define_expand "vec_extract<mode><V1half>"
+  [(match_operand:<V1HALF> 0 "register_operand")
+   (match_operand:VQ_2E 1 "register_operand")
    (match_operand 2 "immediate_operand")]
   "TARGET_SIMD"
 {
-  /* V1DF is rarely used by other patterns, so it should be better to hide
-     it in a subreg destination of a normal DF op.  */
-  rtx scalar0 = gen_lowpart (DFmode, operands[0]);
-  emit_insn (gen_vec_extractv2dfdf (scalar0, operands[1], operands[2]));
+  /* V1DI and V1DF are rarely used by other patterns, so it should be better
+     to hide it in a subreg destination of a normal DI or DF op.  */
+  rtx scalar0 = gen_lowpart (<VHALF>mode, operands[0]);
+  emit_insn (gen_vec_extract<mode><Vhalf> (scalar0, operands[1], operands[2]));
   DONE;
 })
 

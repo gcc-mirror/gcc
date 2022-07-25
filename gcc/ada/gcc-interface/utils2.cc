@@ -1134,12 +1134,17 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	  else if (POINTER_TYPE_P (left_base_type)
 		   && POINTER_TYPE_P (right_base_type))
 	    {
+	      tree left_ref_type = TREE_TYPE (left_base_type);
+	      tree right_ref_type = TREE_TYPE (right_base_type);
+
 	      /* Anonymous access types in Ada 2005 can point to different
-		 members of a tagged type hierarchy.  */
-	      gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (left_base_type))
-			  == TYPE_MAIN_VARIANT (TREE_TYPE (right_base_type))
-			  || (TYPE_ALIGN_OK (TREE_TYPE (left_base_type))
-			      && TYPE_ALIGN_OK (TREE_TYPE (right_base_type))));
+		 members of a tagged hierarchy or different function types.  */
+	      gcc_assert (TYPE_MAIN_VARIANT (left_ref_type)
+			  == TYPE_MAIN_VARIANT (right_ref_type)
+			  || (TYPE_ALIGN_OK (left_ref_type)
+			      && TYPE_ALIGN_OK (right_ref_type))
+			  || (TREE_CODE (left_ref_type) == FUNCTION_TYPE
+			      && TREE_CODE (right_ref_type) == FUNCTION_TYPE));
 	      best_type = left_base_type;
 	    }
 
@@ -2254,6 +2259,8 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
 
   tree malloc_ptr = build_call_n_expr (malloc_decl, 1, size_to_malloc);
 
+  Check_Restriction_No_Dependence_On_System (Name_Memory, gnat_node);
+
   if (aligning_type)
     {
       /* Latch malloc's return value and get a pointer to the aligning field
@@ -2300,7 +2307,7 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
    designated by DATA_PTR using the __gnat_free entry point.  */
 
 static inline tree
-maybe_wrap_free (tree data_ptr, tree data_type)
+maybe_wrap_free (tree data_ptr, tree data_type, Node_Id gnat_node)
 {
   /* In the regular alignment case, we pass the data pointer straight to free.
      In the superaligned case, we need to retrieve the initial allocator
@@ -2311,6 +2318,8 @@ maybe_wrap_free (tree data_ptr, tree data_type)
       = get_target_system_allocator_alignment () * BITS_PER_UNIT;
 
   tree free_ptr;
+
+  Check_Restriction_No_Dependence_On_System (Name_Memory, gnat_node);
 
   if (data_align > system_allocator_alignment)
     {
@@ -2358,7 +2367,7 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, tree gnu_type,
   /* Otherwise, object to "free" or "malloc" with possible special processing
      for alignments stricter than what the default allocator honors.  */
   else if (gnu_obj)
-    return maybe_wrap_free (gnu_obj, gnu_type);
+    return maybe_wrap_free (gnu_obj, gnu_type, gnat_node);
   else
     {
       /* Assert that we no longer can be called with this special pool.  */

@@ -59,7 +59,13 @@ enum conversion_kind {
   ck_ambig,
   ck_list,
   ck_aggr,
-  ck_rvalue
+  ck_rvalue,
+  /* When LOOKUP_SHORTCUT_BAD_CONVS is set, we may return a conversion of
+     this kind whenever we know the true conversion is either bad or outright
+     invalid, but we don't want to attempt to compute the bad conversion (for
+     sake of avoiding unnecessary instantiation).  bad_p should always be set
+     for these.  */
+  ck_deferred_bad,
 };
 
 /* The rank of the conversion.  Order of the enumerals matters; better
@@ -775,7 +781,8 @@ has_next (conversion_kind code)
   return !(code == ck_identity
 	   || code == ck_ambig
 	   || code == ck_list
-	   || code == ck_aggr);
+	   || code == ck_aggr
+	   || code == ck_deferred_bad);
 }
 
 static conversion *
@@ -1912,18 +1919,38 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
      difference in top-level cv-qualification is subsumed by the
      initialization itself and does not constitute a conversion.  */
 
+  bool maybe_valid_p = true;
+
   /* [dcl.init.ref]
 
      Otherwise, the reference shall be an lvalue reference to a
      non-volatile const type, or the reference shall be an rvalue
-     reference.
+     reference.  */
+  if (!CP_TYPE_CONST_NON_VOLATILE_P (to) && !TYPE_REF_IS_RVALUE (rto))
+    maybe_valid_p = false;
 
-     We try below to treat this as a bad conversion to improve diagnostics,
-     but if TO is an incomplete class, we need to reject this conversion
-     now to avoid unnecessary instantiation.  */
-  if (!CP_TYPE_CONST_NON_VOLATILE_P (to) && !TYPE_REF_IS_RVALUE (rto)
-      && !COMPLETE_TYPE_P (to))
-    return NULL;
+  /* [dcl.init.ref]
+
+     Otherwise, a temporary of type "cv1 T1" is created and
+     initialized from the initializer expression using the rules for a
+     non-reference copy initialization.  If T1 is reference-related to
+     T2, cv1 must be the same cv-qualification as, or greater
+     cv-qualification than, cv2; otherwise, the program is ill-formed.  */
+  if (related_p && !at_least_as_qualified_p (to, from))
+    maybe_valid_p = false;
+
+  /* We try below to treat an invalid reference binding as a bad conversion
+     to improve diagnostics, but doing so may cause otherwise unnecessary
+     instantiations that can lead to a hard error.  So during the first pass
+     of overload resolution wherein we shortcut bad conversions, instead just
+     produce a special conversion indicating a second pass is necessary if
+     there's no strictly viable candidate.  */
+  if (!maybe_valid_p && (flags & LOOKUP_SHORTCUT_BAD_CONVS))
+    {
+      conv = alloc_conversion (ck_deferred_bad);
+      conv->bad_p = true;
+      return conv;
+    }
 
   /* We're generating a temporary now, but don't bind any more in the
      conversion (specifically, don't slice the temporary returned by a
@@ -1967,7 +1994,9 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 				   sflags, complain);
 	    if (!new_second)
 	      return NULL;
-	    return merge_conversion_sequences (t, new_second);
+	    conv = merge_conversion_sequences (t, new_second);
+	    gcc_assert (maybe_valid_p || conv->bad_p);
+	    return conv;
 	  }
     }
 
@@ -1976,24 +2005,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
      creation of a temporary.  */
   conv->need_temporary_p = true;
   conv->rvaluedness_matches_p = TYPE_REF_IS_RVALUE (rto);
-
-  /* [dcl.init.ref]
-
-     Otherwise, the reference shall be an lvalue reference to a
-     non-volatile const type, or the reference shall be an rvalue
-     reference.  */
-  if (!CP_TYPE_CONST_NON_VOLATILE_P (to) && !TYPE_REF_IS_RVALUE (rto))
-    conv->bad_p = true;
-
-  /* [dcl.init.ref]
-
-     Otherwise, a temporary of type "cv1 T1" is created and
-     initialized from the initializer expression using the rules for a
-     non-reference copy initialization.  If T1 is reference-related to
-     T2, cv1 must be the same cv-qualification as, or greater
-     cv-qualification than, cv2; otherwise, the program is ill-formed.  */
-  if (related_p && !at_least_as_qualified_p (to, from))
-    conv->bad_p = true;
+  conv->bad_p |= !maybe_valid_p;
 
   return conv;
 }
@@ -2015,7 +2027,8 @@ implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
      resolution, or after we've chosen one.  */
   flags &= (LOOKUP_ONLYCONVERTING|LOOKUP_NO_CONVERSION|LOOKUP_COPY_PARM
 	    |LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND|LOOKUP_PREFER_RVALUE
-	    |LOOKUP_NO_NARROWING|LOOKUP_PROTECT|LOOKUP_NO_NON_INTEGRAL);
+	    |LOOKUP_NO_NARROWING|LOOKUP_PROTECT|LOOKUP_NO_NON_INTEGRAL
+	    |LOOKUP_SHORTCUT_BAD_CONVS);
 
   /* FIXME: actually we don't want warnings either, but we can't just
      have 'complain &= ~(tf_warning|tf_error)' because it would cause
@@ -2432,6 +2445,11 @@ add_function_candidate (struct z_candidate **candidates,
 
   if (! viable)
     goto out;
+
+  if (shortcut_bad_convs)
+    flags |= LOOKUP_SHORTCUT_BAD_CONVS;
+  else
+    flags &= ~LOOKUP_SHORTCUT_BAD_CONVS;
 
   /* Third, for F to be a viable function, there shall exist for each
      argument an implicit conversion sequence that converts that argument
@@ -6038,14 +6056,24 @@ perfect_candidate_p (z_candidate *cand)
   return true;
 }
 
-/* True iff one of CAND's argument conversions is NULL.  */
+/* True iff one of CAND's argument conversions is missing.  */
 
 static bool
 missing_conversion_p (const z_candidate *cand)
 {
   for (unsigned i = 0; i < cand->num_convs; ++i)
-    if (!cand->convs[i])
-      return true;
+    {
+      conversion *conv = cand->convs[i];
+      if (!conv)
+	return true;
+      if (conv->kind == ck_deferred_bad)
+	{
+	  /* We don't know whether this conversion is outright invalid or
+	     just bad, so conservatively assume it's missing.  */
+	  gcc_checking_assert (conv->bad_p);
+	  return true;
+	}
+    }
   return false;
 }
 
@@ -9109,21 +9137,27 @@ conv_binds_ref_to_prvalue (conversion *c)
   return conv_is_prvalue (next_conversion (c));
 }
 
-/* True iff converting EXPR to a reference type TYPE does not involve
-   creating a temporary.  */
+/* Return tristate::TS_TRUE if converting EXPR to a reference type TYPE does
+   not involve creating a temporary.  Return tristate::TS_FALSE if converting
+   EXPR to a reference type TYPE binds the reference to a temporary.  If the
+   conversion is invalid or bad, return tristate::TS_UNKNOWN.  DIRECT_INIT_P
+   says whether the conversion should be done in direct- or copy-initialization
+   context.  */
 
-bool
-ref_conv_binds_directly_p (tree type, tree expr)
+tristate
+ref_conv_binds_directly (tree type, tree expr, bool direct_init_p /*= false*/)
 {
   gcc_assert (TYPE_REF_P (type));
 
   /* Get the high-water mark for the CONVERSION_OBSTACK.  */
   void *p = conversion_obstack_alloc (0);
 
+  const int flags = direct_init_p ? LOOKUP_NORMAL : LOOKUP_IMPLICIT;
   conversion *conv = implicit_conversion (type, TREE_TYPE (expr), expr,
-					  /*c_cast_p=*/false,
-					  LOOKUP_IMPLICIT, tf_none);
-  bool ret = conv && !conv->bad_p && !conv_binds_ref_to_prvalue (conv);
+					  /*c_cast_p=*/false, flags, tf_none);
+  tristate ret (tristate::TS_UNKNOWN);
+  if (conv && !conv->bad_p)
+    ret = tristate (!conv_binds_ref_to_prvalue (conv));
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);

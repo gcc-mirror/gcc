@@ -573,12 +573,15 @@ create_tmp_from_val (tree val)
 }
 
 /* Create a temporary to hold the value of VAL.  If IS_FORMAL, try to reuse
-   an existing expression temporary.  */
+   an existing expression temporary.  If NOT_GIMPLE_REG, mark it as such.  */
 
 static tree
-lookup_tmp_var (tree val, bool is_formal)
+lookup_tmp_var (tree val, bool is_formal, bool not_gimple_reg)
 {
   tree ret;
+
+  /* We cannot mark a formal temporary with DECL_NOT_GIMPLE_REG_P.  */
+  gcc_assert (!is_formal || !not_gimple_reg);
 
   /* If not optimizing, never really reuse a temporary.  local-alloc
      won't allocate any variable that is used in more than one basic
@@ -586,7 +589,10 @@ lookup_tmp_var (tree val, bool is_formal)
      work in reload and final and poorer code generation, outweighing
      the extra memory allocation here.  */
   if (!optimize || !is_formal || TREE_SIDE_EFFECTS (val))
-    ret = create_tmp_from_val (val);
+    {
+      ret = create_tmp_from_val (val);
+      DECL_NOT_GIMPLE_REG_P (ret) = not_gimple_reg;
+    }
   else
     {
       elt_t elt, *elt_p;
@@ -617,7 +623,7 @@ lookup_tmp_var (tree val, bool is_formal)
 
 static tree
 internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
-                      bool is_formal, bool allow_ssa)
+		      bool is_formal, bool allow_ssa, bool not_gimple_reg)
 {
   tree t, mod;
 
@@ -639,7 +645,7 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
 	}
     }
   else
-    t = lookup_tmp_var (val, is_formal);
+    t = lookup_tmp_var (val, is_formal, not_gimple_reg);
 
   mod = build2 (INIT_EXPR, TREE_TYPE (t), t, unshare_expr (val));
 
@@ -667,7 +673,7 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
 tree
 get_formal_tmp_var (tree val, gimple_seq *pre_p)
 {
-  return internal_get_tmp_var (val, pre_p, NULL, true, true);
+  return internal_get_tmp_var (val, pre_p, NULL, true, true, false);
 }
 
 /* Return a temporary variable initialized with VAL.  PRE_P and POST_P
@@ -678,7 +684,7 @@ get_initialized_tmp_var (tree val, gimple_seq *pre_p,
 			 gimple_seq *post_p /* = NULL */,
 			 bool allow_ssa /* = true */)
 {
-  return internal_get_tmp_var (val, pre_p, post_p, false, allow_ssa);
+  return internal_get_tmp_var (val, pre_p, post_p, false, allow_ssa, false);
 }
 
 /* Declare all the variables in VARS in SCOPE.  If DEBUG_INFO is true,
@@ -4574,13 +4580,10 @@ prepare_gimple_addressable (tree *expr_p, gimple_seq *seq_p)
 {
   while (handled_component_p (*expr_p))
     expr_p = &TREE_OPERAND (*expr_p, 0);
+
+  /* Do not allow an SSA name as the temporary.  */
   if (is_gimple_reg (*expr_p))
-    {
-      /* Do not allow an SSA name as the temporary.  */
-      tree var = get_initialized_tmp_var (*expr_p, seq_p, NULL, false);
-      DECL_NOT_GIMPLE_REG_P (var) = 1;
-      *expr_p = var;
-    }
+    *expr_p = internal_get_tmp_var (*expr_p, seq_p, NULL, false, false, true);
 }
 
 /* A subroutine of gimplify_modify_expr.  Replace a MODIFY_EXPR with

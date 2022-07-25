@@ -391,7 +391,9 @@ template_class_depth (tree type)
     {
       tree tinfo = get_template_info (type);
 
-      if (tinfo && PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo))
+      if (tinfo
+	  && TREE_CODE (TI_TEMPLATE (tinfo)) == TEMPLATE_DECL
+	  && PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo))
 	  && uses_template_parms (INNERMOST_TEMPLATE_ARGS (TI_ARGS (tinfo))))
 	++depth;
 
@@ -11011,7 +11013,7 @@ uses_template_parms_level (tree t, int level)
 /* Returns true if the signature of DECL depends on any template parameter from
    its enclosing class.  */
 
-bool
+static bool
 uses_outer_template_parms (tree decl)
 {
   int depth = template_class_depth (CP_DECL_CONTEXT (decl));
@@ -11042,13 +11044,27 @@ uses_outer_template_parms (tree decl)
 	    return true;
 	}
     }
+  if (uses_outer_template_parms_in_constraints (decl))
+    return true;
+  return false;
+}
+
+/* Returns true if the constraints of DECL depend on any template parameters
+   from its enclosing scope.  */
+
+bool
+uses_outer_template_parms_in_constraints (tree decl)
+{
   tree ci = get_constraints (decl);
   if (ci)
     ci = CI_ASSOCIATED_CONSTRAINTS (ci);
-  if (ci && for_each_template_parm (ci, template_parm_outer_level,
-				    &depth, NULL, /*nondeduced*/true))
-    return true;
-  return false;
+  if (!ci)
+    return false;
+  int depth = template_class_depth (CP_DECL_CONTEXT (decl));
+  if (depth == 0)
+    return false;
+  return for_each_template_parm (ci, template_parm_outer_level,
+				 &depth, NULL, /*nondeduced*/true);
 }
 
 /* Returns TRUE iff INST is an instantiation we don't need to do in an
@@ -21190,12 +21206,12 @@ tsubst_copy_and_build (tree t,
 	    bool ord = CALL_EXPR_ORDERED_ARGS (t);
 	    bool rev = CALL_EXPR_REVERSE_ARGS (t);
 	    if (op || ord || rev)
-	      {
-		function = extract_call_expr (ret);
-		CALL_EXPR_OPERATOR_SYNTAX (function) = op;
-		CALL_EXPR_ORDERED_ARGS (function) = ord;
-		CALL_EXPR_REVERSE_ARGS (function) = rev;
-	      }
+	      if (tree call = extract_call_expr (ret))
+		{
+		  CALL_EXPR_OPERATOR_SYNTAX (call) = op;
+		  CALL_EXPR_ORDERED_ARGS (call) = ord;
+		  CALL_EXPR_REVERSE_ARGS (call) = rev;
+		}
 	  }
 
 	RETURN (ret);
@@ -28103,6 +28119,17 @@ type_dependent_expression_p (tree expression)
       return false;
     }
 
+  /* Otherwise, its constraints could still depend on outer template parameters
+     from its (dependent) scope.  */
+  if (TREE_CODE (expression) == FUNCTION_DECL
+      /* As an optimization, check this cheaper sufficient condition first.
+	 (At this point we've established that we're looking at a member of
+	 a dependent class, so it makes sense to start treating say undeduced
+	 auto as dependent.)  */
+      && !dependent_type_p (TREE_TYPE (expression))
+      && uses_outer_template_parms_in_constraints (expression))
+    return true;
+
   /* Always dependent, on the number of arguments if nothing else.  */
   if (TREE_CODE (expression) == EXPR_PACK_EXPANSION)
     return true;
@@ -30213,7 +30240,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 
   tree type = TREE_TYPE (tmpl);
 
-  bool try_list_ctor = false;
+  bool try_list_cand = false;
   bool list_init_p = false;
 
   releasing_vec rv_args = NULL;
@@ -30223,8 +30250,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
   else if (BRACE_ENCLOSED_INITIALIZER_P (init))
     {
       list_init_p = true;
-      try_list_ctor = TYPE_HAS_LIST_CTOR (type);
-      if (try_list_ctor && CONSTRUCTOR_NELTS (init) == 1
+      try_list_cand = true;
+      if (CONSTRUCTOR_NELTS (init) == 1
 	  && !CONSTRUCTOR_IS_DESIGNATED_INIT (init))
 	{
 	  /* As an exception, the first phase in 16.3.1.7 (considering the
@@ -30234,9 +30261,9 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 	     specialization of C.  */
 	  tree elt = CONSTRUCTOR_ELT (init, 0)->value;
 	  if (is_spec_or_derived (TREE_TYPE (elt), tmpl))
-	    try_list_ctor = false;
+	    try_list_cand = false;
 	}
-      if (try_list_ctor || is_std_init_list (type))
+      if (try_list_cand || is_std_init_list (type))
 	args = make_tree_vector_single (init);
       else
 	args = make_tree_vector_from_ctor (init);
@@ -30283,26 +30310,25 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 
   tree fndecl = error_mark_node;
 
-  /* If this is list-initialization and the class has a list constructor, first
+  /* If this is list-initialization and the class has a list guide, first
      try deducing from the list as a single argument, as [over.match.list].  */
-  tree list_cands = NULL_TREE;
-  if (try_list_ctor && cands)
-    for (lkp_iterator iter (cands); iter; ++iter)
-      {
-	tree dg = *iter;
+  if (try_list_cand)
+    {
+      tree list_cands = NULL_TREE;
+      for (tree dg : lkp_range (cands))
 	if (is_list_ctor (dg))
 	  list_cands = lookup_add (dg, list_cands);
-      }
-  if (list_cands)
-    {
-      fndecl = perform_dguide_overload_resolution (list_cands, args, tf_none);
-
+      if (list_cands)
+	fndecl = perform_dguide_overload_resolution (list_cands, args, tf_none);
       if (fndecl == error_mark_node)
 	{
 	  /* That didn't work, now try treating the list as a sequence of
 	     arguments.  */
 	  release_tree_vector (args);
 	  args = make_tree_vector_from_ctor (init);
+	  args = resolve_args (args, complain);
+	  if (args == NULL)
+	    return error_mark_node;
 	}
     }
 

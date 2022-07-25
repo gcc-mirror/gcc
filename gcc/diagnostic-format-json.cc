@@ -102,8 +102,8 @@ json_from_location_range (diagnostic_context *context,
   if (loc_range->m_label)
     {
       label_text text (loc_range->m_label->get_text (range_idx));
-      if (text.m_buffer)
-	result->set ("label", new json::string (text.m_buffer));
+      if (text.get ())
+	result->set ("label", new json::string (text.get ()));
     }
 
   return result;

@@ -855,10 +855,10 @@ superedge::dump (pretty_printer *pp) const
 {
   pp_printf (pp, "edge: SN: %i -> SN: %i", m_src->m_index, m_dest->m_index);
   label_text desc (get_description (false));
-  if (strlen (desc.m_buffer) > 0)
+  if (strlen (desc.get ()) > 0)
     {
       pp_space (pp);
-      pp_string (pp, desc.m_buffer);
+      pp_string (pp, desc.get ());
     }
 }
 

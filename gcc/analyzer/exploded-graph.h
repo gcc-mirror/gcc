@@ -65,6 +65,9 @@ class impl_region_model_context : public region_model_context
 		     enum tree_code op,
 		     const svalue *rhs) final override;
 
+  void on_bounded_ranges (const svalue &sval,
+			  const bounded_ranges &ranges) final override;
+
   void on_unknown_change (const svalue *sval, bool is_mutable) final override;
 
   void on_phi (const gphi *phi, tree rhs) final override;

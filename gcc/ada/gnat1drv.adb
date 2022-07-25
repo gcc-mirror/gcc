@@ -557,10 +557,14 @@ procedure Gnat1drv is
          Validity_Checks_On := False;
          Check_Validity_Of_Parameters := False;
 
-         --  Turn off style check options since we are not interested in any
-         --  front-end warnings when we are getting SPARK output.
+         --  Turn off style checks and compiler warnings in GNATprove except:
+         --    - elaboration warnings, which turn into errors on SPARK code
+         --    - suspicious contracts, which are useful for SPARK code
 
          Reset_Style_Check_Options;
+         Restore_Warnings (W => (Elab_Warnings               => True,
+                                 Warn_On_Suspicious_Contract => True,
+                                 others                      => False));
 
          --  Suppress the generation of name tables for enumerations, which are
          --  not needed for formal verification, and fall outside the SPARK

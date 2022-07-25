@@ -96,10 +96,6 @@ enum rs6000_cmodel rs6000_current_cmodel = CMODEL_SMALL
 TargetVariable
 unsigned int rs6000_recip_control
 
-;; Mask of what builtin functions are allowed
-TargetVariable
-HOST_WIDE_INT rs6000_builtin_mask
-
 ;; Debug flags
 TargetVariable
 unsigned int rs6000_debug

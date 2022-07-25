@@ -17,9 +17,9 @@ test_1 (const char *path, void *buf)
     if (fd >= 0) /* { dg-message "assuming 'fd' is a valid file descriptor \\(>= 0\\)" "event1" } */
     /* { dg-message "following 'true' branch \\(when 'fd >= 0'\\)..." "event2" { target *-*-* } .-1 } */
     {
-        write (fd, buf, 1); /* { dg-warning "'write' on 'read-only' file descriptor 'fd'" "warning" } */
+        write (fd, buf, 1); /* { dg-warning "'write' on read-only file descriptor 'fd'" "warning" } */
         /* { dg-message "\\(4\\) ...to here" "event1" { target *-*-* } .-1 } */
-        /* { dg-message "\\(5\\) 'write' on 'read-only' file descriptor 'fd'" "event2" { target *-*-* } .-2 } */
+        /* { dg-message "\\(5\\) 'write' on read-only file descriptor 'fd'" "event2" { target *-*-* } .-2 } */
         close (fd);
     }
 }
@@ -31,9 +31,9 @@ test_2 (const char *path, void *buf)
     if (fd >= 0) /* { dg-message "assuming 'fd' is a valid file descriptor \\(>= 0\\)" "event1" } */
     /* { dg-message "following 'true' branch \\(when 'fd >= 0'\\)..." "event2" { target *-*-* } .-1 } */
     {
-        read (fd, buf, 1); /* { dg-warning "'read' on 'write-only' file descriptor 'fd'" "warning" } */
+        read (fd, buf, 1); /* { dg-warning "'read' on write-only file descriptor 'fd'" "warning" } */
         /* { dg-message "\\(4\\) ...to here" "event1" { target *-*-* } .-1 } */
-        /* { dg-message "\\(5\\) 'read' on 'write-only' file descriptor 'fd'" "event2" { target *-*-* } .-2 } */
+        /* { dg-message "\\(5\\) 'read' on write-only file descriptor 'fd'" "event2" { target *-*-* } .-2 } */
         close (fd);
     }
 }

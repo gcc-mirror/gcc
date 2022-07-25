@@ -120,6 +120,7 @@ init_internal_fns ()
 #define len_store_direct { 3, 3, false }
 #define vec_set_direct { 3, 3, false }
 #define unary_direct { 0, 0, true }
+#define unary_convert_direct { -1, 0, true }
 #define binary_direct { 0, 0, true }
 #define ternary_direct { 0, 0, true }
 #define cond_unary_direct { 1, 1, true }
@@ -3679,6 +3680,19 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
     emit_move_insn (lhs_rtx, ops[0].value);
 }
 
+/* Expand a call to a convert-like optab using the operands in STMT.
+   FN has a single output operand and NARGS input operands.  */
+
+static void
+expand_convert_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab,
+			 unsigned int nargs)
+{
+  tree_pair types = direct_internal_fn_types (fn, stmt);
+  insn_code icode = convert_optab_handler (optab, TYPE_MODE (types.first),
+					  TYPE_MODE (types.second));
+  expand_fn_using_insn (stmt, icode, 1, nargs);
+}
+
 /* Expanders for optabs that can use expand_direct_optab_fn.  */
 
 #define expand_unary_optab_fn(FN, STMT, OPTAB) \
@@ -3710,6 +3724,11 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 
 #define expand_check_ptrs_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 4)
+
+/* Expanders for optabs that can use expand_convert_optab_fn.  */
+
+#define expand_unary_convert_optab_fn(FN, STMT, OPTAB) \
+  expand_convert_optab_fn (FN, STMT, OPTAB, 1)
 
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
@@ -3783,6 +3802,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 }
 
 #define direct_unary_optab_supported_p direct_optab_supported_p
+#define direct_unary_convert_optab_supported_p convert_optab_supported_p
 #define direct_binary_optab_supported_p direct_optab_supported_p
 #define direct_ternary_optab_supported_p direct_optab_supported_p
 #define direct_cond_unary_optab_supported_p direct_optab_supported_p

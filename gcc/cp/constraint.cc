@@ -3176,9 +3176,15 @@ satisfy_declaration_constraints (tree t, sat_info info)
 	args = regen_args;
     }
 
-  /* If any arguments depend on template parameters, we can't
-     check constraints. Pretend they're satisfied for now.  */
-  if (uses_template_parms (args))
+  /* If the innermost arguments are dependent, or if the outer arguments
+     are dependent and are needed by the constraints, we can't check
+     satisfaction yet so pretend they're satisfied for now.  */
+  if (uses_template_parms (args)
+      && ((DECL_TEMPLATE_INFO (t)
+	   && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t))
+	   && (TMPL_ARGS_DEPTH (args) == 1
+	       || uses_template_parms (INNERMOST_TEMPLATE_ARGS (args))))
+	  || uses_outer_template_parms_in_constraints (t)))
     return boolean_true_node;
 
   /* Get the normalized constraints.  */
@@ -3240,9 +3246,13 @@ satisfy_declaration_constraints (tree t, tree args, sat_info info)
   else
     args = add_outermost_template_args (t, args);
 
-  /* If any arguments depend on template parameters, we can't
-     check constraints. Pretend they're satisfied for now.  */
-  if (uses_template_parms (args))
+  /* If the innermost arguments are dependent, or if the outer arguments
+     are dependent and are needed by the constraints, we can't check
+     satisfaction yet so pretend they're satisfied for now.  */
+  if (uses_template_parms (args)
+      && (TMPL_ARGS_DEPTH (args) == 1
+	  || uses_template_parms (INNERMOST_TEMPLATE_ARGS (args))
+	  || uses_outer_template_parms_in_constraints (t)))
     return boolean_true_node;
 
   tree result = boolean_true_node;
@@ -3686,6 +3696,14 @@ diagnose_trait_expr (tree expr, tree args)
       break;
     case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
       inform (loc, "  %qT does not have unique object representations", t1);
+      break;
+    case CPTK_REF_CONSTRUCTS_FROM_TEMPORARY:
+      inform (loc, "  %qT is not a reference that binds to a temporary "
+	      "object of type %qT (direct-initialization)", t1, t2);
+      break;
+    case CPTK_REF_CONVERTS_FROM_TEMPORARY:
+      inform (loc, "  %qT is not a reference that binds to a temporary "
+	      "object of type %qT (copy-initialization)", t1, t2);
       break;
     case CPTK_BASES:
     case CPTK_DIRECT_BASES:

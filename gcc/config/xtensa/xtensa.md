@@ -1244,35 +1244,16 @@
   "! optimize_debug && reload_completed"
   [(const_int 0)]
 {
-  int i = 0;
-  rtx x = XEXP (operands[1], 0);
-  long l[2];
-  if (SYMBOL_REF_P (x)
-      && CONSTANT_POOL_ADDRESS_P (x))
-    x = get_pool_constant (x);
-  else if (GET_CODE (x) == CONST)
-    {
-      x = XEXP (x, 0);
-      gcc_assert (GET_CODE (x) == PLUS
-		  && SYMBOL_REF_P (XEXP (x, 0))
-		  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0))
-		  && CONST_INT_P (XEXP (x, 1)));
-      i = INTVAL (XEXP (x, 1));
-      gcc_assert (i == 0 || i == 4);
-      i /= 4;
-      x = get_pool_constant (XEXP (x, 0));
-    }
-  else
-    gcc_unreachable ();
-  if (GET_MODE (x) == SFmode)
-    REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l[0]);
-  else if (GET_MODE (x) == DFmode)
-    REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), l);
-  else
+  rtx x = avoid_constant_pool_reference (operands[1]);
+  long l;
+  HOST_WIDE_INT value;
+  if (! CONST_DOUBLE_P (x) || GET_MODE (x) != SFmode)
     FAIL;
+  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
   x = gen_rtx_REG (SImode, REGNO (operands[0]));
-  if (! xtensa_constantsynth (x, l[i]))
-    emit_move_insn (x, GEN_INT (l[i]));
+  value = (int32_t)l;
+  if (! xtensa_constantsynth (x, value))
+    emit_move_insn (x, GEN_INT (value));
   DONE;
 })
 
@@ -1733,65 +1714,164 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
 
-(define_insn_and_split "*masktrue_const_pow2_minus_one"
+(define_insn_and_split "*masktrue_const_bitcmpl"
   [(set (pc)
 	(if_then_else (match_operator 3 "boolean_operator"
-			[(and:SI (match_operand:SI 0 "register_operand" "r")
+			[(and:SI (not:SI (match_operand:SI 0 "register_operand" "r"))
 				 (match_operand:SI 1 "const_int_operand" "i"))
 			 (const_int 0)])
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
-  "IN_RANGE (exact_log2 (INTVAL (operands[1]) + 1), 17, 31)"
+  "exact_log2 (INTVAL (operands[1])) < 0"
   "#"
   "&& can_create_pseudo_p ()"
   [(set (match_dup 4)
-	(ashift:SI (match_dup 0)
-		   (match_dup 1)))
+	(match_dup 1))
    (set (pc)
 	(if_then_else (match_op_dup 3
-			[(match_dup 4)
+			[(and:SI (not:SI (match_dup 0))
+				 (match_dup 4))
 			 (const_int 0)])
 		      (label_ref (match_dup 2))
 		      (pc)))]
 {
-  operands[1] = GEN_INT (32 - floor_log2 (INTVAL (operands[1]) + 1));
   operands[4] = gen_reg_rtx (SImode);
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_DENSITY
-				   && INTVAL (operands[1]) == 0x7FFFFFFF")
+				   && IN_RANGE (INTVAL (operands[1]), -32, 95)")
 		      (const_int 5)
-		      (const_int 6)))])
+		      (if_then_else (match_test "xtensa_simm12b (INTVAL (operands[1]))")
+				    (const_int 6)
+				    (const_int 10))))])
 
-(define_insn_and_split "*masktrue_const_negative_pow2"
+(define_split
   [(set (pc)
-	(if_then_else (match_operator 3 "boolean_operator"
-			[(and:SI (match_operand:SI 0 "register_operand" "r")
-				 (match_operand:SI 1 "const_int_operand" "i"))
+	(if_then_else (match_operator 2 "boolean_operator"
+			[(subreg:HQI (not:SI (match_operand:SI 0 "register_operand")) 0)
 			 (const_int 0)])
-		      (label_ref (match_operand 2 "" ""))
+		      (label_ref (match_operand 1 ""))
 		      (pc)))]
-  "IN_RANGE (exact_log2 (-INTVAL (operands[1])), 12, 30)"
-  "#"
-  "&& can_create_pseudo_p ()"
-  [(set (match_dup 4)
-	(lshiftrt:SI (match_dup 0)
-		     (match_dup 1)))
-   (set (pc)
-	(if_then_else (match_op_dup 3
-			[(match_dup 4)
+  "!BYTES_BIG_ENDIAN"
+  [(set (pc)
+	(if_then_else (match_op_dup 2
+			[(and:SI (not:SI (match_dup 0))
+				 (match_dup 3))
 			 (const_int 0)])
-		      (label_ref (match_dup 2))
+		      (label_ref (match_dup 1))
 		      (pc)))]
 {
-  operands[1] = GEN_INT (floor_log2 (-INTVAL (operands[1])));
-  operands[4] = gen_reg_rtx (SImode);
+  operands[3] = GEN_INT ((1 << GET_MODE_BITSIZE (<MODE>mode)) - 1);
+})
+
+(define_split
+  [(set (pc)
+	(if_then_else (match_operator 2 "boolean_operator"
+			[(subreg:HI (not:SI (match_operand:SI 0 "register_operand")) 2)
+			 (const_int 0)])
+		      (label_ref (match_operand 1 ""))
+		      (pc)))]
+  "BYTES_BIG_ENDIAN"
+  [(set (pc)
+	(if_then_else (match_op_dup 2
+			[(and:SI (not:SI (match_dup 0))
+				 (const_int 65535))
+			 (const_int 0)])
+		      (label_ref (match_dup 1))
+		      (pc)))])
+
+(define_split
+  [(set (pc)
+	(if_then_else (match_operator 2 "boolean_operator"
+			[(subreg:QI (not:SI (match_operand:SI 0 "register_operand")) 3)
+			 (const_int 0)])
+		      (label_ref (match_operand 1 ""))
+		      (pc)))]
+  "BYTES_BIG_ENDIAN"
+  [(set (pc)
+	(if_then_else (match_op_dup 2
+			[(and:SI (not:SI (match_dup 0))
+				 (const_int 255))
+			 (const_int 0)])
+		      (label_ref (match_dup 1))
+		      (pc)))])
+
+(define_insn_and_split "*masktrue_const_pow2_minus_one"
+  [(set (pc)
+	(if_then_else (match_operator 4 "boolean_operator"
+			[(and:SI (match_operand:SI 0 "register_operand" "r")
+				 (match_operand:SI 1 "const_int_operand" "i"))
+			 (match_operand:SI 2 "const_int_operand" "i")])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))]
+  "IN_RANGE (exact_log2 (INTVAL (operands[1]) + 1), 17, 31)
+   /* && (~INTVAL (operands[1]) & INTVAL (operands[2])) == 0  // can be omitted */
+   && xtensa_b4const_or_zero (INTVAL (operands[2]) << (32 - floor_log2 (INTVAL (operands[1]) + 1)))"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 5)
+	(ashift:SI (match_dup 0)
+		   (match_dup 1)))
+   (set (pc)
+	(if_then_else (match_op_dup 4
+			[(match_dup 5)
+			 (match_dup 2)])
+		      (label_ref (match_dup 3))
+		      (pc)))]
+{
+  int shift = 32 - floor_log2 (INTVAL (operands[1]) + 1);
+  operands[1] = GEN_INT (shift);
+  operands[2] = GEN_INT (INTVAL (operands[2]) << shift);
+  operands[5] = gen_reg_rtx (SImode);
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
-   (set_attr "length"	"6")])
+   (set (attr "length")
+	(if_then_else (match_test "(TARGET_DENSITY && INTVAL (operands[1]) == 0x7FFFFFFF)
+				   && INTVAL (operands[2]) == 0")
+		      (const_int 4)
+		      (if_then_else (match_test "TARGET_DENSITY
+						 && (INTVAL (operands[1]) == 0x7FFFFFFF
+						     || INTVAL (operands[2]) == 0)")
+				    (const_int 5)
+				    (const_int 6))))])
+
+(define_insn_and_split "*masktrue_const_negative_pow2"
+  [(set (pc)
+	(if_then_else (match_operator 4 "boolean_operator"
+			[(and:SI (match_operand:SI 0 "register_operand" "r")
+				 (match_operand:SI 1 "const_int_operand" "i"))
+			 (match_operand:SI 2 "const_int_operand" "i")])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))]
+  "IN_RANGE (exact_log2 (-INTVAL (operands[1])), 1, 30)
+   /* && (~INTVAL (operands[1]) & INTVAL (operands[2])) == 0  // can be omitted */
+   && xtensa_b4const_or_zero (INTVAL (operands[2]) >> floor_log2 (-INTVAL (operands[1])))"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 5)
+	(lshiftrt:SI (match_dup 0)
+		     (match_dup 1)))
+   (set (pc)
+	(if_then_else (match_op_dup 4
+			[(match_dup 5)
+			 (match_dup 2)])
+		      (label_ref (match_dup 3))
+		      (pc)))]
+{
+  int shift = floor_log2 (-INTVAL (operands[1]));
+  operands[1] = GEN_INT (shift);
+  operands[2] = GEN_INT (INTVAL (operands[2]) >> shift);
+  operands[5] = gen_reg_rtx (SImode);
+}
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY && INTVAL (operands[2]) == 0")
+		      (const_int 5)
+		      (const_int 6)))])
 
 (define_insn_and_split "*masktrue_const_shifted_mask"
   [(set (pc)
@@ -1801,8 +1881,8 @@
 			 (match_operand:SI 2 "const_int_operand" "i")])
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
-  "(INTVAL (operands[2]) & ((1 << ctz_hwi (INTVAL (operands[1]))) - 1)) == 0
-   && xtensa_b4const_or_zero ((uint32_t)INTVAL (operands[2]) >> ctz_hwi (INTVAL (operands[1])))"
+  "/* (INTVAL (operands[2]) & ((1 << ctz_hwi (INTVAL (operands[1]))) - 1)) == 0  // can be omitted
+   && */ xtensa_b4const_or_zero ((uint32_t)INTVAL (operands[2]) >> ctz_hwi (INTVAL (operands[1])))"
   "#"
   "&& can_create_pseudo_p ()"
   [(set (match_dup 6)

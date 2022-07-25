@@ -675,7 +675,7 @@ binding_map::to_json () const
     {
       const svalue *value = *const_cast <map_t &> (m_map).get (key);
       label_text key_desc = key->get_desc ();
-      map_obj->set (key_desc.m_buffer, value->to_json ());
+      map_obj->set (key_desc.get (), value->to_json ());
     }
 
   return map_obj;
@@ -1102,6 +1102,12 @@ binding_map::remove_overlapping_bindings (store_manager *mgr,
 }
 
 /* class binding_cluster.  */
+
+binding_cluster::binding_cluster (const region *base_region)
+: m_base_region (base_region), m_map (),
+  m_escaped (false), m_touched (false)
+{
+}
 
 /* binding_cluster's copy ctor.  */
 
@@ -2402,11 +2408,11 @@ store::to_json () const
 	  binding_cluster *cluster
 	    = *const_cast<cluster_map_t &> (m_cluster_map).get (base_reg);
 	  label_text base_reg_desc = base_reg->get_desc ();
-	  clusters_in_parent_reg_obj->set (base_reg_desc.m_buffer,
+	  clusters_in_parent_reg_obj->set (base_reg_desc.get (),
 					   cluster->to_json ());
 	}
       label_text parent_reg_desc = parent_reg->get_desc ();
-      store_obj->set (parent_reg_desc.m_buffer, clusters_in_parent_reg_obj);
+      store_obj->set (parent_reg_desc.get (), clusters_in_parent_reg_obj);
     }
 
   store_obj->set ("called_unknown_fn", new json::literal (m_called_unknown_fn));

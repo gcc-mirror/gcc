@@ -1877,9 +1877,10 @@ struct pod_label_text
   {}
 
   pod_label_text (label_text &&other)
-  : m_buffer (other.m_buffer), m_caller_owned (other.m_owned)
+  : m_buffer (const_cast<char*> (other.get ())),
+    m_caller_owned (other.is_owner ())
   {
-    other.moved_from ();
+    other.release ();
   }
 
   void maybe_free ()
@@ -1963,7 +1964,7 @@ layout::print_any_labels (linenum_type row)
 	/* Allow for labels that return NULL from their get_text
 	   implementation (so e.g. such labels can control their own
 	   visibility).  */
-	if (text.m_buffer == NULL)
+	if (text.get () == NULL)
 	  continue;
 
 	labels.safe_push (line_label (m_policy, i, disp_col, std::move (text)));

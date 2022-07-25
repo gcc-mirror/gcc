@@ -506,12 +506,17 @@ package body System.Secondary_Stack is
       Mem_Size : Memory_Size) return Boolean
    is
    begin
+      --  First check if the chunk is full (Byte is > Memory'Last in that
+      --  case), then check there is enough free memory.
+
       --  Byte - 1 denotes the last occupied byte. Subtracting that byte from
       --  the memory capacity of the chunk yields the size of the free memory
       --  within the chunk. The chunk can fit the request as long as the free
       --  memory is as big as the request.
 
-      return Chunk.Size - (Byte - 1) >= Mem_Size;
+      return Chunk.Memory'Last >= Byte
+        and then Chunk.Size - (Byte - 1) >= Mem_Size;
+
    end Has_Enough_Free_Memory;
 
    ----------------------

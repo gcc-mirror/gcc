@@ -405,6 +405,9 @@ public:
   virtual void write_reproducer (reproducer &r) = 0;
   virtual location *dyn_cast_location () { return NULL; }
 
+  memento (const memento&) = delete;
+  memento& operator= (const memento&) = delete;
+
 protected:
   memento (context *ctxt)
   : m_ctxt (ctxt),
@@ -436,12 +439,15 @@ public:
   string (context *ctxt, const char *text, bool escaped);
   ~string ();
 
-  const char *c_str () { return m_buffer; }
+  const char *c_str () const { return m_buffer; }
 
   static string * from_printf (context *ctxt, const char *fmt, ...)
     GNU_PRINTF(2, 3);
 
   void replay_into (replayer *) final override {}
+
+  string (const string&) = delete;
+  string& operator= (const string&) = delete;
 
 private:
   string * make_debug_string () final override;

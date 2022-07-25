@@ -623,8 +623,10 @@ package Exp_Util is
    --  specifies aspect Storage_Model_Type, returns the Entity_Id of the
    --  subprogram associated with Nam, which must either be a primitive op of
    --  the type in the case of a storage pool, or the operation corresponding
-   --  to Nam as specified in the aspect Storage_Model_Type. It is an error if
-   --  no operation corresponding to the given name is found.
+   --  to Nam as specified in the aspect Storage_Model_Type. In the case of
+   --  aspect Storage_Model_Type, returns Empty when no operation is found,
+   --  indicating that the operation is defaulted in the aspect (can occur in
+   --  the case where the storage-model address type is System.Address).
 
    function Find_Hook_Context (N : Node_Id) return Node_Id;
    --  Determine a suitable node on which to attach actions related to N that
@@ -758,7 +760,7 @@ package Exp_Util is
 
    function Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id;
    --  Return a suitable standard integer type containing at least S bits and
-   --  of the signedness given by Uns.
+   --  of the signedness given by Uns. See also Small_Integer_Type_For.
 
    function Is_Displacement_Of_Object_Or_Function_Result
      (Obj_Id : Entity_Id) return Boolean;
@@ -1193,7 +1195,7 @@ package Exp_Util is
 
    function Small_Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id;
    --  Return the smallest standard integer type containing at least S bits and
-   --  of the signedness given by Uns.
+   --  of the signedness given by Uns. See also Integer_Type_For.
 
    function Thunk_Target (Thunk : Entity_Id) return Entity_Id;
    --  Return the entity ultimately called by the thunk, that is to say return

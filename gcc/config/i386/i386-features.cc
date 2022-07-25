@@ -708,7 +708,7 @@ gen_gpr_to_xmm_move_src (enum machine_mode vmode, rtx gpr)
    and replace its uses in a chain.  */
 
 void
-general_scalar_chain::make_vector_copies (rtx_insn *insn, rtx reg)
+scalar_chain::make_vector_copies (rtx_insn *insn, rtx reg)
 {
   rtx vreg = *defs_map.get (reg);
 
@@ -772,7 +772,7 @@ general_scalar_chain::make_vector_copies (rtx_insn *insn, rtx reg)
    scalar uses outside of the chain.  */
 
 void
-general_scalar_chain::convert_reg (rtx_insn *insn, rtx dst, rtx src)
+scalar_chain::convert_reg (rtx_insn *insn, rtx dst, rtx src)
 {
   start_sequence ();
   if (!TARGET_INTER_UNIT_MOVES_FROM_VEC)
@@ -973,10 +973,10 @@ scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 			 UNSPEC_PTEST);
 }
 
-/* Convert INSN to vector mode.  */
+/* Helper function for converting INSN to vector mode.  */
 
 void
-general_scalar_chain::convert_insn (rtx_insn *insn)
+scalar_chain::convert_insn_common (rtx_insn *insn)
 {
   /* Generate copies for out-of-chain uses of defs and adjust debug uses.  */
   for (df_ref ref = DF_INSN_DEFS (insn); ref; ref = DF_REF_NEXT_LOC (ref))
@@ -1037,7 +1037,13 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
 	    XEXP (note, 0) = *vreg;
 	  *DF_REF_REAL_LOC (ref) = *vreg;
 	}
+}
 
+/* Convert INSN to vector mode.  */
+
+void
+general_scalar_chain::convert_insn (rtx_insn *insn)
+{
   rtx def_set = single_set (insn);
   rtx src = SET_SRC (def_set);
   rtx dst = SET_DEST (def_set);
@@ -1054,13 +1060,13 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
   else if (REG_P (dst) && GET_MODE (dst) == smode)
     {
       /* Replace the definition with a SUBREG to the definition we
-         use inside the chain.  */
+	 use inside the chain.  */
       rtx *vdef = defs_map.get (dst);
       if (vdef)
 	dst = *vdef;
       dst = gen_rtx_SUBREG (vmode, dst, 0);
       /* IRA doesn't like to have REG_EQUAL/EQUIV notes when the SET_DEST
-         is a non-REG_P.  So kill those off.  */
+	 is a non-REG_P.  So kill those off.  */
       rtx note = find_reg_equal_equiv_note (insn);
       if (note)
 	remove_note (insn, note);
@@ -1246,7 +1252,7 @@ timode_scalar_chain::fix_debug_reg_uses (rtx reg)
     {
       rtx_insn *insn = DF_REF_INSN (ref);
       /* Make sure the next ref is for a different instruction,
-         so that we're not affected by the rescan.  */
+	 so that we're not affected by the rescan.  */
       next = DF_REF_NEXT_REG (ref);
       while (next && DF_REF_INSN (next) == insn)
 	next = DF_REF_NEXT_REG (next);
@@ -1336,21 +1342,19 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
   rtx dst = SET_DEST (def_set);
   rtx tmp;
 
-  if (MEM_P (dst) && !REG_P (src))
-    {
-      /* There are no scalar integer instructions and therefore
-	 temporary register usage is required.  */
-    }
   switch (GET_CODE (dst))
     {
     case REG:
       if (GET_MODE (dst) == TImode)
 	{
+	  PUT_MODE (dst, V1TImode);
+	  fix_debug_reg_uses (dst);
+	}
+      if (GET_MODE (dst) == V1TImode)
+	{
 	  tmp = find_reg_equal_equiv_note (insn);
 	  if (tmp && GET_MODE (XEXP (tmp, 0)) == TImode)
 	    PUT_MODE (XEXP (tmp, 0), V1TImode);
-	  PUT_MODE (dst, V1TImode);
-	  fix_debug_reg_uses (dst);
 	}
       break;
     case MEM:
@@ -1410,8 +1414,8 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
       if (MEM_P (dst))
 	{
 	  tmp = gen_reg_rtx (V1TImode);
-          emit_insn_before (gen_rtx_SET (tmp, src), insn);
-          src = tmp;
+	  emit_insn_before (gen_rtx_SET (tmp, src), insn);
+	  src = tmp;
 	}
       break;
 
@@ -1434,8 +1438,8 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
       if (MEM_P (dst))
 	{
 	  tmp = gen_reg_rtx (V1TImode);
-          emit_insn_before (gen_rtx_SET (tmp, src), insn);
-          src = tmp;
+	  emit_insn_before (gen_rtx_SET (tmp, src), insn);
+	  src = tmp;
 	}
       break;
 
@@ -1448,8 +1452,8 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
       if (MEM_P (dst))
 	{
 	  tmp = gen_reg_rtx (V1TImode);
-          emit_insn_before (gen_rtx_SET (tmp, src), insn);
-          src = tmp;
+	  emit_insn_before (gen_rtx_SET (tmp, src), insn);
+	  src = tmp;
 	}
       break;
 
@@ -1477,7 +1481,7 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
    Also populates defs_map which is used later by convert_insn.  */
 
 void
-general_scalar_chain::convert_registers ()
+scalar_chain::convert_registers ()
 {
   bitmap_iterator bi;
   unsigned id;
@@ -1512,7 +1516,9 @@ scalar_chain::convert ()
 
   EXECUTE_IF_SET_IN_BITMAP (insns, 0, id, bi)
     {
-      convert_insn (DF_INSN_UID_GET (id)->insn);
+      rtx_insn *insn = DF_INSN_UID_GET (id)->insn;
+      convert_insn_common (insn);
+      convert_insn (insn);
       converted_insns++;
     }
 
@@ -1585,7 +1591,7 @@ convertible_comparison_p (rtx_insn *insn, enum machine_mode mode)
   /* *cmp<dwi>_doubleword.  */
   if ((CONST_INT_P (op1)
        || ((REG_P (op1) || MEM_P (op1))
-           && GET_MODE (op1) == mode))
+	   && GET_MODE (op1) == mode))
       && (CONST_INT_P (op2)
 	  || ((REG_P (op2) || MEM_P (op2))
 	      && GET_MODE (op2) == mode)))
@@ -1745,7 +1751,7 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
 
   if (GET_MODE (dst) != TImode
       || (GET_MODE (src) != TImode
-          && !CONST_SCALAR_INT_P (src)))
+	  && !CONST_SCALAR_INT_P (src)))
     return false;
 
   if (!REG_P (dst) && !MEM_P (dst))
@@ -1845,56 +1851,62 @@ timode_remove_non_convertible_regs (bitmap candidates)
   bitmap_iterator bi;
   unsigned id;
   bitmap regs = BITMAP_ALLOC (NULL);
+  bool changed;
 
-  EXECUTE_IF_SET_IN_BITMAP (candidates, 0, id, bi)
-    {
-      rtx def_set = single_set (DF_INSN_UID_GET (id)->insn);
-      rtx dest = SET_DEST (def_set);
-      rtx src = SET_SRC (def_set);
+  do {
+    changed = false;
+    EXECUTE_IF_SET_IN_BITMAP (candidates, 0, id, bi)
+      {
+	rtx def_set = single_set (DF_INSN_UID_GET (id)->insn);
+	rtx dest = SET_DEST (def_set);
+	rtx src = SET_SRC (def_set);
 
-      if ((!REG_P (dest)
-	   || bitmap_bit_p (regs, REGNO (dest))
-	   || HARD_REGISTER_P (dest))
-	  && (!REG_P (src)
-	      || bitmap_bit_p (regs, REGNO (src))
-	      || HARD_REGISTER_P (src)))
-	continue;
+	if ((!REG_P (dest)
+	     || bitmap_bit_p (regs, REGNO (dest))
+	     || HARD_REGISTER_P (dest))
+	    && (!REG_P (src)
+		|| bitmap_bit_p (regs, REGNO (src))
+		|| HARD_REGISTER_P (src)))
+	  continue;
 
-      if (REG_P (dest))
-	timode_check_non_convertible_regs (candidates, regs,
-					   REGNO (dest));
+	if (REG_P (dest))
+	  timode_check_non_convertible_regs (candidates, regs,
+					     REGNO (dest));
 
-      if (REG_P (src))
-	timode_check_non_convertible_regs (candidates, regs,
-					   REGNO (src));
-    }
+	if (REG_P (src))
+	  timode_check_non_convertible_regs (candidates, regs,
+					     REGNO (src));
+      }
 
-  EXECUTE_IF_SET_IN_BITMAP (regs, 0, id, bi)
-    {
-      for (df_ref def = DF_REG_DEF_CHAIN (id);
-	   def;
-	   def = DF_REF_NEXT_REG (def))
-	if (bitmap_bit_p (candidates, DF_REF_INSN_UID (def)))
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "Removing insn %d from candidates list\n",
-		       DF_REF_INSN_UID (def));
+    EXECUTE_IF_SET_IN_BITMAP (regs, 0, id, bi)
+      {
+	for (df_ref def = DF_REG_DEF_CHAIN (id);
+	     def;
+	     def = DF_REF_NEXT_REG (def))
+	  if (bitmap_bit_p (candidates, DF_REF_INSN_UID (def)))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "Removing insn %d from candidates list\n",
+			 DF_REF_INSN_UID (def));
 
-	    bitmap_clear_bit (candidates, DF_REF_INSN_UID (def));
-	  }
+	      bitmap_clear_bit (candidates, DF_REF_INSN_UID (def));
+	      changed = true;
+	    }
 
-      for (df_ref ref = DF_REG_USE_CHAIN (id);
-	   ref;
-	   ref = DF_REF_NEXT_REG (ref))
-	if (bitmap_bit_p (candidates, DF_REF_INSN_UID (ref)))
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "Removing insn %d from candidates list\n",
-		       DF_REF_INSN_UID (ref));
+	for (df_ref ref = DF_REG_USE_CHAIN (id);
+	     ref;
+	     ref = DF_REF_NEXT_REG (ref))
+	  if (bitmap_bit_p (candidates, DF_REF_INSN_UID (ref)))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "Removing insn %d from candidates list\n",
+			 DF_REF_INSN_UID (ref));
 
-	    bitmap_clear_bit (candidates, DF_REF_INSN_UID (ref));
-	  }
-    }
+	      bitmap_clear_bit (candidates, DF_REF_INSN_UID (ref));
+	      changed = true;
+	    }
+      }
+  } while (changed);
 
   BITMAP_FREE (regs);
 }

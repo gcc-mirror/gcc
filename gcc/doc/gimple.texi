@@ -1965,11 +1965,10 @@ statements to be executed by just the master.
 
 @deftypefn {GIMPLE function} gimple gimple_build_omp_ordered (gimple_seq body)
 Build a @code{GIMPLE_OMP_ORDERED} statement.
-@end deftypefn
 
 @code{BODY} is the sequence of statements inside a loop that will
 executed in sequence.
-
+@end deftypefn
 
 @node @code{GIMPLE_OMP_PARALLEL}
 @subsection @code{GIMPLE_OMP_PARALLEL}
@@ -1978,12 +1977,12 @@ executed in sequence.
 @deftypefn {GIMPLE function} gomp_parallel *gimple_build_omp_parallel (@
 gimple_seq body, tree clauses, tree child_fn, tree data_arg)
 Build a @code{GIMPLE_OMP_PARALLEL} statement.
-@end deftypefn
 
 @code{BODY} is sequence of statements which are executed in parallel.
 @code{CLAUSES}, are the @code{OMP} parallel construct's clauses.  @code{CHILD_FN} is
 the function created for the parallel threads to execute.
 @code{DATA_ARG} are the shared data argument(s).
+@end deftypefn
 
 @deftypefn {GIMPLE function} bool gimple_omp_parallel_combined_p (gimple g)
 Return true if @code{OMP} parallel statement @code{G} has the
@@ -2077,9 +2076,9 @@ Return true if @code{OMP} return statement @code{G} has the
 
 @deftypefn {GIMPLE function} gimple gimple_build_omp_section (gimple_seq body)
 Build a @code{GIMPLE_OMP_SECTION} statement for a sections statement.
-@end deftypefn
 
 @code{BODY} is the sequence of statements in the section.
+@end deftypefn
 
 @deftypefn {GIMPLE function} bool gimple_omp_section_last_p (gimple g)
 Return true if @code{OMP} section statement @code{G} has the

@@ -4924,7 +4924,8 @@ package body Exp_Ch5 is
 
    --  In the optimized case, we make use of these:
 
-   --     procedure Next (Position : in out Cursor); -- instead of Iter.Next
+   --     procedure _Next (Position : in out Cursor); -- instead of Iter.Next
+   --        (or _Previous for reverse loops)
 
    --     function Pseudo_Reference
    --       (Container : aliased Vector'Class) return Reference_Control_Type;
@@ -4938,6 +4939,11 @@ package body Exp_Ch5 is
    --  The other three are added in the private part. (We're not supposed to
    --  pollute the namespace for clients. The compiler has no trouble breaking
    --  privacy to call things in the private part of an instance.)
+
+   --  Note that Next and Previous are renamed as _Next and _Previous with
+   --  leading underscores. Leading underscores are illegal in Ada, but we
+   --  allow them in the run-time library. This allows us to avoid polluting
+   --  the user-visible namespaces.
 
    --  Source:
 
@@ -4989,7 +4995,7 @@ package body Exp_Ch5 is
    --              X.Count := X.Count + 1;
    --              ...
    --
-   --              Next (Cur); -- or Prev
+   --              _Next (Cur); -- or _Previous
    --              --  This is instead of "Cur := Next (Iter, Cur);"
    --          end;
    --          --  No finalization here
@@ -5015,13 +5021,14 @@ package body Exp_Ch5 is
       Stats    : List_Id     := Statements (N);
       --  Maybe wrapped in a conditional if a filter is present
 
-      Cursor    : Entity_Id;
-      Decl      : Node_Id;
-      Iter_Type : Entity_Id;
-      Iterator  : Entity_Id;
-      Name_Init : Name_Id;
-      Name_Step : Name_Id;
-      New_Loop  : Node_Id;
+      Cursor         : Entity_Id;
+      Decl           : Node_Id;
+      Iter_Type      : Entity_Id;
+      Iterator       : Entity_Id;
+      Name_Init      : Name_Id;
+      Name_Step      : Name_Id;
+      Name_Fast_Step : Name_Id;
+      New_Loop       : Node_Id;
 
       Fast_Element_Access_Op : Entity_Id := Empty;
       Fast_Step_Op           : Entity_Id := Empty;
@@ -5049,9 +5056,11 @@ package body Exp_Ch5 is
       if Reverse_Present (I_Spec) then
          Name_Init := Name_Last;
          Name_Step := Name_Previous;
+         Name_Fast_Step := Name_uPrevious;
       else
          Name_Init := Name_First;
          Name_Step := Name_Next;
+         Name_Fast_Step := Name_uNext;
       end if;
 
       --  The type of the iterator is the return type of the Iterate function
@@ -5189,14 +5198,13 @@ package body Exp_Ch5 is
 
             Iter_Pack := Scope (Root_Type (Etype (Iter_Type)));
 
-            --  Find declarations needed for "for ... of" optimization
+            --  Find declarations needed for "for ... of" optimization.
             --  These declarations come from GNAT sources or sources
             --  derived from them. User code may include additional
             --  overloadings with similar names, and we need to perforn
             --  some reasonable resolution to find the needed primitives.
-            --  It is unclear whether this mechanism is fragile if a user
-            --  makes arbitrary changes to the private part of a package
-            --  that supports iterators.
+            --  Note that we use _Next or _Previous to avoid picking up
+            --  some arbitrary user-defined Next or Previous.
 
             Ent := First_Entity (Pack);
             while Present (Ent) loop
@@ -5215,12 +5223,7 @@ package body Exp_Ch5 is
                --  Next or Prev procedure with one parameter called
                --  Position.
 
-               elsif Chars (Ent) = Name_Step
-                 and then Ekind (Ent) = E_Procedure
-                 and then Present (First_Formal (Ent))
-                 and then Chars (First_Formal (Ent)) = Name_Position
-                 and then No (Next_Formal (First_Formal (Ent)))
-               then
+               elsif Chars (Ent) = Name_Fast_Step then
                   pragma Assert (No (Fast_Step_Op));
                   Fast_Step_Op := Ent;
 

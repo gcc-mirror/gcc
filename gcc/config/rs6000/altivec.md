@@ -886,13 +886,13 @@
   "TARGET_POWER10"
 {
   if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_vstrir_code_<mode> (operands[0], operands[1]));
+    emit_insn (gen_vstrir_direct_<mode> (operands[0], operands[1]));
   else
-    emit_insn (gen_vstril_code_<mode> (operands[0], operands[1]));
+    emit_insn (gen_vstril_direct_<mode> (operands[0], operands[1]));
   DONE;
 })
 
-(define_insn "vstrir_code_<mode>"
+(define_insn "vstrir_direct_<mode>"
   [(set (match_operand:VIshort 0 "altivec_register_operand" "=v")
 	(unspec:VIshort
 	   [(match_operand:VIshort 1 "altivec_register_operand" "v")]
@@ -901,7 +901,7 @@
   "vstri<wd>r %0,%1"
   [(set_attr "type" "vecsimple")])
 
-;; This expands into same code as vstrir_<mode> followed by condition logic
+;; This expands into same code as vstrir<mode> followed by condition logic
 ;; so that a single vstribr. or vstrihr. or vstribl. or vstrihl. instruction
 ;; can, for example, satisfy the needs of a vec_strir () function paired
 ;; with a vec_strir_p () function if both take the same incoming arguments.
@@ -912,14 +912,14 @@
 {
   rtx scratch = gen_reg_rtx (<MODE>mode);
   if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_vstrir_p_code_<mode> (scratch, operands[1]));
+    emit_insn (gen_vstrir_p_direct_<mode> (scratch, operands[1]));
   else
-    emit_insn (gen_vstril_p_code_<mode> (scratch, operands[1]));
+    emit_insn (gen_vstril_p_direct_<mode> (scratch, operands[1]));
   emit_insn (gen_cr6_test_for_zero (operands[0]));
   DONE;
 })
 
-(define_insn "vstrir_p_code_<mode>"
+(define_insn "vstrir_p_direct_<mode>"
   [(set (match_operand:VIshort 0 "altivec_register_operand" "=v")
 	(unspec:VIshort
 	   [(match_operand:VIshort 1 "altivec_register_operand" "v")]
@@ -938,13 +938,13 @@
   "TARGET_POWER10"
 {
   if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_vstril_code_<mode> (operands[0], operands[1]));
+    emit_insn (gen_vstril_direct_<mode> (operands[0], operands[1]));
   else
-    emit_insn (gen_vstrir_code_<mode> (operands[0], operands[1]));
+    emit_insn (gen_vstrir_direct_<mode> (operands[0], operands[1]));
   DONE;
 })
 
-(define_insn "vstril_code_<mode>"
+(define_insn "vstril_direct_<mode>"
   [(set (match_operand:VIshort 0 "altivec_register_operand" "=v")
 	(unspec:VIshort
 	   [(match_operand:VIshort 1 "altivec_register_operand" "v")]
@@ -964,14 +964,14 @@
 {
   rtx scratch = gen_reg_rtx (<MODE>mode);
   if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_vstril_p_code_<mode> (scratch, operands[1]));
+    emit_insn (gen_vstril_p_direct_<mode> (scratch, operands[1]));
   else
-    emit_insn (gen_vstrir_p_code_<mode> (scratch, operands[1]));
+    emit_insn (gen_vstrir_p_direct_<mode> (scratch, operands[1]));
   emit_insn (gen_cr6_test_for_zero (operands[0]));
   DONE;
 })
 
-(define_insn "vstril_p_code_<mode>"
+(define_insn "vstril_p_direct_<mode>"
   [(set (match_operand:VIshort 0 "altivec_register_operand" "=v")
 	(unspec:VIshort
 	   [(match_operand:VIshort 1 "altivec_register_operand" "v")]

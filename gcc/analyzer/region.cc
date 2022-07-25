@@ -589,7 +589,7 @@ json::value *
 region::to_json () const
 {
   label_text desc = get_desc (true);
-  json::value *reg_js = new json::string (desc.m_buffer);
+  json::value *reg_js = new json::string (desc.get ());
   return reg_js;
 }
 
@@ -1150,6 +1150,11 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
       const binding_key *binding
 	= binding_key::make (mgr->get_store_manager (), this);
       if (binding->symbolic_p ())
+	return NULL;
+
+      /* If we don't care about tracking the content of this region, then
+	 it's unused, and the value doesn't matter.  */
+      if (!tracked_p ())
 	return NULL;
 
       binding_cluster c (this);

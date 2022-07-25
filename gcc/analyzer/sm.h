@@ -108,6 +108,15 @@ public:
   {
   }
 
+  virtual void
+  on_bounded_ranges (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
+		     const supernode *node ATTRIBUTE_UNUSED,
+		     const gimple *stmt ATTRIBUTE_UNUSED,
+		     const svalue &sval ATTRIBUTE_UNUSED,
+		     const bounded_ranges &ranges ATTRIBUTE_UNUSED) const
+  {
+  }
+
   /* Return true if it safe to discard the given state (to help
      when simplifying state objects).
      States that need leak detection should return false.  */

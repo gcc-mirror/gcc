@@ -276,7 +276,7 @@ graphds_dfs (struct graph *g, int *qs, int nq, vec<int> *qt,
 }
 
 /* Determines the strongly connected components of G, using the algorithm of
-   Tarjan -- first determine the postorder dfs numbering in reversed graph,
+   Kosaraju -- first determine the postorder dfs numbering in reversed graph,
    then run the dfs on the original graph in the order given by decreasing
    numbers assigned by the previous pass.  If SUBGRAPH is not NULL, it
    specifies the subgraph of G whose strongly connected components we want

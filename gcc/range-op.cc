@@ -803,6 +803,9 @@ operator_lt::fold_range (irange &r, tree type,
     r = range_true (type);
   else if (!wi::lt_p (op1.lower_bound (), op2.upper_bound (), sign))
     r = range_false (type);
+  // Use nonzero bits to determine if < 0 is false.
+  else if (op2.zero_p () && !wi::neg_p (op1.get_nonzero_bits (), sign))
+    r = range_false (type);
   else
     r = range_true_and_false (type);
   return true;
@@ -2604,71 +2607,7 @@ private:
   void simple_op1_range_solver (irange &r, tree type,
 				const irange &lhs,
 				const irange &op2) const;
-  void remove_impossible_ranges (irange &r, const irange &rh) const;
 } op_bitwise_and;
-
-static bool
-unsigned_singleton_p (const irange &op)
-{
-  tree mask;
-  if (op.singleton_p (&mask))
-    {
-      wide_int x = wi::to_wide (mask);
-      return wi::ge_p (x, 0, TYPE_SIGN (op.type ()));
-    }
-  return false;
-}
-
-// Remove any ranges from R that are known to be impossible when an
-// range is ANDed with MASK.
-
-void
-operator_bitwise_and::remove_impossible_ranges (irange &r,
-						const irange &rmask) const
-{
-  if (r.undefined_p () || !unsigned_singleton_p (rmask))
-    return;
-
-  wide_int mask = rmask.lower_bound ();
-  tree type = r.type ();
-  int prec = TYPE_PRECISION (type);
-  int leading_zeros = wi::clz (mask);
-  int_range_max impossible_ranges;
-
-  /* We know that starting at the most significant bit, any 0 in the
-     mask means the resulting range cannot contain a 1 in that same
-     position.  This means the following ranges are impossible:
-
-	x & 0b1001 1010
-			  IMPOSSIBLE RANGES
-	      01xx xxxx   [0100 0000, 0111 1111]
-	      001x xxxx   [0010 0000, 0011 1111]
-	      0000 01xx   [0000 0100, 0000 0111]
-	      0000 0001   [0000 0001, 0000 0001]
-  */
-  wide_int one = wi::one (prec);
-  for (int i = 0; i < prec - leading_zeros - 1; ++i)
-    if (wi::bit_and (mask, wi::lshift (one, wi::uhwi (i, prec))) == 0)
-      {
-	tree lb = fold_build2 (LSHIFT_EXPR, type,
-			       build_one_cst (type),
-			       build_int_cst (type, i));
-	tree ub_left = fold_build1 (BIT_NOT_EXPR, type,
-				    fold_build2 (LSHIFT_EXPR, type,
-						 build_minus_one_cst (type),
-						 build_int_cst (type, i)));
-	tree ub_right = fold_build2 (LSHIFT_EXPR, type,
-				     build_one_cst (type),
-				     build_int_cst (type, i));
-	tree ub = fold_build2 (BIT_IOR_EXPR, type, ub_left, ub_right);
-	impossible_ranges.union_ (int_range<1> (lb, ub));
-      }
-  if (!impossible_ranges.undefined_p ())
-    {
-      impossible_ranges.invert ();
-      r.intersect (impossible_ranges);
-    }
-}
 
 bool
 operator_bitwise_and::fold_range (irange &r, tree type,
@@ -2678,9 +2617,9 @@ operator_bitwise_and::fold_range (irange &r, tree type,
 {
   if (range_operator::fold_range (r, type, lh, rh))
     {
-      // FIXME: This is temporarily disabled because, though it
-      // generates better ranges, it's noticeably slower for evrp.
-      // remove_impossible_ranges (r, rh);
+      if (!lh.undefined_p () && !rh.undefined_p ())
+	r.set_nonzero_bits (wi::bit_and (lh.get_nonzero_bits (),
+					 rh.get_nonzero_bits ()));
       return true;
     }
   return false;
@@ -4213,28 +4152,56 @@ get_handler (enum tree_code code, tree type)
   return NULL;
 }
 
-range_op_handler::range_op_handler (tree_code code, tree type)
+// Return the floating point operator for CODE or NULL if none available.
+
+static inline range_operator_float *
+get_float_handler (enum tree_code code, tree)
 {
-  m_op = get_handler (code, type);
+  return (*floating_tree_table)[code];
+}
+
+range_op_handler::range_op_handler (tree_code code, tree type)
+  : m_code (code), m_type (type)
+{
 }
 
 range_op_handler::range_op_handler (const gimple *s)
 {
   if (const gassign *ass = dyn_cast<const gassign *> (s))
     {
-      enum tree_code code = gimple_assign_rhs_code (ass);
+      m_code = gimple_assign_rhs_code (ass);
       // The LHS of a comparison is always an int, so we must look at
       // the operands.
-      if (TREE_CODE_CLASS (code) == tcc_comparison)
-	m_op = get_handler (code, TREE_TYPE (gimple_assign_rhs1 (ass)));
+      if (TREE_CODE_CLASS (m_code) == tcc_comparison)
+	m_type = TREE_TYPE (gimple_assign_rhs1 (ass));
       else
-	m_op = get_handler (code, TREE_TYPE (gimple_assign_lhs (ass)));
+	m_type = TREE_TYPE (gimple_assign_lhs (ass));
     }
   else if (const gcond *cond = dyn_cast<const gcond *> (s))
-    m_op = get_handler (gimple_cond_code (cond),
-			TREE_TYPE (gimple_cond_lhs (cond)));
+    {
+      m_code = gimple_cond_code (cond);
+      m_type = TREE_TYPE (gimple_cond_lhs (cond));
+    }
   else
-    m_op = NULL;
+    {
+      // A null type means there is no handler for this combination,
+      // but the decision whether there is one or not, is delayed
+      // until operator bool below is queried.
+      m_code = NOP_EXPR;
+      m_type = nullptr;
+    }
+}
+
+// Return TRUE if there is a handler available for the current
+// combination of tree_code and type.
+
+range_op_handler::operator bool () const
+{
+  if (!m_type)
+    return false;
+  if (frange::supports_p (m_type))
+    return get_float_handler (m_code, m_type);
+  return get_handler (m_code, m_type);
 }
 
 bool
@@ -4243,10 +4210,24 @@ range_op_handler::fold_range (vrange &r, tree type,
 			      const vrange &rh,
 			      relation_kind rel) const
 {
-  if (is_a <irange> (lh))
-    return m_op->fold_range (as_a <irange> (r), type,
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->fold_range (as_a <irange> (r), type,
 			     as_a <irange> (lh),
 			     as_a <irange> (rh), rel);
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      if (is_a <irange> (r))
+	return op->fold_range (as_a <irange> (r), type,
+			       as_a <frange> (lh),
+			       as_a <frange> (rh), rel);
+      return op->fold_range (as_a <frange> (r), type,
+			     as_a <frange> (lh),
+			     as_a <frange> (rh), rel);
+    }
   gcc_unreachable ();
   return false;
 }
@@ -4257,10 +4238,24 @@ range_op_handler::op1_range (vrange &r, tree type,
 			     const vrange &op2,
 			     relation_kind rel) const
 {
-  if (is_a <irange> (r))
-    return m_op->op1_range (as_a <irange> (r), type,
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->op1_range (as_a <irange> (r), type,
 			    as_a <irange> (lhs),
 			    as_a <irange> (op2), rel);
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      if (is_a <irange> (lhs))
+	return op->op1_range (as_a <frange> (r), type,
+			      as_a <irange> (lhs),
+			      as_a <frange> (op2), rel);
+      return op->op1_range (as_a <frange> (r), type,
+			    as_a <frange> (lhs),
+			    as_a <frange> (op2), rel);
+    }
   gcc_unreachable ();
   return false;
 }
@@ -4271,10 +4266,24 @@ range_op_handler::op2_range (vrange &r, tree type,
 			     const vrange &op1,
 			     relation_kind rel) const
 {
-  if (is_a <irange> (r))
-    return m_op->op2_range (as_a <irange> (r), type,
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->op2_range (as_a <irange> (r), type,
 			    as_a <irange> (lhs),
 			    as_a <irange> (op1), rel);
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      if (is_a <irange> (lhs))
+	return op->op2_range (as_a <frange> (r), type,
+			      as_a <irange> (lhs),
+			      as_a <frange> (op1), rel);
+      return op->op2_range (as_a <frange> (r), type,
+			    as_a <frange> (lhs),
+			    as_a <frange> (op1), rel);
+    }
   gcc_unreachable ();
   return false;
 }
@@ -4285,9 +4294,24 @@ range_op_handler::lhs_op1_relation (const vrange &lhs,
 				    const vrange &op2,
 				    relation_kind rel) const
 {
-  if (is_a <irange> (op1))
-    return m_op->lhs_op1_relation (as_a <irange> (lhs),
-				   as_a <irange> (op1), as_a <irange> (op2), rel);
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->lhs_op1_relation (as_a <irange> (lhs),
+				   as_a <irange> (op1),
+				   as_a <irange> (op2), rel);
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      if (is_a <irange> (lhs))
+	return op->lhs_op1_relation (as_a <irange> (lhs),
+				     as_a <frange> (op1),
+				     as_a <frange> (op2), rel);
+      return op->lhs_op1_relation (as_a <frange> (lhs),
+				   as_a <frange> (op1),
+				   as_a <frange> (op2), rel);
+    }
   gcc_unreachable ();
   return VREL_VARYING;
 }
@@ -4298,9 +4322,24 @@ range_op_handler::lhs_op2_relation (const vrange &lhs,
 				    const vrange &op2,
 				    relation_kind rel) const
 {
-  if (is_a <irange> (op1))
-    return m_op->lhs_op2_relation (as_a <irange> (lhs),
-				   as_a <irange> (op1), as_a <irange> (op2), rel);
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->lhs_op2_relation (as_a <irange> (lhs),
+				   as_a <irange> (op1),
+				   as_a <irange> (op2), rel);
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      if (is_a <irange> (lhs))
+	return op->lhs_op2_relation (as_a <irange> (lhs),
+				     as_a <frange> (op1),
+				     as_a <frange> (op2), rel);
+      return op->lhs_op2_relation (as_a <frange> (lhs),
+				   as_a <frange> (op1),
+				   as_a <frange> (op2), rel);
+    }
   gcc_unreachable ();
   return VREL_VARYING;
 }
@@ -4308,7 +4347,18 @@ range_op_handler::lhs_op2_relation (const vrange &lhs,
 relation_kind
 range_op_handler::op1_op2_relation (const vrange &lhs) const
 {
-  return m_op->op1_op2_relation (as_a <irange> (lhs));
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->op1_op2_relation (as_a <irange> (lhs));
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      return op->op1_op2_relation (as_a <irange> (lhs));
+    }
+  gcc_unreachable ();
+  return VREL_VARYING;
 }
 
 // Cast the range in R to TYPE.

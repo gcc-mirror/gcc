@@ -1,3 +1,10 @@
+2022-07-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/105531
+	* sanitizer_common/sanitizer_linux_libcdep.cpp,
+	sanitizer_common/sanitizer_solaris.h:: Cherry-pick
+	llvm-project revision 3776db9a4fd2080d23d6a5f52e405eea44558761.
+
 2022-05-05  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Update.
