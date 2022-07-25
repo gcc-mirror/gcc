@@ -3040,22 +3040,25 @@ warn_hidden (tree t)
 	bool seen_non_override = false;
 	for (tree fndecl : ovl_range (fns))
 	  {
+	    bool any_override = false;
 	    if (TREE_CODE (fndecl) == FUNCTION_DECL
 		&& DECL_VINDEX (fndecl))
 	      {
 		/* If the method from the base class has the same
 		   signature as the method from the derived class, it
-		   has been overridden.  */
+		   has been overridden.  Note that we can't move on
+		   after finding one match: fndecl might override
+		   multiple base fns.  */
 		for (size_t k = 0; k < base_fndecls.length (); k++)
 		  if (base_fndecls[k]
 		      && same_signature_p (fndecl, base_fndecls[k]))
 		    {
 		      base_fndecls[k] = NULL_TREE;
-		      goto next;
+		      any_override = true;
 		    }
 	      }
-	    seen_non_override = true;
-	  next:;
+	    if (!any_override)
+	      seen_non_override = true;
 	  }
 
 	if (!seen_non_override && warn_overloaded_virtual == 1)
