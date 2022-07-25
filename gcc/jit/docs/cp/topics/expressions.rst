@@ -236,48 +236,39 @@ operation:
               gccjit::context::new_plus (gccjit::type result_type, \
                                          gccjit::rvalue a, gccjit::rvalue b, \
                                          gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_minus (gccjit::type result_type, \
                                           gccjit::rvalue a, gccjit::rvalue b, \
                                           gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_mult (gccjit::type result_type, \
                                          gccjit::rvalue a, gccjit::rvalue b, \
                                          gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_divide (gccjit::type result_type, \
                                            gccjit::rvalue a, gccjit::rvalue b, \
                                            gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_modulo (gccjit::type result_type, \
                                            gccjit::rvalue a, gccjit::rvalue b, \
                                            gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_bitwise_and (gccjit::type result_type, \
                                                 gccjit::rvalue a, gccjit::rvalue b, \
                                                 gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_bitwise_xor (gccjit::type result_type, \
                                                 gccjit::rvalue a, gccjit::rvalue b, \
                                                 gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_bitwise_or (gccjit::type result_type, \
                                                gccjit::rvalue a, gccjit::rvalue b, \
                                                gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_logical_and (gccjit::type result_type, \
                                                 gccjit::rvalue a, gccjit::rvalue b, \
                                                 gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_logical_or (gccjit::type result_type, \
                                                gccjit::rvalue a, gccjit::rvalue b, \
                                                gccjit::location loc)
@@ -375,24 +366,19 @@ operation:
 .. function:: gccjit::rvalue \
               gccjit::context::new_eq (gccjit::rvalue a, gccjit::rvalue b, \
                                        gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_ne (gccjit::rvalue a, gccjit::rvalue b, \
                                        gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_lt (gccjit::rvalue a, gccjit::rvalue b, \
                                        gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_le (gccjit::rvalue a, gccjit::rvalue b, \
                                        gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_gt (gccjit::rvalue a, gccjit::rvalue b, \
                                        gccjit::location loc)
-
-.. function:: gccjit::rvalue \
+              gccjit::rvalue \
               gccjit::context::new_ge (gccjit::rvalue a, gccjit::rvalue b, \
                                        gccjit::location loc)
 
