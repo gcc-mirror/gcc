@@ -783,7 +783,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
   int i = 0;
   if (extrema[i] < -arrbounds[1] || extrema[i = 1] > ubound)
     {
-      HOST_WIDE_INT tmpidx = extrema[i].to_shwi () / eltsize.to_shwi ();
+      HOST_WIDE_INT tmpidx = (extrema[i] / eltsize).to_shwi ();
 
       if (warning_at (location, OPT_Warray_bounds,
 		      "intermediate array offset %wi is outside array bounds "
