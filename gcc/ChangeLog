@@ -1,3 +1,57 @@
+2022-07-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-query.cc (range_query::get_value_range): Add assert.
+	* vr-values.cc (vr_values::range_of_expr): Make sure we don't ICE
+	on unsupported types in vr_values.
+	(simplify_using_ranges::simplify): Same.
+
+2022-07-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssanames.cc (get_nonzero_bits): Return -1 for unsupported
+	types.
+	* value-query.cc (get_ssa_name_range_info): Remove precision check.
+
+2022-07-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-relation.cc (value_relation::set_relation): Remove assert.
+	(path_oracle::register_relation): Exit when trying to register
+	same SSA name relations.
+
+2022-07-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::edge_range): Convert to vrange.
+	(ranger_cache::range_from_dom): Same.
+	* tree-ssa-dom.cc
+	(dom_opt_dom_walker::set_global_ranges_from_unreachable_edges): Same.
+
+2022-07-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106303
+	PR target/106347
+	* config/i386/i386-features.cc (make_vector_copies): Move from
+	general_scalar_chain to scalar_chain.
+	(convert_reg): Likewise.
+	(convert_insn_common): New scalar_chain method split out from
+	general_scalar_chain convert_insn.
+	(convert_registers): Move from general_scalar_chain to
+	scalar_chain.
+	(scalar_chain::convert): Call convert_insn_common before calling
+	convert_insn.
+	(timode_remove_non_convertible_regs): Iterate until there are
+	no further changes to the candidates.
+	* config/i386/i386-features.h (scalar_chain::hash_map): Move
+	from general_scalar_chain.
+	(scalar_chain::convert_reg): Likewise.
+	(scalar_chain::convert_insn_common): New shared method.
+	(scalar_chain::make_vector_copies): Move from general_scalar_chain.
+	(scalar_chain::convert_registers): Likewise.  No longer virtual.
+	(general_scalar_chain::hash_map): Delete.  Moved to scalar_chain.
+	(general_scalar_chain::convert_reg): Likewise.
+	(general_scalar_chain::make_vector_copies): Likewise.
+	(general_scalar_chain::convert_registers): Delete virtual method.
+	(timode_scalar_chain::convert_registers): Likewise.
+
 2022-07-23  Immad Mir  <mirimmad@outlook.com>
 
 	* doc/extend.texi: Add fd_arg, fd_arg_read and fd_arg_write under

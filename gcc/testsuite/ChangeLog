@@ -1,3 +1,11 @@
+2022-07-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106303
+	PR target/106347
+	* gcc.target/i386/pr106303.c: New test case.
+	* gcc.target/i386/pr106347.c: New test case.
+
 2022-07-23  Immad Mir  <mirimmad@outlook.com>
 
 	* gcc.dg/analyzer/fd-5.c: New test.
