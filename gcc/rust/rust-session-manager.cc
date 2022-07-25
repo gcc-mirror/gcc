@@ -792,7 +792,12 @@ Session::parse_file (const char *filename)
 
   // Various HIR error passes. The privacy pass happens before the unsafe checks
   Privacy::Resolver::resolve (hir);
+  if (saw_errors ())
+    return;
+
   HIR::UnsafeChecker ().go (hir);
+  if (saw_errors ())
+    return;
 
   // do compile to gcc generic
   Compile::Context ctx (backend);
