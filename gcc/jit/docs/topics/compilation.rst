@@ -158,14 +158,14 @@ For linking in object files, use :c:func:`gcc_jit_context_add_driver_option`.
 
 :c:func:`gcc_jit_context_compile_to_file` ignores the suffix of
 ``output_path``, and insteads uses the given
-:c:type:`enum gcc_jit_output_kind` to decide what to do.
+:c:enum:`gcc_jit_output_kind` to decide what to do.
 
 .. note::
 
    This is different from the ``gcc`` program, which does make use of the
    suffix of the output file when determining what to do.
 
-.. type:: enum gcc_jit_output_kind
+.. enum:: gcc_jit_output_kind
 
 The available kinds of output are:
 

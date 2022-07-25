@@ -311,7 +311,7 @@ String Options
 
    Set a string option of the context.
 
-   .. type:: enum gcc_jit_str_option
+   .. enum:: gcc_jit_str_option
 
    The parameter ``value`` can be NULL.   If non-NULL, the call takes a
    copy of the underlying string, so it is valid to pass in a pointer to
@@ -334,7 +334,7 @@ Boolean options
   Set a boolean option of the context.
   Zero is "false" (the default), non-zero is "true".
 
-  .. type:: enum gcc_jit_bool_option
+  .. enum:: gcc_jit_bool_option
 
   .. macro:: GCC_JIT_BOOL_OPTION_DEBUGINFO
 
@@ -513,7 +513,7 @@ Integer options
 
   Set an integer option of the context.
 
-  .. type:: enum gcc_jit_int_option
+  .. enum:: gcc_jit_int_option
 
   There is just one integer option specified this way:
 
