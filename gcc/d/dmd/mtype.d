@@ -6184,6 +6184,11 @@ extern (C++) final class TypeClass : Type
         if (t && t.ty == Tclass)
         {
             ClassDeclaration cd = (cast(TypeClass)t).sym;
+            if (cd.semanticRun < PASS.semanticdone && !cd.isBaseInfoComplete())
+                cd.dsymbolSemantic(null);
+            if (sym.semanticRun < PASS.semanticdone && !sym.isBaseInfoComplete())
+                sym.dsymbolSemantic(null);
+
             if (sym.isBaseOf(cd, poffset))
                 return true;
         }

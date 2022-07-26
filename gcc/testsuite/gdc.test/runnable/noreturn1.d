@@ -261,6 +261,37 @@ void testThrowDtor()
 
 /*****************************************/
 
+noreturn func()
+{
+    throw new Exception("B");
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23120
+void test23120()
+{
+    string a;
+    try
+    {
+        noreturn q = throw new Exception ("A");
+    }
+    catch(Exception e)
+    {
+        a ~= e.msg;
+    }
+
+    try
+    {
+        noreturn z = func();
+    }
+    catch(Exception e)
+    {
+        a ~= e.msg;
+    }
+
+    assert(a == "AB");
+}
+
+/*****************************************/
 int main()
 {
     test1();
@@ -269,5 +300,6 @@ int main()
     testThrowExpression();
     testThrowSideEffect();
     testThrowDtor();
+    test23120();
     return 0;
 }

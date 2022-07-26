@@ -2048,7 +2048,8 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
                 if (global.params.useDIP1000 == FeatureState.enabled)
                     err |= checkParamArgumentEscape(sc, fd, p, arg, false, false);
             }
-            else if (!(pStc & STC.return_))
+            else if (!(pStc & STC.return_) &&
+                ((global.params.useDIP1000 == FeatureState.enabled) || !(p.storageClass & STC.scopeinferred)))
             {
                 /* Argument value cannot escape from the called function.
                  */
@@ -2058,10 +2059,10 @@ private bool functionParameters(const ref Loc loc, Scope* sc,
 
                 ArrayLiteralExp ale;
                 if (p.type.toBasetype().ty == Tarray &&
-                    (ale = a.isArrayLiteralExp()) !is null)
+                    (ale = a.isArrayLiteralExp()) !is null && ale.elements && ale.elements.length > 0)
                 {
                     // allocate the array literal as temporary static array on the stack
-                    ale.type = ale.type.nextOf().sarrayOf(ale.elements ? ale.elements.length : 0);
+                    ale.type = ale.type.nextOf().sarrayOf(ale.elements.length);
                     auto tmp = copyToTemp(0, "__arrayliteral_on_stack", ale);
                     auto declareTmp = new DeclarationExp(ale.loc, tmp);
                     auto castToSlice = new CastExp(ale.loc, new VarExp(ale.loc, tmp),
@@ -9926,9 +9927,11 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 ae.e2.type.nextOf &&
                 ae.e1.type.nextOf.mutableOf.equals(ae.e2.type.nextOf.mutableOf);
 
+            /* Unlike isArrayCtor above, lower all Rvalues. If the RHS is a literal,
+             * then we do want to make a temporary for it and call its destructor.
+             */
             const isArraySetCtor =
                 (ae.e1.isSliceExp || ae.e1.type.ty == Tsarray) &&
-                ae.e2.isLvalue &&
                 (ae.e2.type.ty == Tstruct || ae.e2.type.ty == Tsarray) &&
                 ae.e1.type.nextOf &&
                 ae.e1.type.nextOf.equivalent(ae.e2.type);
@@ -12535,7 +12538,7 @@ Expression semanticY(DotIdExp exp, Scope* sc, int flag)
                     e = new CommaExp(exp.loc, eleft, e);
                     e.type = Type.tvoid; // ambiguous type?
                 }
-                return e;
+                return e.expressionSemantic(sc);
             }
             if (auto o = s.isOverloadSet())
             {
