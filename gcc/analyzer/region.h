@@ -400,10 +400,6 @@ public:
   /* region vfuncs.  */
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
   enum region_kind get_kind () const final override { return RK_CODE; }
-
-  const region *get_element (region_model *model,
-			const svalue *index,
-			region_model_context *ctxt);
 };
 
 } // namespace ana
@@ -438,10 +434,6 @@ public:
   dyn_cast_function_region () const final override{ return this; }
 
   tree get_fndecl () const { return m_fndecl; }
-
-  region *get_element (region_model *model,
-			const svalue *index_sid,
-			region_model_context *ctxt);
 
 private:
   tree m_fndecl;
