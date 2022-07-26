@@ -1,3 +1,10 @@
+2022-07-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from master:
+	2022-07-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/rtems.h (CPLUSPLUS_CPP_SPEC): Undef.
+
 2022-07-22  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
