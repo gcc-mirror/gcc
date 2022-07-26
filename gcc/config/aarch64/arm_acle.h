@@ -28,12 +28,65 @@
 #define _GCC_ARM_ACLE_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 #pragma GCC aarch64 "arm_acle.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define _GCC_ARM_ACLE_ROR_FN(NAME, TYPE)				  \
+__extension__ extern __inline TYPE					  \
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))	  \
+NAME (TYPE __value, uint32_t __rotate)					  \
+{									  \
+  size_t __size = sizeof (TYPE) * __CHAR_BIT__;				  \
+  __rotate = __rotate % __size;						  \
+  return __value >> __rotate | __value << ((__size - __rotate) % __size); \
+}
+
+_GCC_ARM_ACLE_ROR_FN (__ror, uint32_t)
+_GCC_ARM_ACLE_ROR_FN (__rorl, unsigned long)
+_GCC_ARM_ACLE_ROR_FN (__rorll, uint64_t)
+
+#undef _GCC_ARM_ACLE_ROR_FN
+
+#define _GCC_ARM_ACLE_DATA_FN(NAME, BUILTIN, ITYPE, RTYPE)	    \
+__extension__ extern __inline RTYPE				    \
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__)) \
+__##NAME (ITYPE __value)					    \
+{								    \
+  return __builtin_##BUILTIN (__value);				    \
+}
+
+_GCC_ARM_ACLE_DATA_FN (clz, clz, uint32_t, unsigned int)
+_GCC_ARM_ACLE_DATA_FN (clzl, clzl, unsigned long, unsigned int)
+_GCC_ARM_ACLE_DATA_FN (clzll, clzll, uint64_t, unsigned int)
+_GCC_ARM_ACLE_DATA_FN (cls, clrsb, uint32_t, unsigned int)
+_GCC_ARM_ACLE_DATA_FN (clsl, clrsbl, unsigned long, unsigned int)
+_GCC_ARM_ACLE_DATA_FN (clsll, clrsbll, uint64_t, unsigned int)
+_GCC_ARM_ACLE_DATA_FN (rev16, aarch64_rev16, uint32_t, uint32_t)
+_GCC_ARM_ACLE_DATA_FN (rev16l, aarch64_rev16l, unsigned long, unsigned long)
+_GCC_ARM_ACLE_DATA_FN (rev16ll, aarch64_rev16ll, uint64_t, uint64_t)
+_GCC_ARM_ACLE_DATA_FN (rbit, aarch64_rbit, uint32_t, uint32_t)
+_GCC_ARM_ACLE_DATA_FN (rbitl, aarch64_rbitl, unsigned long, unsigned long)
+_GCC_ARM_ACLE_DATA_FN (rbitll, aarch64_rbitll, uint64_t, uint64_t)
+_GCC_ARM_ACLE_DATA_FN (revsh, bswap16, int16_t, int16_t)
+_GCC_ARM_ACLE_DATA_FN (rev, bswap32, uint32_t, uint32_t)
+_GCC_ARM_ACLE_DATA_FN (revll, bswap64, uint64_t, uint64_t)
+
+#undef _GCC_ARM_ACLE_DATA_FN
+
+__extension__ extern __inline unsigned long
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__revl (unsigned long __value)
+{
+  if (sizeof (unsigned long) == 8)
+    return __revll (__value);
+  else
+    return __rev (__value);
+}
 
 #pragma GCC push_options
 #pragma GCC target ("arch=armv8.3-a")

@@ -1,3 +1,13 @@
+2022-07-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106230
+	* semantics.cc (finish_for_stmt): Check stmts_are_full_exprs_p.
+
+2022-07-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	* class.cc (warn_hidden): Remove shortcut.
+
 2022-07-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/106366

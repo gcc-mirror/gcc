@@ -1,3 +1,123 @@
+2022-07-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (OBJS): Add range-op-float.o.
+	* range-op.cc (get_float_handler): New.
+	(range_op_handler::range_op_handler): Save code and type for
+	delayed querying.
+	(range_op_handler::oeprator bool): Move from header file, and
+	add support for floats.
+	(range_op_handler::fold_range): Add support for floats.
+	(range_op_handler::op1_range): Same.
+	(range_op_handler::op2_range): Same.
+	(range_op_handler::lhs_op1_relation): Same.
+	(range_op_handler::lhs_op2_relation): Same.
+	(range_op_handler::op1_op2_relation): Same.
+	* range-op.h (class range_operator_float): New.
+	(class floating_op_table): New.
+	* value-query.cc (range_query::get_tree_range): Add case for
+	REAL_CST.
+	* range-op-float.cc: New file.
+
+2022-07-25  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91681
+	* config/i386/i386-expand.cc (split_double_concat): A new helper
+	function for setting a double word value from two word values.
+	* config/i386/i386-protos.h (split_double_concat): Prototype here.
+	* config/i386/i386.md (zero_extendditi2): New define_insn_and_split.
+	(*add<dwi>3_doubleword_zext): New define_insn_and_split.
+	(*sub<dwi>3_doubleword_zext): New define_insn_and_split.
+	(*concat<mode><dwi>3_1): New define_insn_and_split replacing
+	previous define_split for implementing DST = (HI<<32)|LO as
+	pair of move instructions, setting lopart and hipart.
+	(*concat<mode><dwi>3_2): Likewise.
+	(*concat<mode><dwi>3_3): Likewise, where HI is zero_extended.
+	(*concat<mode><dwi>3_4): Likewise, where HI is zero_extended.
+
+2022-07-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/106432
+	* gimple-range.cc (gimple_ranger::range_on_edge): Return false
+	when the result range type is unsupported.
+
+2022-07-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/rtems.h (CPLUSPLUS_CPP_SPEC): Undef.
+
+2022-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106414
+	* match.pd (~(x ^ y) -> x == y): Restrict to single bit
+	precision types.
+
+2022-07-25  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.md (rbit<mode>2): Rename this ...
+	(@aarch64_rbit<mode>): ... to this and change it in...
+	(ffs<mode>2,ctz<mode>2): ... here.
+	(@aarch64_rev16<mode>): New.
+	* config/aarch64/aarch64-builtins.cc: (aarch64_builtins):
+	Define the following enum AARCH64_REV16, AARCH64_REV16L,
+	AARCH64_REV16LL, AARCH64_RBIT, AARCH64_RBITL, AARCH64_RBITLL.
+	(aarch64_init_data_intrinsics): New.
+	(aarch64_general_init_builtins): Add call to
+	aarch64_init_data_intrinsics.
+	(aarch64_expand_builtin_data_intrinsic): New.
+	(aarch64_general_expand_builtin): Add call to
+	aarch64_expand_builtin_data_intrinsic.
+	* config/aarch64/arm_acle.h (__clz, __clzl, __clzll, __cls, __clsl,
+	__clsll, __rbit, __rbitl, __rbitll, __rev, __revl, __revll, __rev16,
+	__rev16l, __rev16ll, __ror, __rorl, __rorll, __revsh): New.
+
+2022-07-25  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Remove trailing whitespaces.
+	* doc/invoke.texi: Likewise.
+
+2022-07-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-pretty-print.cc (vrange_printer::visit): New.
+	(vrange_printer::print_frange_prop): New.
+	* value-range-pretty-print.h (class vrange_printer): Add visit and
+	print_frange_prop.
+	* value-range-storage.h (vrange_allocator::alloc_vrange): Handle frange.
+	(vrange_allocator::alloc_frange): New.
+	* value-range.cc (vrange::operator=): Handle frange.
+	(vrange::operator==): Same.
+	(frange::accept): New.
+	(frange::set): New.
+	(frange::normalize_kind): New.
+	(frange::union_): New.
+	(frange::intersect): New.
+	(frange::operator=): New.
+	(frange::operator==): New.
+	(frange::supports_type_p): New.
+	(frange::verify_range): New.
+	* value-range.h (enum value_range_discriminator): Handle frange.
+	(class fp_prop): New.
+	(FP_PROP_ACCESSOR): New.
+	(class frange_props): New.
+	(FRANGE_PROP_ACCESSOR): New.
+	(class frange): New.
+	(Value_Range::init): Handle frange.
+	(Value_Range::operator=): Same.
+	(Value_Range::supports_type_p): Same.
+	(frange_props::operator==): New.
+	(frange_props::union_): New.
+	(frange_props::intersect): New
+	(frange::frange): New.
+	(frange::type): New.
+	(frange::set_varying): New.
+	(frange::set_undefined): New.
+
+2022-07-25  Peter Bergner  <bergner@linux.ibm.com>
+	    Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/106345
+	* config/rs6000/rs6000.h (DRIVER_SELF_SPECS): Adjust -mdejagnu-cpu
+	to filter out all -mtune options.
+
 2022-07-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* value-query.cc (range_query::get_value_range): Add assert.

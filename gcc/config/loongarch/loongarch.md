@@ -57,6 +57,10 @@
   ;; CRC
   UNSPEC_CRC
   UNSPEC_CRCC
+
+  UNSPEC_LOAD_FROM_GOT
+  UNSPEC_ORI_L_LO12
+  UNSPEC_TLS_LOW
 ])
 
 (define_c_enum "unspecv" [
@@ -1743,73 +1747,6 @@
   [(set_attr "move_type" "move,load,store")
    (set_attr "mode" "DF")])
 
-
-;; 128-bit integer moves
-
-(define_expand "movti"
-  [(set (match_operand:TI 0)
-	(match_operand:TI 1))]
-  "TARGET_64BIT"
-{
-  if (loongarch_legitimize_move (TImode, operands[0], operands[1]))
-    DONE;
-})
-
-(define_insn "*movti"
-  [(set (match_operand:TI 0 "nonimmediate_operand" "=r,r,r,m")
-	(match_operand:TI 1 "move_operand" "r,i,m,rJ"))]
-  "TARGET_64BIT
-   && (register_operand (operands[0], TImode)
-       || reg_or_0_operand (operands[1], TImode))"
-  { return loongarch_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store")
-   (set (attr "mode")
-    (if_then_else (eq_attr "move_type" "imul")
-		      (const_string "SI")
-		      (const_string "TI")))])
-
-;; 128-bit floating point moves
-
-(define_expand "movtf"
-  [(set (match_operand:TF 0)
-	(match_operand:TF 1))]
-  "TARGET_64BIT"
-{
-  if (loongarch_legitimize_move (TFmode, operands[0], operands[1]))
-    DONE;
-})
-
-;; This pattern handles both hard- and soft-float cases.
-(define_insn "*movtf"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=r,r,m,f,r,f,m")
-	(match_operand:TF 1 "move_operand" "rG,m,rG,rG,f,m,f"))]
-  "TARGET_64BIT
-   && (register_operand (operands[0], TFmode)
-       || reg_or_0_operand (operands[1], TFmode))"
-  "#"
-  [(set_attr "move_type" "move,load,store,mgtf,mftg,fpload,fpstore")
-   (set_attr "mode" "TF")])
-
-(define_split
-  [(set (match_operand:MOVE64 0 "nonimmediate_operand")
-	(match_operand:MOVE64 1 "move_operand"))]
-  "reload_completed && loongarch_split_move_insn_p (operands[0], operands[1])"
-  [(const_int 0)]
-{
-  loongarch_split_move_insn (operands[0], operands[1], curr_insn);
-  DONE;
-})
-
-(define_split
-  [(set (match_operand:MOVE128 0 "nonimmediate_operand")
-	(match_operand:MOVE128 1 "move_operand"))]
-  "reload_completed && loongarch_split_move_insn_p (operands[0], operands[1])"
-  [(const_int 0)]
-{
-  loongarch_split_move_insn (operands[0], operands[1], curr_insn);
-  DONE;
-})
-
 ;; Emit a doubleword move in which exactly one of the operands is
 ;; a floating-point register.  We can't just emit two normal moves
 ;; because of the constraints imposed by the FPU register model;
@@ -1937,6 +1874,57 @@
   "lu52i.d\t%0,%1,%X3>>52"
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])
+
+;; Instructions for adding the low 12 bits of an address to a register.
+;; Operand 2 is the address: loongarch_print_operand works out which relocation
+;; should be applied.
+
+(define_insn "*low<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+ (lo_sum:P (match_operand:P 1 "register_operand" " r")
+     (match_operand:P 2 "symbolic_operand" "")))]
+  "TARGET_EXPLICIT_RELOCS"
+  "addi.<d>\t%0,%1,%L2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@tls_low<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(mem:P (lo_sum:P (match_operand:P 1 "register_operand" "r")
+				    (match_operand:P 2 "symbolic_operand" "")))]
+	UNSPEC_TLS_LOW))]
+  "TARGET_EXPLICIT_RELOCS"
+  "addi.<d>\t%0,%1,%L2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
+
+;; Instructions for loading address from GOT entry.
+;; operands[1] is pc plus the high half of the address difference with the got
+;; entry;
+;; operands[2] is low 12 bits for low 12 bit of the address difference with the
+;; got entry.
+;; loongarch_print_operand works out which relocation should be applied.
+
+(define_insn "@ld_from_got<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(mem:P (lo_sum:P
+				(match_operand:P 1 "register_operand" "r")
+				(match_operand:P 2 "symbolic_operand")))]
+	UNSPEC_LOAD_FROM_GOT))]
+  "TARGET_EXPLICIT_RELOCS"
+  "ld.<d>\t%0,%1,%L2"
+  [(set_attr "type" "move")]
+)
+
+(define_insn "@ori_l_lo12<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand:P 1 "register_operand" "r")
+		    (match_operand:P 2 "symbolic_operand")]
+	UNSPEC_ORI_L_LO12))]
+  ""
+  "ori\t%0,%1,%L2"
+  [(set_attr "type" "move")]
+)
 
 ;; Convert floating-point numbers to integers
 (define_insn "frint_<fmt>"
@@ -2844,48 +2832,14 @@
 })
 
 (define_insn "sibcall_internal"
-  [(call (mem:SI (match_operand 0 "call_insn_operand" "j,c,a,t,h"))
+  [(call (mem:SI (match_operand 0 "call_insn_operand" "j,c,b"))
 	 (match_operand 1 "" ""))]
   "SIBLING_CALL_P (insn)"
-{
-  switch (which_alternative)
-    {
-    case 0:
-      return "jr\t%0";
-    case 1:
-      if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r12,(%%pcrel(%0+0x20000))>>18\n\t"
-	       "jirl\t$r0,$r12,%%pcrel(%0+4)-(%%pcrel(%0+4+0x20000)>>18<<18)";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.local\t$r12,$r13,%0\n\tjr\t$r12";
-      else
-	return "b\t%0";
-    case 2:
-      if (TARGET_CMODEL_TINY_STATIC)
-	return "b\t%0";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r12,$r13,%0\n\tjr\t$r12";
-      else
-	return "la.global\t$r12,%0\n\tjr\t$r12";
-    case 3:
-      if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r12,$r13,%0\n\tjr\t$r12";
-      else
-	return "la.global\t$r12,%0\n\tjr\t$r12";
-    case 4:
-      if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
-	return "b\t%%plt(%0)";
-      else if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r12,(%%plt(%0)+0x20000)>>18\n\t"
-	       "jirl\t$r0,$r12,%%plt(%0)+4-((%%plt(%0)+(4+0x20000))>>18<<18)";
-      else
-	/* Cmodel extreme and tiny static not support plt.  */
-	gcc_unreachable ();
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "jirl" "indirect,direct,direct,direct,direct")])
+  "@
+   jr\t%0
+   b\t%0
+   b\t%%plt(%0)"
+  [(set_attr "jirl" "indirect,direct,direct")])
 
 (define_expand "sibcall_value"
   [(parallel [(set (match_operand 0 "")
@@ -2920,96 +2874,28 @@
 
 (define_insn "sibcall_value_internal"
   [(set (match_operand 0 "register_operand" "")
-	(call (mem:SI (match_operand 1 "call_insn_operand" "j,c,a,t,h"))
+	(call (mem:SI (match_operand 1 "call_insn_operand" "j,c,b"))
 	      (match_operand 2 "" "")))]
   "SIBLING_CALL_P (insn)"
-{
-  switch (which_alternative)
-  {
-    case 0:
-      return "jr\t%1";
-    case 1:
-      if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r12,%%pcrel(%1+0x20000)>>18\n\t"
-	       "jirl\t$r0,$r12,%%pcrel(%1+4)-((%%pcrel(%1+4+0x20000))>>18<<18)";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.local\t$r12,$r13,%1\n\tjr\t$r12";
-      else
-	return "b\t%1";
-    case 2:
-      if (TARGET_CMODEL_TINY_STATIC)
-	return "b\t%1";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r12,$r13,%1\n\tjr\t$r12";
-      else
-	return "la.global\t$r12,%1\n\tjr\t$r12";
-    case 3:
-      if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r12,$r13,%1\n\tjr\t$r12";
-      else
-	return "la.global\t$r12,%1\n\tjr\t$r12";
-    case 4:
-      if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
-	return " b\t%%plt(%1)";
-      else if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r12,(%%plt(%1)+0x20000)>>18\n\t"
-	       "jirl\t$r0,$r12,%%plt(%1)+4-((%%plt(%1)+(4+0x20000))>>18<<18)";
-      else
-	/* Cmodel extreme and tiny static not support plt.  */
-	gcc_unreachable ();
-    default:
-      gcc_unreachable ();
-  }
-}
-  [(set_attr "jirl" "indirect,direct,direct,direct,direct")])
+  "@
+   jr\t%1
+   b\t%1
+   b\t%%plt(%1)"
+  [(set_attr "jirl" "indirect,direct,direct")])
 
 (define_insn "sibcall_value_multiple_internal"
   [(set (match_operand 0 "register_operand" "")
-	(call (mem:SI (match_operand 1 "call_insn_operand" "j,c,a,t,h"))
+	(call (mem:SI (match_operand 1 "call_insn_operand" "j,c,b"))
 	      (match_operand 2 "" "")))
    (set (match_operand 3 "register_operand" "")
 	(call (mem:SI (match_dup 1))
 	      (match_dup 2)))]
   "SIBLING_CALL_P (insn)"
-{
-  switch (which_alternative)
-  {
-    case 0:
-      return "jr\t%1";
-    case 1:
-      if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r12,%%pcrel(%1+0x20000)>>18\n\t"
-	       "jirl\t$r0,$r12,%%pcrel(%1+4)-(%%pcrel(%1+4+0x20000)>>18<<18)";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.local\t$r12,$r13,%1\n\tjr\t$r12";
-      else
-	return "b\t%1";
-    case 2:
-      if (TARGET_CMODEL_TINY_STATIC)
-	return "b\t%1";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r12,$r13,%1\n\tjr\t$r12";
-      else
-	return "la.global\t$r12,%1\n\tjr\t$r12";
-    case 3:
-      if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r12,$r13,%1\n\tjr\t$r12";
-      else
-	return "la.global\t$r12,%1\n\tjr\t$r12";
-    case 4:
-      if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
-	return "b\t%%plt(%1)";
-      else if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r12,(%%plt(%1)+0x20000)>>18\n\t"
-	       "jirl\t$r0,$r12,%%plt(%1)+4-((%%plt(%1)+(4+0x20000))>>18<<18)";
-      else
-	/* Cmodel extreme and tiny static not support plt.  */
-	gcc_unreachable ();
-    default:
-      gcc_unreachable ();
-  }
-}
-  [(set_attr "jirl" "indirect,direct,direct,direct,direct")])
+  "@
+   jr\t%1
+   b\t%1
+   b\t%%plt(%1)"
+  [(set_attr "jirl" "indirect,direct,direct")])
 
 (define_expand "call"
   [(parallel [(call (match_operand 0 "")
@@ -3025,50 +2911,15 @@
 })
 
 (define_insn "call_internal"
-  [(call (mem:SI (match_operand 0 "call_insn_operand" "e,c,a,t,h"))
+  [(call (mem:SI (match_operand 0 "call_insn_operand" "e,c,b"))
 	 (match_operand 1 "" ""))
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
-{
-  switch (which_alternative)
-    {
-    case 0:
-      return "jirl\t$r1,%0,0";
-    case 1:
-      if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r1,%%pcrel(%0+0x20000)>>18\n\t"
-	       "jirl\t$r1,$r1,%%pcrel(%0+4)-(%%pcrel(%0+4+0x20000)>>18<<18)";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.local\t$r1,$r12,%0\n\tjirl\t$r1,$r1,0";
-      else
-	return "bl\t%0";
-    case 2:
-      if (TARGET_CMODEL_TINY_STATIC)
-	return "bl\t%0";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r1,$r12,%0\n\tjirl\t$r1,$r1,0";
-      else
-	return "la.global\t$r1,%0\n\tjirl\t$r1,$r1,0";
-    case 3:
-      if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r1,$r12,%0\n\tjirl\t$r1,$r1,0";
-      else
-	return "la.global\t$r1,%0\n\tjirl\t$r1,$r1,0";
-    case 4:
-      if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r1,(%%plt(%0)+0x20000)>>18\n\t"
-	       "jirl\t$r1,$r1,%%plt(%0)+4-((%%plt(%0)+(4+0x20000))>>18<<18)";
-      else if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
-	return "bl\t%%plt(%0)";
-      else
-	/* Cmodel extreme and tiny static not support plt.  */
-	gcc_unreachable ();
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "jirl" "indirect,direct,direct,direct,direct")
-   (set_attr "insn_count" "1,2,3,3,2")])
+  "@
+   jirl\t$r1,%0,0
+   bl\t%0
+   bl\t%%plt(%0)"
+  [(set_attr "jirl" "indirect,direct,direct")])
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "")
@@ -3101,100 +2952,30 @@
 
 (define_insn "call_value_internal"
   [(set (match_operand 0 "register_operand" "")
-	(call (mem:SI (match_operand 1 "call_insn_operand" "e,c,a,t,h"))
+	(call (mem:SI (match_operand 1 "call_insn_operand" "e,c,b"))
 	      (match_operand 2 "" "")))
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
-{
-  switch (which_alternative)
-    {
-    case 0:
-      return "jirl\t$r1,%1,0";
-    case 1:
-      if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r1,%%pcrel(%1+0x20000)>>18\n\t"
-	       "jirl\t$r1,$r1,%%pcrel(%1+4)-(%%pcrel(%1+4+0x20000)>>18<<18)";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.local\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0";
-      else
-	return "bl\t%1";
-    case 2:
-      if (TARGET_CMODEL_TINY_STATIC)
-	return "bl\t%1";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0";
-      else
-	return "la.global\t$r1,%1\n\tjirl\t$r1,$r1,0";
-    case 3:
-      if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0";
-      else
-	return "la.global\t$r1,%1\n\tjirl\t$r1,$r1,0";
-    case 4:
-      if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r1,(%%plt(%1)+0x20000)>>18\n\t"
-	       "jirl\t$r1,$r1,%%plt(%1)+4-((%%plt(%1)+(4+0x20000))>>18<<18)";
-      else if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
-	return "bl\t%%plt(%1)";
-      else
-	/* Cmodel extreme and tiny static not support plt.  */
-	gcc_unreachable ();
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "jirl" "indirect,direct,direct,direct,direct")
-   (set_attr "insn_count" "1,2,3,3,2")])
+  "@
+   jirl\t$r1,%1,0
+   bl\t%1
+   bl\t%%plt(%1)"
+  [(set_attr "jirl" "indirect,direct,direct")])
 
 (define_insn "call_value_multiple_internal"
   [(set (match_operand 0 "register_operand" "")
-	(call (mem:SI (match_operand 1 "call_insn_operand" "e,c,a,t,h"))
+	(call (mem:SI (match_operand 1 "call_insn_operand" "e,c,b"))
 	      (match_operand 2 "" "")))
    (set (match_operand 3 "register_operand" "")
 	(call (mem:SI (match_dup 1))
 	      (match_dup 2)))
    (clobber (reg:SI RETURN_ADDR_REGNUM))]
   ""
-{
-  switch (which_alternative)
-    {
-    case 0:
-      return "jirl\t$r1,%1,0";
-    case 1:
-      if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r1,%%pcrel(%1+0x20000)>>18\n\t"
-	       "jirl\t$r1,$r1,%%pcrel(%1+4)-(%%pcrel(%1+4+0x20000)>>18<<18)";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.local\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0";
-      else
-	return "bl\t%1";
-    case 2:
-      if (TARGET_CMODEL_TINY_STATIC)
-	return "bl\t%1";
-      else if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0 ";
-      else
-	return "la.global\t$r1,%1\n\tjirl\t$r1,$r1,0";
-    case 3:
-      if (TARGET_CMODEL_EXTREME)
-	return "la.global\t$r1,$r12,%1\n\tjirl\t$r1,$r1,0";
-      else
-	return "la.global\t$r1,%1\n\tjirl\t$r1,$r1,0";
-    case 4:
-      if (TARGET_CMODEL_LARGE)
-	return "pcaddu18i\t$r1,(%%plt(%1)+0x20000)>>18\n\t"
-	       "jirl\t$r1,$r1,%%plt(%1)+4-((%%plt(%1)+(4+0x20000))>>18<<18)";
-      else if (TARGET_CMODEL_NORMAL || TARGET_CMODEL_TINY)
-	return "bl\t%%plt(%1)";
-      else
-	/* Cmodel extreme and tiny static not support plt.  */
-	gcc_unreachable ();
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "jirl" "indirect,direct,direct,direct,direct")
-   (set_attr "insn_count" "1,2,3,3,2")])
+  "@
+   jirl\t$r1,%1,0
+   bl\t%1
+   bl\t%%plt(%1)"
+  [(set_attr "jirl" "indirect,direct,direct")])
 
 
 ;; Call subroutine returning any type.

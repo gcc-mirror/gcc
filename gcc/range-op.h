@@ -108,12 +108,61 @@ protected:
 			 const wide_int &rh_ub) const;
 };
 
+// Like range_operator above, but for floating point operators.
+
+class range_operator_float
+{
+public:
+  virtual bool fold_range (frange &r, tree type,
+			   const frange &lh,
+			   const frange &rh,
+			   relation_kind rel = VREL_VARYING) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const frange &lh,
+			   const frange &rh,
+			   relation_kind rel = VREL_VARYING) const;
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op2,
+			  relation_kind rel = VREL_VARYING) const;
+  virtual bool op1_range (frange &r, tree type,
+			  const irange &lhs,
+			  const frange &op2,
+			  relation_kind rel = VREL_VARYING) const;
+  virtual bool op2_range (frange &r, tree type,
+			  const frange &lhs,
+			  const frange &op1,
+			  relation_kind rel = VREL_VARYING) const;
+  virtual bool op2_range (frange &r, tree type,
+			  const irange &lhs,
+			  const frange &op1,
+			  relation_kind rel = VREL_VARYING) const;
+
+  virtual relation_kind lhs_op1_relation (const frange &lhs,
+					  const frange &op1,
+					  const frange &op2,
+					  relation_kind = VREL_VARYING) const;
+  virtual relation_kind lhs_op1_relation (const irange &lhs,
+					  const frange &op1,
+					  const frange &op2,
+					  relation_kind = VREL_VARYING) const;
+  virtual relation_kind lhs_op2_relation (const frange &lhs,
+					  const frange &op1,
+					  const frange &op2,
+					  relation_kind = VREL_VARYING) const;
+  virtual relation_kind lhs_op2_relation (const irange &lhs,
+					  const frange &op1,
+					  const frange &op2,
+					  relation_kind = VREL_VARYING) const;
+  virtual relation_kind op1_op2_relation (const irange &lhs) const;
+};
+
 class range_op_handler
 {
 public:
   range_op_handler (enum tree_code code, tree type);
   range_op_handler (const gimple *s);
-  operator bool () const { return m_op; }
+  operator bool () const;
 
   bool fold_range (vrange &r, tree type,
 		   const vrange &lh,
@@ -137,7 +186,8 @@ public:
 				  relation_kind = VREL_VARYING) const;
   relation_kind op1_op2_relation (const vrange &lhs) const;
 private:
-  range_operator *m_op;
+  enum tree_code m_code;
+  tree m_type;
 };
 
 extern bool range_cast (vrange &, tree type);
@@ -217,5 +267,20 @@ protected:
 private:
   range_operator *m_range_tree[MAX_TREE_CODES];
 };
+
+// Like above, but for floating point operators.
+
+class floating_op_table
+{
+public:
+  floating_op_table ();
+  range_operator_float *operator[] (enum tree_code code);
+private:
+  void set (enum tree_code code, range_operator_float &op);
+  range_operator_float *m_range_tree[MAX_TREE_CODES];
+};
+
+// This holds the range op table for floating point operations.
+extern floating_op_table *floating_tree_table;
 
 #endif // GCC_RANGE_OP_H
