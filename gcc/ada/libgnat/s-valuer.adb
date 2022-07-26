@@ -184,7 +184,7 @@ package body System.Value_R is
       UmaxB : constant Uns := Precision_Limit / Uns (Base);
       --  Numbers bigger than UmaxB overflow if multiplied by base
 
-      Precision_Limit_Reached : Boolean := False;
+      Precision_Limit_Reached : Boolean;
       --  Set to True if addition of a digit will cause Value to be superior
       --  to Precision_Limit.
 
@@ -198,7 +198,7 @@ package body System.Value_R is
       Temp : Uns;
       --  Temporary
 
-      Trailing_Zeros : Natural := 0;
+      Trailing_Zeros : Natural;
       --  Number of trailing zeros at a given point
 
    begin
@@ -209,11 +209,16 @@ package body System.Value_R is
          Precision_Limit_Reached := True;
       else
          Extra := 0;
+         Precision_Limit_Reached := False;
       end if;
 
       if Round then
          Precision_Limit_Just_Reached := False;
       end if;
+
+      --  Initialize trailing zero counter
+
+      Trailing_Zeros := 0;
 
       --  The function precondition is that the first character is a valid
       --  digit.
@@ -362,7 +367,7 @@ package body System.Value_R is
       UmaxB : constant Uns := Precision_Limit / Uns (Base);
       --  Numbers bigger than UmaxB overflow if multiplied by base
 
-      Precision_Limit_Reached : Boolean := False;
+      Precision_Limit_Reached : Boolean;
       --  Set to True if addition of a digit will cause Value to be superior
       --  to Precision_Limit.
 
@@ -382,6 +387,8 @@ package body System.Value_R is
       Value := 0;
       Scale := 0;
       Extra := 0;
+
+      Precision_Limit_Reached := False;
 
       if Round then
          Precision_Limit_Just_Reached := False;
@@ -494,28 +501,32 @@ package body System.Value_R is
       After_Point : Boolean;
       --  True if a decimal should be parsed
 
-      Base_Char : Character := ASCII.NUL;
-      --  Character used to set the base. If Nul this means that default
+      Base_Char : Character;
+      --  Character used to set the base. If it is Nul, this means that default
       --  base is used.
 
-      Base_Violation : Boolean := False;
+      Base_Violation : Boolean;
       --  If True some digits where not in the base. The real is still scanned
       --  till the end even if an error will be raised.
+
+      Expon : Integer;
+      --  Exponent as an Integer
 
       Index : Integer;
       --  Local copy of string pointer
 
       Start : Positive;
+      --  Index of the first non-blank character
 
       Value : Uns;
       --  Mantissa as an Integer
 
-      Expon : Integer;
-
    begin
       --  The default base is 10
 
-      Base := 10;
+      Base           := 10;
+      Base_Char      := ASCII.NUL;
+      Base_Violation := False;
 
       --  We do not tolerate strings with Str'Last = Positive'Last
 
