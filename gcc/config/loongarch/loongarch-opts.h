@@ -87,4 +87,8 @@ loongarch_config_target (struct loongarch_target *target,
    while -m[no]-memcpy imposes a global constraint.  */
 #define TARGET_DO_OPTIMIZE_BLOCK_MOVE_P  loongarch_do_optimize_block_move_p()
 
+#ifndef HAVE_AS_EXPLICIT_RELOCS
+#define HAVE_AS_EXPLICIT_RELOCS 0
+#endif
+
 #endif /* LOONGARCH_OPTS_H */
