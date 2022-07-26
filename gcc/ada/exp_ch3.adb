@@ -7850,6 +7850,7 @@ package body Exp_Ch3 is
         and then Present (DIC_Procedure (Typ))
         and then not Has_Null_Body (DIC_Procedure (Typ))
         and then not Has_Init_Expression (N)
+        and then No (Expr)
         and then not Is_Imported (Def_Id)
       then
          declare
