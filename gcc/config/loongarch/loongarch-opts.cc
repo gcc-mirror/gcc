@@ -378,8 +378,8 @@ fallback:
   t.cmodel = constrained.cmodel ? opt_cmodel : CMODEL_NORMAL;
   if (t.cmodel != CMODEL_NORMAL)
     {
-      warning (0, "%qs is not supported, now cmodel is set to 'normal'.",
-	       loongarch_cmodel_strings[t.cmodel]);
+      warning (0, "%qs is not supported, now cmodel is set to %qs",
+	       loongarch_cmodel_strings[t.cmodel], "normal");
       t.cmodel = CMODEL_NORMAL;
     }
 
