@@ -1,3 +1,7 @@
+2022-07-25  Martin Liska  <mliska@suse.cz>
+
+	* sm-fd.cc: Run dos2unix and fix coding style issues.
+
 2022-07-23  Immad Mir  <mirimmad@outlook.com>
 
 	* sm-fd.cc (fd_param_diagnostic): New diagnostic class.

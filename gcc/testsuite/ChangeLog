@@ -1,3 +1,45 @@
+2022-07-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106230
+	* g++.dg/cpp0x/range-for38.C: New test.
+
+2022-07-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/analyzer/fd-2.c: Convert Windows endlines to Unix
+	style.
+	* gcc.dg/analyzer/fd-3.c: Likewise.
+	* gcc.dg/analyzer/fd-4.c: Likewise.
+	* gcc.dg/analyzer/fd-5.c: Likewise.
+	* c-c++-common/attr-fd.c: Likewise.
+
+2022-07-25  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91681
+	* g++.target/i386/pr91681.C: New test case (from the PR).
+	* gcc.target/i386/pr91681-1.c: New int128 test case.
+	* gcc.target/i386/pr91681-2.c: Likewise.
+	* gcc.target/i386/pr91681-3.c: Likewise, but for ia32.
+
+2022-07-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	* g++.dg/warn/Woverloaded-virt4.C: New test.
+
+2022-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106414
+	* gcc.dg/torture/pr106414-1.c: New testcase.
+	* gcc.dg/torture/pr106414-2.c: Likewise.
+
+2022-07-25  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/acle/data-intrinsics.c: New test.
+
+2022-07-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/nsdmi-union7.C: Fix PR number.
+
 2022-07-24  Roger Sayle  <roger@nextmovesoftware.com>
 	    H.J. Lu  <hjl.tools@gmail.com>
 
