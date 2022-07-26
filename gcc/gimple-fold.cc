@@ -6916,6 +6916,7 @@ and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 }
 
 static basic_block fosa_bb;
+static vec<std::pair<tree, void *> > *fosa_unwind;
 static tree
 follow_outer_ssa_edges (tree val)
 {
@@ -6929,7 +6930,21 @@ follow_outer_ssa_edges (tree val)
 	      && (def_bb == fosa_bb
 		  || dominated_by_p (CDI_DOMINATORS, fosa_bb, def_bb))))
 	return val;
-      return NULL_TREE;
+      /* We cannot temporarily rewrite stmts with undefined overflow
+	 behavior, so avoid expanding them.  */
+      if ((ANY_INTEGRAL_TYPE_P (TREE_TYPE (val))
+	   || POINTER_TYPE_P (TREE_TYPE (val)))
+	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (val)))
+	return NULL_TREE;
+      /* If the definition does not dominate fosa_bb temporarily reset
+	 flow-sensitive info.  */
+      if (val->ssa_name.info.range_info)
+	{
+	  fosa_unwind->safe_push (std::make_pair
+				    (val, val->ssa_name.info.range_info));
+	  val->ssa_name.info.range_info = NULL;
+	}
+      return val;
     }
   return val;
 }
@@ -6988,9 +7003,14 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
 		      type, gimple_assign_lhs (stmt1),
 		      gimple_assign_lhs (stmt2));
   fosa_bb = outer_cond_bb;
+  auto_vec<std::pair<tree, void *>, 8> unwind_stack;
+  fosa_unwind = &unwind_stack;
   if (op.resimplify (NULL, (!outer_cond_bb
 			    ? follow_all_ssa_edges : follow_outer_ssa_edges)))
     {
+      fosa_unwind = NULL;
+      for (auto p : unwind_stack)
+	p.first->ssa_name.info.range_info = p.second;
       if (gimple_simplified_result_is_gimple_val (&op))
 	{
 	  tree res = op.ops[0];
@@ -7012,6 +7032,9 @@ maybe_fold_comparisons_from_match_pd (tree type, enum tree_code code,
 	  return build2 ((enum tree_code)op.code, op.type, op0, op1);
 	}
     }
+  fosa_unwind = NULL;
+  for (auto p : unwind_stack)
+    p.first->ssa_name.info.range_info = p.second;
 
   return NULL_TREE;
 }
