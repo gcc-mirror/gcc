@@ -3081,7 +3081,13 @@ reduced_constant_expression_p (tree t)
 	     element.  */
 	  if (!reduced_constant_expression_p (e.value))
 	    return false;
-	  /* Empty class field may or may not have an initializer.  */
+	  /* We want to remove initializers for empty fields in a struct to
+	     avoid confusing output_constructor.  */
+	  if (is_empty_field (e.index)
+	      && TREE_CODE (TREE_TYPE (t)) == RECORD_TYPE)
+	    return false;
+	  /* Check for non-empty fields between initialized fields when
+	     CONSTRUCTOR_NO_CLEARING.  */
 	  for (; field && e.index != field;
 	       field = next_subobject_field (DECL_CHAIN (field)))
 	    if (!is_really_empty_class (TREE_TYPE (field),
