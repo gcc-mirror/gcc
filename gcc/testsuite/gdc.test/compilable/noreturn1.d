@@ -122,3 +122,31 @@ noreturn testdg(noreturn delegate() dg)
 {
     dg();
 }
+
+noreturn func()
+{
+    while(1)
+    {
+    }
+}
+alias AliasSeq(T...) = T;
+alias Types = AliasSeq!(bool, byte, ubyte, short, ushort, int, uint,
+                        long, ulong, char, wchar, dchar, float, double,
+                        real);
+void noreturnImplicit()
+{
+    /*
+        Testing both ways because, although the underlying table
+        is symmetrical the code that calls into it may be buggy.
+    */
+    {
+        int x = 2 + func();
+        int y = func() + 2;
+    }
+    foreach(T; Types)
+    {
+        T value;
+        auto x = value + throw new Exception("Hello");
+        auto y = (throw new Exception("wow")) + value;
+    }
+}

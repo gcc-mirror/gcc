@@ -733,9 +733,26 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         {
             assert(oaggr.type);
 
-            fs.error("invalid `foreach` aggregate `%s` of type `%s`", oaggr.toChars(), oaggr.type.toPrettyChars());
-            if (isAggregate(fs.aggr.type))
-                fs.loc.errorSupplemental("maybe define `opApply()`, range primitives, or use `.tupleof`");
+            fs.error("invalid `%s` aggregate `%s` of type `%s`",
+                Token.toChars(fs.op), oaggr.toChars(), oaggr.type.toPrettyChars());
+
+            if (auto ad = isAggregate(fs.aggr.type))
+            {
+                if (fs.op == TOK.foreach_reverse_)
+                {
+                    fs.loc.errorSupplemental("`foreach_reverse` works with bidirectional ranges"~
+                        " (implementing `back` and `popBack`), aggregates implementing" ~
+                        " `opApplyReverse`, or the result of an aggregate's `.tupleof` property");
+                    fs.loc.errorSupplemental("https://dlang.org/phobos/std_range_primitives.html#isBidirectionalRange");
+                }
+                else
+                {
+                    fs.loc.errorSupplemental("`foreach` works with input ranges"~
+                        " (implementing `front` and `popFront`), aggregates implementing" ~
+                        " `opApply`, or the result of an aggregate's `.tupleof` property");
+                    fs.loc.errorSupplemental("https://dlang.org/phobos/std_range_primitives.html#isInputRange");
+                }
+            }
 
             return setError();
         }
@@ -2828,10 +2845,20 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             rs.error("`return` statements cannot be in contracts");
             errors = true;
         }
-        if (sc.os && sc.os.tok != TOK.onScopeFailure)
+        if (sc.os)
         {
-            rs.error("`return` statements cannot be in `%s` bodies", Token.toChars(sc.os.tok));
-            errors = true;
+            // @@@DEPRECATED_2.112@@@
+            // Deprecated in 2.100, transform into an error in 2.112
+            if (sc.os.tok == TOK.onScopeFailure)
+            {
+                rs.deprecation("`return` statements cannot be in `scope(failure)` bodies.");
+                deprecationSupplemental(rs.loc, "Use try-catch blocks for this purpose");
+            }
+            else
+            {
+                rs.error("`return` statements cannot be in `%s` bodies", Token.toChars(sc.os.tok));
+                errors = true;
+            }
         }
         if (sc.tf)
         {
@@ -2912,6 +2939,17 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                     rs.exp = new AssertExp(rs.loc, IntegerExp.literal!0, msg);
                     rs.exp.type = texp;
                 }
+
+                // @@@DEPRECATED_2.111@@@
+                const olderrors = global.startGagging();
+                // uncomment to turn deprecation into an error when
+                // deprecation cycle is over
+                if (discardValue(rs.exp))
+                {
+                    //errors = true;
+                }
+                if (global.endGagging(olderrors))
+                    rs.exp.deprecation("`%s` has no effect", rs.exp.toChars());
 
                 /* Replace:
                  *      return exp;

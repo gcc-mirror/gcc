@@ -54,8 +54,8 @@ void test2(scope int* p, int[] a ...) @safe
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(75): Error: function `retscope.HTTP.Impl.onReceive` is `@nogc` yet allocates closures with the GC
-fail_compilation/retscope.d(77):        retscope.HTTP.Impl.onReceive.__lambda1 closes over variable this at fail_compilation/retscope.d(75)
+fail_compilation/retscope.d(75): Error: function `retscope.HTTP.Impl.onReceive` is `@nogc` yet allocates closure for `onReceive()` with the GC
+fail_compilation/retscope.d(77):        `retscope.HTTP.Impl.onReceive.__lambda1` closes over variable `this` at fail_compilation/retscope.d(75)
 ---
 */
 

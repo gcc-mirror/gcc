@@ -867,6 +867,8 @@ extern (C++) class FuncDeclaration : Declaration
             auto f = s.isFuncDeclaration();
             if (!f)
                 return 0;
+            if (f.storage_class & STC.disable)
+                return 0;
             if (t.equals(f.type))
             {
                 fd = f;
@@ -2048,9 +2050,11 @@ extern (C++) class FuncDeclaration : Declaration
                     }
                     if (!found)
                     {
-                        //printf("\tadding sibling %s\n", fdthis.toPrettyChars());
+                        //printf("\tadding sibling %s to %s\n", fdthis.toPrettyChars(), toPrettyChars());
                         if (!sc.intypeof && !(sc.flags & SCOPE.compile))
+                        {
                             siblingCallers.push(fdthis);
+                        }
                     }
                 }
 
@@ -2164,7 +2168,6 @@ extern (C++) class FuncDeclaration : Declaration
         return false;
 
     Lyes:
-        //printf("\tneeds closure\n");
         return true;
     }
 
@@ -2176,14 +2179,21 @@ extern (C++) class FuncDeclaration : Declaration
      * Returns:
      *      true if any errors occur.
      */
-    extern (D) final bool checkClosure()
+    extern (C++) final bool checkClosure()
     {
+        //printf("checkClosure() %s\n", toChars());
         if (!needsClosure())
             return false;
 
         if (setGC())
         {
-            error("is `@nogc` yet allocates closures with the GC");
+            error("is `@nogc` yet allocates closure for `%s()` with the GC", toChars());
+            if (global.gag)     // need not report supplemental errors
+                return true;
+        }
+        else if (global.params.betterC)
+        {
+            error("is `-betterC` yet allocates closure for `%s()` with the GC", toChars());
             if (global.gag)     // need not report supplemental errors
                 return true;
         }
@@ -2216,7 +2226,7 @@ extern (C++) class FuncDeclaration : Declaration
                                 break LcheckAncestorsOfANestedRef;
                         }
                         a.push(f);
-                        .errorSupplemental(f.loc, "%s closes over variable %s at %s",
+                        .errorSupplemental(f.loc, "`%s` closes over variable `%s` at %s",
                             f.toPrettyChars(), v.toChars(), v.loc.toChars());
                         break LcheckAncestorsOfANestedRef;
                     }
@@ -3293,7 +3303,8 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
                    td.kind(), td.parent.toPrettyChars(), td.ident.toChars(),
                    tiargsBuf.peekChars(), fargsBuf.peekChars());
 
-            printCandidates(loc, td, sc.isDeprecated());
+            if (!global.gag || global.params.showGaggedErrors)
+                printCandidates(loc, td, sc.isDeprecated());
             return null;
         }
         /* This case used to happen when several ctors are mixed in an agregate.
@@ -3331,7 +3342,8 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
         {
             .error(loc, "none of the overloads of `%s` are callable using a %sobject",
                    fd.ident.toChars(), thisBuf.peekChars());
-            printCandidates(loc, fd, sc.isDeprecated());
+            if (!global.gag || global.params.showGaggedErrors)
+                printCandidates(loc, fd, sc.isDeprecated());
             return null;
         }
 
@@ -3361,18 +3373,23 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
     {
         .error(loc, "none of the overloads of `%s` are callable using argument types `%s`",
                fd.toChars(), fargsBuf.peekChars());
-        printCandidates(loc, fd, sc.isDeprecated());
+        if (!global.gag || global.params.showGaggedErrors)
+            printCandidates(loc, fd, sc.isDeprecated());
         return null;
     }
 
     .error(loc, "%s `%s%s%s` is not callable using argument types `%s`",
            fd.kind(), fd.toPrettyChars(), parametersTypeToChars(tf.parameterList),
            tf.modToChars(), fargsBuf.peekChars());
+
     // re-resolve to check for supplemental message
-    const(char)* failMessage;
-    functionResolve(m, orig_s, loc, sc, tiargs, tthis, fargs, &failMessage);
-    if (failMessage)
-        errorSupplemental(loc, failMessage);
+    if (!global.gag || global.params.showGaggedErrors)
+    {
+        const(char)* failMessage;
+        functionResolve(m, orig_s, loc, sc, tiargs, tthis, fargs, &failMessage);
+        if (failMessage)
+            errorSupplemental(loc, failMessage);
+    }
     return null;
 }
 
@@ -4220,6 +4237,7 @@ extern (C++) final class InvariantDeclaration : FuncDeclaration
 {
     extern (D) this(const ref Loc loc, const ref Loc endloc, StorageClass stc, Identifier id, Statement fbody)
     {
+        // Make a unique invariant for now; we'll fix it up as we add it to the aggregate invariant list.
         super(loc, endloc, id ? id : Identifier.generateId("__invariant"), stc, null);
         this.fbody = fbody;
     }
@@ -4255,6 +4273,15 @@ extern (C++) final class InvariantDeclaration : FuncDeclaration
     override void accept(Visitor v)
     {
         v.visit(this);
+    }
+
+    extern (D) void fixupInvariantIdent(size_t offset)
+    {
+        OutBuffer idBuf;
+        idBuf.writestring("__invariant");
+        idBuf.print(offset);
+
+        ident = Identifier.idPool(idBuf[]);
     }
 }
 
@@ -4447,12 +4474,15 @@ void errorSupplementalInferredSafety(FuncDeclaration fd, int maxDepth, bool depr
             errorFunc(s.loc, s.fmtStr,
                 s.arg0 ? s.arg0.toChars() : "", s.arg1 ? s.arg1.toChars() : "", s.arg2 ? s.arg2.toChars() : "");
         }
-        else if (FuncDeclaration fd2 = cast(FuncDeclaration) s.arg0)
+        else if (s.arg0.dyncast() == DYNCAST.dsymbol)
         {
-            if (maxDepth > 0)
+            if (FuncDeclaration fd2 = (cast(Dsymbol) s.arg0).isFuncDeclaration())
             {
-                errorFunc(s.loc, "which calls `%s`", fd2.toPrettyChars());
-                errorSupplementalInferredSafety(fd2, maxDepth - 1, deprecation);
+                if (maxDepth > 0)
+                {
+                    errorFunc(s.loc, "which calls `%s`", fd2.toPrettyChars());
+                    errorSupplementalInferredSafety(fd2, maxDepth - 1, deprecation);
+                }
             }
         }
     }

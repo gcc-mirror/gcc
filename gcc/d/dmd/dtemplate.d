@@ -7323,7 +7323,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                         errors = true;
                     }
                 L1:
-                    //printf("\tnested inside %s\n", enclosing.toChars());
+                    //printf("\tnested inside %s as it references %s\n", enclosing.toChars(), sa.toChars());
                     nested |= 1;
                 }
             }

@@ -862,6 +862,12 @@ package mixin template ParseVisitMethods(AST)
         visitFuncBody(d);
     }
 
+    override void visit(AST.CtorDeclaration d)
+    {
+        //printf("Visiting CtorDeclaration\n");
+        visitFuncBody(d);
+    }
+
     override void visit(AST.StaticCtorDeclaration d)
     {
         //printf("Visiting StaticCtorDeclaration\n");

@@ -383,6 +383,7 @@ template floatTraits(T)
             enum ushort EXPBIAS = 0x3FE0;
             enum uint EXPMASK_INT = 0x7FF0_0000;
             enum uint MANTISSAMASK_INT = 0x000F_FFFF; // for the MSB only
+            enum ulong MANTISSAMASK_LONG = 0x000F_FFFF_FFFF_FFFF;
             enum realFormat = RealFormat.ieeeDouble;
             version (LittleEndian)
             {

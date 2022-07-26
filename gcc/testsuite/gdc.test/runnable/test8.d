@@ -592,6 +592,44 @@ void test34()
 }
 
 /***********************************/
+// https://issues.dlang.org/show_bug.cgi?id=19178
+
+float[3][4] arr2f = 10;
+Int3_4[1] arr3i = 20;
+short[3][4][1][1] arr4s = 30;
+
+enum Int3 : int[3] {
+    a = [0, 1, 2],
+}
+
+enum Int3_4 : Int3[4] {
+    b = Int3[4].init,
+}
+
+struct S35
+{
+    int[3][3] arr = [2, 1];
+}
+
+void test35()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            // printf("[%d %d]: %f %d %d\n", i, j, arr2f[i][j], arr3i[0][i][j], arr4s[0][0][i][j]);
+            assert(arr2f[i][j] == 10);
+            assert(arr3i[0][i][j] == 20);
+            assert(arr4s[0][0][i][j] == 30);
+        }
+    }
+
+    S35 t = S35.init;
+    assert(t.arr[0] == [2, 2, 2]);
+    assert(t.arr[1] == [1, 1, 1]);
+    assert(t.arr[2] == [0, 0, 0]);
+}
+/***********************************/
 
 string itoa(int i)
 {
@@ -868,6 +906,7 @@ int main()
     test32();
     test33();
     test34();
+    test35();
     test36();
     test37();
     test38();

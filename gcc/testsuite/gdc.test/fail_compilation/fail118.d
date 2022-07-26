@@ -1,15 +1,17 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail118.d(43): Error: invalid `foreach` aggregate `Iter` of type `Iter`
-fail_compilation/fail118.d(43):        maybe define `opApply()`, range primitives, or use `.tupleof`
-fail_compilation/fail118.d(44): Error: invalid `foreach` aggregate `Iter` of type `Iter`
-fail_compilation/fail118.d(44):        maybe define `opApply()`, range primitives, or use `.tupleof`
-fail_compilation/fail118.d(47): Error: invalid `foreach` aggregate `s` of type `S*`
-fail_compilation/fail118.d(49): Error: undefined identifier `unknown`
-fail_compilation/fail118.d(37): Error: undefined identifier `doesNotExist`
-fail_compilation/fail118.d(51): Error: template instance `fail118.error!()` error instantiating
-fail_compilation/fail118.d(51): Error: invalid `foreach` aggregate `error()` of type `void`
+fail_compilation/fail118.d(45): Error: invalid `foreach` aggregate `Iter` of type `Iter`
+fail_compilation/fail118.d(45):        `foreach` works with input ranges (implementing `front` and `popFront`), aggregates implementing `opApply`, or the result of an aggregate's `.tupleof` property
+fail_compilation/fail118.d(45):        https://dlang.org/phobos/std_range_primitives.html#isInputRange
+fail_compilation/fail118.d(46): Error: invalid `foreach` aggregate `Iter` of type `Iter`
+fail_compilation/fail118.d(46):        `foreach` works with input ranges (implementing `front` and `popFront`), aggregates implementing `opApply`, or the result of an aggregate's `.tupleof` property
+fail_compilation/fail118.d(46):        https://dlang.org/phobos/std_range_primitives.html#isInputRange
+fail_compilation/fail118.d(49): Error: invalid `foreach` aggregate `s` of type `S*`
+fail_compilation/fail118.d(51): Error: undefined identifier `unknown`
+fail_compilation/fail118.d(39): Error: undefined identifier `doesNotExist`
+fail_compilation/fail118.d(53): Error: template instance `fail118.error!()` error instantiating
+fail_compilation/fail118.d(53): Error: invalid `foreach` aggregate `error()` of type `void`
 ---
 */
 

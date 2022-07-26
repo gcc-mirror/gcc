@@ -170,6 +170,8 @@ public:
     bool hle()          {return _hle;}
     /// Is RTM (restricted transactional memory) supported
     bool rtm()          {return _rtm;}
+    /// Is AVX512F supported
+    bool avx512f()      {return _avx512f;}
     /// Is rdseed supported
     bool hasRdseed()    {return _hasRdseed;}
     /// Is SHA supported
@@ -279,6 +281,7 @@ private immutable
     bool _avx2;
     bool _hle;
     bool _rtm;
+    bool _avx512f;
     bool _hasRdseed;
     bool _hasSha;
     bool _amd3dnow;
@@ -389,6 +392,7 @@ CpuFeatures* getCpuFeatures() @nogc nothrow
     enum : uint
     {
         FSGSBASE_BIT = 1 << 0,
+        SGX_BIT = 1 << 2,
         BMI1_BIT = 1 << 3,
         HLE_BIT = 1 << 4,
         AVX2_BIT = 1 << 5,
@@ -397,8 +401,19 @@ CpuFeatures* getCpuFeatures() @nogc nothrow
         ERMS_BIT = 1 << 9,
         INVPCID_BIT = 1 << 10,
         RTM_BIT = 1 << 11,
+        AVX512F_BIT = 1 << 16,
+        AVX512DQ_BIT = 1 << 17,
         RDSEED_BIT = 1 << 18,
+        ADX_BIT = 1 << 19,
+        AVX512IFMA_BIT = 1 << 21,
+        CLFLUSHOPT_BIT = 1 << 23,
+        CLWB_BIT = 1 << 24,
+        AVX512PF_BIT = 1 << 26,
+        AVX512ER_BIT = 1 << 27,
+        AVX512CD_BIT = 1 << 28,
         SHA_BIT = 1 << 29,
+        AVX512BW_BIT = 1 << 30,
+        AVX512VL_BIT = 1 << 31,
     }
     // feature flags XFEATURES_ENABLED_MASK
     enum : ulong
@@ -1122,6 +1137,7 @@ shared static this()
     _avx2 =           avx && (cf.extfeatures & AVX2_BIT) != 0;
     _hle =            (cf.extfeatures & HLE_BIT) != 0;
     _rtm =            (cf.extfeatures & RTM_BIT) != 0;
+    _avx512f =        (cf.extfeatures & AVX512F_BIT) != 0;
     _hasRdseed =      (cf.extfeatures&RDSEED_BIT)!=0;
     _hasSha =         (cf.extfeatures&SHA_BIT)!=0;
     _amd3dnow =       (cf.amdfeatures&AMD_3DNOW_BIT)!=0;

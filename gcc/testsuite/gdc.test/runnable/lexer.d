@@ -1,5 +1,11 @@
 // REQUIRED_ARGS:
-
+/*
+TEST_OUTPUT:
+---
+runnable/lexer.d(81): Deprecation: `version( <integer> )` is deprecated, use version identifiers instead
+runnable/lexer.d(82): Deprecation: `debug( <integer> )` is deprecated, use debug identifiers instead
+---
+*/
 
 /*********************************************************/
 
