@@ -2834,9 +2834,17 @@ class ExternalItem : public Node
   Location locus;
 
 public:
+  enum class ExternKind
+  {
+    Static,
+    Function,
+  };
+
   virtual ~ExternalItem () {}
 
   BaseKind get_hir_kind () override final { return EXTERNAL; }
+
+  virtual ExternKind get_extern_kind () = 0;
 
   // Returns whether item has outer attributes.
   bool has_outer_attrs () const { return !outer_attrs.empty (); }
@@ -2943,6 +2951,8 @@ public:
   Mutability get_mut () { return mut; }
 
   std::unique_ptr<Type> &get_item_type () { return item_type; }
+
+  ExternKind get_extern_kind () override { return ExternKind::Static; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -3094,6 +3104,8 @@ public:
   }
 
   bool is_variadic () const { return has_variadics; }
+
+  ExternKind get_extern_kind () override { return ExternKind::Function; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
