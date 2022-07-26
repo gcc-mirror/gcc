@@ -286,7 +286,7 @@ before compiling:
         .cfi_endproc
   .LFE6:
         .size   square, .-square
-        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2-0.5.1920c315ff984892399893b380305ab36e07b455.fc20)"
+        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2)"
         .section       .note.GNU-stack,"",@progbits
 
 By default, no optimizations are performed, the equivalent of GCC's
@@ -315,7 +315,7 @@ By default, no optimizations are performed, the equivalent of GCC's
         .cfi_endproc
   .LFE7:
         .size   square, .-square
-        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2-0.5.1920c315ff984892399893b380305ab36e07b455.fc20)"
+        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2)"
         .section        .note.GNU-stack,"",@progbits
 
 Naturally this has only a small effect on such a trivial function.

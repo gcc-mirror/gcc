@@ -423,7 +423,7 @@ Boolean options
            .cfi_endproc
        .LFE0:
            .size    square, .-square
-           .ident    "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.1-%{gcc_release})"
+           .ident    "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2)"
            .section    .note.GNU-stack,"",@progbits
 
 

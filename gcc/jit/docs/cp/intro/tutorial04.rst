@@ -574,7 +574,7 @@ yields this code, which is simple enough to quote in its entirety:
           .cfi_endproc
   .LFE0:
           .size   factorial, .-factorial
-          .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2-%{gcc_release})"
+          .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2)"
           .section        .note.GNU-stack,"",@progbits
 
 Note that the stack pushing and popping have been eliminated, as has the
