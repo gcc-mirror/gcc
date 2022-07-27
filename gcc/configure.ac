@@ -1253,11 +1253,30 @@ else
 fi
 AC_SUBST(GENERATED_MANPAGES)
 
+AC_ARG_WITH(sphinx-build,
+  [AS_HELP_STRING([--with-sphinx-build=],
+                  [Use sphinx-build from a given path])],
+  [CONFIGURE_SPHINX_BUILD=$withval],
+  [CONFIGURE_SPHINX_BUILD=]
+)
+AC_SUBST(CONFIGURE_SPHINX_BUILD)
+
 # See if sphinx-build has been installed and is modern enough
 # that we can use it.
 AC_MSG_CHECKING([for sphinx-build])
-if sphinx-build -j auto -h &>/dev/null ; then
-  SPHINX_BUILD=sphinx-build
+sphinx=sphinx-build
+if test x${CONFIGURE_SPHINX_BUILD} != x ; then
+  sphinx=${CONFIGURE_SPHINX_BUILD}
+fi
+
+tempdir=build.$$
+source=source.$$
+mkdir $source
+grep 'needs_sphinx =' ${srcdir}/../doc/baseconf.py > $source/conf.py
+touch $source/index.rst
+if ${sphinx} $source $tempdir >/dev/null 2>&1; then
+  SPHINX_BUILD=${sphinx}
+  HAS_SPHINX_BUILD=has-sphinx-build
   AC_MSG_RESULT(yes)
 else
   AC_MSG_WARN([
@@ -1265,8 +1284,12 @@ else
   *** Info and man pages documentation will not be built.])
   AC_MSG_RESULT(no)
   SPHINX_BUILD=
+  HAS_SPHINX_BUILD=
 fi
+rm -rf $tempdir
+rm -rf $source
 AC_SUBST(SPHINX_BUILD)
+AC_SUBST(HAS_SPHINX_BUILD)
 
 MISSING="${CONFIG_SHELL-/bin/sh} $ac_aux_dir/missing"
 

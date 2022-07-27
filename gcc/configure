@@ -807,7 +807,9 @@ AR
 NM
 BISON
 FLEX
+HAS_SPHINX_BUILD
 SPHINX_BUILD
+CONFIGURE_SPHINX_BUILD
 GENERATED_MANPAGES
 BUILD_INFO
 MAKEINFO
@@ -982,6 +984,7 @@ with_changes_root_url
 enable_languages
 with_multilib_list
 with_multilib_generator
+with_sphinx_build
 with_zstd
 with_zstd_include
 with_zstd_lib
@@ -1836,6 +1839,7 @@ Optional Packages:
                           SH and x86-64 only)
   --with-multilib-generator
                           Multi-libs configuration string (RISC-V only)
+  --with-sphinx-build=    Use sphinx-build from a given path
   --with-zstd=PATH        specify prefix directory for installed zstd library.
                           Equivalent to --with-zstd-include=PATH/include plus
                           --with-zstd-lib=PATH/lib
@@ -8806,12 +8810,34 @@ $as_echo "no" >&6; }
 fi
 
 
+
+# Check whether --with-sphinx-build was given.
+if test "${with_sphinx_build+set}" = set; then :
+  withval=$with_sphinx_build; CONFIGURE_SPHINX_BUILD=$withval
+else
+  CONFIGURE_SPHINX_BUILD=
+
+fi
+
+
+
 # See if sphinx-build has been installed and is modern enough
 # that we can use it.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sphinx-build" >&5
 $as_echo_n "checking for sphinx-build... " >&6; }
-if sphinx-build -j auto -h &>/dev/null ; then
-  SPHINX_BUILD=sphinx-build
+sphinx=sphinx-build
+if test x${CONFIGURE_SPHINX_BUILD} != x ; then
+  sphinx=${CONFIGURE_SPHINX_BUILD}
+fi
+
+tempdir=build.$$
+source=source.$$
+mkdir $source
+grep 'needs_sphinx =' ${srcdir}/../doc/baseconf.py > $source/conf.py
+touch $source/index.rst
+if ${sphinx} $source $tempdir >/dev/null 2>&1; then
+  SPHINX_BUILD=${sphinx}
+  HAS_SPHINX_BUILD=has-sphinx-build
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -8824,7 +8850,11 @@ $as_echo "$as_me: WARNING:
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
   SPHINX_BUILD=
+  HAS_SPHINX_BUILD=
 fi
+rm -rf $tempdir
+rm -rf $source
+
 
 
 MISSING="${CONFIG_SHELL-/bin/sh} $ac_aux_dir/missing"
@@ -19732,7 +19762,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19735 "configure"
+#line 19765 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19838,7 +19868,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19841 "configure"
+#line 19871 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

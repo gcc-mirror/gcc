@@ -89,15 +89,15 @@ go1$(exeext): $(GO_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(go.prev)
 # Documentation.
 
 doc/gccgo/info/texinfo/gccgo.info: $(SPHINX_FILES)
-	+ if [ x$(SPHINX_BUILD) = xsphinx-build ]; then \
-	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/go/doc/ BUILDDIR=$(objdir)/doc/gccgo/info; \
+	+ if [ x$(HAS_SPHINX_BUILD) = xhas-sphinx-build ]; then \
+	  make -C $(srcdir)/../doc info SOURCEDIR=$(abs_srcdir)/go/doc/ BUILDDIR=$(objdir)/doc/gccgo/info SPHINXBUILD=$(SPHINX_BUILD); \
 	else true; fi
 
 doc/gccgo/pdf/latex/gccgo.pdf: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/go/doc/ BUILDDIR=$(objdir)/doc/gccgo/pdf
+	+ make -C $(srcdir)/../doc latexpdf SOURCEDIR=$(abs_srcdir)/go/doc/ BUILDDIR=$(objdir)/doc/gccgo/pdf SPHINXBUILD=$(SPHINX_BUILD)
 
 doc/gccgo/html/html/index.html: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/go/doc/ BUILDDIR=$(objdir)/doc/gccgo/html
+	+ make -C $(srcdir)/../doc html SOURCEDIR=$(abs_srcdir)/go/doc/ BUILDDIR=$(objdir)/doc/gccgo/html SPHINXBUILD=$(SPHINX_BUILD)
 
 # Build hooks.
 
@@ -126,7 +126,7 @@ go.srcman: doc/gccgo/man/man/gccgo.1
 	-cp -p $^ $(srcdir)/doc
 
 doc/gccgo/man/man/gccgo.1: $(SPHINX_FILES)
-	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/go/doc BUILDDIR=$(objdir)/doc/gccgo/man
+	+ make -C $(srcdir)/../doc man SOURCEDIR=$(abs_srcdir)/go/doc BUILDDIR=$(objdir)/doc/gccgo/man SPHINXBUILD=$(SPHINX_BUILD)
 
 lang_checks += check-go
 lang_checks_parallelized += check-go
