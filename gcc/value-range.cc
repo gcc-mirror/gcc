@@ -195,12 +195,12 @@ vrange &
 vrange::operator= (const vrange &src)
 {
   if (is_a <irange> (src))
-    {
-      as_a <irange> (*this) = as_a <irange> (src);
-      return *this;
-    }
+    as_a <irange> (*this) = as_a <irange> (src);
+  else if (is_a <frange> (src))
+    as_a <frange> (*this) = as_a <frange> (src);
   else
     gcc_unreachable ();
+  return *this;
 }
 
 // Equality operator for generic ranges.
@@ -210,6 +210,8 @@ vrange::operator== (const vrange &src) const
 {
   if (is_a <irange> (src))
     return as_a <irange> (*this) == as_a <irange> (src);
+  if (is_a <frange> (src))
+    return as_a <frange> (*this) == as_a <frange> (src);
   gcc_unreachable ();
 }
 
@@ -250,6 +252,191 @@ unsupported_range::unsupported_range ()
 {
   m_discriminator = VR_UNKNOWN;
   set_undefined ();
+}
+
+void
+frange::accept (const vrange_visitor &v) const
+{
+  v.visit (*this);
+}
+
+// Setter for franges.  Currently only singletons are supported.
+
+void
+frange::set (tree min, tree max, value_range_kind kind)
+{
+  gcc_checking_assert (kind == VR_RANGE);
+  gcc_checking_assert (operand_equal_p (min, max));
+  gcc_checking_assert (TREE_CODE (min) == REAL_CST);
+
+  m_kind = kind;
+  m_type = TREE_TYPE (min);
+
+  REAL_VALUE_TYPE *const cst = TREE_REAL_CST_PTR (min);
+  if (real_isnan (cst))
+    m_props.nan_set_yes ();
+  else
+    m_props.nan_set_no ();
+
+  if (real_isinf (cst))
+    {
+      if (real_isneg (cst))
+	{
+	  m_props.inf_set_no ();
+	  m_props.ninf_set_yes ();
+	}
+      else
+	{
+	  m_props.inf_set_yes ();
+	  m_props.ninf_set_no ();
+	}
+    }
+  else
+    {
+      m_props.inf_set_no ();
+      m_props.ninf_set_no ();
+    }
+
+  if (flag_checking)
+    verify_range ();
+}
+
+// Normalize range to VARYING or UNDEFINED, or vice versa.
+//
+// A range with no known properties can be dropped to VARYING.
+// Similarly, a VARYING with any properties should be dropped to a
+// VR_RANGE.  Normalizing ranges upon changing them ensures there is
+// only one representation for a given range.
+
+void
+frange::normalize_kind ()
+{
+  if (m_kind == VR_RANGE)
+    {
+      // No FP properties set means varying.
+      if (m_props.nan_varying_p ()
+	  && m_props.inf_varying_p ()
+	  && m_props.ninf_varying_p ())
+	{
+	  set_varying (m_type);
+	  return;
+	}
+      // Undefined is viral.
+      if (m_props.nan_undefined_p ()
+	  || m_props.inf_undefined_p ()
+	  || m_props.ninf_undefined_p ())
+	{
+	  set_undefined ();
+	  return;
+	}
+    }
+  else if (m_kind == VR_VARYING)
+    {
+      // If a VARYING has any FP properties, it's no longer VARYING.
+      if (!m_props.nan_varying_p ()
+	  || !m_props.inf_varying_p ()
+	  || !m_props.ninf_varying_p ())
+	m_kind = VR_RANGE;
+    }
+}
+
+bool
+frange::union_ (const vrange &v)
+{
+  const frange &r = as_a <frange> (v);
+
+  if (r.undefined_p () || varying_p ())
+    return false;
+  if (undefined_p () || r.varying_p ())
+    {
+      *this = r;
+      return true;
+    }
+
+  bool ret = m_props.union_ (r.m_props);
+  normalize_kind ();
+
+  if (flag_checking)
+    verify_range ();
+  return ret;
+}
+
+bool
+frange::intersect (const vrange &v)
+{
+  const frange &r = as_a <frange> (v);
+
+  if (undefined_p () || r.varying_p ())
+    return false;
+  if (r.undefined_p ())
+    {
+      set_undefined ();
+      return true;
+    }
+  if (varying_p ())
+    {
+      *this = r;
+      return true;
+    }
+
+  bool ret = m_props.intersect (r.m_props);
+  normalize_kind ();
+
+  if (flag_checking)
+    verify_range ();
+  return ret;
+}
+
+frange &
+frange::operator= (const frange &src)
+{
+  m_kind = src.m_kind;
+  m_type = src.m_type;
+  m_props = src.m_props;
+
+  if (flag_checking)
+    verify_range ();
+  return *this;
+}
+
+bool
+frange::operator== (const frange &src) const
+{
+  if (m_kind == src.m_kind)
+    {
+      if (undefined_p ())
+	return true;
+
+      if (varying_p ())
+	return types_compatible_p (m_type, src.m_type);
+
+      return m_props == src.m_props;
+    }
+  return false;
+}
+
+bool
+frange::supports_type_p (tree type) const
+{
+  return supports_p (type);
+}
+
+void
+frange::verify_range ()
+{
+  if (undefined_p ())
+    {
+      gcc_checking_assert (m_props.undefined_p ());
+      return;
+    }
+  else if (varying_p ())
+    {
+      gcc_checking_assert (m_props.varying_p ());
+      return;
+    }
+
+  gcc_checking_assert (m_kind == VR_RANGE);
+  gcc_checking_assert (!m_props.varying_p () && !m_props.undefined_p ());
 }
 
 // Here we copy between any two irange's.  The ranges can be legacy or
@@ -2405,6 +2592,14 @@ wide_int
 irange::get_nonzero_bits () const
 {
   gcc_checking_assert (!undefined_p ());
+
+  // In case anyone in the legacy world queries us.
+  if (!constant_p ())
+    {
+      if (m_nonzero_mask)
+	return wi::to_wide (m_nonzero_mask);
+      return wi::shwi (-1, TYPE_PRECISION (type ()));
+    }
 
   // Calculate the nonzero bits inherent in the range.
   wide_int min = lower_bound ();

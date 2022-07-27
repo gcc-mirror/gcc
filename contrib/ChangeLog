@@ -1,3 +1,14 @@
+2022-07-22  Martin Liska  <mliska@suse.cz>
+
+	* git-commit-mklog.py: Do not parse -b argument.
+	Pass mklog_args as json environment variable.
+	* mklog.py: Parse GCC_MKLOG_ARGS and append it to sys.argv.
+	* prepare-commit-msg: Do not append GCC_MKLOG_ARGS to args.
+
+2022-07-22  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Use component: [PR xyz] only when one PR is used.
+
 2022-07-04  Martin Liska  <mliska@suse.cz>
 
 	* git-descr.sh: By default print revision for HEAD.

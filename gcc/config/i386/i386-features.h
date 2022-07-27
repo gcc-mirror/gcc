@@ -149,6 +149,7 @@ class scalar_chain
   bitmap defs_conv;
 
   bitmap insns_conv;
+  hash_map<rtx, rtx> defs_map;
   unsigned n_sse_to_integer;
   unsigned n_integer_to_sse;
 
@@ -161,12 +162,15 @@ class scalar_chain
   void emit_conversion_insns (rtx insns, rtx_insn *pos);
   rtx convert_compare (rtx op1, rtx op2, rtx_insn *insn);
   void mark_dual_mode_def (df_ref def);
+  void convert_reg (rtx_insn *insn, rtx dst, rtx src);
+  void convert_insn_common (rtx_insn *insn);
+  void make_vector_copies (rtx_insn *, rtx);
+  void convert_registers ();
 
  private:
   void add_insn (bitmap candidates, unsigned insn_uid);
   void analyze_register_chain (bitmap candidates, df_ref ref);
   virtual void convert_insn (rtx_insn *insn) = 0;
-  virtual void convert_registers () = 0;
   virtual void convert_op (rtx *op, rtx_insn *insn) = 0;
 };
 
@@ -178,12 +182,8 @@ class general_scalar_chain : public scalar_chain
   int compute_convert_gain () final override;
 
  private:
-  hash_map<rtx, rtx> defs_map;
   void convert_insn (rtx_insn *insn) final override;
-  void convert_reg (rtx_insn *insn, rtx dst, rtx src);
   void convert_op (rtx *op, rtx_insn *insn);
-  void make_vector_copies (rtx_insn *, rtx);
-  void convert_registers () final override;
   int vector_const_cost (rtx exp);
 };
 
@@ -197,8 +197,6 @@ class timode_scalar_chain : public scalar_chain
   void fix_debug_reg_uses (rtx reg);
   void convert_insn (rtx_insn *insn) final override;
   void convert_op (rtx *op, rtx_insn *insn);
-  /* We don't convert registers to different size.  */
-  void convert_registers () final override {}
 };
 
 } // anon namespace

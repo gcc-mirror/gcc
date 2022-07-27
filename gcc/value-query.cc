@@ -167,6 +167,7 @@ range_query::free_value_range_equiv (value_range_equiv *v)
 const class value_range_equiv *
 range_query::get_value_range (const_tree expr, gimple *stmt)
 {
+  gcc_checking_assert (value_range_equiv::supports_p (TREE_TYPE (expr)));
   int_range_max r;
   if (range_of_expr (r, const_cast<tree> (expr), stmt))
     return new (equiv_alloc->allocate ()) value_range_equiv (r);
@@ -210,6 +211,7 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
+    case REAL_CST:
       if (TREE_OVERFLOW_P (expr))
 	expr = drop_tree_overflow (expr);
       r.set (expr, expr);
@@ -280,16 +282,13 @@ get_ssa_name_range_info (vrange &r, const_tree name)
 
   void *ri = SSA_NAME_RANGE_INFO (name);
 
-  // Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
-  // with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.
-  if (!ri || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (name)))
-	      > 2 * HOST_BITS_PER_WIDE_INT))
-    r.set_varying (type);
-  else
+  if (ri)
     {
       vrange_storage vstore (NULL);
       vstore.get_vrange (ri, r, TREE_TYPE (name));
     }
+  else
+    r.set_varying (type);
 }
 
 // Return nonnull attribute of pointer NAME from SSA_NAME_PTR_INFO.

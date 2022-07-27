@@ -27,9 +27,13 @@ along with GCC; see the file COPYING3.  If not see
    SYMBOL_GOT_DISP
        The symbol's value will be loaded directly from the GOT.
 
+   SYMBOL_PCREL
+       The symbol's value will be loaded directly from data section.
+
    SYMBOL_TLS
        A thread-local symbol.
 
+   SYMBOL_TLS_IE
    SYMBOL_TLSGD
    SYMBOL_TLSLDM
        UNSPEC wrappers around SYMBOL_TLS, corresponding to the
@@ -37,7 +41,10 @@ along with GCC; see the file COPYING3.  If not see
    */
 enum loongarch_symbol_type {
   SYMBOL_GOT_DISP,
+  SYMBOL_PCREL,
   SYMBOL_TLS,
+  SYMBOL_TLS_IE,
+  SYMBOL_TLS_LE,
   SYMBOL_TLSGD,
   SYMBOL_TLSLDM,
 };
@@ -61,7 +68,6 @@ extern int loongarch_idiv_insns (machine_mode);
 #ifdef RTX_CODE
 extern void loongarch_emit_binary (enum rtx_code, rtx, rtx, rtx);
 #endif
-extern bool loongarch_split_symbol (rtx, rtx, machine_mode, rtx *);
 extern rtx loongarch_unspec_address (rtx, enum loongarch_symbol_type);
 extern rtx loongarch_strip_unspec_address (rtx);
 extern void loongarch_move_integer (rtx, rtx, unsigned HOST_WIDE_INT);
@@ -71,8 +77,6 @@ extern rtx loongarch_legitimize_call_address (rtx);
 extern rtx loongarch_subword (rtx, bool);
 extern bool loongarch_split_move_p (rtx, rtx);
 extern void loongarch_split_move (rtx, rtx, rtx);
-extern bool loongarch_split_move_insn_p (rtx, rtx);
-extern void loongarch_split_move_insn (rtx, rtx, rtx);
 extern const char *loongarch_output_move (rtx, rtx);
 extern bool loongarch_cfun_has_cprestore_slot_p (void);
 #ifdef RTX_CODE

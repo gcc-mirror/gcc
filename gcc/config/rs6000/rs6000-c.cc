@@ -335,20 +335,16 @@ rs6000_define_or_undefine_macro (bool define_p, const char *name)
 }
 
 /* Define or undefine macros based on the current target.  If the user does
-   #pragma GCC target, we need to adjust the macros dynamically.  Note, some of
-   the options needed for builtins have been moved to separate variables, so
-   have both the target flags and the builtin flags as arguments.  */
+   #pragma GCC target, we need to adjust the macros dynamically.  */
 
 void
-rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
-			     HOST_WIDE_INT bu_mask)
+rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags)
 {
   if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
     fprintf (stderr,
-	     "rs6000_target_modify_macros (%s, " HOST_WIDE_INT_PRINT_HEX
-	     ", " HOST_WIDE_INT_PRINT_HEX ")\n",
+	     "rs6000_target_modify_macros (%s, " HOST_WIDE_INT_PRINT_HEX ")\n",
 	     (define_p) ? "define" : "undef",
-	     flags, bu_mask);
+	     flags);
 
   /* Each of the flags mentioned below controls whether certain
      preprocessor macros will be automatically defined when
@@ -595,10 +591,8 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
   if ((flags & OPTION_MASK_FLOAT128_HW) != 0)
     rs6000_define_or_undefine_macro (define_p, "__FLOAT128_HARDWARE__");
 
-  /* options from the builtin masks.  */
-  /* Note that OPTION_MASK_FPRND is enabled only if
-     (rs6000_cpu == PROCESSOR_CELL) (e.g. -mcpu=cell).  */
-  if ((bu_mask & OPTION_MASK_FPRND) != 0)
+  /* Tell the user if we are targeting CELL.  */
+  if (rs6000_cpu == PROCESSOR_CELL)
     rs6000_define_or_undefine_macro (define_p, "__PPU__");
 
   /* Tell the user if we support the MMA instructions.  */
@@ -616,8 +610,7 @@ void
 rs6000_cpu_cpp_builtins (cpp_reader *pfile)
 {
   /* Define all of the common macros.  */
-  rs6000_target_modify_macros (true, rs6000_isa_flags,
-			       rs6000_builtin_mask_calculate ());
+  rs6000_target_modify_macros (true, rs6000_isa_flags);
 
   if (TARGET_FRE)
     builtin_define ("__RECIP__");

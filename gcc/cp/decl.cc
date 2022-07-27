@@ -15022,8 +15022,6 @@ copy_fn_p (const_tree d)
 bool
 move_fn_p (const_tree d)
 {
-  gcc_assert (DECL_FUNCTION_MEMBER_P (d));
-
   if (cxx_dialect == cxx98)
     /* There are no move constructors if we are in C++98 mode.  */
     return false;

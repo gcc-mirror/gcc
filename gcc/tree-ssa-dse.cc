@@ -93,7 +93,9 @@ static bitmap need_eh_cleanup;
 static bitmap need_ab_cleanup;
 
 /* STMT is a statement that may write into memory.  Analyze it and
-   initialize WRITE to describe how STMT affects memory.
+   initialize WRITE to describe how STMT affects memory.  When
+   MAY_DEF_OK is true then the function initializes WRITE to what
+   the stmt may define.
 
    Return TRUE if the statement was analyzed, FALSE otherwise.
 
@@ -101,7 +103,7 @@ static bitmap need_ab_cleanup;
    can be achieved by analyzing more statements.  */
 
 static bool
-initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
+initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write, bool may_def_ok = false)
 {
   /* It's advantageous to handle certain mem* functions.  */
   if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
@@ -144,6 +146,32 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
 
 	default:
 	  break;
+	}
+    }
+  else if (is_gimple_call (stmt)
+	   && gimple_call_internal_p (stmt))
+    {
+      switch (gimple_call_internal_fn (stmt))
+	{
+	case IFN_LEN_STORE:
+	  ao_ref_init_from_ptr_and_size
+	      (write, gimple_call_arg (stmt, 0),
+	       int_const_binop (MINUS_EXPR,
+				gimple_call_arg (stmt, 2),
+				gimple_call_arg (stmt, 4)));
+	  return true;
+	case IFN_MASK_STORE:
+	  /* We cannot initialize a must-def ao_ref (in all cases) but we
+	     can provide a may-def variant.  */
+	  if (may_def_ok)
+	    {
+	      ao_ref_init_from_ptr_and_size
+		  (write, gimple_call_arg (stmt, 0),
+		   TYPE_SIZE_UNIT (TREE_TYPE (gimple_call_arg (stmt, 2))));
+	      return true;
+	    }
+	  break;
+	default:;
 	}
     }
   else if (tree lhs = gimple_get_lhs (stmt))
@@ -1328,8 +1356,10 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
 
   ao_ref ref;
   /* If this is not a store we can still remove dead call using
-     modref summary.  */
-  if (!initialize_ao_ref_for_dse (stmt, &ref))
+     modref summary.  Note we specifically allow ref to be initialized
+     to a conservative may-def since we are looking for followup stores
+     to kill all of it.  */
+  if (!initialize_ao_ref_for_dse (stmt, &ref, true))
     {
       dse_optimize_call (gsi, live_bytes);
       return;
@@ -1396,6 +1426,23 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
 
 	default:
 	  return;
+	}
+    }
+  else if (is_gimple_call (stmt)
+	   && gimple_call_internal_p (stmt))
+    {
+      switch (gimple_call_internal_fn (stmt))
+	{
+	case IFN_LEN_STORE:
+	case IFN_MASK_STORE:
+	  {
+	    enum dse_store_status store_status;
+	    store_status = dse_classify_store (&ref, stmt, false, live_bytes);
+	    if (store_status == DSE_STORE_DEAD)
+	      delete_dead_or_redundant_call (gsi, "dead");
+	    return;
+	  }
+	default:;
 	}
     }
 

@@ -1436,7 +1436,6 @@ sort_mem_initializers (tree t, tree mem_inits)
 	  continue;
 	splice:
 	  *p = TREE_CHAIN (*p);
-	  continue;
 	}
     }
 

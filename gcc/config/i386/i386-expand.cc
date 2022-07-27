@@ -165,6 +165,46 @@ split_double_mode (machine_mode mode, rtx operands[],
     }
 }
 
+/* Emit the double word assignment DST = { LO, HI }.  */
+
+void
+split_double_concat (machine_mode mode, rtx dst, rtx lo, rtx hi)
+{
+  rtx dlo, dhi;
+  int deleted_move_count = 0;
+  split_double_mode (mode, &dst, 1, &dlo, &dhi);
+  if (!rtx_equal_p (dlo, hi))
+    {
+      if (!rtx_equal_p (dlo, lo))
+	emit_move_insn (dlo, lo);
+      else
+	deleted_move_count++;
+      if (!rtx_equal_p (dhi, hi))
+	emit_move_insn (dhi, hi);
+      else
+	deleted_move_count++;
+    }
+  else if (!rtx_equal_p (lo, dhi))
+    {
+      if (!rtx_equal_p (dhi, hi))
+	emit_move_insn (dhi, hi);
+      else
+	deleted_move_count++;
+      if (!rtx_equal_p (dlo, lo))
+	emit_move_insn (dlo, lo);
+      else
+	deleted_move_count++;
+    }
+  else if (mode == TImode)
+    emit_insn (gen_swapdi (dlo, dhi));
+  else
+    emit_insn (gen_swapsi (dlo, dhi));
+
+  if (deleted_move_count == 2)
+    emit_note (NOTE_INSN_DELETED);
+}
+
+
 /* Generate either "mov $0, reg" or "xor reg, reg", as appropriate
    for the target.  */
 

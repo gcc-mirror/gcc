@@ -1347,6 +1347,8 @@ candidates_list_and_hint (const char *arg, char *&str,
   const char *candidate;
   char *p;
 
+  gcc_assert (!candidates.is_empty ());
+
   FOR_EACH_VEC_ELT (candidates, i, candidate)
     len += strlen (candidate) + 1;
 

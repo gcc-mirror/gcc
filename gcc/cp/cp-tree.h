@@ -5877,6 +5877,11 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define LOOKUP_REVERSED (LOOKUP_REWRITTEN << 1)
 /* We're initializing an aggregate from a parenthesized list of values.  */
 #define LOOKUP_AGGREGATE_PAREN_INIT (LOOKUP_REVERSED << 1)
+/* We're computing conversions as part of a first pass of overload resolution
+   wherein we don't try to distinguish an unviable candidate from a
+   non-strictly viable candidate and thus can avoid computing unnecessary
+   bad conversions.  */
+#define LOOKUP_SHORTCUT_BAD_CONVS (LOOKUP_AGGREGATE_PAREN_INIT << 1)
 
 /* These flags are used by the conversion code.
    CONV_IMPLICIT   :  Perform implicit conversions (standard and user-defined).

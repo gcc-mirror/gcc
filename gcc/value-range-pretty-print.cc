@@ -63,38 +63,45 @@ vrange_printer::visit (const irange &r) const
       pp_string (pp, "VARYING");
       return;
     }
- for (unsigned i = 0; i < r.num_pairs (); ++i)
+  // Handle legacy symbolics.
+  if (!r.constant_p ())
     {
-      tree lb = wide_int_to_tree (r.type (), r.lower_bound (i));
-      tree ub = wide_int_to_tree (r.type (), r.upper_bound (i));
+      if (r.kind () == VR_ANTI_RANGE)
+	pp_character (pp, '~');
       pp_character (pp, '[');
-      print_irange_bound (lb);
+      dump_generic_node (pp, r.min (), 0, TDF_NONE, false);
       pp_string (pp, ", ");
-      print_irange_bound (ub);
+      dump_generic_node (pp, r.max (), 0, TDF_NONE, false);
+      pp_character (pp, ']');
+      print_irange_bitmasks (r);
+      return;
+    }
+  for (unsigned i = 0; i < r.num_pairs (); ++i)
+    {
+      pp_character (pp, '[');
+      print_irange_bound (r.lower_bound (i), r.type ());
+      pp_string (pp, ", ");
+      print_irange_bound (r.upper_bound (i), r.type ());
       pp_character (pp, ']');
     }
  print_irange_bitmasks (r);
 }
 
 void
-vrange_printer::print_irange_bound (tree bound) const
+vrange_printer::print_irange_bound (const wide_int &bound, tree type) const
 {
-  tree type = TREE_TYPE (bound);
   wide_int type_min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
   wide_int type_max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
 
   if (INTEGRAL_TYPE_P (type)
       && !TYPE_UNSIGNED (type)
-      && TREE_CODE (bound) == INTEGER_CST
-      && wi::to_wide (bound) == type_min
+      && bound == type_min
       && TYPE_PRECISION (type) != 1)
     pp_string (pp, "-INF");
-  else if (TREE_CODE (bound) == INTEGER_CST
-	   && wi::to_wide (bound) == type_max
-	   && TYPE_PRECISION (type) != 1)
+  else if (bound == type_max && TYPE_PRECISION (type) != 1)
     pp_string (pp, "+INF");
   else
-    dump_generic_node (pp, bound, 0, TDF_NONE, false);
+    pp_wide_int (pp, bound, TYPE_SIGN (type));
 }
 
 void
@@ -108,4 +115,45 @@ vrange_printer::print_irange_bitmasks (const irange &r) const
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
   print_hex (nz, buf);
   pp_string (pp, buf);
+}
+
+// Print an frange.
+
+void
+vrange_printer::visit (const frange &r) const
+{
+  pp_string (pp, "[frange] ");
+  if (r.undefined_p ())
+    {
+      pp_string (pp, "UNDEFINED");
+      return;
+    }
+  dump_generic_node (pp, r.type (), 0, TDF_NONE, false);
+  pp_string (pp, " ");
+  if (r.varying_p ())
+    {
+      pp_string (pp, "VARYING");
+      return;
+    }
+  print_frange_prop ("NAN", r.get_nan ());
+  print_frange_prop ("INF", r.get_inf ());
+  print_frange_prop ("NINF", r.get_ninf ());
+}
+
+// Print the FP properties in an frange.
+
+void
+vrange_printer::print_frange_prop (const char *str, const fp_prop &prop) const
+{
+  if (prop.varying_p ())
+    return;
+
+  if (prop.yes_p ())
+    pp_string (pp, str);
+  else if (prop.no_p ())
+    {
+      pp_character (pp, '!');
+      pp_string (pp, str);
+    }
+  pp_character (pp, ' ');
 }

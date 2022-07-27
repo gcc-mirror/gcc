@@ -85,6 +85,7 @@ extern void print_reg (rtx, int, FILE*);
 extern void ix86_print_operand (FILE *, rtx, int);
 
 extern void split_double_mode (machine_mode, rtx[], int, rtx[], rtx[]);
+extern void split_double_concat (machine_mode, rtx, rtx lo, rtx);
 
 extern const char *output_set_got (rtx, rtx);
 extern const char *output_387_binary_op (rtx_insn *, rtx*);

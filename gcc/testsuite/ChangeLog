@@ -1,3 +1,295 @@
+2022-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106319
+	* gcc.dg/analyzer/stdarg-types-3.c: New test.
+	* gcc.dg/analyzer/stdarg-types-4.c: New test.
+
+2022-07-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103504
+	* gfortran.dg/pr103504.f90: New test.
+
+2022-07-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR c/106016
+	* gcc.target/powerpc/pr106016.c: New test.
+
+2022-07-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106311
+	* g++.dg/template/redecl5.C: New test.
+
+2022-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106444
+	* gcc.dg/tree-ssa/evrp4.c: Adjust.
+
+2022-07-26  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/combine.c:
+	New test.
+
+2022-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106189
+	* gcc.dg/pr106189.c: New testcase.
+
+2022-07-26  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/func-call-1.c: Add build option '-mno-explicit-relocs'.
+	* gcc.target/loongarch/func-call-2.c: Add build option '-mno-explicit-relocs'.
+	* gcc.target/loongarch/func-call-3.c: Add build option '-mno-explicit-relocs'.
+	* gcc.target/loongarch/func-call-4.c: Add build option '-mno-explicit-relocs'.
+	* gcc.target/loongarch/func-call-5.c: New test.
+	* gcc.target/loongarch/func-call-6.c: New test.
+	* gcc.target/loongarch/func-call-7.c: New test.
+	* gcc.target/loongarch/func-call-8.c: New test.
+	* gcc.target/loongarch/relocs-symbol-noaddend.c: New test.
+
+2022-07-26  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/func-call-1.c: New test.
+	* gcc.target/loongarch/func-call-2.c: New test.
+	* gcc.target/loongarch/func-call-3.c: New test.
+	* gcc.target/loongarch/func-call-4.c: New test.
+
+2022-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/106091
+	* gcc.target/powerpc/pr106091.c: New test.
+
+2022-07-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106230
+	* g++.dg/cpp0x/range-for38.C: New test.
+
+2022-07-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/analyzer/fd-2.c: Convert Windows endlines to Unix
+	style.
+	* gcc.dg/analyzer/fd-3.c: Likewise.
+	* gcc.dg/analyzer/fd-4.c: Likewise.
+	* gcc.dg/analyzer/fd-5.c: Likewise.
+	* c-c++-common/attr-fd.c: Likewise.
+
+2022-07-25  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91681
+	* g++.target/i386/pr91681.C: New test case (from the PR).
+	* gcc.target/i386/pr91681-1.c: New int128 test case.
+	* gcc.target/i386/pr91681-2.c: Likewise.
+	* gcc.target/i386/pr91681-3.c: Likewise, but for ia32.
+
+2022-07-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	* g++.dg/warn/Woverloaded-virt4.C: New test.
+
+2022-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106414
+	* gcc.dg/torture/pr106414-1.c: New testcase.
+	* gcc.dg/torture/pr106414-2.c: Likewise.
+
+2022-07-25  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/acle/data-intrinsics.c: New test.
+
+2022-07-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/nsdmi-union7.C: Fix PR number.
+
+2022-07-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106303
+	PR target/106347
+	* gcc.target/i386/pr106303.c: New test case.
+	* gcc.target/i386/pr106347.c: New test case.
+
+2022-07-23  Immad Mir  <mirimmad@outlook.com>
+
+	* gcc.dg/analyzer/fd-5.c: New test.
+	* gcc.dg/analyzer/fd-4.c: Remove quotes around 'read-only' and
+	'write-only'.
+	* c-c++-common/attr-fd.c: New test.
+
+2022-07-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106413
+	* gcc.dg/analyzer/torture/stdarg-4.c: New test.
+
+2022-07-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106401
+	* gcc.dg/analyzer/memcpy-2.c: New test.
+
+2022-07-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106366
+	* g++.dg/cpp1z/class-deduction112.C: New test.
+
+2022-07-22  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106394
+	* gcc.dg/analyzer/pr106394.c: New test.
+
+2022-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106397
+	* gcc.dg/pr106397.c: New testcase.
+
+2022-07-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/106010
+	* gcc.dg/pr23911.c: Scan IMAGPART/REALPART_EXPR = ** instead
+	of __complex__ since COMPLEX_CST is lower to scalars.
+
+2022-07-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106038-1.c: New test.
+
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106383
+	* gcc.dg/analyzer/stdarg-3.c: New test.
+
+2022-07-21  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/94920
+	* g++.dg/pr94920-1.C: New test.
+	* g++.dg/pr94920.C: New test.
+	* gcc.dg/pr94920-2.c: New test.
+
+2022-07-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106361
+	* g++.dg/cpp2a/spaceship-eq14.C: New test.
+
+2022-07-21  Jason Merrill  <jason@redhat.com>
+
+	DR 2084
+	PR c++/94823
+	* g++.dg/cpp0x/nsdmi-union7.C: New test.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106379
+	* gcc.dg/pr106379-1.c: New testcase.
+
+2022-07-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106365
+	* gcc.target/i386/vec-maskstore-vn.c: New testcase.
+
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106374
+	* gcc.dg/analyzer/untracked-2.c: New test.
+
+2022-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106373
+	* gcc.dg/analyzer/torture/taint-read-index-3.c: New test.
+
+2022-07-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101330
+	* gfortran.dg/gomp/affinity-clause-7.f90: New test.
+
+2022-07-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/pow-sqrt-synth-1.c: Adjust testcase.
+
+2022-07-20  Richard Biener  <richard.guenther@gmail.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr106010-1a.c: New test.
+	* gcc.target/i386/pr106010-1b.c: New test.
+	* gcc.target/i386/pr106010-1c.c: New test.
+	* gcc.target/i386/pr106010-2a.c: New test.
+	* gcc.target/i386/pr106010-2b.c: New test.
+	* gcc.target/i386/pr106010-2c.c: New test.
+	* gcc.target/i386/pr106010-3a.c: New test.
+	* gcc.target/i386/pr106010-3b.c: New test.
+	* gcc.target/i386/pr106010-3c.c: New test.
+	* gcc.target/i386/pr106010-4a.c: New test.
+	* gcc.target/i386/pr106010-4b.c: New test.
+	* gcc.target/i386/pr106010-4c.c: New test.
+	* gcc.target/i386/pr106010-5a.c: New test.
+	* gcc.target/i386/pr106010-5b.c: New test.
+	* gcc.target/i386/pr106010-5c.c: New test.
+	* gcc.target/i386/pr106010-6a.c: New test.
+	* gcc.target/i386/pr106010-6b.c: New test.
+	* gcc.target/i386/pr106010-6c.c: New test.
+	* gcc.target/i386/pr106010-7a.c: New test.
+	* gcc.target/i386/pr106010-7b.c: New test.
+	* gcc.target/i386/pr106010-7c.c: New test.
+	* gcc.target/i386/pr106010-8a.c: New test.
+	* gcc.target/i386/pr106010-8b.c: New test.
+	* gcc.target/i386/pr106010-8c.c: New test.
+	* gcc.target/i386/pr106010-9a.c: New test.
+	* gcc.target/i386/pr106010-9b.c: New test.
+	* gcc.target/i386/pr106010-9c.c: New test.
+	* gcc.target/i386/pr106010-9d.c: New test.
+
+2022-07-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103590
+	* gfortran.dg/associate_54.f90: Adjust.
+	* gfortran.dg/associate_59.f90: New test.
+
+2022-07-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94894
+	PR c++/105766
+	PR c++/106201
+	* g++.dg/conversion/ref8.C: New test.
+	* g++.dg/conversion/ref9.C: New test.
+
+2022-07-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gcc.dg/setjmp-7.c: New test.
+
+2022-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106321
+	* gcc.dg/analyzer/torture/taint-read-index-2.c: Add test coverage
+	for switch statements.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106331
+	* gfortran.dg/pr106331.f90: New testcase.
+
+2022-07-19  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR c/106264
+	* gcc.dg/pr106264.c: New test case.
+
+2022-07-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ldist-24.c: XFAIL.
+	* gcc.dg/tree-ssa/ldist-36.c: Adjust expected outcome.
+
+2022-07-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/106253
+	* gcc.target/arm/vect_unary_1.c: New test.
+	* gcc.target/arm/vect_binary_1.c: Likewise.
+
+2022-07-18  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* gcc.target/arc/interrupt-13.c: New file.
+
+2022-07-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106231
+	* gcc.target/i386/pr106231-1.c: New test case.
+	* gcc.target/i386/pr106231-2.c: New test case.
+
 2022-07-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/85620

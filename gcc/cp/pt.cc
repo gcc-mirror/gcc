@@ -6377,7 +6377,10 @@ redeclare_class_template (tree type, tree parms, tree cons)
 	{
 	  auto_diagnostic_group d;
 	  error ("template parameter %q+#D", tmpl_parm);
-	  inform (DECL_SOURCE_LOCATION (parm), "redeclared here as %q#D", parm);
+	  if (DECL_P (parm))
+	    inform (DECL_SOURCE_LOCATION (parm), "redeclared here as %q#D", parm);
+	  else
+	    inform (input_location, "redeclared here");
 	  return false;
 	}
 
@@ -30240,7 +30243,7 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 
   tree type = TREE_TYPE (tmpl);
 
-  bool try_list_ctor = false;
+  bool try_list_cand = false;
   bool list_init_p = false;
 
   releasing_vec rv_args = NULL;
@@ -30250,8 +30253,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
   else if (BRACE_ENCLOSED_INITIALIZER_P (init))
     {
       list_init_p = true;
-      try_list_ctor = TYPE_HAS_LIST_CTOR (type);
-      if (try_list_ctor && CONSTRUCTOR_NELTS (init) == 1
+      try_list_cand = true;
+      if (CONSTRUCTOR_NELTS (init) == 1
 	  && !CONSTRUCTOR_IS_DESIGNATED_INIT (init))
 	{
 	  /* As an exception, the first phase in 16.3.1.7 (considering the
@@ -30261,9 +30264,9 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 	     specialization of C.  */
 	  tree elt = CONSTRUCTOR_ELT (init, 0)->value;
 	  if (is_spec_or_derived (TREE_TYPE (elt), tmpl))
-	    try_list_ctor = false;
+	    try_list_cand = false;
 	}
-      if (try_list_ctor || is_std_init_list (type))
+      if (try_list_cand || is_std_init_list (type))
 	args = make_tree_vector_single (init);
       else
 	args = make_tree_vector_from_ctor (init);
@@ -30310,26 +30313,25 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 
   tree fndecl = error_mark_node;
 
-  /* If this is list-initialization and the class has a list constructor, first
+  /* If this is list-initialization and the class has a list guide, first
      try deducing from the list as a single argument, as [over.match.list].  */
-  tree list_cands = NULL_TREE;
-  if (try_list_ctor && cands)
-    for (lkp_iterator iter (cands); iter; ++iter)
-      {
-	tree dg = *iter;
+  if (try_list_cand)
+    {
+      tree list_cands = NULL_TREE;
+      for (tree dg : lkp_range (cands))
 	if (is_list_ctor (dg))
 	  list_cands = lookup_add (dg, list_cands);
-      }
-  if (list_cands)
-    {
-      fndecl = perform_dguide_overload_resolution (list_cands, args, tf_none);
-
+      if (list_cands)
+	fndecl = perform_dguide_overload_resolution (list_cands, args, tf_none);
       if (fndecl == error_mark_node)
 	{
 	  /* That didn't work, now try treating the list as a sequence of
 	     arguments.  */
 	  release_tree_vector (args);
 	  args = make_tree_vector_from_ctor (init);
+	  args = resolve_args (args, complain);
+	  if (args == NULL)
+	    return error_mark_node;
 	}
     }
 

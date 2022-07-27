@@ -2848,7 +2848,7 @@
 	 UNSPEC_SSP_SET))
    (set (match_scratch:GPR 2 "=&r") (const_int 0))]
   ""
-  "<load>\\t%2, %1\;<store>\\t%2, %0\;li\t%2, 0"
+  "<load>\t%2, %1\;<store>\t%2, %0\;li\t%2, 0"
   [(set_attr "length" "12")])
 
 (define_expand "stack_protect_test"

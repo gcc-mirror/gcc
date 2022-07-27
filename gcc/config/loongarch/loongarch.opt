@@ -161,6 +161,10 @@ mmax-inline-memcpy-size=
 Target Joined RejectNegative UInteger Var(loongarch_max_inline_memcpy_size) Init(1024)
 -mmax-inline-memcpy-size=SIZE	Set the max size of memcpy to inline, default is 1024.
 
+mexplicit-relocs
+Target Var(TARGET_EXPLICIT_RELOCS) Init(HAVE_AS_EXPLICIT_RELOCS)
+Use %reloc() assembly operators.
+
 ; The code model option names for -mcmodel.
 Enum
 Name(cmodel) Type(int)

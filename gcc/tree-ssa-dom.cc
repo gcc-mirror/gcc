@@ -1233,20 +1233,22 @@ dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
 
   gimple *stmt = last_stmt (pred_e->src);
   tree name;
-  int_range_max r;
   if (stmt
       && gimple_code (stmt) == GIMPLE_COND
       && (name = gimple_cond_lhs (stmt))
       && TREE_CODE (name) == SSA_NAME
-      && r.supports_type_p (TREE_TYPE (name))
       && assert_unreachable_fallthru_edge_p (pred_e)
-      && all_uses_feed_or_dominated_by_stmt (name, stmt)
-      && m_ranger->range_on_edge (r, pred_e, name)
-      && !r.varying_p ()
-      && !r.undefined_p ())
+      && all_uses_feed_or_dominated_by_stmt (name, stmt))
     {
-      set_range_info (name, r);
-      maybe_set_nonzero_bits (pred_e, name);
+      Value_Range r (TREE_TYPE (name));
+
+      if (m_ranger->range_on_edge (r, pred_e, name)
+	  && !r.varying_p ()
+	  && !r.undefined_p ())
+	{
+	  set_range_info (name, r);
+	  maybe_set_nonzero_bits (pred_e, name);
+	}
     }
 }
 

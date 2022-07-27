@@ -4152,28 +4152,56 @@ get_handler (enum tree_code code, tree type)
   return NULL;
 }
 
-range_op_handler::range_op_handler (tree_code code, tree type)
+// Return the floating point operator for CODE or NULL if none available.
+
+static inline range_operator_float *
+get_float_handler (enum tree_code code, tree)
 {
-  m_op = get_handler (code, type);
+  return (*floating_tree_table)[code];
+}
+
+range_op_handler::range_op_handler (tree_code code, tree type)
+  : m_code (code), m_type (type)
+{
 }
 
 range_op_handler::range_op_handler (const gimple *s)
 {
   if (const gassign *ass = dyn_cast<const gassign *> (s))
     {
-      enum tree_code code = gimple_assign_rhs_code (ass);
+      m_code = gimple_assign_rhs_code (ass);
       // The LHS of a comparison is always an int, so we must look at
       // the operands.
-      if (TREE_CODE_CLASS (code) == tcc_comparison)
-	m_op = get_handler (code, TREE_TYPE (gimple_assign_rhs1 (ass)));
+      if (TREE_CODE_CLASS (m_code) == tcc_comparison)
+	m_type = TREE_TYPE (gimple_assign_rhs1 (ass));
       else
-	m_op = get_handler (code, TREE_TYPE (gimple_assign_lhs (ass)));
+	m_type = TREE_TYPE (gimple_assign_lhs (ass));
     }
   else if (const gcond *cond = dyn_cast<const gcond *> (s))
-    m_op = get_handler (gimple_cond_code (cond),
-			TREE_TYPE (gimple_cond_lhs (cond)));
+    {
+      m_code = gimple_cond_code (cond);
+      m_type = TREE_TYPE (gimple_cond_lhs (cond));
+    }
   else
-    m_op = NULL;
+    {
+      // A null type means there is no handler for this combination,
+      // but the decision whether there is one or not, is delayed
+      // until operator bool below is queried.
+      m_code = NOP_EXPR;
+      m_type = nullptr;
+    }
+}
+
+// Return TRUE if there is a handler available for the current
+// combination of tree_code and type.
+
+range_op_handler::operator bool () const
+{
+  if (!m_type)
+    return false;
+  if (frange::supports_p (m_type))
+    return get_float_handler (m_code, m_type);
+  return get_handler (m_code, m_type);
 }
 
 bool
@@ -4182,10 +4210,24 @@ range_op_handler::fold_range (vrange &r, tree type,
 			      const vrange &rh,
 			      relation_kind rel) const
 {
-  if (is_a <irange> (lh))
-    return m_op->fold_range (as_a <irange> (r), type,
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->fold_range (as_a <irange> (r), type,
 			     as_a <irange> (lh),
 			     as_a <irange> (rh), rel);
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      if (is_a <irange> (r))
+	return op->fold_range (as_a <irange> (r), type,
+			       as_a <frange> (lh),
+			       as_a <frange> (rh), rel);
+      return op->fold_range (as_a <frange> (r), type,
+			     as_a <frange> (lh),
+			     as_a <frange> (rh), rel);
+    }
   gcc_unreachable ();
   return false;
 }
@@ -4196,10 +4238,24 @@ range_op_handler::op1_range (vrange &r, tree type,
 			     const vrange &op2,
 			     relation_kind rel) const
 {
-  if (is_a <irange> (r))
-    return m_op->op1_range (as_a <irange> (r), type,
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->op1_range (as_a <irange> (r), type,
 			    as_a <irange> (lhs),
 			    as_a <irange> (op2), rel);
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      if (is_a <irange> (lhs))
+	return op->op1_range (as_a <frange> (r), type,
+			      as_a <irange> (lhs),
+			      as_a <frange> (op2), rel);
+      return op->op1_range (as_a <frange> (r), type,
+			    as_a <frange> (lhs),
+			    as_a <frange> (op2), rel);
+    }
   gcc_unreachable ();
   return false;
 }
@@ -4210,10 +4266,24 @@ range_op_handler::op2_range (vrange &r, tree type,
 			     const vrange &op1,
 			     relation_kind rel) const
 {
-  if (is_a <irange> (r))
-    return m_op->op2_range (as_a <irange> (r), type,
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->op2_range (as_a <irange> (r), type,
 			    as_a <irange> (lhs),
 			    as_a <irange> (op1), rel);
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      if (is_a <irange> (lhs))
+	return op->op2_range (as_a <frange> (r), type,
+			      as_a <irange> (lhs),
+			      as_a <frange> (op1), rel);
+      return op->op2_range (as_a <frange> (r), type,
+			    as_a <frange> (lhs),
+			    as_a <frange> (op1), rel);
+    }
   gcc_unreachable ();
   return false;
 }
@@ -4224,9 +4294,24 @@ range_op_handler::lhs_op1_relation (const vrange &lhs,
 				    const vrange &op2,
 				    relation_kind rel) const
 {
-  if (is_a <irange> (op1))
-    return m_op->lhs_op1_relation (as_a <irange> (lhs),
-				   as_a <irange> (op1), as_a <irange> (op2), rel);
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->lhs_op1_relation (as_a <irange> (lhs),
+				   as_a <irange> (op1),
+				   as_a <irange> (op2), rel);
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      if (is_a <irange> (lhs))
+	return op->lhs_op1_relation (as_a <irange> (lhs),
+				     as_a <frange> (op1),
+				     as_a <frange> (op2), rel);
+      return op->lhs_op1_relation (as_a <frange> (lhs),
+				   as_a <frange> (op1),
+				   as_a <frange> (op2), rel);
+    }
   gcc_unreachable ();
   return VREL_VARYING;
 }
@@ -4237,9 +4322,24 @@ range_op_handler::lhs_op2_relation (const vrange &lhs,
 				    const vrange &op2,
 				    relation_kind rel) const
 {
-  if (is_a <irange> (op1))
-    return m_op->lhs_op2_relation (as_a <irange> (lhs),
-				   as_a <irange> (op1), as_a <irange> (op2), rel);
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->lhs_op2_relation (as_a <irange> (lhs),
+				   as_a <irange> (op1),
+				   as_a <irange> (op2), rel);
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      if (is_a <irange> (lhs))
+	return op->lhs_op2_relation (as_a <irange> (lhs),
+				     as_a <frange> (op1),
+				     as_a <frange> (op2), rel);
+      return op->lhs_op2_relation (as_a <frange> (lhs),
+				   as_a <frange> (op1),
+				   as_a <frange> (op2), rel);
+    }
   gcc_unreachable ();
   return VREL_VARYING;
 }
@@ -4247,7 +4347,18 @@ range_op_handler::lhs_op2_relation (const vrange &lhs,
 relation_kind
 range_op_handler::op1_op2_relation (const vrange &lhs) const
 {
-  return m_op->op1_op2_relation (as_a <irange> (lhs));
+  if (irange::supports_p (m_type))
+    {
+      range_operator *op = get_handler (m_code, m_type);
+      return op->op1_op2_relation (as_a <irange> (lhs));
+    }
+  if (frange::supports_p (m_type))
+    {
+      range_operator_float *op = get_float_handler (m_code, m_type);
+      return op->op1_op2_relation (as_a <irange> (lhs));
+    }
+  gcc_unreachable ();
+  return VREL_VARYING;
 }
 
 // Cast the range in R to TYPE.

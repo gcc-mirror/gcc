@@ -54,3 +54,88 @@ test_4 (unsigned uarg)
 {
   return called_by_test_4 (uarg);
 }
+
+int  __attribute__((tainted_args))
+test_5 (int idx)
+{
+  switch (idx)
+    {
+    default:
+      return 0;
+    case 5 ... 20:
+      return arr[idx]; /* { dg-bogus "bounds checking" } */
+      /* 20 is still an out-of-bounds error (off-by-one)
+	 but we don't check for that, just that bounds have been imposed.  */
+
+    /* Extra cases to avoid optimizing the switch away.  */
+    case 22:
+      return 22;
+    case 23:
+      return -17;
+    }
+}
+
+int  __attribute__((tainted_args))
+test_6 (int idx)
+{
+  switch (idx)
+    {
+    default:
+      return arr[idx]; /* { dg-warning "without bounds checking" } */
+
+    case 2:
+      return arr[idx]; /* { dg-bogus "bounds checking" } */
+
+    case 6 ... 19:
+      return arr[idx]; /* { dg-bogus "bounds checking" } */
+
+    case 22:
+      return 22;
+    case 23:
+      return -17;
+    }
+}
+
+int  __attribute__((tainted_args))
+test_7 (int idx)
+{
+  switch (idx)
+    {
+    default:
+      return arr[idx]; /* { dg-warning "without bounds checking" } */
+
+    case 2 ... 4:
+    case 7 ... 9:
+      return arr[idx]; /* { dg-bogus "bounds checking" } */
+
+    case 12 ... 19:
+      return arr[idx]; /* { dg-bogus "bounds checking" } */
+
+    case 22:
+      return 22;
+    case 23:
+      return -17;
+    }
+}
+
+int  __attribute__((tainted_args))
+test_8 (unsigned idx)
+{
+  switch (idx)
+    {
+    default:
+      return arr[idx]; /* { dg-warning "without upper-bounds checking" } */
+
+    case 2 ... 4:
+    case 7 ... 9:
+      return arr[idx]; /* { dg-bogus "bounds checking" } */
+
+    case 12 ... 19:
+      return arr[idx]; /* { dg-bogus "bounds checking" } */
+
+    case 22:
+      return 22;
+    case 23:
+      return -17;
+    }
+}

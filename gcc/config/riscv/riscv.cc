@@ -1853,6 +1853,33 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       /* Otherwise use the default handling.  */
       return false;
 
+    case IF_THEN_ELSE:
+      if (TARGET_SFB_ALU
+	  && register_operand (XEXP (x, 1), mode)
+	  && sfb_alu_operand (XEXP (x, 2), mode)
+	  && comparison_operator (XEXP (x, 0), VOIDmode))
+	{
+	  /* For predicated conditional-move operations we assume the cost
+	     of a single instruction even though there are actually two.  */
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      else if (LABEL_REF_P (XEXP (x, 1)) && XEXP (x, 2) == pc_rtx)
+	{
+	  if (equality_operator (XEXP (x, 0), mode)
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTRACT)
+	    {
+	      *total = COSTS_N_INSNS (SINGLE_SHIFT_COST + 1);
+	      return true;
+	    }
+	  if (order_operator (XEXP (x, 0), mode))
+	    {
+	      *total = COSTS_N_INSNS (1);
+	      return true;
+	    }
+	}
+      return false;
+
     case NOT:
       *total = COSTS_N_INSNS (GET_MODE_SIZE (mode) > UNITS_PER_WORD ? 2 : 1);
       return false;

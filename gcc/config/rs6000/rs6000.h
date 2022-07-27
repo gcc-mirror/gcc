@@ -81,12 +81,15 @@
 # define SUBTARGET_DRIVER_SELF_SPECS ""
 #endif
 
-/* Only for use in the testsuite: -mdejagnu-cpu= simply overrides -mcpu=.
+/* Only for use in the testsuite: -mdejagnu-cpu=<value> filters out all
+   -mcpu= as well as -mtune= options then simply adds -mcpu=<value>,
+   while -mdejagnu-tune=<value> filters out all -mtune= options then
+   simply adds -mtune=<value>.
    With older versions of Dejagnu the command line arguments you set in
-   RUNTESTFLAGS override those set in the testcases; with this option,
-   the testcase will always win.  Ditto for -mdejagnu-tune=.  */
+   RUNTESTFLAGS override those set in the testcases; with these options,
+   the testcase will always win.  */
 #define DRIVER_SELF_SPECS \
-  "%{mdejagnu-cpu=*: %<mcpu=* -mcpu=%*}", \
+  "%{mdejagnu-cpu=*: %<mcpu=* %<mtune=* -mcpu=%*}", \
   "%{mdejagnu-tune=*: %<mtune=* -mtune=%*}", \
   "%{mdejagnu-*: %<mdejagnu-*}", \
    SUBTARGET_DRIVER_SELF_SPECS

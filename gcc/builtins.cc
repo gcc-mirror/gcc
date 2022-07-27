@@ -1360,7 +1360,7 @@ expand_builtin_prefetch (tree exp)
 rtx
 get_memory_rtx (tree exp, tree len)
 {
-  tree orig_exp = exp;
+  tree orig_exp = exp, base;
   rtx addr, mem;
 
   /* When EXP is not resolved SAVE_EXPR, MEM_ATTRS can be still derived
@@ -1391,10 +1391,11 @@ get_memory_rtx (tree exp, tree len)
   if (is_gimple_mem_ref_addr (TREE_OPERAND (exp, 0)))
     set_mem_attributes (mem, exp, 0);
   else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
-	   && (exp = get_base_address (TREE_OPERAND (TREE_OPERAND (exp, 0),
-						     0))))
+	   && (base = get_base_address (TREE_OPERAND (TREE_OPERAND (exp, 0),
+						      0))))
     {
-      exp = build_fold_addr_expr (exp);
+      unsigned int align = get_pointer_alignment (TREE_OPERAND (exp, 0));
+      exp = build_fold_addr_expr (base);
       exp = fold_build2 (MEM_REF,
 			 build_array_type (char_type_node,
 					   build_range_type (sizetype,
@@ -1402,6 +1403,10 @@ get_memory_rtx (tree exp, tree len)
 							     NULL)),
 			 exp, build_int_cst (ptr_type_node, 0));
       set_mem_attributes (mem, exp, 0);
+      /* Since we stripped parts make sure the offset is unknown and the
+	 alignment is computed from the original address.  */
+      clear_mem_offset (mem);
+      set_mem_align (mem, align);
     }
   set_mem_alias_set (mem, 0);
   return mem;
@@ -7467,15 +7472,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	  tree label = TREE_OPERAND (CALL_EXPR_ARG (exp, 1), 0);
 	  rtx_insn *label_r = label_rtx (label);
 
-	  /* This is copied from the handling of non-local gotos.  */
 	  expand_builtin_setjmp_setup (buf_addr, label_r);
-	  nonlocal_goto_handler_labels
-	    = gen_rtx_INSN_LIST (VOIDmode, label_r,
-				 nonlocal_goto_handler_labels);
-	  /* ??? Do not let expand_label treat us as such since we would
-	     not want to be both on the list of non-local labels and on
-	     the list of forced labels.  */
-	  FORCED_LABEL (label) = 0;
 	  return const0_rtx;
 	}
       break;
@@ -7488,6 +7485,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	  rtx_insn *label_r = label_rtx (label);
 
 	  expand_builtin_setjmp_receiver (label_r);
+	  nonlocal_goto_handler_labels
+	    = gen_rtx_INSN_LIST (VOIDmode, label_r,
+				 nonlocal_goto_handler_labels);
+	  /* ??? Do not let expand_label treat us as such since we would
+	     not want to be both on the list of non-local labels and on
+	     the list of forced labels.  */
+	  FORCED_LABEL (label) = 0;
 	  return const0_rtx;
 	}
       break;
@@ -8625,7 +8629,7 @@ fold_builtin_frexp (location_t loc, tree arg0, tree arg1, tree rettype)
   if (TYPE_MAIN_VARIANT (TREE_TYPE (arg1)) == integer_type_node)
     {
       const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (arg0);
-      tree frac, exp;
+      tree frac, exp, res;
 
       switch (value->cl)
       {
@@ -8656,7 +8660,9 @@ fold_builtin_frexp (location_t loc, tree arg0, tree arg1, tree rettype)
       /* Create the COMPOUND_EXPR (*arg1 = trunc, frac). */
       arg1 = fold_build2_loc (loc, MODIFY_EXPR, rettype, arg1, exp);
       TREE_SIDE_EFFECTS (arg1) = 1;
-      return fold_build2_loc (loc, COMPOUND_EXPR, rettype, arg1, frac);
+      res = fold_build2_loc (loc, COMPOUND_EXPR, rettype, arg1, frac);
+      suppress_warning (res, OPT_Wunused_value);
+      return res;
     }
 
   return NULL_TREE;
@@ -8682,6 +8688,7 @@ fold_builtin_modf (location_t loc, tree arg0, tree arg1, tree rettype)
     {
       const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (arg0);
       REAL_VALUE_TYPE trunc, frac;
+      tree res;
 
       switch (value->cl)
       {
@@ -8711,8 +8718,10 @@ fold_builtin_modf (location_t loc, tree arg0, tree arg1, tree rettype)
       arg1 = fold_build2_loc (loc, MODIFY_EXPR, rettype, arg1,
 			  build_real (rettype, trunc));
       TREE_SIDE_EFFECTS (arg1) = 1;
-      return fold_build2_loc (loc, COMPOUND_EXPR, rettype, arg1,
-			  build_real (rettype, frac));
+      res = fold_build2_loc (loc, COMPOUND_EXPR, rettype, arg1,
+			     build_real (rettype, frac));
+      suppress_warning (res, OPT_Wunused_value);
+      return res;
     }
 
   return NULL_TREE;
@@ -10673,8 +10682,10 @@ do_mpfr_remquo (tree arg0, tree arg1, tree arg_quo)
 						  integer_quo));
 		  TREE_SIDE_EFFECTS (result_quo) = 1;
 		  /* Combine the quo assignment with the rem.  */
-		  result = non_lvalue (fold_build2 (COMPOUND_EXPR, type,
-						    result_quo, result_rem));
+		  result = fold_build2 (COMPOUND_EXPR, type,
+					result_quo, result_rem);
+		  suppress_warning (result, OPT_Wunused_value);
+		  result = non_lvalue (result);
 		}
 	    }
 	}

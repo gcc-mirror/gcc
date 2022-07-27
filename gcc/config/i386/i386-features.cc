@@ -708,7 +708,7 @@ gen_gpr_to_xmm_move_src (enum machine_mode vmode, rtx gpr)
    and replace its uses in a chain.  */
 
 void
-general_scalar_chain::make_vector_copies (rtx_insn *insn, rtx reg)
+scalar_chain::make_vector_copies (rtx_insn *insn, rtx reg)
 {
   rtx vreg = *defs_map.get (reg);
 
@@ -772,7 +772,7 @@ general_scalar_chain::make_vector_copies (rtx_insn *insn, rtx reg)
    scalar uses outside of the chain.  */
 
 void
-general_scalar_chain::convert_reg (rtx_insn *insn, rtx dst, rtx src)
+scalar_chain::convert_reg (rtx_insn *insn, rtx dst, rtx src)
 {
   start_sequence ();
   if (!TARGET_INTER_UNIT_MOVES_FROM_VEC)
@@ -973,10 +973,10 @@ scalar_chain::convert_compare (rtx op1, rtx op2, rtx_insn *insn)
 			 UNSPEC_PTEST);
 }
 
-/* Convert INSN to vector mode.  */
+/* Helper function for converting INSN to vector mode.  */
 
 void
-general_scalar_chain::convert_insn (rtx_insn *insn)
+scalar_chain::convert_insn_common (rtx_insn *insn)
 {
   /* Generate copies for out-of-chain uses of defs and adjust debug uses.  */
   for (df_ref ref = DF_INSN_DEFS (insn); ref; ref = DF_REF_NEXT_LOC (ref))
@@ -1037,7 +1037,13 @@ general_scalar_chain::convert_insn (rtx_insn *insn)
 	    XEXP (note, 0) = *vreg;
 	  *DF_REF_REAL_LOC (ref) = *vreg;
 	}
+}
 
+/* Convert INSN to vector mode.  */
+
+void
+general_scalar_chain::convert_insn (rtx_insn *insn)
+{
   rtx def_set = single_set (insn);
   rtx src = SET_SRC (def_set);
   rtx dst = SET_DEST (def_set);
@@ -1475,7 +1481,7 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
    Also populates defs_map which is used later by convert_insn.  */
 
 void
-general_scalar_chain::convert_registers ()
+scalar_chain::convert_registers ()
 {
   bitmap_iterator bi;
   unsigned id;
@@ -1510,7 +1516,9 @@ scalar_chain::convert ()
 
   EXECUTE_IF_SET_IN_BITMAP (insns, 0, id, bi)
     {
-      convert_insn (DF_INSN_UID_GET (id)->insn);
+      rtx_insn *insn = DF_INSN_UID_GET (id)->insn;
+      convert_insn_common (insn);
+      convert_insn (insn);
       converted_insns++;
     }
 
@@ -1843,56 +1851,62 @@ timode_remove_non_convertible_regs (bitmap candidates)
   bitmap_iterator bi;
   unsigned id;
   bitmap regs = BITMAP_ALLOC (NULL);
+  bool changed;
 
-  EXECUTE_IF_SET_IN_BITMAP (candidates, 0, id, bi)
-    {
-      rtx def_set = single_set (DF_INSN_UID_GET (id)->insn);
-      rtx dest = SET_DEST (def_set);
-      rtx src = SET_SRC (def_set);
+  do {
+    changed = false;
+    EXECUTE_IF_SET_IN_BITMAP (candidates, 0, id, bi)
+      {
+	rtx def_set = single_set (DF_INSN_UID_GET (id)->insn);
+	rtx dest = SET_DEST (def_set);
+	rtx src = SET_SRC (def_set);
 
-      if ((!REG_P (dest)
-	   || bitmap_bit_p (regs, REGNO (dest))
-	   || HARD_REGISTER_P (dest))
-	  && (!REG_P (src)
-	      || bitmap_bit_p (regs, REGNO (src))
-	      || HARD_REGISTER_P (src)))
-	continue;
+	if ((!REG_P (dest)
+	     || bitmap_bit_p (regs, REGNO (dest))
+	     || HARD_REGISTER_P (dest))
+	    && (!REG_P (src)
+		|| bitmap_bit_p (regs, REGNO (src))
+		|| HARD_REGISTER_P (src)))
+	  continue;
 
-      if (REG_P (dest))
-	timode_check_non_convertible_regs (candidates, regs,
-					   REGNO (dest));
+	if (REG_P (dest))
+	  timode_check_non_convertible_regs (candidates, regs,
+					     REGNO (dest));
 
-      if (REG_P (src))
-	timode_check_non_convertible_regs (candidates, regs,
-					   REGNO (src));
-    }
+	if (REG_P (src))
+	  timode_check_non_convertible_regs (candidates, regs,
+					     REGNO (src));
+      }
 
-  EXECUTE_IF_SET_IN_BITMAP (regs, 0, id, bi)
-    {
-      for (df_ref def = DF_REG_DEF_CHAIN (id);
-	   def;
-	   def = DF_REF_NEXT_REG (def))
-	if (bitmap_bit_p (candidates, DF_REF_INSN_UID (def)))
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "Removing insn %d from candidates list\n",
-		       DF_REF_INSN_UID (def));
+    EXECUTE_IF_SET_IN_BITMAP (regs, 0, id, bi)
+      {
+	for (df_ref def = DF_REG_DEF_CHAIN (id);
+	     def;
+	     def = DF_REF_NEXT_REG (def))
+	  if (bitmap_bit_p (candidates, DF_REF_INSN_UID (def)))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "Removing insn %d from candidates list\n",
+			 DF_REF_INSN_UID (def));
 
-	    bitmap_clear_bit (candidates, DF_REF_INSN_UID (def));
-	  }
+	      bitmap_clear_bit (candidates, DF_REF_INSN_UID (def));
+	      changed = true;
+	    }
 
-      for (df_ref ref = DF_REG_USE_CHAIN (id);
-	   ref;
-	   ref = DF_REF_NEXT_REG (ref))
-	if (bitmap_bit_p (candidates, DF_REF_INSN_UID (ref)))
-	  {
-	    if (dump_file)
-	      fprintf (dump_file, "Removing insn %d from candidates list\n",
-		       DF_REF_INSN_UID (ref));
+	for (df_ref ref = DF_REG_USE_CHAIN (id);
+	     ref;
+	     ref = DF_REF_NEXT_REG (ref))
+	  if (bitmap_bit_p (candidates, DF_REF_INSN_UID (ref)))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "Removing insn %d from candidates list\n",
+			 DF_REF_INSN_UID (ref));
 
-	    bitmap_clear_bit (candidates, DF_REF_INSN_UID (ref));
-	  }
-    }
+	      bitmap_clear_bit (candidates, DF_REF_INSN_UID (ref));
+	      changed = true;
+	    }
+      }
+  } while (changed);
 
   BITMAP_FREE (regs);
 }

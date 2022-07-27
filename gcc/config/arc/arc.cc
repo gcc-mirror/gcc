@@ -646,8 +646,8 @@ arc_sched_issue_rate (void)
 {
   switch (arc_tune)
     {
-    case TUNE_ARCHS4X:
-    case TUNE_ARCHS4XD:
+    case ARC_TUNE_ARCHS4X:
+    case ARC_TUNE_ARCHS4XD:
       return 3;
     default:
       break;
@@ -1457,6 +1457,12 @@ arc_override_options (void)
   /* Set unaligned to all HS cpus.  */
   if (!OPTION_SET_P (unaligned_access) && TARGET_HS)
     unaligned_access = 1;
+
+  if (TARGET_HS && (arc_tune == ARC_TUNE_ARCHS4X_REL31A))
+    {
+      TARGET_CODE_DENSITY_FRAME = 0;
+      flag_delayed_branch = 0;
+    }
 
   /* These need to be done at start up.  It's convenient to do them here.  */
   arc_init ();
@@ -3965,7 +3971,7 @@ arc_expand_epilogue (int sibcall_p)
   if (size)
     emit_insn (gen_blockage ());
 
-  if (ARC_INTERRUPT_P (fn_type) && restore_fp)
+  if (ARC_INTERRUPT_P (fn_type))
     {
       /* We need to restore FP before any SP operation in an
 	 interrupt.  */
@@ -7817,6 +7823,115 @@ arc_store_addr_hazard_p (rtx_insn* producer, rtx_insn* consumer)
   return arc_store_addr_hazard_internal_p (producer, consumer);
 }
 
+/* Return length adjustment for INSN.
+   For ARC600:
+   A write to a core reg greater or equal to 32 must not be immediately
+   followed by a use.  Anticipate the length requirement to insert a nop
+   between PRED and SUCC to prevent a hazard.  */
+
+static int
+arc600_corereg_hazard (rtx_insn *pred, rtx_insn *succ)
+{
+  if (!TARGET_ARC600)
+    return 0;
+  if (GET_CODE (PATTERN (pred)) == SEQUENCE)
+    pred = as_a <rtx_sequence *> (PATTERN (pred))->insn (1);
+  if (GET_CODE (PATTERN (succ)) == SEQUENCE)
+    succ = as_a <rtx_sequence *> (PATTERN (succ))->insn (0);
+  if (recog_memoized (pred) == CODE_FOR_mulsi_600
+      || recog_memoized (pred) == CODE_FOR_umul_600
+      || recog_memoized (pred) == CODE_FOR_mac_600
+      || recog_memoized (pred) == CODE_FOR_mul64_600
+      || recog_memoized (pred) == CODE_FOR_mac64_600
+      || recog_memoized (pred) == CODE_FOR_umul64_600
+      || recog_memoized (pred) == CODE_FOR_umac64_600)
+    return 0;
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, PATTERN (pred), NONCONST)
+    {
+      const_rtx x = *iter;
+      switch (GET_CODE (x))
+	{
+	case SET: case POST_INC: case POST_DEC: case PRE_INC: case PRE_DEC:
+	  break;
+	default:
+	  /* This is also fine for PRE/POST_MODIFY, because they
+	     contain a SET.  */
+	  continue;
+	}
+      rtx dest = XEXP (x, 0);
+      /* Check if this sets a an extension register.  N.B. we use 61 for the
+	 condition codes, which is definitely not an extension register.  */
+      if (REG_P (dest) && REGNO (dest) >= 32 && REGNO (dest) < 61
+	  /* Check if the same register is used by the PAT.  */
+	  && (refers_to_regno_p
+	      (REGNO (dest),
+	       REGNO (dest) + (GET_MODE_SIZE (GET_MODE (dest)) + 3) / 4U,
+	       PATTERN (succ), 0)))
+	return 4;
+    }
+  return 0;
+}
+
+/* For ARC600:
+   A write to a core reg greater or equal to 32 must not be immediately
+   followed by a use.  Anticipate the length requirement to insert a nop
+   between PRED and SUCC to prevent a hazard.  */
+
+int
+arc_hazard (rtx_insn *pred, rtx_insn *succ)
+{
+  if (!pred || !INSN_P (pred) || !succ || !INSN_P (succ))
+    return 0;
+
+  if (TARGET_ARC600)
+    return arc600_corereg_hazard (pred, succ);
+
+  return 0;
+}
+
+/* When compiling for release 310a, insert a nop before any
+   conditional jump.  */
+
+static int
+arc_check_release31a (rtx_insn *pred, rtx_insn *succ)
+{
+  if (!pred || !INSN_P (pred) || !succ || !INSN_P (succ))
+    return 0;
+
+  if (!JUMP_P (pred) && !single_set (pred))
+    return 0;
+
+  if (!JUMP_P (succ) && !single_set (succ))
+    return 0;
+
+  if (TARGET_HS && (arc_tune == ARC_TUNE_ARCHS4X_REL31A))
+    switch (get_attr_type (pred))
+      {
+      case TYPE_STORE:
+	switch (get_attr_type (succ))
+	  {
+	  case TYPE_BRCC:
+	  case TYPE_BRCC_NO_DELAY_SLOT:
+	  case TYPE_LOOP_END:
+	    return 1;
+	  default:
+	    break;
+	  }
+	break;
+      case TYPE_BRCC:
+      case TYPE_BRCC_NO_DELAY_SLOT:
+      case TYPE_LOOP_END:
+	if (get_attr_type (succ) == TYPE_STORE)
+	  return 1;
+	break;
+      default:
+	break;
+      }
+
+  return 0;
+}
+
 /* The same functionality as arc_hazard.  It is called in machine
    reorg before any other optimization.  Hence, the NOP size is taken
    into account when doing branch shortening.  */
@@ -7830,10 +7945,8 @@ workaround_arc_anomaly (void)
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       succ0 = next_real_insn (insn);
-      if (arc_hazard (insn, succ0))
-	{
-	  emit_insn_before (gen_nopv (), succ0);
-	}
+      if (arc_hazard (insn, succ0) || arc_check_release31a (insn, succ0))
+	emit_insn_before (gen_nopv (), succ0);
     }
 
   if (!TARGET_ARC700)
@@ -9324,56 +9437,6 @@ disi_highpart (rtx in)
   return simplify_gen_subreg (SImode, in, DImode, TARGET_BIG_ENDIAN ? 0 : 4);
 }
 
-/* Return length adjustment for INSN.
-   For ARC600:
-   A write to a core reg greater or equal to 32 must not be immediately
-   followed by a use.  Anticipate the length requirement to insert a nop
-   between PRED and SUCC to prevent a hazard.  */
-
-static int
-arc600_corereg_hazard (rtx_insn *pred, rtx_insn *succ)
-{
-  if (!TARGET_ARC600)
-    return 0;
-  if (GET_CODE (PATTERN (pred)) == SEQUENCE)
-    pred = as_a <rtx_sequence *> (PATTERN (pred))->insn (1);
-  if (GET_CODE (PATTERN (succ)) == SEQUENCE)
-    succ = as_a <rtx_sequence *> (PATTERN (succ))->insn (0);
-  if (recog_memoized (pred) == CODE_FOR_mulsi_600
-      || recog_memoized (pred) == CODE_FOR_umul_600
-      || recog_memoized (pred) == CODE_FOR_mac_600
-      || recog_memoized (pred) == CODE_FOR_mul64_600
-      || recog_memoized (pred) == CODE_FOR_mac64_600
-      || recog_memoized (pred) == CODE_FOR_umul64_600
-      || recog_memoized (pred) == CODE_FOR_umac64_600)
-    return 0;
-  subrtx_iterator::array_type array;
-  FOR_EACH_SUBRTX (iter, array, PATTERN (pred), NONCONST)
-    {
-      const_rtx x = *iter;
-      switch (GET_CODE (x))
-	{
-	case SET: case POST_INC: case POST_DEC: case PRE_INC: case PRE_DEC:
-	  break;
-	default:
-	  /* This is also fine for PRE/POST_MODIFY, because they
-	     contain a SET.  */
-	  continue;
-	}
-      rtx dest = XEXP (x, 0);
-      /* Check if this sets an extension register.  N.B. we use 61 for the
-	 condition codes, which is definitely not an extension register.  */
-      if (REG_P (dest) && REGNO (dest) >= 32 && REGNO (dest) < 61
-	  /* Check if the same register is used by the PAT.  */
-	  && (refers_to_regno_p
-	      (REGNO (dest),
-	       REGNO (dest) + (GET_MODE_SIZE (GET_MODE (dest)) + 3) / 4U,
-	       PATTERN (succ), 0)))
-	return 4;
-    }
-  return 0;
-}
-
 /* Given a rtx, check if it is an assembly instruction or not.  */
 
 static int
@@ -9404,23 +9467,6 @@ arc_asm_insn_p (rtx x)
     default:
       break;
     }
-
-  return 0;
-}
-
-/* For ARC600:
-   A write to a core reg greater or equal to 32 must not be immediately
-   followed by a use.  Anticipate the length requirement to insert a nop
-   between PRED and SUCC to prevent a hazard.  */
-
-int
-arc_hazard (rtx_insn *pred, rtx_insn *succ)
-{
-  if (!pred || !INSN_P (pred) || !succ || !INSN_P (succ))
-    return 0;
-
-  if (TARGET_ARC600)
-    return arc600_corereg_hazard (pred, succ);
 
   return 0;
 }

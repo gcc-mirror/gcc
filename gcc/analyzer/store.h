@@ -544,9 +544,7 @@ public:
   typedef hash_map <const binding_key *, const svalue *> map_t;
   typedef map_t::iterator iterator_t;
 
-  binding_cluster (const region *base_region)
-  : m_base_region (base_region), m_map (),
-    m_escaped (false), m_touched (false) {}
+  binding_cluster (const region *base_region);
   binding_cluster (const binding_cluster &other);
   binding_cluster& operator=(const binding_cluster &other);
 

@@ -1,3 +1,9 @@
+2022-07-23  Immad Mir  <mirimmad@outlook.com>
+
+	* c-attribs.cc: (c_common_attribute_table): add three new attributes
+	namely: fd_arg, fd_arg_read and fd_arg_write.
+	(handle_fd_arg_attribute): New.
+
 2022-07-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/104477
