@@ -25,7 +25,10 @@
 namespace Rust {
 namespace HIR {
 
-UnsafeChecker::UnsafeChecker () : context (*Resolver::TypeCheckContext::get ())
+UnsafeChecker::UnsafeChecker ()
+  : context (*Resolver::TypeCheckContext::get ()),
+    resolver (*Resolver::Resolver::get ()),
+    mappings (*Analysis::Mappings::get ())
 {}
 
 void
@@ -33,6 +36,47 @@ UnsafeChecker::go (HIR::Crate &crate)
 {
   for (auto &item : crate.items)
     item->accept_vis (*this);
+}
+
+static void
+check_static_mut (HIR::Item *maybe_static, Location locus)
+{
+  if (maybe_static->get_hir_kind () == Node::BaseKind::VIS_ITEM)
+    {
+      auto item = static_cast<Item *> (maybe_static);
+      if (item->get_item_kind () == Item::ItemKind::Static)
+	{
+	  auto static_item = static_cast<StaticItem *> (item);
+	  if (static_item->is_mut ())
+	    rust_error_at (
+	      locus, "use of mutable static requires unsafe function or block");
+	}
+    }
+}
+
+static void
+check_extern_static (HIR::ExternalItem *maybe_static, Location locus)
+{
+  if (maybe_static->get_extern_kind () == ExternalItem::ExternKind::Static)
+    rust_error_at (locus,
+		   "use of extern static requires unsafe function or block");
+}
+
+void
+UnsafeChecker::check_use_of_static (HirId node_id, Location locus)
+{
+  if (is_unsafe_context ())
+    return;
+
+  auto maybe_static_mut = mappings.lookup_hir_item (node_id);
+  auto maybe_extern_static = mappings.lookup_hir_extern_item (node_id);
+
+  if (maybe_static_mut)
+    check_static_mut (maybe_static_mut, locus);
+
+  if (maybe_extern_static)
+    check_extern_static (static_cast<ExternalItem *> (maybe_extern_static),
+			 locus);
 }
 
 void
@@ -60,7 +104,18 @@ UnsafeChecker::is_unsafe_context ()
 
 void
 UnsafeChecker::visit (IdentifierExpr &ident_expr)
-{}
+{
+  NodeId ast_node_id = ident_expr.get_mappings ().get_nodeid ();
+  NodeId ref_node_id;
+  HirId definition_id;
+
+  if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
+    return;
+
+  rust_assert (mappings.lookup_node_to_hir (ref_node_id, &definition_id));
+
+  check_use_of_static (definition_id, ident_expr.get_locus ());
+}
 
 void
 UnsafeChecker::visit (Lifetime &lifetime)
@@ -72,7 +127,18 @@ UnsafeChecker::visit (LifetimeParam &lifetime_param)
 
 void
 UnsafeChecker::visit (PathInExpression &path)
-{}
+{
+  NodeId ast_node_id = path.get_mappings ().get_nodeid ();
+  NodeId ref_node_id;
+  HirId definition_id;
+
+  if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
+    return;
+
+  rust_assert (mappings.lookup_node_to_hir (ref_node_id, &definition_id));
+
+  check_use_of_static (definition_id, path.get_locus ());
+}
 
 void
 UnsafeChecker::visit (TypePathSegment &segment)
@@ -253,7 +319,11 @@ UnsafeChecker::visit (StructExprStructBase &expr)
 
 void
 UnsafeChecker::visit (CallExpr &expr)
-{}
+{
+  if (expr.has_params ())
+    for (auto &arg : expr.get_arguments ())
+      arg->accept_vis (*this);
+}
 
 void
 UnsafeChecker::visit (MethodCallExpr &expr)
