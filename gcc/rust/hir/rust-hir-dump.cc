@@ -21,15 +21,60 @@
 namespace Rust {
 namespace HIR {
 
-Dump::Dump (std::ostream &stream) : stream (stream) {}
+Dump::Dump (std::ostream &stream) : stream (stream), indent (0) {}
 
 void
 Dump::go (HIR::Crate &crate)
 {
-  // TODO: print crate inner_attrs
-  // TODO: print crate items
-  // TODO: print crate mappings
-  stream << crate.as_string ();
+  stream << "Crate"
+	 << " "
+	 << "{" << std::endl;
+  //
+
+  indent++;
+  stream << std::string (indent, indent_char);
+  stream << "inner_attrs"
+	 << ":"
+	 << " "
+	 << "[";
+  for (auto &attr : crate.inner_attrs)
+    stream << attr.as_string ();
+  stream << "]"
+	 << "," << std::endl;
+  indent--;
+
+  indent++;
+  stream << std::string (indent, indent_char);
+  //
+
+  stream << "items"
+	 << ":"
+	 << " "
+	 << "[";
+
+  stream << std::string (indent, indent_char);
+  for (const auto &item : crate.items)
+    {
+      stream << std::endl;
+      item->accept_vis (*this);
+    }
+  stream << std::string (indent, indent_char);
+  stream << "]"
+	 << "," << std::endl;
+  indent--;
+  //
+
+  indent++;
+  stream << std::string (indent, indent_char);
+  stream << "node_mappings"
+	 << ":"
+	 << " "
+	 << "[";
+  // TODO: print crate mapping attrs
+  stream << "]" << std::endl;
+  indent--;
+
+  stream << "}" << std::endl;
 }
 
 void
@@ -64,8 +109,14 @@ Dump::visit (QualifiedPathInType &)
 {}
 
 void
-Dump::visit (LiteralExpr &)
-{}
+Dump::visit (LiteralExpr &literal_expr)
+{
+  indent++;
+  stream << std::string (indent, indent_char);
+  stream << "( " + literal_expr.get_literal ().as_string () + " ("
+	      + literal_expr.get_mappings ().as_string () + "))";
+  stream << "\n";
+}
 void
 Dump::visit (BorrowExpr &)
 {}
@@ -152,8 +203,18 @@ void
 Dump::visit (ClosureExprInner &)
 {}
 void
-Dump::visit (BlockExpr &)
-{}
+Dump::visit (BlockExpr &block_expr)
+{
+  stream << "BlockExpr"
+	 << ":"
+	 << " "
+	 << "[";
+  indent++;
+  // TODO: print statements
+  // TODO: print tail expression if exists
+  stream << "]";
+  indent--;
+}
 void
 Dump::visit (ClosureExprInnerTyped &)
 {}
@@ -268,8 +329,21 @@ void
 Dump::visit (UseDeclaration &)
 {}
 void
-Dump::visit (Function &)
-{}
+Dump::visit (Function &function)
+{
+  indent++;
+  stream << std::string (indent, indent_char);
+  stream << "Function"
+	 << " ";
+  stream << "{" << std::endl;
+  // TODO: print function params
+  stream << std::string (indent, indent_char);
+  stream << "}" << std::endl;
+  // TODO: get function definition and visit block
+
+  stream << std::endl;
+  indent--;
+}
 void
 Dump::visit (TypeAlias &)
 {}
