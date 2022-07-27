@@ -2171,6 +2171,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		  log ("considering event %i (%s), with sval: %qs, state: %qs",
 		       idx, event_kind_to_string (base_event->m_kind),
 		       sval_desc.m_buffer, state->get_name ());
+		  sval_desc.maybe_free ();
 		}
 	      else
 		log ("considering event %i (%s), with global state: %qs",
@@ -2238,6 +2239,8 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			     " switching var of interest from %qs to %qs",
 			     idx, sval_desc.m_buffer,
 			     origin_sval_desc.m_buffer);
+			sval_desc.maybe_free ();
+			origin_sval_desc.maybe_free ();
 		      }
 		    sval = state_change->m_origin;
 		  }
@@ -2265,6 +2268,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			else
 			  log ("filtering event %i: state change to %qs",
 			       idx, change_sval_desc.m_buffer);
+			change_sval_desc.maybe_free ();
 		      }
 		    else
 		      log ("filtering event %i: global state change", idx);
@@ -2334,6 +2338,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			 " recording critical state for %qs at call"
 			 " from %qE in callee to %qE in caller",
 			 idx, sval_desc.m_buffer, callee_var, caller_var);
+		    sval_desc.maybe_free ();
 		  }
 		if (expr.param_p ())
 		  event->record_critical_state (caller_var, state);
@@ -2377,6 +2382,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			     " recording critical state for %qs at return"
 			     " from %qE in caller to %qE in callee",
 			     idx, sval_desc.m_buffer, callee_var, callee_var);
+			sval_desc.maybe_free ();
 		      }
 		    if (expr.return_value_p ())
 		      event->record_critical_state (callee_var, state);

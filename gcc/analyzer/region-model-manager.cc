@@ -97,11 +97,11 @@ region_model_manager::~region_model_manager ()
        iter != m_unknowns_map.end (); ++iter)
     delete (*iter).second;
   delete m_unknown_NULL;
-  for (setjmp_values_map_t::iterator iter = m_setjmp_values_map.begin ();
-       iter != m_setjmp_values_map.end (); ++iter)
-    delete (*iter).second;
   for (poisoned_values_map_t::iterator iter = m_poisoned_values_map.begin ();
        iter != m_poisoned_values_map.end (); ++iter)
+    delete (*iter).second;
+  for (setjmp_values_map_t::iterator iter = m_setjmp_values_map.begin ();
+       iter != m_setjmp_values_map.end (); ++iter)
     delete (*iter).second;
   for (initial_values_map_t::iterator iter = m_initial_values_map.begin ();
        iter != m_initial_values_map.end (); ++iter)
@@ -118,6 +118,10 @@ region_model_manager::~region_model_manager ()
   for (sub_values_map_t::iterator iter = m_sub_values_map.begin ();
        iter != m_sub_values_map.end (); ++iter)
     delete (*iter).second;
+  for (auto iter : m_repeated_values_map)
+    delete iter.second;
+  for (auto iter : m_bits_within_values_map)
+    delete iter.second;
   for (unmergeable_values_map_t::iterator iter
 	 = m_unmergeable_values_map.begin ();
        iter != m_unmergeable_values_map.end (); ++iter)
@@ -131,6 +135,10 @@ region_model_manager::~region_model_manager ()
   for (conjured_values_map_t::iterator iter = m_conjured_values_map.begin ();
        iter != m_conjured_values_map.end (); ++iter)
     delete (*iter).second;
+  for (auto iter : m_asm_output_values_map)
+    delete iter.second;
+  for (auto iter : m_const_fn_result_values_map)
+    delete iter.second;
 
   /* Delete consolidated regions.  */
   for (fndecls_map_t::iterator iter = m_fndecls_map.begin ();

@@ -2340,15 +2340,14 @@ exploded_graph::exploded_graph (const supergraph &sg, logger *logger,
 
 exploded_graph::~exploded_graph ()
 {
-  for (function_stat_map_t::iterator iter = m_per_function_stats.begin ();
-       iter != m_per_function_stats.end ();
-       ++iter)
-    delete (*iter).second;
-
-  for (point_map_t::iterator iter = m_per_point_data.begin ();
-       iter != m_per_point_data.end ();
-       ++iter)
-    delete (*iter).second;
+  for (auto iter : m_per_point_data)
+    delete iter.second;
+  for (auto iter : m_per_function_data)
+    delete iter.second;
+  for (auto iter : m_per_function_stats)
+    delete iter.second;
+  for (auto iter : m_per_call_string_data)
+    delete iter.second;
 }
 
 /* Subroutine for use when implementing __attribute__((tainted_args))
@@ -4538,10 +4537,14 @@ feasibility_state::maybe_update_for_edge (logger *logger,
   if (sedge)
     {
       if (logger)
-	logger->log ("  sedge: SN:%i -> SN:%i %s",
-		     sedge->m_src->m_index,
-		     sedge->m_dest->m_index,
-		     sedge->get_description (false));
+	{
+	  char *desc = sedge->get_description (false);
+	  logger->log ("  sedge: SN:%i -> SN:%i %s",
+		       sedge->m_src->m_index,
+		       sedge->m_dest->m_index,
+		       desc);
+	  free (desc);
+	}
 
       const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
       if (!m_model.maybe_update_for_edge (*sedge, last_stmt, NULL, out_rc))
