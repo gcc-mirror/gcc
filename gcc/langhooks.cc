@@ -634,6 +634,14 @@ lhd_omp_finish_clause (tree, gimple_seq *, bool)
 {
 }
 
+/* Return array size; cf. omp_array_data.  */
+
+tree
+lhd_omp_array_size (tree, gimple_seq *)
+{
+  return NULL_TREE;
+}
+
 /* Return true if DECL is a scalar variable (for the purpose of
    implicit firstprivatization & mapping). Only if alloc_ptr_ok
    are allocatables and pointers accepted. */
@@ -915,6 +923,14 @@ lhd_finalize_early_debug (void)
   struct cgraph_node *cnode;
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (cnode)
     (*debug_hooks->early_global_decl) (cnode->decl);
+}
+
+/* Default implementation of LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE.  */
+
+const char *
+lhd_get_sarif_source_language (const char *)
+{
+  return NULL;
 }
 
 /* Returns true if the current lang_hooks represents the GNU C frontend.  */

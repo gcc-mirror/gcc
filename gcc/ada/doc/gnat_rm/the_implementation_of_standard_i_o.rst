@@ -617,7 +617,7 @@ of stream pointer positioning (:ref:`Text_IO`).  There is one additional
 case:
 
 If ``Ada.Wide_Text_IO.Look_Ahead`` reads a character outside the
-normal lower ASCII set (i.e., a character in the range:
+normal lower ASCII set, i.e. a character in the range:
 
 
 .. code-block:: ada
@@ -761,7 +761,7 @@ of stream pointer positioning (:ref:`Text_IO`).  There is one additional
 case:
 
 If ``Ada.Wide_Wide_Text_IO.Look_Ahead`` reads a character outside the
-normal lower ASCII set (i.e., a character in the range:
+normal lower ASCII set, i.e. a character in the range:
 
 
 .. code-block:: ada

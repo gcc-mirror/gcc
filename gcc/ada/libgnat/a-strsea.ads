@@ -52,6 +52,7 @@ with Ada.Strings.Maps; use type Ada.Strings.Maps.Character_Mapping_Function;
 
 package Ada.Strings.Search with SPARK_Mode is
    pragma Preelaborate;
+   pragma Annotate (GNATprove, Always_Return, Search);
 
    --  The ghost function Match tells whether the slice of Source starting at
    --  From and of length Pattern'Length matches with Pattern with respect to

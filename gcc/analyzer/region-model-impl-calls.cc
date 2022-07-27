@@ -57,6 +57,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-info.h"
+#include "analyzer/sm.h"
+#include "diagnostic-path.h"
+#include "analyzer/pending-diagnostic.h"
 #include "gimple-pretty-print.h"
 
 #if ENABLE_ANALYZER
@@ -78,6 +81,14 @@ call_details::call_details (const gcall *call, region_model *model,
       m_lhs_region = model->get_lvalue (lhs, ctxt);
       m_lhs_type = TREE_TYPE (lhs);
     }
+}
+
+/* Get the manager from m_model.  */
+
+region_model_manager *
+call_details::get_manager () const
+{
+  return m_model->get_manager ();
 }
 
 /* Get any uncertainty_t associated with the region_model_context.  */
@@ -204,13 +215,15 @@ call_details::dump (bool simple) const
   pp_flush (&pp);
 }
 
-/* Get a conjured_svalue for this call for REG.  */
+/* Get a conjured_svalue for this call for REG,
+   and purge any state already relating to that conjured_svalue.  */
 
 const svalue *
 call_details::get_or_create_conjured_svalue (const region *reg) const
 {
   region_model_manager *mgr = m_model->get_manager ();
-  return mgr->get_or_create_conjured_svalue (reg->get_type (), m_call, reg);
+  return mgr->get_or_create_conjured_svalue (reg->get_type (), m_call, reg,
+					     conjured_purge (m_model, m_ctxt));
 }
 
 /* Implementations of specific functions.  */
@@ -242,7 +255,7 @@ region_model::impl_call_analyzer_describe (const gcall *call,
   const svalue *sval = get_rvalue (t_val, ctxt);
   bool simple = zerop (t_verbosity);
   label_text desc = sval->get_desc (simple);
-  warning_at (call->location, 0, "svalue: %qs", desc.m_buffer);
+  warning_at (call->location, 0, "svalue: %qs", desc.get ());
 }
 
 /* Handle a call to "__analyzer_dump_capacity".
@@ -261,7 +274,7 @@ region_model::impl_call_analyzer_dump_capacity (const gcall *call,
   const region *base_reg = reg->get_base_region ();
   const svalue *capacity = get_capacity (base_reg);
   label_text desc = capacity->get_desc (true);
-  warning_at (call->location, 0, "capacity: %qs", desc.m_buffer);
+  warning_at (call->location, 0, "capacity: %qs", desc.get ());
 }
 
 /* Compare D1 and D2 using their names, and then IDs to order them.  */
@@ -426,7 +439,6 @@ region_model::impl_call_fgets (const call_details &cd)
     {
       const region *base_reg = reg->get_base_region ();
       const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
-      purge_state_involving (new_sval, cd.get_ctxt ());
       set_value (base_reg, new_sval, cd.get_ctxt ());
     }
 }
@@ -441,7 +453,6 @@ region_model::impl_call_fread (const call_details &cd)
     {
       const region *base_reg = reg->get_base_region ();
       const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
-      purge_state_involving (new_sval, cd.get_ctxt ());
       set_value (base_reg, new_sval, cd.get_ctxt ());
     }
 }
@@ -610,7 +621,7 @@ region_model::impl_call_realloc (const call_details &cd)
 
     bool update_model (region_model *model,
 		       const exploded_edge *,
-		       region_model_context *ctxt) const FINAL OVERRIDE
+		       region_model_context *ctxt) const final override
     {
       /* Return NULL; everything else is unchanged.  */
       const call_details cd (get_call_details (model, ctxt));
@@ -636,7 +647,7 @@ region_model::impl_call_realloc (const call_details &cd)
     {
     }
 
-    label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+    label_text get_desc (bool can_colorize) const final override
     {
       return make_label_text (can_colorize,
 			      "when %qE succeeds, without moving buffer",
@@ -645,7 +656,7 @@ region_model::impl_call_realloc (const call_details &cd)
 
     bool update_model (region_model *model,
 		       const exploded_edge *,
-		       region_model_context *ctxt) const FINAL OVERRIDE
+		       region_model_context *ctxt) const final override
     {
       /* Update size of buffer and return the ptr unchanged.  */
       const call_details cd (get_call_details (model, ctxt));
@@ -688,7 +699,7 @@ region_model::impl_call_realloc (const call_details &cd)
     {
     }
 
-    label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+    label_text get_desc (bool can_colorize) const final override
     {
       return make_label_text (can_colorize,
 			      "when %qE succeeds, moving buffer",
@@ -696,7 +707,7 @@ region_model::impl_call_realloc (const call_details &cd)
     }
     bool update_model (region_model *model,
 		       const exploded_edge *,
-		       region_model_context *ctxt) const FINAL OVERRIDE
+		       region_model_context *ctxt) const final override
     {
       const call_details cd (get_call_details (model, ctxt));
       const svalue *old_ptr_sval = cd.get_arg_svalue (0);
@@ -789,7 +800,7 @@ region_model::impl_call_strchr (const call_details &cd)
     {
     }
 
-    label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+    label_text get_desc (bool can_colorize) const final override
     {
       if (m_found)
 	return make_label_text (can_colorize,
@@ -803,7 +814,7 @@ region_model::impl_call_strchr (const call_details &cd)
 
     bool update_model (region_model *model,
 		       const exploded_edge *,
-		       region_model_context *ctxt) const FINAL OVERRIDE
+		       region_model_context *ctxt) const final override
     {
       const call_details cd (get_call_details (model, ctxt));
       if (tree lhs_type = cd.get_lhs_type ())
@@ -822,7 +833,9 @@ region_model::impl_call_strchr (const call_details &cd)
 	      const svalue *offset
 		= mgr->get_or_create_conjured_svalue (size_type_node,
 						      cd.get_call_stmt (),
-						      str_reg);
+						      str_reg,
+						      conjured_purge (model,
+								      ctxt));
 	      result = mgr->get_or_create_binop (lhs_type, POINTER_PLUS_EXPR,
 						 str_sval, offset);
 	    }

@@ -1889,6 +1889,12 @@ c_fold_indirect_ref_for_warn (location_t loc, tree type, tree op,
 	      = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (field)));
 	    if (upos <= off && off < upos + el_sz)
 	      {
+		/* The C++ pretty printers print scope of the FIELD_DECLs,
+		   so punt if it is something that can't be printed.  */
+		if (c_dialect_cxx ())
+		  if (tree scope = get_containing_scope (field))
+		    if (TYPE_P (scope) && TYPE_NAME (scope) == NULL_TREE)
+		      break;
 		tree cop = build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
 				       op, field, NULL_TREE);
 		off = off - upos;

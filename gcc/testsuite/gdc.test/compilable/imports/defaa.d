@@ -10,6 +10,3 @@ class Display
 
 	this() { }
 }
-
-
-

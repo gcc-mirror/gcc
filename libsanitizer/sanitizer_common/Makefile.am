@@ -59,6 +59,7 @@ sanitizer_common_files = \
 	sanitizer_procmaps_mac.cpp \
 	sanitizer_procmaps_solaris.cpp \
 	sanitizer_solaris.cpp \
+	sanitizer_stack_store.cpp \
 	sanitizer_stackdepot.cpp \
 	sanitizer_stacktrace.cpp \
 	sanitizer_stacktrace_libcdep.cpp \

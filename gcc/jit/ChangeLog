@@ -1,3 +1,186 @@
+2022-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* jit-recording.h (recording::memento): Define copy constructor
+	and copy assignment operator as deleted.
+	(recording::string): Likewise.
+	(recording::string::c_str): Add const qualifier.
+
+2022-06-29  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/105812
+	* jit-playback.cc: Use the correct return type when folding in
+	as_truth_value.
+
+2022-06-29  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* jit-playback.cc: Include <pthread.h> via "system.h" to avoid calloc()
+	poisoning.
+	* jit-recording.cc: Ditto.
+	* libgccjit.cc: Ditto.
+
+2022-06-10  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/105829
+	* libgccjit.cc: Add support for floating-point types in
+	gcc_jit_type_get_size.
+
+2022-06-08  Yang Yujie  <yangyujie@loongson.cn>
+
+	* Make-lang.in: only link objects from $(EXTRA_GCC_OBJS)
+	that's not in $(EXTRA_OBJS) into libgccjit.
+
+2022-05-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.h: Add "final" and "override" to all vfunc
+	implementations that were missing them, as appropriate.
+
+2022-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.h: Replace uses of "FINAL" and "OVERRIDE" with
+	"final" and "override".
+	* jit-recording.cc: Likewise.
+	* jit-recording.h: Likewise.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* jit-builtins.cc (find_builtin_by_name): Use ARRAY_SIZE.
+	(get_string_for_type_id): Likewise.
+	* jit-recording.cc (recording::context::context): Likewise.
+
+2022-04-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit-playback.cc (new_bitcast): Cast values returned by tree_to_uhwi
+	to 'long' to match the print format.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104293
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_24): New ABI tag.
+	* docs/topics/expressions.rst: Add documentation for the
+	functions gcc_jit_lvalue_set_alignment and
+	gcc_jit_lvalue_get_alignment.
+	* jit-playback.h: New function (set_alignment).
+	* jit-recording.cc: New function (set_alignment).
+	* jit-recording.h: New functions (set_alignment, get_alignment)
+	and new field (m_alignment).
+	* libgccjit.cc: New functions (gcc_jit_lvalue_get_alignment,
+	gcc_jit_lvalue_set_alignment)
+	* libgccjit.h: New functions (gcc_jit_lvalue_get_alignment,
+	gcc_jit_lvalue_set_alignment)
+	* libgccjit.map (LIBGCCJIT_ABI_24): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104073
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_23): New ABI tag.
+	* docs/topics/contexts.rst: Add documentation for the new
+	function gcc_jit_context_set_bool_print_errors_to_stderr.
+	* jit-common.h: New enum value
+	(INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR).
+	* jit-recording.cc: Handle the new option
+	INNER_BOOL_OPTION_PRINT_ERRORS_TO_STDERR.
+	* libgccjit.cc: New function
+	(gcc_jit_context_set_bool_print_errors_to_stderr).
+	* libgccjit.h: New function
+	(gcc_jit_context_set_bool_print_errors_to_stderr).
+	* libgccjit.map (LIBGCCJIT_ABI_23): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104072
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_22): New ABI tag.
+	* docs/topics/expressions.rst: Add documentation for the
+	function gcc_jit_lvalue_set_register_name.
+	* jit-playback.h: New function (set_register_name).
+	* jit-recording.cc: New function (set_register_name) and add
+	support for register variables.
+	* jit-recording.h: New field (m_reg_name) and new function
+	(set_register_name).
+	* libgccjit.cc: New function (gcc_jit_lvalue_set_register_name).
+	* libgccjit.h: New function (gcc_jit_lvalue_set_register_name).
+	* libgccjit.map (LIBGCCJIT_ABI_22): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/104071
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_21): New ABI tag.
+	* docs/topics/expressions.rst: Add documentation for the
+	function gcc_jit_context_new_bitcast.
+	* jit-playback.cc: New function (new_bitcast).
+	* jit-playback.h: New function (new_bitcast).
+	* jit-recording.cc: New functions (new_bitcast,
+	bitcast::replay_into, bitcast::visit_children,
+	bitcast::make_debug_string, bitcast::write_reproducer).
+	* jit-recording.h: New class (bitcast) and new function
+	(new_bitcast, bitcast::replay_into, bitcast::visit_children,
+	bitcast::make_debug_string, bitcast::write_reproducer,
+	bitcast::get_precedence).
+	* libgccjit.cc: New function (gcc_jit_context_new_bitcast)
+	* libgccjit.h: New function (gcc_jit_context_new_bitcast)
+	* libgccjit.map (LIBGCCJIT_ABI_21): New ABI tag.
+
+2022-04-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95325
+	* docs/_build/texinfo/libgccjit.texi: Regenerate
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_20): New ABI tag.
+	* docs/topics/types.rst: Add documentation for the new types
+	GCC_JIT_TYPE_UINT8_T, GCC_JIT_TYPE_UINT16_T,
+	GCC_JIT_TYPE_UINT32_T, GCC_JIT_TYPE_UINT64_T,
+	GCC_JIT_TYPE_UINT128_T, GCC_JIT_TYPE_INT8_T, GCC_JIT_TYPE_INT16_T,
+	GCC_JIT_TYPE_INT32_T, GCC_JIT_TYPE_INT64_T, GCC_JIT_TYPE_INT128_T and
+	new functions (gcc_jit_compatible_types, gcc_jit_type_get_size).
+	* jit-builtins.cc: Add support for BT_UINT128.
+	* jit-common.h: Update the value of NUM_GCC_JIT_TYPES.
+	* jit-playback.cc: Add support for the sized integer types.
+	* jit-recording.cc: Add support for the sized integer types.
+	* jit-recording.h: Add support for comparing integer types
+	and new function (is_signed).
+	* libgccjit.cc (gcc_jit_compatible_types): New.
+	(gcc_jit_type_get_size) New.
+	* libgccjit.h: New enum variants for gcc_jit_types
+	(GCC_JIT_TYPE_UINT8_T, GCC_JIT_TYPE_UINT16_T,
+	GCC_JIT_TYPE_UINT32_T, GCC_JIT_TYPE_UINT64_T,
+	GCC_JIT_TYPE_UINT128_T, GCC_JIT_TYPE_INT8_T,
+	GCC_JIT_TYPE_INT16_T, GCC_JIT_TYPE_INT32_T,
+	GCC_JIT_TYPE_INT64_T, GCC_JIT_TYPE_INT128_T) and new functions
+	(gcc_jit_compatible_types, gcc_jit_type_get_size).
+	* libgccjit.map (LIBGCCJIT_ABI_20): New ABI tag.
+
+2022-04-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/102824
+	* docs/_build/texinfo/factorial.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/factorial.png: ...here.
+	* docs/_build/texinfo/factorial1.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/factorial1.png: ...here.
+	* docs/_build/texinfo/sum-of-squares.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/sum-of-squares.png: ...here.
+	* docs/_build/texinfo/sum-of-squares1.png: Move to...
+	* docs/_build/texinfo/libgccjit-figures/sum-of-squares1.png: ...here.
+
+2022-04-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/expressions.rst: Fix formatting.
+	* docs/topics/types.rst: Likewise.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate
+
+2022-04-01  Petter Tomner  <tomner@kth.se>
+
+	* docs/topics/compatibility.rst: Add 19 tag
+	* docs/topics/compilation.rst: Linking
+	* docs/topics/contexts.rst: Linking example
+	* docs/topics/expressions.rst: Fix formatting and dropped 's'
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgccjit.h: Fix up duplicated word issue in a comment.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* config-lang.in: Rename .c names to .cc.

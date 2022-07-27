@@ -2,7 +2,6 @@
 // { dg-additional-options "-mavx" { target avx_runtime } }
 // { dg-do run { target { avx_runtime || vect_sizes_16B_8B } } }
 // { dg-skip-if "needs gcc/config.d" { ! d_runtime } }
-// { dg-skip-if "needs gcc/config.d" { ! d_runtime } }
 import core.simd;
 
 void main()

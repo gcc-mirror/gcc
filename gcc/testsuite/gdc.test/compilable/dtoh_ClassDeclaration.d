@@ -8,9 +8,9 @@ TEST_OUTPUT:
 #pragma once
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <math.h>
 
 #ifdef CUSTOM_D_ARRAY_TYPE
 #define _d_dynamicArray CUSTOM_D_ARRAY_TYPE
@@ -82,7 +82,9 @@ public:
     int32_t a;
     C* c;
     virtual void foo();
-    extern "C" virtual void bar();
+private:
+    virtual void __vtable_slot_0();
+public:
     virtual void baz(int32_t x = 42);
     struct
     {
@@ -116,7 +118,7 @@ public:
     {
     public:
         int32_t x;
-        A* this;
+        A* outer;
     };
 
     typedef Inner I;
@@ -140,14 +142,14 @@ class B : public A, public I1, public I2
 {
 public:
     using A::bar;
-    void foo();
-    void bar();
+    void foo() final override;
+    void bar() override;
 };
 
 class Parent
 {
-    virtual void __vtable_slot_0();
     virtual void __vtable_slot_1();
+    virtual void __vtable_slot_2();
 public:
     virtual void foo();
 };
@@ -155,7 +157,7 @@ public:
 class Child final : public Parent
 {
 public:
-    void foo() /* const */;
+    void foo() override;
 };
 
 class VisitorBase
@@ -287,7 +289,7 @@ interface I2 : I1
 class B : A, I1, I2
 {
     alias bar = A.bar;
-    override void foo() {}
+    override final void foo() {}
     override void bar() {}
 }
 
@@ -301,7 +303,7 @@ class Parent
 final class Child : Parent
 {
     extern(D) override void over() {}
-    override void foo() const {}
+    override void foo() {}
 }
 
 class VisitorBase

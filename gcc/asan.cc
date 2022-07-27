@@ -1285,7 +1285,20 @@ has_stmt_been_instrumented_p (gimple *stmt)
 
       if (get_mem_ref_of_assignment (as_a <gassign *> (stmt), &r,
 				     &r_is_store))
-	return has_mem_ref_been_instrumented (&r);
+	{
+	  if (!has_mem_ref_been_instrumented (&r))
+	    return false;
+	  if (r_is_store && gimple_assign_load_p (stmt))
+	    {
+	      asan_mem_ref src;
+	      asan_mem_ref_init (&src, NULL, 1);
+	      src.start = gimple_assign_rhs1 (stmt);
+	      src.access_size = int_size_in_bytes (TREE_TYPE (src.start));
+	      if (!has_mem_ref_been_instrumented (&src))
+		return false;
+	    }
+	  return true;
+	}
     }
   else if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     {
@@ -1497,10 +1510,14 @@ asan_redzone_buffer::emit_redzone_byte (HOST_WIDE_INT offset,
   HOST_WIDE_INT off
     = m_prev_offset + ASAN_SHADOW_GRANULARITY * m_shadow_bytes.length ();
   if (off == offset)
+    /* Consecutive shadow memory byte.  */;
+  else if (offset < m_prev_offset + (HOST_WIDE_INT) (ASAN_SHADOW_GRANULARITY
+						     * RZ_BUFFER_SIZE)
+	   && !m_shadow_bytes.is_empty ())
     {
-      /* Consecutive shadow memory byte.  */
-      m_shadow_bytes.safe_push (value);
-      flush_if_full ();
+      /* Shadow memory byte with a small gap.  */
+      for (; off < offset; off += ASAN_SHADOW_GRANULARITY)
+	m_shadow_bytes.safe_push (0);
     }
   else
     {
@@ -1521,9 +1538,9 @@ asan_redzone_buffer::emit_redzone_byte (HOST_WIDE_INT offset,
       m_shadow_mem = adjust_address (m_shadow_mem, VOIDmode,
 				     diff >> ASAN_SHADOW_SHIFT);
       m_prev_offset = offset;
-      m_shadow_bytes.safe_push (value);
-      flush_if_full ();
     }
+  m_shadow_bytes.safe_push (value);
+  flush_if_full ();
 }
 
 /* Emit RTX emission of the content of the buffer.  */
@@ -2688,13 +2705,13 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     return;
 
   poly_int64 decl_size;
-  if (VAR_P (inner)
+  if ((VAR_P (inner) || TREE_CODE (inner) == RESULT_DECL)
       && offset == NULL_TREE
       && DECL_SIZE (inner)
       && poly_int_tree_p (DECL_SIZE (inner), &decl_size)
       && known_subrange_p (bitpos, bitsize, 0, decl_size))
     {
-      if (DECL_THREAD_LOCAL_P (inner))
+      if (VAR_P (inner) && DECL_THREAD_LOCAL_P (inner))
 	return;
       /* If we're not sanitizing globals and we can tell statically that this
 	 access is inside a global variable, then there's no point adding
@@ -2723,6 +2740,11 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
 	    return;
 	}
     }
+
+  if (DECL_P (inner)
+      && decl_function_context (inner) == current_function_decl
+      && !TREE_ADDRESSABLE (inner))
+    mark_addressable (inner);
 
   base = build_fold_addr_expr (t);
   if (!has_mem_ref_been_instrumented (base, size_in_bytes))
@@ -3448,14 +3470,22 @@ initialize_sanitizer_builtins (void)
 
 #include "sanitizer.def"
 
-  /* -fsanitize=object-size uses __builtin_object_size, but that might
-     not be available for e.g. Fortran at this point.  We use
-     DEF_SANITIZER_BUILTIN here only as a convenience macro.  */
-  if ((flag_sanitize & SANITIZE_OBJECT_SIZE)
-      && !builtin_decl_implicit_p (BUILT_IN_OBJECT_SIZE))
-    DEF_SANITIZER_BUILTIN_1 (BUILT_IN_OBJECT_SIZE, "object_size",
-			     BT_FN_SIZE_CONST_PTR_INT,
-			     ATTR_PURE_NOTHROW_LEAF_LIST);
+  /* -fsanitize=object-size uses __builtin_dynamic_object_size and
+     __builtin_object_size, but they might not be available for e.g. Fortran at
+     this point.  We use DEF_SANITIZER_BUILTIN here only as a convenience
+     macro.  */
+  if (flag_sanitize & SANITIZE_OBJECT_SIZE)
+    {
+      if (!builtin_decl_implicit_p (BUILT_IN_OBJECT_SIZE))
+	DEF_SANITIZER_BUILTIN_1 (BUILT_IN_OBJECT_SIZE, "object_size",
+				 BT_FN_SIZE_CONST_PTR_INT,
+				 ATTR_PURE_NOTHROW_LEAF_LIST);
+      if (!builtin_decl_implicit_p (BUILT_IN_DYNAMIC_OBJECT_SIZE))
+	DEF_SANITIZER_BUILTIN_1 (BUILT_IN_DYNAMIC_OBJECT_SIZE,
+				 "dynamic_object_size",
+				 BT_FN_SIZE_CONST_PTR_INT,
+				 ATTR_PURE_NOTHROW_LEAF_LIST);
+    }
 
 #undef DEF_SANITIZER_BUILTIN_1
 #undef DEF_SANITIZER_BUILTIN
@@ -4192,9 +4222,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_asan (m_ctxt); }
-  virtual bool gate (function *) { return gate_asan () || gate_hwasan (); }
-  virtual unsigned int execute (function *) { return asan_instrument (); }
+  opt_pass * clone () final override { return new pass_asan (m_ctxt); }
+  bool gate (function *) final override
+  {
+    return gate_asan () || gate_hwasan ();
+  }
+  unsigned int execute (function *) final override
+  {
+    return asan_instrument ();
+  }
 
 }; // class pass_asan
 
@@ -4229,11 +4265,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return !optimize && (gate_asan () || gate_hwasan ());
     }
-  virtual unsigned int execute (function *) { return asan_instrument (); }
+  unsigned int execute (function *) final override
+  {
+    return asan_instrument ();
+  }
 
 }; // class pass_asan_O0
 

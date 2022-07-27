@@ -176,9 +176,9 @@ class FileException : Exception
     private this(scope const(char)[] name, scope const(char)[] msg, string file, size_t line, uint errno) @safe pure
     {
         if (msg.empty)
-            super(name.idup, file, line);
+            super(name is null ? "(null)" : name.idup, file, line);
         else
-            super(text(name, ": ", msg), file, line);
+            super(text(name is null ? "(null)" : name, ": ", msg), file, line);
 
         this.errno = errno;
     }
@@ -214,7 +214,7 @@ class FileException : Exception
                           string file = __FILE__,
                           size_t line = __LINE__) @safe
     {
-        this(name, sysErrorString(errno), file, line, errno);
+        this(name, generateSysErrorMsg(errno), file, line, errno);
     }
     else version (Posix) this(scope const(char)[] name,
                              uint errno = .errno,
@@ -425,10 +425,10 @@ version (Windows) private void[] readImpl(scope const(char)[] name, scope const(
             fileSize = makeUlong(sizeLow, sizeHigh);
         return result;
     }
-    static trustedReadFile(HANDLE hFile, void *lpBuffer, ulong nNumberOfBytesToRead)
+    static trustedReadFile(HANDLE hFile, void *lpBuffer, size_t nNumberOfBytesToRead)
     {
         // Read by chunks of size < 4GB (Windows API limit)
-        ulong totalNumRead = 0;
+        size_t totalNumRead = 0;
         while (totalNumRead != nNumberOfBytesToRead)
         {
             const uint chunkSize = min(nNumberOfBytesToRead - totalNumRead, 0xffff_0000);
@@ -1067,11 +1067,38 @@ private void removeImpl(scope const(char)[] name, scope const(FSChar)* namez) @t
         if (!name)
         {
             import core.stdc.string : strlen;
-            auto len = strlen(namez);
+
+            auto len = namez ? strlen(namez) : 0;
             name = namez[0 .. len];
         }
         cenforce(core.stdc.stdio.remove(namez) == 0,
-            "Failed to remove file " ~ name);
+            "Failed to remove file " ~ (name is null ? "(null)" : name));
+    }
+}
+
+@safe unittest
+{
+    import std.exception : collectExceptionMsg, assertThrown;
+
+    string filename = null; // e.g. as returned by File.tmpfile.name
+
+    version (linux)
+    {
+        // exact exception message is OS-dependent
+        auto msg = filename.remove.collectExceptionMsg!FileException;
+        assert("Failed to remove file (null): Bad address" == msg, msg);
+    }
+    else version (Windows)
+    {
+        import std.algorithm.searching : startsWith;
+
+        // don't test exact message on windows, it's language dependent
+        auto msg = filename.remove.collectExceptionMsg!FileException;
+        assert(msg.startsWith("(null):"), msg);
+    }
+    else
+    {
+        assertThrown!FileException(filename.remove);
     }
 }
 
@@ -3471,7 +3498,7 @@ else version (Posix) string getcwd() @trusted
         while (true)
         {
             auto len = GetModuleFileNameW(null, buffer.ptr, cast(DWORD) buffer.length);
-            enforce(len, sysErrorString(GetLastError()));
+            wenforce(len);
             if (len != buffer.length)
                 return to!(string)(buffer[0 .. len]);
             buffer.length *= 2;
@@ -3574,6 +3601,10 @@ else version (Posix) string getcwd() @trusted
         // Only Solaris 10 and later
         return readLink(format("/proc/%d/path/a.out", getpid()));
     }
+    else version (Hurd)
+    {
+        return readLink("/proc/self/exe");
+    }
     else
         static assert(0, "thisExePath is not supported on this platform");
 }
@@ -3606,7 +3637,7 @@ version (StdDdoc)
             Throws:
                 $(LREF FileException) if the file does not exist.
         +/
-        this(string path);
+        this(return scope string path);
 
         version (Windows)
         {
@@ -3768,7 +3799,7 @@ else version (Windows)
     public:
         alias name this;
 
-        this(string path)
+        this(return scope string path)
         {
             import std.datetime.systime : FILETIMEToSysTime;
 
@@ -3877,7 +3908,7 @@ else version (Posix)
     public:
         alias name this;
 
-        this(string path)
+        this(return scope string path)
         {
             if (!path.exists)
                 throw new FileException(path, "File does not exist");
@@ -4420,7 +4451,7 @@ void rmdirRecurse(scope const(char)[] pathname) @safe
 }
 
 /// ditto
-void rmdirRecurse(ref DirEntry de) @safe
+void rmdirRecurse(ref scope DirEntry de) @safe
 {
     if (!de.isDir)
         throw new FileException(de.name, "Not a directory");
@@ -4455,7 +4486,7 @@ void rmdirRecurse(ref DirEntry de) @safe
 //"rmdirRecurse(in char[] pathname)" implementation. That is needlessly
 //expensive.
 //A DirEntry is a bit big (72B), so keeping the "by ref" signature is desirable.
-void rmdirRecurse(DirEntry de) @safe
+void rmdirRecurse(scope DirEntry de) @safe
 {
     rmdirRecurse(de);
 }
@@ -4507,22 +4538,20 @@ version (Posix) @system unittest
     enforce(!exists(deleteme));
 }
 
-@system unittest
+@safe unittest
 {
-    void[] buf;
-
-    buf = new void[10];
-    (cast(byte[]) buf)[] = 3;
+    ubyte[] buf = new ubyte[10];
+    buf[] = 3;
     string unit_file = deleteme ~ "-unittest_write.tmp";
     if (exists(unit_file)) remove(unit_file);
-    write(unit_file, buf);
+    write(unit_file, cast(void[]) buf);
     void[] buf2 = read(unit_file);
-    assert(buf == buf2);
+    assert(cast(void[]) buf == buf2);
 
     string unit2_file = deleteme ~ "-unittest_write2.tmp";
     copy(unit_file, unit2_file);
     buf2 = read(unit2_file);
-    assert(buf == buf2);
+    assert(cast(void[]) buf == buf2);
 
     remove(unit_file);
     assert(!exists(unit_file));
@@ -4635,7 +4664,7 @@ private struct DirIteratorImpl
             import std.path : chainPath;
             auto searchPattern = chainPath(directory, "*.*");
 
-            static auto trustedFindFirstFileW(typeof(searchPattern) pattern, WIN32_FIND_DATAW* findinfo) @trusted
+            static auto trustedFindFirstFileW(typeof(searchPattern) pattern, scope WIN32_FIND_DATAW* findinfo) @trusted
             {
                 return FindFirstFileW(pattern.tempCString!FSChar(), findinfo);
             }
@@ -4653,7 +4682,7 @@ private struct DirIteratorImpl
             return toNext(true, &_findinfo);
         }
 
-        bool toNext(bool fetch, WIN32_FIND_DATAW* findinfo) @trusted
+        bool toNext(bool fetch, scope WIN32_FIND_DATAW* findinfo) @trusted
         {
             import core.stdc.wchar_ : wcscmp;
 
@@ -5038,7 +5067,7 @@ auto dirEntries(string path, string pattern, SpanMode mode,
     return filter!f(DirIterator(path, mode, followSymlink));
 }
 
-@system unittest
+@safe unittest
 {
     import std.stdio : writefln;
     immutable dpath = deleteme ~ "_dir";
@@ -5055,11 +5084,11 @@ auto dirEntries(string path, string pattern, SpanMode mode,
 
     mkdir(dpath);
     write(fpath, "hello world");
-    version (Posix)
+    version (Posix) () @trusted
     {
         core.sys.posix.unistd.symlink((dpath ~ '\0').ptr, (sdpath ~ '\0').ptr);
         core.sys.posix.unistd.symlink((fpath ~ '\0').ptr, (sfpath ~ '\0').ptr);
-    }
+    } ();
 
     static struct Flags { bool dir, file, link; }
     auto tests = [dpath : Flags(true), fpath : Flags(false, true)];
@@ -5274,7 +5303,21 @@ Returns:
 */
 string tempDir() @trusted
 {
-    import std.path : dirSeparator;
+    // We must check that the end of a path is not a separator, before adding another
+    // If we don't we end up with https://issues.dlang.org/show_bug.cgi?id=22738
+    static string addSeparator(string input)
+    {
+        import std.path : dirSeparator;
+        import std.algorithm.searching : endsWith;
+
+        // It is very rare a directory path will reach this point with a directory separator at the end
+        // However on OSX this can happen, so we must verify lest we break user code i.e. https://github.com/dlang/dub/pull/2208
+        if (!input.endsWith(dirSeparator))
+            return input ~ dirSeparator;
+        else
+            return input;
+    }
+
     static string cache;
     if (cache is null)
     {
@@ -5294,7 +5337,7 @@ string tempDir() @trusted
             static string findExistingDir(T...)(lazy T alternatives)
             {
                 foreach (dir; alternatives)
-                    if (!dir.empty && exists(dir)) return dir ~ dirSeparator;
+                    if (!dir.empty && exists(dir)) return addSeparator(dir);
                 return null;
             }
 
@@ -5309,7 +5352,7 @@ string tempDir() @trusted
 
         if (cache is null)
         {
-            cache = getcwd() ~ dirSeparator;
+            cache = addSeparator(getcwd());
         }
     }
     return cache;
@@ -5338,6 +5381,9 @@ string tempDir() @trusted
     import std.algorithm.searching : endsWith;
     import std.path : dirSeparator;
     assert(tempDir.endsWith(dirSeparator));
+
+    // https://issues.dlang.org/show_bug.cgi?id=22738
+    assert(!tempDir.endsWith(dirSeparator ~ dirSeparator));
 }
 
 /**

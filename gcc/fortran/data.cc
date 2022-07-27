@@ -618,6 +618,10 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 	gfc_convert_type (expr, &lvalue->ts, 0);
     }
 
+  if (IS_POINTER (symbol)
+      && !gfc_check_pointer_assign (lvalue, rvalue, false, true))
+    return false;
+
   if (last_con == NULL)
     symbol->value = expr;
   else

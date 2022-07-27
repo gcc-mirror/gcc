@@ -6,10 +6,10 @@ struct IsEqual( T )
     {
 	return p1 == p2;
     }
-}    
+}
 
 template find_( Elem, Pred = IsEqual!(Elem) )
-{    
+{
     size_t fn( char[] buf, Pred pred = Pred.init )
     {
         return 3;
@@ -23,6 +23,3 @@ template find()
         return find_!(char).fn( buf );
     }
 }
-
-
-

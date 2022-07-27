@@ -63,7 +63,6 @@ enum SCOPE
     free          = 0x8000,   /// is on free list
 
     fullinst      = 0x10000,  /// fully instantiate templates
-    alias_        = 0x20000,  /// inside alias declaration.
 
     // The following are mutually exclusive
     printf        = 0x4_0000, /// printf-style function
@@ -174,7 +173,7 @@ struct Scope
             m = m.parent;
         m.addMember(null, sc.scopesym);
         m.parent = null; // got changed by addMember()
-        if (_module.isCFile)
+        if (_module.filetype == FileType.c)
             sc.flags |= SCOPE.Cfile;
         // Create the module scope underneath the global scope
         sc = sc.push(_module);
@@ -457,6 +456,8 @@ struct Scope
 
                 if (sc.scopesym.isModule())
                     flags |= SearchUnqualifiedModule;        // tell Module.search() that SearchLocalsOnly is to be obeyed
+                else if (sc.flags & SCOPE.Cfile && sc.scopesym.isStructDeclaration())
+                    continue;                                // C doesn't have struct scope
 
                 if (Dsymbol s = sc.scopesym.search(loc, ident, flags))
                 {
@@ -692,7 +693,7 @@ struct Scope
     }
 
     /********************************************
-     * Search enclosing scopes for ClassDeclaration.
+     * Search enclosing scopes for ClassDeclaration or StructDeclaration.
      */
     extern (C++) AggregateDeclaration getStructClassScope()
     {
@@ -706,6 +707,31 @@ struct Scope
                 return ad;
         }
         return null;
+    }
+
+    /********************************************
+     * Find the lexically enclosing function (if any).
+     *
+     * This function skips through generated FuncDeclarations,
+     * e.g. rewritten foreach bodies.
+     *
+     * Returns: the function or null
+     */
+    inout(FuncDeclaration) getEnclosingFunction() inout
+    {
+        if (!this.func)
+            return null;
+
+        auto fd = cast(FuncDeclaration) this.func;
+
+        // Look through foreach bodies rewritten as delegates
+        while (fd.fes)
+        {
+            assert(fd.fes.func);
+            fd = fd.fes.func;
+        }
+
+        return cast(inout(FuncDeclaration)) fd;
     }
 
     /*******************************************
@@ -728,7 +754,6 @@ struct Scope
             //    assert(0);
         }
     }
-
     /******************************
      */
     structalign_t alignment()
@@ -745,13 +770,13 @@ struct Scope
             return sa;
         }
     }
-
+    @safe @nogc pure nothrow const:
     /**********************************
     * Checks whether the current scope (or any of its parents) is deprecated.
     *
     * Returns: `true` if this or any parent scope is deprecated, `false` otherwise`
     */
-    extern(C++) bool isDeprecated() @safe @nogc pure nothrow const
+    extern(C++) bool isDeprecated()
     {
         for (const(Dsymbol)* sp = &(this.parent); *sp; sp = &(sp.parent))
         {
@@ -772,5 +797,17 @@ struct Scope
             return true;
         }
         return false;
+    }
+    /**
+     * dmd relies on mutation of state during semantic analysis, however
+     * sometimes semantic is being performed in a speculative context that should
+     * not have any visible effect on the rest of the compilation: for example when compiling
+     * a typeof() or __traits(compiles).
+     *
+     * Returns: `true` if this `Scope` is known to be from one of these speculative contexts
+     */
+    extern(C++) bool isFromSpeculativeSemanticContext() scope
+    {
+        return this.intypeof || this.flags & SCOPE.compile;
     }
 }

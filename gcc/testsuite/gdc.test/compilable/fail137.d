@@ -23,4 +23,3 @@ void main()
     TypeTuple!(int, long) T;
     printf( "%u\n", cast(uint)IndexOf!(long, T) );
 }
-

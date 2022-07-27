@@ -68,12 +68,10 @@ control over the state of the random number generator.
 #define	LONG_MAX   ((long)(ULONG_MAX >> 1))   /* 0x7FFFFFFF for 32-bits*/
 
 #ifdef __STDC__
-#  define PTR void *
 #  ifndef NULL
 #    define NULL (void *) 0
 #  endif
 #else
-#  define PTR char *
 #  ifndef NULL
 #    define NULL (void *) 0
 #  endif
@@ -254,10 +252,10 @@ srandom (unsigned int x)
    Note: The first thing we do is save the current state, if any, just like
    setstate so that it doesn't matter when initstate is called.
    Returns a pointer to the old state.  */
-PTR
-initstate (unsigned int seed, PTR arg_state, unsigned long n)
+void *
+initstate (unsigned int seed, void *arg_state, unsigned long n)
 {
-  PTR ostate = (PTR) &state[-1];
+  void *ostate = (void *) &state[-1];
 
   if (rand_type == TYPE_0)
     state[-1] = rand_type;
@@ -320,13 +318,13 @@ initstate (unsigned int seed, PTR arg_state, unsigned long n)
    same state as the current state
    Returns a pointer to the old state information.  */
 
-PTR
-setstate (PTR arg_state)
+void *
+setstate (void *arg_state)
 {
   register long int *new_state = (long int *) arg_state;
   register int type = new_state[0] % MAX_TYPES;
   register int rear = new_state[0] / MAX_TYPES;
-  PTR ostate = (PTR) &state[-1];
+  void *ostate = (void *) &state[-1];
 
   if (rand_type == TYPE_0)
     state[-1] = rand_type;

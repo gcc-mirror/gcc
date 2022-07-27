@@ -135,8 +135,8 @@ C ObjC C++ ObjC++ Separate Alias(o)
 -output=
 C ObjC C++ ObjC++ Joined Alias(o)
 
--output-pch=
-C ObjC C++ ObjC++ Joined Separate
+-output-pch
+C ObjC C++ ObjC++ Separate
 
 -pedantic
 C ObjC C++ ObjC++ Alias(pedantic)
@@ -342,10 +342,6 @@ Wno-alloca-larger-than
 C ObjC C++ LTO ObjC++ Alias(Walloca-larger-than=,18446744073709551615EiB,none) Warning
 Disable Walloca-larger-than= warning.  Equivalent to Walloca-larger-than=<SIZE_MAX> or larger.
 
-Warray-bounds
-LangEnabledBy(C ObjC C++ LTO ObjC++)
-; in common.opt
-
 Warray-bounds=
 LangEnabledBy(C ObjC C++ LTO ObjC++,Wall,1,0)
 ; in common.opt
@@ -463,23 +459,23 @@ C++ ObjC++ Var(warn_cxx20_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about C++ constructs whose meaning differs between ISO C++ 2017 and ISO C++ 2020.
 
 Wc++11-extensions
-C++ ObjC++ Var(warn_cxx11_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx11_extensions) Warning Init(1)
 Warn about C++11 constructs in code compiled with an older standard.
 
 Wc++14-extensions
-C++ ObjC++ Var(warn_cxx14_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx14_extensions) Warning Init(1)
 Warn about C++14 constructs in code compiled with an older standard.
 
 Wc++17-extensions
-C++ ObjC++ Var(warn_cxx17_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx17_extensions) Warning Init(1)
 Warn about C++17 constructs in code compiled with an older standard.
 
 Wc++20-extensions
-C++ ObjC++ Var(warn_cxx20_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx20_extensions) Warning Init(1)
 Warn about C++20 constructs in code compiled with an older standard.
 
 Wc++23-extensions
-C++ ObjC++ Var(warn_cxx23_extensions) Warning LangEnabledBy(C++ ObjC++) Init(1)
+C++ ObjC++ Var(warn_cxx23_extensions) Warning Init(1)
 Warn about C++23 constructs in code compiled with an older standard.
 
 Wcast-function-type
@@ -641,6 +637,10 @@ Warn about comparison of different enum types.
 Wenum-conversion
 C ObjC C++ ObjC++ Var(warn_enum_conversion) Init(0) Warning LangEnabledBy(C ObjC,Wextra)
 Warn about implicit conversion of enum types.
+
+Wenum-int-mismatch
+C ObjC Var(warn_enum_int_mismatch) Warning LangEnabledBy(C ObjC,Wall || Wc++-compat)
+Warn about enum/integer type mismatches.
 
 Werror
 C ObjC C++ ObjC++
@@ -1126,7 +1126,11 @@ C ObjC C++ ObjC++ Var(warn_overlength_strings) Warning LangEnabledBy(C ObjC C++ 
 Warn if a string is longer than the maximum portable length specified by the standard.
 
 Woverloaded-virtual
-C++ ObjC++ Var(warn_overloaded_virtual) Warning
+C++ ObjC++ Warning Alias(Woverloaded-virtual=,2,0)
+Warn about overloaded virtual function names.
+
+Woverloaded-virtual=
+C++ ObjC++ Joined UInteger IntegerRange(0,2) Var(warn_overloaded_virtual) Warning LangEnabledBy(C++ ObjC++,Wall,1,0)
 Warn about overloaded virtual function names.
 
 Woverride-init
@@ -1377,13 +1381,9 @@ Wunused-const-variable=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_unused_const_variable) Warning LangEnabledBy(C ObjC,Wunused-variable, 1, 0) IntegerRange(0, 2)
 Warn when a const variable is unused.
 
-# Defining these options here in addition to common.opt is necessary
-# in order for the default -Wall setting of -Wuse-after-free=2 to take
-# effect.
-
-Wuse-after-free
-LangEnabledBy(C ObjC C++ LTO ObjC++)
-; in common.opt
+; Defining this option here in addition to common.opt is necessary
+; in order for the default -Wall setting of -Wuse-after-free=2 to take
+; effect.
 
 Wuse-after-free=
 LangEnabledBy(C ObjC C++ LTO ObjC++, Wall,2,0)
@@ -1730,6 +1730,10 @@ Support dynamic initialization of thread-local variables in a different translat
 
 fexternal-templates
 C++ ObjC++ WarnRemoved
+
+ffold-simple-inlines
+C++ ObjC++ Optimization Var(flag_fold_simple_inlines)
+Fold calls to simple inline functions.
 
 ffor-scope
 C++ ObjC++ WarnRemoved

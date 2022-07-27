@@ -64,7 +64,9 @@ void test04()
 
   // target_type and target() functions
   const function<int(float)>& f1c = f1;
+#if __cpp_rtti
   VERIFY( typeid(do_truncate_float_t) == f1.target_type() );
+#endif
   VERIFY( f2.target<do_truncate_float_t>() != 0 );
   VERIFY( f1c.target<do_truncate_float_t>() != 0 );
 }

@@ -94,6 +94,18 @@
   return register_operand (op, mode);
 })
 
+(define_predicate "nvptx_register_or_complex_di_df_register_operand"
+  (ior (match_code "reg")
+       (match_code "concat"))
+{
+  if (GET_CODE (op) == CONCAT)
+    return ((GET_MODE (op) == DCmode || GET_MODE (op) == CDImode)
+	    && nvptx_register_operand (XEXP (op, 0), mode)
+	    && nvptx_register_operand (XEXP (op, 1), mode));
+
+  return nvptx_register_operand (op, mode);
+})
+
 (define_predicate "nvptx_nonimmediate_operand"
   (match_code "mem,reg")
 {
@@ -160,8 +172,8 @@
   return SYMBOL_REF_FUNCTION_P (op);
 })
 
-(define_attr "predicable" "false,true"
-  (const_string "true"))
+(define_attr "predicable" "no,yes"
+  (const_string "yes"))
 
 (define_cond_exec
   [(match_operator 0 "predicate_operator"
@@ -288,7 +300,8 @@
   "@
    %.\\tmov.b16\\t%0, %1;
    %.\\tld.b16\\t%0, %1;
-   %.\\tst.b16\\t%0, %1;")
+   %.\\tst.b16\\t%0, %1;"
+  [(set_attr "subregs_ok" "true")])
 
 (define_expand "movhf"
   [(set (match_operand:HF 0 "nonimmediate_operand" "")
@@ -807,6 +820,22 @@
   ""
   "%.\\tshr.u%T0\\t%0, %1, %2;")
 
+(define_insn "rotlsi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(rotate:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+		   (and:SI (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")
+			   (const_int 31))))]
+  "TARGET_SM35"
+  "%.\\tshf.l.wrap.b32\\t%0, %1, %1, %2;")
+
+(define_insn "rotrsi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(rotatert:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+		     (and:SI (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")
+			     (const_int 31))))]
+  "TARGET_SM35"
+  "%.\\tshf.r.wrap.b32\\t%0, %1, %1, %2;")
+
 ;; Logical operations
 
 (define_code_iterator any_logic [and ior xor])
@@ -882,7 +911,7 @@
 		      (pc)))]
   ""
   "%j0\\tbra\\t%l1;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_insn "br_false"
   [(set (pc)
@@ -892,7 +921,7 @@
 		      (pc)))]
   ""
   "%J0\\tbra\\t%l1;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 ;; unified conditional branch
 (define_insn "br_true_uni"
@@ -902,7 +931,7 @@
         (label_ref (match_operand 1 "" "")) (pc)))]
   ""
   "%j0\\tbra.uni\\t%l1;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_insn "br_false_uni"
   [(set (pc) (if_then_else
@@ -911,7 +940,7 @@
         (label_ref (match_operand 1 "" "")) (pc)))]
   ""
   "%J0\\tbra.uni\\t%l1;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_expand "cbranch<mode>4"
   [(set (pc)
@@ -1590,7 +1619,7 @@
 {
   return nvptx_output_return ();
 }
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_expand "epilogue"
   [(clobber (const_int 0))]
@@ -1683,7 +1712,7 @@
 	    (const_int 0))]
   ""
   "%j0 trap; %j0 exit;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_insn "trap_if_false"
   [(trap_if (eq (match_operand:BI 0 "nvptx_register_operand" "R")
@@ -1691,7 +1720,7 @@
 	    (const_int 0))]
   ""
   "%J0 trap; %J0 exit;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_expand "ctrap<mode>4"
   [(trap_if (match_operator 0 "nvptx_comparison_operator"
@@ -1740,28 +1769,28 @@
 		       UNSPECV_FORK)]
   ""
   "// fork %0;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_insn "nvptx_forked"
   [(unspec_volatile:SI [(match_operand:SI 0 "const_int_operand" "")]
 		       UNSPECV_FORKED)]
   ""
   "// forked %0;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_insn "nvptx_joining"
   [(unspec_volatile:SI [(match_operand:SI 0 "const_int_operand" "")]
 		       UNSPECV_JOINING)]
   ""
   "// joining %0;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_insn "nvptx_join"
   [(unspec_volatile:SI [(match_operand:SI 0 "const_int_operand" "")]
 		       UNSPECV_JOIN)]
   ""
   "// join %0;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_expand "oacc_fork"
   [(set (match_operand:SI 0 "nvptx_nonmemory_operand" "")
@@ -1852,6 +1881,10 @@
   ""
 {
   emit_insn (gen_omp_simt_exit (Pmode, operands[0]));
+  if (TARGET_PTX_6_0)
+    emit_insn (gen_nvptx_warpsync ());
+  else
+    emit_insn (gen_nvptx_uniform_warp_check ());
   DONE;
 })
 
@@ -1885,8 +1918,8 @@
 ;; Implement IFN_GOMP_SIMT_XCHG_BFLY: perform a "butterfly" exchange
 ;; across lanes
 (define_expand "omp_simt_xchg_bfly"
-  [(match_operand 0 "nvptx_register_operand" "=R")
-   (match_operand 1 "nvptx_register_operand" "R")
+  [(match_operand 0 "nvptx_register_or_complex_di_df_register_operand" "=R")
+   (match_operand 1 "nvptx_register_or_complex_di_df_register_operand" "R")
    (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")]
   ""
 {
@@ -1898,8 +1931,8 @@
 ;; Implement IFN_GOMP_SIMT_XCHG_IDX: broadcast value in operand 1
 ;; from lane given by index in operand 2 to operand 0 in all lanes
 (define_expand "omp_simt_xchg_idx"
-  [(match_operand 0 "nvptx_register_operand" "=R")
-   (match_operand 1 "nvptx_register_operand" "R")
+  [(match_operand 0 "nvptx_register_or_complex_di_df_register_operand" "=R")
+   (match_operand 1 "nvptx_register_or_complex_di_df_register_operand" "R")
    (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")]
   ""
 {
@@ -2006,7 +2039,7 @@
 	output_asm_insn ("}", NULL);
 	return "";
   }
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_insn "atomic_compare_and_swap<mode>_1"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
@@ -2021,7 +2054,7 @@
   ""
   {
     const char *t
-      = "%.\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;";
+      = "%.\\tatom%A1.cas.b%T0\\t%x0, %1, %2, %3;";
     return nvptx_output_atomic_insn (t, operands, 1, 4);
   }
   [(set_attr "atomic" "true")])
@@ -2047,7 +2080,7 @@
 	return "";
       }
     const char *t
-      = "%.\tatom%A1.exch.b%T0\t%0, %1, %2;";
+      = "%.\tatom%A1.exch.b%T0\t%x0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
   }
   [(set_attr "atomic" "true")])
@@ -2069,8 +2102,8 @@
 
   if (TARGET_SM70)
     {
-       emit_insn (gen_nvptx_atomic_store<mode> (operands[0], operands[1],
-						operands[2]));
+       emit_insn (gen_nvptx_atomic_store_sm70<mode> (operands[0], operands[1],
+						     operands[2]));
        DONE;
     }
 
@@ -2079,13 +2112,12 @@
     /* Fall back to expand_atomic_store.  */
     FAIL;
 
-  rtx tmpreg = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_atomic_exchange<mode> (tmpreg, operands[0], operands[1],
-					operands[2]));
+  emit_insn (gen_nvptx_atomic_store<mode> (operands[0], operands[1],
+					   operands[2]));
   DONE;
 })
 
-(define_insn "nvptx_atomic_store<mode>"
+(define_insn "nvptx_atomic_store_sm70<mode>"
   [(set (match_operand:SDIM 0 "memory_operand" "+m")	      ;; memory
        (unspec_volatile:SDIM
 	 [(match_operand:SDIM 1 "nvptx_nonmemory_operand" "Ri") ;; input
@@ -2095,6 +2127,20 @@
   {
     const char *t
       = "%.\tst%A0.b%T0\t%0, %1;";
+    return nvptx_output_atomic_insn (t, operands, 0, 2);
+  }
+  [(set_attr "atomic" "false")]) ;; Note: st is not an atomic insn.
+
+(define_insn "nvptx_atomic_store<mode>"
+  [(set (match_operand:SDIM 0 "memory_operand" "+m")	      ;; memory
+       (unspec_volatile:SDIM
+	 [(match_operand:SDIM 1 "nvptx_nonmemory_operand" "Ri") ;; input
+	  (match_operand:SI 2 "const_int_operand")]		;; model
+	       UNSPECV_ST))]
+  "!TARGET_SM70"
+  {
+    const char *t
+      = "%.\tatom%A0.exch.b%T0\t_, %0, %1;";
     return nvptx_output_atomic_insn (t, operands, 0, 2);
   }
   [(set_attr "atomic" "true")])
@@ -2124,7 +2170,7 @@
 	return "";
       }
     const char *t
-      = "%.\\tatom%A1.add%t0\\t%0, %1, %2;";
+      = "%.\\tatom%A1.add%t0\\t%x0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
   }
   [(set_attr "atomic" "true")])
@@ -2154,7 +2200,7 @@
 	return "";
       }
     const char *t
-      = "%.\\tatom%A1.add%t0\\t%0, %1, %2;";
+      = "%.\\tatom%A1.add%t0\\t%x0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
   }
   [(set_attr "atomic" "true")])
@@ -2184,7 +2230,7 @@
 	return "";
       }
     const char *t
-      = "%.\\tatom%A1.b%T0.<logic>\\t%0, %1, %2;";
+      = "%.\\tatom%A1.<logic>.b%T0\\t%x0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
   }
 
@@ -2221,30 +2267,34 @@
 	      ? "\\tbarrier.sync\\t%0, %1;"
 	      : "\\tbar.sync\\t%0, %1;");
   }
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_insn "nvptx_warpsync"
   [(unspec_volatile [(const_int 0)] UNSPECV_WARPSYNC)]
   "TARGET_PTX_6_0"
-  "\\tbar.warp.sync\\t0xffffffff;"
-  [(set_attr "predicable" "false")])
+  "%.\\tbar.warp.sync\\t0xffffffff;")
 
 (define_insn "nvptx_uniform_warp_check"
   [(unspec_volatile [(const_int 0)] UNSPECV_UNIFORM_WARP_CHECK)]
   ""
   {
-    output_asm_insn ("{", NULL);
-    output_asm_insn ("\\t"	 ".reg.b32"	   "\\t" "act;", NULL);
-    output_asm_insn ("\\t"	 "vote.ballot.b32" "\\t" "act,1;", NULL);
-    output_asm_insn ("\\t"	 ".reg.pred"	   "\\t" "uni;", NULL);
-    output_asm_insn ("\\t"	 "setp.eq.b32"	   "\\t" "uni,act,0xffffffff;",
-		     NULL);
-    output_asm_insn ("@ !uni\\t" "trap;", NULL);
-    output_asm_insn ("@ !uni\\t" "exit;", NULL);
-    output_asm_insn ("}", NULL);
+    const char *insns[] = {
+      "{",
+      "\\t"		  ".reg.b32"	    "\\t" "%%r_act;",
+      "%.\\t"		  "vote.ballot.b32" "\\t" "%%r_act,1;",
+      "\\t"		  ".reg.pred"	    "\\t" "%%r_do_abort;",
+      "\\t"		  "mov.pred"	    "\\t" "%%r_do_abort,0;",
+      "%.\\t"		  "setp.ne.b32"	    "\\t" "%%r_do_abort,%%r_act,"
+						  "0xffffffff;",
+      "@ %%r_do_abort\\t" "trap;",
+      "@ %%r_do_abort\\t" "exit;",
+      "}",
+      NULL
+    };
+    for (const char **p = &insns[0]; *p != NULL; p++)
+      output_asm_insn (*p, NULL);
     return "";
-  }
-  [(set_attr "predicable" "false")])
+  })
 
 (define_expand "memory_barrier"
   [(set (match_dup 0)
@@ -2265,7 +2315,7 @@
 	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR))]
   ""
   "\\tmembar.sys;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_expand "nvptx_membar_cta"
   [(set (match_dup 0)
@@ -2281,7 +2331,7 @@
 	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR_CTA))]
   ""
   "\\tmembar.cta;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_expand "nvptx_membar_gl"
   [(set (match_dup 0)
@@ -2297,13 +2347,13 @@
 	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR_GL))]
   ""
   "\\tmembar.gl;"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_insn "nvptx_nounroll"
   [(unspec_volatile [(const_int 0)] UNSPECV_NOUNROLL)]
   ""
   "\\t.pragma \\\"nounroll\\\";"
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 (define_insn "nvptx_red_partition"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=R")
@@ -2313,7 +2363,7 @@
   {
     return nvptx_output_red_partition (operands[0], operands[1]);
   }
-  [(set_attr "predicable" "false")])
+  [(set_attr "predicable" "no")])
 
 ;; Expand QI mode operations using SI mode instructions.
 (define_code_iterator any_sbinary [plus minus smin smax])

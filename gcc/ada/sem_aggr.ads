@@ -43,4 +43,7 @@ package Sem_Aggr is
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
+   function Is_Null_Array_Aggregate_High_Bound (N : Node_Id) return Boolean;
+   --  Returns True for the high bound of a null array aggregate.
+
 end Sem_Aggr;

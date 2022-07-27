@@ -133,7 +133,7 @@ go.srcinfo: doc/gccgo.info
 go.srcextra:
 go.tags: force
 	cd $(srcdir)/go; \
-	$(ETAGS) -o TAGS.sub *.c *.h gofrontend/*.h gofrontend/*.cc; \
+	$(ETAGS) -o TAGS.sub *.cc *.h gofrontend/*.h gofrontend/*.cc; \
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 go.man: doc/gccgo.1
 go.srcman: doc/gccgo.1

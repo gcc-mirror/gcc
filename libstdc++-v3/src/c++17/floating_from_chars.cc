@@ -30,6 +30,7 @@
 // Prefer to use std::pmr::string if possible, which requires the cxx11 ABI.
 #define _GLIBCXX_USE_CXX11_ABI 1
 
+#include <array>
 #include <charconv>
 #include <bit>
 #include <string>
@@ -39,7 +40,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <cctype>
 #include <locale.h>
 #include <bits/functexcept.h>
 #if _GLIBCXX_HAVE_XLOCALE_H
@@ -61,9 +61,11 @@
 extern "C" __ieee128 __strtoieee128(const char*, char**);
 #endif
 
-#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
+    && __SIZE_WIDTH__ >= 32
 # define USE_LIB_FAST_FLOAT 1
 # if __LDBL_MANT_DIG__ == __DBL_MANT_DIG__
+// No need to use strtold.
 #  undef USE_STRTOD_FOR_FROM_CHARS
 # endif
 #endif
@@ -99,7 +101,6 @@ namespace
 	return m_buf + std::__exchange(m_bytes, m_bytes + bytes);
 
       __glibcxx_assert(m_ptr == nullptr);
-      __glibcxx_assert(alignment != 1);
 
       m_ptr = operator new(bytes);
       m_bytes = bytes;
@@ -140,10 +141,10 @@ namespace
 
   // Find initial portion of [first, last) containing a floating-point number.
   // The string `digits` is either `dec_digits` or `hex_digits`
-  // and `exp` is 'e' or 'p' or '\0'.
+  // and `exp` is "eE", "pP" or NULL.
   const char*
   find_end_of_float(const char* first, const char* last, const char* digits,
-		    char exp)
+		    const char *exp)
   {
     while (first < last && strchr(digits, *first) != nullptr)
       ++first;
@@ -153,7 +154,7 @@ namespace
 	while (first < last && strchr(digits, *first))
 	  ++first;
       }
-    if (first < last && exp != 0 && std::tolower((unsigned char)*first) == exp)
+    if (first < last && exp != nullptr && (*first == exp[0] || *first == exp[1]))
       {
 	++first;
 	if (first < last && (*first == '-' || *first == '+'))
@@ -235,7 +236,7 @@ namespace
 
 	if ((last - first + 2) > buffer_resource::guaranteed_capacity())
 	  {
-	    last = find_end_of_float(first + neg, last, digits, 'p');
+	    last = find_end_of_float(first + neg, last, digits, "pP");
 #ifndef __cpp_exceptions
 	    if ((last - first + 2) > buffer_resource::guaranteed_capacity())
 	      {
@@ -259,7 +260,7 @@ namespace
 	if ((last - first) > buffer_resource::guaranteed_capacity())
 	  {
 	    last = find_end_of_float(first + neg, last, digits,
-				     "e"[fmt == chars_format::fixed]);
+				     fmt == chars_format::fixed ? nullptr : "eE");
 #ifndef __cpp_exceptions
 	    if ((last - first) > buffer_resource::guaranteed_capacity())
 	      {
@@ -419,33 +420,64 @@ namespace
     return true;
   }
 #endif
+
+  template<typename T>
+  from_chars_result
+  from_chars_strtod(const char* first, const char* last, T& value,
+		    chars_format fmt) noexcept
+  {
+    errc ec = errc::invalid_argument;
+#if _GLIBCXX_USE_CXX11_ABI
+    buffer_resource mr;
+    pmr::string buf(&mr);
+#else
+    string buf;
+    if (!reserve_string(buf))
+      return make_result(first, 0, {}, ec);
+#endif
+    size_t len = 0;
+    __try
+      {
+	if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
+	  len = from_chars_impl(pat, value, ec);
+      }
+    __catch (const std::bad_alloc&)
+      {
+	fmt = chars_format{};
+      }
+    return make_result(first, len, fmt, ec);
+  }
 #endif // USE_STRTOD_FOR_FROM_CHARS
 
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
-  // If the given ASCII character represents a hexit, return that hexit.
-  // Otherwise return -1.
-  int
-  ascii_to_hexit(char ch)
-  {
-    if (ch >= '0' && ch <= '9')
-      return ch - '0';
-    if (ch >= 'a' && ch <= 'f')
-      return ch - 'a' + 10;
-    if (ch >= 'A' && ch <= 'F')
-      return ch - 'A' + 10;
-    return -1;
-  }
-
   // Return true iff [FIRST,LAST) begins with PREFIX, ignoring case.
+  // PREFIX is assumed to not contain any uppercase letters.
   bool
   starts_with_ci(const char* first, const char* last, string_view prefix)
   {
     __glibcxx_requires_valid_range(first, last);
 
-    for (char ch : prefix)
+    // A lookup table that maps uppercase letters to lowercase and
+    // is otherwise the identity mapping.
+    static constexpr auto upper_to_lower_table = [] {
+      constexpr unsigned char lower_letters[27] = "abcdefghijklmnopqrstuvwxyz";
+      constexpr unsigned char upper_letters[27] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      std::array<unsigned char, (1u << __CHAR_BIT__)> table = {};
+      for (unsigned i = 0; i < table.size(); ++i)
+	table[i] = i;
+      for (unsigned i = 0; i < 26; ++i)
+	table[upper_letters[i]] = lower_letters[i];
+      return table;
+    }();
+
+    if (last - first < static_cast<ptrdiff_t>(prefix.length()))
+      return false;
+
+    for (const unsigned char pch : prefix)
       {
-	__glibcxx_assert(ch >= 'a' && ch <= 'z');
-	if (first == last || (*first != ch && *first != ch - 32))
+	// __glibcxx_assert(pch == upper_to_lower_table[pch]);
+	const unsigned char ch = *first;
+	if (ch != pch && upper_to_lower_table[ch] != pch)
 	  return false;
 	++first;
       }
@@ -521,10 +553,8 @@ namespace
 			  ++first;
 			  break;
 			}
-		      else if ((ch >= '0' && ch <= '9')
-			       || (ch >= 'a' && ch <= 'z')
-			       || (ch >= 'A' && ch <= 'Z')
-			       || ch == '_')
+		      else if (ch == '_'
+			       || __detail::__from_chars_alnum_to_val(ch) < 127)
 			continue;
 		      else
 			{
@@ -585,8 +615,8 @@ namespace
 	    continue;
 	  }
 
-	int hexit = ascii_to_hexit(ch);
-	if (hexit == -1)
+	int hexit = __detail::__from_chars_alnum_to_val(ch);
+	if (hexit >= 16)
 	  break;
 	seen_hexit = true;
 
@@ -633,7 +663,7 @@ namespace
 
     // Parse the written exponent.
     int written_exponent = 0;
-    if (first != last && *first == 'p')
+    if (first != last && (*first == 'p' || *first == 'P'))
       {
 	// Tentatively consume the 'p' and try to parse a decimal number.
 	const char* const fallback_first = first;
@@ -792,35 +822,15 @@ from_chars_result
 from_chars(const char* first, const char* last, float& value,
 	   chars_format fmt) noexcept
 {
-#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+#if USE_LIB_FAST_FLOAT
   if (fmt == chars_format::hex)
     return __floating_from_chars_hex(first, last, value);
   else
     {
-      static_assert(USE_LIB_FAST_FLOAT);
       return fast_float::from_chars(first, last, value, fmt);
     }
 #else
-  errc ec = errc::invalid_argument;
-#if _GLIBCXX_USE_CXX11_ABI
-  buffer_resource mr;
-  pmr::string buf(&mr);
-#else
-  string buf;
-  if (!reserve_string(buf))
-    return make_result(first, 0, {}, ec);
-#endif
-  size_t len = 0;
-  __try
-    {
-      if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
-	len = from_chars_impl(pat, value, ec);
-    }
-  __catch (const std::bad_alloc&)
-    {
-      fmt = chars_format{};
-    }
-  return make_result(first, len, fmt, ec);
+  return from_chars_strtod(first, last, value, fmt);
 #endif
 }
 
@@ -828,35 +838,15 @@ from_chars_result
 from_chars(const char* first, const char* last, double& value,
 	   chars_format fmt) noexcept
 {
-#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+#if USE_LIB_FAST_FLOAT
   if (fmt == chars_format::hex)
     return __floating_from_chars_hex(first, last, value);
   else
     {
-      static_assert(USE_LIB_FAST_FLOAT);
       return fast_float::from_chars(first, last, value, fmt);
     }
 #else
-  errc ec = errc::invalid_argument;
-#if _GLIBCXX_USE_CXX11_ABI
-  buffer_resource mr;
-  pmr::string buf(&mr);
-#else
-  string buf;
-  if (!reserve_string(buf))
-    return make_result(first, 0, {}, ec);
-#endif
-  size_t len = 0;
-  __try
-    {
-      if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
-	len = from_chars_impl(pat, value, ec);
-    }
-  __catch (const std::bad_alloc&)
-    {
-      fmt = chars_format{};
-    }
-  return make_result(first, len, fmt, ec);
+  return from_chars_strtod(first, last, value, fmt);
 #endif
 }
 
@@ -864,41 +854,23 @@ from_chars_result
 from_chars(const char* first, const char* last, long double& value,
 	   chars_format fmt) noexcept
 {
-#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
-  && ! USE_STRTOD_FOR_FROM_CHARS
+#if ! USE_STRTOD_FOR_FROM_CHARS
+  // Either long double is the same as double, or we can't use strtold.
+  // In the latter case, this might give an incorrect result (e.g. values
+  // out of range of double give an error, even if they fit in long double).
   double dbl_value;
   from_chars_result result;
   if (fmt == chars_format::hex)
     result = __floating_from_chars_hex(first, last, dbl_value);
   else
     {
-      static_assert(USE_LIB_FAST_FLOAT);
       result = fast_float::from_chars(first, last, dbl_value, fmt);
     }
   if (result.ec == errc{})
     value = dbl_value;
   return result;
 #else
-  errc ec = errc::invalid_argument;
-#if _GLIBCXX_USE_CXX11_ABI
-  buffer_resource mr;
-  pmr::string buf(&mr);
-#else
-  string buf;
-  if (!reserve_string(buf))
-    return make_result(first, 0, {}, ec);
-#endif
-  size_t len = 0;
-  __try
-    {
-      if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
-	len = from_chars_impl(pat, value, ec);
-    }
-  __catch (const std::bad_alloc&)
-    {
-      fmt = chars_format{};
-    }
-  return make_result(first, len, fmt, ec);
+  return from_chars_strtod(first, last, value, fmt);
 #endif
 }
 
@@ -917,20 +889,8 @@ from_chars_result
 from_chars(const char* first, const char* last, __ieee128& value,
 	   chars_format fmt) noexcept
 {
-  buffer_resource mr;
-  pmr::string buf(&mr);
-  size_t len = 0;
-  errc ec = errc::invalid_argument;
-  __try
-    {
-      if (const char* pat = pattern(first, last, fmt, buf)) [[likely]]
-	len = from_chars_impl(pat, value, ec);
-    }
-  __catch (const std::bad_alloc&)
-    {
-      fmt = chars_format{};
-    }
-  return make_result(first, len, fmt, ec);
+  // fast_float doesn't support IEEE binary128 format, but we can use strtold.
+  return from_chars_strtod(first, last, value, fmt);
 }
 #endif
 

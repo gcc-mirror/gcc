@@ -1,3 +1,87 @@
+2022-07-14  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/106156
+	* Makefile.am: Use ac_lto_plugin_extra_ldflags for AM_LDFLAGS.
+	* configure.ac: Use AC_SUBST(ac_lto_plugin_extra_ldflags).
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2022-07-12  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (negotiate_api_version): New.
+	(onload): Negotiate API version.
+	* Makefile.am: Add -DBASE_VERSION.
+	* Makefile.in: Regenerate.
+
+2022-07-07  Martin Liska  <mliska@suse.cz>
+
+	PR lto/106170
+	* configure.ac: Configure HAVE_PTHREAD_LOCKING.
+	* lto-plugin.c (LOCK_SECTION): New.
+	(UNLOCK_SECTION): New.
+	(claim_file_handler): Use the newly added macros.
+	(onload): Likewise.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2022-07-01  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
+
+	PR lto/106118
+	* configure.ac: Move -pthread from here...
+	* Makefile.am: ...to here.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+
+2022-06-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (plugin_lock): New lock.
+	(claim_file_handler): Use mutex for critical section.
+	(onload): Initialize mutex.
+	* configure.ac: Check for pthread.h.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2022-06-20  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (struct plugin_file_info): Add skip_file flag.
+	(write_resolution): Write resolution only if get_symbols != LDPS_NO_SYMS.
+	(all_symbols_read_handler): Ignore file if skip_file is true.
+	(onload): Handle LDPT_GET_SYMBOLS_V3.
+
+2022-05-04  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (struct plugin_objfile): Use bool for offset
+	field.
+	(exec_lto_wrapper): Assign true/false to bool variables.
+	(process_offload_section): Likewise.
+	(claim_file_handler): Likewise.
+	(onload): Likewise.
+
+2022-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/102426
+	* configure.ac (LTO_PLUGIN_USE_SYMVER, LTO_PLUGIN_USE_SYMVER_GNU,
+	LTO_PLUGIN_USE_SYMVER_SUN): New test for symbol versioning support.
+	* Makefile.am (version_arg, version_dep): Set conditionally based
+	on LTO_PLUGIN_USE_SYMVER*.
+	(liblto_plugin_la_LDFLAGS): Use $(version_arg) instead of
+	-export-symbols-regex onload.
+	(liblto_plugin_la_DEPENDENCIES): Depend on $(version_dep).
+	* lto-plugin.map: New file.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
+2022-03-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* lto-plugin.c (all_symbols_read_handler): With -save-temps, use
+	link_output_name for -foffload-objects's file name, if available.
+
+2022-03-01  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (process_offload_section): Use a linker as many
+	comments are connected to gold linker.
+	(process_option): Likewise.
+
 2021-12-02  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
 
 	* lto-plugin.c: Fix -linker-output-auto-notlo-rel ->

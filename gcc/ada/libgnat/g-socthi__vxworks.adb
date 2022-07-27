@@ -190,7 +190,9 @@ package body GNAT.Sockets.Thin is
          return Res;
       end if;
 
-      declare
+      pragma Warnings (Off, "unreachable code");
+      declare -- unreachable if Thread_Blocking_IO is statically True
+         pragma Warnings (On, "unreachable code");
          WSet : aliased Fd_Set;
          Now  : aliased Timeval;
       begin

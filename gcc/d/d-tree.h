@@ -57,6 +57,9 @@ typedef Array <Expression *> Expressions;
    4: TYPE_DELEGATE (in RECORD_TYPE).
    5: TYPE_ASSOCIATIVE_ARRAY (in RECORD_TYPE).
 
+   Usage of TYPE_LANG_SLOT_?:
+   1: TYPE_FORWARD_REFERENCES (in RECORD_TYPE, UNION_TYPE).
+
    Usage of DECL_LANG_FLAG_?:
    0: LABEL_VARIABLE_CASE (in LABEL_DECL).
       DECL_BUILT_IN_CTFE (in FUNCTION_DECL).
@@ -67,6 +70,10 @@ typedef Array <Expression *> Expressions;
 
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE) \
   TREE_CHECK2 (NODE, VAR_DECL, FUNCTION_DECL)
+
+#define AGGREGATE_OR_ENUM_TYPE_CHECK(NODE) \
+  TREE_CHECK4 (NODE, RECORD_TYPE, UNION_TYPE, \
+	       QUAL_UNION_TYPE, ENUMERAL_TYPE)
 
 /* The kinds of scopes we recognize.  */
 
@@ -378,6 +385,11 @@ lang_tree_node
 #define TYPE_ASSOCIATIVE_ARRAY(NODE) \
   (TYPE_LANG_FLAG_5 (RECORD_TYPE_CHECK (NODE)))
 
+/* In an incomplete RECORD_TYPE, UNION_TYPE, or ENUMERAL_TYPE, a list of field
+   declarations whose type would be completed by completing that type.  */
+#define TYPE_FORWARD_REFERENCES(NODE) \
+  (TYPE_LANG_SLOT_1 (AGGREGATE_OR_ENUM_TYPE_CHECK (NODE)))
+
 /* True if the decl is a variable case label decl.  */
 #define LABEL_VARIABLE_CASE(NODE) \
   (DECL_LANG_FLAG_0 (LABEL_DECL_CHECK (NODE)))
@@ -392,7 +404,7 @@ lang_tree_node
 
 /* True if the decl comes from a template instance.  */
 #define DECL_INSTANTIATED(NODE) \
-  (DECL_LANG_FLAG_1 (VAR_OR_FUNCTION_DECL_CHECK (NODE)))
+  (DECL_LANG_FLAG_2 (VAR_OR_FUNCTION_DECL_CHECK (NODE)))
 
 enum d_tree_index
 {
@@ -537,7 +549,7 @@ extern tree stabilize_expr (tree *);
 extern tree build_target_expr (tree, tree);
 extern tree force_target_expr (tree);
 extern tree build_address (tree);
-extern tree d_mark_addressable (tree);
+extern tree d_mark_addressable (tree, bool = true);
 extern tree d_mark_used (tree);
 extern tree d_mark_read (tree);
 extern tree build_memcmp_call (tree, tree, tree);
@@ -566,7 +578,7 @@ extern tree imaginary_part (tree);
 extern tree complex_expr (tree, tree, tree);
 extern tree indirect_ref (tree, tree);
 extern tree build_deref (tree);
-extern tree build_array_index (tree, tree);
+extern tree build_pointer_index (tree, tree);
 extern tree build_offset_op (tree_code, tree, tree);
 extern tree build_offset (tree, tree);
 extern tree build_memref (tree, tree, tree);
@@ -580,7 +592,6 @@ extern tree build_bounds_index_condition (IndexExp *, tree, tree);
 extern tree build_bounds_slice_condition (SliceExp *, tree, tree, tree);
 extern bool array_bounds_check (void);
 extern bool checkaction_trap_p (void);
-extern tree bind_expr (tree, tree);
 extern TypeFunction *get_function_type (Type *);
 extern bool call_by_alias_p (FuncDeclaration *, FuncDeclaration *);
 extern tree d_build_call_expr (FuncDeclaration *, tree, Expressions *);
@@ -643,6 +654,7 @@ extern tree build_artificial_decl (tree, tree, const char * = NULL);
 extern tree create_field_decl (tree, const char *, int, int);
 extern void build_type_decl (tree, Dsymbol *);
 extern void set_linkage_for_decl (tree);
+extern void set_visibility_for_decl (tree, Dsymbol *);
 
 /* In expr.cc.  */
 extern tree build_expr (Expression *, bool = false, bool = false);
@@ -672,8 +684,9 @@ extern tree layout_classinfo (ClassDeclaration *);
 extern unsigned base_vtable_offset (ClassDeclaration *, BaseClass *);
 extern tree get_typeinfo_decl (TypeInfoDeclaration *);
 extern tree get_classinfo_decl (ClassDeclaration *);
-extern void check_typeinfo_type (const Loc &, Scope *);
-extern tree build_typeinfo (const Loc &, Type *);
+extern void check_typeinfo_type (const Loc &, Scope *, Expression * = NULL);
+extern tree build_typeinfo (const Loc &, Type *, Expression * = NULL);
+extern tree build_typeinfo (Expression *, Type *);
 extern void create_typeinfo (Type *, Module *);
 extern void create_tinfo_types (Module *);
 extern void layout_cpp_typeinfo (ClassDeclaration *);

@@ -146,12 +146,12 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-am__objects_1 = tsan_clock.lo tsan_debugging.lo tsan_external.lo \
-	tsan_fd.lo tsan_flags.lo tsan_ignoreset.lo \
-	tsan_interceptors_posix.lo tsan_interceptors_mac.lo \
-	tsan_interface_ann.lo tsan_interface_atomic.lo \
-	tsan_interface.lo tsan_interface_java.lo tsan_malloc_mac.lo \
-	tsan_md5.lo tsan_mman.lo tsan_mutexset.lo tsan_new_delete.lo \
+am__objects_1 = tsan_debugging.lo tsan_external.lo tsan_fd.lo \
+	tsan_flags.lo tsan_ignoreset.lo tsan_interceptors_posix.lo \
+	tsan_interceptors_mac.lo tsan_interface_ann.lo \
+	tsan_interface_atomic.lo tsan_interface.lo \
+	tsan_interface_java.lo tsan_malloc_mac.lo tsan_md5.lo \
+	tsan_mman.lo tsan_mutexset.lo tsan_new_delete.lo \
 	tsan_platform_linux.lo tsan_platform_mac.lo \
 	tsan_platform_posix.lo tsan_platform_windows.lo tsan_report.lo \
 	tsan_rtl.lo tsan_rtl_access.lo tsan_rtl_mutex.lo \
@@ -391,7 +391,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -421,7 +420,6 @@ ACLOCAL_AMFLAGS = -I m4
 toolexeclib_LTLIBRARIES = libtsan.la
 nodist_toolexeclib_HEADERS = libtsan_preinit.o
 tsan_files = \
-	tsan_clock.cpp \
 	tsan_debugging.cpp \
 	tsan_external.cpp \
 	tsan_fd.cpp \
@@ -585,7 +583,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_clock.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_debugging.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_external.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_fd.Plo@am__quote@

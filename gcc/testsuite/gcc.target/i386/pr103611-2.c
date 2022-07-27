@@ -1,5 +1,6 @@
-/* { dg-do compile } */
-/* { dg-options "-m32 -O2 -msse4" } */
+/* { dg-do compile { target ia32 } } */
+/* { dg-options "-O2 -msse4" } */
+
 typedef int __v4si __attribute__ ((__vector_size__ (16)));
 
 long long test1(__v4si v) {

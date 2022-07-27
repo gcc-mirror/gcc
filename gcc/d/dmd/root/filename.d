@@ -36,6 +36,8 @@ version (Windows)
     import core.sys.windows.windef;
     import core.sys.windows.winnls;
 
+    import dmd.common.string : extendedPathThen;
+
     extern (Windows) DWORD GetFullPathNameW(LPCWSTR, DWORD, LPWSTR, LPWSTR*) nothrow @nogc;
     extern (Windows) void SetLastError(DWORD) nothrow @nogc;
     extern (C) char* getcwd(char* buffer, size_t maxlen) nothrow;
@@ -732,16 +734,15 @@ nothrow:
      * Returns:
      *  index of the first reserved character in path if found, size_t.max otherwise
      */
-    extern (D) static size_t findReservedChar(const(char)* name) pure @nogc
+    extern (D) static size_t findReservedChar(const(char)[] name) pure @nogc @safe
     {
         version (Windows)
         {
-            size_t idx = 0;
             // According to https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions
             // the following characters are not allowed in path: < > : " | ? *
-            for (const(char)* p = name; *p; p++, idx++)
+            foreach (idx; 0 .. name.length)
             {
-                char c = *p;
+                char c = name[idx];
                 if (c == '<' || c == '>' || c == ':' || c == '"' || c == '|' || c == '?' || c == '*')
                 {
                     return idx;
@@ -782,21 +783,21 @@ nothrow:
      * Returns:
      *  true if path contains '..' reference to parent directory
      */
-    extern (D) static bool refersToParentDir(const(char)* name) pure @nogc
+    extern (D) static bool refersToParentDir(const(char)[] name) pure @nogc @safe
     {
-        if (name[0] == '.' && name[1] == '.' && (!name[2] || isDirSeparator(name[2])))
+        size_t s = 0;
+        foreach (i; 0 .. name.length)
         {
-            return true;
-        }
-
-        for (const(char)* p = name; *p; p++)
-        {
-            char c = *p;
-            if (isDirSeparator(c) && p[1] == '.' && p[2] == '.' && (!p[3] || isDirSeparator(p[3])))
+            if (isDirSeparator(name[i]))
             {
-                return true;
+                if (name[s..i] == "..")
+                    return true;
+                s = i + 1;
             }
         }
+        if (name[s..$] == "..")
+            return true;
+
         return false;
     }
     unittest
@@ -855,7 +856,7 @@ nothrow:
         }
         else version (Windows)
         {
-            return name.toWStringzThen!((wname)
+            return name.extendedPathThen!((wname)
             {
                 const dw = GetFileAttributesW(&wname[0]);
                 if (dw == -1)
@@ -1005,7 +1006,7 @@ nothrow:
                 // Have canonicalize_file_name, which malloc's memory.
                 // We need a dmd.root.rmem allocation though.
                 auto path = name.toCStringThen!((n) => canonicalize_file_name(n.ptr));
-                scope(exit) .free(path.ptr);
+                scope(exit) .free(path);
                 if (path !is null)
                     return xarraydup(path.toDString);
             }
@@ -1124,7 +1125,6 @@ version(Windows)
      */
     private int _mkdir(const(char)[] path) nothrow
     {
-        import dmd.common.string : extendedPathThen;
         const createRet = path.extendedPathThen!(
             p => CreateDirectoryW(&p[0], null /*securityAttributes*/));
         // different conventions for CreateDirectory and mkdir

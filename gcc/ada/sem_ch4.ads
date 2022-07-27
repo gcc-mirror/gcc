@@ -31,9 +31,8 @@ package Sem_Ch4  is
    procedure Analyze_Arithmetic_Op             (N : Node_Id);
    procedure Analyze_Call                      (N : Node_Id);
    procedure Analyze_Case_Expression           (N : Node_Id);
-   procedure Analyze_Comparison_Op             (N : Node_Id);
+   procedure Analyze_Comparison_Equality_Op    (N : Node_Id);
    procedure Analyze_Concatenation             (N : Node_Id);
-   procedure Analyze_Equality_Op               (N : Node_Id);
    procedure Analyze_Explicit_Dereference      (N : Node_Id);
    procedure Analyze_Expression_With_Actions   (N : Node_Id);
    procedure Analyze_If_Expression             (N : Node_Id);
@@ -54,6 +53,10 @@ package Sem_Ch4  is
    procedure Analyze_Unchecked_Expression      (N : Node_Id);
    procedure Analyze_Unchecked_Type_Conversion (N : Node_Id);
 
+   procedure Ambiguous_Operands (N : Node_Id);
+   --  Give an error for comparison, equality and membership operators with
+   --  ambiguous operands, and list possible interpretations.
+
    procedure Analyze_Indexed_Component_Form    (N : Node_Id);
    --  Prior to semantic analysis, an indexed component node can denote any
    --  of the following syntactic constructs:
@@ -63,6 +66,12 @@ package Sem_Ch4  is
    --    d) A slice
    --  The resolution of the construct requires some semantic information
    --  on the prefix and the indexes.
+
+   procedure Nondispatching_Call_To_Abstract_Operation
+     (N           : Node_Id;
+      Abstract_Op : Entity_Id);
+   --  Give an error, or a warning and rewrite N to raise Program_Error because
+   --  it is a nondispatching call to an abstract operation.
 
    function Try_Object_Operation
      (N                : Node_Id;

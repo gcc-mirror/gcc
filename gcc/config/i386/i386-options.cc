@@ -138,6 +138,8 @@ along with GCC; see the file COPYING3.  If not see
 #define m_TREMONT (HOST_WIDE_INT_1U<<PROCESSOR_TREMONT)
 #define m_INTEL (HOST_WIDE_INT_1U<<PROCESSOR_INTEL)
 
+#define m_LUJIAZUI (HOST_WIDE_INT_1U<<PROCESSOR_LUJIAZUI)
+
 #define m_GEODE (HOST_WIDE_INT_1U<<PROCESSOR_GEODE)
 #define m_K6 (HOST_WIDE_INT_1U<<PROCESSOR_K6)
 #define m_K6_GEODE (m_K6 | m_GEODE)
@@ -755,6 +757,7 @@ static const struct processor_costs *processor_cost_table[] =
   &alderlake_cost,
   &icelake_cost,
   &intel_cost,
+  &lujiazui_cost,
   &geode_cost,
   &k6_cost,
   &athlon_cost,
@@ -2212,8 +2215,8 @@ ix86_option_override_internal (bool main_args_p,
   if (i == pta_size)
     {
       error (main_args_p
-	     ? G_("bad value (%qs) for %<-march=%> switch")
-	     : G_("bad value (%qs) for %<target(\"arch=\")%> attribute"),
+	     ? G_("bad value %qs for %<-march=%> switch")
+	     : G_("bad value %qs for %<target(\"arch=\")%> attribute"),
 	     opts->x_ix86_arch_string);
 
       auto_vec <const char *> candidates;
@@ -2292,8 +2295,8 @@ ix86_option_override_internal (bool main_args_p,
   if (ix86_tune_specified && i == pta_size)
     {
       error (main_args_p
-	     ? G_("bad value (%qs) for %<-mtune=%> switch")
-	     : G_("bad value (%qs) for %<target(\"tune=\")%> attribute"),
+	     ? G_("bad value %qs for %<-mtune=%> switch")
+	     : G_("bad value %qs for %<target(\"tune=\")%> attribute"),
 	     opts->x_ix86_tune_string);
 
       auto_vec <const char *> candidates;
@@ -3229,28 +3232,22 @@ ix86_set_current_function (tree fndecl)
   if (new_tree == NULL_TREE)
     new_tree = target_option_default_node;
 
-  if (old_tree != new_tree)
+  bool fp_flag_change
+    = (flag_unsafe_math_optimizations
+       != TREE_TARGET_OPTION (new_tree)->x_ix86_unsafe_math_optimizations
+       || (flag_excess_precision
+	   != TREE_TARGET_OPTION (new_tree)->x_ix86_excess_precision));
+  if (old_tree != new_tree || fp_flag_change)
     {
       cl_target_option_restore (&global_options, &global_options_set,
 				TREE_TARGET_OPTION (new_tree));
-      if (TREE_TARGET_GLOBALS (new_tree))
-	restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
-      else if (new_tree == target_option_default_node)
-	restore_target_globals (&default_target_globals);
-      else
-	TREE_TARGET_GLOBALS (new_tree) = save_target_globals_default_opts ();
-    }
-  else if (flag_unsafe_math_optimizations
-	   != TREE_TARGET_OPTION (new_tree)->x_ix86_unsafe_math_optimizations
-	   || (flag_excess_precision
-	       != TREE_TARGET_OPTION (new_tree)->x_ix86_excess_precision))
-    {
-      cl_target_option_restore (&global_options, &global_options_set,
-				TREE_TARGET_OPTION (new_tree));
-      ix86_excess_precision = flag_excess_precision;
-      ix86_unsafe_math_optimizations = flag_unsafe_math_optimizations;
-      DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_tree
-	= build_target_option_node (&global_options, &global_options_set);
+      if (fp_flag_change)
+	{
+	  ix86_excess_precision = flag_excess_precision;
+	  ix86_unsafe_math_optimizations = flag_unsafe_math_optimizations;
+	  DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_tree
+	    = build_target_option_node (&global_options, &global_options_set);
+	}
       if (TREE_TARGET_GLOBALS (new_tree))
 	restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
       else if (new_tree == target_option_default_node)

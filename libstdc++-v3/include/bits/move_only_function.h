@@ -183,6 +183,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr bool __is_move_only_function_v<move_only_function<_Tp>> = true;
   /// @endcond
 
+  namespace __detail::__variant
+  {
+    template<typename> struct _Never_valueless_alt; // see <variant>
+
+    // Provide the strong exception-safety guarantee when emplacing a
+    // move_only_function into a variant.
+    template<typename... _Signature>
+      struct _Never_valueless_alt<std::move_only_function<_Signature...>>
+      : true_type
+      { };
+  }  // namespace __detail::__variant
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

@@ -8,4 +8,3 @@ void main()
 {
     assert(S.sizeof == int.sizeof);
 }
-

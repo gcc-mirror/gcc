@@ -537,6 +537,10 @@ const struct c_common_resword c_common_reswords[] =
   { "__is_constructible", RID_IS_CONSTRUCTIBLE, D_CXXONLY },
   { "__is_nothrow_assignable", RID_IS_NOTHROW_ASSIGNABLE, D_CXXONLY },
   { "__is_nothrow_constructible", RID_IS_NOTHROW_CONSTRUCTIBLE, D_CXXONLY },
+  { "__reference_constructs_from_temporary", RID_REF_CONSTRUCTS_FROM_TEMPORARY,
+					D_CXXONLY },
+  { "__reference_converts_from_temporary", RID_REF_CONVERTS_FROM_TEMPORARY,
+					D_CXXONLY },
 
   /* C++ transactional memory.  */
   { "synchronized",	RID_SYNCHRONIZED, D_CXX_OBJC | D_TRANSMEM },
@@ -602,8 +606,7 @@ const struct c_common_resword c_common_reswords[] =
   { "null_resettable",	RID_NULL_RESETTABLE,	D_OBJC },
 };
 
-const unsigned int num_c_common_reswords =
-  sizeof c_common_reswords / sizeof (struct c_common_resword);
+const unsigned int num_c_common_reswords = ARRAY_SIZE (c_common_reswords);
 
 /* Return identifier for address space AS.  */
 
@@ -2009,12 +2012,12 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
   enum tree_code code;
   enum tree_code_class cl;
 
+ restart:
   /* X may be NULL if it is the operand of an empty statement expression
      ({ }).  */
   if (x == NULL)
     return;
 
- restart:
   code = TREE_CODE (x);
   cl = TREE_CODE_CLASS (code);
 
@@ -4278,6 +4281,8 @@ c_common_nodes_and_builtins (void)
       sprintf (name, "__int%d__", int_n_data[i].bitsize);
       record_builtin_type ((enum rid)(RID_FIRST_INT_N + i), name,
 			   int_n_trees[i].signed_type);
+      ridpointers[RID_FIRST_INT_N + i]
+	= DECL_NAME (TYPE_NAME (int_n_trees[i].signed_type));
 
       sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
       record_builtin_type (RID_MAX, name, int_n_trees[i].unsigned_type);
@@ -4480,9 +4485,7 @@ c_common_nodes_and_builtins (void)
 
   /* Make fileptr_type_node a distinct void * type until
      FILE type is defined.  Likewise for const struct tm*.  */
-  for (unsigned i = 0;
-       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
-       ++i)
+  for (unsigned i = 0; i < ARRAY_SIZE (builtin_structptr_types); ++i)
     builtin_structptr_types[i].node
       = build_variant_type_copy (builtin_structptr_types[i].base);
 
@@ -6069,8 +6072,8 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
   /* Check for errors in format strings.  */
 
   if (warn_format || warn_suggest_attribute_format)
-    check_function_format (fntype, TYPE_ATTRIBUTES (fntype), nargs, argarray,
-			   arglocs);
+    check_function_format (fndecl ? fndecl : fntype, TYPE_ATTRIBUTES (fntype), nargs,
+			   argarray, arglocs);
 
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);
@@ -6610,6 +6613,20 @@ c_option_controlling_cpp_diagnostic (enum cpp_warning_reason reason)
 	return entry->option_code;
     }
   return 0;
+}
+
+/* Return TRUE if the given option index corresponds to a diagnostic
+   issued by libcpp.  Linear search seems fine for now.  */
+bool
+c_option_is_from_cpp_diagnostics (int option_index)
+{
+  for (auto entry = cpp_reason_option_codes; entry->reason != CPP_W_NONE;
+       ++entry)
+    {
+      if (entry->option_code == option_index)
+	return true;
+    }
+  return false;
 }
 
 /* Callback from cpp_diagnostic for PFILE to print diagnostics from the
@@ -8151,15 +8168,16 @@ check_missing_format_attribute (tree ltype, tree rtype)
 void
 set_underlying_type (tree x)
 {
-  if (x == error_mark_node)
+  if (x == error_mark_node || TREE_TYPE (x) == error_mark_node)
     return;
   if (DECL_IS_UNDECLARED_BUILTIN (x) && TREE_CODE (TREE_TYPE (x)) != ARRAY_TYPE)
     {
       if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	TYPE_NAME (TREE_TYPE (x)) = x;
     }
-  else if (TREE_TYPE (x) != error_mark_node
-	   && DECL_ORIGINAL_TYPE (x) == NULL_TREE)
+  else if (DECL_ORIGINAL_TYPE (x))
+    gcc_checking_assert (TYPE_NAME (TREE_TYPE (x)) == x);
+  else
     {
       tree tt = TREE_TYPE (x);
       DECL_ORIGINAL_TYPE (x) = tt;
@@ -9120,6 +9138,8 @@ c_family_tests (void)
   c_indentation_cc_tests ();
   c_pretty_print_cc_tests ();
   c_spellcheck_cc_tests ();
+  c_diagnostic_cc_tests ();
+  c_opt_problem_cc_tests ();
 }
 
 } // namespace selftest

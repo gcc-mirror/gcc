@@ -113,7 +113,9 @@ gomp_init_work_share (struct gomp_work_share *ws, size_t ordered,
 	  size_t o = nthreads * sizeof (*ws->ordered_team_ids);
 	  o += __alignof__ (long long) - 1;
 	  if ((offsetof (struct gomp_work_share, inline_ordered_team_ids)
-	       & (__alignof__ (long long) - 1)) == 0)
+	       & (__alignof__ (long long) - 1)) == 0
+	      && __alignof__ (struct gomp_work_share)
+		 >= __alignof__ (long long))
 	    o &= ~(__alignof__ (long long) - 1);
 	  ordered += o - 1;
 	}

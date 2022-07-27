@@ -534,7 +534,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
   int i = 0;
   if (aref.offmax[i] < -aref.sizrng[1] || aref.offmax[i = 1] > ubound)
     {
-      HOST_WIDE_INT tmpidx = aref.offmax[i].to_shwi () / eltsize.to_shwi ();
+      HOST_WIDE_INT tmpidx = (aref.offmax[i] / eltsize).to_shwi ();
 
       if (warning_at (location, OPT_Warray_bounds,
 		      "intermediate array offset %wi is outside array bounds "
@@ -761,7 +761,7 @@ public:
     checker (checker) { }
   ~check_array_bounds_dom_walker () {}
 
-  edge before_dom_children (basic_block) FINAL OVERRIDE;
+  edge before_dom_children (basic_block) final override;
 
 private:
   array_bounds_checker *checker;

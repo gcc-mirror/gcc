@@ -315,6 +315,14 @@ extern (C++) abstract class Statement : ASTNode
             override void visit(ImportStatement s)
             {
             }
+
+            override void visit(CaseStatement s)
+            {
+            }
+
+            override void visit(DefaultStatement s)
+            {
+            }
         }
 
         scope HasCode hc = new HasCode();
@@ -688,7 +696,7 @@ extern (C++) final class UnrolledLoopStatement : Statement
 
 /***********************************************************
  */
-extern (C++) class ScopeStatement : Statement
+extern (C++) final class ScopeStatement : Statement
 {
     Statement statement;
     Loc endloc;                 // location of closing curly bracket
@@ -753,7 +761,7 @@ extern (C++) final class ForwardingStatement : Statement
 
     extern (D) this(const ref Loc loc, Statement statement)
     {
-        auto sym = new ForwardingScopeDsymbol(null);
+        auto sym = new ForwardingScopeDsymbol();
         sym.symtab = new DsymbolTable();
         this(loc, sym, statement);
     }
@@ -1761,6 +1769,9 @@ extern (C++) final class GotoStatement : Statement
         return new GotoStatement(loc, ident);
     }
 
+    /**************
+     * Returns: true for error
+     */
     extern (D) bool checkLabel()
     {
         if (!label.statement)

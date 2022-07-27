@@ -20,4 +20,3 @@ template fun2(a...) { auto fun2(T...)(T args){ return 1; } }
 
 enum x1 = fun1(0);
 enum x2 = fun2(0);
-

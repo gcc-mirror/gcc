@@ -464,6 +464,15 @@ test_find_closest_string ()
   ASSERT_STREQ ("DWARF_GNAT_ENCODINGS_ALL",
 		find_closest_string ("DWARF_GNAT_ENCODINGS_all",
 				     &candidates));
+
+  /* Example from PR 105564 where option name with missing equal
+     sign should win.  */
+  candidates.truncate (0);
+  candidates.safe_push ("-Wtrivial-auto-var-init");
+  candidates.safe_push ("-ftrivial-auto-var-init=");
+  ASSERT_STREQ ("-ftrivial-auto-var-init=",
+		find_closest_string ("-ftrivial-auto-var-init",
+				     &candidates));
 }
 
 /* Test data for test_metric_conditions.  */
@@ -489,7 +498,7 @@ static const char * const test_data[] = {
 static void
 test_metric_conditions ()
 {
-  const int num_test_cases = sizeof (test_data) / sizeof (test_data[0]);
+  const int num_test_cases = ARRAY_SIZE (test_data);
 
   for (int i = 0; i < num_test_cases; i++)
     {

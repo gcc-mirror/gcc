@@ -305,7 +305,7 @@ inline clobber_info::clobber_info (insn_info *insn, unsigned int regno)
 inline void
 clobber_info::update_group (clobber_group *group)
 {
-  if (__builtin_expect (m_group != group, 0))
+  if (UNLIKELY (m_group != group))
     m_group = group;
 }
 

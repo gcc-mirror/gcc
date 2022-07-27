@@ -23,7 +23,7 @@ baz (int x)
 {
   if (!x)
     return 1;
-  static int a;	// { dg-error "'a' declared 'static' in 'constexpr' function only available with" "" { target c++20_down } }
+  static int a;	// { dg-error "'a' defined 'static' in 'constexpr' function only available with" "" { target c++20_down } }
   return ++a;	// { dg-error "uninitialized variable 'a' in 'constexpr' function" "" { target c++17_down } .-1 }
 }
 
@@ -32,7 +32,7 @@ qux (int x)
 {
   if (!x)
     return 1;
-  thread_local int a;	// { dg-error "'a' declared 'thread_local' in 'constexpr' function only available with" "" { target c++20_down } }
+  thread_local int a;	// { dg-error "'a' defined 'thread_local' in 'constexpr' function only available with" "" { target c++20_down } }
   return ++a;	// { dg-error "uninitialized variable 'a' in 'constexpr' function" "" { target c++17_down } .-1 }
 }
 
@@ -41,7 +41,7 @@ garply (int x)
 {
   if (!x)
     return 1;
-  extern thread_local int a;	// { dg-error "'a' declared 'thread_local' in 'constexpr' function only available with" "" { target c++20_down } }
+  extern thread_local int a;	// { dg-bogus "'thread_local' in 'constexpr' function only available with" "" { target c++20_down } }
   return ++a;
 }
 

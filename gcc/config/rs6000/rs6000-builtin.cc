@@ -45,8 +45,8 @@
 #include "expr.h"
 #include "langhooks.h"
 #include "gimplify.h"
-#include "gimple-fold.h"
 #include "gimple-iterator.h"
+#include "gimple-fold.h"
 #include "ssa.h"
 #include "tree-ssa-propagate.h"
 #include "builtins.h"
@@ -402,7 +402,9 @@ rs6000_vector_type (const char *name, tree elt_type, unsigned num_elts)
 static
 const char *rs6000_type_string (tree type_node)
 {
-  if (type_node == void_type_node)
+  if (type_node == NULL_TREE)
+    return "**NULL**";
+  else if (type_node == void_type_node)
     return "void";
   else if (type_node == long_integer_type_node)
     return "long";
@@ -432,6 +434,8 @@ const char *rs6000_type_string (tree type_node)
     return "ss";
   else if (type_node == ibm128_float_type_node)
     return "__ibm128";
+  else if (type_node == ieee128_float_type_node)
+    return "__ieee128";
   else if (type_node == opaque_V4SI_type_node)
     return "opaque";
   else if (POINTER_TYPE_P (type_node))
@@ -709,9 +713,9 @@ rs6000_init_builtins (void)
      For IEEE 128-bit floating point, always create the type __ieee128.  If the
      user used -mfloat128, rs6000-c.cc will create a define from __float128 to
      __ieee128.  */
-  if (TARGET_FLOAT128_TYPE)
+  if (TARGET_LONG_DOUBLE_128 && (!TARGET_IEEEQUAD || TARGET_FLOAT128_TYPE))
     {
-      if (!TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128)
+      if (!TARGET_IEEEQUAD)
 	ibm128_float_type_node = long_double_type_node;
       else
 	{
@@ -721,22 +725,24 @@ rs6000_init_builtins (void)
 	  layout_type (ibm128_float_type_node);
 	}
       t = build_qualified_type (ibm128_float_type_node, TYPE_QUAL_CONST);
-      ptr_ibm128_float_type_node = build_pointer_type (t);
       lang_hooks.types.register_builtin_type (ibm128_float_type_node,
 					      "__ibm128");
+    }
+  else
+    ibm128_float_type_node = NULL_TREE;
 
+  if (TARGET_FLOAT128_TYPE)
+    {
       if (TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128)
 	ieee128_float_type_node = long_double_type_node;
       else
 	ieee128_float_type_node = float128_type_node;
       t = build_qualified_type (ieee128_float_type_node, TYPE_QUAL_CONST);
-      ptr_ieee128_float_type_node = build_pointer_type (t);
       lang_hooks.types.register_builtin_type (ieee128_float_type_node,
 					      "__ieee128");
     }
-
   else
-    ieee128_float_type_node = ibm128_float_type_node = long_double_type_node;
+    ieee128_float_type_node = NULL_TREE;
 
   /* Vector pair and vector quad support.  */
   vector_pair_type_node = make_node (OPAQUE_TYPE);
@@ -1994,16 +2000,14 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case RS6000_BIF_VCMPEQUH:
     case RS6000_BIF_VCMPEQUW:
     case RS6000_BIF_VCMPEQUD:
-    /* We deliberately omit RS6000_BIF_VCMPEQUT for now, because gimple
-       folding produces worse code for 128-bit compares.  */
+    case RS6000_BIF_VCMPEQUT:
       fold_compare_helper (gsi, EQ_EXPR, stmt);
       return true;
 
     case RS6000_BIF_VCMPNEB:
     case RS6000_BIF_VCMPNEH:
     case RS6000_BIF_VCMPNEW:
-    /* We deliberately omit RS6000_BIF_VCMPNET for now, because gimple
-       folding produces worse code for 128-bit compares.  */
+    case RS6000_BIF_VCMPNET:
       fold_compare_helper (gsi, NE_EXPR, stmt);
       return true;
 
@@ -2015,9 +2019,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case RS6000_BIF_CMPGE_U4SI:
     case RS6000_BIF_CMPGE_2DI:
     case RS6000_BIF_CMPGE_U2DI:
-    /* We deliberately omit RS6000_BIF_CMPGE_1TI and RS6000_BIF_CMPGE_U1TI
-       for now, because gimple folding produces worse code for 128-bit
-       compares.  */
+    case RS6000_BIF_CMPGE_1TI:
+    case RS6000_BIF_CMPGE_U1TI:
       fold_compare_helper (gsi, GE_EXPR, stmt);
       return true;
 
@@ -2029,9 +2032,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case RS6000_BIF_VCMPGTUW:
     case RS6000_BIF_VCMPGTUD:
     case RS6000_BIF_VCMPGTSD:
-    /* We deliberately omit RS6000_BIF_VCMPGTUT and RS6000_BIF_VCMPGTST
-       for now, because gimple folding produces worse code for 128-bit
-       compares.  */
+    case RS6000_BIF_VCMPGTUT:
+    case RS6000_BIF_VCMPGTST:
       fold_compare_helper (gsi, GT_EXPR, stmt);
       return true;
 
@@ -2043,9 +2045,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case RS6000_BIF_CMPLE_U4SI:
     case RS6000_BIF_CMPLE_2DI:
     case RS6000_BIF_CMPLE_U2DI:
-    /* We deliberately omit RS6000_BIF_CMPLE_1TI and RS6000_BIF_CMPLE_U1TI
-       for now, because gimple folding produces worse code for 128-bit
-       compares.  */
+    case RS6000_BIF_CMPLE_1TI:
+    case RS6000_BIF_CMPLE_U1TI:
       fold_compare_helper (gsi, LE_EXPR, stmt);
       return true;
 
@@ -3418,6 +3419,13 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
       return const0_rtx;
     }
 
+  if (bif_is_ibm128 (*bifaddr) && !ibm128_float_type_node)
+    {
+      error ("%qs requires %<__ibm128%> type support",
+	     bifaddr->bifname);
+      return const0_rtx;
+    }
+
   if (bif_is_cpu (*bifaddr))
     return cpu_expand_builtin (fcode, exp, target);
 
@@ -3498,6 +3506,21 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 	gcc_unreachable ();
     }
 
+  if (bif_is_ibm128 (*bifaddr) && TARGET_LONG_DOUBLE_128 && !TARGET_IEEEQUAD)
+    {
+      if (fcode == RS6000_BIF_PACK_IF)
+	{
+	  icode = CODE_FOR_packtf;
+	  fcode = RS6000_BIF_PACK_TF;
+	  uns_fcode = (size_t) fcode;
+	}
+      else if (fcode == RS6000_BIF_UNPACK_IF)
+	{
+	  icode = CODE_FOR_unpacktf;
+	  fcode = RS6000_BIF_UNPACK_TF;
+	  uns_fcode = (size_t) fcode;
+	}
+    }
 
   /* TRUE iff the built-in function returns void.  */
   bool void_func = TREE_TYPE (TREE_TYPE (fndecl)) == void_type_node;
@@ -3641,23 +3664,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 
   if (bif_is_mma (*bifaddr))
     return mma_expand_builtin (exp, target, icode, fcode);
-
-  if (fcode == RS6000_BIF_PACK_IF
-      && TARGET_LONG_DOUBLE_128
-      && !TARGET_IEEEQUAD)
-    {
-      icode = CODE_FOR_packtf;
-      fcode = RS6000_BIF_PACK_TF;
-      uns_fcode = (size_t) fcode;
-    }
-  else if (fcode == RS6000_BIF_UNPACK_IF
-	   && TARGET_LONG_DOUBLE_128
-	   && !TARGET_IEEEQUAD)
-    {
-      icode = CODE_FOR_unpacktf;
-      fcode = RS6000_BIF_UNPACK_TF;
-      uns_fcode = (size_t) fcode;
-    }
 
   if (TREE_TYPE (TREE_TYPE (fndecl)) == void_type_node)
     target = NULL_RTX;

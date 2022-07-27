@@ -35,4 +35,3 @@ void foo()
         assert(i == 1);  // this fails
     }
 }
-

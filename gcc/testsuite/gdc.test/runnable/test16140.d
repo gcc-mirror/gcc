@@ -29,4 +29,3 @@ void main()
         res ~= value;
     assert(res == [1, 2, 3]);
 }
-

@@ -36,8 +36,8 @@
 #include "gimple-ssa-warn-restrict.h"
 #include "diagnostic-core.h"
 #include "fold-const.h"
-#include "gimple-fold.h"
 #include "gimple-iterator.h"
+#include "gimple-fold.h"
 #include "langhooks.h"
 #include "memmodel.h"
 #include "target.h"
@@ -47,7 +47,7 @@
 #include "tree-object-size.h"
 #include "tree-ssa-strlen.h"
 #include "calls.h"
-#include "cfgloop.h"
+#include "cfganal.h"
 #include "intl.h"
 #include "gimple-range.h"
 #include "stringpool.h"
@@ -146,7 +146,7 @@ warn_string_no_nul (location_t loc, GimpleOrTree expr, const char *fname,
   loc = expansion_point_location_if_in_system_header (loc);
   bool warned;
 
-  /* Format the bound range as a string to keep the nuber of messages
+  /* Format the bound range as a string to keep the number of messages
      from exploding.  */
   char bndstr[80];
   *bndstr = 0;
@@ -159,6 +159,8 @@ warn_string_no_nul (location_t loc, GimpleOrTree expr, const char *fname,
 		 (unsigned long long) bndrng[0].to_uhwi (),
 		 (unsigned long long) bndrng[1].to_uhwi ());
     }
+
+  auto_diagnostic_group d;
 
   const tree maxobjsize = max_object_size ();
   const wide_int maxsiz = wi::to_wide (maxobjsize);
@@ -328,11 +330,11 @@ check_nul_terminated_array (GimpleOrTree expr, tree src, tree bound)
   wide_int bndrng[2];
   if (bound)
     {
-      value_range r;
+      Value_Range r (TREE_TYPE (bound));
 
       get_global_range_query ()->range_of_expr (r, bound);
 
-      if (r.kind () != VR_RANGE)
+      if (r.undefined_p () || r.varying_p ())
 	return true;
 
       bndrng[0] = r.lower_bound ();
@@ -619,7 +621,7 @@ maybe_warn_nonstring_arg (tree fndecl, GimpleOrTree exp)
       /* In a call to strncat with a bound in a range whose lower but
 	 not upper bound is less than the array size, reset ASIZE to
 	 be the same as the bound and the other variable to trigger
-	 the apprpriate warning below.  */
+	 the appropriate warning below.  */
       if (fncode == BUILT_IN_STRNCAT
 	  && bndrng[0] != bndrng[1]
 	  && wi::ltu_p (wi::to_offset (bndrng[0]), asize)
@@ -718,6 +720,7 @@ maybe_warn_for_bound (opt_code opt, location_t loc, GimpleOrTree exp, tree func,
 	    maybe = false;
 	}
 
+      auto_diagnostic_group d;
       if (tree_int_cst_lt (maxobjsize, bndrng[0]))
 	{
 	  if (bndrng[0] == bndrng[1])
@@ -1387,6 +1390,7 @@ check_access (GimpleOrTree exp, tree dstwrite,
 		  && warning_suppressed_p (pad->dst.ref, opt)))
 	    return false;
 
+	  auto_diagnostic_group d;
 	  location_t loc = get_location (exp);
 	  bool warned = false;
 	  if (dstwrite == slen && at_least_one)
@@ -1505,6 +1509,7 @@ check_access (GimpleOrTree exp, tree dstwrite,
       const bool read
 	= mode == access_read_only || mode == access_read_write;
       const bool maybe = pad && pad->dst.parmarray;
+      auto_diagnostic_group d;
       if (warn_for_access (loc, func, exp, opt, range, slen, false, read,
 			   maybe))
 	{
@@ -1538,7 +1543,7 @@ check_access (tree expr, tree dstwrite,
 }
 
 /* Return true if STMT is a call to an allocation function.  Unless
-   ALL_ALLOC is set, consider only functions that return dynmamically
+   ALL_ALLOC is set, consider only functions that return dynamically
    allocated objects.  Otherwise return true even for all forms of
    alloca (including VLA).  */
 
@@ -1720,7 +1725,7 @@ new_delete_mismatch_p (const demangle_component &newc,
 }
 
 /* Return true if DELETE_DECL is an operator delete that's not suitable
-   to call with a pointer returned fron NEW_DECL.  */
+   to call with a pointer returned from NEW_DECL.  */
 
 static bool
 new_delete_mismatch_p (tree new_decl, tree delete_decl)
@@ -1960,7 +1965,7 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 }
 
 /* Return true if DEALLOC_DECL is a function suitable to deallocate
-   objectes allocated by the ALLOC call.  */
+   objects allocated by the ALLOC call.  */
 
 static bool
 matching_alloc_calls_p (gimple *alloc, tree dealloc_decl)
@@ -2019,6 +2024,7 @@ warn_dealloc_offset (location_t loc, gimple *call, const access_ref &aref)
 		 (long long)aref.offrng[1].to_shwi ());
     }
 
+  auto_diagnostic_group d;
   if (!warning_at (loc, OPT_Wfree_nonheap_object,
 		   "%qD called on pointer %qE with nonzero offset%s",
 		   dealloc_decl, aref.ref, offstr))
@@ -2069,13 +2075,13 @@ class pass_waccess : public gimple_opt_pass
 
   ~pass_waccess ();
 
-  opt_pass *clone ();
+  opt_pass *clone () final override;
 
-  virtual bool gate (function *);
+  bool gate (function *) final override;
 
-  void set_pass_param (unsigned, bool);
+  void set_pass_param (unsigned, bool) final override;
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 private:
   /* Not copyable or assignable.  */
@@ -2215,7 +2221,7 @@ alloc_max_size (void)
 
 /* Diagnose a call EXP to function FN decorated with attribute alloc_size
    whose argument numbers given by IDX with values given by ARGS exceed
-   the maximum object size or cause an unsigned oveflow (wrapping) when
+   the maximum object size or cause an unsigned overflow (wrapping) when
    multiplied.  FN is null when EXP is a call via a function pointer.
    When ARGS[0] is null the function does nothing.  ARGS[1] may be null
    for functions like malloc, and non-null for those like calloc that
@@ -2388,7 +2394,7 @@ pass_waccess::check_alloca (gcall *stmt)
       /* -Walloca-larger-than and -Wvla-larger-than settings of less
 	 than  HWI_MAX override the more general -Walloc-size-larger-than
 	 so unless either of the former options is smaller than the last
-	 one (wchich would imply that the call was already checked), check
+	 one (which would imply that the call was already checked), check
 	 the alloca arguments for overflow.  */
       const tree alloc_args[] = { call_arg (stmt, 0), NULL_TREE };
       const int idx[] = { 0, -1 };
@@ -2471,7 +2477,7 @@ pass_waccess::check_strcat (gcall *stmt)
 
   /* There is no way here to determine the length of the string in
      the destination to which the SRC string is being appended so
-     just diagnose cases when the souce string is longer than
+     just diagnose cases when the source string is longer than
      the destination object.  */
   access_data data (m_ptr_qry.rvals, stmt, access_read_write, NULL_TREE,
 		    true, NULL_TREE, true);
@@ -2642,7 +2648,7 @@ pass_waccess::check_strncmp (gcall *stmt)
      a bound that's larger than the size of either array makes no sense
      and is likely a bug.  When the length of neither of the two strings
      is known but the sizes of both of the arrays they are stored in is,
-     issue a warning if the bound is larger than than the size of
+     issue a warning if the bound is larger than the size of
      the larger of the two arrays.  */
 
   c_strlen_data lendata1{ }, lendata2{ };
@@ -2789,10 +2795,9 @@ memmodel_to_uhwi (tree ord, gimple *stmt, unsigned HOST_WIDE_INT *cstval)
   else
     {
       /* Use the range query to determine constant values in the absence
-	 of constant proppagation (such as at -O0).  */
-      value_range rng;
+	 of constant propagation (such as at -O0).  */
+      Value_Range rng (TREE_TYPE (ord));
       if (!get_range_query (cfun)->range_of_expr (rng, ord, stmt)
-	  || !rng.constant_p ()
 	  || !rng.singleton_p (&ord))
 	return false;
 
@@ -2853,7 +2858,7 @@ memmodel_name (unsigned HOST_WIDE_INT val)
 {
   val = memmodel_base (val);
 
-  for (unsigned i = 0; i != sizeof memory_models / sizeof *memory_models; ++i)
+  for (unsigned i = 0; i != ARRAY_SIZE (memory_models); ++i)
     {
       if (val == memory_models[i].modval)
 	return memory_models[i].modname;
@@ -2903,6 +2908,7 @@ pass_waccess::maybe_warn_memmodel (gimple *stmt, tree ord_sucs,
   if (!is_valid)
     {
       bool warned = false;
+      auto_diagnostic_group d;
       if (const char *modname = memmodel_name (sucs))
 	warned = warning_at (loc, OPT_Winvalid_memory_model,
 			     "invalid memory model %qs for %qD",
@@ -2936,6 +2942,7 @@ pass_waccess::maybe_warn_memmodel (gimple *stmt, tree ord_sucs,
       {
 	/* If both memory model arguments are valid but their combination
 	   is not, use their names in the warning.  */
+	auto_diagnostic_group d;
 	if (!warning_at (loc, OPT_Winvalid_memory_model,
 			 "invalid failure memory model %qs for %qD",
 			 failname, fndecl))
@@ -2956,6 +2963,7 @@ pass_waccess::maybe_warn_memmodel (gimple *stmt, tree ord_sucs,
       {
 	/* If both memory model arguments are valid but their combination
 	   is not, use their names in the warning.  */
+	auto_diagnostic_group d;
 	if (!warning_at (loc, OPT_Winvalid_memory_model,
 			 "failure memory model %qs cannot be stronger "
 			 "than success memory model %qs for %qD",
@@ -3270,7 +3278,7 @@ pass_waccess::check_builtin (gcall *stmt)
 }
 
 /* Returns the type of the argument ARGNO to function with type FNTYPE
-   or null when the typoe cannot be determined or no such argument exists.  */
+   or null when the type cannot be determined or no such argument exists.  */
 
 static tree
 fntype_argno_type (tree fntype, unsigned argno)
@@ -3347,7 +3355,7 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
       tree ptrtype = fntype_argno_type (fntype, ptridx);
       if (!ptrtype)
 	/* A function with a prototype was redeclared without one and
-	   the protype has been lost.  See pr102759.  Avoid dealing
+	   the prototype has been lost.  See pr102759.  Avoid dealing
 	   with this pathological case.  */
 	return;
 
@@ -3605,7 +3613,7 @@ pass_waccess::check_call_access (gcall *stmt)
   if (!fntypeattrs)
     return false;
 
-  /* Map of attribute accewss specifications for function arguments.  */
+  /* Map of attribute access specifications for function arguments.  */
   rdwr_map rdwr_idx;
   init_attr_rdwr_indices (&rdwr_idx, fntypeattrs);
 
@@ -3621,7 +3629,7 @@ pass_waccess::check_call_access (gcall *stmt)
 	  if (POINTER_TYPE_P (TREE_TYPE (arg)))
 	    {
 	      access->ptr = arg;
-	      // A nonnull ACCESS->SIZE contains VLA bounds.  */
+	      /* A nonnull ACCESS->SIZE contains VLA bounds.  */
 	    }
 	  else
 	    {
@@ -3654,7 +3662,7 @@ check_nonstring_args (gcall *stmt)
 /* Issue a warning if a deallocation function such as free, realloc,
    or C++ operator delete is called with an argument not returned by
    a matching allocation function such as malloc or the corresponding
-   form of C++ operatorn new.  */
+   form of C++ operator new.  */
 
 void
 pass_waccess::maybe_check_dealloc_call (gcall *call)
@@ -3685,13 +3693,16 @@ pass_waccess::maybe_check_dealloc_call (gcall *call)
   if (DECL_P (ref) || EXPR_P (ref))
     {
       /* Diagnose freeing a declared object.  */
-      if (aref.ref_declared ()
-	  && warning_at (loc, OPT_Wfree_nonheap_object,
-			 "%qD called on unallocated object %qD",
-			 dealloc_decl, ref))
+      if (aref.ref_declared ())
 	{
-	  inform (get_location (ref), "declared here");
-	  return;
+	  auto_diagnostic_group d;
+	  if (warning_at (loc, OPT_Wfree_nonheap_object,
+			  "%qD called on unallocated object %qD",
+			  dealloc_decl, ref))
+	    {
+	      inform (get_location (ref), "declared here");
+	      return;
+	    }
 	}
 
       /* Diagnose freeing a pointer that includes a positive offset.
@@ -3703,6 +3714,7 @@ pass_waccess::maybe_check_dealloc_call (gcall *call)
     }
   else if (CONSTANT_CLASS_P (ref))
     {
+      auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wfree_nonheap_object,
 		      "%qD called on a pointer to an unallocated "
 		      "object %qE", dealloc_decl, ref))
@@ -3812,20 +3824,15 @@ pass_waccess::use_after_inval_p (gimple *inval_stmt, gimple *use_stmt,
       /* Proceed only when looking for uses of dangling pointers.  */
       auto gsi = gsi_for_stmt (use_stmt);
 
-      auto_bitmap visited;
-
       /* A use statement in the last basic block in a function or one that
 	 falls through to it is after any other prior clobber of the used
 	 variable unless it's followed by a clobber of the same variable. */
       basic_block bb = use_bb;
       while (bb != inval_bb
 	     && single_succ_p (bb)
-	     && !(single_succ_edge (bb)->flags & (EDGE_EH|EDGE_DFS_BACK)))
+	     && !(single_succ_edge (bb)->flags
+		  & (EDGE_EH | EDGE_ABNORMAL | EDGE_DFS_BACK)))
 	{
-	  if (!bitmap_set_bit (visited, bb->index))
-	    /* Avoid cycles. */
-	    return true;
-
 	  for (; !gsi_end_p (gsi); gsi_next_nondebug (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
@@ -3910,6 +3917,7 @@ pass_waccess::warn_invalid_pointer (tree ref, gimple *use_stmt,
 
       const tree inval_decl = gimple_call_fndecl (inval_stmt);
 
+      auto_diagnostic_group d;
       if ((ref && warning_at (use_loc, OPT_Wuse_after_free,
 			      (maybe
 			       ? G_("pointer %qE may be used after %qD")
@@ -3928,12 +3936,14 @@ pass_waccess::warn_invalid_pointer (tree ref, gimple *use_stmt,
       return;
     }
 
-  if ((maybe && warn_dangling_pointer < 2)
+  if (equality
+      || (maybe && warn_dangling_pointer < 2)
       || warning_suppressed_p (use_stmt, OPT_Wdangling_pointer_))
     return;
 
   if (DECL_NAME (var))
     {
+      auto_diagnostic_group d;
       if ((ref
 	   && warning_at (use_loc, OPT_Wdangling_pointer_,
 			  (maybe
@@ -4169,8 +4179,7 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
   for (unsigned i = 0; i != pointers.length (); ++i)
     {
       tree ptr = pointers[i];
-      if (TREE_CODE (ptr) == SSA_NAME
-	  && !bitmap_set_bit (visited, SSA_NAME_VERSION (ptr)))
+      if (!bitmap_set_bit (visited, SSA_NAME_VERSION (ptr)))
 	/* Avoid revisiting the same pointer.  */
 	continue;
 
@@ -4247,7 +4256,7 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 	      basic_block use_bb = gimple_bb (use_stmt);
 	      bool this_maybe
 		= (maybe
-		   || !dominated_by_p (CDI_POST_DOMINATORS, use_bb, stmt_bb));
+		   || !dominated_by_p (CDI_POST_DOMINATORS, stmt_bb, use_bb));
 	      warn_invalid_pointer (*use_p->use, use_stmt, stmt, var,
 				    this_maybe, equality);
 	      continue;
@@ -4267,7 +4276,7 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 
 	  if (gcall *call = dyn_cast <gcall *>(use_stmt))
 	    {
-	      if (gimple_call_return_arg (call))
+	      if (gimple_call_return_arg (call) == ptr)
 		if (tree lhs = gimple_call_lhs (call))
 		  if (TREE_CODE (lhs) == SSA_NAME)
 		    pointers.safe_push (lhs);
@@ -4331,7 +4340,7 @@ pass_waccess::check_stmt (gimple *stmt)
   if (m_check_dangling_p
       && gimple_clobber_p (stmt, CLOBBER_EOL))
     {
-      /* Ignore clobber statemts in blocks with exceptional edges.  */
+      /* Ignore clobber statements in blocks with exceptional edges.  */
       basic_block bb = gimple_bb (stmt);
       edge e = EDGE_PRED (bb, 0);
       if (e->flags & EDGE_EH)
@@ -4492,7 +4501,7 @@ pass_waccess::check_dangling_uses (tree var, tree decl, bool maybe /* = false */
 
   basic_block use_bb = gimple_bb (use_stmt);
   basic_block clob_bb = gimple_bb (*pclob);
-  maybe = maybe || !dominated_by_p (CDI_POST_DOMINATORS, use_bb, clob_bb);
+  maybe = maybe || !dominated_by_p (CDI_POST_DOMINATORS, clob_bb, use_bb);
   warn_invalid_pointer (var, use_stmt, *pclob, decl, maybe, false);
 }
 
@@ -4516,6 +4525,9 @@ pass_waccess::check_dangling_stores (basic_block bb,
       gimple *stmt = gsi_stmt (gsi);
       if (!stmt)
 	break;
+
+      if (warning_suppressed_p (stmt, OPT_Wdangling_pointer_))
+	continue;
 
       if (is_gimple_call (stmt)
 	  && !(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
@@ -4542,10 +4554,16 @@ pass_waccess::check_dangling_stores (basic_block bb,
 	}
       else if (TREE_CODE (lhs_ref.ref) == SSA_NAME)
 	{
-	  /* Avoid looking at or before stores into unknown objects.  */
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (lhs_ref.ref);
 	  if (!gimple_nop_p (def_stmt))
+	    /* Avoid looking at or before stores into unknown objects.  */
 	    return;
+
+	  tree var = SSA_NAME_VAR (lhs_ref.ref);
+	  if (TREE_CODE (var) == PARM_DECL && DECL_BY_REFERENCE (var))
+	    /* Avoid by-value arguments transformed into by-reference.  */
+	    continue;
+
 	}
       else if (TREE_CODE (lhs_ref.ref) == MEM_REF)
 	{
@@ -4573,11 +4591,14 @@ pass_waccess::check_dangling_stores (basic_block bb,
       if (!is_auto_decl (rhs_ref.ref))
 	continue;
 
+      auto_diagnostic_group d;
       location_t loc = gimple_location (stmt);
       if (warning_at (loc, OPT_Wdangling_pointer_,
 		      "storing the address of local variable %qD in %qE",
 		      rhs_ref.ref, lhs))
 	{
+	  suppress_warning (stmt, OPT_Wdangling_pointer_);
+
 	  location_t loc = DECL_SOURCE_LOCATION (rhs_ref.ref);
 	  inform (loc, "%qD declared here", rhs_ref.ref);
 
@@ -4710,6 +4731,9 @@ pass_waccess::execute (function *fun)
 {
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  /* Set or clear EDGE_DFS_BACK bits on back edges.  */
+  mark_dfs_back_edges (fun);
 
   /* Create a new ranger instance and associate it with FUN.  */
   m_ptr_qry.rvals = enable_ranger (fun);

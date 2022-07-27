@@ -12,5 +12,5 @@ struct Attrib {}
 
 @Attrib enum TEST = 123;
 
-pragma(msg, __traits(getAttributes, 
+pragma(msg, __traits(getAttributes,
                      __traits(getMember, example, "TEST")));

@@ -16,4 +16,3 @@ void main()
     mixin Foo!(y);
     assert(abc() == 8);
 }
-

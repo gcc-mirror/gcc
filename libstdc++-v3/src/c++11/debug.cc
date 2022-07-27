@@ -52,8 +52,11 @@ namespace std
   __glibcxx_assert_fail(const char* file, int line,
 			const char* function, const char* condition) noexcept
   {
-    fprintf(stderr, "%s:%d: %s: Assertion '%s' failed.\n",
-		      file, line, function, condition);
+    if (file && function && condition)
+      fprintf(stderr, "%s:%d: %s: Assertion '%s' failed.\n",
+	      file, line, function, condition);
+    else if (function)
+      fprintf(stderr, "%s: Undefined behavior detected.\n", function);
     abort();
   }
 }

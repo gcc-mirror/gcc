@@ -48,7 +48,6 @@ generic
       P : in out Natural);
 
 package System.Image_R is
-   pragma Pure;
 
    procedure Image_Fixed_Point
      (V   : Num;

@@ -1114,6 +1114,7 @@ go_output_typedef (class godump_container *container, tree decl)
 	  struct macro_hash_value *mhval;
 	  void **slot;
 	  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
+	  tree value = DECL_INITIAL (TREE_VALUE (element));
 
 	  name = IDENTIFIER_POINTER (TREE_PURPOSE (element));
 
@@ -1127,12 +1128,12 @@ go_output_typedef (class godump_container *container, tree decl)
 	  if (*slot != NULL)
 	    macro_hash_del (*slot);
 
-	  if (tree_fits_shwi_p (TREE_VALUE (element)))
+	  if (tree_fits_shwi_p (value))
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_DEC,
-		     tree_to_shwi (TREE_VALUE (element)));
-	  else if (tree_fits_uhwi_p (TREE_VALUE (element)))
+		     tree_to_shwi (value));
+	  else if (tree_fits_uhwi_p (value))
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_UNSIGNED,
-		      tree_to_uhwi (TREE_VALUE (element)));
+		      tree_to_uhwi (value));
 	  else
 	    print_hex (wi::to_wide (element), buf);
 
@@ -1326,7 +1327,7 @@ static void
 keyword_hash_init (class godump_container *container)
 {
   size_t i;
-  size_t count = sizeof (keywords) / sizeof (keywords[0]);
+  size_t count = ARRAY_SIZE (keywords);
   void **slot;
 
   for (i = 0; i < count; i++)

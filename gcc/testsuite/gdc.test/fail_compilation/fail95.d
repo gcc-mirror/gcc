@@ -19,4 +19,3 @@ void main()
     A(i);
     assert(i == 2);
 }
-

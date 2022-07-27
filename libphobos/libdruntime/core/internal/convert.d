@@ -741,28 +741,6 @@ const(ubyte)[] toUbyte(T)(const ref scope T val) if (is(T == __vector))
     }
 }
 
-// @@@DEPRECATED_2022-02@@@
-deprecated
-@trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const ref return scope T val) if (__traits(isFloating, T) && is(T : creal))
-{
-    if (__ctfe)
-    {
-        auto re = val.re;
-        auto im = val.im;
-        auto a = re.toUbyte();
-        auto b = im.toUbyte();
-        ubyte[] result = ctfe_alloc(a.length + b.length);
-        result[0 .. a.length] = a[0 .. a.length];
-        result[a.length .. $] = b[0 .. b.length];
-        return result;
-    }
-    else
-    {
-        return (cast(const(ubyte)*)&val)[0 .. T.sizeof];
-    }
-}
-
 @trusted pure nothrow @nogc
 const(ubyte)[] toUbyte(T)(const ref return scope T val) if (is(T == enum))
 {

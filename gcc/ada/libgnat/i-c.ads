@@ -29,6 +29,8 @@ with System.Parameters;
 package Interfaces.C
   with SPARK_Mode, Pure
 is
+   pragma Annotate (GNATprove, Always_Return, C);
+
    --  Each of the types declared in Interfaces.C is C-compatible.
 
    --  The types int, short, long, unsigned, ptrdiff_t, size_t, double,

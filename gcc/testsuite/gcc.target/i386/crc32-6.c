@@ -10,4 +10,4 @@ test_mm_crc32_u8 (unsigned int CRC, unsigned char V)
   return _mm_crc32_u8 (CRC, V);
 }
 
-/* { dg-error "needs isa option -mcrc32" "" { target *-*-* } 0  } */
+/* { dg-error "target specific option mismatch" "" { target *-*-* } 0  } */

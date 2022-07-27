@@ -11,4 +11,3 @@ struct C
         return ((cast(ubyte*)&y)[1]);
     }
 }
-

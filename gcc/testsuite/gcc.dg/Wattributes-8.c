@@ -24,8 +24,10 @@ int c ATTR ((aligned (2)));           // okay (reduces alignment)
 ASSERT (_Alignof (c) == 2);
 
 struct {
-  int a ATTR ((packed, aligned (2)));   /* { dg-bogus "\\\[-Wattributes" } */
-  int b ATTR ((aligned (2), packed));   /* { dg-bogus "\\\[-Wattributes" } */
+  int a ATTR ((packed, aligned (2)));   /* { dg-bogus "\\\[-Wattributes" "" { target { ! default_packed } } } */
+  /* { dg-warning "attribute ignored" "" { target { default_packed } } .-1 } */
+  int b ATTR ((aligned (2), packed));   /* { dg-bogus "\\\[-Wattributes" "" { target { ! default_packed } } } */
+  /* { dg-warning "attribute ignored" "" { target { default_packed } } .-1 } */
 
   /* Avoid exercising this since the attribute has no effect yet
      there is no warning.

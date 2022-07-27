@@ -101,14 +101,15 @@ is
       Name : String := "";
       Form : String := "")
    with
-     Pre    => not Is_Open (File),
-     Post   =>
+     Pre      => not Is_Open (File),
+     Post     =>
        Is_Open (File)
        and then Ada.Text_IO.Mode (File) = Mode
        and then (if Mode /= In_File
                    then (Line_Length (File) = 0
                          and then Page_Length (File) = 0)),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Open
      (File : in out File_Type;
@@ -116,54 +117,63 @@ is
       Name : String;
       Form : String := "")
    with
-     Pre    => not Is_Open (File),
-     Post   =>
+     Pre      => not Is_Open (File),
+     Post     =>
       Is_Open (File)
       and then Ada.Text_IO.Mode (File) = Mode
       and then (if Mode /= In_File
                   then (Line_Length (File) = 0
                         and then Page_Length (File) = 0)),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Close  (File : in out File_Type) with
-     Pre    => Is_Open (File),
-     Post   => not Is_Open (File),
-     Global => (In_Out => File_System);
+     Pre      => Is_Open (File),
+     Post     => not Is_Open (File),
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
    procedure Delete (File : in out File_Type) with
-     Pre    => Is_Open (File),
-     Post   => not Is_Open (File),
-     Global => (In_Out => File_System);
+     Pre      => Is_Open (File),
+     Post     => not Is_Open (File),
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
    procedure Reset  (File : in out File_Type; Mode : File_Mode) with
-     Pre    => Is_Open (File),
-     Post   =>
+     Pre      => Is_Open (File),
+     Post     =>
        Is_Open (File)
        and then Ada.Text_IO.Mode (File) = Mode
        and then (if Mode /= In_File
                    then (Line_Length (File) = 0
                          and then Page_Length (File) = 0)),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
    procedure Reset  (File : in out File_Type) with
-     Pre    => Is_Open (File),
-     Post   =>
+     Pre      => Is_Open (File),
+     Post     =>
        Is_Open (File)
        and Mode (File)'Old = Mode (File)
        and (if Mode (File) /= In_File
                 then (Line_Length (File) = 0
                       and then Page_Length (File) = 0)),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    function Mode (File : File_Type) return File_Mode with
-     Pre    => Is_Open (File),
-     Global => null;
+     Pre      => Is_Open (File),
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
    function Name (File : File_Type) return String with
-     Pre    => Is_Open (File),
-     Global => null;
+     Pre      => Is_Open (File),
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
    function Form (File : File_Type) return String with
-     Pre    => Is_Open (File),
-     Global => null;
+     Pre      => Is_Open (File),
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
 
    function Is_Open (File : File_Type) return Boolean with
-     Global => null;
+     Global   => null,
+     Annotate => (GNATprove, Always_Return);
 
    ------------------------------------------------------
    -- Control of default input, output and error files --
@@ -199,120 +209,142 @@ is
    --  an oversight, and was intended to be IN, see AI95-00057.
 
    procedure Flush (File : File_Type) with
-     Pre    => Is_Open (File) and then Mode (File) /= In_File,
-     Post   =>
+     Pre      => Is_Open (File) and then Mode (File) /= In_File,
+     Post     =>
        Line_Length (File)'Old = Line_Length (File)
        and Page_Length (File)'Old = Page_Length (File),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
    procedure Flush with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    --------------------------------------------
    -- Specification of line and page lengths --
    --------------------------------------------
 
    procedure Set_Line_Length (File : File_Type; To : Count) with
-     Pre    => Is_Open (File)  and then Mode (File) /= In_File,
-     Post   =>
+     Pre      => Is_Open (File)  and then Mode (File) /= In_File,
+     Post     =>
        Line_Length (File) = To
        and Page_Length (File)'Old = Page_Length (File),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
    procedure Set_Line_Length (To : Count) with
-     Post   =>
+     Post     =>
        Line_Length = To
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Set_Page_Length (File : File_Type; To : Count) with
-     Pre    => Is_Open (File) and then Mode (File) /= In_File,
-     Post   =>
+     Pre      => Is_Open (File) and then Mode (File) /= In_File,
+     Post     =>
        Page_Length (File) = To
        and Line_Length (File)'Old = Line_Length (File),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
    procedure Set_Page_Length (To : Count) with
-     Post   =>
+     Post     =>
        Page_Length = To
        and Line_Length'Old = Line_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    function Line_Length (File : File_Type) return Count with
-     Pre    => Is_Open (File) and then Mode (File) /= In_File,
-     Global => (Input => File_System);
+     Pre      => Is_Open (File) and then Mode (File) /= In_File,
+     Global   => (Input => File_System);
    function Line_Length return Count with
-     Global => (Input => File_System);
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    function Page_Length (File : File_Type) return Count with
-     Pre    => Is_Open (File) and then Mode (File) /= In_File,
-     Global => (Input => File_System);
+     Pre      => Is_Open (File) and then Mode (File) /= In_File,
+     Global   => (Input => File_System);
    function Page_Length return Count with
-     Global => (Input => File_System);
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    ------------------------------------
    -- Column, Line, and Page Control --
    ------------------------------------
 
    procedure New_Line (File : File_Type; Spacing : Positive_Count := 1) with
-     Pre    => Is_Open (File) and then Mode (File) /= In_File,
-     Post   =>
+     Pre      => Is_Open (File) and then Mode (File) /= In_File,
+     Post     =>
        Line_Length (File)'Old = Line_Length (File)
        and Page_Length (File)'Old = Page_Length (File),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
    procedure New_Line (Spacing : Positive_Count := 1) with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1) with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Global => (In_Out => File_System);
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
    procedure Skip_Line (Spacing : Positive_Count := 1) with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    function End_Of_Line (File : File_Type) return Boolean with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Global => (Input => File_System);
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
    function End_Of_Line return Boolean with
-     Global => (Input => File_System);
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    procedure New_Page (File : File_Type) with
-     Pre    => Is_Open (File) and then Mode (File) /= In_File,
-     Post   =>
+     Pre      => Is_Open (File) and then Mode (File) /= In_File,
+     Post     =>
        Line_Length (File)'Old = Line_Length (File)
        and Page_Length (File)'Old = Page_Length (File),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
    procedure New_Page with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    procedure Skip_Page (File : File_Type) with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Global => (In_Out => File_System);
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
    procedure Skip_Page with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    function End_Of_Page (File : File_Type) return Boolean with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Global => (Input => File_System);
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
    function End_Of_Page return Boolean with
-     Global => (Input => File_System);
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    function End_Of_File (File : File_Type) return Boolean with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Global => (Input => File_System);
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
    function End_Of_File return Boolean with
-     Global => (Input => File_System);
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    procedure Set_Col (File : File_Type;  To : Positive_Count) with
      Pre            =>
@@ -325,13 +357,15 @@ is
               Line_Length (File)'Old = Line_Length (File)
               and Page_Length (File)'Old = Page_Length (File),
         others                 => True),
-     Global         => (In_Out => File_System);
+     Global         => (In_Out => File_System),
+     Annotate       => (GNATprove, Might_Not_Return);
    procedure Set_Col (To : Positive_Count) with
-     Pre    => Line_Length = 0 or To <= Line_Length,
-     Post   =>
+     Pre      => Line_Length = 0 or To <= Line_Length,
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Set_Line (File : File_Type; To : Positive_Count) with
      Pre            =>
@@ -344,149 +378,173 @@ is
               Line_Length (File)'Old = Line_Length (File)
               and Page_Length (File)'Old = Page_Length (File),
         others                 => True),
-     Global         => (In_Out => File_System);
+     Global         => (In_Out => File_System),
+     Annotate       => (GNATprove, Might_Not_Return);
    procedure Set_Line (To : Positive_Count) with
-     Pre    => Page_Length = 0 or To <= Page_Length,
-     Post   =>
+     Pre      => Page_Length = 0 or To <= Page_Length,
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    function Col (File : File_Type) return Positive_Count with
-     Pre    => Is_Open (File),
-     Global => (Input => File_System);
+     Pre      => Is_Open (File),
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
    function Col return Positive_Count with
-     Global => (Input => File_System);
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    function Line (File : File_Type) return Positive_Count with
-     Pre    => Is_Open (File),
-     Global => (Input => File_System);
+     Pre      => Is_Open (File),
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
    function Line return Positive_Count with
-     Global => (Input => File_System);
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    function Page (File : File_Type) return Positive_Count with
-     Pre => Is_Open (File),
-     Global => (Input => File_System);
+     Pre      => Is_Open (File),
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
    function Page return Positive_Count with
-     Global => (Input => File_System);
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    ----------------------------
    -- Character Input-Output --
    ----------------------------
 
    procedure Get (File : File_Type; Item : out Character) with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Global => (In_Out => File_System);
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
    procedure Get (Item : out Character) with
      Post   =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
    procedure Put (File : File_Type; Item : Character) with
-     Pre    => Is_Open (File) and then Mode (File) /= In_File,
-     Post   =>
+     Pre      => Is_Open (File) and then Mode (File) /= In_File,
+     Post     =>
        Line_Length (File)'Old = Line_Length (File)
        and Page_Length (File)'Old = Page_Length (File),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
    procedure Put (Item : Character) with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    procedure Look_Ahead
      (File        : File_Type;
       Item        : out Character;
       End_Of_Line : out Boolean)
    with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Global => (Input => File_System);
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    procedure Look_Ahead
      (Item        : out Character;
       End_Of_Line : out Boolean)
    with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (Input => File_System);
+     Global   => (Input => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    procedure Get_Immediate
      (File : File_Type;
       Item : out Character)
    with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Global => (In_Out => File_System);
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Get_Immediate
      (Item : out Character)
    with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Get_Immediate
      (File      : File_Type;
       Item      : out Character;
       Available : out Boolean)
    with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Global => (In_Out => File_System);
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Get_Immediate
      (Item      : out Character;
       Available : out Boolean)
    with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    -------------------------
    -- String Input-Output --
    -------------------------
 
    procedure Get (File : File_Type; Item : out String) with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Global => (In_Out => File_System);
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
    procedure Get (Item : out String) with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
    procedure Put (File : File_Type; Item : String) with
-     Pre    => Is_Open (File) and then Mode (File) /= In_File,
-     Post   =>
+     Pre      => Is_Open (File) and then Mode (File) /= In_File,
+     Post     =>
        Line_Length (File)'Old = Line_Length (File)
        and Page_Length (File)'Old = Page_Length (File),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
    procedure Put (Item : String) with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    procedure Get_Line
      (File : File_Type;
       Item : out String;
       Last : out Natural)
    with
-     Pre    => Is_Open (File) and then Mode (File) = In_File,
-     Post   => (if Item'Length > 0 then Last in Item'First - 1 .. Item'Last
+     Pre      => Is_Open (File) and then Mode (File) = In_File,
+     Post     => (if Item'Length > 0 then Last in Item'First - 1 .. Item'Last
                else Last = Item'First - 1),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    procedure Get_Line
      (Item : out String;
       Last : out Natural)
    with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length
        and (if Item'Length > 0 then Last in Item'First - 1 .. Item'Last
             else Last = Item'First - 1),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Might_Not_Return);
 
    function Get_Line (File : File_Type) return String with SPARK_Mode => Off;
    pragma Ada_05 (Get_Line);
@@ -498,19 +556,21 @@ is
      (File : File_Type;
       Item : String)
    with
-     Pre    => Is_Open (File) and then Mode (File) /= In_File,
-     Post   =>
+     Pre      => Is_Open (File) and then Mode (File) /= In_File,
+     Post     =>
        Line_Length (File)'Old = Line_Length (File)
        and Page_Length (File)'Old = Page_Length (File),
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    procedure Put_Line
      (Item : String)
    with
-     Post   =>
+     Post     =>
        Line_Length'Old = Line_Length
        and Page_Length'Old = Page_Length,
-     Global => (In_Out => File_System);
+     Global   => (In_Out => File_System),
+     Annotate => (GNATprove, Always_Return);
 
    ---------------------------------------
    -- Generic packages for Input-Output --

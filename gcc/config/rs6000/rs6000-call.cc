@@ -55,8 +55,8 @@
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "gimplify.h"
-#include "gimple-fold.h"
 #include "gimple-iterator.h"
+#include "gimple-fold.h"
 #include "ssa.h"
 #include "tree-ssa-propagate.h"
 #include "builtins.h"
@@ -1110,6 +1110,12 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
       if (USE_ALTIVEC_FOR_ARG_P (cum, elt_mode, named))
 	{
 	  cum->vregno += n_elts;
+
+	  /* If we are not splitting Complex IEEE128 args then account for the
+	     fact that they are passed in 2 VSX regs. */
+	  if (!targetm.calls.split_complex_arg && type
+	      && TREE_CODE (type) == COMPLEX_TYPE && elt_mode == KCmode)
+	    cum->vregno++;
 
 	  if (!TARGET_ALTIVEC)
 	    error ("cannot pass argument in vector register because"

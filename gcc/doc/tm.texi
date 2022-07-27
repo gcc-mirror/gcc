@@ -736,7 +736,7 @@ If a target implements string objects then this hook should return
 @end deftypefn
 
 @deftypefn {C Target Hook} void TARGET_CHECK_STRING_OBJECT_FORMAT_ARG (tree @var{format_arg}, tree @var{args_list})
-If a target implements string objects then this hook should should
+If a target implements string objects then this hook should
 provide a facility to check the function arguments in @var{args_list}
 against the format specifiers in @var{format_arg} where the type of
 @var{format_arg} is one recognized as a valid string reference type.
@@ -2799,7 +2799,7 @@ intermediate registers or scratch registers.
 
 If copying a register @var{class} in @var{mode} to @var{x} requires an
 intermediate or scratch register, @code{SECONDARY_OUTPUT_RELOAD_CLASS}
-was supposed to be defined be defined to return the largest register
+was supposed to be defined to return the largest register
 class required.  If the
 requirements for input and output reloads were the same, the macro
 @code{SECONDARY_RELOAD_CLASS} should have been used instead of defining both
@@ -6088,14 +6088,18 @@ for the given scalar type @var{type}.  @var{is_packed} is false if the scalar
 access using @var{type} is known to be naturally aligned.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST (machine_mode @var{mode}, rtx @var{output}, rtx @var{in0}, rtx @var{in1}, const vec_perm_indices @var{&sel})
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST (machine_mode @var{mode}, machine_mode @var{op_mode}, rtx @var{output}, rtx @var{in0}, rtx @var{in1}, const vec_perm_indices @var{&sel})
 This hook is used to test whether the target can permute up to two
-vectors of mode @var{mode} using the permutation vector @code{sel}, and
-also to emit such a permutation.  In the former case @var{in0}, @var{in1}
-and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are
-the source vectors and @var{out} is the destination vector; all three are
-operands of mode @var{mode}.  @var{in1} is the same as @var{in0} if
-@var{sel} describes a permutation on one vector instead of two.
+vectors of mode @var{op_mode} using the permutation vector @code{sel},
+producing a vector of mode @var{mode}.  The hook is also used to emit such
+a permutation.
+
+When the hook is being used to test whether the target supports a permutation,
+@var{in0}, @var{in1}, and @var{out} are all null.  When the hook is being used
+to emit a permutation, @var{in0} and @var{in1} are the source vectors of mode
+@var{op_mode} and @var{out} is the destination vector of mode @var{mode}.
+@var{in1} is the same as @var{in0} if @var{sel} describes a permutation on one
+vector instead of two.
 
 Return true if the operation is possible, emitting instructions for it
 if rtxes are provided.
@@ -10205,18 +10209,18 @@ Here are macros for DWARF output.
 Define this macro if GCC should produce dwarf version 2 format
 debugging output in response to the @option{-g} option.
 
-@deftypefn {Target Hook} int TARGET_DWARF_CALLING_CONVENTION (const_tree @var{function})
-Define this to enable the dwarf attribute @code{DW_AT_calling_convention} to
-be emitted for each function.  Instead of an integer return the enum
-value for the @code{DW_CC_} tag.
-@end deftypefn
-
 To support optional call frame debugging information, you must also
 define @code{INCOMING_RETURN_ADDR_RTX} and either set
 @code{RTX_FRAME_RELATED_P} on the prologue insns if you use RTL for the
 prologue, or call @code{dwarf2out_def_cfa} and @code{dwarf2out_reg_save}
 as appropriate from @code{TARGET_ASM_FUNCTION_PROLOGUE} if you don't.
 @end defmac
+
+@deftypefn {Target Hook} int TARGET_DWARF_CALLING_CONVENTION (const_tree @var{function})
+Define this to enable the dwarf attribute @code{DW_AT_calling_convention} to
+be emitted for each function.  Instead of an integer return the enum
+value for the @code{DW_CC_} tag.
+@end deftypefn
 
 @defmac DWARF2_FRAME_INFO
 Define this macro to a nonzero value if GCC should always output
@@ -12330,6 +12334,13 @@ This target hook emits instructions to zero the subset of @var{selected_regs}
 that could conceivably contain values that are useful to an attacker.
 Return the set of registers that were actually cleared.
 
+For most targets, the returned set of registers is a subset of
+@var{selected_regs}, however, for some of the targets (for example MIPS),
+clearing some registers that are in the @var{selected_regs} requires
+clearing other call used registers that are not in the @var{selected_regs},
+under such situation, the returned set of registers must be a subset of all
+call used registers.
+
 The default implementation uses normal move instructions to zero
 all the registers in @var{selected_regs}.  Define this hook if the
 target has more efficient ways of zeroing certain registers,
@@ -12596,3 +12607,8 @@ counters are incremented using atomic operations.  Targets not supporting
 64-bit atomic operations may override the default value and request a 32-bit
 type.
 @end deftypefn
+
+@deftypevr {Target Hook} bool TARGET_HAVE_SHADOW_CALL_STACK
+This value is true if the target platform supports
+@option{-fsanitize=shadow-call-stack}.  The default value is false.
+@end deftypevr

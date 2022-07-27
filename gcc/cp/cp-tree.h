@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "function.h"
+#include "tristate.h"
 
 /* In order for the format checking to accept the C++ front end
    diagnostic framework extensions, you must include this file before
@@ -466,6 +467,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       IMPLICIT_CONV_EXPR_NONTYPE_ARG (in IMPLICIT_CONV_EXPR)
       BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (in BASELINK)
       BIND_EXPR_VEC_DTOR (in BIND_EXPR)
+      ATOMIC_CONSTR_EXPR_FROM_CONCEPT_P (in ATOMIC_CONSTR)
    2: IDENTIFIER_KIND_BIT_2 (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -542,7 +544,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_CONSTRAINT_VAR_P (in a PARM_DECL)
       TEMPLATE_DECL_COMPLEX_ALIAS_P (in TEMPLATE_DECL)
       DECL_INSTANTIATING_NSDMI_P (in a FIELD_DECL)
-      LABEL_DECL_CDTOR (in LABEL_DECL)
       USING_DECL_UNRELATED_P (in USING_DECL)
    3: DECL_IN_AGGR_P.
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
@@ -1397,7 +1398,9 @@ enum cp_trait_kind
   CPTK_IS_ASSIGNABLE,
   CPTK_IS_CONSTRUCTIBLE,
   CPTK_IS_NOTHROW_ASSIGNABLE,
-  CPTK_IS_NOTHROW_CONSTRUCTIBLE
+  CPTK_IS_NOTHROW_CONSTRUCTIBLE,
+  CPTK_REF_CONSTRUCTS_FROM_TEMPORARY,
+  CPTK_REF_CONVERTS_FROM_TEMPORARY
 };
 
 /* The types that we are processing.  */
@@ -1679,6 +1682,11 @@ check_constraint_info (tree t)
 #define ATOMIC_CONSTR_MAP_INSTANTIATED_P(NODE) \
   TREE_LANG_FLAG_0 (ATOMIC_CONSTR_CHECK (NODE))
 
+/* Whether the expression for this atomic constraint belongs to a
+   concept definition.  */
+#define ATOMIC_CONSTR_EXPR_FROM_CONCEPT_P(NODE) \
+  TREE_LANG_FLAG_1 (ATOMIC_CONSTR_CHECK (NODE))
+
 /* The expression of an atomic constraint. */
 #define ATOMIC_CONSTR_EXPR(NODE) \
   CONSTR_EXPR (ATOMIC_CONSTR_CHECK (NODE))
@@ -1715,9 +1723,15 @@ check_constraint_info (tree t)
 #define DECL_MODULE_CHECK(NODE)						\
   TREE_NOT_CHECK (NODE, TEMPLATE_DECL)
 
-/* In the purview of a module (including header unit).  */
+/* In the purview of a named module (or in the purview of the
+   header-unit being compiled).  */
 #define DECL_MODULE_PURVIEW_P(N) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (N))->u.base.module_purview_p)
+
+/* Attached to the named module it is in the purview of.  Decls
+   attached to the global module will have this false.  */
+#define DECL_MODULE_ATTACH_P(N) \
+  (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (N))->u.base.module_attach_p)
 
 /* True if the live version of the decl was imported.  */
 #define DECL_MODULE_IMPORT_P(NODE) \
@@ -1729,9 +1743,9 @@ check_constraint_info (tree t)
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_entity_p)
 
 /* DECL that has attached decls for ODR-relatedness.  */
-#define DECL_MODULE_ATTACHMENTS_P(NODE)			\
+#define DECL_MODULE_KEYED_DECLS_P(NODE)			\
   (DECL_LANG_SPECIFIC (TREE_CHECK2(NODE,FUNCTION_DECL,VAR_DECL))\
-   ->u.base.module_attached_p)
+   ->u.base.module_keyed_decls_p)
 
 /* Whether this is an exported DECL.  Held on any decl that can appear
    at namespace scope (function, var, type, template, const or
@@ -2051,7 +2065,6 @@ struct named_label_hash : ggc_remove <named_label_entry *>
 struct GTY(()) language_function {
   struct c_language_function base;
 
-  tree x_cdtor_label;
   tree x_current_class_ptr;
   tree x_current_class_ref;
   tree x_eh_spec_block;
@@ -2084,13 +2097,6 @@ struct GTY(()) language_function {
 /* The current C++-specific per-function global variables.  */
 
 #define cp_function_chain (cfun->language)
-
-/* In a constructor destructor, the point at which all derived class
-   destroying/construction has been done.  I.e., just before a
-   constructor returns, or before any base class destroying will be done
-   in a destructor.  */
-
-#define cdtor_label cp_function_chain->x_cdtor_label
 
 /* When we're processing a member function, current_class_ptr is the
    PARM_DECL for the `this' pointer.  The current_class_ref is an
@@ -2829,12 +2835,13 @@ struct GTY(()) lang_decl_base {
 
   /* The following apply to VAR, FUNCTION, TYPE, CONCEPT, & NAMESPACE
      decls.  */
-  unsigned module_purview_p : 1;	   /* in module purview (not GMF) */
+  unsigned module_purview_p : 1;	   // in named-module purview
+  unsigned module_attach_p : 1;		   // attached to named module
   unsigned module_import_p : 1;     	   /* from an import */
   unsigned module_entity_p : 1;		   /* is in the entitity ary &
 					      hash.  */
-  /* VAR_DECL or FUNCTION_DECL has attached decls.     */
-  unsigned module_attached_p : 1;
+  /* VAR_DECL or FUNCTION_DECL has keyed decls.     */
+  unsigned module_keyed_decls_p : 1;
 
   /* 12 spare bits.  */
 };
@@ -3767,17 +3774,20 @@ struct GTY(()) lang_decl {
 
 /* The depth of a template argument vector.  When called directly by
    the parser, we use a TREE_LIST rather than a TREE_VEC to represent
-   template arguments.  In fact, we may even see NULL_TREE if there
-   are no template arguments.  In both of those cases, there is only
-   one level of template arguments.  */
-#define TMPL_ARGS_DEPTH(NODE)					\
-  (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (NODE) ? TREE_VEC_LENGTH (NODE) : 1)
+   template arguments.  In that case, there is only one level of template
+   arguments.  We may even see NULL_TREE if there are 0 levels of
+   template arguments, as in cp_parser_requires_expression.   */
+#define TMPL_ARGS_DEPTH(NODE)						\
+  ((NODE) == NULL_TREE ? 0						\
+   : TMPL_ARGS_HAVE_MULTIPLE_LEVELS (NODE) ? TREE_VEC_LENGTH (NODE)	\
+   : 1)
 
 /* The LEVELth level of the template ARGS.  The outermost level of
    args is level 1, not level 0.  */
 #define TMPL_ARGS_LEVEL(ARGS, LEVEL)		\
   (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (ARGS)	\
-   ? TREE_VEC_ELT (ARGS, (LEVEL) - 1) : (ARGS))
+   ? TREE_VEC_ELT (ARGS, (LEVEL) - 1)		\
+   : (gcc_checking_assert ((LEVEL) == 1), (ARGS)))
 
 /* Set the LEVELth level of the template ARGS to VAL.  This macro does
    not work with single-level argument vectors.  */
@@ -3890,24 +3900,19 @@ struct GTY(()) lang_decl {
   (TREE_CODE (NODE) == TYPE_PACK_EXPANSION     \
    || TREE_CODE (NODE) == EXPR_PACK_EXPANSION)
 
+#define PACK_EXPANSION_CHECK(NODE) \
+  TREE_CHECK2 (NODE, TYPE_PACK_EXPANSION, EXPR_PACK_EXPANSION)
+
 /* Extracts the type or expression pattern from a TYPE_PACK_EXPANSION or
    EXPR_PACK_EXPANSION.  */
 #define PACK_EXPANSION_PATTERN(NODE)                            \
-  (TREE_CODE (NODE) == TYPE_PACK_EXPANSION ? TREE_TYPE (NODE)    \
-   : TREE_OPERAND (NODE, 0))
-
-/* Sets the type or expression pattern for a TYPE_PACK_EXPANSION or
-   EXPR_PACK_EXPANSION.  */
-#define SET_PACK_EXPANSION_PATTERN(NODE,VALUE)  \
-  if (TREE_CODE (NODE) == TYPE_PACK_EXPANSION)  \
-    TREE_TYPE (NODE) = VALUE;                   \
-  else                                          \
-    TREE_OPERAND (NODE, 0) = VALUE
+  (TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == TYPE_PACK_EXPANSION \
+   ? TREE_TYPE (NODE) : TREE_OPERAND (NODE, 0))
 
 /* The list of parameter packs used in the PACK_EXPANSION_* node. The
    TREE_VALUE of each TREE_LIST contains the parameter packs.  */
 #define PACK_EXPANSION_PARAMETER_PACKS(NODE)		\
-  *(TREE_CODE (NODE) == EXPR_PACK_EXPANSION		\
+  *(TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == EXPR_PACK_EXPANSION \
     ? &TREE_OPERAND (NODE, 1)				\
     : &TYPE_MIN_VALUE_RAW (TYPE_PACK_EXPANSION_CHECK (NODE)))
 
@@ -3918,22 +3923,26 @@ struct GTY(()) lang_decl {
    are enclosing functions that provided function parameter packs we'll need
    to map appropriately.  */
 #define PACK_EXPANSION_EXTRA_ARGS(NODE)		\
-  *(TREE_CODE (NODE) == TYPE_PACK_EXPANSION	\
+  *(TREE_CODE (PACK_EXPANSION_CHECK (NODE)) == TYPE_PACK_EXPANSION \
     ? &TYPE_MAX_VALUE_RAW (NODE)			\
     : &TREE_OPERAND ((NODE), 2))
 
 /* True iff this pack expansion is within a function context.  */
-#define PACK_EXPANSION_LOCAL_P(NODE) TREE_LANG_FLAG_0 (NODE)
+#define PACK_EXPANSION_LOCAL_P(NODE) \
+  TREE_LANG_FLAG_0 (PACK_EXPANSION_CHECK (NODE))
 
 /* True iff this pack expansion is for sizeof....  */
-#define PACK_EXPANSION_SIZEOF_P(NODE) TREE_LANG_FLAG_1 (NODE)
+#define PACK_EXPANSION_SIZEOF_P(NODE) \
+  TREE_LANG_FLAG_1 (PACK_EXPANSION_CHECK (NODE))
 
 /* True iff this pack expansion is for auto... in lambda init-capture.  */
-#define PACK_EXPANSION_AUTO_P(NODE) TREE_LANG_FLAG_2 (NODE)
+#define PACK_EXPANSION_AUTO_P(NODE) \
+  TREE_LANG_FLAG_2 (PACK_EXPANSION_CHECK (NODE))
 
 /* True if we must use PACK_EXPANSION_EXTRA_ARGS and avoid partial
    instantiation of this pack expansion.  */
-#define PACK_EXPANSION_FORCE_EXTRA_ARGS_P(NODE) TREE_LANG_FLAG_3 (NODE)
+#define PACK_EXPANSION_FORCE_EXTRA_ARGS_P(NODE) \
+  TREE_LANG_FLAG_3 (PACK_EXPANSION_CHECK (NODE))
 
 /* True iff the wildcard can match a template parameter pack.  */
 #define WILDCARD_PACK_P(NODE) TREE_LANG_FLAG_0 (NODE)
@@ -3943,19 +3952,14 @@ struct GTY(()) lang_decl {
   (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK              \
    || TREE_CODE (NODE) == NONTYPE_ARGUMENT_PACK)
 
+#define ARGUMENT_PACK_CHECK(NODE) \
+  TREE_CHECK2 (NODE, TYPE_ARGUMENT_PACK, NONTYPE_ARGUMENT_PACK)
+
 /* The arguments stored in an argument pack. Arguments are stored in a
    TREE_VEC, which may have length zero.  */
 #define ARGUMENT_PACK_ARGS(NODE)                               \
-  (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK? TREE_TYPE (NODE)    \
-   : TREE_OPERAND (NODE, 0))
-
-/* Set the arguments stored in an argument pack. VALUE must be a
-   TREE_VEC.  */
-#define SET_ARGUMENT_PACK_ARGS(NODE,VALUE)     \
-  if (TREE_CODE (NODE) == TYPE_ARGUMENT_PACK)  \
-    TREE_TYPE (NODE) = VALUE;                           \
-  else                                                  \
-    TREE_OPERAND (NODE, 0) = VALUE
+  (TREE_CODE (ARGUMENT_PACK_CHECK (NODE)) == TYPE_ARGUMENT_PACK \
+   ? TREE_TYPE (NODE) : TREE_OPERAND (NODE, 0))
 
 /* Whether the argument pack is "incomplete", meaning that more
    arguments can still be deduced. Incomplete argument packs are only
@@ -4265,11 +4269,6 @@ get_vec_init_expr (tree t)
 /* The namespace-scope decl a DECL_LOCAL_DECL_P aliases.  */
 #define DECL_LOCAL_DECL_ALIAS(NODE)			\
   DECL_ACCESS ((gcc_checking_assert (DECL_LOCAL_DECL_P (NODE)), NODE))
-
-/* Nonzero if NODE is the target for genericization of 'return' stmts
-   in constructors/destructors of targetm.cxx.cdtor_returns_this targets.  */
-#define LABEL_DECL_CDTOR(NODE) \
-  DECL_LANG_FLAG_2 (LABEL_DECL_CHECK (NODE))
 
 /* True if NODE was declared with auto in its return type, but it has
    started compilation and so the return type might have been changed by
@@ -5551,6 +5550,9 @@ enum tsubst_flags {
 				(build_target_expr and friends) */
   tf_norm = 1 << 11,		 /* Build diagnostic information during
 				    constraint normalization.  */
+  tf_tst_ok = 1 << 12,		 /* Allow a typename-specifier to name
+				    a template (C++17 or later).  */
+  tf_dguide = 1 << 13,		/* Building a deduction guide from a ctor.  */
   /* Convenient substitution flags combinations.  */
   tf_warning_or_error = tf_warning | tf_error
 };
@@ -5875,6 +5877,11 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 #define LOOKUP_REVERSED (LOOKUP_REWRITTEN << 1)
 /* We're initializing an aggregate from a parenthesized list of values.  */
 #define LOOKUP_AGGREGATE_PAREN_INIT (LOOKUP_REVERSED << 1)
+/* We're computing conversions as part of a first pass of overload resolution
+   wherein we don't try to distinguish an unviable candidate from a
+   non-strictly viable candidate and thus can avoid computing unnecessary
+   bad conversions.  */
+#define LOOKUP_SHORTCUT_BAD_CONVS (LOOKUP_AGGREGATE_PAREN_INIT << 1)
 
 /* These flags are used by the conversion code.
    CONV_IMPLICIT   :  Perform implicit conversions (standard and user-defined).
@@ -6521,7 +6528,7 @@ extern bool sufficient_parms_p			(const_tree);
 extern tree type_decays_to			(tree);
 extern tree extract_call_expr			(tree);
 extern tree build_trivial_dtor_call		(tree, bool = false);
-extern bool ref_conv_binds_directly_p		(tree, tree);
+extern tristate ref_conv_binds_directly		(tree, tree, bool = false);
 extern tree build_user_type_conversion		(tree, tree, int,
 						 tsubst_flags_t);
 extern tree build_new_function_call		(tree, vec<tree, va_gc> **,
@@ -6648,6 +6655,7 @@ extern bool make_safe_copy_elision		(tree, tree);
 extern bool cp_handle_deprecated_or_unavailable (tree, tsubst_flags_t = tf_warning_or_error);
 extern void cp_warn_deprecated_use_scopes	(tree);
 extern tree get_function_version_dispatcher	(tree);
+extern bool any_template_arguments_need_structural_equality_p (tree);
 
 /* in class.cc */
 extern tree build_vfield_ref			(tree, tree);
@@ -6663,6 +6671,7 @@ extern tree build_vfn_ref			(tree, tree);
 extern tree get_vtable_decl			(tree, int);
 extern bool add_method				(tree, tree, bool);
 extern tree declared_access			(tree);
+extern bool maybe_push_used_methods		(tree);
 extern tree currently_open_class		(tree);
 extern tree currently_open_derived_class	(tree);
 extern tree outermost_open_class		(void);
@@ -6781,6 +6790,7 @@ extern void note_iteration_stmt_body_end	(bool);
 extern void determine_local_discriminator	(tree);
 extern int decls_match				(tree, tree, bool = true);
 extern bool maybe_version_functions		(tree, tree, bool);
+extern bool merge_default_template_args		(tree, tree, bool);
 extern tree duplicate_decls			(tree, tree,
 						 bool hiding = false,
 						 bool was_hidden = false);
@@ -6833,11 +6843,12 @@ extern void xref_basetypes			(tree, tree);
 extern tree start_enum				(tree, tree, tree, tree, bool, bool *);
 extern void finish_enum_value_list		(tree);
 extern void finish_enum				(tree);
-extern void build_enumerator			(tree, tree, tree, tree, location_t);
+extern tree build_enumerator			(tree, tree, tree, tree, location_t);
 extern tree lookup_enumerator			(tree, tree);
 extern bool start_preparsed_function		(tree, tree, int);
 extern bool start_function			(cp_decl_specifier_seq *,
 						 const cp_declarator *, tree);
+extern void maybe_return_this			(void);
 extern tree begin_function_body			(void);
 extern void finish_function_body		(tree);
 extern tree outer_curly_brace_block		(tree);
@@ -6867,7 +6878,8 @@ extern bool is_direct_enum_init			(tree, tree);
 extern void initialize_artificial_var		(tree, vec<constructor_elt, va_gc> *);
 extern tree check_var_type			(tree, tree, location_t);
 extern tree reshape_init                        (tree, tree, tsubst_flags_t);
-extern tree next_initializable_field (tree);
+extern tree next_aggregate_field		(tree);
+extern tree next_subobject_field		(tree);
 extern tree first_field				(const_tree);
 extern tree fndecl_declared_return_type		(tree);
 extern bool undeduced_auto_decl			(tree);
@@ -6930,6 +6942,7 @@ extern void no_linkage_error			(tree);
 extern void check_default_args			(tree);
 extern bool mark_used				(tree);
 extern bool mark_used			        (tree, tsubst_flags_t);
+extern bool mark_single_function	        (tree, tsubst_flags_t);
 extern void finish_static_data_member_decl	(tree, tree, bool, tree, int);
 extern tree cp_build_parm_decl			(tree, tree, tree);
 extern void copy_linkage			(tree, tree);
@@ -7029,6 +7042,7 @@ extern void emit_mem_initializers		(tree);
 extern tree build_aggr_init			(tree, tree, int,
                                                  tsubst_flags_t);
 extern int is_class_type			(tree, int);
+extern bool is_copy_initialization		(tree);
 extern tree build_zero_init			(tree, tree, bool);
 extern tree build_value_init			(tree, tsubst_flags_t);
 extern tree build_value_init_noctor		(tree, tsubst_flags_t);
@@ -7099,6 +7113,7 @@ extern tree forward_parm			(tree);
 extern bool is_trivially_xible			(enum tree_code, tree, tree);
 extern bool is_nothrow_xible			(enum tree_code, tree, tree);
 extern bool is_xible				(enum tree_code, tree, tree);
+extern bool ref_xes_from_temporary		(tree, tree, bool);
 extern tree get_defaulted_eh_spec		(tree, tsubst_flags_t = tf_warning_or_error);
 extern bool maybe_explain_implicit_delete	(tree);
 extern void explain_implicit_non_constexpr	(tree);
@@ -7130,46 +7145,40 @@ inline bool modules_p () { return flag_modules != 0; }
 /* The kind of module or part thereof that we're in.  */
 enum module_kind_bits
 {
-  MK_MODULE = 1 << 0,     /* This TU is a module.  */
-  MK_GLOBAL = 1 << 1,     /* Entities are in the global module.  */
-  MK_INTERFACE = 1 << 2,  /* This TU is an interface.  */
-  MK_PARTITION = 1 << 3,  /* This TU is a partition.  */
-  MK_EXPORTING = 1 << 4,  /* We are in an export region.  */
+  MK_NAMED = 1 << 0,	// TU is a named module
+  MK_HEADER = 1 << 1,	// TU is a header unit
+  MK_INTERFACE = 1 << 2,  // TU is an interface
+  MK_PARTITION = 1 << 3,  // TU is a partition
+
+  MK_PURVIEW = 1 << 4,	// In purview of current module
+  MK_ATTACH = 1 << 5,	// Attaching to named module
+
+  MK_EXPORTING = 1 << 6,  /* We are in an export region.  */
 };
 
 /* We do lots of bit-manipulation, so an unsigned is easier.  */
 extern unsigned module_kind;
 
-/*  MK_MODULE & MK_GLOBAL have the following combined meanings:
- MODULE GLOBAL
-   0	  0	not a module
-   0	  1	GMF of named module (we've not yet seen module-decl)
-   1	  0	purview of named module
-   1	  1	header unit.   */
-
-inline bool module_purview_p ()
-{ return module_kind & MK_MODULE; }
-inline bool global_purview_p ()
-{ return module_kind & MK_GLOBAL; }
-
-inline bool not_module_p ()
-{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == 0; }
+inline bool module_p ()
+{ return module_kind & (MK_NAMED | MK_HEADER); }
 inline bool named_module_p ()
-{ /* This is a named module if exactly one of MODULE and GLOBAL is
-     set.  */
-  /* The divides are constant shifts!  */
-  return ((module_kind / MK_MODULE) ^ (module_kind / MK_GLOBAL)) & 1;
-}
+{ return module_kind & MK_NAMED; }
 inline bool header_module_p ()
-{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == (MK_MODULE | MK_GLOBAL); }
-inline bool named_module_purview_p ()
-{ return (module_kind & (MK_MODULE | MK_GLOBAL)) == MK_MODULE; }
+{ return module_kind & MK_HEADER; }
 inline bool module_interface_p ()
 { return module_kind & MK_INTERFACE; }
 inline bool module_partition_p ()
 { return module_kind & MK_PARTITION; }
 inline bool module_has_cmi_p ()
 { return module_kind & (MK_INTERFACE | MK_PARTITION); }
+
+inline bool module_purview_p ()
+{ return module_kind & MK_PURVIEW; }
+inline bool module_attach_p ()
+{ return module_kind & MK_ATTACH; }
+
+inline bool named_module_purview_p ()
+{ return named_module_p () && module_purview_p (); }
 
 /* We're currently exporting declarations.  */
 inline bool module_exporting_p ()
@@ -7179,7 +7188,8 @@ extern module_state *get_module (tree name, module_state *parent = NULL,
 				 bool partition = false);
 extern bool module_may_redeclare (tree decl);
 
-extern int module_initializer_kind ();
+extern bool module_global_init_needed ();
+extern bool module_determine_import_inits ();
 extern void module_add_import_initializers ();
 
 /* Where the namespace-scope decl was originally declared.  */
@@ -7191,7 +7201,7 @@ extern unsigned get_importing_module (tree, bool = false) ATTRIBUTE_PURE;
 /* Where current instance of the decl got declared/defined/instantiated.  */
 extern void set_instantiating_module (tree);
 extern void set_defining_module (tree);
-extern void maybe_attach_decl (tree ctx, tree decl);
+extern void maybe_key_decl (tree ctx, tree decl);
 
 extern void mangle_module (int m, bool include_partition);
 extern void mangle_module_fini ();
@@ -7208,9 +7218,9 @@ extern void import_module (module_state *, location_t, bool export_p,
 extern void declare_module (module_state *, location_t, bool export_p,
 			    tree attr, cpp_reader *);
 extern void init_modules (cpp_reader *);
-extern void fini_modules ();
+extern void fini_modules (cpp_reader *, void *cookie, bool);
 extern void maybe_check_all_macros (cpp_reader *);
-extern void finish_module_processing (cpp_reader *);
+extern void *finish_module_processing (cpp_reader *);
 extern char const *module_name (unsigned, bool header_ok);
 extern bitmap get_import_bitmap ();
 extern bitmap visible_instantiation_path (bitmap *);
@@ -7235,6 +7245,7 @@ extern void inject_this_parameter (tree, cp_cv_quals);
 extern location_t defparse_location (tree);
 extern void maybe_show_extern_c_location (void);
 extern bool literal_integer_zerop (const_tree);
+extern tree attr_chainon (tree, tree);
 
 /* in pt.cc */
 extern tree canonical_type_parameter		(tree);
@@ -7293,8 +7304,9 @@ extern tree lookup_template_class		(tree, tree, tree, tree,
 						 int, tsubst_flags_t);
 extern tree lookup_template_function		(tree, tree);
 extern tree lookup_template_variable		(tree, tree);
-extern int uses_template_parms			(tree);
+extern bool uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
+extern bool uses_outer_template_parms_in_constraints (tree);
 extern bool in_template_function		(void);
 extern bool need_generic_capture		(void);
 extern tree instantiate_class_template		(tree);
@@ -7326,7 +7338,7 @@ extern tree get_template_info			(const_tree);
 extern int template_class_depth			(tree);
 extern int is_specialization_of			(tree, tree);
 extern bool is_specialization_of_friend		(tree, tree);
-extern int comp_template_args			(tree, tree, tree * = NULL,
+extern bool comp_template_args			(tree, tree, tree * = NULL,
 						 tree * = NULL, bool = false);
 extern int template_args_equal                  (tree, tree, bool = false);
 extern tree maybe_process_partial_specialization (tree);
@@ -7394,6 +7406,7 @@ extern bool push_tinst_level_loc                (tree, location_t);
 extern bool push_tinst_level_loc                (tree, tree, location_t);
 extern void pop_tinst_level                     (void);
 extern struct tinst_level *outermost_tinst_level(void);
+extern bool non_templated_friend_p		(tree);
 extern void init_template_processing		(void);
 extern void print_template_statistics		(void);
 bool template_template_parameter_p		(const_tree);
@@ -7596,7 +7609,8 @@ inline tree force_paren_expr_uneval 		(tree t)
 { return force_paren_expr (t, true); }
 extern tree maybe_undo_parenthesized_ref	(tree);
 extern tree maybe_strip_ref_conversion		(tree);
-extern tree finish_non_static_data_member       (tree, tree, tree);
+extern tree finish_non_static_data_member       (tree, tree, tree,
+						 tsubst_flags_t = tf_warning_or_error);
 extern tree begin_stmt_expr			(void);
 extern tree finish_stmt_expr_expr		(tree, tree);
 extern tree finish_stmt_expr			(tree, bool);
@@ -7875,9 +7889,8 @@ extern tree make_ptrmem_cst			(tree, tree);
 extern tree cp_build_type_attribute_variant     (tree, tree);
 extern tree cp_build_reference_type		(tree, bool);
 extern tree move				(tree);
-extern tree cp_build_qualified_type_real	(tree, int, tsubst_flags_t);
-#define cp_build_qualified_type(TYPE, QUALS) \
-  cp_build_qualified_type_real ((TYPE), (QUALS), tf_warning_or_error)
+extern tree cp_build_qualified_type		(tree, int,
+						 tsubst_flags_t = tf_warning_or_error);
 extern bool cv_qualified_p			(const_tree);
 extern tree cv_unqualified			(tree);
 extern special_function_kind special_function_p (const_tree);
@@ -8179,7 +8192,7 @@ extern char *get_mangled_vtable_map_var_name    (tree);
 extern bool mangle_return_type_p		(tree);
 extern tree mangle_decomp			(tree, vec<tree> &);
 extern void mangle_module_substitution		(int);
-extern void mangle_identifier			(char, tree);
+extern int mangle_module_component		(tree id, bool partition);
 extern tree mangle_module_global_init		(int);
 
 /* in dump.cc */
@@ -8224,6 +8237,8 @@ extern tree fold_builtin_source_location	(location_t);
 
 /* in name-lookup.cc */
 extern tree strip_using_decl                    (tree);
+extern void diagnose_name_conflict		(tree, tree);
+extern bool dependent_local_decl_p		(tree);
 
 /* Tell the binding oracle what kind of binding we are looking for.  */
 
@@ -8306,7 +8321,6 @@ extern tree evaluate_requires_expr		(tree);
 extern tree tsubst_constraint                   (tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_constraint_info              (tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_parameter_mapping		(tree, tree, tsubst_flags_t, tree);
-extern tree get_mapped_args			(tree);
 
 struct processing_constraint_expression_sentinel
 {
@@ -8396,7 +8410,7 @@ extern bool require_constant_expression (tree);
 extern bool require_rvalue_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
-extern tree cxx_constant_value_sfinae		(tree, tsubst_flags_t);
+extern tree cxx_constant_value_sfinae		(tree, tree, tsubst_flags_t);
 extern void cxx_constant_dtor			(tree, tree);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE, bool = false);

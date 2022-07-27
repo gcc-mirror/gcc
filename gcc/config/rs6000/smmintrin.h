@@ -273,31 +273,31 @@ _mm_round_ss (__m128 __A, __m128 __B, int __rounding)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_insert_epi8 (__m128i const __A, int const __D, int const __N)
 {
-  __v16qi result = (__v16qi)__A;
+  __v16qi __result = (__v16qi)__A;
 
-  result [__N & 0xf] = __D;
+  __result [__N & 0xf] = __D;
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_insert_epi32 (__m128i const __A, int const __D, int const __N)
 {
-  __v4si result = (__v4si)__A;
+  __v4si __result = (__v4si)__A;
 
-  result [__N & 3] = __D;
+  __result [__N & 3] = __D;
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_insert_epi64 (__m128i const __A, long long const __D, int const __N)
 {
-  __v2di result = (__v2di)__A;
+  __v2di __result = (__v2di)__A;
 
-  result [__N & 1] = __D;
+  __result [__N & 1] = __D;
 
-  return (__m128i) result;
+  return (__m128i) __result;
 }
 
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))

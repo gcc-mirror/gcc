@@ -13,4 +13,3 @@ class Foo {
 void main() {
         Bar.foobar();
 }
-

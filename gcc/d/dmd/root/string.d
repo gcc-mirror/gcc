@@ -69,17 +69,12 @@ The return value of `T`
 auto toCStringThen(alias dg)(const(char)[] src) nothrow
 {
     import dmd.root.rmem : mem;
+    import dmd.common.string : SmallBuffer;
 
     const len = src.length + 1;
     char[512] small = void;
-    scope ptr = (src.length < (small.length - 1))
-                    ? small[0 .. len]
-                    : (cast(char*)mem.xmalloc(len))[0 .. len];
-    scope (exit)
-    {
-        if (&ptr[0] != &small[0])
-            mem.xfree(&ptr[0]);
-    }
+    auto sb = SmallBuffer!char(len, small[]);
+    scope ptr = sb[];
     ptr[0 .. src.length] = src[];
     ptr[src.length] = '\0';
     return dg(ptr);
@@ -206,10 +201,10 @@ int dstrcmp()( scope const char[] s1, scope const char[] s2 ) @trusted
 unittest
 {
     assert(dstrcmp("Fraise", "Fraise")      == 0);
-    assert(dstrcmp("Baguette", "Croissant") == -1);
-    assert(dstrcmp("Croissant", "Baguette") == 1);
+    assert(dstrcmp("Baguette", "Croissant") < 0);
+    assert(dstrcmp("Croissant", "Baguette") > 0);
 
-    static assert(dstrcmp("Baguette", "Croissant") == -1);
+    static assert(dstrcmp("Baguette", "Croissant") < 0);
 
     // UTF-8 decoding for the CT variant
     assert(dstrcmp("안녕하세요!", "안녕하세요!") == 0);

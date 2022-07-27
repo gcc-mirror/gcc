@@ -38,4 +38,3 @@ class Context
 	printf("context.func>\n");
     }
 }
-

@@ -309,7 +309,10 @@ struct GTY(()) cp_binding_level {
   /* true for SK_FUNCTION_PARMS of immediate functions.  */
   unsigned immediate_fn_ctx_p : 1;
 
-  /* 22 bits left to fill a 32-bit word.  */
+  /* True for SK_FUNCTION_PARMS of a requires-expression.  */
+  unsigned requires_expression: 1;
+
+  /* 21 bits left to fill a 32-bit word.  */
 };
 
 /* The binding level currently in effect.  */
@@ -468,7 +471,7 @@ extern void pop_from_top_level (void);
 extern void push_using_decl_bindings (tree, tree);
 
 /* Lower level interface for modules. */
-extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_global,
+extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_attached,
 					tree *mvec);
 extern void add_mergeable_namespace_entity (tree *slot, tree decl);
 extern tree lookup_class_binding (tree ctx, tree name);

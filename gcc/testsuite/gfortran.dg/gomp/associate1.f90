@@ -16,65 +16,65 @@ program associate1
   j = 2
   associate(k => v, l => a(i, j), m => a(i, :))
   associate(n => b(j)%c(:, :)%i, o => a, p => b)
-!$omp parallel shared (l)	! { dg-error "ASSOCIATE name" }
+!$omp parallel shared (l)	! { dg-error "Associate name" }
 !$omp end parallel
-!$omp parallel firstprivate (m)	! { dg-error "ASSOCIATE name" }
+!$omp parallel firstprivate (m)	! { dg-error "Associate name" }
 !$omp end parallel
-!$omp parallel reduction (+: k)	! { dg-error "ASSOCIATE name" }
+!$omp parallel reduction (+: k)	! { dg-error "Associate name" }
 !$omp end parallel
-!$omp parallel do firstprivate (k)	! { dg-error "ASSOCIATE name" }
+!$omp parallel do firstprivate (k)	! { dg-error "Associate name" }
   do i = 1, 10
   end do
-!$omp parallel do lastprivate (n)	! { dg-error "ASSOCIATE name" }
+!$omp parallel do lastprivate (n)	! { dg-error "Associate name" }
   do i = 1, 10
   end do
-!$omp parallel do private (o)	! { dg-error "ASSOCIATE name" }
+!$omp parallel do private (o)	! { dg-error "Associate name" }
   do i = 1, 10
   end do
-!$omp parallel do shared (p)	! { dg-error "ASSOCIATE name" }
+!$omp parallel do shared (p)	! { dg-error "Associate name" }
   do i = 1, 10
   end do
-!$omp task private (k)		! { dg-error "ASSOCIATE name" }
+!$omp task private (k)		! { dg-error "Associate name" }
 !$omp end task
-!$omp task shared (l)		! { dg-error "ASSOCIATE name" }
+!$omp task shared (l)		! { dg-error "Associate name" }
 !$omp end task
-!$omp task firstprivate (m)	! { dg-error "ASSOCIATE name" }
+!$omp task firstprivate (m)	! { dg-error "Associate name" }
 !$omp end task
-!$omp do private (l)		! { dg-error "ASSOCIATE name" }
+!$omp do private (l)		! { dg-error "Associate name" }
   do i = 1, 10
   end do
-!$omp do reduction (*: k)	! { dg-error "ASSOCIATE name" }
+!$omp do reduction (*: k)	! { dg-error "Associate name" }
   do i = 1, 10
   end do
-!$omp sections private(o)	! { dg-error "ASSOCIATE name" }
+!$omp sections private(o)	! { dg-error "Associate name" }
 !$omp section
 !$omp section
 !$omp end sections
-!$omp parallel sections firstprivate(p)	! { dg-error "ASSOCIATE name" }
+!$omp parallel sections firstprivate(p)	! { dg-error "Associate name" }
 !$omp section
 !$omp section
 !$omp endparallelsections
-!$omp parallelsections lastprivate(m)	! { dg-error "ASSOCIATE name" }
+!$omp parallelsections lastprivate(m)	! { dg-error "Associate name" }
 !$omp section
 !$omp section
 !$omp endparallelsections
-!$omp sections reduction(+:k)	! { dg-error "ASSOCIATE name" }
+!$omp sections reduction(+:k)	! { dg-error "Associate name" }
 !$omp section
 !$omp section
 !$omp end sections
-!$omp simd private (l)		! { dg-error "ASSOCIATE name" }
+!$omp simd private (l)		! { dg-error "Associate name" }
   do i = 1, 10
   end do
   k = 1
-!$omp simd lastprivate (m)	! { dg-error "ASSOCIATE name" }
+!$omp simd lastprivate (m)	! { dg-error "Associate name" }
   do i = 1, 10
   end do
   k = 1
-!$omp simd reduction (+: k)	! { dg-error "ASSOCIATE name" }
+!$omp simd reduction (+: k)	! { dg-error "Associate name" }
   do i = 1, 10
   end do
   k = 1
-!$omp simd linear (k : 2)	! { dg-error "ASSOCIATE name" }
+!$omp simd linear (k : 2)	! { dg-error "Associate name" }
   do i = 1, 10
     k = k + 2
   end do

@@ -299,10 +299,9 @@ static:
         }
         else version (Windows)
         {
-            import std.exception : enforce;
-            enforce(
+            import std.windows.syserror : wenforce;
+            wenforce(
                 SetEnvironmentVariableW(name.tempCStringW(), value.tempCStringW()),
-                sysErrorString(GetLastError())
             );
             return value;
         }
@@ -614,7 +613,7 @@ private:
  * writefln("Current process ID: %d", thisProcessID);
  * ---
  */
-@property int thisProcessID() @trusted nothrow //TODO: @safe
+@property int thisProcessID() @trusted nothrow @nogc //TODO: @safe
 {
     version (Windows)    return GetCurrentProcessId();
     else version (Posix) return core.sys.posix.unistd.getpid();
@@ -633,7 +632,7 @@ private:
  * writefln("Current thread ID: %s", thisThreadID);
  * ---
  */
-@property ThreadID thisThreadID() @trusted nothrow //TODO: @safe
+@property ThreadID thisThreadID() @trusted nothrow @nogc //TODO: @safe
 {
     version (Windows)
         return GetCurrentThreadId();
@@ -1330,7 +1329,7 @@ private Pid spawnProcessWin(scope const(char)[] commandLine,
                 {
                     throw new StdioException(
                         "Failed to make "~which~" stream inheritable by child process ("
-                        ~sysErrorString(GetLastError()) ~ ')',
+                        ~generateSysErrorMsg() ~ ')',
                         0);
                 }
             }
@@ -2775,7 +2774,7 @@ Pipe pipe() @trusted //TODO: @safe
     if (!CreatePipe(&readHandle, &writeHandle, null, 0))
     {
         throw new StdioException(
-            "Error creating pipe (" ~ sysErrorString(GetLastError()) ~ ')',
+            "Error creating pipe (" ~ generateSysErrorMsg() ~ ')',
             0);
     }
 
@@ -3475,7 +3474,7 @@ class ProcessException : Exception
                                              string file = __FILE__,
                                              size_t line = __LINE__)
     {
-        auto lastMsg = sysErrorString(GetLastError());
+        auto lastMsg = generateSysErrorMsg();
         auto msg = customMsg.empty ? lastMsg
                                    : customMsg ~ " (" ~ lastMsg ~ ')';
         return new ProcessException(msg, file, line);

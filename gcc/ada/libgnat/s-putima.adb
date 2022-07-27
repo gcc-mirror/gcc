@@ -32,7 +32,7 @@
 with Ada.Strings.Text_Buffers.Utils;
 use Ada.Strings.Text_Buffers;
 use Ada.Strings.Text_Buffers.Utils;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package body System.Put_Images is
 
@@ -133,7 +133,7 @@ package body System.Put_Images is
    procedure Put_Image_Pointer
      (S : in out Sink'Class; X : Pointer; Type_Kind : String)
    is
-      function Cast is new Unchecked_Conversion
+      function Cast is new Ada.Unchecked_Conversion
         (System.Address, Unsigned_Address);
    begin
       if X = null then

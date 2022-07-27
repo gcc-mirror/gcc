@@ -43,7 +43,7 @@ Common Joined UInteger Var(param_analyzer_max_recursion_depth) Init(2) Param
 The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper.
 
 -param=analyzer-max-svalue-depth=
-Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(13) Param
+Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(12) Param
 The maximum depth of a symbolic value, before approximating the value as unknown.
 
 -param=analyzer-min-snodes-for-call-summary=
@@ -53,6 +53,10 @@ The minimum number of supernodes within a function for the analyzer to consider 
 -param=analyzer-max-enodes-for-full-dump=
 Common Joined UInteger Var(param_analyzer_max_enodes_for_full_dump) Init(200) Param
 The maximum depth of exploded nodes that should appear in a dot dump before switching to a less verbose format.
+
+Wanalyzer-allocation-size
+Common Var(warn_analyzer_allocation_size) Init(1) Warning
+Warn about code paths in which a pointer to a buffer is assigned to an incompatible type.
 
 Wanalyzer-double-fclose
 Common Var(warn_analyzer_double_fclose) Init(1) Warning
@@ -65,6 +69,26 @@ Warn about code paths in which a pointer can be freed more than once.
 Wanalyzer-exposure-through-output-file
 Common Var(warn_analyzer_exposure_through_output_file) Init(1) Warning
 Warn about code paths in which sensitive data is written to a file.
+
+Wanalyzer-fd-access-mode-mismatch
+Common Var(warn_analyzer_fd_mode_mismatch) Init(1) Warning
+Warn about code paths in which read on a write-only file descriptor is attempted, or vice versa.
+
+Wanalyzer-fd-double-close
+Common Var(warn_analyzer_fd_double_close) Init(1) Warning
+Warn about code paths in which a file descriptor can be closed more than once.
+
+Wanalyzer-fd-leak
+Common Var(warn_analyzer_fd_leak) Init(1) Warning
+Warn about code paths in which a file descriptor is not closed.
+
+Wanalyzer-fd-use-after-close
+Common Var(warn_analyzer_fd_use_after_close) Init(1) Warning
+Warn about code paths in which a read or write is performed on a closed file descriptor.
+
+Wanalyzer-fd-use-without-check
+Common Var(warn_analyzer_fd_use_without_check) Init(1) Warning
+Warn about code paths in which a file descriptor is used without being checked for validity.
 
 Wanalyzer-file-leak
 Common Var(warn_analyzer_file_leak) Init(1) Warning
@@ -142,6 +166,22 @@ Wanalyzer-use-of-pointer-in-stale-stack-frame
 Common Var(warn_analyzer_use_of_pointer_in_stale_stack_frame) Init(1) Warning
 Warn about code paths in which a pointer to a stale stack frame is used.
 
+Wanalyzer-va-arg-type-mismatch
+Common Var(warn_analyzer_va_arg_type_mismatch) Init(1) Warning
+Warn about code paths in which va_arg uses the wrong type.
+
+Wanalyzer-va-list-exhausted
+Common Var(warn_analyzer_va_list_exhausted) Init(1) Warning
+Warn about code paths in which va_arg is used too many times on a va_list.
+
+Wanalyzer-va-list-leak
+Common Var(warn_analyzer_va_list_leak) Init(1) Warning
+Warn about code paths in which va_start or va_copy is used without a corresponding va_end.
+
+Wanalyzer-va-list-use-after-va-end
+Common Var(warn_analyzer_va_list_use_after_va_end) Init(1) Warning
+Warn about code paths in which a va_list is used after va_end.
+
 Wanalyzer-write-to-const
 Common Var(warn_analyzer_write_to_const) Init(1) Warning
 Warn about code paths which attempt to write to a const object.
@@ -189,6 +229,10 @@ Enable transitivity of constraints during analysis.
 fanalyzer-call-summaries
 Common Var(flag_analyzer_call_summaries) Init(0)
 Approximate the effect of function calls to simplify analysis.
+
+fanalyzer-undo-inlining
+Common Var(flag_analyzer_undo_inlining) Init(1)
+Try to reconstruct function calls and returns after inlining.
 
 fanalyzer-verbose-edges
 Common Var(flag_analyzer_verbose_edges) Init(0)
@@ -249,5 +293,9 @@ Dump state-purging information to a SRCFILE.state-purge.dot file.
 fdump-analyzer-supergraph
 Common RejectNegative Var(flag_dump_analyzer_supergraph)
 Dump the analyzer supergraph to a SRCFILE.supergraph.dot file.
+
+fdump-analyzer-untracked
+Common RejectNegative Var(flag_dump_analyzer_untracked)
+Emit custom warnings with internal details intended for analyzer developers.
 
 ; This comment is to ensure we retain the blank line above.

@@ -56,7 +56,7 @@ int posix_madvise(void*, size_t, int);
 
 version (CRuntime_Glibc)
 {
-    static if (__USE_XOPEN2K)
+    static if (_XOPEN_SOURCE >= 600)
     {
         int posix_madvise(void *__addr, size_t __len, int __advice);
     }
@@ -303,7 +303,7 @@ else version (CRuntime_Musl)
 }
 else version (CRuntime_UClibc)
 {
-    static if (__USE_LARGEFILE64) void* mmap64(void*, size_t, int, int, int, off64_t);
+    static if (__USE_LARGEFILE64) void* mmap64(void*, size_t, int, int, int, off_t);
     static if (__USE_FILE_OFFSET64)
         alias mmap = mmap64;
     else

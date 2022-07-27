@@ -85,13 +85,19 @@ libbacktrace_la_DEPENDENCIES = $(libbacktrace_la_LIBADD)
 
 # Testsuite.
 
-# Add a test to this variable if you want it to be built.
+# Add a test to this variable if you want it to be built as a program,
+# with SOURCES, etc.
 check_PROGRAMS =
 
 # Add a test to this variable if you want it to be run.
 TESTS =
 
-# Add a test to this variable if you want it to be built and run.
+# Add a test to this variable if you want it to be built as a Makefile
+# target and run.
+MAKETESTS =
+
+# Add a test to this variable if you want it to be built as a program,
+# with SOURCES, etc., and run.
 BUILDTESTS =
 
 # Add a file to this variable if you want it to be built for testing.
@@ -250,7 +256,7 @@ b2test_LDFLAGS = -Wl,--build-id
 b2test_LDADD = libbacktrace_elf_for_test.la
 
 check_PROGRAMS += b2test
-TESTS += b2test_buildid
+MAKETESTS += b2test_buildid
 
 if HAVE_DWZ
 
@@ -260,7 +266,7 @@ b3test_LDFLAGS = -Wl,--build-id
 b3test_LDADD = libbacktrace_elf_for_test.la
 
 check_PROGRAMS += b3test
-TESTS += b3test_dwz_buildid
+MAKETESTS += b3test_dwz_buildid
 
 endif HAVE_DWZ
 
@@ -311,11 +317,11 @@ if HAVE_DWZ
 	  cp $< $@; \
 	fi
 
-TESTS += btest_dwz
+MAKETESTS += btest_dwz
 
 if HAVE_OBJCOPY_DEBUGLINK
 
-TESTS += btest_dwz_gnudebuglink
+MAKETESTS += btest_dwz_gnudebuglink
 
 endif HAVE_OBJCOPY_DEBUGLINK
 
@@ -416,7 +422,7 @@ endif HAVE_PTHREAD
 
 if HAVE_OBJCOPY_DEBUGLINK
 
-TESTS += btest_gnudebuglink
+MAKETESTS += btest_gnudebuglink
 
 %_gnudebuglink: %
 	$(OBJCOPY) --only-keep-debug $< $@.debug
@@ -494,7 +500,7 @@ endif USE_DSYMUTIL
 
 if HAVE_MINIDEBUG
 
-TESTS += mtest_minidebug
+MAKETESTS += mtest_minidebug
 
 %_minidebug: %
 	$(NM) -D $< -P --defined-only | $(AWK) '{ print $$1 }' | sort > $<.dsyms
@@ -536,10 +542,11 @@ endif HAVE_ELF
 
 check_PROGRAMS += $(BUILDTESTS)
 
-TESTS += $(BUILDTESTS)
+TESTS += $(MAKETESTS) $(BUILDTESTS)
 
 CLEANFILES = \
-	$(TESTS) *.debug elf_for_test.c edtest2_build.c gen_edtest2_build \
+	$(MAKETESTS) $(BUILDTESTS) *.debug elf_for_test.c edtest2_build.c \
+	gen_edtest2_build \
 	*.dsyms *.fsyms *.keepsyms *.dbg *.mdbg *.mdbg.xz *.strip
 
 clean-local:

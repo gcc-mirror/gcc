@@ -220,6 +220,7 @@ struct riscv_tune_param
   unsigned short issue_rate;
   unsigned short branch_cost;
   unsigned short memory_cost;
+  unsigned short fmv_cost;
   bool slow_unaligned_access;
 };
 
@@ -285,6 +286,7 @@ static const struct riscv_tune_param rocket_tune_info = {
   1,						/* issue_rate */
   3,						/* branch_cost */
   5,						/* memory_cost */
+  8,						/* fmv_cost */
   true,						/* slow_unaligned_access */
 };
 
@@ -298,6 +300,7 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   2,						/* issue_rate */
   4,						/* branch_cost */
   3,						/* memory_cost */
+  8,						/* fmv_cost */
   true,						/* slow_unaligned_access */
 };
 
@@ -311,6 +314,7 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   1,            /* issue_rate */
   3,            /* branch_cost */
   5,            /* memory_cost */
+  8,		/* fmv_cost */
   false,            /* slow_unaligned_access */
 };
 
@@ -324,6 +328,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   1,						/* issue_rate */
   1,						/* branch_cost */
   2,						/* memory_cost */
+  8,						/* fmv_cost */
   false,					/* slow_unaligned_access */
 };
 
@@ -415,6 +420,15 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
       /* Simply BSETI.  */
       codes[0].code = UNKNOWN;
       codes[0].value = value;
+
+      /* RISC-V sign-extends all 32bit values that live in a 32bit
+	 register.  To avoid paradoxes, we thus need to use the
+	 sign-extended (negative) representation (-1 << 31) for the
+	 value, if we want to build (1 << 31) in SImode.  This will
+	 then expand to an LUI instruction.  */
+      if (mode == SImode && value == (HOST_WIDE_INT_1U << 31))
+	codes[0].value = (HOST_WIDE_INT_M1U << 31);
+
       return 1;
     }
 
@@ -1797,6 +1811,12 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST_DOUBLE:
+      /* With TARGET_SUPPORTS_WIDE_INT const int can't be in CONST_DOUBLE
+	 rtl object. Weird recheck due to switch-case fall through above.  */
+      if (GET_CODE (x) == CONST_DOUBLE)
+	gcc_assert (GET_MODE (x) != VOIDmode);
+      /* Fall through.  */
+
     case CONST:
       if ((cost = riscv_const_insns (x)) > 0)
 	{
@@ -1831,6 +1851,33 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  return true;
 	}
       /* Otherwise use the default handling.  */
+      return false;
+
+    case IF_THEN_ELSE:
+      if (TARGET_SFB_ALU
+	  && register_operand (XEXP (x, 1), mode)
+	  && sfb_alu_operand (XEXP (x, 2), mode)
+	  && comparison_operator (XEXP (x, 0), VOIDmode))
+	{
+	  /* For predicated conditional-move operations we assume the cost
+	     of a single instruction even though there are actually two.  */
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      else if (LABEL_REF_P (XEXP (x, 1)) && XEXP (x, 2) == pc_rtx)
+	{
+	  if (equality_operator (XEXP (x, 0), mode)
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTRACT)
+	    {
+	      *total = COSTS_N_INSNS (SINGLE_SHIFT_COST + 1);
+	      return true;
+	    }
+	  if (order_operator (XEXP (x, 0), mode))
+	    {
+	      *total = COSTS_N_INSNS (1);
+	      return true;
+	    }
+	}
       return false;
 
     case NOT:
@@ -2918,8 +2965,8 @@ riscv_pass_aggregate_in_fpr_pair_p (const_tree type,
 
   if ((n_old != n_new) && (warned == 0))
     {
-      warning (0, "ABI for flattened struct with zero-length bit-fields "
-	       "changed in GCC 10");
+      warning (OPT_Wpsabi, "ABI for flattened struct with zero-length "
+			   "bit-fields changed in GCC 10");
       warned = 1;
     }
 
@@ -2960,8 +3007,8 @@ riscv_pass_aggregate_in_fpr_and_gpr_p (const_tree type,
 	   && (num_int_old != num_int_new || num_float_old != num_float_new)))
       && (warned == 0))
     {
-      warning (0, "ABI for flattened struct with zero-length bit-fields "
-	       "changed in GCC 10");
+      warning (OPT_Wpsabi, "ABI for flattened struct with zero-length "
+			   "bit-fields changed in GCC 10");
       warned = 1;
     }
 
@@ -4737,6 +4784,10 @@ static int
 riscv_register_move_cost (machine_mode mode,
 			  reg_class_t from, reg_class_t to)
 {
+  if ((from == FP_REGS && to == GR_REGS) ||
+      (from == GR_REGS && to == FP_REGS))
+    return tune_param->fmv_cost;
+
   return riscv_secondary_memory_needed (mode, from, to) ? 8 : 2;
 }
 
@@ -4984,7 +5035,7 @@ riscv_option_override (void)
     target_flags |= MASK_FDIV;
 
   /* Handle -mtune, use -mcpu if -mtune is not given, and use default -mtune
-     if -mtune and -mcpu both not not given.  */
+     if -mtune and -mcpu both not given.  */
   cpu = riscv_parse_tune (riscv_tune_string ? riscv_tune_string :
 			  (riscv_cpu_string ? riscv_cpu_string :
 			   RISCV_TUNE_STRING_DEFAULT));

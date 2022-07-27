@@ -35,6 +35,8 @@
 #include <ctype.h>
 #include <stddef.h>
 
+#define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))
+
 typedef char char4 [4];
 
 /* Table containing equivalences between ISO_639_1 codes and their ISO_639_3
@@ -649,7 +651,7 @@ str_get_last_byte (char *lc_all) {
 
 static char*
 iso_639_1_to_639_3(char* iso_639_1_code) {
-  int len = sizeof(iso_639)/sizeof(iso_639[0]);
+  int len = ARRAY_SIZE (iso_639);
   char **p = iso_639;
   int j;
 
@@ -673,7 +675,7 @@ iso_639_1_to_639_3(char* iso_639_1_code) {
 
 static char*
 language_name_to_639_3(char* name) {
-  int len = sizeof(iso_639)/sizeof(iso_639[0]);
+  int len = ARRAY_SIZE (iso_639);
   char **p = iso_639;
   int j;
 
@@ -695,7 +697,7 @@ language_name_to_639_3(char* name) {
 
 static char*
 country_name_to_3166 (char* name) {
-  int len = sizeof(iso_3166)/sizeof(iso_3166[0]);
+  int len = ARRAY_SIZE (iso_3166);
   char **p = iso_3166;
   int j;
 

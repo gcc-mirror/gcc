@@ -1741,7 +1741,7 @@
 	(ior:SI (ashift:SI (match_operand:SI 1 "register_operand" "d") (const_int 1))
 		(zero_extend:SI (reg:BI REG_CC))))
    (set (reg:BI REG_CC)
-	(zero_extract:BI (match_dup 1) (const_int 31) (const_int 0)))]
+	(zero_extract:BI (match_dup 1) (const_int 1) (const_int 31)))]
   ""
   "%0 = ROT %1 BY 1%!"
   [(set_attr "type" "dsp32shiftimm")])

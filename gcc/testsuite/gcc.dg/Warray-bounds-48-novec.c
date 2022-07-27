@@ -238,15 +238,17 @@ static void warn_a1_init (struct A1 *p)
 
 static void warn_a1_local_buf (struct A1 *p)
 {
-  p->a1[0] = 0; p->a1[1] = 1; p->a1[2] = 2; p->a1[3] = 3;
+  p->a1[0] = 0; p->a1[1] = 1; p->a1[2] = 2;
 
+  p->a1[3] = 3;	    // { dg-warning "\\\[-Warray-bounds" "" { target default_packed } }
   p->a1[4] = 4;     // { dg-warning "\\\[-Warray-bounds" }
 }
 
 static void warn_a1_extern_buf (struct A1 *p)
 {
-  p->a1[0] = 0; p->a1[1] = 1; p->a1[2] = 2; p->a1[3] = 3; p->a1[4] = 4;
+  p->a1[0] = 0; p->a1[1] = 1; p->a1[2] = 2; p->a1[3] = 3;
 
+  p->a1[4] = 4;	    // { dg-warning "\\\[-Warray-bounds" "" { target default_packed } }
   p->a1[5] = 5;     // { dg-warning "\\\[-Warray-bounds" }
 }
 

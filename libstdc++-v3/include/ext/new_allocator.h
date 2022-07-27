@@ -36,14 +36,20 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   *  @brief  An allocator that uses global new, as per C++03 [20.4.1].
+   *  @brief  An allocator that uses global `new`, as per C++03 [20.4.1].
    *  @ingroup allocators
    *
    *  This is precisely the allocator defined in the C++ Standard.
-   *    - all allocation calls operator new
-   *    - all deallocation calls operator delete
+   *    - all allocation calls `operator new`
+   *    - all deallocation calls `operator delete`
+   *
+   *  This is a non-standard extension that can be used to guarantee
+   *  allocation from `new` even if the library has been configured to
+   *  use a different implementation for `std::allocator`.
    *
    *  @tparam  _Tp  Type of allocated object.
+   *
+   *  @headerfile ext/new_allocator.h
    */
   template<typename _Tp>
     class new_allocator : public std::__new_allocator<_Tp>

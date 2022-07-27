@@ -27,8 +27,8 @@ proc g++-dg-prune { system text } {
     return [gcc-dg-prune $system $text]
 }
 
-# Modified dg-runtest that runs tests in both C++98 and C++11 modes
-# unless they specifically specify one or the other.
+# Modified dg-runtest that runs tests in multiple standard modes,
+# unless they specifically specify one standard.
 proc g++-dg-runtest { testcases flags default-extra-flags } {
     global runtests
 
@@ -39,7 +39,7 @@ proc g++-dg-runtest { testcases flags default-extra-flags } {
 	}
 
 	# If the testcase specifies a standard, use that one.
-	# If not, run it under both standards, allowing GNU extensions
+	# If not, run it under several standards, allowing GNU extensions
 	# if there's a dg-options line.
 	if ![search_for $test "-std=*++"] {
 	    if [search_for $test "dg-options"] {
@@ -48,6 +48,7 @@ proc g++-dg-runtest { testcases flags default-extra-flags } {
 		set std_prefix "-std=c++"
 	    }
 
+	    # See g++.exp for the initial value of this list.
 	    global gpp_std_list
 	    if { [llength $gpp_std_list] > 0 } {
 		set std_list $gpp_std_list

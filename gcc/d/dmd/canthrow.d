@@ -114,9 +114,7 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
                         import dmd.id : Id;
 
                         auto sd = ts.sym;
-                        if (sd.dtor && ce.f.ident == Id._d_delstruct)
-                            checkFuncThrows(ce, sd.dtor);
-                        else if (sd.postblit &&
+                        if (sd.postblit &&
                             (ce.f.ident == Id._d_arrayctor || ce.f.ident == Id._d_arraysetctor))
                         {
                             checkFuncThrows(ce, sd.postblit);
@@ -173,14 +171,6 @@ extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustN
             {
             case Tclass:
                 ad = tb.isTypeClass().sym;
-                break;
-
-            case Tpointer:
-            case Tarray:
-                auto ts = tb.nextOf().baseElemOf().isTypeStruct();
-                if (!ts)
-                    return;
-                ad = ts.sym;
                 break;
 
             default:
@@ -256,7 +246,7 @@ private CT Dsymbol_canThrow(Dsymbol s, FuncDeclaration func, bool mustNotThrow)
         if (vd.storage_class & STC.manifest)
         {
         }
-        else if (vd.isStatic() || vd.storage_class & (STC.extern_ | STC.tls | STC.gshared))
+        else if (vd.isStatic() || vd.storage_class & (STC.extern_ | STC.gshared))
         {
         }
         else
@@ -280,18 +270,7 @@ private CT Dsymbol_canThrow(Dsymbol s, FuncDeclaration func, bool mustNotThrow)
     }
     else if (auto td = s.isTupleDeclaration())
     {
-        for (size_t i = 0; i < td.objects.dim; i++)
-        {
-            RootObject o = (*td.objects)[i];
-            if (o.dyncast() == DYNCAST.expression)
-            {
-                Expression eo = cast(Expression)o;
-                if (auto se = eo.isDsymbolExp())
-                {
-                    result |= Dsymbol_canThrow(se.s, func, mustNotThrow);
-                }
-            }
-        }
+        td.foreachVar(&symbolDg);
     }
     return result;
 }

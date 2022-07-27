@@ -1,5 +1,5 @@
 //https://issues.dlang.org/show_bug.cgi?id=19315
-void main() 
+void main()
 {
     #line 100 "file.d"
     enum code = q{

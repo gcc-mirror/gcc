@@ -33,19 +33,23 @@ if the dependency module's version is not already the same as the build
 list's version. Note that Minimal Version Selection guarantees that the
 build list's version of each module is always the same or higher than
 that in each workspace module.
+
+See the workspaces reference at https://go.dev/ref/mod#workspaces
+for more information.
 `,
 	Run: runSync,
 }
 
 func init() {
 	base.AddModCommonFlags(&cmdSync.Flag)
-	base.AddWorkfileFlag(&cmdSync.Flag)
 }
 
 func runSync(ctx context.Context, cmd *base.Command, args []string) {
-	modload.InitWorkfile()
-
 	modload.ForceUseModules = true
+	modload.InitWorkfile()
+	if modload.WorkFilePath() == "" {
+		base.Fatalf("go: no go.work file found\n\t(run 'go work init' first or specify path using GOWORK environment variable)")
+	}
 
 	workGraph := modload.LoadModGraph(ctx, "")
 	_ = workGraph

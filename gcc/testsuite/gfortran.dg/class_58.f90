@@ -9,5 +9,5 @@ subroutine s
   end type
   class(t), parameter :: x = t()  ! { dg-error "cannot have the PARAMETER attribute" }
   class(t), parameter :: y = x    ! { dg-error "cannot have the PARAMETER attribute" }
-  class(t) :: z = x               ! { dg-error "must be dummy, allocatable or pointer" }
+  class(t) :: z = t()             ! { dg-error "must be dummy, allocatable or pointer" }
 end

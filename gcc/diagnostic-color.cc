@@ -91,6 +91,8 @@ static struct color_cap color_dict[] =
   { "locus", SGR_SEQ (COLOR_BOLD), 5, false },
   { "quote", SGR_SEQ (COLOR_BOLD), 5, false },
   { "path", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_CYAN), 4, false },
+  { "fnname", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN), 6, false },
+  { "targs", SGR_SEQ (COLOR_FG_MAGENTA), 5, false },
   { "fixit-insert", SGR_SEQ (COLOR_FG_GREEN), 12, false },
   { "fixit-delete", SGR_SEQ (COLOR_FG_RED), 12, false },
   { "diff-filename", SGR_SEQ (COLOR_BOLD), 13, false },

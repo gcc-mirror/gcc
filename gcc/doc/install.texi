@@ -287,7 +287,8 @@ section.
 @item @anchor{GDC-prerequisite}GDC
 
 In order to build GDC, the D compiler, you need a working GDC
-compiler (GCC version 9.1 or later), as the D front end is written in D.
+compiler (GCC version 9.1 or later) and D runtime library,
+@samp{libphobos}, as the D front end is written in D.
 
 Versions of GDC prior to 12 can be built with an ISO C++11 compiler, which can
 then be installed and used to bootstrap newer versions of the D front end.
@@ -302,6 +303,10 @@ and has a sufficiently recent version.  Though the implementation of the D
 front end does not make use of any GDC-specific extensions, or novel features
 of the D language, if too old a GDC version is installed and
 @option{--enable-languages=d} is used, the build will fail.
+
+On some targets, @samp{libphobos} isn't enabled by default, but compiles
+and works if @option{--enable-libphobos} is used.  Specifics are
+documented for affected targets.
 
 @item A ``working'' POSIX compatible shell, or GNU bash
 
@@ -747,13 +752,13 @@ Here are the possible CPU types:
 @quotation
 aarch64, aarch64_be, alpha, alpha64, amdgcn, arc, arceb, arm, armeb, avr, bfin,
 bpf, cr16, cris, csky, epiphany, fido, fr30, frv, ft32, h8300, hppa, hppa2.0,
-hppa64, i486, i686, ia64, iq2000, lm32, m32c, m32r, m32rle, m68k, mcore,
-microblaze, microblazeel, mips, mips64, mips64el, mips64octeon, mips64orion,
-mips64vr, mipsel, mipsisa32, mipsisa32r2, mipsisa64, mipsisa64r2,
+hppa64, i486, i686, ia64, iq2000, lm32, loongarch64, m32c, m32r, m32rle, m68k,
+mcore, microblaze, microblazeel, mips, mips64, mips64el, mips64octeon,
+mips64orion, mips64vr, mipsel, mipsisa32, mipsisa32r2, mipsisa64, mipsisa64r2,
 mipsisa64r2el, mipsisa64sb1, mipsisa64sr71k, mipstx39, mmix, mn10300, moxie,
 msp430, nds32be, nds32le, nios2, nvptx, or1k, pdp11, powerpc, powerpc64,
 powerpc64le, powerpcle, pru, riscv32, riscv32be, riscv64, riscv64be, rl78, rx,
-s390, s390x, sh, shle, sparc, sparc64, tic6x, tilegx, tilegxbe, tilepro, v850,
+s390, s390x, sh, shle, sparc, sparc64, tic6x, v850,
 v850e, v850e1, vax, visium, x86_64, xstormy16, xtensa
 @end quotation
 
@@ -1166,8 +1171,9 @@ sysv, aix.
 @itemx --without-multilib-list
 Specify what multilibs to build.  @var{list} is a comma separated list of
 values, possibly consisting of a single value.  Currently only implemented
-for aarch64*-*-*, arm*-*-*, riscv*-*-*, sh*-*-* and x86-64-*-linux*.  The
-accepted values and meaning for each target is given below.
+for aarch64*-*-*, arm*-*-*, loongarch64-*-*, riscv*-*-*, sh*-*-* and
+x86-64-*-linux*.  The accepted values and meaning for each target is given
+below.
 
 @table @code
 @item aarch64*-*-*
@@ -1253,6 +1259,14 @@ profile.  The union of these options is considered when specifying both
 @code{-mfloat-abi=softfp}@*
 @code{-mfloat-abi=hard}
 @end multitable
+
+@item loongarch*-*-*
+@var{list} is a comma-separated list of the following ABI identifiers:
+@code{lp64d[/base]} @code{lp64f[/base]} @code{lp64d[/base]}, where the
+@code{/base} suffix may be omitted, to enable their respective run-time
+libraries.  If @var{list} is empty or @code{default},
+or if @option{--with-multilib-list} is not specified, then the default ABI
+as specified by @option{--with-abi} or implied by @option{--target} is selected.
 
 @item riscv*-*-*
 @var{list} is a single ABI name.  The target architecture must be either
@@ -2125,17 +2139,6 @@ Until all of the libraries are converted to use IEEE 128-bit floating
 point, it is not recommended to use
 @option{--with-long-double-format=ieee}.
 
-On little endian PowerPC Linux systems, if you explicitly set the
-@code{long double} type, it will build multilibs to allow you to
-select either @code{long double} format, unless you disable multilibs
-with the @code{--disable-multilib} option.  At present,
-@code{long double} multilibs are not built on big endian PowerPC Linux
-systems.  If you are building multilibs, you will need to configure
-the compiler using the @option{--with-system-zlib} option.
-
-If you do not set the @code{long double} type explicitly, no multilibs
-will be generated.
-
 @item --enable-fdpic
 On SH Linux systems, generate ELF FDPIC code.
 
@@ -2326,18 +2329,6 @@ those are in separate optional packages and where the presence or absence
 of those optional packages should determine the actual supported offloading
 target set rather than the GCC configure-time selection.
 
-@item --with-hsa-runtime=@var{pathname}
-@itemx --with-hsa-runtime-include=@var{pathname}
-@itemx --with-hsa-runtime-lib=@var{pathname}
-
-If you configure GCC with offloading which uses an HSA run-time such as
-AMDGCN but do not have the HSA run-time library installed in a standard
-location then you can explicitly specify the directory where they are
-installed.  The @option{--with-hsa-runtime=@/@var{hsainstalldir}} option
-is a shorthand for
-@option{--with-hsa-runtime-lib=@/@var{hsainstalldir}/lib} and
-@option{--with-hsa-runtime-include=@/@var{hsainstalldir}/include}.
-
 @item --enable-cet
 @itemx --disable-cet
 Enable building target run-time libraries with control-flow
@@ -2368,6 +2359,21 @@ For a native build and cross compiles that have target headers, the option's
 default is derived from glibc's behavior. When glibc clamps float_t to double,
 GCC follows and enables the option. For other cross compiles, the default is
 disabled.
+
+@item --with-zstd=@var{pathname}
+@itemx --with-zstd-include=@var{pathname}
+@itemx --with-zstd-lib=@var{pathname}
+If you do not have the @code{zstd} library installed in a standard
+location and you want to build GCC, you can explicitly specify the
+directory where it is installed (@samp{--with-zstd=@/@var{zstdinstalldir}}).
+The @option{--with-zstd=@/@var{zstdinstalldir}} option is shorthand for
+@option{--with-zstd-lib=@/@var{zstdinstalldir}/lib} and
+@option{--with-zstd-include=@/@var{zstdinstalldir}/include}. If this
+shorthand assumption is not correct, you can use the explicit
+include and lib options directly.
+
+These flags are applicable to the host platform only.  When building
+a cross compiler, they will not be used to configure target libraries.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -3669,12 +3675,6 @@ information have to.
 @item
 @uref{#c6x-x-x,,c6x-*-*}
 @item
-@uref{#tilegx-x-linux,,tilegx-*-linux*}
-@item
-@uref{#tilegxbe-x-linux,,tilegxbe-*-linux*}
-@item
-@uref{#tilepro-x-linux,,tilepro-*-linux*}
-@item
 @uref{#visium-x-elf, visium-*-elf}
 @item
 @uref{#x-x-vxworks,,*-*-vxworks*}
@@ -3892,8 +3892,8 @@ configure GCC@ for building a CR16 uclinux cross-compiler.
 @end html
 @anchor{cris}
 @heading CRIS
-CRIS is the CPU architecture in Axis Communications ETRAX system-on-a-chip
-series.  These are used in embedded applications.
+CRIS is a CPU architecture in Axis Communications systems-on-a-chip, for
+example the ETRAX series.  These are used in embedded applications.
 
 @ifnothtml
 @xref{CRIS Options,, CRIS Options, gcc, Using the GNU Compiler
@@ -3904,21 +3904,8 @@ See ``CRIS Options'' in the main manual
 @end ifhtml
 for a list of CRIS-specific options.
 
-There are a few different CRIS targets:
-@table @code
-@item cris-axis-elf
-Mainly for monolithic embedded systems.  Includes a multilib for the
-@samp{v10} core used in @samp{ETRAX 100 LX}.
-@item cris-axis-linux-gnu
-A GNU/Linux port for the CRIS architecture, currently targeting
-@samp{ETRAX 100 LX} by default.
-@end table
-
-Pre-packaged tools can be obtained from
-@uref{ftp://ftp.axis.com/@/pub/@/axis/@/tools/@/cris/@/compiler-kit/}.  More
-information about this platform is available at
-@uref{http://developer.axis.com/}.
-
+Use @samp{configure --target=cris-elf} to configure GCC@ for building
+a cross-compiler for CRIS.
 @html
 <hr />
 @end html
@@ -4442,6 +4429,34 @@ This configuration is intended for embedded systems running uClinux.
 @html
 <hr />
 @end html
+@anchor{loongarch}
+@heading LoongArch
+LoongArch processor.
+The following LoongArch targets are available:
+@table @code
+@item loongarch64-linux-gnu*
+LoongArch processor running GNU/Linux.  This target triplet may be coupled
+with a small set of possible suffixes to identify their default ABI type:
+@table @code
+@item f64
+Uses @code{lp64d/base} ABI by default.
+@item f32
+Uses @code{lp64f/base} ABI by default.
+@item sf
+Uses @code{lp64s/base} ABI by default.
+@end table
+
+@item loongarch64-linux-gnu
+Same as @code{loongarch64-linux-gnuf64}, but may be used with
+@option{--with-abi=*} to configure the default ABI type.
+@end table
+
+More information about LoongArch can be found at
+@uref{https://github.com/loongson/LoongArch-Documentation}.
+
+@html
+<hr />
+@end html
 @anchor{m32c-x-elf}
 @heading m32c-*-elf
 Renesas M32C processor.
@@ -4851,6 +4866,12 @@ GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
 appropriate version is found.  Solaris @command{c++filt} from the Solaris
 Studio compilers does @emph{not} work.
 
+In order to build the GNU D compiler, GDC, a working @samp{libphobos} is
+needed.  That library wasn't built by default in GCC 9--11 on SPARC, or
+on x86 when the Solaris assembler is used, but can be enabled by
+configuring with @option{--enable-libphobos}.  Also, GDC 9.4.0 is
+required on x86, while GDC 9.3.0 is known to work on SPARC.
+
 The versions of the GNU Multiple Precision Library (GMP), the MPFR
 library and the MPC library bundled with Solaris 11.3 and later are
 usually recent enough to match GCC's requirements.  There are two
@@ -4864,6 +4885,7 @@ need to configure with @option{--with-gmp-include=/usr/include/gmp}.
 @item
 The version of the MPFR libary included in Solaris 11.3 is too old; you
 need to provide a more recent one.
+
 @end itemize
 
 @html
@@ -4949,30 +4971,6 @@ This is a synonym for @samp{sparc64-*-solaris2*}.
 @anchor{c6x-x-x}
 @heading c6x-*-*
 The C6X family of processors. This port requires binutils-2.22 or newer.
-
-@html
-<hr />
-@end html
-@anchor{tilegx-*-linux}
-@heading tilegx-*-linux*
-The TILE-Gx processor in little endian mode, running GNU/Linux.  This
-port requires binutils-2.22 or newer.
-
-@html
-<hr />
-@end html
-@anchor{tilegxbe-*-linux}
-@heading tilegxbe-*-linux*
-The TILE-Gx processor in big endian mode, running GNU/Linux.  This
-port requires binutils-2.23 or newer.
-
-@html
-<hr />
-@end html
-@anchor{tilepro-*-linux}
-@heading tilepro-*-linux*
-The TILEPro processor running GNU/Linux.  This port requires
-binutils-2.22 or newer.
 
 @html
 <hr />
@@ -5104,7 +5102,7 @@ the Win32 subsystem that provides a subset of POSIX.
 
 @subheading Intel 64-bit versions
 GCC contains support for x86-64 using the mingw-w64
-runtime library, available from @uref{https://mingw-w64.org/doku.php}.
+runtime library, available from @uref{https://www.mingw-w64.org/downloads/}.
 This library should be used with the target triple x86_64-pc-mingw32.
 
 @subheading Windows CE

@@ -1164,6 +1164,7 @@ gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
 
   /* Check for attributes which prevent the symbol from being INTRINSIC.  */
   if (sym->attr.external || sym->attr.contained
+      || sym->attr.recursive
       || sym->attr.if_source == IFSRC_IFBODY)
     return false;
 
@@ -1184,7 +1185,7 @@ gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
 	gfc_warning_now (OPT_Wintrinsics_std, "The intrinsic %qs at %L is not "
 			 "included in the selected standard but %s and %qs will"
 			 " be treated as if declared EXTERNAL.  Use an"
-			 " appropriate %<-std=%>* option or define"
+			 " appropriate %<-std=%> option or define"
 			 " %<-fall-intrinsics%> to allow this intrinsic.",
 			 sym->name, &loc, symstd, sym->name);
 

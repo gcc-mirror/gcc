@@ -71,5 +71,3 @@ void test3()
     finally foo();
     int x = 1;
 }
-
-

@@ -29,4 +29,4 @@ template PredAny(A, B...)
 void main()
 {
     pragma(msg, PredAny!(int, long, float));
-} 
+}

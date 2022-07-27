@@ -82,7 +82,7 @@ class svaba_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     rtx_code max_code = e.type_suffix (0).unsigned_p ? UMAX : SMAX;
     machine_mode mode = e.vector_mode (0);
@@ -94,7 +94,7 @@ class svcdot_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Convert the rotation amount into a specific unspec.  */
     int rot = INTVAL (e.args.pop ());
@@ -107,7 +107,7 @@ class svcdot_lane_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Convert the rotation amount into a specific unspec.  */
     int rot = INTVAL (e.args.pop ());
@@ -120,13 +120,13 @@ class svldnt1_gather_impl : public full_width_access
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_READ_MEMORY;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.prepare_gather_address_operands (1, false);
     machine_mode mem_mode = e.memory_vector_mode ();
@@ -142,7 +142,7 @@ public:
     : extending_load (memory_type) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.prepare_gather_address_operands (1, false);
     /* Add a constant predicate for the extension rtx.  */
@@ -162,7 +162,7 @@ public:
   CONSTEXPR svmatch_svnmatch_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* These are UNSPEC_PRED_Z operations and so need a hint operand.  */
     e.add_ptrue_hint (0, e.gp_mode (0));
@@ -185,7 +185,7 @@ public:
   {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.args.quick_push (const0_rtx);
     return e.map_to_unspecs (m_unspec_for_sint, m_unspec_for_uint,
@@ -197,7 +197,7 @@ class svqcadd_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Convert the rotation amount into a specific unspec.  */
     int rot = INTVAL (e.args.pop ());
@@ -213,7 +213,7 @@ class svqrdcmlah_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Convert the rotation amount into a specific unspec.  */
     int rot = INTVAL (e.args.pop ());
@@ -226,7 +226,7 @@ class svqrdcmlah_lane_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     /* Convert the rotation amount into a specific unspec.  */
     int rot = INTVAL (e.args.pop ());
@@ -242,7 +242,7 @@ public:
     : unspec_based_function (UNSPEC_SQRSHL, UNSPEC_UQRSHL, -1) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     if (tree amount = uniform_integer_cst_p (gimple_call_arg (f.call, 2)))
       {
@@ -276,7 +276,7 @@ public:
     : unspec_based_function (UNSPEC_SQSHL, UNSPEC_UQSHL, -1) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     if (tree amount = uniform_integer_cst_p (gimple_call_arg (f.call, 2)))
       {
@@ -312,7 +312,7 @@ public:
     : unspec_based_function (UNSPEC_SRSHL, UNSPEC_URSHL, -1) {}
 
   gimple *
-  fold (gimple_folder &f) const OVERRIDE
+  fold (gimple_folder &f) const override
   {
     if (tree amount = uniform_integer_cst_p (gimple_call_arg (f.call, 2)))
       {
@@ -349,7 +349,7 @@ class svsqadd_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
     if (e.pred == PRED_x
@@ -363,7 +363,7 @@ class svsra_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     rtx_code shift_code = e.type_suffix (0).unsigned_p ? LSHIFTRT : ASHIFTRT;
     machine_mode mode = e.vector_mode (0);
@@ -375,13 +375,13 @@ class svstnt1_scatter_impl : public full_width_access
 {
 public:
   unsigned int
-  call_properties (const function_instance &) const OVERRIDE
+  call_properties (const function_instance &) const override
   {
     return CP_WRITE_MEMORY;
   }
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.prepare_gather_address_operands (1, false);
     machine_mode mem_mode = e.memory_vector_mode ();
@@ -397,7 +397,7 @@ public:
     : truncating_store (to_mode) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     e.prepare_gather_address_operands (1, false);
     insn_code icode = code_for_aarch64_scatter_stnt (e.vector_mode (0),
@@ -412,7 +412,7 @@ public:
   CONSTEXPR svtbl2_impl () : quiet<multi_vector_function> (2) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     return e.use_exact_insn (code_for_aarch64_sve2_tbl2 (e.vector_mode (0)));
   }
@@ -422,7 +422,7 @@ class svuqadd_impl : public function_base
 {
 public:
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
     if (e.pred == PRED_x
@@ -440,7 +440,7 @@ public:
   CONSTEXPR svwhilerw_svwhilewr_impl (int unspec) : m_unspec (unspec) {}
 
   rtx
-  expand (function_expander &e) const OVERRIDE
+  expand (function_expander &e) const override
   {
     for (unsigned int i = 0; i < 2; ++i)
       e.args[i] = e.convert_to_pmode (e.args[i]);

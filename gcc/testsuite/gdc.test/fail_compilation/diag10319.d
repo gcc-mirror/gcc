@@ -9,7 +9,7 @@ fail_compilation/diag10319.d(28): Error: `@safe` function `D main` cannot call `
 fail_compilation/diag10319.d(18):        `diag10319.bar!int.bar` is declared here
 fail_compilation/diag10319.d(27): Error: function `diag10319.foo` is not `nothrow`
 fail_compilation/diag10319.d(28): Error: function `diag10319.bar!int.bar` is not `nothrow`
-fail_compilation/diag10319.d(25): Error: `nothrow` function `D main` may throw
+fail_compilation/diag10319.d(25): Error: function `D main` may throw but is marked as `nothrow`
 ---
 */
 

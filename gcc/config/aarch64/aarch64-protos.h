@@ -507,6 +507,18 @@ struct cpu_prefetch_tune
   const int default_opt_level;
 };
 
+/* Model the costs for loads/stores for the register allocators so that it can
+   do more accurate spill heuristics.  */
+struct cpu_memmov_cost
+{
+  int load_int;
+  int store_int;
+  int load_fp;
+  int store_fp;
+  int load_pred;
+  int store_pred;
+};
+
 struct tune_params
 {
   const struct cpu_cost_table *insn_extra_cost;
@@ -519,7 +531,8 @@ struct tune_params
      or SVE_NOT_IMPLEMENTED if not applicable.  Only used for tuning
      decisions, does not disable VLA vectorization.  */
   unsigned int sve_width;
-  int memmov_cost;
+  /* Structure used by reload to cost spills.  */
+  struct cpu_memmov_cost memmov_cost;
   int issue_rate;
   unsigned int fusible_ops;
   const char *function_align;
@@ -659,14 +672,6 @@ enum simd_immediate_check {
   AARCH64_CHECK_MOV  = AARCH64_CHECK_ORR | AARCH64_CHECK_BIC
 };
 
-/* The key type that -msign-return-address should use.  */
-enum aarch64_key_type {
-  AARCH64_KEY_A,
-  AARCH64_KEY_B
-};
-
-extern enum aarch64_key_type aarch64_ra_sign_key;
-
 extern struct tune_params aarch64_tune_params;
 
 /* The available SVE predicate patterns, known in the ACLE as "svpattern".  */
@@ -732,6 +737,19 @@ const unsigned int AARCH64_BUILTIN_SHIFT = 1;
 
 /* Mask that selects the aarch64_builtin_class part of a function code.  */
 const unsigned int AARCH64_BUILTIN_CLASS = (1 << AARCH64_BUILTIN_SHIFT) - 1;
+
+/* RAII class for enabling enough features to define built-in types
+   and implement the arm_neon.h pragma.  */
+class aarch64_simd_switcher
+{
+public:
+  aarch64_simd_switcher (unsigned int extra_flags = 0);
+  ~aarch64_simd_switcher ();
+
+private:
+  unsigned long m_old_isa_flags;
+  bool m_old_general_regs_only;
+};
 
 void aarch64_post_cfi_startproc (void);
 poly_int64 aarch64_initial_elimination_offset (unsigned, unsigned);
@@ -968,7 +986,7 @@ gimple *aarch64_general_gimple_fold_builtin (unsigned int, gcall *,
 rtx aarch64_general_expand_builtin (unsigned int, tree, rtx, int);
 tree aarch64_general_builtin_decl (unsigned, bool);
 tree aarch64_general_builtin_rsqrt (unsigned int);
-tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
+void handle_arm_acle_h (void);
 void handle_arm_neon_h (void);
 
 namespace aarch64_sve {
@@ -1038,7 +1056,7 @@ bool aarch64_high_bits_all_ones_p (HOST_WIDE_INT);
 
 struct atomic_ool_names
 {
-    const char *str[5][4];
+    const char *str[5][5];
 };
 
 rtx aarch64_atomic_ool_func(machine_mode mode, rtx model_rtx,

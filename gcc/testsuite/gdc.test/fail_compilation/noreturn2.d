@@ -93,7 +93,7 @@ auto returnVoid3(int i)
 TEST_OUTPUT:
 ---
 fail_compilation/noreturn2.d(104): Error: `object.Exception` is thrown but not caught
-fail_compilation/noreturn2.d(100): Error: `nothrow` function `noreturn2.doesNestedThrow` may throw
+fail_compilation/noreturn2.d(100): Error: function `noreturn2.doesNestedThrow` may throw but is marked as `nothrow`
 ---
 +/
 

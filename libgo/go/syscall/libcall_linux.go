@@ -146,6 +146,7 @@ func PtraceDetach(pid int) (err error) { return ptrace(PTRACE_DETACH, pid, 0, 0)
 
 //sys	reboot(magic1 uint, magic2 uint, cmd int, arg string) (err error)
 //reboot(magic1 _C_uint, magic2 _C_uint, cmd _C_int, arg *byte) _C_int
+
 func Reboot(cmd int) (err error) {
 	return reboot(LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, cmd, "")
 }
@@ -209,19 +210,20 @@ func Gettid() (tid int) {
 //sys	Setxattr(path string, attr string, data []byte, flags int) (err error)
 //setxattr(path *byte, name *byte, value *byte, size Size_t, flags _C_int) _C_int
 
-//sys	splice(rfd int, roff *_loff_t, wfd int, woff *_loff_t, len int, flags int) (n int64, err error)
-//splice(rfd _C_int, roff *_loff_t, wfd _C_int, woff *_loff_t, len Size_t, flags _C_uint) Ssize_t
+//sys	splice(rfd int, roff *_libgo_loff_t_type, wfd int, woff *_libgo_loff_t_type, len int, flags int) (n int64, err error)
+//splice(rfd _C_int, roff *_libgo_loff_t_type, wfd _C_int, woff *_libgo_loff_t_type, len Size_t, flags _C_uint) Ssize_t
+
 func Splice(rfd int, roff *int64, wfd int, woff *int64, len int, flags int) (n int64, err error) {
-	var lroff _loff_t
-	var plroff *_loff_t
+	var lroff _libgo_loff_t_type
+	var plroff *_libgo_loff_t_type
 	if roff != nil {
-		lroff = _loff_t(*roff)
+		lroff = _libgo_loff_t_type(*roff)
 		plroff = &lroff
 	}
-	var lwoff _loff_t
-	var plwoff *_loff_t
+	var lwoff _libgo_loff_t_type
+	var plwoff *_libgo_loff_t_type
 	if woff != nil {
-		lwoff = _loff_t(*woff)
+		lwoff = _libgo_loff_t_type(*woff)
 		plwoff = &lwoff
 	}
 	n, err = splice(rfd, plroff, wfd, plwoff, len, flags)

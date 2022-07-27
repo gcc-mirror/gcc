@@ -58,6 +58,7 @@ static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
+static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *);
 
 /* D attribute handlers for user defined attributes.  */
 static tree d_handle_noinline_attribute (tree *, tree, tree, int, bool *);
@@ -75,8 +76,12 @@ static tree d_handle_weak_attribute (tree *, tree, tree, int, bool *) ;
 static tree d_handle_noplt_attribute (tree *, tree, tree, int, bool *) ;
 static tree d_handle_alloc_size_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_cold_attribute (tree *, tree, tree, int, bool *);
+static tree d_handle_register_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_restrict_attribute (tree *, tree, tree, int, bool *);
 static tree d_handle_used_attribute (tree *, tree, tree, int, bool *);
+static tree d_handle_visibility_attribute (tree *, tree, tree, int, bool *);
+static tree d_handle_no_sanitize_attribute (tree *, tree, tree, int, bool *);
+static tree d_handle_simd_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -183,6 +188,8 @@ const attribute_spec d_langhook_common_attribute_table[] =
 	     handle_type_generic_attribute, NULL),
   ATTR_SPEC ("fn spec", 1, 1, false, true, true, false,
 	     handle_fnspec_attribute, NULL),
+  ATTR_SPEC ("omp declare simd", 0, -1, true,  false, false, false,
+	     handle_omp_declare_simd_attribute, NULL),
   ATTR_SPEC (NULL, 0, 0, false, false, false, false, NULL, NULL),
 };
 
@@ -219,10 +226,18 @@ const attribute_spec d_langhook_attribute_table[] =
 	     d_handle_alloc_size_attribute, attr_alloc_exclusions),
   ATTR_SPEC ("cold", 0, 0, true, false, false, false,
 	     d_handle_cold_attribute, attr_cold_hot_exclusions),
+  ATTR_SPEC ("no_sanitize", 1, -1, true, false, false, false,
+	     d_handle_no_sanitize_attribute, NULL),
+  ATTR_SPEC ("register", 1, 1, true, false, false, false,
+	     d_handle_register_attribute, NULL),
   ATTR_SPEC ("restrict", 0, 0, true, false, false, false,
 	     d_handle_restrict_attribute, NULL),
+  ATTR_SPEC ("simd", 0, 1, true,  false, false, false,
+	     d_handle_simd_attribute, NULL),
   ATTR_SPEC ("used", 0, 0, true, false, false, false,
 	     d_handle_used_attribute, NULL),
+  ATTR_SPEC ("visibility", 1, 1, false, false, false, false,
+	     d_handle_visibility_attribute, NULL),
   ATTR_SPEC (NULL, 0, 0, false, false, false, false, NULL, NULL),
 };
 
@@ -238,10 +253,9 @@ insert_type_attribute (tree type, const char *attrname, tree value)
   if (value)
     value = tree_cons (NULL_TREE, value, NULL_TREE);
 
-  tree attribs = merge_attributes (TYPE_ATTRIBUTES (type),
-				   tree_cons (ident, value, NULL_TREE));
-
-  return build_type_attribute_variant (type, attribs);
+  decl_attributes (&type, build_tree_list (ident, value),
+		   ATTR_FLAG_TYPE_IN_PLACE);
+  return type;
 }
 
 /* Insert the decl attribute ATTRNAME with value VALUE into DECL.  */
@@ -254,10 +268,9 @@ insert_decl_attribute (tree decl, const char *attrname, tree value)
   if (value)
     value = tree_cons (NULL_TREE, value, NULL_TREE);
 
-  tree attribs = merge_attributes (DECL_ATTRIBUTES (decl),
-				   tree_cons (ident, value, NULL_TREE));
+  decl_attributes (&decl, build_tree_list (ident, value), 0);
 
-  return build_decl_attribute_variant (decl, attribs);
+  return decl;
 }
 
 /* Returns TRUE if NAME is an attribute recognized as being handled by
@@ -414,19 +427,17 @@ void
 apply_user_attributes (Dsymbol *sym, tree node)
 {
   if (!sym->userAttribDecl)
-    {
-      if (DECL_P (node) && DECL_ATTRIBUTES (node) != NULL)
-	decl_attributes (&node, DECL_ATTRIBUTES (node), 0);
-
-      return;
-    }
+    return;
 
   location_t saved_location = input_location;
   input_location = make_location_t (sym->loc);
 
+  int attr_flags = 0;
+  if (TYPE_P (node) && !COMPLETE_TYPE_P (node))
+    attr_flags |= ATTR_FLAG_TYPE_IN_PLACE;
+
   Expressions *attrs = sym->userAttribDecl->getAttributes ();
-  decl_attributes (&node, build_attributes (attrs),
-		   TYPE_P (node) ? ATTR_FLAG_TYPE_IN_PLACE : 0);
+  decl_attributes (&node, build_attributes (attrs), attr_flags);
 
   input_location = saved_location;
 }
@@ -656,6 +667,16 @@ handle_fnspec_attribute (tree *, tree, tree args, int, bool *)
   gcc_assert (args
 	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST
 	      && !TREE_CHAIN (args));
+  return NULL_TREE;
+}
+
+/* Handle an "omp declare simd" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+tree
+handle_omp_declare_simd_attribute (tree *node, tree, tree, int, bool *)
+{
+  gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
   return NULL_TREE;
 }
 
@@ -1010,7 +1031,7 @@ d_handle_section_attribute (tree *node, tree name, tree args, int flags,
 
   if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
     {
-      error ("section attribute argument not a string constant");
+      error ("%qE attribute argument not a string constant", name);
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -1060,7 +1081,8 @@ d_handle_section_attribute (tree *node, tree name, tree args, int flags,
    struct attribute_spec.handler.  */
 
 static tree
-d_handle_symver_attribute (tree *node, tree, tree args, int, bool *no_add_attrs)
+d_handle_symver_attribute (tree *node, tree name, tree args, int,
+			   bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL && TREE_CODE (*node) != VAR_DECL)
     {
@@ -1083,7 +1105,7 @@ d_handle_symver_attribute (tree *node, tree, tree args, int, bool *no_add_attrs)
       tree symver = TREE_VALUE (args);
       if (TREE_CODE (symver) != STRING_CST)
 	{
-	  error ("%<symver%> attribute argument not a string constant");
+	  error ("%qE attribute argument not a string constant", name);
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -1365,6 +1387,88 @@ d_handle_cold_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
   return NULL_TREE;
 }
 
+/* Handle a "no_sanitize" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+d_handle_no_sanitize_attribute (tree *node, tree name, tree args, int,
+				bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      return NULL_TREE;
+    }
+
+  unsigned int flags = 0;
+  for (; args; args = TREE_CHAIN (args))
+    {
+      tree id = TREE_VALUE (args);
+      if (TREE_CODE (id) != STRING_CST)
+	{
+	  error ("%qE attribute argument not a string constant", name);
+	  return NULL_TREE;
+	}
+
+      char *string = ASTRDUP (TREE_STRING_POINTER (id));
+      flags |= parse_no_sanitize_attribute (string);
+    }
+
+  /* Store the flags argument back into no_sanitize attribute as an integer,
+     merge existing flags if no_sanitize was previously handled.  */
+  if (tree attr = lookup_attribute ("no_sanitize", DECL_ATTRIBUTES (*node)))
+    {
+      unsigned int old_value = tree_to_uhwi (TREE_VALUE (attr));
+      flags |= old_value;
+
+      if (flags != old_value)
+	TREE_VALUE (attr) = build_int_cst (d_uint_type, flags);
+    }
+  else
+    {
+      DECL_ATTRIBUTES (*node) = tree_cons (get_identifier ("no_sanitize"),
+					   build_int_cst (d_uint_type, flags),
+					   DECL_ATTRIBUTES (*node));
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "register" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+d_handle_register_attribute (tree *node, tree name, tree args, int,
+			     bool *no_add_attrs)
+{
+  if (!VAR_P (*node))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+  else if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+    {
+      error ("%qE attribute argument not a string constant", name);
+      *no_add_attrs = true;
+    }
+  else if (TREE_STRING_LENGTH (TREE_VALUE (args)) == 0
+	   || TREE_STRING_POINTER (TREE_VALUE (args))[0] == '\0')
+    {
+      error ("register name not specified for %q+D", *node);
+      *no_add_attrs = true;
+    }
+  else
+    {
+      DECL_REGISTER (*node) = 1;
+      set_user_assembler_name (*node, TREE_STRING_POINTER (TREE_VALUE (args)));
+      DECL_HARD_REGISTER (*node) = 1;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handle a "restrict" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -1382,6 +1486,55 @@ d_handle_restrict_attribute (tree *node, tree name, tree, int,
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
+
+  return NULL_TREE;
+}
+
+/* Handle a "simd" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+d_handle_simd_attribute (tree *node, tree name, tree args, int,
+			 bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  tree omp_attr = get_identifier ("omp declare simd");
+  tree omp_flags = NULL_TREE;
+  if (args)
+    {
+      tree id = TREE_VALUE (args);
+
+      if (TREE_CODE (id) != STRING_CST)
+	{
+	  error ("%qE attribute argument not a string constant", name);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      if (strcmp (TREE_STRING_POINTER (id), "notinbranch") == 0)
+	omp_flags = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+				      OMP_CLAUSE_NOTINBRANCH);
+      else if (strcmp (TREE_STRING_POINTER (id), "inbranch") == 0)
+	omp_flags = build_omp_clause (DECL_SOURCE_LOCATION (*node),
+				      OMP_CLAUSE_INBRANCH);
+      else
+	{
+	  error ("only %<inbranch%> and %<notinbranch%> flags are "
+		 "allowed for %<simd%> attribute");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+    }
+
+  DECL_ATTRIBUTES (*node) =
+    tree_cons (omp_attr, build_tree_list (NULL_TREE, omp_flags),
+	       DECL_ATTRIBUTES (*node));
 
   return NULL_TREE;
 }
@@ -1406,6 +1559,82 @@ d_handle_used_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
+
+  return NULL_TREE;
+}
+
+/* Handle an "visibility" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+d_handle_visibility_attribute (tree *node, tree name, tree args,
+			       int, bool *)
+{
+  /*  If this is a type, set the visibility on the type decl.  */
+  tree decl = *node;
+  if (TYPE_P (decl))
+    {
+      decl = TYPE_NAME (decl);
+      if (decl == NULL_TREE || TREE_CODE (decl) != TYPE_DECL)
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored on types", name);
+	  return NULL_TREE;
+	}
+    }
+
+  if (decl_function_context (decl) != 0 || !TREE_PUBLIC (decl))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      return NULL_TREE;
+    }
+
+  tree id = TREE_VALUE (args);
+  if (TREE_CODE (id) != STRING_CST)
+    {
+      error ("%qE attribute argument not a string constant", name);
+      return NULL_TREE;
+    }
+
+  enum symbol_visibility vis;
+  if (strcmp (TREE_STRING_POINTER (id), "default") == 0)
+    vis = VISIBILITY_DEFAULT;
+  else if (strcmp (TREE_STRING_POINTER (id), "internal") == 0)
+    vis = VISIBILITY_INTERNAL;
+  else if (strcmp (TREE_STRING_POINTER (id), "hidden") == 0)
+    vis = VISIBILITY_HIDDEN;
+  else if (strcmp (TREE_STRING_POINTER (id), "protected") == 0)
+    vis = VISIBILITY_PROTECTED;
+  else
+    {
+      error ("attribute %qE argument must be one of %qs, %qs, %qs, or %qs",
+	     name, "default", "hidden", "protected", "internal");
+      vis = VISIBILITY_DEFAULT;
+    }
+
+  if (DECL_VISIBILITY_SPECIFIED (decl) && vis != DECL_VISIBILITY (decl))
+    {
+      tree attributes = (TYPE_P (*node)
+			 ? TYPE_ATTRIBUTES (*node)
+			 : DECL_ATTRIBUTES (decl));
+      if (lookup_attribute ("visibility", attributes))
+	error ("%qD redeclared with different visibility", decl);
+      else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	       && lookup_attribute ("dllimport", attributes))
+	error ("%qD was declared %qs which implies default visibility",
+	       decl, "export");
+      else if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	       && lookup_attribute ("dllexport", attributes))
+	error ("%qD was declared %qs which implies default visibility",
+	       decl, "export");
+    }
+
+  DECL_VISIBILITY (decl) = vis;
+  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+
+  /* Go ahead and attach the attribute to the node as well.  This is needed
+     so we can determine whether we have VISIBILITY_DEFAULT because the
+     visibility was not specified, or because it was explicitly overridden
+     from the containing scope.  */
 
   return NULL_TREE;
 }

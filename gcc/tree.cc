@@ -69,6 +69,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "escaped_string.h"
 #include "gimple-range.h"
+#include "gomp-constants.h"
+#include "dfp.h"
+#include "asan.h"
+#include "ubsan.h"
 
 /* Tree code classes.  */
 
@@ -278,7 +282,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_DEPEND  */
   1, /* OMP_CLAUSE_NONTEMPORAL  */
   1, /* OMP_CLAUSE_UNIFORM  */
-  1, /* OMP_CLAUSE_TO_DECLARE  */
+  1, /* OMP_CLAUSE_ENTER  */
   1, /* OMP_CLAUSE_LINK  */
   1, /* OMP_CLAUSE_DETACH  */
   1, /* OMP_CLAUSE_USE_DEVICE_PTR  */
@@ -368,7 +372,7 @@ const char * const omp_clause_code_name[] =
   "depend",
   "nontemporal",
   "uniform",
-  "to",
+  "enter",
   "link",
   "detach",
   "use_device_ptr",
@@ -438,6 +442,41 @@ const char * const omp_clause_code_name[] =
   "finalize",
   "nohost",
 };
+
+/* Unless specific to OpenACC, we tend to internally maintain OpenMP-centric
+   clause names, but for use in diagnostics etc. would like to use the "user"
+   clause names.  */
+
+const char *
+user_omp_clause_code_name (tree clause, bool oacc)
+{
+  /* For OpenACC, the 'OMP_CLAUSE_MAP_KIND' of an 'OMP_CLAUSE_MAP' is used to
+     distinguish clauses as seen by the user.  See also where front ends do
+     'build_omp_clause' with 'OMP_CLAUSE_MAP'.  */
+  if (oacc && OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP)
+    switch (OMP_CLAUSE_MAP_KIND (clause))
+      {
+      case GOMP_MAP_FORCE_ALLOC:
+      case GOMP_MAP_ALLOC: return "create";
+      case GOMP_MAP_FORCE_TO:
+      case GOMP_MAP_TO: return "copyin";
+      case GOMP_MAP_FORCE_FROM:
+      case GOMP_MAP_FROM: return "copyout";
+      case GOMP_MAP_FORCE_TOFROM:
+      case GOMP_MAP_TOFROM: return "copy";
+      case GOMP_MAP_RELEASE: return "delete";
+      case GOMP_MAP_FORCE_PRESENT: return "present";
+      case GOMP_MAP_ATTACH: return "attach";
+      case GOMP_MAP_FORCE_DETACH:
+      case GOMP_MAP_DETACH: return "detach";
+      case GOMP_MAP_DEVICE_RESIDENT: return "device_resident";
+      case GOMP_MAP_LINK: return "link";
+      case GOMP_MAP_FORCE_DEVICEPTR: return "deviceptr";
+      default: break;
+      }
+
+  return omp_clause_code_name[OMP_CLAUSE_CODE (clause)];
+}
 
 
 /* Return the tree node structure used by tree code CODE.  */
@@ -2344,18 +2383,34 @@ tree
 build_real (tree type, REAL_VALUE_TYPE d)
 {
   tree v;
-  REAL_VALUE_TYPE *dp;
   int overflow = 0;
+
+  /* dconst{1,2,m1,half} are used in various places in
+     the middle-end and optimizers, allow them here
+     even for decimal floating point types as an exception
+     by converting them to decimal.  */
+  if (DECIMAL_FLOAT_MODE_P (TYPE_MODE (type))
+      && d.cl == rvc_normal
+      && !d.decimal)
+    {
+      if (memcmp (&d, &dconst1, sizeof (d)) == 0)
+	decimal_real_from_string (&d, "1");
+      else if (memcmp (&d, &dconst2, sizeof (d)) == 0)
+	decimal_real_from_string (&d, "2");
+      else if (memcmp (&d, &dconstm1, sizeof (d)) == 0)
+	decimal_real_from_string (&d, "-1");
+      else if (memcmp (&d, &dconsthalf, sizeof (d)) == 0)
+	decimal_real_from_string (&d, "0.5");
+      else
+	gcc_unreachable ();
+    }
 
   /* ??? Used to check for overflow here via CHECK_FLOAT_TYPE.
      Consider doing it via real_convert now.  */
 
   v = make_node (REAL_CST);
-  dp = ggc_alloc<real_value> ();
-  memcpy (dp, &d, sizeof (REAL_VALUE_TYPE));
-
   TREE_TYPE (v) = type;
-  TREE_REAL_CST_PTR (v) = dp;
+  memcpy (TREE_REAL_CST_PTR (v), &d, sizeof (REAL_VALUE_TYPE));
   TREE_OVERFLOW (v) = overflow;
   return v;
 }
@@ -6949,6 +7004,15 @@ build_reference_type (tree to_type)
   (HOST_BITS_PER_WIDE_INT > 64 ? HOST_BITS_PER_WIDE_INT : 64)
 static GTY(()) tree nonstandard_integer_type_cache[2 * MAX_INT_CACHED_PREC + 2];
 
+static void
+clear_nonstandard_integer_type_cache (void)
+{
+  for (size_t i = 0 ; i < 2 * MAX_INT_CACHED_PREC + 2 ; i++)
+  {
+    nonstandard_integer_type_cache[i] = NULL;
+  }
+}
+
 /* Builds a signed or unsigned integer type of precision PRECISION.
    Used for C bitfields whose precision does not match that of
    built-in target types.  */
@@ -8370,6 +8434,69 @@ get_callee_fndecl (const_tree call)
   return NULL_TREE;
 }
 
+/* Return true when STMTs arguments and return value match those of FNDECL,
+   a decl of a builtin function.  */
+
+static bool
+tree_builtin_call_types_compatible_p (const_tree call, tree fndecl)
+{
+  gcc_checking_assert (DECL_BUILT_IN_CLASS (fndecl) != NOT_BUILT_IN);
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    if (tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl)))
+      fndecl = decl;
+
+  bool gimple_form = (cfun && (cfun->curr_properties & PROP_gimple)) != 0;
+  if (gimple_form
+      ? !useless_type_conversion_p (TREE_TYPE (call),
+				    TREE_TYPE (TREE_TYPE (fndecl)))
+      : (TYPE_MAIN_VARIANT (TREE_TYPE (call))
+	 != TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))))
+    return false;
+
+  tree targs = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+  unsigned nargs = call_expr_nargs (call);
+  for (unsigned i = 0; i < nargs; ++i, targs = TREE_CHAIN (targs))
+    {
+      /* Variadic args follow.  */
+      if (!targs)
+	return true;
+      tree arg = CALL_EXPR_ARG (call, i);
+      tree type = TREE_VALUE (targs);
+      if (gimple_form
+	  ? !useless_type_conversion_p (type, TREE_TYPE (arg))
+	  : TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (arg)))
+	{
+	  /* For pointer arguments be more forgiving, e.g. due to
+	     FILE * vs. fileptr_type_node, or say char * vs. const char *
+	     differences etc.  */
+	  if (!gimple_form
+	      && POINTER_TYPE_P (type)
+	      && POINTER_TYPE_P (TREE_TYPE (arg))
+	      && tree_nop_conversion_p (type, TREE_TYPE (arg)))
+	    continue;
+	  /* char/short integral arguments are promoted to int
+	     by several frontends if targetm.calls.promote_prototypes
+	     is true.  Allow such promotion too.  */
+	  if (INTEGRAL_TYPE_P (type)
+	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
+	      && INTEGRAL_TYPE_P (TREE_TYPE (arg))
+	      && !TYPE_UNSIGNED (TREE_TYPE (arg))
+	      && targetm.calls.promote_prototypes (TREE_TYPE (fndecl))
+	      && (gimple_form
+		  ? useless_type_conversion_p (integer_type_node,
+					       TREE_TYPE (arg))
+		  : tree_nop_conversion_p (integer_type_node,
+					   TREE_TYPE (arg))))
+	    continue;
+	  return false;
+	}
+    }
+  if (targs && !VOID_TYPE_P (TREE_VALUE (targs)))
+    return false;
+  return true;
+}
+
 /* If CALL_EXPR CALL calls a normal built-in function or an internal function,
    return the associated function code, otherwise return CFN_LAST.  */
 
@@ -8383,7 +8510,9 @@ get_call_combined_fn (const_tree call)
     return as_combined_fn (CALL_EXPR_IFN (call));
 
   tree fndecl = get_callee_fndecl (call);
-  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+  if (fndecl
+      && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
+      && tree_builtin_call_types_compatible_p (call, fndecl))
     return as_combined_fn (DECL_FUNCTION_CODE (fndecl));
 
   return CFN_LAST;
@@ -9281,9 +9410,7 @@ build_common_tree_nodes (bool signed_char)
   ptr_type_node = build_pointer_type (void_type_node);
   const_ptr_type_node
     = build_pointer_type (build_type_variant (void_type_node, 1, 0));
-  for (unsigned i = 0;
-       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
-       ++i)
+  for (unsigned i = 0; i < ARRAY_SIZE (builtin_structptr_types); ++i)
     builtin_structptr_types[i].node = builtin_structptr_types[i].base;
 
   pointer_sized_int_node = build_nonstandard_integer_type (POINTER_SIZE, 1);
@@ -9524,6 +9651,7 @@ build_common_builtin_nodes (void)
     }
 
   if (!builtin_decl_explicit_p (BUILT_IN_UNREACHABLE)
+      || !builtin_decl_explicit_p (BUILT_IN_TRAP)
       || !builtin_decl_explicit_p (BUILT_IN_ABORT))
     {
       ftype = build_function_type (void_type_node, void_list_node);
@@ -9537,6 +9665,10 @@ build_common_builtin_nodes (void)
 	local_define_builtin ("__builtin_abort", ftype, BUILT_IN_ABORT,
 			      "abort",
 			      ECF_LEAF | ECF_NORETURN | ECF_CONST | ECF_COLD);
+      if (!builtin_decl_explicit_p (BUILT_IN_TRAP))
+	local_define_builtin ("__builtin_trap", ftype, BUILT_IN_TRAP,
+			      "__builtin_trap",
+			      ECF_NORETURN | ECF_NOTHROW | ECF_LEAF | ECF_COLD);
     }
 
   if (!builtin_decl_explicit_p (BUILT_IN_MEMCPY)
@@ -10230,6 +10362,8 @@ uniform_vector_p (const_tree vec)
       if (i != nelts)
 	return NULL_TREE;
 
+      if (TREE_CODE (first) == CONSTRUCTOR || TREE_CODE (first) == VECTOR_CST)
+	return uniform_vector_p (first);
       return first;
     }
 
@@ -10650,6 +10784,39 @@ build_alloca_call_expr (tree size, unsigned int align, HOST_WIDE_INT max_size)
       tree t = builtin_decl_explicit (BUILT_IN_ALLOCA);
       return build_call_expr (t, 1, size);
     }
+}
+
+/* The built-in decl to use to mark code points believed to be unreachable.
+   Typically __builtin_unreachable, but __builtin_trap if
+   -fsanitize=unreachable -fsanitize-trap=unreachable.  If only
+   -fsanitize=unreachable, we rely on sanopt to replace calls with the
+   appropriate ubsan function.  When building a call directly, use
+   {gimple_},build_builtin_unreachable instead.  */
+
+tree
+builtin_decl_unreachable ()
+{
+  enum built_in_function fncode = BUILT_IN_UNREACHABLE;
+
+  if (sanitize_flags_p (SANITIZE_UNREACHABLE)
+      ? (flag_sanitize_trap & SANITIZE_UNREACHABLE)
+      : flag_unreachable_traps)
+    fncode = BUILT_IN_TRAP;
+  /* For non-trapping sanitize, we will rewrite __builtin_unreachable () later,
+     in the sanopt pass.  */
+
+  return builtin_decl_explicit (fncode);
+}
+
+/* Build a call to __builtin_unreachable, possibly rewritten by
+   -fsanitize=unreachable.  Use this rather than the above when practical.  */
+
+tree
+build_builtin_unreachable (location_t loc)
+{
+  tree data = NULL_TREE;
+  tree fn = sanitize_unreachable_fn (&data, loc);
+  return build_call_expr_loc (loc, fn, data != NULL_TREE, data);
 }
 
 /* Create a new constant string literal of type ELTYPE[SIZE] (or LEN
@@ -12049,8 +12216,13 @@ warn_deprecated_use (tree node, tree attr)
 	{
 	  tree decl = TYPE_STUB_DECL (node);
 	  if (decl)
-	    attr = lookup_attribute ("deprecated",
-				     TYPE_ATTRIBUTES (TREE_TYPE (decl)));
+	    attr = TYPE_ATTRIBUTES (TREE_TYPE (decl));
+	  else if ((decl = TYPE_STUB_DECL (TYPE_MAIN_VARIANT (node)))
+		   != NULL_TREE)
+	    {
+	      node = TREE_TYPE (decl);
+	      attr = TYPE_ATTRIBUTES (node);
+	    }
 	}
     }
 
@@ -12863,6 +13035,8 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
      to struct types with flexible array members.  */
   if (memsize)
     {
+      if (!tree_fits_poly_int64_p (memsize))
+	return NULL_TREE;
       poly_int64 memsz64 = memsize ? tree_to_poly_int64 (memsize) : 0;
       if (known_lt (baseoff, memsz64))
 	{
@@ -14549,6 +14723,36 @@ get_attr_nonstring_decl (tree expr, tree *ref)
     return decl;
 
   return NULL_TREE;
+}
+
+/* Return length of attribute names string,
+   if arglist chain > 1, -1 otherwise.  */
+
+int
+get_target_clone_attr_len (tree arglist)
+{
+  tree arg;
+  int str_len_sum = 0;
+  int argnum = 0;
+
+  for (arg = arglist; arg; arg = TREE_CHAIN (arg))
+    {
+      const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
+      size_t len = strlen (str);
+      str_len_sum += len + 1;
+      for (const char *p = strchr (str, ','); p; p = strchr (p + 1, ','))
+	argnum++;
+      argnum++;
+    }
+  if (argnum <= 1)
+    return -1;
+  return str_len_sum;
+}
+
+void
+tree_cc_finalize (void)
+{
+  clear_nonstandard_integer_type_cache ();
 }
 
 #if CHECKING_P

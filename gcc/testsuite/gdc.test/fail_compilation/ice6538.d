@@ -27,4 +27,3 @@ void test9361b()
     auto d = new D();
     d.foo();
 }
-

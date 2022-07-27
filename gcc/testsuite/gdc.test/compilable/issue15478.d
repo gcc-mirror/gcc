@@ -52,4 +52,3 @@ void test15478_3()
     enum foo_bug = foo.bug;
     Foo15478!int[foo_bug] baz; // OK
 }
-

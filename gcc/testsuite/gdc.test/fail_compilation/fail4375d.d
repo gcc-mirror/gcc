@@ -14,7 +14,6 @@ void main() {
 label2:
         if (true)
             assert(15);
-    else 
+    else
         assert(16);
 }
-

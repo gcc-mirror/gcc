@@ -113,6 +113,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "diagnostic.h"
 #include "fold-const.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"
@@ -306,17 +307,18 @@ public:
 class ipcp_bits_lattice
 {
 public:
-  bool bottom_p () { return m_lattice_val == IPA_BITS_VARYING; }
-  bool top_p () { return m_lattice_val == IPA_BITS_UNDEFINED; }
-  bool constant_p () { return m_lattice_val == IPA_BITS_CONSTANT; }
+  bool bottom_p () const { return m_lattice_val == IPA_BITS_VARYING; }
+  bool top_p () const { return m_lattice_val == IPA_BITS_UNDEFINED; }
+  bool constant_p () const { return m_lattice_val == IPA_BITS_CONSTANT; }
   bool set_to_bottom ();
   bool set_to_constant (widest_int, widest_int);
+  bool known_nonzero_p () const;
 
-  widest_int get_value () { return m_value; }
-  widest_int get_mask () { return m_mask; }
+  widest_int get_value () const { return m_value; }
+  widest_int get_mask () const { return m_mask; }
 
   bool meet_with (ipcp_bits_lattice& other, unsigned, signop,
-		  enum tree_code, tree);
+		  enum tree_code, tree, bool);
 
   bool meet_with (widest_int, widest_int, unsigned);
 
@@ -330,7 +332,7 @@ private:
      value is known to be constant.  */
   widest_int m_value, m_mask;
 
-  bool meet_with_1 (widest_int, widest_int, unsigned);
+  bool meet_with_1 (widest_int, widest_int, unsigned, bool);
   void get_value_and_mask (tree, widest_int *, widest_int *);
 };
 
@@ -1017,8 +1019,8 @@ ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
     return set_to_bottom ();
 
   value_range save (m_vr);
-  m_vr.union_ (other_vr);
-  return !m_vr.equal_p (save);
+  m_vr.union_ (*other_vr);
+  return m_vr != save;
 }
 
 /* Return true if value range information in the lattice is yet unknown.  */
@@ -1081,6 +1083,16 @@ ipcp_bits_lattice::set_to_constant (widest_int value, widest_int mask)
   return true;
 }
 
+/* Return true if any of the known bits are non-zero.  */
+
+bool
+ipcp_bits_lattice::known_nonzero_p () const
+{
+  if (!constant_p ())
+    return false;
+  return wi::ne_p (wi::bit_and (wi::bit_not (m_mask), m_value), 0);
+}
+
 /* Convert operand to value, mask form.  */
 
 void
@@ -1103,16 +1115,19 @@ ipcp_bits_lattice::get_value_and_mask (tree operand, widest_int *valuep, widest_
 /* Meet operation, similar to ccp_lattice_meet, we xor values
    if this->value, value have different values at same bit positions, we want
    to drop that bit to varying. Return true if mask is changed.
-   This function assumes that the lattice value is in CONSTANT state  */
+   This function assumes that the lattice value is in CONSTANT state.  If
+   DROP_ALL_ONES, mask out any known bits with value one afterwards.  */
 
 bool
 ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
-				unsigned precision)
+				unsigned precision, bool drop_all_ones)
 {
   gcc_assert (constant_p ());
 
   widest_int old_mask = m_mask;
   m_mask = (m_mask | mask) | (m_value ^ value);
+  if (drop_all_ones)
+    m_mask |= m_value;
   m_value &= ~m_mask;
 
   if (wi::sext (m_mask, precision) == -1)
@@ -1138,16 +1153,18 @@ ipcp_bits_lattice::meet_with (widest_int value, widest_int mask,
       return set_to_constant (value, mask);
     }
 
-  return meet_with_1 (value, mask, precision);
+  return meet_with_1 (value, mask, precision, false);
 }
 
 /* Meet bits lattice with the result of bit_value_binop (other, operand)
    if code is binary operation or bit_value_unop (other) if code is unary op.
-   In the case when code is nop_expr, no adjustment is required. */
+   In the case when code is nop_expr, no adjustment is required.  If
+   DROP_ALL_ONES, mask out any known bits with value one afterwards.  */
 
 bool
 ipcp_bits_lattice::meet_with (ipcp_bits_lattice& other, unsigned precision,
-			      signop sgn, enum tree_code code, tree operand)
+			      signop sgn, enum tree_code code, tree operand,
+			      bool drop_all_ones)
 {
   if (other.bottom_p ())
     return set_to_bottom ();
@@ -1186,12 +1203,18 @@ ipcp_bits_lattice::meet_with (ipcp_bits_lattice& other, unsigned precision,
 
   if (top_p ())
     {
+      if (drop_all_ones)
+	{
+	  adjusted_mask |= adjusted_value;
+	  adjusted_value &= ~adjusted_mask;
+	}
       if (wi::sext (adjusted_mask, precision) == -1)
 	return set_to_bottom ();
       return set_to_constant (adjusted_value, adjusted_mask);
     }
   else
-    return meet_with_1 (adjusted_value, adjusted_mask, precision);
+    return meet_with_1 (adjusted_value, adjusted_mask, precision,
+			drop_all_ones);
 }
 
 /* Mark bot aggregate and scalar lattices as containing an unknown variable,
@@ -1477,6 +1500,9 @@ ipa_get_jf_ancestor_result (struct ipa_jump_func *jfunc, tree input)
 		     fold_build2 (MEM_REF, TREE_TYPE (TREE_TYPE (input)), input,
 				  build_int_cst (ptr_type_node, byte_offset)));
     }
+  else if (ipa_get_jf_ancestor_keep_null (jfunc)
+	   && zerop (input))
+    return input;
   else
     return NULL_TREE;
 }
@@ -2373,6 +2399,7 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
       tree operand = NULL_TREE;
       enum tree_code code;
       unsigned src_idx;
+      bool keep_null = false;
 
       if (jfunc->type == IPA_JF_PASS_THROUGH)
 	{
@@ -2385,7 +2412,9 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 	{
 	  code = POINTER_PLUS_EXPR;
 	  src_idx = ipa_get_jf_ancestor_formal_id (jfunc);
-	  unsigned HOST_WIDE_INT offset = ipa_get_jf_ancestor_offset (jfunc) / BITS_PER_UNIT;
+	  unsigned HOST_WIDE_INT offset
+	    = ipa_get_jf_ancestor_offset (jfunc) / BITS_PER_UNIT;
+	  keep_null = (ipa_get_jf_ancestor_keep_null (jfunc) || !offset);
 	  operand = build_int_cstu (size_type_node, offset);
 	}
 
@@ -2402,18 +2431,17 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 	 result of x & 0xff == 0xff, which gets computed during ccp1 pass
 	 and we store it in jump function during analysis stage.  */
 
-      if (src_lats->bits_lattice.bottom_p ()
-	  && jfunc->bits)
-	return dest_lattice->meet_with (jfunc->bits->value, jfunc->bits->mask,
-					precision);
-      else
-	return dest_lattice->meet_with (src_lats->bits_lattice, precision, sgn,
-					code, operand);
+      if (!src_lats->bits_lattice.bottom_p ())
+	{
+	  bool drop_all_ones
+	    = keep_null && !src_lats->bits_lattice.known_nonzero_p ();
+
+	  return dest_lattice->meet_with (src_lats->bits_lattice, precision,
+					  sgn, code, operand, drop_all_ones);
+	}
     }
 
-  else if (jfunc->type == IPA_JF_ANCESTOR)
-    return dest_lattice->set_to_bottom ();
-  else if (jfunc->bits)
+  if (jfunc->bits)
     return dest_lattice->meet_with (jfunc->bits->value, jfunc->bits->mask,
 				    precision);
   else
@@ -4162,9 +4190,9 @@ public:
       m_initialize_when_cloning = true;
     }
 
-  virtual void duplicate (cgraph_edge *src_edge, cgraph_edge *dst_edge,
-			  edge_clone_summary *src_data,
-			  edge_clone_summary *dst_data);
+  void duplicate (cgraph_edge *src_edge, cgraph_edge *dst_edge,
+		  edge_clone_summary *src_data,
+		  edge_clone_summary *dst_data) final override;
 };
 
 /* Edge duplication hook.  */
@@ -4624,8 +4652,7 @@ update_counts_for_self_gen_clones (cgraph_node *orig_node,
     {
       profile_count orig_count = n->count;
       profile_count new_count
-	= (redist_sum.apply_scale (1, self_gen_clones.length ())
-	   + other_edges_count[i]);
+	= (redist_sum / self_gen_clones.length () + other_edges_count[i]);
       new_count = lenient_count_portion_handling (new_count, orig_node);
       n->count = new_count;
       profile_count::adjust_for_ipa_scaling (&new_count, &orig_count);
@@ -4657,7 +4684,7 @@ update_counts_for_self_gen_clones (cgraph_node *orig_node,
 	    for (cgraph_edge *e = cs; e; e = get_next_cgraph_edge_clone (e))
 	      if (e->callee->ultimate_alias_target () == orig_node
 		  && processed_edges.contains (e))
-		e->count = e->count.apply_scale (1, den);
+		e->count /= den;
 	}
     }
 
@@ -4685,8 +4712,7 @@ update_counts_for_self_gen_clones (cgraph_node *orig_node,
 	      && desc.unproc_orig_rec_edges > 0)
 	    {
 	      desc.count = n->count - desc.count;
-	      desc.count
-		= desc.count.apply_scale (1, desc.unproc_orig_rec_edges);
+	      desc.count = desc.count /= desc.unproc_orig_rec_edges;
 	      adjust_clone_incoming_counts (n, &desc);
 	    }
 	  else if (dump_file)
@@ -5099,6 +5125,16 @@ create_specialized_node (struct cgraph_node *node,
   else
     new_adjustments = NULL;
 
+  auto_vec<cgraph_edge *, 2> self_recursive_calls;
+  for (i = callers.length () - 1; i >= 0; i--)
+    {
+      cgraph_edge *cs = callers[i];
+      if (cs->caller == node)
+	{
+	  self_recursive_calls.safe_push (cs);
+	  callers.unordered_remove (i);
+	}
+    }
   replace_trees = cinfo ? vec_safe_copy (cinfo->tree_map) : NULL;
   for (i = 0; i < count; i++)
     {
@@ -5128,16 +5164,6 @@ create_specialized_node (struct cgraph_node *node,
       ipa_replace_map *replace_map = get_replacement_map (info, t, i, load_ref);
       if (replace_map)
 	vec_safe_push (replace_trees, replace_map);
-    }
-  auto_vec<cgraph_edge *, 2> self_recursive_calls;
-  for (i = callers.length () - 1; i >= 0; i--)
-    {
-      cgraph_edge *cs = callers[i];
-      if (cs->caller == node)
-	{
-	  self_recursive_calls.safe_push (cs);
-	  callers.unordered_remove (i);
-	}
     }
 
   unsigned &suffix_counter = clone_num_suffixes->get_or_insert (
@@ -6056,7 +6082,7 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
       if (node->count.ipa ().nonzero_p ())
 	{
 	  unsigned dem = self_gen_clones->length () + 1;
-	  rec_count_sum = node->count.ipa ().apply_scale (1, dem);
+	  rec_count_sum = node->count.ipa () / dem;
 	}
       else
 	rec_count_sum = profile_count::zero ();
@@ -6154,8 +6180,32 @@ decide_whether_version_node (struct cgraph_node *node)
 	{
 	  ipcp_value<tree> *val;
 	  for (val = lat->values; val; val = val->next)
-	    ret |= decide_about_value (node, i, -1, val, &avals,
-				       &self_gen_clones);
+	    {
+	      /* If some values generated for self-recursive calls with
+		 arithmetic jump functions fall outside of the known
+		 value_range for the parameter, we can skip them.  VR interface
+		 supports this only for integers now.  */
+	      if (TREE_CODE (val->value) == INTEGER_CST
+		  && !plats->m_value_range.bottom_p ()
+		  && !plats->m_value_range.m_vr.contains_p (val->value))
+		{
+		  /* This can happen also if a constant present in the source
+		     code falls outside of the range of parameter's type, so we
+		     cannot assert.  */
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, " - skipping%s value ",
+			       val->self_recursion_generated_p ()
+			       ? " self_recursion_generated" : "");
+		      print_ipcp_constant_value (dump_file, val->value);
+		      fprintf (dump_file, " because it is outside known "
+			       "value range.\n");
+		    }
+		  continue;
+		}
+	      ret |= decide_about_value (node, i, -1, val, &avals,
+					 &self_gen_clones);
+	    }
 	}
 
       if (!plats->aggs_bottom)
@@ -6607,14 +6657,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       /* FIXME: We should remove the optimize check after we ensure we never run
 	 IPA passes when not optimizing.  */
       return (flag_ipa_cp && optimize) || in_lto_p;
     }
 
-  virtual unsigned int execute (function *) { return ipcp_driver (); }
+  unsigned int execute (function *) final override { return ipcp_driver (); }
 
 }; // class pass_ipa_cp
 

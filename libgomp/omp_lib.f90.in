@@ -168,6 +168,8 @@
                  parameter :: omp_high_bw_mem_space = 3
         integer (omp_memspace_handle_kind), &
                  parameter :: omp_low_lat_mem_space = 4
+        integer, parameter :: omp_initial_device = -1
+        integer, parameter :: omp_invalid_device = -4
 
         type omp_alloctrait
           integer (kind=omp_alloctrait_key_kind) key
@@ -799,6 +801,22 @@
         end interface
 
         interface
+          function omp_target_memcpy_async (dst, src, length, dst_offset, &
+                                            src_offset, dst_device_num, &
+                                            src_device_num, depobj_count, &
+                                            depobj_list) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_int, c_size_t
+            import :: omp_depend_kind
+            integer(c_int) :: omp_target_memcpy_async
+            type(c_ptr), value :: dst, src
+            integer(c_size_t), value :: length, dst_offset, src_offset
+            integer(c_int), value :: dst_device_num, src_device_num, &
+                                     depobj_count
+            integer(omp_depend_kind), optional :: depobj_list(*)
+          end function omp_target_memcpy_async
+        end interface
+
+        interface
           function omp_target_memcpy_rect (dst,src,element_size, num_dims, &
                                            volume, dst_offsets, src_offsets, &
                                            dst_dimensions, src_dimensions, &
@@ -813,6 +831,30 @@
                                              src_offsets(*), dst_dimensions(*), &
                                              src_dimensions(*)
           end function omp_target_memcpy_rect
+        end interface
+
+        interface
+          function omp_target_memcpy_rect_async (dst,src,element_size,     &
+                                                 num_dims, volume,         &
+                                                 dst_offsets, src_offsets, &
+                                                 dst_dimensions,           &
+                                                 src_dimensions,           &
+                                                 dst_device_num,           &
+                                                 src_device_num,           &
+                                                 depobj_count,             &
+                                                 depobj_list) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_int, c_size_t
+            import :: omp_depend_kind
+            integer(c_int) :: omp_target_memcpy_rect_async
+            type(c_ptr), value :: dst, src
+            integer(c_size_t), value :: element_size
+            integer(c_int), value :: num_dims, dst_device_num, src_device_num, &
+                                     depobj_count
+            integer(c_size_t), intent(in) :: volume(*), dst_offsets(*),  &
+                                             src_offsets(*), dst_dimensions(*), &
+                                             src_dimensions(*)
+            integer(omp_depend_kind), optional :: depobj_list(*)
+          end function omp_target_memcpy_rect_async
         end interface
 
         interface
@@ -833,6 +875,25 @@
             type(c_ptr), value :: ptr
             integer(c_int), value :: device_num
           end function omp_target_disassociate_ptr
+        end interface
+
+        interface
+          function omp_get_mapped_ptr (ptr, device_num) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_int
+            type(c_ptr) :: omp_get_mapped_ptr
+            type(c_ptr), value :: ptr
+            integer(c_int), value :: device_num
+          end function omp_get_mapped_ptr
+        end interface
+
+        interface
+          function omp_target_is_accessible (ptr, size, device_num) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t, c_int
+            integer(c_int) :: omp_target_is_accessible
+            type(c_ptr), value :: ptr
+            integer(c_size_t), value :: size
+            integer(c_int), value :: device_num
+          end function omp_target_is_accessible
         end interface
 
 #if _OPENMP >= 201811

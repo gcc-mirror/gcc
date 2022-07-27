@@ -7,7 +7,7 @@ fail_compilation/fail10964.d(30): Error: function `fail10964.S.__postblit` is no
 fail_compilation/fail10964.d(33): Error: function `fail10964.S.__postblit` is not `nothrow`
 fail_compilation/fail10964.d(34): Error: function `fail10964.S.__postblit` is not `nothrow`
 fail_compilation/fail10964.d(35): Error: function `fail10964.S.__postblit` is not `nothrow`
-fail_compilation/fail10964.d(22): Error: `nothrow` function `fail10964.foo` may throw
+fail_compilation/fail10964.d(22): Error: function `fail10964.foo` may throw but is marked as `nothrow`
 ---
 */
 

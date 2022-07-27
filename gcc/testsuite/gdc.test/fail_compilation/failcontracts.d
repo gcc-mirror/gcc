@@ -21,4 +21,3 @@ void test()
 
     enum : int (int function() bode T);
 }
-

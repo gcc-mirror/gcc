@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 // The general range_query object provided in value-query.h provides
 // access to an oracle, if one is available, via the oracle() method.
 // Thre are also a couple of access routines provided, which even if there is
-// no oracle, will return the default VREL_NONE no relation.
+// no oracle, will return the default VREL_VARYING no relation.
 //
 // Typically, when a ranger object is active, there will be an oracle, and
 // any information available can be directly queried.  Ranger also sets and
@@ -43,14 +43,14 @@ along with GCC; see the file COPYING3.  If not see
 // block, or on an edge, the possible return values are:
 //
 //  EQ_EXPR, NE_EXPR, LT_EXPR, LE_EXPR, GT_EXPR, and GE_EXPR mean the same.
-//  VREL_NONE : No relation between the 2 names.
-//  VREL_EMPTY : Impossible relation (ie, A < B && A > B produces VREL_EMPTY.
+//  VREL_VARYING : No relation between the 2 names.
+//  VREL_UNDEFINED : Impossible relation (ie, A < B && A > B)
 //
 // The oracle maintains EQ_EXPR relations with equivalency sets, so if a
 // relation comes back EQ_EXPR, it is also possible to query the set of
 // equivlaencies.  These are basically bitmaps over ssa_names.
 //
-// relations are maintained via the dominace trees, are are optimized assuming
+// Relations are maintained via the dominace trees and are optimized assuming
 // they are registered in dominance order.   When a new relation is added, it
 // is intersected with whatever existing relation exists in the dominance tree
 // and registered at the specified block.
@@ -58,13 +58,20 @@ along with GCC; see the file COPYING3.  If not see
 
 // Rather than introduce a new enumerated type for relations, we can use the
 // existing tree_codes for relations, plus add a couple of #defines for
-// the other cases.  These codes are arranged such that VREL_NONE is the first
-// code, and all the rest are contiguous.
+// the other cases.  These codes are arranged such that VREL_VARYING is the
+// first code, and all the rest are contiguous.
 
-typedef enum tree_code relation_kind;
-
-#define VREL_NONE		TRUTH_NOT_EXPR
-#define VREL_EMPTY		LTGT_EXPR
+typedef enum relation_kind_t
+{
+  VREL_VARYING = 0,	// No known relation,  AKA varying.
+  VREL_UNDEFINED,	// Impossible relation, ie (r1 < r2) && (r2 > r1)
+  VREL_LT,		// r1 < r2
+  VREL_LE,		// r1 <= r2
+  VREL_GT,		// r1 > r2
+  VREL_GE,		// r1 >= r2
+  VREL_EQ,		// r1 == r2
+  VREL_NE		// r1 != r2
+} relation_kind;
 
 // General relation kind transformations.
 relation_kind relation_union (relation_kind r1, relation_kind r2);
@@ -72,7 +79,6 @@ relation_kind relation_intersect (relation_kind r1, relation_kind r2);
 relation_kind relation_negate (relation_kind r);
 relation_kind relation_swap (relation_kind r);
 void print_relation (FILE *f, relation_kind rel);
-
 
 class relation_oracle
 {
@@ -89,15 +95,19 @@ public:
   virtual void register_relation (basic_block, relation_kind, tree, tree) = 0;
   // Query for a relation between two ssa names in a basic block.
   virtual relation_kind query_relation (basic_block, tree, tree) = 0;
-  // Query for a relation between two equivalency stes in a basic block.
-  virtual relation_kind query_relation (basic_block, const_bitmap,
-					const_bitmap) = 0;
+
+  relation_kind validate_relation (relation_kind, tree, tree);
+  relation_kind validate_relation (relation_kind, vrange &, vrange &);
 
   virtual void dump (FILE *, basic_block) const = 0;
   virtual void dump (FILE *) const = 0;
   void debug () const;
 protected:
   void valid_equivs (bitmap b, const_bitmap equivs, basic_block bb);
+  // Query for a relation between two equivalency sets in a basic block.
+  virtual relation_kind query_relation (basic_block, const_bitmap,
+					const_bitmap) = 0;
+  friend class path_oracle;
 };
 
 // This class represents an equivalency set, and contains a link to the next
@@ -124,14 +134,15 @@ public:
   equiv_oracle ();
   ~equiv_oracle ();
 
-  const_bitmap equiv_set (tree ssa, basic_block bb);
+  const_bitmap equiv_set (tree ssa, basic_block bb) final override;
   void register_relation (basic_block bb, relation_kind k, tree ssa1,
-			  tree ssa2);
+			  tree ssa2) override;
 
-  relation_kind query_relation (basic_block, tree, tree);
-  relation_kind query_relation (basic_block, const_bitmap, const_bitmap);
-  void dump (FILE *f, basic_block bb) const;
-  void dump (FILE *f) const;
+  relation_kind query_relation (basic_block, tree, tree) override;
+  relation_kind query_relation (basic_block, const_bitmap, const_bitmap)
+    override;
+  void dump (FILE *f, basic_block bb) const override;
+  void dump (FILE *f) const override;
 
 protected:
   bitmap_obstack m_bitmaps;
@@ -179,14 +190,16 @@ public:
   dom_oracle ();
   ~dom_oracle ();
 
-  void register_relation (basic_block bb, relation_kind k, tree op1, tree op2);
+  void register_relation (basic_block bb, relation_kind k, tree op1, tree op2)
+    final override;
 
-  relation_kind query_relation (basic_block bb, tree ssa1, tree ssa2);
+  relation_kind query_relation (basic_block bb, tree ssa1, tree ssa2)
+    final override;
   relation_kind query_relation (basic_block bb, const_bitmap b1,
-				   const_bitmap b2);
+				const_bitmap b2) final override;
 
-  void dump (FILE *f, basic_block bb) const;
-  void dump (FILE *f) const;
+  void dump (FILE *f, basic_block bb) const final override;
+  void dump (FILE *f) const final override;
 private:
   bitmap m_tmp, m_tmp2;
   bitmap m_relation_set;  // Index by ssa-name. True if a relation exists
@@ -223,15 +236,16 @@ class path_oracle : public relation_oracle
 public:
   path_oracle (relation_oracle *oracle = NULL);
   ~path_oracle ();
-  const_bitmap equiv_set (tree, basic_block);
-  void register_relation (basic_block, relation_kind, tree, tree);
+  const_bitmap equiv_set (tree, basic_block) final override;
+  void register_relation (basic_block, relation_kind, tree, tree) final override;
   void killing_def (tree);
-  relation_kind query_relation (basic_block, tree, tree);
-  relation_kind query_relation (basic_block, const_bitmap, const_bitmap);
+  relation_kind query_relation (basic_block, tree, tree) final override;
+  relation_kind query_relation (basic_block, const_bitmap, const_bitmap)
+    final override;
   void reset_path ();
   void set_root_oracle (relation_oracle *oracle) { m_root = oracle; }
-  void dump (FILE *, basic_block) const;
-  void dump (FILE *) const;
+  void dump (FILE *, basic_block) const final override;
+  void dump (FILE *) const final override;
 private:
   void register_equiv (basic_block bb, tree ssa1, tree ssa2);
   equiv_chain m_equiv;

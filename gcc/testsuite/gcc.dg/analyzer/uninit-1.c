@@ -127,3 +127,22 @@ size_t test_builtin_strlen (void)
   const char *ptr; /* { dg-message "region created on stack here" } */
   return __builtin_strlen (ptr); /* { dg-warning "use of uninitialized value 'ptr'" } */
 }
+
+void test_calling_uninit_fn_ptr_1 (void)
+{
+  void (*fn_ptr) (void); /* { dg-message "region created on stack here" } */
+  fn_ptr (); /* { dg-warning "use of uninitialized value 'fn_ptr'" } */
+}
+
+int test_calling_uninit_fn_ptr_2 (void)
+{
+  int (*fn_ptr) (void); /* { dg-message "region created on stack here" } */
+  return fn_ptr (); /* { dg-warning "use of uninitialized value 'fn_ptr'" } */
+}
+
+extern void called_by_uninit_arg (int);
+void test_passing_uninit_arg (void)
+{
+  int i; /* { dg-message "region created on stack here" } */
+  called_by_uninit_arg (i); /* { dg-warning "use of uninitialized value 'i'" } */
+}

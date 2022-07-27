@@ -16,4 +16,3 @@ alias T1 = Type!(__traits(toType));
 alias T2 = Type!(__traits(toType, int));
 alias T3 = Type!(__traits(toType, 1));
 alias T4 = Type!(__traits(toType, "hello betty"));
-

@@ -207,7 +207,7 @@ string::print (pretty_printer *pp) const
 	  pp_string (pp, "\\\"");
 	  break;
 	case '\\':
-	  pp_string (pp, "\\n");
+	  pp_string (pp, "\\\\");
 	  break;
 	case '\b':
 	  pp_string (pp, "\\b");

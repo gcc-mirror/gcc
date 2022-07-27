@@ -1339,7 +1339,7 @@ pure @safe:
         TypeFunction:
             CallConvention FuncAttrs Arguments ArgClose Type
     */
-    char[] parseTypeFunction( char[] name = null, IsDelegate isdg = IsDelegate.no ) return
+    char[] parseTypeFunction( char[] name = null, IsDelegate isdg = IsDelegate.no ) return scope
     {
         debug(trace) printf( "parseTypeFunction+\n" );
         debug(trace) scope(success) printf( "parseTypeFunction-\n" );

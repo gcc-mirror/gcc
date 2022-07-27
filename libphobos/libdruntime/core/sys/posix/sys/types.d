@@ -322,7 +322,7 @@ else version (Darwin)
     alias uint   fsfilcnt_t;
     alias c_long clock_t;
     alias uint   id_t;
-    // key_t
+    alias int    key_t;
     alias int    suseconds_t;
     alias uint   useconds_t;
 }

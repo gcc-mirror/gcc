@@ -578,7 +578,7 @@ extern(C++) private final class Supported : Objc
 
     override void checkLinkage(FuncDeclaration fd)
     {
-        if (fd.linkage != LINK.objc && fd.objc.selector)
+        if (fd._linkage != LINK.objc && fd.objc.selector)
             fd.error("must have Objective-C linkage to attach a selector");
     }
 
@@ -640,11 +640,11 @@ extern(C++) private final class Supported : Objc
         if (!fd.objc.isOptional)
             return;
 
-        if (fd.linkage != LINK.objc)
+        if (fd._linkage != LINK.objc)
         {
             fd.error("only functions with Objective-C linkage can be declared as optional");
 
-            const linkage = linkageToString(fd.linkage);
+            const linkage = linkageToString(fd._linkage);
 
             errorSupplemental(fd.loc, "function is declared with %.*s linkage",
                 cast(uint) linkage.length, linkage.ptr);

@@ -33,7 +33,19 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Interfaces.C.Strings is
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. These preconditions
+--  protect from Dereference_Error and Update_Error, but not from
+--  Storage_Error.
+
+pragma Assertion_Policy (Pre => Ignore);
+
+package Interfaces.C.Strings with
+  SPARK_Mode     => On,
+  Abstract_State => (C_Memory),
+  Initializes    => (C_Memory)
+is
    pragma Preelaborate;
 
    type char_array_access is access all char_array;
@@ -53,47 +65,85 @@ package Interfaces.C.Strings is
 
    function To_Chars_Ptr
      (Item      : char_array_access;
-      Nul_Check : Boolean := False) return chars_ptr;
+      Nul_Check : Boolean := False) return chars_ptr
+   with
+     SPARK_Mode => Off;
 
-   function New_Char_Array (Chars : char_array) return chars_ptr;
+   function New_Char_Array (Chars : char_array) return chars_ptr with
+     Volatile_Function,
+     Post   => New_Char_Array'Result /= Null_Ptr,
+     Global => (Input => C_Memory);
 
-   function New_String (Str : String) return chars_ptr;
+   function New_String (Str : String) return chars_ptr with
+     Volatile_Function,
+     Post   => New_String'Result /= Null_Ptr,
+     Global => (Input => C_Memory);
 
-   procedure Free (Item : in out chars_ptr);
+   procedure Free (Item : in out chars_ptr) with
+     SPARK_Mode => Off;
    --  When deallocation is prohibited (eg: cert runtimes) this routine
    --  will raise Program_Error
 
    Dereference_Error : exception;
 
-   function Value (Item : chars_ptr) return char_array;
+   function Value (Item : chars_ptr) return char_array with
+     Pre    => Item /= Null_Ptr,
+     Global => (Input => C_Memory);
 
    function Value
      (Item   : chars_ptr;
-      Length : size_t) return char_array;
+      Length : size_t) return char_array
+   with
+     Pre    => Item /= Null_Ptr,
+     Global => (Input => C_Memory);
 
-   function Value (Item : chars_ptr) return String;
+   function Value (Item : chars_ptr) return String with
+     Pre    => Item /= Null_Ptr,
+     Global => (Input => C_Memory);
 
    function Value
      (Item   : chars_ptr;
-      Length : size_t) return String;
+      Length : size_t) return String
+   with
+     Pre    => Item /= Null_Ptr,
+     Global => (Input => C_Memory);
 
-   function Strlen (Item : chars_ptr) return size_t;
+   function Strlen (Item : chars_ptr) return size_t with
+     Pre    => Item /= Null_Ptr,
+     Global => (Input => C_Memory);
 
    procedure Update
      (Item   : chars_ptr;
       Offset : size_t;
       Chars  : char_array;
-      Check  : Boolean := True);
+      Check  : Boolean := True)
+   with
+     Pre    =>
+       Item /= Null_Ptr
+         and then
+      (if Check then
+         Strlen (Item) <= size_t'Last - Offset
+           and then Strlen (Item) + Offset <= Chars'Length),
+     Global => (In_Out => C_Memory);
 
    procedure Update
      (Item   : chars_ptr;
       Offset : size_t;
       Str    : String;
-      Check  : Boolean := True);
+      Check  : Boolean := True)
+   with
+     Pre    =>
+       Item /= Null_Ptr
+         and then
+      (if Check then
+         Strlen (Item) <= size_t'Last - Offset
+           and then Strlen (Item) + Offset <= Str'Length),
+     Global => (In_Out => C_Memory);
 
    Update_Error : exception;
 
 private
+   pragma SPARK_Mode (Off);
    type chars_ptr is access all Character;
    for chars_ptr'Size use System.Parameters.ptr_bits;
 

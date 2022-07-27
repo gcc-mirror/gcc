@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
+// { dg-require-effective-target rtti }
 
 // Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //

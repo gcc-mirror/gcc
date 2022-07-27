@@ -138,7 +138,7 @@ To see this output, invoke the compiler as follows:
 
   ::
 
-     $  gcc -c -S -fomit-frame-pointer -gnatp nothing.adb
+     $ gcc -c -S -fomit-frame-pointer -gnatp nothing.adb
 
 where the options are:
 

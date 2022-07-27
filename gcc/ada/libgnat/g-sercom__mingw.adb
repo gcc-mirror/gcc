@@ -70,6 +70,7 @@ package body GNAT.Serial_Communications is
    begin
       if Port.H /= -1 then
          Success := CloseHandle (HANDLE (Port.H));
+         Port.H := -1;
 
          if Success = Win32.FALSE then
             Raise_Error ("error closing the port");

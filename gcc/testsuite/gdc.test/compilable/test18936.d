@@ -28,4 +28,3 @@ struct S
         return c;
     }
 }
-

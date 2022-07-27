@@ -14,4 +14,3 @@ void main() @safe {
 
     arr1[] = arr2[];  // overwrites pointers with arbitrary ints
 }
-

@@ -242,22 +242,6 @@ void test7435() {
 
 /********************************************/
 
-char[] dup12()(char[] a) // although inferred pure, don't infer a is 'return'
-{
-    char[] res;
-    foreach (ref e; a)
-    {}
-    return res;
-}
-
-char[] foo12()
-{
-    char[10] buf;
-    return dup12(buf);
-}
-
-/********************************************/
-
 void test7049() @safe
 {
     int count = 0;

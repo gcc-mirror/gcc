@@ -230,7 +230,7 @@ func StartTrace() error {
 			gp.traceseq = 0
 			gp.tracelastp = getg().m.p
 			// +PCQuantum because traceFrameForPC expects return PCs and subtracts PCQuantum.
-			id := trace.stackTab.put([]location{location{pc: gp.startpc + sys.PCQuantum}})
+			id := trace.stackTab.put([]location{location{pc: startPCforTrace(gp.startpc) + sys.PCQuantum}})
 			traceEvent(traceEvGoCreate, -1, uint64(gp.goid), uint64(id), stackID)
 		}
 		if status == _Gwaiting {
@@ -1066,7 +1066,7 @@ func traceGoCreate(newg *g, pc uintptr) {
 	newg.traceseq = 0
 	newg.tracelastp = getg().m.p
 	// +PCQuantum because traceFrameForPC expects return PCs and subtracts PCQuantum.
-	id := trace.stackTab.put([]location{location{pc: pc + sys.PCQuantum}})
+	id := trace.stackTab.put([]location{location{pc: startPCforTrace(pc) + sys.PCQuantum}})
 	traceEvent(traceEvGoCreate, 2, uint64(newg.goid), uint64(id))
 }
 
@@ -1238,4 +1238,10 @@ func trace_userLog(id uint64, category, message string) {
 	buf.pos += copy(buf.arr[buf.pos:], message[:slen])
 
 	traceReleaseBuffer(pid)
+}
+
+// the start PC of a goroutine for tracing purposes. If pc is a wrapper,
+// it returns the PC of the wrapped function. Otherwise it returns pc.
+func startPCforTrace(pc uintptr) uintptr {
+	return pc
 }

@@ -141,13 +141,13 @@ interface GC
      * Retrieve statistics about garbage collection.
      * Useful for debugging and tuning.
      */
-    core.memory.GC.Stats stats() nothrow;
+    core.memory.GC.Stats stats() @safe nothrow @nogc;
 
     /**
      * Retrieve profile statistics about garbage collection.
      * Useful for debugging and tuning.
      */
-    core.memory.GC.ProfileStats profileStats() nothrow @safe;
+    core.memory.GC.ProfileStats profileStats() @safe nothrow @nogc;
 
     /**
      * add p to list of roots

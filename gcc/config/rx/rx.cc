@@ -2477,7 +2477,7 @@ rx_expand_builtin_mvtc (tree exp)
 
   if (INTVAL (arg1) == 1)
     {
-      warning (0, "invalid control register for mvtc: %d - using 'psw'",
+      warning (0, "invalid control register %d for mvtc; using %<psw%>",
 	       (int) INTVAL (arg1));
       arg1 = const0_rtx;
     }

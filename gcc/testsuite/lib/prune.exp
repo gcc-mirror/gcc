@@ -82,6 +82,11 @@ proc prune_gcc_output { text } {
     regsub -all "(^|\n)\[^\n\]*file path prefix \[^\n\]* never used" $text "" text
     regsub -all "(^|\n)\[^\n\]*linker input file unused since linking not done" $text "" text
 
+    # Ideally the tests would indicate that executable stacks were needed
+    # to the linker.  But the option for that varies and may not even exist
+    # on some targets.  So we're stuck pruning the warning.
+    regsub -all "(^|\n)(\[^\n\]*: warning:\[^\n\]*requires executable stack\[^\n\]*\n?)+" $text "\\1" text
+
     # Ignore harmless warnings from Xcode 3.2.x.
     regsub -all "(^|\n)\[^\n\]*ld: warning: can't add line info to anonymous symbol\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*warning: DWARFDebugInfoEntry::AppendDependants\[^\n\]*AT_\[^\n\]*FORM_ref4\[^\n\]*" $text "" text

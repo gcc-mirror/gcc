@@ -1504,7 +1504,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
      argument of intrinsic inquiry functions.  */
   if (pointer->rank != -1 && !rank_check (target, 0, pointer->rank))
     t = false;
-  if (target->rank > 0)
+  if (target->rank > 0 && target->ref)
     {
       for (i = 0; i < target->rank; i++)
 	if (target->ref->u.ar.dimen_type[i] == DIMEN_VECTOR)
@@ -6352,6 +6352,8 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
 
   if (!same_type_check (vector, 0, field, 2))
     return false;
+
+  gfc_simplify_expr (mask, 0);
 
   if (mask->expr_type == EXPR_ARRAY
       && gfc_array_size (vector, &vector_size))

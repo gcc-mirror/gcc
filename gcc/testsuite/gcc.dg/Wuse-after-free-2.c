@@ -1,6 +1,6 @@
 /* PR middle-end/104232 - spurious -Wuse-after-free after conditional free
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -fno-tree-loop-distribute-patterns" }  */
 
 void free (void*);
 
@@ -107,6 +107,8 @@ int warn_cond_loop (char *p)
 {
   char *q = p;
 
+  /*  -fno-tree-loop-distribute-patterns ensures this does not get converted
+      into rawmemchr (making q and p unrelated).  */
   while (*q)
     ++q;
 

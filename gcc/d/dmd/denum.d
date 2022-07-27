@@ -54,9 +54,17 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
     Expression maxval;
     Expression minval;
     Expression defaultval;  // default initializer
-    bool isdeprecated;
-    bool added;
-    int inuse;
+
+    // `bool` fields that are compacted into bit fields in a string mixin
+    private extern (D) static struct BitFields
+    {
+        bool isdeprecated;
+        bool added;
+        bool inuse;
+    }
+
+    import dmd.common.bitfields : generateBitFields;
+    mixin(generateBitFields!(BitFields, ubyte));
 
     extern (D) this(const ref Loc loc, Identifier ident, Type memtype)
     {
@@ -96,7 +104,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
 
     override void setScope(Scope* sc)
     {
-        if (semanticRun > PASS.init)
+        if (semanticRun > PASS.initial)
             return;
         ScopeDsymbol.setScope(sc);
     }
@@ -162,6 +170,9 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         //printf("EnumDeclaration::getDefaultValue() %p %s\n", this, toChars());
         if (defaultval)
             return defaultval;
+
+        if (isCsymbol())
+            return memtype.defaultInit(loc, true);
 
         if (_scope)
             dsymbolSemantic(this, _scope);

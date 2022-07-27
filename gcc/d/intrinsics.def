@@ -252,5 +252,28 @@ DEF_D_BUILTIN (INTRINSIC_C_VA_ARG, BUILT_IN_NONE, "va_arg", "core.stdc.stdarg",
 DEF_D_BUILTIN (INTRINSIC_VASTART, BUILT_IN_NONE, "va_start", "core.stdc.stdarg",
 	       "FJ@7va_listK@1TZv")
 
+/* gcc.simd intrinsics.  */
+
+DEF_D_BUILTIN (INTRINSIC_LOADUNALIGNED, BUILT_IN_NONE, "loadUnaligned",
+	       "gcc.simd", "FP@1VZ@1V")
+DEF_D_BUILTIN (INTRINSIC_STOREUNALIGNED, BUILT_IN_NONE, "storeUnaligned",
+	       "gcc.simd", "FP@1V@1VZ@1V")
+DEF_D_BUILTIN (INTRINSIC_SHUFFLE, BUILT_IN_NONE, "shuffle", "gcc.simd",
+	       "F@2V0@2V1@1MZ@2V0")
+DEF_D_BUILTIN (INTRINSIC_SHUFFLEVECTOR, BUILT_IN_NONE, "shufflevector",
+	       "gcc.simd", "F@2V1@2V2@1MZNhH@1M@")
+DEF_D_BUILTIN (INTRINSIC_CONVERTVECTOR, BUILT_IN_NONE, "convertvector",
+	       "gcc.simd", "F@1TZ@1V")
+DEF_D_BUILTIN (INTRINSIC_BLENDVECTOR, BUILT_IN_NONE, "blendvector", "gcc.simd",
+	       "F@2V0@2V1@1MZ@2V0")
+DEF_D_BUILTIN (INTRINSIC_EQUALMASK, BUILT_IN_NONE, "equalMask", "gcc.simd",
+	       "F@1V@1VZ@1V")
+DEF_D_BUILTIN (INTRINSIC_NOTEQUALMASK, BUILT_IN_NONE, "notEqualMask",
+	       "gcc.simd", "F@1V@1VZ@1V")
+DEF_D_BUILTIN (INTRINSIC_GREATERMASK, BUILT_IN_NONE, "greaterMask", "gcc.simd",
+	       "F@1V@1VZ@1V")
+DEF_D_BUILTIN (INTRINSIC_GREATEREQUALMASK, BUILT_IN_NONE,
+	       "greaterOrEqualMask", "gcc.simd", "F@1V@1VZ@1V")
+
 #undef DEF_D_BUILTIN
 #undef DEF_CTFE_BUILTIN

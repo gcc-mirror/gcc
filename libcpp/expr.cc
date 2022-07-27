@@ -1366,6 +1366,10 @@ _cpp_parse_expr (cpp_reader *pfile, bool is_if)
 	    op.op = CPP_UMINUS;
 	  break;
 
+	case CPP_PADDING:
+	  lex_count--;
+	  continue;
+
 	default:
 	  if ((int) op.op <= (int) CPP_EQ || (int) op.op >= (int) CPP_PLUS_EQ)
 	    SYNTAX_ERROR2_AT (op.loc,

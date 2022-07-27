@@ -259,6 +259,18 @@ else version (CRuntime_Musl)
     int   shmdt(const scope void*);
     int   shmget(key_t, size_t, int);
 }
+else version (CRuntime_Bionic)
+{
+    enum SHMLBA = 4096;
+
+    deprecated("Not useful on Android because it's disallowed by SELinux")
+    {
+        void* shmat(int, const scope void*, int);
+        int   shmctl(int, int, shmid_ds*);
+        int   shmdt(const scope void*);
+        int   shmget(key_t, size_t, int);
+    }
+}
 else version (CRuntime_UClibc)
 {
     int   __getpagesize();

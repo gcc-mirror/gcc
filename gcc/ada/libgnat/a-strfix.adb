@@ -628,6 +628,11 @@ package body Ada.Strings.Fixed with SPARK_Mode is
                  (Result (1 .. Integer'Max (0, Low - Source'First))
                   = Source (Source'First .. Low - 1));
                Result (Front_Len + 1 .. Front_Len + By'Length) := By;
+               pragma Assert
+                 (Result
+                    (Integer'Max (0, Low - Source'First) + 1
+                     .. Integer'Max (0, Low - Source'First) + By'Length)
+                  = By);
 
                if High < Source'Last then
                   Result (Front_Len + By'Length + 1 .. Result'Last) :=

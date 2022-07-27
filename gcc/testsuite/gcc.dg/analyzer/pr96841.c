@@ -1,4 +1,4 @@
-/* { dg-additional-options "-Wno-analyzer-too-complex -O1 -Wno-builtin-declaration-mismatch" } */
+/* { dg-additional-options "-O1 -Wno-builtin-declaration-mismatch" } */
 
 int
 l8 (void);

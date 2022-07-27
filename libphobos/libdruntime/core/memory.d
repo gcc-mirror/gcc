@@ -31,14 +31,14 @@
         $(LI Maintain another reference to that same data in another thread that the
         GC does know about.)
         $(LI Disable GC collection cycles while that thread is active with $(LREF disable)/$(LREF enable).)
-        $(LI Register the thread with the GC using $(REF thread_attachThis, core,thread)/$(REF thread_detachThis, core,thread).)
+        $(LI Register the thread with the GC using $(REF thread_attachThis, core,thread,osthread)/$(REF thread_detachThis, core,thread,threadbase).)
         )
    )
    )
  *
  * Notes_to_implementors:
  * $(UL
- * $(LI On POSIX systems, the signals SIGUSR1 and SIGUSR2 are reserved
+ * $(LI On POSIX systems, the signals `SIGRTMIN` and `SIGRTMIN + 1` are reserved
  *   by this module for use in the garbage collector implementation.
  *   Typically, they will be used to stop and resume other threads
  *   when performing a collection, but an implementation may choose
@@ -133,7 +133,7 @@ private
     }
 
     extern (C) BlkInfo_ gc_query(return scope void* p) pure nothrow;
-    extern (C) GC.Stats gc_stats ( ) nothrow @nogc;
+    extern (C) GC.Stats gc_stats ( ) @safe nothrow @nogc;
     extern (C) GC.ProfileStats gc_profileStats ( ) nothrow @nogc @safe;
 }
 
@@ -766,7 +766,7 @@ extern(D):
      * Returns runtime stats for currently active GC implementation
      * See `core.memory.GC.Stats` for list of available metrics.
      */
-    static Stats stats() nothrow
+    static Stats stats() @safe nothrow @nogc
     {
         return gc_stats();
     }
@@ -1229,7 +1229,10 @@ void __delete(T)(ref T x) @system
     else static if (is(T == U*, U))
     {
         static if (is(U == struct))
-            _destructRecurse(*x);
+        {
+            if (x)
+                _destructRecurse(*x);
+        }
     }
     else static if (is(T : E[], E))
     {
@@ -1334,6 +1337,10 @@ unittest
     assert(a is null);
     assert(dtorCalled);
     assert(GC.addrOf(cast(void*) a) == null);
+
+    // https://issues.dlang.org/show_bug.cgi?id=22779
+    A *aptr;
+    __delete(aptr);
 }
 
 /// Deleting arrays

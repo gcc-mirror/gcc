@@ -46,5 +46,3 @@ void testClosure1()
     dg = &bar;               // Error
     auto dg2 = &bar;
 }
-
-

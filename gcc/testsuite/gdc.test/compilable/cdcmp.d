@@ -145,4 +145,3 @@ bool test_eq(double x, double y) { return x == y; }
 bool test_ne(double x, double y) { return x != y; }
 bool test_ge(double x, double y) { return x >= y; }
 bool test_gt(double x, double y) { return x >  y; }
-

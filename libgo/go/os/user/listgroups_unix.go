@@ -14,7 +14,6 @@ import (
 	"io"
 	"os"
 	"strconv"
-	"syscall"
 )
 
 const groupFile = "/etc/group"

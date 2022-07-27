@@ -32,6 +32,8 @@
 #if __cplusplus > 202002L
 #include <atomic>
 
+#define __cpp_lib_stdatomic_h 202011L
+
 #define _Atomic(_Tp) std::atomic<_Tp>
 
 using std::memory_order;

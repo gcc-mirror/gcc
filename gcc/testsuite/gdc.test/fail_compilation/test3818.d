@@ -23,5 +23,3 @@ void test1()
 static foreach (a, b, c)
 {
 }
-
-

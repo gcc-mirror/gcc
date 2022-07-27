@@ -1,3 +1,143 @@
+2022-07-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 651389b5.
+	* src/MERGE: Merge upstream phobos 1516ecad9.
+
+2022-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add gcc/simd.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/gcc/simd.d: New file.
+
+2022-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/attributes.d (simd): Define.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/105413
+	* libdruntime/gcc/attributes.d (register): Define.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 148608b7.
+
+2022-06-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e150cca1.
+	* src/MERGE: Merge upstream phobos a4a18d21c.
+	* testsuite/libphobos.cycles/cycles.exp (cycle_test_list): Update
+	expected result of deprecate test.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/attributes.d (no_sanitize): Define.
+	(noSanitize): Define.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/attributes.d (visibility): Define.
+	(hidden): Define.
+
+2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 454471d8.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	core/sync/package.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 1206fc94f.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libphobos-dg.exp: Add load_gcc_lib of scansarif.exp.
+
+2022-05-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime f89da313.
+	* src/MERGE: Merge upstream phobos d46814c86.
+
+2022-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 94bd5bcb.
+	* libdruntime/Makefile.am (ALL_DRUNTIME_INSTALL_DSOURCES): Add
+	$(DRUNTIME_DSOURCES_ELF).
+	(ALL_DRUNTIME_SOURCES): Likewise.
+	(DRUNTIME_DSOURCES_ELF): New variable.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 3a1cd9a01.
+	* testsuite/libphobos.init_fini/custom_gc.d: Update test.
+
+2022-04-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e361d200.
+
+2022-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/emutls.d (emutlsDestroyThread): Clear the per-thread
+	TLS array, don't call free().
+
+2022-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 27834edb.
+	* src/MERGE: Merge upstream phobos ac296f80c.
+	* src/Makefile.am (PHOBOS_DSOURCES): Add std/int128.d.
+	* src/Makefile.in: Regenerate.
+
+2022-04-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 9ba9a6ae.
+	* src/MERGE: Merge upstream phobos c0cc5e917.
+
+2022-04-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime c52e28b7.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_OPENBSD): Add
+	core/sys/openbsd/pwd.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 99e9c1b77.
+	* testsuite/libphobos.exceptions/message_with_null.d: New test.
+
+2022-03-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/104911
+	* src/MERGE: Merge upstream phobos a74fa63e6.
+
+2022-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 26b58167.
+	* src/MERGE: Merge upstream phobos 16cb085b5.
+
+2022-03-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/103528
+	* configure.ac <x86_64-*-solaris2.* | i?86-*-solaris2.*>: Remove
+	gas requirement.
+	* configure: Regenerate.
+	* configure.tgt (sparc*-*-solaris2.11*): Mark supported.
+
+2022-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 100a608c.
+	* src/MERGE: Merge upstream phobos a1f8c4c07.
+
+2022-03-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/104659
+	* libdruntime/config/mingw/msvc.c (init_msvc): Fix misspelling of
+	msvcUsesUCRT.
+
+2022-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime caf14b0f.
+	* src/MERGE: Merge upstream phobos 41aaf8c26.
+
+2022-02-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 55528bd1.
+	* src/MERGE: Merge upstream phobos 1a3e80ec2.
+	* testsuite/libphobos.hash/test_hash.d: Update.
+	* testsuite/libphobos.betterc/test19933.d: New test.
+
 2022-02-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Makefile.in: Regenerate.

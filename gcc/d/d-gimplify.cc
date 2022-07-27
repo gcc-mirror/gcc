@@ -109,7 +109,8 @@ d_gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     }
 
   /* Same as above, but for bit-field assignments.  */
-  if (bit_field_ref (op0) && TREE_TYPE (op0) != TREE_TYPE (op1))
+  if ((bit_field_ref (op0) || bit_field_ref (op1))
+      && TREE_TYPE (op0) != TREE_TYPE (op1))
     {
       TREE_OPERAND (*expr_p, 1) = convert (TREE_TYPE (op0), op1);
       return GS_OK;
@@ -234,10 +235,10 @@ d_gimplify_binary_expr (tree *expr_p)
   if (bit_field_ref (op0) || bit_field_ref (op1))
     {
       if (TREE_TYPE (op0) != TREE_TYPE (*expr_p))
-    	TREE_OPERAND (*expr_p, 0) = convert (TREE_TYPE (*expr_p), op0);
+	TREE_OPERAND (*expr_p, 0) = convert (TREE_TYPE (*expr_p), op0);
 
       if (TREE_TYPE (op1) != TREE_TYPE (*expr_p))
-    	TREE_OPERAND (*expr_p, 1) = convert (TREE_TYPE (*expr_p), op1);
+	TREE_OPERAND (*expr_p, 1) = convert (TREE_TYPE (*expr_p), op1);
 
       return GS_OK;
     }

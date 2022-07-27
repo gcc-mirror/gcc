@@ -1,4 +1,4 @@
-// { dg-do run { target property_1_needed } }
+// { dg-do run { target { *-*-linux* && property_1_needed } } }
 // { dg-options "-O2 -mno-direct-extern-access" }
 
 class Foo 

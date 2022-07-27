@@ -22,5 +22,3 @@ void main()
     auto a = const(S)("abc");
     assert(a.i == 2);
 }
-
-

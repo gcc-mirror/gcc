@@ -8,6 +8,15 @@ void *
 __attribute__ ((alloc_size (1)))
 __attribute__ ((__nothrow__ , __leaf__))
 __attribute__ ((noinline))
+alloc_func_long (long sz)
+{
+  return __builtin_malloc (sz);
+}
+
+void *
+__attribute__ ((alloc_size (1)))
+__attribute__ ((__nothrow__ , __leaf__))
+__attribute__ ((noinline))
 alloc_func (size_t sz)
 {
   return __builtin_malloc (sz);
@@ -142,6 +151,16 @@ test_builtin_malloc_condphi5 (size_t sz, int cond, char *c)
 
   size_t ret = __builtin_dynamic_object_size (cond ? c : (void *) &a, 0);
   __builtin_free (a);
+  return ret;
+}
+
+long
+__attribute__ ((noinline))
+test_builtin_malloc_long (long sz, long off)
+{
+  char *a = alloc_func_long (sz);
+  char *dest = a + off;
+  long ret = __builtin_dynamic_object_size (dest, 0);
   return ret;
 }
 
@@ -304,6 +323,34 @@ test_substring (size_t sz, size_t off)
   return __builtin_dynamic_object_size (&str[off], 0);
 }
 
+struct S2
+{
+  char arr[7];
+};
+
+struct S1
+{
+  int pad;
+  struct S2 s2;
+};
+
+static long
+g (struct S1 *s1)
+{
+  struct S2 *s2 = &s1->s2;
+  return __builtin_dynamic_object_size (s2->arr, 0);
+}
+
+long
+__attribute__ ((noinline))
+test_alloc_nested_structs (int x)
+{
+  struct S1 *s1 = __builtin_malloc (x);
+  return g (s1);
+}
+
+/* POINTER_PLUS expressions.  */
+
 size_t
 __attribute__ ((noinline))
 test_substring_ptrplus (size_t sz, size_t off)
@@ -323,10 +370,28 @@ test_substring_ptrplus2 (size_t sz, size_t off, size_t off2)
   return __builtin_dynamic_object_size (ptr + off2, 0);
 }
 
+/* Function parameters.  */
+
 size_t
 __attribute__ ((access (__read_write__, 1, 2)))
 __attribute__ ((noinline))
 test_parmsz_simple (void *obj, size_t sz)
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+size_t
+__attribute__ ((access (__read_write__, 2, 1)))
+__attribute__ ((noinline))
+test_parmsz_simple2 (size_t sz, char obj[])
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+/* Implicitly constructed access attributes not supported yet.  */
+size_t
+__attribute__ ((noinline))
+test_parmsz_simple3 (size_t sz, char obj[sz])
 {
   return __builtin_dynamic_object_size (obj, 0);
 }
@@ -363,6 +428,40 @@ test_parmsz_unknown (void *obj, void *unknown, size_t sz, int cond)
   return __builtin_dynamic_object_size (cond ? obj : unknown, 0);
 }
 
+struct S;
+size_t
+__attribute__ ((access (__read_write__, 1, 2)))
+__attribute__ ((noinline))
+test_parmsz_extern (struct S *obj, size_t sz)
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+/* Implicitly constructed access attributes not supported yet.  */
+size_t
+__attribute__ ((noinline))
+test_parmsz_internal (size_t sz, double obj[][sz])
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+size_t
+__attribute__ ((access (__read_write__, 2, 1)))
+__attribute__ ((noinline))
+test_parmsz_internal2 (size_t sz, double obj[][sz])
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+size_t
+__attribute__ ((noinline))
+test_parmsz_internal3 (size_t sz1, size_t sz2, double obj[sz1][sz2])
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+/* Loops.  */
+
 size_t
 __attribute__ ((noinline))
 __attribute__ ((access (__read_write__, 1, 2)))
@@ -378,6 +477,20 @@ test_loop (int *obj, size_t sz, size_t start, size_t end, int incr)
     }
 
   return __builtin_dynamic_object_size (ptr, 0);
+}
+
+/* Other tests.  */
+
+struct TV4
+{
+  __attribute__((vector_size (sizeof (int) * 4))) int v;
+};
+
+struct TV4 val3;
+int *
+test_pr105736 (struct TV4 *a)
+{
+  return &a->v[0];
 }
 
 unsigned nfails = 0;
@@ -418,6 +531,9 @@ main (int argc, char **argv)
   if (test_builtin_malloc_condphi4 (128, 0) != sizeof (void *))
     FAIL ();
   if (test_builtin_malloc_condphi5 (128, 0, argv[0]) != -1)
+    FAIL ();
+  long x = 42;
+  if (test_builtin_malloc_long (x, 0) != x)
     FAIL ();
   if (test_calloc (2048, 4) != 2048 * 4)
     FAIL ();
@@ -469,6 +585,8 @@ main (int argc, char **argv)
     FAIL ();
   if (test_dynarray_cond (1) != 8)
     FAIL ();
+  if (test_alloc_nested_structs (42) != 42 - sizeof (int))
+    FAIL ();
   if (test_deploop (128, 4) != 128)
     FAIL ();
   if (test_deploop (128, 129) != 32)
@@ -476,8 +594,21 @@ main (int argc, char **argv)
   if (test_parmsz_simple (argv[0], __builtin_strlen (argv[0]) + 1)
       != __builtin_strlen (argv[0]) + 1)
     FAIL ();
+  if (test_parmsz_simple2 (__builtin_strlen (argv[0]) + 1, argv[0])
+      != __builtin_strlen (argv[0]) + 1)
+    FAIL ();
+  /* Only explicitly added access attributes are supported for now.  */
+  if (test_parmsz_simple3 (__builtin_strlen (argv[0]) + 1, argv[0]) != -1)
+    FAIL ();
   int arr[42];
   if (test_parmsz_scaled (arr, 42) != sizeof (arr))
+    FAIL ();
+  if (test_parmsz_scaled (arr, 40) != 40 * sizeof (int))
+    FAIL ();
+  /* __bdos cannot see the actual size of ARR, so it will return what it was
+     passed.  Fortunately though the overflow warnings see this caller side and
+     warns of the problematic size.  */
+  if (test_parmsz_scaled (arr, 44) != 44 * sizeof (int)) /* { dg-warning "-Wstringop-overflow=" } */
     FAIL ();
   if (test_parmsz_unknown (argv[0], argv[0], __builtin_strlen (argv[0]) + 1, 0)
       != -1)
@@ -494,6 +625,16 @@ main (int argc, char **argv)
     FAIL ();
   if (test_parmsz_scaled_off (arr, 42, 2) != 40 * sizeof (int))
     FAIL ();
+  struct S *s;
+  if (test_parmsz_extern (s, 42) != -1)
+    FAIL ();
+  double obj[4][4];
+  if (test_parmsz_internal (4, obj) != -1)
+    FAIL ();
+  if (test_parmsz_internal2 (4, obj) != -1)
+    FAIL ();
+  if (test_parmsz_internal3 (4, 4, obj) != -1)
+    FAIL ();
   if (test_loop (arr, 42, 0, 32, 1) != 10 * sizeof (int))
     FAIL ();
   if (test_loop (arr, 42, 32, -1, -1) != 0)
@@ -505,6 +646,10 @@ main (int argc, char **argv)
   if (test_loop (arr, 42, 44, 0, -1) != 0)
     FAIL ();
   if (test_loop (arr, 42, 20, 52, 1) != 0)
+    FAIL ();
+  /* pr105736.  */
+  int *t = test_pr105736 (&val3);
+  if (__builtin_dynamic_object_size (t, 0) != -1)
     FAIL ();
 
   if (nfails > 0)

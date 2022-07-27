@@ -390,6 +390,10 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_SLOW_PSHUFB]
 #define TARGET_AVOID_4BYTE_PREFIXES \
 	ix86_tune_features[X86_TUNE_AVOID_4BYTE_PREFIXES]
+#define TARGET_USE_GATHER_2PARTS \
+	ix86_tune_features[X86_TUNE_USE_GATHER_2PARTS]
+#define TARGET_USE_GATHER_4PARTS \
+	ix86_tune_features[X86_TUNE_USE_GATHER_4PARTS]
 #define TARGET_USE_GATHER \
 	ix86_tune_features[X86_TUNE_USE_GATHER]
 #define TARGET_FUSE_CMP_AND_BRANCH_32 \
@@ -2239,6 +2243,7 @@ enum processor_type
   PROCESSOR_ALDERLAKE,
   PROCESSOR_ROCKETLAKE,
   PROCESSOR_INTEL,
+  PROCESSOR_LUJIAZUI,
   PROCESSOR_GEODE,
   PROCESSOR_K6,
   PROCESSOR_ATHLON,
@@ -2323,10 +2328,11 @@ constexpr wide_int_bitmask PTA_ICELAKE_SERVER = PTA_ICELAKE_CLIENT
   | PTA_PCONFIG | PTA_WBNOINVD | PTA_CLWB;
 constexpr wide_int_bitmask PTA_TIGERLAKE = PTA_ICELAKE_CLIENT | PTA_MOVDIRI
   | PTA_MOVDIR64B | PTA_CLWB | PTA_AVX512VP2INTERSECT | PTA_KL | PTA_WIDEKL;
-constexpr wide_int_bitmask PTA_SAPPHIRERAPIDS = PTA_COOPERLAKE | PTA_MOVDIRI
+constexpr wide_int_bitmask PTA_SAPPHIRERAPIDS = PTA_ICELAKE_SERVER | PTA_MOVDIRI
   | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT | PTA_ENQCMD | PTA_CLDEMOTE
   | PTA_PTWRITE | PTA_WAITPKG | PTA_SERIALIZE | PTA_TSXLDTRK | PTA_AMX_TILE
-  | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR | PTA_AVXVNNI | PTA_AVX512FP16;
+  | PTA_AMX_INT8 | PTA_AMX_BF16 | PTA_UINTR | PTA_AVXVNNI | PTA_AVX512FP16
+  | PTA_AVX512BF16;
 constexpr wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF
   | PTA_AVX512ER | PTA_AVX512F | PTA_AVX512CD | PTA_PREFETCHWT1;
 constexpr wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;
@@ -2414,6 +2420,7 @@ enum ix86_stack_slot
   SLOT_CW_FLOOR,
   SLOT_CW_CEIL,
   SLOT_STV_TEMP,
+  SLOT_FLOATxFDI_387,
   MAX_386_STACK_LOCALS
 };
 
@@ -2845,6 +2852,12 @@ extern void debug_dispatch_window (int);
 extern enum attr_cpu ix86_schedule;
 
 #define NUM_X86_64_MS_CLOBBERED_REGS 12
+#endif
+
+/* __builtin_eh_return can't handle stack realignment, so disable MMX/SSE
+   in 32-bit libgcc functions that call it.  */
+#ifndef __x86_64__
+#define LIBGCC2_UNWIND_ATTRIBUTE __attribute__((target ("no-mmx,no-sse")))
 #endif
 
 /*

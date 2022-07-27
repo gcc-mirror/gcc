@@ -87,7 +87,9 @@ const (
 //
 // We alias maxOffAddr just to make it clear that this is the maximum address
 // for the page allocator's search space. See maxOffAddr for details.
-var maxSearchAddr = maxOffAddr
+func maxSearchAddr() offAddr {
+	return maxOffAddr
+}
 
 // Global chunk index.
 //
@@ -331,13 +333,13 @@ func (p *pageAlloc) init(mheapLock *mutex, sysStat *sysMemStat) {
 	p.sysInit()
 
 	// Start with the searchAddr in a state indicating there's no free memory.
-	p.searchAddr = maxSearchAddr
+	p.searchAddr = maxSearchAddr()
 
 	// Set the mheapLock.
 	p.mheapLock = mheapLock
 
 	// Initialize scavenge tracking state.
-	p.scav.scavLWM = maxSearchAddr
+	p.scav.scavLWM = maxSearchAddr()
 }
 
 // tryChunkOf returns the bitmap data for the given chunk.
@@ -760,7 +762,7 @@ nextLevel:
 		}
 		if l == 0 {
 			// We're at level zero, so that means we've exhausted our search.
-			return 0, maxSearchAddr
+			return 0, maxSearchAddr()
 		}
 
 		// We're not at level zero, and we exhausted the level we were looking in.
@@ -854,7 +856,7 @@ func (p *pageAlloc) alloc(npages uintptr) (addr uintptr, scav uintptr) {
 			// exhausted. Otherwise, the heap still might have free
 			// space in it, just not enough contiguous space to
 			// accommodate npages.
-			p.searchAddr = maxSearchAddr
+			p.searchAddr = maxSearchAddr()
 		}
 		return 0, 0
 	}

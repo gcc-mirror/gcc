@@ -32,12 +32,12 @@ Dg escapeAssign(int i, return scope Dg dg)
     return dg;
 }
 
-ref Dg identityR(ref return scope Dg dg)
+ref Dg identityR(return ref scope Dg dg)
 {
     return dg;
 }
 
-ref Dg escapeAssignRef(int i, ref return scope Dg dg)
+ref Dg escapeAssignRef(int i, return ref scope Dg dg)
 {
     dg = () => i;
     return dg;

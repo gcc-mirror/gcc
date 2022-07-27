@@ -7,4 +7,3 @@ module test57;
 import imports.test57a;
 
 void main() {}
-

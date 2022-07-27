@@ -42,7 +42,12 @@ public:
 
   bool operator== (const saved_diagnostic &other) const;
 
+  void add_note (pending_note *pn);
+
   json::object *to_json () const;
+
+  void dump_dot_id (pretty_printer *pp) const;
+  void dump_as_dot_node (pretty_printer *pp) const;
 
   const feasibility_problem *get_feasibility_problem () const
   {
@@ -59,6 +64,8 @@ public:
   unsigned get_index () const { return m_idx; }
 
   bool supercedes_p (const saved_diagnostic &other) const;
+
+  void emit_any_notes () const;
 
   //private:
   const state_machine *m_sm;
@@ -80,6 +87,7 @@ private:
   feasibility_problem *m_problem; // owned
 
   auto_vec<const saved_diagnostic *> m_duplicates;
+  auto_delete_vec <pending_note> m_notes;
 };
 
 class path_builder;
@@ -102,7 +110,7 @@ public:
 
   json::object *to_json () const;
 
-  void add_diagnostic (const state_machine *sm,
+  bool add_diagnostic (const state_machine *sm,
 		       exploded_node *enode,
 		       const supernode *snode, const gimple *stmt,
 		       stmt_finder *finder,
@@ -111,10 +119,12 @@ public:
 		       state_machine::state_t state,
 		       pending_diagnostic *d);
 
-  void add_diagnostic (exploded_node *enode,
+  bool add_diagnostic (exploded_node *enode,
 		       const supernode *snode, const gimple *stmt,
 		       stmt_finder *finder,
 		       pending_diagnostic *d);
+
+  void add_note (pending_note *pn);
 
   void emit_saved_diagnostics (const exploded_graph &eg);
 
@@ -138,6 +148,10 @@ private:
   void build_emission_path (const path_builder &pb,
 			    const exploded_path &epath,
 			    checker_path *emission_path) const;
+
+  void add_event_on_final_node (const exploded_node *final_enode,
+				checker_path *emission_path,
+				interesting_t *interest) const;
 
   void add_events_for_eedge (const path_builder &pb,
 			     const exploded_edge &eedge,
@@ -172,6 +186,7 @@ private:
   engine *m_eng;
   auto_delete_vec<saved_diagnostic> m_saved_diagnostics;
   const int m_verbosity;
+  int m_num_disabled_diagnostics;
 };
 
 } // namespace ana

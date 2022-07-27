@@ -1,3 +1,29 @@
+2022-07-08  Martin Liska  <mliska@suse.cz>
+
+	* lto-dump.cc (lto_main): Exit in the function
+	as we don't want any LTO bytecode processing.
+
+2022-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* lto-dump.cc: Add "final" and "override" to various vfunc
+	implementations, removing redundant "virtual" as appropriate.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* lto-common.cc (lto_resolution_read): Use ARRAY_SIZE.
+	* lto-lang.cc (lto_init): Likewise.
+
+2022-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/104285
+	* lto-partition.cc (maybe_rewrite_identifier): Use get_identifier
+	for the returned string to be usable as hash key.
+	(validize_symbol_for_target): Hence, use return value directly.
+	(privatize_symbol_name_1): Track maybe_rewrite_identifier renames.
+	* lto.cc (offload_handle_link_vars): Move function up before ...
+	(do_whole_program_analysis): Call it after static renamings.
+	(lto_main): Move call after static renamings.
+
 2022-02-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/90348

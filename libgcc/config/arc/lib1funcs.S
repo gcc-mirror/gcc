@@ -936,6 +936,7 @@ SYM(__divsi3):
 
 #endif /* L_divsi3 */
 
+#ifndef __ARC_RF16__
 #ifdef  L_umodsi3
 	.section .text
 	.align 4
@@ -950,6 +951,7 @@ SYM(__umodsi3):
 	ENDFUNC(__umodsi3)
 
 #endif /* L_umodsi3 */
+#endif /* !__ARC_RF16__ */
 
 #ifdef  L_modsi3
 	.section .text

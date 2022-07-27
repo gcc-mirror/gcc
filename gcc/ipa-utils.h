@@ -30,7 +30,7 @@ struct ipa_dfs_info {
   bool new_node;
   bool on_stack;
   struct cgraph_node* next_cycle;
-  PTR aux;
+  void *aux;
 };
 
 

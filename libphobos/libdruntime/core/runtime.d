@@ -285,7 +285,7 @@ struct Runtime
      * an appropriate calling context from which to begin the trace.
      *
      * Params:
-     *  h = The new trace handler.  Set to null to use the default handler.
+     *  h = The new trace handler.  Set to null to disable exception backtracing.
      */
     extern(C) pragma(mangle, "rt_setTraceHandler") static @property void traceHandler(TraceHandler h);
 

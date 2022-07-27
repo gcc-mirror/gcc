@@ -634,7 +634,7 @@ namespace ranges
     template<typename _Tp>
       concept __is_derived_from_view_interface
 	= requires (_Tp __t) { __is_derived_from_view_interface_fn(__t, __t); };
-  }
+  } // namespace __detail
 
   /// [range.view] The ranges::view_base type.
   struct view_base { };
@@ -689,11 +689,23 @@ namespace ranges
     concept common_range
       = range<_Tp> && same_as<iterator_t<_Tp>, sentinel_t<_Tp>>;
 
+  namespace __detail
+  {
+    template<typename _Tp>
+      inline constexpr bool __is_initializer_list = false;
+
+    template<typename _Tp>
+      inline constexpr bool __is_initializer_list<initializer_list<_Tp>> = true;
+  } // namespace __detail
+
   /// A range which can be safely converted to a view.
   template<typename _Tp>
     concept viewable_range = range<_Tp>
       && ((view<remove_cvref_t<_Tp>> && constructible_from<remove_cvref_t<_Tp>, _Tp>)
-	  || (!view<remove_cvref_t<_Tp>> && borrowed_range<_Tp>));
+	  || (!view<remove_cvref_t<_Tp>>
+	      && (is_lvalue_reference_v<_Tp>
+		  || (movable<remove_reference_t<_Tp>>
+		      && !__detail::__is_initializer_list<remove_cvref_t<_Tp>>))));
 
   // [range.iter.ops] range iterator operations
 

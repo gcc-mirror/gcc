@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "langhooks.h"
 #include "bitmap.h"
-#include "gimple-fold.h"
 
 
 /* Complete a #pragma oacc wait construct.  LOC is the location of
@@ -739,6 +738,7 @@ c_finish_omp_depobj (location_t loc, tree depobj,
 	case OMP_CLAUSE_DEPEND_OUT:
 	case OMP_CLAUSE_DEPEND_INOUT:
 	case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
+	case OMP_CLAUSE_DEPEND_INOUTSET:
 	  kind = OMP_CLAUSE_DEPEND_KIND (clause);
 	  t = OMP_CLAUSE_DECL (clause);
 	  gcc_assert (t);
@@ -757,7 +757,7 @@ c_finish_omp_depobj (location_t loc, tree depobj,
 	      t = build2 (COMPOUND_EXPR, TREE_TYPE (t1), TREE_OPERAND (t, 0),
 			  t1);
 	    }
-	  else
+	  else if (t != null_pointer_node)
 	    t = build_fold_addr_expr (t);
 	  break;
 	default:
@@ -796,6 +796,9 @@ c_finish_omp_depobj (location_t loc, tree depobj,
       break;
     case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
       k = GOMP_DEPEND_MUTEXINOUTSET;
+      break;
+    case OMP_CLAUSE_DEPEND_INOUTSET:
+      k = GOMP_DEPEND_INOUTSET;
       break;
     case OMP_CLAUSE_DEPEND_LAST:
       k = -1;
@@ -2995,39 +2998,6 @@ c_omp_predetermined_mapping (tree decl)
   return OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
 }
 
-
-/* For OpenACC, the OMP_CLAUSE_MAP_KIND of an OMP_CLAUSE_MAP is used internally
-   to distinguish clauses as seen by the user.  Return the "friendly" clause
-   name for error messages etc., where possible.  See also
-   c/c-parser.cc:c_parser_oacc_data_clause and
-   cp/parser.cc:cp_parser_oacc_data_clause.  */
-
-const char *
-c_omp_map_clause_name (tree clause, bool oacc)
-{
-  if (oacc && OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP)
-    switch (OMP_CLAUSE_MAP_KIND (clause))
-    {
-    case GOMP_MAP_FORCE_ALLOC:
-    case GOMP_MAP_ALLOC: return "create";
-    case GOMP_MAP_FORCE_TO:
-    case GOMP_MAP_TO: return "copyin";
-    case GOMP_MAP_FORCE_FROM:
-    case GOMP_MAP_FROM: return "copyout";
-    case GOMP_MAP_FORCE_TOFROM:
-    case GOMP_MAP_TOFROM: return "copy";
-    case GOMP_MAP_RELEASE: return "delete";
-    case GOMP_MAP_FORCE_PRESENT: return "present";
-    case GOMP_MAP_ATTACH: return "attach";
-    case GOMP_MAP_FORCE_DETACH:
-    case GOMP_MAP_DETACH: return "detach";
-    case GOMP_MAP_DEVICE_RESIDENT: return "device_resident";
-    case GOMP_MAP_LINK: return "link";
-    case GOMP_MAP_FORCE_DEVICEPTR: return "deviceptr";
-    default: break;
-    }
-  return omp_clause_code_name[OMP_CLAUSE_CODE (clause)];
-}
 
 /* Used to merge map clause information in c_omp_adjust_map_clauses.  */
 struct map_clause

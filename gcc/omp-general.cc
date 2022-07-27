@@ -2980,4 +2980,18 @@ oacc_get_ifn_dim_arg (const gimple *stmt)
   return (int) axis;
 }
 
+/* Build COMPONENT_REF and set TREE_THIS_VOLATILE and TREE_READONLY on it
+   as appropriate.  */
+
+tree
+omp_build_component_ref (tree obj, tree field)
+{
+  tree ret = build3 (COMPONENT_REF, TREE_TYPE (field), obj, field, NULL);
+  if (TREE_THIS_VOLATILE (field))
+    TREE_THIS_VOLATILE (ret) |= 1;
+  if (TREE_READONLY (field))
+    TREE_READONLY (ret) |= 1;
+  return ret;
+}
+
 #include "gt-omp-general.h"

@@ -1,0 +1,42 @@
+; -*- buffer-read-only: t -*-
+; Generated automatically by gen-opt.sh from nvptx-sm.def.
+
+; Copyright (C) 2022 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+Enum
+Name(ptx_isa) Type(int)
+Known PTX ISA target architectures (for use with the -misa= option):
+
+EnumValue
+Enum(ptx_isa) String(sm_30) Value(PTX_ISA_SM30)
+
+EnumValue
+Enum(ptx_isa) String(sm_35) Value(PTX_ISA_SM35)
+
+EnumValue
+Enum(ptx_isa) String(sm_53) Value(PTX_ISA_SM53)
+
+EnumValue
+Enum(ptx_isa) String(sm_70) Value(PTX_ISA_SM70)
+
+EnumValue
+Enum(ptx_isa) String(sm_75) Value(PTX_ISA_SM75)
+
+EnumValue
+Enum(ptx_isa) String(sm_80) Value(PTX_ISA_SM80)

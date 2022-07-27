@@ -841,7 +841,7 @@ if (isForwardRange!R && is(ElementType!R : dchar))
         switch (front)
         {
         case '*', '?', '+', '|', '{', '}':
-            error("'*', '+', '?', '{', '}' not allowed in atom");
+            return error("'*', '+', '?', '{', '}' not allowed in atom");
         case '.':
             if (re_flags & RegexOption.singleline)
                 g.put(Bytecode(IR.Any, 0));

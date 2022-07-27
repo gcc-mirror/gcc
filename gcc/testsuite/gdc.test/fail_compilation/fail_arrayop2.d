@@ -209,8 +209,8 @@ fail_compilation/fail_arrayop2.d(269): Error: array operation `"abc"[] + '\x01'`
 fail_compilation/fail_arrayop2.d(272): Error: array operation `[1] * 6` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(275): Error: `([1] * 6)[0..2]` is not an lvalue and cannot be modified
 fail_compilation/fail_arrayop2.d(278): Error: can only `*` a pointer, not a `int[]`
-fail_compilation/fail_arrayop2.d(281): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-fail_compilation/fail_arrayop2.d(281): Error: `[1] * 6` is not an lvalue and cannot be modified
+fail_compilation/fail_arrayop2.d(281): Error: the `delete` keyword is obsolete
+fail_compilation/fail_arrayop2.d(281):        use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead
 fail_compilation/fail_arrayop2.d(284): Error: array operation `da[] * 6` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(287): Error: array operation `da[] * 6` without destination memory not allowed
 fail_compilation/fail_arrayop2.d(290): Error: `[1] * 6` is not an lvalue and cannot be modified
@@ -252,7 +252,7 @@ void test15407exp()
     // StructLiteralExp.elements <- preFunctionParameters in CallExp
     { auto r = S([1] * 6); }
 
-    // NewExp.newargs/arguments <- preFunctionParameters
+    // NewExp.arguments <- preFunctionParameters
     { auto r = new S([1] * 6); }
 
     // TODO: TypeidExp

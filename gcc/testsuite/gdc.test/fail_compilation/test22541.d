@@ -2,7 +2,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/test22541.d(104): Error: returning `i` escapes a reference to parameter `i`
-fail_compilation/test22541.d(104):        perhaps annotate the parameter with `return`
+fail_compilation/test22541.d(102):        perhaps annotate the parameter with `return`
 ---
  */
 

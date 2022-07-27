@@ -1,6 +1,6 @@
 /* PR target/101772  */
 /* { dg-do compile } */
-/* { dg-additional-options "-O0 -march=x86-64 -mstackrealign" } */
+/* { dg-additional-options "-O0 -mincoming-stack-boundary=4 -march=x86-64 -mstackrealign" } */
 
 struct _Unwind_Context _Unwind_Resume_or_Rethrow_this_context;
 

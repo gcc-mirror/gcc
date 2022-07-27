@@ -34,5 +34,3 @@ struct Capture(alias c)
         return *ptr;
     }
 }
-
-

@@ -207,7 +207,7 @@ Target RejectNegative Mask(ALIGN_DOUBLE)
 Align doubles at 64-bit boundaries.
 
 mdiv=
-Target RejectNegative Joined Var(sh_div_str) Init("")
+Target Save RejectNegative Joined Var(sh_div_str) Init("")
 Division strategy, one of: call-div1, call-fp, call-table.
 
 mdivsi3_libfunc=

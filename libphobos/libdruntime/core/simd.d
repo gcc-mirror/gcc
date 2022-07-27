@@ -409,6 +409,28 @@ version (D_SIMD)
     *      op2    = second operand
     * Returns:
     *      result of opcode
+    * Example:
+    ---
+    import core.simd;
+    import core.stdc.stdio;
+
+    void main()
+    {
+        float4 A = [2.34f, -70000.0f, 0.00001f, 345.5f];
+        float4 R = A;
+        R = cast(float4) __simd(XMM.RCPSS, R, A);
+        printf("%g %g %g %g\n", R.array[0], R.array[1], R.array[2], R.array[3]);
+    }
+    ---
+    * Prints `0.427368 -70000 1e-05 345.5`.
+    * The use of the two operand form for `XMM.RCPSS` is necessary because the result of the instruction
+    * contains elements of both operands.
+    * Example:
+    ---
+    double[2] A = [56.0, -75.0];
+    double2 R = cast(double2) __simd(XMM.LODUPD, *cast(double2*)A.ptr);
+    ---
+    * The cast to `double2*` is necessary because the type of `*A.ptr` is `double`.
     */
     pure @safe void16 __simd(XMM opcode, void16 op1, void16 op2);
 
@@ -480,6 +502,7 @@ version (D_SIMD)
     /*****
     * For "store" operations of the form:
     *    op1 op= op2
+    * such as MOVLPS.
     * Returns:
     *    op2
     * These cannot be marked as pure, as semantic() doesn't check them.
@@ -487,6 +510,7 @@ version (D_SIMD)
     @safe void16 __simd_sto(XMM opcode, void16 op1, void16 op2);
     @safe void16 __simd_sto(XMM opcode, double op1, void16 op2); ///
     @safe void16 __simd_sto(XMM opcode, float op1, void16 op2);  ///
+    @safe void16 __simd_sto(XMM opcode, void16 op1, long op2); ///
 
     ///
     unittest

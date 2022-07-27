@@ -26,8 +26,8 @@
 
 # Arch and FPU variants to build libraries with
 
-MULTI_ARCH_OPTS_A       = march=armv7-a/march=armv7-a+fp/march=armv7-a+simd/march=armv7ve+simd/march=armv8-a/march=armv8-a+simd/march=armv9-a/march=armv9-a+simd
-MULTI_ARCH_DIRS_A       = v7-a v7-a+fp v7-a+simd v7ve+simd v8-a v8-a+simd v9-a v9-a+simd
+MULTI_ARCH_OPTS_A       = march=armv7-a/march=armv7-a+fp/march=armv7-a+simd/march=armv7ve+simd/march=armv8-a/march=armv8-a+simd
+MULTI_ARCH_DIRS_A       = v7-a v7-a+fp v7-a+simd v7ve+simd v8-a v8-a+simd
 
 # ARMv7-A - build nofp, fp-d16 and SIMD variants
 
@@ -45,11 +45,6 @@ MULTILIB_REQUIRED	+= mthumb/march=armv7ve+simd/mfloat-abi=softfp
 MULTILIB_REQUIRED	+= mthumb/march=armv8-a/mfloat-abi=soft
 MULTILIB_REQUIRED	+= mthumb/march=armv8-a+simd/mfloat-abi=hard
 MULTILIB_REQUIRED	+= mthumb/march=armv8-a+simd/mfloat-abi=softfp
-
-# Armv9-A - build nofp and SIMD variants.
-MULTILIB_REQUIRED	+= mthumb/march=armv9-a/mfloat-abi=soft
-MULTILIB_REQUIRED	+= mthumb/march=armv9-a+simd/mfloat-abi=hard
-MULTILIB_REQUIRED	+= mthumb/march=armv9-a+simd/mfloat-abi=softfp
 
 # Matches
 
@@ -135,14 +130,12 @@ MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_6_a_simd_variants), \
 			     march?armv8-a+simd=march?armv8.6-a$(ARCH))
 
 # Armv9 without SIMD: map down to base architecture
-MULTILIB_MATCHES	+= $(foreach ARCH, $(v9_a_nosimd_variants), \
-			     march?armv9-a=march?armv9-a$(ARCH))
+MULTILIB_MATCHES    += march?armv8-a=march?armv9-a
+# No variants without SIMD.
 
 # Armv9 with SIMD: map down to base arch + simd
-MULTILIB_MATCHES	+= march?armv9-a+simd=march?armv9-a+crc+simd \
-			   $(foreach ARCH, $(filter-out +simd, $(v9_a_simd_variants)), \
-			     march?armv9-a+simd=march?armv9-a$(ARCH) \
-			     march?armv9-a+simd=march?armv9-a+crc$(ARCH))
+MULTILIB_MATCHES    += $(foreach ARCH, $(v9_a_simd_variants), \
+			     march?armv8-a+simd=march?armv9-a$(ARCH))
 
 # Use Thumb libraries for everything.
 
@@ -150,13 +143,11 @@ MULTILIB_REUSE		+= mthumb/march.armv7-a/mfloat-abi.soft=marm/march.armv7-a/mfloa
 
 MULTILIB_REUSE		+= mthumb/march.armv8-a/mfloat-abi.soft=marm/march.armv8-a/mfloat-abi.soft
 
-MULTILIB_REUSE		+= mthumb/march.armv9-a/mfloat-abi.soft=marm/march.armv9-a/mfloat-abi.soft
-
 MULTILIB_REUSE		+= $(foreach ABI, hard softfp, \
-			     $(foreach ARCH, armv7-a+fp armv7-a+simd armv7ve+simd armv8-a+simd armv9-a+simd, \
+			     $(foreach ARCH, armv7-a+fp armv7-a+simd armv7ve+simd armv8-a+simd, \
 			       mthumb/march.$(ARCH)/mfloat-abi.$(ABI)=marm/march.$(ARCH)/mfloat-abi.$(ABI)))
 
 # Softfp but no FP, use the soft-float libraries.
 MULTILIB_REUSE		+= $(foreach MODE, arm thumb, \
-			     $(foreach ARCH, armv7-a armv8-a armv9-a, \
+			     $(foreach ARCH, armv7-a armv8-a, \
 			       mthumb/march.$(ARCH)/mfloat-abi.soft=m$(MODE)/march.$(ARCH)/mfloat-abi.softfp))

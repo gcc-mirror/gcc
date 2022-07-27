@@ -81,7 +81,8 @@ package System.Rident is
 
    --  To add a new restriction identifier, add an entry with the name to be
    --  used in the pragma, and add calls to the Restrict.Check_Restriction
-   --  routine as appropriate.
+   --  routine as appropriate. If the new restriction is GNAT specific, also
+   --  add an entry in Restrict.Implementation_Restriction (restrict.ads).
 
    type Restriction_Id is
 
@@ -90,7 +91,7 @@ package System.Rident is
       --  does not violate the restriction.
 
      (Simple_Barriers,                           -- Ada 2012 (D.7 (10.9/3))
-      Pure_Barriers,                             -- GNAT
+      Pure_Barriers,                             -- Ada 2022 (D.7(10.11/5))
       No_Abort_Statements,                       -- (RM D.7(5), H.4(3))
       No_Access_Parameter_Allocators,            -- Ada 2012 (RM H.4 (8.3/3))
       No_Access_Subprograms,                     -- (RM H.4(17))
@@ -126,6 +127,7 @@ package System.Rident is
       No_Implicit_Task_Allocations,              -- GNAT
       No_Implicit_Protected_Object_Allocations,  -- GNAT
       No_Initialize_Scalars,                     -- GNAT
+      No_Local_Tagged_Types,                     -- GNAT
       No_Local_Allocators,                       -- (RM H.4(8))
       No_Local_Timing_Events,                    -- (RM D.7(10.2/2))
       No_Local_Protected_Objects,                -- Ada 2012 (D.7(10/1.3))
@@ -150,7 +152,7 @@ package System.Rident is
       No_Task_Attributes_Package,                -- GNAT
       No_Task_At_Interrupt_Priority,             -- GNAT
       No_Task_Hierarchy,                         -- (RM D.7(3), H.4(3))
-      No_Task_Termination,                       -- GNAT (Ravenscar)
+      No_Task_Termination,                       -- Ada 2005 (D.7(15.1/2))
       No_Tasks_Unassigned_To_CPU,                -- Ada 202x (D.7(10.10/4))
       No_Tasking,                                -- GNAT
       No_Terminate_Alternatives,                 -- (RM D.7(6))

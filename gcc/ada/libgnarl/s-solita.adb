@@ -188,7 +188,14 @@ package body System.Soft_Links.Tasking is
       --  fall-back handler applies only to the dependent tasks of the task".
 
       if Self_Id.Common.Specific_Handler /= null then
-         Self_Id.Common.Specific_Handler.all (Cause, Self_Id, EO);
+         begin
+            Self_Id.Common.Specific_Handler.all (Cause, Self_Id, EO);
+         exception
+            --  RM-C.7.3(16) requires all exceptions raised here to be ignored
+
+            when others =>
+               null;
+         end;
       end if;
    end Task_Termination_Handler_T;
 

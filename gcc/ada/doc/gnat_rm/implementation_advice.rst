@@ -353,12 +353,6 @@ then values of the type are implicitly initialized to zero. This
 happens both for objects of the packed type, and for objects that have a
 subcomponent of the packed type.
 
-
-  "An implementation should support Address clauses for imported
-  subprograms."
-
-Followed.
-
 .. index:: Address clauses
 
 RM 13.3(14-19): Address Clauses

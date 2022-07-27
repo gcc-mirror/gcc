@@ -20,6 +20,33 @@ int echoPlusOne(int x)
     return x;
 }
 static assert(echoPlusOne(1) == 2);
+
+void nesting(double d, int i)
+{
+    alias EXP = AliasSeq!(d, i);
+
+    if (d)
+    {
+        static assert(__traits(isSame, __traits(parameters), EXP));
+
+        while (d)
+        {
+            static assert(__traits(isSame, __traits(parameters), EXP));
+            switch (i)
+            {
+                static assert(__traits(isSame, __traits(parameters), EXP));
+                case 1:
+                    static assert(__traits(isSame, __traits(parameters), EXP));
+                    break;
+
+                default:
+                    static assert(__traits(isSame, __traits(parameters), EXP));
+                    break;
+            }
+        }
+    }
+}
+
 class Tree {
     int opApply(int delegate(size_t, Tree) dg) {
         if (dg(0, this)) return 1;
@@ -34,7 +61,22 @@ void useOpApply(Tree top, int x)
     }
     foreach(idx, elem; top)
     {
-        static assert(is(typeof(__traits(parameters)) == AliasSeq!(size_t, Tree)));
+        static assert(is(typeof(__traits(parameters)) == AliasSeq!(Tree, int)));
+    }
+
+    foreach(idx, elem; top)
+    {
+        foreach (idx2, elem2; elem)
+            static assert(is(typeof(__traits(parameters)) == AliasSeq!(Tree, int)));
+    }
+
+    foreach(idx, elem; top)
+    {
+        static void foo(char[] text)
+        {
+            foreach (const char c; text)
+                static assert(is(typeof(__traits(parameters)) == AliasSeq!(char[])));
+        }
     }
 }
 class Test
@@ -132,3 +174,64 @@ T testTemplate(T)(scope T input)
 
 static assert(testTemplate!long(420) == 0);
 
+void qualifiers(immutable int a, const bool b)
+{
+    static assert(is(typeof(__traits(parameters)) == AliasSeq!(immutable int, const bool)));
+}
+
+int makeAggregate(int a, bool b)
+{
+    struct S
+    {
+        typeof(__traits(parameters)) members;
+    }
+
+    S s = S(__traits(parameters));
+    assert(s.members[0] == a);
+    assert(s.members[1] == b);
+    return 1;
+}
+
+static assert(makeAggregate(5, true));
+
+int makeAlias(int a, bool b)
+{
+    alias Params = __traits(parameters);
+    assert(Params[0] == 3);
+    assert(Params[1] == true);
+    return 1;
+}
+
+static assert(makeAlias(3, true));
+
+
+mixin template nestedCheckParameters(int unique)
+{
+    alias NestedNames = __traits(parameters);
+    version (Fixed)
+    alias Types = typeof(Names);
+}
+
+mixin template checkParameters(int unique)
+{
+    mixin nestedCheckParameters!unique;
+
+    alias Names = __traits(parameters);
+    alias Types = typeof(Names);
+}
+
+int makeAggregateMixin(immutable int a, const bool b)
+{
+    mixin checkParameters!0;
+
+    struct S
+    {
+        mixin checkParameters!1;
+        typeof(Names) members;
+    }
+
+    S s = S(Names);
+    assert(s.members[0] == a);
+    assert(s.members[1] == b);
+    return 1;
+}

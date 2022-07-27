@@ -6474,7 +6474,7 @@ gfc_generate_return (void)
 	     NULL_TREE, and a 'return' is generated without a variable.
 	     The following generates a 'return __result_XXX' where XXX is
 	     the function name.  */
-	  if (sym == sym->result && sym->attr.function)
+	  if (sym == sym->result && sym->attr.function && !flag_f2c)
 	    {
 	      result = gfc_get_fake_result_decl (sym, 0);
 	      result = fold_build2_loc (input_location, MODIFY_EXPR,

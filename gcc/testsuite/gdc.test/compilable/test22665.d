@@ -18,5 +18,3 @@ E foo3(E e)
 {
     return E.A; // with qualification, it is an enum
 }
-
-

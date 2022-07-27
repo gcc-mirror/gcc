@@ -51,7 +51,7 @@ struct GTY(()) modref_summary
      it is still useful for CSE.  */
   unsigned calls_interposable : 1;
 
-  /* Flags coputed by finalize method.  */
+  /* Flags computed by finalize method.  */
 
   /* Total number of accesses in loads tree.  */
   unsigned int load_accesses;
@@ -101,7 +101,7 @@ static const int implicit_retslot_eaf_flags
      | EAF_NOT_RETURNED_INDIRECTLY;
 
 /* If function does not bind to current def (i.e. it is inline in comdat
-   section), the modref analysis may not match the behaviour of function
+   section), the modref analysis may not match the behavior of function
    which will be later symbol interposed to.  All side effects must match
    however it is possible that the other function body contains more loads
    which may trap.
@@ -120,7 +120,7 @@ interposable_eaf_flags (int modref_flags, int flags)
 		      | EAF_NOT_RETURNED_DIRECTLY | EAF_NOT_RETURNED_INDIRECTLY
 		      | EAF_NO_DIRECT_CLOBBER | EAF_NO_INDIRECT_CLOBBER;
     }
-  /* We can not deterine that value is not read at all.  */
+  /* We can not determine that value is not read at all.  */
   if ((modref_flags & EAF_NO_DIRECT_READ) && !(flags & EAF_NO_DIRECT_READ))
     modref_flags &= ~EAF_NO_DIRECT_READ;
   if ((modref_flags & EAF_NO_INDIRECT_READ) && !(flags & EAF_NO_INDIRECT_READ))

@@ -499,7 +499,7 @@ diag_attr_exclusions (tree last_decl, tree node, tree attrname,
 
   /* Iterate over the mutually exclusive attribute names and verify
      that the symbol doesn't contain it.  */
-  for (unsigned i = 0; i != sizeof attrs / sizeof *attrs; ++i)
+  for (unsigned i = 0; i != ARRAY_SIZE (attrs); ++i)
     {
       if (!attrs[i])
 	continue;
@@ -636,15 +636,20 @@ decl_attributes (tree *node, tree attributes, int flags,
       && !DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node))
     {
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node) = optimization_current_node;
-      tree cur_tree
-	= build_target_option_node (&global_options, &global_options_set);
-      tree old_tree = DECL_FUNCTION_SPECIFIC_TARGET (*node);
-      if (!old_tree)
-	old_tree = target_option_default_node;
-      /* The changes on optimization options can cause the changes in
-	 target options, update it accordingly if it's changed.  */
-      if (old_tree != cur_tree)
-	DECL_FUNCTION_SPECIFIC_TARGET (*node) = cur_tree;
+      /* Don't set DECL_FUNCTION_SPECIFIC_TARGET for targets that don't
+	 support #pragma GCC target or target attribute.  */
+      if (target_option_default_node)
+	{
+	  tree cur_tree
+	    = build_target_option_node (&global_options, &global_options_set);
+	  tree old_tree = DECL_FUNCTION_SPECIFIC_TARGET (*node);
+	  if (!old_tree)
+	    old_tree = target_option_default_node;
+	  /* The changes on optimization options can cause the changes in
+	     target options, update it accordingly if it's changed.  */
+	  if (old_tree != cur_tree)
+	    DECL_FUNCTION_SPECIFIC_TARGET (*node) = cur_tree;
+	}
     }
 
   /* If this is a function and the user used #pragma GCC target, add the
@@ -866,6 +871,21 @@ decl_attributes (tree *node, tree attributes, int flags,
 
 	  tree ret = (spec->handler) (cur_and_last_decl, name, args,
 				      flags|cxx11_flag, &no_add_attrs);
+
+	  /* Fix up typedefs clobbered by attribute handlers.  */
+	  if (TREE_CODE (*node) == TYPE_DECL
+	      && anode == &TREE_TYPE (*node)
+	      && DECL_ORIGINAL_TYPE (*node)
+	      && TYPE_NAME (*anode) == *node
+	      && TYPE_NAME (cur_and_last_decl[0]) != *node)
+	    {
+	      tree t = cur_and_last_decl[0];
+	      DECL_ORIGINAL_TYPE (*node) = t;
+	      tree tt = build_variant_type_copy (t);
+	      cur_and_last_decl[0] = tt;
+	      TREE_TYPE (*node) = tt;
+	      TYPE_NAME (tt) = *node;
+	    }
 
 	  *anode = cur_and_last_decl[0];
 	  if (ret == error_mark_node)
@@ -2101,7 +2121,7 @@ decls_mismatched_attributes (tree tmpl, tree decl, tree attrlist,
   };
 
   for (unsigned i = 0; i != 2; ++i)
-    for (unsigned j = 0; j != sizeof whitelist / sizeof *whitelist; ++j)
+    for (unsigned j = 0; j != ARRAY_SIZE (whitelist); ++j)
       if (lookup_attribute (whitelist[j], tmpl_attrs[i])
 	  || lookup_attribute (whitelist[j], decl_attrs[i]))
 	return 0;

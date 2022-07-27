@@ -235,7 +235,7 @@ delete_insn_and_edges (rtx_insn *insn)
 {
   bool purge = false;
 
-  if (INSN_P (insn) && BLOCK_FOR_INSN (insn))
+  if (NONDEBUG_INSN_P (insn) && BLOCK_FOR_INSN (insn))
     {
       basic_block bb = BLOCK_FOR_INSN (insn);
       if (BB_END (bb) == insn)
@@ -483,7 +483,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_free_cfg
 
@@ -1686,8 +1686,8 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	 add also edge from asm goto bb to target.  */
       if (asm_goto_edge)
 	{
-	  new_edge->probability = new_edge->probability.apply_scale (1, 2);
-	  jump_block->count = jump_block->count.apply_scale (1, 2);
+	  new_edge->probability /= 2;
+	  jump_block->count /= 2;
 	  edge new_edge2 = make_edge (new_edge->src, target,
 				      e->flags & ~EDGE_FALLTHRU);
 	  new_edge2->probability = probability - new_edge->probability;
@@ -3698,7 +3698,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       cfg_layout_initialize (0);
       return 0;
@@ -3737,7 +3737,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_outof_cfg_layout_mode
 
@@ -4090,7 +4090,7 @@ fixup_reorder_chain (void)
 		     && (!NONDEBUG_INSN_P (insn) || !INSN_HAS_LOCATION (insn)))
 		insn = PREV_INSN (insn);
 	      if (insn != end
-		  && INSN_LOCATION (insn) == e->goto_locus)
+		  && loc_equal (INSN_LOCATION (insn), e->goto_locus))
 		continue;
 	      if (simplejump_p (BB_END (e->src))
 		  && !INSN_HAS_LOCATION (BB_END (e->src)))
@@ -4112,7 +4112,7 @@ fixup_reorder_chain (void)
 		  while (insn != end && !NONDEBUG_INSN_P (insn))
 		    insn = NEXT_INSN (insn);
 		  if (insn != end && INSN_HAS_LOCATION (insn)
-		      && INSN_LOCATION (insn) == e->goto_locus)
+		      && loc_equal (INSN_LOCATION (insn), e->goto_locus))
 		    continue;
 		}
 	      nb = split_edge (e);

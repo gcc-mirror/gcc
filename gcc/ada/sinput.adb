@@ -41,8 +41,8 @@ with System.Storage_Elements;
 with System.Memory;
 with System.WCh_Con; use System.WCh_Con;
 
-with Unchecked_Conversion;
-with Unchecked_Deallocation;
+with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
 
 package body Sinput is
 
@@ -56,16 +56,16 @@ package body Sinput is
    --  used to construct improperly aliased pointer values.
 
    function To_Address is
-     new Unchecked_Conversion (Lines_Table_Ptr, Address);
+     new Ada.Unchecked_Conversion (Lines_Table_Ptr, Address);
 
    function To_Address is
-     new Unchecked_Conversion (Logical_Lines_Table_Ptr, Address);
+     new Ada.Unchecked_Conversion (Logical_Lines_Table_Ptr, Address);
 
    function To_Pointer is
-     new Unchecked_Conversion (Address, Lines_Table_Ptr);
+     new Ada.Unchecked_Conversion (Address, Lines_Table_Ptr);
 
    function To_Pointer is
-     new Unchecked_Conversion (Address, Logical_Lines_Table_Ptr);
+     new Ada.Unchecked_Conversion (Address, Logical_Lines_Table_Ptr);
 
    pragma Warnings (On);
 
@@ -319,10 +319,10 @@ package body Sinput is
    -- Clear_Source_File_Table --
    -----------------------------
 
-   procedure Free is new Unchecked_Deallocation
+   procedure Free is new Ada.Unchecked_Deallocation
      (Lines_Table_Type, Lines_Table_Ptr);
 
-   procedure Free is new Unchecked_Deallocation
+   procedure Free is new Ada.Unchecked_Deallocation
      (Logical_Lines_Table_Type, Logical_Lines_Table_Ptr);
 
    procedure Clear_Source_File_Table is
@@ -378,12 +378,12 @@ package body Sinput is
       --  to first Unchecked_Convert to access-to-variable.
 
       function To_Source_Buffer_Ptr_Var is new
-        Unchecked_Conversion (Source_Buffer_Ptr, Source_Buffer_Ptr_Var);
+        Ada.Unchecked_Conversion (Source_Buffer_Ptr, Source_Buffer_Ptr_Var);
 
       Temp : Source_Buffer_Ptr_Var := To_Source_Buffer_Ptr_Var (Src);
 
       procedure Free_Ptr is new
-        Unchecked_Deallocation (Source_Buffer, Source_Buffer_Ptr_Var);
+        Ada.Unchecked_Deallocation (Source_Buffer, Source_Buffer_Ptr_Var);
    begin
       Free_Ptr (Temp);
       Src := null;
@@ -922,7 +922,7 @@ package body Sinput is
       pragma Import (Ada, Dope);
       use System.Storage_Elements;
       for Dope'Address use Src + System.Address'Size / 8;
-      procedure Free is new Unchecked_Deallocation (Dope_Rec, Dope_Ptr);
+      procedure Free is new Ada.Unchecked_Deallocation (Dope_Rec, Dope_Ptr);
    begin
       Free (Dope);
    end Free_Dope;
@@ -1023,7 +1023,7 @@ package body Sinput is
             SI : constant Source_File_Index := Get_Source_File_Index (P);
 
          begin
-            Write_Name (Debug_Source_Name (SI));
+            Write_Name_For_Debug (Debug_Source_Name (SI));
             Write_Char (':');
             Write_Int (Int (Get_Logical_Line_Number (P)));
             Write_Char (':');

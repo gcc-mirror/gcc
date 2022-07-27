@@ -1,15 +1,19 @@
 This directory contains a mechanism for GCC to have its own internal
-implementation of wcwidth functionality.  (cpp_wcwidth () in libcpp/charset.c).
+implementation of wcwidth functionality (cpp_wcwidth () in libcpp/charset.c),
+as well as a mechanism to update the information about codepoints permitted in
+identifiers, which is encoded in libcpp/ucnid.h.
 
-The idea is to produce the necessary lookup table
-(../../libcpp/generated_cpp_wcwidth.h) in a reproducible way, starting from the
-following files that are distributed by the Unicode Consortium:
+The idea is to produce the necessary lookup tables
+(../../libcpp/{ucnid.h,generated_cpp_wcwidth.h}) in a reproducible way, starting
+from the following files that are distributed by the Unicode Consortium:
 
 ftp://ftp.unicode.org/Public/UNIDATA/UnicodeData.txt
 ftp://ftp.unicode.org/Public/UNIDATA/EastAsianWidth.txt
 ftp://ftp.unicode.org/Public/UNIDATA/PropList.txt
+ftp://ftp.unicode.org/Public/UNIDATA/DerivedNormalizationProps.txt
+ftp://ftp.unicode.org/Public/UNIDATA/DerivedCoreProperties.txt
 
-These three files have been added to source control in this directory;
+These files have been added to source control in this directory;
 please see unicode-license.txt for the relevant copyright information.
 
 In order to keep in sync with glibc's wcwidth as much as possible, it is
@@ -25,20 +29,27 @@ localedata/unicode-gen/utf8_gen.py
 And the most recent versions added to GCC are from glibc git commit:
 f6032247061fb37d59565f2e9667e242c8a98e76
 
-Finally, the script gen_wcwidth.py found here contains the GCC-specific code to
+The script gen_wcwidth.py found here contains the GCC-specific code to
 map glibc's output to the lookup tables we require.  This script should not need
 to change, unless there are structural changes to the Unicode data files or to
-the glibc code.
+the glibc code.  Similarly, makeucnid.cc in ../../libcpp contains the logic to
+produce ucnid.h.
 
-The procedure to update GCC's wcwidth tables is the following:
+The procedure to update GCC's Unicode support is the following:
 
-1.  Update the three Unicode data files from the above URLs.
+1.  Update the five Unicode data files from the above URLs.
 
 2.  Update the two glibc files in from_glibc/ from glibc's git.  Update
     the commit number above in this README.
 
 3.  Run ./gen_wcwidth.py X.Y > ../../libcpp/generated_cpp_wcwidth.h
     (where X.Y is the version of the Unicode standard corresponding to the
-    Unicode data files being used, most recently, 13.0.0).
+    Unicode data files being used, most recently, 14.0.0).
 
-After that, GCC's wcwidth will match the most recent glibc.
+4.  Compile makeucnid, e.g. with:
+      gcc -O2 ../../libcpp/makeucnid.cc -o ../../libcpp/makeucnid
+
+5.  Generate ucnid.h as follows:
+      ../../libcpp/makeucnid ../../libcpp/ucnid.tab UnicodeData.txt \
+	DerivedNormalizationProps.txt DerivedCoreProperties.txt \
+	> ../../libcpp/ucnid.h

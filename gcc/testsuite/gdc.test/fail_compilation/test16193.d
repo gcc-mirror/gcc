@@ -41,4 +41,3 @@ void abc() @nogc {
         x++;
     }
 }
-

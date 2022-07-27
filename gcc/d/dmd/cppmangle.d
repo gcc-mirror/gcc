@@ -471,7 +471,7 @@ private final class CppMangleVisitor : Visitor
             }
             else
             {
-                ti.error("Internal Compiler Error: C++ `%s` template value parameter is not supported", tv.valType.toChars());
+                ti.error("internal compiler error: C++ `%s` template value parameter is not supported", tv.valType.toChars());
                 fatal();
             }
         }
@@ -506,13 +506,13 @@ private final class CppMangleVisitor : Visitor
             }
             else
             {
-                ti.error("Internal Compiler Error: C++ `%s` template alias parameter is not supported", o.toChars());
+                ti.error("internal compiler error: C++ `%s` template alias parameter is not supported", o.toChars());
                 fatal();
             }
         }
         else if (tp.isTemplateThisParameter())
         {
-            ti.error("Internal Compiler Error: C++ `%s` template this parameter is not supported", o.toChars());
+            ti.error("internal compiler error: C++ `%s` template this parameter is not supported", o.toChars());
             fatal();
         }
         else
@@ -995,7 +995,7 @@ private final class CppMangleVisitor : Visitor
         // fake mangling for fields to fix https://issues.dlang.org/show_bug.cgi?id=16525
         if (!(d.storage_class & (STC.extern_ | STC.field | STC.gshared)))
         {
-            d.error("Internal Compiler Error: C++ static non-`__gshared` non-`extern` variables not supported");
+            d.error("internal compiler error: C++ static non-`__gshared` non-`extern` variables not supported");
             fatal();
         }
         Dsymbol p = d.toParent();
@@ -1318,7 +1318,7 @@ private final class CppMangleVisitor : Visitor
             Type t = fparam.type.merge2();
             if (fparam.isReference())
                 t = t.referenceTo();
-            else if (fparam.storageClass & STC.lazy_)
+            else if (fparam.isLazy())
             {
                 // Mangle as delegate
                 auto tf = new TypeFunction(ParameterList(), t, LINK.d);
@@ -1330,7 +1330,7 @@ private final class CppMangleVisitor : Visitor
             if (t.ty == Tsarray)
             {
                 // Static arrays in D are passed by value; no counterpart in C++
-                .error(loc, "Internal Compiler Error: unable to pass static array `%s` to extern(C++) function, use pointer instead",
+                .error(loc, "internal compiler error: unable to pass static array `%s` to extern(C++) function, use pointer instead",
                     t.toChars());
                 fatal();
             }
@@ -1369,7 +1369,7 @@ private final class CppMangleVisitor : Visitor
             p = "`shared` ";
         else
             p = "";
-        .error(loc, "Internal Compiler Error: %stype `%s` cannot be mapped to C++\n", p, t.toChars());
+        .error(loc, "internal compiler error: %stype `%s` cannot be mapped to C++\n", p, t.toChars());
         fatal(); //Fatal, because this error should be handled in frontend
     }
 
@@ -1713,6 +1713,38 @@ extern(C++):
          * Ds       char16_t
          * u <source-name>  # vendor extended type
          */
+        if (t.isimaginary() || t.iscomplex())
+        {
+            // https://issues.dlang.org/show_bug.cgi?id=22806
+            // Complex and imaginary types are represented in the same way as
+            // arrays or vectors in C++.  First substitute the outer type, then
+            // write out the mangle string of the underlying type.
+            if (substitute(t))
+                return;
+            append(t);
+            CV_qualifiers(t);
+
+            if (t.isimaginary())
+                buf.writeByte('G'); // 'G' means imaginary
+            else
+                buf.writeByte('C'); // 'C' means complex
+
+            switch (t.ty)
+            {
+                case Timaginary32:
+                case Tcomplex32:
+                    return Type.tfloat32.accept(this);
+                case Timaginary64:
+                case Tcomplex64:
+                    return Type.tfloat64.accept(this);
+                case Timaginary80:
+                case Tcomplex80:
+                    return Type.tfloat80.accept(this);
+                default:
+                    assert(0);
+            }
+        }
+
         char c;
         char p = 0;
         switch (t.ty)
@@ -1739,12 +1771,6 @@ extern(C++):
             case Tchar:                  c = 'c';       break;
             case Twchar:        p = 'D'; c = 's';       break;  // since C++11
             case Tdchar:        p = 'D'; c = 'i';       break;  // since C++11
-            case Timaginary32:  p = 'G'; c = 'f';       break;  // 'G' means imaginary
-            case Timaginary64:  p = 'G'; c = 'd';       break;
-            case Timaginary80:  p = 'G'; c = 'e';       break;
-            case Tcomplex32:    p = 'C'; c = 'f';       break;  // 'C' means complex
-            case Tcomplex64:    p = 'C'; c = 'd';       break;
-            case Tcomplex80:    p = 'C'; c = 'e';       break;
 
             default:
                 return error(t);
@@ -1882,6 +1908,8 @@ extern(C++):
             return writeBasicType(t, 0, 'l');
         else if (id == Id.__c_ulong)
             return writeBasicType(t, 0, 'm');
+        else if (id == Id.__c_char)
+            return writeBasicType(t, 0, 'c');
         else if (id == Id.__c_wchar_t)
             return writeBasicType(t, 0, 'w');
         else if (id == Id.__c_longlong)
@@ -1889,11 +1917,11 @@ extern(C++):
         else if (id == Id.__c_ulonglong)
             return writeBasicType(t, 0, 'y');
         else if (id == Id.__c_complex_float)
-            return writeBasicType(t, 'C', 'f');
+            return Type.tcomplex32.accept(this);
         else if (id == Id.__c_complex_double)
-            return writeBasicType(t, 'C', 'd');
+            return Type.tcomplex64.accept(this);
         else if (id == Id.__c_complex_real)
-            return writeBasicType(t, 'C', 'e');
+            return Type.tcomplex80.accept(this);
 
         doSymbol(t);
     }

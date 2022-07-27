@@ -30,13 +30,13 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #else
-extern PTR malloc ();
+extern void *malloc ();
 #endif
 
 #ifdef HAVE_STRING_H
 #include <string.h>
 #else
-extern PTR memset ();
+extern void *memset ();
 #endif
 
 #ifndef MAX

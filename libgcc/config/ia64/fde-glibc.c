@@ -29,6 +29,7 @@
 #define _GNU_SOURCE 1
 #endif
 #include "config.h"
+#ifndef inhibit_libc
 #include <stddef.h>
 #include <stdlib.h>
 #include <link.h>
@@ -159,3 +160,4 @@ _Unwind_FindTableEntry (void *pc, unw_word *segment_base, unw_word *gp,
 
   return data.ret;
 }
+#endif

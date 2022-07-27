@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "gimplify.h"
 #include "target.h"
+#include "decl.h"
 
 /* Constructor for a lambda expression.  */
 
@@ -183,6 +184,23 @@ lambda_function (tree lambda)
   return lambda;
 }
 
+/* True if EXPR is an expression whose type can be used directly in lambda
+   capture.  Not to be used for 'auto'.  */
+
+static bool
+type_deducible_expression_p (tree expr)
+{
+  if (!type_dependent_expression_p (expr))
+    return true;
+  if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+      || TREE_CODE (expr) == EXPR_PACK_EXPANSION)
+    return false;
+  tree t = non_reference (TREE_TYPE (expr));
+  return (t && TREE_CODE (t) != TYPE_PACK_EXPANSION
+	  && !WILDCARD_TYPE_P (t) && !LAMBDA_TYPE_P (t)
+	  && !type_uses_auto (t));
+}
+
 /* Returns the type to use for the FIELD_DECL corresponding to the
    capture of EXPR.  EXPLICIT_INIT_P indicates whether this is a
    C++14 init capture, and BY_REFERENCE_P indicates whether we're
@@ -211,7 +229,7 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
       else
 	type = do_auto_deduction (type, expr, auto_node);
     }
-  else if (type_dependent_expression_p (expr))
+  else if (!type_deducible_expression_p (expr))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
@@ -407,9 +425,9 @@ build_capture_proxy (tree member, tree init)
   if (DECL_VLA_CAPTURE_P (member))
     {
       /* Rebuild the VLA type from the pointer and maxindex.  */
-      tree field = next_initializable_field (TYPE_FIELDS (type));
+      tree field = next_aggregate_field (TYPE_FIELDS (type));
       tree ptr = build_simple_component_ref (object, field);
-      field = next_initializable_field (DECL_CHAIN (field));
+      field = next_aggregate_field (DECL_CHAIN (field));
       tree max = build_simple_component_ref (object, field);
       type = build_cplus_array_type (TREE_TYPE (TREE_TYPE (ptr)),
 				     build_index_type (max));
@@ -741,6 +759,7 @@ lambda_expr_this_capture (tree lambda, int add_capture_p)
     {
       tree lambda_stack = NULL_TREE;
       tree init = NULL_TREE;
+      bool saw_complete = false;
 
       /* If we are in a lambda function, we can move out until we hit:
            1. a non-lambda function or NSDMI,
@@ -759,6 +778,11 @@ lambda_expr_this_capture (tree lambda, int add_capture_p)
 				      lambda_stack);
 
 	  tree closure = LAMBDA_EXPR_CLOSURE (tlambda);
+	  if (COMPLETE_TYPE_P (closure))
+	    /* We're instantiating a generic lambda op(), the containing
+	       scope may be gone.  */
+	    saw_complete = true;
+
 	  tree containing_function
 	    = decl_function_context (TYPE_NAME (closure));
 
@@ -768,7 +792,7 @@ lambda_expr_this_capture (tree lambda, int add_capture_p)
 	      /* Lambda in an NSDMI.  We don't have a function to look up
 		 'this' in, but we can find (or rebuild) the fake one from
 		 inject_this_parameter.  */
-	      if (!containing_function && !COMPLETE_TYPE_P (closure))
+	      if (!containing_function && !saw_complete)
 		/* If we're parsing a lambda in a non-local class,
 		   we can find the fake 'this' in scope_chain.  */
 		init = scope_chain->x_current_class_ptr;
@@ -1169,9 +1193,14 @@ maybe_add_lambda_conv_op (tree type)
 	}
     }
   else
-    call = build_call_a (callop,
-			 direct_argvec->length (),
-			 direct_argvec->address ());
+    {
+      /* Don't warn on deprecated or unavailable lambda declarations, unless
+	 the lambda is actually called.  */
+      auto du = make_temp_override (deprecated_state,
+				    UNAVAILABLE_DEPRECATED_SUPPRESS);
+      call = build_call_a (callop, direct_argvec->length (),
+			   direct_argvec->address ());
+    }
 
   CALL_FROM_THUNK_P (call) = 1;
   SET_EXPR_LOCATION (call, UNKNOWN_LOCATION);
@@ -1402,7 +1431,7 @@ record_lambda_scope (tree lambda)
     {
       tree closure = LAMBDA_EXPR_CLOSURE (lambda);
       gcc_checking_assert (closure);
-      maybe_attach_decl (lambda_scope, TYPE_NAME (closure));
+      maybe_key_decl (lambda_scope, TYPE_NAME (closure));
     }
 }
 

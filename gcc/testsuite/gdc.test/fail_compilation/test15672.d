@@ -34,5 +34,3 @@ alias const(byte) CT;
 {
     return cast(T[])[];
 }
-
-

@@ -42,7 +42,10 @@ void test01()
 
   check_ret_type<shared_ptr<void>>(static_pointer_cast<void>(std::move(spd)));
   check_ret_type<shared_ptr<int>>(const_pointer_cast<int>(std::move(spci)));
+  check_ret_type<shared_ptr<MyP>>(dynamic_pointer_cast<MyP>(std::move(spa)));
+#if __cpp_rtti
   check_ret_type<shared_ptr<MyDP>>(dynamic_pointer_cast<MyDP>(std::move(spa)));
+#endif
   check_ret_type<shared_ptr<void>>(reinterpret_pointer_cast<void>(std::move(spd)));
   check_ret_type<shared_ptr<const short>>(reinterpret_pointer_cast<const short>(std::move(spci)));
   check_ret_type<shared_ptr<MyDP>>(reinterpret_pointer_cast<MyDP>(std::move(spa)));
@@ -70,6 +73,7 @@ test02()
   VERIFY(pi.get() == ptr);
   VERIFY(pci.get() == nullptr);
 
+#if __cpp_rtti
   MyP* pptr = new MyP;
   shared_ptr<MyP> pp(pptr);
   auto pdp = dynamic_pointer_cast<MyDP>(std::move(pp));
@@ -92,6 +96,7 @@ test02()
   VERIFY(pi.use_count() == 0);
   VERIFY(reinterpret_cast<int*>(pl.get()) == ptr);
   VERIFY(pi.get() == nullptr);
+#endif
 }
 
 int main()

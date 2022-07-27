@@ -1481,7 +1481,7 @@ class TypeInfo_Delegate : TypeInfo
 
     override size_t getHash(scope const void* p) @trusted const
     {
-        return hashOf(*cast(void delegate()*)p);
+        return hashOf(*cast(const void delegate() *)p);
     }
 
     override bool equals(in void* p1, in void* p2) const
@@ -1885,8 +1885,8 @@ class TypeInfo_Struct : TypeInfo
             return false;
         else if (xopEquals)
         {
-            const dg = _memberFunc(p2, xopEquals);
-            return dg.xopEquals(p1);
+            const dg = _memberFunc(p1, xopEquals);
+            return dg.xopEquals(p2);
         }
         else if (p1 == p2)
             return true;
@@ -2649,13 +2649,18 @@ class Throwable : Object
 
     /**
      * Get the message describing the error.
-     * Base behavior is to return the `Throwable.msg` field.
-     * Override to return some other error message.
+     *
+     * This getter is an alternative way to access the Exception's message,
+     * with the added advantage of being override-able in subclasses.
+     * Subclasses are hence free to do their own memory managements without
+     * being tied to the requirement of providing a `string` in a field.
+     *
+     * The default behavior is to return the `Throwable.msg` field.
      *
      * Returns:
-     *  Error message
+     *  A message representing the cause of the `Throwable`
      */
-    @__future const(char)[] message() const
+    @__future const(char)[] message() const @safe nothrow
     {
         return this.msg;
     }
@@ -2825,8 +2830,8 @@ extern (C)
 
     private struct AA { void* impl; }
     // size_t _aaLen(in AA aa) pure nothrow @nogc;
-    private void* _aaGetY(AA* paa, const TypeInfo_AssociativeArray ti, const size_t valsz, const scope void* pkey) pure nothrow;
-    private void* _aaGetX(AA* paa, const TypeInfo_AssociativeArray ti, const size_t valsz, const scope void* pkey, out bool found) pure nothrow;
+    private void* _aaGetY(scope AA* paa, const TypeInfo_AssociativeArray ti, const size_t valsz, const scope void* pkey) pure nothrow;
+    private void* _aaGetX(scope AA* paa, const TypeInfo_AssociativeArray ti, const size_t valsz, const scope void* pkey, out bool found) pure nothrow;
     // inout(void)* _aaGetRvalueX(inout AA aa, in TypeInfo keyti, in size_t valsz, in void* pkey);
     inout(void[]) _aaValues(inout AA aa, const size_t keysz, const size_t valsz, const TypeInfo tiValueArray) pure nothrow;
     inout(void[]) _aaKeys(inout AA aa, const size_t keysz, const TypeInfo tiKeyArray) pure nothrow;
@@ -4423,7 +4428,7 @@ nothrow @safe @nogc unittest
     }
 }
 
-private extern (C) void rt_finalize(void *data, bool det=true) nothrow;
+private extern (C) void rt_finalize2(void* p, bool det = true, bool resetMemory = true) nothrow;
 
 /// ditto
 void destroy(bool initialize = true, T)(T obj) if (is(T == class))
@@ -4440,7 +4445,11 @@ void destroy(bool initialize = true, T)(T obj) if (is(T == class))
         }
     }
     else
-        rt_finalize(cast(void*)obj);
+    {
+        // Bypass overloaded opCast
+        auto ptr = (() @trusted => *cast(void**) &obj)();
+        rt_finalize2(ptr, true, initialize);
+    }
 }
 
 /// ditto
@@ -4702,6 +4711,37 @@ nothrow unittest
     assert(C.dtorCount == 1);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=22832
+nothrow unittest
+{
+    static struct A {}
+    static class B
+    {
+        A opCast(T : A)() { return A(); }
+    }
+
+    destroy(B.init);
+}
+
+// make sure destroy!false skips re-initialization
+unittest
+{
+    static struct S { int x; }
+    static class C { int x; }
+    static extern(C++) class Cpp { int x; }
+
+    static void test(T)(T inst)
+    {
+        inst.x = 123;
+        destroy!false(inst);
+        assert(inst.x == 123, T.stringof);
+    }
+
+    test(S());
+    test(new C());
+    test(new Cpp());
+}
+
 /// ditto
 void destroy(bool initialize = true, T)(ref T obj)
 if (__traits(isStaticArray, T))
@@ -4861,7 +4901,8 @@ they are only intended to be instantiated by the compiler, not the user.
 
 public import core.internal.entrypoint : _d_cmain;
 
-public import core.internal.array.appending : _d_arrayappendTImpl;
+public import core.internal.array.appending : _d_arrayappendT;
+public import core.internal.array.appending : _d_arrayappendTTrace;
 public import core.internal.array.appending : _d_arrayappendcTXImpl;
 public import core.internal.array.comparison : __cmp;
 public import core.internal.array.equality : __equals;

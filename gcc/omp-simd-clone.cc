@@ -1819,8 +1819,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *) { return ipa_omp_simd_clone (); }
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override
+  {
+    return ipa_omp_simd_clone ();
+  }
 };
 
 bool

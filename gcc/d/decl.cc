@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "symtab-thunks.h"
+#include "gimple-expr.h"
 
 #include "d-tree.h"
 #include "d-target.h"
@@ -99,7 +100,7 @@ mangle_internal_decl (Dsymbol *decl, const char *name, const char *suffix)
   return ident;
 }
 
-/* Returns true if DECL is from the gcc.attribute module.  */
+/* Returns true if DECL is from the gcc.attributes module.  */
 
 static bool
 gcc_attribute_p (Dsymbol *decl)
@@ -149,13 +150,13 @@ public:
 
   /* This should be overridden by each declaration class.  */
 
-  void visit (Dsymbol *)
+  void visit (Dsymbol *) final override
   {
   }
 
   /* Compile a D module, and all members of it.  */
 
-  void visit (Module *d)
+  void visit (Module *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -166,7 +167,7 @@ public:
 
   /* Write the imported symbol to debug.  */
 
-  void visit (Import *d)
+  void visit (Import *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -218,23 +219,23 @@ public:
 
   /* Expand any local variables found in tuples.  */
 
-  void visit (TupleDeclaration *d)
+  void visit (TupleDeclaration *d) final override
   {
     for (size_t i = 0; i < d->objects->length; i++)
       {
 	RootObject *o = (*d->objects)[i];
 	if (o->dyncast () == DYNCAST_EXPRESSION)
 	  {
-	    DsymbolExp *de = ((Expression *) o)->isDsymbolExp ();
-	    if (de != NULL && de->s->isDeclaration ())
-	      this->build_dsymbol (de->s);
+	    VarExp *ve = ((Expression *) o)->isVarExp ();
+	    if (ve)
+	      this->build_dsymbol (ve->var);
 	  }
       }
   }
 
   /* Walk over all declarations in the attribute scope.  */
 
-  void visit (AttribDeclaration *d)
+  void visit (AttribDeclaration *d) final override
   {
     Dsymbols *ds = d->include (NULL);
 
@@ -248,7 +249,7 @@ public:
   /* Pragmas are a way to pass special information to the compiler and to add
      vendor specific extensions to D.  */
 
-  void visit (PragmaDeclaration *d)
+  void visit (PragmaDeclaration *d) final override
   {
     if (d->ident == Identifier::idPool ("lib")
 	|| d->ident == Identifier::idPool ("startaddress"))
@@ -266,7 +267,7 @@ public:
   /* Conditional compilation is the process of selecting which code to compile
      and which code to not compile.  Look for version conditions that may  */
 
-  void visit (ConditionalDeclaration *d)
+  void visit (ConditionalDeclaration *d) final override
   {
     bool old_condition = this->in_version_unittest_;
 
@@ -284,7 +285,7 @@ public:
 
   /* Walk over all members in the namespace scope.  */
 
-  void visit (Nspace *d)
+  void visit (Nspace *d) final override
   {
     if (isError (d) || !d->members)
       return;
@@ -298,7 +299,7 @@ public:
      voldemort type, then it's members must be compiled before the parent
      function finishes.  */
 
-  void visit (TemplateDeclaration *d)
+  void visit (TemplateDeclaration *d) final override
   {
     /* Type cannot be directly named outside of the scope it's declared in, so
        the only way it can be escaped is if the function has auto return.  */
@@ -329,7 +330,7 @@ public:
 
   /* Walk over all members in the instantiated template.  */
 
-  void visit (TemplateInstance *d)
+  void visit (TemplateInstance *d) final override
   {
     if (isError (d)|| !d->members)
       return;
@@ -343,7 +344,7 @@ public:
 
   /* Walk over all members in the mixin template scope.  */
 
-  void visit (TemplateMixin *d)
+  void visit (TemplateMixin *d) final override
   {
     if (isError (d)|| !d->members)
       return;
@@ -355,7 +356,7 @@ public:
   /* Write out compiler generated TypeInfo, initializer and functions for the
      given struct declaration, walking over all static members.  */
 
-  void visit (StructDeclaration *d)
+  void visit (StructDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -367,6 +368,10 @@ public:
 	return;
       }
 
+    /* Don't emit any symbols from gcc.attributes module.  */
+    if (gcc_attribute_p (d))
+      return;
+
     /* Add this decl to the current binding level.  */
     tree ctype = build_ctype (d->type);
     if (TYPE_NAME (ctype))
@@ -375,10 +380,6 @@ public:
     /* Anonymous structs/unions only exist as part of others,
        do not output forward referenced structs.  */
     if (d->isAnonymous () || !d->members)
-      return;
-
-    /* Don't emit any symbols from gcc.attribute module.  */
-    if (gcc_attribute_p (d))
       return;
 
     /* Generate TypeInfo.  */
@@ -470,7 +471,7 @@ public:
   /* Write out compiler generated TypeInfo, initializer and vtables for the
      given class declaration, walking over all static members.  */
 
-  void visit (ClassDeclaration *d)
+  void visit (ClassDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -481,6 +482,11 @@ public:
 		  "had semantic errors when compiling");
 	return;
       }
+
+    /* Add this decl to the current binding level.  */
+    tree ctype = TREE_TYPE (build_ctype (d->type));
+    if (TYPE_NAME (ctype))
+      d_pushdecl (TYPE_NAME (ctype));
 
     if (!d->members)
       return;
@@ -533,18 +539,13 @@ public:
       = build_constructor (TREE_TYPE (vtblsym->csym), elms);
     d_finish_decl (vtblsym->csym);
 
-    /* Add this decl to the current binding level.  */
-    tree ctype = TREE_TYPE (build_ctype (d->type));
-    if (TYPE_NAME (ctype))
-      d_pushdecl (TYPE_NAME (ctype));
-
     d->semanticRun = PASS::obj;
   }
 
   /* Write out compiler generated TypeInfo and vtables for the given interface
      declaration, walking over all static members.  */
 
-  void visit (InterfaceDeclaration *d)
+  void visit (InterfaceDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -555,6 +556,11 @@ public:
 		  "had semantic errors when compiling");
 	return;
       }
+
+    /* Add this decl to the current binding level.  */
+    tree ctype = TREE_TYPE (build_ctype (d->type));
+    if (TYPE_NAME (ctype))
+      d_pushdecl (TYPE_NAME (ctype));
 
     if (!d->members)
       return;
@@ -576,18 +582,13 @@ public:
     DECL_INITIAL (d->csym) = layout_classinfo (d);
     d_finish_decl (d->csym);
 
-    /* Add this decl to the current binding level.  */
-    tree ctype = TREE_TYPE (build_ctype (d->type));
-    if (TYPE_NAME (ctype))
-      d_pushdecl (TYPE_NAME (ctype));
-
     d->semanticRun = PASS::obj;
   }
 
   /* Write out compiler generated TypeInfo and initializer for the given
      enum declaration.  */
 
-  void visit (EnumDeclaration *d)
+  void visit (EnumDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -598,6 +599,11 @@ public:
 		  "had semantic errors when compiling");
 	return;
       }
+
+    /* Add this decl to the current binding level.  */
+    tree ctype = build_ctype (d->type);
+    if (TREE_CODE (ctype) == ENUMERAL_TYPE && TYPE_NAME (ctype))
+      d_pushdecl (TYPE_NAME (ctype));
 
     if (d->isAnonymous ())
       return;
@@ -615,18 +621,13 @@ public:
 	d_finish_decl (d->sinit);
       }
 
-    /* Add this decl to the current binding level.  */
-    tree ctype = build_ctype (d->type);
-    if (TYPE_NAME (ctype))
-      d_pushdecl (TYPE_NAME (ctype));
-
     d->semanticRun = PASS::obj;
   }
 
   /* Finish up a variable declaration and push it into the current scope.
      This can either be a static, local or manifest constant.  */
 
-  void visit (VarDeclaration *d)
+  void visit (VarDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -670,9 +671,13 @@ public:
 	    rest_of_decl_compilation (decl, 1, 0);
 	  }
       }
-    else if (d->isDataseg () && !(d->storage_class & STCextern))
+    else if (d->isDataseg ())
       {
 	tree decl = get_symbol_decl (d);
+
+	/* Only need to build the VAR_DECL for extern declarations.  */
+	if (d->storage_class & STCextern)
+	  return;
 
 	/* Duplicated VarDeclarations map to the same symbol.  Check if this
 	   is the one declaration which will be emitted.  */
@@ -753,7 +758,7 @@ public:
   /* Generate and compile a static TypeInfo declaration, but only if it is
      needed in the current compilation.  */
 
-  void visit (TypeInfoDeclaration *d)
+  void visit (TypeInfoDeclaration *d) final override
   {
     if (d->semanticRun >= PASS::obj)
       return;
@@ -770,13 +775,13 @@ public:
   /* Finish up a function declaration and compile it all the way
      down to assembler language output.  */
 
-  void visit (FuncDeclaration *d)
+  void visit (FuncDeclaration *d) final override
   {
     /* Already generated the function.  */
     if (d->semanticRun >= PASS::obj)
       return;
 
-    /* Don't emit any symbols from gcc.attribute module.  */
+    /* Don't emit any symbols from gcc.attributes module.  */
     if (gcc_attribute_p (d))
       return;
 
@@ -791,7 +796,7 @@ public:
 	  return;
       }
 
-    if (d->semantic3Errors)
+    if (d->hasSemantic3Errors ())
       return;
 
     if (d->isNested ())
@@ -805,7 +810,7 @@ public:
 	      break;
 
 	    /* Parent failed to compile, but errors were gagged.  */
-	    if (fdp->semantic3Errors)
+	    if (fdp->hasSemantic3Errors ())
 	      return;
 	  }
       }
@@ -921,15 +926,6 @@ public:
 	  }
       }
 
-    /* May change cfun->static_chain.  */
-    build_closure (d);
-
-    if (d->vresult)
-      declare_local_var (d->vresult);
-
-    if (d->v_argptr)
-      push_stmt_list ();
-
     /* Named return value optimisation support for D.
        Implemented by overriding all the RETURN_EXPRs and replacing all
        occurrences of VAR with the RESULT_DECL for the function.
@@ -951,7 +947,7 @@ public:
 	else
 	  d->shidden = resdecl;
 
-	if (d->nrvo_can && d->nrvo_var)
+	if (d->isNRVO () && d->nrvo_var)
 	  {
 	    tree var = get_symbol_decl (d->nrvo_var);
 
@@ -965,6 +961,15 @@ public:
 	    SET_DECL_LANG_NRVO (var, d->shidden);
 	  }
       }
+
+    /* May change cfun->static_chain.  */
+    build_closure (d);
+
+    if (d->vresult)
+      declare_local_var (d->vresult);
+
+    if (d->v_argptr)
+      push_stmt_list ();
 
     build_function_body (d);
 
@@ -1284,26 +1289,26 @@ get_symbol_decl (Declaration *decl)
       /* In [pragma/crtctor], Annotates a function so it is run after the C
 	 runtime library is initialized and before the D runtime library is
 	 initialized.  */
-      if (fd->isCrtCtorDtor == 1)
+      if (fd->isCrtCtor ())
 	{
 	  DECL_STATIC_CONSTRUCTOR (decl->csym) = 1;
 	  decl_init_priority_insert (decl->csym, DEFAULT_INIT_PRIORITY);
 	}
-      else if (fd->isCrtCtorDtor == 2)
+      else if (fd->isCrtDtor ())
 	{
 	  DECL_STATIC_DESTRUCTOR (decl->csym) = 1;
 	  decl_fini_priority_insert (decl->csym, DEFAULT_INIT_PRIORITY);
-       	}
+	}
 
       /* Function was declared `naked'.  */
-      if (fd->naked)
+      if (fd->isNaked ())
 	{
 	  insert_decl_attribute (decl->csym, "naked");
 	  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl->csym) = 1;
 	}
 
       /* Mark compiler generated functions as artificial.  */
-      if (fd->generated)
+      if (fd->isGenerated ())
 	DECL_ARTIFICIAL (decl->csym) = 1;
 
       /* Ensure and require contracts are lexically nested in the function they
@@ -1343,26 +1348,13 @@ get_symbol_decl (Declaration *decl)
   if (decl->storage_class & STCvolatile)
     TREE_THIS_VOLATILE (decl->csym) = 1;
 
-  /* Visibility attributes are used by the debugger.  */
-  if (decl->visibility.kind == Visibility::private_)
-    TREE_PRIVATE (decl->csym) = 1;
-  else if (decl->visibility.kind == Visibility::protected_)
-    TREE_PROTECTED (decl->csym) = 1;
+  /* Symbol was marked register.  */
+  if (decl->storage_class & STCregister)
+    DECL_REGISTER (decl->csym) = 1;
 
-  /* Likewise, so could the deprecated attribute.  */
+  /* Symbol was declared with deprecated attribute.  */
   if (decl->storage_class & STCdeprecated)
     TREE_DEPRECATED (decl->csym) = 1;
-
-#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  /* Have to test for import first.  */
-  if (decl->isImportedSymbol ())
-    {
-      insert_decl_attribute (decl->csym, "dllimport");
-      DECL_DLLIMPORT_P (decl->csym) = 1;
-    }
-  else if (decl->isExport ())
-    insert_decl_attribute (decl->csym, "dllexport");
-#endif
 
   if (decl->isDataseg () || decl->isCodeseg () || decl->isThreadlocal ())
     {
@@ -1373,6 +1365,9 @@ get_symbol_decl (Declaration *decl)
       TREE_STATIC (decl->csym) = 1;
       /* The decl has not been defined -- yet.  */
       DECL_EXTERNAL (decl->csym) = 1;
+
+      /* Visibility attributes are used by the debugger.  */
+      set_visibility_for_decl (decl->csym, decl);
 
       DECL_INSTANTIATED (decl->csym) = (decl->isInstantiated () != NULL);
       set_linkage_for_decl (decl->csym);
@@ -1389,6 +1384,18 @@ get_symbol_decl (Declaration *decl)
 
   /* Apply any user attributes that may affect semantic meaning.  */
   apply_user_attributes (decl, decl->csym);
+
+  /* Handle any conflicts between D language attributes and compiler-recognized
+   * user attributes.  */
+  if (VAR_P (decl->csym) && DECL_HARD_REGISTER (decl->csym))
+    {
+      if (decl->storage_class & STCextern)
+	error_at (make_location_t (decl->loc), "explicit register variable "
+		  "%qs declared %<extern%>", decl->toChars ());
+      else if (decl->isThreadlocal ())
+	error_at (make_location_t (decl->loc), "explicit register variable "
+		  "%qs declared thread local", decl->toChars ());
+    }
 
   /* %% Probably should be a little more intelligent about setting this.  */
   TREE_USED (decl->csym) = 1;
@@ -1459,11 +1466,7 @@ declare_local_var (VarDeclaration *var)
 tree
 build_local_temp (tree type)
 {
-  tree decl = build_decl (input_location, VAR_DECL, NULL_TREE, type);
-
-  DECL_CONTEXT (decl) = current_function_decl;
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
+  tree decl = create_tmp_var_raw (type);
   d_pushdecl (decl);
 
   return decl;
@@ -1486,19 +1489,25 @@ get_decl_tree (Declaration *decl)
   if (vd == NULL || fd == NULL)
     return t;
 
-  /* Get the named return value.  */
-  if (DECL_LANG_NRVO (t))
-    return DECL_LANG_NRVO (t);
-
   /* Get the closure holding the var decl.  */
   if (DECL_LANG_FRAME_FIELD (t))
     {
       FuncDeclaration *parent = vd->toParent2 ()->isFuncDeclaration ();
       tree frame_ref = get_framedecl (fd, parent);
 
-      return component_ref (build_deref (frame_ref),
-			    DECL_LANG_FRAME_FIELD (t));
+      tree field = component_ref (build_deref (frame_ref),
+				  DECL_LANG_FRAME_FIELD (t));
+      /* Frame field can also be a reference to the DECL_RESULT of a function.
+	 Dereference it to get the value.  */
+      if (DECL_LANG_NRVO (t))
+	field = build_deref (field);
+
+      return field;
     }
+
+  /* Get the named return value.  */
+  if (DECL_LANG_NRVO (t))
+    return DECL_LANG_NRVO (t);
 
   /* Get the non-local `this' value by going through parent link
      of nested classes, this routine pretty much undoes what
@@ -1839,7 +1848,7 @@ make_thunk (FuncDeclaration *decl, int offset)
      forcing a D local thunk to be emitted.  */
   const char *ident;
 
-  if (decl->linkage == LINK::cpp)
+  if (decl->resolvedLinkage () == LINK::cpp)
     ident = target.cpp.thunkMangle (decl, offset);
   else
     {
@@ -1856,7 +1865,7 @@ make_thunk (FuncDeclaration *decl, int offset)
 
   d_keep (thunk);
 
-  if (decl->linkage != LINK::cpp)
+  if (decl->resolvedLinkage () != LINK::cpp)
     free (CONST_CAST (char *, ident));
 
   if (!DECL_EXTERNAL (function))
@@ -1885,16 +1894,7 @@ start_function (FuncDeclaration *fd)
      modules not in this compilation, or thunk aliases.  */
   TemplateInstance *ti = fd->isInstantiated ();
   if (ti && ti->needsCodegen ())
-    {
-      /* Warn about templates instantiated in this compilation.  */
-      if (ti == fd->parent)
-	{
-	  warning (OPT_Wtemplates, "%s %qs instantiated",
-		   ti->kind (), ti->toPrettyChars (false));
-	}
-
-      DECL_EXTERNAL (fndecl) = 0;
-    }
+    DECL_EXTERNAL (fndecl) = 0;
   else
     {
       Module *md = fd->getModule ();
@@ -2235,7 +2235,7 @@ aggregate_initializer_decl (AggregateDeclaration *decl)
 tree
 layout_class_initializer (ClassDeclaration *cd)
 {
-  NewExp *ne = NewExp::create (cd->loc, NULL, NULL, cd->type, NULL);
+  NewExp *ne = NewExp::create (cd->loc, NULL, cd->type, NULL);
   ne->type = cd->type;
 
   Expression *e = ne->ctfeInterpret ();
@@ -2339,8 +2339,6 @@ build_type_decl (tree type, Dsymbol *dsym)
     }
   else if (type != TYPE_MAIN_VARIANT (type))
     DECL_ORIGINAL_TYPE (decl) = TYPE_MAIN_VARIANT (type);
-
-  rest_of_decl_compilation (decl, DECL_FILE_SCOPE_P (decl), 0);
 }
 
 /* Create a declaration for field NAME of a given TYPE, setting the flags
@@ -2451,4 +2449,38 @@ set_linkage_for_decl (tree decl)
   /* Compiler generated public symbols can appear in multiple contexts.  */
   if (DECL_ARTIFICIAL (decl))
     return d_weak_linkage (decl);
+}
+
+/* NODE is a FUNCTION_DECL, VAR_DECL or RECORD_TYPE for the declaration SYM.
+   Set flags to reflect visibility that NODE will get in the object file.  */
+
+void
+set_visibility_for_decl (tree node, Dsymbol *sym)
+{
+  Visibility visibility = sym->visible ();
+  if (visibility.kind == Visibility::private_)
+    TREE_PRIVATE (node) = 1;
+  else if (visibility.kind == Visibility::protected_)
+    TREE_PROTECTED (node) = 1;
+
+  /* If the declaration was declared `export', append either the dllimport
+     or dllexport attribute.  */
+  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES)
+    {
+      const char *attrname = NULL;
+
+      /* Have to test for import first.  */
+      if (sym->isImportedSymbol ())
+	attrname = "dllimport";
+      else if (sym->isExport ())
+	attrname = "dllexport";
+
+      if (attrname != NULL)
+	{
+	  if (DECL_P (node))
+	    insert_decl_attribute (node, attrname);
+	  else if (TYPE_P (node))
+	    insert_type_attribute (node, attrname);
+	}
+    }
 }

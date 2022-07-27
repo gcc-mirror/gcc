@@ -612,16 +612,31 @@ chrec_apply (unsigned var,
     case POLYNOMIAL_CHREC:
       if (evolution_function_is_affine_p (chrec))
 	{
+	  tree chrecr = CHREC_RIGHT (chrec);
 	  if (CHREC_VARIABLE (chrec) != var)
-	    return build_polynomial_chrec
+	    res = build_polynomial_chrec
 	      (CHREC_VARIABLE (chrec),
 	       chrec_apply (var, CHREC_LEFT (chrec), x),
-	       chrec_apply (var, CHREC_RIGHT (chrec), x));
+	       chrec_apply (var, chrecr, x));
 
 	  /* "{a, +, b} (x)"  ->  "a + b*x".  */
-	  x = chrec_convert_rhs (type, x, NULL);
-	  res = chrec_fold_multiply (TREE_TYPE (x), CHREC_RIGHT (chrec), x);
-	  res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
+	  else if (operand_equal_p (CHREC_LEFT (chrec), chrecr)
+		   && TREE_CODE (x) == PLUS_EXPR
+		   && integer_all_onesp (TREE_OPERAND (x, 1)))
+	    {
+	      /* We know the number of iterations can't be negative.
+		 So {a, +, a} (x-1) -> "a*x".  */
+	      res = build_int_cst (TREE_TYPE (x), 1);
+	      res = chrec_fold_plus (TREE_TYPE (x), x, res);
+	      res = chrec_convert_rhs (type, res, NULL);
+	      res = chrec_fold_multiply (type, chrecr, res);
+	    }
+	  else
+	    {
+	      res = chrec_convert_rhs (TREE_TYPE (chrecr), x, NULL);
+	      res = chrec_fold_multiply (TREE_TYPE (chrecr), chrecr, res);
+	      res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
+	    }
 	}
       else if (TREE_CODE (x) == INTEGER_CST
 	       && tree_int_cst_sgn (x) == 1)
@@ -644,7 +659,7 @@ chrec_apply (unsigned var,
 
   if (dump_file && (dump_flags & TDF_SCEV))
     {
-      fprintf (dump_file, "  (varying_loop = %d\n", var);
+      fprintf (dump_file, "  (varying_loop = %d", var);
       fprintf (dump_file, ")\n  (chrec = ");
       print_generic_expr (dump_file, chrec);
       fprintf (dump_file, ")\n  (x = ");

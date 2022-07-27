@@ -319,10 +319,7 @@ public:
             // Should not be printed
             //property(name, "d");
             break;
-        case LINK.system:
-            // Should not be printed
-            //property(name, "system");
-            break;
+        case LINK.system:   return property(name, "system");
         case LINK.c:        return property(name, "c");
         case LINK.cpp:      return property(name, "cpp");
         case LINK.windows:  return property(name, "windows");
@@ -449,7 +446,7 @@ public:
             return;
         jsonProperties(cast(Dsymbol)d);
         propertyStorageClass("storageClass", d.storage_class);
-        property("linkage", d.linkage);
+        property("linkage", d._linkage);
         property("type", "deco", d.type);
         // Emit originalType if it differs from type
         if (d.type != d.originalType && d.originalType)
@@ -937,7 +934,7 @@ public:
 
         propertyStart("ddocFiles");
         arrayStart();
-        foreach (ddocFile; global.params.ddocfiles)
+        foreach (ddocFile; global.params.ddoc.files)
         {
             item(ddocFile.toDString);
         }

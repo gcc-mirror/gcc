@@ -40,6 +40,10 @@
 # error "compatibility-c++0x.cc must be compiled with -std=gnu++0x"
 #endif
 
+#if _GLIBCXX_INLINE_VERSION
+# error "compatibility-thread-c++0x.cc is not needed for gnu-versioned-namespace"
+#endif
+
 #ifdef _GLIBCXX_SHARED
 
 namespace std _GLIBCXX_VISIBILITY(default)

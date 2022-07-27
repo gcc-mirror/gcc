@@ -32,7 +32,9 @@ test01()
   std::shared_ptr<int> p;
   VERIFY( std::get_deleter<Del>(p) == nullptr );
   p = std::shared_ptr<int>(new int, Del());
+#if __cpp_rtti
   VERIFY( std::get_deleter<Del>(p) != nullptr );
+#endif
   p = std::shared_ptr<int>(new int);
   VERIFY( std::get_deleter<Del>(p) == nullptr );
 }

@@ -2000,7 +2000,7 @@ package Ada.Strings.Superbounded with SPARK_Mode is
             --  Source are remaining at the left.
 
             and then
-              (if New_Item'Length > Source.Max_Length then
+              (if New_Item'Length >= Source.Max_Length then
 
                  --  New_Item covers all Max_Length characters
 
@@ -2089,7 +2089,7 @@ package Ada.Strings.Superbounded with SPARK_Mode is
             --  Source are remaining at the left.
 
             and then
-              (if New_Item'Length > Source.Max_Length then
+              (if New_Item'Length >= Source.Max_Length then
 
                  --  New_Item covers all Max_Length characters
 

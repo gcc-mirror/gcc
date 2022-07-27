@@ -1,3 +1,91 @@
+2022-07-12  Martin Liska  <mliska@suse.cz>
+
+	* plugin-api.h (enum linker_api_version): New enum.
+	(ld_plugin_get_api_version): New.
+	(enum ld_plugin_tag): Add LDPT_GET_API_VERSION.
+	(struct ld_plugin_tv): Add tv_get_api_version.
+
+2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (OMP_REQUIRES_[...]): Update comment.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION): Bump to 2.
+	(GOMP_REQUIRES_UNIFIED_ADDRESS, GOMP_REQUIRES_UNIFIED_SHARED_MEMORY,
+	GOMP_REQUIRES_REVERSE_OFFLOAD, GOMP_REQUIRES_TARGET_USED):
+	New defines.
+
+2022-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gomp-constants.h (GOMP_DEVICE_INVALID): Define.
+
+2022-05-31  Alan Modra  <amodra@gmail.com>
+
+	* dwarf2.def: Correct spelling of DW_AT_namelist_item.
+
+2022-05-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* ansidecl.h: Drop macros OVERRIDE and FINAL.
+
+2022-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	* demangle.h (enum demangle_component_type): Add module components.
+
+2022-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cuda/cuda.h (enum CUjit_option): Add
+	'CU_JIT_GENERATE_DEBUG_INFO', 'CU_JIT_GENERATE_LINE_INFO'.
+	(enum CUlimit): Add 'CU_LIMIT_STACK_SIZE',
+	'CU_LIMIT_MALLOC_HEAP_SIZE'.
+	(cuCtxSetLimit, cuGetErrorName): Add.
+
+2022-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cuda/cuda.h: For C++, wrap in 'extern "C"'.
+
+2022-05-17  Nathan Sidwell  <nathan@acm.org>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_STRUCTURED_BINDING.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gomp-constants.h (GOMP_DEPEND_INOUTSET): Define.
+
+2022-05-10  Martin Liska  <mliska@suse.cz>
+
+	* ansidecl.h (PTR): Remove.
+	(const): Likewise.
+	(volatile): Likewise.
+	(signed): Likewise.
+
+2022-05-10  Martin Liska  <mliska@suse.cz>
+
+	* hashtab.h (HTAB_EMPTY_ENTRY): Use void * instead PTR.
+	(HTAB_DELETED_ENTRY): Likewise.
+
+2022-05-09  Martin Liska  <mliska@suse.cz>
+
+	* ansidecl.h (PTR): Remove Not ANCI C part.
+
+2022-05-04  Martin Liska  <mliska@suse.cz>
+
+	* plugin-api.h (enum ld_plugin_tag): Do not set implicit enum
+	values.
+
+2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cuda/cuda.h: New file.
+
+2022-03-19  Tiezhu Yang  <yangtiezhu@loongson.cn>
+
+	* floatformat.h (floatformat_ieee_quad_big): Renamed from
+	floatformat_ia64_quad_big.
+	(floatformat_ieee_quad_little): Similarly.
+
 2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* unique-ptr.h: Removed.

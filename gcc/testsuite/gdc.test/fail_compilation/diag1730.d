@@ -100,4 +100,3 @@ void main()
     scObj.scFunc();
     scObj.wFunc(); // ng
 }
-

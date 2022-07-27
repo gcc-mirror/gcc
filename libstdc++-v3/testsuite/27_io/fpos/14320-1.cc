@@ -19,46 +19,33 @@
 
 // 27.4.3 fpos
 
-// { dg-do run }
+// { dg-do compile }
 
-#include <typeinfo>
 #include <limits>
 #include <iterator>
-#include <testsuite_hooks.h>
 
 // libstdc++/14320
-void test01()
-{
-  using namespace std;
 
-  typedef istreambuf_iterator<char>::difference_type Distance;
+typedef std::istreambuf_iterator<char>::difference_type Distance;
 
-  bool found = false;
-  // The C++ standard didn't originally have "long long", however that
-  // type is in the C++11 standard and testing for it allows
-  // ilp32 targets to pass this test when `Distance' is 64 bits.
-  if (typeid(Distance) == typeid(long long int))
-    found = true;
-  if (typeid(Distance) == typeid(long int))
-    found = true;
-  if (typeid(Distance) == typeid(int))
-    found = true;
-  if (typeid(Distance) == typeid(short int))
-    found = true;
-  if (typeid(Distance) == typeid(signed char))
-    found = true;
-  if (numeric_limits<char>::is_signed &&
-      typeid(Distance) == typeid(char))
-    found = true;
-  if (numeric_limits<wchar_t>::is_signed &&
-      typeid(Distance) == typeid(wchar_t))
-    found = true;
-  
-  VERIFY( found );
-}
+#if __cplusplus >= 201103L
+  static_assert( std::is_integral<Distance>::value, "integral type" );
+  static_assert( std::is_signed<Distance>::value, "signed integral type" );
+#else
+template<typename> struct SignedInteger { enum { value = 0 }; };
+// The C++ standard didn't originally have "long long", however that
+// type is in the C++11 standard and testing for it allows
+// ilp32 targets to pass this test when `Distance' is 64 bits.
+template<> struct SignedInteger<long long int> { enum { value = 1 }; };
+template<> struct SignedInteger<long int> { enum { value = 1 }; };
+template<> struct SignedInteger<int> { enum { value = 1 }; };
+template<> struct SignedInteger<short int> { enum { value = 1 }; };
+template<> struct SignedInteger<char> {
+  enum { value = std::numeric_limits<char>::is_signed };
+};
+template<> struct SignedInteger<wchar_t> {
+  enum { value = std::numeric_limits<wchar_t>::is_signed };
+};
 
-int main()
-{
-  test01();
-  return 0;
-}
+char assertion[SignedInteger<Distance>::value ? 1 : -1];
+#endif

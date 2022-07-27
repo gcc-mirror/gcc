@@ -7,9 +7,9 @@ TEST_OUTPUT:
 #pragma once
 
 #include <assert.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <math.h>
 
 #ifdef CUSTOM_D_ARRAY_TYPE
 #define _d_dynamicArray CUSTOM_D_ARRAY_TYPE
@@ -65,9 +65,7 @@ enum class ExternDEnum
 template <>
 struct ExternDStructTemplate final
 {
-    // Ignoring var i alignment 0
     int32_t i;
-    // Ignoring var d alignment 0
     double d;
     ExternDStructTemplate()
     {
@@ -131,7 +129,7 @@ struct ExternCppStruct final
         st()
     {
     }
-    ExternCppStruct(ExternDStruct s, ExternDEnum e = (ExternDEnum)0, ExternDStructTemplate< > st = ExternDStructTemplate< >(0, NAN)) :
+    ExternCppStruct(ExternDStruct s, ExternDEnum e = (ExternDEnum)0, ExternDStructTemplate< > st = ExternDStructTemplate< >()) :
         s(s),
         e(e),
         st(st)

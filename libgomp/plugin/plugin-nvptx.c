@@ -41,7 +41,11 @@
 #include "oacc-int.h"
 
 #include <pthread.h>
-#include <cuda.h>
+#ifndef PLUGIN_NVPTX_INCLUDE_SYSTEM_CUDA_H
+# include "cuda/cuda.h"
+#else
+# include <cuda.h>
+#endif
 #include <stdbool.h>
 #include <limits.h>
 #include <string.h>
@@ -81,7 +85,7 @@ CUresult cuOccupancyMaxPotentialBlockSize(int *, int *, CUfunction,
 
 #define DO_PRAGMA(x) _Pragma (#x)
 
-#if PLUGIN_NVPTX_DYNAMIC
+#ifndef PLUGIN_NVPTX_LINK_LIBCUDA
 # include <dlfcn.h>
 
 struct cuda_lib_s {
@@ -1171,9 +1175,14 @@ GOMP_OFFLOAD_get_type (void)
 }
 
 int
-GOMP_OFFLOAD_get_num_devices (void)
+GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
 {
-  return nvptx_get_num_devices ();
+  int num_devices = nvptx_get_num_devices ();
+  /* Return -1 if no omp_requires_mask cannot be fulfilled but
+     devices were present.  */
+  if (num_devices > 0 && omp_requires_mask != 0)
+    return -1;
+  return num_devices;
 }
 
 bool

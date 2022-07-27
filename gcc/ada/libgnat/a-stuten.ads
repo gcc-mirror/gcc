@@ -36,8 +36,8 @@
 --  UTF encoded strings. Note: this package is consistent with Ada 95, and may
 --  be used in Ada 95 or Ada 2005 mode.
 
+with Ada.Unchecked_Conversion;
 with Interfaces;
-with Unchecked_Conversion;
 
 package Ada.Strings.UTF_Encoding is
    pragma Pure (UTF_Encoding);
@@ -106,13 +106,13 @@ package Ada.Strings.UTF_Encoding is
 
 private
    function To_Unsigned_8 is new
-     Unchecked_Conversion (Character, Interfaces.Unsigned_8);
+     Ada.Unchecked_Conversion (Character, Interfaces.Unsigned_8);
 
    function To_Unsigned_16 is new
-     Unchecked_Conversion (Wide_Character, Interfaces.Unsigned_16);
+     Ada.Unchecked_Conversion (Wide_Character, Interfaces.Unsigned_16);
 
    function To_Unsigned_32 is new
-     Unchecked_Conversion (Wide_Wide_Character, Interfaces.Unsigned_32);
+     Ada.Unchecked_Conversion (Wide_Wide_Character, Interfaces.Unsigned_32);
 
    subtype UTF_XE_Encoding is Encoding_Scheme range UTF_16BE .. UTF_16LE;
    --  Subtype containing only UTF_16BE and UTF_16LE entries

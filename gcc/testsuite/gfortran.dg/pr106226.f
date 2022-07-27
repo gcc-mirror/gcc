@@ -1,0 +1,37 @@
+! { dg-do compile }
+! { dg-options "-O3 -std=legacy" }
+
+      SUBROUTINE EFTORD(DM,CHDINT,L4)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      PARAMETER (MXPT=100, MXFRG=50, MXFGPT=MXPT*MXFRG)
+      DIMENSION DM(*),CHDINT(L4)
+      COMMON /FGRAD / DEF0,DEFT0,TORQ0
+     *                ,ATORQ(3,MXFRG)
+      COMMON /CSSTV / CX,CY,CZ
+     *                EFBTRM(MXFGPT),EFATRM2(MXFGPT),EFBTRM2(MXFGPT),
+     *                EFDIP(3,MXFGPT),EFQAD(6,MXFGPT),
+     *                EFOCT(10,MXFGPT),FRGNME(MXFGPT)
+      IF(NROOTS.EQ.5) CALL ROOT5
+      IF(NROOTS.EQ.6) CALL ROOT6
+      IF(NROOTS.GE.7) THEN
+         CALL ABRT
+      END IF
+      DO 403 I = 1,IJ
+      CHDINT(ICC)=CHDINT(ICC)-DUM*DUMY
+      ICC=ICC+1
+ 403  CONTINUE
+      CHDINT(ICC)=CHDINT(ICC)-DUM*DUMY
+      DO 550 J=MINJ,MAX
+      LJ=LOCJ+J
+      IF (LI-LJ) 920,940,940
+  920 ID = LJ
+      GO TO 960
+  940 ID = LI
+  960 NN = (ID*(ID-1))/2+JD
+      DUM = DM(NN)
+      ATORQ(1,INF)=ATORQ(1,INF)-DUM*(CHDINT(ICC+1)*EFDIP(3,IC)
+     $           -CHDINT(ICC+2)*EFDIP(2,IC))
+      ICC=ICC+1
+      ICC=ICC+1
+  550 CONTINUE
+      END

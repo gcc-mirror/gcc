@@ -52,4 +52,3 @@ void put(R, E)(ref R r, E e)
                 "Cannot put a "~E.stringof~" into a "~R.stringof);
     }
 }
-

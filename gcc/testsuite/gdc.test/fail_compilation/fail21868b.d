@@ -2,7 +2,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/fail21868b.d(19): Error: returning `&s.x` escapes a reference to parameter `s`
-fail_compilation/fail21868b.d(19):        perhaps remove `scope` parameter annotation so `return` applies to `ref`
+fail_compilation/fail21868b.d(17):        perhaps change the `return scope` into `scope return`
 ---
 */
 
@@ -14,9 +14,7 @@ struct S
     int* y;
 }
 
-int* test(ref return scope S s)
+int* test(ref return scope S s) @safe
 {
     return &s.x;
 }
-
-

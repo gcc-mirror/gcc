@@ -47,9 +47,9 @@ contains
           !$acc atomic write ! ... to force 'TREE_ADDRESSABLE'.
           y = a
     !$acc end parallel
-    ! { dg-note {variable 'i' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO2" { xfail *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'j' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO3" { xfail *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'a' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO4" { xfail *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "TODO" { xfail *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "TODO" { xfail *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'a' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "TODO" { xfail *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'C\.[0-9]+' declared in block potentially has improper OpenACC privatization level: 'const_decl'} "TODO" { target *-*-* } l_compute$c_compute }
   end subroutine f
 end module m

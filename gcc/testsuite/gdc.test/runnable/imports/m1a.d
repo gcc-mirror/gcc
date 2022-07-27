@@ -8,4 +8,3 @@ A aFunc( aliasM1 f )
 }
 
 //A aFunc( A function() f );
-

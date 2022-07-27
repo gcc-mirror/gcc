@@ -24,4 +24,3 @@ void main()
 {
   foo!(i);
 }
-

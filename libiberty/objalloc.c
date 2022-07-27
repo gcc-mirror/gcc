@@ -37,8 +37,8 @@ Boston, MA 02110-1301, USA.  */
 #include <stdlib.h>
 #else
 /* For systems with larger pointers than ints, this must be declared.  */
-extern PTR malloc (size_t);
-extern void free (PTR);
+extern void *malloc (size_t);
+extern void free (void *);
 #endif
 
 #endif
@@ -92,7 +92,7 @@ objalloc_create (void)
   if (ret == NULL)
     return NULL;
 
-  ret->chunks = (PTR) malloc (CHUNK_SIZE);
+  ret->chunks = (void *) malloc (CHUNK_SIZE);
   if (ret->chunks == NULL)
     {
       free (ret);
@@ -111,7 +111,7 @@ objalloc_create (void)
 
 /* Allocate space from an objalloc structure.  */
 
-PTR
+void *
 _objalloc_alloc (struct objalloc *o, unsigned long original_len)
 {
   unsigned long len = original_len;
@@ -132,7 +132,7 @@ _objalloc_alloc (struct objalloc *o, unsigned long original_len)
     {
       o->current_ptr += len;
       o->current_space -= len;
-      return (PTR) (o->current_ptr - len);
+      return (void *) (o->current_ptr - len);
     }
 
   if (len >= BIG_REQUEST)
@@ -148,9 +148,9 @@ _objalloc_alloc (struct objalloc *o, unsigned long original_len)
       chunk->next = (struct objalloc_chunk *) o->chunks;
       chunk->current_ptr = o->current_ptr;
 
-      o->chunks = (PTR) chunk;
+      o->chunks = (void *) chunk;
 
-      return (PTR) (ret + CHUNK_HEADER_SIZE);
+      return (void *) (ret + CHUNK_HEADER_SIZE);
     }
   else
     {
@@ -165,7 +165,7 @@ _objalloc_alloc (struct objalloc *o, unsigned long original_len)
       o->current_ptr = (char *) chunk + CHUNK_HEADER_SIZE;
       o->current_space = CHUNK_SIZE - CHUNK_HEADER_SIZE;
 
-      o->chunks = (PTR) chunk;
+      o->chunks = (void *) chunk;
 
       return objalloc_alloc (o, len);
     }
@@ -195,7 +195,7 @@ objalloc_free (struct objalloc *o)
    recently allocated blocks.  */
 
 void
-objalloc_free_block (struct objalloc *o, PTR block)
+objalloc_free_block (struct objalloc *o, void *block)
 {
   struct objalloc_chunk *p, *small;
   char *b = (char *) block;
@@ -257,7 +257,7 @@ objalloc_free_block (struct objalloc *o, PTR block)
 
       if (first == NULL)
 	first = p;
-      o->chunks = (PTR) first;
+      o->chunks = (void *) first;
 
       /* Now start allocating from this small block again.  */
       o->current_ptr = b;
@@ -287,7 +287,7 @@ objalloc_free_block (struct objalloc *o, PTR block)
 	  q = next;
 	}
 
-      o->chunks = (PTR) p;
+      o->chunks = (void *) p;
 
       while (p->current_ptr != NULL)
 	p = p->next;

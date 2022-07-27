@@ -133,6 +133,7 @@ typedef enum
   LIBERROR_CORRUPT_FILE,
   LIBERROR_INQUIRE_INTERNAL_UNIT, /* Must be different from STAT_STOPPED_IMAGE.  */
   LIBERROR_BAD_WAIT_ID,
+  LIBERROR_NO_MEMORY,
   LIBERROR_LAST			/* Not a real error, the last error # + 1.  */
 }
 libgfortran_error_codes;

@@ -137,7 +137,7 @@
  [(set (match_dup 0)
        (vec_merge:SUBST_V
 	 (match_dup 1)
-	 (match_operand:SUBST_V 2 "const0_operand" "C")
+	 (match_operand:SUBST_V 2 "const0_operand")
 	 (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")))
 ])
 
@@ -155,7 +155,7 @@
 	(vec_merge:SUBST_V
 	  (vec_merge:SUBST_V
 	    (match_dup 1)
-	    (match_operand:SUBST_V 3 "const0_operand" "C")
+	    (match_operand:SUBST_V 3 "const0_operand")
 	    (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
 	  (match_dup 2)
 	  (const_int 1)))])
@@ -171,7 +171,7 @@
  [(set (match_dup 0)
        (vec_merge:SUBST_CV
 	 (match_dup 1)
-	 (match_operand:SUBST_CV 2 "const0_operand" "C")
+	 (match_operand:SUBST_CV 2 "const0_operand")
 	 (unspec:<avx512fmaskmode>
 	   [(match_operand:<avx512fmaskcmode> 3 "register_operand" "Yk")]
 	   UNSPEC_COMPLEX_MASK)))
@@ -372,7 +372,7 @@
 	(vec_merge:SUBST_CV
 	  (vec_merge:SUBST_CV
 	    (match_dup 1)
-	    (match_operand:SUBST_CV 3 "const0_operand" "C")
+	    (match_operand:SUBST_CV 3 "const0_operand")
 	    (unspec:<avx512fmaskmode>
 	      [(match_operand:<avx512fmaskcmode> 4 "register_operand" "Yk")]
 	      UNSPEC_COMPLEX_MASK))
@@ -478,5 +478,5 @@
   [(set (match_dup 0)
         (vec_merge:SUBST_V
 	  (match_dup 1)
-	  (match_operand:SUBST_V 2 "const0_operand" "C")
+	  (match_operand:SUBST_V 2 "const0_operand")
 	  (match_operand:<avx512fmaskhalfmode> 3 "register_operand" "Yk")))])

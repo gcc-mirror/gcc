@@ -42,8 +42,8 @@ ALL_HOST_OBJS += gcn-run.o
 gcn-run$(exeext): gcn-run.o
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $< -ldl
 
-MULTILIB_OPTIONS = march=gfx900/march=gfx906/march=gfx908
-MULTILIB_DIRNAMES = gfx900 gfx906 gfx908
+MULTILIB_OPTIONS = march=gfx900/march=gfx906/march=gfx908/march=gfx90a
+MULTILIB_DIRNAMES = gfx900 gfx906 gfx908 gfx90a
 
 gcn-tree.o: $(srcdir)/config/gcn/gcn-tree.cc
 	$(COMPILE) $<

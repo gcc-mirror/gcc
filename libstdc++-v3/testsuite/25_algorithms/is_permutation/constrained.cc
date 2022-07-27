@@ -19,6 +19,7 @@
 // { dg-do run { target c++2a } }
 
 #include <algorithm>
+#include <iterator>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 

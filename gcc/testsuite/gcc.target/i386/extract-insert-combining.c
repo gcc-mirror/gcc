@@ -4,6 +4,7 @@
 /* { dg-final { scan-assembler-times "(?:vpaddd|paddd)\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]" 2 } } */
 /* { dg-final { scan-assembler-times "(?:vpinsrd|pinsrd)\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]" 1 } } */
 /* { dg-final { scan-assembler-not "vmovss" } } */
+/* { dg-final { scan-assembler-not {(?n)mov.*(%rsp)} { target { ! ia32 } } } } */
 
 #include <immintrin.h>
 

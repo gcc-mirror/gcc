@@ -1,4 +1,5 @@
-/* { dg-do link } */
+/* { dg-do link { target two_plus_gigs } } */
+/* { dg-do compile { target { ! two_plus_gigs } } } */
 /* { dg-options "-O3 -save-temps -mcmodel=small" } */
 
 char fixed_regs[0x80000000];

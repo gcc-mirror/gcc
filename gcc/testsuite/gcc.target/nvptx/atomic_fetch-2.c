@@ -69,9 +69,9 @@ main()
 /* { dg-final { scan-assembler-times "atom.cas.b64" 3 } } */
 
 /* { dg-final { scan-assembler-times "atom.add.u32" 1 } } */
-/* { dg-final { scan-assembler-times "atom.b32.and" 1 } } */
-/* { dg-final { scan-assembler-times "atom.b32.or" 1 } } */
-/* { dg-final { scan-assembler-times "atom.b32.xor" 1 } } */
+/* { dg-final { scan-assembler-times "atom.and.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.or.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.xor.b32" 1 } } */
 
 /* Global.  */
 
@@ -79,9 +79,9 @@ main()
 /* { dg-final { scan-assembler-times "atom.global.cas.b64" 3 } } */
 
 /* { dg-final { scan-assembler-times "atom.global.add.u32" 1 } } */
-/* { dg-final { scan-assembler-times "atom.global.b32.and" 1 } } */
-/* { dg-final { scan-assembler-times "atom.global.b32.or" 1 } } */
-/* { dg-final { scan-assembler-times "atom.global.b32.xor" 1 } } */
+/* { dg-final { scan-assembler-times "atom.global.and.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.global.or.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.global.xor.b32" 1 } } */
 
 /* Shared.  */
 
@@ -89,6 +89,6 @@ main()
 /* { dg-final { scan-assembler-times "atom.shared.cas.b64" 3 } } */
 
 /* { dg-final { scan-assembler-times "atom.shared.add.u32" 1 } } */
-/* { dg-final { scan-assembler-times "atom.shared.b32.and" 1 } } */
-/* { dg-final { scan-assembler-times "atom.shared.b32.or" 1 } } */
-/* { dg-final { scan-assembler-times "atom.shared.b32.xor" 1 } } */
+/* { dg-final { scan-assembler-times "atom.shared.and.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.shared.or.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.shared.xor.b32" 1 } } */

@@ -19,20 +19,20 @@
 
 // 21.3.6.5 basic_string find_first_not_of
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 void test03(void)
 {
-  typedef std::wstring::size_type csize_type;
-  csize_type npos = std::wstring::npos;
+  typedef __gnu_test::wstring::size_type csize_type;
+  csize_type npos = __gnu_test::wstring::npos;
   csize_type csz01;
 
-  const std::wstring str01(L"Bob Rock, per me");
+  const __gnu_test::wstring str01(L"Bob Rock, per me");
   const wchar_t str_lit01[] = L"Bob Rock";
-  std::wstring str02(L"ovvero Trivi");
-  std::wstring str03(str_lit01);
-  std::wstring str04;
+  __gnu_test::wstring str02(L"ovvero Trivi");
+  __gnu_test::wstring str03(str_lit01);
+  __gnu_test::wstring str04;
 
   // size_type find_first_not_of(const string&, size_type pos = 0) const;
   csz01 = str01.find_first_not_of(str01);

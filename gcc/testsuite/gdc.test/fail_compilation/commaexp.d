@@ -1,16 +1,16 @@
 /* REQUIRED_ARGS: -o-
 TEST_OUTPUT:
 ---
-fail_compilation/commaexp.d(27): Error: Using the result of a comma expression is not allowed
-fail_compilation/commaexp.d(39): Error: Using the result of a comma expression is not allowed
-fail_compilation/commaexp.d(40): Error: Using the result of a comma expression is not allowed
-fail_compilation/commaexp.d(41): Error: Using the result of a comma expression is not allowed
-fail_compilation/commaexp.d(42): Error: Using the result of a comma expression is not allowed
-fail_compilation/commaexp.d(44): Error: Using the result of a comma expression is not allowed
-fail_compilation/commaexp.d(45): Error: Using the result of a comma expression is not allowed
-fail_compilation/commaexp.d(56): Error: Using the result of a comma expression is not allowed
-fail_compilation/commaexp.d(69): Error: Using the result of a comma expression is not allowed
-fail_compilation/commaexp.d(81): Error: Using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(27): Error: using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(39): Error: using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(40): Error: using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(41): Error: using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(42): Error: using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(44): Error: using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(45): Error: using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(56): Error: using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(69): Error: using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(81): Error: using the result of a comma expression is not allowed
 ---
 */
 

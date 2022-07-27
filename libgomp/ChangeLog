@@ -1,3 +1,996 @@
+2022-07-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_target_init): Added tailing '\n' to gomp_debug.
+
+2022-07-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/101551
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: XFAIL
+	'offloading_enabled' diagnostics issue.
+
+2022-07-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Enhance
+	'_Pragma' diagnostics verification.
+
+2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Adapt for
+	improved warning locations.
+	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: Likewise.
+
+2022-07-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/requires-1.c: Add 'dg-note's.
+	* testsuite/libgomp.c-c++-common/requires-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-3.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-7.c: Likewise.
+	* testsuite/libgomp.fortran/requires-1.f90: Likewise.
+
+2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (GOMP_offload_register, GOMP_offload_unregister):
+	Denote as legacy entry points.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_target_any): New proc.
+	* testsuite/libgomp.c-c++-common/requires-1.c: Enable for
+	'offload_target_any'.
+	* testsuite/libgomp.c-c++-common/requires-3.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-7.c: Likewise.
+	* testsuite/libgomp.fortran/requires-1.f90: Likewise.
+
+2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/requires-4.c: Enhance testing.
+	* testsuite/libgomp.c-c++-common/requires-5.c: Likewise.
+
+2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/requires-3.c: Adjust.
+
+2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (GOMP_offload_register_ver): Clarify 'target_data' ->
+	'data'.
+	(GOMP_offload_unregister_ver): Likewise.  Fix up 'target_data'.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark linear-clause change as 'Y'.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_get_num_devices): Add
+	omp_requires_mask arg.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices): Likewise;
+	return -1 when device available but omp_requires_mask != 0.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_num_devices): Likewise.
+	* oacc-host.c (host_get_num_devices, host_openacc_get_property):
+	Update call.
+	* oacc-init.c (resolve_device, acc_init_1, acc_shutdown_1,
+	goacc_attach_host_thread_to_device, acc_get_num_devices,
+	acc_set_device_num, get_property_any): Likewise.
+	* target.c (omp_requires_mask): New global var.
+	(gomp_requires_to_name): New.
+	(GOMP_offload_register_ver): Handle passed omp_requires_mask.
+	(gomp_target_init): Handle omp_requires_mask.
+	* libgomp.texi (OpenMP 5.0): Update requires impl. status.
+	(OpenMP 5.1): Add a missed item.
+	(OpenMP 5.2): Mark linear-clause change as supported in C/C++.
+	* testsuite/libgomp.c-c++-common/requires-1-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-1.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-2-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-2.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-3-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-3.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-4-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-4.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-5-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-5.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-6.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-7-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-7.c: New test.
+	* testsuite/libgomp.fortran/requires-1-aux.f90: New test.
+	* testsuite/libgomp.fortran/requires-1.f90: New test.
+
+2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark target enter/exit data
+	with fromto as implemented.
+
+2022-06-28  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Fix typo in mold linker detection.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+	    Paul Iannetta  <piannetta@kalrayinc.com>
+
+	PR libgomp/106045
+	* testsuite/libgomp.c/target-31.c: Add private (i) clause.
+
+2022-06-17  Martin Liska  <mliska@suse.cz>
+
+	* libgomp.texi: Add table header for new features of
+	OpenMP 5.2.
+
+2022-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/get-mapped-ptr-1.c (main): Initialize
+	q to ddress of an automatic variable.  Use -5 instead of -1 in
+	omp_get_mapped_ptr call.  Add test with omp_initial_device.
+	* testsuite/libgomp.fortran/get-mapped-ptr-1.f90 (main): Use -5 instead
+	of -1 in omp_get_mapped_ptr call.  Add test with omp_initial_device.
+	Renumber stop arguments afterwards.
+
+2022-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_initial_device, omp_invalid_device): New enumerators.
+	* omp_lib.f90.in (omp_initial_device, omp_invalid_device): New
+	parameters.
+	* omp_lib.h.in (omp_initial_device, omp_invalid_device): Likewise.
+	* target.c (resolve_device): Add remapped argument, handle
+	GOMP_DEVICE_ICV only if remapped is true (and clear remapped),
+	for negative values, treat GOMP_DEVICE_FALLBACK as fallback only
+	if remapped, otherwise treat omp_initial_device that way.  For
+	omp_invalid_device, always emit gomp_fatal, even when
+	OMP_TARGET_OFFLOAD isn't mandatory.
+	(GOMP_target, GOMP_target_ext, GOMP_target_data, GOMP_target_data_ext,
+	GOMP_target_update, GOMP_target_update_ext,
+	GOMP_target_enter_exit_data): Pass true as remapped argument to
+	resolve_device.
+	(omp_target_alloc, omp_target_free, omp_target_is_present,
+	omp_target_memcpy_check, omp_target_associate_ptr,
+	omp_target_disassociate_ptr, omp_get_mapped_ptr,
+	omp_target_is_accessible): Pass false as remapped argument to
+	resolve_device.  Treat omp_initial_device the same as
+	gomp_get_num_devices ().  Don't bypass resolve_device calls if
+	device_num is negative.
+	(omp_pause_resource): Treat omp_initial_device the same as
+	gomp_get_num_devices ().  Call resolve_device.
+	* icv-device.c (omp_set_default_device): Always set to device_num
+	even when it is negative.
+	* libgomp.texi: Document that Conforming device numbers,
+	omp_initial_device and omp_invalid_device is implemented.
+	* testsuite/libgomp.c/target-41.c (main): Add test with
+	omp_initial_device.
+	* testsuite/libgomp.c/target-45.c: New test.
+	* testsuite/libgomp.c/target-46.c: New test.
+	* testsuite/libgomp.c/target-47.c: New test.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-1.c (main): Add
+	test with omp_initial_device.  Use -5 instead of -1 for negative value
+	test.
+	* testsuite/libgomp.fortran/target-is-accessible-1.f90 (main):
+	Likewise.  Reorder stop numbers.
+
+2022-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c (gomp_init_memkind): Call dlopen with "libmemkind.so.0"
+	rather than "libmemkind.so".
+
+2022-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/Makefrag.am: Evaluate 'if PLUGIN_NVPTX_DYNAMIC' to true.
+	* plugin/configfrag.ac (--with-cuda-driver)
+	(--with-cuda-driver-include, --with-cuda-driver-lib)
+	(CUDA_DRIVER_INCLUDE, CUDA_DRIVER_LIB, PLUGIN_NVPTX_CPPFLAGS)
+	(PLUGIN_NVPTX_LDFLAGS, PLUGIN_NVPTX_LIBS, PLUGIN_NVPTX_DYNAMIC):
+	Remove.
+	* testsuite/libgomp-test-support.exp.in (cuda_driver_include)
+	(cuda_driver_lib): Remove.
+	* testsuite/lib/libgomp.exp (libgomp_init): Don't consider these.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/allocator.c: Fix up #include directive.
+
+2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c: Include dlfcn.h if LIBGOMP_USE_MEMKIND is defined.
+	(enum gomp_memkind_kind): New type.
+	(struct omp_allocator_data): Add memkind field if LIBGOMP_USE_MEMKIND
+	is defined.
+	(struct gomp_memkind_data): New type.
+	(memkind_data, memkind_data_once): New variables.
+	(gomp_init_memkind, gomp_get_memkind): New functions.
+	(omp_init_allocator): Initialize data.memkind, don't fail for
+	omp_high_bw_mem_space if libmemkind supports it.
+	(omp_aligned_alloc, omp_free, omp_aligned_calloc, omp_realloc): Add
+	memkind support of LIBGOMP_USE_MEMKIND is defined.
+	* config/linux/allocator.c: New file.
+
+2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark scope w/ firstprivate/allocate as Y.
+	* testsuite/libgomp.fortran/scope-2.f90: New test.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libgomp.exp: Add load_gcc_lib of scansarif.exp.
+
+2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/allocate-1.c (foo): Add testcase for
+	scope construct with allocate clause.
+	* testsuite/libgomp.c-c++-common/allocate-3.c (foo): Likewise.
+	* testsuite/libgomp.c-c++-common/scope-2.c: New test.
+
+2022-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark 'enter' clause as supported.
+	* testsuite/libgomp.fortran/declare-target-1.f90: Extend to test
+	explicit 'to' and 'enter' clause.
+	* testsuite/libgomp.fortran/declare-target-2.f90: Update accordingly.
+
+2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/105745
+	* libgomp.h (GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC): Don't define for
+	defined(HAVE__ALIGNED_MALLOC) case.
+	* alloc.c (gomp_aligned_alloc): Move defined(HAVE__ALIGNED_MALLOC)
+	handling as last option before fallback instead of first.
+	(gomp_aligned_free): For defined(HAVE__ALIGNED_MALLOC) call
+	_aligned_free.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/target-40.c: Modify some existing to
+	clauses to enter.
+	* testsuite/libgomp.c/target-41.c: Likewise.
+
+2022-05-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Other new OpenMP 5.1 features): Add
+	'begin declare target'.
+	(Other new OpenMP 5.2 features): New.
+
+2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (gomp_task_run_post_handle_dependers): If empty_task
+	is the last task taskwait depend depends on, wake it up.
+	Similarly if it is the last child of a taskgroup, use atomic
+	store instead of decrement and awak taskgroup wait if any.
+	* testsuite/libgomp.c-c++-common/taskwait-depend-nowait-2.c: New test.
+
+2022-05-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Add
+	EF_AMDGPU_MACH_AMDGCN_GFX90a.
+	(gcn_gfx90a_s): New.
+	(isa_hsa_name): Support gfx90a.
+	(isa_code): Likewise.
+
+2022-05-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/105378
+	* libgomp.texi (OpenMP 5.1): Set 'taskwait nowait' to 'Y'.
+	* testsuite/libgomp.fortran/taskwait-depend-nowait-1.f90: New.
+
+2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* libgomp_g.h (GOMP_taskwait_depend_nowait): Declare.
+	* libgomp.map (GOMP_taskwait_depend_nowait): Export at GOMP_5.1.1.
+	* task.c (empty_task): New function.
+	(gomp_task_run_post_handle_depend_hash): Declare earlier.
+	(gomp_task_run_post_handle_depend): Declare.
+	(GOMP_task): Optimize fn == empty_task if there is nothing to wait
+	for.
+	(gomp_task_run_post_handle_dependers): Optimize task->fn == empty_task.
+	(GOMP_taskwait_depend_nowait): New function.
+	* testsuite/libgomp.c-c++-common/taskwait-depend-nowait-1.c: New test.
+
+2022-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104949
+	* target.c (gomp_map_vars_internal, copy_firstprivate_data):
+	Support attach for GOMP_MAP_FIRSTPRIVATE.
+	* testsuite/libgomp.fortran/target-firstprivate-1.f90: New test.
+	* testsuite/libgomp.fortran/target-firstprivate-2.f90: New test.
+	* testsuite/libgomp.fortran/target-firstprivate-3.f90: New test.
+
+2022-05-20  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* libgomp.map: Added omp_target_memcpy_async and
+	omp_target_memcpy_rect_async.
+	* libgomp.texi: Both functions are now supported.
+	* omp.h.in: Added omp_target_memcpy_async and
+	omp_target_memcpy_rect_async.
+	* omp_lib.f90.in: Added interfaces for both new functions.
+	* omp_lib.h.in: Likewise.
+	* target.c (ialias_redirect): Added for GOMP_task.
+	(omp_target_memcpy): Restructured into check and copy part.
+	(omp_target_memcpy_check): New helper function for omp_target_memcpy and
+	omp_target_memcpy_async that checks requirements.
+	(omp_target_memcpy_copy): New helper function for omp_target_memcpy and
+	omp_target_memcpy_async that performs the memcpy.
+	(omp_target_memcpy_async_helper): New helper function that is used in
+	omp_target_memcpy_async for the asynchronous task.
+	(omp_target_memcpy_async): Added.
+	(omp_target_memcpy_rect): Restructured into check and copy part.
+	(omp_target_memcpy_rect_check): New helper function for
+	omp_target_memcpy_rect and omp_target_memcpy_rect_async that checks
+	requirements.
+	(omp_target_memcpy_rect_copy): New helper function for
+	omp_target_memcpy_rect and omp_target_memcpy_rect_async that performs
+	the memcpy.
+	(omp_target_memcpy_rect_async_helper): New helper function that is used
+	in omp_target_memcpy_rect_async for the asynchronous task.
+	(omp_target_memcpy_rect_async): Added.
+	* task.c (ialias): Added for GOMP_task.
+	* testsuite/libgomp.c-c++-common/target-memcpy-async-1.c: New test.
+	* testsuite/libgomp.c-c++-common/target-memcpy-async-2.c: New test.
+	* testsuite/libgomp.c-c++-common/target-memcpy-rect-async-1.c: New test.
+	* testsuite/libgomp.c-c++-common/target-memcpy-rect-async-2.c: New test.
+	* testsuite/libgomp.fortran/target-memcpy-async-1.f90: New test.
+	* testsuite/libgomp.fortran/target-memcpy-async-2.f90: New test.
+	* testsuite/libgomp.fortran/target-memcpy-rect-async-1.f90: New test.
+	* testsuite/libgomp.fortran/target-memcpy-rect-async-2.f90: New test.
+
+2022-05-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Set 'inoutset' to Y.
+	(OpenMP Context Selectors): Add missing comma.
+	* testsuite/libgomp.fortran/depend-5.f90: Add inoutset test.
+	* testsuite/libgomp.fortran/depend-6.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-7.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-inoutset-1.f90: New test.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.1): Remove "Not inside target regions"
+	comment for omp_display_env feature.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Offload-Target Specifics): New chapter; add section
+	to document OpenMP context selectors.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_task_depend_entry): Change is_in type
+	from bool to unsigned char.
+	* task.c (gomp_task_handle_depend): Handle GOMP_DEPEND_INOUTSET.
+	Ignore dependencies where
+	task->depend[i].is_in && task->depend[i].is_in == ent->is_in
+	rather than just task->depend[i].is_in && ent->is_in.  Remember
+	whether GOMP_DEPEND_IN loop is needed and guard the loop with that
+	conditional.
+	(gomp_task_maybe_wait_for_dependencies): Handle GOMP_DEPEND_INOUTSET.
+	Ignore dependencies where elem.is_in && elem.is_in == ent->is_in
+	rather than just elem.is_in && ent->is_in.
+	* testsuite/libgomp.c-c++-common/depend-1.c (test): Add task with
+	inoutset depend-kind.
+	* testsuite/libgomp.c-c++-common/depend-2.c (test): Likewise.
+	* testsuite/libgomp.c-c++-common/depend-3.c (test): Likewise.
+	* testsuite/libgomp.c-c++-common/depend-inoutset-1.c: New test.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP Implementation Status): Add 5.2 table.
+
+2022-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Set omp_all_memory to 'Y'.
+	* testsuite/libgomp.fortran/depend-5.f90: New test.
+	* testsuite/libgomp.fortran/depend-6.f90: New test.
+	* testsuite/libgomp.fortran/depend-7.f90: New test.
+
+2022-05-16  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* testsuite/libgomp.c++/target-has-device-addr-7.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-8.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-9.C: New test.
+
+2022-05-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-nowait-array-section.f90: New test.
+
+2022-05-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-nowait-array-section.f90: New test.
+
+2022-05-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/Makefrag.am (libgomp_plugin_nvptx_la_CPPFLAGS)
+	[PLUGIN_NVPTX_DYNAMIC]: Don't append '$(PLUGIN_NVPTX_CPPFLAGS)'.
+	(libgomp_plugin_nvptx_la_LDFLAGS) [PLUGIN_NVPTX_DYNAMIC]: Don't
+	append '$(PLUGIN_NVPTX_LDFLAGS)'.
+	* Makefile.in: Regenerate.
+
+2022-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.am (libgomp_la_LIBADD): Initialize.
+	* plugin/configfrag.ac (DL_LIBS): New.
+	(PLUGIN_GCN_LIBS): Remove.
+	(PLUGIN_NVPTX_LIBS): Don't set in the 'PLUGIN_NVPTX_DYNAMIC' case.
+	* plugin/Makefrag.am (libgomp_la_LIBADD)
+	(libgomp_plugin_gcn_la_LIBADD): Consider '$(DL_LIBS)'.
+	(libgomp_plugin_nvptx_la_LIBADD) <PLUGIN_NVPTX_DYNAMIC>: Likewise.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2022-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/Makefrag.am: Handle 'PLUGIN_NVPTX_DYNAMIC'.
+	* plugin/configfrag.ac (PLUGIN_NVPTX_DYNAMIC): Change
+	'AC_DEFINE_UNQUOTED' into 'AM_CONDITIONAL'.
+	* plugin/plugin-nvptx.c: Split 'PLUGIN_NVPTX_DYNAMIC' into
+	'PLUGIN_NVPTX_INCLUDE_SYSTEM_CUDA_H' and
+	'PLUGIN_NVPTX_LINK_LIBCUDA'.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+
+2022-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/configfrag.ac: Don't 'AC_SUBST' and 'AC_DEFINE_UNQUOTED'
+	for 'PLUGIN_GCN', 'PLUGIN_NVPTX'.
+	* Makefile.in: Regenerate.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_task): Add depend_all_memory member.
+	* task.c (gomp_init_task): Initialize depend_all_memory.
+	(gomp_task_handle_depend): Handle omp_all_memory.
+	(gomp_task_run_post_handle_depend_hash): Clear
+	parent->depend_all_memory if equal to current task.
+	(gomp_task_maybe_wait_for_dependencies): Handle omp_all_memory.
+	* testsuite/libgomp.c-c++-common/depend-1.c: New test.
+	* testsuite/libgomp.c-c++-common/depend-2.c: New test.
+	* testsuite/libgomp.c-c++-common/depend-3.c: New test.
+
+2022-05-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/configfrag.ac: Remove '--with-hsa-runtime',
+	'--with-hsa-runtime-include', '--with-hsa-runtime-lib' processing.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2022-05-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/Makefrag.am (libgomp_plugin_gcn_la_CPPFLAGS): Don't
+	consider 'PLUGIN_GCN_CPPFLAGS'.
+	(libgomp_plugin_gcn_la_LDFLAGS): Don't consider
+	'PLUGIN_GCN_LDFLAGS'.
+	* plugin/configfrag.ac (PLUGIN_GCN_CPPFLAGS, PLUGIN_GCN_LDFLAGS):
+	Remove.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2022-05-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/configfrag.ac (HSA_RUNTIME_CPPFLAGS)
+	(HSA_RUNTIME_LDFLAGS): Remove.
+	* configure: Regenerate.
+
+2022-05-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Don't
+	'append always_ld_library_path ":$hsa_runtime_lib"'.
+	* testsuite/libgomp-test-support.exp.in (hsa_runtime_lib): Don't set.
+
+2022-05-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_addr-5.f90: Fix up
+	multi-device testing.
+
+2022-05-06  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* libgomp.map: Added omp_target_is_accessible.
+	* libgomp.texi: Tagged omp_target_is_accessible as supported.
+	* omp.h.in: Added omp_target_is_accessible.
+	* omp_lib.f90.in: Added interface for omp_target_is_accessible.
+	* omp_lib.h.in: Likewise.
+	* target.c (omp_target_is_accessible): Added implementation of
+	omp_target_is_accessible.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-1.c: New test.
+	* testsuite/libgomp.fortran/target-is-accessible-1.f90: New test.
+
+2022-05-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.0): Feature is now fully supported.
+
+2022-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* plugin/plugin-gcn.c (isa_matches_agent): Suggest -foffload-options.
+
+2022-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_addr-5.f90: New test.
+
+2022-05-03  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* libgomp.map: Added omp_get_mapped_ptr.
+	* libgomp.texi: Tagged omp_get_mapped_ptr as supported.
+	* omp.h.in: Added omp_get_mapped_ptr.
+	* omp_lib.f90.in: Added interface for omp_get_mapped_ptr.
+	* omp_lib.h.in: Likewise.
+	* target.c (omp_get_mapped_ptr): Added implementation of
+	omp_get_mapped_ptr.
+	* testsuite/libgomp.c-c++-common/get-mapped-ptr-1.c: New test.
+	* testsuite/libgomp.c-c++-common/get-mapped-ptr-2.c: New test.
+	* testsuite/libgomp.c-c++-common/get-mapped-ptr-3.c: New test.
+	* testsuite/libgomp.c-c++-common/get-mapped-ptr-4.c: New test.
+	* testsuite/libgomp.fortran/get-mapped-ptr-1.f90: New test.
+	* testsuite/libgomp.fortran/get-mapped-ptr-2.f90: New test.
+	* testsuite/libgomp.fortran/get-mapped-ptr-3.f90: New test.
+	* testsuite/libgomp.fortran/get-mapped-ptr-4.f90: New test.
+
+2022-04-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/104717
+	* testsuite/libgomp.oacc-fortran/print-1.f90: Add OpenACC
+	privatization scanning.  For GCN offloading compilation, raise
+	'-mgang-private-size'.
+
+2022-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/105358
+	* work.c (gomp_init_work_share): Don't mask of adjustment for
+	dynamic long long realignment if struct gomp_work_share has smaller
+	alignof than long long.
+	* loop.c (GOMP_loop_start): Don't use inline_ordered_team_ids if
+	struct gomp_work_share has smaller alignof than long long or if
+	sizeof (struct gomp_work_share) is smaller than
+	INLINE_ORDERED_TEAM_IDS_OFF.
+	* loop_ull.c (GOMP_loop_ull_start): Likewise.
+	* sections.c (GOMP_sections2_start): Likewise.
+
+2022-04-25  Jakub Jelinek  <jakub@redhat.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/104717
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Adjust.
+
+2022-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Fix a typo - mutexinouset -> mutexinoutset.
+
+2022-04-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/cuda/cuda.h: Remove file.
+	* plugin/plugin-nvptx.c [PLUGIN_NVPTX_DYNAMIC]: Include
+	"cuda/cuda.h" instead of <cuda.h>.
+	* plugin/configfrag.ac <PLUGIN_NVPTX_DYNAMIC>: Don't set
+	'PLUGIN_NVPTX_CPPFLAGS'.
+	* configure: Regenerate.
+
+2022-04-05  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.fortran/use_device_ptr-4.f90: New testcase.
+
+2022-04-04  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Use
+	on_device_arch_nvptx instead of offload_target_nvptx.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Same.
+
+2022-04-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Define
+	and use REC_DEPTH.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Same.
+
+2022-04-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-7.c: Fix
+	num_workers check.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* configure.tgt: Add LoongArch triplet.
+
+2022-03-28  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/configfrag.ac: Use /$(libexecdir:\$(exec_prefix)/%=%)/
+	instead of /libexec/.
+	* configure: Regenerate.
+
+2022-03-25  Tom de Vries  <tdevries@suse.de>
+
+	PR libgomp/105042
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Reduce
+	execution time.
+	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: Same.
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Same.
+
+2022-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/104285
+	* testsuite/libgomp.c++/target-same-name-2-a.C: New test.
+	* testsuite/libgomp.c++/target-same-name-2-b.C: New test.
+	* testsuite/libgomp.c++/target-same-name-2.C: New test.
+	* testsuite/libgomp.c-c++-common/target-same-name-1-a.c: New test.
+	* testsuite/libgomp.c-c++-common/target-same-name-1-b.c: New test.
+	* testsuite/libgomp.c-c++-common/target-same-name-1.c: New test.
+
+2022-03-22  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104916
+	PR target/104783
+	* testsuite/libgomp.c/pr104783-2.c: New test.
+
+2022-03-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/103039
+	* testsuite/libgomp.fortran/associate4.f90: New test.
+
+2022-03-18  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104952
+	* testsuite/libgomp.c/pr104952-1.c: New test.
+	* testsuite/libgomp.c/pr104952-2.c: New test.
+
+2022-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/affinity.c (gomp_affinity_init_numa_domains): Move seen
+	variable next to pl variable.
+
+2022-03-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c:
+	Enhance.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-g.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/if-1.f90: Likewise.
+
+2022-03-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Enhance.
+	* testsuite/libgomp.oacc-fortran/if-1.f90: Likewise.
+
+2022-03-16  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* fortran.c (omp_set_num_teams_8_): Call omp_set_num_teams instead of
+	omp_set_max_active_levels.
+	* testsuite/libgomp.fortran/icv-8.f90: New test.
+
+2022-03-16  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/102841
+	* testsuite/libgomp.oacc-c-c++-common/host_data-7.c: Adjust.
+
+2022-03-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi: Fix typo.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104892
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/default-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-reduction-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-reduction-1.f90:
+	Likewise.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/104892
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Point
+	to PR104892.
+	* testsuite/libgomp.oacc-c-c++-common/default-1.c: Likewise,
+	enable '--param=openacc-kernels=decompose' and adjust.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-reduction-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-reduction-1.f90:
+	Likewise.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* testsuite/libgomp.oacc-c-c++-common/default-1.c: Enhance.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-reduction-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-reduction-1.f90: Likewise.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104086
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:
+	Merge this...
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose.c:
+	..., and this...
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: ... into
+	this, and adjust.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Extend.
+
+2022-03-10  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.f90: Remove pool_size
+	trait.  Test last index in w and v array.  Remove redundant
+	assignment to V(1).  Move alignment checks at the end of
+	parallel region.
+
+2022-03-10  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.c/pr104783.c: New test.
+
+2022-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	PR middle-end/102330
+	PR middle-end/104774
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Enhance.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-1.c:
+	Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-7.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/optional-private.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Likewise.
+
+2022-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* testsuite/libgomp.oacc-fortran/routine-1.f90: Enhance.
+	* testsuite/libgomp.oacc-fortran/routine-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-9.f90: Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/104791
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Fix
+	expected diagnostics.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/104784
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-1.c:
+	Test with '--param=openacc-kernels=decompose'.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-7.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-3.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-6.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-vector-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-vector-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-3.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-4.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-5.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-6.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-7.f90:
+	Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-1.c:
+	Test '-fopt-info-omp-all'.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-local-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-gang-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-vector-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-3.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-4.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-5.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-6.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-private-vars-loop-worker-7.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-3.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-gang-6.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-vector-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-vector-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-2.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-3.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-4.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-5.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-6.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-private-vars-loop-worker-7.f90:
+	Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	PR middle-end/104132
+	PR middle-end/104133
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Extend.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+
+2022-03-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+
+2022-02-28  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.c/declare-variant-3-sm30.c: Add -foffload=-mptx=_.
+	* testsuite/libgomp.c/declare-variant-3-sm35.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm53.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm70.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm75.c: Same.
+	* testsuite/libgomp.c/declare-variant-3-sm80.c: Same.
+
+2022-02-24  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.c/declare-variant-3-sm30.c: New test.
+	* testsuite/libgomp.c/declare-variant-3-sm35.c: New test.
+	* testsuite/libgomp.c/declare-variant-3-sm53.c: New test.
+	* testsuite/libgomp.c/declare-variant-3-sm70.c: New test.
+	* testsuite/libgomp.c/declare-variant-3-sm75.c: New test.
+	* testsuite/libgomp.c/declare-variant-3-sm80.c: New test.
+	* testsuite/libgomp.c/declare-variant-3.h: New header file.
+
+2022-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Fix OpenACC
+	gang-redundant execution.
+
+2022-02-22  Tom de Vries  <tdevries@suse.de>
+
+	PR target/99555
+	* config/nvptx/bar.c (generation_to_barrier): New function, copied
+	from config/rtems/bar.c.
+	(futex_wait, futex_wake): New function.
+	(do_spin, do_wait): New function, copied from config/linux/wait.h.
+	(gomp_barrier_wait_end, gomp_barrier_wait_last)
+	(gomp_team_barrier_wake, gomp_team_barrier_wait_end):
+	(gomp_team_barrier_wait_cancel_end, gomp_team_barrier_cancel): Remove
+	and replace with include of config/linux/bar.c.
+	* config/nvptx/bar.h (gomp_barrier_t): Add fields waiters and lock.
+	(gomp_barrier_init): Init new fields.
+	* testsuite/libgomp.c-c++-common/task-detach-6.c: Remove nvptx-specific
+	workarounds.
+	* testsuite/libgomp.c/pr99555-1.c: Same.
+	* testsuite/libgomp.fortran/task-detach-6.f90: Same.
+
+2022-02-22  Tom de Vries  <tdevries@suse.de>
+
+	PR testsuite/104146
+	* testsuite/libgomp.c++/pr96390.C: Add additional-option
+	-foffload=-Wa,--verify for nvptx.
+	* testsuite/libgomp.c-c++-common/pr96390.c: Same.
+
 2022-02-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/depend-4.f90: New test.

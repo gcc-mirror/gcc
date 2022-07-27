@@ -4763,7 +4763,8 @@ bfin_handle_longcall_attribute (tree *node, tree name,
 	  && lookup_attribute ("longcall", TYPE_ATTRIBUTES (*node))))
     {
       warning (OPT_Wattributes,
-	       "cannott apply both longcall and shortcall attributes to the same function");
+	       "cannot apply both %<longcall%> and %<shortcall%> attributes "
+	       "to the same function");
       *no_add_attrs = true;
     }
 

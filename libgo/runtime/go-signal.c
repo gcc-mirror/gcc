@@ -230,8 +230,14 @@ getSiginfo(siginfo_t *info, void *context __attribute__((unused)))
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.gregs[REG_EIP];
 #elif defined(__alpha__) && defined(__linux__)
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.sc_pc;
+#elif defined(__PPC64__) && defined(__linux__)
+	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.gp_regs[32];
 #elif defined(__PPC__) && defined(__linux__)
-	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.regs->nip;
+# if defined(__GLIBC__)
+	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.uc_regs->gregs[32];
+# else
+	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.gregs[32];
+# endif
 #elif defined(__PPC__) && defined(_AIX)
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.jmp_context.iar;
 #elif defined(__aarch64__) && defined(__linux__)
@@ -342,19 +348,37 @@ dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((u
 		runtime_printf("sp  %X\n", m->sc_regs[30]);
 		runtime_printf("pc  %X\n", m->sc_pc);
 	  }
-#elif defined(__PPC__) && defined(__LITTLE_ENDIAN__) && defined(__linux__)
+#elif defined(__PPC__) && defined(__linux__)
 	  {
-		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
 		int i;
 
+# if defined(__PPC64__)
+		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
+
 		for (i = 0; i < 32; i++)
-			runtime_printf("r%d %X\n", i, m->regs->gpr[i]);
-		runtime_printf("pc  %X\n", m->regs->nip);
-		runtime_printf("msr %X\n", m->regs->msr);
-		runtime_printf("cr  %X\n", m->regs->ccr);
-		runtime_printf("lr  %X\n", m->regs->link);
-		runtime_printf("ctr %X\n", m->regs->ctr);
-		runtime_printf("xer %X\n", m->regs->xer);
+			runtime_printf("r%d %X\n", i, m->gp_regs[i]);
+		runtime_printf("pc  %X\n", m->gp_regs[32]);
+		runtime_printf("msr %X\n", m->gp_regs[33]);
+		runtime_printf("cr  %X\n", m->gp_regs[38]);
+		runtime_printf("lr  %X\n", m->gp_regs[36]);
+		runtime_printf("ctr %X\n", m->gp_regs[35]);
+		runtime_printf("xer %X\n", m->gp_regs[37]);
+# else
+#  if defined(__GLIBC__)
+		mcontext_t *m = ((ucontext_t*)(context))->uc_mcontext.uc_regs;
+#  else
+		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
+#  endif
+
+		for (i = 0; i < 32; i++)
+			runtime_printf("r%d %x\n", i, m->gregs[i]);
+		runtime_printf("pc  %x\n", m->gregs[32]);
+		runtime_printf("msr %x\n", m->gregs[33]);
+		runtime_printf("cr  %x\n", m->gregs[38]);
+		runtime_printf("lr  %x\n", m->gregs[36]);
+		runtime_printf("ctr %x\n", m->gregs[35]);
+		runtime_printf("xer %x\n", m->gregs[37]);
+# endif
 	  }
 #elif defined(__PPC__) && defined(_AIX)
 	  {

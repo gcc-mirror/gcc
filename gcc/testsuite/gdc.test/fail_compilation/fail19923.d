@@ -1,4 +1,4 @@
-/* 
+/*
 DFLAGS:
 TEST_OUTPUT:
 ---
@@ -15,4 +15,3 @@ void test()
     Object o;
     auto ti = o.classinfo;
 }
-

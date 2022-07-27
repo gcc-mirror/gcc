@@ -1598,7 +1598,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   if (!maybe_in_construction && !maybe_derived_type)
     return false;
 
-  /* If we are in fact not looking at any object object or the instance is
+  /* If we are in fact not looking at any object or the instance is
      some placement new into a random load, give up straight away.  */
   if (TREE_CODE (instance) == MEM_REF)
     return false;

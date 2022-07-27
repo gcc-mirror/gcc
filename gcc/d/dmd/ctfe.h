@@ -17,7 +17,7 @@
   A reference to a class, or an interface. We need this when we
   point to a base class (we must record what the type is).
  */
-class ClassReferenceExp : public Expression
+class ClassReferenceExp final : public Expression
 {
 public:
     StructLiteralExp *value;
@@ -26,39 +26,39 @@ public:
     /// Return index of the field, or -1 if not found
     /// Same as getFieldIndex, but checks for a direct match with the VarDeclaration
     int findFieldIndexByName(VarDeclaration *v);
-    void accept(Visitor *v) { v->visit(this); }
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 /**
   An uninitialized value
  */
-class VoidInitExp : public Expression
+class VoidInitExp final : public Expression
 {
 public:
     VarDeclaration *var;
 
-    const char *toChars() const;
-    void accept(Visitor *v) { v->visit(this); }
+    const char *toChars() const override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 /**
   Fake class which holds the thrown exception.
   Used for implementing exception handling.
 */
-class ThrownExceptionExp : public Expression
+class ThrownExceptionExp final : public Expression
 {
 public:
     ClassReferenceExp *thrown; // the thing being tossed
-    const char *toChars() const;
-    void accept(Visitor *v) { v->visit(this); }
+    const char *toChars() const override;
+    void accept(Visitor *v) override { v->visit(this); }
 };
 
 /****************************************************************/
 
 // This type is only used by the interpreter.
 
-class CTFEExp : public Expression
+class CTFEExp final : public Expression
 {
 public:
-    const char *toChars() const;
+    const char *toChars() const override;
 };

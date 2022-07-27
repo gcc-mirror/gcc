@@ -808,12 +808,26 @@ gen_ctf_variable (ctf_container_ref ctfc, dw_die_ref die)
   if (ctf_dvd_lookup (ctfc, die))
     return;
 
+  /* Do not generate CTF variable records for non-defining incomplete
+     declarations.  Such declarations can be known via the DWARF
+     DW_AT_specification attribute.  */
+  if (ctf_dvd_ignore_lookup (ctfc, die))
+    return;
+
+  /* The value of the DW_AT_specification attribute, if present, is a
+     reference to the debugging information entry representing the
+     non-defining declaration.  */
+  dw_die_ref decl = get_AT_ref (die, DW_AT_specification);
+
   /* Add the type of the variable.  */
   var_type_id = gen_ctf_type (ctfc, var_type);
 
   /* Generate the new CTF variable and update global counter.  */
-  (void) ctf_add_variable (ctfc, var_name, var_type_id, die, external_vis);
-  ctfc->ctfc_num_global_objts += 1;
+  (void) ctf_add_variable (ctfc, var_name, var_type_id, die, external_vis,
+			   decl);
+  /* Skip updating the number of global objects at this time.  This is updated
+     later after pre-processing as some CTF variable records although
+     generated now, will not be emitted later.  [PR105089].  */
 }
 
 /* Add a CTF function record for the given input DWARF DIE.  */

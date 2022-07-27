@@ -28,6 +28,7 @@ enum Baseok : ubyte
 
 enum MODFlags : int
 {
+    none         = 0,    // default (mutable)
     const_       = 1,    // type is const
     immutable_   = 4,    // type is immutable
     shared_      = 2,    // type is shared
@@ -429,4 +430,13 @@ enum PINLINE : ubyte
     default_, /// as specified on the command line
     never,    /// never inline
     always,   /// always inline
+}
+
+/// Source file type
+enum FileType : ubyte
+{
+    d,    /// normal D source file
+    dhdr, /// D header file (.di)
+    ddoc, /// Ddoc documentation file (.dd)
+    c,    /// C source file
 }

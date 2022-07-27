@@ -721,7 +721,7 @@ init_asm_output (const char *name)
 		     "cannot open %qs for writing: %m", asm_file_name);
     }
 
-  if (!flag_syntax_only)
+  if (!flag_syntax_only && !(global_dc->lang_mask & CL_LTODump))
     {
       targetm.asm_out.file_start ();
 
@@ -1038,6 +1038,8 @@ general_init (const char *argv0, bool init_signals)
     = global_options_init.x_flag_diagnostics_show_line_numbers;
   global_dc->show_cwe
     = global_options_init.x_flag_diagnostics_show_cwe;
+  global_dc->show_rules
+    = global_options_init.x_flag_diagnostics_show_rules;
   global_dc->path_format
     = (enum diagnostic_path_format)global_options_init.x_flag_diagnostics_path_format;
   global_dc->show_path_depths
@@ -1458,30 +1460,6 @@ process_options (bool no_backend)
 		debug_type_names[debug_set_to_format (write_symbols)]);
     }
 
-  /* We know which debug output will be used so we can set flag_var_tracking
-     and flag_var_tracking_uninit if the user has not specified them.  */
-  if (debug_info_level < DINFO_LEVEL_NORMAL
-      || !dwarf_debuginfo_p ()
-      || debug_hooks->var_location == do_nothing_debug_hooks.var_location)
-    {
-      if ((OPTION_SET_P (flag_var_tracking) && flag_var_tracking == 1)
-	  || (OPTION_SET_P (flag_var_tracking_uninit)
-	      && flag_var_tracking_uninit == 1))
-        {
-	  if (debug_info_level < DINFO_LEVEL_NORMAL)
-	    warning_at (UNKNOWN_LOCATION, 0,
-			"variable tracking requested, but useless unless "
-			"producing debug info");
-	  else
-	    warning_at (UNKNOWN_LOCATION, 0,
-			"variable tracking requested, but not supported "
-			"by this debug format");
-	}
-      flag_var_tracking = 0;
-      flag_var_tracking_uninit = 0;
-      flag_var_tracking_assignments = 0;
-    }
-
   /* The debug hooks are used to implement -fdump-go-spec because it
      gives a simple and stable API for all the information we need to
      dump.  */
@@ -1677,6 +1655,16 @@ process_options (bool no_backend)
       warning_at (UNKNOWN_LOCATION, 0, "%qs is not supported for this target",
 		  "-fsanitize=hwaddress");
       flag_sanitize &= ~SANITIZE_HWADDRESS;
+    }
+
+  if (flag_sanitize & SANITIZE_SHADOW_CALL_STACK)
+    {
+      if (!targetm.have_shadow_call_stack)
+	sorry ("%<-fsanitize=shadow-call-stack%> not supported "
+	       "in current platform");
+      else if (flag_exceptions)
+	error_at (UNKNOWN_LOCATION, "%<-fsanitize=shadow-call-stack%> "
+		  "requires %<-fno-exceptions%>");
     }
 
   HOST_WIDE_INT patch_area_size, patch_area_start;
@@ -2368,6 +2356,8 @@ toplev::finalize (void)
   gcse_cc_finalize ();
   ipa_cp_cc_finalize ();
   ira_costs_cc_finalize ();
+  tree_cc_finalize ();
+  reginfo_cc_finalize ();
 
   /* save_decoded_options uses opts_obstack, so these must
      be cleaned up together.  */

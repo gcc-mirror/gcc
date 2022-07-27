@@ -392,6 +392,7 @@ version (Posix)
     AlignedMallocator.instance.alignedReallocate(c, 32, 32);
     assert(c.ptr);
 
+    version (LDC_AddressSanitizer) {} else // AddressSanitizer does not support such large memory allocations (0x10000000000 max)
     version (DragonFlyBSD) {} else    /* FIXME: Malloc on DragonFly does not return NULL when allocating more than UINTPTR_MAX
                                        * $(LINK: https://bugs.dragonflybsd.org/issues/3114, dragonfly bug report)
                                        * $(LINK: https://github.com/dlang/druntime/pull/1999#discussion_r157536030, PR Discussion) */

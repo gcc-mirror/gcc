@@ -13,7 +13,7 @@ fail_compilation/diag16977.d(30): Error: template instance `diag16977.test.funcT
 ---
 */
 
-// when copying the expression of a default argument, location information is 
+// when copying the expression of a default argument, location information is
 //   replaced by the location of the caller to improve debug information
 // verify error messages are displayed for the original location only
 
@@ -26,7 +26,7 @@ void test()
     void badOp(int x, int y = 1 ~ "string") {}
     void lazyTemplate(int x, lazy int y = 4.templ) {}
     void funcTemplate(T)(T y = 5) {}
-    
+
     funcTemplate!string();
     undefinedId(1);
     badOp(2);

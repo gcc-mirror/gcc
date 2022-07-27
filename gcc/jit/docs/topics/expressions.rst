@@ -24,7 +24,7 @@ Rvalues
 -------
 .. type:: gcc_jit_rvalue
 
-A :c:type:`gcc_jit_rvalue *` is an expression that can be computed.
+A :c:type:`gcc_jit_rvalue` is an expression that can be computed.
 
 It can be simple, e.g.:
 
@@ -152,6 +152,7 @@ Constructor expressions
    their presence using:
 
    .. code-block:: c
+
      #ifdef LIBGCCJIT_HAVE_CTORS
 
 .. function:: gcc_jit_rvalue *\
@@ -186,6 +187,7 @@ Constructor expressions
    presence using:
 
    .. code-block:: c
+
      #ifdef LIBGCCJIT_HAVE_CTORS
 
 .. function:: gcc_jit_rvalue *\
@@ -194,7 +196,7 @@ Constructor expressions
 						      gcc_jit_type *type,\
 						      size_t num_values,\
 						      gcc_jit_field **fields,\
-						      gcc_jit_rvalue **value)
+						      gcc_jit_rvalue **values)
 
 
    Create a constructor for a struct as an rvalue.
@@ -235,6 +237,7 @@ Constructor expressions
    presence using:
 
    .. code-block:: c
+
      #ifdef LIBGCCJIT_HAVE_CTORS
 
 .. function:: gcc_jit_rvalue *\
@@ -265,6 +268,7 @@ Constructor expressions
    presence using:
 
    .. code-block:: c
+
      #ifdef LIBGCCJIT_HAVE_CTORS
 
 Vector expressions
@@ -598,7 +602,7 @@ Function calls
               gcc_jit_rvalue_set_bool_require_tail_call (gcc_jit_rvalue *call,\
                                                          int require_tail_call)
 
-   Given an :c:type:`gcc_jit_rvalue *` for a call created through
+   Given an :c:type:`gcc_jit_rvalue` for a call created through
    :c:func:`gcc_jit_context_new_call` or
    :c:func:`gcc_jit_context_new_call_through_ptr`, mark/clear the
    call as needing tail-call optimization.  The optimizer will
@@ -648,6 +652,25 @@ Type-coercion
      * int <-> float
      * int <-> bool
      * P*  <-> Q*, for pointer types P and Q
+
+.. function:: gcc_jit_rvalue *\
+              gcc_jit_context_new_bitcast (gcc_jit_context *ctxt,\
+                                           gcc_jit_location *loc,\
+                                           gcc_jit_rvalue *rvalue,\
+                                           gcc_jit_type *type)
+
+   Given an rvalue of T, bitcast it to another type, meaning that this will
+   generate a new rvalue by interpreting the bits of ``rvalue`` to the layout
+   of ``type``.
+
+   The type of rvalue must be the same size as the size of ``type``.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_21`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_bitcast
 
 Lvalues
 -------
@@ -717,8 +740,8 @@ where the rvalue is computed by reading from the storage area.
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_tls_model
 
-.. function:: void
-              gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,
+.. function:: void\
+              gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,\
                                                const char *section_name)
 
    Set the link section of a variable.
@@ -737,6 +760,65 @@ where the rvalue is computed by reading from the storage area.
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_link_section
+
+.. function:: void\
+              gcc_jit_lvalue_set_register_name (gcc_jit_lvalue *lvalue,\
+                                                const char *reg_name);
+
+   Set the register name of a variable.
+   The parameter ``reg_name`` must be non-NULL. Analogous to:
+
+   .. code-block:: c
+
+     register int variable asm ("r12");
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_22`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_register_name
+
+.. function:: void\
+              gcc_jit_lvalue_set_alignment (gcc_jit_lvalue *lvalue,\
+                                            unsigned bytes)
+
+   Set the alignment of a variable, in bytes.
+   Analogous to:
+
+   .. code-block:: c
+
+     int variable __attribute__((aligned (16)));
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_24`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_ALIGNMENT
+
+.. function:: unsigned\
+              gcc_jit_lvalue_get_alignment (gcc_jit_lvalue *lvalue)
+
+   Return the alignment of a variable set by ``gcc_jit_lvalue_set_alignment``.
+   Return 0 if the alignment was not set. Analogous to:
+
+   .. code-block:: c
+
+     _Alignof (variable)
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_24`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_ALIGNMENT
 
 Global variables
 ****************
@@ -803,14 +885,14 @@ Global variables
       #ifdef LIBGCCJIT_HAVE_gcc_jit_global_set_initializer
 
 .. function:: gcc_jit_lvalue *\
-	      gcc_jit_global_set_initializer_rvalue (gcc_jit_lvalue *global,
+	      gcc_jit_global_set_initializer_rvalue (gcc_jit_lvalue *global,\
 	                                             gcc_jit_rvalue *init_value)
 
    Set the initial value of a global with an rvalue.
 
    The rvalue needs to be a constant expression, e.g. no function calls.
 
-   The global can't have the ``kind`` :ref:`GCC_JIT_GLOBAL_IMPORTED`.
+   The global can't have the ``kind`` :c:macro:`GCC_JIT_GLOBAL_IMPORTED`.
 
    As a non-comprehensive example it is OK to do the equivalent of:
 
@@ -822,8 +904,9 @@ Global variables
        const int baz = 3; /* rvalue from gcc_jit_context_rvalue_from_int.  */
        int boz = baz; /* rvalue from gcc_jit_lvalue_as_rvalue.  */
 
-   Use together with :ref:`gcc_jit_context_new_constructor` to
-   initialize structs, unions and arrays.
+   Use together with :c:func:`gcc_jit_context_new_struct_constructor`,
+   :c:func:`gcc_jit_context_new_union_constructor`, :c:func:`gcc_jit_context_new_array_constructor`
+   to initialize structs, unions and arrays.
 
    On success, returns the ``global`` parameter unchanged. Otherwise, ``NULL``.
 

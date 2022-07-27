@@ -7,4 +7,3 @@ int main()
     TA!(int) variable;
     return 0;
 }
-

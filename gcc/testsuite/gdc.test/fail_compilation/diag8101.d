@@ -2,7 +2,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/diag8101.d(57): Error: function `diag8101.f_0(int)` is not callable using argument types `()`
-fail_compilation/diag8101.d(57):        missing argument for parameter #1: `int`
+fail_compilation/diag8101.d(57):        too few arguments, expected `1`, got `0`
 fail_compilation/diag8101.d(58): Error: none of the overloads of `f_1` are callable using argument types `()`
 fail_compilation/diag8101.d(33):        Candidates are: `diag8101.f_1(int)`
 fail_compilation/diag8101.d(34):                        `diag8101.f_1(int, int)`

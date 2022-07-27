@@ -945,9 +945,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_backprop (m_ctxt); }
-  virtual bool gate (function *) { return flag_ssa_backprop; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_backprop (m_ctxt); }
+  bool gate (function *) final override { return flag_ssa_backprop; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_backprop
 

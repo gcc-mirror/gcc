@@ -96,7 +96,7 @@ package body System.Task_Primitives.Operations is
    Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads)
 
-   Use_Alternate_Stack : constant Boolean := Alternate_Stack_Size /= 0;
+   Use_Alternate_Stack : Boolean := Alternate_Stack_Size /= 0;
    --  Whether to use an alternate signal stack for stack overflows
 
    Abort_Handler_Installed : Boolean := False;
@@ -1375,9 +1375,9 @@ package body System.Task_Primitives.Operations is
       function State
         (Int : System.Interrupt_Management.Interrupt_ID) return Character;
       pragma Import (C, State, "__gnat_get_interrupt_state");
-      --  Get interrupt state.  Defined in a-init.c
-      --  The input argument is the interrupt number,
-      --  and the result is one of the following:
+      --  Get interrupt state. Defined in init.c.
+      --  The input argument is the interrupt number, and the result is one of
+      --  the following:
 
       Default : constant Character := 's';
       --    'n'   this interrupt not set by any Interrupt_State pragma
@@ -1408,6 +1408,12 @@ package body System.Task_Primitives.Operations is
       --  Initialize the global RTS lock
 
       Specific.Initialize (Environment_Task);
+
+      --  Do not use an alternate stack if no handler for SEGV is installed
+
+      if State (SIGSEGV) = Default then
+         Use_Alternate_Stack := False;
+      end if;
 
       if Use_Alternate_Stack then
          Environment_Task.Common.Task_Alternate_Stack :=

@@ -150,13 +150,6 @@ package body Exp_Ch2 is
 
          and then OK_To_Do_Constant_Replacement (E)
 
-         --  Do not replace occurrences in pragmas (where names typically
-         --  appear not as values, but as simply names. If there are cases
-         --  where values are required, it is only a very minor efficiency
-         --  issue that they do not get replaced when they could be).
-
-         and then Nkind (Parent (N)) /= N_Pragma_Argument_Association
-
          --  Do not replace the prefixes of attribute references, since this
          --  causes trouble with cases like 4'Size. Also for Name_Asm_Input and
          --  Name_Asm_Output, don't do replacement anywhere, since we can have

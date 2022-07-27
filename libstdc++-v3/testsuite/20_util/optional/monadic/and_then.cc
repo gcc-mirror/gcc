@@ -3,9 +3,7 @@
 
 #include <optional>
 
-#ifndef __cpp_lib_monadic_optional
-# error "Feature test macro for monadic optional is missing in <optional>"
-#elif __cpp_lib_monadic_optional < 202110L
+#if __cpp_lib_optional < 202110L
 # error "Feature test macro for monadic optional has wrong value in <optional>"
 #endif
 
@@ -118,7 +116,7 @@ void f(int&) { }
 void
 test_unconstrained()
 {
-  // PR libstc++/102863 - Optional monadic ops should not be constrained
+  // PR libstdc++/102863 - Optional monadic ops should not be constrained
   std::optional<int> x;
   auto answer = x.and_then([](auto& y) { f(y); return std::optional<int>{42}; });
   VERIFY( !answer );

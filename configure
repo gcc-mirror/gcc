@@ -811,11 +811,9 @@ enable_pgo_build
 with_mpc
 with_mpc_include
 with_mpc_lib
-with_mpfr_dir
 with_mpfr
 with_mpfr_include
 with_mpfr_lib
-with_gmp_dir
 with_gmp
 with_gmp_include
 with_gmp_lib
@@ -1588,14 +1586,12 @@ Optional Packages:
                           --with-mpc-lib=PATH/lib
   --with-mpc-include=PATH specify directory for installed MPC include files
   --with-mpc-lib=PATH     specify directory for the installed MPC library
-  --with-mpfr-dir=PATH    this option has been REMOVED
   --with-mpfr=PATH        specify prefix directory for installed MPFR package.
                           Equivalent to --with-mpfr-include=PATH/include plus
                           --with-mpfr-lib=PATH/lib
   --with-mpfr-include=PATH
                           specify directory for installed MPFR include files
   --with-mpfr-lib=PATH    specify directory for the installed MPFR library
-  --with-gmp-dir=PATH     this option has been REMOVED
   --with-gmp=PATH         specify prefix directory for the installed GMP
                           package. Equivalent to
                           --with-gmp-include=PATH/include plus
@@ -3060,7 +3056,7 @@ case "${ENABLE_GOLD}" in
       # Check for target supported by gold.
       case "${target}" in
         i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-* \
-        | aarch64*-*-* | tilegx*-*-* | mips*-*-* | s390*-*-*)
+        | aarch64*-*-* | mips*-*-* | s390*-*-* | loongarch*-*-*)
 	  configdirs="$configdirs gold"
 	  if test x${ENABLE_GOLD} = xdefault; then
 	    default_ld=gold
@@ -3390,7 +3386,7 @@ case "${target}" in
 esac
 
 # Disable libstdc++-v3 for some systems.
-# Allow user to override this if they pass --enable-libstdc++-v3
+# Allow user to override this if they pass --enable-libstdcxx
 if test "${ENABLE_LIBSTDCXX}" = "default" ; then
   case "${target}" in
     *-*-vxworks*)
@@ -3646,6 +3642,9 @@ case "${target}" in
   i[3456789]86-*-*)
     libgloss_dir=i386
     ;;
+  loongarch*-*-*)
+    libgloss_dir=loongarch
+    ;;
   m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
     libgloss_dir=m68hc11
     ;;
@@ -3768,7 +3767,7 @@ case "${target}" in
   *-*-dragonfly*)
     ;;
   *-*-freebsd*)
-    if test "x$with_gmp" = x && test "x$with_gmp_dir" = x \
+    if test "x$with_gmp" = x \
 	&& ! test -d ${srcdir}/gmp \
 	&& test -f /usr/local/include/gmp.h; then
       with_gmp=/usr/local
@@ -4018,9 +4017,6 @@ case "${target}" in
   tic6x-*-*)
     noconfigdirs="$noconfigdirs sim"
     ;;
-  tilepro*-*-* | tilegx*-*-*)
-    noconfigdirs="$noconfigdirs sim"
-    ;;
   v810-*-*)
     noconfigdirs="$noconfigdirs bfd binutils gas gdb ld opcodes target-libgloss"
     ;;
@@ -4029,6 +4025,11 @@ case "${target}" in
     ;;
   wasm32-*-*)
     noconfigdirs="$noconfigdirs ld"
+    ;;
+  loongarch*-*-linux*)
+    ;;
+  loongarch*-*-*)
+    noconfigdirs="$noconfigdirs gprof"
     ;;
 esac
 
@@ -7999,14 +8000,6 @@ fi
 # Specify a location for mpfr
 # check for this first so it ends up on the link line before gmp.
 
-# Check whether --with-mpfr-dir was given.
-if test "${with_mpfr_dir+set}" = set; then :
-  withval=$with_mpfr_dir; as_fn_error $? "The --with-mpfr-dir=PATH option has been removed.
-Use --with-mpfr=PATH or --with-mpfr-include=PATH plus --with-mpfr-lib=PATH" "$LINENO" 5
-fi
-
-
-
 # Check whether --with-mpfr was given.
 if test "${with_mpfr+set}" = set; then :
   withval=$with_mpfr;
@@ -8051,14 +8044,6 @@ if test "x$with_mpfr$with_mpfr_include$with_mpfr_lib" = x && test -d ${srcdir}/m
 fi
 
 # Specify a location for gmp
-
-# Check whether --with-gmp-dir was given.
-if test "${with_gmp_dir+set}" = set; then :
-  withval=$with_gmp_dir; as_fn_error $? "The --with-gmp-dir=PATH option has been removed.
-Use --with-gmp=PATH or --with-gmp-include=PATH plus --with-gmp-lib=PATH" "$LINENO" 5
-fi
-
-
 
 # Check whether --with-gmp was given.
 if test "${with_gmp+set}" = set; then :
@@ -8658,7 +8643,7 @@ fi
 # Check whether --enable-host-shared was given.
 if test "${enable_host_shared+set}" = set; then :
   enableval=$enable_host_shared; host_shared=$enableval
- case $target in
+ case $host in
    x86_64-*-darwin* | aarch64-*-darwin*)
      if test x$host_shared != xyes ; then
        # PIC is the default, and actually cannot be switched off.
@@ -8668,7 +8653,7 @@ if test "${enable_host_shared+set}" = set; then :
   *) ;;
  esac
 else
-  case $target in
+  case $host in
   x86_64-*-darwin* | aarch64-*-darwin*) host_shared=yes ;;
   *) host_shared=no ;;
  esac
@@ -9214,7 +9199,7 @@ fi
 extra_host_libiberty_configure_flags=
 extra_host_zlib_configure_flags=
 case " $configdirs " in
-  *" lto-plugin "* | *" libcc1 "*)
+  *" lto-plugin "* | *" libcc1 "* | *" gdbserver "*)
     # When these are to be built as shared libraries, the same applies to
     # libiberty.
     extra_host_libiberty_configure_flags=--enable-shared

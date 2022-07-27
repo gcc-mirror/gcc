@@ -48,4 +48,3 @@ void test()
     enum c = new C();
     enum pi = new int(3);
 }
-

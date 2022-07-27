@@ -1489,6 +1489,9 @@ eval_intrinsic (gfc_intrinsic_op op,
   int unary;
   arith rc;
 
+  if (!op1)
+    return NULL;
+
   gfc_clear_ts (&temp.ts);
 
   switch (op)
@@ -1703,11 +1706,11 @@ eval_type_intrinsic0 (gfc_intrinsic_op iop, gfc_expr *op)
 
 /* Return nonzero if the expression is a zero size array.  */
 
-static int
+static bool
 gfc_zero_size_array (gfc_expr *e)
 {
-  if (e->expr_type != EXPR_ARRAY)
-    return 0;
+  if (e == NULL || e->expr_type != EXPR_ARRAY)
+    return false;
 
   return e->value.constructor == NULL;
 }

@@ -498,17 +498,21 @@ struct File
     private Impl* _p;
     private string _name;
 
-    package this(FILE* handle, string name, uint refs = 1, bool isPopened = false) @trusted
+    package this(FILE* handle, string name, uint refs = 1, bool isPopened = false) @trusted @nogc nothrow
     {
         import core.stdc.stdlib : malloc;
-        import std.exception : enforce;
 
         assert(!_p);
-        _p = cast(Impl*) enforce(malloc(Impl.sizeof), "Out of memory");
+        _p = cast(Impl*) malloc(Impl.sizeof);
+        if (!_p)
+        {
+            import core.exception : onOutOfMemoryError;
+            onOutOfMemoryError();
+        }
         initImpl(handle, name, refs, isPopened);
     }
 
-    private void initImpl(FILE* handle, string name, uint refs = 1, bool isPopened = false)
+    private void initImpl(FILE* handle, string name, uint refs = 1, bool isPopened = false) @nogc nothrow pure @safe
     {
         assert(_p);
         _p.handle = handle;
@@ -1458,6 +1462,7 @@ Throws: `Exception` if the file is not opened.
     {
         import core.sys.windows.winbase : OVERLAPPED;
         import core.sys.windows.winnt : BOOL, ULARGE_INTEGER;
+        import std.windows.syserror : wenforce;
 
         private BOOL lockImpl(alias F, Flags...)(ulong start, ulong length,
             Flags flags)
@@ -1473,15 +1478,6 @@ Throws: `Exception` if the file is not opened.
             overlapped.hEvent = null;
             return F(windowsHandle, flags, 0, liLength.LowPart,
                 liLength.HighPart, &overlapped);
-        }
-
-        private static T wenforce(T)(T cond, lazy string str)
-        {
-            import core.sys.windows.winbase : GetLastError;
-            import std.windows.syserror : sysErrorString;
-
-            if (cond) return cond;
-            throw new Exception(str ~ ": " ~ sysErrorString(GetLastError()));
         }
     }
     version (Posix)
@@ -1783,7 +1779,7 @@ Throws: `Exception` if the file is not opened.
         import std.format : checkFormatException;
 
         alias e = checkFormatException!(fmt, A);
-        static assert(!e, e.msg);
+        static assert(!e, e);
         return this.writef(fmt, args);
     }
 
@@ -1802,7 +1798,7 @@ Throws: `Exception` if the file is not opened.
         import std.format : checkFormatException;
 
         alias e = checkFormatException!(fmt, A);
-        static assert(!e, e.msg);
+        static assert(!e, e);
         return this.writefln(fmt, args);
     }
 
@@ -2151,7 +2147,7 @@ $(CONSOLE
         import std.format : checkFormatException;
 
         alias e = checkFormatException!(format, Data);
-        static assert(!e, e.msg);
+        static assert(!e, e);
         return this.readf(format, data);
     }
 
@@ -4388,7 +4384,7 @@ if (isSomeString!(typeof(fmt)))
     import std.format : checkFormatException;
 
     alias e = checkFormatException!(fmt, A);
-    static assert(!e, e.msg);
+    static assert(!e, e);
     return .writef(fmt, args);
 }
 
@@ -4429,7 +4425,7 @@ if (isSomeString!(typeof(fmt)))
     import std.format : checkFormatException;
 
     alias e = checkFormatException!(fmt, A);
-    static assert(!e, e.msg);
+    static assert(!e, e);
     return .writefln(fmt, args);
 }
 
@@ -4510,7 +4506,7 @@ if (isSomeString!(typeof(format)))
     import std.format : checkFormatException;
 
     alias e = checkFormatException!(format, A);
-    static assert(!e, e.msg);
+    static assert(!e, e);
     return .readf(format, args);
 }
 

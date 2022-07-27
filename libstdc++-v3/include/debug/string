@@ -49,6 +49,20 @@
 # define _GLIBCXX_INSERT_RETURNS_ITERATOR_ONLY(expr)
 #endif
 
+#ifdef _GLIBCXX_DEBUG_PEDANTIC
+# define __glibcxx_check_string(_String)				\
+  _GLIBCXX_DEBUG_VERIFY_STR_COND_AT(_String != 0,		\
+				    __FILE__, __LINE__,		\
+				    __PRETTY_FUNCTION__);
+# define __glibcxx_check_string_len(_String,_Len)		\
+  _GLIBCXX_DEBUG_VERIFY_STR_COND_AT(_String != 0 || _Len == 0,	\
+				    __FILE__, __LINE__,		\
+				    __PRETTY_FUNCTION__);
+#else
+# define __glibcxx_check_string(_String)
+# define __glibcxx_check_string_len(_String,_Len)
+#endif
+
 namespace __gnu_debug
 {
   /** Checks that __s is non-NULL or __n == 0, and then returns __s. */
@@ -868,34 +882,28 @@ namespace __gnu_debug
 
       using _Base::get_allocator;
 
-      size_type
-      find(const basic_string& __str, size_type __pos = 0) const
-	_GLIBCXX_NOEXCEPT
-      { return _Base::find(__str, __pos); }
+      using _Base::find;
 
+      _GLIBCXX20_CONSTEXPR
       size_type
       find(const _CharT* __s, size_type __pos, size_type __n) const
+	_GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_string(__s);
 	return _Base::find(__s, __pos, __n);
       }
 
+      _GLIBCXX20_CONSTEXPR
       size_type
-      find(const _CharT* __s, size_type __pos = 0) const
+      find(const _CharT* __s, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_string(__s);
 	return _Base::find(__s, __pos);
       }
 
-      size_type
-      find(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
-      { return _Base::find(__c, __pos); }
+      using _Base::rfind;
 
-      size_type
-      rfind(const basic_string& __str, size_type __pos = _Base::npos) const
-	_GLIBCXX_NOEXCEPT
-      { return _Base::rfind(__str, __pos); }
-
+      _GLIBCXX20_CONSTEXPR
       size_type
       rfind(const _CharT* __s, size_type __pos, size_type __n) const
       {
@@ -903,6 +911,7 @@ namespace __gnu_debug
 	return _Base::rfind(__s, __pos, __n);
       }
 
+      _GLIBCXX20_CONSTEXPR
       size_type
       rfind(const _CharT* __s, size_type __pos = _Base::npos) const
       {
@@ -910,104 +919,84 @@ namespace __gnu_debug
 	return _Base::rfind(__s, __pos);
       }
 
-      size_type
-      rfind(_CharT __c, size_type __pos = _Base::npos) const _GLIBCXX_NOEXCEPT
-      { return _Base::rfind(__c, __pos); }
+      using _Base::find_first_of;
 
-      size_type
-      find_first_of(const basic_string& __str, size_type __pos = 0) const
-	_GLIBCXX_NOEXCEPT
-      { return _Base::find_first_of(__str, __pos); }
-
+      _GLIBCXX20_CONSTEXPR
       size_type
       find_first_of(const _CharT* __s, size_type __pos, size_type __n) const
+	_GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_string(__s);
 	return _Base::find_first_of(__s, __pos, __n);
       }
 
+      _GLIBCXX20_CONSTEXPR
       size_type
-      find_first_of(const _CharT* __s, size_type __pos = 0) const
+      find_first_of(const _CharT* __s, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_string(__s);
 	return _Base::find_first_of(__s, __pos);
       }
 
-      size_type
-      find_first_of(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
-      { return _Base::find_first_of(__c, __pos); }
+      using _Base::find_last_of;
 
-      size_type
-      find_last_of(const basic_string& __str,
-		   size_type __pos = _Base::npos) const _GLIBCXX_NOEXCEPT
-      { return _Base::find_last_of(__str, __pos); }
-
+      _GLIBCXX20_CONSTEXPR
       size_type
       find_last_of(const _CharT* __s, size_type __pos, size_type __n) const
+	_GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_string(__s);
 	return _Base::find_last_of(__s, __pos, __n);
       }
 
+      _GLIBCXX20_CONSTEXPR
       size_type
       find_last_of(const _CharT* __s, size_type __pos = _Base::npos) const
+	_GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_string(__s);
 	return _Base::find_last_of(__s, __pos);
       }
 
-      size_type
-      find_last_of(_CharT __c, size_type __pos = _Base::npos) const
-	_GLIBCXX_NOEXCEPT
-      { return _Base::find_last_of(__c, __pos); }
+      using _Base::find_first_not_of;
 
-      size_type
-      find_first_not_of(const basic_string& __str, size_type __pos = 0) const
-	_GLIBCXX_NOEXCEPT
-      { return _Base::find_first_not_of(__str, __pos); }
-
+      _GLIBCXX20_CONSTEXPR
       size_type
       find_first_not_of(const _CharT* __s, size_type __pos, size_type __n) const
+	_GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_string_len(__s, __n);
 	return _Base::find_first_not_of(__s, __pos, __n);
       }
 
+      _GLIBCXX20_CONSTEXPR
       size_type
       find_first_not_of(const _CharT* __s, size_type __pos = 0) const
+	_GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_string(__s);
 	return _Base::find_first_not_of(__s, __pos);
       }
 
-      size_type
-      find_first_not_of(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
-      { return _Base::find_first_not_of(__c, __pos); }
+      using _Base::find_last_not_of;
 
-      size_type
-      find_last_not_of(const basic_string& __str,
-		       size_type __pos = _Base::npos) const
-	_GLIBCXX_NOEXCEPT
-      { return _Base::find_last_not_of(__str, __pos); }
-
+      _GLIBCXX20_CONSTEXPR
       size_type
       find_last_not_of(const _CharT* __s, size_type __pos, size_type __n) const
+	_GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_string(__s);
 	return _Base::find_last_not_of(__s, __pos, __n);
       }
 
+      _GLIBCXX20_CONSTEXPR
       size_type
       find_last_not_of(const _CharT* __s, size_type __pos = _Base::npos) const
+	_GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_string(__s);
 	return _Base::find_last_not_of(__s, __pos);
       }
-
-      size_type
-      find_last_not_of(_CharT __c, size_type __pos = _Base::npos) const
-	_GLIBCXX_NOEXCEPT
-      { return _Base::find_last_not_of(__c, __pos); }
 
       basic_string
       substr(size_type __pos = 0, size_type __n = _Base::npos) const

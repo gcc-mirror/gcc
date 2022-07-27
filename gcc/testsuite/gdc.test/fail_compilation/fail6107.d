@@ -13,4 +13,3 @@ class Bar
 {
     int __ctor = 4;
 }
-

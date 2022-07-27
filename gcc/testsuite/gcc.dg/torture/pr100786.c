@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-alias "" } */
 
 const double a = 0;
 extern int b __attribute__((alias("a")));

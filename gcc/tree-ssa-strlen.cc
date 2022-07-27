@@ -34,10 +34,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa-warn-restrict.h"
 #include "fold-const.h"
 #include "stor-layout.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "expr.h"
 #include "tree-cfg.h"
@@ -243,8 +243,8 @@ public:
 
   ~strlen_pass ();
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
   bool check_and_optimize_stmt (bool *cleanup_eh);
   bool check_and_optimize_call (bool *zero_write);
@@ -1736,12 +1736,6 @@ valid_builtin_call (gimple *stmt)
     return false;
 
   tree callee = gimple_call_fndecl (stmt);
-  tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (callee));
-  if (decl
-      && decl != callee
-      && !gimple_builtin_call_types_compatible_p (stmt, decl))
-    return false;
-
   switch (DECL_FUNCTION_CODE (callee))
     {
     case BUILT_IN_MEMCMP:
@@ -1957,7 +1951,8 @@ set_strlen_range (tree lhs, wide_int min, wide_int max,
   if (min == max)
     return wide_int_to_tree (size_type_node, min);
 
-  set_range_info (lhs, VR_RANGE, min, max);
+  value_range vr (TREE_TYPE (lhs), min, max);
+  set_range_info (lhs, vr);
   return lhs;
 }
 
@@ -3810,9 +3805,44 @@ strlen_pass::handle_builtin_memset (bool *zero_write)
 {
   gimple *memset_stmt = gsi_stmt (m_gsi);
   tree ptr = gimple_call_arg (memset_stmt, 0);
+  tree memset_val = gimple_call_arg (memset_stmt, 1);
+  tree memset_size = gimple_call_arg (memset_stmt, 2);
+
   /* Set to the non-constant offset added to PTR.  */
   wide_int offrng[2];
   int idx1 = get_stridx (ptr, memset_stmt, offrng, ptr_qry.rvals);
+  if (idx1 == 0
+      && TREE_CODE (memset_val) == INTEGER_CST
+      && ((TREE_CODE (memset_size) == INTEGER_CST
+	   && !integer_zerop (memset_size))
+	  || TREE_CODE (memset_size) == SSA_NAME))
+    {
+      unsigned HOST_WIDE_INT mask = (HOST_WIDE_INT_1U << CHAR_TYPE_SIZE) - 1;
+      bool full_string_p = (wi::to_wide (memset_val) & mask) == 0;
+
+      /* We only handle symbolic lengths when writing non-zero values.  */
+      if (full_string_p && TREE_CODE (memset_size) != INTEGER_CST)
+	return false;
+
+      idx1 = new_stridx (ptr);
+      if (idx1 == 0)
+	return false;
+      tree newlen;
+      if (full_string_p)
+	newlen = build_int_cst (size_type_node, 0);
+      else if (TREE_CODE (memset_size) == INTEGER_CST)
+	newlen = fold_convert (size_type_node, memset_size);
+      else
+	newlen = memset_size;
+
+      strinfo *dsi = new_strinfo (ptr, idx1, newlen, full_string_p);
+      set_strinfo (idx1, dsi);
+      find_equal_ptrs (ptr, idx1);
+      dsi->dont_invalidate = true;
+      dsi->writable = true;
+      return false;
+    }
+
   if (idx1 <= 0)
     return false;
   strinfo *si1 = get_strinfo (idx1);
@@ -3825,7 +3855,6 @@ strlen_pass::handle_builtin_memset (bool *zero_write)
   if (!valid_builtin_call (alloc_stmt))
     return false;
   tree alloc_size = gimple_call_arg (alloc_stmt, 0);
-  tree memset_size = gimple_call_arg (memset_stmt, 2);
 
   /* Check for overflow.  */
   maybe_warn_overflow (memset_stmt, false, memset_size, NULL, false, true);
@@ -3841,7 +3870,7 @@ strlen_pass::handle_builtin_memset (bool *zero_write)
     return false;
 
   /* Bail when the call writes a non-zero value.  */
-  if (!integer_zerop (gimple_call_arg (memset_stmt, 1)))
+  if (!integer_zerop (memset_val))
     return false;
 
   /* Let the caller know the memset call cleared the destination.  */
@@ -3884,8 +3913,8 @@ strlen_pass::handle_builtin_memset (bool *zero_write)
    nonnull if and only RES is used in such expressions exclusively and
    in none other.  */
 
-static gimple *
-use_in_zero_equality (tree res, bool exclusive = true)
+gimple *
+use_in_zero_equality (tree res, bool exclusive)
 {
   gimple *first_use = NULL;
 
@@ -4349,8 +4378,9 @@ strlen_pass::handle_builtin_string_cmp ()
 	       known to be unequal set the range of the result to non-zero.
 	       This allows the call to be eliminated if its result is only
 	       used in tests for equality to zero.  */
-	    wide_int zero = wi::zero (TYPE_PRECISION (TREE_TYPE (lhs)));
-	    set_range_info (lhs, VR_ANTI_RANGE, zero, zero);
+	    value_range nz;
+	    nz.set_nonzero (TREE_TYPE (lhs));
+	    set_range_info (lhs, nz);
 	    return false;
 	  }
 	/* When the two strings are definitely equal (such as when they
@@ -5093,8 +5123,9 @@ strlen_pass::handle_store (bool *zero_write)
 	  return false;
 	}
 
-      if (storing_all_zeros_p
-	  || storing_nonzero_p
+      if (storing_nonzero_p
+	  || storing_all_zeros_p
+	  || (full_string_p && lenrange[1] == 0)
 	  || (offset != 0 && store_before_nul[1] > 0))
 	{
 	  /* When STORING_NONZERO_P, we know that the string will start
@@ -5104,8 +5135,9 @@ strlen_pass::handle_store (bool *zero_write)
 	     of leading non-zero characters and set si->NONZERO_CHARS to
 	     the result instead.
 
-	     When STORING_ALL_ZEROS_P, we know that the string is now
-	     OFFSET characters long.
+	     When STORING_ALL_ZEROS_P, or the first byte written is zero,
+	     i.e. FULL_STRING_P && LENRANGE[1] == 0, we know that the
+	     string is now OFFSET characters long.
 
 	     Otherwise, we're storing an unknown value at offset OFFSET,
 	     so need to clip the nonzero_chars to OFFSET.
@@ -5573,7 +5605,7 @@ strlen_pass::handle_integral_assign (bool *cleanup_eh)
 }
 
 /* Handle assignment statement at *GSI to LHS.  Set *ZERO_WRITE if
-   the assignent stores all zero bytes..  */
+   the assignment stores all zero bytes.  */
 
 bool
 strlen_pass::handle_assign (tree lhs, bool *zero_write)
@@ -5811,7 +5843,7 @@ strlen_pass::before_dom_children (basic_block bb)
   /* Attempt to optimize individual statements.  */
   for (m_gsi = gsi_start_bb (bb); !gsi_end_p (m_gsi); )
     {
-      /* Reset search depth preformance counter.  */
+      /* Reset search depth performance counter.  */
       ptr_qry.depth = 0;
 
       if (check_and_optimize_stmt (&cleanup_eh))
@@ -5858,13 +5890,8 @@ printf_strlen_execute (function *fun, bool warn_only)
   strlen_optimize = !warn_only;
 
   calculate_dominance_info (CDI_DOMINATORS);
-
-  bool use_scev = optimize > 0 && flag_printf_return_value;
-  if (use_scev)
-    {
-      loop_optimizer_init (LOOPS_NORMAL);
-      scev_initialize ();
-    }
+  loop_optimizer_init (LOOPS_NORMAL);
+  scev_initialize ();
 
   gcc_assert (!strlen_to_stridx);
   if (warn_stringop_overflow || warn_stringop_truncation)
@@ -5902,11 +5929,8 @@ printf_strlen_execute (function *fun, bool warn_only)
       strlen_to_stridx = NULL;
     }
 
-  if (use_scev)
-    {
-      scev_finalize ();
-      loop_optimizer_finalize ();
-    }
+  scev_finalize ();
+  loop_optimizer_finalize ();
 
   return walker.m_cleanup_cfg ? TODO_cleanup_cfg : 0;
 }
@@ -5938,8 +5962,8 @@ public:
     : gimple_opt_pass (pass_data_warn_printf, ctxt)
   {}
 
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *fun)
+  bool gate (function *) final override;
+  unsigned int execute (function *fun) final override
   {
     return printf_strlen_execute (fun, true);
   }
@@ -5975,10 +5999,10 @@ public:
     : gimple_opt_pass (pass_data_strlen, ctxt)
   {}
 
-  opt_pass * clone () { return new pass_strlen (m_ctxt); }
+  opt_pass * clone () final override { return new pass_strlen (m_ctxt); }
 
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *fun)
+  bool gate (function *) final override;
+  unsigned int execute (function *fun) final override
   {
     return printf_strlen_execute (fun, false);
   }

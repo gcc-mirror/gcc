@@ -14,4 +14,3 @@ void bar()
 {
     float g = foo().ptr[0];
 }
-

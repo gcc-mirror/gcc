@@ -324,7 +324,7 @@ test_opt_result_failure_at (const line_table_case &case_)
 /* Run all of the selftests within this file.  */
 
 void
-opt_problem_cc_tests ()
+c_opt_problem_cc_tests ()
 {
   test_opt_result_success ();
   for_each_line_table_case (test_opt_result_failure_at);

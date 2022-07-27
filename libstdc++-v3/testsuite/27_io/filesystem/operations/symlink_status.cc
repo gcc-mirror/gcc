@@ -17,7 +17,6 @@
 
 // { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
-// { dg-xfail-if "symlinks not supported" { *-*-mingw* } }
 
 #include <filesystem>
 #include <testsuite_hooks.h>
@@ -39,6 +38,7 @@ test01()
   fs::file_status st2 = fs::symlink_status(dot);
   VERIFY( st2.type() == fs::file_type::directory );
 
+#ifndef NO_SYMLINKS
   fs::path link = __gnu_test::nonexistent_path();
   create_directory_symlink(dot, link);
   __gnu_test::scoped_file l(link, __gnu_test::scoped_file::adopt_file);
@@ -49,6 +49,7 @@ test01()
   st2 = fs::symlink_status(link, ec);
   VERIFY( !ec );
   VERIFY( st2.type() == fs::file_type::symlink );
+#endif
 }
 
 void
@@ -68,6 +69,7 @@ test02()
 void
 test03()
 {
+#ifndef NO_SYMLINKS
   if (!__gnu_test::permissions_are_testable())
     return;
 
@@ -94,7 +96,7 @@ test03()
   std::error_code ec2;
   fs::path p, p2;
   try {
-    fs::symlink_status(f.path);
+    (void) fs::symlink_status(f.path);
   } catch (const fs::filesystem_error& e) {
     caught = true;
     p = e.path1();
@@ -111,6 +113,7 @@ test03()
   VERIFY( st2.type() == fs::file_type::symlink );
 
   fs::permissions(dir, fs::perms::owner_all, ec);
+#endif
 }
 
 void

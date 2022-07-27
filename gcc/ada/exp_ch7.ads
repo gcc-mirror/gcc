@@ -255,8 +255,8 @@ package Exp_Ch7 is
    procedure Expand_Cleanup_Actions (N : Node_Id);
    --  Expand the necessary stuff into a scope to enable finalization of local
    --  objects and deallocation of transient data when exiting the scope. N is
-   --  a "scope node" that is to say one of the following: N_Block_Statement,
-   --  N_Subprogram_Body, N_Task_Body, N_Entry_Body.
+   --  one of N_Block_Statement, N_Subprogram_Body, N_Task_Body, N_Entry_Body,
+   --  or N_Extended_Return_Statement.
 
    procedure Establish_Transient_Scope
      (N                : Node_Id;

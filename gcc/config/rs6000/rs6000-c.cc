@@ -178,9 +178,8 @@ rid_int128(void)
   return RID_MAX + 1;
 }
 
-/* Called to decide whether a conditional macro should be expanded.
-   Since we have exactly one such macro (i.e, 'vector'), we do not
-   need to examine the 'tok' parameter.  */
+/* Called to decide whether a conditional macro should be expanded
+   by peeking two or more tokens(_bool/_pixel/int/long/double/...).  */
 
 static cpp_hashnode *
 rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
@@ -282,7 +281,9 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 		expand_bool_pixel = __pixel_keyword;
 	      else if (ident == C_CPP_HASHNODE (__bool_keyword))
 		expand_bool_pixel = __bool_keyword;
-	      else
+
+	      /* If there are more tokens to check.  */
+	      else if (ident)
 		{
 		  /* Try two tokens down, too.  */
 		  do
@@ -334,20 +335,16 @@ rs6000_define_or_undefine_macro (bool define_p, const char *name)
 }
 
 /* Define or undefine macros based on the current target.  If the user does
-   #pragma GCC target, we need to adjust the macros dynamically.  Note, some of
-   the options needed for builtins have been moved to separate variables, so
-   have both the target flags and the builtin flags as arguments.  */
+   #pragma GCC target, we need to adjust the macros dynamically.  */
 
 void
-rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
-			     HOST_WIDE_INT bu_mask)
+rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags)
 {
   if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
     fprintf (stderr,
-	     "rs6000_target_modify_macros (%s, " HOST_WIDE_INT_PRINT_HEX
-	     ", " HOST_WIDE_INT_PRINT_HEX ")\n",
+	     "rs6000_target_modify_macros (%s, " HOST_WIDE_INT_PRINT_HEX ")\n",
 	     (define_p) ? "define" : "undef",
-	     flags, bu_mask);
+	     flags);
 
   /* Each of the flags mentioned below controls whether certain
      preprocessor macros will be automatically defined when
@@ -383,7 +380,7 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	TARGET_DEFAULT macro is defined to equal zero, and
 	TARGET_POWERPC64 and
 	a) BYTES_BIG_ENDIAN and the flag to be enabled is either
-	   MASK_PPC_GFXOPT or MASK_POWERPC64 (flags for "powerpc64"
+	   OPTION_MASK_PPC_GFXOPT or MASK_POWERPC64 (flags for "powerpc64"
 	   target), or
 	b) !BYTES_BIG_ENDIAN and the flag to be enabled is either
 	   MASK_POWERPC64 or it is one of the flags included in
@@ -584,16 +581,18 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
 	rs6000_define_or_undefine_macro (true, "__float128=__ieee128");
       else
 	rs6000_define_or_undefine_macro (false, "__float128");
+      if (ieee128_float_type_node && define_p)
+	rs6000_define_or_undefine_macro (true, "__SIZEOF_FLOAT128__=16");
+      else
+	rs6000_define_or_undefine_macro (false, "__SIZEOF_FLOAT128__");
     }
   /* OPTION_MASK_FLOAT128_HARDWARE can be turned on if -mcpu=power9 is used or
      via the target attribute/pragma.  */
   if ((flags & OPTION_MASK_FLOAT128_HW) != 0)
     rs6000_define_or_undefine_macro (define_p, "__FLOAT128_HARDWARE__");
 
-  /* options from the builtin masks.  */
-  /* Note that RS6000_BTM_CELL is enabled only if (rs6000_cpu ==
-     PROCESSOR_CELL) (e.g. -mcpu=cell).  */
-  if ((bu_mask & RS6000_BTM_CELL) != 0)
+  /* Tell the user if we are targeting CELL.  */
+  if (rs6000_cpu == PROCESSOR_CELL)
     rs6000_define_or_undefine_macro (define_p, "__PPU__");
 
   /* Tell the user if we support the MMA instructions.  */
@@ -611,8 +610,7 @@ void
 rs6000_cpu_cpp_builtins (cpp_reader *pfile)
 {
   /* Define all of the common macros.  */
-  rs6000_target_modify_macros (true, rs6000_isa_flags,
-			       rs6000_builtin_mask_calculate ());
+  rs6000_target_modify_macros (true, rs6000_isa_flags);
 
   if (TARGET_FRE)
     builtin_define ("__RECIP__");
@@ -623,11 +621,11 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
   if (TARGET_FRSQRTES)
     builtin_define ("__RSQRTEF__");
   if (TARGET_FLOAT128_TYPE)
-      builtin_define ("__FLOAT128_TYPE__");
+    builtin_define ("__FLOAT128_TYPE__");
   if (ibm128_float_type_node)
     builtin_define ("__SIZEOF_IBM128__=16");
   if (ieee128_float_type_node)
-    builtin_define ("__SIZEOF_FLOAT128__=16");
+    builtin_define ("__SIZEOF_IEEE128__=16");
 #ifdef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB
   builtin_define ("__BUILTIN_CPU_SUPPORTS__");
 #endif
@@ -1682,6 +1680,10 @@ find_instance (bool *unsupported_builtin, ovlddata **instance,
 
   ovlddata *inst = *instance;
   gcc_assert (inst != NULL);
+  /* It is possible for an instance to require a data type that isn't
+     defined on this target, in which case inst->fntype will be NULL.  */
+  if (!inst->fntype)
+    return error_mark_node;
   tree fntype = rs6000_builtin_info[inst->bifid].fntype;
   tree parmtype0 = TREE_VALUE (TYPE_ARG_TYPES (fntype));
   tree parmtype1 = TREE_VALUE (TREE_CHAIN (TYPE_ARG_TYPES (fntype)));
@@ -1784,8 +1786,9 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	{
 	  if (TYPE_READONLY (TREE_TYPE (type))
 	      && !TYPE_READONLY (TREE_TYPE (decl_type)))
-	    warning (0, "passing argument %d of %qE discards const qualifier "
-		     "from pointer target type", n + 1, fndecl);
+	    warning (0, "passing argument %d of %qE discards %qs "
+		     "qualifier from pointer target type", n + 1, fndecl,
+		     "const");
 	  type = build_qualified_type (TREE_TYPE (type), 0);
 	  type = build_pointer_type (type);
 	  arg = fold_convert (type, arg);

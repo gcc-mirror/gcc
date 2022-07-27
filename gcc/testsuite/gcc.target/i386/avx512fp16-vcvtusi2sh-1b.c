@@ -9,7 +9,7 @@
 
 void NOINLINE
 emulate_vcvtusi2sh(V512 *dest, V512 op1, 
-		   int value_32, __int64_t value_64, int bits)
+		   int value_32, long long value_64, int bits)
 {
   V512 v1,v2,v5,v6;
   unpack_ph_2twops(op1, &v1, &v2);

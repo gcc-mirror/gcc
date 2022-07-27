@@ -78,7 +78,7 @@
    (SJLJ or DWARF). We need a consistently named interface to import from
    a-except, so wrappers are defined here.  */
 
-#ifdef __CYGWIN__
+#if defined (__CYGWIN__) || (defined(__SEH__) && defined(STANDALONE))
 /* Prevent compile error due to unwind-generic.h including <windows.h>,
    see comment above #include <windows.h> in mingw32.h.  */
 #include "mingw32.h"
@@ -1377,6 +1377,10 @@ __gnat_cleanupunwind_handler (int version ATTRIBUTE_UNUSED,
 _Unwind_Reason_Code
 __gnat_Unwind_RaiseException (_Unwind_Exception *e)
 {
+#ifdef NO_EXCEPTION_PROPAGATION
+  abort();
+#endif
+
 #ifdef __USING_SJLJ_EXCEPTIONS__
   return _Unwind_SjLj_RaiseException (e);
 #else

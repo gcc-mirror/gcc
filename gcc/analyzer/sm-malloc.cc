@@ -128,7 +128,7 @@ struct allocation_state : public state_machine::state
     m_deallocator (deallocator)
   {}
 
-  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+  void dump_to_pp (pretty_printer *pp) const final override;
 
   const allocation_state *get_nonnull () const;
 
@@ -243,9 +243,9 @@ struct custom_deallocator_set : public deallocator_set
 			  //unsigned arg_idx,
 			  enum wording wording);
 
-  bool contains_p (const deallocator *d) const FINAL OVERRIDE;
-  const deallocator *maybe_get_single () const FINAL OVERRIDE;
-  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+  bool contains_p (const deallocator *d) const final override;
+  const deallocator *maybe_get_single () const final override;
+  void dump_to_pp (pretty_printer *pp) const final override;
 
   auto_vec <const deallocator *> m_deallocator_vec;
 };
@@ -259,9 +259,9 @@ struct standard_deallocator_set : public deallocator_set
 			    const char *name,
 			    enum wording wording);
 
-  bool contains_p (const deallocator *d) const FINAL OVERRIDE;
-  const deallocator *maybe_get_single () const FINAL OVERRIDE;
-  void dump_to_pp (pretty_printer *pp) const FINAL OVERRIDE;
+  bool contains_p (const deallocator *d) const final override;
+  const deallocator *maybe_get_single () const final override;
+  void dump_to_pp (pretty_printer *pp) const final override;
 
   standard_deallocator m_deallocator;
 };
@@ -343,10 +343,10 @@ public:
 	     const deallocator_set *deallocators,
 	     const deallocator *deallocator);
 
-  bool inherited_state_p () const FINAL OVERRIDE { return false; }
+  bool inherited_state_p () const final override { return false; }
 
   state_machine::state_t
-  get_default_state (const svalue *sval) const FINAL OVERRIDE
+  get_default_state (const svalue *sval) const final override
   {
     if (tree cst = sval->maybe_get_constant ())
       {
@@ -372,25 +372,25 @@ public:
 
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
-		const gimple *stmt) const FINAL OVERRIDE;
+		const gimple *stmt) const final override;
 
   void on_phi (sm_context *sm_ctxt,
 	       const supernode *node,
 	       const gphi *phi,
-	       tree rhs) const FINAL OVERRIDE;
+	       tree rhs) const final override;
 
   void on_condition (sm_context *sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
 		     const svalue *lhs,
 		     enum tree_code op,
-		     const svalue *rhs) const FINAL OVERRIDE;
+		     const svalue *rhs) const final override;
 
-  bool can_purge_p (state_t s) const FINAL OVERRIDE;
-  pending_diagnostic *on_leak (tree var) const FINAL OVERRIDE;
+  bool can_purge_p (state_t s) const final override;
+  pending_diagnostic *on_leak (tree var) const final override;
 
   bool reset_when_passed_to_unknown_fn_p (state_t s,
-					  bool is_mutable) const FINAL OVERRIDE;
+					  bool is_mutable) const final override;
 
   static bool unaffected_by_call_p (tree fndecl);
 
@@ -689,13 +689,13 @@ public:
   : m_sm (sm), m_arg (arg)
   {}
 
-  bool subclass_equal_p (const pending_diagnostic &base_other) const OVERRIDE
+  bool subclass_equal_p (const pending_diagnostic &base_other) const override
   {
     return same_tree_p (m_arg, ((const malloc_diagnostic &)base_other).m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    OVERRIDE
+    override
   {
     if (change.m_old_state == m_sm.get_start_state ()
 	&& unchecked_p (change.m_new_state))
@@ -736,6 +736,20 @@ public:
     return label_text ();
   }
 
+  diagnostic_event::meaning
+  get_meaning_for_state_change (const evdesc::state_change &change)
+    const final override
+  {
+    if (change.m_old_state == m_sm.get_start_state ()
+	&& unchecked_p (change.m_new_state))
+      return diagnostic_event::meaning (diagnostic_event::VERB_acquire,
+					diagnostic_event::NOUN_memory);
+    if (freed_p (change.m_new_state))
+      return diagnostic_event::meaning (diagnostic_event::VERB_release,
+					diagnostic_event::NOUN_memory);
+    return diagnostic_event::meaning ();
+  }
+
 protected:
   const malloc_state_machine &m_sm;
   tree m_arg;
@@ -755,32 +769,37 @@ public:
     m_actual_dealloc (actual_dealloc)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE
+  const char *get_kind () const final override
   {
     return "mismatching_deallocation";
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_mismatching_deallocation;
+  }
+
+  bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;
     m.add_cwe (762); /* CWE-762: Mismatched Memory Management Routines.  */
     if (const deallocator *expected_dealloc
 	  = m_expected_deallocators->maybe_get_single ())
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_mismatching_deallocation,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "%qE should have been deallocated with %qs"
 			   " but was deallocated with %qs",
 			   m_arg, expected_dealloc->m_name,
 			   m_actual_dealloc->m_name);
     else
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_mismatching_deallocation,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "%qs called on %qE returned from a mismatched"
 			   " allocation function",
 			   m_actual_dealloc->m_name, m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    FINAL OVERRIDE
+    final override
   {
     if (unchecked_p (change.m_new_state))
       {
@@ -796,7 +815,7 @@ public:
     return malloc_diagnostic::describe_state_change (change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (m_alloc_event.known_p ())
       {
@@ -832,19 +851,24 @@ public:
   : malloc_diagnostic (sm, arg), m_funcname (funcname)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "double_free"; }
+  const char *get_kind () const final override { return "double_free"; }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_double_free;
+  }
+
+  bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;
     m.add_cwe (415); /* CWE-415: Double Free.  */
-    return warning_meta (rich_loc, m, OPT_Wanalyzer_double_free,
+    return warning_meta (rich_loc, m, get_controlling_option (),
 			 "double-%qs of %qE", m_funcname, m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    FINAL OVERRIDE
+    final override
   {
     if (freed_p (change.m_new_state))
       {
@@ -855,7 +879,7 @@ public:
   }
 
   label_text describe_call_with_state (const evdesc::call_with_state &info)
-    FINAL OVERRIDE
+    final override
   {
     if (freed_p (info.m_state))
       return info.formatted_print
@@ -864,7 +888,7 @@ public:
     return label_text ();
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (m_first_free_event.known_p ())
       return ev.formatted_print ("second %qs here; first %qs was at %@",
@@ -889,7 +913,7 @@ public:
   {}
 
   label_text describe_state_change (const evdesc::state_change &change)
-    FINAL OVERRIDE
+    final override
   {
     if (change.m_old_state == m_sm.get_start_state ()
 	&& unchecked_p (change.m_new_state))
@@ -901,7 +925,7 @@ public:
   }
 
   label_text describe_return_of_state (const evdesc::return_of_state &info)
-    FINAL OVERRIDE
+    final override
   {
     if (unchecked_p (info.m_state))
       return info.formatted_print ("possible return of NULL to %qE from %qE",
@@ -923,19 +947,23 @@ public:
   : possible_null (sm, arg)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "possible_null_deref"; }
+  const char *get_kind () const final override { return "possible_null_deref"; }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_possible_null_dereference;
+  }
+
+  bool emit (rich_location *rich_loc) final override
   {
     /* CWE-690: Unchecked Return Value to NULL Pointer Dereference.  */
     diagnostic_metadata m;
     m.add_cwe (690);
-    return warning_meta (rich_loc, m,
-			 OPT_Wanalyzer_possible_null_dereference,
+    return warning_meta (rich_loc, m, get_controlling_option (),
 			 "dereference of possibly-NULL %qE", m_arg);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (m_origin_of_unchecked_event.known_p ())
       return ev.formatted_print ("%qE could be NULL: unchecked value from %@",
@@ -979,8 +1007,7 @@ inform_nonnull_attribute (tree fndecl, int arg_idx)
   label_text arg_desc = describe_argument_index (fndecl, arg_idx);
   inform (DECL_SOURCE_LOCATION (fndecl),
 	  "argument %s of %qD must be non-null",
-	  arg_desc.m_buffer, fndecl);
-  arg_desc.maybe_free ();
+	  arg_desc.get (), fndecl);
   /* Ideally we would use the location of the parm and underline the
      attribute also - but we don't have the location_t values at this point
      in the middle-end.
@@ -999,9 +1026,10 @@ public:
     m_fndecl (fndecl), m_arg_idx (arg_idx)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "possible_null_arg"; }
+  const char *get_kind () const final override { return "possible_null_arg"; }
 
-  bool subclass_equal_p (const pending_diagnostic &base_other) const
+  bool subclass_equal_p (const pending_diagnostic &base_other)
+    const final override
   {
     const possible_null_arg &sub_other
       = (const possible_null_arg &)base_other;
@@ -1010,15 +1038,19 @@ public:
 	    && m_arg_idx == sub_other.m_arg_idx);
   }
 
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_possible_null_argument;
+  }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) final override
   {
     /* CWE-690: Unchecked Return Value to NULL Pointer Dereference.  */
     auto_diagnostic_group d;
     diagnostic_metadata m;
     m.add_cwe (690);
     bool warned
-      = warning_meta (rich_loc, m, OPT_Wanalyzer_possible_null_argument,
+      = warning_meta (rich_loc, m, get_controlling_option (),
 		      "use of possibly-NULL %qE where non-null expected",
 		      m_arg);
     if (warned)
@@ -1026,20 +1058,19 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     label_text arg_desc = describe_argument_index (m_fndecl, m_arg_idx);
     label_text result;
     if (m_origin_of_unchecked_event.known_p ())
       result = ev.formatted_print ("argument %s (%qE) from %@ could be NULL"
 				   " where non-null expected",
-				   arg_desc.m_buffer, ev.m_expr,
+				   arg_desc.get (), ev.m_expr,
 				   &m_origin_of_unchecked_event);
     else
       result = ev.formatted_print ("argument %s (%qE) could be NULL"
 				   " where non-null expected",
-				   arg_desc.m_buffer, ev.m_expr);
-    arg_desc.maybe_free ();
+				   arg_desc.get (), ev.m_expr);
     return result;
   }
 
@@ -1056,20 +1087,24 @@ public:
   null_deref (const malloc_state_machine &sm, tree arg)
   : malloc_diagnostic (sm, arg) {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "null_deref"; }
+  const char *get_kind () const final override { return "null_deref"; }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_null_dereference;
+  }
+
+  bool emit (rich_location *rich_loc) final override
   {
     /* CWE-476: NULL Pointer Dereference.  */
     diagnostic_metadata m;
     m.add_cwe (476);
-    return warning_meta (rich_loc, m,
-			 OPT_Wanalyzer_null_dereference,
+    return warning_meta (rich_loc, m, get_controlling_option (),
 			 "dereference of NULL %qE", m_arg);
   }
 
   label_text describe_return_of_state (const evdesc::return_of_state &info)
-    FINAL OVERRIDE
+    final override
   {
     if (info.m_state == m_sm.m_null)
       return info.formatted_print ("return of NULL to %qE from %qE",
@@ -1077,7 +1112,7 @@ public:
     return label_text ();
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("dereference of NULL %qE", ev.m_expr);
   }
@@ -1095,9 +1130,10 @@ public:
     m_fndecl (fndecl), m_arg_idx (arg_idx)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "null_arg"; }
+  const char *get_kind () const final override { return "null_arg"; }
 
-  bool subclass_equal_p (const pending_diagnostic &base_other) const
+  bool subclass_equal_p (const pending_diagnostic &base_other)
+    const final override
   {
     const null_arg &sub_other
       = (const null_arg &)base_other;
@@ -1106,7 +1142,12 @@ public:
 	    && m_arg_idx == sub_other.m_arg_idx);
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_null_argument;
+  }
+
+  bool emit (rich_location *rich_loc) final override
   {
     /* CWE-476: NULL Pointer Dereference.  */
     auto_diagnostic_group d;
@@ -1115,10 +1156,10 @@ public:
 
     bool warned;
     if (zerop (m_arg))
-      warned = warning_meta (rich_loc, m, OPT_Wanalyzer_null_argument,
+      warned = warning_meta (rich_loc, m, get_controlling_option (),
 			     "use of NULL where non-null expected");
     else
-      warned = warning_meta (rich_loc, m, OPT_Wanalyzer_null_argument,
+      warned = warning_meta (rich_loc, m, get_controlling_option (),
 			     "use of NULL %qE where non-null expected",
 			     m_arg);
     if (warned)
@@ -1126,18 +1167,17 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     label_text arg_desc = describe_argument_index (m_fndecl, m_arg_idx);
     label_text result;
     if (zerop (ev.m_expr))
       result = ev.formatted_print ("argument %s NULL where non-null expected",
-				   arg_desc.m_buffer);
+				   arg_desc.get ());
     else
       result = ev.formatted_print ("argument %s (%qE) NULL"
 				   " where non-null expected",
-				   arg_desc.m_buffer, ev.m_expr);
-    arg_desc.maybe_free ();
+				   arg_desc.get (), ev.m_expr);
     return result;
   }
 
@@ -1157,20 +1197,25 @@ public:
     gcc_assert (deallocator);
   }
 
-  const char *get_kind () const FINAL OVERRIDE { return "use_after_free"; }
+  const char *get_kind () const final override { return "use_after_free"; }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_use_after_free;
+  }
+
+  bool emit (rich_location *rich_loc) final override
   {
     /* CWE-416: Use After Free.  */
     diagnostic_metadata m;
     m.add_cwe (416);
-    return warning_meta (rich_loc, m, OPT_Wanalyzer_use_after_free,
+    return warning_meta (rich_loc, m, get_controlling_option (),
 			 "use after %<%s%> of %qE",
 			 m_deallocator->m_name, m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    FINAL OVERRIDE
+    final override
   {
     if (freed_p (change.m_new_state))
       {
@@ -1191,7 +1236,7 @@ public:
     return malloc_diagnostic::describe_state_change (change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     const char *funcname = m_deallocator->m_name;
     if (m_free_event.known_p ())
@@ -1227,7 +1272,7 @@ public:
      that if they are accessed after the free, it looks like
      they are uninitialized).  */
 
-  bool supercedes_p (const pending_diagnostic &other) const FINAL OVERRIDE
+  bool supercedes_p (const pending_diagnostic &other) const final override
   {
     if (other.use_of_uninit_p ())
       return true;
@@ -1246,22 +1291,27 @@ public:
   malloc_leak (const malloc_state_machine &sm, tree arg)
   : malloc_diagnostic (sm, arg) {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "malloc_leak"; }
+  const char *get_kind () const final override { return "malloc_leak"; }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_malloc_leak;
+  }
+
+  bool emit (rich_location *rich_loc) final override
   {
     diagnostic_metadata m;
     m.add_cwe (401);
     if (m_arg)
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_malloc_leak,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "leak of %qE", m_arg);
     else
-      return warning_meta (rich_loc, m, OPT_Wanalyzer_malloc_leak,
+      return warning_meta (rich_loc, m, get_controlling_option (),
 			   "leak of %qs", "<unknown>");
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    FINAL OVERRIDE
+    final override
   {
     if (unchecked_p (change.m_new_state)
 	|| (start_p (change.m_old_state) && nonnull_p (change.m_new_state)))
@@ -1272,7 +1322,7 @@ public:
     return malloc_diagnostic::describe_state_change (change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     if (ev.m_expr)
       {
@@ -1306,17 +1356,22 @@ public:
   {
   }
 
-  const char *get_kind () const FINAL OVERRIDE { return "free_of_non_heap"; }
+  const char *get_kind () const final override { return "free_of_non_heap"; }
 
   bool subclass_equal_p (const pending_diagnostic &base_other) const
-    FINAL OVERRIDE
+    final override
   {
     const free_of_non_heap &other = (const free_of_non_heap &)base_other;
     return (same_tree_p (m_arg, other.m_arg)
 	    && m_freed_reg == other.m_freed_reg);
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_free_of_non_heap;
+  }
+
+  bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;
@@ -1330,13 +1385,13 @@ public:
       case MEMSPACE_CODE:
       case MEMSPACE_GLOBALS:
       case MEMSPACE_READONLY_DATA:
-	return warning_meta (rich_loc, m, OPT_Wanalyzer_free_of_non_heap,
+	return warning_meta (rich_loc, m, get_controlling_option (),
 			     "%<%s%> of %qE which points to memory"
 			     " not on the heap",
 			     m_funcname, m_arg);
 	break;
       case MEMSPACE_STACK:
-	return warning_meta (rich_loc, m, OPT_Wanalyzer_free_of_non_heap,
+	return warning_meta (rich_loc, m, get_controlling_option (),
 			     "%<%s%> of %qE which points to memory"
 			     " on the stack",
 			     m_funcname, m_arg);
@@ -1345,17 +1400,17 @@ public:
   }
 
   label_text describe_state_change (const evdesc::state_change &)
-    FINAL OVERRIDE
+    final override
   {
     return label_text::borrow ("pointer is from here");
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("call to %qs here", m_funcname);
   }
 
-  void mark_interesting_stuff (interesting_t *interest) FINAL OVERRIDE
+  void mark_interesting_stuff (interesting_t *interest) final override
   {
     if (m_freed_reg)
       interest->add_region_creation (m_freed_reg);
@@ -2012,8 +2067,7 @@ malloc_state_machine::unaffected_by_call_p (tree fndecl)
     /* This array must be kept sorted.  */
     "strsep",
   };
-  const size_t count
-    = sizeof(funcnames) / sizeof (funcnames[0]);
+  const size_t count = ARRAY_SIZE (funcnames);
   function_set fs (funcnames, count);
 
   if (fs.contains_decl_p (fndecl))

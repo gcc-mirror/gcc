@@ -24,7 +24,7 @@ baz (int x)
 {
   if (!x)
     return 1;
-  static int a;		// { dg-error "control passes through declaration of 'a' with static storage duration" }
+  static int a;		// { dg-error "control passes through definition of 'a' with static storage duration" }
   return ++a;
 }
 
@@ -33,7 +33,7 @@ qux (int x)
 {
   if (!x)
     return 1;
-  thread_local int a;	// { dg-error "control passes through declaration of 'a' with thread storage duration" }
+  thread_local int a;	// { dg-error "control passes through definition of 'a' with thread storage duration" }
   return ++a;
 }
 

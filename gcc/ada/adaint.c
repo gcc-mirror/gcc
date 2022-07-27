@@ -3556,7 +3556,7 @@ __gnat_get_executable_load_address (void)
 }
 
 void
-__gnat_kill (int pid, int sig, int close ATTRIBUTE_UNUSED)
+__gnat_kill (int pid, int sig)
 {
 #if defined(_WIN32)
   HANDLE h;
@@ -3595,7 +3595,7 @@ void __gnat_killprocesstree (int pid, int sig_num)
 
   if (hSnap == INVALID_HANDLE_VALUE)
     {
-      __gnat_kill (pid, sig_num, 1);
+      __gnat_kill (pid, sig_num);
       return;
     }
 
@@ -3618,7 +3618,7 @@ void __gnat_killprocesstree (int pid, int sig_num)
 
   /* kill process */
 
-  __gnat_kill (pid, sig_num, 1);
+  __gnat_kill (pid, sig_num);
 
 #elif defined (__vxworks)
   /* not implemented */
@@ -3635,7 +3635,7 @@ void __gnat_killprocesstree (int pid, int sig_num)
 
   if (!dir)
     {
-      __gnat_kill (pid, sig_num, 1);
+      __gnat_kill (pid, sig_num);
       return;
     }
 
@@ -3673,9 +3673,9 @@ void __gnat_killprocesstree (int pid, int sig_num)
 
   /* kill process */
 
-  __gnat_kill (pid, sig_num, 1);
+  __gnat_kill (pid, sig_num);
 #else
-  __gnat_kill (pid, sig_num, 1);
+  __gnat_kill (pid, sig_num);
 #endif
   /* Note on Solaris it is possible to read /proc/<PID>/status.
      The 5th and 6th words are the pid and the 7th and 8th the ppid.

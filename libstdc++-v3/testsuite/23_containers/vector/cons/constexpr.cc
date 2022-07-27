@@ -3,6 +3,13 @@
 // { dg-xfail-if "not supported" { debug_mode } }
 
 #include <vector>
+
+#ifndef __cpp_lib_constexpr_vector
+# error "Feature test macro for constexpr vector is missing in <vector>"
+#elif __cpp_lib_constexpr_vector != 201907L
+# error "Feature test macro for constexpr vector has wrong value in <vector>"
+#endif
+
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 

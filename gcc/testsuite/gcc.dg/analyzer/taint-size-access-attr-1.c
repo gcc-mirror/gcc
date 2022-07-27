@@ -1,8 +1,8 @@
 /* Passing tainted sizes to external functions with attribute ((access)) with
    a size-index.  */
 
-// TODO: remove need for this option:
-/* { dg-additional-options "-fanalyzer-checker=taint" } */
+// TODO: remove need for the explicit taint option:
+/* { dg-additional-options "-fanalyzer-checker=taint -fanalyzer-show-duplicate-count" } */
 
 #include "analyzer-decls.h"
 #include <stdio.h>
@@ -27,7 +27,8 @@ void test_fn_read_only (FILE *f, void *p)
     __analyzer_dump_state ("taint", tmp.sz); /* { dg-warning "state: 'tainted'" } */
     /* { dg-message "\\(\[0-9\]+\\) \\.\\.\\.to here" "event: to here" { target *-*-* } .-1 } */
 
-    extern_fn_read_only (p, tmp.sz); /* { dg-warning "use of attacker-controlled value 'tmp.sz' as size without upper-bounds checking" } */
+    extern_fn_read_only (p, tmp.sz); /* { dg-warning "use of attacker-controlled value 'tmp.sz' as size without upper-bounds checking" "warning" } */
+    /* { dg-bogus "duplicate" "duplicate" { target *-*-* } .-1 } */
   }
 }
 

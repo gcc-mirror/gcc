@@ -5,7 +5,7 @@
 --          A D A . N U M E R I C S . A U X _ L O N G _ F L O A T           --
 --                                                                          --
 --                                 S p e c                                  --
---                     (C Math Library Version, Long Float)                 --
+--                       (Intrinsic Version, Long Float)                    --
 --                                                                          --
 --          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -30,9 +30,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides the basic computational interface for the generic
---  elementary functions. The C library version interfaces with the routines
---  in the C mathematical library, and is thus quite portable.
+--  This package provides the basic computational interface for the
+--  generic elementary functions. With the intrinsic version, the
+--  compiler can use its knowledge of the functions to select the most
+--  suitable implementation. It is thus quite portable. These
+--  interfaces are suitable for cases in which Long Float and C's
+--  double share the same representation.
 
 with Ada.Numerics.Aux_Linker_Options;
 pragma Warnings (Off, Ada.Numerics.Aux_Linker_Options);
@@ -42,7 +45,7 @@ package Ada.Numerics.Aux_Long_Float is
 
    subtype T is Long_Float;
 
-   --  We import these functions directly from C. Note that we label them
+   --  We import these functions as intrinsics. Note that we label them
    --  all as pure functions, because indeed all of them are in fact pure.
 
    function Sin (X : T) return T with

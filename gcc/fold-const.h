@@ -225,6 +225,7 @@ extern const char *c_getstr (tree);
 extern wide_int tree_nonzero_bits (const_tree);
 extern int address_compare (tree_code, tree, tree, tree, tree &, tree &,
 			    poly_int64 &, poly_int64 &, bool);
+extern tree ctor_single_nonzero_element (const_tree);
 
 /* Return OFF converted to a pointer offset type suitable as offset for
    POINTER_PLUS_EXPR.  Use location LOC for this conversion.  */
@@ -244,6 +245,11 @@ extern tree fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE
 #define fold_build_pointer_plus_hwi(p,o) \
 	fold_build_pointer_plus_hwi_loc (UNKNOWN_LOCATION, p, o)
 
+/* In gimple-fold.cc.  */
+extern void clear_type_padding_in_mask (tree, unsigned char *);
+extern bool clear_padding_type_may_have_padding_p (tree);
+extern bool arith_overflowed_p (enum tree_code, const_tree, const_tree,
+				const_tree);
 
 /* Class used to compare gimple operands.  */
 

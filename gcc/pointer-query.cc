@@ -33,6 +33,7 @@
 #include "langhooks.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "gimple-ssa.h"
 #include "intl.h"
@@ -554,7 +555,7 @@ gimple_parm_array_size (tree ptr, wide_int rng[2],
      from the current function declaratation (e.g., attribute access or
      related).  */
   tree var = SSA_NAME_VAR (ptr);
-  if (TREE_CODE (var) != PARM_DECL)
+  if (TREE_CODE (var) != PARM_DECL || !POINTER_TYPE_P (TREE_TYPE (var)))
     return NULL_TREE;
 
   const unsigned prec = TYPE_PRECISION (sizetype);
@@ -959,7 +960,7 @@ void access_ref::add_offset (const offset_int &min, const offset_int &max)
 	 (which may be greater than MAX_OBJECT_SIZE).
 	 The lower bound is either the sum of the current offset and
 	 MIN when abs(MAX) is greater than the former, or zero otherwise.
-	 Zero because then then inverted range includes the negative of
+	 Zero because then the inverted range includes the negative of
 	 the lower bound.  */
       offset_int maxoff = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
       offrng[1] = maxoff;
@@ -2243,7 +2244,7 @@ compute_objsize_r (tree ptr, gimple *stmt, bool addr, int ostype,
       }
 
     case ARRAY_REF:
-	return handle_array_ref (ptr, stmt, addr, ostype, pref, snlim, qry);
+      return handle_array_ref (ptr, stmt, addr, ostype, pref, snlim, qry);
 
     case COMPONENT_REF:
       return handle_component_ref (ptr, stmt, addr, ostype, pref, snlim, qry);
@@ -2264,12 +2265,14 @@ compute_objsize_r (tree ptr, gimple *stmt, bool addr, int ostype,
       }
 
     case INTEGER_CST:
-      /* Pointer constants other than null are most likely the result
-	 of erroneous null pointer addition/subtraction.  Unless zero
-	 is a valid address set size to zero.  For null pointers, set
-	 size to the maximum for now since those may be the result of
-	 jump threading.  */
-      if (integer_zerop (ptr))
+      /* Pointer constants other than null smaller than param_min_pagesize
+	 might be the result of erroneous null pointer addition/subtraction.
+	 Unless zero is a valid address set size to zero.  For null pointers,
+	 set size to the maximum for now since those may be the result of
+	 jump threading.  Similarly, for values >= param_min_pagesize in
+	 order to support (type *) 0x7cdeab00.  */
+      if (integer_zerop (ptr)
+	  || wi::to_widest (ptr) >= param_min_pagesize)
 	pref->set_max_size_range ();
       else if (POINTER_TYPE_P (TREE_TYPE (ptr)))
 	{
@@ -2297,9 +2300,10 @@ compute_objsize_r (tree ptr, gimple *stmt, bool addr, int ostype,
       if (!compute_objsize_r (ref, stmt, addr, ostype, pref, snlim, qry))
 	return false;
 
-      /* Clear DEREF since the offset is being applied to the target
-	 of the dereference.  */
-      pref->deref = 0;
+      /* The below only makes sense if the offset is being applied to the
+	 address of the object.  */
+      if (pref->deref != -1)
+	return false;
 
       offset_int orng[2];
       tree off = pref->eval (TREE_OPERAND (ptr, 1));
@@ -2444,9 +2448,13 @@ field_at_offset (tree type, tree start_after, HOST_WIDE_INT off,
       /* The offset of FLD within its immediately enclosing structure.  */
       HOST_WIDE_INT fldpos = next_pos < 0 ? int_byte_position (fld) : next_pos;
 
+      tree typesize = TYPE_SIZE_UNIT (fldtype);
+      if (typesize && TREE_CODE (typesize) != INTEGER_CST)
+	/* Bail if FLD is a variable length member.  */
+	return NULL_TREE;
+
       /* If the size is not available the field is a flexible array
 	 member.  Treat this case as success.  */
-      tree typesize = TYPE_SIZE_UNIT (fldtype);
       HOST_WIDE_INT fldsize = (tree_fits_uhwi_p (typesize)
 			       ? tree_to_uhwi (typesize)
 			       : off);
@@ -2460,7 +2468,11 @@ field_at_offset (tree type, tree start_after, HOST_WIDE_INT off,
 	{
 	  /* If OFF is equal to the offset of the next field continue
 	     to it and skip the array/struct business below.  */
-	  next_pos = int_byte_position (next_fld);
+	  tree pos = byte_position (next_fld);
+	  if (!tree_fits_shwi_p (pos))
+	    /* Bail if NEXT_FLD is a variable length member.  */
+	    return NULL_TREE;
+	  next_pos = tree_to_shwi (pos);
 	  *nextoff = *fldoff + next_pos;
 	  if (*nextoff == off && TREE_CODE (type) != UNION_TYPE)
 	    continue;

@@ -35,28 +35,28 @@ extern "C" int posix_memalign (void **, size_t, size_t) throw ();
 #endif
 
 static __inline void *
-_mm_malloc (size_t size, size_t alignment)
+_mm_malloc (size_t __size, size_t __alignment)
 {
   /* PowerPC64 ELF V2 ABI requires quadword alignment.  */
-  size_t vec_align = sizeof (__vector float);
+  size_t __vec_align = sizeof (__vector float);
   /* Linux GLIBC malloc alignment is at least 2 X ptr size.  */
-  size_t malloc_align = (sizeof (void *) + sizeof (void *));
-  void *ptr;
+  size_t __malloc_align = (sizeof (void *) + sizeof (void *));
+  void *__ptr;
 
-  if (alignment == malloc_align && alignment == vec_align)
-    return malloc (size);
-  if (alignment < vec_align)
-    alignment = vec_align;
-  if (posix_memalign (&ptr, alignment, size) == 0)
-    return ptr;
+  if (__alignment == __malloc_align && __alignment == __vec_align)
+    return malloc (__size);
+  if (__alignment < __vec_align)
+    __alignment = __vec_align;
+  if (posix_memalign (&__ptr, __alignment, __size) == 0)
+    return __ptr;
   else
     return NULL;
 }
 
 static __inline void
-_mm_free (void * ptr)
+_mm_free (void * __ptr)
 {
-  free (ptr);
+  free (__ptr);
 }
 
 #endif /* _MM_MALLOC_H_INCLUDED */

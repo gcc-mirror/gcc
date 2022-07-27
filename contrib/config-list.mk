@@ -57,7 +57,9 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   i686-wrs-vxworksae \
   i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elf \
   ia64-freebsd6 ia64-linux ia64-hpux ia64-hp-vms iq2000-elf lm32-elf \
-  lm32-rtems lm32-uclinux m32c-rtems m32c-elf m32r-elf m32rle-elf \
+  lm32-rtems lm32-uclinux \
+  loongarch64-linux-gnuf64 loongarch64-linux-gnuf32 loongarch64-linux-gnusf \
+  m32c-rtems m32c-elf m32r-elf m32rle-elf \
   m68k-elf m68k-netbsdelf \
   m68k-uclinux m68k-linux m68k-rtems \
   mcore-elf microblaze-linux microblaze-elf \
@@ -94,8 +96,6 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   sparc64-sun-solaris2.11OPT-with-gnu-ldOPT-with-gnu-asOPT-enable-threads=posix \
   sparc-wrs-vxworks sparc64-elf sparc64-rtems sparc64-linux sparc64-freebsd6 \
   sparc64-netbsd sparc64-openbsd \
-  tilegx-linux-gnuOPT-enable-obsolete tilegxbe-linux-gnuOPT-enable-obsolete \
-  tilepro-linux-gnuOPT-enable-obsolete \
   v850e1-elf v850e-elf v850-elf v850-rtems vax-linux-gnu \
   vax-netbsdelf visium-elf x86_64-apple-darwin \
   x86_64-pc-linux-gnuOPT-with-fpmath=avx \

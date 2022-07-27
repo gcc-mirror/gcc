@@ -1,6 +1,7 @@
-/* Test compatibility of unprototyped and prototyped function types (C2x makes
-   the case of types affected by default argument promotions compatible).  Test
-   valid-in-C2x usages are not accepted for C11.  */
+/* Test compatibility of unprototyped and prototyped function types (C2x made
+   the case of types affected by default argument promotions compatible, before
+   removing unprototyped functions completely).  Test affected usages are not
+   accepted for C11.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c11 -pedantic-errors" } */
 

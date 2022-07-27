@@ -1153,7 +1153,7 @@ if (!(isImplicitlyConvertible!(S, T) &&
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=16108
-@system unittest
+@safe unittest
 {
     static struct A
     {
@@ -1341,12 +1341,12 @@ if (is (T == immutable) && isExactSomeString!T && is(S == enum))
     assert(to!string(a) == "[1.5, 2.5]");
 }
 
-@system unittest
+@safe unittest
 {
     // Conversion representing class object with string
     class A
     {
-        override string toString() const { return "an A"; }
+        override string toString() @safe const { return "an A"; }
     }
     A a;
     assert(to!string(a) == "null");
@@ -1354,7 +1354,7 @@ if (is (T == immutable) && isExactSomeString!T && is(S == enum))
     assert(to!string(a) == "an A");
 
     // https://issues.dlang.org/show_bug.cgi?id=7660
-    class C { override string toString() const { return "C"; } }
+    class C { override string toString() @safe const { return "C"; } }
     struct S { C c; alias c this; }
     S s; s.c = new C();
     assert(to!string(s) == "C");
@@ -1642,7 +1642,7 @@ if (!isImplicitlyConvertible!(S, T) &&
 Array-to-array conversion (except when target is a string type)
 converts each element in turn by using `to`.
  */
-private T toImpl(T, S)(S value)
+private T toImpl(T, S)(scope S value)
 if (!isImplicitlyConvertible!(S, T) &&
     !isSomeString!S && isDynamicArray!S &&
     !isExactSomeString!T && isArray!T)
@@ -1739,10 +1739,10 @@ if (!isImplicitlyConvertible!(S, T) && isAssociativeArray!S &&
     foreach (k1, v1; value)
     {
         // Cast values temporarily to Unqual!V2 to store them to result variable
-        result[to!K2(k1)] = cast(Unqual!V2) to!V2(v1);
+        result[to!K2(k1)] = to!(Unqual!V2)(v1);
     }
     // Cast back to original type
-    return cast(T) result;
+    return () @trusted { return cast(T) result; }();
 }
 
 @safe unittest
@@ -2850,7 +2850,7 @@ do
     static if (isNarrowString!Source)
     {
         import std.string : representation;
-        auto s = source.representation;
+        scope s = source.representation;
     }
     else
     {
@@ -2898,7 +2898,7 @@ do
     }
 
     static if (isNarrowString!Source)
-        source = cast(Source) s;
+        source = source[$ - s.length .. $];
 
     static if (doCount)
     {
@@ -3115,11 +3115,17 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     static if (isNarrowString!Source)
     {
         import std.string : representation;
-        auto p = source.representation;
+        scope p = source.representation;
     }
     else
     {
         alias p = source;
+    }
+
+    void advanceSource()
+    {
+        static if (isNarrowString!Source)
+            source = source[$ - p.length .. $];
     }
 
     static immutable real[14] negtab =
@@ -3137,6 +3143,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     }
 
     enforce(!p.empty, bailOut());
+
 
     size_t count = 0;
     bool sign = false;
@@ -3168,8 +3175,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         // skip past the last 'f'
         ++count;
         p.popFront();
-        static if (isNarrowString!Source)
-            source = cast(Source) p;
+        advanceSource();
         static if (doCount)
         {
             return tuple!("data", "count")(sign ? -Target.infinity : Target.infinity, count);
@@ -3189,8 +3195,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         p.popFront();
         if (p.empty)
         {
-            static if (isNarrowString!Source)
-                source = cast(Source) p;
+            advanceSource();
             static if (doCount)
             {
                 return tuple!("data", "count")(cast (Target) (sign ? -0.0 : 0.0), count);
@@ -3222,8 +3227,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         // skip past the last 'n'
         ++count;
         p.popFront();
-        static if (isNarrowString!Source)
-            source = cast(Source) p;
+        advanceSource();
         static if (doCount)
         {
             return tuple!("data", "count")(Target.nan, count);
@@ -3418,8 +3422,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     // if overflow occurred
     enforce(ldval != real.infinity, new ConvException("Range error"));
 
-    static if (isNarrowString!Source)
-        source = cast(Source) p;
+    advanceSource();
     static if (doCount)
     {
         return tuple!("data", "count")(cast (Target) (sign ? -ldval : ldval), count);
@@ -3429,6 +3432,7 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         return cast (Target) (sign ? -ldval : ldval);
     }
 }
+
 
 ///
 @safe unittest
@@ -5977,4 +5981,15 @@ if ((radix == 2 || radix == 8 || radix == 10 || radix == 16) &&
             assert(original[i .. original.length - i].tupleof == r.tupleof);
         }
     }
+}
+
+// Converts an unsigned integer to a compile-time string constant.
+package enum toCtString(ulong n) = n.stringof[0 .. $ - "LU".length];
+
+// Check that .stringof does what we expect, since it's not guaranteed by the
+// language spec.
+@safe /*@betterC*/ unittest
+{
+    assert(toCtString!0 == "0");
+    assert(toCtString!123456 == "123456");
 }

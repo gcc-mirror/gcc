@@ -239,7 +239,13 @@ visit_loops_in_gang_single_region (gimple_stmt_iterator *gsi_p,
     case GIMPLE_OMP_FOR:
       /*TODO Given the current 'adjust_region_code' algorithm, this is
 	actually...  */
+#if 0
       gcc_unreachable ();
+#else
+      /* ..., but due to bugs (PR100400), we may actually come here.
+	 Reliably catch this, regardless of checking level.  */
+      internal_error ("PR100400");
+#endif
 
       {
 	tree clauses = gimple_omp_for_clauses (stmt);
@@ -845,7 +851,30 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
 	  prev_mapped_var = v;
 
 	  /* See <https://gcc.gnu.org/PR100280>.  */
-	  TREE_ADDRESSABLE (v) = 1;
+	  if (!TREE_ADDRESSABLE (v))
+	    {
+	      /* Request that OMP lowering make 'v' addressable.  */
+	      OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE (new_clause) = 1;
+
+	      if (dump_enabled_p ())
+		{
+		  const dump_user_location_t d_u_loc
+		    = dump_user_location_t::from_location_t (loc);
+		  /* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+		  dump_printf_loc (MSG_NOTE, d_u_loc,
+				   "OpenACC %<kernels%> decomposition:"
+				   " variable %<%T%> declared in block"
+				   " requested to be made addressable\n",
+				   v);
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+		}
+	    }
 	}
     }
 
@@ -1255,6 +1284,16 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
       gsi_next (&gsi_n);
 
       gimple *stmt = gsi_stmt (gsi);
+      if (gimple_code (stmt) == GIMPLE_DEBUG)
+	{
+	  if (flag_compare_debug_opt || flag_compare_debug)
+	    /* Let the usual '-fcompare-debug' analysis bail out, as
+	       necessary.  */
+	    ;
+	  else
+	    sorry_at (loc, "%qs not yet supported",
+		      gimple_code_name[gimple_code (stmt)]);
+	}
       gimple *omp_for = top_level_omp_for_in_stmt (stmt);
       bool is_unconditional_oacc_for_loop = false;
       if (omp_for != NULL)
@@ -1435,12 +1474,43 @@ omp_oacc_kernels_decompose_1 (gimple *kernels_stmt)
 		  /* Now that this data is mapped, turn the data clause on the
 		     inner OpenACC 'kernels' into a 'present' clause.  */
 		  OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_FORCE_PRESENT);
+
+		  /* See <https://gcc.gnu.org/PR100280>,
+		     <https://gcc.gnu.org/PR104086>.  */
+		  if (DECL_P (decl)
+		      && !TREE_ADDRESSABLE (decl))
+		    {
+		      /* Request that OMP lowering make 'decl' addressable.  */
+		      OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE (new_clause) = 1;
+
+		      if (dump_enabled_p ())
+			{
+			  location_t loc = OMP_CLAUSE_LOCATION (new_clause);
+			  const dump_user_location_t d_u_loc
+			    = dump_user_location_t::from_location_t (loc);
+			  /* PR100695 "Format decoder, quoting in 'dump_printf'
+			     etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+			  dump_printf_loc
+			    (MSG_NOTE, d_u_loc,
+			     "OpenACC %<kernels%> decomposition:"
+			     " variable %<%T%> in %qs clause"
+			     " requested to be made addressable\n",
+			     decl,
+			     user_omp_clause_code_name (new_clause, true));
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+			}
+		    }
 		}
 	      break;
 
 	    case GOMP_MAP_POINTER:
 	    case GOMP_MAP_TO_PSET:
-	    case GOMP_MAP_FORCE_TOFROM:
 	    case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	    case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
 	      /* ??? Copying these map kinds leads to internal compiler
@@ -1545,12 +1615,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
   {
     return (flag_openacc
 	    && param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE);
   }
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
   {
     return omp_oacc_kernels_decompose ();
   }

@@ -104,6 +104,24 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
 
     }
 
+  if (TARGET_MIN_VLEN != 0)
+    builtin_define_with_int_value ("__riscv_v_min_vlen", TARGET_MIN_VLEN);
+
+  if (TARGET_VECTOR_ELEN_64)
+    builtin_define_with_int_value ("__riscv_v_elen", 64);
+  else if (TARGET_VECTOR_ELEN_32)
+    builtin_define_with_int_value ("__riscv_v_elen", 32);
+
+  if (TARGET_VECTOR_ELEN_FP_64)
+    builtin_define_with_int_value ("__riscv_v_elen_fp", 64);
+  else if (TARGET_VECTOR_ELEN_FP_32)
+    builtin_define_with_int_value ("__riscv_v_elen_fp", 32);
+  else if (TARGET_MIN_VLEN != 0)
+    builtin_define_with_int_value ("__riscv_v_elen_fp", 0);
+
+  if (TARGET_MIN_VLEN)
+    builtin_define ("__riscv_vector");
+
   /* Define architecture extension test macros.  */
   builtin_define_with_int_value ("__riscv_arch_test", 1);
 

@@ -14,4 +14,3 @@ struct S {
     alias g a;
     alias g a;
 }
-

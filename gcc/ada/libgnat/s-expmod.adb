@@ -251,9 +251,6 @@ is
             pragma Loop_Invariant (Equal_Modulo
               (Big (Result) * Big (Factor) ** Exp, Big (Left) ** Right));
             pragma Loop_Variant (Decreases => Exp);
-            pragma Annotate
-              (CodePeer, False_Positive,
-               "validity check", "confusion on generated code");
 
             if Exp rem 2 /= 0 then
                pragma Assert

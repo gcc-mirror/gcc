@@ -131,7 +131,7 @@ generic_subrtx_iterator <T>::add_subrtxes_to_queue (array_type &array,
   enum rtx_code code = GET_CODE (x);
   const char *format = GET_RTX_FORMAT (code);
   size_t orig_end = end;
-  if (__builtin_expect (INSN_P (x), false))
+  if (UNLIKELY (INSN_P (x)))
     {
       /* Put the pattern at the top of the queue, since that's what
 	 we're likely to want most.  It also allows for the SEQUENCE
@@ -140,7 +140,7 @@ generic_subrtx_iterator <T>::add_subrtxes_to_queue (array_type &array,
 	if (format[i] == 'e')
 	  {
 	    value_type subx = T::get_value (x->u.fld[i].rt_rtx);
-	    if (__builtin_expect (end < LOCAL_ELEMS, true))
+	    if (LIKELY (end < LOCAL_ELEMS))
 	      base[end++] = subx;
 	    else
 	      base = add_single_to_queue (array, base, end++, subx);
@@ -151,7 +151,7 @@ generic_subrtx_iterator <T>::add_subrtxes_to_queue (array_type &array,
       if (format[i] == 'e')
 	{
 	  value_type subx = T::get_value (x->u.fld[i].rt_rtx);
-	  if (__builtin_expect (end < LOCAL_ELEMS, true))
+	  if (LIKELY (end < LOCAL_ELEMS))
 	    base[end++] = subx;
 	  else
 	    base = add_single_to_queue (array, base, end++, subx);
@@ -160,7 +160,7 @@ generic_subrtx_iterator <T>::add_subrtxes_to_queue (array_type &array,
 	{
 	  unsigned int length = GET_NUM_ELEM (x->u.fld[i].rt_rtvec);
 	  rtx *vec = x->u.fld[i].rt_rtvec->elem;
-	  if (__builtin_expect (end + length <= LOCAL_ELEMS, true))
+	  if (LIKELY (end + length <= LOCAL_ELEMS))
 	    for (unsigned int j = 0; j < length; j++)
 	      base[end++] = T::get_value (vec[j]);
 	  else
@@ -2114,7 +2114,7 @@ rtx_properties::try_to_add_dest (const_rtx x, unsigned int flags)
 {
   /* If we have a PARALLEL, SET_DEST is a list of EXPR_LIST expressions,
      each of whose first operand is a register.  */
-  if (__builtin_expect (GET_CODE (x) == PARALLEL, 0))
+  if (UNLIKELY (GET_CODE (x) == PARALLEL))
     {
       for (int i = XVECLEN (x, 0) - 1; i >= 0; --i)
 	if (rtx dest = XEXP (XVECEXP (x, 0, i), 0))
@@ -2159,7 +2159,7 @@ rtx_properties::try_to_add_dest (const_rtx x, unsigned int flags)
       return;
     }
 
-  if (__builtin_expect (REG_P (x), 1))
+  if (LIKELY (REG_P (x)))
     {
       /* We want to keep sp alive everywhere -  by making all
 	 writes to sp also use sp. */
@@ -2878,35 +2878,6 @@ in_insn_list_p (const rtx_insn_list *listp, const rtx_insn *node)
   return false;
 }
 
-/* Search LISTP (an EXPR_LIST) for an entry whose first operand is NODE and
-   remove that entry from the list if it is found.
-
-   A simple equality test is used to determine if NODE matches.  */
-
-void
-remove_node_from_expr_list (const_rtx node, rtx_expr_list **listp)
-{
-  rtx_expr_list *temp = *listp;
-  rtx_expr_list *prev = NULL;
-
-  while (temp)
-    {
-      if (node == temp->element ())
-	{
-	  /* Splice the node out of the list.  */
-	  if (prev)
-	    XEXP (prev, 1) = temp->next ();
-	  else
-	    *listp = temp->next ();
-
-	  return;
-	}
-
-      prev = temp;
-      temp = temp->next ();
-    }
-}
-
 /* Search LISTP (an INSN_LIST) for an entry whose first operand is NODE and
    remove that entry from the list if it is found.
 
@@ -2928,6 +2899,7 @@ remove_node_from_insn_list (const rtx_insn *node, rtx_insn_list **listp)
 	  else
 	    *listp = temp->next ();
 
+	  gcc_checking_assert (!in_insn_list_p (temp->next (), node));
 	  return;
 	}
 
@@ -3390,7 +3362,7 @@ replace_rtx (rtx x, rtx from, rtx to, bool all_regs)
     {
       rtx new_rtx = replace_rtx (SUBREG_REG (x), from, to, all_regs);
 
-      if (CONST_INT_P (new_rtx))
+      if (CONST_SCALAR_INT_P (new_rtx))
 	{
 	  x = simplify_subreg (GET_MODE (x), new_rtx,
 			       GET_MODE (SUBREG_REG (x)),
@@ -3406,7 +3378,7 @@ replace_rtx (rtx x, rtx from, rtx to, bool all_regs)
     {
       rtx new_rtx = replace_rtx (XEXP (x, 0), from, to, all_regs);
 
-      if (CONST_INT_P (new_rtx))
+      if (CONST_SCALAR_INT_P (new_rtx))
 	{
 	  x = simplify_unary_operation (ZERO_EXTEND, GET_MODE (x),
 					new_rtx, GET_MODE (XEXP (x, 0)));
@@ -4578,6 +4550,11 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
   switch (code)
     {
     case MULT:
+    case FMA:
+    case SS_MULT:
+    case US_MULT:
+    case SMUL_HIGHPART:
+    case UMUL_HIGHPART:
       /* Multiplication has time-complexity O(N*N), where N is the
 	 number of units (translated from digits) when using
 	 schoolbook long multiplication.  */
@@ -4587,6 +4564,8 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
     case UDIV:
     case MOD:
     case UMOD:
+    case SS_DIV:
+    case US_DIV:
       /* Similarly, complexity for schoolbook long division.  */
       total = factor * factor * COSTS_N_INSNS (7);
       break;

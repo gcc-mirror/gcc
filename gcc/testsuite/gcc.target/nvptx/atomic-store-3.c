@@ -1,7 +1,7 @@
 /* Test the atomic store expansion, global state space.  */
 
 /* { dg-do compile } */
-/* { dg-additional-options "-Wno-long-long" } */
+/* { dg-additional-options "-Wno-long-long -misa=sm_30" } */
 
 enum memmodel
 {

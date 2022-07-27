@@ -158,9 +158,14 @@ Target::_init (const Param &)
   Type::thash_t = Type::tsize_t;
 
   /* Set-up target C ABI.  */
-  this->c.longsize = int_size_in_bytes (long_integer_type_node);
-  this->c.long_doublesize = int_size_in_bytes (long_double_type_node);
+  this->c.boolsize = (BOOL_TYPE_SIZE / BITS_PER_UNIT);
+  this->c.shortsize = (SHORT_TYPE_SIZE / BITS_PER_UNIT);
+  this->c.intsize = (INT_TYPE_SIZE / BITS_PER_UNIT);
+  this->c.longsize = (LONG_TYPE_SIZE / BITS_PER_UNIT);
+  this->c.long_longsize = (LONG_LONG_TYPE_SIZE / BITS_PER_UNIT);
+  this->c.long_doublesize = (LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT);
   this->c.wchar_tsize = (WCHAR_TYPE_SIZE / BITS_PER_UNIT);
+
   this->c.bitFieldStyle = targetm.ms_bitfield_layout_p (unknown_type_node)
     ? TargetC::BitFieldStyle::MS : TargetC::BitFieldStyle::Gcc_Clang;
 

@@ -15,4 +15,3 @@ abstract:
         class G5 {}
 else
     class G6 {}
-

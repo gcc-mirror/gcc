@@ -86,8 +86,8 @@ fail_compilation/retscope2.d(504): Error: scope variable `c` may not be returned
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope2.d(604): Error: scope variable `_param_0` assigned to non-scope parameter `__anonymous_param` calling retscope2.foo600
-fail_compilation/retscope2.d(604): Error: scope variable `_param_1` assigned to non-scope parameter `__anonymous_param` calling retscope2.foo600
+fail_compilation/retscope2.d(604): Error: scope variable `_param_0` assigned to non-scope parameter `__anonymous_param` calling `foo600`
+fail_compilation/retscope2.d(604): Error: scope variable `_param_1` assigned to non-scope parameter `__anonymous_param` calling `foo600`
 fail_compilation/retscope2.d(614): Error: template instance `retscope2.test600!(int*, int*)` error instantiating
 ---
 */
@@ -130,7 +130,7 @@ fail_compilation/retscope2.d(721): Error: returning `s.get1()` escapes a referen
 
 struct S700
 {
-    @safe S700* get1() return scope
+    @safe S700* get1() scope return
     {
         return &this;
     }
@@ -156,7 +156,7 @@ fail_compilation/retscope2.d(804): Error: scope variable `e` may not be thrown
 
 #line 800
 
-void foo800()
+void foo800() @safe
 {
     scope Exception e;
     throw e;
@@ -315,4 +315,3 @@ struct S1300
     int* oops;
 //    this(int* p) @safe { oops = p; }
 }
-

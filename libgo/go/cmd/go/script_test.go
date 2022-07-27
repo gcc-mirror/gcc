@@ -142,6 +142,8 @@ var extraEnvKeys = []string{
 	"SYSTEMROOT",         // must be preserved on Windows to find DLLs; golang.org/issue/25210
 	"WINDIR",             // must be preserved on Windows to be able to run PowerShell command; golang.org/issue/30711
 	"LD_LIBRARY_PATH",    // must be preserved on Unix systems to find shared libraries
+	"LIBRARY_PATH",       // allow override of non-standard static library paths
+	"C_INCLUDE_PATH",     // allow override non-standard include paths
 	"CC",                 // don't lose user settings when invoking cgo
 	"GO_TESTING_GOTOOLS", // for gccgo testing
 	"GCCGO",              // for gccgo testing
@@ -648,9 +650,9 @@ func (ts *testScript) doCmdCmp(want simpleStatus, args []string, env, quiet bool
 		}
 	case successOrFailure:
 		if eq {
-			fmt.Fprintf(&ts.log, "%s and %s do not differ", name1, name2)
+			fmt.Fprintf(&ts.log, "%s and %s do not differ\n", name1, name2)
 		} else {
-			fmt.Fprintf(&ts.log, "%s and %s differ", name1, name2)
+			fmt.Fprintf(&ts.log, "%s and %s differ\n", name1, name2)
 		}
 	default:
 		ts.fatalf("unsupported: %v cmp", want)
@@ -902,7 +904,7 @@ func (ts *testScript) cmdStale(want simpleStatus, args []string) {
 	tmpl := "{{if .Error}}{{.ImportPath}}: {{.Error.Err}}{{else}}"
 	switch want {
 	case failure:
-		tmpl += "{{if .Stale}}{{.ImportPath}} is unexpectedly stale{{end}}"
+		tmpl += "{{if .Stale}}{{.ImportPath}} is unexpectedly stale: {{.StaleReason}}{{end}}"
 	case success:
 		tmpl += "{{if not .Stale}}{{.ImportPath}} is unexpectedly NOT stale{{end}}"
 	default:

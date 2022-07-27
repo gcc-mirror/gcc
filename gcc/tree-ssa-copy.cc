@@ -71,8 +71,8 @@ struct prop_value_t {
 class copy_prop : public ssa_propagation_engine
 {
  public:
-  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) FINAL OVERRIDE;
-  enum ssa_prop_result visit_phi (gphi *) FINAL OVERRIDE;
+  enum ssa_prop_result visit_stmt (gimple *, edge *, tree *) final override;
+  enum ssa_prop_result visit_phi (gphi *) final override;
 };
 
 static prop_value_t *copy_of;
@@ -492,7 +492,7 @@ init_copy_prop (void)
 class copy_folder : public substitute_and_fold_engine
 {
  public:
-  tree value_of_expr (tree name, gimple *) FINAL OVERRIDE;
+  tree value_of_expr (tree name, gimple *) final override;
 };
 
 /* Callback for substitute_and_fold to get at the final copy-of values.  */
@@ -556,9 +556,7 @@ fini_copy_prop (void)
 		   && SSA_NAME_RANGE_INFO (var)
 		   && !SSA_NAME_RANGE_INFO (copy_of[i].value)
 		   && var_bb == copy_of_bb)
-	    duplicate_ssa_name_range_info (copy_of[i].value,
-					   SSA_NAME_RANGE_TYPE (var),
-					   SSA_NAME_RANGE_INFO (var));
+	    duplicate_ssa_name_range_info (copy_of[i].value, var);
 	}
     }
 
@@ -644,9 +642,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_copy_prop (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_copy_prop != 0; }
-  virtual unsigned int execute (function *) { return execute_copy_prop (); }
+  opt_pass * clone () final override { return new pass_copy_prop (m_ctxt); }
+  bool gate (function *) final override { return flag_tree_copy_prop != 0; }
+  unsigned int execute (function *) final override
+  {
+    return execute_copy_prop ();
+  }
 
 }; // class pass_copy_prop
 

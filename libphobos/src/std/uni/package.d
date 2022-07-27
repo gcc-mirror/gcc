@@ -5363,7 +5363,7 @@ pure @safe unittest
 pure @safe unittest
 {
     import std.range : stride;
-    static bool testAll(Matcher, Range)(scope ref Matcher m, ref Range r)
+    static bool testAll(Matcher, Range)(ref Matcher m, ref Range r) @safe
     {
         bool t = m.test(r);
         auto save = r.idx;
@@ -9824,7 +9824,7 @@ dchar toLower(dchar c)
 
 /++
     Creates a new array which is identical to `s` except that all of its
-    characters are converted to lowercase (by preforming Unicode lowercase mapping).
+    characters are converted to lowercase (by performing Unicode lowercase mapping).
     If none of `s` characters were affected, then `s` itself is returned if `s` is a
     `string`-like type.
 
@@ -9834,25 +9834,29 @@ dchar toLower(dchar c)
     Returns:
         An array with the same element type as `s`.
 +/
-ElementEncodingType!S[] toLower(S)(S s)
-if (isSomeString!S || (isRandomAccessRange!S && hasLength!S && hasSlicing!S && isSomeChar!(ElementType!S)))
+ElementEncodingType!S[] toLower(S)(return scope S s) @trusted
+if (isSomeString!S)
 {
     static import std.ascii;
+    return toCase!(LowerTriple, std.ascii.toLower)(s);
+}
 
-    static if (isSomeString!S)
-        return () @trusted { return toCase!(LowerTriple, std.ascii.toLower)(s); } ();
-    else
-        return toCase!(LowerTriple, std.ascii.toLower)(s);
+/// ditto
+ElementEncodingType!S[] toLower(S)(S s)
+if (!isSomeString!S && (isRandomAccessRange!S && hasLength!S && hasSlicing!S && isSomeChar!(ElementType!S)))
+{
+    static import std.ascii;
+    return toCase!(LowerTriple, std.ascii.toLower)(s);
 }
 
 // overloads for the most common cases to reduce compile time
 @safe pure /*TODO nothrow*/
 {
-    string toLower(string s)
+    string toLower(return scope string s)
     { return toLower!string(s); }
-    wstring toLower(wstring s)
+    wstring toLower(return scope wstring s)
     { return toLower!wstring(s); }
-    dstring toLower(dstring s)
+    dstring toLower(return scope dstring s)
     { return toLower!dstring(s); }
 
     @safe unittest
@@ -10028,7 +10032,7 @@ dchar toUpper(dchar c)
 
 /++
     Allocates a new array which is identical to `s` except that all of its
-    characters are converted to uppercase (by preforming Unicode uppercase mapping).
+    characters are converted to uppercase (by performing Unicode uppercase mapping).
     If none of `s` characters were affected, then `s` itself is returned if `s`
     is a `string`-like type.
 
@@ -10038,25 +10042,29 @@ dchar toUpper(dchar c)
     Returns:
         An new array with the same element type as `s`.
 +/
-ElementEncodingType!S[] toUpper(S)(S s)
-if (isSomeString!S || (isRandomAccessRange!S && hasLength!S && hasSlicing!S && isSomeChar!(ElementType!S)))
+ElementEncodingType!S[] toUpper(S)(return scope S s) @trusted
+if (isSomeString!S)
 {
     static import std.ascii;
+    return toCase!(UpperTriple, std.ascii.toUpper)(s);
+}
 
-    static if (isSomeString!S)
-        return () @trusted { return toCase!(UpperTriple, std.ascii.toUpper)(s); } ();
-    else
-        return toCase!(UpperTriple, std.ascii.toUpper)(s);
+/// ditto
+ElementEncodingType!S[] toUpper(S)(S s)
+if (!isSomeString!S && (isRandomAccessRange!S && hasLength!S && hasSlicing!S && isSomeChar!(ElementType!S)))
+{
+    static import std.ascii;
+    return toCase!(UpperTriple, std.ascii.toUpper)(s);
 }
 
 // overloads for the most common cases to reduce compile time
 @safe pure /*TODO nothrow*/
 {
-    string toUpper(string s)
+    string toUpper(return scope string s)
     { return toUpper!string(s); }
-    wstring toUpper(wstring s)
+    wstring toUpper(return scope wstring s)
     { return toUpper!wstring(s); }
-    dstring toUpper(dstring s)
+    dstring toUpper(return scope dstring s)
     { return toUpper!dstring(s); }
 
     @safe unittest

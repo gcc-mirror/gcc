@@ -1,3 +1,118 @@
+2022-07-22  Martin Liska  <mliska@suse.cz>
+
+	* git-commit-mklog.py: Do not parse -b argument.
+	Pass mklog_args as json environment variable.
+	* mklog.py: Parse GCC_MKLOG_ARGS and append it to sys.argv.
+	* prepare-commit-msg: Do not append GCC_MKLOG_ARGS to args.
+
+2022-07-22  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Use component: [PR xyz] only when one PR is used.
+
+2022-07-04  Martin Liska  <mliska@suse.cz>
+
+	* git-descr.sh: By default print revision for HEAD.
+
+2022-06-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* unicode/README: Added instructions for updating ucnid.h.
+	* unicode/DerivedCoreProperties.txt: New file added to source
+	control from Unicode 14.0 release.
+	* unicode/DerivedNormalizationProps.txt: Likewise.
+
+2022-06-26  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* unicode/EastAsianWidth.txt: Update to Unicode 14.0.0.
+	* unicode/PropList.txt: Likewise.
+	* unicode/README: Likewise.
+	* unicode/UnicodeData.txt: Likewise.
+
+2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config-list.mk: Remove tilegx and tilepro entries.
+	* gcc_update: Remove tilegx and tilepro entries.
+
+2022-05-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc-changelog/git_update_version.py (active_refs): Remove
+	releases/gcc-9.
+
+2022-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 12.
+
+2022-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (active_refs): Add
+	releases/gcc-12.
+
+2022-04-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out
+	-Wc++20-attribute-extensions in lex.cc.
+
+2022-04-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out
+	-Wbitwise-instead-of-logical.
+
+2022-04-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Ignore the revision.
+
+2022-03-31  Jakub Jelinek  <jakub@redhat.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	PR other/105114
+	* gcc_update: Fix up spelling of
+	gcc/config/loongarch/genopts/loongarch-strings dependency.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config-list.mk: Add LoongArch triplet.
+
+2022-03-29  Chenghua Xu  <xuchenghua@loongson.cn>
+	    Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc_update (files_and_dependencies): Add
+	  config/loongarch/loongarch.opt and config/loongarch/loongarch-str.h.
+
+2022-03-28  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Match trailing dot literally.
+
+2022-03-28  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Make the parsing stricter.
+
+2022-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	3ab5c8cd03d92bf4ec41e351820349d92fbc40c4 to ignored commits.
+
+2022-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/102664
+	* gcc-git-customization.sh: Fix non-portable commands.
+
+2022-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/102664
+	* git-descr.sh: Replace all [1-9] occurrences with [0-9].
+	* git-undescr.sh: Likewise.
+
+2022-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/102664
+	* git-descr.sh: Use portable sed commands.
+	* git-undescr.sh: Likewise.
+
+2022-03-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/102664
+	* git-descr.sh: Use portable form of expr match.
+
 2022-01-31  Martin Liska  <mliska@suse.cz>
 
 	* analyze_brprob.py: Support more formatted predict.def file.

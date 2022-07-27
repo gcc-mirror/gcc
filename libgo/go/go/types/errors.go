@@ -63,8 +63,15 @@ func (check *Checker) markImports(pkg *Package) {
 	}
 }
 
+// check may be nil.
 func (check *Checker) sprintf(format string, args ...any) string {
-	return sprintf(check.fset, check.qualifier, false, format, args...)
+	var fset *token.FileSet
+	var qf Qualifier
+	if check != nil {
+		fset = check.fset
+		qf = check.qualifier
+	}
+	return sprintf(fset, qf, false, format, args...)
 }
 
 func sprintf(fset *token.FileSet, qf Qualifier, debug bool, format string, args ...any) string {
@@ -100,6 +107,17 @@ func sprintf(fset *token.FileSet, qf Qualifier, debug bool, format string, args 
 					buf.WriteString(", ")
 				}
 				buf.WriteString(typeString(x, qf, debug))
+			}
+			buf.WriteByte(']')
+			arg = buf.String()
+		case []*TypeParam:
+			var buf bytes.Buffer
+			buf.WriteByte('[')
+			for i, x := range a {
+				if i > 0 {
+					buf.WriteString(", ")
+				}
+				buf.WriteString(typeString(x, qf, debug)) // use typeString so we get subscripts when debugging
 			}
 			buf.WriteByte(']')
 			arg = buf.String()

@@ -622,7 +622,6 @@ package body SFN_Scan is
          Q := '%';
       else
          Error ("bad string");
-         Q := '"';
       end if;
 
       --  Scan out the string, B points to first char

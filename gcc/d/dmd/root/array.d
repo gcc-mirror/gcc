@@ -137,7 +137,7 @@ public:
 
     void reserve(size_t nentries) pure nothrow
     {
-        //printf("Array::reserve: length = %d, data.length = %d, nentries = %d\n", (int)length, (int)data.length, (int)nentries);
+        //printf("Array::reserve: length = %d, data.length = %d, nentries = %d\n", cast(int)length, cast(int)data.length, cast(int)nentries);
 
         // Cold path
         void enlarge(size_t nentries)

@@ -1447,13 +1447,16 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  bool gate (function *fun) final override
     {
       return (optimize > 0 && flag_gcse_after_reload
 	      && optimize_function_for_speed_p (fun));
     }
 
-  virtual unsigned int execute (function *) { return rest_of_handle_gcse2 (); }
+  unsigned int execute (function *) final override
+  {
+    return rest_of_handle_gcse2 ();
+  }
 
 }; // class pass_gcse2
 

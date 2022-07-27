@@ -5,13 +5,13 @@
 #include <atomic>
 
 void
-test1(const std::atomic<char*>& a, char* p)
+test1(std::atomic<char*>& a, char* p)
 {
   a.wait(p);
 }
 
 void
-test2(const std::atomic<int>* a, int v)
+test2(std::atomic<int>* a, int v)
 {
   std::atomic_wait(a, v);
   std::atomic_notify_one(a);

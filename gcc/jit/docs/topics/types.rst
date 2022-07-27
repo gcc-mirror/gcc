@@ -76,6 +76,16 @@ Standard types
    :c:data:`GCC_JIT_TYPE_UNSIGNED_LONG`        C's ``unsigned long``
    :c:data:`GCC_JIT_TYPE_LONG_LONG`            C99's ``long long`` (signed)
    :c:data:`GCC_JIT_TYPE_UNSIGNED_LONG_LONG`   C99's ``unsigned long long``
+   :c:data:`GCC_JIT_TYPE_UINT8_T`              C99's ``uint8_t``
+   :c:data:`GCC_JIT_TYPE_UINT16_T`             C99's ``uint16_t``
+   :c:data:`GCC_JIT_TYPE_UINT32_T`             C99's ``uint32_t``
+   :c:data:`GCC_JIT_TYPE_UINT64_T`             C99's ``uint64_t``
+   :c:data:`GCC_JIT_TYPE_UINT128_T`            C99's ``__uint128_t``
+   :c:data:`GCC_JIT_TYPE_INT8_T`               C99's ``int8_t``
+   :c:data:`GCC_JIT_TYPE_INT16_T`              C99's ``int16_t``
+   :c:data:`GCC_JIT_TYPE_INT32_T`              C99's ``int32_t``
+   :c:data:`GCC_JIT_TYPE_INT64_T`              C99's ``int64_t``
+   :c:data:`GCC_JIT_TYPE_INT128_T`             C99's ``__int128_t``
    :c:data:`GCC_JIT_TYPE_FLOAT`
    :c:data:`GCC_JIT_TYPE_DOUBLE`
    :c:data:`GCC_JIT_TYPE_LONG_DOUBLE`
@@ -192,7 +202,7 @@ A compound type analagous to a C `struct`.
 
 A field within a :c:type:`gcc_jit_struct`.
 
-You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
+You can model C `struct` types by creating :c:type:`gcc_jit_struct` and
 :c:type:`gcc_jit_field` instances, in either order:
 
 * by creating the fields, then the structure.  For example, to model:
@@ -375,7 +385,7 @@ Reflection API
      Given a function type, return its number of parameters.
 
 .. function::  gcc_jit_type *\
-               gcc_jit_function_type_get_param_type (gcc_jit_function_type *function_type,
+               gcc_jit_function_type_get_param_type (gcc_jit_function_type *function_type,\
                                                      size_t index)
 
      Given a function type, return the type of the specified parameter.
@@ -417,7 +427,7 @@ Reflection API
      alignment qualifiers.
 
 .. function::  gcc_jit_field *\
-               gcc_jit_struct_get_field (gcc_jit_struct *struct_type,
+               gcc_jit_struct_get_field (gcc_jit_struct *struct_type,\
                                          size_t index)
 
      Get a struct field by index.
@@ -467,3 +477,34 @@ Reflection API
       #ifdef LIBGCCJIT_HAVE_REFLECTION
 
    .. type:: gcc_jit_case
+
+.. function::  int\
+               gcc_jit_compatible_types (gcc_jit_type *ltype,\
+                                         gcc_jit_type *rtype)
+
+     Return non-zero if the two types are compatible. For instance,
+     if :c:data:`GCC_JIT_TYPE_UINT64_T` and :c:data:`GCC_JIT_TYPE_UNSIGNED_LONG`
+     are the same size on the target, this will return non-zero.
+     The parameters ``ltype`` and ``rtype`` must be non-NULL.
+     Return 0 on errors.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_20`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_SIZED_INTEGERS
+
+.. function::  ssize_t\
+               gcc_jit_type_get_size (gcc_jit_type *type)
+
+     Return the size of a type, in bytes. It only works on integer types for now.
+     The parameter ``type`` must be non-NULL.
+     Return -1 on errors.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_20`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_SIZED_INTEGERS

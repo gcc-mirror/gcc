@@ -403,7 +403,7 @@ maybe_warn_read_write_only (tree fndecl, gimple *stmt, tree arg, tree ptr)
     return;
 
   /* Initialize a map of attribute access specifications for arguments
-     to the function function call.  */
+     to the function call.  */
   rdwr_map rdwr_idx;
   init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
 
@@ -514,7 +514,7 @@ check_defs (ao_ref *ref, tree vdef, void *data_)
   return true;
 }
 
-/* Counters and limits controlling the the depth of analysis and
+/* Counters and limits controlling the depth of analysis and
    strictness of the warning.  */
 struct wlimits
 {
@@ -785,7 +785,7 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
   const bool save_always_executed = wlims.always_executed;
 
   /* Initialize a map of attribute access specifications for arguments
-     to the function function call.  */
+     to the function call.  */
   rdwr_map rdwr_idx;
   init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
 
@@ -796,6 +796,9 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
   FOREACH_FUNCTION_ARGS (fntype, argtype, it)
     {
       ++argno;
+
+      if (argno > nargs)
+	break;
 
       if (!POINTER_TYPE_P (argtype))
 	continue;
@@ -979,7 +982,7 @@ warn_uninit_phi_uses (basic_block bb)
 static void
 warn_uninitialized_vars (bool wmaybe_uninit)
 {
-  /* Counters and limits controlling the the depth of the warning.  */
+  /* Counters and limits controlling the depth of the warning.  */
   wlimits wlims = { };
   wlims.wmaybe_uninit = wmaybe_uninit;
 
@@ -1317,9 +1320,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass *clone () { return new pass_late_warn_uninitialized (m_ctxt); }
-  virtual bool gate (function *) { return gate_warn_uninitialized (); }
-  virtual unsigned int execute (function *);
+  opt_pass *clone () final override
+  {
+    return new pass_late_warn_uninitialized (m_ctxt);
+  }
+  bool gate (function *) final override { return gate_warn_uninitialized (); }
+  unsigned int execute (function *) final override;
 
 }; // class pass_late_warn_uninitialized
 
@@ -1459,8 +1465,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_warn_uninitialized (); }
-  virtual unsigned int execute (function *fun)
+  bool gate (function *) final override { return gate_warn_uninitialized (); }
+  unsigned int execute (function *fun) final override
   {
     return execute_early_warn_uninitialized (fun);
   }

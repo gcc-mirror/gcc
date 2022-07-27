@@ -33,7 +33,7 @@ Copies the string @var{src} into @var{dst}.  Returns a pointer to
 #include <stddef.h>
 
 extern size_t strlen (const char *);
-extern PTR memcpy (PTR, const PTR, size_t);
+extern void *memcpy (void *, const void *, size_t);
 
 char *
 stpcpy (char *dst, const char *src)

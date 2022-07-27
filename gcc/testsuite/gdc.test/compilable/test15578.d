@@ -7,4 +7,3 @@ void f()
     j = 0; // works as expected
     k = 0; // Error: variable foo.ns.k is private
 }
-

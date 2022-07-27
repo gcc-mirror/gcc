@@ -724,7 +724,10 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  bool remove_p = true;
 
 	  for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	    if (reg->type != OP_IN && sparseset_bit_p (pseudos_live, reg->regno))
+	    if (reg->type != OP_IN
+		&& (reg->regno < FIRST_PSEUDO_REGISTER
+		    ? TEST_HARD_REG_BIT (hard_regs_live, reg->regno)
+		    : sparseset_bit_p (pseudos_live, reg->regno)))
 	      {
 		remove_p = false;
 		break;

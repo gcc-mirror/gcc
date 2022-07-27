@@ -19,4 +19,3 @@ template moduleName(alias T)
         enum moduleName = "--error--";
     }
 }
-

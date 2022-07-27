@@ -51,9 +51,6 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `dl' library (-ldl). */
-#undef HAVE_LIBDL
-
 /* Define to 1 if you have the `memalign' function. */
 #undef HAVE_MEMALIGN
 
@@ -169,16 +166,6 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
-
-/* Define to 1 if the GCN plugin is built, 0 if not. */
-#undef PLUGIN_GCN
-
-/* Define to 1 if the NVIDIA plugin is built, 0 if not. */
-#undef PLUGIN_NVPTX
-
-/* Define to 1 if the NVIDIA plugin should dlopen libcuda.so.1, 0 if it should
-   be linked against it. */
-#undef PLUGIN_NVPTX_DYNAMIC
 
 /* Define if all infrastructure, needed for plugins, is supported. */
 #undef PLUGIN_SUPPORT

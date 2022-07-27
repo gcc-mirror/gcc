@@ -52,7 +52,6 @@
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 # define _GLIBCXX_FILESYSTEM_IS_WINDOWS 1
-# include <algorithm>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -103,19 +102,16 @@ namespace __detail
 #endif
 
   template<typename _Iter_traits, typename = void>
-    struct __is_path_iter_src
-    : false_type
-    { };
+    inline constexpr bool __is_path_iter_src = false;
 
   template<typename _Iter_traits>
-    struct __is_path_iter_src<_Iter_traits,
-			      void_t<typename _Iter_traits::value_type>>
-    : bool_constant<__is_encoded_char<typename _Iter_traits::value_type>>
-    { };
+    inline constexpr bool
+    __is_path_iter_src<_Iter_traits, void_t<typename _Iter_traits::value_type>>
+      = __is_encoded_char<typename _Iter_traits::value_type>;
 
   template<typename _Source>
     inline constexpr bool __is_path_src
-      = __is_path_iter_src<iterator_traits<decay_t<_Source>>>::value;
+      = __is_path_iter_src<iterator_traits<decay_t<_Source>>>;
 
   template<>
     inline constexpr bool __is_path_src<path> = false;
@@ -151,7 +147,7 @@ namespace __detail
 
   // SFINAE constraint for InputIterator parameters as required by [fs.req].
   template<typename _Iter, typename _Tr = __safe_iterator_traits<_Iter>>
-    using _Path2 = enable_if_t<__is_path_iter_src<_Tr>::value, path>;
+    using _Path2 = enable_if_t<__is_path_iter_src<_Tr>, path>;
 
 #if __cpp_lib_concepts
   template<typename _Iter>
@@ -1060,8 +1056,12 @@ namespace __detail
   path::make_preferred()
   {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    std::replace(_M_pathname.begin(), _M_pathname.end(), L'/',
-		 preferred_separator);
+    auto __pos = _M_pathname.find(L'/');
+    while (__pos != _M_pathname.npos)
+      {
+	_M_pathname[__pos] = preferred_separator;
+	__pos = _M_pathname.find(L'/', __pos);
+      }
 #endif
     return *this;
   }
@@ -1412,6 +1412,16 @@ template<typename _Distance>
 extern template class __shared_ptr<const filesystem::filesystem_error::_Impl>;
 
 /// @endcond
+
+// _GLIBCXX_RESOLVE_LIB_DEFECTS
+// 3657. std::hash<std::filesystem::path> is not enabled
+template<>
+  struct hash<filesystem::path>
+  {
+    size_t
+    operator()(const filesystem::path& __p) const noexcept
+    { return filesystem::hash_value(__p); }
+  };
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

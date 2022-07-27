@@ -249,6 +249,10 @@ bool has_VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO (tree);
 tree vn_get_expr_for (tree);
 void scc_vn_restore_ssa_info (void);
+vn_nary_op_t alloc_vn_nary_op_noinit (unsigned int, struct obstack *);
+unsigned int vn_nary_length_from_stmt (gimple *);
+void init_vn_nary_op_from_stmt (vn_nary_op_t, gassign *);
+hashval_t vn_nary_op_compute_hash (const vn_nary_op_t);
 tree vn_nary_op_lookup_stmt (gimple *, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
 			       tree, tree *, vn_nary_op_t *);
@@ -261,7 +265,7 @@ tree vn_reference_lookup_pieces (tree, alias_set_type, alias_set_type, tree,
 				 vec<vn_reference_op_s> ,
 				 vn_reference_t *, vn_lookup_kind);
 tree vn_reference_lookup (tree, tree, vn_lookup_kind, vn_reference_t *, bool,
-			  tree * = NULL, tree = NULL_TREE);
+			  tree * = NULL, tree = NULL_TREE, bool = false);
 void vn_reference_lookup_call (gcall *, vn_reference_t *, vn_reference_t);
 vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, alias_set_type,
 					   tree, vec<vn_reference_op_s>,

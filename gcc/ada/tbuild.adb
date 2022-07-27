@@ -882,8 +882,8 @@ package body Tbuild is
       --  We don't really want to allow E_Void here, but existing code passes
       --  it.
 
-      Loc         : constant Source_Ptr := Sloc (Expr);
-      Result      : Node_Id;
+      Loc    : constant Source_Ptr := Sloc (Expr);
+      Result : Node_Id;
 
    begin
       --  If the expression is already of the correct type, then nothing

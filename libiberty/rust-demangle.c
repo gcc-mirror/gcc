@@ -126,7 +126,7 @@ parse_integer_62 (struct rust_demangler *rdm)
     return 0;
 
   x = 0;
-  while (!eat (rdm, '_'))
+  while (!eat (rdm, '_') && !rdm->errored)
     {
       c = next (rdm);
       x *= 62;
@@ -1082,6 +1082,18 @@ demangle_path_maybe_open_generics (struct rust_demangler *rdm)
   if (rdm->errored)
     return open;
 
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    {
+      ++ rdm->recursion;
+      if (rdm->recursion > RUST_MAX_RECURSION_COUNT)
+	{
+	  /* FIXME: There ought to be a way to report
+	     that the recursion limit has been reached.  */
+	  rdm->errored = 1;
+	  goto end_of_func;
+	}
+    }
+
   if (eat (rdm, 'B'))
     {
       backref = parse_integer_62 (rdm);
@@ -1107,6 +1119,11 @@ demangle_path_maybe_open_generics (struct rust_demangler *rdm)
     }
   else
     demangle_path (rdm, 0);
+
+ end_of_func:
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    -- rdm->recursion;
+
   return open;
 }
 
@@ -1148,6 +1165,15 @@ demangle_const (struct rust_demangler *rdm)
   if (rdm->errored)
     return;
 
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    {
+      ++ rdm->recursion;
+      if (rdm->recursion > RUST_MAX_RECURSION_COUNT)
+	/* FIXME: There ought to be a way to report
+	   that the recursion limit has been reached.  */
+	goto fail_return;
+    }
+
   if (eat (rdm, 'B'))
     {
       backref = parse_integer_62 (rdm);
@@ -1158,7 +1184,7 @@ demangle_const (struct rust_demangler *rdm)
           demangle_const (rdm);
           rdm->next = old_next;
         }
-      return;
+      goto pass_return;
     }
 
   ty_tag = next (rdm);
@@ -1167,7 +1193,7 @@ demangle_const (struct rust_demangler *rdm)
     /* Placeholder. */
     case 'p':
       PRINT ("_");
-      return;
+      goto pass_return;
 
     /* Unsigned integer types. */
     case 'h':
@@ -1200,18 +1226,21 @@ demangle_const (struct rust_demangler *rdm)
       break;
 
     default:
-      rdm->errored = 1;
-      return;
+      goto fail_return;
     }
 
-  if (rdm->errored)
-    return;
-
-  if (rdm->verbose)
+  if (!rdm->errored && rdm->verbose)
     {
       PRINT (": ");
       PRINT (basic_type (ty_tag));
     }
+  goto pass_return;
+
+ fail_return:
+  rdm->errored = 1;
+ pass_return:
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    -- rdm->recursion;
 }
 
 static void
@@ -1375,13 +1404,19 @@ rust_demangle_callback (const char *mangled, int options,
   /* Rust symbols (v0) use only [_0-9a-zA-Z] characters. */
   for (p = rdm.sym; *p; p++)
     {
+      /* Rust v0 symbols can have '.' suffixes, ignore those.  */
+      if (rdm.version == 0 && *p == '.')
+        break;
+
       rdm.sym_len++;
 
       if (*p == '_' || ISALNUM (*p))
         continue;
 
-      /* Legacy Rust symbols can also contain [.:$] characters. */
-      if (rdm.version == -1 && (*p == '$' || *p == '.' || *p == ':'))
+      /* Legacy Rust symbols can also contain [.:$] characters.
+         Or @ in the .suffix (which will be skipped, see below). */
+      if (rdm.version == -1 && (*p == '$' || *p == '.' || *p == ':'
+                                || *p == '@'))
         continue;
 
       return 0;
@@ -1390,7 +1425,16 @@ rust_demangle_callback (const char *mangled, int options,
   /* Legacy Rust symbols need to be handled separately. */
   if (rdm.version == -1)
     {
-      /* Legacy Rust symbols always end with E. */
+      /* Legacy Rust symbols always end with E.  But can be followed by a
+         .suffix (which we want to ignore).  */
+      int dot_suffix = 1;
+      while (rdm.sym_len > 0 &&
+             !(dot_suffix && rdm.sym[rdm.sym_len - 1] == 'E'))
+        {
+          dot_suffix = rdm.sym[rdm.sym_len - 1] == '.';
+          rdm.sym_len--;
+        }
+
       if (!(rdm.sym_len > 0 && rdm.sym[rdm.sym_len - 1] == 'E'))
         return 0;
       rdm.sym_len--;

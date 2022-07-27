@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "builtins.h"
 #include "generic-match.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-into-ssa.h"
 #include "md5.h"
@@ -2384,7 +2385,7 @@ build_zero_vector (tree type)
 bool
 fold_convertible_p (const_tree type, const_tree arg)
 {
-  tree orig = TREE_TYPE (arg);
+  const_tree orig = TREE_TYPE (arg);
 
   if (type == orig)
     return true;
@@ -2416,7 +2417,7 @@ fold_convertible_p (const_tree type, const_tree arg)
       return (VECTOR_TYPE_P (orig)
 	      && known_eq (TYPE_VECTOR_SUBPARTS (type),
 			   TYPE_VECTOR_SUBPARTS (orig))
-	      && fold_convertible_p (TREE_TYPE (type), TREE_TYPE (orig)));
+	      && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
 
     default:
       return false;
@@ -3357,8 +3358,11 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 		    tree field0 = TREE_OPERAND (arg0, 1);
 		    tree field1 = TREE_OPERAND (arg1, 1);
 
-		    if (!operand_equal_p (DECL_FIELD_OFFSET (field0),
-					  DECL_FIELD_OFFSET (field1), flags)
+		    /* Non-FIELD_DECL operands can appear in C++ templates.  */
+		    if (TREE_CODE (field0) != FIELD_DECL
+			|| TREE_CODE (field1) != FIELD_DECL
+			|| !operand_equal_p (DECL_FIELD_OFFSET (field0),
+					     DECL_FIELD_OFFSET (field1), flags)
 			|| !operand_equal_p (DECL_FIELD_BIT_OFFSET (field0),
 					     DECL_FIELD_BIT_OFFSET (field1),
 					     flags))
@@ -5208,7 +5212,7 @@ make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
 	n_high = fold_convert_loc (loc, arg0_type, n_high);
 
       /* If we're converting arg0 from an unsigned type, to exp,
-	 a signed type,  we will be doing the comparison as unsigned.
+	 a signed type, we will be doing the comparison as unsigned.
 	 The tests above have already verified that LOW and HIGH
 	 are both positive.
 
@@ -5267,6 +5271,32 @@ make_range_step (location_t loc, enum tree_code code, tree arg0, tree arg1,
 		return NULL_TREE;
 
 	      in_p = (in_p != n_in_p);
+	    }
+	}
+
+      /* Otherwise, if we are converting arg0 from signed type, to exp,
+	 an unsigned type, we will do the comparison as signed.  If
+	 high is non-NULL, we punt above if it doesn't fit in the signed
+	 type, so if we get through here, +[-, high] or +[low, high] are
+	 equivalent to +[-, n_high] or +[n_low, n_high].  Similarly,
+	 +[-, -] or -[-, -] are equivalent too.  But if low is specified and
+	 high is not, the +[low, -] range is equivalent to union of
+	 +[n_low, -] and +[-, -1] ranges, so +[low, -] is equivalent to
+	 -[0, n_low-1] and similarly -[low, -] to +[0, n_low-1], except for
+	 low being 0, which should be treated as [-, -].  */
+      else if (TYPE_UNSIGNED (exp_type)
+	       && !TYPE_UNSIGNED (arg0_type)
+	       && low
+	       && !high)
+	{
+	  if (integer_zerop (low))
+	    n_low = NULL_TREE;
+	  else
+	    {
+	      n_high = fold_build2_loc (loc, PLUS_EXPR, arg0_type,
+					n_low, build_int_cst (arg0_type, -1));
+	      n_low = build_zero_cst (arg0_type);
+	      in_p = !in_p;
 	    }
 	}
 
@@ -7500,7 +7530,7 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1)
 static tree
 fold_to_nonsharp_ineq_using_bound (location_t loc, tree ineq, tree bound)
 {
-  tree a, typea, type = TREE_TYPE (ineq), a1, diff, y;
+  tree a, typea, type = TREE_TYPE (bound), a1, diff, y;
 
   if (TREE_CODE (bound) == LT_EXPR)
     a = TREE_OPERAND (bound, 0);
@@ -9484,6 +9514,16 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	      && sanitize_flags_p (SANITIZE_ALIGNMENT)
 	      && (min_align_of_type (TREE_TYPE (type))
 		  > min_align_of_type (TREE_TYPE (TREE_TYPE (arg00)))))
+	    return NULL_TREE;
+
+	  /* Similarly, avoid this optimization in GENERIC for -fsanitize=null
+	     when type is a reference type and arg00's type is not,
+	     because arg00 could be validly nullptr and if arg01 doesn't return,
+	     we don't want false positive binding of reference to nullptr.  */
+	  if (TREE_CODE (type) == REFERENCE_TYPE
+	      && !in_gimple_form
+	      && sanitize_flags_p (SANITIZE_NULL)
+	      && TREE_CODE (TREE_TYPE (arg00)) != REFERENCE_TYPE)
 	    return NULL_TREE;
 
 	  arg00 = fold_convert_loc (loc, type, arg00);
@@ -11997,11 +12037,15 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	{
 	  tem = fold_to_nonsharp_ineq_using_bound (loc, arg0, arg1);
 	  if (tem && !operand_equal_p (tem, arg0, 0))
-	    return fold_build2_loc (loc, code, type, tem, arg1);
+	    return fold_convert (type,
+				 fold_build2_loc (loc, code, TREE_TYPE (arg1),
+						  tem, arg1));
 
 	  tem = fold_to_nonsharp_ineq_using_bound (loc, arg1, arg0);
 	  if (tem && !operand_equal_p (tem, arg1, 0))
-	    return fold_build2_loc (loc, code, type, arg0, tem);
+	    return fold_convert (type,
+				 fold_build2_loc (loc, code, TREE_TYPE (arg0),
+						  arg0, tem));
 	}
 
       if ((tem = fold_truth_andor (loc, code, type, arg0, arg1, op0, op1))
@@ -16790,6 +16834,26 @@ address_compare (tree_code code, tree type, tree op0, tree op1,
     return 0;
 
   return equal;
+}
+
+/* Return the single non-zero element of a CONSTRUCTOR or NULL_TREE.  */
+tree
+ctor_single_nonzero_element (const_tree t)
+{
+  unsigned HOST_WIDE_INT idx;
+  constructor_elt *ce;
+  tree elt = NULL_TREE;
+
+  if (TREE_CODE (t) != CONSTRUCTOR)
+    return NULL_TREE;
+  for (idx = 0; vec_safe_iterate (CONSTRUCTOR_ELTS (t), idx, &ce); idx++)
+    if (!integer_zerop (ce->value) && !real_zerop (ce->value))
+      {
+	if (elt)
+	  return NULL_TREE;
+	elt = ce->value;
+      }
+  return elt;
 }
 
 #if CHECKING_P

@@ -2411,10 +2411,11 @@ sem_item_optimizer::filter_removed_items (void)
 	    {
 	      /* Filter out non-readonly variables.  */
 	      tree decl = item->decl;
-	      if (TREE_READONLY (decl))
-		filtered.safe_push (item);
-	      else
+	      varpool_node *vnode = static_cast <sem_variable *>(item)->get_node ();
+	      if (!TREE_READONLY (decl) || vnode->body_removed)
 		remove_item (item);
+	      else
+		filtered.safe_push (item);
 	    }
         }
     }
@@ -3637,12 +3638,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
   {
     return in_lto_p || flag_ipa_icf_variables || flag_ipa_icf_functions;
   }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
   {
     return ipa_icf_driver();
   }

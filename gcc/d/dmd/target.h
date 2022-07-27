@@ -70,7 +70,11 @@ struct TargetC
     };
 
     uint8_t crtDestructorsSupported; // Not all platforms support crt_destructor
+    uint8_t boolsize;            // size of a C '_Bool' type
+    uint8_t shortsize;           // size of a C 'short' or 'unsigned short' type
+    uint8_t intsize;             // size of a C 'int' or 'unsigned int' type
     uint8_t longsize;            // size of a C 'long' or 'unsigned long' type
+    uint8_t long_longsize;       // size of a C 'long long' or 'unsigned long long' type
     uint8_t long_doublesize;     // size of a C 'long double'
     uint8_t wchar_tsize;         // size of a C 'wchar_t' type
     Runtime runtime;
@@ -171,12 +175,12 @@ struct Target
         real_t infinity;
         real_t epsilon;
 
-        d_int64 dig;
-        d_int64 mant_dig;
-        d_int64 max_exp;
-        d_int64 min_exp;
-        d_int64 max_10_exp;
-        d_int64 min_10_exp;
+        int64_t dig;
+        int64_t mant_dig;
+        int64_t max_exp;
+        int64_t min_exp;
+        int64_t max_10_exp;
+        int64_t min_10_exp;
     };
 
     FPTypeProperties<float> FloatProperties;
@@ -190,7 +194,6 @@ private:
 public:
     void _init(const Param& params);
     // Type sizes and support.
-    void setTriple(const char* _triple);
     unsigned alignsize(Type *type);
     unsigned fieldalign(Type *type);
     Type *va_listType(const Loc &loc, Scope *sc);  // get type of va_list
@@ -200,7 +203,6 @@ public:
     LINK systemLinkage();
     TypeTuple *toArgTypes(Type *t);
     bool isReturnOnStack(TypeFunction *tf, bool needsThis);
-    d_uns64 parameterSize(const Loc& loc, Type *t);
     bool preferPassByRef(Type *t);
     Expression *getTargetInfo(const char* name, const Loc& loc);
     bool isCalleeDestroyingArgs(TypeFunction* tf);

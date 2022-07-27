@@ -110,6 +110,10 @@ package Sem_Ch12 is
    --  function and procedure instances. The flag Body_Optional has the
    --  same purpose as described for Instantiate_Package_Body.
 
+   function Is_Abbreviated_Instance (E : Entity_Id) return Boolean;
+   --  Return true if E is a package created for an abbreviated instantiation
+   --  to check conformance between formal package and corresponding actual.
+
    function Need_Subprogram_Instance_Body
      (N    : Node_Id;
       Subp : Entity_Id) return Boolean;

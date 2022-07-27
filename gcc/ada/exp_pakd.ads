@@ -41,7 +41,8 @@ package Exp_Pakd is
 
    --  This packed array type has the name xxxPn, where xxx is the name
    --  of the packed type, and n is the component size. The expanded
-   --  declaration declares a type that is one of the following:
+   --  declaration declares a type that is one of the following (sizes
+   --  below are in bytes):
 
    --    For an unconstrained array with component size 1,2,4 or any other
    --    odd component size. These are the cases in which we do not need
@@ -49,10 +50,10 @@ package Exp_Pakd is
 
    --      type xxxPn is new Packed_Bytes1;
 
-   --    For an unconstrained array with component size that is divisible
-   --    by 2, but not divisible by 4 (other than 2 itself). These are the
-   --    cases in which we can generate better code if the underlying array
-   --    is 2-byte aligned (see System.Pack_14 in file s-pack14 for example).
+   --    For an unconstrained array with component size greater than 2, that is
+   --    divisible by 2, but not divisible by 4. These are the cases in which
+   --    we can generate better code if the underlying array is 2-byte aligned
+   --    (see System.Pack_14 in file s-pack14 for example).
 
    --      type xxxPn is new Packed_Bytes2;
 
@@ -942,7 +943,7 @@ package Exp_Pakd is
    --  N is an N_Op_Eq node where the operands are packed arrays whose
    --  representation is an array-of-bytes type (the case where a modular
    --  type is used for the representation does not require any special
-   --  handling, because in the modular case, unused bits are zeroes.
+   --  handling, because in the modular case, unused bits are zeroes).
 
    procedure Expand_Packed_Not (N : Node_Id);
    --  N is an N_Op_Not node where the operand is packed array of Boolean

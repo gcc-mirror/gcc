@@ -1,7 +1,7 @@
 /* Regression test for PR/80725.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=zEC12" } */
+/* { dg-options "-O2 -march=zEC12 -Wno-int-to-pointer-cast" } */
 
 int a, e;
 const char b;

@@ -330,7 +330,7 @@ class noop_reader : public md_reader
   noop_reader () : md_reader (false) {}
 
   /* A dummy implementation which skips unknown directives.  */
-  void handle_unknown_directive (file_location, const char *);
+  void handle_unknown_directive (file_location, const char *) override;
 };
 
 /* An md_reader subclass that actually handles full hierarchical

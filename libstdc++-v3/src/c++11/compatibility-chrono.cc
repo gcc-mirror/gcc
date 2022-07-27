@@ -24,6 +24,10 @@
 
 #include <bits/c++config.h>
 
+#if _GLIBCXX_INLINE_VERSION
+# error "compatibility-thread-c++0x.cc is not needed for gnu-versioned-namespace"
+#endif
+
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
 #ifdef _GLIBCXX_USE_GETTIMEOFDAY

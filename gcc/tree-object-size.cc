@@ -29,8 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "tree-object-size.h"
-#include "gimple-fold.h"
 #include "gimple-iterator.h"
+#include "gimple-fold.h"
 #include "tree-cfg.h"
 #include "tree-dfa.h"
 #include "stringpool.h"
@@ -371,8 +371,8 @@ size_for_offset (tree sz, tree offset, tree wholesize = NULL_TREE)
     }
 
   /* Safe to convert now, since a valid net offset should be non-negative.  */
-  if (!types_compatible_p (TREE_TYPE (offset), sizetype))
-    fold_convert (sizetype, offset);
+  if (!useless_type_conversion_p (sizetype, TREE_TYPE (offset)))
+    offset = fold_convert (sizetype, offset);
 
   if (TREE_CODE (offset) == INTEGER_CST)
     {
@@ -695,19 +695,21 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	var_size = pt_var_size;
       bytes = compute_object_offset (TREE_OPERAND (ptr, 0), var);
       if (bytes != error_mark_node)
-	bytes = size_for_offset (var_size, bytes);
-      if (var != pt_var
-	  && pt_var_size
-	  && TREE_CODE (pt_var) == MEM_REF
-	  && bytes != error_mark_node)
 	{
-	  tree bytes2 = compute_object_offset (TREE_OPERAND (ptr, 0), pt_var);
-	  if (bytes2 != error_mark_node)
+	  bytes = size_for_offset (var_size, bytes);
+	  if (var != pt_var && pt_var_size && TREE_CODE (pt_var) == MEM_REF)
 	    {
-	      bytes2 = size_for_offset (pt_var_size, bytes2);
-	      bytes = size_binop (MIN_EXPR, bytes, bytes2);
+	      tree bytes2 = compute_object_offset (TREE_OPERAND (ptr, 0),
+						   pt_var);
+	      if (bytes2 != error_mark_node)
+		{
+		  bytes2 = size_for_offset (pt_var_size, bytes2);
+		  bytes = size_binop (MIN_EXPR, bytes, bytes2);
+		}
 	    }
 	}
+      else
+	bytes = size_unknown (object_size_type);
 
       wholebytes
 	= object_size_type & OST_SUBOBJECT ? var_size : pt_var_wholesize;
@@ -784,10 +786,7 @@ alloc_object_size (const gcall *call, int object_size_type)
   else if (arg1 >= 0)
     bytes = fold_convert (sizetype, gimple_call_arg (call, arg1));
 
-  if (bytes)
-    return STRIP_NOPS (bytes);
-
-  return size_unknown (object_size_type);
+  return bytes ? bytes : size_unknown (object_size_type);
 }
 
 
@@ -1480,14 +1479,19 @@ parm_object_size (struct object_size_info *osi, tree var)
   tree typesize = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (parm)));
   tree sz = NULL_TREE;
 
-  if (access && access->sizarg != UINT_MAX)
+  /* If we have an explicit access attribute with a usable size argument... */
+  if (access && access->sizarg != UINT_MAX && !access->internal_p
+      /* ... and either PARM is void * or has a type that is complete and has a
+	 constant size... */
+      && ((typesize && poly_int_tree_p (typesize))
+	  || (!typesize && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (parm))))))
     {
       tree fnargs = DECL_ARGUMENTS (fndecl);
       tree arg = NULL_TREE;
       unsigned argpos = 0;
 
-      /* Walk through the parameters to pick the size parameter and safely
-	 scale it by the type size.  */
+      /* ... then walk through the parameters to pick the size parameter and
+	 safely scale it by the type size if needed.  */
       for (arg = fnargs; arg; arg = TREE_CHAIN (arg), ++argpos)
 	if (argpos == access->sizarg && INTEGRAL_TYPE_P (TREE_TYPE (arg)))
 	  {
@@ -2120,8 +2124,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_object_sizes (m_ctxt); }
-  virtual unsigned int execute (function *fun)
+  opt_pass * clone () final override { return new pass_object_sizes (m_ctxt); }
+  unsigned int execute (function *fun) final override
   {
     return object_sizes_execute (fun, false);
   }
@@ -2160,7 +2164,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *fun)
+  unsigned int execute (function *fun) final override
   {
     return object_sizes_execute (fun, true);
   }

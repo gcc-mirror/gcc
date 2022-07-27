@@ -84,19 +84,16 @@ public:
             }
             f.printGCUsage(e.loc, "setting `length` may cause a GC allocation");
         }
-        else if (fd.ident == Id._d_delstruct)
+        else if (fd.ident == Id._d_arrayappendT || fd.ident == Id._d_arrayappendcTX)
         {
-            // In expressionsem.d, `delete s` was lowererd to `_d_delstruct(s)`.
-            // The following code handles the call like the original expression,
-            // so the error is menaningful to the user.
             if (f.setGC())
             {
-                e.error("cannot use `delete` in `@nogc` %s `%s`", f.kind(),
-                    f.toPrettyChars());
+                e.error("cannot use operator `~=` in `@nogc` %s `%s`",
+                    f.kind(), f.toPrettyChars());
                 err = true;
                 return;
             }
-            f.printGCUsage(e.loc, "`delete` requires the GC");
+            f.printGCUsage(e.loc, "operator `~=` may cause a GC allocation");
         }
     }
 
@@ -151,39 +148,15 @@ public:
 
     override void visit(DeleteExp e)
     {
-        if (e.e1.op == EXP.variable)
+        if (VarExp ve = e.e1.isVarExp())
         {
-            VarDeclaration v = (cast(VarExp)e.e1).var.isVarDeclaration();
+            VarDeclaration v = ve.var.isVarDeclaration();
             if (v && v.onstack)
                 return; // delete for scope allocated class object
         }
 
-        Type tb = e.e1.type.toBasetype();
-        AggregateDeclaration ad = null;
-        switch (tb.ty)
-        {
-        case Tclass:
-            ad = (cast(TypeClass)tb).sym;
-            break;
-
-        case Tpointer:
-            tb = (cast(TypePointer)tb).next.toBasetype();
-            if (tb.ty == Tstruct)
-                ad = (cast(TypeStruct)tb).sym;
-            break;
-
-        default:
-            break;
-        }
-
-        if (f.setGC())
-        {
-            e.error("cannot use `delete` in `@nogc` %s `%s`",
-                f.kind(), f.toPrettyChars());
-            err = true;
-            return;
-        }
-        f.printGCUsage(e.loc, "`delete` requires the GC");
+        // Semantic should have already handled this case.
+        assert(0);
     }
 
     override void visit(IndexExp e)
@@ -219,14 +192,15 @@ public:
 
     override void visit(CatAssignExp e)
     {
+        /* CatAssignExp will exist in `__traits(compiles, ...)` and in the `.e1` branch of a `__ctfe ? :` CondExp.
+         * The other branch will be `_d_arrayappendcTX(e1, 1), e1[$-1]=e2` which will generate the warning about
+         * GC usage. See visit(CallExp).
+         */
         if (f.setGC())
         {
-            e.error("cannot use operator `~=` in `@nogc` %s `%s`",
-                f.kind(), f.toPrettyChars());
             err = true;
             return;
         }
-        f.printGCUsage(e.loc, "operator `~=` may cause a GC allocation");
     }
 
     override void visit(CatExp e)

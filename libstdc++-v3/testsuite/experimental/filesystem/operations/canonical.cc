@@ -30,11 +30,11 @@ test01()
 {
   std::error_code ec;
   auto p = __gnu_test::nonexistent_path();
-  canonical( p, ec );
+  (void) canonical( p, ec );
   VERIFY( ec );
 
   p = fs::current_path();
-  canonical( p, ec );
+  (void) canonical( p, ec );
   VERIFY( !ec );
 
   const auto root = fs::absolute("/");
@@ -67,7 +67,7 @@ test02()
   fs::path p = "rel", base = __gnu_test::nonexistent_path();
   fs::path e1, e2;
   try {
-    canonical(p, base);
+    (void) canonical(p, base);
   } catch (const fs::filesystem_error& e) {
     e1 = e.path1();
     e2 = e.path2();

@@ -558,7 +558,7 @@ package body Csets is
       'q' => 'Q',  X_A8 => X_A6,
       'r' => 'R',  X_B8 => X_B4,
       's' => 'S',  X_BD => X_BC,
-      't' => 'T',  X_BE => X_FF,
+      't' => 'T',  X_BE => X_BE,
       'u' => 'U',
       'v' => 'V',
       'w' => 'W',
@@ -581,7 +581,7 @@ package body Csets is
       'M' => 'M',  X_CC => X_CC,  X_DC => X_DC,
       'N' => 'N',  X_CD => X_CD,  X_DD => X_DD,
       'O' => 'O',  X_CE => X_CE,  X_DE => X_DE,
-      'P' => 'P',  X_CF => X_CF,  X_DF => X_DF,  X_FF => X_FF,
+      'P' => 'P',  X_CF => X_CF,  X_DF => X_DF,  X_FF => X_BE,
       'Q' => 'Q',  X_A6 => X_A6,
       'R' => 'R',  X_B4 => X_B4,
       'S' => 'S',  X_BC => X_BC,
@@ -835,6 +835,8 @@ package body Csets is
       X_98 => X_98,  -- y umlaut
       X_99 => X_99,  -- O umlaut
       X_9A => X_9A,  -- U umlaut
+      X_9B => X_9D,  -- o with stroke
+      X_9D => X_9D,  -- O with stroke
 
       X_A0 => X_B5,  -- a acute
       X_A1 => X_D6,  -- i acute
@@ -1145,12 +1147,13 @@ package body Csets is
          Identifier_Char (J) := (Fold_Upper (J) /= ' ');
       end loop;
 
-      --  Always add [ as an identifier character to deal with the brackets
-      --  notation for wide characters used in identifiers. Note that if
-      --  we are not allowing wide characters in identifiers, then any use
-      --  of this notation will be flagged as an error in Scan_Identifier.
+      --  Add [ as an identifier character to deal with the brackets notation
+      --  for wide characters used in identifiers for versions up to Ada 2012.
+      --  Note that if we are not allowing wide characters in identifiers, then
+      --  any use of this notation will be flagged as an error in
+      --  Scan_Identifier.
 
-      Identifier_Char ('[') := True;
+      Identifier_Char ('[') := Ada_Version < Ada_2022;
 
       --  Add entry for ESC if wide characters in use with a wide character
       --  encoding method active that uses the ESC code for encoding.

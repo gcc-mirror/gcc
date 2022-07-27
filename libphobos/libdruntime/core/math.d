@@ -36,6 +36,7 @@ nothrow:
  * greater than long.max, the result is
  * indeterminate.
  */
+deprecated("rndtonl is to be removed by 2.100. Please use round instead")
 extern (C) real rndtonl(real x);
 
 pure:

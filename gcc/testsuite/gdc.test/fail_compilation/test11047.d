@@ -15,5 +15,3 @@ int x;
     __traits(getAttributes, foo);
     __traits(getAttributes, foo)[0];
 }
-
-

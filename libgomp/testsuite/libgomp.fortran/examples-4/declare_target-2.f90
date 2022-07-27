@@ -1,16 +1,31 @@
 ! { dg-do run }
+! { dg-additional-sources ../on_device_arch.c }
+! { dg-prune-output "command-line option '-fintrinsic-modules-path=.*' is valid for Fortran but not for C" }
 
 program e_53_2
   !$omp declare target (fib)
   integer :: x, fib
+  integer :: REC_DEPTH = 25
+
+  interface
+    integer function on_device_arch_nvptx() bind(C)
+    end function on_device_arch_nvptx
+  end interface
+
+  if (on_device_arch_nvptx () /= 0) then
+     ! Reduced from 25 to 23, otherwise execution runs out of thread stack on
+     ! Nvidia Titan V.
+     ! Reduced from 23 to 22, otherwise execution runs out of thread stack on
+     ! Nvidia T400 (2GB variant), when run with GOMP_NVPTX_JIT=-O0.
+     ! Reduced from 22 to 18, otherwise execution runs out of thread stack on
+     ! Nvidia RTX A2000 (6GB variant), when run with GOMP_NVPTX_JIT=-O0.
+     REC_DEPTH = 18
+  end if
+
   !$omp target map(from: x)
-    ! Reduced from 25 to 23, otherwise execution runs out of thread stack on
-    ! Nvidia Titan V.
-    ! Reduced from 23 to 22, otherwise execution runs out of thread stack on
-    ! Nvidia T400 (2GB variant), when run with GOMP_NVPTX_JIT=-O0.
-    x = fib (22)
+    x = fib (REC_DEPTH)
   !$omp end target
-  if (x /= fib (22)) stop 1
+  if (x /= fib (REC_DEPTH)) stop 1
 end program
 
 integer recursive function fib (n) result (f)

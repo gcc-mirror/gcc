@@ -37,4 +37,4 @@ void main()
     assignableByRef(s1.member);
     assignableByOut(s1.member);
     assignableByConstRef(s1.member);
-} 
+}

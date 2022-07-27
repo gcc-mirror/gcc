@@ -25,5 +25,3 @@ Object testobj(scope Object obj) @safe
     array ~= arr;
     return array[0];
 }
-
-

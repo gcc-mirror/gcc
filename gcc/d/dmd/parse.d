@@ -28,271 +28,9 @@ import dmd.root.rootobject;
 import dmd.root.string;
 import dmd.tokens;
 
-// How multiple declarations are parsed.
-// If 1, treat as C.
-// If 0, treat:
-//      int *p, i;
-// as:
-//      int* p;
-//      int* i;
-private enum CDECLSYNTAX = 0;
-
-// Support C cast syntax:
-//      (type)(expression)
-private enum CCASTSYNTAX = 1;
-
-// Support postfix C array declarations, such as
-//      int a[3][4];
-private enum CARRAYDECL = 1;
-
-/**********************************
- * Set operator precedence for each operator.
- *
- * Used by hdrgen
- */
-immutable PREC[EXP.max + 1] precedence =
-[
-    EXP.type : PREC.expr,
-    EXP.error : PREC.expr,
-    EXP.objcClassReference : PREC.expr, // Objective-C class reference, same as EXP.type
-
-    EXP.typeof_ : PREC.primary,
-    EXP.mixin_ : PREC.primary,
-
-    EXP.import_ : PREC.primary,
-    EXP.dotVariable : PREC.primary,
-    EXP.scope_ : PREC.primary,
-    EXP.identifier : PREC.primary,
-    EXP.this_ : PREC.primary,
-    EXP.super_ : PREC.primary,
-    EXP.int64 : PREC.primary,
-    EXP.float64 : PREC.primary,
-    EXP.complex80 : PREC.primary,
-    EXP.null_ : PREC.primary,
-    EXP.string_ : PREC.primary,
-    EXP.arrayLiteral : PREC.primary,
-    EXP.assocArrayLiteral : PREC.primary,
-    EXP.classReference : PREC.primary,
-    EXP.file : PREC.primary,
-    EXP.fileFullPath : PREC.primary,
-    EXP.line : PREC.primary,
-    EXP.moduleString : PREC.primary,
-    EXP.functionString : PREC.primary,
-    EXP.prettyFunction : PREC.primary,
-    EXP.typeid_ : PREC.primary,
-    EXP.is_ : PREC.primary,
-    EXP.assert_ : PREC.primary,
-    EXP.halt : PREC.primary,
-    EXP.template_ : PREC.primary,
-    EXP.dSymbol : PREC.primary,
-    EXP.function_ : PREC.primary,
-    EXP.variable : PREC.primary,
-    EXP.symbolOffset : PREC.primary,
-    EXP.structLiteral : PREC.primary,
-    EXP.compoundLiteral : PREC.primary,
-    EXP.arrayLength : PREC.primary,
-    EXP.delegatePointer : PREC.primary,
-    EXP.delegateFunctionPointer : PREC.primary,
-    EXP.remove : PREC.primary,
-    EXP.tuple : PREC.primary,
-    EXP.traits : PREC.primary,
-    EXP.default_ : PREC.primary,
-    EXP.overloadSet : PREC.primary,
-    EXP.void_ : PREC.primary,
-    EXP.vectorArray : PREC.primary,
-    EXP._Generic : PREC.primary,
-
-    // post
-    EXP.dotTemplateInstance : PREC.primary,
-    EXP.dotIdentifier : PREC.primary,
-    EXP.dotTemplateDeclaration : PREC.primary,
-    EXP.dot : PREC.primary,
-    EXP.dotType : PREC.primary,
-    EXP.plusPlus : PREC.primary,
-    EXP.minusMinus : PREC.primary,
-    EXP.prePlusPlus : PREC.primary,
-    EXP.preMinusMinus : PREC.primary,
-    EXP.call : PREC.primary,
-    EXP.slice : PREC.primary,
-    EXP.array : PREC.primary,
-    EXP.index : PREC.primary,
-
-    EXP.delegate_ : PREC.unary,
-    EXP.address : PREC.unary,
-    EXP.star : PREC.unary,
-    EXP.negate : PREC.unary,
-    EXP.uadd : PREC.unary,
-    EXP.not : PREC.unary,
-    EXP.tilde : PREC.unary,
-    EXP.delete_ : PREC.unary,
-    EXP.new_ : PREC.unary,
-    EXP.newAnonymousClass : PREC.unary,
-    EXP.cast_ : PREC.unary,
-    EXP.throw_ : PREC.unary,
-
-    EXP.vector : PREC.unary,
-    EXP.pow : PREC.pow,
-
-    EXP.mul : PREC.mul,
-    EXP.div : PREC.mul,
-    EXP.mod : PREC.mul,
-
-    EXP.add : PREC.add,
-    EXP.min : PREC.add,
-    EXP.concatenate : PREC.add,
-
-    EXP.leftShift : PREC.shift,
-    EXP.rightShift : PREC.shift,
-    EXP.unsignedRightShift : PREC.shift,
-
-    EXP.lessThan : PREC.rel,
-    EXP.lessOrEqual : PREC.rel,
-    EXP.greaterThan : PREC.rel,
-    EXP.greaterOrEqual : PREC.rel,
-    EXP.in_ : PREC.rel,
-
-    /* Note that we changed precedence, so that < and != have the same
-     * precedence. This change is in the parser, too.
-     */
-    EXP.equal : PREC.rel,
-    EXP.notEqual : PREC.rel,
-    EXP.identity : PREC.rel,
-    EXP.notIdentity : PREC.rel,
-
-    EXP.and : PREC.and,
-    EXP.xor : PREC.xor,
-    EXP.or : PREC.or,
-
-    EXP.andAnd : PREC.andand,
-    EXP.orOr : PREC.oror,
-
-    EXP.question : PREC.cond,
-
-    EXP.assign : PREC.assign,
-    EXP.construct : PREC.assign,
-    EXP.blit : PREC.assign,
-    EXP.addAssign : PREC.assign,
-    EXP.minAssign : PREC.assign,
-    EXP.concatenateAssign : PREC.assign,
-    EXP.concatenateElemAssign : PREC.assign,
-    EXP.concatenateDcharAssign : PREC.assign,
-    EXP.mulAssign : PREC.assign,
-    EXP.divAssign : PREC.assign,
-    EXP.modAssign : PREC.assign,
-    EXP.powAssign : PREC.assign,
-    EXP.leftShiftAssign : PREC.assign,
-    EXP.rightShiftAssign : PREC.assign,
-    EXP.unsignedRightShiftAssign : PREC.assign,
-    EXP.andAssign : PREC.assign,
-    EXP.orAssign : PREC.assign,
-    EXP.xorAssign : PREC.assign,
-
-    EXP.comma : PREC.expr,
-    EXP.declaration : PREC.expr,
-
-    EXP.interval : PREC.assign,
-];
-
-enum ParseStatementFlags : int
-{
-    semi          = 1,        // empty ';' statements are allowed, but deprecated
-    scope_        = 2,        // start a new scope
-    curly         = 4,        // { } statement is required
-    curlyScope    = 8,        // { } starts a new scope
-    semiOk        = 0x10,     // empty ';' are really ok
-}
-
-struct PrefixAttributes(AST)
-{
-    StorageClass storageClass;
-    AST.Expression depmsg;
-    LINK link;
-    AST.Visibility visibility;
-    bool setAlignment;
-    AST.Expression ealign;
-    AST.Expressions* udas;
-    const(char)* comment;
-}
-
-/// The result of the `ParseLinkage` function
-struct ParsedLinkage(AST)
-{
-    /// What linkage was specified
-    LINK link;
-    /// If `extern(C++, class|struct)`, contains the `class|struct`
-    CPPMANGLE cppmangle;
-    /// If `extern(C++, some.identifier)`, will be the identifiers
-    AST.Identifiers* idents;
-    /// If `extern(C++, (some_tuple_expression)|"string"), will be the expressions
-    AST.Expressions* identExps;
-}
-
-/*****************************
- * Destructively extract storage class from pAttrs.
- */
-private StorageClass getStorageClass(AST)(PrefixAttributes!(AST)* pAttrs)
-{
-    StorageClass stc = STC.undefined_;
-    if (pAttrs)
-    {
-        stc = pAttrs.storageClass;
-        pAttrs.storageClass = STC.undefined_;
-    }
-    return stc;
-}
-
-/**************************************
- * dump mixin expansion to file for better debugging
- */
-private bool writeMixin(const(char)[] s, ref Loc loc)
-{
-    if (!global.params.mixinOut)
-        return false;
-
-    OutBuffer* ob = global.params.mixinOut;
-
-    ob.writestring("// expansion at ");
-    ob.writestring(loc.toChars());
-    ob.writenl();
-
-    global.params.mixinLines++;
-
-    loc = Loc(global.params.mixinFile, global.params.mixinLines + 1, loc.charnum);
-
-    // write by line to create consistent line endings
-    size_t lastpos = 0;
-    for (size_t i = 0; i < s.length; ++i)
-    {
-        // detect LF and CRLF
-        const c = s[i];
-        if (c == '\n' || (c == '\r' && i+1 < s.length && s[i+1] == '\n'))
-        {
-            ob.writestring(s[lastpos .. i]);
-            ob.writenl();
-            global.params.mixinLines++;
-            if (c == '\r')
-                ++i;
-            lastpos = i + 1;
-        }
-    }
-
-    if(lastpos < s.length)
-        ob.writestring(s[lastpos .. $]);
-
-    if (s.length == 0 || s[$-1] != '\n')
-    {
-        ob.writenl(); // ensure empty line after expansion
-        global.params.mixinLines++;
-    }
-    ob.writenl();
-    global.params.mixinLines++;
-
-    return true;
-}
-
 /***********************************************************
  */
-class Parser(AST) : Lexer
+class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 {
     AST.ModuleDeclaration* md;
 
@@ -344,80 +82,49 @@ class Parser(AST) : Lexer
         //nextToken();              // start up the scanner
     }
 
+    /++
+     + Parse a module, i.e. the optional `module x.y.z` declaration and all declarations
+     + found in the current file.
+     +
+     + Returns: the list of declarations or an empty list in case of malformed declarations,
+     +          the module declaration will be stored as `this.md` if found
+     +/
     AST.Dsymbols* parseModule()
+    {
+        if (!parseModuleDeclaration())
+            return errorReturn();
+
+        return parseModuleContent();
+    }
+
+    /++
+     + Parse the optional module declaration
+     +
+     + Returns: false if a malformed module declaration was found
+     +/
+    final bool parseModuleDeclaration()
     {
         const comment = token.blockComment;
         bool isdeprecated = false;
         AST.Expression msg = null;
-        AST.Expressions* udas = null;
-        AST.Dsymbols* decldefs;
-        AST.Dsymbol lastDecl = mod; // for attaching ddoc unittests to module decl
 
-        Token* tk;
-        if (skipAttributes(&token, &tk) && tk.value == TOK.module_)
-        {
-            while (token.value != TOK.module_)
-            {
-                switch (token.value)
-                {
-                case TOK.deprecated_:
-                    {
-                        // deprecated (...) module ...
-                        if (isdeprecated)
-                            error("there is only one deprecation attribute allowed for module declaration");
-                        isdeprecated = true;
-                        nextToken();
-                        if (token.value == TOK.leftParenthesis)
-                        {
-                            check(TOK.leftParenthesis);
-                            msg = parseAssignExp();
-                            check(TOK.rightParenthesis);
-                        }
-                        break;
-                    }
-                case TOK.at:
-                    {
-                        AST.Expressions* exps = null;
-                        const stc = parseAttribute(exps);
-                        if (stc & atAttrGroup)
-                        {
-                            error("`@%s` attribute for module declaration is not supported", token.toChars());
-                        }
-                        else
-                        {
-                            udas = AST.UserAttributeDeclaration.concat(udas, exps);
-                        }
-                        if (stc)
-                            nextToken();
-                        break;
-                    }
-                default:
-                    {
-                        error("`module` expected instead of `%s`", token.toChars());
-                        nextToken();
-                        break;
-                    }
-                }
-            }
-        }
+        // Parse optional module attributes
+        parseModuleAttributes(msg, isdeprecated);
 
-        if (udas)
-        {
-            auto a = new AST.Dsymbols();
-            auto udad = new AST.UserAttributeDeclaration(udas, a);
-            mod.userAttribDecl = udad;
-        }
-
-        // ModuleDeclation leads off
+        // ModuleDeclaration leads off
         if (token.value == TOK.module_)
         {
             const loc = token.loc;
-
             nextToken();
+
+            /* parse ModuleFullyQualifiedName
+             * https://dlang.org/spec/module.html#ModuleFullyQualifiedName
+             */
+
             if (token.value != TOK.identifier)
             {
                 error("identifier expected following `module`");
-                goto Lerr;
+                return false;
             }
 
             Identifier[] a;
@@ -430,7 +137,7 @@ class Parser(AST) : Lexer
                 if (token.value != TOK.identifier)
                 {
                     error("identifier expected following `package`");
-                    goto Lerr;
+                    return false;
                 }
                 id = token.ident;
             }
@@ -442,27 +149,113 @@ class Parser(AST) : Lexer
             nextToken();
             addComment(mod, comment);
         }
+        return true;
+    }
 
-        decldefs = parseDeclDefs(0, &lastDecl);
+    /++
+     + Parse the content of a module, i.e. all declarations found until the end of file.
+     +
+     + Returns: the list of declarations or an empty list in case of malformed declarations
+     +/
+    final AST.Dsymbols* parseModuleContent()
+    {
+        AST.Dsymbol lastDecl = mod;
+        AST.Dsymbols* decldefs = parseDeclDefs(0, &lastDecl);
 
         if (token.value == TOK.rightCurly)
         {
             error(token.loc, "unmatched closing brace");
-            goto Lerr;
+            return errorReturn();
         }
 
         if (token.value != TOK.endOfFile)
         {
             error(token.loc, "unrecognized declaration");
-            goto Lerr;
+            return errorReturn();
         }
         return decldefs;
+    }
 
-    Lerr:
+    /++
+     + Skips to the end of the current declaration - denoted by either `;` or EOF
+     +
+     + Returns: An empty list of Dsymbols
+     +/
+    private AST.Dsymbols* errorReturn()
+    {
         while (token.value != TOK.semicolon && token.value != TOK.endOfFile)
             nextToken();
         nextToken();
         return new AST.Dsymbols();
+    }
+
+    /**********************************
+     * Parse the ModuleAttributes preceding a module declaration.
+     * ModuleDeclaration:
+     *    ModuleAttributes(opt) module ModuleFullyQualifiedName ;
+     * https://dlang.org/spec/module.html#ModuleAttributes
+     * Params:
+     *  msg = set to the AssignExpression from DeprecatedAttribute https://dlang.org/spec/module.html#DeprecatedAttribute
+     *  isdeprecated = set to true if a DeprecatedAttribute is seen
+     */
+    private
+    void parseModuleAttributes(out AST.Expression msg, out bool isdeprecated)
+    {
+        Token* tk;
+        if (!(skipAttributes(&token, &tk) && tk.value == TOK.module_))
+            return;             // no module attributes
+
+        AST.Expressions* udas = null;
+        while (token.value != TOK.module_)
+        {
+            switch (token.value)
+            {
+            case TOK.deprecated_:
+                {
+                    // deprecated (...) module ...
+                    if (isdeprecated)
+                        error("there is only one deprecation attribute allowed for module declaration");
+                    isdeprecated = true;
+                    nextToken();
+                    if (token.value == TOK.leftParenthesis)
+                    {
+                        check(TOK.leftParenthesis);
+                        msg = parseAssignExp();
+                        check(TOK.rightParenthesis);
+                    }
+                    break;
+                }
+            case TOK.at:
+                {
+                    AST.Expressions* exps = null;
+                    const stc = parseAttribute(exps);
+                    if (stc & atAttrGroup)
+                    {
+                        error("`@%s` attribute for module declaration is not supported", token.toChars());
+                    }
+                    else
+                    {
+                        udas = AST.UserAttributeDeclaration.concat(udas, exps);
+                    }
+                    if (stc)
+                        nextToken();
+                    break;
+                }
+            default:
+                {
+                    error("`module` expected instead of `%s`", token.toChars());
+                    nextToken();
+                    break;
+                }
+            }
+        }
+
+        if (udas)
+        {
+            auto a = new AST.Dsymbols();
+            auto udad = new AST.UserAttributeDeclaration(udas, a);
+            mod.userAttribDecl = udad;
+        }
     }
 
   final:
@@ -496,6 +289,15 @@ class Parser(AST) : Lexer
         return true;
     }
 
+    /************************************
+     * Parse declarations and definitions
+     * Params:
+     *  once = !=0 means parse exactly one decl or def
+     *  pLastDecl = set to last decl or def parsed
+     *  pAttrs = keep track of attributes
+     * Returns:
+     *  array of declared symbols
+     */
     AST.Dsymbols* parseDeclDefs(int once, AST.Dsymbol* pLastDecl = null, PrefixAttributes!AST* pAttrs = null)
     {
         AST.Dsymbol lastDecl = null; // used to link unittest to its previous declaration
@@ -687,7 +489,7 @@ class Parser(AST) : Lexer
                  * template instantiations in these unittests as candidates for
                  * further codegen culling.
                  */
-                if (mod.isRoot() && (global.params.useUnitTests || global.params.doDocComments || global.params.doHdrGeneration))
+                if (mod.isRoot() && (global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput))
                 {
                     s = parseUnitTest(pAttrs);
                     if (*pLastDecl)
@@ -914,13 +716,13 @@ class Parser(AST) : Lexer
                      tk.value == TOK.out_ || tk.value == TOK.do_ || tk.value == TOK.goesTo ||
                      tk.value == TOK.identifier && tk.ident == Id._body))
                 {
-                    // @@@DEPRECATED@@@
+                    // @@@DEPRECATED_2.117@@@
                     // https://github.com/dlang/DIPs/blob/1f5959abe482b1f9094f6484a7d0a3ade77fc2fc/DIPs/accepted/DIP1003.md
                     // Deprecated in 2.097 - Can be removed from 2.117
                     // The deprecation period is longer than usual as `body`
                     // was quite widely used.
                     if (tk.value == TOK.identifier && tk.ident == Id._body)
-                        deprecation("Usage of the `body` keyword is deprecated. Use `do` instead.");
+                        deprecation("usage of the `body` keyword is deprecated. Use `do` instead.");
 
                     a = parseDeclarations(true, pAttrs, pAttrs.comment);
                     if (a && a.dim)
@@ -1194,23 +996,9 @@ class Parser(AST) : Lexer
                 nextToken();
                 if (token.value == TOK.assign)
                 {
-                    nextToken();
-                    if (token.value == TOK.identifier)
-                        s = new AST.DebugSymbol(token.loc, token.ident);
-                    else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
-                        s = new AST.DebugSymbol(token.loc, cast(uint)token.unsvalue);
-                    else
-                    {
-                        error("identifier or integer expected, not `%s`", token.toChars());
-                        s = null;
-                    }
-                    nextToken();
-                    if (token.value != TOK.semicolon)
-                        error("semicolon expected");
-                    nextToken();
+                    s = parseDebugSpecification();
                     break;
                 }
-
                 condition = parseDebugCondition();
                 goto Lcondition;
 
@@ -1219,20 +1007,7 @@ class Parser(AST) : Lexer
                 nextToken();
                 if (token.value == TOK.assign)
                 {
-                    nextToken();
-                    if (token.value == TOK.identifier)
-                        s = new AST.VersionSymbol(token.loc, token.ident);
-                    else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
-                        s = new AST.VersionSymbol(token.loc, cast(uint)token.unsvalue);
-                    else
-                    {
-                        error("identifier or integer expected, not `%s`", token.toChars());
-                        s = null;
-                    }
-                    nextToken();
-                    if (token.value != TOK.semicolon)
-                        error("semicolon expected");
-                    nextToken();
+                    s = parseVersionSpecification();
                     break;
                 }
                 condition = parseVersionCondition();
@@ -1418,6 +1193,15 @@ class Parser(AST) : Lexer
      */
     private StorageClass appendStorageClass(StorageClass orig, StorageClass added)
     {
+        void checkConflictSTCGroup(bool at = false)(StorageClass group)
+        {
+            if (added & group && orig & group & ((orig & group) - 1))
+                error(
+                    at ? "conflicting attribute `@%s`"
+                       : "conflicting attribute `%s`",
+                    token.toChars());
+        }
+
         if (orig & added)
         {
             OutBuffer buf;
@@ -1460,24 +1244,9 @@ class Parser(AST) : Lexer
             return orig;
         }
 
-        if (added & (STC.const_ | STC.immutable_ | STC.manifest))
-        {
-            StorageClass u = orig & (STC.const_ | STC.immutable_ | STC.manifest);
-            if (u & (u - 1))
-                error("conflicting attribute `%s`", Token.toChars(token.value));
-        }
-        if (added & (STC.gshared | STC.shared_ | STC.tls))
-        {
-            StorageClass u = orig & (STC.gshared | STC.shared_ | STC.tls);
-            if (u & (u - 1))
-                error("conflicting attribute `%s`", Token.toChars(token.value));
-        }
-        if (added & STC.safeGroup)
-        {
-            StorageClass u = orig & STC.safeGroup;
-            if (u & (u - 1))
-                error("conflicting attribute `@%s`", token.toChars());
-        }
+        checkConflictSTCGroup(STC.const_ | STC.immutable_ | STC.manifest);
+        checkConflictSTCGroup(STC.gshared | STC.shared_);
+        checkConflictSTCGroup!true(STC.safeGroup);
 
         return orig;
     }
@@ -1691,7 +1460,7 @@ class Parser(AST) : Lexer
 
         if (token.value != TOK.leftCurly)
         {
-            error("members of template declaration expected");
+            error("`{` expected after template parameter list, not `%s`", token.toChars());
             goto Lerr;
         }
         decldefs = parseBlock(null);
@@ -2184,7 +1953,6 @@ class Parser(AST) : Lexer
         case TOK.wcharLiteral:
         case TOK.dcharLiteral:
         case TOK.string_:
-        case TOK.hexadecimalString:
         case TOK.file:
         case TOK.fileFullPath:
         case TOK.line:
@@ -2411,6 +2179,26 @@ class Parser(AST) : Lexer
         return qualified;
     }
 
+    private AST.DebugSymbol parseDebugSpecification()
+    {
+        AST.DebugSymbol s;
+        nextToken();
+        if (token.value == TOK.identifier)
+            s = new AST.DebugSymbol(token.loc, token.ident);
+        else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+            s = new AST.DebugSymbol(token.loc, cast(uint)token.unsvalue);
+        else
+        {
+            error("identifier or integer expected, not `%s`", token.toChars());
+            s = null;
+        }
+        nextToken();
+        if (token.value != TOK.semicolon)
+            error("semicolon expected");
+        nextToken();
+        return s;
+    }
+
     /**************************************
      * Parse a debug conditional
      */
@@ -2435,6 +2223,29 @@ class Parser(AST) : Lexer
             check(TOK.rightParenthesis);
         }
         return new AST.DebugCondition(loc, mod, level, id);
+    }
+
+    /**************************************
+     * Parse a version specification
+     */
+    private AST.VersionSymbol parseVersionSpecification()
+    {
+        AST.VersionSymbol s;
+        nextToken();
+        if (token.value == TOK.identifier)
+            s = new AST.VersionSymbol(token.loc, token.ident);
+        else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+            s = new AST.VersionSymbol(token.loc, cast(uint)token.unsvalue);
+        else
+        {
+            error("identifier or integer expected, not `%s`", token.toChars());
+            s = null;
+        }
+        nextToken();
+        if (token.value != TOK.semicolon)
+            error("semicolon expected");
+        nextToken();
+        return s;
     }
 
     /**************************************
@@ -2847,7 +2658,7 @@ class Parser(AST) : Lexer
         /** Extract unittest body as a string. Must be done eagerly since memory
          will be released by the lexer before doc gen. */
         char* docline = null;
-        if (global.params.doDocComments && endPtr > begPtr)
+        if (global.params.ddoc.doOutput && endPtr > begPtr)
         {
             /* Remove trailing whitespaces */
             for (const(char)* p = endPtr - 1; begPtr <= p && (*p == ' ' || *p == '\r' || *p == '\n' || *p == '\t'); --p)
@@ -2885,7 +2696,7 @@ class Parser(AST) : Lexer
         }
         nextToken();
 
-        /* @@@DEPRECATED_2.098@@@
+        /* @@@DEPRECATED_2.108@@@
          * After deprecation period (2.108), remove all code in the version(all) block.
          */
         version (all)
@@ -3865,7 +3676,7 @@ class Parser(AST) : Lexer
 
         case TOK.traits:
             if (AST.TraitsExp te = cast(AST.TraitsExp) parsePrimaryExp())
-                if (te.ident && te.args)
+                if (te.ident)
                 {
                     t = new AST.TypeTraits(token.loc, te);
                     break;
@@ -4496,7 +4307,8 @@ class Parser(AST) : Lexer
      * These can be:
      *      1. declarations at global/class level
      *      2. declarations at statement level
-     * Return array of Declaration *'s.
+     * Returns:
+     *  array of Declarations.
      */
     private AST.Dsymbols* parseDeclarations(bool autodecl, PrefixAttributes!AST* pAttrs, const(char)* comment)
     {
@@ -4614,13 +4426,13 @@ class Parser(AST) : Lexer
                     (tk.value == TOK.leftParenthesis || tk.value == TOK.leftCurly || tk.value == TOK.in_ || tk.value == TOK.out_ || tk.value == TOK.goesTo ||
                      tk.value == TOK.do_ || tk.value == TOK.identifier && tk.ident == Id._body))
                 {
-                    // @@@DEPRECATED@@@
+                    // @@@DEPRECATED_2.117@@@
                     // https://github.com/dlang/DIPs/blob/1f5959abe482b1f9094f6484a7d0a3ade77fc2fc/DIPs/accepted/DIP1003.md
                     // Deprecated in 2.097 - Can be removed from 2.117
                     // The deprecation period is longer than usual as `body`
                     // was quite widely used.
                     if (tk.value == TOK.identifier && tk.ident == Id._body)
-                        deprecation("Usage of the `body` keyword is deprecated. Use `do` instead.");
+                        deprecation("usage of the `body` keyword is deprecated. Use `do` instead.");
 
                     ts = null;
                 }
@@ -4656,6 +4468,12 @@ class Parser(AST) : Lexer
                 tfirst = t;
             else if (t != tfirst)
                 error("multiple declarations must have the same type, not `%s` and `%s`", tfirst.toChars(), t.toChars());
+
+            if (token.value == TOK.colon && !ident && t.ty != Tfunction)
+            {
+                // Unnamed bit field
+                ident = Identifier.generateAnonymousId("BitField");
+            }
 
             bool isThis = (t.ty == Tident && (cast(AST.TypeIdentifier)t).ident == Id.This && token.value == TOK.assign);
             if (ident)
@@ -4789,6 +4607,13 @@ class Parser(AST) : Lexer
             }
             else if (ident)
             {
+                AST.Expression width;
+                if (token.value == TOK.colon)
+                {
+                    nextToken();
+                    width = parseCondExp();
+                }
+
                 AST.Initializer _init = null;
                 if (token.value == TOK.assign)
                 {
@@ -4796,12 +4621,25 @@ class Parser(AST) : Lexer
                     _init = parseInitializer();
                 }
 
-                auto v = new AST.VarDeclaration(loc, t, ident, _init);
-                v.storage_class = storage_class;
-                if (pAttrs)
-                    pAttrs.storageClass = STC.undefined_;
-
-                AST.Dsymbol s = v;
+                AST.Dsymbol s;
+                if (width)
+                {
+                    if (!global.params.bitfields)
+                        error("use -preview=bitfields for bitfield support");
+                    if (_init)
+                        error("initializer not allowed for bit-field declaration");
+                    if (storage_class)
+                        error("storage class not allowed for bit-field declaration");
+                    s = new AST.BitFieldDeclaration(width.loc, t, ident, width);
+                }
+                else
+                {
+                    auto v = new AST.VarDeclaration(loc, t, ident, _init);
+                    v.storage_class = storage_class;
+                    if (pAttrs)
+                        pAttrs.storageClass = STC.undefined_;
+                    s = v;
+                }
 
                 if (tpl && _init)
                 {
@@ -4814,7 +4652,7 @@ class Parser(AST) : Lexer
                 {
                     auto ax = new AST.Dsymbols();
                     ax.push(s);
-                    s = new AST.AlignDeclaration(v.loc, ealign, ax);
+                    s = new AST.AlignDeclaration(s.loc, ealign, ax);
                 }
                 if (link != linkage)
                 {
@@ -4844,12 +4682,12 @@ class Parser(AST) : Lexer
                 default:
                     if (loc.linnum != token.loc.linnum)
                     {
-                        error("semicolon needed to end declaration of `%s`, instead of `%s`", v.toChars(), token.toChars());
-                        errorSupplemental(loc, "`%s` declared here", v.toChars());
+                        error("semicolon needed to end declaration of `%s`, instead of `%s`", s.toChars(), token.toChars());
+                        errorSupplemental(loc, "`%s` declared here", s.toChars());
                     }
                     else
                     {
-                        error("semicolon needed to end declaration of `%s` instead of `%s`", v.toChars(), token.toChars());
+                        error("semicolon needed to end declaration of `%s` instead of `%s`", s.toChars(), token.toChars());
                     }
                     break;
                 }
@@ -5024,16 +4862,22 @@ class Parser(AST) : Lexer
                     if (udas !is null)
                     {
                         if (storage_class != 0)
-                            error("Cannot put a storage-class in an alias declaration.");
+                            error("cannot put a storage-class in an `alias` declaration.");
                         // parseAttributes shouldn't have set these variables
                         assert(link == linkage && !setAlignment && ealign is null);
                         auto tpl_ = cast(AST.TemplateDeclaration) s;
-                        assert(tpl_ !is null && tpl_.members.dim == 1);
-                        auto fd = cast(AST.FuncLiteralDeclaration) (*tpl_.members)[0];
-                        auto tf = cast(AST.TypeFunction) fd.type;
-                        assert(tf.parameterList.parameters.dim > 0);
-                        auto as = new AST.Dsymbols();
-                        (*tf.parameterList.parameters)[0].userAttribDecl = new AST.UserAttributeDeclaration(udas, as);
+                        if (tpl_ is null || tpl_.members.dim != 1)
+                        {
+                            error("user-defined attributes are not allowed on `alias` declarations");
+                        }
+                        else
+                        {
+                            auto fd = cast(AST.FuncLiteralDeclaration) (*tpl_.members)[0];
+                            auto tf = cast(AST.TypeFunction) fd.type;
+                            assert(tf.parameterList.parameters.dim > 0);
+                            auto as = new AST.Dsymbols();
+                            (*tf.parameterList.parameters)[0].userAttribDecl = new AST.UserAttributeDeclaration(udas, as);
+                        }
                     }
 
                     v = new AST.AliasDeclaration(loc, ident, s);
@@ -5043,7 +4887,7 @@ class Parser(AST) : Lexer
                     parseAttributes();
                     // type
                     if (udas)
-                        error("user-defined attributes not allowed for alias declarations");
+                        error("user-defined attributes not allowed for `alias` declarations");
 
                     auto t = parseType();
 
@@ -5060,7 +4904,7 @@ class Parser(AST) : Lexer
                         {
                             OutBuffer buf;
                             AST.stcToBuffer(&buf, remStc);
-                            // @@@DEPRECATED_2.093@@@
+                            // @@@DEPRECATED_2.103@@@
                             // Deprecated in 2020-07, can be made an error in 2.103
                             deprecation("storage class `%s` has no effect in type aliases", buf.peekChars());
                         }
@@ -5226,7 +5070,7 @@ class Parser(AST) : Lexer
             check(TOK.goesTo);
             if (token.value == TOK.leftCurly)
             {
-                deprecation("Using `(args) => { ... }` to create a delegate that returns a delegate is error-prone.");
+                deprecation("using `(args) => { ... }` to create a delegate that returns a delegate is error-prone.");
                 deprecationSupplemental(token.loc, "Use `(args) { ... }` for a multi-statement function literal or use `(args) => () { }` if you intended for the lambda to return a delegate.");
             }
             const returnloc = token.loc;
@@ -5287,12 +5131,12 @@ class Parser(AST) : Lexer
         case TOK.identifier:
             if (token.ident == Id._body)
             {
-                // @@@DEPRECATED@@@
+                // @@@DEPRECATED_2.117@@@
                 // https://github.com/dlang/DIPs/blob/1f5959abe482b1f9094f6484a7d0a3ade77fc2fc/DIPs/accepted/DIP1003.md
                 // Deprecated in 2.097 - Can be removed from 2.117
                 // The deprecation period is longer than usual as `body`
                 // was quite widely used.
-                deprecation("Usage of the `body` keyword is deprecated. Use `do` instead.");
+                deprecation("usage of the `body` keyword is deprecated. Use `do` instead.");
                 goto case TOK.do_;
             }
             goto default;
@@ -5830,7 +5674,6 @@ LagainStc:
         case TOK.true_:
         case TOK.false_:
         case TOK.string_:
-        case TOK.hexadecimalString:
         case TOK.leftParenthesis:
         case TOK.cast_:
         case TOK.mul:
@@ -6034,7 +5877,8 @@ LagainStc:
             {
                 if (isDeclaration(&token, NeedDeclaratorId.mustIfDstyle, TOK.reserved, null))
                     goto Ldeclaration;
-                if (peekNext() == TOK.leftParenthesis)
+                const tv = peekNext();
+                if (tv == TOK.leftParenthesis)
                 {
                     // mixin(string)
                     AST.Expression e = parseAssignExp();
@@ -6048,6 +5892,14 @@ LagainStc:
                     {
                         s = new AST.ExpStatement(loc, e);
                     }
+                    break;
+                }
+                else if (tv == TOK.template_)
+                {
+                    // mixin template
+                    nextToken();
+                    AST.Dsymbol d = parseTemplateDeclaration(true);
+                    s = new AST.ExpStatement(loc, d);
                     break;
                 }
                 AST.Dsymbol d = parseMixin();
@@ -6262,10 +6114,14 @@ LagainStc:
             nextToken();
             if (token.value == TOK.assign)
             {
-                error("debug conditions can only be declared at module scope");
-                nextToken();
-                nextToken();
-                goto Lerror;
+                if (auto ds = parseDebugSpecification())
+                {
+                    if (ds.ident)
+                        ds.error("declaration must be at module level");
+                    else
+                        ds.error("level declaration must be at module level");
+                }
+                break;
             }
             cond = parseDebugCondition();
             goto Lcondition;
@@ -6274,10 +6130,14 @@ LagainStc:
             nextToken();
             if (token.value == TOK.assign)
             {
-                error("version conditions can only be declared at module scope");
-                nextToken();
-                nextToken();
-                goto Lerror;
+                if (auto vs = parseVersionSpecification())
+                {
+                    if (vs.ident)
+                        vs.error("declaration must be at module level");
+                    else
+                        vs.error("level declaration must be at module level");
+                }
+                break;
             }
             cond = parseVersionCondition();
             goto Lcondition;
@@ -7313,7 +7173,6 @@ LagainStc:
                     case TOK.wcharLiteral:
                     case TOK.dcharLiteral:
                     case TOK.string_:
-                    case TOK.hexadecimalString:
                     case TOK.file:
                     case TOK.fileFullPath:
                     case TOK.line:
@@ -7607,12 +7466,12 @@ LagainStc:
             case TOK.identifier:
                 if (t.ident == Id._body)
                 {
-                    // @@@DEPRECATED@@@
+                    // @@@DEPRECATED_2.117@@@
                     // https://github.com/dlang/DIPs/blob/1f5959abe482b1f9094f6484a7d0a3ade77fc2fc/DIPs/accepted/DIP1003.md
                     // Deprecated in 2.097 - Can be removed from 2.117
                     // The deprecation period is longer than usual as `body`
                     // was quite widely used.
-                    deprecation("Usage of the `body` keyword is deprecated. Use `do` instead.");
+                    deprecation("usage of the `body` keyword is deprecated. Use `do` instead.");
                     goto case TOK.do_;
                 }
                 goto default;
@@ -8194,7 +8053,6 @@ LagainStc:
             break;
 
         case TOK.string_:
-        case TOK.hexadecimalString:
             {
                 // cat adjacent strings
                 auto s = token.ustring;
@@ -8204,7 +8062,7 @@ LagainStc:
                 {
                     const prev = token;
                     nextToken();
-                    if (token.value == TOK.string_ || token.value == TOK.hexadecimalString)
+                    if (token.value == TOK.string_)
                     {
                         if (token.postfix)
                         {
@@ -8213,7 +8071,7 @@ LagainStc:
                             postfix = token.postfix;
                         }
 
-                        error("Implicit string concatenation is error-prone and disallowed in D");
+                        error("implicit string concatenation is error-prone and disallowed in D");
                         errorSupplemental(token.loc, "Use the explicit syntax instead " ~
                              "(concatenating literals is `@nogc`): %s ~ %s",
                              prev.toChars(), token.toChars());
@@ -8652,6 +8510,9 @@ LagainStc:
             break;
 
         case TOK.delete_:
+            // @@@DEPRECATED_2.109@@@
+            // Use of `delete` keyword has been an error since 2.099.
+            // Remove from the parser after 2.109.
             nextToken();
             e = parseUnaryExp();
             e = new AST.DeleteExp(loc, e, false);
@@ -9409,12 +9270,7 @@ LagainStc:
         const loc = token.loc;
 
         nextToken();
-        AST.Expressions* newargs = null;
         AST.Expressions* arguments = null;
-        if (token.value == TOK.leftParenthesis)
-        {
-            newargs = parseArguments();
-        }
 
         // An anonymous nested class starts with "class"
         if (token.value == TOK.class_)
@@ -9444,7 +9300,7 @@ LagainStc:
             }
 
             auto cd = new AST.ClassDeclaration(loc, id, baseclasses, members, false);
-            auto e = new AST.NewAnonClassExp(loc, thisexp, newargs, cd, arguments);
+            auto e = new AST.NewAnonClassExp(loc, thisexp, cd, arguments);
             return e;
         }
 
@@ -9469,7 +9325,7 @@ LagainStc:
             arguments = parseArguments();
         }
 
-        auto e = new AST.NewExp(loc, thisexp, newargs, t, arguments);
+        auto e = new AST.NewExp(loc, thisexp, t, arguments);
         return e;
     }
 
@@ -9519,7 +9375,7 @@ LagainStc:
                 STC.live     |
                 /*STC.future   |*/ // probably should be included
                 STC.disable;
-    }
+}
 
 enum PREC : int
 {
@@ -9540,4 +9396,275 @@ enum PREC : int
     pow,
     unary,
     primary,
+}
+
+/**********************************
+ * Set operator precedence for each operator.
+ *
+ * Used by hdrgen
+ */
+immutable PREC[EXP.max + 1] precedence =
+[
+    EXP.type : PREC.expr,
+    EXP.error : PREC.expr,
+    EXP.objcClassReference : PREC.expr, // Objective-C class reference, same as EXP.type
+
+    EXP.typeof_ : PREC.primary,
+    EXP.mixin_ : PREC.primary,
+
+    EXP.import_ : PREC.primary,
+    EXP.dotVariable : PREC.primary,
+    EXP.scope_ : PREC.primary,
+    EXP.identifier : PREC.primary,
+    EXP.this_ : PREC.primary,
+    EXP.super_ : PREC.primary,
+    EXP.int64 : PREC.primary,
+    EXP.float64 : PREC.primary,
+    EXP.complex80 : PREC.primary,
+    EXP.null_ : PREC.primary,
+    EXP.string_ : PREC.primary,
+    EXP.arrayLiteral : PREC.primary,
+    EXP.assocArrayLiteral : PREC.primary,
+    EXP.classReference : PREC.primary,
+    EXP.file : PREC.primary,
+    EXP.fileFullPath : PREC.primary,
+    EXP.line : PREC.primary,
+    EXP.moduleString : PREC.primary,
+    EXP.functionString : PREC.primary,
+    EXP.prettyFunction : PREC.primary,
+    EXP.typeid_ : PREC.primary,
+    EXP.is_ : PREC.primary,
+    EXP.assert_ : PREC.primary,
+    EXP.halt : PREC.primary,
+    EXP.template_ : PREC.primary,
+    EXP.dSymbol : PREC.primary,
+    EXP.function_ : PREC.primary,
+    EXP.variable : PREC.primary,
+    EXP.symbolOffset : PREC.primary,
+    EXP.structLiteral : PREC.primary,
+    EXP.compoundLiteral : PREC.primary,
+    EXP.arrayLength : PREC.primary,
+    EXP.delegatePointer : PREC.primary,
+    EXP.delegateFunctionPointer : PREC.primary,
+    EXP.remove : PREC.primary,
+    EXP.tuple : PREC.primary,
+    EXP.traits : PREC.primary,
+    EXP.default_ : PREC.primary,
+    EXP.overloadSet : PREC.primary,
+    EXP.void_ : PREC.primary,
+    EXP.vectorArray : PREC.primary,
+    EXP._Generic : PREC.primary,
+
+    // post
+    EXP.dotTemplateInstance : PREC.primary,
+    EXP.dotIdentifier : PREC.primary,
+    EXP.dotTemplateDeclaration : PREC.primary,
+    EXP.dot : PREC.primary,
+    EXP.dotType : PREC.primary,
+    EXP.plusPlus : PREC.primary,
+    EXP.minusMinus : PREC.primary,
+    EXP.prePlusPlus : PREC.primary,
+    EXP.preMinusMinus : PREC.primary,
+    EXP.call : PREC.primary,
+    EXP.slice : PREC.primary,
+    EXP.array : PREC.primary,
+    EXP.index : PREC.primary,
+
+    EXP.delegate_ : PREC.unary,
+    EXP.address : PREC.unary,
+    EXP.star : PREC.unary,
+    EXP.negate : PREC.unary,
+    EXP.uadd : PREC.unary,
+    EXP.not : PREC.unary,
+    EXP.tilde : PREC.unary,
+    EXP.delete_ : PREC.unary,
+    EXP.new_ : PREC.unary,
+    EXP.newAnonymousClass : PREC.unary,
+    EXP.cast_ : PREC.unary,
+    EXP.throw_ : PREC.unary,
+
+    EXP.vector : PREC.unary,
+    EXP.pow : PREC.pow,
+
+    EXP.mul : PREC.mul,
+    EXP.div : PREC.mul,
+    EXP.mod : PREC.mul,
+
+    EXP.add : PREC.add,
+    EXP.min : PREC.add,
+    EXP.concatenate : PREC.add,
+
+    EXP.leftShift : PREC.shift,
+    EXP.rightShift : PREC.shift,
+    EXP.unsignedRightShift : PREC.shift,
+
+    EXP.lessThan : PREC.rel,
+    EXP.lessOrEqual : PREC.rel,
+    EXP.greaterThan : PREC.rel,
+    EXP.greaterOrEqual : PREC.rel,
+    EXP.in_ : PREC.rel,
+
+    /* Note that we changed precedence, so that < and != have the same
+     * precedence. This change is in the parser, too.
+     */
+    EXP.equal : PREC.rel,
+    EXP.notEqual : PREC.rel,
+    EXP.identity : PREC.rel,
+    EXP.notIdentity : PREC.rel,
+
+    EXP.and : PREC.and,
+    EXP.xor : PREC.xor,
+    EXP.or : PREC.or,
+
+    EXP.andAnd : PREC.andand,
+    EXP.orOr : PREC.oror,
+
+    EXP.question : PREC.cond,
+
+    EXP.assign : PREC.assign,
+    EXP.construct : PREC.assign,
+    EXP.blit : PREC.assign,
+    EXP.addAssign : PREC.assign,
+    EXP.minAssign : PREC.assign,
+    EXP.concatenateAssign : PREC.assign,
+    EXP.concatenateElemAssign : PREC.assign,
+    EXP.concatenateDcharAssign : PREC.assign,
+    EXP.mulAssign : PREC.assign,
+    EXP.divAssign : PREC.assign,
+    EXP.modAssign : PREC.assign,
+    EXP.powAssign : PREC.assign,
+    EXP.leftShiftAssign : PREC.assign,
+    EXP.rightShiftAssign : PREC.assign,
+    EXP.unsignedRightShiftAssign : PREC.assign,
+    EXP.andAssign : PREC.assign,
+    EXP.orAssign : PREC.assign,
+    EXP.xorAssign : PREC.assign,
+
+    EXP.comma : PREC.expr,
+    EXP.declaration : PREC.expr,
+
+    EXP.interval : PREC.assign,
+];
+
+enum ParseStatementFlags : int
+{
+    semi          = 1,        // empty ';' statements are allowed, but deprecated
+    scope_        = 2,        // start a new scope
+    curly         = 4,        // { } statement is required
+    curlyScope    = 8,        // { } starts a new scope
+    semiOk        = 0x10,     // empty ';' are really ok
+}
+
+struct PrefixAttributes(AST)
+{
+    StorageClass storageClass;
+    AST.Expression depmsg;
+    LINK link;
+    AST.Visibility visibility;
+    bool setAlignment;
+    AST.Expression ealign;
+    AST.Expressions* udas;
+    const(char)* comment;
+}
+
+/// The result of the `ParseLinkage` function
+struct ParsedLinkage(AST)
+{
+    /// What linkage was specified
+    LINK link;
+    /// If `extern(C++, class|struct)`, contains the `class|struct`
+    CPPMANGLE cppmangle;
+    /// If `extern(C++, some.identifier)`, will be the identifiers
+    AST.Identifiers* idents;
+    /// If `extern(C++, (some_tuple_expression)|"string"), will be the expressions
+    AST.Expressions* identExps;
+}
+
+
+/*********************************** Private *************************************/
+
+/***********************
+ * How multiple declarations are parsed.
+ * If 1, treat as C.
+ * If 0, treat:
+ *      int *p, i;
+ * as:
+ *      int* p;
+ *      int* i;
+ */
+private enum CDECLSYNTAX = 0;
+
+/*****
+ * Support C cast syntax:
+ *      (type)(expression)
+ */
+private enum CCASTSYNTAX = 1;
+
+/*****
+ * Support postfix C array declarations, such as
+ *      int a[3][4];
+ */
+private enum CARRAYDECL = 1;
+
+/*****************************
+ * Destructively extract storage class from pAttrs.
+ */
+private StorageClass getStorageClass(AST)(PrefixAttributes!(AST)* pAttrs)
+{
+    StorageClass stc = STC.undefined_;
+    if (pAttrs)
+    {
+        stc = pAttrs.storageClass;
+        pAttrs.storageClass = STC.undefined_;
+    }
+    return stc;
+}
+
+/**************************************
+ * dump mixin expansion to file for better debugging
+ */
+private bool writeMixin(const(char)[] s, ref Loc loc)
+{
+    if (!global.params.mixinOut.doOutput)
+        return false;
+
+    OutBuffer* ob = global.params.mixinOut.buffer;
+
+    ob.writestring("// expansion at ");
+    ob.writestring(loc.toChars());
+    ob.writenl();
+
+    global.params.mixinOut.bufferLines++;
+
+    loc = Loc(global.params.mixinOut.name.ptr, global.params.mixinOut.bufferLines + 1, loc.charnum);
+
+    // write by line to create consistent line endings
+    size_t lastpos = 0;
+    for (size_t i = 0; i < s.length; ++i)
+    {
+        // detect LF and CRLF
+        const c = s[i];
+        if (c == '\n' || (c == '\r' && i+1 < s.length && s[i+1] == '\n'))
+        {
+            ob.writestring(s[lastpos .. i]);
+            ob.writenl();
+            global.params.mixinOut.bufferLines++;
+            if (c == '\r')
+                ++i;
+            lastpos = i + 1;
+        }
+    }
+
+    if(lastpos < s.length)
+        ob.writestring(s[lastpos .. $]);
+
+    if (s.length == 0 || s[$-1] != '\n')
+    {
+        ob.writenl(); // ensure empty line after expansion
+        global.params.mixinOut.bufferLines++;
+    }
+    ob.writenl();
+    global.params.mixinOut.bufferLines++;
+
+    return true;
 }

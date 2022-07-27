@@ -177,4 +177,3 @@ public:
         doCond(s.statement) || applyTo(s);
     }
 }
-

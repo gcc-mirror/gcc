@@ -1049,7 +1049,12 @@ add_method (tree type, tree method, bool via_using)
       if (via_using && iter.using_p ()
 	  /* Except handle inherited constructors specially.  */
 	  && ! DECL_CONSTRUCTOR_P (fn))
-	continue;
+	{
+	  if (fn == method)
+	    /* Don't add the same one twice.  */
+	    return false;
+	  continue;
+	}
 
       /* [over.load] Member function declarations with the
 	 same name and the same parameter types cannot be
@@ -1212,10 +1217,11 @@ add_method (tree type, tree method, bool via_using)
       if (via_using)
 	/* Defer to the local function.  */
 	return false;
-      else if (flag_new_inheriting_ctors
-	       && DECL_INHERITED_CTOR (fn))
+      else if (iter.using_p ()
+	       ||  (flag_new_inheriting_ctors
+		    && DECL_INHERITED_CTOR (fn)))
 	{
-	  /* Remove the inherited constructor.  */
+	  /* Remove the inherited function.  */
 	  current_fns = iter.remove_node (current_fns);
 	  continue;
 	}
@@ -1299,21 +1305,65 @@ declared_access (tree decl)
 	  : access_public_node);
 }
 
+/* If DECL is a non-dependent using of non-ctor function members, push them
+   and return true, otherwise return false.  Called from
+   finish_member_declaration.  */
+
+bool
+maybe_push_used_methods (tree decl)
+{
+  if (TREE_CODE (decl) != USING_DECL)
+    return false;
+  tree used = strip_using_decl (decl);
+  if (!used || !is_overloaded_fn (used))
+    return false;
+
+  /* Add the functions to CLASSTYPE_MEMBER_VEC so that overload resolution
+     works within the class body.  */
+  for (tree f : ovl_range (used))
+    {
+      if (DECL_CONSTRUCTOR_P (f))
+	/* Inheriting constructors are handled separately.  */
+	return false;
+
+      bool added = add_method (current_class_type, f, true);
+
+      if (added)
+	alter_access (current_class_type, f, current_access_specifier);
+
+      /* If add_method returns false because f was already declared, look
+	 for a duplicate using-declaration.  */
+      else
+	for (tree d = TYPE_FIELDS (current_class_type); d; d = DECL_CHAIN (d))
+	  if (TREE_CODE (d) == USING_DECL
+	      && DECL_NAME (d) == DECL_NAME (decl)
+	      && same_type_p (USING_DECL_SCOPE (d), USING_DECL_SCOPE (decl)))
+	    {
+	      diagnose_name_conflict (decl, d);
+	      break;
+	    }
+    }
+  return true;
+}
+
 /* Process the USING_DECL, which is a member of T.  */
 
 static void
 handle_using_decl (tree using_decl, tree t)
 {
   tree decl = USING_DECL_DECLS (using_decl);
-  tree name = DECL_NAME (using_decl);
-  tree access = declared_access (using_decl);
-  tree flist = NULL_TREE;
-  tree old_value;
 
   gcc_assert (!processing_template_decl && decl);
 
-  old_value = lookup_member (t, name, /*protect=*/0, /*want_type=*/false,
-			     tf_warning_or_error);
+  cp_emit_debug_info_for_using (decl, t);
+
+  if (is_overloaded_fn (decl))
+    /* Handled in maybe_push_used_methods.  */
+    return;
+
+  tree name = DECL_NAME (using_decl);
+  tree old_value = lookup_member (t, name, /*protect=*/0, /*want_type=*/false,
+				  tf_warning_or_error);
   if (old_value)
     {
       old_value = OVL_FIRST (old_value);
@@ -1324,27 +1374,16 @@ handle_using_decl (tree using_decl, tree t)
 	old_value = NULL_TREE;
     }
 
-  cp_emit_debug_info_for_using (decl, t);
-
-  if (is_overloaded_fn (decl))
-    flist = decl;
-
   if (! old_value)
     ;
   else if (is_overloaded_fn (old_value))
     {
-      if (flist)
-	/* It's OK to use functions from a base when there are functions with
-	   the same name already present in the current class.  */;
-      else
-	{
-	  error_at (DECL_SOURCE_LOCATION (using_decl), "%qD invalid in %q#T "
-		    "because of local method %q#D with same name",
-		    using_decl, t, old_value);
-	  inform (DECL_SOURCE_LOCATION (old_value),
-		  "local method %q#D declared here", old_value);
-	  return;
-	}
+      error_at (DECL_SOURCE_LOCATION (using_decl), "%qD invalid in %q#T "
+		"because of local method %q#D with same name",
+		using_decl, t, old_value);
+      inform (DECL_SOURCE_LOCATION (old_value),
+	      "local method %q#D declared here", old_value);
+      return;
     }
   else if (!DECL_ARTIFICIAL (old_value))
     {
@@ -1357,23 +1396,17 @@ handle_using_decl (tree using_decl, tree t)
     }
 
   iloc_sentinel ils (DECL_SOURCE_LOCATION (using_decl));
+  tree access = declared_access (using_decl);
 
   /* Make type T see field decl FDECL with access ACCESS.  */
-  if (flist)
-    for (tree f : ovl_range (flist))
-      {
-	add_method (t, f, true);
-	alter_access (t, f, access);
-      }
-  else if (USING_DECL_UNRELATED_P (using_decl))
+  if (USING_DECL_UNRELATED_P (using_decl))
     {
       /* C++20 using enum can import non-inherited enumerators into class
 	 scope.  We implement that by making a copy of the CONST_DECL for which
 	 CONST_DECL_USING_P is true.  */
       gcc_assert (TREE_CODE (decl) == CONST_DECL);
 
-      auto cas = make_temp_override (current_access_specifier);
-      set_current_access_from_decl (using_decl);
+      auto cas = make_temp_override (current_access_specifier, access);
       tree copy = copy_decl (decl);
       DECL_CONTEXT (copy) = t;
       DECL_ARTIFICIAL (copy) = true;
@@ -2987,6 +3020,9 @@ warn_hidden (tree t)
 	tree binfo;
 	unsigned j;
 
+	if (IDENTIFIER_CDTOR_P (name))
+	  continue;
+
 	/* Iterate through all of the base classes looking for possibly
 	   hidden functions.  */
 	for (binfo = TYPE_BINFO (t), j = 0;
@@ -3001,31 +3037,43 @@ warn_hidden (tree t)
 	  continue;
 
 	/* Remove any overridden functions.  */
+	bool seen_non_override = false;
 	for (tree fndecl : ovl_range (fns))
 	  {
+	    bool any_override = false;
 	    if (TREE_CODE (fndecl) == FUNCTION_DECL
 		&& DECL_VINDEX (fndecl))
 	      {
 		/* If the method from the base class has the same
 		   signature as the method from the derived class, it
-		   has been overridden.  */
+		   has been overridden.  Note that we can't move on
+		   after finding one match: fndecl might override
+		   multiple base fns.  */
 		for (size_t k = 0; k < base_fndecls.length (); k++)
 		  if (base_fndecls[k]
 		      && same_signature_p (fndecl, base_fndecls[k]))
-		    base_fndecls[k] = NULL_TREE;
+		    {
+		      base_fndecls[k] = NULL_TREE;
+		      any_override = true;
+		    }
 	      }
+	    if (!any_override)
+	      seen_non_override = true;
 	  }
+
+	if (!seen_non_override && warn_overloaded_virtual == 1)
+	  /* All the derived fns override base virtuals.  */
+	  return;
 
 	/* Now give a warning for all base functions without overriders,
 	   as they are hidden.  */
-	tree base_fndecl;
-	FOR_EACH_VEC_ELT (base_fndecls, j, base_fndecl)
+	for (tree base_fndecl : base_fndecls)
 	  if (base_fndecl)
 	    {
 	      auto_diagnostic_group d;
 	      /* Here we know it is a hider, and no overrider exists.  */
 	      if (warning_at (location_of (base_fndecl),
-			      OPT_Woverloaded_virtual,
+			      OPT_Woverloaded_virtual_,
 			      "%qD was hidden", base_fndecl))
 		inform (location_of (fns), "  by %qD", fns);
 	    }
@@ -5461,8 +5509,8 @@ default_init_uninitialized_part (tree type)
       if (r)
 	return r;
     }
-  for (t = next_initializable_field (TYPE_FIELDS (type)); t;
-       t = next_initializable_field (DECL_CHAIN (t)))
+  for (t = next_aggregate_field (TYPE_FIELDS (type)); t;
+       t = next_aggregate_field (DECL_CHAIN (t)))
     if (!DECL_INITIAL (t) && !DECL_ARTIFICIAL (t))
       {
 	r = default_init_uninitialized_part (TREE_TYPE (t));
@@ -7672,18 +7720,8 @@ finish_struct (tree t, tree attributes)
     {
       tree x;
 
-      /* We need to add the target functions of USING_DECLS, so that
-	 they can be found when the using declaration is not
-	 instantiated yet.  */
       for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
-	if (TREE_CODE (x) == USING_DECL)
-	  {
-	    tree fn = strip_using_decl (x);
-  	    if (OVL_P (fn))
-	      for (lkp_iterator iter (fn); iter; ++iter)
-		add_method (t, *iter, true);
-	  }
-	else if (DECL_DECLARES_FUNCTION_P (x))
+	if (DECL_DECLARES_FUNCTION_P (x))
 	  {
 	    DECL_IN_AGGR_P (x) = false;
 	    if (DECL_VIRTUAL_P (x))
@@ -7758,10 +7796,10 @@ finish_struct (tree t, tree attributes)
       bool ok = false;
       if (processing_template_decl)
 	{
-	  tree f = next_initializable_field (TYPE_FIELDS (t));
+	  tree f = next_aggregate_field (TYPE_FIELDS (t));
 	  if (f && TYPE_PTR_P (TREE_TYPE (f)))
 	    {
-	      f = next_initializable_field (DECL_CHAIN (f));
+	      f = next_aggregate_field (DECL_CHAIN (f));
 	      if (f && same_type_p (TREE_TYPE (f), size_type_node))
 		ok = true;
 	    }
@@ -8908,32 +8946,53 @@ is_really_empty_class (tree type, bool ignore_vptr)
 void
 maybe_note_name_used_in_class (tree name, tree decl)
 {
-  splay_tree names_used;
-
   /* If we're not defining a class, there's nothing to do.  */
   if (!(innermost_scope_kind() == sk_class
 	&& TYPE_BEING_DEFINED (current_class_type)
 	&& !LAMBDA_TYPE_P (current_class_type)))
     return;
 
-  /* If there's already a binding for this NAME, then we don't have
-     anything to worry about.  */
-  if (lookup_member (current_class_type, name,
-		     /*protect=*/0, /*want_type=*/false, tf_warning_or_error))
-    return;
+  const cp_binding_level *blev = nullptr;
+  if (const cxx_binding *binding = IDENTIFIER_BINDING (name))
+    blev = binding->scope;
+  const cp_binding_level *lev = current_binding_level;
 
-  if (!current_class_stack[current_class_depth - 1].names_used)
-    current_class_stack[current_class_depth - 1].names_used
-      = splay_tree_new (splay_tree_compare_pointers, 0, 0);
-  names_used = current_class_stack[current_class_depth - 1].names_used;
+  /* Record the binding in the names_used tables for classes inside blev.  */
+  for (int i = current_class_depth; i > 0; --i)
+    {
+      tree type = (i == current_class_depth
+		   ? current_class_type
+		   : current_class_stack[i].type);
 
-  splay_tree_insert (names_used,
-		     (splay_tree_key) name,
-		     (splay_tree_value) decl);
+      for (; lev; lev = lev->level_chain)
+	{
+	  if (lev == blev)
+	    /* We found the declaration.  */
+	    return;
+	  if (lev->kind == sk_class && lev->this_entity == type)
+	    /* This class is inside the declaration scope.  */
+	    break;
+	}
+
+      auto &names_used = current_class_stack[i-1].names_used;
+      if (!names_used)
+	names_used = splay_tree_new (splay_tree_compare_pointers, 0, 0);
+
+      tree use = build1_loc (input_location, VIEW_CONVERT_EXPR,
+			     TREE_TYPE (decl), decl);
+      EXPR_LOCATION_WRAPPER_P (use) = 1;
+      splay_tree_insert (names_used,
+			 (splay_tree_key) name,
+			 (splay_tree_value) use);
+    }
 }
 
 /* Note that NAME was declared (as DECL) in the current class.  Check
-   to see that the declaration is valid.  */
+   to see that the declaration is valid under [class.member.lookup]:
+
+   If [the result of a search in T for N at point P] differs from the result of
+   a search in T for N from immediately after the class-specifier of T, the
+   program is ill-formed, no diagnostic required.  */
 
 void
 note_name_declared_in_class (tree name, tree decl)
@@ -8956,6 +9015,9 @@ note_name_declared_in_class (tree name, tree decl)
   n = splay_tree_lookup (names_used, (splay_tree_key) name);
   if (n)
     {
+      tree use = (tree) n->value;
+      location_t loc = EXPR_LOCATION (use);
+      tree olddecl = OVL_FIRST (TREE_OPERAND (use, 0));
       /* [basic.scope.class]
 
 	 A name N used in a class S shall refer to the same declaration
@@ -8964,9 +9026,10 @@ note_name_declared_in_class (tree name, tree decl)
       if (permerror (location_of (decl),
 		     "declaration of %q#D changes meaning of %qD",
 		     decl, OVL_NAME (decl)))
-	inform (location_of ((tree) n->value),
-		"%qD declared here as %q#D",
-		OVL_NAME (decl), (tree) n->value);
+	{
+	  inform (loc, "used here to mean %q#D", olddecl);
+	  inform (location_of (olddecl), "declared here" );
+	}
     }
 }
 

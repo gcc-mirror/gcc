@@ -184,6 +184,8 @@ enum rid
   RID_IS_UNION,                RID_UNDERLYING_TYPE,
   RID_IS_ASSIGNABLE,           RID_IS_CONSTRUCTIBLE,
   RID_IS_NOTHROW_ASSIGNABLE,   RID_IS_NOTHROW_CONSTRUCTIBLE,
+  RID_REF_CONSTRUCTS_FROM_TEMPORARY,
+  RID_REF_CONVERTS_FROM_TEMPORARY,
 
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
@@ -218,6 +220,9 @@ enum rid
   RID_AT_SYNTHESIZE, RID_AT_DYNAMIC,
   RID_AT_INTERFACE,
   RID_AT_IMPLEMENTATION,
+
+  /* OpenMP */
+  RID_OMP_ALL_MEMORY,
 
   /* Named address support, mapping the keyword to a particular named address
      number.  Named address space 0 is reserved for the generic address.  If
@@ -268,7 +273,7 @@ enum rid
   RID_FIRST_CXX11 = RID_CONSTEXPR,
   RID_LAST_CXX11 = RID_STATIC_ASSERT,
   RID_FIRST_CXX20 = RID_CONSTINIT,
-  RID_LAST_CXX20 = RID_CONSTINIT,
+  RID_LAST_CXX20 = RID_CO_RETURN,
   RID_FIRST_AT = RID_AT_ENCODE,
   RID_LAST_AT = RID_AT_IMPLEMENTATION,
   RID_FIRST_PQ = RID_IN,
@@ -908,6 +913,7 @@ extern tree fold_for_warn (tree);
 extern tree c_common_get_narrower (tree, int *);
 extern bool get_attribute_operand (tree, unsigned HOST_WIDE_INT *);
 extern void c_common_finalize_early_debug (void);
+extern bool c_option_is_from_cpp_diagnostics (int);
 
 /* Used by convert_and_check; in front ends.  */
 extern tree convert_init (tree, tree);
@@ -950,7 +956,6 @@ extern bool c_common_post_options (const char **);
 extern bool c_common_init (void);
 extern void c_common_finish (void);
 extern void c_common_parse_file (void);
-extern FILE *get_dump_info (int, dump_flags_t *);
 extern alias_set_type c_common_get_alias_set (tree);
 extern void c_register_builtin_type (tree, const char*);
 extern bool c_promoting_integer_type_p (const_tree);
@@ -1049,6 +1054,7 @@ extern tree finish_label_address_expr (tree, location_t);
 extern tree lookup_label (tree);
 extern tree lookup_name (tree);
 extern bool lvalue_p (const_tree);
+extern int maybe_adjust_arg_pos_for_attribute (const_tree);
 
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
@@ -1188,6 +1194,7 @@ extern void preprocess_file (cpp_reader *);
 extern void pp_file_change (const line_map_ordinary *);
 extern void pp_dir_change (cpp_reader *, const char *);
 extern bool check_missing_format_attribute (tree, tree);
+extern void c_pp_stream_token (cpp_reader *, const cpp_token *, location_t loc);
 
 /* In c-omp.cc  */
 typedef wide_int_bitmask omp_clause_mask;
@@ -1250,7 +1257,6 @@ extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
 extern enum omp_clause_defaultmap_kind c_omp_predetermined_mapping (tree);
 extern tree c_omp_check_context_selector (location_t, tree);
 extern void c_omp_mark_declare_variant (location_t, tree, tree);
-extern const char *c_omp_map_clause_name (tree, bool);
 extern void c_omp_adjust_map_clauses (tree, bool);
 
 enum c_omp_directive_kind {
@@ -1494,7 +1500,7 @@ enum posargflags {
   POSARG_ELLIPSIS = 2
 };
 
-extern tree positional_argument (const_tree, const_tree, tree, tree_code,
+extern tree positional_argument (const_tree, const_tree, tree &, tree_code,
 				 int = 0, int = posargflags ());
 
 extern enum flt_eval_method
@@ -1513,8 +1519,10 @@ extern tree braced_lists_to_strings (tree, tree);
 namespace selftest {
   /* Declarations for specific families of tests within c-family,
      by source file, in alphabetical order.  */
+  extern void c_diagnostic_cc_tests (void);
   extern void c_format_cc_tests (void);
   extern void c_indentation_cc_tests (void);
+  extern void c_opt_problem_cc_tests (void);
   extern void c_pretty_print_cc_tests (void);
   extern void c_spellcheck_cc_tests (void);
 

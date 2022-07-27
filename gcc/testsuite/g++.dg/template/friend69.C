@@ -12,7 +12,7 @@ protected:
 
 struct A {
   friend void g(A) {
-    B::f(); // { dg-error "private" }
-    B::g(); // { dg-error "protected" }
+    B::f();
+    B::g();
   }
 };

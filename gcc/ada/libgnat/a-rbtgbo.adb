@@ -1038,8 +1038,11 @@ package body Ada.Containers.Red_Black_Trees.Generic_Bounded_Operations is
    function Vet (Tree : Tree_Type'Class; Index : Count_Type) return Boolean is
       Nodes : Nodes_Type renames Tree.Nodes;
       Node  : Node_Type renames Nodes (Index);
-
    begin
+      if not Container_Checks'Enabled then
+         return True;
+      end if;
+
       if Parent (Node) = Index
         or else Left (Node) = Index
         or else Right (Node) = Index

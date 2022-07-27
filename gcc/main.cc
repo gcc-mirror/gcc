@@ -37,9 +37,9 @@ main (int argc, char **argv)
 		 true /* init_signals */);
 
   int r = toplev.main (argc, argv);
-#if CHECKING_P
-  toplev.finalize ();
-#endif
+
+  if (flag_checking && !seen_error ())
+    toplev.finalize ();
 
   return r;
 }

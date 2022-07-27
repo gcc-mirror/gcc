@@ -10,4 +10,3 @@ template DownCastMethods(T...)
 {
     enum x = _dgliteral!T;
 }
-

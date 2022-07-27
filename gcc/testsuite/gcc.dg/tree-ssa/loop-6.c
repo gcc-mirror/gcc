@@ -19,7 +19,7 @@ void xxx(void)
 
 /* Loop should be unswitched.  */
 
-/* { dg-final { scan-tree-dump-times "Unswitching loop" 1 "unswitch" } } */
+/* { dg-final { scan-tree-dump-times "unswitching loop" 1 "unswitch" } } */
 
 /* In effect there should be exactly three conditional jumps in the final program.  */
 

@@ -265,6 +265,8 @@ class ShlAssignExp;
 class ShrAssignExp;
 class UshrAssignExp;
 class CatAssignExp;
+class CatElemAssignExp;
+class CatDcharAssignExp;
 class AddExp;
 class MinExp;
 class CatExp;
@@ -563,6 +565,10 @@ public:
     virtual void visit(ShrAssignExp *e) { visit((BinAssignExp *)e); }
     virtual void visit(UshrAssignExp *e) { visit((BinAssignExp *)e); }
     virtual void visit(CatAssignExp *e) { visit((BinAssignExp *)e); }
+
+    // CatAssignExp
+    virtual void visit(CatElemAssignExp *e) { visit((CatAssignExp *)e); }
+    virtual void visit(CatDcharAssignExp *e) { visit((CatAssignExp *)e); }
 
     // TemplateParameter
     virtual void visit(TemplateAliasParameter *tp) { visit((TemplateParameter *)tp); }

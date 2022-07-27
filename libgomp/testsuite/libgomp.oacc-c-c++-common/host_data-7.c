@@ -4,7 +4,9 @@
    { dg-additional-options "--param=openacc-privatization=noisy" }
    { dg-additional-options "-foffload=-fopt-info-all-omp" }
    { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
-   for testing/documenting aspects of that functionality.  */
+   Prune a few: uninteresting, and potentially varying depending on GCC configuration (data types) or 'assert' implementation:
+   { dg-prune-output {note: variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} }
+   { dg-prune-output {note: variable 'iftmp\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} } */
 
 /* C/C++ variant of 'libgomp.oacc-fortran/host_data-5.F90' */
 
@@ -25,7 +27,6 @@ foo (float *p, intptr_t host_p, int cond)
 
 #pragma acc data copy(p[0:100])
     /* { dg-note {variable 'host_p\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 } */
-    /* { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 } */
     {
       /* Not inside a host_data construct, so p is still the host pointer.  */
       assert (p == (float *) host_p);
@@ -54,7 +55,6 @@ foo (float *p, intptr_t host_p, int cond)
 
 #pragma acc host_data use_device(p) if(cond)
       /* { dg-note {variable 'host_p\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 } */
-      /* { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target { ! openacc_host_selected } } .-2 } */
       {
 #if ACC_MEM_SHARED
 	assert (p == (float *) host_p);

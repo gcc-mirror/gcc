@@ -11,4 +11,3 @@ mixin template C(alias B = cast(NonExistent)null) {
 }
 
 mixin C!();
-

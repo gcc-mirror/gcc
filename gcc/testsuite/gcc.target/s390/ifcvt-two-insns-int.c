@@ -3,8 +3,8 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -march=z13 --save-temps" } */
 
-/* { dg-final { scan-assembler "lochinle\t%r.?,1" } } */
-/* { dg-final { scan-assembler "locrnle\t.*" } } */
+/* { dg-final { scan-assembler "lochih\t%r.?,1" } } */
+/* { dg-final { scan-assembler "locrh\t.*" } } */
 #include <limits.h>
 #include <stdio.h>
 #include <assert.h>

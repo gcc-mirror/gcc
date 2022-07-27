@@ -17,7 +17,8 @@ program main
 
   call setup(a, b)
 
-  !$acc parallel loop copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-message "optimized: assigned OpenACC gang vector loop parallelism" }
+  !$acc parallel loop copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-line l_compute_loop_i1 }
+  ! { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l_compute_loop_i1 }
   do i = 0, n - 1
      c(i) = a(i) + b(i)
   end do

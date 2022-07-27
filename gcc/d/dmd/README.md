@@ -130,6 +130,8 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [impcnvtab.d](https://github.com/dlang/dmd/blob/master/src/dmd/impcnvtab.d)   | Define an implicit conversion table for basic types                                        |
 | [importc.d](https://github.com/dlang/dmd/blob/master/src/dmd/importc.d)       | Helpers specific to ImportC                                                                |
 | [sideeffect.d](https://github.com/dlang/dmd/blob/master/src/dmd/sideeffect.d) | Extract side-effects of expressions for certain lowerings.                                 |
+| [mustuse.d](https://github.com/dlang/dmd/blob/master/src/dmd/mustuse.d)       | Helpers related to the `@mustuse` attribute                                                |
+
 
 **Compile Time Function Execution (CTFE)**
 
@@ -162,20 +164,21 @@ Note that these groups have no strict meaning, the category assignments are a bi
 
 **Other**
 
-| File                                                                          | Purpose                                                                                     |
-|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
-| [aliasthis.d](https://github.com/dlang/dmd/blob/master/src/dmd/aliasthis.d)   | Resolve implicit conversions for `alias X this`                                             |
-| [traits.d](https://github.com/dlang/dmd/blob/master/src/dmd/traits.d)         | `__traits()`                                                                                |
-| [lambdacomp.d](https://github.com/dlang/dmd/blob/master/src/dmd/lambdacomp.d) | `__traits(isSame, x => y, z => w)`                                                          |
-| [cond.d](https://github.com/dlang/dmd/blob/master/src/dmd/cond.d)             | Evaluate `static if`, `version` `debug `                                                    |
-| [staticcond.d](https://github.com/dlang/dmd/blob/master/src/dmd/staticcond.d) | Lazily evaluate static conditions for `static if`, `static assert` and template constraints |
-| [delegatize.d](https://github.com/dlang/dmd/blob/master/src/dmd/delegatize.d) | Converts expression to delegates for `lazy` parameters                                      |
-| [eh.d](https://github.com/dlang/dmd/blob/master/src/dmd/eh.d)                 | Generate tables for exception handling                                                      |
-| [nspace.d](https://github.com/dlang/dmd/blob/master/src/dmd/nspace.d)         | Namespace for `extern (C++, Module)`                                                        |
-| [intrange.d](https://github.com/dlang/dmd/blob/master/src/dmd/intrange.d)     | [Value range propagation](https://digitalmars.com/articles/b62.html)                        |
-| [dimport.d](https://github.com/dlang/dmd/blob/master/src/dmd/dimport.d)       | Renamed imports (`import aliasSymbol = pkg1.pkg2.symbol`)                                   |
-| [arrayop.d](https://github.com/dlang/dmd/blob/master/src/dmd/arrayop.d)       | Array operations (`a[] = b[] + c[]`)                                                        |
-| [typinf.d](https://github.com/dlang/dmd/blob/master/src/dmd/typinf.d)         | Generate typeinfo for `typeid()` (as well as internals)                                     |
+| File                                                                           | Purpose                                                                                     |
+|--------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| [aliasthis.d](https://github.com/dlang/dmd/blob/master/src/dmd/aliasthis.d)    | Resolve implicit conversions for `alias X this`                                             |
+| [traits.d](https://github.com/dlang/dmd/blob/master/src/dmd/traits.d)          | `__traits()`                                                                                |
+| [lambdacomp.d](https://github.com/dlang/dmd/blob/master/src/dmd/lambdacomp.d)  | `__traits(isSame, x => y, z => w)`                                                          |
+| [cond.d](https://github.com/dlang/dmd/blob/master/src/dmd/cond.d)              | Evaluate `static if`, `version` `debug `                                                    |
+| [staticcond.d](https://github.com/dlang/dmd/blob/master/src/dmd/staticcond.d)  | Lazily evaluate static conditions for `static if`, `static assert` and template constraints |
+| [delegatize.d](https://github.com/dlang/dmd/blob/master/src/dmd/delegatize.d)  | Converts expression to delegates for `lazy` parameters                                      |
+| [eh.d](https://github.com/dlang/dmd/blob/master/src/dmd/eh.d)                  | Generate tables for exception handling                                                      |
+| [nspace.d](https://github.com/dlang/dmd/blob/master/src/dmd/nspace.d)          | Namespace for `extern (C++, Module)`                                                        |
+| [intrange.d](https://github.com/dlang/dmd/blob/master/src/dmd/intrange.d)      | [Value range propagation](https://digitalmars.com/articles/b62.html)                        |
+| [dimport.d](https://github.com/dlang/dmd/blob/master/src/dmd/dimport.d)        | Renamed imports (`import aliasSymbol = pkg1.pkg2.symbol`)                                   |
+| [arrayop.d](https://github.com/dlang/dmd/blob/master/src/dmd/arrayop.d)        | Array operations (`a[] = b[] + c[]`)                                                        |
+| [cpreprocess.d](https://github.com/dlang/dmd/blob/master/src/dmd/cpreprocess.d)| Run the C preprocessor on C source files                                                   |
+| [typinf.d](https://github.com/dlang/dmd/blob/master/src/dmd/typinf.d)          | Generate typeinfo for `typeid()` (as well as internals)                                     |
 
 | File                                                                        | Purpose                                                                            |
 |-----------------------------------------------------------------------------|------------------------------------------------------------------------------------|

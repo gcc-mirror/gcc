@@ -28,6 +28,7 @@ hwasan_files = \
 	hwasan_memintrinsics.cpp \
 	hwasan_new_delete.cpp \
 	hwasan_poisoning.cpp \
+	hwasan_preinit.cpp \
 	hwasan_report.cpp \
 	hwasan_setjmp_aarch64.S \
 	hwasan_setjmp_x86_64.S \

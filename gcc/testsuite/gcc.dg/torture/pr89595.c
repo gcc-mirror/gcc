@@ -5,6 +5,7 @@ int __attribute__((noipa))
 __GIMPLE(ssa,startwith("dom")) bar(int cond, int val)
 {
   int i;
+  _Bool _7;
 
 __BB(3):
   if (0 != 0)
@@ -20,7 +21,8 @@ __BB(2):
 
 __BB(4):
   i_6 = val_2(D);
-  i_1 = val_2(D) > 0 ? i_6 : 0;
+  _7 = val_2(D) > 0;
+  i_1 = _7 ? i_6 : 0;
   goto __BB5;
 
 __BB(5):

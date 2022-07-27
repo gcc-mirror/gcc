@@ -454,7 +454,7 @@ decode_statement (void)
 
     case 'c':
       match ("call", gfc_match_call, ST_CALL);
-      match ("change team", gfc_match_change_team, ST_CHANGE_TEAM);
+      match ("change% team", gfc_match_change_team, ST_CHANGE_TEAM);
       match ("close", gfc_match_close, ST_CLOSE);
       match ("continue", gfc_match_continue, ST_CONTINUE);
       match ("contiguous", gfc_match_contiguous, ST_ATTR_DECL);
@@ -479,7 +479,7 @@ decode_statement (void)
       match ("else", gfc_match_else, ST_ELSE);
       match ("else where", gfc_match_elsewhere, ST_ELSEWHERE);
       match ("else if", gfc_match_elseif, ST_ELSEIF);
-      match ("error stop", gfc_match_error_stop, ST_ERROR_STOP);
+      match ("error% stop", gfc_match_error_stop, ST_ERROR_STOP);
       match ("enum , bind ( c )", gfc_match_enum, ST_ENUM);
 
       if (gfc_match_end (&st) == MATCH_YES)
@@ -488,15 +488,15 @@ decode_statement (void)
       match ("entry% ", gfc_match_entry, ST_ENTRY);
       match ("equivalence", gfc_match_equivalence, ST_EQUIVALENCE);
       match ("external", gfc_match_external, ST_ATTR_DECL);
-      match ("event post", gfc_match_event_post, ST_EVENT_POST);
-      match ("event wait", gfc_match_event_wait, ST_EVENT_WAIT);
+      match ("event% post", gfc_match_event_post, ST_EVENT_POST);
+      match ("event% wait", gfc_match_event_wait, ST_EVENT_WAIT);
       break;
 
     case 'f':
-      match ("fail image", gfc_match_fail_image, ST_FAIL_IMAGE);
+      match ("fail% image", gfc_match_fail_image, ST_FAIL_IMAGE);
       match ("final", gfc_match_final_decl, ST_FINAL);
       match ("flush", gfc_match_flush, ST_FLUSH);
-      match ("form team", gfc_match_form_team, ST_FORM_TEAM);
+      match ("form% team", gfc_match_form_team, ST_FORM_TEAM);
       match ("format", gfc_match_format, ST_FORMAT);
       break;
 
@@ -562,16 +562,16 @@ decode_statement (void)
       match ("save", gfc_match_save, ST_ATTR_DECL);
       match ("static", gfc_match_static, ST_ATTR_DECL);
       match ("submodule", gfc_match_submodule, ST_SUBMODULE);
-      match ("sync all", gfc_match_sync_all, ST_SYNC_ALL);
-      match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
-      match ("sync memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
-      match ("sync team", gfc_match_sync_team, ST_SYNC_TEAM);
+      match ("sync% all", gfc_match_sync_all, ST_SYNC_ALL);
+      match ("sync% images", gfc_match_sync_images, ST_SYNC_IMAGES);
+      match ("sync% memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
+      match ("sync% team", gfc_match_sync_team, ST_SYNC_TEAM);
       break;
 
     case 't':
       match ("target", gfc_match_target, ST_ATTR_DECL);
       match ("type", gfc_match_derived_decl, ST_DERIVED_DECL);
-      match ("type is", gfc_match_type_is, ST_TYPE_IS);
+      match ("type% is", gfc_match_type_is, ST_TYPE_IS);
       break;
 
     case 'u':
@@ -1168,7 +1168,8 @@ decode_omp_directive (void)
     }
   switch (ret)
     {
-    case ST_OMP_DECLARE_TARGET:
+    /* Set omp_target_seen; exclude ST_OMP_DECLARE_TARGET.
+       FIXME: Get clarification, cf. OpenMP Spec Issue #3240.  */
     case ST_OMP_TARGET:
     case ST_OMP_TARGET_DATA:
     case ST_OMP_TARGET_ENTER_DATA:
@@ -4924,6 +4925,24 @@ parse_associate (void)
 	 in case of association to a derived-type.  */
       sym->ts = a->target->ts;
 
+      /* Don’t share the character length information between associate
+	 variable and target if the length is not a compile-time constant,
+	 as we don’t want to touch some other character length variable when
+	 we try to initialize the associate variable’s character length
+	 variable.
+	 We do it here rather than later so that expressions referencing the
+	 associate variable will automatically have the correctly setup length
+	 information.  If we did it at resolution stage the expressions would
+	 use the original length information, and the variable a new different
+	 one, but only the latter one would be correctly initialized at
+	 translation stage, and the former one would need some additional setup
+	 there.  */
+      if (sym->ts.type == BT_CHARACTER
+	  && sym->ts.u.cl
+	  && !(sym->ts.u.cl->length
+	       && sym->ts.u.cl->length->expr_type == EXPR_CONSTANT))
+	sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
+
       /* Check if the target expression is array valued.  This cannot always
 	 be done by looking at target.rank, because that might not have been
 	 set yet.  Therefore traverse the chain of refs, looking for the last
@@ -6861,11 +6880,14 @@ done:
 
   /* Fixup for external procedures and resolve 'omp requires'.  */
   int omp_requires;
+  bool omp_target_seen;
   omp_requires = 0;
+  omp_target_seen = false;
   for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
        gfc_current_ns = gfc_current_ns->sibling)
     {
       omp_requires |= gfc_current_ns->omp_requires;
+      omp_target_seen |= gfc_current_ns->omp_target_seen;
       gfc_check_externals (gfc_current_ns);
     }
   for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
@@ -6890,6 +6912,22 @@ done:
       break;
     }
 
+  if (omp_target_seen)
+    omp_requires_mask = (enum omp_requires) (omp_requires_mask
+					     | OMP_REQUIRES_TARGET_USED);
+  if (omp_requires & OMP_REQ_REVERSE_OFFLOAD)
+    omp_requires_mask = (enum omp_requires) (omp_requires_mask
+					     | OMP_REQUIRES_REVERSE_OFFLOAD);
+  if (omp_requires & OMP_REQ_UNIFIED_ADDRESS)
+    omp_requires_mask = (enum omp_requires) (omp_requires_mask
+					     | OMP_REQUIRES_UNIFIED_ADDRESS);
+  if (omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY)
+    omp_requires_mask
+	  = (enum omp_requires) (omp_requires_mask
+				 | OMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+  if (omp_requires & OMP_REQ_DYNAMIC_ALLOCATORS)
+    omp_requires_mask = (enum omp_requires) (omp_requires_mask
+					     | OMP_REQUIRES_DYNAMIC_ALLOCATORS);
   /* Do the parse tree dump.  */
   gfc_current_ns = flag_dump_fortran_original ? gfc_global_ns_list : NULL;
 

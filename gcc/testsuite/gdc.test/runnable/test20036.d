@@ -7,4 +7,3 @@ void main()
 	foreach(p; px)
 		assert(p && *p == 7);
 }
-
