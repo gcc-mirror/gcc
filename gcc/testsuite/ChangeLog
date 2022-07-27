@@ -1,3 +1,63 @@
+2022-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106319
+	* gcc.dg/analyzer/stdarg-types-3.c: New test.
+	* gcc.dg/analyzer/stdarg-types-4.c: New test.
+
+2022-07-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103504
+	* gfortran.dg/pr103504.f90: New test.
+
+2022-07-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR c/106016
+	* gcc.target/powerpc/pr106016.c: New test.
+
+2022-07-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106311
+	* g++.dg/template/redecl5.C: New test.
+
+2022-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106444
+	* gcc.dg/tree-ssa/evrp4.c: Adjust.
+
+2022-07-26  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/combine.c:
+	New test.
+
+2022-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106189
+	* gcc.dg/pr106189.c: New testcase.
+
+2022-07-26  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/func-call-1.c: Add build option '-mno-explicit-relocs'.
+	* gcc.target/loongarch/func-call-2.c: Add build option '-mno-explicit-relocs'.
+	* gcc.target/loongarch/func-call-3.c: Add build option '-mno-explicit-relocs'.
+	* gcc.target/loongarch/func-call-4.c: Add build option '-mno-explicit-relocs'.
+	* gcc.target/loongarch/func-call-5.c: New test.
+	* gcc.target/loongarch/func-call-6.c: New test.
+	* gcc.target/loongarch/func-call-7.c: New test.
+	* gcc.target/loongarch/func-call-8.c: New test.
+	* gcc.target/loongarch/relocs-symbol-noaddend.c: New test.
+
+2022-07-26  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/func-call-1.c: New test.
+	* gcc.target/loongarch/func-call-2.c: New test.
+	* gcc.target/loongarch/func-call-3.c: New test.
+	* gcc.target/loongarch/func-call-4.c: New test.
+
+2022-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/106091
+	* gcc.target/powerpc/pr106091.c: New test.
+
 2022-07-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/106230

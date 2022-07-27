@@ -1,3 +1,346 @@
+2022-07-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR c/106016
+	* expr.cc (count_type_elements): Handle OPAQUE_TYPE.
+
+2022-07-26  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-opts.cc: Modify the output message string
+	of the warning.
+
+2022-07-26  Martin Liska  <mliska@suse.cz>
+
+	* doc/tm.texi.in: Fix placement of defmac.
+	* doc/tm.texi: Copy.
+
+2022-07-26  Martin Liska  <mliska@suse.cz>
+
+	* doc/tm.texi.in: Fix cross @defmac and @hook.
+	* doc/tm.texi: Copy.
+
+2022-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106444
+	* value-range-pretty-print.cc (vrange_printer::visit): Handle
+	legacy ranges.
+	(vrange_printer::print_irange_bound): Work on wide_int's.
+	* value-range-pretty-print.h (print_irange_bound): Same.
+	* value-range.cc (irange::get_nonzero_bits): Handle legacy ranges.
+
+2022-07-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.cc (ptr_derefs_may_alias_p): If ptr1
+	points to a constant continue checking ptr2.
+
+2022-07-26  Andrew Carlotti  <Andrew.Carlotti@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(MODE_d_bf16, MODE_d_f16, MODE_d_f32, MODE_d_f64, MODE_d_s8)
+	(MODE_d_s16, MODE_d_s32, MODE_d_s64, MODE_d_u8, MODE_d_u16)
+	(MODE_d_u32, MODE_d_u64, MODE_d_p8, MODE_d_p16, MODE_d_p64)
+	(MODE_q_bf16, MODE_q_f16, MODE_q_f32, MODE_q_f64, MODE_q_s8)
+	(MODE_q_s16, MODE_q_s32, MODE_q_s64, MODE_q_u8, MODE_q_u16)
+	(MODE_q_u32, MODE_q_u64, MODE_q_p8, MODE_q_p16, MODE_q_p64)
+	(MODE_q_p128): Define macro to map to corresponding mode name.
+	(QUAL_bf16, QUAL_f16, QUAL_f32, QUAL_f64, QUAL_s8, QUAL_s16)
+	(QUAL_s32, QUAL_s64, QUAL_u8, QUAL_u16, QUAL_u32, QUAL_u64)
+	(QUAL_p8, QUAL_p16, QUAL_p64, QUAL_p128): Define macro to map to
+	corresponding qualifier name.
+	(LENGTH_d, LENGTH_q): Define macro to map to "" or "q" suffix.
+	(SIMD_INTR_MODE, SIMD_INTR_QUAL, SIMD_INTR_LENGTH_CHAR): Macro
+	functions for the above mappings
+	(VREINTERPRET_BUILTIN2, VREINTERPRET_BUILTINS1, VREINTERPRET_BUILTINS)
+	(VREINTERPRETQ_BUILTIN2, VREINTERPRETQ_BUILTINS1)
+	(VREINTERPRETQ_BUILTINS, VREINTERPRET_BUILTIN)
+	(AARCH64_SIMD_VREINTERPRET_BUILTINS): New macros to create definitions
+	for all vreinterpret intrinsics
+	(enum aarch64_builtins): Add vreinterpret function codes
+	(aarch64_init_simd_intrinsics): New
+	(handle_arm_neon_h): Improved comment.
+	(aarch64_general_fold_builtin): Fold vreinterpret calls
+	* config/aarch64/arm_neon.h
+	(vreinterpret_p8_f16, vreinterpret_p8_f64, vreinterpret_p8_s8)
+	(vreinterpret_p8_s16, vreinterpret_p8_s32, vreinterpret_p8_s64)
+	(vreinterpret_p8_f32, vreinterpret_p8_u8, vreinterpret_p8_u16)
+	(vreinterpret_p8_u32, vreinterpret_p8_u64, vreinterpret_p8_p16)
+	(vreinterpret_p8_p64, vreinterpretq_p8_f64, vreinterpretq_p8_s8)
+	(vreinterpretq_p8_s16, vreinterpretq_p8_s32, vreinterpretq_p8_s64)
+	(vreinterpretq_p8_f16, vreinterpretq_p8_f32, vreinterpretq_p8_u8)
+	(vreinterpretq_p8_u16, vreinterpretq_p8_u32, vreinterpretq_p8_u64)
+	(vreinterpretq_p8_p16, vreinterpretq_p8_p64, vreinterpretq_p8_p128)
+	(vreinterpret_p16_f16, vreinterpret_p16_f64, vreinterpret_p16_s8)
+	(vreinterpret_p16_s16, vreinterpret_p16_s32, vreinterpret_p16_s64)
+	(vreinterpret_p16_f32, vreinterpret_p16_u8, vreinterpret_p16_u16)
+	(vreinterpret_p16_u32, vreinterpret_p16_u64, vreinterpret_p16_p8)
+	(vreinterpret_p16_p64, vreinterpretq_p16_f64, vreinterpretq_p16_s8)
+	(vreinterpretq_p16_s16, vreinterpretq_p16_s32, vreinterpretq_p16_s64)
+	(vreinterpretq_p16_f16, vreinterpretq_p16_f32, vreinterpretq_p16_u8)
+	(vreinterpretq_p16_u16, vreinterpretq_p16_u32, vreinterpretq_p16_u64)
+	(vreinterpretq_p16_p8, vreinterpretq_p16_p64, vreinterpretq_p16_p128)
+	(vreinterpret_p64_f16, vreinterpret_p64_f64, vreinterpret_p64_s8)
+	(vreinterpret_p64_s16, vreinterpret_p64_s32, vreinterpret_p64_s64)
+	(vreinterpret_p64_f32, vreinterpret_p64_u8, vreinterpret_p64_u16)
+	(vreinterpret_p64_u32, vreinterpret_p64_u64, vreinterpret_p64_p8)
+	(vreinterpret_p64_p16, vreinterpretq_p64_f64, vreinterpretq_p64_s8)
+	(vreinterpretq_p64_s16, vreinterpretq_p64_s32, vreinterpretq_p64_s64)
+	(vreinterpretq_p64_f16, vreinterpretq_p64_f32, vreinterpretq_p64_p128)
+	(vreinterpretq_p64_u8, vreinterpretq_p64_u16, vreinterpretq_p64_p16)
+	(vreinterpretq_p64_u32, vreinterpretq_p64_u64, vreinterpretq_p64_p8)
+	(vreinterpretq_p128_p8, vreinterpretq_p128_p16, vreinterpretq_p128_f16)
+	(vreinterpretq_p128_f32, vreinterpretq_p128_p64, vreinterpretq_p128_s64)
+	(vreinterpretq_p128_u64, vreinterpretq_p128_s8, vreinterpretq_p128_s16)
+	(vreinterpretq_p128_s32, vreinterpretq_p128_u8, vreinterpretq_p128_u16)
+	(vreinterpretq_p128_u32, vreinterpret_f16_f64, vreinterpret_f16_s8)
+	(vreinterpret_f16_s16, vreinterpret_f16_s32, vreinterpret_f16_s64)
+	(vreinterpret_f16_f32, vreinterpret_f16_u8, vreinterpret_f16_u16)
+	(vreinterpret_f16_u32, vreinterpret_f16_u64, vreinterpret_f16_p8)
+	(vreinterpret_f16_p16, vreinterpret_f16_p64, vreinterpretq_f16_f64)
+	(vreinterpretq_f16_s8, vreinterpretq_f16_s16, vreinterpretq_f16_s32)
+	(vreinterpretq_f16_s64, vreinterpretq_f16_f32, vreinterpretq_f16_u8)
+	(vreinterpretq_f16_u16, vreinterpretq_f16_u32, vreinterpretq_f16_u64)
+	(vreinterpretq_f16_p8, vreinterpretq_f16_p128, vreinterpretq_f16_p16)
+	(vreinterpretq_f16_p64, vreinterpret_f32_f16, vreinterpret_f32_f64)
+	(vreinterpret_f32_s8, vreinterpret_f32_s16, vreinterpret_f32_s32)
+	(vreinterpret_f32_s64, vreinterpret_f32_u8, vreinterpret_f32_u16)
+	(vreinterpret_f32_u32, vreinterpret_f32_u64, vreinterpret_f32_p8)
+	(vreinterpret_f32_p16, vreinterpret_f32_p64, vreinterpretq_f32_f16)
+	(vreinterpretq_f32_f64, vreinterpretq_f32_s8, vreinterpretq_f32_s16)
+	(vreinterpretq_f32_s32, vreinterpretq_f32_s64, vreinterpretq_f32_u8)
+	(vreinterpretq_f32_u16, vreinterpretq_f32_u32, vreinterpretq_f32_u64)
+	(vreinterpretq_f32_p8, vreinterpretq_f32_p16, vreinterpretq_f32_p64)
+	(vreinterpretq_f32_p128, vreinterpret_f64_f16, vreinterpret_f64_f32)
+	(vreinterpret_f64_p8, vreinterpret_f64_p16, vreinterpret_f64_p64)
+	(vreinterpret_f64_s8, vreinterpret_f64_s16, vreinterpret_f64_s32)
+	(vreinterpret_f64_s64, vreinterpret_f64_u8, vreinterpret_f64_u16)
+	(vreinterpret_f64_u32, vreinterpret_f64_u64, vreinterpretq_f64_f16)
+	(vreinterpretq_f64_f32, vreinterpretq_f64_p8, vreinterpretq_f64_p16)
+	(vreinterpretq_f64_p64, vreinterpretq_f64_s8, vreinterpretq_f64_s16)
+	(vreinterpretq_f64_s32, vreinterpretq_f64_s64, vreinterpretq_f64_u8)
+	(vreinterpretq_f64_u16, vreinterpretq_f64_u32, vreinterpretq_f64_u64)
+	(vreinterpret_s64_f16, vreinterpret_s64_f64, vreinterpret_s64_s8)
+	(vreinterpret_s64_s16, vreinterpret_s64_s32, vreinterpret_s64_f32)
+	(vreinterpret_s64_u8, vreinterpret_s64_u16, vreinterpret_s64_u32)
+	(vreinterpret_s64_u64, vreinterpret_s64_p8, vreinterpret_s64_p16)
+	(vreinterpret_s64_p64, vreinterpretq_s64_f64, vreinterpretq_s64_s8)
+	(vreinterpretq_s64_s16, vreinterpretq_s64_s32, vreinterpretq_s64_f16)
+	(vreinterpretq_s64_f32, vreinterpretq_s64_u8, vreinterpretq_s64_u16)
+	(vreinterpretq_s64_u32, vreinterpretq_s64_u64, vreinterpretq_s64_p8)
+	(vreinterpretq_s64_p16, vreinterpretq_s64_p64, vreinterpretq_s64_p128)
+	(vreinterpret_u64_f16, vreinterpret_u64_f64, vreinterpret_u64_s8)
+	(vreinterpret_u64_s16, vreinterpret_u64_s32, vreinterpret_u64_s64)
+	(vreinterpret_u64_f32, vreinterpret_u64_u8, vreinterpret_u64_u16)
+	(vreinterpret_u64_u32, vreinterpret_u64_p8, vreinterpret_u64_p16)
+	(vreinterpret_u64_p64, vreinterpretq_u64_f64, vreinterpretq_u64_s8)
+	(vreinterpretq_u64_s16, vreinterpretq_u64_s32, vreinterpretq_u64_s64)
+	(vreinterpretq_u64_f16, vreinterpretq_u64_f32, vreinterpretq_u64_u8)
+	(vreinterpretq_u64_u16, vreinterpretq_u64_u32, vreinterpretq_u64_p8)
+	(vreinterpretq_u64_p16, vreinterpretq_u64_p64, vreinterpretq_u64_p128)
+	(vreinterpret_s8_f16, vreinterpret_s8_f64, vreinterpret_s8_s16)
+	(vreinterpret_s8_s32, vreinterpret_s8_s64, vreinterpret_s8_f32)
+	(vreinterpret_s8_u8, vreinterpret_s8_u16, vreinterpret_s8_u32)
+	(vreinterpret_s8_u64, vreinterpret_s8_p8, vreinterpret_s8_p16)
+	(vreinterpret_s8_p64, vreinterpretq_s8_f64, vreinterpretq_s8_s16)
+	(vreinterpretq_s8_s32, vreinterpretq_s8_s64, vreinterpretq_s8_f16)
+	(vreinterpretq_s8_f32, vreinterpretq_s8_u8, vreinterpretq_s8_u16)
+	(vreinterpretq_s8_u32, vreinterpretq_s8_u64, vreinterpretq_s8_p8)
+	(vreinterpretq_s8_p16, vreinterpretq_s8_p64, vreinterpretq_s8_p128)
+	(vreinterpret_s16_f16, vreinterpret_s16_f64, vreinterpret_s16_s8)
+	(vreinterpret_s16_s32, vreinterpret_s16_s64, vreinterpret_s16_f32)
+	(vreinterpret_s16_u8, vreinterpret_s16_u16, vreinterpret_s16_u32)
+	(vreinterpret_s16_u64, vreinterpret_s16_p8, vreinterpret_s16_p16)
+	(vreinterpret_s16_p64, vreinterpretq_s16_f64, vreinterpretq_s16_s8)
+	(vreinterpretq_s16_s32, vreinterpretq_s16_s64, vreinterpretq_s16_f16)
+	(vreinterpretq_s16_f32, vreinterpretq_s16_u8, vreinterpretq_s16_u16)
+	(vreinterpretq_s16_u32, vreinterpretq_s16_u64, vreinterpretq_s16_p8)
+	(vreinterpretq_s16_p16, vreinterpretq_s16_p64, vreinterpretq_s16_p128)
+	(vreinterpret_s32_f16, vreinterpret_s32_f64, vreinterpret_s32_s8)
+	(vreinterpret_s32_s16, vreinterpret_s32_s64, vreinterpret_s32_f32)
+	(vreinterpret_s32_u8, vreinterpret_s32_u16, vreinterpret_s32_u32)
+	(vreinterpret_s32_u64, vreinterpret_s32_p8, vreinterpret_s32_p16)
+	(vreinterpret_s32_p64, vreinterpretq_s32_f64, vreinterpretq_s32_s8)
+	(vreinterpretq_s32_s16, vreinterpretq_s32_s64, vreinterpretq_s32_f16)
+	(vreinterpretq_s32_f32, vreinterpretq_s32_u8, vreinterpretq_s32_u16)
+	(vreinterpretq_s32_u32, vreinterpretq_s32_u64, vreinterpretq_s32_p8)
+	(vreinterpretq_s32_p16, vreinterpretq_s32_p64, vreinterpretq_s32_p128)
+	(vreinterpret_u8_f16, vreinterpret_u8_f64, vreinterpret_u8_s8)
+	(vreinterpret_u8_s16, vreinterpret_u8_s32, vreinterpret_u8_s64)
+	(vreinterpret_u8_f32, vreinterpret_u8_u16, vreinterpret_u8_u32)
+	(vreinterpret_u8_u64, vreinterpret_u8_p8, vreinterpret_u8_p16)
+	(vreinterpret_u8_p64, vreinterpretq_u8_f64, vreinterpretq_u8_s8)
+	(vreinterpretq_u8_s16, vreinterpretq_u8_s32, vreinterpretq_u8_s64)
+	(vreinterpretq_u8_f16, vreinterpretq_u8_f32, vreinterpretq_u8_u16)
+	(vreinterpretq_u8_u32, vreinterpretq_u8_u64, vreinterpretq_u8_p8)
+	(vreinterpretq_u8_p16, vreinterpretq_u8_p64, vreinterpretq_u8_p128)
+	(vreinterpret_u16_f16, vreinterpret_u16_f64, vreinterpret_u16_s8)
+	(vreinterpret_u16_s16, vreinterpret_u16_s32, vreinterpret_u16_s64)
+	(vreinterpret_u16_f32, vreinterpret_u16_u8, vreinterpret_u16_u32)
+	(vreinterpret_u16_u64, vreinterpret_u16_p8, vreinterpret_u16_p16)
+	(vreinterpret_u16_p64, vreinterpretq_u16_f64, vreinterpretq_u16_s8)
+	(vreinterpretq_u16_s16, vreinterpretq_u16_s32, vreinterpretq_u16_s64)
+	(vreinterpretq_u16_f16, vreinterpretq_u16_f32, vreinterpretq_u16_u8)
+	(vreinterpretq_u16_u32, vreinterpretq_u16_u64, vreinterpretq_u16_p8)
+	(vreinterpretq_u16_p16, vreinterpretq_u16_p64, vreinterpretq_u16_p128)
+	(vreinterpret_u32_f16, vreinterpret_u32_f64, vreinterpret_u32_s8)
+	(vreinterpret_u32_s16, vreinterpret_u32_s32, vreinterpret_u32_s64)
+	(vreinterpret_u32_f32, vreinterpret_u32_u8, vreinterpret_u32_u16)
+	(vreinterpret_u32_u64, vreinterpret_u32_p8, vreinterpret_u32_p16)
+	(vreinterpret_u32_p64, vreinterpretq_u32_f64, vreinterpretq_u32_s8)
+	(vreinterpretq_u32_s16, vreinterpretq_u32_s32, vreinterpretq_u32_s64)
+	(vreinterpretq_u32_f16, vreinterpretq_u32_f32, vreinterpretq_u32_u8)
+	(vreinterpretq_u32_u16, vreinterpretq_u32_u64, vreinterpretq_u32_p8)
+	(vreinterpretq_u32_p16, vreinterpretq_u32_p64, vreinterpretq_u32_p128)
+	(vreinterpretq_f64_p128, vreinterpretq_p128_f64, vreinterpret_bf16_u8)
+	(vreinterpret_bf16_u16, vreinterpret_bf16_u32, vreinterpret_bf16_u64)
+	(vreinterpret_bf16_s8, vreinterpret_bf16_s16, vreinterpret_bf16_s32)
+	(vreinterpret_bf16_s64, vreinterpret_bf16_p8, vreinterpret_bf16_p16)
+	(vreinterpret_bf16_p64, vreinterpret_bf16_f16, vreinterpret_bf16_f32)
+	(vreinterpret_bf16_f64, vreinterpretq_bf16_u8, vreinterpretq_bf16_u16)
+	(vreinterpretq_bf16_u32, vreinterpretq_bf16_u64, vreinterpretq_bf16_s8)
+	(vreinterpretq_bf16_s16, vreinterpretq_bf16_s32, vreinterpretq_bf16_s64)
+	(vreinterpretq_bf16_p8, vreinterpretq_bf16_p16, vreinterpretq_bf16_p64)
+	(vreinterpretq_bf16_p128, vreinterpretq_bf16_f16)
+	(vreinterpretq_bf16_f32, vreinterpretq_bf16_f64, vreinterpret_s8_bf16)
+	(vreinterpret_s16_bf16, vreinterpret_s32_bf16, vreinterpret_s64_bf16)
+	(vreinterpret_u8_bf16, vreinterpret_u16_bf16, vreinterpret_u32_bf16)
+	(vreinterpret_u64_bf16, vreinterpret_f16_bf16, vreinterpret_f32_bf16)
+	(vreinterpret_f64_bf16, vreinterpret_p8_bf16, vreinterpret_p16_bf16)
+	(vreinterpret_p64_bf16, vreinterpretq_s8_bf16, vreinterpretq_s16_bf16)
+	(vreinterpretq_s32_bf16, vreinterpretq_s64_bf16, vreinterpretq_u8_bf16)
+	(vreinterpretq_u16_bf16, vreinterpretq_u32_bf16, vreinterpretq_u64_bf16)
+	(vreinterpretq_f16_bf16, vreinterpretq_f32_bf16, vreinterpretq_f64_bf16)
+	(vreinterpretq_p8_bf16, vreinterpretq_p16_bf16, vreinterpretq_p64_bf16)
+	(vreinterpretq_p128_bf16): Delete
+
+2022-07-26  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_simd_builtin_std_type): Rename to...
+	(aarch64_int_or_fp_type): ...this, and allow irrelevant qualifiers.
+	(aarch64_lookup_simd_builtin_type): Rename to...
+	(aarch64_simd_builtin_type): ...this. Add const/pointer
+	support, and extract table lookup to...
+	(aarch64_lookup_simd_type_in_table): ...this function.
+	(aarch64_init_crc32_builtins): Update to use aarch64_simd_builtin_type.
+	(aarch64_init_fcmla_laneq_builtins): Ditto.
+	(aarch64_init_simd_builtin_functions): Ditto.
+
+2022-07-26  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_general_gimple_fold_builtin): Add combine.
+
+2022-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106189
+	* gimple-array-bounds.cc (array_bounds_checker::check_mem_ref):
+	Divide using offset_ints.
+
+2022-07-26  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* common/config/loongarch/loongarch-common.cc:
+	Enable '-fsection-anchors' when O1 and more advanced optimization.
+	* config/loongarch/genopts/loongarch.opt.in: Add new option
+	'-mexplicit-relocs', and enable by default.
+	* config/loongarch/loongarch-protos.h (loongarch_split_move_insn_p):
+	Delete function declaration.
+	(loongarch_split_move_insn): Delete function declaration.
+	(loongarch_split_symbol_type): Add function declaration.
+	* config/loongarch/loongarch.cc (enum loongarch_address_type):
+	Add new address type 'ADDRESS_LO_SUM'.
+	(loongarch_classify_symbolic_expression): New function definitions.
+	Classify the base of symbolic expression X, given that X appears in
+	context CONTEXT.
+	(loongarch_symbol_insns): Add a judgment condition TARGET_EXPLICIT_RELOCS.
+	(loongarch_split_symbol_type): New function definitions.
+	Determines whether the symbol load should be split into two instructions.
+	(loongarch_valid_lo_sum_p): New function definitions.
+	Return true if a LO_SUM can address a value of mode MODE when the LO_SUM
+	symbol has type SYMBOL_TYPE.
+	(loongarch_classify_address): Add handling of 'LO_SUM'.
+	(loongarch_address_insns): Add handling of 'ADDRESS_LO_SUM'.
+	(loongarch_signed_immediate_p): Sort code.
+	(loongarch_12bit_offset_address_p): Return true if address type is ADDRESS_LO_SUM.
+	(loongarch_const_insns): Add handling of 'HIGH'.
+	(loongarch_split_move_insn_p): Add the static attribute to the function.
+	(loongarch_emit_set): New function definitions.
+	(loongarch_call_tls_get_addr): Add symbol handling when defining TARGET_EXPLICIT_RELOCS.
+	(loongarch_legitimize_tls_address): Add symbol handling when defining the
+	TARGET_EXPLICIT_RELOCS macro.
+	(loongarch_split_symbol): New function definitions. Split symbol.
+	(loongarch_legitimize_address): Add codes see if the address can split into a high part
+	and a LO_SUM.
+	(loongarch_legitimize_const_move): Add codes split moves of symbolic constants into
+	high and low.
+	(loongarch_split_move_insn): Delete function definitions.
+	(loongarch_output_move): Add support for HIGH and LO_SUM.
+	(loongarch_print_operand_reloc): New function definitions.
+	Print symbolic operand OP, which is part of a HIGH or LO_SUM in context CONTEXT.
+	(loongarch_memmodel_needs_release_fence): Sort code.
+	(loongarch_print_operand): Rearrange alphabetical order and add H and L to support HIGH
+	and LOW output.
+	(loongarch_print_operand_address): Add handling of 'ADDRESS_LO_SUM'.
+	(TARGET_MIN_ANCHOR_OFFSET): Define macro to -IMM_REACH/2.
+	(TARGET_MAX_ANCHOR_OFFSET): Define macro to IMM_REACH/2-1.
+	* config/loongarch/loongarch.md (movti): Delete the template.
+	(*movti): Delete the template.
+	(movtf): Delete the template.
+	(*movtf): Delete the template.
+	(*low<mode>): New template of normal symbol low address.
+	(@tls_low<mode>): New template of tls symbol low address.
+	(@ld_from_got<mode>): New template load address from got table.
+	(@ori_l_lo12<mode>): New template.
+	* config/loongarch/loongarch.opt: Update from loongarch.opt.in.
+	* config/loongarch/predicates.md: Add support for symbol_type HIGH.
+
+2022-07-26  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/constraints.md (a): Delete the constraint.
+	(b): A constant call not local address.
+	(h): Delete the constraint.
+	(t): Delete the constraint.
+	* config/loongarch/loongarch-opts.cc (loongarch_config_target):
+	Remove cModel type support other than normal.
+	* config/loongarch/loongarch-protos.h (enum loongarch_symbol_type):
+	Add new symbol type 'SYMBOL_PCREL', 'SYMBOL_TLS_IE' and 'SYMBOL_TLS_LE'.
+	(loongarch_split_symbol): Delete useless function declarations.
+	(loongarch_split_symbol_type): Delete useless function declarations.
+	* config/loongarch/loongarch.cc (enum loongarch_address_type):
+	Delete unnecessary comment information.
+	(loongarch_symbol_binds_local_p): Modified the judgment order of label
+	and symbol.
+	(loongarch_classify_symbol): Return symbol type. If symbol is a label,
+	or symbol is a local symbol return SYMBOL_PCREL. If is a tls symbol,
+	return SYMBOL_TLS. If is a not local symbol return SYMBOL_GOT_DISP.
+	(loongarch_symbolic_constant_p): Add handling of 'SYMBOL_TLS_IE'
+	'SYMBOL_TLS_LE' and 'SYMBOL_PCREL'.
+	(loongarch_symbol_insns): Add handling of 'SYMBOL_TLS_IE' 'SYMBOL_TLS_LE'
+	and 'SYMBOL_PCREL'.
+	(loongarch_address_insns): Sort code.
+	(loongarch_12bit_offset_address_p): Sort code.
+	(loongarch_14bit_shifted_offset_address_p): Sort code.
+	(loongarch_call_tls_get_addr): Sort code.
+	(loongarch_legitimize_tls_address): Sort code.
+	(loongarch_output_move): Remove schema support for cmodel other than normal.
+	(loongarch_memmodel_needs_release_fence): Sort code.
+	(loongarch_print_operand): Sort code.
+	* config/loongarch/loongarch.h (LARCH_U12BIT_OFFSET_P):
+	Rename to LARCH_12BIT_OFFSET_P.
+	(LARCH_12BIT_OFFSET_P): New macro.
+	* config/loongarch/loongarch.md: Reimplement the function call. Remove schema
+	support for cmodel other than normal.
+	* config/loongarch/predicates.md (is_const_call_weak_symbol): Delete this predicate.
+	(is_const_call_plt_symbol): Delete this predicate.
+	(is_const_call_global_noplt_symbol): Delete this predicate.
+	(is_const_call_no_local_symbol): New predicate, determines whether it is a local
+	symbol or label.
+
+2022-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/106091
+	* config/rs6000/rs6000-p8swap.cc (replace_swapped_aligned_store): Copy
+	REG_EH_REGION when replacing one store insn having it.
+	(replace_swapped_aligned_load): Likewise.
+
 2022-07-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	* Makefile.in (OBJS): Add range-op-float.o.
