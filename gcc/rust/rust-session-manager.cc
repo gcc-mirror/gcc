@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-session-manager.h"
+#include "rust-unsafe-checker.h"
 #include "rust-diagnostics.h"
 #include "rust-lex.h"
 #include "rust-parse.h"
@@ -789,8 +790,14 @@ Session::parse_file (const char *filename)
   if (saw_errors ())
     return;
 
-  // privacy pass
+  // Various HIR error passes. The privacy pass happens before the unsafe checks
   Privacy::Resolver::resolve (hir);
+  if (saw_errors ())
+    return;
+
+  HIR::UnsafeChecker ().go (hir);
+  if (saw_errors ())
+    return;
 
   // do compile to gcc generic
   Compile::Context ctx (backend);

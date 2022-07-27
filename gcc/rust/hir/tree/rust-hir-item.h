@@ -502,6 +502,7 @@ public:
   AsyncConstStatus get_status () const { return const_status; }
 
   bool is_const () const { return const_status == AsyncConstStatus::CONST_FN; }
+  bool is_unsafe () const { return unsafety == Unsafety::Unsafe; }
 
   ABI get_abi () const { return abi; }
 };
