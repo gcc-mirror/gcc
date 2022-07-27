@@ -4605,6 +4605,15 @@ feasibility_state::maybe_update_for_edge (logger *logger,
   return true;
 }
 
+/* Dump this object to PP.  */
+
+void
+feasibility_state::dump_to_pp (pretty_printer *pp,
+			       bool simple, bool multiline) const
+{
+  m_model.dump_to_pp (pp, simple, multiline);
+}
+
 /* A family of cluster subclasses for use when generating .dot output for
    exploded graphs (-fdump-analyzer-exploded-graph), for grouping the
    enodes into hierarchical boxes.

@@ -112,6 +112,10 @@ private:
   void dump_feasible_graph (const exploded_node *target_enode,
 			    const char *desc, unsigned diag_idx,
 			    const feasible_graph &fg);
+  void dump_feasible_path (const exploded_node *target_enode,
+			   unsigned diag_idx,
+			   const feasible_graph &fg,
+			   const feasible_node &fnode) const;
 
   const exploded_graph &m_eg;
   shortest_exploded_paths *m_sep;
@@ -510,6 +514,9 @@ epath_finder::process_worklist_item (feasible_worklist *worklist,
 			     target_enode->m_index, diag_idx,
 			     succ_fnode->get_path_length ());
 	      *out_best_path = fg->make_epath (succ_fnode);
+	      if (flag_dump_analyzer_feasibility)
+		dump_feasible_path (target_enode, diag_idx, *fg, *succ_fnode);
+
 	      /* Success: stop the worklist iteration.  */
 	      return false;
 	    }
@@ -605,6 +612,23 @@ epath_finder::dump_feasible_graph (const exploded_node *target_enode,
 	     dump_base_name, desc, diag_idx, target_enode->m_index);
   char *filename = xstrdup (pp_formatted_text (&pp));
   fg.dump_dot (filename, NULL, args);
+  free (filename);
+}
+
+/* Dump the path to FNODE to "BASE_NAME.DIAG_IDX.to-enN.fpath.txt".  */
+
+void
+epath_finder::dump_feasible_path (const exploded_node *target_enode,
+				  unsigned diag_idx,
+				  const feasible_graph &fg,
+				  const feasible_node &fnode) const
+{
+  auto_timevar tv (TV_ANALYZER_DUMP);
+  pretty_printer pp;
+  pp_printf (&pp, "%s.%i.to-en%i.fpath.txt",
+	     dump_base_name, diag_idx, target_enode->m_index);
+  char *filename = xstrdup (pp_formatted_text (&pp));
+  fg.dump_feasible_path (fnode, filename);
   free (filename);
 }
 

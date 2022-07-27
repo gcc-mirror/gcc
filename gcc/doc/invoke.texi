@@ -10198,8 +10198,8 @@ diagnostic to @file{@var{file}.@var{idx}.@var{kind}.epath.txt}.
 @opindex dump-analyzer-feasibility
 Dump internal details about the analyzer's search for feasible paths.
 The details are written in a form suitable for viewing with GraphViz
-to filenames of the form @file{@var{file}.*.fg.dot} and
-@file{@var{file}.*.tg.dot}.
+to filenames of the form @file{@var{file}.*.fg.dot},
+@file{@var{file}.*.tg.dot}, and @file{@var{file}.*.fpath.txt}.
 
 @item -fdump-analyzer-json
 @opindex fdump-analyzer-json
