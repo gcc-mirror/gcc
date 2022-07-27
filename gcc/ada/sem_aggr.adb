@@ -4088,7 +4088,10 @@ package body Sem_Aggr is
       Index  : Node_Id;
       Lo, Hi : Node_Id;
       Constr : constant List_Id := New_List;
-      Subt   : constant Entity_Id := Make_Temporary (Loc, 'S');
+      Subt   : constant Entity_Id :=
+        Create_Itype (Ekind       => E_Array_Subtype,
+                      Related_Nod => N,
+                      Suffix      => 'S');
 
    begin
       --  Create a constrained subtype with null dimensions
@@ -4134,7 +4137,6 @@ package body Sem_Aggr is
                       Make_Index_Or_Discriminant_Constraint (Loc, Constr)));
 
       Insert_Action (N, Decl);
-      Set_Is_Internal (Subt);
       Analyze (Decl);
       Set_Etype (N, Subt);
       Set_Compile_Time_Known_Aggregate (N);
