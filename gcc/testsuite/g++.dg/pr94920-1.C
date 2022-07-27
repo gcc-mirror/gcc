@@ -1,4 +1,5 @@
 /* PR tree-optimization/94920 */
+/* { dg-additional-options "-Wno-psabi" } */
 /* { dg-do run } */
 
 #include "pr94920.C"
