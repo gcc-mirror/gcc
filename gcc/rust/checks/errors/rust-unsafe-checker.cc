@@ -36,6 +36,29 @@ UnsafeChecker::go (HIR::Crate &crate)
 }
 
 void
+UnsafeChecker::push_unsafe (HirId id)
+{
+  unsafe_contexts.emplace_back (id);
+}
+
+HirId
+UnsafeChecker::pop_unsafe ()
+{
+  rust_assert (!unsafe_contexts.empty ());
+
+  auto last = unsafe_contexts.back ();
+  unsafe_contexts.pop_back ();
+
+  return last;
+}
+
+bool
+UnsafeChecker::is_unsafe_context ()
+{
+  return !unsafe_contexts.empty ();
+}
+
+void
 UnsafeChecker::visit (IdentifierExpr &ident_expr)
 {}
 
@@ -94,7 +117,7 @@ UnsafeChecker::visit (DereferenceExpr &expr)
   rust_assert (context.lookup_type (to_deref, &to_deref_type));
 
   if (to_deref_type->get_kind () == TyTy::TypeKind::POINTER
-      && !in_unsafe_context)
+      && !is_unsafe_context ())
     rust_error_at (expr.get_locus (), "dereference of raw pointer requires "
 				      "unsafe function or block");
 }
@@ -320,11 +343,11 @@ UnsafeChecker::visit (ReturnExpr &expr)
 void
 UnsafeChecker::visit (UnsafeBlockExpr &expr)
 {
-  in_unsafe_context = true;
+  push_unsafe (expr.get_mappings ().get_hirid ());
 
   expr.get_block_expr ()->accept_vis (*this);
 
-  in_unsafe_context = false;
+  pop_unsafe ();
 }
 
 void
@@ -485,11 +508,15 @@ UnsafeChecker::visit (UseDeclaration &use_decl)
 void
 UnsafeChecker::visit (Function &function)
 {
-  in_unsafe_context = function.get_qualifiers ().is_unsafe ();
+  auto is_unsafe_fn = function.get_qualifiers ().is_unsafe ();
+
+  if (is_unsafe_fn)
+    push_unsafe (function.get_mappings ().get_hirid ());
 
   function.get_definition ()->accept_vis (*this);
 
-  in_unsafe_context = false;
+  if (is_unsafe_fn)
+    pop_unsafe ();
 }
 
 void

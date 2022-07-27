@@ -32,8 +32,24 @@ public:
   void go (HIR::Crate &crate);
 
 private:
-  /* Are we currently in an unsafe function or block ? */
-  bool in_unsafe_context;
+  /* Stack of unsafe contexts */
+  std::vector<HirId> unsafe_contexts;
+
+  /**
+   * Add an unsafe context to the stack. To call when entering unsafe blocks
+   */
+  void push_unsafe (HirId id);
+
+  /**
+   * Remove an unsafe context from the stack. Call this when exiting unsafe
+   * blocks
+   */
+  HirId pop_unsafe ();
+
+  /**
+   * Are we currently in an unsafe context or not
+   */
+  bool is_unsafe_context ();
 
   Resolver::TypeCheckContext &context;
 
@@ -170,6 +186,7 @@ private:
   virtual void visit (InferredType &type) override;
   virtual void visit (BareFunctionType &type) override;
 };
+
 } // namespace HIR
 } // namespace Rust
 
