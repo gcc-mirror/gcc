@@ -2223,7 +2223,7 @@ cgraph_node::assemble_thunks_and_aliases (void)
 	cgraph_node *thunk = e->caller;
 
 	e = e->next_caller;
-	thunk->expand_thunk (true, false);
+	thunk->expand_thunk (!rtl_dump_and_exit, false);
 	thunk->assemble_thunks_and_aliases ();
       }
     else
