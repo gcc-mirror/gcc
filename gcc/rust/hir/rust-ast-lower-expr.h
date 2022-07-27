@@ -307,7 +307,14 @@ public:
 	elements.push_back (std::unique_ptr<HIR::Expr> (translated_elem));
       }
 
-    translated_array_elems = new HIR::ArrayElemsValues (std::move (elements));
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (mappings->get_current_crate (),
+				   elems.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated_array_elems
+      = new HIR::ArrayElemsValues (mapping, std::move (elements));
   }
 
   void visit (AST::ArrayElemsCopied &elems) override
@@ -317,8 +324,15 @@ public:
     HIR::Expr *num_copies
       = ASTLoweringExpr::translate (elems.get_num_copies ().get ());
 
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (mappings->get_current_crate (),
+				   elems.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
     translated_array_elems
-      = new HIR::ArrayElemsCopied (std::unique_ptr<HIR::Expr> (element),
+      = new HIR::ArrayElemsCopied (mapping,
+				   std::unique_ptr<HIR::Expr> (element),
 				   std::unique_ptr<HIR::Expr> (num_copies));
   }
 

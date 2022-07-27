@@ -849,6 +849,8 @@ public:
     COPIED,
   };
 
+  ArrayElems (Analysis::NodeMapping mappings) : mappings (mappings){};
+
   virtual ~ArrayElems () {}
 
   // Unique pointer custom clone ArrayElems function
@@ -863,9 +865,13 @@ public:
 
   virtual ArrayExprType get_array_expr_type () const = 0;
 
+  Analysis::NodeMapping &get_mappings () { return mappings; }
+
 protected:
   // pure virtual clone implementation
   virtual ArrayElems *clone_array_elems_impl () const = 0;
+
+  Analysis::NodeMapping mappings;
 };
 
 // Value array elements
@@ -876,12 +882,13 @@ class ArrayElemsValues : public ArrayElems
   // TODO: should this store location data?
 
 public:
-  ArrayElemsValues (std::vector<std::unique_ptr<Expr> > elems)
-    : values (std::move (elems))
+  ArrayElemsValues (Analysis::NodeMapping mappings,
+		    std::vector<std::unique_ptr<Expr> > elems)
+    : ArrayElems (mappings), values (std::move (elems))
   {}
 
   // copy constructor with vector clone
-  ArrayElemsValues (ArrayElemsValues const &other)
+  ArrayElemsValues (ArrayElemsValues const &other) : ArrayElems (other)
   {
     values.reserve (other.values.size ());
     for (const auto &e : other.values)
@@ -930,15 +937,16 @@ class ArrayElemsCopied : public ArrayElems
 
 public:
   // Constructor requires pointers for polymorphism
-  ArrayElemsCopied (std::unique_ptr<Expr> copied_elem,
+  ArrayElemsCopied (Analysis::NodeMapping mappings,
+		    std::unique_ptr<Expr> copied_elem,
 		    std::unique_ptr<Expr> copy_amount)
-    : elem_to_copy (std::move (copied_elem)),
+    : ArrayElems (mappings), elem_to_copy (std::move (copied_elem)),
       num_copies (std::move (copy_amount))
   {}
 
   // Copy constructor required due to unique_ptr - uses custom clone
   ArrayElemsCopied (ArrayElemsCopied const &other)
-    : elem_to_copy (other.elem_to_copy->clone_expr ()),
+    : ArrayElems (other), elem_to_copy (other.elem_to_copy->clone_expr ()),
       num_copies (other.num_copies->clone_expr ())
   {}
 
