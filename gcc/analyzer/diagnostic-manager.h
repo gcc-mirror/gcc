@@ -46,6 +46,9 @@ public:
 
   json::object *to_json () const;
 
+  void dump_dot_id (pretty_printer *pp) const;
+  void dump_as_dot_node (pretty_printer *pp) const;
+
   const feasibility_problem *get_feasibility_problem () const
   {
     return m_problem;

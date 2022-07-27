@@ -742,6 +742,68 @@ saved_diagnostic::to_json () const
   return sd_obj;
 }
 
+/* Dump this to PP in a form suitable for use as an id in .dot output.  */
+
+void
+saved_diagnostic::dump_dot_id (pretty_printer *pp) const
+{
+  pp_printf (pp, "sd_%i", m_idx);
+}
+
+/* Dump this to PP in a form suitable for use as a node in .dot output.  */
+
+void
+saved_diagnostic::dump_as_dot_node (pretty_printer *pp) const
+{
+  dump_dot_id (pp);
+  pp_printf (pp,
+	     " [shape=none,margin=0,style=filled,fillcolor=\"red\",label=\"");
+  pp_write_text_to_stream (pp);
+
+  /* Node label.  */
+  pp_printf (pp, "DIAGNOSTIC: %s (sd: %i)\n",
+	     m_d->get_kind (), m_idx);
+  if (m_sm)
+    {
+      pp_printf (pp, "sm: %s", m_sm->get_name ());
+      if (m_state)
+	{
+	  pp_printf (pp, "; state: ");
+	  m_state->dump_to_pp (pp);
+	}
+      pp_newline (pp);
+    }
+  if (m_stmt)
+    {
+      pp_string (pp, "stmt: ");
+      pp_gimple_stmt_1 (pp, m_stmt, 0, (dump_flags_t)0);
+      pp_newline (pp);
+    }
+  if (m_var)
+    pp_printf (pp, "var: %qE\n", m_var);
+  if (m_sval)
+    {
+      pp_string (pp, "sval: ");
+      m_sval->dump_to_pp (pp, true);
+      pp_newline (pp);
+    }
+  if (m_best_epath)
+    pp_printf (pp, "path length: %i\n", get_epath_length ());
+
+  pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+  pp_string (pp, "\"];\n\n");
+
+  /* Show links to duplicates.  */
+  for (auto iter : m_duplicates)
+    {
+      dump_dot_id (pp);
+      pp_string (pp, " -> ");
+      iter->dump_dot_id (pp);
+      pp_string (pp, " [style=\"dotted\" arrowhead=\"none\"];");
+      pp_newline (pp);
+    }
+}
+
 /* Use PF to find the best exploded_path for this saved_diagnostic,
    and store it in m_best_epath.
    If m_stmt is still NULL, use m_stmt_finder on the epath to populate
