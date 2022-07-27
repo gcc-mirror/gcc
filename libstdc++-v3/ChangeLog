@@ -1,3 +1,10 @@
+2022-07-26  Thomas Rodgers  <trodgers@redhat.com>
+
+	Backported from master:
+	2022-07-26  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/bits/atomic_wait.h (__atomic_spin): Merge spin loops.
+
 2022-07-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/106320
