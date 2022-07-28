@@ -325,9 +325,6 @@ private:
   void dump_hir_pretty (HIR::Crate &crate) const;
   void dump_type_resolution (HIR::Crate &crate) const;
 
-  void implicitly_enable_feature (std::string feature_name);
-  void enable_features ();
-
   // pipeline stages - TODO maybe move?
   /* Register plugins pipeline stage. TODO maybe move to another object?
    * Currently dummy stage. In future will handle attribute injection
