@@ -59,8 +59,8 @@ private:
   void check_use_of_static (HirId node_id, Location locus);
 
   Resolver::TypeCheckContext &context;
-  Resolver::Resolver resolver;
-  Analysis::Mappings mappings;
+  Resolver::Resolver &resolver;
+  Analysis::Mappings &mappings;
 
   virtual void visit (IdentifierExpr &ident_expr) override;
   virtual void visit (Lifetime &lifetime) override;
