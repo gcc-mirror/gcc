@@ -1,3 +1,11 @@
+2022-07-27  David Faust  <david.faust@oracle.com>
+
+	* MAINTAINERS: Add myself as reviewer for CTF and BTF.
+
+2022-07-27  Richard Biener  <rguenther@suse.de>
+
+	* MAINTAINERS (Roger Sayle): Update e-mail address.
+
 2022-07-21  Sam Feifer  <sfeifer@redhat.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

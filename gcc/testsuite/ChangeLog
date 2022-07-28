@@ -1,3 +1,30 @@
+2022-07-27  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-c++-common/pragma-diag-14.c: New test.
+	* c-c++-common/pragma-diag-15.c: New test.
+
+2022-07-27  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106286
+	* gcc.dg/analyzer/fd-meaning.c: New test.
+
+2022-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/106261
+	* g++.dg/debug/pr106261.C: New test.
+
+2022-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94920
+	* g++.dg/pr94920.C: Add -Wno-psabi to dg-options.
+	* g++.dg/pr94920-1.C: Add dg-additional-options -Wno-psabi.
+
+2022-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106397
+	* gcc.dg/pr106397.c: For ia32, add dg-additional-options
+	-march=i686 -msse.
+
 2022-07-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106319
