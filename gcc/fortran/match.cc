@@ -454,10 +454,11 @@ gfc_match_eos (void)
 /* Match a literal integer on the input, setting the value on
    MATCH_YES.  Literal ints occur in kind-parameters as well as
    old-style character length specifications.  If cnt is non-NULL it
-   will be set to the number of digits.  */
+   will be set to the number of digits.
+   When gobble_ws is false, do not skip over leading blanks.  */
 
 match
-gfc_match_small_literal_int (int *value, int *cnt)
+gfc_match_small_literal_int (int *value, int *cnt, bool gobble_ws)
 {
   locus old_loc;
   char c;
@@ -466,7 +467,8 @@ gfc_match_small_literal_int (int *value, int *cnt)
   old_loc = gfc_current_locus;
 
   *value = -1;
-  gfc_gobble_whitespace ();
+  if (gobble_ws)
+    gfc_gobble_whitespace ();
   c = gfc_next_ascii_char ();
   if (cnt)
     *cnt = 0;
@@ -608,17 +610,19 @@ gfc_match_label (void)
 /* See if the current input looks like a name of some sort.  Modifies
    the passed buffer which must be GFC_MAX_SYMBOL_LEN+1 bytes long.
    Note that options.cc restricts max_identifier_length to not more
-   than GFC_MAX_SYMBOL_LEN.  */
+   than GFC_MAX_SYMBOL_LEN.
+   When gobble_ws is false, do not skip over leading blanks.  */
 
 match
-gfc_match_name (char *buffer)
+gfc_match_name (char *buffer, bool gobble_ws)
 {
   locus old_loc;
   int i;
   char c;
 
   old_loc = gfc_current_locus;
-  gfc_gobble_whitespace ();
+  if (gobble_ws)
+    gfc_gobble_whitespace ();
 
   c = gfc_next_ascii_char ();
   if (!(ISALPHA (c) || (c == '_' && flag_allow_leading_underscore)))
@@ -1053,15 +1057,17 @@ cleanup:
 
 
 /* Tries to match the next non-whitespace character on the input.
-   This subroutine does not return MATCH_ERROR.  */
+   This subroutine does not return MATCH_ERROR.
+   When gobble_ws is false, do not skip over leading blanks.  */
 
 match
-gfc_match_char (char c)
+gfc_match_char (char c, bool gobble_ws)
 {
   locus where;
 
   where = gfc_current_locus;
-  gfc_gobble_whitespace ();
+  if (gobble_ws)
+    gfc_gobble_whitespace ();
 
   if (gfc_next_ascii_char () == c)
     return MATCH_YES;
