@@ -12778,6 +12778,10 @@ array_at_struct_end_p (tree ref)
       && DECL_SIZE_UNIT (ref)
       && TREE_CODE (DECL_SIZE_UNIT (ref)) == INTEGER_CST)
     {
+      /* If the object itself is the array it is not at struct end.  */
+      if (DECL_P (ref_to_array))
+	return false;
+
       /* Check whether the array domain covers all of the available
          padding.  */
       poly_int64 offset;
