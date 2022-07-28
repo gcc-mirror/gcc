@@ -237,7 +237,7 @@ future activies on a context to the given `FILE *`.
    a much simpler executable that performs the equivalent calls into
    libgccjit, without needing the client code and its data.
 
-   Typically you need to supply :option:`-Wno-unused-variable` when
+   Typically you need to supply :option:`gcc:-Wno-unused-variable` when
    compiling the generated file (since the result of each API call is
    assigned to a unique variable within the generated C source, and not
    all are necessarily then used).
@@ -252,7 +252,7 @@ future activies on a context to the given `FILE *`.
 
    Parameter "dumpname" corresponds to the equivalent gcc command-line
    option, without the "-fdump-" prefix.
-   For example, to get the equivalent of :option:`-fdump-tree-vrp1`,
+   For example, to get the equivalent of :option:`-fdump-tree-vrp <gcc:-fdump-tree-all>`,
    supply ``"tree-vrp1"``:
 
    .. code-block:: c
