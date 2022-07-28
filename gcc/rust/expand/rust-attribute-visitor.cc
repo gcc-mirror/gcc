@@ -1122,12 +1122,12 @@ AttrVisitor::visit (AST::CallExpr &expr)
 
       stmt->accept_vis (*this);
 
-      auto fragment = expander.take_expanded_fragment (*this);
-      if (fragment.should_expand ())
+      auto final_fragment = expand_macro_fragment_recursive ();
+      if (final_fragment.should_expand ())
 	{
 	  // Remove the current expanded invocation
 	  it = params.erase (it);
-	  for (auto &node : fragment.get_nodes ())
+	  for (auto &node : final_fragment.get_nodes ())
 	    {
 	      it = params.insert (it, node.take_expr ());
 	      it++;
@@ -3430,25 +3430,16 @@ AttrVisitor::visit (AST::BareFunctionType &type)
 void
 AttrVisitor::maybe_expand_expr (std::unique_ptr<AST::Expr> &expr)
 {
-  auto fragment = expander.take_expanded_fragment (*this);
-  unsigned int original_depth = expander.expansion_depth;
-  while (fragment.should_expand ())
-    {
-      expr = fragment.take_expression_fragment ();
-      expander.expansion_depth++;
-      auto new_fragment = expander.take_expanded_fragment (*this);
-      if (new_fragment.is_error ())
-	break;
-      fragment = std::move (new_fragment);
-    }
-  expander.expansion_depth = original_depth;
+  auto final_fragment = expand_macro_fragment_recursive ();
+  if (final_fragment.should_expand ())
+    expr = final_fragment.take_expression_fragment ();
 }
 
 void
 AttrVisitor::maybe_expand_type (std::unique_ptr<AST::Type> &type)
 {
-  auto fragment = expander.take_expanded_fragment (*this);
-  if (fragment.should_expand ())
-    type = fragment.take_type_fragment ();
+  auto final_fragment = expand_macro_fragment_recursive ();
+  if (final_fragment.should_expand ())
+    type = final_fragment.take_type_fragment ();
 }
 } // namespace Rust
