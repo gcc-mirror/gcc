@@ -18,7 +18,7 @@
 #include "rust-location.h"
 #include "rust-diagnostics.h"
 #include "rust-tree.h"
-
+#include "rust-target.h"
 #include "fold-const.h"
 #include "realmpfr.h"
 #include "convert.h"
@@ -30,6 +30,7 @@
 #include "cgraph.h"
 #include "tree-inline.h"
 #include "vec.h"
+#include "rust-target.h"
 
 #define VERIFY_CONSTANT(X)                                                     \
   do                                                                           \
@@ -488,6 +489,10 @@ eval_conditional_expression (const constexpr_ctx *ctx, tree t, bool lval,
 			     bool *non_constant_p, bool *overflow_p,
 			     tree *jump_target);
 
+static tree
+eval_bit_field_ref (const constexpr_ctx *ctx, tree t, bool lval,
+		    bool *non_constant_p, bool *overflow_p);
+
 /* Variables and functions to manage constexpr call expansion context.
    These do not need to be marked for PCH or GC.  */
 
@@ -724,6 +729,10 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	  if (ctx->save_exprs)
 	    ctx->save_exprs->safe_push (t);
 	}
+      break;
+
+    case BIT_FIELD_REF:
+      r = eval_bit_field_ref (ctx, t, lval, non_constant_p, overflow_p);
       break;
 
     case COND_EXPR:
@@ -2667,6 +2676,88 @@ eval_conditional_expression (const constexpr_ctx *ctx, tree t, bool lval,
     val = void_node;
   return eval_constant_expression (ctx, val, lval, non_constant_p, overflow_p,
 				   jump_target);
+}
+
+// forked from gcc/cp/constexpr.cc cxx_eval_bit_field_ref
+
+/* Subroutine of cxx_eval_constant_expression.
+   Attempt to reduce a field access of a value of class type that is
+   expressed as a BIT_FIELD_REF.  */
+
+static tree
+eval_bit_field_ref (const constexpr_ctx *ctx, tree t, bool lval,
+		    bool *non_constant_p, bool *overflow_p)
+{
+  tree orig_whole = TREE_OPERAND (t, 0);
+  tree retval, fldval, utype, mask;
+  bool fld_seen = false;
+  HOST_WIDE_INT istart, isize;
+  tree whole = eval_constant_expression (ctx, orig_whole, lval, non_constant_p,
+					 overflow_p);
+  tree start, field, value;
+  unsigned HOST_WIDE_INT i;
+
+  if (whole == orig_whole)
+    return t;
+  /* Don't VERIFY_CONSTANT here; we only want to check that we got a
+     CONSTRUCTOR.  */
+  if (!*non_constant_p && TREE_CODE (whole) != VECTOR_CST
+      && TREE_CODE (whole) != CONSTRUCTOR)
+    {
+      if (!ctx->quiet)
+	error ("%qE is not a constant expression", orig_whole);
+      *non_constant_p = true;
+    }
+  if (*non_constant_p)
+    return t;
+
+  if (TREE_CODE (whole) == VECTOR_CST)
+    return fold_ternary (BIT_FIELD_REF, TREE_TYPE (t), whole,
+			 TREE_OPERAND (t, 1), TREE_OPERAND (t, 2));
+
+  start = TREE_OPERAND (t, 2);
+  istart = tree_to_shwi (start);
+  isize = tree_to_shwi (TREE_OPERAND (t, 1));
+  utype = TREE_TYPE (t);
+  if (!TYPE_UNSIGNED (utype))
+    utype = build_nonstandard_integer_type (TYPE_PRECISION (utype), 1);
+  retval = build_int_cst (utype, 0);
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (whole), i, field, value)
+    {
+      tree bitpos = bit_position (field);
+      STRIP_ANY_LOCATION_WRAPPER (value);
+      if (bitpos == start && DECL_SIZE (field) == TREE_OPERAND (t, 1))
+	return value;
+      if (TREE_CODE (TREE_TYPE (field)) == INTEGER_TYPE
+	  && TREE_CODE (value) == INTEGER_CST && tree_fits_shwi_p (bitpos)
+	  && tree_fits_shwi_p (DECL_SIZE (field)))
+	{
+	  HOST_WIDE_INT bit = tree_to_shwi (bitpos);
+	  HOST_WIDE_INT sz = tree_to_shwi (DECL_SIZE (field));
+	  HOST_WIDE_INT shift;
+	  if (bit >= istart && bit + sz <= istart + isize)
+	    {
+	      fldval = fold_convert (utype, value);
+	      mask = build_int_cst_type (utype, -1);
+	      mask = fold_build2 (LSHIFT_EXPR, utype, mask,
+				  size_int (TYPE_PRECISION (utype) - sz));
+	      mask = fold_build2 (RSHIFT_EXPR, utype, mask,
+				  size_int (TYPE_PRECISION (utype) - sz));
+	      fldval = fold_build2 (BIT_AND_EXPR, utype, fldval, mask);
+	      shift = bit - istart;
+	      if (BYTES_BIG_ENDIAN)
+		shift = TYPE_PRECISION (utype) - shift - sz;
+	      fldval
+		= fold_build2 (LSHIFT_EXPR, utype, fldval, size_int (shift));
+	      retval = fold_build2 (BIT_IOR_EXPR, utype, retval, fldval);
+	      fld_seen = true;
+	    }
+	}
+    }
+  if (fld_seen)
+    return fold_convert (TREE_TYPE (t), retval);
+  gcc_unreachable ();
+  return error_mark_node;
 }
 
 // #include "gt-rust-rust-constexpr.h"
