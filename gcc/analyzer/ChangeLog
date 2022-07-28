@@ -1,3 +1,9 @@
+2022-07-27  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106286
+	* sm-fd.cc:
+	(fd_diagnostic::get_meaning_for_state_change): New.
+
 2022-07-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106319

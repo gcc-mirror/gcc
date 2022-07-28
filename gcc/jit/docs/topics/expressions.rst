@@ -60,7 +60,7 @@ Simple expressions
                                                    int value)
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant :c:type:`int` value.
+   the given constant :expr:`int` value.
 
 .. function:: gcc_jit_rvalue *\
               gcc_jit_context_new_rvalue_from_long (gcc_jit_context *ctxt, \
@@ -68,7 +68,7 @@ Simple expressions
                                                     long value)
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant :c:type:`long` value.
+   the given constant :expr:`long` value.
 
 .. function::  gcc_jit_rvalue *gcc_jit_context_zero (gcc_jit_context *ctxt, \
                                                      gcc_jit_type *numeric_type)
@@ -96,7 +96,7 @@ Simple expressions
                                                        double value)
 
    Given a numeric type (integer or floating point), build an rvalue for
-   the given constant :c:type:`double` value.
+   the given constant :expr:`double` value.
 
 .. function:: gcc_jit_rvalue *\
               gcc_jit_context_new_rvalue_from_ptr (gcc_jit_context *ctxt, \
@@ -309,18 +309,24 @@ Unary Operations
 
    The parameter ``result_type`` must be a numeric type.
 
-.. type:: enum gcc_jit_unary_op
+.. enum:: gcc_jit_unary_op
 
 The available unary operations are:
 
-==========================================  ============
-Unary Operation                             C equivalent
-==========================================  ============
-:c:macro:`GCC_JIT_UNARY_OP_MINUS`           `-(EXPR)`
-:c:macro:`GCC_JIT_UNARY_OP_BITWISE_NEGATE`  `~(EXPR)`
-:c:macro:`GCC_JIT_UNARY_OP_LOGICAL_NEGATE`  `!(EXPR)`
-:c:macro:`GCC_JIT_UNARY_OP_ABS`             `abs (EXPR)`
-==========================================  ============
+.. list-table::
+   :header-rows: 1
+
+   * - Unary Operation
+     - C equivalent
+
+   * - :c:macro:`GCC_JIT_UNARY_OP_MINUS`
+     - `-(EXPR)`
+   * - :c:macro:`GCC_JIT_UNARY_OP_BITWISE_NEGATE`
+     - `~(EXPR)`
+   * - :c:macro:`GCC_JIT_UNARY_OP_LOGICAL_NEGATE`
+     - `!(EXPR)`
+   * - :c:macro:`GCC_JIT_UNARY_OP_ABS`
+     - `abs (EXPR)`
 
 .. c:macro:: GCC_JIT_UNARY_OP_MINUS
 
@@ -376,26 +382,40 @@ Binary Operations
 
    The parameter ``result_type`` must be a numeric type.
 
-.. type:: enum gcc_jit_binary_op
+.. enum:: gcc_jit_binary_op
 
 The available binary operations are:
 
-========================================  ============
-Binary Operation                          C equivalent
-========================================  ============
-:c:macro:`GCC_JIT_BINARY_OP_PLUS`         `x + y`
-:c:macro:`GCC_JIT_BINARY_OP_MINUS`        `x - y`
-:c:macro:`GCC_JIT_BINARY_OP_MULT`         `x * y`
-:c:macro:`GCC_JIT_BINARY_OP_DIVIDE`       `x / y`
-:c:macro:`GCC_JIT_BINARY_OP_MODULO`       `x % y`
-:c:macro:`GCC_JIT_BINARY_OP_BITWISE_AND`  `x & y`
-:c:macro:`GCC_JIT_BINARY_OP_BITWISE_XOR`  `x ^ y`
-:c:macro:`GCC_JIT_BINARY_OP_BITWISE_OR`   `x | y`
-:c:macro:`GCC_JIT_BINARY_OP_LOGICAL_AND`  `x && y`
-:c:macro:`GCC_JIT_BINARY_OP_LOGICAL_OR`   `x || y`
-:c:macro:`GCC_JIT_BINARY_OP_LSHIFT`       `x << y`
-:c:macro:`GCC_JIT_BINARY_OP_RSHIFT`       `x >> y`
-========================================  ============
+.. list-table::
+   :header-rows: 1
+
+   * - Binary Operation
+     - C equivalent
+
+   * - :c:macro:`GCC_JIT_BINARY_OP_PLUS`
+     - `x + y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_MINUS`
+     - `x - y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_MULT`
+     - `x * y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_DIVIDE`
+     - `x / y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_MODULO`
+     - `x % y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_BITWISE_AND`
+     - `x & y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_BITWISE_XOR`
+     - `x ^ y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_BITWISE_OR`
+     - `x | y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_LOGICAL_AND`
+     - `x && y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_LOGICAL_OR`
+     - `x || y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_LSHIFT`
+     - `x << y`
+   * - :c:macro:`GCC_JIT_BINARY_OP_RSHIFT`
+     - `x >> y`
 
 .. c:macro:: GCC_JIT_BINARY_OP_PLUS
 
@@ -534,19 +554,26 @@ Comparisons
 
    Build a boolean rvalue out of the comparison of two other rvalues.
 
-.. type:: enum gcc_jit_comparison
+.. enum:: gcc_jit_comparison
 
-=======================================  ============
-Comparison                               C equivalent
-=======================================  ============
-:c:macro:`GCC_JIT_COMPARISON_EQ`         `x == y`
-:c:macro:`GCC_JIT_COMPARISON_NE`         `x != y`
-:c:macro:`GCC_JIT_COMPARISON_LT`         `x < y`
-:c:macro:`GCC_JIT_COMPARISON_LE`         `x <= y`
-:c:macro:`GCC_JIT_COMPARISON_GT`         `x > y`
-:c:macro:`GCC_JIT_COMPARISON_GE`         `x >= y`
-=======================================  ============
+.. list-table::
+   :header-rows: 1
 
+   * - Comparison
+     - C equivalent
+
+   * - :c:macro:`GCC_JIT_COMPARISON_EQ`
+     - `x == y`
+   * - :c:macro:`GCC_JIT_COMPARISON_NE`
+     - `x != y`
+   * - :c:macro:`GCC_JIT_COMPARISON_LT`
+     - `x < y`
+   * - :c:macro:`GCC_JIT_COMPARISON_LE`
+     - `x <= y`
+   * - :c:macro:`GCC_JIT_COMPARISON_GT`
+     - `x > y`
+   * - :c:macro:`GCC_JIT_COMPARISON_GE`
+     - `x >= y`
 
 Function calls
 **************
@@ -711,7 +738,7 @@ where the rvalue is computed by reading from the storage area.
 
    The "model" parameter determines the thread-local storage model of the "lvalue":
 
-   .. type:: enum gcc_jit_tls_model
+   .. enum:: gcc_jit_tls_model
 
    .. c:macro:: GCC_JIT_TLS_MODEL_NONE
 
@@ -841,7 +868,7 @@ Global variables
    The "kind" parameter determines the visibility of the "global" outside
    of the :c:type:`gcc_jit_result`:
 
-   .. type:: enum gcc_jit_global_kind
+   .. enum:: gcc_jit_global_kind
 
    .. c:macro:: GCC_JIT_GLOBAL_EXPORTED
 

@@ -23,12 +23,12 @@ Objects
 .. type:: gcc_jit_object
 
 Almost every entity in the API (with the exception of
-:c:type:`gcc_jit_context *` and :c:type:`gcc_jit_result *`) is a
-"contextual" object, a :c:type:`gcc_jit_object *`
+:c:expr:`gcc_jit_context *` and :c:expr:`gcc_jit_result *`) is a
+"contextual" object, a :c:expr:`gcc_jit_object *`
 
 A JIT object:
 
-  * is associated with a :c:type:`gcc_jit_context *`.
+  * is associated with a :c:expr:`gcc_jit_context *`.
 
   * is automatically cleaned up for you when its context is released so
     you don't need to manually track and cleanup all objects, just the

@@ -13674,6 +13674,11 @@ math functions.
 
 The default is @option{-ftrapping-math}.
 
+Future versions of GCC may provide finer control of this setting
+using C99's @code{FENV_ACCESS} pragma.  This command-line option
+will be used along with @option{-frounding-math} to specify the
+default state for @code{FENV_ACCESS}.
+
 @item -frounding-math
 @opindex frounding-math
 Disable transformations and optimizations that assume default floating-point
@@ -13692,7 +13697,8 @@ This option is experimental and does not currently guarantee to
 disable all GCC optimizations that are affected by rounding mode.
 Future versions of GCC may provide finer control of this setting
 using C99's @code{FENV_ACCESS} pragma.  This command-line option
-will be used to specify the default state for @code{FENV_ACCESS}.
+will be used along with @option{-ftrapping-math} to specify the
+default state for @code{FENV_ACCESS}.
 
 @item -fsignaling-nans
 @opindex fsignaling-nans

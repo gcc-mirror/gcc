@@ -764,6 +764,7 @@ toyvm_function_compile (toyvm_function *fn)
   toyvm_result->cf_code =
     (toyvm_compiled_code)gcc_jit_result_get_code (jit_result,
 						  funcname);
+  /* (this leaks "jit_result" and "funcname") */
 
   free (funcname);
 

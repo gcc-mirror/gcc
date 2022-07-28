@@ -1,3 +1,45 @@
+2022-07-27  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* doc/loop.texi: Refer to LOOPS_HAVE_RECORDED_EXITS instead.
+
+2022-07-27  WANG Xuerui  <i@xen0n.name>
+
+	* doc/invoke.texi: Document -m[no-]explicit-relocs for
+	LoongArch.
+
+2022-07-27  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md (stack_protect_set_<mode>): Remove
+	duplicate backslashes.
+
+2022-07-27  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs) <IF_THEN_ELSE>: New
+	case.
+
+2022-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/106261
+	* cgraphunit.cc (cgraph_node::assemble_thunks_and_aliases): Don't
+	output asm thunks for -dx.
+
+2022-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106332
+	* opts-common.cc (candidates_list_and_hint): Add gcc_assert
+	that candidates is not an empty vector.
+
+2022-07-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* configure.ac (HAVE_AS_EXPLICIT_RELOCS): Define to 1 if the
+	assembler supports explicit relocation for LoongArch.
+	* configure: Regenerate.
+	* config/loongarch/loongarch-opts.h (HAVE_AS_EXPLICIT_RELOCS):
+	Define to 0 if not defined.
+	* config/loongarch/genopts/loongarch.opt.in
+	(TARGET_EXPLICIT_RELOCS): Default to HAVE_AS_EXPLICIT_RELOCS.
+	* config/loongarch/loongarch.opt: Regenerate.
+
 2022-07-26  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR c/106016

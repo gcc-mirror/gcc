@@ -39,6 +39,9 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
+# c:type directive is supported since 3.0
+needs_sphinx = '3.0'
+
 # General information about the project.
 project = u'libgccjit'
 copyright = u'2014-2022 Free Software Foundation, Inc.'

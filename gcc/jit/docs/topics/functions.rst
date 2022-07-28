@@ -80,7 +80,7 @@ Functions
 
    Create a gcc_jit_function with the given name and parameters.
 
-   .. type:: enum gcc_jit_function_kind
+   .. enum:: gcc_jit_function_kind
 
    This enum controls the kind of function created, and has the following
    values:
