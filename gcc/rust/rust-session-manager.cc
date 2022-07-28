@@ -574,13 +574,16 @@ Session::enable_dump (std::string arg)
 /* Actual main entry point for front-end. Called from langhook to parse files.
  */
 void
-Session::parse_files (int num_files, const char **files)
+Session::handle_input_files (int num_files, const char **files)
 {
+  if (num_files != 1)
+    rust_fatal_error (Location (),
+		      "only one file may be specified on the command line");
+
+  const auto &file = files[0];
+
   if (options.crate_name.empty ())
     {
-      /* HACK: We use the first file to infer the crate name, which might be
-       * incorrect: since rustc only allows one file to be supplied in the
-       * command-line */
       auto filename = "-";
       if (num_files > 0)
 	filename = files[0];
@@ -594,13 +597,9 @@ Session::parse_files (int num_files, const char **files)
 
   CrateNum crate_num = mappings->get_next_crate_num (options.get_crate_name ());
   mappings->set_current_crate (crate_num);
-  for (int i = 0; i < num_files; i++)
-    {
-      rust_debug ("Attempting to parse file: %s", files[i]);
-      parse_file (files[i]);
-    }
-  /* TODO: should semantic analysis be dealed with here? or per file? for now,
-   * per-file. */
+
+  rust_debug ("Attempting to parse file: %s", file);
+  compile_crate (file);
 }
 
 void
@@ -656,7 +655,7 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
 
 // Parses a single file with filename filename.
 void
-Session::parse_file (const char *filename)
+Session::compile_crate (const char *filename)
 {
   RAIIFile file_wrap (filename);
   if (!file_wrap.ok ())
