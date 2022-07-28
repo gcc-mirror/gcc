@@ -2125,6 +2125,14 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
 	    if (is_gimple_call (stmt) && loop->safelen)
 	      {
 		tree fndecl = gimple_call_fndecl (stmt), op;
+		if (fndecl == NULL_TREE
+		    && gimple_call_internal_p (stmt, IFN_MASK_CALL))
+		  {
+		    fndecl = gimple_call_arg (stmt, 0);
+		    gcc_checking_assert (TREE_CODE (fndecl) == ADDR_EXPR);
+		    fndecl = TREE_OPERAND (fndecl, 0);
+		    gcc_checking_assert (TREE_CODE (fndecl) == FUNCTION_DECL);
+		  }
 		if (fndecl != NULL_TREE)
 		  {
 		    cgraph_node *node = cgraph_node::get (fndecl);

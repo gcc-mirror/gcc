@@ -4521,3 +4521,10 @@ void
 expand_ASSUME (internal_fn, gcall *)
 {
 }
+
+void
+expand_MASK_CALL (internal_fn, gcall *)
+{
+  /* This IFN should only exist between ifcvt and vect passes.  */
+  gcc_unreachable ();
+}

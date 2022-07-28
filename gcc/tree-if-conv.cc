@@ -123,6 +123,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-dse.h"
 #include "tree-vectorizer.h"
 #include "tree-eh.h"
+#include "cgraph.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -1063,7 +1064,8 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
    A statement is if-convertible if:
    - it is an if-convertible GIMPLE_ASSIGN,
    - it is a GIMPLE_LABEL or a GIMPLE_COND,
-   - it is builtins call.  */
+   - it is builtins call,
+   - it is a call to a function with a SIMD clone.  */
 
 static bool
 if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
@@ -1083,13 +1085,23 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 	tree fndecl = gimple_call_fndecl (stmt);
 	if (fndecl)
 	  {
+	    /* We can vectorize some builtins and functions with SIMD
+	       "inbranch" clones.  */
 	    int flags = gimple_call_flags (stmt);
+	    struct cgraph_node *node = cgraph_node::get (fndecl);
 	    if ((flags & ECF_CONST)
 		&& !(flags & ECF_LOOPING_CONST_OR_PURE)
-		/* We can only vectorize some builtins at the moment,
-		   so restrict if-conversion to those.  */
 		&& fndecl_built_in_p (fndecl))
 	      return true;
+	    if (node && node->simd_clones != NULL)
+	      /* Ensure that at least one clone can be "inbranch".  */
+	      for (struct cgraph_node *n = node->simd_clones; n != NULL;
+		   n = n->simdclone->next_clone)
+		if (n->simdclone->inbranch)
+		  {
+		    need_to_predicate = true;
+		    return true;
+		  }
 	  }
 	return false;
       }
@@ -2613,6 +2625,29 @@ predicate_statements (loop_p loop)
 	      gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
 	      update_stmt (stmt);
 	    }
+
+	  /* Convert functions that have a SIMD clone to IFN_MASK_CALL.  This
+	     will cause the vectorizer to match the "in branch" clone variants,
+	     and serves to build the mask vector in a natural way.  */
+	  gcall *call = dyn_cast <gcall *> (gsi_stmt (gsi));
+	  if (call && !gimple_call_internal_p (call))
+	    {
+	      tree orig_fn = gimple_call_fn (call);
+	      int orig_nargs = gimple_call_num_args (call);
+	      auto_vec<tree> args;
+	      args.safe_push (orig_fn);
+	      for (int i = 0; i < orig_nargs; i++)
+		args.safe_push (gimple_call_arg (call, i));
+	      args.safe_push (cond);
+
+	      /* Replace the call with a IFN_MASK_CALL that has the extra
+		 condition parameter. */
+	      gcall *new_call = gimple_build_call_internal_vec (IFN_MASK_CALL,
+								args);
+	      gimple_call_set_lhs (new_call, gimple_call_lhs (call));
+	      gsi_replace (&gsi, new_call, true);
+	    }
+
 	  lhs = gimple_get_lhs (gsi_stmt (gsi));
 	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	    ssa_names.add (lhs);
