@@ -2058,7 +2058,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     [[nodiscard]]
-    constexpr decltype(auto)
+    constexpr auto
     operator->() const requires __detail::__common_iter_has_arrow<_It>
     {
       __glibcxx_assert(_M_index == 0);
