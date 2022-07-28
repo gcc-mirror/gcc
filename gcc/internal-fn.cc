@@ -4494,3 +4494,9 @@ expand_SPACESHIP (internal_fn, gcall *stmt)
   if (!rtx_equal_p (target, ops[0].value))
     emit_move_insn (target, ops[0].value);
 }
+
+void
+expand_TRAP (internal_fn, gcall *)
+{
+  expand_builtin_trap ();
+}
