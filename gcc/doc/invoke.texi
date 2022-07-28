@@ -5045,7 +5045,7 @@ the vertical bars and the ``char *'' and ``long int'' text).
 @opindex fno-diagnostics-show-cwe
 @opindex fdiagnostics-show-cwe
 Diagnostic messages can optionally have an associated
-@url{https://cwe.mitre.org/index.html, CWE} identifier.
+@uref{https://cwe.mitre.org/index.html, CWE} identifier.
 GCC itself only provides such metadata for some of the @option{-fanalyzer}
 diagnostics.  GCC plugins may also provide diagnostics with such metadata.
 By default, if this information is present, it will be printed with
@@ -9808,7 +9808,7 @@ This diagnostic warns for paths through the code in which a pointer to
 a buffer is assigned to point at a buffer with a size that is not a
 multiple of @code{sizeof (*pointer)}.
 
-See @url{https://cwe.mitre.org/data/definitions/131.html, CWE-131: Incorrect Calculation of Buffer Size}.
+See @uref{https://cwe.mitre.org/data/definitions/131.html, CWE-131: Incorrect Calculation of Buffer Size}.
 
 @item -Wno-analyzer-double-fclose
 @opindex Wanalyzer-double-fclose
@@ -9818,6 +9818,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 
 This diagnostic warns for paths through the code in which a @code{FILE *}
 can have @code{fclose} called on it more than once.
+
+See @uref{https://cwe.mitre.org/data/definitions/1341.html, CWE-1341: Multiple Releases of Same Resource or Handle}.
 
 @item -Wno-analyzer-double-free
 @opindex Wanalyzer-double-free
@@ -9829,6 +9831,8 @@ This diagnostic warns for paths through the code in which a pointer
 can have a deallocator called on it more than once, either @code{free},
 or a deallocator referenced by attribute @code{malloc}.
 
+See @uref{https://cwe.mitre.org/data/definitions/415.html, CWE-415: Double Free}.
+
 @item -Wno-analyzer-exposure-through-output-file
 @opindex Wanalyzer-exposure-through-output-file
 @opindex Wno-analyzer-exposure-through-output-file
@@ -9839,6 +9843,8 @@ to disable it.
 This diagnostic warns for paths through the code in which a
 security-sensitive value is written to an output file
 (such as writing a password to a log file).
+
+See @uref{https://cwe.mitre.org/data/definitions/532.html, CWE-532: Information Exposure Through Log Files}.
 
 @item -Wno-analyzer-fd-access-mode-mismatch
 @opindex Wanalyzer-fd-access-mode-mismatch
@@ -9866,6 +9872,8 @@ to disable it.
 This diagnostic warns for paths through code in which a
 file descriptor can be closed more than once.
 
+See @uref{https://cwe.mitre.org/data/definitions/1341.html, CWE-1341: Multiple Releases of Same Resource or Handle}.
+
 @item -Wno-analyzer-fd-leak
 @opindex Wanalyzer-fd-leak
 @opindex Wno-analyzer-fd-leak
@@ -9875,6 +9883,8 @@ to disable it.
 
 This diagnostic warns for paths through code in which an
 open file descriptor is leaked.
+
+See @uref{https://cwe.mitre.org/data/definitions/775.html, CWE-775: Missing Release of File Descriptor or Handle after Effective Lifetime}.
 
 @item -Wno-analyzer-fd-use-after-close
 @opindex Wanalyzer-fd-use-after-close
@@ -9916,6 +9926,8 @@ to disable it.
 This diagnostic warns for paths through the code in which a
 @code{<stdio.h>} @code{FILE *} stream object is leaked.
 
+See @uref{https://cwe.mitre.org/data/definitions/775.html, CWE-775: Missing Release of File Descriptor or Handle after Effective Lifetime}.
+
 @item -Wno-analyzer-free-of-non-heap
 @opindex Wanalyzer-free-of-non-heap
 @opindex Wno-analyzer-free-of-non-heap
@@ -9925,6 +9937,8 @@ to disable it.
 
 This diagnostic warns for paths through the code in which @code{free}
 is called on a non-heap pointer (e.g. an on-stack buffer, or a global).
+
+See @uref{https://cwe.mitre.org/data/definitions/590.html, CWE-590: Free of Memory not on the Heap}.
 
 @item -Wno-analyzer-malloc-leak
 @opindex Wanalyzer-malloc-leak
@@ -9936,6 +9950,8 @@ to disable it.
 This diagnostic warns for paths through the code in which a
 pointer allocated via an allocator is leaked: either @code{malloc},
 or a function marked with attribute @code{malloc}.
+
+See @uref{https://cwe.mitre.org/data/definitions/401.html, CWE-401: Missing Release of Memory after Effective Lifetime}.
 
 @item -Wno-analyzer-mismatching-deallocation
 @opindex Wanalyzer-mismatching-deallocation
@@ -9951,6 +9967,8 @@ will warn about mismatches between @code{free}, scalar @code{delete}
 and vector @code{delete[]}, and those marked as allocator/deallocator
 pairs using attribute @code{malloc}.
 
+See @uref{https://cwe.mitre.org/data/definitions/762.html, CWE-762: Mismatched Memory Management Routines}.
+
 @item -Wno-analyzer-possible-null-argument
 @opindex Wanalyzer-possible-null-argument
 @opindex Wno-analyzer-possible-null-argument
@@ -9962,6 +9980,8 @@ possibly-NULL value is passed to a function argument marked
 with @code{__attribute__((nonnull))} as requiring a non-NULL
 value.
 
+See @uref{https://cwe.mitre.org/data/definitions/690.html, CWE-690: Unchecked Return Value to NULL Pointer Dereference}.
+
 @item -Wno-analyzer-possible-null-dereference
 @opindex Wanalyzer-possible-null-dereference
 @opindex Wno-analyzer-possible-null-dereference
@@ -9970,6 +9990,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 
 This diagnostic warns for paths through the code in which a
 possibly-NULL value is dereferenced.
+
+See @uref{https://cwe.mitre.org/data/definitions/690.html, CWE-690: Unchecked Return Value to NULL Pointer Dereference}.
 
 @item -Wno-analyzer-null-argument
 @opindex Wanalyzer-null-argument
@@ -9982,6 +10004,8 @@ value known to be NULL is passed to a function argument marked
 with @code{__attribute__((nonnull))} as requiring a non-NULL
 value.
 
+See @uref{https://cwe.mitre.org/data/definitions/476.html, CWE-476: NULL Pointer Dereference}.
+
 @item -Wno-analyzer-null-dereference
 @opindex Wanalyzer-null-dereference
 @opindex Wno-analyzer-null-dereference
@@ -9990,6 +10014,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 
 This diagnostic warns for paths through the code in which a
 value known to be NULL is dereferenced.
+
+See @uref{https://cwe.mitre.org/data/definitions/476.html, CWE-476: NULL Pointer Dereference}.
 
 @item -Wno-analyzer-shift-count-negative
 @opindex Wanalyzer-shift-count-negative
@@ -10049,7 +10075,7 @@ of an allocation without being sanitized, so that an attacker could
 inject an excessively large allocation and potentially cause a denial
 of service attack.
 
-See @url{https://cwe.mitre.org/data/definitions/789.html, CWE-789: Memory Allocation with Excessive Size Value}.
+See @uref{https://cwe.mitre.org/data/definitions/789.html, CWE-789: Memory Allocation with Excessive Size Value}.
 
 @item -Wno-analyzer-tainted-array-index
 @opindex Wanalyzer-tainted-array-index
@@ -10063,7 +10089,7 @@ that could be under an attacker's control is used as the index
 of an array access without being sanitized, so that an attacker
 could inject an out-of-bounds access.
 
-See @url{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
+See @uref{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
 
 @item -Wno-analyzer-tainted-divisor
 @opindex Wanalyzer-tainted-divisor
@@ -10077,6 +10103,8 @@ that could be under an attacker's control is used as the divisor
 in a division or modulus operation without being sanitized, so that
 an attacker could inject a division-by-zero.
 
+See @uref{https://cwe.mitre.org/data/definitions/369.html, CWE-369: Divide By Zero}.
+
 @item -Wno-analyzer-tainted-offset
 @opindex Wanalyzer-tainted-offset
 @opindex Wno-analyzer-tainted-offset
@@ -10089,7 +10117,7 @@ that could be under an attacker's control is used as a pointer offset
 without being sanitized, so that an attacker could inject an out-of-bounds
 access.
 
-See @url{https://cwe.mitre.org/data/definitions/823.html, CWE-823: Use of Out-of-range Pointer Offset}.
+See @uref{https://cwe.mitre.org/data/definitions/823.html, CWE-823: Use of Out-of-range Pointer Offset}.
 
 @item -Wno-analyzer-tainted-size
 @opindex Wanalyzer-tainted-size
@@ -10103,6 +10131,8 @@ that could be under an attacker's control is used as the size of
 an operation such as @code{memset} without being sanitized, so that an
 attacker could inject an out-of-bounds access.
 
+See @uref{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
+
 @item -Wno-analyzer-unsafe-call-within-signal-handler
 @opindex Wanalyzer-unsafe-call-within-signal-handler
 @opindex Wno-analyzer-unsafe-call-within-signal-handler
@@ -10113,6 +10143,8 @@ This diagnostic warns for paths through the code in which a
 function known to be async-signal-unsafe (such as @code{fprintf}) is
 called from a signal handler.
 
+See @uref{https://cwe.mitre.org/data/definitions/479.html, CWE-479: Signal Handler Use of a Non-reentrant Function}.
+
 @item -Wno-analyzer-use-after-free
 @opindex Wanalyzer-use-after-free
 @opindex Wno-analyzer-use-after-free
@@ -10122,6 +10154,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 This diagnostic warns for paths through the code in which a
 pointer is used after a deallocator is called on it: either @code{free},
 or a deallocator referenced by attribute @code{malloc}.
+
+See @uref{https://cwe.mitre.org/data/definitions/416.html, CWE-416: Use After Free}.
 
 @item -Wno-analyzer-use-of-pointer-in-stale-stack-frame
 @opindex Wanalyzer-use-of-pointer-in-stale-stack-frame
@@ -10145,6 +10179,8 @@ the analyzer detects an attempt to use @code{va_arg} to extract a value
 passed to a variadic call, but uses a type that does not match that of
 the expression passed to the call.
 
+See @uref{https://cwe.mitre.org/data/definitions/686.html, CWE-686: Function Call With Incorrect Argument Type}.
+
 @item -Wno-analyzer-va-list-exhausted
 @opindex Wanalyzer-va-list-exhausted
 @opindex Wno-analyzer-va-list-exhausted
@@ -10156,6 +10192,8 @@ This diagnostic warns for interprocedural paths through the code for which
 the analyzer detects an attempt to use @code{va_arg} to access the next
 value passed to a variadic call, but all of the values in the
 @code{va_list} have already been consumed.
+
+See @uref{https://cwe.mitre.org/data/definitions/685.html, CWE-685: Function Call With Incorrect Number of Arguments}.
 
 @item -Wno-analyzer-va-list-leak
 @opindex Wanalyzer-va-list-leak
@@ -10212,6 +10250,8 @@ This warning requires @option{-fanalyzer}, which enables it; use
 
 This diagnostic warns for paths through the code in which an uninitialized
 value is used.
+
+See @uref{https://cwe.mitre.org/data/definitions/457.html, CWE-457: Use of Uninitialized Variable}.
 
 @end table
 

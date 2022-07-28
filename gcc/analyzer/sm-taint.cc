@@ -435,6 +435,7 @@ public:
 
   bool emit (rich_location *rich_loc) override
   {
+    /* "CWE-129: Improper Validation of Array Index".  */
     diagnostic_metadata m;
     m.add_cwe (129);
     if (m_arg)
