@@ -7,5 +7,5 @@ mod mem {
 
 fn main() {
     let a = 123;
-    let _b: [u32; mem::size_of::<i32>()] = mem::transmute(a);
+    let _b: [u32; mem::size_of::<i32>()] = unsafe { mem::transmute(a) };
 }
