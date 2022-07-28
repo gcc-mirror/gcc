@@ -332,10 +332,24 @@ UnsafeChecker::visit (MethodCallExpr &expr)
 void
 UnsafeChecker::visit (FieldAccessExpr &expr)
 {
-  // FIXME: If the receiver is an union, we need to be in an unsafe context to
-  // access it. Make sure to check.
-
   expr.get_receiver_expr ()->accept_vis (*this);
+
+  if (is_unsafe_context ())
+    return;
+
+  TyTy::BaseType *receiver_ty;
+  auto ok = context.lookup_type (
+    expr.get_receiver_expr ()->get_mappings ().get_hirid (), &receiver_ty);
+  rust_assert (ok);
+
+  if (receiver_ty->get_kind () == TyTy::TypeKind::ADT)
+    {
+      auto maybe_union = static_cast<TyTy::ADTType *> (receiver_ty);
+      if (maybe_union->is_union ())
+	rust_error_at (
+	  expr.get_locus (),
+	  "access to union field requires unsafe function or block");
+    }
 }
 
 void
