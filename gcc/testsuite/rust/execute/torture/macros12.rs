@@ -5,7 +5,9 @@ extern "C" {
 
 fn print_int(value: i32) {
     let s = "%d\n\0" as *const str as *const i8;
-    printf(s, value);
+    unsafe {
+        printf(s, value);
+    }
 }
 
 macro_rules! add_exprs {

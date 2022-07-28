@@ -30,12 +30,16 @@ fn inspect(f: Foo, g: u8) -> i32 {
     return 25;
 }
 
-fn main () -> i32 {
-    let x = inspect (Foo::B, 2);
-    let y = inspect (Foo::B, 1);
+fn main() -> i32 {
+    let x = inspect(Foo::B, 2);
+    let y = inspect(Foo::B, 1);
 
-    printf ("x:%d\n" as *const str as *const i8, x);
-    printf ("y:%d\n" as *const str as *const i8, y);
+    unsafe {
+        printf("x:%d\n" as *const str as *const i8, x);
+    }
+    unsafe {
+        printf("y:%d\n" as *const str as *const i8, y);
+    }
 
     y - x - 5
 }

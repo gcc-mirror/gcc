@@ -1,10 +1,12 @@
-// { dg-output "15\n18\n" }
+// { dg-output "17\n20\n" }
 extern "C" {
     fn printf(fmt: *const i8, ...);
 }
 
 fn print(s: u32) {
-    printf("%u\n\0" as *const str as *const i8, s);
+    unsafe {
+        printf("%u\n\0" as *const str as *const i8, s);
+    }
 }
 
 macro_rules! line {

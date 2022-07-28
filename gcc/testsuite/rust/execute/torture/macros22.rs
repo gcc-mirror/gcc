@@ -1,9 +1,11 @@
 // { dg-output "1\n2\nNaN\n3\n" }
 
 macro_rules! print_num {
-    ($l:literal) => {
-        printf("%d\n\0" as *const str as *const i8, $l);
-    };
+    ($l:literal) => {{
+        unsafe {
+            printf("%d\n\0" as *const str as *const i8, $l);
+        }
+    }};
 }
 
 extern "C" {
@@ -15,7 +17,9 @@ fn main() -> i32 {
     print_num!(1);
     print_num!(2);
 
-    printf("NaN\n\0" as *const str as *const i8);
+    unsafe {
+        printf("NaN\n\0" as *const str as *const i8);
+    }
 
     print_num!(3);
 
