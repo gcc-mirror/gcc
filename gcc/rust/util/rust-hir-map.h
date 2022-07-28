@@ -115,8 +115,11 @@ public:
   void insert_hir_trait_item (HIR::TraitItem *item);
   HIR::TraitItem *lookup_hir_trait_item (HirId id);
 
-  void insert_hir_extern_item (HIR::ExternalItem *item);
-  HIR::ExternalItem *lookup_hir_extern_item (HirId id);
+  void insert_hir_extern_block (HIR::ExternBlock *block);
+  HIR::ExternBlock *lookup_hir_extern_block (HirId id);
+
+  void insert_hir_extern_item (HIR::ExternalItem *item, HirId parent_block);
+  HIR::ExternalItem *lookup_hir_extern_item (HirId id, HirId *parent_block);
 
   void insert_hir_impl_block (HIR::ImplBlock *item);
   HIR::ImplBlock *lookup_hir_impl_block (HirId id);
@@ -312,7 +315,8 @@ private:
   std::map<HirId, HIR::ImplBlock *> hirImplItemsToImplMappings;
   std::map<HirId, HIR::ImplBlock *> hirImplBlockMappings;
   std::map<HirId, HIR::TraitItem *> hirTraitItemMappings;
-  std::map<HirId, HIR::ExternalItem *> hirExternItemMappings;
+  std::map<HirId, HIR::ExternBlock *> hirExternBlockMappings;
+  std::map<HirId, std::pair<HIR::ExternalItem *, HirId>> hirExternItemMappings;
   std::map<HirId, HIR::PathExprSegment *> hirPathSegMappings;
   std::map<HirId, HIR::GenericParam *> hirGenericParamMappings;
   std::map<HirId, HIR::Trait *> hirTraitItemsToTraitMappings;

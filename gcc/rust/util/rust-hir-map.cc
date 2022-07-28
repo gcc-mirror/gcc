@@ -371,23 +371,45 @@ Mappings::lookup_hir_trait_item (HirId id)
 }
 
 void
-Mappings::insert_hir_extern_item (HIR::ExternalItem *item)
+Mappings::insert_hir_extern_block (HIR::ExternBlock *block)
+{
+  auto id = block->get_mappings ().get_hirid ();
+  rust_assert (lookup_hir_extern_block (id) == nullptr);
+
+  hirExternBlockMappings[id] = block;
+  insert_node_to_hir (block->get_mappings ().get_nodeid (), id);
+}
+
+HIR::ExternBlock *
+Mappings::lookup_hir_extern_block (HirId id)
+{
+  auto it = hirExternBlockMappings.find (id);
+  if (it == hirExternBlockMappings.end ())
+    return nullptr;
+
+  return it->second;
+}
+
+void
+Mappings::insert_hir_extern_item (HIR::ExternalItem *item, HirId parent_block)
 {
   auto id = item->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_extern_item (id) == nullptr);
+  rust_assert (lookup_hir_extern_item (id, nullptr) == nullptr);
 
-  hirExternItemMappings[id] = item;
+  hirExternItemMappings[id] = {item, parent_block};
   insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
 }
 
 HIR::ExternalItem *
-Mappings::lookup_hir_extern_item (HirId id)
+Mappings::lookup_hir_extern_item (HirId id, HirId *parent_block)
 {
   auto it = hirExternItemMappings.find (id);
   if (it == hirExternItemMappings.end ())
     return nullptr;
 
-  return it->second;
+  *parent_block = it->second.second;
+
+  return it->second.first;
 }
 
 void

@@ -69,7 +69,9 @@ UnsafeChecker::check_use_of_static (HirId node_id, Location locus)
     return;
 
   auto maybe_static_mut = mappings.lookup_hir_item (node_id);
-  auto maybe_extern_static = mappings.lookup_hir_extern_item (node_id);
+  HirId extern_block;
+  auto maybe_extern_static
+    = mappings.lookup_hir_extern_item (node_id, &extern_block);
 
   if (maybe_static_mut)
     check_static_mut (maybe_static_mut, locus);

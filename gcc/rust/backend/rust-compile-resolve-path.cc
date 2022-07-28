@@ -159,8 +159,9 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 			       Location expr_locus, bool is_qualified_path)
 {
   HIR::Item *resolved_item = ctx->get_mappings ()->lookup_hir_item (ref);
+  HirId parent_block;
   HIR::ExternalItem *resolved_extern_item
-    = ctx->get_mappings ()->lookup_hir_extern_item (ref);
+    = ctx->get_mappings ()->lookup_hir_extern_item (ref, &parent_block);
   bool is_hir_item = resolved_item != nullptr;
   bool is_hir_extern_item = resolved_extern_item != nullptr;
   if (is_hir_item)
