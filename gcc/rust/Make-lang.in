@@ -120,6 +120,7 @@ GRS_OBJS = \
     rust/rust-hir-type-check-base.o \
     rust/rust-autoderef.o \
     rust/rust-substitution-mapper.o \
+    rust/rust-const-checker.o \
     rust/rust-lint-marklive.o \
     rust/rust-lint-unused-var.o \
     rust/rust-hir-type-check-path.o \

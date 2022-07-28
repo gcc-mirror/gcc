@@ -17,8 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-session-manager.h"
-#include "rust-unsafe-checker.h"
 #include "rust-diagnostics.h"
+#include "rust-unsafe-checker.h"
 #include "rust-lex.h"
 #include "rust-parse.h"
 #include "rust-macro-expand.h"
@@ -26,6 +26,7 @@
 #include "rust-ast-lower.h"
 #include "rust-hir-type-check.h"
 #include "rust-privacy-check.h"
+#include "rust-const-checker.h"
 #include "rust-tycheck-dump.h"
 #include "rust-compile.h"
 #include "rust-cfg-parser.h"
@@ -796,6 +797,8 @@ Session::parse_file (const char *filename)
     return;
 
   HIR::UnsafeChecker ().go (hir);
+  HIR::ConstChecker ().go (hir);
+
   if (saw_errors ())
     return;
 

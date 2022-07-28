@@ -16,49 +16,30 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_UNSAFE_CHECKER_H
-#define RUST_UNSAFE_CHECKER_H
+#ifndef RUST_CONST_CHECKER_H
+#define RUST_CONST_CHECKER_H
 
 #include "rust-hir-visitor.h"
-#include "rust-name-resolver.h"
 #include "rust-hir-type-check.h"
+#include "rust-stacked-contexts.h"
+#include "rust-name-resolver.h"
 
 namespace Rust {
 namespace HIR {
-class UnsafeChecker : public HIRFullVisitor
+class ConstChecker : public HIRFullVisitor
 {
 public:
-  UnsafeChecker ();
+  ConstChecker ();
 
   void go (HIR::Crate &crate);
 
 private:
-  /* Stack of unsafe contexts */
-  std::vector<HirId> unsafe_contexts;
-
   /**
-   * Add an unsafe context to the stack. To call when entering unsafe blocks
+   * Check that only const functions are called in const contexts
    */
-  void push_unsafe (HirId id);
+  void check_function_call (HirId fn_id, Location locus);
 
-  /**
-   * Remove an unsafe context from the stack. Call this when exiting unsafe
-   * blocks
-   */
-  HirId pop_unsafe ();
-
-  /**
-   * Are we currently in an unsafe context or not
-   */
-  bool is_unsafe_context ();
-
-  /**
-   * Check if a mutable static or external static item is used outside of an
-   * unsafe context
-   */
-  void check_use_of_static (HirId node_id, Location locus);
-
-  Resolver::TypeCheckContext &context;
+  StackedContexts<HirId> const_context;
   Resolver::Resolver &resolver;
   Analysis::Mappings &mappings;
 
@@ -199,4 +180,4 @@ private:
 } // namespace HIR
 } // namespace Rust
 
-#endif /* !RUST_UNSAFE_CHECKER_H */
+#endif /* !RUST_CONST_CHECKER_H */
