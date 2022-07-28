@@ -4905,8 +4905,14 @@ if (is(Interface == interface) && is(BaseClass == class))
         // - try default first
         // - only on a failure run & return fallback
         enum fallback = q{
-            scope (failure) return fallback.%1$s(args);
-            return default_.%1$s(args);
+            try
+            {
+                return default_.%1$s(args);
+            }
+            catch (Exception)
+            {
+                return fallback.%1$s(args);
+            }
         }.format(__traits(identifier, func));
     }
 

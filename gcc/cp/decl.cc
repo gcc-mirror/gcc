@@ -5474,7 +5474,8 @@ shadow_tag (cp_decl_specifier_seq *declspecs)
   if (!t)
     return NULL_TREE;
 
-  if (maybe_process_partial_specialization (t) == error_mark_node)
+  t = maybe_process_partial_specialization (t);
+  if (t == error_mark_node)
     return NULL_TREE;
 
   /* This is where the variables in an anonymous union are
@@ -15015,8 +15016,6 @@ copy_fn_p (const_tree d)
 bool
 move_fn_p (const_tree d)
 {
-  gcc_assert (DECL_FUNCTION_MEMBER_P (d));
-
   if (cxx_dialect == cxx98)
     /* There are no move constructors if we are in C++98 mode.  */
     return false;

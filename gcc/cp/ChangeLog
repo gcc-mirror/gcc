@@ -1,3 +1,112 @@
+2022-07-26  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-07-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106311
+	* pt.cc (redeclare_class_template): Check DECL_P before accessing
+	DECL_SOURCE_LOCATION.
+
+2022-07-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106230
+	* semantics.cc (finish_for_stmt): Check stmts_are_full_exprs_p.
+
+2022-07-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106361
+	* decl.cc (move_fn_p): Remove assert.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105912
+	* call.cc (extract_call_expr): Return a NULL_TREE on failure
+	instead of asserting.
+	* pt.cc (tsubst_copy_and_build) <case CALL_EXPR>: Guard against
+	NULL_TREE extract_call_expr result.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-07-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105842
+	* constraint.cc (satisfy_declaration_constraints): Refine early
+	exit test for argument dependence.
+	* cp-tree.h (uses_outer_template_parms_in_constraints): Declare.
+	* pt.cc (template_class_depth): Handle TI_TEMPLATE being a
+	FIELD_DECL.
+	(usse_outer_template_parms): Factor out constraint dependence
+	test into ...
+	(uses_outer_template_parms_in_constraints): ... here.
+	(type_dependent_expression_p): Use it for FUNCTION_DECL.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/53164
+	PR c++/105848
+	* pt.cc (tsubst_copy_and_build) <case CALL_EXPR>: Look through an
+	ADDR_EXPR callee when calling mark_used.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105637
+	* tree.cc (maybe_dummy_object): When returning a dummy
+	object, respect the cv-quals of 'this' if available.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100374
+	* pt.cc (determine_specialization): Compare overall constraints
+	not just the trailing constraints.
+	(tsubst_each_template_parm_constraints): Define.
+	(tsubst_friend_function): Use it.
+	(tsubst_friend_class): Use it.
+	(tsubst_template_parm): Don't substitute TEMPLATE_PARM_CONSTRAINTS.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/105758
+	* call.cc (build_over_call): Use z_candidate::conversion_path
+	and ::access_path instead of TYPE_BINFO when building the
+	BASELINK for the templated form.
+
+2022-07-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96363
+	* decl.cc (shadow_tag): Use the return value of
+	maybe_process_partial_specialization.
+	* parser.cc (cp_parser_single_declaration): Call shadow_tag
+	before associate_classtype_constraints.
+	* pt.cc (maybe_new_partial_specialization): Change return type
+	to bool.  Take 'type' argument by mutable reference.  Set 'type'
+	to point to the correct constrained specialization when
+	appropriate.
+	(maybe_process_partial_specialization): Adjust accordingly.
+
+2022-07-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105634
+	* call.cc (maybe_warn_class_memaccess): Avoid % by zero.
+
 2022-07-02  Sergei Trofimovich  <siarheit@google.com>
 
 	Backported from master:

@@ -278,6 +278,8 @@ public:
 
   const svalue *get_old_svalue (tree expr) const;
 
+  const region_model *get_old_region_model () const;
+
 protected:
   sm_context (int sm_idx, const state_machine &sm)
   : m_sm_idx (sm_idx), m_sm (sm) {}

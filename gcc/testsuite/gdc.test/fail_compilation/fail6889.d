@@ -55,7 +55,7 @@ L1:
     scope(failure) { L2: goto L1; } // OK
     goto L2;                        // NG
 
-    scope(failure) { return; }      // OK
+
 
     foreach (i; 0..1)
     {

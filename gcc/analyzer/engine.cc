@@ -1187,6 +1187,27 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
 
   pp_string (pp, "\"];\n\n");
+
+  /* It can be hard to locate the saved diagnostics as text within the
+     enode nodes, so add extra nodes to the graph for each saved_diagnostic,
+     highlighted in red.
+     Compare with dump_saved_diagnostics.  */
+  {
+    unsigned i;
+    const saved_diagnostic *sd;
+    FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
+      {
+	sd->dump_as_dot_node (pp);
+
+	/* Add edge connecting this enode to the saved_diagnostic.  */
+	dump_dot_id (pp);
+	pp_string (pp, " -> ");
+	sd->dump_dot_id (pp);
+	pp_string (pp, " [style=\"dotted\" arrowhead=\"none\"];");
+	pp_newline (pp);
+      }
+  }
+
   pp_flush (pp);
 }
 
@@ -2340,15 +2361,14 @@ exploded_graph::exploded_graph (const supergraph &sg, logger *logger,
 
 exploded_graph::~exploded_graph ()
 {
-  for (function_stat_map_t::iterator iter = m_per_function_stats.begin ();
-       iter != m_per_function_stats.end ();
-       ++iter)
-    delete (*iter).second;
-
-  for (point_map_t::iterator iter = m_per_point_data.begin ();
-       iter != m_per_point_data.end ();
-       ++iter)
-    delete (*iter).second;
+  for (auto iter : m_per_point_data)
+    delete iter.second;
+  for (auto iter : m_per_function_data)
+    delete iter.second;
+  for (auto iter : m_per_function_stats)
+    delete iter.second;
+  for (auto iter : m_per_call_string_data)
+    delete iter.second;
 }
 
 /* Subroutine for use when implementing __attribute__((tainted_args))
@@ -4538,10 +4558,14 @@ feasibility_state::maybe_update_for_edge (logger *logger,
   if (sedge)
     {
       if (logger)
-	logger->log ("  sedge: SN:%i -> SN:%i %s",
-		     sedge->m_src->m_index,
-		     sedge->m_dest->m_index,
-		     sedge->get_description (false));
+	{
+	  char *desc = sedge->get_description (false);
+	  logger->log ("  sedge: SN:%i -> SN:%i %s",
+		       sedge->m_src->m_index,
+		       sedge->m_dest->m_index,
+		       desc);
+	  free (desc);
+	}
 
       const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
       if (!m_model.maybe_update_for_edge (*sedge, last_stmt, NULL, out_rc))
@@ -4603,6 +4627,15 @@ feasibility_state::maybe_update_for_edge (logger *logger,
       bitmap_set_bit (m_snodes_visited, dst_snode_idx);
     }
   return true;
+}
+
+/* Dump this object to PP.  */
+
+void
+feasibility_state::dump_to_pp (pretty_printer *pp,
+			       bool simple, bool multiline) const
+{
+  m_model.dump_to_pp (pp, simple, multiline);
 }
 
 /* A family of cluster subclasses for use when generating .dot output for

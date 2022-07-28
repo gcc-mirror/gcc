@@ -1,3 +1,181 @@
+2022-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* json.cc (string::print): Fix escaping of '\'.
+
+2022-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdump-analyzer-feasibility): Mention the
+	fpath.txt output.
+
+2022-07-27  Maciej W. Rozycki  <macro@embecosm.com>
+
+	Backported from master:
+	2022-07-27  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md (stack_protect_set_<mode>): Remove
+	duplicate backslashes.
+
+2022-07-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106189
+	* gimple-array-bounds.cc (array_bounds_checker::check_mem_ref):
+	Divide using offset_ints.
+
+2022-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	Backported from master:
+	2022-06-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR lto/106129
+	* lto-wrapper.cc (find_option): Add argument start.
+	(merge_and_complain): Loop over existing_opt_index and
+	existing_opt2_index for Xassembler check.  Update calls to
+	find_option.
+	(find_and_merge_options): Add argument first to determine whether
+	to merge options with those passed in *opts.
+	(run_gcc): Update calls to find_and_merge_options.
+
+2022-07-27  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2022-07-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106087
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Check
+	to make sure the statement is only defining one operand.
+
+2022-07-27  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2022-07-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/106063
+	* match.pd: Do not apply pattern after veclower is not supported.
+
+2022-07-27  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-06-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/105665
+	PR tree-optimization/100810
+	* tree-ssa-loop-ivopts.cc
+	(ssa_name_maybe_undef_p, ssa_name_set_maybe_undef): New.
+	(ssa_name_any_use_dominates_bb_p, mark_ssa_maybe_undefs): New.
+	(find_ssa_undef): Check precomputed flag and intervening uses.
+	(tree_ssa_iv_optimize): Call mark_ssa_maybe_undefs.
+
+2022-07-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from master:
+	2022-07-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/rtems.h (CPLUSPLUS_CPP_SPEC): Undef.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106331
+	* builtins.cc (get_memory_rtx): Compute alignment from
+	the original address and set MEM_OFFSET to unknown when
+	we create a MEM_EXPR from the base object of the address.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106131
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Force alias-set
+	zero when offsetting the read looking through an aggregate
+	copy.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106112
+	* tree-ssa-sccvn.cc (valueized_wider_op): Properly extend
+	a constant operand according to its type.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106027
+	* fold-const.cc (fold_to_nonsharp_ineq_using_bound): Use the
+	type of the prevailing comparison for the new comparison type.
+	(fold_binary_loc): Use proper types for the A < X && A + 1 > Y
+	to A < X && A >= Y folding.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105971
+	* tree-ssa-alias.cc (refs_may_alias_p_2): Put bail-out for
+	FUNCTION_DECL and LABEL_DECL refs after decl-decl disambiguation
+	to leak less surprising alias results.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105969
+	* gimple-ssa-sprintf.cc (get_origin_and_offset_r): Avoid division
+	by zero in overflow check.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/105965
+	* match.pd (view_convert CONSTRUCTOR): Handle single-element
+	CTOR case.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105946
+	* tree-ssa-uninit.cc (maybe_warn_pass_by_reference):
+	Do not look at arguments not specified in the function call.
+
+2022-07-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-11  Richard Biener  <rguenthert@suse.de>
+
+	PR target/105459
+	* config/i386/i386-options.cc (ix86_set_current_function):
+	Rebuild the target optimization node whenever necessary,
+	not only when the optimization node didn't change.
+
+2022-07-14   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Do
+	not generate block copies with vector pair instructions if we are
+	tuning for power10.  Back port from master branch.
+
+2022-07-14  Surya Kumari Jangala  <jskumari@linux.vnet.ibm.com>
+
+	Backported from master:
+	2022-06-14  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/105041
+	* regrename.cc (check_new_reg_p): Use nregs value from du chain.
+
 2022-07-11  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

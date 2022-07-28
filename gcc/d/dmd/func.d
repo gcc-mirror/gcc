@@ -3748,9 +3748,7 @@ extern (C++) final class FuncLiteralDeclaration : FuncDeclaration
             {
                 Expression exp = s.exp;
                 if (exp && !exp.type.equals(tret))
-                {
-                    s.exp = exp.castTo(sc, tret);
-                }
+                    s.exp = exp.implicitCastTo(sc, tret);
             }
         }
 
@@ -4150,6 +4148,7 @@ extern (C++) final class InvariantDeclaration : FuncDeclaration
 {
     extern (D) this(const ref Loc loc, const ref Loc endloc, StorageClass stc, Identifier id, Statement fbody)
     {
+        // Make a unique invariant for now; we'll fix it up as we add it to the aggregate invariant list.
         super(loc, endloc, id ? id : Identifier.generateId("__invariant"), stc, null);
         this.fbody = fbody;
     }
@@ -4185,6 +4184,15 @@ extern (C++) final class InvariantDeclaration : FuncDeclaration
     override void accept(Visitor v)
     {
         v.visit(this);
+    }
+
+    extern (D) void fixupInvariantIdent(size_t offset)
+    {
+        OutBuffer idBuf;
+        idBuf.writestring("__invariant");
+        idBuf.print(offset);
+
+        ident = Identifier.idPool(idBuf[]);
     }
 }
 

@@ -324,8 +324,7 @@ static bool
 check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 		 class du_head *this_head, HARD_REG_SET this_unavailable)
 {
-  machine_mode mode = GET_MODE (*this_head->first->loc);
-  int nregs = hard_regno_nregs (new_reg, mode);
+  int nregs = this_head->nregs;
   int i;
   struct du_chain *tmp;
 

@@ -4407,7 +4407,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
              invd.semanticRun < PASS.semantic &&
              !ad.isUnionDeclaration()           // users are on their own with union fields
            )
+        {
+            invd.fixupInvariantIdent(ad.invs.length);
             ad.invs.push(invd);
+        }
         if (!invd.type)
             invd.type = new TypeFunction(ParameterList(), Type.tvoid, LINK.d, invd.storage_class);
 

@@ -292,6 +292,9 @@
 /* Define if <math.h> defines obsolete isnan function. */
 #undef HAVE_OBSOLETE_ISNAN
 
+/* Define if openat is available in <fcntl.h>. */
+#undef HAVE_OPENAT
+
 /* Define if poll is available in <poll.h>. */
 #undef HAVE_POLL
 

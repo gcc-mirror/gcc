@@ -1,3 +1,12 @@
+2022-07-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 76e3b41375.
+	* dmd/VERSION: Bump version to v2.100.1.
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Evaluate RHS
+	  of noreturn declaration expressions first.
+	* expr.cc (ExprVisitor::visit (AssignExp *)): Don't generate
+	  assignment for noreturn types.
+
 2022-07-04  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

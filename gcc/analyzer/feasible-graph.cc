@@ -218,6 +218,71 @@ feasible_graph::make_epath (feasible_node *fnode) const
   return epath;
 }
 
+/* Dump the path to DST_FNODE in textual form to PP.  */
+
+void
+feasible_graph::dump_feasible_path (const feasible_node &dst_fnode,
+				    pretty_printer *pp) const
+{
+  const feasible_node *fnode = &dst_fnode;
+
+  auto_vec<const feasible_edge *> fpath;
+
+  /* FG is actually a tree.  Built the path backwards, by walking
+     backwards from FNODE until we reach the origin.  */
+  while (fnode->get_inner_node ()->m_index != 0)
+    {
+      gcc_assert (fnode->m_preds.length () == 1);
+      feasible_edge *pred_fedge
+	= static_cast <feasible_edge *> (fnode->m_preds[0]);
+      fpath.safe_push (pred_fedge);
+      fnode = static_cast <const feasible_node *> (pred_fedge->m_src);
+    }
+
+  /* Now reverse it.  */
+  fpath.reverse ();
+
+  for (unsigned i = 0; i < fpath.length (); i++)
+    {
+      const feasible_edge *fedge = fpath[i];
+      const feasible_node *src_fnode
+	= static_cast <const feasible_node *> (fedge->m_src);
+      const feasible_node *dest_fnode
+	= static_cast <const feasible_node *> (fedge->m_dest);
+
+      pp_printf (pp, "fpath[%i]: FN %i (EN %i) -> FN %i (EN %i)",
+		 i,
+		 src_fnode->get_index (),
+		 src_fnode->get_inner_node ()->m_index,
+		 dest_fnode->get_index (),
+		 dest_fnode->get_inner_node ()->m_index);
+      pp_newline (pp);
+      pp_printf (pp, "  FN %i (EN %i):",
+		 dest_fnode->get_index (),
+		 dest_fnode->get_inner_node ()->m_index);
+      pp_newline (pp);
+      const program_point &point = dest_fnode->get_inner_node ()->get_point ();
+      point.print (pp, format (true));
+      dest_fnode->get_state ().dump_to_pp (pp, true, true);
+      pp_newline (pp);
+    }
+}
+
+/* Dump the path to DST_FNODE in textual form to FILENAME.  */
+
+void
+feasible_graph::dump_feasible_path (const feasible_node &dst_fnode,
+				    const char *filename) const
+{
+  FILE *fp = fopen (filename, "w");
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp.buffer->stream = fp;
+  dump_feasible_path (dst_fnode, &pp);
+  pp_flush (&pp);
+  fclose (fp);
+}
+
 /* Dump stats about this graph to LOGGER.  */
 
 void

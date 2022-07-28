@@ -7116,9 +7116,10 @@ extract_call_expr (tree call)
       default:;
       }
 
-  gcc_assert (TREE_CODE (call) == CALL_EXPR
-	      || TREE_CODE (call) == AGGR_INIT_EXPR
-	      || call == error_mark_node);
+  if (TREE_CODE (call) != CALL_EXPR
+      && TREE_CODE (call) != AGGR_INIT_EXPR
+      && call != error_mark_node)
+    return NULL_TREE;
   return call;
 }
 
@@ -9248,8 +9249,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       else
 	{
-	  tree binfo = TYPE_BINFO (TREE_TYPE (first_arg));
-	  callee = build_baselink (binfo, binfo, fn, NULL_TREE);
+	  callee = build_baselink (cand->conversion_path, cand->access_path,
+				   fn, NULL_TREE);
 	  callee = build_min (COMPONENT_REF, TREE_TYPE (fn),
 			      first_arg, callee, NULL_TREE);
 	}
@@ -10333,6 +10334,8 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
 	  /* Finally, warn on partial copies.  */
 	  unsigned HOST_WIDE_INT typesize
 	    = tree_to_uhwi (TYPE_SIZE_UNIT (desttype));
+	  if (typesize == 0)
+	    break;
 	  if (unsigned HOST_WIDE_INT partial = tree_to_uhwi (sz) % typesize)
 	    warned = warning_at (loc, OPT_Wclass_memaccess,
 				 (typesize - partial > 1

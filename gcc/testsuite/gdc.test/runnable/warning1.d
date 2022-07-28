@@ -133,15 +133,6 @@ void test6518()
     }
 }
 
-/******************************************/
-// https://issues.dlang.org/show_bug.cgi?id=7232
-
-bool test7232()
-{
-    scope(failure) return false;
-    return true;
-}
-
 /***************************************************/
 
 struct S9332

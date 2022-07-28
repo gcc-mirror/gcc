@@ -2397,15 +2397,6 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
       || CONSTANT_CLASS_P (base2))
     return false;
 
-  /* We can end up referring to code via function and label decls.
-     As we likely do not properly track code aliases conservatively
-     bail out.  */
-  if (TREE_CODE (base1) == FUNCTION_DECL
-      || TREE_CODE (base1) == LABEL_DECL
-      || TREE_CODE (base2) == FUNCTION_DECL
-      || TREE_CODE (base2) == LABEL_DECL)
-    return true;
-
   /* Two volatile accesses always conflict.  */
   if (ref1->volatile_p
       && ref2->volatile_p)
@@ -2431,6 +2422,15 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 				  ref1->size,
 				  ref2ref, base2, offset2, max_size2,
 				  ref2->size);
+
+  /* We can end up referring to code via function and label decls.
+     As we likely do not properly track code aliases conservatively
+     bail out.  */
+  if (TREE_CODE (base1) == FUNCTION_DECL
+      || TREE_CODE (base1) == LABEL_DECL
+      || TREE_CODE (base2) == FUNCTION_DECL
+      || TREE_CODE (base2) == LABEL_DECL)
+    return true;
 
   /* Handle restrict based accesses.
      ???  ao_ref_base strips inner MEM_REF [&decl], recover from that

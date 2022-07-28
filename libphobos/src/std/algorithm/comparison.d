@@ -1027,7 +1027,7 @@ template equal(alias pred = "a == b")
         }
     }
 
-    private bool equalLoop(Rs...)(Rs rs)
+    private bool equalLoop(Rs...)(ref Rs rs)
     {
         for (; !rs[0].empty; rs[0].popFront)
             static foreach (r; rs[1 .. $])
