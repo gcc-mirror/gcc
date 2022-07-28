@@ -1,3 +1,67 @@
+2022-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106225
+	* gcc.dg/analyzer/taint-divisor-1.c: Add test coverage for various
+	correct and incorrect checks against zero.
+
+2022-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106204
+	* gcc.dg/analyzer/torture/uninit-pr106204.c: New test.
+	* gcc.dg/analyzer/uninit-pr106204.c: New test.
+
+2022-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/uninit-1.c: Add test coverage of attempts
+	to jump through an uninitialized function pointer, and of attempts
+	to pass an uninitialized value to a function call.
+
+2022-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105285
+	* gcc.dg/analyzer/symbolic-12.c: New test.
+
+2022-07-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106189
+	* gcc.dg/pr106189.c: New testcase.
+
+2022-07-27  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2022-07-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106087
+	* gcc.c-torture/compile/inline-asm-1.c: New test.
+
+2022-07-27  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	Backported from master:
+	2022-07-10  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR tree-optimization/106063
+	* gcc.dg/pr106063.c: Require effective target int128.
+
+2022-07-27  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2022-07-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/106063
+	* gcc.dg/pr106063.c: New test.
+
+2022-07-27  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-06-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/105665
+	PR tree-optimization/100810
+	* gcc.dg/torture/pr105665.c: New.
+
 2022-07-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

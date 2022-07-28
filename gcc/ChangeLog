@@ -1,3 +1,73 @@
+2022-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* json.cc (string::print): Fix escaping of '\'.
+
+2022-07-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdump-analyzer-feasibility): Mention the
+	fpath.txt output.
+
+2022-07-27  Maciej W. Rozycki  <macro@embecosm.com>
+
+	Backported from master:
+	2022-07-27  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md (stack_protect_set_<mode>): Remove
+	duplicate backslashes.
+
+2022-07-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-07-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106189
+	* gimple-array-bounds.cc (array_bounds_checker::check_mem_ref):
+	Divide using offset_ints.
+
+2022-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	Backported from master:
+	2022-06-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR lto/106129
+	* lto-wrapper.cc (find_option): Add argument start.
+	(merge_and_complain): Loop over existing_opt_index and
+	existing_opt2_index for Xassembler check.  Update calls to
+	find_option.
+	(find_and_merge_options): Add argument first to determine whether
+	to merge options with those passed in *opts.
+	(run_gcc): Update calls to find_and_merge_options.
+
+2022-07-27  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2022-07-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/106087
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Check
+	to make sure the statement is only defining one operand.
+
+2022-07-27  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2022-07-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/106063
+	* match.pd: Do not apply pattern after veclower is not supported.
+
+2022-07-27  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2022-06-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/105665
+	PR tree-optimization/100810
+	* tree-ssa-loop-ivopts.cc
+	(ssa_name_maybe_undef_p, ssa_name_set_maybe_undef): New.
+	(ssa_name_any_use_dominates_bb_p, mark_ssa_maybe_undefs): New.
+	(find_ssa_undef): Check precomputed flag and intervening uses.
+	(tree_ssa_iv_optimize): Call mark_ssa_maybe_undefs.
+
 2022-07-25  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backported from master:
