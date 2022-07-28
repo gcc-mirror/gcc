@@ -1,3 +1,24 @@
+2023-02-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/vect/vect-simd-clone-16.c: New test.
+	* gcc.dg/vect/vect-simd-clone-16b.c: New test.
+	* gcc.dg/vect/vect-simd-clone-16c.c: New test.
+	* gcc.dg/vect/vect-simd-clone-16d.c: New test.
+	* gcc.dg/vect/vect-simd-clone-16e.c: New test.
+	* gcc.dg/vect/vect-simd-clone-16f.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17b.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17c.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17d.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17e.c: New test.
+	* gcc.dg/vect/vect-simd-clone-17f.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18b.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18c.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18d.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18e.c: New test.
+	* gcc.dg/vect/vect-simd-clone-18f.c: New test.
+
 2023-02-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

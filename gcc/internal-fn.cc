@@ -4477,3 +4477,10 @@ expand_SPACESHIP (internal_fn, gcall *stmt)
   if (!rtx_equal_p (target, ops[0].value))
     emit_move_insn (target, ops[0].value);
 }
+
+void
+expand_MASK_CALL (internal_fn, gcall *)
+{
+  /* This IFN should only exist between ifcvt and vect passes.  */
+  gcc_unreachable ();
+}

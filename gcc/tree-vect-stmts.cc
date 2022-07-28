@@ -3988,6 +3988,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   size_t i, nargs;
   tree lhs, rtype, ratype;
   vec<constructor_elt, va_gc> *ret_ctor_elts = NULL;
+  int arg_offset = 0;
 
   /* Is STMT a vectorizable call?   */
   gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt);
@@ -3995,6 +3996,15 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
     return false;
 
   fndecl = gimple_call_fndecl (stmt);
+  if (fndecl == NULL_TREE
+      && gimple_call_internal_p (stmt, IFN_MASK_CALL))
+    {
+      fndecl = gimple_call_arg (stmt, 0);
+      gcc_checking_assert (TREE_CODE (fndecl) == ADDR_EXPR);
+      fndecl = TREE_OPERAND (fndecl, 0);
+      gcc_checking_assert (TREE_CODE (fndecl) == FUNCTION_DECL);
+      arg_offset = 1;
+    }
   if (fndecl == NULL_TREE)
     return false;
 
@@ -4025,7 +4035,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
     return false;
 
   /* Process function arguments.  */
-  nargs = gimple_call_num_args (stmt);
+  nargs = gimple_call_num_args (stmt) - arg_offset;
 
   /* Bail out if the function has zero arguments.  */
   if (nargs == 0)
@@ -4043,7 +4053,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
       thisarginfo.op = NULL_TREE;
       thisarginfo.simd_lane_linear = false;
 
-      op = gimple_call_arg (stmt, i);
+      op = gimple_call_arg (stmt, i + arg_offset);
       if (!vect_is_simple_use (op, vinfo, &thisarginfo.dt,
 			       &thisarginfo.vectype)
 	  || thisarginfo.dt == vect_uninitialized_def)
@@ -4058,16 +4068,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	  || thisarginfo.dt == vect_external_def)
 	gcc_assert (thisarginfo.vectype == NULL_TREE);
       else
-	{
-	  gcc_assert (thisarginfo.vectype != NULL_TREE);
-	  if (VECTOR_BOOLEAN_TYPE_P (thisarginfo.vectype))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "vector mask arguments are not supported\n");
-	      return false;
-	    }
-	}
+	gcc_assert (thisarginfo.vectype != NULL_TREE);
 
       /* For linear arguments, the analyze phase should have saved
 	 the base and step in STMT_VINFO_SIMD_CLONE_INFO.  */
@@ -4160,9 +4161,6 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	if (target_badness < 0)
 	  continue;
 	this_badness += target_badness * 512;
-	/* FORNOW: Have to add code to add the mask argument.  */
-	if (n->simdclone->inbranch)
-	  continue;
 	for (i = 0; i < nargs; i++)
 	  {
 	    switch (n->simdclone->args[i].arg_type)
@@ -4170,7 +4168,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	      case SIMD_CLONE_ARG_TYPE_VECTOR:
 		if (!useless_type_conversion_p
 			(n->simdclone->args[i].orig_type,
-			 TREE_TYPE (gimple_call_arg (stmt, i))))
+			 TREE_TYPE (gimple_call_arg (stmt, i + arg_offset))))
 		  i = -1;
 		else if (arginfo[i].dt == vect_constant_def
 			 || arginfo[i].dt == vect_external_def
@@ -4200,7 +4198,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		i = -1;
 		break;
 	      case SIMD_CLONE_ARG_TYPE_MASK:
-		gcc_unreachable ();
+		break;
 	      }
 	    if (i == (size_t) -1)
 	      break;
@@ -4226,18 +4224,55 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
     return false;
 
   for (i = 0; i < nargs; i++)
-    if ((arginfo[i].dt == vect_constant_def
-	 || arginfo[i].dt == vect_external_def)
-	&& bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR)
-      {
-	tree arg_type = TREE_TYPE (gimple_call_arg (stmt, i));
-	arginfo[i].vectype = get_vectype_for_scalar_type (vinfo, arg_type,
-							  slp_node);
-	if (arginfo[i].vectype == NULL
-	    || !constant_multiple_p (bestn->simdclone->simdlen,
-				     simd_clone_subparts (arginfo[i].vectype)))
+    {
+      if ((arginfo[i].dt == vect_constant_def
+	   || arginfo[i].dt == vect_external_def)
+	  && bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR)
+	{
+	  tree arg_type = TREE_TYPE (gimple_call_arg (stmt, i + arg_offset));
+	  arginfo[i].vectype = get_vectype_for_scalar_type (vinfo, arg_type,
+							    slp_node);
+	  if (arginfo[i].vectype == NULL
+	      || !constant_multiple_p (bestn->simdclone->simdlen,
+				       simd_clone_subparts (arginfo[i].vectype)))
+	    return false;
+	}
+
+      if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR
+	  && VECTOR_BOOLEAN_TYPE_P (bestn->simdclone->args[i].vector_type))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "vector mask arguments are not supported.\n");
 	  return false;
-      }
+	}
+
+      if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK
+	  && bestn->simdclone->mask_mode == VOIDmode
+	  && (simd_clone_subparts (bestn->simdclone->args[i].vector_type)
+	      != simd_clone_subparts (arginfo[i].vectype)))
+	{
+	  /* FORNOW we only have partial support for vector-type masks that
+	     can't hold all of simdlen. */
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+			     vect_location,
+			     "in-branch vector clones are not yet"
+			     " supported for mismatched vector sizes.\n");
+	  return false;
+	}
+      if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK
+	  && bestn->simdclone->mask_mode != VOIDmode)
+	{
+	  /* FORNOW don't support integer-type masks.  */
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+			     vect_location,
+			     "in-branch vector clones are not yet"
+			     " supported for integer mask modes.\n");
+	  return false;
+	}
+    }
 
   fndecl = bestn->decl;
   nunits = bestn->simdclone->simdlen;
@@ -4319,7 +4354,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	{
 	  unsigned int k, l, m, o;
 	  tree atype;
-	  op = gimple_call_arg (stmt, i);
+	  op = gimple_call_arg (stmt, i + arg_offset);
 	  switch (bestn->simdclone->args[i].arg_type)
 	    {
 	    case SIMD_CLONE_ARG_TYPE_VECTOR:
@@ -4414,6 +4449,65 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			  vect_finish_stmt_generation (vinfo, stmt_info,
 						       new_stmt, gsi);
 			  vargs.safe_push (gimple_assign_lhs (new_stmt));
+			}
+		    }
+		}
+	      break;
+	    case SIMD_CLONE_ARG_TYPE_MASK:
+	      atype = bestn->simdclone->args[i].vector_type;
+	      if (bestn->simdclone->mask_mode != VOIDmode)
+		{
+		  /* FORNOW: this is disabled above.  */
+		  gcc_unreachable ();
+		}
+	      else
+		{
+		  tree elt_type = TREE_TYPE (atype);
+		  tree one = fold_convert (elt_type, integer_one_node);
+		  tree zero = fold_convert (elt_type, integer_zero_node);
+		  o = vector_unroll_factor (nunits,
+					    simd_clone_subparts (atype));
+		  for (m = j * o; m < (j + 1) * o; m++)
+		    {
+		      if (simd_clone_subparts (atype)
+			  < simd_clone_subparts (arginfo[i].vectype))
+			{
+			  /* The mask type has fewer elements than simdlen.  */
+
+			  /* FORNOW */
+			  gcc_unreachable ();
+			}
+		      else if (simd_clone_subparts (atype)
+			       == simd_clone_subparts (arginfo[i].vectype))
+			{
+			  /* The SIMD clone function has the same number of
+			     elements as the current function.  */
+			  if (m == 0)
+			    {
+			      vect_get_vec_defs_for_operand (vinfo, stmt_info,
+							     o * ncopies,
+							     op,
+							     &vec_oprnds[i]);
+			      vec_oprnds_i[i] = 0;
+			    }
+			  vec_oprnd0 = vec_oprnds[i][vec_oprnds_i[i]++];
+			  vec_oprnd0
+			    = build3 (VEC_COND_EXPR, atype, vec_oprnd0,
+				      build_vector_from_val (atype, one),
+				      build_vector_from_val (atype, zero));
+			  gassign *new_stmt
+			    = gimple_build_assign (make_ssa_name (atype),
+						   vec_oprnd0);
+			  vect_finish_stmt_generation (vinfo, stmt_info,
+						       new_stmt, gsi);
+			  vargs.safe_push (gimple_assign_lhs (new_stmt));
+			}
+		      else
+			{
+			  /* The mask type has more elements than simdlen.  */
+
+			  /* FORNOW */
+			  gcc_unreachable ();
 			}
 		    }
 		}

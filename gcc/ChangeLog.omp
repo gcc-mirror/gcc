@@ -1,3 +1,19 @@
+2023-02-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	* internal-fn.cc (expand_MASK_CALL): New.
+	* internal-fn.def (MASK_CALL): New.
+	* internal-fn.h (expand_MASK_CALL): New prototype.
+	* omp-simd-clone.cc (simd_clone_adjust_argument_types): Set vector_type
+	for mask arguments also.
+	* tree-if-conv.cc: Include cgraph.h.
+	(if_convertible_stmt_p): Do if conversions for calls to SIMD calls.
+	(predicate_statements): Convert functions to IFN_MASK_CALL.
+	* tree-vect-loop.cc (vect_get_datarefs_in_loop): Recognise
+	IFN_MASK_CALL as a SIMD function call.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Handle
+	IFN_MASK_CALL as an inbranch SIMD function call.
+	Generate the mask vector arguments.
+
 2023-02-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gimplify.cc (gimplify_scan_omp_clauses): Remove Fortran
