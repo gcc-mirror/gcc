@@ -22,6 +22,7 @@
 #include "rust-hir-visitor.h"
 #include "rust-name-resolver.h"
 #include "rust-hir-type-check.h"
+#include "rust-stacked-contexts.h"
 
 namespace Rust {
 namespace HIR {
@@ -33,31 +34,13 @@ public:
   void go (HIR::Crate &crate);
 
 private:
-  /* Stack of unsafe contexts */
-  std::vector<HirId> unsafe_contexts;
-
-  /**
-   * Add an unsafe context to the stack. To call when entering unsafe blocks
-   */
-  void push_unsafe (HirId id);
-
-  /**
-   * Remove an unsafe context from the stack. Call this when exiting unsafe
-   * blocks
-   */
-  HirId pop_unsafe ();
-
-  /**
-   * Are we currently in an unsafe context or not
-   */
-  bool is_unsafe_context ();
-
   /**
    * Check if a mutable static or external static item is used outside of an
    * unsafe context
    */
   void check_use_of_static (HirId node_id, Location locus);
 
+  StackedContexts<HirId> unsafe_context;
   Resolver::TypeCheckContext &context;
   Resolver::Resolver &resolver;
   Analysis::Mappings &mappings;

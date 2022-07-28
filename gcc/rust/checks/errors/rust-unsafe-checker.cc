@@ -65,7 +65,7 @@ check_extern_static (HIR::ExternalItem *maybe_static, Location locus)
 void
 UnsafeChecker::check_use_of_static (HirId node_id, Location locus)
 {
-  if (is_unsafe_context ())
+  if (unsafe_context.is_in_context ())
     return;
 
   auto maybe_static_mut = mappings.lookup_hir_item (node_id);
@@ -77,29 +77,6 @@ UnsafeChecker::check_use_of_static (HirId node_id, Location locus)
   if (maybe_extern_static)
     check_extern_static (static_cast<ExternalItem *> (maybe_extern_static),
 			 locus);
-}
-
-void
-UnsafeChecker::push_unsafe (HirId id)
-{
-  unsafe_contexts.emplace_back (id);
-}
-
-HirId
-UnsafeChecker::pop_unsafe ()
-{
-  rust_assert (!unsafe_contexts.empty ());
-
-  auto last = unsafe_contexts.back ();
-  unsafe_contexts.pop_back ();
-
-  return last;
-}
-
-bool
-UnsafeChecker::is_unsafe_context ()
-{
-  return !unsafe_contexts.empty ();
 }
 
 void
@@ -183,7 +160,7 @@ UnsafeChecker::visit (DereferenceExpr &expr)
   rust_assert (context.lookup_type (to_deref, &to_deref_type));
 
   if (to_deref_type->get_kind () == TyTy::TypeKind::POINTER
-      && !is_unsafe_context ())
+      && !unsafe_context.is_in_context ())
     rust_error_at (expr.get_locus (), "dereference of raw pointer requires "
 				      "unsafe function or block");
 }
@@ -334,7 +311,7 @@ UnsafeChecker::visit (FieldAccessExpr &expr)
 {
   expr.get_receiver_expr ()->accept_vis (*this);
 
-  if (is_unsafe_context ())
+  if (unsafe_context.is_in_context ())
     return;
 
   TyTy::BaseType *receiver_ty;
@@ -427,11 +404,11 @@ UnsafeChecker::visit (ReturnExpr &expr)
 void
 UnsafeChecker::visit (UnsafeBlockExpr &expr)
 {
-  push_unsafe (expr.get_mappings ().get_hirid ());
+  unsafe_context.enter (expr.get_mappings ().get_hirid ());
 
   expr.get_block_expr ()->accept_vis (*this);
 
-  pop_unsafe ();
+  unsafe_context.exit ();
 }
 
 void
@@ -595,12 +572,12 @@ UnsafeChecker::visit (Function &function)
   auto is_unsafe_fn = function.get_qualifiers ().is_unsafe ();
 
   if (is_unsafe_fn)
-    push_unsafe (function.get_mappings ().get_hirid ());
+    unsafe_context.enter (function.get_mappings ().get_hirid ());
 
   function.get_definition ()->accept_vis (*this);
 
   if (is_unsafe_fn)
-    pop_unsafe ();
+    unsafe_context.exit ();
 }
 
 void
