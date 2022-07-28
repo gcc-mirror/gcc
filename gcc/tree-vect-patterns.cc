@@ -4509,10 +4509,8 @@ vect_recog_bool_pattern (vec_info *vinfo,
 	   && STMT_VINFO_DATA_REF (stmt_vinfo))
     {
       stmt_vec_info pattern_stmt_info;
-      tree nunits_vectype;
-      if (!vect_get_vector_types_for_stmt (vinfo, stmt_vinfo, &vectype,
-					   &nunits_vectype)
-	  || !VECTOR_MODE_P (TYPE_MODE (vectype)))
+      vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
+      if (!vectype || !VECTOR_MODE_P (TYPE_MODE (vectype)))
 	return NULL;
 
       if (check_bool_pattern (var, vinfo, bool_stmts))
