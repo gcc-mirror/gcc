@@ -493,6 +493,10 @@ static tree
 eval_bit_field_ref (const constexpr_ctx *ctx, tree t, bool lval,
 		    bool *non_constant_p, bool *overflow_p);
 
+static tree
+eval_loop_expr (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
+		bool *overflow_p, tree *jump_target);
+
 /* Variables and functions to manage constexpr call expansion context.
    These do not need to be marked for PCH or GC.  */
 
@@ -731,6 +735,12 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	}
       break;
 
+    case LOOP_EXPR:
+    case WHILE_STMT:
+    case FOR_STMT:
+      eval_loop_expr (ctx, t, non_constant_p, overflow_p, jump_target);
+      break;
+
     case BIT_FIELD_REF:
       r = eval_bit_field_ref (ctx, t, lval, non_constant_p, overflow_p);
       break;
@@ -774,6 +784,7 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
       r = eval_conditional_expression (ctx, t, lval, non_constant_p, overflow_p,
 				       jump_target);
       break;
+
     default:
       break;
     }
@@ -2758,6 +2769,149 @@ eval_bit_field_ref (const constexpr_ctx *ctx, tree t, bool lval,
     return fold_convert (TREE_TYPE (t), retval);
   gcc_unreachable ();
   return error_mark_node;
+}
+
+/* Predicates for the meaning of *jump_target.  */
+
+static bool
+returns (tree *jump_target)
+{
+  return *jump_target
+	 && (TREE_CODE (*jump_target) == RETURN_EXPR
+	     || (TREE_CODE (*jump_target) == LABEL_DECL
+		 && LABEL_DECL_CDTOR (*jump_target)));
+}
+
+static bool
+breaks (tree *jump_target)
+{
+  return *jump_target
+	 && ((TREE_CODE (*jump_target) == LABEL_DECL
+	      && LABEL_DECL_BREAK (*jump_target))
+	     || TREE_CODE (*jump_target) == BREAK_STMT
+	     || TREE_CODE (*jump_target) == EXIT_EXPR);
+}
+
+static bool
+continues (tree *jump_target)
+{
+  return *jump_target
+	 && ((TREE_CODE (*jump_target) == LABEL_DECL
+	      && LABEL_DECL_CONTINUE (*jump_target))
+	     || TREE_CODE (*jump_target) == CONTINUE_STMT);
+}
+
+static bool
+switches (tree *jump_target)
+{
+  return *jump_target && TREE_CODE (*jump_target) == INTEGER_CST;
+}
+
+/* Evaluate a LOOP_EXPR for side-effects.  Handles break and return
+   semantics; continue semantics are covered by cxx_eval_statement_list.  */
+
+static tree
+eval_loop_expr (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
+		bool *overflow_p, tree *jump_target)
+{
+  constexpr_ctx new_ctx = *ctx;
+  tree local_target;
+  if (!jump_target)
+    {
+      local_target = NULL_TREE;
+      jump_target = &local_target;
+    }
+
+  tree body, cond = NULL_TREE, expr = NULL_TREE;
+  int count = 0;
+  switch (TREE_CODE (t))
+    {
+    case LOOP_EXPR:
+      body = LOOP_EXPR_BODY (t);
+      break;
+    case WHILE_STMT:
+      body = WHILE_BODY (t);
+      cond = WHILE_COND (t);
+      count = -1;
+      break;
+    case FOR_STMT:
+      if (FOR_INIT_STMT (t))
+	eval_constant_expression (ctx, FOR_INIT_STMT (t), /*lval*/ false,
+				  non_constant_p, overflow_p, jump_target);
+      if (*non_constant_p)
+	return NULL_TREE;
+      body = FOR_BODY (t);
+      cond = FOR_COND (t);
+      expr = FOR_EXPR (t);
+      count = -1;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  auto_vec<tree, 10> save_exprs;
+  new_ctx.save_exprs = &save_exprs;
+  do
+    {
+      if (count != -1)
+	{
+	  if (body)
+	    eval_constant_expression (&new_ctx, body, /*lval*/ false,
+				      non_constant_p, overflow_p, jump_target);
+	  if (breaks (jump_target))
+	    {
+	      *jump_target = NULL_TREE;
+	      break;
+	    }
+
+	  if (TREE_CODE (t) != LOOP_EXPR && continues (jump_target))
+	    *jump_target = NULL_TREE;
+
+	  if (expr)
+	    eval_constant_expression (&new_ctx, expr, /*lval*/ false,
+				      non_constant_p, overflow_p, jump_target);
+	}
+
+      if (cond)
+	{
+	  tree res = eval_constant_expression (&new_ctx, cond, /*lval*/ false,
+					       non_constant_p, overflow_p,
+					       jump_target);
+	  if (res)
+	    {
+	      if (verify_constant (res, ctx->quiet, non_constant_p, overflow_p))
+		break;
+	      if (integer_zerop (res))
+		break;
+	    }
+	  else
+	    gcc_assert (*jump_target);
+	}
+
+      /* Forget saved values of SAVE_EXPRs and TARGET_EXPRs.  */
+      for (tree save_expr : save_exprs)
+	ctx->global->values.remove (save_expr);
+      save_exprs.truncate (0);
+
+      if (++count >= constexpr_loop_limit)
+	{
+	  if (!ctx->quiet)
+	    error_at (rs_expr_loc_or_input_loc (t),
+		      "%<constexpr%> loop iteration count exceeds limit of %d "
+		      "(use %<-fconstexpr-loop-limit=%> to increase the limit)",
+		      constexpr_loop_limit);
+	  *non_constant_p = true;
+	  break;
+	}
+    }
+  while (!returns (jump_target) && !breaks (jump_target)
+	 && !continues (jump_target) && (!switches (jump_target) || count == 0)
+	 && !*non_constant_p);
+
+  /* Forget saved values of SAVE_EXPRs and TARGET_EXPRs.  */
+  for (tree save_expr : save_exprs)
+    ctx->global->values.remove (save_expr);
+
+  return NULL_TREE;
 }
 
 // #include "gt-rust-rust-constexpr.h"

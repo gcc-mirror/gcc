@@ -1240,6 +1240,10 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define DECL_FUNCTION_MEMBER_P(NODE)                                           \
   (DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE) || DECL_STATIC_FUNCTION_P (NODE))
 
+/* Nonzero if NODE is the target for genericization of 'return' stmts
+   in constructors/destructors of targetm.cxx.cdtor_returns_this targets.  */
+#define LABEL_DECL_CDTOR(NODE) DECL_LANG_FLAG_2 (LABEL_DECL_CHECK (NODE))
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
@@ -1333,6 +1337,26 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
    constant-expression.  */
 #define DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P(NODE)                        \
   (TREE_LANG_FLAG_2 (VAR_DECL_CHECK (NODE)))
+
+/* WHILE_STMT accessors. These give access to the condition of the
+   while statement and the body of the while statement, respectively.  */
+#define WHILE_COND(NODE) TREE_OPERAND (WHILE_STMT_CHECK (NODE), 0)
+#define WHILE_BODY(NODE) TREE_OPERAND (WHILE_STMT_CHECK (NODE), 1)
+
+/* FOR_STMT accessors. These give access to the init statement,
+   condition, update expression, and body of the for statement,
+   respectively.  */
+#define FOR_INIT_STMT(NODE) TREE_OPERAND (FOR_STMT_CHECK (NODE), 0)
+#define FOR_COND(NODE) TREE_OPERAND (FOR_STMT_CHECK (NODE), 1)
+#define FOR_EXPR(NODE) TREE_OPERAND (FOR_STMT_CHECK (NODE), 2)
+#define FOR_BODY(NODE) TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
+#define FOR_SCOPE(NODE) TREE_OPERAND (FOR_STMT_CHECK (NODE), 4)
+
+/* Nonzero if NODE is the target for genericization of 'break' stmts.  */
+#define LABEL_DECL_BREAK(NODE) DECL_LANG_FLAG_0 (LABEL_DECL_CHECK (NODE))
+
+/* Nonzero if NODE is the target for genericization of 'continue' stmts.  */
+#define LABEL_DECL_CONTINUE(NODE) DECL_LANG_FLAG_1 (LABEL_DECL_CHECK (NODE))
 
 // Above macros are copied from gcc/c-family/c-common.h
 
