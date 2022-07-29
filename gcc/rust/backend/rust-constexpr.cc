@@ -497,6 +497,10 @@ static tree
 eval_loop_expr (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
 		bool *overflow_p, tree *jump_target);
 
+static tree
+eval_switch_expr (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
+		  bool *overflow_p, tree *jump_target);
+
 /* Variables and functions to manage constexpr call expansion context.
    These do not need to be marked for PCH or GC.  */
 
@@ -739,6 +743,11 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
     case WHILE_STMT:
     case FOR_STMT:
       eval_loop_expr (ctx, t, non_constant_p, overflow_p, jump_target);
+      break;
+
+    case SWITCH_EXPR:
+    case SWITCH_STMT:
+      eval_switch_expr (ctx, t, non_constant_p, overflow_p, jump_target);
       break;
 
     case BIT_FIELD_REF:
@@ -2771,6 +2780,8 @@ eval_bit_field_ref (const constexpr_ctx *ctx, tree t, bool lval,
   return error_mark_node;
 }
 
+// forked from gcc/cp/constexpr.cc returns
+
 /* Predicates for the meaning of *jump_target.  */
 
 static bool
@@ -2782,6 +2793,8 @@ returns (tree *jump_target)
 		 && LABEL_DECL_CDTOR (*jump_target)));
 }
 
+// forked from gcc/cp/constexpr.cc breaks
+
 static bool
 breaks (tree *jump_target)
 {
@@ -2792,6 +2805,8 @@ breaks (tree *jump_target)
 	     || TREE_CODE (*jump_target) == EXIT_EXPR);
 }
 
+// forked from gcc/cp/constexpr.cc continues
+
 static bool
 continues (tree *jump_target)
 {
@@ -2801,11 +2816,15 @@ continues (tree *jump_target)
 	     || TREE_CODE (*jump_target) == CONTINUE_STMT);
 }
 
+// forked from gcc/cp/constexpr.cc switches
+
 static bool
 switches (tree *jump_target)
 {
   return *jump_target && TREE_CODE (*jump_target) == INTEGER_CST;
 }
+
+// forked from gcc/cp/constexpr.cc cxx_eval_loop_expr
 
 /* Evaluate a LOOP_EXPR for side-effects.  Handles break and return
    semantics; continue semantics are covered by cxx_eval_statement_list.  */
@@ -2911,6 +2930,43 @@ eval_loop_expr (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
   for (tree save_expr : save_exprs)
     ctx->global->values.remove (save_expr);
 
+  return NULL_TREE;
+}
+
+// forked from gcc/cp/constexpr.cc cxx_eval_switch_expr
+
+/* Evaluate a SWITCH_EXPR for side-effects.  Handles switch and break jump
+   semantics.  */
+
+static tree
+eval_switch_expr (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
+		  bool *overflow_p, tree *jump_target)
+{
+  tree cond
+    = TREE_CODE (t) == SWITCH_STMT ? SWITCH_STMT_COND (t) : SWITCH_COND (t);
+  cond
+    = eval_constant_expression (ctx, cond, false, non_constant_p, overflow_p);
+  VERIFY_CONSTANT (cond);
+  *jump_target = cond;
+
+  tree body
+    = TREE_CODE (t) == SWITCH_STMT ? SWITCH_STMT_BODY (t) : SWITCH_BODY (t);
+  constexpr_ctx new_ctx = *ctx;
+  constexpr_switch_state css = css_default_not_seen;
+  new_ctx.css_state = &css;
+  eval_constant_expression (&new_ctx, body, false, non_constant_p, overflow_p,
+			    jump_target);
+  if (switches (jump_target) && css == css_default_seen)
+    {
+      /* If the SWITCH_EXPR body has default: label, process it once again,
+	 this time instructing label_matches to return true for default:
+	 label on switches (jump_target).  */
+      css = css_default_processing;
+      eval_constant_expression (&new_ctx, body, false, non_constant_p,
+				overflow_p, jump_target);
+    }
+  if (breaks (jump_target) || switches (jump_target))
+    *jump_target = NULL_TREE;
   return NULL_TREE;
 }
 
