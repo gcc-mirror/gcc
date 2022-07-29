@@ -380,7 +380,7 @@ public:
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
-    lhs->coerce (rhs);
+    coercion_site (lhs, rhs, expr.get_locus ());
   }
 
   void visit (HIR::CompoundAssignmentExpr &expr) override

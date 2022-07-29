@@ -327,5 +327,12 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, Location locus)
   return repr;
 }
 
+TyTy::BaseType *
+TypeCheckBase::coercion_site (TyTy::BaseType *lhs, TyTy::BaseType *rhs,
+			      Location)
+{
+  return lhs->coerce (rhs);
+}
+
 } // namespace Resolver
 } // namespace Rust
