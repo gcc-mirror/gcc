@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-visitor.h"
+#include "rust-ast.h"
 #include "rust-macro-expand.h"
 
 namespace Rust {
@@ -43,6 +44,39 @@ public:
   void expand_trait_method_decl (AST::TraitMethodDecl &decl);
 
   /**
+   * Expand The current macro fragment recursively until it could not be
+   * expanded further.
+   *
+   * The return value checking works because correctly
+   * expanded fragment can never be an error (if the fragment can not be
+   * expanded, a stand-in error fragment will be returned; for fragments that
+   * could not be further expanded: the fragment prior to the expansion failure
+   * will be returned).
+   *
+   * @return Either the expanded fragment or an empty errored-out fragment
+   * indicating an expansion failure.
+   */
+  AST::ASTFragment expand_macro_fragment_recursive ()
+  {
+    auto fragment = expander.take_expanded_fragment (*this);
+    unsigned int original_depth = expander.expansion_depth;
+    auto final_fragment = AST::ASTFragment ({}, true);
+
+    while (fragment.should_expand ())
+      {
+	final_fragment = std::move (fragment);
+	expander.expansion_depth++;
+	// further expand the previously expanded macro fragment
+	auto new_fragment = expander.take_expanded_fragment (*this);
+	if (new_fragment.is_error ())
+	  break;
+	fragment = std::move (new_fragment);
+      }
+    expander.expansion_depth = original_depth;
+    return final_fragment;
+  }
+
+  /**
    * Expand a set of values, erasing them if they are marked for strip, and
    * replacing them with expanded macro nodes if necessary.
    * This function is slightly different from `expand_pointer_allow_strip` as
@@ -67,11 +101,13 @@ public:
 	// mark for stripping if required
 	value->accept_vis (*this);
 
-	auto fragment = expander.take_expanded_fragment (*this);
-	if (fragment.should_expand ())
+	// recursively expand the children
+	auto final_fragment = expand_macro_fragment_recursive ();
+
+	if (final_fragment.should_expand ())
 	  {
 	    it = values.erase (it);
-	    for (auto &node : fragment.get_nodes ())
+	    for (auto &node : final_fragment.get_nodes ())
 	      {
 		auto new_node = extractor (node);
 		if (new_node != nullptr && !new_node->is_marked_for_strip ())
