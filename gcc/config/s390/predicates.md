@@ -594,3 +594,15 @@
 (define_predicate "addv_const_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= -32768 && INTVAL (op) <= 32767")))
+
+; Match (subreg (reg ...)) operands.
+; Used for movstrict destination operands
+; When replacing pseudos with hard regs reload strips away the
+; subregs. Accept also plain registers then to prevent the insn from
+; becoming unrecognizable.
+(define_predicate "subreg_register_operand"
+  (ior (and (match_code "subreg")
+	    (match_test "register_operand (SUBREG_REG (op), GET_MODE (SUBREG_REG (op)))"))
+       (and (match_code "reg")
+	    (match_test "reload_completed || reload_in_progress")
+	    (match_test "register_operand (op, GET_MODE (op))"))))
