@@ -3982,6 +3982,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (plus:c (mult:c (div @0 @1) @1) (mod @0 @1))
    @0))
 
+/* x / y * y == x -> x % y == 0.  */
+(simplify
+  (eq:c (mult:c (trunc_div:s @0 @1) @1) @0)
+  (if (TREE_CODE (TREE_TYPE (@0)) != COMPLEX_TYPE)
+    (eq (trunc_mod @0 @1) { build_zero_cst (TREE_TYPE (@0)); })))
+
 /* ((X /[ex] A) +- B) * A  -->  X +- A * B.  */
 (for op (plus minus)
  (simplify
