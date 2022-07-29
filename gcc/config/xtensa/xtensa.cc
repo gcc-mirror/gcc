@@ -4273,6 +4273,7 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
     case ZERO_EXTRACT:
     case ZERO_EXTEND:
+    case IF_THEN_ELSE:
       *total = COSTS_N_INSNS (1);
       return true;
 
