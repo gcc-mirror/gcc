@@ -171,7 +171,7 @@ _M2_ldtoa_init (int, char **, char **)
 }
 
 extern "C" void
-_M2_ldtoa_finish (int, char **, char **)
+_M2_ldtoa_fini (int, char **, char **)
 {
 }
 
@@ -184,7 +184,7 @@ struct _M2_ldtoa_ctor { _M2_ldtoa_ctor (); } _M2_ldtoa_ctor;
 
 _M2_ldtoa_ctor::_M2_ldtoa_ctor (void)
 {
-  M2RTS_RegisterModule ("ldtoa", _M2_ldtoa_init, _M2_ldtoa_finish,
+  M2RTS_RegisterModule ("ldtoa", _M2_ldtoa_init, _M2_ldtoa_fini,
 			_M2_ldtoa_dep);
 }
 #endif

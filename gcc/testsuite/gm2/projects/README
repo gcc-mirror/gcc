@@ -1,0 +1,3 @@
+Tests under here provide confidence that basic linking works for small
+projects.  There are projects to link against the core pim, pim and iso
+libraries.

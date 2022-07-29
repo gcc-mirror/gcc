@@ -30,15 +30,18 @@ FROM SymbolTable IMPORT NulSym, MakeProcedure, PutFunction,
                         GetMainModule, GetModuleCtors, MakeDefImp,
                         PutModuleCtorExtern, IsDefinitionForC,
                         ForeachModuleDo, IsDefImp, IsModule,
-                        IsModuleBuiltin,
-                        GetSymName, StartScope, EndScope ;
+                        IsModuleBuiltin, IsImport, IsImportStatement,
+                        GetSymName, StartScope, EndScope,
+                        GetModuleDefImportStatementList,
+                        GetModuleModImportStatementList,
+                        GetImportModule, GetImportStatementList ;
 
 FROM NameKey IMPORT NulName, Name, MakeKey, makekey, KeyToCharStar ;
 FROM M2Base IMPORT Integer, Cardinal ;
 FROM M2System IMPORT Address ;
 FROM M2LexBuf IMPORT GetTokenNo ;
 FROM Assertion IMPORT Assert ;
-FROM Lists IMPORT List, InitList, IncludeItemIntoList, NoOfItemsInList, GetItemFromList ;
+FROM Lists IMPORT List, InitList, IncludeItemIntoList, NoOfItemsInList, GetItemFromList, KillList, IsItemInList ;
 FROM M2MetaError IMPORT MetaErrorT0, MetaErrorStringT0 ;
 
 FROM SFIO IMPORT OpenToWrite, WriteS, ReadS, OpenToRead, Exists ;
@@ -60,8 +63,12 @@ FROM DynamicStrings IMPORT String, InitString, KillString, ConCat, RemoveWhitePr
                     EqualArray, Mark, Assign, Fin, InitStringChar, Length, Slice, Equal,
                     RemoveComment, string, InitStringCharStar ;
 
+FROM M2Graph IMPORT Graph, InitGraph, KillGraph, AddDependent, SortGraph ;
+
+
 CONST
-   Comment = '#'  ; (* Comment leader      *)
+   Comment   = '#'  ; (* Comment leader      *)
+   Debugging = FALSE ;
 
 VAR
    uselistModules,
@@ -250,12 +257,95 @@ END LookupModuleSym ;
 
 
 (*
+   addDependentStatement - 
+*)
+
+PROCEDURE addDependentStatement (graph: Graph; moduleSym: CARDINAL; list: List) ;
+VAR
+   n1, n2: Name ;
+   import,
+   depmod,
+   i, n  : CARDINAL ;
+BEGIN
+   n := NoOfItemsInList (list) ;
+   i := 1 ;
+   WHILE i <= n DO
+      import := GetItemFromList (list, i) ;
+      Assert (IsImport (import)) ;
+      depmod := GetImportModule (import) ;
+      AddDependent (graph, moduleSym, depmod) ;
+      IF Debugging
+      THEN
+         n1 := GetSymName (moduleSym) ;
+         n2 := GetSymName (depmod) ;
+         printf2 ("AddDependent (%a, %a)\n",
+                  n1, n2)
+      END ;
+      INC (i)
+   END
+END addDependentStatement ;
+
+
+(*
+   addDependentImport - adds dependent imports of moduleSym into the graph.
+*)
+
+PROCEDURE addDependentImport (graph: Graph; moduleSym: CARDINAL; importList: List) ;
+VAR
+   stmt,
+   i, n: CARDINAL ;
+BEGIN
+   n := NoOfItemsInList (importList) ;
+   i := 1 ;
+   WHILE i <= n DO
+      stmt := GetItemFromList (importList, i) ;
+      Assert (IsImportStatement (stmt)) ;
+      addDependentStatement (graph, moduleSym, GetImportStatementList (stmt)) ;
+      INC (i)
+   END
+END addDependentImport ;
+
+
+(*
+   TopologicallySortList - topologically sort the list based on import graph.
+                           A new list is returned.
+*)
+
+PROCEDURE TopologicallySortList (list: List; topModule: CARDINAL) : List ;
+VAR
+   graph    : Graph ;
+   i, n     : CARDINAL ;
+   moduleSym: CARDINAL ;
+BEGIN
+   graph := InitGraph () ;
+   n := NoOfItemsInList (list) ;
+   i := 1 ;
+   WHILE i <= n DO
+      moduleSym := GetItemFromList (uselistModules, i) ;
+      addDependentImport (graph, moduleSym, GetModuleDefImportStatementList (moduleSym)) ;
+      addDependentImport (graph, moduleSym, GetModuleModImportStatementList (moduleSym)) ;
+      INC (i) ;
+   END ;
+   (* Ensure that topModule is also in the graph.  *)
+   IF NOT IsItemInList (list, topModule)
+   THEN
+      addDependentImport (graph, topModule, GetModuleDefImportStatementList (topModule)) ;
+      addDependentImport (graph, topModule, GetModuleModImportStatementList (topModule))
+   END ;
+   RETURN SortGraph (graph, topModule)
+END TopologicallySortList ;
+
+
+(*
    AddEntry - adds an entry to the ctorGlobals and uselistModules.
 *)
 
 PROCEDURE AddEntry (tok: CARDINAL; name: Name) ;
 BEGIN
-   IncludeItemIntoList (ctorGlobals, name) ;
+   IF ctorGlobals # NIL
+   THEN
+      IncludeItemIntoList (ctorGlobals, name)
+   END ;
    IncludeItemIntoList (uselistModules, LookupModuleSym (tok, name))
 END AddEntry ;
 
@@ -292,7 +382,8 @@ VAR
 
 
 (*
-   AddModuleToCtor - adds moduleSym to the ctorGlobals and uselistModules.
+   AddModuleToCtor - adds moduleSym to the uselistModules and
+                     sets all modules ctors as extern.
 *)
 
 PROCEDURE AddModuleToCtor (moduleSym: CARDINAL) ;
@@ -302,7 +393,6 @@ BEGIN
       IF (moduleSym # GetMainModule ()) AND (NOT IsModuleBuiltin (moduleSym))
       THEN
          PutModuleCtorExtern (ctorTok, moduleSym) ;
-         IncludeItemIntoList (ctorGlobals, GetSymName (moduleSym)) ;
          IncludeItemIntoList (uselistModules, moduleSym)
       END
    END
@@ -310,16 +400,17 @@ END AddModuleToCtor ;
 
 
 (*
-   WriteCtorList - writes the ctor list to GetGenModuleFilename
-                   providing the filename is not NIL and not '-'.
+   WriteList - writes the list to GetGenModuleFilename
+               providing the filename is not NIL and not '-'.
 *)
 
-PROCEDURE WriteCtorList (tok: CARDINAL) ;
+PROCEDURE WriteList (tok: CARDINAL; list: List) ;
 VAR
-   fo  : File ;
-   name: Name ;
-   i, n: CARDINAL ;
-   s   : String ;
+   fo       : File ;
+   name     : Name ;
+   moduleSym: CARDINAL ;
+   i, n     : CARDINAL ;
+   s        : String ;
 BEGIN
    IF (GetGenModuleFilename () # NIL) AND (NOT EqualArray (GetGenModuleFilename (), '-'))
    THEN
@@ -327,9 +418,10 @@ BEGIN
       IF IsNoError (fo)
       THEN
          i := 1 ;
-         n := NoOfItemsInList (ctorGlobals) ;
+         n := NoOfItemsInList (list) ;
          WHILE i <= n DO
-            name := GetItemFromList (ctorGlobals, i) ;
+            moduleSym := GetItemFromList (list, i) ;
+            name := GetSymName (moduleSym) ;
             s := InitStringCharStar (KeyToCharStar (name)) ;
             s := ConCat (s, Mark (InitString ('\n'))) ;
             s := HandleEscape (s) ;
@@ -344,7 +436,7 @@ BEGIN
          MetaErrorStringT0 (tok, s)
       END
    END
-END WriteCtorList ;
+END WriteList ;
 
 
 (*
@@ -354,14 +446,27 @@ END WriteCtorList ;
 *)
 
 PROCEDURE CreateCtorListFromImports (tok: CARDINAL) : BOOLEAN ;
+VAR
+   newlist: List ;
+   i, n   : CARDINAL ;
 BEGIN
    IF GenModuleList
    THEN
-      InitList (ctorGlobals) ;
       InitList (uselistModules) ;
       ctorTok := tok ;
       ForeachModuleDo (AddModuleToCtor) ;
-      WriteCtorList (tok) ;
+      newlist := TopologicallySortList (uselistModules, GetMainModule ()) ;
+      KillList (uselistModules) ;
+      uselistModules := newlist ;
+      (* Now create the ctorGlobals using uselistModules and retain the same order.  *)
+      InitList (ctorGlobals) ;
+      i := 1 ;
+      n := NoOfItemsInList (uselistModules) ;
+      WHILE i <= n DO
+         IncludeItemIntoList (ctorGlobals, GetSymName (GetItemFromList (uselistModules, i))) ;
+         INC (i)
+      END ;
+      WriteList (tok, uselistModules) ;
       RETURN TRUE
    END ;
    RETURN FALSE

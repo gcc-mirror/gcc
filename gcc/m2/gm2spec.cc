@@ -950,8 +950,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  if (strcmp (dialect, "iso") == 0)
 	    libraries = xstrdup ("m2iso,m2pim");
 	  else
-	    libraries = xstrdup ("m2pim");  /* Default to pim libraries if none
-					       specified.  */
+	    /* Default to pim libraries if none specified.  */
+	    libraries = xstrdup ("m2pim,m2log,m2iso");
 	}
 
       libraries = convert_abbreviations (libraries);

@@ -635,7 +635,7 @@ GM2-COMP-BOOT-DEFS = FifoQueue.def   M2Debug.def     M2Optimize.def  M2Defaults.
                      M2Base.def      M2Reserved.def  SymbolKey.def   M2BasicBlock.def\
                      M2Search.def    M2Batch.def     M2System.def    P2SymBuild.def  \
                      M2Code.def      M2Comp.def      m2flex.def      NameKey.def     \
-                     M2LexBuf.def    M2Version.def   M2Error.def     \
+                     M2LexBuf.def    M2Version.def   M2Error.def     M2Graph.def     \
                      M2Students.def  \
                      M2GenGCC.def    M2GCCDeclare.def \
                      M2Configure.def SymbolTable.def Lists.def       SymbolConversion.def \
@@ -658,7 +658,7 @@ GM2-COMP-BOOT-MODS = FifoQueue.mod   M2LexBuf.mod                             \
                      M2FileName.mod  P0SymBuild.mod  P1SymBuild.mod  P2SymBuild.mod  \
                      P3SymBuild.mod  \
                      SymbolKey.mod   SymbolTable.mod                 M2Error.mod     \
-                     M2Students.mod  \
+                     M2Graph.mod     M2Students.mod  \
                      M2BasicBlock.mod M2Code.mod     M2GenGCC.mod    M2GCCDeclare.mod \
                      SymbolConversion.mod            M2Base.mod      \
                      M2ALU.mod       M2System.mod    Lists.mod       \
@@ -718,7 +718,7 @@ GM2-LIBS-C         = wrapc.c           Selective.c     choosetemp.c    \
 GM2-LIBS-CC        = UnixArgs.cc       dtoa.cc         ldtoa.cc
 
 GM2-COMP-DEFS      = FifoQueue.def     M2Debug.def     M2Optimize.def  M2Defaults.def  \
-                     M2Options.def     P3SymBuild.def  M2ALU.def       \
+                     M2Options.def     P3SymBuild.def  M2ALU.def       M2Graph.def     \
                      M2Pass.def        P0SymBuild.def  P1SymBuild.def  M2AsmUtil.def   \
                      M2Quads.def     \
                      M2StackWord.def   M2FileName.def  M2Base.def      M2Reserved.def  \
@@ -739,7 +739,7 @@ GM2-COMP-DEFS      = FifoQueue.def     M2Debug.def     M2Optimize.def  M2Default
 GM2-COMP-MODS      = FifoQueue.mod     M2AsmUtil.mod                   M2Optimize.mod  \
                      M2StackWord.mod   M2Options.mod   M2Pass.mod      M2Batch.mod     \
                      M2Quads.mod       M2Comp.mod      M2Reserved.mod  M2Configure.mod \
-                     M2Debug.mod       M2Defaults.mod  NameKey.mod     \
+                     M2Debug.mod       M2Defaults.mod  NameKey.mod     M2Graph.mod     \
                      M2FileName.mod    P0SymBuild.mod  P1SymBuild.mod  P2SymBuild.mod  \
                      P3SymBuild.mod  \
                      SymbolKey.mod     SymbolTable.mod                 M2Error.mod     \

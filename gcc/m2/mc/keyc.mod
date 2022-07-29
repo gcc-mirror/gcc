@@ -997,7 +997,8 @@ BEGIN
    add (keywords, 'catch') ;
    add (keywords, 'operator') ;
    add (keywords, 'complex') ;
-   add (keywords, 'export')
+   add (keywords, 'export') ;
+   add (keywords, 'public')
 END initCP ;
 
 

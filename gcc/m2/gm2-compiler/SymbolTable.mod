@@ -1251,7 +1251,7 @@ END GetImportStatementList ;
 
 (*
    GetModuleDefImportStatementList - returns the list of dependents associated with
-                               the definition module.
+                                     the definition module.
 *)
 
 PROCEDURE GetModuleDefImportStatementList (sym: CARDINAL) : List ;
@@ -1270,7 +1270,7 @@ END GetModuleDefImportStatementList ;
 
 (*
    GetModuleModImportStatementList - returns the list of dependents associated with
-                               the implementation or program module.
+                                     the implementation or program module.
 *)
 
 PROCEDURE GetModuleModImportStatementList (sym: CARDINAL) : List ;
