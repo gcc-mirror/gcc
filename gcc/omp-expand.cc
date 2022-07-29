@@ -6696,7 +6696,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       if (fd->loops[i].m2)
 	t = n2v = create_tmp_var (itype);
       else
-	t = fold_convert (itype, fd->loops[i].n2);
+	t = fold_convert (itype, unshare_expr (fd->loops[i].n2));
       t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 				    false, GSI_CONTINUE_LINKING);
       tree v = fd->loops[i].v;
@@ -6710,7 +6710,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       if (fd->collapse > 1 && !broken_loop)
 	t = n2var;
       else
-	t = fold_convert (type, n2);
+	t = fold_convert (type, unshare_expr (n2));
       t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 				    false, GSI_CONTINUE_LINKING);
       tree v = fd->loop.v;
@@ -6819,7 +6819,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	  if (fd->loops[i].m2)
 	    t = nextn2v = create_tmp_var (itype);
 	  else
-	    t = fold_convert (itype, fd->loops[i].n2);
+	    t = fold_convert (itype, unshare_expr (fd->loops[i].n2));
 	  t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 					false, GSI_CONTINUE_LINKING);
 	  tree v = fd->loops[i].v;
@@ -6849,17 +6849,25 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	  ne->probability = e->probability.invert ();
 
 	  gsi = gsi_after_labels (init_bb);
-	  t = fold_convert (TREE_TYPE (fd->loops[i + 1].v),
-			    fd->loops[i + 1].n1);
 	  if (fd->loops[i + 1].m1)
 	    {
-	      tree t2 = fold_convert (TREE_TYPE (t),
+	      tree t2 = fold_convert (TREE_TYPE (fd->loops[i + 1].v),
 				      fd->loops[i + 1
 						- fd->loops[i + 1].outer].v);
-	      tree t3 = fold_convert (TREE_TYPE (t), fd->loops[i + 1].m1);
-	      t2 = fold_build2 (MULT_EXPR, TREE_TYPE (t), t2, t3);
-	      t = fold_build2 (PLUS_EXPR, TREE_TYPE (t), t, t2);
+	      if (POINTER_TYPE_P (TREE_TYPE (t2)))
+		t = fold_build_pointer_plus (t2, fd->loops[i + 1].n1);
+	      else
+		{
+		  t = fold_convert (TREE_TYPE (fd->loops[i + 1].v),
+				    fd->loops[i + 1].n1);
+		  tree t3 = fold_convert (TREE_TYPE (t), fd->loops[i + 1].m1);
+		  t2 = fold_build2 (MULT_EXPR, TREE_TYPE (t), t2, t3);
+		  t = fold_build2 (PLUS_EXPR, TREE_TYPE (t), t, t2);
+		}
 	    }
+	  else
+	    t = fold_convert (TREE_TYPE (fd->loops[i + 1].v),
+			      fd->loops[i + 1].n1);
 	  expand_omp_build_assign (&gsi, fd->loops[i + 1].v, t);
 	  if (fd->loops[i + 1].m2)
 	    {
@@ -6868,14 +6876,19 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 		  gcc_assert (n2v == NULL_TREE);
 		  n2v = create_tmp_var (TREE_TYPE (fd->loops[i + 1].v));
 		}
-	      t = fold_convert (TREE_TYPE (fd->loops[i + 1].v),
-				fd->loops[i + 1].n2);
-	      tree t2 = fold_convert (TREE_TYPE (t),
+	      tree t2 = fold_convert (TREE_TYPE (fd->loops[i + 1].v),
 				      fd->loops[i + 1
 						- fd->loops[i + 1].outer].v);
-	      tree t3 = fold_convert (TREE_TYPE (t), fd->loops[i + 1].m2);
-	      t2 = fold_build2 (MULT_EXPR, TREE_TYPE (t), t2, t3);
-	      t = fold_build2 (PLUS_EXPR, TREE_TYPE (t), t, t2);
+	      if (POINTER_TYPE_P (TREE_TYPE (t2)))
+		t = fold_build_pointer_plus (t2, fd->loops[i + 1].n2);
+	      else
+		{
+		  t = fold_convert (TREE_TYPE (fd->loops[i + 1].v),
+				    fd->loops[i + 1].n2);
+		  tree t3 = fold_convert (TREE_TYPE (t), fd->loops[i + 1].m2);
+		  t2 = fold_build2 (MULT_EXPR, TREE_TYPE (t), t2, t3);
+		  t = fold_build2 (PLUS_EXPR, TREE_TYPE (t), t, t2);
+		}
 	      expand_omp_build_assign (&gsi, n2v, t);
 	    }
 	  if (i + 2 == fd->collapse && n2var)
@@ -6891,17 +6904,25 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	      tree t2 = fold_build2 (MINUS_EXPR, type, n2, fd->loop.v);
 	      if (fd->loops[i + 1].m1 || fd->loops[i + 1].m2)
 		{
+		  tree itype = TREE_TYPE (fd->loops[i].v);
+		  if (POINTER_TYPE_P (itype))
+		    itype = signed_type_for (itype);
 		  t = build_int_cst (itype, (fd->loops[i + 1].cond_code
 					     == LT_EXPR ? -1 : 1));
 		  t = fold_build2 (PLUS_EXPR, itype,
 				   fold_convert (itype,
 						 fd->loops[i + 1].step), t);
-		  if (fd->loops[i + 1].m2)
-		    t = fold_build2 (PLUS_EXPR, itype, t, n2v);
-		  else
+		  if (fd->loops[i + 1].m2 == NULL_TREE)
 		    t = fold_build2 (PLUS_EXPR, itype, t,
 				     fold_convert (itype,
 						   fd->loops[i + 1].n2));
+		  else if (POINTER_TYPE_P (TREE_TYPE (n2v)))
+		    {
+		      t = fold_build_pointer_plus (n2v, t);
+		      t = fold_convert (itype, t);
+		    }
+		  else
+		    t = fold_build2 (PLUS_EXPR, itype, t, n2v);
 		  t = fold_build2 (MINUS_EXPR, itype, t,
 				   fold_convert (itype, fd->loops[i + 1].v));
 		  tree step = fold_convert (itype, fd->loops[i + 1].step);
