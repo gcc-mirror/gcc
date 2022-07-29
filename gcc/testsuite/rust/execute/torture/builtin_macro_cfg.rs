@@ -9,9 +9,13 @@ extern "C" {
 }
 
 fn print(s: &str) {
-    printf("%s\n" as *const str as *const i8, s as *const str as *const i8);
+    unsafe {
+        printf(
+            "%s\n" as *const str as *const i8,
+            s as *const str as *const i8,
+        );
+    }
 }
-
 
 fn main() -> i32 {
     let cfg = cfg!(A);

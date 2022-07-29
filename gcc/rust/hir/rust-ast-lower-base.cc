@@ -1038,6 +1038,11 @@ ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
 {
   HIR::Visibility vis = translate_visibility (extern_block.get_visibility ());
 
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, extern_block.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 mappings->get_next_localdef_id (crate_num));
+
   std::vector<std::unique_ptr<HIR::ExternalItem>> extern_items;
   for (auto &item : extern_block.get_extern_items ())
     {
@@ -1045,7 +1050,7 @@ ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
 	continue;
 
       HIR::ExternalItem *lowered
-	= ASTLoweringExternItem::translate (item.get ());
+	= ASTLoweringExternItem::translate (item.get (), mapping.get_hirid ());
       extern_items.push_back (std::unique_ptr<HIR::ExternalItem> (lowered));
     }
 
@@ -1058,16 +1063,13 @@ ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
 	rust_error_at (extern_block.get_locus (), "unknown ABI option");
     }
 
-  auto crate_num = mappings->get_current_crate ();
-  Analysis::NodeMapping mapping (crate_num, extern_block.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
-
   HIR::ExternBlock *hir_extern_block
     = new HIR::ExternBlock (mapping, abi, std::move (extern_items),
 			    std::move (vis), extern_block.get_inner_attrs (),
 			    extern_block.get_outer_attrs (),
 			    extern_block.get_locus ());
+
+  mappings->insert_hir_extern_block (hir_extern_block);
 
   return hir_extern_block;
 }

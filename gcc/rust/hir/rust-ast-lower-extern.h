@@ -31,13 +31,15 @@ class ASTLoweringExternItem : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::ExternalItem *translate (AST::ExternalItem *item)
+  static HIR::ExternalItem *translate (AST::ExternalItem *item,
+				       HirId parent_hirid)
   {
     ASTLoweringExternItem resolver;
     item->accept_vis (resolver);
 
     rust_assert (resolver.translated != nullptr);
-    resolver.mappings->insert_hir_extern_item (resolver.translated);
+    resolver.mappings->insert_hir_extern_item (resolver.translated,
+					       parent_hirid);
     resolver.mappings->insert_location (
       resolver.translated->get_mappings ().get_hirid (),
       resolver.translated->get_locus ());

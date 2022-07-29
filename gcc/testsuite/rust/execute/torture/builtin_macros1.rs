@@ -8,7 +8,9 @@ extern "C" {
 }
 
 fn print(s: &str) {
-    printf("%s\n\0" as *const str as *const i8, s);
+    unsafe {
+        printf("%s\n\0" as *const str as *const i8, s);
+    }
 }
 
 fn main() -> i32 {

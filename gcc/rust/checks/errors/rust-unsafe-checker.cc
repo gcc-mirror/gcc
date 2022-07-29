@@ -69,7 +69,10 @@ UnsafeChecker::check_use_of_static (HirId node_id, Location locus)
     return;
 
   auto maybe_static_mut = mappings.lookup_hir_item (node_id);
-  auto maybe_extern_static = mappings.lookup_hir_extern_item (node_id);
+
+  HirId extern_block;
+  auto maybe_extern_static
+    = mappings.lookup_hir_extern_item (node_id, &extern_block);
 
   if (maybe_static_mut)
     check_static_mut (maybe_static_mut, locus);
@@ -77,6 +80,52 @@ UnsafeChecker::check_use_of_static (HirId node_id, Location locus)
   if (maybe_extern_static)
     check_extern_static (static_cast<ExternalItem *> (maybe_extern_static),
 			 locus);
+}
+
+static void
+check_unsafe_call (HIR::Function *fn, Location locus, const std::string &kind)
+{
+  if (fn->get_qualifiers ().is_unsafe ())
+    rust_error_at (locus, "call to unsafe %s requires unsafe function or block",
+		   kind.c_str ());
+}
+
+static void
+check_extern_call (HIR::ExternalItem *maybe_fn, HIR::ExternBlock *parent_block,
+		   Location locus)
+{
+  // We have multiple operations to perform here
+  //     1. Is the item an actual function we're calling
+  //     2. Is the block it's defined in an FFI block or an `extern crate` block
+  //
+  // It is not unsafe to call into other crates, so items defined in an `extern
+  // crate` must be callable without being in an unsafe context. On the other
+  // hand, any function defined in a block with a specific ABI (even `extern
+  // "Rust"` blocks) is unsafe to call
+
+  if (maybe_fn->get_extern_kind () == ExternalItem::ExternKind::Function)
+    rust_error_at (locus,
+		   "call to extern function requires unsafe function or block");
+}
+
+void
+UnsafeChecker::check_function_call (HirId node_id, Location locus)
+{
+  if (unsafe_context.is_in_context ())
+    return;
+
+  HirId parent_extern_block;
+  auto maybe_fn = mappings.lookup_hir_item (node_id);
+  auto maybe_extern
+    = mappings.lookup_hir_extern_item (node_id, &parent_extern_block);
+
+  if (maybe_fn && maybe_fn->get_item_kind () == Item::ItemKind::Function)
+    check_unsafe_call (static_cast<Function *> (maybe_fn), locus, "function");
+
+  if (maybe_extern)
+    check_extern_call (static_cast<ExternalItem *> (maybe_extern),
+		       mappings.lookup_hir_extern_block (parent_extern_block),
+		       locus);
 }
 
 void
@@ -297,6 +346,28 @@ UnsafeChecker::visit (StructExprStructBase &expr)
 void
 UnsafeChecker::visit (CallExpr &expr)
 {
+  auto fn = expr.get_fnexpr ();
+  if (!fn)
+    return;
+
+  NodeId ast_node_id = fn->get_mappings ().get_nodeid ();
+  NodeId ref_node_id;
+  HirId definition_id;
+
+  // There are no unsafe types, and functions are defined in the name resolver.
+  // If we can't find the name, then we're dealing with a type and should return
+  // early.
+  if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
+    return;
+
+  rust_assert (mappings.lookup_node_to_hir (ref_node_id, &definition_id));
+
+  // At this point we have the function's HIR Id. There are two checks we
+  // must perform:
+  //     1. The function is an unsafe one
+  //     2. The function is an extern one
+  check_function_call (definition_id, expr.get_locus ());
+
   if (expr.has_params ())
     for (auto &arg : expr.get_arguments ())
       arg->accept_vis (*this);
@@ -304,7 +375,23 @@ UnsafeChecker::visit (CallExpr &expr)
 
 void
 UnsafeChecker::visit (MethodCallExpr &expr)
-{}
+{
+  TyTy::BaseType *method_type;
+  context.lookup_type (expr.get_method_name ().get_mappings ().get_hirid (),
+		       &method_type);
+
+  auto fn = *static_cast<TyTy::FnType *> (method_type);
+  auto method = mappings.lookup_hir_implitem (fn.get_ref (), nullptr);
+
+  if (!unsafe_context.is_in_context () && method)
+    check_unsafe_call (static_cast<Function *> (method), expr.get_locus (),
+		       "method");
+
+  expr.get_receiver ()->accept_vis (*this);
+
+  for (auto &arg : expr.get_arguments ())
+    arg->accept_vis (*this);
+}
 
 void
 UnsafeChecker::visit (FieldAccessExpr &expr)

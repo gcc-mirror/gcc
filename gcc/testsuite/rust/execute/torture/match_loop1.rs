@@ -7,10 +7,10 @@ extern "C" {
 enum E {
     One,
     Two,
-    Other
+    Other,
 }
 
-fn foo () {
+fn foo() {
     let mut x = E::One;
 
     loop {
@@ -19,7 +19,9 @@ fn foo () {
                 let a = "E::One\n\0";
                 let b = a as *const str;
                 let c = b as *const i8;
-                printf (c);
+                unsafe {
+                    printf(c);
+                }
 
                 x = E::Two;
             }
@@ -27,7 +29,9 @@ fn foo () {
                 let a = "E::Two\n\0";
                 let b = a as *const str;
                 let c = b as *const i8;
-                printf (c);
+                unsafe {
+                    printf(c);
+                }
 
                 x = E::Other;
             }
@@ -35,7 +39,9 @@ fn foo () {
                 let a = "break!\n\0";
                 let b = a as *const str;
                 let c = b as *const i8;
-                printf (c);
+                unsafe {
+                    printf(c);
+                }
 
                 break;
             }
@@ -43,9 +49,8 @@ fn foo () {
     }
 }
 
-
-fn main () -> i32 {
-    foo ();
+fn main() -> i32 {
+    foo();
 
     0
 }
