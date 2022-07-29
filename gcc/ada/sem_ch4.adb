@@ -4814,6 +4814,14 @@ package body Sem_Ch4 is
       Is_Single_Concurrent_Object : Boolean;
       --  Set True if the prefix is a single task or a single protected object
 
+      function Constraint_Has_Unprefixed_Discriminant_Reference
+        (Typ : Entity_Id) return Boolean;
+      --  Given a subtype that is subject to a discriminant-dependent
+      --  constraint, returns True if any of the values of the constraint
+      --  (i.e., any of the index values for an index constraint, any of
+      --  the discriminant values for a discriminant constraint)
+      --  are unprefixed discriminant names.
+
       procedure Find_Component_In_Instance (Rec : Entity_Id);
       --  In an instance, a component of a private extension may not be visible
       --  while it was visible in the generic. Search candidate scope for a
@@ -4841,6 +4849,56 @@ package body Sem_Ch4 is
       --  interpretation is a procedure with synchronization kind By_Protected
       --  _Procedure, and collect all its interpretations (since it may be an
       --  overloaded interface primitive); otherwise return False.
+
+      ------------------------------------------------------
+      -- Constraint_Has_Unprefixed_Discriminant_Reference --
+      ------------------------------------------------------
+
+      function Constraint_Has_Unprefixed_Discriminant_Reference
+        (Typ : Entity_Id) return Boolean
+      is
+
+         function Is_Discriminant_Name (N : Node_Id) return Boolean is
+           ((Nkind (N) = N_Identifier)
+              and then (Ekind (Entity (N)) = E_Discriminant));
+      begin
+         if Is_Array_Type (Typ) then
+            declare
+               Index : Node_Id := First_Index (Typ);
+               Rng   : Node_Id;
+            begin
+               while Present (Index) loop
+                  Rng := Index;
+                  if Nkind (Rng) = N_Subtype_Indication then
+                     Rng := Range_Expression (Constraint (Rng));
+                  end if;
+
+                  if Nkind (Rng) = N_Range then
+                     if Is_Discriminant_Name (Low_Bound (Rng))
+                       or else Is_Discriminant_Name (High_Bound (Rng))
+                     then
+                        return True;
+                     end if;
+                  end if;
+
+                  Next_Index (Index);
+               end loop;
+            end;
+         else
+            declare
+               Elmt : Elmt_Id := First_Elmt (Discriminant_Constraint (Typ));
+            begin
+               while Present (Elmt) loop
+                  if Is_Discriminant_Name (Node (Elmt)) then
+                     return True;
+                  end if;
+                  Next_Elmt (Elmt);
+               end loop;
+            end;
+         end if;
+
+         return False;
+      end Constraint_Has_Unprefixed_Discriminant_Reference;
 
       --------------------------------
       -- Find_Component_In_Instance --
@@ -5288,6 +5346,33 @@ package body Sem_Ch4 is
                         Set_Etype (N, Subt);
                      end;
                   end if;
+
+               --  If Etype (Comp) is an access type whose designated subtype
+               --  is constrained by an unprefixed discriminant value,
+               --  then ideally we would build a new subtype with an
+               --  appropriately prefixed discriminant value and use that
+               --  instead, as is done in Build_Actual_Subtype_Of_Component.
+               --  That turns out to be difficult in this context (with
+               --  Full_Analysis = False, we could be processing a selected
+               --  component that occurs in a Postcondition pragma;
+               --  PPC pragmas are odd because they can contain references
+               --  to formal parameters that occur outside the subprogram).
+               --  So instead we punt on building a new subtype and we
+               --  use the base type instead. This might introduce
+               --  correctness problems if N were the target of an
+               --  assignment (because a required check might be omitted);
+               --  fortunately, that's impossible because a reference to the
+               --  current instance of a type does not denote a variable view
+               --  when the reference occurs within an aspect_specification.
+               --  GNAT's Precondition and Postcondition pragmas follow the
+               --  same rules as a Pre or Post aspect_specification.
+
+               elsif Has_Discriminant_Dependent_Constraint (Comp)
+                 and then Ekind (Etype (Comp)) = E_Access_Subtype
+                 and then Constraint_Has_Unprefixed_Discriminant_Reference
+                            (Designated_Type (Etype (Comp)))
+               then
+                  Set_Etype (N, Base_Type (Etype (Comp)));
 
                --  If Full_Analysis not enabled, just set the Etype
 
