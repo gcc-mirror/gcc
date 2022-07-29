@@ -144,6 +144,27 @@ private:
   const TyTy::BaseType *base;
 };
 
+class AutoderefCycle
+{
+protected:
+  AutoderefCycle (bool autoderef_flag);
+
+  virtual ~AutoderefCycle ();
+
+  virtual bool select (const TyTy::BaseType &autoderefed) = 0;
+
+  // optional: this is a chance to hook in to grab predicate items on the raw
+  // type
+  virtual void try_hook (const TyTy::BaseType &);
+
+  bool cycle (const TyTy::BaseType *receiver);
+
+  bool try_autoderefed (const TyTy::BaseType *r);
+
+  bool autoderef_flag;
+  std::vector<Adjustment> adjustments;
+};
+
 } // namespace Resolver
 } // namespace Rust
 

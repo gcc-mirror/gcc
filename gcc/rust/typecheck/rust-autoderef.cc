@@ -268,5 +268,129 @@ resolve_operator_overload_fn (
   return true;
 }
 
+AutoderefCycle::AutoderefCycle (bool autoderef_flag)
+  : autoderef_flag (autoderef_flag)
+{}
+
+AutoderefCycle::~AutoderefCycle () {}
+
+void
+AutoderefCycle::try_hook (const TyTy::BaseType &)
+{}
+
+bool
+AutoderefCycle::cycle (const TyTy::BaseType *receiver)
+{
+  const TyTy::BaseType *r = receiver;
+  while (true)
+    {
+      if (try_autoderefed (r))
+	return true;
+
+      // 4. deref to to 1, if cannot deref then quit
+      if (autoderef_flag)
+	return false;
+
+      // try unsize
+      Adjustment unsize = Adjuster::try_unsize_type (r);
+      if (!unsize.is_error ())
+	{
+	  adjustments.push_back (unsize);
+	  auto unsize_r = unsize.get_expected ();
+
+	  if (try_autoderefed (unsize_r))
+	    return true;
+
+	  adjustments.pop_back ();
+	}
+
+      Adjustment deref
+	= Adjuster::try_deref_type (r, Analysis::RustLangItem::ItemType::DEREF);
+      if (!deref.is_error ())
+	{
+	  auto deref_r = deref.get_expected ();
+	  adjustments.push_back (deref);
+
+	  if (try_autoderefed (deref_r))
+	    return true;
+
+	  adjustments.pop_back ();
+	}
+
+      Adjustment deref_mut = Adjuster::try_deref_type (
+	r, Analysis::RustLangItem::ItemType::DEREF_MUT);
+      if (!deref_mut.is_error ())
+	{
+	  auto deref_r = deref_mut.get_expected ();
+	  adjustments.push_back (deref_mut);
+
+	  if (try_autoderefed (deref_r))
+	    return true;
+
+	  adjustments.pop_back ();
+	}
+
+      if (!deref_mut.is_error ())
+	{
+	  auto deref_r = deref_mut.get_expected ();
+	  adjustments.push_back (deref_mut);
+	  Adjustment raw_deref = Adjuster::try_raw_deref_type (deref_r);
+	  adjustments.push_back (raw_deref);
+	  deref_r = raw_deref.get_expected ();
+
+	  if (try_autoderefed (deref_r))
+	    return true;
+
+	  adjustments.pop_back ();
+	  adjustments.pop_back ();
+	}
+
+      if (!deref.is_error ())
+	{
+	  r = deref.get_expected ();
+	  adjustments.push_back (deref);
+	}
+      Adjustment raw_deref = Adjuster::try_raw_deref_type (r);
+      if (raw_deref.is_error ())
+	return false;
+
+      r = raw_deref.get_expected ();
+      adjustments.push_back (raw_deref);
+    }
+  return false;
+}
+
+bool
+AutoderefCycle::try_autoderefed (const TyTy::BaseType *r)
+{
+  try_hook (*r);
+
+  // 1. try raw
+  if (select (*r))
+    return true;
+
+  // 2. try ref
+  TyTy::ReferenceType *r1
+    = new TyTy::ReferenceType (r->get_ref (), TyTy::TyVar (r->get_ref ()),
+			       Mutability::Imm);
+  adjustments.push_back (Adjustment (Adjustment::AdjustmentType::IMM_REF, r1));
+  if (select (*r1))
+    return true;
+
+  adjustments.pop_back ();
+
+  // 3. try mut ref
+  TyTy::ReferenceType *r2
+    = new TyTy::ReferenceType (r->get_ref (), TyTy::TyVar (r->get_ref ()),
+			       Mutability::Mut);
+  adjustments.push_back (Adjustment (Adjustment::AdjustmentType::MUT_REF, r2));
+  if (select (*r2))
+    return true;
+
+  adjustments.pop_back ();
+
+  return false;
+}
+
 } // namespace Resolver
 } // namespace Rust
