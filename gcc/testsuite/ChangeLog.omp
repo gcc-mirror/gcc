@@ -1,6 +1,13 @@
 2022-07-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
+	2022-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-simd-3.f90: New test.
+
+2022-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
 	2022-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106448
