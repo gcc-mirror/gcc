@@ -1,3 +1,49 @@
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105893
+	* doc/invoke.texi: Add -Wanalyzer-putenv-of-auto-var.
+
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdiagnostics-show-cwe): Use uref rather than
+	url.
+	(Static Analyzer Options): Likewise.  Add urefs for all of the
+	warnings that have associated CWE identifiers.
+
+2022-07-28  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* doc/implement-c.texi (Floating point implementation): Mention
+	`-fno-trapping-math' in the context of FENV_ACCESS pragma.
+	* doc/invoke.texi (Optimize Options): Clarify FENV_ACCESS pragma
+	implication in the descriptions of `-fno-trapping-math' and
+	`-frounding-math'.
+
+2022-07-28  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md (UNSPECV_FSNVSNAN): New constant.
+	(QUIET_PATTERN): New int attribute.
+	(f<quiet_pattern>_quiet<ANYF:mode><X:mode>4): Emit the intended
+	RTL insns entirely within the preparation statements.
+	(*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_default)
+	(*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_snan): Remove
+	insns.
+	(*riscv_fsnvsnan<mode>2): New insn.
+
+2022-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106457
+	* tree.cc (array_at_struct_end_p): Handle array objects
+	specially.
+
+2022-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106099
+	* internal-fn.def (TRAP): New internal fn.
+	* internal-fn.h (expand_TRAP): Declare.
+	* internal-fn.cc (expand_TRAP): Define.
+	* gimple.cc (gimple_build_builtin_unreachable): For BUILT_IN_TRAP,
+	use internal fn rather than builtin.
+
 2022-07-27  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* doc/loop.texi: Refer to LOOPS_HAVE_RECORDED_EXITS instead.

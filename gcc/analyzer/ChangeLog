@@ -1,3 +1,22 @@
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105893
+	* analyzer.opt (Wanalyzer-putenv-of-auto-var): New.
+	* region-model-impl-calls.cc (class putenv_of_auto_var): New.
+	(region_model::impl_call_putenv): New.
+	* region-model.cc (region_model::on_call_pre): Handle putenv.
+	* region-model.h (region_model::impl_call_putenv): New decl.
+
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-malloc.cc (free_of_non_heap::emit): Add comment about CWE.
+	* sm-taint.cc (tainted_size::emit): Likewise.
+
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* region.h: Add notes to the comment describing the region
+	class hierarchy.
+
 2022-07-27  Immad Mir  <mirimmad@outlook.com>
 
 	PR analyzer/106286

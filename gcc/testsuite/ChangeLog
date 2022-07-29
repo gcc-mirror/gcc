@@ -1,3 +1,28 @@
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105893
+	* gcc.dg/analyzer/putenv-1.c: New test.
+
+2022-07-28  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/fle-ieee.c: New test.
+	* gcc.target/riscv/fle-snan.c: New test.
+	* gcc.target/riscv/fle.c: New test.
+	* gcc.target/riscv/flef-ieee.c: New test.
+	* gcc.target/riscv/flef-snan.c: New test.
+	* gcc.target/riscv/flef.c: New test.
+	* gcc.target/riscv/flt-ieee.c: New test.
+	* gcc.target/riscv/flt-snan.c: New test.
+	* gcc.target/riscv/flt.c: New test.
+	* gcc.target/riscv/fltf-ieee.c: New test.
+	* gcc.target/riscv/fltf-snan.c: New test.
+	* gcc.target/riscv/fltf.c: New test.
+
+2022-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106099
+	* gcc.dg/ubsan/pr106099.c: New test.
+
 2022-07-27  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* c-c++-common/pragma-diag-14.c: New test.
