@@ -1244,6 +1244,10 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
    in constructors/destructors of targetm.cxx.cdtor_returns_this targets.  */
 #define LABEL_DECL_CDTOR(NODE) DECL_LANG_FLAG_2 (LABEL_DECL_CHECK (NODE))
 
+/* Nonzero if this NOP_EXPR is a reinterpret_cast.  Such conversions
+   are not constexprs.  Other NOP_EXPRs are.  */
+#define REINTERPRET_CAST_P(NODE) TREE_LANG_FLAG_0 (NOP_EXPR_CHECK (NODE))
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \

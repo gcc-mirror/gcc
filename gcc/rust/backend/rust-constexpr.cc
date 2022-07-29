@@ -697,6 +697,29 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 				    non_constant_p, overflow_p);
       break;
 
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+      if (jump_target)
+	*jump_target = t;
+      else
+	{
+	  /* Can happen with ({ return true; }) && false; passed to
+	     maybe_constant_value.  There is nothing to jump over in this
+	     case, and the bug will be diagnosed later.  */
+	  gcc_assert (ctx->quiet);
+	  *non_constant_p = true;
+	}
+      break;
+
+    case NOP_EXPR:
+      if (REINTERPRET_CAST_P (t))
+	{
+	  if (!ctx->quiet)
+	    error_at (loc, "%<reinterpret_cast%> is not a constant expression");
+	  *non_constant_p = true;
+	  return t;
+	}
+
     case MODIFY_EXPR:
       r = eval_store_expression (ctx, t, false, non_constant_p, overflow_p);
       break;
@@ -3030,6 +3053,132 @@ eval_unary_expression (const constexpr_ctx *ctx, tree t, bool /*lval*/,
     }
   VERIFY_CONSTANT (r);
   return r;
+}
+
+// forked from gcc/cp/constexpr.cc cxx_union_active_member
+
+/* Try to determine the currently active union member for an expression
+   with UNION_TYPE.  If it can be determined, return the FIELD_DECL,
+   otherwise return NULL_TREE.  */
+
+static tree
+union_active_member (const constexpr_ctx *ctx, tree t)
+{
+  constexpr_ctx new_ctx = *ctx;
+  new_ctx.quiet = true;
+  bool non_constant_p = false, overflow_p = false;
+  tree ctor = eval_constant_expression (&new_ctx, t, false, &non_constant_p,
+					&overflow_p);
+  if (TREE_CODE (ctor) == CONSTRUCTOR && CONSTRUCTOR_NELTS (ctor) == 1
+      && CONSTRUCTOR_ELT (ctor, 0)->index
+      && TREE_CODE (CONSTRUCTOR_ELT (ctor, 0)->index) == FIELD_DECL)
+    return CONSTRUCTOR_ELT (ctor, 0)->index;
+  return NULL_TREE;
+}
+
+// forked from gcc/cp/constexpr.cc cxx_fold_indirect_ref_1
+
+static tree
+fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
+		     tree op, unsigned HOST_WIDE_INT off, bool *empty_base)
+{
+  tree optype = TREE_TYPE (op);
+  unsigned HOST_WIDE_INT const_nunits;
+  if (off == 0 && similar_type_p (optype, type))
+    return op;
+  else if (TREE_CODE (optype) == COMPLEX_TYPE
+	   && similar_type_p (type, TREE_TYPE (optype)))
+    {
+      /* *(foo *)&complexfoo => __real__ complexfoo */
+      if (off == 0)
+	return build1_loc (loc, REALPART_EXPR, type, op);
+      /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
+      else if (tree_to_uhwi (TYPE_SIZE_UNIT (type)) == off)
+	return build1_loc (loc, IMAGPART_EXPR, type, op);
+    }
+  /* ((foo*)&vectorfoo)[x] => BIT_FIELD_REF<vectorfoo,...> */
+  else if (VECTOR_TYPE_P (optype) && similar_type_p (type, TREE_TYPE (optype))
+	   && TYPE_VECTOR_SUBPARTS (optype).is_constant (&const_nunits))
+    {
+      unsigned HOST_WIDE_INT part_width = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+      unsigned HOST_WIDE_INT max_offset = part_width * const_nunits;
+      if (off < max_offset && off % part_width == 0)
+	{
+	  tree index = bitsize_int (off * BITS_PER_UNIT);
+	  return build3_loc (loc, BIT_FIELD_REF, type, op, TYPE_SIZE (type),
+			     index);
+	}
+    }
+  /* ((foo *)&fooarray)[x] => fooarray[x] */
+  else if (TREE_CODE (optype) == ARRAY_TYPE
+	   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (optype)))
+	   && !integer_zerop (TYPE_SIZE_UNIT (TREE_TYPE (optype))))
+    {
+      tree type_domain = TYPE_DOMAIN (optype);
+      tree min_val = size_zero_node;
+      if (type_domain && TYPE_MIN_VALUE (type_domain))
+	min_val = TYPE_MIN_VALUE (type_domain);
+      unsigned HOST_WIDE_INT el_sz
+	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (optype)));
+      unsigned HOST_WIDE_INT idx = off / el_sz;
+      unsigned HOST_WIDE_INT rem = off % el_sz;
+      if (tree_fits_uhwi_p (min_val))
+	{
+	  tree index = size_int (idx + tree_to_uhwi (min_val));
+	  op = build4_loc (loc, ARRAY_REF, TREE_TYPE (optype), op, index,
+			   NULL_TREE, NULL_TREE);
+	  return fold_indirect_ref_1 (ctx, loc, type, op, rem, empty_base);
+	}
+    }
+  /* ((foo *)&struct_with_foo_field)[x] => COMPONENT_REF */
+  else if (TREE_CODE (optype) == RECORD_TYPE
+	   || TREE_CODE (optype) == UNION_TYPE)
+    {
+      if (TREE_CODE (optype) == UNION_TYPE)
+	/* For unions prefer the currently active member.  */
+	if (tree field = union_active_member (ctx, op))
+	  {
+	    unsigned HOST_WIDE_INT el_sz
+	      = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (field)));
+	    if (off < el_sz)
+	      {
+		tree cop = build3 (COMPONENT_REF, TREE_TYPE (field), op, field,
+				   NULL_TREE);
+		if (tree ret = fold_indirect_ref_1 (ctx, loc, type, cop, off,
+						    empty_base))
+		  return ret;
+	      }
+	  }
+      for (tree field = TYPE_FIELDS (optype); field; field = DECL_CHAIN (field))
+	if (TREE_CODE (field) == FIELD_DECL
+	    && TREE_TYPE (field) != error_mark_node
+	    && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (field))))
+	  {
+	    tree pos = byte_position (field);
+	    if (!tree_fits_uhwi_p (pos))
+	      continue;
+	    unsigned HOST_WIDE_INT upos = tree_to_uhwi (pos);
+	    unsigned HOST_WIDE_INT el_sz
+	      = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (field)));
+	    if (upos <= off && off < upos + el_sz)
+	      {
+		tree cop = build3 (COMPONENT_REF, TREE_TYPE (field), op, field,
+				   NULL_TREE);
+		if (tree ret = fold_indirect_ref_1 (ctx, loc, type, cop,
+						    off - upos, empty_base))
+		  return ret;
+	      }
+	  }
+      /* Also handle conversion to an empty base class, which
+	 is represented with a NOP_EXPR.  */
+      if (is_empty_class (type) && CLASS_TYPE_P (optype))
+	{
+	  *empty_base = true;
+	  return op;
+	}
+    }
+
+  return NULL_TREE;
 }
 
 // #include "gt-rust-rust-constexpr.h"
