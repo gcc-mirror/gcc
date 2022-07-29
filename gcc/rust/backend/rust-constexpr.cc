@@ -501,6 +501,10 @@ static tree
 eval_switch_expr (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
 		  bool *overflow_p, tree *jump_target);
 
+static tree
+eval_unary_expression (const constexpr_ctx *ctx, tree t, bool /*lval*/,
+		       bool *non_constant_p, bool *overflow_p);
+
 /* Variables and functions to manage constexpr call expansion context.
    These do not need to be marked for PCH or GC.  */
 
@@ -737,6 +741,33 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	  if (ctx->save_exprs)
 	    ctx->save_exprs->safe_push (t);
 	}
+      break;
+
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      if (lval)
+	{
+	  r = eval_constant_expression (ctx, TREE_OPERAND (t, 0), lval,
+					non_constant_p, overflow_p);
+	  if (r == error_mark_node)
+	    ;
+	  else if (r == TREE_OPERAND (t, 0))
+	    r = t;
+	  else
+	    r = fold_build1 (TREE_CODE (t), TREE_TYPE (t), r);
+	  break;
+	}
+      /* FALLTHRU */
+    case CONJ_EXPR:
+    case FIX_TRUNC_EXPR:
+    case FLOAT_EXPR:
+    case NEGATE_EXPR:
+    case ABS_EXPR:
+    case ABSU_EXPR:
+    case BIT_NOT_EXPR:
+    case TRUTH_NOT_EXPR:
+    case FIXED_CONVERT_EXPR:
+      r = eval_unary_expression (ctx, t, lval, non_constant_p, overflow_p);
       break;
 
     case LOOP_EXPR:
@@ -2968,6 +2999,37 @@ eval_switch_expr (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
   if (breaks (jump_target) || switches (jump_target))
     *jump_target = NULL_TREE;
   return NULL_TREE;
+}
+
+// forked from gcc/cp/constexpr.cc eval_unary_expression
+
+/* Subroutine of cxx_eval_constant_expression.
+   Attempt to reduce the unary expression tree T to a compile time value.
+   If successful, return the value.  Otherwise issue a diagnostic
+   and return error_mark_node.  */
+
+static tree
+eval_unary_expression (const constexpr_ctx *ctx, tree t, bool /*lval*/,
+		       bool *non_constant_p, bool *overflow_p)
+{
+  tree r;
+  tree orig_arg = TREE_OPERAND (t, 0);
+  tree arg = eval_constant_expression (ctx, orig_arg, /*lval*/ false,
+				       non_constant_p, overflow_p);
+  VERIFY_CONSTANT (arg);
+  location_t loc = EXPR_LOCATION (t);
+  enum tree_code code = TREE_CODE (t);
+  tree type = TREE_TYPE (t);
+  r = fold_unary_loc (loc, code, type, arg);
+  if (r == NULL_TREE)
+    {
+      if (arg == orig_arg)
+	r = t;
+      else
+	r = build1_loc (loc, code, type, arg);
+    }
+  VERIFY_CONSTANT (r);
+  return r;
 }
 
 // #include "gt-rust-rust-constexpr.h"
