@@ -210,6 +210,10 @@ void
 token_streamer::stream (cpp_reader *pfile, const cpp_token *token,
 			location_t loc)
 {
+  /* Keep input_location up to date, since it is needed for processing early
+     pragmas such as #pragma GCC diagnostic.  */
+  input_location = loc;
+
   if (token->type == CPP_PADDING)
     {
       avoid_paste = true;

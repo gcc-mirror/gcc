@@ -1,3 +1,8 @@
+2022-07-27  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-ppoutput.cc (token_streamer::stream): Update input_location
+	prior to streaming each token.
+
 2022-07-23  Immad Mir  <mirimmad@outlook.com>
 
 	* c-attribs.cc: (c_common_attribute_table): add three new attributes

@@ -210,7 +210,7 @@ loop in depth-first search order in reversed CFG, ordered by dominance
 relation, and breath-first search order, respectively.
 @item @code{single_exit}: Returns the single exit edge of the loop, or
 @code{NULL} if the loop has more than one exit.  You can only use this
-function if LOOPS_HAVE_MARKED_SINGLE_EXITS property is used.
+function if @code{LOOPS_HAVE_RECORDED_EXITS} is used.
 @item @code{get_loop_exit_edges}: Enumerates the exit edges of a loop.
 @item @code{just_once_each_iteration_p}: Returns true if the basic block
 is executed exactly once during each iteration of a loop (that is, it

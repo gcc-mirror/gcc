@@ -42,19 +42,30 @@ within the array.
 brainf is hard for humans to read, but it's trivial to write a parser for
 it, as there is no lexing; just a stream of bytes.  The operations are:
 
-====================== =============================
-Character              Meaning
-====================== =============================
-``>``                  ``idx += 1``
-``<``                  ``idx -= 1``
-``+``                  ``data[idx] += 1``
-``-``                  ``data[idx] -= 1``
-``.``                  ``output (data[idx])``
-``,``                  ``data[idx] = input ()``
-``[``                  loop until ``data[idx] == 0``
-``]``                  end of loop
-Anything else          ignored
-====================== =============================
+.. list-table::
+   :header-rows: 1
+
+   * - Character
+     - Meaning
+
+   * - ``>``
+     - ``idx += 1``
+   * - ``<``
+     - ``idx -= 1``
+   * - ``+``
+     - ``data[idx] += 1``
+   * - ``-``
+     - ``data[idx] -= 1``
+   * - ``.``
+     - ``output (data[idx])``
+   * - ``,``
+     - ``data[idx] = input ()``
+   * - ``[``
+     - loop until ``data[idx] == 0``
+   * - ``]``
+     - end of loop
+   * - Anything else
+     - ignored
 
 Unlike the previous example, we'll implement an ahead-of-time compiler,
 which reads ``.bf`` scripts and outputs executables (though it would
@@ -84,7 +95,7 @@ Here's what a simple ``.bf`` script looks like:
 Converting a brainf script to libgccjit IR
 ******************************************
 
-As before we write simple code to populate a :c:type:`gcc_jit_context *`.
+As before we write simple code to populate a :c:expr:`gcc_jit_context *`.
 
    .. literalinclude:: ../examples/tut05-bf.c
     :start-after: #define MAX_OPEN_PARENS 16
@@ -250,7 +261,7 @@ state ``idx`` and ``data_cells``:
 Other forms of ahead-of-time-compilation
 ****************************************
 
-The above demonstrates compiling a :c:type:`gcc_jit_context *` directly
+The above demonstrates compiling a :c:expr:`gcc_jit_context *` directly
 to an executable.  It's also possible to compile it to an object file,
 and to a dynamic library.  See the documentation of
 :c:func:`gcc_jit_context_compile_to_file` for more information.

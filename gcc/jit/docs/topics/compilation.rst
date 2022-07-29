@@ -20,7 +20,7 @@
 Compiling a context
 ===================
 
-Once populated, a :c:type:`gcc_jit_context *` can be compiled to
+Once populated, a :c:expr:`gcc_jit_context *` can be compiled to
 machine code, either in-memory via :c:func:`gcc_jit_context_compile` or
 to disk via :c:func:`gcc_jit_context_compile_to_file`.
 
@@ -80,7 +80,7 @@ In-memory compilation
 
    Note that the resulting machine code becomes invalid after
    :func:`gcc_jit_result_release` is called on the
-   :type:`gcc_jit_result *`; attempting to call it after that may lead
+   :expr:`gcc_jit_result *`; attempting to call it after that may lead
    to a segmentation fault.
 
 .. function:: void *\
@@ -98,8 +98,8 @@ In-memory compilation
    If the global is found, the result will need to be cast to a
    pointer of the correct type before it can be called.
 
-   This is a *pointer* to the global, so e.g. for an :c:type:`int` this is
-   an :c:type:`int *`.
+   This is a *pointer* to the global, so e.g. for an :expr:`int` this is
+   an :expr:`int *`.
 
    For example, given an ``int foo;`` created this way:
 
@@ -125,7 +125,7 @@ In-memory compilation
 
    Note that the resulting address becomes invalid after
    :func:`gcc_jit_result_release` is called on the
-   :type:`gcc_jit_result *`; attempting to use it after that may lead
+   :expr:`gcc_jit_result *`; attempting to use it after that may lead
    to a segmentation fault.
 
 .. function:: void\
@@ -153,30 +153,36 @@ For linking in object files, use :c:func:`gcc_jit_context_add_driver_option`.
                                                enum gcc_jit_output_kind output_kind,\
                                                const char *output_path)
 
-   Compile the :c:type:`gcc_jit_context *` to a file of the given
+   Compile the :c:expr:`gcc_jit_context *` to a file of the given
    kind.
 
 :c:func:`gcc_jit_context_compile_to_file` ignores the suffix of
 ``output_path``, and insteads uses the given
-:c:type:`enum gcc_jit_output_kind` to decide what to do.
+:c:enum:`gcc_jit_output_kind` to decide what to do.
 
 .. note::
 
    This is different from the ``gcc`` program, which does make use of the
    suffix of the output file when determining what to do.
 
-.. type:: enum gcc_jit_output_kind
+.. enum:: gcc_jit_output_kind
 
 The available kinds of output are:
 
-==============================================  ==============
-Output kind                                     Typical suffix
-==============================================  ==============
-:c:macro:`GCC_JIT_OUTPUT_KIND_ASSEMBLER`        .s
-:c:macro:`GCC_JIT_OUTPUT_KIND_OBJECT_FILE`      .o
-:c:macro:`GCC_JIT_OUTPUT_KIND_DYNAMIC_LIBRARY`  .so or .dll
-:c:macro:`GCC_JIT_OUTPUT_KIND_EXECUTABLE`       None, or .exe
-==============================================  ==============
+.. list-table::
+   :header-rows: 1
+
+   * - Output kind
+     - Typical suffix
+
+   * - :c:macro:`GCC_JIT_OUTPUT_KIND_ASSEMBLER`
+     - .s
+   * - :c:macro:`GCC_JIT_OUTPUT_KIND_OBJECT_FILE`
+     - .o
+   * - :c:macro:`GCC_JIT_OUTPUT_KIND_DYNAMIC_LIBRARY`
+     - .so or .dll
+   * - :c:macro:`GCC_JIT_OUTPUT_KIND_EXECUTABLE`
+     - None, or .exe
 
 .. c:macro:: GCC_JIT_OUTPUT_KIND_ASSEMBLER
 

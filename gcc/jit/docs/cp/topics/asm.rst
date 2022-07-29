@@ -43,7 +43,7 @@ Adding assembler instructions within a function
    to outputs.
 
    :class:`gccjit::extended_asm` is a subclass of :class:`gccjit::object`.
-   It is a thin wrapper around the C API's :c:type:`gcc_jit_extended_asm *`.
+   It is a thin wrapper around the C API's :c:expr:`gcc_jit_extended_asm *`.
 
    To avoid having an API entrypoint with a very large number of
    parameters, an extended ``asm`` statement is made in stages:

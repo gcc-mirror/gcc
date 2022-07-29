@@ -1676,6 +1676,26 @@
 ;; }}}
 ;; {{{ ALU: generic 64-bit
 
+(define_insn_and_split "one_cmpldi2"
+  [(set (match_operand:DI 0 "register_operand"        "=Sg,    v")
+	(not:DI (match_operand:DI 1 "gcn_alu_operand" "SgA,vSvDB")))
+   (clobber (match_scratch:BI 2			      "=cs,    X"))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 3) (not:SI (match_dup 4)))
+	      (clobber (match_dup 2))])
+   (parallel [(set (match_dup 5) (not:SI (match_dup 6)))
+	      (clobber (match_dup 2))])]
+  {
+    operands[3] = gcn_operand_part (DImode, operands[0], 0);
+    operands[4] = gcn_operand_part (DImode, operands[1], 0);
+    operands[5] = gcn_operand_part (DImode, operands[0], 1);
+    operands[6] = gcn_operand_part (DImode, operands[1], 1);
+  }
+  [(set_attr "type" "mult")]
+)
+
 (define_code_iterator vec_and_scalar64_com [and ior xor])
 
 (define_insn_and_split "<expander>di3"

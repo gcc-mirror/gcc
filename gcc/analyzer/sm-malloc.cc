@@ -1300,6 +1300,7 @@ public:
 
   bool emit (rich_location *rich_loc) final override
   {
+    /* "CWE-401: Missing Release of Memory after Effective Lifetime".  */
     diagnostic_metadata m;
     m.add_cwe (401);
     if (m_arg)

@@ -6377,7 +6377,10 @@ redeclare_class_template (tree type, tree parms, tree cons)
 	{
 	  auto_diagnostic_group d;
 	  error ("template parameter %q+#D", tmpl_parm);
-	  inform (DECL_SOURCE_LOCATION (parm), "redeclared here as %q#D", parm);
+	  if (DECL_P (parm))
+	    inform (DECL_SOURCE_LOCATION (parm), "redeclared here as %q#D", parm);
+	  else
+	    inform (input_location, "redeclared here");
 	  return false;
 	}
 

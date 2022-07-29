@@ -349,7 +349,9 @@ ptr_derefs_may_alias_p (tree ptr1, tree ptr2)
       else if (base
 	       && DECL_P (base))
 	return ptr_deref_may_alias_decl_p (ptr2, base);
-      else
+      /* Try ptr2 when ptr1 points to a constant.  */
+      else if (base
+	       && !CONSTANT_CLASS_P (base))
 	return true;
     }
   if (TREE_CODE (ptr2) == ADDR_EXPR)

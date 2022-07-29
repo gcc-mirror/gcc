@@ -1411,6 +1411,11 @@ finish_for_stmt (tree for_stmt)
 
   add_stmt (do_poplevel (scope));
 
+  /* If we're being called from build_vec_init, don't mess with the names of
+     the variables for an enclosing range-for.  */
+  if (!stmts_are_full_exprs_p ())
+    return;
+
   for (int i = 0; i < 3; i++)
     if (range_for_decl[i])
       DECL_NAME (range_for_decl[i])

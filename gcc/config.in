@@ -404,13 +404,19 @@
 #endif
 
 
+/* Define if your assembler supports eh_frame pcrel encoding. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT
+#endif
+
+
 /* Define if your assembler supports the R_PPC64_ENTRY relocation. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_ENTRY_MARKERS
 #endif
 
 
-/* Define if your assembler supports explicit relocations. */
+/* Define if your assembler supports explicit relocation. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_EXPLICIT_RELOCS
 #endif

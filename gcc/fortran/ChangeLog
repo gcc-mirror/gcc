@@ -1,3 +1,9 @@
+2022-07-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103504
+	* interface.cc (get_sym_storage_size): Array bounds and character
+	length can only be of integer type.
+
 2022-07-21  Martin Liska  <mliska@suse.cz>
 
 	* intrinsic.texi: Remove trailing dots for 2 Fortran fns.

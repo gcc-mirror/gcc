@@ -1,3 +1,8 @@
+2022-07-28  Martin Liska  <mliska@suse.cz>
+
+	* update_web_docs_git: Use sphinx-build from a venv so that
+	we can use a recent version.
+
 2022-05-20  Richard Biener  <rguenther@suse.de>
 
 	* crontab: Disable snapshots from the gcc-9 branch.

@@ -65,7 +65,7 @@ Standard types
 
    Access the integer type of the given size.
 
-.. function:: gccjit::type \
+.. function:: template<typename T> gccjit::type \
               gccjit::context::get_int_type <T> ()
 
    Access the given integer type.  For example, you could map the

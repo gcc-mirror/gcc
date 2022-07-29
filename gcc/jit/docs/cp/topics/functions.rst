@@ -36,7 +36,7 @@ Params
 
 :class:`gccjit::param` is a subclass of :class:`gccjit::lvalue` (and thus
 of :class:`gccjit::rvalue` and :class:`gccjit::object`).  It is a thin
-wrapper around the C API's :c:type:`gcc_jit_param *`.
+wrapper around the C API's :c:expr:`gcc_jit_param *`.
 
 Functions
 ---------
@@ -243,6 +243,29 @@ Statements
 
       return;
 
+.. class:: gccjit::case_
+
+   A `gccjit::case_` represents a case within a switch statement, and
+   is created within a particular :class:`gccjit::context` using
+   :func:`gccjit::context::new_case`.  It is a subclass of
+   :class:`gccjit::object`.
+
+   Each case expresses a multivalued range of integer values.  You
+   can express single-valued cases by passing in the same value for
+   both `min_value` and `max_value`.
+
+.. function:: gccjit::case_ *\
+               gccjit::context::new_case (gccjit::rvalue min_value,\
+                                          gccjit::rvalue max_value,\
+                                          gccjit::block dest_block)
+
+    Create a new gccjit::case for use in a switch statement.
+    `min_value` and `max_value` must be constants of an integer type,
+    which must match that of the expression of the switch statement.
+
+    `dest_block` must be within the same function as the switch
+    statement.
+
 .. function:: void\
               gccjit::block::end_with_switch (gccjit::rvalue expr,\
                                               gccjit::block default_block,\
@@ -291,29 +314,6 @@ Statements
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_SWITCH_STATEMENTS
-
-   .. class:: gccjit::case_
-
-   A `gccjit::case_` represents a case within a switch statement, and
-   is created within a particular :class:`gccjit::context` using
-   :func:`gccjit::context::new_case`.  It is a subclass of
-   :class:`gccjit::object`.
-
-   Each case expresses a multivalued range of integer values.  You
-   can express single-valued cases by passing in the same value for
-   both `min_value` and `max_value`.
-
-   .. function:: gccjit::case_ *\
-                 gccjit::context::new_case (gccjit::rvalue min_value,\
-                                            gccjit::rvalue max_value,\
-                                            gccjit::block dest_block)
-
-      Create a new gccjit::case for use in a switch statement.
-      `min_value` and `max_value` must be constants of an integer type,
-      which must match that of the expression of the switch statement.
-
-      `dest_block` must be within the same function as the switch
-      statement.
 
    Here's an example of creating a switch statement:
 

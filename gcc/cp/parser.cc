@@ -41535,7 +41535,9 @@ restart:
 	      goto saw_error;
 	    }
 	  token = cp_lexer_peek_token (parser->lexer);
-	  if (token->type != CPP_SEMICOLON && !cp_tree_equal (lhs, rhs1))
+	  if (token->type != CPP_SEMICOLON
+	      && (!compare || token->type != CPP_QUERY)
+	      && !cp_tree_equal (lhs, rhs1))
 	    {
 	      cp_parser_abort_tentative_parse (parser);
 	      cp_parser_parse_tentatively (parser);

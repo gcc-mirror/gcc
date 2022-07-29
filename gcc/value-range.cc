@@ -2593,6 +2593,14 @@ irange::get_nonzero_bits () const
 {
   gcc_checking_assert (!undefined_p ());
 
+  // In case anyone in the legacy world queries us.
+  if (!constant_p ())
+    {
+      if (m_nonzero_mask)
+	return wi::to_wide (m_nonzero_mask);
+      return wi::shwi (-1, TYPE_PRECISION (type ()));
+    }
+
   // Calculate the nonzero bits inherent in the range.
   wide_int min = lower_bound ();
   wide_int max = upper_bound ();

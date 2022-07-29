@@ -20,14 +20,14 @@
 
 ;; Register constraints
 
-;; "a" "A constant call global and noplt address."
-;; "b" <-----unused
+;; "a" <-----unused
+;; "b" "A constant call not local address."
 ;; "c" "A constant call local address."
 ;; "d" <-----unused
 ;; "e" JIRL_REGS
 ;; "f" FP_REGS
 ;; "g" <-----unused
-;; "h" "A constant call plt address."
+;; "h" <-----unused
 ;; "i" "Matches a general integer constant." (Global non-architectural)
 ;; "j" SIBCALL_REGS
 ;; "k" "A memory operand whose address is formed by a base register and
@@ -42,7 +42,7 @@
 ;; "q" CSR_REGS
 ;; "r" GENERAL_REGS (Global non-architectural)
 ;; "s" "Matches a symbolic integer constant." (Global non-architectural)
-;; "t" "A constant call weak address"
+;; "t" <-----unused
 ;; "u" "A signed 52bit constant and low 32-bit is zero (for logic instructions)"
 ;; "v" "A signed 64-bit constant and low 44-bit is zero (for logic instructions)."
 ;; "w" "Matches any valid memory."
@@ -89,10 +89,10 @@
 ;; "<" "Matches a pre-dec or post-dec operand." (Global non-architectural)
 ;; ">" "Matches a pre-inc or post-inc operand." (Global non-architectural)
 
-(define_constraint "a"
+(define_constraint "b"
   "@internal
-   A constant call global and noplt address."
-  (match_operand 0 "is_const_call_global_noplt_symbol"))
+   A constant call no local address."
+  (match_operand 0 "is_const_call_no_local_symbol"))
 
 (define_constraint "c"
   "@internal
@@ -104,11 +104,6 @@
 
 (define_register_constraint "f" "TARGET_HARD_FLOAT ? FP_REGS : NO_REGS"
   "A floating-point register (if available).")
-
-(define_constraint "h"
-  "@internal
-   A constant call plt address."
-  (match_operand 0 "is_const_call_plt_symbol"))
 
 (define_register_constraint "j" "SIBCALL_REGS"
   "@internal")
@@ -133,11 +128,6 @@
 
 (define_register_constraint "q" "CSR_REGS"
   "A general-purpose register except for $r0 and $r1 for lcsr.")
-
-(define_constraint "t"
-  "@internal
-   A constant call weak address."
-  (match_operand 0 "is_const_call_weak_symbol"))
 
 (define_constraint "u"
   "A signed 52bit constant and low 32-bit is zero (for logic instructions)."
