@@ -3096,6 +3096,26 @@
   "prefetch.i\t%a0"
 )
 
+(define_expand "extv<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(sign_extract:GPR (match_operand:GPR 1 "register_operand" "r")
+			 (match_operand 2 "const_int_operand")
+			 (match_operand 3 "const_int_operand")))]
+  "TARGET_XTHEADBB"
+)
+
+(define_expand "extzv<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(zero_extract:GPR (match_operand:GPR 1 "register_operand" "r")
+			 (match_operand 2 "const_int_operand")
+			 (match_operand 3 "const_int_operand")))]
+  "TARGET_XTHEADBB"
+{
+  if (TARGET_XTHEADBB
+      && (INTVAL (operands[2]) < 8) && (INTVAL (operands[3]) == 0))
+    FAIL;
+})
+
 (include "bitmanip.md")
 (include "crypto.md")
 (include "sync.md")
