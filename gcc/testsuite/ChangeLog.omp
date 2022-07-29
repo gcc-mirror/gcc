@@ -1,3 +1,11 @@
+2022-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106448
+	* c-c++-common/gomp/atomic-32.c: New test.
+
 2022-07-12  Andrew Stubbs  <ams@codesourcery.com>
 
 	* lib/target-supports.exp
