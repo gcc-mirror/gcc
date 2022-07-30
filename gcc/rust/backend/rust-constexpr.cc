@@ -574,6 +574,18 @@ fold_expr (tree expr)
   return folded;
 }
 
+static bool
+same_type_ignoring_tlq_and_bounds_p (tree type1, tree type2)
+{
+  while (TREE_CODE (type1) == ARRAY_TYPE && TREE_CODE (type2) == ARRAY_TYPE
+	 && (!TYPE_DOMAIN (type1) || !TYPE_DOMAIN (type2)))
+    {
+      type1 = TREE_TYPE (type1);
+      type2 = TREE_TYPE (type2);
+    }
+  return same_type_ignoring_top_level_qualifiers_p (type1, type2);
+}
+
 static tree
 eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 			  bool *non_constant_p, bool *overflow_p,
@@ -846,6 +858,135 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	}
       r = eval_conditional_expression (ctx, t, lval, non_constant_p, overflow_p,
 				       jump_target);
+      break;
+
+      /* FALLTHROUGH.  */
+    case CONVERT_EXPR:
+      case VIEW_CONVERT_EXPR: {
+	tree oldop = TREE_OPERAND (t, 0);
+
+	tree op = eval_constant_expression (ctx, oldop, lval, non_constant_p,
+					    overflow_p);
+	if (*non_constant_p)
+	  return t;
+	tree type = TREE_TYPE (t);
+
+	if (VOID_TYPE_P (type))
+	  return void_node;
+
+	if (TREE_CODE (t) == CONVERT_EXPR && ARITHMETIC_TYPE_P (type)
+	    && INDIRECT_TYPE_P (TREE_TYPE (op)) && ctx->manifestly_const_eval)
+	  {
+	    if (!ctx->quiet)
+	      error_at (loc,
+			"conversion from pointer type %qT to arithmetic type "
+			"%qT in a constant expression",
+			TREE_TYPE (op), type);
+	    *non_constant_p = true;
+	    return t;
+	  }
+
+	if (TYPE_PTROB_P (type) && TYPE_PTR_P (TREE_TYPE (op))
+	    && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (op))))
+	  {
+	    /* Likewise, don't error when casting from void* when OP is
+	       &heap uninit and similar.  */
+	    tree sop = tree_strip_nop_conversions (op);
+	    if (TREE_CODE (sop) == ADDR_EXPR && VAR_P (TREE_OPERAND (sop, 0))
+		&& DECL_ARTIFICIAL (TREE_OPERAND (sop, 0)))
+	      /* OK */;
+	    else
+	      {
+		if (!ctx->quiet)
+		  error_at (loc, "cast from %qT is not allowed",
+			    TREE_TYPE (op));
+		*non_constant_p = true;
+		return t;
+	      }
+	  }
+
+	if (INDIRECT_TYPE_P (type) && TREE_CODE (op) == INTEGER_CST)
+	  {
+	    if (integer_zerop (op))
+	      {
+		if (TYPE_REF_P (type))
+		  {
+		    if (!ctx->quiet)
+		      error_at (loc, "dereferencing a null pointer");
+		    *non_constant_p = true;
+		    return t;
+		  }
+	      }
+	    else
+	      {
+		/* This detects for example:
+		     reinterpret_cast<void*>(sizeof 0)
+		*/
+		if (!ctx->quiet)
+		  error_at (loc,
+			    "%<reinterpret_cast<%T>(%E)%> is not "
+			    "a constant expression",
+			    type, op);
+		*non_constant_p = true;
+		return t;
+	      }
+	  }
+
+	if (INDIRECT_TYPE_P (type) && TREE_CODE (op) == NOP_EXPR
+	    && TREE_TYPE (op) == ptr_type_node
+	    && TREE_CODE (TREE_OPERAND (op, 0)) == ADDR_EXPR
+	    && VAR_P (TREE_OPERAND (TREE_OPERAND (op, 0), 0))
+	    && (DECL_NAME (TREE_OPERAND (TREE_OPERAND (op, 0), 0))
+		  == heap_uninit_identifier
+		|| DECL_NAME (TREE_OPERAND (TREE_OPERAND (op, 0), 0))
+		     == heap_vec_uninit_identifier))
+	  {
+	    tree var = TREE_OPERAND (TREE_OPERAND (op, 0), 0);
+	    tree var_size = TYPE_SIZE_UNIT (TREE_TYPE (var));
+	    tree elt_type = TREE_TYPE (type);
+	    tree cookie_size = NULL_TREE;
+	    if (TREE_CODE (elt_type) == RECORD_TYPE
+		&& TYPE_NAME (elt_type) == heap_identifier)
+	      {
+		tree fld1 = TYPE_FIELDS (elt_type);
+		tree fld2 = DECL_CHAIN (fld1);
+		elt_type = TREE_TYPE (TREE_TYPE (fld2));
+		cookie_size = TYPE_SIZE_UNIT (TREE_TYPE (fld1));
+	      }
+	    DECL_NAME (var) = (DECL_NAME (var) == heap_uninit_identifier
+				 ? heap_identifier
+				 : heap_vec_identifier);
+	    TREE_TYPE (var)
+	      = build_new_constexpr_heap_type (elt_type, cookie_size, var_size);
+	    TREE_TYPE (TREE_OPERAND (op, 0))
+	      = build_pointer_type (TREE_TYPE (var));
+	  }
+
+	if (op == oldop)
+	  /* We didn't fold at the top so we could check for ptr-int
+	     conversion.  */
+	  return fold (t);
+
+	tree sop;
+
+	/* Handle an array's bounds having been deduced after we built
+	   the wrapping expression.  */
+	if (same_type_ignoring_tlq_and_bounds_p (type, TREE_TYPE (op)))
+	  r = op;
+	else if (sop = tree_strip_nop_conversions (op),
+		 sop != op
+		   && (same_type_ignoring_tlq_and_bounds_p (type,
+							    TREE_TYPE (sop))))
+	  r = sop;
+	else
+	  r = fold_build1 (tcode, type, op);
+
+	/* Conversion of an out-of-range value has implementation-defined
+	   behavior; the language considers it different from arithmetic
+	   overflow, which is undefined.  */
+	if (TREE_OVERFLOW_P (r) && !TREE_OVERFLOW_P (op))
+	  TREE_OVERFLOW (r) = false;
+      }
       break;
 
     default:

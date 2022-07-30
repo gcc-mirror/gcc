@@ -4033,4 +4033,50 @@ location_of (tree t)
   return EXPR_LOCATION (t);
 }
 
+/* For element type ELT_TYPE, return the appropriate type of the heap object
+   containing such element(s).  COOKIE_SIZE is NULL or the size of cookie
+   in bytes.  FULL_SIZE is NULL if it is unknown how big the heap allocation
+   will be, otherwise size of the heap object.  If COOKIE_SIZE is NULL,
+   return array type ELT_TYPE[FULL_SIZE / sizeof(ELT_TYPE)], otherwise return
+   struct { size_t[COOKIE_SIZE/sizeof(size_t)]; ELT_TYPE[N]; }
+   where N is nothing (flexible array member) if FULL_SIZE is NULL, otherwise
+   it is computed such that the size of the struct fits into FULL_SIZE.  */
+
+tree
+build_new_constexpr_heap_type (tree elt_type, tree cookie_size, tree full_size)
+{
+  gcc_assert (cookie_size == NULL_TREE || tree_fits_uhwi_p (cookie_size));
+  gcc_assert (full_size == NULL_TREE || tree_fits_uhwi_p (full_size));
+  unsigned HOST_WIDE_INT csz = cookie_size ? tree_to_uhwi (cookie_size) : 0;
+  tree itype2 = NULL_TREE;
+  if (full_size)
+    {
+      unsigned HOST_WIDE_INT fsz = tree_to_uhwi (full_size);
+      gcc_assert (fsz >= csz);
+      fsz -= csz;
+      fsz /= int_size_in_bytes (elt_type);
+      itype2 = build_index_type (size_int (fsz - 1));
+      if (!cookie_size)
+	return build_cplus_array_type (elt_type, itype2);
+    }
+  else
+    gcc_assert (cookie_size);
+  csz /= int_size_in_bytes (sizetype);
+  tree itype1 = build_index_type (size_int (csz - 1));
+  tree atype1 = build_cplus_array_type (sizetype, itype1);
+  tree atype2 = build_cplus_array_type (elt_type, itype2);
+  tree rtype = cxx_make_type (RECORD_TYPE);
+  TYPE_NAME (rtype) = heap_identifier;
+  tree fld1 = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE, atype1);
+  tree fld2 = build_decl (UNKNOWN_LOCATION, FIELD_DECL, NULL_TREE, atype2);
+  DECL_FIELD_CONTEXT (fld1) = rtype;
+  DECL_FIELD_CONTEXT (fld2) = rtype;
+  DECL_ARTIFICIAL (fld1) = true;
+  DECL_ARTIFICIAL (fld2) = true;
+  TYPE_FIELDS (rtype) = fld1;
+  DECL_CHAIN (fld1) = fld2;
+  layout_type (rtype);
+  return rtype;
+}
+
 } // namespace Rust

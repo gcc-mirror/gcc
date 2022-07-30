@@ -1248,6 +1248,21 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
    are not constexprs.  Other NOP_EXPRs are.  */
 #define REINTERPRET_CAST_P(NODE) TREE_LANG_FLAG_0 (NOP_EXPR_CHECK (NODE))
 
+/* Returns true if NODE is an object type:
+
+     [basic.types]
+
+     An object type is a (possibly cv-qualified) type that is not a
+     function type, not a reference type, and not a void type.
+
+   Keep these checks in ascending order, for speed.  */
+#define TYPE_OBJ_P(NODE)                                                       \
+  (!TYPE_REF_P (NODE) && !VOID_TYPE_P (NODE) && !FUNC_OR_METHOD_TYPE_P (NODE))
+
+/* Returns true if NODE is a pointer to an object.  Keep these checks
+   in ascending tree code order.  */
+#define TYPE_PTROB_P(NODE) (TYPE_PTR_P (NODE) && TYPE_OBJ_P (TREE_TYPE (NODE)))
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
@@ -2581,6 +2596,8 @@ extern bool undeduced_auto_decl (tree);
 extern bool require_deduced_type (tree, tsubst_flags_t = tf_warning_or_error);
 
 extern bool decl_constant_var_p (tree);
+
+extern tree build_new_constexpr_heap_type (tree, tree, tree);
 
 // forked from gcc/cp/cp-tree.h
 
