@@ -1,3 +1,10 @@
+2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106448
+	* parser.cc (cp_parser_omp_atomic): For simple cast followed by
+	CPP_QUERY token, don't try cp_parser_binary_operation if compare
+	is true.
+
 2022-07-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106311

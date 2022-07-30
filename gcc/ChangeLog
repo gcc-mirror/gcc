@@ -1,3 +1,60 @@
+2022-07-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (V_INT_noHI): New iterator.
+	(<expander><mode>3<exec>): Use V_INT_noHI.
+	(v<expander><mode>3<exec>): Likewise.
+
+2022-07-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (one_cmpldi2): New.
+
+2022-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105679
+	* tree-ssa-threadbackward.cc
+	(back_threader_profitability::profitable_path_p): Avoid threading
+	when the entry edge is probably never executed.
+
+2022-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106422
+	* tree-ssa-threadupdate.cc (fwd_jt_path_registry::update_cfg):
+	Check whether we can copy thread blocks and cancel the thread if not.
+
+2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106449
+	* omp-expand.cc (expand_omp_simd): Fix up handling of pointer
+	iterators in non-rectangular simd loops.  Unshare fd->loops[i].n2
+	or n2 before regimplifying it inside of a condition.
+
+2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.cc (expand_omp_for_init_counts, expand_omp_for_init_vars,
+	extract_omp_for_update_vars, expand_omp_for_ordered_loops,
+	expand_omp_simd): Don't fold_convert second argument to
+	fold_build_pointer_plus to sizetype.
+
+2022-07-29  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config.in: Regenerate.
+	* config/loongarch/loongarch.h (ASM_PREFERRED_EH_DATA_FORMAT):
+	Select the value of the macro definition according to whether
+	HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT is defined.
+	* configure: Regenerate.
+	* configure.ac: Reinstate HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT test.
+
+2022-07-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-warn-restrict.cc (builtin_memref::set_base_and_offset):
+	Use CONVERT_EXPR_CODE_P.
+
+2022-07-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (vect_recog_bool_pattern): Use
+	get_vectype_for_scalar_type instead of
+	vect_get_vector_types_for_stmt.
+
 2022-07-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105893

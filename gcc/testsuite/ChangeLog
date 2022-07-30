@@ -1,3 +1,17 @@
+2022-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-simd-3.f90: New test.
+
+2022-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106422
+	* gcc.dg/torture/pr106422.c: New testcase.
+
+2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106448
+	* c-c++-common/gomp/atomic-32.c: New test.
+
 2022-07-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105893
