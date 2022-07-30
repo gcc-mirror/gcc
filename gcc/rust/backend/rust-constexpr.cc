@@ -909,6 +909,32 @@ rs_eval_indirect_ref (const constexpr_ctx *ctx, tree t, bool lval,
   return r;
 }
 
+// forked from gcc/cp/constexpr.cc cxx_eval_logical_expression
+
+/* Subroutine of cxx_eval_constant_expression.
+   Evaluate a short-circuited logical expression T in the context
+   of a given constexpr CALL.  BAILOUT_VALUE is the value for
+   early return.  CONTINUE_VALUE is used here purely for
+   sanity check purposes.  */
+
+static tree
+eval_logical_expression (const constexpr_ctx *ctx, tree t, tree bailout_value,
+			 tree continue_value, bool lval, bool *non_constant_p,
+			 bool *overflow_p)
+{
+  tree r;
+  tree lhs = eval_constant_expression (ctx, TREE_OPERAND (t, 0), lval,
+				       non_constant_p, overflow_p);
+  VERIFY_CONSTANT (lhs);
+  if (tree_int_cst_equal (lhs, bailout_value))
+    return lhs;
+  gcc_assert (tree_int_cst_equal (lhs, continue_value));
+  r = eval_constant_expression (ctx, TREE_OPERAND (t, 1), lval, non_constant_p,
+				overflow_p);
+  VERIFY_CONSTANT (r);
+  return r;
+}
+
 static tree
 eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 			  bool *non_constant_p, bool *overflow_p,
@@ -1020,6 +1046,22 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
     case RANGE_EXPR:
     case COMPLEX_EXPR:
       r = eval_binary_expression (ctx, t, false, non_constant_p, overflow_p);
+      break;
+
+      /* fold can introduce non-IF versions of these; still treat them as
+	 short-circuiting.  */
+    case TRUTH_AND_EXPR:
+    case TRUTH_ANDIF_EXPR:
+      r = eval_logical_expression (ctx, t, boolean_false_node,
+				   boolean_true_node, lval, non_constant_p,
+				   overflow_p);
+      break;
+
+    case TRUTH_OR_EXPR:
+    case TRUTH_ORIF_EXPR:
+      r = eval_logical_expression (ctx, t, boolean_true_node,
+				   boolean_false_node, lval, non_constant_p,
+				   overflow_p);
       break;
 
     case CALL_EXPR:
