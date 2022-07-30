@@ -1263,6 +1263,12 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
    in ascending tree code order.  */
 #define TYPE_PTROB_P(NODE) (TYPE_PTR_P (NODE) && TYPE_OBJ_P (TREE_TYPE (NODE)))
 
+/* True if this CONSTRUCTOR contains PLACEHOLDER_EXPRs referencing the
+   CONSTRUCTOR's type not nested inside another CONSTRUCTOR marked with
+   CONSTRUCTOR_PLACEHOLDER_BOUNDARY.  */
+#define CONSTRUCTOR_PLACEHOLDER_BOUNDARY(NODE)                                 \
+  (TREE_LANG_FLAG_5 (CONSTRUCTOR_CHECK (NODE)))
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \

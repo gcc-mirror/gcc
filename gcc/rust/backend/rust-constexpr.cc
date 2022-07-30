@@ -825,6 +825,8 @@ rs_fold_indirect_ref (const constexpr_ctx *ctx, location_t loc, tree type,
   return NULL_TREE;
 }
 
+// forked from gcc/cp/constexpr.cc cxx_eval_indirect_ref
+
 static tree
 rs_eval_indirect_ref (const constexpr_ctx *ctx, tree t, bool lval,
 		      bool *non_constant_p, bool *overflow_p)
@@ -933,6 +935,59 @@ eval_logical_expression (const constexpr_ctx *ctx, tree t, tree bailout_value,
 				overflow_p);
   VERIFY_CONSTANT (r);
   return r;
+}
+
+// forked from gcc/cp/constexp.rcc lookup_placeholder
+
+/* Find the object of TYPE under initialization in CTX.  */
+
+static tree
+lookup_placeholder (const constexpr_ctx *ctx, bool lval, tree type)
+{
+  if (!ctx)
+    return NULL_TREE;
+
+  /* Prefer the outermost matching object, but don't cross
+     CONSTRUCTOR_PLACEHOLDER_BOUNDARY constructors.  */
+  if (ctx->ctor && !CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ctx->ctor))
+    if (tree outer_ob = lookup_placeholder (ctx->parent, lval, type))
+      return outer_ob;
+
+  /* We could use ctx->object unconditionally, but using ctx->ctor when we
+     can is a minor optimization.  */
+  if (!lval && ctx->ctor && same_type_p (TREE_TYPE (ctx->ctor), type))
+    return ctx->ctor;
+
+  if (!ctx->object)
+    return NULL_TREE;
+
+  /* Since an object cannot have a field of its own type, we can search outward
+     from ctx->object to find the unique containing object of TYPE.  */
+  tree ob = ctx->object;
+  while (ob)
+    {
+      if (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (ob), type))
+	break;
+      if (handled_component_p (ob))
+	ob = TREE_OPERAND (ob, 0);
+      else
+	ob = NULL_TREE;
+    }
+
+  return ob;
+}
+
+// forked from gcc/cp/constexp.rcc inline_asm_in_constexpr_error
+
+/* Complain about an attempt to evaluate inline assembly.  */
+
+static void
+inline_asm_in_constexpr_error (location_t loc)
+{
+  auto_diagnostic_group d;
+  error_at (loc, "inline assembly is not a constant expression");
+  inform (loc, "only unevaluated inline assembly is allowed in a "
+	       "%<constexpr%> function in C++20");
 }
 
 static tree
@@ -1096,6 +1151,14 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
       r = rs_eval_indirect_ref (ctx, t, lval, non_constant_p, overflow_p);
       break;
 
+    case PAREN_EXPR:
+      gcc_assert (!REF_PARENTHESIZED_P (t));
+      /* A PAREN_EXPR resulting from __builtin_assoc_barrier has no effect in
+	 constant expressions since it's unaffected by -fassociative-math.  */
+      r = eval_constant_expression (ctx, TREE_OPERAND (t, 0), lval,
+				    non_constant_p, overflow_p);
+      break;
+
     case NOP_EXPR:
       if (REINTERPRET_CAST_P (t))
 	{
@@ -1150,6 +1213,25 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	    ctx->save_exprs->safe_push (t);
 	}
       break;
+
+      case ADDR_EXPR: {
+	tree oldop = TREE_OPERAND (t, 0);
+	tree op = eval_constant_expression (ctx, oldop,
+					    /*lval*/ true, non_constant_p,
+					    overflow_p);
+	/* Don't VERIFY_CONSTANT here.  */
+	if (*non_constant_p)
+	  return t;
+	gcc_checking_assert (TREE_CODE (op) != CONSTRUCTOR);
+	/* This function does more aggressive folding than fold itself.  */
+	r = build_fold_addr_expr_with_type (op, TREE_TYPE (t));
+	if (TREE_CODE (r) == ADDR_EXPR && TREE_OPERAND (r, 0) == oldop)
+	  {
+	    ggc_free (r);
+	    return t;
+	  }
+	break;
+      }
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
@@ -1361,6 +1443,34 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	  TREE_OVERFLOW (r) = false;
       }
       break;
+
+    case PLACEHOLDER_EXPR:
+      /* Use of the value or address of the current object.  */
+      if (tree ctor = lookup_placeholder (ctx, lval, TREE_TYPE (t)))
+	{
+	  if (TREE_CODE (ctor) == CONSTRUCTOR)
+	    return ctor;
+	  else
+	    return eval_constant_expression (ctx, ctor, lval, non_constant_p,
+					     overflow_p);
+	}
+      /* A placeholder without a referent.  We can get here when
+	 checking whether NSDMIs are noexcept, or in massage_init_elt;
+	 just say it's non-constant for now.  */
+      gcc_assert (ctx->quiet);
+      *non_constant_p = true;
+      break;
+
+    case ANNOTATE_EXPR:
+      r = eval_constant_expression (ctx, TREE_OPERAND (t, 0), lval,
+				    non_constant_p, overflow_p, jump_target);
+      break;
+
+    case ASM_EXPR:
+      if (!ctx->quiet)
+	inline_asm_in_constexpr_error (loc);
+      *non_constant_p = true;
+      return t;
 
     default:
       break;
