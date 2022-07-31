@@ -567,7 +567,29 @@ package body Sem_Aggr is
       end if;
 
       Set_Parent (Index_Constraints, N);
-      Collect_Aggr_Bounds (N, 1);
+
+      --  When resolving a null aggregate we created a list of aggregate bounds
+      --  for the consecutive dimensions. The bounds for the first dimension
+      --  are attached as the Aggregate_Bounds of the aggregate node.
+
+      if Is_Null_Aggregate (N) then
+         declare
+            This_Range : Node_Id := Aggregate_Bounds (N);
+         begin
+            for J in 1 .. Aggr_Dimension loop
+               Aggr_Range (J) := This_Range;
+               Next_Index (This_Range);
+
+               --  Remove bounds from the list, so they can be reattached as
+               --  the First_Index/Next_Index again by the code that also
+               --  handles non-null aggregates.
+
+               Remove (Aggr_Range (J));
+            end loop;
+         end;
+      else
+         Collect_Aggr_Bounds (N, 1);
+      end if;
 
       --  Build the list of constrained indexes of our aggregate itype
 
@@ -1202,9 +1224,6 @@ package body Sem_Aggr is
                end if;
 
                Aggr_Subtyp := Any_Composite;
-
-            elsif Is_Null_Aggr then
-               Aggr_Subtyp := Etype (N);
 
             else
                Aggr_Subtyp := Array_Aggr_Subtype (N, Typ);
@@ -4084,16 +4103,16 @@ package body Sem_Aggr is
       Typ    : constant Entity_Id := Etype (N);
 
       Check  : Node_Id;
-      Decl   : Node_Id;
       Index  : Node_Id;
       Lo, Hi : Node_Id;
       Constr : constant List_Id := New_List;
-      Subt   : constant Entity_Id :=
-        Create_Itype (Ekind       => E_Array_Subtype,
-                      Related_Nod => N,
-                      Suffix      => 'S');
 
    begin
+      --  Attach the list of constraints at the location of the aggregate, so
+      --  the individual constraints can be analyzed.
+
+      Set_Parent (Constr, N);
+
       --  Create a constrained subtype with null dimensions
 
       Index := First_Index (Typ);
@@ -4120,25 +4139,14 @@ package body Sem_Aggr is
 
          Insert_Action (N, Check);
 
-         Append (Make_Range (Loc, Lo, Hi), Constr);
+         Append (Make_Range (Loc, New_Copy_Tree (Lo), Hi), Constr);
+         Analyze_And_Resolve (Last (Constr), Etype (Index));
 
          Index := Next_Index (Index);
       end loop;
 
-      Decl := Make_Subtype_Declaration (Loc,
-                Defining_Identifier => Subt,
-                Subtype_Indication  =>
-                  Make_Subtype_Indication (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (Base_Type (Typ), Loc),
-                    Constraint =>
-                      Make_Index_Or_Discriminant_Constraint (Loc, Constr)));
-
-      Insert_Action (N, Decl);
-      Analyze (Decl);
-      Set_Etype (N, Subt);
       Set_Compile_Time_Known_Aggregate (N);
-      Set_Aggregate_Bounds (N, New_Copy_Tree (First_Index (Etype (N))));
+      Set_Aggregate_Bounds (N, First (Constr));
 
       return True;
    end Resolve_Null_Array_Aggregate;
