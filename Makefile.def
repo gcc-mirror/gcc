@@ -4,7 +4,7 @@ AutoGen definitions Makefile.tpl;
 // Makefile.in is generated from Makefile.tpl by 'autogen Makefile.def'.
 // This file was originally written by Nathanael Nerode.
 //
-//   Copyright 2002-2021 Free Software Foundation
+//   Copyright 2002-2022 Free Software Foundation
 //
 // This file is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -663,6 +663,7 @@ dependencies = { module=configure-target-newlib; on=all-binutils; };
 dependencies = { module=configure-target-newlib; on=all-ld; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libquadmath; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libbacktrace; };
+dependencies = { module=configure-target-libgo; on=all-target-libbacktrace; };
 
 languages = { language=c;	gcc-check-target=check-gcc; };
 languages = { language=c++;	gcc-check-target=check-c++;
