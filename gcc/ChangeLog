@@ -1,3 +1,14 @@
+2022-07-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md: Change hard register number used in
+	the split patterns for indirect sibling call fixups from 10 to 11,
+	the last free one for the CALL0 ABI.
+
+2022-07-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_rtx_costs):
+	Add new case for IF_THEN_ELSE.
+
 2022-07-29  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (V_INT_noHI): New iterator.
