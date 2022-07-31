@@ -4113,12 +4113,10 @@ package body Sem_Aggr is
          --  including modular).
 
          Check :=
-           Make_If_Statement (Loc,
+           Make_Raise_Constraint_Error (Loc,
              Condition =>
                Make_Op_Le (Loc, New_Copy_Tree (Lo), New_Copy_Tree (Hi)),
-             Then_Statements =>
-               New_List (Make_Raise_Constraint_Error
-                           (Loc, Reason => CE_Range_Check_Failed)));
+             Reason => CE_Range_Check_Failed);
 
          Insert_Action (N, Check);
 
