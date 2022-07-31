@@ -853,12 +853,14 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
       }
 
   // If SCEV is available, query if this PHI has any knonwn values.
-  if (scev_initialized_p () && !POINTER_TYPE_P (TREE_TYPE (phi_def)))
+  if (scev_initialized_p ()
+      && !POINTER_TYPE_P (TREE_TYPE (phi_def))
+      && irange::supports_p (TREE_TYPE (phi_def)))
     {
-      value_range loop_range;
       class loop *l = loop_containing_stmt (phi);
       if (l && loop_outer (l))
 	{
+	  int_range_max loop_range;
 	  range_of_ssa_name_with_loop_info (loop_range, phi_def, l, phi, src);
 	  if (!loop_range.varying_p ())
 	    {
@@ -1337,9 +1339,7 @@ fold_using_range::range_of_ssa_name_with_loop_info (irange &r, tree name,
 {
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
   tree min, max, type = TREE_TYPE (name);
-  // FIXME: Remove the supports_p() once all this can handle floats, etc.
-  if (irange::supports_p (type)
-      && bounds_of_var_in_loop (&min, &max, src.query (), l, phi, name))
+  if (bounds_of_var_in_loop (&min, &max, src.query (), l, phi, name))
     {
       if (TREE_CODE (min) != INTEGER_CST)
 	{
