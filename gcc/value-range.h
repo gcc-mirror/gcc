@@ -359,7 +359,7 @@ public:
   FRANGE_PROP_ACCESSOR(ninf)
 private:
   void verify_range ();
-  void normalize_kind ();
+  bool normalize_kind ();
 
   frange_props m_props;
   tree m_type;
@@ -1010,6 +1010,45 @@ irange::normalize_kind ()
     }
 }
 
+// Return the maximum value for TYPE.
+
+inline tree
+vrp_val_max (const_tree type)
+{
+  if (INTEGRAL_TYPE_P (type))
+    return TYPE_MAX_VALUE (type);
+  if (POINTER_TYPE_P (type))
+    {
+      wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+      return wide_int_to_tree (const_cast<tree> (type), max);
+    }
+  if (frange::supports_p (type))
+    {
+      REAL_VALUE_TYPE real;
+      real_inf (&real);
+      return build_real (const_cast <tree> (type), real);
+    }
+  return NULL_TREE;
+}
+
+// Return the minimum value for TYPE.
+
+inline tree
+vrp_val_min (const_tree type)
+{
+  if (INTEGRAL_TYPE_P (type))
+    return TYPE_MIN_VALUE (type);
+  if (POINTER_TYPE_P (type))
+    return build_zero_cst (const_cast<tree> (type));
+  if (frange::supports_p (type))
+    {
+      REAL_VALUE_TYPE real, real_ninf;
+      real_inf (&real);
+      real_ninf = real_value_negate (&real);
+      return build_real (const_cast <tree> (type), real_ninf);
+    }
+  return NULL_TREE;
+}
 
 // Supporting methods for frange.
 
@@ -1039,7 +1078,6 @@ inline
 frange::frange ()
 {
   m_discriminator = VR_FRANGE;
-  m_type = nullptr;
   set_undefined ();
 }
 
@@ -1070,34 +1108,6 @@ frange::set_undefined ()
   m_kind = VR_UNDEFINED;
   m_type = NULL;
   m_props.set_undefined ();
-}
-
-
-// Return the maximum value for TYPE.
-
-inline tree
-vrp_val_max (const_tree type)
-{
-  if (INTEGRAL_TYPE_P (type))
-    return TYPE_MAX_VALUE (type);
-  if (POINTER_TYPE_P (type))
-    {
-      wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-      return wide_int_to_tree (const_cast<tree> (type), max);
-    }
-  return NULL_TREE;
-}
-
-// Return the minimum value for TYPE.
-
-inline tree
-vrp_val_min (const_tree type)
-{
-  if (INTEGRAL_TYPE_P (type))
-    return TYPE_MIN_VALUE (type);
-  if (POINTER_TYPE_P (type))
-    return build_zero_cst (const_cast<tree> (type));
-  return NULL_TREE;
 }
 
 #endif // GCC_VALUE_RANGE_H
