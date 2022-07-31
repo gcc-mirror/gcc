@@ -105,7 +105,7 @@ vrange::type () const
 }
 
 bool
-vrange::supports_type_p (tree) const
+vrange::supports_type_p (const_tree) const
 {
   return false;
 }
@@ -229,7 +229,7 @@ vrange::dump (FILE *file) const
 }
 
 bool
-irange::supports_type_p (tree type) const
+irange::supports_type_p (const_tree type) const
 {
   return supports_p (type);
 }
@@ -416,7 +416,7 @@ frange::operator== (const frange &src) const
 }
 
 bool
-frange::supports_type_p (tree type) const
+frange::supports_type_p (const_tree type) const
 {
   return supports_p (type);
 }
