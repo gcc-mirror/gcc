@@ -777,6 +777,13 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
 		     "exceeds PARAM_MAX_FSM_THREAD_PATH_INSNS.\n");
 	  return false;
 	}
+      if (taken_edge && probably_never_executed_edge_p (cfun, taken_edge))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
+		     "path leads to probably never executed edge.\n");
+	  return false;
+	}
       edge entry = find_edge (m_path[m_path.length () - 1],
 			      m_path[m_path.length () - 2]);
       if (probably_never_executed_edge_p (cfun, entry))
