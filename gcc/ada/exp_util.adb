@@ -5187,19 +5187,6 @@ package body Exp_Util is
       end if;
    end Ensure_Defined;
 
-   --------------------
-   -- Entry_Names_OK --
-   --------------------
-
-   function Entry_Names_OK return Boolean is
-   begin
-      return
-        not Restricted_Profile
-          and then not Global_Discard_Names
-          and then not Restriction_Active (No_Implicit_Heap_Allocations)
-          and then not Restriction_Active (No_Local_Allocators);
-   end Entry_Names_OK;
-
    -------------------
    -- Evaluate_Name --
    -------------------
