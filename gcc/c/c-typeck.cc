@@ -6032,18 +6032,18 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  if (!addr_space_superset (as_to, as_from, &as_common))
 	    {
 	      if (ADDR_SPACE_GENERIC_P (as_from))
-		warning_at (loc, 0, "cast to %s address space pointer "
+		warning_at (loc, 0, "cast to %qs address space pointer "
 			    "from disjoint generic address space pointer",
 			    c_addr_space_name (as_to));
 
 	      else if (ADDR_SPACE_GENERIC_P (as_to))
 		warning_at (loc, 0, "cast to generic address space pointer "
-			    "from disjoint %s address space pointer",
+			    "from disjoint %qs address space pointer",
 			    c_addr_space_name (as_from));
 
 	      else
-		warning_at (loc, 0, "cast to %s address space pointer "
-			    "from disjoint %s address space pointer",
+		warning_at (loc, 0, "cast to %qs address space pointer "
+			    "from disjoint %qs address space pointer",
 			    c_addr_space_name (as_to),
 			    c_addr_space_name (as_from));
 	    }
@@ -7252,6 +7252,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       if (!null_pointer_constant_p (rhs)
 	  && asr != asl && !targetm.addr_space.subset_p (asr, asl))
 	{
+	  auto_diagnostic_group d;
+	  bool diagnosed = true;
 	  switch (errtype)
 	    {
 	    case ic_argpass:
@@ -7259,7 +7261,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		const char msg[] = G_("passing argument %d of %qE from "
 				      "pointer to non-enclosed address space");
 		if (warnopt)
-		  warning_at (expr_loc, warnopt, msg, parmnum, rname);
+		  diagnosed
+		    = warning_at (expr_loc, warnopt, msg, parmnum, rname);
 		else
 		  error_at (expr_loc, msg, parmnum, rname);
 	      break;
@@ -7269,7 +7272,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		const char msg[] = G_("assignment from pointer to "
 				      "non-enclosed address space");
 		if (warnopt)
-		  warning_at (location, warnopt, msg);
+		  diagnosed = warning_at (location, warnopt, msg);
 		else
 		  error_at (location, msg);
 		break;
@@ -7280,7 +7283,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		const char msg[] = G_("initialization from pointer to "
 				      "non-enclosed address space");
 		if (warnopt)
-		  warning_at (location, warnopt, msg);
+		  diagnosed = warning_at (location, warnopt, msg);
 		else
 		  error_at (location, msg);
 		break;
@@ -7290,13 +7293,21 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		const char msg[] = G_("return from pointer to "
 				      "non-enclosed address space");
 		if (warnopt)
-		  warning_at (location, warnopt, msg);
+		  diagnosed = warning_at (location, warnopt, msg);
 		else
 		  error_at (location, msg);
 		break;
 	      }
 	    default:
 	      gcc_unreachable ();
+	    }
+	  if (diagnosed)
+	    {
+	      if (errtype == ic_argpass)
+		inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	      else
+		inform (location, "expected %qT but pointer is of type %qT",
+			type, rhstype);
 	    }
 	  return error_mark_node;
 	}
