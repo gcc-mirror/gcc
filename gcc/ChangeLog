@@ -1,3 +1,19 @@
+2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (define_expand <any_rotate>ti3): For
+	rotations by 64 bits use new rot[lr]64ti2_doubleword pattern.
+	(rot[lr]64ti2_doubleword): New post-reload splitter.
+
+2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106450
+	* config/i386/i386-features.cc (timode_check_non_convertible_regs):
+	Do nothing if REGNO is set in the REGS bitmap, or is a hard reg.
+	(timode_remove_non_convertible_regs): Update comment.
+	Call timode_check_non_convertible_reg on all TImode register
+	DEFs and USEs in each instruction.
+
 2022-07-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.md: Change hard register number used in

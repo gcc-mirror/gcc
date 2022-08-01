@@ -1,3 +1,15 @@
+2022-07-31  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/66290
+	* parser.cc (cp_lexer_new_main): Rename global done_lexing to
+	override_libcpp_locations.
+
+2022-07-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106369
+	* constexpr.cc (reduced_constant_expression_p): Return false
+	if a CONSTRUCTOR initializes an empty field.
+
 2022-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/106448
