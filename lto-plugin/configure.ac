@@ -91,7 +91,7 @@ AM_CONDITIONAL(LTO_PLUGIN_USE_SYMVER_SUN, [test "x$lto_plugin_use_symver" = xsun
 use_locking=no
 ac_lto_plugin_extra_ldflags=
 
-case $target in
+case $host in
   riscv*)
     # do not use locking as pthread depends on libatomic
     ;;
