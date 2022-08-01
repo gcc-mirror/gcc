@@ -1,3 +1,71 @@
+2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106450
+	* gcc.target/i386/pr106450.c: New test case.
+
+2022-07-31  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/92805
+	* gfortran.dg/literal_constants.f: New test.
+	* gfortran.dg/literal_constants.f90: New test.
+
+2022-07-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/77652
+	* gfortran.dg/associated_target_9a.f90: New test.
+	* gfortran.dg/associated_target_9b.f90: New test.
+
+2022-07-31  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/66290
+	* c-c++-common/pragma-diag-15.c: Remove xfail for C++.
+
+2022-07-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106369
+	* g++.dg/cpp1z/constexpr-lambda27.C: New test.
+
+2022-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-simd-3.f90: New test.
+
+2022-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106422
+	* gcc.dg/torture/pr106422.c: New testcase.
+
+2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106448
+	* c-c++-common/gomp/atomic-32.c: New test.
+
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105893
+	* gcc.dg/analyzer/putenv-1.c: New test.
+
+2022-07-28  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/fle-ieee.c: New test.
+	* gcc.target/riscv/fle-snan.c: New test.
+	* gcc.target/riscv/fle.c: New test.
+	* gcc.target/riscv/flef-ieee.c: New test.
+	* gcc.target/riscv/flef-snan.c: New test.
+	* gcc.target/riscv/flef.c: New test.
+	* gcc.target/riscv/flt-ieee.c: New test.
+	* gcc.target/riscv/flt-snan.c: New test.
+	* gcc.target/riscv/flt.c: New test.
+	* gcc.target/riscv/fltf-ieee.c: New test.
+	* gcc.target/riscv/fltf-snan.c: New test.
+	* gcc.target/riscv/fltf.c: New test.
+
+2022-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106099
+	* gcc.dg/ubsan/pr106099.c: New test.
+
 2022-07-27  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* c-c++-common/pragma-diag-14.c: New test.

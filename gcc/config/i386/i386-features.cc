@@ -1808,6 +1808,11 @@ static void
 timode_check_non_convertible_regs (bitmap candidates, bitmap regs,
 				   unsigned int regno)
 {
+  /* Do nothing if REGNO is already in REGS or is a hard reg.  */
+  if (bitmap_bit_p (regs, regno)
+      || HARD_REGISTER_NUM_P (regno))
+    return;
+
   for (df_ref def = DF_REG_DEF_CHAIN (regno);
        def;
        def = DF_REF_NEXT_REG (def))
@@ -1843,7 +1848,13 @@ timode_check_non_convertible_regs (bitmap candidates, bitmap regs,
     }
 }
 
-/* The TImode version of remove_non_convertible_regs.  */
+/* For a given bitmap of insn UIDs scans all instructions and
+   remove insn from CANDIDATES in case it has both convertible
+   and not convertible definitions.
+
+   All insns in a bitmap are conversion candidates according to
+   scalar_to_vector_candidate_p.  Currently it implies all insns
+   are single_set.  */
 
 static void
 timode_remove_non_convertible_regs (bitmap candidates)
@@ -1857,25 +1868,20 @@ timode_remove_non_convertible_regs (bitmap candidates)
     changed = false;
     EXECUTE_IF_SET_IN_BITMAP (candidates, 0, id, bi)
       {
-	rtx def_set = single_set (DF_INSN_UID_GET (id)->insn);
-	rtx dest = SET_DEST (def_set);
-	rtx src = SET_SRC (def_set);
+	rtx_insn *insn = DF_INSN_UID_GET (id)->insn;
+	df_ref ref;
 
-	if ((!REG_P (dest)
-	     || bitmap_bit_p (regs, REGNO (dest))
-	     || HARD_REGISTER_P (dest))
-	    && (!REG_P (src)
-		|| bitmap_bit_p (regs, REGNO (src))
-		|| HARD_REGISTER_P (src)))
-	  continue;
+	FOR_EACH_INSN_DEF (ref, insn)
+	  if (!DF_REF_REG_MEM_P (ref)
+	      && GET_MODE (DF_REF_REG (ref)) == TImode)
+	    timode_check_non_convertible_regs (candidates, regs,
+					       DF_REF_REGNO (ref));
 
-	if (REG_P (dest))
-	  timode_check_non_convertible_regs (candidates, regs,
-					     REGNO (dest));
-
-	if (REG_P (src))
-	  timode_check_non_convertible_regs (candidates, regs,
-					     REGNO (src));
+	FOR_EACH_INSN_USE (ref, insn)
+	  if (!DF_REF_REG_MEM_P (ref)
+	      && GET_MODE (DF_REF_REG (ref)) == TImode)
+	    timode_check_non_convertible_regs (candidates, regs,
+					       DF_REF_REGNO (ref));
       }
 
     EXECUTE_IF_SET_IN_BITMAP (regs, 0, id, bi)

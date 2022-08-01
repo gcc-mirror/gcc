@@ -57,6 +57,7 @@
   ;; Floating-point unspecs.
   UNSPECV_FRFLAGS
   UNSPECV_FSFLAGS
+  UNSPECV_FSNVSNAN
 
   ;; Interrupt handler instructions.
   UNSPECV_MRET
@@ -360,6 +361,7 @@
 ;; Iterator and attributes for quiet comparisons.
 (define_int_iterator QUIET_COMPARISON [UNSPEC_FLT_QUIET UNSPEC_FLE_QUIET])
 (define_int_attr quiet_pattern [(UNSPEC_FLT_QUIET "lt") (UNSPEC_FLE_QUIET "le")])
+(define_int_attr QUIET_PATTERN [(UNSPEC_FLT_QUIET "LT") (UNSPEC_FLE_QUIET "LE")])
 
 ;; This code iterator allows signed and unsigned widening multiplications
 ;; to use the same template.
@@ -2326,39 +2328,31 @@
    (set_attr "mode" "<UNITMODE>")])
 
 (define_expand "f<quiet_pattern>_quiet<ANYF:mode><X:mode>4"
-   [(parallel [(set (match_operand:X      0 "register_operand")
-		    (unspec:X
-		     [(match_operand:ANYF 1 "register_operand")
-		      (match_operand:ANYF 2 "register_operand")]
-		     QUIET_COMPARISON))
-	       (clobber (match_scratch:X 3))])]
-  "TARGET_HARD_FLOAT")
+   [(set (match_operand:X               0 "register_operand")
+	 (unspec:X [(match_operand:ANYF 1 "register_operand")
+		    (match_operand:ANYF 2 "register_operand")]
+		   QUIET_COMPARISON))]
+  "TARGET_HARD_FLOAT"
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+  rtx tmp = gen_reg_rtx (SImode);
+  rtx cmp = gen_rtx_<QUIET_PATTERN> (<X:MODE>mode, op1, op2);
+  rtx frflags = gen_rtx_UNSPEC_VOLATILE (SImode, gen_rtvec (1, const0_rtx),
+					 UNSPECV_FRFLAGS);
+  rtx fsflags = gen_rtx_UNSPEC_VOLATILE (SImode, gen_rtvec (1, tmp),
+					 UNSPECV_FSFLAGS);
 
-(define_insn "*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_default"
-   [(set (match_operand:X      0 "register_operand" "=r")
-	 (unspec:X
-	  [(match_operand:ANYF 1 "register_operand" " f")
-	   (match_operand:ANYF 2 "register_operand" " f")]
-	  QUIET_COMPARISON))
-    (clobber (match_scratch:X 3 "=&r"))]
-  "TARGET_HARD_FLOAT && ! HONOR_SNANS (<ANYF:MODE>mode)"
-  "frflags\t%3\n\tf<quiet_pattern>.<fmt>\t%0,%1,%2\n\tfsflags\t%3"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "<UNITMODE>")
-   (set (attr "length") (const_int 12))])
-
-(define_insn "*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_snan"
-   [(set (match_operand:X      0 "register_operand" "=r")
-	 (unspec:X
-	  [(match_operand:ANYF 1 "register_operand" " f")
-	   (match_operand:ANYF 2 "register_operand" " f")]
-	  QUIET_COMPARISON))
-    (clobber (match_scratch:X 3 "=&r"))]
-  "TARGET_HARD_FLOAT && HONOR_SNANS (<ANYF:MODE>mode)"
-  "frflags\t%3\n\tf<quiet_pattern>.<fmt>\t%0,%1,%2\n\tfsflags\t%3\n\tfeq.<fmt>\tzero,%1,%2"
-  [(set_attr "type" "fcmp")
-   (set_attr "mode" "<UNITMODE>")
-   (set (attr "length") (const_int 16))])
+  emit_insn (gen_rtx_SET (tmp, frflags));
+  emit_insn (gen_rtx_SET (op0, cmp));
+  emit_insn (fsflags);
+  if (HONOR_SNANS (<ANYF:MODE>mode))
+    emit_insn (gen_rtx_UNSPEC_VOLATILE (<ANYF:MODE>mode,
+					gen_rtvec (2, op1, op2),
+					UNSPECV_FSNVSNAN));
+  DONE;
+})
 
 (define_insn "*seq_zero_<X:mode><GPR:mode>"
   [(set (match_operand:GPR       0 "register_operand" "=r")
@@ -2765,6 +2759,15 @@
   [(unspec_volatile [(match_operand:SI 0 "csr_operand" "rK")] UNSPECV_FSFLAGS)]
   "TARGET_HARD_FLOAT"
   "fsflags\t%0")
+
+(define_insn "*riscv_fsnvsnan<mode>2"
+  [(unspec_volatile [(match_operand:ANYF 0 "register_operand" "f")
+		     (match_operand:ANYF 1 "register_operand" "f")]
+		    UNSPECV_FSNVSNAN)]
+  "TARGET_HARD_FLOAT"
+  "feq.<fmt>\tzero,%0,%1"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "riscv_mret"
   [(return)

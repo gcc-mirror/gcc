@@ -126,6 +126,10 @@ Wanalyzer-null-dereference
 Common Var(warn_analyzer_null_dereference) Init(1) Warning
 Warn about code paths in which a NULL pointer is dereferenced.
 
+Wanalyzer-putenv-of-auto-var
+Common Var(warn_analyzer_putenv_of_auto_var) Init(1) Warning
+Warn about code paths in which an on-stack buffer is passed to putenv.
+
 Wanalyzer-shift-count-negative
 Common Var(warn_analyzer_shift_count_negative) Init(1) Warning
 Warn about code paths in which a shift with negative count is attempted.

@@ -1,3 +1,9 @@
+2022-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104443
+	* include/bits/stl_iterator.h (common_iterator::operator->):
+	Change return type to just auto.
+
 2022-07-26  Thomas Rodgers  <trodgers@redhat.com>
 
 	* include/bits/atomic_wait.h (__atomic_spin): Merge spin loops.

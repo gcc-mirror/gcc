@@ -1539,6 +1539,12 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  impl_call_memset (cd);
 	  return false;
 	}
+      else if (is_named_call_p (callee_fndecl, "putenv", call, 1)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
+	{
+	  impl_call_putenv (cd);
+	  return false;
+	}
       else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{

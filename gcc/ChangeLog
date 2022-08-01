@@ -1,3 +1,133 @@
+2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (define_expand <any_rotate>ti3): For
+	rotations by 64 bits use new rot[lr]64ti2_doubleword pattern.
+	(rot[lr]64ti2_doubleword): New post-reload splitter.
+
+2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106450
+	* config/i386/i386-features.cc (timode_check_non_convertible_regs):
+	Do nothing if REGNO is set in the REGS bitmap, or is a hard reg.
+	(timode_remove_non_convertible_regs): Update comment.
+	Call timode_check_non_convertible_reg on all TImode register
+	DEFs and USEs in each instruction.
+
+2022-07-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md: Change hard register number used in
+	the split patterns for indirect sibling call fixups from 10 to 11,
+	the last free one for the CALL0 ABI.
+
+2022-07-30  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_rtx_costs):
+	Add new case for IF_THEN_ELSE.
+
+2022-07-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (V_INT_noHI): New iterator.
+	(<expander><mode>3<exec>): Use V_INT_noHI.
+	(v<expander><mode>3<exec>): Likewise.
+
+2022-07-29  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (one_cmpldi2): New.
+
+2022-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105679
+	* tree-ssa-threadbackward.cc
+	(back_threader_profitability::profitable_path_p): Avoid threading
+	when the entry edge is probably never executed.
+
+2022-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106422
+	* tree-ssa-threadupdate.cc (fwd_jt_path_registry::update_cfg):
+	Check whether we can copy thread blocks and cancel the thread if not.
+
+2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106449
+	* omp-expand.cc (expand_omp_simd): Fix up handling of pointer
+	iterators in non-rectangular simd loops.  Unshare fd->loops[i].n2
+	or n2 before regimplifying it inside of a condition.
+
+2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.cc (expand_omp_for_init_counts, expand_omp_for_init_vars,
+	extract_omp_for_update_vars, expand_omp_for_ordered_loops,
+	expand_omp_simd): Don't fold_convert second argument to
+	fold_build_pointer_plus to sizetype.
+
+2022-07-29  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config.in: Regenerate.
+	* config/loongarch/loongarch.h (ASM_PREFERRED_EH_DATA_FORMAT):
+	Select the value of the macro definition according to whether
+	HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT is defined.
+	* configure: Regenerate.
+	* configure.ac: Reinstate HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT test.
+
+2022-07-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-warn-restrict.cc (builtin_memref::set_base_and_offset):
+	Use CONVERT_EXPR_CODE_P.
+
+2022-07-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (vect_recog_bool_pattern): Use
+	get_vectype_for_scalar_type instead of
+	vect_get_vector_types_for_stmt.
+
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105893
+	* doc/invoke.texi: Add -Wanalyzer-putenv-of-auto-var.
+
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fdiagnostics-show-cwe): Use uref rather than
+	url.
+	(Static Analyzer Options): Likewise.  Add urefs for all of the
+	warnings that have associated CWE identifiers.
+
+2022-07-28  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* doc/implement-c.texi (Floating point implementation): Mention
+	`-fno-trapping-math' in the context of FENV_ACCESS pragma.
+	* doc/invoke.texi (Optimize Options): Clarify FENV_ACCESS pragma
+	implication in the descriptions of `-fno-trapping-math' and
+	`-frounding-math'.
+
+2022-07-28  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md (UNSPECV_FSNVSNAN): New constant.
+	(QUIET_PATTERN): New int attribute.
+	(f<quiet_pattern>_quiet<ANYF:mode><X:mode>4): Emit the intended
+	RTL insns entirely within the preparation statements.
+	(*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_default)
+	(*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_snan): Remove
+	insns.
+	(*riscv_fsnvsnan<mode>2): New insn.
+
+2022-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106457
+	* tree.cc (array_at_struct_end_p): Handle array objects
+	specially.
+
+2022-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106099
+	* internal-fn.def (TRAP): New internal fn.
+	* internal-fn.h (expand_TRAP): Declare.
+	* internal-fn.cc (expand_TRAP): Define.
+	* gimple.cc (gimple_build_builtin_unreachable): For BUILT_IN_TRAP,
+	use internal fn rather than builtin.
+
 2022-07-27  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* doc/loop.texi: Refer to LOOPS_HAVE_RECORDED_EXITS instead.

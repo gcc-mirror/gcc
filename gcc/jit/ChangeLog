@@ -1,3 +1,79 @@
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst: Remove reference to ".c" extensions
+	of source files.
+
+2022-07-28  Martin Liška  <mliska@suse.cz>
+
+	* docs/cp/intro/tutorial02.rst:
+	Shorten the assembly example so that there is not slider.
+	* docs/cp/intro/tutorial04.rst: Likewise.
+	* docs/intro/tutorial02.rst: Likewise.
+	* docs/intro/tutorial04.rst: Likewise.
+	* docs/topics/contexts.rst: Likewise.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/index.rst: Remove reference to module index
+	as we don't emit any.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/cp/intro/tutorial02.rst: Use :expr:`type *` for pointers to a type
+	* docs/cp/topics/asm.rst: Likewise.
+	* docs/cp/topics/contexts.rst: Likewise.
+	* docs/cp/topics/expressions.rst: Likewise.
+	* docs/cp/topics/functions.rst: Likewise.
+	* docs/cp/topics/objects.rst: Likewise.
+	* docs/intro/tutorial02.rst: Likewise.
+	* docs/intro/tutorial03.rst: Likewise.
+	* docs/intro/tutorial04.rst: Likewise.
+	* docs/intro/tutorial05.rst: Likewise.
+	* docs/topics/compilation.rst: Likewise.
+	* docs/topics/contexts.rst: Likewise.
+	* docs/topics/objects.rst: Likewise.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/cp/intro/tutorial04.rst: Use list-table.
+	* docs/intro/tutorial04.rst: Likewise.
+	* docs/intro/tutorial05.rst: Likewise.
+	* docs/topics/compilation.rst: Likewise.
+	* docs/topics/expressions.rst: Likewise.
+	* docs/topics/types.rst: Likewise.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/cp/topics/expressions.rst: Compact so that the generated
+	output is also more compact.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/cp/intro/tutorial02.rst: Use proper reference.
+	* docs/cp/topics/contexts.rst: Likewise.
+	* docs/cp/topics/functions.rst: Put `class` directive before a
+	function as it is not allowed declaring a class in a fn.
+	* docs/cp/topics/types.rst: Add template keyword.
+	* docs/examples/tut04-toyvm/toyvm.c (toyvm_function_compile):
+	Add removed comment used for code snippet ending detection.
+	* docs/intro/tutorial04.rst: Fix to match the real comment.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/cp/topics/expressions.rst: Use :expr: for basic types.
+	* docs/topics/compilation.rst: Likewise.
+	* docs/topics/expressions.rst: Likewise.
+	* docs/topics/function-pointers.rst: Likewise.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/conf.py: Add needs_sphinx = '3.0' where c:type was added.
+	* docs/index.rst: Remove note about it.
+	* docs/topics/compilation.rst: Use enum directive and reference.
+	* docs/topics/contexts.rst: Likewise.
+	* docs/topics/expressions.rst: Likewise.
+	* docs/topics/functions.rst: Likewise.
+
 2022-07-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* jit-recording.h (recording::memento): Define copy constructor

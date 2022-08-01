@@ -1502,8 +1502,27 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
     t = false;
   /* F2018 C838 explicitly allows an assumed-rank variable as the first
      argument of intrinsic inquiry functions.  */
-  if (pointer->rank != -1 && !rank_check (target, 0, pointer->rank))
-    t = false;
+  if (pointer->rank != -1 && pointer->rank != target->rank)
+    {
+      if (pointer->rank == 0 || target->rank == 0)
+	{
+	  /* There exists no valid pointer assignment using bounds
+	     remapping for scalar => array or array => scalar. */
+	  if (!rank_check (target, 0, pointer->rank))
+	    t = false;
+	}
+      else if (target->rank != 1)
+	{
+	  if (!gfc_notify_std (GFC_STD_F2008, "Rank remapping target is not "
+			       "rank 1 at %L", &target->where))
+	    t = false;
+	}
+      else if ((gfc_option.allow_std & GFC_STD_F2003) == 0)
+	{
+	  if (!rank_check (target, 0, pointer->rank))
+	    t = false;
+	}
+    }
   if (target->rank > 0 && target->ref)
     {
       for (i = 0; i < target->rank; i++)
