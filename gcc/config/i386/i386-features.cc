@@ -1353,8 +1353,15 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
       if (GET_MODE (dst) == V1TImode)
 	{
 	  tmp = find_reg_equal_equiv_note (insn);
-	  if (tmp && GET_MODE (XEXP (tmp, 0)) == TImode)
-	    PUT_MODE (XEXP (tmp, 0), V1TImode);
+	  if (tmp)
+	    {
+	      if (GET_MODE (XEXP (tmp, 0)) == TImode)
+		PUT_MODE (XEXP (tmp, 0), V1TImode);
+	      else if (CONST_SCALAR_INT_P (XEXP (tmp, 0)))
+		XEXP (tmp, 0)
+		  = gen_rtx_CONST_VECTOR (V1TImode,
+					  gen_rtvec (1, XEXP (tmp, 0)));
+	    }
 	}
       break;
     case MEM:
