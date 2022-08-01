@@ -8099,6 +8099,7 @@ extern tree finish_right_unary_fold_expr     (tree, int);
 extern tree finish_binary_fold_expr          (tree, tree, int);
 extern tree treat_lvalue_as_rvalue_p	     (tree, bool);
 extern bool decl_in_std_namespace_p	     (tree);
+extern void maybe_warn_pessimizing_move	     (tree, tree, bool);
 
 /* in typeck2.cc */
 extern void require_complete_eh_spec_types	(tree, tree);

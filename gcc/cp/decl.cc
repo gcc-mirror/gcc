@@ -7220,9 +7220,10 @@ check_array_initializer (tree decl, tree type, tree init)
 
 static tree
 build_aggr_init_full_exprs (tree decl, tree init, int flags)
-     
 {
   gcc_assert (stmts_are_full_exprs_p ());
+  if (init)
+    maybe_warn_pessimizing_move (init, TREE_TYPE (decl), /*return_p*/false);
   return build_aggr_init (decl, init, flags, tf_warning_or_error);
 }
 

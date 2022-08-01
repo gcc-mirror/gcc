@@ -10372,17 +10372,17 @@ treat_lvalue_as_rvalue_p (tree expr, bool return_p)
     }
 }
 
-/* Warn about wrong usage of std::move in a return statement.  RETVAL
-   is the expression we are returning; FUNCTYPE is the type the function
-   is declared to return.  */
+/* Warn about dubious usage of std::move (in a return statement, if RETURN_P
+   is true).  EXPR is the std::move expression; TYPE is the type of the object
+   being initialized.  */
 
-static void
-maybe_warn_pessimizing_move (tree retval, tree functype)
+void
+maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
 {
   if (!(warn_pessimizing_move || warn_redundant_move))
     return;
 
-  location_t loc = cp_expr_loc_or_input_loc (retval);
+  const location_t loc = cp_expr_loc_or_input_loc (expr);
 
   /* C++98 doesn't know move.  */
   if (cxx_dialect < cxx11)
@@ -10394,14 +10394,32 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
     return;
 
   /* This is only interesting for class types.  */
-  if (!CLASS_TYPE_P (functype))
+  if (!CLASS_TYPE_P (type))
     return;
 
-  /* We're looking for *std::move<T&> ((T &) &arg).  */
-  if (REFERENCE_REF_P (retval)
-      && TREE_CODE (TREE_OPERAND (retval, 0)) == CALL_EXPR)
+  /* A a = std::move (A());  */
+  if (TREE_CODE (expr) == TREE_LIST)
     {
-      tree fn = TREE_OPERAND (retval, 0);
+      if (list_length (expr) == 1)
+	expr = TREE_VALUE (expr);
+      else
+	return;
+    }
+  /* A a = {std::move (A())};
+     A a{std::move (A())};  */
+  else if (TREE_CODE (expr) == CONSTRUCTOR)
+    {
+      if (CONSTRUCTOR_NELTS (expr) == 1)
+	expr = CONSTRUCTOR_ELT (expr, 0)->value;
+      else
+	return;
+    }
+
+  /* We're looking for *std::move<T&> ((T &) &arg).  */
+  if (REFERENCE_REF_P (expr)
+      && TREE_CODE (TREE_OPERAND (expr, 0)) == CALL_EXPR)
+    {
+      tree fn = TREE_OPERAND (expr, 0);
       if (is_std_move_p (fn))
 	{
 	  tree arg = CALL_EXPR_ARG (fn, 0);
@@ -10413,20 +10431,24 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	    return;
 	  arg = TREE_OPERAND (arg, 0);
 	  arg = convert_from_reference (arg);
+	  if (can_do_rvo_p (arg, type))
+	    {
+	      auto_diagnostic_group d;
+	      if (warning_at (loc, OPT_Wpessimizing_move,
+			      "moving a temporary object prevents copy "
+			      "elision"))
+		inform (loc, "remove %<std::move%> call");
+	    }
+	  /* The rest of the warnings is only relevant for when we are
+	     returning from a function.  */
+	  else if (!return_p)
+	    return;
 	  /* Warn if we could do copy elision were it not for the move.  */
-	  if (can_do_nrvo_p (arg, functype))
+	  else if (can_do_nrvo_p (arg, type))
 	    {
 	      auto_diagnostic_group d;
 	      if (warning_at (loc, OPT_Wpessimizing_move,
 			      "moving a local object in a return statement "
-			      "prevents copy elision"))
-		inform (loc, "remove %<std::move%> call");
-	    }
-	  else if (can_do_rvo_p (arg, functype))
-	    {
-	      auto_diagnostic_group d;
-	      if (warning_at (loc, OPT_Wpessimizing_move,
-			      "moving a temporary object in a return statement "
 			      "prevents copy elision"))
 		inform (loc, "remove %<std::move%> call");
 	    }
@@ -10437,7 +10459,7 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	    {
 	      /* Make sure that overload resolution would actually succeed
 		 if we removed the std::move call.  */
-	      tree t = convert_for_initialization (NULL_TREE, functype,
+	      tree t = convert_for_initialization (NULL_TREE, type,
 						   moved,
 						   (LOOKUP_NORMAL
 						    | LOOKUP_ONLYCONVERTING
@@ -10722,7 +10744,7 @@ check_return_expr (tree retval, bool *no_warning)
     return NULL_TREE;
 
   if (!named_return_value_okay_p)
-    maybe_warn_pessimizing_move (retval, functype);
+    maybe_warn_pessimizing_move (retval, functype, /*return_p*/true);
 
   /* Do any required conversions.  */
   if (bare_retval == result || DECL_CONSTRUCTOR_P (current_function_decl))
