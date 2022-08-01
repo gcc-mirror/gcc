@@ -303,6 +303,67 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (view_convert (bit_and:itype (view_convert @0)
 				 (ne @1 { build_zero_cst (type); })))))))
 
+/* In SWAR (SIMD within a register) code a signed comparison of packed data
+   can be constructed with a particular combination of shift, bitwise and,
+   and multiplication by constants.  If that code is vectorized we can
+   convert this pattern into a more efficient vector comparison.  */
+(simplify
+ (mult (bit_and (rshift @0 uniform_integer_cst_p@1)
+	    uniform_integer_cst_p@2)
+    uniform_integer_cst_p@3)
+ (with {
+   tree rshift_cst = uniform_integer_cst_p (@1);
+   tree bit_and_cst = uniform_integer_cst_p (@2);
+   tree mult_cst = uniform_integer_cst_p (@3);
+  }
+  /* Make sure we're working with vectors and uniform vector constants.  */
+  (if (VECTOR_TYPE_P (type)
+       && tree_fits_uhwi_p (rshift_cst)
+       && tree_fits_uhwi_p (mult_cst)
+       && tree_fits_uhwi_p (bit_and_cst))
+   /* Compute what constants would be needed for this to represent a packed
+      comparison based on the shift amount denoted by RSHIFT_CST.  */
+   (with {
+     HOST_WIDE_INT vec_elem_bits = vector_element_bits (type);
+     poly_int64 vec_nelts = TYPE_VECTOR_SUBPARTS (type);
+     poly_int64 vec_bits = vec_elem_bits * vec_nelts;
+     unsigned HOST_WIDE_INT cmp_bits_i, bit_and_i, mult_i;
+     unsigned HOST_WIDE_INT target_mult_i, target_bit_and_i;
+     cmp_bits_i = tree_to_uhwi (rshift_cst) + 1;
+     mult_i = tree_to_uhwi (mult_cst);
+     target_mult_i = (HOST_WIDE_INT_1U << cmp_bits_i) - 1;
+     bit_and_i = tree_to_uhwi (bit_and_cst);
+     target_bit_and_i = 0;
+
+     /* The bit pattern in BIT_AND_I should be a mask for the least
+	significant bit of each packed element that is CMP_BITS wide.  */
+     for (unsigned i = 0; i < vec_elem_bits / cmp_bits_i; i++)
+       target_bit_and_i = (target_bit_and_i << cmp_bits_i) | 1U;
+    }
+    (if ((exact_log2 (cmp_bits_i)) >= 0
+	 && cmp_bits_i < HOST_BITS_PER_WIDE_INT
+	 && multiple_p (vec_bits, cmp_bits_i)
+	 && vec_elem_bits <= HOST_BITS_PER_WIDE_INT
+	 && target_mult_i == mult_i
+	 && target_bit_and_i == bit_and_i)
+     /* Compute the vector shape for the comparison and check if the target is
+	able to expand the comparison with that type.  */
+     (with {
+       /* We're doing a signed comparison.  */
+       tree cmp_type = build_nonstandard_integer_type (cmp_bits_i, 0);
+       poly_int64 vector_type_nelts = exact_div (vec_bits, cmp_bits_i);
+       tree vec_cmp_type = build_vector_type (cmp_type, vector_type_nelts);
+       tree vec_truth_type = truth_type_for (vec_cmp_type);
+       tree zeros = build_zero_cst (vec_cmp_type);
+       tree ones = build_all_ones_cst (vec_cmp_type);
+      }
+      (if (expand_vec_cmp_expr_p (vec_cmp_type, vec_truth_type, LT_EXPR)
+	   && expand_vec_cond_expr_p (vec_cmp_type, vec_truth_type, LT_EXPR))
+       (view_convert:type (vec_cond (lt:vec_truth_type
+				     (view_convert:vec_cmp_type @0)
+				     { zeros; })
+			   { ones; } { zeros; })))))))))
+
 (for cmp (gt ge lt le)
      outp (convert convert negate negate)
      outn (negate negate convert convert)
