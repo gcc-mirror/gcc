@@ -1,3 +1,13 @@
+2022-08-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.cc (expand_omp_for_init_counts, expand_omp_for_init_vars,
+	extract_omp_for_update_vars, expand_omp_for_ordered_loops,
+	expand_omp_simd): Don't fold_convert second argument to
+	fold_build_pointer_plus to sizetype.
+
 2022-07-12  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gimple-loop-versioning.cc (loop_versioning::loop_versioning): Add
