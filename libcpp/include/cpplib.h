@@ -547,6 +547,9 @@ struct cpp_options
   /* True if warn about differences between C++98 and C++11.  */
   bool cpp_warn_cxx11_compat;
 
+  /* True if warn about differences between C++17 and C++20.  */
+  bool cpp_warn_cxx20_compat;
+
   /* Nonzero if bidirectional control characters checking is on.  See enum
      cpp_bidirectional_level.  */
   unsigned char cpp_warn_bidirectional;
@@ -655,6 +658,7 @@ enum cpp_warning_reason {
   CPP_W_C90_C99_COMPAT,
   CPP_W_C11_C2X_COMPAT,
   CPP_W_CXX11_COMPAT,
+  CPP_W_CXX20_COMPAT,
   CPP_W_EXPANSION_TO_DEFINED,
   CPP_W_BIDIRECTIONAL
 };
