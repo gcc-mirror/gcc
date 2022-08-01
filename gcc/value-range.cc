@@ -292,38 +292,47 @@ frange::set (tree min, tree max, value_range_kind kind)
 
   m_kind = kind;
   m_type = TREE_TYPE (min);
-
-  // Mark NANness.
-  if (real_isnan (TREE_REAL_CST_PTR (min))
-      || real_isnan (TREE_REAL_CST_PTR (max)))
-    {
-      gcc_checking_assert (operand_equal_p (min, max));
-      m_props.nan_set_yes ();
-    }
-  else
-    m_props.nan_set_no ();
+  m_props.set_varying ();
 
   bool is_min = vrp_val_is_min (min);
   bool is_max = vrp_val_is_max (max);
+  bool is_nan = (real_isnan (TREE_REAL_CST_PTR (min))
+		 || real_isnan (TREE_REAL_CST_PTR (max)));
 
-  // Mark when the endpoints can't be INF.
-  if (!is_min)
-    m_props.ninf_set_no ();
-  if (!is_max)
-    m_props.inf_set_no ();
+  // Ranges with a NAN and a non-NAN endpoint are nonsensical.
+  gcc_checking_assert (!is_nan || operand_equal_p (min, max));
 
-  // Mark when the endpoints are definitely INF.
+  // The properties for singletons can be all set ahead of time.
   if (operand_equal_p (min, max))
     {
+      // Set INF properties.
       if (is_min)
 	m_props.ninf_set_yes ();
-      else if (is_max)
+      else
+	m_props.ninf_set_no ();
+      if (is_max)
 	m_props.inf_set_yes ();
+      else
+	m_props.inf_set_no ();
+      // Set NAN property.
+      if (is_nan)
+	m_props.nan_set_yes ();
+      else
+	m_props.nan_set_no ();
+    }
+  else
+    {
+      // Mark when the endpoints can't be +-INF.
+      if (!is_min)
+	m_props.ninf_set_no ();
+      if (!is_max)
+	m_props.inf_set_no ();
     }
 
   // Check for swapped ranges.
-  gcc_checking_assert (m_props.nan_yes_p ()
-		       || tree_compare (LE_EXPR, min, max));
+  gcc_checking_assert (is_nan || tree_compare (LE_EXPR, min, max));
+
+  normalize_kind ();
 
   if (flag_checking)
     verify_range ();
