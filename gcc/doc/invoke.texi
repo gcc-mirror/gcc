@@ -10023,7 +10023,7 @@ See @uref{https://cwe.mitre.org/data/definitions/476.html, CWE-476: NULL Pointer
 @opindex Wanalyzer-putenv-of-auto-var
 @opindex Wno-analyzer-putenv-of-auto-var
 This warning requires @option{-fanalyzer}, which enables it; use
-@option{-Wno-analyzer-possible-null-dereference} to disable it.
+@option{-Wno-analyzer-putenv-of-auto-var} to disable it.
 
 This diagnostic warns for paths through the code in which a
 call to @code{putenv} is passed a pointer to an automatic variable
