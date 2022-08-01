@@ -1,3 +1,11 @@
+2022-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/106261
+	* g++.dg/debug/pr106261.C: New test.
+
 2022-07-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106225

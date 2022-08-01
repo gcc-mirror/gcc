@@ -1,3 +1,33 @@
+2022-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106449
+	* omp-expand.cc (expand_omp_simd): Fix up handling of pointer
+	iterators in non-rectangular simd loops.  Unshare fd->loops[i].n2
+	or n2 before regimplifying it inside of a condition.
+
+2022-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/106261
+	* cgraphunit.cc (cgraph_node::assemble_thunks_and_aliases): Don't
+	output asm thunks for -dx.
+
+2022-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106144
+	* wide-int.cc (wi::shifted_mask): If end >= prec, return right after
+	emitting element for shift or if shift is 0 first element after start.
+	(wide_int_cc_tests): Add tests for equivalency of wi::mask and
+	wi::shifted_mask with 0 start.
+
 2022-07-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* json.cc (string::print): Fix escaping of '\'.

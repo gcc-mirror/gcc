@@ -1,3 +1,11 @@
+2022-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106449
+	* testsuite/libgomp.c-c++-common/pr106449.c: New test.
+
 2022-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
