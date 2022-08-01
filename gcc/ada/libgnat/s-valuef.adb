@@ -46,7 +46,7 @@ package body System.Value_F is
    pragma Assert (Int'Size <= Uns'Size);
    --  We need an unsigned type large enough to represent the mantissa
 
-   package Impl is new Value_R (Uns, 2**(Int'Size - 1), Round => True);
+   package Impl is new Value_R (Uns, 1, 2**(Int'Size - 1), Round => True);
    --  We use the Extra digit for ordinary fixed-point types
 
    function Integer_To_Fixed
@@ -332,16 +332,17 @@ package body System.Value_F is
       Num : Int;
       Den : Int) return Int
    is
-      Base   : Unsigned;
-      ScaleB : Integer;
-      Extra  : Unsigned;
-      Minus  : Boolean;
-      Val    : Uns;
+      Base  : Unsigned;
+      Scl   : Impl.Scale_Array;
+      Extra : Unsigned;
+      Minus : Boolean;
+      Val   : Impl.Value_Array;
 
    begin
-      Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, ScaleB, Extra, Minus);
+      Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, Scl, Extra, Minus);
 
-      return Integer_To_Fixed (Str, Val, Base, ScaleB, Extra, Minus, Num, Den);
+      return
+        Integer_To_Fixed (Str, Val (1), Base, Scl (1), Extra, Minus, Num, Den);
    end Scan_Fixed;
 
    -----------------
@@ -353,16 +354,17 @@ package body System.Value_F is
       Num : Int;
       Den : Int) return Int
    is
-      Base   : Unsigned;
-      ScaleB : Integer;
-      Extra  : Unsigned;
-      Minus  : Boolean;
-      Val    : Uns;
+      Base  : Unsigned;
+      Scl   : Impl.Scale_Array;
+      Extra : Unsigned;
+      Minus : Boolean;
+      Val   : Impl.Value_Array;
 
    begin
-      Val := Impl.Value_Raw_Real (Str, Base, ScaleB, Extra, Minus);
+      Val := Impl.Value_Raw_Real (Str, Base, Scl, Extra, Minus);
 
-      return Integer_To_Fixed (Str, Val, Base, ScaleB, Extra, Minus, Num, Den);
+      return
+        Integer_To_Fixed (Str, Val (1), Base, Scl (1), Extra, Minus, Num, Den);
    end Value_Fixed;
 
 end System.Value_F;

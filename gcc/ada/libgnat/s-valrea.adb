@@ -43,18 +43,9 @@ package body System.Val_Real is
    pragma Assert (Num'Machine_Mantissa <= Uns'Size);
    --  We need an unsigned type large enough to represent the mantissa
 
-   Need_Extra : constant Boolean := Num'Machine_Mantissa > Uns'Size - 4;
-   --  If the mantissa of the floating-point type is almost as large as the
-   --  unsigned type, we do not have enough space for an extra digit in the
-   --  unsigned type so we handle the extra digit separately, at the cost of
-   --  a bit more work in Integer_to_Real.
+   Precision_Limit : constant Uns := 2**Num'Machine_Mantissa - 1;
 
-   Precision_Limit : constant Uns :=
-     (if Need_Extra then 2**Num'Machine_Mantissa - 1 else 2**Uns'Size - 1);
-   --  If we handle the extra digit separately, we use the precision of the
-   --  floating-point type so that the conversion is exact.
-
-   package Impl is new Value_R (Uns, Precision_Limit, Round => Need_Extra);
+   package Impl is new Value_R (Uns, 2, Precision_Limit, Round => False);
 
    subtype Base_T is Unsigned range 2 .. 16;
 
@@ -83,12 +74,20 @@ package body System.Val_Real is
    subtype Double_T is Double_Real.Double_T;
    --  The double floating-point type
 
+   function Exact_Log2 (N : Unsigned) return Positive is
+     (case N is
+        when  2     => 1,
+        when  4     => 2,
+        when  8     => 3,
+        when 16     => 4,
+        when others => raise Program_Error);
+   --  Return the exponent of a power of 2
+
    function Integer_to_Real
      (Str   : String;
-      Val   : Uns;
+      Val   : Impl.Value_Array;
       Base  : Unsigned;
-      Scale : Integer;
-      Extra : Unsigned;
+      Scale : Impl.Scale_Array;
       Minus : Boolean) return Num;
    --  Convert the real value from integer to real representation
 
@@ -101,10 +100,9 @@ package body System.Val_Real is
 
    function Integer_to_Real
      (Str   : String;
-      Val   : Uns;
+      Val   : Impl.Value_Array;
       Base  : Unsigned;
-      Scale : Integer;
-      Extra : Unsigned;
+      Scale : Impl.Scale_Array;
       Minus : Boolean) return Num
    is
       pragma Assert (Base in 2 .. 16);
@@ -120,9 +118,9 @@ package body System.Val_Real is
                   else  raise Program_Error);
       --  Maximum exponent of the base that can fit in Num
 
-      R_Val : Num;
       D_Val : Double_T;
-      S     : Integer := Scale;
+      R_Val : Num;
+      S     : Integer;
 
    begin
       --  We call the floating-point processor reset routine so we can be sure
@@ -134,82 +132,78 @@ package body System.Val_Real is
          System.Float_Control.Reset;
       end if;
 
-      --  Take into account the extra digit, i.e. do the two computations
+      --  First convert the integer mantissa into a double real. The conversion
+      --  of each part is exact, given the precision limit we used above. Then,
+      --  if the contribution of the low part might be nonnull, scale the high
+      --  part appropriately and add the low part to the result.
 
-      --    (1)  R_Val := R_Val * Num (B) + Num (Extra)
-      --    (2)  S := S - 1
-
-      --  In the first, the three operands are exact, so using an FMA would
-      --  be ideal, but we are most likely running on the x87 FPU, hence we
-      --  may not have one. That is why we turn the multiplication into an
-      --  iterated addition with exact error handling, so that we can do a
-      --  single rounding at the end.
-
-      if Need_Extra and then Extra > 0 then
-         declare
-            B   : Unsigned := Base;
-            Acc : Num      := 0.0;
-            Err : Num      := 0.0;
-            Fac : Num      := Num (Val);
-            DS  : Double_T;
-
-         begin
-            loop
-               --  If B is odd, add one factor. Note that the accumulator is
-               --  never larger than the factor at this point (it is in fact
-               --  never larger than the factor minus the initial value).
-
-               if B rem 2 /= 0 then
-                  if Acc = 0.0 then
-                     Acc := Fac;
-                  else
-                     DS  := Double_Real.Quick_Two_Sum (Fac, Acc);
-                     Acc := DS.Hi;
-                     Err := Err + DS.Lo;
-                  end if;
-                  exit when B = 1;
-               end if;
-
-               --  Now B is (morally) even, halve it and double the factor,
-               --  which is always an exact operation.
-
-               B := B / 2;
-               Fac := Fac * 2.0;
-            end loop;
-
-            --  Add Extra to the error, which are both small integers
-
-            D_Val := Double_Real.Quick_Two_Sum (Acc, Err + Num (Extra));
-
-            S := S - 1;
-         end;
-
-      --  Or else, if the Extra digit is zero, do the exact conversion
-
-      elsif Need_Extra then
-         D_Val := Double_Real.To_Double (Num (Val));
-
-      --  Otherwise, the value contains more bits than the mantissa so do the
-      --  conversion in two steps.
+      if Val (2) = 0 then
+         D_Val := Double_Real.To_Double (Num (Val (1)));
+         S := Scale (1);
 
       else
          declare
-            Mask : constant Uns := 2**(Uns'Size - Num'Machine_Mantissa) - 1;
-            Hi   : constant Uns := Val and not Mask;
-            Lo   : constant Uns := Val and Mask;
+            V1 : constant Num := Num (Val (1));
+            V2 : constant Num := Num (Val (2));
+
+            DS : Positive;
 
          begin
-            if Hi = 0 then
-               D_Val := Double_Real.To_Double (Num (Lo));
-            else
-               D_Val := Double_Real.Quick_Two_Sum (Num (Hi), Num (Lo));
-            end if;
+            DS := Scale (1) - Scale (2);
+
+            case Base is
+               --  If the base is a power of two, we use the efficient Scaling
+               --  attribute up to an amount worth a double mantissa.
+
+               when 2 | 4 | 8 | 16 =>
+                  declare
+                     L : constant Positive := Exact_Log2 (Base);
+
+                  begin
+                     if DS <= 2 * Num'Machine_Mantissa / L then
+                        DS := DS * L;
+                        D_Val :=
+                          Double_Real.Quick_Two_Sum (Num'Scaling (V1, DS), V2);
+                        S := Scale (2);
+
+                     else
+                        D_Val := Double_Real.To_Double (V1);
+                        S := Scale (1);
+                     end if;
+                  end;
+
+               --  If the base is 10, we also scale up to an amount worth a
+               --  double mantissa.
+
+               when 10 =>
+                  declare
+                     Powten : constant array (0 .. Maxpow) of Double_T;
+                     pragma Import (Ada, Powten);
+                     for Powten'Address use Powten_Address;
+
+                  begin
+                     if DS <= Maxpow then
+                        D_Val := Powten (DS) * V1 + V2;
+                        S := Scale (2);
+
+                     else
+                        D_Val := Double_Real.To_Double (V1);
+                        S := Scale (1);
+                     end if;
+                  end;
+
+               --  Inaccurate implementation for other bases
+
+               when others =>
+                  D_Val := Double_Real.To_Double (V1);
+                  S := Scale (1);
+            end case;
          end;
       end if;
 
       --  Compute the final value by applying the scaling, if any
 
-      if Val = 0 or else S = 0 then
+      if (Val (1) = 0 and then Val (2) = 0) or else S = 0 then
          R_Val := Double_Real.To_Single (D_Val);
 
       else
@@ -218,29 +212,17 @@ package body System.Val_Real is
             --  attribute with an overflow check, if it is not 2, to catch
             --  ludicrous exponents that would result in an infinity or zero.
 
-            when 2 =>
-               R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
+            when 2 | 4 | 8 | 16 =>
+               declare
+                  L : constant Positive := Exact_Log2 (Base);
 
-            when 4 =>
-               if Integer'First / 2 <= S and then S <= Integer'Last / 2 then
-                  S := S * 2;
-               end if;
+               begin
+                  if Integer'First / L <= S and then S <= Integer'Last / L then
+                     S := S * L;
+                  end if;
 
-               R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
-
-            when 8 =>
-               if Integer'First / 3 <= S and then S <= Integer'Last / 3 then
-                  S := S * 3;
-               end if;
-
-               R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
-
-            when 16 =>
-               if Integer'First / 4 <= S and then S <= Integer'Last / 4 then
-                  S := S * 4;
-               end if;
-
-               R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
+                  R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
+               end;
 
             --  If the base is 10, use a double implementation for the sake
             --  of accuracy, to be removed when exponentiation is improved.
@@ -358,15 +340,15 @@ package body System.Val_Real is
       Max : Integer) return Num
    is
       Base  : Unsigned;
-      Scale : Integer;
+      Scale : Impl.Scale_Array;
       Extra : Unsigned;
       Minus : Boolean;
-      Val   : Uns;
+      Val   : Impl.Value_Array;
 
    begin
       Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, Scale, Extra, Minus);
 
-      return Integer_to_Real (Str, Val, Base, Scale, Extra, Minus);
+      return Integer_to_Real (Str, Val, Base, Scale, Minus);
    end Scan_Real;
 
    ----------------
@@ -375,15 +357,15 @@ package body System.Val_Real is
 
    function Value_Real (Str : String) return Num is
       Base  : Unsigned;
-      Scale : Integer;
+      Scale : Impl.Scale_Array;
       Extra : Unsigned;
       Minus : Boolean;
-      Val   : Uns;
+      Val   : Impl.Value_Array;
 
    begin
       Val := Impl.Value_Raw_Real (Str, Base, Scale, Extra, Minus);
 
-      return Integer_to_Real (Str, Val, Base, Scale, Extra, Minus);
+      return Integer_to_Real (Str, Val, Base, Scale, Minus);
    end Value_Real;
 
 end System.Val_Real;
