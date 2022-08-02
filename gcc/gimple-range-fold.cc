@@ -1496,6 +1496,10 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range, edge e0, edge 
   tree name;
   basic_block bb = gimple_bb (s);
 
+  range_op_handler handler (s);
+  if (!handler)
+    return;
+
   if (e0)
     {
       // If this edge is never taken, ignore it.
@@ -1524,8 +1528,6 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range, edge e0, edge 
   tree ssa2 = gimple_range_ssa_p (gimple_range_operand2 (s));
   if (ssa1 && ssa2)
     {
-      range_op_handler handler (s);
-      gcc_checking_assert (handler);
       if (e0)
 	{
 	  relation_kind relation = handler.op1_op2_relation (e0_range);
