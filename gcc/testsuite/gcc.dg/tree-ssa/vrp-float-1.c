@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -fdisable-tree-ethread -fdisable-tree-fre1 -fdump-tree-evrp" }
+// { dg-options "-O2 -fdisable-tree-ethread -fdisable-tree-fre1 -fdump-tree-evrp-details" }
 
 void bar ();
 void george ();
@@ -16,4 +16,4 @@ foo (float x, float y)
     }
 }
 
-// { dg-final { scan-tree-dump-times "Folding predicate x_*to 1" "evrp" 1 } }
+// { dg-final { scan-tree-dump-times "Folded into: if \\(1 != 0\\)" 1 "evrp" } }
