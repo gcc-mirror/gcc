@@ -3082,7 +3082,7 @@ gen_parallel_loop (class loop *loop,
 		    profile_probability::unlikely (),
 		    profile_probability::likely (),
 		    profile_probability::unlikely (), true);
-      update_ssa (TODO_update_ssa);
+      update_ssa (TODO_update_ssa_no_phi);
       free_original_copy_tables ();
     }
 
