@@ -766,7 +766,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	      sum2 += freq2;
 	    }
 	}
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  double nsum1 = 0, nsum2 = 0;
 	  stats.qsort (cmp_stats);
