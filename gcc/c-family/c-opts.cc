@@ -1059,9 +1059,9 @@ c_common_post_options (const char **pfilename)
   if (flag_sized_deallocation == -1)
     flag_sized_deallocation = (cxx_dialect >= cxx14);
 
-  /* char8_t support is new in C++20.  */
+  /* char8_t support is implicitly enabled in C++20 and C2X.  */
   if (flag_char8_t == -1)
-    flag_char8_t = (cxx_dialect >= cxx20);
+    flag_char8_t = (cxx_dialect >= cxx20) || flag_isoc2x;
 
   if (flag_extern_tls_init)
     {

@@ -1352,7 +1352,14 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
 	default:
 	case CPP_STRING:
 	case CPP_UTF8STRING:
-	  value = build_string (1, "");
+	  if (type == CPP_UTF8STRING && flag_char8_t)
+	    {
+	      value = build_string (TYPE_PRECISION (char8_type_node)
+				    / TYPE_PRECISION (char_type_node),
+				    "");  /* char8_t is 8 bits */
+	    }
+	  else
+	    value = build_string (1, "");
 	  break;
 	case CPP_STRING16:
 	  value = build_string (TYPE_PRECISION (char16_type_node)
@@ -1425,9 +1432,7 @@ lex_charconst (const cpp_token *token)
     type = char16_type_node;
   else if (token->type == CPP_UTF8CHAR)
     {
-      if (!c_dialect_cxx ())
-	type = unsigned_char_type_node;
-      else if (flag_char8_t)
+      if (flag_char8_t)
         type = char8_type_node;
       else
         type = char_type_node;
