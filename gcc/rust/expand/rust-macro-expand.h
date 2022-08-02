@@ -321,12 +321,28 @@ struct MacroExpander
   AST::ASTFragment take_expanded_fragment (AST::ASTVisitor &vis)
   {
     AST::ASTFragment old_fragment = std::move (expanded_fragment);
+    auto accumulator = std::vector<AST::SingleASTNode> ();
     expanded_fragment = AST::ASTFragment::create_error ();
 
     for (auto &node : old_fragment.get_nodes ())
       {
 	expansion_depth++;
 	node.accept_vis (vis);
+	// we'll decide the next move according to the outcome of the macro
+	// expansion
+	if (expanded_fragment.is_error ())
+	  accumulator.push_back (node); // if expansion fails, there might be a
+					// non-macro expression we need to keep
+	else
+	  {
+	    // if expansion succeeded, then we need to merge the fragment with
+	    // the contents in the accumulator, so that our final expansion
+	    // result will contain non-macro nodes as it should
+	    auto new_nodes = expanded_fragment.get_nodes ();
+	    std::move (new_nodes.begin (), new_nodes.end (),
+		       std::back_inserter (accumulator));
+	    expanded_fragment = AST::ASTFragment (accumulator);
+	  }
 	expansion_depth--;
       }
 
