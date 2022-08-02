@@ -46,7 +46,7 @@ TYPE
           END ;
 
    Graph = POINTER TO RECORD
-                         nodes : Index ;
+                         nodes: Index ;
                       END ;
 
 
@@ -70,7 +70,7 @@ END InitGraph ;
 
 PROCEDURE KillNode (nptr: node) ;
 BEGIN
-   KillIndex (nptr^.deps)
+   nptr^.deps := KillIndex (nptr^.deps)
 END KillNode ;
 
 

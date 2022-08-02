@@ -403,6 +403,6 @@ _M2_wraptime_init ()
 {
 }
 void
-_M2_wraptime_finish ()
+_M2_wraptime_fini ()
 {
 }

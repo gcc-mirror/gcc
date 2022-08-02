@@ -377,7 +377,7 @@ gm2_langhook_handle_option (
       M2Options_SetSwig (value);
       return 1;
     case OPT_fshared:
-      /* handled by the linker.  */
+      M2Options_SetShared (value);
       return 1;
     case OPT_fm2_statistics:
       M2Options_SetStatistics (value);

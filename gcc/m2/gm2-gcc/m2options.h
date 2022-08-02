@@ -119,6 +119,7 @@ EXTERN void M2Options_SetScaffoldDynamic (int value);
 EXTERN void M2Options_SetScaffoldMain (int value);
 EXTERN void M2Options_SetRuntimeModuleOverride (const char *override);
 EXTERN void M2Options_SetGenModuleList (int value, const char *filename);
+EXTERN void M2Options_SetShared (int value);
 
 #undef EXTERN
 #endif /* m2options_h.  */

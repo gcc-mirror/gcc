@@ -301,7 +301,7 @@ _M2_Selective_init (int argc, char *argv[], char *envp[])
 }
 
 extern "C" void
-_M2_Selective_finish (int argc, char *argv[], char *envp[])
+_M2_Selective_fini (int argc, char *argv[], char *envp[])
 {
 }
 
@@ -314,6 +314,6 @@ struct _M2_Selective_ctor { _M2_Selective_ctor (); } _M2_Selective_ctor;
 
 _M2_Selective_ctor::_M2_Selective_ctor (void)
 {
-  M2RTS_RegisterModule ("Selective", _M2_Selective_init, _M2_Selective_finish,
+  M2RTS_RegisterModule ("Selective", _M2_Selective_init, _M2_Selective_fini,
 			_M2_Selective_dep);
 }

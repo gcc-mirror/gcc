@@ -245,6 +245,6 @@ _M2_wrapsock_init (void)
 }
 
 void
-_M2_wrapsock_finish (void)
+_M2_wrapsock_fini (void)
 {
 }

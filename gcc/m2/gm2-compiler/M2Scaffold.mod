@@ -48,7 +48,8 @@ FROM SFIO IMPORT OpenToWrite, WriteS, ReadS, OpenToRead, Exists ;
 FROM FIO IMPORT File, EOF, IsNoError, Close ;
 
 FROM M2Options IMPORT GetUselist, ScaffoldStatic, ScaffoldDynamic, GenModuleList,
-                      GetGenModuleFilename, GetUselistFilename, GetUselist, cflag ;
+                      GetGenModuleFilename, GetUselistFilename, GetUselist, cflag,
+                      SharedFlag ;
 
 FROM M2Base IMPORT Proc ;
 
@@ -85,7 +86,7 @@ static void _M2_init (int argc, char *argv[], char *envp[])
 }
 
 
-static void _M2_finish (int argc, char *argv[], char *envp[])
+static void _M2_fini (int argc, char *argv[], char *envp[])
 {
   M2RTS_Terminate ();
   M2RTS_DeconstructModules (module_name, argc, argv, envp);
@@ -96,7 +97,7 @@ int
 main (int argc, char *argv[], char *envp[])
 {
   init (argc, argv, envp);
-  finish ();
+  fini (argc, argv, envp);
   return (0);
 }  *)
 
@@ -180,7 +181,7 @@ END ForeachModuleCallInit ;
 (*
    ForeachModuleCallFinish - precondition: the module list will be ordered.
                              postcondition: foreach module in the application universe
-                                               call _M2_module_finish (argc, argv, envp);
+                                               call _M2_module_fini (argc, argv, envp);
 *)
 
 PROCEDURE ForeachModuleCallFinish (tok: CARDINAL; argc, argv, envp: CARDINAL) ;
@@ -554,18 +555,23 @@ BEGIN
                    '{%O}dynamic linking enabled but no module ctor list has been created, hint use -fuse-list=filename or -fgen-module-list=-')
    END ;
 
-   mainFunction := MakeProcedure (tokenno, MakeKey ("main")) ;
-   StartScope (mainFunction) ;
-   PutFunction (mainFunction, Integer) ;
-   DeclareArgEnvParams (tokenno, mainFunction) ;
-   PutPublic (mainFunction, TRUE) ;
-   EndScope ;
-
    initFunction := MakeProcedure (tokenno, MakeKey ("_M2_init")) ;
-   DeclareArgEnvParams (tokenno, initFunction) ;
+   finiFunction := MakeProcedure (tokenno, MakeKey ("_M2_fini")) ;
+   IF SharedFlag
+   THEN
+      PutCtor (initFunction, TRUE) ;
+      PutCtor (finiFunction, TRUE)
+   ELSE
+      DeclareArgEnvParams (tokenno, initFunction) ;
+      DeclareArgEnvParams (tokenno, finiFunction) ;
 
-   finiFunction := MakeProcedure (tokenno, MakeKey ("_M2_finish")) ;
-   DeclareArgEnvParams (tokenno, finiFunction)
+      mainFunction := MakeProcedure (tokenno, MakeKey ("main")) ;
+      StartScope (mainFunction) ;
+      PutFunction (mainFunction, Integer) ;
+      DeclareArgEnvParams (tokenno, mainFunction) ;
+      PutPublic (mainFunction, TRUE) ;
+      EndScope
+   END
 END DeclareScaffoldFunctions ;
 
 

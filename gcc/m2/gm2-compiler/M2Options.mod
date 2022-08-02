@@ -1184,6 +1184,16 @@ BEGIN
 END GetGenModuleFilename ;
 
 
+(*
+   SetShared - sets the SharedFlag to value.
+*)
+
+PROCEDURE SetShared (value: BOOLEAN) ;
+BEGIN
+   SharedFlag := value
+END SetShared ;
+
+
 BEGIN
    cflag                        := FALSE ;  (* -c.  *)
    RuntimeModuleOverride        := NIL ;
@@ -1247,5 +1257,6 @@ BEGIN
    ScaffoldMain                 := FALSE ;
    UselistFilename              := NIL ;
    GenModuleList                := FALSE ;
-   GenModuleListFilename        := NIL
+   GenModuleListFilename        := NIL ;
+   SharedFlag                   := FALSE
 END M2Options.

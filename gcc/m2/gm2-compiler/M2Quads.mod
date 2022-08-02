@@ -115,6 +115,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         IsImportStatement, IsImport, GetImportModule, GetImportDeclared,
                         GetImportStatementList,
                         GetModuleDefImportStatementList, GetModuleModImportStatementList,
+                        IsCtor, IsPublic, IsExtern,
 
                         GetUnboundedRecordType,
                         GetUnboundedAddressOffset,
@@ -204,7 +205,7 @@ FROM M2Options IMPORT NilChecking,
                       Pedantic, CompilerDebugging, GenerateDebugging,
                       GenerateLineDebug, Exceptions,
                       Profiling, Coding, Optimizing,
-                      ScaffoldDynamic, ScaffoldStatic, cflag, ScaffoldMain ;
+                      ScaffoldDynamic, ScaffoldStatic, cflag, ScaffoldMain, SharedFlag ;
 
 FROM M2Pass IMPORT IsPassCodeGeneration, IsNoPass ;
 
@@ -2233,6 +2234,34 @@ END BuildRetry ;
 
 
 (*
+   SafeRequestSym - only used during scaffold to get argc, argv, envp.
+                    It attempts to get symbol name from the current scope(s) and if
+                    it fails then it falls back onto default constants.
+*)
+
+PROCEDURE SafeRequestSym (procedure: CARDINAL; tok: CARDINAL; name: Name) : CARDINAL ;
+VAR
+   sym: CARDINAL ;
+BEGIN
+   sym := GetSym (name) ;
+   IF sym = NulSym
+   THEN
+      IF name = MakeKey ('argc')
+      THEN
+         RETURN MakeConstLit (tok, MakeKey ('0'), ZType)
+      ELSIF (name = MakeKey ('argv')) OR (name = MakeKey ('envp'))
+      THEN
+         RETURN Nil
+      ELSE
+         InternalError ('not expecting this parameter name') ;
+         RETURN Nil
+      END
+   END ;
+   RETURN sym
+END SafeRequestSym ;
+
+
+(*
    callRequestDependant - create a call:
                           RequestDependant (GetSymName (modulesym), GetSymName (depModuleSym));
 *)
@@ -2389,7 +2418,7 @@ END BuildM2LinkFunction ;
 
 PROCEDURE BuildM2MainFunction (tokno: CARDINAL; modulesym: CARDINAL) ;
 BEGIN
-   IF ScaffoldDynamic OR ScaffoldStatic
+   IF (ScaffoldDynamic OR ScaffoldStatic) AND (NOT SharedFlag)
    THEN
       (* Scaffold required and main should be produced.  *)
       (*
@@ -2475,18 +2504,18 @@ BEGIN
             PushT(1) ;
             BuildAdrFunction ;
 
-            PushTtok (RequestSym (tok, MakeKey ("argc")), tok) ;
-            PushTtok (RequestSym (tok, MakeKey ("argv")), tok) ;
-            PushTtok (RequestSym (tok, MakeKey ("envp")), tok) ;
+            PushTtok (SafeRequestSym (initFunction, tok, MakeKey ("argc")), tok) ;
+            PushTtok (SafeRequestSym (initFunction, tok, MakeKey ("argv")), tok) ;
+            PushTtok (SafeRequestSym (initFunction, tok, MakeKey ("envp")), tok) ;
             PushT (4) ;
             BuildProcedureCall (tok) ;
          END
       ELSIF ScaffoldStatic
       THEN
          ForeachModuleCallInit (tok,
-                                RequestSym (tok, MakeKey ("argc")),
-                                RequestSym (tok, MakeKey ("argv")),
-                                RequestSym (tok, MakeKey ("envp")))
+                                SafeRequestSym (initFunction, tok, MakeKey ("argc")),
+                                SafeRequestSym (initFunction, tok, MakeKey ("argv")),
+                                SafeRequestSym (initFunction, tok, MakeKey ("envp")))
       END ;
       EndScope ;
       BuildProcedureEnd ;
@@ -2530,18 +2559,18 @@ BEGIN
             PushT(1) ;
             BuildAdrFunction ;
 
-            PushTtok (RequestSym (tok, MakeKey ("argc")), tok) ;
-            PushTtok (RequestSym (tok, MakeKey ("argv")), tok) ;
-            PushTtok (RequestSym (tok, MakeKey ("envp")), tok) ;
+            PushTtok (SafeRequestSym (finiFunction, tok, MakeKey ("argc")), tok) ;
+            PushTtok (SafeRequestSym (finiFunction, tok, MakeKey ("argv")), tok) ;
+            PushTtok (SafeRequestSym (finiFunction, tok, MakeKey ("envp")), tok) ;
             PushT (4) ;
             BuildProcedureCall (tok)
          END
       ELSIF ScaffoldStatic
       THEN
          ForeachModuleCallFinish (tok,
-                                  RequestSym (tok, MakeKey ("argc")),
-                                  RequestSym (tok, MakeKey ("argv")),
-                                  RequestSym (tok, MakeKey ("envp")))
+                                  SafeRequestSym (finiFunction, tok, MakeKey ("argc")),
+                                  SafeRequestSym (finiFunction, tok, MakeKey ("argv")),
+                                  SafeRequestSym (finiFunction, tok, MakeKey ("envp")))
       END ;
       EndScope ;
       BuildProcedureEnd ;
@@ -13042,6 +13071,27 @@ END DisplayQuad ;
 
 
 (*
+   DisplayProcedureAttributes -
+*)
+
+PROCEDURE DisplayProcedureAttributes (proc: CARDINAL) ;
+BEGIN
+   IF IsCtor (proc)
+   THEN
+      printf0 (" (ctor)")
+   END ;
+   IF IsPublic (proc)
+   THEN
+      printf0 (" (public)")
+   END ;
+   IF IsExtern (proc)
+   THEN
+      printf0 (" (extern)")
+   END
+END DisplayProcedureAttributes ;
+
+
+(*
    WriteQuad - Writes out the Quad BufferQuad.
 *)
 
@@ -13107,7 +13157,10 @@ BEGIN
       CallOp,
       KillLocalVarOp    : WriteOperand(Operand3) |
 
-      ProcedureScopeOp,
+      ProcedureScopeOp  : n1 := GetSymName(Operand2) ;
+                          n2 := GetSymName(Operand3) ;
+                          printf3('  %4d  %a  %a', Operand1, n1, n2) ;
+                          DisplayProcedureAttributes (Operand3) |
       NewLocalVarOp,
       FinallyStartOp,
       FinallyEndOp,

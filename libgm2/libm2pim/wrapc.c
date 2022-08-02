@@ -283,7 +283,7 @@ _M2_wrapc_init ()
 }
 
 void
-_M2_wrapc_finish ()
+_M2_wrapc_fini ()
 {
 }
 

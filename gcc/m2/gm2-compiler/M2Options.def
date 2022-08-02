@@ -52,7 +52,8 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
 		 SetWholeValueCheck, GetWholeValueCheck,
                  SetLowerCaseKeywords,
                  SetIndex, SetRange, SetWholeDiv, SetStrictTypeChecking,
-                 Setc, Getc, SetUselist, GetUselist, GetUselisrFilename,
+                 Setc, Getc, SetUselist, GetUselist, GetUselistFilename,
+                 SetShared,
 
                  Iso, Pim, Pim2, Pim3, Pim4,
                  cflag,
@@ -89,7 +90,7 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  SetScaffoldDynamic, SetScaffoldStatic,
                  SetScaffoldMain, ScaffoldMain,
                  SetRuntimeModuleOverride, GetRuntimeModuleOverride,
-                 SetGenModuleList, GetGenModuleFilename ;
+                 SetGenModuleList, GetGenModuleFilename, SharedFlag ;
 
 
 VAR
@@ -161,6 +162,9 @@ VAR
    ScaffoldMain,                 (* Should we generate a main function?      *)
    GenModuleList,                (* Should the compiler generate a list of   *)
                                  (* all modules used?                        *)
+   SharedFlag,                   (* -fshared indicating this module needs    *)
+                                 (* the shared library version of the        *)
+                                 (* scaffold.                                *)
    ForcedLocation,
    DebugFunctionLineNumbers,
    GenerateStatementNote,
@@ -785,6 +789,13 @@ PROCEDURE SetGenModuleList (value: BOOLEAN; filename: ADDRESS) ;
 *)
 
 PROCEDURE GetGenModuleFilename () : String ;
+
+
+(*
+   SetShared - sets the SharedFlag to value.
+*)
+
+PROCEDURE SetShared (value: BOOLEAN) ;
 
 
 (*
