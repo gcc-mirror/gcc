@@ -626,7 +626,7 @@ class GitCommit:
 
     def deduce_changelog_locations(self):
         for entry in self.changelog_entries:
-            if not entry.folder:
+            if entry.folder is None:
                 changelog = None
                 for file in entry.files:
                     location = self.get_file_changelog_location(file)
