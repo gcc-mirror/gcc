@@ -1,4 +1,5 @@
 // { dg-output "1\n" }
+#[rustc_builtin_macro]
 macro_rules! concat {
     () => {{}};
 }

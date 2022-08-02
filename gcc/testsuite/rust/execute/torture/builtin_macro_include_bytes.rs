@@ -1,5 +1,5 @@
 // { dg-output "104\n33\n1\n" }
-
+#[rustc_builtin_macro]
 macro_rules! include_bytes {
     () => {{}};
 }

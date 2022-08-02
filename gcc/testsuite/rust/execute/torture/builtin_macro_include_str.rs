@@ -1,5 +1,5 @@
 // { dg-output "hello, include!\n" }
-
+#[rustc_builtin_macro]
 macro_rules! include_str {
     () => {{}};
 }

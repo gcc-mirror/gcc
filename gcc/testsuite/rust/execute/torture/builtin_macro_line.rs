@@ -1,4 +1,4 @@
-// { dg-output "17\n20\n" }
+// { dg-output "18\n21\n" }
 extern "C" {
     fn printf(fmt: *const i8, ...);
 }
@@ -9,6 +9,7 @@ fn print(s: u32) {
     }
 }
 
+#[rustc_builtin_macro]
 macro_rules! line {
     () => {{}};
 }
