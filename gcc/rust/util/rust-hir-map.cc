@@ -18,6 +18,7 @@
 
 #include "rust-hir-map.h"
 #include "rust-ast-full.h"
+#include "rust-diagnostics.h"
 #include "rust-hir-full.h"
 #include "rust-macro-builtins.h"
 #include "rust-mapping-common.h"
@@ -818,9 +819,22 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
       {"include", MacroBuiltin::include},
     };
 
-  auto builtin = builtin_macros.find (macro->get_rule_name ());
-  if (builtin != builtin_macros.end ())
-    macro->set_builtin_transcriber (builtin->second);
+  auto outer_attrs = macro->get_outer_attrs ();
+  bool should_be_builtin
+    = std::any_of (outer_attrs.begin (), outer_attrs.end (),
+		   [] (AST::Attribute attr) {
+		     return attr.get_path () == "rustc_builtin_macro";
+		   });
+  if (should_be_builtin)
+    {
+      auto builtin = builtin_macros.find (macro->get_rule_name ());
+      if (builtin != builtin_macros.end ())
+	macro->set_builtin_transcriber (builtin->second);
+      else
+	rust_error_at (macro->get_locus (),
+		       "cannot find a built-in macro with name %qs",
+		       macro->get_rule_name ().c_str ());
+    }
 
   auto it = macroMappings.find (macro->get_node_id ());
   rust_assert (it == macroMappings.end ());
