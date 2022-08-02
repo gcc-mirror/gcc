@@ -5608,6 +5608,8 @@ case ${target} in
 		esac
 		if test x$with_arch != x; then
 			default_mips_arch=$with_arch
+		else
+			with_arch=$default_mips_arch
 		fi
 		if test x$with_abi != x; then
 			default_mips_abi=$with_abi
