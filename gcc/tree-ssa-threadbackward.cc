@@ -794,7 +794,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
 	  return false;
 	}
     }
-  else if (!m_speed_p && n_insns > 1)
+  else if (n_insns > 1)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
