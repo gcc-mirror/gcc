@@ -10,3 +10,7 @@ template<typename T>
   { static const bool value = true; };
 
 static_assert(is_same<decltype(u8'x'), char8_t>::value, "Error");
+
+#if u8'\0' - 1 < 0
+#error "UTF-8 character literals not unsigned in preprocessor"
+#endif

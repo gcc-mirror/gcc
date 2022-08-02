@@ -1062,6 +1062,7 @@ c_common_post_options (const char **pfilename)
   /* char8_t support is implicitly enabled in C++20 and C2X.  */
   if (flag_char8_t == -1)
     flag_char8_t = (cxx_dialect >= cxx20) || flag_isoc2x;
+  cpp_opts->unsigned_utf8char = flag_char8_t ? 1 : cpp_opts->unsigned_char;
 
   if (flag_extern_tls_init)
     {
