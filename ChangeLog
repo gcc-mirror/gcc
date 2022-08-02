@@ -1,3 +1,8 @@
+2022-08-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Arnaud Charlet  <charlet@adacore.com>
+
+	* configure: Regenerate.
+
 2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR bootstrap/106472

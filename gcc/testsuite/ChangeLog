@@ -1,3 +1,33 @@
+2022-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.target/i386/addr-space-typeck-1.c: New test.
+	* gcc.target/i386/addr-space-typeck-2.c: New test.
+
+2022-08-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/106481
+	* gcc.target/i386/pr106481.c: New test case.
+
+2022-08-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/83782
+	* gcc.target/i386/pr83782-1.c: Require non-ia32.
+	* gcc.target/i386/pr83782-2.c: Likewise.
+	* gcc.target/i386/pr83782-3.c: New test.
+
+2022-08-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR debug/106263
+	* gcc.dg/debug/btf/btf-function-4.c: New test.
+	* gcc.dg/debug/btf/btf-function-5.c: Likewise.
+
+2022-08-01  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/104992
+	* g++.dg/pr104992-1.C: New test.
+	* gcc.dg/pr104992.c: New test.
+
 2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
 	    H.J. Lu  <hjl.tools@gmail.com>
 

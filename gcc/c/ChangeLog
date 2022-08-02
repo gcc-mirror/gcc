@@ -1,3 +1,10 @@
+2022-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-typeck.cc (build_c_cast): Quote names of address spaces in
+	diagnostics.
+	(convert_for_assignment): Add a note to address space mismatch
+	diagnostics, specifying the expected and actual types.
+
 2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/97498

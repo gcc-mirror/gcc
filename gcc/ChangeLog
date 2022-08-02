@@ -1,3 +1,72 @@
+2022-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-Wanalyzer-putenv-of-auto-var): Fix copy&paste
+	error.
+
+2022-08-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/106481
+	* config/i386/i386-features.cc (timode_scalar_chain::convert_insn):
+	Convert a CONST_SCALAR_INT_P in a REG_EQUAL note into a V1TImode
+	CONST_VECTOR.
+
+2022-08-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/83782
+	* config/i386/i386.cc (ix86_ifunc_ref_local_ok): New.
+	(TARGET_IFUNC_REF_LOCAL_OK): Use it.
+
+2022-08-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR debug/106263
+	* ctfc.h (struct ctf_dtdef): Add field linkage.
+	* ctfc.cc (ctf_add_function): Set ctti_linkage.
+	* dwarf2ctf.cc (gen_ctf_function_type): Pass a linkage for
+	function types and subprograms.
+	* btfout.cc (btf_asm_func_type): Emit linkage information for the
+	function.
+	(btf_dtd_emit_preprocess_cb): Propagate the linkage information
+	for functions.
+
+2022-08-01  Andrew Stubbs  <ams@codesourcery.com>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	* omp-simd-clone.cc (simd_clone_adjust): Convert shift_cnt to match
+	the mask type.
+
+2022-08-01  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/104992
+	* match.pd (x / y * y == x): New simplification.
+
+2022-08-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (tree_compare): New.
+	(frange::set): Make more general.
+	(frange::normalize_kind): Cleanup and return bool.
+	(frange::union_): Use normalize_kind return value.
+	(frange::intersect): Same.
+	(frange::verify_range): Remove unnecessary else.
+	* value-range.h (vrp_val_max): Move before frange class.
+	(vrp_val_min): Same.
+	(frange::frange): Remove set to m_type.
+
+2022-08-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (vrange::supports_type_p): Use const_tree.
+	(irange::supports_type_p): Same.
+	(frange::supports_type_p): Same.
+	* value-range.h (Value_Range::supports_type_p): Same.
+	(irange::supports_p): Same.
+
+2022-08-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Only
+	query SCEV for integers.
+	(fold_using_range::range_of_ssa_name_with_loop_info): Remove
+	irange check.
+
 2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386.md (define_expand <any_rotate>ti3): For
