@@ -404,10 +404,6 @@ package body Sem_Aggr is
    --  The bounds of the aggregate itype are cooked up to look reasonable
    --  (in this particular case the bounds will be 1 .. 2).
 
-   function Is_Null_Aggregate (N : Node_Id) return Boolean;
-   --  Returns True for a "[]" aggregate (an Ada 2022 feature), even after
-   --  it has been transformed by expansion. Returns False otherwise.
-
    procedure Make_String_Into_Aggregate (N : Node_Id);
    --  A string literal can appear in a context in which a one dimensional
    --  array of characters is expected. This procedure simply rewrites the
@@ -419,9 +415,6 @@ package body Sem_Aggr is
    --  is constrained). If the subtype is unconstrained, then the bounds
    --  are determined in much the same way as the bounds for a null string
    --  literal with no applicable index constraint.
-   --  Emit a check that the bounds for each dimension define a null
-   --  range; no check is emitted if it is statically known that the
-   --  check would succeed.
 
    ---------------------------------
    --  Delta aggregate processing --
@@ -4102,7 +4095,6 @@ package body Sem_Aggr is
       Loc    : constant Source_Ptr := Sloc (N);
       Typ    : constant Entity_Id := Etype (N);
 
-      Check  : Node_Id;
       Index  : Node_Id;
       Lo, Hi : Node_Id;
       Constr : constant List_Id := New_List;
@@ -4126,18 +4118,6 @@ package body Sem_Aggr is
              Prefix         => New_Occurrence_Of (Etype (Index), Loc),
              Attribute_Name => Name_Pred,
              Expressions    => New_List (New_Copy_Tree (Lo)));
-
-         --  Check that high bound (i.e., low bound predecessor) exists.
-         --  Fail if low bound is low bound of base subtype (in all cases,
-         --  including modular).
-
-         Check :=
-           Make_Raise_Constraint_Error (Loc,
-             Condition =>
-               Make_Op_Le (Loc, New_Copy_Tree (Lo), New_Copy_Tree (Hi)),
-             Reason => CE_Range_Check_Failed);
-
-         Insert_Action (N, Check);
 
          Append (Make_Range (Loc, New_Copy_Tree (Lo), Hi), Constr);
          Analyze_And_Resolve (Last (Constr), Etype (Index));
