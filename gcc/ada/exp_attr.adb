@@ -7103,7 +7103,8 @@ package body Exp_Attr is
       --  See separate sections below for the generated code in each case.
 
       when Attribute_Valid => Valid : declare
-         PBtyp : Entity_Id := Base_Type (Ptyp);
+         PBtyp : Entity_Id := Base_Type (Validated_View (Ptyp));
+         --  The scalar base type, looking through private types
 
          Save_Validity_Checks_On : constant Boolean := Validity_Checks_On;
          --  Save the validity checking mode. We always turn off validity
@@ -7150,21 +7151,27 @@ package body Exp_Attr is
                Temp := Duplicate_Subexpr (Pref);
             end if;
 
-            return
-              Make_In (Loc,
-                Left_Opnd  => Unchecked_Convert_To (PBtyp, Temp),
-                Right_Opnd =>
-                  Make_Range (Loc,
-                    Low_Bound  =>
-                      Unchecked_Convert_To (PBtyp,
-                        Make_Attribute_Reference (Loc,
-                          Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                          Attribute_Name => Name_First)),
-                    High_Bound =>
-                      Unchecked_Convert_To (PBtyp,
-                        Make_Attribute_Reference (Loc,
-                          Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                          Attribute_Name => Name_Last))));
+            declare
+               Val_Typ : constant Entity_Id := Validated_View (Ptyp);
+            begin
+               return
+                 Make_In (Loc,
+                   Left_Opnd  => Unchecked_Convert_To (PBtyp, Temp),
+                   Right_Opnd =>
+                     Make_Range (Loc,
+                       Low_Bound  =>
+                         Unchecked_Convert_To (PBtyp,
+                           Make_Attribute_Reference (Loc,
+                             Prefix         =>
+                               New_Occurrence_Of (Val_Typ, Loc),
+                             Attribute_Name => Name_First)),
+                       High_Bound =>
+                         Unchecked_Convert_To (PBtyp,
+                           Make_Attribute_Reference (Loc,
+                             Prefix         =>
+                               New_Occurrence_Of (Val_Typ, Loc),
+                             Attribute_Name => Name_Last))));
+            end;
          end Make_Range_Test;
 
          --  Local variables
@@ -7185,13 +7192,6 @@ package body Exp_Attr is
          --  checks to intefere with the explicit check from the attribute
 
          Validity_Checks_On := False;
-
-         --  Retrieve the base type. Handle the case where the base type is a
-         --  private enumeration type.
-
-         if Is_Private_Type (PBtyp) and then Present (Full_View (PBtyp)) then
-            PBtyp := Full_View (PBtyp);
-         end if;
 
          --  Floating-point case. This case is handled by the Valid attribute
          --  code in the floating-point attribute run-time library.
@@ -7462,7 +7462,7 @@ package body Exp_Attr is
                Uns  : constant Boolean :=
                         Is_Unsigned_Type (Ptyp)
                           or else (Is_Private_Type (Ptyp)
-                                    and then Is_Unsigned_Type (Btyp));
+                                    and then Is_Unsigned_Type (PBtyp));
                Size : Uint;
                P    : Node_Id := Pref;
 
