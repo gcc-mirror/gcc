@@ -110,10 +110,7 @@ public:
     if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
 				   fntype->get_id (), fntype))
       {
-	reference
-	  = address_expression (lookup, build_pointer_type (TREE_TYPE (lookup)),
-				ref_locus);
-
+	reference = address_expression (lookup, ref_locus);
 	return;
       }
 
@@ -155,9 +152,7 @@ public:
 
     ctx->insert_function_decl (fntype, fndecl);
 
-    reference
-      = address_expression (fndecl, build_pointer_type (TREE_TYPE (fndecl)),
-			    ref_locus);
+    reference = address_expression (fndecl, ref_locus);
   }
 
 private:

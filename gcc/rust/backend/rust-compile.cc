@@ -225,20 +225,14 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
       const TyTy::ReferenceType *act
 	= static_cast<const TyTy::ReferenceType *> (actual);
 
-      tree expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
-      tree deref_rvalue
-	= ctx->get_backend ()->indirect_expression (expected_type, rvalue,
-						    false /*known_valid*/,
-						    rvalue_locus);
+      tree deref_rvalue = indirect_expression (rvalue, rvalue_locus);
       tree coerced
 	= coercion_site (deref_rvalue, act->get_base (), exp->get_base (),
 			 lvalue_locus, rvalue_locus);
       if (exp->is_dyn_object () && SLICE_TYPE_P (TREE_TYPE (coerced)))
 	return coerced;
 
-      return address_expression (coerced,
-				 build_reference_type (TREE_TYPE (coerced)),
-				 rvalue_locus);
+      return address_expression (coerced, rvalue_locus);
     }
   else if (expected->get_kind () == TyTy::TypeKind::POINTER)
     {
@@ -258,14 +252,12 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
 	= static_cast<const TyTy::ReferenceType *> (expected);
 
       TyTy::BaseType *actual_base = nullptr;
-      tree expected_type = error_mark_node;
       if (actual->get_kind () == TyTy::TypeKind::REF)
 	{
 	  const TyTy::ReferenceType *act
 	    = static_cast<const TyTy::ReferenceType *> (actual);
 
 	  actual_base = act->get_base ();
-	  expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
 	}
       else if (actual->get_kind () == TyTy::TypeKind::POINTER)
 	{
@@ -273,22 +265,16 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
 	    = static_cast<const TyTy::PointerType *> (actual);
 
 	  actual_base = act->get_base ();
-	  expected_type = TyTyResolveCompile::compile (ctx, act->get_base ());
 	}
       rust_assert (actual_base != nullptr);
 
-      tree deref_rvalue
-	= ctx->get_backend ()->indirect_expression (expected_type, rvalue,
-						    false /*known_valid*/,
-						    rvalue_locus);
+      tree deref_rvalue = indirect_expression (rvalue, rvalue_locus);
       tree coerced = coercion_site (deref_rvalue, actual_base, exp->get_base (),
 				    lvalue_locus, rvalue_locus);
       if (exp->is_dyn_object () && SLICE_TYPE_P (TREE_TYPE (coerced)))
 	return coerced;
 
-      return address_expression (coerced,
-				 build_pointer_type (TREE_TYPE (coerced)),
-				 rvalue_locus);
+      return address_expression (coerced, rvalue_locus);
     }
   else if (expected->get_kind () == TyTy::TypeKind::ARRAY)
     {
@@ -350,10 +336,7 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 
   tree address_of_compiled_ref = null_pointer_node;
   if (!actual->is_unit ())
-    address_of_compiled_ref
-      = address_expression (compiled_ref,
-			    build_pointer_type (TREE_TYPE (compiled_ref)),
-			    locus);
+    address_of_compiled_ref = address_expression (compiled_ref, locus);
 
   std::vector<tree> vtable_ctor_elems;
   std::vector<unsigned long> vtable_ctor_idx;

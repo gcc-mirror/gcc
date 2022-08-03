@@ -144,10 +144,7 @@ CompileItem::visit (HIR::Function &function)
 	      ctx->insert_function_decl (fntype, lookup);
 	    }
 
-	  reference
-	    = address_expression (lookup,
-				  build_pointer_type (TREE_TYPE (lookup)),
-				  ref_locus);
+	  reference = address_expression (lookup, ref_locus);
 	  return;
 	}
     }
@@ -171,9 +168,7 @@ CompileItem::visit (HIR::Function &function)
 			function.get_outer_attrs (), function.get_locus (),
 			function.get_definition ().get (), canonical_path,
 			fntype, function.has_function_return_type ());
-  reference
-    = address_expression (fndecl, build_pointer_type (TREE_TYPE (fndecl)),
-			  ref_locus);
+  reference = address_expression (fndecl, ref_locus);
 }
 
 void

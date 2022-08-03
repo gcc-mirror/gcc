@@ -53,14 +53,7 @@ public:
     // do we need to add an indirect reference
     if (tuple_expr_ty->get_kind () == TyTy::TypeKind::REF)
       {
-	TyTy::ReferenceType *r
-	  = static_cast<TyTy::ReferenceType *> (tuple_expr_ty);
-	TyTy::BaseType *tuple_type = r->get_base ();
-	tree tuple_tyty = TyTyResolveCompile::compile (ctx, tuple_type);
-
-	tree indirect
-	  = ctx->get_backend ()->indirect_expression (tuple_tyty, receiver_ref,
-						      true, expr.get_locus ());
+	tree indirect = indirect_expression (receiver_ref, expr.get_locus ());
 	receiver_ref = indirect;
       }
 
@@ -552,10 +545,7 @@ public:
 					 &field_index);
 	rust_assert (ok);
 
-	tree adt_tyty = TyTyResolveCompile::compile (ctx, adt);
-	tree indirect
-	  = ctx->get_backend ()->indirect_expression (adt_tyty, receiver_ref,
-						      true, expr.get_locus ());
+	tree indirect = indirect_expression (receiver_ref, expr.get_locus ());
 	receiver_ref = indirect;
       }
 

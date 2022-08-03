@@ -101,7 +101,9 @@ protected:
 
   static void setup_abi_options (tree fndecl, ABI abi);
 
-  static tree address_expression (tree expr, tree ptrtype, Location locus);
+  static tree address_expression (tree expr, Location locus);
+
+  static tree indirect_expression (tree expr, Location locus);
 
   static bool mark_addressable (tree, Location);
 
