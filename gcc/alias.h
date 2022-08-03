@@ -40,6 +40,7 @@ tree reference_alias_ptr_type_1 (tree *);
 bool alias_ptr_types_compatible_p (tree, tree);
 int compare_base_decls (tree, tree);
 bool refs_same_for_tbaa_p (tree, tree);
+bool mems_same_for_tbaa_p (rtx, rtx);
 
 /* This alias set can be used to force a memory to conflict with all
    other memories, creating a barrier across which no memory reference
