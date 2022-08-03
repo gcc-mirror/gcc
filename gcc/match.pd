@@ -8061,3 +8061,8 @@ and,
       (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
         (bit_and @0 @1)
       (cond (le @0 @1) @0 (bit_and @0 @1))))))
+
+/* -x & 1 -> x & 1.  */
+(simplify 
+  (bit_and (negate @0) integer_onep@1)
+  (bit_and @0 @1))
