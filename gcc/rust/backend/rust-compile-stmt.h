@@ -87,7 +87,8 @@ public:
     Location lvalue_locus = stmt.get_pattern ()->get_locus ();
     Location rvalue_locus = stmt.get_init_expr ()->get_locus ();
     TyTy::BaseType *expected = ty;
-    init = coercion_site (init, actual, expected, lvalue_locus, rvalue_locus);
+    init = coercion_site (stmt.get_mappings ().get_hirid (), init, actual,
+			  expected, lvalue_locus, rvalue_locus);
 
     auto fnctx = ctx->peek_fn ();
     if (ty->is_unit ())

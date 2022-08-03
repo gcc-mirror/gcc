@@ -58,7 +58,9 @@ TypeCheckCallExpr::visit (ADTType &type)
 	  return;
 	}
 
-      auto res = field_tyty->coerce (arg);
+      auto res = Resolver::TypeCheckBase::coercion_site (
+	argument->get_mappings ().get_hirid (), field_tyty, arg,
+	argument->get_locus ());
       if (res->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  return;
@@ -123,8 +125,9 @@ TypeCheckCallExpr::visit (FnType &type)
       if (i < type.num_params ())
 	{
 	  auto fnparam = type.param_at (i);
-	  auto resolved_argument_type
-	    = fnparam.second->coerce (argument_expr_tyty);
+	  auto resolved_argument_type = Resolver::TypeCheckBase::coercion_site (
+	    argument->get_mappings ().get_hirid (), fnparam.second,
+	    argument_expr_tyty, argument->get_locus ());
 	  if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	    {
 	      rust_error_at (argument->get_locus (),
@@ -176,9 +179,9 @@ TypeCheckCallExpr::visit (FnPtr &type)
 	  return;
 	}
 
-      auto resolved_argument_type
-	= Resolver::TypeCheckBase::coercion_site (fnparam, argument_expr_tyty,
-						  argument->get_locus ());
+      auto resolved_argument_type = Resolver::TypeCheckBase::coercion_site (
+	argument->get_mappings ().get_hirid (), fnparam, argument_expr_tyty,
+	argument->get_locus ());
       if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (argument->get_locus (),
@@ -234,10 +237,9 @@ TypeCheckMethodCallExpr::visit (FnType &type)
 	  return;
 	}
 
-      auto resolved_argument_type
-	= Resolver::TypeCheckBase::coercion_site (fnparam.second,
-						  argument_expr_tyty,
-						  argument->get_locus ());
+      auto resolved_argument_type = Resolver::TypeCheckBase::coercion_site (
+	argument->get_mappings ().get_hirid (), fnparam.second,
+	argument_expr_tyty, argument->get_locus ());
       if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
 	{
 	  rust_error_at (argument->get_locus (),

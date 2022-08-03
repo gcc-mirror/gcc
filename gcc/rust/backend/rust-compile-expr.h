@@ -177,9 +177,9 @@ public:
       expr.get_rhs ()->get_mappings ().get_hirid (), &actual);
     rust_assert (ok);
 
-    rvalue
-      = coercion_site (rvalue, actual, expected, expr.get_lhs ()->get_locus (),
-		       expr.get_rhs ()->get_locus ());
+    rvalue = coercion_site (expr.get_mappings ().get_hirid (), rvalue, actual,
+			    expected, expr.get_lhs ()->get_locus (),
+			    expr.get_rhs ()->get_locus ());
 
     tree assignment
       = ctx->get_backend ()->assignment_statement (lvalue, rvalue,
@@ -435,8 +435,9 @@ public:
 
 	if (ok)
 	  {
-	    rvalue = coercion_site (rvalue, actual, expected, lvalue_locus,
-				    rvalue_locus);
+	    rvalue
+	      = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
+			       actual, expected, lvalue_locus, rvalue_locus);
 	  }
 
 	// add it to the list
@@ -469,7 +470,8 @@ public:
 	    // compile/torture/struct_base_init_1.rs
 	    if (ok)
 	      {
-		rvalue = coercion_site (rvalue, actual, expected, lvalue_locus,
+		rvalue = coercion_site (argument->get_mappings ().get_hirid (),
+					rvalue, actual, expected, lvalue_locus,
 					rvalue_locus);
 	      }
 

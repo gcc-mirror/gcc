@@ -222,7 +222,8 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
 
   TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
   resolved_field_value_expr
-    = coercion_site (field_type->get_field_type (), value, field.get_locus ());
+    = coercion_site (field.get_mappings ().get_hirid (),
+		     field_type->get_field_type (), value, field.get_locus ());
   if (resolved_field_value_expr != nullptr)
     {
       fields_assigned.insert (field.field_name);
@@ -252,7 +253,8 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
 
   TyTy::BaseType *value = TypeCheckExpr::Resolve (field.get_value ());
   resolved_field_value_expr
-    = coercion_site (field_type->get_field_type (), value, field.get_locus ());
+    = coercion_site (field.get_mappings ().get_hirid (),
+		     field_type->get_field_type (), value, field.get_locus ());
   if (resolved_field_value_expr != nullptr)
     {
       fields_assigned.insert (field_name);
@@ -287,7 +289,8 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
   TyTy::BaseType *value = TypeCheckExpr::Resolve (&expr);
 
   resolved_field_value_expr
-    = coercion_site (field_type->get_field_type (), value, field.get_locus ());
+    = coercion_site (field.get_mappings ().get_hirid (),
+		     field_type->get_field_type (), value, field.get_locus ());
   if (resolved_field_value_expr != nullptr)
 
     {

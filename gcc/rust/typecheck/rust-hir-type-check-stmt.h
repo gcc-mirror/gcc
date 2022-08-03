@@ -99,7 +99,8 @@ public:
     if (specified_ty != nullptr && init_expr_ty != nullptr)
       {
 	// FIXME use this result and look at the regressions
-	coercion_site (specified_ty, init_expr_ty, stmt.get_locus ());
+	coercion_site (stmt.get_mappings ().get_hirid (), specified_ty,
+		       init_expr_ty, stmt.get_locus ());
 	context->insert_type (stmt_pattern.get_pattern_mappings (),
 			      specified_ty);
       }

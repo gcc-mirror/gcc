@@ -157,7 +157,7 @@ protected:
   // type
   virtual void try_hook (const TyTy::BaseType &);
 
-  bool cycle (const TyTy::BaseType *receiver);
+  virtual bool cycle (const TyTy::BaseType *receiver);
 
   bool try_autoderefed (const TyTy::BaseType *r);
 

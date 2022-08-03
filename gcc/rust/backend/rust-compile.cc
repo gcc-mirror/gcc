@@ -198,9 +198,25 @@ CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
 // Shared methods in compilation
 
 tree
-HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
+HIRCompileBase::coercion_site (HirId id, tree rvalue,
+			       const TyTy::BaseType *rval,
 			       const TyTy::BaseType *lval,
 			       Location lvalue_locus, Location rvalue_locus)
+{
+  std::vector<Resolver::Adjustment> *adjustments = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_autoderef_mappings (id, &adjustments);
+  if (ok)
+    {
+      rvalue = resolve_adjustements (*adjustments, rvalue, rvalue_locus);
+    }
+
+  return coercion_site1 (rvalue, rval, lval, lvalue_locus, rvalue_locus);
+}
+
+tree
+HIRCompileBase::coercion_site1 (tree rvalue, const TyTy::BaseType *rval,
+				const TyTy::BaseType *lval,
+				Location lvalue_locus, Location rvalue_locus)
 {
   if (rvalue == error_mark_node)
     return error_mark_node;
@@ -227,8 +243,8 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
 
       tree deref_rvalue = indirect_expression (rvalue, rvalue_locus);
       tree coerced
-	= coercion_site (deref_rvalue, act->get_base (), exp->get_base (),
-			 lvalue_locus, rvalue_locus);
+	= coercion_site1 (deref_rvalue, act->get_base (), exp->get_base (),
+			  lvalue_locus, rvalue_locus);
       if (exp->is_dyn_object () && SLICE_TYPE_P (TREE_TYPE (coerced)))
 	return coerced;
 
@@ -269,8 +285,10 @@ HIRCompileBase::coercion_site (tree rvalue, const TyTy::BaseType *rval,
       rust_assert (actual_base != nullptr);
 
       tree deref_rvalue = indirect_expression (rvalue, rvalue_locus);
-      tree coerced = coercion_site (deref_rvalue, actual_base, exp->get_base (),
-				    lvalue_locus, rvalue_locus);
+      tree coerced
+	= coercion_site1 (deref_rvalue, actual_base, exp->get_base (),
+			  lvalue_locus, rvalue_locus);
+
       if (exp->is_dyn_object () && SLICE_TYPE_P (TREE_TYPE (coerced)))
 	return coerced;
 

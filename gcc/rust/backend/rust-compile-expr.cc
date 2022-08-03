@@ -853,8 +853,9 @@ CompileExpr::visit (HIR::CallExpr &expr)
 	  Location lvalue_locus
 	    = ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
 	  Location rvalue_locus = argument->get_locus ();
-	  rvalue = coercion_site (rvalue, actual, expected, lvalue_locus,
-				  rvalue_locus);
+	  rvalue
+	    = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
+			     actual, expected, lvalue_locus, rvalue_locus);
 
 	  // add it to the list
 	  arguments.push_back (rvalue);
@@ -951,8 +952,8 @@ CompileExpr::visit (HIR::CallExpr &expr)
       Location lvalue_locus
 	= ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
       Location rvalue_locus = argument->get_locus ();
-      rvalue
-	= coercion_site (rvalue, actual, expected, lvalue_locus, rvalue_locus);
+      rvalue = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
+			      actual, expected, lvalue_locus, rvalue_locus);
 
       // add it to the list
       args.push_back (rvalue);
@@ -1069,8 +1070,8 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       Location lvalue_locus
 	= ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
       Location rvalue_locus = argument->get_locus ();
-      rvalue
-	= coercion_site (rvalue, actual, expected, lvalue_locus, rvalue_locus);
+      rvalue = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
+			      actual, expected, lvalue_locus, rvalue_locus);
 
       // add it to the list
       args.push_back (rvalue);

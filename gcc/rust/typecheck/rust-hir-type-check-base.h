@@ -39,7 +39,7 @@ public:
 
   virtual ~TypeCheckBase () {}
 
-  static TyTy::BaseType *coercion_site (TyTy::BaseType *lhs,
+  static TyTy::BaseType *coercion_site (HirId id, TyTy::BaseType *lhs,
 					TyTy::BaseType *rhs, Location locus);
 
 protected:
