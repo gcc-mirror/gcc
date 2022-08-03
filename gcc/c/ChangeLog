@@ -1,3 +1,12 @@
+2022-08-02  Lewis Hyatt  <lhyatt@gmail.com>
+
+	Backported from master:
+	2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/97498
+	* c-parser.c (c_parser_pragma): Set input_location to the
+	location of the pragma, rather than the start of the line.
+
 2022-06-28  Release Manager
 
 	* GCC 10.4.0 released.
