@@ -1221,6 +1221,13 @@ timode_scalar_chain::compute_convert_gain ()
 	    igain = COSTS_N_INSNS (1);
 	  break;
 
+	case ASHIFT:
+	case LSHIFTRT:
+	  /* For logical shifts by constant multiples of 8. */
+	  igain = optimize_insn_for_size_p () ? COSTS_N_BYTES (4)
+					      : COSTS_N_INSNS (1);
+	  break;
+
 	default:
 	  break;
 	}
@@ -1467,6 +1474,12 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
     case COMPARE:
       dst = gen_rtx_REG (CCmode, FLAGS_REG);
       src = convert_compare (XEXP (src, 0), XEXP (src, 1), insn);
+      break;
+
+    case ASHIFT:
+    case LSHIFTRT:
+      convert_op (&XEXP (src, 0), insn);
+      PUT_MODE (src, V1TImode);
       break;
 
     default:
@@ -1802,6 +1815,14 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
 
     case NOT:
       return REG_P (XEXP (src, 0)) || timode_mem_p (XEXP (src, 0));
+
+    case ASHIFT:
+    case LSHIFTRT:
+      /* Handle logical shifts by integer constants between 0 and 120
+	 that are multiples of 8.  */
+      return REG_P (XEXP (src, 0))
+	     && CONST_INT_P (XEXP (src, 1))
+	     && (INTVAL (XEXP (src, 1)) & ~0x78) == 0;
 
     default:
       return false;
