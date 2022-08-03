@@ -686,7 +686,7 @@ inline bool _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
 }
 extern cpp_macro *_cpp_new_macro (cpp_reader *, cpp_macro_kind, void *);
 extern void _cpp_free_definition (cpp_hashnode *);
-extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *);
+extern bool _cpp_create_definition (cpp_reader *, cpp_hashnode *, location_t);
 extern void _cpp_pop_context (cpp_reader *);
 extern void _cpp_push_text_context (cpp_reader *, cpp_hashnode *,
 				    const unsigned char *, size_t);
