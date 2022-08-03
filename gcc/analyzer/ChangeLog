@@ -1,3 +1,13 @@
+2022-08-02  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106298
+	* sm-fd.cc (fd_state_machine::on_open): Add
+	creat, dup, dup2 and dup3 functions.
+	(enum dup): New.
+	(fd_state_machine::valid_to_unchecked_state): New.
+	(fd_state_machine::on_creat): New.
+	(fd_state_machine::on_dup): New.
+
 2022-07-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105893

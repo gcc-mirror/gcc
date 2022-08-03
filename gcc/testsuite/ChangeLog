@@ -1,3 +1,46 @@
+2022-08-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106510
+	* gcc.dg/pr106510.c: New.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-1.c: Adjust test so it passes.
+
+2022-08-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106474
+	* g++.dg/pr106474.C: New.
+
+2022-08-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.dg/debug/btf/btf-int-1.c: Do not check for char bits in
+	bti_encoding and check for bool bits.
+
+2022-08-02  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106298
+	* gcc.dg/analyzer/fd-1.c: Add tests for 'creat'.
+	* gcc.dg/analyzer/fd-2.c: Likewise.
+	* gcc.dg/analyzer/fd-4.c: Likewise.
+	* gcc.dg/analyzer/fd-dup-1.c: New tests.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/opt/pr94589-2.C: XFAIL.
+	* gcc.dg/tree-ssa/vrp-float-1.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-11.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-3.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-4.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-6.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-7.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-8.c: New test.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106497
+	* gcc.dg/torture/pr106497.c: New testcase.
+
 2022-08-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.target/i386/addr-space-typeck-1.c: New test.

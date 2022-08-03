@@ -1,3 +1,114 @@
+2022-08-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106510
+	* gimple-range-fold.cc (fur_source::register_outgoing_edges):
+	  Check for unsupported statements early.
+
+2022-08-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106474
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Query
+	range of equivalences that may contribute to the range.
+
+2022-08-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* btfout.cc (output_asm_btf_vlen_bytes): Do not use the CHAR
+	encoding bit in BTF.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Remove
+	irange check.
+	(tree_lower_bound): New.
+	(tree_upper_bound): New.
+	(fold_using_range::range_of_ssa_name_with_loop_info): Convert to
+	vrange.
+	* gimple-range-fold.h (range_of_ssa_name_with_loop_info): Change
+	argument to vrange.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-threadbackward.cc
+	(back_threader_profitability::profitable_path_p): Apply
+	size constraints to all paths again.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (finite_operands_p): New.
+	(frelop_early_resolve): New.
+	(default_frelop_fold_range): New.
+	(class foperator_equal): New.
+	(class foperator_not_equal): New.
+	(class foperator_lt): New.
+	(class foperator_le): New.
+	(class foperator_gt): New.
+	(class foperator_ge): New.
+	(class foperator_unordered): New.
+	(class foperator_ordered): New.
+	(class foperator_relop_unknown): New.
+	(floating_op_table::floating_op_table): Add above classes to
+	floating op table.
+	* value-range.h (frange::supports_p): Enable.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-core.h (struct tree_ssa_name): Add frange_info and
+	reshuffle the rest.
+	* value-range-storage.cc (vrange_storage::alloc_slot): Add case
+	for frange.
+	(vrange_storage::set_vrange): Same.
+	(vrange_storage::get_vrange): Same.
+	(vrange_storage::fits_p): Same.
+	(frange_storage_slot::alloc_slot): New.
+	(frange_storage_slot::set_frange): New.
+	(frange_storage_slot::get_frange): New.
+	(frange_storage_slot::fits_p): New.
+	* value-range-storage.h (class frange_storage_slot): New.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Limit ranger
+	query to integrals.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set): Initialize m_props and cleanup.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106497
+	* tree-ssa-threadupdate.cc (fwd_jt_path_registry::update_cfg):
+	Also verify we can copy EDGE_COPY_SRC_JOINER_BLOCK.
+
+2022-08-02  Martin Liska  <mliska@suse.cz>
+
+	* profile.cc (compute_branch_probabilities): Dump details only
+	if TDF_DETAILS.
+	* symtab.cc (symtab_node::dump_base): Do not dump pointer unless
+	TDF_ADDRESS is used, it makes comparison harder.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106498
+	* omp-expand.cc (expand_omp_taskreg): Do not perform virtual
+	SSA update here.
+	(expand_omp_for): Or here.
+	(execute_expand_omp): Instead schedule it here together
+	with CFG cleanup via TODO.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR lto/106334
+	* dwarf2out.cc (dwarf2out_register_external_die): Adjust
+	assert.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106495
+	* tree-ssa-threadbackward.cc
+	(back_threader_profitability::profitable_path_p): If known_edge
+	is probably never executed avoid threading.
+
 2022-08-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/invoke.texi (-Wanalyzer-putenv-of-auto-var): Fix copy&paste
