@@ -1,3 +1,20 @@
+2022-08-02  Lewis Hyatt  <lhyatt@gmail.com>
+
+	Backported from master:
+	2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/97498
+	* c-c++-common/pr97498.c: New test.
+	* gcc.dg/pragma-message.c: Adapt for improved warning locations.
+
+2022-08-02  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/106091
+	* gcc.target/powerpc/pr106091.c: New test.
+
 2022-07-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

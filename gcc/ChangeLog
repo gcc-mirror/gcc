@@ -1,3 +1,23 @@
+2022-08-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-07-25  Peter Bergner  <bergner@linux.ibm.com>
+		    Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/106345
+	* config/rs6000/rs6000.h (DRIVER_SELF_SPECS): Adjust -mdejagnu-cpu
+	to filter out all -mtune options.
+
+2022-08-02  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/106091
+	* config/rs6000/rs6000-p8swap.c (replace_swapped_aligned_store): Copy
+	REG_EH_REGION when replacing one store insn having it.
+	(replace_swapped_aligned_load): Likewise.
+
 2022-07-27  Maciej W. Rozycki  <macro@embecosm.com>
 
 	Backported from master:
