@@ -1366,10 +1366,34 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	break;
 
       /* If operand is something known to be positive, ignore the ABS.  */
-      if (GET_CODE (op) == FFS || GET_CODE (op) == ABS
-	  || val_signbit_known_clear_p (GET_MODE (op),
-					nonzero_bits (op, GET_MODE (op))))
+      if (val_signbit_known_clear_p (GET_MODE (op),
+				     nonzero_bits (op, GET_MODE (op))))
 	return op;
+
+      /* Using nonzero_bits doesn't (currently) work for modes wider than
+	 HOST_WIDE_INT, so the following transformations help simplify
+	 ABS for TImode and wider.  */
+      switch (GET_CODE (op))
+	{
+	case ABS:
+	case CLRSB:
+	case FFS:
+	case PARITY:
+	case POPCOUNT:
+	case SS_ABS:
+	  return op;
+
+	case LSHIFTRT:
+	  if (CONST_INT_P (XEXP (op, 1))
+	      && INTVAL (XEXP (op, 1)) > 0
+	      && is_a <scalar_int_mode> (mode, &int_mode)
+	      && INTVAL (XEXP (op, 1)) < GET_MODE_PRECISION (int_mode))
+	    return op;
+	  break;
+
+	default:
+	  break;
+	}
 
       /* If operand is known to be only -1 or 0, convert ABS to NEG.  */
       if (is_a <scalar_int_mode> (mode, &int_mode)
@@ -1615,6 +1639,24 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	    }
 	}
 
+      /* We can canonicalize SIGN_EXTEND (op) as ZERO_EXTEND (op) when
+         we know the sign bit of OP must be clear.  */
+      if (val_signbit_known_clear_p (GET_MODE (op),
+				     nonzero_bits (op, GET_MODE (op))))
+	return simplify_gen_unary (ZERO_EXTEND, mode, op, GET_MODE (op));
+
+      /* (sign_extend:DI (subreg:SI (ctz:DI ...))) is (ctz:DI ...).  */
+      if (GET_CODE (op) == SUBREG
+	  && subreg_lowpart_p (op)
+	  && GET_MODE (SUBREG_REG (op)) == mode
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (op), &op_mode)
+	  && GET_MODE_PRECISION (int_mode) <= HOST_BITS_PER_WIDE_INT
+	  && GET_MODE_PRECISION (op_mode) < GET_MODE_PRECISION (int_mode)
+	  && (nonzero_bits (SUBREG_REG (op), mode)
+	      & ~(GET_MODE_MASK (op_mode) >> 1)) == 0)
+	return SUBREG_REG (op);
+
 #if defined(POINTERS_EXTEND_UNSIGNED)
       /* As we do not know which address space the pointer is referring to,
 	 we can do this only if the target does not support different pointer
@@ -1764,6 +1806,18 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	  return simplify_gen_unary (ZERO_EXTEND, int_mode, SUBREG_REG (op),
 				     op0_mode);
 	}
+
+      /* (zero_extend:DI (subreg:SI (ctz:DI ...))) is (ctz:DI ...).  */
+      if (GET_CODE (op) == SUBREG
+	  && subreg_lowpart_p (op)
+	  && GET_MODE (SUBREG_REG (op)) == mode
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (op), &op_mode)
+	  && GET_MODE_PRECISION (int_mode) <= HOST_BITS_PER_WIDE_INT
+	  && GET_MODE_PRECISION (op_mode) < GET_MODE_PRECISION (int_mode)
+	  && (nonzero_bits (SUBREG_REG (op), mode)
+	      & ~GET_MODE_MASK (op_mode)) == 0)
+	return SUBREG_REG (op);
 
 #if defined(POINTERS_EXTEND_UNSIGNED)
       /* As we do not know which address space the pointer is referring to,
