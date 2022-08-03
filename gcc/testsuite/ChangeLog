@@ -1,3 +1,22 @@
+2022-08-02  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-07-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/106091
+	* gcc.target/powerpc/pr106091.c: New test.
+
+2022-08-01  Lewis Hyatt  <lhyatt@gmail.com>
+
+	Backported from master:
+	2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/97498
+	* c-c++-common/pr97498.c: New test.
+	* c-c++-common/gomp/pragma-3.c: Adapt for improved warning locations.
+	* c-c++-common/gomp/pragma-5.c: Likewise.
+	* gcc.dg/pragma-message.c: Likewise.
+
 2022-07-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
