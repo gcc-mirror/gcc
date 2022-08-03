@@ -21215,6 +21215,9 @@ tsubst_copy_and_build (tree t,
 		  CALL_EXPR_ORDERED_ARGS (call) = ord;
 		  CALL_EXPR_REVERSE_ARGS (call) = rev;
 		}
+	    if (warning_suppressed_p (t, OPT_Wpessimizing_move))
+	      /* This also suppresses -Wredundant-move.  */
+	      suppress_warning (ret, OPT_Wpessimizing_move);
 	  }
 
 	RETURN (ret);

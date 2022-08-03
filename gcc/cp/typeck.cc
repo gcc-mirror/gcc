@@ -10447,14 +10447,16 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
 	  else if (can_do_nrvo_p (arg, type))
 	    {
 	      auto_diagnostic_group d;
-	      if (warning_at (loc, OPT_Wpessimizing_move,
-			      "moving a local object in a return statement "
-			      "prevents copy elision"))
+	      if (!warning_suppressed_p (expr, OPT_Wpessimizing_move)
+		  && warning_at (loc, OPT_Wpessimizing_move,
+				 "moving a local object in a return statement "
+				 "prevents copy elision"))
 		inform (loc, "remove %<std::move%> call");
 	    }
 	  /* Warn if the move is redundant.  It is redundant when we would
 	     do maybe-rvalue overload resolution even without std::move.  */
 	  else if (warn_redundant_move
+		   && !warning_suppressed_p (expr, OPT_Wredundant_move)
 		   && (moved = treat_lvalue_as_rvalue_p (arg, /*return*/true)))
 	    {
 	      /* Make sure that overload resolution would actually succeed
@@ -10699,6 +10701,11 @@ check_return_expr (tree retval, bool *no_warning)
       /* We don't know if this is an lvalue or rvalue use, but
 	 either way we can mark it as read.  */
       mark_exp_read (retval);
+      /* Disable our std::move warnings when we're returning
+	 a dependent expression (c++/89780).  */
+      if (retval && TREE_CODE (retval) == CALL_EXPR)
+	/* This also suppresses -Wredundant-move.  */
+	suppress_warning (retval, OPT_Wpessimizing_move);
       return retval;
     }
 
