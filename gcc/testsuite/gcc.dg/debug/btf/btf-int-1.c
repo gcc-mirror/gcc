@@ -18,10 +18,10 @@
 /* { dg-final { scan-assembler-times "\[\t \]0x1000000\[\t \]+\[^\n\]*btt_info" 9 } } */
 
 /* Check the signed flags, but not bit size. */
-/* { dg-final { scan-assembler-times "\[\t \]0x10000..\[\t \]+\[^\n\]*bti_encoding" 4 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0x..\[\t \]+\[^\n\]*bti_encoding" 3 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0x.\[\t \]+\[^\n\]*bti_encoding" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0x40000..\[\t \]+\[^\n\]*bti_encoding" 1 } } */
+/* { dg-final { scan-assembler-times "\[\t \]0x10000\[0-9a-zA-Z\]{2}\[\t \]+\[^\n\]*bti_encoding" 4 } } */
+/* { dg-final { scan-assembler-times "\[\t \]0x\[0-9a-zA-Z\]{2}\[\t \]+\[^\n\]*bti_encoding" 3 } } */
+/* { dg-final { scan-assembler-times "\[\t \]0x\[0-9a-zA-Z\]\[\t \]+\[^\n\]*bti_encoding" 1 } } */
+/* { dg-final { scan-assembler-times "\[\t \]0x40000\[0-9a-zA-Z\]{2}\[\t \]+\[^\n\]*bti_encoding" 1 } } */
 
 /* Check that there is a string entry for each type name.  */
 /* { dg-final { scan-assembler-times "ascii \"unsigned char.0\"\[\t \]+\[^\n\]*btf_string" 1 } } */
