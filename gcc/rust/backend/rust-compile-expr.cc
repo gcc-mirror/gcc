@@ -1285,7 +1285,7 @@ CompileExpr::resolve_operator_overload (
   // lookup the autoderef mappings
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
   ok = ctx->get_tyctx ()->lookup_autoderef_mappings (
-    expr.get_mappings ().get_hirid (), &adjustments);
+    expr.get_lvalue_mappings ().get_hirid (), &adjustments);
   rust_assert (ok);
 
   // apply adjustments for the fn call

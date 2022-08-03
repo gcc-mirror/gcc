@@ -365,7 +365,7 @@ TypeCheckExpr::resolve_operator_overload (
     }
 
   // store the adjustments for code-generation to know what to do
-  context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
+  context->insert_autoderef_mappings (expr.get_lvalue_mappings ().get_hirid (),
 				      std::move (candidate.adjustments));
 
   // now its just like a method-call-expr

@@ -4120,31 +4120,47 @@ class OperatorExprMeta
 {
 public:
   OperatorExprMeta (HIR::CompoundAssignmentExpr &expr)
-    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+    : node_mappings (expr.get_mappings ()),
+      lvalue_mappings (expr.get_expr ()->get_mappings ()),
+      locus (expr.get_locus ())
   {}
 
   OperatorExprMeta (HIR::ArithmeticOrLogicalExpr &expr)
-    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+    : node_mappings (expr.get_mappings ()),
+      lvalue_mappings (expr.get_expr ()->get_mappings ()),
+      locus (expr.get_locus ())
   {}
 
   OperatorExprMeta (HIR::NegationExpr &expr)
-    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+    : node_mappings (expr.get_mappings ()),
+      lvalue_mappings (expr.get_expr ()->get_mappings ()),
+      locus (expr.get_locus ())
   {}
 
   OperatorExprMeta (HIR::DereferenceExpr &expr)
-    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+    : node_mappings (expr.get_mappings ()),
+      lvalue_mappings (expr.get_expr ()->get_mappings ()),
+      locus (expr.get_locus ())
   {}
 
   OperatorExprMeta (HIR::ArrayIndexExpr &expr)
-    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+    : node_mappings (expr.get_mappings ()),
+      lvalue_mappings (expr.get_array_expr ()->get_mappings ()),
+      locus (expr.get_locus ())
   {}
 
   const Analysis::NodeMapping &get_mappings () const { return node_mappings; }
+
+  const Analysis::NodeMapping &get_lvalue_mappings () const
+  {
+    return lvalue_mappings;
+  }
 
   Location get_locus () const { return locus; }
 
 private:
   const Analysis::NodeMapping node_mappings;
+  const Analysis::NodeMapping lvalue_mappings;
   Location locus;
 };
 
