@@ -208,7 +208,7 @@ mark_effect (rtx exp, regset nonequal)
       return false;
 
     case SET:
-      if (rtx_equal_for_cselib_p (SET_DEST (exp), SET_SRC (exp)))
+      if (cselib_redundant_set_p (exp))
 	return false;
       dest = SET_DEST (exp);
       if (dest == pc_rtx)

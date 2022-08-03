@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "cselib.h"
 #include "function-abi.h"
+#include "alias.h"
 
 /* A list of cselib_val structures.  */
 struct elt_list
@@ -1155,6 +1156,75 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode, int depth)
 	}
     }
   return 1;
+}
+
+/* Wrapper for rtx_equal_for_cselib_p to determine whether a SET is
+   truly redundant, taking into account aliasing information.  */
+bool
+cselib_redundant_set_p (rtx set)
+{
+  gcc_assert (GET_CODE (set) == SET);
+  rtx dest = SET_DEST (set);
+  if (cselib_reg_set_mode (dest) != GET_MODE (dest))
+    return false;
+
+  if (!rtx_equal_for_cselib_p (dest, SET_SRC (set)))
+    return false;
+
+  while (GET_CODE (dest) == SUBREG
+	 || GET_CODE (dest) == ZERO_EXTRACT
+	 || GET_CODE (dest) == STRICT_LOW_PART)
+    dest = XEXP (dest, 0);
+
+  if (!flag_strict_aliasing || !MEM_P (dest))
+    return true;
+
+  /* For a store we need to check that suppressing it will not change
+     the effective alias set.  */
+  rtx dest_addr = XEXP (dest, 0);
+
+  /* Lookup the equivalents to the original dest (rather than just the
+     MEM).  */
+  cselib_val *src_val = cselib_lookup (SET_DEST (set),
+				       GET_MODE (SET_DEST (set)),
+				       0, VOIDmode);
+
+  if (src_val)
+    {
+      /* Walk the list of source equivalents to find the MEM accessing
+	 the same location.  */
+      for (elt_loc_list *l = src_val->locs; l; l = l->next)
+	{
+	  rtx src_equiv = l->loc;
+	  while (GET_CODE (src_equiv) == SUBREG
+		 || GET_CODE (src_equiv) == ZERO_EXTRACT
+		 || GET_CODE (src_equiv) == STRICT_LOW_PART)
+	    src_equiv = XEXP (src_equiv, 0);
+
+	  if (MEM_P (src_equiv))
+	    {
+	      /* Match the MEMs by comparing the addresses.  We can
+		 only remove the later store if the earlier aliases at
+		 least all the accesses of the later one.  */
+	      if (rtx_equal_for_cselib_1 (dest_addr, XEXP (src_equiv, 0),
+					  GET_MODE (dest), 0))
+		return mems_same_for_tbaa_p (src_equiv, dest);
+	    }
+	}
+    }
+
+  /* We failed to find a recorded value in the cselib history, so try
+     the source of this set; this catches cases such as *p = *q when p
+     and q have the same value.  */
+  rtx src = SET_SRC (set);
+  while (GET_CODE (src) == SUBREG)
+    src = XEXP (src, 0);
+
+  if (MEM_P (src)
+      && rtx_equal_for_cselib_1 (dest_addr, XEXP (src, 0), GET_MODE (dest), 0))
+    return mems_same_for_tbaa_p (src, dest);
+
+  return false;
 }
 
 /* Helper function for cselib_hash_rtx.  Arguments like for cselib_hash_rtx,
