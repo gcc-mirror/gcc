@@ -477,6 +477,16 @@ proc check_effective_target_alias { } {
     }
 }
 
+# Returns 1 if the target uses the ELF object format, 0 otherwise.
+
+proc check_effective_target_elf { } {
+    if { [gcc_target_object_format] == "elf" } {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
 # Returns 1 if the target toolchain supports ifunc, 0 otherwise.
 
 proc check_ifunc_available { } {
