@@ -269,7 +269,10 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	}
       else if (EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest
 	       && !empty_block_p (bb1))
-	diamond_p = true;
+	{
+	  diamond_p = true;
+	  e2 = EDGE_SUCC (bb2, 0);
+	}
       else
 	continue;
 
@@ -324,7 +327,6 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	  if (!candorest)
 	    continue;
 
-	  e2 = diamond_p ? EDGE_SUCC (bb2, 0) : e2;
 	  phi = single_non_singleton_phi_for_edges (phis, e1, e2);
 	  if (!phi)
 	    continue;
