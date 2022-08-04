@@ -479,32 +479,28 @@ path_range_query::compute_ranges_in_block (basic_block bb)
       p->set_root_oracle (nullptr);
     }
 
-  EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
+  gori_compute &g = m_ranger->gori ();
+  bitmap exports = g.exports (bb);
+  EXECUTE_IF_AND_IN_BITMAP (m_imports, exports, 0, i, bi)
     {
       tree name = ssa_name (i);
-      gori_compute &g = m_ranger->gori ();
-      bitmap exports = g.exports (bb);
-
-      if (bitmap_bit_p (exports, i))
+      Value_Range r (TREE_TYPE (name));
+      if (g.outgoing_edge_range_p (r, e, name, *this))
 	{
-	  Value_Range r (TREE_TYPE (name));
-	  if (g.outgoing_edge_range_p (r, e, name, *this))
-	    {
-	      Value_Range cached_range (TREE_TYPE (name));
-	      if (get_cache (cached_range, name))
-		r.intersect (cached_range);
+	  Value_Range cached_range (TREE_TYPE (name));
+	  if (get_cache (cached_range, name))
+	    r.intersect (cached_range);
 
-	      set_cache (r, name);
-	      if (DEBUG_SOLVER)
-		{
-		  fprintf (dump_file, "outgoing_edge_range_p for ");
-		  print_generic_expr (dump_file, name, TDF_SLIM);
-		  fprintf (dump_file, " on edge %d->%d ",
-			   e->src->index, e->dest->index);
-		  fprintf (dump_file, "is ");
-		  r.dump (dump_file);
-		  fprintf (dump_file, "\n");
-		}
+	  set_cache (r, name);
+	  if (DEBUG_SOLVER)
+	    {
+	      fprintf (dump_file, "outgoing_edge_range_p for ");
+	      print_generic_expr (dump_file, name, TDF_SLIM);
+	      fprintf (dump_file, " on edge %d->%d ",
+		       e->src->index, e->dest->index);
+	      fprintf (dump_file, "is ");
+	      r.dump (dump_file);
+	      fprintf (dump_file, "\n");
 	    }
 	}
     }
