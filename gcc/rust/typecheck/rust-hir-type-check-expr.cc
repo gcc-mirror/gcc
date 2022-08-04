@@ -295,6 +295,157 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
   infered = array_type->get_element_type ()->clone ();
 }
 
+void
+TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
+{
+  auto receiver_tyty = TypeCheckExpr::Resolve (expr.get_receiver ().get ());
+  if (receiver_tyty->get_kind () == TyTy::TypeKind::ERROR)
+    {
+      rust_error_at (expr.get_receiver ()->get_locus (),
+		     "failed to resolve receiver in MethodCallExpr");
+      return;
+    }
+
+  context->insert_receiver (expr.get_mappings ().get_hirid (), receiver_tyty);
+
+  auto candidate
+    = MethodResolver::Probe (receiver_tyty,
+			     expr.get_method_name ().get_segment ());
+  if (candidate.is_error ())
+    {
+      rust_error_at (
+	expr.get_method_name ().get_locus (),
+	"failed to resolve method for %<%s%>",
+	expr.get_method_name ().get_segment ().as_string ().c_str ());
+      return;
+    }
+
+  // Get the adjusted self
+  Adjuster adj (receiver_tyty);
+  TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
+
+  // store the adjustments for code-generation to know what to do
+  context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
+				      std::move (candidate.adjustments));
+
+  PathProbeCandidate &resolved_candidate = candidate.candidate;
+  TyTy::BaseType *lookup_tyty = candidate.candidate.ty;
+  NodeId resolved_node_id
+    = resolved_candidate.is_impl_candidate ()
+	? resolved_candidate.item.impl.impl_item->get_impl_mappings ()
+	    .get_nodeid ()
+	: resolved_candidate.item.trait.item_ref->get_mappings ().get_nodeid ();
+
+  if (lookup_tyty->get_kind () != TyTy::TypeKind::FNDEF)
+    {
+      RichLocation r (expr.get_method_name ().get_locus ());
+      r.add_range (resolved_candidate.locus);
+      rust_error_at (r, "associated impl item is not a method");
+      return;
+    }
+
+  TyTy::BaseType *lookup = lookup_tyty;
+  TyTy::FnType *fn = static_cast<TyTy::FnType *> (lookup);
+  if (!fn->is_method ())
+    {
+      RichLocation r (expr.get_method_name ().get_locus ());
+      r.add_range (resolved_candidate.locus);
+      rust_error_at (r, "associated function is not a method");
+      return;
+    }
+
+  auto root = receiver_tyty->get_root ();
+  if (root->get_kind () == TyTy::TypeKind::ADT)
+    {
+      const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (root);
+      if (adt->has_substitutions () && fn->needs_substitution ())
+	{
+	  // consider the case where we have:
+	  //
+	  // struct Foo<X,Y>(X,Y);
+	  //
+	  // impl<T> Foo<T, i32> {
+	  //   fn test<X>(self, a:X) -> (T,X) { (self.0, a) }
+	  // }
+	  //
+	  // In this case we end up with an fn type of:
+	  //
+	  // fn <T,X> test(self:Foo<T,i32>, a:X) -> (T,X)
+	  //
+	  // This means the instance or self we are calling this method for
+	  // will be substituted such that we can get the inherited type
+	  // arguments but then need to use the turbo fish if available or
+	  // infer the remaining arguments. Luckily rust does not allow for
+	  // default types GenericParams on impl blocks since these must
+	  // always be at the end of the list
+
+	  auto s = fn->get_self_type ()->get_root ();
+	  rust_assert (s->can_eq (adt, false));
+	  rust_assert (s->get_kind () == TyTy::TypeKind::ADT);
+	  const TyTy::ADTType *self_adt
+	    = static_cast<const TyTy::ADTType *> (s);
+
+	  // we need to grab the Self substitutions as the inherit type
+	  // parameters for this
+	  if (self_adt->needs_substitution ())
+	    {
+	      rust_assert (adt->was_substituted ());
+
+	      TyTy::SubstitutionArgumentMappings used_args_in_prev_segment
+		= GetUsedSubstArgs::From (adt);
+
+	      TyTy::SubstitutionArgumentMappings inherit_type_args
+		= self_adt->solve_mappings_from_receiver_for_self (
+		  used_args_in_prev_segment);
+
+	      // there may or may not be inherited type arguments
+	      if (!inherit_type_args.is_error ())
+		{
+		  // need to apply the inherited type arguments to the
+		  // function
+		  lookup = fn->handle_substitions (inherit_type_args);
+		}
+	    }
+	}
+    }
+
+  // apply any remaining generic arguments
+  if (expr.get_method_name ().has_generic_args ())
+    {
+      HIR::GenericArgs &args = expr.get_method_name ().get_generic_args ();
+      lookup
+	= SubstMapper::Resolve (lookup, expr.get_method_name ().get_locus (),
+				&args);
+      if (lookup->get_kind () == TyTy::TypeKind::ERROR)
+	return;
+    }
+  else if (lookup->needs_generic_substitutions ())
+    {
+      lookup = SubstMapper::InferSubst (lookup,
+					expr.get_method_name ().get_locus ());
+    }
+
+  TyTy::BaseType *function_ret_tyty
+    = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, adjusted_self, context);
+  if (function_ret_tyty == nullptr
+      || function_ret_tyty->get_kind () == TyTy::TypeKind::ERROR)
+    {
+      rust_error_at (expr.get_locus (),
+		     "failed to lookup type to MethodCallExpr");
+      return;
+    }
+
+  // store the expected fntype
+  context->insert_type (expr.get_method_name ().get_mappings (), lookup);
+
+  // set up the resolved name on the path
+  resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+				  resolved_node_id);
+
+  // return the result of the function back
+  infered = function_ret_tyty;
+}
+
 bool
 TypeCheckExpr::resolve_operator_overload (
   Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExprMeta expr,
