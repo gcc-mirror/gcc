@@ -1,3 +1,87 @@
+2022-08-03   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Remove code
+	setting -mblock-ops-vector-pair.
+
+2022-08-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106514
+	* value-relation.cc (path_oracle::killing_def) Do not walk the
+	  equivalence set clearing bits.
+
+2022-08-03  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-ssa-phiopt.cc (minmax_replacement): Optionally search for the phi
+	sequence of a three-way conditional.
+	(replace_phi_edge_with_variable): Support diamonds.
+	(tree_ssa_phiopt_worker): Detect diamond phi structure for three-way
+	min/max.
+	(strip_bit_not, invert_minmax_code): New.
+
+2022-08-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/106187
+	* alias.h (mems_same_for_tbaa_p): Declare.
+	* alias.cc (mems_same_for_tbaa_p): New function.
+	* dse.cc (record_store): Use it instead of open-coding
+	alias check.
+	* cselib.h (cselib_redundant_set_p): Declare.
+	* cselib.cc: Include alias.h
+	(cselib_redundant_set_p): New function.
+	* cfgcleanup.cc: (mark_effect): Use cselib_redundant_set_p instead
+	of rtx_equal_for_cselib_p.
+	* postreload.cc (reload_cse_simplify): Use cselib_redundant_set_p.
+	(reload_cse_noop_set_p): Delete.
+
+2022-08-03  Martin Liska  <mliska@suse.cz>
+
+	* doc/gcov-dump.texi: Document the new option.
+	* gcov-dump.cc (main): Parse the new option.
+	(print_usage): Show the option.
+	(tag_counters): Sort key:value pairs of TOP N counter.
+
+2022-08-03  Martin Liska  <mliska@suse.cz>
+
+	* profile.cc (compute_branch_probabilities): Do not collect
+	stats unless TDF_DETAILS.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/47949
+	* config/i386/i386.md (peephole2): New peephole2 to convert
+	SWI48 moves to/from %rax/%eax where the src is dead to xchg,
+	when optimizing for minimal size with -Oz.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*cmp<dwi>_doubleword): Add a special case
+	to split comparisons against -1 using AND and CMP -1 instructions.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (compute_convert_gain): Add gain
+	for converting suitable TImode shift to a V1TImode shift.
+	(timode_scalar_chain::convert_insn): Add support for converting
+	suitable ASHIFT and LSHIFTRT.
+	(timode_scalar_to_vector_candidate_p): Consider logical shifts
+	by integer constants that are multiples of 8 to be candidates.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* simplify-rtx.cc (simplify_unary_operation_1) <ABS>: Add
+	optimizations for CLRSB, PARITY, POPCOUNT, SS_ABS and LSHIFTRT
+	that are all positive to complement the existing FFS and
+	idempotent ABS simplifications.
+	<SIGN_EXTEND>: Canonicalize SIGN_EXTEND to ZERO_EXTEND when
+	val_signbit_known_clear_p is true of the operand.
+	Simplify sign extensions of SUBREG truncations of operands
+	that are already suitably (zero) extended.
+	<ZERO_EXTEND>: Simplify zero extensions of SUBREG truncations
+	of operands that are already suitably zero extended.
+
 2022-08-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/106510

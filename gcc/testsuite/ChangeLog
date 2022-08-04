@@ -1,3 +1,38 @@
+2022-08-03  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR testsuite/106515
+	* gcc.dg/debug/btf/btf-int-1.c: Fix regexps in
+	scan-assembler-times.
+
+2022-08-03  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/tree-ssa/split-path-1.c: Disable phi-opts so we don't optimize
+	code away.
+	* gcc.dg/tree-ssa/minmax-10.c: New test.
+	* gcc.dg/tree-ssa/minmax-11.c: New test.
+	* gcc.dg/tree-ssa/minmax-12.c: New test.
+	* gcc.dg/tree-ssa/minmax-13.c: New test.
+	* gcc.dg/tree-ssa/minmax-14.c: New test.
+	* gcc.dg/tree-ssa/minmax-15.c: New test.
+	* gcc.dg/tree-ssa/minmax-16.c: New test.
+	* gcc.dg/tree-ssa/minmax-3.c: New test.
+	* gcc.dg/tree-ssa/minmax-4.c: New test.
+	* gcc.dg/tree-ssa/minmax-5.c: New test.
+	* gcc.dg/tree-ssa/minmax-6.c: New test.
+	* gcc.dg/tree-ssa/minmax-7.c: New test.
+	* gcc.dg/tree-ssa/minmax-8.c: New test.
+	* gcc.dg/tree-ssa/minmax-9.c: New test.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/47949
+	* gcc.target/i386/pr47949.c: New test case.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse4_1-stv-7.c: New test case.
+
 2022-08-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/106510
