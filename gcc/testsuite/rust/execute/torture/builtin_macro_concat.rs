@@ -1,4 +1,5 @@
 // { dg-output "\ntest10btrue2.15\ntest10bfalse2.151\n" }
+#[rustc_builtin_macro]
 macro_rules! concat {
     () => {{}};
 }

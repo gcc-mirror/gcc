@@ -1,4 +1,5 @@
 // { dg-output "14\n42\n" }
+#[rustc_builtin_macro]
 macro_rules! column {
     () => {{}};
 }

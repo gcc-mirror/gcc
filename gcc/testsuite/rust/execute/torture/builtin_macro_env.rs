@@ -1,6 +1,6 @@
 // { dg-output "VALUE\nVALUE\n" }
 // { dg-set-compiler-env-var ENV_MACRO_TEST "VALUE" }
-
+#[rustc_builtin_macro]
 macro_rules! env {
     () => {{}};
 }
