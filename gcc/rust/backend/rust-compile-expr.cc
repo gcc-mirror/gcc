@@ -1035,9 +1035,11 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
     }
 
   // lookup the autoderef mappings
+  HirId autoderef_mappings_id
+    = expr.get_receiver ()->get_mappings ().get_hirid ();
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
-  ok = ctx->get_tyctx ()->lookup_autoderef_mappings (
-    expr.get_mappings ().get_hirid (), &adjustments);
+  ok = ctx->get_tyctx ()->lookup_autoderef_mappings (autoderef_mappings_id,
+						     &adjustments);
   rust_assert (ok);
 
   // apply adjustments for the fn call

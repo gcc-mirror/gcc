@@ -324,8 +324,12 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
   Adjuster adj (receiver_tyty);
   TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
 
-  // store the adjustments for code-generation to know what to do
-  context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
+  // store the adjustments for code-generation to know what to do which must be
+  // stored onto the receiver to so as we don't trigger duplicate deref mappings
+  // ICE when an argument is a method call
+  HirId autoderef_mappings_id
+    = expr.get_receiver ()->get_mappings ().get_hirid ();
+  context->insert_autoderef_mappings (autoderef_mappings_id,
 				      std::move (candidate.adjustments));
 
   PathProbeCandidate &resolved_candidate = candidate.candidate;
