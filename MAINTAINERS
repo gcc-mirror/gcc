@@ -239,6 +239,7 @@ tree-ssa		Andrew MacLeod		<amacleod@redhat.com>
 tree browser/unparser	Sebastian Pop		<sebpop@gmail.com>
 scev, data dependence	Sebastian Pop		<sebpop@gmail.com>
 profile feedback	Jan Hubicka		<hubicka@ucw.cz>
+AutoFDO			Eugene Rozenfeld	<erozen@microsoft.com>
 reload			Ulrich Weigand		<uweigand@de.ibm.com>
 RTL optimizers		Eric Botcazou		<ebotcazou@libertysurf.fr>
 instruction combiner	Segher Boessenkool	<segher@kernel.crashing.org>
@@ -603,7 +604,6 @@ Craig Rodrigues					<rodrigc@gcc.gnu.org>
 Erven Rohou					<erven.rohou@inria.fr>
 Ira Rosen					<irar@il.ibm.com>
 Yvan Roux					<yvan.roux@linaro.org>
-Eugene Rozenfeld				<erozen@microsoft.com>
 Silvius Rus					<rus@google.com>
 Matthew Sachs					<msachs@apple.com>
 Ankur Saini					<arsenic@sourceware.org>
