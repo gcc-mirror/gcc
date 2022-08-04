@@ -91,7 +91,6 @@ private:
   edge maybe_register_path ();
   void maybe_register_path_dump (edge taken_edge);
   void find_paths_to_names (basic_block bb, bitmap imports);
-  void resolve_phi (gphi *phi, bitmap imports);
   edge find_taken_edge (const vec<basic_block> &path);
   edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
   edge find_taken_edge_switch (const vec<basic_block> &path, gswitch *);
@@ -335,71 +334,6 @@ back_threader::find_taken_edge_cond (const vec<basic_block> &path,
   return NULL;
 }
 
-// Populate a vector of trees from a bitmap.
-
-static inline void
-populate_worklist (vec<tree> &worklist, bitmap bits)
-{
-  bitmap_iterator bi;
-  unsigned i;
-
-  EXECUTE_IF_SET_IN_BITMAP (bits, 0, i, bi)
-    {
-      tree name = ssa_name (i);
-      worklist.quick_push (name);
-    }
-}
-
-// Find jump threading paths that go through a PHI.
-
-void
-back_threader::resolve_phi (gphi *phi, bitmap interesting)
-{
-  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (phi)))
-    return;
-
-  for (size_t i = 0; i < gimple_phi_num_args (phi); ++i)
-    {
-      edge e = gimple_phi_arg_edge (phi, i);
-
-      // This is like path_crosses_loops in profitable_path_p but more
-      // restrictive to avoid peeling off loop iterations (see
-      // tree-ssa/pr14341.c for an example).
-      bool profitable_p = m_path[0]->loop_father == e->src->loop_father;
-      if (!profitable_p)
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file,
-		       "  FAIL: path through PHI in bb%d (incoming bb:%d) crosses loop\n",
-		       e->dest->index, e->src->index);
-	      fprintf (dump_file, "path: %d->", e->src->index);
-	      dump_path (dump_file, m_path);
-	      fprintf (dump_file, "->xx REJECTED\n");
-	    }
-	  continue;
-	}
-
-      tree arg = gimple_phi_arg_def (phi, i);
-      unsigned v = 0;
-
-      if (TREE_CODE (arg) == SSA_NAME
-	  && !bitmap_bit_p (interesting, SSA_NAME_VERSION (arg)))
-	{
-	  // Record that ARG is interesting when searching down this path.
-	  v = SSA_NAME_VERSION (arg);
-	  gcc_checking_assert (v != 0);
-	  bitmap_set_bit (interesting, v);
-	  bitmap_set_bit (m_imports, v);
-	}
-
-      find_paths_to_names (e->src, interesting);
-
-      if (v)
-	bitmap_clear_bit (interesting, v);
-    }
-}
-
 // Find jump threading paths to any of the SSA names in the
 // INTERESTING bitmap, and register any such paths.
 //
@@ -417,51 +351,75 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
   if (m_path.length () > 1
       && (!m_profit.profitable_path_p (m_path, m_name, NULL)
 	  || maybe_register_path ()))
-    {
-      m_path.pop ();
-      m_visited_bbs.remove (bb);
-      return;
-    }
+    ;
 
-  auto_bitmap processed;
-  bool done = false;
-  // We use a worklist instead of iterating through the bitmap,
-  // because we may add new items in-flight.
-  auto_vec<tree> worklist (bitmap_count_bits (interesting));
-  populate_worklist (worklist, interesting);
-  while (!worklist.is_empty ())
+  // Continue looking for ways to extend the path
+  else
     {
-      tree name = worklist.pop ();
-      unsigned i = SSA_NAME_VERSION (name);
-      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
-      basic_block def_bb = gimple_bb (def_stmt);
-
-      // Process any PHIs defined in this block.
-      if (def_bb == bb
-	  && bitmap_set_bit (processed, i)
-	  && gimple_code (def_stmt) == GIMPLE_PHI)
+      // For further greedy searching we want to remove interesting
+      // names defined in BB but add ones on the PHI edges for the
+      // respective edges.  We do this by starting with all names
+      // not defined in BB as interesting, collecting a list of
+      // interesting PHIs in BB on the fly.  Then we iterate over
+      // predecessor edges, adding interesting PHI edge defs to
+      // the set of interesting names to consider when processing it.
+      auto_bitmap new_interesting;
+      auto_vec<gphi *, 4> interesting_phis;
+      bitmap_iterator bi;
+      unsigned i;
+      EXECUTE_IF_SET_IN_BITMAP (interesting, 0, i, bi)
 	{
-	  resolve_phi (as_a<gphi *> (def_stmt), interesting);
-	  done = true;
-	  break;
+	  tree name = ssa_name (i);
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+	  if (gimple_bb (def_stmt) != bb)
+	    bitmap_set_bit (new_interesting, i);
+	  else if (gphi *phi = dyn_cast<gphi *> (def_stmt))
+	    {
+	      tree res = gimple_phi_result (phi);
+	      if (!SSA_NAME_OCCURS_IN_ABNORMAL_PHI (res))
+		interesting_phis.safe_push (phi);
+	    }
 	}
-    }
-  // If there are interesting names not yet processed, keep looking.
-  if (!done)
-    {
-      bitmap_and_compl_into (interesting, processed);
-      if (!bitmap_empty_p (interesting))
+      if (!bitmap_empty_p (new_interesting)
+	  || !interesting_phis.is_empty ())
 	{
+	  auto_vec<tree, 4> unwind (interesting_phis.length ());
 	  edge_iterator iter;
 	  edge e;
 	  FOR_EACH_EDGE (e, iter, bb->preds)
-	    if ((e->flags & EDGE_ABNORMAL) == 0)
-	      find_paths_to_names (e->src, interesting);
+	    {
+	      if (e->flags & EDGE_ABNORMAL
+		  // This is like path_crosses_loops in profitable_path_p but
+		  // more restrictive to avoid peeling off loop iterations (see
+		  // tree-ssa/pr14341.c for an example).
+		  // ???  Note this restriction only applied when visiting an
+		  // interesting PHI with the former resolve_phi.
+		  || (!interesting_phis.is_empty ()
+		      && m_path[0]->loop_father != e->src->loop_father))
+		continue;
+	      for (gphi *phi : interesting_phis)
+		{
+		  tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
+		  if (TREE_CODE (def) == SSA_NAME)
+		    if (bitmap_set_bit (new_interesting,
+					SSA_NAME_VERSION (def)))
+		      {
+			bitmap_set_bit (m_imports, SSA_NAME_VERSION (def));
+			unwind.quick_push (def);
+		      }
+		}
+	      find_paths_to_names (e->src, new_interesting);
+	      // Restore new_interesting.  We leave m_imports alone since
+	      // we do not prune defs in BB from it and separately keeping
+	      // track of which bits to unwind isn't worth the trouble.
+	      for (tree def : unwind)
+		bitmap_clear_bit (new_interesting, SSA_NAME_VERSION (def));
+	      unwind.truncate (0);
+	    }
 	}
     }
 
   // Reset things to their original state.
-  bitmap_ior_into (interesting, processed);
   m_path.pop ();
   m_visited_bbs.remove (bb);
 }
