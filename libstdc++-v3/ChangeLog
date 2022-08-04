@@ -1,3 +1,47 @@
+2022-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98421
+	* include/std/span (span(Iter, size_type), span(Iter, Iter)):
+	Add valid range checks.
+	* testsuite/23_containers/span/cons_1_assert_neg.cc: New test.
+	* testsuite/23_containers/span/cons_2_assert_neg.cc: New test.
+
+2022-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/list.tcc (list::merge) [!USE_CXX11_ABI]: Remove
+	call to size() and try-catch block.
+
+2022-08-03  Tim Adye  <Tim.Adye@cern.ch>
+
+	Backported from master:
+	2021-06-04  Tim Adye  <Tim.Adye@cern.ch>
+
+	* include/std/any (any::_Manager::_S_access): New static
+	function to access the contained value.
+	(any::emplace, __any_caster): Use _S_access member of the
+	manager type.
+
+2022-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (subrange(i, s, n)): Remove assertion.
+	* testsuite/std/ranges/subrange/constexpr.cc: New test.
+
+2022-08-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100748
+	PR libstdc++/103133
+	* config/os/gnu-linux/os_defines.h (_GLIBCXX_GTHREAD_USE_WEAK):
+	Define for glibc 2.34 and later.
+
 2022-07-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
