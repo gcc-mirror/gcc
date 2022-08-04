@@ -545,8 +545,22 @@ transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
   tree result_expr = error_mark_node;
   if (AGGREGATE_TYPE_P (TREE_TYPE (convert_me_expr)))
     {
-      result_expr = fold_build1_loc (Location ().gcc_location (), CONVERT_EXPR,
-				     result_type_tree, convert_me_expr);
+      // Return *(orig_type*)&decl.  */
+      // tree t = build_fold_addr_expr_loc (location.gcc_location (), this->t_);
+      // t = fold_build1_loc (location.gcc_location (), NOP_EXPR,
+      //       	       build_pointer_type (this->orig_type_), t);
+      // return build_fold_indirect_ref_loc (location.gcc_location (), t);
+
+      // result_expr = fold_build1_loc (Location ().gcc_location (),
+      // CONVERT_EXPR,
+      //   			     result_type_tree, convert_me_expr);
+
+      tree t = build_fold_addr_expr_loc (Location ().gcc_location (),
+					 convert_me_expr);
+      t = fold_build1_loc (Location ().gcc_location (), NOP_EXPR,
+			   build_pointer_type (target_type_expr), t);
+      result_expr
+	= build_fold_indirect_ref_loc (Location ().gcc_location (), t);
     }
   else
     {
