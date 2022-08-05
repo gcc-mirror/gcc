@@ -250,6 +250,35 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
   if (index_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
+  // first attempt to use direct array index logic
+  auto direct_array_expr_ty = array_expr_ty;
+  if (direct_array_expr_ty->get_kind () == TyTy::TypeKind::REF)
+    {
+      // lets try and deref it since rust allows this
+      auto ref = static_cast<TyTy::ReferenceType *> (direct_array_expr_ty);
+      auto base = ref->get_base ();
+      if (base->get_kind () == TyTy::TypeKind::ARRAY)
+	direct_array_expr_ty = base;
+    }
+
+  TyTy::BaseType *size_ty;
+  bool ok = context->lookup_builtin ("usize", &size_ty);
+  rust_assert (ok);
+
+  bool maybe_simple_array_access = index_expr_ty->can_eq (size_ty, false);
+  if (maybe_simple_array_access
+      && direct_array_expr_ty->get_kind () == TyTy::TypeKind::ARRAY)
+    {
+      auto resolved_index_expr = size_ty->unify (index_expr_ty);
+      if (resolved_index_expr->get_kind () == TyTy::TypeKind::ERROR)
+	return;
+
+      TyTy::ArrayType *array_type
+	= static_cast<TyTy::ArrayType *> (direct_array_expr_ty);
+      infered = array_type->get_element_type ()->clone ();
+      return;
+    }
+
   // is this a case of core::ops::index?
   auto lang_item_type = Analysis::RustLangItem::ItemType::INDEX;
   bool operator_overloaded
@@ -266,33 +295,13 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
       return;
     }
 
-  if (array_expr_ty->get_kind () == TyTy::TypeKind::REF)
-    {
-      // lets try and deref it since rust allows this
-      auto ref = static_cast<TyTy::ReferenceType *> (array_expr_ty);
-      auto base = ref->get_base ();
-      if (base->get_kind () == TyTy::TypeKind::ARRAY)
-	array_expr_ty = base;
-    }
-
-  if (array_expr_ty->get_kind () != TyTy::TypeKind::ARRAY)
-    {
-      rust_error_at (expr.get_index_expr ()->get_locus (),
-		     "expected an ArrayType got [%s]",
-		     array_expr_ty->as_string ().c_str ());
-      return;
-    }
-
-  TyTy::BaseType *size_ty;
-  bool ok = context->lookup_builtin ("usize", &size_ty);
-  rust_assert (ok);
-
-  auto resolved_index_expr = size_ty->unify (index_expr_ty);
-  if (resolved_index_expr->get_kind () == TyTy::TypeKind::ERROR)
-    return;
-
-  TyTy::ArrayType *array_type = static_cast<TyTy::ArrayType *> (array_expr_ty);
-  infered = array_type->get_element_type ()->clone ();
+  // error[E0277]: the type `[{integer}]` cannot be indexed by `u32`
+  RichLocation r (expr.get_locus ());
+  r.add_range (expr.get_array_expr ()->get_locus ());
+  r.add_range (expr.get_index_expr ()->get_locus ());
+  rust_error_at (r, "the type %<%s%> cannot be indexed by %<%s%>",
+		 array_expr_ty->get_name ().c_str (),
+		 index_expr_ty->get_name ().c_str ());
 }
 
 void
