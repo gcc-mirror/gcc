@@ -1629,6 +1629,9 @@ DEFHOOK
 "This hook should set @var{vecsize_mangle}, @var{vecsize_int}, @var{vecsize_float}\n\
 fields in @var{simd_clone} structure pointed by @var{clone_info} argument and also\n\
 @var{simdlen} field if it was previously 0.\n\
+@var{vecsize_mangle} is a marker for the backend only. @var{vecsize_int} and\n\
+@var{vecsize_float} should be left zero on targets where the number of lanes is\n\
+not determined by the bitsize (in which case @var{simdlen} is always used).\n\
 The hook should return 0 if SIMD clones shouldn't be emitted,\n\
 or number of @var{vecsize_mangle} variants that should be emitted.",
 int, (struct cgraph_node *, struct cgraph_simd_clone *, tree, int), NULL)

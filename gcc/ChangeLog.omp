@@ -1,6 +1,16 @@
 2022-09-01  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
+	* doc/tm.texi: Regenerate.
+	* omp-simd-clone.cc (simd_clone_adjust_return_type): Allow zero
+	vecsize.
+	(simd_clone_adjust_argument_types): Likewise.
+	* target.def (compute_vecsize_and_simdlen): Document the new
+	vecsize_int and vecsize_float semantics.
+
+2022-09-01  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
 	* config/gcn/gcn.cc (gcn_function_value): Allow vector return values.
 	(num_arg_regs): Allow vector arguments.
 	(gcn_function_arg): Likewise.
