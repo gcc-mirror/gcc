@@ -43,6 +43,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace experimental::inline fundamentals_v3
 {
+#define __cpp_lib_experimental_scope 201902
+
   template<typename _Tp, typename _Up>
     concept __not_same_as = !same_as<_Tp, _Up>;
 
