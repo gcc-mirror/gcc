@@ -62,9 +62,6 @@ Context::type_hasher (tree type)
       hstate.add_object (record_name_hash);
     }
 
-  if (TREE_TYPE (type))
-    hstate.add_object (TYPE_HASH (TREE_TYPE (type)));
-
   for (tree t = TYPE_ATTRIBUTES (type); t; t = TREE_CHAIN (t))
     /* Just the identifier is adequate to distinguish.  */
     hstate.add_object (IDENTIFIER_HASH_VALUE (TREE_PURPOSE (t)));
@@ -125,6 +122,16 @@ Context::type_hasher (tree type)
 	    hstate.add_object (name_hash);
 	    hstate.add_object (type_hash);
 	  }
+      }
+      break;
+
+    case BOOLEAN_TYPE:
+      break;
+
+    case REFERENCE_TYPE:
+      case POINTER_TYPE: {
+	hashval_t type_hash = type_hasher (TREE_TYPE (type));
+	hstate.add_object (type_hash);
       }
       break;
 
