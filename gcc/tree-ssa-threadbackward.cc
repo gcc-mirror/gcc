@@ -243,10 +243,9 @@ back_threader::maybe_register_path ()
 	  bool irreducible = false;
 	  if (m_profit.profitable_path_p (m_path, m_name, taken_edge,
 					  &irreducible)
-	      && debug_counter ())
+	      && debug_counter ()
+	      && m_registry.register_path (m_path, taken_edge))
 	    {
-	      m_registry.register_path (m_path, taken_edge);
-
 	      if (irreducible)
 		vect_free_loop_info_assumptions (m_path[0]->loop_father);
 	    }
@@ -858,8 +857,7 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
     }
 
   push_edge (jump_thread_path, taken_edge, EDGE_NO_COPY_SRC_BLOCK);
-  register_jump_thread (jump_thread_path);
-  return true;
+  return register_jump_thread (jump_thread_path);
 }
 
 // Thread all suitable paths in the current function.
