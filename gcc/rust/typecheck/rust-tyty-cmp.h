@@ -36,12 +36,7 @@ public:
     if (other->get_kind () == TypeKind::PARAM)
       {
 	const ParamType *p = static_cast<const ParamType *> (other);
-	if (p->can_resolve ())
-	  {
-	    const BaseType *resolved = p->resolve ();
-	    resolved->accept_vis (*this);
-	    return ok;
-	  }
+	other = p->resolve ();
       }
     if (other->get_kind () == TypeKind::PLACEHOLDER)
       {
@@ -861,6 +856,17 @@ public:
     : BaseCmp (base, emit_errors), base (base)
   {}
 
+  void visit (const InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    ok = true;
+  }
+
 private:
   const BaseType *get_base () const override { return base; }
   const ClosureType *base;
@@ -889,6 +895,17 @@ public:
     ok = true;
   }
 
+  void visit (const InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    ok = true;
+  }
+
 private:
   const BaseType *get_base () const override { return base; }
   const ArrayType *base;
@@ -909,6 +926,17 @@ public:
     const BaseType *base_element = base->get_element_type ();
     const BaseType *other_element = type.get_element_type ();
     if (!base_element->can_eq (other_element, emit_error_flag))
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    ok = true;
+  }
+
+  void visit (const InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
       {
 	BaseCmp::visit (type);
 	return;
@@ -1074,6 +1102,17 @@ public:
     ok = true;
   }
 
+  void visit (const InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    ok = true;
+  }
+
 private:
   const BaseType *get_base () const override { return base; }
   const ADTType *base;
@@ -1106,6 +1145,17 @@ public:
 	    BaseCmp::visit (type);
 	    return;
 	  }
+      }
+
+    ok = true;
+  }
+
+  void visit (const InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseCmp::visit (type);
+	return;
       }
 
     ok = true;
@@ -1209,6 +1259,17 @@ public:
     ok = true;
   }
 
+  void visit (const InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    ok = true;
+  }
+
 private:
   const BaseType *get_base () const override { return base; }
   const ReferenceType *base;
@@ -1238,6 +1299,17 @@ public:
       }
 
     if (!base_type->can_eq (other_base_type, emit_error_flag))
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    ok = true;
+  }
+
+  void visit (const InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
       {
 	BaseCmp::visit (type);
 	return;
@@ -1344,6 +1416,17 @@ public:
 
   void visit (const StrType &type) override { ok = true; }
 
+  void visit (const InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    ok = true;
+  }
+
 private:
   const BaseType *get_base () const override { return base; }
   const StrType *base;
@@ -1359,6 +1442,17 @@ public:
   {}
 
   void visit (const NeverType &type) override { ok = true; }
+
+  void visit (const InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    ok = true;
+  }
 
 private:
   const BaseType *get_base () const override { return base; }

@@ -201,8 +201,6 @@ public:
 
   tree var_expression (Bvariable *var, Location);
 
-  tree indirect_expression (tree, tree expr, bool known_valid, Location);
-
   tree integer_constant_expression (tree type, mpz_t val);
 
   tree float_constant_expression (tree type, mpfr_t val);
@@ -1051,28 +1049,6 @@ tree
 Gcc_backend::var_expression (Bvariable *var, Location location)
 {
   return var->get_tree (location);
-}
-
-// An expression that indirectly references an expression.
-
-tree
-Gcc_backend::indirect_expression (tree type_tree, tree expr_tree,
-				  bool known_valid, Location location)
-{
-  if (expr_tree == error_mark_node || type_tree == error_mark_node)
-    return error_mark_node;
-
-  // If the type of EXPR is a recursive pointer type, then we
-  // need to insert a cast before indirecting.
-  tree target_type_tree = TREE_TYPE (TREE_TYPE (expr_tree));
-  if (VOID_TYPE_P (target_type_tree))
-    expr_tree = fold_convert_loc (location.gcc_location (),
-				  build_pointer_type (type_tree), expr_tree);
-
-  tree ret = build_fold_indirect_ref_loc (location.gcc_location (), expr_tree);
-  if (known_valid)
-    TREE_THIS_NOTRAP (ret) = 1;
-  return ret;
 }
 
 // Return a typed value as a constant integer.

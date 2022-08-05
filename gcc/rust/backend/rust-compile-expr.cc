@@ -134,8 +134,7 @@ CompileExpr::visit (HIR::BorrowExpr &expr)
 				       &tyty))
     return;
 
-  tree ptrtype = TyTyResolveCompile::compile (ctx, tyty);
-  translated = address_expression (main_expr, ptrtype, expr.get_locus ());
+  translated = address_expression (main_expr, expr.get_locus ());
 }
 
 void
@@ -175,10 +174,7 @@ CompileExpr::visit (HIR::DereferenceExpr &expr)
       return;
     }
 
-  bool known_valid = true;
-  translated
-    = ctx->get_backend ()->indirect_expression (expected_type, main_expr,
-						known_valid, expr.get_locus ());
+  translated = indirect_expression (main_expr, expr.get_locus ());
 }
 
 // Helper for sort_tuple_patterns.
@@ -857,8 +853,9 @@ CompileExpr::visit (HIR::CallExpr &expr)
 	  Location lvalue_locus
 	    = ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
 	  Location rvalue_locus = argument->get_locus ();
-	  rvalue = coercion_site (rvalue, actual, expected, lvalue_locus,
-				  rvalue_locus);
+	  rvalue
+	    = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
+			     actual, expected, lvalue_locus, rvalue_locus);
 
 	  // add it to the list
 	  arguments.push_back (rvalue);
@@ -955,8 +952,8 @@ CompileExpr::visit (HIR::CallExpr &expr)
       Location lvalue_locus
 	= ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
       Location rvalue_locus = argument->get_locus ();
-      rvalue
-	= coercion_site (rvalue, actual, expected, lvalue_locus, rvalue_locus);
+      rvalue = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
+			      actual, expected, lvalue_locus, rvalue_locus);
 
       // add it to the list
       args.push_back (rvalue);
@@ -1039,9 +1036,11 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
     }
 
   // lookup the autoderef mappings
+  HirId autoderef_mappings_id
+    = expr.get_receiver ()->get_mappings ().get_hirid ();
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
-  ok = ctx->get_tyctx ()->lookup_autoderef_mappings (
-    expr.get_mappings ().get_hirid (), &adjustments);
+  ok = ctx->get_tyctx ()->lookup_autoderef_mappings (autoderef_mappings_id,
+						     &adjustments);
   rust_assert (ok);
 
   // apply adjustments for the fn call
@@ -1071,8 +1070,8 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       Location lvalue_locus
 	= ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
       Location rvalue_locus = argument->get_locus ();
-      rvalue
-	= coercion_site (rvalue, actual, expected, lvalue_locus, rvalue_locus);
+      rvalue = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
+			      actual, expected, lvalue_locus, rvalue_locus);
 
       // add it to the list
       args.push_back (rvalue);
@@ -1111,15 +1110,7 @@ CompileExpr::get_fn_addr_from_dyn (const TyTy::DynamicObjectType *dyn,
   // get any indirection sorted out
   if (receiver->get_kind () == TyTy::TypeKind::REF)
     {
-      TyTy::ReferenceType *r = static_cast<TyTy::ReferenceType *> (receiver);
-      auto indirect_ty = r->get_base ();
-      tree indrect_compiled_tyty
-	= TyTyResolveCompile::compile (ctx, indirect_ty);
-
-      tree indirect
-	= ctx->get_backend ()->indirect_expression (indrect_compiled_tyty,
-						    receiver_ref, true,
-						    expr_locus);
+      tree indirect = indirect_expression (receiver_ref, expr_locus);
       receiver_ref = indirect;
     }
 
@@ -1149,17 +1140,8 @@ CompileExpr::get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
 {
   // get any indirection sorted out
   if (receiver->get_kind () == TyTy::TypeKind::REF)
-
     {
-      TyTy::ReferenceType *r = static_cast<TyTy::ReferenceType *> (receiver);
-      auto indirect_ty = r->get_base ();
-      tree indrect_compiled_tyty
-	= TyTyResolveCompile::compile (ctx, indirect_ty);
-
-      tree indirect
-	= ctx->get_backend ()->indirect_expression (indrect_compiled_tyty,
-						    receiver_ref, true,
-						    expr_locus);
+      tree indirect = indirect_expression (receiver_ref, expr_locus);
       receiver_ref = indirect;
     }
 
@@ -1179,8 +1161,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
   tree fn = NULL_TREE;
   if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
     {
-      return address_expression (fn, build_pointer_type (TREE_TYPE (fn)),
-				 expr_locus);
+      return address_expression (fn, expr_locus);
     }
 
   // Now we can try and resolve the address since this might be a forward
@@ -1307,7 +1288,7 @@ CompileExpr::resolve_operator_overload (
   // lookup the autoderef mappings
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
   ok = ctx->get_tyctx ()->lookup_autoderef_mappings (
-    expr.get_mappings ().get_hirid (), &adjustments);
+    expr.get_lvalue_mappings ().get_hirid (), &adjustments);
   rust_assert (ok);
 
   // apply adjustments for the fn call
@@ -1440,8 +1421,7 @@ CompileExpr::compile_string_literal (const HIR::LiteralExpr &expr,
 
   auto base = ctx->get_backend ()->string_constant_expression (
     literal_value.as_string ());
-  tree data = address_expression (base, build_pointer_type (TREE_TYPE (base)),
-				  expr.get_locus ());
+  tree data = address_expression (base, expr.get_locus ());
 
   TyTy::BaseType *usize = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_builtin ("usize", &usize);
@@ -1487,8 +1467,7 @@ CompileExpr::compile_byte_string_literal (const HIR::LiteralExpr &expr,
 							 vals,
 							 expr.get_locus ());
 
-  return address_expression (constructed, build_pointer_type (array_type),
-			     expr.get_locus ());
+  return address_expression (constructed, expr.get_locus ());
 }
 
 tree
@@ -1734,10 +1713,7 @@ HIRCompileBase::resolve_adjustements (
 	  case Resolver::Adjustment::AdjustmentType::MUT_REF: {
 	    if (!SLICE_TYPE_P (TREE_TYPE (e)))
 	      {
-		tree ptrtype
-		  = TyTyResolveCompile::compile (ctx,
-						 adjustment.get_expected ());
-		e = address_expression (e, ptrtype, locus);
+		e = address_expression (e, locus);
 	      }
 	  }
 	  break;
@@ -1785,10 +1761,7 @@ HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
 		      != Resolver::Adjustment::AdjustmentType::ERROR;
   if (needs_borrow)
     {
-      adjusted_argument
-	= address_expression (expression,
-			      build_reference_type (TREE_TYPE (expression)),
-			      locus);
+      adjusted_argument = address_expression (expression, locus);
     }
 
   // make the call
@@ -1800,12 +1773,7 @@ tree
 HIRCompileBase::resolve_indirection_adjustment (
   Resolver::Adjustment &adjustment, tree expression, Location locus)
 {
-  tree expected_type
-    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
-
-  return ctx->get_backend ()->indirect_expression (expected_type, expression,
-						   true, /* known_valid*/
-						   locus);
+  return indirect_expression (expression, locus);
 }
 
 tree
@@ -1824,9 +1792,7 @@ HIRCompileBase::resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
     = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
 
   // make a constructor for this
-  tree data
-    = address_expression (expression,
-			  build_reference_type (TREE_TYPE (expression)), locus);
+  tree data = address_expression (expression, locus);
 
   // fetch the size from the domain
   tree domain = TYPE_DOMAIN (expr_type);
@@ -1919,8 +1885,7 @@ CompileExpr::visit (HIR::IdentifierExpr &expr)
   else if (ctx->lookup_function_decl (ref, &fn))
     {
       TREE_USED (fn) = 1;
-      translated = address_expression (fn, build_pointer_type (TREE_TYPE (fn)),
-				       expr.get_locus ());
+      translated = address_expression (fn, expr.get_locus ());
     }
   else if (ctx->lookup_var_decl (ref, &var))
     {
@@ -2091,20 +2056,10 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
 	  return;
 	}
 
-      // lookup the expected type for this expression
-      TyTy::BaseType *tyty = nullptr;
-      bool ok
-	= ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
-					  &tyty);
-      rust_assert (ok);
-      tree expected_type = TyTyResolveCompile::compile (ctx, tyty);
-
       // rust deref always returns a reference from this overload then we can
       // actually do the indirection
       translated
-	= ctx->get_backend ()->indirect_expression (expected_type,
-						    operator_overload_call,
-						    true, expr.get_locus ());
+	= indirect_expression (operator_overload_call, expr.get_locus ());
       return;
     }
 
@@ -2118,14 +2073,8 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
   // do we need to add an indirect reference
   if (array_expr_ty->get_kind () == TyTy::TypeKind::REF)
     {
-      TyTy::ReferenceType *r
-	= static_cast<TyTy::ReferenceType *> (array_expr_ty);
-      TyTy::BaseType *tuple_type = r->get_base ();
-      tree array_tyty = TyTyResolveCompile::compile (ctx, tuple_type);
-
       array_reference
-	= ctx->get_backend ()->indirect_expression (array_tyty, array_reference,
-						    true, expr.get_locus ());
+	= indirect_expression (array_reference, expr.get_locus ());
     }
 
   translated

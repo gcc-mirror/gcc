@@ -67,10 +67,8 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
 	    {
 	      ctx->insert_function_decl (fntype, lookup);
 	    }
-	  reference
-	    = address_expression (lookup,
-				  build_pointer_type (TREE_TYPE (lookup)),
-				  ref_locus);
+
+	  reference = address_expression (lookup, ref_locus);
 	  return;
 	}
     }
@@ -96,9 +94,7 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
 			func.get_outer_attrs (), func.get_locus (),
 			func.get_block_expr ().get (), canonical_path, fntype,
 			function.has_return_type ());
-  reference
-    = address_expression (fndecl, build_pointer_type (TREE_TYPE (fndecl)),
-			  ref_locus);
+  reference = address_expression (fndecl, ref_locus);
 }
 
 } // namespace Compile

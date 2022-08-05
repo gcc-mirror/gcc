@@ -178,14 +178,6 @@ public:
   // Create a reference to a variable.
   virtual tree var_expression (Bvariable *var, Location) = 0;
 
-  // Create an expression that indirects through the pointer expression EXPR
-  // (i.e., return the expression for *EXPR). KNOWN_VALID is true if the pointer
-  // is known to point to a valid memory location.  BTYPE is the expected type
-  // of the indirected EXPR.
-  virtual tree indirect_expression (tree btype, tree expr, bool known_valid,
-				    Location)
-    = 0;
-
   // Return an expression for the multi-precision integer VAL in BTYPE.
   virtual tree integer_constant_expression (tree btype, mpz_t val) = 0;
 

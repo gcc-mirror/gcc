@@ -129,16 +129,14 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
       if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
 	{
 	  TREE_USED (fn) = 1;
-	  return address_expression (fn, build_pointer_type (TREE_TYPE (fn)),
-				     expr_locus);
+	  return address_expression (fn, expr_locus);
 	}
       else if (fntype->get_abi () == ABI::INTRINSIC)
 	{
 	  Intrinsics compile (ctx);
 	  fn = compile.compile (fntype);
 	  TREE_USED (fn) = 1;
-	  return address_expression (fn, build_pointer_type (TREE_TYPE (fn)),
-				     expr_locus);
+	  return address_expression (fn, expr_locus);
 	}
     }
 

@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-base.h"
+#include "rust-coercion.h"
 
 namespace Rust {
 namespace Resolver {
@@ -325,6 +326,27 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, Location locus)
     }
 
   return repr;
+}
+
+TyTy::BaseType *
+TypeCheckBase::coercion_site (HirId id, TyTy::BaseType *expected,
+			      TyTy::BaseType *expr, Location locus)
+{
+  auto context = TypeCheckContext::get ();
+  if (expected->get_kind () == TyTy::TypeKind::ERROR
+      || expr->get_kind () == TyTy::TypeKind::ERROR)
+    return expr;
+
+  // can we autoderef it?
+  auto result = AutoderefTypeCoercion::Coerce (expr, expected, locus);
+  if (!result.is_error ())
+    {
+      // save any adjustments
+      context->insert_autoderef_mappings (id, std::move (result.adjustments));
+      return expected->coerce (result.tyty);
+    }
+
+  return expected->coerce (expr);
 }
 
 } // namespace Resolver

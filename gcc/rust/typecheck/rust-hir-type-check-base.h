@@ -39,6 +39,9 @@ public:
 
   virtual ~TypeCheckBase () {}
 
+  static TyTy::BaseType *coercion_site (HirId id, TyTy::BaseType *lhs,
+					TyTy::BaseType *rhs, Location locus);
+
 protected:
   TypeCheckBase ()
     : mappings (Analysis::Mappings::get ()), resolver (Resolver::get ()),

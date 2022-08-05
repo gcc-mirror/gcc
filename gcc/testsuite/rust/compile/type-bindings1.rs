@@ -7,5 +7,4 @@ fn main() {
     // { dg-error {failed to type resolve expression} "" { target *-*-* } .-2 }
     // { dg-error {Failed to resolve expression of function call} "" { target *-*-* } .-3 }
     // { duplicate _dg-error {failed to type resolve expression} "" { target *-*-* } .-4 }
-    // { dg-error {expected \[T\?\] got \[<tyty::error>\]} "" { target *-*-* } .-5 }
 }

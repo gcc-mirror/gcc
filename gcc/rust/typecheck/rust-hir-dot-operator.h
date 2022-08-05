@@ -37,43 +37,42 @@ struct MethodCandidate
   bool is_error () const { return candidate.is_error (); }
 };
 
-class MethodResolver : public TypeCheckBase
+class MethodResolver : protected AutoderefCycle
 {
-protected:
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
-  static MethodCandidate Probe (const TyTy::BaseType *receiver,
-				const HIR::PathIdentSegment &segment_name,
-				bool autoderef_flag = false);
-
-protected:
   struct predicate_candidate
   {
     TyTy::TypeBoundPredicateItem lookup;
     TyTy::FnType *fntype;
   };
 
-  static MethodCandidate Try (const TyTy::BaseType *r,
-			      const HIR::PathIdentSegment &segment_name,
-			      std::vector<Adjustment> &adjustments);
+  static MethodCandidate Probe (const TyTy::BaseType *receiver,
+				const HIR::PathIdentSegment &segment_name,
+				bool autoderef_flag = false);
 
   static std::vector<predicate_candidate> get_predicate_items (
     const HIR::PathIdentSegment &segment_name, const TyTy::BaseType &receiver,
     const std::vector<TyTy::TypeBoundPredicate> &specified_bounds);
 
-  PathProbeCandidate select ();
+protected:
+  MethodResolver (bool autoderef_flag,
+		  const HIR::PathIdentSegment &segment_name);
 
-  MethodResolver (
-    const TyTy::BaseType &receiver, const HIR::PathIdentSegment &segment_name,
-    const std::vector<MethodResolver::predicate_candidate> &predicate_items)
-    : receiver (receiver), segment_name (segment_name),
-      predicate_items (predicate_items)
-  {}
+  void try_hook (const TyTy::BaseType &r) override;
 
-  const TyTy::BaseType &receiver;
+  bool select (const TyTy::BaseType &receiver) override;
+
+private:
+  // context info
+  Analysis::Mappings *mappings;
+  TypeCheckContext *context;
+
+  // search
   const HIR::PathIdentSegment &segment_name;
-  const std::vector<MethodResolver::predicate_candidate> &predicate_items;
+  std::vector<MethodResolver::predicate_candidate> predicate_items;
+
+  // mutable fields
+  MethodCandidate try_result;
 };
 
 } // namespace Resolver
