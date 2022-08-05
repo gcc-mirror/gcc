@@ -3705,6 +3705,46 @@ private:
   bool m_terminate_path;
 };
 
+/* A subclass of pending_diagnostic for complaining about jumps through NULL
+   function pointers.  */
+
+class jump_through_null : public pending_diagnostic_subclass<jump_through_null>
+{
+public:
+  jump_through_null (const gcall *call)
+  : m_call (call)
+  {}
+
+  const char *get_kind () const final override
+  {
+    return "jump_through_null";
+  }
+
+  bool operator== (const jump_through_null &other) const
+  {
+    return m_call == other.m_call;
+  }
+
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_jump_through_null;
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    return warning_at (rich_loc, get_controlling_option (),
+		       "jump through null pointer");
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) final override
+  {
+    return ev.formatted_print ("jump through null pointer here");
+  }
+
+private:
+  const gcall *m_call;
+};
+
 /* The core of exploded_graph::process_worklist (the main analysis loop),
    handling one node in the worklist.
 
@@ -4046,6 +4086,15 @@ exploded_graph::process_node (exploded_node *node)
 							       logger);
 		if (!call_discovered)
 		  {
+		    /* Check for jump through NULL.  */
+		    if (tree fn_ptr = gimple_call_fn (call))
+		      {
+			const svalue *fn_ptr_sval
+			  = model->get_rvalue (fn_ptr, &ctxt);
+			if (fn_ptr_sval->all_zeroes_p ())
+			  ctxt.warn (new jump_through_null (call));
+		      }
+
 		    /* An unknown function or a special function was called
 		       at this point, in such case, don't terminate the
 		       analysis of the current function.
