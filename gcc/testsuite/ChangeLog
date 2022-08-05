@@ -1,3 +1,26 @@
+2022-08-04  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-03-25  Peter Bergner  <bergner@linux.ibm.com>
+
+	* g++.dg/pr65240-1.C: Use -mdejagnu-cpu=.  Remove dg-skip-if.
+	* g++.dg/pr65240-2.C: Likewise.
+	* g++.dg/pr65240-3.C: Likewise.
+	* g++.dg/pr65240-4.C: Likewise.
+	* g++.dg/pr65242.C: Likewise.
+	* g++.dg/pr67211.C: Likewise.
+	* g++.dg/pr69667.C: Likewise.
+	* g++.dg/pr71294.C: Likewise.
+	* g++.dg/pr84279.C: Likewise.
+	* g++.dg/torture/ppc-ldst-array.C: Likewise.
+	* gfortran.dg/nint_p7.f90: Likewise.
+	* gfortran.dg/pr102860.f90: Likewise.
+	* gcc.target/powerpc/fusion.c: Use -mdejagnu-cpu= and -mdejagnu-tune=.
+	* gcc.target/powerpc/fusion2.c: Likewise.
+	* gcc.target/powerpc/test_mffsl.c: Likewise.
+	* gfortran.dg/pr47614.f: Likewise.
+	* gfortran.dg/pr58968.f: Likewise.
+
 2022-08-02  Lewis Hyatt  <lhyatt@gmail.com>
 
 	Backported from master:
