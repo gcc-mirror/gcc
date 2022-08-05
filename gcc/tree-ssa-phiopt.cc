@@ -283,7 +283,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	  || (e1->flags & EDGE_FALLTHRU) == 0)
         continue;
 
-      if (do_store_elim)
+      if (do_store_elim && !diamond_p)
 	{
 	  /* Also make sure that bb1 only have one predecessor and that it
 	     is bb.  */
@@ -310,7 +310,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 
 	  /* Value replacement can work with more than one PHI
 	     so try that first. */
-	  if (!early_p)
+	  if (!early_p && !diamond_p)
 	    for (gsi = gsi_start (phis); !gsi_end_p (gsi); gsi_next (&gsi))
 	      {
 		phi = as_a <gphi *> (gsi_stmt (gsi));
