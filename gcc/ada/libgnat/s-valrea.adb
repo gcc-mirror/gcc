@@ -43,7 +43,11 @@ package body System.Val_Real is
    pragma Assert (Num'Machine_Mantissa <= Uns'Size);
    --  We need an unsigned type large enough to represent the mantissa
 
+   Is_Large_Type : constant Boolean := Num'Machine_Mantissa >= 53;
+   --  True if the floating-point type is at least IEEE Double
+
    Precision_Limit : constant Uns := 2**Num'Machine_Mantissa - 1;
+   --  See below for the rationale
 
    package Impl is new Value_R (Uns, 2, Precision_Limit, Round => False);
 
@@ -55,18 +59,21 @@ package body System.Val_Real is
 
    Maxexp32 : constant array (Base_T) of Positive :=
      [2  => 127, 3 => 80,  4 => 63,  5 => 55,  6 => 49,
-      7  => 45,  8 => 42,  9 => 40, 10 => 38, 11 => 37,
+      7  => 45,  8 => 42,  9 => 40, 10 => 55, 11 => 37,
       12 => 35, 13 => 34, 14 => 33, 15 => 32, 16 => 31];
+   --  The actual value for 10 is 38 but we also use scaling for 10
 
    Maxexp64 : constant array (Base_T) of Positive :=
      [2  => 1023, 3 => 646,  4 => 511,  5 => 441,  6 => 396,
-      7  => 364,  8 => 341,  9 => 323, 10 => 308, 11 => 296,
+      7  => 364,  8 => 341,  9 => 323, 10 => 441, 11 => 296,
       12 => 285, 13 => 276, 14 => 268, 15 => 262, 16 => 255];
+   --  The actual value for 10 is 308 but we also use scaling for 10
 
    Maxexp80 : constant array (Base_T) of Positive :=
      [2  => 16383, 3 => 10337, 4 => 8191,  5 => 7056,  6 => 6338,
-      7  => 5836,  8 => 5461,  9 => 5168, 10 => 4932, 11 => 4736,
+      7  => 5836,  8 => 5461,  9 => 5168, 10 => 7056, 11 => 4736,
       12 => 4570, 13 => 4427, 14 => 4303, 15 => 4193, 16 => 4095];
+   --  The actual value for 10 is 4932 but we also use scaling for 10
 
    package Double_Real is new System.Double_Real (Num);
    use type Double_Real.Double_T;
@@ -91,8 +98,11 @@ package body System.Val_Real is
       Minus : Boolean) return Num;
    --  Convert the real value from integer to real representation
 
-   function Large_Powten (Exp : Natural) return Double_T;
-   --  Return 10.0**Exp as a double number, where Exp > Maxpow
+   function Large_Powfive (Exp : Natural) return Double_T;
+   --  Return 5.0**Exp as a double number, where Exp > Maxpow
+
+   function Large_Powfive (Exp : Natural; S : out Natural) return Double_T;
+   --  Return Num'Scaling (5.0**Exp, -S) as a double number where Exp > Maxexp
 
    ---------------------
    -- Integer_to_Real --
@@ -177,13 +187,13 @@ package body System.Val_Real is
 
                when 10 =>
                   declare
-                     Powten : constant array (0 .. Maxpow) of Double_T;
-                     pragma Import (Ada, Powten);
-                     for Powten'Address use Powten_Address;
+                     Powfive : constant array (0 .. Maxpow) of Double_T;
+                     pragma Import (Ada, Powfive);
+                     for Powfive'Address use Powfive_Address;
 
                   begin
                      if DS <= Maxpow then
-                        D_Val := Powten (DS) * V1 + V2;
+                        D_Val := Powfive (DS) * Num'Scaling (V1, DS) + V2;
                         S := Scale (2);
 
                      else
@@ -224,43 +234,46 @@ package body System.Val_Real is
                   R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
                end;
 
-            --  If the base is 10, use a double implementation for the sake
-            --  of accuracy, to be removed when exponentiation is improved.
-
-            --  When the exponent is positive, we can do the computation
-            --  directly because, if the exponentiation overflows, then
-            --  the final value overflows as well. But when the exponent
-            --  is negative, we may need to do it in two steps to avoid
-            --  an artificial underflow.
+            --  If the base is 10, we use a double implementation for the sake
+            --  of accuracy combining powers of 5 and scaling attribute. Using
+            --  this combination is better than using powers of 10 only because
+            --  the Large_Powfive function may overflow only if the final value
+            --  will also either overflow or underflow, thus making it possible
+            --  to use a single division for the case of negative powers of 10.
 
             when 10 =>
                declare
-                  Powten : constant array (0 .. Maxpow) of Double_T;
-                  pragma Import (Ada, Powten);
-                  for Powten'Address use Powten_Address;
+                  Powfive : constant array (0 .. Maxpow) of Double_T;
+                  pragma Import (Ada, Powfive);
+                  for Powfive'Address use Powfive_Address;
+
+                  RS : Natural;
 
                begin
                   if S > 0 then
                      if S <= Maxpow then
-                        D_Val := D_Val * Powten (S);
+                        D_Val := D_Val * Powfive (S);
                      else
-                        D_Val := D_Val * Large_Powten (S);
+                        D_Val := D_Val * Large_Powfive (S);
                      end if;
 
                   else
-                     if S < -Maxexp then
-                        D_Val := D_Val / Large_Powten (Maxexp);
-                        S := S + Maxexp;
-                     end if;
-
                      if S >= -Maxpow then
-                        D_Val := D_Val / Powten (-S);
+                        D_Val := D_Val / Powfive (-S);
+
+                     --  For small types, typically IEEE Single, the trick
+                     --  described above does not fully work.
+
+                     elsif not Is_Large_Type and then S < -Maxexp then
+                        D_Val := D_Val / Large_Powfive (-S, RS);
+                        S := S - RS;
+
                      else
-                        D_Val := D_Val / Large_Powten (-S);
+                        D_Val := D_Val / Large_Powfive (-S);
                      end if;
                   end if;
 
-                  R_Val := Double_Real.To_Single (D_Val);
+                  R_Val := Num'Scaling (Double_Real.To_Single (D_Val), S);
                end;
 
             --  Implementation for other bases with exponentiation
@@ -302,14 +315,26 @@ package body System.Val_Real is
       when Constraint_Error => Bad_Value (Str);
    end Integer_to_Real;
 
-   ------------------
-   -- Large_Powten --
-   ------------------
+   -------------------
+   -- Large_Powfive --
+   -------------------
 
-   function Large_Powten (Exp : Natural) return Double_T is
-      Powten : constant array (0 .. Maxpow) of Double_T;
-      pragma Import (Ada, Powten);
-      for Powten'Address use Powten_Address;
+   function Large_Powfive (Exp : Natural) return Double_T is
+      Powfive : constant array (0 .. Maxpow) of Double_T;
+      pragma Import (Ada, Powfive);
+      for Powfive'Address use Powfive_Address;
+
+      Powfive_100 : constant Double_T;
+      pragma Import (Ada, Powfive_100);
+      for Powfive_100'Address use Powfive_100_Address;
+
+      Powfive_200 : constant Double_T;
+      pragma Import (Ada, Powfive_200);
+      for Powfive_200'Address use Powfive_200_Address;
+
+      Powfive_300 : constant Double_T;
+      pragma Import (Ada, Powfive_300);
+      for Powfive_300'Address use Powfive_300_Address;
 
       R : Double_T;
       E : Natural;
@@ -317,18 +342,80 @@ package body System.Val_Real is
    begin
       pragma Assert (Exp > Maxpow);
 
-      R := Powten (Maxpow);
-      E := Exp - Maxpow;
+      if Is_Large_Type and then Exp >= 300 then
+         R := Powfive_300;
+         E := Exp - 300;
+
+      elsif Is_Large_Type and then Exp >= 200 then
+         R := Powfive_200;
+         E := Exp - 200;
+
+      elsif Is_Large_Type and then Exp >= 100 then
+         R := Powfive_100;
+         E := Exp - 100;
+
+      else
+         R := Powfive (Maxpow);
+         E := Exp - Maxpow;
+      end if;
 
       while E > Maxpow loop
-         R := R * Powten (Maxpow);
+         R := R * Powfive (Maxpow);
          E := E - Maxpow;
       end loop;
 
-      R := R * Powten (E);
+      R := R * Powfive (E);
 
       return R;
-   end Large_Powten;
+   end Large_Powfive;
+
+   function Large_Powfive (Exp : Natural; S : out Natural) return Double_T is
+      Maxexp : constant Positive :=
+        (if    Num'Size = 32             then Maxexp32 (5)
+         elsif Num'Size = 64             then Maxexp64 (5)
+         elsif Num'Machine_Mantissa = 64 then Maxexp80 (5)
+         else  raise Program_Error);
+      --  Maximum exponent of 5 that can fit in Num
+
+      Powfive : constant array (0 .. Maxpow) of Double_T;
+      pragma Import (Ada, Powfive);
+      for Powfive'Address use Powfive_Address;
+
+      R : Double_T;
+      E : Natural;
+
+   begin
+      pragma Assert (Exp > Maxexp);
+
+      pragma Warnings (Off, "-gnatw.a");
+      pragma Assert (not Is_Large_Type);
+      pragma Warnings (On, "-gnatw.a");
+
+      R := Powfive (Maxpow);
+      E := Exp - Maxpow;
+
+      --  If the exponent is not too large, then scale down the result so that
+      --  its final value does not overflow but, if it's too large, then do not
+      --  bother doing it since overflow is just fine. The scaling factor is -3
+      --  for every power of 5 above the maximum, in other words division by 8.
+
+      if Exp - Maxexp <= Maxpow then
+         S := 3 * (Exp - Maxexp);
+         R.Hi := Num'Scaling (R.Hi, -S);
+         R.Lo := Num'Scaling (R.Lo, -S);
+      else
+         S := 0;
+      end if;
+
+      while E > Maxpow loop
+         R := R * Powfive (Maxpow);
+         E := E - Maxpow;
+      end loop;
+
+      R := R * Powfive (E);
+
+      return R;
+   end Large_Powfive;
 
    ---------------
    -- Scan_Real --

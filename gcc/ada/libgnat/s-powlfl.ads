@@ -29,17 +29,74 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides a powers of ten table used for real conversions
+--  This package provides tables of powers used for real conversions
 
 package System.Powten_LFlt is
    pragma Pure;
 
    Maxpow_Exact : constant := 22;
-   --  Largest power of ten exactly representable with Long_Float. It is equal
+   --  Largest power of five exactly representable with Long_Float. It is equal
    --  to floor (M * log 2 / log 5), when M is the size of the mantissa (53).
+   --  It also works for any number of the form 5*(2**N) and in particular 10.
 
    Maxpow : constant := Maxpow_Exact * 2;
-   --  Largest power of ten exactly representable with a double Long_Float
+   --  Largest power of five exactly representable with double Long_Float
+
+   Powfive : constant array (0 .. Maxpow, 1 .. 2) of Long_Float :=
+     [00 => [5.0**00, 0.0],
+      01 => [5.0**01, 0.0],
+      02 => [5.0**02, 0.0],
+      03 => [5.0**03, 0.0],
+      04 => [5.0**04, 0.0],
+      05 => [5.0**05, 0.0],
+      06 => [5.0**06, 0.0],
+      07 => [5.0**07, 0.0],
+      08 => [5.0**08, 0.0],
+      09 => [5.0**09, 0.0],
+      10 => [5.0**10, 0.0],
+      11 => [5.0**11, 0.0],
+      12 => [5.0**12, 0.0],
+      13 => [5.0**13, 0.0],
+      14 => [5.0**14, 0.0],
+      15 => [5.0**15, 0.0],
+      16 => [5.0**16, 0.0],
+      17 => [5.0**17, 0.0],
+      18 => [5.0**18, 0.0],
+      19 => [5.0**19, 0.0],
+      20 => [5.0**20, 0.0],
+      21 => [5.0**21, 0.0],
+      22 => [5.0**22, 0.0],
+      23 => [5.0**23, 5.0**23 - Long_Float'Machine (5.0**23)],
+      24 => [5.0**24, 5.0**24 - Long_Float'Machine (5.0**24)],
+      25 => [5.0**25, 5.0**25 - Long_Float'Machine (5.0**25)],
+      26 => [5.0**26, 5.0**26 - Long_Float'Machine (5.0**26)],
+      27 => [5.0**27, 5.0**27 - Long_Float'Machine (5.0**27)],
+      28 => [5.0**28, 5.0**28 - Long_Float'Machine (5.0**28)],
+      29 => [5.0**29, 5.0**29 - Long_Float'Machine (5.0**29)],
+      30 => [5.0**30, 5.0**30 - Long_Float'Machine (5.0**30)],
+      31 => [5.0**31, 5.0**31 - Long_Float'Machine (5.0**31)],
+      32 => [5.0**32, 5.0**32 - Long_Float'Machine (5.0**32)],
+      33 => [5.0**33, 5.0**33 - Long_Float'Machine (5.0**33)],
+      34 => [5.0**34, 5.0**34 - Long_Float'Machine (5.0**34)],
+      35 => [5.0**35, 5.0**35 - Long_Float'Machine (5.0**35)],
+      36 => [5.0**36, 5.0**36 - Long_Float'Machine (5.0**36)],
+      37 => [5.0**37, 5.0**37 - Long_Float'Machine (5.0**37)],
+      38 => [5.0**38, 5.0**38 - Long_Float'Machine (5.0**38)],
+      39 => [5.0**39, 5.0**39 - Long_Float'Machine (5.0**39)],
+      40 => [5.0**40, 5.0**40 - Long_Float'Machine (5.0**40)],
+      41 => [5.0**41, 5.0**41 - Long_Float'Machine (5.0**41)],
+      42 => [5.0**42, 5.0**42 - Long_Float'Machine (5.0**42)],
+      43 => [5.0**43, 5.0**43 - Long_Float'Machine (5.0**43)],
+      44 => [5.0**44, 5.0**44 - Long_Float'Machine (5.0**44)]];
+
+   Powfive_100 : constant array (1 .. 2) of Long_Float :=
+     [5.0**100, 5.0**100 - Long_Float'Machine (5.0**100)];
+
+   Powfive_200 : constant array (1 .. 2) of Long_Float :=
+     [5.0**200, 5.0**200 - Long_Float'Machine (5.0**200)];
+
+   Powfive_300 : constant array (1 .. 2) of Long_Float :=
+     [5.0**300, 5.0**300 - Long_Float'Machine (5.0**300)];
 
    Powten : constant array (0 .. Maxpow, 1 .. 2) of Long_Float :=
      [00 => [1.0E+00, 0.0],
