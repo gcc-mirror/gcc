@@ -10894,7 +10894,7 @@ package body Sem_Util is
       --  First.
 
       Assoc := First (Component_Associations (Expression (Aspect)));
-      First_Op  := Any_Id;
+      First_Op := Any_Id;
       while Present (Assoc) loop
          if Chars (First (Choices (Assoc))) = Name_First then
             First_Op := Expression (Assoc);

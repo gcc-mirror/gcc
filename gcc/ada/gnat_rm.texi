@@ -9774,33 +9774,37 @@ The following is a typical example of use:
 type List is private with
     Iterable => (First       => First_Cursor,
                  Next        => Advance,
-                 Has_Element => Cursor_Has_Element,
-                [Element     => Get_Element]);
+                 Has_Element => Cursor_Has_Element
+               [,Element     => Get_Element]
+               [,Last        => Last_Cursor]
+               [,Previous    => Retreat]);
 @end example
 
 
 @itemize *
 
 @item 
-The value denoted by @code{First} must denote a primitive operation of the
-container type that returns a @code{Cursor}, which must a be a type declared in
+The values of @code{First} and @code{Last} are primitive operations of the
+container type that return a @code{Cursor}, which must be a type declared in
 the container package or visible from it. For example:
 @end itemize
 
 @example
 function First_Cursor (Cont : Container) return Cursor;
+function Last_Cursor  (Cont : Container) return Cursor;
 @end example
 
 
 @itemize *
 
 @item 
-The value of @code{Next} is a primitive operation of the container type that takes
-both a container and a cursor and yields a cursor. For example:
+The values of @code{Next} and @code{Previous} are primitive operations of the container type that take
+both a container and a cursor and yield a cursor. For example:
 @end itemize
 
 @example
 function Advance (Cont : Container; Position : Cursor) return Cursor;
+function Retreat (Cont : Container; Position : Cursor) return Cursor;
 @end example
 
 

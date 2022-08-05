@@ -6959,6 +6959,7 @@ package body Sem_Ch13 is
 
             if Nkind (Expr) /= N_Aggregate then
                Error_Msg_N ("aspect Iterable must be an aggregate", Expr);
+               return;
             end if;
 
             declare
@@ -6969,7 +6970,9 @@ package body Sem_Ch13 is
                while Present (Assoc) loop
                   Analyze (Expression (Assoc));
 
-                  if not Is_Entity_Name (Expression (Assoc)) then
+                  if not Is_Entity_Name (Expression (Assoc))
+                    or else Ekind (Entity (Expression (Assoc))) /= E_Function
+                  then
                      Error_Msg_N ("value must be a function", Assoc);
                   end if;
 
@@ -15875,22 +15878,34 @@ package body Sem_Ch13 is
 
          Ent := Entity (N);
          F1  := First_Formal (Ent);
+         F2  := Next_Formal (F1);
 
-         if Nam in Name_First | Name_Last then
+         if Nam = Name_First then
 
-            --  First or Last (Container) => Cursor
+            --  First (Container) => Cursor
 
             if Etype (Ent) /= Cursor then
                Error_Msg_N ("primitive for First must yield a cursor", N);
+            elsif Present (F2) then
+               Error_Msg_N ("no match for First iterable primitive", N);
+            end if;
+
+         elsif Nam = Name_Last then
+
+            --  Last (Container) => Cursor
+
+            if Etype (Ent) /= Cursor then
+               Error_Msg_N ("primitive for Last must yield a cursor", N);
+            elsif Present (F2) then
+               Error_Msg_N ("no match for Last iterable primitive", N);
             end if;
 
          elsif Nam = Name_Next then
 
             --  Next (Container, Cursor) => Cursor
 
-            F2 := Next_Formal (F1);
-
-            if Etype (F2) /= Cursor
+            if No (F2)
+              or else Etype (F2) /= Cursor
               or else Etype (Ent) /= Cursor
               or else Present (Next_Formal (F2))
             then
@@ -15901,9 +15916,8 @@ package body Sem_Ch13 is
 
             --  Previous (Container, Cursor) => Cursor
 
-            F2 := Next_Formal (F1);
-
-            if Etype (F2) /= Cursor
+            if No (F2)
+              or else Etype (F2) /= Cursor
               or else Etype (Ent) /= Cursor
               or else Present (Next_Formal (F2))
             then
@@ -15914,9 +15928,8 @@ package body Sem_Ch13 is
 
             --  Has_Element (Container, Cursor) => Boolean
 
-            F2 := Next_Formal (F1);
-
-            if Etype (F2) /= Cursor
+            if No (F2)
+              or else Etype (F2) /= Cursor
               or else Etype (Ent) /= Standard_Boolean
               or else Present (Next_Formal (F2))
             then
@@ -15924,7 +15937,8 @@ package body Sem_Ch13 is
             end if;
 
          elsif Nam = Name_Element then
-            F2 := Next_Formal (F1);
+
+            --  Element (Container, Cursor) => Element_Type;
 
             if No (F2)
               or else Etype (F2) /= Cursor
@@ -17084,34 +17098,41 @@ package body Sem_Ch13 is
    ------------------------------
 
    procedure Validate_Iterable_Aspect (Typ : Entity_Id; ASN : Node_Id) is
+      Aggr  : constant Node_Id := Expression (ASN);
       Assoc : Node_Id;
       Expr  : Node_Id;
 
       Prim   : Node_Id;
-      Cursor : constant Entity_Id := Get_Cursor_Type (ASN, Typ);
+      Cursor : Entity_Id;
 
-      First_Id       : Entity_Id;
-      Last_Id        : Entity_Id;
-      Next_Id        : Entity_Id;
-      Has_Element_Id : Entity_Id;
-      Element_Id     : Entity_Id;
+      First_Id       : Entity_Id := Empty;
+      Last_Id        : Entity_Id := Empty;
+      Next_Id        : Entity_Id := Empty;
+      Has_Element_Id : Entity_Id := Empty;
+      Element_Id     : Entity_Id := Empty;
 
    begin
+      if Nkind (Aggr) /= N_Aggregate then
+         Error_Msg_N ("aspect Iterable must be an aggregate", Aggr);
+         return;
+      end if;
+
+      Cursor := Get_Cursor_Type (ASN, Typ);
+
       --  If previous error aspect is unusable
 
       if Cursor = Any_Type then
          return;
       end if;
 
-      First_Id       := Empty;
-      Last_Id        := Empty;
-      Next_Id        := Empty;
-      Has_Element_Id := Empty;
-      Element_Id     := Empty;
+      if not Is_Empty_List (Expressions (Aggr)) then
+         Error_Msg_N
+           ("illegal positional association", First (Expressions (Aggr)));
+      end if;
 
       --  Each expression must resolve to a function with the proper signature
 
-      Assoc := First (Component_Associations (Expression (ASN)));
+      Assoc := First (Component_Associations (Aggr));
       while Present (Assoc) loop
          Expr := Expression (Assoc);
          Analyze (Expr);

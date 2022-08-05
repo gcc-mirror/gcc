@@ -2079,7 +2079,8 @@ package body Exp_Attr is
 
       case Id is
 
-      --  Attributes related to Ada 2012 iterators
+      --  Attributes related to Ada 2012 iterators. They are only allowed in
+      --  attribute definition clauses and should never be expanded.
 
       when Attribute_Constant_Indexing
          | Attribute_Default_Iterator
@@ -2088,7 +2089,7 @@ package body Exp_Attr is
          | Attribute_Iterator_Element
          | Attribute_Variable_Indexing
       =>
-         null;
+         raise Program_Error;
 
       --  Internal attributes used to deal with Ada 2012 delayed aspects. These
       --  were already rejected by the parser. Thus they shouldn't appear here.
