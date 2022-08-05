@@ -1,3 +1,62 @@
+2022-08-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (basic_string_view(Range&&)): Add
+	explicit as per P2499R0.
+	* testsuite/21_strings/basic_string_view/cons/char/range_c++20.cc:
+	Adjust implicit conversions. Check implicit conversions fail.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/range_c++20.cc:
+	Likewise.
+
+2022-08-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_dir.h (directory_iterator): Add comparison
+	with std::default_sentinel_t. Remove redundant operator!= for
+	C++20.
+	* (recursive_directory_iterator): Likewise.
+	* include/bits/iterator_concepts.h [!__cpp_lib_concepts]
+	(default_sentinel_t, default_sentinel): Define even if concepts
+	are not supported.
+	* include/bits/regex.h (regex_iterator): Add comparison with
+	std::default_sentinel_t. Remove redundant operator!= for C++20.
+	(regex_token_iterator): Likewise.
+	(regex_token_iterator::_M_end_of_seq()): Add noexcept.
+	* testsuite/27_io/filesystem/iterators/lwg3719.cc: New test.
+	* testsuite/28_regex/iterators/regex_iterator/lwg3719.cc:
+	New test.
+	* testsuite/28_regex/iterators/regex_token_iterator/lwg3719.cc:
+	New test.
+
+2022-08-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (unexpected::_M_val): Rename to _M_unex.
+	(bad_expected_access::_M_val): Likewise.
+
+2022-08-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ios_base.h (__cpp_lib_ios_noreplace): Update
+	value to 202207L.
+	* include/std/version (__cpp_lib_ios_noreplace): Likewise.
+	* testsuite/27_io/basic_ofstream/open/char/noreplace.cc: Check
+	for new value.
+	* testsuite/27_io/basic_ofstream/open/wchar_t/noreplace.cc:
+	Likewise.
+
+2022-08-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106183
+	* include/bits/atomic_wait.h (__waiter_pool_base::_M_notify):
+	Move increment of _M_ver here.
+	[!_GLIBCXX_HAVE_PLATFORM_WAIT]: Lock mutex around increment.
+	Use relaxed memory order and always notify all waiters.
+	(__waiter_base::_M_do_wait) [!_GLIBCXX_HAVE_PLATFORM_WAIT]:
+	Check value again after locking mutex.
+	(__waiter_base::_M_notify): Remove increment of _M_ver.
+
+2022-08-04  Ulrich Drepper  <drepper@gmail.com>
+
+	* python/libstdcxx/v6/printers.py (class StdTuplePrinter): Use
+	zero-based indeces just like std:get takes.
+
 2022-07-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104443

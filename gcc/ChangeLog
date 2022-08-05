@@ -1,3 +1,42 @@
+2022-08-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106514
+	* gimple-range-path.cc (path_range_query::compute_ranges_in_block):
+	Use EXECUTE_IF_AND_IN_BITMAP to loop over 2 bitmaps.
+
+2022-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* match.pd: New bit_not rule.
+
+2022-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/106519
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker): Check final phi edge for
+	diamond shapes.
+
+2022-08-04  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/106243
+	* match.pd (-x & 1): New simplification.
+
+2022-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106521
+	* gimple-loop-jam.cc (tree_loop_unroll_and_jam): Perform
+	CFG cleanup manually before rewriting into LC SSA.
+
+2022-08-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-threadbackward.cc (populate_worklist): Remove.
+	(back_threader::resolve_phi): Likewise.
+	(back_threader::find_paths_to_names): Rewrite greedy search.
+
+2022-08-04  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/vector.md (V_HW_FT): New iterator.
+	* config/s390/vx-builtins.md (vsel<mode>): Use V_HW_FT instead
+	of V_HW.
+
 2022-08-03   Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Remove code

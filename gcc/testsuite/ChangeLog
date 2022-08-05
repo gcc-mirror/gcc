@@ -1,3 +1,23 @@
+2022-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/subnot.c: New test.
+
+2022-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/106519
+	* gcc.dg/pr106519.c: New test.
+
+2022-08-04  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/106243
+	* gcc.dg/pr106243-1.c: New test.
+	* gcc.dg/pr106243.c: New test.
+
+2022-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106521
+	* gcc.dg/torture/pr106521.c: New testcase.
+
 2022-08-03  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	PR testsuite/106515
