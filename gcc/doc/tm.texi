@@ -6253,6 +6253,9 @@ stores.
 This hook should set @var{vecsize_mangle}, @var{vecsize_int}, @var{vecsize_float}
 fields in @var{simd_clone} structure pointed by @var{clone_info} argument and also
 @var{simdlen} field if it was previously 0.
+@var{vecsize_mangle} is a marker for the backend only. @var{vecsize_int} and
+@var{vecsize_float} should be left zero on targets where the number of lanes is
+not determined by the bitsize (in which case @var{simdlen} is always used).
 The hook should return 0 if SIMD clones shouldn't be emitted,
 or number of @var{vecsize_mangle} variants that should be emitted.
 @end deftypefn
