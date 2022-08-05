@@ -250,7 +250,15 @@ private:
 class unsupported_range : public vrange
 {
 public:
-  unsupported_range ();
+  unsupported_range ()
+  {
+    m_discriminator = VR_UNKNOWN;
+    set_undefined ();
+  }
+  virtual void set_undefined () final override
+  {
+    m_kind = VR_UNDEFINED;
+  }
   virtual void accept (const vrange_visitor &v) const override;
 };
 

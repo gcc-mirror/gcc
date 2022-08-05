@@ -248,12 +248,6 @@ irange::set_nonnegative (tree type)
   set (build_int_cst (type, 0), TYPE_MAX_VALUE (type));
 }
 
-unsupported_range::unsupported_range ()
-{
-  m_discriminator = VR_UNKNOWN;
-  set_undefined ();
-}
-
 void
 frange::accept (const vrange_visitor &v) const
 {
