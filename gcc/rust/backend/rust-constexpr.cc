@@ -1398,6 +1398,32 @@ eval_bare_aggregate (const constexpr_ctx *ctx, tree t, bool lval,
   return t;
 }
 
+/* Subroutine of cxx_eval_constant_expression.
+   Like cxx_eval_unary_expression, except for trinary expressions.  */
+
+static tree
+cxx_eval_trinary_expression (const constexpr_ctx *ctx, tree t, bool lval,
+			     bool *non_constant_p, bool *overflow_p)
+{
+  int i;
+  tree args[3];
+  tree val;
+
+  for (i = 0; i < 3; i++)
+    {
+      args[i] = eval_constant_expression (ctx, TREE_OPERAND (t, i), lval,
+					  non_constant_p, overflow_p);
+      VERIFY_CONSTANT (args[i]);
+    }
+
+  val = fold_ternary_loc (EXPR_LOCATION (t), TREE_CODE (t), TREE_TYPE (t),
+			  args[0], args[1], args[2]);
+  if (val == NULL_TREE)
+    return t;
+  VERIFY_CONSTANT (val);
+  return val;
+}
+
 /* Return true if T is a valid constant initializer.  If a CONSTRUCTOR
    initializes all the members, the CONSTRUCTOR_NO_CLEARING flag will be
    cleared.
@@ -1649,6 +1675,11 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
       r = rs_eval_indirect_ref (ctx, t, lval, non_constant_p, overflow_p);
       break;
 
+    case VEC_PERM_EXPR:
+      r = cxx_eval_trinary_expression (ctx, t, lval, non_constant_p,
+				       overflow_p);
+      break;
+
     case PAREN_EXPR:
       gcc_assert (!REF_PARENTHESIZED_P (t));
       /* A PAREN_EXPR resulting from __builtin_assoc_barrier has no effect in
@@ -1679,6 +1710,21 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
     case BIND_EXPR:
       return eval_constant_expression (ctx, BIND_EXPR_BODY (t), lval,
 				       non_constant_p, overflow_p, jump_target);
+
+    case OBJ_TYPE_REF:
+      /* Virtual function lookup.  We don't need to do anything fancy.  */
+      return eval_constant_expression (ctx, OBJ_TYPE_REF_EXPR (t), lval,
+				       non_constant_p, overflow_p);
+
+      case EXIT_EXPR: {
+	tree cond = TREE_OPERAND (t, 0);
+	cond = eval_constant_expression (ctx, cond, /*lval*/ false,
+					 non_constant_p, overflow_p);
+	VERIFY_CONSTANT (cond);
+	if (integer_nonzerop (cond))
+	  *jump_target = t;
+      }
+      break;
 
     case RESULT_DECL:
       if (lval)
