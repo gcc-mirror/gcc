@@ -1269,6 +1269,8 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define CONSTRUCTOR_PLACEHOLDER_BOUNDARY(NODE)                                 \
   (TREE_LANG_FLAG_5 (CONSTRUCTOR_CHECK (NODE)))
 
+#define AGGR_INIT_EXPR_SLOT(NODE) TREE_OPERAND (AGGR_INIT_EXPR_CHECK (NODE), 2)
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
@@ -2604,6 +2606,8 @@ extern bool require_deduced_type (tree, tsubst_flags_t = tf_warning_or_error);
 extern bool decl_constant_var_p (tree);
 
 extern tree build_new_constexpr_heap_type (tree, tree, tree);
+
+extern bool is_empty_field (tree);
 
 // forked from gcc/cp/cp-tree.h
 

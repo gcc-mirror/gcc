@@ -990,6 +990,463 @@ inline_asm_in_constexpr_error (location_t loc)
 	       "%<constexpr%> function in C++20");
 }
 
+// forked from gcc/cp/constexpr.cc verify_ctor_sanity
+
+/* We're about to process an initializer for a class or array TYPE.  Make
+   sure that CTX is set up appropriately.  */
+
+static void
+verify_ctor_sanity (const constexpr_ctx *ctx, tree type)
+{
+  /* We don't bother building a ctor for an empty base subobject.  */
+  if (is_empty_class (type))
+    return;
+
+  /* We're in the middle of an initializer that might involve placeholders;
+     our caller should have created a CONSTRUCTOR for us to put the
+     initializer into.  We will either return that constructor or T.  */
+  gcc_assert (ctx->ctor);
+  gcc_assert (
+    same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (ctx->ctor)));
+  /* We used to check that ctx->ctor was empty, but that isn't the case when
+     the object is zero-initialized before calling the constructor.  */
+  if (ctx->object)
+    {
+      tree otype = TREE_TYPE (ctx->object);
+      gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, otype)
+		  /* Handle flexible array members.  */
+		  || (TREE_CODE (otype) == ARRAY_TYPE
+		      && TYPE_DOMAIN (otype) == NULL_TREE
+		      && TREE_CODE (type) == ARRAY_TYPE
+		      && (same_type_ignoring_top_level_qualifiers_p (
+			TREE_TYPE (type), TREE_TYPE (otype)))));
+    }
+  gcc_assert (!ctx->object || !DECL_P (ctx->object)
+	      || *(ctx->global->values.get (ctx->object)) == ctx->ctor);
+}
+
+// forked from gcc/cp/constexpr.cc array_index_cmp
+
+/* Some of the expressions fed to the constexpr mechanism are calls to
+   constructors, which have type void.  In that case, return the type being
+   initialized by the constructor.  */
+
+static tree
+initialized_type (tree t)
+{
+  if (TYPE_P (t))
+    return t;
+  tree type = TREE_TYPE (t);
+  if (TREE_CODE (t) == CALL_EXPR)
+    {
+      /* A constructor call has void type, so we need to look deeper.  */
+      tree fn = get_function_named_in_call (t);
+      if (fn && TREE_CODE (fn) == FUNCTION_DECL && DECL_CXX_CONSTRUCTOR_P (fn))
+	type = DECL_CONTEXT (fn);
+    }
+  else if (TREE_CODE (t) == COMPOUND_EXPR)
+    return initialized_type (TREE_OPERAND (t, 1));
+
+  return cv_unqualified (type);
+}
+
+// forked from gcc/cp/constexpr.cc init_subob_ctx
+
+/* We're about to initialize element INDEX of an array or class from VALUE.
+   Set up NEW_CTX appropriately by adjusting .object to refer to the
+   subobject and creating a new CONSTRUCTOR if the element is itself
+   a class or array.  */
+
+static void
+init_subob_ctx (const constexpr_ctx *ctx, constexpr_ctx &new_ctx, tree index,
+		tree &value)
+{
+  new_ctx = *ctx;
+
+  if (index && TREE_CODE (index) != INTEGER_CST
+      && TREE_CODE (index) != FIELD_DECL && TREE_CODE (index) != RANGE_EXPR)
+    /* This won't have an element in the new CONSTRUCTOR.  */
+    return;
+
+  tree type = initialized_type (value);
+  if (!AGGREGATE_TYPE_P (type) && !VECTOR_TYPE_P (type))
+    /* A non-aggregate member doesn't get its own CONSTRUCTOR.  */
+    return;
+
+  /* The sub-aggregate initializer might contain a placeholder;
+     update object to refer to the subobject and ctor to refer to
+     the (newly created) sub-initializer.  */
+  if (ctx->object)
+    {
+      if (index == NULL_TREE || TREE_CODE (index) == RANGE_EXPR)
+	/* There's no well-defined subobject for this index.  */
+	new_ctx.object = NULL_TREE;
+      else
+	// new_ctx.object = build_ctor_subob_ref (index, type, ctx->object);
+	;
+    }
+  tree elt = build_constructor (type, NULL);
+  CONSTRUCTOR_NO_CLEARING (elt) = true;
+  new_ctx.ctor = elt;
+
+  if (TREE_CODE (value) == TARGET_EXPR)
+    /* Avoid creating another CONSTRUCTOR when we expand the TARGET_EXPR.  */
+    value = TARGET_EXPR_INITIAL (value);
+}
+
+// forked from gcc/cp/constexpr.cc base_field_constructor_elt
+
+/* REF is a COMPONENT_REF designating a particular field.  V is a vector of
+   CONSTRUCTOR elements to initialize (part of) an object containing that
+   field.  Return a pointer to the constructor_elt corresponding to the
+   initialization of the field.  */
+
+static constructor_elt *
+base_field_constructor_elt (vec<constructor_elt, va_gc> *v, tree ref)
+{
+  tree aggr = TREE_OPERAND (ref, 0);
+  tree field = TREE_OPERAND (ref, 1);
+  HOST_WIDE_INT i;
+  constructor_elt *ce;
+
+  gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
+
+  if (TREE_CODE (aggr) == COMPONENT_REF)
+    {
+      constructor_elt *base_ce = base_field_constructor_elt (v, aggr);
+      v = CONSTRUCTOR_ELTS (base_ce->value);
+    }
+
+  for (i = 0; vec_safe_iterate (v, i, &ce); ++i)
+    if (ce->index == field)
+      return ce;
+
+  gcc_unreachable ();
+  return NULL;
+}
+
+/* Return a pointer to the constructor_elt of CTOR which matches INDEX.  If no
+   matching constructor_elt exists, then add one to CTOR.
+
+   As an optimization, if POS_HINT is non-negative then it is used as a guess
+   for the (integer) index of the matching constructor_elt within CTOR.  */
+
+static constructor_elt *
+get_or_insert_ctor_field (tree ctor, tree index, int pos_hint = -1)
+{
+  /* Check the hint first.  */
+  if (pos_hint >= 0 && (unsigned) pos_hint < CONSTRUCTOR_NELTS (ctor)
+      && CONSTRUCTOR_ELT (ctor, pos_hint)->index == index)
+    return CONSTRUCTOR_ELT (ctor, pos_hint);
+
+  tree type = TREE_TYPE (ctor);
+  if (TREE_CODE (type) == VECTOR_TYPE && index == NULL_TREE)
+    {
+      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (ctor), index, NULL_TREE);
+      return &CONSTRUCTOR_ELTS (ctor)->last ();
+    }
+  else if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == VECTOR_TYPE)
+    {
+      if (TREE_CODE (index) == RANGE_EXPR)
+	{
+	  /* Support for RANGE_EXPR index lookups is currently limited to
+	     accessing an existing element via POS_HINT, or appending a new
+	     element to the end of CTOR.  ??? Support for other access
+	     patterns may also be needed.  */
+	  vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (ctor);
+	  if (vec_safe_length (elts))
+	    {
+	      tree lo = TREE_OPERAND (index, 0);
+	      gcc_assert (array_index_cmp (elts->last ().index, lo) < 0);
+	    }
+	  CONSTRUCTOR_APPEND_ELT (elts, index, NULL_TREE);
+	  return &elts->last ();
+	}
+
+      HOST_WIDE_INT i = find_array_ctor_elt (ctor, index, /*insert*/ true);
+      gcc_assert (i >= 0);
+      constructor_elt *cep = CONSTRUCTOR_ELT (ctor, i);
+      gcc_assert (cep->index == NULL_TREE
+		  || TREE_CODE (cep->index) != RANGE_EXPR);
+      return cep;
+    }
+  else
+    {
+      gcc_assert (
+	TREE_CODE (index) == FIELD_DECL
+	&& (same_type_ignoring_top_level_qualifiers_p (DECL_CONTEXT (index),
+						       TREE_TYPE (ctor))));
+
+      /* We must keep the CONSTRUCTOR's ELTS in FIELD order.
+	 Usually we meet initializers in that order, but it is
+	 possible for base types to be placed not in program
+	 order.  */
+      tree fields = TYPE_FIELDS (DECL_CONTEXT (index));
+      unsigned HOST_WIDE_INT idx = 0;
+      constructor_elt *cep = NULL;
+
+      /* Check if we're changing the active member of a union.  */
+      if (TREE_CODE (type) == UNION_TYPE && CONSTRUCTOR_NELTS (ctor)
+	  && CONSTRUCTOR_ELT (ctor, 0)->index != index)
+	vec_safe_truncate (CONSTRUCTOR_ELTS (ctor), 0);
+      /* If the bit offset of INDEX is larger than that of the last
+	 constructor_elt, then we can just immediately append a new
+	 constructor_elt to the end of CTOR.  */
+      else if (CONSTRUCTOR_NELTS (ctor)
+	       && tree_int_cst_compare (
+		    bit_position (index),
+		    bit_position (CONSTRUCTOR_ELTS (ctor)->last ().index))
+		    > 0)
+	{
+	  idx = CONSTRUCTOR_NELTS (ctor);
+	  goto insert;
+	}
+
+      /* Otherwise, we need to iterate over CTOR to find or insert INDEX
+	 appropriately.  */
+
+      for (; vec_safe_iterate (CONSTRUCTOR_ELTS (ctor), idx, &cep);
+	   idx++, fields = DECL_CHAIN (fields))
+	{
+	  if (index == cep->index)
+	    goto found;
+
+	  /* The field we're initializing must be on the field
+	     list.  Look to see if it is present before the
+	     field the current ELT initializes.  */
+	  for (; fields != cep->index; fields = DECL_CHAIN (fields))
+	    if (index == fields)
+	      goto insert;
+	}
+      /* We fell off the end of the CONSTRUCTOR, so insert a new
+	 entry at the end.  */
+
+      insert : {
+	constructor_elt ce = {index, NULL_TREE};
+
+	vec_safe_insert (CONSTRUCTOR_ELTS (ctor), idx, ce);
+	cep = CONSTRUCTOR_ELT (ctor, idx);
+      }
+    found:;
+
+      return cep;
+    }
+}
+
+// forked from gcc/cp/constexpr.cc cxx_eval_bare_aggregate
+
+/* Subroutine of cxx_eval_constant_expression.
+   The expression tree T denotes a C-style array or a C-style
+   aggregate.  Reduce it to a constant expression.  */
+
+static tree
+eval_bare_aggregate (const constexpr_ctx *ctx, tree t, bool lval,
+		     bool *non_constant_p, bool *overflow_p)
+{
+  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (t);
+  bool changed = false;
+  gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (t));
+  tree type = TREE_TYPE (t);
+
+  constexpr_ctx new_ctx;
+  if (TYPE_PTRMEMFUNC_P (type) || VECTOR_TYPE_P (type))
+    {
+      /* We don't really need the ctx->ctor business for a PMF or
+	 vector, but it's simpler to use the same code.  */
+      new_ctx = *ctx;
+      new_ctx.ctor = build_constructor (type, NULL);
+      new_ctx.object = NULL_TREE;
+      ctx = &new_ctx;
+    };
+  verify_ctor_sanity (ctx, type);
+  vec<constructor_elt, va_gc> **p = &CONSTRUCTOR_ELTS (ctx->ctor);
+  vec_alloc (*p, vec_safe_length (v));
+
+  if (CONSTRUCTOR_PLACEHOLDER_BOUNDARY (t))
+    CONSTRUCTOR_PLACEHOLDER_BOUNDARY (ctx->ctor) = 1;
+
+  unsigned i;
+  tree index, value;
+  bool constant_p = true;
+  bool side_effects_p = false;
+  FOR_EACH_CONSTRUCTOR_ELT (v, i, index, value)
+    {
+      tree orig_value = value;
+      /* Like in cxx_eval_store_expression, omit entries for empty fields.  */
+      bool no_slot = TREE_CODE (type) == RECORD_TYPE && is_empty_field (index);
+      if (no_slot)
+	new_ctx = *ctx;
+      else
+	init_subob_ctx (ctx, new_ctx, index, value);
+      int pos_hint = -1;
+      if (new_ctx.ctor != ctx->ctor)
+	{
+	  /* If we built a new CONSTRUCTOR, attach it now so that other
+	     initializers can refer to it.  */
+	  constructor_elt *cep = get_or_insert_ctor_field (ctx->ctor, index);
+	  cep->value = new_ctx.ctor;
+	  pos_hint = cep - (*p)->begin ();
+	}
+      else if (TREE_CODE (type) == UNION_TYPE)
+	/* Otherwise if we're constructing a non-aggregate union member, set
+	   the active union member now so that we can later detect and diagnose
+	   if its initializer attempts to activate another member.  */
+	get_or_insert_ctor_field (ctx->ctor, index);
+      tree elt = eval_constant_expression (&new_ctx, value, lval,
+					   non_constant_p, overflow_p);
+      /* Don't VERIFY_CONSTANT here.  */
+      if (ctx->quiet && *non_constant_p)
+	break;
+      if (elt != orig_value)
+	changed = true;
+
+      if (!TREE_CONSTANT (elt))
+	constant_p = false;
+      if (TREE_SIDE_EFFECTS (elt))
+	side_effects_p = true;
+      if (index && TREE_CODE (index) == COMPONENT_REF)
+	{
+	  /* This is an initialization of a vfield inside a base
+	     subaggregate that we already initialized; push this
+	     initialization into the previous initialization.  */
+	  constructor_elt *inner = base_field_constructor_elt (*p, index);
+	  inner->value = elt;
+	  changed = true;
+	}
+      else if (index
+	       && (TREE_CODE (index) == NOP_EXPR
+		   || TREE_CODE (index) == POINTER_PLUS_EXPR))
+	{
+	  /* This is an initializer for an empty base; now that we've
+	     checked that it's constant, we can ignore it.  */
+	  gcc_assert (is_empty_class (TREE_TYPE (TREE_TYPE (index))));
+	  changed = true;
+	}
+      else if (no_slot)
+	changed = true;
+      else
+	{
+	  if (TREE_CODE (type) == UNION_TYPE && (*p)->last ().index != index)
+	    /* The initializer erroneously changed the active union member that
+	       we're initializing.  */
+	    gcc_assert (*non_constant_p);
+	  else
+	    {
+	      /* The initializer might have mutated the underlying CONSTRUCTOR,
+		 so recompute the location of the target constructer_elt.  */
+	      constructor_elt *cep
+		= get_or_insert_ctor_field (ctx->ctor, index, pos_hint);
+	      cep->value = elt;
+	    }
+
+	  /* Adding or replacing an element might change the ctor's flags.  */
+	  TREE_CONSTANT (ctx->ctor) = constant_p;
+	  TREE_SIDE_EFFECTS (ctx->ctor) = side_effects_p;
+	}
+    }
+  if (*non_constant_p || !changed)
+    return t;
+  t = ctx->ctor;
+  /* We're done building this CONSTRUCTOR, so now we can interpret an
+     element without an explicit initializer as value-initialized.  */
+  CONSTRUCTOR_NO_CLEARING (t) = false;
+  TREE_CONSTANT (t) = constant_p;
+  TREE_SIDE_EFFECTS (t) = side_effects_p;
+  if (VECTOR_TYPE_P (type))
+    t = fold (t);
+  return t;
+}
+
+/* Return true if T is a valid constant initializer.  If a CONSTRUCTOR
+   initializes all the members, the CONSTRUCTOR_NO_CLEARING flag will be
+   cleared.
+   FIXME speed this up, it's taking 16% of compile time on sieve testcase.  */
+
+bool
+reduced_constant_expression_p (tree t)
+{
+  if (t == NULL_TREE)
+    return false;
+
+  switch (TREE_CODE (t))
+    {
+    case PTRMEM_CST:
+      /* Even if we can't lower this yet, it's constant.  */
+      return true;
+
+    case CONSTRUCTOR:
+      /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
+      tree field;
+      if (CONSTRUCTOR_NO_CLEARING (t))
+	{
+	  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+	    /* An initialized vector would have a VECTOR_CST.  */
+	    return false;
+	  else if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+	    {
+	      /* There must be a valid constant initializer at every array
+		 index.  */
+	      tree min = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (t)));
+	      tree max = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t)));
+	      tree cursor = min;
+	      for (auto &e : CONSTRUCTOR_ELTS (t))
+		{
+		  if (!reduced_constant_expression_p (e.value))
+		    return false;
+		  if (array_index_cmp (cursor, e.index) != 0)
+		    return false;
+		  if (TREE_CODE (e.index) == RANGE_EXPR)
+		    cursor = TREE_OPERAND (e.index, 1);
+		  cursor = int_const_binop (PLUS_EXPR, cursor, size_one_node);
+		}
+	      if (find_array_ctor_elt (t, max) == -1)
+		return false;
+	      goto ok;
+	    }
+	  else if (TREE_CODE (TREE_TYPE (t)) == UNION_TYPE)
+	    {
+	      if (CONSTRUCTOR_NELTS (t) == 0)
+		/* An initialized union has a constructor element.  */
+		return false;
+	      /* And it only initializes one member.  */
+	      field = NULL_TREE;
+	    }
+	  else
+	    field = next_initializable_field (TYPE_FIELDS (TREE_TYPE (t)));
+	}
+      else
+	field = NULL_TREE;
+      for (auto &e : CONSTRUCTOR_ELTS (t))
+	{
+	  /* If VAL is null, we're in the middle of initializing this
+	     element.  */
+	  if (!reduced_constant_expression_p (e.value))
+	    return false;
+	  /* Empty class field may or may not have an initializer.  */
+	  for (; field && e.index != field;
+	       field = next_initializable_field (DECL_CHAIN (field)))
+	    if (!is_really_empty_class (TREE_TYPE (field),
+					/*ignore_vptr*/ false))
+	      return false;
+	  if (field)
+	    field = next_initializable_field (DECL_CHAIN (field));
+	}
+      /* There could be a non-empty field at the end.  */
+      for (; field; field = next_initializable_field (DECL_CHAIN (field)))
+	if (!is_really_empty_class (TREE_TYPE (field), /*ignore_vptr*/ false))
+	  return false;
+    ok:
+      if (CONSTRUCTOR_NO_CLEARING (t))
+	/* All the fields are initialized.  */
+	CONSTRUCTOR_NO_CLEARING (t) = false;
+      return true;
+
+    default:
+      /* FIXME are we calling this too much?  */
+      return initializer_constant_valid_p (t, TREE_TYPE (t)) != NULL_TREE;
+    }
+}
+
 static tree
 eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 			  bool *non_constant_p, bool *overflow_p,
@@ -1276,7 +1733,7 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
       break;
 
     case COND_EXPR:
-    case IF_STMT:
+    case IF_STMT: // comes from cp-tree.def
       if (jump_target && *jump_target)
 	{
 	  tree orig_jump = *jump_target;
@@ -1313,6 +1770,18 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	}
       r = eval_conditional_expression (ctx, t, lval, non_constant_p, overflow_p,
 				       jump_target);
+      break;
+
+    case CONSTRUCTOR:
+      if (TREE_CONSTANT (t) && reduced_constant_expression_p (t))
+	{
+	  /* Don't re-process a constant CONSTRUCTOR, but do fold it to
+	     VECTOR_CST if applicable.  */
+	  verify_constructor_flags (t);
+	  if (TREE_CONSTANT (t))
+	    return fold (t);
+	}
+      r = eval_bare_aggregate (ctx, t, lval, non_constant_p, overflow_p);
       break;
 
       /* FALLTHROUGH.  */
@@ -1477,114 +1946,6 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
     }
 
   return r;
-}
-
-/* Return a pointer to the constructor_elt of CTOR which matches INDEX.  If no
-   matching constructor_elt exists, then add one to CTOR.
-
-   As an optimization, if POS_HINT is non-negative then it is used as a guess
-   for the (integer) index of the matching constructor_elt within CTOR.  */
-
-static constructor_elt *
-get_or_insert_ctor_field (tree ctor, tree index, int pos_hint = -1)
-{
-  /* Check the hint first.  */
-  if (pos_hint >= 0 && (unsigned) pos_hint < CONSTRUCTOR_NELTS (ctor)
-      && CONSTRUCTOR_ELT (ctor, pos_hint)->index == index)
-    return CONSTRUCTOR_ELT (ctor, pos_hint);
-
-  tree type = TREE_TYPE (ctor);
-  if (TREE_CODE (type) == VECTOR_TYPE && index == NULL_TREE)
-    {
-      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (ctor), index, NULL_TREE);
-      return &CONSTRUCTOR_ELTS (ctor)->last ();
-    }
-  else if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == VECTOR_TYPE)
-    {
-      if (TREE_CODE (index) == RANGE_EXPR)
-	{
-	  /* Support for RANGE_EXPR index lookups is currently limited to
-	     accessing an existing element via POS_HINT, or appending a new
-	     element to the end of CTOR.  ??? Support for other access
-	     patterns may also be needed.  */
-	  vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (ctor);
-	  if (vec_safe_length (elts))
-	    {
-	      tree lo = TREE_OPERAND (index, 0);
-	      gcc_assert (array_index_cmp (elts->last ().index, lo) < 0);
-	    }
-	  CONSTRUCTOR_APPEND_ELT (elts, index, NULL_TREE);
-	  return &elts->last ();
-	}
-
-      HOST_WIDE_INT i = find_array_ctor_elt (ctor, index, /*insert*/ true);
-      gcc_assert (i >= 0);
-      constructor_elt *cep = CONSTRUCTOR_ELT (ctor, i);
-      gcc_assert (cep->index == NULL_TREE
-		  || TREE_CODE (cep->index) != RANGE_EXPR);
-      return cep;
-    }
-  else
-    {
-      gcc_assert (
-	TREE_CODE (index) == FIELD_DECL
-	&& (same_type_ignoring_top_level_qualifiers_p (DECL_CONTEXT (index),
-						       TREE_TYPE (ctor))));
-
-      /* We must keep the CONSTRUCTOR's ELTS in FIELD order.
-	 Usually we meet initializers in that order, but it is
-	 possible for base types to be placed not in program
-	 order.  */
-      tree fields = TYPE_FIELDS (DECL_CONTEXT (index));
-      unsigned HOST_WIDE_INT idx = 0;
-      constructor_elt *cep = NULL;
-
-      /* Check if we're changing the active member of a union.  */
-      if (TREE_CODE (type) == UNION_TYPE && CONSTRUCTOR_NELTS (ctor)
-	  && CONSTRUCTOR_ELT (ctor, 0)->index != index)
-	vec_safe_truncate (CONSTRUCTOR_ELTS (ctor), 0);
-      /* If the bit offset of INDEX is larger than that of the last
-	 constructor_elt, then we can just immediately append a new
-	 constructor_elt to the end of CTOR.  */
-      else if (CONSTRUCTOR_NELTS (ctor)
-	       && tree_int_cst_compare (
-		    bit_position (index),
-		    bit_position (CONSTRUCTOR_ELTS (ctor)->last ().index))
-		    > 0)
-	{
-	  idx = CONSTRUCTOR_NELTS (ctor);
-	  goto insert;
-	}
-
-      /* Otherwise, we need to iterate over CTOR to find or insert INDEX
-	 appropriately.  */
-
-      for (; vec_safe_iterate (CONSTRUCTOR_ELTS (ctor), idx, &cep);
-	   idx++, fields = DECL_CHAIN (fields))
-	{
-	  if (index == cep->index)
-	    goto found;
-
-	  /* The field we're initializing must be on the field
-	     list.  Look to see if it is present before the
-	     field the current ELT initializes.  */
-	  for (; fields != cep->index; fields = DECL_CHAIN (fields))
-	    if (index == fields)
-	      goto insert;
-	}
-      /* We fell off the end of the CONSTRUCTOR, so insert a new
-	 entry at the end.  */
-
-      insert : {
-	constructor_elt ce = {index, NULL_TREE};
-
-	vec_safe_insert (CONSTRUCTOR_ELTS (ctor), idx, ce);
-	cep = CONSTRUCTOR_ELT (ctor, idx);
-      }
-    found:;
-
-      return cep;
-    }
 }
 
 /* Complain about a const object OBJ being modified in a constant expression.
@@ -2617,31 +2978,6 @@ var_in_maybe_constexpr_fn (tree t)
   return (DECL_FUNCTION_SCOPE_P (t) && maybe_constexpr_fn (DECL_CONTEXT (t)));
 }
 
-// forked from gcc/cp/constexpr.cc array_index_cmp
-
-/* Some of the expressions fed to the constexpr mechanism are calls to
-   constructors, which have type void.  In that case, return the type being
-   initialized by the constructor.  */
-
-static tree
-initialized_type (tree t)
-{
-  if (TYPE_P (t))
-    return t;
-  tree type = TREE_TYPE (t);
-  if (TREE_CODE (t) == CALL_EXPR)
-    {
-      /* A constructor call has void type, so we need to look deeper.  */
-      tree fn = get_function_named_in_call (t);
-      if (fn && TREE_CODE (fn) == FUNCTION_DECL && DECL_CXX_CONSTRUCTOR_P (fn))
-	type = DECL_CONTEXT (fn);
-    }
-  else if (TREE_CODE (t) == COMPOUND_EXPR)
-    return initialized_type (TREE_OPERAND (t, 1));
-
-  return cv_unqualified (type);
-}
-
 /* P0859: A function is needed for constant evaluation if it is a constexpr
    function that is named by an expression ([basic.def.odr]) that is
    potentially constant evaluated.
@@ -2852,96 +3188,6 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert)
     }
 
   return -1;
-}
-
-/* Return true if T is a valid constant initializer.  If a CONSTRUCTOR
-   initializes all the members, the CONSTRUCTOR_NO_CLEARING flag will be
-   cleared.
-   FIXME speed this up, it's taking 16% of compile time on sieve testcase.  */
-
-bool
-reduced_constant_expression_p (tree t)
-{
-  if (t == NULL_TREE)
-    return false;
-
-  switch (TREE_CODE (t))
-    {
-    case PTRMEM_CST:
-      /* Even if we can't lower this yet, it's constant.  */
-      return true;
-
-    case CONSTRUCTOR:
-      /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
-      tree field;
-      if (CONSTRUCTOR_NO_CLEARING (t))
-	{
-	  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
-	    /* An initialized vector would have a VECTOR_CST.  */
-	    return false;
-	  else if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
-	    {
-	      /* There must be a valid constant initializer at every array
-		 index.  */
-	      tree min = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (t)));
-	      tree max = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t)));
-	      tree cursor = min;
-	      for (auto &e : CONSTRUCTOR_ELTS (t))
-		{
-		  if (!reduced_constant_expression_p (e.value))
-		    return false;
-		  if (array_index_cmp (cursor, e.index) != 0)
-		    return false;
-		  if (TREE_CODE (e.index) == RANGE_EXPR)
-		    cursor = TREE_OPERAND (e.index, 1);
-		  cursor = int_const_binop (PLUS_EXPR, cursor, size_one_node);
-		}
-	      if (find_array_ctor_elt (t, max) == -1)
-		return false;
-	      goto ok;
-	    }
-	  else if (TREE_CODE (TREE_TYPE (t)) == UNION_TYPE)
-	    {
-	      if (CONSTRUCTOR_NELTS (t) == 0)
-		/* An initialized union has a constructor element.  */
-		return false;
-	      /* And it only initializes one member.  */
-	      field = NULL_TREE;
-	    }
-	  else
-	    field = next_initializable_field (TYPE_FIELDS (TREE_TYPE (t)));
-	}
-      else
-	field = NULL_TREE;
-      for (auto &e : CONSTRUCTOR_ELTS (t))
-	{
-	  /* If VAL is null, we're in the middle of initializing this
-	     element.  */
-	  if (!reduced_constant_expression_p (e.value))
-	    return false;
-	  /* Empty class field may or may not have an initializer.  */
-	  for (; field && e.index != field;
-	       field = next_initializable_field (DECL_CHAIN (field)))
-	    if (!is_really_empty_class (TREE_TYPE (field),
-					/*ignore_vptr*/ false))
-	      return false;
-	  if (field)
-	    field = next_initializable_field (DECL_CHAIN (field));
-	}
-      /* There could be a non-empty field at the end.  */
-      for (; field; field = next_initializable_field (DECL_CHAIN (field)))
-	if (!is_really_empty_class (TREE_TYPE (field), /*ignore_vptr*/ false))
-	  return false;
-    ok:
-      if (CONSTRUCTOR_NO_CLEARING (t))
-	/* All the fields are initialized.  */
-	CONSTRUCTOR_NO_CLEARING (t) = false;
-      return true;
-
-    default:
-      /* FIXME are we calling this too much?  */
-      return initializer_constant_valid_p (t, TREE_TYPE (t)) != NULL_TREE;
-    }
 }
 
 /* Some expressions may have constant operands but are not constant

@@ -4079,4 +4079,33 @@ build_new_constexpr_heap_type (tree elt_type, tree cookie_size, tree full_size)
   return rtype;
 }
 
+// forked from gcc/cp/class.cc field_poverlapping_p
+
+/* Return true iff FIELD_DECL DECL is potentially overlapping.  */
+
+static bool
+field_poverlapping_p (tree decl)
+{
+  return lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (decl));
+}
+
+// forked from gcc/cp/class.cc is_empty_field
+
+/* Return true iff DECL is an empty field, either for an empty base or a
+   [[no_unique_address]] data member.  */
+
+bool
+is_empty_field (tree decl)
+{
+  if (!decl || TREE_CODE (decl) != FIELD_DECL)
+    return false;
+
+  bool r = (is_empty_class (TREE_TYPE (decl)) && (field_poverlapping_p (decl)));
+
+  /* Empty fields should have size zero.  */
+  gcc_checking_assert (!r || integer_zerop (DECL_SIZE (decl)));
+
+  return r;
+}
+
 } // namespace Rust
