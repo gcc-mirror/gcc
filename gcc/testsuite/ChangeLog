@@ -1,3 +1,18 @@
+2022-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105947
+	* gcc.dg/analyzer/function-ptr-5.c: New test.
+
+2022-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106533
+	* gcc.dg/tree-ssa/ldist-39.c: New testcase.
+
+2022-08-05  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* lib/target-supports.exp (check_p9modulo_hw_available): Correct return
+	value.
+
 2022-08-04  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/subnot.c: New test.

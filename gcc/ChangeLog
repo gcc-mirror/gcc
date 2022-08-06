@@ -1,3 +1,46 @@
+2022-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105947
+	* doc/invoke.texi: Add -Wanalyzer-jump-through-null.
+
+2022-08-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* expmed.cc (emit_store_flag_1): Move code to expand double word
+	equality and inequality against zero or -1, using word operations,
+	to after trying to use the backend's cstore<mode>4 optab/expander.
+
+2022-08-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/106534
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker): Guard the
+	value_replacement and store_elim from diamonds.
+
+2022-08-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-threadbackward.cc (back_threader::maybe_register_path):
+	Check whether the registry register_path rejected the path.
+	(back_threader_registry::register_path): Return whether
+	register_jump_thread succeeded.
+
+2022-08-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106514
+	* value-range.cc (unsupported_range::unsupported_range): Move...
+	* value-range.h (unsupported_range::unsupported_range): ...here.
+	(unsupported_range::set_undefined): New.
+
+2022-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106533
+	* tree-loop-distribution.cc (loop_distribution::execute): Continue
+	analyzing the inner loops when find_seed_stmts_for_distribution
+	fails.
+
+2022-08-05  Andrew Pinski  <apinski@marvell.com>
+
+	* config/riscv/predicates.md (splittable_const_int_operand):
+	Remove the check for TARGET_64BIT for single bit const values.
+
 2022-08-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/106514

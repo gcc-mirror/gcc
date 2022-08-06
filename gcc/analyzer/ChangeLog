@@ -1,3 +1,11 @@
+2022-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105947
+	* analyzer.opt (Wanalyzer-jump-through-null): New option.
+	* engine.cc (class jump_through_null): New.
+	(exploded_graph::process_node): Complain about jumps through NULL
+	function pointers.
+
 2022-08-02  Immad Mir  <mirimmad@outlook.com>
 
 	PR analyzer/106298

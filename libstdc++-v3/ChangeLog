@@ -1,3 +1,17 @@
+2022-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/scope (__cpp_lib_experimental_scope):
+	Define.
+	* testsuite/experimental/scopeguard/uniqueres.cc: Check macro.
+
+2022-08-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/scope: New file.
+	* testsuite/experimental/scopeguard/uniqueres.cc: New test.
+	* testsuite/experimental/scopeguard/exit.cc: New test.
+
 2022-08-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/string_view (basic_string_view(Range&&)): Add
