@@ -1233,6 +1233,46 @@ get_or_insert_ctor_field (tree ctor, tree index, int pos_hint = -1)
     }
 }
 
+// forked from gcc/cp/constexpr.cc cxx_eval_vector_conditional_expression
+
+/* Subroutine of cxx_eval_constant_expression.
+   Attempt to evaluate vector condition expressions.  Unlike
+   cxx_eval_conditional_expression, VEC_COND_EXPR acts like a normal
+   ternary arithmetics operation, where all 3 arguments have to be
+   evaluated as constants and then folding computes the result from
+   them.  */
+
+static tree
+eval_vector_conditional_expression (const constexpr_ctx *ctx, tree t,
+				    bool *non_constant_p, bool *overflow_p)
+{
+  tree arg1
+    = eval_constant_expression (ctx, TREE_OPERAND (t, 0),
+				/*lval*/ false, non_constant_p, overflow_p);
+  VERIFY_CONSTANT (arg1);
+  tree arg2
+    = eval_constant_expression (ctx, TREE_OPERAND (t, 1),
+				/*lval*/ false, non_constant_p, overflow_p);
+  VERIFY_CONSTANT (arg2);
+  tree arg3
+    = eval_constant_expression (ctx, TREE_OPERAND (t, 2),
+				/*lval*/ false, non_constant_p, overflow_p);
+  VERIFY_CONSTANT (arg3);
+  location_t loc = EXPR_LOCATION (t);
+  tree type = TREE_TYPE (t);
+  tree r = fold_ternary_loc (loc, VEC_COND_EXPR, type, arg1, arg2, arg3);
+  if (r == NULL_TREE)
+    {
+      if (arg1 == TREE_OPERAND (t, 0) && arg2 == TREE_OPERAND (t, 1)
+	  && arg3 == TREE_OPERAND (t, 2))
+	r = t;
+      else
+	r = build3_loc (loc, VEC_COND_EXPR, type, arg1, arg2, arg3);
+    }
+  VERIFY_CONSTANT (r);
+  return r;
+}
+
 // forked from gcc/cp/constexpr.cc cxx_eval_bare_aggregate
 
 /* Subroutine of cxx_eval_constant_expression.
@@ -1770,6 +1810,11 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	}
       r = eval_conditional_expression (ctx, t, lval, non_constant_p, overflow_p,
 				       jump_target);
+      break;
+
+    case VEC_COND_EXPR:
+      r = eval_vector_conditional_expression (ctx, t, non_constant_p,
+					      overflow_p);
       break;
 
     case CONSTRUCTOR:
