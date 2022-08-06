@@ -1730,6 +1730,31 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	break;
       }
 
+      case COMPOUND_EXPR: {
+	/* check_return_expr sometimes wraps a TARGET_EXPR in a
+	   COMPOUND_EXPR; don't get confused.  Also handle EMPTY_CLASS_EXPR
+	   introduced by build_call_a.  */
+	tree op0 = TREE_OPERAND (t, 0);
+	tree op1 = TREE_OPERAND (t, 1);
+	STRIP_NOPS (op1);
+	if ((TREE_CODE (op0) == TARGET_EXPR && op1 == TARGET_EXPR_SLOT (op0))
+	    || TREE_CODE (op1) == EMPTY_CLASS_EXPR)
+	  r = eval_constant_expression (ctx, op0, lval, non_constant_p,
+					overflow_p, jump_target);
+	else
+	  {
+	    /* Check that the LHS is constant and then discard it.  */
+	    eval_constant_expression (ctx, op0, true, non_constant_p,
+				      overflow_p, jump_target);
+	    if (*non_constant_p)
+	      return t;
+	    op1 = TREE_OPERAND (t, 1);
+	    r = eval_constant_expression (ctx, op1, lval, non_constant_p,
+					  overflow_p, jump_target);
+	  }
+      }
+      break;
+
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       if (lval)
@@ -1815,6 +1840,41 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
     case VEC_COND_EXPR:
       r = eval_vector_conditional_expression (ctx, t, non_constant_p,
 					      overflow_p);
+      break;
+
+    case TRY_CATCH_EXPR:
+      if (TREE_OPERAND (t, 0) == NULL_TREE)
+	{
+	  r = void_node;
+	  break;
+	}
+      r = eval_constant_expression (ctx, TREE_OPERAND (t, 0), lval,
+				    non_constant_p, overflow_p, jump_target);
+      break;
+
+      case CLEANUP_POINT_EXPR: {
+	auto_vec<tree, 2> cleanups;
+	vec<tree> *prev_cleanups = ctx->global->cleanups;
+	ctx->global->cleanups = &cleanups;
+	r = eval_constant_expression (ctx, TREE_OPERAND (t, 0), lval,
+				      non_constant_p, overflow_p, jump_target);
+	ctx->global->cleanups = prev_cleanups;
+	unsigned int i;
+	tree cleanup;
+	/* Evaluate the cleanups.  */
+	FOR_EACH_VEC_ELT_REVERSE (cleanups, i, cleanup)
+	  eval_constant_expression (ctx, cleanup, false, non_constant_p,
+				    overflow_p);
+      }
+      break;
+
+    case TRY_FINALLY_EXPR:
+      r = eval_constant_expression (ctx, TREE_OPERAND (t, 0), lval,
+				    non_constant_p, overflow_p, jump_target);
+      if (!*non_constant_p)
+	/* Also evaluate the cleanup.  */
+	eval_constant_expression (ctx, TREE_OPERAND (t, 1), true,
+				  non_constant_p, overflow_p);
       break;
 
     case CONSTRUCTOR:
