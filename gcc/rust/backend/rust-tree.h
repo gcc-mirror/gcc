@@ -1221,6 +1221,9 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 
 #define current_class_type scope_chain->class_type
 
+#define in_discarded_stmt scope_chain->discarded_stmt
+#define in_consteval_if_p scope_chain->consteval_if_p
+
 /* Nonzero means that this type is being defined.  I.e., the left brace
    starting the definition of this type has been seen.  */
 #define TYPE_BEING_DEFINED(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->being_defined)
@@ -1418,7 +1421,61 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define STAT_TYPE_HIDDEN_P(N) OVL_HIDDEN_P (N)
 #define STAT_DECL_HIDDEN_P(N) OVL_DEDUP_P (N)
 
+/* The binding level currently in effect.  */
+
+#define current_binding_level                                                  \
+  (*(cfun && cp_function_chain && cp_function_chain->bindings                  \
+       ? &cp_function_chain->bindings                                          \
+       : &scope_chain->bindings))
+
 // Above macros are copied from gcc/cp/name-lookup.cc
+
+// forked from gcc/cp/name_lookup.h scope_kind
+
+/* The kinds of scopes we recognize.  */
+enum scope_kind
+{
+  sk_block = 0,	     /* An ordinary block scope.  This enumerator must
+			have the value zero because "cp_binding_level"
+			is initialized by using "memset" to set the
+			contents to zero, and the default scope kind
+			is "sk_block".  */
+  sk_cleanup,	     /* A scope for (pseudo-)scope for cleanup.  It is
+			pseudo in that it is transparent to name lookup
+			activities.  */
+  sk_try,	     /* A try-block.  */
+  sk_catch,	     /* A catch-block.  */
+  sk_for,	     /* The scope of the variable declared in a
+			init-statement.  */
+  sk_cond,	     /* The scope of the variable declared in the condition
+			of an if or switch statement.  */
+  sk_function_parms, /* The scope containing function parameters.  */
+  sk_class,	     /* The scope containing the members of a class.  */
+  sk_scoped_enum,    /* The scope containing the enumerators of a C++11
+			scoped enumeration.  */
+  sk_namespace,	     /* The scope containing the members of a
+			namespace, including the global scope.  */
+  sk_template_parms, /* A scope for template parameters.  */
+  sk_template_spec,  /* Like sk_template_parms, but for an explicit
+			specialization.  Since, by definition, an
+			explicit specialization is introduced by
+			"template <>", this scope is always empty.  */
+  sk_transaction,    /* A synchronized or atomic statement.  */
+  sk_omp	     /* An OpenMP structured block.  */
+};
+
+// forked from gcc/cp/cp-tree.h cp_built_in_function
+
+/* BUILT_IN_FRONTEND function codes.  */
+enum cp_built_in_function
+{
+  CP_BUILT_IN_IS_CONSTANT_EVALUATED,
+  CP_BUILT_IN_INTEGER_PACK,
+  CP_BUILT_IN_IS_CORRESPONDING_MEMBER,
+  CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS,
+  CP_BUILT_IN_SOURCE_LOCATION,
+  CP_BUILT_IN_LAST
+};
 
 // forked from gcc/cp/cp-tree.h warning_sentinel
 
@@ -2539,12 +2596,9 @@ extern bool reduced_constant_expression_p (tree);
 extern tree cv_unqualified (tree);
 
 extern tree cp_get_callee (tree);
-extern tree cp_get_callee_fndecl_nofold (tree);
+extern tree rs_get_callee_fndecl_nofold (tree);
 
 extern bool is_nondependent_static_init_expression (tree);
-
-extern tree
-maybe_constant_init (tree, tree = NULL_TREE, bool = false);
 
 extern tree build_nop (tree, tree);
 
@@ -2608,6 +2662,11 @@ extern bool decl_constant_var_p (tree);
 extern tree build_new_constexpr_heap_type (tree, tree, tree);
 
 extern bool is_empty_field (tree);
+
+extern bool
+in_immediate_context ();
+
+extern tree cp_get_callee_fndecl_nofold (tree);
 
 // forked from gcc/cp/cp-tree.h
 
@@ -2810,6 +2869,11 @@ cxx_incomplete_type_error (const_tree value, const_tree type)
 
 extern location_t
 location_of (tree t);
+
+namespace Compile {
+extern tree
+maybe_constant_init (tree, tree = NULL_TREE, bool = false);
+}
 
 } // namespace Rust
 

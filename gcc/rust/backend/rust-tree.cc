@@ -4108,4 +4108,47 @@ is_empty_field (tree decl)
   return r;
 }
 
+// forked from gcc/cp/call.cc in_immediate_context
+
+/* Return true if in an immediate function context, or an unevaluated operand,
+   or a subexpression of an immediate invocation.  */
+
+bool
+in_immediate_context ()
+{
+  return false;
+}
+
+// forked from gcc/cp/cvt.cc cp_get_fndecl_from_callee
+
+/* FN is the callee of a CALL_EXPR or AGGR_INIT_EXPR; return the FUNCTION_DECL
+   if we can.  */
+
+tree
+rs_get_fndecl_from_callee (tree fn, bool fold /* = true */)
+{
+  if (fn == NULL_TREE)
+    return fn;
+  if (TREE_CODE (fn) == FUNCTION_DECL)
+    return fn;
+  tree type = TREE_TYPE (fn);
+  if (type == NULL_TREE || !INDIRECT_TYPE_P (type))
+    return NULL_TREE;
+  if (fold)
+    fn = Compile::maybe_constant_init (fn);
+  STRIP_NOPS (fn);
+  if (TREE_CODE (fn) == ADDR_EXPR || TREE_CODE (fn) == FDESC_EXPR)
+    fn = TREE_OPERAND (fn, 0);
+  if (TREE_CODE (fn) == FUNCTION_DECL)
+    return fn;
+  return NULL_TREE;
+}
+
+// forked from gcc/cp/cvt.cc cp_get_callee_fndecl_nofold
+tree
+rs_get_callee_fndecl_nofold (tree call)
+{
+  return rs_get_fndecl_from_callee (cp_get_callee (call), false);
+}
+
 } // namespace Rust

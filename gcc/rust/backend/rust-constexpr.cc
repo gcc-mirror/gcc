@@ -31,6 +31,7 @@
 #include "tree-inline.h"
 #include "vec.h"
 #include "rust-target.h"
+#include "function.h"
 
 #define VERIFY_CONSTANT(X)                                                     \
   do                                                                           \
@@ -4028,6 +4029,323 @@ eval_unary_expression (const constexpr_ctx *ctx, tree t, bool /*lval*/,
     }
   VERIFY_CONSTANT (r);
   return r;
+}
+
+// forked from gcc/cp/constexpr.cc cxx_eval_outermost_constant_expr
+
+/* ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
+   STRICT has the same sense as for constant_value_1: true if we only allow
+   conforming C++ constant expressions, or false if we want a constant value
+   even if it doesn't conform.
+   MANIFESTLY_CONST_EVAL is true if T is manifestly const-evaluated as
+   per P0595 even when ALLOW_NON_CONSTANT is true.
+   CONSTEXPR_DTOR is true when evaluating the dtor of a constexpr variable.
+   OBJECT must be non-NULL in that case.  */
+
+static tree
+cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
+				  bool strict = true,
+				  bool manifestly_const_eval = false,
+				  bool constexpr_dtor = false,
+				  tree object = NULL_TREE)
+{
+  auto_timevar time (TV_CONSTEXPR);
+
+  bool non_constant_p = false;
+  bool overflow_p = false;
+
+  if (BRACE_ENCLOSED_INITIALIZER_P (t))
+    {
+      gcc_checking_assert (allow_non_constant);
+      return t;
+    }
+
+  constexpr_global_ctx global_ctx;
+  constexpr_ctx ctx
+    = {&global_ctx, NULL,
+       NULL,	    NULL,
+       NULL,	    NULL,
+       NULL,	    allow_non_constant,
+       strict,	    manifestly_const_eval || !allow_non_constant};
+
+  /* Turn off -frounding-math for manifestly constant evaluation.  */
+  warning_sentinel rm (flag_rounding_math, ctx.manifestly_const_eval);
+  tree type = initialized_type (t);
+  tree r = t;
+  bool is_consteval = false;
+  if (VOID_TYPE_P (type))
+    {
+      if (constexpr_dtor)
+	/* Used for destructors of array elements.  */
+	type = TREE_TYPE (object);
+      else
+	{
+	  if (TREE_CODE (t) != CALL_EXPR)
+	    return t;
+	  /* Calls to immediate functions returning void need to be
+	     evaluated.  */
+	  tree fndecl = rs_get_callee_fndecl_nofold (t);
+	  if (fndecl == NULL_TREE || !DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	    return t;
+	  else
+	    is_consteval = true;
+	}
+    }
+  else if ((TREE_CODE (t) == CALL_EXPR || TREE_CODE (t) == TARGET_EXPR))
+    {
+      /* For non-concept checks, determine if it is consteval.  */
+      tree x = t;
+      if (TREE_CODE (x) == TARGET_EXPR)
+	x = TARGET_EXPR_INITIAL (x);
+      tree fndecl = rs_get_callee_fndecl_nofold (x);
+      if (fndecl && DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	is_consteval = true;
+    }
+  if (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
+    {
+      /* In C++14 an NSDMI can participate in aggregate initialization,
+	 and can refer to the address of the object being initialized, so
+	 we need to pass in the relevant VAR_DECL if we want to do the
+	 evaluation in a single pass.  The evaluation will dynamically
+	 update ctx.values for the VAR_DECL.  We use the same strategy
+	 for C++11 constexpr constructors that refer to the object being
+	 initialized.  */
+      if (constexpr_dtor)
+	{
+	  gcc_assert (object && VAR_P (object));
+	  gcc_assert (DECL_DECLARED_CONSTEXPR_P (object));
+	  gcc_assert (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (object));
+	  if (error_operand_p (DECL_INITIAL (object)))
+	    return t;
+	  ctx.ctor = unshare_expr (DECL_INITIAL (object));
+	  TREE_READONLY (ctx.ctor) = false;
+	  /* Temporarily force decl_really_constant_value to return false
+	     for it, we want to use ctx.ctor for the current value instead.  */
+	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (object) = false;
+	}
+      else
+	{
+	  ctx.ctor = build_constructor (type, NULL);
+	  CONSTRUCTOR_NO_CLEARING (ctx.ctor) = true;
+	}
+      if (!object)
+	{
+	  if (TREE_CODE (t) == TARGET_EXPR)
+	    object = TARGET_EXPR_SLOT (t);
+	}
+      ctx.object = object;
+      if (object)
+	gcc_assert (
+	  same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (object)));
+      if (object && DECL_P (object))
+	global_ctx.values.put (object, ctx.ctor);
+      if (TREE_CODE (r) == TARGET_EXPR)
+	/* Avoid creating another CONSTRUCTOR when we expand the
+	   TARGET_EXPR.  */
+	r = TARGET_EXPR_INITIAL (r);
+    }
+
+  auto_vec<tree, 16> cleanups;
+  global_ctx.cleanups = &cleanups;
+
+  if (manifestly_const_eval)
+    instantiate_constexpr_fns (r);
+  r = eval_constant_expression (&ctx, r, false, &non_constant_p, &overflow_p);
+
+  if (!constexpr_dtor)
+    verify_constant (r, allow_non_constant, &non_constant_p, &overflow_p);
+  else
+    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (object) = true;
+
+  unsigned int i;
+  tree cleanup;
+  /* Evaluate the cleanups.  */
+  FOR_EACH_VEC_ELT_REVERSE (cleanups, i, cleanup)
+    eval_constant_expression (&ctx, cleanup, false, &non_constant_p,
+			      &overflow_p);
+
+  /* Mutable logic is a bit tricky: we want to allow initialization of
+     constexpr variables with mutable members, but we can't copy those
+     members to another constexpr variable.  */
+  if (TREE_CODE (r) == CONSTRUCTOR && CONSTRUCTOR_MUTABLE_POISON (r))
+    {
+      if (!allow_non_constant)
+	error ("%qE is not a constant expression because it refers to "
+	       "mutable subobjects of %qT",
+	       t, type);
+      non_constant_p = true;
+    }
+
+  if (TREE_CODE (r) == CONSTRUCTOR && CONSTRUCTOR_NO_CLEARING (r))
+    {
+      if (!allow_non_constant)
+	error ("%qE is not a constant expression because it refers to "
+	       "an incompletely initialized variable",
+	       t);
+      TREE_CONSTANT (r) = false;
+      non_constant_p = true;
+    }
+
+  if (!global_ctx.heap_vars.is_empty ())
+    {
+      tree heap_var
+	= rs_walk_tree_without_duplicates (&r, find_heap_var_refs, NULL);
+      unsigned int i;
+      if (heap_var)
+	{
+	  if (!allow_non_constant && !non_constant_p)
+	    error_at (DECL_SOURCE_LOCATION (heap_var),
+		      "%qE is not a constant expression because it refers to "
+		      "a result of %<operator new%>",
+		      t);
+	  r = t;
+	  non_constant_p = true;
+	}
+      FOR_EACH_VEC_ELT (global_ctx.heap_vars, i, heap_var)
+	{
+	  if (DECL_NAME (heap_var) != heap_deleted_identifier)
+	    {
+	      if (!allow_non_constant && !non_constant_p)
+		error_at (DECL_SOURCE_LOCATION (heap_var),
+			  "%qE is not a constant expression because allocated "
+			  "storage has not been deallocated",
+			  t);
+	      r = t;
+	      non_constant_p = true;
+	    }
+	  varpool_node::get (heap_var)->remove ();
+	}
+    }
+
+  /* Check that immediate invocation does not return an expression referencing
+     any immediate function decls.  */
+  if (is_consteval || in_immediate_context ())
+    if (tree immediate_fndecl
+	= rs_walk_tree_without_duplicates (&r, find_immediate_fndecl, NULL))
+      {
+	if (!allow_non_constant && !non_constant_p)
+	  error_at (rs_expr_loc_or_input_loc (t),
+		    "immediate evaluation returns address of immediate "
+		    "function %qD",
+		    immediate_fndecl);
+	r = t;
+	non_constant_p = true;
+      }
+
+  if (non_constant_p)
+    /* If we saw something bad, go back to our argument.  The wrapping below is
+       only for the cases of TREE_CONSTANT argument or overflow.  */
+    r = t;
+
+  if (!non_constant_p && overflow_p)
+    non_constant_p = true;
+
+  /* Unshare the result.  */
+  bool should_unshare = true;
+  if (r == t || (TREE_CODE (t) == TARGET_EXPR && TARGET_EXPR_INITIAL (t) == r))
+    should_unshare = false;
+
+  if (non_constant_p && !allow_non_constant)
+    return error_mark_node;
+  else if (constexpr_dtor)
+    return r;
+  else if (non_constant_p && TREE_CONSTANT (r))
+    {
+      /* This isn't actually constant, so unset TREE_CONSTANT.
+	 Don't clear TREE_CONSTANT on ADDR_EXPR, as the middle-end requires
+	 it to be set if it is invariant address, even when it is not
+	 a valid C++ constant expression.  Wrap it with a NOP_EXPR
+	 instead.  */
+      if (EXPR_P (r) && TREE_CODE (r) != ADDR_EXPR)
+	r = copy_node (r);
+      else if (TREE_CODE (r) == CONSTRUCTOR)
+	r = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (r), r);
+      else
+	r = build_nop (TREE_TYPE (r), r);
+      TREE_CONSTANT (r) = false;
+    }
+  else if (non_constant_p)
+    return t;
+
+  if (should_unshare)
+    r = unshare_expr (r);
+
+  if (TREE_CODE (r) == CONSTRUCTOR && CLASS_TYPE_P (TREE_TYPE (r)))
+    {
+      r = adjust_temp_type (type, r);
+      if (TREE_CODE (t) == TARGET_EXPR && TARGET_EXPR_INITIAL (t) == r)
+	return t;
+    }
+
+  /* Remember the original location if that wouldn't need a wrapper.  */
+  if (location_t loc = EXPR_LOCATION (t))
+    protected_set_expr_location (r, loc);
+
+  return r;
+}
+
+/* Like is_constant_expression, but allow const variables that are not allowed
+   under constexpr rules.  */
+
+bool
+is_static_init_expression (tree t)
+{
+  // return potential_constant_expression_1 (t, false, false, true, tf_none);
+  // faisal: just return false for now to make it compile
+}
+
+/* Returns true if T is a potential static initializer expression that is not
+   instantiation-dependent.  */
+
+bool
+is_nondependent_static_init_expression (tree t)
+{
+  return (!type_unknown_p (t) && is_static_init_expression (t));
+}
+
+/* Like maybe_constant_value, but returns a CONSTRUCTOR directly, rather
+   than wrapped in a TARGET_EXPR.
+   ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
+   MANIFESTLY_CONST_EVAL is true if T is manifestly const-evaluated as
+   per P0595 even when ALLOW_NON_CONSTANT is true.  */
+
+static tree
+maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
+		       bool manifestly_const_eval)
+{
+  if (!t)
+    return t;
+  if (TREE_CODE (t) == EXPR_STMT)
+    t = TREE_OPERAND (t, 0);
+  if (TREE_CODE (t) == CONVERT_EXPR && VOID_TYPE_P (TREE_TYPE (t)))
+    t = TREE_OPERAND (t, 0);
+  if (TREE_CODE (t) == INIT_EXPR)
+    t = TREE_OPERAND (t, 1);
+  if (TREE_CODE (t) == TARGET_EXPR)
+    t = TARGET_EXPR_INITIAL (t);
+  if (!is_nondependent_static_init_expression (t))
+    /* Don't try to evaluate it.  */;
+  else if (CONSTANT_CLASS_P (t) && allow_non_constant)
+    /* No evaluation needed.  */;
+  else
+    t = cxx_eval_outermost_constant_expr (t, allow_non_constant,
+					  /*strict*/ false,
+					  manifestly_const_eval, false, decl);
+  if (TREE_CODE (t) == TARGET_EXPR)
+    {
+      tree init = TARGET_EXPR_INITIAL (t);
+      if (TREE_CODE (init) == CONSTRUCTOR)
+	t = init;
+    }
+  return t;
+}
+
+/* Wrapper for maybe_constant_init_1 which permits non constants.  */
+
+tree
+maybe_constant_init (tree t, tree decl, bool manifestly_const_eval)
+{
+  return maybe_constant_init_1 (t, decl, true, manifestly_const_eval);
 }
 
 // #include "gt-rust-rust-constexpr.h"
