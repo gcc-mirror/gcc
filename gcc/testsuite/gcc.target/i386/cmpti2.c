@@ -1,5 +1,5 @@
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mno-stv" } */
 
 __int128 x;
 __int128 y;
