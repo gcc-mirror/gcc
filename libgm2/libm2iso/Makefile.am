@@ -29,7 +29,8 @@ version := $(shell $(CC) -dumpversion)
 # Directory in which the compiler finds libraries etc.
 libsubdir = $(libdir)/gcc/$(target_alias)/$(version)
 # Used to install the shared libgcc.
-slibdir = @slibdir@
+# was slibdir = @slibdir@
+slibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 
 toolexeclibdir=@toolexeclibdir@
 toolexecdir=@toolexecdir@
@@ -40,7 +41,6 @@ MULTIOSDIR := $(shell $(CC) $(CFLAGS) -print-multi-os-directory)
 MULTIOSSUBDIR := $(shell if test x$(MULTIOSDIR) != x.; then echo /$(MULTIOSDIR); fi)
 inst_libdir = $(libsubdir)$(MULTISUBDIR)
 inst_slibdir = $(slibdir)$(MULTIOSSUBDIR)
-
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -79,8 +79,6 @@ AM_MAKEFLAGS = \
 	"includedir=$(includedir)" \
 	"prefix=$(prefix)" \
 	"tooldir=$(tooldir)" \
-        "toolexeclibdir=$(toolexeclibdir)" \
-        "toolexecdir=$(toolexecdir)" \
 	"gxx_include_dir=$(gxx_include_dir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \

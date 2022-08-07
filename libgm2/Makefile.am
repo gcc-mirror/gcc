@@ -43,7 +43,7 @@ toolexecdir=@toolexecdir@
 
 SUBDIRS = libm2min libm2log libm2cor libm2iso libm2pim
 GM2_BUILDDIR := $(shell pwd)
-
+gm2_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -82,8 +82,6 @@ AM_MAKEFLAGS = \
 	"includedir=$(includedir)" \
 	"prefix=$(prefix)" \
 	"tooldir=$(tooldir)" \
-        "toolexeclibdir=$(toolexeclibdir)" \
-        "toolexecdir=$(toolexecdir)" \
 	"gxx_include_dir=$(gxx_include_dir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
