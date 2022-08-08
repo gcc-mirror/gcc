@@ -1279,6 +1279,24 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define TARGET_EXPR_DIRECT_INIT_P(NODE)                                        \
   TREE_LANG_FLAG_2 (TARGET_EXPR_CHECK (NODE))
 
+/* Nonzero if DECL is a declaration of __builtin_constant_p.  */
+#define DECL_IS_BUILTIN_CONSTANT_P(NODE)                                       \
+  (TREE_CODE (NODE) == FUNCTION_DECL                                           \
+   && DECL_BUILT_IN_CLASS (NODE) == BUILT_IN_NORMAL                            \
+   && DECL_FUNCTION_CODE (NODE) == BUILT_IN_CONSTANT_P)
+
+/* True iff this represents an lvalue being treated as an rvalue during return
+   or throw as per [class.copy.elision].  */
+#define IMPLICIT_RVALUE_P(NODE)                                                \
+  TREE_LANG_FLAG_3 (TREE_CHECK2 ((NODE), NON_LVALUE_EXPR, STATIC_CAST_EXPR))
+
+/* Nonzero for _DECL means that this decl appears in (or will appear
+   in) as a member in a RECORD_TYPE or UNION_TYPE node.  It is also for
+   detecting circularity in case members are multiply defined.  In the
+   case of a VAR_DECL, it means that no definition has been seen, even
+   if an initializer has been.  */
+#define DECL_IN_AGGR_P(NODE) (DECL_LANG_FLAG_3 (NODE))
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
@@ -1400,6 +1418,16 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 
 // Above macros are copied from gcc/c-family/c-common.h
 
+// Below macros are copied from gcc/cp/name-lookup.h
+
+/* Lookup walker marking.  */
+#define LOOKUP_SEEN_P(NODE) TREE_VISITED (NODE)
+#define LOOKUP_FOUND_P(NODE)                                                   \
+  TREE_LANG_FLAG_4 (TREE_CHECK4 (NODE, RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, \
+				 NAMESPACE_DECL))
+
+// Above macros are copied from gcc/cp/name-lookup.h
+
 // Below macros are copied from gcc/cp/name-lookup.cc
 
 /* Create an overload suitable for recording an artificial TYPE_DECL
@@ -1434,6 +1462,22 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
        : &scope_chain->bindings))
 
 // Above macros are copied from gcc/cp/name-lookup.cc
+
+/* The various kinds of lvalues we distinguish.  */
+enum cp_lvalue_kind_flags
+{
+  clk_none = 0,	     /* Things that are not an lvalue.  */
+  clk_ordinary = 1,  /* An ordinary lvalue.  */
+  clk_rvalueref = 2, /* An xvalue (rvalue formed using an rvalue reference) */
+  clk_class = 4,     /* A prvalue of class or array type.  */
+  clk_bitfield = 8,  /* An lvalue for a bit-field.  */
+  clk_packed = 16,   /* An lvalue for a packed field.  */
+  clk_implicit_rval = 1 << 5 /* An lvalue being treated as an xvalue.  */
+};
+
+/* This type is used for parameters and variables which hold
+   combinations of the flags in enum cp_lvalue_kind_flags.  */
+typedef int cp_lvalue_kind;
 
 // forked from gcc/cp/name_lookup.h scope_kind
 
@@ -2673,6 +2717,29 @@ in_immediate_context ();
 
 extern tree cp_get_callee_fndecl_nofold (tree);
 
+extern bool
+cxx_mark_addressable (tree, bool = false);
+
+extern tree fold_builtin_source_location (location_t);
+
+extern tree build_address (tree);
+
+extern bool bitfield_p (const_tree);
+
+extern tree rvalue (tree);
+
+extern bool glvalue_p (const_tree);
+
+extern cp_lvalue_kind lvalue_kind (const_tree);
+
+extern tree
+decl_constant_value (tree, bool);
+
+extern tree lookup_enumerator (tree, tree);
+
+extern int
+is_class_type (tree, int);
+
 // forked from gcc/cp/cp-tree.h
 
 enum
@@ -2874,6 +2941,25 @@ cxx_incomplete_type_error (const_tree value, const_tree type)
 
 extern location_t
 location_of (tree t);
+
+/* Helpers for IMPLICIT_RVALUE_P to look through automatic dereference.  */
+
+inline bool
+implicit_rvalue_p (const_tree t)
+{
+  if (REFERENCE_REF_P (t))
+    t = TREE_OPERAND (t, 0);
+  return ((TREE_CODE (t) == NON_LVALUE_EXPR) && IMPLICIT_RVALUE_P (t));
+}
+inline tree
+set_implicit_rvalue_p (tree ot)
+{
+  tree t = ot;
+  if (REFERENCE_REF_P (t))
+    t = TREE_OPERAND (t, 0);
+  IMPLICIT_RVALUE_P (t) = 1;
+  return ot;
+}
 
 namespace Compile {
 extern tree

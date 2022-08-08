@@ -31,6 +31,11 @@
 #include "gimplify.h"
 #include "function.h"
 #include "gcc-rich-location.h"
+#include "target.h"
+#include "file-prefix-map.h"
+#include "cgraph.h"
+
+#include "output.h"
 
 // forked from gcc/c-family/c-common.cc c_global_trees
 tree c_global_trees[CTI_MAX];
@@ -44,6 +49,9 @@ namespace Rust {
 void
 mark_exp_read (tree exp)
 {
+  char tmp_name[32];
+  ASM_GENERATE_INTERNAL_LABEL (tmp_name, "Lsrc_loc", 1);
+
   if (exp == NULL)
     return;
 
@@ -4149,6 +4157,730 @@ tree
 rs_get_callee_fndecl_nofold (tree call)
 {
   return rs_get_fndecl_from_callee (cp_get_callee (call), false);
+}
+
+// forked from gcc/cp/init.cc is_class_type
+
+/* Report an error if TYPE is not a user-defined, class type.  If
+   OR_ELSE is nonzero, give an error message.  */
+
+int
+is_class_type (tree type, int or_else)
+{
+  if (type == error_mark_node)
+    return 0;
+
+  if (!CLASS_TYPE_P (type))
+    {
+      if (or_else)
+	error ("%qT is not a class type", type);
+      return 0;
+    }
+  return 1;
+}
+
+// forked from gcc/cp/decl.cc lookup_enumerator
+
+/* Look for an enumerator with the given NAME within the enumeration
+   type ENUMTYPE.  This routine is used primarily for qualified name
+   lookup into an enumerator in C++0x, e.g.,
+
+     enum class Color { Red, Green, Blue };
+
+     Color color = Color::Red;
+
+   Returns the value corresponding to the enumerator, or
+   NULL_TREE if no such enumerator was found.  */
+tree
+lookup_enumerator (tree enumtype, tree name)
+{
+  tree e;
+  gcc_assert (enumtype && TREE_CODE (enumtype) == ENUMERAL_TYPE);
+
+  e = purpose_member (name, TYPE_VALUES (enumtype));
+  return e ? TREE_VALUE (e) : NULL_TREE;
+}
+
+// forked from gcc/cp/init.cc constant_value_1
+// commented out mark_used
+
+/* If DECL is a scalar enumeration constant or variable with a
+   constant initializer, return the initializer (or, its initializers,
+   recursively); otherwise, return DECL.  If STRICT_P, the
+   initializer is only returned if DECL is a
+   constant-expression.  If RETURN_AGGREGATE_CST_OK_P, it is ok to
+   return an aggregate constant.  If UNSHARE_P, return an unshared
+   copy of the initializer.  */
+
+static tree
+constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p,
+		  bool unshare_p)
+{
+  while (TREE_CODE (decl) == CONST_DECL || decl_constant_var_p (decl)
+	 || (!strict_p && VAR_P (decl)
+	     && RS_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl))))
+    {
+      tree init;
+      /* If DECL is a static data member in a template
+	 specialization, we must instantiate it here.  The
+	 initializer for the static data member is not processed
+	 until needed; we need it now.  */
+      // mark_used (decl, tf_none);
+      init = DECL_INITIAL (decl);
+      if (init == error_mark_node)
+	{
+	  if (TREE_CODE (decl) == CONST_DECL
+	      || DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+	    /* Treat the error as a constant to avoid cascading errors on
+	       excessively recursive template instantiation (c++/9335).  */
+	    return init;
+	  else
+	    return decl;
+	}
+
+      /* Instantiate a non-dependent initializer for user variables.  We
+	 mustn't do this for the temporary for an array compound literal;
+	 trying to instatiate the initializer will keep creating new
+	 temporaries until we crash.  Probably it's not useful to do it for
+	 other artificial variables, either.  */
+      if (!DECL_ARTIFICIAL (decl))
+	init = instantiate_non_dependent_or_null (init);
+      if (!init || !TREE_TYPE (init) || !TREE_CONSTANT (init)
+	  || (!return_aggregate_cst_ok_p
+	      /* Unless RETURN_AGGREGATE_CST_OK_P is true, do not
+		 return an aggregate constant (of which string
+		 literals are a special case), as we do not want
+		 to make inadvertent copies of such entities, and
+		 we must be sure that their addresses are the
+		 same everywhere.  */
+	      && (TREE_CODE (init) == CONSTRUCTOR
+		  || TREE_CODE (init) == STRING_CST)))
+	break;
+      /* Don't return a CONSTRUCTOR for a variable with partial run-time
+	 initialization, since it doesn't represent the entire value.
+	 Similarly for VECTOR_CSTs created by cp_folding those
+	 CONSTRUCTORs.  */
+      if ((TREE_CODE (init) == CONSTRUCTOR || TREE_CODE (init) == VECTOR_CST)
+	  && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+	break;
+      /* If the variable has a dynamic initializer, don't use its
+	 DECL_INITIAL which doesn't reflect the real value.  */
+      if (VAR_P (decl) && TREE_STATIC (decl)
+	  && !DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)
+	  && DECL_NONTRIVIALLY_INITIALIZED_P (decl))
+	break;
+      decl = init;
+    }
+  return unshare_p ? unshare_expr (decl) : decl;
+}
+
+// forked from gcc/cp/init.cc decl_constant_value
+
+/* A more relaxed version of decl_really_constant_value, used by the
+   common C/C++ code.  */
+
+tree
+decl_constant_value (tree decl, bool unshare_p)
+{
+  return constant_value_1 (decl, /*strict_p=*/false,
+			   /*return_aggregate_cst_ok_p=*/true,
+			   /*unshare_p=*/unshare_p);
+}
+
+// Below is forked from gcc/cp/init.cc decl_constant_value
+
+tree
+decl_constant_value (tree decl)
+{
+  return decl_constant_value (decl, /*unshare_p=*/true);
+}
+
+// Below is forked from gcc/cp/cp-gimplify.cc
+
+/* Type for source_location_table hash_set.  */
+struct GTY ((for_user)) source_location_table_entry
+{
+  location_t loc;
+  unsigned uid;
+  tree var;
+};
+
+/* Traits class for function start hash maps below.  */
+
+struct source_location_table_entry_hash
+  : ggc_remove<source_location_table_entry>
+{
+  typedef source_location_table_entry value_type;
+  typedef source_location_table_entry compare_type;
+
+  static hashval_t hash (const source_location_table_entry &ref)
+  {
+    inchash::hash hstate (0);
+    hstate.add_int (ref.loc);
+    hstate.add_int (ref.uid);
+    return hstate.end ();
+  }
+
+  static bool equal (const source_location_table_entry &ref1,
+		     const source_location_table_entry &ref2)
+  {
+    return ref1.loc == ref2.loc && ref1.uid == ref2.uid;
+  }
+
+  static void mark_deleted (source_location_table_entry &ref)
+  {
+    ref.loc = UNKNOWN_LOCATION;
+    ref.uid = -1U;
+    ref.var = NULL_TREE;
+  }
+
+  static const bool empty_zero_p = true;
+
+  static void mark_empty (source_location_table_entry &ref)
+  {
+    ref.loc = UNKNOWN_LOCATION;
+    ref.uid = 0;
+    ref.var = NULL_TREE;
+  }
+
+  static bool is_deleted (const source_location_table_entry &ref)
+  {
+    return (ref.loc == UNKNOWN_LOCATION && ref.uid == -1U
+	    && ref.var == NULL_TREE);
+  }
+
+  static bool is_empty (const source_location_table_entry &ref)
+  {
+    return (ref.loc == UNKNOWN_LOCATION && ref.uid == 0
+	    && ref.var == NULL_TREE);
+  }
+
+  static void pch_nx (source_location_table_entry &p)
+  {
+    extern void gt_pch_nx (source_location_table_entry &);
+    gt_pch_nx (p);
+  }
+
+  static void pch_nx (source_location_table_entry &p, gt_pointer_operator op,
+		      void *cookie)
+  {
+    extern void gt_pch_nx (source_location_table_entry *, gt_pointer_operator,
+			   void *);
+    gt_pch_nx (&p, op, cookie);
+  }
+};
+
+static GTY (())
+  hash_table<source_location_table_entry_hash> *source_location_table;
+static GTY (()) unsigned int source_location_id;
+
+// Above is forked from gcc/cp/cp-gimplify.cc
+
+// forked from gcc/cp/tree.cc lvalue_kind
+
+/* If REF is an lvalue, returns the kind of lvalue that REF is.
+   Otherwise, returns clk_none.  */
+
+cp_lvalue_kind
+lvalue_kind (const_tree ref)
+{
+  cp_lvalue_kind op1_lvalue_kind = clk_none;
+  cp_lvalue_kind op2_lvalue_kind = clk_none;
+
+  /* Expressions of reference type are sometimes wrapped in
+     INDIRECT_REFs.  INDIRECT_REFs are just internal compiler
+     representation, not part of the language, so we have to look
+     through them.  */
+  if (REFERENCE_REF_P (ref))
+    return lvalue_kind (TREE_OPERAND (ref, 0));
+
+  if (TREE_TYPE (ref) && TYPE_REF_P (TREE_TYPE (ref)))
+    {
+      /* unnamed rvalue references are rvalues */
+      if (TYPE_REF_IS_RVALUE (TREE_TYPE (ref)) && TREE_CODE (ref) != PARM_DECL
+	  && !VAR_P (ref)
+	  && TREE_CODE (ref) != COMPONENT_REF
+	  /* Functions are always lvalues.  */
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (ref))) != FUNCTION_TYPE)
+	{
+	  op1_lvalue_kind = clk_rvalueref;
+	  if (implicit_rvalue_p (ref))
+	    op1_lvalue_kind |= clk_implicit_rval;
+	  return op1_lvalue_kind;
+	}
+
+      /* lvalue references and named rvalue references are lvalues.  */
+      return clk_ordinary;
+    }
+
+  if (ref == current_class_ptr)
+    return clk_none;
+
+  /* Expressions with cv void type are prvalues.  */
+  if (TREE_TYPE (ref) && VOID_TYPE_P (TREE_TYPE (ref)))
+    return clk_none;
+
+  switch (TREE_CODE (ref))
+    {
+    case SAVE_EXPR:
+      return clk_none;
+
+      /* preincrements and predecrements are valid lvals, provided
+	 what they refer to are valid lvals.  */
+    case PREINCREMENT_EXPR:
+    case PREDECREMENT_EXPR:
+    case TRY_CATCH_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case VIEW_CONVERT_EXPR:
+      return lvalue_kind (TREE_OPERAND (ref, 0));
+
+      case ARRAY_REF: {
+	tree op1 = TREE_OPERAND (ref, 0);
+	if (TREE_CODE (TREE_TYPE (op1)) == ARRAY_TYPE)
+	  {
+	    op1_lvalue_kind = lvalue_kind (op1);
+	    if (op1_lvalue_kind == clk_class)
+	      /* in the case of an array operand, the result is an lvalue if
+		 that operand is an lvalue and an xvalue otherwise */
+	      op1_lvalue_kind = clk_rvalueref;
+	    return op1_lvalue_kind;
+	  }
+	else
+	  return clk_ordinary;
+      }
+
+    case MEMBER_REF:
+    case DOTSTAR_EXPR:
+      if (TREE_CODE (ref) == MEMBER_REF)
+	op1_lvalue_kind = clk_ordinary;
+      else
+	op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 0));
+      if (TYPE_PTRMEMFUNC_P (TREE_TYPE (TREE_OPERAND (ref, 1))))
+	op1_lvalue_kind = clk_none;
+      else if (op1_lvalue_kind == clk_class)
+	/* The result of a .* expression whose second operand is a pointer to a
+	   data member is an lvalue if the first operand is an lvalue and an
+	   xvalue otherwise.  */
+	op1_lvalue_kind = clk_rvalueref;
+      return op1_lvalue_kind;
+
+    case COMPONENT_REF:
+      op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 0));
+      if (op1_lvalue_kind == clk_class)
+	/* If E1 is an lvalue, then E1.E2 is an lvalue;
+	   otherwise E1.E2 is an xvalue.  */
+	op1_lvalue_kind = clk_rvalueref;
+
+      /* Look at the member designator.  */
+      if (!op1_lvalue_kind)
+	;
+      else if (is_overloaded_fn (TREE_OPERAND (ref, 1)))
+	/* The "field" can be a FUNCTION_DECL or an OVERLOAD in some
+	   situations.  If we're seeing a COMPONENT_REF, it's a non-static
+	   member, so it isn't an lvalue. */
+	op1_lvalue_kind = clk_none;
+      else if (TREE_CODE (TREE_OPERAND (ref, 1)) != FIELD_DECL)
+	/* This can be IDENTIFIER_NODE in a template.  */;
+      else if (DECL_C_BIT_FIELD (TREE_OPERAND (ref, 1)))
+	{
+	  /* Clear the ordinary bit.  If this object was a class
+	     rvalue we want to preserve that information.  */
+	  op1_lvalue_kind &= ~clk_ordinary;
+	  /* The lvalue is for a bitfield.  */
+	  op1_lvalue_kind |= clk_bitfield;
+	}
+      else if (DECL_PACKED (TREE_OPERAND (ref, 1)))
+	op1_lvalue_kind |= clk_packed;
+
+      return op1_lvalue_kind;
+
+    case STRING_CST:
+    case COMPOUND_LITERAL_EXPR:
+      return clk_ordinary;
+
+    case CONST_DECL:
+      /* CONST_DECL without TREE_STATIC are enumeration values and
+	 thus not lvalues.  With TREE_STATIC they are used by ObjC++
+	 in objc_build_string_object and need to be considered as
+	 lvalues.  */
+      if (!TREE_STATIC (ref))
+	return clk_none;
+      /* FALLTHRU */
+    case VAR_DECL:
+      if (VAR_P (ref) && DECL_HAS_VALUE_EXPR_P (ref))
+	return lvalue_kind (DECL_VALUE_EXPR (CONST_CAST_TREE (ref)));
+
+      if (TREE_READONLY (ref) && !TREE_STATIC (ref) && DECL_LANG_SPECIFIC (ref)
+	  && DECL_IN_AGGR_P (ref))
+	return clk_none;
+      /* FALLTHRU */
+    case INDIRECT_REF:
+    case ARROW_EXPR:
+    case PARM_DECL:
+    case RESULT_DECL:
+    case PLACEHOLDER_EXPR:
+      return clk_ordinary;
+
+    case MAX_EXPR:
+    case MIN_EXPR:
+      /* Disallow <? and >? as lvalues if either argument side-effects.  */
+      if (TREE_SIDE_EFFECTS (TREE_OPERAND (ref, 0))
+	  || TREE_SIDE_EFFECTS (TREE_OPERAND (ref, 1)))
+	return clk_none;
+      op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 0));
+      op2_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 1));
+      break;
+
+      case COND_EXPR: {
+	tree op1 = TREE_OPERAND (ref, 1);
+	if (!op1)
+	  op1 = TREE_OPERAND (ref, 0);
+	tree op2 = TREE_OPERAND (ref, 2);
+	op1_lvalue_kind = lvalue_kind (op1);
+	op2_lvalue_kind = lvalue_kind (op2);
+	if (!op1_lvalue_kind != !op2_lvalue_kind)
+	  {
+	    /* The second or the third operand (but not both) is a
+	       throw-expression; the result is of the type
+	       and value category of the other.  */
+	    if (op1_lvalue_kind && TREE_CODE (op2) == THROW_EXPR)
+	      op2_lvalue_kind = op1_lvalue_kind;
+	    else if (op2_lvalue_kind && TREE_CODE (op1) == THROW_EXPR)
+	      op1_lvalue_kind = op2_lvalue_kind;
+	  }
+      }
+      break;
+
+    case MODIFY_EXPR:
+    case TYPEID_EXPR:
+      return clk_ordinary;
+
+    case COMPOUND_EXPR:
+      return lvalue_kind (TREE_OPERAND (ref, 1));
+
+    case TARGET_EXPR:
+      return clk_class;
+
+    case VA_ARG_EXPR:
+      return (CLASS_TYPE_P (TREE_TYPE (ref)) ? clk_class : clk_none);
+
+    case CALL_EXPR:
+      /* We can see calls outside of TARGET_EXPR in templates.  */
+      if (CLASS_TYPE_P (TREE_TYPE (ref)))
+	return clk_class;
+      return clk_none;
+
+    case FUNCTION_DECL:
+      /* All functions (except non-static-member functions) are
+	 lvalues.  */
+      return (DECL_NONSTATIC_MEMBER_FUNCTION_P (ref) ? clk_none : clk_ordinary);
+
+    case NON_DEPENDENT_EXPR:
+    case PAREN_EXPR:
+      return lvalue_kind (TREE_OPERAND (ref, 0));
+
+    case TEMPLATE_PARM_INDEX:
+      if (CLASS_TYPE_P (TREE_TYPE (ref)))
+	/* A template parameter object is an lvalue.  */
+	return clk_ordinary;
+      return clk_none;
+
+    default:
+    default_:
+      if (!TREE_TYPE (ref))
+	return clk_none;
+      if (CLASS_TYPE_P (TREE_TYPE (ref))
+	  || TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE)
+	return clk_class;
+      return clk_none;
+    }
+
+  /* If one operand is not an lvalue at all, then this expression is
+     not an lvalue.  */
+  if (!op1_lvalue_kind || !op2_lvalue_kind)
+    return clk_none;
+
+  /* Otherwise, it's an lvalue, and it has all the odd properties
+     contributed by either operand.  */
+  op1_lvalue_kind = op1_lvalue_kind | op2_lvalue_kind;
+  /* It's not an ordinary lvalue if it involves any other kind.  */
+  if ((op1_lvalue_kind & ~clk_ordinary) != clk_none)
+    op1_lvalue_kind &= ~clk_ordinary;
+  /* It can't be both a pseudo-lvalue and a non-addressable lvalue.
+     A COND_EXPR of those should be wrapped in a TARGET_EXPR.  */
+  if ((op1_lvalue_kind & (clk_rvalueref | clk_class))
+      && (op1_lvalue_kind & (clk_bitfield | clk_packed)))
+    op1_lvalue_kind = clk_none;
+  return op1_lvalue_kind;
+}
+
+// forked from gcc/cp/tree.cc glvalue_p
+
+/* This differs from lvalue_p in that xvalues are included.  */
+
+bool
+glvalue_p (const_tree ref)
+{
+  cp_lvalue_kind kind = lvalue_kind (ref);
+  if (kind & clk_class)
+    return false;
+  else
+    return (kind != clk_none);
+}
+
+// forked from gcc/cp/init.cc cv_qualified_p
+
+/* Returns nonzero if TYPE is const or volatile.  */
+
+bool
+cv_qualified_p (const_tree type)
+{
+  int quals = rs_type_quals (type);
+  return (quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)) != 0;
+}
+
+// forked from gcc/cp/tree.cc rvalue
+
+/* EXPR is being used in an rvalue context.  Return a version of EXPR
+   that is marked as an rvalue.  */
+
+tree
+rvalue (tree expr)
+{
+  tree type;
+
+  if (error_operand_p (expr))
+    return expr;
+
+  expr = mark_rvalue_use (expr);
+
+  /* [basic.lval]
+
+     Non-class rvalues always have cv-unqualified types.  */
+  type = TREE_TYPE (expr);
+  if (!CLASS_TYPE_P (type) && cv_qualified_p (type))
+    type = cv_unqualified (type);
+
+  /* We need to do this for rvalue refs as well to get the right answer
+     from decltype; see c++/36628.  */
+  if (glvalue_p (expr))
+    {
+      /* But don't use this function for class lvalues; use move (to treat an
+	 lvalue as an xvalue) or force_rvalue (to make a prvalue copy).  */
+      gcc_checking_assert (!CLASS_TYPE_P (type));
+      expr = build1 (NON_LVALUE_EXPR, type, expr);
+    }
+  else if (type != TREE_TYPE (expr))
+    expr = build_nop (type, expr);
+
+  return expr;
+}
+
+// forked from gcc/cp/tree.cc bitfield_p
+
+/* True if REF is a bit-field.  */
+
+bool
+bitfield_p (const_tree ref)
+{
+  return (lvalue_kind (ref) & clk_bitfield);
+}
+
+// forked from gcc/cp/typeck.cc cxx_mark_addressable
+
+/* Mark EXP saying that we need to be able to take the
+   address of it; it should not be allocated in a register.
+   Value is true if successful.  ARRAY_REF_P is true if this
+   is for ARRAY_REF construction - in that case we don't want
+   to look through VIEW_CONVERT_EXPR from VECTOR_TYPE to ARRAY_TYPE,
+   it is fine to use ARRAY_REFs for vector subscripts on vector
+   register variables.
+
+   C++: we do not allow `current_class_ptr' to be addressable.  */
+
+bool
+cxx_mark_addressable (tree exp, bool array_ref_p)
+{
+  tree x = exp;
+
+  while (1)
+    switch (TREE_CODE (x))
+      {
+      case VIEW_CONVERT_EXPR:
+	if (array_ref_p && TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
+	    && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))))
+	  return true;
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      case COMPONENT_REF:
+	if (bitfield_p (x))
+	  error ("attempt to take address of bit-field");
+	/* FALLTHRU */
+      case ADDR_EXPR:
+      case ARRAY_REF:
+      case REALPART_EXPR:
+      case IMAGPART_EXPR:
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      case PARM_DECL:
+	if (x == current_class_ptr)
+	  {
+	    error ("cannot take the address of %<this%>, which is an rvalue "
+		   "expression");
+	    TREE_ADDRESSABLE (x) = 1; /* so compiler doesn't die later.  */
+	    return true;
+	  }
+	/* Fall through.  */
+
+      case VAR_DECL:
+	/* Caller should not be trying to mark initialized
+	   constant fields addressable.  */
+	gcc_assert (DECL_LANG_SPECIFIC (x) == 0 || DECL_IN_AGGR_P (x) == 0
+		    || TREE_STATIC (x) || DECL_EXTERNAL (x));
+	/* Fall through.  */
+
+      case RESULT_DECL:
+	if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x) && !DECL_ARTIFICIAL (x))
+	  {
+	    if (VAR_P (x) && DECL_HARD_REGISTER (x))
+	      {
+		error ("address of explicit register variable %qD requested",
+		       x);
+		return false;
+	      }
+	    else if (extra_warnings)
+	      warning (
+		OPT_Wextra,
+		"address requested for %qD, which is declared %<register%>", x);
+	  }
+	TREE_ADDRESSABLE (x) = 1;
+	return true;
+
+      case CONST_DECL:
+      case FUNCTION_DECL:
+	TREE_ADDRESSABLE (x) = 1;
+	return true;
+
+      case CONSTRUCTOR:
+	TREE_ADDRESSABLE (x) = 1;
+	return true;
+
+      case TARGET_EXPR:
+	TREE_ADDRESSABLE (x) = 1;
+	cxx_mark_addressable (TREE_OPERAND (x, 0));
+	return true;
+
+      default:
+	return true;
+      }
+}
+
+// forked from gcc/cp/typeck.cc build_address
+
+/* Returns the address of T.  This function will fold away
+   ADDR_EXPR of INDIRECT_REF.  This is only for low-level usage;
+   most places should use cp_build_addr_expr instead.  */
+
+tree
+build_address (tree t)
+{
+  if (error_operand_p (t) || !cxx_mark_addressable (t))
+    return error_mark_node;
+  gcc_checking_assert (TREE_CODE (t) != CONSTRUCTOR);
+  t = build_fold_addr_expr_loc (EXPR_LOCATION (t), t);
+  if (TREE_CODE (t) != ADDR_EXPR)
+    t = rvalue (t);
+  return t;
+}
+
+// forked from gcc/cp/gp-gimplify.cc fold_builtin_source_location
+
+/* Fold __builtin_source_location () call.  LOC is the location
+   of the call.  */
+
+tree
+fold_builtin_source_location (location_t loc)
+{
+  if (source_location_impl == error_mark_node)
+    return build_zero_cst (const_ptr_type_node);
+  if (source_location_table == NULL)
+    source_location_table
+      = hash_table<source_location_table_entry_hash>::create_ggc (64);
+  const line_map_ordinary *map;
+  source_location_table_entry entry;
+  entry.loc = linemap_resolve_location (line_table, loc,
+					LRK_MACRO_EXPANSION_POINT, &map);
+  entry.uid = current_function_decl ? DECL_UID (current_function_decl) : -1;
+  entry.var = error_mark_node;
+  source_location_table_entry *entryp
+    = source_location_table->find_slot (entry, INSERT);
+  tree var;
+  if (entryp->var)
+    var = entryp->var;
+  else
+    {
+      char tmp_name[32];
+      ASM_GENERATE_INTERNAL_LABEL (tmp_name, "Lsrc_loc", source_location_id++);
+      var = build_decl (loc, VAR_DECL, get_identifier (tmp_name),
+			source_location_impl);
+      TREE_STATIC (var) = 1;
+      TREE_PUBLIC (var) = 0;
+      DECL_ARTIFICIAL (var) = 1;
+      DECL_IGNORED_P (var) = 1;
+      DECL_EXTERNAL (var) = 0;
+      DECL_DECLARED_CONSTEXPR_P (var) = 1;
+      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (var) = 1;
+      layout_decl (var, 0);
+
+      vec<constructor_elt, va_gc> *v = NULL;
+      vec_alloc (v, 4);
+      for (tree field = TYPE_FIELDS (source_location_impl);
+	   (field = next_initializable_field (field)) != NULL_TREE;
+	   field = DECL_CHAIN (field))
+	{
+	  const char *n = IDENTIFIER_POINTER (DECL_NAME (field));
+	  tree val = NULL_TREE;
+	  if (strcmp (n, "_M_file_name") == 0)
+	    {
+	      if (const char *fname = LOCATION_FILE (loc))
+		{
+		  fname = remap_macro_filename (fname);
+		  val = build_string_literal (strlen (fname) + 1, fname);
+		}
+	      else
+		val = build_string_literal (1, "");
+	    }
+	  else if (strcmp (n, "_M_function_name") == 0)
+	    {
+	      const char *name = "todo: add funciton name here";
+
+	      // if (current_function_decl)
+	      // name = cxx_printable_name (current_function_decl, 2);
+
+	      val = build_string_literal (strlen (name) + 1, name);
+	    }
+	  else if (strcmp (n, "_M_line") == 0)
+	    val = build_int_cst (TREE_TYPE (field), LOCATION_LINE (loc));
+	  else if (strcmp (n, "_M_column") == 0)
+	    val = build_int_cst (TREE_TYPE (field), LOCATION_COLUMN (loc));
+	  else
+	    gcc_unreachable ();
+	  CONSTRUCTOR_APPEND_ELT (v, field, val);
+	}
+
+      tree ctor = build_constructor (source_location_impl, v);
+      TREE_CONSTANT (ctor) = 1;
+      TREE_STATIC (ctor) = 1;
+      DECL_INITIAL (var) = ctor;
+      varpool_node::finalize_decl (var);
+      *entryp = entry;
+      entryp->var = var;
+    }
+
+  return build_fold_addr_expr_with_type_loc (loc, var, const_ptr_type_node);
 }
 
 } // namespace Rust
