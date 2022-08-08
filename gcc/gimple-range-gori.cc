@@ -1398,16 +1398,17 @@ gori_compute::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
     }
 
    // Now solve for SSA1 or SSA2 if they are in the dependency chain.
-  Value_Range tmp (type);
    if (ssa1 && in_chain_p (ssa1, cond_name))
     {
-      if (compute_operand_range (tmp, def_stmt, cond_true, ssa1, src))
-	r1.intersect (tmp);
+      Value_Range tmp1 (TREE_TYPE (ssa1));
+      if (compute_operand_range (tmp1, def_stmt, cond_true, ssa1, src))
+	r1.intersect (tmp1);
     }
   if (ssa2 && in_chain_p (ssa2, cond_name))
     {
-      if (compute_operand_range (tmp, def_stmt, cond_false, ssa2, src))
-	r2.intersect (tmp);
+      Value_Range tmp2 (TREE_TYPE (ssa2));
+      if (compute_operand_range (tmp2, def_stmt, cond_false, ssa2, src))
+	r2.intersect (tmp2);
     }
   if (idx)
     {
