@@ -6069,12 +6069,7 @@ dwarf2out_register_external_die (tree decl, const char *sym,
 
   if (!external_die_map)
     external_die_map = hash_map<tree, sym_off_pair>::create_ggc (1000);
-  /* When we do tree merging during WPA or with -flto-partition=none we
-     can end up re-using GC memory as there's currently no way to unregister
-     external DIEs.  Ideally we'd register them only after merging finished
-     but allowing override here is easiest.  See PR106334.  */
-  gcc_checking_assert (!(in_lto_p && !flag_wpa)
-		       || !external_die_map->get (decl));
+  gcc_checking_assert (!external_die_map->get (decl));
   sym_off_pair p = { IDENTIFIER_POINTER (get_identifier (sym)), off };
   external_die_map->put (decl, p);
 }
