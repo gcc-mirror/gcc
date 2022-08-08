@@ -1,8 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail261.d(19): Error: invalid `foreach` aggregate `range` of type `MyRange`
-fail_compilation/fail261.d(19):        maybe define `opApply()`, range primitives, or use `.tupleof`
+fail_compilation/fail261.d(20): Error: invalid `foreach` aggregate `range` of type `MyRange`
+fail_compilation/fail261.d(20):        `foreach` works with input ranges (implementing `front` and `popFront`), aggregates implementing `opApply`, or the result of an aggregate's `.tupleof` property
+fail_compilation/fail261.d(20):        https://dlang.org/phobos/std_range_primitives.html#isInputRange
 ---
 */
 

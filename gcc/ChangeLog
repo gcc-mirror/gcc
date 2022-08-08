@@ -1,3 +1,355 @@
+2022-08-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*cmp<dwi>_doubleword): Change predicate
+	for x86_64_hilo_general_operand to general operand.  Call
+	force_reg on parts that are not x86_64_immediate_operand.
+
+2022-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105947
+	* doc/invoke.texi: Add -Wanalyzer-jump-through-null.
+
+2022-08-05  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* expmed.cc (emit_store_flag_1): Move code to expand double word
+	equality and inequality against zero or -1, using word operations,
+	to after trying to use the backend's cstore<mode>4 optab/expander.
+
+2022-08-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/106534
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker): Guard the
+	value_replacement and store_elim from diamonds.
+
+2022-08-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-threadbackward.cc (back_threader::maybe_register_path):
+	Check whether the registry register_path rejected the path.
+	(back_threader_registry::register_path): Return whether
+	register_jump_thread succeeded.
+
+2022-08-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/106514
+	* value-range.cc (unsupported_range::unsupported_range): Move...
+	* value-range.h (unsupported_range::unsupported_range): ...here.
+	(unsupported_range::set_undefined): New.
+
+2022-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106533
+	* tree-loop-distribution.cc (loop_distribution::execute): Continue
+	analyzing the inner loops when find_seed_stmts_for_distribution
+	fails.
+
+2022-08-05  Andrew Pinski  <apinski@marvell.com>
+
+	* config/riscv/predicates.md (splittable_const_int_operand):
+	Remove the check for TARGET_64BIT for single bit const values.
+
+2022-08-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106514
+	* gimple-range-path.cc (path_range_query::compute_ranges_in_block):
+	Use EXECUTE_IF_AND_IN_BITMAP to loop over 2 bitmaps.
+
+2022-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* match.pd: New bit_not rule.
+
+2022-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/106519
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker): Check final phi edge for
+	diamond shapes.
+
+2022-08-04  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/106243
+	* match.pd (-x & 1): New simplification.
+
+2022-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106521
+	* gimple-loop-jam.cc (tree_loop_unroll_and_jam): Perform
+	CFG cleanup manually before rewriting into LC SSA.
+
+2022-08-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-threadbackward.cc (populate_worklist): Remove.
+	(back_threader::resolve_phi): Likewise.
+	(back_threader::find_paths_to_names): Rewrite greedy search.
+
+2022-08-04  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/vector.md (V_HW_FT): New iterator.
+	* config/s390/vx-builtins.md (vsel<mode>): Use V_HW_FT instead
+	of V_HW.
+
+2022-08-03   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Remove code
+	setting -mblock-ops-vector-pair.
+
+2022-08-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106514
+	* value-relation.cc (path_oracle::killing_def) Do not walk the
+	  equivalence set clearing bits.
+
+2022-08-03  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-ssa-phiopt.cc (minmax_replacement): Optionally search for the phi
+	sequence of a three-way conditional.
+	(replace_phi_edge_with_variable): Support diamonds.
+	(tree_ssa_phiopt_worker): Detect diamond phi structure for three-way
+	min/max.
+	(strip_bit_not, invert_minmax_code): New.
+
+2022-08-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/106187
+	* alias.h (mems_same_for_tbaa_p): Declare.
+	* alias.cc (mems_same_for_tbaa_p): New function.
+	* dse.cc (record_store): Use it instead of open-coding
+	alias check.
+	* cselib.h (cselib_redundant_set_p): Declare.
+	* cselib.cc: Include alias.h
+	(cselib_redundant_set_p): New function.
+	* cfgcleanup.cc: (mark_effect): Use cselib_redundant_set_p instead
+	of rtx_equal_for_cselib_p.
+	* postreload.cc (reload_cse_simplify): Use cselib_redundant_set_p.
+	(reload_cse_noop_set_p): Delete.
+
+2022-08-03  Martin Liska  <mliska@suse.cz>
+
+	* doc/gcov-dump.texi: Document the new option.
+	* gcov-dump.cc (main): Parse the new option.
+	(print_usage): Show the option.
+	(tag_counters): Sort key:value pairs of TOP N counter.
+
+2022-08-03  Martin Liska  <mliska@suse.cz>
+
+	* profile.cc (compute_branch_probabilities): Do not collect
+	stats unless TDF_DETAILS.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/47949
+	* config/i386/i386.md (peephole2): New peephole2 to convert
+	SWI48 moves to/from %rax/%eax where the src is dead to xchg,
+	when optimizing for minimal size with -Oz.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*cmp<dwi>_doubleword): Add a special case
+	to split comparisons against -1 using AND and CMP -1 instructions.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (compute_convert_gain): Add gain
+	for converting suitable TImode shift to a V1TImode shift.
+	(timode_scalar_chain::convert_insn): Add support for converting
+	suitable ASHIFT and LSHIFTRT.
+	(timode_scalar_to_vector_candidate_p): Consider logical shifts
+	by integer constants that are multiples of 8 to be candidates.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* simplify-rtx.cc (simplify_unary_operation_1) <ABS>: Add
+	optimizations for CLRSB, PARITY, POPCOUNT, SS_ABS and LSHIFTRT
+	that are all positive to complement the existing FFS and
+	idempotent ABS simplifications.
+	<SIGN_EXTEND>: Canonicalize SIGN_EXTEND to ZERO_EXTEND when
+	val_signbit_known_clear_p is true of the operand.
+	Simplify sign extensions of SUBREG truncations of operands
+	that are already suitably (zero) extended.
+	<ZERO_EXTEND>: Simplify zero extensions of SUBREG truncations
+	of operands that are already suitably zero extended.
+
+2022-08-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106510
+	* gimple-range-fold.cc (fur_source::register_outgoing_edges):
+	  Check for unsupported statements early.
+
+2022-08-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106474
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Query
+	range of equivalences that may contribute to the range.
+
+2022-08-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* btfout.cc (output_asm_btf_vlen_bytes): Do not use the CHAR
+	encoding bit in BTF.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Remove
+	irange check.
+	(tree_lower_bound): New.
+	(tree_upper_bound): New.
+	(fold_using_range::range_of_ssa_name_with_loop_info): Convert to
+	vrange.
+	* gimple-range-fold.h (range_of_ssa_name_with_loop_info): Change
+	argument to vrange.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-threadbackward.cc
+	(back_threader_profitability::profitable_path_p): Apply
+	size constraints to all paths again.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (finite_operands_p): New.
+	(frelop_early_resolve): New.
+	(default_frelop_fold_range): New.
+	(class foperator_equal): New.
+	(class foperator_not_equal): New.
+	(class foperator_lt): New.
+	(class foperator_le): New.
+	(class foperator_gt): New.
+	(class foperator_ge): New.
+	(class foperator_unordered): New.
+	(class foperator_ordered): New.
+	(class foperator_relop_unknown): New.
+	(floating_op_table::floating_op_table): Add above classes to
+	floating op table.
+	* value-range.h (frange::supports_p): Enable.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-core.h (struct tree_ssa_name): Add frange_info and
+	reshuffle the rest.
+	* value-range-storage.cc (vrange_storage::alloc_slot): Add case
+	for frange.
+	(vrange_storage::set_vrange): Same.
+	(vrange_storage::get_vrange): Same.
+	(vrange_storage::fits_p): Same.
+	(frange_storage_slot::alloc_slot): New.
+	(frange_storage_slot::set_frange): New.
+	(frange_storage_slot::get_frange): New.
+	(frange_storage_slot::fits_p): New.
+	* value-range-storage.h (class frange_storage_slot): New.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Limit ranger
+	query to integrals.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set): Initialize m_props and cleanup.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106497
+	* tree-ssa-threadupdate.cc (fwd_jt_path_registry::update_cfg):
+	Also verify we can copy EDGE_COPY_SRC_JOINER_BLOCK.
+
+2022-08-02  Martin Liska  <mliska@suse.cz>
+
+	* profile.cc (compute_branch_probabilities): Dump details only
+	if TDF_DETAILS.
+	* symtab.cc (symtab_node::dump_base): Do not dump pointer unless
+	TDF_ADDRESS is used, it makes comparison harder.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106498
+	* omp-expand.cc (expand_omp_taskreg): Do not perform virtual
+	SSA update here.
+	(expand_omp_for): Or here.
+	(execute_expand_omp): Instead schedule it here together
+	with CFG cleanup via TODO.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR lto/106334
+	* dwarf2out.cc (dwarf2out_register_external_die): Adjust
+	assert.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106495
+	* tree-ssa-threadbackward.cc
+	(back_threader_profitability::profitable_path_p): If known_edge
+	is probably never executed avoid threading.
+
+2022-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-Wanalyzer-putenv-of-auto-var): Fix copy&paste
+	error.
+
+2022-08-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/106481
+	* config/i386/i386-features.cc (timode_scalar_chain::convert_insn):
+	Convert a CONST_SCALAR_INT_P in a REG_EQUAL note into a V1TImode
+	CONST_VECTOR.
+
+2022-08-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/83782
+	* config/i386/i386.cc (ix86_ifunc_ref_local_ok): New.
+	(TARGET_IFUNC_REF_LOCAL_OK): Use it.
+
+2022-08-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR debug/106263
+	* ctfc.h (struct ctf_dtdef): Add field linkage.
+	* ctfc.cc (ctf_add_function): Set ctti_linkage.
+	* dwarf2ctf.cc (gen_ctf_function_type): Pass a linkage for
+	function types and subprograms.
+	* btfout.cc (btf_asm_func_type): Emit linkage information for the
+	function.
+	(btf_dtd_emit_preprocess_cb): Propagate the linkage information
+	for functions.
+
+2022-08-01  Andrew Stubbs  <ams@codesourcery.com>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	* omp-simd-clone.cc (simd_clone_adjust): Convert shift_cnt to match
+	the mask type.
+
+2022-08-01  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/104992
+	* match.pd (x / y * y == x): New simplification.
+
+2022-08-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (tree_compare): New.
+	(frange::set): Make more general.
+	(frange::normalize_kind): Cleanup and return bool.
+	(frange::union_): Use normalize_kind return value.
+	(frange::intersect): Same.
+	(frange::verify_range): Remove unnecessary else.
+	* value-range.h (vrp_val_max): Move before frange class.
+	(vrp_val_min): Same.
+	(frange::frange): Remove set to m_type.
+
+2022-08-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (vrange::supports_type_p): Use const_tree.
+	(irange::supports_type_p): Same.
+	(frange::supports_type_p): Same.
+	* value-range.h (Value_Range::supports_type_p): Same.
+	(irange::supports_p): Same.
+
+2022-08-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Only
+	query SCEV for integers.
+	(fold_using_range::range_of_ssa_name_with_loop_info): Remove
+	irange check.
+
 2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386.md (define_expand <any_rotate>ti3): For

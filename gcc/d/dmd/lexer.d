@@ -1326,7 +1326,7 @@ class Lexer
                 switch (*p)
                 {
                 case ';':
-                    c = HtmlNamedEntity(idstart, p - idstart);
+                    c = HtmlNamedEntity(idstart[0 .. p - idstart]);
                     if (c == ~0)
                     {
                         error(loc, "unnamed character entity &%.*s;", cast(int)(p - idstart), idstart);

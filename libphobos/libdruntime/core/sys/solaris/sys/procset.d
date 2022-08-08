@@ -50,4 +50,3 @@ void setprocset(ref procset_t psp, idop_t op, idtype_t ltype, id_t lid, idtype_t
     psp.p_ridtype = rtype;
     psp.p_rid = rid;
 }
-

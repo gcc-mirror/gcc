@@ -4,6 +4,7 @@ Source: $(PHOBOSSRC std/experimental/logger/core.d)
 */
 module std.experimental.logger.core;
 
+import core.atomic : atomicLoad, atomicOp, atomicStore, MemoryOrder;
 import core.sync.mutex : Mutex;
 import std.datetime.date : DateTime;
 import std.datetime.systime : Clock, SysTime;
@@ -555,14 +556,14 @@ abstract class Logger
     Params:
          lv = `LogLevel` to use for this `Logger` instance.
     */
-    this(LogLevel lv) @safe
+    this(this This)(LogLevel lv)
     {
         this.logLevel_ = lv;
         this.fatalHandler_ = delegate() {
             throw new Error("A fatal log message was logged");
         };
 
-        this.mutex = new Mutex();
+        this.mutex = new typeof(mutex)();
     }
 
     /** A custom logger must implement this method in order to work in a
@@ -661,7 +662,7 @@ abstract class Logger
     /// Ditto
     @property final void logLevel(const LogLevel lv) @safe @nogc
     {
-        synchronized (mutex) this.logLevel_ = lv;
+        atomicStore(this.logLevel_, lv);
     }
 
     /** This `delegate` is called in case a log message with
@@ -1403,28 +1404,28 @@ abstract class Logger
 
 // Thread Global
 
-private __gshared Logger stdSharedDefaultLogger;
+private shared Logger stdSharedDefaultLogger;
 private shared Logger stdSharedLogger;
 private shared LogLevel stdLoggerGlobalLogLevel = LogLevel.all;
 
 /* This method returns the global default Logger.
  * Marked @trusted because of excessive reliance on __gshared data
  */
-private @property Logger defaultSharedLoggerImpl() @trusted
+private @property shared(Logger) defaultSharedLoggerImpl() @trusted
 {
     import core.lifetime : emplace;
     import std.stdio : stderr;
 
     __gshared align(__traits(classInstanceAlignment, FileLogger))
-        void[__traits(classInstanceSize, FileLogger)] _buffer;
+        void[__traits(classInstanceSize, FileLogger)] _buffer = void;
 
     import std.concurrency : initOnce;
     initOnce!stdSharedDefaultLogger({
         auto buffer = cast(ubyte[]) _buffer;
-        return emplace!FileLogger(buffer, stderr, LogLevel.info);
+        return cast(shared) emplace!(FileLogger)(buffer, stderr, LogLevel.info);
     }());
 
-    return stdSharedDefaultLogger;
+    return atomicLoad(stdSharedDefaultLogger);
 }
 
 /** This property sets and gets the default `Logger`. Unless set to another
@@ -1452,19 +1453,12 @@ if (sharedLog !is myLogger)
     sharedLog = new myLogger;
 -------------
 */
-@property Logger sharedLog() @safe
+@property shared(Logger) sharedLog() @safe
 {
-    static auto trustedLoad(ref shared Logger logger) @trusted
-    {
-        import core.atomic : atomicLoad, MemoryOrder;
-        return cast() atomicLoad!(MemoryOrder.acq)(logger);
-            //FIXME: Casting shared away here. Not good. See issue 16232.
-    }
-
     // If we have set up our own logger use that
-    if (auto logger = trustedLoad(stdSharedLogger))
+    if (auto logger = atomicLoad!(MemoryOrder.seq)(stdSharedLogger))
     {
-        return logger;
+        return atomicLoad(logger);
     }
     else
     {
@@ -1474,10 +1468,9 @@ if (sharedLog !is myLogger)
 }
 
 /// Ditto
-@property void sharedLog(Logger logger) @trusted
+@property void sharedLog(shared(Logger) logger) @safe
 {
-    import core.atomic : atomicStore, MemoryOrder;
-    atomicStore!(MemoryOrder.rel)(stdSharedLogger, cast(shared) logger);
+    atomicStore!(MemoryOrder.seq)(stdSharedLogger, atomicLoad(logger));
 }
 
 /** This methods get and set the global `LogLevel`.
@@ -1523,9 +1516,12 @@ class StdForwardLogger : Logger
         this.fatalHandler = delegate() {};
     }
 
-    override protected void writeLogMsg(ref LogEntry payload)
+    override protected void writeLogMsg(ref LogEntry payload) @trusted
     {
-          sharedLog.forwardMsg(payload);
+        synchronized (sharedLog.mutex)
+        {
+            (cast() sharedLog).forwardMsg(payload);
+        }
     }
 }
 
@@ -1533,6 +1529,40 @@ class StdForwardLogger : Logger
 @safe unittest
 {
     auto nl1 = new StdForwardLogger(LogLevel.all);
+}
+
+@safe unittest
+{
+    import core.thread : Thread, msecs;
+
+    static class RaceLogger : Logger
+    {
+        int value;
+        this() @safe shared
+        {
+            super(LogLevel.init);
+        }
+        override void writeLogMsg(ref LogEntry payload) @safe
+        {
+            import core.thread : Thread, msecs;
+            if (payload.msg == "foo")
+            {
+                value = 42;
+                () @trusted { Thread.sleep(100.msecs); }();
+                assert(value == 42, "Another thread changed the value");
+            }
+            else
+            {
+                () @trusted { Thread.sleep(50.msecs); } ();
+                value = 13;
+            }
+        }
+    }
+
+    sharedLog = new shared RaceLogger;
+    scope(exit) { sharedLog = null; }
+    () @trusted { new Thread(() { log("foo"); }).start(); }();
+    log("bar");
 }
 
 /** This `LogLevel` is unqiue to every thread.
@@ -1561,7 +1591,7 @@ private @property Logger stdThreadLocalLogImpl() @trusted
 }
 
 /** This function returns a thread unique `Logger`, that by default
-propergates all data logged to it to the `sharedLog`.
+propagates all data logged to it to the `sharedLog`.
 
 These properties can be used to set and get this `Logger`. Every
 modification to this `Logger` will only be visible in the thread the
@@ -1671,10 +1701,12 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     auto oldunspecificLogger = sharedLog;
     scope(exit) {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
     }
 
-    sharedLog = tl1;
+    () @trusted {
+        sharedLog = cast(shared) tl1;
+    }();
 
     log();
     assert(tl1.line == __LINE__ - 1);
@@ -1793,22 +1825,34 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
     assert(l.line == lineNumber);
     assert(l.logLevel == LogLevel.all);
 
-    auto oldunspecificLogger = sharedLog;
+    Logger oldunspecificLogger;
+    () @trusted {
+        oldunspecificLogger = cast() sharedLog;
+    }();
 
     assert(oldunspecificLogger.logLevel == LogLevel.info,
          to!string(oldunspecificLogger.logLevel));
 
     assert(l.logLevel == LogLevel.all);
-    sharedLog = l;
+
+    () @trusted {
+        sharedLog = cast(shared) l;
+    }();
+
     assert(globalLogLevel == LogLevel.all,
             to!string(globalLogLevel));
 
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        () @trusted {
+            sharedLog = atomicLoad(cast(shared) oldunspecificLogger);
+        }();
     }
 
-    assert(sharedLog.logLevel == LogLevel.all);
+    () @trusted {
+        assert((cast() sharedLog).logLevel == LogLevel.all);
+    }();
+
     assert(stdThreadLocalLog.logLevel == LogLevel.all);
     assert(globalLogLevel == LogLevel.all);
 
@@ -1880,13 +1924,14 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
     string filename = deleteme ~ __FUNCTION__ ~ ".tempLogFile";
     FileLogger l = new FileLogger(filename);
     auto oldunspecificLogger = sharedLog;
-    sharedLog = l;
+
+    sharedLog = cast(shared) l;
 
     scope(exit)
     {
         remove(filename);
         assert(!exists(filename));
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -1923,7 +1968,7 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
     scope(exit)
     {
         remove(filename);
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -1931,8 +1976,11 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
     string written = "this should be written to file";
 
     auto l = new FileLogger(filename);
-    sharedLog = l;
-    sharedLog.logLevel = LogLevel.critical;
+    sharedLog = cast(shared) l;
+
+    () @trusted {
+        (cast() sharedLog).logLevel = LogLevel.critical;
+    }();
 
     log(LogLevel.error, false, notWritten);
     log(LogLevel.critical, true, written);
@@ -1974,11 +2022,14 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     auto mem = new TestLogger;
     mem.fatalHandler = delegate() {};
-    sharedLog = mem;
+
+    () @trusted {
+        sharedLog = cast(shared) mem;
+    }();
 
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -2221,11 +2272,14 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     auto mem = new TestLogger;
     mem.fatalHandler = delegate() {};
-    sharedLog = mem;
+
+    () @trusted {
+        sharedLog = cast(shared) mem;
+    }();
 
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -2477,10 +2531,13 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     stdThreadLocalLog.logLevel = LogLevel.all;
 
-    sharedLog = mem;
+    () @trusted {
+        sharedLog = cast(shared) mem;
+    }();
+
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -2707,12 +2764,15 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
     auto tl = new TestLogger(LogLevel.info);
-    sharedLog = tl;
+
+    () @trusted {
+        sharedLog = cast(shared) tl;
+    }();
 
     trace("trace");
     assert(tl.msg.indexOf("trace") == -1);
@@ -2730,7 +2790,7 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -2738,7 +2798,10 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     auto tl = new TestLogger(LogLevel.info);
     logger.insertLogger("required", tl);
-    sharedLog = logger;
+
+    () @trusted {
+        sharedLog = cast(shared) logger;
+    }();
 
     trace("trace");
     assert(tl.msg.indexOf("trace") == -1);
@@ -2774,14 +2837,12 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 // Workaround for atomics not allowed in @safe code
 private auto trustedLoad(T)(ref shared T value) @trusted
 {
-    import core.atomic : atomicLoad, MemoryOrder;
     return atomicLoad!(MemoryOrder.acq)(value);
 }
 
 // ditto
 private void trustedStore(T)(ref shared T dst, ref T src) @trusted
 {
-    import core.atomic : atomicStore, MemoryOrder;
     atomicStore!(MemoryOrder.rel)(dst, src);
 }
 
@@ -2789,7 +2850,7 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
 // to shared logger
 @system unittest
 {
-    import core.atomic, core.thread, std.concurrency;
+    import core.thread, std.concurrency;
 
     static shared logged_count = 0;
 
@@ -2826,10 +2887,13 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
     auto oldSharedLog = sharedLog;
     scope(exit)
     {
-        sharedLog = oldSharedLog;
+        sharedLog = atomicLoad(oldSharedLog);
     }
 
-    sharedLog = new IgnoredLog;
+    () @trusted {
+        sharedLog = cast(shared) new IgnoredLog;
+    }();
+
     Thread[] spawned;
 
     foreach (i; 0 .. 4)
@@ -2849,7 +2913,9 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
 
 @safe unittest
 {
-    auto dl = cast(FileLogger) sharedLog;
+    auto dl = () @trusted {
+        return cast(FileLogger) cast() sharedLog;
+    }();
     assert(dl !is null);
     assert(dl.logLevel == LogLevel.info);
     assert(globalLogLevel == LogLevel.all);
@@ -2946,7 +3012,7 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
     auto oldShared = sharedLog;
     scope(exit)
     {
-        sharedLog = oldShared;
+        sharedLog = atomicLoad(oldShared);
         if (exists(fn))
         {
             remove(fn);
@@ -2956,7 +3022,11 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
     auto ts = [ "Test log 1", "Test log 2", "Test log 3"];
 
     auto fl = new FileLogger(fn);
-    sharedLog = fl;
+
+    () @trusted {
+        sharedLog = cast(shared) fl;
+    }();
+
     assert(exists(fn));
 
     foreach (t; ts)

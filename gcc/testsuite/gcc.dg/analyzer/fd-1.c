@@ -3,6 +3,13 @@ int open(const char *, int mode);
 #define O_WRONLY 1
 #define O_RDWR 2
 
+typedef enum {
+  S_IRWXU
+  // etc
+} mode_t;
+
+int creat (const char *, mode_t mode);
+
 void
 test_1 (const char *path)
 {
@@ -36,4 +43,18 @@ void test_4 (const char *path)
   open(path, O_RDONLY); /* { dg-warning "leak of file descriptor \\\[CWE-775\\\]" } */
   /* { dg-message "\\(1\\) leaks here" "" { target *-*-* } .-1 } */
 }
+
+void 
+test_5 (const char *path, mode_t mode)
+{
+  creat (path, mode); /* { dg-warning "leak of file descriptor \\\[CWE-775\\\]" } */
+}
+
+void
+test_6 (const char *path, mode_t mode)
+{
+  int fd = creat (path, mode);
+  return; /* { dg-warning "leak of file descriptor 'fd' \\\[CWE-775\\\]" } */
+}
+
 

@@ -2762,7 +2762,7 @@ Returns:
     return a `ref` to the $(D range element), otherwise it will return
     a copy.
  */
-auto ref choice(Range, RandomGen = Random)(auto ref Range range, ref RandomGen urng)
+auto ref choice(Range, RandomGen = Random)(Range range, ref RandomGen urng)
 if (isRandomAccessRange!Range && hasLength!Range && isUniformRNG!RandomGen)
 {
     assert(range.length > 0,
@@ -2772,7 +2772,22 @@ if (isRandomAccessRange!Range && hasLength!Range && isUniformRNG!RandomGen)
 }
 
 /// ditto
-auto ref choice(Range)(auto ref Range range)
+auto ref choice(Range)(Range range)
+{
+    return choice(range, rndGen);
+}
+
+/// ditto
+auto ref choice(Range, RandomGen = Random)(ref Range range, ref RandomGen urng)
+if (isRandomAccessRange!Range && hasLength!Range && isUniformRNG!RandomGen)
+{
+    assert(range.length > 0,
+           __PRETTY_FUNCTION__ ~ ": invalid Range supplied. Range cannot be empty");
+    return range[uniform(size_t(0), $, urng)];
+}
+
+/// ditto
+auto ref choice(Range)(ref Range range)
 {
     return choice(range, rndGen);
 }
@@ -2825,6 +2840,39 @@ auto ref choice(Range)(auto ref Range range)
            "Choice did not return a ref to an element from the given Range");
     assert(array.canFind(*(cast(int *)(elemAddr))),
            "Choice did not return a valid element from the given Range");
+}
+
+@safe unittest // issue 18631
+{
+    auto rng = MinstdRand0(42);
+    const a = [0,1,2];
+    const(int[]) b = [0, 1, 2];
+    auto x = choice(a);
+    auto y = choice(b);
+    auto z = choice(cast(const)[1, 2, 3]);
+    auto x1 = choice(a, rng);
+    auto y1 = choice(b, rng);
+    auto z1 = choice(cast(const)[1, 2, 3], rng);
+}
+
+@safe unittest // Ref range (issue 18631 PR)
+{
+    struct TestRange
+    {
+        int x;
+        ref int front() return {return x;}
+        ref int back() return {return x;}
+        void popFront() {}
+        void popBack() {}
+        bool empty = false;
+        TestRange save() {return this;}
+        size_t length = 10;
+        alias opDollar = length;
+        ref int opIndex(size_t i) return {return x;}
+    }
+
+    TestRange r = TestRange(10);
+    int* s = &choice(r);
 }
 
 /**
@@ -3008,8 +3056,16 @@ if (isRandomAccessRange!Range)
 }
 
 /**
-Rolls a dice with relative probabilities stored in $(D
-proportions). Returns the index in `proportions` that was chosen.
+Get a random index into a list of weights corresponding to each index
+
+Similar to rolling a die with relative probabilities stored in `proportions`.
+Returns the index in `proportions` that was chosen.
+
+Note:
+    Usually, dice are 'fair', meaning that each side has equal probability
+    to come up, in which case `1 + uniform(0, 6)` can simply be used.
+    In future Phobos versions, this function might get renamed to something like
+    `weightedChoice` to avoid confusion.
 
 Params:
     rnd = (optional) random number generator to use; if not
@@ -3055,6 +3111,9 @@ if (isNumeric!Num)
 ///
 @safe unittest
 {
+    auto d6  = 1 + dice(1, 1, 1, 1, 1, 1); // fair dice roll
+    auto d6b = 1 + dice(2, 1, 1, 1, 1, 1); // double the chance to roll '1'
+
     auto x = dice(0.5, 0.5);   // x is 0 or 1 in equal proportions
     auto y = dice(50, 50);     // y is 0 or 1 in equal proportions
     auto z = dice(70, 20, 10); // z is 0 70% of the time, 1 20% of the time,

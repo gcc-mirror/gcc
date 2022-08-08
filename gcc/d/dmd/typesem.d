@@ -1272,6 +1272,16 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                     errors = true;
                 }
 
+                const bool isTypesafeVariadic = i + 1 == dim &&
+                                                tf.parameterList.varargs == VarArg.typesafe &&
+                                                (t.isTypeDArray() || t.isTypeClass());
+                if (isTypesafeVariadic)
+                {
+                    /* typesafe variadic arguments are constructed on the stack, so must be `scope`
+                     */
+                    fparam.storageClass |= STC.scope_ | STC.scopeinferred;
+                }
+
                 if (fparam.storageClass & STC.return_)
                 {
                     if (fparam.isReference())
@@ -1300,8 +1310,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                         }
                     }
 
-                    if (i + 1 == dim && tf.parameterList.varargs == VarArg.typesafe &&
-                        (t.isTypeDArray() || t.isTypeClass()))
+                    if (isTypesafeVariadic)
                     {
                         /* This is because they can be constructed on the stack
                          * https://dlang.org/spec/function.html#typesafe_variadic_functions

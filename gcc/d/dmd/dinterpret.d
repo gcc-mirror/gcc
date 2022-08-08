@@ -2352,6 +2352,7 @@ public:
                 if (ExpInitializer ie = v._init.isExpInitializer())
                 {
                     result = interpretRegion(ie.exp, istate, goal);
+                    return;
                 }
                 else if (v._init.isVoidInitializer())
                 {
@@ -2359,12 +2360,16 @@ public:
                     // There is no AssignExp for void initializers,
                     // so set it here.
                     setValue(v, result);
+                    return;
                 }
-                else
+                else if (v._init.isArrayInitializer())
                 {
-                    e.error("declaration `%s` is not yet implemented in CTFE", e.toChars());
-                    result = CTFEExp.cantexp;
+                    result = v._init.initializerToExpression(v.type);
+                    if (result !is null)
+                        return;
                 }
+                e.error("declaration `%s` is not yet implemented in CTFE", e.toChars());
+                result = CTFEExp.cantexp;
             }
             else if (v.type.size() == 0)
             {

@@ -1,6 +1,6 @@
 
 /**
- * This module is now deprecated, use $(MREF std, experimental)
+ * This module is now deprecated, use $(MREF std, checkedint)
  * instead.
  *
  * Copyright: Copyright The D Language Foundation 2005 - 2015.

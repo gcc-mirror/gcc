@@ -1211,13 +1211,56 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   // Check if a dominators can supply the range.
   if (range_from_dom (block_result, name, bb, RFD_FILL))
     {
-      m_on_entry.set_bb_range (name, bb, block_result);
       if (DEBUG_RANGE_CACHE)
 	{
 	  fprintf (dump_file, "Filled from dominator! :  ");
 	  block_result.dump (dump_file);
 	  fprintf (dump_file, "\n");
 	}
+      // See if any equivalences can refine it.
+      if (m_oracle)
+	{
+	  unsigned i;
+	  bitmap_iterator bi;
+	  // Query equivalences in read-only mode.
+	  const_bitmap equiv = m_oracle->equiv_set (name, bb);
+	  EXECUTE_IF_SET_IN_BITMAP (equiv, 0, i, bi)
+	    {
+	      if (i == SSA_NAME_VERSION (name))
+		continue;
+	      tree equiv_name = ssa_name (i);
+	      basic_block equiv_bb = gimple_bb (SSA_NAME_DEF_STMT (equiv_name));
+
+	      // Check if the equiv has any ranges calculated.
+	      if (!m_gori.has_edge_range_p (equiv_name))
+		continue;
+
+	      // Check if the equiv definition dominates this block
+	      if (equiv_bb == bb ||
+		  (equiv_bb && !dominated_by_p (CDI_DOMINATORS, bb, equiv_bb)))
+		continue;
+
+	      Value_Range equiv_range (TREE_TYPE (equiv_name));
+	      if (range_from_dom (equiv_range, equiv_name, bb, RFD_READ_ONLY))
+		{
+		  if (block_result.intersect (equiv_range))
+		    {
+		      if (DEBUG_RANGE_CACHE)
+			{
+			  fprintf (dump_file, "Equivalence update! :  ");
+			  print_generic_expr (dump_file, equiv_name, TDF_SLIM);
+			  fprintf (dump_file, "had range  :  ");
+			  equiv_range.dump (dump_file);
+			  fprintf (dump_file, " refining range to :");
+			  block_result.dump (dump_file);
+			  fprintf (dump_file, "\n");
+			}
+		    }
+		}
+	    }
+	}
+
+      m_on_entry.set_bb_range (name, bb, block_result);
       gcc_checking_assert (m_workback.length () == 0);
       return;
     }

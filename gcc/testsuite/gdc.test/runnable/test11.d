@@ -1193,41 +1193,6 @@ void test63()
      printf("%.*s\n", cast(int)s.length, s.ptr);
 }
 
-
-/**************************************/
-
-debug = 3;
-
-void test64()
-{
-    debug(5)
-    {
-        assert(0);
-    }
-    debug(3)
-    {
-        int x = 3;
-    }
-    assert(x == 3);
-}
-
-/**************************************/
-
-version = 3;
-
-void test65()
-{
-    version(5)
-    {
-        assert(0);
-    }
-    version(3)
-    {
-        int x = 3;
-    }
-    assert(x == 3);
-}
-
 /**************************************/
 // https://issues.dlang.org/show_bug.cgi?id=8809
 
@@ -1381,8 +1346,6 @@ int main(string[] argv)
     test61();
     test62();
     test63();
-    test64();
-    test65();
     test8809();
     test9734();
 

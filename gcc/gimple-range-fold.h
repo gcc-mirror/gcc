@@ -173,7 +173,7 @@ protected:
   void range_of_builtin_ubsan_call (irange &r, gcall *call, tree_code code,
 				    fur_source &src);
   bool range_of_phi (vrange &r, gphi *phi, fur_source &src);
-  void range_of_ssa_name_with_loop_info (irange &, tree, class loop *, gphi *,
+  void range_of_ssa_name_with_loop_info (vrange &, tree, class loop *, gphi *,
 					 fur_source &src);
   void relation_fold_and_or (irange& lhs_range, gimple *s, fur_source &src);
 };

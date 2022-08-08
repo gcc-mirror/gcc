@@ -1,3 +1,161 @@
+2022-08-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/cmpti2.c: Add -mno-stv to dg-options.
+
+2022-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88174
+	* g++.dg/cpp1y/constexpr-complex1.C: New test.
+
+2022-08-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/cmpti1.c: New test case.
+	* gcc.target/i386/cmpti2.c: Likewise.
+	* gcc.target/i386/cmpti3.c: Likewise.
+
+2022-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105947
+	* gcc.dg/analyzer/function-ptr-5.c: New test.
+
+2022-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106533
+	* gcc.dg/tree-ssa/ldist-39.c: New testcase.
+
+2022-08-05  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* lib/target-supports.exp (check_p9modulo_hw_available): Correct return
+	value.
+
+2022-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/subnot.c: New test.
+
+2022-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/106519
+	* gcc.dg/pr106519.c: New test.
+
+2022-08-04  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/106243
+	* gcc.dg/pr106243-1.c: New test.
+	* gcc.dg/pr106243.c: New test.
+
+2022-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106521
+	* gcc.dg/torture/pr106521.c: New testcase.
+
+2022-08-03  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR testsuite/106515
+	* gcc.dg/debug/btf/btf-int-1.c: Fix regexps in
+	scan-assembler-times.
+
+2022-08-03  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/tree-ssa/split-path-1.c: Disable phi-opts so we don't optimize
+	code away.
+	* gcc.dg/tree-ssa/minmax-10.c: New test.
+	* gcc.dg/tree-ssa/minmax-11.c: New test.
+	* gcc.dg/tree-ssa/minmax-12.c: New test.
+	* gcc.dg/tree-ssa/minmax-13.c: New test.
+	* gcc.dg/tree-ssa/minmax-14.c: New test.
+	* gcc.dg/tree-ssa/minmax-15.c: New test.
+	* gcc.dg/tree-ssa/minmax-16.c: New test.
+	* gcc.dg/tree-ssa/minmax-3.c: New test.
+	* gcc.dg/tree-ssa/minmax-4.c: New test.
+	* gcc.dg/tree-ssa/minmax-5.c: New test.
+	* gcc.dg/tree-ssa/minmax-6.c: New test.
+	* gcc.dg/tree-ssa/minmax-7.c: New test.
+	* gcc.dg/tree-ssa/minmax-8.c: New test.
+	* gcc.dg/tree-ssa/minmax-9.c: New test.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/47949
+	* gcc.target/i386/pr47949.c: New test case.
+
+2022-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse4_1-stv-7.c: New test case.
+
+2022-08-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106510
+	* gcc.dg/pr106510.c: New.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-float-1.c: Adjust test so it passes.
+
+2022-08-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106474
+	* g++.dg/pr106474.C: New.
+
+2022-08-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.dg/debug/btf/btf-int-1.c: Do not check for char bits in
+	bti_encoding and check for bool bits.
+
+2022-08-02  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106298
+	* gcc.dg/analyzer/fd-1.c: Add tests for 'creat'.
+	* gcc.dg/analyzer/fd-2.c: Likewise.
+	* gcc.dg/analyzer/fd-4.c: Likewise.
+	* gcc.dg/analyzer/fd-dup-1.c: New tests.
+
+2022-08-02  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/opt/pr94589-2.C: XFAIL.
+	* gcc.dg/tree-ssa/vrp-float-1.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-11.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-3.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-4.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-6.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-7.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-8.c: New test.
+
+2022-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106497
+	* gcc.dg/torture/pr106497.c: New testcase.
+
+2022-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.target/i386/addr-space-typeck-1.c: New test.
+	* gcc.target/i386/addr-space-typeck-2.c: New test.
+
+2022-08-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/106481
+	* gcc.target/i386/pr106481.c: New test case.
+
+2022-08-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/83782
+	* gcc.target/i386/pr83782-1.c: Require non-ia32.
+	* gcc.target/i386/pr83782-2.c: Likewise.
+	* gcc.target/i386/pr83782-3.c: New test.
+
+2022-08-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR debug/106263
+	* gcc.dg/debug/btf/btf-function-4.c: New test.
+	* gcc.dg/debug/btf/btf-function-5.c: Likewise.
+
+2022-08-01  Sam Feifer  <sfeifer@redhat.com>
+
+	PR tree-optimization/104992
+	* g++.dg/pr104992-1.C: New test.
+	* gcc.dg/pr104992.c: New test.
+
 2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
 	    H.J. Lu  <hjl.tools@gmail.com>
 

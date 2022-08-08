@@ -1,3 +1,9 @@
+2022-08-01  Martin Liska  <mliska@suse.cz>
+
+	PR lto/106170
+	* configure.ac: Replace $target with $host.
+	* configure: Regenerate.
+
 2022-07-14  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/106156

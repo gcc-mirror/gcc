@@ -567,18 +567,40 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                     i.exp = e.optimize(WANTvalue);
             }
         }
+
+        // Look for the case of statically initializing an array with a single member.
+        // Recursively strip static array / enum layers until a compatible element is found,
+        // and return an `ArrayLiteralExp` repeating the initializer, or `null` if no match found
+        // int[2][3] = 7       => [[7, 7], [7, 7], [7, 7]]
+        // int[2] = new Object => null
+        Expression sarrayRepeat(Type tb)
         {
-        // Look for the case of statically initializing an array
-        // with a single member.
-        auto tba = tb.isTypeSArray();
-        if (tba && !tba.next.equals(ti.toBasetype().nextOf()) && i.exp.implicitConvTo(tba.next))
-        {
-            /* If the variable is not actually used in compile time, array creation is
-             * redundant. So delay it until invocation of toExpression() or toDt().
-             */
-            t = tb.nextOf();
+            auto tsa = tb.isTypeSArray();
+            if (!tsa)
+                return null;
+
+            // printf("i.exp = %s, tsa = %s\n", i.exp.toChars(), tsa.toChars());
+            Expression elem = null;
+            if (i.exp.implicitConvTo(tb.nextOf()))
+                elem = i.exp.implicitCastTo(sc, tb.nextOf());
+            else if (auto ae = sarrayRepeat(tb.nextOf().toBasetype()))
+                elem = ae;
+            else
+                return null;
+
+            auto arrayElements = new Expressions(cast(size_t) tsa.dim.toInteger());
+            foreach (ref e; *arrayElements)
+                e = elem;
+            return new ArrayLiteralExp(i.exp.loc, tb, elem, arrayElements);
         }
 
+        if (auto sa = sarrayRepeat(tb))
+        {
+            // printf("sa = %s\n", sa.toChars());
+            i.exp = sa;
+        }
+
+        {
         auto tta = t.isTypeSArray();
         if (i.exp.implicitConvTo(t))
         {
@@ -595,6 +617,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         }
         else
         {
+            auto tba = tb.isTypeSArray();
             // Look for mismatch of compile-time known length to emit
             // better diagnostic message, as same as AssignExp::semantic.
             if (tba && i.exp.implicitConvTo(tba.next.arrayOf()) > MATCH.nomatch)

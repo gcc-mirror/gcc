@@ -3829,7 +3829,7 @@ loop_distribution::execute (function *fun)
 	{
 	  auto_vec<gimple *> work_list;
 	  if (!find_seed_stmts_for_distribution (loop, &work_list))
-	    break;
+	    continue;
 
 	  const char *str = loop->inner ? " nest" : "";
 	  dump_user_location_t loc = find_loop_location (loop);

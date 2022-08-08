@@ -19,6 +19,7 @@ gcov-dump
      [@option{-l}|@option{--long}]
      [@option{-p}|@option{--positions}]
      [@option{-r}|@option{--raw}]
+     [@option{-s}|@option{--stable}]
      [@var{gcovfiles}]
 
 @subsubheading Options
@@ -40,6 +41,10 @@ Dump positions of records.
 @item -r
 @itemx --raw
 Print content records in raw format.
+
+@item -s
+@itemx --stable
+Print content in stable format usable for comparison.
 
 @item -v
 @itemx --version

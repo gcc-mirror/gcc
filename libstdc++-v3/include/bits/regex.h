@@ -28,6 +28,10 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
+#if __cplusplus >= 202002L
+# include <bits/iterator_concepts.h>	// std::default_sentinel_t
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -2760,12 +2764,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       bool
       operator==(const regex_iterator&) const noexcept;
 
+#if __cplusplus >= 202002L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3719. Directory iterators should be usable with default sentinel
+      bool operator==(default_sentinel_t) const noexcept
+      { return _M_pregex == nullptr; }
+#endif
+
+#if __cpp_impl_three_way_comparison < 201907L
       /**
        * @brief Tests the inequivalence of two regex iterators.
        */
       bool
       operator!=(const regex_iterator& __rhs) const noexcept
       { return !(*this == __rhs); }
+#endif
 
       /**
        * @brief Dereferences a %regex_iterator.
@@ -2968,12 +2981,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       bool
       operator==(const regex_token_iterator& __rhs) const;
 
+#if __cplusplus >= 202002L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3719. Directory iterators should be usable with default sentinel
+      bool operator==(default_sentinel_t) const noexcept
+      { return _M_end_of_seq(); }
+#endif
+
+#if __cpp_impl_three_way_comparison < 201907L
       /**
        * @brief Compares a %regex_token_iterator to another for inequality.
        */
       bool
       operator!=(const regex_token_iterator& __rhs) const
       { return !(*this == __rhs); }
+#endif
 
       /**
        * @brief Dereferences a %regex_token_iterator.
@@ -3022,7 +3044,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 
       constexpr bool
-      _M_end_of_seq() const
+      _M_end_of_seq() const noexcept
       { return _M_result == nullptr; }
 
       // [28.12.2.2.4]

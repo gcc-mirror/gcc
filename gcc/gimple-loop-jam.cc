@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-vectorizer.h"
 #include "tree-ssa-sccvn.h"
+#include "tree-cfgcleanup.h"
 
 /* Unroll and Jam transformation
    
@@ -609,9 +610,16 @@ tree_loop_unroll_and_jam (void)
 
   if (todo)
     {
+      free_dominance_info (CDI_DOMINATORS);
+      /* We need to cleanup the CFG first since otherwise SSA form can
+	 be not up-to-date from the VN run.  */
+      if (todo & TODO_cleanup_cfg)
+	{
+	  cleanup_tree_cfg ();
+	  todo &= ~TODO_cleanup_cfg;
+	}
       rewrite_into_loop_closed_ssa (NULL, 0);
       scev_reset ();
-      free_dominance_info (CDI_DOMINATORS);
     }
   return todo;
 }

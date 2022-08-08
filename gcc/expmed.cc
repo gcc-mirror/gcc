@@ -5662,9 +5662,81 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
       break;
     }
 
+  /* If this is A < 0 or A >= 0, we can do this by taking the ones
+     complement of A (for GE) and shifting the sign bit to the low bit.  */
+  scalar_int_mode int_mode;
+  if (op1 == const0_rtx && (code == LT || code == GE)
+      && is_int_mode (mode, &int_mode)
+      && (normalizep || STORE_FLAG_VALUE == 1
+	  || val_signbit_p (int_mode, STORE_FLAG_VALUE)))
+    {
+      scalar_int_mode int_target_mode;
+      subtarget = target;
+
+      if (!target)
+	int_target_mode = int_mode;
+      else
+	{
+	  /* If the result is to be wider than OP0, it is best to convert it
+	     first.  If it is to be narrower, it is *incorrect* to convert it
+	     first.  */
+	  int_target_mode = as_a <scalar_int_mode> (target_mode);
+	  if (GET_MODE_SIZE (int_target_mode) > GET_MODE_SIZE (int_mode))
+	    {
+	      op0 = convert_modes (int_target_mode, int_mode, op0, 0);
+	      int_mode = int_target_mode;
+	    }
+	}
+
+      if (int_target_mode != int_mode)
+	subtarget = 0;
+
+      if (code == GE)
+	op0 = expand_unop (int_mode, one_cmpl_optab, op0,
+			   ((STORE_FLAG_VALUE == 1 || normalizep)
+			    ? 0 : subtarget), 0);
+
+      if (STORE_FLAG_VALUE == 1 || normalizep)
+	/* If we are supposed to produce a 0/1 value, we want to do
+	   a logical shift from the sign bit to the low-order bit; for
+	   a -1/0 value, we do an arithmetic shift.  */
+	op0 = expand_shift (RSHIFT_EXPR, int_mode, op0,
+			    GET_MODE_BITSIZE (int_mode) - 1,
+			    subtarget, normalizep != -1);
+
+      if (int_mode != int_target_mode)
+	op0 = convert_modes (int_target_mode, int_mode, op0, 0);
+
+      return op0;
+    }
+
+  /* Next try expanding this via the backend's cstore<mode>4.  */
+  mclass = GET_MODE_CLASS (mode);
+  FOR_EACH_MODE_FROM (compare_mode, mode)
+    {
+     machine_mode optab_mode = mclass == MODE_CC ? CCmode : compare_mode;
+     icode = optab_handler (cstore_optab, optab_mode);
+     if (icode != CODE_FOR_nothing)
+	{
+	  do_pending_stack_adjust ();
+	  rtx tem = emit_cstore (target, icode, code, mode, compare_mode,
+				 unsignedp, op0, op1, normalizep, target_mode);
+	  if (tem)
+	    return tem;
+
+	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	    {
+	      tem = emit_cstore (target, icode, scode, mode, compare_mode,
+				 unsignedp, op1, op0, normalizep, target_mode);
+	      if (tem)
+	        return tem;
+	    }
+	  break;
+	}
+    }
+
   /* If we are comparing a double-word integer with zero or -1, we can
      convert the comparison into one involving a single word.  */
-  scalar_int_mode int_mode;
   if (is_int_mode (mode, &int_mode)
       && GET_MODE_BITSIZE (int_mode) == BITS_PER_WORD * 2
       && (!MEM_P (op0) || ! MEM_VOLATILE_P (op0)))
@@ -5714,77 +5786,6 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
 						  (normalizep ? normalizep
 						   : STORE_FLAG_VALUE)));
 	  return target;
-	}
-    }
-
-  /* If this is A < 0 or A >= 0, we can do this by taking the ones
-     complement of A (for GE) and shifting the sign bit to the low bit.  */
-  if (op1 == const0_rtx && (code == LT || code == GE)
-      && is_int_mode (mode, &int_mode)
-      && (normalizep || STORE_FLAG_VALUE == 1
-	  || val_signbit_p (int_mode, STORE_FLAG_VALUE)))
-    {
-      scalar_int_mode int_target_mode;
-      subtarget = target;
-
-      if (!target)
-	int_target_mode = int_mode;
-      else
-	{
-	  /* If the result is to be wider than OP0, it is best to convert it
-	     first.  If it is to be narrower, it is *incorrect* to convert it
-	     first.  */
-	  int_target_mode = as_a <scalar_int_mode> (target_mode);
-	  if (GET_MODE_SIZE (int_target_mode) > GET_MODE_SIZE (int_mode))
-	    {
-	      op0 = convert_modes (int_target_mode, int_mode, op0, 0);
-	      int_mode = int_target_mode;
-	    }
-	}
-
-      if (int_target_mode != int_mode)
-	subtarget = 0;
-
-      if (code == GE)
-	op0 = expand_unop (int_mode, one_cmpl_optab, op0,
-			   ((STORE_FLAG_VALUE == 1 || normalizep)
-			    ? 0 : subtarget), 0);
-
-      if (STORE_FLAG_VALUE == 1 || normalizep)
-	/* If we are supposed to produce a 0/1 value, we want to do
-	   a logical shift from the sign bit to the low-order bit; for
-	   a -1/0 value, we do an arithmetic shift.  */
-	op0 = expand_shift (RSHIFT_EXPR, int_mode, op0,
-			    GET_MODE_BITSIZE (int_mode) - 1,
-			    subtarget, normalizep != -1);
-
-      if (int_mode != int_target_mode)
-	op0 = convert_modes (int_target_mode, int_mode, op0, 0);
-
-      return op0;
-    }
-
-  mclass = GET_MODE_CLASS (mode);
-  FOR_EACH_MODE_FROM (compare_mode, mode)
-    {
-     machine_mode optab_mode = mclass == MODE_CC ? CCmode : compare_mode;
-     icode = optab_handler (cstore_optab, optab_mode);
-     if (icode != CODE_FOR_nothing)
-	{
-	  do_pending_stack_adjust ();
-	  rtx tem = emit_cstore (target, icode, code, mode, compare_mode,
-				 unsignedp, op0, op1, normalizep, target_mode);
-	  if (tem)
-	    return tem;
-
-	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-	    {
-	      tem = emit_cstore (target, icode, scode, mode, compare_mode,
-				 unsignedp, op1, op0, normalizep, target_mode);
-	      if (tem)
-	        return tem;
-	    }
-	  break;
 	}
     }
 

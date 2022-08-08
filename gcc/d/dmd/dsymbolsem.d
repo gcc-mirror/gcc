@@ -2023,7 +2023,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     override void visit(EnumDeclaration ed)
     {
         //printf("EnumDeclaration::semantic(sd = %p, '%s') %s\n", sc.scopesym, sc.scopesym.toChars(), ed.toChars());
-        //printf("EnumDeclaration::semantic() %p %s\n", this, ed.toChars());
+        //printf("EnumDeclaration::semantic() %p %s\n", ed, ed.toChars());
         if (ed.semanticRun >= PASS.semanticdone)
             return; // semantic() already completed
         if (ed.semanticRun == PASS.semantic)
@@ -4442,7 +4442,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
              invd.semanticRun < PASS.semantic &&
              !ad.isUnionDeclaration()           // users are on their own with union fields
            )
+        {
+            invd.fixupInvariantIdent(ad.invs.length);
             ad.invs.push(invd);
+        }
         if (!invd.type)
             invd.type = new TypeFunction(ParameterList(), Type.tvoid, LINK.d, invd.storage_class);
 
@@ -5713,6 +5716,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
  */
 void addEnumMembers(EnumDeclaration ed, Scope* sc, ScopeDsymbol sds)
 {
+    //printf("addEnumMembers(ed: %p)\n", ed);
     if (ed.added)
         return;
     ed.added = true;
@@ -5736,6 +5740,7 @@ void addEnumMembers(EnumDeclaration ed, Scope* sc, ScopeDsymbol sds)
             em.ed = ed;
             if (isCEnum)
             {
+                //printf("adding EnumMember %s to %p\n", em.toChars(), ed);
                 em.addMember(sc, ed);   // add em to ed's symbol table
                 em.addMember(sc, sds);  // add em to symbol table that ed is in
                 em.parent = ed; // restore it after previous addMember() changed it

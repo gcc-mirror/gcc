@@ -169,3 +169,21 @@ void test409() { char* p; printf("%llu", p); }
 void test410() { char* p; printf("%lld", p); }
 void test411() { char* p; printf("%ju", p); }
 void test412() { char* p; printf("%jd", p); }
+
+/* https://issues.dlang.org/show_bug.cgi?id=23247
+TEST_OUTPUT:
+---
+fail_compilation/chkformat.d(501): Deprecation: argument `p` for format specification `"%a"` must be `double`, not `char*`
+fail_compilation/chkformat.d(502): Deprecation: argument `p` for format specification `"%La"` must be `real`, not `char*`
+fail_compilation/chkformat.d(503): Deprecation: argument `p` for format specification `"%a"` must be `float*`, not `char*`
+fail_compilation/chkformat.d(504): Deprecation: argument `p` for format specification `"%la"` must be `double*`, not `char*`
+fail_compilation/chkformat.d(505): Deprecation: argument `p` for format specification `"%La"` must be `real*`, not `char*`
+---
+*/
+#line 500
+
+void test501() { char* p; printf("%a", p); }
+void test502() { char* p; printf("%La", p); }
+void test503() { char* p; scanf("%a", p); }
+void test504() { char* p; scanf("%la", p); }
+void test505() { char* p; scanf("%La", p); }

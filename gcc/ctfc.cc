@@ -777,7 +777,7 @@ ctf_add_function_arg (ctf_container_ref ctfc, dw_die_ref func,
 ctf_id_t
 ctf_add_function (ctf_container_ref ctfc, uint32_t flag, const char * name,
 		  const ctf_funcinfo_t * ctc, dw_die_ref die,
-		  bool from_global_func)
+		  bool from_global_func, int linkage)
 {
   ctf_dtdef_ref dtd;
   ctf_id_t type;
@@ -791,6 +791,7 @@ ctf_add_function (ctf_container_ref ctfc, uint32_t flag, const char * name,
   type = ctf_add_generic (ctfc, flag, name, &dtd, die);
 
   dtd->from_global_func = from_global_func;
+  dtd->linkage = linkage;
   dtd->dtd_data.ctti_info = CTF_TYPE_INFO (CTF_K_FUNCTION, flag, vlen);
   /* Caller must make sure CTF types for ctc->ctc_return are already added.  */
   dtd->dtd_data.ctti_type = (uint32_t) ctc->ctc_return;

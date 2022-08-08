@@ -45,16 +45,12 @@ alias Alias(T) = T;
 static assert(is(Alias!(__traits(parent, Foo.bar)) == Foo));
 
 extern(C++, "std"):
-debug = 456;
 debug = def;
-version = 456;
 version = def;
 
 extern(C++, "std")
 {
-    debug = 456;
     debug = def;
-    version = 456;
     version = def;
 }
 

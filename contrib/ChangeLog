@@ -1,3 +1,7 @@
+2022-08-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Do not deduce changelog for root ChangeLog.
+
 2022-07-22  Martin Liska  <mliska@suse.cz>
 
 	* git-commit-mklog.py: Do not parse -b argument.

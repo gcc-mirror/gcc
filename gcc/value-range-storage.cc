@@ -40,7 +40,8 @@ vrange_storage::alloc_slot (const vrange &r)
 
   if (is_a <irange> (r))
     return irange_storage_slot::alloc_slot (*m_alloc, as_a <irange> (r));
-
+  if (is_a <frange> (r))
+    return frange_storage_slot::alloc_slot (*m_alloc, as_a <frange> (r));
   return NULL;
 }
 
@@ -54,6 +55,12 @@ vrange_storage::set_vrange (void *slot, const vrange &r)
       irange_storage_slot *s = static_cast <irange_storage_slot *> (slot);
       gcc_checking_assert (s->fits_p (as_a <irange> (r)));
       s->set_irange (as_a <irange> (r));
+    }
+  else if (is_a <frange> (r))
+    {
+      frange_storage_slot *s = static_cast <frange_storage_slot *> (slot);
+      gcc_checking_assert (s->fits_p (as_a <frange> (r)));
+      s->set_frange (as_a <frange> (r));
     }
   else
     gcc_unreachable ();
@@ -70,6 +77,12 @@ vrange_storage::get_vrange (const void *slot, vrange &r, tree type)
 	= static_cast <const irange_storage_slot *> (slot);
       s->get_irange (as_a <irange> (r), type);
     }
+  else if (is_a <frange> (r))
+    {
+      const frange_storage_slot *s
+	= static_cast <const frange_storage_slot *> (slot);
+      s->get_frange (as_a <frange> (r), type);
+    }
   else
     gcc_unreachable ();
 }
@@ -84,6 +97,12 @@ vrange_storage::fits_p (const void *slot, const vrange &r)
       const irange_storage_slot *s
 	= static_cast <const irange_storage_slot *> (slot);
       return s->fits_p (as_a <irange> (r));
+    }
+  if (is_a <frange> (r))
+    {
+      const frange_storage_slot *s
+	= static_cast <const frange_storage_slot *> (slot);
+      return s->fits_p (as_a <frange> (r));
     }
   gcc_unreachable ();
   return false;
@@ -214,4 +233,44 @@ debug (const irange_storage_slot &storage)
 {
   storage.dump ();
   fprintf (stderr, "\n");
+}
+
+// Implementation of frange_storage_slot.
+
+frange_storage_slot *
+frange_storage_slot::alloc_slot (vrange_allocator &allocator, const frange &r)
+{
+  size_t size = sizeof (frange_storage_slot);
+  frange_storage_slot *p
+    = static_cast <frange_storage_slot *> (allocator.alloc (size));
+  new (p) frange_storage_slot (r);
+  return p;
+}
+
+void
+frange_storage_slot::set_frange (const frange &r)
+{
+  gcc_checking_assert (fits_p (r));
+  gcc_checking_assert (!r.undefined_p ());
+
+  m_props = r.m_props;
+}
+
+void
+frange_storage_slot::get_frange (frange &r, tree type) const
+{
+  gcc_checking_assert (r.supports_type_p (type));
+
+  r.set_varying (type);
+  r.m_props = m_props;
+  r.normalize_kind ();
+
+  if (flag_checking)
+    r.verify_range ();
+}
+
+bool
+frange_storage_slot::fits_p (const frange &) const
+{
+  return true;
 }

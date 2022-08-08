@@ -456,16 +456,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fdebug_:
-      if (ISDIGIT (arg[0]))
-	{
-	  int level = integral_argument (arg);
-	  if (level != -1)
-	    {
-	      global.params.debuglevel = level;
-	      break;
-	    }
-	}
-
       if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
 	{
 	  if (!global.params.debugids)
@@ -713,16 +703,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fversion_:
-      if (ISDIGIT (arg[0]))
-	{
-	  int level = integral_argument (arg);
-	  if (level != -1)
-	    {
-	      global.params.versionlevel = level;
-	      break;
-	    }
-	}
-
       if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
 	{
 	  if (!global.params.versionids)

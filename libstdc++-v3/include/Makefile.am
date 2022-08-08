@@ -757,6 +757,7 @@ experimental_headers = \
 	${experimental_srcdir}/random \
 	${experimental_srcdir}/ratio \
 	${experimental_srcdir}/regex \
+	${experimental_srcdir}/scope \
 	${experimental_srcdir}/set \
 	${experimental_srcdir}/simd \
 	${experimental_srcdir}/socket \

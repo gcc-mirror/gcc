@@ -2288,7 +2288,7 @@ proc check_p9modulo_hw_available { } {
 		{
 		    int i = 5, j = 3, r = -1;
 		    asm ("modsw %0,%1,%2" : "+r" (r) : "r" (i), "r" (j));
-		    return (r == 2);
+		    return (r != 2);
 		}
 	    } $options
 	}

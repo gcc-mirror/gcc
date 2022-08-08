@@ -5,6 +5,13 @@ void close(int fd);
 #define O_RDWR 2
 #define STDIN 0
 
+typedef enum {
+  S_IRWXU
+  // etc
+} mode_t;
+
+int creat (const char *, mode_t mode);
+
 void 
 test_1 (const char *path)
 {
@@ -46,4 +53,12 @@ test_4 ()
     int fd = -1;
     close(fd);
     close(fd);
+}
+
+void
+test_5 (const char *path, mode_t mode)
+{
+    int fd = creat (path, mode);
+    close(fd);
+    close(fd); /* { dg-warning "double 'close' of file descriptor 'fd' \\\[CWE-1341\\\]" "warning" } */
 }

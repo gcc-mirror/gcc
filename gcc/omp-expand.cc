@@ -1530,8 +1530,6 @@ expand_omp_taskreg (struct omp_region *region)
     expand_teams_call (new_bb, as_a <gomp_teams *> (entry_stmt));
   else
     expand_task_call (region, new_bb, as_a <gomp_task *> (entry_stmt));
-  if (gimple_in_ssa_p (cfun))
-    update_ssa (TODO_update_ssa_only_virtuals);
 }
 
 /* Information about members of an OpenACC collapsed loop nest.  */
@@ -8191,9 +8189,6 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
 			      (enum built_in_function) next_ix, sched_arg,
 			      inner_stmt);
     }
-
-  if (gimple_in_ssa_p (cfun))
-    update_ssa (TODO_update_ssa_only_virtuals);
 }
 
 /* Expand code for an OpenMP sections directive.  In pseudo code, we generate
@@ -10591,13 +10586,10 @@ execute_expand_omp (void)
 
   expand_omp (root_omp_region);
 
-  if (flag_checking && !loops_state_satisfies_p (LOOPS_NEED_FIXUP))
-    verify_loop_structure ();
-  cleanup_tree_cfg ();
-
   omp_free_regions ();
 
-  return 0;
+  return (TODO_cleanup_cfg
+	  | (gimple_in_ssa_p (cfun) ? TODO_update_ssa_only_virtuals : 0));
 }
 
 /* OMP expansion -- the default pass, run before creation of SSA form.  */

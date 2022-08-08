@@ -1120,7 +1120,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     e.e1 = ci;
             }
         }
-        if (e.e1.op == EXP.string_ || e.e1.op == EXP.arrayLiteral || e.e1.op == EXP.assocArrayLiteral || e.e1.type.toBasetype().ty == Tsarray)
+        if (e.e1.op == EXP.string_ || e.e1.op == EXP.arrayLiteral || e.e1.op == EXP.assocArrayLiteral || e.e1.type.toBasetype().ty == Tsarray || e.e1.op == EXP.null_)
         {
             ret = ArrayLength(e.type, e.e1).copy();
         }

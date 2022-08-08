@@ -59,22 +59,7 @@ void test2()
 void test3()
 {
     debug printf("debug\n");
-    debug(1) printf("debug(1)\n");
-    debug(2) printf("debug(2)\n");
-    debug(3) printf("debug(3)\n");
     debug(bar) printf("debug(bar)\n");
-    debug(10) assert(0);
-
-    debug(1)
-    {
-        int d1 = 3;
-
-        printf("debug(1) { }\n");
-    }
-    debug(2)
-    {
-        printf("debug(2): d1 = %d\n", d1);
-    }
 }
 
 /* ================================ */
