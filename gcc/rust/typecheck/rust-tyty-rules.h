@@ -1128,6 +1128,28 @@ public:
 	  }
       }
 
+    // generic args for the unit-struct case
+    if (type.is_unit () && base->is_unit ())
+      {
+	rust_assert (type.get_num_substitutions ()
+		     == base->get_num_substitutions ());
+
+	for (size_t i = 0; i < type.get_num_substitutions (); i++)
+	  {
+	    auto &a = base->get_substs ().at (i);
+	    auto &b = type.get_substs ().at (i);
+
+	    auto pa = a.get_param_ty ();
+	    auto pb = b.get_param_ty ();
+
+	    auto res = pa->unify (pb);
+	    if (res->get_kind () == TyTy::TypeKind::ERROR)
+	      {
+		return;
+	      }
+	  }
+      }
+
     resolved = type.clone ();
   }
 
