@@ -1,5 +1,5 @@
-// { dg-do compile }
-// { dg-options "-O1 -gdwarf-5 -dA -w" }
+// { dg-additional-options -fdump-tree-ccp1-raw }
+
 macro_rules! stmt {
     ($s:stmt) => {
         $s
@@ -13,6 +13,7 @@ macro_rules! stmt {
 pub fn test() -> i32 {
     stmt!(
         let a = 1
+	// { dg-warning {unused name 'a'} {} { target *-*-* } .-1 }
     );
     stmt!(
         let b = 2,
@@ -21,8 +22,8 @@ pub fn test() -> i32 {
         let e = 5,
         let f = b + c + d + e
     );
-    // { dg-final { scan-assembler "14" } }
     f
+    // { dg-final { scan-tree-dump-times {gimple_return <14>} 1 ccp1 { target __OPTIMIZE__ } } }
 }
 
 fn main() {
