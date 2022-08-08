@@ -1514,6 +1514,21 @@ reduced_constant_expression_p (tree t)
     }
 }
 
+/* TEMP is the constant value of a temporary object of type TYPE.  Adjust
+   the type of the value to match.  */
+
+static tree
+adjust_temp_type (tree type, tree temp)
+{
+  if (same_type_p (TREE_TYPE (temp), type))
+    return temp;
+
+  gcc_assert (scalarish_type_p (type));
+  /* Now we know we're dealing with a scalar, and a prvalue of non-class
+     type is cv-unqualified.  */
+  return fold_convert (cv_unqualified (type), temp);
+}
+
 static tree
 eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 			  bool *non_constant_p, bool *overflow_p,
@@ -1544,6 +1559,7 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
       return t;
     }
 
+  constexpr_ctx new_ctx;
   tree r = t;
   tree_code tcode = TREE_CODE (t);
   switch (tcode)
@@ -1560,6 +1576,14 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	  }
       }
       break;
+
+    case VAR_DECL:
+      if (DECL_HAS_VALUE_EXPR_P (t))
+	{
+	  r = DECL_VALUE_EXPR (t);
+	  return eval_constant_expression (ctx, r, lval, non_constant_p,
+					   overflow_p);
+	}
 
     case PARM_DECL:
       if (lval && !TYPE_REF_P (TREE_TYPE (t)))
@@ -1643,6 +1667,67 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 				   overflow_p);
       break;
 
+      case TARGET_EXPR: {
+	tree type = TREE_TYPE (t);
+
+	if (!literal_type_p (type))
+	  {
+	    if (!ctx->quiet)
+	      {
+		auto_diagnostic_group d;
+		error ("temporary of non-literal type %qT in a "
+		       "constant expression",
+		       type);
+		// explain_non_literal_class (type);
+	      }
+	    *non_constant_p = true;
+	    break;
+	  }
+	gcc_checking_assert (!TARGET_EXPR_DIRECT_INIT_P (t));
+	/* Avoid evaluating a TARGET_EXPR more than once.  */
+	tree slot = TARGET_EXPR_SLOT (t);
+	if (tree *p = ctx->global->values.get (slot))
+	  {
+	    if (lval)
+	      return slot;
+	    r = *p;
+	    break;
+	  }
+	if ((AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type)))
+	  {
+	    /* We're being expanded without an explicit target, so start
+	       initializing a new object; expansion with an explicit target
+	       strips the TARGET_EXPR before we get here.  */
+	    new_ctx = *ctx;
+	    /* Link CTX to NEW_CTX so that lookup_placeholder can resolve
+	       any PLACEHOLDER_EXPR within the initializer that refers to the
+	       former object under construction.  */
+	    new_ctx.parent = ctx;
+	    new_ctx.ctor = build_constructor (type, NULL);
+	    CONSTRUCTOR_NO_CLEARING (new_ctx.ctor) = true;
+	    new_ctx.object = slot;
+	    ctx->global->values.put (new_ctx.object, new_ctx.ctor);
+	    ctx = &new_ctx;
+	  }
+	/* Pass false for 'lval' because this indicates
+	   initialization of a temporary.  */
+	r = eval_constant_expression (ctx, TREE_OPERAND (t, 1), false,
+				      non_constant_p, overflow_p);
+	if (*non_constant_p)
+	  break;
+	/* Adjust the type of the result to the type of the temporary.  */
+	r = adjust_temp_type (type, r);
+	if (TARGET_EXPR_CLEANUP (t) && !CLEANUP_EH_ONLY (t))
+	  ctx->global->cleanups->safe_push (TARGET_EXPR_CLEANUP (t));
+	r = unshare_constructor (r);
+	ctx->global->values.put (slot, r);
+	if (ctx->save_exprs)
+	  ctx->save_exprs->safe_push (slot);
+	if (lval)
+	  return slot;
+      }
+      break;
+
     case CALL_EXPR:
       r = eval_call_expression (ctx, t, false, non_constant_p, overflow_p);
       break;
@@ -1665,6 +1750,38 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	  gcc_assert (ctx->quiet);
 	  *non_constant_p = true;
 	}
+      break;
+
+      case DECL_EXPR: {
+	r = DECL_EXPR_DECL (t);
+
+	if (AGGREGATE_TYPE_P (TREE_TYPE (r)) || VECTOR_TYPE_P (TREE_TYPE (r)))
+	  {
+	    new_ctx = *ctx;
+	    new_ctx.object = r;
+	    new_ctx.ctor = build_constructor (TREE_TYPE (r), NULL);
+	    CONSTRUCTOR_NO_CLEARING (new_ctx.ctor) = true;
+	    ctx->global->values.put (r, new_ctx.ctor);
+	    ctx = &new_ctx;
+	  }
+
+	if (tree init = DECL_INITIAL (r))
+	  {
+	    init = eval_constant_expression (ctx, init, false, non_constant_p,
+					     overflow_p);
+	    /* Don't share a CONSTRUCTOR that might be changed.  */
+	    init = unshare_constructor (init);
+	    /* Remember that a constant object's constructor has already
+	       run.  */
+	    if (CLASS_TYPE_P (TREE_TYPE (r)) && RS_TYPE_CONST_P (TREE_TYPE (r)))
+	      TREE_READONLY (init) = true;
+	    ctx->global->values.put (r, init);
+	  }
+	else if (ctx == &new_ctx)
+	  /* We gave it a CONSTRUCTOR above.  */;
+	else
+	  ctx->global->values.put (r, NULL_TREE);
+      }
       break;
 
     /* These differ from cxx_eval_unary_expression in that this doesn't
@@ -2524,21 +2641,6 @@ eval_binary_expression (const constexpr_ctx *ctx, tree t, bool lval,
   tree type = TREE_TYPE (t);
 
   return fold_binary_loc (loc, code, type, lhs, rhs);
-}
-
-/* TEMP is the constant value of a temporary object of type TYPE.  Adjust
-   the type of the value to match.  */
-
-static tree
-adjust_temp_type (tree type, tree temp)
-{
-  if (same_type_p (TREE_TYPE (temp), type))
-    return temp;
-
-  gcc_assert (scalarish_type_p (type));
-  /* Now we know we're dealing with a scalar, and a prvalue of non-class
-     type is cv-unqualified.  */
-  return fold_convert (cv_unqualified (type), temp);
 }
 
 /* Helper function of cxx_bind_parameters_in_call.  Return non-NULL

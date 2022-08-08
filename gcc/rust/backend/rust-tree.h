@@ -1274,6 +1274,11 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 
 #define AGGR_INIT_EXPR_SLOT(NODE) TREE_OPERAND (AGGR_INIT_EXPR_CHECK (NODE), 2)
 
+/* True if this TARGET_EXPR expresses direct-initialization of an object
+   to be named later.  */
+#define TARGET_EXPR_DIRECT_INIT_P(NODE)                                        \
+  TREE_LANG_FLAG_2 (TARGET_EXPR_CHECK (NODE))
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
