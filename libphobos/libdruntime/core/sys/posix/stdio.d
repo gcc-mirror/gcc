@@ -487,7 +487,7 @@ else version (CRuntime_Musl)
 
 version (HaveMemstream)
 {
-    FILE*  fmemopen(const scope void* buf, in size_t size, const scope char* mode);
+    FILE*  fmemopen(const scope void* buf, size_t size, const scope char* mode);
     FILE*  open_memstream(char** ptr, size_t* sizeloc);
     version (CRuntime_UClibc) {} else
     FILE*  open_wmemstream(wchar_t** ptr, size_t* sizeloc);

@@ -25,7 +25,7 @@
   (A7_REG		7)
   (A8_REG		8)
   (A9_REG		9)
-  (A10_REG		10)
+  (A11_REG		11)
 
   (UNSPEC_NOP		2)
   (UNSPEC_PLT		3)
@@ -2295,9 +2295,9 @@
   "reload_completed
    && !TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)
    && ! call_used_or_fixed_reg_p (REGNO (operands[0]))"
-  [(set (reg:SI A10_REG)
+  [(set (reg:SI A11_REG)
 	(match_dup 0))
-   (call (mem:SI (reg:SI A10_REG))
+   (call (mem:SI (reg:SI A11_REG))
 	 (match_dup 1))])
 
 (define_expand "sibcall_value"
@@ -2328,10 +2328,10 @@
   "reload_completed
    && !TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)
    && ! call_used_or_fixed_reg_p (REGNO (operands[1]))"
-  [(set (reg:SI A10_REG)
+  [(set (reg:SI A11_REG)
 	(match_dup 1))
    (set (match_dup 0)
-	(call (mem:SI (reg:SI A10_REG))
+	(call (mem:SI (reg:SI A11_REG))
 	      (match_dup 2)))])
 
 (define_insn "entry"

@@ -1,3 +1,18 @@
+2022-08-04  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* MAINTAINERS: Add myself as AutoFDO maintainer.
+
+2022-08-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Arnaud Charlet  <charlet@adacore.com>
+
+	* configure: Regenerate.
+
+2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR bootstrap/106472
+	* Makefile.def (dependencies): Make configure-target-libgo depend
+	upon all-target-libbacktrace.
+
 2022-07-27  David Faust  <david.faust@oracle.com>
 
 	* MAINTAINERS: Add myself as reviewer for CTF and BTF.

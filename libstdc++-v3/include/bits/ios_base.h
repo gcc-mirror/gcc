@@ -474,7 +474,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static const openmode __noreplace =	_S_noreplace;
 
 #if __cplusplus >= 202100L
-#define __cpp_lib_ios_noreplace 202200L
+#define __cpp_lib_ios_noreplace 202207L
     /// Open a file in exclusive mode.
     static const openmode noreplace =	_S_noreplace;
 #endif

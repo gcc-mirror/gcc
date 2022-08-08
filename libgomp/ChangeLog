@@ -1,3 +1,12 @@
+2022-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/pr106449-2.c: New test.
+
+2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106449
+	* testsuite/libgomp.c-c++-common/pr106449.c: New test.
+
 2022-07-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* target.c (gomp_target_init): Added tailing '\n' to gomp_debug.

@@ -646,9 +646,12 @@ public:
 	if (!d->isDataseg () && !d->isMember ()
 	    && d->_init && !d->_init->isVoidInitializer ())
 	  {
+	    /* Evaluate RHS for side effects first.  */
+	    Expression *ie = initializerToExpression (d->_init);
+	    add_stmt (build_expr (ie));
+
 	    Expression *e = d->type->defaultInitLiteral (d->loc);
-	    tree exp = build_expr (e);
-	    add_stmt (exp);
+	    add_stmt (build_expr (e));
 	  }
 
 	return;

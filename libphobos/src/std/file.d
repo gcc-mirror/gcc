@@ -1510,7 +1510,7 @@ private
         ushort bitmapcount, reserved;
         attrgroup_t commonattr, volattr, dirattr, fileattr, forkattr;
     }
-    extern(C) int setattrlist(in char* path, scope ref attrlist attrs,
+    extern(C) int setattrlist(scope const(char)* path, scope ref attrlist attrs,
         scope void* attrbuf, size_t attrBufSize, c_ulong options) nothrow @nogc @system;
 }
 

@@ -389,6 +389,20 @@ refs_same_for_tbaa_p (tree earlier, tree later)
 	  || alias_set_subset_of (later_base_set, earlier_base_set));
 }
 
+/* Similar to refs_same_for_tbaa_p() but for use on MEM rtxs.  */
+bool
+mems_same_for_tbaa_p (rtx earlier, rtx later)
+{
+  gcc_assert (MEM_P (earlier));
+  gcc_assert (MEM_P (later));
+
+  return ((MEM_ALIAS_SET (earlier) == MEM_ALIAS_SET (later)
+	   || alias_set_subset_of (MEM_ALIAS_SET (later),
+				   MEM_ALIAS_SET (earlier)))
+	  && (!MEM_EXPR (earlier)
+	      || refs_same_for_tbaa_p (MEM_EXPR (earlier), MEM_EXPR (later))));
+}
+
 /* Returns a pointer to the alias set entry for ALIAS_SET, if there is
    such an entry, or NULL otherwise.  */
 

@@ -908,7 +908,9 @@ T floorImpl(T)(const T x) @trusted pure nothrow @nogc
 
         // Other kinds of extractors for real formats.
         static if (F.realFormat == RealFormat.ieeeSingle)
-            int vi;
+            uint vi;
+        else static if (F.realFormat == RealFormat.ieeeDouble)
+            ulong vi;
     }
     floatBits y = void;
     y.rv = x;
@@ -919,15 +921,14 @@ T floorImpl(T)(const T x) @trusted pure nothrow @nogc
     static if (F.realFormat == RealFormat.ieeeSingle)
     {
         int exp = ((y.vi >> (T.mant_dig - 1)) & 0xff) - 0x7f;
+        enum mantissa_mask = F.MANTISSAMASK_INT;
+        enum sign_shift = 31;
     }
     else static if (F.realFormat == RealFormat.ieeeDouble)
     {
-        int exp = ((y.vu[F.EXPPOS_SHORT] >> 4) & 0x7ff) - 0x3ff;
-
-        version (LittleEndian)
-            int pos = 0;
-        else
-            int pos = 3;
+        long exp = ((y.vi >> (T.mant_dig - 1)) & 0x7ff) - 0x3ff;
+        enum mantissa_mask = F.MANTISSAMASK_LONG;
+        enum sign_shift = 63;
     }
     else static if (F.realFormat == RealFormat.ieeeExtended ||
                     F.realFormat == RealFormat.ieeeExtended53)
@@ -959,18 +960,21 @@ T floorImpl(T)(const T x) @trusted pure nothrow @nogc
             return 0.0;
     }
 
-    static if (F.realFormat == RealFormat.ieeeSingle)
+    static if (F.realFormat == RealFormat.ieeeSingle ||
+               F.realFormat == RealFormat.ieeeDouble)
     {
         if (exp < (T.mant_dig - 1))
         {
             // Clear all bits representing the fraction part.
-            const uint fraction_mask = F.MANTISSAMASK_INT >> exp;
+            // Note: the fraction mask represents the floating point number 0.999999...
+            // i.e: `2.0 ^^ (exp - T.mant_dig + 1) * (fraction_mask + 1) == 1.0`
+            const fraction_mask = mantissa_mask >> exp;
 
             if ((y.vi & fraction_mask) != 0)
             {
-                // If 'x' is negative, then first substract 1.0 from the value.
-                if (y.vi < 0)
-                    y.vi += 0x00800000 >> exp;
+                // If 'x' is negative, then first substract (1.0 - T.epsilon) from the value.
+                if (y.vi >> sign_shift)
+                    y.vi += fraction_mask;
                 y.vi &= ~fraction_mask;
             }
         }

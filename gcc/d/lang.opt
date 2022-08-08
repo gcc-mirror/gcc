@@ -249,7 +249,7 @@ Compile in debug code.
 
 fdebug=
 D Joined RejectNegative
--fdebug=<level|ident>	Compile in debug code, code <= <level>, or code identified by <ident>.
+-fdebug=<ident>	Compile in debug code identified by <ident>.
 
 fdoc
 D
@@ -466,7 +466,7 @@ Compile in unittest code.
 
 fversion=
 D Joined RejectNegative
--fversion=<level|ident>	Compile in version code >= <level> or identified by <ident>.
+-fversion=<ident>	Compile in version code identified by <ident>.
 
 fweak-templates
 D Var(flag_weak_templates) Init(1)

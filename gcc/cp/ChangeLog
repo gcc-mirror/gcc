@@ -1,3 +1,30 @@
+2022-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88174
+	* constexpr.cc (cxx_eval_store_expression): Handle REALPART_EXPR
+	and IMAGPART_EXPR.  Change ctors from releasing_vec to
+	auto_vec<tree *>, adjust all uses.  For !preeval, update ctors
+	vector.
+
+2022-07-31  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/66290
+	* parser.cc (cp_lexer_new_main): Rename global done_lexing to
+	override_libcpp_locations.
+
+2022-07-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106369
+	* constexpr.cc (reduced_constant_expression_p): Return false
+	if a CONSTRUCTOR initializes an empty field.
+
+2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106448
+	* parser.cc (cp_parser_omp_atomic): For simple cast followed by
+	CPP_QUERY token, don't try cp_parser_binary_operation if compare
+	is true.
+
 2022-07-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/106311

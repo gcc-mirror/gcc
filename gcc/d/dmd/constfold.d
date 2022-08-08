@@ -234,99 +234,9 @@ UnionExp Add(const ref Loc loc, Type type, Expression e1, Expression e2)
 
 UnionExp Min(const ref Loc loc, Type type, Expression e1, Expression e2)
 {
-    UnionExp ue = void;
-    if (type.isreal())
-    {
-        emplaceExp!(RealExp)(&ue, loc, e1.toReal() - e2.toReal(), type);
-    }
-    else if (type.isimaginary())
-    {
-        emplaceExp!(RealExp)(&ue, loc, e1.toImaginary() - e2.toImaginary(), type);
-    }
-    else if (type.iscomplex())
-    {
-        // This rigamarole is necessary so that -0.0 doesn't get
-        // converted to +0.0 by doing an extraneous add with +0.0
-        auto c1 = complex_t(CTFloat.zero);
-        real_t r1 = CTFloat.zero;
-        real_t i1 = CTFloat.zero;
-        auto c2 = complex_t(CTFloat.zero);
-        real_t r2 = CTFloat.zero;
-        real_t i2 = CTFloat.zero;
-        auto v = complex_t(CTFloat.zero);
-        int x;
-        if (e1.type.isreal())
-        {
-            r1 = e1.toReal();
-            x = 0;
-        }
-        else if (e1.type.isimaginary())
-        {
-            i1 = e1.toImaginary();
-            x = 3;
-        }
-        else
-        {
-            c1 = e1.toComplex();
-            x = 6;
-        }
-        if (e2.type.isreal())
-        {
-            r2 = e2.toReal();
-        }
-        else if (e2.type.isimaginary())
-        {
-            i2 = e2.toImaginary();
-            x += 1;
-        }
-        else
-        {
-            c2 = e2.toComplex();
-            x += 2;
-        }
-        switch (x)
-        {
-        case 0 + 0:
-            v = complex_t(r1 - r2);
-            break;
-        case 0 + 1:
-            v = complex_t(r1, -i2);
-            break;
-        case 0 + 2:
-            v = complex_t(r1 - creall(c2), -cimagl(c2));
-            break;
-        case 3 + 0:
-            v = complex_t(-r2, i1);
-            break;
-        case 3 + 1:
-            v = complex_t(CTFloat.zero, i1 - i2);
-            break;
-        case 3 + 2:
-            v = complex_t(-creall(c2), i1 - cimagl(c2));
-            break;
-        case 6 + 0:
-            v = complex_t(creall(c1) - r2, cimagl(c1));
-            break;
-        case 6 + 1:
-            v = complex_t(creall(c1), cimagl(c1) - i2);
-            break;
-        case 6 + 2:
-            v = c1 - c2;
-            break;
-        default:
-            assert(0);
-        }
-        emplaceExp!(ComplexExp)(&ue, loc, v, type);
-    }
-    else if (SymOffExp soe = e1.isSymOffExp())
-    {
-        emplaceExp!(SymOffExp)(&ue, loc, soe.var, soe.offset - e2.toInteger());
-        ue.exp().type = type;
-    }
-    else
-    {
-        emplaceExp!(IntegerExp)(&ue, loc, e1.toInteger() - e2.toInteger(), type);
-    }
+    // Compute e1-e2 as e1+(-e2)
+    UnionExp neg = Neg(e2.type, e2);
+    UnionExp ue = Add(loc, type, e1, neg.exp());
     return ue;
 }
 
@@ -1213,6 +1123,10 @@ UnionExp ArrayLength(Type type, Expression e1)
         Expression e = (cast(TypeSArray)e1.type.toBasetype()).dim;
         emplaceExp!(UnionExp)(&ue, e);
     }
+    else if (e1.isNullExp())
+    {
+        emplaceExp!(IntegerExp)(&ue, loc, 0, type);
+    }
     else
         cantExp(ue);
     return ue;
@@ -1505,17 +1419,11 @@ UnionExp Cat(const ref Loc loc, Type type, Expression e1, Expression e2)
     Type t2 = e2.type.toBasetype();
     //printf("Cat(e1 = %s, e2 = %s)\n", e1.toChars(), e2.toChars());
     //printf("\tt1 = %s, t2 = %s, type = %s\n", t1.toChars(), t2.toChars(), type.toChars());
-    if (e1.op == EXP.null_ && (e2.op == EXP.int64 || e2.op == EXP.structLiteral))
+
+    /* e is the non-null operand, t is the type of the null operand
+     */
+    UnionExp catNull(Expression e, Type t)
     {
-        e = e2;
-        t = t1;
-        goto L2;
-    }
-    else if ((e1.op == EXP.int64 || e1.op == EXP.structLiteral) && e2.op == EXP.null_)
-    {
-        e = e1;
-        t = t2;
-    L2:
         Type tn = e.type.toBasetype();
         if (tn.ty.isSomeChar)
         {
@@ -1544,6 +1452,15 @@ UnionExp Cat(const ref Loc loc, Type type, Expression e1, Expression e2)
         }
         assert(ue.exp().type);
         return ue;
+    }
+
+    if (e1.op == EXP.null_ && (e2.op == EXP.int64 || e2.op == EXP.structLiteral))
+    {
+        return catNull(e2, t1);
+    }
+    else if ((e1.op == EXP.int64 || e1.op == EXP.structLiteral) && e2.op == EXP.null_)
+    {
+        return catNull(e1, t2);
     }
     else if (e1.op == EXP.null_ && e2.op == EXP.null_)
     {

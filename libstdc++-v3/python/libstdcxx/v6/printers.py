@@ -611,9 +611,9 @@ class StdTuplePrinter:
             # the value "as is".
             fields = impl.type.fields ()
             if len (fields) < 1 or fields[0].name != "_M_head_impl":
-                return ('[%d]' % self.count, impl)
+                return ('[%d]' % (self.count - 1), impl)
             else:
-                return ('[%d]' % self.count, impl['_M_head_impl'])
+                return ('[%d]' % (self.count - 1), impl['_M_head_impl'])
 
     def __init__ (self, typename, val):
         self.typename = strip_versioned_namespace(typename)

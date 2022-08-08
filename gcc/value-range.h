@@ -78,7 +78,7 @@ public:
   virtual void accept (const class vrange_visitor &v) const = 0;
   virtual void set (tree, tree, value_range_kind = VR_RANGE);
   virtual tree type () const;
-  virtual bool supports_type_p (tree type) const;
+  virtual bool supports_type_p (const_tree type) const;
   virtual void set_varying (tree type);
   virtual void set_undefined ();
   virtual bool union_ (const vrange &);
@@ -122,8 +122,8 @@ public:
   virtual void set_undefined () override;
 
   // Range types.
-  static bool supports_p (tree type);
-  virtual bool supports_type_p (tree type) const override;
+  static bool supports_p (const_tree type);
+  virtual bool supports_type_p (const_tree type) const override;
   virtual tree type () const override;
 
   // Iteration over sub-ranges.
@@ -250,7 +250,15 @@ private:
 class unsupported_range : public vrange
 {
 public:
-  unsupported_range ();
+  unsupported_range ()
+  {
+    m_discriminator = VR_UNKNOWN;
+    set_undefined ();
+  }
+  virtual void set_undefined () final override
+  {
+    m_kind = VR_UNDEFINED;
+  }
   virtual void accept (const vrange_visitor &v) const override;
 };
 
@@ -336,10 +344,9 @@ class frange : public vrange
 public:
   frange ();
   frange (const frange &);
-  static bool supports_p (tree type)
+  static bool supports_p (const_tree type)
   {
-    // Disabled until floating point range-ops come live.
-    return 0 && SCALAR_FLOAT_TYPE_P (type);
+    return SCALAR_FLOAT_TYPE_P (type);
   }
   virtual tree type () const override;
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
@@ -347,7 +354,7 @@ public:
   virtual void set_undefined () override;
   virtual bool union_ (const vrange &) override;
   virtual bool intersect (const vrange &) override;
-  virtual bool supports_type_p (tree type) const override;
+  virtual bool supports_type_p (const_tree type) const override;
   virtual void accept (const vrange_visitor &v) const override;
   frange& operator= (const frange &);
   bool operator== (const frange &) const;
@@ -359,7 +366,7 @@ public:
   FRANGE_PROP_ACCESSOR(ninf)
 private:
   void verify_range ();
-  void normalize_kind ();
+  bool normalize_kind ();
 
   frange_props m_props;
   tree m_type;
@@ -457,7 +464,7 @@ public:
   operator vrange &();
   operator const vrange &() const;
   void dump (FILE *) const;
-  static bool supports_type_p (tree type);
+  static bool supports_type_p (const_tree type);
 
   // Convenience methods for vrange compatability.
   void set (tree min, tree max, value_range_kind kind = VR_RANGE)
@@ -588,7 +595,7 @@ Value_Range::operator const vrange &() const
 // Return TRUE if TYPE is supported by the vrange infrastructure.
 
 inline bool
-Value_Range::supports_type_p (tree type)
+Value_Range::supports_type_p (const_tree type)
 {
   return irange::supports_p (type) || frange::supports_p (type);
 }
@@ -730,7 +737,7 @@ irange::nonzero_p () const
 }
 
 inline bool
-irange::supports_p (tree type)
+irange::supports_p (const_tree type)
 {
   return INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type);
 }
@@ -1010,6 +1017,45 @@ irange::normalize_kind ()
     }
 }
 
+// Return the maximum value for TYPE.
+
+inline tree
+vrp_val_max (const_tree type)
+{
+  if (INTEGRAL_TYPE_P (type))
+    return TYPE_MAX_VALUE (type);
+  if (POINTER_TYPE_P (type))
+    {
+      wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+      return wide_int_to_tree (const_cast<tree> (type), max);
+    }
+  if (frange::supports_p (type))
+    {
+      REAL_VALUE_TYPE real;
+      real_inf (&real);
+      return build_real (const_cast <tree> (type), real);
+    }
+  return NULL_TREE;
+}
+
+// Return the minimum value for TYPE.
+
+inline tree
+vrp_val_min (const_tree type)
+{
+  if (INTEGRAL_TYPE_P (type))
+    return TYPE_MIN_VALUE (type);
+  if (POINTER_TYPE_P (type))
+    return build_zero_cst (const_cast<tree> (type));
+  if (frange::supports_p (type))
+    {
+      REAL_VALUE_TYPE real, real_ninf;
+      real_inf (&real);
+      real_ninf = real_value_negate (&real);
+      return build_real (const_cast <tree> (type), real_ninf);
+    }
+  return NULL_TREE;
+}
 
 // Supporting methods for frange.
 
@@ -1039,7 +1085,6 @@ inline
 frange::frange ()
 {
   m_discriminator = VR_FRANGE;
-  m_type = nullptr;
   set_undefined ();
 }
 
@@ -1070,34 +1115,6 @@ frange::set_undefined ()
   m_kind = VR_UNDEFINED;
   m_type = NULL;
   m_props.set_undefined ();
-}
-
-
-// Return the maximum value for TYPE.
-
-inline tree
-vrp_val_max (const_tree type)
-{
-  if (INTEGRAL_TYPE_P (type))
-    return TYPE_MAX_VALUE (type);
-  if (POINTER_TYPE_P (type))
-    {
-      wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-      return wide_int_to_tree (const_cast<tree> (type), max);
-    }
-  return NULL_TREE;
-}
-
-// Return the minimum value for TYPE.
-
-inline tree
-vrp_val_min (const_tree type)
-{
-  if (INTEGRAL_TYPE_P (type))
-    return TYPE_MIN_VALUE (type);
-  if (POINTER_TYPE_P (type))
-    return build_zero_cst (const_cast<tree> (type));
-  return NULL_TREE;
 }
 
 #endif // GCC_VALUE_RANGE_H

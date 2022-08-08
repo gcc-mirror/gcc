@@ -1221,6 +1221,13 @@ timode_scalar_chain::compute_convert_gain ()
 	    igain = COSTS_N_INSNS (1);
 	  break;
 
+	case ASHIFT:
+	case LSHIFTRT:
+	  /* For logical shifts by constant multiples of 8. */
+	  igain = optimize_insn_for_size_p () ? COSTS_N_BYTES (4)
+					      : COSTS_N_INSNS (1);
+	  break;
+
 	default:
 	  break;
 	}
@@ -1353,8 +1360,15 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
       if (GET_MODE (dst) == V1TImode)
 	{
 	  tmp = find_reg_equal_equiv_note (insn);
-	  if (tmp && GET_MODE (XEXP (tmp, 0)) == TImode)
-	    PUT_MODE (XEXP (tmp, 0), V1TImode);
+	  if (tmp)
+	    {
+	      if (GET_MODE (XEXP (tmp, 0)) == TImode)
+		PUT_MODE (XEXP (tmp, 0), V1TImode);
+	      else if (CONST_SCALAR_INT_P (XEXP (tmp, 0)))
+		XEXP (tmp, 0)
+		  = gen_rtx_CONST_VECTOR (V1TImode,
+					  gen_rtvec (1, XEXP (tmp, 0)));
+	    }
 	}
       break;
     case MEM:
@@ -1460,6 +1474,12 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
     case COMPARE:
       dst = gen_rtx_REG (CCmode, FLAGS_REG);
       src = convert_compare (XEXP (src, 0), XEXP (src, 1), insn);
+      break;
+
+    case ASHIFT:
+    case LSHIFTRT:
+      convert_op (&XEXP (src, 0), insn);
+      PUT_MODE (src, V1TImode);
       break;
 
     default:
@@ -1796,6 +1816,14 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
     case NOT:
       return REG_P (XEXP (src, 0)) || timode_mem_p (XEXP (src, 0));
 
+    case ASHIFT:
+    case LSHIFTRT:
+      /* Handle logical shifts by integer constants between 0 and 120
+	 that are multiples of 8.  */
+      return REG_P (XEXP (src, 0))
+	     && CONST_INT_P (XEXP (src, 1))
+	     && (INTVAL (XEXP (src, 1)) & ~0x78) == 0;
+
     default:
       return false;
     }
@@ -1808,6 +1836,11 @@ static void
 timode_check_non_convertible_regs (bitmap candidates, bitmap regs,
 				   unsigned int regno)
 {
+  /* Do nothing if REGNO is already in REGS or is a hard reg.  */
+  if (bitmap_bit_p (regs, regno)
+      || HARD_REGISTER_NUM_P (regno))
+    return;
+
   for (df_ref def = DF_REG_DEF_CHAIN (regno);
        def;
        def = DF_REF_NEXT_REG (def))
@@ -1843,7 +1876,13 @@ timode_check_non_convertible_regs (bitmap candidates, bitmap regs,
     }
 }
 
-/* The TImode version of remove_non_convertible_regs.  */
+/* For a given bitmap of insn UIDs scans all instructions and
+   remove insn from CANDIDATES in case it has both convertible
+   and not convertible definitions.
+
+   All insns in a bitmap are conversion candidates according to
+   scalar_to_vector_candidate_p.  Currently it implies all insns
+   are single_set.  */
 
 static void
 timode_remove_non_convertible_regs (bitmap candidates)
@@ -1857,25 +1896,20 @@ timode_remove_non_convertible_regs (bitmap candidates)
     changed = false;
     EXECUTE_IF_SET_IN_BITMAP (candidates, 0, id, bi)
       {
-	rtx def_set = single_set (DF_INSN_UID_GET (id)->insn);
-	rtx dest = SET_DEST (def_set);
-	rtx src = SET_SRC (def_set);
+	rtx_insn *insn = DF_INSN_UID_GET (id)->insn;
+	df_ref ref;
 
-	if ((!REG_P (dest)
-	     || bitmap_bit_p (regs, REGNO (dest))
-	     || HARD_REGISTER_P (dest))
-	    && (!REG_P (src)
-		|| bitmap_bit_p (regs, REGNO (src))
-		|| HARD_REGISTER_P (src)))
-	  continue;
+	FOR_EACH_INSN_DEF (ref, insn)
+	  if (!DF_REF_REG_MEM_P (ref)
+	      && GET_MODE (DF_REF_REG (ref)) == TImode)
+	    timode_check_non_convertible_regs (candidates, regs,
+					       DF_REF_REGNO (ref));
 
-	if (REG_P (dest))
-	  timode_check_non_convertible_regs (candidates, regs,
-					     REGNO (dest));
-
-	if (REG_P (src))
-	  timode_check_non_convertible_regs (candidates, regs,
-					     REGNO (src));
+	FOR_EACH_INSN_USE (ref, insn)
+	  if (!DF_REF_REG_MEM_P (ref)
+	      && GET_MODE (DF_REF_REG (ref)) == TImode)
+	    timode_check_non_convertible_regs (candidates, regs,
+					       DF_REF_REGNO (ref));
       }
 
     EXECUTE_IF_SET_IN_BITMAP (regs, 0, id, bi)

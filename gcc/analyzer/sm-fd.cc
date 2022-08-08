@@ -69,6 +69,14 @@ enum access_directions
   DIRS_WRITE
 };
 
+/* An enum for distinguishing between dup, dup2 and dup3.  */
+enum dup
+{
+  DUP_1,
+  DUP_2,
+  DUP_3
+};
+
 class fd_state_machine : public state_machine
 {
 public:
@@ -114,7 +122,9 @@ public:
   bool is_readonly_fd_p (state_t s) const;
   bool is_writeonly_fd_p (state_t s) const;
   enum access_mode get_access_mode_from_flag (int flag) const;
-
+  /* Function for one-to-one correspondence between valid
+     and unchecked states.  */
+  state_t valid_to_unchecked_state (state_t state) const;
   /* State for a constant file descriptor (>= 0) */
   state_t m_constant_fd;
 
@@ -147,6 +157,8 @@ public:
 private:
   void on_open (sm_context *sm_ctxt, const supernode *node, const gimple *stmt,
 		const gcall *call) const;
+  void on_creat (sm_context *sm_ctxt, const supernode *node, const gimple *stmt,
+		const gcall *call) const;
   void on_close (sm_context *sm_ctxt, const supernode *node, const gimple *stmt,
 		 const gcall *call) const;
   void on_read (sm_context *sm_ctxt, const supernode *node, const gimple *stmt,
@@ -170,6 +182,9 @@ private:
 			   const gimple *stmt, const gcall *call,
 			   const tree callee_fndecl, const char *attr_name,
 			   access_directions fd_attr_access_dir) const;
+  void check_for_dup (sm_context *sm_ctxt, const supernode *node,
+       const gimple *stmt, const gcall *call, const tree callee_fndecl,
+       enum dup kind) const;
 };
 
 /* Base diagnostic class relative to fd_state_machine.  */
@@ -723,6 +738,20 @@ fd_state_machine::is_constant_fd_p (state_t state) const
   return (state == m_constant_fd);
 }
 
+fd_state_machine::state_t
+fd_state_machine::valid_to_unchecked_state (state_t state) const
+{
+  if (state == m_valid_read_write)
+    return m_unchecked_read_write;
+  else if (state == m_valid_write_only)
+    return m_unchecked_write_only;
+  else if (state == m_valid_read_only)
+    return m_unchecked_read_only;
+  else
+    gcc_unreachable ();
+  return NULL;
+}
+
 bool
 fd_state_machine::on_stmt (sm_context *sm_ctxt, const supernode *node,
 			   const gimple *stmt) const
@@ -735,6 +764,11 @@ fd_state_machine::on_stmt (sm_context *sm_ctxt, const supernode *node,
 	    on_open (sm_ctxt, node, stmt, call);
 	    return true;
 	  } //  "open"
+
+	if (is_named_call_p (callee_fndecl, "creat", call, 2))
+	  {
+	    on_creat (sm_ctxt, node, stmt, call);
+	  } // "creat"
 
 	if (is_named_call_p (callee_fndecl, "close", call, 1))
 	  {
@@ -754,6 +788,23 @@ fd_state_machine::on_stmt (sm_context *sm_ctxt, const supernode *node,
 	    return true;
 	  } // "read"
 
+	if (is_named_call_p (callee_fndecl, "dup", call, 1))
+	  {
+	    check_for_dup (sm_ctxt, node, stmt, call, callee_fndecl, DUP_1);
+	    return true;
+	  }
+
+	if (is_named_call_p (callee_fndecl, "dup2", call, 2))
+	  {
+	    check_for_dup (sm_ctxt, node, stmt, call, callee_fndecl, DUP_2);
+	    return true;
+	  }
+
+	if (is_named_call_p (callee_fndecl, "dup3", call, 3))
+	  {
+	    check_for_dup (sm_ctxt, node, stmt, call, callee_fndecl, DUP_3);
+	    return true;
+	  }
 
 	{
 	  // Handle __attribute__((fd_arg))
@@ -900,6 +951,78 @@ fd_state_machine::on_open (sm_context *sm_ctxt, const supernode *node,
 }
 
 void
+fd_state_machine::on_creat (sm_context *sm_ctxt, const supernode *node,
+			    const gimple *stmt, const gcall *call) const
+{
+  tree lhs = gimple_call_lhs (call);
+  if (lhs)
+    sm_ctxt->on_transition (node, stmt, lhs, m_start, m_unchecked_write_only);
+  else
+    sm_ctxt->warn (node, stmt, NULL_TREE, new fd_leak (*this, NULL_TREE));
+}
+
+void
+fd_state_machine::check_for_dup (sm_context *sm_ctxt, const supernode *node,
+				 const gimple *stmt, const gcall *call,
+				 const tree callee_fndecl, enum dup kind) const
+{
+  tree lhs = gimple_call_lhs (call);
+  tree arg_1 = gimple_call_arg (call, 0);
+  state_t state_arg_1 = sm_ctxt->get_state (stmt, arg_1);
+  if (state_arg_1 == m_stop)
+    return;
+  if (!(is_constant_fd_p (state_arg_1) || is_valid_fd_p (state_arg_1)))
+    {
+      check_for_open_fd (sm_ctxt, node, stmt, call, callee_fndecl,
+			 DIRS_READ_WRITE);
+      if (kind == DUP_1)
+	return;
+    }
+  switch (kind)
+    {
+    case DUP_1:
+      if (lhs)
+	{
+	  if (is_constant_fd_p (state_arg_1))
+	    sm_ctxt->set_next_state (stmt, lhs, m_unchecked_read_write);
+	  else
+	    sm_ctxt->set_next_state (stmt, lhs,
+				     valid_to_unchecked_state (state_arg_1));
+	}
+      break;
+
+    case DUP_2:
+    case DUP_3:
+      tree arg_2 = gimple_call_arg (call, 1);
+      state_t state_arg_2 = sm_ctxt->get_state (stmt, arg_2);
+      tree diag_arg_2 = sm_ctxt->get_diagnostic_tree (arg_2);
+      if (state_arg_2 == m_stop)
+	return;
+      /* Check if -1 was passed as second argument to dup2.  */
+      if (!(is_constant_fd_p (state_arg_2) || is_valid_fd_p (state_arg_2)))
+	{
+	  sm_ctxt->warn (
+	      node, stmt, arg_2,
+	      new fd_use_without_check (*this, diag_arg_2, callee_fndecl));
+	  return;
+	}
+      /* dup2 returns value of its second argument on success.But, the
+      access mode of the returned file descriptor depends on the duplicated
+      file descriptor i.e the first argument.  */
+      if (lhs)
+	{
+	  if (is_constant_fd_p (state_arg_1))
+	    sm_ctxt->set_next_state (stmt, lhs, m_unchecked_read_write);
+	  else
+	    sm_ctxt->set_next_state (stmt, lhs,
+				     valid_to_unchecked_state (state_arg_1));
+	}
+
+      break;
+    }
+}
+
+void
 fd_state_machine::on_close (sm_context *sm_ctxt, const supernode *node,
 			    const gimple *stmt, const gcall *call) const
 {
@@ -964,6 +1087,8 @@ fd_state_machine::check_for_open_fd (
 	}
       switch (callee_fndecl_dir)
 	{
+	case DIRS_READ_WRITE:
+	  break;
 	case DIRS_READ:
 	  if (is_writeonly_fd_p (state))
 	    {
@@ -984,8 +1109,6 @@ fd_state_machine::check_for_open_fd (
 				 *this, diag_arg, DIRS_READ, callee_fndecl));
 	    }
 	  break;
-	default:
-	  gcc_unreachable ();
 	}
     }
 }

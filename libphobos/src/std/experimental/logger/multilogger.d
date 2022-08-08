@@ -187,7 +187,7 @@ class MultiLogger : Logger
     assert(line.indexOf(iMsg) != -1, line ~ ":" ~ tMsg);
 }
 
-@safe unittest
+@system unittest
 {
     auto dl = cast(FileLogger) sharedLog;
     assert(dl !is null);

@@ -1121,6 +1121,10 @@ private DtorDeclaration buildExternDDtor(AggregateDeclaration ad, Scope* sc)
     if (!dtor)
         return null;
 
+    // Don't try to call `@disable`d dtors
+    if (dtor.storage_class & STC.disable)
+        return null;
+
     // Generate shim only when ABI incompatible on target platform
     if (ad.classKind != ClassKind.cpp || !target.cpp.wrapDtorInExternD)
         return dtor;

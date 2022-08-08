@@ -284,9 +284,11 @@ int c_inhibit_evaluation_warnings;
    be generated.  */
 bool in_late_binary_op;
 
-/* Whether lexing has been completed, so subsequent preprocessor
-   errors should use the compiler's input_location.  */
-bool done_lexing = false;
+/* Depending on which phase of processing we are in, we may need
+   to prefer input_location to libcpp's locations.  (Specifically,
+   after the C++ lexer is done lexing tokens, but prior to calling
+   cpp_finish (), we need to do so.  */
+bool override_libcpp_locations;
 
 /* Information about how a function name is generated.  */
 struct fname_var_t
@@ -6681,7 +6683,7 @@ c_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
     default:
       gcc_unreachable ();
     }
-  if (done_lexing)
+  if (override_libcpp_locations)
     richloc->set_range (0, input_location, SHOW_RANGE_WITH_CARET);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);

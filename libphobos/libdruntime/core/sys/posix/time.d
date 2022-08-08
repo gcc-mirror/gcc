@@ -167,9 +167,6 @@ else
 CLOCK_PROCESS_CPUTIME_ID (TMR|CPT)
 CLOCK_THREAD_CPUTIME_ID (TMR|TCT)
 
-NOTE: timespec must be defined in core.sys.posix.signal to break
-      a circular import.
-
 struct timespec
 {
     time_t  tv_sec;
@@ -198,6 +195,69 @@ int timer_gettime(timer_t, itimerspec*);
 int timer_getoverrun(timer_t);
 int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
 */
+
+version (linux)
+{
+    struct timespec
+    {
+        time_t  tv_sec;
+        c_long  tv_nsec;
+    }
+}
+else version (Darwin)
+{
+    struct timespec
+    {
+        time_t  tv_sec;
+        c_long  tv_nsec;
+    }
+}
+else version (FreeBSD)
+{
+    struct timespec
+    {
+        time_t  tv_sec;
+        c_long  tv_nsec;
+    }
+}
+else version (NetBSD)
+{
+    struct timespec
+    {
+        time_t  tv_sec;
+        c_long  tv_nsec;
+    }
+}
+else version (OpenBSD)
+{
+    struct timespec
+    {
+        time_t  tv_sec;
+        c_long  tv_nsec;
+    }
+}
+else version (DragonFlyBSD)
+{
+    struct timespec
+    {
+        time_t  tv_sec;
+        c_long  tv_nsec;
+    }
+}
+else version (Solaris)
+{
+    struct timespec
+    {
+        time_t tv_sec;
+        c_long tv_nsec;
+    }
+
+    alias timespec timestruc_t;
+}
+else
+{
+    static assert(false, "Unsupported platform");
+}
 
 version (CRuntime_Glibc)
 {

@@ -1356,6 +1356,30 @@ if (isSomeChar!Char)
     assert(result == "    1");
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=23245
+@safe unittest
+{
+    static struct S
+    {
+        string toString() { return "S"; }
+    }
+
+    S[1] s;
+    assert(format("%s", s) == "[S]");
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23246
+@safe unittest
+{
+    static struct S
+    {
+        string toString() { return "S"; }
+    }
+
+    S[int] s = [0 : S()];
+    assert(format("%s", s) == "[0:S]");
+}
+
 /// ditto
 typeof(fmt) format(alias fmt, Args...)(Args args)
 if (isSomeString!(typeof(fmt)))

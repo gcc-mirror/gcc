@@ -1,3 +1,10 @@
+2022-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/106079
+	* io/transfer.c (formatted_transfer_scalar_read,
+	formatted_transfer_scalar_write): For type BT_REAL with kind 17
+	change kind to 16 before calling read_radix or write_{b,o,z}.
+
 2022-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* mk-kinds-h.sh: Change __float128 to _Float128 in a comment.

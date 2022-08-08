@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-O1" } */
+/* This used to ICE in SRA as SRA got
+   confused by the zero signed assigment. */
 
 struct empty {};
 struct s { int i; };

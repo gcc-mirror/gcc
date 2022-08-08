@@ -2186,7 +2186,13 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         if (token.value == TOK.identifier)
             s = new AST.DebugSymbol(token.loc, token.ident);
         else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+        {
+            // @@@DEPRECATED_2.111@@@
+            // Deprecated in 2.101, remove in 2.111
+            deprecation("`debug = <integer>` is deprecated, use debug identifiers instead");
+
             s = new AST.DebugSymbol(token.loc, cast(uint)token.unsvalue);
+        }
         else
         {
             error("identifier or integer expected, not `%s`", token.toChars());
@@ -2215,7 +2221,13 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             if (token.value == TOK.identifier)
                 id = token.ident;
             else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+            {
+                // @@@DEPRECATED_2.111@@@
+                // Deprecated in 2.101, remove in 2.111
+                deprecation("`debug( <integer> )` is deprecated, use debug identifiers instead");
+
                 level = cast(uint)token.unsvalue;
+            }
             else
                 error("identifier or integer expected inside `debug(...)`, not `%s`", token.toChars());
             loc = token.loc;
@@ -2235,7 +2247,12 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         if (token.value == TOK.identifier)
             s = new AST.VersionSymbol(token.loc, token.ident);
         else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+        {
+            // @@@DEPRECATED_2.111@@@
+            // Deprecated in 2.101, remove in 2.111
+            deprecation("`version = <integer>` is deprecated, use version identifiers instead");
             s = new AST.VersionSymbol(token.loc, cast(uint)token.unsvalue);
+        }
         else
         {
             error("identifier or integer expected, not `%s`", token.toChars());
@@ -2269,7 +2286,13 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             if (token.value == TOK.identifier)
                 id = token.ident;
             else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+            {
+                // @@@DEPRECATED_2.111@@@
+                // Deprecated in 2.101, remove in 2.111
+                deprecation("`version( <integer> )` is deprecated, use version identifiers instead");
+
                 level = cast(uint)token.unsvalue;
+            }
             else if (token.value == TOK.unittest_)
                 id = Identifier.idPool(Token.toString(TOK.unittest_));
             else if (token.value == TOK.assert_)
@@ -9312,13 +9335,10 @@ LagainStc:
         {
             AST.TypeAArray taa = cast(AST.TypeAArray)t;
             AST.Type index = taa.index;
+            // `new Type[expr]` is a static array
             auto edim = AST.typeToExpression(index);
-            if (!edim)
-            {
-                error("cannot create a `%s` with `new`", t.toChars);
-                return new AST.NullExp(loc);
-            }
-            t = new AST.TypeSArray(taa.next, edim);
+            if (edim)
+                t = new AST.TypeSArray(taa.next, edim);
         }
         else if (token.value == TOK.leftParenthesis && t.ty != Tsarray)
         {

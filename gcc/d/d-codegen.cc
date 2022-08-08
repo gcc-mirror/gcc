@@ -2826,8 +2826,15 @@ get_frameinfo (FuncDeclaration *fd)
 
   DECL_LANG_FRAMEINFO (fds) = ffi;
 
+  const bool requiresClosure = fd->requiresClosure;
   if (fd->needsClosure ())
     {
+      /* This can shift due to templates being expanded that access alias
+         symbols, give it a decent error for now.  */
+      if (requiresClosure != fd->requiresClosure
+	  && (fd->nrvo_var || global.params.betterC))
+	fd->checkClosure ();
+
       /* Set-up a closure frame, this will be allocated on the heap.  */
       FRAMEINFO_CREATES_FRAME (ffi) = 1;
       FRAMEINFO_IS_CLOSURE (ffi) = 1;

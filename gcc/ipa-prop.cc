@@ -2303,6 +2303,10 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	{
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
+	      /* Limit the ranger query to integral types as the rest
+		 of this file uses value_range's, which only hold
+		 integers and pointers.  */
+	      && irange::supports_p (TREE_TYPE (arg))
 	      && get_range_query (cfun)->range_of_expr (vr, arg)
 	      && !vr.undefined_p ())
 	    {

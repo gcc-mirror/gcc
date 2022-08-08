@@ -1,8 +1,11 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice11856_1.d(13): Error: none of the overloads of template `ice11856_1.g` are callable using argument types `!()(A)`
-fail_compilation/ice11856_1.d(11):        Candidate is: `g(T)(T x)`
+fail_compilation/ice11856_1.d(16): Error: none of the overloads of template `ice11856_1.g` are callable using argument types `!()(A)`
+fail_compilation/ice11856_1.d(14):        Candidate is: `g(T)(T x)`
+  with `T = A`
+  must satisfy the following constraint:
+`       is(typeof(x.f()))`
 ---
 */
 struct A {}
