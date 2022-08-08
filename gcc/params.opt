@@ -582,6 +582,10 @@ Bound on the number of iterations the brute force # of iterations analysis algor
 Common Joined UInteger Var(param_max_jump_thread_duplication_stmts) Init(15) Param Optimization
 Maximum number of statements allowed in a block that needs to be duplicated when threading jumps.
 
+-param=max-jump-thread-paths=
+Common Joined UInteger Var(param_max_jump_thread_paths) Init(64) IntegerRange(1, 65536) Param Optimization
+Search space limit for the backwards jump threader.
+
 -param=max-last-value-rtl=
 Common Joined UInteger Var(param_max_last_value_rtl) Init(10000) Param Optimization
 The maximum number of RTL nodes that can be recorded as combiner's last value.

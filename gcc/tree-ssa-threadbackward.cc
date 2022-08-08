@@ -90,7 +90,7 @@ private:
   bool debug_counter ();
   edge maybe_register_path ();
   void maybe_register_path_dump (edge taken_edge);
-  void find_paths_to_names (basic_block bb, bitmap imports);
+  void find_paths_to_names (basic_block bb, bitmap imports, unsigned);
   edge find_taken_edge (const vec<basic_block> &path);
   edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
   edge find_taken_edge_switch (const vec<basic_block> &path, gswitch *);
@@ -337,9 +337,12 @@ back_threader::find_taken_edge_cond (const vec<basic_block> &path,
 // INTERESTING bitmap, and register any such paths.
 //
 // BB is the current path being processed.
+//
+// OVERALL_PATHS is the search space up to this block
 
 void
-back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
+back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
+				    unsigned overall_paths)
 {
   if (m_visited_bbs.add (bb))
     return;
@@ -352,8 +355,10 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
 	  || maybe_register_path ()))
     ;
 
-  // Continue looking for ways to extend the path
-  else
+  // Continue looking for ways to extend the path but limit the
+  // search space along a branch
+  else if ((overall_paths = overall_paths * EDGE_COUNT (bb->preds))
+	   <= (unsigned)param_max_jump_thread_paths)
     {
       // For further greedy searching we want to remove interesting
       // names defined in BB but add ones on the PHI edges for the
@@ -407,7 +412,7 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
 			unwind.quick_push (def);
 		      }
 		}
-	      find_paths_to_names (e->src, new_interesting);
+	      find_paths_to_names (e->src, new_interesting, overall_paths);
 	      // Restore new_interesting.  We leave m_imports alone since
 	      // we do not prune defs in BB from it and separately keeping
 	      // track of which bits to unwind isn't worth the trouble.
@@ -417,6 +422,9 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
 	    }
 	}
     }
+  else if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "  FAIL: Search space limit %d reached.\n",
+	     param_max_jump_thread_paths);
 
   // Reset things to their original state.
   m_path.pop ();
@@ -447,7 +455,7 @@ back_threader::find_paths (basic_block bb, tree name)
 
       auto_bitmap interesting;
       bitmap_copy (interesting, m_imports);
-      find_paths_to_names (bb, interesting);
+      find_paths_to_names (bb, interesting, 1);
     }
 }
 
