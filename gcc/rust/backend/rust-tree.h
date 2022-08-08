@@ -2740,6 +2740,8 @@ extern tree lookup_enumerator (tree, tree);
 extern int
 is_class_type (tree, int);
 
+extern tree braced_lists_to_strings (tree, tree);
+
 // forked from gcc/cp/cp-tree.h
 
 enum

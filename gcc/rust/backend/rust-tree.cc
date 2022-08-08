@@ -4883,4 +4883,172 @@ fold_builtin_source_location (location_t loc)
   return build_fold_addr_expr_with_type_loc (loc, var, const_ptr_type_node);
 }
 
+// forked from gcc/c-family.c-common.cc braced_lists_to_strings
+
+/* Attempt to convert a braced array initializer list CTOR for array
+   TYPE into a STRING_CST for convenience and efficiency.  Return
+   the converted string on success or the original ctor on failure.  */
+
+static tree
+braced_list_to_string (tree type, tree ctor, bool member)
+{
+  /* Ignore non-members with unknown size like arrays with unspecified
+     bound.  */
+  tree typesize = TYPE_SIZE_UNIT (type);
+  if (!member && !tree_fits_uhwi_p (typesize))
+    return ctor;
+
+  /* If the target char size differes from the host char size, we'd risk
+     loosing data and getting object sizes wrong by converting to
+     host chars.  */
+  if (TYPE_PRECISION (char_type_node) != CHAR_BIT)
+    return ctor;
+
+  /* If the array has an explicit bound, use it to constrain the size
+     of the string.  If it doesn't, be sure to create a string that's
+     as long as implied by the index of the last zero specified via
+     a designator, as in:
+       const char a[] = { [7] = 0 };  */
+  unsigned HOST_WIDE_INT maxelts;
+  if (typesize)
+    {
+      maxelts = tree_to_uhwi (typesize);
+      maxelts /= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
+    }
+  else
+    maxelts = HOST_WIDE_INT_M1U;
+
+  /* Avoid converting initializers for zero-length arrays (but do
+     create them for flexible array members).  */
+  if (!maxelts)
+    return ctor;
+
+  unsigned HOST_WIDE_INT nelts = CONSTRUCTOR_NELTS (ctor);
+
+  auto_vec<char> str;
+  str.reserve (nelts + 1);
+
+  unsigned HOST_WIDE_INT i;
+  tree index, value;
+
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), i, index, value)
+    {
+      unsigned HOST_WIDE_INT idx = i;
+      if (index)
+	{
+	  if (!tree_fits_uhwi_p (index))
+	    return ctor;
+	  idx = tree_to_uhwi (index);
+	}
+
+      /* auto_vec is limited to UINT_MAX elements.  */
+      if (idx > UINT_MAX)
+	return ctor;
+
+      /* Avoid non-constant initializers.  */
+      if (!tree_fits_shwi_p (value))
+	return ctor;
+
+      /* Skip over embedded nuls except the last one (initializer
+	 elements are in ascending order of indices).  */
+      HOST_WIDE_INT val = tree_to_shwi (value);
+      if (!val && i + 1 < nelts)
+	continue;
+
+      if (idx < str.length ())
+	return ctor;
+
+      /* Bail if the CTOR has a block of more than 256 embedded nuls
+	 due to implicitly initialized elements.  */
+      unsigned nchars = (idx - str.length ()) + 1;
+      if (nchars > 256)
+	return ctor;
+
+      if (nchars > 1)
+	{
+	  str.reserve (idx);
+	  str.quick_grow_cleared (idx);
+	}
+
+      if (idx >= maxelts)
+	return ctor;
+
+      str.safe_insert (idx, val);
+    }
+
+  /* Append a nul string termination.  */
+  if (maxelts != HOST_WIDE_INT_M1U && str.length () < maxelts)
+    str.safe_push (0);
+
+  /* Build a STRING_CST with the same type as the array.  */
+  tree res = build_string (str.length (), str.begin ());
+  TREE_TYPE (res) = type;
+  return res;
+}
+
+// forked from gcc/c-family.c-common.cc braced_lists_to_strings
+
+/* Implementation of the two-argument braced_lists_to_string withe
+   the same arguments plus MEMBER which is set for struct members
+   to allow initializers for flexible member arrays.  */
+
+static tree
+braced_lists_to_strings (tree type, tree ctor, bool member)
+{
+  if (TREE_CODE (ctor) != CONSTRUCTOR)
+    return ctor;
+
+  tree_code code = TREE_CODE (type);
+
+  tree ttp;
+  if (code == ARRAY_TYPE)
+    ttp = TREE_TYPE (type);
+  else if (code == RECORD_TYPE)
+    {
+      ttp = TREE_TYPE (ctor);
+      if (TREE_CODE (ttp) == ARRAY_TYPE)
+	{
+	  type = ttp;
+	  ttp = TREE_TYPE (ttp);
+	}
+    }
+  else
+    return ctor;
+
+  if ((TREE_CODE (ttp) == ARRAY_TYPE || TREE_CODE (ttp) == INTEGER_TYPE)
+      && TYPE_STRING_FLAG (ttp))
+    return braced_list_to_string (type, ctor, member);
+
+  code = TREE_CODE (ttp);
+  if (code == ARRAY_TYPE || RECORD_OR_UNION_TYPE_P (ttp))
+    {
+      bool rec = RECORD_OR_UNION_TYPE_P (ttp);
+
+      /* Handle array of arrays or struct member initializers.  */
+      tree val;
+      unsigned HOST_WIDE_INT idx;
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), idx, val)
+	{
+	  val = braced_lists_to_strings (ttp, val, rec);
+	  CONSTRUCTOR_ELT (ctor, idx)->value = val;
+	}
+    }
+
+  return ctor;
+}
+
+// forked from gcc/c-family.c-common.cc braced_lists_to_strings
+
+/* Attempt to convert a CTOR containing braced array initializer lists
+   for array TYPE into one containing STRING_CSTs, for convenience and
+   efficiency.  Recurse for arrays of arrays and member initializers.
+   Return the converted CTOR or STRING_CST on success or the original
+   CTOR otherwise.  */
+
+tree
+braced_lists_to_strings (tree type, tree ctor)
+{
+  return braced_lists_to_strings (type, ctor, false);
+}
+
 } // namespace Rust
