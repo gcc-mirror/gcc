@@ -4884,7 +4884,6 @@ package body Exp_Attr is
       ---------
 
       when Attribute_Old => Old : declare
-         Typ     : constant Entity_Id := Etype (N);
          CW_Temp : Entity_Id;
          CW_Typ  : Entity_Id;
          Decl    : Node_Id;
