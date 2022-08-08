@@ -1,3 +1,9 @@
+2022-08-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*cmp<dwi>_doubleword): Change predicate
+	for x86_64_hilo_general_operand to general operand.  Call
+	force_reg on parts that are not x86_64_immediate_operand.
+
 2022-08-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105947

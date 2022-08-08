@@ -1,3 +1,18 @@
+2022-08-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/cmpti2.c: Add -mno-stv to dg-options.
+
+2022-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88174
+	* g++.dg/cpp1y/constexpr-complex1.C: New test.
+
+2022-08-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/cmpti1.c: New test case.
+	* gcc.target/i386/cmpti2.c: Likewise.
+	* gcc.target/i386/cmpti3.c: Likewise.
+
 2022-08-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/105947
