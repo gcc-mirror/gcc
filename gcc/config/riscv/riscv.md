@@ -242,6 +242,7 @@
 ;; bitmanip	bit manipulation instructions
 ;; rotate   rotation instructions
 ;; atomic   atomic instructions
+;; condmove	conditional moves
 ;; crypto cryptography instructions
 ;; Classification of RVV instructions which will be added to each RVV .md pattern and used by scheduler.
 ;; rdvlenb     vector byte length vlenb csrr read
@@ -339,7 +340,7 @@
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate,
-   atomic,crypto,rdvlenb,rdvl,vsetvl,vlde,vste,vldm,vstm,vlds,vsts,
+   atomic,condmove,crypto,rdvlenb,rdvl,vsetvl,vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
    vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,
    vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,vimov,
@@ -2317,17 +2318,15 @@
 (define_expand "mov<mode>cc"
   [(set (match_operand:GPR 0 "register_operand")
 	(if_then_else:GPR (match_operand 1 "comparison_operator")
-			  (match_operand:GPR 2 "register_operand")
+			  (match_operand:GPR 2 "reg_or_0_operand")
 			  (match_operand:GPR 3 "sfb_alu_operand")))]
-  "TARGET_SFB_ALU"
+  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV"
 {
-  rtx cmp = operands[1];
-  /* We only handle word mode integer compares for now.  */
-  if (GET_MODE (XEXP (cmp, 0)) != word_mode)
+  if (riscv_expand_conditional_move (operands[0], operands[1],
+				     operands[2], operands[3]))
+    DONE;
+  else
     FAIL;
-  riscv_expand_conditional_move (operands[0], operands[2], operands[3],
-				 GET_CODE (cmp), XEXP (cmp, 0), XEXP (cmp, 1));
-  DONE;
 })
 
 (define_insn "*mov<GPR:mode><X:mode>cc"

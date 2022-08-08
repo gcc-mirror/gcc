@@ -2312,8 +2312,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case IF_THEN_ELSE:
-      if (TARGET_SFB_ALU
-	  && register_operand (XEXP (x, 1), mode)
+      if ((TARGET_SFB_ALU || TARGET_XTHEADCONDMOV)
+	  && reg_or_0_operand (XEXP (x, 1), mode)
 	  && sfb_alu_operand (XEXP (x, 2), mode)
 	  && comparison_operator (XEXP (x, 0), VOIDmode))
 	{
@@ -3111,13 +3111,30 @@ riscv_extend_comparands (rtx_code code, rtx *op0, rtx *op1)
     }
 }
 
-/* Convert a comparison into something that can be used in a branch.  On
-   entry, *OP0 and *OP1 are the values being compared and *CODE is the code
-   used to compare them.  Update them to describe the final comparison.  */
+/* Convert a comparison into something that can be used in a branch or
+   conditional move.  On entry, *OP0 and *OP1 are the values being
+   compared and *CODE is the code used to compare them.
+
+   Update *CODE, *OP0 and *OP1 so that they describe the final comparison.
+   If NEED_EQ_NE_P, then only EQ or NE comparisons against zero are
+   emitted.  */
 
 static void
-riscv_emit_int_compare (enum rtx_code *code, rtx *op0, rtx *op1)
+riscv_emit_int_compare (enum rtx_code *code, rtx *op0, rtx *op1,
+			bool need_eq_ne_p = false)
 {
+  if (need_eq_ne_p)
+    {
+      rtx cmp_op0 = *op0;
+      rtx cmp_op1 = *op1;
+      if (*code == EQ || *code == NE)
+	{
+	  *op0 = riscv_zero_if_equal (cmp_op0, cmp_op1);
+	  *op1 = const0_rtx;
+	  return;
+	}
+    }
+
   if (splittable_const_int_operand (*op1, VOIDmode))
     {
       HOST_WIDE_INT rhs = INTVAL (*op1);
@@ -3303,16 +3320,71 @@ riscv_expand_conditional_branch (rtx label, rtx_code code, rtx op0, rtx op1)
   emit_jump_insn (gen_condjump (condition, label));
 }
 
-/* If (CODE OP0 OP1) holds, move CONS to DEST; else move ALT to DEST.  */
+/* Helper to emit two one-sided conditional moves for the movecc.  */
 
-void
-riscv_expand_conditional_move (rtx dest, rtx cons, rtx alt, rtx_code code,
-			       rtx op0, rtx op1)
+static void
+riscv_expand_conditional_move_onesided (rtx dest, rtx cons, rtx alt,
+					rtx_code code, rtx op0, rtx op1)
 {
-  riscv_emit_int_compare (&code, &op0, &op1);
-  rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
-  emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (GET_MODE (dest), cond,
-						      cons, alt)));
+  machine_mode mode = GET_MODE (dest);
+
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
+  gcc_assert (reg_or_0_operand (cons, mode));
+  gcc_assert (reg_or_0_operand (alt, mode));
+
+  riscv_emit_int_compare (&code, &op0, &op1, true);
+  rtx cond = gen_rtx_fmt_ee (code, mode, op0, op1);
+
+  rtx tmp1 = gen_reg_rtx (mode);
+  rtx tmp2 = gen_reg_rtx (mode);
+
+  emit_insn (gen_rtx_SET (tmp1, gen_rtx_IF_THEN_ELSE (mode, cond,
+						      cons, const0_rtx)));
+
+  /* We need to expand a sequence for both blocks and we do that such,
+     that the second conditional move will use the inverted condition.
+     We use temporaries that are or'd to the dest register.  */
+  cond = gen_rtx_fmt_ee ((code == EQ) ? NE : EQ, mode, op0, op1);
+  emit_insn (gen_rtx_SET (tmp2, gen_rtx_IF_THEN_ELSE (mode, cond,
+						      alt, const0_rtx)));
+
+  emit_insn (gen_rtx_SET (dest, gen_rtx_IOR (mode, tmp1, tmp2)));
+ }
+
+/* Emit a cond move: If OP holds, move CONS to DEST; else move ALT to DEST.
+   Return 0 if expansion failed.  */
+
+bool
+riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
+{
+  machine_mode mode = GET_MODE (dest);
+  rtx_code code = GET_CODE (op);
+  rtx op0 = XEXP (op, 0);
+  rtx op1 = XEXP (op, 1);
+
+  if (TARGET_XTHEADCONDMOV
+      && GET_MODE_CLASS (mode) == MODE_INT
+      && reg_or_0_operand (cons, mode)
+      && reg_or_0_operand (alt, mode)
+      && GET_MODE (op) == mode
+      && GET_MODE (op0) == mode
+      && GET_MODE (op1) == mode
+      && (code == EQ || code == NE))
+    {
+      riscv_expand_conditional_move_onesided (dest, cons, alt, code, op0, op1);
+      return true;
+    }
+  else if (TARGET_SFB_ALU
+	   && mode == word_mode)
+    {
+      riscv_emit_int_compare (&code, &op0, &op1);
+      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+      emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (GET_MODE (dest),
+							  cond, cons, alt)));
+      return true;
+    }
+
+  return false;
 }
 
 /* Implement TARGET_FUNCTION_ARG_BOUNDARY.  Every parameter gets at
