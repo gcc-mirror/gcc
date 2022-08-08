@@ -1133,6 +1133,18 @@ public:
     resolved = type.clone ();
   }
 
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseCoercionRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
 private:
   BaseType *get_base () override { return base; }
 
@@ -1170,6 +1182,18 @@ public:
 
     resolved = new TyTy::TupleType (type.get_ref (), type.get_ty_ref (),
 				    type.get_ident ().locus, fields);
+  }
+
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseCoercionRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
   }
 
 private:
