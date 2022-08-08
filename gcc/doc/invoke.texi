@@ -264,7 +264,7 @@ in the following sections.
 -Wreorder  -Wregister @gol
 -Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
--Woverloaded-virtual  -Wno-pmf-conversions -Wsign-promo @gol
+-Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo @gol
 -Wsized-deallocation  -Wsuggest-final-methods @gol
 -Wsuggest-final-types  -Wsuggest-override  @gol
 -Wno-terminate  -Wuseless-cast  -Wno-vexing-parse  @gol
@@ -5838,6 +5838,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wreorder   @gol
 -Wrestrict   @gol
 -Wreturn-type  @gol
+-Wself-move @r{(only for C++)}  @gol
 -Wsequence-point  @gol
 -Wsign-compare @r{(only in C++)}  @gol
 -Wsizeof-array-div @gol
@@ -6818,6 +6819,26 @@ of a declaration:
   // Declares a local variable called mymutex.
   std::unique_lock<std::mutex> (mymutex);
   // User meant std::unique_lock<std::mutex> lock (mymutex);
+@}
+@end smallexample
+
+This warning is enabled by @option{-Wall}.
+
+@item -Wno-self-move @r{(C++ and Objective-C++ only)}
+@opindex Wself-move
+@opindex Wno-self-move
+This warning warns when a value is moved to itself with @code{std::move}.
+Such a @code{std::move} typically has no effect.
+
+@smallexample
+struct T @{
+@dots{}
+@};
+void fn()
+@{
+  T t;
+  @dots{}
+  t = std::move (t);
 @}
 @end smallexample
 
