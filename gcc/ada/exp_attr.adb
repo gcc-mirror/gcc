@@ -5088,7 +5088,17 @@ package body Exp_Attr is
          --  to reflect the new placement of the prefix.
 
          if Validity_Checks_On and then Validity_Check_Operands then
-            Ensure_Valid (Expression (Decl));
+
+            --  Object declaration that captures the attribute prefix might
+            --  be rewritten into object renaming declaration.
+
+            if Nkind (Decl) = N_Object_Declaration then
+               Ensure_Valid (Expression (Decl));
+            else
+               pragma Assert (Nkind (Decl) = N_Object_Renaming_Declaration
+                              and then Is_Rewrite_Substitution (Decl));
+               Ensure_Valid (Name (Decl));
+            end if;
          end if;
 
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
