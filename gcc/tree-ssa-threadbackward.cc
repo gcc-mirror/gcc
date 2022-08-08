@@ -569,15 +569,6 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
   if (m_path.length () <= 1)
       return false;
 
-  if (m_path.length () > (unsigned) param_max_fsm_thread_length)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
-		 "the number of basic blocks on the path "
-		 "exceeds PARAM_MAX_FSM_THREAD_LENGTH.\n");
-      return false;
-    }
-
   int n_insns = 0;
   gimple_stmt_iterator gsi;
   loop_p loop = m_path[0]->loop_father;

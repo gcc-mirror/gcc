@@ -15262,9 +15262,6 @@ Emit instrumentation calls to __tsan_func_entry() and __tsan_func_exit().
 Maximum number of instructions to copy when duplicating blocks on a
 finite state automaton jump thread path.
 
-@item max-fsm-thread-length
-Maximum number of basic blocks on a jump thread path.
-
 @item threader-debug
 threader-debug=[none|all] Enables verbose dumping of the threader solver.
 
