@@ -2743,7 +2743,6 @@ package Sem_Util is
    --      fields are recreated after the replication takes place.
    --
    --        First_Named_Actual
-   --        First_Real_Statement
    --        Next_Named_Actual
    --
    --      If applicable, the Etype field (if any) is updated to refer to a

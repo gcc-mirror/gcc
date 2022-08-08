@@ -2032,7 +2032,7 @@ package body Sem_Ch6 is
       end loop;
 
       --  Determine whether the null procedure may be a completion of a generic
-      --  suprogram, in which case we use the new null body as the completion
+      --  subprogram, in which case we use the new null body as the completion
       --  and set minimal semantic information on the original declaration,
       --  which is rewritten as a null statement.
 
@@ -5409,17 +5409,9 @@ package body Sem_Ch6 is
       --  we have a special test to set X as apparently assigned to suppress
       --  the warning.
 
-      --  If X above is controlled, we need to use First_Real_Statement to skip
-      --  generated finalization-related code. Otherwise (First_Real_Statement
-      --  is Empty), we just get the first statement.
-
       declare
-         Stm : Node_Id := First_Real_Statement (HSS);
+         Stm : Node_Id := First (Statements (HSS));
       begin
-         if No (Stm) then
-            Stm := First (Statements (HSS));
-         end if;
-
          --  Skip call markers installed by the ABE mechanism, labels, and
          --  Push_xxx_Error_Label to find the first real statement.
 

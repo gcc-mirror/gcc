@@ -9430,8 +9430,8 @@ package body Sem_Prag is
 
                   --  If the pragma comes from an aspect specification, there
                   --  must be an Import aspect specified as well. In the rare
-                  --  case where Import is set to False, the suprogram needs to
-                  --  have a local completion.
+                  --  case where Import is set to False, the subprogram needs
+                  --  to have a local completion.
 
                   declare
                      Imp_Aspect : constant Node_Id :=
@@ -20139,7 +20139,7 @@ package body Sem_Prag is
                end loop;
 
                --  If entity in not in current scope it may be the enclosing
-               --  suprogram body to which the aspect applies.
+               --  subprogram body to which the aspect applies.
 
                if not Found then
                   if Entity (Id) = Current_Scope

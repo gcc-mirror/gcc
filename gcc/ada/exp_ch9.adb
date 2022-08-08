@@ -3811,6 +3811,7 @@ package body Exp_Ch9 is
          --  Establish link between subprogram body and source entry body
 
          Set_Corresponding_Entry_Body (Proc_Body, N);
+         Set_At_End_Proc (Proc_Body, At_End_Proc (N));
 
          Reset_Scopes_To (Proc_Body, Protected_Body_Subprogram (Ent));
          return Proc_Body;
@@ -4021,8 +4022,7 @@ package body Exp_Ch9 is
       Pid       : Node_Id;
       N_Op_Spec : Node_Id) return Node_Id
    is
-      Exc_Safe : constant Boolean := not Might_Raise (N);
-      --  True if N cannot raise an exception
+      Might_Raise : constant Boolean := Sem_Util.Might_Raise (N);
 
       Loc       : constant Source_Ptr := Sloc (N);
       Op_Spec   : constant Node_Id := Specification (N);
@@ -4059,7 +4059,17 @@ package body Exp_Ch9 is
       --  for use by the protected version built below.
 
       if Nkind (Op_Spec) = N_Function_Specification then
-         if Exc_Safe then
+         if Might_Raise then
+            Unprot_Call :=
+              Make_Simple_Return_Statement (Loc,
+                Expression =>
+                  Make_Function_Call (Loc,
+                    Name                   =>
+                      Make_Identifier (Loc,
+                        Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
+                    Parameter_Associations => Uactuals));
+
+         else
             R := Make_Temporary (Loc, 'R');
 
             Unprot_Call :=
@@ -4078,16 +4088,6 @@ package body Exp_Ch9 is
             Return_Stmt :=
               Make_Simple_Return_Statement (Loc,
                 Expression => New_Occurrence_Of (R, Loc));
-
-         else
-            Unprot_Call :=
-              Make_Simple_Return_Statement (Loc,
-                Expression =>
-                  Make_Function_Call (Loc,
-                    Name                   =>
-                      Make_Identifier (Loc,
-                        Chars => Chars (Defining_Unit_Name (N_Op_Spec))),
-                    Parameter_Associations => Uactuals));
          end if;
 
          if Has_Aspect (Pid, Aspect_Exclusive_Functions)
@@ -4113,7 +4113,7 @@ package body Exp_Ch9 is
 
       --  Wrap call in block that will be covered by an at_end handler
 
-      if not Exc_Safe then
+      if Might_Raise then
          Unprot_Call :=
            Make_Block_Statement (Loc,
              Handled_Statement_Sequence =>
@@ -4160,7 +4160,7 @@ package body Exp_Ch9 is
          Stmts := New_List (Lock_Stmt);
       end if;
 
-      if not Exc_Safe then
+      if Might_Raise then
          Append (Unprot_Call, Stmts);
       else
          if Nkind (Op_Spec) = N_Function_Specification then
@@ -4169,10 +4169,6 @@ package body Exp_Ch9 is
          else
             Append (Unprot_Call, Stmts);
          end if;
-
-         --  Historical note: Previously, call to the cleanup was inserted
-         --  here. This is now done by Build_Protected_Subprogram_Call_Cleanup,
-         --  which is also shared by the 'not Exc_Safe' path.
 
          Build_Protected_Subprogram_Call_Cleanup (Op_Spec, Pid, Loc, Stmts);
 
@@ -4196,10 +4192,10 @@ package body Exp_Ch9 is
             Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts));
 
       --  Mark this subprogram as a protected subprogram body so that the
-      --  cleanup will be inserted. This is done only in the 'not Exc_Safe'
-      --  path as otherwise the cleanup has already been inserted.
+      --  cleanup will be inserted. This is done only in the Might_Raise
+      --  case because otherwise the cleanup has already been inserted.
 
-      if not Exc_Safe then
+      if Might_Raise then
          Set_Is_Protected_Subprogram_Body (Sub_Body);
       end if;
 
@@ -5236,7 +5232,8 @@ package body Exp_Ch9 is
           Specification              =>
             Build_Protected_Sub_Specification (N, Pid, Unprotected_Mode),
           Declarations               => Decls,
-          Handled_Statement_Sequence => Handled_Statement_Sequence (N));
+          Handled_Statement_Sequence => Handled_Statement_Sequence (N),
+          At_End_Proc                => At_End_Proc (N));
    end Build_Unprotected_Subprogram_Body;
 
    ----------------------------
@@ -8216,7 +8213,7 @@ package body Exp_Ch9 is
 
       else
          Transient_Blk :=
-           First_Real_Statement (Handled_Statement_Sequence (Blk));
+           First (Statements (Handled_Statement_Sequence (Blk)));
 
          if Present (Transient_Blk)
            and then Nkind (Transient_Blk) = N_Block_Statement
@@ -11833,17 +11830,11 @@ package body Exp_Ch9 is
 
       if Abort_Allowed then
          Call := Build_Runtime_Call (Loc, RE_Abort_Undefer);
-         Insert_Before
-           (First (Statements (Handled_Statement_Sequence (N))), Call);
+         Prepend (Call, Declarations (N));
          Analyze (Call);
       end if;
 
-      --  The statement part has already been protected with an at_end and
-      --  cleanup actions. The call to Complete_Activation must be placed
-      --  at the head of the sequence of statements of that block. The
-      --  declarations have been merged in this sequence of statements but
-      --  the first real statement is accessible from the First_Real_Statement
-      --  field (which was set for exactly this purpose).
+      --  Place call to Complete_Activation at the head of the statement list.
 
       if Restricted_Profile then
          Call := Build_Runtime_Call (Loc, RE_Complete_Restricted_Activation);
@@ -11852,7 +11843,7 @@ package body Exp_Ch9 is
       end if;
 
       Insert_Before
-        (First_Real_Statement (Handled_Statement_Sequence (N)), Call);
+        (First (Statements (Handled_Statement_Sequence (N))), Call);
       Analyze (Call);
 
       New_N :=
@@ -11861,6 +11852,7 @@ package body Exp_Ch9 is
           Declarations               => Declarations (N),
           Handled_Statement_Sequence => Handled_Statement_Sequence (N));
       Set_Is_Task_Body_Procedure (New_N);
+      Set_At_End_Proc (New_N, At_End_Proc (N));
 
       --  If the task contains generic instantiations, cleanup actions are
       --  delayed until after instantiation. Transfer the activation chain to

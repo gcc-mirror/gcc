@@ -234,7 +234,7 @@ static inline bool stmt_group_may_fallthru (void);
 static enum gimplify_status gnat_gimplify_stmt (tree *);
 static void elaborate_all_entities (Node_Id);
 static void process_freeze_entity (Node_Id);
-static void process_decls (List_Id, List_Id, Node_Id, bool, bool);
+static void process_decls (List_Id, List_Id, bool, bool);
 static tree emit_check (tree, tree, int, Node_Id);
 static tree build_unary_op_trapv (enum tree_code, tree, tree, Node_Id);
 static tree build_binary_op_trapv (enum tree_code, tree, tree, tree, Node_Id);
@@ -3778,6 +3778,30 @@ build_return_expr (tree ret_obj, tree ret_val)
   return build1 (RETURN_EXPR, void_type_node, result_expr);
 }
 
+/* Subroutine of gnat_to_gnu to translate the At_End_Proc of GNAT_NODE, an
+   N_Block_Statement or N_Handled_Sequence_Of_Statements or N_*_Body node.
+
+   To invoked the GCC mechanism, we call add_cleanup and when we leave the
+   group, end_stmt_group will create the TRY_FINALLY_EXPR construct.  */
+
+static void
+At_End_Proc_to_gnu (Node_Id gnat_node)
+{
+  tree proc_decl = gnat_to_gnu (At_End_Proc (gnat_node));
+
+  /* When not optimizing, disable inlining of finalizers as this can
+     create a more complex CFG in the parent function.  */
+  if (!optimize || optimize_debug)
+    DECL_DECLARED_INLINE_P (proc_decl) = 0;
+
+  /* If there is no end label attached, we use the location of the At_End
+     procedure because Expand_Cleanup_Actions might reset the location of
+      the enclosing construct to that of an inner statement.  */
+  add_cleanup (build_call_n_expr (proc_decl, 0),
+	       Present (End_Label (gnat_node))
+	       ? End_Label (gnat_node) : At_End_Proc (gnat_node));
+}
+
 /* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Subprogram_Body.  */
 
 static void
@@ -3928,11 +3952,15 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   gnat_pushlevel ();
 
   /* First translate the declarations of the subprogram.  */
-  process_decls (Declarations (gnat_node), Empty, Empty, true, true);
+  process_decls (Declarations (gnat_node), Empty, true, true);
 
   /* Then generate the code of the subprogram itself.  A return statement will
      be present and any Out parameters will be handled there.  */
   add_stmt (gnat_to_gnu (Handled_Statement_Sequence (gnat_node)));
+
+  /* Process the At_End_Proc, if any.  */
+  if (Present (At_End_Proc (gnat_node)))
+    At_End_Proc_to_gnu (gnat_node);
 
   gnat_poplevel ();
   tree gnu_result = end_stmt_group ();
@@ -5305,76 +5333,39 @@ static tree
 Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 {
   /* If just annotating, ignore all EH and cleanups.  */
-  const bool gcc_eh
+  const bool eh
     = !type_annotate_only && Present (Exception_Handlers (gnat_node));
   const bool at_end = !type_annotate_only && Present (At_End_Proc (gnat_node));
-  const bool binding_for_block = (at_end || gcc_eh);
-  tree gnu_inner_block; /* The statement(s) for the block itself.  */
   tree gnu_result;
   Node_Id gnat_temp;
 
-  /* The GCC exception handling mechanism can handle both ZCX and SJLJ schemes.
-     To call the GCC mechanism, we call add_cleanup, and when we leave the
-     binding, end_stmt_group will create the TRY_FINALLY_EXPR construct.
+  /* The exception handling mechanism can handle both ZCX and SJLJ schemes, and
+     is exposed through the TRY_CATCH_EXPR construct that we build manually.
 
      ??? The region level calls down there have been specifically put in place
      for a ZCX context and currently the order in which things are emitted
      (region/handlers) is different from the SJLJ case.  Instead of putting
      other calls with different conditions at other places for the SJLJ case,
      it seems cleaner to reorder things for the SJLJ case and generalize the
-     condition to make it not ZCX specific.
+     condition to make it not ZCX specific.  */
 
-     If there are any exceptions or cleanup processing involved, we need an
-     outer statement group and binding level.  */
-  if (binding_for_block)
-    {
-      start_stmt_group ();
-      gnat_pushlevel ();
-    }
-
-  /* If we are to call a function when exiting this block, add a cleanup
-     to the binding level we made above.  Note that add_cleanup is FIFO
-     so we must register this cleanup after the EH cleanup just above.  */
-  if (at_end)
-    {
-      tree proc_decl = gnat_to_gnu (At_End_Proc (gnat_node));
-
-      /* When not optimizing, disable inlining of finalizers as this can
-	 create a more complex CFG in the parent function.  */
-      if (!optimize || optimize_debug)
-	DECL_DECLARED_INLINE_P (proc_decl) = 0;
-
-      /* If there is no end label attached, we use the location of the At_End
-	 procedure because Expand_Cleanup_Actions might reset the location of
-	 the enclosing construct to that of an inner statement.  */
-      add_cleanup (build_call_n_expr (proc_decl, 0),
-		   Present (End_Label (gnat_node))
-		   ? End_Label (gnat_node) : At_End_Proc (gnat_node));
-    }
-
-  /* Now build the tree for the declarations and statements inside this
-     block.  */
+  /* First build the tree for the statements inside the sequence.  */
   start_stmt_group ();
 
-  if (Present (First_Real_Statement (gnat_node)))
-    process_decls (Statements (gnat_node), Empty,
-		   First_Real_Statement (gnat_node), true, true);
-
-  /* Generate code for each statement in the block.  */
-  for (gnat_temp = (Present (First_Real_Statement (gnat_node))
-		    ? First_Real_Statement (gnat_node)
-		    : First (Statements (gnat_node)));
-       Present (gnat_temp); gnat_temp = Next (gnat_temp))
+  for (gnat_temp = First (Statements (gnat_node));
+       Present (gnat_temp);
+       gnat_temp = Next (gnat_temp))
     add_stmt (gnat_to_gnu (gnat_temp));
 
-  gnu_inner_block = end_stmt_group ();
+  gnu_result = end_stmt_group ();
 
-  if (gcc_eh)
+  /* Then process the exception handlers, if any.  */
+  if (eh)
     {
       tree gnu_handlers;
       location_t locus;
 
-      /* First make a block containing the handlers.  */
+      /* First make a group containing the handlers.  */
       start_stmt_group ();
       for (gnat_temp = First_Non_Pragma (Exception_Handlers (gnat_node));
 	   Present (gnat_temp);
@@ -5382,9 +5373,10 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 	add_stmt (gnat_to_gnu (gnat_temp));
       gnu_handlers = end_stmt_group ();
 
-      /* Now make the TRY_CATCH_EXPR for the block.  */
-      gnu_result = build2 (TRY_CATCH_EXPR, void_type_node,
-			   gnu_inner_block, gnu_handlers);
+      /* Now make the TRY_CATCH_EXPR for the group.  */
+      gnu_result
+	= build2 (TRY_CATCH_EXPR, void_type_node, gnu_result, gnu_handlers);
+
       /* Set a location.  We need to find a unique location for the dispatching
 	 code, otherwise we can get coverage or debugging issues.  Try with
 	 the location of the end label.  */
@@ -5398,14 +5390,13 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
            coverage analysis tools.  */
 	set_expr_location_from_node (gnu_result, gnat_node, true);
     }
-  else
-    gnu_result = gnu_inner_block;
 
-  /* Now close our outer block, if we had to make one.  */
-  if (binding_for_block)
+  /* Process the At_End_Proc, if any.  */
+  if (at_end)
     {
+      start_stmt_group ();
       add_stmt (gnu_result);
-      gnat_poplevel ();
+      At_End_Proc_to_gnu (gnat_node);
       gnu_result = end_stmt_group ();
     }
 
@@ -5493,7 +5484,6 @@ Exception_Handler_to_gnu (Node_Id gnat_node)
     }
 
   start_stmt_group ();
-  gnat_pushlevel ();
 
   /* Expand a call to the begin_handler hook at the beginning of the
      handler, and arrange for a call to the end_handler hook to occur
@@ -5584,7 +5574,7 @@ Exception_Handler_to_gnu (Node_Id gnat_node)
   else
     {
       start_stmt_group ();
-      gnat_pushlevel ();
+
       /* CODE: void *EXPRP = __builtin_eh_handler (0); */
       tree prop_ptr
 	= create_var_decl (get_identifier ("EXPRP"), NULL_TREE,
@@ -5604,13 +5594,10 @@ Exception_Handler_to_gnu (Node_Id gnat_node)
       add_stmt_with_node (ecall, gnat_node);
 
       /* CODE: } */
-      gnat_poplevel ();
       tree eblk = end_stmt_group ();
       tree ehls = build2 (EH_ELSE_EXPR, void_type_node, call, eblk);
       add_cleanup (ehls, gnat_node);
     }
-
-  gnat_poplevel ();
 
   gnu_incoming_exc_ptr = prev_gnu_incoming_exc_ptr;
 
@@ -5677,7 +5664,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
        gnat_pragma = Next (gnat_pragma))
     if (Nkind (gnat_pragma) == N_Pragma)
       add_stmt (gnat_to_gnu (gnat_pragma));
-  process_decls (Declarations (Aux_Decls_Node (gnat_node)), Empty, Empty,
+  process_decls (Declarations (Aux_Decls_Node (gnat_node)), Empty,
 		 true, true);
 
   /* Process the unit itself.  */
@@ -7365,8 +7352,10 @@ gnat_to_gnu (Node_Id gnat_node)
 	{
 	  start_stmt_group ();
 	  gnat_pushlevel ();
-	  process_decls (Declarations (gnat_node), Empty, Empty, true, true);
+	  process_decls (Declarations (gnat_node), Empty, true, true);
 	  add_stmt (gnat_to_gnu (Handled_Statement_Sequence (gnat_node)));
+	  if (Present (At_End_Proc (gnat_node)))
+	    At_End_Proc_to_gnu (gnat_node);
 	  gnat_poplevel ();
 	  gnu_result = end_stmt_group ();
 	}
@@ -7606,15 +7595,14 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Package_Specification:
-
       start_stmt_group ();
       process_decls (Visible_Declarations (gnat_node),
-		     Private_Declarations (gnat_node), Empty, true, true);
+		     Private_Declarations (gnat_node),
+		     true, true);
       gnu_result = end_stmt_group ();
       break;
 
     case N_Package_Body:
-
       /* If this is the body of a generic package - do nothing.  */
       if (Ekind (Corresponding_Spec (gnat_node)) == E_Generic_Package)
 	{
@@ -7623,11 +7611,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	}
 
       start_stmt_group ();
-      process_decls (Declarations (gnat_node), Empty, Empty, true, true);
-
+      process_decls (Declarations (gnat_node), Empty, true, true);
       if (Present (Handled_Statement_Sequence (gnat_node)))
 	add_stmt (gnat_to_gnu (Handled_Statement_Sequence (gnat_node)));
-
+      if (Present (At_End_Proc (gnat_node)))
+	At_End_Proc_to_gnu (gnat_node);
       gnu_result = end_stmt_group ();
       break;
 
@@ -7673,7 +7661,7 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Task_Body:
       /* These nodes should only be present when annotating types.  */
       gcc_assert (type_annotate_only);
-      process_decls (Declarations (gnat_node), Empty, Empty, true, true);
+      process_decls (Declarations (gnat_node), Empty, true, true);
       gnu_result = alloc_stmt_list ();
       break;
 
@@ -7975,7 +7963,7 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Freeze_Entity:
       start_stmt_group ();
       process_freeze_entity (gnat_node);
-      process_decls (Actions (gnat_node), Empty, Empty, true, true);
+      process_decls (Actions (gnat_node), Empty, true, true);
       gnu_result = end_stmt_group ();
       break;
 
@@ -9203,17 +9191,13 @@ process_freeze_entity (Node_Id gnat_node)
    we declare a function if there was no spec).  The second pass
    elaborates the bodies.
 
-   GNAT_END_LIST gives the element in the list past the end.  Normally,
-   this is Empty, but can be First_Real_Statement for a
-   Handled_Sequence_Of_Statements.
-
    We make a complete pass through both lists if PASS1P is true, then make
    the second pass over both lists if PASS2P is true.  The lists usually
    correspond to the public and private parts of a package.  */
 
 static void
 process_decls (List_Id gnat_decls, List_Id gnat_decls2,
-	       Node_Id gnat_end_list, bool pass1p, bool pass2p)
+	       bool pass1p, bool pass2p)
 {
   List_Id gnat_decl_array[2];
   Node_Id gnat_decl;
@@ -9225,7 +9209,8 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
     for (i = 0; i <= 1; i++)
       if (Present (gnat_decl_array[i]))
 	for (gnat_decl = First (gnat_decl_array[i]);
-	     gnat_decl != gnat_end_list; gnat_decl = Next (gnat_decl))
+	     Present (gnat_decl);
+	     gnat_decl = Next (gnat_decl))
 	  {
 	    /* For package specs, we recurse inside the declarations,
 	       thus taking the two pass approach inside the boundary.  */
@@ -9234,14 +9219,14 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 			   == N_Package_Specification)))
 	      process_decls (Visible_Declarations (Specification (gnat_decl)),
 			     Private_Declarations (Specification (gnat_decl)),
-			     Empty, true, false);
+			     true, false);
 
 	    /* Similarly for any declarations in the actions of a
 	       freeze node.  */
 	    else if (Nkind (gnat_decl) == N_Freeze_Entity)
 	      {
 		process_freeze_entity (gnat_decl);
-		process_decls (Actions (gnat_decl), Empty, Empty, true, false);
+		process_decls (Actions (gnat_decl), Empty, true, false);
 	      }
 
 	    /* Package bodies with freeze nodes get their elaboration deferred
@@ -9308,7 +9293,8 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
     for (i = 0; i <= 1; i++)
       if (Present (gnat_decl_array[i]))
 	for (gnat_decl = First (gnat_decl_array[i]);
-	     gnat_decl != gnat_end_list; gnat_decl = Next (gnat_decl))
+	     Present (gnat_decl);
+	     gnat_decl = Next (gnat_decl))
 	  {
 	    if (Nkind (gnat_decl) == N_Subprogram_Body
 		|| Nkind (gnat_decl) == N_Subprogram_Body_Stub
@@ -9321,10 +9307,10 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 				== N_Package_Specification)))
 	      process_decls (Visible_Declarations (Specification (gnat_decl)),
 			     Private_Declarations (Specification (gnat_decl)),
-			     Empty, false, true);
+			     false, true);
 
 	    else if (Nkind (gnat_decl) == N_Freeze_Entity)
-	      process_decls (Actions (gnat_decl), Empty, Empty, false, true);
+	      process_decls (Actions (gnat_decl), Empty, false, true);
 
 	    else if (Nkind (gnat_decl) == N_Subprogram_Renaming_Declaration)
 	      add_stmt (gnat_to_gnu (gnat_decl));

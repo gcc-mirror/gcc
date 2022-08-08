@@ -22900,6 +22900,7 @@ package body Sem_Util is
                        | N_Function_Call
                        | N_Raise_Statement
                        | N_Raise_xxx_Error
+                       | N_Raise_Expression
          then
             Result := True;
             return Abandon;
@@ -24049,13 +24050,6 @@ package body Sem_Util is
       pragma Inline (Update_CFS_Sloc);
       --  Update the Comes_From_Source and Sloc attributes of node or entity N
 
-      procedure Update_First_Real_Statement
-        (Old_HSS : Node_Id;
-         New_HSS : Node_Id);
-      pragma Inline (Update_First_Real_Statement);
-      --  Update semantic attribute First_Real_Statement of handled sequence of
-      --  statements New_HSS based on handled sequence of statements Old_HSS.
-
       procedure Update_Named_Associations
         (Old_Call : Node_Id;
          New_Call : Node_Id);
@@ -24570,14 +24564,6 @@ package body Sem_Util is
                Set_Renamed_Object_Of_Possibly_Void
                  (Defining_Entity (Result), Name (Result));
 
-            --  Update the First_Real_Statement attribute of a replicated
-            --  handled sequence of statements.
-
-            elsif Nkind (N) = N_Handled_Sequence_Of_Statements then
-               Update_First_Real_Statement
-                 (Old_HSS => N,
-                  New_HSS => Result);
-
             --  Update the Chars attribute of identifiers
 
             elsif Nkind (N) = N_Identifier then
@@ -24679,39 +24665,6 @@ package body Sem_Util is
             Set_Sloc              (N, New_Sloc);
          end if;
       end Update_CFS_Sloc;
-
-      ---------------------------------
-      -- Update_First_Real_Statement --
-      ---------------------------------
-
-      procedure Update_First_Real_Statement
-        (Old_HSS : Node_Id;
-         New_HSS : Node_Id)
-      is
-         Old_First_Stmt : constant Node_Id := First_Real_Statement (Old_HSS);
-
-         New_Stmt : Node_Id;
-         Old_Stmt : Node_Id;
-
-      begin
-         --  Recreate the First_Real_Statement attribute of a handled sequence
-         --  of statements by traversing the statement lists of both sequences
-         --  in parallel.
-
-         if Present (Old_First_Stmt) then
-            New_Stmt := First (Statements (New_HSS));
-            Old_Stmt := First (Statements (Old_HSS));
-            while Present (Old_Stmt) and then Old_Stmt /= Old_First_Stmt loop
-               Next (New_Stmt);
-               Next (Old_Stmt);
-            end loop;
-
-            pragma Assert (Present (New_Stmt));
-            pragma Assert (Present (Old_Stmt));
-
-            Set_First_Real_Statement (New_HSS, New_Stmt);
-         end if;
-      end Update_First_Real_Statement;
 
       -------------------------------
       -- Update_Named_Associations --
@@ -25424,8 +25377,8 @@ package body Sem_Util is
       --    * Semantic fields of entities such as Etype and Scope must be
       --      updated to reference the proper replicated entities.
 
-      --    * Semantic fields of nodes such as First_Real_Statement must be
-      --      updated to reference the proper replicated nodes.
+      --    * Some semantic fields of nodes must be updated to reference
+      --      the proper replicated nodes.
 
       --  Finally, quantified expressions contain an implicit declaration for
       --  the bound variable. Given that quantified expressions appearing

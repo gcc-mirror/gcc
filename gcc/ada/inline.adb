@@ -4536,13 +4536,14 @@ package body Inline is
       Decl   : Node_Id;
 
    begin
-      if No (E_Body) then        --  imported subprogram
+      if No (E_Body) then -- imported subprogram
          return False;
 
       else
          Decl := First (Declarations (E_Body));
          while Present (Decl) loop
             if Nkind (Decl) = N_Full_Type_Declaration
+              and then Comes_From_Source (Decl)
               and then Present (Init_Proc (Defining_Identifier (Decl)))
             then
                return True;
