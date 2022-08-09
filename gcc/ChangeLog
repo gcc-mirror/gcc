@@ -1,3 +1,9 @@
+2022-08-08   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Remove code
+	setting -mblock-ops-vector-pair.  Patch back ported from trunk, August
+	3rd, 2022.
+
 2022-08-02  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
