@@ -6241,10 +6241,10 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			}
 
 		      if (POINTER_TYPE_P (TREE_TYPE (x)))
-			x = fold_build2 (POINTER_PLUS_EXPR,
-					 TREE_TYPE (x), x, t);
+			x = fold_build_pointer_plus (x, t);
 		      else
-			x = fold_build2 (PLUS_EXPR, TREE_TYPE (x), x, t);
+			x = fold_build2 (PLUS_EXPR, TREE_TYPE (x), x,
+					 fold_convert (TREE_TYPE (x), t));
 		    }
 
 		  if ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_LINEAR
