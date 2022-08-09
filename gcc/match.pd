@@ -3601,21 +3601,44 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp (bit_and:s (lshift:s @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
   (if (tree_fits_shwi_p (@1)
        && tree_to_shwi (@1) > 0
-       && tree_to_shwi (@1) < TYPE_PRECISION (TREE_TYPE (@0))
-       && tree_to_shwi (@1) <= wi::ctz (wi::to_wide (@3)))
-   (with { wide_int c1 = wi::to_wide (@1);
-	   wide_int c2 = wi::lrshift (wi::to_wide (@2), c1);
-	   wide_int c3 = wi::lrshift (wi::to_wide (@3), c1); }
-    (cmp (bit_and @0 { wide_int_to_tree (TREE_TYPE (@0), c2); })
-	 { wide_int_to_tree (TREE_TYPE (@0), c3); }))))
+       && tree_to_shwi (@1) < TYPE_PRECISION (TREE_TYPE (@0)))
+    (if (tree_to_shwi (@1) > wi::ctz (wi::to_wide (@3)))
+      { constant_boolean_node (cmp == NE_EXPR, type); }
+      (with { wide_int c1 = wi::to_wide (@1);
+	      wide_int c2 = wi::lrshift (wi::to_wide (@2), c1);
+	      wide_int c3 = wi::lrshift (wi::to_wide (@3), c1); }
+	(cmp (bit_and @0 { wide_int_to_tree (TREE_TYPE (@0), c2); })
+	     { wide_int_to_tree (TREE_TYPE (@0), c3); })))))
  (simplify
   (cmp (bit_and:s (rshift:s @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
   (if (tree_fits_shwi_p (@1)
        && tree_to_shwi (@1) > 0
-       && tree_to_shwi (@1) < TYPE_PRECISION (TREE_TYPE (@0))
-       && tree_to_shwi (@1) <= wi::clz (wi::to_wide (@2))
-       && tree_to_shwi (@1) <= wi::clz (wi::to_wide (@3)))
-   (cmp (bit_and @0 (lshift @2 @1)) (lshift @3 @1)))))
+       && tree_to_shwi (@1) < TYPE_PRECISION (TREE_TYPE (@0)))
+    (with { tree t0 = TREE_TYPE (@0);
+	    unsigned int prec = TYPE_PRECISION (t0);
+	    wide_int c1 = wi::to_wide (@1);
+	    wide_int c2 = wi::to_wide (@2);
+	    wide_int c3 = wi::to_wide (@3);
+	    wide_int sb = wi::set_bit_in_zero (prec - 1, prec); }
+      (if ((c2 & c3) != c3)
+        { constant_boolean_node (cmp == NE_EXPR, type); }
+	(if (TYPE_UNSIGNED (t0))
+	  (if ((c3 & wi::arshift (sb, c1 - 1)) != 0)
+            { constant_boolean_node (cmp == NE_EXPR, type); }
+	    (cmp (bit_and @0 { wide_int_to_tree (t0, c2 << c1); })
+		 { wide_int_to_tree (t0, c3 << c1); }))
+	  (with { wide_int smask = wi::arshift (sb, c1); }
+	    (switch
+	      (if ((c2 & smask) == 0)
+		(cmp (bit_and @0 { wide_int_to_tree (t0, c2 << c1); })
+		     { wide_int_to_tree (t0, c3 << c1); }))
+	      (if ((c3 & smask) == 0)
+	        (cmp (bit_and @0 { wide_int_to_tree (t0, (c2 << c1) | sb); })
+		     { wide_int_to_tree (t0, c3 << c1); }))
+	      (if ((c2 & smask) != (c3 & smask))
+		{ constant_boolean_node (cmp == NE_EXPR, type); })
+	      (cmp (bit_and @0 { wide_int_to_tree (t0, (c2 << c1) | sb); })
+		   { wide_int_to_tree (t0, (c3 << c1) | sb); })))))))))
 
 /* Fold (X << C1) & C2 into (X << C1) & (C2 | ((1 << C1) - 1))
         (X >> C1) & C2 into (X >> C1) & (C2 | ~((type) -1 >> C1))
