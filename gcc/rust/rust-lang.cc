@@ -69,13 +69,11 @@
 // Language-dependent contents of a type. GTY() mark used for garbage collector.
 struct GTY (()) lang_type
 {
-  char dummy;
 };
 
 // Language-dependent contents of a decl.
 struct GTY (()) lang_decl
 {
-  char dummy;
 };
 
 // Language-dependent contents of an identifier.  This must include a
@@ -100,7 +98,6 @@ union GTY ((
 // We don't use language_function.
 struct GTY (()) language_function
 {
-  int dummy;
 };
 
 // has to be in same compilation unit as session, so here for now
@@ -172,7 +169,7 @@ grs_langhook_parse_file (void)
 {
   rust_debug ("Preparing to parse files. ");
 
-  Rust::Session::get_instance ().parse_files (num_in_fnames, in_fnames);
+  Rust::Session::get_instance ().handle_input_files (num_in_fnames, in_fnames);
 }
 
 /* Seems to get the exact type for a specific type - e.g. for scalar float with
@@ -280,32 +277,10 @@ grs_langhook_handle_option (
 {
   // Convert integer code to lang.opt enum codes with names.
   enum opt_code code = (enum opt_code) scode;
-  // used to store whether results of various stuff are successful
-  // bool ret = true;
 
-  // delegate to session manager
+  // Delegate to session manager
   return Rust::Session::get_instance ().handle_option (code, arg, value, kind,
 						       loc, handlers);
-
-  // Handles options as listed in lang.opt.
-  /*switch (code) {
-      case OPT_I:
-	  // TODO: add search path
-	  break;
-      case OPT_L:
-	  // TODO: add library link path or something
-	  break;
-      case OPT_frust_dump:
-	  // enable dump and return whether this was successful
-	  ret = rust_enable_dump(arg) ? true : false;
-	  break;
-      // no option handling for -o
-      default:
-	  // return 1 to indicate option is valid
-	  break;
-  }
-
-  return ret;*/
 }
 
 /* Run after parsing options.  */
@@ -447,17 +422,10 @@ rust_localize_identifier (const char *ident)
 
 namespace selftest {
 
-static void
-simple_assert ()
-{
-  ASSERT_TRUE (true);
-}
-
 void
 run_rust_tests ()
 {
   // Call tests for the rust frontend here
-  simple_assert ();
   rust_cfg_parser_test ();
   rust_privacy_ctx_test ();
   rust_crate_name_validation_test ();

@@ -40,13 +40,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 {
   unsigned int i, j;
 
-  /* This is a tristate:
-     -1 means we should not link in librust
-     0  means we should link in librust if it is needed
-     1  means librust is needed and should be linked in.
-     2  means librust is needed and should be linked statically.  */
-  int library = 0;
-
   /* The new argument list will be contained in this.  */
   struct cl_decoded_option *new_decoded_options;
 
@@ -78,14 +71,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* Whether the -o option was used.  */
   bool saw_opt_o = false;
 
-  /* Whether the -c option was used.  Also used for -E, -fsyntax-only,
-     in general anything which implies only compilation and not
-     linking.  */
-  bool saw_opt_c = false;
-
-  /* Whether the -S option was used.  */
-  bool saw_opt_S = false;
-
   /* The first input file with an extension of .rs.  */
   const char *first_rust_file = NULL;
 
@@ -101,47 +86,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
       switch (decoded_options[i].opt_index)
 	{
-	case OPT_r:
-	case OPT_nostdlib:
-	case OPT_nodefaultlibs:
-	  library = -1;
-	  break;
-
 	case OPT_l:
 	  if (strcmp (arg, "c") == 0)
 	    args[i] |= WITHLIBC;
-	  else
-	    /* Unrecognized libraries (e.g. -lfoo) may require librust.  */
-	    library = (library == 0) ? 1 : library;
-	  break;
-
-	case OPT_x:
-	  if (library == 0 && strcmp (arg, "rust") == 0)
-	    library = 1;
-	  break;
-
-	case OPT_Xlinker:
-	case OPT_Wl_:
-	  /* Arguments that go directly to the linker might be .o files,
-	     or something, and so might cause librust to be needed.  */
-	  if (library == 0)
-	    library = 1;
-	  break;
-
-	case OPT_c:
-	case OPT_E:
-	case OPT_M:
-	case OPT_MM:
-	case OPT_fsyntax_only:
-	  /* Don't specify libraries if we won't link, since that would
-	     cause a warning.  */
-	  saw_opt_c = true;
-	  library = -1;
-	  break;
-
-	case OPT_S:
-	  saw_opt_S = true;
-	  library = -1;
 	  break;
 
 	case OPT_o:
@@ -156,15 +103,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  shared_libgcc = 0;
 	  break;
 
-	case OPT_static_librust:
-	  library = library >= 0 ? 2 : library;
-	  args[i] |= SKIPOPT;
-	  break;
-
 	case OPT_SPECIAL_input_file:
-	  if (library == 0)
-	    library = 1;
-
 	  if (first_rust_file == NULL)
 	    {
 	      int len;
@@ -172,6 +111,13 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	      len = strlen (arg);
 	      if (len > 3 && strcmp (arg + len - 3, ".rs") == 0)
 		first_rust_file = arg;
+	    }
+	  else
+	    {
+	      // FIXME: ARTHUR: Do we want to error here? If there's already one
+	      // file?
+	      // How do we error here? Do we want to instead just handle that in
+	      // the session manager?
 	    }
 
 	  break;
@@ -185,7 +131,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #endif
 
   /* Make sure to have room for the trailing NULL argument.  */
-  num_args = argc + shared_libgcc + (library > 0) * 5 + 10;
+  num_args = argc + shared_libgcc * 5 + 10;
   new_decoded_options = XNEWVEC (struct cl_decoded_option, num_args);
 
   i = 0;
@@ -199,7 +145,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     {
       new_decoded_options[j] = decoded_options[i];
 
-      if (!saw_libc && (args[i] & WITHLIBC) && library > 0)
+      if (!saw_libc && (args[i] & WITHLIBC))
 	{
 	  --j;
 	  saw_libc = &decoded_options[i];
@@ -217,65 +163,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
      driver will invoke rust1 separately for each input file.  FIXME:
      This should probably use some other interface to force the driver
      to set combine_inputs.  */
-  if (first_rust_file != NULL && !saw_opt_o)
+  if (!saw_opt_o)
     {
-      if (saw_opt_c || saw_opt_S)
-	{
-	  const char *base;
-	  int baselen;
-	  int alen;
-	  char *out;
-
-	  base = lbasename (first_rust_file);
-	  baselen = strlen (base) - 3;
-	  alen = baselen + 3;
-	  out = XNEWVEC (char, alen);
-	  memcpy (out, base, baselen);
-	  /* The driver will convert .o to some other suffix (e.g.,
-	     .obj) if appropriate.  */
-	  out[baselen] = '.';
-	  if (saw_opt_S)
-	    out[baselen + 1] = 's';
-	  else
-	    out[baselen + 1] = 'o';
-	  out[baselen + 2] = '\0';
-	  generate_option (OPT_o, out, 1, CL_DRIVER, &new_decoded_options[j]);
-	}
-      else
-	generate_option (OPT_o, "a.out", 1, CL_DRIVER, &new_decoded_options[j]);
+      generate_option (OPT_o, "a.out", 1, CL_DRIVER, &new_decoded_options[j]);
       j++;
-    }
-
-  /* Add `-lrust' if we haven't already done so.  */
-  if (library > 0)
-    {
-      // generate_option (OPT_l, LIBGOBEGIN, 1, CL_DRIVER,
-      //               &new_decoded_options[j]);
-      // added_libraries++;
-      // j++;
-
-#ifdef HAVE_LD_STATIC_DYNAMIC
-      if (library > 1 && !static_link)
-	{
-	  generate_option (OPT_Wl_, LD_STATIC_OPTION, 1, CL_DRIVER,
-			   &new_decoded_options[j]);
-	  j++;
-	}
-#endif
-
-	// generate_option (OPT_l, LIBGO, 1,
-	//   	       CL_DRIVER, &new_decoded_options[j]);
-	// added_libraries++;
-	// j++;
-
-#ifdef HAVE_LD_STATIC_DYNAMIC
-      if (library > 1 && !static_link)
-	{
-	  generate_option (OPT_Wl_, LD_DYNAMIC_OPTION, 1, CL_DRIVER,
-			   &new_decoded_options[j]);
-	  j++;
-	}
-#endif
     }
 
   if (saw_libc)

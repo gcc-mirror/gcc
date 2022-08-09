@@ -310,6 +310,17 @@ public:
       }
 
     infered = lookup->clone ();
+
+    // Generic unit structs look like an identifier but they actually need be
+    // handled as a path-in-expression so this gives us a chance to infer the
+    // generic parameters.
+    // see https://github.com/Rust-GCC/gccrs/issues/1447
+    bool is_unit_struct
+      = infered->get_kind () == TyTy::TypeKind::ADT && infered->is_unit ();
+    if (is_unit_struct && infered->needs_generic_substitutions ())
+      {
+	infered = SubstMapper::InferSubst (infered, expr.get_locus ());
+      }
   }
 
   void visit (HIR::LiteralExpr &expr) override

@@ -298,7 +298,7 @@ public:
   bool handle_option (enum opt_code code, const char *arg, HOST_WIDE_INT value,
 		      int kind, location_t loc,
 		      const struct cl_option_handlers *handlers);
-  void parse_files (int num_files, const char **files);
+  void handle_input_files (int num_files, const char **files);
   void init_options ();
   void handle_crate_name (const AST::Crate &parsed_crate);
 
@@ -314,7 +314,7 @@ public:
   NodeId load_extern_crate (const std::string &crate_name, Location locus);
 
 private:
-  void parse_file (const char *filename);
+  void compile_crate (const char *filename);
   bool enable_dump (std::string arg);
 
   void dump_lex (Parser<Lexer> &parser) const;
