@@ -276,8 +276,6 @@ void
 path_range_query::ssa_range_in_phi (vrange &r, gphi *phi)
 {
   tree name = gimple_phi_result (phi);
-  basic_block bb = gimple_bb (phi);
-  unsigned nargs = gimple_phi_num_args (phi);
 
   if (at_entry ())
     {
@@ -287,6 +285,7 @@ path_range_query::ssa_range_in_phi (vrange &r, gphi *phi)
       // Try to fold the phi exclusively with global or cached values.
       // This will get things like PHI <5(99), 6(88)>.  We do this by
       // calling range_of_expr with no context.
+      unsigned nargs = gimple_phi_num_args (phi);
       Value_Range arg_range (TREE_TYPE (name));
       r.set_undefined ();
       for (size_t i = 0; i < nargs; ++i)
@@ -303,36 +302,31 @@ path_range_query::ssa_range_in_phi (vrange &r, gphi *phi)
       return;
     }
 
+  basic_block bb = gimple_bb (phi);
   basic_block prev = prev_bb ();
   edge e_in = find_edge (prev, bb);
-
-  for (size_t i = 0; i < nargs; ++i)
-    if (e_in == gimple_phi_arg_edge (phi, i))
-      {
-	tree arg = gimple_phi_arg_def (phi, i);
-	// Avoid using the cache for ARGs defined in this block, as
-	// that could create an ordering problem.
-	if (ssa_defined_in_bb (arg, bb) || !get_cache (r, arg))
-	  {
-	    if (m_resolve)
-	      {
-		Value_Range tmp (TREE_TYPE (name));
-		// Using both the range on entry to the path, and the
-		// range on this edge yields significantly better
-		// results.
-		if (defined_outside_path (arg))
-		  range_on_path_entry (r, arg);
-		else
-		  r.set_varying (TREE_TYPE (name));
-		m_ranger->range_on_edge (tmp, e_in, arg);
-		r.intersect (tmp);
-		return;
-	      }
+  tree arg = PHI_ARG_DEF_FROM_EDGE (phi, e_in);
+  // Avoid using the cache for ARGs defined in this block, as
+  // that could create an ordering problem.
+  if (ssa_defined_in_bb (arg, bb) || !get_cache (r, arg))
+    {
+      if (m_resolve)
+	{
+	  Value_Range tmp (TREE_TYPE (name));
+	  // Using both the range on entry to the path, and the
+	  // range on this edge yields significantly better
+	  // results.
+	  if (TREE_CODE (arg) == SSA_NAME
+	      && defined_outside_path (arg))
+	    range_on_path_entry (r, arg);
+	  else
 	    r.set_varying (TREE_TYPE (name));
-	  }
-	return;
-      }
-  gcc_unreachable ();
+	  m_ranger->range_on_edge (tmp, e_in, arg);
+	  r.intersect (tmp);
+	  return;
+	}
+      r.set_varying (TREE_TYPE (name));
+    }
 }
 
 // If NAME is defined in BB, set R to the range of NAME, and return

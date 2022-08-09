@@ -30,4 +30,4 @@ int foo (struct S *chain, _Bool is_ctor, _Bool is_dtor)
 /* We want to thread both paths from A with NULL chain to C, the one through
    B and one around it.
    ???  Ideally we'd thread one "path" containing the half-diamond with B.  */
-/* { dg-final { scan-tree-dump "Jumps threaded: 2" "threadfull1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 2" "threadfull1" } } */
