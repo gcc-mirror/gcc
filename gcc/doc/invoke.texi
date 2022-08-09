@@ -10281,6 +10281,87 @@ See @uref{https://cwe.mitre.org/data/definitions/457.html, CWE-457: Use of Unini
 
 @end table
 
+The analyzer has hardcoded knowledge about the behavior of the following
+memory-management functions:
+
+@itemize @bullet
+@item @code{alloca}
+@item The built-in functions @code{__builtin_alloc},
+@code{__builtin_alloc_with_align}, @item @code{__builtin_calloc},
+@code{__builtin_free}, @code{__builtin_malloc}, @code{__builtin_memcpy},
+@code{__builtin_memcpy_chk}, @code{__builtin_memset},
+@code{__builtin_memset_chk}, @code{__builtin_realloc},
+@code{__builtin_stack_restore}, and @code{__builtin_stack_save}
+@item @code{calloc}
+@item @code{free}
+@item @code{malloc}
+@item @code{memset}
+@item @code{operator delete}
+@item @code{operator delete []}
+@item @code{operator new}
+@item @code{operator new []}
+@item @code{realloc}
+@item @code{strdup}
+@item @code{strndup}
+@end itemize
+
+of the following functions for working with file descriptors:
+
+@itemize @bullet
+@item @code{open}
+@item @code{close}
+@item @code{creat}
+@item @code{dup}, @code{dup2} and @code{dup3}
+@item @code{read}
+@item @code{write}
+@end itemize
+
+of the following functions for working with @code{<stdio.h>} streams:
+@itemize @bullet
+@item The built-in functions @code{__builtin_fprintf},
+@code{__builtin_fprintf_unlocked}, @code{__builtin_fputc},
+@code{__builtin_fputc_unlocked}, @code{__builtin_fputs},
+@code{__builtin_fputs_unlocked}, @code{__builtin_fwrite},
+@code{__builtin_fwrite_unlocked}, @code{__builtin_printf},
+@code{__builtin_printf_unlocked}, @code{__builtin_putc},
+@code{__builtin_putchar}, @code{__builtin_putchar_unlocked},
+@code{__builtin_putc_unlocked}, @code{__builtin_puts},
+@code{__builtin_puts_unlocked}, @code{__builtin_vfprintf}, and
+@code{__builtin_vprintf}
+@item @code{fopen}
+@item @code{fclose}
+@item @code{fgets}
+@item @code{fgets_unlocked}
+@item @code{fread}
+@item @code{getchar}
+@item @code{fprintf}
+@item @code{printf}
+@item @code{fwrite}
+@end itemize
+
+and of the following functions:
+
+@itemize @bullet
+@item The built-in functions @code{__builtin_expect},
+@code{__builtin_expect_with_probability}, @code{__builtin_strchr},
+@code{__builtin_strcpy}, @code{__builtin_strcpy_chk},
+@code{__builtin_strlen}, @code{__builtin_va_copy}, and
+@code{__builtin_va_start}
+@item The GNU extensions @code{error} and @code{error_at_line}
+@item @code{getpass}
+@item @code{longjmp}
+@item @code{putenv}
+@item @code{setjmp}
+@item @code{siglongjmp}
+@item @code{signal}
+@item @code{sigsetjmp}
+@item @code{strchr}
+@item @code{strlen}
+@end itemize
+
+In addition, various functions with an @code{__analyzer_} prefix have
+special meaning to the analyzer, described in the GCC Internals manual.
+
 Pertinent parameters for controlling the exploration are:
 @option{--param analyzer-bb-explosion-factor=@var{value}},
 @option{--param analyzer-max-enodes-per-program-point=@var{value}},
