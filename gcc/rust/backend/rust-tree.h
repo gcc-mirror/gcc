@@ -1319,6 +1319,33 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
   (CLASS_TYPE_P (NODE) && LANG_TYPE_CLASS_CHECK (NODE)->anon_aggr)
 #define SET_ANON_AGGR_TYPE_P(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->anon_aggr = 1)
 
+/* Nonzero if T is a class type but not a union.  */
+#define NON_UNION_CLASS_TYPE_P(T)                                              \
+  (TREE_CODE (T) == RECORD_TYPE && TYPE_LANG_FLAG_5 (T))
+
+/* Determines whether an ENUMERAL_TYPE has an explicit
+   underlying type.  */
+#define ENUM_FIXED_UNDERLYING_TYPE_P(NODE) (TYPE_LANG_FLAG_5 (NODE))
+
+/* Returns the underlying type of the given enumeration type. The
+   underlying type is determined in different ways, depending on the
+   properties of the enum:
+
+     - In C++0x, the underlying type can be explicitly specified, e.g.,
+
+	 enum E1 : char { ... } // underlying type is char
+
+     - In a C++0x scoped enumeration, the underlying type is int
+       unless otherwises specified:
+
+	 enum class E2 { ... } // underlying type is int
+
+     - Otherwise, the underlying type is determined based on the
+       values of the enumerators. In this case, the
+       ENUM_UNDERLYING_TYPE will not be set until after the definition
+       of the enumeration is completed by finish_enum.  */
+#define ENUM_UNDERLYING_TYPE(TYPE) TREE_TYPE (ENUMERAL_TYPE_CHECK (TYPE))
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
@@ -2763,6 +2790,34 @@ extern int
 is_class_type (tree, int);
 
 extern tree braced_lists_to_strings (tree, tree);
+
+extern tree
+fold_builtin_is_pointer_inverconvertible_with_class (location_t, int, tree *);
+
+extern bool layout_compatible_type_p (tree, tree);
+
+extern tree finish_underlying_type (tree);
+
+extern tree
+c_common_type_for_mode (machine_mode, int);
+
+extern bool std_layout_type_p (const_tree);
+
+extern tree complete_type (tree);
+
+extern tree complete_type_or_else (tree, tree);
+
+extern void note_failed_type_completion_for_satisfaction (tree);
+
+extern tree complete_type_or_maybe_complain (tree, tree, tsubst_flags_t);
+
+extern bool
+next_common_initial_seqence (tree &, tree &);
+
+extern bool null_member_pointer_value_p (tree);
+
+extern tree
+fold_builtin_is_corresponding_member (location_t, int, tree *);
 
 // forked from gcc/cp/cp-tree.h
 

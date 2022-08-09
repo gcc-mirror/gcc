@@ -5257,4 +5257,684 @@ fold_builtin_is_pointer_inverconvertible_with_class (location_t loc, int nargs,
 		      build_zero_cst (TREE_TYPE (arg)));
 }
 
+/* Used for communication between c_common_type_for_mode and
+   c_register_builtin_type.  */
+tree registered_builtin_types;
+
+/* Return a data type that has machine mode MODE.
+   If the mode is an integer,
+   then UNSIGNEDP selects between signed and unsigned types.
+   If the mode is a fixed-point mode,
+   then UNSIGNEDP selects between saturating and nonsaturating types.  */
+
+tree
+c_common_type_for_mode (machine_mode mode, int unsignedp)
+{
+  tree t;
+  int i;
+
+  if (mode == TYPE_MODE (integer_type_node))
+    return unsignedp ? unsigned_type_node : integer_type_node;
+
+  if (mode == TYPE_MODE (signed_char_type_node))
+    return unsignedp ? unsigned_char_type_node : signed_char_type_node;
+
+  if (mode == TYPE_MODE (short_integer_type_node))
+    return unsignedp ? short_unsigned_type_node : short_integer_type_node;
+
+  if (mode == TYPE_MODE (long_integer_type_node))
+    return unsignedp ? long_unsigned_type_node : long_integer_type_node;
+
+  if (mode == TYPE_MODE (long_long_integer_type_node))
+    return unsignedp ? long_long_unsigned_type_node
+		     : long_long_integer_type_node;
+
+  for (i = 0; i < NUM_INT_N_ENTS; i++)
+    if (int_n_enabled_p[i] && mode == int_n_data[i].m)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+			: int_n_trees[i].signed_type);
+
+  if (mode == QImode)
+    return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
+
+  if (mode == HImode)
+    return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
+
+  if (mode == SImode)
+    return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
+
+  if (mode == DImode)
+    return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
+
+#if HOST_BITS_PER_WIDE_INT >= 64
+  if (mode == TYPE_MODE (intTI_type_node))
+    return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
+#endif
+
+  if (mode == TYPE_MODE (float_type_node))
+    return float_type_node;
+
+  if (mode == TYPE_MODE (double_type_node))
+    return double_type_node;
+
+  if (mode == TYPE_MODE (long_double_type_node))
+    return long_double_type_node;
+
+  for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+    if (FLOATN_NX_TYPE_NODE (i) != NULL_TREE
+	&& mode == TYPE_MODE (FLOATN_NX_TYPE_NODE (i)))
+      return FLOATN_NX_TYPE_NODE (i);
+
+  if (mode == TYPE_MODE (void_type_node))
+    return void_type_node;
+
+  if (mode == TYPE_MODE (build_pointer_type (char_type_node))
+      || mode == TYPE_MODE (build_pointer_type (integer_type_node)))
+    {
+      unsigned int precision
+	= GET_MODE_PRECISION (as_a<scalar_int_mode> (mode));
+      return (unsignedp ? make_unsigned_type (precision)
+			: make_signed_type (precision));
+    }
+
+  if (COMPLEX_MODE_P (mode))
+    {
+      machine_mode inner_mode;
+      tree inner_type;
+
+      if (mode == TYPE_MODE (complex_float_type_node))
+	return complex_float_type_node;
+      if (mode == TYPE_MODE (complex_double_type_node))
+	return complex_double_type_node;
+      if (mode == TYPE_MODE (complex_long_double_type_node))
+	return complex_long_double_type_node;
+
+      for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+	if (COMPLEX_FLOATN_NX_TYPE_NODE (i) != NULL_TREE
+	    && mode == TYPE_MODE (COMPLEX_FLOATN_NX_TYPE_NODE (i)))
+	  return COMPLEX_FLOATN_NX_TYPE_NODE (i);
+
+      if (mode == TYPE_MODE (complex_integer_type_node) && !unsignedp)
+	return complex_integer_type_node;
+
+      inner_mode = GET_MODE_INNER (mode);
+      inner_type = c_common_type_for_mode (inner_mode, unsignedp);
+      if (inner_type != NULL_TREE)
+	return build_complex_type (inner_type);
+    }
+  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
+    {
+      unsigned int elem_bits
+	= vector_element_size (GET_MODE_BITSIZE (mode), GET_MODE_NUNITS (mode));
+      tree bool_type = build_nonstandard_boolean_type (elem_bits);
+      return build_vector_type_for_mode (bool_type, mode);
+    }
+  else if (VECTOR_MODE_P (mode)
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
+    {
+      machine_mode inner_mode = GET_MODE_INNER (mode);
+      tree inner_type = c_common_type_for_mode (inner_mode, unsignedp);
+      if (inner_type != NULL_TREE)
+	return build_vector_type_for_mode (inner_type, mode);
+    }
+
+  if (dfloat32_type_node != NULL_TREE && mode == TYPE_MODE (dfloat32_type_node))
+    return dfloat32_type_node;
+  if (dfloat64_type_node != NULL_TREE && mode == TYPE_MODE (dfloat64_type_node))
+    return dfloat64_type_node;
+  if (dfloat128_type_node != NULL_TREE
+      && mode == TYPE_MODE (dfloat128_type_node))
+    return dfloat128_type_node;
+
+  if (ALL_SCALAR_FIXED_POINT_MODE_P (mode))
+    {
+      if (mode == TYPE_MODE (short_fract_type_node))
+	return unsignedp ? sat_short_fract_type_node : short_fract_type_node;
+      if (mode == TYPE_MODE (fract_type_node))
+	return unsignedp ? sat_fract_type_node : fract_type_node;
+      if (mode == TYPE_MODE (long_fract_type_node))
+	return unsignedp ? sat_long_fract_type_node : long_fract_type_node;
+      if (mode == TYPE_MODE (long_long_fract_type_node))
+	return unsignedp ? sat_long_long_fract_type_node
+			 : long_long_fract_type_node;
+
+      if (mode == TYPE_MODE (unsigned_short_fract_type_node))
+	return unsignedp ? sat_unsigned_short_fract_type_node
+			 : unsigned_short_fract_type_node;
+      if (mode == TYPE_MODE (unsigned_fract_type_node))
+	return unsignedp ? sat_unsigned_fract_type_node
+			 : unsigned_fract_type_node;
+      if (mode == TYPE_MODE (unsigned_long_fract_type_node))
+	return unsignedp ? sat_unsigned_long_fract_type_node
+			 : unsigned_long_fract_type_node;
+      if (mode == TYPE_MODE (unsigned_long_long_fract_type_node))
+	return unsignedp ? sat_unsigned_long_long_fract_type_node
+			 : unsigned_long_long_fract_type_node;
+
+      if (mode == TYPE_MODE (short_accum_type_node))
+	return unsignedp ? sat_short_accum_type_node : short_accum_type_node;
+      if (mode == TYPE_MODE (accum_type_node))
+	return unsignedp ? sat_accum_type_node : accum_type_node;
+      if (mode == TYPE_MODE (long_accum_type_node))
+	return unsignedp ? sat_long_accum_type_node : long_accum_type_node;
+      if (mode == TYPE_MODE (long_long_accum_type_node))
+	return unsignedp ? sat_long_long_accum_type_node
+			 : long_long_accum_type_node;
+
+      if (mode == TYPE_MODE (unsigned_short_accum_type_node))
+	return unsignedp ? sat_unsigned_short_accum_type_node
+			 : unsigned_short_accum_type_node;
+      if (mode == TYPE_MODE (unsigned_accum_type_node))
+	return unsignedp ? sat_unsigned_accum_type_node
+			 : unsigned_accum_type_node;
+      if (mode == TYPE_MODE (unsigned_long_accum_type_node))
+	return unsignedp ? sat_unsigned_long_accum_type_node
+			 : unsigned_long_accum_type_node;
+      if (mode == TYPE_MODE (unsigned_long_long_accum_type_node))
+	return unsignedp ? sat_unsigned_long_long_accum_type_node
+			 : unsigned_long_long_accum_type_node;
+
+      if (mode == QQmode)
+	return unsignedp ? sat_qq_type_node : qq_type_node;
+      if (mode == HQmode)
+	return unsignedp ? sat_hq_type_node : hq_type_node;
+      if (mode == SQmode)
+	return unsignedp ? sat_sq_type_node : sq_type_node;
+      if (mode == DQmode)
+	return unsignedp ? sat_dq_type_node : dq_type_node;
+      if (mode == TQmode)
+	return unsignedp ? sat_tq_type_node : tq_type_node;
+
+      if (mode == UQQmode)
+	return unsignedp ? sat_uqq_type_node : uqq_type_node;
+      if (mode == UHQmode)
+	return unsignedp ? sat_uhq_type_node : uhq_type_node;
+      if (mode == USQmode)
+	return unsignedp ? sat_usq_type_node : usq_type_node;
+      if (mode == UDQmode)
+	return unsignedp ? sat_udq_type_node : udq_type_node;
+      if (mode == UTQmode)
+	return unsignedp ? sat_utq_type_node : utq_type_node;
+
+      if (mode == HAmode)
+	return unsignedp ? sat_ha_type_node : ha_type_node;
+      if (mode == SAmode)
+	return unsignedp ? sat_sa_type_node : sa_type_node;
+      if (mode == DAmode)
+	return unsignedp ? sat_da_type_node : da_type_node;
+      if (mode == TAmode)
+	return unsignedp ? sat_ta_type_node : ta_type_node;
+
+      if (mode == UHAmode)
+	return unsignedp ? sat_uha_type_node : uha_type_node;
+      if (mode == USAmode)
+	return unsignedp ? sat_usa_type_node : usa_type_node;
+      if (mode == UDAmode)
+	return unsignedp ? sat_uda_type_node : uda_type_node;
+      if (mode == UTAmode)
+	return unsignedp ? sat_uta_type_node : uta_type_node;
+    }
+
+  for (t = registered_builtin_types; t; t = TREE_CHAIN (t))
+    {
+      tree type = TREE_VALUE (t);
+      if (TYPE_MODE (type) == mode
+	  && VECTOR_TYPE_P (type) == VECTOR_MODE_P (mode)
+	  && !!unsignedp == !!TYPE_UNSIGNED (type))
+	return type;
+    }
+  return NULL_TREE;
+}
+
+/* Implement the __underlying_type keyword: Return the underlying
+   type of TYPE, suitable for use as a type-specifier.  */
+
+tree
+finish_underlying_type (tree type)
+{
+  tree underlying_type;
+
+  if (!complete_type_or_else (type, NULL_TREE))
+    return error_mark_node;
+
+  if (TREE_CODE (type) != ENUMERAL_TYPE)
+    {
+      error ("%qT is not an enumeration type", type);
+      return error_mark_node;
+    }
+
+  underlying_type = ENUM_UNDERLYING_TYPE (type);
+
+  /* Fixup necessary in this case because ENUM_UNDERLYING_TYPE
+     includes TYPE_MIN_VALUE and TYPE_MAX_VALUE information.
+     See finish_enum_value_list for details.  */
+  if (!ENUM_FIXED_UNDERLYING_TYPE_P (type))
+    underlying_type = c_common_type_for_mode (TYPE_MODE (underlying_type),
+					      TYPE_UNSIGNED (underlying_type));
+
+  return underlying_type;
+}
+
+/* Return true if TYPE1 and TYPE2 are layout-compatible types.  */
+
+bool
+layout_compatible_type_p (tree type1, tree type2)
+{
+  if (type1 == error_mark_node || type2 == error_mark_node)
+    return false;
+  if (type1 == type2)
+    return true;
+  if (TREE_CODE (type1) != TREE_CODE (type2))
+    return false;
+
+  type1 = rs_build_qualified_type (type1, TYPE_UNQUALIFIED);
+  type2 = rs_build_qualified_type (type2, TYPE_UNQUALIFIED);
+
+  if (TREE_CODE (type1) == ENUMERAL_TYPE)
+    return (TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
+	    && tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2))
+	    && same_type_p (finish_underlying_type (type1),
+			    finish_underlying_type (type2)));
+
+  if (CLASS_TYPE_P (type1) && std_layout_type_p (type1)
+      && std_layout_type_p (type2) && TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
+      && tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2)))
+    {
+      tree field1 = TYPE_FIELDS (type1);
+      tree field2 = TYPE_FIELDS (type2);
+      if (TREE_CODE (type1) == RECORD_TYPE)
+	{
+	  while (1)
+	    {
+	      if (!next_common_initial_seqence (field1, field2))
+		return false;
+	      if (field1 == NULL_TREE)
+		return true;
+	      field1 = DECL_CHAIN (field1);
+	      field2 = DECL_CHAIN (field2);
+	    }
+	}
+      /* Otherwise both types must be union types.
+	 The standard says:
+	 "Two standard-layout unions are layout-compatible if they have
+	 the same number of non-static data members and corresponding
+	 non-static data members (in any order) have layout-compatible
+	 types."
+	 but the code anticipates that bitfield vs. non-bitfield,
+	 different bitfield widths or presence/absence of
+	 [[no_unique_address]] should be checked as well.  */
+      auto_vec<tree, 16> vec;
+      unsigned int count = 0;
+      for (; field1; field1 = DECL_CHAIN (field1))
+	if (TREE_CODE (field1) == FIELD_DECL)
+	  count++;
+      for (; field2; field2 = DECL_CHAIN (field2))
+	if (TREE_CODE (field2) == FIELD_DECL)
+	  vec.safe_push (field2);
+      /* Discussions on core lean towards treating multiple union fields
+	 of the same type as the same field, so this might need changing
+	 in the future.  */
+      if (count != vec.length ())
+	return false;
+      for (field1 = TYPE_FIELDS (type1); field1; field1 = DECL_CHAIN (field1))
+	{
+	  if (TREE_CODE (field1) != FIELD_DECL)
+	    continue;
+	  unsigned int j;
+	  tree t1 = DECL_BIT_FIELD_TYPE (field1);
+	  if (t1 == NULL_TREE)
+	    t1 = TREE_TYPE (field1);
+	  FOR_EACH_VEC_ELT (vec, j, field2)
+	    {
+	      tree t2 = DECL_BIT_FIELD_TYPE (field2);
+	      if (t2 == NULL_TREE)
+		t2 = TREE_TYPE (field2);
+	      if (DECL_BIT_FIELD_TYPE (field1))
+		{
+		  if (!DECL_BIT_FIELD_TYPE (field2))
+		    continue;
+		  if (TYPE_PRECISION (TREE_TYPE (field1))
+		      != TYPE_PRECISION (TREE_TYPE (field2)))
+		    continue;
+		}
+	      else if (DECL_BIT_FIELD_TYPE (field2))
+		continue;
+	      if (!layout_compatible_type_p (t1, t2))
+		continue;
+	      if ((!lookup_attribute ("no_unique_address",
+				      DECL_ATTRIBUTES (field1)))
+		  != !lookup_attribute ("no_unique_address",
+					DECL_ATTRIBUTES (field2)))
+		continue;
+	      break;
+	    }
+	  if (j == vec.length ())
+	    return false;
+	  vec.unordered_remove (j);
+	}
+      return true;
+    }
+
+  return same_type_p (type1, type2);
+}
+
+/* Helper function for is_corresponding_member_aggr.  Return true if
+   MEMBERTYPE pointer-to-data-member ARG can be found in anonymous
+   union or structure BASETYPE.  */
+
+static bool
+is_corresponding_member_union (tree basetype, tree membertype, tree arg)
+{
+  for (tree field = TYPE_FIELDS (basetype); field; field = DECL_CHAIN (field))
+    if (TREE_CODE (field) != FIELD_DECL || DECL_BIT_FIELD_TYPE (field))
+      continue;
+    else if (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field),
+							membertype))
+      {
+	if (TREE_CODE (arg) != INTEGER_CST
+	    || tree_int_cst_equal (arg, byte_position (field)))
+	  return true;
+      }
+    else if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+      {
+	tree narg = arg;
+	if (TREE_CODE (basetype) != UNION_TYPE
+	    && TREE_CODE (narg) == INTEGER_CST)
+	  narg = size_binop (MINUS_EXPR, arg, byte_position (field));
+	if (is_corresponding_member_union (TREE_TYPE (field), membertype, narg))
+	  return true;
+      }
+  return false;
+}
+
+/* Helper function for layout_compatible_type_p and
+   is_corresponding_member_aggr.  Advance to next members (NULL if
+   no further ones) and return true if those members are still part of
+   the common initial sequence.  */
+
+bool
+next_common_initial_seqence (tree &memb1, tree &memb2)
+{
+  while (memb1)
+    {
+      if (TREE_CODE (memb1) != FIELD_DECL
+	  || (DECL_FIELD_IS_BASE (memb1) && is_empty_field (memb1)))
+	{
+	  memb1 = DECL_CHAIN (memb1);
+	  continue;
+	}
+      if (DECL_FIELD_IS_BASE (memb1))
+	{
+	  memb1 = TYPE_FIELDS (TREE_TYPE (memb1));
+	  continue;
+	}
+      break;
+    }
+  while (memb2)
+    {
+      if (TREE_CODE (memb2) != FIELD_DECL
+	  || (DECL_FIELD_IS_BASE (memb2) && is_empty_field (memb2)))
+	{
+	  memb2 = DECL_CHAIN (memb2);
+	  continue;
+	}
+      if (DECL_FIELD_IS_BASE (memb2))
+	{
+	  memb2 = TYPE_FIELDS (TREE_TYPE (memb2));
+	  continue;
+	}
+      break;
+    }
+  if (memb1 == NULL_TREE && memb2 == NULL_TREE)
+    return true;
+  if (memb1 == NULL_TREE || memb2 == NULL_TREE)
+    return false;
+  if (DECL_BIT_FIELD_TYPE (memb1))
+    {
+      if (!DECL_BIT_FIELD_TYPE (memb2))
+	return false;
+      if (!layout_compatible_type_p (DECL_BIT_FIELD_TYPE (memb1),
+				     DECL_BIT_FIELD_TYPE (memb2)))
+	return false;
+      if (TYPE_PRECISION (TREE_TYPE (memb1))
+	  != TYPE_PRECISION (TREE_TYPE (memb2)))
+	return false;
+    }
+  else if (DECL_BIT_FIELD_TYPE (memb2))
+    return false;
+  else if (!layout_compatible_type_p (TREE_TYPE (memb1), TREE_TYPE (memb2)))
+    return false;
+  if ((!lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (memb1)))
+      != !lookup_attribute ("no_unique_address", DECL_ATTRIBUTES (memb2)))
+    return false;
+  if (!tree_int_cst_equal (bit_position (memb1), bit_position (memb2)))
+    return false;
+  return true;
+}
+
+/* Helper function for fold_builtin_is_corresponding_member call.
+   Return boolean_false_node if MEMBERTYPE1 BASETYPE1::*ARG1 and
+   MEMBERTYPE2 BASETYPE2::*ARG2 aren't corresponding members,
+   boolean_true_node if they are corresponding members, or for
+   non-constant ARG2 the highest member offset for corresponding
+   members.  */
+
+static tree
+is_corresponding_member_aggr (location_t loc, tree basetype1, tree membertype1,
+			      tree arg1, tree basetype2, tree membertype2,
+			      tree arg2)
+{
+  tree field1 = TYPE_FIELDS (basetype1);
+  tree field2 = TYPE_FIELDS (basetype2);
+  tree ret = boolean_false_node;
+  while (1)
+    {
+      bool r = next_common_initial_seqence (field1, field2);
+      if (field1 == NULL_TREE || field2 == NULL_TREE)
+	break;
+      if (r
+	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field1),
+							membertype1)
+	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field2),
+							membertype2))
+	{
+	  tree pos = byte_position (field1);
+	  if (TREE_CODE (arg1) == INTEGER_CST && tree_int_cst_equal (arg1, pos))
+	    {
+	      if (TREE_CODE (arg2) == INTEGER_CST)
+		return boolean_true_node;
+	      return pos;
+	    }
+	  else if (TREE_CODE (arg1) != INTEGER_CST)
+	    ret = pos;
+	}
+      else if (ANON_AGGR_TYPE_P (TREE_TYPE (field1))
+	       && ANON_AGGR_TYPE_P (TREE_TYPE (field2)))
+	{
+	  if ((!lookup_attribute ("no_unique_address",
+				  DECL_ATTRIBUTES (field1)))
+	      != !lookup_attribute ("no_unique_address",
+				    DECL_ATTRIBUTES (field2)))
+	    break;
+	  if (!tree_int_cst_equal (bit_position (field1),
+				   bit_position (field2)))
+	    break;
+	  bool overlap = true;
+	  tree pos = byte_position (field1);
+	  if (TREE_CODE (arg1) == INTEGER_CST)
+	    {
+	      tree off1 = fold_convert (sizetype, arg1);
+	      tree sz1 = TYPE_SIZE_UNIT (TREE_TYPE (field1));
+	      if (tree_int_cst_lt (off1, pos)
+		  || tree_int_cst_le (size_binop (PLUS_EXPR, pos, sz1), off1))
+		overlap = false;
+	    }
+	  if (TREE_CODE (arg2) == INTEGER_CST)
+	    {
+	      tree off2 = fold_convert (sizetype, arg2);
+	      tree sz2 = TYPE_SIZE_UNIT (TREE_TYPE (field2));
+	      if (tree_int_cst_lt (off2, pos)
+		  || tree_int_cst_le (size_binop (PLUS_EXPR, pos, sz2), off2))
+		overlap = false;
+	    }
+	  if (overlap && NON_UNION_CLASS_TYPE_P (TREE_TYPE (field1))
+	      && NON_UNION_CLASS_TYPE_P (TREE_TYPE (field2)))
+	    {
+	      tree narg1 = arg1;
+	      if (TREE_CODE (arg1) == INTEGER_CST)
+		narg1
+		  = size_binop (MINUS_EXPR, fold_convert (sizetype, arg1), pos);
+	      tree narg2 = arg2;
+	      if (TREE_CODE (arg2) == INTEGER_CST)
+		narg2
+		  = size_binop (MINUS_EXPR, fold_convert (sizetype, arg2), pos);
+	      tree t1 = TREE_TYPE (field1);
+	      tree t2 = TREE_TYPE (field2);
+	      tree nret
+		= is_corresponding_member_aggr (loc, t1, membertype1, narg1, t2,
+						membertype2, narg2);
+	      if (nret != boolean_false_node)
+		{
+		  if (nret == boolean_true_node)
+		    return nret;
+		  if (TREE_CODE (arg1) == INTEGER_CST)
+		    return size_binop (PLUS_EXPR, nret, pos);
+		  ret = size_binop (PLUS_EXPR, nret, pos);
+		}
+	    }
+	  else if (overlap && TREE_CODE (TREE_TYPE (field1)) == UNION_TYPE
+		   && TREE_CODE (TREE_TYPE (field2)) == UNION_TYPE)
+	    {
+	      tree narg1 = arg1;
+	      if (TREE_CODE (arg1) == INTEGER_CST)
+		narg1
+		  = size_binop (MINUS_EXPR, fold_convert (sizetype, arg1), pos);
+	      tree narg2 = arg2;
+	      if (TREE_CODE (arg2) == INTEGER_CST)
+		narg2
+		  = size_binop (MINUS_EXPR, fold_convert (sizetype, arg2), pos);
+	      if (is_corresponding_member_union (TREE_TYPE (field1),
+						 membertype1, narg1)
+		  && is_corresponding_member_union (TREE_TYPE (field2),
+						    membertype2, narg2))
+		{
+		  sorry_at (loc, "%<__builtin_is_corresponding_member%> "
+				 "not well defined for anonymous unions");
+		  return boolean_false_node;
+		}
+	    }
+	}
+      if (!r)
+	break;
+      field1 = DECL_CHAIN (field1);
+      field2 = DECL_CHAIN (field2);
+    }
+  return ret;
+}
+
+/* Returns true iff T is a null member pointer value (4.11).  */
+
+bool
+null_member_pointer_value_p (tree t)
+{
+  tree type = TREE_TYPE (t);
+  if (!type)
+    return false;
+  else if (TYPE_PTRMEMFUNC_P (type))
+    return (TREE_CODE (t) == CONSTRUCTOR && CONSTRUCTOR_NELTS (t)
+	    && integer_zerop (CONSTRUCTOR_ELT (t, 0)->value));
+  else if (TYPE_PTRDATAMEM_P (type))
+    return integer_all_onesp (t);
+  else
+    return false;
+}
+
+/* Fold __builtin_is_corresponding_member call.  */
+
+tree
+fold_builtin_is_corresponding_member (location_t loc, int nargs, tree *args)
+{
+  /* Unless users call the builtin directly, the following 3 checks should be
+     ensured from std::is_corresponding_member function template.  */
+  if (nargs != 2)
+    {
+      error_at (loc, "%<__builtin_is_corresponding_member%> "
+		     "needs two arguments");
+      return boolean_false_node;
+    }
+  tree arg1 = args[0];
+  tree arg2 = args[1];
+  if (error_operand_p (arg1) || error_operand_p (arg2))
+    return boolean_false_node;
+  if (!TYPE_PTRMEM_P (TREE_TYPE (arg1)) || !TYPE_PTRMEM_P (TREE_TYPE (arg2)))
+    {
+      error_at (loc, "%<__builtin_is_corresponding_member%> "
+		     "argument is not pointer to member");
+      return boolean_false_node;
+    }
+
+  if (!TYPE_PTRDATAMEM_P (TREE_TYPE (arg1))
+      || !TYPE_PTRDATAMEM_P (TREE_TYPE (arg2)))
+    return boolean_false_node;
+
+  tree membertype1 = TREE_TYPE (TREE_TYPE (arg1));
+  tree basetype1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg1));
+  if (!complete_type_or_else (basetype1, NULL_TREE))
+    return boolean_false_node;
+
+  tree membertype2 = TREE_TYPE (TREE_TYPE (arg2));
+  tree basetype2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg2));
+  if (!complete_type_or_else (basetype2, NULL_TREE))
+    return boolean_false_node;
+
+  if (!NON_UNION_CLASS_TYPE_P (basetype1) || !NON_UNION_CLASS_TYPE_P (basetype2)
+      || !std_layout_type_p (basetype1) || !std_layout_type_p (basetype2))
+    return boolean_false_node;
+
+  /* If the member types aren't layout compatible, then they
+     can't be corresponding members.  */
+  if (!layout_compatible_type_p (membertype1, membertype2))
+    return boolean_false_node;
+
+  if (null_member_pointer_value_p (arg1) || null_member_pointer_value_p (arg2))
+    return boolean_false_node;
+
+  if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg2) == INTEGER_CST
+      && !tree_int_cst_equal (arg1, arg2))
+    return boolean_false_node;
+
+  if (TREE_CODE (arg2) == INTEGER_CST && TREE_CODE (arg1) != INTEGER_CST)
+    {
+      std::swap (arg1, arg2);
+      std::swap (membertype1, membertype2);
+      std::swap (basetype1, basetype2);
+    }
+
+  tree ret = is_corresponding_member_aggr (loc, basetype1, membertype1, arg1,
+					   basetype2, membertype2, arg2);
+  if (TREE_TYPE (ret) == boolean_type_node)
+    return ret;
+  /* If both arg1 and arg2 are INTEGER_CSTs, is_corresponding_member_aggr
+     already returns boolean_{true,false}_node whether those particular
+     members are corresponding members or not.  Otherwise, if only
+     one of them is INTEGER_CST (canonicalized to first being INTEGER_CST
+     above), it returns boolean_false_node if it is certainly not a
+     corresponding member and otherwise we need to do a runtime check that
+     those two OFFSET_TYPE offsets are equal.
+     If neither of the operands is INTEGER_CST, is_corresponding_member_aggr
+     returns the largest offset at which the members would be corresponding
+     members, so perform arg1 <= ret && arg1 == arg2 runtime check.  */
+  gcc_assert (TREE_CODE (arg2) != INTEGER_CST);
+  if (TREE_CODE (arg1) == INTEGER_CST)
+    return fold_build2 (EQ_EXPR, boolean_type_node, arg1,
+			fold_convert (TREE_TYPE (arg1), arg2));
+  ret = fold_build2 (LE_EXPR, boolean_type_node,
+		     fold_convert (pointer_sized_int_node, arg1),
+		     fold_convert (pointer_sized_int_node, ret));
+  return fold_build2 (TRUTH_AND_EXPR, boolean_type_node, ret,
+		      fold_build2 (EQ_EXPR, boolean_type_node, arg1,
+				   fold_convert (TREE_TYPE (arg1), arg2)));
+}
+
 } // namespace Rust
