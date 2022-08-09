@@ -4802,8 +4802,8 @@ print_option (const char *desc, unsigned int i,
   /* On some hosts value is declared as a long long int.  */
   printf (" value [%ld]", (long int)in_decoded_options[i].value);
   printf (" error [%d]", in_decoded_options[i].errors);
-  printf (" canonical_option_num_elements [%ld]\n",
-	  in_decoded_options[i].canonical_option_num_elements);
+  printf (" canonical_option_num_elements [%lu]\n",
+	  (unsigned long) in_decoded_options[i].canonical_option_num_elements);
 }
 
 /* print_options display all options with a leading string desc.  */
