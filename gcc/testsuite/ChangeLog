@@ -1,3 +1,12 @@
+2022-08-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-08-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106555
+	* gdc.dg/imports/pr106555.d: New test.
+	* gdc.dg/pr106555.d: New test.
+
 2022-08-02  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
