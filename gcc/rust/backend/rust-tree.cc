@@ -4883,7 +4883,7 @@ fold_builtin_source_location (location_t loc)
   return build_fold_addr_expr_with_type_loc (loc, var, const_ptr_type_node);
 }
 
-// forked from gcc/c-family.c-common.cc braced_lists_to_strings
+// forked from gcc/c-family/c-common.cc braced_lists_to_strings
 
 /* Attempt to convert a braced array initializer list CTOR for array
    TYPE into a STRING_CST for convenience and efficiency.  Return
@@ -4986,7 +4986,7 @@ braced_list_to_string (tree type, tree ctor, bool member)
   return res;
 }
 
-// forked from gcc/c-family.c-common.cc braced_lists_to_strings
+// forked from gcc/c-family/c-common.cc braced_lists_to_strings
 
 /* Implementation of the two-argument braced_lists_to_string withe
    the same arguments plus MEMBER which is set for struct members
@@ -5037,7 +5037,7 @@ braced_lists_to_strings (tree type, tree ctor, bool member)
   return ctor;
 }
 
-// forked from gcc/c-family.c-common.cc braced_lists_to_strings
+// forked from gcc/c-family/c-common.cc braced_lists_to_strings
 
 /* Attempt to convert a CTOR containing braced array initializer lists
    for array TYPE into one containing STRING_CSTs, for convenience and
@@ -5049,6 +5049,212 @@ tree
 braced_lists_to_strings (tree type, tree ctor)
 {
   return braced_lists_to_strings (type, ctor, false);
+}
+
+/*---------------------------------------------------------------------------
+			Constraint satisfaction
+---------------------------------------------------------------------------*/
+
+// forked from gcc/cp/constraint.cc satisfying_constraint
+
+/* True if we are currently satisfying a failed_type_completions.  */
+
+static bool satisfying_constraint;
+
+// forked from gcc/cp/constraint.cc satisfying_constraint
+
+/* A vector of incomplete types (and of declarations with undeduced return
+   type), appended to by note_failed_type_completion_for_satisfaction.  The
+   satisfaction caches use this in order to keep track of "potentially unstable"
+   satisfaction results.
+
+   Since references to entries in this vector are stored only in the
+   GC-deletable sat_cache, it's safe to make this deletable as well.  */
+
+static GTY ((deletable)) vec<tree, va_gc> *failed_type_completions;
+
+// forked from gcc/cp/constraint.cc note_failed_type_completion_for_satisfaction
+
+/* Called whenever a type completion (or return type deduction) failure occurs
+   that definitely affects the meaning of the program, by e.g. inducing
+   substitution failure.  */
+
+void
+note_failed_type_completion_for_satisfaction (tree t)
+{
+  if (satisfying_constraint)
+    {
+      gcc_checking_assert ((TYPE_P (t) && !COMPLETE_TYPE_P (t))
+			   || (DECL_P (t) && undeduced_auto_decl (t)));
+      vec_safe_push (failed_type_completions, t);
+    }
+}
+
+// forked from gcc/cp/typeck.cc complete_type
+
+/* Try to complete TYPE, if it is incomplete.  For example, if TYPE is
+   a template instantiation, do the instantiation.  Returns TYPE,
+   whether or not it could be completed, unless something goes
+   horribly wrong, in which case the error_mark_node is returned.  */
+
+tree
+complete_type (tree type)
+{
+  if (type == NULL_TREE)
+    /* Rather than crash, we return something sure to cause an error
+       at some point.  */
+    return error_mark_node;
+
+  if (type == error_mark_node || COMPLETE_TYPE_P (type))
+    ;
+  else if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree t = complete_type (TREE_TYPE (type));
+      unsigned int needs_constructing, has_nontrivial_dtor;
+      if (COMPLETE_TYPE_P (t))
+	layout_type (type);
+      needs_constructing = TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (t));
+      has_nontrivial_dtor
+	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TYPE_MAIN_VARIANT (t));
+      for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+	{
+	  TYPE_NEEDS_CONSTRUCTING (t) = needs_constructing;
+	  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = has_nontrivial_dtor;
+	}
+    }
+
+  return type;
+}
+
+// forked from gcc/cp/typeck.cc complete_type_or_maybe_complain
+
+/* Like complete_type, but issue an error if the TYPE cannot be completed.
+   VALUE is used for informative diagnostics.
+   Returns NULL_TREE if the type cannot be made complete.  */
+
+tree
+complete_type_or_maybe_complain (tree type, tree value, tsubst_flags_t complain)
+{
+  type = complete_type (type);
+  if (type == error_mark_node)
+    /* We already issued an error.  */
+    return NULL_TREE;
+  else if (!COMPLETE_TYPE_P (type))
+    {
+      if (complain & tf_error)
+	cxx_incomplete_type_diagnostic (value, type, DK_ERROR);
+      note_failed_type_completion_for_satisfaction (type);
+      return NULL_TREE;
+    }
+  else
+    return type;
+}
+
+// forked from gcc/cp/typeck.cc complete_type_or_else
+
+tree
+complete_type_or_else (tree type, tree value)
+{
+  return complete_type_or_maybe_complain (type, value, tf_warning_or_error);
+}
+
+// forked from gcc/cp/tree.cc std_layout_type_p
+
+/* Returns true iff T is a standard-layout type, as defined in
+   [basic.types].  */
+
+bool
+std_layout_type_p (const_tree t)
+{
+  t = strip_array_types (CONST_CAST_TREE (t));
+
+  if (CLASS_TYPE_P (t))
+    return !CLASSTYPE_NON_STD_LAYOUT (t);
+  else
+    return scalarish_type_p (t);
+}
+
+// forked from /gcc/cp/semantics.cc first_nonstatic_data_member_p
+
+/* Helper function for fold_builtin_is_pointer_inverconvertible_with_class,
+   return true if MEMBERTYPE is the type of the first non-static data member
+   of TYPE or for unions of any members.  */
+static bool
+first_nonstatic_data_member_p (tree type, tree membertype)
+{
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+      if (DECL_FIELD_IS_BASE (field) && is_empty_field (field))
+	continue;
+      if (DECL_FIELD_IS_BASE (field))
+	return first_nonstatic_data_member_p (TREE_TYPE (field), membertype);
+      if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	{
+	  if ((TREE_CODE (TREE_TYPE (field)) == UNION_TYPE
+	       || std_layout_type_p (TREE_TYPE (field)))
+	      && first_nonstatic_data_member_p (TREE_TYPE (field), membertype))
+	    return true;
+	}
+      else if (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (field),
+							  membertype))
+	return true;
+      if (TREE_CODE (type) != UNION_TYPE)
+	return false;
+    }
+  return false;
+}
+
+// forked from gcc/cp/semantics.cc
+// fold_builtin_is_pointer_inverconvertible_with_class
+
+/* Fold __builtin_is_pointer_interconvertible_with_class call.  */
+
+tree
+fold_builtin_is_pointer_inverconvertible_with_class (location_t loc, int nargs,
+						     tree *args)
+{
+  /* Unless users call the builtin directly, the following 3 checks should be
+     ensured from std::is_pointer_interconvertible_with_class function
+     template.  */
+  if (nargs != 1)
+    {
+      error_at (loc, "%<__builtin_is_pointer_interconvertible_with_class%> "
+		     "needs a single argument");
+      return boolean_false_node;
+    }
+  tree arg = args[0];
+  if (error_operand_p (arg))
+    return boolean_false_node;
+  if (!TYPE_PTRMEM_P (TREE_TYPE (arg)))
+    {
+      error_at (loc, "%<__builtin_is_pointer_interconvertible_with_class%> "
+		     "argument is not pointer to member");
+      return boolean_false_node;
+    }
+
+  if (!TYPE_PTRDATAMEM_P (TREE_TYPE (arg)))
+    return boolean_false_node;
+
+  tree membertype = TREE_TYPE (TREE_TYPE (arg));
+  tree basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg));
+  if (!complete_type_or_else (basetype, NULL_TREE))
+    return boolean_false_node;
+
+  if (TREE_CODE (basetype) != UNION_TYPE && !std_layout_type_p (basetype))
+    return boolean_false_node;
+
+  if (!first_nonstatic_data_member_p (basetype, membertype))
+    return boolean_false_node;
+
+  if (integer_nonzerop (arg))
+    return boolean_false_node;
+  if (integer_zerop (arg))
+    return boolean_true_node;
+
+  return fold_build2 (EQ_EXPR, boolean_type_node, arg,
+		      build_zero_cst (TREE_TYPE (arg)));
 }
 
 } // namespace Rust

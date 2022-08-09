@@ -1297,6 +1297,28 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
    if an initializer has been.  */
 #define DECL_IN_AGGR_P(NODE) (DECL_LANG_FLAG_3 (NODE))
 
+/* Nonzero means that this class type is a non-standard-layout class.  */
+#define CLASSTYPE_NON_STD_LAYOUT(NODE)                                         \
+  (LANG_TYPE_CLASS_CHECK (NODE)->non_std_layout)
+
+/* Nonzero for FIELD_DECL node means that this field is a base class
+   of the parent object, as opposed to a member field.  */
+#define DECL_FIELD_IS_BASE(NODE) DECL_LANG_FLAG_6 (FIELD_DECL_CHECK (NODE))
+
+/* Nonzero if TYPE is an anonymous union type.  */
+#define ANON_UNION_TYPE_P(NODE)                                                \
+  (TREE_CODE (NODE) == UNION_TYPE && ANON_AGGR_TYPE_P (NODE))
+
+/* For an ANON_AGGR_TYPE_P the single FIELD_DECL it is used with.  */
+#define ANON_AGGR_TYPE_FIELD(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->typeinfo_var)
+
+/* Nonzero if TYPE is an anonymous union or struct type.  We have to use a
+   flag for this because "A union for which objects or pointers are
+   declared is not an anonymous union" [class.union].  */
+#define ANON_AGGR_TYPE_P(NODE)                                                 \
+  (CLASS_TYPE_P (NODE) && LANG_TYPE_CLASS_CHECK (NODE)->anon_aggr)
+#define SET_ANON_AGGR_TYPE_P(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->anon_aggr = 1)
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
