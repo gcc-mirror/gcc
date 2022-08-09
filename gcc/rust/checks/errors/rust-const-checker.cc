@@ -37,6 +37,21 @@ ConstChecker::go (HIR::Crate &crate)
     item->accept_vis (*this);
 }
 
+bool
+ConstChecker::is_const_extern_fn (HIR::ExternalFunctionItem &fn)
+{
+  // FIXME: Is it really how we want to handle `rustc_const_stable`
+  // and `rustc_const_unstable`?
+  // TODO: Add these attributes to the attribute check and handle
+  // `stable` and `unstable` as well
+  return std::any_of (
+    fn.get_outer_attrs ().begin (), fn.get_outer_attrs ().end (),
+    [] (const AST::Attribute &attr) {
+      // `starts_with` in C++11...
+      return attr.get_path ().as_string ().rfind ("rustc_const_", 0) == 0;
+    });
+}
+
 void
 ConstChecker::visit (IdentifierExpr &ident_expr)
 {}
@@ -261,17 +276,7 @@ ConstChecker::check_function_call (HirId fn_id, Location locus)
     {
       {
 	auto fn = static_cast<ExternalFunctionItem *> (maybe_extern_item);
-	auto is_const_extern = std::any_of (
-	  fn->get_outer_attrs ().begin (), fn->get_outer_attrs ().end (),
-	  [] (const AST::Attribute &attr) {
-	    // `starts_with` in C++11...
-	    // FIXME: Is it really how we want to handle `rustc_const_stable`
-	    // and `rustc_const_unstable`?
-	    // TODO: Add these attributes to the attribute check and handle
-	    // `stable` and `unstable` as well
-	    return attr.get_path ().as_string ().rfind ("rustc_const_", 0) == 0;
-	  });
-	if (!is_const_extern)
+	if (!is_const_extern_fn (*fn))
 	  is_error = true;
       }
     }
