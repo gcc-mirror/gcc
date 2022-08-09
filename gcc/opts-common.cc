@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "intl.h"
@@ -25,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "diagnostic.h"
 #include "spellcheck.h"
+#include "opts-jobserver.h"
 
 static void prune_options (struct cl_decoded_option **, unsigned int *);
 
@@ -2004,4 +2006,43 @@ void prepend_xassembler_to_collect_as_options (const char *collect_as_options,
       obstack_grow (o, opt, strlen (opt));
       obstack_1grow (o, '\'');
     }
+}
+
+jobserver_info::jobserver_info ()
+{
+  /* Detect jobserver and drop it if it's not working.  */
+  string js_needle = "--jobserver-auth=";
+
+  const char *envval = getenv ("MAKEFLAGS");
+  if (envval != NULL)
+    {
+      string makeflags = envval;
+      size_t n = makeflags.rfind (js_needle);
+      if (n != string::npos)
+	{
+	  if (sscanf (makeflags.c_str () + n + js_needle.size (),
+		      "%d,%d", &rfd, &wfd) == 2
+	      && rfd > 0
+	      && wfd > 0
+	      && is_valid_fd (rfd)
+	      && is_valid_fd (wfd))
+	    is_active = true;
+	  else
+	    {
+	      string dup = makeflags.substr (0, n);
+	      size_t pos = makeflags.find (' ', n);
+	      if (pos != string::npos)
+		dup += makeflags.substr (pos);
+	      skipped_makeflags = "MAKEFLAGS=" + dup;
+	      error_msg
+		= "cannot access %<" + js_needle + "%> file descriptors";
+	    }
+	}
+      error_msg = "%<" + js_needle + "%> is not present in %<MAKEFLAGS%>";
+    }
+  else
+    error_msg = "%<MAKEFLAGS%> environment variable is unset";
+
+  if (!error_msg.empty ())
+    error_msg = "jobserver is not available: " + error_msg;
 }
