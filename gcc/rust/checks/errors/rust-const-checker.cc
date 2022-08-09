@@ -37,6 +37,21 @@ ConstChecker::go (HIR::Crate &crate)
     item->accept_vis (*this);
 }
 
+bool
+ConstChecker::is_const_extern_fn (HIR::ExternalFunctionItem &fn)
+{
+  // FIXME: Is it really how we want to handle `rustc_const_stable`
+  // and `rustc_const_unstable`?
+  // TODO: Add these attributes to the attribute check and handle
+  // `stable` and `unstable` as well
+  return std::any_of (
+    fn.get_outer_attrs ().begin (), fn.get_outer_attrs ().end (),
+    [] (const AST::Attribute &attr) {
+      // `starts_with` in C++11...
+      return attr.get_path ().as_string ().rfind ("rustc_const_", 0) == 0;
+    });
+}
+
 void
 ConstChecker::visit (IdentifierExpr &ident_expr)
 {}
@@ -235,11 +250,38 @@ ConstChecker::check_function_call (HirId fn_id, Location locus)
     return;
 
   auto maybe_fn = mappings.lookup_hir_item (fn_id);
-  if (!maybe_fn || maybe_fn->get_item_kind () != Item::ItemKind::Function)
+  if (maybe_fn && maybe_fn->get_item_kind () != Item::ItemKind::Function)
     return;
 
-  auto fn = static_cast<Function *> (maybe_fn);
-  if (!fn->get_qualifiers ().is_const ())
+  // There are const extern functions (intrinsics)
+  // TODO: Should we check the ABI is only "rust intrinsics"? Is that handled
+  // elsewhere?
+  HirId parent_block;
+  auto maybe_extern_item
+    = mappings.lookup_hir_extern_item (fn_id, &parent_block);
+  if (maybe_extern_item
+      && maybe_extern_item->get_extern_kind ()
+	   != ExternalItem::ExternKind::Function)
+    return;
+
+  auto is_error = false;
+  if (maybe_fn)
+    {
+      auto fn = static_cast<Function *> (maybe_fn);
+      if (!fn->get_qualifiers ().is_const ())
+	is_error = true;
+    }
+
+  if (maybe_extern_item)
+    {
+      {
+	auto fn = static_cast<ExternalFunctionItem *> (maybe_extern_item);
+	if (!is_const_extern_fn (*fn))
+	  is_error = true;
+      }
+    }
+
+  if (is_error)
     rust_error_at (locus, "only functions marked as %<const%> are allowed to "
 			  "be called from constant contexts");
 }
@@ -521,6 +563,9 @@ ConstChecker::visit (Function &function)
   auto const_fn = function.get_qualifiers ().is_const ();
   if (const_fn)
     const_context.enter (function.get_mappings ().get_hirid ());
+
+  for (auto &param : function.get_function_params ())
+    param.get_type ()->accept_vis (*this);
 
   function.get_definition ()->accept_vis (*this);
 

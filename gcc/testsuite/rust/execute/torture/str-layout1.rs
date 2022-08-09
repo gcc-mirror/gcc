@@ -2,6 +2,7 @@
 // { dg-output "t1sz=5 t2sz=10" }
 mod mem {
     extern "rust-intrinsic" {
+        #[rustc_const_stable(feature = "const_transmute", since = "1.46.0")]
         fn transmute<T, U>(_: T) -> U;
     }
 }

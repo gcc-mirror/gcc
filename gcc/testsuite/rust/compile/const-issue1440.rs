@@ -1,13 +1,10 @@
 // { dg-additional-options "-w" }
+
 mod intrinsics {
     extern "rust-intrinsic" {
-        #[rustc_const_stable(feature = "const_int_wrapping", since = "1.40.0")]
         pub fn wrapping_add<T>(a: T, b: T) -> T;
-        #[rustc_const_stable(feature = "const_int_rotate", since = "1.40.0")]
         pub fn rotate_left<T>(a: T, b: T) -> T;
-        #[rustc_const_stable(feature = "const_int_rotate", since = "1.40.0")]
         pub fn rotate_right<T>(a: T, b: T) -> T;
-        #[rustc_const_stable(feature = "const_ptr_offset", since = "1.61.0")]
         pub fn offset<T>(ptr: *const T, count: isize) -> *const T;
     }
 }
@@ -15,9 +12,8 @@ mod intrinsics {
 mod mem {
     extern "rust-intrinsic" {
         #[rustc_const_stable(feature = "const_transmute", since = "1.46.0")]
-        fn transmute<T, U>(_: T) -> U;
-        #[rustc_const_stable(feature = "const_size_of", since = "1.40.0")]
-        fn size_of<T>() -> usize;
+        pub fn transmute<T, U>(_: T) -> U;
+        pub fn size_of<T>() -> usize;
     }
 }
 
@@ -50,6 +46,7 @@ macro_rules! impl_uint {
                 }
 
                 pub const fn from_le_bytes(bytes: [u8; mem::size_of::<Self>()]) -> Self {
+                    // { dg-error "only functions marked as .const. are allowed to be called from constant contexts" "" { target *-*-* } .-1 }
                     Self::from_le(Self::from_ne_bytes(bytes))
                 }
 
@@ -61,6 +58,7 @@ macro_rules! impl_uint {
                 }
 
                 pub const fn from_ne_bytes(bytes: [u8; mem::size_of::<Self>()]) -> Self {
+                    // { dg-error "only functions marked as .const. are allowed to be called from constant contexts" "" { target *-*-* } .-1 }
                     unsafe { mem::transmute(bytes) }
                 }
             }

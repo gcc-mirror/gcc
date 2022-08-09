@@ -33,6 +33,13 @@ public:
 
   void go (HIR::Crate &crate);
 
+  /**
+   * Check if an item is a const extern item or not
+   * TODO: Move this to a const compilation context class or an attribute
+   * checking class
+   */
+  static bool is_const_extern_fn (HIR::ExternalFunctionItem &fn);
+
 private:
   /**
    * Check that only const functions are called in const contexts
