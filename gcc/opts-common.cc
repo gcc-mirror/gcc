@@ -2059,3 +2059,43 @@ jobserver_info::jobserver_info ()
   if (!error_msg.empty ())
     error_msg = "jobserver is not available: " + error_msg;
 }
+
+void
+jobserver_info::connect ()
+{
+  if (!pipe_path.empty ())
+    pipefd = open (pipe_path.c_str (), O_RDWR);
+}
+
+void
+jobserver_info::disconnect ()
+{
+  if (!pipe_path.empty ())
+    {
+      gcc_assert (close (pipefd) == 0);
+      pipefd = -1;
+    }
+}
+
+bool
+jobserver_info::get_token ()
+{
+  int fd = pipe_path.empty () ? rfd : pipefd;
+  char c;
+  unsigned n = read (fd, &c, 1);
+  if (n != 1)
+    {
+      gcc_assert (errno == EAGAIN);
+      return false;
+    }
+  else
+    return true;
+}
+
+void
+jobserver_info::return_token ()
+{
+  int fd = pipe_path.empty () ? wfd : pipefd;
+  char c = 'G';
+  gcc_assert (write (fd, &c, 1) == 1);
+}
