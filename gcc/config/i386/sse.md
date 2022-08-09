@@ -23021,6 +23021,19 @@
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "mode" "TI")])
 
+(define_insn_and_split "*ptest<mode>_and"
+  [(set (reg:CC FLAGS_REG)
+	(unspec:CC [(and:V_AVX (match_operand:V_AVX 0 "register_operand")
+			       (match_operand:V_AVX 1 "vector_operand"))
+		    (and:V_AVX (match_dup 0) (match_dup 1))]
+		   UNSPEC_PTEST))]
+  "TARGET_SSE4_1
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (reg:CC FLAGS_REG)
+	(unspec:CC [(match_dup 0) (match_dup 1)] UNSPEC_PTEST))])
+
 (define_expand "nearbyint<mode>2"
   [(set (match_operand:VFH 0 "register_operand")
 	(unspec:VFH
