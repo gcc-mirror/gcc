@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
    ./ccCJuXGv.lto.ltrans.o
 */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -48,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "simple-object.h"
 #include "lto-section-names.h"
 #include "collect-utils.h"
+#include "opts-jobserver.h"
 
 /* Environment variable, used for passing the names of offload targets from GCC
    driver to lto-wrapper.  */
@@ -1304,37 +1306,6 @@ init_num_threads (void)
 #endif
 }
 
-/* FIXME: once using -std=c++11, we can use std::thread::hardware_concurrency.  */
-
-/* Test and return reason why a jobserver cannot be detected.  */
-
-static const char *
-jobserver_active_p (void)
-{
-  #define JS_PREFIX "jobserver is not available: "
-  #define JS_NEEDLE "--jobserver-auth="
-
-  const char *makeflags = getenv ("MAKEFLAGS");
-  if (makeflags == NULL)
-    return JS_PREFIX "%<MAKEFLAGS%> environment variable is unset";
-
-  const char *n = strstr (makeflags, JS_NEEDLE);
-  if (n == NULL)
-    return JS_PREFIX "%<" JS_NEEDLE "%> is not present in %<MAKEFLAGS%>";
-
-  int rfd = -1;
-  int wfd = -1;
-
-  if (sscanf (n + strlen (JS_NEEDLE), "%d,%d", &rfd, &wfd) == 2
-      && rfd > 0
-      && wfd > 0
-      && is_valid_fd (rfd)
-      && is_valid_fd (wfd))
-    return NULL;
-  else
-    return JS_PREFIX "cannot access %<" JS_NEEDLE "%> file descriptors";
-}
-
 /* Test that a make command is present and working, return true if so.  */
 
 static bool
@@ -1581,14 +1552,14 @@ run_gcc (unsigned argc, char *argv[])
     }
   else
     {
-      const char *jobserver_error = jobserver_active_p ();
-      if (jobserver && jobserver_error != NULL)
+      jobserver_info jinfo;
+      if (jobserver && !jinfo.is_active)
 	{
-	  warning (0, jobserver_error);
+	  warning (0, jinfo.error_msg.c_str ());
 	  parallel = 0;
 	  jobserver = 0;
 	}
-      else if (!jobserver && jobserver_error == NULL)
+      else if (!jobserver && jinfo.is_active)
 	{
 	  parallel = 1;
 	  jobserver = 1;
@@ -1902,6 +1873,15 @@ cont:
       fclose (stream);
       maybe_unlink (ltrans_output_file);
       ltrans_output_file = NULL;
+
+      if (nr > 1)
+	{
+	  jobserver_info jinfo;
+	  if (jobserver && !jinfo.is_active)
+	    warning (0, jinfo.error_msg.c_str ());
+	  else if (parallel == 0)
+	    warning (0, "using serial compilation of %d LTRANS jobs", nr);
+	}
 
       if (parallel)
 	{
