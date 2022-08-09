@@ -14717,6 +14717,13 @@ optimizing.
 Maximum number of statements allowed in a block that needs to be
 duplicated when threading jumps.
 
+@item max-jump-thread-paths
+The maximum number of paths to consider when searching for jump threading
+opportunities.  When arriving at a block incoming edges are only considered
+if the number of paths to be searched sofar multiplied by the incoming
+edge degree does not exhaust the specified maximum number of paths to
+consider.
+
 @item max-fields-for-field-sensitive
 Maximum number of fields in a structure treated in
 a field sensitive manner during pointer analysis.
@@ -15217,9 +15224,6 @@ Emit instrumentation calls to __tsan_func_entry() and __tsan_func_exit().
 @item max-fsm-thread-path-insns
 Maximum number of instructions to copy when duplicating blocks on a
 finite state automaton jump thread path.
-
-@item max-fsm-thread-length
-Maximum number of basic blocks on a jump thread path.
 
 @item threader-debug
 threader-debug=[none|all] Enables verbose dumping of the threader solver.

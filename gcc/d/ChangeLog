@@ -1,3 +1,8 @@
+2022-08-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106555
+	* d-target.cc (Target::isReturnOnStack): Check for return type size.
+
 2022-08-03  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd d7772a2369.

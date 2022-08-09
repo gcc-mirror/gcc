@@ -8056,7 +8056,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 
 	  if (char_array)
 	    {
-	      if (typ2 != char_type_node)
+	      if (typ2 != char_type_node && typ2 != char8_type_node)
 		incompat_string_cst = true;
 	    }
 	  else if (!comptypes (typ1, typ2))

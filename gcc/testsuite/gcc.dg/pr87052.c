@@ -23,8 +23,7 @@ void test (void)
 
   const char d[0] = { };
 
-  /* Expect the following:
-     d = ""; */
+  /* Expect nothing.  */
 
   const char e[0] = "";
 
@@ -36,6 +35,7 @@ void test (void)
 /* { dg-final { scan-tree-dump-times "a = \"\\\\x00ab\";" 1 "gimple" } }
    { dg-final { scan-tree-dump-times "b = \"a\\\\x00bc\";"  1 "gimple" } }
    { dg-final { scan-tree-dump-times "c = \"\";"  1 "gimple" } }
-   { dg-final { scan-tree-dump-times "d = { *};"  1 "gimple" } }
+   { dg-final { scan-tree-dump-times "d = "  1 "gimple" } }
+   { dg-final { scan-tree-dump-times "d = {CLOBBER\\(eol\\)}"  1 "gimple" } }
    { dg-final { scan-tree-dump-times "e = "  1 "gimple" } }
    { dg-final { scan-tree-dump-times "e = {CLOBBER\\(eol\\)}"  1 "gimple" } }  */

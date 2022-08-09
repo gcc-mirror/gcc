@@ -8617,7 +8617,7 @@ expand_omp_atomic_load (basic_block load_bb, tree addr,
   basic_block store_bb;
   location_t loc;
   gimple *stmt;
-  tree decl, call, type, itype;
+  tree decl, type, itype;
 
   gsi = gsi_last_nondebug_bb (load_bb);
   stmt = gsi_stmt (gsi);
@@ -8637,22 +8637,32 @@ expand_omp_atomic_load (basic_block load_bb, tree addr,
   itype = TREE_TYPE (TREE_TYPE (decl));
 
   enum omp_memory_order omo = gimple_omp_atomic_memory_order (stmt);
-  tree mo = build_int_cst (NULL, omp_memory_order_to_memmodel (omo));
-  call = build_call_expr_loc (loc, decl, 2, addr, mo);
+  tree mo = build_int_cst (integer_type_node,
+			   omp_memory_order_to_memmodel (omo));
+  gcall *call = gimple_build_call (decl, 2, addr, mo);
+  gimple_set_location (call, loc);
+  gimple_set_vuse (call, gimple_vuse (stmt));
+  gimple *repl;
   if (!useless_type_conversion_p (type, itype))
-    call = fold_build1_loc (loc, VIEW_CONVERT_EXPR, type, call);
-  call = build2_loc (loc, MODIFY_EXPR, void_type_node, loaded_val, call);
-
-  force_gimple_operand_gsi (&gsi, call, true, NULL_TREE, true, GSI_SAME_STMT);
-  gsi_remove (&gsi, true);
+    {
+      tree lhs = make_ssa_name (itype);
+      gimple_call_set_lhs (call, lhs);
+      gsi_insert_before (&gsi, call, GSI_SAME_STMT);
+      repl = gimple_build_assign (loaded_val,
+				  build1 (VIEW_CONVERT_EXPR, type, lhs));
+      gimple_set_location (repl, loc);
+    }
+  else
+    {
+      gimple_call_set_lhs (call, loaded_val);
+      repl = call;
+    }
+  gsi_replace (&gsi, repl, true);
 
   store_bb = single_succ (load_bb);
   gsi = gsi_last_nondebug_bb (store_bb);
   gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_ATOMIC_STORE);
   gsi_remove (&gsi, true);
-
-  if (gimple_in_ssa_p (cfun))
-    update_ssa (TODO_update_ssa_no_phi);
 
   return true;
 }
@@ -8669,7 +8679,7 @@ expand_omp_atomic_store (basic_block load_bb, tree addr,
   basic_block store_bb = single_succ (load_bb);
   location_t loc;
   gimple *stmt;
-  tree decl, call, type, itype;
+  tree decl, type, itype;
   machine_mode imode;
   bool exchange;
 
@@ -8710,24 +8720,35 @@ expand_omp_atomic_store (basic_block load_bb, tree addr,
   if (!useless_type_conversion_p (itype, type))
     stored_val = fold_build1_loc (loc, VIEW_CONVERT_EXPR, itype, stored_val);
   enum omp_memory_order omo = gimple_omp_atomic_memory_order (stmt);
-  tree mo = build_int_cst (NULL, omp_memory_order_to_memmodel (omo));
-  call = build_call_expr_loc (loc, decl, 3, addr, stored_val, mo);
+  tree mo = build_int_cst (integer_type_node,
+			   omp_memory_order_to_memmodel (omo));
+  stored_val = force_gimple_operand_gsi (&gsi, stored_val, true, NULL_TREE,
+					 true, GSI_SAME_STMT);
+  gcall *call = gimple_build_call (decl, 3, addr, stored_val, mo);
+  gimple_set_location (call, loc);
+  gimple_set_vuse (call, gimple_vuse (stmt));
+  gimple_set_vdef (call, gimple_vdef (stmt));
+
+  gimple *repl = call;
   if (exchange)
     {
       if (!useless_type_conversion_p (type, itype))
-	call = build1_loc (loc, VIEW_CONVERT_EXPR, type, call);
-      call = build2_loc (loc, MODIFY_EXPR, void_type_node, loaded_val, call);
+	{
+	  tree lhs = make_ssa_name (itype);
+	  gimple_call_set_lhs (call, lhs);
+	  gsi_insert_before (&gsi, call, GSI_SAME_STMT);
+	  repl = gimple_build_assign (loaded_val,
+				      build1 (VIEW_CONVERT_EXPR, type, lhs));
+	  gimple_set_location  (repl, loc);
+	}
+      else
+	gimple_call_set_lhs (call, loaded_val);
     }
-
-  force_gimple_operand_gsi (&gsi, call, true, NULL_TREE, true, GSI_SAME_STMT);
-  gsi_remove (&gsi, true);
+  gsi_replace (&gsi, repl, true);
 
   /* Remove the GIMPLE_OMP_ATOMIC_LOAD that we verified above.  */
   gsi = gsi_last_nondebug_bb (load_bb);
   gsi_remove (&gsi, true);
-
-  if (gimple_in_ssa_p (cfun))
-    update_ssa (TODO_update_ssa_no_phi);
 
   return true;
 }
@@ -8874,10 +8895,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   gsi_remove (&gsi, true);
 
   if (gimple_in_ssa_p (cfun))
-    {
-      release_defs (stmt);
-      update_ssa (TODO_update_ssa_no_phi);
-    }
+    release_defs (stmt);
 
   return true;
 }
@@ -9333,15 +9351,15 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
     }
 
   /* Remove GIMPLE_OMP_ATOMIC_STORE.  */
+  stmt = gsi_stmt (si);
   gsi_remove (&si, true);
+  if (gimple_in_ssa_p (cfun))
+    release_defs (stmt);
 
   class loop *loop = alloc_loop ();
   loop->header = loop_header;
   loop->latch = store_bb;
   add_loop (loop, loop_header->loop_father);
-
-  if (gimple_in_ssa_p (cfun))
-    update_ssa (TODO_update_ssa_no_phi);
 
   return true;
 }
@@ -9399,15 +9417,14 @@ expand_omp_atomic_mutex (basic_block load_bb, basic_block store_bb,
   gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_ATOMIC_STORE);
 
   stmt = gimple_build_assign (unshare_expr (mem), stored_val);
+  gimple_set_vuse (stmt, gimple_vuse (gsi_stmt (si)));
+  gimple_set_vdef (stmt, gimple_vdef (gsi_stmt (si)));
   gsi_insert_before (&si, stmt, GSI_SAME_STMT);
 
   t = builtin_decl_explicit (BUILT_IN_GOMP_ATOMIC_END);
   t = build_call_expr (t, 0);
   force_gimple_operand_gsi (&si, t, true, NULL_TREE, true, GSI_SAME_STMT);
   gsi_remove (&si, true);
-
-  if (gimple_in_ssa_p (cfun))
-    update_ssa (TODO_update_ssa_no_phi);
   return true;
 }
 

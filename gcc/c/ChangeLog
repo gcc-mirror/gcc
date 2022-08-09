@@ -1,3 +1,11 @@
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	* c-parser.cc (c_parser_string_literal): Use char8_t as the type
+	of CPP_UTF8STRING when char8_t support is enabled.
+	* c-typeck.cc (digest_init): Allow initialization of an array
+	of character type by a string literal with type array of
+	char8_t.
+
 2022-08-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-typeck.cc (build_c_cast): Quote names of address spaces in

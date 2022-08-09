@@ -581,8 +581,8 @@ struct cpp_options
      ints and target wide characters, respectively.  */
   size_t precision, char_precision, int_precision, wchar_precision;
 
-  /* True means chars (wide chars) are unsigned.  */
-  bool unsigned_char, unsigned_wchar;
+  /* True means chars (wide chars, UTF-8 chars) are unsigned.  */
+  bool unsigned_char, unsigned_wchar, unsigned_utf8char;
 
   /* True if the most significant byte in a word has the lowest
      address in memory.  */

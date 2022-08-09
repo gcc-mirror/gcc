@@ -1699,11 +1699,14 @@ lto_read_tree_1 (class lto_input_block *ib, class data_in *data_in, tree expr)
   /* Read all the pointer fields in EXPR.  */
   streamer_read_tree_body (ib, data_in, expr);
 
-  /* Read any LTO-specific data not read by the tree streamer.  */
+  /* Read any LTO-specific data not read by the tree streamer.  Do not use
+     stream_read_tree here since that flushes the dref_queue in mids of
+     SCC reading.  */
   if (DECL_P (expr)
       && TREE_CODE (expr) != FUNCTION_DECL
       && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
-    DECL_INITIAL (expr) = stream_read_tree (ib, data_in);
+    DECL_INITIAL (expr)
+      = lto_input_tree_1 (ib, data_in, streamer_read_record_start (ib), 0);
 
   /* Stream references to early generated DIEs.  Keep in sync with the
      trees handled in dwarf2out_register_external_die.  */
