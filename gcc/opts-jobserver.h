@@ -37,6 +37,8 @@ struct jobserver_info
   int rfd = -1;
   /* File descriptor for writing used for jobserver communication.  */
   int wfd = -1;
+  /* Named pipe path.  */
+  string pipe_path = "";
   /* Return true if jobserver is active.  */
   bool is_active = false;
 };
