@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
    ./ccCJuXGv.lto.ltrans.o
 */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -48,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "simple-object.h"
 #include "lto-section-names.h"
 #include "collect-utils.h"
+#include "opts-jobserver.h"
 
 /* Environment variable, used for passing the names of offload targets from GCC
    driver to lto-wrapper.  */
@@ -1295,32 +1297,6 @@ init_num_threads (void)
 #endif
 }
 
-/* FIXME: once using -std=c++11, we can use std::thread::hardware_concurrency.  */
-
-/* Return true when a jobserver is running and can accept a job.  */
-
-static bool
-jobserver_active_p (void)
-{
-  const char *makeflags = getenv ("MAKEFLAGS");
-  if (makeflags == NULL)
-    return false;
-
-  const char *needle = "--jobserver-auth=";
-  const char *n = strstr (makeflags, needle);
-  if (n == NULL)
-    return false;
-
-  int rfd = -1;
-  int wfd = -1;
-
-  return (sscanf (n + strlen (needle), "%d,%d", &rfd, &wfd) == 2
-	  && rfd > 0
-	  && wfd > 0
-	  && is_valid_fd (rfd)
-	  && is_valid_fd (wfd));
-}
-
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
 
 static void
@@ -1535,10 +1511,20 @@ run_gcc (unsigned argc, char *argv[])
       auto_parallel = 0;
       parallel = 0;
     }
-  else if (!jobserver && jobserver_active_p ())
+  else
     {
-      parallel = 1;
-      jobserver = 1;
+      jobserver_info jinfo;
+      if (jobserver && !jinfo.is_active)
+	{
+	  warning (0, jinfo.error_msg.c_str ());
+	  parallel = 0;
+	  jobserver = 0;
+	}
+      else if (!jobserver && jinfo.is_active)
+	{
+	  parallel = 1;
+	  jobserver = 1;
+	}
     }
 
   if (linker_output)
@@ -1860,6 +1846,15 @@ cont:
       fclose (stream);
       maybe_unlink (ltrans_output_file);
       ltrans_output_file = NULL;
+
+      if (nr > 1)
+	{
+	  jobserver_info jinfo;
+	  if (jobserver && !jinfo.is_active)
+	    warning (0, jinfo.error_msg.c_str ());
+	  else if (parallel == 0)
+	    warning (0, "using serial compilation of %d LTRANS jobs", nr);
+	}
 
       if (parallel)
 	{
