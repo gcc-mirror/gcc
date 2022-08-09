@@ -1,3 +1,17 @@
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	PR preprocessor/106426
+	* c-opts.cc (c_common_post_options): Assign cpp_opts->unsigned_utf8char
+	subject to -fchar8_t, -fsigned-char, and/or -funsigned-char.
+
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	* c-lex.cc (lex_string, lex_charconst): Use char8_t as the type
+	of CPP_UTF8CHAR and CPP_UTF8STRING when char8_t support is
+	enabled.
+	* c-opts.cc (c_common_post_options): Set flag_char8_t if
+	targeting C2x.
+
 2022-07-31  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR c++/66290

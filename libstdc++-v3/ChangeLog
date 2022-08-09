@@ -1,3 +1,21 @@
+2022-08-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h (__singular_value_init): New _Iterator_state enum entry.
+	(_Parameter<>(const _Safe_iterator<>&, const char*, _Is_iterator)): Check if iterator
+	parameter is value-initialized.
+	(_Parameter<>(const _Safe_local_iterator<>&, const char*, _Is_iterator)): Likewise.
+	* include/debug/safe_iterator.h (_Safe_iterator<>::_M_value_initialized()): New. Adapt
+	checks.
+	* include/debug/safe_local_iterator.h (_Safe_local_iterator<>::_M_value_initialized()): New.
+	Adapt checks.
+	* src/c++11/debug.cc (_Safe_iterator_base::_M_reset): Do not reset _M_version.
+	(print_field(PrintContext&, const _Parameter&, const char*)): Adapt state_names.
+	* testsuite/23_containers/deque/debug/iterator1_neg.cc: New test.
+	* testsuite/23_containers/deque/debug/iterator2_neg.cc: New test.
+	* testsuite/23_containers/forward_list/debug/iterator1_neg.cc: New test.
+	* testsuite/23_containers/forward_list/debug/iterator2_neg.cc: New test.
+	* testsuite/23_containers/forward_list/debug/iterator3_neg.cc: New test.
+
 2022-08-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/scope (__cpp_lib_experimental_scope):

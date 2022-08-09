@@ -1,3 +1,29 @@
+2022-08-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106556
+	* gimple-range-gori.cc (gori_compute::condexpr_adjust): Use the
+	  type of the cond_expr operands being evaluted.
+
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	* ginclude/stdatomic.h (atomic_char8_t,
+	ATOMIC_CHAR8_T_LOCK_FREE): New typedef and macro.
+
+2022-08-08  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/103645
+	* gimplify.cc (gimplify_init_constructor): Don't build/add
+	gimple assignment of an empty type.
+
+2022-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/106540
+	PR lto/106334
+	* dwarf2out.cc (dwarf2out_register_external_die): Restore
+	original assert.
+	* lto-streamer-in.cc (lto_read_tree_1): Use lto_input_tree_1
+	to input DECL_INITIAL, avoiding to commit drefs.
+
 2022-08-07  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386.md (*cmp<dwi>_doubleword): Change predicate
