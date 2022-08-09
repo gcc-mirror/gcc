@@ -30,31 +30,32 @@ namespace Rust {
 namespace Compile {
 
 static tree
-offset_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype);
+offset_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
-sizeof_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype);
+sizeof_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
-transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype);
+transmute_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
-rotate_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype, tree_code op);
+rotate_handler (Context *ctx, TyTy::FnType *fntype, tree_code op);
+
 static inline tree
-rotate_left_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype)
+rotate_left_handler (Context *ctx, TyTy::FnType *fntype)
 {
-  return rotate_intrinsic_handler (ctx, fntype, LROTATE_EXPR);
+  return rotate_handler (ctx, fntype, LROTATE_EXPR);
 }
 static inline tree
-rotate_right_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype)
+rotate_right_handler (Context *ctx, TyTy::FnType *fntype)
 {
-  return rotate_intrinsic_handler (ctx, fntype, RROTATE_EXPR);
+  return rotate_handler (ctx, fntype, RROTATE_EXPR);
 }
 
 static const std::map<std::string,
-		      std::function<tree (Context *, TyTy::BaseType *)>>
-  generic_intrinsics = {{"offset", &offset_intrinsic_handler},
-			{"size_of", &sizeof_intrinsic_handler},
-			{"transmute", &transmute_intrinsic_handler},
-			{"rotate_left", &rotate_left_intrinsic_handler},
-			{"rotate_right", &rotate_right_intrinsic_handler}};
+		      std::function<tree (Context *, TyTy::FnType *)>>
+  generic_intrinsics = {{"offset", &offset_handler},
+			{"size_of", &sizeof_handler},
+			{"transmute", &transmute_handler},
+			{"rotate_left", &rotate_left_handler},
+			{"rotate_right", &rotate_right_handler}};
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
 
@@ -80,62 +81,47 @@ Intrinsics::compile (TyTy::FnType *fntype)
   return error_mark_node;
 }
 
-static tree
-offset_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
+/**
+ * Items can be forward compiled which means we may not need to invoke this
+ * code. We might also have already compiled this generic function as well.
+ */
+static bool
+check_for_cached_intrinsic (Context *ctx, TyTy::FnType *fntype, tree *lookup)
 {
-  rust_assert (fntype_tyty->get_kind () == TyTy::TypeKind::FNDEF);
-  TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
-  const Resolver::CanonicalPath &canonical_path = fntype->get_ident ().path;
-
-  // items can be forward compiled which means we may not need to invoke this
-  // code. We might also have already compiled this generic function as well.
-  tree lookup = NULL_TREE;
-  if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
+  if (ctx->lookup_function_decl (fntype->get_ty_ref (), lookup,
 				 fntype->get_id (), fntype))
     {
-      // has this been added to the list then it must be finished
-      if (ctx->function_completed (lookup))
+      // Has this been added to the list? Then it must be finished
+      if (ctx->function_completed (*lookup))
 	{
 	  tree dummy = NULL_TREE;
 	  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	    {
-	      ctx->insert_function_decl (fntype, lookup);
-	    }
-	  return lookup;
+	    ctx->insert_function_decl (fntype, *lookup);
+	  return true;
 	}
     }
 
+  return false;
+}
+
+/**
+ * Maybe override the Hir Lookups for the substituions in this context
+ */
+static void
+maybe_override_ctx (TyTy::FnType *fntype)
+{
   if (fntype->has_subsititions_defined ())
-    {
-      // override the Hir Lookups for the substituions in this context
-      fntype->override_context ();
-    }
+    fntype->override_context ();
+}
 
-  // offset intrinsic has two params dst pointer and offset isize
-  if (fntype->get_params ().size () != 2)
-    {
-      rust_error_at (fntype->get_ident ().locus,
-		     "invalid number of parameters for offset intrinsic");
-      return error_mark_node;
-    }
-
-  tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
-  std::string ir_symbol_name
-    = canonical_path.get () + fntype->subst_as_string ();
-  std::string asm_name = ctx->mangle_item (fntype, canonical_path);
-
-  unsigned int flags = 0;
-  tree fndecl
-    = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name, asm_name,
-				     flags, fntype->get_ident ().locus);
-  TREE_PUBLIC (fndecl) = 0;
-  TREE_READONLY (fndecl) = 1;
-  DECL_ARTIFICIAL (fndecl) = 1;
-  DECL_EXTERNAL (fndecl) = 0;
-  DECL_DECLARED_INLINE_P (fndecl) = 1;
-
-  // setup the params
-  std::vector<Bvariable *> param_vars;
+/**
+ * Compile and setup a function's parameters
+ */
+static void
+compile_fn_params (Context *ctx, TyTy::FnType *fntype, tree fndecl,
+		   std::vector<Bvariable *> *compiled_param_variables,
+		   std::vector<tree_node *> *compiled_param_types = nullptr)
+{
   for (auto &parm : fntype->get_params ())
     {
       auto &referenced_param = parm.first;
@@ -147,8 +133,71 @@ offset_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
 	= CompileFnParam::compile (ctx, fndecl, referenced_param,
 				   compiled_param_type, param_locus);
 
-      param_vars.push_back (compiled_param_var);
+      compiled_param_variables->push_back (compiled_param_var);
+      if (compiled_param_types)
+	compiled_param_types->push_back (compiled_param_type);
     }
+}
+
+static tree
+compile_intrinsic_function (Context *ctx, TyTy::FnType *fntype)
+{
+  maybe_override_ctx (fntype);
+
+  const Resolver::CanonicalPath &canonical_path = fntype->get_ident ().path;
+
+  tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+  std::string ir_symbol_name
+    = canonical_path.get () + fntype->subst_as_string ();
+  std::string asm_name = ctx->mangle_item (fntype, canonical_path);
+
+  unsigned int flags = 0;
+  tree fndecl
+    = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name, asm_name,
+				     flags, fntype->get_ident ().locus);
+
+  TREE_PUBLIC (fndecl) = 0;
+  TREE_READONLY (fndecl) = 1;
+  DECL_ARTIFICIAL (fndecl) = 1;
+  DECL_EXTERNAL (fndecl) = 0;
+  DECL_DECLARED_INLINE_P (fndecl) = 1;
+
+  return fndecl;
+}
+
+static void
+enter_intrinsic_block (Context *ctx, tree fndecl)
+{
+  tree enclosing_scope = NULL_TREE;
+  Location start_location = Location ();
+  Location end_location = Location ();
+
+  auto block = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
+					   start_location, end_location);
+
+  ctx->push_block (block);
+}
+
+static void
+finalize_intrinsic_block (Context *ctx, tree fndecl)
+{
+  tree bind_tree = ctx->pop_block ();
+
+  gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
+  DECL_SAVED_TREE (fndecl) = bind_tree;
+  ctx->push_function (fndecl);
+}
+
+static tree
+offset_handler (Context *ctx, TyTy::FnType *fntype)
+{
+  // offset intrinsic has two params dst pointer and offset isize
+  rust_assert (fntype->get_params ().size () == 2);
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  std::vector<Bvariable *> param_vars;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
 
   auto &dst_param = param_vars.at (0);
   auto &size_param = param_vars.at (1);
@@ -156,13 +205,7 @@ offset_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
   if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
     return error_mark_node;
 
-  tree enclosing_scope = NULL_TREE;
-  Location start_location = Location ();
-  Location end_location = Location ();
-
-  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
-						start_location, end_location);
-  ctx->push_block (code_block);
+  enter_intrinsic_block (ctx, fndecl);
 
   // BUILTIN offset FN BODY BEGIN
   tree dst = ctx->get_backend ()->var_expression (dst_param, Location ());
@@ -175,53 +218,22 @@ offset_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
   ctx->add_statement (return_statement);
   // BUILTIN offset FN BODY END
 
-  tree bind_tree = ctx->pop_block ();
-
-  gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
-  DECL_SAVED_TREE (fndecl) = bind_tree;
-  ctx->push_function (fndecl);
+  finalize_intrinsic_block (ctx, fndecl);
 
   return fndecl;
 }
 
 static tree
-sizeof_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
+sizeof_handler (Context *ctx, TyTy::FnType *fntype)
 {
-  rust_assert (fntype_tyty->get_kind () == TyTy::TypeKind::FNDEF);
-  TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
-  const Resolver::CanonicalPath &canonical_path = fntype->get_ident ().path;
-
-  // items can be forward compiled which means we may not need to invoke this
-  // code. We might also have already compiled this generic function as well.
-  tree lookup = NULL_TREE;
-  if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
-				 fntype->get_id (), fntype))
-    {
-      // has this been added to the list then it must be finished
-      if (ctx->function_completed (lookup))
-	{
-	  tree dummy = NULL_TREE;
-	  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	    {
-	      ctx->insert_function_decl (fntype, lookup);
-	    }
-	  return lookup;
-	}
-    }
-
-  if (fntype->has_subsititions_defined ())
-    {
-      // override the Hir Lookups for the substituions in this context
-      fntype->override_context ();
-    }
-
   // size_of has _zero_ parameters its parameter is the generic one
-  if (fntype->get_params ().size () != 0)
-    {
-      rust_error_at (fntype->get_ident ().locus,
-		     "invalid number of parameters for size of intrinsic");
-      return error_mark_node;
-    }
+  rust_assert (fntype->get_params ().size () == 0);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
 
   // get the template parameter type tree fn size_of<T>();
   rust_assert (fntype->get_num_substitutions () == 1);
@@ -231,29 +243,7 @@ sizeof_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
   tree template_parameter_type
     = TyTyResolveCompile::compile (ctx, resolved_tyty);
 
-  // build the intrinsic function
-  tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
-  std::string ir_symbol_name
-    = canonical_path.get () + fntype->subst_as_string ();
-  std::string asm_name = ctx->mangle_item (fntype, canonical_path);
-
-  unsigned int flags = 0;
-  tree fndecl
-    = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name, asm_name,
-				     flags, fntype->get_ident ().locus);
-  TREE_PUBLIC (fndecl) = 0;
-  TREE_READONLY (fndecl) = 1;
-  DECL_ARTIFICIAL (fndecl) = 1;
-  DECL_EXTERNAL (fndecl) = 0;
-  DECL_DECLARED_INLINE_P (fndecl) = 1;
-
-  tree enclosing_scope = NULL_TREE;
-  Location start_location = Location ();
-  Location end_location = Location ();
-
-  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
-						start_location, end_location);
-  ctx->push_block (code_block);
+  enter_intrinsic_block (ctx, fndecl);
 
   // BUILTIN size_of FN BODY BEGIN
   tree size_expr = TYPE_SIZE_UNIT (template_parameter_type);
@@ -262,89 +252,27 @@ sizeof_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
   ctx->add_statement (return_statement);
   // BUILTIN size_of FN BODY END
 
-  tree bind_tree = ctx->pop_block ();
-
-  gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
-  DECL_SAVED_TREE (fndecl) = bind_tree;
-  ctx->push_function (fndecl);
+  finalize_intrinsic_block (ctx, fndecl);
 
   return fndecl;
 }
 
 static tree
-transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
+transmute_handler (Context *ctx, TyTy::FnType *fntype)
 {
-  rust_assert (fntype_tyty->get_kind () == TyTy::TypeKind::FNDEF);
-  TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
-  const Resolver::CanonicalPath &canonical_path = fntype->get_ident ().path;
-
-  // items can be forward compiled which means we may not need to invoke this
-  // code. We might also have already compiled this generic function as well.
-  tree lookup = NULL_TREE;
-  if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
-				 fntype->get_id (), fntype))
-    {
-      // has this been added to the list then it must be finished
-      if (ctx->function_completed (lookup))
-	{
-	  tree dummy = NULL_TREE;
-	  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	    {
-	      ctx->insert_function_decl (fntype, lookup);
-	    }
-	  return lookup;
-	}
-    }
-
-  if (fntype->has_subsititions_defined ())
-    {
-      // override the Hir Lookups for the substituions in this context
-      fntype->override_context ();
-    }
-
   // transmute intrinsic has one parameter
-  if (fntype->get_params ().size () != 1)
-    {
-      rust_error_at (fntype->get_ident ().locus,
-		     "invalid number of parameters for transmute intrinsic");
-      return error_mark_node;
-    }
+  rust_assert (fntype->get_params ().size () == 1);
 
-  // build the intrinsic function
-  tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
-  std::string ir_symbol_name
-    = canonical_path.get () + fntype->subst_as_string ();
-  std::string asm_name = ctx->mangle_item (fntype, canonical_path);
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
 
-  unsigned int flags = 0;
-  tree fndecl
-    = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name, asm_name,
-				     flags, fntype->get_ident ().locus);
-  TREE_PUBLIC (fndecl) = 0;
-  TREE_READONLY (fndecl) = 1;
-  DECL_ARTIFICIAL (fndecl) = 1;
-  DECL_EXTERNAL (fndecl) = 0;
-  DECL_DECLARED_INLINE_P (fndecl) = 1;
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
 
-  // setup the params
   std::vector<Bvariable *> param_vars;
   std::vector<tree_node *> compiled_types;
-  for (auto &parm : fntype->get_params ())
-    {
-      auto &referenced_param = parm.first;
-      auto &param_tyty = parm.second;
-      auto compiled_param_type = TyTyResolveCompile::compile (ctx, param_tyty);
+  compile_fn_params (ctx, fntype, fndecl, &param_vars, &compiled_types);
 
-      Location param_locus = referenced_param->get_locus ();
-      Bvariable *compiled_param_var
-	= CompileFnParam::compile (ctx, fndecl, referenced_param,
-				   compiled_param_type, param_locus);
-
-      param_vars.push_back (compiled_param_var);
-      compiled_types.push_back (compiled_param_type);
-    }
-
-  rust_assert (param_vars.size () == 1);
   if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
     return error_mark_node;
 
@@ -381,13 +309,7 @@ transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
 		   (unsigned long) target_size);
     }
 
-  tree enclosing_scope = NULL_TREE;
-  Location start_location = Location ();
-  Location end_location = Location ();
-
-  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
-						start_location, end_location);
-  ctx->push_block (code_block);
+  enter_intrinsic_block (ctx, fndecl);
 
   // BUILTIN transmute FN BODY BEGIN
   tree result_type_tree = TREE_TYPE (DECL_RESULT (fndecl));
@@ -424,86 +346,26 @@ transmute_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty)
   ctx->add_statement (return_statement);
   // BUILTIN transmute FN BODY END
 
-  tree bind_tree = ctx->pop_block ();
-
-  gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
-  DECL_SAVED_TREE (fndecl) = bind_tree;
-  ctx->push_function (fndecl);
+  finalize_intrinsic_block (ctx, fndecl);
 
   return fndecl;
 }
 
 static tree
-rotate_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty,
-			  tree_code op)
+rotate_handler (Context *ctx, TyTy::FnType *fntype, tree_code op)
 {
-  rust_assert (fntype_tyty->get_kind () == TyTy::TypeKind::FNDEF);
-  TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
-  const Resolver::CanonicalPath &canonical_path = fntype->get_ident ().path;
-
-  // items can be forward compiled which means we may not need to invoke this
-  // code. We might also have already compiled this generic function as well.
-  tree lookup = NULL_TREE;
-  if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
-				 fntype->get_id (), fntype))
-    {
-      // has this been added to the list then it must be finished
-      if (ctx->function_completed (lookup))
-	{
-	  tree dummy = NULL_TREE;
-	  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	    {
-	      ctx->insert_function_decl (fntype, lookup);
-	    }
-	  return lookup;
-	}
-    }
-
-  if (fntype->has_subsititions_defined ())
-    {
-      // override the Hir Lookups for the substitutions in this context
-      fntype->override_context ();
-    }
-
   // rotate intrinsic has two parameter
-  if (fntype->get_params ().size () != 2)
-    {
-      rust_error_at (fntype->get_ident ().locus,
-		     "invalid number of parameters for rotate intrinsic");
-      return error_mark_node;
-    }
+  rust_assert (fntype->get_params ().size () == 2);
 
-  // build the intrinsic function
-  tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
-  std::string ir_symbol_name
-    = canonical_path.get () + fntype->subst_as_string ();
-  std::string asm_name = ctx->mangle_item (fntype, canonical_path);
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
 
-  unsigned int flags = 0;
-  tree fndecl
-    = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name, asm_name,
-				     flags, fntype->get_ident ().locus);
-  TREE_PUBLIC (fndecl) = 0;
-  TREE_READONLY (fndecl) = 1;
-  DECL_ARTIFICIAL (fndecl) = 1;
-  DECL_EXTERNAL (fndecl) = 0;
-  DECL_DECLARED_INLINE_P (fndecl) = 1;
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
 
   // setup the params
   std::vector<Bvariable *> param_vars;
-  for (auto &parm : fntype->get_params ())
-    {
-      auto &referenced_param = parm.first;
-      auto &param_tyty = parm.second;
-      auto compiled_param_type = TyTyResolveCompile::compile (ctx, param_tyty);
-
-      Location param_locus = referenced_param->get_locus ();
-      Bvariable *compiled_param_var
-	= CompileFnParam::compile (ctx, fndecl, referenced_param,
-				   compiled_param_type, param_locus);
-
-      param_vars.push_back (compiled_param_var);
-    }
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
 
   auto &x_param = param_vars.at (0);
   auto &y_param = param_vars.at (1);
@@ -511,13 +373,7 @@ rotate_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty,
   if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
     return error_mark_node;
 
-  tree enclosing_scope = NULL_TREE;
-  Location start_location = Location ();
-  Location end_location = Location ();
-
-  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
-						start_location, end_location);
-  ctx->push_block (code_block);
+  enter_intrinsic_block (ctx, fndecl);
 
   // BUILTIN rotate FN BODY BEGIN
   tree x = ctx->get_backend ()->var_expression (x_param, Location ());
@@ -530,11 +386,7 @@ rotate_intrinsic_handler (Context *ctx, TyTy::BaseType *fntype_tyty,
   ctx->add_statement (return_statement);
   // BUILTIN rotate FN BODY END
 
-  tree bind_tree = ctx->pop_block ();
-
-  gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
-  DECL_SAVED_TREE (fndecl) = bind_tree;
-  ctx->push_function (fndecl);
+  finalize_intrinsic_block (ctx, fndecl);
 
   return fndecl;
 }
