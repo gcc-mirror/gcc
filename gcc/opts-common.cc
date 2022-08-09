@@ -2010,8 +2010,14 @@ void prepend_xassembler_to_collect_as_options (const char *collect_as_options,
 
 jobserver_info::jobserver_info ()
 {
+  /* Traditionally, GNU make uses opened pipes for jobserver-auth,
+    e.g. --jobserver-auth=3,4.
+    Starting with GNU make 4.4, one can use --jobserver-style=fifo
+    and then named pipe is used: --jobserver-auth=fifo:/tmp/hcsparta.  */
+
   /* Detect jobserver and drop it if it's not working.  */
   string js_needle = "--jobserver-auth=";
+  string fifo_prefix = "fifo:";
 
   const char *envval = getenv ("MAKEFLAGS");
   if (envval != NULL)
@@ -2020,8 +2026,15 @@ jobserver_info::jobserver_info ()
       size_t n = makeflags.rfind (js_needle);
       if (n != string::npos)
 	{
-	  if (sscanf (makeflags.c_str () + n + js_needle.size (),
-		      "%d,%d", &rfd, &wfd) == 2
+	  string ending = makeflags.substr (n + js_needle.size ());
+	  if (ending.find (fifo_prefix) == 0)
+	    {
+	      ending = ending.substr (fifo_prefix.size ());
+	      pipe_path = ending.substr (0, ending.find (' '));
+	      is_active = true;
+	    }
+	  else if (sscanf (makeflags.c_str () + n + js_needle.size (),
+			   "%d,%d", &rfd, &wfd) == 2
 	      && rfd > 0
 	      && wfd > 0
 	      && is_valid_fd (rfd)
