@@ -67,7 +67,7 @@ jobs:
     - name: Run Tests
       run: |
            cd gccrs-build; \
-           make check-rust
+           make check-rust RUNTESTFLAGS="--target_board=unix\{-m32,-m64}"
     - name: Archive check-rust results
       uses: actions/upload-artifact@v2
       with:
