@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
-   Return an IEEE half converted to IEEE single
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Convert a 32bit signed integer to IEEE half
+   Copyright (C) 2022 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -26,24 +26,20 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#define FP_NO_EXACT_UNDERFLOW
 #include "soft-fp.h"
 #include "half.h"
-#include "single.h"
 
-SFtype
-__extendhfsf2 (HFtype a)
+HFtype
+__floatsihf (SItype i)
 {
   FP_DECL_EX;
   FP_DECL_H (A);
-  FP_DECL_S (R);
-  SFtype r;
+  HFtype a;
 
-  FP_INIT_EXCEPTIONS;
-  FP_UNPACK_RAW_H (A, a);
-  FP_EXTEND (S, H, 1, 1, R, A);
-  FP_PACK_RAW_S (r, R);
+  FP_INIT_ROUNDMODE;
+  FP_FROM_INT_H (A, i, SI_BITS, USItype);
+  FP_PACK_RAW_H (a, A);
   FP_HANDLE_EXCEPTIONS;
 
-  return r;
+  return a;
 }
