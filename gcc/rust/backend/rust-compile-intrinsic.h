@@ -18,6 +18,7 @@
 #define RUST_COMPILE_INTRINSIC
 
 #include "rust-compile-context.h"
+#include "langhooks.h"
 
 namespace Rust {
 namespace Compile {
