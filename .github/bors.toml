@@ -1,5 +1,5 @@
 status = [
-  "build-and-check"
+  "build-and-check-ubuntu-64bit"
 ]
 # Uncomment this to use a two hour timeout.
 # The default is one hour.

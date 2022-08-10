@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: GCC Rust build and test
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build-and-check:
+  build-and-check-ubuntu-64bit:
 
     env:
       # Force locale, in particular for reproducible results re '.github/bors_log_expected_warnings' (see below).
@@ -67,7 +67,84 @@ jobs:
     - name: Run Tests
       run: |
            cd gccrs-build; \
-           make check-rust
+           make check-rust RUNTESTFLAGS="--target_board=unix\{-m64}"
+    - name: Archive check-rust results
+      uses: actions/upload-artifact@v2
+      with:
+        name: check-rust-logs
+        path: |
+          gccrs-build/gcc/testsuite/rust/
+    - name: Check regressions
+      run: |
+           cd gccrs-build; \
+           if grep -e "unexpected" -e "unresolved" -e "ERROR:" gcc/testsuite/rust/rust.sum;\
+           then \
+              echo "::error title=Regression test failed::some tests are not correct"; \
+              perl -n ../.github/emit_test_errors.pl < gcc/testsuite/rust/rust.sum; \
+              exit 1; \
+            else \
+              exit 0; \
+            fi
+
+  build-and-check-ubuntu-32bit:
+
+    env:
+      # Force locale, in particular for reproducible results re '.github/bors_log_expected_warnings' (see below).
+      LC_ALL: C.UTF-8
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Deps
+      run: |
+          sudo apt-get update;
+          sudo apt-get install -y \
+                  automake \
+                  autoconf \
+                  libtool \
+                  autogen \
+                  bison \
+                  flex \
+                  libgmp3-dev \
+                  libmpfr-dev \
+                  libmpc-dev \
+                  build-essential \
+                  gcc-multilib \
+                  g++-multilib \
+                  dejagnu
+
+    - name: Configure
+      run: |
+           mkdir -p gccrs-build;
+           cd gccrs-build;
+           ../configure \
+               --enable-languages=rust \
+               --disable-bootstrap \
+               --enable-multilib
+
+    - name: Build
+      shell: bash
+      run: |
+           cd gccrs-build; \
+           make -Otarget -j $(nproc) 2>&1 | tee log
+
+    - name: Check for new warnings
+      run: |
+           cd gccrs-build
+           < log grep 'warning: ' | sort > log_warnings
+           if diff -U0 ../.github/bors_log_expected_warnings log_warnings; then
+               :
+           else
+               echo 'See <https://github.com/Rust-GCC/gccrs/pull/1026>.'
+               exit 1
+           fi >&2
+
+    - name: Run Tests
+      run: |
+           cd gccrs-build; \
+           make check-rust RUNTESTFLAGS="--target_board=unix\{-m32}"
     - name: Archive check-rust results
       uses: actions/upload-artifact@v2
       with:
@@ -131,7 +208,7 @@ jobs:
     - name: Run Tests
       run: |
            cd gccrs-build; \
-           make check-rust
+           make check-rust RUNTESTFLAGS="--target_board=unix\{-m32,-m64}"
 
     - name: Archive check-rust results
       uses: actions/upload-artifact@v2
