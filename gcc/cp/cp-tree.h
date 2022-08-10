@@ -187,9 +187,6 @@ enum cp_tree_index
     CPTI_NOEXCEPT_FALSE_SPEC,
     CPTI_NOEXCEPT_DEFERRED_SPEC,
 
-    CPTI_NULLPTR,
-    CPTI_NULLPTR_TYPE,
-
     CPTI_ANY_TARG,
 
     CPTI_MODULE_HWM,
@@ -254,8 +251,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define conv_op_marker			cp_global_trees[CPTI_CONV_OP_MARKER]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
-#define nullptr_node			cp_global_trees[CPTI_NULLPTR]
-#define nullptr_type_node		cp_global_trees[CPTI_NULLPTR_TYPE]
 /* std::align_val_t */
 #define align_type_node			cp_global_trees[CPTI_ALIGN_TYPE]
 
@@ -4404,9 +4399,6 @@ get_vec_init_expr (tree t)
   (CP_INTEGRAL_TYPE_P (TYPE) \
    || TREE_CODE (TYPE) == REAL_TYPE \
    || TREE_CODE (TYPE) == COMPLEX_TYPE)
-
-/* True iff TYPE is cv decltype(nullptr).  */
-#define NULLPTR_TYPE_P(TYPE) (TREE_CODE (TYPE) == NULLPTR_TYPE)
 
 /* [basic.types]
 

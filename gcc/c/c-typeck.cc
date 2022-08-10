@@ -133,6 +133,13 @@ null_pointer_constant_p (const_tree expr)
   /* This should really operate on c_expr structures, but they aren't
      yet available everywhere required.  */
   tree type = TREE_TYPE (expr);
+
+  /* An integer constant expression with the value 0, such an expression
+     cast to type void*, or the predefined constant nullptr, are a null
+     pointer constant.  */
+  if (expr == nullptr_node)
+    return true;
+
   return (TREE_CODE (expr) == INTEGER_CST
 	  && !TREE_OVERFLOW (expr)
 	  && integer_zerop (expr)
@@ -4575,7 +4582,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
     case TRUTH_NOT_EXPR:
       if (typecode != INTEGER_TYPE && typecode != FIXED_POINT_TYPE
 	  && typecode != REAL_TYPE && typecode != POINTER_TYPE
-	  && typecode != COMPLEX_TYPE)
+	  && typecode != COMPLEX_TYPE && typecode != NULLPTR_TYPE)
 	{
 	  error_at (location,
 		    "wrong type argument to unary exclamation mark");
@@ -5515,6 +5522,13 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	}
       result_type = type2;
     }
+  /* 6.5.15: "if one is a null pointer constant (other than a pointer) or has
+     type nullptr_t and the other is a pointer, the result type is the pointer
+     type."  */
+  else if (code1 == NULLPTR_TYPE && code2 == POINTER_TYPE)
+    result_type = type2;
+  else if (code1 == POINTER_TYPE && code2 == NULLPTR_TYPE)
+    result_type = type1;
 
   if (!result_type)
     {
@@ -7613,12 +7627,13 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	error_at (location, msg);
       return error_mark_node;
     }
-  else if (codel == POINTER_TYPE && coder == INTEGER_TYPE)
+  else if (codel == POINTER_TYPE
+	   && (coder == INTEGER_TYPE || coder == NULLPTR_TYPE))
     {
-      /* An explicit constant 0 can convert to a pointer,
-	 or one that results from arithmetic, even including
-	 a cast to integer type.  */
-      if (!null_pointer_constant)
+      /* An explicit constant 0 or type nullptr_t can convert to a pointer,
+	 or one that results from arithmetic, even including a cast to
+	 integer type.  */
+      if (!null_pointer_constant && coder != NULLPTR_TYPE)
 	switch (errtype)
 	  {
 	  case ic_argpass:
@@ -7691,7 +7706,10 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 
       return convert (type, rhs);
     }
-  else if (codel == BOOLEAN_TYPE && coder == POINTER_TYPE)
+  else if (codel == BOOLEAN_TYPE
+	   /* The type nullptr_t may be converted to bool.  The
+	      result is false.  */
+	   && (coder == POINTER_TYPE || coder == NULLPTR_TYPE))
     {
       tree ret;
       bool save = in_late_binary_op;
@@ -12112,10 +12130,10 @@ build_binary_op (location_t location, enum tree_code code,
     case TRUTH_XOR_EXPR:
       if ((code0 == INTEGER_TYPE || code0 == POINTER_TYPE
 	   || code0 == REAL_TYPE || code0 == COMPLEX_TYPE
-	   || code0 == FIXED_POINT_TYPE)
+	   || code0 == FIXED_POINT_TYPE || code0 == NULLPTR_TYPE)
 	  && (code1 == INTEGER_TYPE || code1 == POINTER_TYPE
 	      || code1 == REAL_TYPE || code1 == COMPLEX_TYPE
-	      || code1 == FIXED_POINT_TYPE))
+	      || code1 == FIXED_POINT_TYPE || code1 ==  NULLPTR_TYPE))
 	{
 	  /* Result of these operations is always an int,
 	     but that does not mean the operands should be
@@ -12423,6 +12441,27 @@ build_binary_op (location_t location, enum tree_code code,
 	  result_type = type1;
 	  pedwarn (location, 0, "comparison between pointer and integer");
 	}
+      /* 6.5.9: One of the following shall hold:
+	 -- both operands have type nullptr_t;  */
+      else if (code0 == NULLPTR_TYPE && code1 == NULLPTR_TYPE)
+	{
+	  result_type = nullptr_type_node;
+	  /* No need to convert the operands to result_type later.  */
+	  converted = 1;
+	}
+    /* -- one operand has type nullptr_t and the other is a null pointer
+       constant.  We will have to convert the former to the type of the
+       latter, because during gimplification we can't have mismatching
+       comparison operand type.  We convert from nullptr_t to the other
+       type, since only nullptr_t can be converted to nullptr_t.  Also,
+       even a constant 0 is a null pointer constant, so we may have to
+       create a pointer type from its type.  */
+      else if (code0 == NULLPTR_TYPE && null_pointer_constant_p (orig_op1))
+	result_type = (INTEGRAL_TYPE_P (type1)
+		       ? build_pointer_type (type1) : type1);
+      else if (code1 == NULLPTR_TYPE && null_pointer_constant_p (orig_op0))
+	result_type = (INTEGRAL_TYPE_P (type0)
+		       ? build_pointer_type (type0) : type0);
       if ((TREE_CODE (TREE_TYPE (orig_op0)) == BOOLEAN_TYPE
 	   || truth_value_p (TREE_CODE (orig_op0)))
 	  ^ (TREE_CODE (TREE_TYPE (orig_op1)) == BOOLEAN_TYPE

@@ -321,6 +321,7 @@ pp_c_pointer (c_pretty_printer *pp, tree t)
       _Bool                          -- C99
       _Complex                       -- C99
       _Imaginary                     -- C99
+      nullptr_t                      -- C23
       struct-or-union-specifier
       enum-specifier
       typedef-name.
@@ -423,6 +424,9 @@ c_pretty_printer::simple_type_specifier (tree t)
 	id_expression (TYPE_NAME (t));
       else
 	translate_string ("<anonymous>");
+      break;
+    case NULLPTR_TYPE:
+      pp_c_ws_string (this, "nullptr_t");
       break;
 
     default:
@@ -678,6 +682,7 @@ c_pretty_printer::direct_abstract_declarator (tree t)
     case COMPLEX_TYPE:
     case TYPE_DECL:
     case ERROR_MARK:
+    case NULLPTR_TYPE:
       break;
 
     default:
@@ -1219,6 +1224,8 @@ c_pretty_printer::constant (tree e)
 	  pp_c_character_constant (this, e);
 	else if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  pp_c_enumeration_constant (this, e);
+	else if (NULLPTR_TYPE_P (type))
+	  pp_string (this, "nullptr");
 	else
 	  pp_c_integer_constant (this, e);
       }

@@ -4531,6 +4531,12 @@ c_init_decl_processing (void)
   pushdecl (build_decl (UNKNOWN_LOCATION, TYPE_DECL, get_identifier ("_Bool"),
 			boolean_type_node));
 
+  /* C-specific nullptr initialization.  */
+  record_builtin_type (RID_MAX, "nullptr_t", nullptr_type_node);
+  /* The size and alignment of nullptr_t is the same as for a pointer to
+     character type.  */
+  SET_TYPE_ALIGN (nullptr_type_node, GET_MODE_ALIGNMENT (ptr_mode));
+
   input_location = save_loc;
 
   make_fname_decl = c_make_fname_decl;
