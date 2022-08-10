@@ -5094,7 +5094,8 @@ package body Checks is
         --  Don't deal with enumerated types with non-standard representation
 
         or else (Is_Enumeration_Type (Typ)
-                   and then Present (Enum_Pos_To_Rep (Base_Type (Typ))))
+                   and then Present (Enum_Pos_To_Rep
+                                       (Implementation_Base_Type (Typ))))
 
         --  Ignore type for which an error has been posted, since range in
         --  this case may well be a bogosity deriving from the error. Also

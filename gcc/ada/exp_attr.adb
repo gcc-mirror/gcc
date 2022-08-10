@@ -7103,7 +7103,10 @@ package body Exp_Attr is
       --  See separate sections below for the generated code in each case.
 
       when Attribute_Valid => Valid : declare
-         PBtyp : Entity_Id := Base_Type (Validated_View (Ptyp));
+         PBtyp : Entity_Id := Implementation_Base_Type (Validated_View (Ptyp));
+         pragma Assert (Is_Scalar_Type (PBtyp)
+                          or else Serious_Errors_Detected > 0);
+
          --  The scalar base type, looking through private types
 
          Save_Validity_Checks_On : constant Boolean := Validity_Checks_On;
