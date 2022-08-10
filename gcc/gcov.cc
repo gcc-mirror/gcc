@@ -2694,6 +2694,13 @@ add_line_counts (coverage_info *coverage, function_info *fn)
 		{
 		  gcc_assert (lines[j] - fn->start_line < fn->lines.size ());
 		  line = &(fn->lines[lines[j] - fn->start_line]);
+		  if (coverage)
+		    {
+		      if (!line->exists)
+			coverage->lines++;
+		      if (!line->count && block->count)
+			coverage->lines_executed++;
+		    }
 		  line->exists = 1;
 		  if (!block->exceptional)
 		    {
@@ -2815,7 +2822,7 @@ accumulate_line_counts (source_info *src)
 	   it2 != fn->lines.end (); it2++)
 	  {
 	    line_info *line = &(*it2);
-	    accumulate_line_info (line, src, false);
+	    accumulate_line_info (line, src, true);
 	  }
     }
 
