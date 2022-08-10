@@ -22311,8 +22311,18 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
 
   REG_NOTES (par) = dwarf;
   if (!return_in_pc)
-    arm_add_cfa_adjust_cfa_note (par, UNITS_PER_WORD * num_regs,
-				 stack_pointer_rtx, stack_pointer_rtx);
+    {
+      /* If the frame pointer was set define again the stack pointer
+         as CFA reg.  */
+      if (frame_pointer_needed)
+        {
+          RTX_FRAME_RELATED_P (par) = 1;
+          add_reg_note (par, REG_CFA_DEF_CFA, stack_pointer_rtx);
+        }
+      else
+        arm_add_cfa_adjust_cfa_note (par, UNITS_PER_WORD * num_regs,
+                                     stack_pointer_rtx, stack_pointer_rtx);
+    }
 }
 
 /* Generate and emit an insn pattern that we will recognize as a pop_multi
