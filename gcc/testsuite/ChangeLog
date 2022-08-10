@@ -1,3 +1,15 @@
+2022-08-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-08-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106563
+	* gdc.dg/torture/torture.exp (srcdir): New proc.
+	* gdc.dg/torture/imports/pr106563math.d: New test.
+	* gdc.dg/torture/imports/pr106563regex.d: New test.
+	* gdc.dg/torture/imports/pr106563uni.d: New test.
+	* gdc.dg/torture/pr106563.d: New test.
+
 2022-08-08  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
