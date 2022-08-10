@@ -549,7 +549,7 @@ path_range_query::add_to_imports (tree name, bitmap imports)
   return false;
 }
 
-// Compute the imports to the path ending in EXIT.  These are
+// Compute the imports to PATH.  These are
 // essentially the SSA names used to calculate the final conditional
 // along the path.
 //
@@ -559,9 +559,10 @@ path_range_query::add_to_imports (tree name, bitmap imports)
 // we can solve.
 
 void
-path_range_query::compute_imports (bitmap imports, basic_block exit)
+path_range_query::compute_imports (bitmap imports, const vec<basic_block> &path)
 {
   // Start with the imports from the exit block...
+  basic_block exit = path[0];
   gori_compute &gori = m_ranger->gori ();
   bitmap r_imports = gori.imports (exit);
   bitmap_copy (imports, r_imports);
@@ -599,7 +600,7 @@ path_range_query::compute_imports (bitmap imports, basic_block exit)
 	      tree arg = gimple_phi_arg (phi, i)->def;
 
 	      if (TREE_CODE (arg) == SSA_NAME
-		  && m_path.contains (e->src)
+		  && path.contains (e->src)
 		  && bitmap_set_bit (imports, SSA_NAME_VERSION (arg)))
 		worklist.safe_push (arg);
 	    }
@@ -607,9 +608,9 @@ path_range_query::compute_imports (bitmap imports, basic_block exit)
     }
   // Exported booleans along the path, may help conditionals.
   if (m_resolve)
-    for (i = 0; i < m_path.length (); ++i)
+    for (i = 0; i < path.length (); ++i)
       {
-	basic_block bb = m_path[i];
+	basic_block bb = path[i];
 	tree name;
 	FOR_EACH_GORI_EXPORT_NAME (gori, bb, name)
 	  if (TREE_CODE (TREE_TYPE (name)) == BOOLEAN_TYPE)
@@ -636,7 +637,7 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
   if (imports)
     bitmap_copy (m_imports, imports);
   else
-    compute_imports (m_imports, exit_bb ());
+    compute_imports (m_imports, m_path);
 
   if (m_resolve)
     get_path_oracle ()->reset_path ();
@@ -845,15 +846,9 @@ path_range_query::compute_phi_relations (basic_block bb, basic_block prev)
 void
 path_range_query::compute_outgoing_relations (basic_block bb, basic_block next)
 {
-  gimple *stmt = last_stmt (bb);
-
-  if (stmt
-      && gimple_code (stmt) == GIMPLE_COND
-      && (import_p (gimple_cond_lhs (stmt))
-	  || import_p (gimple_cond_rhs (stmt))))
+  if (gcond *cond = safe_dyn_cast <gcond *> (last_stmt (bb)))
     {
       int_range<2> r;
-      gcond *cond = as_a<gcond *> (stmt);
       edge e0 = EDGE_SUCC (bb, 0);
       edge e1 = EDGE_SUCC (bb, 1);
 

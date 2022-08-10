@@ -451,7 +451,9 @@ back_threader::find_paths (basic_block bb, tree name)
       m_visited_bbs.empty ();
       m_path.truncate (0);
       m_name = name;
-      m_solver->compute_imports (m_imports, bb);
+      m_path.safe_push (bb);
+      m_solver->compute_imports (m_imports, m_path);
+      m_path.pop ();
 
       auto_bitmap interesting;
       bitmap_copy (interesting, m_imports);
