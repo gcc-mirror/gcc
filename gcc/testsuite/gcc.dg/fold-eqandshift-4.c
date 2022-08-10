@@ -1,14 +1,14 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
-int sr30eq00(char x) { return ((x >> 4) & 0x30) == 0; }
-int sr30ne00(char x) { return ((x >> 4) & 0x30) != 0; }
-int sr30eq20(char z) { return ((z >> 4) & 0x30) == 0x20; }
-int sr30ne20(char z) { return ((z >> 4) & 0x30) != 0x20; }
-int sr30eq30(char x) { return ((x >> 4) & 0x30) == 0x30; }
-int sr30ne30(char x) { return ((x >> 4) & 0x30) != 0x30; }
-int sr33eq33(char x) { return ((x >> 4) & 0x33) == 0x33; }
-int sr33ne33(char x) { return ((x >> 4) & 0x33) != 0x33; }
+int sr30eq00(signed char x) { return ((x >> 4) & 0x30) == 0; }
+int sr30ne00(signed char x) { return ((x >> 4) & 0x30) != 0; }
+int sr30eq20(signed char z) { return ((z >> 4) & 0x30) == 0x20; }
+int sr30ne20(signed char z) { return ((z >> 4) & 0x30) != 0x20; }
+int sr30eq30(signed char x) { return ((x >> 4) & 0x30) == 0x30; }
+int sr30ne30(signed char x) { return ((x >> 4) & 0x30) != 0x30; }
+int sr33eq33(signed char x) { return ((x >> 4) & 0x33) == 0x33; }
+int sr33ne33(signed char x) { return ((x >> 4) & 0x33) != 0x33; }
 
 int ur30eq00(unsigned char z) { return ((z >> 4) & 0x30) == 0; }
 int ur30ne00(unsigned char z) { return ((z >> 4) & 0x30) != 0; }
