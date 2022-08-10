@@ -312,33 +312,15 @@ transmute_handler (Context *ctx, TyTy::FnType *fntype)
   enter_intrinsic_block (ctx, fndecl);
 
   // BUILTIN transmute FN BODY BEGIN
-  tree result_type_tree = TREE_TYPE (DECL_RESULT (fndecl));
-  tree result_expr = error_mark_node;
-  if (AGGREGATE_TYPE_P (TREE_TYPE (convert_me_expr)))
-    {
-      // Return *(orig_type*)&decl.  */
-      // tree t = build_fold_addr_expr_loc (location.gcc_location (), this->t_);
-      // t = fold_build1_loc (location.gcc_location (), NOP_EXPR,
-      //       	       build_pointer_type (this->orig_type_), t);
-      // return build_fold_indirect_ref_loc (location.gcc_location (), t);
 
-      // result_expr = fold_build1_loc (Location ().gcc_location (),
-      // CONVERT_EXPR,
-      //   			     result_type_tree, convert_me_expr);
+  // Return *((orig_type*)&decl)  */
 
-      tree t = build_fold_addr_expr_loc (Location ().gcc_location (),
-					 convert_me_expr);
-      t = fold_build1_loc (Location ().gcc_location (), NOP_EXPR,
-			   build_pointer_type (target_type_expr), t);
-      result_expr
-	= build_fold_indirect_ref_loc (Location ().gcc_location (), t);
-    }
-  else
-    {
-      result_expr = ctx->get_backend ()->convert_expression (result_type_tree,
-							     convert_me_expr,
-							     Location ());
-    }
+  tree t
+    = build_fold_addr_expr_loc (Location ().gcc_location (), convert_me_expr);
+  t = fold_build1_loc (Location ().gcc_location (), NOP_EXPR,
+		       build_pointer_type (target_type_expr), t);
+  tree result_expr
+    = build_fold_indirect_ref_loc (Location ().gcc_location (), t);
 
   auto return_statement
     = ctx->get_backend ()->return_statement (fndecl, {result_expr},
