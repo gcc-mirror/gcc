@@ -1,3 +1,8 @@
+2022-08-09  Vibhav Pant  <vibhavp@gmail.com>
+
+	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_context_new_bitcast): Move
+	definition out of comment.
+
 2022-07-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/internals/index.rst: Remove reference to ".c" extensions
