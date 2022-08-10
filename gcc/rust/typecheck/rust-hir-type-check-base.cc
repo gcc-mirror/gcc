@@ -17,6 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-base.h"
+#include "rust-hir-type-check-type.h"
+#include "rust-hir-type-check-expr.h"
 #include "rust-coercion.h"
 
 namespace Rust {
@@ -347,6 +349,50 @@ TypeCheckBase::coercion_site (HirId id, TyTy::BaseType *expected,
     }
 
   return expected->coerce (expr);
+}
+
+void
+TypeCheckBase::resolve_generic_params (
+  const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
+  std::vector<TyTy::SubstitutionParamMapping> &substitutions)
+{
+  for (auto &generic_param : generic_params)
+    {
+      switch (generic_param.get ()->get_kind ())
+	{
+	case HIR::GenericParam::GenericKind::LIFETIME:
+	  // FIXME: Skipping Lifetime completely until better
+	  // handling.
+	  break;
+	  case HIR::GenericParam::GenericKind::CONST: {
+	    auto param
+	      = static_cast<HIR::ConstGenericParam *> (generic_param.get ());
+	    auto specified_type
+	      = TypeCheckType::Resolve (param->get_type ().get ());
+
+	    if (param->has_default_expression ())
+	      {
+		auto expr_type = TypeCheckExpr::Resolve (
+		  param->get_default_expression ().get ());
+		specified_type->coerce (expr_type);
+	      }
+
+	    context->insert_type (generic_param->get_mappings (),
+				  specified_type);
+	  }
+	  break;
+
+	  case HIR::GenericParam::GenericKind::TYPE: {
+	    auto param_type
+	      = TypeResolveGenericParam::Resolve (generic_param.get ());
+	    context->insert_type (generic_param->get_mappings (), param_type);
+
+	    substitutions.push_back (TyTy::SubstitutionParamMapping (
+	      static_cast<HIR::TypeParam &> (*generic_param), param_type));
+	  }
+	  break;
+	}
+    }
 }
 
 } // namespace Resolver

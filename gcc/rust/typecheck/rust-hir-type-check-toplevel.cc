@@ -29,50 +29,6 @@ TypeCheckTopLevel::Resolve (HIR::Item *item)
 }
 
 void
-TypeCheckTopLevel::resolve_generic_params (
-  const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
-  std::vector<TyTy::SubstitutionParamMapping> &substitutions)
-{
-  for (auto &generic_param : generic_params)
-    {
-      switch (generic_param.get ()->get_kind ())
-	{
-	case HIR::GenericParam::GenericKind::LIFETIME:
-	  // FIXME: Skipping Lifetime completely until better
-	  // handling.
-	  break;
-	  case HIR::GenericParam::GenericKind::CONST: {
-	    auto param
-	      = static_cast<HIR::ConstGenericParam *> (generic_param.get ());
-	    auto specified_type
-	      = TypeCheckType::Resolve (param->get_type ().get ());
-
-	    if (param->has_default_expression ())
-	      {
-		auto expr_type = TypeCheckExpr::Resolve (
-		  param->get_default_expression ().get ());
-		specified_type->coerce (expr_type);
-	      }
-
-	    context->insert_type (generic_param->get_mappings (),
-				  specified_type);
-	  }
-	  break;
-
-	  case HIR::GenericParam::GenericKind::TYPE: {
-	    auto param_type
-	      = TypeResolveGenericParam::Resolve (generic_param.get ());
-	    context->insert_type (generic_param->get_mappings (), param_type);
-
-	    substitutions.push_back (TyTy::SubstitutionParamMapping (
-	      static_cast<HIR::TypeParam &> (*generic_param), param_type));
-	  }
-	  break;
-	}
-    }
-}
-
-void
 TypeCheckTopLevel::visit (HIR::TypeAlias &alias)
 {
   TyTy::BaseType *actual_type

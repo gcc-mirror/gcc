@@ -64,6 +64,10 @@ protected:
   TyTy::ADTType::ReprOptions parse_repr_options (const AST::AttrVec &attrs,
 						 Location locus);
 
+  void resolve_generic_params (
+    const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
+    std::vector<TyTy::SubstitutionParamMapping> &substitutions);
+
   Analysis::Mappings *mappings;
   Resolver *resolver;
   TypeCheckContext *context;

@@ -51,10 +51,6 @@ public:
 
 private:
   TypeCheckTopLevel () : TypeCheckBase () {}
-
-  void resolve_generic_params (
-    const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
-    std::vector<TyTy::SubstitutionParamMapping> &substitutions);
 };
 
 } // namespace Resolver
