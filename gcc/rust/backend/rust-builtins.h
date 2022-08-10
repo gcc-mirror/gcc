@@ -122,6 +122,14 @@ private:
     define_builtin ("breakpoint", BUILT_IN_TRAP, "__builtin_trap", "breakpoint",
 		    build_function_type (void_type_node, void_list_node),
 		    builtin_const | builtin_noreturn);
+
+    define_builtin (
+      "memcpy", BUILT_IN_MEMCPY, "__builtin_memcpy", "memcpy",
+      build_function_type_list (build_pointer_type (void_type_node),
+				build_pointer_type (void_type_node),
+				build_pointer_type (void_type_node),
+				size_type_node, NULL_TREE),
+      0);
   }
 
   // Define a builtin function.  BCODE is the builtin function code
