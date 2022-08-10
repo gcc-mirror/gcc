@@ -19,14 +19,14 @@
 
 // [string::compare]
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 void
 test03()
 {
   std::wstring_view str1(L"foobar");
-  std::wstring str2(L"foobar");
+  __gnu_test::wstring str2(L"foobar");
 
   auto x = str2.compare(str1);
   VERIFY (x == 0);
@@ -52,7 +52,7 @@ test03()
 void
 test04()
 {
-  const std::wstring str(L"a");
+  const __gnu_test::wstring str(L"a");
 
   wchar_t c = L'a';
   int res = str.compare(0, 1, &c, 1);

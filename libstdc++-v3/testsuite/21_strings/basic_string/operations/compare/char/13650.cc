@@ -19,13 +19,13 @@
 
 // 21.3.6.8 basic_string::compare [lib.string::compare]
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 // libstdc++/13650
 void test01()
 {
-  using namespace std;
+  using namespace __gnu_test;
 
   const char lit_01[] = { 'w', 'e', '\0', 'r', 'd' };
   const char lit_02[] = { 'w', 'e', 'i', '\0', 'd' };
