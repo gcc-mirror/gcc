@@ -1,3 +1,42 @@
+2022-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106573
+	* gcc.dg/analyzer/error-uninit.c: New test.
+	* gcc.dg/analyzer/fd-uninit-1.c: New test.
+	* gcc.dg/analyzer/file-uninit-1.c: New test.
+
+2022-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse4_1-stv-8.c: New test case.
+
+2022-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/21137
+	PR tree-optimization/98954
+	* gcc.dg/fold-eqandshift-4.c: New test case.
+
+2022-08-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106563
+	* gdc.dg/torture/torture.exp (srcdir): New proc.
+	* gdc.dg/torture/imports/pr106563math.d: New test.
+	* gdc.dg/torture/imports/pr106563regex.d: New test.
+	* gdc.dg/torture/imports/pr106563uni.d: New test.
+	* gdc.dg/torture/pr106563.d: New test.
+
+2022-08-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106514
+	* gcc.dg/tree-ssa/ssa-thread-16.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-thread-17.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust.
+
+2022-08-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106492
+	* g++.dg/gomp/pr106492.C: New test.
+
 2022-08-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/106556

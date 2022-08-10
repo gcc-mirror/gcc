@@ -1,3 +1,98 @@
+2022-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (scalar_chain::convert_compare):
+	Create new pseudos only when/if needed.  Add support for TEST,
+	i.e. (COMPARE (AND x y) (const_int 0)), using UNSPEC_PTEST.
+	When broadcasting V2DImode and V4SImode use new pseudo register.
+	(timode_scalar_chain::convert_op): Do nothing if operand is
+	already V1TImode.  Avoid generating useless SUBREG conversions,
+	i.e. (SUBREG:V1TImode (REG:V1TImode) 0).  Handle CONST_WIDE_INT
+	in addition to CONST_INT by using CONST_SCALAR_INT_P.
+	(convertible_comparison_p): Use CONST_SCALAR_INT_P to match both
+	CONST_WIDE_INT and CONST_INT.  Recognize new *testti_doubleword
+	pattern as an STV candidate.
+	(timode_scalar_to_vector_candidate_p): Allow CONST_SCALAR_INT_P
+	operands in binary logic operations.
+	* config/i386/i386.cc (ix86_rtx_costs) <case UNSPEC>: Add costs
+	for UNSPEC_PTEST; a PTEST that performs an AND has the same cost
+	as regular PTEST, i.e. cost->sse_op.
+	* config/i386/i386.md (*testti_doubleword): New pre-reload
+	define_insn_and_split that recognizes comparison of TI mode AND
+	against zero.
+	* config/i386/sse.md (*ptest<mode>_and): New pre-reload
+	define_insn_and_split that recognizes UNSPEC_PTEST of identical
+	AND operands.
+
+2022-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/21137
+	PR tree-optimization/98954
+	* fold-const.cc (fold_binary_loc): Remove optimizations to
+	optimize ((X >> C1) & C2) ==/!= 0.
+	* match.pd (cmp (bit_and (lshift @0 @1) @2) @3): Remove wi::ctz
+	check, and handle all values of INTEGER_CSTs @2 and @3.
+	(cmp (bit_and (rshift @0 @1) @2) @3): Likewise, remove wi::clz
+	checks, and handle all values of INTEGER_CSTs @2 and @3.
+
+2022-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (Static Analyzer Options): Add notes on which
+	functions the analyzer has hardcoded knowledge of.
+
+2022-08-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_function_value): Allow vector return values.
+	(num_arg_regs): Allow vector arguments.
+	(gcn_function_arg): Likewise.
+	(gcn_function_arg_advance): Likewise.
+	(gcn_arg_partial_bytes): Likewise.
+	(gcn_return_in_memory): Likewise.
+	(gcn_expand_epilogue): Get return value from v8.
+	* config/gcn/gcn.h (RETURN_VALUE_REG): Set to v8.
+	(FIRST_PARM_REG): USE FIRST_SGPR_REG for clarity.
+	(FIRST_VPARM_REG): New.
+	(FUNCTION_ARG_REGNO_P): Allow vector parameters.
+	(struct gcn_args): Add vnum field.
+	(LIBCALL_VALUE): All vector return values.
+	* config/gcn/gcn.md (gcn_call_value): Add vector constraints.
+	(gcn_call_value_indirect): Likewise.
+
+2022-08-09  Richard Biener  <rguenther@suse.de>
+
+	* omp-expand.cc (expand_omp_atomic_load): Emit GIMPLE
+	directly.  Avoid update_ssa when in SSA form.
+	(expand_omp_atomic_store): Likewise.
+	(expand_omp_atomic_fetch_op): Avoid update_ssa when in SSA
+	form.
+	(expand_omp_atomic_pipeline): Likewise.
+	(expand_omp_atomic_mutex): Likewise.
+	* tree-parloops.cc (gen_parallel_loop): Use
+	TODO_update_ssa_no_phi after loop_version.
+
+2022-08-09  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (max-fsm-thread-length): Remove.
+	* params.opt (max-fsm-thread-length): Likewise.
+	* tree-ssa-threadbackward.cc
+	(back_threader_profitability::profitable_path_p): Do not
+	check max-fsm-thread-length.
+
+2022-08-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106514
+	* params.opt (max-jump-thread-paths): New.
+	* doc/invoke.texi (max-jump-thread-paths): Document.
+	* tree-ssa-threadbackward.cc (back_threader::find_paths_to_names):
+	Honor max-jump-thread-paths, take overall_path argument.
+	(back_threader::find_paths): Pass 1 as initial overall_path.
+
+2022-08-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106492
+	* omp-low.cc (lower_rec_input_clauses): Add missing folding
+	to data type of linear-clause list item.
+
 2022-08-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/106556
