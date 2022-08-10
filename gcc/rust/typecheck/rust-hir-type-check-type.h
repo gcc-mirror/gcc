@@ -27,14 +27,15 @@
 namespace Rust {
 namespace Resolver {
 
+// FIXME
+// This simply fetches the HIR:::GenericArgs from the base class. Check to see
+// if we can get rid of this class
 class TypeCheckResolveGenericArguments : public TypeCheckBase
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
   static HIR::GenericArgs resolve (HIR::TypePathSegment *segment);
 
-  void visit (HIR::TypePathSegmentGeneric &generic) override;
+  void visit (HIR::TypePathSegmentGeneric &generic);
 
 private:
   TypeCheckResolveGenericArguments (Location locus)
@@ -44,10 +45,8 @@ private:
   HIR::GenericArgs args;
 };
 
-class TypeCheckType : public TypeCheckBase
+class TypeCheckType : public TypeCheckBase, public HIR::HIRTypeVisitor
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
   static TyTy::BaseType *Resolve (HIR::Type *type);
 
@@ -62,6 +61,22 @@ public:
   void visit (HIR::InferredType &type) override;
   void visit (HIR::NeverType &type) override;
   void visit (HIR::TraitObjectType &type) override;
+
+  void visit (HIR::TypePathSegmentFunction &segment) override
+  { /* TODO */
+  }
+  void visit (HIR::TraitBound &bound) override
+  { /* TODO */
+  }
+  void visit (HIR::ImplTraitType &type) override
+  { /* TODO */
+  }
+  void visit (HIR::ParenthesisedType &type) override
+  { /* TODO */
+  }
+  void visit (HIR::ImplTraitTypeOneBound &type) override
+  { /* TODO */
+  }
 
 private:
   TypeCheckType (HirId id)
@@ -82,12 +97,13 @@ private:
 
 class TypeResolveGenericParam : public TypeCheckBase
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
   static TyTy::ParamType *Resolve (HIR::GenericParam *param);
 
-  void visit (HIR::TypeParam &param) override;
+protected:
+  void visit (HIR::TypeParam &param);
+  void visit (HIR::LifetimeParam &param);
+  void visit (HIR::ConstGenericParam &param);
 
 private:
   TypeResolveGenericParam () : TypeCheckBase (), resolved (nullptr) {}
@@ -97,13 +113,12 @@ private:
 
 class ResolveWhereClauseItem : public TypeCheckBase
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
   static void Resolve (HIR::WhereClauseItem &item);
 
-  void visit (HIR::LifetimeWhereClauseItem &) override;
-  void visit (HIR::TypeBoundWhereClauseItem &item) override;
+protected:
+  void visit (HIR::LifetimeWhereClauseItem &item);
+  void visit (HIR::TypeBoundWhereClauseItem &item);
 
 private:
   ResolveWhereClauseItem () : TypeCheckBase () {}

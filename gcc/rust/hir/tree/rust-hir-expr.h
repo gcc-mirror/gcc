@@ -1409,6 +1409,13 @@ public:
 class StructExprField
 {
 public:
+  enum StructExprFieldKind
+  {
+    IDENTIFIER_VALUE,
+    IDENTIFIER,
+    INDEX_VALUE,
+  };
+
   virtual ~StructExprField () {}
 
   // Unique pointer custom clone function
@@ -1426,6 +1433,8 @@ public:
 
   Location get_locus () { return locus; }
 
+  virtual StructExprFieldKind get_kind () const = 0;
+
 protected:
   // pure virtual clone implementation
   virtual StructExprField *clone_struct_expr_field_impl () const = 0;
@@ -1441,11 +1450,11 @@ protected:
 // Identifier-only variant of StructExprField HIR node
 class StructExprFieldIdentifier : public StructExprField
 {
-public:
+private:
   Identifier field_name;
 
   // TODO: should this store location data?
-
+public:
   StructExprFieldIdentifier (Analysis::NodeMapping mapping,
 			     Identifier field_identifier, Location locus)
     : StructExprField (mapping, locus),
@@ -1458,6 +1467,11 @@ public:
   void accept_vis (HIRExpressionVisitor &vis) override;
 
   Identifier get_field_name () const { return field_name; }
+
+  StructExprFieldKind get_kind () const override
+  {
+    return StructExprFieldKind::IDENTIFIER;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1527,6 +1541,11 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
+  StructExprFieldKind get_kind () const override
+  {
+    return StructExprFieldKind::IDENTIFIER_VALUE;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1557,6 +1576,11 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
+
+  StructExprFieldKind get_kind () const override
+  {
+    return StructExprFieldKind::INDEX_VALUE;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

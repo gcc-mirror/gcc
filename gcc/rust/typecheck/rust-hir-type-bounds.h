@@ -28,8 +28,6 @@ namespace Resolver {
 
 class TypeBoundsProbe : public TypeCheckBase
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
   static std::vector<std::pair<TraitReference *, HIR::ImplBlock *>>
   Probe (const TyTy::BaseType *receiver)

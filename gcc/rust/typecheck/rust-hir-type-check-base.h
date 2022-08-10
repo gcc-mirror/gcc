@@ -30,13 +30,9 @@ namespace Rust {
 namespace Resolver {
 
 class TraitReference;
-
-// base class to allow derivatives to overload as needed
-class TypeCheckBase : public HIR::HIRFullVisitorBase
+class TypeCheckBase
 {
 public:
-  using Rust::HIR::HIRFullVisitorBase::visit;
-
   virtual ~TypeCheckBase () {}
 
   static TyTy::BaseType *coercion_site (HirId id, TyTy::BaseType *lhs,

@@ -27,7 +27,15 @@ HIR::GenericArgs
 TypeCheckResolveGenericArguments::resolve (HIR::TypePathSegment *segment)
 {
   TypeCheckResolveGenericArguments resolver (segment->get_locus ());
-  segment->accept_vis (resolver);
+  switch (segment->get_type ())
+    {
+    case HIR::TypePathSegment::SegmentType::GENERIC:
+      resolver.visit (static_cast<HIR::TypePathSegmentGeneric &> (*segment));
+      break;
+
+    default:
+      break;
+    }
   return resolver.args;
 }
 
@@ -674,15 +682,33 @@ TyTy::ParamType *
 TypeResolveGenericParam::Resolve (HIR::GenericParam *param)
 {
   TypeResolveGenericParam resolver;
-  param->accept_vis (resolver);
-
-  if (resolver.resolved == nullptr)
+  switch (param->get_kind ())
     {
-      rust_error_at (param->get_locus (), "failed to setup generic parameter");
-      return nullptr;
-    }
+    case HIR::GenericParam::GenericKind::TYPE:
+      resolver.visit (static_cast<HIR::TypeParam &> (*param));
+      break;
 
+    case HIR::GenericParam::GenericKind::CONST:
+      resolver.visit (static_cast<HIR::ConstGenericParam &> (*param));
+      break;
+
+    case HIR::GenericParam::GenericKind::LIFETIME:
+      resolver.visit (static_cast<HIR::LifetimeParam &> (*param));
+      break;
+    }
   return resolver.resolved;
+}
+
+void
+TypeResolveGenericParam::visit (HIR::LifetimeParam &param)
+{
+  // nothing to do
+}
+
+void
+TypeResolveGenericParam::visit (HIR::ConstGenericParam &param)
+{
+  // TODO
 }
 
 void
@@ -725,11 +751,20 @@ void
 ResolveWhereClauseItem::Resolve (HIR::WhereClauseItem &item)
 {
   ResolveWhereClauseItem resolver;
-  item.accept_vis (resolver);
+  switch (item.get_item_type ())
+    {
+    case HIR::WhereClauseItem::LIFETIME:
+      resolver.visit (static_cast<HIR::LifetimeWhereClauseItem &> (item));
+      break;
+
+    case HIR::WhereClauseItem::TYPE_BOUND:
+      resolver.visit (static_cast<HIR::TypeBoundWhereClauseItem &> (item));
+      break;
+    }
 }
 
 void
-ResolveWhereClauseItem::visit (HIR::LifetimeWhereClauseItem &)
+ResolveWhereClauseItem::visit (HIR::LifetimeWhereClauseItem &item)
 {}
 
 void

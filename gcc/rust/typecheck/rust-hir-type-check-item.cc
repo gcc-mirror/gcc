@@ -17,15 +17,26 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-item.h"
+#include "rust-hir-full.h"
+#include "rust-hir-type-check-implitem.h"
+#include "rust-hir-type-check-type.h"
+#include "rust-hir-type-check-stmt.h"
+#include "rust-hir-type-check-expr.h"
+#include "rust-hir-trait-resolve.h"
 
 namespace Rust {
-
 namespace Resolver {
+
+TypeCheckItem::TypeCheckItem () : TypeCheckBase () {}
+
 void
-TypeCheckItem::Resolve (HIR::Item *item)
+TypeCheckItem::Resolve (HIR::Item &item)
 {
+  rust_assert (item.get_hir_kind () == HIR::Node::BaseKind::VIS_ITEM);
+  HIR::VisItem &vis_item = static_cast<HIR::VisItem &> (item);
+
   TypeCheckItem resolver;
-  item->accept_vis (resolver);
+  vis_item.accept_vis (resolver);
 }
 
 void
@@ -213,7 +224,7 @@ void
 TypeCheckItem::visit (HIR::Module &module)
 {
   for (auto &item : module.get_items ())
-    TypeCheckItem::Resolve (item.get ());
+    TypeCheckItem::Resolve (*item.get ());
 }
 
 void

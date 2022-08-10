@@ -17,15 +17,25 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-toplevel.h"
+#include "rust-hir-type-check-enumitem.h"
+#include "rust-hir-type-check-type.h"
+#include "rust-hir-type-check-expr.h"
+#include "rust-hir-type-check-pattern.h"
+#include "rust-hir-type-check-implitem.h"
 
 namespace Rust {
 namespace Resolver {
 
+TypeCheckTopLevel::TypeCheckTopLevel () : TypeCheckBase () {}
+
 void
-TypeCheckTopLevel::Resolve (HIR::Item *item)
+TypeCheckTopLevel::Resolve (HIR::Item &item)
 {
+  rust_assert (item.get_hir_kind () == HIR::Node::BaseKind::VIS_ITEM);
+  HIR::VisItem &vis_item = static_cast<HIR::VisItem &> (item);
+
   TypeCheckTopLevel resolver;
-  item->accept_vis (resolver);
+  vis_item.accept_vis (resolver);
 }
 
 void
@@ -100,7 +110,7 @@ void
 TypeCheckTopLevel::visit (HIR::Module &module)
 {
   for (auto &item : module.get_items ())
-    TypeCheckTopLevel::Resolve (item.get ());
+    TypeCheckTopLevel::Resolve (*item.get ());
 }
 
 void

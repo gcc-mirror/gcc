@@ -21,6 +21,7 @@
 #include "rust-hir-type-check-toplevel.h"
 #include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-expr.h"
+#include "rust-hir-type-check-pattern.h"
 #include "rust-hir-type-check-struct-field.h"
 #include "rust-hir-inherent-impl-overlap.h"
 
@@ -34,7 +35,7 @@ void
 TypeResolution::Resolve (HIR::Crate &crate)
 {
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    TypeCheckTopLevel::Resolve (it->get ());
+    TypeCheckTopLevel::Resolve (*it->get ());
 
   if (saw_errors ())
     return;
@@ -44,7 +45,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
     return;
 
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    TypeCheckItem::Resolve (it->get ());
+    TypeCheckItem::Resolve (*it->get ());
 
   if (saw_errors ())
     return;
@@ -79,47 +80,6 @@ TypeResolution::Resolve (HIR::Crate &crate)
 
     return true;
   });
-}
-
-// RUST_HIR_TYPE_CHECK_EXPR
-void
-TypeCheckExpr::visit (HIR::BlockExpr &expr)
-{
-  for (auto &s : expr.get_statements ())
-    {
-      if (!s->is_item ())
-	continue;
-
-      TypeCheckStmt::Resolve (s.get ());
-    }
-
-  for (auto &s : expr.get_statements ())
-    {
-      if (s->is_item ())
-	continue;
-
-      auto resolved = TypeCheckStmt::Resolve (s.get ());
-      if (resolved == nullptr)
-	{
-	  rust_error_at (s->get_locus (), "failure to resolve type");
-	  return;
-	}
-
-      if (s->is_unit_check_needed () && !resolved->is_unit ())
-	{
-	  auto unit
-	    = TyTy::TupleType::get_unit_type (s->get_mappings ().get_hirid ());
-	  resolved = unit->unify (resolved);
-	}
-    }
-
-  if (expr.has_expr ())
-    infered = TypeCheckExpr::Resolve (expr.get_final_expr ().get ())->clone ();
-  else if (expr.is_tail_reachable ())
-    infered
-      = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
-  else
-    infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
 }
 
 // rust-hir-trait-ref.h

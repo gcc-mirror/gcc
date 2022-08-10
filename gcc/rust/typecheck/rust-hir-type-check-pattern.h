@@ -25,45 +25,27 @@
 namespace Rust {
 namespace Resolver {
 
-class TypeCheckPattern : public TypeCheckBase
+class TypeCheckPattern : public TypeCheckBase, public HIR::HIRPatternVisitor
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
-  static TyTy::BaseType *Resolve (HIR::Pattern *pattern, TyTy::BaseType *parent)
-  {
-    TypeCheckPattern resolver (parent);
-    pattern->accept_vis (resolver);
-
-    if (resolver.infered == nullptr)
-      return new TyTy::ErrorType (
-	pattern->get_pattern_mappings ().get_hirid ());
-
-    resolver.context->insert_type (pattern->get_pattern_mappings (),
-				   resolver.infered);
-    return resolver.infered;
-  }
+  static TyTy::BaseType *Resolve (HIR::Pattern *pattern,
+				  TyTy::BaseType *parent);
 
   void visit (HIR::PathInExpression &pattern) override;
-
   void visit (HIR::StructPattern &pattern) override;
-
   void visit (HIR::TupleStructPattern &pattern) override;
-
   void visit (HIR::WildcardPattern &pattern) override;
-
   void visit (HIR::TuplePattern &pattern) override;
-
   void visit (HIR::LiteralPattern &pattern) override;
-
   void visit (HIR::RangePattern &pattern) override;
-
   void visit (HIR::IdentifierPattern &pattern) override;
+  void visit (HIR::GroupedPattern &pattern) override;
+  void visit (HIR::QualifiedPathInExpression &pattern) override;
+  void visit (HIR::ReferencePattern &pattern) override;
+  void visit (HIR::SlicePattern &pattern) override;
 
 private:
-  TypeCheckPattern (TyTy::BaseType *parent)
-    : TypeCheckBase (), parent (parent), infered (nullptr)
-  {}
+  TypeCheckPattern (TyTy::BaseType *parent);
 
   static TyTy::BaseType *
   typecheck_range_pattern_bound (HIR::RangePatternBound *bound,
