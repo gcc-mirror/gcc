@@ -1,3 +1,6 @@
+#ifdef _AIX
+#define _MODE_T
+#endif
 #include <stdio.h>
 
 int open(const char *, int mode);
