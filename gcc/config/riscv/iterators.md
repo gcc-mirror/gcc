@@ -112,6 +112,9 @@
 ;; the controlling mode.
 (define_mode_attr HALFMODE [(DF "SI") (DI "SI") (TF "DI")])
 
+; bitmanip mode attribute
+(define_mode_attr shiftm1 [(SI "const31_operand") (DI "const63_operand")])
+
 ;; -------------------------------------------------------------------
 ;; Code Iterators
 ;; -------------------------------------------------------------------
@@ -147,10 +150,16 @@
 (define_code_iterator any_lt [lt ltu])
 (define_code_iterator any_le [le leu])
 
+; bitmanip code iterators
+(define_code_iterator bitmanip_bitwise [and ior])
+
+(define_code_iterator bitmanip_minmax [smin umin smax umax])
+
+(define_code_iterator clz_ctz_pcnt [clz ctz popcount])
+
 ;; -------------------------------------------------------------------
 ;; Code Attributes
 ;; -------------------------------------------------------------------
-
 
 ;; <u> expands to an empty string when doing a signed operation and
 ;; "u" when doing an unsigned operation.
@@ -194,6 +203,22 @@
 			(and "and")
 			(plus "add")
 			(minus "sub")])
+
+; bitmanip code attributes
+(define_code_attr bitmanip_optab [(smin "smin")
+				  (smax "smax")
+				  (umin "umin")
+				  (umax "umax")
+				  (clz "clz")
+				  (ctz "ctz")
+				  (popcount "popcount")])
+(define_code_attr bitmanip_insn [(smin "min")
+				 (smax "max")
+				 (umin "minu")
+				 (umax "maxu")
+				 (clz "clz")
+				 (ctz "ctz")
+				 (popcount "cpop")])
 
 ;; -------------------------------------------------------------------
 ;; Int Iterators.

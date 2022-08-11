@@ -17,31 +17,6 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_code_iterator bitmanip_bitwise [and ior])
-
-(define_code_iterator bitmanip_minmax [smin umin smax umax])
-
-(define_code_iterator clz_ctz_pcnt [clz ctz popcount])
-
-(define_code_attr bitmanip_optab [(smin "smin")
-				  (smax "smax")
-				  (umin "umin")
-				  (umax "umax")
-				  (clz "clz")
-				  (ctz "ctz")
-				  (popcount "popcount")])
-
-
-(define_code_attr bitmanip_insn [(smin "min")
-				 (smax "max")
-				 (umin "minu")
-				 (umax "maxu")
-				 (clz "clz")
-				 (ctz "ctz")
-				 (popcount "cpop")])
-
-(define_mode_attr shiftm1 [(SI "const31_operand") (DI "const63_operand")])
-
 ;; ZBA extension.
 
 (define_insn "*zero_extendsidi2_bitmanip"
