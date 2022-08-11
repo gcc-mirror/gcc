@@ -971,7 +971,8 @@ fd_state_machine::check_for_dup (sm_context *sm_ctxt, const supernode *node,
   state_t state_arg_1 = sm_ctxt->get_state (stmt, arg_1);
   if (state_arg_1 == m_stop)
     return;
-  if (!(is_constant_fd_p (state_arg_1) || is_valid_fd_p (state_arg_1)))
+  if (!(is_constant_fd_p (state_arg_1) || is_valid_fd_p (state_arg_1)
+	|| state_arg_1 == m_start))
     {
       check_for_open_fd (sm_ctxt, node, stmt, call, callee_fndecl,
 			 DIRS_READ_WRITE);
@@ -983,7 +984,7 @@ fd_state_machine::check_for_dup (sm_context *sm_ctxt, const supernode *node,
     case DUP_1:
       if (lhs)
 	{
-	  if (is_constant_fd_p (state_arg_1))
+	  if (is_constant_fd_p (state_arg_1) || state_arg_1 == m_start)
 	    sm_ctxt->set_next_state (stmt, lhs, m_unchecked_read_write);
 	  else
 	    sm_ctxt->set_next_state (stmt, lhs,
@@ -999,7 +1000,8 @@ fd_state_machine::check_for_dup (sm_context *sm_ctxt, const supernode *node,
       if (state_arg_2 == m_stop)
 	return;
       /* Check if -1 was passed as second argument to dup2.  */
-      if (!(is_constant_fd_p (state_arg_2) || is_valid_fd_p (state_arg_2)))
+      if (!(is_constant_fd_p (state_arg_2) || is_valid_fd_p (state_arg_2)
+	    || state_arg_2 == m_start))
 	{
 	  sm_ctxt->warn (
 	      node, stmt, arg_2,
@@ -1011,7 +1013,7 @@ fd_state_machine::check_for_dup (sm_context *sm_ctxt, const supernode *node,
       file descriptor i.e the first argument.  */
       if (lhs)
 	{
-	  if (is_constant_fd_p (state_arg_1))
+	  if (is_constant_fd_p (state_arg_1) || state_arg_1 == m_start)
 	    sm_ctxt->set_next_state (stmt, lhs, m_unchecked_read_write);
 	  else
 	    sm_ctxt->set_next_state (stmt, lhs,
