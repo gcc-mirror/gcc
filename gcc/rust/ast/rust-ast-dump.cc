@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-dump.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
 namespace AST {
@@ -51,7 +52,7 @@ Dump::go (AST::Crate &crate)
     {
       stream << indentation;
       item->accept_vis (*this);
-      stream << "\n";
+      stream << '\n';
     }
 }
 
@@ -72,8 +73,7 @@ Dump::format_function_param (FunctionParam &param)
 void
 Dump::emit_attrib (const Attribute &attrib)
 {
-  stream << "#";
-  stream << "[";
+  stream << "#[";
 
   for (size_t i = 0; i < attrib.get_path ().get_segments ().size (); i++)
     {
@@ -106,6 +106,13 @@ Dump::emit_attrib (const Attribute &attrib)
     }
 
   stream << "]";
+}
+
+std::ostream &
+Dump::emit_indented_string (const std::string &value,
+			    const std::string &comment)
+{
+  return stream << indentation << value << comment;
 }
 
 void
@@ -141,7 +148,9 @@ Dump::visit (ConstGenericParam &lifetime_param)
 // rust-path.h
 void
 Dump::visit (PathInExpression &path)
-{}
+{
+  stream << path.as_string ();
+}
 
 void
 Dump::visit (TypePathSegment &segment)
@@ -163,7 +172,9 @@ Dump::visit (TypePath &path)
 
 void
 Dump::visit (QualifiedPathInExpression &path)
-{}
+{
+  stream << path.as_string ();
+}
 
 void
 Dump::visit (QualifiedPathInType &path)
@@ -207,53 +218,52 @@ Dump::visit (NegationExpr &expr)
 void
 Dump::visit (ArithmeticOrLogicalExpr &expr)
 {
-  expr.get_left_expr ()->accept_vis (*this);
-  stream << " ";
-
+  auto op = "";
   switch (expr.get_expr_type ())
     {
     case ArithmeticOrLogicalOperator::ADD:
-      stream << "+";
+      op = "+";
       break;
 
     case ArithmeticOrLogicalOperator::SUBTRACT:
-      stream << "-";
+      op = "-";
       break;
 
     case ArithmeticOrLogicalOperator::MULTIPLY:
-      stream << "*";
+      op = "*";
       break;
 
     case ArithmeticOrLogicalOperator::DIVIDE:
-      stream << "/";
+      op = "/";
       break;
 
     case ArithmeticOrLogicalOperator::MODULUS:
-      stream << "%";
+      op = "%";
       break;
 
     case ArithmeticOrLogicalOperator::BITWISE_AND:
-      stream << "&";
+      op = "&";
       break;
 
     case ArithmeticOrLogicalOperator::BITWISE_OR:
-      stream << "|";
+      op = "|";
       break;
 
     case ArithmeticOrLogicalOperator::BITWISE_XOR:
-      stream << "^";
+      op = "^";
       break;
 
     case ArithmeticOrLogicalOperator::LEFT_SHIFT:
-      stream << "<<";
+      op = "<<";
       break;
 
     case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
-      stream << ">>";
+      op = ">>";
       break;
     }
 
-  stream << " ";
+  expr.get_left_expr ()->accept_vis (*this);
+  stream << " " << op << " ";
   expr.get_right_expr ()->accept_vis (*this);
 }
 
@@ -331,7 +341,23 @@ Dump::visit (StructExprStructBase &expr)
 
 void
 Dump::visit (CallExpr &expr)
-{}
+{
+  expr.get_function_expr ()->accept_vis (*this);
+  stream << '(';
+
+  indentation.increment ();
+
+  for (auto &arg : expr.get_params ())
+    {
+      stream << '\n' << indentation;
+      arg->accept_vis (*this);
+      stream << ',';
+    }
+
+  indentation.decrement ();
+
+  stream << '\n' << indentation << ')';
+}
 
 void
 Dump::visit (MethodCallExpr &expr)
@@ -355,13 +381,14 @@ Dump::visit (BlockExpr &expr)
     {
       stream << indentation;
       stmt->accept_vis (*this);
-      stream << ";\n";
+      stream << "; /* stmt */\n";
     }
 
   if (expr.has_tail_expr ())
     {
       stream << indentation;
       expr.get_tail_expr ()->accept_vis (*this);
+      stream << " /* tail expr */";
     }
 
   indentation.decrement ();
@@ -656,8 +683,10 @@ Dump::format_function_common (std::unique_ptr<Type> &return_type,
   if (block)
     {
       if (return_type)
-	stream << ' ';
-      block->accept_vis (*this);
+	{
+	  stream << ' ';
+	  block->accept_vis (*this);
+	}
     }
   else
     stream << ";\n";
@@ -784,12 +813,15 @@ Dump::visit (TraitImpl &impl)
   impl.get_trait_path ().accept_vis (*this);
   stream << " for ";
   impl.get_type ()->accept_vis (*this);
-
   stream << " {\n";
+
   indentation.increment ();
 
   for (auto &item : impl.get_impl_items ())
-    item->accept_vis (*this);
+    {
+      stream << indentation;
+      item->accept_vis (*this);
+    }
 
   indentation.decrement ();
   stream << "\n}\n";
@@ -830,11 +862,7 @@ Dump::visit (ExternBlock &block)
   stream << "extern ";
 
   if (block.has_abi ())
-    {
-      stream << "\"";
-      stream << block.get_abi ();
-      stream << "\" ";
-    }
+    stream << "\"" << block.get_abi () << "\" ";
 
   stream << "{\n";
   indentation.increment ();
@@ -1014,11 +1042,15 @@ Dump::visit (LetStmt &stmt)
 
 void
 Dump::visit (ExprStmtWithoutBlock &stmt)
-{}
+{
+  stmt.get_expr ()->accept_vis (*this);
+}
 
 void
 Dump::visit (ExprStmtWithBlock &stmt)
-{}
+{
+  stmt.get_expr ()->accept_vis (*this);
+}
 
 // rust-type.h
 void

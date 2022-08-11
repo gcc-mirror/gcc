@@ -66,6 +66,12 @@ private:
   void format_function_param (FunctionParam &param);
   void emit_attrib (const Attribute &attrib);
 
+  /**
+   * Emit an indented string with an optional extra comment
+   */
+  std::ostream &emit_indented_string (const std::string &value,
+				      const std::string &comment = "");
+
   // rust-ast.h
   void visit (Token &tok);
   void visit (DelimTokenTree &delim_tok_tree);
