@@ -1,6 +1,6 @@
 /* PR tree-optimization/104992 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -Wno-psabi -fdump-tree-optimized" } */
 
 #define vector __attribute__((vector_size(4*sizeof(int))))
 
