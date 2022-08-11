@@ -319,7 +319,7 @@ private:
 
   void dump_lex (Parser<Lexer> &parser) const;
   void dump_ast (Parser<Lexer> &parser, AST::Crate &crate) const;
-  void dump_ast_pretty (AST::Crate &crate) const;
+  void dump_ast_pretty (AST::Crate &crate, bool expanded = false) const;
   void dump_ast_expanded (Parser<Lexer> &parser, AST::Crate &crate) const;
   void dump_hir (HIR::Crate &crate) const;
   void dump_hir_pretty (HIR::Crate &crate) const;
