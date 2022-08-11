@@ -64,6 +64,13 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 	return error_mark_node;
 
       TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
+
+      // it might be a unit-struct
+      if (adt->is_unit ())
+	{
+	  return ctx->get_backend ()->unit_expression ();
+	}
+
       if (!adt->is_enum ())
 	return error_mark_node;
 
@@ -119,6 +126,14 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
     {
       // TREE_USED is setup in the gcc abstraction here
       return ctx->get_backend ()->var_expression (var, expr_locus);
+    }
+
+  // might be a match pattern binding
+  tree binding = error_mark_node;
+  if (ctx->lookup_pattern_binding (ref, &binding))
+    {
+      TREE_USED (binding) = 1;
+      return binding;
     }
 
   // it might be a function call

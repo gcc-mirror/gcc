@@ -37,7 +37,6 @@ public:
   void visit (HIR::MethodCallExpr &expr) override;
   void visit (HIR::AssignmentExpr &expr) override;
   void visit (HIR::CompoundAssignmentExpr &expr) override;
-  void visit (HIR::IdentifierExpr &expr) override;
   void visit (HIR::LiteralExpr &expr) override;
   void visit (HIR::ArithmeticOrLogicalExpr &expr) override;
   void visit (HIR::ComparisonExpr &expr) override;

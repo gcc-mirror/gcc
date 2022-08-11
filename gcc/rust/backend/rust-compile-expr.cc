@@ -692,12 +692,6 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 	  }
 	  break;
 
-	  case HIR::Expr::ExprType::Ident: {
-	    // FIXME
-	    gcc_unreachable ();
-	  }
-	  break;
-
 	  case HIR::Expr::ExprType::Path: {
 	    // FIXME
 	    gcc_unreachable ();
@@ -1806,120 +1800,6 @@ HIRCompileBase::resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
 
   return ctx->get_backend ()->constructor_expression (fat_pointer, false,
 						      {data, size}, -1, locus);
-}
-
-void
-CompileExpr::visit (HIR::IdentifierExpr &expr)
-{
-  NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
-
-  bool is_value = false;
-  NodeId ref_node_id = UNKNOWN_NODEID;
-  if (ctx->get_resolver ()->lookup_resolved_name (ast_node_id, &ref_node_id))
-    {
-      is_value = true;
-    }
-  else if (!ctx->get_resolver ()->lookup_resolved_type (ast_node_id,
-							&ref_node_id))
-    {
-      rust_error_at (expr.get_locus (),
-		     "Failed to lookup type reference for node: %s",
-		     expr.as_string ().c_str ());
-      return;
-    }
-
-  if (ref_node_id == UNKNOWN_NODEID)
-    {
-      rust_fatal_error (expr.get_locus (), "unresolved IdentifierExpr: %s",
-			expr.as_string ().c_str ());
-      return;
-    }
-
-  // node back to HIR
-  HirId ref;
-  if (!ctx->get_mappings ()->lookup_node_to_hir (ref_node_id, &ref))
-    {
-      rust_error_at (expr.get_locus (), "reverse lookup failure");
-      return;
-    }
-
-  TyTy::BaseType *lookup = nullptr;
-  if (!ctx->get_tyctx ()->lookup_type (ref, &lookup))
-    {
-      rust_fatal_error (expr.get_locus (),
-			"failed to find type relevant to this context: %s",
-			expr.get_mappings ().as_string ().c_str ());
-      return;
-    }
-
-  bool is_type_ref = !is_value;
-  if (is_type_ref)
-    {
-      // this might be a case for
-      //
-      // struct S;
-      //
-      // fn main() {
-      //    let s = S;
-      // }
-
-      if (lookup->is_unit ())
-	{
-	  translated = ctx->get_backend ()->unit_expression ();
-	  return;
-	}
-
-      // rust actually treats like this an fn call or structs with fields but
-      // unit structs are just the struct name lets catch it with an is-unit
-      // check
-      gcc_unreachable ();
-    }
-
-  tree fn = NULL_TREE;
-  Bvariable *var = nullptr;
-  if (ctx->lookup_const_decl (ref, &translated))
-    {
-      TREE_USED (translated) = 1;
-      return;
-    }
-  else if (ctx->lookup_function_decl (ref, &fn))
-    {
-      TREE_USED (fn) = 1;
-      translated = address_expression (fn, expr.get_locus ());
-    }
-  else if (ctx->lookup_var_decl (ref, &var))
-    {
-      // TREE_USED is setup in the gcc abstraction here
-      translated = ctx->get_backend ()->var_expression (var, expr.get_locus ());
-    }
-  else if (ctx->lookup_pattern_binding (ref, &translated))
-    {
-      TREE_USED (translated) = 1;
-      return;
-    }
-  else
-    {
-      // lets try and query compile it to an item/impl item
-      HIR::Item *resolved_item = ctx->get_mappings ()->lookup_hir_item (ref);
-      bool is_hir_item = resolved_item != nullptr;
-      if (!is_hir_item)
-	{
-	  translated = error_mark_node;
-	  return;
-	}
-
-      if (!lookup->has_subsititions_defined ())
-	translated = CompileItem::compile (resolved_item, ctx, nullptr, true,
-					   expr.get_locus ());
-      else
-	translated = CompileItem::compile (resolved_item, ctx, lookup, true,
-					   expr.get_locus ());
-
-      if (translated != error_mark_node)
-	{
-	  TREE_USED (translated) = 1;
-	}
-    }
 }
 
 void

@@ -118,8 +118,6 @@ public:
 
   void visit (HIR::MethodCallExpr &expr) override;
 
-  void visit (HIR::IdentifierExpr &expr) override;
-
   void visit (HIR::LiteralExpr &expr) override
   {
     TyTy::BaseType *tyty = nullptr;

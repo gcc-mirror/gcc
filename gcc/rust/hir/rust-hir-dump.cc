@@ -78,9 +78,6 @@ Dump::go (HIR::Crate &crate)
 }
 
 void
-Dump::visit (IdentifierExpr &)
-{}
-void
 Dump::visit (Lifetime &)
 {}
 void

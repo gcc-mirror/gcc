@@ -36,7 +36,6 @@ public:
   void go (HIR::Crate &crate);
 
   void visit (HIR::PathInExpression &expr) override;
-  void visit (HIR::IdentifierExpr &expr) override;
   void visit (HIR::FieldAccessExpr &expr) override;
   void visit (HIR::TupleIndexExpr &expr) override;
   void visit (HIR::MethodCallExpr &expr) override;

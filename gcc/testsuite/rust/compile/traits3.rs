@@ -10,9 +10,9 @@ impl<T> Foo for Bar<T> {
     type A = i32;
 
     fn baz(a: f32) -> f32 {
-        // { dg-error "expected .i32. got .f32." "" { target *-*-* } .-1 }
-        // { dg-error "method .baz. has an incompatible type for trait .Foo." "" { target *-*-* } .-2 }
+        // { dg-error "method .baz. has an incompatible type for trait .Foo." "" { target *-*-* } .-1 }
         a
+        // { dg-error "expected .i32. got .f32." "" { target *-*-* } .-1 }
     }
 }
 

@@ -29,8 +29,7 @@ pub struct Range<Idx> {
 #[lang = "const_slice_ptr"]
 impl<T> *const [T] {
     pub const fn len(self) -> usize {
-        let a = unsafe { Repr { rust: self }.raw };
-        a.len
+        unsafe { Repr { rust: self }.raw.len }
     }
 
     pub const fn as_ptr(self) -> *const T {

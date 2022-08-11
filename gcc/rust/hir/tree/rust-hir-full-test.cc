@@ -3752,18 +3752,6 @@ Module::add_crate_name (std::vector<std::string> &names) const
 /* All accept_vis method below */
 
 void
-IdentifierExpr::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IdentifierExpr::accept_vis (HIRExpressionVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 Lifetime::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);

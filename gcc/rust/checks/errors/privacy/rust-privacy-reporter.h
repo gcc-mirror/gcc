@@ -87,7 +87,6 @@ types
   virtual void visit (HIR::ClosureExprInner &expr);
   virtual void visit (HIR::StructExprStructFields &);
   virtual void visit (HIR::StructExprStruct &);
-  virtual void visit (HIR::IdentifierExpr &ident_expr);
   virtual void visit (HIR::LiteralExpr &expr);
   virtual void visit (HIR::BorrowExpr &expr);
   virtual void visit (HIR::DereferenceExpr &expr);

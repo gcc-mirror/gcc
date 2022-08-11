@@ -27,7 +27,6 @@ class Stmt;
 class Item;
 class Expr;
 class ExprWithoutBlock;
-class IdentifierExpr;
 class Pattern;
 class Type;
 class TypeNoBounds;

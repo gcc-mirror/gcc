@@ -313,10 +313,16 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
       return;
     }
 
-  // we can make the field look like an identifier expr to take advantage of
-  // existing code to figure out the type
-  HIR::IdentifierExpr expr (field.get_mappings (), field.get_field_name (),
-			    field.get_locus ());
+  // we can make the field look like a path expr to take advantage of existing
+  // code
+  Analysis::NodeMapping mappings_copy1 = field.get_mappings ();
+  Analysis::NodeMapping mappings_copy2 = field.get_mappings ();
+
+  HIR::PathIdentSegment ident_seg (field.get_field_name ());
+  HIR::PathExprSegment seg (mappings_copy1, ident_seg, field.get_locus (),
+			    HIR::GenericArgs::create_empty ());
+  HIR::PathInExpression expr (mappings_copy2, {seg}, field.get_locus (), false,
+			      {});
   TyTy::BaseType *value = TypeCheckExpr::Resolve (&expr);
 
   resolved_field_value_expr
