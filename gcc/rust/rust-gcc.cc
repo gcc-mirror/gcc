@@ -323,10 +323,6 @@ public:
   bool function_set_parameters (tree function,
 				const std::vector<Bvariable *> &);
 
-  tree lookup_gcc_builtin (const std::string &);
-
-  tree lookup_builtin_by_rust_name (const std::string &);
-
   void write_global_definitions (const std::vector<tree> &,
 				 const std::vector<tree> &,
 				 const std::vector<tree> &,
