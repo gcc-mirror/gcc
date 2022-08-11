@@ -575,18 +575,11 @@ path_range_query::compute_imports (bitmap imports, const vec<basic_block> &path)
     {
       tree name = worklist.pop ();
       gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+      if (SSA_NAME_IS_DEFAULT_DEF (name)
+	  || !path.contains (gimple_bb (def_stmt)))
+	continue;
 
-      if (is_gimple_assign (def_stmt))
-	{
-	  add_to_imports (gimple_assign_rhs1 (def_stmt), imports);
-	  tree rhs = gimple_assign_rhs2 (def_stmt);
-	  if (rhs && add_to_imports (rhs, imports))
-	    worklist.safe_push (rhs);
-	  rhs = gimple_assign_rhs3 (def_stmt);
-	  if (rhs && add_to_imports (rhs, imports))
-	    worklist.safe_push (rhs);
-	}
-      else if (gphi *phi = dyn_cast <gphi *> (def_stmt))
+      if (gphi *phi = dyn_cast <gphi *> (def_stmt))
 	{
 	  for (size_t i = 0; i < gimple_phi_num_args (phi); ++i)
 	    {
@@ -597,6 +590,30 @@ path_range_query::compute_imports (bitmap imports, const vec<basic_block> &path)
 		  && path.contains (e->src)
 		  && bitmap_set_bit (imports, SSA_NAME_VERSION (arg)))
 		worklist.safe_push (arg);
+	    }
+	}
+      else if (gassign *ass = dyn_cast <gassign *> (def_stmt))
+	{
+	  tree ssa[3];
+	  if (range_op_handler (ass))
+	    {
+	      ssa[0] = gimple_range_ssa_p (gimple_range_operand1 (ass));
+	      ssa[1] = gimple_range_ssa_p (gimple_range_operand2 (ass));
+	      ssa[2] = NULL_TREE;
+	    }
+	  else if (gimple_assign_rhs_code (ass) == COND_EXPR)
+	    {
+	      ssa[0] = gimple_range_ssa_p (gimple_assign_rhs1 (ass));
+	      ssa[1] = gimple_range_ssa_p (gimple_assign_rhs2 (ass));
+	      ssa[2] = gimple_range_ssa_p (gimple_assign_rhs3 (ass));
+	    }
+	  else
+	    continue;
+	  for (unsigned j = 0; j < 3; ++j)
+	    {
+	      tree rhs = ssa[j];
+	      if (rhs && add_to_imports (rhs, imports))
+		worklist.safe_push (rhs);
 	    }
 	}
     }
