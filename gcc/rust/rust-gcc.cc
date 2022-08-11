@@ -1778,8 +1778,6 @@ Gcc_backend::call_expression (tree fn, const std::vector<tree> &fn_args,
   for (size_t i = 0; i < nargs; ++i)
     {
       args[i] = fn_args.at (i);
-      if (args[i] == error_mark_node)
-	return error_mark_node;
     }
 
   tree fndecl = fn;
