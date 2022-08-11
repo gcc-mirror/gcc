@@ -2823,18 +2823,18 @@ BEGIN
 
    IF Debugging
    THEN
-      n := GetSymName(scope) ;
-      printf1('declaring symbols in BLOCK %a\n', n)
+      n := GetSymName (scope) ;
+      printf1 ('declaring symbols in BLOCK %a\n', n)
    END ;
-   IF IsProcedure(scope)
+   IF IsProcedure (scope)
    THEN
-      StartDeclareProcedureScope(scope)
+      StartDeclareProcedureScope (scope)
    ELSE
-      StartDeclareModuleScope(scope)
+      StartDeclareModuleScope (scope)
    END ;
    IF Debugging
    THEN
-      n := GetSymName(scope) ;
+      n := GetSymName (scope) ;
       printf1('\nEND declaring symbols in BLOCK %a\n', n)
    END
 END StartDeclareScope ;

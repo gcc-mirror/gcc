@@ -84,7 +84,9 @@ FROM M2LexBuf IMPORT FindFileNameFromToken, TokenToLineNo, TokenToLocation, Make
 FROM M2Code IMPORT CodeBlock ;
 FROM M2Debug IMPORT Assert ;
 FROM M2Error IMPORT InternalError, WriteFormat0, WriteFormat1, WriteFormat2, WarnStringAt ;
-FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3, MetaError1, MetaError2 ;
+
+FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3,
+                        MetaError1, MetaError2, MetaErrorStringT1 ;
 
 FROM M2Options IMPORT DisplayQuadruples, UnboundedByReference, PedanticCast,
                       VerboseUnbounded, Iso, Pim, DebugBuiltins, WholeProgram,
@@ -105,7 +107,10 @@ FROM M2Base IMPORT MixTypes, NegateType, ActivationPointer, IsMathType,
 
 FROM M2Bitset IMPORT Bitset ;
 FROM NameKey IMPORT Name, MakeKey, KeyToCharStar, LengthKey, makekey, NulName ;
-FROM DynamicStrings IMPORT string, InitString, KillString, String, InitStringCharStar, Mark, Slice, ConCat ;
+
+FROM DynamicStrings IMPORT string, InitString, KillString, String,
+                           InitStringCharStar, Mark, Slice, ConCat, ConCatChar ;
+
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3, Sprintf4 ;
 FROM M2System IMPORT Address, Word, System, TBitSize, MakeAdr, IsSystemType, IsGenericSystemType, IsRealN, IsComplexN, IsSetN, IsWordN, Loc, Byte ;
 FROM M2FileName IMPORT CalculateFileName ;
@@ -242,6 +247,7 @@ FROM m2except IMPORT BuildThrow, BuildTryBegin, BuildTryEnd,
 FROM M2Quads IMPORT QuadOperator, GetQuad, IsReferenced, GetNextQuad,
                     SubQuad, PutQuad, MustCheckOverflow, GetQuadOtok,
                     QuadToTokenNo, DisplayQuad, GetQuadtok,
+                    GetM2OperatorDesc, GetQuadOp,
                     DisplayQuadList ;
 
 FROM M2Check IMPORT ParameterTypeCompatible, AssignmentTypeCompatible ;
@@ -553,7 +559,10 @@ VAR
    op     : QuadOperator ;
    op1,
    op2,
-   op3    : CARDINAL ;
+   op3,
+   op1pos,
+   op2pos,
+   op3pos : CARDINAL ;
    Changed: BOOLEAN ;
 BEGIN
    Changed  := FALSE ;
@@ -566,7 +575,8 @@ BEGIN
          THEN
             tokenno := QuadToTokenNo (quad)
          END ;
-         GetQuad (quad, op, op1, op2, op3) ;
+         GetQuadtok (quad, op, op1, op2, op3,
+                     op1pos, op2pos, op3pos) ;
          CASE op OF
 
          StandardFunctionOp : FoldStandardFunction (tokenno, p, quad, op1, op2, op3) |
@@ -576,18 +586,18 @@ BEGIN
          LogicalAndOp       : FoldSetAnd (tokenno, p, quad, op1, op2, op3) |
          LogicalXorOp       : FoldSymmetricDifference (tokenno, p, quad, op1, op2, op3) |
          BecomesOp          : FoldBecomes (tokenno, p, quad, op1, op3) |
-         AddOp              : FoldAdd (tokenno, p, quad, op1, op2, op3) |
-         SubOp              : FoldSub (tokenno, p, quad, op1, op2, op3) |
-         MultOp             : FoldMult (tokenno, p, quad, op1, op2, op3) |
-         DivM2Op            : FoldDivM2 (tokenno, p, quad, op1, op2, op3) |
-         ModM2Op            : FoldModM2 (tokenno, p, quad, op1, op2, op3) |
-         DivTruncOp         : FoldDivTrunc (tokenno, p, quad, op1, op2, op3) |
-         ModTruncOp         : FoldModTrunc (tokenno, p, quad, op1, op2, op3) |
-         DivCeilOp          : FoldDivCeil (tokenno, p, quad, op1, op2, op3) |
-         ModCeilOp          : FoldModCeil (tokenno, p, quad, op1, op2, op3) |
-         DivFloorOp         : FoldDivFloor (tokenno, p, quad, op1, op2, op3) |
-         ModFloorOp         : FoldModFloor (tokenno, p, quad, op1, op2, op3) |
-         NegateOp           : FoldNegate (tokenno, p, quad, op1, op3) |
+         AddOp              : FoldAdd (op1pos, p, quad, op1, op2, op3) |
+         SubOp              : FoldSub (op1pos, p, quad, op1, op2, op3) |
+         MultOp             : FoldMult (op1pos, p, quad, op1, op2, op3) |
+         DivM2Op            : FoldDivM2 (op1pos, p, quad, op1, op2, op3) |
+         ModM2Op            : FoldModM2 (op1pos, p, quad, op1, op2, op3) |
+         DivTruncOp         : FoldDivTrunc (op1pos, p, quad, op1, op2, op3) |
+         ModTruncOp         : FoldModTrunc (op1pos, p, quad, op1, op2, op3) |
+         DivCeilOp          : FoldDivCeil (op1pos, p, quad, op1, op2, op3) |
+         ModCeilOp          : FoldModCeil (op1pos, p, quad, op1, op2, op3) |
+         DivFloorOp         : FoldDivFloor (op1pos, p, quad, op1, op2, op3) |
+         ModFloorOp         : FoldModFloor (op1pos, p, quad, op1, op2, op3) |
+         NegateOp           : FoldNegate (op1pos, p, quad, op1, op3) |
          SizeOp             : FoldSize (tokenno, p, quad, op1, op2, op3) |
          RecordFieldOp      : FoldRecordField (tokenno, p, quad, op1, op2, op3) |
          HighOp             : FoldHigh (tokenno, p, quad, op1, op2, op3) |
@@ -2244,7 +2254,7 @@ BEGIN
    IF CompareTrees(bits, max)>0
    THEN
       MetaErrorT0 (CurrentQuadToken,
-                   'total number of bit specified as parameters to {%kMAKEADR} exceeds address width')
+                   'total number of bits specified as parameters to {%kMAKEADR} exceeds address width')
    END ;
    SubQuad(n) ;
    BuildAssignmentStatement (location, res, val)
@@ -2314,7 +2324,7 @@ BEGIN
             IF GetType(op3)=NulSym
             THEN
                MetaErrorT0 (tokenno,
-                            'must supply typed constants to {%kMAKEADR}')
+                            'constants passed to {%kMAKEADR} must be typed')
             ELSE
                type := GetType(op3) ;
                tmp := BuildConvert(location, GetPointerType(), Mod2Gcc(op3), FALSE) ;
@@ -2333,7 +2343,7 @@ BEGIN
       IF CompareTrees(bits, max)>0
       THEN
          MetaErrorT0 (tokenno,
-                      'total number of bit specified as parameters to {%kMAKEADR} exceeds address width')
+                      'total number of bits specified as parameters to {%kMAKEADR} exceeds address width')
       END ;
       PutConst(r, Address) ;
       AddModGcc(r, DeclareKnownConstant(location, Mod2Gcc(Address), val)) ;
@@ -3481,6 +3491,91 @@ END CodeBinarySet ;
 
 
 (*
+   CheckUnaryOperand - checks to see whether operand is using a generic type.
+*)
+
+PROCEDURE CheckUnaryOperand (quad: CARDINAL; operand: CARDINAL) : BOOLEAN ;
+VAR
+   type  : CARDINAL ;
+   s, op : String ;
+BEGIN
+   type := SkipType (GetType (operand)) ;
+   IF (Word=type) OR IsWordN (type) OR (Byte=type) OR (Loc=type)
+   THEN
+      op := GetM2OperatorDesc (GetQuadOp (quad)) ;
+      s := InitString ('operand of type {%1Ets} is not allowed in an unary expression') ;
+      IF op # NIL
+      THEN
+         s := ConCatChar (s, ' ') ;
+         s := ConCat (s, Mark (op))
+      END ;
+      MetaErrorStringT1 (CurrentQuadToken, s, operand) ;
+      RETURN FALSE
+   END ;
+   RETURN TRUE
+END CheckUnaryOperand ;
+
+
+(*
+   UnaryOperand - returns TRUE if operand is acceptable for
+                  unary operator: + -.  If FALSE
+                  is returned, an error message will be generated
+                  and the quad is deleted.
+*)
+
+PROCEDURE UnaryOperand (quad: CARDINAL; operand: CARDINAL) : BOOLEAN ;
+BEGIN
+   IF NOT CheckUnaryOperand (quad, operand)
+   THEN
+      SubQuad (quad) ;  (* We do not want multiple copies of the same error.  *)
+      RETURN FALSE
+   END ;
+   RETURN TRUE
+END UnaryOperand ;
+
+
+(*
+   CheckBinaryOperand - checks to see whether operand is using a generic type.
+*)
+
+PROCEDURE CheckBinaryOperand (quad: CARDINAL; isleft: BOOLEAN;
+                              operand: CARDINAL; result: BOOLEAN) : BOOLEAN ;
+VAR
+   type  : CARDINAL ;
+   qop   : QuadOperator ;
+   op1,
+   op2,
+   op3,
+   op1pos,
+   op2pos,
+   op3pos: CARDINAL ;
+   s, op : String ;
+BEGIN
+   type := SkipType (GetType (operand)) ;
+   IF (Word=type) OR IsWordN (type) OR (Byte=type) OR (Loc=type)
+   THEN
+      GetQuadtok (quad, qop, op1, op2, op3,
+                  op1pos, op2pos, op3pos) ;
+         op := GetM2OperatorDesc (GetQuadOp (quad)) ;
+      IF isleft
+      THEN
+         s := InitString ('left operand {%1Ea} of type {%1Ets} is not allowed in binary expression')
+      ELSE
+         s := InitString ('right operand {%1Ea} of type {%1Ets} is not allowed in binary expression')
+      END ;
+      IF op # NIL
+      THEN
+         s := ConCatChar (s, ' ') ;
+         s := ConCat (s, Mark (op))
+      END ;
+      MetaErrorStringT1 (op1pos, s, operand) ;
+      RETURN FALSE
+   END ;
+   RETURN result
+END CheckBinaryOperand ;
+
+
+(*
    BinaryOperands - returns TRUE if, l, and, r, are acceptable for
                     binary operator: + - / * and friends.  If FALSE
                     is returned, an error message will be generated
@@ -3489,25 +3584,13 @@ END CodeBinarySet ;
 
 PROCEDURE BinaryOperands (quad: CARDINAL; l, r: CARDINAL) : BOOLEAN ;
 VAR
-   tl, tr: CARDINAL ;
    result: BOOLEAN ;
 BEGIN
-   result := TRUE ;
-   tl := SkipType(GetType(l)) ;
-   tr := SkipType(GetType(r)) ;
-   IF (Word=tl) OR IsWordN(tl) OR (Byte=tl) OR (Loc=tl)
-   THEN
-      MetaErrorT1 (CurrentQuadToken, 'operand of type {%1Ets} is not allowed in a binary expression', l) ;
-      result := FALSE
-   END ;
-   IF (Word=tr) OR IsWordN(tr) OR (Byte=tl) OR (Loc=tl)
-   THEN
-      MetaErrorT1 (CurrentQuadToken, 'operand of type {%1Ets} is not allowed in a binary expression', r) ;
-      result := FALSE
-   END ;
+   result := CheckBinaryOperand (quad, TRUE, l, TRUE) ;
+   result := CheckBinaryOperand (quad, FALSE, r, result) ;
    IF NOT result
    THEN
-      SubQuad (quad)   (* we do not want multiple copies of the same error *)
+      SubQuad (quad)   (* We do not want multiple copies of the same error.  *)
    END ;
    RETURN result
 END BinaryOperands ;
@@ -3535,9 +3618,9 @@ BEGIN
       SubQuad(quad) ;
       s := KillString(s)
    ELSE
-      IF BinaryOperands(quad, op2, op3)
+      IF BinaryOperands (quad, op2, op3)
       THEN
-         FoldBinary(tokenno, p, BuildAdd, quad, op1, op2, op3)
+         FoldBinary (tokenno, p, BuildAdd, quad, op1, op2, op3)
       END
    END
 END FoldAdd ;
@@ -3592,7 +3675,7 @@ END CodeAdd ;
 PROCEDURE FoldSub (tokenno: CARDINAL; p: WalkAction;
                    quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, op2, op3)
+   IF BinaryOperands (quad, op2, op3)
    THEN
       FoldBinary(tokenno, p, BuildSub, quad, op1, op2, op3)
    END
@@ -3621,7 +3704,7 @@ END CodeSubChecked ;
 
 PROCEDURE CodeSubCheck (quad: CARDINAL; left, right: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, left, right)
+   IF BinaryOperands (quad, left, right)
    THEN
       CodeBinaryCheck (BuildSubCheck, quad)
    END
@@ -3634,7 +3717,7 @@ END CodeSubCheck ;
 
 PROCEDURE CodeSub (quad: CARDINAL; left, right: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, left, right)
+   IF BinaryOperands (quad, left, right)
    THEN
       CodeBinary (BuildSub, quad)
    END
@@ -3648,7 +3731,7 @@ END CodeSub ;
 PROCEDURE FoldMult (tokenno: CARDINAL; p: WalkAction;
                     quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, op2, op3)
+   IF BinaryOperands (quad, op2, op3)
    THEN
       FoldBinary(tokenno, p, BuildMult, quad, op1, op2, op3)
    END
@@ -3776,7 +3859,7 @@ END BinaryOperandRealFamily ;
 PROCEDURE FoldDivM2 (tokenno: CARDINAL; p: WalkAction;
                      quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, op2, op3)
+   IF BinaryOperands (quad, op2, op3)
    THEN
       IF BinaryOperandRealFamily(op2) OR BinaryOperandRealFamily(op3)
       THEN
@@ -3813,7 +3896,7 @@ END CodeDivM2 ;
 PROCEDURE FoldModM2 (tokenno: CARDINAL; p: WalkAction;
                      quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, op2, op3)
+   IF BinaryOperands (quad, op2, op3)
    THEN
       FoldBinary(tokenno, p, BuildModM2, quad, op1, op2, op3)
    END
@@ -3826,7 +3909,7 @@ END FoldModM2 ;
 
 PROCEDURE CodeModM2 (quad: CARDINAL; left, right: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, left, right)
+   IF BinaryOperands (quad, left, right)
    THEN
       CodeBinary (BuildModM2, quad)
    END
@@ -3840,7 +3923,7 @@ END CodeModM2 ;
 PROCEDURE FoldDivTrunc (tokenno: CARDINAL; p: WalkAction;
                         quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, op2, op3)
+   IF BinaryOperands (quad, op2, op3)
    THEN
       IF BinaryOperandRealFamily(op2) OR BinaryOperandRealFamily(op3)
       THEN
@@ -3858,7 +3941,7 @@ END FoldDivTrunc ;
 
 PROCEDURE CodeDivTrunc (quad: CARDINAL; left, right: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, left, right)
+   IF BinaryOperands (quad, left, right)
    THEN
       IF BinaryOperandRealFamily (left) OR BinaryOperandRealFamily (right)
       THEN
@@ -3904,7 +3987,7 @@ END CodeModTrunc ;
 PROCEDURE FoldDivCeil (tokenno: CARDINAL; p: WalkAction;
                        quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, op2, op3)
+   IF BinaryOperands (quad, op2, op3)
    THEN
       IF BinaryOperandRealFamily(op2) OR BinaryOperandRealFamily(op3)
       THEN
@@ -3922,7 +4005,7 @@ END FoldDivCeil ;
 
 PROCEDURE CodeDivCeil (quad: CARDINAL; left, right: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, left, right)
+   IF BinaryOperands (quad, left, right)
    THEN
       IF BinaryOperandRealFamily (left) OR BinaryOperandRealFamily (right)
       THEN
@@ -3941,7 +4024,7 @@ END CodeDivCeil ;
 PROCEDURE FoldModCeil (tokenno: CARDINAL; p: WalkAction;
                        quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, op2, op3)
+   IF BinaryOperands (quad, op2, op3)
    THEN
       FoldBinary(tokenno, p, BuildModCeil, quad, op1, op2, op3)
    END
@@ -3968,7 +4051,7 @@ END CodeModCeil ;
 PROCEDURE FoldDivFloor (tokenno: CARDINAL; p: WalkAction;
                         quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, op2, op3)
+   IF BinaryOperands (quad, op2, op3)
    THEN
       IF BinaryOperandRealFamily(op2) OR BinaryOperandRealFamily(op3)
       THEN
@@ -4005,7 +4088,7 @@ END CodeDivFloor ;
 PROCEDURE FoldModFloor (tokenno: CARDINAL; p: WalkAction;
                         quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, op2, op3)
+   IF BinaryOperands (quad, op2, op3)
    THEN
       FoldBinary(tokenno, p, BuildModFloor, quad, op1, op2, op3)
    END
@@ -4018,7 +4101,7 @@ END FoldModFloor ;
 
 PROCEDURE CodeModFloor (quad: CARDINAL; left, right: CARDINAL) ;
 BEGIN
-   IF BinaryOperands(quad, left, right)
+   IF BinaryOperands (quad, left, right)
    THEN
       CodeBinary (BuildModFloor, quad)
    END
@@ -4437,7 +4520,7 @@ END FoldBinarySet ;
 PROCEDURE FoldSetOr (tokenno: CARDINAL; p: WalkAction;
                      quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   FoldBinarySet(tokenno, p, SetOr, quad, op1, op2, op3)
+   FoldBinarySet (tokenno, p, SetOr, quad, op1, op2, op3)
 END FoldSetOr ;
 
 
@@ -4447,7 +4530,7 @@ END FoldSetOr ;
 
 PROCEDURE CodeSetOr (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   CodeBinarySet(BuildLogicalOr, SetOr, quad, op1, op2, op3)
+   CodeBinarySet (BuildLogicalOr, SetOr, quad, op1, op2, op3)
 END CodeSetOr ;
 
 
@@ -4468,7 +4551,7 @@ END FoldSetAnd ;
 
 PROCEDURE CodeSetAnd (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   CodeBinarySet(BuildLogicalAnd, SetAnd, quad, op1, op2, op3)
+   CodeBinarySet (BuildLogicalAnd, SetAnd, quad, op1, op2, op3)
 END CodeSetAnd ;
 
 
@@ -4566,12 +4649,12 @@ END FoldSetShift ;
 
 PROCEDURE CodeSetShift (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   CodeBinarySetShift(BuildLogicalShift,
-                      SetShift,
-                      MakeKey('ShiftVal'),
-                      MakeKey('ShiftLeft'),
-                      MakeKey('ShiftRight'),
-                      quad, op1, op2, op3)
+   CodeBinarySetShift (BuildLogicalShift,
+                       SetShift,
+                       MakeKey('ShiftVal'),
+                       MakeKey('ShiftLeft'),
+                       MakeKey('ShiftRight'),
+                       quad, op1, op2, op3)
 END CodeSetShift ;
 
 
@@ -4592,12 +4675,12 @@ END FoldSetRotate ;
 
 PROCEDURE CodeSetRotate (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   CodeBinarySetShift(BuildLogicalRotate,
-                      SetRotate,
-                      MakeKey('RotateVal'),
-                      MakeKey('RotateLeft'),
-                      MakeKey('RotateRight'),
-                      quad, op1, op2, op3)
+   CodeBinarySetShift (BuildLogicalRotate,
+                       SetRotate,
+                       MakeKey ('RotateVal'),
+                       MakeKey ('RotateLeft'),
+                       MakeKey ('RotateRight'),
+                       quad, op1, op2, op3)
 END CodeSetRotate ;
 
 
@@ -4620,8 +4703,8 @@ END FoldSetLogicalDifference ;
 
 PROCEDURE CodeSetLogicalDifference (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   CodeBinarySet(BuildLogicalDifference, SetDifference,
-                 quad, op1, op2, op3)
+   CodeBinarySet (BuildLogicalDifference, SetDifference,
+                  quad, op1, op2, op3)
 END CodeSetLogicalDifference ;
 
 
@@ -4632,7 +4715,7 @@ END CodeSetLogicalDifference ;
 PROCEDURE FoldSymmetricDifference (tokenno: CARDINAL; p: WalkAction;
                                    quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   FoldBinarySet(tokenno, p, SetSymmetricDifference, quad, op1, op2, op3)
+   FoldBinarySet (tokenno, p, SetSymmetricDifference, quad, op1, op2, op3)
 END FoldSymmetricDifference ;
 
 
@@ -4642,8 +4725,8 @@ END FoldSymmetricDifference ;
 
 PROCEDURE CodeSetSymmetricDifference (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   CodeBinarySet(BuildSymmetricDifference, SetSymmetricDifference,
-                 quad, op1, op2, op3)
+   CodeBinarySet (BuildSymmetricDifference, SetSymmetricDifference,
+                  quad, op1, op2, op3)
 END CodeSetSymmetricDifference ;
 
 
@@ -4652,7 +4735,7 @@ END CodeSetSymmetricDifference ;
                   Set operands may be longer than a word.
 *)
 
-PROCEDURE CodeUnarySet (unop: BuildUnarySetFunction; doOp: DoUnaryProcedure;
+PROCEDURE CodeUnarySet (unop: BuildUnarySetFunction; constop: DoUnaryProcedure;
                         quad: CARDINAL; result, expr: CARDINAL) ;
 VAR
    location: location_t ;
@@ -4669,7 +4752,7 @@ BEGIN
          Assert (FindType (expr) # NulSym) ;
          PutConst (result, FindType (expr)) ;
          PushValue (expr) ;
-         doOp (CurrentQuadToken) ;
+         constop (CurrentQuadToken) ;
          PopValue (result) ;
          PushValue (result) ;
          PutConstSet (result) ;
@@ -4683,10 +4766,10 @@ BEGIN
       END
    ELSE
       checkDeclare (result) ;
-      BuildUnaryForeachWordDo(location,
-                              Mod2Gcc (GetType (result)), Mod2Gcc (result), Mod2Gcc (expr), unop,
-                              GetMode(result) = LeftValue, GetMode(expr) = LeftValue,
-                              IsConst (result), IsConst (expr))
+      BuildUnaryForeachWordDo (location,
+                               Mod2Gcc (GetType (result)), Mod2Gcc (result), Mod2Gcc (expr), unop,
+                               GetMode(result) = LeftValue, GetMode(expr) = LeftValue,
+                               IsConst (result), IsConst (expr))
    END
 END CodeUnarySet ;
 
@@ -5195,7 +5278,7 @@ PROCEDURE FoldNegate (tokenno: CARDINAL; p: WalkAction;
 BEGIN
    IF IsConstSet (expr)
    THEN
-      FoldUnarySet(tokenno, p, SetNegate, quad, result, expr)
+      FoldUnarySet (tokenno, p, SetNegate, quad, result, expr)
    ELSE
       FoldUnary (tokenno, p, BuildNegate, NIL, quad, result, expr)
    END
@@ -5212,11 +5295,14 @@ BEGIN
    IF IsConstSet (op3) OR IsSet (GetType (op3))
    THEN
       CodeUnarySet (BuildSetNegate, SetNegate, quad, op1, op3)
-   ELSIF MustCheckOverflow (quad)
+   ELSIF UnaryOperand (quad, op3)
    THEN
-      CodeUnaryCheck (BuildNegateCheck, NIL, quad, op1, op3)
-   ELSE
-      CodeUnary (BuildNegate, NIL, quad, op1, op3)
+      IF MustCheckOverflow (quad)
+      THEN
+         CodeUnaryCheck (BuildNegateCheck, NIL, quad, op1, op3)
+      ELSE
+         CodeUnary (BuildNegate, NIL, quad, op1, op3)
+      END
    END
 END CodeNegateChecked ;
 
@@ -6288,7 +6374,7 @@ BEGIN
       IF IsComposite(GetType(op1)) OR IsComposite(GetType(op2))
       THEN
          MetaErrorT2 (CurrentQuadToken,
-                      'comparison tests between are composite types not allowed {%1Eatd} and {%2atd}',
+                      'comparison tests between composite types not allowed {%1Eatd} and {%2atd}',
                       op1, op2)
       ELSE
          ConvertBinaryOperands(location,
@@ -6385,7 +6471,7 @@ BEGIN
       IF IsComposite(GetType(op1)) OR IsComposite(GetType(op2))
       THEN
          MetaErrorT2 (CurrentQuadToken,
-                      'comparison tests between are composite types not allowed {%1Eatd} and {%2atd}',
+                      'comparison tests between composite types not allowed {%1Eatd} and {%2atd}',
                       op1, op2)
       ELSE
          ConvertBinaryOperands(location,
@@ -6481,7 +6567,7 @@ BEGIN
       IF IsComposite(GetType(op1)) OR IsComposite(GetType(op2))
       THEN
          MetaErrorT2 (CurrentQuadToken,
-                      'comparison tests between are composite types not allowed {%1Eatd} and {%2atd}',
+                      'comparison tests between composite types not allowed {%1Eatd} and {%2atd}',
                       op1, op2)
       ELSE
          ConvertBinaryOperands(location,
@@ -6577,7 +6663,7 @@ BEGIN
       IF IsComposite(GetType(op1)) OR IsComposite(GetType(op2))
       THEN
          MetaErrorT2 (CurrentQuadToken,
-                      'comparison tests between are composite types not allowed {%1Eatd} and {%2atd}',
+                      'comparison tests between composite types not allowed {%1Eatd} and {%2atd}',
                       op1, op2)
       ELSE
          ConvertBinaryOperands(location,
@@ -6731,7 +6817,7 @@ BEGIN
       IF IsComposite(GetType(op1)) OR IsComposite(GetType(op2))
       THEN
          MetaErrorT2 (CurrentQuadToken,
-                      'equality tests between are composite types not allowed {%1Eatd} and {%2atd}',
+                      'equality tests between composite types not allowed {%1Eatd} and {%2atd}',
                       op1, op2)
       ELSE
          ConvertBinaryOperands(location,
@@ -6780,7 +6866,7 @@ BEGIN
       IF IsComposite(op1) OR IsComposite(op2)
       THEN
          MetaErrorT2 (CurrentQuadToken,
-                      'inequality tests between are composite types not allowed {%1Eatd} and {%2atd}',
+                      'inequality tests between composite types not allowed {%1Eatd} and {%2atd}',
                       op1, op2)
       ELSE
          ConvertBinaryOperands(location,

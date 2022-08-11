@@ -227,7 +227,7 @@ PROCEDURE BuildAsm (location: location_t; instr: Tree;
     BuildUnaryForeachWordDo - provides the large set operators.
                               Each word (or less) of the set can be
                               calculated by unop.
-                              This procedure runs along each word
+                              This procedure iterates over each word
                               of the large set invoking the unop.
 *)
 

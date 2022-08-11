@@ -194,6 +194,15 @@ BEGIN
                ELSE
                   SetScope (nb, op3, programscope)
                END
+            ELSIF op=InitStartOp
+            THEN
+               nb := AddToRange (nb, TRUE, i) ;
+               IF IsDefImp (op3)
+               THEN
+                  SetScope (nb, op3, implementationscope)
+               ELSE
+                  SetScope (nb, op3, programscope)
+               END
             ELSE
                nb := AddToRange (nb, First, i) ;
                IF First

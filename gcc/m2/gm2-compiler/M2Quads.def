@@ -128,6 +128,7 @@ EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
                  GetQuad, GetFirstQuad, GetNextQuad, PutQuad,
                  SubQuad, EraseQuad, GetRealQuad,
                  GetQuadtok, GetQuadOtok,
+                 GetQuadOp, GetM2OperatorDesc,
                  CountQuads,
                  GetLastFileQuad,
                  GetLastQuadNo,
@@ -435,6 +436,24 @@ PROCEDURE QuadToLineNo (QuadNo: CARDINAL) : CARDINAL ;
 PROCEDURE GetQuad (QuadNo: CARDINAL;
                    VAR Op: QuadOperator;
                    VAR Oper1, Oper2, Oper3: CARDINAL) ;
+
+
+(*
+   GetQuadOp - returns the operator for quad.
+*)
+
+PROCEDURE GetQuadOp (quad: CARDINAL) : QuadOperator ;
+
+
+(*
+   GetM2OperatorDesc - returns the Modula-2 string associated with the quad operator
+                       (if possible).  It returns NIL if no there is not an obvious match
+                       in Modula-2.  It is assummed that the string will be used during
+                       construction of error messages and therefore keywords are
+                       wrapped with a format specifier.
+*)
+
+PROCEDURE GetM2OperatorDesc (op: QuadOperator) : String ;
 
 
 (*

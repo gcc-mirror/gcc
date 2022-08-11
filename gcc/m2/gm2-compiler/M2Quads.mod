@@ -13382,6 +13382,55 @@ END WriteMode ;
 
 
 (*
+   GetQuadOp - returns the operator for quad.
+*)
+
+PROCEDURE GetQuadOp (quad: CARDINAL) : QuadOperator ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   f := GetQF (quad) ;
+   RETURN f^.Operator
+END GetQuadOp ;
+
+
+(*
+   GetM2OperatorDesc - returns the Modula-2 string associated with the quad operator
+                       (if possible).  It returns NIL if no there is not an obvious match
+                       in Modula-2.  It is assummed that the string will be used during
+                       construction of error messages and therefore keywords are
+                       wrapped with a format specifier.
+*)
+
+PROCEDURE GetM2OperatorDesc (op: QuadOperator) : String ;
+BEGIN
+   CASE op OF
+
+   NegateOp    :  RETURN InitString ('-') |
+   AddOp       :  RETURN InitString ('+') |
+   SubOp       :  RETURN InitString ('-') |
+   MultOp      :  RETURN InitString ('*') |
+   DivM2Op,
+   DivCeilOp,
+   DivFloorOp,
+   DivTruncOp  :  RETURN InitString ('{%kDIV}') |
+   ModM2Op,
+   ModCeilOp,
+   ModFloorOp  :  RETURN InitString ('{%kMOD}') |
+   ModTruncOp  :  RETURN InitString ('{%kREM}') |
+   LogicalOrOp :  RETURN InitString ('{%kOR}') |
+   LogicalAndOp:  RETURN InitString ('{%kAND}') |
+   InclOp      :  RETURN InitString ('{%kINCL}') |
+   ExclOp      :  RETURN InitString ('{%kEXCL}')
+
+   ELSE
+      RETURN NIL
+   END
+END GetM2OperatorDesc ;
+
+
+
+(*
    PushExit - pushes the exit value onto the EXIT stack.
 *)
 
