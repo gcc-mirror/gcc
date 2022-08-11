@@ -117,6 +117,9 @@ GRS_OBJS = \
     rust/rust-hir-type-check-struct.o \
     rust/rust-hir-type-check-pattern.o \
     rust/rust-hir-type-check-expr.o \
+    rust/rust-hir-type-check-stmt.o \
+    rust/rust-hir-type-check-enumitem.o \
+    rust/rust-hir-type-check-implitem.o \
     rust/rust-hir-dot-operator.o \
     rust/rust-coercion.o \
     rust/rust-hir-type-check-base.o \

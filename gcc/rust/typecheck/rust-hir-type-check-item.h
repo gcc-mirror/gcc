@@ -20,30 +20,36 @@
 #define RUST_HIR_TYPE_CHECK_ITEM
 
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-full.h"
-#include "rust-hir-type-check-implitem.h"
-#include "rust-hir-type-check-type.h"
-#include "rust-hir-type-check-stmt.h"
-#include "rust-hir-trait-resolve.h"
-#include "rust-tyty-visitor.h"
 
 namespace Rust {
 namespace Resolver {
 
-class TypeCheckItem : public TypeCheckBase
+class TypeCheckItem : private TypeCheckBase, private HIR::HIRVisItemVisitor
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
-  static void Resolve (HIR::Item *item);
+  static void Resolve (HIR::Item &item);
 
   void visit (HIR::ImplBlock &impl_block) override;
   void visit (HIR::Function &function) override;
   void visit (HIR::Module &module) override;
   void visit (HIR::Trait &trait) override;
 
+  // FIXME - get rid of toplevel pass
+  void visit (HIR::TypeAlias &alias) override{};
+  void visit (HIR::TupleStruct &struct_decl) override{};
+  void visit (HIR::StructStruct &struct_decl) override{};
+  void visit (HIR::Enum &enum_decl) override{};
+  void visit (HIR::Union &union_decl) override{};
+  void visit (HIR::StaticItem &var) override{};
+  void visit (HIR::ConstantItem &constant) override{};
+  void visit (HIR::ExternBlock &extern_block) override{};
+
+  // nothing to do
+  void visit (HIR::ExternCrate &crate) override {}
+  void visit (HIR::UseDeclaration &use_decl) override {}
+
 private:
-  TypeCheckItem () : TypeCheckBase () {}
+  TypeCheckItem ();
 };
 
 } // namespace Resolver

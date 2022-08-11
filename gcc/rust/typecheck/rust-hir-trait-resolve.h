@@ -20,19 +20,15 @@
 #define RUST_HIR_TRAIT_RESOLVE_H
 
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-full.h"
-#include "rust-tyty-visitor.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-trait-ref.h"
-#include "rust-expr.h"
 
 namespace Rust {
 namespace Resolver {
 
-class ResolveTraitItemToRef : public TypeCheckBase
+class ResolveTraitItemToRef : public TypeCheckBase,
+			      private HIR::HIRTraitItemVisitor
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
   static TraitItemReference
   Resolve (HIR::TraitItem &item, TyTy::BaseType *self,
@@ -59,9 +55,9 @@ private:
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
 };
 
-class TraitResolver : public TypeCheckBase
+class TraitResolver : public TypeCheckBase, private HIR::HIRFullVisitorBase
 {
-  using Rust::Resolver::TypeCheckBase::visit;
+  using HIR::HIRFullVisitorBase::visit;
 
 public:
   static TraitReference *Resolve (HIR::TypePath &path);

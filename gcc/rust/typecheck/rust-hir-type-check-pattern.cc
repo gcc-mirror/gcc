@@ -22,6 +22,24 @@
 namespace Rust {
 namespace Resolver {
 
+TypeCheckPattern::TypeCheckPattern (TyTy::BaseType *parent)
+  : TypeCheckBase (), parent (parent), infered (nullptr)
+{}
+
+TyTy::BaseType *
+TypeCheckPattern::Resolve (HIR::Pattern *pattern, TyTy::BaseType *parent)
+{
+  TypeCheckPattern resolver (parent);
+  pattern->accept_vis (resolver);
+
+  if (resolver.infered == nullptr)
+    return new TyTy::ErrorType (pattern->get_pattern_mappings ().get_hirid ());
+
+  resolver.context->insert_type (pattern->get_pattern_mappings (),
+				 resolver.infered);
+  return resolver.infered;
+}
+
 void
 TypeCheckPattern::visit (HIR::PathInExpression &pattern)
 {
@@ -355,6 +373,34 @@ void
 TypeCheckPattern::visit (HIR::IdentifierPattern &pattern)
 {
   infered = parent;
+}
+
+void
+TypeCheckPattern::visit (HIR::GroupedPattern &pattern)
+{
+  // TODO
+  gcc_unreachable ();
+}
+
+void
+TypeCheckPattern::visit (HIR::QualifiedPathInExpression &pattern)
+{
+  // TODO
+  gcc_unreachable ();
+}
+
+void
+TypeCheckPattern::visit (HIR::ReferencePattern &pattern)
+{
+  // TODO
+  gcc_unreachable ();
+}
+
+void
+TypeCheckPattern::visit (HIR::SlicePattern &pattern)
+{
+  // TODO
+  gcc_unreachable ();
 }
 
 } // namespace Resolver

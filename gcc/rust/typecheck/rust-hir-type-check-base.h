@@ -30,13 +30,9 @@ namespace Rust {
 namespace Resolver {
 
 class TraitReference;
-
-// base class to allow derivatives to overload as needed
-class TypeCheckBase : public HIR::HIRFullVisitorBase
+class TypeCheckBase
 {
 public:
-  using Rust::HIR::HIRFullVisitorBase::visit;
-
   virtual ~TypeCheckBase () {}
 
   static TyTy::BaseType *coercion_site (HirId id, TyTy::BaseType *lhs,
@@ -63,6 +59,10 @@ protected:
 
   TyTy::ADTType::ReprOptions parse_repr_options (const AST::AttrVec &attrs,
 						 Location locus);
+
+  void resolve_generic_params (
+    const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
+    std::vector<TyTy::SubstitutionParamMapping> &substitutions);
 
   Analysis::Mappings *mappings;
   Resolver *resolver;

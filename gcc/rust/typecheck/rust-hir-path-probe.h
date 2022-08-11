@@ -125,11 +125,8 @@ struct PathProbeCandidate
   bool is_error () const { return type == ERROR; }
 };
 
-class PathProbeType : public TypeCheckBase
+class PathProbeType : public TypeCheckBase, public HIR::HIRImplVisitor
 {
-protected:
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
   static std::vector<PathProbeCandidate>
   Probe (const TyTy::BaseType *receiver,
@@ -452,10 +449,9 @@ protected:
   DefId specific_trait_id;
 };
 
-class ReportMultipleCandidateError : private TypeCheckBase
+class ReportMultipleCandidateError : private TypeCheckBase,
+				     private HIR::HIRImplVisitor
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
   static void Report (std::vector<PathProbeCandidate> &candidates,
 		      const HIR::PathIdentSegment &query, Location query_locus)

@@ -20,41 +20,34 @@
 #define RUST_HIR_TYPE_CHECK_TOPLEVEL
 
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-full.h"
-#include "rust-hir-type-check-implitem.h"
-#include "rust-hir-type-check-type.h"
-#include "rust-hir-type-check-expr.h"
-#include "rust-hir-type-check-enumitem.h"
-#include "rust-tyty.h"
 
 namespace Rust {
 namespace Resolver {
 
-class TypeCheckTopLevel : public TypeCheckBase
+class TypeCheckTopLevel : private TypeCheckBase, public HIR::HIRVisItemVisitor
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
-  static void Resolve (HIR::Item *item);
+  static void Resolve (HIR::Item &item);
 
+  void visit (HIR::Module &module) override;
+  void visit (HIR::Function &function) override;
   void visit (HIR::TypeAlias &alias) override;
   void visit (HIR::TupleStruct &struct_decl) override;
-  void visit (HIR::Module &module) override;
   void visit (HIR::StructStruct &struct_decl) override;
   void visit (HIR::Enum &enum_decl) override;
   void visit (HIR::Union &union_decl) override;
   void visit (HIR::StaticItem &var) override;
   void visit (HIR::ConstantItem &constant) override;
-  void visit (HIR::Function &function) override;
   void visit (HIR::ImplBlock &impl_block) override;
   void visit (HIR::ExternBlock &extern_block) override;
 
-private:
-  TypeCheckTopLevel () : TypeCheckBase () {}
+  // nothing to do
+  void visit (HIR::Trait &trait_block) override {}
+  void visit (HIR::ExternCrate &crate) override {}
+  void visit (HIR::UseDeclaration &use_decl) override {}
 
-  void resolve_generic_params (
-    const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
-    std::vector<TyTy::SubstitutionParamMapping> &substitutions);
+private:
+  TypeCheckTopLevel ();
 };
 
 } // namespace Resolver

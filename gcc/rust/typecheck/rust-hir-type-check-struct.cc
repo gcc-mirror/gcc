@@ -24,8 +24,23 @@
 namespace Rust {
 namespace Resolver {
 
+TypeCheckStructExpr::TypeCheckStructExpr (HIR::Expr *e)
+  : TypeCheckBase (),
+    resolved (new TyTy::ErrorType (e->get_mappings ().get_hirid ())),
+    struct_path_resolved (nullptr),
+    variant (&TyTy::VariantDef::get_error_node ())
+{}
+
+TyTy::BaseType *
+TypeCheckStructExpr::Resolve (HIR::StructExprStructFields *expr)
+{
+  TypeCheckStructExpr resolver (expr);
+  resolver.resolve (*expr);
+  return resolver.resolved;
+}
+
 void
-TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
+TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 {
   TyTy::BaseType *struct_path_ty
     = TypeCheckExpr::Resolve (&struct_expr.get_struct_name ());
@@ -77,7 +92,23 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
   for (auto &field : struct_expr.get_fields ())
     {
       resolved_field_value_expr = nullptr;
-      field->accept_vis (*this);
+
+      switch (field->get_kind ())
+	{
+	case HIR::StructExprField::StructExprFieldKind::IDENTIFIER:
+	  visit (static_cast<HIR::StructExprFieldIdentifier &> (*field.get ()));
+	  break;
+
+	case HIR::StructExprField::StructExprFieldKind::IDENTIFIER_VALUE:
+	  visit (
+	    static_cast<HIR::StructExprFieldIdentifierValue &> (*field.get ()));
+	  break;
+
+	case HIR::StructExprField::StructExprFieldKind::INDEX_VALUE:
+	  visit (static_cast<HIR::StructExprFieldIndexValue &> (*field.get ()));
+	  break;
+	}
+
       if (resolved_field_value_expr == nullptr)
 	{
 	  rust_fatal_error (field->get_locus (),
@@ -294,7 +325,7 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
   if (resolved_field_value_expr != nullptr)
 
     {
-      fields_assigned.insert (field.field_name);
+      fields_assigned.insert (field.get_field_name ());
       adtFieldIndexToField[field_index] = &field;
     }
 }

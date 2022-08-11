@@ -264,10 +264,6 @@ public:
   tree if_statement (tree, tree condition, tree then_block, tree else_block,
 		     Location);
 
-  tree switch_statement (tree function, tree value,
-			 const std::vector<std::vector<tree>> &cases,
-			 const std::vector<tree> &statements, Location);
-
   tree compound_statement (tree, tree);
 
   tree statement_list (const std::vector<tree> &);
@@ -326,10 +322,6 @@ public:
 
   bool function_set_parameters (tree function,
 				const std::vector<Bvariable *> &);
-
-  tree lookup_gcc_builtin (const std::string &);
-
-  tree lookup_builtin_by_rust_name (const std::string &);
 
   void write_global_definitions (const std::vector<tree> &,
 				 const std::vector<tree> &,
@@ -2055,67 +2047,6 @@ Gcc_backend::exit_expression (tree cond_tree, Location locus)
 {
   return fold_build1_loc (locus.gcc_location (), EXIT_EXPR, void_type_node,
 			  cond_tree);
-}
-
-// Switch.
-
-tree
-Gcc_backend::switch_statement (tree decl, tree value,
-			       const std::vector<std::vector<tree>> &cases,
-			       const std::vector<tree> &statements,
-			       Location switch_location)
-{
-  gcc_assert (cases.size () == statements.size ());
-
-  if (DECL_STRUCT_FUNCTION (decl) == NULL)
-    push_struct_function (decl);
-  else
-    push_cfun (DECL_STRUCT_FUNCTION (decl));
-
-  tree stmt_list = NULL_TREE;
-  std::vector<std::vector<tree>>::const_iterator pc = cases.begin ();
-  for (std::vector<tree>::const_iterator ps = statements.begin ();
-       ps != statements.end (); ++ps, ++pc)
-    {
-      if (pc->empty ())
-	{
-	  location_t loc
-	    = (*ps != NULL ? EXPR_LOCATION (*ps) : UNKNOWN_LOCATION);
-	  tree label = create_artificial_label (loc);
-	  tree c = build_case_label (NULL_TREE, NULL_TREE, label);
-	  append_to_statement_list (c, &stmt_list);
-	}
-      else
-	{
-	  for (std::vector<tree>::const_iterator pcv = pc->begin ();
-	       pcv != pc->end (); ++pcv)
-	    {
-	      tree t = (*pcv);
-	      if (t == error_mark_node)
-		return error_mark_node;
-	      location_t loc = EXPR_LOCATION (t);
-	      tree label = create_artificial_label (loc);
-	      tree c = build_case_label ((*pcv), NULL_TREE, label);
-	      append_to_statement_list (c, &stmt_list);
-	    }
-	}
-
-      if (*ps != NULL)
-	{
-	  tree t = (*ps);
-	  if (t == error_mark_node)
-	    return error_mark_node;
-	  append_to_statement_list (t, &stmt_list);
-	}
-    }
-  pop_cfun ();
-
-  tree tv = value;
-  if (tv == error_mark_node)
-    return error_mark_node;
-  tree t = build2_loc (switch_location.gcc_location (), SWITCH_EXPR, NULL_TREE,
-		       tv, stmt_list);
-  return t;
 }
 
 // Pair of statements.

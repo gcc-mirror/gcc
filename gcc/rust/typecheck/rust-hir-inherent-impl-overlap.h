@@ -25,10 +25,8 @@
 namespace Rust {
 namespace Resolver {
 
-class ImplItemToName : public TypeCheckBase
+class ImplItemToName : private TypeCheckBase, private HIR::HIRImplVisitor
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
   static bool resolve (HIR::ImplItem *item, std::string &name_result)
   {
@@ -66,8 +64,6 @@ private:
 
 class OverlappingImplItemPass : public TypeCheckBase
 {
-  using Rust::Resolver::TypeCheckBase::visit;
-
 public:
   static void go ()
   {
