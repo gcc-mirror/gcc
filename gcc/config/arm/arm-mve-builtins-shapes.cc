@@ -338,6 +338,22 @@ struct overloaded_base : public function_shape
   }
 };
 
+/* <T0>[xN]_t vfoo_t0().
+
+   Example: vuninitializedq.
+   int8x16_t [__arm_]vuninitializedq_s8(void)
+   int8x16_t [__arm_]vuninitializedq(int8x16_t t)  */
+struct inherent_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "t0", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (inherent)
+
 /* <T0>_t foo_t0[_t1](<T1>_t)
 
    where the target type <t0> must be specified explicitly but the source

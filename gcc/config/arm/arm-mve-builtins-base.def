@@ -19,8 +19,10 @@
 
 #define REQUIRES_FLOAT false
 DEF_MVE_FUNCTION (vreinterpretq, unary_convert, reinterpret_integer, none)
+DEF_MVE_FUNCTION (vuninitializedq, inherent, all_integer_with_64, none)
 #undef REQUIRES_FLOAT
 
 #define REQUIRES_FLOAT true
 DEF_MVE_FUNCTION (vreinterpretq, unary_convert, reinterpret_float, none)
+DEF_MVE_FUNCTION (vuninitializedq, inherent, all_float, none)
 #undef REQUIRES_FLOAT

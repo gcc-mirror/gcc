@@ -25,11 +25,16 @@ namespace arm_mve
   /* The naming convention is:
 
      - to use names like "unary" etc. if the rules are somewhat generic,
-       especially if there are no ranges involved.  */
+       especially if there are no ranges involved.
+
+     Also:
+
+     - "inherent" means that the function takes no arguments.  */
 
   namespace shapes
   {
 
+    extern const function_shape *const inherent;
     extern const function_shape *const unary_convert;
 
   } /* end namespace arm_mve::shapes */

@@ -69,10 +69,24 @@ class vreinterpretq_impl : public quiet<function_base>
   }
 };
 
+/* Implements vuninitializedq_* intrinsics.  */
+class vuninitializedq_impl : public quiet<function_base>
+{
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    rtx target = e.get_reg_target ();
+    emit_clobber (copy_rtx (target));
+    return target;
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
 
 FUNCTION (vreinterpretq, vreinterpretq_impl,)
+FUNCTION (vuninitializedq, vuninitializedq_impl,)
 
 } /* end namespace arm_mve */
