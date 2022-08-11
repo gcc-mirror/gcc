@@ -152,8 +152,14 @@ grs_langhook_option_lang_mask (void)
 
 /* Initialize the options structure. */
 static void
-grs_langhook_init_options_struct (struct gcc_options * /* opts */)
+grs_langhook_init_options_struct (struct gcc_options *opts)
 {
+  /* Operations are always wrapping in Rust, even on signed integer. This is
+   * useful for the low level wrapping_{add, sub, mul} intrinsics, not for
+   * regular arithmetic operations which are checked for overflow anyway using
+   * builtins */
+  opts->x_flag_wrapv = 1;
+
   // nothing yet - used by frontends to change specific options for the language
   Rust::Session::get_instance ().init_options ();
 }
