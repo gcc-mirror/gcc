@@ -306,18 +306,6 @@ public:
   // exit expressions
   virtual tree exit_expression (tree condition, Location) = 0;
 
-  // Create a switch statement where the case values are constants.
-  // CASES and STATEMENTS must have the same number of entries.  If
-  // VALUE matches any of the list in CASES[i], which will all be
-  // integers, then STATEMENTS[i] is executed.  STATEMENTS[i] will
-  // either end with a goto statement or will fall through into
-  // STATEMENTS[i + 1].  CASES[i] is empty for the default clause,
-  // which need not be last.  FUNCTION is the current function.
-  virtual tree switch_statement (tree function, tree value,
-				 const std::vector<std::vector<tree> > &cases,
-				 const std::vector<tree> &statements, Location)
-    = 0;
-
   // Create a single statement from two statements.
   virtual tree compound_statement (tree, tree) = 0;
 
