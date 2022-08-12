@@ -150,6 +150,9 @@
 (define_code_iterator any_lt [lt ltu])
 (define_code_iterator any_le [le leu])
 
+; atomics code iterator
+(define_code_iterator any_atomic [plus ior xor and])
+
 ; bitmanip code iterators
 (define_code_iterator bitmanip_bitwise [and ior])
 
@@ -203,6 +206,10 @@
 			(and "and")
 			(plus "add")
 			(minus "sub")])
+
+; atomics code attribute
+(define_code_attr atomic_optab
+  [(plus "add") (ior "or") (xor "xor") (and "and")])
 
 ; bitmanip code attributes
 (define_code_attr bitmanip_optab [(smin "smin")
