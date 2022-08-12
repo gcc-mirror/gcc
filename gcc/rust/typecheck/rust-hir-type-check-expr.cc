@@ -263,62 +263,6 @@ TypeCheckExpr::visit (HIR::CompoundAssignmentExpr &expr)
 }
 
 void
-TypeCheckExpr::visit (HIR::IdentifierExpr &expr)
-{
-  NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
-
-  // then lookup the reference_node_id
-  NodeId ref_node_id = UNKNOWN_NODEID;
-  if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
-    {
-      resolver->lookup_resolved_type (ast_node_id, &ref_node_id);
-    }
-
-  if (ref_node_id == UNKNOWN_NODEID)
-    {
-      // FIXME this needs to go away and just return error node
-      rust_error_at (expr.get_locus (), "unresolved node: %s",
-		     expr.as_string ().c_str ());
-      return;
-    }
-
-  // node back to HIR
-  HirId ref;
-  if (!mappings->lookup_node_to_hir (ref_node_id, &ref))
-    {
-      // FIXME
-      // this is an internal error
-      rust_error_at (expr.get_locus (), "123 reverse lookup failure");
-      return;
-    }
-
-  // the base reference for this name _must_ have a type set
-  TyTy::BaseType *lookup;
-  if (!context->lookup_type (ref, &lookup))
-    {
-      // FIXME
-      // this is an internal error
-      rust_error_at (mappings->lookup_location (ref),
-		     "Failed to resolve IdentifierExpr type: %s",
-		     expr.as_string ().c_str ());
-      return;
-    }
-
-  infered = lookup->clone ();
-
-  // Generic unit structs look like an identifier but they actually need be
-  // handled as a path-in-expression so this gives us a chance to infer the
-  // generic parameters.
-  // see https://github.com/Rust-GCC/gccrs/issues/1447
-  bool is_unit_struct
-    = infered->get_kind () == TyTy::TypeKind::ADT && infered->is_unit ();
-  if (is_unit_struct && infered->needs_generic_substitutions ())
-    {
-      infered = SubstMapper::InferSubst (infered, expr.get_locus ());
-    }
-}
-
-void
 TypeCheckExpr::visit (HIR::LiteralExpr &expr)
 {
   infered = resolve_literal (expr.get_mappings (), expr.get_literal (),

@@ -201,10 +201,6 @@ PrivacyReporter::check_type_privacy (const HIR::Type *type)
 }
 
 void
-PrivacyReporter::visit (HIR::IdentifierExpr &ident_expr)
-{}
-
-void
 PrivacyReporter::visit (HIR::PathInExpression &path)
 {
   check_for_privacy_violation (path.get_mappings ().get_nodeid (),

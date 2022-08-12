@@ -255,11 +255,16 @@ public:
   void visit (AST::IdentifierExpr &expr) override
   {
     auto crate_num = mappings->get_current_crate ();
-    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   UNKNOWN_LOCAL_DEFID);
-    translated
-      = new HIR::IdentifierExpr (mapping, expr.as_string (), expr.get_locus ());
+    Analysis::NodeMapping mapping1 (crate_num, expr.get_node_id (),
+				    mappings->get_next_hir_id (crate_num),
+				    UNKNOWN_LOCAL_DEFID);
+    Analysis::NodeMapping mapping2 (mapping1);
+
+    HIR::PathIdentSegment ident_seg (expr.get_ident ());
+    HIR::PathExprSegment seg (mapping1, ident_seg, expr.get_locus (),
+			      HIR::GenericArgs::create_empty ());
+    translated = new HIR::PathInExpression (mapping2, {seg}, expr.get_locus (),
+					    false, expr.get_outer_attrs ());
   }
 
   void visit (AST::ArrayExpr &expr) override

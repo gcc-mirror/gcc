@@ -159,11 +159,6 @@ public:
 	    + type_string (expr.get_mappings ());
   }
 
-  void visit (HIR::IdentifierExpr &expr) override
-  {
-    dump += expr.get_identifier () + ":" + type_string (expr.get_mappings ());
-  }
-
   void visit (HIR::ArrayExpr &expr) override
   {
     dump += type_string (expr.get_mappings ()) + ":[";

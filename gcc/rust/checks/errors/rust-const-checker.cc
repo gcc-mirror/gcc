@@ -53,10 +53,6 @@ ConstChecker::is_const_extern_fn (HIR::ExternalFunctionItem &fn)
 }
 
 void
-ConstChecker::visit (IdentifierExpr &ident_expr)
-{}
-
-void
 ConstChecker::visit (Lifetime &lifetime)
 {}
 

@@ -247,20 +247,6 @@ MarkLive::visit (HIR::TupleIndexExpr &expr)
 }
 
 void
-MarkLive::visit (HIR::IdentifierExpr &expr)
-{
-  NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
-  NodeId ref_node_id = UNKNOWN_NODEID;
-  find_ref_node_id (ast_node_id, ref_node_id);
-
-  // node back to HIR
-  HirId ref;
-  bool ok = mappings->lookup_node_to_hir (ref_node_id, &ref);
-  rust_assert (ok);
-  mark_hir_id (ref);
-}
-
-void
 MarkLive::visit (HIR::TypeAlias &alias)
 {
   NodeId ast_node_id;

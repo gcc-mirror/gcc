@@ -129,21 +129,6 @@ UnsafeChecker::check_function_call (HirId node_id, Location locus)
 }
 
 void
-UnsafeChecker::visit (IdentifierExpr &ident_expr)
-{
-  NodeId ast_node_id = ident_expr.get_mappings ().get_nodeid ();
-  NodeId ref_node_id;
-  HirId definition_id;
-
-  if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
-    return;
-
-  rust_assert (mappings.lookup_node_to_hir (ref_node_id, &definition_id));
-
-  check_use_of_static (definition_id, ident_expr.get_locus ());
-}
-
-void
 UnsafeChecker::visit (Lifetime &lifetime)
 {}
 

@@ -46,7 +46,6 @@ public:
   void visit (HIR::StructExprFieldIndexValue &) override {}
   void visit (HIR::StructExprStruct &) override {}
   void visit (HIR::StructExprStructFields &) override {}
-  void visit (HIR::IdentifierExpr &) override {}
   void visit (HIR::LiteralExpr &) override {}
   void visit (HIR::BorrowExpr &) override {}
   void visit (HIR::DereferenceExpr &) override {}
@@ -126,7 +125,6 @@ public:
   void visit (HIR::StructExprFieldIndexValue &) override {}
   void visit (HIR::StructExprStruct &) override {}
   void visit (HIR::StructExprStructFields &) override {}
-  void visit (HIR::IdentifierExpr &) override {}
   void visit (HIR::LiteralExpr &) override {}
   void visit (HIR::BorrowExpr &) override {}
   void visit (HIR::DereferenceExpr &) override {}
@@ -216,7 +214,6 @@ public:
   void visit (HIR::StructExprFieldIndexValue &) override {}
   void visit (HIR::StructExprStruct &) override {}
   void visit (HIR::StructExprStructFields &) override {}
-  void visit (HIR::IdentifierExpr &) override {}
   void visit (HIR::LiteralExpr &) override {}
   void visit (HIR::BorrowExpr &) override {}
   void visit (HIR::DereferenceExpr &) override {}

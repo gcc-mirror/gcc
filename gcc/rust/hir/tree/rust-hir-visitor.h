@@ -27,7 +27,6 @@ namespace HIR {
 class HIRFullVisitor
 {
 public:
-  virtual void visit (IdentifierExpr &ident_expr) = 0;
   virtual void visit (Lifetime &lifetime) = 0;
   virtual void visit (LifetimeParam &lifetime_param) = 0;
   virtual void visit (PathInExpression &path) = 0;
@@ -166,7 +165,6 @@ class HIRFullVisitorBase : public HIRFullVisitor
 public:
   virtual ~HIRFullVisitorBase () {}
 
-  virtual void visit (IdentifierExpr &) override {}
   virtual void visit (Lifetime &) override {}
   virtual void visit (LifetimeParam &) override {}
   virtual void visit (PathInExpression &) override {}
@@ -425,7 +423,6 @@ public:
   virtual void visit (ClosureExprInner &expr) = 0;
   virtual void visit (StructExprStructFields &) = 0;
   virtual void visit (StructExprStruct &) = 0;
-  virtual void visit (IdentifierExpr &ident_expr) = 0;
   virtual void visit (LiteralExpr &expr) = 0;
   virtual void visit (BorrowExpr &expr) = 0;
   virtual void visit (DereferenceExpr &expr) = 0;

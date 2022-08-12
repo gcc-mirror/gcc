@@ -37,7 +37,6 @@ private:
   std::size_t indent; // current indentation level
   char indent_char = '\t';
 
-  virtual void visit (IdentifierExpr &) override;
   virtual void visit (Lifetime &) override;
   virtual void visit (LifetimeParam &) override;
   virtual void visit (PathInExpression &) override;

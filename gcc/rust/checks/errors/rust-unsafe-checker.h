@@ -52,7 +52,6 @@ private:
   Resolver::Resolver &resolver;
   Analysis::Mappings &mappings;
 
-  virtual void visit (IdentifierExpr &ident_expr) override;
   virtual void visit (Lifetime &lifetime) override;
   virtual void visit (LifetimeParam &lifetime_param) override;
   virtual void visit (PathInExpression &path) override;

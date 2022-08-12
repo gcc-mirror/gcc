@@ -274,7 +274,6 @@ public:
     Match,
     Await,
     AsyncBlock,
-    Ident,
     Path,
   };
 
@@ -365,63 +364,6 @@ public:
   {
     return BlockType::WITHOUT_BLOCK;
   };
-};
-
-/* HACK: IdentifierExpr, delete when figure out identifier vs expr problem in
- * Pratt parser */
-/* Alternatively, identifiers could just be represented as single-segment paths
- */
-class IdentifierExpr : public ExprWithoutBlock
-{
-  Identifier ident;
-
-public:
-  Location locus;
-
-  IdentifierExpr (Analysis::NodeMapping mappings, Identifier ident,
-		  Location locus = Location (),
-		  AST::AttrVec outer_attrs = AST::AttrVec ())
-    : ExprWithoutBlock (std::move (mappings), std::move (outer_attrs)),
-      ident (std::move (ident)), locus (locus)
-  {}
-
-  std::string as_string () const override
-  {
-    return "( " + ident + " (" + get_mappings ().as_string () + "))";
-  }
-
-  Location get_locus () const override final { return locus; }
-
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRExpressionVisitor &vis) override;
-
-  // Clones this object.
-  std::unique_ptr<IdentifierExpr> clone_identifier_expr () const
-  {
-    return std::unique_ptr<IdentifierExpr> (clone_identifier_expr_impl ());
-  }
-
-  Identifier get_identifier () const { return ident; }
-
-  ExprType get_expression_type () const final override
-  {
-    return ExprType::Ident;
-  }
-
-protected:
-  // Clone method implementation
-  IdentifierExpr *clone_expr_without_block_impl () const override
-  {
-    return clone_identifier_expr_impl ();
-  }
-
-  IdentifierExpr *clone_identifier_expr_impl () const
-  {
-    return new IdentifierExpr (*this);
-  }
-
-  IdentifierExpr (IdentifierExpr const &other) = default;
-  IdentifierExpr &operator= (IdentifierExpr const &other) = default;
 };
 
 // Pattern base HIR node

@@ -37,6 +37,8 @@ static tree
 transmute_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
 rotate_handler (Context *ctx, TyTy::FnType *fntype, tree_code op);
+static tree
+wrapping_op_handler (Context *ctx, TyTy::FnType *fntype, tree_code op);
 
 static inline tree
 rotate_left_handler (Context *ctx, TyTy::FnType *fntype)
@@ -49,13 +51,32 @@ rotate_right_handler (Context *ctx, TyTy::FnType *fntype)
   return rotate_handler (ctx, fntype, RROTATE_EXPR);
 }
 
+static inline tree
+wrapping_add_handler (Context *ctx, TyTy::FnType *fntype)
+{
+  return wrapping_op_handler (ctx, fntype, PLUS_EXPR);
+}
+static inline tree
+wrapping_sub_handler (Context *ctx, TyTy::FnType *fntype)
+{
+  return wrapping_op_handler (ctx, fntype, MINUS_EXPR);
+}
+static inline tree
+wrapping_mul_handler (Context *ctx, TyTy::FnType *fntype)
+{
+  return wrapping_op_handler (ctx, fntype, MULT_EXPR);
+}
+
 static const std::map<std::string,
 		      std::function<tree (Context *, TyTy::FnType *)>>
   generic_intrinsics = {{"offset", &offset_handler},
 			{"size_of", &sizeof_handler},
 			{"transmute", &transmute_handler},
 			{"rotate_left", &rotate_left_handler},
-			{"rotate_right", &rotate_right_handler}};
+			{"rotate_right", &rotate_right_handler},
+			{"wrapping_add", &wrapping_add_handler},
+			{"wrapping_sub", &wrapping_sub_handler},
+			{"wrapping_mul", &wrapping_mul_handler}};
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
 
@@ -367,6 +388,52 @@ rotate_handler (Context *ctx, TyTy::FnType *fntype, tree_code op)
 					     Location ());
   ctx->add_statement (return_statement);
   // BUILTIN rotate FN BODY END
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+/**
+ * pub fn wrapping_{add, sub, mul}<T>(lhs: T, rhs: T) -> T;
+ */
+static tree
+wrapping_op_handler (Context *ctx, TyTy::FnType *fntype, tree_code op)
+{
+  // wrapping_<op> intrinsics have two parameter
+  rust_assert (fntype->get_params ().size () == 2);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  // setup the params
+  std::vector<Bvariable *> param_vars;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
+
+  auto &lhs_param = param_vars.at (0);
+  auto &rhs_param = param_vars.at (1);
+  if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
+    return error_mark_node;
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  // BUILTIN wrapping_<op> FN BODY BEGIN
+  auto lhs = ctx->get_backend ()->var_expression (lhs_param, Location ());
+  auto rhs = ctx->get_backend ()->var_expression (rhs_param, Location ());
+
+  // Operations are always wrapping in Rust, as we have -fwrapv enabled by
+  // default. The difference between a wrapping_{add, sub, mul} and a regular
+  // arithmetic operation is that these intrinsics do not panic - they always
+  // carry over.
+  auto wrap_expr = build2 (op, TREE_TYPE (lhs), lhs, rhs);
+
+  auto return_statement
+    = ctx->get_backend ()->return_statement (fndecl, {wrap_expr}, Location ());
+  ctx->add_statement (return_statement);
+  // BUILTIN wrapping_<op> FN BODY END
 
   finalize_intrinsic_block (ctx, fndecl);
 
