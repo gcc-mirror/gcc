@@ -4699,8 +4699,9 @@ package body Inline is
    procedure Inline_Static_Function_Call (N : Node_Id; Subp : Entity_Id) is
 
       function Replace_Formal (N : Node_Id) return Traverse_Result;
-      --  Replace each occurrence of a formal with the corresponding actual,
-      --  using the mapping created by Establish_Mapping_For_Inlined_Call.
+      --  Replace each occurrence of a formal with the
+      --  corresponding actual, using the mapping created
+      --  by Establish_Actual_Mapping_For_Inlined_Call.
 
       function Reset_Sloc (Nod : Node_Id) return Traverse_Result;
       --  Reset the Sloc of a node to that of the call itself, so that errors
