@@ -1,3 +1,43 @@
+2022-08-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-range-path.cc (path_range_query::compute_imports):
+	Restrict walking SSA defs to blocks inside the path.  Track
+	the same operands as range_def_chain::get_def_chain does.
+
+2022-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106514
+	* tree-ssa-threadbackward.cc (back_threader::find_paths_to_names):
+	Compute and unwind both m_imports and interesting on the fly during
+	path discovery.
+	(back_threader::find_paths): Compute the original m_imports
+	from just the SSA uses of the exit conditional.  Drop
+	handling single_succ_to_potentially_threadable_block.
+	* gimple-range-path.cc (path_range_query::ssa_range_in_phi): Handle
+	constant PHI arguments without crashing.  Use PHI_ARG_DEF_FROM_EDGE.
+
+2022-08-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-range-path.h (path_range_query::compute_imports):
+	Take path as argument, not the exit block.
+	* gimple-range-path.cc (path_range_query::compute_imports):
+	Likewise, and adjust, avoiding possibly stale m_path.
+	(path_range_query::compute_outgoing_relations): Register
+	relations for all conditionals.
+	* tree-ssa-threadbackward.cc (back_threader::find_paths):
+	Adjust.
+
+2022-08-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (rs6000_init_builtins): Fix the
+	oversight on ENB_CELL by simplifying with rs6000_builtin_is_supported.
+	(rs6000_expand_builtin): Simplify with rs6000_builtin_is_supported.
+
+2022-08-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000-internal.h (rs6000_global_entry_point_needed_p):
+	Remove function declaration.
+
 2022-08-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/106513

@@ -1,3 +1,47 @@
+2022-08-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/analyzer/fd-4.c: Define _MODE_T on AIX.
+
+2022-08-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/cpp0x/initlist-const1.C: XFAIL on AIX.
+
+2022-08-11  Immad Mir  <mirimmad@outlook.com>
+
+	* gcc.dg/analyzer/fd-dup-1.c: New testcases.
+	* gcc.dg/analyzer/fd-uninit-1.c: Remove bogus
+	warning.
+
+2022-08-11  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/102633
+	* c-c++-common/Winit-self1.c: New test.
+	* c-c++-common/Winit-self2.c: New test.
+
+2022-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106514
+	* gcc.dg/tree-ssa/ssa-thread-19.c: Un-XFAIL.
+	* gcc.dg/tree-ssa/ssa-thread-20.c: New testcase.
+
+2022-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106243
+	* gcc.dg/pr106243.c: Add -Wno-psabi to dg-options.
+	* gcc.dg/pr106243-1.c: Likewise.
+
+2022-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104992
+	* gcc.dg/pr104992.c: Add -Wno-psabi to dg-options.
+	* g++.dg/pr104992-1.C: Likewise.  Add space between " and } in
+	dg-options.
+
+2022-08-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-thread-18.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-thread-19.c: Likewise, but XFAILed.
+
 2022-08-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/106513

@@ -1,3 +1,10 @@
+2022-08-11  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106551
+	* sm-fd.cc (check_for_dup): handle the m_start
+	state when transitioning the state of LHS
+	of dup, dup2 and dup3 call.
+
 2022-08-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106573
