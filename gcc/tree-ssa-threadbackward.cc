@@ -518,7 +518,11 @@ back_threader::find_paths (basic_block bb, tree name)
       bitmap_clear (m_imports);
       ssa_op_iter iter;
       FOR_EACH_SSA_TREE_OPERAND (name, stmt, iter, SSA_OP_USE)
-	bitmap_set_bit (m_imports, SSA_NAME_VERSION (name));
+	{
+	  if (!gimple_range_ssa_p (name))
+	    return;
+	  bitmap_set_bit (m_imports, SSA_NAME_VERSION (name));
+	}
 
       // Interesting is the set of imports we still not have see
       // the definition of.  So while imports only grow, the
