@@ -2370,8 +2370,6 @@ package body Sem_Res is
            ("prefix must statically denote a non-remote subprogram", N);
       end if;
 
-      From_Lib := Comes_From_Predefined_Lib_Unit (N);
-
       --  If the context is a Remote_Access_To_Subprogram, access attributes
       --  must be resolved with the corresponding fat pointer. There is no need
       --  to check for the attribute name since the return type of an
@@ -2505,6 +2503,8 @@ package body Sem_Res is
       --  is compatible with the context (i.e. the type passed to Resolve)
 
       else
+         From_Lib := Comes_From_Predefined_Lib_Unit (N);
+
          --  Loop through possible interpretations
 
          Get_First_Interp (N, I, It);
