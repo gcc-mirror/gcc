@@ -7023,7 +7023,7 @@ package body Sem_Ch12 is
                Astype := First_Subtype (E);
             end if;
 
-            Set_Size_Info      (E, (Astype));
+            Set_Size_Info      (E, Astype);
             Copy_RM_Size       (To => E, From => Astype);
             Set_First_Rep_Item (E, First_Rep_Item (Astype));
 
@@ -7054,12 +7054,10 @@ package body Sem_Ch12 is
             elsif Present (Associated_Formal_Package (E))
               and then not Is_Generic_Formal (E)
             then
-               if Box_Present (Parent (Associated_Formal_Package (E))) then
-                  Check_Generic_Actuals (Renamed_Entity (E), True);
-
-               else
-                  Check_Generic_Actuals (Renamed_Entity (E), False);
-               end if;
+               Check_Generic_Actuals
+                 (Renamed_Entity (E),
+                  Is_Formal_Box =>
+                    Box_Present (Parent (Associated_Formal_Package (E))));
 
                Set_Is_Hidden (E, False);
             end if;
@@ -15457,7 +15455,7 @@ package body Sem_Ch12 is
             end loop;
          end if;
 
-         Exchange_Declarations (Node (M));
+         Exchange_Declarations (Typ);
          Next_Elmt (M);
       end loop;
 
