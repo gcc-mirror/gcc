@@ -1840,9 +1840,6 @@ Gcc_backend::call_expression (tree fn, const std::vector<tree> &fn_args,
       ret = build1_loc (location.gcc_location (), NOP_EXPR, rettype, ret);
     }
 
-  if (!TREE_SIDE_EFFECTS (ret))
-    TREE_SIDE_EFFECTS (ret) = TREE_SIDE_EFFECTS (fndecl);
-
   delete[] args;
   return ret;
 }
