@@ -3730,7 +3730,9 @@ riscv_memmodel_needs_release_fence (enum memmodel model)
    'z'	Print x0 if OP is zero, otherwise print OP normally.
    'i'	Print i if the operand is not a register.
    'S'	Print shift-index of single-bit mask OP.
-   'T'	Print shift-index of inverted single-bit mask OP.  */
+   'T'	Print shift-index of inverted single-bit mask OP.
+
+   Note please keep this list and the list in riscv.md in sync.  */
 
 static void
 riscv_print_operand (FILE *file, rtx op, int letter)

@@ -19,6 +19,20 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+
+;; Keep this list and the one above riscv_print_operand in sync.
+;; The special asm out single letter directives following a '%' are:
+;; h -- Print the high-part relocation associated with OP, after stripping
+;;	  any outermost HIGH.
+;; R -- Print the low-part relocation associated with OP.
+;; C -- Print the integer branch condition for comparison OP.
+;; A -- Print the atomic operation suffix for memory model OP.
+;; F -- Print a FENCE if the memory model requires a release.
+;; z -- Print x0 if OP is zero, otherwise print OP normally.
+;; i -- Print i if the operand is not a register.
+;; S -- Print shift-index of single-bit mask OP.
+;; T -- Print shift-index of inverted single-bit mask OP.
+
 (define_c_enum "unspec" [
   ;; Override return address for exception handling.
   UNSPEC_EH_RETURN
