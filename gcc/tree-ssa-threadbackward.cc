@@ -90,7 +90,7 @@ private:
   bool debug_counter ();
   edge maybe_register_path ();
   void maybe_register_path_dump (edge taken_edge);
-  void find_paths_to_names (basic_block bb, bitmap imports);
+  void find_paths_to_names (basic_block bb, bitmap imports, unsigned);
   edge find_taken_edge (const vec<basic_block> &path);
   edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
   edge find_taken_edge_switch (const vec<basic_block> &path, gswitch *);
@@ -337,9 +337,12 @@ back_threader::find_taken_edge_cond (const vec<basic_block> &path,
 // INTERESTING bitmap, and register any such paths.
 //
 // BB is the current path being processed.
+//
+// OVERALL_PATHS is the search space up to this block
 
 void
-back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
+back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
+				    unsigned overall_paths)
 {
   if (m_visited_bbs.add (bb))
     return;
@@ -352,37 +355,92 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
 	  || maybe_register_path ()))
     ;
 
-  // Continue looking for ways to extend the path
-  else
+  // Continue looking for ways to extend the path but limit the
+  // search space along a branch
+  else if ((overall_paths = overall_paths * EDGE_COUNT (bb->preds))
+	   <= (unsigned)param_max_jump_thread_paths)
     {
       // For further greedy searching we want to remove interesting
       // names defined in BB but add ones on the PHI edges for the
-      // respective edges.  We do this by starting with all names
+      // respective edges and adding imports from those stmts.
+      // We do this by starting with all names
       // not defined in BB as interesting, collecting a list of
       // interesting PHIs in BB on the fly.  Then we iterate over
       // predecessor edges, adding interesting PHI edge defs to
       // the set of interesting names to consider when processing it.
       auto_bitmap new_interesting;
+      auto_vec<int, 16> new_imports;
       auto_vec<gphi *, 4> interesting_phis;
       bitmap_iterator bi;
       unsigned i;
+      auto_vec<tree, 16> worklist;
       EXECUTE_IF_SET_IN_BITMAP (interesting, 0, i, bi)
 	{
 	  tree name = ssa_name (i);
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+	  /* Imports remain interesting.  */
 	  if (gimple_bb (def_stmt) != bb)
-	    bitmap_set_bit (new_interesting, i);
-	  else if (gphi *phi = dyn_cast<gphi *> (def_stmt))
 	    {
-	      tree res = gimple_phi_result (phi);
-	      if (!SSA_NAME_OCCURS_IN_ABNORMAL_PHI (res))
-		interesting_phis.safe_push (phi);
+	      bitmap_set_bit (new_interesting, i);
+	      continue;
+	    }
+	  worklist.quick_push (name);
+	  while (!worklist.is_empty ())
+	    {
+	      tree name = worklist.pop ();
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+	      /* Newly discovered imports are interesting.  */
+	      if (gimple_bb (def_stmt) != bb)
+		{
+		  bitmap_set_bit (new_interesting, SSA_NAME_VERSION (name));
+		  continue;
+		}
+	      /* Local PHIs participate in renaming below.  */
+	      if (gphi *phi = dyn_cast<gphi *> (def_stmt))
+		{
+		  tree res = gimple_phi_result (phi);
+		  if (!SSA_NAME_OCCURS_IN_ABNORMAL_PHI (res))
+		    interesting_phis.safe_push (phi);
+		}
+	      /* For other local defs process their uses, amending
+		 imports on the way.  */
+	      else if (gassign *ass = dyn_cast <gassign *> (def_stmt))
+		{
+		  tree ssa[3];
+		  if (range_op_handler (ass))
+		    {
+		      ssa[0] = gimple_range_ssa_p (gimple_range_operand1 (ass));
+		      ssa[1] = gimple_range_ssa_p (gimple_range_operand2 (ass));
+		      ssa[2] = NULL_TREE;
+		    }
+		  else if (gimple_assign_rhs_code (ass) == COND_EXPR)
+		    {
+		      ssa[0] = gimple_range_ssa_p (gimple_assign_rhs1 (ass));
+		      ssa[1] = gimple_range_ssa_p (gimple_assign_rhs2 (ass));
+		      ssa[2] = gimple_range_ssa_p (gimple_assign_rhs3 (ass));
+		    }
+		  else
+		    continue;
+		  for (unsigned j = 0; j < 3; ++j)
+		    {
+		      tree rhs = ssa[j];
+		      if (rhs
+			  && TREE_CODE (rhs) == SSA_NAME
+			  && bitmap_set_bit (m_imports,
+					     SSA_NAME_VERSION (rhs)))
+			{
+			  new_imports.safe_push (SSA_NAME_VERSION (rhs));
+			  worklist.safe_push (rhs);
+			}
+		    }
+		}
 	    }
 	}
       if (!bitmap_empty_p (new_interesting)
 	  || !interesting_phis.is_empty ())
 	{
-	  auto_vec<tree, 4> unwind (interesting_phis.length ());
+	  auto_vec<int, 4> unwind (interesting_phis.length ());
+	  auto_vec<int, 4> imports_unwind (interesting_phis.length ());
 	  edge_iterator iter;
 	  edge e;
 	  FOR_EACH_EDGE (e, iter, bb->preds)
@@ -400,23 +458,35 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
 		{
 		  tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
 		  if (TREE_CODE (def) == SSA_NAME)
-		    if (bitmap_set_bit (new_interesting,
-					SSA_NAME_VERSION (def)))
-		      {
-			bitmap_set_bit (m_imports, SSA_NAME_VERSION (def));
-			unwind.quick_push (def);
-		      }
+		    {
+		      int ver = SSA_NAME_VERSION (def);
+		      if (bitmap_set_bit (new_interesting, ver))
+			{
+			  if (bitmap_set_bit (m_imports, ver))
+			    imports_unwind.quick_push (ver);
+			  unwind.quick_push (ver);
+			}
+		    }
 		}
-	      find_paths_to_names (e->src, new_interesting);
-	      // Restore new_interesting.  We leave m_imports alone since
-	      // we do not prune defs in BB from it and separately keeping
-	      // track of which bits to unwind isn't worth the trouble.
-	      for (tree def : unwind)
-		bitmap_clear_bit (new_interesting, SSA_NAME_VERSION (def));
+	      find_paths_to_names (e->src, new_interesting, overall_paths);
+	      // Restore new_interesting.
+	      for (int def : unwind)
+		bitmap_clear_bit (new_interesting, def);
 	      unwind.truncate (0);
+	      // Restore and m_imports.
+	      for (int def : imports_unwind)
+		bitmap_clear_bit (m_imports, def);
+	      imports_unwind.truncate (0);
 	    }
 	}
+      /* m_imports tracks all interesting names on the path, so when
+	 backtracking we have to restore it.  */
+      for (int j : new_imports)
+	bitmap_clear_bit (m_imports, j);
     }
+  else if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "  FAIL: Search space limit %d reached.\n",
+	     param_max_jump_thread_paths);
 
   // Reset things to their original state.
   m_path.pop ();
@@ -436,18 +506,27 @@ back_threader::find_paths (basic_block bb, tree name)
 	  && gimple_code (stmt) != GIMPLE_SWITCH))
     return;
 
-  if (EDGE_COUNT (bb->succs) > 1
-      || single_succ_to_potentially_threadable_block (bb))
+  if (EDGE_COUNT (bb->succs) > 1)
     {
       m_last_stmt = stmt;
       m_visited_bbs.empty ();
       m_path.truncate (0);
       m_name = name;
-      m_solver->compute_imports (m_imports, bb);
 
+      // We compute imports of the path during discovery starting
+      // just with names used in the conditional.
+      bitmap_clear (m_imports);
+      ssa_op_iter iter;
+      FOR_EACH_SSA_TREE_OPERAND (name, stmt, iter, SSA_OP_USE)
+	bitmap_set_bit (m_imports, SSA_NAME_VERSION (name));
+
+      // Interesting is the set of imports we still not have see
+      // the definition of.  So while imports only grow, the
+      // set of interesting defs dwindles and once empty we can
+      // stop searching.
       auto_bitmap interesting;
       bitmap_copy (interesting, m_imports);
-      find_paths_to_names (bb, interesting);
+      find_paths_to_names (bb, interesting, 1);
     }
 }
 
@@ -560,15 +639,6 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      reject that case.  */
   if (m_path.length () <= 1)
       return false;
-
-  if (m_path.length () > (unsigned) param_max_fsm_thread_length)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
-		 "the number of basic blocks on the path "
-		 "exceeds PARAM_MAX_FSM_THREAD_LENGTH.\n");
-      return false;
-    }
 
   int n_insns = 0;
   gimple_stmt_iterator gsi;

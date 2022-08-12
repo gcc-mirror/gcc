@@ -1,3 +1,15 @@
+2022-08-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/102218
+	* config/arm/host-config.h (pre_seq_barrier, post_seq_barrier,
+	pre_post_seq_barrier): Require barrier on __ATOMIC_SEQ_CST.
+
+2022-08-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/102218
+	* config/aarch64/aarch64-config.h: New file.
+	* config/aarch64/host-config.h: New file.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/lib/libatomic.exp: Add load_gcc_lib of scansarif.exp.

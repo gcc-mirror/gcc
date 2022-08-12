@@ -1,6 +1,6 @@
 /* PR tree-optimization/106243 */
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -Wno-psabi" } */
 
 #include "pr106243.c"
 

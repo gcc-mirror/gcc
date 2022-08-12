@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "intl.h"
@@ -25,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "diagnostic.h"
 #include "spellcheck.h"
+#include "opts-jobserver.h"
 
 static void prune_options (struct cl_decoded_option **, unsigned int *);
 
@@ -2004,4 +2006,96 @@ void prepend_xassembler_to_collect_as_options (const char *collect_as_options,
       obstack_grow (o, opt, strlen (opt));
       obstack_1grow (o, '\'');
     }
+}
+
+jobserver_info::jobserver_info ()
+{
+  /* Traditionally, GNU make uses opened pipes for jobserver-auth,
+    e.g. --jobserver-auth=3,4.
+    Starting with GNU make 4.4, one can use --jobserver-style=fifo
+    and then named pipe is used: --jobserver-auth=fifo:/tmp/hcsparta.  */
+
+  /* Detect jobserver and drop it if it's not working.  */
+  string js_needle = "--jobserver-auth=";
+  string fifo_prefix = "fifo:";
+
+  const char *envval = getenv ("MAKEFLAGS");
+  if (envval != NULL)
+    {
+      string makeflags = envval;
+      size_t n = makeflags.rfind (js_needle);
+      if (n != string::npos)
+	{
+	  string ending = makeflags.substr (n + js_needle.size ());
+	  if (ending.find (fifo_prefix) == 0)
+	    {
+	      ending = ending.substr (fifo_prefix.size ());
+	      pipe_path = ending.substr (0, ending.find (' '));
+	      is_active = true;
+	    }
+	  else if (sscanf (makeflags.c_str () + n + js_needle.size (),
+			   "%d,%d", &rfd, &wfd) == 2
+	      && rfd > 0
+	      && wfd > 0
+	      && is_valid_fd (rfd)
+	      && is_valid_fd (wfd))
+	    is_active = true;
+	  else
+	    {
+	      string dup = makeflags.substr (0, n);
+	      size_t pos = makeflags.find (' ', n);
+	      if (pos != string::npos)
+		dup += makeflags.substr (pos);
+	      skipped_makeflags = "MAKEFLAGS=" + dup;
+	      error_msg
+		= "cannot access %<" + js_needle + "%> file descriptors";
+	    }
+	}
+      error_msg = "%<" + js_needle + "%> is not present in %<MAKEFLAGS%>";
+    }
+  else
+    error_msg = "%<MAKEFLAGS%> environment variable is unset";
+
+  if (!error_msg.empty ())
+    error_msg = "jobserver is not available: " + error_msg;
+}
+
+void
+jobserver_info::connect ()
+{
+  if (!pipe_path.empty ())
+    pipefd = open (pipe_path.c_str (), O_RDWR);
+}
+
+void
+jobserver_info::disconnect ()
+{
+  if (!pipe_path.empty ())
+    {
+      gcc_assert (close (pipefd) == 0);
+      pipefd = -1;
+    }
+}
+
+bool
+jobserver_info::get_token ()
+{
+  int fd = pipe_path.empty () ? rfd : pipefd;
+  char c;
+  unsigned n = read (fd, &c, 1);
+  if (n != 1)
+    {
+      gcc_assert (errno == EAGAIN);
+      return false;
+    }
+  else
+    return true;
+}
+
+void
+jobserver_info::return_token ()
+{
+  int fd = pipe_path.empty () ? wfd : pipefd;
+  char c = 'G';
+  gcc_assert (write (fd, &c, 1) == 1);
 }

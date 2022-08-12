@@ -1960,8 +1960,8 @@ narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
   /* Multichar constants are of type int and therefore signed.  */
   if (i > 1)
     unsigned_p = 0;
-  else if (type == CPP_UTF8CHAR && !CPP_OPTION (pfile, cplusplus))
-    unsigned_p = 1;
+  else if (type == CPP_UTF8CHAR)
+    unsigned_p = CPP_OPTION (pfile, unsigned_utf8char);
   else
     unsigned_p = CPP_OPTION (pfile, unsigned_char);
 

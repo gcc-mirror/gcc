@@ -231,6 +231,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, int_precision) = CHAR_BIT * sizeof (int);
   CPP_OPTION (pfile, unsigned_char) = 0;
   CPP_OPTION (pfile, unsigned_wchar) = 1;
+  CPP_OPTION (pfile, unsigned_utf8char) = 1;
   CPP_OPTION (pfile, bytes_big_endian) = 1;  /* does not matter */
 
   /* Default to no charset conversion.  */

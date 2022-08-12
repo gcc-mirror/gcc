@@ -1,3 +1,195 @@
+2022-08-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-range-path.cc (path_range_query::compute_imports):
+	Restrict walking SSA defs to blocks inside the path.  Track
+	the same operands as range_def_chain::get_def_chain does.
+
+2022-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106514
+	* tree-ssa-threadbackward.cc (back_threader::find_paths_to_names):
+	Compute and unwind both m_imports and interesting on the fly during
+	path discovery.
+	(back_threader::find_paths): Compute the original m_imports
+	from just the SSA uses of the exit conditional.  Drop
+	handling single_succ_to_potentially_threadable_block.
+	* gimple-range-path.cc (path_range_query::ssa_range_in_phi): Handle
+	constant PHI arguments without crashing.  Use PHI_ARG_DEF_FROM_EDGE.
+
+2022-08-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-range-path.h (path_range_query::compute_imports):
+	Take path as argument, not the exit block.
+	* gimple-range-path.cc (path_range_query::compute_imports):
+	Likewise, and adjust, avoiding possibly stale m_path.
+	(path_range_query::compute_outgoing_relations): Register
+	relations for all conditionals.
+	* tree-ssa-threadbackward.cc (back_threader::find_paths):
+	Adjust.
+
+2022-08-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (rs6000_init_builtins): Fix the
+	oversight on ENB_CELL by simplifying with rs6000_builtin_is_supported.
+	(rs6000_expand_builtin): Simplify with rs6000_builtin_is_supported.
+
+2022-08-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000-internal.h (rs6000_global_entry_point_needed_p):
+	Remove function declaration.
+
+2022-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106513
+	* gimple-ssa-store-merging.cc (do_shift_rotate): Use uint64_t
+	for head_marker.
+
+2022-08-10  Martin Liska  <mliska@suse.cz>
+
+	PR lto/106328
+	* opts-jobserver.h (struct jobserver_info): Add pipefd.
+	(jobserver_info::connect): New.
+	(jobserver_info::disconnect): Likewise.
+	(jobserver_info::get_token): Likewise.
+	(jobserver_info::return_token): Likewise.
+	* opts-common.cc: Implement the new functions.
+
+2022-08-10  Martin Liska  <mliska@suse.cz>
+
+	* opts-jobserver.h: Add one member.
+	* opts-common.cc (jobserver_info::jobserver_info): Parse FIFO
+	format of --jobserver-auth.
+
+2022-08-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc.cc (driver::detect_jobserver): Remove and move to
+	jobserver.h.
+	* lto-wrapper.cc (jobserver_active_p): Likewise.
+	(run_gcc): Likewise.
+	* opts-jobserver.h: New file.
+	* opts-common.cc (jobserver_info::jobserver_info): New function.
+
+2022-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (scalar_chain::convert_compare):
+	Create new pseudos only when/if needed.  Add support for TEST,
+	i.e. (COMPARE (AND x y) (const_int 0)), using UNSPEC_PTEST.
+	When broadcasting V2DImode and V4SImode use new pseudo register.
+	(timode_scalar_chain::convert_op): Do nothing if operand is
+	already V1TImode.  Avoid generating useless SUBREG conversions,
+	i.e. (SUBREG:V1TImode (REG:V1TImode) 0).  Handle CONST_WIDE_INT
+	in addition to CONST_INT by using CONST_SCALAR_INT_P.
+	(convertible_comparison_p): Use CONST_SCALAR_INT_P to match both
+	CONST_WIDE_INT and CONST_INT.  Recognize new *testti_doubleword
+	pattern as an STV candidate.
+	(timode_scalar_to_vector_candidate_p): Allow CONST_SCALAR_INT_P
+	operands in binary logic operations.
+	* config/i386/i386.cc (ix86_rtx_costs) <case UNSPEC>: Add costs
+	for UNSPEC_PTEST; a PTEST that performs an AND has the same cost
+	as regular PTEST, i.e. cost->sse_op.
+	* config/i386/i386.md (*testti_doubleword): New pre-reload
+	define_insn_and_split that recognizes comparison of TI mode AND
+	against zero.
+	* config/i386/sse.md (*ptest<mode>_and): New pre-reload
+	define_insn_and_split that recognizes UNSPEC_PTEST of identical
+	AND operands.
+
+2022-08-09  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/21137
+	PR tree-optimization/98954
+	* fold-const.cc (fold_binary_loc): Remove optimizations to
+	optimize ((X >> C1) & C2) ==/!= 0.
+	* match.pd (cmp (bit_and (lshift @0 @1) @2) @3): Remove wi::ctz
+	check, and handle all values of INTEGER_CSTs @2 and @3.
+	(cmp (bit_and (rshift @0 @1) @2) @3): Likewise, remove wi::clz
+	checks, and handle all values of INTEGER_CSTs @2 and @3.
+
+2022-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (Static Analyzer Options): Add notes on which
+	functions the analyzer has hardcoded knowledge of.
+
+2022-08-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_function_value): Allow vector return values.
+	(num_arg_regs): Allow vector arguments.
+	(gcn_function_arg): Likewise.
+	(gcn_function_arg_advance): Likewise.
+	(gcn_arg_partial_bytes): Likewise.
+	(gcn_return_in_memory): Likewise.
+	(gcn_expand_epilogue): Get return value from v8.
+	* config/gcn/gcn.h (RETURN_VALUE_REG): Set to v8.
+	(FIRST_PARM_REG): USE FIRST_SGPR_REG for clarity.
+	(FIRST_VPARM_REG): New.
+	(FUNCTION_ARG_REGNO_P): Allow vector parameters.
+	(struct gcn_args): Add vnum field.
+	(LIBCALL_VALUE): All vector return values.
+	* config/gcn/gcn.md (gcn_call_value): Add vector constraints.
+	(gcn_call_value_indirect): Likewise.
+
+2022-08-09  Richard Biener  <rguenther@suse.de>
+
+	* omp-expand.cc (expand_omp_atomic_load): Emit GIMPLE
+	directly.  Avoid update_ssa when in SSA form.
+	(expand_omp_atomic_store): Likewise.
+	(expand_omp_atomic_fetch_op): Avoid update_ssa when in SSA
+	form.
+	(expand_omp_atomic_pipeline): Likewise.
+	(expand_omp_atomic_mutex): Likewise.
+	* tree-parloops.cc (gen_parallel_loop): Use
+	TODO_update_ssa_no_phi after loop_version.
+
+2022-08-09  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (max-fsm-thread-length): Remove.
+	* params.opt (max-fsm-thread-length): Likewise.
+	* tree-ssa-threadbackward.cc
+	(back_threader_profitability::profitable_path_p): Do not
+	check max-fsm-thread-length.
+
+2022-08-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106514
+	* params.opt (max-jump-thread-paths): New.
+	* doc/invoke.texi (max-jump-thread-paths): Document.
+	* tree-ssa-threadbackward.cc (back_threader::find_paths_to_names):
+	Honor max-jump-thread-paths, take overall_path argument.
+	(back_threader::find_paths): Pass 1 as initial overall_path.
+
+2022-08-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106492
+	* omp-low.cc (lower_rec_input_clauses): Add missing folding
+	to data type of linear-clause list item.
+
+2022-08-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106556
+	* gimple-range-gori.cc (gori_compute::condexpr_adjust): Use the
+	  type of the cond_expr operands being evaluted.
+
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	* ginclude/stdatomic.h (atomic_char8_t,
+	ATOMIC_CHAR8_T_LOCK_FREE): New typedef and macro.
+
+2022-08-08  Andrew Pinski  <apinski@marvell.com>
+
+	PR middle-end/103645
+	* gimplify.cc (gimplify_init_constructor): Don't build/add
+	gimple assignment of an empty type.
+
+2022-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/106540
+	PR lto/106334
+	* dwarf2out.cc (dwarf2out_register_external_die): Restore
+	original assert.
+	* lto-streamer-in.cc (lto_read_tree_1): Use lto_input_tree_1
+	to input DECL_INITIAL, avoiding to commit drefs.
+
 2022-08-07  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386.md (*cmp<dwi>_doubleword): Change predicate

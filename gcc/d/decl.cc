@@ -828,6 +828,10 @@ public:
     if (global.errors)
       return;
 
+    /* Start generating code for this function.  */
+    gcc_assert (d->semanticRun == PASS::semantic3done);
+    d->semanticRun = PASS::obj;
+
     /* Duplicated FuncDeclarations map to the same symbol.  Check if this
        is the one declaration which will be emitted.  */
     tree fndecl = get_symbol_decl (d);
@@ -843,10 +847,6 @@ public:
 
     if (global.params.verbose)
       message ("function  %s", d->toPrettyChars ());
-
-    /* Start generating code for this function.  */
-    gcc_assert (d->semanticRun == PASS::semantic3done);
-    d->semanticRun = PASS::obj;
 
     tree old_context = start_function (d);
 
@@ -1020,13 +1020,103 @@ build_decl_tree (Dsymbol *d)
   input_location = saved_location;
 }
 
+/* Returns true if function FD is defined or instantiated in a root module.  */
+
+static bool
+function_defined_in_root_p (FuncDeclaration *fd)
+{
+  Module *md = fd->getModule ();
+  if (md && md->isRoot ())
+    return true;
+
+  TemplateInstance *ti = fd->isInstantiated ();
+  if (ti && ti->minst && ti->minst->isRoot ())
+    return true;
+
+  return false;
+}
+
+/* Returns true if function FD always needs to be implicitly defined, such as
+   it was declared `pragma(inline)'.  */
+
+static bool
+function_needs_inline_definition_p (FuncDeclaration *fd)
+{
+  /* Function has already been defined.  */
+  if (!DECL_EXTERNAL (fd->csym))
+    return false;
+
+  /* Non-inlineable functions are always external.  */
+  if (DECL_UNINLINABLE (fd->csym))
+    return false;
+
+  /* No function body available for inlining.  */
+  if (!fd->fbody)
+    return false;
+
+  /* Ignore functions that aren't decorated with `pragma(inline)'.  */
+  if (fd->inlining != PINLINE::always)
+    return false;
+
+  /* These functions are tied to the module they are defined in.  */
+  if (fd->isFuncLiteralDeclaration ()
+      || fd->isUnitTestDeclaration ()
+      || fd->isFuncAliasDeclaration ()
+      || fd->isInvariantDeclaration ())
+    return false;
+
+  /* Check whether function will be regularly defined later in the current
+     translation unit.  */
+  if (function_defined_in_root_p (fd))
+    return false;
+
+  /* Weak functions cannot be inlined.  */
+  if (lookup_attribute ("weak", DECL_ATTRIBUTES (fd->csym)))
+    return false;
+
+  /* Naked functions cannot be inlined.  */
+  if (lookup_attribute ("naked", DECL_ATTRIBUTES (fd->csym)))
+    return false;
+
+  return true;
+}
+
+/* If the variable or function declaration in DECL needs to be defined, call
+   build_decl_tree on it now before returning its back-end symbol.  */
+
+static tree
+maybe_build_decl_tree (Declaration *decl)
+{
+  gcc_assert (decl->csym != NULL_TREE);
+
+  /* Still running semantic analysis on declaration, or it has already had its
+     code generated.  */
+  if (doing_semantic_analysis_p || decl->semanticRun >= PASS::obj)
+    return decl->csym;
+
+  if (error_operand_p (decl->csym))
+    return decl->csym;
+
+  if (FuncDeclaration *fd = decl->isFuncDeclaration ())
+    {
+      /* Externally defined inline functions need to be emitted.  */
+      if (function_needs_inline_definition_p (fd))
+	{
+	  DECL_EXTERNAL (fd->csym) = 0;
+	  build_decl_tree (fd);
+	}
+    }
+
+  return decl->csym;
+}
+
 /* Return the decl for the symbol, create it if it doesn't already exist.  */
 
 tree
 get_symbol_decl (Declaration *decl)
 {
   if (decl->csym)
-    return decl->csym;
+    return maybe_build_decl_tree (decl);
 
   /* Deal with placeholder symbols immediately:
      SymbolDeclaration is used as a shell around an initializer symbol.  */
@@ -1404,7 +1494,7 @@ get_symbol_decl (Declaration *decl)
   TREE_USED (decl->csym) = 1;
   d_keep (decl->csym);
 
-  return decl->csym;
+  return maybe_build_decl_tree (decl);
 }
 
 /* Returns a declaration for a VAR_DECL.  Used to create compiler-generated
@@ -1895,15 +1985,8 @@ start_function (FuncDeclaration *fd)
   /* Function has been defined, check now whether we intend to send it to
      object file, or it really is extern.  Such as inlinable functions from
      modules not in this compilation, or thunk aliases.  */
-  TemplateInstance *ti = fd->isInstantiated ();
-  if (ti && ti->needsCodegen ())
+  if (function_defined_in_root_p (fd))
     DECL_EXTERNAL (fndecl) = 0;
-  else
-    {
-      Module *md = fd->getModule ();
-      if (md && md->isRoot ())
-	DECL_EXTERNAL (fndecl) = 0;
-    }
 
   DECL_INITIAL (fndecl) = error_mark_node;
 
@@ -2422,15 +2505,15 @@ set_linkage_for_decl (tree decl)
   if (!TREE_PUBLIC (decl))
     return;
 
-  /* Don't need to give private or protected symbols a special linkage.  */
-  if ((TREE_PRIVATE (decl) || TREE_PROTECTED (decl))
-      && !DECL_INSTANTIATED (decl))
-    return;
-
   /* Functions declared as `pragma(inline, true)' can appear in multiple
      translation units.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
     return d_comdat_linkage (decl);
+
+  /* Don't need to give private or protected symbols a special linkage.  */
+  if ((TREE_PRIVATE (decl) || TREE_PROTECTED (decl))
+      && !DECL_INSTANTIATED (decl))
+    return;
 
   /* If all instantiations must go in COMDAT, give them that linkage.
      This also applies to other extern declarations, so that it is possible

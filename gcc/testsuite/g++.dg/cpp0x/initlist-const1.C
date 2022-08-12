@@ -4,4 +4,4 @@
 
 const auto x = { 1, 2 };
 
-// { dg-final { scan-assembler-not {\.data} } }
+// { dg-final { scan-assembler-not {\.data} { xfail powerpc-ibm-aix* } } }

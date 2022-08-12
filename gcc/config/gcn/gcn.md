@@ -908,11 +908,11 @@
   {})
 
 (define_insn "gcn_call_value"
-  [(set (match_operand 0 "register_operand" "=Sg,Sg")
-	(call (mem (match_operand 1 "immediate_operand" "Y,B"))
+  [(set (match_operand 0 "register_operand"		"=Sgv,Sgv")
+	(call (mem (match_operand 1 "immediate_operand" "   Y,  B"))
 	      (match_operand 2 "const_int_operand")))
    (clobber (reg:DI LR_REGNUM))
-   (clobber (match_scratch:DI 3 "=&Sg,X"))]
+   (clobber (match_scratch:DI 3				"=&Sg,  X"))]
   ""
   "@
   s_getpc_b64\t%3\;s_add_u32\t%L3, %L3, %1@rel32@lo+4\;s_addc_u32\t%H3, %H3, %1@rel32@hi+4\;s_swappc_b64\ts[18:19], %3
@@ -921,11 +921,11 @@
    (set_attr "length" "24")])
 
 (define_insn "gcn_call_value_indirect"
-  [(set (match_operand 0 "register_operand" "=Sg")
-	(call (mem (match_operand:DI 1 "register_operand" "Sg"))
+  [(set (match_operand 0 "register_operand"		  "=Sgv")
+	(call (mem (match_operand:DI 1 "register_operand" "  Sg"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI LR_REGNUM))
-   (clobber (match_scratch:DI 3 "=X"))]
+   (clobber (match_scratch:DI 3				  "=  X"))]
   ""
   "s_swappc_b64\ts[18:19], %1"
   [(set_attr "type" "sop1")

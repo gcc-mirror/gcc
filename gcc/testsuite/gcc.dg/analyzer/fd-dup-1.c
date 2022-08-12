@@ -221,3 +221,28 @@ test_19 (const char *path, void *buf)
     }
     
 }
+
+extern int m;
+
+void
+test_20 ()
+{
+    int fd = dup (m); 
+    close (fd);
+}
+
+void
+test_21 ()
+{
+    int fd = dup2 (m, 1); 
+    close (fd);
+}
+
+void
+test_22 (int flags)
+{
+    int fd = dup3 (m, 1, flags);
+    close (fd);
+}
+
+

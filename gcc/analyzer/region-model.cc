@@ -1355,6 +1355,14 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
       && gimple_call_internal_fn (call) == IFN_DEFERRED_INIT)
     return false;
 
+  /* Get svalues for all of the arguments at the callsite, to ensure that we
+     complain about any uninitialized arguments.  This might lead to
+     duplicates if any of the handling below also looks up the svalues,
+     but the deduplication code should deal with that.  */
+  if (ctxt)
+    for (unsigned arg_idx = 0; arg_idx < cd.num_args (); arg_idx++)
+      cd.get_arg_svalue (arg_idx);
+
   /* Some of the cases below update the lhs of the call based on the
      return value, but not all.  Provide a default value, which may
      get overwritten below.  */

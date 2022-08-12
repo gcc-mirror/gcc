@@ -426,7 +426,9 @@ namespace __gnu_debug
   _M_reset() throw ()
   {
     __atomic_store_n(&_M_sequence, (_Safe_sequence_base*)0, __ATOMIC_RELEASE);
-    _M_version = 0;
+    // Do not reset version, so that a detached iterator does not look like a
+    // value-initialized one.
+    // _M_version = 0;
     _M_prior = 0;
     _M_next = 0;
   }
@@ -767,7 +769,8 @@ namespace
 	 "before-begin",
 	 "dereferenceable (start-of-reverse-sequence)",
 	 "dereferenceable (reverse)",
-	 "past-the-reverse-end"
+	 "past-the-reverse-end",
+	 "singular (value-initialized)"
 	};
       print_word(ctx, state_names[iterator._M_state]);
     }

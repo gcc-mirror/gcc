@@ -1,3 +1,20 @@
+2022-08-11  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/102633
+	* c-parser.cc (c_parser_initializer): Add new tree parameter.  Use it.
+	Call suppress_warning.
+	(c_parser_declaration_or_fndef): Pass d down to c_parser_initializer.
+	(c_parser_omp_declare_reduction): Pass omp_priv down to
+	c_parser_initializer.
+
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	* c-parser.cc (c_parser_string_literal): Use char8_t as the type
+	of CPP_UTF8STRING when char8_t support is enabled.
+	* c-typeck.cc (digest_init): Allow initialization of an array
+	of character type by a string literal with type array of
+	char8_t.
+
 2022-08-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-typeck.cc (build_c_cast): Quote names of address spaces in

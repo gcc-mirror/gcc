@@ -1,3 +1,8 @@
+2022-08-11  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/102633
+	* decl.cc (cp_finish_decl): Call suppress_warning.
+
 2022-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88174

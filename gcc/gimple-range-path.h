@@ -37,7 +37,7 @@ public:
   void compute_ranges (const vec<basic_block> &,
 		       const bitmap_head *imports = NULL);
   void compute_ranges (edge e);
-  void compute_imports (bitmap imports, basic_block exit);
+  void compute_imports (bitmap imports, const vec<basic_block> &);
   bool range_of_expr (vrange &r, tree name, gimple * = NULL) override;
   bool range_of_stmt (vrange &r, gimple *, tree name = NULL) override;
   bool unreachable_path_p ();
