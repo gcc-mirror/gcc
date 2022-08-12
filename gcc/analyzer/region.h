@@ -211,6 +211,8 @@ public:
 
   bool symbolic_for_unknown_ptr_p () const;
 
+  bool symbolic_p () const;
+
   /* For most base regions it makes sense to track the bindings of the region
      within the store.  As an optimization, some are not tracked (to avoid
      bloating the store object with redundant binding clusters).  */
@@ -917,6 +919,8 @@ public:
   const svalue *get_byte_offset () const { return m_byte_offset; }
 
   bool get_relative_concrete_offset (bit_offset_t *out) const final override;
+  const svalue * get_byte_size_sval (region_model_manager *mgr) const;
+
 
 private:
   const svalue *m_byte_offset;

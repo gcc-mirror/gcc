@@ -110,6 +110,10 @@ Wanalyzer-mismatching-deallocation
 Common Var(warn_analyzer_mismatching_deallocation) Init(1) Warning
 Warn about code paths in which the wrong deallocation function is called.
 
+Wanalyzer-out-of-bounds
+Common Var(warn_analyzer_out_of_bounds) Init(1) Warning
+Warn about code paths in which a write or read to a buffer is out-of-bounds.
+
 Wanalyzer-possible-null-argument
 Common Var(warn_analyzer_possible_null_argument) Init(1) Warning
 Warn about code paths in which a possibly-NULL value is passed to a must-not-be-NULL function argument.
