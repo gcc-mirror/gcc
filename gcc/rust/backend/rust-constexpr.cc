@@ -1084,6 +1084,7 @@ init_subob_ctx (const constexpr_ctx *ctx, constexpr_ctx &new_ctx, tree index,
 	/* There's no well-defined subobject for this index.  */
 	new_ctx.object = NULL_TREE;
       else
+	// Faisal: commenting this out as not sure if it's needed and it's huge
 	// new_ctx.object = build_ctor_subob_ref (index, type, ctx->object);
 	;
     }
@@ -2761,6 +2762,217 @@ rs_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
   return binds;
 }
 
+// forked from gcc/cp/constexpr.cc cxx_eval_builtin_function_call
+
+/* Attempt to evaluate T which represents a call to a builtin function.
+   We assume here that all builtin functions evaluate to scalar types
+   represented by _CST nodes.  */
+
+static tree
+eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
+			    bool lval, bool *non_constant_p, bool *overflow_p)
+{
+  const int nargs = call_expr_nargs (t);
+  tree *args = (tree *) alloca (nargs * sizeof (tree));
+  tree new_call;
+  int i;
+
+  /* Don't fold __builtin_constant_p within a constexpr function.  */
+  bool bi_const_p = DECL_IS_BUILTIN_CONSTANT_P (fun);
+
+  /* If we aren't requiring a constant expression, defer __builtin_constant_p
+     in a constexpr function until we have values for the parameters.  */
+  if (bi_const_p && !ctx->manifestly_const_eval && current_function_decl
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+    {
+      *non_constant_p = true;
+      return t;
+    }
+
+  /* For __builtin_is_constant_evaluated, defer it if not
+     ctx->manifestly_const_eval (as sometimes we try to constant evaluate
+     without manifestly_const_eval even expressions or parts thereof which
+     will later be manifestly const_eval evaluated), otherwise fold it to
+     true.  */
+  if (fndecl_built_in_p (fun, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
+			 BUILT_IN_FRONTEND))
+    {
+      if (!ctx->manifestly_const_eval)
+	{
+	  *non_constant_p = true;
+	  return t;
+	}
+      return boolean_true_node;
+    }
+
+  if (fndecl_built_in_p (fun, CP_BUILT_IN_SOURCE_LOCATION, BUILT_IN_FRONTEND))
+    {
+      temp_override<tree> ovr (current_function_decl);
+      if (ctx->call && ctx->call->fundef)
+	current_function_decl = ctx->call->fundef->decl;
+      return fold_builtin_source_location (EXPR_LOCATION (t));
+    }
+
+  int strops = 0;
+  int strret = 0;
+  if (fndecl_built_in_p (fun, BUILT_IN_NORMAL))
+    switch (DECL_FUNCTION_CODE (fun))
+      {
+      case BUILT_IN_STRLEN:
+      case BUILT_IN_STRNLEN:
+	strops = 1;
+	break;
+      case BUILT_IN_MEMCHR:
+      case BUILT_IN_STRCHR:
+      case BUILT_IN_STRRCHR:
+	strops = 1;
+	strret = 1;
+	break;
+      case BUILT_IN_MEMCMP:
+      case BUILT_IN_STRCMP:
+	strops = 2;
+	break;
+      case BUILT_IN_STRSTR:
+	strops = 2;
+	strret = 1;
+	break;
+      case BUILT_IN_ASAN_POINTER_COMPARE:
+      case BUILT_IN_ASAN_POINTER_SUBTRACT:
+	/* These builtins shall be ignored during constant expression
+	   evaluation.  */
+	return void_node;
+      default:
+	break;
+      }
+
+  /* Be permissive for arguments to built-ins; __builtin_constant_p should
+     return constant false for a non-constant argument.  */
+  constexpr_ctx new_ctx = *ctx;
+  new_ctx.quiet = true;
+  for (i = 0; i < nargs; ++i)
+    {
+      tree arg = CALL_EXPR_ARG (t, i);
+      tree oarg = arg;
+
+      /* To handle string built-ins we need to pass ADDR_EXPR<STRING_CST> since
+	 expand_builtin doesn't know how to look in the values table.  */
+      bool strop = i < strops;
+      if (strop)
+	{
+	  STRIP_NOPS (arg);
+	  if (TREE_CODE (arg) == ADDR_EXPR)
+	    arg = TREE_OPERAND (arg, 0);
+	  else
+	    strop = false;
+	}
+
+      /* If builtin_valid_in_constant_expr_p is true,
+	 potential_constant_expression_1 has not recursed into the arguments
+	 of the builtin, verify it here.  */
+      if (!builtin_valid_in_constant_expr_p (fun)
+	  || potential_constant_expression (arg))
+	{
+	  bool dummy1 = false, dummy2 = false;
+	  arg
+	    = eval_constant_expression (&new_ctx, arg, false, &dummy1, &dummy2);
+	}
+
+      if (bi_const_p)
+	/* For __builtin_constant_p, fold all expressions with constant values
+	   even if they aren't C++ constant-expressions.  */
+	arg = cp_fold_rvalue (arg);
+      else if (strop)
+	{
+	  if (TREE_CODE (arg) == CONSTRUCTOR)
+	    arg = braced_lists_to_strings (TREE_TYPE (arg), arg);
+	  if (TREE_CODE (arg) == STRING_CST)
+	    arg = build_address (arg);
+	  else
+	    arg = oarg;
+	}
+
+      args[i] = arg;
+    }
+
+  bool save_ffbcp = force_folding_builtin_constant_p;
+  force_folding_builtin_constant_p |= ctx->manifestly_const_eval;
+  tree save_cur_fn = current_function_decl;
+  /* Return name of ctx->call->fundef->decl for __builtin_FUNCTION ().  */
+  if (fndecl_built_in_p (fun, BUILT_IN_FUNCTION) && ctx->call
+      && ctx->call->fundef)
+    current_function_decl = ctx->call->fundef->decl;
+  if (fndecl_built_in_p (fun,
+			 CP_BUILT_IN_IS_POINTER_INTERCONVERTIBLE_WITH_CLASS,
+			 BUILT_IN_FRONTEND))
+    {
+      location_t loc = EXPR_LOCATION (t);
+      if (nargs >= 1)
+	VERIFY_CONSTANT (args[0]);
+      new_call
+	= fold_builtin_is_pointer_inverconvertible_with_class (loc, nargs,
+							       args);
+    }
+  else if (fndecl_built_in_p (fun, CP_BUILT_IN_IS_CORRESPONDING_MEMBER,
+			      BUILT_IN_FRONTEND))
+    {
+      location_t loc = EXPR_LOCATION (t);
+      if (nargs >= 2)
+	{
+	  VERIFY_CONSTANT (args[0]);
+	  VERIFY_CONSTANT (args[1]);
+	}
+      new_call = fold_builtin_is_corresponding_member (loc, nargs, args);
+    }
+  else
+    new_call = fold_builtin_call_array (EXPR_LOCATION (t), TREE_TYPE (t),
+					CALL_EXPR_FN (t), nargs, args);
+  current_function_decl = save_cur_fn;
+  force_folding_builtin_constant_p = save_ffbcp;
+  if (new_call == NULL)
+    {
+      if (!*non_constant_p && !ctx->quiet)
+	{
+	  /* Do not allow__builtin_unreachable in constexpr function.
+	     The __builtin_unreachable call with BUILTINS_LOCATION
+	     comes from cp_maybe_instrument_return.  */
+	  if (fndecl_built_in_p (fun, BUILT_IN_UNREACHABLE)
+	      && EXPR_LOCATION (t) == BUILTINS_LOCATION)
+	    error ("%<constexpr%> call flows off the end of the function");
+	  else
+	    {
+	      new_call = build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
+					       CALL_EXPR_FN (t), nargs, args);
+	      error ("%q+E is not a constant expression", new_call);
+	    }
+	}
+      *non_constant_p = true;
+      return t;
+    }
+
+  if (!potential_constant_expression (new_call))
+    {
+      if (!*non_constant_p && !ctx->quiet)
+	error ("%q+E is not a constant expression", new_call);
+      *non_constant_p = true;
+      return t;
+    }
+
+  if (strret)
+    {
+      /* memchr returns a pointer into the first argument, but we replaced the
+	 argument above with a STRING_CST; put it back it now.  */
+      tree op = CALL_EXPR_ARG (t, strret - 1);
+      STRIP_NOPS (new_call);
+      if (TREE_CODE (new_call) == POINTER_PLUS_EXPR)
+	TREE_OPERAND (new_call, 0) = op;
+      else if (TREE_CODE (new_call) == ADDR_EXPR)
+	new_call = op;
+    }
+
+  return eval_constant_expression (&new_ctx, new_call, lval, non_constant_p,
+				   overflow_p);
+}
+
 // Subroutine of cxx_eval_constant_expression.
 // Evaluate the call expression tree T in the context of OLD_CALL expression
 // evaluation.
@@ -2791,6 +3003,10 @@ eval_call_expression (const constexpr_ctx *ctx, tree t, bool lval,
       *non_constant_p = true;
       return t;
     }
+
+  if (fndecl_built_in_p (fun))
+    return eval_builtin_function_call (ctx, t, fun, lval, non_constant_p,
+				       overflow_p);
 
   bool non_constant_args = false;
   new_call.bindings
@@ -4443,6 +4659,20 @@ is_static_init_expression (tree t)
   // faisal: just return false for now to make it compile
 }
 
+/* Like potential_constant_expression, but don't consider possible constexpr
+   substitution of the current function.  That is, PARM_DECL qualifies under
+   potential_constant_expression, but not here.
+
+   This is basically what you can check when any actual constant values might
+   be value-dependent.  */
+
+bool
+is_constant_expression (tree t)
+{
+  // return potential_constant_expression_1 (t, false, true, true, tf_none);
+  // faisal: just return false for now to make it compile
+}
+
 /* Returns true if T is a potential static initializer expression that is not
    instantiation-dependent.  */
 
@@ -4495,6 +4725,94 @@ tree
 maybe_constant_init (tree t, tree decl, bool manifestly_const_eval)
 {
   return maybe_constant_init_1 (t, decl, true, manifestly_const_eval);
+}
+
+/* Returns true if T is a potential constant expression that is not
+   instantiation-dependent, and therefore a candidate for constant folding even
+   in a template.  */
+
+bool
+is_nondependent_constant_expression (tree t)
+{
+  return (!type_unknown_p (t) && is_constant_expression (t)
+	  && !instantiation_dependent_expression_p (t));
+}
+
+// forked from gcc/cp/parser.cc cp_unevaluated_operand
+
+/* Nonzero if we are parsing an unevaluated operand: an operand to
+   sizeof, typeof, or alignof.  */
+int cp_unevaluated_operand;
+
+// forked from gcc/cp/constexpr.cc cv_cache
+
+/* If T is a constant expression, returns its reduced value.
+   Otherwise, if T does not have TREE_CONSTANT set, returns T.
+   Otherwise, returns a version of T without TREE_CONSTANT.
+   MANIFESTLY_CONST_EVAL is true if T is manifestly const-evaluated
+   as per P0595.  */
+
+static GTY ((deletable)) hash_map<tree, tree> *cv_cache;
+
+// forked from gcc/cp/constexpr.cc maybe_constant_value
+
+tree
+maybe_constant_value (tree t, tree decl, bool manifestly_const_eval)
+{
+  tree r;
+
+  if (!is_nondependent_constant_expression (t))
+    {
+      if (TREE_OVERFLOW_P (t))
+	{
+	  t = build_nop (TREE_TYPE (t), t);
+	  TREE_CONSTANT (t) = false;
+	}
+      return t;
+    }
+  else if (CONSTANT_CLASS_P (t))
+    /* No caching or evaluation needed.  */
+    return t;
+
+  if (manifestly_const_eval)
+    return cxx_eval_outermost_constant_expr (t, true, true, true, false, decl);
+
+  if (cv_cache == NULL)
+    cv_cache = hash_map<tree, tree>::create_ggc (101);
+  if (tree *cached = cv_cache->get (t))
+    {
+      r = *cached;
+      if (r != t)
+	{
+	  // Faisal: commenting this out as not sure if it's needed and it's
+	  // huge r = break_out_target_exprs (r, /*clear_loc*/true);
+	  protected_set_expr_location (r, EXPR_LOCATION (t));
+	}
+      return r;
+    }
+
+  /* Don't evaluate an unevaluated operand.  */
+  if (cp_unevaluated_operand)
+    return t;
+
+  uid_sensitive_constexpr_evaluation_checker c;
+  r = cxx_eval_outermost_constant_expr (t, true, true, false, false, decl);
+  gcc_checking_assert (
+    r == t || CONVERT_EXPR_P (t) || TREE_CODE (t) == VIEW_CONVERT_EXPR
+    || (TREE_CONSTANT (t) && !TREE_CONSTANT (r)) || !rs_tree_equal (r, t));
+  if (!c.evaluation_restricted_p ())
+    cv_cache->put (t, r);
+  return r;
+}
+
+// forked from gcc/cp/constexpr.cc
+
+bool
+potential_constant_expression (tree t)
+{
+  // return potential_constant_expression_1 (t, false, true, false, tf_none);
+  // Faisal: return false until we port above call to make the code compile
+  return false;
 }
 
 // #include "gt-rust-rust-constexpr.h"

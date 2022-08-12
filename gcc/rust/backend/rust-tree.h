@@ -1346,6 +1346,26 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
        of the enumeration is completed by finish_enum.  */
 #define ENUM_UNDERLYING_TYPE(TYPE) TREE_TYPE (ENUMERAL_TYPE_CHECK (TYPE))
 
+/* Nonzero if this type is volatile-qualified.  */
+#define CP_TYPE_VOLATILE_P(NODE)                                               \
+  ((rs_type_quals (NODE) & TYPE_QUAL_VOLATILE) != 0)
+
+/* Nonzero means that this type is either complete or being defined, so we
+   can do lookup in it.  */
+#define COMPLETE_OR_OPEN_TYPE_P(NODE)                                          \
+  (COMPLETE_TYPE_P (NODE) || (CLASS_TYPE_P (NODE) && TYPE_BEING_DEFINED (NODE)))
+
+/* Indicates when overload resolution may resolve to a pointer to
+   member function. [expr.unary.op]/3 */
+#define PTRMEM_OK_P(NODE)                                                      \
+  TREE_LANG_FLAG_0 (TREE_CHECK3 ((NODE), ADDR_EXPR, OFFSET_REF, SCOPE_REF))
+
+/* Returns nonzero iff NODE is a declaration for the global function
+   `main'.  */
+#define DECL_MAIN_P(NODE)                                                      \
+  (DECL_NAME (NODE) != NULL_TREE && MAIN_NAME_P (DECL_NAME (NODE))             \
+   && flag_hosted)
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
@@ -1511,6 +1531,77 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
        : &scope_chain->bindings))
 
 // Above macros are copied from gcc/cp/name-lookup.cc
+
+/* Places where an lvalue, or modifiable lvalue, may be required.
+   Used to select diagnostic messages in lvalue_error and
+   readonly_error.  */
+enum lvalue_use
+{
+  lv_assign,
+  lv_increment,
+  lv_decrement,
+  lv_addressof,
+  lv_asm
+};
+
+/* A class for recording information about access failures (e.g. private
+   fields), so that we can potentially supply a fix-it hint about
+   an accessor (from a context in which the constness of the object
+   is known).  */
+
+class access_failure_info
+{
+public:
+  access_failure_info ()
+    : m_was_inaccessible (false), m_basetype_path (NULL_TREE),
+      m_decl (NULL_TREE), m_diag_decl (NULL_TREE)
+  {}
+
+  void record_access_failure (tree basetype_path, tree decl, tree diag_decl);
+
+  bool was_inaccessible_p () const { return m_was_inaccessible; }
+  tree get_decl () const { return m_decl; }
+  tree get_diag_decl () const { return m_diag_decl; }
+  tree get_any_accessor (bool const_p) const;
+  void maybe_suggest_accessor (bool const_p) const;
+  static void add_fixit_hint (rich_location *richloc, tree accessor);
+
+private:
+  bool m_was_inaccessible;
+  tree m_basetype_path;
+  tree m_decl;
+  tree m_diag_decl;
+};
+
+/* The various kinds of access check during parsing.  */
+enum deferring_kind
+{
+  dk_no_deferred = 0, /* Check access immediately */
+  dk_deferred = 1,    /* Deferred check */
+  dk_no_check = 2     /* No access check */
+};
+
+/* The representation of a deferred access check.  */
+
+struct GTY (()) deferred_access_check
+{
+  /* The base class in which the declaration is referenced. */
+  tree binfo;
+  /* The declaration whose access must be checked.  */
+  tree decl;
+  /* The declaration that should be used in the error message.  */
+  tree diag_decl;
+  /* The location of this access.  */
+  location_t loc;
+};
+
+struct GTY (()) tree_template_info
+{
+  struct tree_base base;
+  tree tmpl;
+  tree args;
+  vec<deferred_access_check, va_gc> *deferred_access_checks;
+};
 
 /* The various kinds of lvalues we distinguish.  */
 enum cp_lvalue_kind_flags
@@ -2819,6 +2910,18 @@ extern bool null_member_pointer_value_p (tree);
 extern tree
 fold_builtin_is_corresponding_member (location_t, int, tree *);
 
+extern tree cp_fold_rvalue (tree);
+
+extern tree
+maybe_constant_value (tree, tree = NULL_TREE, bool = false);
+
+extern tree lvalue_type (tree);
+
+extern void lvalue_error (location_t, enum lvalue_use);
+
+extern tree
+cp_fold_maybe_rvalue (tree, bool);
+
 // forked from gcc/cp/cp-tree.h
 
 enum
@@ -3043,6 +3146,8 @@ set_implicit_rvalue_p (tree ot)
 namespace Compile {
 extern tree
 maybe_constant_init (tree, tree = NULL_TREE, bool = false);
+
+extern bool potential_constant_expression (tree);
 }
 
 } // namespace Rust

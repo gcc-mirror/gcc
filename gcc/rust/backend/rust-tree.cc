@@ -5257,6 +5257,8 @@ fold_builtin_is_pointer_inverconvertible_with_class (location_t loc, int nargs,
 		      build_zero_cst (TREE_TYPE (arg)));
 }
 
+// forked from gcc/c-family/c-common.cc registered_builtin_types
+
 /* Used for communication between c_common_type_for_mode and
    c_register_builtin_type.  */
 tree registered_builtin_types;
@@ -5266,6 +5268,8 @@ tree registered_builtin_types;
    then UNSIGNEDP selects between signed and unsigned types.
    If the mode is a fixed-point mode,
    then UNSIGNEDP selects between saturating and nonsaturating types.  */
+
+// forked from gcc/c-family/c-common.cc c_common_type_for_mode
 
 tree
 c_common_type_for_mode (machine_mode mode, int unsignedp)
@@ -5487,6 +5491,8 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
   return NULL_TREE;
 }
 
+// forked from gcc/cp/semantics.cc finish_underlying_type
+
 /* Implement the __underlying_type keyword: Return the underlying
    type of TYPE, suitable for use as a type-specifier.  */
 
@@ -5515,6 +5521,8 @@ finish_underlying_type (tree type)
 
   return underlying_type;
 }
+
+// forked from gcc/cp/typeck.cc layout_compatible_type_p
 
 /* Return true if TYPE1 and TYPE2 are layout-compatible types.  */
 
@@ -5619,6 +5627,8 @@ layout_compatible_type_p (tree type1, tree type2)
   return same_type_p (type1, type2);
 }
 
+// forked from gcc/cp/semnatics.cc is_corresponding_member_union
+
 /* Helper function for is_corresponding_member_aggr.  Return true if
    MEMBERTYPE pointer-to-data-member ARG can be found in anonymous
    union or structure BASETYPE.  */
@@ -5647,6 +5657,8 @@ is_corresponding_member_union (tree basetype, tree membertype, tree arg)
       }
   return false;
 }
+
+// forked from gcc/cp/typeck.cc next_common_initial_seqence
 
 /* Helper function for layout_compatible_type_p and
    is_corresponding_member_aggr.  Advance to next members (NULL if
@@ -5712,6 +5724,8 @@ next_common_initial_seqence (tree &memb1, tree &memb2)
     return false;
   return true;
 }
+
+// forked from gcc/cp/semantics.cc is_corresponding_member_aggr
 
 /* Helper function for fold_builtin_is_corresponding_member call.
    Return boolean_false_node if MEMBERTYPE1 BASETYPE1::*ARG1 and
@@ -5833,6 +5847,8 @@ is_corresponding_member_aggr (location_t loc, tree basetype1, tree membertype1,
   return ret;
 }
 
+// forked from gcc/cp/call.cc null_member_pointer_value_p
+
 /* Returns true iff T is a null member pointer value (4.11).  */
 
 bool
@@ -5849,6 +5865,8 @@ null_member_pointer_value_p (tree t)
   else
     return false;
 }
+
+// forked from gcc/cp/semantics.cc fold_builtin_is_corresponding_member
 
 /* Fold __builtin_is_corresponding_member call.  */
 
@@ -5935,6 +5953,84 @@ fold_builtin_is_corresponding_member (location_t loc, int nargs, tree *args)
   return fold_build2 (TRUTH_AND_EXPR, boolean_type_node, ret,
 		      fold_build2 (EQ_EXPR, boolean_type_node, arg1,
 				   fold_convert (TREE_TYPE (arg1), arg2)));
+}
+
+// forked from gcc/cp/tree.cc lvalue_type
+
+/* The type of ARG when used as an lvalue.  */
+
+tree
+lvalue_type (tree arg)
+{
+  tree type = TREE_TYPE (arg);
+  return type;
+}
+
+// forked from gcc/c-family/c-warn.cc lvalue_error
+
+/* Print an error message for an invalid lvalue.  USE says
+   how the lvalue is being used and so selects the error message.  LOC
+   is the location for the error.  */
+
+void
+lvalue_error (location_t loc, enum lvalue_use use)
+{
+  switch (use)
+    {
+    case lv_assign:
+      error_at (loc, "lvalue required as left operand of assignment");
+      break;
+    case lv_increment:
+      error_at (loc, "lvalue required as increment operand");
+      break;
+    case lv_decrement:
+      error_at (loc, "lvalue required as decrement operand");
+      break;
+    case lv_addressof:
+      error_at (loc, "lvalue required as unary %<&%> operand");
+      break;
+    case lv_asm:
+      error_at (loc, "lvalue required in %<asm%> statement");
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+// forked from gcc/cp/cp--gimplify.cc cp_fold_maybe_rvalue
+
+/* Fold expression X which is used as an rvalue if RVAL is true.  */
+
+tree
+cp_fold_maybe_rvalue (tree x, bool rval)
+{
+  while (true)
+    {
+      x = fold (x);
+      if (rval)
+	x = mark_rvalue_use (x);
+      if (rval && DECL_P (x) && !TYPE_REF_P (TREE_TYPE (x)))
+	{
+	  tree v = decl_constant_value (x);
+	  if (v != x && v != error_mark_node)
+	    {
+	      x = v;
+	      continue;
+	    }
+	}
+      break;
+    }
+  return x;
+}
+
+// forked from gcc/cp/cp--gimplify.cc cp_fold_rvalue
+
+/* Fold expression X which is used as an rvalue.  */
+
+tree
+cp_fold_rvalue (tree x)
+{
+  return cp_fold_maybe_rvalue (x, true);
 }
 
 } // namespace Rust
