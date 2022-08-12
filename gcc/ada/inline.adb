@@ -3367,6 +3367,8 @@ package body Inline is
          E   : Entity_Id;
          Ret : Node_Id;
 
+         Had_Private_View : Boolean;
+
       begin
          if Is_Entity_Name (N) and then Present (Entity (N)) then
             E := Entity (N);
@@ -3380,13 +3382,21 @@ package body Inline is
                --  subtype is private at the call point but its full view is
                --  visible to the body, then the inlined tree here must be
                --  analyzed with the full view).
+               --
+               --  The Has_Private_View flag is cleared by rewriting, so it
+               --  must be explicitly saved and restored, just like when
+               --  instantiating the body to inline.
 
                if Is_Entity_Name (A) then
+                  Had_Private_View := Has_Private_View (N);
                   Rewrite (N, New_Occurrence_Of (Entity (A), Sloc (N)));
+                  Set_Has_Private_View (N, Had_Private_View);
                   Check_Private_View (N);
 
                elsif Nkind (A) = N_Defining_Identifier then
+                  Had_Private_View := Has_Private_View (N);
                   Rewrite (N, New_Occurrence_Of (A, Sloc (N)));
+                  Set_Has_Private_View (N, Had_Private_View);
                   Check_Private_View (N);
 
                --  Numeric literal
