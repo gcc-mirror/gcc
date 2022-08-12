@@ -21087,7 +21087,7 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52}, @samp{cortex-r52plus},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
 @samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m23}, @samp{cortex-m33},
-@samp{cortex-m35p}, @samp{cortex-m55}, @samp{cortex-x1},
+@samp{cortex-m35p}, @samp{cortex-m55}, @samp{cortex-m85}, @samp{cortex-x1},
 @samp{cortex-m1.small-multiply}, @samp{cortex-m0.small-multiply},
 @samp{cortex-m0plus.small-multiply}, @samp{exynos-m1}, @samp{marvell-pj4},
 @samp{neoverse-n1}, @samp{neoverse-n2}, @samp{neoverse-v1}, @samp{xscale},
@@ -21151,25 +21151,30 @@ The following extension options are common to the listed CPUs:
 
 @table @samp
 @item +nodsp
-Disable the DSP instructions on @samp{cortex-m33}, @samp{cortex-m35p}
-and @samp{cortex-m55}. Also disable the M-Profile Vector Extension (MVE)
-integer and single precision floating-point instructions on @samp{cortex-m55}.
+Disable the DSP instructions on @samp{cortex-m33}, @samp{cortex-m35p},
+@samp{cortex-m55} and @samp{cortex-m85}. Also disable the M-Profile Vector
+Extension (MVE) integer and single precision floating-point instructions on
+@samp{cortex-m55} and @samp{cortex-m85}.
+
+@item +nopacbti
+Disable the Pointer Authentication and Branch Target Identification Extension
+on @samp{cortex-m85}.
 
 @item +nomve
 Disable the M-Profile Vector Extension (MVE) integer and single precision
-floating-point instructions on @samp{cortex-m55}.
+floating-point instructions on @samp{cortex-m55} and @samp{cortex-m85}.
 
 @item +nomve.fp
 Disable the M-Profile Vector Extension (MVE) single precision floating-point
-instructions on @samp{cortex-m55}.
+instructions on @samp{cortex-m55} and @samp{cortex-m85}.
 
 @item  +nofp
 Disables the floating-point instructions on @samp{arm9e},
 @samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm10e},
 @samp{arm1020e}, @samp{arm1022e}, @samp{arm926ej-s},
 @samp{arm1026ej-s}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8},
-@samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m33}, @samp{cortex-m35p}
-and @samp{cortex-m55}.
+@samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m33}, @samp{cortex-m35p},
+@samp{cortex-m55} and @samp{cortex-m85}.
 Disables the floating-point and SIMD instructions on
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7},
 @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a12},
@@ -21509,8 +21514,9 @@ Development Tools Engineering Specification", which can be found on
 Mitigate against a potential security issue with the @code{VLLDM} instruction
 in some M-profile devices when using CMSE (CVE-2021-365465).  This option is
 enabled by default when the option @option{-mcpu=} is used with
-@code{cortex-m33}, @code{cortex-m35p} or @code{cortex-m55}.  The option
-@option{-mno-fix-cmse-cve-2021-35465} can be used to disable the mitigation.
+@code{cortex-m33}, @code{cortex-m35p}, @code{cortex-m55} or @code{cortex-m85}.
+The option @option{-mno-fix-cmse-cve-2021-35465} can be used to disable the
+mitigation.
 
 @item -mstack-protector-guard=@var{guard}
 @itemx -mstack-protector-guard-offset=@var{offset}

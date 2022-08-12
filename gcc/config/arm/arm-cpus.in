@@ -1643,6 +1643,21 @@ begin cpu cortex-m55
  vendor 41
 end cpu cortex-m55
 
+begin cpu cortex-m85
+ cname cortexm85
+ tune flags LDSCHED
+ architecture armv8.1-m.main+pacbti+mve.fp+fp.dp
+ option nopacbti remove pacbti
+ option nomve.fp remove mve_float
+ option nomve remove mve mve_float
+ option nofp remove ALL_FP mve_float
+ option nodsp remove MVE mve_float
+ isa quirk_no_asmcpu quirk_vlldm
+ costs v7m
+ part 0xd23
+ vendor 41
+end cpu cortex-m85
+
 # V8 R-profile implementations.
 begin cpu cortex-r52
  cname cortexr52
