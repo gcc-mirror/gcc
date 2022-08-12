@@ -112,9 +112,6 @@ extern bool some_small_symbolic_operand_int (rtx);
 extern int tls_symbolic_operand_1 (rtx, int, int);
 extern rtx resolve_reload_operand (rtx);
 
-/* Declare functions in alpha-rust.cc  */
-extern void alpha_rust_target_cpu_info (void);
-
 namespace gcc { class context; }
 class rtl_opt_pass;
 

@@ -30,23 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #define EXTRA_TARGET_D_OS_VERSIONS()		\
   ANDROID_TARGET_D_OS_VERSIONS();
 
-#define EXTRA_TARGET_RUST_OS_INFO()		\
-  ANDROID_TARGET_RUST_OS_INFO();
-// TODO: decide on whether following c frontend style or d one - leaning towards c
-
-
-/*#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in linux-common.h (i386) - c++ undefines it and redefines it."
-# error "note that this above error (linux-common-i386) is expected due to already defining EXTRA_TARGET stuff"
-#endif*/
-/* This is previously defined in gnu-user-common.h, but has no linux-specific info.  */
-#undef TARGET_RUST_OS_INFO 
-#define TARGET_RUST_OS_INFO()               \
-  do {                                      \
-    GNU_USER_TARGET_RUST_OS_INFO();         \
-    ANDROID_TARGET_RUST_OS_INFO();          \
-  } while (0)
-
 #undef CC1_SPEC
 #define CC1_SPEC \
   LINUX_OR_ANDROID_CC (GNU_USER_TARGET_CC1_SPEC, \

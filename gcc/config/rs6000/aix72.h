@@ -118,14 +118,6 @@ do {									\
     }                                \
   while (0)
 
-#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in aix72.h (rs6000) - c++ undefines it and redefines it."
-#endif
-#define TARGET_RUST_OS_INFO()		\
-  do {						\
-    AIX_TARGET_RUST_OS_INFO (); \
-  } while (0)
-
 #define CPP_SPEC32 ""
 #define CPP_SPEC64 "-D__64BIT__"
 #define CPP_SPEC_COMMON "%{posix: -D_POSIX_SOURCE} \

@@ -27,11 +27,6 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#define TARGET_RUST_OS_INFO()		\
-  do {						\
-    GNU_USER_TARGET_RUST_OS_INFO();		\
-  } while (0)
-
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
   GNU_USER_TARGET_ENDFILE_SPEC \

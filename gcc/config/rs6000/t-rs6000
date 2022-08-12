@@ -39,10 +39,6 @@ rs6000-d.o: $(srcdir)/config/rs6000/rs6000-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-rs6000-rust.o: $(srcdir)/config/rs6000/rs6000-rust.cc
-	$(COMPILE) $<
-	$(POSTCOMPILE)
-
 rs6000-logue.o: $(srcdir)/config/rs6000/rs6000-logue.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

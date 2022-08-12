@@ -28,7 +28,3 @@ PASSES_EXTRA += $(srcdir)/config/riscv/riscv-passes.def
 $(common_out_file): $(srcdir)/config/riscv/riscv-cores.def \
     $(srcdir)/config/riscv/riscv-protos.h \
     $(srcdir)/config/riscv/riscv-subset.h
-
-riscv-rust.o: $(srcdir)/config/riscv/riscv-rust.cc \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

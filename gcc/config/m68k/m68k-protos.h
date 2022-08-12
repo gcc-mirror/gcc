@@ -101,9 +101,6 @@ extern enum attr_op_mem m68k_sched_attr_op_mem (rtx_insn *);
 
 #endif /* RTX_CODE */
 
-/* Defined in m68k-rust.cc  */
-extern void m68k_rust_target_cpu_info (void);
-
 extern enum reg_class m68k_secondary_reload_class (enum reg_class,
 						   machine_mode, rtx);
 extern enum reg_class m68k_preferred_reload_class (rtx, enum reg_class);

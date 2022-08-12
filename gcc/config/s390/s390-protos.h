@@ -179,9 +179,6 @@ extern bool s390_const_operand_ok (tree, int, int, tree);
 extern void s390_d_target_versions (void);
 extern void s390_d_register_target_info (void);
 
-/* Routines implemented in s390-rust.cc  */
-extern void s390_rust_target_cpu_info (void);
-
 /* Pass management.  */
 namespace gcc { class context; }
 class rtl_opt_pass;

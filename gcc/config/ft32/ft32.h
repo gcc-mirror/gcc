@@ -463,23 +463,6 @@ do { \
     builtin_define ("__FT32__");          \
   }
 
-#define TARGET_RUST_CPU_INFO()   \
-  do {      \
-    rust_add_target_info("target_arch", "ft32");  \
-    if (TARGET_SIM)   \
-      rust_add_target_info("target_feature", "sim");   \
-    if (ft32_lra_flag)   \
-      rust_add_target_info("target_feature", "lra");   \
-    if (TARGET_NODIV)   \
-      rust_add_target_info("target_feature", "nodiv");   \
-    if (TARGET_FT32B)   \
-      rust_add_target_info("target_feature", "ft32b");   \
-    if (TARGET_COMPRESS)   \
-      rust_add_target_info("target_feature", "compress");   \
-    if (TARGET_NOPM)   \
-      rust_add_target_info("target_feature", "nopm");   \
-  } while (0)
-
 #define HAS_LONG_UNCOND_BRANCH true
 
 #define NO_FUNCTION_CSE 1

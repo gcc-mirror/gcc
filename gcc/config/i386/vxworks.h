@@ -113,11 +113,6 @@ along with GCC; see the file COPYING3.  If not see
     }							\
   while (0)
 
-#define TARGET_RUST_OS_INFO()			\
-  do {							\
-    VXWORKS_TARGET_RUST_OS_INFO();			\
-  } while (0)
-
 #undef  CPP_SPEC
 #define CPP_SPEC VXWORKS_ADDITIONAL_CPP_SPEC
 #undef  CC1_SPEC

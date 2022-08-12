@@ -64,16 +64,6 @@
     }						\
   while (0)
 
-#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in netbsd-eabi.h (arm) - c++ undefines it and redefines it."
-#endif
-#define TARGET_RUST_OS_INFO()		\
-  do {						\
-  	if (TARGET_AAPCS_BASED)			\
-      BPABI_TARGET_RUST_OS_INFO();		\
-    NETBSD_TARGET_RUST_OS_INFO();		\
-  } while (0)
-
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC NETBSD_CPP_SPEC
 

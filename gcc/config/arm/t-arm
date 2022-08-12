@@ -172,10 +172,6 @@ arm-d.o: $(srcdir)/config/arm/arm-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-arm-rust.o: $(srcdir)/config/arm/arm-rust.cc
-	$(COMPILE) $<
-	$(POSTCOMPILE)
-
 arm-common.o: arm-cpu-cdata.h
 
 driver-arm.o: arm-native.h

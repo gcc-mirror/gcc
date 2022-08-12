@@ -30,7 +30,3 @@ s390-c.o: $(srcdir)/config/s390/s390-c.cc \
 s390-d.o: $(srcdir)/config/s390/s390-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
-
-s390-rust.o: $(srcdir)/config/s390/s390-rust.cc \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

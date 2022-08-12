@@ -65,7 +65,4 @@ extern void ghs_pragma_endtda		    (struct cpp_reader *);
 extern void ghs_pragma_endsda		    (struct cpp_reader *);
 extern void ghs_pragma_endzda		    (struct cpp_reader *);
 
-/* Routines implemented in v850-rust.cc  */
-extern void v850_rust_target_cpu_info (void);
-
 #endif /* ! GCC_V850_PROTOS_H */

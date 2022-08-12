@@ -30,9 +30,6 @@
 #define TARGET_D_CPU_VERSIONS aarch64_d_target_versions
 #define TARGET_D_REGISTER_CPU_TARGET_INFO aarch64_d_register_target_info
 
-/* Target CPU info for Rust.  */
-#define TARGET_RUST_CPU_INFO aarch64_rust_target_cpu_info
-
 
 
 #define REGISTER_TARGET_PRAGMAS() aarch64_register_pragmas ()

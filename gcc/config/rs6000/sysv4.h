@@ -547,19 +547,6 @@ extern int fixuplabelno;
   while (0)
 #endif
 
-#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in sysv4.h (rs6000) - c++ undefines it and redefines it."
-#endif
-#define TARGET_RUST_OS_INFO()		\
-  do {						\
-    /*TODO: everything in here is just guessed from gcc triples and assumptions - nothing really*/ \
-    /*targets system v anymore so hard to find info on it. as such, everything subject to change*/ \
-    builtin_rust_info ("target_family", "unix");			\
-    builtin_rust_info ("target_os", "sysv4");			\
-    builtin_rust_info ("target_vendor", "unknown");			\
-    builtin_rust_info ("target_env", "");			\
-  } while (0)
-
 /* Select one of BIG_OPT, LITTLE_OPT or DEFAULT_OPT depending
    on various -mbig, -mlittle and -mcall- options.  */
 #define ENDIAN_SELECT(BIG_OPT, LITTLE_OPT, DEFAULT_OPT)	\

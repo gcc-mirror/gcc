@@ -28,11 +28,6 @@ $(TREE_H) $(TM_H) $(TM_P_H) coretypes.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arc/arc-c.cc
 
-arc-rust.o: $(srcdir)/config/arc/arc-rust.cc $(CONFIG_H) $(SYSTEM_H) \
-$(TREE_H) $(TM_H) $(TM_P_H) coretypes.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/arc/arc-rust.cc
-
 #Run `arc-cpus` if you changed something in arc-cpus.def
 
 .PHONY: arc-cpus

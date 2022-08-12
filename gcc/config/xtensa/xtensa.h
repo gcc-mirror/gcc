@@ -90,20 +90,6 @@ along with GCC; see the file COPYING3.  If not see
       builtin_define ("__XTENSA_SOFT_FLOAT__");				\
   } while (0)
 
-#define TARGET_RUST_CPU_INFO()		    \
-  do {		    \
-    rust_add_target_info("target_arch", "xtensa");		    \
-    /*TODO: figure out how to get info from longcalls, target-align and text-section-literals*/ \
-    if (TARGET_CONST16)		    \
-      rust_add_target_info("target_feature", "const16");		    \
-    if (TARGET_FORCE_NO_PIC)		    \
-      rust_add_target_info("target_feature", "force-no-pic");		    \
-    if (TARGET_AUTO_LITPOOLS)		    \
-      rust_add_target_info("target_feature", "auto-litpools");		    \
-    if (TARGET_SERIALIZE_VOLATILE)		    \
-      rust_add_target_info("target_feature", "serialize-volatile");		    \
-  } while (0)
-
 #define CPP_SPEC " %(subtarget_cpp_spec) "
 
 #ifndef SUBTARGET_CPP_SPEC

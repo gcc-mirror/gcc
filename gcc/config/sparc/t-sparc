@@ -28,10 +28,6 @@ sparc-d.o: $(srcdir)/config/sparc/sparc-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-sparc-rust.o: $(srcdir)/config/sparc/sparc-rust.cc \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
-
 # Hack around PR bootstrap/92002.
 tree-ssanames.o-warn += -Wno-error=uninitialized -Wno-error=maybe-uninitialized
 wide-int.o-warn += -Wno-error=uninitialized -Wno-error=maybe-uninitialized

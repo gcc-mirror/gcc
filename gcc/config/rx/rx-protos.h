@@ -171,7 +171,4 @@ rx_find_use_of_reg (rtx reg, rtx_insn* insn, F stepfunc)
 
 #endif
 
-/* Routines implemented in rx-rust.cc  */
-extern void rx_rust_target_cpu_info (void);
-
 #endif /* GCC_RX_PROTOS_H */

@@ -22,11 +22,6 @@ along with GCC; see the file COPYING3.  If not see
     GNU_USER_TARGET_OS_CPP_BUILTINS();				\
   } while (0)
 
-#define TARGET_RUST_OS_INFO()				\
-  do {								\
-    GNU_USER_TARGET_RUST_OS_INFO();				\
-  } while (0)
-
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-riscv" XLEN_SPEC "-" ABI_SPEC ".so.1"
 
 #define MUSL_ABI_SUFFIX \

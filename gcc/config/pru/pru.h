@@ -37,21 +37,6 @@
     }						    \
   while (0)
 
-#define TARGET_RUST_CPU_INFO()		    \
-  do {		    \
-    rust_add_target_info("target_arch", "pru");		    \
-    if (TARGET_MINRT)		    \
-      rust_add_target_info("target_feature", "minrt");		    \
-    if (TARGET_OPT_LOOP)		    \
-      rust_add_target_info("target_feature", "loop");		    \
-    if (pru_current_abi == PRU_ABI_GNU)		    \
-      rust_add_target_info("target_feature", "abi-gnu");		    \
-    else if (pru_current_abi == PRU_ABI_TI)		    \
-      rust_add_target_info("target_feature", "abi-ti");		    \
-    /*TODO: find way of getting no-relax and mcu info?*/		    \
-    /*TODO: add additional options for the changed abi things (e.g. pointer size, return value)?*/    \
-  } while (0)
-
 /* TI ABI implementation is not feature-complete enough (e.g. function
    pointers are not supported), so we cannot list it as a multilib variant.
    To prevent misuse from users, do not link any of the standard libraries.  */

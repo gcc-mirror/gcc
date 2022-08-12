@@ -27,14 +27,6 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in pa-netbsd.h (pa) - c++ undefines it and redefines it."
-#endif
-#define TARGET_RUST_OS_INFO()			\
-  do {							\
-    NETBSD_TARGET_RUST_OS_INFO();	\
-  } while (0)
-
 #undef CPP_SPEC
 #define CPP_SPEC NETBSD_CPP_SPEC
 

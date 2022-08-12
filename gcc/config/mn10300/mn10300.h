@@ -58,26 +58,6 @@
     }						\
   while (0)
 
-#define TARGET_RUST_CPU_INFO() \
-  do { \
-    rust_add_target_info("target_arch", "mn10300"); \
-    if (TARGET_AM33) \
-      rust_add_target_info("target_feature", "am33"); \
-    else if (TARGET_AM33_2) \
-      rust_add_target_info("target_feature", "am33-2"); \
-    else if (TARGET_AM34) \
-      rust_add_target_info("target_feature", "am34"); \
-    if (TARGET_MULT_BUG) \
-      rust_add_target_info("target_feature", "mult-bug"); \
-    if (TARGET_PTR_A0D0) \
-      rust_add_target_info("target_feature", "return-pointer-on-d0"); \
-    if (TARGET_ALLOW_LIW) \
-      rust_add_target_info("target_feature", "liw"); \
-    if (TARGET_ALLOW_SETLB) \
-      rust_add_target_info("target_feature", "setlb"); \
-    /*TODO: find way of getting no-crt0 and relax info?*/ \
-  } while (0)
-
 #ifndef MN10300_OPTS_H
 #include "config/mn10300/mn10300-opts.h"
 #endif

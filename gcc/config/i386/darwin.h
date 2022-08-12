@@ -40,16 +40,6 @@ along with GCC; see the file COPYING3.  If not see
     darwin_cpp_builtins (pfile);		\
   } while (0)
 
-#define TARGET_RUST_OS_INFO()		\
-  do {								\
-    builtin_rust_info ("target_family", "unix");	\
-    /*TODO: rust actually has "macos", "ios", and "tvos" for darwin targets, but gcc seems to have no*/ \
-    /*current support for them, so assuming that target_os is always macos for now*/ \
-    builtin_rust_info ("target_os", "macos");	\
-    builtin_rust_info ("target_vendor", "apple");	\
-    builtin_rust_info ("target_env", "");	\
-  } while (0)
-
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (TARGET_64BIT ? "long int" : "int")
 

@@ -156,8 +156,6 @@
     }						\
   while(0)
 
-#define TARGET_RUST_CPU_INFO v850_rust_target_cpu_info
-
 #define MASK_CPU (MASK_V850 | MASK_V850E | MASK_V850E1 | MASK_V850E2 | MASK_V850E2V3 | MASK_V850E3V5)
 
 /* Target machine storage layout */

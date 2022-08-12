@@ -570,8 +570,6 @@ tm_p_file_list=@tm_p_file_list@
 tm_p_include_list=@tm_p_include_list@
 tm_d_file_list=@tm_d_file_list@
 tm_d_include_list=@tm_d_include_list@
-tm_rust_file_list=@tm_rust_file_list@
-tm_rust_include_list=@tm_rust_include_list@
 build_xm_file_list=@build_xm_file_list@
 build_xm_include_list=@build_xm_include_list@
 build_xm_defines=@build_xm_defines@
@@ -865,7 +863,6 @@ CONFIG_H  = config.h  $(host_xm_file_list)
 TCONFIG_H = tconfig.h $(xm_file_list)
 TM_P_H    = tm_p.h    $(tm_p_file_list)
 TM_D_H    = tm_d.h    $(tm_d_file_list)
-TM_RUST_H = tm_rust.h $(tm_rust_file_list)
 GTM_H     = tm.h      $(tm_file_list) insn-constants.h
 TM_H      = $(GTM_H) insn-flags.h $(OPTIONS_H)
 
@@ -928,7 +925,6 @@ TARGET_H = $(TM_H) target.h $(TARGET_DEF) insn-modes.h insn-codes.h
 C_TARGET_H = c-family/c-target.h $(C_TARGET_DEF)
 COMMON_TARGET_H = common/common-target.h $(INPUT_H) $(COMMON_TARGET_DEF)
 D_TARGET_H = d/d-target.h $(D_TARGET_DEF)
-RUST_TARGET_H = rust/rust-target.h $(RUST_TARGET_DEF)
 MACHMODE_H = machmode.h mode-classes.def
 HOOKS_H = hooks.h
 HOSTHOOKS_DEF_H = hosthooks-def.h $(HOOKS_H)
@@ -1227,9 +1223,6 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 
 # Target specific, D specific object file
 D_TARGET_OBJS=@d_target_objs@
-
-# Target specific, D specific object file
-RUST_TARGET_OBJS=@rust_target_objs@
 
 # Target specific, Fortran specific object file
 FORTRAN_TARGET_OBJS=@fortran_target_objs@
@@ -1932,7 +1925,6 @@ tconfig.h: cs-tconfig.h ; @true
 tm.h: cs-tm.h ; @true
 tm_p.h: cs-tm_p.h ; @true
 tm_d.h: cs-tm_d.h ; @true
-tm_rust.h: cs-tm_rust.h ; @true
 
 cs-config.h: Makefile
 	TARGET_CPU_DEFAULT="" \
@@ -1963,11 +1955,6 @@ cs-tm_d.h: Makefile
 	TARGET_CPU_DEFAULT="" \
 	HEADERS="$(tm_d_include_list)" DEFINES="" \
 	$(SHELL) $(srcdir)/mkconfig.sh tm_d.h
-
-cs-tm_rust.h: Makefile
-	TARGET_CPU_DEFAULT="" \
-	HEADERS="$(tm_rust_include_list)" DEFINES="" \
-	$(SHELL) $(srcdir)/mkconfig.sh tm_rust.h
 
 # Don't automatically run autoconf, since configure.ac might be accidentally
 # newer than configure.  Also, this writes into the source directory which
@@ -2305,12 +2292,6 @@ default-d.o: config/default-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-# Files used by the Rust language front end.
-
-default-rust.o: config/default-rust.cc
-	$(COMPILE) $<
-	$(POSTCOMPILE)
-
 # Language-independent files.
 
 DRIVER_DEFINES = \
@@ -2615,15 +2596,6 @@ s-d-target-hooks-def-h: build/genhooks$(build_exeext)
 					     d/d-target-hooks-def.h
 	$(STAMP) s-d-target-hooks-def-h
 
-rust/rust-target-hooks-def.h: s-rust-target-hooks-def-h; @true
-
-s-rust-target-hooks-def-h: build/genhooks$(build_exeext)
-	$(RUN_GEN) build/genhooks$(build_exeext) "Rust Target Hook" \
-					     > tmp-rust-target-hooks-def.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-rust-target-hooks-def.h \
-					     rust/rust-target-hooks-def.h
-	$(STAMP) s-rust-target-hooks-def-h
-
 # check if someone mistakenly only changed tm.texi.
 # We use a different pathname here to avoid a circular dependency.
 s-tm-texi: $(srcdir)/doc/../doc/tm.texi
@@ -2648,7 +2620,6 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 	    || test $(srcdir)/doc/tm.texi -nt $(srcdir)/c-family/c-target.def \
 	    || test $(srcdir)/doc/tm.texi -nt $(srcdir)/common/common-target.def \
 	    || test $(srcdir)/doc/tm.texi -nt $(srcdir)/d/d-target.def \
-	    || test $(srcdir)/doc/tm.texi -nt $(srcdir)/rust/rust-target.def \
 	  ); then \
 	  echo >&2 ; \
 	  echo You should edit $(srcdir)/doc/tm.texi.in rather than $(srcdir)/doc/tm.texi . >&2 ; \
@@ -2797,8 +2768,8 @@ s-gtype: $(EXTRA_GTYPE_DEPS) build/gengtype$(build_exeext) \
                     -r gtype.state
 	$(STAMP) s-gtype
 
-generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_RUST_H) $(TM_H) \
-       multilib.h $(simple_generated_h) specs.h \
+generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_H) multilib.h \
+       $(simple_generated_h) specs.h \
        tree-check.h genrtl.h insn-modes.h insn-modes-inline.h \
        tm-preds.h tm-constrs.h \
        $(ALL_GTFILES_H) gtype-desc.cc gtype-desc.h version.h \
@@ -2806,7 +2777,7 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_RUST_H) $(TM_H) \
        common/common-target-hooks-def.h pass-instances.def \
        gimple-match.cc generic-match.cc \
        c-family/c-target-hooks-def.h d/d-target-hooks-def.h \
-       rust/rust-target-hooks-def.h case-cfn-macros.h \
+       case-cfn-macros.h \
        cfn-operators.pd omp-device-properties.h
 
 #

@@ -48,11 +48,6 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#define TARGET_RUST_OS_INFO()		\
-  do {						\
-    GNU_USER_TARGET_RUST_OS_INFO();	\
-  } while (0)
-
 
 /* Target specific assembler settings.  */
 /* Rewrite -march=arch* options to the original CPU name in order to

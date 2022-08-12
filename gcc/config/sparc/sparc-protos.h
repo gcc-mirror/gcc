@@ -116,7 +116,4 @@ extern rtl_opt_pass *make_pass_work_around_errata (gcc::context *);
 extern void sparc_d_target_versions (void);
 extern void sparc_d_register_target_info (void);
 
-/* Routines implemented in sparc-rust.cc  */
-extern void sparc_rust_target_cpu_info (void);
-
 #endif /* __SPARC_PROTOS_H__ */

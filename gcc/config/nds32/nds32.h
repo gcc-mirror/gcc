@@ -1006,9 +1006,6 @@ enum nds32_builtins
 #define TARGET_CPU_CPP_BUILTINS() \
   nds32_cpu_cpp_builtins (pfile)
 
-/* Target CPU info for Rust.  */
-#define TARGET_RUST_CPU_INFO nds32_rust_target_cpu_info
-
 
 /* Defining Data Structures for Per-function Information.  */
 

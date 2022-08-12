@@ -44,9 +44,6 @@ extern void nvptx_cpu_cpp_builtins (void);
 extern void nvptx_register_pragmas (void);
 extern unsigned int nvptx_data_alignment (const_tree, unsigned int);
 
-/* Routines implemented in nvptx-rust.cc  */
-extern void nvptx_rust_target_cpu_info (void);
-
 #ifdef RTX_CODE
 extern void nvptx_expand_oacc_fork (unsigned);
 extern void nvptx_expand_oacc_join (unsigned);

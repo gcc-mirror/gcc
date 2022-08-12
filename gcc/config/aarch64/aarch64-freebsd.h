@@ -65,14 +65,6 @@
   }                                           \
   while (false)
 
-#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in aarch64-freebsd.h - c++ undefines it and redefines it."
-#endif
-#define TARGET_RUST_OS_INFO()       \
-  do {                              \
-    FBSD_TARGET_RUST_OS_INFO ();    \
-  } while (0)
-
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
 /* Uninitialized common symbols in non-PIE executables, even with

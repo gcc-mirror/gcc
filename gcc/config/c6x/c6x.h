@@ -114,8 +114,6 @@ extern c6x_cpu_t c6x_arch;
 	}					\
     } while (0)
 
-#define TARGET_RUST_CPU_INFO c6x_rust_target_cpu_info
-
 #define OPTION_DEFAULT_SPECS \
   {"arch", "%{!march=*:-march=%(VALUE)}" }
 

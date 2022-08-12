@@ -80,30 +80,6 @@
     }							\
   while (0)
 
-#define TARGET_RUST_CPU_INFO()		    \
-  do {		    \
-    rust_add_target_info("target_arch", "visium");		    \
-    /*TODO: figure out how to get info from debug, sim and enable-trampolines*/ \
-    if (TARGET_FPU)		    \
-      rust_add_target_info("target_feature", "hard-float");		    \
-    else		    \
-      rust_add_target_info("target_feature", "soft-float");		    \
-    if (TARGET_MCM)		    \
-      rust_add_target_info("target_feature", "mcm");		    \
-    else if (visium_cpu_and_features == PROCESSOR_GR5)		    \
-      rust_add_target_info("target_feature", "gr5");		    \
-    else if (visium_cpu_and_features == PROCESSOR_GR6)		    \
-      rust_add_target_info("target_feature", "gas");		    \
-    if (TARGET_SV_MODE)		    \
-      rust_add_target_info("target_feature", "sv-mode");		    \
-    else		    \
-      rust_add_target_info("target_feature", "user-mode");		    \
-    if (TARGET_BMI)		    \
-      rust_add_target_info("target_feature", "bmi");		    \
-    if (TARGET_FPU_IEEE)		    \
-      rust_add_target_info("target_feature", "fpu-ieee");		    \
-  } while (0)
-
 /* Recast the cpu class to be the cpu attribute.
    Every file includes us, but not every file includes insn-attr.h.  */
 #define visium_cpu_attr ((enum attr_cpu) visium_cpu)

@@ -27,28 +27,6 @@
     }					\
   while(0)
 
-#define TARGET_RUST_CPU_INFO()   \
-  do {      \
-    rust_add_target_info("target_arch", "amdgcn");  \
-    /*TODO: maybe make arches features? e.g. "fiji", "gfx900"*/ \
-    /*TODO: is defining via "is arch 3" or "is arch 3 or higher" better?*/ \
-    if (TARGET_GCN3)   \
-      rust_add_target_info("target_feature", "gcn3");   \
-    if (TARGET_GCN5)   \
-      rust_add_target_info("target_feature", "gcn5");   \
-    if (TARGET_ABI64)   \
-      rust_add_target_info("target_feature", "64");   \
-    else /*are these defines actually useful?*/  \
-      rust_add_target_info("target_feature", "32");   \
-    /*TODO: figure out how to check gomp feature*/ \
-    /*TODO: ensure that vars below are accessible - defined weirdly so may not be*/ \
-    if (flag_bypass_init_error)   \
-      rust_add_target_info("target_feature", "bypass-init-error");   \
-    if (flag_worker_partitioning)   \
-      rust_add_target_info("target_feature", "acc-experimental-workers");   \
-    /*TODO: figure out how to represent stack-size and local-symbol-id as defines*/ \
-  } while (0)
-
 /* Support for a compile-time default architecture and tuning.
    The rules are:
    --with-arch is ignored if -march is specified.

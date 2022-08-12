@@ -60,8 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Target OS builtins.  */
 #define TARGET_OS_CPP_BUILTINS() GNU_USER_TARGET_OS_CPP_BUILTINS()
 
-#define TARGET_RUST_OS_INFO() GNU_USER_TARGET_RUST_OS_INFO()
-
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
