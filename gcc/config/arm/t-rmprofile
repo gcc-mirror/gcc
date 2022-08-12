@@ -97,6 +97,13 @@ MULTILIB_MATCHES += $(foreach FP, $(v8_1m_sp_variants), \
 MULTILIB_MATCHES += $(foreach FP, $(v8_1m_dp_variants), \
 			     march?armv8-m.main+fp.dp=mlibarch?armv8.1-m.main$(FP))
 
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti+fp.dp=march?armv8.1-m.main+pacbti+fp.dp+mve.fp
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti+fp.dp=mlibarch?armv8.1-m.main+pacbti+fp.dp+mve.fp
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti+fp.dp=march?armv8.1-m.main+pacbti+fp.dp+mve
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti+fp.dp=mlibarch?armv8.1-m.main+pacbti+fp.dp+mve
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti+fp.dp=march?armv8.1-m.main+dsp+pacbti+fp.dp
+MULTILIB_MATCHES	+= march?armv8.1-m.main+pacbti+fp.dp=mlibarch?armv8.1-m.main+dsp+pacbti+fp.dp
+
 # Map all mbranch-protection values other than 'none' to 'standard'.
 MULTILIB_MATCHES	+= mbranch-protection?standard=mbranch-protection?bti
 MULTILIB_MATCHES	+= mbranch-protection?standard=mbranch-protection?pac-ret
