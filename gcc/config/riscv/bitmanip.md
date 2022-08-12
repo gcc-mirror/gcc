@@ -143,7 +143,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
         (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r")))]
   "TARGET_ZBB"
-  { return TARGET_64BIT ? "<bitmanip_insn>w\t%0,%1" : "<bitmanip_insn>\t%0,%1"; }
+  "<bitmanip_insn>%~\t%0,%1"
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "SI")])
 
@@ -201,7 +201,7 @@
 	(rotatert:SI (match_operand:SI 1 "register_operand" "r")
 		     (match_operand:QI 2 "arith_operand" "rI")))]
   "TARGET_ZBB"
-  { return TARGET_64BIT ? "ror%i2w\t%0,%1,%2" : "ror%i2\t%0,%1,%2"; }
+  "ror%i2%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
 (define_insn "rotrdi3"
@@ -225,7 +225,7 @@
 	(rotate:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:QI 2 "register_operand" "r")))]
   "TARGET_ZBB"
-  { return TARGET_64BIT ? "rolw\t%0,%1,%2" : "rol\t%0,%1,%2"; }
+  "rol%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
 (define_insn "rotldi3"

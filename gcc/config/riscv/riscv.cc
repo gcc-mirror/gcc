@@ -3731,12 +3731,22 @@ riscv_memmodel_needs_release_fence (enum memmodel model)
    'i'	Print i if the operand is not a register.
    'S'	Print shift-index of single-bit mask OP.
    'T'	Print shift-index of inverted single-bit mask OP.
+   '~'	Print w if TARGET_64BIT is true; otherwise not print anything.
 
    Note please keep this list and the list in riscv.md in sync.  */
 
 static void
 riscv_print_operand (FILE *file, rtx op, int letter)
 {
+  /* `~` does not take an operand so op will be null
+     Check for before accessing op.
+  */
+  if (letter == '~')
+    {
+      if (TARGET_64BIT)
+	fputc('w', file);
+      return;
+    }
   machine_mode mode = GET_MODE (op);
   enum rtx_code code = GET_CODE (op);
 
@@ -3810,6 +3820,13 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	  break;
 	}
     }
+}
+
+/* Implement TARGET_PRINT_OPERAND_PUNCT_VALID_P */
+static bool
+riscv_print_operand_punct_valid_p (unsigned char code)
+{
+  return (code == '~');
 }
 
 /* Implement TARGET_PRINT_OPERAND_ADDRESS.  */
@@ -5900,6 +5917,8 @@ riscv_init_libfuncs (void)
 #define TARGET_PRINT_OPERAND riscv_print_operand
 #undef TARGET_PRINT_OPERAND_ADDRESS
 #define TARGET_PRINT_OPERAND_ADDRESS riscv_print_operand_address
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P riscv_print_operand_punct_valid_p
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS riscv_setup_incoming_varargs
