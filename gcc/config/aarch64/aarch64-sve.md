@@ -8231,7 +8231,7 @@
 	        [(match_operand:<VPRED> 1)
 	         (const_int SVE_KNOWN_PTRUE)
 	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
-	         (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "wDz")]
+	         (match_operand:SVE_FULL_F 3 "register_operand" "w")]
 	        UNSPEC_COND_FCMUO))
 	    (match_operand:<VPRED> 4 "register_operand" "Upa"))
 	  (match_dup:<VPRED> 1)))
@@ -8267,7 +8267,7 @@
 	        [(match_operand:<VPRED> 1)
 	         (const_int SVE_KNOWN_PTRUE)
 	         (match_operand:SVE_FULL_F 2 "register_operand" "w")
-	         (match_operand:SVE_FULL_F 3 "aarch64_simd_reg_or_zero" "wDz")]
+	         (match_operand:SVE_FULL_F 3 "register_operand" "w")]
 	        UNSPEC_COND_FCMUO))
 	    (not:<VPRED>
 	      (match_operand:<VPRED> 4 "register_operand" "Upa")))
