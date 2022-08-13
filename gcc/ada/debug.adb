@@ -201,7 +201,7 @@ package body Debug is
    --  d6   Default access unconstrained to thin pointers
    --  d7   Suppress version/source stamp/compilation time for -gnatv/-gnatl
    --  d8   Force opposite endianness in packed stuff
-   --  d9   Allow lock free implementation
+   --  d9
 
    --  d.1  Enable unnesting of nested procedures
    --  d.2  Allow statements in declarative part
