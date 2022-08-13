@@ -1,3 +1,47 @@
+2022-08-12  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* doc/invoke.texi (Arm Options): Document -mcpu=cortex-m55 options.
+
+2022-08-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/106057
+	* ipa-devirt.cc (type_or_derived_type_possibly_instantiated_p): New
+	function.
+	(possible_polymorphic_call_targets): Use it.
+
+2022-08-12  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* tree-ssa-loop.h: Improve comment
+
+2022-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106506
+	* tree-ssa-phiopt.cc (spaceship_replacement): Don't punt for
+	is_cast or orig_use_lhs cases if phi_bb has 3 predecessors.
+
+2022-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106593
+	* tree-ssa-threadbackward.cc (back_threader::find_paths):
+	If the imports from the conditional do not satisfy
+	gimple_range_ssa_p don't try to thread anything.
+
+2022-08-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/106524
+	* config/aarch64/aarch64-sve.md (*fcmuo<mode>_nor_combine,
+	*fcmuo<mode>_bic_combine): Don't accept comparisons against zero.
+
+2022-08-12  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106000
+	* doc/invoke.texi: Add Wanalyzer-out-of-bounds.
+
+2022-08-12  Andrew Pinski  <apinski@marvell.com>
+
+	* config/aarch64/aarch64.md: Remove comment
+	about MD_INCLUDES as it is out of date and not needed.
+
 2022-08-11  Richard Biener  <rguenther@suse.de>
 
 	* gimple-range-path.cc (path_range_query::compute_imports):
