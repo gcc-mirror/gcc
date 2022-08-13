@@ -931,6 +931,14 @@
   return val <= 255*8 && val % 8 == 0;
 })
 
+;; Match 1 to 255 except multiples of 8
+(define_predicate "const_0_to_255_not_mul_8_operand"
+  (match_code "const_int")
+{
+  unsigned HOST_WIDE_INT val = INTVAL (op);
+  return val <= 255 && val % 8 != 0;
+})
+
 ;; Return true if OP is CONST_INT >= 1 and <= 31 (a valid operand
 ;; for shift & compare patterns, as shifting by 0 does not change flags).
 (define_predicate "const_1_to_31_operand"
