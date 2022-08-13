@@ -920,17 +920,6 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_ISOLIB_TRUE@	$(INSTALL_DATA) .libs/libm2iso.a $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)
 @BUILD_ISOLIB_TRUE@	chmod 644 $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)/libm2iso.a
 @BUILD_ISOLIB_TRUE@	$(RANLIB) $(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)/libm2iso.a
-@BUILD_ISOLIB_TRUE@	echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-@BUILD_ISOLIB_TRUE@	echo "  gxx_include_dir = $(gxx_include_dir)"
-@BUILD_ISOLIB_TRUE@	echo "  TARGET_LIB_PATH = $(TARGET_LIB_PATH)"
-@BUILD_ISOLIB_TRUE@	echo "  libexecsubdir = $(libexecsubdir)"
-@BUILD_ISOLIB_TRUE@	echo "  multiple:  $(libexecdir)/gcc/$(target_alias)/$(gcc_version)"
-@BUILD_ISOLIB_TRUE@	echo "  $(DESTDIR)/A/$(inst_libdir)/B/$(MULTIDIR)/C/$(M2LIBDIR)/D/"
-@BUILD_ISOLIB_TRUE@	echo "  DESTDIR = $(DESTDIR)"
-@BUILD_ISOLIB_TRUE@	echo "  inst_libdir = $(inst_libdir)"
-@BUILD_ISOLIB_TRUE@	echo "  MULTIDIR = $(MULTIDIR)"
-@BUILD_ISOLIB_TRUE@	echo "  M2LIBDIR = $(M2LIBDIR)"
-@BUILD_ISOLIB_TRUE@	echo "  pwd = `pwd`"
 @BUILD_ISOLIB_TRUE@	for i in $(M2DEFS) $(M2MODS) ; do \
 @BUILD_ISOLIB_TRUE@           if [ -f $$i ] ; then \
 @BUILD_ISOLIB_TRUE@              $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(MULTIDIR)$(M2LIBDIR)'; \
