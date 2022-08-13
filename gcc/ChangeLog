@@ -1,3 +1,11 @@
+2022-08-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-07-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR c/106016
+	* expr.c (count_type_elements): Handle OPAQUE_TYPE.
+
 2022-08-08   Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Remove code
