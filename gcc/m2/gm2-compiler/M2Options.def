@@ -53,7 +53,7 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  SetLowerCaseKeywords,
                  SetIndex, SetRange, SetWholeDiv, SetStrictTypeChecking,
                  Setc, Getc, SetUselist, GetUselist, GetUselistFilename,
-                 SetShared,
+                 SetShared, SetB,
 
                  Iso, Pim, Pim2, Pim3, Pim4,
                  cflag,
@@ -90,7 +90,8 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  SetScaffoldDynamic, SetScaffoldStatic,
                  SetScaffoldMain, ScaffoldMain,
                  SetRuntimeModuleOverride, GetRuntimeModuleOverride,
-                 SetGenModuleList, GetGenModuleFilename, SharedFlag ;
+                 SetGenModuleList, GetGenModuleFilename, SharedFlag,
+                 GetB ;
 
 
 VAR
@@ -192,6 +193,20 @@ PROCEDURE Setc (value: BOOLEAN) ;
 *)
 
 PROCEDURE Getc () : BOOLEAN ;
+
+
+(*
+   SetB - assigns Barg to arg.
+*)
+
+PROCEDURE SetB (arg: ADDRESS) ;
+
+
+(*
+   GetB - returns argument to the -B option as a string or NIL if it were never set.
+*)
+
+PROCEDURE GetB () : ADDRESS ;
 
 
 (*

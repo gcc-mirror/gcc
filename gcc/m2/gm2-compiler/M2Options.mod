@@ -30,6 +30,7 @@ FROM M2Printf IMPORT printf0, printf1 ;
 FROM libc IMPORT exit ;
 FROM Debug IMPORT Halt ;
 FROM m2linemap IMPORT location_t ;
+FROM m2configure IMPORT FullPathCPP ;
 
 FROM DynamicStrings IMPORT String, Length, InitString, Mark, Slice, EqualArray,
                            InitStringCharStar, ConCatChar, ConCat, KillString,
@@ -51,10 +52,10 @@ CONST
    Debugging = FALSE ;
 
 VAR
+   Barg,
    GenModuleListFilename,
    UselistFilename,
    RuntimeModuleOverride,
-   CppProgram,
    CppArgs              : String ;
    UselistFlag,
    GenModuleListFlag,
@@ -110,6 +111,27 @@ END DSdbExit ;
 
 
 (*
+   SetB - assigns Barg to arg.
+*)
+
+PROCEDURE SetB (arg: ADDRESS) ;
+BEGIN
+   Barg := KillString (Barg) ;
+   Barg := InitStringCharStar (arg)
+END SetB ;
+
+
+(*
+   GetB - returns Barg value as a C string or NIL if it was never set.
+*)
+
+PROCEDURE GetB () : ADDRESS ;
+BEGIN
+   RETURN string (Barg)
+END GetB ;
+
+
+(*
    DisplayVersion - displays the version of the compiler.
 *)
 
@@ -137,36 +159,26 @@ END DisplayVersion ;
 
 (*
    CppCommandLine - returns the Cpp command line and all arguments.
+                    NIL is returned if the -fcpp is absent.
 *)
 
 PROCEDURE CppCommandLine () : String ;
 VAR
    s: String ;
 BEGIN
-   IF EqualArray(CppProgram, '')
+   IF CPreProcessor
    THEN
-      RETURN( NIL )
-   ELSE
-      s := Dup(CppProgram) ;
-      s := ConCat(ConCatChar(s, ' '), CppArgs) ;
+      s := InitStringCharStar (FullPathCPP ()) ;
+      s := ConCat (ConCatChar (s, ' '), CppArgs) ;
       IF CC1Quiet
       THEN
-         s := ConCat(ConCatChar(s, ' '), Mark(InitString('-quiet')))
+         s := ConCat (ConCatChar (s, ' '), Mark (InitString ('-quiet')))
       END ;
-      RETURN( s )
+      RETURN s
+   ELSE
+      RETURN NIL
    END
 END CppCommandLine ;
-
-
-(*
-   CppProg - sets the cpp program to be, program.
-*)
-
-PROCEDURE CppProg (program: ADDRESS) ;
-BEGIN
-   CppProgram := KillString(CppProgram) ;
-   CppProgram := InitStringCharStar(program)
-END CppProg ;
 
 
 (*
@@ -181,10 +193,6 @@ BEGIN
    IF EqualArray(s, '-fcpp-begin') OR EqualArray(s, '-fcpp-end')
    THEN
       (* do nothing *)
-   ELSIF EqualArray(s, '-fcpp-prog=')
-   THEN
-      CppProgram := KillString(CppProgram) ;
-      CppProgram := InitStringCharStar(arg)
    ELSE
       IF NOT EqualArray(CppArgs, '')
       THEN
@@ -211,17 +219,12 @@ END CppArg ;
 
 PROCEDURE CppRemember (s: String) ;
 BEGIN
-   IF EqualArray(Mark(Slice(s, 0, 10)), '-fcpp-prog=')
+   IF (CppArgs=NIL) OR EqualArray (CppArgs, '')
    THEN
-      CppProg(string(Mark(Slice(s, 10, 0))))
+      CppArgs := Dup (s)
    ELSE
-      IF (CppArgs=NIL) OR EqualArray(CppArgs, '')
-      THEN
-         CppArgs := Dup(s)
-      ELSE
-         CppArgs := ConCatChar(CppArgs, ' ') ;
-         CppArgs := ConCat(CppArgs, s)
-      END
+      CppArgs := ConCatChar (CppArgs, ' ') ;
+      CppArgs := ConCat (CppArgs, s)
    END
 END CppRemember ;
 
@@ -1198,7 +1201,6 @@ BEGIN
    cflag                        := FALSE ;  (* -c.  *)
    RuntimeModuleOverride        := NIL ;
    CppArgs                      := InitString ('') ;
-   CppProgram                   := InitString ('') ;
    Pim                          :=  TRUE ;
    Pim2                         := FALSE ;
    Pim3                         := FALSE ;
@@ -1258,5 +1260,6 @@ BEGIN
    UselistFilename              := NIL ;
    GenModuleList                := FALSE ;
    GenModuleListFilename        := NIL ;
-   SharedFlag                   := FALSE
+   SharedFlag                   := FALSE ;
+   Barg                         := NIL
 END M2Options.

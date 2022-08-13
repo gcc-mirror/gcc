@@ -1,4 +1,4 @@
-;; Copyright (C) 1985-2021
+;; Copyright (C) 1985-2022
 
 ;; Free Software Foundation, Inc.
 
@@ -138,7 +138,7 @@
   (progn
     (concat m2-compile-command-default " " m2-options)))
 
-(defcustom m2-link-command-default "gm2 -fonlylink"
+(defcustom m2-link-command-default "gm2 "
   "command to link Modula-2 programs"
   :type 'string
   :group 'gm2)
@@ -439,7 +439,7 @@
 
 (defun m2-move-to-procedure-start ()
   "moves to the start of the procedure implementation (before the
-							      comments start - if they exist)."
+   comments start - if they exist)."
   (beginning-of-line)
   (let (m2-point)
     (setq m2-point (point))
@@ -468,7 +468,7 @@
 
 (defun m2-is-forward-declaration ()
   "returns true if this procedure heading is just a FORWARD declaration
-  of a implementation further down the file."
+   of a implementation further down the file."
   (interactive)
   (save-excursion
     (m2-forward-to-token)

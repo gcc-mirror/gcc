@@ -26,6 +26,10 @@
 Language
 Modula-2
 
+B
+Modula-2
+; Documented in c.opt
+
 D
 Modula-2
 ; Documented in c.opt
@@ -112,10 +116,6 @@ passed to the preprocessor if -fcpp is used (internal switch)
 
 fcpp-begin
 Modula-2
-passed to the preprocessor if -fcpp is used (internal switch)
-
-fcpp-prog=
-Modula-2 Joined
 passed to the preprocessor if -fcpp is used (internal switch)
 
 fdebug-builtins

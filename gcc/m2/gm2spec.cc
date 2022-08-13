@@ -140,8 +140,6 @@ static bool seen_uselist = false;
 static bool uselist = false;
 static bool gen_module_list = true;  // Default uses -fgen-module-list=-.
 static const char *gen_module_filename = "-";
-static bool seen_B = false;
-static const char *B_path = NULL;
 static const char *multilib_dir = NULL;
 /* The original argument list and related info is copied here.  */
 static unsigned int gm2_xargc;
@@ -228,61 +226,6 @@ append_option (size_t opt_index, const char *arg, int value)
 
   generate_option (opt_index, arg, value, CL_DRIVER, &decoded);
   append_arg (&decoded);
-}
-
-/* gen_gm2_libexec returns a string containing libexec /
-   DEFAULT_TARGET_MACHINE string / DEFAULT_TARGET_MACHINE.  */
-
-static const char *
-gen_gm2_libexec (const char *libexec)
-{
-  int l = strlen (libexec) + 1 + strlen (DEFAULT_TARGET_MACHINE) + 1
-          + strlen (DEFAULT_TARGET_VERSION) + 1;
-  char *s = (char *)xmalloc (l);
-  char dir_sep[2];
-
-  dir_sep[0] = DIR_SEPARATOR;
-  dir_sep[1] = (char)0;
-
-  strcpy (s, libexec);
-  strcat (s, dir_sep);
-  strcat (s, DEFAULT_TARGET_MACHINE);
-  strcat (s, dir_sep);
-  strcat (s, DEFAULT_TARGET_VERSION);
-  return s;
-}
-
-/* add_exec_dir wraps the exec path with the -fcpp-prog= option.  */
-
-static const char *
-add_exec_dir (int argc, const char *argv[])
-{
-  if (argc == 1 && argv[0] != NULL)
-    {
-      const char *path;
-
-      if (seen_B)
-        path = xstrdup (B_path);
-      else
-        path = gen_gm2_libexec (STANDARD_LIBEXEC_PREFIX);
-
-      if (path != NULL)
-        {
-          char *opt = (char *)xmalloc (strlen ("-fcpp-prog=") + strlen (path)
-                                       + 1 + strlen (argv[0]) + 1);
-          char *sep = (char *)alloca (2);
-
-          sep[0] = DIR_SEPARATOR;
-          sep[1] = (char)0;
-
-          strcpy (opt, "-fcpp-prog=");
-          strcat (opt, path);
-          strcat (opt, sep);
-          strcat (opt, argv[0]);
-          return opt;
-        }
-    }
-  return "-fcpp-prog=none";
 }
 
 /* build_archive_path returns a string containing the path to the
@@ -733,10 +676,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	case OPT_fm2_version:
 	  gm2_version (false);
 	  break;
-        case OPT_B:
-          seen_B = true;
-          B_path = decoded_options[i].arg;
-          break;
         case OPT_fpthread:
           need_pthread = decoded_options[i].value;
           break;
@@ -1008,7 +947,7 @@ int lang_specific_extra_outfiles = 0;
 void
 lang_register_spec_functions (void)
 {
-#if 1
+#if 0
   fe_add_spec_function ("exec_prefix", add_exec_dir);
 #endif
 }

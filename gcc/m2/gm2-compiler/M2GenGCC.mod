@@ -114,7 +114,6 @@ FROM DynamicStrings IMPORT string, InitString, KillString, String,
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3, Sprintf4 ;
 FROM M2System IMPORT Address, Word, System, TBitSize, MakeAdr, IsSystemType, IsGenericSystemType, IsRealN, IsComplexN, IsSetN, IsWordN, Loc, Byte ;
 FROM M2FileName IMPORT CalculateFileName ;
-FROM M2AsmUtil IMPORT GetModuleInitName, GetModuleFinallyName ;
 FROM SymbolConversion IMPORT AddModGcc, Mod2Gcc, GccKnowsAbout, RemoveMod2Gcc ;
 
 FROM M2StackWord IMPORT InitStackWord, StackOfWord, PeepWord, ReduceWord,

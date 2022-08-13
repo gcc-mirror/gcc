@@ -126,7 +126,6 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         IsUnused,
                         NulSym ;
 
-FROM M2Configure IMPORT PushParametersLeftToRight, UsingGCCBackend ;
 FROM M2Batch IMPORT MakeDefinitionSource ;
 FROM M2GCCDeclare IMPORT PutToBeSolvedByQuads ;
 
@@ -4995,41 +4994,21 @@ BEGIN
    THEN
       GenQuad (ParamOp, 0, Proc, ProcSym)  (* Space for return value *)
    END ;
-   IF PushParametersLeftToRight
+   IF (NoOfParameters+1=NoOfParam(Proc)) AND UsesOptArg(Proc)
    THEN
-      IF (NoOfParameters+1=NoOfParam(Proc)) AND UsesOptArg(Proc)
+      GenQuad (OptParamOp, NoOfParam(Proc), Proc, Proc)
+   END ;
+   i := NoOfParameters ;
+   pi := 1 ;     (* stack index referencing stacked parameter, i *)
+   WHILE i>0 DO
+      paramtok := OperandTtok (pi) ;
+      GenQuadO (paramtok, ParamOp, i, Proc, OperandT (pi), TRUE) ;
+      IF NOT IsConst (OperandT (pi))
       THEN
-         GenQuad (OptParamOp, NoOfParam(Proc), Proc, Proc)
+         ParamConstant := FALSE
       END ;
-      i := NoOfParameters ;
-      pi := 1 ;     (* stack index referencing stacked parameter, i *)
-      WHILE i>0 DO
-         paramtok := OperandTtok (pi) ;
-         GenQuadO (paramtok, ParamOp, i, Proc, OperandT (pi), TRUE) ;
-         IF NOT IsConst (OperandT (pi))
-         THEN
-            ParamConstant := FALSE
-         END ;
-         DEC (i) ;
-         INC (pi)
-      END
-   ELSE
-      i := 1 ;
-      pi := NoOfParameters ;   (* stack index referencing stacked parameter, i *)
-      WHILE i<=NoOfParameters DO
-         paramtok := OperandTtok (pi) ;
-         GenQuadO (paramtok, ParamOp, i, Proc, OperandT(pi), TRUE) ;
-         IF NOT IsConst (OperandT (pi))
-         THEN
-            ParamConstant := FALSE
-         END ;
-         INC (i) ;
-         DEC (pi)
-      END ;
-      IF (NoOfParameters+1 = NoOfParam (Proc)) AND UsesOptArg (Proc)
-      THEN
-         GenQuad (OptParamOp, NoOfParam (Proc), Proc, Proc)
-      END
+      DEC (i) ;
+      INC (pi)
    END ;
    GenQuadO (proctok, CallOp, NulSym, NulSym, ProcSym, TRUE) ;
    PopN (NoOfParameters+1) ; (* Destroy arguments and procedure call *)
@@ -8650,25 +8629,13 @@ BEGIN
       starttok := OperandTok (NoOfParameters + 1) ;  (* ADR token.  *)
       endtok := OperandTok (1) ;  (* last parameter.  *)
       GenQuad (ParamOp, 0, MakeAdr, MakeAdr) ;
-      IF PushParametersLeftToRight
-      THEN
-         i := NoOfParameters ;
-         (* stack index referencing stacked parameter, i *)
-         pi := 1 ;
-         WHILE i > 0 DO
-            GenQuadO (OperandTok (pi), ParamOp, i, MakeAdr, OperandT (pi), TRUE) ;
-            DEC (i) ;
-            INC (pi)
-         END
-      ELSE
-         i := 1 ;
-         (* stack index referencing stacked parameter, i *)
-         pi := NoOfParameters ;
-         WHILE i <= NoOfParameters DO
-            GenQuadO (OperandTok (pi), ParamOp, i, MakeAdr, OperandT (pi), TRUE) ;
-            INC (i) ;
-            DEC (pi)
-         END
+      i := NoOfParameters ;
+      (* stack index referencing stacked parameter, i *)
+      pi := 1 ;
+      WHILE i > 0 DO
+         GenQuadO (OperandTok (pi), ParamOp, i, MakeAdr, OperandT (pi), TRUE) ;
+         DEC (i) ;
+         INC (pi)
       END ;
       AreConst := TRUE ;
       i := 1 ;

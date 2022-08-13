@@ -24,14 +24,14 @@ along with GCC; see the file COPYING3.  If not see
 /* Pass the preprocessor options on the command line together with
    the exec prefix.  */
 
-#define M2CPP "%{fcpp:-fcpp-begin %:exec_prefix(cc1)" \
+#define M2CPP "%{fcpp:-fcpp-begin " \
               "      -E -lang-asm -traditional-cpp " \
               "      %(cpp_unique_options) -fcpp-end}"
 
   {".mod", "@modula-2", 0, 0, 0},
   {"@modula-2",
       "cc1gm2 " M2CPP
-      "      %(cc1_options) %{c*} %{f*} %{+e*} %{I*} "
+      "      %(cc1_options) %{B*} %{c*} %{f*} %{+e*} %{I*} "
       "      %{MD} %{MMD} %{M} %{MM} %{MA} %{MT*} %{MF*} %V"
       "      %{save-temps*}"
       "      %i %{!fsyntax-only:%(invoke_as)}",

@@ -40,13 +40,10 @@ IMPORT FIO ;
 FROM M2Options IMPORT DisplayQuadruples,
                       GenerateDebugging, GenerateLineDebug, Iso, Optimizing, WholeProgram ;
 
-FROM M2AsmUtil IMPORT WriteAsmName, WriteName, GetAsmName, GetFullSymName,
-                      UnderScoreString, GetModuleInitName, GetModuleFinallyName,
-                      GetFullScopeAsmName ;
+FROM M2AsmUtil IMPORT GetFullSymName, GetFullScopeAsmName ;
 
 FROM NameKey IMPORT Name, MakeKey, NulName, KeyToCharStar, makekey ;
 FROM M2FileName IMPORT CalculateFileName ;
-FROM M2Configure IMPORT PushParametersLeftToRight ;
 FROM DynamicStrings IMPORT String, string, InitString, KillString, InitStringCharStar, Mark ;
 FROM FormatStrings IMPORT Sprintf1 ;
 FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation, UnknownTokenNo ;
@@ -2346,7 +2343,6 @@ VAR
 BEGIN
    IF (NOT GccKnowsAbout(Sym)) AND (NOT IsPseudoProcFunc(Sym))
    THEN
-      Assert(PushParametersLeftToRight) ;
       BuildStartFunctionDeclaration(UsesVarArgs(Sym)) ;
       p := NoOfParam(Sym) ;
       i := p ;
@@ -2427,7 +2423,6 @@ BEGIN
        IsExported(GetModuleWhereDeclared (Sym), Sym) OR
        IsExtern (Sym))
    THEN
-      Assert(PushParametersLeftToRight) ;
       BuildStartFunctionDeclaration(UsesVarArgs(Sym)) ;
       p := NoOfParam(Sym) ;
       i := p ;
@@ -4823,7 +4818,6 @@ BEGIN
    InitFunctionTypeParameters ;
    p := NoOfParam(Sym) ;
    i := p ;
-   Assert(PushParametersLeftToRight) ;
    WHILE i>0 DO
       Son := GetNthParam(Sym, i) ;
       location := TokenToLocation(GetDeclaredMod(Son)) ;

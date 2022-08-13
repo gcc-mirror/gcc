@@ -497,8 +497,9 @@ GM2_C_OBJS        = m2/gm2-lang.o \
                     m2/gm2-gcc/m2block.o \
                     m2/gm2-gcc/m2builtins.o \
                     m2/gm2-gcc/m2except.o \
-                    m2/gm2-gcc/m2convert.o \
                     m2/gm2-gcc/m2color.o \
+                    m2/gm2-gcc/m2configure.o \
+                    m2/gm2-gcc/m2convert.o \
                     m2/gm2-gcc/m2decl.o \
                     m2/gm2-gcc/m2expr.o \
                     m2/gm2-gcc/m2linemap.o \
@@ -569,6 +570,16 @@ m2/gm2-gcc/%.o: $(srcdir)/m2/gm2-gcc/%.cc $(GCC_HEADER_DEPENDENCIES_FOR_M2)
 	$(COMPILER) -c -g $(ALL_COMPILERFLAGS) \
              $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
+m2/gm2-gcc/m2configure.o: $(srcdir)/m2/gm2-gcc/m2configure.cc \
+               $(SYSTEM_H) $(GCC_H) $(CONFIG_H) \
+               m2/gm2config.h $(TARGET_H) $(PLUGIN_HEADERS) \
+               $(generated_files) $(C_TREE_H) insn-attr-common.h
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+         $(DRIVER_DEFINES) \
+		-DLIBSUBDIR=\"$(libsubdir)\" \
+                -DPREFIX=\"$(prefix)\" \
+                -c $(srcdir)/m2/gm2-gcc/m2configure.cc $(OUTPUT_OPTION)
+
 m2/gm2-lang.o: $(srcdir)/m2/gm2-lang.cc gt-m2-gm2-lang.h $(GCC_HEADER_DEPENDENCIES_FOR_M2)
 	$(COMPILER) -c -g -I$(GM2GCC) $(ALL_COMPILERFLAGS) \
             $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
@@ -638,7 +649,7 @@ GM2-COMP-BOOT-DEFS = FifoQueue.def   M2Debug.def     M2Optimize.def  M2Defaults.
                      M2LexBuf.def    M2Version.def   M2Error.def     M2Graph.def     \
                      M2Students.def  \
                      M2GenGCC.def    M2GCCDeclare.def \
-                     M2Configure.def SymbolTable.def Lists.def       SymbolConversion.def \
+                     SymbolTable.def Lists.def       SymbolConversion.def \
                      P0SyntaxCheck.def \
                      P1Build.def     P2Build.def     P3Build.def     PHBuild.def     \
                      M2Printf.def    bnflex.def      M2Quiet.def     M2Preprocess.def \
@@ -653,7 +664,7 @@ GM2-COMP-BOOT-DEFS = FifoQueue.def   M2Debug.def     M2Optimize.def  M2Defaults.
 GM2-COMP-BOOT-MODS = FifoQueue.mod   M2LexBuf.mod                             \
                      M2AsmUtil.mod   M2Optimize.mod  M2StackWord.mod \
                      M2Options.mod   M2Pass.mod      M2Batch.mod     M2Quads.mod     \
-                     M2Comp.mod      M2Reserved.mod  M2Configure.mod M2StackAddress.mod \
+                     M2Comp.mod      M2Reserved.mod                  M2StackAddress.mod \
                      M2Debug.mod     M2Defaults.mod  NameKey.mod     \
                      M2FileName.mod  P0SymBuild.mod  P1SymBuild.mod  P2SymBuild.mod  \
                      P3SymBuild.mod  \
@@ -675,7 +686,7 @@ GM2-COMP-BOOT-MODS = FifoQueue.mod   M2LexBuf.mod                             \
 GM2-GCC-DEFS      =  m2builtins.def  m2except.def    m2convert.def   m2decl.def \
                      m2except.def    m2expr.def      m2misc.def      m2block.def \
                      m2statement.def m2top.def       m2tree.def      m2treelib.def \
-                     m2type.def      m2linemap.def   m2color.def
+                     m2type.def      m2linemap.def   m2color.def     m2configure.def
 
 # The following tables define the source files used to build gm2 using only Modula-2
 # sources (except for interfacing to libc and gcc).
@@ -726,7 +737,7 @@ GM2-COMP-DEFS      = FifoQueue.def     M2Debug.def     M2Optimize.def  M2Default
                      M2System.def      P2SymBuild.def  M2Code.def      M2Comp.def      \
                      NameKey.def       M2Version.def   M2Error.def     M2StackAddress.def \
                      M2Students.def    M2GenGCC.def    \
-                     M2GCCDeclare.def  M2Configure.def SymbolTable.def Lists.def       \
+                     M2GCCDeclare.def  SymbolTable.def Lists.def       \
                      P0SyntaxCheck.def bnflex.def      P1Build.def     P2Build.def     \
                      P3Build.def       PHBuild.def     SymbolConversion.def \
                      M2Preprocess.def  M2Printf.def    M2LexBuf.def    M2Quiet.def     \
@@ -738,7 +749,7 @@ GM2-COMP-DEFS      = FifoQueue.def     M2Debug.def     M2Optimize.def  M2Default
 
 GM2-COMP-MODS      = FifoQueue.mod     M2AsmUtil.mod                   M2Optimize.mod  \
                      M2StackWord.mod   M2Options.mod   M2Pass.mod      M2Batch.mod     \
-                     M2Quads.mod       M2Comp.mod      M2Reserved.mod  M2Configure.mod \
+                     M2Quads.mod       M2Comp.mod      M2Reserved.mod                  \
                      M2Debug.mod       M2Defaults.mod  NameKey.mod     M2Graph.mod     \
                      M2FileName.mod    P0SymBuild.mod  P1SymBuild.mod  P2SymBuild.mod  \
                      P3SymBuild.mod  \
@@ -769,7 +780,7 @@ GM2-LIBIBERTY-DEFS = choosetemp.def    pexecute.def
 
 GM2-VERIFY-MODS    = FifoQueue.mod     M2AsmUtil.mod                   M2Optimize.mod  \
                      M2StackWord.mod                   M2Pass.mod      M2Batch.mod     \
-                     M2Quads.mod       M2Comp.mod      M2Reserved.mod  M2Configure.mod \
+                     M2Quads.mod       M2Comp.mod      M2Reserved.mod  \
                      M2Debug.mod       M2Defaults.mod  NameKey.mod     \
                      M2FileName.mod    P0SymBuild.mod  P1SymBuild.mod  P2SymBuild.mod  \
                      P3SymBuild.mod  \

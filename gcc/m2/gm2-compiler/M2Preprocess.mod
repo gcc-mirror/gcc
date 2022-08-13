@@ -105,7 +105,7 @@ VAR
    commandLine: String ;
 BEGIN
    command := CppCommandLine () ;
-   IF EqualArray (command, '')
+   IF (command = NIL) OR EqualArray (command, '')
    THEN
       RETURN filename
    ELSE

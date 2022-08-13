@@ -26,49 +26,12 @@ DEFINITION MODULE M2AsmUtil ;
    Title      : M2AsmUtil
    Date       : Thu Feb  1 15:34:08 GMT 1990
    Description: Provides utilities relating symbols in the SymbolTable
-                to their equalalent representation in ASM format.
+                to their equivalent representation in ASM format.
 *)
 
 FROM DynamicStrings IMPORT String ;
 FROM NameKey IMPORT Name ;
-EXPORT QUALIFIED WriteAsmName, WriteName, GetAsmName, GetFullSymName,
-                 UnderScoreString, DotifyLabel,
-                 GetModuleInitName, GetModuleFinallyName,
-                 GetFullScopeAsmName ;
-
-
-(*
-   DotifyLabel - place a dot infront of the label if necessary.
-                 The string, s, should no longer be used after
-                 this function. A new string is returned.
-*)
-
-PROCEDURE DotifyLabel (s: String) : String ;
-
-
-(*
-   WriteAsmName - displays the symbol, Sym, name using module prefixes
-                  if it is EXPORT QUALIFIED.
-*)
-
-PROCEDURE WriteAsmName (Sym: CARDINAL) ;
-
-
-(*
-   WriteName - writes out the symbol, Sym, name using module prefixes
-               if it is EXPORT QUALIFIED.
-               The procedure differs from the above because it does
-               not generate any _ prefix to the name.
-*)
-
-PROCEDURE WriteName (Sym: CARDINAL) ;
-
-
-(*
-   GetAsmName - returns the NameKey for the assembler string of a symbol.
-*)
-
-PROCEDURE GetAsmName (Sym: CARDINAL) : Name ;
+EXPORT QUALIFIED GetFullSymName, GetFullScopeAsmName ;
 
 
 (*
@@ -87,28 +50,6 @@ PROCEDURE GetFullSymName (Sym: CARDINAL) : Name ;
 *)
 
 PROCEDURE GetFullScopeAsmName (Sym: CARDINAL) : Name ;
-
-
-(*
-   UnderScoreString - emits a string with a leading underscore if the C compiler
-                      uses _ prefixes. The string without the underscore is returned.
-*)
-
-PROCEDURE UnderScoreString (s: String) : String ;
-
-
-(*
-   GetModuleInitName - returns the name of the initialization section of a module.
-*)
-
-PROCEDURE GetModuleInitName (Sym: CARDINAL) : Name ;
-
-
-(*
-   GetModuleFinallyName - returns the name of the finalization section of a module.
-*)
-
-PROCEDURE GetModuleFinallyName (Sym: CARDINAL) : Name ;
 
 
 END M2AsmUtil.

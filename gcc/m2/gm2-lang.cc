@@ -204,6 +204,9 @@ gm2_langhook_handle_option (
 
   switch (code)
     {
+    case OPT_B:
+      M2Options_SetB (arg);
+      return 1;
     case OPT_c:
       M2Options_Setc (value);
       return 1;
@@ -351,9 +354,6 @@ gm2_langhook_handle_option (
       return 1;
     case OPT_fcpp_end:
       insideCppArgs = FALSE;
-      return 1;
-    case OPT_fcpp_prog_:
-      M2Options_CppProg (arg);
       return 1;
     case OPT_fq:
       M2Options_SetQuadDebugging (value);
