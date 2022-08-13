@@ -1347,7 +1347,7 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define ENUM_UNDERLYING_TYPE(TYPE) TREE_TYPE (ENUMERAL_TYPE_CHECK (TYPE))
 
 /* Nonzero if this type is volatile-qualified.  */
-#define CP_TYPE_VOLATILE_P(NODE)                                               \
+#define RS_TYPE_VOLATILE_P(NODE)                                               \
   ((rs_type_quals (NODE) & TYPE_QUAL_VOLATILE) != 0)
 
 /* Nonzero means that this type is either complete or being defined, so we
@@ -1365,6 +1365,169 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define DECL_MAIN_P(NODE)                                                      \
   (DECL_NAME (NODE) != NULL_TREE && MAIN_NAME_P (DECL_NAME (NODE))             \
    && flag_hosted)
+
+/* Nonzero if the variable was declared to be thread-local.
+   We need a special C++ version of this test because the middle-end
+   DECL_THREAD_LOCAL_P uses the symtab, so we can't use it for
+   templates.  */
+#define RS_DECL_THREAD_LOCAL_P(NODE) (TREE_LANG_FLAG_0 (VAR_DECL_CHECK (NODE)))
+
+#define COND_EXPR_IS_VEC_DELETE(NODE) TREE_LANG_FLAG_0 (COND_EXPR_CHECK (NODE))
+
+/* RANGE_FOR_STMT accessors. These give access to the declarator,
+   expression, body, and scope of the statement, respectively.  */
+#define RANGE_FOR_DECL(NODE) TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 0)
+#define RANGE_FOR_EXPR(NODE) TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 1)
+#define RANGE_FOR_BODY(NODE) TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 2)
+#define RANGE_FOR_SCOPE(NODE) TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 3)
+#define RANGE_FOR_UNROLL(NODE) TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 4)
+#define RANGE_FOR_INIT_STMT(NODE) TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 5)
+#define RANGE_FOR_IVDEP(NODE) TREE_LANG_FLAG_6 (RANGE_FOR_STMT_CHECK (NODE))
+
+#define CP_DECL_CONTEXT(NODE)                                                  \
+  (!DECL_FILE_SCOPE_P (NODE) ? DECL_CONTEXT (NODE) : global_namespace)
+#define CP_TYPE_CONTEXT(NODE)                                                  \
+  (!TYPE_FILE_SCOPE_P (NODE) ? TYPE_CONTEXT (NODE) : global_namespace)
+#define FROB_CONTEXT(NODE)                                                     \
+  ((NODE) == global_namespace ? DECL_CONTEXT (NODE) : (NODE))
+
+/* Nonzero if NODE is the std namespace.  */
+#define DECL_NAMESPACE_STD_P(NODE) ((NODE) == std_node)
+
+/* Whether the namepace is an inline namespace.  */
+#define DECL_NAMESPACE_INLINE_P(NODE)                                          \
+  TREE_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
+
+#define CP_DECL_CONTEXT(NODE)                                                  \
+  (!DECL_FILE_SCOPE_P (NODE) ? DECL_CONTEXT (NODE) : global_namespace)
+
+/* Based off of TYPE_UNNAMED_P.  */
+#define LAMBDA_TYPE_P(NODE)                                                    \
+  (TREE_CODE (NODE) == RECORD_TYPE && TYPE_LINKAGE_IDENTIFIER (NODE)           \
+   && IDENTIFIER_LAMBDA_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
+
+/* Macros to make error reporting functions' lives easier.  */
+#define TYPE_LINKAGE_IDENTIFIER(NODE)                                          \
+  (TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (NODE)))
+
+/* Identifiers used for lambda types are almost anonymous.  Use this
+   spare flag to distinguish them (they also have the anonymous flag).  */
+#define IDENTIFIER_LAMBDA_P(NODE)                                              \
+  (IDENTIFIER_NODE_CHECK (NODE)->base.protected_flag)
+
+/* If NODE, a FUNCTION_DECL, is a C++11 inheriting constructor, then this
+   is the constructor it inherits from.  */
+#define DECL_INHERITED_CTOR(NODE)                                              \
+  (DECL_DECLARES_FUNCTION_P (NODE) && DECL_CONSTRUCTOR_P (NODE)                \
+     ? LANG_DECL_FN_CHECK (NODE)->context                                      \
+     : NULL_TREE)
+
+/* True if the class type TYPE is a literal type.  */
+#define CLASSTYPE_LITERAL_P(TYPE) (LANG_TYPE_CLASS_CHECK (TYPE)->is_literal)
+
+/* Nonzero if NODE (a FUNCTION_DECL or TEMPLATE_DECL)
+   is a destructor.  */
+#define DECL_DESTRUCTOR_P(NODE) DECL_CXX_DESTRUCTOR_P (NODE)
+
+/* Nonzero if TYPE has a trivial destructor.  From [class.dtor]:
+
+     A destructor is trivial if it is an implicitly declared
+     destructor and if:
+
+       - all of the direct base classes of its class have trivial
+	 destructors,
+
+       - for all of the non-static data members of its class that are
+	 of class type (or array thereof), each such class has a
+	 trivial destructor.  */
+#define TYPE_HAS_TRIVIAL_DESTRUCTOR(NODE)                                      \
+  (!TYPE_HAS_NONTRIVIAL_DESTRUCTOR (NODE))
+
+/* Nonzero means that NODE (a class type) has a destructor -- but that
+   it has not yet been declared.  */
+#define CLASSTYPE_LAZY_DESTRUCTOR(NODE)                                        \
+  (LANG_TYPE_CLASS_CHECK (NODE)->lazy_destructor)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a complete
+   object.  */
+#define DECL_COMPLETE_CONSTRUCTOR_P(NODE)                                      \
+  (DECL_NAME (NODE) == complete_ctor_identifier)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a base
+   object.  */
+#define DECL_BASE_CONSTRUCTOR_P(NODE) (DECL_NAME (NODE) == base_ctor_identifier)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a constructor, but not either the
+   specialized in-charge constructor or the specialized not-in-charge
+   constructor.  */
+#define DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P(NODE)                               \
+  (DECL_NAME (NODE) == ctor_identifier)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a copy constructor.  */
+#define DECL_COPY_CONSTRUCTOR_P(NODE)                                          \
+  (DECL_CONSTRUCTOR_P (NODE) && copy_fn_p (NODE) > 0)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a move constructor.  */
+#define DECL_MOVE_CONSTRUCTOR_P(NODE)                                          \
+  (DECL_CONSTRUCTOR_P (NODE) && move_fn_p (NODE))
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a destructor, but not the
+   specialized in-charge constructor, in-charge deleting constructor,
+   or the base destructor.  */
+#define DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P(NODE)                                \
+  (DECL_NAME (NODE) == dtor_identifier)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a complete
+   object.  */
+#define DECL_COMPLETE_DESTRUCTOR_P(NODE)                                       \
+  (DECL_NAME (NODE) == complete_dtor_identifier)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a base
+   object.  */
+#define DECL_BASE_DESTRUCTOR_P(NODE) (DECL_NAME (NODE) == base_dtor_identifier)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a complete
+   object that deletes the object after it has been destroyed.  */
+#define DECL_DELETING_DESTRUCTOR_P(NODE)                                       \
+  (DECL_NAME (NODE) == deleting_dtor_identifier)
+
+/* Nonzero if either DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P or
+   DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P is true of NODE.  */
+#define DECL_MAYBE_IN_CHARGE_CDTOR_P(NODE)                                     \
+  (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (NODE)                                   \
+   || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (NODE))
+
+/* Nonzero if NODE (a _DECL) is a cloned constructor or
+   destructor.  */
+#define DECL_CLONED_FUNCTION_P(NODE)                                           \
+  (DECL_NAME (NODE) && IDENTIFIER_CDTOR_P (DECL_NAME (NODE))                   \
+   && !DECL_MAYBE_IN_CHARGE_CDTOR_P (NODE))
+
+/* If DECL_CLONED_FUNCTION_P holds, this is the function that was
+   cloned.  */
+#define DECL_CLONED_FUNCTION(NODE)                                             \
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->u.fn.u5.cloned_function)
+
+/* Nonzero means that an object of this type cannot be initialized using
+   an initializer list.  */
+#define CLASSTYPE_NON_AGGREGATE(NODE)                                          \
+  (LANG_TYPE_CLASS_CHECK (NODE)->non_aggregate)
+#define TYPE_NON_AGGREGATE_CLASS(NODE)                                         \
+  (CLASS_TYPE_P (NODE) && CLASSTYPE_NON_AGGREGATE (NODE))
+
+/* Nonzero for class type means that the default constructor is trivial.  */
+#define TYPE_HAS_TRIVIAL_DFLT(NODE)                                            \
+  (TYPE_HAS_DEFAULT_CONSTRUCTOR (NODE) && !TYPE_HAS_COMPLEX_DFLT (NODE))
+
+/* Nonzero if this class has a constexpr constructor other than a copy/move
+   constructor.  Note that a class can have constexpr constructors for
+   static initialization even if it isn't a literal class.  */
+#define TYPE_HAS_CONSTEXPR_CTOR(NODE)                                          \
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_constexpr_ctor)
+
+/* Nonzero if there is no trivial default constructor for this class.  */
+#define TYPE_HAS_COMPLEX_DFLT(NODE)                                            \
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_dflt)
 
 #if defined ENABLE_TREE_CHECKING
 
@@ -1531,6 +1694,33 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
        : &scope_chain->bindings))
 
 // Above macros are copied from gcc/cp/name-lookup.cc
+
+/* The various kinds of special functions.  If you add to this list,
+   you should update special_function_p as well.  */
+enum special_function_kind
+{
+  sfk_none = 0, /* Not a special function.  This enumeral
+		   must have value zero; see
+		   special_function_p.  */
+  /* The following are ordered, for use by member synthesis fns.  */
+  sfk_destructor,	      /* A destructor.  */
+  sfk_constructor,	      /* A constructor.  */
+  sfk_inheriting_constructor, /* An inheriting constructor */
+  sfk_copy_constructor,	      /* A copy constructor.  */
+  sfk_move_constructor,	      /* A move constructor.  */
+  sfk_copy_assignment,	      /* A copy assignment operator.  */
+  sfk_move_assignment,	      /* A move assignment operator.  */
+  /* The following are unordered.  */
+  sfk_complete_destructor, /* A destructor for complete objects.  */
+  sfk_base_destructor,	   /* A destructor for base subobjects.  */
+  sfk_deleting_destructor, /* A destructor for complete objects that
+			      deletes the object after it has been
+			      destroyed.  */
+  sfk_conversion,	   /* A conversion operator.  */
+  sfk_deduction_guide,	   /* A class template deduction guide.  */
+  sfk_comparison,	   /* A comparison operator (e.g. ==, <, <=>).  */
+  sfk_virtual_destructor   /* Used by member synthesis fns.  */
+};
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and
@@ -2922,6 +3112,10 @@ extern void lvalue_error (location_t, enum lvalue_use);
 extern tree
 cp_fold_maybe_rvalue (tree, bool);
 
+extern tree get_first_fn (tree) ATTRIBUTE_PURE;
+
+extern void explain_non_literal_class (tree);
+
 // forked from gcc/cp/cp-tree.h
 
 enum
@@ -3147,7 +3341,16 @@ namespace Compile {
 extern tree
 maybe_constant_init (tree, tree = NULL_TREE, bool = false);
 
+extern void
+explain_invalid_constexpr_fn (tree fun);
+
 extern bool potential_constant_expression (tree);
+
+extern bool
+literal_type_p (tree t);
+
+extern bool
+maybe_constexpr_fn (tree t);
 }
 
 } // namespace Rust

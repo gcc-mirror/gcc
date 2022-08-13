@@ -1678,6 +1678,8 @@ fields_linear_search (tree klass, tree name, bool want_type)
       if (!want_type || DECL_DECLARES_TYPE_P (decl))
 	return decl;
     }
+
+  return NULL_TREE;
 }
 
 // forked from gcc/cp/except.cc canonnothrow_spec_pical_eh_spec
@@ -4587,7 +4589,6 @@ lvalue_kind (const_tree ref)
       return clk_none;
 
     default:
-    default_:
       if (!TREE_TYPE (ref))
 	return clk_none;
       if (CLASS_TYPE_P (TREE_TYPE (ref))
@@ -6031,6 +6032,118 @@ tree
 cp_fold_rvalue (tree x)
 {
   return cp_fold_maybe_rvalue (x, true);
+}
+
+/* Returns true iff class T has a constexpr destructor or has an
+   implicitly declared destructor that we can't tell if it's constexpr
+   without forcing a lazy declaration (which might cause undesired
+   instantiations).  */
+
+static bool
+type_maybe_constexpr_destructor (tree t)
+{
+  /* Until C++20, only trivial destruction is constexpr.  */
+  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (t))
+    return true;
+
+  if (CLASS_TYPE_P (t) && CLASSTYPE_LAZY_DESTRUCTOR (t))
+    /* Assume it's constexpr.  */
+    return true;
+  tree fn = CLASSTYPE_DESTRUCTOR (t);
+  return (fn && Compile::maybe_constexpr_fn (fn));
+}
+
+/* T is a non-literal type used in a context which requires a constant
+   expression.  Explain why it isn't literal.  */
+
+void
+explain_non_literal_class (tree t)
+{
+  static hash_set<tree> *diagnosed;
+
+  if (!CLASS_TYPE_P (t))
+    return;
+  t = TYPE_MAIN_VARIANT (t);
+
+  if (diagnosed == NULL)
+    diagnosed = new hash_set<tree>;
+  if (diagnosed->add (t))
+    /* Already explained.  */
+    return;
+
+  auto_diagnostic_group d;
+  inform (UNKNOWN_LOCATION, "%q+T is not literal because:", t);
+  if (LAMBDA_TYPE_P (t))
+    inform (UNKNOWN_LOCATION,
+	    "  %qT is a closure type, which is only literal in "
+	    "C++17 and later",
+	    t);
+  else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
+	   && !type_maybe_constexpr_destructor (t))
+    inform (UNKNOWN_LOCATION, "  %q+T does not have %<constexpr%> destructor",
+	    t);
+  else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+    inform (UNKNOWN_LOCATION, "  %q+T has a non-trivial destructor", t);
+  else if (CLASSTYPE_NON_AGGREGATE (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
+	   && !LAMBDA_TYPE_P (t) && !TYPE_HAS_CONSTEXPR_CTOR (t))
+    {
+      inform (UNKNOWN_LOCATION,
+	      "  %q+T is not an aggregate, does not have a trivial "
+	      "default constructor, and has no %<constexpr%> constructor that "
+	      "is not a copy or move constructor",
+	      t);
+      if (type_has_non_user_provided_default_constructor (t))
+	/* Note that we can't simply call locate_ctor because when the
+	   constructor is deleted it just returns NULL_TREE.  */
+	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+	  {
+	    tree fn = *iter;
+	    tree parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
+
+	    parms = skip_artificial_parms_for (fn, parms);
+
+	    if (sufficient_parms_p (parms))
+	      {
+		Compile::explain_invalid_constexpr_fn (fn);
+		break;
+	      }
+	  }
+    }
+  else
+    {
+      tree binfo, base_binfo, field;
+      int i;
+      for (binfo = TYPE_BINFO (t), i = 0;
+	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+	{
+	  tree basetype = TREE_TYPE (base_binfo);
+	  if (!CLASSTYPE_LITERAL_P (basetype))
+	    {
+	      inform (UNKNOWN_LOCATION,
+		      "  base class %qT of %q+T is non-literal", basetype, t);
+	      explain_non_literal_class (basetype);
+	      return;
+	    }
+	}
+      for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+	{
+	  tree ftype;
+	  if (TREE_CODE (field) != FIELD_DECL)
+	    continue;
+	  ftype = TREE_TYPE (field);
+	  if (!Compile::literal_type_p (ftype))
+	    {
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "  non-static data member %qD has non-literal type",
+		      field);
+	      if (CLASS_TYPE_P (ftype))
+		explain_non_literal_class (ftype);
+	    }
+	  if (RS_TYPE_VOLATILE_P (ftype))
+	    inform (DECL_SOURCE_LOCATION (field),
+		    "  non-static data member %qD has volatile type", field);
+	}
+    }
 }
 
 } // namespace Rust
