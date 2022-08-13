@@ -1,3 +1,27 @@
+2022-08-12  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2022-07-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106369
+	* g++.dg/cpp1z/constexpr-lambda27.C: New test.
+
+2022-08-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/67048
+	* g++.dg/cpp0x/enum42.C: New test.
+
+2022-08-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-07-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR c/106016
+	* gcc.target/powerpc/pr106016.c: New test.
+
 2022-08-11  Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backported from master:

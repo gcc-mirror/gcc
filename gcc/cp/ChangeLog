@@ -1,3 +1,21 @@
+2022-08-12  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2022-07-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106369
+	* constexpr.cc (reduced_constant_expression_p): Return false
+	if a CONSTRUCTOR initializes an empty field.
+
+2022-08-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/67048
+	* parser.cc (cp_parser_enum_specifier): Warn about empty unnamed enum
+	only when it's followed by a semicolon.
+
 2022-07-26  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
