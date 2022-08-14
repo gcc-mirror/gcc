@@ -1,3 +1,28 @@
+2022-08-13  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (const_0_to_255_not_mul_8_operand):
+	New predicate for values between 0/1 and 255, not multiples of 8.
+	* config/i386/sse.md (ashlv1ti3): Delay lowering of logical left
+	shifts by constant bit counts.
+	(*ashlvti3_internal): New define_insn_and_split that lowers
+	logical left shifts by constant bit counts, that aren't multiples
+	of 8, before reload.
+	(lshrv1ti3): Delay lowering of logical right shifts by constant.
+	(*lshrv1ti3_internal): New define_insn_and_split that lowers
+	logical right shifts by constant bit counts, that aren't multiples
+	of 8, before reload.
+	(ashrv1ti3):: Delay lowering of arithmetic right shifts by
+	constant bit counts.
+	(*ashrv1ti3_internal): New define_insn_and_split that lowers
+	arithmetic right shifts by constant bit counts before reload.
+	(rotlv1ti3): Delay lowering of rotate left by constant.
+	(*rotlv1ti3_internal): New define_insn_and_split that lowers
+	rotate left by constant bits counts before reload.
+	(rotrv1ti3): Delay lowering of rotate right by constant.
+	(*rotrv1ti3_internal): New define_insn_and_split that lowers
+	rotate right by constant bits counts before reload.
+
 2022-08-12  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* doc/invoke.texi (Arm Options): Document -mcpu=cortex-m55 options.

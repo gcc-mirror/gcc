@@ -1,3 +1,8 @@
+2022-08-13  Tim Lange  <mail@tim-lange.me>
+
+	* gcc.dg/analyzer/torture/pr93451.c:
+	Disable Wanalyzer-out-of-bounds.
+
 2022-08-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/106057
