@@ -1,3 +1,42 @@
+2022-08-12  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106000
+	* analyzer.opt: Add Wanalyzer-out-of-bounds.
+	* region-model.cc (class out_of_bounds): Diagnostics base class
+	for all out-of-bounds diagnostics.
+	(class past_the_end): Base class derived from out_of_bounds for
+	the buffer_overflow and buffer_overread diagnostics.
+	(class buffer_overflow): Buffer overflow diagnostics.
+	(class buffer_overread): Buffer overread diagnostics.
+	(class buffer_underflow): Buffer underflow diagnostics.
+	(class buffer_underread): Buffer overread diagnostics.
+	(region_model::check_region_bounds): New function to check region
+	bounds for out-of-bounds accesses.
+	(region_model::check_region_access):
+	Add call to check_region_bounds.
+	(region_model::get_representative_tree): New function that accepts
+	a region instead of an svalue.
+	* region-model.h (class region_model):
+	Add region_model::check_region_bounds.
+	* region.cc (region::symbolic_p): New predicate.
+	(offset_region::get_byte_size_sval): Only return the remaining
+	byte size on offset_regions.
+	* region.h: Add region::symbolic_p.
+	* store.cc (byte_range::intersects_p):
+	Add new function equivalent to bit_range::intersects_p.
+	(byte_range::exceeds_p): New function.
+	(byte_range::falls_short_of_p): New function.
+	* store.h (struct byte_range): Add byte_range::intersects_p,
+	byte_range::exceeds_p and byte_range::falls_short_of_p.
+
+2022-08-12  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106539
+	* region-model-impl-calls.cc (region_model::impl_call_realloc):
+	Use the result of get_copied_size as the size for the
+	sized_regions in realloc.
+	(success_with_move::get_copied_size): New function.
+
 2022-08-11  Immad Mir  <mirimmad@outlook.com>
 
 	PR analyzer/106551

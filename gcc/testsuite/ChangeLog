@@ -1,3 +1,47 @@
+2022-08-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/106057
+	* g++.dg/tree-ssa/pr101839.C: New test.
+
+2022-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/106506
+	* g++.dg/opt/pr94589-2.C: New test.
+
+2022-08-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/106524
+	* gcc.target/aarch64/sve/pr106524.c: New test.
+
+2022-08-12  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106000
+	* g++.dg/analyzer/pr100244.C: Disable out-of-bounds warning.
+	* gcc.dg/analyzer/allocation-size-3.c:
+	Disable out-of-bounds warning.
+	* gcc.dg/analyzer/memcpy-2.c: Disable out-of-bounds warning.
+	* gcc.dg/analyzer/pr101962.c: Add dg-warning.
+	* gcc.dg/analyzer/pr96764.c: Disable out-of-bounds warning.
+	* gcc.dg/analyzer/pr97029.c:
+	Add dummy buffer to prevent an out-of-bounds warning.
+	* gcc.dg/analyzer/realloc-5.c: Add dg-warning.
+	* gcc.dg/analyzer/test-setjmp.h:
+	Add dummy buffer to prevent an out-of-bounds warning.
+	* gcc.dg/analyzer/zlib-3.c: Add dg-bogus.
+	* g++.dg/analyzer/out-of-bounds-placement-new.C: New test.
+	* gcc.dg/analyzer/out-of-bounds-1.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-2.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-3.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-container_of.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-coreutils.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-curl.c: New test.
+
+2022-08-12  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106539
+	* gcc.dg/analyzer/pr106539.c: New test.
+	* gcc.dg/analyzer/realloc-5.c: New test.
+
 2022-08-11  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/analyzer/fd-4.c: Define _MODE_T on AIX.

@@ -1,3 +1,5 @@
+/* { dg-additional-options -Wno-analyzer-out-of-bounds } */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>

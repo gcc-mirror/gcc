@@ -458,6 +458,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-mismatching-deallocation @gol
 -Wno-analyzer-null-argument @gol
 -Wno-analyzer-null-dereference @gol
+-Wno-analyzer-out-of-bounds @gol
 -Wno-analyzer-possible-null-argument @gol
 -Wno-analyzer-possible-null-dereference @gol
 -Wno-analyzer-putenv-of-auto-var @gol
@@ -9762,6 +9763,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-mismatching-deallocation @gol
 -Wanalyzer-null-argument @gol
 -Wanalyzer-null-dereference @gol
+-Wanalyzer-out-of-bounds @gol
 -Wanalyzer-possible-null-argument @gol
 -Wanalyzer-possible-null-dereference @gol
 -Wanalyzer-putenv-of-auto-var @gol
@@ -9982,6 +9984,19 @@ and vector @code{delete[]}, and those marked as allocator/deallocator
 pairs using attribute @code{malloc}.
 
 See @uref{https://cwe.mitre.org/data/definitions/762.html, CWE-762: Mismatched Memory Management Routines}.
+
+@item -Wno-analyzer-out-of-bounds
+@opindex Wanalyzer-out-of-bounds
+@opindex Wno-analyzer-out-of-bounds
+This warning requires @option{-fanalyzer} to enable it; use
+@option{-Wno-analyzer-out-of-bounds} to disable it.
+
+This diagnostic warns for path through the code in which a buffer is
+definitely read or written out-of-bounds.  The diagnostic only applies
+for cases where the analyzer is able to determine a constant offset and
+for accesses past the end of a buffer, also a constant capacity.
+
+See @uref{https://cwe.mitre.org/data/definitions/119.html, CWE-119: Improper Restriction of Operations within the Bounds of a Memory Buffer}.
 
 @item -Wno-analyzer-possible-null-argument
 @opindex Wanalyzer-possible-null-argument
@@ -21623,14 +21638,25 @@ The following extension options are common to the listed CPUs:
 
 @table @samp
 @item +nodsp
-Disable the DSP instructions on @samp{cortex-m33}, @samp{cortex-m35p}.
+Disable the DSP instructions on @samp{cortex-m33}, @samp{cortex-m35p}
+and @samp{cortex-m55}. Also disable the M-Profile Vector Extension (MVE)
+integer and single precision floating-point instructions on @samp{cortex-m55}.
+
+@item +nomve
+Disable the M-Profile Vector Extension (MVE) integer and single precision
+floating-point instructions on @samp{cortex-m55}.
+
+@item +nomve.fp
+Disable the M-Profile Vector Extension (MVE) single precision floating-point
+instructions on @samp{cortex-m55}.
 
 @item  +nofp
 Disables the floating-point instructions on @samp{arm9e},
 @samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm10e},
 @samp{arm1020e}, @samp{arm1022e}, @samp{arm926ej-s},
 @samp{arm1026ej-s}, @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8},
-@samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m33} and @samp{cortex-m35p}.
+@samp{cortex-m4}, @samp{cortex-m7}, @samp{cortex-m33}, @samp{cortex-m35p}
+and @samp{cortex-m55}.
 Disables the floating-point and SIMD instructions on
 @samp{generic-armv7-a}, @samp{cortex-a5}, @samp{cortex-a7},
 @samp{cortex-a8}, @samp{cortex-a9}, @samp{cortex-a12},

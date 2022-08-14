@@ -12,7 +12,9 @@
 
 #pragma GCC system_header
 
-struct __jmp_buf_tag {};
+struct __jmp_buf_tag {
+  char buf[1];
+};
 typedef struct __jmp_buf_tag jmp_buf[1];
 typedef struct __jmp_buf_tag sigjmp_buf[1];
 

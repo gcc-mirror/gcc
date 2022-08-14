@@ -22,8 +22,10 @@ test_1 (void)
   a = maybe_inc_int_ptr (a);
   __analyzer_eval (a == NULL); /* { dg-warning "FALSE" } */
   __analyzer_eval (a != NULL); /* { dg-warning "TRUE" } */
-  return *a; /* { dg-warning "use of uninitialized value '\\*a'" } */
-  /* TODO: a complaint about out-of-bounds would be a better warning.  */
+  return *a; /* { dg-line test_1 } */
+
+  /* { dg-warning "use of uninitialized value '\\*a'" "warning" { target *-*-* } test_1 } */
+  /* { dg-warning "overread" "warning" { target *-*-* } test_1 } */
 }
 
 static const char * __attribute__((noinline))

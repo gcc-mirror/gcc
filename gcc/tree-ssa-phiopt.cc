@@ -2448,8 +2448,6 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	return false;
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig_use_lhs))
 	return false;
-      if (EDGE_COUNT (phi_bb->preds) != 4)
-	return false;
       if (!single_imm_use (orig_use_lhs, &use_p, &use_stmt))
 	return false;
 
@@ -2466,8 +2464,6 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	 (res & ~1) == 0.  */
       orig_use_lhs = gimple_assign_lhs (use_stmt);
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig_use_lhs))
-	return false;
-      if (EDGE_COUNT (phi_bb->preds) != 4)
 	return false;
       if (!single_imm_use (orig_use_lhs, &use_p, &use_stmt))
 	return false;

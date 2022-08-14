@@ -849,15 +849,17 @@ region_model::impl_call_realloc (const call_details &cd)
 	  const svalue *old_size_sval = model->get_dynamic_extents (freed_reg);
 	  if (old_size_sval)
 	    {
-	      const region *sized_old_reg
+	      const svalue *copied_size_sval
+		= get_copied_size (old_size_sval, new_size_sval);
+	      const region *copied_old_reg
 		= model->m_mgr->get_sized_region (freed_reg, NULL,
-						  old_size_sval);
+						  copied_size_sval);
 	      const svalue *buffer_content_sval
-		= model->get_store_value (sized_old_reg, cd.get_ctxt ());
-	      const region *sized_new_reg
+		= model->get_store_value (copied_old_reg, cd.get_ctxt ());
+	      const region *copied_new_reg
 		= model->m_mgr->get_sized_region (new_reg, NULL,
-						  old_size_sval);
-	      model->set_value (sized_new_reg, buffer_content_sval,
+						  copied_size_sval);
+	      model->set_value (copied_new_reg, buffer_content_sval,
 				cd.get_ctxt ());
 	    }
 	  else
@@ -890,6 +892,40 @@ region_model::impl_call_realloc (const call_details &cd)
 	}
       else
 	return true;
+    }
+
+  private:
+    /* Return the lesser of OLD_SIZE_SVAL and NEW_SIZE_SVAL.
+       If either one is symbolic, the symbolic svalue is returned.  */
+    const svalue *get_copied_size (const svalue *old_size_sval,
+				   const svalue *new_size_sval) const
+    {
+      tree old_size_cst = old_size_sval->maybe_get_constant ();
+      tree new_size_cst = new_size_sval->maybe_get_constant ();
+
+      if (old_size_cst && new_size_cst)
+	{
+	  /* Both are constants and comparable.  */
+	  tree cmp = fold_binary (LT_EXPR, boolean_type_node,
+				  old_size_cst, new_size_cst);
+
+	  if (cmp == boolean_true_node)
+	    return old_size_sval;
+	  else
+	    return new_size_sval;
+	}
+      else if (new_size_cst)
+	{
+	  /* OLD_SIZE_SVAL is symbolic, so return that.  */
+	  return old_size_sval;
+	}
+      else
+	{
+	  /* NEW_SIZE_SVAL is symbolic or both are symbolic.
+	     Return NEW_SIZE_SVAL, because implementations of realloc
+	     probably only moves the buffer if the new size is larger.  */
+	  return new_size_sval;
+	}
     }
   };
 
