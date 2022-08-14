@@ -942,12 +942,3 @@ lang_specific_pre_link (void)  /* Not used for M2.  */
 
 /* Number of extra output files that lang_specific_pre_link may generate.  */
 int lang_specific_extra_outfiles = 0;
-
-/* lang_register_spec_functions.   --fixme-- remove me.  */
-void
-lang_register_spec_functions (void)
-{
-#if 0
-  fe_add_spec_function ("exec_prefix", add_exec_dir);
-#endif
-}

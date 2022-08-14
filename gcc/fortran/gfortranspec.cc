@@ -447,12 +447,4 @@ lang_specific_pre_link (void)
 }
 
 /* Number of extra output files that lang_specific_pre_link may generate.  */
-int lang_specific_extra_outfiles = 0;	/* Not used for Fortran.  */
-
-/* lang_register_spec_functions register the Fortran associated spec
-   functions.  */
-
-void
-lang_register_spec_functions (void)
-{
-}
+int lang_specific_extra_outfiles = 0;	/* Not used for F77.  */

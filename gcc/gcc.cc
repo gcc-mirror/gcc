@@ -336,10 +336,6 @@ static const char *cross_compile = "1";
 static const char *cross_compile = "0";
 #endif
 
-/* The lang specs might wish to override the default linker.
- */
-int allow_linker = 1;
-
 /* Greatest exit code of sub-processes that has been encountered up to
    now.  */
 static int greatest_status = 1;
@@ -1788,10 +1784,6 @@ static const struct spec_function static_spec_functions[] =
   { 0, 0 }
 };
 
-/* Front end registered spec functions */
-static struct spec_function *lang_spec_functions = NULL;
-static unsigned int lang_spec_functions_length = 0;
-
 static int processing_spec_function;
 
 /* Add appropriate libgcc specs to OBSTACK, taking into account
@@ -2960,30 +2952,6 @@ xputenv (const char *string)
   env.xput (string);
 }
 
-/* Get the environment variable through the managed env.  */
-
-static const char *
-xgetenv (const char *key)
-{
-  return env.get (key);
-}
-
-/* Allow front end access to xputenv.  */
-
-void
-fe_putenv (const char *string)
-{
-  xputenv (string);
-}
-
-/* Allow front end access to xgetenv.  */
-
-const char *
-fe_getenv (const char *key)
-{
-  return xgetenv (key);
-}
-
 /* Build a list of search directories from PATHS.
    PREFIX is a string to prepend to the list.
    If CHECK_DIR_P is true we ensure the directory exists.
@@ -3950,15 +3918,6 @@ save_switch (const char *opt, size_t n_args, const char *const *args,
   n_switches++;
 }
 
-/* Allow front ends to save switches.  */
-
-void
-fe_save_switch (const char *opt, size_t n_args, const char *const *args,
-		bool validated, bool known)
-{
-  save_switch (opt, n_args, args, validated, known);
-}
-
 /* Set the SOURCE_DATE_EPOCH environment variable to the current time if it is
    not set already.  */
 
@@ -3980,76 +3939,6 @@ set_source_date_epoch_envvar ()
      after finalizing so that it's still set in the second run when using
      -fcompare-debug.  */
   setenv ("SOURCE_DATE_EPOCH", source_date_epoch, 0);
-}
-
-/* Wrapper providing front end access to link options.  */
-
-void
-fe_add_linker_option (const char *option)
-{
-  add_linker_option (option, strlen (option));
-}
-
-/* Handle the -B option by adding the prefix to exec, startfile and
-   include search paths.  */
-
-static void
-handle_opt_b (const char *arg)
-{
-  size_t len = strlen (arg);
-
-  /* Catch the case where the user has forgotten to append a
-     directory separator to the path.  Note, they may be using
-     -B to add an executable name prefix, eg "i386-elf-", in
-     order to distinguish between multiple installations of
-     GCC in the same directory.  Hence we must check to see
-     if appending a directory separator actually makes a
-     valid directory name.  */
-  if (!IS_DIR_SEPARATOR (arg[len - 1])
-      && is_directory (arg, false))
-    {
-      char *tmp = XNEWVEC (char, len + 2);
-      strcpy (tmp, arg);
-      tmp[len] = DIR_SEPARATOR;
-      tmp[++len] = 0;
-      arg = tmp;
-    }
-
-  add_prefix (&exec_prefixes, arg, NULL,
-	      PREFIX_PRIORITY_B_OPT, 0, 0);
-  add_prefix (&startfile_prefixes, arg, NULL,
-	      PREFIX_PRIORITY_B_OPT, 0, 0);
-  add_prefix (&include_prefixes, arg, NULL,
-	      PREFIX_PRIORITY_B_OPT, 0, 0);
-}
-
-/* Wrapper allowing the front end to create a -B option.  */
-
-void
-fe_handle_opt_b (const char *arg)
-{
-  handle_opt_b (arg);
-}
-
-/* Save the infile.  */
-
-void
-fe_add_infile (const char *infile, const char *lang)
-{
-  add_infile (infile, lang);
-}
-
-/* Mark a file as compiled.  */
-
-void
-fe_mark_compiled (const char *name)
-{
-  int max = n_infiles + lang_specific_extra_outfiles;
-  int i;
-
-  for (i = 0; i < max; i++)
-    if (filename_cmp (name, infiles[i].name) == 0)
-      infiles[i].compiled = true;
 }
 
 /* Handle an option DECODED that is unknown to the option-processing
@@ -4631,7 +4520,33 @@ driver_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_B:
-      handle_opt_b (arg);
+      {
+	size_t len = strlen (arg);
+
+	/* Catch the case where the user has forgotten to append a
+	   directory separator to the path.  Note, they may be using
+	   -B to add an executable name prefix, eg "i386-elf-", in
+	   order to distinguish between multiple installations of
+	   GCC in the same directory.  Hence we must check to see
+	   if appending a directory separator actually makes a
+	   valid directory name.  */
+	if (!IS_DIR_SEPARATOR (arg[len - 1])
+	    && is_directory (arg, false))
+	  {
+	    char *tmp = XNEWVEC (char, len + 2);
+	    strcpy (tmp, arg);
+	    tmp[len] = DIR_SEPARATOR;
+	    tmp[++len] = 0;
+	    arg = tmp;
+	  }
+
+	add_prefix (&exec_prefixes, arg, NULL,
+		    PREFIX_PRIORITY_B_OPT, 0, 0);
+	add_prefix (&startfile_prefixes, arg, NULL,
+		    PREFIX_PRIORITY_B_OPT, 0, 0);
+	add_prefix (&include_prefixes, arg, NULL,
+		    PREFIX_PRIORITY_B_OPT, 0, 0);
+      }
       validated = true;
       break;
 
@@ -4762,71 +4677,6 @@ single_input_file_index ()
     }
 
   return ret;
-}
-
-/* print_option a debugging routine to display option i with a leading desc
-   string.  */
-
-void
-print_option (const char *desc, unsigned int i,
-	      struct cl_decoded_option *in_decoded_options)
-{
-  printf (desc);
-  printf (" [%d]", i);
-  switch (in_decoded_options[i].opt_index)
-    {
-
-    case N_OPTS:
-      break;
-    case OPT_SPECIAL_unknown:
-      printf (" flag <unknown>");
-      break;
-    case OPT_SPECIAL_ignore:
-      printf (" flag <ignore>");
-      break;
-    case OPT_SPECIAL_program_name:
-      printf (" flag <program name>");
-      break;
-    case OPT_SPECIAL_input_file:
-      printf (" flag <input file name>");
-      break;
-    default:
-      printf (" flag [%s]",
-              cl_options[in_decoded_options[i].opt_index].opt_text);
-    }
-
-  if (in_decoded_options[i].arg == NULL)
-    printf (" no arg");
-  else
-    printf (" arg [%s]", in_decoded_options[i].arg);
-  printf (" orig text [%s]",
-          in_decoded_options[i].orig_option_with_args_text);
-  /* On some hosts value is declared as a long long int.  */
-  printf (" value [%ld]", (long int)in_decoded_options[i].value);
-  printf (" error [%d]", in_decoded_options[i].errors);
-  printf (" canonical_option_num_elements [%lu]\n",
-	  (unsigned long) in_decoded_options[i].canonical_option_num_elements);
-}
-
-/* print_options display all options with a leading string desc.  */
-
-void
-print_options (const char *desc,
-	       unsigned int in_decoded_options_count,
-	       struct cl_decoded_option *in_decoded_options)
-{
-  for (unsigned int i = 0; i < in_decoded_options_count; i++)
-    print_option (desc, i, in_decoded_options);
-}
-
-/* dbg_options display all options.  */
-
-void
-dbg_options (unsigned int in_decoded_options_count,
-	     struct cl_decoded_option *in_decoded_options)
-{
-  print_options ("dbg_options", in_decoded_options_count,
-		 in_decoded_options);
 }
 
 /* Create the vector `switches' and its contents.
@@ -6994,35 +6844,6 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
   return 0;
 }
 
-/* Allow the front end to register a spec function.  */
-
-void fe_add_spec_function (const char *name,
-			   const char *(*func) (int, const char **))
-{
-  const struct spec_function *f = lookup_spec_function (name);
-  struct spec_function *fl;
-  unsigned int i;
-
-  if (f != NULL)
-    fatal_error (input_location, "spec function (%s) already registered", name);
-
-  if (lang_spec_functions == NULL)
-    lang_spec_functions_length = 1;
-
-  lang_spec_functions_length++;
-  fl = (struct spec_function *) xmalloc (sizeof (const struct spec_function)
-					 *lang_spec_functions_length);
-  for (i=0; i<lang_spec_functions_length-2; i++)
-    fl[i] = lang_spec_functions[i];
-  free (lang_spec_functions);
-  lang_spec_functions = fl;
-
-  lang_spec_functions[lang_spec_functions_length-2].name = name;
-  lang_spec_functions[lang_spec_functions_length-2].func = func;
-  lang_spec_functions[lang_spec_functions_length-1].name = NULL;
-  lang_spec_functions[lang_spec_functions_length-1].func = NULL;
-}
-
 /* Look up a spec function.  */
 
 static const struct spec_function *
@@ -7033,11 +6854,6 @@ lookup_spec_function (const char *name)
   for (sf = static_spec_functions; sf->name != NULL; sf++)
     if (strcmp (sf->name, name) == 0)
       return sf;
-
-  if (lang_spec_functions != NULL)
-    for (sf = lang_spec_functions; sf->name != NULL; sf++)
-      if (strcmp (sf->name, name) == 0)
-	return sf;
 
   return NULL;
 }
@@ -8525,8 +8341,6 @@ driver::set_up_specs () const
 			   accel_dir_suffix, dir_separator_str, NULL);
   just_machine_suffix = concat (spec_machine, dir_separator_str, NULL);
 
-  lang_register_spec_functions ();
-
   specs_file = find_a_file (&startfile_prefixes, "specs", R_OK, true);
   /* Read the specs file unless it is a default one.  */
   if (specs_file != 0 && strcmp (specs_file, "specs"))
@@ -9258,8 +9072,7 @@ driver::maybe_run_linker (const char *argv0) const
 
   /* Run ld to link all the compiler output files.  */
 
-  if (num_linker_inputs > 0 && !seen_error () && print_subprocess_help < 2
-      && allow_linker)
+  if (num_linker_inputs > 0 && !seen_error () && print_subprocess_help < 2)
     {
       int tmp = execution_count;
 
@@ -9328,7 +9141,7 @@ driver::maybe_run_linker (const char *argv0) const
   /* If options said don't run linker,
      complain about input files to be given to the linker.  */
 
-  if (! linker_was_run && !seen_error () && allow_linker)
+  if (! linker_was_run && !seen_error ())
     for (i = 0; (int) i < n_infiles; i++)
       if (explicit_link_files[i]
 	  && !(infiles[i].language && infiles[i].language[0] == '*'))
