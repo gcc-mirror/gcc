@@ -80,16 +80,16 @@ struct sanopt_info
 
 /* If T has a single definition of form T = T2, return T2.  */
 
-static tree
+static gimple *
 maybe_get_single_definition (tree t)
 {
   if (TREE_CODE (t) == SSA_NAME)
     {
       gimple *g = SSA_NAME_DEF_STMT (t);
       if (gimple_assign_single_p (g))
-	return gimple_assign_rhs1 (g);
+	return g;
     }
-  return NULL_TREE;
+  return NULL;
 }
 
 /* Tree triplet for vptr_check_map.  */
@@ -618,11 +618,31 @@ maybe_optimize_ubsan_vptr_ifn (class sanopt_ctx *ctx, gimple *stmt)
   return true;
 }
 
+/* Checks whether value of T in CHECK and USE is the same.  */
+
+static bool
+same_value_p (gimple *check, gimple *use, tree t)
+{
+  tree check_vuse = gimple_vuse (check);
+  tree use_vuse = gimple_vuse (use);
+
+  if (TREE_CODE (t) == SSA_NAME
+      || is_gimple_min_invariant (t)
+      || ! use_vuse)
+    return true;
+
+  if (check_vuse == use_vuse)
+    return true;
+
+  return false;
+}
+
 /* Returns TRUE if ASan check of length LEN in block BB can be removed
    if preceded by checks in V.  */
 
 static bool
-can_remove_asan_check (auto_vec<gimple *> &v, tree len, basic_block bb)
+can_remove_asan_check (auto_vec<gimple *> &v, tree len, basic_block bb,
+		       gimple *base_stmt, tree base_addr)
 {
   unsigned int i;
   gimple *g;
@@ -674,8 +694,10 @@ can_remove_asan_check (auto_vec<gimple *> &v, tree len, basic_block bb)
 
 	  last_bb = imm;
 	}
-      if (last_bb == gbb)
-	remove = true;
+      if (last_bb != gbb)
+	break;
+      // In case of base_addr residing in memory we also need to check aliasing
+      remove = ! base_addr || same_value_p (g, base_stmt, base_addr);
       break;
     }
 
@@ -718,7 +740,8 @@ maybe_optimize_asan_check_ifn (class sanopt_ctx *ctx, gimple *stmt)
 
   auto_vec<gimple *> *ptr_checks = &ctx->asan_check_map.get_or_insert (ptr);
 
-  tree base_addr = maybe_get_single_definition (ptr);
+  gimple *base_stmt = maybe_get_single_definition (ptr);
+  tree base_addr = base_stmt ? gimple_assign_rhs1 (base_stmt) : NULL_TREE;
   auto_vec<gimple *> *base_checks = NULL;
   if (base_addr)
     {
@@ -747,11 +770,12 @@ maybe_optimize_asan_check_ifn (class sanopt_ctx *ctx, gimple *stmt)
   bool remove = false;
 
   if (ptr_checks)
-    remove = can_remove_asan_check (*ptr_checks, len, bb);
+    remove = can_remove_asan_check (*ptr_checks, len, bb, NULL, NULL);
 
   if (!remove && base_checks)
     /* Try with base address as well.  */
-    remove = can_remove_asan_check (*base_checks, len, bb);
+    remove = can_remove_asan_check (*base_checks, len, bb, base_stmt,
+				    base_addr);
 
   if (!remove)
     {
