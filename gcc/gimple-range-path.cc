@@ -153,38 +153,7 @@ path_range_query::range_on_path_entry (vrange &r, tree name)
 {
   gcc_checking_assert (defined_outside_path (name));
   basic_block entry = entry_bb ();
-
-  // Prefer to use range_of_expr if we have a statement to look at,
-  // since it has better caching than range_on_edge.
-  gimple *last = last_stmt (entry);
-  if (last)
-    {
-      if (m_ranger->range_of_expr (r, name, last))
-	return;
-      gcc_unreachable ();
-    }
-
-  // If we have no statement, look at all the incoming ranges to the
-  // block.  This can happen when we're querying a block with only an
-  // outgoing edge (no statement but the fall through edge), but for
-  // which we can determine a range on entry to the block.
-  Value_Range tmp (TREE_TYPE (name));
-  bool changed = false;
-  r.set_undefined ();
-  for (unsigned i = 0; i < EDGE_COUNT (entry->preds); ++i)
-    {
-      edge e = EDGE_PRED (entry, i);
-      if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
-	  && m_ranger->range_on_edge (tmp, e, name))
-	{
-	  r.union_ (tmp);
-	  changed = true;
-	}
-    }
-
-  // Make sure we don't return UNDEFINED by mistake.
-  if (!changed)
-    r.set_varying (TREE_TYPE (name));
+  m_ranger->range_on_entry (r, entry, name);
 }
 
 // Return the range of NAME at the end of the path being analyzed.
