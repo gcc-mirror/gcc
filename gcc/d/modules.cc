@@ -121,6 +121,9 @@ static module_info *current_testing_module;
 
 static Module *current_module_decl;
 
+/* Any inline symbols that were deferred during codegen.  */
+vec<Declaration *> *deferred_inline_declarations;
+
 /* Returns an internal function identified by IDENT.  This is used
    by both module initialization and dso handlers.  */
 
@@ -724,6 +727,9 @@ build_module_tree (Module *decl)
   current_testing_module = &mitest;
   current_module_decl = decl;
 
+  vec<Declaration *> deferred_decls = vNULL;
+  deferred_inline_declarations = &deferred_decls;
+
   /* Layout module members.  */
   if (decl->members)
     {
@@ -811,9 +817,14 @@ build_module_tree (Module *decl)
       layout_moduleinfo (decl);
     }
 
+  /* Process all deferred functions after finishing module.  */
+  for (size_t i = 0; i < deferred_decls.length (); ++i)
+    build_decl_tree (deferred_decls[i]);
+
   current_moduleinfo = NULL;
   current_testing_module = NULL;
   current_module_decl = NULL;
+  deferred_inline_declarations = NULL;
 }
 
 /* Returns the current function or module context for the purpose
@@ -886,6 +897,15 @@ register_module_decl (Declaration *d)
       if (fd->isUnitTestDeclaration ())
 	vec_safe_push (minfo->unitTests, decl);
     }
+}
+
+/* Add DECL as a declaration to emit at the end of the current module.  */
+
+void
+d_defer_declaration (Declaration *decl)
+{
+  gcc_assert (deferred_inline_declarations != NULL);
+  deferred_inline_declarations->safe_push (decl);
 }
 
 /* Wrapup all global declarations and start the final compilation.  */
