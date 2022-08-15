@@ -7,4 +7,6 @@ void foo (long long ixi)
     __builtin_abort ();
 }
 
-/* { dg-final { scan-assembler-times "mov" 1 } } */
+/* { dg-final { scan-assembler-times "mov" 1 { target nonpic } } } */
+/* get_pc_thunk adds an extra mov insn.  */
+/* { dg-final { scan-assembler-times "mov" 2 { target { ! nonpic } } } } */
