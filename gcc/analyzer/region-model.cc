@@ -1768,8 +1768,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
      duplicates if any of the handling below also looks up the svalues,
      but the deduplication code should deal with that.  */
   if (ctxt)
-    for (unsigned arg_idx = 0; arg_idx < cd.num_args (); arg_idx++)
-      cd.get_arg_svalue (arg_idx);
+    check_call_args (cd);
 
   /* Some of the cases below update the lhs of the call based on the
      return value, but not all.  Provide a default value, which may
@@ -1889,7 +1888,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    /* These stdio builtins have external effects that are out
 	       of scope for the analyzer: we only want to model the effects
 	       on the return value.  */
-	    check_call_args (cd);
 	    break;
 
 	  case BUILT_IN_VA_START:
