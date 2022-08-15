@@ -297,7 +297,7 @@
 	(ior:X (ashift:X (const_int 1)
 			 (subreg:QI
 			  (and:X (match_operand:X 2 "register_operand" "r")
-				 (match_operand 3 "<X:shiftm1>" "i")) 0))
+				 (match_operand 3 "<X:shiftm1>" "<X:shiftm1p>")) 0))
 	       (match_operand:X 1 "register_operand" "r")))]
   "TARGET_ZBS"
   "bset\t%0,%1,%2"
@@ -316,7 +316,7 @@
 	(ashift:X (const_int 1)
 		  (subreg:QI
 		   (and:X (match_operand:X 1 "register_operand" "r")
-			  (match_operand 2 "<X:shiftm1>" "i")) 0)))]
+			  (match_operand 2 "<X:shiftm1>" "<X:shiftm1p>")) 0)))]
   "TARGET_ZBS"
   "bset\t%0,x0,%1"
   [(set_attr "type" "bitmanip")])

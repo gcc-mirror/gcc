@@ -114,6 +114,7 @@
 
 ; bitmanip mode attribute
 (define_mode_attr shiftm1 [(SI "const31_operand") (DI "const63_operand")])
+(define_mode_attr shiftm1p [(SI "DsS") (DI "DsD")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators

@@ -60,6 +60,18 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 1, 3)")))
 
+(define_constraint "DsS"
+  "@internal
+   31 immediate"
+  (and (match_code "const_int")
+       (match_test "ival == 31")))
+
+(define_constraint "DsD"
+  "@internal
+   63 immediate"
+  (and (match_code "const_int")
+       (match_test "ival == 63")))
+
 ;; Floating-point constant +0.0, used for FCVT-based moves when FMV is
 ;; not available in RV32.
 (define_constraint "G"
