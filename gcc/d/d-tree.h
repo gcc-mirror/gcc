@@ -564,6 +564,7 @@ extern tree size_mult_expr (tree, tree);
 extern tree real_part (tree);
 extern tree imaginary_part (tree);
 extern tree complex_expr (tree, tree, tree);
+extern tree underlying_complex_expr (tree, tree);
 extern tree indirect_ref (tree, tree);
 extern tree build_deref (tree);
 extern tree build_array_index (tree, tree);
