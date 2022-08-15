@@ -174,6 +174,22 @@ package Sem_Ch6 is
    --  the end of Subp's parameter list (with each subsequent extra formal
    --  being attached to the preceding extra formal).
 
+   function Extra_Formals_Match_OK
+     (E     : Entity_Id;
+      Ref_E : Entity_Id) return Boolean;
+   --  Return True if the extra formals of the given entities match. E is a
+   --  subprogram, and Ref_E is the reference entity that will be used to check
+   --  the extra formals of E: a subprogram type or another subprogram. For
+   --  example, if E is a dispatching primitive of a tagged type then Ref_E
+   --  may be the overridden primitive of its parent type or its ultimate
+   --  renamed entity; however, if E is a subprogram to which 'Access is
+   --  applied then Ref_E is its corresponding subprogram type. Used in
+   --  assertions.
+
+   function Extra_Formals_OK (E : Entity_Id) return Boolean;
+   --  Return True if the decoration of the attributes associated with extra
+   --  formals are properly set. Used in assertions.
+
    function Find_Corresponding_Spec
      (N          : Node_Id;
       Post_Error : Boolean := True) return Entity_Id;
