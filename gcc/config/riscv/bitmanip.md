@@ -324,7 +324,7 @@
 (define_insn "*bseti<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(ior:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand 2 "single_bit_mask_operand" "i")))]
+	       (match_operand:X 2 "single_bit_mask_operand" "DbS")))]
   "TARGET_ZBS"
   "bseti\t%0,%1,%S2"
   [(set_attr "type" "bitmanip")])
@@ -341,7 +341,7 @@
 (define_insn "*bclri<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(and:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand 2 "not_single_bit_mask_operand" "i")))]
+	       (match_operand:X 2 "not_single_bit_mask_operand" "DnS")))]
   "TARGET_ZBS"
   "bclri\t%0,%1,%T2"
   [(set_attr "type" "bitmanip")])
@@ -358,7 +358,7 @@
 (define_insn "*binvi<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(xor:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand 2 "single_bit_mask_operand" "i")))]
+	       (match_operand:X 2 "single_bit_mask_operand" "DbS")))]
   "TARGET_ZBS"
   "binvi\t%0,%1,%S2"
   [(set_attr "type" "bitmanip")])

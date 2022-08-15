@@ -72,6 +72,16 @@
   (and (match_code "const_int")
        (match_test "ival == 63")))
 
+(define_constraint "DbS"
+  "@internal"
+  (and (match_code "const_int")
+       (match_test "SINGLE_BIT_MASK_OPERAND (ival)")))
+
+(define_constraint "DnS"
+  "@internal"
+  (and (match_code "const_int")
+       (match_test "SINGLE_BIT_MASK_OPERAND (~ival)")))
+
 ;; Floating-point constant +0.0, used for FCVT-based moves when FMV is
 ;; not available in RV32.
 (define_constraint "G"
