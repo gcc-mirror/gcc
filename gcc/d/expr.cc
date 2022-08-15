@@ -1892,7 +1892,7 @@ public:
 	       underlying is really a complex type.  */
 	    if (e->e1->type->ty == TY::Tenum
 		&& e->e1->type->isTypeEnum ()->sym->isSpecial ())
-	      object = build_vconvert (build_ctype (tb), object);
+	      object = underlying_complex_expr (build_ctype (tb), object);
 
 	    this->result_ = component_ref (object, get_symbol_decl (vd));
 	  }
