@@ -982,6 +982,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && tree_nop_conversion_p (type, TREE_TYPE (@1)))
    (lshift @0 @2)))
 
+/* Shifts by constants distribute over several binary operations,
+   hence (X << C) + (Y << C) can be simplified to (X + Y) << C.  */
+(for op (plus minus)
+  (simplify
+    (op (lshift:s @0 @1) (lshift:s @2 @1))
+    (if (INTEGRAL_TYPE_P (type)
+	 && TYPE_OVERFLOW_WRAPS (type)
+	 && !TYPE_SATURATING (type))
+      (lshift (op @0 @2) @1))))
+
+(for op (bit_and bit_ior bit_xor)
+  (simplify
+    (op (lshift:s @0 @1) (lshift:s @2 @1))
+    (if (INTEGRAL_TYPE_P (type))
+      (lshift (op @0 @2) @1)))
+  (simplify
+    (op (rshift:s @0 @1) (rshift:s @2 @1))
+    (if (INTEGRAL_TYPE_P (type))
+      (rshift (op @0 @2) @1))))
+
 /* Fold (1 << (C - x)) where C = precision(type) - 1
    into ((1 << C) >> x). */
 (simplify
