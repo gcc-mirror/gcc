@@ -432,7 +432,7 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	 sign-extended (negative) representation (-1 << 31) for the
 	 value, if we want to build (1 << 31) in SImode.  This will
 	 then expand to an LUI instruction.  */
-      if (mode == SImode && value == (HOST_WIDE_INT_1U << 31))
+      if (TARGET_64BIT && mode == SImode && value == (HOST_WIDE_INT_1U << 31))
 	codes[0].value = (HOST_WIDE_INT_M1U << 31);
 
       return 1;
@@ -445,7 +445,11 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
       && (mode != HImode
 	  || value - low_part <= ((1 << (GET_MODE_BITSIZE (HImode) - 1)) - 1)))
     {
-      alt_cost = 1 + riscv_build_integer_1 (alt_codes, value - low_part, mode);
+      HOST_WIDE_INT upper_part = value - low_part;
+      if (mode != VOIDmode)
+	upper_part = trunc_int_for_mode (value - low_part, mode);
+
+      alt_cost = 1 + riscv_build_integer_1 (alt_codes, upper_part, mode);
       if (alt_cost < cost)
 	{
 	  alt_codes[alt_cost-1].code = PLUS;
@@ -1550,6 +1554,7 @@ riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value,
     x = riscv_split_integer (value, mode);
   else
     {
+      codes[0].value = trunc_int_for_mode (codes[0].value, mode);
       /* Apply each binary operation to X. */
       x = GEN_INT (codes[0].value);
 
@@ -1559,7 +1564,7 @@ riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value,
 	    x = riscv_emit_set (temp, x);
 	  else
 	    x = force_reg (mode, x);
-
+	  codes[i].value = trunc_int_for_mode (codes[i].value, mode);
 	  x = gen_rtx_fmt_ee (codes[i].code, mode, x, GEN_INT (codes[i].value));
 	}
     }
@@ -2651,6 +2656,7 @@ riscv_emit_int_compare (enum rtx_code *code, rtx *op0, rtx *op1)
 		continue;
 
 	      new_rhs = rhs + (increment ? 1 : -1);
+	      new_rhs = trunc_int_for_mode (new_rhs, GET_MODE (*op0));
 	      if (riscv_integer_cost (new_rhs) < riscv_integer_cost (rhs)
 		  && (rhs < 0) == (new_rhs < 0))
 		{
