@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 FRACTIONAL_FLOAT_MODE (XF, 80, 12, ieee_extended_intel_96_format);
 FLOAT_MODE (TF, 16, ieee_quad_format);
 FLOAT_MODE (HF, 2, ieee_half_format);
+FLOAT_MODE (BF, 2, 0);
+ADJUST_FLOAT_FORMAT (BF, &arm_bfloat_half_format);
 
 /* In ILP32 mode, XFmode has size 12 and alignment 4.
    In LP64 mode, XFmode has size and alignment 16.  */
