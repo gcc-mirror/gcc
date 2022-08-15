@@ -1447,11 +1447,11 @@ public:
 	print_dec (m_out_of_bounds_range.m_size_in_bytes,
 		   num_bytes_past_buf, UNSIGNED);
 	if (m_diag_arg)
-	  inform (rich_loc->get_loc (), "write is %s bytes past the end"
+	  inform (rich_loc->get_loc (), "read is %s bytes past the end"
 					" of %qE", num_bytes_past_buf,
 						    m_diag_arg);
 	else
-	  inform (rich_loc->get_loc (), "write is %s bytes past the end"
+	  inform (rich_loc->get_loc (), "read is %s bytes past the end"
 					"of the region",
 					num_bytes_past_buf);
       }
