@@ -32,10 +32,9 @@
 (define_insn "*shNadd"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(plus:X (ashift:X (match_operand:X 1 "register_operand" "r")
-			  (match_operand:QI 2 "immediate_operand" "I"))
+			  (match_operand:QI 2 "imm123_operand" "Ds3"))
 		(match_operand:X 3 "register_operand" "r")))]
-  "TARGET_ZBA
-   && (INTVAL (operands[2]) >= 1) && (INTVAL (operands[2]) <= 3)"
+  "TARGET_ZBA"
   "sh%2add\t%0,%1,%3"
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
@@ -44,11 +43,10 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI
 	  (and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
-			     (match_operand:QI 2 "immediate_operand" "I"))
+			     (match_operand:QI 2 "imm123_operand" "Ds3"))
 		 (match_operand 3 "immediate_operand" ""))
 	  (match_operand:DI 4 "register_operand" "r")))]
   "TARGET_64BIT && TARGET_ZBA
-   && (INTVAL (operands[2]) >= 1) && (INTVAL (operands[2]) <= 3)
    && (INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff"
   "sh%2add.uw\t%0,%1,%4"
   [(set_attr "type" "bitmanip")
