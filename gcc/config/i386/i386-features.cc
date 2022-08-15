@@ -1250,6 +1250,23 @@ timode_scalar_chain::compute_convert_gain ()
 					      : COSTS_N_INSNS (1);
 	  break;
 
+	case COMPARE:
+	  if (XEXP (src, 1) == const0_rtx)
+	    {
+	      if (GET_CODE (XEXP (src, 0)) == AND)
+		/* and;and;or (9 bytes) vs. ptest (5 bytes).  */
+		igain = optimize_insn_for_size_p() ? COSTS_N_BYTES (4)
+						   : COSTS_N_INSNS (2);
+	      /* or (3 bytes) vs. ptest (5 bytes).  */
+	      else if (optimize_insn_for_size_p ())
+		igain = -COSTS_N_BYTES (2);
+	    }
+	  else if (XEXP (src, 1) == const1_rtx)
+	    /* and;cmp -1 (7 bytes) vs. pcmpeqd;pxor;ptest (13 bytes).  */
+	    igain = optimize_insn_for_size_p() ? -COSTS_N_BYTES (6)
+					       : -COSTS_N_INSNS (1);
+	  break;
+
 	default:
 	  break;
 	}
