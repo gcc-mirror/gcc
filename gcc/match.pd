@@ -1920,6 +1920,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0)))
   (mult (convert @1) (convert @2))))
 
+/* (X << C) != 0 can be simplified to X, when C is zero_one_valued_p.
+   Check that the shift is well-defined (C is less than TYPE_PRECISION)
+   as some targets (such as x86's SSE) may return zero for larger C.  */
+(simplify
+  (ne (lshift zero_one_valued_p@0 INTEGER_CST@1) integer_zerop@2)
+  (if (tree_fits_shwi_p (@1)
+       && tree_to_shwi (@1) > 0
+       && tree_to_shwi (@1) < TYPE_PRECISION (TREE_TYPE (@0)))
+    (convert @0)))
+
+/* (X << C) == 0 can be simplified to X == 0, when C is zero_one_valued_p.
+   Check that the shift is well-defined (C is less than TYPE_PRECISION)
+   as some targets (such as x86's SSE) may return zero for larger C.  */
+(simplify
+  (eq (lshift zero_one_valued_p@0 INTEGER_CST@1) integer_zerop@2)
+  (if (tree_fits_shwi_p (@1)
+       && tree_to_shwi (@1) > 0
+       && tree_to_shwi (@1) < TYPE_PRECISION (TREE_TYPE (@0)))
+    (eq @0 @2)))
+
 /* Convert ~ (-A) to A - 1.  */
 (simplify
  (bit_not (convert? (negate @0)))
