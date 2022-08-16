@@ -47,10 +47,6 @@ extern char arm_arch_name[];
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() arm_cpu_cpp_builtins (pfile)
 
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS arm_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO arm_d_register_target_info
-
 #include "config/arm/arm-opts.h"
 
 /* The processor for which instructions should be scheduled.  */

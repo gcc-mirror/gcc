@@ -402,10 +402,6 @@ extern void arm_lang_object_attributes_init (void);
 extern void arm_register_target_pragmas (void);
 extern void arm_cpu_cpp_builtins (struct cpp_reader *);
 
-/* Defined in arm-d.cc  */
-extern void arm_d_target_versions (void);
-extern void arm_d_register_target_info (void);
-
 extern bool arm_is_constant_pool_ref (rtx);
 
 /* The bits in this mask specify which instruction scheduling options should

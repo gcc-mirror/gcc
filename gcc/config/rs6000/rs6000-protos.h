@@ -323,10 +323,6 @@ extern void rs6000_activate_target_options (tree new_tree);
 extern void rs6000_target_modify_macros (bool, HOST_WIDE_INT);
 extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT);
 
-/* Declare functions in rs6000-d.cc  */
-extern void rs6000_d_target_versions (void);
-extern void rs6000_d_register_target_info (void);
-
 #ifdef NO_DOLLAR_IN_LABEL
 const char * rs6000_xcoff_strip_dollar (const char *);
 #endif

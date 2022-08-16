@@ -175,10 +175,6 @@ extern void s390_register_target_pragmas (void);
 /* Routines for s390-c.cc */
 extern bool s390_const_operand_ok (tree, int, int, tree);
 
-/* s390-d.cc routines */
-extern void s390_d_target_versions (void);
-extern void s390_d_register_target_info (void);
-
 /* Pass management.  */
 namespace gcc { class context; }
 class rtl_opt_pass;

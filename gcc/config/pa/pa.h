@@ -1300,9 +1300,5 @@ do {									     \
 
 #define NEED_INDICATE_EXEC_STACK 0
 
-/* Target hooks for D language.  */
-#define TARGET_D_CPU_VERSIONS pa_d_target_versions
-#define TARGET_D_REGISTER_CPU_TARGET_INFO pa_d_register_target_info
-
 /* Output default function prologue for hpux.  */
 #define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue
