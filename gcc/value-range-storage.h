@@ -119,7 +119,7 @@ class GTY (()) frange_storage_slot
   frange_props m_props;
 };
 
-class obstack_vrange_allocator : public vrange_allocator
+class obstack_vrange_allocator final: public vrange_allocator
 {
 public:
   obstack_vrange_allocator ()
@@ -139,7 +139,7 @@ private:
   obstack m_obstack;
 };
 
-class ggc_vrange_allocator : public vrange_allocator
+class ggc_vrange_allocator final: public vrange_allocator
 {
 public:
   ggc_vrange_allocator () { }
