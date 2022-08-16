@@ -4805,6 +4805,13 @@ build_address (tree t)
 tree
 fold_builtin_source_location (location_t loc)
 {
+  //  if (source_location_impl == NULL_TREE)
+  //  {
+  //    auto_diagnostic_group d;
+  //    source_location_impl = get_source_location_impl_type (loc);
+  //    if (source_location_impl == error_mark_node)
+  // inform (loc, "evaluating %qs", "__builtin_source_location");
+  //  }
   if (source_location_impl == error_mark_node)
     return build_zero_cst (const_ptr_type_node);
   if (source_location_table == NULL)
