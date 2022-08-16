@@ -1529,6 +1529,24 @@ extern GTY (()) tree cp_global_trees[CPTI_MAX];
 #define TYPE_HAS_COMPLEX_DFLT(NODE)                                            \
   (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_dflt)
 
+/* [dcl.init.aggr]
+
+   An aggregate is an array or a class with no user-provided
+   constructors, no brace-or-equal-initializers for non-static data
+   members, no private or protected non-static data members, no
+   base classes, and no virtual functions.
+
+   As an extension, we also treat vectors as aggregates.  Keep these
+   checks in ascending code order.  */
+#define CP_AGGREGATE_TYPE_P(TYPE)                                              \
+  (gnu_vector_type_p (TYPE) || TREE_CODE (TYPE) == ARRAY_TYPE                  \
+   || (CLASS_TYPE_P (TYPE) && COMPLETE_TYPE_P (TYPE)                           \
+       && !CLASSTYPE_NON_AGGREGATE (TYPE)))
+
+/* Nonzero for a FIELD_DECL means that this member object type
+   is mutable.  */
+#define DECL_MUTABLE_P(NODE) (DECL_LANG_FLAG_0 (FIELD_DECL_CHECK (NODE)))
+
 #if defined ENABLE_TREE_CHECKING
 
 #define LANG_DECL_MIN_CHECK(NODE)                                              \
@@ -3116,6 +3134,12 @@ extern tree get_first_fn (tree) ATTRIBUTE_PURE;
 
 extern void explain_non_literal_class (tree);
 
+extern bool reference_related_p (tree, tree);
+
+extern bool ordinary_char_type_p (tree);
+
+extern bool array_string_literal_compatible_p (tree, tree);
+
 // forked from gcc/cp/cp-tree.h
 
 enum
@@ -3351,6 +3375,10 @@ literal_type_p (tree t);
 
 extern bool
 maybe_constexpr_fn (tree t);
+
+extern tree
+fold_non_dependent_init (tree, tsubst_flags_t = tf_warning_or_error,
+			 bool = false, tree = NULL_TREE);
 }
 
 } // namespace Rust

@@ -1532,6 +1532,273 @@ adjust_temp_type (tree type, tree temp)
   return fold_convert (cv_unqualified (type), temp);
 }
 
+// forked from gcc/cp/constexpr.cc free_constructor
+
+/* If T is a CONSTRUCTOR, ggc_free T and any sub-CONSTRUCTORs.  */
+
+static void
+free_constructor (tree t)
+{
+  if (!t || TREE_CODE (t) != CONSTRUCTOR)
+    return;
+  releasing_vec ctors;
+  vec_safe_push (ctors, t);
+  while (!ctors->is_empty ())
+    {
+      tree c = ctors->pop ();
+      if (vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (c))
+	{
+	  constructor_elt *ce;
+	  for (HOST_WIDE_INT i = 0; vec_safe_iterate (elts, i, &ce); ++i)
+	    if (TREE_CODE (ce->value) == CONSTRUCTOR)
+	      vec_safe_push (ctors, ce->value);
+	  ggc_free (elts);
+	}
+      ggc_free (c);
+    }
+}
+
+static tree
+eval_and_check_array_index (const constexpr_ctx *ctx, tree t,
+			    bool allow_one_past, bool *non_constant_p,
+			    bool *overflow_p);
+
+// forked from gcc/cp/constexpr.cc cxx_eval_array_reference
+
+/* Subroutine of cxx_eval_constant_expression.
+   Attempt to reduce a reference to an array slot.  */
+
+static tree
+eval_array_reference (const constexpr_ctx *ctx, tree t, bool lval,
+		      bool *non_constant_p, bool *overflow_p)
+{
+  tree oldary = TREE_OPERAND (t, 0);
+  tree ary
+    = eval_constant_expression (ctx, oldary, lval, non_constant_p, overflow_p);
+  if (*non_constant_p)
+    return t;
+  if (!lval && TREE_CODE (ary) == VIEW_CONVERT_EXPR
+      && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (ary, 0)))
+      && TREE_TYPE (t) == TREE_TYPE (TREE_TYPE (TREE_OPERAND (ary, 0))))
+    ary = TREE_OPERAND (ary, 0);
+
+  tree oldidx = TREE_OPERAND (t, 1);
+  tree index
+    = eval_and_check_array_index (ctx, t, lval, non_constant_p, overflow_p);
+  if (*non_constant_p)
+    return t;
+
+  if (lval && ary == oldary && index == oldidx)
+    return t;
+  else if (lval)
+    return build4 (ARRAY_REF, TREE_TYPE (t), ary, index, NULL, NULL);
+
+  unsigned len = 0, elem_nchars = 1;
+  tree elem_type = TREE_TYPE (TREE_TYPE (ary));
+  if (TREE_CODE (ary) == CONSTRUCTOR)
+    len = CONSTRUCTOR_NELTS (ary);
+  else if (TREE_CODE (ary) == STRING_CST)
+    {
+      elem_nchars
+	= (TYPE_PRECISION (elem_type) / TYPE_PRECISION (char_type_node));
+      len = (unsigned) TREE_STRING_LENGTH (ary) / elem_nchars;
+    }
+  else if (TREE_CODE (ary) == VECTOR_CST)
+    /* We don't create variable-length VECTOR_CSTs.  */
+    len = VECTOR_CST_NELTS (ary).to_constant ();
+  else
+    {
+      /* We can't do anything with other tree codes, so use
+	 VERIFY_CONSTANT to complain and fail.  */
+      VERIFY_CONSTANT (ary);
+      gcc_unreachable ();
+    }
+
+  bool found;
+  HOST_WIDE_INT i = 0;
+  if (TREE_CODE (ary) == CONSTRUCTOR)
+    {
+      HOST_WIDE_INT ix = find_array_ctor_elt (ary, index);
+      found = (ix >= 0);
+      if (found)
+	i = ix;
+    }
+  else
+    {
+      i = tree_to_shwi (index);
+      found = (i < len);
+    }
+
+  if (found)
+    {
+      tree r;
+      if (TREE_CODE (ary) == CONSTRUCTOR)
+	r = (*CONSTRUCTOR_ELTS (ary))[i].value;
+      else if (TREE_CODE (ary) == VECTOR_CST)
+	r = VECTOR_CST_ELT (ary, i);
+      else
+	r = extract_string_elt (ary, elem_nchars, i);
+
+      if (r)
+	/* Don't VERIFY_CONSTANT here.  */
+	return r;
+
+      /* Otherwise the element doesn't have a value yet.  */
+    }
+
+  /* Not found.  */
+
+  if (TREE_CODE (ary) == CONSTRUCTOR && CONSTRUCTOR_NO_CLEARING (ary))
+    {
+      /* 'ary' is part of the aggregate initializer we're currently
+	 building; if there's no initializer for this element yet,
+	 that's an error.  */
+      if (!ctx->quiet)
+	error ("accessing uninitialized array element");
+      *non_constant_p = true;
+      return t;
+    }
+
+  /* If it's within the array bounds but doesn't have an explicit
+     initializer, it's initialized from {}.  But use build_value_init
+     directly for non-aggregates to avoid creating a garbage CONSTRUCTOR.  */
+  tree val;
+  constexpr_ctx new_ctx;
+  if (is_really_empty_class (elem_type, /*ignore_vptr*/ false))
+    return build_constructor (elem_type, NULL);
+  // Faisal: commenting this out as not sure if we need this but we need to come
+  // back to handle this to assign suitable value to val before sending it in
+  // eval_constant_expression below
+  // else if (CP_AGGREGATE_TYPE_P (elem_type))
+  //  {
+  //    tree empty_ctor = build_constructor (init_list_type_node, NULL);
+  //    val = digest_init (elem_type, empty_ctor, tf_warning_or_error);
+  //  }
+  // else
+  //  val = build_value_init (elem_type, tf_warning_or_error);
+
+  if (!SCALAR_TYPE_P (elem_type))
+    {
+      new_ctx = *ctx;
+      if (ctx->object)
+	/* If there was no object, don't add one: it could confuse us
+	   into thinking we're modifying a const object.  */
+	new_ctx.object = t;
+      new_ctx.ctor = build_constructor (elem_type, NULL);
+      ctx = &new_ctx;
+    }
+  t = eval_constant_expression (ctx, val, lval, non_constant_p, overflow_p);
+  if (!SCALAR_TYPE_P (elem_type) && t != ctx->ctor)
+    free_constructor (ctx->ctor);
+  return t;
+}
+
+// forked from gcc/cp/constexpr.cc cxx_eval_component_reference
+
+/* Subroutine of cxx_eval_constant_expression.
+   Attempt to reduce a field access of a value of class type.  */
+
+static tree
+eval_component_reference (const constexpr_ctx *ctx, tree t, bool lval,
+			  bool *non_constant_p, bool *overflow_p)
+{
+  unsigned HOST_WIDE_INT i;
+  tree field;
+  tree value;
+  tree part = TREE_OPERAND (t, 1);
+  tree orig_whole = TREE_OPERAND (t, 0);
+  tree whole = eval_constant_expression (ctx, orig_whole, lval, non_constant_p,
+					 overflow_p);
+  if (INDIRECT_REF_P (whole) && integer_zerop (TREE_OPERAND (whole, 0)))
+    {
+      if (!ctx->quiet)
+	error ("dereferencing a null pointer in %qE", orig_whole);
+      *non_constant_p = true;
+      return t;
+    }
+
+  if (whole == orig_whole)
+    return t;
+  if (lval)
+    return fold_build3 (COMPONENT_REF, TREE_TYPE (t), whole, part, NULL_TREE);
+  /* Don't VERIFY_CONSTANT here; we only want to check that we got a
+     CONSTRUCTOR.  */
+  if (!*non_constant_p && TREE_CODE (whole) != CONSTRUCTOR)
+    {
+      if (!ctx->quiet)
+	error ("%qE is not a constant expression", orig_whole);
+      *non_constant_p = true;
+    }
+  if (DECL_MUTABLE_P (part))
+    {
+      if (!ctx->quiet)
+	error ("mutable %qD is not usable in a constant expression", part);
+      *non_constant_p = true;
+    }
+  if (*non_constant_p)
+    return t;
+  bool pmf = TYPE_PTRMEMFUNC_P (TREE_TYPE (whole));
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (whole), i, field, value)
+    {
+      /* Use name match for PMF fields, as a variant will have a
+	 different FIELD_DECL with a different type.  */
+      if (pmf ? DECL_NAME (field) == DECL_NAME (part) : field == part)
+	{
+	  if (value)
+	    {
+	      STRIP_ANY_LOCATION_WRAPPER (value);
+	      return value;
+	    }
+	  else
+	    /* We're in the middle of initializing it.  */
+	    break;
+	}
+    }
+  if (TREE_CODE (TREE_TYPE (whole)) == UNION_TYPE
+      && CONSTRUCTOR_NELTS (whole) > 0)
+    {
+      /* DR 1188 says we don't have to deal with this.  */
+      if (!ctx->quiet)
+	{
+	  constructor_elt *cep = CONSTRUCTOR_ELT (whole, 0);
+	  if (cep->value == NULL_TREE)
+	    error ("accessing uninitialized member %qD", part);
+	  else
+	    error ("accessing %qD member instead of initialized %qD member in "
+		   "constant expression",
+		   part, cep->index);
+	}
+      *non_constant_p = true;
+      return t;
+    }
+
+  /* We only create a CONSTRUCTOR for a subobject when we modify it, so empty
+     classes never get represented; throw together a value now.  */
+  if (is_really_empty_class (TREE_TYPE (t), /*ignore_vptr*/ false))
+    return build_constructor (TREE_TYPE (t), NULL);
+
+  gcc_assert (DECL_CONTEXT (part) == TYPE_MAIN_VARIANT (TREE_TYPE (whole)));
+
+  if (CONSTRUCTOR_NO_CLEARING (whole))
+    {
+      /* 'whole' is part of the aggregate initializer we're currently
+	 building; if there's no initializer for this member yet, that's an
+	 error.  */
+      if (!ctx->quiet)
+	error ("accessing uninitialized member %qD", part);
+      *non_constant_p = true;
+      return t;
+    }
+
+  /* If there's no explicit init for this field, it's value-initialized.  */
+  // Faisal: commenting this out as not sure if we need this but we need to come
+  // back to handle this to assign suitable value to value before sending it in
+  // eval_constant_expression below
+  // value = build_value_init (TREE_TYPE (t), tf_warning_or_error);
+  return eval_constant_expression (ctx, value, lval, non_constant_p,
+				   overflow_p);
+}
+
 static tree
 eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 			  bool *non_constant_p, bool *overflow_p,
@@ -1962,6 +2229,24 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
     case SWITCH_EXPR:
     case SWITCH_STMT:
       eval_switch_expr (ctx, t, non_constant_p, overflow_p, jump_target);
+      break;
+
+    case ARRAY_REF:
+      r = eval_array_reference (ctx, t, lval, non_constant_p, overflow_p);
+      break;
+
+    case COMPONENT_REF:
+      if (is_overloaded_fn (t))
+	{
+	  /* We can only get here in checking mode via
+	     build_non_dependent_expr,  because any expression that
+	     calls or takes the address of the function will have
+	     pulled a FUNCTION_DECL out of the COMPONENT_REF.  */
+	  gcc_checking_assert (ctx->quiet || errorcount);
+	  *non_constant_p = true;
+	  return t;
+	}
+      r = eval_component_reference (ctx, t, lval, non_constant_p, overflow_p);
       break;
 
     case BIT_FIELD_REF:
@@ -4144,32 +4429,6 @@ extract_string_elt (tree string, unsigned chars_per_elt, unsigned index)
   return r;
 }
 
-// forked from gcc/cp/constexpr.cc free_constructor
-
-/* If T is a CONSTRUCTOR, ggc_free T and any sub-CONSTRUCTORs.  */
-
-static void
-free_constructor (tree t)
-{
-  if (!t || TREE_CODE (t) != CONSTRUCTOR)
-    return;
-  releasing_vec ctors;
-  vec_safe_push (ctors, t);
-  while (!ctors->is_empty ())
-    {
-      tree c = ctors->pop ();
-      if (vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (c))
-	{
-	  constructor_elt *ce;
-	  for (HOST_WIDE_INT i = 0; vec_safe_iterate (elts, i, &ce); ++i)
-	    if (TREE_CODE (ce->value) == CONSTRUCTOR)
-	      vec_safe_push (ctors, ce->value);
-	  ggc_free (elts);
-	}
-      ggc_free (c);
-    }
-}
-
 /* Check whether the parameter and return types of FUN are valid for a
    constexpr function, and complain if COMPLAIN.  */
 
@@ -6127,6 +6386,22 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
   tree target = NULL_TREE;
   return potential_constant_expression_1 (t, want_rval, strict, now, flags,
 					  &target);
+}
+
+// forked from gcc/cp/constexpr.cc fold_non_dependent_init
+
+/* Like maybe_constant_init but first fully instantiate the argument.  */
+
+tree
+fold_non_dependent_init (tree t,
+			 tsubst_flags_t complain /*=tf_warning_or_error*/,
+			 bool manifestly_const_eval /*=false*/,
+			 tree object /* = NULL_TREE */)
+{
+  if (t == NULL_TREE)
+    return NULL_TREE;
+
+  return maybe_constant_init (t, object, manifestly_const_eval);
 }
 
 // #include "gt-rust-rust-constexpr.h"

@@ -6146,4 +6146,63 @@ explain_non_literal_class (tree t)
     }
 }
 
+// forked from gcc/cp/call.cc reference_related_p
+
+/* Returns nonzero if T1 is reference-related to T2.  */
+
+bool
+reference_related_p (tree t1, tree t2)
+{
+  if (t1 == error_mark_node || t2 == error_mark_node)
+    return false;
+
+  t1 = TYPE_MAIN_VARIANT (t1);
+  t2 = TYPE_MAIN_VARIANT (t2);
+
+  /* [dcl.init.ref]
+
+     Given types "cv1 T1" and "cv2 T2," "cv1 T1" is reference-related
+     to "cv2 T2" if T1 is similar to T2, or T1 is a base class of T2.  */
+  return (similar_type_p (t1, t2)
+	  /*|| (CLASS_TYPE_P (t1) && CLASS_TYPE_P (t2)
+	      && DERIVED_FROM_P (t1, t2))*/);
+}
+
+// forked from gcc/cp/typeck2.cc ordinary_char_type_p
+
+/* True iff TYPE is a C++20 "ordinary" character type.  */
+
+bool
+ordinary_char_type_p (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  return (type == char_type_node || type == signed_char_type_node
+	  || type == unsigned_char_type_node);
+}
+
+// forked from gcc/cp/typeck2.cc array_string_literal_compatible_p
+
+/* True iff the string literal INIT has a type suitable for initializing array
+   TYPE.  */
+
+bool
+array_string_literal_compatible_p (tree type, tree init)
+{
+  tree to_char_type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+  tree from_char_type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));
+
+  if (to_char_type == from_char_type)
+    return true;
+  /* The array element type does not match the initializing string
+     literal element type; this is only allowed when both types are
+     ordinary character type.  There are no string literals of
+     signed or unsigned char type in the language, but we can get
+     them internally from converting braced-init-lists to
+     STRING_CST.  */
+  if (ordinary_char_type_p (to_char_type)
+      && ordinary_char_type_p (from_char_type))
+    return true;
+  return false;
+}
+
 } // namespace Rust
