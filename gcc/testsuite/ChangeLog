@@ -1,3 +1,11 @@
+2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106623
+	* gdc.dg/torture/pr106623.d: New test.
+
 2022-08-12  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
