@@ -222,7 +222,7 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
     case MODIFY_EXPR:
 	{
 	  tree lhs = TREE_OPERAND (expr, 0);
-	  /* [expr.ass] "A simple assignment whose left operand is of
+	  /* [expr.ass] "An assignment whose left operand is of
 	     a volatile-qualified type is deprecated unless the assignment
 	     is either a discarded-value expression or appears in an
 	     unevaluated context."  */
@@ -232,7 +232,7 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	      && !TREE_THIS_VOLATILE (expr))
 	    {
 	      if (warning_at (location_of (expr), OPT_Wvolatile,
-			      "using value of simple assignment with "
+			      "using value of assignment with "
 			      "%<volatile%>-qualified left operand is "
 			      "deprecated"))
 		/* Make sure not to warn about this assignment again.  */

@@ -57,6 +57,9 @@ fn2 ()
   vi = i;
   vi = i = 42;
   i = vi = 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
+  i = vi |= 42; // { dg-warning "using value of assignment with .volatile.-qualified left operand is deprecated" }
+  i = vi &= 42; // { dg-warning "using value of assignment with .volatile.-qualified left operand is deprecated" }
+  i = vi ^= 42; // { dg-warning "using value of assignment with .volatile.-qualified left operand is deprecated" }
   &(vi = i); // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
   (vi = 42, 45);
   (i = vi = 42, 10); // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
@@ -75,8 +78,9 @@ fn2 ()
   vi += i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
   vi -= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
   vi %= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
-  vi ^= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
-  vi |= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
+  vi ^= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
+  vi |= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
+  vi &= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
   vi /= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
   vi = vi += 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
   vi += vi = 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
@@ -132,7 +136,8 @@ void raccoon ()
   volatile T t, u;
   t = 42;
   u = t = 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
-  t &= 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
+  t += 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" }
+  t &= 42; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
 }
 
 void

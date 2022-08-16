@@ -56,6 +56,9 @@ fn2 ()
   vi = i;
   vi = i = 42;
   i = vi = 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
+  i = vi |= 42; // { dg-warning "using value of assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
+  i = vi &= 42; // { dg-warning "using value of assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
+  i = vi ^= 42; // { dg-warning "using value of assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
   &(vi = i); // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
   (vi = 42, 45);
   (i = vi = 42, 10); // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
@@ -74,8 +77,9 @@ fn2 ()
   vi += i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
   vi -= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
   vi %= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
-  vi ^= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
-  vi |= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
+  vi ^= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
+  vi |= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
+  vi &= i; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
   vi /= i; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
   vi = vi += 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
   vi += vi = 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
@@ -131,7 +135,8 @@ void raccoon ()
   volatile T t, u;
   t = 42;
   u = t = 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
-  t &= 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
+  t += 42; // { dg-warning "assignment with .volatile.-qualified left operand is deprecated" "" { target c++2a } }
+  t &= 42; // { dg-bogus "assignment with .volatile.-qualified left operand is deprecated" }
 }
 
 void
