@@ -25,6 +25,7 @@
 #include "rust-location.h"
 #include "rust-tree.h"
 #include "tree-core.h"
+#include "print-tree.h"
 
 namespace Rust {
 namespace Compile {
@@ -39,6 +40,8 @@ static tree
 rotate_handler (Context *ctx, TyTy::FnType *fntype, tree_code op);
 static tree
 wrapping_op_handler (Context *ctx, TyTy::FnType *fntype, tree_code op);
+static tree
+copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype);
 
 static inline tree
 rotate_left_handler (Context *ctx, TyTy::FnType *fntype)
@@ -76,7 +79,8 @@ static const std::map<std::string,
 			{"rotate_right", &rotate_right_handler},
 			{"wrapping_add", &wrapping_add_handler},
 			{"wrapping_sub", &wrapping_sub_handler},
-			{"wrapping_mul", &wrapping_mul_handler}};
+			{"wrapping_mul", &wrapping_mul_handler},
+			{"copy_nonoverlapping", &copy_nonoverlapping_handler}};
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
 
@@ -205,7 +209,9 @@ finalize_intrinsic_block (Context *ctx, tree fndecl)
   tree bind_tree = ctx->pop_block ();
 
   gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
+
   DECL_SAVED_TREE (fndecl) = bind_tree;
+
   ctx->push_function (fndecl);
 }
 
@@ -415,6 +421,7 @@ wrapping_op_handler (Context *ctx, TyTy::FnType *fntype, tree_code op)
 
   auto &lhs_param = param_vars.at (0);
   auto &rhs_param = param_vars.at (1);
+
   if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
     return error_mark_node;
 
@@ -434,6 +441,70 @@ wrapping_op_handler (Context *ctx, TyTy::FnType *fntype, tree_code op)
     = ctx->get_backend ()->return_statement (fndecl, {wrap_expr}, Location ());
   ctx->add_statement (return_statement);
   // BUILTIN wrapping_<op> FN BODY END
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+/**
+ * fn copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize);
+ */
+static tree
+copy_nonoverlapping_handler (Context *ctx, TyTy::FnType *fntype)
+{
+  rust_assert (fntype->get_params ().size () == 3);
+  rust_assert (fntype->get_num_substitutions () == 1);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  // Most intrinsic functions are pure - not `copy_nonoverlapping`
+  TREE_READONLY (fndecl) = 0;
+  TREE_SIDE_EFFECTS (fndecl) = 1;
+
+  // setup the params
+  std::vector<Bvariable *> param_vars;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
+
+  if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
+    return error_mark_node;
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  // BUILTIN copy_nonoverlapping BODY BEGIN
+
+  auto src = ctx->get_backend ()->var_expression (param_vars[0], Location ());
+  auto dst = ctx->get_backend ()->var_expression (param_vars[1], Location ());
+  auto count = ctx->get_backend ()->var_expression (param_vars[2], Location ());
+
+  // We want to create the following statement
+  // memcpy(dst, src, size_of::<T>());
+  // so
+  // memcpy(dst, src, size_expr);
+
+  auto *resolved_ty = fntype->get_substs ().at (0).get_param_ty ()->resolve ();
+  auto param_type = TyTyResolveCompile::compile (ctx, resolved_ty);
+
+  tree size_expr
+    = build2 (MULT_EXPR, size_type_node, TYPE_SIZE_UNIT (param_type), count);
+
+  tree memcpy_raw = nullptr;
+  BuiltinsContext::get ().lookup_simple_builtin ("memcpy", &memcpy_raw);
+  rust_assert (memcpy_raw);
+  auto memcpy
+    = build_fold_addr_expr_loc (Location ().gcc_location (), memcpy_raw);
+
+  auto copy_call
+    = ctx->get_backend ()->call_expression (memcpy, {dst, src, size_expr},
+					    nullptr, Location ());
+
+  ctx->add_statement (copy_call);
+
+  // BUILTIN copy_nonoverlapping BODY END
 
   finalize_intrinsic_block (ctx, fndecl);
 
