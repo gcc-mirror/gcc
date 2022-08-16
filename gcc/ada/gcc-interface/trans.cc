@@ -1088,6 +1088,28 @@ Gigi_Types_Compatible (Entity_Id type, Entity_Id def_type)
   return false;
 }
 
+/* Return the full view of a private constant E, or of a renaming thereof, if
+   its type has discriminants, and Empty otherwise.  */
+
+static Entity_Id
+Full_View_Of_Private_Constant (Entity_Id E)
+{
+  while (Present (Renamed_Object (E)) && Is_Entity_Name (Renamed_Object (E)))
+    E = Entity (Renamed_Object (E));
+
+  if (Ekind (E) != E_Constant || No (Full_View (E)))
+    return Empty;
+
+  const Entity_Id T = Etype (E);
+
+  if (Is_Private_Type (T)
+      && (Has_Unknown_Discriminants (T)
+	  || (Present (Full_View (T)) && Has_Discriminants (Full_View (T)))))
+    return Full_View (E);
+
+  return Empty;
+}
+
 /* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Identifier, to a GCC
    tree, which is returned.  GNU_RESULT_TYPE_P is a pointer to where we should
    place the result type.  */
@@ -1095,21 +1117,19 @@ Gigi_Types_Compatible (Entity_Id type, Entity_Id def_type)
 static tree
 Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 {
-  /* The entity of GNAT_NODE and its type.  */
-  Node_Id gnat_entity = (Nkind (gnat_node) == N_Defining_Identifier
-			 || Nkind (gnat_node) == N_Defining_Operator_Symbol)
-			? gnat_node : Entity (gnat_node);
-  Node_Id gnat_entity_type = Etype (gnat_entity);
+  Entity_Id gnat_entity = (Nkind (gnat_node) == N_Defining_Identifier
+			   || Nkind (gnat_node) == N_Defining_Operator_Symbol)
+			  ? gnat_node : Entity (gnat_node);
+  Entity_Id gnat_result_type;
+  tree gnu_result, gnu_result_type;
   /* If GNAT_NODE is a constant, whether we should use the initialization
      value instead of the constant entity, typically for scalars with an
      address clause when the parent doesn't require an lvalue.  */
-  bool use_constant_initializer = false;
+  bool use_constant_initializer;
   /* Whether we should require an lvalue for GNAT_NODE.  Needed in
      specific circumstances only, so evaluated lazily.  < 0 means
      unknown, > 0 means known true, 0 means known false.  */
-  int require_lvalue = -1;
-  Entity_Id gnat_result_type;
-  tree gnu_result, gnu_result_type;
+  int require_lvalue;
 
   /* If the Etype of this node is not the same as that of the Entity, then
      something went wrong, probably in generic instantiation.  However, this
@@ -1118,25 +1138,17 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      may have been changed to a subtype by Exp_Ch3.Adjust_Discriminants.  */
   gcc_assert (!Is_Object (gnat_entity)
 	      || Ekind (gnat_entity) == E_Discriminant
-	      || Etype (gnat_node) == gnat_entity_type
-	      || Gigi_Types_Compatible (Etype (gnat_node), gnat_entity_type));
+	      || Etype (gnat_node) == Etype (gnat_entity)
+	      || Gigi_Types_Compatible (Etype (gnat_node),
+					Etype (gnat_entity)));
 
-  /* If this is a reference to a deferred constant whose partial view is an
+  /* If this is a reference to a deferred constant whose partial view is of
      unconstrained private type, the proper type is on the full view of the
-     constant, not on the full view of the type, which may be unconstrained.
-
-     This may be a reference to a type, for example in the prefix of the
-     attribute Position, generated for dispatching code (see Make_DT in
-     exp_disp,adb). In that case we need the type itself, not is parent,
-     in particular if it is a derived type  */
-  if (Ekind (gnat_entity) == E_Constant
-      && Is_Private_Type (gnat_entity_type)
-      && (Has_Unknown_Discriminants (gnat_entity_type)
-	  || (Present (Full_View (gnat_entity_type))
- 	      && Has_Discriminants (Full_View (gnat_entity_type))))
-      && Present (Full_View (gnat_entity)))
+     constant, not on the full view of the type which may be unconstrained.  */
+  const Entity_Id gnat_full_view = Full_View_Of_Private_Constant (gnat_entity);
+  if (Present (gnat_full_view))
     {
-      gnat_entity = Full_View (gnat_entity);
+      gnat_entity = gnat_full_view;
       gnat_result_type = Etype (gnat_entity);
     }
   else
@@ -1184,7 +1196,13 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	= lvalue_required_p (gnat_node, gnu_result_type, true, false);
       use_constant_initializer = !require_lvalue;
     }
+  else
+    {
+      require_lvalue = -1;
+      use_constant_initializer = false;
+    }
 
+  /* Fetch the initialization value of a constant if requested.  */
   if (use_constant_initializer)
     {
       /* If this is a deferred constant, the initializer is attached to
