@@ -246,7 +246,7 @@ including OpenMP and OpenACC support for parallel programming.
 The GNU Fortran compiler passes the
 @uref{http://www.fortran-2000.com/ArnaudRecipes/fcvs21_f95.html,
 NIST Fortran 77 Test Suite}, and produces acceptable results on the
-@uref{https://www.netlib.org/lapack/faq.html#1.21, LAPACK Test Suite}.
+@uref{https://www.netlib.org/lapack/faq.html, LAPACK Test Suite}.
 It also provides respectable performance on
 the @uref{https://polyhedron.com/?page_id=175,
 Polyhedron Fortran compiler benchmarks} and the
@@ -441,7 +441,7 @@ found in the following sections of the documentation.
 
 Additionally, the GNU Fortran compilers supports the OpenMP specification
 (version 4.5 and partial support of the features of the 5.0 version,
-@url{https://openmp.org/@/openmp-specifications/}).
+@url{https://openmp.org/@/specifications/}).
 There also is support for the OpenACC specification (targeting
 version 2.6, @uref{https://www.openacc.org/}).  See
 @uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
@@ -1806,7 +1806,7 @@ It consists of a set of compiler directives, library routines,
 and environment variables that influence run-time behavior.
 
 GNU Fortran strives to be compatible to the
-@uref{https://openmp.org/wp/openmp-specifications/,
+@uref{https://openmp.org/specifications/,
 OpenMP Application Program Interface v4.5}.
 
 To enable the processing of the OpenMP directive @code{!$omp} in
