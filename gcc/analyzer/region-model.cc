@@ -3425,7 +3425,7 @@ public:
     result_set.add (sval);
   }
 
-  void visit_unaryop_svalue (const unaryop_svalue *sval)
+  void visit_unaryop_svalue (const unaryop_svalue *sval) final override
   {
     const svalue *arg = sval->get_arg ();
     if (result_set.contains (arg))
@@ -3449,7 +3449,7 @@ public:
       }
   }
 
-  void visit_repeated_svalue (const repeated_svalue *sval)
+  void visit_repeated_svalue (const repeated_svalue *sval) final override
   {
     sval->get_inner_svalue ()->accept (this);
     if (result_set.contains (sval->get_inner_svalue ()))
