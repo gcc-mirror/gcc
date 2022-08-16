@@ -2399,6 +2399,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_CTImode:
       return 0;
     case E_HFmode:
+    case E_BFmode:
       if (!(bit_offset % 64))
 	classes[0] = X86_64_SSEHF_CLASS;
       else
@@ -2792,9 +2793,10 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	    intreg++;
 	    break;
 	  case X86_64_SSEHF_CLASS:
+	    tmpmode = (mode == BFmode ? BFmode : HFmode);
 	    exp [nexps++]
 	      = gen_rtx_EXPR_LIST (VOIDmode,
-				   gen_rtx_REG (HFmode,
+				   gen_rtx_REG (tmpmode,
 						GET_SSE_REGNO (sse_regno)),
 				   GEN_INT (i*8));
 	    sse_regno++;
@@ -4001,8 +4003,8 @@ function_value_32 (machine_mode orig_mode, machine_mode mode,
     /* Most things go in %eax.  */
     regno = AX_REG;
 
-  /* Return _Float16/_Complex _Foat16 by sse register.  */
-  if (mode == HFmode)
+  /* Return __bf16/ _Float16/_Complex _Foat16 by sse register.  */
+  if (mode == HFmode || mode == BFmode)
     regno = FIRST_SSE_REG;
   if (mode == HCmode)
     {
@@ -4050,6 +4052,7 @@ function_value_64 (machine_mode orig_mode, machine_mode mode,
 
       switch (mode)
 	{
+	case E_BFmode:
 	case E_HFmode:
 	case E_HCmode:
 	case E_SFmode:
@@ -5631,6 +5634,7 @@ ix86_output_ssemov (rtx_insn *insn, rtx *operands)
 	return "%vmovss\t{%1, %0|%0, %1}";
 
     case MODE_HF:
+    case MODE_BF:
       if (REG_P (operands[0]) && REG_P (operands[1]))
 	return "vmovsh\t{%d1, %0|%0, %d1}";
       else
@@ -10647,6 +10651,11 @@ ix86_legitimate_constant_p (machine_mode mode, rtx x)
 
     case CONST_VECTOR:
       if (!standard_sse_constant_p (x, mode))
+	return false;
+      break;
+
+    case CONST_DOUBLE:
+      if (mode == E_BFmode)
 	return false;
 
     default:
@@ -19415,7 +19424,8 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
     }
 
   /* Require movement to gpr, and then store to memory.  */
-  if ((mode == HFmode || mode == HImode || mode == V2QImode)
+  if ((mode == HFmode || mode == HImode || mode == V2QImode
+       || mode == BFmode)
       && !TARGET_SSE4_1
       && SSE_CLASS_P (rclass)
       && !in_p && MEM_P (x))
@@ -22358,7 +22368,7 @@ ix86_scalar_mode_supported_p (scalar_mode mode)
     return default_decimal_float_supported_p ();
   else if (mode == TFmode)
     return true;
-  else if (mode == HFmode && TARGET_SSE2)
+  else if ((mode == HFmode || mode == BFmode) && TARGET_SSE2)
     return true;
   else
     return default_scalar_mode_supported_p (mode);
@@ -22673,6 +22683,8 @@ ix86_mangle_type (const_tree type)
 
   switch (TYPE_MODE (type))
     {
+    case E_BFmode:
+      return "u6__bf16";
     case E_HFmode:
       /* _Float16 is "DF16_".
 	 Align with clang's decision in https://reviews.llvm.org/D33719. */
@@ -22686,6 +22698,55 @@ ix86_mangle_type (const_tree type)
     default:
       return NULL;
     }
+}
+
+/* Return the diagnostic message string if conversion from FROMTYPE to
+   TOTYPE is not allowed, NULL otherwise.  */
+
+static const char *
+ix86_invalid_conversion (const_tree fromtype, const_tree totype)
+{
+  if (element_mode (fromtype) != element_mode (totype))
+    {
+      /* Do no allow conversions to/from BFmode scalar types.  */
+      if (TYPE_MODE (fromtype) == BFmode)
+	return N_("invalid conversion from type %<__bf16%>");
+      if (TYPE_MODE (totype) == BFmode)
+	return N_("invalid conversion to type %<__bf16%>");
+    }
+
+  /* Conversion allowed.  */
+  return NULL;
+}
+
+/* Return the diagnostic message string if the unary operation OP is
+   not permitted on TYPE, NULL otherwise.  */
+
+static const char *
+ix86_invalid_unary_op (int op, const_tree type)
+{
+  /* Reject all single-operand operations on BFmode except for &.  */
+  if (element_mode (type) == BFmode && op != ADDR_EXPR)
+    return N_("operation not permitted on type %<__bf16%>");
+
+  /* Operation allowed.  */
+  return NULL;
+}
+
+/* Return the diagnostic message string if the binary operation OP is
+   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
+
+static const char *
+ix86_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
+			   const_tree type2)
+{
+  /* Reject all 2-operand operations on BFmode.  */
+  if (element_mode (type1) == BFmode
+      || element_mode (type2) == BFmode)
+    return N_("operation not permitted on type %<__bf16%>");
+
+  /* Operation allowed.  */
+  return NULL;
 }
 
 static GTY(()) tree ix86_tls_stack_chk_guard_decl;
@@ -24744,6 +24805,15 @@ ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE ix86_mangle_type
+
+#undef TARGET_INVALID_CONVERSION
+#define TARGET_INVALID_CONVERSION ix86_invalid_conversion
+
+#undef TARGET_INVALID_UNARY_OP
+#define TARGET_INVALID_UNARY_OP ix86_invalid_unary_op
+
+#undef TARGET_INVALID_BINARY_OP
+#define TARGET_INVALID_BINARY_OP ix86_invalid_binary_op
 
 #undef TARGET_STACK_PROTECT_GUARD
 #define TARGET_STACK_PROTECT_GUARD ix86_stack_protect_guard

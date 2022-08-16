@@ -15,4 +15,6 @@ void foo(void)
     }
 }
 
-/* { dg-final { scan-assembler-not "\\\(%.sp\\\)" } } */
+/* { dg-final { scan-assembler-not "\\\(%.sp\\\)" { target { nonpic || { ! ia32 } } } } } */
+/* ia32's get_pc_thunk variants all load from %(esp).  */
+/* { dg-final { scan-assembler-times "movl\[ \t]*\\\(%.sp\\\)" 1 { target { ! { nonpic || { ! ia32 } } } } } } */

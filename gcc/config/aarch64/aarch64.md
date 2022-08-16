@@ -347,9 +347,6 @@
    ; must not operate on inactive inputs if doing so could induce a fault.
    (SVE_STRICT_GP 1)])
 
-;; If further include files are added the defintion of MD_INCLUDES
-;; must be updated.
-
 (include "constraints.md")
 (include "predicates.md")
 (include "iterators.md")

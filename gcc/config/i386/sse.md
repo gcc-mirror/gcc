@@ -15995,10 +15995,28 @@
 
 (define_expand "ashlv1ti3"
   [(set (match_operand:V1TI 0 "register_operand")
+        (ashift:V1TI
+         (match_operand:V1TI 1 "register_operand")
+         (match_operand:QI 2 "general_operand")))]
+  "TARGET_SSE2 && TARGET_64BIT"
+{
+  if (!CONST_INT_P (operands[2]))
+    {
+      ix86_expand_v1ti_shift (ASHIFT, operands);
+      DONE;
+    }
+})
+
+(define_insn_and_split "*ashlv1ti3_internal"
+  [(set (match_operand:V1TI 0 "register_operand")
 	(ashift:V1TI
 	 (match_operand:V1TI 1 "register_operand")
-	 (match_operand:QI 2 "general_operand")))]
-  "TARGET_SSE2 && TARGET_64BIT"
+	 (match_operand:SI 2 "const_0_to_255_not_mul_8_operand")))]
+  "TARGET_SSE2 && TARGET_64BIT
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   ix86_expand_v1ti_shift (ASHIFT, operands);
   DONE;
@@ -16011,6 +16029,24 @@
 	 (match_operand:QI 2 "general_operand")))]
   "TARGET_SSE2 && TARGET_64BIT"
 {
+  if (!CONST_INT_P (operands[2]))
+    {
+      ix86_expand_v1ti_shift (LSHIFTRT, operands);
+      DONE;
+    }
+})
+
+(define_insn_and_split "*lshrv1ti3_internal"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(lshiftrt:V1TI
+	 (match_operand:V1TI 1 "register_operand")
+	 (match_operand:SI 2 "const_0_to_255_not_mul_8_operand")))]
+  "TARGET_SSE2 && TARGET_64BIT
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
   ix86_expand_v1ti_shift (LSHIFTRT, operands);
   DONE;
 })
@@ -16021,6 +16057,25 @@
 	 (match_operand:V1TI 1 "register_operand")
 	 (match_operand:QI 2 "general_operand")))]
   "TARGET_SSE2 && TARGET_64BIT"
+{
+  if (!CONST_INT_P (operands[2]))
+    {
+      ix86_expand_v1ti_ashiftrt (operands);
+      DONE;
+    }
+})
+
+
+(define_insn_and_split "*ashrv1ti3_internal"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(ashiftrt:V1TI
+	 (match_operand:V1TI 1 "register_operand")
+	 (match_operand:SI 2 "const_0_to_255_operand")))]
+  "TARGET_SSE2 && TARGET_64BIT
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   ix86_expand_v1ti_ashiftrt (operands);
   DONE;
@@ -16033,6 +16088,24 @@
 	 (match_operand:QI 2 "general_operand")))]
   "TARGET_SSE2 && TARGET_64BIT"
 {
+  if (!CONST_INT_P (operands[2]))
+    {
+      ix86_expand_v1ti_rotate (ROTATE, operands);
+      DONE;
+    }
+})
+
+(define_insn_and_split "*rotlv1ti3_internal"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(rotate:V1TI
+	 (match_operand:V1TI 1 "register_operand")
+	 (match_operand:SI 2 "const_0_to_255_operand")))]
+  "TARGET_SSE2 && TARGET_64BIT
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
   ix86_expand_v1ti_rotate (ROTATE, operands);
   DONE;
 })
@@ -16043,6 +16116,24 @@
 	 (match_operand:V1TI 1 "register_operand")
 	 (match_operand:QI 2 "general_operand")))]
   "TARGET_SSE2 && TARGET_64BIT"
+{
+  if (!CONST_INT_P (operands[2]))
+    {
+      ix86_expand_v1ti_rotate (ROTATERT, operands);
+      DONE;
+    }
+})
+
+(define_insn_and_split "*rotrv1ti3_internal"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(rotatert:V1TI
+	 (match_operand:V1TI 1 "register_operand")
+	 (match_operand:SI 2 "const_0_to_255_operand")))]
+  "TARGET_SSE2 && TARGET_64BIT
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   ix86_expand_v1ti_rotate (ROTATERT, operands);
   DONE;

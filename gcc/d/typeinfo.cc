@@ -244,6 +244,10 @@ make_frontend_typeinfo (Identifier *ident, ClassDeclaration *base = NULL)
 void
 create_tinfo_types (Module *mod)
 {
+  /* Already generated internal types for the object module.  */
+  if (object_module != NULL)
+    return;
+
   /* Build the internal TypeInfo and ClassInfo types.
      See TypeInfoVisitor for documentation of field layout.  */
   make_internal_typeinfo (TK_TYPEINFO_TYPE, Identifier::idPool ("TypeInfo"),

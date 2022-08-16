@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -54,10 +55,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "builtins.h"
 #include "lto-common.h"
+#include "opts-jobserver.h"
 
-
-/* Number of parallel tasks to run, -1 if we want to use GNU Make jobserver.  */
+/* Number of parallel tasks to run.  */
 static int lto_parallelism;
+
+/* Number of active WPA streaming processes.  */
+static int nruns = 0;
+
+/* GNU make's jobserver info.  */
+static jobserver_info *jinfo = NULL;
 
 /* Return true when NODE has a clone that is analyzed (i.e. we need
    to load its body even if the node itself is not needed).  */
@@ -205,6 +212,12 @@ wait_for_child ()
 		     "streaming subprocess was killed by signal");
     }
   while (!WIFEXITED (status) && !WIFSIGNALED (status));
+
+    --nruns;
+
+    /* Return token to the jobserver if active.  */
+    if (jinfo != NULL && jinfo->is_active)
+      jinfo->return_token ();
 }
 #endif
 
@@ -228,25 +241,35 @@ stream_out_partitions (char *temp_filename, int blen, int min, int max,
 		       bool ARG_UNUSED (last))
 {
 #ifdef HAVE_WORKING_FORK
-  static int nruns;
-
   if (lto_parallelism <= 1)
     {
       stream_out_partitions_1 (temp_filename, blen, min, max);
       return;
     }
 
-  /* Do not run more than LTO_PARALLELISM streamings
-     FIXME: we ignore limits on jobserver.  */
   if (lto_parallelism > 0 && nruns >= lto_parallelism)
-    {
-      wait_for_child ();
-      nruns --;
-    }
+    wait_for_child ();
+
   /* If this is not the last parallel partition, execute new
      streaming process.  */
   if (!last)
     {
+      if (jinfo != NULL && jinfo->is_active)
+	while (true)
+	  {
+	    if (jinfo->get_token ())
+	      break;
+	    if (nruns > 0)
+	      wait_for_child ();
+	    else
+	      {
+		/* There are no free tokens, lets do the job outselves.  */
+		stream_out_partitions_1 (temp_filename, blen, min, max);
+		asm_nodes_output = true;
+		return;
+	      }
+	  }
+
       pid_t cpid = fork ();
 
       if (!cpid)
@@ -264,10 +287,12 @@ stream_out_partitions (char *temp_filename, int blen, int min, int max,
   /* Last partition; stream it and wait for all children to die.  */
   else
     {
-      int i;
       stream_out_partitions_1 (temp_filename, blen, min, max);
-      for (i = 0; i < nruns; i++)
+      while (nruns > 0)
 	wait_for_child ();
+
+      if (jinfo != NULL && jinfo->is_active)
+	jinfo->disconnect ();
     }
   asm_nodes_output = true;
 #else
@@ -460,9 +485,14 @@ do_whole_program_analysis (void)
 
   lto_parallelism = 1;
 
-  /* TODO: jobserver communication is not supported, yet.  */
   if (!strcmp (flag_wpa, "jobserver"))
-    lto_parallelism = param_max_lto_streaming_parallelism;
+    {
+      jinfo = new jobserver_info ();
+      if (jinfo->is_active)
+	jinfo->connect ();
+
+      lto_parallelism = param_max_lto_streaming_parallelism;
+    }
   else
     {
       lto_parallelism = atoi (flag_wpa);

@@ -576,6 +576,7 @@ extern tree size_mult_expr (tree, tree);
 extern tree real_part (tree);
 extern tree imaginary_part (tree);
 extern tree complex_expr (tree, tree, tree);
+extern tree underlying_complex_expr (tree, tree);
 extern tree indirect_ref (tree, tree);
 extern tree build_deref (tree);
 extern tree build_pointer_index (tree, tree);
@@ -672,6 +673,7 @@ extern tree maybe_expand_intrinsic (tree);
 extern void build_module_tree (Module *);
 extern tree d_module_context (void);
 extern void register_module_decl (Declaration *);
+extern void d_defer_declaration (Declaration *);
 extern void d_finish_compilation (tree *, int);
 
 /* In runtime.cc.  */

@@ -285,6 +285,19 @@ type_possibly_instantiated_p (tree t)
   return vnode && vnode->definition;
 }
 
+/* Return true if T or type derived from T may have instance.  */
+
+static bool
+type_or_derived_type_possibly_instantiated_p (odr_type t)
+{
+  if (type_possibly_instantiated_p (t->type))
+    return true;
+  for (auto derived : t->derived_types)
+    if (type_or_derived_type_possibly_instantiated_p (derived))
+      return true;
+  return false;
+}
+
 /* Hash used to unify ODR types based on their mangled name and for anonymous
    namespace types.  */
 
@@ -3172,6 +3185,7 @@ possible_polymorphic_call_targets (tree otr_type,
     {
       odr_type speculative_outer_type;
       bool speculation_complete = true;
+      bool check_derived_types = false;
 
       /* First insert target from type itself and check if it may have
 	 derived types.  */
@@ -3190,8 +3204,12 @@ possible_polymorphic_call_targets (tree otr_type,
 	 to walk derivations.  */
       if (target && DECL_FINAL_P (target))
 	context.speculative_maybe_derived_type = false;
-      if (type_possibly_instantiated_p (speculative_outer_type->type))
-	maybe_record_node (nodes, target, &inserted, can_refer, &speculation_complete);
+      if (check_derived_types
+	  ? type_or_derived_type_possibly_instantiated_p
+		 (speculative_outer_type)
+	  : type_possibly_instantiated_p (speculative_outer_type->type))
+	maybe_record_node (nodes, target, &inserted, can_refer,
+			   &speculation_complete);
       if (binfo)
 	matched_vtables.add (BINFO_VTABLE (binfo));
 
@@ -3212,6 +3230,7 @@ possible_polymorphic_call_targets (tree otr_type,
 
   if (!speculative || !nodes.length ())
     {
+      bool check_derived_types = false;
       /* First see virtual method of type itself.  */
       binfo = get_binfo_at_offset (TYPE_BINFO (outer_type->type),
 				   context.offset, otr_type);
@@ -3229,16 +3248,18 @@ possible_polymorphic_call_targets (tree otr_type,
       if (target && DECL_CXX_DESTRUCTOR_P (target))
 	context.maybe_in_construction = false;
 
-      if (target)
+      /* In the case we get complete method, we don't need 
+	 to walk derivations.  */
+      if (target && DECL_FINAL_P (target))
 	{
-	  /* In the case we get complete method, we don't need 
-	     to walk derivations.  */
-	  if (DECL_FINAL_P (target))
-	    context.maybe_derived_type = false;
+	  check_derived_types = true;
+	  context.maybe_derived_type = false;
 	}
 
       /* If OUTER_TYPE is abstract, we know we are not seeing its instance.  */
-      if (type_possibly_instantiated_p (outer_type->type))
+      if (check_derived_types
+	  ? type_or_derived_type_possibly_instantiated_p (outer_type)
+	  : type_possibly_instantiated_p (outer_type->type))
 	maybe_record_node (nodes, target, &inserted, can_refer, &complete);
       else
 	skipped = true;

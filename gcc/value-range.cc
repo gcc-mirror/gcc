@@ -716,25 +716,6 @@ irange::irange_set_anti_range (tree min, tree max)
 void
 irange::set (tree min, tree max, value_range_kind kind)
 {
-  if (kind != VR_UNDEFINED)
-    {
-      if (TREE_OVERFLOW_P (min))
-	min = drop_tree_overflow (min);
-      if (TREE_OVERFLOW_P (max))
-	max = drop_tree_overflow (max);
-    }
-
-  if (!legacy_mode_p ())
-    {
-      if (kind == VR_RANGE)
-	irange_set (min, max);
-      else
-	{
-	  gcc_checking_assert (kind == VR_ANTI_RANGE);
-	  irange_set_anti_range (min, max);
-	}
-      return;
-    }
   if (kind == VR_UNDEFINED)
     {
       irange::set_undefined ();
@@ -749,6 +730,22 @@ irange::set (tree min, tree max, value_range_kind kind)
       return;
     }
 
+  if (TREE_OVERFLOW_P (min))
+    min = drop_tree_overflow (min);
+  if (TREE_OVERFLOW_P (max))
+    max = drop_tree_overflow (max);
+
+  if (!legacy_mode_p ())
+    {
+      if (kind == VR_RANGE)
+	irange_set (min, max);
+      else
+	{
+	  gcc_checking_assert (kind == VR_ANTI_RANGE);
+	  irange_set_anti_range (min, max);
+	}
+      return;
+    }
   // Nothing to canonicalize for symbolic ranges.
   if (TREE_CODE (min) != INTEGER_CST
       || TREE_CODE (max) != INTEGER_CST)

@@ -3369,6 +3369,20 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   return TRUE;
 }
 
+/* Helper function for noce_convert_multiple_sets_1.  If store to
+   DEST can affect P[0] or P[1], clear P[0].  Called via note_stores.  */
+
+static void
+check_for_cc_cmp_clobbers (rtx dest, const_rtx, void *p0)
+{
+  rtx *p = (rtx *) p0;
+  if (p[0] == NULL_RTX)
+    return;
+  if (reg_overlap_mentioned_p (dest, p[0])
+      || (p[1] && reg_overlap_mentioned_p (dest, p[1])))
+    p[0] = NULL_RTX;
+}
+
 /* This goes through all relevant insns of IF_INFO->then_bb and tries to
    create conditional moves.  In case a simple move sufficis the insn
    should be listed in NEED_NO_CMOV.  The rewired-src cases should be
@@ -3519,7 +3533,7 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
 
 	 as min/max and emit an insn, accordingly.  */
       unsigned cost1 = 0, cost2 = 0;
-      rtx_insn *seq, *seq1, *seq2;
+      rtx_insn *seq, *seq1, *seq2 = NULL;
       rtx temp_dest = NULL_RTX, temp_dest1 = NULL_RTX, temp_dest2 = NULL_RTX;
       bool read_comparison = false;
 
@@ -3531,9 +3545,10 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
 	 as well.  This allows the backend to emit a cmov directly without
 	 creating an additional compare for each.  If successful, costing
 	 is easier and this sequence is usually preferred.  */
-      seq2 = try_emit_cmove_seq (if_info, temp, cond,
-				 new_val, old_val, need_cmov,
-				 &cost2, &temp_dest2, cc_cmp, rev_cc_cmp);
+      if (cc_cmp)
+	seq2 = try_emit_cmove_seq (if_info, temp, cond,
+				   new_val, old_val, need_cmov,
+				   &cost2, &temp_dest2, cc_cmp, rev_cc_cmp);
 
       /* The backend might have created a sequence that uses the
 	 condition.  Check this.  */
@@ -3586,6 +3601,24 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
 	  /* Nothing worked, bail out.  */
 	  end_sequence ();
 	  return FALSE;
+	}
+
+      if (cc_cmp)
+	{
+	  /* Check if SEQ can clobber registers mentioned in
+	     cc_cmp and/or rev_cc_cmp.  If yes, we need to use
+	     only seq1 from that point on.  */
+	  rtx cc_cmp_pair[2] = { cc_cmp, rev_cc_cmp };
+	  for (walk = seq; walk; walk = NEXT_INSN (walk))
+	    {
+	      note_stores (walk, check_for_cc_cmp_clobbers, cc_cmp_pair);
+	      if (cc_cmp_pair[0] == NULL_RTX)
+		{
+		  cc_cmp = NULL_RTX;
+		  rev_cc_cmp = NULL_RTX;
+		  break;
+		}
+	    }
 	}
 
       /* End the sub sequence and emit to the main sequence.  */

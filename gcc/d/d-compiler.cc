@@ -130,8 +130,7 @@ Compiler::onParseModule (Module *m)
     {
       if (md->packages.length == 0)
 	{
-	  Identifier *id = (md && md->id) ? md->id : m->ident;
-	  if (!strcmp (id->toChars (), "object"))
+	  if (!strcmp (md->id->toChars (), "object"))
 	    {
 	      create_tinfo_types (m);
 	      return;
@@ -145,6 +144,14 @@ Compiler::onParseModule (Module *m)
 	      d_build_builtins_module (m);
 	      return;
 	    }
+	}
+    }
+  else if (m->ident)
+    {
+      if (!strcmp (m->ident->toChars (), "object"))
+	{
+	  create_tinfo_types (m);
+	  return;
 	}
     }
 

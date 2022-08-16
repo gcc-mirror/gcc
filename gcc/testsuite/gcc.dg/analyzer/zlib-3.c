@@ -182,7 +182,9 @@ static int huft_build(uInt *b, uInt n, uInt s, const uInt *d, const uInt *e,
         q[j] = r; /* { dg-warning "use of uninitialized value 'r.base'" } */
 
       mask = (1 << w) - 1;
-      while ((i & mask) != x[h]) {
+      /* The analyzer thinks that h can be -1 here.
+         This is probably a false positive. */
+      while ((i & mask) !=  x[h]) { /* { dg-bogus "underread" "" { xfail *-*-* } } */
         h--;
         w -= l;
         mask = (1 << w) - 1;

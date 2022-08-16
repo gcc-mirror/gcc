@@ -1,3 +1,37 @@
+2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (d_defer_declaration): Declare.
+	* decl.cc (function_needs_inline_definition_p): Defer checking
+	DECL_UNINLINABLE and DECL_DECLARED_INLINE_P.
+	(maybe_build_decl_tree): Call d_defer_declaration instead of
+	build_decl_tree.
+	* modules.cc (deferred_inline_declarations): New variable.
+	(build_module_tree): Set deferred_inline_declarations and a handle
+	declarations pushed to it.
+	(d_defer_declaration): New function.
+
+2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106623
+	* d-codegen.cc (underlying_complex_expr): New function.
+	(d_build_call): Handle passing native complex objects as the
+	library-defined equivalent.
+	* d-tree.h (underlying_complex_expr): Declare.
+	* expr.cc (ExprVisitor::visit (DotVarExp *)): Call
+	underlying_complex_expr instead of build_vconvert.
+
+2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-compiler.cc (Compiler::onParseModule): Call create_tinfo_types
+	when module name is object.
+	* typeinfo.cc (create_tinfo_types): Add guard for multiple
+	invocations.
+
+2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_delegate_cst): Give anonymous delegate field
+	names same as per ABI spec.
+
 2022-08-09  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/106563

@@ -11,7 +11,8 @@ foo (int i)
 }
 
 /* { dg-final { scan-assembler-not "movups\[\\t \]*%(x|y|z)mm\[0-9\]+" } } */
-/* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)(a|b|c|d)x" } } */
+/* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)bx" { target { nonpic || { ! ia32 } } } } } */
+/* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)(a|c|d)x" } } */
 /* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)si" } } */
 /* { dg-final { scan-assembler-not "(push|pop)(l|q)\[\\t \]*%(r|e)bp" } } */
 /* { dg-final { scan-assembler-not "(push|pop)l\[\\t \]*%edi" { target ia32 } } } */

@@ -1,6 +1,7 @@
 /* PR target/87767 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512f -mavx512vl" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 /* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } }
 /* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to2\\\}" 4 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to4\\\}" 4 { target ia32 } } } */

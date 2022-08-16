@@ -10,4 +10,4 @@ fn1 (long long int x)
   return x;
 }
 
-/* { dg-final { scan-assembler-not "movl\[ \\t\]+\[0-9]*\\(%esp\\)" } } */
+/* { dg-final { scan-assembler-not "movl\[ \\t\]+\[0-9]+\\(%esp\\)" } } */

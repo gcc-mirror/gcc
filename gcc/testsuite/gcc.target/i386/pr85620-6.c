@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fcf-protection" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 /* { dg-final { scan-assembler "jmp" } } */
 
 struct ucontext;

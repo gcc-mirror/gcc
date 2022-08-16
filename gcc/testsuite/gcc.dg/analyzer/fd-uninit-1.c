@@ -9,8 +9,6 @@ test_1 ()
 {
   int m;
   return dup (m); /* { dg-warning "use of uninitialized value 'm'" "uninit" } */
-  /* { dg-bogus "'dup' on possibly invalid file descriptor 'm'" "invalid fd false +ve" { xfail *-*-* } .-1 } */
-  /* XFAIL: probably covered by fix for PR analyzer/106551.  */
 }
 
 int

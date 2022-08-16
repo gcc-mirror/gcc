@@ -153,38 +153,7 @@ path_range_query::range_on_path_entry (vrange &r, tree name)
 {
   gcc_checking_assert (defined_outside_path (name));
   basic_block entry = entry_bb ();
-
-  // Prefer to use range_of_expr if we have a statement to look at,
-  // since it has better caching than range_on_edge.
-  gimple *last = last_stmt (entry);
-  if (last)
-    {
-      if (m_ranger->range_of_expr (r, name, last))
-	return;
-      gcc_unreachable ();
-    }
-
-  // If we have no statement, look at all the incoming ranges to the
-  // block.  This can happen when we're querying a block with only an
-  // outgoing edge (no statement but the fall through edge), but for
-  // which we can determine a range on entry to the block.
-  Value_Range tmp (TREE_TYPE (name));
-  bool changed = false;
-  r.set_undefined ();
-  for (unsigned i = 0; i < EDGE_COUNT (entry->preds); ++i)
-    {
-      edge e = EDGE_PRED (entry, i);
-      if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
-	  && m_ranger->range_on_edge (tmp, e, name))
-	{
-	  r.union_ (tmp);
-	  changed = true;
-	}
-    }
-
-  // Make sure we don't return UNDEFINED by mistake.
-  if (!changed)
-    r.set_varying (TREE_TYPE (name));
+  m_ranger->range_on_entry (r, entry, name);
 }
 
 // Return the range of NAME at the end of the path being analyzed.
@@ -276,8 +245,6 @@ void
 path_range_query::ssa_range_in_phi (vrange &r, gphi *phi)
 {
   tree name = gimple_phi_result (phi);
-  basic_block bb = gimple_bb (phi);
-  unsigned nargs = gimple_phi_num_args (phi);
 
   if (at_entry ())
     {
@@ -287,6 +254,7 @@ path_range_query::ssa_range_in_phi (vrange &r, gphi *phi)
       // Try to fold the phi exclusively with global or cached values.
       // This will get things like PHI <5(99), 6(88)>.  We do this by
       // calling range_of_expr with no context.
+      unsigned nargs = gimple_phi_num_args (phi);
       Value_Range arg_range (TREE_TYPE (name));
       r.set_undefined ();
       for (size_t i = 0; i < nargs; ++i)
@@ -303,36 +271,31 @@ path_range_query::ssa_range_in_phi (vrange &r, gphi *phi)
       return;
     }
 
+  basic_block bb = gimple_bb (phi);
   basic_block prev = prev_bb ();
   edge e_in = find_edge (prev, bb);
-
-  for (size_t i = 0; i < nargs; ++i)
-    if (e_in == gimple_phi_arg_edge (phi, i))
-      {
-	tree arg = gimple_phi_arg_def (phi, i);
-	// Avoid using the cache for ARGs defined in this block, as
-	// that could create an ordering problem.
-	if (ssa_defined_in_bb (arg, bb) || !get_cache (r, arg))
-	  {
-	    if (m_resolve)
-	      {
-		Value_Range tmp (TREE_TYPE (name));
-		// Using both the range on entry to the path, and the
-		// range on this edge yields significantly better
-		// results.
-		if (defined_outside_path (arg))
-		  range_on_path_entry (r, arg);
-		else
-		  r.set_varying (TREE_TYPE (name));
-		m_ranger->range_on_edge (tmp, e_in, arg);
-		r.intersect (tmp);
-		return;
-	      }
+  tree arg = PHI_ARG_DEF_FROM_EDGE (phi, e_in);
+  // Avoid using the cache for ARGs defined in this block, as
+  // that could create an ordering problem.
+  if (ssa_defined_in_bb (arg, bb) || !get_cache (r, arg))
+    {
+      if (m_resolve)
+	{
+	  Value_Range tmp (TREE_TYPE (name));
+	  // Using both the range on entry to the path, and the
+	  // range on this edge yields significantly better
+	  // results.
+	  if (TREE_CODE (arg) == SSA_NAME
+	      && defined_outside_path (arg))
+	    range_on_path_entry (r, arg);
+	  else
 	    r.set_varying (TREE_TYPE (name));
-	  }
-	return;
-      }
-  gcc_unreachable ();
+	  m_ranger->range_on_edge (tmp, e_in, arg);
+	  r.intersect (tmp);
+	  return;
+	}
+      r.set_varying (TREE_TYPE (name));
+    }
 }
 
 // If NAME is defined in BB, set R to the range of NAME, and return
@@ -549,7 +512,7 @@ path_range_query::add_to_imports (tree name, bitmap imports)
   return false;
 }
 
-// Compute the imports to the path ending in EXIT.  These are
+// Compute the imports to PATH.  These are
 // essentially the SSA names used to calculate the final conditional
 // along the path.
 //
@@ -559,9 +522,10 @@ path_range_query::add_to_imports (tree name, bitmap imports)
 // we can solve.
 
 void
-path_range_query::compute_imports (bitmap imports, basic_block exit)
+path_range_query::compute_imports (bitmap imports, const vec<basic_block> &path)
 {
   // Start with the imports from the exit block...
+  basic_block exit = path[0];
   gori_compute &gori = m_ranger->gori ();
   bitmap r_imports = gori.imports (exit);
   bitmap_copy (imports, r_imports);
@@ -580,18 +544,11 @@ path_range_query::compute_imports (bitmap imports, basic_block exit)
     {
       tree name = worklist.pop ();
       gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+      if (SSA_NAME_IS_DEFAULT_DEF (name)
+	  || !path.contains (gimple_bb (def_stmt)))
+	continue;
 
-      if (is_gimple_assign (def_stmt))
-	{
-	  add_to_imports (gimple_assign_rhs1 (def_stmt), imports);
-	  tree rhs = gimple_assign_rhs2 (def_stmt);
-	  if (rhs && add_to_imports (rhs, imports))
-	    worklist.safe_push (rhs);
-	  rhs = gimple_assign_rhs3 (def_stmt);
-	  if (rhs && add_to_imports (rhs, imports))
-	    worklist.safe_push (rhs);
-	}
-      else if (gphi *phi = dyn_cast <gphi *> (def_stmt))
+      if (gphi *phi = dyn_cast <gphi *> (def_stmt))
 	{
 	  for (size_t i = 0; i < gimple_phi_num_args (phi); ++i)
 	    {
@@ -599,17 +556,41 @@ path_range_query::compute_imports (bitmap imports, basic_block exit)
 	      tree arg = gimple_phi_arg (phi, i)->def;
 
 	      if (TREE_CODE (arg) == SSA_NAME
-		  && m_path.contains (e->src)
+		  && path.contains (e->src)
 		  && bitmap_set_bit (imports, SSA_NAME_VERSION (arg)))
 		worklist.safe_push (arg);
+	    }
+	}
+      else if (gassign *ass = dyn_cast <gassign *> (def_stmt))
+	{
+	  tree ssa[3];
+	  if (range_op_handler (ass))
+	    {
+	      ssa[0] = gimple_range_ssa_p (gimple_range_operand1 (ass));
+	      ssa[1] = gimple_range_ssa_p (gimple_range_operand2 (ass));
+	      ssa[2] = NULL_TREE;
+	    }
+	  else if (gimple_assign_rhs_code (ass) == COND_EXPR)
+	    {
+	      ssa[0] = gimple_range_ssa_p (gimple_assign_rhs1 (ass));
+	      ssa[1] = gimple_range_ssa_p (gimple_assign_rhs2 (ass));
+	      ssa[2] = gimple_range_ssa_p (gimple_assign_rhs3 (ass));
+	    }
+	  else
+	    continue;
+	  for (unsigned j = 0; j < 3; ++j)
+	    {
+	      tree rhs = ssa[j];
+	      if (rhs && add_to_imports (rhs, imports))
+		worklist.safe_push (rhs);
 	    }
 	}
     }
   // Exported booleans along the path, may help conditionals.
   if (m_resolve)
-    for (i = 0; i < m_path.length (); ++i)
+    for (i = 0; i < path.length (); ++i)
       {
-	basic_block bb = m_path[i];
+	basic_block bb = path[i];
 	tree name;
 	FOR_EACH_GORI_EXPORT_NAME (gori, bb, name)
 	  if (TREE_CODE (TREE_TYPE (name)) == BOOLEAN_TYPE)
@@ -636,7 +617,7 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
   if (imports)
     bitmap_copy (m_imports, imports);
   else
-    compute_imports (m_imports, exit_bb ());
+    compute_imports (m_imports, m_path);
 
   if (m_resolve)
     get_path_oracle ()->reset_path ();
@@ -845,15 +826,9 @@ path_range_query::compute_phi_relations (basic_block bb, basic_block prev)
 void
 path_range_query::compute_outgoing_relations (basic_block bb, basic_block next)
 {
-  gimple *stmt = last_stmt (bb);
-
-  if (stmt
-      && gimple_code (stmt) == GIMPLE_COND
-      && (import_p (gimple_cond_lhs (stmt))
-	  || import_p (gimple_cond_rhs (stmt))))
+  if (gcond *cond = safe_dyn_cast <gcond *> (last_stmt (bb)))
     {
       int_range<2> r;
-      gcond *cond = as_a<gcond *> (stmt);
       edge e0 = EDGE_SUCC (bb, 0);
       edge e1 = EDGE_SUCC (bb, 1);
 

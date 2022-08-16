@@ -1,3 +1,11 @@
+2022-08-10  Martin Liska  <mliska@suse.cz>
+
+	PR lto/106328
+	* lto.cc (wait_for_child): Decrement nruns once a process
+	finishes.
+	(stream_out_partitions): Use job server if active.
+	(do_whole_program_analysis): Likewise.
+
 2022-07-08  Martin Liska  <mliska@suse.cz>
 
 	* lto-dump.cc (lto_main): Exit in the function

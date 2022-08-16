@@ -221,3 +221,39 @@ test_19 (const char *path, void *buf)
     }
     
 }
+
+extern int m;
+
+void
+test_20 ()
+{
+    int fd = dup (m); 
+    close (fd);
+}
+
+void
+test_21 ()
+{
+    int fd = dup2 (m, 1); 
+    close (fd);
+}
+
+void
+test_22 (int flags)
+{
+    int fd = dup3 (m, 1, flags);
+    close (fd);
+}
+
+void do_something();
+void
+test_23 ()
+{
+    int nullfd = -1;
+    int fd = 1;
+    if (dup2 (nullfd, fd) < 0) /* { dg-warning "'dup2' on possibly invalid file descriptor 'nullfd'" } */
+    {
+        do_something();
+    }
+}
+
