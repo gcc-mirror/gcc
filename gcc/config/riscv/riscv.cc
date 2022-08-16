@@ -2296,11 +2296,13 @@ riscv_output_move (rtx dest, rtx src)
   enum rtx_code dest_code, src_code;
   machine_mode mode;
   bool dbl_p;
+  unsigned width;
 
   dest_code = GET_CODE (dest);
   src_code = GET_CODE (src);
   mode = GET_MODE (dest);
   dbl_p = (GET_MODE_SIZE (mode) == 8);
+  width = GET_MODE_SIZE (mode);
 
   if (dbl_p && riscv_split_64bit_move_p (dest, src))
     return "#";
@@ -2308,10 +2310,21 @@ riscv_output_move (rtx dest, rtx src)
   if (dest_code == REG && GP_REG_P (REGNO (dest)))
     {
       if (src_code == REG && FP_REG_P (REGNO (src)))
-	return dbl_p ? "fmv.x.d\t%0,%1" : "fmv.x.w\t%0,%1";
+	switch (width)
+	  {
+	  case 2:
+	    if (TARGET_ZFHMIN)
+	      return "fmv.x.h\t%0,%1";
+	    /* Using fmv.x.s + sign-extend to emulate fmv.x.h.  */
+	    return "fmv.x.s\t%0,%1;slli\t%0,%0,16;srai\t%0,%0,16";
+	  case 4:
+	    return "fmv.x.s\t%0,%1";
+	  case 8:
+	    return "fmv.x.d\t%0,%1";
+	  }
 
       if (src_code == MEM)
-	switch (GET_MODE_SIZE (mode))
+	switch (width)
 	  {
 	  case 1: return "lbu\t%0,%1";
 	  case 2: return "lhu\t%0,%1";
@@ -2353,18 +2366,26 @@ riscv_output_move (rtx dest, rtx src)
 	    return "mv\t%0,%z1";
 
 	  if (FP_REG_P (REGNO (dest)))
-	    {
-	      if (!dbl_p)
-		return "fmv.w.x\t%0,%z1";
-	      if (TARGET_64BIT)
-		return "fmv.d.x\t%0,%z1";
-	      /* in RV32, we can emulate fmv.d.x %0, x0 using fcvt.d.w */
-	      gcc_assert (src == CONST0_RTX (mode));
-	      return "fcvt.d.w\t%0,x0";
-	    }
+	    switch (width)
+	      {
+	      case 2:
+		if (TARGET_ZFHMIN)
+		  return "fmv.h.x\t%0,%z1";
+		/* High 16 bits should be all-1, otherwise HW will treated
+		   as a n-bit canonical NaN, but isn't matter for softfloat.  */
+		return "fmv.s.x\t%0,%1";
+	      case 4:
+		return "fmv.s.x\t%0,%z1";
+	      case 8:
+		if (TARGET_64BIT)
+		  return "fmv.d.x\t%0,%z1";
+		/* in RV32, we can emulate fmv.d.x %0, x0 using fcvt.d.w */
+		gcc_assert (src == CONST0_RTX (mode));
+		return "fcvt.d.w\t%0,x0";
+	      }
 	}
       if (dest_code == MEM)
-	switch (GET_MODE_SIZE (mode))
+	switch (width)
 	  {
 	  case 1: return "sb\t%z1,%0";
 	  case 2: return "sh\t%z1,%0";
@@ -2375,15 +2396,41 @@ riscv_output_move (rtx dest, rtx src)
   if (src_code == REG && FP_REG_P (REGNO (src)))
     {
       if (dest_code == REG && FP_REG_P (REGNO (dest)))
-	return dbl_p ? "fmv.d\t%0,%1" : "fmv.s\t%0,%1";
+	switch (width)
+	  {
+	  case 2:
+	    if (TARGET_ZFH)
+	      return "fmv.h\t%0,%1";
+	    return "fmv.s\t%0,%1";
+	  case 4:
+	    return "fmv.s\t%0,%1";
+	  case 8:
+	    return "fmv.d\t%0,%1";
+	  }
 
       if (dest_code == MEM)
-	return dbl_p ? "fsd\t%1,%0" : "fsw\t%1,%0";
+	switch (width)
+	  {
+	  case 2:
+	    return "fsh\t%1,%0";
+	  case 4:
+	    return "fsw\t%1,%0";
+	  case 8:
+	    return "fsd\t%1,%0";
+	  }
     }
   if (dest_code == REG && FP_REG_P (REGNO (dest)))
     {
       if (src_code == MEM)
-	return dbl_p ? "fld\t%0,%1" : "flw\t%0,%1";
+	switch (width)
+	  {
+	  case 2:
+	    return "flh\t%0,%1";
+	  case 4:
+	    return "flw\t%0,%1";
+	  case 8:
+	    return "fld\t%0,%1";
+	  }
     }
   gcc_unreachable ();
 }
@@ -2660,6 +2707,10 @@ riscv_emit_float_compare (enum rtx_code *code, rtx *op0, rtx *op1)
 	emit_insn (gen_f##CMP##_quietdfdi4 (*op0, cmp_op0, cmp_op1));	\
       else if (GET_MODE (cmp_op0) == DFmode)				\
 	emit_insn (gen_f##CMP##_quietdfsi4 (*op0, cmp_op0, cmp_op1));	\
+      else if (GET_MODE (cmp_op0) == HFmode && TARGET_64BIT)		\
+	emit_insn (gen_f##CMP##_quiethfdi4 (*op0, cmp_op0, cmp_op1));	\
+      else if (GET_MODE (cmp_op0) == HFmode)				\
+	emit_insn (gen_f##CMP##_quiethfsi4 (*op0, cmp_op0, cmp_op1));	\
       else								\
 	gcc_unreachable ();						\
       *op1 = const0_rtx;						\
@@ -5638,6 +5689,108 @@ riscv_asan_shadow_offset (void)
   return TARGET_64BIT ? (HOST_WIDE_INT_1 << 29) : 0;
 }
 
+/* Implement TARGET_MANGLE_TYPE.  */
+
+static const char *
+riscv_mangle_type (const_tree type)
+{
+  /* Half-precision float, _Float16 is "DF16_".  */
+  if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
+    return "DF16_";
+
+  /* Use the default mangling.  */
+  return NULL;
+}
+
+/* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
+
+static bool
+riscv_scalar_mode_supported_p (scalar_mode mode)
+{
+  if (mode == HFmode)
+    return true;
+  else
+    return default_scalar_mode_supported_p (mode);
+}
+
+/* Implement TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P - return TRUE
+   if MODE is HFmode, and punt to the generic implementation otherwise.  */
+
+static bool
+riscv_libgcc_floating_mode_supported_p (scalar_float_mode mode)
+{
+  if (mode == HFmode)
+    return true;
+  else
+    return default_libgcc_floating_mode_supported_p (mode);
+}
+
+/* Set the value of FLT_EVAL_METHOD.
+   ISO/IEC TS 18661-3 defines two values that we'd like to make use of:
+
+    0: evaluate all operations and constants, whose semantic type has at
+       most the range and precision of type float, to the range and
+       precision of float; evaluate all other operations and constants to
+       the range and precision of the semantic type;
+
+    N, where _FloatN is a supported interchange floating type
+       evaluate all operations and constants, whose semantic type has at
+       most the range and precision of _FloatN type, to the range and
+       precision of the _FloatN type; evaluate all other operations and
+       constants to the range and precision of the semantic type;
+
+   If we have the zfh extensions then we support _Float16 in native
+   precision, so we should set this to 16.  */
+static enum flt_eval_method
+riscv_excess_precision (enum excess_precision_type type)
+{
+  switch (type)
+    {
+    case EXCESS_PRECISION_TYPE_FAST:
+    case EXCESS_PRECISION_TYPE_STANDARD:
+      return (TARGET_ZFH ? FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16
+			 : FLT_EVAL_METHOD_PROMOTE_TO_FLOAT);
+    case EXCESS_PRECISION_TYPE_IMPLICIT:
+      return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16;
+    default:
+      gcc_unreachable ();
+    }
+  return FLT_EVAL_METHOD_UNPREDICTABLE;
+}
+
+/* Implement TARGET_FLOATN_MODE.  */
+static opt_scalar_float_mode
+riscv_floatn_mode (int n, bool extended)
+{
+  if (!extended && n == 16)
+    return HFmode;
+
+  return default_floatn_mode (n, extended);
+}
+
+static void
+riscv_init_libfuncs (void)
+{
+  /* Half-precision float operations.  The compiler handles all operations
+     with NULL libfuncs by converting to SFmode.  */
+
+  /* Arithmetic.  */
+  set_optab_libfunc (add_optab, HFmode, NULL);
+  set_optab_libfunc (sdiv_optab, HFmode, NULL);
+  set_optab_libfunc (smul_optab, HFmode, NULL);
+  set_optab_libfunc (neg_optab, HFmode, NULL);
+  set_optab_libfunc (sub_optab, HFmode, NULL);
+
+  /* Comparisons.  */
+  set_optab_libfunc (eq_optab, HFmode, NULL);
+  set_optab_libfunc (ne_optab, HFmode, NULL);
+  set_optab_libfunc (lt_optab, HFmode, NULL);
+  set_optab_libfunc (le_optab, HFmode, NULL);
+  set_optab_libfunc (ge_optab, HFmode, NULL);
+  set_optab_libfunc (gt_optab, HFmode, NULL);
+  set_optab_libfunc (unord_optab, HFmode, NULL);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -5820,6 +5973,25 @@ riscv_asan_shadow_offset (void)
 
 #undef TARGET_NEW_ADDRESS_PROFITABLE_P
 #define TARGET_NEW_ADDRESS_PROFITABLE_P riscv_new_address_profitable_p
+
+#undef TARGET_MANGLE_TYPE
+#define TARGET_MANGLE_TYPE riscv_mangle_type
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P riscv_scalar_mode_supported_p
+
+#undef TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
+#define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P                                \
+  riscv_libgcc_floating_mode_supported_p
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS riscv_init_libfuncs
+
+#undef TARGET_C_EXCESS_PRECISION
+#define TARGET_C_EXCESS_PRECISION riscv_excess_precision
+
+#undef TARGET_FLOATN_MODE
+#define TARGET_FLOATN_MODE riscv_floatn_mode
 
 #undef TARGET_ASAN_SHADOW_OFFSET
 #define TARGET_ASAN_SHADOW_OFFSET riscv_asan_shadow_offset

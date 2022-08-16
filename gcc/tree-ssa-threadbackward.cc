@@ -355,6 +355,12 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
 	  || maybe_register_path ()))
     ;
 
+  // The backwards thread copier cannot copy blocks that do not belong
+  // to the same loop, so when the new source of the path entry no
+  // longer belongs to it we don't need to search further.
+  else if (m_path[0]->loop_father != bb->loop_father)
+    ;
+
   // Continue looking for ways to extend the path but limit the
   // search space along a branch
   else if ((overall_paths = overall_paths * EDGE_COUNT (bb->preds))
