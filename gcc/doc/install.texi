@@ -3475,10 +3475,6 @@ contact their makers.
 AIX:
 @itemize
 @item
-@uref{http://www.bullfreeware.com,,Bull's Open Source Software Archive for
-for AIX 6 and AIX 7};
-
-@item
 @uref{http://www.perzl.org/aix/,,AIX Open Source Packages (AIX5L AIX 6.1
 AIX 7.1)}.
 @end itemize
