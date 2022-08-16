@@ -9182,7 +9182,7 @@ driver::detect_jobserver () const
 {
   jobserver_info jinfo;
   if (!jinfo.is_active && !jinfo.skipped_makeflags.empty ())
-    xputenv (jinfo.skipped_makeflags.c_str ());
+    xputenv (xstrdup (jinfo.skipped_makeflags.c_str ()));
 }
 
 /* Determine what the exit code of the driver should be.  */
