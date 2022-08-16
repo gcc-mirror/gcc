@@ -1917,7 +1917,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (convert (mult@0 zero_one_valued_p@1 INTEGER_CST@2))
  (if (INTEGRAL_TYPE_P (type)
       && INTEGRAL_TYPE_P (TREE_TYPE (@0))
-      && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0)))
+      && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (@0)))
   (mult (convert @1) (convert @2))))
 
 /* (X << C) != 0 can be simplified to X, when C is zero_one_valued_p.

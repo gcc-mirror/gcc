@@ -35,9 +35,10 @@ public:
   path_range_query (bool resolve = true, class gimple_ranger *ranger = NULL);
   virtual ~path_range_query ();
   void compute_ranges (const vec<basic_block> &,
-		       const bitmap_head *imports = NULL);
+		       const bitmap_head *dependencies = NULL);
   void compute_ranges (edge e);
-  void compute_imports (bitmap imports, const vec<basic_block> &);
+  void compute_exit_dependencies (bitmap dependencies,
+				  const vec<basic_block> &);
   bool range_of_expr (vrange &r, tree name, gimple * = NULL) override;
   bool range_of_stmt (vrange &r, gimple *, tree name = NULL) override;
   bool unreachable_path_p ();
@@ -64,8 +65,8 @@ private:
   void compute_outgoing_relations (basic_block bb, basic_block next);
   void compute_phi_relations (basic_block bb, basic_block prev);
   void maybe_register_phi_relation (gphi *, edge e);
-  bool add_to_imports (tree name, bitmap imports);
-  bool import_p (tree name);
+  bool add_to_exit_dependencies (tree name, bitmap dependencies);
+  bool exit_dependency_p (tree name);
   bool ssa_defined_in_bb (tree name, basic_block bb);
   bool relations_may_be_invalidated (edge);
 
@@ -89,7 +90,15 @@ private:
   // Path being analyzed.
   auto_vec<basic_block> m_path;
 
-  auto_bitmap m_imports;
+  // This is a list of SSA names that may have relevant context
+  // information for solving the final conditional along the path.
+  // Ranges for these SSA names are pre-calculated and cached during a
+  // top-down traversal of the path, and are then used to answer
+  // questions at the path exit.
+  auto_bitmap m_exit_dependencies;
+
+  // A ranger used to resolve ranges for SSA names whose values come
+  // from outside the path.
   gimple_ranger *m_ranger;
 
   // Current path position.
