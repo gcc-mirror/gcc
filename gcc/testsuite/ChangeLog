@@ -1,3 +1,152 @@
+2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106623
+	* gdc.dg/torture/pr106623.d: New test.
+
+2022-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* gcc.dg/analyzer/out-of-bounds-read-char-arr.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-read-int-arr.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-write-char-arr.c: New test.
+	* gcc.dg/analyzer/out-of-bounds-write-int-arr.c: New test.
+
+2022-08-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106621
+	* gcc.dg/pr106621.c
+
+2022-08-15  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106551
+	* gcc.dg/analyzer/fd-dup-1.c: New testcase.
+
+2022-08-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse4_1-stv-9.c: New test case.
+
+2022-08-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/64992
+	* gcc.dg/pr64992.c: New test case.
+
+2022-08-15  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71343
+	* gcc.dg/pr71343-1.c: New test case.
+
+2022-08-15  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/loc-prune-4.C: Adjust regexp
+
+2022-08-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106276
+	* g++.dg/cpp0x/Wpessimizing-move7.C: New test.
+
+2022-08-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/abi/anon1.C: Disable pie on ia32.
+	* g++.dg/abi/anon4.C: Likewise.
+	* g++.dg/cpp0x/initlist-const1.C: Likewise.
+	* g++.dg/no-stack-protector-attr-3.C: Likewise.
+	* g++.dg/stackprotectexplicit2.C: Likewise.
+	* g++.dg/pr71694.C: Likewise.
+	* gcc.dg/pr102892-1.c: Likewise.
+	* gcc.dg/sibcall-11.c: Likewise.
+	* gcc.dg/torture/builtin-self.c: Likewise.
+	* gcc.target/i386/avx2-dest-false-dep-for-glc.c: Likewise.
+	* gcc.target/i386/avx512bf16-cvtsbh2ss-1.c: Likewise.
+	* gcc.target/i386/avx512f-broadcast-pr87767-1.c: Likewise.
+	* gcc.target/i386/avx512f-broadcast-pr87767-3.c: Likewise.
+	* gcc.target/i386/avx512f-broadcast-pr87767-5.c: Likewise.
+	* gcc.target/i386/avx512f-broadcast-pr87767-7.c: Likewise.
+	* gcc.target/i386/avx512fp16-broadcast-1.c: Likewise.
+	* gcc.target/i386/avx512fp16-pr101846.c: Likewise.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-1.c: Likewise.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-3.c: Likewise.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-5.c: Likewise.
+	* gcc.target/i386/pr100865-2.c: Likewise.
+	* gcc.target/i386/pr100865-3.c: Likewise.
+	* gcc.target/i386/pr100865-4a.c: Likewise.
+	* gcc.target/i386/pr100865-4b.c: Likewise.
+	* gcc.target/i386/pr100865-5a.c: Likewise.
+	* gcc.target/i386/pr100865-5b.c: Likewise.
+	* gcc.target/i386/pr100865-6a.c: Likewise.
+	* gcc.target/i386/pr100865-6b.c: Likewise.
+	* gcc.target/i386/pr100865-6c.c: Likewise.
+	* gcc.target/i386/pr100865-7b.c: Likewise.
+	* gcc.target/i386/pr101796-1.c: Likewise.
+	* gcc.target/i386/pr101846-2.c: Likewise.
+	* gcc.target/i386/pr101989-broadcast-1.c: Likewise.
+	* gcc.target/i386/pr102021.c: Likewise.
+	* gcc.target/i386/pr90773-17.c: Likewise.
+	* gcc.target/i386/pr54855-3.c: Likewise.
+	* gcc.target/i386/pr54855-7.c: Likewise.
+	* gcc.target/i386/pr15184-1.c: Likewise.
+	* gcc.target/i386/pr15184-2.c: Likewise.
+	* gcc.target/i386/pr27971.c: Likewise.
+	* gcc.target/i386/pr70263-2.c: Likewise.
+	* gcc.target/i386/pr78035.c: Likewise.
+	* gcc.target/i386/pr81736-5.c: Likewise.
+	* gcc.target/i386/pr81736-7.c: Likewise.
+	* gcc.target/i386/pr85620-6.c: Likewise.
+	* gcc.target/i386/pr85667-6.c: Likewise.
+	* gcc.target/i386/pr93492-5.c: Likewise.
+	* gcc.target/i386/pr96539.c: Likewise.
+	PR target/81708 (%gs:my_guard)
+	* gcc.target/i386/stack-prot-sym.c: Likewise.
+	* g++.dg/init/static-cdtor1.C: Add alternate patterns for PIC.
+	* gcc.target/i386/avx512fp16-vcvtsh2si-1a.c: Extend patterns
+	for PIC/PIE register allocation.
+	* gcc.target/i386/pr100704-3.c: Likewise.
+	* gcc.target/i386/avx512fp16-vcvtsh2usi-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16-vcvttsh2si-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16-vcvttsh2usi-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16-vmovsh-1a.c: Likewise.
+	* gcc.target/i386/interrupt-11.c: Likewise, allowing for
+	preservation of the PIC register.
+	* gcc.target/i386/interrupt-12.c: Likewise.
+	* gcc.target/i386/interrupt-13.c: Likewise.
+	* gcc.target/i386/interrupt-15.c: Likewise.
+	* gcc.target/i386/interrupt-16.c: Likewise.
+	* gcc.target/i386/interrupt-17.c: Likewise.
+	* gcc.target/i386/interrupt-8.c: Likewise.
+	* gcc.target/i386/cet-sjlj-6a.c: Combine patterns from
+	previous change.
+	* gcc.target/i386/cet-sjlj-6b.c: Likewise.
+	* gcc.target/i386/pad-10.c: Accept insns in get_pc_thunk.
+	* gcc.target/i386/pr70321.c: Likewise.
+	* gcc.target/i386/pr81563.c: Likewise.
+	* gcc.target/i386/pr84278.c: Likewise.
+	* gcc.target/i386/pr90773-2.c: Likewise, plus extra loads from
+	the GOT.
+	* gcc.target/i386/pr90773-3.c: Likewise.
+	* gcc.target/i386/pr94913-2.c: Accept additional PIC insns.
+	* gcc.target/i386/stack-check-17.c: Likewise.
+	* gcc.target/i386/stack-check-12.c: Do not require dummy stack
+	probing obviated with PIC.
+	* gcc.target/i386/pr95126-m32-1.c: Expect missed optimization
+	with PIC.
+	* gcc.target/i386/pr95126-m32-2.c: Likewise.
+	* gcc.target/i386/pr95852-2.c: Accept different optimization
+	with PIC.
+	* gcc.target/i386/pr95852-4.c: Likewise.
+
+2022-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106590
+	* gcc.dg/torture/pr106590.c: New test.
+
+2022-08-15  konglin1  <lingling.kong@intel.com>
+
+	* g++.target/i386/bfloat_cpp_typecheck.C: New test.
+	* gcc.target/i386/bfloat16-1.c: Ditto.
+	* gcc.target/i386/sse2-bfloat16-1.c: Ditto.
+	* gcc.target/i386/sse2-bfloat16-2.c: Ditto.
+	* gcc.target/i386/sse2-bfloat16-scalar-typecheck.c: Ditto.
+
 2022-08-13  Tim Lange  <mail@tim-lange.me>
 
 	* gcc.dg/analyzer/torture/pr93451.c:

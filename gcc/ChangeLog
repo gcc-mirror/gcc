@@ -1,3 +1,94 @@
+2022-08-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106621
+	* value-range.cc (irange::set): Check for POLY_INT_CST early.
+
+2022-08-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc
+	(timode_scalar_chain::compute_convert_gain): Provide costs for
+	shifts and rotates.
+	(timode_scalar_chain::convert_insn): Handle ASHIFTRT, ROTATERT
+	and ROTATE just like existing ASHIFT and LSHIFTRT cases.
+	(timode_scalar_to_vector_candidate_p): Handle all shifts and
+	rotates by integer constants between 0 and 127.
+
+2022-08-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc
+	(timode_scalar_chain::compute_convert_gain): Provide gains for
+	comparisons against 0/-1, including "*testti" patterns.
+
+2022-08-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/64992
+	PR tree-optimization/98956
+	* match.pd (ne (lshift @0 @1) 0): Simplify (X << C) != 0 to X
+	when X is zero_one_valued_p and the shift constant C is valid.
+	(eq (lshift @0 @1) 0): Likewise, simplify (X << C) == 0 to !X
+	when X is zero_one_valued_p and the shift constant C is valid.
+
+2022-08-15  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71343
+	* match.pd (op (lshift @0 @1) (lshift @2 @1)): Optimize the
+	expression (X<<C) + (Y<<C) to (X+Y)<<C for multiple operators.
+	(op (rshift @0 @1) (rshift @2 @1)): Likewise, simplify (X>>C)^(Y>>C)
+	to (X^Y)>>C for binary logical operators, AND, IOR and XOR.
+
+2022-08-15  Richard Biener  <rguenther@suse.de>
+
+	* gimple-range-path.cc (range_on_path_entry): Just
+	call range_on_entry.
+
+2022-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/106590
+	* ifcvt.cc (check_for_cc_cmp_clobbers): New function.
+	(noce_convert_multiple_sets_1): If SEQ sets or clobbers any regs
+	mentioned in cc_cmp or rev_cc_cmp, don't consider seq2 for any
+	further conditional moves.
+
+2022-08-15  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/i386-builtin-types.def (BFLOAT16): New primitive type.
+	* config/i386/i386-builtins.cc : Support __bf16 type for i386 backend.
+	(ix86_register_bf16_builtin_type): New function.
+	(ix86_bf16_type_node): New.
+	(ix86_bf16_ptr_type_node): Ditto.
+	(ix86_init_builtin_types): Add ix86_register_bf16_builtin_type function call.
+	* config/i386/i386-modes.def (FLOAT_MODE): Add BFmode.
+	(ADJUST_FLOAT_FORMAT): Ditto.
+	* config/i386/i386.cc (classify_argument): Handle BFmode.
+	(construct_container): Ditto.
+	(function_value_32): Return __bf16 by %xmm0.
+	(function_value_64): Return __bf16 by SSE register.
+	(ix86_output_ssemov): Handle BFmode.
+	(ix86_legitimate_constant_p): Disable BFmode constant double.
+	(ix86_secondary_reload): Require gpr as intermediate register
+	to store __bf16 from sse register when sse4 is not available.
+	(ix86_scalar_mode_supported_p): Enable __bf16 under sse2.
+	(ix86_mangle_type): Add manlging for __bf16 type.
+	(ix86_invalid_conversion): New function for target hook.
+	(ix86_invalid_unary_op): Ditto.
+	(ix86_invalid_binary_op): Ditto.
+	(TARGET_INVALID_CONVERSION): New define for target hook.
+	(TARGET_INVALID_UNARY_OP): Ditto.
+	(TARGET_INVALID_BINARY_OP): Ditto.
+	* config/i386/i386.h (host_detect_local_cpu): Add BFmode.
+	* config/i386/i386.md ("mode"): Add BFmode.
+	(MODE_SIZE): Ditto.
+	(X87MODEFH): Ditto.
+	(HFBF): Add new define_mode_iterator.
+	(*pushhf_rex64): Change for BFmode.
+	(*push<mode>_rex64): Ditto.
+	(*pushhf): Ditto.
+	(*push<mode>): Ditto.
+	(MODESH): Ditto.
+	(hfbfconstf): Add new define_mode_attr.
+	(*mov<mode>_internal): Add BFmode.
+
 2022-08-13  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 

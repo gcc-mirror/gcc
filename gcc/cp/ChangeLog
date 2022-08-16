@@ -1,3 +1,10 @@
+2022-08-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106276
+	* typeck.cc (can_do_rvo_p): New.
+	(maybe_warn_pessimizing_move): Warn when moving a temporary object
+	in a return statement prevents copy elision.
+
 2022-08-11  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/102633

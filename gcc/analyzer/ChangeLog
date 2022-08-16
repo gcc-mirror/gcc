@@ -1,3 +1,22 @@
+2022-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* region-model.cc (buffer_overread::emit): Fix copy&paste error in
+	direction of the access in the note.
+
+2022-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106573
+	* region-model.cc (region_model::on_call_pre): Use check_call_args
+	when ensuring that we call get_arg_svalue on all args.  Remove
+	redundant call from handling for stdio builtins.
+
+2022-08-15  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106551
+	* sm-fd.cc (check_for_dup): exit early if first
+	argument is invalid for all dup functions.
+
 2022-08-12  Tim Lange  <mail@tim-lange.me>
 
 	PR analyzer/106000
