@@ -21,9 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
+#include "tm_d.h"
 #include "d/d-target.h"
 #include "d/d-target-def.h"
-#include "tm_p.h"
 
 /* Implement TARGET_D_OS_VERSIONS for Windows targets.  */
 
