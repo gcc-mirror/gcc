@@ -228,6 +228,7 @@ public:
   int_range (tree type);
   int_range (const int_range &);
   int_range (const irange &);
+  virtual ~int_range () = default;
   int_range& operator= (const int_range &);
 private:
   template <unsigned X> friend void gt_ggc_mx (int_range<X> *);

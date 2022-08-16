@@ -37,6 +37,9 @@ class GTY((user)) value_range_equiv : public value_range
   /* Shallow-copies equiv bitmap.  */
   value_range_equiv& operator=(const value_range_equiv &) /* = delete */;
 
+  /* Virtual destructor.  */
+  virtual ~value_range_equiv () = default;
+
   /* Move equiv bitmap from source range.  */
   void move (value_range_equiv *);
 
