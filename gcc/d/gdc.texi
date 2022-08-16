@@ -633,9 +633,11 @@ Give deprecation messages about @option{-ftransition=import} anomalies.
 @item complex
 List all usages of complex or imaginary types.
 @item dip1000
-Implements @uref{http://wiki.dlang.org/DIP1000} (experimental).
+Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/other/DIP1000.md}
+(Scoped pointers).
 @item dip25
-Implements @uref{http://wiki.dlang.org/DIP25} (experimental).
+Implements @uref{https://github.com/dlang/DIPs/blob/master/DIPs/archive/DIP25.md}
+(Sealed references).
 @item field
 List all non-mutable fields which occupy an object instance.
 @item import
