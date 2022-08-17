@@ -692,6 +692,13 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 #endif
       break;
 
+    case OPT_static_libquadmath:
+#ifndef HAVE_LD_STATIC_DYNAMIC
+      gfc_fatal_error ("%<-static-libquadmath%> is not supported in this "
+		       "configuration");
+#endif
+      break;
+
     case OPT_fintrinsic_modules_path:
     case OPT_fintrinsic_modules_path_:
 
