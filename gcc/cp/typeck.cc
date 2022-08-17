@@ -10301,7 +10301,7 @@ can_do_nrvo_p (tree retval, tree functype)
    prvalue.  */
 
 static bool
-can_do_rvo_p (tree retval, tree functype)
+can_elide_copy_prvalue_p (tree retval, tree functype)
 {
   if (functype == error_mark_node)
     return false;
@@ -10415,70 +10415,109 @@ maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
 	return;
     }
 
-  /* We're looking for *std::move<T&> ((T &) &arg).  */
-  if (REFERENCE_REF_P (expr)
-      && TREE_CODE (TREE_OPERAND (expr, 0)) == CALL_EXPR)
+  /* First, check if this is a call to std::move.  */
+  if (!REFERENCE_REF_P (expr)
+      || TREE_CODE (TREE_OPERAND (expr, 0)) != CALL_EXPR)
+    return;
+  tree fn = TREE_OPERAND (expr, 0);
+  if (!is_std_move_p (fn))
+    return;
+  tree arg = CALL_EXPR_ARG (fn, 0);
+  if (TREE_CODE (arg) != NOP_EXPR)
+    return;
+  /* If we're looking at *std::move<T&> ((T &) &arg), do the pessimizing N/RVO
+     and implicitly-movable warnings.  */
+  if (TREE_CODE (TREE_OPERAND (arg, 0)) == ADDR_EXPR)
     {
-      tree fn = TREE_OPERAND (expr, 0);
-      if (is_std_move_p (fn))
+      arg = TREE_OPERAND (arg, 0);
+      arg = TREE_OPERAND (arg, 0);
+      arg = convert_from_reference (arg);
+      if (can_elide_copy_prvalue_p (arg, type))
 	{
-	  tree arg = CALL_EXPR_ARG (fn, 0);
-	  tree moved;
-	  if (TREE_CODE (arg) != NOP_EXPR)
-	    return;
-	  arg = TREE_OPERAND (arg, 0);
-	  if (TREE_CODE (arg) != ADDR_EXPR)
-	    return;
-	  arg = TREE_OPERAND (arg, 0);
-	  arg = convert_from_reference (arg);
-	  if (can_do_rvo_p (arg, type))
+	  auto_diagnostic_group d;
+	  if (warning_at (loc, OPT_Wpessimizing_move,
+			  "moving a temporary object prevents copy elision"))
+	    inform (loc, "remove %<std::move%> call");
+	}
+      /* The rest of the warnings is only relevant for when we are returning
+	 from a function.  */
+      if (!return_p)
+	return;
+
+      tree moved;
+      /* Warn if we could do copy elision were it not for the move.  */
+      if (can_do_nrvo_p (arg, type))
+	{
+	  auto_diagnostic_group d;
+	  if (!warning_suppressed_p (expr, OPT_Wpessimizing_move)
+	      && warning_at (loc, OPT_Wpessimizing_move,
+			     "moving a local object in a return statement "
+			     "prevents copy elision"))
+	    inform (loc, "remove %<std::move%> call");
+	}
+      /* Warn if the move is redundant.  It is redundant when we would
+	 do maybe-rvalue overload resolution even without std::move.  */
+      else if (warn_redundant_move
+	       && !warning_suppressed_p (expr, OPT_Wredundant_move)
+	       && (moved = treat_lvalue_as_rvalue_p (arg, /*return*/true)))
+	{
+	  /* Make sure that overload resolution would actually succeed
+	     if we removed the std::move call.  */
+	  tree t = convert_for_initialization (NULL_TREE, type,
+					       moved,
+					       (LOOKUP_NORMAL
+						| LOOKUP_ONLYCONVERTING
+						| LOOKUP_PREFER_RVALUE),
+					       ICR_RETURN, NULL_TREE, 0,
+					       tf_none);
+	  /* If this worked, implicit rvalue would work, so the call to
+	     std::move is redundant.  */
+	  if (t != error_mark_node
+	      /* Trying to move something const will never succeed unless
+		 there's T(const T&&), which it almost never is, and if
+		 so, T wouldn't be error_mark_node now: the above convert_
+		 call with LOOKUP_PREFER_RVALUE returns an error if a const T&
+		 overload is selected.  */
+	      || (CP_TYPE_CONST_P (TREE_TYPE (arg))
+		  && same_type_ignoring_top_level_qualifiers_p
+		  (TREE_TYPE (arg), type)))
 	    {
 	      auto_diagnostic_group d;
-	      if (warning_at (loc, OPT_Wpessimizing_move,
-			      "moving a temporary object prevents copy "
-			      "elision"))
+	      if (warning_at (loc, OPT_Wredundant_move,
+			      "redundant move in return statement"))
 		inform (loc, "remove %<std::move%> call");
-	    }
-	  /* The rest of the warnings is only relevant for when we are
-	     returning from a function.  */
-	  else if (!return_p)
-	    return;
-	  /* Warn if we could do copy elision were it not for the move.  */
-	  else if (can_do_nrvo_p (arg, type))
-	    {
-	      auto_diagnostic_group d;
-	      if (!warning_suppressed_p (expr, OPT_Wpessimizing_move)
-		  && warning_at (loc, OPT_Wpessimizing_move,
-				 "moving a local object in a return statement "
-				 "prevents copy elision"))
-		inform (loc, "remove %<std::move%> call");
-	    }
-	  /* Warn if the move is redundant.  It is redundant when we would
-	     do maybe-rvalue overload resolution even without std::move.  */
-	  else if (warn_redundant_move
-		   && !warning_suppressed_p (expr, OPT_Wredundant_move)
-		   && (moved = treat_lvalue_as_rvalue_p (arg, /*return*/true)))
-	    {
-	      /* Make sure that overload resolution would actually succeed
-		 if we removed the std::move call.  */
-	      tree t = convert_for_initialization (NULL_TREE, type,
-						   moved,
-						   (LOOKUP_NORMAL
-						    | LOOKUP_ONLYCONVERTING
-						    | LOOKUP_PREFER_RVALUE),
-						   ICR_RETURN, NULL_TREE, 0,
-						   tf_none);
-	      /* If this worked, implicit rvalue would work, so the call to
-		 std::move is redundant.  */
-	      if (t != error_mark_node)
-		{
-		  auto_diagnostic_group d;
-		  if (warning_at (loc, OPT_Wredundant_move,
-				  "redundant move in return statement"))
-		    inform (loc, "remove %<std::move%> call");
-		}
 	    }
 	}
+     }
+  /* Also try to warn about redundant std::move in code such as
+      T f (const T& t)
+      {
+	return std::move(t);
+      }
+    for which EXPR will be something like
+      *std::move<const T&> ((const struct T &) (const struct T *) t)
+     and where the std::move does nothing if T does not have a T(const T&&)
+     constructor, because the argument is const.  It will not use T(T&&)
+     because that would mean losing the const.  */
+  else if (TYPE_REF_P (TREE_TYPE (arg))
+	   && CP_TYPE_CONST_P (TREE_TYPE (TREE_TYPE (arg))))
+    {
+      tree rtype = TREE_TYPE (TREE_TYPE (arg));
+      if (!same_type_ignoring_top_level_qualifiers_p (rtype, type))
+	return;
+      /* Check for the unlikely case there's T(const T&&) (we don't care if
+	 it's deleted).  */
+      for (tree fn : ovl_range (CLASSTYPE_CONSTRUCTORS (rtype)))
+	if (move_fn_p (fn))
+	  {
+	    tree t = TREE_VALUE (FUNCTION_FIRST_USER_PARMTYPE (fn));
+	    if (UNLIKELY (CP_TYPE_CONST_P (TREE_TYPE (t))))
+	      return;
+	  }
+      auto_diagnostic_group d;
+      if (warning_at (loc, OPT_Wredundant_move,
+		      "redundant move in return statement"))
+	inform (loc, "remove %<std::move%> call");
     }
 }
 
