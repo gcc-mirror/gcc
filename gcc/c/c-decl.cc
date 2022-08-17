@@ -5074,8 +5074,7 @@ c_decl_attributes (tree *node, tree attributes, int flags)
       && ((VAR_P (*node) && is_global_var (*node))
 	  || TREE_CODE (*node) == FUNCTION_DECL))
     {
-      if (VAR_P (*node)
-	  && !lang_hooks.types.omp_mappable_type (TREE_TYPE (*node)))
+      if (VAR_P (*node) && !omp_mappable_type (TREE_TYPE (*node)))
 	attributes = tree_cons (get_identifier ("omp declare target implicit"),
 				NULL_TREE, attributes);
       else
@@ -5701,7 +5700,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
       DECL_ATTRIBUTES (decl)
 	= remove_attribute ("omp declare target implicit",
 			    DECL_ATTRIBUTES (decl));
-      if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (decl)))
+      if (!omp_mappable_type (TREE_TYPE (decl)))
 	error ("%q+D in declare target directive does not have mappable type",
 	       decl);
       else if (!lookup_attribute ("omp declare target",

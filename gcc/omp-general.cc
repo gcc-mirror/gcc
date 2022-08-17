@@ -80,6 +80,17 @@ omp_check_optional_argument (tree decl, bool for_present_check)
   return lang_hooks.decls.omp_check_optional_argument (decl, for_present_check);
 }
 
+/* Return true if TYPE is an OpenMP mappable type.  */
+
+bool
+omp_mappable_type (tree type)
+{
+  /* Mappable type has to be complete.  */
+  if (type == error_mark_node || !COMPLETE_TYPE_P (type))
+    return false;
+  return true;
+}
+
 /* True if OpenMP should privatize what this DECL points to rather
    than the DECL itself.  */
 
