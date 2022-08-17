@@ -1,3 +1,11 @@
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* splay-tree.h: Fix splay_* macro unsetting if
+	splay_tree_prefix is defined.
+
 2022-07-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
