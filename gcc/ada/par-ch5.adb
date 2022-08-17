@@ -103,21 +103,11 @@ package body Ch5 is
    --  | LOOP_STATEMENT       | BLOCK_STATEMENT
    --  | ACCEPT_STATEMENT     | SELECT_STATEMENT
 
-   --  This procedure scans a sequence of statements. The caller sets SS_Flags
-   --  to indicate acceptable termination conditions for the sequence:
-
-   --    SS_Flags.Eftm Terminate on ELSIF
-   --    SS_Flags.Eltm Terminate on ELSE
-   --    SS_Flags.Extm Terminate on EXCEPTION
-   --    SS_Flags.Ortm Terminate on OR
-   --    SS_Flags.Tatm Terminate on THEN ABORT (Token = ABORT on return)
-   --    SS_Flags.Whtm Terminate on WHEN
-   --    SS_Flags.Unco Unconditional terminate after scanning one statement
-
-   --  In addition, the scan is always terminated by encountering END or the
-   --  end of file (EOF) condition. If one of the six above terminators is
-   --  encountered with the corresponding SS_Flags flag not set, then the
-   --  action taken is as follows:
+   --  This procedure scans a sequence of statements. SS_Flags indicates
+   --  termination conditions for the sequence. In addition, the sequence is
+   --  always terminated by encountering END or end of file. If one of the six
+   --  above terminators is encountered with the corresponding SS_Flags flag
+   --  not set, then the action taken is as follows:
 
    --    If the keyword occurs to the left of the expected column of the end
    --    for the current sequence (as recorded in the current end context),
@@ -131,7 +121,8 @@ package body Ch5 is
 
    --  Note that the first action means that control can return to the caller
    --  with Token set to a terminator other than one of those specified by the
-   --  SS parameter. The caller should treat such a case as equivalent to END.
+   --  SS_Flags parameter. The caller should treat such a case as equivalent to
+   --  END.
 
    --  In addition, the flag SS_Flags.Sreq is set to True to indicate that at
    --  least one real statement (other than a pragma) is required in the
@@ -147,14 +138,14 @@ package body Ch5 is
    function P_Sequence_Of_Statements
      (SS_Flags : SS_Rec; Handled : Boolean := False) return List_Id
    is
-      Statement_Required : Boolean;
+      Statement_Required : Boolean := SS_Flags.Sreq;
       --  This flag indicates if a subsequent statement (other than a pragma)
       --  is required. It is initialized from the Sreq flag, and modified as
       --  statements are scanned (a statement turns it off, and a label turns
       --  it back on again since a statement must follow a label).
       --  Note : this final requirement is lifted in Ada 2012.
 
-      Statement_Seen : Boolean;
+      Statement_Seen : Boolean := False;
       --  In Ada 2012, a label can end a sequence of statements, but the
       --  sequence cannot contain only labels. This flag is set whenever a
       --  label is encountered, to enforce this rule at the end of a sequence.
@@ -162,7 +153,7 @@ package body Ch5 is
       Scan_State_Label : Saved_Scan_State;
       Scan_State       : Saved_Scan_State;
 
-      Statement_List : List_Id;
+      Statement_List : constant List_Id := New_List;
       Block_Label    : Name_Id;
       Id_Node        : Node_Id;
       Name_Node      : Node_Id;
@@ -215,13 +206,7 @@ package body Ch5 is
                    and then Statement_Seen)
                 or else All_Pragmas)
             then
-               declare
-                  Null_Stm : constant Node_Id :=
-                               Make_Null_Statement (Token_Ptr);
-               begin
-                  Set_Comes_From_Source (Null_Stm, False);
-                  Append_To (Statement_List, Null_Stm);
-               end;
+               null;
 
             --  If not Ada 2012, or not special case above, and no declaration
             --  seen (as allowed in Ada 2020), give error message.
@@ -236,10 +221,6 @@ package body Ch5 is
    --  Start of processing for P_Sequence_Of_Statements
 
    begin
-      Statement_List := New_List;
-      Statement_Required := SS_Flags.Sreq;
-      Statement_Seen     := False;
-
       --  In Ada 2022, we allow declarative items to be mixed with
       --  statements. The loop below alternates between calling
       --  P_Declarative_Items to parse zero or more declarative items,
@@ -270,7 +251,7 @@ package body Ch5 is
             end if;
          end;
 
-         begin
+         begin -- handle Error_Resync
             if Style_Check then
                Style.Check_Indentation;
             end if;
@@ -290,18 +271,13 @@ package body Ch5 is
                   --  with the exception of the cases tested for below.
 
                   (Token = Tok_Semicolon
-                    and then Prev_Token /= Tok_Return
-                    and then Prev_Token /= Tok_Null
-                    and then Prev_Token /= Tok_Raise
-                    and then Prev_Token /= Tok_End
-                    and then Prev_Token /= Tok_Exit)
+                    and then Prev_Token not in
+                     Tok_Return | Tok_Null | Tok_Raise | Tok_End | Tok_Exit)
 
                   --  If followed by colon, colon-equal, or dot, then we
                   --  definitely  have an identifier (could not be reserved)
 
-                  or else Token = Tok_Colon
-                  or else Token = Tok_Colon_Equal
-                  or else Token = Tok_Dot
+                  or else Token in Tok_Colon | Tok_Colon_Equal | Tok_Dot
 
                   --  Left paren means we have an identifier except for those
                   --  reserved words that can legitimately be followed by a
@@ -309,14 +285,9 @@ package body Ch5 is
 
                   or else
                     (Token = Tok_Left_Paren
-                      and then Prev_Token /= Tok_Case
-                      and then Prev_Token /= Tok_Delay
-                      and then Prev_Token /= Tok_If
-                      and then Prev_Token /= Tok_Elsif
-                      and then Prev_Token /= Tok_Return
-                      and then Prev_Token /= Tok_When
-                      and then Prev_Token /= Tok_While
-                      and then Prev_Token /= Tok_Separate)
+                      and then Prev_Token not in
+                       Tok_Case | Tok_Delay | Tok_If | Tok_Elsif | Tok_Return |
+                       Tok_When | Tok_While | Tok_Separate)
                then
                   --  Here we have an apparent reserved identifier and the
                   --  token past it is appropriate to this usage (and would
@@ -704,11 +675,12 @@ package body Ch5 is
                   --  instance of an incorrectly spelled keyword. If so, we
                   --  do nothing. The Bad_Spelling_Of will have reset Token
                   --  to the appropriate keyword, so the next time round the
-                  --  loop we will process the modified token. Note that we
-                  --  check for ELSIF before ELSE here. That's not accidental.
-                  --  We don't want to identify a misspelling of ELSE as
-                  --  ELSIF, and in particular we do not want to treat ELSEIF
-                  --  as ELSE IF.
+                  --  loop we will process the modified token.
+                  --
+                  --  Note that we check for ELSIF before ELSE here, because
+                  --  we don't want to identify a misspelling of ELSE as ELSIF,
+                  --  and in particular we do not want to treat ELSEIF as
+                  --  ELSE IF.
 
                   else
                      Restore_Scan_State (Scan_State_Label); -- to identifier
@@ -1452,7 +1424,7 @@ package body Ch5 is
          --  If we have a WHEN or OTHERS, then that's fine keep going. Note
          --  that it is a semantic check to ensure the proper use of OTHERS
 
-         if Token = Tok_When or else Token = Tok_Others then
+         if Token in Tok_When | Tok_Others then
             Append (P_Case_Statement_Alternative, Alternatives_List);
 
          --  If we have an END, then probably we are at the end of the case
@@ -1764,7 +1736,7 @@ package body Ch5 is
       --  expression it is an iterator specification. Ambiguity is resolved
       --  during analysis of the loop parameter specification.
 
-      if Token = Tok_Of or else Token = Tok_Colon then
+      if Token in Tok_Of | Tok_Colon then
          Error_Msg_Ada_2012_Feature ("iterator", Token_Ptr);
          return P_Iterator_Specification (ID_Node);
       end if;
@@ -2272,9 +2244,7 @@ package body Ch5 is
             --  END, EOF, or a token which starts declarations.
 
             elsif Parent_Nkind = N_Package_Body
-              and then (Token = Tok_End
-                          or else Token = Tok_EOF
-                          or else Token in Token_Class_Declk)
+              and then (Token in Tok_End | Tok_EOF | Token_Class_Declk)
             then
                Set_Null_HSS (Parent);
 
@@ -2384,7 +2354,7 @@ package body Ch5 is
          TF_Then;
       end loop;
 
-      if Token = Tok_And or else Token = Tok_Or then
+      if Token in Tok_And | Tok_Or then
          Error_Msg_SC ("unexpected logical operator");
          Scan; -- past logical operator
 
