@@ -1314,6 +1314,13 @@ arm*-*-linux-* | arm*-*-uclinuxfdpiceabi)
 	    tm_file="$tm_file arm/uclinuxfdpiceabi.h"
 	    ;;
 	esac
+	# Define with_float to "hard" if not already defined and
+	# target name ends with "hf"
+	case $target:$with_float in
+	arm*-*-*hf:)
+	    with_float=hard
+	    ;;
+	esac
 	# Generation of floating-point instructions requires at least ARMv5te.
 	if [ "$with_float" = "hard" -o "$with_float" = "softfp" ] ; then
 	    target_cpu_cname="arm10e"
