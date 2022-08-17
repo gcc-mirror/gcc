@@ -24,6 +24,51 @@
 namespace Rust {
 namespace Compile {
 
+CompileFnParam::CompileFnParam (Context *ctx, tree fndecl, tree decl_type,
+				Location locus)
+  : HIRCompileBase (ctx), fndecl (fndecl), decl_type (decl_type), locus (locus),
+    compiled_param (ctx->get_backend ()->error_variable ())
+{}
+
+Bvariable *
+CompileFnParam::compile (Context *ctx, tree fndecl, HIR::FunctionParam *param,
+			 tree decl_type, Location locus)
+{
+  CompileFnParam compiler (ctx, fndecl, decl_type, locus);
+  param->get_param_name ()->accept_vis (compiler);
+  return compiler.compiled_param;
+}
+
+Bvariable *
+CompileFnParam::compile (Context *ctx, tree fndecl, HIR::Pattern *param,
+			 tree decl_type, Location locus)
+{
+  CompileFnParam compiler (ctx, fndecl, decl_type, locus);
+  param->accept_vis (compiler);
+  return compiler.compiled_param;
+}
+
+void
+CompileFnParam::visit (HIR::IdentifierPattern &pattern)
+{
+  if (!pattern.is_mut ())
+    decl_type = ctx->get_backend ()->immutable_type (decl_type);
+
+  compiled_param
+    = ctx->get_backend ()->parameter_variable (fndecl,
+					       pattern.get_identifier (),
+					       decl_type, locus);
+}
+
+void
+CompileFnParam::visit (HIR::WildcardPattern &pattern)
+{
+  decl_type = ctx->get_backend ()->immutable_type (decl_type);
+
+  compiled_param
+    = ctx->get_backend ()->parameter_variable (fndecl, "_", decl_type, locus);
+}
+
 void
 CompileFnParam::visit (HIR::StructPattern &pattern)
 {
@@ -56,6 +101,20 @@ CompileFnParam::visit (HIR::TupleStructPattern &pattern)
   // setup the pattern bindings
   tree anon_param = ctx->get_backend ()->var_expression (compiled_param, locus);
   CompilePatternBindings::Compile (&pattern, anon_param, ctx);
+}
+
+Bvariable *
+CompileSelfParam::compile (Context *ctx, tree fndecl, HIR::SelfParam &self,
+			   tree decl_type, Location locus)
+{
+  bool is_immutable
+    = self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM
+      || self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM_REF;
+  if (is_immutable)
+    decl_type = ctx->get_backend ()->immutable_type (decl_type);
+
+  return ctx->get_backend ()->parameter_variable (fndecl, "self", decl_type,
+						  locus);
 }
 
 } // namespace Compile

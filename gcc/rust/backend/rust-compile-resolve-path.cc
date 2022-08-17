@@ -24,6 +24,7 @@
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-path-probe.h"
 #include "rust-compile-extern.h"
+#include "rust-constexpr.h"
 
 namespace Rust {
 namespace Compile {

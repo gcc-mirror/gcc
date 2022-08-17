@@ -18,9 +18,8 @@
 
 #include "rust-compile-pattern.h"
 #include "rust-compile-expr.h"
+#include "rust-compile-resolve-path.h"
 #include "rust-constexpr.h"
-
-#include "print-tree.h"
 
 namespace Rust {
 namespace Compile {

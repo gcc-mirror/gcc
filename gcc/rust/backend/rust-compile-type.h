@@ -24,7 +24,7 @@
 namespace Rust {
 namespace Compile {
 
-class TyTyResolveCompile : public TyTy::TyConstVisitor
+class TyTyResolveCompile : protected TyTy::TyConstVisitor
 {
 public:
   static tree compile (Context *ctx, const TyTy::BaseType *ty,

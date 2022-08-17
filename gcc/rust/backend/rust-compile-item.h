@@ -24,7 +24,7 @@
 namespace Rust {
 namespace Compile {
 
-class CompileItem : public HIRCompileBase, public HIR::HIRStmtVisitor
+class CompileItem : private HIRCompileBase, protected HIR::HIRStmtVisitor
 {
 protected:
 public:

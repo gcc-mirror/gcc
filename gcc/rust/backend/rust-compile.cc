@@ -16,16 +16,17 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-hir-trait-resolve.h"
-#include "rust-hir-path-probe.h"
-#include "rust-hir-type-bounds.h"
-#include "rust-hir-dot-operator.h"
 #include "rust-compile.h"
 #include "rust-compile-item.h"
 #include "rust-compile-implitem.h"
 #include "rust-compile-expr.h"
 #include "rust-compile-struct-field-expr.h"
 #include "rust-compile-stmt.h"
+#include "rust-hir-trait-resolve.h"
+#include "rust-hir-path-probe.h"
+#include "rust-hir-type-bounds.h"
+#include "rust-hir-dot-operator.h"
+#include "rust-compile-block.h"
 
 namespace Rust {
 namespace Compile {
@@ -48,158 +49,6 @@ CompileCrate::go ()
 {
   for (auto &item : crate.items)
     CompileItem::compile (item.get (), ctx);
-}
-
-// rust-compile-block.h
-
-void
-CompileBlock::visit (HIR::BlockExpr &expr)
-{
-  fncontext fnctx = ctx->peek_fn ();
-  tree fndecl = fnctx.fndecl;
-  Location start_location = expr.get_locus ();
-  Location end_location = expr.get_end_locus ();
-  auto body_mappings = expr.get_mappings ();
-
-  Resolver::Rib *rib = nullptr;
-  if (!ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (), &rib))
-    {
-      rust_fatal_error (expr.get_locus (), "failed to setup locals per block");
-      return;
-    }
-
-  std::vector<Bvariable *> locals
-    = compile_locals_for_block (ctx, *rib, fndecl);
-
-  tree enclosing_scope = ctx->peek_enclosing_scope ();
-  tree new_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-					       start_location, end_location);
-  ctx->push_block (new_block);
-
-  for (auto &s : expr.get_statements ())
-    {
-      auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
-      if (compiled_expr != nullptr)
-	{
-	  tree s = convert_to_void (compiled_expr, ICV_STATEMENT);
-	  ctx->add_statement (s);
-	}
-    }
-
-  if (expr.has_expr ())
-    {
-      // the previous passes will ensure this is a valid return or
-      // a valid trailing expression
-      tree compiled_expr = CompileExpr::Compile (expr.expr.get (), ctx);
-      if (compiled_expr != nullptr)
-	{
-	  if (result == nullptr)
-	    {
-	      ctx->add_statement (compiled_expr);
-	    }
-	  else
-	    {
-	      tree result_reference = ctx->get_backend ()->var_expression (
-		result, expr.get_final_expr ()->get_locus ());
-
-	      tree assignment
-		= ctx->get_backend ()->assignment_statement (result_reference,
-							     compiled_expr,
-							     expr.get_locus ());
-	      ctx->add_statement (assignment);
-	    }
-	}
-    }
-
-  ctx->pop_block ();
-  translated = new_block;
-}
-
-void
-CompileConditionalBlocks::visit (HIR::IfExpr &expr)
-{
-  fncontext fnctx = ctx->peek_fn ();
-  tree fndecl = fnctx.fndecl;
-  tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  tree then_block = CompileBlock::compile (expr.get_if_block (), ctx, result);
-
-  translated
-    = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
-					 NULL, expr.get_locus ());
-}
-
-void
-CompileConditionalBlocks::visit (HIR::IfExprConseqElse &expr)
-{
-  fncontext fnctx = ctx->peek_fn ();
-  tree fndecl = fnctx.fndecl;
-  tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  tree then_block = CompileBlock::compile (expr.get_if_block (), ctx, result);
-  tree else_block = CompileBlock::compile (expr.get_else_block (), ctx, result);
-
-  translated
-    = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
-					 else_block, expr.get_locus ());
-}
-
-void
-CompileConditionalBlocks::visit (HIR::IfExprConseqIf &expr)
-{
-  fncontext fnctx = ctx->peek_fn ();
-  tree fndecl = fnctx.fndecl;
-  tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  tree then_block = CompileBlock::compile (expr.get_if_block (), ctx, result);
-
-  // else block
-  std::vector<Bvariable *> locals;
-  Location start_location = expr.get_conseq_if_expr ()->get_locus ();
-  Location end_location = expr.get_conseq_if_expr ()->get_locus (); // FIXME
-  tree enclosing_scope = ctx->peek_enclosing_scope ();
-  tree else_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-						start_location, end_location);
-  ctx->push_block (else_block);
-
-  tree else_stmt_decl
-    = CompileConditionalBlocks::compile (expr.get_conseq_if_expr (), ctx,
-					 result);
-  ctx->add_statement (else_stmt_decl);
-
-  ctx->pop_block ();
-
-  translated
-    = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
-					 else_block, expr.get_locus ());
-}
-
-// rust-compile-struct-field-expr.h
-
-void
-CompileStructExprField::visit (HIR::StructExprFieldIdentifierValue &field)
-{
-  translated = CompileExpr::Compile (field.get_value (), ctx);
-}
-
-void
-CompileStructExprField::visit (HIR::StructExprFieldIndexValue &field)
-{
-  translated = CompileExpr::Compile (field.get_value (), ctx);
-}
-
-void
-CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
-{
-  // we can make the field look like a path expr to take advantage of existing
-  // code
-
-  Analysis::NodeMapping mappings_copy1 = field.get_mappings ();
-  Analysis::NodeMapping mappings_copy2 = field.get_mappings ();
-
-  HIR::PathIdentSegment ident_seg (field.get_field_name ());
-  HIR::PathExprSegment seg (mappings_copy1, ident_seg, field.get_locus (),
-			    HIR::GenericArgs::create_empty ());
-  HIR::PathInExpression expr (mappings_copy2, {seg}, field.get_locus (), false,
-			      {});
-  translated = CompileExpr::Compile (&expr, ctx);
 }
 
 // Shared methods in compilation
