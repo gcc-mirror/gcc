@@ -1248,7 +1248,7 @@ timode_scalar_chain::compute_convert_gain ()
 	case ASHIFT:
 	case LSHIFTRT:
 	  /* See ix86_expand_v1ti_shift.  */
-	  op1val = XINT (src, 1);
+	  op1val = INTVAL (XEXP (src, 1));
 	  if (optimize_insn_for_size_p ())
 	    {
 	      if (op1val == 64 || op1val == 65)
@@ -1282,7 +1282,7 @@ timode_scalar_chain::compute_convert_gain ()
 
 	case ASHIFTRT:
 	  /* See ix86_expand_v1ti_ashiftrt.  */
-	  op1val = XINT (src, 1);
+	  op1val = INTVAL (XEXP (src, 1));
 	  if (optimize_insn_for_size_p ())
 	    {
 	      if (op1val == 64 || op1val == 127)
@@ -1355,7 +1355,7 @@ timode_scalar_chain::compute_convert_gain ()
 	case ROTATE:
 	case ROTATERT:
 	  /* See ix86_expand_v1ti_rotate.  */
-	  op1val = XINT (src, 1);
+	  op1val = INTVAL (XEXP (src, 1));
 	  if (optimize_insn_for_size_p ())
 	    {
 	      scost = COSTS_N_BYTES (13);
