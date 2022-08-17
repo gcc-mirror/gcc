@@ -90,6 +90,50 @@ check_unsafe_call (HIR::Function *fn, Location locus, const std::string &kind)
 		   kind.c_str ());
 }
 
+static bool
+is_safe_intrinsic (const std::string &fn_name)
+{
+  static const std::unordered_set<std::string> safe_intrinsics = {
+    "abort",
+    "size_of",
+    "min_align_of",
+    "needs_drop",
+    "caller_location",
+    "add_with_overflow",
+    "sub_with_overflow",
+    "mul_with_overflow",
+    "wrapping_add",
+    "wrapping_sub",
+    "wrapping_mul",
+    "saturating_add",
+    "saturating_sub",
+    "rotate_left",
+    "rotate_right",
+    "ctpop",
+    "ctlz",
+    "cttz",
+    "bswap",
+    "bitreverse",
+    "discriminant_value",
+    "type_id",
+    "likely",
+    "unlikely",
+    "ptr_guaranteed_eq",
+    "ptr_guaranteed_ne",
+    "minnumf32",
+    "minnumf64",
+    "maxnumf32",
+    "rustc_peek",
+    "maxnumf64",
+    "type_name",
+    "forget",
+    "black_box",
+    "variant_count",
+  };
+
+  return safe_intrinsics.find (fn_name) != safe_intrinsics.end ();
+}
+
 static void
 check_extern_call (HIR::ExternalItem *maybe_fn, HIR::ExternBlock *parent_block,
 		   Location locus)
@@ -103,9 +147,16 @@ check_extern_call (HIR::ExternalItem *maybe_fn, HIR::ExternBlock *parent_block,
   // hand, any function defined in a block with a specific ABI (even `extern
   // "Rust"` blocks) is unsafe to call
 
-  if (maybe_fn->get_extern_kind () == ExternalItem::ExternKind::Function)
-    rust_error_at (locus,
-		   "call to extern function requires unsafe function or block");
+  if (maybe_fn->get_extern_kind () != ExternalItem::ExternKind::Function)
+    return;
+
+  // Some intrinsics are safe to call
+  if (parent_block->get_abi () == Rust::ABI::INTRINSIC
+      && is_safe_intrinsic (maybe_fn->get_item_name ()))
+    return;
+
+  rust_error_at (locus,
+		 "call to extern function requires unsafe function or block");
 }
 
 void
