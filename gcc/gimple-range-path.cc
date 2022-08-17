@@ -435,11 +435,10 @@ path_range_query::compute_ranges_in_block (basic_block bb)
 		 e->src->index, e->dest->index);
 
       path_oracle *p = get_path_oracle ();
-      p->reset_path ();
       // ?? Instead of nuking the root oracle altogether, we could
       // reset the path oracle to search for relations from the top of
       // the loop with the root oracle.  Something for future development.
-      p->set_root_oracle (nullptr);
+      p->reset_path ();
     }
 
   gori_compute &g = m_ranger->gori ();
@@ -615,7 +614,10 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
     compute_exit_dependencies (m_exit_dependencies, m_path);
 
   if (m_resolve)
-    get_path_oracle ()->reset_path ();
+    {
+      path_oracle *p = get_path_oracle ();
+      p->reset_path (m_ranger->oracle ());
+    }
 
   if (DEBUG_SOLVER)
     {
