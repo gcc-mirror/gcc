@@ -507,12 +507,12 @@ Returns zero if @var{argv} is NULL.
 int
 countargv (char * const *argv)
 {
-  int argc;
+  int argc = 0;
 
   if (argv == NULL)
     return 0;
-  for (argc = 0; argv[argc] != NULL; argc++)
-    continue;
+  while (argv[argc++])
+	  ;
   return argc;
 }
 
