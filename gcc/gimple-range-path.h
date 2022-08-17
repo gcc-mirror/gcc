@@ -32,13 +32,14 @@ along with GCC; see the file COPYING3.  If not see
 class path_range_query : public range_query
 {
 public:
-  path_range_query (bool resolve = true, class gimple_ranger *ranger = NULL);
+  path_range_query (class gimple_ranger &ranger,
+		    const vec<basic_block> &path,
+		    const bitmap_head *dependencies = NULL,
+		    bool resolve = true);
+  path_range_query (gimple_ranger &ranger, bool resolve = true);
+  path_range_query (gimple_ranger &ranger, edge e, bool resolve = true);
   virtual ~path_range_query ();
-  void compute_ranges (const vec<basic_block> &,
-		       const bitmap_head *dependencies = NULL);
-  void compute_ranges (edge e);
-  void compute_exit_dependencies (bitmap dependencies,
-				  const vec<basic_block> &);
+  void reset_path (const vec<basic_block> &, const bitmap_head *dependencies);
   bool range_of_expr (vrange &r, tree name, gimple * = NULL) override;
   bool range_of_stmt (vrange &r, gimple *, tree name = NULL) override;
   bool unreachable_path_p ();
@@ -47,6 +48,8 @@ public:
 
 private:
   bool internal_range_of_expr (vrange &r, tree name, gimple *);
+  void compute_ranges (const bitmap_head *dependencies);
+  void compute_exit_dependencies (bitmap_head *dependencies);
   bool defined_outside_path (tree name);
   void range_on_path_entry (vrange &r, tree name);
   path_oracle *get_path_oracle () { return (path_oracle *)m_oracle; }
@@ -71,7 +74,6 @@ private:
   bool relations_may_be_invalidated (edge);
 
   // Path navigation.
-  void set_path (const vec<basic_block> &);
   basic_block entry_bb () { return m_path[m_path.length () - 1]; }
   basic_block exit_bb ()  { return m_path[0]; }
   basic_block curr_bb ()  { return m_path[m_pos]; }
@@ -99,7 +101,7 @@ private:
 
   // A ranger used to resolve ranges for SSA names whose values come
   // from outside the path.
-  gimple_ranger *m_ranger;
+  gimple_ranger &m_ranger;
 
   // Current path position.
   unsigned m_pos;
@@ -109,10 +111,6 @@ private:
 
   // Set if there were any undefined expressions while pre-calculating path.
   bool m_undefined_path;
-
-  // True if m_ranger was allocated in this class and must be freed at
-  // destruction.
-  bool m_alloced_ranger;
 };
 
 #endif // GCC_TREE_SSA_THREADSOLVER_H

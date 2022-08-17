@@ -798,7 +798,7 @@ pass_dominator::execute (function *fun)
 
   /* Recursively walk the dominator tree optimizing statements.  */
   gimple_ranger *ranger = enable_ranger (fun);
-  path_range_query path_query (/*resolve=*/true, ranger);
+  path_range_query path_query (*ranger);
   dom_jt_simplifier simplifier (avail_exprs_stack, ranger, &path_query);
   dom_jt_state state (const_and_copies, avail_exprs_stack);
   jump_threader threader (&simplifier, &state);
