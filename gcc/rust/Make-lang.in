@@ -137,8 +137,11 @@ GRS_OBJS = \
     rust/rust-optional-test.o \
     rust/rust-compile-item.o \
     rust/rust-compile-implitem.o \
+    rust/rust-compile-stmt.o \
     rust/rust-compile-expr.o \
     rust/rust-compile-type.o \
+    rust/rust-compile-block.o \
+    rust/rust-compile-struct-field-expr.o \
     rust/rust-constexpr.o \
     rust/rust-compile-base.o \
     rust/rust-tree.o \

@@ -24,45 +24,17 @@
 namespace Rust {
 namespace Compile {
 
-class CompileFnParam : public HIRCompileBase, public HIR::HIRPatternVisitor
+class CompileFnParam : private HIRCompileBase, protected HIR::HIRPatternVisitor
 {
 public:
   static Bvariable *compile (Context *ctx, tree fndecl,
 			     HIR::FunctionParam *param, tree decl_type,
-			     Location locus)
-  {
-    CompileFnParam compiler (ctx, fndecl, decl_type, locus);
-    param->get_param_name ()->accept_vis (compiler);
-    return compiler.compiled_param;
-  }
-
+			     Location locus);
   static Bvariable *compile (Context *ctx, tree fndecl, HIR::Pattern *param,
-			     tree decl_type, Location locus)
-  {
-    CompileFnParam compiler (ctx, fndecl, decl_type, locus);
-    param->accept_vis (compiler);
-    return compiler.compiled_param;
-  }
+			     tree decl_type, Location locus);
 
-  void visit (HIR::IdentifierPattern &pattern) override
-  {
-    if (!pattern.is_mut ())
-      decl_type = ctx->get_backend ()->immutable_type (decl_type);
-
-    compiled_param
-      = ctx->get_backend ()->parameter_variable (fndecl,
-						 pattern.get_identifier (),
-						 decl_type, locus);
-  }
-
-  void visit (HIR::WildcardPattern &pattern) override
-  {
-    decl_type = ctx->get_backend ()->immutable_type (decl_type);
-
-    compiled_param
-      = ctx->get_backend ()->parameter_variable (fndecl, "_", decl_type, locus);
-  }
-
+  void visit (HIR::IdentifierPattern &pattern) override;
+  void visit (HIR::WildcardPattern &pattern) override;
   void visit (HIR::StructPattern &) override;
   void visit (HIR::TupleStructPattern &) override;
 
@@ -77,10 +49,7 @@ public:
   void visit (HIR::TuplePattern &) override {}
 
 private:
-  CompileFnParam (Context *ctx, tree fndecl, tree decl_type, Location locus)
-    : HIRCompileBase (ctx), fndecl (fndecl), decl_type (decl_type),
-      locus (locus), compiled_param (ctx->get_backend ()->error_variable ())
-  {}
+  CompileFnParam (Context *ctx, tree fndecl, tree decl_type, Location locus);
 
   tree fndecl;
   tree decl_type;
@@ -88,21 +57,11 @@ private:
   Bvariable *compiled_param;
 };
 
-class CompileSelfParam : public HIRCompileBase, public HIR::HIRStmtVisitor
+class CompileSelfParam : private HIRCompileBase
 {
 public:
   static Bvariable *compile (Context *ctx, tree fndecl, HIR::SelfParam &self,
-			     tree decl_type, Location locus)
-  {
-    bool is_immutable
-      = self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM
-	|| self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM_REF;
-    if (is_immutable)
-      decl_type = ctx->get_backend ()->immutable_type (decl_type);
-
-    return ctx->get_backend ()->parameter_variable (fndecl, "self", decl_type,
-						    locus);
-  }
+			     tree decl_type, Location locus);
 };
 
 } // namespace Compile

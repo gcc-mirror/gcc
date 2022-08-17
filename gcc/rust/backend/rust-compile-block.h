@@ -24,77 +24,16 @@
 namespace Rust {
 namespace Compile {
 
-class CompileBlock : public HIRCompileBase, public HIR::HIRExpressionVisitor
+class CompileBlock : private HIRCompileBase
 {
 public:
-  static tree compile (HIR::BlockExpr *expr, Context *ctx, Bvariable *result)
-  {
-    CompileBlock compiler (ctx, result);
-    expr->accept_vis (compiler);
-    return compiler.translated;
-  }
+  static tree compile (HIR::BlockExpr *expr, Context *ctx, Bvariable *result);
 
-  void visit (HIR::BlockExpr &expr) override;
-
-  // Empty visit for unused Expression HIR nodes.
-  void visit (HIR::PathInExpression &) override {}
-  void visit (HIR::QualifiedPathInExpression &) override {}
-  void visit (HIR::ClosureExprInner &) override {}
-  void visit (HIR::ClosureExprInnerTyped &) override {}
-  void visit (HIR::StructExprFieldIdentifier &) override {}
-  void visit (HIR::StructExprFieldIdentifierValue &) override {}
-  void visit (HIR::StructExprFieldIndexValue &) override {}
-  void visit (HIR::StructExprStruct &) override {}
-  void visit (HIR::StructExprStructFields &) override {}
-  void visit (HIR::LiteralExpr &) override {}
-  void visit (HIR::BorrowExpr &) override {}
-  void visit (HIR::DereferenceExpr &) override {}
-  void visit (HIR::ErrorPropagationExpr &) override {}
-  void visit (HIR::NegationExpr &) override {}
-  void visit (HIR::ArithmeticOrLogicalExpr &) override {}
-  void visit (HIR::ComparisonExpr &) override {}
-  void visit (HIR::LazyBooleanExpr &) override {}
-  void visit (HIR::TypeCastExpr &) override {}
-  void visit (HIR::AssignmentExpr &) override {}
-  void visit (HIR::CompoundAssignmentExpr &) override {}
-  void visit (HIR::GroupedExpr &) override {}
-  void visit (HIR::ArrayExpr &) override {}
-  void visit (HIR::ArrayIndexExpr &) override {}
-  void visit (HIR::TupleExpr &) override {}
-  void visit (HIR::TupleIndexExpr &) override {}
-  void visit (HIR::CallExpr &) override {}
-  void visit (HIR::MethodCallExpr &) override {}
-  void visit (HIR::FieldAccessExpr &) override {}
-  void visit (HIR::ContinueExpr &) override {}
-  void visit (HIR::BreakExpr &) override {}
-  void visit (HIR::RangeFromToExpr &) override {}
-  void visit (HIR::RangeFromExpr &) override {}
-  void visit (HIR::RangeToExpr &) override {}
-  void visit (HIR::RangeFullExpr &) override {}
-  void visit (HIR::RangeFromToInclExpr &) override {}
-  void visit (HIR::RangeToInclExpr &) override {}
-  void visit (HIR::ReturnExpr &) override {}
-  void visit (HIR::UnsafeBlockExpr &) override {}
-  void visit (HIR::LoopExpr &) override {}
-  void visit (HIR::WhileLoopExpr &) override {}
-  void visit (HIR::WhileLetLoopExpr &) override {}
-  void visit (HIR::ForLoopExpr &) override {}
-  void visit (HIR::IfExpr &) override {}
-  void visit (HIR::IfExprConseqElse &) override {}
-  void visit (HIR::IfExprConseqIf &) override {}
-  void visit (HIR::IfExprConseqIfLet &) override {}
-  void visit (HIR::IfLetExpr &) override {}
-  void visit (HIR::IfLetExprConseqElse &) override {}
-  void visit (HIR::IfLetExprConseqIf &) override {}
-  void visit (HIR::IfLetExprConseqIfLet &) override {}
-  void visit (HIR::MatchExpr &) override {}
-  void visit (HIR::AwaitExpr &) override {}
-  void visit (HIR::AsyncBlockExpr &) override {}
+protected:
+  void visit (HIR::BlockExpr &expr);
 
 private:
-  CompileBlock (Context *ctx, Bvariable *result)
-    : HIRCompileBase (ctx), translated (nullptr), result (result)
-  {}
+  CompileBlock (Context *ctx, Bvariable *result);
 
   tree translated;
   Bvariable *result;
