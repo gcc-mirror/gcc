@@ -1,3 +1,145 @@
+2022-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR target/106637
+	* doc/install.texi: Remove link to www.bullfreeware.com
+
+2022-08-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_implied_info): Add
+	zfh and zfhmin.
+	(riscv_ext_version_table): Ditto.
+	(riscv_ext_flag_table): Ditto.
+	* config/riscv/riscv-opts.h (MASK_ZFHMIN): New.
+	(MASK_ZFH): Ditto.
+	(TARGET_ZFHMIN): Ditto.
+	(TARGET_ZFH): Ditto.
+	* config/riscv/riscv.cc (riscv_output_move): Handle HFmode move
+	for zfh and zfhmin.
+	(riscv_emit_float_compare): Handle HFmode.
+	* config/riscv/riscv.md (ANYF): Add HF.
+	(SOFTF): Add HF.
+	(load): Ditto.
+	(store): Ditto.
+	(truncsfhf2): New.
+	(truncdfhf2): Ditto.
+	(extendhfsf2): Ditto.
+	(extendhfdf2): Ditto.
+	(*movhf_hardfloat): Ditto.
+	(*movhf_softfloat): Make sure not ZFHMIN.
+	* config/riscv/riscv.opt (riscv_zf_subext): New.
+
+2022-08-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-builtins.cc: include stringpool.h
+	(riscv_float16_type_node): New.
+	(riscv_init_builtin_types): Ditto.
+	(riscv_init_builtins): Call riscv_init_builtin_types.
+	* config/riscv/riscv-modes.def (HF): New.
+	* config/riscv/riscv.cc (riscv_output_move): Handle HFmode.
+	(riscv_mangle_type): New.
+	(riscv_scalar_mode_supported_p): Ditto.
+	(riscv_libgcc_floating_mode_supported_p): Ditto.
+	(riscv_excess_precision): Ditto.
+	(riscv_floatn_mode): Ditto.
+	(riscv_init_libfuncs): Ditto.
+	(TARGET_MANGLE_TYPE): Ditto.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): Ditto.
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Ditto.
+	(TARGET_INIT_LIBFUNCS): Ditto.
+	(TARGET_C_EXCESS_PRECISION): Ditto.
+	(TARGET_FLOATN_MODE): Ditto.
+	* config/riscv/riscv.md (mode): Add HF.
+	(softload): Add HF.
+	(softstore): Ditto.
+	(fmt): Ditto.
+	(UNITMODE): Ditto.
+	(movhf): New.
+	(*movhf_softfloat): New.
+
+2022-08-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-threadbackward.cc (back_threader::find_paths_to_names):
+	Do not walk further if we are leaving the current loop.
+
+2022-08-16  Sergei Trofimovich  <siarheit@google.com>
+
+	PR driver/106624
+	* gcc.cc (driver::detect_jobserver): Allocate storage xputenv()
+	argument using xstrdup().
+
+2022-08-16  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::import_p): Rename to...
+	(path_range_query::exit_dependency_p): ...this.
+	(path_range_query::dump): Rename imports to exit dependencies.
+	(path_range_query::compute_ranges_in_phis): Same.
+	(path_range_query::compute_ranges_in_block): Same.
+	(path_range_query::adjust_for_non_null_uses): Same.
+	(path_range_query::compute_ranges): Same.
+	(path_range_query::compute_phi_relations): Same.
+	(path_range_query::add_to_imports): Rename to...
+	(path_range_query::add_to_exit_dependencies): ...this.
+	(path_range_query::compute_imports): Rename to...
+	(path_range_query::compute_exit_dependencies): ...this.
+	* gimple-range-path.h (class path_range_query): Rename imports to
+	exit dependencies.
+
+2022-08-16  Martin Liska  <mliska@suse.cz>
+
+	* value-range-storage.h (class obstack_vrange_allocator): Mark
+	  the class as final.
+	(class ggc_vrange_allocator): Likewise.
+
+2022-08-16  Martin Liska  <mliska@suse.cz>
+
+	* value-range-equiv.h (class value_range_equiv): Add virtual
+	  destructor.
+	* value-range.h: Likewise.
+
+2022-08-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106630
+	* match.pd ((T)(x * CST) -> (T)x * CST): Restrict to
+	narrowing conversions.
+
+2022-08-16  Martin Liska  <mliska@suse.cz>
+
+	* value-range-equiv.h (class value_range_equiv):
+
+2022-08-16  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386-features.h (class general_scalar_chain): Add
+	  final override for a method.
+	(class timode_scalar_chain): Likewise.
+
+2022-08-16  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (max-jump-thread-paths): Adjust.
+
+2022-08-16  Martin Liska  <mliska@suse.cz>
+
+	* opts-common.cc (jobserver_info::connect): Open fifo
+	in non-blocking mode.
+
+2022-08-16  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/103353
+	* config/rs6000/mma.md (define_expand movoo): Move TARGET_MMA condition
+	check to preparation statements and add handlings for !TARGET_MMA.
+	(define_expand movxo): Likewise.
+
+2022-08-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/106322
+	* tree-vect-stmts.cc (vectorizable_call): Don't allow
+	vect_emulated_vector_p type for both vectype_in and vectype_out.
+
+2022-08-16  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* common/config/xtensa/xtensa-common.cc
+	(xtensa_option_optimization_table): Add OPT_fsplit_wide_types_early
+	for OPT_LEVELS_ALL in order to restore pre-GCC10 behavior.
+
 2022-08-15  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/106621

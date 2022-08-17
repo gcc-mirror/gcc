@@ -1,3 +1,9 @@
+2022-08-16  Tom Honermann  <tom@honermann.net>
+
+	PR c++/106423
+	* include/cpplib.h (cpp_warning_reason): Add CPP_W_CXX20_COMPAT.
+	* init.cc (cpp_create_reader): Add cpp_warn_cxx20_compat.
+
 2022-08-08  Tom Honermann  <tom@honermann.net>
 
 	PR preprocessor/106426

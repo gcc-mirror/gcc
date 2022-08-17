@@ -1,3 +1,7 @@
+2022-08-16  Martin Liska  <mliska@suse.cz>
+
+	* gfortran.texi: Fix link destination to a valid URL.
+
 2022-07-31  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

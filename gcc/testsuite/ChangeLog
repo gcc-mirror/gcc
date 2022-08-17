@@ -1,3 +1,59 @@
+2022-08-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/Wstringop-overflow-4.C: Only xfail for C++98.
+	* g++.target/i386/bfloat_cpp_typecheck.C: Remove xfail.
+
+2022-08-16  Tom Honermann  <tom@honermann.net>
+
+	PR c++/106423
+	* g++.dg/cpp0x/keywords2.C: New test.
+	* g++.dg/cpp2a/keywords2.C: New test.
+
+2022-08-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/_Float16-zfh-1.c: New.
+	* gcc.target/riscv/_Float16-zfh-2.c: Ditto.
+	* gcc.target/riscv/_Float16-zfh-3.c: Ditto.
+	* gcc.target/riscv/_Float16-zfhmin-1.c: Ditto.
+	* gcc.target/riscv/_Float16-zfhmin-2.c: Ditto.
+	* gcc.target/riscv/_Float16-zfhmin-3.c: Ditto.
+	* gcc.target/riscv/arch-16.c: Ditto.
+	* gcc.target/riscv/arch-17.c: Ditto.
+	* gcc.target/riscv/predef-21.c: Ditto.
+	* gcc.target/riscv/predef-22.c: Ditto.
+
+2022-08-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* g++.target/riscv/_Float16.C: New.
+	* gcc.target/riscv/_Float16-soft-1.c: Ditto.
+	* gcc.target/riscv/_Float16-soft-2.c: Ditto.
+	* gcc.target/riscv/_Float16-soft-3.c: Ditto.
+	* gcc.target/riscv/_Float16-soft-4.c: Ditto.
+	* gcc.target/riscv/_Float16.c: Ditto.
+
+2022-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/volatile1.C: Adjust for de-deprecation of volatile
+	compound |=, &= and ^= operations.
+	* g++.dg/cpp2a/volatile3.C: Likewise.
+	* g++.dg/cpp2a/volatile5.C: Likewise.
+
+2022-08-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106630
+	* gcc.dg/torture/pr106630.c: New testcase.
+
+2022-08-16  Kewen.Lin  <linkw@gcc.gnu.org>
+
+	PR target/103353
+	* gcc.target/powerpc/pr103353.c: New test.
+
+2022-08-16  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/106322
+	* gcc.target/i386/pr106322.c: New test.
+	* gcc.target/powerpc/pr106322.c: New test.
+
 2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/106623

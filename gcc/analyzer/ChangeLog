@@ -1,3 +1,9 @@
+2022-08-16  Martin Liska  <mliska@suse.cz>
+
+	* region-model.cc: Fix -Winconsistent-missing-override clang
+	  warning.
+	* region.h: Likewise.
+
 2022-08-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106626
