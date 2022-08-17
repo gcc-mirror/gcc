@@ -392,7 +392,4 @@ extern void mips_expand_vec_cmp_expr (rtx *);
 extern void mips_d_target_versions (void);
 extern void mips_d_register_target_info (void);
 
-/* Routines implemented in mips-rust.cc  */
-extern void mips_rust_target_cpu_info (void);
-
 #endif /* ! GCC_MIPS_PROTOS_H */

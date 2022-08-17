@@ -39,8 +39,6 @@
     }						\
   while (0)
 
-#define TARGET_RUST_CPU_INFO or1k_rust_target_cpu_info
-
 #define TARGET_CMODEL_SMALL \
   (or1k_code_model == CMODEL_SMALL)
 #define TARGET_CMODEL_LARGE \

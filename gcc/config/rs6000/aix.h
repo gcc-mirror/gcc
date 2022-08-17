@@ -166,16 +166,6 @@
     }						\
   while (0)
 
-#define AIX_TARGET_RUST_OS_INFO()		\
-  do {						\
-    /*note: as far as I know, rustc has no supported for aix, so this is just guessed from triple*/ \
-    /*target_vendor is subject to change (and target_env to a lesser extent)*/ \
-    builtin_rust_info ("target_family", "unix");			\
-    builtin_rust_info ("target_os", "aix");			\
-    builtin_rust_info ("target_vendor", "ibm");			\
-    builtin_rust_info ("target_env", "");			\
-  } while (0)
-
 /* Define appropriate architecture macros for preprocessor depending on
    target switches.  */
 

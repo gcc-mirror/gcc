@@ -75,20 +75,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     MAYBE_TARGET_BPABI_CPP_BUILTINS ();			\
   } while (0)
 
-#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in vxworks.h (arm) - c++ undefines it and redefines it."
-#endif
-#ifdef BPABI_TARGET_RUST_OS_INFO
-# define MAYBE_BPABI_TARGET_RUST_OS_INFO BPABI_TARGET_RUST_OS_INFO
-#else
-# define MAYBE_BPABI_TARGET_RUST_OS_INFO()
-#endif
-#define TARGET_RUST_OS_INFO()			\
-  do {			\
-    VXWORKS_TARGET_RUST_OS_INFO ();			\
-    MAYBE_BPABI_TARGET_RUST_OS_INFO ();			\
-  } while (0)
-
 #undef SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS VXWORKS_OVERRIDE_OPTIONS
 

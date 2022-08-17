@@ -52,14 +52,6 @@
     }						\
   while (0)
 
-#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in aarch64-netbsd.h - c++ undefines it and redefines it."
-#endif
-#define TARGET_RUST_OS_INFO()		\
-  do {		\
-    NETBSD_TARGET_RUST_OS_INFO();		\
-  } while (0)
-
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC NETBSD_CPP_SPEC
 

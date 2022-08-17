@@ -21,9 +21,6 @@
 #ifndef GCC_C6X_PROTOS_H
 #define GCC_C6X_PROTOS_H
 
-/* Defined in c6x-rust.cc  */
-extern void c6x_rust_target_cpu_info (void);
-
 /* Functions defined in c6x.cc.  */
 
 #ifdef RTX_CODE

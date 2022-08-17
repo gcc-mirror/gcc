@@ -95,11 +95,6 @@
     }					    \
   while (0)
 
-#define TARGET_RUST_OS_INFO()		\
-  do {					\
-    GNU_USER_TARGET_RUST_OS_INFO();	\
-  } while (0)
-
 /* In crtstuff.c to control section in where code resides.
    We have to write it as asm code.  */
 #ifdef __PIC__

@@ -35,11 +35,6 @@ along with GCC; see the file COPYING3.  If not see
     }							\
   while (0)
 
-#define TARGET_RUST_OS_INFO()		\
-  do {						\
-    NETBSD_TARGET_RUST_OS_INFO();		\
-  } while (0)
-
 /* CPP defines used by all NetBSD targets.  */
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "%(netbsd_cpp_spec)"

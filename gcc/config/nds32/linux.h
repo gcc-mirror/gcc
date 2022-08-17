@@ -36,11 +36,6 @@
     }                                           \
   while (0)
 
-#define TARGET_RUST_OS_INFO()                 \
-  do {                                        \
-    GNU_USER_TARGET_RUST_OS_INFO();           \
-  } while (0)
-
 #ifdef TARGET_BIG_ENDIAN_DEFAULT
 #define LD_SO_ENDIAN_SPEC "%{mlittle-endian:le}%{!mlittle-endian:be}"
 #else

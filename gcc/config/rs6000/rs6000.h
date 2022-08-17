@@ -650,9 +650,6 @@ extern unsigned char rs6000_recip_bits[];
 #define TARGET_D_CPU_VERSIONS rs6000_d_target_versions
 #define TARGET_D_REGISTER_CPU_TARGET_INFO rs6000_d_register_target_info
 
-/* Target CPU info for Rust.  */
-#define TARGET_RUST_CPU_INFO rs6000_rust_target_cpu_info
-
 /* This is used by rs6000_cpu_cpp_builtins to indicate the byte order
    we're compiling for.  Some configurations may need to override it.  */
 #define RS6000_CPU_CPP_ENDIAN_BUILTINS()	\

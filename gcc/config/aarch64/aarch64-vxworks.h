@@ -55,14 +55,6 @@ along with GCC; see the file COPYING3.  If not see
     VXWORKS_OS_CPP_BUILTINS ();		  \
   } while (0)
 
-#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in aarch64-vxworks.h - c++ undefines it and redefines it."
-#endif
-#define TARGET_RUST_OS_INFO()	  \
-  do {					  \
-    VXWORKS_TARGET_RUST_OS_INFO ();		  \
-  } while (0)
-
 /* Static stack checking is supported.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
 

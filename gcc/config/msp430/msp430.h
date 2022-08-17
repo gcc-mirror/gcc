@@ -44,23 +44,6 @@ extern bool msp430x;
     }						\
   while (0)
 
-#define TARGET_RUST_CPU_INFO()                                                 \
-  do                                                                           \
-    {                                                                          \
-      rust_add_target_info ("target_arch", "msp430");                          \
-      /*TODO: ensure below variables work*/                                    \
-      if (msp430_hwmult_type == MSP430_HWMULT_SMALL)                           \
-	rust_add_target_info ("target_feature", "hwmult16");                   \
-      else if (msp430_hwmult_type == MSP430_HWMULT_LARGE)                      \
-	rust_add_target_info ("target_feature", "hwmult32");                   \
-      else if (msp430_hwmult_type == MSP430_HWMULT_F5SERIES)                   \
-	rust_add_target_info ("target_feature", "hwmultf5");                   \
-      if (msp430x)                                                             \
-	rust_add_target_info ("target_feature", "ext");                        \
-      /*TODO: add other options that aren't in llvm?*/                         \
-    }                                                                          \
-  while (0)
-
 /* For the "c" language where exceptions are implicitly disabled, use
    crt*_no_eh.o unless -fexceptions is passed.  For other languages, only use
    crt*_no_eh.o if -fno-exceptions is explicitly passed.  */

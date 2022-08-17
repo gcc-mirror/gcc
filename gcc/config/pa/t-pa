@@ -2,6 +2,3 @@ pa-d.o: $(srcdir)/config/pa/pa-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-pa-rust.o: $(srcdir)/config/pa/pa-rust.cc \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

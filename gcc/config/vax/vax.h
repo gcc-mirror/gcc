@@ -33,23 +33,6 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#define TARGET_RUST_CPU_INFO()		    \
-  do {		    \
-    rust_add_target_info("target_arch", "vax");		    \
-    if (TARGET_G_FLOAT)		    \
-      rust_add_target_info("target_feature", "g-float");		    \
-    else		    \
-      rust_add_target_info("target_feature", "d-float");		    \
-    if (TARGET_UNIX_ASM)		    \
-      rust_add_target_info("target_feature", "unix-as");		    \
-    else		    \
-      rust_add_target_info("target_feature", "gas");		    \
-    if (TARGET_VAXC_ALIGNMENT)		    \
-      rust_add_target_info("target_feature", "vaxc-alignment");		    \
-    if (TARGET_QMATH)		    \
-      rust_add_target_info("target_feature", "qmath");		    \
-  } while (0)
-
 /* Use -J option for long branch support with Unix assembler.  */
 
 #define ASM_SPEC "-J"

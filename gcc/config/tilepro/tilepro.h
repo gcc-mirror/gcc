@@ -34,14 +34,6 @@
 #define TARGET_CPU_CPP_BUILTINS() \
   tilepro_cpu_cpp_builtins (pfile)
 
-#define TARGET_RUST_CPU_INFO()		    \
-  do {		    \
-    rust_add_target_info("target_arch", "tilepro");		    \
-    rust_add_target_info("target_feature", "32");		    \
-    if (tilepro_cpu == 0)		    \
-      rust_add_target_info("target_feature", "cpu-tilepro");		    \
-  } while (0)
-
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
 

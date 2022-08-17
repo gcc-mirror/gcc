@@ -54,21 +54,6 @@
 #define TARGET_CPU_CPP_BUILTINS() \
   tilegx_cpu_cpp_builtins (pfile)
 
-#define TARGET_RUST_CPU_INFO()		    \
-  do {		    \
-    rust_add_target_info("target_arch", "tilegx");		    \
-    if (tilegx_cpu == 0)		    \
-      rust_add_target_info("target_feature", "cpu-tilegx");		    \
-    if (TARGET_32BIT)		    \
-      rust_add_target_info("target_feature", "32");		    \
-    else		    \
-      rust_add_target_info("target_feature", "64");		    \
-    if (tilegx_cmodel == CM_SMALL)		    \
-      rust_add_target_info("target_feature", "cmodel-small");		    \
-    else if (tilegx_cmodel == CM_LARGE)		    \
-      rust_add_target_info("target_feature", "cmodel-large");		    \
-  } while (0)
-
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (TARGET_32BIT ? "int" : "long int")
 

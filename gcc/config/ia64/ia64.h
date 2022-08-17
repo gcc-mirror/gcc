@@ -43,8 +43,6 @@ do {						\
 	builtin_define("__SIZEOF_FLOAT128__=16");\
 } while (0)
 
-#define TARGET_RUST_CPU_INFO ia64_rust_target_cpu_info
-
 #ifndef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS
 #endif

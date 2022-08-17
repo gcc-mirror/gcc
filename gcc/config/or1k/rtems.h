@@ -29,19 +29,5 @@
     }						\
   while (0)
 
-#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in rtems.h (or1k) - c++ undefines it and redefines it."
-#endif
-#define TARGET_RUST_OS_INFO()		\
-  do {						\
-    /*note: as far as I know, rustc has no supported for rtems, so this is just guessed*/ \
-    /*everything is subject to change, especially target_env and target_family*/ \
-    builtin_rust_info ("target_family", "unix");			\
-    builtin_rust_info ("target_os", "rtems");			\
-    builtin_rust_info ("target_vendor", "unknown");			\
-    builtin_rust_info ("target_env", "");			\
-  } while (0)
-
 #define RTEMS_STARTFILE_SPEC "crtbegin%O%s"
 #define RTEMS_ENDFILE_SPEC "crtend%O%s"
-

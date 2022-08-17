@@ -64,13 +64,6 @@
     }						\
   while (0)
 
-#define GNU_USER_TARGET_D_CRITSEC_SIZE 48
-
-#define TARGET_RUST_OS_INFO()		\
-  do {		\
-    GNU_USER_TARGET_RUST_OS_INFO();		\
-  } while (0)
-
 #define TARGET_ASM_FILE_END aarch64_file_end_indicate_exec_stack
 
 /* Uninitialized common symbols in non-PIE executables, even with

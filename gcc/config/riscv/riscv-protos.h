@@ -82,9 +82,6 @@ void riscv_cpu_cpp_builtins (cpp_reader *);
 extern void riscv_d_target_versions (void);
 extern void riscv_d_register_target_info (void);
 
-/* Routines implemented in riscv-rust.cc  */
-extern void riscv_rust_target_cpu_info (void);
-
 /* Routines implemented in riscv-builtins.cc.  */
 extern void riscv_atomic_assign_expand_fenv (tree *, tree *, tree *);
 extern rtx riscv_expand_builtin (tree, rtx, rtx, machine_mode, int);

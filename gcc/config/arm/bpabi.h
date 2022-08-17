@@ -104,16 +104,6 @@
 #define TARGET_OS_CPP_BUILTINS() \
   TARGET_BPABI_CPP_BUILTINS()
 
-#define BPABI_TARGET_RUST_OS_INFO() \
-  do { \
-    /*TODO: is this even an OS? What should go here?*/ \
-  } while (0)
-
-/* Override less-specific arm/linux-elf.h definition. */
-#undef TARGET_RUST_OS_INFO
-#define TARGET_RUST_OS_INFO() \
-  BPABI_TARGET_RUST_OS_INFO()
-
 /* The BPABI specifies the use of .{init,fini}_array.  Therefore, we
    do not want GCC to put anything into the .{init,fini} sections.  */
 #undef INIT_SECTION_ASM_OP

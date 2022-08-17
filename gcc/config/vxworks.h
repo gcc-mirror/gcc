@@ -337,14 +337,6 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
     }									\
   while (0)
 
-#define VXWORKS_TARGET_RUST_OS_INFO()					\
-  do {					\
-    builtin_rust_info ("target_family", "unix");			\
-    builtin_rust_info ("target_os", "vxworks");			\
-    builtin_rust_info ("target_vendor", "wrs");			\
-    builtin_rust_info ("target_env", "gnu");			\
-  } while (0)
-
 /* For specific CPU macro definitions expected by the system headers,
    different versions of VxWorks expect different forms of macros,
    such as "_VX_CPU=..." on Vx7 and some variants of Vx6, or "CPU=..."

@@ -45,9 +45,6 @@ enum data_model_type
   ILLEGAL_DM		/* Illegal data model.  */
 };
 
-/* Defined in cr16-rust.cc  */
-extern void cr16_rust_target_cpu_info (void);
-
 #ifdef RTX_CODE
 
 /* Addressing Modes.  */

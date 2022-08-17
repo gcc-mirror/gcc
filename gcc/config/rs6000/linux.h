@@ -59,13 +59,6 @@
     }							\
   while (0)
 
-/* Override less-specific rs6000/sysv4.h definition. */
-#undef TARGET_RUST_OS_INFO
-#define TARGET_RUST_OS_INFO()          \
-  do {                                 \
-    GNU_USER_TARGET_RUST_OS_INFO();		\
-  } while (0)
-
 #undef	CPP_OS_DEFAULT_SPEC
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux)"
 

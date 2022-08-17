@@ -52,9 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Names to predefine in the preprocessor for this target machine.  */
 #define TARGET_CPU_CPP_BUILTINS() arc_cpu_cpp_builtins (pfile)
 
-/* CPU info for Rust for this target machine.  */
-#define TARGET_RUST_CPU_INFO arc_rust_target_cpu_info
-
 /* Macros enabled by specific command line option.  FIXME: to be
    deprecatd.  */
 #define CPP_SPEC "\

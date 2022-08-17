@@ -185,8 +185,6 @@ do {								\
        builtin_define("__SIZEOF_FLOAT128__=16");		\
 } while (0)
 
-#define TARGET_RUST_CPU_INFO pa_rust_target_cpu_info
-
 /* An old set of OS defines for various BSD-like systems.  */
 #define TARGET_OS_CPP_BUILTINS()				\
   do								\
@@ -203,8 +201,6 @@ do {								\
 	builtin_assert ("system=unix");				\
     }								\
   while (0)
-
-/* TODO: is a TARGET_RUST_OS_INFO() required here? probably not */
 
 #define CC1_SPEC "%{pg:} %{p:}"
 

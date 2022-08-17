@@ -319,9 +319,6 @@ extern int nds32_address_cost_impl (rtx, machine_mode, addr_space_t, bool);
 /* Auxiliary functions for pre-define marco.  */
 extern void nds32_cpu_cpp_builtins(struct cpp_reader *);
 
-/* Routines implemented in nds32-rust.cc  */
-extern void nds32_rust_target_cpu_info (void);
-
 /* Auxiliary functions for const_vector's constraints.  */
 
 extern HOST_WIDE_INT const_vector_to_hwint (rtx);

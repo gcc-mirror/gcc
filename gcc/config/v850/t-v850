@@ -30,10 +30,6 @@ v850-c.o: $(srcdir)/config/v850/v850-c.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/v850/v850-c.cc 
 
-v850-rust.o: $(srcdir)/config/v850/v850-rust.cc \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
-
 # Local Variables:
 # mode: Makefile
 # End:

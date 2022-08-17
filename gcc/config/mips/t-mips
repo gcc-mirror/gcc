@@ -28,7 +28,3 @@ frame-header-opt.o: $(srcdir)/config/mips/frame-header-opt.cc
 mips-d.o: $(srcdir)/config/mips/mips-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
-
-mips-rust.o: $(srcdir)/config/mips/mips-rust.cc \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

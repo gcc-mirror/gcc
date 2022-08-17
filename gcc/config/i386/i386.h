@@ -609,9 +609,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_D_REGISTER_CPU_TARGET_INFO ix86_d_register_target_info
 #define TARGET_D_HAS_STDCALL_CONVENTION ix86_d_has_stdcall_convention
 
-/* Target CPU info for Rust.  */
-#define TARGET_RUST_CPU_INFO ix86_rust_target_cpu_info 
-
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
 #endif

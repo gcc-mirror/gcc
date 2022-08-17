@@ -329,9 +329,6 @@ extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT,
 extern void rs6000_d_target_versions (void);
 extern void rs6000_d_register_target_info (void);
 
-/* Declare functions in rs6000-rust.cc  */
-extern void rs6000_rust_target_cpu_info (void);
-
 #ifdef NO_DOLLAR_IN_LABEL
 const char * rs6000_xcoff_strip_dollar (const char *);
 #endif

@@ -75,8 +75,6 @@
     }                                           \
   while (0)
 
-#define TARGET_RUST_CPU_INFO rx_rust_target_cpu_info
-
 #undef  CC1_SPEC
 #define CC1_SPEC "\
   %{mas100-syntax:%{gdwarf*:%e-mas100-syntax is incompatible with -gdwarf}} \
