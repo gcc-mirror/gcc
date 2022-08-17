@@ -1,3 +1,21 @@
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+		    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR c++/104493
+	* gimplify.cc (omp_notice_variable): Call omp_mappable_type
+	instead of removed langhook.
+	* omp-general.h (omp_mappable_type): New prototype.
+	* omp-general.cc (omp_mappable_type):  New; moved from ...
+	* langhooks.cc (lhd_omp_mappable_type): ... here.
+	* langhooks-def.h (lhd_omp_mappable_type,
+	LANG_HOOKS_OMP_MAPPABLE_TYPE): Remove.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Remote the latter.
+	* langhooks.h (struct lang_hooks_for_types): Remove
+	omp_mappable_type.
+
 2022-08-02  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:

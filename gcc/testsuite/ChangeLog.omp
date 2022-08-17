@@ -1,3 +1,14 @@
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+		    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR c++/104493
+	* g++.dg/gomp/unmappable-1.C: Remove dg-error; remove dg-note no
+	longer shown as TYPE_MAIN_DECL is NULL.
+	* c-c++-common/gomp/map-incomplete-type.c: New test.
+
 2022-07-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
