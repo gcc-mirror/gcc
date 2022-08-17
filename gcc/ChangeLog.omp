@@ -2,6 +2,14 @@
 
 	Backport from mainline:
 	2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* lto-cgraph.cc (input_offload_tables): Improve requires diagnostic
+	when filenames come out identically.
+
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
 		    Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR c++/104493

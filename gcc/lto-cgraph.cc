@@ -1881,6 +1881,11 @@ input_offload_tables (bool do_force_output)
 		      if (tmp_decl != NULL_TREE)
 			fn2 = IDENTIFIER_POINTER (DECL_NAME (tmp_decl));
 		    }
+		  if (fn1 == fn2)
+		    {
+		      fn1 = requires_fn;
+		      fn2 = file_data->file_name;
+		    }
 
 		  char buf1[sizeof ("unified_address, unified_shared_memory, "
 				    "reverse_offload")];
