@@ -1,3 +1,18 @@
+2022-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2022-04-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/103197
+	PR target/102146
+	* config/rs6000/rs6000.md (zero_extendqi<mode>2 for EXTQI): Disparage
+	the "Z" alternatives in {l,st}{f,xs}iwzx.
+	(zero_extendhi<mode>2 for EXTHI): Ditto.
+	(zero_extendsi<mode>2 for EXTSI): Ditto.
+	(*movsi_internal1): Ditto.
+	(*mov<mode>_internal1 for QHI): Ditto.
+	(movsd_hardfloat): Ditto.
+
 2022-08-02  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
