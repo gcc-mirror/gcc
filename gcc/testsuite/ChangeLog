@@ -1,3 +1,12 @@
+2022-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2022-04-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/103197
+	PR target/102146
+	* gcc.target/powerpc/bswap-brw.c: Add xfail on scan-assembler for -m32.
+
 2022-08-12  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
