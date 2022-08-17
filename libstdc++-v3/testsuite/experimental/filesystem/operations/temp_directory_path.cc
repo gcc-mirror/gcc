@@ -118,7 +118,7 @@ test03()
 
   std::error_code ec2;
   try {
-    fs::temp_directory_path();
+    (void) fs::temp_directory_path();
   } catch (const fs::filesystem_error& e) {
     ec2 = e.code();
   }
@@ -142,7 +142,7 @@ test04()
 
   std::error_code ec2;
   try {
-    fs::temp_directory_path();
+    (void) fs::temp_directory_path();
   } catch (const fs::filesystem_error& e) {
     ec2 = e.code();
   }

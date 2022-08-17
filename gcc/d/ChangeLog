@@ -1,3 +1,65 @@
+2022-08-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-08-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106638
+	* gdc.texi: Update DIP links to point at upstream dlang/DIPs
+	repository.
+
+2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-tree.h (d_defer_declaration): Declare.
+	* decl.cc (function_needs_inline_definition_p): Defer checking
+	DECL_UNINLINABLE and DECL_DECLARED_INLINE_P.
+	(maybe_build_decl_tree): Call d_defer_declaration instead of
+	build_decl_tree.
+	* modules.cc (deferred_inline_declarations): New variable.
+	(build_module_tree): Set deferred_inline_declarations and a handle
+	declarations pushed to it.
+	(d_defer_declaration): New function.
+
+2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106623
+	* d-codegen.cc (underlying_complex_expr): New function.
+	(d_build_call): Handle passing native complex objects as the
+	library-defined equivalent.
+	* d-tree.h (underlying_complex_expr): Declare.
+	* expr.cc (ExprVisitor::visit (DotVarExp *)): Call
+	underlying_complex_expr instead of build_vconvert.
+
+2022-08-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-08-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106563
+	* decl.cc (DeclVisitor::visit (FuncDeclaration *)): Set semanticRun
+	before generating its symbol.
+	(function_defined_in_root_p): New function.
+	(function_needs_inline_definition_p): New function.
+	(maybe_build_decl_tree): New function.
+	(get_symbol_decl): Call maybe_build_decl_tree before returning symbol.
+	(start_function): Use function_defined_in_root_p instead of inline
+	test for locally defined symbols.
+	(set_linkage_for_decl): Check for inline functions before private or
+	protected symbols.
+
+2022-08-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2022-08-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106555
+	* d-target.cc (Target::isReturnOnStack): Check for return type size.
+
 2022-07-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 76e3b41375.

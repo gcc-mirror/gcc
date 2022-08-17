@@ -1,3 +1,66 @@
+2022-08-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2022-07-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR c/106016
+	* expr.cc (count_type_elements): Handle OPAQUE_TYPE.
+
+2022-08-11  Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2022-07-25  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.md (rbit<mode>2): Rename this ...
+	(@aarch64_rbit<mode>): ... to this and change it in...
+	(ffs<mode>2,ctz<mode>2): ... here.
+	(@aarch64_rev16<mode>): New.
+	* config/aarch64/aarch64-builtins.cc: (aarch64_builtins):
+	Define the following enum AARCH64_REV16, AARCH64_REV16L,
+	AARCH64_REV16LL, AARCH64_RBIT, AARCH64_RBITL, AARCH64_RBITLL.
+	(aarch64_init_data_intrinsics): New.
+	(aarch64_general_init_builtins): Add call to
+	aarch64_init_data_intrinsics.
+	(aarch64_expand_builtin_data_intrinsic): New.
+	(aarch64_general_expand_builtin): Add call to
+	aarch64_expand_builtin_data_intrinsic.
+	* config/aarch64/arm_acle.h (__clz, __clzl, __clzll, __cls, __clsl,
+	__clsll, __rbit, __rbitl, __rbitll, __rev, __revl, __revll, __rev16,
+	__rev16l, __rev16ll, __ror, __rorl, __rorll, __revsh): New.
+
+2022-08-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-08-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106492
+	* omp-low.cc (lower_rec_input_clauses): Add missing folding
+	to data type of linear-clause list item.
+
+2022-08-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106513
+	* gimple-ssa-store-merging.cc (do_shift_rotate): Use uint64_t
+	for head_marker.
+
+2022-08-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/106540
+	PR lto/106334
+	* lto-streamer-in.cc (lto_read_tree_1): Use lto_input_tree_1
+	to input DECL_INITIAL, avoiding to commit drefs.
+
+2022-08-05   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Remove code
+	setting -mblock-ops-vector-pair.  Back port patch from trunk on 8/3.
+
 2022-08-02  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

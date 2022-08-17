@@ -36,7 +36,7 @@ test01()
   };
 
   R r;
-  std::wstring_view s = r;
+  std::wstring_view s{r};
   VERIFY( s == r.str );
   VERIFY( s.data() == std::ranges::data(r) );
   VERIFY( s.size() == std::ranges::size(r) );
@@ -50,9 +50,14 @@ test01()
   static_assert( std::ranges::contiguous_range<R2> );
   static_assert( std::ranges::sized_range<R2> );
   R2 r2;
-  std::wstring_view s2 = r2; // uses conversion to wstring_view
+  std::wstring_view s2(r2); // uses conversion to wstring_view
   VERIFY( s2 == L"Out of range" );
   VERIFY( std::wstring_view(const_cast<const R2&>(r2)) == s2 );
+
+  // And again using copy-initialization instead of direct-initialization.
+  std::wstring_view s2_implicit = r2; // uses conversion to wstring_view
+  VERIFY( s2_implicit == L"Out of range" );
+  VERIFY( std::wstring_view(const_cast<const R2&>(r2)) == s2_implicit );
 
   struct R3 : R
   {
@@ -91,10 +96,10 @@ test01()
   static_assert( std::ranges::contiguous_range<R5> );
   static_assert( std::ranges::sized_range<R5> );
   R5 r5;
-  std::wstring_view s5 = r5; // Uses range constructor
+  std::wstring_view s5(r5); // Uses range constructor
   VERIFY( s5 == r5.str );
   s5 = std::wstring_view(std::move(r5)); // In C++20 this used conversion op.
-  VERIFY( s5 == r5.str );	        // In C++23 it uses range constructor.
+  VERIFY( s5 == r5.str );	         // In C++23 it uses range constructor.
 
   wchar_t arr[] = L"arrangement\0with\0nulls";
   std::wstring_view sa = arr; // Does not use range constructor
@@ -156,9 +161,23 @@ test04()
   };
 
   R r;
-  std::basic_string_view s = r; // Use deduction guide.
+  std::basic_string_view s(r); // Use deduction guide.
 
   static_assert( std::is_same_v<decltype(s), std::wstring_view> );
+}
+
+void
+test05()
+{
+  struct R
+  {
+    const wchar_t* begin() const { return nullptr; }
+    const wchar_t* end() const { return nullptr; }
+  };
+
+  // P2499R0 string_view range constructor should be explicit
+  // P2516R0 string_view is implicitly convertible from what?
+  static_assert( ! std::is_convertible_v<R, std::wstring_view> );
 }
 
 int main()
@@ -167,4 +186,5 @@ int main()
   test02();
   test03();
   test04();
+  test05();
 }

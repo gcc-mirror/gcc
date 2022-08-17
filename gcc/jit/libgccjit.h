@@ -1252,9 +1252,9 @@ gcc_jit_context_new_cast (gcc_jit_context *ctxt,
 			  gcc_jit_rvalue *rvalue,
 			  gcc_jit_type *type);
 
-/* Reinterpret a value as another type.
-
 #define LIBGCCJIT_HAVE_gcc_jit_context_new_bitcast
+
+/* Reinterpret a value as another type.
 
    The types must be of the same size.
 

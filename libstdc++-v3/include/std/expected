@@ -95,32 +95,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class bad_expected_access : public bad_expected_access<void> {
     public:
       explicit
-      bad_expected_access(_Er __e) : _M_val(std::move(__e)) { }
+      bad_expected_access(_Er __e) : _M_unex(std::move(__e)) { }
 
       // XXX const char* what() const noexcept override;
 
       [[nodiscard]]
       _Er&
       error() & noexcept
-      { return _M_val; }
+      { return _M_unex; }
 
       [[nodiscard]]
       const _Er&
       error() const & noexcept
-      { return _M_val; }
+      { return _M_unex; }
 
       [[nodiscard]]
       _Er&&
       error() && noexcept
-      { return std::move(_M_val); }
+      { return std::move(_M_unex); }
 
       [[nodiscard]]
       const _Er&&
       error() const && noexcept
-      { return std::move(_M_val); }
+      { return std::move(_M_unex); }
 
     private:
-      _Er _M_val;
+      _Er _M_unex;
     };
 
   /// Tag type for constructing unexpected values in a std::expected
@@ -175,7 +175,7 @@ namespace __expected
 	constexpr explicit
 	unexpected(_Err&& __e)
 	noexcept(is_nothrow_constructible_v<_Er, _Err>)
-	: _M_val(std::forward<_Err>(__e))
+	: _M_unex(std::forward<_Err>(__e))
 	{ }
 
       template<typename... _Args>
@@ -183,7 +183,7 @@ namespace __expected
 	constexpr explicit
 	unexpected(in_place_t, _Args&&... __args)
 	noexcept(is_nothrow_constructible_v<_Er, _Args...>)
-	: _M_val(std::forward<_Args>(__args)...)
+	: _M_unex(std::forward<_Args>(__args)...)
 	{ }
 
       template<typename _Up, typename... _Args>
@@ -192,7 +192,7 @@ namespace __expected
 	unexpected(in_place_t, initializer_list<_Up> __il, _Args&&... __args)
 	noexcept(is_nothrow_constructible_v<_Er, initializer_list<_Up>&,
 					    _Args...>)
-	: _M_val(__il, std::forward<_Args>(__args)...)
+	: _M_unex(__il, std::forward<_Args>(__args)...)
 	{ }
 
       constexpr unexpected& operator=(const unexpected&) = default;
@@ -201,33 +201,33 @@ namespace __expected
 
       [[nodiscard]]
       constexpr const _Er&
-      error() const & noexcept { return _M_val; }
+      error() const & noexcept { return _M_unex; }
 
       [[nodiscard]]
       constexpr _Er&
-      error() & noexcept { return _M_val; }
+      error() & noexcept { return _M_unex; }
 
       [[nodiscard]]
       constexpr const _Er&&
-      error() const && noexcept { return std::move(_M_val); }
+      error() const && noexcept { return std::move(_M_unex); }
 
       [[nodiscard]]
       constexpr _Er&&
-      error() && noexcept { return std::move(_M_val); }
+      error() && noexcept { return std::move(_M_unex); }
 
       constexpr void
       swap(unexpected& __other) noexcept(is_nothrow_swappable_v<_Er>)
       {
 	static_assert( is_swappable_v<_Er> );
 	using std::swap;
-	swap(_M_val, __other._M_val);
+	swap(_M_unex, __other._M_unex);
       }
 
       template<typename _Err>
 	[[nodiscard]]
 	friend constexpr bool
 	operator==(const unexpected& __x, const unexpected<_Err>& __y)
-	{ return __x._M_val == __y.error(); }
+	{ return __x._M_unex == __y.error(); }
 
       friend constexpr void
       swap(unexpected& __x, unexpected& __y)
@@ -236,7 +236,7 @@ namespace __expected
       { __x.swap(__y); }
 
     private:
-      _Er _M_val;
+      _Er _M_unex;
     };
 
   template<typename _Er> unexpected(_Er) -> unexpected<_Er>;
