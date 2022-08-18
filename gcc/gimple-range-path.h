@@ -37,7 +37,6 @@ public:
 		    const bitmap_head *dependencies = NULL,
 		    bool resolve = true);
   path_range_query (gimple_ranger &ranger, bool resolve = true);
-  path_range_query (gimple_ranger &ranger, edge e, bool resolve = true);
   virtual ~path_range_query ();
   void reset_path (const vec<basic_block> &, const bitmap_head *dependencies);
   bool range_of_expr (vrange &r, tree name, gimple * = NULL) override;

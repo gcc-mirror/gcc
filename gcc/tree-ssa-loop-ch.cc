@@ -45,6 +45,20 @@ along with GCC; see the file COPYING3.  If not see
    increases effectiveness of code motion optimizations, and reduces the need
    for loop preconditioning.  */
 
+/* Given a path through edge E, whose last statement is COND, return
+   the range of the solved conditional in R.  */
+
+static void
+edge_range_query (irange &r, edge e, gcond *cond, gimple_ranger &ranger)
+{
+  auto_vec<basic_block> path (2);
+  path.safe_push (e->dest);
+  path.safe_push (e->src);
+  path_range_query query (ranger, path);
+  if (!query.range_of_stmt (r, cond))
+    r.set_varying (boolean_type_node);
+}
+
 /* Return true if the condition on the first iteration of the loop can
    be statically determined.  */
 
@@ -72,8 +86,7 @@ entry_loop_condition_is_static (class loop *l, gimple_ranger *ranger)
     desired_static_value = boolean_true_node;
 
   int_range<2> r;
-  path_range_query query (*ranger, e);
-  query.range_of_stmt (r, last);
+  edge_range_query (r, e, last, *ranger);
   return r == int_range<2> (desired_static_value, desired_static_value);
 }
 
