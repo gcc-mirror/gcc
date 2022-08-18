@@ -2254,8 +2254,8 @@
 	 (match_operand:GPR 4 "sfb_alu_operand" "rJ,IL")))]
   "TARGET_SFB_ALU"
   "@
-   b%C5 %1,%z2,1f; mv %0,%z4; 1: # movcc
-   b%C5 %1,%z2,1f; li %0,%4; 1: # movcc"
+   b%C5\t%1,%z2,1f\t# movcc\;mv\t%0,%z4\n1:
+   b%C5\t%1,%z2,1f\t# movcc\;li\t%0,%4\n1:"
   [(set_attr "length" "8")
    (set_attr "type" "sfb_alu")
    (set_attr "mode" "<GPR:MODE>")])
