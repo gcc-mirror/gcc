@@ -66523,6 +66523,7 @@ all-target-liboffloadmic: maybe-all-target-libgomp
 configure-target-newlib: maybe-all-binutils
 configure-target-newlib: maybe-all-ld
 configure-target-libgfortran: maybe-all-target-libbacktrace
+configure-target-libgo: maybe-all-target-libbacktrace
 @endunless gcc-bootstrap
 
 # Dependencies for target modules on other target modules are
