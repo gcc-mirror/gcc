@@ -1021,6 +1021,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcond-move-float  -mno-cond-move-float @gol
 -memcpy  -mno-memcpy -mstrict-align -mno-strict-align @gol
 -mmax-inline-memcpy-size=@var{n} @gol
+-mexplicit-relocs -mno-explicit-relocs @gol
 -mcmodel=@var{code-model}}
 
 @emph{M32R/D Options}
@@ -25090,50 +25091,19 @@ less than or equal to @var{n} bytes.  The default value of @var{n} is 1024.
 @item -mcmodel=@var{code-model}
 Set the code model to one of:
 @table @samp
-@item tiny-static
-@itemize @bullet
-@item
-local symbol and global strong symbol: The data section must be within +/-2MiB addressing space.
-The text section must be within +/-128MiB addressing space.
-@item
-global weak symbol: The got table must be within +/-2GiB addressing space.
-@end itemize
-
-@item tiny
-@itemize @bullet
-@item
-local symbol: The data section must be within +/-2MiB addressing space.
-The text section must be within +/-128MiB
-addressing space.
-@item
-global symbol: The got table must be within +/-2GiB addressing space.
-@end itemize
+@item tiny-static (Not implemented yet)
+@item tiny (Not implemented yet)
 
 @item normal
-@itemize @bullet
-@item
-local symbol: The data section must be within +/-2GiB addressing space.
-The text section must be within +/-128MiB addressing space.
-@item
-global symbol: The got table must be within +/-2GiB addressing space.
-@end itemize
+The text segment must be within 128MB addressing space.  The data segment must
+be within 2GB addressing space.
 
-@item large
-@itemize @bullet
-@item
-local symbol: The data section must be within +/-2GiB addressing space.
-The text section must be within +/-128GiB addressing space.
-@item
-global symbol: The got table must be within +/-2GiB addressing space.
-@end itemize
+@item large (Not implemented yet)
 
-@item extreme(Not implemented yet)
-@itemize @bullet
-@item
-local symbol: The data and text section must be within +/-8EiB addressing space.
-@item
-global symbol: The data got table must be within +/-8EiB addressing space.
-@end itemize
+@item extreme
+This mode does not limit the size of the code segment and data segment.
+The @option{-mcmodel=extreme} option is incompatible with @option{-fplt} and
+@option{-mno-explicit-relocs}.
 @end table
 The default code model is @code{normal}.
 

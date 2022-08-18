@@ -60,6 +60,9 @@
 
   UNSPEC_LOAD_FROM_GOT
   UNSPEC_ORI_L_LO12
+  UNSPEC_LUI_L_HI20
+  UNSPEC_LUI_H_LO20
+  UNSPEC_LUI_H_HI12
   UNSPEC_TLS_LOW
 ])
 
@@ -1934,13 +1937,42 @@
   [(set_attr "type" "move")]
 )
 
+(define_insn "@lui_l_hi20<mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand:P 1 "symbolic_operand")]
+	UNSPEC_LUI_L_HI20))]
+  ""
+  "lu12i.w\t%0,%r1"
+  [(set_attr "type" "move")]
+)
+
 (define_insn "@ori_l_lo12<mode>"
   [(set (match_operand:P 0 "register_operand" "=r")
 	(unspec:P [(match_operand:P 1 "register_operand" "r")
-		    (match_operand:P 2 "symbolic_operand")]
+		   (match_operand:P 2 "symbolic_operand")]
 	UNSPEC_ORI_L_LO12))]
   ""
   "ori\t%0,%1,%L2"
+  [(set_attr "type" "move")]
+)
+
+(define_insn "lui_h_lo20"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "0")
+		    (match_operand:DI 2 "symbolic_operand")]
+	UNSPEC_LUI_H_LO20))]
+  "TARGET_64BIT"
+  "lu32i.d\t%0,%R2"
+  [(set_attr "type" "move")]
+)
+
+(define_insn "lui_h_hi12"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "r")
+		    (match_operand:DI 2 "symbolic_operand")]
+	UNSPEC_LUI_H_HI12))]
+  "TARGET_64BIT"
+  "lu52i.d\t%0,%1,%H2"
   [(set_attr "type" "move")]
 )
 

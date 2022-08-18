@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mabi=lp64d -mexplicit-relocs -fno-pic -O2" } */
+/* { dg-options "-mabi=lp64d -mexplicit-relocs -fno-pic -O2 -mcmodel=normal" } */
 /* { dg-final { scan-assembler "pcalau12i.*%pc_hi20\\(\.LANCHOR0\\)\n" } } */
 /* { dg-final { scan-assembler "addi\.d.*%pc_lo12\\(\.LANCHOR0\\)\n" } } */
 /* { dg-final { scan-assembler "ldptr.d\t\\\$r4,.*,0\n" } } */
