@@ -49,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
    be statically determined.  */
 
 static bool
-entry_loop_condition_is_static (class loop *l, path_range_query *query)
+entry_loop_condition_is_static (class loop *l, gimple_ranger *ranger)
 {
   edge e = loop_preheader_edge (l);
   gcond *last = safe_dyn_cast <gcond *> (last_stmt (e->dest));
@@ -72,8 +72,8 @@ entry_loop_condition_is_static (class loop *l, path_range_query *query)
     desired_static_value = boolean_true_node;
 
   int_range<2> r;
-  query->compute_ranges (e);
-  query->range_of_stmt (r, last);
+  path_range_query query (*ranger, e);
+  query.range_of_stmt (r, last);
   return r == int_range<2> (desired_static_value, desired_static_value);
 }
 
@@ -385,7 +385,7 @@ ch_base::copy_headers (function *fun)
   auto_vec<std::pair<edge, loop_p> > copied;
 
   mark_dfs_back_edges ();
-  path_range_query *query = new path_range_query;
+  gimple_ranger *ranger = new gimple_ranger;
   for (auto loop : loops_list (cfun, 0))
     {
       int initial_limit = param_max_loop_header_insns;
@@ -409,7 +409,7 @@ ch_base::copy_headers (function *fun)
 	 iteration.  */
       if (optimize_loop_for_size_p (loop)
 	  && !loop->force_vectorize
-	  && !entry_loop_condition_is_static (loop, query))
+	  && !entry_loop_condition_is_static (loop, ranger))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
@@ -422,7 +422,7 @@ ch_base::copy_headers (function *fun)
 	candidates.safe_push (loop);
     }
   /* Do not use ranger after we change the IL and not have updated SSA.  */
-  delete query;
+  delete ranger;
 
   for (auto loop : candidates)
     {

@@ -116,7 +116,6 @@ private:
   virtual void dump (FILE *out);
 
   back_threader_registry m_registry;
-  path_range_query *m_solver;
 
   // Current path being analyzed.
   auto_vec<basic_block> m_path;
@@ -136,6 +135,8 @@ private:
   // with the ranger.  Otherwise, unknown SSA names are assumed to be
   // VARYING.  Setting to true is more precise but slower.
   function *m_fun;
+  // Ranger for the path solver.
+  gimple_ranger *m_ranger;
   unsigned m_flags;
   // Set to TRUE for the first of each thread[12] pass or the first of
   // each threadfull[12] pass.  This is used to differentiate between
@@ -162,13 +163,13 @@ back_threader::back_threader (function *fun, unsigned flags, bool first)
   // The path solver needs EDGE_DFS_BACK in resolving mode.
   if (flags & BT_RESOLVE)
     mark_dfs_back_edges ();
-  m_solver = new path_range_query (flags & BT_RESOLVE);
+
+  m_ranger = new gimple_ranger;
 }
 
 back_threader::~back_threader ()
 {
-  delete m_solver;
-
+  delete m_ranger;
   loop_optimizer_finalize ();
 }
 
@@ -305,8 +306,8 @@ back_threader::find_taken_edge_switch (const vec<basic_block> &path,
   tree name = gimple_switch_index (sw);
   int_range_max r;
 
-  m_solver->compute_ranges (path, m_imports);
-  m_solver->range_of_expr (r, name, sw);
+  path_range_query solver (*m_ranger, path, m_imports, m_flags & BT_RESOLVE);
+  solver.range_of_expr (r, name, sw);
 
   if (r.undefined_p ())
     return UNREACHABLE_EDGE;
@@ -329,10 +330,10 @@ back_threader::find_taken_edge_cond (const vec<basic_block> &path,
 {
   int_range_max r;
 
-  m_solver->compute_ranges (path, m_imports);
-  m_solver->range_of_stmt (r, cond);
+  path_range_query solver (*m_ranger, path, m_imports, m_flags & BT_RESOLVE);
+  solver.range_of_stmt (r, cond);
 
-  if (m_solver->unreachable_path_p ())
+  if (solver.unreachable_path_p ())
     return UNREACHABLE_EDGE;
 
   int_range<2> true_range (boolean_true_node, boolean_true_node);
@@ -583,7 +584,6 @@ debug (const vec <basic_block> &path)
 void
 back_threader::dump (FILE *out)
 {
-  m_solver->dump (out);
   fprintf (out, "\nCandidates for pre-computation:\n");
   fprintf (out, "===================================\n");
 

@@ -14,7 +14,7 @@ enable_push=no
 upstream=`git config --get "gcc-config.upstream"`
 if [ x"$upstream" = x ]
 then
-    echo "Config gcc-config.upstream not set, run contrib/gcc-git-customization"
+    echo "Config gcc-config.upstream not set, run contrib/gcc-git-customization.sh"
     exit 1
 fi
 

@@ -115,3 +115,13 @@ void test_10 (int32_t n)
   char *ptr = malloc (7 * n);
   free (ptr);
 }
+
+void test_11 ()
+{
+  /* 3.0 is folded to an int before the analyzer runs.  */
+  int32_t *ptr = malloc (3.0); /* { dg-line malloc11 } */
+  free (ptr);
+
+  /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } malloc11 } */
+  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4'" "note" { target *-*-* } malloc11 } */
+}
