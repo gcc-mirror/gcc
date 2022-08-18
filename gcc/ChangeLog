@@ -1,3 +1,12 @@
+2022-08-17  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	Backported from master:
+	2022-08-04  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/vector.md (V_HW_FT): New iterator.
+	* config/s390/vx-builtins.md (vsel<mode>): Use V_HW_FT instead
+	of V_HW.
+
 2022-08-12  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
