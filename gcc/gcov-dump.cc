@@ -17,6 +17,7 @@ along with Gcov; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -27,8 +28,6 @@ along with Gcov; see the file COPYING3.  If not see
 #define IN_GCOV (-1)
 #include "gcov-io.h"
 #include "gcov-io.cc"
-
-#include <vector>
 
 using namespace std;
 
