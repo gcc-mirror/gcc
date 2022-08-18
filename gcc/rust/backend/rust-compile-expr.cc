@@ -1774,6 +1774,27 @@ tree
 HIRCompileBase::resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
 					    tree expression, Location locus)
 {
+  bool expect_slice
+    = adjustment.get_expected ()->get_kind () == TyTy::TypeKind::SLICE;
+  bool expect_dyn
+    = adjustment.get_expected ()->get_kind () == TyTy::TypeKind::DYNAMIC;
+
+  // assumes this is an array
+  tree expr_type = TREE_TYPE (expression);
+  if (expect_slice)
+    {
+      rust_assert (TREE_CODE (expr_type) == ARRAY_TYPE);
+      return resolve_unsized_slice_adjustment (adjustment, expression, locus);
+    }
+
+  rust_assert (expect_dyn);
+  return resolve_unsized_dyn_adjustment (adjustment, expression, locus);
+}
+
+tree
+HIRCompileBase::resolve_unsized_slice_adjustment (
+  Resolver::Adjustment &adjustment, tree expression, Location locus)
+{
   // assumes this is an array
   tree expr_type = TREE_TYPE (expression);
   rust_assert (TREE_CODE (expr_type) == ARRAY_TYPE);
@@ -1800,6 +1821,25 @@ HIRCompileBase::resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
 
   return ctx->get_backend ()->constructor_expression (fat_pointer, false,
 						      {data, size}, -1, locus);
+}
+
+tree
+HIRCompileBase::resolve_unsized_dyn_adjustment (
+  Resolver::Adjustment &adjustment, tree expression, Location locus)
+{
+  tree rvalue = expression;
+  Location rvalue_locus = locus;
+
+  const TyTy::BaseType *actual = adjustment.get_actual ();
+  const TyTy::BaseType *expected = adjustment.get_expected ();
+
+  const TyTy::DynamicObjectType *dyn
+    = static_cast<const TyTy::DynamicObjectType *> (expected);
+
+  rust_debug ("resolve_unsized_dyn_adjustment actual={%s} dyn={%s}",
+	      actual->debug_str ().c_str (), dyn->debug_str ().c_str ());
+
+  return coerce_to_dyn_object (rvalue, actual, dyn, rvalue_locus);
 }
 
 void

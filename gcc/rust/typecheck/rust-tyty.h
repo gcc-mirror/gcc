@@ -180,9 +180,6 @@ public:
   // checks
   virtual bool can_eq (const BaseType *other, bool emit_errors) const = 0;
 
-  // this is the base coercion interface for types
-  virtual BaseType *coerce (BaseType *other) = 0;
-
   // this is the cast interface for TypeCastExpr
   virtual BaseType *cast (BaseType *other) = 0;
 
@@ -350,7 +347,6 @@ public:
 
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
@@ -390,7 +386,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
@@ -434,7 +430,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
@@ -534,7 +530,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
@@ -1363,7 +1359,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
@@ -1500,7 +1496,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
@@ -1622,7 +1618,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
@@ -1696,7 +1692,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
@@ -1762,7 +1758,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
@@ -1812,7 +1808,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
@@ -1859,7 +1855,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
@@ -1905,7 +1901,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   IntKind get_int_kind () const { return int_kind; }
@@ -1958,7 +1954,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   UintKind get_uint_kind () const { return uint_kind; }
@@ -2009,7 +2005,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   FloatKind get_float_kind () const { return float_kind; }
@@ -2050,7 +2046,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
@@ -2084,7 +2080,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
@@ -2118,7 +2114,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
@@ -2152,7 +2148,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
@@ -2197,7 +2193,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
@@ -2285,7 +2281,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
@@ -2374,7 +2370,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
@@ -2416,7 +2412,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
@@ -2492,7 +2488,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
@@ -2550,7 +2546,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-  BaseType *coerce (BaseType *other) override;
+
   BaseType *cast (BaseType *other) override;
   bool is_equal (const BaseType &other) const override;
 

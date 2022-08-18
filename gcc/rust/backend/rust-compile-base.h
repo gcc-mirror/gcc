@@ -48,7 +48,6 @@ protected:
 		       Location rvalue_locus);
 
   tree coerce_to_dyn_object (tree compiled_ref, const TyTy::BaseType *actual,
-			     const TyTy::BaseType *expected,
 			     const TyTy::DynamicObjectType *ty, Location locus);
 
   tree compute_address_for_trait_item (
@@ -77,6 +76,12 @@ protected:
 
   tree resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
 				   tree expression, Location locus);
+
+  tree resolve_unsized_slice_adjustment (Resolver::Adjustment &adjustment,
+					 tree expression, Location locus);
+
+  tree resolve_unsized_dyn_adjustment (Resolver::Adjustment &adjustment,
+				       tree expression, Location locus);
 
   static void setup_fndecl (tree fndecl, bool is_main_entry_point,
 			    bool is_generic_fn, HIR::Visibility &visibility,
