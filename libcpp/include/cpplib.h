@@ -513,6 +513,9 @@ struct cpp_options
   /* Nonzero for the '#elifdef' and '#elifndef' directives.  */
   unsigned char elifdef;
 
+  /* Nonzero for the '#warning' directive.  */
+  unsigned char warning_directive;
+
   /* Nonzero means tokenize C++20 module directives.  */
   unsigned char module_directives;
 
