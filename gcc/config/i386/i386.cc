@@ -2463,6 +2463,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V8SImode:
     case E_V32QImode:
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V16HImode:
     case E_V4DFmode:
     case E_V4DImode:
@@ -2474,6 +2475,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V8DFmode:
     case E_V16SFmode:
     case E_V32HFmode:
+    case E_V32BFmode:
     case E_V8DImode:
     case E_V16SImode:
     case E_V32HImode:
@@ -2492,6 +2494,7 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V16QImode:
     case E_V8HImode:
     case E_V8HFmode:
+    case E_V8BFmode:
     case E_V2DFmode:
     case E_V2DImode:
       classes[0] = X86_64_SSE_CLASS;
@@ -2947,6 +2950,7 @@ pass_in_reg:
       /* FALLTHRU */
 
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V64QImode:
@@ -2954,6 +2958,7 @@ pass_in_reg:
     case E_V16SImode:
     case E_V8DImode:
     case E_V32HFmode:
+    case E_V32BFmode:
     case E_V16SFmode:
     case E_V8DFmode:
     case E_V32QImode:
@@ -2966,6 +2971,7 @@ pass_in_reg:
     case E_V4SImode:
     case E_V2DImode:
     case E_V8HFmode:
+    case E_V8BFmode:
     case E_V4SFmode:
     case E_V2DFmode:
       if (!type || !AGGREGATE_TYPE_P (type))
@@ -3190,6 +3196,7 @@ pass_in_reg:
     case E_V4SImode:
     case E_V2DImode:
     case E_V8HFmode:
+    case E_V8BFmode:
     case E_V4SFmode:
     case E_V2DFmode:
       if (!type || !AGGREGATE_TYPE_P (type))
@@ -3210,9 +3217,11 @@ pass_in_reg:
     case E_V16SImode:
     case E_V8DImode:
     case E_V32HFmode:
+    case E_V32BFmode:
     case E_V16SFmode:
     case E_V8DFmode:
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
@@ -3273,6 +3282,7 @@ function_arg_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
       break;
 
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
@@ -3280,6 +3290,7 @@ function_arg_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
     case E_V4DFmode:
     case E_V4DImode:
     case E_V32HFmode:
+    case E_V32BFmode:
     case E_V16SFmode:
     case E_V16SImode:
     case E_V64QImode:
@@ -4748,6 +4759,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   switch (nat_mode)
     {
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V8SFmode:
     case E_V8SImode:
     case E_V32QImode:
@@ -4755,6 +4767,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
     case E_V4DFmode:
     case E_V4DImode:
     case E_V32HFmode:
+    case E_V32BFmode:
     case E_V16SFmode:
     case E_V16SImode:
     case E_V64QImode:
@@ -5430,7 +5443,7 @@ ix86_get_ssemov (rtx *operands, unsigned size,
       switch (type)
 	{
 	case opcode_int:
-	  if (scalar_mode == E_HFmode)
+	  if (scalar_mode == E_HFmode || scalar_mode == E_BFmode)
 	    opcode = (misaligned_p
 		      ? (TARGET_AVX512BW ? "vmovdqu16" : "vmovdqu64")
 		      : "vmovdqa64");
@@ -5450,6 +5463,7 @@ ix86_get_ssemov (rtx *operands, unsigned size,
       switch (scalar_mode)
 	{
 	case E_HFmode:
+	case E_BFmode:
 	  if (evex_reg_p)
 	    opcode = (misaligned_p
 		      ? (TARGET_AVX512BW
