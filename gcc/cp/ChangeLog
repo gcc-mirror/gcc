@@ -1,3 +1,49 @@
+2022-08-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90428
+	* typeck.cc (can_do_rvo_p): Rename to ...
+	(can_elide_copy_prvalue_p): ... this.
+	(maybe_warn_pessimizing_move): Extend the
+	-Wredundant-move warning to warn about std::move on a
+	const-qualified object.
+
+2022-08-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89780
+	* pt.cc (tsubst_copy_and_build) <case CALL_EXPR>: Maybe suppress
+	-Wpessimizing-move.
+	* typeck.cc (maybe_warn_pessimizing_move): Don't issue warnings
+	if they are suppressed.
+	(check_return_expr): Disable -Wpessimizing-move when returning
+	a dependent expression.
+
+2022-08-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106276
+	* call.cc (build_over_call): Call maybe_warn_pessimizing_move.
+	* cp-tree.h (maybe_warn_pessimizing_move): Declare.
+	* decl.cc (build_aggr_init_full_exprs): Call
+	maybe_warn_pessimizing_move.
+	* typeck.cc (maybe_warn_pessimizing_move): Handle TREE_LIST and
+	CONSTRUCTOR.  Add a bool parameter and use it.  Adjust a diagnostic
+	message.
+	(check_return_expr): Adjust the call to maybe_warn_pessimizing_move.
+
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR c++/104493
+	* cp-objcp-common.h (LANG_HOOKS_OMP_MAPPABLE_TYPE): Remove.
+	* cp-tree.h (cp_omp_mappable_type, cp_omp_emit_unmappable_type_notes):
+	Remove.
+	* decl2.cc (cp_omp_mappable_type_1, cp_omp_mappable_type,
+	cp_omp_emit_unmappable_type_notes): Remove.
+	(cplus_decl_attributes): Call omp_mappable_type instead of
+	removed langhook.
+	* decl.cc (cp_finish_decl): Likewise; call cxx_incomplete_type_inform
+	in lieu of cp_omp_emit_unmappable_type_notes.
+	* semantics.cc (finish_omp_clauses): Likewise.
+
 2022-08-16  Tom Honermann  <tom@honermann.net>
 
 	PR c++/106423

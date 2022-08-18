@@ -1,3 +1,101 @@
+2022-08-17  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/106640
+	* config/i386/i386-features.cc
+	(timde_scalar_chain::compute_convert_gain): Replace incorrect use
+	of XINT with INTVAL (XEXP (src, 1)).
+
+2022-08-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc
+	(path_range_query::compute_ranges_in_block): Remove
+	set_root_oracle call.
+	(path_range_query::compute_ranges): Pass ranger oracle to
+	reset_path.
+	* value-relation.cc (path_oracle::reset_path): Set root oracle.
+	* value-relation.h (path_oracle::reset_path): Add root oracle
+	argument.
+
+2022-08-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89780
+	* diagnostic-spec.cc (nowarn_spec_t::nowarn_spec_t): Handle
+	OPT_Wpessimizing_move and OPT_Wredundant_move.
+	* diagnostic-spec.h (nowarn_spec_t): Add NW_REDUNDANT enumerator.
+
+2022-08-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46539
+	* common.opt (static-libquadmath): New option.
+	* gcc.cc (driver_handle_option): Always accept -static-libquadmath.
+	* config/darwin.h (LINK_SPEC): Handle -static-libquadmath.
+
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* lto-cgraph.cc (input_offload_tables): Improve requires diagnostic
+	when filenames come out identically.
+
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106548
+	* omp-low.cc (lower_rec_input_clauses): Use build_outer_var_ref
+	for 'simd' linear-step values that are variable.
+
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR c++/104493
+	* gimplify.cc (omp_notice_variable): Call omp_mappable_type
+	instead of removed langhook.
+	* omp-general.h (omp_mappable_type): New prototype.
+	* omp-general.cc (omp_mappable_type):  New; moved from ...
+	* langhooks.cc (lhd_omp_mappable_type): ... here.
+	* langhooks-def.h (lhd_omp_mappable_type,
+	LANG_HOOKS_OMP_MAPPABLE_TYPE): Remove.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Remote the latter.
+	* langhooks.h (struct lang_hooks_for_types): Remove
+	omp_mappable_type.
+
+2022-08-17  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config.gcc (arm): Define with_float to hard if target name ends
+	with 'hf'.
+
+2022-08-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-threadbackward.cc
+	(back_threader_profitability): Split profitable_path_p
+	into possibly_profitable_path_p and itself, keep state
+	as new members.
+	(back_threader::m_profit): Remove.
+	(back_threader::find_paths): Likewise.
+	(back_threader::maybe_register_path): Take profitability
+	instance as parameter.
+	(back_threader::find_paths_to_names): Likewise.  Use
+	possibly_profitable_path_p and avoid the path range query
+	when the path is currently too large.
+	(back_threader::find_paths): Fold into ...
+	(back_threader::maybe_thread_block): ... this.
+	(get_gimple_control_stmt): Remove.
+	(back_threader_profitability::possibly_profitable_path_p):
+	Split out from profitable_path_p, do early profitability
+	checks.
+	(back_threader_profitability::profitable_path_p): Do final
+	profitability path after the taken edge has been determined.
+
+2022-08-17  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (fmax<mode>3): New RTL pattern.
+	(fmin<mode>3): Likewise.
+
+2022-08-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (gimple_range_ssa_names): New.
+	* gimple-range-fold.h (gimple_range_ssa_names): New prototype.
+	* gimple-range-gori.cc (range_def_chain::get_def_chain): Move
+	  code to new routine.
+
 2022-08-16  Martin Liska  <mliska@suse.cz>
 
 	PR target/106637
