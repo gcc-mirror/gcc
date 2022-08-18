@@ -40,6 +40,7 @@
 #include "builtins.h"
 #include "calls.h"
 #include "value-query.h"
+#include "cfganal.h"
 
 #include "gimple-predicate-analysis.h"
 
@@ -1224,13 +1225,36 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
 
   /* PHI_USE_GUARDS are OR'ed together.  If we have more than one
      possible guard, there's no way of knowing which guard was true.
-     Since we need to be absolutely sure that the uninitialized
-     operands will be invalidated, bail.  */
+     In that case compute the intersection of all use predicates
+     and use that.  */
   const pred_chain_union &phi_use_guards = m_preds;
+  const pred_chain *use_guard = &phi_use_guards[0];
+  pred_chain phi_use_guard_intersection = vNULL;
   if (phi_use_guards.length () != 1)
-    return false;
-
-  const pred_chain &use_guard = phi_use_guards[0];
+    {
+      phi_use_guard_intersection = use_guard->copy ();
+      for (unsigned i = 1; i < phi_use_guards.length (); ++i)
+	{
+	  for (unsigned j = 0; j < phi_use_guard_intersection.length ();)
+	    {
+	      unsigned k;
+	      for (k = 0; k < phi_use_guards[i].length (); ++k)
+		if (pred_equal_p (phi_use_guards[i][k],
+				  phi_use_guard_intersection[j]))
+		  break;
+	      if (k == phi_use_guards[i].length ())
+		phi_use_guard_intersection.unordered_remove (j);
+	      else
+		j++;
+	    }
+	}
+      if (phi_use_guard_intersection.is_empty ())
+	{
+	  phi_use_guard_intersection.release ();
+	  return false;
+	}
+      use_guard = &phi_use_guard_intersection;
+    }
 
   /* Look for the control dependencies of all the interesting operands
      and build guard predicates describing them.  */
@@ -1250,7 +1274,27 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
       if (!compute_control_dep_chain (ENTRY_BLOCK_PTR_FOR_FN (cfun),
 				      e->src, dep_chains, &num_chains,
 				      cur_chain, &num_calls))
-	return false;
+	{
+	  gcc_assert (num_chains == 0);
+	  /* If compute_control_dep_chain bailed out due to limits
+	     build a partial sparse path using dominators.  Collect
+	     only edges whose predicates are always true when reaching E.  */
+	  cur_chain.truncate (0);
+	  cur_chain.quick_push (e);
+	  basic_block src = e->src;
+	  while (src->index != ENTRY_BLOCK
+		 && cur_chain.length () <= MAX_CHAIN_LEN)
+	    {
+	      basic_block dest = src;
+	      src = get_immediate_dominator (CDI_DOMINATORS, src);
+	      edge pred_e;
+	      if (single_pred_p (dest)
+		  && (pred_e = find_edge (src, dest)))
+		cur_chain.quick_push (pred_e);
+	    }
+	  dep_chains[0] = cur_chain.copy ();
+	  num_chains++;
+	}
 
       if (DEBUG_PREDICATE_ANALYZER && dump_file)
 	{
@@ -1272,10 +1316,14 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
 
       /* Can the guard for this PHI argument be negated by the one
 	 guarding the PHI use?  */
-      if (!can_be_invalidated_p (def_preds.chain (), use_guard))
-	return false;
+      if (!can_be_invalidated_p (def_preds.chain (), *use_guard))
+	{
+	  phi_use_guard_intersection.release ();
+	  return false;
+	}
     }
 
+  phi_use_guard_intersection.release ();
   return true;
 }
 
