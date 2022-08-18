@@ -1,3 +1,14 @@
+2022-08-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46539
+	* acinclude.m4 (LIBQUADSPEC): From $FC -static-libgfortran -###
+	output determine -Bstatic/-Bdynamic, -bstatic/-bdynamic,
+	-aarchive_shared/-adefault linker support or Darwin remapping
+	of -lgfortran to libgfortran.a%s and use that around or instead
+	of -lquadmath in LIBQUADSPEC.
+	* configure: Regenerated.
+
 2022-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/106079

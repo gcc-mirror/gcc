@@ -187,8 +187,6 @@ extern tree cxx_simulate_record_decl (location_t, const char *,
 #define LANG_HOOKS_OMP_FINISH_CLAUSE cxx_omp_finish_clause
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE cxx_omp_privatize_by_reference
-#undef LANG_HOOKS_OMP_MAPPABLE_TYPE
-#define LANG_HOOKS_OMP_MAPPABLE_TYPE cp_omp_mappable_type
 #undef LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR
 #define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR cxx_omp_disregard_value_expr
 

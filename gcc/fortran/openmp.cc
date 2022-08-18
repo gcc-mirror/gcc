@@ -2480,7 +2480,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      goto error;
 		    }
 		}
-	      else
+	      if (step == NULL)
 		{
 		  step = gfc_get_constant_expr (BT_INTEGER,
 						gfc_default_integer_kind,
@@ -4213,9 +4213,13 @@ gfc_match_omp_declare_simd (void)
   gfc_omp_declare_simd *ods;
   bool needs_space = false;
 
-  switch (gfc_match (" ( %s ) ", &proc_name))
+  switch (gfc_match (" ( "))
     {
-    case MATCH_YES: break;
+    case MATCH_YES:
+      if (gfc_match_symbol (&proc_name, /* host assoc = */ true) != MATCH_YES
+	  || gfc_match (" ) ") != MATCH_YES)
+	return MATCH_ERROR;
+      break;
     case MATCH_NO: proc_name = NULL; needs_space = true; break;
     case MATCH_ERROR: return MATCH_ERROR;
     }

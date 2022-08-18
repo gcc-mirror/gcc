@@ -1,3 +1,9 @@
+2022-08-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/106638
+	* gdc.texi: Update DIP links to point at upstream dlang/DIPs
+	repository.
+
 2022-08-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-tree.h (d_defer_declaration): Declare.

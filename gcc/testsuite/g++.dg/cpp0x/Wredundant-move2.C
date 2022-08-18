@@ -37,14 +37,14 @@ template<typename Tp1, typename Tp2>
 Tp1
 fn2 (Tp2 t)
 {
-  return std::move (t); // { dg-warning "redundant move in return statement" }
+  return std::move (t);
 }
 
 template<typename Tp1, typename Tp2>
 Tp1
 fn3 (Tp2 t)
 {
-  return std::move (t); // { dg-warning "redundant move in return statement" }
+  return std::move (t);
 }
 
 int

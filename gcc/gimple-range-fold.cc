@@ -1580,3 +1580,36 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range, edge e0, edge 
 	}
     }
 }
+
+// Given stmt S, fill VEC, up to VEC_SIZE elements, with relevant ssa-names
+// on the statement.  For efficiency, it is an error to not pass in enough
+// elements for the vector.  Return the number of ssa-names.
+
+unsigned
+gimple_range_ssa_names (tree *vec, unsigned vec_size, gimple *stmt)
+{
+  tree ssa;
+  int count = 0;
+
+  if (range_op_handler (stmt))
+    {
+      gcc_checking_assert (vec_size >= 2);
+      if ((ssa = gimple_range_ssa_p (gimple_range_operand1 (stmt))))
+	vec[count++] = ssa;
+      if ((ssa = gimple_range_ssa_p (gimple_range_operand2 (stmt))))
+	vec[count++] = ssa;
+    }
+  else if (is_a<gassign *> (stmt)
+	   && gimple_assign_rhs_code (stmt) == COND_EXPR)
+    {
+      gcc_checking_assert (vec_size >= 3);
+      gassign *st = as_a<gassign *> (stmt);
+      if ((ssa = gimple_range_ssa_p (gimple_assign_rhs1 (st))))
+	vec[count++] = ssa;
+      if ((ssa = gimple_range_ssa_p (gimple_assign_rhs2 (st))))
+	vec[count++] = ssa;
+      if ((ssa = gimple_range_ssa_p (gimple_assign_rhs3 (st))))
+	vec[count++] = ssa;
+    }
+  return count;
+}

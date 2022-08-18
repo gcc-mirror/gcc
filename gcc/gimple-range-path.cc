@@ -435,11 +435,10 @@ path_range_query::compute_ranges_in_block (basic_block bb)
 		 e->src->index, e->dest->index);
 
       path_oracle *p = get_path_oracle ();
-      p->reset_path ();
       // ?? Instead of nuking the root oracle altogether, we could
       // reset the path oracle to search for relations from the top of
       // the loop with the root oracle.  Something for future development.
-      p->set_root_oracle (nullptr);
+      p->reset_path ();
     }
 
   gori_compute &g = m_ranger->gori ();
@@ -558,26 +557,10 @@ path_range_query::compute_exit_dependencies (bitmap dependencies,
       else if (gassign *ass = dyn_cast <gassign *> (def_stmt))
 	{
 	  tree ssa[3];
-	  if (range_op_handler (ass))
-	    {
-	      ssa[0] = gimple_range_ssa_p (gimple_range_operand1 (ass));
-	      ssa[1] = gimple_range_ssa_p (gimple_range_operand2 (ass));
-	      ssa[2] = NULL_TREE;
-	    }
-	  else if (gimple_assign_rhs_code (ass) == COND_EXPR)
-	    {
-	      ssa[0] = gimple_range_ssa_p (gimple_assign_rhs1 (ass));
-	      ssa[1] = gimple_range_ssa_p (gimple_assign_rhs2 (ass));
-	      ssa[2] = gimple_range_ssa_p (gimple_assign_rhs3 (ass));
-	    }
-	  else
-	    continue;
-	  for (unsigned j = 0; j < 3; ++j)
-	    {
-	      tree rhs = ssa[j];
-	      if (rhs && add_to_exit_dependencies (rhs, dependencies))
-		worklist.safe_push (rhs);
-	    }
+	  unsigned count = gimple_range_ssa_names (ssa, 3, ass);
+	  for (unsigned j = 0; j < count; ++j)
+	    if (add_to_exit_dependencies (ssa[j], dependencies))
+	      worklist.safe_push (ssa[j]);
 	}
     }
   // Exported booleans along the path, may help conditionals.
@@ -615,7 +598,10 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
     compute_exit_dependencies (m_exit_dependencies, m_path);
 
   if (m_resolve)
-    get_path_oracle ()->reset_path ();
+    {
+      path_oracle *p = get_path_oracle ();
+      p->reset_path (m_ranger->oracle ());
+    }
 
   if (DEBUG_SOLVER)
     {

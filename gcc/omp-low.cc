@@ -6188,6 +6188,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		      && gimple_omp_for_combined_into_p (ctx->stmt))
 		    {
 		      tree t = OMP_CLAUSE_LINEAR_STEP (c);
+		      if (DECL_P (t))
+			t = build_outer_var_ref (t, ctx);
 		      tree stept = TREE_TYPE (t);
 		      tree ct = omp_find_clause (clauses,
 						 OMP_CLAUSE__LOOPTEMP_);

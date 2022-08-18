@@ -9627,10 +9627,13 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (!conversion_warning)
 	arg_complain &= ~tf_warning;
 
+      if (arg_complain & tf_warning)
+	maybe_warn_pessimizing_move (arg, type, /*return_p*/false);
+
       val = convert_like_with_context (conv, arg, fn, i - is_method,
 				       arg_complain);
       val = convert_for_arg_passing (type, val, arg_complain);
-	
+
       if (val == error_mark_node)
         return error_mark_node;
       else

@@ -4585,12 +4585,14 @@ driver_handle_option (struct gcc_options *opts,
     case OPT_static_libgcc:
     case OPT_shared_libgcc:
     case OPT_static_libgfortran:
+    case OPT_static_libquadmath:
     case OPT_static_libphobos:
     case OPT_static_libstdc__:
       /* These are always valid, since gcc.cc itself understands the
 	 first two, gfortranspec.cc understands -static-libgfortran,
-	 d-spec.cc understands -static-libphobos, and g++spec.cc
-	 understands -static-libstdc++ */
+	 d-spec.cc understands -static-libphobos, g++spec.cc
+	 understands -static-libstdc++ and libgfortran.spec handles
+	 -static-libquadmath.  */
       validated = true;
       break;
 

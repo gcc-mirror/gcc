@@ -1023,6 +1023,24 @@
   [(set_attr "type" "fmove")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "fmax<mode>3"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(smax:ANYF (match_operand:ANYF 1 "register_operand" "f")
+		   (match_operand:ANYF 2 "register_operand" "f")))]
+  ""
+  "fmax.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmove")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "fmin<mode>3"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(smin:ANYF (match_operand:ANYF 1 "register_operand" "f")
+		   (match_operand:ANYF 2 "register_operand" "f")))]
+  ""
+  "fmin.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmove")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "smaxa<mode>3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(if_then_else:ANYF

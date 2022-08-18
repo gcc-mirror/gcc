@@ -5226,12 +5226,16 @@ else
   GNATMAKE="$ac_cv_prog_GNATMAKE"
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler driver understands Ada" >&5
-$as_echo_n "checking whether compiler driver understands Ada... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler driver understands Ada and is recent enough" >&5
+$as_echo_n "checking whether compiler driver understands Ada and is recent enough... " >&6; }
 if ${acx_cv_cc_gcc_supports_ada+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   cat >conftest.adb <<EOF
+pragma Warnings (Off);
+with System.CRTL;
+pragma Warnings (On);
+use type System.CRTL.int64;
 procedure conftest is begin null; end conftest;
 EOF
 acx_cv_cc_gcc_supports_ada=no
@@ -19674,7 +19678,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19677 "configure"
+#line 19681 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19780,7 +19784,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19783 "configure"
+#line 19787 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

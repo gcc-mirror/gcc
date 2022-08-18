@@ -202,6 +202,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   CPP_OPTION (pfile, cpp_warn_c90_c99_compat) = -1;
   CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) = -1;
   CPP_OPTION (pfile, cpp_warn_cxx11_compat) = 0;
+  CPP_OPTION (pfile, cpp_warn_cxx20_compat) = 0;
   CPP_OPTION (pfile, cpp_warn_deprecated) = 1;
   CPP_OPTION (pfile, cpp_warn_long_long) = 0;
   CPP_OPTION (pfile, dollars_in_ident) = 1;

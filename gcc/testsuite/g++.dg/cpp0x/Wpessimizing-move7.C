@@ -30,23 +30,23 @@ static A foo ();
 A
 fn1 ()
 {
-  return std::move (A{}); // { dg-warning "moving a temporary object in a return statement prevents copy elision" }
-  return std::move (A()); // { dg-warning "moving a temporary object in a return statement prevents copy elision" }
-  return std::move (foo ()); // { dg-warning "moving a temporary object in a return statement prevents copy elision" }
+  return std::move (A{}); // { dg-warning "moving a temporary object prevents copy elision" }
+  return std::move (A()); // { dg-warning "moving a temporary object prevents copy elision" }
+  return std::move (foo ()); // { dg-warning "moving a temporary object prevents copy elision" }
 }
 
 B fn2 ()
 {
-  return std::move (A());
-  return std::move (A{});
-  return std::move (foo ());
+  return std::move (A()); // { dg-warning "moving a temporary object prevents copy elision" }
+  return std::move (A{}); // { dg-warning "moving a temporary object prevents copy elision" }
+  return std::move (foo ()); // { dg-warning "moving a temporary object prevents copy elision" }
 }
 
 template <typename T1, typename T2>
 T1
 fn3 ()
 {
-  return std::move (T2{}); // { dg-warning "moving a temporary object in a return statement prevents copy elision" }
+  return std::move (T2{}); // { dg-warning "moving a temporary object prevents copy elision" }
 }
 
 void
@@ -58,6 +58,6 @@ do_fn3 ()
 
 char take_buffer;
 struct label_text {
-  label_text take() { return std::move(label_text(&take_buffer)); } // { dg-warning "moving a temporary object in a return statement prevents copy elision" }
+  label_text take() { return std::move(label_text(&take_buffer)); } // { dg-warning "moving a temporary object prevents copy elision" }
   label_text(char *);
 };

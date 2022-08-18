@@ -239,8 +239,6 @@ HOST_EXPORTS = \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
 	ISLLIBS="$(HOST_ISLLIBS)"; export ISLLIBS; \
 	ISLINC="$(HOST_ISLINC)"; export ISLINC; \
-	LIBELFLIBS="$(HOST_LIBELFLIBS)"; export LIBELFLIBS; \
-	LIBELFINC="$(HOST_LIBELFINC)"; export LIBELFINC; \
 	XGCC_FLAGS_FOR_TARGET="$(XGCC_FLAGS_FOR_TARGET)"; export XGCC_FLAGS_FOR_TARGET; \
 @if gcc-bootstrap
 	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
@@ -345,10 +343,6 @@ HOST_GMPINC = @gmpinc@
 # Where to find isl
 HOST_ISLLIBS = @isllibs@
 HOST_ISLINC = @islinc@
-
-# Where to find libelf
-HOST_LIBELFLIBS = @libelflibs@
-HOST_LIBELFINC = @libelfinc@
 
 # ----------------------------------------------
 # Programs producing files for the BUILD machine

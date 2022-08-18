@@ -2448,8 +2448,18 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 	gcc_unreachable ();
     }
 
-  insn = emit_call_insn (gen_call_value_internal (v0, loongarch_tls_symbol,
-						  const0_rtx));
+  if (flag_plt)
+    insn = emit_call_insn (gen_call_value_internal (v0, loongarch_tls_symbol,
+						    const0_rtx));
+  else
+    {
+      rtx dest = gen_reg_rtx (Pmode);
+      rtx high = gen_reg_rtx (Pmode);
+      loongarch_emit_move (high, gen_rtx_HIGH (Pmode, loongarch_tls_symbol));
+      emit_insn (gen_ld_from_got (Pmode, dest, high, loongarch_tls_symbol));
+      insn = emit_call_insn (gen_call_value_internal (v0, dest, const0_rtx));
+    }
+
   RTL_CONST_CALL_P (insn) = 1;
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), a0);
   insn = get_insns ();

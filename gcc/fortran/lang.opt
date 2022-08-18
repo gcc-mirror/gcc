@@ -863,6 +863,10 @@ static-libgfortran
 Fortran
 Statically link the GNU Fortran helper library (libgfortran).
 
+static-libquadmath
+Fortran
+Statically link the GCC Quad-Precision Math Library (libquadmath).
+
 std=f2003
 Fortran
 Conform to the ISO Fortran 2003 standard.

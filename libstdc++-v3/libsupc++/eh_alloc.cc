@@ -224,8 +224,8 @@ namespace
 	  free_entry **fe;
 	  for (fe = &first_free_entry;
 	       (*fe)->next
-	       && (reinterpret_cast <char *> ((*fe)->next)
-		   > reinterpret_cast <char *> (e) + sz);
+	       && (reinterpret_cast <char *> (e) + sz
+		   > reinterpret_cast <char *> ((*fe)->next));
 	       fe = &(*fe)->next)
 	    ;
 	  // If we can merge the next block into us do so and continue
