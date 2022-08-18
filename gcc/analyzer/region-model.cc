@@ -3301,7 +3301,8 @@ public:
     m.add_cwe (131);
 
     return warning_meta (rich_loc, m, get_controlling_option (),
-	       "allocated buffer size is not a multiple of the pointee's size");
+			 "allocated buffer size is not a multiple"
+			 " of the pointee's size");
   }
 
   label_text
@@ -3396,21 +3397,20 @@ capacity_compatible_with_type (tree cst, tree pointee_size_tree)
 class size_visitor : public visitor
 {
 public:
-  size_visitor (tree size_cst, const svalue *sval, constraint_manager *cm)
-  : m_size_cst (size_cst), m_sval (sval), m_cm (cm)
+  size_visitor (tree size_cst, const svalue *root_sval, constraint_manager *cm)
+  : m_size_cst (size_cst), m_root_sval (root_sval), m_cm (cm)
   {
-    sval->accept (this);
+    m_root_sval->accept (this);
   }
 
   bool get_result ()
   {
-    return result_set.contains (m_sval);
+    return result_set.contains (m_root_sval);
   }
 
   void visit_constant_svalue (const constant_svalue *sval) final override
   {
-    if (capacity_compatible_with_type (sval->get_constant (), m_size_cst))
-      result_set.add (sval);
+    check_constant (sval->get_constant (), sval);
   }
 
   void visit_unknown_svalue (const unknown_svalue *sval ATTRIBUTE_UNUSED)
@@ -3478,15 +3478,10 @@ public:
     equiv_class_id id (-1);
     if (m_cm->get_equiv_class_by_svalue (sval, &id))
       {
-	if (tree cst_val = id.get_obj (*m_cm).get_any_constant ())
-	  {
-	    if (capacity_compatible_with_type (cst_val, m_size_cst))
-	      result_set.add (sval);
-	  }
+	if (tree cst = id.get_obj (*m_cm).get_any_constant ())
+	  check_constant (cst, sval);
 	else
-	  {
-	    result_set.add (sval);
-	  }
+	  result_set.add (sval);
       }
   }
 
@@ -3503,8 +3498,23 @@ public:
   }
 
 private:
+  void check_constant (tree cst, const svalue *sval)
+  {
+    switch (TREE_CODE (cst))
+      {
+      default:
+	/* Assume all unhandled operands are compatible.  */
+	result_set.add (sval);
+	break;
+      case INTEGER_CST:
+	if (capacity_compatible_with_type (cst, m_size_cst))
+	  result_set.add (sval);
+	break;
+      }
+  }
+
   tree m_size_cst;
-  const svalue *m_sval;
+  const svalue *m_root_sval;
   constraint_manager *m_cm;
   svalue_set result_set; /* Used as a mapping of svalue*->bool.  */
 };
@@ -3541,12 +3551,12 @@ struct_or_union_with_inheritance_p (tree struc)
 static bool
 is_any_cast_p (const gimple *stmt)
 {
-  if (const gassign *assign = dyn_cast<const gassign *>(stmt))
+  if (const gassign *assign = dyn_cast <const gassign *> (stmt))
     return gimple_assign_cast_p (assign)
 	   || !pending_diagnostic::same_tree_p (
 		  TREE_TYPE (gimple_assign_lhs (assign)),
 		  TREE_TYPE (gimple_assign_rhs1 (assign)));
-  else if (const gcall *call = dyn_cast<const gcall *>(stmt))
+  else if (const gcall *call = dyn_cast <const gcall *> (stmt))
     {
       tree lhs = gimple_call_lhs (call);
       return lhs != NULL_TREE && !pending_diagnostic::same_tree_p (
@@ -3606,10 +3616,11 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
     case svalue_kind::SK_CONSTANT:
       {
 	const constant_svalue *cst_cap_sval
-		= as_a <const constant_svalue *> (capacity);
+	  = as_a <const constant_svalue *> (capacity);
 	tree cst_cap = cst_cap_sval->get_constant ();
-	if (!capacity_compatible_with_type (cst_cap, pointee_size_tree,
-					    is_struct))
+	if (TREE_CODE (cst_cap) == INTEGER_CST
+	    && !capacity_compatible_with_type (cst_cap, pointee_size_tree,
+					       is_struct))
 	  ctxt->warn (new dubious_allocation_size (lhs_reg, rhs_reg,
 						   cst_cap));
       }
@@ -5055,6 +5066,125 @@ region_model::append_regions_cb (const region *base_reg,
     cb_data->out->safe_push (decl_reg);
 }
 
+
+/* Abstract class for diagnostics related to the use of
+   floating-point arithmetic where precision is needed.  */
+
+class imprecise_floating_point_arithmetic : public pending_diagnostic
+{
+public:
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_imprecise_fp_arithmetic;
+  }
+};
+
+/* Concrete diagnostic to complain about uses of floating-point arithmetic
+   in the size argument of malloc etc.  */
+
+class float_as_size_arg : public imprecise_floating_point_arithmetic
+{
+public:
+  float_as_size_arg (tree arg) : m_arg (arg)
+  {}
+
+  const char *get_kind () const final override
+  {
+    return "float_as_size_arg_diagnostic";
+  }
+
+  bool subclass_equal_p (const pending_diagnostic &other) const
+  {
+    return same_tree_p (m_arg, ((const float_as_size_arg &) other).m_arg);
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    diagnostic_metadata m;
+    bool warned = warning_meta (rich_loc, m, get_controlling_option (),
+				"use of floating-point arithmetic here might"
+				" yield unexpected results");
+    if (warned)
+      inform (rich_loc->get_loc (), "only use operands of an integer type"
+				    " inside the size argument");
+    return warned;
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) final
+  override
+  {
+    if (m_arg)
+      return ev.formatted_print ("operand %qE is of type %qT",
+				 m_arg, TREE_TYPE (m_arg));
+    return ev.formatted_print ("at least one operand of the size argument is"
+			       " of a floating-point type");
+  }
+
+private:
+  tree m_arg;
+};
+
+/* Visitor to find uses of floating-point variables/constants in an svalue.  */
+
+class contains_floating_point_visitor : public visitor
+{
+public:
+  contains_floating_point_visitor (const svalue *root_sval) : m_result (NULL)
+  {
+    root_sval->accept (this);
+  }
+
+  const svalue *get_svalue_to_report ()
+  {
+    return m_result;
+  }
+
+  void visit_constant_svalue (const constant_svalue *sval) final override
+  {
+    /* At the point the analyzer runs, constant integer operands in a floating
+       point expression are already implictly converted to floating-points.
+       Thus, we do prefer to report non-constants such that the diagnostic
+       always reports a floating-point operand.  */
+    tree type = sval->get_type ();
+    if (type && FLOAT_TYPE_P (type) && !m_result)
+      m_result = sval;
+  }
+
+  void visit_conjured_svalue (const conjured_svalue *sval) final override
+  {
+    tree type = sval->get_type ();
+    if (type && FLOAT_TYPE_P (type))
+      m_result = sval;
+  }
+
+  void visit_initial_svalue (const initial_svalue *sval) final override
+  {
+    tree type = sval->get_type ();
+    if (type && FLOAT_TYPE_P (type))
+      m_result = sval;
+  }
+
+private:
+  /* Non-null if at least one floating-point operand was found.  */
+  const svalue *m_result;
+};
+
+/* May complain about uses of floating-point operands in SIZE_IN_BYTES.  */
+
+void
+region_model::check_dynamic_size_for_floats (const svalue *size_in_bytes,
+					     region_model_context *ctxt) const
+{
+  gcc_assert (ctxt);
+
+  contains_floating_point_visitor v (size_in_bytes);
+  if (const svalue *float_sval = v.get_svalue_to_report ())
+	{
+	  tree diag_arg = get_representative_tree (float_sval);
+	  ctxt->warn (new float_as_size_arg (diag_arg));
+	}
+}
+
 /* Return a new region describing a heap-allocated block of memory.
    Use CTXT to complain about tainted sizes.  */
 
@@ -5092,8 +5222,11 @@ region_model::set_dynamic_extents (const region *reg,
 {
   assert_compat_types (size_in_bytes->get_type (), size_type_node);
   if (ctxt)
-    check_dynamic_size_for_taint (reg->get_memory_space (), size_in_bytes,
-				  ctxt);
+    {
+      check_dynamic_size_for_taint (reg->get_memory_space (), size_in_bytes,
+				    ctxt);
+      check_dynamic_size_for_floats (size_in_bytes, ctxt);
+    }
   m_dynamic_extents.put (reg, size_in_bytes);
 }
 

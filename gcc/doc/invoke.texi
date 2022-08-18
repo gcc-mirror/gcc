@@ -453,6 +453,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-fd-use-without-check @gol
 -Wno-analyzer-file-leak @gol
 -Wno-analyzer-free-of-non-heap @gol
+-Wno-analyzer-imprecise-fp-arithmetic @gol
 -Wno-analyzer-jump-through-null @gol
 -Wno-analyzer-malloc-leak @gol
 -Wno-analyzer-mismatching-deallocation @gol
@@ -9758,6 +9759,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-fd-use-without-check @gol
 -Wanalyzer-file-leak @gol
 -Wanalyzer-free-of-non-heap @gol
+-Wanalyzer-imprecise-fp-arithmetic @gol
 -Wanalyzer-jump-through-null @gol
 -Wanalyzer-malloc-leak @gol
 -Wanalyzer-mismatching-deallocation @gol
@@ -9945,6 +9947,18 @@ This diagnostic warns for paths through the code in which @code{free}
 is called on a non-heap pointer (e.g. an on-stack buffer, or a global).
 
 See @uref{https://cwe.mitre.org/data/definitions/590.html, CWE-590: Free of Memory not on the Heap}.
+
+@item -Wno-analyzer-imprecise-fp-arithmetic
+@opindex Wanalyzer-imprecise-fp-arithmetic
+@opindex Wno-analyzer-imprecise-fp-arithmetic
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-imprecise-fp-arithmetic}
+to disable it.
+
+This diagnostic warns for paths through the code in which floating-point
+arithmetic is used in locations where precise computation is needed.  This
+diagnostic only warns on use of floating-point operands inside the
+calculation of an allocation size at the moment.
 
 @item -Wno-analyzer-jump-through-null
 @opindex Wanalyzer-jump-through-null

@@ -853,6 +853,8 @@ class region_model
   void check_dynamic_size_for_taint (enum memory_space mem_space,
 				     const svalue *size_in_bytes,
 				     region_model_context *ctxt) const;
+  void check_dynamic_size_for_floats (const svalue *size_in_bytes,
+				      region_model_context *ctxt) const;
 
   void check_region_for_taint (const region *reg,
 			       enum access_direction dir,
