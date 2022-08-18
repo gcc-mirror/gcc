@@ -1,3 +1,24 @@
+2022-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2022-04-26  Segher Boessenkoool  <segher@kernel.crashing.org>
+
+	PR target/105349
+	* lib/target-supports.exp (check_effective_target_has_arch_pwr5): Use
+	the specified dg-options.
+	(check_effective_target_has_arch_pwr6): Ditto.
+	(check_effective_target_has_arch_pwr7): Ditto.
+	(check_effective_target_has_arch_pwr8): Ditto.
+	(check_effective_target_has_arch_pwr9): Ditto.
+	(check_effective_target_has_arch_ppc64): Ditto.
+
+2022-08-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2022-04-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lib/target-supports.exp (check_effective_target_has_arch_ppc64): New.
+
 2022-08-04  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
