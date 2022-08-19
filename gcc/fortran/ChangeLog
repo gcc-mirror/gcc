@@ -1,3 +1,13 @@
+2022-08-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Revert:
+	2022-07-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/77652
+	* check.cc (gfc_check_associated): Make the rank check of POINTER
+	vs. TARGET match the allowed forms of pointer assignment for the
+	selected Fortran standard.
+
 2022-08-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

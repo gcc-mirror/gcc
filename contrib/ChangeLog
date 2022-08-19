@@ -1,3 +1,7 @@
+2022-08-18  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* git-fetch-vendor.sh : Fix typo.
+
 2022-08-02  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Do not deduce changelog for root ChangeLog.

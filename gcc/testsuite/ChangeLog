@@ -1,3 +1,60 @@
+2022-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cpp/c11-warning-1.c, gcc.dg/cpp/c11-warning-2.c,
+	gcc.dg/cpp/c11-warning-3.c, gcc.dg/cpp/c11-warning-4.c,
+	gcc.dg/cpp/c2x-warning-1.c, gcc.dg/cpp/c2x-warning-2.c,
+	gcc.dg/cpp/gnu11-warning-1.c, gcc.dg/cpp/gnu11-warning-2.c,
+	gcc.dg/cpp/gnu11-warning-3.c, gcc.dg/cpp/gnu11-warning-4.c,
+	gcc.dg/cpp/gnu2x-warning-1.c, gcc.dg/cpp/gnu2x-warning-2.c: New
+	tests.
+
+2022-08-18  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/sibcalls.c: Add a new test function to ensure
+	that registers for arguments (occupy from A2 to A7) and for indirect
+	sibcall (should be assigned to A8) neither conflict nor spill out.
+
+2022-08-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Revert:
+	2022-08-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/77652
+	* gfortran.dg/associated_target_9a.f90: New test.
+	* gfortran.dg/associated_target_9b.f90: New test.
+
+2022-08-18  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106181
+	* gcc.dg/analyzer/allocation-size-1.c: New test.
+	* gcc.dg/analyzer/imprecise-floating-point-1.c: New test.
+	* gcc.dg/analyzer/pr106181.c: New test.
+
+2022-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106617
+	* gcc.dg/pr106617.c: New testcase.
+
+2022-08-18  konglin1  <lingling.kong@intel.com>
+
+	* g++.target/i386/vect-bfloat16-1.C: New test.
+	* gcc.target/i386/vect-bfloat16-1.c: New test.
+	* gcc.target/i386/vect-bfloat16-2a.c: New test.
+	* gcc.target/i386/vect-bfloat16-2b.c: New test.
+	* gcc.target/i386/vect-bfloat16-typecheck_1.c: New test.
+	* gcc.target/i386/vect-bfloat16-typecheck_2.c: New test.
+
+2022-08-18  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/103109
+	* gcc.target/powerpc/pr103109.h: New.
+	* gcc.target/powerpc/pr103109-1.c: New.
+	* gcc.target/powerpc/pr103109-2.c: New.
+
+2022-08-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/tls-gd-noplt.c: New test.
+
 2022-08-17  Maciej W. Rozycki  <macro@embecosm.com>
 
 	* gcc.target/riscv/fmax-snan.c: Add `dg-require-effective-target

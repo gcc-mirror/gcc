@@ -1,3 +1,13 @@
+2022-08-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add warning_directive.
+	* init.cc (struct lang_flags, lang_defaults): Add
+	warning_directive.
+	* directives.cc (DIRECTIVE_TABLE): Mark #warning as STDC2X not
+	EXTENSION.
+	(directive_diagnostics): Diagnose #warning with -Wc11-c2x-compat,
+	or with -pedantic for a standard not supporting #warning.
+
 2022-08-16  Tom Honermann  <tom@honermann.net>
 
 	PR c++/106423
