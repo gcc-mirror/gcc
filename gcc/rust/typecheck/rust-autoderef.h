@@ -40,21 +40,25 @@ public:
   };
 
   // ctor for all adjustments except derefs
-  Adjustment (AdjustmentType type, const TyTy::BaseType *expected)
-    : Adjustment (type, expected, nullptr, nullptr, AdjustmentType::ERROR)
+  Adjustment (AdjustmentType type, const TyTy::BaseType *actual,
+	      const TyTy::BaseType *expected)
+    : Adjustment (type, actual, expected, nullptr, nullptr,
+		  AdjustmentType::ERROR)
   {}
 
   static Adjustment get_op_overload_deref_adjustment (
-    AdjustmentType type, const TyTy::BaseType *expected, TyTy::FnType *fn,
-    HIR::ImplItem *deref_item,
+    AdjustmentType type, const TyTy::BaseType *actual,
+    const TyTy::BaseType *expected, TyTy::FnType *fn, HIR::ImplItem *deref_item,
     Adjustment::AdjustmentType requires_ref_adjustment)
   {
     rust_assert (type == DEREF || type == DEREF_MUT);
-    return Adjustment (type, expected, fn, deref_item, requires_ref_adjustment);
+    return Adjustment (type, actual, expected, fn, deref_item,
+		       requires_ref_adjustment);
   }
 
   AdjustmentType get_type () const { return type; }
 
+  const TyTy::BaseType *get_actual () const { return actual; }
   const TyTy::BaseType *get_expected () const { return expected; }
 
   std::string as_string () const
@@ -86,7 +90,7 @@ public:
     return "";
   }
 
-  static Adjustment get_error () { return Adjustment{ERROR, nullptr}; }
+  static Adjustment get_error () { return Adjustment{ERROR, nullptr, nullptr}; }
 
   bool is_error () const { return type == ERROR; }
 
@@ -106,14 +110,17 @@ public:
   HIR::ImplItem *get_deref_hir_item () const { return deref_item; }
 
 private:
-  Adjustment (AdjustmentType type, const TyTy::BaseType *expected,
-	      TyTy::FnType *deref_operator_fn, HIR::ImplItem *deref_item,
+  Adjustment (AdjustmentType type, const TyTy::BaseType *actual,
+	      const TyTy::BaseType *expected, TyTy::FnType *deref_operator_fn,
+	      HIR::ImplItem *deref_item,
 	      Adjustment::AdjustmentType requires_ref_adjustment)
-    : type (type), expected (expected), deref_operator_fn (deref_operator_fn),
-      deref_item (deref_item), requires_ref_adjustment (requires_ref_adjustment)
+    : type (type), actual (actual), expected (expected),
+      deref_operator_fn (deref_operator_fn), deref_item (deref_item),
+      requires_ref_adjustment (requires_ref_adjustment)
   {}
 
   AdjustmentType type;
+  const TyTy::BaseType *actual;
   const TyTy::BaseType *expected;
 
   // - only used for deref operator_overloads

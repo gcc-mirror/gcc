@@ -23,7 +23,6 @@
 #include "rust-hir-type-check-type.h"
 #include "rust-tyty-rules.h"
 #include "rust-tyty-cmp.h"
-#include "rust-tyty-coercion.h"
 #include "rust-tyty-cast.h"
 #include "rust-hir-map.h"
 #include "rust-substitution-mapper.h"
@@ -419,13 +418,6 @@ InferType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-InferType::coerce (BaseType *other)
-{
-  InferCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 InferType::cast (BaseType *other)
 {
   InferCastRules r (this);
@@ -524,12 +516,6 @@ bool
 ErrorType::can_eq (const BaseType *other, bool emit_errors) const
 {
   return get_kind () == other->get_kind ();
-}
-
-BaseType *
-ErrorType::coerce (BaseType *other)
-{
-  return this;
 }
 
 BaseType *
@@ -999,13 +985,6 @@ ADTType::unify (BaseType *other)
 }
 
 BaseType *
-ADTType::coerce (BaseType *other)
-{
-  ADTCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 ADTType::cast (BaseType *other)
 {
   ADTCastRules r (this);
@@ -1213,13 +1192,6 @@ TupleType::unify (BaseType *other)
 }
 
 BaseType *
-TupleType::coerce (BaseType *other)
-{
-  TupleCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 TupleType::cast (BaseType *other)
 {
   TupleCastRules r (this);
@@ -1331,13 +1303,6 @@ FnType::unify (BaseType *other)
 {
   FnRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-FnType::coerce (BaseType *other)
-{
-  FnCoercionRules r (this);
-  return r.coerce (other);
 }
 
 BaseType *
@@ -1579,13 +1544,6 @@ FnPtr::unify (BaseType *other)
 }
 
 BaseType *
-FnPtr::coerce (BaseType *other)
-{
-  FnptrCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 FnPtr::cast (BaseType *other)
 {
   FnptrCastRules r (this);
@@ -1679,17 +1637,11 @@ ClosureType::can_eq (const BaseType *other, bool emit_errors) const
 }
 
 BaseType *
-ClosureType::coerce (BaseType *other)
-{
-  ClosureCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 ClosureType::cast (BaseType *other)
 {
-  ClosureCoercionRules r (this);
-  return r.coerce (other);
+  // FIXME
+  gcc_unreachable ();
+  return nullptr;
 }
 
 bool
@@ -1742,13 +1694,6 @@ ArrayType::unify (BaseType *other)
 {
   ArrayRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-ArrayType::coerce (BaseType *other)
-{
-  ArrayCoercionRules r (this);
-  return r.coerce (other);
 }
 
 BaseType *
@@ -1842,13 +1787,6 @@ SliceType::unify (BaseType *other)
 }
 
 BaseType *
-SliceType::coerce (BaseType *other)
-{
-  SliceCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 SliceType::cast (BaseType *other)
 {
   SliceCastRules r (this);
@@ -1939,13 +1877,6 @@ BoolType::unify (BaseType *other)
 }
 
 BaseType *
-BoolType::coerce (BaseType *other)
-{
-  BoolCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 BoolType::cast (BaseType *other)
 {
   BoolCastRules r (this);
@@ -2008,13 +1939,6 @@ IntType::unify (BaseType *other)
 {
   IntRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-IntType::coerce (BaseType *other)
-{
-  IntCoercionRules r (this);
-  return r.coerce (other);
 }
 
 BaseType *
@@ -2094,13 +2018,6 @@ UintType::unify (BaseType *other)
 }
 
 BaseType *
-UintType::coerce (BaseType *other)
-{
-  UintCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 UintType::cast (BaseType *other)
 {
   UintCastRules r (this);
@@ -2171,13 +2088,6 @@ FloatType::unify (BaseType *other)
 }
 
 BaseType *
-FloatType::coerce (BaseType *other)
-{
-  FloatCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 FloatType::cast (BaseType *other)
 {
   FloatCastRules r (this);
@@ -2240,13 +2150,6 @@ USizeType::unify (BaseType *other)
 }
 
 BaseType *
-USizeType::coerce (BaseType *other)
-{
-  USizeCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 USizeType::cast (BaseType *other)
 {
   USizeCastRules r (this);
@@ -2295,13 +2198,6 @@ ISizeType::unify (BaseType *other)
 {
   ISizeRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-ISizeType::coerce (BaseType *other)
-{
-  ISizeCoercionRules r (this);
-  return r.coerce (other);
 }
 
 BaseType *
@@ -2356,13 +2252,6 @@ CharType::unify (BaseType *other)
 }
 
 BaseType *
-CharType::coerce (BaseType *other)
-{
-  CharCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 CharType::cast (BaseType *other)
 {
   CharCastRules r (this);
@@ -2412,13 +2301,6 @@ ReferenceType::unify (BaseType *other)
 {
   ReferenceRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-ReferenceType::coerce (BaseType *other)
-{
-  ReferenceCoercionRules r (this);
-  return r.coerce (other);
 }
 
 BaseType *
@@ -2509,13 +2391,6 @@ PointerType::unify (BaseType *other)
 {
   PointerRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-PointerType::coerce (BaseType *other)
-{
-  PointerCoercionRules r (this);
-  return r.coerce (other);
 }
 
 BaseType *
@@ -2620,13 +2495,6 @@ ParamType::unify (BaseType *other)
 {
   ParamRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-ParamType::coerce (BaseType *other)
-{
-  ParamCoercionRules r (this);
-  return r.coerce (other);
 }
 
 BaseType *
@@ -2769,13 +2637,6 @@ StrType::unify (BaseType *other)
 }
 
 BaseType *
-StrType::coerce (BaseType *other)
-{
-  StrCoercionRules r (this);
-  return r.coerce (other);
-}
-
-BaseType *
 StrType::cast (BaseType *other)
 {
   StrCastRules r (this);
@@ -2818,13 +2679,6 @@ NeverType::unify (BaseType *other)
 {
   NeverRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-NeverType::coerce (BaseType *other)
-{
-  NeverCoercionRules r (this);
-  return r.coerce (other);
 }
 
 BaseType *
@@ -2879,13 +2733,6 @@ PlaceholderType::unify (BaseType *other)
 {
   PlaceholderRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-PlaceholderType::coerce (BaseType *other)
-{
-  PlaceholderCoercionRules r (this);
-  return r.coerce (other);
 }
 
 BaseType *
@@ -2990,12 +2837,6 @@ BaseType *
 ProjectionType::unify (BaseType *other)
 {
   return base->unify (other);
-}
-
-BaseType *
-ProjectionType::coerce (BaseType *other)
-{
-  return base->coerce (other);
 }
 
 BaseType *
@@ -3126,13 +2967,6 @@ DynamicObjectType::can_eq (const BaseType *other, bool emit_errors) const
 {
   DynamicCmp r (this, emit_errors);
   return r.can_eq (other);
-}
-
-BaseType *
-DynamicObjectType::coerce (BaseType *other)
-{
-  DynamicCoercionRules r (this);
-  return r.coerce (other);
 }
 
 BaseType *

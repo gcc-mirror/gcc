@@ -79,7 +79,7 @@ Adjuster::try_deref_type (const TyTy::BaseType *ty,
       break;
     }
 
-  return Adjustment::get_op_overload_deref_adjustment (adjustment_type,
+  return Adjustment::get_op_overload_deref_adjustment (adjustment_type, ty,
 						       ref_base, fn, impl_item,
 						       requires_ref_adjustment);
 }
@@ -95,7 +95,7 @@ Adjuster::try_raw_deref_type (const TyTy::BaseType *ty)
     = static_cast<const TyTy::ReferenceType *> (ty);
   auto infered = ref_base->get_base ()->clone ();
 
-  return Adjustment (Adjustment::AdjustmentType::INDIRECTION, infered);
+  return Adjustment (Adjustment::AdjustmentType::INDIRECTION, ty, infered);
 }
 
 Adjustment
@@ -116,7 +116,7 @@ Adjuster::try_unsize_type (const TyTy::BaseType *ty)
 			   TyTy::TyVar (slice_elem->get_ref ()));
   context->insert_implicit_type (slice);
 
-  return Adjustment (Adjustment::AdjustmentType::UNSIZE, slice);
+  return Adjustment (Adjustment::AdjustmentType::UNSIZE, ty, slice);
 }
 
 static bool
@@ -373,7 +373,8 @@ AutoderefCycle::try_autoderefed (const TyTy::BaseType *r)
   TyTy::ReferenceType *r1
     = new TyTy::ReferenceType (r->get_ref (), TyTy::TyVar (r->get_ref ()),
 			       Mutability::Imm);
-  adjustments.push_back (Adjustment (Adjustment::AdjustmentType::IMM_REF, r1));
+  adjustments.push_back (
+    Adjustment (Adjustment::AdjustmentType::IMM_REF, r, r1));
   if (select (*r1))
     return true;
 
@@ -383,7 +384,8 @@ AutoderefCycle::try_autoderefed (const TyTy::BaseType *r)
   TyTy::ReferenceType *r2
     = new TyTy::ReferenceType (r->get_ref (), TyTy::TyVar (r->get_ref ()),
 			       Mutability::Mut);
-  adjustments.push_back (Adjustment (Adjustment::AdjustmentType::MUT_REF, r2));
+  adjustments.push_back (
+    Adjustment (Adjustment::AdjustmentType::MUT_REF, r, r2));
   if (select (*r2))
     return true;
 

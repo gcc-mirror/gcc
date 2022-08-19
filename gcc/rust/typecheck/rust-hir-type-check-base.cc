@@ -334,6 +334,9 @@ TyTy::BaseType *
 TypeCheckBase::coercion_site (HirId id, TyTy::BaseType *expected,
 			      TyTy::BaseType *expr, Location locus)
 {
+  rust_debug ("coercion_site id={%u} expected={%s} expr={%s}", id,
+	      expected->debug_str ().c_str (), expr->debug_str ().c_str ());
+
   auto context = TypeCheckContext::get ();
   if (expected->get_kind () == TyTy::TypeKind::ERROR
       || expr->get_kind () == TyTy::TypeKind::ERROR)
@@ -341,14 +344,19 @@ TypeCheckBase::coercion_site (HirId id, TyTy::BaseType *expected,
 
   // can we autoderef it?
   auto result = AutoderefTypeCoercion::Coerce (expr, expected, locus);
+
+  // the result needs to be unified
+  TyTy::BaseType *receiver = expr;
   if (!result.is_error ())
     {
-      // save any adjustments
-      context->insert_autoderef_mappings (id, std::move (result.adjustments));
-      return expected->coerce (result.tyty);
+      receiver = result.tyty;
     }
 
-  return expected->coerce (expr);
+  rust_debug ("coerce_default_unify(a={%s}, b={%s})",
+	      receiver->debug_str ().c_str (), expected->debug_str ().c_str ());
+  TyTy::BaseType *coerced = expected->unify (receiver);
+  context->insert_autoderef_mappings (id, std::move (result.adjustments));
+  return coerced;
 }
 
 void
@@ -374,7 +382,8 @@ TypeCheckBase::resolve_generic_params (
 	      {
 		auto expr_type = TypeCheckExpr::Resolve (
 		  param->get_default_expression ().get ());
-		specified_type->coerce (expr_type);
+
+		specified_type->unify (expr_type);
 	      }
 
 	    context->insert_type (generic_param->get_mappings (),

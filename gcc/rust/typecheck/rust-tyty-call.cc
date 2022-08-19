@@ -136,8 +136,6 @@ TypeCheckCallExpr::visit (FnType &type)
 	    }
 	}
 
-      context->insert_type (argument->get_mappings (), argument_expr_tyty);
-
       i++;
     }
 
@@ -188,8 +186,6 @@ TypeCheckCallExpr::visit (FnPtr &type)
 			 "Type Resolution failure on parameter");
 	  return;
 	}
-
-      context->insert_type (argument->get_mappings (), argument_expr_tyty);
 
       i++;
     }
@@ -246,8 +242,6 @@ TypeCheckMethodCallExpr::visit (FnType &type)
 			 "Type Resolution failure on parameter");
 	  return;
 	}
-
-      context->insert_type (argument->get_mappings (), argument_expr_tyty);
 
       i++;
     }

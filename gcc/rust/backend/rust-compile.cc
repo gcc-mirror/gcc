@@ -161,13 +161,6 @@ HIRCompileBase::coercion_site1 (tree rvalue, const TyTy::BaseType *rval,
 				    lvalue_locus, rvalue_locus))
 	return error_mark_node;
     }
-  else if (expected->get_kind () == TyTy::TypeKind::DYNAMIC
-	   && actual->get_kind () != TyTy::TypeKind::DYNAMIC)
-    {
-      const TyTy::DynamicObjectType *dyn
-	= static_cast<const TyTy::DynamicObjectType *> (expected);
-      return coerce_to_dyn_object (rvalue, actual, expected, dyn, rvalue_locus);
-    }
   else if (expected->get_kind () == TyTy::TypeKind::SLICE)
     {
       // bad coercion
@@ -182,7 +175,7 @@ HIRCompileBase::coercion_site1 (tree rvalue, const TyTy::BaseType *rval,
 
       // return an unsized coercion
       Resolver::Adjustment unsize_adj (
-	Resolver::Adjustment::AdjustmentType::UNSIZE, expected);
+	Resolver::Adjustment::AdjustmentType::UNSIZE, actual, expected);
       return resolve_unsized_adjustment (unsize_adj, rvalue, rvalue_locus);
     }
 
@@ -192,7 +185,6 @@ HIRCompileBase::coercion_site1 (tree rvalue, const TyTy::BaseType *rval,
 tree
 HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 				      const TyTy::BaseType *actual,
-				      const TyTy::BaseType *expected,
 				      const TyTy::DynamicObjectType *ty,
 				      Location locus)
 {

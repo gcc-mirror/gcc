@@ -58,7 +58,7 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
       TyTy::BaseType *base_resolved
 	= TypeCheckExpr::Resolve (struct_expr.struct_base->base_struct.get ());
       struct_def = static_cast<TyTy::ADTType *> (
-	struct_path_resolved->coerce (base_resolved));
+	struct_path_resolved->unify (base_resolved));
       if (struct_def == nullptr)
 	{
 	  rust_fatal_error (struct_expr.struct_base->base_struct->get_locus (),

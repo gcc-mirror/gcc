@@ -41,15 +41,34 @@ public:
     static CoercionResult get_error () { return CoercionResult{{}, nullptr}; }
   };
 
-  static CoercionResult Coerce (const TyTy::BaseType *receiver,
-				const TyTy::BaseType *expected, Location locus);
+  static CoercionResult Coerce (TyTy::BaseType *receiver,
+				TyTy::BaseType *expected, Location locus);
+
+  CoercionResult coerce_unsafe_ptr (TyTy::BaseType *receiver,
+				    TyTy::PointerType *expected,
+				    Mutability mutability);
+
+  CoercionResult coerce_borrowed_pointer (TyTy::BaseType *receiver,
+					  TyTy::ReferenceType *expected,
+					  Mutability mutability);
+
+  CoercionResult coerce_unsized (TyTy::BaseType *receiver,
+				 TyTy::BaseType *expected, bool &unsafe_error);
+
+  static bool coerceable_mutability (Mutability from_mutbl,
+				     Mutability to_mutbl);
+
+  static void mismatched_mutability_error (Location expr_locus, Location lhs,
+					   Location rhs);
+  static void object_unsafe_error (Location expr_locus, Location lhs,
+				   Location rhs);
 
 protected:
-  AutoderefTypeCoercion (const TyTy::BaseType *expected, Location locus);
-
-  bool cycle (const TyTy::BaseType *receiver) override;
+  AutoderefTypeCoercion (TyTy::BaseType *expected, Location locus);
 
   bool select (const TyTy::BaseType &autoderefed) override;
+
+  bool do_coercion (TyTy::BaseType *receiver);
 
 private:
   // context info
@@ -57,7 +76,7 @@ private:
   TypeCheckContext *context;
 
   // search
-  const TyTy::BaseType *expected;
+  TyTy::BaseType *expected;
   Location locus;
 
   // mutable fields
