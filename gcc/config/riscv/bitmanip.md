@@ -272,7 +272,7 @@
 (define_insn "bswap<mode>2"
   [(set (match_operand:X 0 "register_operand" "=r")
         (bswap:X (match_operand:X 1 "register_operand" "r")))]
-  "TARGET_64BIT && TARGET_ZBB"
+  "TARGET_ZBB"
   "rev8\t%0,%1"
   [(set_attr "type" "bitmanip")])
 
