@@ -263,9 +263,18 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	    pattern.get_items ().get ());
 
 	std::vector<TyTy::TyVar> pattern_elems;
-	for (auto &p : ref.get_patterns ())
+	for (size_t i = 0; i < ref.get_patterns ().size (); i++)
 	  {
-	    TyTy::BaseType *elem = TypeCheckPattern::Resolve (p.get (), parent);
+	    auto &p = ref.get_patterns ()[i];
+	    TyTy::BaseType *par_type = parent;
+	    if (parent->get_kind () == TyTy::TUPLE)
+	      {
+		TyTy::TupleType &par = *static_cast<TyTy::TupleType *> (parent);
+		par_type = par.get_field (i);
+	      }
+
+	    TyTy::BaseType *elem
+	      = TypeCheckPattern::Resolve (p.get (), par_type);
 	    pattern_elems.push_back (TyTy::TyVar (elem->get_ref ()));
 	  }
 	infered
