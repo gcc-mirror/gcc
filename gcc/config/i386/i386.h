@@ -2865,6 +2865,9 @@ struct GTY(()) machine_function {
      approximation.  */
   BOOL_BITFIELD tls_descriptor_call_expanded_p : 1;
 
+  /* True if TLS descriptor is called more than once.  */
+  BOOL_BITFIELD tls_descriptor_call_multiple_p : 1;
+
   /* If true, the current function has a STATIC_CHAIN is placed on the
      stack below the return address.  */
   BOOL_BITFIELD static_chain_on_stack : 1;

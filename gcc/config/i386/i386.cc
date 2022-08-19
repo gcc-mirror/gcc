@@ -12439,7 +12439,7 @@ ix86_tls_index (void)
 
 static GTY(()) rtx ix86_tls_symbol;
 
-static rtx
+rtx
 ix86_tls_get_addr (void)
 {
   if (cfun->machine->call_saved_registers
