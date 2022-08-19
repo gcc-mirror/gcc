@@ -988,10 +988,43 @@ warn_uninitialized_vars (bool wmaybe_uninit)
   wlimits wlims = { };
   wlims.wmaybe_uninit = wmaybe_uninit;
 
-  gimple_stmt_iterator gsi;
-  basic_block bb;
+  auto_bb_flag ft_reachable (cfun);
+
+  /* Mark blocks that are always executed when we ignore provably
+     not executed edges.  */
+  basic_block bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  while (!(bb->flags & ft_reachable))
+    {
+      bb->flags |= ft_reachable;
+      /* Find a single executable edge.  */
+      edge_iterator ei;
+      edge e, ee = NULL;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->flags & EDGE_EXECUTABLE)
+	  {
+	    if (!ee)
+	      ee = e;
+	    else
+	      {
+		ee = NULL;
+		break;
+	      }
+	  }
+      if (ee)
+	bb = ee->dest;
+      else
+	{
+	  bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
+	  if (!bb || bb->index == EXIT_BLOCK)
+	    break;
+	}
+    }
+
   FOR_EACH_BB_FN (bb, cfun)
     {
+      wlims.always_executed = (bb->flags & ft_reachable);
+      bb->flags &= ~ft_reachable;
+
       edge_iterator ei;
       edge e;
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -1002,14 +1035,10 @@ warn_uninitialized_vars (bool wmaybe_uninit)
       if (!e)
 	continue;
 
-      basic_block succ = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-      /* ???  This could be improved when we use a greedy walk and have
-	 some edges marked as not executable.  */
-      wlims.always_executed = dominated_by_p (CDI_POST_DOMINATORS, succ, bb);
-
       if (wlims.always_executed)
 	warn_uninit_phi_uses (bb);
 
+      gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -1030,7 +1059,7 @@ warn_uninitialized_vars (bool wmaybe_uninit)
 	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, op_iter, SSA_OP_USE)
 	    {
 	      /* BIT_INSERT_EXPR first operand should not be considered
-	         a use for the purpose of uninit warnings.  */
+		 a use for the purpose of uninit warnings.  */
 	      if (gassign *ass = dyn_cast <gassign *> (stmt))
 		{
 		  if (gimple_assign_rhs_code (ass) == BIT_INSERT_EXPR
@@ -1041,7 +1070,7 @@ warn_uninitialized_vars (bool wmaybe_uninit)
 	      if (wlims.always_executed)
 		warn_uninit (OPT_Wuninitialized, use,
 			     SSA_NAME_VAR (use), stmt);
-	      else if (wmaybe_uninit)
+	      else if (wlims.wmaybe_uninit)
 		warn_uninit (OPT_Wmaybe_uninitialized, use,
 			     SSA_NAME_VAR (use), stmt);
 	    }
