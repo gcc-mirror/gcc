@@ -74,7 +74,8 @@
   "wr8",   "wr9",   "wr10",  "wr11",				\
   "wr12",  "wr13",  "wr14",  "wr15",				\
   "wcgr0", "wcgr1", "wcgr2", "wcgr3",				\
-  "cc", "vfpcc", "sfp", "afp", "apsrq", "apsrge", "p0"		\
+  "cc", "vfpcc", "sfp", "afp", "apsrq", "apsrge", "p0",		\
+  "ra_auth_code"						\
 }
 #endif
 

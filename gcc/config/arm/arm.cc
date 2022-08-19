@@ -22156,7 +22156,9 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
     {
       if (mask & (1 << i))
 	{
-	  reg = gen_rtx_REG (SImode, i);
+	  rtx reg1 = reg = gen_rtx_REG (SImode, i);
+	  if (arm_current_function_pac_enabled_p () && i == IP_REGNUM)
+	    reg1 = gen_rtx_REG (SImode, RA_AUTH_CODE);
 
 	  XVECEXP (par, 0, 0)
 	    = gen_rtx_SET (gen_frame_mem
@@ -22173,8 +22175,12 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
 
 	  if (dwarf_regs_mask & (1 << i))
 	    {
+	      /* Only the first register in the multi push instruction is stored
+		 to frame memory here.
+		Eg: push {r7 ,r8, ip, lr}
+		Only r7 is stored to frame memory here.  */
 	      tmp = gen_rtx_SET (gen_frame_mem (SImode, stack_pointer_rtx),
-				 reg);
+				 reg1);
 	      RTX_FRAME_RELATED_P (tmp) = 1;
 	      XVECEXP (dwarf, 0, dwarf_par_index++) = tmp;
 	    }
@@ -22187,18 +22193,25 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
     {
       if (mask & (1 << i))
 	{
-	  reg = gen_rtx_REG (SImode, i);
+	  rtx reg1 = reg = gen_rtx_REG (SImode, i);
+	  if (arm_current_function_pac_enabled_p () && i == IP_REGNUM)
+	    reg1 = gen_rtx_REG (SImode, RA_AUTH_CODE);
 
 	  XVECEXP (par, 0, j) = gen_rtx_USE (VOIDmode, reg);
 
 	  if (dwarf_regs_mask & (1 << i))
 	    {
+	      /* Except the first register in the multi push instruction all the
+		 remaining registers are stored to frame memory here.
+		 Eg: push {r7, r8, ip, lr}
+		 r8, ip (ra_auth_code in case PACBTI enabled) and lr registers
+		 are stored to frame memory here.  */
 	      tmp
 		= gen_rtx_SET (gen_frame_mem
 			       (SImode,
 				plus_constant (Pmode, stack_pointer_rtx,
 					       4 * j)),
-			       reg);
+			       reg1);
 	      RTX_FRAME_RELATED_P (tmp) = 1;
 	      XVECEXP (dwarf, 0, dwarf_par_index++) = tmp;
 	    }
@@ -22283,7 +22296,9 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
   for (j = 0, i = 0; j < num_regs; i++)
     if (saved_regs_mask & (1 << i))
       {
-        reg = gen_rtx_REG (SImode, i);
+	rtx reg1 = reg = gen_rtx_REG (SImode, i);
+	if (arm_current_function_pac_enabled_p () && i == IP_REGNUM)
+	  reg1 = gen_rtx_REG (SImode, RA_AUTH_CODE);
         if ((num_regs == 1) && emit_update && !return_in_pc)
           {
             /* Emit single load with writeback.  */
@@ -22291,7 +22306,7 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
                                  gen_rtx_POST_INC (Pmode,
                                                    stack_pointer_rtx));
             tmp = emit_insn (gen_rtx_SET (reg, tmp));
-            REG_NOTES (tmp) = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+	    REG_NOTES (tmp) = alloc_reg_note (REG_CFA_RESTORE, reg1, dwarf);
             return;
           }
 
@@ -22305,7 +22320,7 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
         /* We need to maintain a sequence for DWARF info too.  As dwarf info
            should not have PC, skip PC.  */
         if (i != PC_REGNUM)
-          dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+	  dwarf = alloc_reg_note (REG_CFA_RESTORE, reg1, dwarf);
 
         j++;
       }
@@ -25599,6 +25614,9 @@ arm_regno_class (int regno)
 
   if (IS_VPR_REGNUM (regno))
     return VPR_REG;
+
+  if (IS_PAC_Pseudo_REGNUM (regno))
+    return PAC_REG;
 
   if (TARGET_THUMB1)
     {
@@ -29571,6 +29589,9 @@ arm_dbx_register_number (unsigned int regno)
   if (IS_IWMMXT_REGNUM (regno))
     return 112 + regno - FIRST_IWMMXT_REGNUM;
 
+  if (IS_PAC_Pseudo_REGNUM (regno))
+    return 143;
+
   return DWARF_FRAME_REGISTERS;
 }
 
@@ -29664,7 +29685,7 @@ arm_unwind_emit_sequence (FILE * out_file, rtx p)
   gcc_assert (nregs);
 
   reg = REGNO (SET_SRC (XVECEXP (p, 0, 1)));
-  if (reg < 16)
+  if (reg < 16 || IS_PAC_Pseudo_REGNUM (reg))
     {
       /* For -Os dummy registers can be pushed at the beginning to
 	 avoid separate stack pointer adjustment.  */
@@ -29721,6 +29742,8 @@ arm_unwind_emit_sequence (FILE * out_file, rtx p)
 	 double precision register names.  */
       if (IS_VFP_REGNUM (reg))
 	asm_fprintf (out_file, "d%d", (reg - FIRST_VFP_REGNUM) / 2);
+      else if (IS_PAC_Pseudo_REGNUM (reg))
+	asm_fprintf (asm_out_file, "ra_auth_code");
       else
 	asm_fprintf (out_file, "%r", reg);
 
@@ -30587,6 +30610,9 @@ arm_conditional_register_usage (void)
       if (TARGET_CALLER_INTERWORKING)
 	global_regs[ARM_HARD_FRAME_POINTER_REGNUM] = 1;
     }
+
+  if (TARGET_HAVE_PACBTI)
+    fixed_regs[RA_AUTH_CODE] = 0;
 
   /* The Q and GE bits are only accessed via special ACLE patterns.  */
   CLEAR_HARD_REG_BIT (operand_reg_set, APSRQ_REGNUM);
