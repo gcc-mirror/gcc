@@ -529,6 +529,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    {
 		      const size_type __nleft = (__p + __len1) - __s;
 		      this->_S_move(__p, __s, __nleft);
+		      // Tell the middle-end that the copy can't overlap
+		      // (PR105651).
+		      if (__len2 < __nleft)
+			__builtin_unreachable();
 		      this->_S_copy(__p + __nleft, __p + __len2,
 				    __len2 - __nleft);
 		    }
