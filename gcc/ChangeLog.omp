@@ -1,3 +1,16 @@
+2022-08-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-08-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (main): Add omp_requires_file and dbgobj to
+	files_to_cleanup.
+	* config/i386/intelmic-mkoffload.cc (prepare_target_image): Add
+	omp_requires_file to temp_files.
+	* config/nvptx/mkoffload.cc (omp_requires_file): New global static var.
+	(main): Remove local omp_requires_file var.
+	(tool_cleanup): Handle omp_requires_file.
+
 2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

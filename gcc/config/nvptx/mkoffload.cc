@@ -55,6 +55,7 @@ static id_map *var_ids, **vars_tail = &var_ids;
 /* Files to unlink.  */
 static const char *ptx_name;
 static const char *ptx_cfile_name;
+static const char *omp_requires_file;
 static const char *ptx_dumpbase;
 
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
@@ -68,6 +69,8 @@ tool_cleanup (bool from_signal ATTRIBUTE_UNUSED)
     maybe_unlink (ptx_cfile_name);
   if (ptx_name)
     maybe_unlink (ptx_name);
+  if (omp_requires_file)
+    maybe_unlink (omp_requires_file);
 }
 
 static void
@@ -586,7 +589,6 @@ main (int argc, char **argv)
       unsetenv ("COMPILER_PATH");
       unsetenv ("LIBRARY_PATH");
 
-      char *omp_requires_file;
       if (save_temps)
 	omp_requires_file = concat (dumppfx, ".mkoffload.omp_requires", NULL);
       else
