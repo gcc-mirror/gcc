@@ -991,14 +991,20 @@ warn_uninitialized_vars (bool wmaybe_uninit)
   auto_bb_flag ft_reachable (cfun);
 
   /* Mark blocks that are always executed when we ignore provably
-     not executed edges.  */
+     not executed and EH and abnormal edges.  */
   basic_block bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   while (!(bb->flags & ft_reachable))
     {
       bb->flags |= ft_reachable;
+      edge e = find_fallthru_edge (bb->succs);
+      if (e && e->flags & EDGE_EXECUTABLE)
+	{
+	  bb = e->dest;
+	  continue;
+	}
       /* Find a single executable edge.  */
       edge_iterator ei;
-      edge e, ee = NULL;
+      edge ee = NULL;
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->flags & EDGE_EXECUTABLE)
 	  {
