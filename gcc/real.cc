@@ -1234,6 +1234,14 @@ real_isinf (const REAL_VALUE_TYPE *r)
   return (r->cl == rvc_inf);
 }
 
+/* Determine whether a floating-point value X is infinite with SIGN.  */
+
+bool
+real_isinf (const REAL_VALUE_TYPE *r, bool sign)
+{
+  return real_isinf (r) && r->sign == sign;
+}
+
 /* Determine whether a floating-point value X is a NaN.  */
 
 bool
@@ -2484,12 +2492,12 @@ dconst_sqrt2_ptr (void)
   return &value;
 }
 
-/* Fills R with +Inf.  */
+/* Fills R with Inf with SIGN.  */
 
 void
-real_inf (REAL_VALUE_TYPE *r)
+real_inf (REAL_VALUE_TYPE *r, bool sign)
 {
-  get_inf (r, 0);
+  get_inf (r, sign);
 }
 
 /* Fills R with a NaN whose significand is described by STR.  If QUIET,
