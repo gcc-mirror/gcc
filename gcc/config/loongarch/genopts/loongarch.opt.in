@@ -173,6 +173,9 @@ EnumValue
 Enum(cmodel) String(@@STR_CMODEL_TS@@) Value(CMODEL_TINY_STATIC)
 
 EnumValue
+Enum(cmodel) String(@@STR_CMODEL_MEDIUM@@) Value(CMODEL_MEDIUM)
+
+EnumValue
 Enum(cmodel) String(@@STR_CMODEL_LARGE@@) Value(CMODEL_LARGE)
 
 EnumValue

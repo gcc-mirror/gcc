@@ -2461,44 +2461,96 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
     }
 
   if (flag_plt)
-    insn = emit_call_insn (gen_call_value_internal (v0,
-						    loongarch_tls_symbol,
-						    const0_rtx));
+    {
+      switch (la_opt_cmodel)
+	{
+	case CMODEL_NORMAL:
+	  insn = emit_call_insn (gen_call_value_internal (v0,
+							  loongarch_tls_symbol,
+							  const0_rtx));
+	  break;
+
+	case CMODEL_MEDIUM:
+	    {
+	      rtx reg = gen_reg_rtx (Pmode);
+	      if (TARGET_EXPLICIT_RELOCS)
+		{
+		  emit_insn (gen_pcalau12i (Pmode, reg, loongarch_tls_symbol));
+		  rtx call = gen_call_value_internal_1 (Pmode, v0, reg,
+							loongarch_tls_symbol,
+							const0_rtx);
+		  insn = emit_call_insn (call);
+		}
+	      else
+		{
+		  emit_move_insn (reg, loongarch_tls_symbol);
+		  insn = emit_call_insn (gen_call_value_internal (v0,
+								  reg,
+								  const0_rtx));
+		}
+	      break;
+	    }
+
+	/* code model extreme not support plt.  */
+	case CMODEL_EXTREME:
+	case CMODEL_LARGE:
+	case CMODEL_TINY:
+	case CMODEL_TINY_STATIC:
+	default:
+	  gcc_unreachable ();
+	}
+    }
   else
     {
       rtx dest = gen_reg_rtx (Pmode);
 
-      if (TARGET_CMODEL_EXTREME)
+      switch (la_opt_cmodel)
 	{
-	  gcc_assert (TARGET_EXPLICIT_RELOCS);
-
-	  rtx tmp1 = gen_reg_rtx (Pmode);
-	  rtx high = gen_reg_rtx (Pmode);
-
-	  loongarch_emit_move (high,
-			       gen_rtx_HIGH (Pmode, loongarch_tls_symbol));
-	  loongarch_emit_move (tmp1, gen_rtx_LO_SUM (Pmode,
-						     gen_rtx_REG (Pmode, 0),
-						     loongarch_tls_symbol));
-	  emit_insn (gen_lui_h_lo20 (tmp1, tmp1, loongarch_tls_symbol));
-	  emit_insn (gen_lui_h_hi12 (tmp1, tmp1, loongarch_tls_symbol));
-	  loongarch_emit_move (dest,
-			       gen_rtx_MEM (Pmode,
-					    gen_rtx_PLUS (Pmode, high, tmp1)));
-	}
-      else
-	{
-	  if (TARGET_EXPLICIT_RELOCS)
+	case CMODEL_NORMAL:
+	case CMODEL_MEDIUM:
 	    {
+	      if (TARGET_EXPLICIT_RELOCS)
+		{
+		  rtx high = gen_reg_rtx (Pmode);
+		  loongarch_emit_move (high,
+				       gen_rtx_HIGH (Pmode,
+						     loongarch_tls_symbol));
+		  emit_insn (gen_ld_from_got (Pmode, dest, high,
+					      loongarch_tls_symbol));
+		}
+	      else
+		loongarch_emit_move (dest, loongarch_tls_symbol);
+	      break;
+	    }
+
+	case CMODEL_EXTREME:
+	    {
+	      gcc_assert (TARGET_EXPLICIT_RELOCS);
+
+	      rtx tmp1 = gen_reg_rtx (Pmode);
 	      rtx high = gen_reg_rtx (Pmode);
+
 	      loongarch_emit_move (high,
 				   gen_rtx_HIGH (Pmode, loongarch_tls_symbol));
-	      emit_insn (gen_ld_from_got (Pmode, dest, high,
-					  loongarch_tls_symbol));
+	      loongarch_emit_move (tmp1, gen_rtx_LO_SUM (Pmode,
+							 gen_rtx_REG (Pmode, 0),
+							 loongarch_tls_symbol));
+	      emit_insn (gen_lui_h_lo20 (tmp1, tmp1, loongarch_tls_symbol));
+	      emit_insn (gen_lui_h_hi12 (tmp1, tmp1, loongarch_tls_symbol));
+	      loongarch_emit_move (dest,
+				   gen_rtx_MEM (Pmode,
+						gen_rtx_PLUS (Pmode,
+							      high, tmp1)));
 	    }
-	  else
-	    loongarch_emit_move (dest, loongarch_tls_symbol);
+	  break;
+
+	case CMODEL_LARGE:
+	case CMODEL_TINY:
+	case CMODEL_TINY_STATIC:
+	default:
+	  gcc_unreachable ();
 	}
+
       insn = emit_call_insn (gen_call_value_internal (v0, dest, const0_rtx));
     }
 
@@ -2618,6 +2670,24 @@ loongarch_legitimize_call_address (rtx addr)
       loongarch_emit_move (reg, addr);
       return reg;
     }
+
+  enum loongarch_symbol_type symbol_type = loongarch_classify_symbol (addr);
+
+  /* Split function call insn 'bl sym' or 'bl %plt(sym)' to :
+     pcalau12i $rd, %pc_hi20(sym)
+     jr $rd, %pc_lo12(sym).  */
+
+  if (TARGET_CMODEL_MEDIUM
+      && TARGET_EXPLICIT_RELOCS
+      && (SYMBOL_REF_P (addr) || LABEL_REF_P (addr))
+      && (symbol_type == SYMBOL_PCREL
+	  || (symbol_type == SYMBOL_GOT_DISP && flag_plt)))
+    {
+      rtx reg = gen_reg_rtx (Pmode);
+      emit_insn (gen_pcalau12i (Pmode, reg, addr));
+      return gen_rtx_LO_SUM (Pmode, reg, addr);
+    }
+
   return addr;
 }
 
@@ -5996,6 +6066,7 @@ loongarch_option_override_internal (struct gcc_options *opts)
 	break;
 
       case CMODEL_TINY_STATIC:
+      case CMODEL_MEDIUM:
       case CMODEL_NORMAL:
       case CMODEL_TINY:
       case CMODEL_LARGE:

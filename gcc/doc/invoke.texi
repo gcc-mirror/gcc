@@ -25098,6 +25098,9 @@ Set the code model to one of:
 The text segment must be within 128MB addressing space.  The data segment must
 be within 2GB addressing space.
 
+@item medium
+The text segment and data segment must be within 2GB addressing space.
+
 @item large (Not implemented yet)
 
 @item extreme

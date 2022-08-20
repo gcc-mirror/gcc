@@ -123,16 +123,27 @@
   if (offset != const0_rtx)
     return false;
 
+  /* When compiling with '-mcmodel=medium -mexplicit-relocs'
+     symbols are splited in loongarch_legitimize_call_address.
+
+     When compiling with '-mcmodel=medium -mno-explicit-relocs',
+     first obtain the symbolic address or the address of the
+     plt entry, and then perform an indirect jump, so return false.  */
+
   switch (symbol_type)
     {
     case SYMBOL_PCREL:
-      if (TARGET_CMODEL_EXTREME)
+      if (TARGET_CMODEL_EXTREME
+	  || (TARGET_CMODEL_MEDIUM && !TARGET_EXPLICIT_RELOCS))
 	return false;
       else
 	return 1;
 
     case SYMBOL_GOT_DISP:
-      if (TARGET_CMODEL_EXTREME || !flag_plt)
+      if (TARGET_CMODEL_EXTREME
+	  || !flag_plt
+	  || (flag_plt && TARGET_CMODEL_MEDIUM
+	      && !TARGET_EXPLICIT_RELOCS))
 	return false;
       else
 	return 1;
