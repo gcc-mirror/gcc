@@ -252,7 +252,8 @@ foperator_equal::op1_range (frange &r, tree type,
   switch (get_bool_state (r, lhs, type))
     {
     case BRS_TRUE:
-      r.set_varying (type);
+      // If it's true, the result is the same as OP2.
+      r = op2;
       // The TRUE side of op1 == op2 implies op1 is !NAN.
       r.set_nan (fp_prop::NO);
       break;
