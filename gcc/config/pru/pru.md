@@ -786,15 +786,42 @@
     operands[2] = force_reg (DImode, operands[2]);
 })
 
+;; 64-bit pattern for logical operations.
 (define_insn "pru_<code>di3"
-  [(set (match_operand:DI 0 "register_operand"		"=&r,&r")
+  [(set (match_operand:DI 0 "register_operand"		"=r,&r,r")
 	  (LOGICAL_BITOP:DI
-	    (match_operand:DI 1 "register_operand"	"%r,r")
-	    (match_operand:DI 2 "reg_or_ubyte_operand"	"r,I")))]
+	    (match_operand:DI 1 "register_operand"	"%0,r,r")
+	    (match_operand:DI 2 "reg_or_ubyte_operand"	"r,r,I")))]
   ""
-  "@
-   <logical_bitop_asm>\\t%F0, %F1, %F2\;<logical_bitop_asm>\\t%N0, %N1, %N2
-   <logical_bitop_asm>\\t%F0, %F1, %2\;<logical_bitop_asm>\\t%N0, %N1, 0"
+{
+  switch (which_alternative)
+    {
+    case 0:
+      if (REGNO (operands[0]) == (REGNO (operands[2]) + 4))
+	return "<logical_bitop_asm>\\t%N0, %N0, %N2\;"
+	       "<logical_bitop_asm>\\t%F0, %F0, %F2";
+      else
+	return "<logical_bitop_asm>\\t%F0, %F0, %F2\;"
+	       "<logical_bitop_asm>\\t%N0, %N0, %N2";
+    case 1:
+      /* With the three-register variant there is no way to handle the case
+	 when OP0 overlaps both OP1 and OP2.  Example:
+	     OP0_lo == OP1_hi
+	     OP0_hi == OP2_lo
+	 Hence this variant's OP0 must be marked as an earlyclobber.  */
+      return "<logical_bitop_asm>\\t%F0, %F1, %F2\;"
+	     "<logical_bitop_asm>\\t%N0, %N1, %N2";
+    case 2:
+      if (REGNO (operands[0]) == (REGNO (operands[1]) + 4))
+	return "<logical_bitop_asm>\\t%N0, %N1, 0\;"
+	       "<logical_bitop_asm>\\t%F0, %F1, %2";
+      else
+	return "<logical_bitop_asm>\\t%F0, %F1, %2\;"
+	       "<logical_bitop_asm>\\t%N0, %N1, 0";
+    default:
+      gcc_unreachable ();
+  }
+}
   [(set_attr "type" "alu")
    (set_attr "length" "8")])
 
