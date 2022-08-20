@@ -1,3 +1,21 @@
+2022-08-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (main): Add omp_requires_file and dbgobj to
+	files_to_cleanup.
+	* config/i386/intelmic-mkoffload.cc (prepare_target_image): Add
+	omp_requires_file to temp_files.
+	* config/nvptx/mkoffload.cc (omp_requires_file): New global static var.
+	(main): Remove local omp_requires_file var.
+	(tool_cleanup): Handle omp_requires_file.
+
+2022-08-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::path_range_query):
+	Remove constructor that takes edge.
+	* gimple-range-path.h (class path_range_query): Same.
+	* tree-ssa-loop-ch.cc (edge_range_query): New.
+	(entry_loop_condition_is_static): Call edge_range_query.
+
 2022-08-18  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
 
 	* config/xtensa/xtensa.h

@@ -1,3 +1,45 @@
+2022-08-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/x86_64/abi/bf16/abi-bf16.exp: New test.
+	* gcc.target/x86_64/abi/bf16/args.h: Ditto.
+	* gcc.target/x86_64/abi/bf16/asm-support.S: Ditto.
+	* gcc.target/x86_64/abi/bf16/bf16-check.h: Ditto.
+	* gcc.target/x86_64/abi/bf16/bf16-helper.h: Ditto.
+	* gcc.target/x86_64/abi/bf16/defines.h: Ditto.
+	* gcc.target/x86_64/abi/bf16/m256bf16/abi-bf16-ymm.exp: Ditto.
+	* gcc.target/x86_64/abi/bf16/m256bf16/args.h: Ditto.
+	* gcc.target/x86_64/abi/bf16/m256bf16/asm-support.S: Ditto.
+	* gcc.target/x86_64/abi/bf16/m256bf16/bf16-ymm-check.h: Ditto.
+	* gcc.target/x86_64/abi/bf16/m256bf16/test_m256_returning.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/m256bf16/test_passing_m256.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/m256bf16/test_passing_structs.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/m256bf16/test_passing_unions.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/m256bf16/test_varargs-m256.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/m512bf16/abi-bf16-zmm.exp: Ditto.
+	* gcc.target/x86_64/abi/bf16/m512bf16/args.h: Ditto.
+	* gcc.target/x86_64/abi/bf16/m512bf16/asm-support.S: Ditto.
+	* gcc.target/x86_64/abi/bf16/m512bf16/bf16-zmm-check.h: Ditto.
+	* gcc.target/x86_64/abi/bf16/m512bf16/test_m512_returning.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/m512bf16/test_passing_m512.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/m512bf16/test_passing_structs.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/m512bf16/test_passing_unions.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/m512bf16/test_varargs-m512.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/macros.h: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_3_element_struct_and_unions.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_basic_alignment.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_basic_array_size_and_align.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_basic_returning.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_basic_sizes.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_basic_struct_size_and_align.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_basic_union_size_and_align.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_m128_returning.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_passing_floats.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_passing_m128.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_passing_structs.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_passing_unions.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_struct_returning.c: Ditto.
+	* gcc.target/x86_64/abi/bf16/test_varargs-m128.c: Ditto.
+
 2022-08-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/cpp/c11-warning-1.c, gcc.dg/cpp/c11-warning-2.c,

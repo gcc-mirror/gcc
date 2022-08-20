@@ -1,3 +1,7 @@
+2022-08-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* clang-format: Add further FOR_EACH_ macros.
+
 2022-08-18  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* git-fetch-vendor.sh : Fix typo.
