@@ -18,7 +18,6 @@
 #include "rust-location.h"
 #include "rust-diagnostics.h"
 #include "rust-tree.h"
-#include "rust-target.h"
 #include "fold-const.h"
 #include "realmpfr.h"
 #include "convert.h"
@@ -30,10 +29,10 @@
 #include "cgraph.h"
 #include "tree-inline.h"
 #include "vec.h"
-#include "rust-target.h"
 #include "function.h"
-#include "builtins.h"
 #include "diagnostic.h"
+#include "target.h"
+#include "builtins.h"
 
 #define VERIFY_CONSTANT(X)                                                     \
   do                                                                           \
