@@ -522,6 +522,9 @@ struct cpp_options
   /* Nonzero for C++23 size_t literals.  */
   unsigned char size_t_literals;
 
+  /* Nonzero for C++23 delimited escape sequences.  */
+  unsigned char delimited_escape_seqs;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 

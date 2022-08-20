@@ -1036,6 +1036,19 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
   return 1;
 }
 
+/* Increment char_range->m_finish by a single character.  */
+
+static void
+extend_char_range (source_range *char_range,
+		   cpp_string_location_reader *loc_reader)
+{
+  if (loc_reader)
+    {
+      gcc_assert (char_range);
+      char_range->m_finish = loc_reader->get_next ().m_finish;
+    }
+}
+
 /* [lex.charset]: The character designated by the universal character
    name \UNNNNNNNN is that character whose character short name in
    ISO/IEC 10646 is NNNNNNNN; the character designated by the
@@ -1081,6 +1094,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
   unsigned int length;
   const uchar *str = *pstr;
   const uchar *base = str - 2;
+  bool delimited = false;
 
   if (!CPP_OPTION (pfile, cplusplus) && !CPP_OPTION (pfile, c99))
     cpp_error (pfile, CPP_DL_WARNING,
@@ -1095,7 +1109,17 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 	         (int) str[-1]);
 
   if (str[-1] == 'u')
-    length = 4;
+    {
+      length = 4;
+      if (str < limit && *str == '{')
+	{
+	  str++;
+	  /* Magic value to indicate no digits seen.  */
+	  length = 32;
+	  delimited = true;
+	  extend_char_range (char_range, loc_reader);
+	}
+    }
   else if (str[-1] == 'U')
     length = 8;
   else
@@ -1107,18 +1131,53 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
   result = 0;
   do
     {
+      if (str == limit)
+	break;
       c = *str;
       if (!ISXDIGIT (c))
 	break;
       str++;
-      if (loc_reader)
+      extend_char_range (char_range, loc_reader);
+      if (delimited)
 	{
-	  gcc_assert (char_range);
-	  char_range->m_finish = loc_reader->get_next ().m_finish;
+	  if (!result)
+	    /* Accept arbitrary number of leading zeros.
+	       16 is another magic value, smaller than 32 above
+	       and bigger than 8, so that upon encountering first
+	       non-zero digit we can count 8 digits and after that
+	       or in overflow bit and ensure length doesn't decrease
+	       to 0, as delimited escape sequence doesn't have upper
+	       bound on the number of hex digits.  */
+	    length = 16;
+	  else if (length == 16 - 8)
+	    {
+	      /* Make sure we detect overflows.  */
+	      result |= 0x8000000;
+	      ++length;
+	    }
 	}
+
       result = (result << 4) + hex_value (c);
     }
-  while (--length && str < limit);
+  while (--length);
+
+  if (delimited
+      && str < limit
+      && *str == '}'
+      && (length != 32 || !identifier_pos))
+    {
+      if (length == 32)
+	cpp_error (pfile, CPP_DL_ERROR,
+		   "empty delimited escape sequence");
+      else if (!CPP_OPTION (pfile, delimited_escape_seqs)
+	       && CPP_OPTION (pfile, cpp_pedantic))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "delimited escape sequences are only valid in C++23");
+      str++;
+      length = 0;
+      delimited = false;
+      extend_char_range (char_range, loc_reader);
+    }
 
   /* Partial UCNs are not valid in strings, but decompose into
      multiple tokens in identifiers, so we can't give a helpful
@@ -1132,9 +1191,14 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
   *pstr = str;
   if (length)
     {
-      cpp_error (pfile, CPP_DL_ERROR,
-		 "incomplete universal character name %.*s",
-		 (int) (str - base), base);
+      if (!delimited)
+	cpp_error (pfile, CPP_DL_ERROR,
+		   "incomplete universal character name %.*s",
+		   (int) (str - base), base);
+      else
+	cpp_error (pfile, CPP_DL_ERROR,
+		   "'\\u{' not terminated with '}' after %.*s",
+		   (int) (str - base), base);
       result = 1;
     }
   /* The C99 standard permits $, @ and ` to be specified as UCNs.  We use
@@ -1212,9 +1276,8 @@ convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
 
   from++;  /* Skip u/U.  */
 
-  if (loc_reader)
-    /* The u/U is part of the spelling of this character.  */
-    char_range.m_finish = loc_reader->get_next ().m_finish;
+  /* The u/U is part of the spelling of this character.  */
+  extend_char_range (&char_range, loc_reader);
 
   _cpp_valid_ucn (pfile, &from, limit, 0, &nst,
 		  &ucn, &char_range, loc_reader);
@@ -1392,6 +1455,8 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
   int digits_found = 0;
   size_t width = cvt.width;
   size_t mask = width_to_mask (width);
+  bool delimited = false;
+  const uchar *base = from - 1;
 
   /* loc_reader and ranges must either be both NULL, or both be non-NULL.  */
   gcc_assert ((loc_reader != NULL) == (ranges != NULL));
@@ -1404,8 +1469,14 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
   from++;
 
   /* The 'x' is part of the spelling of this character.  */
-  if (loc_reader)
-    char_range.m_finish = loc_reader->get_next ().m_finish;
+  extend_char_range (&char_range, loc_reader);
+
+  if (from < limit && *from == '{')
+    {
+      delimited = true;
+      from++;
+      extend_char_range (&char_range, loc_reader);
+    }
 
   while (from < limit)
     {
@@ -1413,17 +1484,40 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
       if (! hex_p (c))
 	break;
       from++;
-      if (loc_reader)
-	char_range.m_finish = loc_reader->get_next ().m_finish;
+      extend_char_range (&char_range, loc_reader);
       overflow |= n ^ (n << 4 >> 4);
       n = (n << 4) + hex_value (c);
       digits_found = 1;
+    }
+
+  if (delimited && from < limit && *from == '}')
+    {
+      from++;
+      if (!digits_found)
+	{
+	  cpp_error (pfile, CPP_DL_ERROR,
+		     "empty delimited escape sequence");
+	  return from;
+	}
+     else if (!CPP_OPTION (pfile, delimited_escape_seqs)
+	      && CPP_OPTION (pfile, cpp_pedantic))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "delimited escape sequences are only valid in C++23");
+      delimited = false;
+      extend_char_range (&char_range, loc_reader);
     }
 
   if (!digits_found)
     {
       cpp_error (pfile, CPP_DL_ERROR,
 		 "\\x used with no following hex digits");
+      return from;
+    }
+  else if (delimited)
+    {
+      cpp_error (pfile, CPP_DL_ERROR,
+		 "'\\x{' not terminated with '}' after %.*s",
+		 (int) (from - base), base);
       return from;
     }
 
@@ -1459,12 +1553,28 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
 	     cpp_substring_ranges *ranges)
 {
   size_t count = 0;
-  cppchar_t c, n = 0;
+  cppchar_t c, n = 0, overflow = 0;
   size_t width = cvt.width;
   size_t mask = width_to_mask (width);
+  bool delimited = false;
+  const uchar *base = from - 1;
 
   /* loc_reader and ranges must either be both NULL, or both be non-NULL.  */
   gcc_assert ((loc_reader != NULL) == (ranges != NULL));
+
+  if (from < limit && *from == 'o')
+    {
+      from++;
+      extend_char_range (&char_range, loc_reader);
+      if (from == limit || *from != '{')
+	cpp_error (pfile, CPP_DL_ERROR, "'\\o' not followed by '{'");
+      else
+	{
+	  from++;
+	  extend_char_range (&char_range, loc_reader);
+	  delimited = true;
+	}
+    }
 
   while (from < limit && count++ < 3)
     {
@@ -1472,12 +1582,42 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
       if (c < '0' || c > '7')
 	break;
       from++;
-      if (loc_reader)
-	char_range.m_finish = loc_reader->get_next ().m_finish;
+      extend_char_range (&char_range, loc_reader);
+      if (delimited)
+	{
+	  count = 2;
+	  overflow |= n ^ (n << 3 >> 3);
+	}
       n = (n << 3) + c - '0';
     }
 
-  if (n != (n & mask))
+  if (delimited)
+    {
+      if (from < limit && *from == '}')
+	{
+	  from++;
+	  if (count == 1)
+	    {
+	      cpp_error (pfile, CPP_DL_ERROR,
+			 "empty delimited escape sequence");
+	      return from;
+	    }
+	  else if (!CPP_OPTION (pfile, delimited_escape_seqs)
+		   && CPP_OPTION (pfile, cpp_pedantic))
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "delimited escape sequences are only valid in C++23");
+	  extend_char_range (&char_range, loc_reader);
+	}
+      else
+	{
+	  cpp_error (pfile, CPP_DL_ERROR,
+		     "'\\o{' not terminated with '}' after %.*s",
+		     (int) (from - base), base);
+	  return from;
+	}
+    }
+
+  if (overflow | (n != (n & mask)))
     {
       cpp_error (pfile, CPP_DL_PEDWARN,
 		 "octal escape sequence out of range");
@@ -1535,6 +1675,7 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 
     case '0':  case '1':  case '2':  case '3':
     case '4':  case '5':  case '6':  case '7':
+    case 'o':
       return convert_oct (pfile, from, limit, tbuf, cvt,
 			  char_range, loc_reader, ranges);
 
@@ -2119,15 +2260,27 @@ _cpp_interpret_identifier (cpp_reader *pfile, const uchar *id, size_t len)
 	cppchar_t value = 0;
 	size_t bufleft = len - (bufp - buf);
 	int rval;
+	bool delimited = false;
 
 	idp += 2;
+	if (length == 4 && id[idp] == '{')
+	  {
+	    delimited = true;
+	    idp++;
+	  }
 	while (length && idp < len && ISXDIGIT (id[idp]))
 	  {
 	    value = (value << 4) + hex_value (id[idp]);
 	    idp++;
-	    length--;
+	    if (!delimited)
+	      length--;
 	  }
-	idp--;
+	if (!delimited)
+	  idp--;
+	/* else
+	     assert (id[idp] == '}');
+	   As the caller ensures it is a valid identifier, if it is
+	   delimited escape sequence, it must be terminated by }.  */
 
 	/* Special case for EBCDIC: if the identifier contains
 	   a '$' specified using a UCN, translate it to EBCDIC.  */
