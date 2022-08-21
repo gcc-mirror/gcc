@@ -12930,8 +12930,7 @@ package body Exp_Ch4 is
       --  to Opnd /= Shortcut_Value.
 
       function Useful (Actions : List_Id) return Boolean;
-      --  Return True if Actions is not empty and contains useful nodes to
-      --  process.
+      --  Return True if Actions contains useful nodes to process
 
       --------------------
       -- Make_Test_Expr --
@@ -12951,22 +12950,20 @@ package body Exp_Ch4 is
       ------------
 
       function Useful (Actions : List_Id) return Boolean is
-         L : Node_Id;
+         Action : Node_Id;
       begin
-         if Present (Actions) then
-            L := First (Actions);
+         Action := First (Actions);
 
-            --  For now "useful" means not N_Variable_Reference_Marker.
-            --  Consider stripping other nodes in the future.
+         --  For now "useful" means not N_Variable_Reference_Marker. Consider
+         --  stripping other nodes in the future.
 
-            while Present (L) loop
-               if Nkind (L) /= N_Variable_Reference_Marker then
-                  return True;
-               end if;
+         while Present (Action) loop
+            if Nkind (Action) /= N_Variable_Reference_Marker then
+               return True;
+            end if;
 
-               Next (L);
-            end loop;
-         end if;
+            Next (Action);
+         end loop;
 
          return False;
       end Useful;
