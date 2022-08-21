@@ -1,3 +1,23 @@
+2022-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106645
+	* include/cpplib.h (struct cpp_options): Implement
+	P2290R3 - Delimited escape sequences.  Add delimite_escape_seqs
+	member.
+	* init.cc (struct lang_flags): Likewise.
+	(lang_defaults): Add delim column.
+	(cpp_set_lang): Copy over delimite_escape_seqs.
+	* charset.cc (extend_char_range): New function.
+	(_cpp_valid_ucn): Use it.  Handle delimited escape sequences.
+	(convert_hex): Likewise.
+	(convert_oct): Likewise.
+	(convert_ucn): Use extend_char_range.
+	(convert_escape): Call convert_oct even for \o.
+	(_cpp_interpret_identifier): Handle delimited escape sequences.
+	* lex.cc (get_bidi_ucn_1): Likewise.  Add end argument, fill it in.
+	(get_bidi_ucn): Adjust get_bidi_ucn_1 caller.  Use end argument to
+	compute num_bytes.
+
 2022-08-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (struct cpp_options): Add warning_directive.

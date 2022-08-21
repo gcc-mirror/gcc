@@ -1,3 +1,28 @@
+2022-08-20  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-opts.cc: Allow cmodel to be extreme.
+	* config/loongarch/loongarch.cc (loongarch_call_tls_get_addr):
+	Add extreme support for TLS GD and LD types.
+	(loongarch_legitimize_tls_address): Add extreme support for TLS LE
+	and IE.
+	(loongarch_split_symbol): When compiling with -mcmodel=extreme,
+	the symbol address will be obtained through five instructions.
+	(loongarch_print_operand_reloc): Add support.
+	(loongarch_print_operand): Add support.
+	(loongarch_print_operand_address): Add support.
+	(loongarch_option_override_internal): Set '-mcmodel=extreme' option
+	incompatible with '-mno-explicit-relocs'.
+	* config/loongarch/loongarch.md (@lui_l_hi20<mode>):
+	Loads bits 12-31 of data into registers.
+	(lui_h_lo20): Load bits 32-51 of the data and spell bits 0-31 of
+	the source register.
+	(lui_h_hi12): Load bits 52-63 of the data and spell bits 0-51 of
+	the source register.
+	* config/loongarch/predicates.md: Symbols need to be decomposed
+	when defining the macro TARGET_CMODEL_EXTREME
+	* doc/invoke.texi: Modify the description information of cmodel in the document.
+	Document -W[no-]extreme-plt.
+
 2022-08-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* config/gcn/mkoffload.cc (main): Add omp_requires_file and dbgobj to

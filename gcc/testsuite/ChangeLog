@@ -1,3 +1,29 @@
+2022-08-20  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/func-call-1.c: Add option '-mcmodel=normal'.
+	* gcc.target/loongarch/func-call-2.c: Likewise.
+	* gcc.target/loongarch/func-call-3.c: Likewise.
+	* gcc.target/loongarch/func-call-4.c: Likewise.
+	* gcc.target/loongarch/func-call-5.c: Likewise.
+	* gcc.target/loongarch/func-call-6.c: Likewise.
+	* gcc.target/loongarch/func-call-7.c: Likewise.
+	* gcc.target/loongarch/func-call-8.c: Likewise.
+	* gcc.target/loongarch/relocs-symbol-noaddend.c: Likewise.
+	* gcc.target/loongarch/func-call-extreme-1.c: New test.
+	* gcc.target/loongarch/func-call-extreme-2.c: New test.
+
+2022-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106645
+	* c-c++-common/cpp/delimited-escape-seq-1.c: New test.
+	* c-c++-common/cpp/delimited-escape-seq-2.c: New test.
+	* c-c++-common/cpp/delimited-escape-seq-3.c: New test.
+	* c-c++-common/Wbidi-chars-24.c: New test.
+	* gcc.dg/cpp/delimited-escape-seq-1.c: New test.
+	* gcc.dg/cpp/delimited-escape-seq-2.c: New test.
+	* g++.dg/cpp/delimited-escape-seq-1.C: New test.
+	* g++.dg/cpp/delimited-escape-seq-2.C: New test.
+
 2022-08-19  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* gcc.target/x86_64/abi/bf16/abi-bf16.exp: New test.

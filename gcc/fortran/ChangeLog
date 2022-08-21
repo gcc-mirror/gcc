@@ -1,3 +1,11 @@
+2022-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46539
+	* lang.opt (static-libgfortran, static-libquadmath): Change Fortran
+	to Driver.
+	* options.cc (gfc_handle_option): Don't handle OPT_static_libgfortran
+	nor OPT_static_libquadmath here.
+
 2022-08-18  Harald Anlauf  <anlauf@gmx.de>
 
 	Revert:
