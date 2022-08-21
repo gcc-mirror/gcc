@@ -24,13 +24,11 @@ AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
-# Determine the noncanonical host name, for Modula-2a.
+# Determine the noncanonical host name, for Modula-2.
 ACX_NONCANONICAL_HOST
 
 # Determine the noncanonical target name, for directory use.
 ACX_NONCANONICAL_TARGET
-
-AC_PATH_PROGS(AR_PATH, ${AR}, ar)
 
 AC_CHECK_PROGS(regex_flex, flex)
 if test x$regex_flex = "x" ; then
@@ -42,12 +40,7 @@ if test x$regex_realpath = "x" ; then
     AC_MSG_ERROR([realpath is required to build GNU Modula-2 (hint install coreutils).])
 fi
 
-AM_PATH_PYTHON([3.0])
 AC_CHECK_FUNCS([stpcpy])
-
-AC_DEFINE_UNQUOTED(AR_PATH, "$AR_PATH", the path to target archiver)
-AC_PATH_PROGS(RANLIB_PATH, ${RANLIB}, ranlib)
-AC_DEFINE_UNQUOTED(RANLIB_PATH, "$RANLIB_PATH", the path to target ranlib)
 
 AC_CHECK_HEADERS(sys/types.h)
 AC_HEADER_DIRENT

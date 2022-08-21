@@ -231,7 +231,7 @@ VAR
 
 PROCEDURE mystop ; BEGIN END mystop ;
 
-(* *************************************************** *)
+(* ***************************************************
 (*
    PrintNum -
 *)
@@ -269,7 +269,7 @@ BEGIN
    DebugSet('NilTypedArrays', NilTypedArrays) ;
    DebugSet('ToBeSolvedByQuads', ToBeSolvedByQuads)
 END DebugSets ;
-(* ************************************************ *)
+   ************************************************ *)
 
 
 (*
@@ -4041,6 +4041,7 @@ BEGIN
 END PrintSym ;
 
 
+(* ********************************
 (*
    PrintSymbol - prints limited information about a symbol.
 *)
@@ -4050,7 +4051,7 @@ BEGIN
    PrintTerse(sym) ;
    printf0('\n')
 END PrintSymbol ;
-
+  ******************************************* *)
 
 (*
    PrintTerse -

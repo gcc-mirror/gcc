@@ -623,7 +623,6 @@ LIBOBJS
 EGREP
 GREP
 CPP
-RANLIB_PATH
 OBJEXT
 EXEEXT
 ac_ct_CC
@@ -631,8 +630,8 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+regex_realpath
 regex_flex
-AR_PATH
 target_os
 target_vendor
 target_cpu
@@ -664,7 +663,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -735,7 +733,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -988,15 +985,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1134,7 +1122,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1287,7 +1275,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -2249,58 +2236,11 @@ test -n "$target_alias" &&
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
 
-# Determine the noncanonical host name, for Ada.
+# Determine the noncanonical host name, for Modula-2.
 ACX_NONCANONICAL_HOST
 
 # Determine the noncanonical target name, for directory use.
 ACX_NONCANONICAL_TARGET
-
-for ac_prog in ${AR}
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_AR_PATH+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $AR_PATH in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_AR_PATH="$AR_PATH" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_AR_PATH="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-AR_PATH=$ac_cv_path_AR_PATH
-if test -n "$AR_PATH"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $AR_PATH" >&5
-$as_echo "$AR_PATH" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$AR_PATH" && break
-done
-test -n "$AR_PATH" || AR_PATH="ar"
-
 
 for ac_prog in flex
 do
@@ -2346,6 +2286,52 @@ done
 
 if test x$regex_flex = "x" ; then
     as_fn_error $? "flex is required to build GNU Modula-2 (hint install flex)." "$LINENO" 5
+fi
+
+for ac_prog in realpath
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_regex_realpath+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$regex_realpath"; then
+  ac_cv_prog_regex_realpath="$regex_realpath" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_regex_realpath="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+regex_realpath=$ac_cv_prog_regex_realpath
+if test -n "$regex_realpath"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $regex_realpath" >&5
+$as_echo "$regex_realpath" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$regex_realpath" && break
+done
+
+if test x$regex_realpath = "x" ; then
+    as_fn_error $? "realpath is required to build GNU Modula-2 (hint install coreutils)." "$LINENO" 5
 fi
 
 ac_ext=c
@@ -3148,63 +3134,6 @@ _ACEOF
 
 fi
 done
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define AR_PATH "$AR_PATH"
-_ACEOF
-
-for ac_prog in ${RANLIB}
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_RANLIB_PATH+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $RANLIB_PATH in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_RANLIB_PATH="$RANLIB_PATH" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_RANLIB_PATH="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-RANLIB_PATH=$ac_cv_path_RANLIB_PATH
-if test -n "$RANLIB_PATH"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $RANLIB_PATH" >&5
-$as_echo "$RANLIB_PATH" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$RANLIB_PATH" && break
-done
-test -n "$RANLIB_PATH" || RANLIB_PATH="ranlib"
-
-
-cat >>confdefs.h <<_ACEOF
-#define RANLIB_PATH "$RANLIB_PATH"
-_ACEOF
 
 
 ac_ext=c

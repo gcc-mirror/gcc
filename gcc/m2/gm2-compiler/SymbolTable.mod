@@ -1539,8 +1539,6 @@ BEGIN
 END IsObject ;
 
 
-PROCEDURE stop ; BEGIN END stop ;
-
 (*
    DeclareSym - returns a symbol which was either in the unknown tree or
                 a New symbol, since name is about to be declared.

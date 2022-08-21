@@ -26,16 +26,13 @@
 
 language="m2"
 
-compilers="cc1gm2\$(exeext) gm2l\$(exeext) gm2lcc\$(exeext) \
-           gm2lgen\$(exeext) gm2lsub\$(exeext) gm2cc\$(exeext) \
-           gm2lorder\$(exeext)"
+compilers="cc1gm2\$(exeext)"
 
-stagestuff="gm2\$(exeext) cc1gm2\$(exeext) gm2l\$(exeext) \
-            gm2lcc\$(exeext) gm2lgen\$(exeext) gm2lsub\$(exeext) cc1gm2-cross\$(exeext)"
+stagestuff="gm2\$(exeext) cc1gm2\$(exeext) cc1gm2-cross\$(exeext)"
 
 target_libs="target-libstdc++-v3 target-libgm2"
 
-# The Modula-2 frontend needs C++ to compile the main, so we need to build the C++
+# The Modula-2 frontend needs C++ (is this still true --fixme--)?
 # compiler during stage 1.
 lang_requires_boot_languages=c++
 
@@ -53,18 +50,13 @@ gtfiles="\$(srcdir)/m2/gm2-lang.cc \
          \$(srcdir)/m2/gm2-gcc/m2statement.cc \
          \$(srcdir)/m2/gm2-gcc/m2type.cc"
 
-outputs=" \
-         m2/config-make \
-         m2/www/Makefile \
+outputs="m2/config-make \
+         m2/Make-maintainer \
         "
 
 mkdir -p m2/gm2-compiler-boot
 mkdir -p m2/gm2-libs-boot
-mkdir -p m2/gm2-ppg-boot
-mkdir -p m2/gm2-pge-boot
-mkdir -p m2/gm2-pg-boot
 mkdir -p m2/gm2-ici-boot
-mkdir -p m2/gm2-ici
 mkdir -p m2/gm2-libiberty
 mkdir -p m2/gm2-gcc
 mkdir -p m2/gm2-auto
@@ -78,8 +70,15 @@ mkdir -p m2/boot-bin
 mkdir -p m2/gm2-libs-pim
 mkdir -p m2/gm2-libs-coroutines
 mkdir -p m2/gm2-libs-min
+mkdir -p m2/pge-boot
+mkdir -p plugin
+mkdir -p stage1/m2 stage2/m2 stage3/m2 stage4/m2
+
+# directories used by Make-maintainer
+
 mkdir -p m2/mc-boot
 mkdir -p m2/mc-boot-ch
 mkdir -p m2/mc-boot-gen
-mkdir -p plugin
-mkdir -p stage1/m2 stage2/m2 stage3/m2 stage4/m2
+mkdir -p m2/gm2-ppg-boot
+mkdir -p m2/gm2-pge-boot
+mkdir -p m2/gm2-pg-boot
