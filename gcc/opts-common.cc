@@ -2064,7 +2064,7 @@ void
 jobserver_info::connect ()
 {
   if (!pipe_path.empty ())
-    pipefd = open (pipe_path.c_str (), O_RDWR);
+    pipefd = open (pipe_path.c_str (), O_RDWR | O_NONBLOCK);
 }
 
 void

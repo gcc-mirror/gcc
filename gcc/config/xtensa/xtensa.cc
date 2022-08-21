@@ -3150,7 +3150,6 @@ xtensa_expand_prologue (void)
   rtx_insn *insn = NULL;
   rtx note_rtx;
 
-
   total_size = compute_frame_size (get_frame_size ());
 
   if (flag_stack_usage_info)
@@ -3206,10 +3205,17 @@ xtensa_expand_prologue (void)
 	    }
 	  else
 	    {
-	      rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
-	      emit_move_insn (tmp_reg, GEN_INT (total_size));
-	      insn = emit_insn (gen_subsi3 (stack_pointer_rtx,
-					    stack_pointer_rtx, tmp_reg));
+	      if (xtensa_simm8x256 (-total_size))
+		insn = emit_insn (gen_addsi3 (stack_pointer_rtx,
+					      stack_pointer_rtx,
+					      GEN_INT (-total_size)));
+	      else
+		{
+		  rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
+		  emit_move_insn (tmp_reg, GEN_INT (total_size));
+		  insn = emit_insn (gen_subsi3 (stack_pointer_rtx,
+						stack_pointer_rtx, tmp_reg));
+		}
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	      note_rtx = gen_rtx_SET (stack_pointer_rtx,
 				      plus_constant (Pmode, stack_pointer_rtx,
@@ -3237,11 +3243,19 @@ xtensa_expand_prologue (void)
       if (total_size > 1024
 	  || (!callee_save_size && total_size > 128))
 	{
-	  rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
-	  emit_move_insn (tmp_reg, GEN_INT (total_size -
-					    callee_save_size));
-	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx,
-					stack_pointer_rtx, tmp_reg));
+	  if (xtensa_simm8x256 (callee_save_size - total_size))
+	    insn = emit_insn (gen_addsi3 (stack_pointer_rtx,
+					  stack_pointer_rtx,
+					  GEN_INT (callee_save_size -
+						   total_size)));
+	  else
+	    {
+	      rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
+	      emit_move_insn (tmp_reg, GEN_INT (total_size -
+						callee_save_size));
+	      insn = emit_insn (gen_subsi3 (stack_pointer_rtx,
+					    stack_pointer_rtx, tmp_reg));
+	    }
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  note_rtx = gen_rtx_SET (stack_pointer_rtx,
 				  plus_constant (Pmode, stack_pointer_rtx,
@@ -3315,12 +3329,21 @@ xtensa_expand_epilogue (bool sibcall_p)
 
       if (cfun->machine->current_frame_size > (frame_pointer_needed ? 127 : 1024))
 	{
-	  rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
-	  emit_move_insn (tmp_reg, GEN_INT (cfun->machine->current_frame_size -
-					    cfun->machine->callee_save_size));
-	  emit_insn (gen_addsi3 (stack_pointer_rtx, frame_pointer_needed ?
-				 hard_frame_pointer_rtx : stack_pointer_rtx,
-				 tmp_reg));
+	  if (xtensa_simm8x256 (cfun->machine->current_frame_size -
+				cfun->machine->callee_save_size))
+	    emit_insn (gen_addsi3 (stack_pointer_rtx, frame_pointer_needed ?
+				   hard_frame_pointer_rtx : stack_pointer_rtx,
+				   GEN_INT (cfun->machine->current_frame_size -
+					    cfun->machine->callee_save_size)));
+	  else
+	    {
+	      rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
+	      emit_move_insn (tmp_reg, GEN_INT (cfun->machine->current_frame_size -
+						cfun->machine->callee_save_size));
+	      emit_insn (gen_addsi3 (stack_pointer_rtx, frame_pointer_needed ?
+				     hard_frame_pointer_rtx : stack_pointer_rtx,
+				     tmp_reg));
+	    }
 	  offset = cfun->machine->callee_save_size - UNITS_PER_WORD;
 	}
       else
@@ -3360,18 +3383,24 @@ xtensa_expand_epilogue (bool sibcall_p)
 		offset = cfun->machine->current_frame_size;
 	      else
 		offset = cfun->machine->callee_save_size;
-
-	      emit_insn (gen_addsi3 (stack_pointer_rtx,
-				     stack_pointer_rtx,
-				     GEN_INT (offset)));
+	      if (offset)
+		emit_insn (gen_addsi3 (stack_pointer_rtx,
+				       stack_pointer_rtx,
+				       GEN_INT (offset)));
 	    }
 	  else
 	    {
-	      rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
-	      emit_move_insn (tmp_reg,
-			      GEN_INT (cfun->machine->current_frame_size));
-	      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-				     tmp_reg));
+	      if (xtensa_simm8x256 (cfun->machine->current_frame_size))
+		emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+				       GEN_INT (cfun->machine->current_frame_size)));
+	      else
+		{
+		  rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
+		  emit_move_insn (tmp_reg,
+				  GEN_INT (cfun->machine->current_frame_size));
+		  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+					 tmp_reg));
+		}
 	    }
 	}
 

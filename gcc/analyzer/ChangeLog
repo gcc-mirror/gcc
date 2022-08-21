@@ -1,3 +1,46 @@
+2022-08-18  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106181
+	* analyzer.opt: Add Wanalyzer-imprecise-floating-point-arithmetic.
+	* region-model.cc (is_any_cast_p): Formatting.
+	(region_model::check_region_size): Ensure precondition.
+	(class imprecise_floating_point_arithmetic): New abstract
+	diagnostic class for all floating-point related warnings.
+	(class float_as_size_arg): Concrete diagnostic class to complain
+	about floating-point operands inside the size argument.
+	(class contains_floating_point_visitor):
+	New visitor to find floating-point operands inside svalues.
+	(region_model::check_dynamic_size_for_floats): New function.
+	(region_model::set_dynamic_extents):
+	Call to check_dynamic_size_for_floats.
+	* region-model.h (class region_model):
+	Add region_model::check_dynamic_size_for_floats.
+
+2022-08-16  Martin Liska  <mliska@suse.cz>
+
+	* region-model.cc: Fix -Winconsistent-missing-override clang
+	  warning.
+	* region.h: Likewise.
+
+2022-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* region-model.cc (buffer_overread::emit): Fix copy&paste error in
+	direction of the access in the note.
+
+2022-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106573
+	* region-model.cc (region_model::on_call_pre): Use check_call_args
+	when ensuring that we call get_arg_svalue on all args.  Remove
+	redundant call from handling for stdio builtins.
+
+2022-08-15  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106551
+	* sm-fd.cc (check_for_dup): exit early if first
+	argument is invalid for all dup functions.
+
 2022-08-12  Tim Lange  <mail@tim-lange.me>
 
 	PR analyzer/106000

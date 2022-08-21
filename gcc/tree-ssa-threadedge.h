@@ -69,11 +69,12 @@ public:
   tree simplify (gimple *stmt, gimple *, basic_block, jt_state *) override;
 
 private:
-  void compute_ranges_from_state (gimple *stmt, jt_state *);
+  void compute_exit_dependencies (bitmap dependencies,
+				  const vec<basic_block> &path,
+				  gimple *stmt);
 
   gimple_ranger *m_ranger;
   path_range_query *m_query;
-  auto_vec<basic_block> m_path;
 };
 
 // This is the high level threader.  The entry point is

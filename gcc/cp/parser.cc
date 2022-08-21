@@ -924,7 +924,10 @@ cp_lexer_saving_tokens (const cp_lexer* lexer)
 /* Store the next token from the preprocessor in *TOKEN.  Return true
    if we reach EOF.  If LEXER is NULL, assume we are handling an
    initial #pragma pch_preprocess, and thus want the lexer to return
-   processed strings.  */
+   processed strings.
+
+   Diagnostics issued from this function must have their controlling option (if
+   any) in c.opt annotated as a libcpp option via the CppReason property.  */
 
 static void
 cp_lexer_get_preprocessor_token (unsigned flags, cp_token *token)

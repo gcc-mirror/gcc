@@ -1046,16 +1046,8 @@ function_needs_inline_definition_p (FuncDeclaration *fd)
   if (!DECL_EXTERNAL (fd->csym))
     return false;
 
-  /* Non-inlineable functions are always external.  */
-  if (DECL_UNINLINABLE (fd->csym))
-    return false;
-
   /* No function body available for inlining.  */
   if (!fd->fbody)
-    return false;
-
-  /* Ignore functions that aren't decorated with `pragma(inline)'.  */
-  if (fd->inlining != PINLINE::always)
     return false;
 
   /* These functions are tied to the module they are defined in.  */
@@ -1070,6 +1062,14 @@ function_needs_inline_definition_p (FuncDeclaration *fd)
   if (function_defined_in_root_p (fd))
     return false;
 
+  /* Non-inlineable functions are always external.  */
+  if (DECL_UNINLINABLE (fd->csym))
+    return false;
+
+  /* Ignore functions that aren't decorated with `pragma(inline)'.  */
+  if (!DECL_DECLARED_INLINE_P (fd->csym))
+    return false;
+
   /* Weak functions cannot be inlined.  */
   if (lookup_attribute ("weak", DECL_ATTRIBUTES (fd->csym)))
     return false;
@@ -1081,8 +1081,8 @@ function_needs_inline_definition_p (FuncDeclaration *fd)
   return true;
 }
 
-/* If the variable or function declaration in DECL needs to be defined, call
-   build_decl_tree on it now before returning its back-end symbol.  */
+/* If the variable or function declaration in DECL needs to be defined, add it
+   to the list of deferred declarations to build later.  */
 
 static tree
 maybe_build_decl_tree (Declaration *decl)
@@ -1103,7 +1103,7 @@ maybe_build_decl_tree (Declaration *decl)
       if (function_needs_inline_definition_p (fd))
 	{
 	  DECL_EXTERNAL (fd->csym) = 0;
-	  build_decl_tree (fd);
+	  d_defer_declaration (fd);
 	}
     }
 

@@ -419,8 +419,8 @@ build_delegate_cst (tree method, tree object, Type *type)
     {
       /* Convert a function method into an anonymous delegate.  */
       ctype = make_struct_type ("delegate()", 2,
-				get_identifier ("object"), TREE_TYPE (object),
-				get_identifier ("func"), TREE_TYPE (method));
+				get_identifier ("ptr"), TREE_TYPE (object),
+				get_identifier ("funcptr"), TREE_TYPE (method));
       TYPE_DELEGATE (ctype) = 1;
     }
 
@@ -1588,6 +1588,32 @@ complex_expr (tree type, tree re, tree im)
 			  type, re, im);
 }
 
+/* Build a two-field record TYPE representing the complex expression EXPR.  */
+
+tree
+underlying_complex_expr (tree type, tree expr)
+{
+  gcc_assert (list_length (TYPE_FIELDS (type)) == 2);
+
+  expr = d_save_expr (expr);
+
+  /* Build a constructor from the real and imaginary parts.  */
+  if (COMPLEX_FLOAT_TYPE_P (TREE_TYPE (expr)) &&
+      (!INDIRECT_REF_P (expr)
+       || !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (expr, 0)))))
+    {
+      vec <constructor_elt, va_gc> *ve = NULL;
+      CONSTRUCTOR_APPEND_ELT (ve, TYPE_FIELDS (type),
+                    real_part (expr));
+      CONSTRUCTOR_APPEND_ELT (ve, TREE_CHAIN (TYPE_FIELDS (type)),
+                    imaginary_part (expr));
+      return build_constructor (type, ve);
+    }
+
+  /* Replace type in the reinterpret cast with a cast to the record type.  */
+  return build_vconvert (type, expr);
+}
+
 /* Cast EXP (which should be a pointer) to TYPE* and then indirect.
    The back-end requires this cast in many cases.  */
 
@@ -2213,6 +2239,14 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	      targ = convert (build_reference_type (TREE_TYPE (targ)),
 			      build_address (targ));
 	    }
+
+	  /* Complex types are exposed as special types with an underlying
+	     struct representation, if we are passing the native type to a
+	     function that accepts the library-defined version, then ensure
+	     it is properly reinterpreted as the underlying struct type.  */
+	  if (COMPLEX_FLOAT_TYPE_P (TREE_TYPE (targ))
+	      && arg->type->isTypeStruct ())
+	    targ = underlying_complex_expr (build_ctype (arg->type), targ);
 
 	  /* Type `noreturn` is a terminator, as no other arguments can possibly
 	     be evaluated after it.  */

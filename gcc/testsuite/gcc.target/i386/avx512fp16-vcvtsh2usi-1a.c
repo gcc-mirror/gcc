@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512fp16 -O2" } */
-/* { dg-final { scan-assembler-times "vcvtsh2usi\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%eax" 1 } } */
-/* { dg-final { scan-assembler-times "vcvtsh2usi\[ \\t\]+\{rn-sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%eax" 1 } } */
+/* { dg-final { scan-assembler-times "vcvtsh2usi\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e\[ad]x" 1 } } */
+/* { dg-final { scan-assembler-times "vcvtsh2usi\[ \\t\]+\{rn-sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e\[ad]x" 1 } } */
 
 
 #include <immintrin.h>

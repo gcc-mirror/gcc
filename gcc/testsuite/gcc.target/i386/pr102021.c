@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=skylake-avx512" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 
 #include<immintrin.h>
 

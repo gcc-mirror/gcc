@@ -522,6 +522,10 @@ enum reg_class
 #define SMALL_OPERAND(VALUE) \
   ((unsigned HOST_WIDE_INT) (VALUE) + IMM_REACH/2 < IMM_REACH)
 
+#define POLY_SMALL_OPERAND_P(POLY_VALUE)		\
+  (POLY_VALUE.is_constant () ?				\
+     SMALL_OPERAND (POLY_VALUE.to_constant ()) : false)
+     
 /* True if VALUE can be loaded into a register using LUI.  */
 
 #define LUI_OPERAND(VALUE)						\
@@ -952,6 +956,11 @@ while (0)
 extern const enum reg_class riscv_regno_to_class[];
 extern bool riscv_slow_unaligned_access_p;
 extern unsigned riscv_stack_boundary;
+extern unsigned riscv_bytes_per_vector_chunk;
+extern poly_uint16 riscv_vector_chunks;
+/* The number of bits and bytes in a RVV vector.  */
+#define BITS_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk * 8))
+#define BYTES_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk))
 #endif
 
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL) \

@@ -17,4 +17,9 @@ int test_2(int (*a)(void)) {
     return a();
 }
 
+_Complex double test_3(_Complex double a, _Complex double (*b)(_Complex double, double)) {
+    bar(-1);
+    return b(a, 3.141592653589795);
+}
+
 /* { dg-final { scan-assembler-not "ret" } } */

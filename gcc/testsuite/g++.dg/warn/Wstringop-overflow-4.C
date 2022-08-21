@@ -195,7 +195,7 @@ void test_strcpy_new_int16_t (size_t n, const size_t vals[])
       iftmp.2_33 = _45 * 2;				;; iftmp.2_33 = 0
       _34 = operator new [] (iftmp.2_33);		;; new [] (0)
   */
-  T (S (2), new int16_t[r_dmin_dmax + 1]); // { dg-bogus "into a region of size" "" { xfail *-*-*} }
+  T (S (2), new int16_t[r_dmin_dmax + 1]); // { dg-bogus "into a region of size" "" { xfail c++98_only } }
   T (S (9), new int16_t[r_dmin_dmax * 2 + 1]);
 }
 

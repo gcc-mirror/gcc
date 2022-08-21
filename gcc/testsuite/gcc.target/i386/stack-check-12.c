@@ -11,8 +11,9 @@ f (void)
 }
 
 /* { dg-final { scan-assembler-not "or\[ql\]" } } */
-/* { dg-final { scan-assembler "pushl	%esi" { target ia32 } } } */
-/* { dg-final { scan-assembler "popl	%esi" { target ia32 } } }*/
+/* On ia32 PIC, saving the PIC register requires a stack frame, which does away
+   with the need for the dummy %esi pushing and popping for stack probing.  */
+/* { dg-final { scan-assembler "pushl	%esi" { target { ia32 && nonpic } } } } */
+/* { dg-final { scan-assembler "popl	%esi" { target { ia32 && nonpic } } } } */
 /* { dg-final { scan-assembler "pushq	%rax" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "popq	%rax" { target { ! ia32 } } } }*/
-
+/* { dg-final { scan-assembler "popq	%rax" { target { ! ia32 } } } } */

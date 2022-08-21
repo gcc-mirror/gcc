@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mabi=lp64d -O0 -fno-pic -fno-plt -mno-explicit-relocs" } */
+/* { dg-options "-mabi=lp64d -O0 -fno-pic -fno-plt -mno-explicit-relocs -mcmodel=normal" } */
 /* { dg-final { scan-assembler "test:.*la\.global\t.*g\n\tjirl" } } */
 /* { dg-final { scan-assembler "test1:.*bl\tf\n" } } */
 /* { dg-final { scan-assembler "test2:.*bl\tl\n" } } */

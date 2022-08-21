@@ -1,3 +1,7 @@
+2022-08-17  Keef Aragon  <keef.aragon@konscious.net>
+
+	* libsupc++/eh_alloc.cc (pool::free): Inverse comparison.
+
 2022-08-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/formatter.h (__singular_value_init): New _Iterator_state enum entry.

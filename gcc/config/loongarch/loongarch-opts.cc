@@ -376,13 +376,12 @@ fallback:
 
   /* 5.  Target code model */
   t.cmodel = constrained.cmodel ? opt_cmodel : CMODEL_NORMAL;
-  if (t.cmodel != CMODEL_NORMAL)
+  if (t.cmodel != CMODEL_NORMAL && t.cmodel != CMODEL_EXTREME)
     {
       warning (0, "%qs is not supported, now cmodel is set to %qs",
 	       loongarch_cmodel_strings[t.cmodel], "normal");
       t.cmodel = CMODEL_NORMAL;
     }
-
 
   /* Cleanup and return.  */
   obstack_free (&msg_obstack, NULL);

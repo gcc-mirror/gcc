@@ -1046,6 +1046,13 @@ c_common_post_options (const char **pfilename)
   else if (warn_narrowing == -1)
     warn_narrowing = 0;
 
+  if (cxx_dialect >= cxx20)
+    {
+      /* Don't warn about C++20 compatibility changes in C++20 or later.  */
+      warn_cxx20_compat = 0;
+      cpp_opts->cpp_warn_cxx20_compat = 0;
+    }
+
   /* C++17 has stricter evaluation order requirements; let's use some of them
      for earlier C++ as well, so chaining works as expected.  */
   if (c_dialect_cxx ()

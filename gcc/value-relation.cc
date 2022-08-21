@@ -1513,11 +1513,13 @@ path_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
   return query_relation (bb, equiv_1, equiv_2);
 }
 
-// Reset any relations registered on this path.
+// Reset any relations registered on this path.  ORACLE is the root
+// oracle to use.
 
 void
-path_oracle::reset_path ()
+path_oracle::reset_path (relation_oracle *oracle)
 {
+  set_root_oracle (oracle);
   m_equiv.m_next = NULL;
   bitmap_clear (m_equiv.m_names);
   m_relations.m_head = NULL;

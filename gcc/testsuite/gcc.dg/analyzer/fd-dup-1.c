@@ -245,4 +245,15 @@ test_22 (int flags)
     close (fd);
 }
 
+void do_something();
+void
+test_23 ()
+{
+    int nullfd = -1;
+    int fd = 1;
+    if (dup2 (nullfd, fd) < 0) /* { dg-warning "'dup2' on possibly invalid file descriptor 'nullfd'" } */
+    {
+        do_something();
+    }
+}
 

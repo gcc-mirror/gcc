@@ -976,8 +976,7 @@ fd_state_machine::check_for_dup (sm_context *sm_ctxt, const supernode *node,
     {
       check_for_open_fd (sm_ctxt, node, stmt, call, callee_fndecl,
 			 DIRS_READ_WRITE);
-      if (kind == DUP_1)
-	return;
+      return;
     }
   switch (kind)
     {

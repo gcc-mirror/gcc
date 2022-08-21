@@ -3423,6 +3423,14 @@ vectorizable_call (vec_info *vinfo,
       return false;
     }
 
+  if (vect_emulated_vector_p (vectype_in) || vect_emulated_vector_p (vectype_out))
+  {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "use emulated vector type for call\n");
+      return false;
+  }
+
   /* FORNOW */
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);

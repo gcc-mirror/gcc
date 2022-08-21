@@ -526,6 +526,7 @@ prepare_target_image (const char *target_compiler, int argc, char **argv, uint32
     omp_requires_file = concat (dumppfx, ".mkoffload.omp_requires", NULL);
   else
     omp_requires_file = make_temp_file (".mkoffload.omp_requires");
+  temp_files[num_temps++] = omp_requires_file;
   xputenv (concat ("GCC_OFFLOAD_OMP_REQUIRES_FILE=", omp_requires_file, NULL));
 
   compile_for_target (&argv_obstack);

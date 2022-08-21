@@ -1030,6 +1030,7 @@ main (int argc, char **argv)
 		    }
 		  else
 		    dbgobj = make_temp_file (".mkoffload.dbg.o");
+		  obstack_ptr_grow (&files_to_cleanup, dbgobj);
 
 		  /* If the copy fails then just ignore it.  */
 		  if (copy_early_debug_info (argv[ix], dbgobj))
@@ -1085,6 +1086,7 @@ main (int argc, char **argv)
 	omp_requires_file = concat (dumppfx, ".mkoffload.omp_requires", NULL);
       else
 	omp_requires_file = make_temp_file (".mkoffload.omp_requires");
+      obstack_ptr_grow (&files_to_cleanup, omp_requires_file);
 
       /* Run the compiler pass.  */
       xputenv (concat ("GCC_OFFLOAD_OMP_REQUIRES_FILE=", omp_requires_file, NULL));
