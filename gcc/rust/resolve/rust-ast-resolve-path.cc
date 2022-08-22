@@ -242,8 +242,9 @@ void
 ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
 {
   AST::QualifiedPathType &root_segment = expr->get_qualified_path_type ();
-  ResolveType::go (&root_segment.get_as_type_path ());
   ResolveType::go (root_segment.get_type ().get ());
+  if (root_segment.has_as_clause ())
+    ResolveType::go (&root_segment.get_as_type_path ());
 
   for (auto &segment : expr->get_segments ())
     {
