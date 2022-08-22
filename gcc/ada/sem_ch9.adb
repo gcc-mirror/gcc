@@ -64,6 +64,7 @@ with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Style;
+with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
 
@@ -649,6 +650,10 @@ package body Sem_Ch9 is
             --  Start of processing for Satisfies_Lock_Free_Requirements
 
             begin
+               if not Support_Atomic_Primitives_On_Target then
+                  return False;
+               end if;
+
                --  Get the number of errors detected by the compiler so far
 
                if Lock_Free_Given then
