@@ -46,19 +46,12 @@
 
 #define DEBUG_PREDICATE_ANALYZER 1
 
-/* Return true if BB1 is postdominating BB2 and BB1 is not a loop exit
-   bb.  The loop exit bb check is simple and does not cover all cases.  */
+/* Return true if, when BB1 is postdominating BB2, BB1 is a loop exit.  */
 
 static bool
-is_non_loop_exit_postdominating (basic_block bb1, basic_block bb2)
+is_loop_exit (basic_block bb2, basic_block bb1)
 {
-  if (!dominated_by_p (CDI_POST_DOMINATORS, bb2, bb1))
-    return false;
-
-  if (single_pred_p (bb1) && !single_succ_p (bb2))
-    return false;
-
-  return true;
+  return single_pred_p (bb1) && !single_succ_p (bb2);
 }
 
 /* Find BB's closest postdominator that is its control equivalent (i.e.,
@@ -70,7 +63,7 @@ find_control_equiv_block (basic_block bb)
   basic_block pdom = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
 
   /* Skip the postdominating bb that is also a loop exit.  */
-  if (!is_non_loop_exit_postdominating (pdom, bb))
+  if (is_loop_exit (bb, pdom))
     return NULL;
 
   /* If the postdominator is dominated by BB, return it.  */
@@ -1114,7 +1107,8 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 
       basic_block cd_bb = e->dest;
       cur_cd_chain.safe_push (e);
-      while (!is_non_loop_exit_postdominating (cd_bb, dom_bb))
+      while (!dominated_by_p (CDI_POST_DOMINATORS, dom_bb, cd_bb)
+	     || is_loop_exit (dom_bb, cd_bb))
 	{
 	  if (cd_bb == dep_bb)
 	    {
@@ -1885,7 +1879,7 @@ predicate::is_use_guarded (gimple *use_stmt, basic_block use_bb,
      in the same bb.  */
   predicate use_preds (def_bb, use_bb, m_eval);
 
-  if (is_non_loop_exit_postdominating (use_bb, def_bb))
+  if (dominated_by_p (CDI_POST_DOMINATORS, def_bb, use_bb))
     {
       if (is_empty ())
 	{
