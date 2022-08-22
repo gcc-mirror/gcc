@@ -36,7 +36,12 @@ public:
   virtual ~TypeCheckBase () {}
 
   static TyTy::BaseType *coercion_site (HirId id, TyTy::BaseType *lhs,
-					TyTy::BaseType *rhs, Location locus);
+					TyTy::BaseType *rhs,
+					Location coercion_locus);
+
+  static TyTy::BaseType *cast_site (HirId id, TyTy::TyWithLocation from,
+				    TyTy::TyWithLocation to,
+				    Location cast_locus);
 
 protected:
   TypeCheckBase ()

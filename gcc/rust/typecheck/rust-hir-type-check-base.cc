@@ -20,6 +20,7 @@
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-coercion.h"
+#include "rust-casts.h"
 
 namespace Rust {
 namespace Resolver {
@@ -343,7 +344,7 @@ TypeCheckBase::coercion_site (HirId id, TyTy::BaseType *expected,
     return expr;
 
   // can we autoderef it?
-  auto result = AutoderefTypeCoercion::Coerce (expr, expected, locus);
+  auto result = TypeCoercionRules::Coerce (expr, expected, locus);
 
   // the result needs to be unified
   TyTy::BaseType *receiver = expr;
@@ -357,6 +358,36 @@ TypeCheckBase::coercion_site (HirId id, TyTy::BaseType *expected,
   TyTy::BaseType *coerced = expected->unify (receiver);
   context->insert_autoderef_mappings (id, std::move (result.adjustments));
   return coerced;
+}
+
+TyTy::BaseType *
+TypeCheckBase::cast_site (HirId id, TyTy::TyWithLocation from,
+			  TyTy::TyWithLocation to, Location cast_locus)
+{
+  rust_debug ("cast_site id={%u} from={%s} to={%s}", id,
+	      from.get_ty ()->debug_str ().c_str (),
+	      to.get_ty ()->debug_str ().c_str ());
+
+  auto context = TypeCheckContext::get ();
+  if (from.get_ty ()->get_kind () == TyTy::TypeKind::ERROR
+      || to.get_ty ()->get_kind () == TyTy::TypeKind::ERROR)
+    return to.get_ty ();
+
+  // do the cast
+  auto result = TypeCastRules::resolve (cast_locus, from, to);
+
+  // we assume error has already been emitted
+  if (result.is_error ())
+    return to.get_ty ();
+
+  // the result needs to be unified
+  TyTy::BaseType *casted_result = result.tyty;
+  rust_debug ("cast_default_unify(a={%s}, b={%s})",
+	      casted_result->debug_str ().c_str (),
+	      to.get_ty ()->debug_str ().c_str ());
+  TyTy::BaseType *casted = to.get_ty ()->unify (casted_result);
+  context->insert_cast_autoderef_mappings (id, std::move (result.adjustments));
+  return casted;
 }
 
 void
