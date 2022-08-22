@@ -534,25 +534,17 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 
   // FIXME this needs to be protected behind nominal type-checks see:
   // rustc --explain E0118
-
-  NodeId resolved_node = ResolveType::go (impl_block.get_type ().get ());
-  if (resolved_node == UNKNOWN_NODEID)
-    {
-      resolver->get_type_scope ().pop ();
-      resolver->get_name_scope ().pop ();
-      return;
-    }
+  ResolveType::go (impl_block.get_type ().get ());
 
   // Setup paths
   CanonicalPath self_cpath = CanonicalPath::create_empty ();
   bool ok = ResolveTypeToCanonicalPath::go (impl_block.get_type ().get (),
 					    self_cpath);
   rust_assert (ok);
+  rust_debug ("AST::InherentImpl resolve Self: {%s}",
+	      self_cpath.get ().c_str ());
 
-  std::string raw_impl_type_path = impl_block.get_type ()->as_string ();
-  CanonicalPath impl_type
-    = CanonicalPath::new_seg (impl_block.get_type ()->get_node_id (),
-			      raw_impl_type_path);
+  CanonicalPath impl_type = self_cpath;
   CanonicalPath impl_prefix = prefix.append (impl_type);
 
   // see https://godbolt.org/z/a3vMbsT6W
@@ -580,6 +572,9 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 
   for (auto &impl_item : impl_block.get_impl_items ())
     {
+      rust_debug (
+	"AST::InherentImpl resolve_impl_item: impl_prefix={%s} cpath={%s}",
+	impl_prefix.get ().c_str (), cpath.get ().c_str ());
       resolve_impl_item (impl_item.get (), impl_prefix, cpath);
     }
 
@@ -703,22 +698,20 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
 				       canonical_trait_type);
   rust_assert (ok);
 
+  rust_debug ("AST::TraitImpl resolve trait type: {%s}",
+	      canonical_trait_type.get ().c_str ());
+
   CanonicalPath canonical_impl_type = CanonicalPath::create_empty ();
   ok = ResolveTypeToCanonicalPath::go (impl_block.get_type ().get (),
 				       canonical_impl_type);
   rust_assert (ok);
 
+  rust_debug ("AST::TraitImpl resolve self: {%s}",
+	      canonical_impl_type.get ().c_str ());
+
   // raw paths
-  std::string raw_impl_type_path = impl_block.get_type ()->as_string ();
-  CanonicalPath impl_type_seg
-    = CanonicalPath::new_seg (impl_block.get_type ()->get_node_id (),
-			      raw_impl_type_path);
-
-  std::string raw_trait_type_path = impl_block.get_trait_path ().as_string ();
-  CanonicalPath trait_type_seg
-    = CanonicalPath::new_seg (impl_block.get_trait_path ().get_node_id (),
-			      raw_trait_type_path);
-
+  CanonicalPath impl_type_seg = canonical_impl_type;
+  CanonicalPath trait_type_seg = canonical_trait_type;
   CanonicalPath projection
     = CanonicalPath::trait_impl_projection_seg (impl_block.get_node_id (),
 						trait_type_seg, impl_type_seg);
@@ -756,6 +749,9 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
 
   for (auto &impl_item : impl_block.get_impl_items ())
     {
+      rust_debug (
+	"AST::TraitImpl resolve_impl_item: impl_prefix={%s} cpath={%s}",
+	impl_prefix.get ().c_str (), cpath.get ().c_str ());
       resolve_impl_item (impl_item.get (), impl_prefix, cpath);
     }
 

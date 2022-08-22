@@ -477,6 +477,27 @@ ResolveTypeToCanonicalPath::visit (AST::SliceType &type)
     }
 }
 
+void
+ResolveTypeToCanonicalPath::visit (AST::TraitObjectTypeOneBound &type)
+{
+  CanonicalPath path = CanonicalPath::create_empty ();
+  bool ok
+    = ResolveTypeToCanonicalPath::go (&type.get_trait_bound ().get_type_path (),
+				      path);
+  if (ok)
+    {
+      std::string slice_path = "<dyn " + path.get () + ">";
+      result = CanonicalPath::new_seg (type.get_node_id (), slice_path);
+    }
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::TraitObjectType &type)
+{
+  // FIXME is this actually allowed? dyn A+B
+  gcc_unreachable ();
+}
+
 ResolveTypeToCanonicalPath::ResolveTypeToCanonicalPath ()
   : ResolverBase (), result (CanonicalPath::create_empty ())
 {}

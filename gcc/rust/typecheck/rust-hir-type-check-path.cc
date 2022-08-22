@@ -34,13 +34,7 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
 
   if (!qual_path_type.has_as_clause ())
     {
-      // then this is just a normal path-in-expression
       NodeId root_resolved_node_id = UNKNOWN_NODEID;
-      bool ok = resolver->lookup_resolved_type (
-	qual_path_type.get_type ()->get_mappings ().get_nodeid (),
-	&root_resolved_node_id);
-      rust_assert (ok);
-
       resolve_segments (root_resolved_node_id, expr.get_segments (), 0, root,
 			expr.get_mappings (), expr.get_locus ());
       return;
