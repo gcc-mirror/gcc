@@ -15857,6 +15857,14 @@ s390_option_override_internal (struct gcc_options *opts,
 
   /* Use the alternative scheduling-pressure algorithm by default.  */
   SET_OPTION_IF_UNSET (opts, opts_set, param_sched_pressure_algorithm, 2);
+
+  /* Allow simple vector masking using vll/vstl for epilogues.  */
+  if (TARGET_Z13)
+    SET_OPTION_IF_UNSET (opts, opts_set, param_vect_partial_vector_usage, 1);
+  else
+    SET_OPTION_IF_UNSET (opts, opts_set, param_vect_partial_vector_usage, 0);
+
+  /* Do not vectorize loops with a low trip count for now.  */
   SET_OPTION_IF_UNSET (opts, opts_set, param_min_vect_loop_bound, 2);
 
   /* Set the default alignment.  */
@@ -17824,7 +17832,6 @@ s390_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 
 #undef TARGET_VECTORIZE_VEC_PERM_CONST
 #define TARGET_VECTORIZE_VEC_PERM_CONST s390_vectorize_vec_perm_const
-
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

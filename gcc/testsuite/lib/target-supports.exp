@@ -7778,7 +7778,8 @@ proc check_effective_target_vect_fully_masked { } {
 # @code{len_store} optabs.
 
 proc check_effective_target_vect_len_load_store { } {
-    return [check_effective_target_has_arch_pwr9]
+    return [expr { [check_effective_target_has_arch_pwr9]
+      || [check_effective_target_s390_vx] }]
 }
 
 # Return the value of parameter vect-partial-vector-usage specified for

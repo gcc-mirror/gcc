@@ -236,6 +236,9 @@ dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.{c,S}] \
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.{c,S}]] \
 	"" $DEFAULT_CFLAGS
 
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/partial/*.{c,S}]] \
+	"" $DEFAULT_CFLAGS
+
 gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.F90]] \
 	"" $DEFAULT_FFLAGS
 
