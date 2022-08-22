@@ -206,8 +206,8 @@
 ;;
 ;; Note: Assume that Program Mem (T constraint) can fit in 16 bits!
 (define_insn "prumov<mode>"
-  [(set (match_operand:MOV32 0 "nonimmediate_operand" "=m,r,r,r,r,r")
-	(match_operand:MOV32 1 "general_operand"      "r,m,r,T,J,iF"))]
+  [(set (match_operand:MOV32 0 "nonimmediate_operand" "=m,r,r,r,r,r,r")
+	(match_operand:MOV32 1 "general_operand"      "r,m,r,T,J,Um,iF"))]
   ""
   "@
     sb%B0o\\t%b1, %0, %S0
@@ -215,9 +215,10 @@
     mov\\t%0, %1
     ldi\\t%0, %%pmem(%1)
     ldi\\t%0, %1
+    fill\\t%0, 4
     ldi32\\t%0, %1"
-  [(set_attr "type" "st,ld,alu,alu,alu,alu")
-   (set_attr "length" "4,4,4,4,4,8")])
+  [(set_attr "type" "st,ld,alu,alu,alu,alu,alu")
+   (set_attr "length" "4,4,4,4,4,4,8")])
 
 
 ;; Separate pattern for 8 and 16 bit moves, since LDI32 pseudo instruction
@@ -247,8 +248,8 @@
 ; Forcing DI reg alignment (akin to microblaze's HARD_REGNO_MODE_OK)
 ; does not seem efficient, and will violate TI ABI.
 (define_insn "mov<mode>"
-  [(set (match_operand:MOV64 0 "nonimmediate_operand" "=m,r,r,r,r,r")
-	(match_operand:MOV64 1 "general_operand"      "r,m,r,T,J,nF"))]
+  [(set (match_operand:MOV64 0 "nonimmediate_operand" "=m,r,r,r,r,r,r")
+	(match_operand:MOV64 1 "general_operand"      "r,m,Um,r,T,J,nF"))]
   ""
 {
   switch (which_alternative)
@@ -258,6 +259,8 @@
     case 1:
       return "lb%B1o\\t%b0, %1, %S1";
     case 2:
+      return "fill\\t%F0, 8";
+    case 3:
       /* careful with overlapping source and destination regs.  */
       gcc_assert (GP_REG_P (REGNO (operands[0])));
       gcc_assert (GP_REG_P (REGNO (operands[1])));
@@ -265,18 +268,18 @@
 	return "mov\\t%N0, %N1\;mov\\t%F0, %F1";
       else
 	return "mov\\t%F0, %F1\;mov\\t%N0, %N1";
-    case 3:
-      return "ldi\\t%F0, %%pmem(%1)\;ldi\\t%N0, 0";
     case 4:
-      return "ldi\\t%F0, %1\;ldi\\t%N0, 0";
+      return "ldi\\t%F0, %%pmem(%1)\;ldi\\t%N0, 0";
     case 5:
+      return "ldi\\t%F0, %1\;ldi\\t%N0, 0";
+    case 6:
       return "ldi32\\t%F0, %w1\;ldi32\\t%N0, %W1";
     default:
       gcc_unreachable ();
   }
 }
-  [(set_attr "type" "st,ld,alu,alu,alu,alu")
-   (set_attr "length" "4,4,8,8,8,16")])
+  [(set_attr "type" "st,ld,alu,alu,alu,alu,alu")
+   (set_attr "length" "4,4,4,8,8,8,16")])
 
 ;
 ; load_multiple pattern(s).
