@@ -1892,7 +1892,6 @@ predicate::is_use_guarded (gimple *use_stmt, basic_block use_bb,
 	  /* Lazily initialize *THIS from the PHI and build its use
 	     expression.  */
 	  init_from_phi_def (phi);
-	  m_use_expr = build_pred_expr (use_preds.m_preds);
 	}
 
       /* The use is not guarded.  */
@@ -1921,7 +1920,6 @@ predicate::is_use_guarded (gimple *use_stmt, basic_block use_bb,
       /* Lazily initialize *THIS from PHI.  */
       if (!init_from_phi_def (phi))
 	{
-	  m_use_expr = build_pred_expr (use_preds.m_preds);
 	  return false;
 	}
 
@@ -1937,8 +1935,6 @@ predicate::is_use_guarded (gimple *use_stmt, basic_block use_bb,
      USE_PREDS).  */
   if (superset_of (use_preds))
     return true;
-
-  m_use_expr = build_pred_expr (use_preds.m_preds);
 
   return false;
 }
@@ -2325,39 +2321,4 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
   else
     /* Clear M_PREDS to indicate failure.  */
     m_preds.release ();
-}
-
-/* Return the predicate expression guarding the definition of
-   the interesting variable.  When INVERT is set, return the logical
-   NOT of the predicate.  */
-
-tree
-predicate::def_expr (bool invert /* = false */) const
-{
-  /* The predicate is stored in an inverted form.  */
-  return build_pred_expr (m_preds, !invert);
-}
-
-/* Return the predicate expression guarding the use of the interesting
-   variable or null if the use predicate hasn't been determined yet.  */
-
-tree
-predicate::use_expr () const
-{
-  return m_use_expr;
-}
-
-/* Return a logical AND expression with the (optionally inverted) predicate
-   expression guarding the definition of the interesting variable and one
-   guarding its use.  Return null if the use predicate hasn't yet been
-   determined.  */
-
-tree
-predicate::expr (bool invert /* = false */) const
-{
-  if (!m_use_expr)
-    return NULL_TREE;
-
-  tree expr = build_pred_expr (m_preds, !invert);
-  return build2 (TRUTH_AND_EXPR, boolean_type_node, expr, m_use_expr);
 }
