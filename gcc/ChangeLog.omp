@@ -1,3 +1,15 @@
+2022-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from mainline:
+	2022-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR lto/106686
+	* lto-wrapper.cc (free_array_of_ptrs): Move before tool_cleanup.
+	(tool_cleanup): Unlink offload_names.
+	(compile_offload_image): Take filename argument to set it early.
+	(compile_images_for_offload_targets): Update call; set
+	offload_names to NULL after freeing the array.
+
 2022-08-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
