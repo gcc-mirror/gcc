@@ -3806,18 +3806,27 @@ static void
 At_End_Proc_to_gnu (Node_Id gnat_node)
 {
   tree proc_decl = gnat_to_gnu (At_End_Proc (gnat_node));
+  Node_Id gnat_end_label;
 
   /* When not optimizing, disable inlining of finalizers as this can
      create a more complex CFG in the parent function.  */
   if (!optimize || optimize_debug)
     DECL_DECLARED_INLINE_P (proc_decl) = 0;
 
+  /* Retrieve the end label attached to the node, if any.  */
+  if (Nkind (gnat_node) == N_Handled_Sequence_Of_Statements)
+    gnat_end_label = End_Label (gnat_node);
+  else if (Present (Handled_Statement_Sequence (gnat_node)))
+    gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
+  else
+    gnat_end_label = Empty;
+
   /* If there is no end label attached, we use the location of the At_End
      procedure because Expand_Cleanup_Actions might reset the location of
-      the enclosing construct to that of an inner statement.  */
+     the enclosing construct to that of an inner statement.  */
   add_cleanup (build_call_n_expr (proc_decl, 0),
-	       Present (End_Label (gnat_node))
-	       ? End_Label (gnat_node) : At_End_Proc (gnat_node));
+	       Present (gnat_end_label)
+	       ? gnat_end_label : At_End_Proc (gnat_node));
 }
 
 /* Subroutine of gnat_to_gnu to translate GNAT_NODE, an N_Subprogram_Body.  */
@@ -10418,7 +10427,6 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
 	gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
       else
 	gnat_end_label = Empty;
-
       break;
 
     case N_Package_Declaration:
@@ -10439,7 +10447,7 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
      transient block does not receive the sloc of a source condition.  */
   if (!Sloc_to_locus (Sloc (gnat_node), &end_locus,
                       No (gnat_end_label)
-                      && (Nkind (gnat_node) == N_Block_Statement)))
+                      && Nkind (gnat_node) == N_Block_Statement))
     return false;
 
   switch (TREE_CODE (gnu_node))
