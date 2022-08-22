@@ -5602,6 +5602,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
 
   gnu_param = create_param_decl (gnu_param_name, gnu_param_type);
   TREE_READONLY (gnu_param) = ro_param || by_ref || by_component_ptr;
+  DECL_ARTIFICIAL (gnu_param) = !Comes_From_Source (gnat_param);
   DECL_BY_REF_P (gnu_param) = by_ref;
   DECL_FORCED_BY_REF_P (gnu_param) = forced_by_ref;
   DECL_BY_COMPONENT_PTR_P (gnu_param) = by_component_ptr;
