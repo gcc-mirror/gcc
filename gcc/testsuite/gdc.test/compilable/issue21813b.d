@@ -4,10 +4,9 @@ Target.OS defaultTargetOS()
     return Target.OS.linux;
 }
 
-struct Target 
+struct Target
 {
     enum OS { linux }
     OS os = defaultTargetOS();
     @property isPOSIX() scope @nogc { }
 }
-

@@ -46,26 +46,8 @@ package body System.Concat_2 is
       R (F .. L) := S1;
 
       F := L + 1;
-      L := R'Last;
+      L := F + S2'Length - 1;
       R (F .. L) := S2;
    end Str_Concat_2;
-
-   -------------------------
-   -- Str_Concat_Bounds_2 --
-   -------------------------
-
-   procedure Str_Concat_Bounds_2
-     (Lo, Hi : out Natural;
-      S1, S2 : String)
-   is
-   begin
-      if S1 = "" then
-         Lo := S2'First;
-         Hi := S2'Last;
-      else
-         Lo := S1'First;
-         Hi := S1'Last + S2'Length;
-      end if;
-   end Str_Concat_Bounds_2;
 
 end System.Concat_2;

@@ -14,4 +14,3 @@ version (A)
         struct G3 {}
 else
     struct G4 {}
-

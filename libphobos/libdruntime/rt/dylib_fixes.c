@@ -25,4 +25,3 @@ __attribute__((destructor)) static void finalizer ()
 {
     rt_term();
 }
-

@@ -320,6 +320,16 @@ package Sem_Util is
    --  declaration in the tree before N, and return the entity of that
    --  subtype. Otherwise, simply return T.
 
+   function Build_Default_Subtype_OK (T : Entity_Id) return Boolean;
+   --  When analyzing components or object declarations, it is possible, in
+   --  some cases, to build subtypes for discriminated types. This is
+   --  worthwhile to avoid the backend allocating the maximum possible size for
+   --  objects of the type.
+   --  In particular, when T is limited, the discriminants and therefore the
+   --  size of an object of type T cannot change. Furthermore, if T is definite
+   --  with statically initialized defaulted discriminants, we are able and
+   --  want to build a constrained subtype of the right size.
+
    function Build_Discriminal_Subtype_Of_Component
      (T : Entity_Id) return Node_Id;
    --  Determine whether a record component has a type that depends on
@@ -615,6 +625,11 @@ package Sem_Util is
    --  create a new compatible record type. Loc is the source location assigned
    --  to the created nodes.
 
+   procedure Copy_Ghost_Aspect (From : Node_Id; To : Node_Id);
+   --  Copy the Ghost aspect if present in the aspect specifications of node
+   --  From to node To. On entry it is assumed that To does not have aspect
+   --  specifications. If From has no aspects, the routine has no effect.
+
    function Copy_Parameter_List (Subp_Id : Entity_Id) return List_Id;
    --  Utility to create a parameter profile for a new subprogram spec, when
    --  the subprogram has a body that acts as spec. This is done for some cases
@@ -672,11 +687,10 @@ package Sem_Util is
    --  Current_Scope is returned. The returned value is Empty if this is called
    --  from a library package which is not within any subprogram.
 
-   function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean;
-   --  True if T is a class-wide type, or if it has controlled parts ("part"
-   --  means T or any of its subcomponents). Same as Needs_Finalization, except
-   --  when pragma Restrictions (No_Finalization) applies, in which case we
-   --  know that class-wide objects do not contain controlled parts.
+   function CW_Or_Needs_Finalization (Typ : Entity_Id) return Boolean;
+   --  True if Typ is a class-wide type or requires finalization actions. Same
+   --  as Needs_Finalization except with pragma Restrictions (No_Finalization),
+   --  in which case we know that class-wide objects do not need finalization.
 
    function Deepest_Type_Access_Level
      (Typ             : Entity_Id;
@@ -816,17 +830,17 @@ package Sem_Util is
    --  Enclosing_Comp_Unit_Node returns a subunit, then the corresponding
    --  library unit. If no such item is found, returns Empty.
 
-   function Enclosing_Package (E : Entity_Id) return Entity_Id;
+   function Enclosing_Package (N : Node_Or_Entity_Id) return Entity_Id;
    --  Utility function to return the Ada entity of the package enclosing
-   --  the entity E, if any. Returns Empty if no enclosing package.
+   --  the entity or node N, if any. Returns Empty if no enclosing package.
 
    function Enclosing_Package_Or_Subprogram (E : Entity_Id) return Entity_Id;
    --  Returns the entity of the package or subprogram enclosing E, if any.
    --  Returns Empty if no enclosing package or subprogram.
 
-   function Enclosing_Subprogram (E : Entity_Id) return Entity_Id;
+   function Enclosing_Subprogram (N : Node_Or_Entity_Id) return Entity_Id;
    --  Utility function to return the Ada entity of the subprogram enclosing
-   --  the entity E, if any. Returns Empty if no enclosing subprogram.
+   --  N, if any. Returns Empty if no enclosing subprogram.
 
    function End_Keyword_Location (N : Node_Id) return Source_Ptr;
    --  Given block statement, entry body, package body, package declaration,
@@ -1174,6 +1188,12 @@ package Sem_Util is
    --  If expression N references a part of an object, return this object.
    --  Otherwise return Empty. Expression N should have been resolved already.
 
+   function Get_Enclosing_Deep_Object (N : Node_Id) return Entity_Id;
+   --  If expression N references a reachable part of an object (as defined in
+   --  SPARK RM 6.9), return this object. Otherwise return Empty. It is similar
+   --  to Get_Enclosing_Object, but treats pointer dereference like component
+   --  selection. Expression N should have been resolved already.
+
    function Get_Generic_Entity (N : Node_Id) return Entity_Id;
    --  Returns the true generic entity in an instantiation. If the name in the
    --  instantiation is a renaming, the function returns the renamed generic.
@@ -1258,9 +1278,8 @@ package Sem_Util is
    --  Retrieve one of the primitives First, Last, Next, Previous, Has_Element,
    --  Element from the value of the Iterable aspect of a type.
 
-   procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id);
-   --  Retrieve the fully expanded name of the library unit declared by
-   --  Decl_Node into the name buffer.
+   function Get_Library_Unit_Name (Decl_Node : Node_Id) return String_Id;
+   --  Return the full expanded name of the library unit declared by Decl_Node
 
    function Get_Max_Queue_Length (Id : Entity_Id) return Uint;
    --  Return the argument of pragma Max_Queue_Length or zero if the annotation
@@ -1339,7 +1358,7 @@ package Sem_Util is
    --  Given an entity for a task type or subtype, retrieves the
    --  Task_Body_Procedure field from the corresponding task type declaration.
 
-   function Get_User_Defined_Eq (E : Entity_Id) return Entity_Id;
+   function Get_User_Defined_Equality (E : Entity_Id) return Entity_Id;
    --  For a type entity, return the entity of the primitive equality function
    --  for the type if it exists, otherwise return Empty.
 
@@ -1723,13 +1742,17 @@ package Sem_Util is
    --  This version is more efficient than calling the single root version of
    --  Is_Subtree twice.
 
+   function In_Statement_Condition_With_Actions (N : Node_Id) return Boolean;
+   --  Returns true if the expression N occurs within the condition of a
+   --  statement node with actions. Subsidiary to inlining for GNATprove, where
+   --  inlining of function calls in such expressions would expand the called
+   --  body into actions list of the condition node. GNATprove cannot yet cope
+   --  with such a complex AST.
+
    function In_Visible_Part (Scope_Id : Entity_Id) return Boolean;
    --  Determine whether a declaration occurs within the visible part of a
    --  package specification. The package must be on the scope stack, and the
    --  corresponding private part must not.
-
-   function In_While_Loop_Condition (N : Node_Id) return Boolean;
-   --  Returns true if the expression N occurs within the condition of a while
 
    function Incomplete_Or_Partial_View (Id : Entity_Id) return Entity_Id;
    --  Given the entity of a constant or a type, retrieve the incomplete or
@@ -2052,6 +2075,9 @@ package Sem_Util is
    --  Determine whether an arbitrary node denotes an effectively volatile
    --  object for reading (SPARK RM 7.1.2).
 
+   function Is_Entity_Of_Quantified_Expression (Id : Entity_Id) return Boolean;
+   --  Determine whether entity Id is the entity of a quantified expression
+
    function Is_Entry_Body (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id is the body entity of an entry [family]
 
@@ -2068,6 +2094,8 @@ package Sem_Util is
 
    function Is_Expression_Function (Subp : Entity_Id) return Boolean;
    --  Determine whether subprogram [body] Subp denotes an expression function
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    function Is_Expression_Function_Or_Completion
      (Subp : Entity_Id) return Boolean;
@@ -2201,12 +2229,14 @@ package Sem_Util is
    --  Given a tagged type, returns True if argument is a type extension
    --  that introduces no new components (discriminant or nondiscriminant).
    --  Ignore_Privacy should be True for use in implementing dynamic semantics.
+   --  Cannot be called with class-wide types.
 
    function Is_Null_Extension_Of
      (Descendant, Ancestor : Entity_Id) return Boolean;
    --  Given two tagged types, the first a descendant of the second,
    --  returns True if every component of Descendant is inherited
    --  (directly or indirectly) from Ancestor. Privacy is ignored.
+   --  Cannot be called with class-wide types.
 
    function Is_Null_Record_Definition (Record_Def : Node_Id) return Boolean;
    --  Returns True for an N_Record_Definition node that has no user-defined
@@ -2332,12 +2362,6 @@ package Sem_Util is
    --  AI05-0139-2: Check whether Typ is derived from the predefined interface
    --  Ada.Iterator_Interfaces.Reversible_Iterator.
 
-   function Is_Selector_Name (N : Node_Id) return Boolean;
-   --  Given an N_Identifier node N, determines if it is a Selector_Name.
-   --  As described in Sinfo, Selector_Names are special because they
-   --  represent use of the N_Identifier node for a true identifier, when
-   --  normally such nodes represent a direct name.
-
    function Is_Single_Concurrent_Object (Id : Entity_Id) return Boolean;
    --  Determine whether arbitrary entity Id denotes the anonymous object
    --  created for a single protected or single task type.
@@ -2457,6 +2481,10 @@ package Sem_Util is
    --  unconditional transfer of control at run time, i.e. the following
    --  statement definitely will not be executed.
 
+   function Is_Trivial_Boolean (N : Node_Id) return Boolean;
+   --  Determine whether source node N denotes "True" or "False". Note that
+   --  this is not true for expressions that got folded to True or False.
+
    function Is_Unchecked_Conversion_Instance (Id : Entity_Id) return Boolean;
    --  Determine whether an arbitrary entity denotes an instance of function
    --  Ada.Unchecked_Conversion.
@@ -2467,6 +2495,12 @@ package Sem_Util is
 
    function Is_User_Defined_Equality (Id : Entity_Id) return Boolean;
    --  Determine whether an entity denotes a user-defined equality
+
+   function Is_User_Defined_Literal
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean;
+   pragma Inline (Is_User_Defined_Literal);
+   --  Determine whether N is a user-defined literal for Typ
 
    function Is_Validation_Variable_Reference (N : Node_Id) return Boolean;
    --  Determine whether N denotes a reference to a variable which captures the
@@ -2658,6 +2692,12 @@ package Sem_Util is
    --  parameter to identify the accessibility level of the function result
    --  "determined by the point of call".
 
+   function Needs_Secondary_Stack (Id : Entity_Id) return Boolean;
+   --  Return true if functions whose result type is Id must return on the
+   --  secondary stack, i.e. allocate the return object on this stack.
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
    function Needs_Simple_Initialization
      (Typ         : Entity_Id;
       Consider_IS : Boolean := True) return Boolean;
@@ -2847,7 +2887,7 @@ package Sem_Util is
    --  This routine is called if the sub-expression N maybe the target of
    --  an assignment (e.g. it is the left side of an assignment, used as
    --  an out parameters, or used as prefixes of access attributes). It
-   --  sets May_Be_Modified in the associated entity if there is one,
+   --  sets Never_Set_In_Source in the associated entity if there is one,
    --  taking into account the rule that in the case of renamed objects,
    --  it is the flag in the renamed object that must be set.
    --
@@ -2920,6 +2960,26 @@ package Sem_Util is
    --  Return True if a predicate check should be emitted for the given type
    --  Typ, taking into account Predicates_Ignored and
    --  Predicate_Checks_Suppressed.
+
+   function Predicate_Failure_Expression
+    (Typ : Entity_Id; Inherited_OK : Boolean) return Node_Id;
+   --  If the given type or subtype is subject to a Predicate_Failure
+   --  aspect specification, then returns the specified expression.
+   --  Otherwise, if Inherited_OK is False then returns Empty.
+   --  Otherwise, if Typ denotes a subtype or a derived type then
+   --  returns the result of recursing on the ancestor subtype.
+   --  Otherwise, returns Empty.
+
+   function Predicate_Function_Needs_Membership_Parameter (Typ : Entity_Id)
+     return Boolean is
+     (Present (Predicate_Failure_Expression (Typ, Inherited_OK => True)));
+   --  The predicate function for some, but not all, subtypes needs to
+   --  know whether the predicate is being evaluated as part of a membership
+   --  test. The predicate function for such a subtype takes an additional
+   --  boolean to convey this information. This function returns True if this
+   --  additional parameter is needed. More specifically, this function
+   --  returns true if the Predicate_Failure aspect is specified for the
+   --  given subtype or for any of its "ancestor" subtypes.
 
    function Predicate_Tests_On_Arguments (Subp : Entity_Id) return Boolean;
    --  Subp is the entity for a subprogram call. This function returns True if
@@ -3038,14 +3098,13 @@ package Sem_Util is
    --  This is used as a defense mechanism against ill-formed trees caused by
    --  previous errors (particularly in -gnatq mode).
 
-   function Requires_Transient_Scope (Id : Entity_Id) return Boolean;
-   --  Id is a type entity. The result is True when temporaries of this type
-   --  need to be wrapped in a transient scope to be reclaimed properly when a
-   --  secondary stack is in use. Examples of types requiring such wrapping are
-   --  controlled types and variable-sized types including unconstrained
-   --  arrays.
-
-   --  WARNING: There is a matching C declaration of this subprogram in fe.h
+   function Requires_Transient_Scope (Typ : Entity_Id) return Boolean;
+   pragma Inline (Requires_Transient_Scope);
+   --  Return true if temporaries of Typ need to be wrapped in a transient
+   --  scope, either because they are allocated on the secondary stack or
+   --  finalization actions must be generated before the next instruction.
+   --  Examples of types requiring such wrapping are variable-sized types,
+   --  including unconstrained arrays, and controlled types.
 
    procedure Reset_Analyzed_Flags (N : Node_Id);
    --  Reset the Analyzed flags in all nodes of the tree whose root is N
@@ -3156,9 +3215,8 @@ package Sem_Util is
    --  This procedure has the same calling sequence as Set_Entity, but it
    --  performs additional checks as follows:
    --
-   --    If Style_Check is set, then it calls a style checking routine which
-   --    can check identifier spelling style. This procedure also takes care
-   --    of checking the restriction No_Implementation_Identifiers.
+   --    If Style_Check is set, then it calls a style checking routine that
+   --    can check identifier spelling style.
    --
    --    If restriction No_Abort_Statements is set, then it checks that the
    --    entity is not Ada.Task_Identification.Abort_Task.
@@ -3420,6 +3478,18 @@ package Sem_Util is
    function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean;
    --  Returns True if entity E is declared within scope S
 
+   procedure Warn_On_Hiding_Entity
+     (N               : Node_Id;
+      Hidden, Visible : Entity_Id;
+      On_Use_Clause   : Boolean);
+   --  Warn on hiding of an entity, either because a new declaration hides
+   --  an entity directly visible or potentially visible through a use_clause
+   --  (On_Use_Clause = False), or because the entity would be potentially
+   --  visible through a use_clause if it was now hidden by a visible
+   --  declaration (On_Use_Clause = True). N is the node on which the warning
+   --  is potentially issued: it is the visible entity in the former case, and
+   --  the use_clause in the latter case.
+
    procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id);
    --  Output error message for incorrectly typed expression. Expr is the node
    --  for the incorrectly typed construct (Etype (Expr) is the type found),
@@ -3583,68 +3653,83 @@ package Sem_Util is
       --  for the Storage_Model feature. These functions provide an interface
       --  that the compiler (in particular back-end phases such as gigi and
       --  GNAT-LLVM) can use to easily obtain entities and operations that
-      --  are specified for types in the aspects Storage_Model_Type and
+      --  are specified for types that have aspects Storage_Model_Type or
       --  Designated_Storage_Model.
 
-      function Get_Storage_Model_Type_Entity
-        (Typ : Entity_Id;
-         Nam : Name_Id) return Entity_Id;
-      --  Given type Typ with aspect Storage_Model_Type, returns the Entity_Id
-      --  corresponding to the entity associated with Nam in the aspect. If the
-      --  type does not specify the aspect, or such an entity is not present,
-      --  then returns Empty. (Note: This function is modeled on function
-      --  Get_Iterable_Type_Primitive.)
+      function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean;
+      --  Returns True iff Typ specifies aspect Storage_Model_Type
 
       function Has_Designated_Storage_Model_Aspect
         (Typ : Entity_Id) return Boolean;
       --  Returns True iff Typ specifies aspect Designated_Storage_Model
 
-      function Has_Storage_Model_Type_Aspect (Typ : Entity_Id) return Boolean;
-      --  Returns True iff Typ specifies aspect Storage_Model_Type
-
       function Storage_Model_Object (Typ : Entity_Id) return Entity_Id;
-      --  Given an access type with aspect Designated_Storage_Model, returns
-      --  the storage-model object associated with that type; returns Empty
-      --  if there is no associated object.
+      --  Given an access type Typ with aspect Designated_Storage_Model,
+      --  returns the storage-model object associated with that type.
+      --  The object Entity_Ids returned by this function can be passed
+      --  other functions declared in this interface to retrieve operations
+      --  associated with Storage_Model_Type aspect of the object's type.
 
       function Storage_Model_Type (Obj : Entity_Id) return Entity_Id;
       --  Given an object Obj of a type specifying aspect Storage_Model_Type,
-      --  returns that type; otherwise returns Empty.
+      --  returns that type.
 
-      function Storage_Model_Address_Type (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  the type specified for the Address_Type choice in that aspect;
-      --  returns Empty if the aspect or the type isn't specified.
+      function Get_Storage_Model_Type_Entity
+        (SM_Obj_Or_Type : Entity_Id;
+         Nam            : Name_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, and Nam denoting the name of one of the argument kinds allowed
+      --  for that aspect, returns the Entity_Id corresponding to the entity
+      --  associated with Nam in the aspect. If an entity was not explicitly
+      --  specified for Nam, then returns Empty, except that in the defaulted
+      --  Address_Type case, System.Address will be returned, and in the
+      --  defaulted Null_Address case, System.Null_Address will be returned.
+      --  (Note: This function is modeled on Get_Iterable_Type_Primitive.)
 
-      function Storage_Model_Null_Address (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  constant specified for Null_Address choice in that aspect; returns
-      --  Empty if the aspect or the constant object isn't specified.
+      function Storage_Model_Address_Type
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the type specified for the Address_Type choice in that
+      --  aspect; returns type System.Address if the address type was not
+      --  explicitly specified (indicating use of the native memory model).
 
-      function Storage_Model_Allocate (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  procedure specified for the Allocate choice in that aspect; returns
-      --  Empty if the aspect or the procedure isn't specified.
+      function Storage_Model_Null_Address
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the constant specified for the Null_Address choice in
+      --  that aspect; returns Empty if the constant object isn't specified,
+      --  unless the native memory model is in use (System.Address), in which
+      --  case it returns System.Null_Address.
 
-      function Storage_Model_Deallocate (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  procedure specified for the Deallocate choice in that aspect; returns
-      --  Empty if the aspect or the procedure isn't specified.
+      function Storage_Model_Allocate
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the procedure specified for the Allocate choice in that
+      --  aspect; returns Empty if the procedure isn't specified.
 
-      function Storage_Model_Copy_From (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  procedure specified for the Copy_From choice in that aspect; returns
-      --  Empty if the aspect or the procedure isn't specified.
+      function Storage_Model_Deallocate
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the procedure specified for the Deallocate choice in
+      --  that aspect; returns Empty if the procedure isn't specified.
 
-      function Storage_Model_Copy_To (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  procedure specified for the Copy_To choice in that aspect; returns
-      --  Empty if the aspect or the procedure isn't specified.
+      function Storage_Model_Copy_From
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the procedure specified for the Copy_From choice in
+      --  that aspect; returns Empty if the procedure isn't specified.
 
-      function Storage_Model_Storage_Size (Typ : Entity_Id) return Entity_Id;
-      --  Given a type Typ that specifies aspect Storage_Model_Type, returns
-      --  function specified for Storage_Size choice in that aspect; returns
-      --  Empty if the aspect or the procedure isn't specified.
+      function Storage_Model_Copy_To
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the procedure specified for the Copy_To choice in that
+      --  aspect; returns Empty if the procedure isn't specified.
+
+      function Storage_Model_Storage_Size
+        (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
+      --  Given a type with aspect Storage_Model_Type or an object of such a
+      --  type, returns the function specified for the Storage_Size choice in
+      --  that aspect; returns Empty if the procedure isn't specified.
 
    end Storage_Model_Support;
 

@@ -38,7 +38,9 @@ _Bool __aarch64_have_lse_atomics
 
 unsigned long int __getauxval (unsigned long int);
 
-static void __attribute__((constructor))
+/* Use a higher priority to ensure it runs before user constructors
+   and library constructors with priority 100. */
+static void __attribute__((constructor (90)))
 init_have_lse_atomics (void)
 {
   unsigned long hwcap = __getauxval (AT_HWCAP);

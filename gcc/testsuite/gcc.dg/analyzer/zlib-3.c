@@ -46,7 +46,7 @@ static int huft_build(uInt *b, uInt n, uInt s, const uInt *d, const uInt *e,
   uInt mask;
   register uInt *p;
   inflate_huft *q;
-  struct inflate_huft_s r;
+  struct inflate_huft_s r; /* { dg-message "region created on stack here" } */
   inflate_huft *u[15];
   register int w;
   uInt x[15 + 1];
@@ -182,7 +182,9 @@ static int huft_build(uInt *b, uInt n, uInt s, const uInt *d, const uInt *e,
         q[j] = r; /* { dg-warning "use of uninitialized value 'r.base'" } */
 
       mask = (1 << w) - 1;
-      while ((i & mask) != x[h]) {
+      /* The analyzer thinks that h can be -1 here.
+         This is probably a false positive. */
+      while ((i & mask) !=  x[h]) { /* { dg-bogus "underread" "" { xfail *-*-* } } */
         h--;
         w -= l;
         mask = (1 << w) - 1;

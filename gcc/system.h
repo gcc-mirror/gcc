@@ -239,6 +239,7 @@ extern int errno;
 # include <functional>
 #endif
 # include <cstring>
+# include <initializer_list>
 # include <new>
 # include <utility>
 # include <type_traits>
@@ -735,6 +736,9 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #define __builtin_expect(a, b) (a)
 #endif
 
+#define LIKELY(x) (__builtin_expect ((x), 1))
+#define UNLIKELY(x) (__builtin_expect ((x), 0))
+
 /* Some of the headers included by <memory> can use "abort" within a
    namespace, e.g. "_VSTD::abort();", which fails after we use the
    preprocessor to redefine "abort" as "fancy_abort" below.  */
@@ -747,6 +751,10 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #if defined(HAVE_MALLINFO) || defined(HAVE_MALLINFO2)
 #include <malloc.h>
 #endif
+#endif
+
+#ifdef INCLUDE_PTHREAD_H
+#include <pthread.h>
 #endif
 
 #ifdef INCLUDE_ISL
@@ -770,8 +778,10 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #endif
 #endif
 
-/* Redefine abort to report an internal error w/o coredump, and
-   reporting the location of the error in the source file.  */
+/* Redefine 'abort' to report an internal error w/o coredump, and
+   reporting the location of the error in the source file.
+   Instead of directly calling 'abort' or 'fancy_abort', GCC code
+   should normally call 'internal_error' with a specific message.  */
 extern void fancy_abort (const char *, int, const char *)
 					 ATTRIBUTE_NORETURN ATTRIBUTE_COLD;
 #define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
@@ -782,7 +792,7 @@ extern void fancy_abort (const char *, int, const char *)
    ((void)(!(EXPR) ? fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0 : 0))
 #elif (GCC_VERSION >= 4005)
 #define gcc_assert(EXPR) 						\
-  ((void)(__builtin_expect (!(EXPR), 0) ? __builtin_unreachable (), 0 : 0))
+  ((void)(UNLIKELY (!(EXPR)) ? __builtin_unreachable (), 0 : 0))
 #else
 /* Include EXPR, so that unused variable warnings do not occur.  */
 #define gcc_assert(EXPR) ((void)(0 && (EXPR)))
@@ -831,8 +841,7 @@ extern void fancy_abort (const char *, int, const char *)
 #define STATIC_CONSTANT_P(X) (false && (X))
 #endif
 
-/* static_assert (COND, MESSAGE) is available in C++11 onwards.  */
-#if __cplusplus >= 201103L
+#ifdef __cplusplus
 #define STATIC_ASSERT(X) \
   static_assert ((X), #X)
 #else

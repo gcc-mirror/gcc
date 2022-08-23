@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "file-prefix-map.h"
 #include "cgraph.h"
 #include "omp-general.h"
+#include "opts.h"
 
 /* Forward declarations.  */
 
@@ -249,8 +250,7 @@ cp_gimplify_init_expr (tree *expr_p)
   if (TREE_CODE (from) == TARGET_EXPR)
     if (tree init = TARGET_EXPR_INITIAL (from))
       {
-	if (VOID_TYPE_P (TREE_TYPE (init))
-	    && TREE_CODE (init) != AGGR_INIT_EXPR)
+	if (target_expr_needs_replace (from))
 	  {
 	    /* If this was changed by cp_genericize_target_expr, we need to
 	       walk into it to replace uses of the slot.  */
@@ -931,13 +931,9 @@ static void
 cp_genericize_target_expr (tree *stmt_p)
 {
   tree slot = TARGET_EXPR_SLOT (*stmt_p);
-  /* If TARGET_EXPR is created for some global var initializer, the slot
-     will have NULL and so is_local_temp will return false for it.  If
-     this is a ssdf, set DECL_CONTEXT now.  */
-  if (DECL_CONTEXT (slot) == NULL_TREE)
-    DECL_CONTEXT (slot) = current_function_decl;
   cp_genericize_init (&TARGET_EXPR_INITIAL (*stmt_p),
 		      TARGET_EXPR_INITIAL (*stmt_p), slot);
+  gcc_assert (!DECL_INITIAL (slot));
 }
 
 /* Genericization context.  */
@@ -954,14 +950,23 @@ struct cp_genericize_data
 
 /* Perform any pre-gimplification folding of C++ front end trees to
    GENERIC.
-   Note:  The folding of none-omp cases is something to move into
+   Note:  The folding of non-omp cases is something to move into
      the middle-end.  As for now we have most foldings only on GENERIC
      in fold-const, we need to perform this before transformation to
      GIMPLE-form.  */
 
-static tree
-cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
+struct cp_fold_data
 {
+  hash_set<tree> pset;
+  bool genericize; // called from cp_fold_function?
+
+  cp_fold_data (bool g): genericize (g) {}
+};
+
+static tree
+cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
+{
+  cp_fold_data *data = (cp_fold_data*)data_;
   tree stmt = *stmt_p;
   enum tree_code code = TREE_CODE (stmt);
 
@@ -971,7 +976,7 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
       if (TREE_CODE (PTRMEM_CST_MEMBER (stmt)) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (PTRMEM_CST_MEMBER (stmt)))
 	{
-	  if (!((hash_set<tree> *) data)->add (stmt))
+	  if (!data->pset.add (stmt))
 	    error_at (PTRMEM_CST_LOCATION (stmt),
 		      "taking address of an immediate function %qD",
 		      PTRMEM_CST_MEMBER (stmt));
@@ -1005,7 +1010,7 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 
   *stmt_p = stmt = cp_fold (*stmt_p);
 
-  if (((hash_set<tree> *) data)->add (stmt))
+  if (data->pset.add (stmt))
     {
       /* Don't walk subtrees of stmts we've already walked once, otherwise
 	 we can have exponential complexity with e.g. lots of nested
@@ -1079,12 +1084,17 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 	}
       break;
 
+      /* These are only for genericize time; they're here rather than in
+	 cp_genericize to avoid problems with the invisible reference
+	 transition.  */
     case INIT_EXPR:
-      cp_genericize_init_expr (stmt_p);
+      if (data->genericize)
+	cp_genericize_init_expr (stmt_p);
       break;
 
     case TARGET_EXPR:
-      cp_genericize_target_expr (stmt_p);
+      if (data->genericize)
+	cp_genericize_target_expr (stmt_p);
       break;
 
     default:
@@ -1100,8 +1110,8 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 void
 cp_fold_function (tree fndecl)
 {
-  hash_set<tree> pset;
-  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, &pset, NULL);
+  cp_fold_data data (/*genericize*/true);
+  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, &data, NULL);
 }
 
 /* Turn SPACESHIP_EXPR EXPR into GENERIC.  */
@@ -1168,7 +1178,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
   hash_set<tree> *p_set = wtd->p_set;
 
   /* If in an OpenMP context, note var uses.  */
-  if (__builtin_expect (wtd->omp_ctx != NULL, 0)
+  if (UNLIKELY (wtd->omp_ctx != NULL)
       && (VAR_P (stmt)
 	  || TREE_CODE (stmt) == PARM_DECL
 	  || TREE_CODE (stmt) == RESULT_DECL)
@@ -1232,7 +1242,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       if (is_invisiref_parm (TREE_OPERAND (stmt, 0)))
 	{
 	  /* If in an OpenMP context, note var uses.  */
-	  if (__builtin_expect (wtd->omp_ctx != NULL, 0)
+	  if (UNLIKELY (wtd->omp_ctx != NULL)
 	      && omp_var_to_track (TREE_OPERAND (stmt, 0)))
 	    omp_cxx_notice_variable (wtd->omp_ctx, TREE_OPERAND (stmt, 0));
 	  *stmt_p = fold_convert (TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
@@ -1359,7 +1369,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       break;
 
     case BIND_EXPR:
-      if (__builtin_expect (wtd->omp_ctx != NULL, 0))
+      if (UNLIKELY (wtd->omp_ctx != NULL))
 	{
 	  tree decl;
 	  for (decl = BIND_EXPR_VARS (stmt); decl; decl = DECL_CHAIN (decl))
@@ -1804,7 +1814,7 @@ cp_maybe_instrument_return (tree fndecl)
 	 information is provided, while the __builtin_unreachable () below
 	 if return sanitization is disabled will just result in hard to
 	 understand runtime error without location.  */
-      && (!optimize
+      && ((!optimize && !flag_unreachable_traps)
 	  || sanitize_flags_p (SANITIZE_UNREACHABLE, fndecl)))
     return;
 
@@ -1854,10 +1864,7 @@ cp_maybe_instrument_return (tree fndecl)
   if (sanitize_flags_p (SANITIZE_RETURN, fndecl))
     t = ubsan_instrument_return (loc);
   else
-    {
-      tree fndecl = builtin_decl_explicit (BUILT_IN_UNREACHABLE);
-      t = build_call_expr_loc (BUILTINS_LOCATION, fndecl, 0);
-    }
+    t = build_builtin_unreachable (BUILTINS_LOCATION);
 
   append_to_statement_list (t, p);
 }
@@ -2362,8 +2369,8 @@ cp_fully_fold_init (tree x)
   if (processing_template_decl)
     return x;
   x = cp_fully_fold (x);
-  hash_set<tree> pset;
-  cp_walk_tree (&x, cp_fold_r, &pset, NULL);
+  cp_fold_data data (/*genericize*/false);
+  cp_walk_tree (&x, cp_fold_r, &data, NULL);
   return x;
 }
 
@@ -2441,9 +2448,8 @@ cp_fold (tree x)
     case VIEW_CONVERT_EXPR:
       rval_ops = false;
       /* FALLTHRU */
-    case CONVERT_EXPR:
-    case NOP_EXPR:
     case NON_LVALUE_EXPR:
+    CASE_CONVERT:
 
       if (VOID_TYPE_P (TREE_TYPE (x)))
 	{
@@ -2747,8 +2753,43 @@ cp_fold (tree x)
 
     case CALL_EXPR:
       {
-	int sv = optimize, nw = sv;
 	tree callee = get_callee_fndecl (x);
+
+	/* "Inline" calls to std::move/forward and other cast-like functions
+	   by simply folding them into a corresponding cast to their return
+	   type.  This is cheaper than relying on the middle end to do so, and
+	   also means we avoid generating useless debug info for them at all.
+
+	   At this point the argument has already been converted into a
+	   reference, so it suffices to use a NOP_EXPR to express the
+	   cast.  */
+	if ((OPTION_SET_P (flag_fold_simple_inlines)
+	     ? flag_fold_simple_inlines
+	     : !flag_no_inline)
+	    && call_expr_nargs (x) == 1
+	    && decl_in_std_namespace_p (callee)
+	    && DECL_NAME (callee) != NULL_TREE
+	    && (id_equal (DECL_NAME (callee), "move")
+		|| id_equal (DECL_NAME (callee), "forward")
+		|| id_equal (DECL_NAME (callee), "addressof")
+		/* This addressof equivalent is used heavily in libstdc++.  */
+		|| id_equal (DECL_NAME (callee), "__addressof")
+		|| id_equal (DECL_NAME (callee), "as_const")))
+	  {
+	    r = CALL_EXPR_ARG (x, 0);
+	    /* Check that the return and argument types are sane before
+	       folding.  */
+	    if (INDIRECT_TYPE_P (TREE_TYPE (x))
+		&& INDIRECT_TYPE_P (TREE_TYPE (r)))
+	      {
+		if (!same_type_p (TREE_TYPE (x), TREE_TYPE (r)))
+		  r = build_nop (TREE_TYPE (x), r);
+		x = cp_fold (r);
+		break;
+	      }
+	  }
+
+	int sv = optimize, nw = sv;
 
 	/* Some built-in function calls will be evaluated at compile-time in
 	   fold ().  Set optimize to 1 when folding __builtin_constant_p inside
@@ -3062,7 +3103,7 @@ get_source_location_impl_type (location_t loc)
 
   int cnt = 0;
   for (tree field = TYPE_FIELDS (type);
-       (field = next_initializable_field (field)) != NULL_TREE;
+       (field = next_aggregate_field (field)) != NULL_TREE;
        field = DECL_CHAIN (field))
     {
       if (DECL_NAME (field) != NULL_TREE)
@@ -3237,7 +3278,7 @@ fold_builtin_source_location (location_t loc)
       vec<constructor_elt, va_gc> *v = NULL;
       vec_alloc (v, 4);
       for (tree field = TYPE_FIELDS (source_location_impl);
-	   (field = next_initializable_field (field)) != NULL_TREE;
+	   (field = next_aggregate_field (field)) != NULL_TREE;
 	   field = DECL_CHAIN (field))
 	{
 	  const char *n = IDENTIFIER_POINTER (DECL_NAME (field));

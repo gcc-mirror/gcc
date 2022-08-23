@@ -54,10 +54,6 @@ case "${target}" in
 	;;
   arm*-*-linux*)
 	;;
-  mips*64*-*-linux*)
-	# This clause is only here to not match the supported mips*-*-linux*.
-	UNSUPPORTED=1
-	;;
   mips*-*-linux*)
 	;;
   aarch64*-*-linux*)

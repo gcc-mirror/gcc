@@ -180,6 +180,7 @@ make_internal_typeinfo (tinfo_kind tk, Identifier *ident, ...)
 
   /* Create the TypeInfo type.  */
   tree type = make_node (RECORD_TYPE);
+  TYPE_ARTIFICIAL (type) = 1;
   finish_builtin_struct (type, ident->toChars (), fields, NULL_TREE);
 
   tinfo_types[tk] = type;
@@ -243,6 +244,10 @@ make_frontend_typeinfo (Identifier *ident, ClassDeclaration *base = NULL)
 void
 create_tinfo_types (Module *mod)
 {
+  /* Already generated internal types for the object module.  */
+  if (object_module != NULL)
+    return;
+
   /* Build the internal TypeInfo and ClassInfo types.
      See TypeInfoVisitor for documentation of field layout.  */
   make_internal_typeinfo (TK_TYPEINFO_TYPE, Identifier::idPool ("TypeInfo"),
@@ -556,7 +561,7 @@ public:
 	void **__vptr;
 	void *__monitor;  */
 
-  void visit (TypeInfoDeclaration *)
+  void visit (TypeInfoDeclaration *) final override
   {
     /* The vtable for TypeInfo.  */
     this->layout_base (Type::dtypeinfo);
@@ -567,7 +572,7 @@ public:
 	void *__monitor;
 	TypeInfo base;  */
 
-  void visit (TypeInfoConstDeclaration *d)
+  void visit (TypeInfoConstDeclaration *d) final override
   {
     Type *tm = d->tinfo->mutableOf ();
     tm = tm->merge2 ();
@@ -584,7 +589,7 @@ public:
 	void *__monitor;
 	TypeInfo base;  */
 
-  void visit (TypeInfoInvariantDeclaration *d)
+  void visit (TypeInfoInvariantDeclaration *d) final override
   {
     Type *tm = d->tinfo->mutableOf ();
     tm = tm->merge2 ();
@@ -601,7 +606,7 @@ public:
 	void *__monitor;
 	TypeInfo base;  */
 
-  void visit (TypeInfoSharedDeclaration *d)
+  void visit (TypeInfoSharedDeclaration *d) final override
   {
     Type *tm = d->tinfo->unSharedOf ();
     tm = tm->merge2 ();
@@ -618,7 +623,7 @@ public:
 	void *__monitor;
 	TypeInfo base;  */
 
-  void visit (TypeInfoWildDeclaration *d)
+  void visit (TypeInfoWildDeclaration *d) final override
   {
     Type *tm = d->tinfo->mutableOf ();
     tm = tm->merge2 ();
@@ -637,7 +642,7 @@ public:
 	string name;
 	void[] m_init;  */
 
-  void visit (TypeInfoEnumDeclaration *d)
+  void visit (TypeInfoEnumDeclaration *d) final override
   {
     TypeEnum *ti = d->tinfo->isTypeEnum ();
     EnumDeclaration *ed = ti->sym;
@@ -669,7 +674,7 @@ public:
 	void *__monitor;
 	TypeInfo m_next;  */
 
-  void visit (TypeInfoPointerDeclaration *d)
+  void visit (TypeInfoPointerDeclaration *d) final override
   {
     TypePointer *ti = d->tinfo->isTypePointer ();
 
@@ -685,7 +690,7 @@ public:
 	void *__monitor;
 	TypeInfo value;  */
 
-  void visit (TypeInfoArrayDeclaration *d)
+  void visit (TypeInfoArrayDeclaration *d) final override
   {
     TypeDArray *ti = d->tinfo->isTypeDArray ();
 
@@ -702,7 +707,7 @@ public:
 	TypeInfo value;
 	size_t len;  */
 
-  void visit (TypeInfoStaticArrayDeclaration *d)
+  void visit (TypeInfoStaticArrayDeclaration *d) final override
   {
     TypeSArray *ti = d->tinfo->isTypeSArray ();
 
@@ -722,7 +727,7 @@ public:
 	TypeInfo value;
 	TypeInfo key;  */
 
-  void visit (TypeInfoAssociativeArrayDeclaration *d)
+  void visit (TypeInfoAssociativeArrayDeclaration *d) final override
   {
     TypeAArray *ti = d->tinfo->isTypeAArray ();
 
@@ -741,7 +746,7 @@ public:
 	void *__monitor;
 	TypeInfo base;  */
 
-  void visit (TypeInfoVectorDeclaration *d)
+  void visit (TypeInfoVectorDeclaration *d) final override
   {
     TypeVector *ti = d->tinfo->isTypeVector ();
 
@@ -758,7 +763,7 @@ public:
 	TypeInfo next;
 	string deco;  */
 
-  void visit (TypeInfoFunctionDeclaration *d)
+  void visit (TypeInfoFunctionDeclaration *d) final override
   {
     TypeFunction *ti = d->tinfo->isTypeFunction ();
     gcc_assert (ti->deco != NULL);
@@ -779,7 +784,7 @@ public:
 	TypeInfo next;
 	string deco;  */
 
-  void visit (TypeInfoDelegateDeclaration *d)
+  void visit (TypeInfoDelegateDeclaration *d) final override
   {
     TypeDelegate *ti = d->tinfo->isTypeDelegate ();
     gcc_assert (ti->deco != NULL);
@@ -813,7 +818,7 @@ public:
      Information relating to interfaces, and their vtables are laid out
      immediately after the named fields, if there is anything to write.  */
 
-  void visit (TypeInfoClassDeclaration *d)
+  void visit (TypeInfoClassDeclaration *d) final override
   {
     TypeClass *ti = d->tinfo->isTypeClass ();
     ClassDeclaration *cd = ti->sym;
@@ -1004,7 +1009,7 @@ public:
 	void *__monitor;
 	TypeInfo_Class info;  */
 
-  void visit (TypeInfoInterfaceDeclaration *d)
+  void visit (TypeInfoInterfaceDeclaration *d) final override
   {
     TypeClass *ti = d->tinfo->isTypeClass ();
 
@@ -1034,7 +1039,7 @@ public:
 	uint m_align;
 	immutable(void)* xgetRTInfo;  */
 
-  void visit (TypeInfoStructDeclaration *d)
+  void visit (TypeInfoStructDeclaration *d) final override
   {
     TypeStruct *ti = d->tinfo->isTypeStruct ();
     StructDeclaration *sd = ti->sym;
@@ -1049,7 +1054,7 @@ public:
     this->layout_string (ti->deco);
 
     /* Default initializer for struct.  */
-    tree ptr = (sd->zeroInit) ? null_pointer_node
+    tree ptr = (sd->zeroInit ()) ? null_pointer_node
       : build_address (aggregate_initializer_decl (sd));
     this->layout_field (d_array_value (array_type_node,
 				       size_int (sd->structsize), ptr));
@@ -1119,7 +1124,7 @@ public:
 	void *__monitor;
 	TypeInfo[] elements;  */
 
-  void visit (TypeInfoTupleDeclaration *d)
+  void visit (TypeInfoTupleDeclaration *d) final override
   {
     TypeTuple *ti = d->tinfo->isTypeTuple ();
 
@@ -1328,7 +1333,7 @@ public:
   {
   }
 
-  void visit (TypeInfoDeclaration *tid)
+  void visit (TypeInfoDeclaration *tid) final override
   {
     tree ident = get_identifier (tid->ident->toChars ());
     tree type = tinfo_types[get_typeinfo_kind (tid->tinfo)];
@@ -1342,7 +1347,7 @@ public:
     TREE_READONLY (tid->csym) = 1;
   }
 
-  void visit (TypeInfoClassDeclaration *tid)
+  void visit (TypeInfoClassDeclaration *tid) final override
   {
     TypeClass *tc = tid->tinfo->isTypeClass ();
     tid->csym = get_classinfo_decl (tc->sym);
@@ -1394,21 +1399,29 @@ get_classinfo_decl (ClassDeclaration *decl)
 }
 
 /* Performs sanity checks on the `object.TypeInfo' type, raising an error if
-   RTTI is disabled, or the type is missing.  */
+   RTTI is disabled, or the type is missing.  LOC is the location used for error
+   messages.  SC is the context, and EXPR is expression where TypeInfo is
+   required from, if either are set.  */
 
 void
-check_typeinfo_type (const Loc &loc, Scope *sc)
+check_typeinfo_type (const Loc &loc, Scope *sc, Expression *expr)
 {
   if (!global.params.useTypeInfo)
     {
-      static int warned = 0;
-
       /* Even when compiling without RTTI we should still be able to evaluate
 	 TypeInfo at compile-time, just not at run-time.  */
-      if (!warned && (!sc || !(sc->flags & SCOPEctfe)))
+      if (!sc || !(sc->flags & SCOPEctfe))
 	{
-	  error_at (make_location_t (loc),
-		    "%<object.TypeInfo%> cannot be used with %<-fno-rtti%>");
+	  static int warned = 0;
+
+	  if (expr != NULL)
+	    error_at (make_location_t (loc),
+		     "expression %qs requires %<object.TypeInfo%> and cannot "
+		     "be used with %<-fno-rtti%>", expr->toChars ());
+	  else if (!warned)
+	    error_at (make_location_t (loc),
+		      "%<object.TypeInfo%> cannot be used with %<-fno-rtti%>");
+
 	  warned = 1;
 	}
     }
@@ -1429,15 +1442,21 @@ check_typeinfo_type (const Loc &loc, Scope *sc)
     }
 }
 
-/* Returns typeinfo reference for TYPE.  */
+/* Returns typeinfo reference for TYPE.  LOC is the location used for error
+   messages.  EXPR is the expression where TypeInfo is required, if set.  */
 
 tree
-build_typeinfo (const Loc &loc, Type *type)
+build_typeinfo (const Loc &loc, Type *type, Expression *expr)
 {
   gcc_assert (type->ty != TY::Terror);
-  check_typeinfo_type (loc, NULL);
+  check_typeinfo_type (loc, NULL, expr);
   create_typeinfo (type, NULL);
   return build_address (get_typeinfo_decl (type->vtinfo));
+}
+
+tree build_typeinfo (Expression *expr, Type *type)
+{
+  return build_typeinfo (expr->loc, type, expr);
 }
 
 /* Like layout_classinfo, but generates an Object that wraps around a
@@ -1716,47 +1735,47 @@ public:
     return this->result_;
   }
 
-  void visit (Type *t)
+  void visit (Type *t) final override
   {
     Type *tb = t->toBasetype ();
     if (tb != t)
       tb->accept (this);
   }
 
-  void visit (TypeNext *t)
+  void visit (TypeNext *t) final override
   {
     if (t->next)
       t->next->accept (this);
   }
 
-  void visit (TypeBasic *)
+  void visit (TypeBasic *) final override
   {
   }
 
-  void visit (TypeVector *t)
+  void visit (TypeVector *t) final override
   {
     t->basetype->accept (this);
   }
 
-  void visit (TypeAArray *t)
+  void visit (TypeAArray *t) final override
   {
     t->index->accept (this);
     visit ((TypeNext *) t);
   }
 
-  void visit (TypeFunction *t)
+  void visit (TypeFunction *t) final override
   {
     visit ((TypeNext *) t);
   }
 
-  void visit (TypeStruct *t)
+  void visit (TypeStruct *t) final override
   {
     StructDeclaration *sd = t->sym;
     if (TemplateInstance *ti = sd->isInstantiated ())
       {
 	if (!ti->needsCodegen ())
 	  {
-	    if (ti->minst || sd->requestTypeInfo)
+	    if (ti->minst || sd->requestTypeInfo ())
 	      return;
 
 	    this->result_ |= true;
@@ -1764,7 +1783,7 @@ public:
       }
   }
 
-  void visit (TypeClass *t)
+  void visit (TypeClass *t) final override
   {
     ClassDeclaration *cd = t->sym;
     if (TemplateInstance *ti = cd->isInstantiated ())
@@ -1776,7 +1795,7 @@ public:
       }
   }
 
-  void visit (TypeTuple *t)
+  void visit (TypeTuple *t) final override
   {
     if (!t->arguments)
       return;

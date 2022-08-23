@@ -96,7 +96,7 @@ package body GNAT.Expect is
    procedure Dup2 (Old_Fd, New_Fd : File_Descriptor);
    pragma Import (C, Dup2);
 
-   procedure Kill (Pid : Process_Id; Sig_Num : Integer; Close : Integer);
+   procedure Kill (Pid : Process_Id; Sig_Num : Integer);
    pragma Import (C, Kill, "__gnat_kill");
    --  if Close is set to 1 all OS resources used by the Pid must be freed
 
@@ -222,6 +222,10 @@ package body GNAT.Expect is
       Next_Filter    : Filter_List;
 
    begin
+      if Descriptor.Pid > 0 then  --  see comment in Send_Signal
+         Kill (Descriptor.Pid, Sig_Num => 9);
+      end if;
+
       Close_Input (Descriptor);
 
       if Descriptor.Error_Fd /= Descriptor.Output_Fd
@@ -232,12 +236,6 @@ package body GNAT.Expect is
 
       if Descriptor.Output_Fd /= Invalid_FD then
          Close (Descriptor.Output_Fd);
-      end if;
-
-      --  ??? Should have timeouts for different signals
-
-      if Descriptor.Pid > 0 then  --  see comment in Send_Signal
-         Kill (Descriptor.Pid, Sig_Num => 9, Close => 0);
       end if;
 
       GNAT.OS_Lib.Free (Descriptor.Buffer);
@@ -1349,7 +1347,7 @@ package body GNAT.Expect is
       --  started; we don't want to kill ourself in that case.
 
       if Descriptor.Pid > 0 then
-         Kill (Descriptor.Pid, Signal, Close => 1);
+         Kill (Descriptor.Pid, Signal);
          --  ??? Need to check process status here
       else
          raise Invalid_Process;

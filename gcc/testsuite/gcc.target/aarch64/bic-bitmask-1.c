@@ -10,4 +10,4 @@ uint32x4_t foo (int32x4_t a)
   return vceqq_s32 (vbicq_s32 (a, cst), zero);
 }
 
-/* { dg-final { scan-assembler-not {\tbic\t} { xfail { aarch64*-*-* } } } } */
+/* { dg-final { scan-assembler-not {\tbic\t} } } */

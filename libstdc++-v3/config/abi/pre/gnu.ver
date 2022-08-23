@@ -2337,8 +2337,10 @@ GLIBCXX_3.4.28 {
 
 GLIBCXX_3.4.29 {
 
+#ifdef HAVE_USELOCALE
     # std::from_chars
     _ZSt10from_charsPKcS0_R[def]St12chars_format;
+#endif
 
     # std::__istream_extract(istream&, char*, streamsize)
     _ZSt17__istream_extractRSiPc[ilx];
@@ -2415,6 +2417,11 @@ GLIBCXX_3.4.29 {
 } GLIBCXX_3.4.28;
 
 GLIBCXX_3.4.30 {
+
+#ifndef HAVE_USELOCALE
+    # std::from_chars
+    _ZSt10from_charsPKcS0_R[def]St12chars_format;
+#endif
 
     _ZSt21__glibcxx_assert_fail*;
 

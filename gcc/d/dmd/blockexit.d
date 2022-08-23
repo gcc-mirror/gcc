@@ -99,9 +99,8 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                     result = BE.halt;
                     return;
                 }
-                if (s.exp.op == EXP.assert_)
+                if (AssertExp a = s.exp.isAssertExp())
                 {
-                    AssertExp a = cast(AssertExp)s.exp;
                     if (a.e1.toBool().hasValue(false)) // if it's an assert(0)
                     {
                         result = BE.halt;
@@ -110,8 +109,8 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 }
                 if (s.exp.type && s.exp.type.toBasetype().isTypeNoreturn())
                     result = BE.halt;
-                if (canThrow(s.exp, func, mustNotThrow))
-                    result |= BE.throw_;
+
+                result |= canThrow(s.exp, func, mustNotThrow);
             }
         }
 
@@ -140,16 +139,21 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                             // Allow if last case/default was empty
                             CaseStatement sc = slast.isCaseStatement();
                             DefaultStatement sd = slast.isDefaultStatement();
-                            if (sc && (!sc.statement.hasCode() || sc.statement.isCaseStatement() || sc.statement.isErrorStatement()))
+                            auto sl = (sc ? sc.statement : (sd ? sd.statement : null));
+
+                            if (sl && (!sl.hasCode() || sl.isErrorStatement()))
                             {
                             }
-                            else if (sd && (!sd.statement.hasCode() || sd.statement.isCaseStatement() || sd.statement.isErrorStatement()))
-                            {
-                            }
-                            else if (!func.getModule().isCFile)
+                            else if (func.getModule().filetype != FileType.c)
                             {
                                 const(char)* gototype = s.isCaseStatement() ? "case" : "default";
-                                s.deprecation("switch case fallthrough - use 'goto %s;' if intended", gototype);
+                                // @@@DEPRECATED_2.110@@@ https://issues.dlang.org/show_bug.cgi?id=22999
+                                // Deprecated in 2.100
+                                // Make an error in 2.110
+                                if (sl && sl.isCaseStatement())
+                                    s.deprecation("switch case fallthrough - use 'goto %s;' if intended", gototype);
+                                else
+                                    s.error("switch case fallthrough - use 'goto %s;' if intended", gototype);
                             }
                         }
                     }
@@ -214,8 +218,8 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 result = BE.fallthru;
             if (result & BE.fallthru)
             {
-                if (canThrow(s.condition, func, mustNotThrow))
-                    result |= BE.throw_;
+                result |= canThrow(s.condition, func, mustNotThrow);
+
                 if (!(result & BE.break_) && s.condition.toBool().hasValue(true))
                     result &= ~BE.fallthru;
             }
@@ -233,8 +237,8 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             }
             if (s.condition)
             {
-                if (canThrow(s.condition, func, mustNotThrow))
-                    result |= BE.throw_;
+                result |= canThrow(s.condition, func, mustNotThrow);
+
                 const opt = s.condition.toBool();
                 if (opt.hasValue(true))
                     result &= ~BE.fallthru;
@@ -250,15 +254,15 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                     result |= BE.fallthru;
                 result |= r & ~(BE.fallthru | BE.break_ | BE.continue_);
             }
-            if (s.increment && canThrow(s.increment, func, mustNotThrow))
-                result |= BE.throw_;
+            if (s.increment)
+                result |= canThrow(s.increment, func, mustNotThrow);
         }
 
         override void visit(ForeachStatement s)
         {
             result = BE.fallthru;
-            if (canThrow(s.aggr, func, mustNotThrow))
-                result |= BE.throw_;
+            result |= canThrow(s.aggr, func, mustNotThrow);
+
             if (s._body)
                 result |= blockExit(s._body, func, mustNotThrow) & ~(BE.break_ | BE.continue_);
         }
@@ -273,8 +277,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
         {
             //printf("IfStatement::blockExit(%p)\n", s);
             result = BE.none;
-            if (canThrow(s.condition, func, mustNotThrow))
-                result |= BE.throw_;
+            result |= canThrow(s.condition, func, mustNotThrow);
 
             const opt = s.condition.toBool();
             if (opt.hasValue(true))
@@ -313,8 +316,8 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
         override void visit(SwitchStatement s)
         {
             result = BE.none;
-            if (canThrow(s.condition, func, mustNotThrow))
-                result |= BE.throw_;
+            result |= canThrow(s.condition, func, mustNotThrow);
+
             if (s._body)
             {
                 result |= blockExit(s._body, func, mustNotThrow);
@@ -357,8 +360,8 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
         override void visit(ReturnStatement s)
         {
             result = BE.return_;
-            if (s.exp && canThrow(s.exp, func, mustNotThrow))
-                result |= BE.throw_;
+            if (s.exp)
+                result |= canThrow(s.exp, func, mustNotThrow);
         }
 
         override void visit(BreakStatement s)
@@ -380,8 +383,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
         override void visit(WithStatement s)
         {
             result = BE.none;
-            if (canThrow(s.exp, func, mustNotThrow))
-                result = BE.throw_;
+            result |= canThrow(s.exp, func, mustNotThrow);
             result |= blockExit(s._body, func, mustNotThrow);
         }
 
@@ -483,19 +485,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
                 return;
             }
 
-            Type t = s.exp.type.toBasetype();
-            ClassDeclaration cd = t.isClassHandle();
-            assert(cd);
-
-            if (cd == ClassDeclaration.errorException || ClassDeclaration.errorException.isBaseOf(cd, null))
-            {
-                result = BE.errthrow;
-                return;
-            }
-            if (mustNotThrow)
-                s.error("`%s` is thrown but not caught", s.exp.type.toChars());
-
-            result = BE.throw_;
+            result = checkThrow(s.loc, s.exp, mustNotThrow);
         }
 
         override void visit(GotoStatement s)
@@ -519,7 +509,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             if (!(s.stc & STC.nothrow_))
             {
                 if (mustNotThrow && !(s.stc & STC.nothrow_))
-                    s.deprecation("`asm` statement is assumed to throw - mark it with `nothrow` if it does not");
+                    s.error("`asm` statement is assumed to throw - mark it with `nothrow` if it does not");
                 else
                     result |= BE.throw_;
             }
@@ -536,4 +526,33 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
     scope BlockExit be = new BlockExit(func, mustNotThrow);
     s.accept(be);
     return be.result;
+}
+
+/++
+ + Checks whether `throw <exp>` throws an `Exception` or an `Error`
+ + and raises an error if this violates `nothrow`.
+ +
+ + Params:
+ +   loc          = location of the `throw`
+ +   exp          = expression yielding the throwable
+ +   mustNotThrow = inside of a `nothrow` scope?
+ +
+ + Returns: `BE.[err]throw` depending on the type of `exp`
+ +/
+BE checkThrow(ref const Loc loc, Expression exp, const bool mustNotThrow)
+{
+    import dmd.errors : error;
+
+    Type t = exp.type.toBasetype();
+    ClassDeclaration cd = t.isClassHandle();
+    assert(cd);
+
+    if (cd == ClassDeclaration.errorException || ClassDeclaration.errorException.isBaseOf(cd, null))
+    {
+        return BE.errthrow;
+    }
+    if (mustNotThrow)
+        loc.error("`%s` is thrown but not caught", exp.type.toChars());
+
+    return BE.throw_;
 }

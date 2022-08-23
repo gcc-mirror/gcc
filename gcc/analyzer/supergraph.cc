@@ -29,13 +29,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "basic-block.h"
 #include "function.h"
+#include "gimple.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimple-expr.h"
 #include "is-a.h"
 #include "timevar.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
 #include "gimple-pretty-print.h"
 #include "tree-pretty-print.h"
 #include "graphviz.h"
@@ -854,13 +854,12 @@ void
 superedge::dump (pretty_printer *pp) const
 {
   pp_printf (pp, "edge: SN: %i -> SN: %i", m_src->m_index, m_dest->m_index);
-  char *desc = get_description (false);
-  if (strlen (desc) > 0)
+  label_text desc (get_description (false));
+  if (strlen (desc.get ()) > 0)
     {
       pp_space (pp);
-      pp_string (pp, desc);
+      pp_string (pp, desc.get ());
     }
-  free (desc);
 }
 
 /* Dump this superedge to stderr.  */
@@ -998,17 +997,15 @@ superedge::get_any_callgraph_edge () const
 /* Build a description of this superedge (e.g. "true" for the true
    edge of a conditional, or "case 42:" for a switch case).
 
-   The caller is responsible for freeing the result.
-
    If USER_FACING is false, the result also contains any underlying
    CFG edge flags. e.g. " (flags FALLTHRU | DFS_BACK)".  */
 
-char *
+label_text
 superedge::get_description (bool user_facing) const
 {
   pretty_printer pp;
   dump_label_to_pp (&pp, user_facing);
-  return xstrdup (pp_formatted_text (&pp));
+  return label_text::take (xstrdup (pp_formatted_text (&pp)));
 }
 
 /* Implementation of superedge::dump_label_to_pp for non-switch CFG

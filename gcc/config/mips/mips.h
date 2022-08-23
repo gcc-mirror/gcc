@@ -2309,7 +2309,7 @@ enum reg_class
 
 #define LUI_OPERAND(VALUE)					\
   (((VALUE) | 0x7fff0000) == 0x7fff0000				\
-   || ((VALUE) | 0x7fff0000) + 0x10000 == 0)
+   || ((unsigned HOST_WIDE_INT) (VALUE) | 0x7fff0000) + 0x10000 == 0)
 
 /* Return a value X with the low 16 bits clear, and such that
    VALUE - X is a signed 16-bit value.  */

@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
+#include "inlining-iterator.h"
 #include "cgraph.h"
 #include "digraph.h"
 #include "analyzer/supergraph.h"
@@ -112,6 +113,10 @@ private:
   void dump_feasible_graph (const exploded_node *target_enode,
 			    const char *desc, unsigned diag_idx,
 			    const feasible_graph &fg);
+  void dump_feasible_path (const exploded_node *target_enode,
+			   unsigned diag_idx,
+			   const feasible_graph &fg,
+			   const feasible_node &fnode) const;
 
   const exploded_graph &m_eg;
   shortest_exploded_paths *m_sep;
@@ -510,6 +515,9 @@ epath_finder::process_worklist_item (feasible_worklist *worklist,
 			     target_enode->m_index, diag_idx,
 			     succ_fnode->get_path_length ());
 	      *out_best_path = fg->make_epath (succ_fnode);
+	      if (flag_dump_analyzer_feasibility)
+		dump_feasible_path (target_enode, diag_idx, *fg, *succ_fnode);
+
 	      /* Success: stop the worklist iteration.  */
 	      return false;
 	    }
@@ -558,7 +566,7 @@ public:
   }
 
   void dump_extra_info (const exploded_node *enode,
-			pretty_printer *pp) const FINAL OVERRIDE
+			pretty_printer *pp) const final override
   {
     pp_printf (pp, "sp: %i", m_sep.get_shortest_path (enode).length ());
     pp_newline (pp);
@@ -608,6 +616,23 @@ epath_finder::dump_feasible_graph (const exploded_node *target_enode,
   free (filename);
 }
 
+/* Dump the path to FNODE to "BASE_NAME.DIAG_IDX.to-enN.fpath.txt".  */
+
+void
+epath_finder::dump_feasible_path (const exploded_node *target_enode,
+				  unsigned diag_idx,
+				  const feasible_graph &fg,
+				  const feasible_node &fnode) const
+{
+  auto_timevar tv (TV_ANALYZER_DUMP);
+  pretty_printer pp;
+  pp_printf (&pp, "%s.%i.to-en%i.fpath.txt",
+	     dump_base_name, diag_idx, target_enode->m_index);
+  char *filename = xstrdup (pp_formatted_text (&pp));
+  fg.dump_feasible_path (fnode, filename);
+  free (filename);
+}
+
 /* class saved_diagnostic.  */
 
 /* saved_diagnostic's ctor.
@@ -629,7 +654,8 @@ saved_diagnostic::saved_diagnostic (const state_machine *sm,
   m_var (var), m_sval (sval), m_state (state),
   m_d (d), m_trailing_eedge (NULL),
   m_idx (idx),
-  m_best_epath (NULL), m_problem (NULL)
+  m_best_epath (NULL), m_problem (NULL),
+  m_notes ()
 {
   gcc_assert (m_stmt || m_stmt_finder);
 
@@ -651,6 +677,11 @@ saved_diagnostic::~saved_diagnostic ()
 bool
 saved_diagnostic::operator== (const saved_diagnostic &other) const
 {
+  if (m_notes.length () != other.m_notes.length ())
+    return false;
+  for (unsigned i = 0; i < m_notes.length (); i++)
+    if (!m_notes[i]->equal_p (*other.m_notes[i]))
+      return false;
   return (m_sm == other.m_sm
 	  /* We don't compare m_enode.  */
 	  && m_snode == other.m_snode
@@ -660,6 +691,15 @@ saved_diagnostic::operator== (const saved_diagnostic &other) const
 	  && m_state == other.m_state
 	  && m_d->equal_p (*other.m_d)
 	  && m_trailing_eedge == other.m_trailing_eedge);
+}
+
+/* Add PN to this diagnostic, taking ownership of it.  */
+
+void
+saved_diagnostic::add_note (pending_note *pn)
+{
+  gcc_assert (pn);
+  m_notes.safe_push (pn);
 }
 
 /* Return a new json::object of the form
@@ -697,9 +737,72 @@ saved_diagnostic::to_json () const
      exploded_edge *m_trailing_eedge;
      enum status m_status;
      feasibility_problem *m_problem;
+     auto_delete_vec <pending_note> m_notes;
   */
 
   return sd_obj;
+}
+
+/* Dump this to PP in a form suitable for use as an id in .dot output.  */
+
+void
+saved_diagnostic::dump_dot_id (pretty_printer *pp) const
+{
+  pp_printf (pp, "sd_%i", m_idx);
+}
+
+/* Dump this to PP in a form suitable for use as a node in .dot output.  */
+
+void
+saved_diagnostic::dump_as_dot_node (pretty_printer *pp) const
+{
+  dump_dot_id (pp);
+  pp_printf (pp,
+	     " [shape=none,margin=0,style=filled,fillcolor=\"red\",label=\"");
+  pp_write_text_to_stream (pp);
+
+  /* Node label.  */
+  pp_printf (pp, "DIAGNOSTIC: %s (sd: %i)\n",
+	     m_d->get_kind (), m_idx);
+  if (m_sm)
+    {
+      pp_printf (pp, "sm: %s", m_sm->get_name ());
+      if (m_state)
+	{
+	  pp_printf (pp, "; state: ");
+	  m_state->dump_to_pp (pp);
+	}
+      pp_newline (pp);
+    }
+  if (m_stmt)
+    {
+      pp_string (pp, "stmt: ");
+      pp_gimple_stmt_1 (pp, m_stmt, 0, (dump_flags_t)0);
+      pp_newline (pp);
+    }
+  if (m_var)
+    pp_printf (pp, "var: %qE\n", m_var);
+  if (m_sval)
+    {
+      pp_string (pp, "sval: ");
+      m_sval->dump_to_pp (pp, true);
+      pp_newline (pp);
+    }
+  if (m_best_epath)
+    pp_printf (pp, "path length: %i\n", get_epath_length ());
+
+  pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+  pp_string (pp, "\"];\n\n");
+
+  /* Show links to duplicates.  */
+  for (auto iter : m_duplicates)
+    {
+      dump_dot_id (pp);
+      pp_string (pp, " -> ");
+      iter->dump_dot_id (pp);
+      pp_string (pp, " [style=\"dotted\" arrowhead=\"none\"];");
+      pp_newline (pp);
+    }
 }
 
 /* Use PF to find the best exploded_path for this saved_diagnostic,
@@ -769,6 +872,15 @@ saved_diagnostic::supercedes_p (const saved_diagnostic &other) const
   return m_d->supercedes_p (*other.m_d);
 }
 
+/* Emit any pending notes owned by this diagnostic.  */
+
+void
+saved_diagnostic::emit_any_notes () const
+{
+  for (auto pn : m_notes)
+    pn->emit ();
+}
+
 /* State for building a checker_path from a particular exploded_path.
    In particular, this precomputes reachability information: the set of
    source enodes for which a path be found to the diagnostic enode.  */
@@ -824,19 +936,36 @@ private:
   const feasibility_problem *m_feasibility_problem;
 };
 
+/* Determine the emission location for PD at STMT in FUN.  */
+
+static location_t
+get_emission_location (const gimple *stmt, function *fun,
+		       const pending_diagnostic &pd)
+{
+  location_t loc = get_stmt_location (stmt, fun);
+
+  /* Allow the pending_diagnostic to fix up the location.  */
+  loc = pd.fixup_location (loc);
+
+  return loc;
+}
+
 /* class diagnostic_manager.  */
 
 /* diagnostic_manager's ctor.  */
 
 diagnostic_manager::diagnostic_manager (logger *logger, engine *eng,
 					int verbosity)
-: log_user (logger), m_eng (eng), m_verbosity (verbosity)
+: log_user (logger), m_eng (eng), m_verbosity (verbosity),
+  m_num_disabled_diagnostics (0)
 {
 }
 
-/* Queue pending_diagnostic D at ENODE for later emission.  */
+/* Queue pending_diagnostic D at ENODE for later emission.
+   Return true/false signifying if the diagnostic was actually added.
+   Take ownership of D (or delete it).  */
 
-void
+bool
 diagnostic_manager::add_diagnostic (const state_machine *sm,
 				    exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
@@ -852,6 +981,25 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
      through the exploded_graph to the diagnostic.  */
   gcc_assert (enode);
 
+  /* If this warning is ultimately going to be rejected by a -Wno-analyzer-*
+     flag, reject it now.
+     We can only do this for diagnostics where we already know the stmt,
+     and thus can determine the emission location.  */
+  if (stmt)
+    {
+      location_t loc = get_emission_location (stmt, snode->m_fun, *d);
+      int option = d->get_controlling_option ();
+      if (!warning_enabled_at (loc, option))
+	{
+	  if (get_logger ())
+	    get_logger ()->log ("rejecting disabled warning %qs",
+				d->get_kind ());
+	  delete d;
+	  m_num_disabled_diagnostics++;
+	  return false;
+	}
+    }
+
   saved_diagnostic *sd
     = new saved_diagnostic (sm, enode, snode, stmt, finder, var, sval,
 			    state, d, m_saved_diagnostics.length ());
@@ -861,18 +1009,36 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
     log ("adding saved diagnostic %i at SN %i to EN %i: %qs",
 	 sd->get_index (),
 	 snode->m_index, enode->m_index, d->get_kind ());
+  return true;
 }
 
-/* Queue pending_diagnostic D at ENODE for later emission.  */
+/* Queue pending_diagnostic D at ENODE for later emission.
+   Return true/false signifying if the diagnostic was actually added.
+   Take ownership of D (or delete it).  */
 
-void
+bool
 diagnostic_manager::add_diagnostic (exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
 				    stmt_finder *finder,
 				    pending_diagnostic *d)
 {
   gcc_assert (enode);
-  add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE, NULL, 0, d);
+  return add_diagnostic (NULL, enode, snode, stmt, finder, NULL_TREE,
+			 NULL, 0, d);
+}
+
+/* Add PN to the most recent saved_diagnostic.  */
+
+void
+diagnostic_manager::add_note (pending_note *pn)
+{
+  LOG_FUNC (get_logger ());
+  gcc_assert (pn);
+
+  /* Get most recent saved_diagnostic.  */
+  gcc_assert (m_saved_diagnostics.length () > 0);
+  saved_diagnostic *sd = m_saved_diagnostics[m_saved_diagnostics.length () - 1];
+  sd->add_note (pn);
 }
 
 /* Return a new json::object of the form
@@ -1147,6 +1313,7 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
   LOG_SCOPE (get_logger ());
   auto_timevar tv (TV_ANALYZER_DIAGNOSTICS);
   log ("# saved diagnostics: %i", m_saved_diagnostics.length ());
+  log ("# disabled diagnostics: %i", m_num_disabled_diagnostics);
   if (get_logger ())
     {
       unsigned i;
@@ -1222,15 +1389,16 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
      trailing eedge stashed, add any events for it.  This is for use
      in handling longjmp, to show where a longjmp is rewinding to.  */
   if (sd.m_trailing_eedge)
-    add_events_for_eedge (pb, *sd.m_trailing_eedge, &emission_path);
+    add_events_for_eedge (pb, *sd.m_trailing_eedge, &emission_path, NULL);
+
+  emission_path.inject_any_inlined_call_events (get_logger ());
 
   emission_path.prepare_for_emission (sd.m_d);
 
-  location_t loc = get_stmt_location (sd.m_stmt, sd.m_snode->m_fun);
+  location_t loc
+    = get_emission_location (sd.m_stmt, sd.m_snode->m_fun, *sd.m_d);
 
-  /* Allow the pending_diagnostic to fix up the primary location
-     and any locations for events.  */
-  loc = sd.m_d->fixup_location (loc);
+  /* Allow the pending_diagnostic to fix up the locations of events.  */
   emission_path.fixup_locations (sd.m_d);
 
   gcc_rich_location rich_loc (loc);
@@ -1240,6 +1408,8 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
   auto_cfun sentinel (sd.m_snode->m_fun);
   if (sd.m_d->emit (&rich_loc))
     {
+      sd.emit_any_notes ();
+
       unsigned num_dupes = sd.get_num_dupes ();
       if (flag_analyzer_show_duplicate_count && num_dupes > 0)
 	inform_n (loc, num_dupes,
@@ -1269,11 +1439,104 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
 					 checker_path *emission_path) const
 {
   LOG_SCOPE (get_logger ());
+
+  interesting_t interest;
+  pb.get_pending_diagnostic ()->mark_interesting_stuff (&interest);
+
+  /* Add region creation events for any globals of interest, at the
+     beginning of the path.  */
+  {
+    for (auto reg : interest.m_region_creation)
+      switch (reg->get_memory_space ())
+	{
+	default:
+	  continue;
+	case MEMSPACE_CODE:
+	case MEMSPACE_GLOBALS:
+	case MEMSPACE_READONLY_DATA:
+	  {
+	    const region *base_reg = reg->get_base_region ();
+	    if (tree decl = base_reg->maybe_get_decl ())
+	      if (DECL_P (decl)
+		  && DECL_SOURCE_LOCATION (decl) != UNKNOWN_LOCATION)
+		{
+		  emission_path->add_region_creation_event
+		    (reg,
+		     DECL_SOURCE_LOCATION (decl),
+		     NULL_TREE,
+		     0);
+		}
+	  }
+	}
+  }
+
+  /* Walk EPATH, adding events as appropriate.  */
   for (unsigned i = 0; i < epath.m_edges.length (); i++)
     {
       const exploded_edge *eedge = epath.m_edges[i];
-      add_events_for_eedge (pb, *eedge, emission_path);
+      add_events_for_eedge (pb, *eedge, emission_path, &interest);
     }
+  add_event_on_final_node (epath.get_final_enode (), emission_path, &interest);
+}
+
+/* Emit a region_creation_event when requested on the last statement in
+   the path.
+
+   If a region_creation_event should be emitted on the last statement of the
+   path, we need to peek to the successors to get whether the final enode
+   created a region.
+*/
+
+void
+diagnostic_manager::add_event_on_final_node (const exploded_node *final_enode,
+					     checker_path *emission_path,
+					     interesting_t *interest) const
+{
+  const program_point &src_point = final_enode->get_point ();
+  const int src_stack_depth = src_point.get_stack_depth ();
+  const program_state &src_state = final_enode->get_state ();
+  const region_model *src_model = src_state.m_region_model;
+
+  unsigned j;
+  exploded_edge *e;
+  FOR_EACH_VEC_ELT (final_enode->m_succs, j, e)
+  {
+    exploded_node *dst = e->m_dest;
+    const program_state &dst_state = dst->get_state ();
+    const region_model *dst_model = dst_state.m_region_model;
+    if (src_model->get_dynamic_extents ()
+	!= dst_model->get_dynamic_extents ())
+      {
+	unsigned i;
+	const region *reg;
+	bool emitted = false;
+	FOR_EACH_VEC_ELT (interest->m_region_creation, i, reg)
+	  {
+	    const region *base_reg = reg->get_base_region ();
+	    const svalue *old_extents
+	= src_model->get_dynamic_extents (base_reg);
+	    const svalue *new_extents
+	= dst_model->get_dynamic_extents (base_reg);
+	    if (old_extents == NULL && new_extents != NULL)
+	      switch (base_reg->get_kind ())
+		{
+		default:
+		  break;
+		case RK_HEAP_ALLOCATED:
+		case RK_ALLOCA:
+		  emission_path->add_region_creation_event
+		    (reg,
+		    src_point.get_location (),
+		    src_point.get_fndecl (),
+		    src_stack_depth);
+		  emitted = true;
+		  break;
+		}
+	  }
+	if (emitted)
+	  break;
+      }
+  }
 }
 
 /* Subclass of state_change_visitor that creates state_change_event
@@ -1293,7 +1556,7 @@ public:
   bool on_global_state_change (const state_machine &sm,
 			       state_machine::state_t src_sm_val,
 			       state_machine::state_t dst_sm_val)
-    FINAL OVERRIDE
+    final override
   {
     if (&sm != m_pb.get_sm ())
       return false;
@@ -1323,7 +1586,7 @@ public:
 			state_machine::state_t src_sm_val,
 			state_machine::state_t dst_sm_val,
 			const svalue *sval,
-			const svalue *dst_origin_sval) FINAL OVERRIDE
+			const svalue *dst_origin_sval) final override
   {
     if (&sm != m_pb.get_sm ())
       return false;
@@ -1451,13 +1714,13 @@ struct null_assignment_sm_context : public sm_context
   {
   }
 
-  tree get_fndecl_for_call (const gcall */*call*/) FINAL OVERRIDE
+  tree get_fndecl_for_call (const gcall */*call*/) final override
   {
     return NULL_TREE;
   }
 
   state_machine::state_t get_state (const gimple *stmt ATTRIBUTE_UNUSED,
-				    tree var) FINAL OVERRIDE
+				    tree var) final override
   {
     const svalue *var_old_sval
       = m_old_state->m_region_model->get_rvalue (var, NULL);
@@ -1470,7 +1733,7 @@ struct null_assignment_sm_context : public sm_context
   }
 
   state_machine::state_t get_state (const gimple *stmt ATTRIBUTE_UNUSED,
-				    const svalue *sval) FINAL OVERRIDE
+				    const svalue *sval) final override
   {
     const sm_state_map *old_smap = m_old_state->m_checker_states[m_sm_idx];
     state_machine::state_t current = old_smap->get_state (sval, m_ext_state);
@@ -1480,7 +1743,7 @@ struct null_assignment_sm_context : public sm_context
   void set_next_state (const gimple *stmt,
 		       tree var,
 		       state_machine::state_t to,
-		       tree origin ATTRIBUTE_UNUSED) FINAL OVERRIDE
+		       tree origin ATTRIBUTE_UNUSED) final override
   {
     state_machine::state_t from = get_state (stmt, var);
     if (from != m_sm.get_start_state ())
@@ -1504,7 +1767,7 @@ struct null_assignment_sm_context : public sm_context
   void set_next_state (const gimple *stmt,
 		       const svalue *sval,
 		       state_machine::state_t to,
-		       tree origin ATTRIBUTE_UNUSED) FINAL OVERRIDE
+		       tree origin ATTRIBUTE_UNUSED) final override
   {
     state_machine::state_t from = get_state (stmt, sval);
     if (from != m_sm.get_start_state ())
@@ -1524,36 +1787,41 @@ struct null_assignment_sm_context : public sm_context
   }
 
   void warn (const supernode *, const gimple *,
-	     tree, pending_diagnostic *d) FINAL OVERRIDE
+	     tree, pending_diagnostic *d) final override
+  {
+    delete d;
+  }
+  void warn (const supernode *, const gimple *,
+	     const svalue *, pending_diagnostic *d) final override
   {
     delete d;
   }
 
-  tree get_diagnostic_tree (tree expr) FINAL OVERRIDE
+  tree get_diagnostic_tree (tree expr) final override
   {
     return expr;
   }
 
-  tree get_diagnostic_tree (const svalue *sval) FINAL OVERRIDE
+  tree get_diagnostic_tree (const svalue *sval) final override
   {
     return m_new_state->m_region_model->get_representative_tree (sval);
   }
 
-  state_machine::state_t get_global_state () const FINAL OVERRIDE
+  state_machine::state_t get_global_state () const final override
   {
     return 0;
   }
 
-  void set_global_state (state_machine::state_t) FINAL OVERRIDE
+  void set_global_state (state_machine::state_t) final override
   {
     /* No-op.  */
   }
 
-  void on_custom_transition (custom_transition *) FINAL OVERRIDE
+  void on_custom_transition (custom_transition *) final override
   {
   }
 
-  tree is_zero_assignment (const gimple *stmt) FINAL OVERRIDE
+  tree is_zero_assignment (const gimple *stmt) final override
   {
     const gassign *assign_stmt = dyn_cast <const gassign *> (stmt);
     if (!assign_stmt)
@@ -1564,6 +1832,15 @@ struct null_assignment_sm_context : public sm_context
 	if (::zerop(cst))
 	  return gimple_assign_lhs (assign_stmt);
     return NULL_TREE;
+  }
+
+  const program_state *get_old_program_state () const final override
+  {
+    return m_old_state;
+  }
+  const program_state *get_new_program_state () const final override
+  {
+    return m_new_state;
   }
 
   const program_state *m_old_state;
@@ -1580,10 +1857,12 @@ struct null_assignment_sm_context : public sm_context
 void
 diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 					  const exploded_edge &eedge,
-					  checker_path *emission_path) const
+					  checker_path *emission_path,
+					  interesting_t *interest) const
 {
   const exploded_node *src_node = eedge.m_src;
   const program_point &src_point = src_node->get_point ();
+  const int src_stack_depth = src_point.get_stack_depth ();
   const exploded_node *dst_node = eedge.m_dest;
   const program_point &dst_point = dst_node->get_point ();
   const int dst_stack_depth = dst_point.get_stack_depth ();
@@ -1645,6 +1924,29 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 	     (dst_point.get_supernode ()->get_start_location (),
 	      dst_point.get_fndecl (),
 	      dst_stack_depth));
+	  /* Create region_creation_events for on-stack regions within
+	     this frame.  */
+	  if (interest)
+	    {
+	      unsigned i;
+	      const region *reg;
+	      FOR_EACH_VEC_ELT (interest->m_region_creation, i, reg)
+		if (const frame_region *frame = reg->maybe_get_frame_region ())
+		  if (frame->get_fndecl () == dst_point.get_fndecl ())
+		    {
+		      const region *base_reg = reg->get_base_region ();
+		      if (tree decl = base_reg->maybe_get_decl ())
+			if (DECL_P (decl)
+			    && DECL_SOURCE_LOCATION (decl) != UNKNOWN_LOCATION)
+			  {
+			    emission_path->add_region_creation_event
+			      (reg,
+			       DECL_SOURCE_LOCATION (decl),
+			       dst_point.get_fndecl (),
+			       dst_stack_depth);
+			  }
+		    }
+	    }
 	}
       break;
     case PK_BEFORE_STMT:
@@ -1700,9 +2002,46 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 			    == dst_node->m_succs[0]->m_dest->get_point ())))
 		  break;
 	      }
+
 	  }
       }
       break;
+    }
+
+  /* Look for changes in dynamic extents, which will identify
+     the creation of heap-based regions and alloca regions.  */
+  if (interest)
+    {
+      const region_model *src_model = src_state.m_region_model;
+      const region_model *dst_model = dst_state.m_region_model;
+      if (src_model->get_dynamic_extents ()
+	  != dst_model->get_dynamic_extents ())
+	{
+	  unsigned i;
+	  const region *reg;
+	  FOR_EACH_VEC_ELT (interest->m_region_creation, i, reg)
+	    {
+	      const region *base_reg = reg->get_base_region ();
+	      const svalue *old_extents
+		= src_model->get_dynamic_extents (base_reg);
+	      const svalue *new_extents
+		= dst_model->get_dynamic_extents (base_reg);
+	      if (old_extents == NULL && new_extents != NULL)
+		switch (base_reg->get_kind ())
+		  {
+		  default:
+		    break;
+		  case RK_HEAP_ALLOCATED:
+		  case RK_ALLOCA:
+		    emission_path->add_region_creation_event
+		      (reg,
+		       src_point.get_location (),
+		       src_point.get_fndecl (),
+		       src_stack_depth);
+		    break;
+		  }
+	    }
+	}
     }
 
   if (pb.get_feasibility_problem ()
@@ -1844,15 +2183,7 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
       break;
 
     case SUPEREDGE_CALL:
-      {
-	emission_path->add_event
-	  (new call_event (eedge,
-			   (last_stmt
-			    ? last_stmt->location
-			    : UNKNOWN_LOCATION),
-			   src_point.get_fndecl (),
-			   src_stack_depth));
-      }
+      pd->add_call_event (eedge, emission_path);
       break;
 
     case SUPEREDGE_INTRAPROCEDURAL_CALL:
@@ -1966,7 +2297,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		  label_text sval_desc = sval->get_desc ();
 		  log ("considering event %i (%s), with sval: %qs, state: %qs",
 		       idx, event_kind_to_string (base_event->m_kind),
-		       sval_desc.m_buffer, state->get_name ());
+		       sval_desc.get (), state->get_name ());
 		}
 	      else
 		log ("considering event %i (%s), with global state: %qs",
@@ -2004,6 +2335,10 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	  }
 	  break;
 
+	case EK_REGION_CREATION:
+	  /* Don't filter these.  */
+	  break;
+
 	case EK_FUNCTION_ENTRY:
 	  if (m_verbosity < 1)
 	    {
@@ -2028,8 +2363,8 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			  = state_change->m_origin->get_desc ();
 			log ("event %i:"
 			     " switching var of interest from %qs to %qs",
-			     idx, sval_desc.m_buffer,
-			     origin_sval_desc.m_buffer);
+			     idx, sval_desc.get (),
+			     origin_sval_desc.get ());
 		      }
 		    sval = state_change->m_origin;
 		  }
@@ -2051,12 +2386,12 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			    label_text sval_desc = sval->get_desc ();
 			    log ("filtering event %i:"
 				 " state change to %qs unrelated to %qs",
-				 idx, change_sval_desc.m_buffer,
-				 sval_desc.m_buffer);
+				 idx, change_sval_desc.get (),
+				 sval_desc.get ());
 			  }
 			else
 			  log ("filtering event %i: state change to %qs",
-			       idx, change_sval_desc.m_buffer);
+			       idx, change_sval_desc.get ());
 		      }
 		    else
 		      log ("filtering event %i: global state change", idx);
@@ -2125,7 +2460,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		    log ("event %i:"
 			 " recording critical state for %qs at call"
 			 " from %qE in callee to %qE in caller",
-			 idx, sval_desc.m_buffer, callee_var, caller_var);
+			 idx, sval_desc.get (), callee_var, caller_var);
 		  }
 		if (expr.param_p ())
 		  event->record_critical_state (caller_var, state);
@@ -2168,13 +2503,18 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			log ("event %i:"
 			     " recording critical state for %qs at return"
 			     " from %qE in caller to %qE in callee",
-			     idx, sval_desc.m_buffer, callee_var, callee_var);
+			     idx, sval_desc.get (), callee_var, callee_var);
 		      }
 		    if (expr.return_value_p ())
 		      event->record_critical_state (callee_var, state);
 		  }
 	      }
 	  }
+	  break;
+
+	case EK_INLINED_CALL:
+	  /* We don't expect to see these yet, as they're added later.
+	     We'd want to keep them around.  */
 	  break;
 
 	case EK_SETJMP:
@@ -2246,8 +2586,7 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
 		    (path->get_checker_event (idx)->get_desc (false));
 		  log ("filtering events %i-%i:"
 		       " irrelevant call/entry/return: %s",
-		       idx, idx + 2, desc.m_buffer);
-		  desc.maybe_free ();
+		       idx, idx + 2, desc.get ());
 		}
 	      path->delete_event (idx + 2);
 	      path->delete_event (idx + 1);
@@ -2269,8 +2608,7 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
 		    (path->get_checker_event (idx)->get_desc (false));
 		  log ("filtering events %i-%i:"
 		       " irrelevant call/return: %s",
-		       idx, idx + 1, desc.m_buffer);
-		  desc.maybe_free ();
+		       idx, idx + 1, desc.get ());
 		}
 	      path->delete_event (idx + 1);
 	      path->delete_event (idx);

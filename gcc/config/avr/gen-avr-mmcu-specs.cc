@@ -279,7 +279,7 @@ print_mcu (const avr_mcu_t *mcu)
   if (is_device)
     {
       fprintf (f, "*self_spec:\n");
-      fprintf (f, "\t%%{!mmcu=avr*: %%<mmcu=* -mmcu=%s} ", arch->name);
+      fprintf (f, "\t%%<mmcu=* -mmcu=%s ", arch->name);
       fprintf (f, "%s ", rcall_spec);
       fprintf (f, "%s\n\n", sp8_spec);
 

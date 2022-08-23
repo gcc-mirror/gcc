@@ -1426,19 +1426,35 @@ get_bidi_utf8 (cpp_reader *pfile, const unsigned char *const p, location_t *out)
 /* Parse a UCN where P points just past \u or \U and return its bidi code.  */
 
 static bidi::kind
-get_bidi_ucn_1 (const unsigned char *p, bool is_U)
+get_bidi_ucn_1 (const unsigned char *p, bool is_U, const unsigned char **end)
 {
   /* 6.4.3 Universal Character Names
       \u hex-quad
       \U hex-quad hex-quad
+      \u { simple-hexadecimal-digit-sequence }
      where \unnnn means \U0000nnnn.  */
 
+  *end = p + 4;
   if (is_U)
     {
       if (p[0] != '0' || p[1] != '0' || p[2] != '0' || p[3] != '0')
 	return bidi::kind::NONE;
       /* Skip 4B so we can treat \u and \U the same below.  */
       p += 4;
+      *end += 4;
+    }
+  else if (p[0] == '{')
+    {
+      p++;
+      while (*p == '0')
+	p++;
+      if (p[0] != '2'
+	  || p[1] != '0'
+	  || !ISXDIGIT (p[2])
+	  || !ISXDIGIT (p[3])
+	  || p[4] != '}')
+	return bidi::kind::NONE;
+      *end = p + 5;
     }
 
   /* All code points we are looking for start with 20xx.  */
@@ -1499,14 +1515,15 @@ get_bidi_ucn_1 (const unsigned char *p, bool is_U)
    If the kind is not NONE, write the location to *OUT.*/
 
 static bidi::kind
-get_bidi_ucn (cpp_reader *pfile,  const unsigned char *p, bool is_U,
+get_bidi_ucn (cpp_reader *pfile, const unsigned char *p, bool is_U,
 	      location_t *out)
 {
-  bidi::kind result = get_bidi_ucn_1 (p, is_U);
+  const unsigned char *end;
+  bidi::kind result = get_bidi_ucn_1 (p, is_U, &end);
   if (result != bidi::kind::NONE)
     {
       const unsigned char *start = p - 2;
-      size_t num_bytes = 2 + (is_U ? 8 : 4);
+      size_t num_bytes = end - start;
       *out = get_location_for_byte_range_in_cur_line (pfile, start, num_bytes);
     }
   return result;
@@ -1523,7 +1540,7 @@ class unpaired_bidi_rich_location : public rich_location
   class custom_range_label : public range_label
   {
    public:
-     label_text get_text (unsigned range_idx) const FINAL OVERRIDE
+     label_text get_text (unsigned range_idx) const final override
      {
        /* range 0 is the primary location; each subsequent range i + 1
 	  is for bidi::vec[i].  */
@@ -1560,8 +1577,11 @@ class unpaired_bidi_rich_location : public rich_location
 static void
 maybe_warn_bidi_on_close (cpp_reader *pfile, const uchar *p)
 {
-  if (CPP_OPTION (pfile, cpp_warn_bidirectional) == bidirectional_unpaired
-      && bidi::vec.count () > 0)
+  const auto warn_bidi = CPP_OPTION (pfile, cpp_warn_bidirectional);
+  if (bidi::vec.count () > 0
+      && (warn_bidi & bidirectional_unpaired
+	  && (!bidi::current_ctx_ucn_p ()
+	      || (warn_bidi & bidirectional_ucn))))
     {
       const location_t loc
 	= linemap_position_for_column (pfile->line_table,
@@ -1597,7 +1617,7 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, bidi::kind kind,
 
   const auto warn_bidi = CPP_OPTION (pfile, cpp_warn_bidirectional);
 
-  if (warn_bidi != bidirectional_none)
+  if (warn_bidi & (bidirectional_unpaired|bidirectional_any))
     {
       rich_location rich_loc (pfile->line_table, loc);
       rich_loc.set_escape_on_output (true);
@@ -1605,10 +1625,10 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, bidi::kind kind,
       /* It seems excessive to warn about a PDI/PDF that is closing
 	 an opened context because we've already warned about the
 	 opening character.  Except warn when we have a UCN x UTF-8
-	 mismatch.  */
+	 mismatch, if UCN checking is enabled.  */
       if (kind == bidi::current_ctx ())
 	{
-	  if (warn_bidi == bidirectional_unpaired
+	  if (warn_bidi == (bidirectional_unpaired|bidirectional_ucn)
 	      && bidi::current_ctx_ucn_p () != ucn_p)
 	    {
 	      rich_loc.add_range (bidi::current_ctx_loc ());
@@ -1617,7 +1637,8 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, bidi::kind kind,
 			      "a context by \"%s\"", bidi::to_str (kind));
 	    }
 	}
-      else if (warn_bidi == bidirectional_any)
+      else if (warn_bidi & bidirectional_any
+	       && (!ucn_p || (warn_bidi & bidirectional_ucn)))
 	{
 	  if (kind == bidi::kind::PDF || kind == bidi::kind::PDI)
 	    cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,

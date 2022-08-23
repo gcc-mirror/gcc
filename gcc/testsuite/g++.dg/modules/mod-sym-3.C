@@ -20,7 +20,7 @@ namespace X
 inline void X::Foo () {}
 inline void X::Baz () {}
 
-// { dg-final { scan-assembler "_ZW3bobEN1X3FooEv:" } }
-// { dg-final { scan-assembler "_ZN1X3BazEv:" } }
-// { dg-final { scan-assembler "_ZW3bobEN1X1Y4QuuxEv:" } }
-// { dg-final { scan-assembler "_ZN1X1Y3BarEv:" } }
+// { dg-final { scan-assembler "_ZN1XW3bob3FooEv:" } }
+// { dg-final { scan-assembler "_ZN1XW3bob3BazEv:" } }
+// { dg-final { scan-assembler "_ZN1X1YW3bob4QuuxEv:" } }
+// { dg-final { scan-assembler "_ZN1X1YW3bob3BarEv:" } }

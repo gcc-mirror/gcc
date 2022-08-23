@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "diagnostic-core.h"
 #include "stor-layout.h"
+#include "stringpool.h"
 #include "expr.h"
 #include "langhooks.h"
 
@@ -87,6 +88,18 @@ struct riscv_builtin_description {
 
 AVAIL (hard_float, TARGET_HARD_FLOAT)
 
+
+AVAIL (clean32, TARGET_ZICBOM && !TARGET_64BIT)
+AVAIL (clean64, TARGET_ZICBOM && TARGET_64BIT)
+AVAIL (flush32, TARGET_ZICBOM && !TARGET_64BIT)
+AVAIL (flush64, TARGET_ZICBOM && TARGET_64BIT)
+AVAIL (inval32, TARGET_ZICBOM && !TARGET_64BIT)
+AVAIL (inval64, TARGET_ZICBOM && TARGET_64BIT)
+AVAIL (zero32,  TARGET_ZICBOZ && !TARGET_64BIT)
+AVAIL (zero64,  TARGET_ZICBOZ && TARGET_64BIT)
+AVAIL (prefetchi32, TARGET_ZICBOP && !TARGET_64BIT)
+AVAIL (prefetchi64, TARGET_ZICBOP && TARGET_64BIT)
+
 /* Construct a riscv_builtin_description from the given arguments.
 
    INSN is the name of the associated instruction pattern, without the
@@ -119,6 +132,9 @@ AVAIL (hard_float, TARGET_HARD_FLOAT)
 /* Argument types.  */
 #define RISCV_ATYPE_VOID void_type_node
 #define RISCV_ATYPE_USI unsigned_intSI_type_node
+#define RISCV_ATYPE_SI intSI_type_node
+#define RISCV_ATYPE_DI intDI_type_node
+#define RISCV_ATYPE_VOID_PTR ptr_type_node
 
 /* RISCV_FTYPE_ATYPESN takes N RISCV_FTYPES-like type codes and lists
    their associated RISCV_ATYPEs.  */
@@ -128,6 +144,8 @@ AVAIL (hard_float, TARGET_HARD_FLOAT)
   RISCV_ATYPE_##A, RISCV_ATYPE_##B
 
 static const struct riscv_builtin_description riscv_builtins[] = {
+  #include "riscv-cmo.def"
+
   DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE, hard_float),
   DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float)
 };
@@ -142,6 +160,8 @@ static GTY(()) int riscv_builtin_decl_index[NUM_INSN_CODES];
 
 #define GET_BUILTIN_DECL(CODE) \
   riscv_builtin_decls[riscv_builtin_decl_index[(CODE)]]
+
+tree riscv_float16_type_node = NULL_TREE;
 
 /* Return the function type associated with function prototype TYPE.  */
 
@@ -168,11 +188,32 @@ riscv_build_function_type (enum riscv_function_type type)
   return types[(int) type];
 }
 
+static void
+riscv_init_builtin_types (void)
+{
+  /* Provide the _Float16 type and float16_type_node if needed.  */
+  if (!float16_type_node)
+    {
+      riscv_float16_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (riscv_float16_type_node) = 16;
+      SET_TYPE_MODE (riscv_float16_type_node, HFmode);
+      layout_type (riscv_float16_type_node);
+    }
+  else
+    riscv_float16_type_node = float16_type_node;
+
+  if (!maybe_get_identifier ("_Float16"))
+    lang_hooks.types.register_builtin_type (riscv_float16_type_node,
+					    "_Float16");
+}
+
 /* Implement TARGET_INIT_BUILTINS.  */
 
 void
 riscv_init_builtins (void)
 {
+  riscv_init_builtin_types ();
+
   for (size_t i = 0; i < ARRAY_SIZE (riscv_builtins); i++)
     {
       const struct riscv_builtin_description *d = &riscv_builtins[i];

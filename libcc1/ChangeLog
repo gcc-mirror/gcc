@@ -1,3 +1,14 @@
+2022-06-27  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* libcc1plugin.cc: Include <memory> via "system.h".
+	* libcp1plugin.cc: Ditto.
+
+2022-06-01  David Seifert  <soap@gentoo.org>
+
+	PR plugins/95648
+	* configure: Regenerate.
+
 2021-12-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/51577

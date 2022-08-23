@@ -94,8 +94,9 @@ extern (C++) bool hasSideEffect(Expression e, bool assumeImpureCalls = false)
  * Determine if the call of f, or function type or delegate type t1, has any side effects.
  * Returns:
  *      0   has any side effects
- *      1   nothrow + constant purity
- *      2   nothrow + strong purity
+ *      1   nothrow + strongly pure
+ *      2   nothrow + strongly pure + only immutable indirections in the return
+ *          type
  */
 int callSideEffectLevel(FuncDeclaration f)
 {
@@ -106,15 +107,18 @@ int callSideEffectLevel(FuncDeclaration f)
         return 0;
     assert(f.type.ty == Tfunction);
     TypeFunction tf = cast(TypeFunction)f.type;
-    if (tf.isnothrow)
+    if (!tf.isnothrow)
+        return 0;
+    final switch (f.isPure())
     {
-        PURE purity = f.isPure();
-        if (purity == PURE.strong)
-            return 2;
-        if (purity == PURE.const_)
-            return 1;
+    case PURE.impure:
+    case PURE.fwdref:
+    case PURE.weak:
+        return 0;
+
+    case PURE.const_:
+        return mutabilityOfType(tf.isref, tf.next) == 2 ? 2 : 1;
     }
-    return 0;
 }
 
 int callSideEffectLevel(Type t)
@@ -141,10 +145,9 @@ int callSideEffectLevel(Type t)
             purity = PURE.const_;
     }
 
-    if (purity == PURE.strong)
-        return 2;
     if (purity == PURE.const_)
-        return 1;
+        return mutabilityOfType(tf.isref, tf.next) == 2 ? 2 : 1;
+
     return 0;
 }
 
@@ -178,6 +181,7 @@ private bool lambdaHasSideEffect(Expression e, bool assumeImpureCalls = false)
     case EXP.remove:
     case EXP.assert_:
     case EXP.halt:
+    case EXP.throw_:
     case EXP.delete_:
     case EXP.new_:
     case EXP.newAnonymousClass:
@@ -199,10 +203,9 @@ private bool lambdaHasSideEffect(Expression e, bool assumeImpureCalls = false)
                 Type t = ce.e1.type.toBasetype();
                 if (t.ty == Tdelegate)
                     t = (cast(TypeDelegate)t).next;
-                if (t.ty == Tfunction && (ce.f ? callSideEffectLevel(ce.f) : callSideEffectLevel(ce.e1.type)) > 0)
-                {
-                }
-                else
+
+                const level = t.ty == Tfunction && (ce.f ? callSideEffectLevel(ce.f) : callSideEffectLevel(ce.e1.type));
+                if (level == 0) // 0 means the function has a side effect
                     return true;
             }
             break;
@@ -247,8 +250,9 @@ bool discardValue(Expression e)
             }
             break; // complain
         }
+    // Assumption that error => no side effect
     case EXP.error:
-        return false;
+        return true;
     case EXP.variable:
         {
             VarDeclaration v = (cast(VarExp)e).var.isVarDeclaration();
@@ -352,6 +356,25 @@ bool discardValue(Expression e)
         if (!hasSideEffect(e))
             break;
         return false;
+    case EXP.identity, EXP.notIdentity:
+    case EXP.equal, EXP.notEqual:
+        /*
+            `[side effect] == 0`
+            Technically has a side effect but is clearly wrong;
+        */
+        BinExp tmp = e.isBinExp();
+        assert(tmp);
+
+        e.error("the result of the equality expression `%s` is discarded", e.toChars());
+        bool seenSideEffect = false;
+        foreach(expr; [tmp.e1, tmp.e2])
+        {
+            if (hasSideEffect(expr)) {
+                expr.errorSupplemental("note that `%s` may have a side effect", expr.toChars());
+                seenSideEffect |= true;
+            }
+        }
+        return !seenSideEffect;
     default:
         break;
     }

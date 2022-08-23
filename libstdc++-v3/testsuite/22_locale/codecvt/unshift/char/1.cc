@@ -40,28 +40,28 @@ void test01()
 
   locale 		loc = locale::classic();
   c_codecvt::state_type state;
-  const c_codecvt* 	cvt = &use_facet<c_codecvt>(loc); 
+  const c_codecvt* 	cvt = &use_facet<c_codecvt>(loc);
 
-  // According to the resolution of DR19 (see also libstd++/9168), in
+  // According to the resolution of DR19 (see also libstdc++/9168), in
   // case of degenerate conversion ('noconv'), "there are no changes to
   // the values in [to, to_limit)."
   memset(c_ref, 'X', size);
 
   // in
   memset(c_arr, 'X', size);
-  result r1 = cvt->in(state, c_lit, c_lit + size, from_next, 
+  result r1 = cvt->in(state, c_lit, c_lit + size, from_next,
 		      c_arr, c_arr + size, to_next);
   VERIFY( r1 == codecvt_base::noconv );
-  VERIFY( !memcmp(c_arr, c_ref, size) ); 
+  VERIFY( !memcmp(c_arr, c_ref, size) );
   VERIFY( from_next == c_lit );
   VERIFY( to_next == c_arr );
 
   // out
   memset(c_arr, 'X', size);
-  result r2 = cvt->out(state, c_lit, c_lit + size, from_next, 
+  result r2 = cvt->out(state, c_lit, c_lit + size, from_next,
 		       c_arr, c_arr + size, to_next);
   VERIFY( r2 == codecvt_base::noconv );
-  VERIFY( !memcmp(c_arr, c_ref, size) ); 
+  VERIFY( !memcmp(c_arr, c_ref, size) );
   VERIFY( from_next == c_lit );
   VERIFY( to_next == c_arr );
 

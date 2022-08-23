@@ -246,8 +246,8 @@ package body Ada.Wide_Text_IO.Editing is
 
                   else
                      Count := Count * 10
-                                +  Character'Pos (Picture (Last)) -
-                                   Character'Pos ('0');
+                                + Character'Pos (Picture (Last)) -
+                                  Character'Pos ('0');
                   end if;
 
                   Last := Last + 1;

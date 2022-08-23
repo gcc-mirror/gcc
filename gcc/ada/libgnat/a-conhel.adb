@@ -36,8 +36,6 @@ package body Ada.Containers.Helpers is
 
    package body Generic_Implementation is
 
-      use type SAC.Atomic_Unsigned;
-
       ------------
       -- Adjust --
       ------------
@@ -133,7 +131,7 @@ package body Ada.Containers.Helpers is
       procedure TC_Check (T_Counts : Tamper_Counts) is
       begin
          if T_Check then
-            if T_Counts.Busy > 0 then
+            if Is_Busy (T_Counts) then
                raise Program_Error with
                  "attempt to tamper with cursors";
             end if;
@@ -144,7 +142,7 @@ package body Ada.Containers.Helpers is
             --  Thus if the busy count is zero, then the lock count
             --  must also be zero.
 
-            pragma Assert (T_Counts.Lock = 0);
+            pragma Assert (not Is_Locked (T_Counts));
          end if;
       end TC_Check;
 
@@ -154,7 +152,7 @@ package body Ada.Containers.Helpers is
 
       procedure TE_Check (T_Counts : Tamper_Counts) is
       begin
-         if T_Check and then T_Counts.Lock > 0 then
+         if T_Check and then Is_Locked (T_Counts) then
             raise Program_Error with
               "attempt to tamper with elements";
          end if;

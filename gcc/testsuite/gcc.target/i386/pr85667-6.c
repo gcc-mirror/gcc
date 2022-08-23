@@ -1,5 +1,6 @@
 /* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 /* { dg-final { scan-assembler-times "movl\[^\n\r]*, %eax" 1 } } */
 /* { dg-final { scan-assembler-times "flds\[^\n\r]*" 1 } } */
 typedef struct

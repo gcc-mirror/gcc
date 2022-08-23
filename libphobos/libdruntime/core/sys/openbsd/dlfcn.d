@@ -11,13 +11,6 @@ version (OpenBSD):
 extern (C):
 nothrow:
 
-static assert(RTLD_LAZY   == 1);
-static assert(RTLD_NOW    == 2);
-static assert(RTLD_GLOBAL == 0x100);
-static assert(RTLD_LOCAL  == 0);
-enum RTLD_TRACE           =  0x200;
-enum RTLD_NODELETE        =  0x400;
-
 enum RTLD_NEXT    = cast(void *)-1;
 enum RTLD_DEFAULT = cast(void *)-2;
 enum RTLD_SELF    = cast(void *)-3;

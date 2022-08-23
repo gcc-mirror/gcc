@@ -1,6 +1,6 @@
 // EXTRA_SOURCES: imports/linktypeinfo_file.d
 // PERMUTE_ARGS: -g -inline -unittest -debug
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 
 import imports.linktypeinfo_file;
 

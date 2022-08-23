@@ -24,7 +24,8 @@ extern unsigned int f (unsigned int);
 
 void KERNELS ()
 {
-#pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N]) /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N]) /* { dg-line l_compute1 } */
+  /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute1 } */
   for (unsigned int i = 0; i < N; i++)
     c[i] = a[f (i)] + b[f (i)];
 }

@@ -154,7 +154,7 @@ func gcinit() {
 		throw("size of Workbuf is suboptimal")
 	}
 	// No sweep on the first cycle.
-	mheap_.sweepDrained = 1
+	sweep.active.state.Store(sweepDrainedMask)
 
 	// Initialize GC pacer state.
 	// Use the environment variable GOGC for the initial gcPercent value.
@@ -167,24 +167,19 @@ func gcinit() {
 	lockInit(&work.wbufSpans.lock, lockRankWbufSpans)
 }
 
-// Temporary in order to enable register ABI work.
-// TODO(register args): convert back to local chan in gcenabled, passed to "go" stmts.
-var gcenable_setup chan int
-
 // gcenable is called after the bulk of the runtime initialization,
 // just before we're about to start letting user code run.
 // It kicks off the background sweeper goroutine, the background
 // scavenger goroutine, and enables GC.
 func gcenable() {
 	// Kick off sweeping and scavenging.
-	gcenable_setup = make(chan int, 2)
+	c := make(chan int, 2)
 	expectSystemGoroutine()
-	go bgsweep()
+	go bgsweep(c)
 	expectSystemGoroutine()
-	go bgscavenge()
-	<-gcenable_setup
-	<-gcenable_setup
-	gcenable_setup = nil
+	go bgscavenge(c)
+	<-c
+	<-c
 	memstats.enablegc = true // now that runtime is initialized, GC is okay
 }
 
@@ -331,6 +326,12 @@ var work struct {
 
 	// Base indexes of each root type. Set by gcMarkRootPrepare.
 	baseData, baseSpans, baseStacks, baseEnd uint32
+
+	// stackRoots is a snapshot of all of the Gs that existed
+	// before the beginning of concurrent marking. The backing
+	// store of this must not be modified because it might be
+	// shared with allgs.
+	stackRoots []*g
 
 	// Each type of GC state transition is protected by a lock.
 	// Since multiple threads can simultaneously detect the state
@@ -552,7 +553,7 @@ func (t gcTrigger) test() bool {
 		// own write.
 		return gcController.heapLive >= gcController.trigger
 	case gcTriggerTime:
-		if gcController.gcPercent < 0 {
+		if gcController.gcPercent.Load() < 0 {
 			return false
 		}
 		lastgc := int64(atomic.Load64(&memstats.last_gc_nanotime))
@@ -668,7 +669,9 @@ func gcStart(trigger gcTrigger) {
 
 	work.cycles++
 
-	gcController.startCycle()
+	// Assists and workers can start the moment we start
+	// the world.
+	gcController.startCycle(now, int(gomaxprocs))
 	work.heapGoal = gcController.heapGoal
 
 	// In STW mode, disable scheduling of user Gs. This may also
@@ -710,10 +713,6 @@ func gcStart(trigger gcTrigger) {
 	// put back-pressure on fast allocating
 	// mutators.
 	atomic.Store(&gcBlackenEnabled, 1)
-
-	// Assists and workers can start the moment we start
-	// the world.
-	gcController.markStartTime = now
 
 	// In STW mode, we could block the instant systemstack
 	// returns, so make sure we're not preemptible.
@@ -898,7 +897,7 @@ top:
 	// endCycle depends on all gcWork cache stats being flushed.
 	// The termination algorithm above ensured that up to
 	// allocations since the ragged barrier.
-	nextTriggerRatio := gcController.endCycle(work.userForced)
+	nextTriggerRatio := gcController.endCycle(now, int(gomaxprocs), work.userForced)
 
 	// Perform mark termination. This will restart the world.
 	gcMarkTermination(nextTriggerRatio)
@@ -972,12 +971,13 @@ func gcMarkTermination(nextTriggerRatio float64) {
 		throw("gc done but gcphase != _GCoff")
 	}
 
-	// Record heapGoal and heap_inuse for scavenger.
-	gcController.lastHeapGoal = gcController.heapGoal
+	// Record heap_inuse for scavenger.
 	memstats.last_heap_inuse = memstats.heap_inuse
 
 	// Update GC trigger and pacing for the next cycle.
 	gcController.commit(nextTriggerRatio)
+	gcPaceSweeper(gcController.trigger)
+	gcPaceScavenger(gcController.heapGoal, gcController.lastHeapGoal)
 
 	// Update timing memstats
 	now := nanotime()
@@ -1028,8 +1028,10 @@ func gcMarkTermination(nextTriggerRatio float64) {
 	// Those aren't tracked in any sweep lists, so we need to
 	// count them against sweep completion until we ensure all
 	// those spans have been forced out.
-	sl := newSweepLocker()
-	sl.blockCompletion()
+	sl := sweep.active.begin()
+	if !sl.valid {
+		throw("failed to set sweep barrier")
+	}
 
 	systemstack(func() { startTheWorldWithSema(true) })
 
@@ -1053,7 +1055,7 @@ func gcMarkTermination(nextTriggerRatio float64) {
 	})
 	// Now that we've swept stale spans in mcaches, they don't
 	// count against unswept spans.
-	sl.dispose()
+	sweep.active.end(sl)
 
 	// Print gctrace before dropping worldsema. As soon as we drop
 	// worldsema another cycle could start and smash the stats
@@ -1087,6 +1089,8 @@ func gcMarkTermination(nextTriggerRatio float64) {
 		print(" ms cpu, ",
 			work.heap0>>20, "->", work.heap1>>20, "->", work.heap2>>20, " MB, ",
 			work.heapGoal>>20, " MB goal, ",
+			gcController.stackScan>>20, " MB stacks, ",
+			gcController.globalsScan>>20, " MB globals, ",
 			work.maxprocs, " P")
 		if work.userForced {
 			print(" (forced)")
@@ -1294,15 +1298,9 @@ func gcBgMarkWorker() {
 
 		// Account for time.
 		duration := nanotime() - startTime
-		switch pp.gcMarkWorkerMode {
-		case gcMarkWorkerDedicatedMode:
-			atomic.Xaddint64(&gcController.dedicatedMarkTime, duration)
-			atomic.Xaddint64(&gcController.dedicatedMarkWorkersNeeded, 1)
-		case gcMarkWorkerFractionalMode:
-			atomic.Xaddint64(&gcController.fractionalMarkTime, duration)
+		gcController.logWorkTime(pp.gcMarkWorkerMode, duration)
+		if pp.gcMarkWorkerMode == gcMarkWorkerFractionalMode {
 			atomic.Xaddint64(&pp.gcFractionalMarkTime, duration)
-		case gcMarkWorkerIdleMode:
-			atomic.Xaddint64(&gcController.idleMarkTime, duration)
 		}
 
 		// Was this the last worker and did we run out
@@ -1324,7 +1322,7 @@ func gcBgMarkWorker() {
 		// point, signal the main GC goroutine.
 		if incnwait == work.nproc && !gcMarkWorkAvailable(nil) {
 			// We don't need the P-local buffers here, allow
-			// preemption becuse we may schedule like a regular
+			// preemption because we may schedule like a regular
 			// goroutine in gcMarkDone (block on locks, etc).
 			releasem(node.m.ptr())
 			node.m.set(nil)
@@ -1378,6 +1376,11 @@ func gcMark(startTime int64) {
 		throw("work.full != 0")
 	}
 
+	// Drop allg snapshot. allgs may have grown, in which case
+	// this is the only reference to the old backing store and
+	// there's no need to keep it around.
+	work.stackRoots = nil
+
 	// Clear out buffers and double-check that all gcWork caches
 	// are empty. This should be ensured by gcMarkDone before we
 	// enter mark termination.
@@ -1422,30 +1425,22 @@ func gcMark(startTime int64) {
 		gcw.dispose()
 	}
 
-	// Update the marked heap stat.
-	gcController.heapMarked = work.bytesMarked
-
 	// Flush scanAlloc from each mcache since we're about to modify
 	// heapScan directly. If we were to flush this later, then scanAlloc
 	// might have incorrect information.
+	//
+	// Note that it's not important to retain this information; we know
+	// exactly what heapScan is at this point via scanWork.
 	for _, p := range allp {
 		c := p.mcache
 		if c == nil {
 			continue
 		}
-		gcController.heapScan += uint64(c.scanAlloc)
 		c.scanAlloc = 0
 	}
 
-	// Update other GC heap size stats. This must happen after
-	// cachestats (which flushes local statistics to these) and
-	// flushallmcaches (which modifies gcController.heapLive).
-	gcController.heapLive = work.bytesMarked
-	gcController.heapScan = uint64(gcController.scanWork)
-
-	if trace.enabled {
-		traceHeapAlloc()
-	}
+	// Reset controller state.
+	gcController.resetLive(work.bytesMarked)
 }
 
 // gcSweep must be called on the system stack because it acquires the heap
@@ -1463,11 +1458,11 @@ func gcSweep(mode gcMode) {
 
 	lock(&mheap_.lock)
 	mheap_.sweepgen += 2
-	mheap_.sweepDrained = 0
-	mheap_.pagesSwept = 0
+	sweep.active.reset()
+	mheap_.pagesSwept.Store(0)
 	mheap_.sweepArenas = mheap_.allArenas
-	mheap_.reclaimIndex = 0
-	mheap_.reclaimCredit = 0
+	mheap_.reclaimIndex.Store(0)
+	mheap_.reclaimCredit.Store(0)
 	unlock(&mheap_.lock)
 
 	sweep.centralIndex.clear()
@@ -1565,7 +1560,7 @@ func clearpools() {
 	sched.sudogcache = nil
 	unlock(&sched.sudoglock)
 
-	// Clear central defer pools.
+	// Clear central defer pool.
 	// Leave per-P pools alone, they have strictly bounded size.
 	lock(&sched.deferlock)
 	// disconnect cached list before dropping it on the floor,

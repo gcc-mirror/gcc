@@ -190,25 +190,25 @@ search_imported_binding_slot (tree *slot, unsigned ix)
 static void
 init_global_partition (binding_cluster *cluster, tree decl)
 {
-  bool purview = true;
+  bool named = true;
 
   if (header_module_p ())
-    purview = false;
+    named = false;
   else if (TREE_PUBLIC (decl)
 	   && TREE_CODE (decl) == NAMESPACE_DECL
 	   && !DECL_NAMESPACE_ALIAS (decl))
-    purview = false;
+    named = false;
   else if (!get_originating_module (decl))
-    purview = false;
+    named = false;
 
   binding_slot *mslot;
-  if (!purview)
-    mslot = &cluster[0].slots[BINDING_SLOT_GLOBAL];
-  else
+  if (named)
     mslot = &cluster[BINDING_SLOT_PARTITION
 		     / BINDING_VECTOR_SLOTS_PER_CLUSTER]
       .slots[BINDING_SLOT_PARTITION
 	     % BINDING_VECTOR_SLOTS_PER_CLUSTER];
+  else
+    mslot = &cluster[0].slots[BINDING_SLOT_GLOBAL];
 
   if (*mslot)
     decl = ovl_make (decl, *mslot);
@@ -248,7 +248,7 @@ get_fixed_binding_slot (tree *slot, tree name, unsigned ix, int create)
       if (!create)
 	return NULL;
 
-      /* The partition slot is only needed when we know we're a named
+      /* The partition slot is only needed when we're a named
 	 module.  */
       bool partition_slot = named_module_p ();
       unsigned want = ((BINDING_SLOTS_FIXED + partition_slot + (create < 0)
@@ -429,7 +429,7 @@ class name_lookup
 {
 public:
   typedef std::pair<tree, tree> using_pair;
-  typedef vec<using_pair, va_heap, vl_embed> using_queue;
+  typedef auto_vec<using_pair, 16> using_queue;
 
 public:
   tree name;	/* The identifier being looked for.  */
@@ -528,16 +528,8 @@ private:
   bool search_usings (tree scope);
 
 private:
-  using_queue *queue_namespace (using_queue *queue, int depth, tree scope);
-  using_queue *do_queue_usings (using_queue *queue, int depth,
-				vec<tree, va_gc> *usings);
-  using_queue *queue_usings (using_queue *queue, int depth,
-			     vec<tree, va_gc> *usings)
-  {
-    if (usings)
-      queue = do_queue_usings (queue, depth, usings);
-    return queue;
-  }
+  void queue_namespace (using_queue& queue, int depth, tree scope);
+  void queue_usings (using_queue& queue, int depth, vec<tree, va_gc> *usings);
 
 private:
   void add_fns (tree);
@@ -1084,39 +1076,35 @@ name_lookup::search_qualified (tree scope, bool usings)
 /* Add SCOPE to the unqualified search queue, recursively add its
    inlines and those via using directives.  */
 
-name_lookup::using_queue *
-name_lookup::queue_namespace (using_queue *queue, int depth, tree scope)
+void
+name_lookup::queue_namespace (using_queue& queue, int depth, tree scope)
 {
   if (see_and_mark (scope))
-    return queue;
+    return;
 
   /* Record it.  */
   tree common = scope;
   while (SCOPE_DEPTH (common) > depth)
     common = CP_DECL_CONTEXT (common);
-  vec_safe_push (queue, using_pair (common, scope));
+  queue.safe_push (using_pair (common, scope));
 
   /* Queue its inline children.  */
   if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
     for (unsigned ix = inlinees->length (); ix--;)
-      queue = queue_namespace (queue, depth, (*inlinees)[ix]);
+      queue_namespace (queue, depth, (*inlinees)[ix]);
 
   /* Queue its using targets.  */
-  queue = queue_usings (queue, depth, NAMESPACE_LEVEL (scope)->using_directives);
-
-  return queue;
+  queue_usings (queue, depth, NAMESPACE_LEVEL (scope)->using_directives);
 }
 
 /* Add the namespaces in USINGS to the unqualified search queue.  */
 
-name_lookup::using_queue *
-name_lookup::do_queue_usings (using_queue *queue, int depth,
-			      vec<tree, va_gc> *usings)
+void
+name_lookup::queue_usings (using_queue& queue, int depth, vec<tree, va_gc> *usings)
 {
-  for (unsigned ix = usings->length (); ix--;)
-    queue = queue_namespace (queue, depth, (*usings)[ix]);
-
-  return queue;
+  if (usings)
+    for (unsigned ix = usings->length (); ix--;)
+      queue_namespace (queue, depth, (*usings)[ix]);
 }
 
 /* Unqualified namespace lookup in SCOPE.
@@ -1128,15 +1116,12 @@ name_lookup::do_queue_usings (using_queue *queue, int depth,
 bool
 name_lookup::search_unqualified (tree scope, cp_binding_level *level)
 {
-  /* Make static to avoid continual reallocation.  We're not
-     recursive.  */
-  static using_queue *queue = NULL;
+  using_queue queue;
   bool found = false;
-  int length = vec_safe_length (queue);
 
   /* Queue local using-directives.  */
   for (; level->kind != sk_namespace; level = level->level_chain)
-    queue = queue_usings (queue, SCOPE_DEPTH (scope), level->using_directives);
+    queue_usings (queue, SCOPE_DEPTH (scope), level->using_directives);
 
   for (; !found; scope = CP_DECL_CONTEXT (scope))
     {
@@ -1144,19 +1129,19 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
       int depth = SCOPE_DEPTH (scope);
 
       /* Queue namespaces reachable from SCOPE. */
-      queue = queue_namespace (queue, depth, scope);
+      queue_namespace (queue, depth, scope);
 
       /* Search every queued namespace where SCOPE is the common
 	 ancestor.  Adjust the others.  */
-      unsigned ix = length;
+      unsigned ix = 0;
       do
 	{
-	  using_pair &pair = (*queue)[ix];
+	  using_pair &pair = queue[ix];
 	  while (pair.first == scope)
 	    {
 	      found |= search_namespace_only (pair.second);
-	      pair = queue->pop ();
-	      if (ix == queue->length ())
+	      pair = queue.pop ();
+	      if (ix == queue.length ())
 		goto done;
 	    }
 	  /* The depth is the same as SCOPE, find the parent scope.  */
@@ -1164,7 +1149,7 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
 	    pair.first = CP_DECL_CONTEXT (pair.first);
 	  ix++;
 	}
-      while (ix < queue->length ());
+      while (ix < queue.length ());
     done:;
       if (scope == global_namespace)
 	break;
@@ -1180,9 +1165,6 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
     }
 
   dedup (false);
-
-  /* Restore to incoming length.  */
-  vec_safe_truncate (queue, length);
 
   return found;
 }
@@ -1715,7 +1697,6 @@ static void consider_binding_level (tree name,
 				    cp_binding_level *lvl,
 				    bool look_within_fields,
 				    enum lookup_name_fuzzy_kind kind);
-static void diagnose_name_conflict (tree, tree);
 
 /* ADL lookup of NAME.  FNS is the result of regular lookup, and we
    don't add duplicates to it.  ARGS is the vector of call
@@ -2711,9 +2692,13 @@ supplement_binding (cxx_binding *binding, tree decl)
   return ok;
 }
 
-/* Diagnose a name conflict between DECL and BVAL.  */
+/* Diagnose a name conflict between DECL and BVAL.
 
-static void
+   This is non-static so maybe_push_used_methods can use it and avoid changing
+   the diagnostic for inherit/using4.C; otherwise it should not be used from
+   outside this file.  */
+
+void
 diagnose_name_conflict (tree decl, tree bval)
 {
   if (TREE_CODE (decl) == TREE_CODE (bval)
@@ -3246,6 +3231,10 @@ check_local_shadow (tree decl)
       enum opt_code warning_code;
       if (warn_shadow)
 	warning_code = OPT_Wshadow;
+      else if ((TREE_CODE (decl) == TYPE_DECL)
+	       ^ (TREE_CODE (old) == TYPE_DECL))
+	/* If exactly one is a type, they aren't compatible.  */
+	warning_code = OPT_Wshadow_local;
       else if ((TREE_TYPE (old)
 		&& TREE_TYPE (decl)
 		&& same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
@@ -3296,18 +3285,22 @@ check_local_shadow (tree decl)
 
 	/* Warn if a variable shadows a non-function, or the variable
 	   is a function or a pointer-to-function.  */
-	if (!OVL_P (member)
-	    || TREE_CODE (decl) == FUNCTION_DECL
-	    || (TREE_TYPE (decl)
-		&& (TYPE_PTRFN_P (TREE_TYPE (decl))
-		    || TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))))
+	if ((!OVL_P (member)
+	     || TREE_CODE (decl) == FUNCTION_DECL
+	     || (TREE_TYPE (decl)
+		 && (TYPE_PTRFN_P (TREE_TYPE (decl))
+		     || TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))))
+	    && !warning_suppressed_p (decl, OPT_Wshadow))
 	  {
 	    auto_diagnostic_group d;
 	    if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wshadow,
 			    "declaration of %qD shadows a member of %qT",
 			    decl, current_nonlambda_class_type ())
 		&& DECL_P (member))
-	      inform_shadowed (member);
+	      {
+		inform_shadowed (member);
+		suppress_warning (decl, OPT_Wshadow);
+	      }
 	  }
 	return;
       }
@@ -3319,14 +3312,18 @@ check_local_shadow (tree decl)
 	  || (TREE_CODE (old) == TYPE_DECL
 	      && (!DECL_ARTIFICIAL (old)
 		  || TREE_CODE (decl) == TYPE_DECL)))
-      && !instantiating_current_function_p ())
+      && !instantiating_current_function_p ()
+      && !warning_suppressed_p (decl, OPT_Wshadow))
     /* XXX shadow warnings in outer-more namespaces */
     {
       auto_diagnostic_group d;
       if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wshadow,
 		      "declaration of %qD shadows a global declaration",
 		      decl))
-	inform_shadowed (old);
+	{
+	  inform_shadowed (old);
+	  suppress_warning (decl, OPT_Wshadow);
+	}
       return;
     }
 
@@ -3465,6 +3462,9 @@ push_local_extern_decl_alias (tree decl)
 	      && CP_DECL_THREAD_LOCAL_P (decl)
 	      && alias != error_mark_node)
 	    set_decl_tls_model (alias, DECL_TLS_MODEL (decl));
+
+	  /* Adjust visibility.  */
+	  determine_visibility (alias);
 	}
     }
 
@@ -3472,9 +3472,9 @@ push_local_extern_decl_alias (tree decl)
   DECL_LOCAL_DECL_ALIAS (decl) = alias;
 }
 
-/* DECL is a global or module-purview entity.  If it has non-internal
-   linkage, and we have a module vector, record it in the appropriate
-   slot.  We have already checked for duplicates.  */
+/* If DECL has non-internal linkage, and we have a module vector,
+   record it in the appropriate slot.  We have already checked for
+   duplicates.  */
 
 static void
 maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
@@ -3493,11 +3493,13 @@ maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
     /* Internal linkage.  */
     return;
 
-  bool partition = named_module_p ();
+  bool is_attached = (DECL_LANG_SPECIFIC (not_tmpl)
+		      && DECL_MODULE_ATTACH_P (not_tmpl));
   tree *gslot = get_fixed_binding_slot
-    (slot, name, partition ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL, true);
+    (slot, name, is_attached ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL,
+     true);
 
-  if (!partition)
+  if (!is_attached)
     {
       binding_slot &orig
 	= BINDING_VECTOR_CLUSTER (*slot, 0).slots[BINDING_SLOT_CURRENT];
@@ -3826,7 +3828,7 @@ pushdecl (tree decl, bool hiding)
 
 	  if (level->kind == sk_namespace
 	      && TREE_PUBLIC (level->this_entity)
-	      && !not_module_p ())
+	      && module_p ())
 	    maybe_record_mergeable_decl (slot, name, decl);
 	}
     }
@@ -3841,11 +3843,12 @@ pushdecl (tree decl, bool hiding)
    GMF slot or a module-specific one.  */
 
 tree *
-mergeable_namespace_slots (tree ns, tree name, bool is_global, tree *vec)
+mergeable_namespace_slots (tree ns, tree name, bool is_attached, tree *vec)
 {
   tree *mslot = find_namespace_slot (ns, name, true);
   tree *vslot = get_fixed_binding_slot
-    (mslot, name, is_global ? BINDING_SLOT_GLOBAL : BINDING_SLOT_PARTITION, true);
+    (mslot, name, is_attached ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL,
+     true);
 
   gcc_checking_assert (TREE_CODE (*mslot) == BINDING_VECTOR);
   *vec = *mslot;
@@ -4832,10 +4835,10 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	  if (exporting)
 	    {
 	      /* If the using decl is exported, the things it refers
-		 to must also be exported (or not in module purview).  */
+		 to must also be exported (or not habve module attachment).  */
 	      if (!DECL_MODULE_EXPORT_P (new_fn)
 		  && (DECL_LANG_SPECIFIC (new_fn)
-		      && DECL_MODULE_PURVIEW_P (new_fn)))
+		      && DECL_MODULE_ATTACH_P (new_fn)))
 		{
 		  error ("%q#D does not have external linkage", new_fn);
 		  inform (DECL_SOURCE_LOCATION (new_fn),
@@ -5472,13 +5475,18 @@ push_class_level_binding (tree name, tree x)
 	       && DECL_DEPENDENT_P (bval))
 	return true;
       else if (TREE_CODE (decl) == USING_DECL
+	       && DECL_DEPENDENT_P (decl)
 	       && OVL_P (target_bval))
+	/* The new dependent using beats an old overload.  */
 	old_decl = bval;
       else if (TREE_CODE (bval) == USING_DECL
+	       && DECL_DEPENDENT_P (bval)
 	       && OVL_P (target_decl))
-	old_decl = bval;
+	/* The old dependent using beats a new overload.  */
+	return true;
       else if (OVL_P (target_decl)
 	       && OVL_P (target_bval))
+	/* The new overload set contains the old one.  */
 	old_decl = bval;
 
       if (old_decl && binding->scope == class_binding_level)
@@ -5648,6 +5656,21 @@ lookup_using_decl (tree scope, name_lookup &lookup)
       if (!dependent_p)
 	lookup.value = lookup_member (binfo, lookup.name, /*protect=*/2,
 				      /*want_type=*/false, tf_none);
+
+      /* If the lookup in the base contains a dependent using, this
+	 using is also dependent.  */
+      if (!dependent_p && lookup.value && dependent_type_p (scope))
+	{
+	  tree val = lookup.value;
+	  if (tree fns = maybe_get_fns (val))
+	    val = fns;
+	  for (tree f: lkp_range (val))
+	    if (TREE_CODE (f) == USING_DECL && DECL_DEPENDENT_P (f))
+	      {
+		dependent_p = true;
+		break;
+	      }
+	}
 
       if (!depscope && b_kind < bk_proper_base)
 	{
@@ -5878,6 +5901,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 
   tree found = NULL_TREE;
   bool hidden_p = false;
+  bool saw_template = false;
 
   for (lkp_iterator iter (old); iter; ++iter)
     {
@@ -5902,6 +5926,20 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 	  found = ofn;
 	  hidden_p = iter.hidden_p ();
 	}
+      else if (TREE_CODE (decl) == FUNCTION_DECL
+	       && TREE_CODE (ofn) == TEMPLATE_DECL)
+	saw_template = true;
+    }
+
+  if (!found && friendp && saw_template)
+    {
+      /* "[if no non-template match is found,] each remaining function template
+	 is replaced with the specialization chosen by deduction from the
+	 friend declaration or discarded if deduction fails."
+
+	 So tell check_explicit_specialization to look for a match.  */
+      SET_DECL_IMPLICIT_INSTANTIATION (decl);
+      return;
     }
 
   if (found)
@@ -6880,7 +6918,7 @@ get_std_name_hint (const char *name)
     /* <vector>.  */
     {"vector", "<vector>", cxx98},
   };
-  const size_t num_hints = sizeof (hints) / sizeof (hints[0]);
+  const size_t num_hints = ARRAY_SIZE (hints);
   for (size_t i = 0; i < num_hints; i++)
     {
       if (strcmp (name, hints[i].name) == 0)
@@ -7591,6 +7629,10 @@ outer_binding (tree name,
 		/* Thread this new class-scope binding onto the
 		   IDENTIFIER_BINDING list so that future lookups
 		   find it quickly.  */
+		if (BASELINK_P (class_binding->value))
+		  /* Don't put a BASELINK in IDENTIFIER_BINDING.  */
+		  class_binding->value
+		    = BASELINK_FUNCTIONS (class_binding->value);
 		class_binding->previous = outer;
 		if (binding)
 		  binding->previous = class_binding;
@@ -8940,5 +8982,23 @@ cp_emit_debug_info_for_using (tree t, tree context)
 					      false, false);
     }
 }
+
+/* True if D is a local declaration in dependent scope.  Assumes that it is
+   (part of) the current lookup result for its name.  */
+
+bool
+dependent_local_decl_p (tree d)
+{
+  if (!DECL_LOCAL_DECL_P (d))
+    return false;
+
+  cxx_binding *b = IDENTIFIER_BINDING (DECL_NAME (d));
+  cp_binding_level *l = b->scope;
+  while (!l->this_entity)
+    l = l->level_chain;
+  return uses_template_parms (l->this_entity);
+}
+
+
 
 #include "gt-cp-name-lookup.h"

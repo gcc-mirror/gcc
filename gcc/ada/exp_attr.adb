@@ -26,6 +26,7 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
+with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -888,6 +889,11 @@ package body Exp_Attr is
          --  special stream-processing operations for that type (for example
          --  Unbounded_String and its wide varieties).
 
+         --  We don't install the package either if array type and element
+         --  type come from the same package, and the original array type is
+         --  private, because in this case the underlying type Arr is
+         --  itself a full view, which carries the full view of the component.
+
          Scop := Scope (C_Type);
 
          if Is_Private_Type (C_Type)
@@ -896,7 +902,15 @@ package body Exp_Attr is
            and then Ekind (Scop) = E_Package
            and then No (Get_Stream_Convert_Pragma (C_Type))
          then
-            Install := True;
+            if Scope (Arr) = Scope (C_Type)
+              and then Is_Private_Type (Etype (Prefix (N)))
+              and then Full_View (Etype (Prefix (N))) = Arr
+            then
+               null;
+
+            else
+               Install := True;
+            end if;
          end if;
       end if;
 
@@ -1779,23 +1793,30 @@ package body Exp_Attr is
          Push_Scope (Scope (Loop_Id));
       end if;
 
-      --  The analysis of the conditional block takes care of the constant
-      --  declaration.
+      --  Analyze constant declaration with simple value propagation disabled,
+      --  because the values at the loop entry might be different than the
+      --  values at the occurrence of Loop_Entry attribute.
 
-      if Present (Result) then
-         Rewrite (Loop_Stmt, Result);
-         Analyze (Loop_Stmt);
+      declare
+         Save_Debug_Flag_MM : constant Boolean := Debug_Flag_MM;
+      begin
+         Debug_Flag_MM := True;
 
-      --  The conditional block was analyzed when a previous 'Loop_Entry was
-      --  expanded. There is no point in reanalyzing the block, simply analyze
-      --  the declaration of the constant.
-
-      else
          if Present (Aux_Decl) then
             Analyze (Aux_Decl);
          end if;
 
          Analyze (Temp_Decl);
+
+         Debug_Flag_MM := Save_Debug_Flag_MM;
+      end;
+
+      --  If the conditional block has just been created, then analyze it;
+      --  otherwise it was analyzed when a previous 'Loop_Entry was expanded.
+
+      if Present (Result) then
+         Rewrite (Loop_Stmt, Result);
+         Analyze (Loop_Stmt);
       end if;
 
       Rewrite (N, New_Occurrence_Of (Temp_Id, Loc));
@@ -2087,11 +2108,85 @@ package body Exp_Attr is
             Ref_Object : constant Node_Id := Get_Referenced_Object (Pref);
             Btyp_DDT   : Entity_Id;
 
+            procedure Add_Implicit_Interface_Type_Conversion;
+            --  Ada 2005 (AI-251): The designated type is an interface type;
+            --  add an implicit type conversion to force the displacement of
+            --  the pointer to reference the secondary dispatch table.
+
             function Enclosing_Object (N : Node_Id) return Node_Id;
             --  If N denotes a compound name (selected component, indexed
             --  component, or slice), returns the name of the outermost such
             --  enclosing object. Otherwise returns N. If the object is a
             --  renaming, then the renamed object is returned.
+
+            --------------------------------------------
+            -- Add_Implicit_Interface_Type_Conversion --
+            --------------------------------------------
+
+            procedure Add_Implicit_Interface_Type_Conversion is
+            begin
+               pragma Assert (Is_Interface (Btyp_DDT));
+
+               --  Handle cases were no action is required.
+
+               if not Comes_From_Source (N)
+                 and then not Comes_From_Source (Ref_Object)
+                 and then (Nkind (Ref_Object) not in N_Has_Chars
+                             or else Chars (Ref_Object) /= Name_uInit)
+               then
+                  return;
+               end if;
+
+               --  Common case
+
+               if Nkind (Ref_Object) /= N_Explicit_Dereference then
+
+                  --  No implicit conversion required if types match, or if
+                  --  the prefix is the class_wide_type of the interface. In
+                  --  either case passing an object of the interface type has
+                  --  already set the pointer correctly.
+
+                  if Btyp_DDT = Etype (Ref_Object)
+                    or else
+                      (Is_Class_Wide_Type (Etype (Ref_Object))
+                         and then
+                       Class_Wide_Type (Btyp_DDT) = Etype (Ref_Object))
+                  then
+                     null;
+
+                  else
+                     Rewrite (Prefix (N),
+                       Convert_To (Btyp_DDT,
+                         New_Copy_Tree (Prefix (N))));
+
+                     Analyze_And_Resolve (Prefix (N), Btyp_DDT);
+                  end if;
+
+               --  When the object is an explicit dereference, convert the
+               --  dereference's prefix.
+
+               else
+                  declare
+                     Obj_DDT : constant Entity_Id :=
+                                 Base_Type
+                                   (Directly_Designated_Type
+                                     (Etype (Prefix (Ref_Object))));
+                  begin
+                     --  No implicit conversion required if designated types
+                     --  match.
+
+                     if Obj_DDT /= Btyp_DDT
+                       and then not (Is_Class_Wide_Type (Obj_DDT)
+                                      and then Etype (Obj_DDT) = Btyp_DDT)
+                     then
+                        Rewrite (N,
+                          Convert_To (Typ,
+                            New_Copy_Tree (Prefix (Ref_Object))));
+                        Analyze_And_Resolve (N, Typ);
+                     end if;
+                  end;
+               end if;
+            end Add_Implicit_Interface_Type_Conversion;
 
             ----------------------
             -- Enclosing_Object --
@@ -2377,62 +2472,20 @@ package body Exp_Attr is
             then
                Apply_Accessibility_Check (Prefix (Enc_Object), Typ, N);
 
+               --  Ada 2005 (AI-251): If the designated type is an interface we
+               --  add an implicit conversion to force the displacement of the
+               --  pointer to reference the secondary dispatch table.
+
+               if Is_Interface (Btyp_DDT) then
+                  Add_Implicit_Interface_Type_Conversion;
+               end if;
+
             --  Ada 2005 (AI-251): If the designated type is an interface we
             --  add an implicit conversion to force the displacement of the
             --  pointer to reference the secondary dispatch table.
 
-            elsif Is_Interface (Btyp_DDT)
-              and then (Comes_From_Source (N)
-                         or else Comes_From_Source (Ref_Object)
-                         or else (Nkind (Ref_Object) in N_Has_Chars
-                                   and then Chars (Ref_Object) = Name_uInit))
-            then
-               if Nkind (Ref_Object) /= N_Explicit_Dereference then
-
-                  --  No implicit conversion required if types match, or if
-                  --  the prefix is the class_wide_type of the interface. In
-                  --  either case passing an object of the interface type has
-                  --  already set the pointer correctly.
-
-                  if Btyp_DDT = Etype (Ref_Object)
-                    or else (Is_Class_Wide_Type (Etype (Ref_Object))
-                              and then
-                               Class_Wide_Type (Btyp_DDT) = Etype (Ref_Object))
-                  then
-                     null;
-
-                  else
-                     Rewrite (Prefix (N),
-                       Convert_To (Btyp_DDT,
-                         New_Copy_Tree (Prefix (N))));
-
-                     Analyze_And_Resolve (Prefix (N), Btyp_DDT);
-                  end if;
-
-               --  When the object is an explicit dereference, convert the
-               --  dereference's prefix.
-
-               else
-                  declare
-                     Obj_DDT : constant Entity_Id :=
-                                 Base_Type
-                                   (Directly_Designated_Type
-                                     (Etype (Prefix (Ref_Object))));
-                  begin
-                     --  No implicit conversion required if designated types
-                     --  match.
-
-                     if Obj_DDT /= Btyp_DDT
-                       and then not (Is_Class_Wide_Type (Obj_DDT)
-                                      and then Etype (Obj_DDT) = Btyp_DDT)
-                     then
-                        Rewrite (N,
-                          Convert_To (Typ,
-                            New_Copy_Tree (Prefix (Ref_Object))));
-                        Analyze_And_Resolve (N, Typ);
-                     end if;
-                  end;
-               end if;
+            elsif Is_Interface (Btyp_DDT) then
+               Add_Implicit_Interface_Type_Conversion;
             end if;
          end Access_Cases;
 
@@ -2530,6 +2583,28 @@ package body Exp_Attr is
                Analyze_And_Resolve (N, Addr);
             end;
 
+         --  'Address is an actual parameter of the call to the implicit
+         --  subprogram To_Pointer instantiated with a class-wide interface
+         --  type; its expansion requires adding an implicit type conversion
+         --  to force displacement of the "this" pointer.
+
+         elsif Tagged_Type_Expansion
+           and then Nkind (Parent (N)) = N_Function_Call
+           and then Nkind (Name (Parent (N))) in N_Has_Entity
+           and then Is_Intrinsic_Subprogram (Entity (Name (Parent (N))))
+           and then Chars (Entity (Name (Parent (N)))) = Name_To_Pointer
+           and then Is_Interface (Designated_Type (Etype (Parent (N))))
+           and then Is_Class_Wide_Type (Designated_Type (Etype (Parent (N))))
+         then
+            declare
+               Iface_Typ : constant Entity_Id :=
+                             Designated_Type (Etype (Parent (N)));
+            begin
+               Rewrite (Pref, Convert_To (Iface_Typ, Relocate_Node (Pref)));
+               Analyze_And_Resolve (Pref, Iface_Typ);
+               return;
+            end;
+
          --  Ada 2005 (AI-251): Class-wide interface objects are always
          --  "displaced" to reference the tag associated with the interface
          --  type. In order to obtain the real address of such objects we
@@ -2541,9 +2616,9 @@ package body Exp_Attr is
          --  of nested subprograms), since the address needs to be assigned
          --  as-is to such components.
 
-         elsif Is_Class_Wide_Type (Ptyp)
+         elsif Tagged_Type_Expansion
+           and then Is_Class_Wide_Type (Ptyp)
            and then Is_Interface (Underlying_Type (Ptyp))
-           and then Tagged_Type_Expansion
            and then not (Nkind (Pref) in N_Has_Entity
                           and then Is_Subprogram (Entity (Pref)))
            and then not Is_Unnested_Component_Init (N)
@@ -2551,8 +2626,7 @@ package body Exp_Attr is
             Rewrite (N,
               Make_Function_Call (Loc,
                 Name => New_Occurrence_Of (RTE (RE_Base_Address), Loc),
-                Parameter_Associations => New_List (
-                  Relocate_Node (N))));
+                Parameter_Associations => New_List (Relocate_Node (N))));
             Analyze (N);
             return;
          end if;
@@ -3952,6 +4026,24 @@ package body Exp_Attr is
 
       when Attribute_Img =>
          Exp_Imgv.Expand_Image_Attribute (N);
+
+      -----------
+      -- Index --
+      -----------
+
+      --  Transforms 'Index attribute into a reference to the second formal of
+      --  the wrapper built for an entry family that has contract cases (see
+      --  Exp_Ch9.Build_Contract_Wrapper).
+
+      when Attribute_Index => Index : declare
+         Entry_Id  : constant Entity_Id := Entity (Pref);
+         Entry_Idx : constant Entity_Id :=
+                       Next_Entity
+                         (First_Entity (Contract_Wrapper (Entry_Id)));
+      begin
+         Rewrite (N, New_Occurrence_Of (Entry_Idx, Loc));
+         Analyze_And_Resolve (N, Typ);
+      end Index;
 
       -----------------
       -- Initialized --
@@ -6691,7 +6783,21 @@ package body Exp_Attr is
             Prefix_Is_Type := False;
          end if;
 
-         if Is_Class_Wide_Type (Ttyp) then
+         --  In the case of a class-wide equivalent type without a parent,
+         --  the _Tag component has been built in Make_CW_Equivalent_Type
+         --  manually and must be referenced directly.
+
+         if Ekind (Ttyp) = E_Class_Wide_Subtype
+           and then Present (Equivalent_Type (Ttyp))
+           and then No (Parent_Subtype (Equivalent_Type (Ttyp)))
+         then
+            Ttyp := Equivalent_Type (Ttyp);
+
+         --  In all the other cases of class-wide type, including an equivalent
+         --  type with a parent, the _Tag component ultimately present is that
+         --  of the root type.
+
+         elsif Is_Class_Wide_Type (Ttyp) then
             Ttyp := Root_Type (Ttyp);
          end if;
 
@@ -7254,7 +7360,11 @@ package body Exp_Attr is
                       New_Occurrence_Of (Standard_False, Loc))),
                 Right_Opnd => Make_Integer_Literal (Loc, 0));
 
-            if Ptyp /= PBtyp
+            --  Skip the range test for boolean types, as it buys us
+            --  nothing. The function called above already fails for
+            --  values different from both True and False.
+
+            if Ptyp /= PBtyp and then not Is_Boolean_Type (PBtyp)
               and then
                 (Type_Low_Bound (Ptyp) /= Type_Low_Bound (PBtyp)
                   or else

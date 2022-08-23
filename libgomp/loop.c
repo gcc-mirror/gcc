@@ -270,8 +270,11 @@ GOMP_loop_start (long start, long end, long incr, long sched,
 #define INLINE_ORDERED_TEAM_IDS_OFF \
   ((offsetof (struct gomp_work_share, inline_ordered_team_ids)		\
     + __alignof__ (long long) - 1) & ~(__alignof__ (long long) - 1))
-	  if (size > (sizeof (struct gomp_work_share)
-		      - INLINE_ORDERED_TEAM_IDS_OFF))
+	  if (sizeof (struct gomp_work_share)
+	      <= INLINE_ORDERED_TEAM_IDS_OFF
+	      || __alignof__ (struct gomp_work_share) < __alignof__ (long long)
+	      || size > (sizeof (struct gomp_work_share)
+			- INLINE_ORDERED_TEAM_IDS_OFF))
 	    *mem
 	      = (void *) (thr->ts.work_share->ordered_team_ids
 			  = gomp_malloc_cleared (size));

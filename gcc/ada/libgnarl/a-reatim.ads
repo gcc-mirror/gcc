@@ -41,6 +41,7 @@ package Ada.Real_Time with
   Abstract_State => (Clock_Time with Synchronous),
   Initializes    => Clock_Time
 is
+   pragma Annotate (GNATprove, Always_Return, Real_Time);
 
    pragma Compile_Time_Error
      (Duration'Size /= 64,

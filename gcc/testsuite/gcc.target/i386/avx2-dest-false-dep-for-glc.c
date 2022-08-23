@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx2 -mtune=generic -mtune-ctrl=dest_false_dep_for_glc -O2" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 
 
 #include <immintrin.h>

@@ -160,19 +160,13 @@ darwin_find_version_from_kernel (void)
     goto parse_failed;
 
   /* Darwin20 sees a transition to macOS 11.  In this, it seems that the
-     mapping to macOS minor version is now shifted to the kernel minor
-     version - 1 (at least for the initial releases).  */
+     mapping to macOS minor version and patch level is now always 0, 0
+     (at least for macOS 11 and 12).  */
   if (major_vers >= 20)
     {
-      int minor_vers = *version_p++ - '0';
-      if (ISDIGIT (*version_p))
-	minor_vers = minor_vers * 10 + (*version_p++ - '0');
-      if (*version_p++ != '.')
-	goto parse_failed;
-      if (minor_vers > 0)
-	minor_vers -= 1; /* Kernel 20.3 => macOS 11.2.  */
-      /* It's not yet clear whether patch level will be considered.  */
-      asprintf (&new_flag, "%d.%02d.00", major_vers - 9, minor_vers);
+      /* Apple clang doesn't include the minor version or the patch level
+	 in the object file, nor does it pass it to ld  */
+      asprintf (&new_flag, "%d.00.00", major_vers - 9);
     }
   else if (major_vers - 4 <= 4)
     /* On 10.4 and earlier, the old linker is used which does not

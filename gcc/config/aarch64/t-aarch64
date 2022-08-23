@@ -30,9 +30,21 @@ s-aarch64-tune-md: $(srcdir)/config/aarch64/gentune.sh \
 	$(SHELL) $(srcdir)/config/aarch64/gentune.sh \
 		$(srcdir)/config/aarch64/aarch64-cores.def > \
 		tmp-aarch64-tune.md
+ifneq ($(strip $(ENABLE_MAINTAINER_RULES)),)
 	$(SHELL) $(srcdir)/../move-if-change tmp-aarch64-tune.md \
 		$(srcdir)/config/aarch64/aarch64-tune.md
+else
+	@if ! cmp -s tmp-aarch64-tune.md \
+	  $(srcdir)/config/aarch64/aarch64-tune.md; then \
+	  echo "aarch64-tune.md has changed; either"; \
+	  echo "configure with --enable-maintainer-mode"; \
+	  echo "or copy tmp-aarch64-tune.md to $(srcdir)/config/aarch64/aarch64-tune.md"; \
+	  exit 1; \
+	fi
+endif
 	$(STAMP) s-aarch64-tune-md
+
+s-mddeps: s-aarch64-tune-md
 
 aarch64-builtins.o: $(srcdir)/config/aarch64/aarch64-builtins.cc $(CONFIG_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) \

@@ -65,20 +65,9 @@ void testNewScope()
 
 /***************** DeleteExp *******************/
 
-/*
-TEST_OUTPUT:
----
-compilable/vgc1.d(81): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-compilable/vgc1.d(81): vgc: `delete` requires the GC
-compilable/vgc1.d(82): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-compilable/vgc1.d(82): vgc: `delete` requires the GC
-compilable/vgc1.d(83): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-compilable/vgc1.d(83): vgc: `delete` requires the GC
----
-*/
 void testDelete(int* p, Object o, S1* s)
 {
-    delete p;
-    delete o;
-    delete s;
+    destroy(p);
+    destroy(o);
+    destroy(s);
 }

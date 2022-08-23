@@ -17,10 +17,11 @@ program main
 
   call setup(a, b)
 
-  !$acc serial loop copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-message "optimized: assigned OpenACC gang vector loop parallelism" }
-  ! { dg-bogus "\[Ww\]arning: region contains gang partitioned code but is not gang partitioned" "TODO 'serial'" { xfail *-*-* } .-1 }
-  ! { dg-bogus "\[Ww\]arning: region contains worker partitioned code but is not worker partitioned" "" { target *-*-* } .-2 }
-  ! { dg-bogus "\[Ww\]arning: region contains vector partitioned code but is not vector partitioned" "TODO 'serial'" { xfail *-*-* } .-3 }
+  !$acc serial loop copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-line l_compute_loop_i1 }
+  ! { dg-bogus "\[Ww\]arning: region contains gang partitioned code but is not gang partitioned" "TODO 'serial'" { xfail *-*-* } l_compute_loop_i1 }
+  ! { dg-bogus "\[Ww\]arning: region contains worker partitioned code but is not worker partitioned" "" { target *-*-* } l_compute_loop_i1 }
+  ! { dg-bogus "\[Ww\]arning: region contains vector partitioned code but is not vector partitioned" "TODO 'serial'" { xfail *-*-* } l_compute_loop_i1 }
+  ! { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l_compute_loop_i1 }
   do i = 0, n - 1
      c(i) = a(i) + b(i)
   end do

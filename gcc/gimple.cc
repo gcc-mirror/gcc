@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "ubsan.h"
 #include "langhooks.h"
 #include "attr-fnspec.h"
 #include "ipa-modref-tree.h"
@@ -421,6 +422,27 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
   return call;
 }
 
+/* Build a gcall to __builtin_unreachable as rewritten by
+   -fsanitize=unreachable.  */
+
+gcall *
+gimple_build_builtin_unreachable (location_t loc)
+{
+  tree data = NULL_TREE;
+  tree fn = sanitize_unreachable_fn (&data, loc);
+  gcall *g;
+  if (DECL_FUNCTION_CODE (fn) != BUILT_IN_TRAP)
+    g = gimple_build_call (fn, data != NULL_TREE, data);
+  else
+    {
+      /* Instead of __builtin_trap use .TRAP, so that it doesn't
+	 need vops.  */
+      gcc_checking_assert (data == NULL_TREE);
+      g = gimple_build_call_internal (IFN_TRAP, 0);
+    }
+  gimple_set_location (g, loc);
+  return g;
+}
 
 /* Build a GIMPLE_ASSIGN statement.
 
@@ -2380,48 +2402,6 @@ const unsigned char gimple_rhs_class_table[] = {
 #undef DEFTREECODE
 #undef END_OF_BASE_TREE_CODES
 
-/* Canonicalize a tree T for use in a COND_EXPR as conditional.  Returns
-   a canonicalized tree that is valid for a COND_EXPR or NULL_TREE, if
-   we failed to create one.  */
-
-tree
-canonicalize_cond_expr_cond (tree t)
-{
-  /* Strip conversions around boolean operations.  */
-  if (CONVERT_EXPR_P (t)
-      && (truth_value_p (TREE_CODE (TREE_OPERAND (t, 0)))
-          || TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0)))
-	     == BOOLEAN_TYPE))
-    t = TREE_OPERAND (t, 0);
-
-  /* For !x use x == 0.  */
-  if (TREE_CODE (t) == TRUTH_NOT_EXPR)
-    {
-      tree top0 = TREE_OPERAND (t, 0);
-      t = build2 (EQ_EXPR, TREE_TYPE (t),
-		  top0, build_int_cst (TREE_TYPE (top0), 0));
-    }
-  /* For cmp ? 1 : 0 use cmp.  */
-  else if (TREE_CODE (t) == COND_EXPR
-	   && COMPARISON_CLASS_P (TREE_OPERAND (t, 0))
-	   && integer_onep (TREE_OPERAND (t, 1))
-	   && integer_zerop (TREE_OPERAND (t, 2)))
-    {
-      tree top0 = TREE_OPERAND (t, 0);
-      t = build2 (TREE_CODE (top0), TREE_TYPE (t),
-		  TREE_OPERAND (top0, 0), TREE_OPERAND (top0, 1));
-    }
-  /* For x ^ y use x != y.  */
-  else if (TREE_CODE (t) == BIT_XOR_EXPR)
-    t = build2 (NE_EXPR, TREE_TYPE (t),
-		TREE_OPERAND (t, 0), TREE_OPERAND (t, 1));
-  
-  if (is_gimple_condexpr (t))
-    return t;
-
-  return NULL_TREE;
-}
-
 /* Build a GIMPLE_CALL identical to STMT but skipping the arguments in
    the positions marked by the set ARGS_TO_SKIP.  */
 
@@ -2787,6 +2767,10 @@ bool
 gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
 {
   gcc_checking_assert (DECL_BUILT_IN_CLASS (fndecl) != NOT_BUILT_IN);
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    if (tree decl = builtin_decl_explicit (DECL_FUNCTION_CODE (fndecl)))
+      fndecl = decl;
 
   tree ret = gimple_call_lhs (stmt);
   if (ret
@@ -3510,7 +3494,7 @@ test_return_without_value ()
 /* Run all of the selftests within this file.  */
 
 void
-gimple_c_tests ()
+gimple_cc_tests ()
 {
   test_assign_single ();
   test_assign_binop ();

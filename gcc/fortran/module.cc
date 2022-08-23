@@ -1095,8 +1095,9 @@ gzopen_included_file_1 (const char *name, gfc_directorylist *list,
       if (module && !p->use_for_modules)
        continue;
 
-      fullname = (char *) alloca(strlen (p->path) + strlen (name) + 1);
+      fullname = (char *) alloca(strlen (p->path) + strlen (name) + 2);
       strcpy (fullname, p->path);
+      strcat (fullname, "/");
       strcat (fullname, name);
 
       f = gzopen (fullname, "r");
@@ -4382,10 +4383,10 @@ mio_omp_declare_simd (gfc_namespace *ns, gfc_omp_declare_simd **odsp)
 	    }
 	  for (n = ods->clauses->lists[OMP_LIST_LINEAR]; n; n = n->next)
 	    {
-	      if (n->u.linear_op == OMP_LINEAR_DEFAULT)
+	      if (n->u.linear.op == OMP_LINEAR_DEFAULT)
 		mio_name (4, omp_declare_simd_clauses);
 	      else
-		mio_name (32 + n->u.linear_op, omp_declare_simd_clauses);
+		mio_name (32 + n->u.linear.op, omp_declare_simd_clauses);
 	      mio_symbol_ref (&n->sym);
 	      mio_expr (&n->expr);
 	    }
@@ -4437,7 +4438,7 @@ mio_omp_declare_simd (gfc_namespace *ns, gfc_omp_declare_simd **odsp)
 	    case 34:
 	    case 35:
 	      *ptrs[1] = n = gfc_get_omp_namelist ();
-	      n->u.linear_op = (enum gfc_omp_linear_op) (t - 32);
+	      n->u.linear.op = (enum gfc_omp_linear_op) (t - 32);
 	      t = 4;
 	      goto finish_namelist;
 	    }

@@ -1062,7 +1062,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : true_type { };
 
   // [func.not_fn] Function template not_fn
-#define __cpp_lib_not_fn 201603
+#define __cpp_lib_not_fn 201603L
   /** Wrap a function object to create one that negates its result.
    *
    * The function template `std::not_fn` creates a "forwarding call wrapper",
@@ -1085,7 +1085,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // Searchers
-#define __cpp_lib_boyer_moore_searcher 201603
+#define __cpp_lib_boyer_moore_searcher 201603L
 
   template<typename _ForwardIterator1, typename _BinaryPredicate = equal_to<>>
     class default_searcher

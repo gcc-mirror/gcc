@@ -194,7 +194,7 @@ loop_fini_done:
    If CHANGED_BBS is not NULL, basic blocks whose loop depth has changed are
    marked in it.
 
-   Returns the number of new discovered loops.  */
+   Returns the number of new discovered plus the number of removed loops.  */
 
 unsigned
 fix_loop_structure (bitmap changed_bbs)
@@ -277,7 +277,7 @@ fix_loop_structure (bitmap changed_bbs)
     }
 
   /* Finally free deleted loops.  */
-  bool any_deleted = false;
+  unsigned n_deleted = 0;
   class loop *loop;
   FOR_EACH_VEC_ELT (*get_loops (cfun), i, loop)
     if (loop && loop->header == NULL)
@@ -311,12 +311,12 @@ fix_loop_structure (bitmap changed_bbs)
 	  }
 	(*get_loops (cfun))[i] = NULL;
 	flow_loop_free (loop);
-	any_deleted = true;
+	n_deleted++;
       }
 
   /* If we deleted loops then the cached scalar evolutions refering to
      those loops become invalid.  */
-  if (any_deleted && scev_initialized_p ())
+  if (n_deleted > 0 && scev_initialized_p ())
     scev_reset_htab ();
 
   loops_state_clear (LOOPS_NEED_FIXUP);
@@ -328,7 +328,7 @@ fix_loop_structure (bitmap changed_bbs)
 
   timevar_pop (TV_LOOP_INIT);
 
-  return number_of_loops (cfun) - old_nloops;
+  return number_of_loops (cfun) - old_nloops + n_deleted;
 }
 
 /* The RTL loop superpass.  The actual passes are subpasses.  See passes.cc for
@@ -357,7 +357,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
+  bool gate (function *) final override;
 
 }; // class pass_loop2
 
@@ -429,7 +429,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return rtl_loop_init (); }
+  unsigned int execute (function *) final override { return rtl_loop_init (); }
 
 }; // class pass_rtl_loop_init
 
@@ -467,7 +467,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_rtl_loop_done
 
@@ -523,8 +523,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_move_loop_invariants; }
-  virtual unsigned int execute (function *fun)
+  bool gate (function *) final override { return flag_move_loop_invariants; }
+  unsigned int execute (function *fun) final override
     {
       if (number_of_loops (fun) > 1)
 	move_loop_invariants ();
@@ -565,12 +565,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return (flag_unroll_loops || flag_unroll_all_loops || cfun->has_unroll);
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_rtl_unroll_loops
 
@@ -625,8 +625,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 
 }; // class pass_rtl_doloop
 

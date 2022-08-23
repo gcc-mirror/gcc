@@ -143,7 +143,7 @@ test08()
   VERIFY( count == 0 );
 }
 
-// Converting constrcutor
+// Converting constructor
 
 void
 test09()

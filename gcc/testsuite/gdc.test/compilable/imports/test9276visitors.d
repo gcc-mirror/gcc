@@ -13,4 +13,3 @@ template DeepDup(T) if (is(T : BasicType))
 
 template DeepDup(T)
 {}
-

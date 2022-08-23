@@ -692,7 +692,7 @@ gfc_build_intrinsic_lib_fndecls (void)
   {
     /* If we have soft-float types, we create the decls for their
        C99-like library functions.  For now, we only handle _Float128
-       q-suffixed functions.  */
+       q-suffixed or IEC 60559 f128-suffixed functions.  */
 
     tree type, complex_type, func_1, func_2, func_cabs, func_frexp;
     tree func_iround, func_lround, func_llround, func_scalbn, func_cpow;
@@ -739,7 +739,10 @@ gfc_build_intrinsic_lib_fndecls (void)
        builtin_decl_for_float_type(). The others are all constructed by
        gfc_get_intrinsic_lib_fndecl().  */
 #define OTHER_BUILTIN(ID, NAME, TYPE, CONST) \
-  quad_decls[BUILT_IN_ ## ID] = define_quad_builtin (NAME "q", func_ ## TYPE, CONST);
+    quad_decls[BUILT_IN_ ## ID]						\
+      = define_quad_builtin (gfc_real16_use_iec_60559			\
+			     ? NAME "f128" : NAME "q", func_ ## TYPE,	\
+			     CONST);
 
 #include "mathbuiltins.def"
 
@@ -751,8 +754,9 @@ gfc_build_intrinsic_lib_fndecls (void)
     /* There is one built-in we defined manually, because it gets called
        with builtin_decl_for_precision() or builtin_decl_for_float_type()
        even though it is not an OTHER_BUILTIN: it is SQRT.  */
-    quad_decls[BUILT_IN_SQRT] = define_quad_builtin ("sqrtq", func_1, true);
-
+    quad_decls[BUILT_IN_SQRT]
+      = define_quad_builtin (gfc_real16_use_iec_60559
+			     ? "sqrtf128" : "sqrtq", func_1, true);
   }
 
   /* Add GCC builtin functions.  */
@@ -875,7 +879,8 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
 		  ts->type == BT_COMPLEX ? "c" : "", m->name, "l");
       else if (gfc_real_kinds[n].c_float128)
 	snprintf (name, sizeof (name), "%s%s%s",
-		  ts->type == BT_COMPLEX ? "c" : "", m->name, "q");
+		  ts->type == BT_COMPLEX ? "c" : "", m->name,
+		  gfc_real_kinds[n].use_iec_60559 ? "f128" : "q");
       else
 	gcc_unreachable ();
     }
@@ -2620,7 +2625,7 @@ conv_intrinsic_image_status (gfc_se *se, gfc_expr *expr)
   else
     gcc_unreachable ();
 
-  se->expr = tmp;
+  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
 }
 
 static void
@@ -2662,7 +2667,7 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
   else
     gcc_unreachable ();
 
-  se->expr = tmp;
+  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
 }
 
 
@@ -7255,12 +7260,13 @@ gfc_conv_intrinsic_popcnt_poppar (gfc_se * se, gfc_expr *expr, int parity)
 
       /* Combine the results.  */
       if (parity)
-	se->expr = fold_build2_loc (input_location, BIT_XOR_EXPR, result_type,
-				    call1, call2);
+	se->expr = fold_build2_loc (input_location, BIT_XOR_EXPR,
+				    integer_type_node, call1, call2);
       else
-	se->expr = fold_build2_loc (input_location, PLUS_EXPR, result_type,
-				    call1, call2);
+	se->expr = fold_build2_loc (input_location, PLUS_EXPR,
+				    integer_type_node, call1, call2);
 
+      se->expr = convert (result_type, se->expr);
       return;
     }
 
@@ -8098,12 +8104,14 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 	 class object.  The class object may be a non-pointer object, e.g.
 	 located on the stack, or a memory location pointed to, e.g. a
 	 parameter, i.e., an indirect_ref.  */
-      if (arg->rank < 0
-	  || (arg->rank > 0 && !VAR_P (argse.expr)
-	      && ((INDIRECT_REF_P (TREE_OPERAND (argse.expr, 0))
-		   && GFC_DECL_CLASS (TREE_OPERAND (
-					TREE_OPERAND (argse.expr, 0), 0)))
-		  || GFC_DECL_CLASS (TREE_OPERAND (argse.expr, 0)))))
+      if (POINTER_TYPE_P (TREE_TYPE (argse.expr))
+	  && GFC_CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (argse.expr))))
+	byte_size
+	  = gfc_class_vtab_size_get (build_fold_indirect_ref (argse.expr));
+      else if (GFC_CLASS_TYPE_P (TREE_TYPE (argse.expr)))
+	byte_size = gfc_class_vtab_size_get (argse.expr);
+      else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (argse.expr))
+	       && TREE_CODE (argse.expr) == COMPONENT_REF)
 	byte_size = gfc_class_vtab_size_get (TREE_OPERAND (argse.expr, 0));
       else if (arg->rank > 0
 	       || (arg->rank == 0
@@ -8113,7 +8121,7 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 	byte_size = gfc_class_vtab_size_get (
 	      GFC_DECL_SAVED_DESCRIPTOR (arg->symtree->n.sym->backend_decl));
       else
-	byte_size = gfc_class_vtab_size_get (argse.expr);
+	gcc_unreachable ();
     }
   else
     {
@@ -9781,7 +9789,7 @@ conv_intrinsic_ieee_builtin (gfc_se * se, gfc_expr * expr,
 			     enum built_in_function code, int nargs)
 {
   tree args[2];
-  gcc_assert ((unsigned) nargs <= sizeof(args)/sizeof(args[0]));
+  gcc_assert ((unsigned) nargs <= ARRAY_SIZE (args));
 
   conv_ieee_function_args (se, expr, args, nargs);
   se->expr = build_call_expr_loc_array (input_location,
@@ -11211,24 +11219,31 @@ conv_co_collective (gfc_code *code)
       return gfc_finish_block (&block);
     }
 
+  gfc_symbol *derived = code->ext.actual->expr->ts.type == BT_DERIVED
+    ? code->ext.actual->expr->ts.u.derived : NULL;
+
   /* Handle the array.  */
   gfc_init_se (&argse, NULL);
-  if (code->ext.actual->expr->rank == 0)
+  if (!derived || !derived->attr.alloc_comp
+      || code->resolved_isym->id != GFC_ISYM_CO_BROADCAST)
     {
-      symbol_attribute attr;
-      gfc_clear_attr (&attr);
-      gfc_init_se (&argse, NULL);
-      gfc_conv_expr (&argse, code->ext.actual->expr);
-      gfc_add_block_to_block (&block, &argse.pre);
-      gfc_add_block_to_block (&post_block, &argse.post);
-      array = gfc_conv_scalar_to_descriptor (&argse, argse.expr, attr);
-      array = gfc_build_addr_expr (NULL_TREE, array);
-    }
-  else
-    {
-      argse.want_pointer = 1;
-      gfc_conv_expr_descriptor (&argse, code->ext.actual->expr);
-      array = argse.expr;
+      if (code->ext.actual->expr->rank == 0)
+	{
+	  symbol_attribute attr;
+	  gfc_clear_attr (&attr);
+	  gfc_init_se (&argse, NULL);
+	  gfc_conv_expr (&argse, code->ext.actual->expr);
+	  gfc_add_block_to_block (&block, &argse.pre);
+	  gfc_add_block_to_block (&post_block, &argse.post);
+	  array = gfc_conv_scalar_to_descriptor (&argse, argse.expr, attr);
+	  array = gfc_build_addr_expr (NULL_TREE, array);
+	}
+      else
+	{
+	  argse.want_pointer = 1;
+	  gfc_conv_expr_descriptor (&argse, code->ext.actual->expr);
+	  array = argse.expr;
+	}
     }
 
   gfc_add_block_to_block (&block, &argse.pre);
@@ -11288,9 +11303,6 @@ conv_co_collective (gfc_code *code)
     default:
       gcc_unreachable ();
     }
-
-  gfc_symbol *derived = code->ext.actual->expr->ts.type == BT_DERIVED
-    ? code->ext.actual->expr->ts.u.derived : NULL;
 
   if (derived && derived->attr.alloc_comp
       && code->resolved_isym->id == GFC_ISYM_CO_BROADCAST)

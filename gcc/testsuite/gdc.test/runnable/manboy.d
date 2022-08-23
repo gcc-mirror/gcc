@@ -17,4 +17,3 @@ int main()
     assert(a(10, 1, -1, -1, 1, 0) == -67);
     return 0;
 }
-

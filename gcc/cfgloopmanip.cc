@@ -563,8 +563,7 @@ scale_loop_profile (class loop *loop, profile_probability p,
 
 	  /* Probability of exit must be 1/iterations.  */
 	  count_delta = e->count ();
-	  e->probability = profile_probability::always ()
-				    .apply_scale (1, iteration_bound);
+	  e->probability = profile_probability::always () / iteration_bound;
 	  other_e->probability = e->probability.invert ();
 
 	  /* In code below we only handle the following two updates.  */
@@ -586,7 +585,7 @@ scale_loop_profile (class loop *loop, profile_probability p,
 	 we look at the actual profile, if it is available.  */
       p = profile_probability::always ();
 
-      count_in = count_in.apply_scale (iteration_bound, 1);
+      count_in *= iteration_bound;
       p = count_in.probability_in (loop->header->count);
       if (!(p > profile_probability::never ()))
 	p = profile_probability::very_unlikely ();
@@ -1351,7 +1350,6 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
       unsigned j;
 
       bb = bbs[i];
-      bb->aux = 0;
 
       auto_vec<basic_block> dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
       FOR_EACH_VEC_ELT (dom_bbs, j, dominated)

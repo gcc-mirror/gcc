@@ -180,9 +180,11 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-am__DEPENDENCIES_1 =
-am_libstdc___libbacktrace_la_OBJECTS = atomic.lo dwarf.lo fileline.lo \
-	posix.lo sort.lo simple.lo state.lo cp-demangle.lo
+am_libstdc___libbacktrace_la_OBJECTS = $(obj_prefix)-atomic.lo \
+	$(obj_prefix)-dwarf.lo $(obj_prefix)-fileline.lo \
+	$(obj_prefix)-posix.lo $(obj_prefix)-sort.lo \
+	$(obj_prefix)-simple.lo $(obj_prefix)-state.lo \
+	$(obj_prefix)-cp-demangle.lo
 libstdc___libbacktrace_la_OBJECTS =  \
 	$(am_libstdc___libbacktrace_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -479,52 +481,64 @@ CONFIG_CXXFLAGS = \
 WARN_CXXFLAGS = \
 	$(WARN_FLAGS) $(WERROR_FLAG) -fdiagnostics-show-location=once 
 
-AM_CPPFLAGS = -I $(top_srcdir)/../include -I $(top_srcdir)/../libgcc \
+
+# -I/-D flags to pass when compiling.
+AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
+toolexeclib_LTLIBRARIES = libstdc++_libbacktrace.la
+ACLOCAL_AMFLAGS = -I ../.. -I ../../config
+
+# This will be used instead of the common AM_CPPFLAGS from fragment.am
+libstdc___libbacktrace_la_CPPFLAGS = \
+	-I $(top_srcdir)/../include -I $(top_srcdir)/../libgcc \
 	-I ../../../libgcc -I .. -I $(top_srcdir) \
 	-I $(top_srcdir)/../libbacktrace \
+	-I $(top_srcdir)/../libiberty \
 	-include $(top_srcdir)/src/libbacktrace/backtrace-rename.h \
 	$(BACKTRACE_CPPFLAGS)
 
-toolexeclib_LTLIBRARIES = libstdc++_libbacktrace.la
-ACLOCAL_AMFLAGS = -I ../.. -I ../../config
 C_WARN_FLAGS = $(WARN_FLAGS) -Wstrict-prototypes -Wmissing-prototypes -Wold-style-definition -Wno-unused-but-set-variable
 CXX_WARN_FLAGS = $(WARN_FLAGS) -Wno-unused-parameter
 AM_CFLAGS = $(C_WARN_FLAGS) $(EXTRA_CFLAGS)
 AM_CXXFLAGS = $(CXX_WARN_FLAGS) -fno-rtti -fno-exceptions \
 	$(EXTRA_CXXFLAGS)
+obj_prefix = std_stacktrace
+
+# Each FILE.c in SOURCES will be compiled to SHORTNAME-FILE.o
+libstdc___libbacktrace_la_SHORTNAME = $(obj_prefix)
 libstdc___libbacktrace_la_SOURCES = \
-	../../../libbacktrace/backtrace.h \
-	../../../libbacktrace/atomic.c \
-	../../../libbacktrace/dwarf.c \
-	../../../libbacktrace/fileline.c \
-	../../../libbacktrace/internal.h \
-	../../../libbacktrace/posix.c \
-	../../../libbacktrace/sort.c \
-	../../../libbacktrace/simple.c \
-	../../../libbacktrace/state.c \
-	../../../libiberty/cp-demangle.c
+	atomic.c \
+	dwarf.c \
+	fileline.c \
+	posix.c \
+	sort.c \
+	simple.c \
+	state.c \
+	cp-demangle.c
 
 FORMAT_FILES = \
-	../../../libbacktrace/elf.c \
-	../../../libbacktrace/unknown.c
+	elf.c \
+	unknown.c
 
 VIEW_FILES = \
-	../../../libbacktrace/read.c \
-	../../../libbacktrace/mmapio.c
+	read.c \
+	mmapio.c
 
 ALLOC_FILES = \
-	../../../libbacktrace/alloc.c \
-	../../../libbacktrace/mmap.c
+	alloc.c \
+	mmap.c
 
 EXTRA_libstdc___libbacktrace_la_SOURCES = \
 	$(FORMAT_FILES) \
 	$(VIEW_FILES) \
 	$(ALLOC_FILES)
 
+
+# These three files are chosen by configure and added to the link.
+# We need the SHORTNAME- prefix so that they use the custom CPPFLAGS above.
 libstdc___libbacktrace_la_LIBADD = \
-	$(FORMAT_FILE) \
-	$(VIEW_FILE) \
-	$(ALLOC_FILE)
+	$(obj_prefix)-$(FORMAT_FILE) \
+	$(obj_prefix)-$(VIEW_FILE) \
+	$(obj_prefix)-$(ALLOC_FILE)
 
 libstdc___libbacktrace_la_DEPENDENCIES = $(libstdc___libbacktrace_la_LIBADD)
 LTCOMPILE = \
@@ -630,47 +644,47 @@ distclean-compile:
 .c.lo:
 	$(AM_V_CC)$(LTCOMPILE) -c -o $@ $<
 
-atomic.lo: ../../../libbacktrace/atomic.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o atomic.lo `test -f '../../../libbacktrace/atomic.c' || echo '$(srcdir)/'`../../../libbacktrace/atomic.c
+$(obj_prefix)-atomic.lo: atomic.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-atomic.lo `test -f 'atomic.c' || echo '$(srcdir)/'`atomic.c
 
-dwarf.lo: ../../../libbacktrace/dwarf.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dwarf.lo `test -f '../../../libbacktrace/dwarf.c' || echo '$(srcdir)/'`../../../libbacktrace/dwarf.c
+$(obj_prefix)-dwarf.lo: dwarf.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-dwarf.lo `test -f 'dwarf.c' || echo '$(srcdir)/'`dwarf.c
 
-fileline.lo: ../../../libbacktrace/fileline.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fileline.lo `test -f '../../../libbacktrace/fileline.c' || echo '$(srcdir)/'`../../../libbacktrace/fileline.c
+$(obj_prefix)-fileline.lo: fileline.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-fileline.lo `test -f 'fileline.c' || echo '$(srcdir)/'`fileline.c
 
-posix.lo: ../../../libbacktrace/posix.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o posix.lo `test -f '../../../libbacktrace/posix.c' || echo '$(srcdir)/'`../../../libbacktrace/posix.c
+$(obj_prefix)-posix.lo: posix.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-posix.lo `test -f 'posix.c' || echo '$(srcdir)/'`posix.c
 
-sort.lo: ../../../libbacktrace/sort.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sort.lo `test -f '../../../libbacktrace/sort.c' || echo '$(srcdir)/'`../../../libbacktrace/sort.c
+$(obj_prefix)-sort.lo: sort.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-sort.lo `test -f 'sort.c' || echo '$(srcdir)/'`sort.c
 
-simple.lo: ../../../libbacktrace/simple.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o simple.lo `test -f '../../../libbacktrace/simple.c' || echo '$(srcdir)/'`../../../libbacktrace/simple.c
+$(obj_prefix)-simple.lo: simple.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-simple.lo `test -f 'simple.c' || echo '$(srcdir)/'`simple.c
 
-state.lo: ../../../libbacktrace/state.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o state.lo `test -f '../../../libbacktrace/state.c' || echo '$(srcdir)/'`../../../libbacktrace/state.c
+$(obj_prefix)-state.lo: state.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-state.lo `test -f 'state.c' || echo '$(srcdir)/'`state.c
 
-cp-demangle.lo: ../../../libiberty/cp-demangle.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cp-demangle.lo `test -f '../../../libiberty/cp-demangle.c' || echo '$(srcdir)/'`../../../libiberty/cp-demangle.c
+$(obj_prefix)-cp-demangle.lo: cp-demangle.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-cp-demangle.lo `test -f 'cp-demangle.c' || echo '$(srcdir)/'`cp-demangle.c
 
-elf.lo: ../../../libbacktrace/elf.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o elf.lo `test -f '../../../libbacktrace/elf.c' || echo '$(srcdir)/'`../../../libbacktrace/elf.c
+$(obj_prefix)-elf.lo: elf.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-elf.lo `test -f 'elf.c' || echo '$(srcdir)/'`elf.c
 
-unknown.lo: ../../../libbacktrace/unknown.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unknown.lo `test -f '../../../libbacktrace/unknown.c' || echo '$(srcdir)/'`../../../libbacktrace/unknown.c
+$(obj_prefix)-unknown.lo: unknown.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-unknown.lo `test -f 'unknown.c' || echo '$(srcdir)/'`unknown.c
 
-read.lo: ../../../libbacktrace/read.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o read.lo `test -f '../../../libbacktrace/read.c' || echo '$(srcdir)/'`../../../libbacktrace/read.c
+$(obj_prefix)-read.lo: read.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-read.lo `test -f 'read.c' || echo '$(srcdir)/'`read.c
 
-mmapio.lo: ../../../libbacktrace/mmapio.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mmapio.lo `test -f '../../../libbacktrace/mmapio.c' || echo '$(srcdir)/'`../../../libbacktrace/mmapio.c
+$(obj_prefix)-mmapio.lo: mmapio.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-mmapio.lo `test -f 'mmapio.c' || echo '$(srcdir)/'`mmapio.c
 
-alloc.lo: ../../../libbacktrace/alloc.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o alloc.lo `test -f '../../../libbacktrace/alloc.c' || echo '$(srcdir)/'`../../../libbacktrace/alloc.c
+$(obj_prefix)-alloc.lo: alloc.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-alloc.lo `test -f 'alloc.c' || echo '$(srcdir)/'`alloc.c
 
-mmap.lo: ../../../libbacktrace/mmap.c
-	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mmap.lo `test -f '../../../libbacktrace/mmap.c' || echo '$(srcdir)/'`../../../libbacktrace/mmap.c
+$(obj_prefix)-mmap.lo: mmap.c
+	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libstdc___libbacktrace_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(obj_prefix)-mmap.lo `test -f 'mmap.c' || echo '$(srcdir)/'`mmap.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -854,6 +868,14 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
 
+
+# Use symlinks for the sources
+
+%.c: ../../../libbacktrace/%.c
+	$(LN_S) $< $@
+
+cp-demangle.c: ../../../libiberty/cp-demangle.c
+	$(LN_S) $< $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -241,6 +241,7 @@ package body Impunit is
     ("g-arrspl", F),  -- GNAT.Array_Split
     ("g-awk   ", F),  -- GNAT.AWK
     ("g-binenv", F),  -- GNAT.Bind_Environment
+    ("g-binsea", F),  -- GNAT.Binary_Search
     ("g-boubuf", F),  -- GNAT.Bounded_Buffers
     ("g-boumai", F),  -- GNAT.Bounded_Mailboxes
     ("g-brapre", F),  -- GNAT.Branch_Prediction
@@ -278,6 +279,7 @@ package body Impunit is
     ("g-exptty", F),  -- GNAT.Expect.TTY
     ("g-flocon", F),  -- GNAT.Float_Control
     ("g-forstr", F),  -- GNAT.Formatted_String
+    ("g-gfmafu", F),  -- GNAT.Generic_Fast_Math_Functions
     ("g-graphs", F),  -- GNAT.Graphs
     ("g-heasor", F),  -- GNAT.Heap_Sort
     ("g-hesora", F),  -- GNAT.Heap_Sort_A
@@ -603,6 +605,8 @@ package body Impunit is
    -- GNAT Defined Additions to Ada 2012 --
    ----------------------------------------
 
+    ("a-cfidll", F),  -- Ada.Containers.Formal_Indefinite_Doubly_Linked_Lists
+    ("a-cfinse", F),  -- Ada.Containers.Functional_Infinite_Sequences
     ("a-cfinve", F),  -- Ada.Containers.Formal_Indefinite_Vectors
     ("a-coboho", F),  -- Ada.Containers.Bounded_Holders
     ("a-cofove", F),  -- Ada.Containers.Formal_Vectors

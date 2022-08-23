@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-#define Parent atree__parent
+#define Parent atree__node_parent
 extern Node_Id Parent (Node_Id);
 
 #define Original_Node atree__original_node

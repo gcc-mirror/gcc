@@ -186,7 +186,11 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
 #if defined(HAVE_GFC_REAL_16)
 # if defined(GFC_REAL_16_IS_FLOAT128)
     case 16:
+#  if defined(GFC_REAL_16_USE_IEC_60559)
+      *((GFC_REAL_16*) dest) = strtof128 (buffer, &endptr);
+#  else
       *((GFC_REAL_16*) dest) = __qmath_(strtoflt128) (buffer, &endptr);
+#  endif
       break;
 # elif defined(HAVE_STRTOLD)
     case 16:
@@ -199,6 +203,8 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
     case 17:
 # if defined(POWER_IEEE128)
       *((GFC_REAL_17*) dest) = __strtoieee128 (buffer, &endptr);
+# elif defined(GFC_REAL_17_USE_IEC_60559)
+      *((GFC_REAL_17*) dest) = strtof128 (buffer, &endptr);
 # else
       *((GFC_REAL_17*) dest) = __qmath_(strtoflt128) (buffer, &endptr);
 # endif
@@ -272,7 +278,14 @@ convert_infnan (st_parameter_dt *dtp, void *dest, const char *buffer,
 #if defined(HAVE_GFC_REAL_16)
 # if defined(GFC_REAL_16_IS_FLOAT128)
     case 16:
+#  if defined(GFC_REAL_16_USE_IEC_60559)
+      if (is_inf)
+	*((GFC_REAL_16*) dest) = plus ? __builtin_inff128 () : -__builtin_inff128 ();
+      else
+	*((GFC_REAL_16*) dest) = plus ? __builtin_nanf128 ("") : -__builtin_nanf128 ("");
+#  else
       *((GFC_REAL_16*) dest) = __qmath_(strtoflt128) (buffer, NULL);
+#  endif
       break;
 # else
     case 16:

@@ -1788,7 +1788,7 @@ test_applying_fixits_column_validation (const line_table_case &case_)
 /* Run all of the selftests within this file.  */
 
 void
-edit_context_c_tests ()
+edit_context_cc_tests ()
 {
   test_get_content ();
   for_each_line_table_case (test_applying_fixits_insert_before);

@@ -35,6 +35,10 @@
 # error "compatibility-thread-c++0x.cc must be compiled with -std=gnu++0x"
 #endif
 
+#if _GLIBCXX_INLINE_VERSION
+# error "compatibility-thread-c++0x.cc is not needed for gnu-versioned-namespace"
+#endif
+
 #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
    asm (".symver " #cur "," #old "@@@" #version);
 

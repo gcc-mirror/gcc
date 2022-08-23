@@ -716,7 +716,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	      FOR_EACH_EDGE (e, ei, bb->succs)
 		if (!(e->flags & (EDGE_COMPLEX | EDGE_FAKE)))
 		  e->probability
-		    = profile_probability::guessed_always ().apply_scale (1, total);
+		    = profile_probability::guessed_always () / total;
 		else
 		  e->probability = profile_probability::never ();
 	    }
@@ -724,8 +724,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	    {
 	      total += EDGE_COUNT (bb->succs);
 	      FOR_EACH_EDGE (e, ei, bb->succs)
-		e->probability
-		 = profile_probability::guessed_always ().apply_scale (1, total);
+		e->probability = profile_probability::guessed_always () / total;
 	    }
 	  if (bb->index >= NUM_FIXED_BLOCKS
 	      && block_ends_with_condjump_p (bb)
@@ -754,7 +753,8 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	    bb->count = profile_count::from_gcov_type (bb_gcov_count (bb));
 	  else
 	    bb->count = profile_count::guessed_zero ();
-	  if (dump_file && bb->index >= 0)
+
+	  if (dump_file && (dump_flags & TDF_DETAILS) && bb->index >= 0)
 	    {
 	      double freq1 = cnt.to_sreal_scale (old_entry_cnt).to_double ();
 	      double freq2 = bb->count.to_sreal_scale
@@ -767,7 +767,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	      sum2 += freq2;
 	    }
 	}
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  double nsum1 = 0, nsum2 = 0;
 	  stats.qsort (cmp_stats);
@@ -777,8 +777,8 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	      nsum2 += stat.feedback;
 	      fprintf (dump_file,
 		       " Basic block %4i guessed freq: %12.3f"
-		       " cummulative:%6.2f%% "
-		       " feedback freq: %12.3f cummulative:%7.2f%%"
+		       " cumulative:%6.2f%% "
+		       " feedback freq: %12.3f cumulative:%7.2f%%"
 		       " cnt: 10%" PRId64 "\n", stat.bb->index,
 		       stat.guessed,
 		       nsum1 * 100 / sum1,

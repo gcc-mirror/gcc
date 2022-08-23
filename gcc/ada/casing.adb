@@ -105,15 +105,6 @@ package body Casing is
       end if;
    end Determine_Casing;
 
-   ------------------------
-   -- Set_All_Upper_Case --
-   ------------------------
-
-   procedure Set_All_Upper_Case is
-   begin
-      Set_Casing (All_Upper_Case);
-   end Set_All_Upper_Case;
-
    ----------------
    -- Set_Casing --
    ----------------

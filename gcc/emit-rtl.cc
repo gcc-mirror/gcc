@@ -947,9 +947,11 @@ validate_subreg (machine_mode omode, machine_mode imode,
 	   && GET_MODE_INNER (omode) == GET_MODE_INNER (imode))
     ;
   /* Subregs involving floating point modes are not allowed to
-     change size.  Therefore (subreg:DI (reg:DF) 0) is fine, but
+     change size unless it's an insert into a complex mode.
+     Therefore (subreg:DI (reg:DF) 0) and (subreg:CS (reg:SF) 0) are fine, but
      (subreg:SI (reg:DF) 0) isn't.  */
-  else if (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))
+  else if ((FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))
+	   && !COMPLEX_MODE_P (omode))
     {
       if (! (known_eq (isize, osize)
 	     /* LRA can use subreg to store a floating point value in
@@ -3997,7 +3999,7 @@ make_insn_raw (rtx pattern)
 	  || (GET_CODE (insn) == SET
 	      && SET_DEST (insn) == pc_rtx)))
     {
-      warning (0, "ICE: emit_insn used where emit_jump_insn needed:\n");
+      warning (0, "ICE: %<emit_insn%> used where %<emit_jump_insn%> needed:");
       debug_rtx (insn);
     }
 #endif
@@ -6097,6 +6099,13 @@ init_emit_regs (void)
   if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
     pic_offset_table_rtx = gen_raw_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
 
+  /* Process stack-limiting command-line options.  */
+  if (opt_fstack_limit_symbol_arg != NULL)
+    stack_limit_rtx
+      = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (opt_fstack_limit_symbol_arg));
+  if (opt_fstack_limit_register_no >= 0)
+    stack_limit_rtx = gen_rtx_REG (Pmode, opt_fstack_limit_register_no);
+
   for (i = 0; i < (int) MAX_MACHINE_MODE; i++)
     {
       mode = (machine_mode) i;
@@ -6177,13 +6186,6 @@ init_emit_once (void)
 
   /* Create the unique rtx's for certain rtx codes and operand values.  */
 
-  /* Process stack-limiting command-line options.  */
-  if (opt_fstack_limit_symbol_arg != NULL)
-    stack_limit_rtx 
-      = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (opt_fstack_limit_symbol_arg));
-  if (opt_fstack_limit_register_no >= 0)
-    stack_limit_rtx = gen_rtx_REG (Pmode, opt_fstack_limit_register_no);
-
   /* Don't use gen_rtx_CONST_INT here since gen_rtx_CONST_INT in this case
      tries to use these variables.  */
   for (i = - MAX_SAVED_CONST_INT; i <= MAX_SAVED_CONST_INT; i++)
@@ -6239,9 +6241,22 @@ init_emit_once (void)
 
   /* For BImode, 1 and -1 are unsigned and signed interpretations
      of the same value.  */
-  const_tiny_rtx[0][(int) BImode] = const0_rtx;
-  const_tiny_rtx[1][(int) BImode] = const_true_rtx;
-  const_tiny_rtx[3][(int) BImode] = const_true_rtx;
+  for (mode = MIN_MODE_BOOL;
+       mode <= MAX_MODE_BOOL;
+       mode = (machine_mode)((int)(mode) + 1))
+    {
+      const_tiny_rtx[0][(int) mode] = const0_rtx;
+      if (mode == BImode)
+	{
+	  const_tiny_rtx[1][(int) mode] = const_true_rtx;
+	  const_tiny_rtx[3][(int) mode] = const_true_rtx;
+	}
+      else
+	{
+	  const_tiny_rtx[1][(int) mode] = const1_rtx;
+	  const_tiny_rtx[3][(int) mode] = constm1_rtx;
+	}
+    }
 
   for (mode = MIN_MODE_PARTIAL_INT;
        mode <= MAX_MODE_PARTIAL_INT;
@@ -6260,13 +6275,16 @@ init_emit_once (void)
       const_tiny_rtx[0][(int) mode] = gen_rtx_CONCAT (mode, inner, inner);
     }
 
-  /* As for BImode, "all 1" and "all -1" are unsigned and signed
-     interpretations of the same value.  */
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_BOOL)
     {
       const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
       const_tiny_rtx[3][(int) mode] = gen_const_vector (mode, 3);
-      const_tiny_rtx[1][(int) mode] = const_tiny_rtx[3][(int) mode];
+      if (GET_MODE_INNER (mode) == BImode)
+	/* As for BImode, "all 1" and "all -1" are unsigned and signed
+	   interpretations of the same value.  */
+	const_tiny_rtx[1][(int) mode] = const_tiny_rtx[3][(int) mode];
+      else
+	const_tiny_rtx[1][(int) mode] = gen_const_vector (mode, 1);
     }
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
@@ -6424,7 +6442,8 @@ emit_copy_of_insn_after (rtx_insn *insn, rtx_insn *after)
     }
 
   /* Update LABEL_NUSES.  */
-  mark_jump_label (PATTERN (new_rtx), new_rtx, 0);
+  if (NONDEBUG_INSN_P (insn))
+    mark_jump_label (PATTERN (new_rtx), new_rtx, 0);
 
   INSN_LOCATION (new_rtx) = INSN_LOCATION (insn);
 

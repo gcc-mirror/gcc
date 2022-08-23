@@ -7848,12 +7848,12 @@ if (isTimePoint!TP &&
         duration = The duration which separates each successive time point in
                    the range.
   +/
-TP delegate(scope const TP) everyDuration(TP, Direction dir = Direction.fwd, D)(D duration) nothrow
+TP delegate(return scope const TP) everyDuration(TP, Direction dir = Direction.fwd, D)(D duration) nothrow
 if (isTimePoint!TP &&
     __traits(compiles, TP.init + duration) &&
     (dir == Direction.fwd || dir == Direction.bwd))
 {
-    TP func(scope const TP tp)
+    TP func(return scope const TP tp)
     {
         static if (dir == Direction.fwd)
             return tp + duration;

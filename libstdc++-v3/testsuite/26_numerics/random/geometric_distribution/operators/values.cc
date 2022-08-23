@@ -24,6 +24,14 @@
 #include <functional>
 #include <testsuite_random.h>
 
+// { dg-additional-options "-DSIMULATOR_TEST" { target simulator } }
+
+#ifdef SIMULATOR_TEST
+# define ARGS 100, 1000
+#else
+# define ARGS
+#endif
+
 void test01()
 {
   using namespace __gnu_test;
@@ -32,16 +40,16 @@ void test01()
 
   std::geometric_distribution<> gd1(0.5);
   auto bgd1 = std::bind(gd1, eng);
-  testDiscreteDist(bgd1, [](int n) { return geometric_pdf(n, 0.5); } );
+  testDiscreteDist<ARGS>(bgd1, [](int n) { return geometric_pdf(n, 0.5); } );
 
   std::geometric_distribution<> gd2(0.75);
   auto bgd2 = std::bind(gd2, eng);
-  testDiscreteDist(bgd2, [](int n) { return geometric_pdf(n, 0.75); } );
+  testDiscreteDist<ARGS>(bgd2, [](int n) { return geometric_pdf(n, 0.75); } );
 
   // libstdc++/48114
   std::geometric_distribution<> gd3(0.25);
   auto bgd3 = std::bind(gd3, eng);
-  testDiscreteDist(bgd3, [](int n) { return geometric_pdf(n, 0.25); } );
+  testDiscreteDist<ARGS>(bgd3, [](int n) { return geometric_pdf(n, 0.25); } );
 }
 
 int main()

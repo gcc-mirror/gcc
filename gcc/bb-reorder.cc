@@ -761,7 +761,7 @@ find_traces_1_round (int branch_th, profile_count count_th,
 			    & EDGE_CAN_FALLTHRU)
 			&& !(single_succ_edge (e->dest)->flags & EDGE_COMPLEX)
 			&& single_succ (e->dest) == best_edge->dest
-			&& (e->dest->count.apply_scale (2, 1)
+			&& (e->dest->count * 2
 			    >= best_edge->count () || for_size))
 		      {
 			best_edge = e;
@@ -944,7 +944,7 @@ better_edge_p (const_basic_block bb, const_edge e, profile_probability prob,
 
   /* The BEST_* values do not have to be best, but can be a bit smaller than
      maximum values.  */
-  profile_probability diff_prob = best_prob.apply_scale (1, 10);
+  profile_probability diff_prob = best_prob / 10;
 
   /* The smaller one is better to keep the original order.  */
   if (optimize_function_for_size_p (cfun))
@@ -966,7 +966,7 @@ better_edge_p (const_basic_block bb, const_edge e, profile_probability prob,
     is_better_edge = false;
   else
     {
-      profile_count diff_count = best_count.apply_scale (1, 10);
+      profile_count diff_count = best_count / 10;
       if (count < best_count - diff_count
 	  || (!best_count.initialized_p ()
 	      && count.nonzero_p ()))
@@ -2633,7 +2633,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       if (targetm.cannot_modify_jumps_p ())
 	return false;
@@ -2641,7 +2641,7 @@ public:
 	      && (flag_reorder_blocks || flag_reorder_blocks_and_partition));
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_reorder_blocks
 
@@ -2794,8 +2794,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 
 }; // class pass_duplicate_computed_gotos
 
@@ -2937,8 +2937,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 
 }; // class pass_partition_blocks
 

@@ -38,8 +38,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "calls.h"
 #include "gimple-range.h"
-
 #include "gimple-predicate-analysis.h"
+#include "domwalk.h"
+#include "tree-ssa-sccvn.h"
+#include "cfganal.h"
 
 /* This implements the pass that does predicate aware warning on uses of
    possibly uninitialized variables.  The pass first collects the set of
@@ -402,7 +404,7 @@ maybe_warn_read_write_only (tree fndecl, gimple *stmt, tree arg, tree ptr)
     return;
 
   /* Initialize a map of attribute access specifications for arguments
-     to the function function call.  */
+     to the function call.  */
   rdwr_map rdwr_idx;
   init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
 
@@ -513,7 +515,7 @@ check_defs (ao_ref *ref, tree vdef, void *data_)
   return true;
 }
 
-/* Counters and limits controlling the the depth of analysis and
+/* Counters and limits controlling the depth of analysis and
    strictness of the warning.  */
 struct wlimits
 {
@@ -784,7 +786,7 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
   const bool save_always_executed = wlims.always_executed;
 
   /* Initialize a map of attribute access specifications for arguments
-     to the function function call.  */
+     to the function call.  */
   rdwr_map rdwr_idx;
   init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
 
@@ -795,6 +797,9 @@ maybe_warn_pass_by_reference (gcall *stmt, wlimits &wlims)
   FOREACH_FUNCTION_ARGS (fntype, argtype, it)
     {
       ++argno;
+
+      if (argno > nargs)
+	break;
 
       if (!POINTER_TYPE_P (argtype))
 	continue;
@@ -978,7 +983,7 @@ warn_uninit_phi_uses (basic_block bb)
 static void
 warn_uninitialized_vars (bool wmaybe_uninit)
 {
-  /* Counters and limits controlling the the depth of the warning.  */
+  /* Counters and limits controlling the depth of the warning.  */
   wlimits wlims = { };
   wlims.wmaybe_uninit = wmaybe_uninit;
 
@@ -986,7 +991,19 @@ warn_uninitialized_vars (bool wmaybe_uninit)
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
     {
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (e->flags & EDGE_EXECUTABLE)
+	  break;
+      /* Skip unreachable blocks.  For early analysis we use VN to
+	 determine edge executability when wmaybe_uninit.  */
+      if (!e)
+	continue;
+
       basic_block succ = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+      /* ???  This could be improved when we use a greedy walk and have
+	 some edges marked as not executable.  */
       wlims.always_executed = dominated_by_p (CDI_POST_DOMINATORS, succ, bb);
 
       if (wlims.always_executed)
@@ -1175,8 +1192,16 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
 
       basic_block use_bb;
       if (gphi *use_phi = dyn_cast<gphi *> (use_stmt))
-	use_bb = gimple_phi_arg_edge (use_phi,
-				      PHI_ARG_INDEX_FROM_USE (use_p))->src;
+	{
+	  edge e = gimple_phi_arg_edge (use_phi,
+					PHI_ARG_INDEX_FROM_USE (use_p));
+	  use_bb = e->src;
+	  /* Do not look for uses in the next iteration of a loop, predicate
+	     analysis will not use the appropriate predicates to prove
+	     reachability.  */
+	  if (e->flags & EDGE_DFS_BACK)
+	    continue;
+	}
       else
 	use_bb = gimple_bb (use_stmt);
 
@@ -1304,9 +1329,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass *clone () { return new pass_late_warn_uninitialized (m_ctxt); }
-  virtual bool gate (function *) { return gate_warn_uninitialized (); }
-  virtual unsigned int execute (function *);
+  opt_pass *clone () final override
+  {
+    return new pass_late_warn_uninitialized (m_ctxt);
+  }
+  bool gate (function *) final override { return gate_warn_uninitialized (); }
+  unsigned int execute (function *) final override;
 
 }; // class pass_late_warn_uninitialized
 
@@ -1319,6 +1347,12 @@ execute_late_warn_uninitialized (function *fun)
 
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  /* Mark all edges executable, warn_uninitialized_vars will skip
+     unreachable blocks.  */
+  set_all_edges_as_executable (fun);
+  mark_dfs_back_edges (fun);
+
   /* Re-do the plain uninitialized variable check, as optimization may have
      straightened control flow.  Do this first so that we don't accidentally
      get a "may be" warning when we'd have seen an "is" warning later.  */
@@ -1388,7 +1422,7 @@ make_pass_late_warn_uninitialized (gcc::context *ctxt)
 }
 
 static unsigned int
-execute_early_warn_uninitialized (void)
+execute_early_warn_uninitialized (struct function *fun)
 {
   /* Currently, this pass runs always but
      execute_late_warn_uninitialized only runs with optimization.  With
@@ -1397,6 +1431,17 @@ execute_early_warn_uninitialized (void)
      optimization we need to warn here about "may be uninitialized".  */
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  /* Use VN in its cheapest incarnation and without doing any
+     elimination to compute edge reachability.  Don't bother when
+     we only warn for unconditionally executed code though.  */
+  if (!optimize)
+    {
+      do_rpo_vn (fun, NULL, NULL, false, false, VN_NOWALK);
+      free_rpo_vn ();
+    }
+  else
+    set_all_edges_as_executable (fun);
 
   warn_uninitialized_vars (/*warn_maybe_uninitialized=*/!optimize);
 
@@ -1412,7 +1457,7 @@ namespace {
 const pass_data pass_data_early_warn_uninitialized =
 {
   GIMPLE_PASS, /* type */
-  "*early_warn_uninitialized", /* name */
+  "early_uninit", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_TREE_UNINIT, /* tv_id */
   PROP_ssa, /* properties_required */
@@ -1430,10 +1475,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return gate_warn_uninitialized (); }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return gate_warn_uninitialized (); }
+  unsigned int execute (function *fun) final override
   {
-    return execute_early_warn_uninitialized ();
+    return execute_early_warn_uninitialized (fun);
   }
 
 }; // class pass_early_warn_uninitialized

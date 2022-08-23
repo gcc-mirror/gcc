@@ -1,4 +1,4 @@
 struct variable {
         const char *string;
 };
-struct variable table[] = { };
+struct variable table[] = { { 0 } };

@@ -4186,11 +4186,6 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
 #define DEBUG_LTO_LINE_STR_SECTION  ".gnu.debuglto_.debug_line_str"
 #endif
 
-/* Standard ELF section names for compiled code and data.  */
-#ifndef TEXT_SECTION_NAME
-#define TEXT_SECTION_NAME	".text"
-#endif
-
 /* Section flags for .debug_str section.  */
 #define DEBUG_STR_SECTION_FLAGS                                 \
   (HAVE_GAS_SHF_MERGE && flag_merge_debug_strings               \
@@ -12104,9 +12099,10 @@ index_rnglists (void)
       if (r->label && r->idx != DW_RANGES_IDX_SKELETON)
 	r->idx = rnglist_idx++;
 
-      if (!have_multiple_function_sections)
-	continue;
       int block_num = r->num;
+      if ((HAVE_AS_LEB128 || block_num < 0)
+	  && !have_multiple_function_sections)
+	continue;
       if (HAVE_AS_LEB128 && (r->label || r->maybe_new_sec))
 	base = false;
       if (block_num > 0)
@@ -12930,7 +12926,7 @@ output_one_line_info_table (dw_line_info_table *table)
   char line_label[MAX_ARTIFICIAL_LABEL_BYTES];
   unsigned int current_line = 1;
   bool current_is_stmt = DWARF_LINE_DEFAULT_IS_STMT_START;
-  dw_line_info_entry *ent, *prev_addr;
+  dw_line_info_entry *ent, *prev_addr = NULL;
   size_t i;
   unsigned int view;
 
@@ -13550,8 +13546,7 @@ static const dwarf_qual_info_t dwarf_qual_info[] =
   { TYPE_QUAL_RESTRICT, DW_TAG_restrict_type },
   { TYPE_QUAL_ATOMIC, DW_TAG_atomic_type }
 };
-static const unsigned int dwarf_qual_info_size
-  = sizeof (dwarf_qual_info) / sizeof (dwarf_qual_info[0]);
+static const unsigned int dwarf_qual_info_size = ARRAY_SIZE (dwarf_qual_info);
 
 /* If DIE is a qualified DIE of some base DIE with the same parent,
    return the base DIE, otherwise return NULL.  Set MASK to the
@@ -13579,6 +13574,47 @@ qualified_die_p (dw_die_ref die, int *mask, unsigned int depth)
 	return ret;
     }
   return type;
+}
+
+/* If TYPE is long double or complex long double that
+   should be emitted as artificial typedef to _Float128 or
+   complex _Float128, return the type it should be emitted as.
+   This is done in case the target already supports 16-byte
+   composite floating point type (ibm_extended_format).  */
+
+static tree
+long_double_as_float128 (tree type)
+{
+  if (type != long_double_type_node
+      && type != complex_long_double_type_node)
+    return NULL_TREE;
+
+  machine_mode mode, fmode;
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    mode = TYPE_MODE (TREE_TYPE (type));
+  else
+    mode = TYPE_MODE (type);
+  if (known_eq (GET_MODE_SIZE (mode), 16) && !MODE_COMPOSITE_P (mode))
+    FOR_EACH_MODE_IN_CLASS (fmode, MODE_FLOAT)
+      if (known_eq (GET_MODE_SIZE (fmode), 16)
+          && MODE_COMPOSITE_P (fmode))
+	{
+	  if (type == long_double_type_node)
+	    {
+	      if (float128_type_node
+		  && (TYPE_MODE (float128_type_node)
+		      == TYPE_MODE (type)))
+		return float128_type_node;
+	      return NULL_TREE;
+	    }
+	  for (int i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+	    if (COMPLEX_FLOATN_NX_TYPE_NODE (i) != NULL_TREE
+		&& (TYPE_MODE (COMPLEX_FLOATN_NX_TYPE_NODE (i))
+		    == TYPE_MODE (type)))
+	      return COMPLEX_FLOATN_NX_TYPE_NODE (i);
+	}
+
+  return NULL_TREE;
 }
 
 /* Given a pointer to an arbitrary ..._TYPE tree node, return a debugging
@@ -13861,7 +13897,32 @@ modified_type_die (tree type, int cv_quals, bool reverse,
     }
   else if (is_base_type (type))
     {
-      mod_type_die = base_type_die (type, reverse);
+      /* If a target supports long double as different floating point
+	 modes with the same 16-byte size, use normal DW_TAG_base_type
+	 only for the composite (ibm_extended_real_format) type and
+	 for the other for the time being emit instead a "_Float128"
+	 or "complex _Float128" DW_TAG_base_type and a "long double"
+	 or "complex long double" typedef to it.  */
+      if (tree other_type = long_double_as_float128 (type))
+	{
+	  dw_die_ref other_die;
+	  if (TYPE_NAME (other_type))
+	    other_die
+	      = modified_type_die (other_type, TYPE_UNQUALIFIED, reverse,
+				   context_die);
+	  else
+	    {
+	      other_die = base_type_die (type, reverse);
+	      add_child_die (comp_unit_die (), other_die);
+	      add_name_attribute (other_die,
+				  TREE_CODE (type) == COMPLEX_TYPE
+				  ? "complex _Float128" : "_Float128");
+	    }
+	  mod_type_die = new_die_raw (DW_TAG_typedef);
+	  add_AT_die_ref (mod_type_die, DW_AT_type, other_die);
+	}
+      else
+	mod_type_die = base_type_die (type, reverse);
 
       /* The DIE with DW_AT_endianity is placed right after the naked DIE.  */
       if (reverse_base_type)
@@ -19401,6 +19462,14 @@ loc_list_from_tree_1 (tree loc, int want_address,
       break;
 
     case TRUTH_NOT_EXPR:
+      list_ret = loc_list_from_tree_1 (TREE_OPERAND (loc, 0), 0, context);
+      if (list_ret == 0)
+	return 0;
+
+      add_loc_descr_to_each (list_ret, new_loc_descr (DW_OP_lit0, 0, 0));
+      add_loc_descr_to_each (list_ret, new_loc_descr (DW_OP_eq, 0, 0));
+      break;
+
     case BIT_NOT_EXPR:
       op = DW_OP_not;
       goto do_unop;
@@ -19449,6 +19518,15 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	  list_ret
 	    = loc_list_from_tree_1 (TREE_OPERAND (TREE_OPERAND (loc, 0), 0),
 				    0, context);
+	/* Likewise, swap the operands for a logically negated condition.  */
+	else if (TREE_CODE (TREE_OPERAND (loc, 0)) == TRUTH_NOT_EXPR)
+	  {
+	    lhs = loc_descriptor_from_tree (TREE_OPERAND (loc, 2), 0, context);
+	    rhs = loc_list_from_tree_1 (TREE_OPERAND (loc, 1), 0, context);
+	    list_ret
+	      = loc_list_from_tree_1 (TREE_OPERAND (TREE_OPERAND (loc, 0), 0),
+				      0, context);
+	  }
 	else
 	  list_ret = loc_list_from_tree_1 (TREE_OPERAND (loc, 0), 0, context);
 	if (list_ret == 0 || lhs == 0 || rhs == 0)
@@ -20383,7 +20461,10 @@ rtl_for_decl_init (tree init, tree type)
 	}
     }
   /* Other aggregates, and complex values, could be represented using
-     CONCAT: FIXME!  */
+     CONCAT: FIXME!
+     If this changes, please adjust tree_add_const_value_attribute
+     so that for early_dwarf it will for such initializers mangle referenced
+     decls.  */
   else if (AGGREGATE_TYPE_P (type)
 	   || (TREE_CODE (init) == VIEW_CONVERT_EXPR
 	       && AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (init, 0))))
@@ -20833,6 +20914,19 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
   return tree_add_const_value_attribute_for_decl (die, decl);
 }
 
+/* Mangle referenced decls.  */
+static tree
+mangle_referenced_decls (tree *tp, int *walk_subtrees, void *)
+{
+  if (! EXPR_P (*tp) && ! CONSTANT_CLASS_P (*tp))
+    *walk_subtrees = 0;
+
+  if (VAR_OR_FUNCTION_DECL_P (*tp))
+    assign_assembler_name_if_needed (*tp);
+
+  return NULL_TREE;
+}
+
 /* Attach a DW_AT_const_value attribute to DIE. The value of the
    attribute is the const value T.  */
 
@@ -20841,7 +20935,6 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 {
   tree init;
   tree type = TREE_TYPE (t);
-  rtx rtl;
 
   if (!t || !TREE_TYPE (t) || TREE_TYPE (t) == error_mark_node)
     return false;
@@ -20862,11 +20955,26 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 	  return true;
 	}
     }
-  /* Generate the RTL even if early_dwarf to force mangling of all refered to
-     symbols.  */
-  rtl = rtl_for_decl_init (init, type);
-  if (rtl && !early_dwarf)
-    return add_const_value_attribute (die, TYPE_MODE (type), rtl);
+  if (!early_dwarf)
+    {
+      rtx rtl = rtl_for_decl_init (init, type);
+      if (rtl)
+	return add_const_value_attribute (die, TYPE_MODE (type), rtl);
+    }
+  else
+    {
+      /* For early_dwarf force mangling of all referenced symbols.  */
+      tree initializer = init;
+      STRIP_NOPS (initializer);
+      /* rtl_for_decl_init punts on other aggregates, and complex values.  */
+      if (AGGREGATE_TYPE_P (type)
+	  || (TREE_CODE (initializer) == VIEW_CONVERT_EXPR
+	      && AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (initializer, 0))))
+	  || TREE_CODE (type) == COMPLEX_TYPE)
+	;
+      else if (initializer_constant_valid_p (initializer, type))
+	walk_tree (&initializer, mangle_referenced_decls, NULL, NULL);
+    }
   /* If the host and target are sane, try harder.  */
   if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
       && initializer_constant_valid_p (init, type))
@@ -22445,11 +22553,14 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      /* For VECTOR_TYPEs we use an array die with appropriate bounds.  */
+      /* For VECTOR_TYPEs we use an array DIE with appropriate bounds.  */
       dw_die_ref subrange_die = new_die (DW_TAG_subrange_type, array_die, NULL);
-      add_bound_info (subrange_die, DW_AT_lower_bound, size_zero_node, NULL);
+      int lb = lower_bound_default ();
+      if (lb == -1)
+	lb = 0;
+      add_bound_info (subrange_die, DW_AT_lower_bound, size_int (lb), NULL);
       add_bound_info (subrange_die, DW_AT_upper_bound,
-		      size_int (TYPE_VECTOR_SUBPARTS (type) - 1), NULL);
+		      size_int (lb + TYPE_VECTOR_SUBPARTS (type) - 1), NULL);
     }
   else
     add_subscript_info (array_die, type, collapse_nested_arrays);
@@ -27392,7 +27503,7 @@ gen_namelist_decl (tree name, dw_die_ref scope_die, tree item_decls)
 	nml_item_ref_die = force_decl_die (value);
 
       nml_item_die = new_die (DW_TAG_namelist_item, nml_die, NULL);
-      add_AT_die_ref (nml_item_die, DW_AT_namelist_items, nml_item_ref_die);
+      add_AT_die_ref (nml_item_die, DW_AT_namelist_item, nml_item_ref_die);
     }
   return nml_die;
 }
@@ -32114,6 +32225,7 @@ dwarf2out_finish (const char *filename)
     FOR_EACH_CHILD (die, c, gcc_assert (! c->die_mark));
   }
 #endif
+  base_types.truncate (0);
   for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     resolve_addr (ctnode->root_die);
   resolve_addr (comp_unit_die ());
@@ -32958,6 +33070,7 @@ dwarf2out_early_finish (const char *filename)
      location related output removed and some LTO specific changes.
      Some refactoring might make both smaller and easier to match up.  */
 
+  base_types.truncate (0);
   for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     mark_base_types (ctnode->root_die);
   mark_base_types (comp_unit_die ());
@@ -33079,7 +33192,7 @@ dwarf2out_early_finish (const char *filename)
    within the same process.  For use by toplev::finalize.  */
 
 void
-dwarf2out_c_finalize (void)
+dwarf2out_cc_finalize (void)
 {
   last_var_location_insn = NULL;
   cached_next_real_insn = NULL;

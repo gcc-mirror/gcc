@@ -109,4 +109,6 @@ uns_gte (UNS_TYPE val1, UNS_TYPE val2)
 /* { dg-final { scan-assembler-times {\mvcmpgtsd\M} 4 } } */
 /* { dg-final { scan-assembler-times {\mvcmpgtud\M} 4 } } */
 /* { dg-final { scan-assembler-not   {\mvcmpequd\M} } } */
-/* { dg-final { scan-tree-dump-times "vect_model_simple_cost" 8 "vect" } } */
+/* For each function, one is for the comparison statement and the other
+   is for the condition statement which consumes the compared result.  */
+/* { dg-final { scan-tree-dump-times "vect_model_simple_cost" 16 "vect" } } */

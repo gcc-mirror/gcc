@@ -23,5 +23,3 @@ void main()
     mixin Test!() xs;
     bool x = xs[false];
 }
-
-

@@ -1,10 +1,10 @@
 /* REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/fix18575.d(27): Error: returning `s.foo()` escapes a reference to local variable `s`
-fail_compilation/fix18575.d(31): Error: returning `s.foo()` escapes a reference to local variable `s`
-fail_compilation/fix18575.d(35): Error: returning `s.abc()` escapes a reference to local variable `s`
-fail_compilation/fix18575.d(39): Error: returning `s.ghi(t)` escapes a reference to local variable `t`
+fail_compilation/fix18575.d(27): Error: returning `s.foo()` escapes a reference to parameter `s`
+fail_compilation/fix18575.d(31): Error: returning `s.foo()` escapes a reference to parameter `s`
+fail_compilation/fix18575.d(35): Error: returning `s.abc()` escapes a reference to parameter `s`
+fail_compilation/fix18575.d(39): Error: returning `s.ghi(t)` escapes a reference to parameter `t`
 ---
 */
 
@@ -38,4 +38,3 @@ auto h(S s) {
 auto j(S s, S t) {
     return s.ghi(t);
 }
-

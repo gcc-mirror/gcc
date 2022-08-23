@@ -571,7 +571,7 @@ test_auto_delete_vec ()
 /* Run all of the selftests within this file.  */
 
 void
-vec_c_tests ()
+vec_cc_tests ()
 {
   test_init ();
   test_quick_push ();

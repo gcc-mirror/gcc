@@ -3,6 +3,8 @@ struct S { int *s; char u; struct T v; long x; };
 
 void bar (int *);
 #pragma omp declare target to (bar)
+void baz (int *);
+#pragma omp declare target enter (baz)
 
 int
 main ()
@@ -18,6 +20,6 @@ main ()
   #pragma omp target map (s.s[0]) map (s.v.b[:3])
   ;
   #pragma omp target map (s.s[0]) map (s.v.b[:3])
-  bar (s.s);
+  baz (s.s);
   return 0;
 }

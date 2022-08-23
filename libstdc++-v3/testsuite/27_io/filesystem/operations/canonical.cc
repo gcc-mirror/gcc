@@ -31,7 +31,7 @@ test01()
   const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
   std::error_code ec;
   auto p = __gnu_test::nonexistent_path();
-  canonical( p, ec );
+  (void) canonical( p, ec );
   VERIFY( ec );
 
   create_directory(p);
@@ -90,7 +90,7 @@ test02()
 #if __cpp_exceptions
   fs::path e1, e2;
   try {
-    canonical(p);
+    (void) canonical(p);
   } catch (const fs::filesystem_error& e) {
     e1 = e.path1();
     e2 = e.path2();
@@ -111,9 +111,12 @@ test03()
   fs::path foo = dir/"foo", bar = dir/"bar";
   fs::create_directory(foo);
   fs::create_directory(bar);
+#ifdef NO_SYMLINKS
 #if defined(__MINGW32__) || defined(__MINGW64__)
-  // No symlink support
   const fs::path baz = dir/"foo\\\\..\\bar///";
+#else
+  const fs::path baz = dir/"foo//../bar///";
+#endif
 #else
   fs::create_symlink("../bar", foo/"baz");
   const fs::path baz = dir/"foo//./baz///";

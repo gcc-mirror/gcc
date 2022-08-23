@@ -125,6 +125,9 @@ package Sem_Res is
    --  own type. For now we assume that the prefix cannot be overloaded and
    --  the name of the entry plays no role in the resolution.
 
+   procedure Resolve_Membership_Equality (N : Node_Id; Typ : Entity_Id);
+   --  Resolve the equality operator in an individual membership test
+
    function Valid_Conversion
      (N           : Node_Id;
       Target      : Entity_Id;

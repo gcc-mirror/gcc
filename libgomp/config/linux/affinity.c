@@ -411,11 +411,11 @@ gomp_affinity_init_numa_domains (unsigned long count, cpu_set_t *copy,
 	    {
 	      char *p = line;
 	      void *pl = NULL;
+	      bool seen = false;
 
 	      while (*p && *p != '\n')
 		{
 		  unsigned long first, last;
-		  bool seen = false;
 
 		  errno = 0;
 		  first = strtoul (p, &end, 10);

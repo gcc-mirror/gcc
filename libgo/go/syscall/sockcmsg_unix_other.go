@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build aix || darwin || freebsd || hurd || linux || netbsd || openbsd || solaris
-// +build aix darwin freebsd hurd linux netbsd openbsd solaris
 
 package syscall
 

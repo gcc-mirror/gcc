@@ -2411,7 +2411,7 @@ ira_adjust_equiv_reg_cost (unsigned regno, int cost)
 }
 
 void
-ira_costs_c_finalize (void)
+ira_costs_cc_finalize (void)
 {
   this_target_ira_int->free_ira_costs ();
 }

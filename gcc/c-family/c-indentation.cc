@@ -804,7 +804,7 @@ test_get_visual_column ()
 /* Run all of the selftests within this file.  */
 
 void
-c_indentation_c_tests ()
+c_indentation_cc_tests ()
 {
   test_next_tab_stop ();
   test_get_visual_column ();

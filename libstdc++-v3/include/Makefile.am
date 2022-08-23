@@ -42,6 +42,7 @@ std_headers = \
 	${std_srcdir}/coroutine \
 	${std_srcdir}/deque \
 	${std_srcdir}/execution \
+	${std_srcdir}/expected \
 	${std_srcdir}/filesystem \
 	${std_srcdir}/forward_list \
 	${std_srcdir}/fstream \
@@ -156,6 +157,7 @@ bits_headers = \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
 	${bits_srcdir}/max_size_type.h \
+	${bits_srcdir}/memory_resource.h \
 	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/mofunc_impl.h \
 	${bits_srcdir}/move.h \
@@ -755,6 +757,7 @@ experimental_headers = \
 	${experimental_srcdir}/random \
 	${experimental_srcdir}/ratio \
 	${experimental_srcdir}/regex \
+	${experimental_srcdir}/scope \
 	${experimental_srcdir}/set \
 	${experimental_srcdir}/simd \
 	${experimental_srcdir}/socket \
@@ -850,6 +853,7 @@ c_compatibility_headers = \
 	${c_compatibility_srcdir}/fenv.h \
 	${c_compatibility_srcdir}/tgmath.h \
 	${c_compatibility_srcdir}/math.h \
+	${c_compatibility_srcdir}/stdatomic.h \
 	${c_compatibility_srcdir}/stdlib.h
 endif
 
@@ -1283,7 +1287,7 @@ stamp-float128:
 endif
 
 # This header is not installed, it's only used to build libstdc++ itself.
-${host_builddir}/largefile-config.h: ${CONFIG_HEADER}
+${host_builddir}/largefile-config.h: ${CONFIG_HEADER} stamp-${host_alias}
 	@rm -f $@.tmp
 	@-grep 'define _DARWIN_USE_64_BIT_INODE' ${CONFIG_HEADER} >> $@.tmp
 	@-grep 'define _FILE_OFFSET_BITS' ${CONFIG_HEADER} >> $@.tmp

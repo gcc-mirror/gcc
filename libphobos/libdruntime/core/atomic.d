@@ -292,7 +292,7 @@ template cas(MemoryOrder succ = MemoryOrder.seq, MemoryOrder fail = MemoryOrder.
     in (atomicPtrIsProperlyAligned(here), "Argument `here` is not properly aligned")
     {
         // resolve implicit conversions
-        T arg1 = ifThis;
+        const T arg1 = ifThis;
         T arg2 = writeThis;
 
         static if (__traits(isFloating, T))
@@ -1275,5 +1275,14 @@ version (CoreUnittest)
         static struct NoIndirections { int i; }
         shared NoIndirections n;
         static assert(is(typeof(atomicLoad(n)) == NoIndirections));
+    }
+
+    unittest // Issue 21631
+    {
+        shared uint si1 = 45;
+        shared uint si2 = 38;
+        shared uint* psi = &si1;
+
+        assert((&psi).cas(cast(const) psi, &si2));
     }
 }

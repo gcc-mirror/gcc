@@ -50,7 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
 #if __cplusplus >= 201703L
-# define __cpp_lib_atomic_is_always_lock_free 201603
+# define __cpp_lib_atomic_is_always_lock_free 201603L
 #endif
 
   template<typename _Tp>
@@ -172,20 +172,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // TODO add const volatile overload
 
     void
-    notify_one() const noexcept
+    notify_one() noexcept
     { _M_base.notify_one(); }
 
     void
-    notify_all() const noexcept
+    notify_all() noexcept
     { _M_base.notify_all(); }
 #endif // __cpp_lib_atomic_wait
   };
 
-#if __cplusplus <= 201703L
-# define _GLIBCXX20_INIT(I)
-#else
+/// @cond undocumented
+#if __cpp_lib_atomic_value_initialization
 # define _GLIBCXX20_INIT(I) = I
+#else
+# define _GLIBCXX20_INIT(I)
 #endif
+/// @endcond
 
   /**
    *  @brief Generic atomic type, primary class template.
@@ -399,11 +401,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // TODO add const volatile overload
 
     void
-    notify_one() const noexcept
+    notify_one() noexcept
     { std::__atomic_notify_address(&_M_i, false); }
 
     void
-    notify_all() const noexcept
+    notify_all() noexcept
     { std::__atomic_notify_address(&_M_i, true); }
 #endif // __cpp_lib_atomic_wait 
 
@@ -654,11 +656,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // TODO add const volatile overload
 
     void
-    notify_one() const noexcept
+    notify_one() noexcept
     { _M_b.notify_one(); }
 
     void
-    notify_all() const noexcept
+    notify_all() noexcept
     { _M_b.notify_all(); }
 #endif // __cpp_lib_atomic_wait
 
@@ -1241,11 +1243,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   atomic_flag_clear(volatile atomic_flag* __a) noexcept
   { atomic_flag_clear_explicit(__a, memory_order_seq_cst); }
 
-
+  /// @cond undocumented
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3220. P0558 broke conforming C++14 uses of atomic shared_ptr
   template<typename _Tp>
-    using __atomic_val_t = typename atomic<_Tp>::value_type;
+    using __atomic_val_t = __type_identity_t<_Tp>;
   template<typename _Tp>
     using __atomic_diff_t = typename atomic<_Tp>::difference_type;
+  /// @endcond
 
   // [atomics.nonmembers] Non-member functions.
   // Function templates generally applicable to atomic types.
@@ -1434,12 +1439,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline void
-    atomic_notify_one(const atomic<_Tp>* __a) noexcept
+    atomic_notify_one(atomic<_Tp>* __a) noexcept
     { __a->notify_one(); }
 
   template<typename _Tp>
     inline void
-    atomic_notify_all(const atomic<_Tp>* __a) noexcept
+    atomic_notify_all(atomic<_Tp>* __a) noexcept
     { __a->notify_all(); }
 #endif // __cpp_lib_atomic_wait
 

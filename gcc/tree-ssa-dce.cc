@@ -284,7 +284,10 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
       break;
 
     case GIMPLE_ASSIGN:
-      if (gimple_clobber_p (stmt))
+      /* Mark indirect CLOBBERs to be lazily removed if their SSA operands
+	 do not prevail.  That also makes control flow leading to them
+	 not necessary in aggressive mode.  */
+      if (gimple_clobber_p (stmt) && !zero_ssa_operands (stmt, SSA_OP_USE))
 	return;
       break;
 
@@ -312,7 +315,7 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
     }
 
   if ((gimple_vdef (stmt) && keep_all_vdefs_p ())
-      || stmt_may_clobber_global_p (stmt))
+      || stmt_may_clobber_global_p (stmt, false))
     {
       mark_stmt_necessary (stmt, true);
       return;
@@ -1023,7 +1026,8 @@ remove_dead_phis (basic_block bb)
 	{
 	  /* Virtual PHI nodes with one or identical arguments
 	     can be removed.  */
-	  if (degenerate_phi_p (phi))
+	  if (!loops_state_satisfies_p (LOOP_CLOSED_SSA)
+	      && degenerate_phi_p (phi))
 	    {
 	      tree vdef = gimple_phi_result (phi);
 	      tree vuse = gimple_phi_arg_def (phi, 0);
@@ -1268,11 +1272,36 @@ maybe_optimize_arith_overflow (gimple_stmt_iterator *gsi,
   gimplify_and_update_call_from_tree (gsi, result);
 }
 
+/* Returns whether the control parents of BB are preserved.  */
+
+static bool
+control_parents_preserved_p (basic_block bb)
+{
+  /* If we marked the control parents from BB they are preserved.  */
+  if (bitmap_bit_p (visited_control_parents, bb->index))
+    return true;
+
+  /* But they can also end up being marked from elsewhere.  */
+  bitmap_iterator bi;
+  unsigned edge_number;
+  EXECUTE_IF_SET_IN_BITMAP (cd->get_edges_dependent_on (bb->index),
+			    0, edge_number, bi)
+    {
+      basic_block cd_bb = cd->get_edge_src (edge_number);
+      if (cd_bb != bb
+	  && !bitmap_bit_p (last_stmt_necessary, cd_bb->index))
+	return false;
+    }
+  /* And cache the result.  */
+  bitmap_set_bit (visited_control_parents, bb->index);
+  return true;
+}
+
 /* Eliminate unnecessary statements. Any instruction not marked as necessary
    contributes nothing to the program, and can be deleted.  */
 
 static bool
-eliminate_unnecessary_stmts (void)
+eliminate_unnecessary_stmts (bool aggressive)
 {
   bool something_changed = false;
   basic_block bb;
@@ -1366,7 +1395,10 @@ eliminate_unnecessary_stmts (void)
 			  break;
 			}
 		    }
-		  if (!dead)
+		  if (!dead
+		      /* When doing CD-DCE we have to ensure all controls
+			 of the stmt are still live.  */
+		      && (!aggressive || control_parents_preserved_p (bb)))
 		    {
 		      bitmap_clear (debug_seen);
 		      continue;
@@ -1835,9 +1867,9 @@ perform_tree_ssa_dce (bool aggressive)
   bool in_loop_pipeline = scev_initialized_p ();
   if (aggressive && ! in_loop_pipeline)
     {
-      scev_initialize ();
       loop_optimizer_init (LOOPS_NORMAL
 			   | LOOPS_HAVE_RECORDED_EXITS);
+      scev_initialize ();
     }
 
   if (aggressive)
@@ -1864,8 +1896,8 @@ perform_tree_ssa_dce (bool aggressive)
 
   if (aggressive && ! in_loop_pipeline)
     {
-      loop_optimizer_finalize ();
       scev_finalize ();
+      loop_optimizer_finalize ();
     }
 
   longest_chain = 0;
@@ -1876,7 +1908,7 @@ perform_tree_ssa_dce (bool aggressive)
   propagate_necessity (aggressive);
   BITMAP_FREE (visited);
 
-  something_changed |= eliminate_unnecessary_stmts ();
+  something_changed |= eliminate_unnecessary_stmts (aggressive);
   something_changed |= cfg_altered;
 
   /* We do not update postdominators, so free them unconditionally.  */
@@ -1943,9 +1975,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dce (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_dce != 0; }
-  virtual unsigned int execute (function *) { return tree_ssa_dce (); }
+  opt_pass * clone () final override { return new pass_dce (m_ctxt); }
+  bool gate (function *) final override { return flag_tree_dce != 0; }
+  unsigned int execute (function *) final override { return tree_ssa_dce (); }
 
 }; // class pass_dce
 
@@ -1980,14 +2012,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_cd_dce (m_ctxt); }
-  void set_pass_param (unsigned n, bool param)
+  opt_pass * clone () final override { return new pass_cd_dce (m_ctxt); }
+  void set_pass_param (unsigned n, bool param) final override
     {
       gcc_assert (n == 0);
       update_address_taken_p = param;
     }
-  virtual bool gate (function *) { return flag_tree_dce != 0; }
-  virtual unsigned int execute (function *)
+  bool gate (function *) final override { return flag_tree_dce != 0; }
+  unsigned int execute (function *) final override
     {
       return (tree_ssa_cd_dce ()
 	      | (update_address_taken_p ? TODO_update_address_taken : 0));
@@ -2027,6 +2059,13 @@ simple_dce_from_worklist (bitmap worklist)
 
       gimple *t = SSA_NAME_DEF_STMT (def);
       if (gimple_has_side_effects (t))
+	continue;
+
+      /* The defining statement needs to be defining only this name.
+	 ASM is the only statement that can define more than one
+	 (non-virtual) name. */
+      if (is_a<gasm *>(t)
+	  && !single_ssa_def_operand (t, SSA_OP_DEF))
 	continue;
 
       /* Don't remove statements that are needed for non-call

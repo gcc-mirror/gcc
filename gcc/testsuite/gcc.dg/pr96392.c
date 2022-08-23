@@ -12,11 +12,6 @@ double sub0(int x)
   return x - 0.0;
 }
 
-double mult0(int x)
-{
-  return 0.0 * x;
-}
-
 double negate(int x)
 {
   return 0.0 - x;
@@ -29,5 +24,4 @@ double subtract(int x)
 
 /* { dg-final { scan-tree-dump-not " \\+ " "optimized" } } */
 /* { dg-final { scan-tree-dump-not " \\- " "optimized" } } */
-/* { dg-final { scan-tree-dump-not " \\* " "optimized" } } */
 

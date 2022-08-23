@@ -209,12 +209,12 @@ extern (C)
         return instance.query( p );
     }
 
-    core.memory.GC.Stats gc_stats() nothrow
+    core.memory.GC.Stats gc_stats() @safe nothrow @nogc
     {
         return instance.stats();
     }
 
-    core.memory.GC.ProfileStats gc_profileStats() nothrow @safe
+    core.memory.GC.ProfileStats gc_profileStats() @safe nothrow @nogc
     {
         return instance.profileStats();
     }

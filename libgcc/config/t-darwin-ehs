@@ -3,5 +3,5 @@
 
 LIBEHSOBJS = unwind-dw2_s.o unwind-dw2-fde-darwin_s.o unwind-c_s.o
 
-unwind-dw2_s.o: gthr-default.h md-unwind-support.h
+unwind-dw2_s.o: gthr-default.h md-unwind-support.h unwind.h
 $(LIBEHSOBJS): libgcc_tm.h

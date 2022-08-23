@@ -69,7 +69,7 @@ version (GenericBaseException)
     {
     @nogc:
         ///
-        this() nothrow {}
+        extern(D) this() nothrow {}
         ///
         @weak ~this() nothrow {} // HACK: this should extern, but then we have link errors!
 
@@ -77,7 +77,7 @@ version (GenericBaseException)
         @weak const(char)* what() const nothrow { return "unknown"; } // HACK: this should extern, but then we have link errors!
 
     protected:
-        this(const(char)*, int = 1) nothrow { this(); } // compat with MS derived classes
+        extern(D) this(const(char)*, int = 1) nothrow { this(); } // compat with MS derived classes
     }
 }
 else version (CppRuntime_DigitalMars)
@@ -87,7 +87,7 @@ else version (CppRuntime_DigitalMars)
     {
     @nogc:
         ///
-        this() nothrow {}
+        extern(D) this() nothrow {}
         //virtual ~this();
         void dtor() { }     // reserve slot in vtbl[]
 
@@ -105,7 +105,7 @@ else version (CppRuntime_Microsoft)
     {
     @nogc:
         ///
-        this(const(char)* message = "unknown", int = 1) nothrow { msg = message; }
+        extern(D) this(const(char)* message = "unknown", int = 1) nothrow { msg = message; }
         ///
         @weak ~this() nothrow {}
 
@@ -131,7 +131,7 @@ class bad_exception : exception
 {
 @nogc:
     ///
-    this(const(char)* message = "bad exception") { super(message); }
+    extern(D) this(const(char)* message = "bad exception") nothrow { super(message); }
 
     version (GenericBaseException)
     {

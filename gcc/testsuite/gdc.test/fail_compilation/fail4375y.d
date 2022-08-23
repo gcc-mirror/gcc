@@ -17,4 +17,3 @@ static if (true)
                     void G10(){}
 else
     void G11(){}
-

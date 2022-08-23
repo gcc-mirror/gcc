@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-forwprop -fdump-tree-evrp-details -fdump-tree-optimized -fno-tree-ccp" } */
+/* { dg-options "-O2 -fno-tree-forwprop -fdump-tree-evrp-details -fdump-tree-optimized -fno-tree-ccp --param logical-op-non-short-circuit=1" } */
 
 
 struct rtx_def;
@@ -89,5 +89,5 @@ L7:
    boolean operation.  */
 
 /* { dg-final { scan-tree-dump-times "Simplified relational" 2 "evrp" } } */
-/* { dg-final { scan-tree-dump-times "if " 4 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "if " 3 "optimized" } } */
 

@@ -76,36 +76,42 @@ import std.range.primitives : isOutputRange;
 import std.traits;
 import std.internal.attributes : betterC;
 
-///
+/// Value tuples
 @safe unittest
 {
-    // value tuples
     alias Coord = Tuple!(int, "x", int, "y", int, "z");
     Coord c;
     c[1] = 1;       // access by index
     c.z = 1;        // access by given name
     assert(c == Coord(0, 1, 1));
 
-    // names can be omitted
-    alias DicEntry = Tuple!(string, string);
+    // names can be omitted, types can be mixed
+    alias DictEntry = Tuple!(string, int);
+    auto dict = DictEntry("seven", 7);
 
-    // tuples can also be constructed on instantiation
+    // element types can be inferred
     assert(tuple(2, 3, 4)[1] == 3);
-    // construction on instantiation works with names too
-    assert(tuple!("x", "y", "z")(2, 3, 4).y == 3);
+    // type inference works with names too
+    auto tup = tuple!("x", "y", "z")(2, 3, 4);
+    assert(tup.y == 3);
+}
 
-    // Rebindable references to const and immutable objects
+/// Rebindable references to const and immutable objects
+@safe unittest
+{
+    class Widget
     {
-        class Widget { void foo() const @safe {} }
-        const w1 = new Widget, w2 = new Widget;
-        w1.foo();
-        // w1 = w2 would not work; can't rebind const object
-        auto r = Rebindable!(const Widget)(w1);
-        // invoke method as if r were a Widget object
-        r.foo();
-        // rebind r to refer to another object
-        r = w2;
+        void foo() const @safe {}
     }
+    const w1 = new Widget, w2 = new Widget;
+    w1.foo();
+    // w1 = w2 would not work; can't rebind const object
+
+    auto r = Rebindable!(const Widget)(w1);
+    // invoke method as if r were a Widget object
+    r.foo();
+    // rebind r to refer to another object
+    r = w2;
 }
 
 /**
@@ -2792,13 +2798,24 @@ struct Nullable(T)
         }
     }
 
-    this (ref return scope inout Nullable!T rhs) inout
+    static if (__traits(hasPostblit, T))
     {
-        _isNull = rhs._isNull;
-        if (!_isNull)
-            _value.payload = rhs._value.payload;
-        else
-            _value = DontCallDestructorT.init;
+        this(this)
+        {
+            if (!_isNull)
+                _value.payload.__xpostblit();
+        }
+    }
+    else static if (__traits(hasCopyConstructor, T))
+    {
+        this(ref return scope inout Nullable!T rhs) inout
+        {
+            _isNull = rhs._isNull;
+            if (!_isNull)
+                _value.payload = rhs._value.payload;
+            else
+                _value = DontCallDestructorT.init;
+        }
     }
 
     /**
@@ -3092,6 +3109,64 @@ struct Nullable(T)
     {
         return isNull ? fallback : _value.payload;
     }
+
+    /// $(MREF_ALTTEXT Range interface, std, range, primitives) functions.
+    alias empty = isNull;
+
+    /// ditto
+    alias popFront = nullify;
+
+    /// ditto
+    alias popBack = nullify;
+
+    /// ditto
+    @property ref inout(T) front() inout @safe pure nothrow
+    {
+        return get();
+    }
+
+    /// ditto
+    alias back = front;
+
+    /// ditto
+    @property inout(typeof(this)) save() inout
+    {
+        return this;
+    }
+
+    /// ditto
+    inout(typeof(this)) opIndex() inout
+    {
+        return this;
+    }
+
+    /// ditto
+    inout(typeof(this)) opIndex(size_t[2] dim) inout
+    in (dim[0] <= length && dim[1] <= length && dim[1] >= dim[0])
+    {
+        return (dim[0] == 0 && dim[1] == 1) ? this : this.init;
+    }
+    /// ditto
+    size_t[2] opSlice(size_t dim : 0)(size_t from, size_t to) const
+    {
+        return [from, to];
+    }
+
+    /// ditto
+    @property size_t length() const @safe pure nothrow
+    {
+        return !empty;
+    }
+
+    /// ditto
+    alias opDollar(size_t dim : 0) = length;
+
+    /// ditto
+    ref inout(T) opIndex(size_t index) inout @safe pure nothrow
+    in (index < length)
+    {
+        return get();
+    }
 }
 
 /// ditto
@@ -3144,6 +3219,23 @@ auto nullable(T)(T t)
     a.nullify();
     assert(a.isNull);
     assertThrown!Throwable(a.get);
+}
+///
+@safe unittest
+{
+    import std.algorithm.iteration : each, joiner;
+    Nullable!int a = 42;
+    Nullable!int b;
+    // Add each value to an array
+    int[] arr;
+    a.each!((n) => arr ~= n);
+    assert(arr == [42]);
+    b.each!((n) => arr ~= n);
+    assert(arr == [42]);
+    // Take first value from an array of Nullables
+    Nullable!int[] c = new Nullable!int[](10);
+    c[7] = Nullable!int(42);
+    assert(c.joiner.front == 42);
 }
 @safe unittest
 {
@@ -3621,6 +3713,42 @@ auto nullable(T)(T t)
     a = b = c = nullable(5);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=18374
+@safe pure nothrow unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.range : only, takeNone;
+    import std.range.primitives : hasAssignableElements, hasLength,
+        hasLvalueElements, hasSlicing, hasSwappableElements,
+        isRandomAccessRange;
+    Nullable!int a = 42;
+    assert(!a.empty);
+    assert(a.front == 42);
+    assert(a.back == 42);
+    assert(a[0] == 42);
+    assert(a.equal(only(42)));
+    assert(a[0 .. $].equal(only(42)));
+    a[0] = 43;
+    assert(a.equal(only(43)));
+    --a[0];
+    assert(a.equal(only(42)));
+    Nullable!int b;
+    assert(b.empty);
+    assert(b.equal(takeNone(b)));
+    Nullable!int c = a.save();
+    assert(!c.empty);
+    c.popFront();
+    assert(!a.empty);
+    assert(c.empty);
+
+    assert(isRandomAccessRange!(Nullable!int));
+    assert(hasLength!(Nullable!int));
+    assert(hasSlicing!(Nullable!int));
+    assert(hasAssignableElements!(Nullable!int));
+    assert(hasSwappableElements!(Nullable!int));
+    assert(hasLvalueElements!(Nullable!int));
+}
+
 /**
 Just like `Nullable!T`, except that the null state is defined as a
 particular value. For example, $(D Nullable!(uint, uint.max)) is an
@@ -4036,7 +4164,7 @@ template apply(alias fun)
     import std.functional : unaryFun;
 
     auto apply(T)(auto ref T t)
-    if (isInstanceOf!(Nullable, T) && is(typeof(unaryFun!fun(T.init.get))))
+    if (isInstanceOf!(Nullable, T))
     {
         alias FunType = typeof(unaryFun!fun(T.init.get));
 
@@ -4777,8 +4905,14 @@ if (is(Interface == interface) && is(BaseClass == class))
         // - try default first
         // - only on a failure run & return fallback
         enum fallback = q{
-            scope (failure) return fallback.%1$s(args);
-            return default_.%1$s(args);
+            try
+            {
+                return default_.%1$s(args);
+            }
+            catch (Exception)
+            {
+                return fallback.%1$s(args);
+            }
         }.format(__traits(identifier, func));
     }
 
@@ -5107,6 +5241,46 @@ private static:
         static abstract class C_9 : K {}
         auto o = new BlackHole!C_9;
     }+/
+    // test `parent` alias
+    {
+        interface I_11
+        {
+            void simple(int) @safe;
+            int anotherSimple(string);
+            int overloaded(int);
+            /+ XXX [BUG 19715]
+            void overloaded(string) @safe;
+            +/
+        }
+
+        static class C_11
+        {
+            import std.traits : Parameters, ReturnType;
+            import std.meta : Alias;
+
+            protected ReturnType!fn _impl(alias fn)(Parameters!fn)
+            if (is(Alias!(__traits(parent, fn)) == interface))
+            {
+                static if (!is(typeof(return) == void))
+                    return typeof(return).init;
+            }
+        }
+
+        template tpl(I, alias fn)
+        if (is(I == interface) && __traits(isSame, __traits(parent, fn), I))
+        {
+            enum string tpl = q{
+                enum bool haveReturn = !is(typeof(return) == void);
+
+                static if (is(typeof(return) == void))
+                    _impl!parent(args);
+                else
+                    return _impl!parent(args);
+            };
+        }
+
+        auto o = new AutoImplement!(I_11, C_11, tpl);
+    }
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=17177
@@ -5188,6 +5362,7 @@ version (StdUnittest)
         void bar(int a) { }
     }
 }
+
 @system unittest
 {
     auto foo = new issue10647_DoNothing!issue10647_Foo();
@@ -5424,8 +5599,8 @@ private static:
             if (!isCtor)
             {
                 preamble ~= "alias self = " ~ name ~ ";\n";
-                if (WITH_BASE_CLASS && !__traits(isAbstractFunction, func))
-                    preamble ~= `alias parent = __traits(getMember, super, "` ~ name ~ `");`;
+                static if (WITH_BASE_CLASS)
+                    preamble ~= `alias parent = __traits(getMember, ` ~ Policy.BASE_CLASS_ID ~ `, "` ~ name ~ `");`;
             }
 
             // Function body
@@ -6420,15 +6595,11 @@ if (!is(T == class) && !(is(T == interface)))
         private enum enableGCScan = hasIndirections!T;
     }
 
-    // TODO remove pure when https://issues.dlang.org/show_bug.cgi?id=15862 has been fixed
     extern(C) private pure nothrow @nogc static
     {
         pragma(mangle, "free") void pureFree( void *ptr );
         static if (enableGCScan)
-        {
-            pragma(mangle, "gc_addRange") void pureGcAddRange( in void* p, size_t sz, const TypeInfo ti = null );
-            pragma(mangle, "gc_removeRange") void pureGcRemoveRange( in void* p );
-        }
+            import core.memory : GC;
     }
 
     /// `RefCounted` storage implementation.
@@ -6468,7 +6639,7 @@ if (!is(T == class) && !(is(T == interface)))
             {
                 import std.internal.memory : enforceCalloc;
                 _store = cast(Impl*) enforceCalloc(1, Impl.sizeof);
-                pureGcAddRange(&_store._payload, T.sizeof);
+                GC.addRange(&_store._payload, T.sizeof);
             }
             else
             {
@@ -6481,7 +6652,7 @@ if (!is(T == class) && !(is(T == interface)))
         {
             static if (enableGCScan)
             {
-                pureGcRemoveRange(&this._store._payload);
+                GC.removeRange(&this._store._payload);
             }
             pureFree(_store);
             _store = null;
@@ -8098,7 +8269,7 @@ if (is(T == class))
 {
     // _d_newclass now use default GC alignment (looks like (void*).sizeof * 2 for
     // small objects). We will just use the maximum of filed alignments.
-    alias alignment = classInstanceAlignment!T;
+    enum alignment = __traits(classInstanceAlignment, T);
     alias aligned = _alignUp!alignment;
 
     static struct Scoped
@@ -8735,19 +8906,6 @@ private:
     enum isBaseEnumType(T) = is(E == T);
     alias Base = OriginalType!E;
     Base mValue;
-    static struct Negation
-    {
-    @safe @nogc pure nothrow:
-    private:
-        Base mValue;
-
-        // Prevent non-copy construction outside the module.
-        @disable this();
-        this(Base value)
-        {
-            mValue = value;
-        }
-    }
 
 public:
     this(E flag)
@@ -8772,10 +8930,10 @@ public:
         return mValue;
     }
 
-    Negation opUnary(string op)() const
+    auto opUnary(string op)() const
         if (op == "~")
     {
-        return Negation(~mValue);
+        return BitFlags(cast(E) cast(Base) ~mValue);
     }
 
     auto ref opAssign(T...)(T flags)
@@ -8819,12 +8977,6 @@ public:
         return this;
     }
 
-    auto ref opOpAssign(string op: "&")(Negation negatedFlags)
-    {
-        mValue &= negatedFlags.mValue;
-        return this;
-    }
-
     auto opBinary(string op)(BitFlags flags) const
         if (op == "|" || op == "&")
     {
@@ -8838,13 +8990,6 @@ public:
     {
         BitFlags result = this;
         result.opOpAssign!op(flag);
-        return result;
-    }
-
-    auto opBinary(string op: "&")(Negation negatedFlags) const
-    {
-        BitFlags result = this;
-        result.opOpAssign!op(negatedFlags);
         return result;
     }
 
@@ -9044,6 +9189,34 @@ public:
     flags.A = true;
     flags.BC = false;
     assert(flags.A && !flags.B && !flags.C);
+}
+
+// Negation of BitFlags should work with any base type.
+// Double-negation of BitFlags should work.
+@safe @nogc pure nothrow unittest
+{
+    static foreach (alias Base; AliasSeq!(
+        byte,
+        ubyte,
+        short,
+        ushort,
+        int,
+        uint,
+        long,
+        ulong,
+    ))
+    {{
+        enum Enum : Base
+        {
+            A = 1 << 0,
+            B = 1 << 1,
+            C = 1 << 2,
+        }
+
+        auto flags = BitFlags!Enum(Enum.A);
+
+        assert(flags == ~~flags);
+    }}
 }
 
 private enum false_(T) = false;
@@ -9247,6 +9420,8 @@ private template replaceTypeInFunctionTypeUnless(alias pred, From, To, fun)
             result ~= " shared";
         static if (attributes & FunctionAttribute.return_)
             result ~= " return";
+        static if (attributes & FunctionAttribute.live)
+            result ~= " @live";
 
         return result;
     }
@@ -9583,13 +9758,28 @@ unittest
     {
         int b;
         @disable this(this);
-        this (ref return scope inout S rhs) inout
+        this(ref return scope inout S rhs) inout
         {
             this.b = rhs.b + 1;
         }
     }
 
     Nullable!S s1 = S(1);
+    assert(s1.get().b == 2);
     Nullable!S s2 = s1;
-    assert(s2.get().b > s1.get().b);
+    assert(s2.get().b == 3);
+}
+
+@safe unittest
+{
+    static struct S
+    {
+        int b;
+        this(this) { ++b; }
+    }
+
+    Nullable!S s1 = S(1);
+    assert(s1.get().b == 2);
+    Nullable!S s2 = s1;
+    assert(s2.get().b == 3);
 }

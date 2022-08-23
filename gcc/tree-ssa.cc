@@ -30,9 +30,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "fold-const.h"
 #include "stor-layout.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-into-ssa.h"
@@ -272,7 +272,7 @@ target_for_debug_bind (tree var)
 /* Called via walk_tree, look for SSA_NAMEs that have already been
    released.  */
 
-static tree
+tree
 find_released_ssa_name (tree *tp, int *walk_subtrees, void *data_)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data_;
@@ -1256,18 +1256,24 @@ delete_tree_ssa (struct function *fn)
 bool
 tree_ssa_useless_type_conversion (tree expr)
 {
+  tree outer_type, inner_type;
+
   /* If we have an assignment that merely uses a NOP_EXPR to change
      the top of the RHS to the type of the LHS and the type conversion
      is "safe", then strip away the type conversion so that we can
      enter LHS = RHS into the const_and_copies table.  */
-  if (CONVERT_EXPR_P (expr)
-      || TREE_CODE (expr) == VIEW_CONVERT_EXPR
-      || TREE_CODE (expr) == NON_LVALUE_EXPR)
-    return useless_type_conversion_p
-      (TREE_TYPE (expr),
-       TREE_TYPE (TREE_OPERAND (expr, 0)));
+  if (!CONVERT_EXPR_P (expr)
+      && TREE_CODE (expr) != VIEW_CONVERT_EXPR
+      && TREE_CODE (expr) != NON_LVALUE_EXPR)
+    return false;
 
-  return false;
+  outer_type = TREE_TYPE (expr);
+  inner_type = TREE_TYPE (TREE_OPERAND (expr, 0));
+
+  if (inner_type == error_mark_node)
+    return false;
+
+  return useless_type_conversion_p (outer_type, inner_type);
 }
 
 /* Strip conversions from EXP according to
@@ -1417,8 +1423,8 @@ maybe_rewrite_mem_ref_base (tree *tp, bitmap suitable_for_renaming)
       if (TREE_CODE (TREE_TYPE (sym)) == VECTOR_TYPE
 	  && useless_type_conversion_p (TREE_TYPE (*tp),
 					TREE_TYPE (TREE_TYPE (sym)))
-	  && multiple_of_p (sizetype, TREE_OPERAND (*tp, 1),
-			    TYPE_SIZE_UNIT (TREE_TYPE (*tp))))
+	  && multiple_p (mem_ref_offset (*tp),
+			 wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (*tp)))))
 	{
 	  *tp = build3 (BIT_FIELD_REF, TREE_TYPE (*tp), sym, 
 			TYPE_SIZE (TREE_TYPE (*tp)),
@@ -1504,8 +1510,8 @@ non_rewritable_mem_ref_base (tree ref)
 	  && known_ge (mem_ref_offset (base), 0)
 	  && known_gt (wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
 		       mem_ref_offset (base))
-	  && multiple_of_p (sizetype, TREE_OPERAND (base, 1),
-			    TYPE_SIZE_UNIT (TREE_TYPE (base))))
+	  && multiple_p (mem_ref_offset (base),
+			 wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (base)))))
 	return NULL_TREE;
       /* For same sizes and zero offset we can use a VIEW_CONVERT_EXPR.  */
       if (integer_zerop (TREE_OPERAND (base, 1))
@@ -1596,8 +1602,8 @@ non_rewritable_lvalue_p (tree lhs)
 	  && known_ge (mem_ref_offset (lhs), 0)
 	  && known_gt (wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
 		       mem_ref_offset (lhs))
-	  && multiple_of_p (sizetype, TREE_OPERAND (lhs, 1),
-			    TYPE_SIZE_UNIT (TREE_TYPE (lhs)))
+	  && multiple_p (mem_ref_offset (lhs),
+			 wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (lhs))))
 	  && known_ge (wi::to_poly_offset (TYPE_SIZE (TREE_TYPE (decl))),
 		       wi::to_poly_offset (TYPE_SIZE (TREE_TYPE (lhs)))))
 	{
@@ -1736,6 +1742,7 @@ execute_update_addresses_taken (void)
   auto_bitmap addresses_taken;
   auto_bitmap not_reg_needs;
   auto_bitmap suitable_for_renaming;
+  bool optimistic_not_addressable = false;
   tree var;
   unsigned i;
 
@@ -1764,6 +1771,8 @@ execute_update_addresses_taken (void)
 		  gimple_call_set_arg (stmt, 1, null_pointer_node);
 		  gimple_ior_addresses_taken (addresses_taken, stmt);
 		  gimple_call_set_arg (stmt, 1, arg);
+		  /* Remember we have to check again below.  */
+		  optimistic_not_addressable = true;
 		}
 	      else if (is_asan_mark_p (stmt)
 		       || gimple_call_internal_p (stmt, IFN_GOMP_SIMT_ENTER))
@@ -1867,7 +1876,8 @@ execute_update_addresses_taken (void)
 
   /* Operand caches need to be recomputed for operands referencing the updated
      variables and operands need to be rewritten to expose bare symbols.  */
-  if (!bitmap_empty_p (suitable_for_renaming))
+  if (!bitmap_empty_p (suitable_for_renaming)
+      || optimistic_not_addressable)
     {
       FOR_EACH_BB_FN (bb, cfun)
 	for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
@@ -1895,6 +1905,7 @@ execute_update_addresses_taken (void)
 					? REALPART_EXPR : IMAGPART_EXPR,
 					TREE_TYPE (other),
 					TREE_OPERAND (lhs, 0));
+		    suppress_warning (lrhs);
 		    gimple *load = gimple_build_assign (other, lrhs);
 		    location_t loc = gimple_location (stmt);
 		    gimple_set_location (load, loc);
@@ -1969,9 +1980,9 @@ execute_update_addresses_taken (void)
 		    && known_gt (wi::to_poly_offset
 				   (TYPE_SIZE_UNIT (TREE_TYPE (sym))),
 				 mem_ref_offset (lhs))
-		    && multiple_of_p (sizetype,
-				      TREE_OPERAND (lhs, 1),
-				      TYPE_SIZE_UNIT (TREE_TYPE (lhs))))
+		    && multiple_p (mem_ref_offset (lhs),
+				   wi::to_poly_offset
+				     (TYPE_SIZE_UNIT (TREE_TYPE (lhs)))))
 		  {
 		    tree val = gimple_assign_rhs1 (stmt);
 		    if (! types_compatible_p (TREE_TYPE (val),
@@ -2058,12 +2069,18 @@ execute_update_addresses_taken (void)
 		if (optimize_atomic_compare_exchange_p (stmt))
 		  {
 		    tree expected = gimple_call_arg (stmt, 1);
-		    if (bitmap_bit_p (suitable_for_renaming,
-				      DECL_UID (TREE_OPERAND (expected, 0))))
+		    tree decl = TREE_OPERAND (expected, 0);
+		    if (bitmap_bit_p (suitable_for_renaming, DECL_UID (decl)))
 		      {
 			fold_builtin_atomic_compare_exchange (&gsi);
 			continue;
 		      }
+		    else if (!TREE_ADDRESSABLE (decl))
+		      /* If there are partial defs of the decl we may
+			 have cleared the addressable bit but set
+			 DECL_NOT_GIMPLE_REG_P.  We have to restore
+			 TREE_ADDRESSABLE here.  */
+		      TREE_ADDRESSABLE (decl) = 1;
 		  }
 		else if (is_asan_mark_p (stmt))
 		  {

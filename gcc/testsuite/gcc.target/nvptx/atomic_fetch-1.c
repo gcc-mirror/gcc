@@ -66,35 +66,35 @@ main()
 /* Generic.  */
 
 /* { dg-final { scan-assembler-times "atom.add.u64" 1 } } */
-/* { dg-final { scan-assembler-times "atom.b64.and" 1 } } */
-/* { dg-final { scan-assembler-times "atom.b64.or" 1 } } */
-/* { dg-final { scan-assembler-times "atom.b64.xor" 1 } } */
+/* { dg-final { scan-assembler-times "atom.and.b64" 1 } } */
+/* { dg-final { scan-assembler-times "atom.or.b64" 1 } } */
+/* { dg-final { scan-assembler-times "atom.xor.b64" 1 } } */
 
 /* { dg-final { scan-assembler-times "atom.add.u32" 1 } } */
-/* { dg-final { scan-assembler-times "atom.b32.and" 1 } } */
-/* { dg-final { scan-assembler-times "atom.b32.or" 1 } } */
-/* { dg-final { scan-assembler-times "atom.b32.xor" 1 } } */
+/* { dg-final { scan-assembler-times "atom.and.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.or.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.xor.b32" 1 } } */
 
 /* Global.  */
 
 /* { dg-final { scan-assembler-times "atom.global.add.u64" 1 } } */
-/* { dg-final { scan-assembler-times "atom.global.b64.and" 1 } } */
-/* { dg-final { scan-assembler-times "atom.global.b64.or" 1 } } */
-/* { dg-final { scan-assembler-times "atom.global.b64.xor" 1 } } */
+/* { dg-final { scan-assembler-times "atom.global.and.b64" 1 } } */
+/* { dg-final { scan-assembler-times "atom.global.or.b64" 1 } } */
+/* { dg-final { scan-assembler-times "atom.global.xor.b64" 1 } } */
 
 /* { dg-final { scan-assembler-times "atom.global.add.u32" 1 } } */
-/* { dg-final { scan-assembler-times "atom.global.b32.and" 1 } } */
-/* { dg-final { scan-assembler-times "atom.global.b32.or" 1 } } */
-/* { dg-final { scan-assembler-times "atom.global.b32.xor" 1 } } */
+/* { dg-final { scan-assembler-times "atom.global.and.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.global.or.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.global.xor.b32" 1 } } */
 
 /* Shared.  */
 
 /* { dg-final { scan-assembler-times "atom.shared.add.u64" 1 } } */
-/* { dg-final { scan-assembler-times "atom.shared.b64.and" 1 } } */
-/* { dg-final { scan-assembler-times "atom.shared.b64.or" 1 } } */
-/* { dg-final { scan-assembler-times "atom.shared.b64.xor" 1 } } */
+/* { dg-final { scan-assembler-times "atom.shared.and.b64" 1 } } */
+/* { dg-final { scan-assembler-times "atom.shared.or.b64" 1 } } */
+/* { dg-final { scan-assembler-times "atom.shared.xor.b64" 1 } } */
 
 /* { dg-final { scan-assembler-times "atom.shared.add.u32" 1 } } */
-/* { dg-final { scan-assembler-times "atom.shared.b32.and" 1 } } */
-/* { dg-final { scan-assembler-times "atom.shared.b32.or" 1 } } */
-/* { dg-final { scan-assembler-times "atom.shared.b32.xor" 1 } } */
+/* { dg-final { scan-assembler-times "atom.shared.and.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.shared.or.b32" 1 } } */
+/* { dg-final { scan-assembler-times "atom.shared.xor.b32" 1 } } */

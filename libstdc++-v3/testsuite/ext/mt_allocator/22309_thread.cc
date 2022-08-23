@@ -22,6 +22,7 @@
 #include <pthread.h>
 #include <cstdlib>
 #include <stdexcept>
+#include <string>
 
 void
 check_dlopen(void*& h)

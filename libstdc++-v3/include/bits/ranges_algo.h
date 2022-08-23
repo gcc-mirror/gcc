@@ -3084,7 +3084,7 @@ namespace ranges
 	auto __last = ranges::end(__r);
 	__glibcxx_assert(__first != __last);
 	auto __comp_proj = __detail::__make_comp_proj(__comp, __proj);
-	minmax_result<range_value_t<_Range>> __result = {*__first, *__first};
+	minmax_result<range_value_t<_Range>> __result = {*__first, __result.min};
 	if (++__first == __last)
 	  return __result;
 	else

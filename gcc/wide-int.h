@@ -1373,10 +1373,13 @@ namespace wi
     : public int_traits <wide_int_storage> {};
 }
 
-/* An array of N wide_int-like objects that can be put at the end of
-   a variable-sized structure.  Use extra_size to calculate how many
-   bytes beyond the sizeof need to be allocated.  Use set_precision
-   to initialize the structure.  */
+/* A variable-length array of wide_int-like objects that can be put
+   at the end of a variable-sized structure.  The number of objects is
+   at most N and can be set at runtime by using set_precision().
+
+   Use extra_size to calculate how many bytes beyond the
+   sizeof need to be allocated.  Use set_precision to initialize the
+   structure.  */
 template <int N>
 struct GTY((user)) trailing_wide_ints
 {
@@ -1386,6 +1389,9 @@ private:
 
   /* The shared maximum length of each number.  */
   unsigned char m_max_len;
+
+  /* The number of elements.  */
+  unsigned char m_num_elements;
 
   /* The current length of each number.
      Avoid char array so the whole structure is not a typeless storage
@@ -1399,12 +1405,15 @@ private:
 public:
   typedef WIDE_INT_REF_FOR (trailing_wide_int_storage) const_reference;
 
-  void set_precision (unsigned int);
+  void set_precision (unsigned int precision, unsigned int num_elements = N);
   unsigned int get_precision () const { return m_precision; }
+  unsigned int num_elements () const { return m_num_elements; }
   trailing_wide_int operator [] (unsigned int);
   const_reference operator [] (unsigned int) const;
-  static size_t extra_size (unsigned int);
-  size_t extra_size () const { return extra_size (m_precision); }
+  static size_t extra_size (unsigned int precision,
+			    unsigned int num_elements = N);
+  size_t extra_size () const { return extra_size (m_precision,
+						  m_num_elements); }
 };
 
 inline trailing_wide_int_storage::
@@ -1457,11 +1466,14 @@ trailing_wide_int_storage::operator = (const T &x)
 }
 
 /* Initialize the structure and record that all elements have precision
-   PRECISION.  */
+   PRECISION.  NUM_ELEMENTS can be no more than N.  */
 template <int N>
 inline void
-trailing_wide_ints <N>::set_precision (unsigned int precision)
+trailing_wide_ints <N>::set_precision (unsigned int precision,
+				       unsigned int num_elements)
 {
+  gcc_checking_assert (num_elements <= N);
+  m_num_elements = num_elements;
   m_precision = precision;
   m_max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
 	       / HOST_BITS_PER_WIDE_INT);
@@ -1484,15 +1496,19 @@ trailing_wide_ints <N>::operator [] (unsigned int index) const
 			  m_len[index].len, m_precision);
 }
 
-/* Return how many extra bytes need to be added to the end of the structure
-   in order to handle N wide_ints of precision PRECISION.  */
+/* Return how many extra bytes need to be added to the end of the
+   structure in order to handle NUM_ELEMENTS wide_ints of precision
+   PRECISION.  NUM_ELEMENTS is the number of elements, and defaults
+   to N.  */
 template <int N>
 inline size_t
-trailing_wide_ints <N>::extra_size (unsigned int precision)
+trailing_wide_ints <N>::extra_size (unsigned int precision,
+				    unsigned int num_elements)
 {
   unsigned int max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
 			  / HOST_BITS_PER_WIDE_INT);
-  return (N * max_len - 1) * sizeof (HOST_WIDE_INT);
+  gcc_checking_assert (num_elements <= N);
+  return (num_elements * max_len - 1) * sizeof (HOST_WIDE_INT);
 }
 
 /* This macro is used in structures that end with a trailing_wide_ints field
@@ -1867,7 +1883,7 @@ wi::eq_p (const T1 &x, const T2 &y)
       while (++i != xi.len);
       return true;
     }
-  if (__builtin_expect (yi.len == 1, true))
+  if (LIKELY (yi.len == 1))
     {
       /* XI is only equal to YI if it too has a single HWI.  */
       if (xi.len != 1)
@@ -1943,7 +1959,7 @@ wi::ltu_p (const T1 &x, const T2 &y)
   /* Optimize the case of two HWIs.  The HWIs are implicitly sign-extended
      for precisions greater than HOST_BITS_WIDE_INT, but sign-extending both
      values does not change the result.  */
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       unsigned HOST_WIDE_INT xl = xi.to_uhwi ();
       unsigned HOST_WIDE_INT yl = yi.to_uhwi ();
@@ -2114,7 +2130,7 @@ wi::cmpu (const T1 &x, const T2 &y)
   /* Optimize the case of two HWIs.  The HWIs are implicitly sign-extended
      for precisions greater than HOST_BITS_WIDE_INT, but sign-extending both
      values does not change the result.  */
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       unsigned HOST_WIDE_INT xl = xi.to_uhwi ();
       unsigned HOST_WIDE_INT yl = yi.to_uhwi ();
@@ -2321,7 +2337,7 @@ wi::bit_and (const T1 &x, const T2 &y)
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       val[0] = xi.ulow () & yi.ulow ();
       result.set_len (1, is_sign_extended);
@@ -2342,7 +2358,7 @@ wi::bit_and_not (const T1 &x, const T2 &y)
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       val[0] = xi.ulow () & ~yi.ulow ();
       result.set_len (1, is_sign_extended);
@@ -2363,7 +2379,7 @@ wi::bit_or (const T1 &x, const T2 &y)
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       val[0] = xi.ulow () | yi.ulow ();
       result.set_len (1, is_sign_extended);
@@ -2384,7 +2400,7 @@ wi::bit_or_not (const T1 &x, const T2 &y)
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       val[0] = xi.ulow () | ~yi.ulow ();
       result.set_len (1, is_sign_extended);
@@ -2405,7 +2421,7 @@ wi::bit_xor (const T1 &x, const T2 &y)
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       val[0] = xi.ulow () ^ yi.ulow ();
       result.set_len (1, is_sign_extended);
@@ -2441,7 +2457,7 @@ wi::add (const T1 &x, const T2 &y)
      HOST_BITS_PER_WIDE_INT are relatively rare and there's not much
      point handling them inline.  */
   else if (STATIC_CONSTANT_P (precision > HOST_BITS_PER_WIDE_INT)
-	   && __builtin_expect (xi.len + yi.len == 2, true))
+	   && LIKELY (xi.len + yi.len == 2))
     {
       unsigned HOST_WIDE_INT xl = xi.ulow ();
       unsigned HOST_WIDE_INT yl = yi.ulow ();
@@ -2527,7 +2543,7 @@ wi::sub (const T1 &x, const T2 &y)
      HOST_BITS_PER_WIDE_INT are relatively rare and there's not much
      point handling them inline.  */
   else if (STATIC_CONSTANT_P (precision > HOST_BITS_PER_WIDE_INT)
-	   && __builtin_expect (xi.len + yi.len == 2, true))
+	   && LIKELY (xi.len + yi.len == 2))
     {
       unsigned HOST_WIDE_INT xl = xi.ulow ();
       unsigned HOST_WIDE_INT yl = yi.ulow ();

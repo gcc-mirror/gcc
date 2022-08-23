@@ -15,4 +15,3 @@ void main()
         assert(temp!int() == 5);
     }
 }
-

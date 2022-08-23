@@ -75,13 +75,13 @@ class signal_state_machine : public state_machine
 public:
   signal_state_machine (logger *logger);
 
-  bool inherited_state_p () const FINAL OVERRIDE { return false; }
+  bool inherited_state_p () const final override { return false; }
 
   bool on_stmt (sm_context *sm_ctxt,
 		const supernode *node,
-		const gimple *stmt) const FINAL OVERRIDE;
+		const gimple *stmt) const final override;
 
-  bool can_purge_p (state_t s) const FINAL OVERRIDE;
+  bool can_purge_p (state_t s) const final override;
 
   /* These states are "global", rather than per-expression.  */
 
@@ -106,21 +106,25 @@ public:
     gcc_assert (m_unsafe_fndecl);
   }
 
-  const char *get_kind () const FINAL OVERRIDE { return "signal_unsafe_call"; }
+  const char *get_kind () const final override { return "signal_unsafe_call"; }
 
   bool operator== (const signal_unsafe_call &other) const
   {
     return m_unsafe_call == other.m_unsafe_call;
   }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_unsafe_call_within_signal_handler;
+  }
+
+  bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
     diagnostic_metadata m;
     /* CWE-479: Signal Handler Use of a Non-reentrant Function.  */
     m.add_cwe (479);
-    if (warning_meta (rich_loc, m,
-		      OPT_Wanalyzer_unsafe_call_within_signal_handler,
+    if (warning_meta (rich_loc, m, get_controlling_option (),
 		      "call to %qD from within signal handler",
 		      m_unsafe_fndecl))
       {
@@ -144,7 +148,7 @@ public:
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
-    FINAL OVERRIDE
+    final override
   {
     if (change.is_global_p ()
 	&& change.m_new_state == m_sm.m_in_signal_handler)
@@ -156,7 +160,7 @@ public:
     return label_text ();
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
+  label_text describe_final_event (const evdesc::final_event &ev) final override
   {
     return ev.formatted_print ("call to %qD from within signal handler",
 			       m_unsafe_fndecl);
@@ -209,7 +213,7 @@ update_model_for_signal_handler (region_model *model,
 class signal_delivery_edge_info_t : public custom_edge_info
 {
 public:
-  void print (pretty_printer *pp) const FINAL OVERRIDE
+  void print (pretty_printer *pp) const final override
   {
     pp_string (pp, "signal delivered");
   }
@@ -222,7 +226,7 @@ public:
 
   bool update_model (region_model *model,
 		     const exploded_edge *eedge,
-		     region_model_context *) const FINAL OVERRIDE
+		     region_model_context *) const final override
   {
     gcc_assert (eedge);
     update_model_for_signal_handler (model, eedge->m_dest->get_function ());
@@ -231,7 +235,7 @@ public:
 
   void add_events_to_path (checker_path *emission_path,
 			   const exploded_edge &eedge ATTRIBUTE_UNUSED)
-    const FINAL OVERRIDE
+    const final override
   {
     emission_path->add_event
       (new precanned_custom_event
@@ -257,16 +261,18 @@ public:
      on the node.  */
   void impl_transition (exploded_graph *eg,
 			exploded_node *src_enode,
-			int sm_idx) FINAL OVERRIDE
+			int sm_idx) final override
   {
     function *handler_fun = DECL_STRUCT_FUNCTION (m_fndecl);
     if (!handler_fun)
       return;
+    const extrinsic_state &ext_state = eg->get_ext_state ();
     program_point entering_handler
-      = program_point::from_function_entry (eg->get_supergraph (),
+      = program_point::from_function_entry (*ext_state.get_model_manager (),
+					    eg->get_supergraph (),
 					    handler_fun);
 
-    program_state state_entering_handler (eg->get_ext_state ());
+    program_state state_entering_handler (ext_state);
     update_model_for_signal_handler (state_entering_handler.m_region_model,
 				     handler_fun);
     state_entering_handler.m_checker_states[sm_idx]->set_global_state
@@ -305,8 +311,7 @@ get_async_signal_unsafe_fns ()
     "vsnprintf",
     "vsprintf"
   };
-  const size_t count
-    = sizeof(async_signal_unsafe_fns) / sizeof (async_signal_unsafe_fns[0]);
+  const size_t count = ARRAY_SIZE (async_signal_unsafe_fns);
   function_set fs (async_signal_unsafe_fns, count);
   return fs;
 }

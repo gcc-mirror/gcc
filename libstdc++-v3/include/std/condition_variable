@@ -234,7 +234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void (*_M_cb)(void*);
   };
 
-  inline namespace _V2 {
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 
   /// condition_variable_any
   // Like above, but mutex is not required to have try_lock.
@@ -439,7 +439,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   };
 
-  } // end inline namespace
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
   /// @} group condition_variables
 _GLIBCXX_END_NAMESPACE_VERSION

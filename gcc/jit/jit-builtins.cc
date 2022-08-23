@@ -109,9 +109,7 @@ find_builtin_by_name (const char *in_name,
 
      We start at index 1 to skip the initial entry (BUILT_IN_NONE), which
      has a NULL name.  */
-  for (unsigned int i = 1;
-       i < sizeof (builtin_data) / sizeof (builtin_data[0]);
-       i++)
+  for (unsigned int i = 1; i < ARRAY_SIZE (builtin_data); i++)
     {
       const struct builtin_data& bd = builtin_data[i];
       if (matches_builtin (in_name, bd))
@@ -320,7 +318,7 @@ static const char * const type_names[] = {
 static const char *
 get_string_for_type_id (enum jit_builtin_type type_id)
 {
-  gcc_assert (type_id < sizeof (type_names)/sizeof(type_names[0]));
+  gcc_assert (type_id < ARRAY_SIZE (type_names));
   return type_names[type_id];
 }
 
@@ -483,6 +481,7 @@ builtins_manager::make_primitive_type (enum jit_builtin_type type_id)
     case BT_UINT16: return m_ctxt->get_int_type (2, false);
     case BT_UINT32: return m_ctxt->get_int_type (4, false);
     case BT_UINT64: return m_ctxt->get_int_type (8, false);
+    case BT_UINT128: return m_ctxt->get_int_type (16, false);
     // case BT_WORD:
     // case BT_UNWINDWORD:
     case BT_FLOAT: return m_ctxt->get_type (GCC_JIT_TYPE_FLOAT);

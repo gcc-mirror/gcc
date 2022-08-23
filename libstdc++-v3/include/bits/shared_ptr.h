@@ -939,7 +939,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return shared_ptr<const _Tp>(this->_M_weak_this); }
 
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
-#define __cpp_lib_enable_shared_from_this 201603
+#define __cpp_lib_enable_shared_from_this 201603L
       /** @{
        * Get a `weak_ptr` referring to the object that has `*this` as its base.
        * @since C++17

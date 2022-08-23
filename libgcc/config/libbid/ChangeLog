@@ -1,3 +1,51 @@
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* bid_binarydecimal.c (CLZ32_MASK16): Delete.
+	(CLZ32_MASK8): Delete.
+	(CLZ32_MASK4): Delete.
+	(CLZ32_MASK2): Delete.
+	(CLZ32_MASK1): Delete.
+	(clz32_nz): Use __builtin_clz.
+	(ctz32_1bit): Delete.
+	(ctz32): Use __builtin_ctz.
+	(CLZ64_MASK32): Delete.
+	(CLZ64_MASK16): Delete.
+	(CLZ64_MASK8): Delete.
+	(CLZ64_MASK4): Delete.
+	(CLZ64_MASK2): Delete.
+	(CLZ64_MASK1): Delete.
+	(clz64_nz): Use __builtin_clzl.
+	(ctz64_1bit): Delete.
+	(ctz64): Use __builtin_ctzl.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* bid_gcc_intrinsics.h (LIBGCC2_HAS_HF_MODE): Define according to
+	__LIBGCC_HAS_HF_MODE__.
+	(BID_HAS_HF_MODE): Define.
+	(HFtype): Define.
+	(__bid_extendhfsd): New prototype.
+	(__bid_extendhfdd): Likewise.
+	(__bid_extendhftd): Likewise.
+	(__bid_truncsdhf): Likewise.
+	(__bid_truncddhf): Likewise.
+	(__bid_trunctdhf): Likewise.
+	* _dd_to_hf.c: New file.
+	* _hf_to_dd.c: New file.
+	* _hf_to_sd.c: New file.
+	* _hf_to_td.c: New file.
+	* _sd_to_hf.c: New file.
+	* _td_to_hf.c: New file.
+
+2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* _dd_to_xf.c: Check __LIBGCC_HAS_XF_MODE__.
+	* _sd_to_xf.c: Likewise.
+	* _td_to_xf.c: Likewise.
+	* _xf_to_dd.c: Likewise.
+	* _xf_to_sd.c: Likewise.
+	* _xf_to_td.c: Likewise.
+
 2020-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/97164

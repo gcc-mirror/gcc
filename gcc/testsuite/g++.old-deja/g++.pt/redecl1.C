@@ -9,14 +9,14 @@ struct S1 {}; // { dg-error "redeclared" } used 1 template parameter
 template <class T = int> // { dg-message "original definition" }
 struct S2; 
 
-template <class T = int>
-struct S2; // { dg-error "redefinition of default" } 
+template <class T = int> // { dg-error "redefinition of default" } 
+struct S2;
 
 template <class T> // { dg-error "template parameter" } 
 struct S3;
 
-template <int I>
-struct S3; // { dg-message "note: redeclared here" } 
+template <int I> // { dg-message "note: redeclared here" } 
+struct S3;
 
-template <template <class T> class C>
-struct S3; // { dg-message "note: redeclared here" } 
+template <template <class T> class C> // { dg-message "note: redeclared here" } 
+struct S3;

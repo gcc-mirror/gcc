@@ -765,7 +765,7 @@ classify_insn (rtx x)
     return CALL_INSN;
   if (ANY_RETURN_P (x))
     return JUMP_INSN;
-  if (GET_CODE (x) == ASM_OPERANDS && ASM_OPERANDS_LABEL_VEC (x))
+  if (GET_CODE (x) == ASM_OPERANDS && ASM_OPERANDS_LABEL_LENGTH (x))
     return JUMP_INSN;
   if (GET_CODE (x) == SET)
     {
@@ -794,7 +794,7 @@ classify_insn (rtx x)
       if (has_return_p)
 	return JUMP_INSN;
       if (GET_CODE (XVECEXP (x, 0, 0)) == ASM_OPERANDS
-	  && ASM_OPERANDS_LABEL_VEC (XVECEXP (x, 0, 0)))
+	  && ASM_OPERANDS_LABEL_LENGTH (XVECEXP (x, 0, 0)))
 	return JUMP_INSN;
     }
 #ifdef GENERATOR_FILE
@@ -870,6 +870,15 @@ dump_rtx_statistics (void)
 }
 
 #if defined ENABLE_RTL_CHECKING && (GCC_VERSION >= 2007)
+
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the internal_error calls.  Their format strings deliberately don't
+   follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 void
 rtl_check_failed_bounds (const_rtx r, int n, const char *file, int line,
 			 const char *func)
@@ -944,6 +953,10 @@ rtl_check_failed_code_mode (const_rtx r, enum rtx_code code, machine_mode mode,
 		  GET_RTX_NAME (GET_CODE (r)), GET_MODE_NAME (GET_MODE (r)),
 		  func, trim_filename (file), line);
 }
+
+#if __GNUC__ >= 10
+#pragma GCC diagnostic pop
+#endif
 
 /* Report that line LINE of FILE tried to access the block symbol fields
    of a non-block symbol.  FUNC is the function that contains the line.  */

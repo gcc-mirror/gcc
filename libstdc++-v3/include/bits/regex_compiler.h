@@ -125,7 +125,7 @@ namespace __detail
       struct _BracketState
       {
 	enum class _Type : char { _None, _Char, _Class } _M_type = _Type::_None;
-	_CharT _M_char;
+	_CharT _M_char = _CharT();
 
 	void
 	set(_CharT __c) noexcept { _M_type = _Type::_Char; _M_char = __c; }

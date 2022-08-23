@@ -394,6 +394,28 @@ set_node::print (pretty_printer *pp) const
 }
 
 // See the comment above the declaration.
+clobber_info *
+clobber_group::prev_clobber (insn_info *insn) const
+{
+  auto &tree = const_cast<clobber_tree &> (m_clobber_tree);
+  int comparison = lookup_clobber (tree, insn);
+  if (comparison <= 0)
+    return dyn_cast<clobber_info *> (tree.root ()->prev_def ());
+  return tree.root ();
+}
+
+// See the comment above the declaration.
+clobber_info *
+clobber_group::next_clobber (insn_info *insn) const
+{
+  auto &tree = const_cast<clobber_tree &> (m_clobber_tree);
+  int comparison = lookup_clobber (tree, insn);
+  if (comparison >= 0)
+    return dyn_cast<clobber_info *> (tree.root ()->next_def ());
+  return tree.root ();
+}
+
+// See the comment above the declaration.
 void
 clobber_group::print (pretty_printer *pp) const
 {
@@ -413,6 +435,32 @@ clobber_group::print (pretty_printer *pp) const
   pp_newline_and_indent (pp, 2);
   m_clobber_tree.print (pp, print_clobber);
   pp_indentation (pp) -= 4;
+}
+
+// See the comment above the declaration.
+def_info *
+def_lookup::prev_def (insn_info *insn) const
+{
+  if (mux && comparison == 0)
+    if (auto *node = mux.dyn_cast<def_node *> ())
+      if (auto *group = dyn_cast<clobber_group *> (node))
+	if (clobber_info *clobber = group->prev_clobber (insn))
+	  return clobber;
+
+  return last_def_of_prev_group ();
+}
+
+// See the comment above the declaration.
+def_info *
+def_lookup::next_def (insn_info *insn) const
+{
+  if (mux && comparison == 0)
+    if (auto *node = mux.dyn_cast<def_node *> ())
+      if (auto *group = dyn_cast<clobber_group *> (node))
+	if (clobber_info *clobber = group->next_clobber (insn))
+	  return clobber;
+
+  return first_def_of_next_group ();
 }
 
 // Return a clobber_group for CLOBBER, creating one if CLOBBER doesn't
@@ -1299,9 +1347,9 @@ function_info::make_use_available (use_info *use, bb_info *bb,
 	  input->m_is_temp = true;
 	  phi->m_is_temp = true;
 	  phi->make_degenerate (input);
-	  if (def_info *prev = dl.prev_def ())
+	  if (def_info *prev = dl.prev_def (phi_insn))
 	    phi->set_prev_def (prev);
-	  if (def_info *next = dl.next_def ())
+	  if (def_info *next = dl.next_def (phi_insn))
 	    phi->set_next_def (next);
 	}
 

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "" } */
 
 extern void abort (void);
 extern void exit (int);

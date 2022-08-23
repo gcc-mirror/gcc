@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs-tree.h"
 #include "dbgcnt.h"
 #include "tm.h"
+#include "tree-eh.h"
 
 /* Routine to determine if the types T1 and T2 are effectively
    the same for GENERIC.  If T1 or T2 is not a type, the test

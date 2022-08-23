@@ -38,7 +38,7 @@ int main ()
 }
 
 /* Scan for c = 972195717) >> [0, 1] in function foo.  */
-/* { dg-final { scan-tree-dump-times "486097858 : 972195717" 1  "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "972195717 : 486097858" 1  "vrp1" } } */
 
 /* Previously we were checking for two ?: with constant PHI arguments,
    but now we collapse them into one.  */

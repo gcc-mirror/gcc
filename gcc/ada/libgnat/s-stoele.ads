@@ -43,6 +43,8 @@ package System.Storage_Elements is
    --  this unit Pure instead of Preelaborable; see RM 13.7.1(15). In Ada 2005,
    --  this is Pure in any case (AI-362).
 
+   pragma Annotate (GNATprove, Always_Return, Storage_Elements);
+
    --  We also add the pragma Pure_Function to the operations in this package,
    --  because otherwise functions with parameters derived from Address are
    --  treated as non-pure by the back-end (see exp_ch6.adb). This is because

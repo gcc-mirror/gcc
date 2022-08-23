@@ -4,7 +4,7 @@ void __attribute__ ((target("branch-protection=leaf")))
 foo1 ()
 {
 }
-/* { dg-error {invalid protection type \("leaf"\) in 'target\("branch-protection="\)' pragma or attribute} "" { target *-*-* } 5 } */
+/* { dg-error {invalid protection type 'leaf' in 'target\("branch-protection="\)' pragma or attribute} "" { target *-*-* } 5 } */
 /* { dg-error {pragma or attribute 'target\("branch-protection=leaf"\)' is not valid} "" { target *-*-* } 5 } */
 
 void __attribute__ ((target("branch-protection=none+pac-ret")))

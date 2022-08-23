@@ -151,6 +151,8 @@ version (GNUFP)
     // https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/sparc/fpu/bits/fenv.h
     else version (SPARC_Any)
     {
+        import core.stdc.config : c_ulong;
+
         alias fenv_t = c_ulong;
         alias fexcept_t = c_ulong;
     }

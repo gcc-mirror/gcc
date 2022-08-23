@@ -5,6 +5,13 @@
 #include <assert.h>
 #include <stdio.h>
 
+#if ACC_DEVICE_TYPE_nvidia
+/* To avoid 'libgomp: The Nvidia accelerator has insufficient resources'.  */
+#define NUM_WORKERS 28
+#else
+#define NUM_WORKERS 32
+#endif
+
 #define LOCAL(n) double n = input;
 #define LOCALS(n) LOCAL(n##1) LOCAL(n##2) LOCAL(n##3) LOCAL(n##4) \
 		  LOCAL(n##5) LOCAL(n##6) LOCAL(n##7) LOCAL(n##8)
@@ -23,7 +30,7 @@ int main (void)
   int ret;
   int input = 1;
 
-  #pragma acc parallel num_gangs(1) num_workers(32) copyout(ret)
+  #pragma acc parallel num_gangs(1) num_workers(NUM_WORKERS) copyout(ret)
   {
     int w = 0;
     LOCALS2(h);

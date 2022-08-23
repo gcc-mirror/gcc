@@ -187,6 +187,3 @@ nothrow pure unittest
     a = b;
     assert(a == b);
 }
-
-
-

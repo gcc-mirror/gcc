@@ -1,3 +1,31 @@
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* objc-act.h (objc_get_sarif_source_language): New decl.
+	* objc-lang.cc (LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+	(objc_get_sarif_source_language): New.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (objc.tags): Look at *.cc.
+
+2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91134
+	* objc-act.cc (objc_build_component_ref): Adjust build_component_ref
+	caller.
+
+2022-05-11  Martin Liska  <mliska@suse.cz>
+
+	PR target/105355
+	* lang-specs.h: Use Separate syntax.
+
+2022-05-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.cc (next_runtime_abi_02_protocol_decl): Do
+	not dead-strip the runtime meta-data symbols.
+	(build_v2_classrefs_table): Likewise.
+	(build_v2_protocol_list_address_table): Likewise.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* Make-lang.in: Rename .c names to .cc.

@@ -214,8 +214,9 @@ union_defs (swap_web_entry *insn_entry, rtx insn, df_ref use)
       if (DF_REF_INSN_INFO (link->ref))
 	{
 	  rtx def_insn = DF_REF_INSN (link->ref);
-	  (void)unionfind_union (insn_entry + INSN_UID (insn),
-				 insn_entry + INSN_UID (def_insn));
+	  gcc_assert (NONDEBUG_INSN_P (def_insn));
+	  unionfind_union (insn_entry + INSN_UID (insn),
+			   insn_entry + INSN_UID (def_insn));
 	}
 
       link = link->next;
@@ -242,8 +243,9 @@ union_uses (swap_web_entry *insn_entry, rtx insn, df_ref def)
       if (DF_REF_INSN_INFO (link->ref))
 	{
 	  rtx use_insn = DF_REF_INSN (link->ref);
-	  (void)unionfind_union (insn_entry + INSN_UID (insn),
-				 insn_entry + INSN_UID (use_insn));
+	  if (NONDEBUG_INSN_P (use_insn))
+	    unionfind_union (insn_entry + INSN_UID (insn),
+			     insn_entry + INSN_UID (use_insn));
 	}
 
       link = link->next;
@@ -1688,7 +1690,15 @@ replace_swapped_aligned_store (swap_web_entry *insn_entry,
   gcc_assert ((GET_CODE (new_body) == SET)
 	      && MEM_P (SET_DEST (new_body)));
 
-  set_block_for_insn (new_insn, BLOCK_FOR_INSN (store_insn));
+  basic_block bb = BLOCK_FOR_INSN (store_insn);
+  set_block_for_insn (new_insn, bb);
+  /* Handle REG_EH_REGION note.  */
+  if (cfun->can_throw_non_call_exceptions && BB_END (bb) == store_insn)
+    {
+      rtx note = find_reg_note (store_insn, REG_EH_REGION, NULL_RTX);
+      if (note)
+	add_reg_note (new_insn, REG_EH_REGION, XEXP (note, 0));
+    }
   df_insn_rescan (new_insn);
 
   df_insn_delete (store_insn);
@@ -1782,7 +1792,15 @@ replace_swapped_aligned_load (swap_web_entry *insn_entry, rtx swap_insn)
   gcc_assert ((GET_CODE (new_body) == SET)
 	      && MEM_P (SET_SRC (new_body)));
 
-  set_block_for_insn (new_insn, BLOCK_FOR_INSN (def_insn));
+  basic_block bb = BLOCK_FOR_INSN (def_insn);
+  set_block_for_insn (new_insn, bb);
+  /* Handle REG_EH_REGION note.  */
+  if (cfun->can_throw_non_call_exceptions && BB_END (bb) == def_insn)
+    {
+      rtx note = find_reg_note (def_insn, REG_EH_REGION, NULL_RTX);
+      if (note)
+	add_reg_note (new_insn, REG_EH_REGION, XEXP (note, 0));
+    }
   df_insn_rescan (new_insn);
 
   df_insn_delete (def_insn);

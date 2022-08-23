@@ -21,4 +21,8 @@ void fooi (unsigned long x, unsigned long y)
 }
 
 /* { dg-final { scan-assembler-not "cmp" } } */
-/* { dg-final { scan-assembler-times "add" 3 } } */
+/* On IA32, PIC adds one add per function to compute the PIC register, and
+   another add to adjust %esp in the epilogue needed to restore the PIC
+   register.  */
+/* { dg-final { scan-assembler-times "add" 3 { target { ! { ia32 && { ! nonpic } } } } } } */
+/* { dg-final { scan-assembler-times "add" 9 { target { ia32 && { ! nonpic } } } } } */

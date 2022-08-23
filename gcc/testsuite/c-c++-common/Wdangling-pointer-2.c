@@ -2,7 +2,8 @@
    variable within the same function
    Exercise basic cases of -Wdangling-pointer with optimization.
    { dg-do compile }
-   { dg-options "-O2 -Wall -Wno-uninitialized -Wno-return-local-addr -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wall -Wno-uninitialized -Wno-return-local-addr -ftrack-macro-expansion=0" }
+   { dg-require-effective-target alloca } */
 
 typedef __INTPTR_TYPE__ intptr_t;
 typedef __SIZE_TYPE__   size_t;

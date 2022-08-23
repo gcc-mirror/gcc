@@ -213,7 +213,7 @@ void testRTInfo()
     testType!(fn)           ([ 0b0 ]);
     testType!(S!fn)         ([ 0b100 ]);
     testType!(NullType)     ([ 0b0 ]);
-    version(D_LP64)
+    static if (__traits(compiles, __vector(float[4])))
         testType!(__vector(float[4]))  ([ 0b00 ]);
 
     testType!(Object[int])       ([ 0b1 ]);

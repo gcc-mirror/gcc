@@ -61,7 +61,9 @@ write_langs (unsigned int mask)
     if (mask & (1U << n))
       len += strlen (lang_name) + 1;
 
-  result = XNEWVEC (char, len);
+  /* Allocate at least one character as we'll terminate the string
+     at the very end of this function.  */
+  result = XNEWVEC (char, MAX (1, len));
   len = 0;
   for (n = 0; (lang_name = lang_names[n]) != 0; n++)
     if (mask & (1U << n))
@@ -417,7 +419,8 @@ handle_common_deferred_options (void)
 #ifdef ENABLE_PLUGIN
 	  add_new_plugin (opt->arg);
 #else
-	  error ("plugin support is disabled; configure with --enable-plugin");
+	  error ("plugin support is disabled; configure with "
+		 "%<--enable-plugin%>");
 #endif
 	  break;
 
@@ -425,7 +428,8 @@ handle_common_deferred_options (void)
 #ifdef ENABLE_PLUGIN
 	  parse_plugin_arg_opt (opt->arg);
 #else
-	  error ("plugin support is disabled; configure with --enable-plugin");
+	  error ("plugin support is disabled; configure with "
+		 "%<--enable-plugin%>");
 #endif
 	  break;
 

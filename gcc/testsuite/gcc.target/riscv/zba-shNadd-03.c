@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zba -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gc_zba -mabi=lp64" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 /* RV64 only.  */
 int foos(short *x, int n){

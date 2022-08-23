@@ -1,0 +1,53 @@
+# Copyright (C) 2021-2022 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Multilib
+MULTILIB_OPTIONS = mabi=lp64d/mabi=lp64f/mabi=lp64s
+MULTILIB_DIRNAMES = base/lp64d base/lp64f base/lp64s
+
+# The GCC driver always gets all abi-related options on the command line.
+# (see loongarch-driver.c:driver_get_normalized_m_opts)
+comma=,
+MULTILIB_REQUIRED = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))
+
+# Multiarch
+ifneq ($(call if_multiarch,yes),yes)
+    # Define LA_DISABLE_MULTIARCH if multiarch is disabled.
+    tm_defines += LA_DISABLE_MULTIARCH
+else
+    # Only define MULTIARCH_DIRNAME when multiarch is enabled,
+    # or it would always introduce ${target} into the search path.
+    MULTIARCH_DIRNAME = $(LA_MULTIARCH_TRIPLET)
+endif
+
+# Don't define MULTILIB_OSDIRNAMES if multilib is disabled.
+ifeq ($(filter LA_DISABLE_MULTILIB,$(tm_defines)),)
+
+    MULTILIB_OSDIRNAMES = \
+      mabi.lp64d=../lib64$\
+      $(call if_multiarch,:loongarch64-linux-gnuf64)
+
+    MULTILIB_OSDIRNAMES += \
+      mabi.lp64f=../lib64/f32$\
+      $(call if_multiarch,:loongarch64-linux-gnuf32)
+
+    MULTILIB_OSDIRNAMES += \
+      mabi.lp64s=../lib64/sf$\
+      $(call if_multiarch,:loongarch64-linux-gnusf)
+
+endif

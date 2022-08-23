@@ -20,8 +20,7 @@ static assert(!is(noreturn == void));
 
 static assert(is( typeof(assert(0)) == noreturn ));
 
-// Does not parse yet
-// static assert(is( typeof(throw new Exception()) == noreturn ));
+static assert(is( typeof(throw new Exception("")) == noreturn ));
 
 static assert(is(noreturn == noreturn));
 static assert(!is(noreturn == const noreturn));
@@ -122,4 +121,32 @@ noreturn testfn(noreturn function() fn)
 noreturn testdg(noreturn delegate() dg)
 {
     dg();
+}
+
+noreturn func()
+{
+    while(1)
+    {
+    }
+}
+alias AliasSeq(T...) = T;
+alias Types = AliasSeq!(bool, byte, ubyte, short, ushort, int, uint,
+                        long, ulong, char, wchar, dchar, float, double,
+                        real);
+void noreturnImplicit()
+{
+    /*
+        Testing both ways because, although the underlying table
+        is symmetrical the code that calls into it may be buggy.
+    */
+    {
+        int x = 2 + func();
+        int y = func() + 2;
+    }
+    foreach(T; Types)
+    {
+        T value;
+        auto x = value + throw new Exception("Hello");
+        auto y = (throw new Exception("wow")) + value;
+    }
 }

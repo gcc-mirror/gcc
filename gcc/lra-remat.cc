@@ -1039,7 +1039,7 @@ update_scratch_ops (rtx_insn *remat_insn)
       if (! ira_former_scratch_p (regno))
 	continue;
       *loc = lra_create_new_reg (GET_MODE (*loc), *loc,
-				 lra_get_allocno_class (regno),
+				 lra_get_allocno_class (regno), NULL,
 				 "scratch pseudo copy");
       ira_register_new_scratch_op (remat_insn, i, id->icode);
     }

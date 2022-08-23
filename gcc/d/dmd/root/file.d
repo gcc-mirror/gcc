@@ -26,10 +26,14 @@ import dmd.root.string;
 import dmd.common.file;
 import dmd.common.string;
 
-/// Owns a (rmem-managed) file buffer.
-struct FileBuffer
+nothrow:
+
+/// Owns a (rmem-managed) buffer.
+struct Buffer
 {
     ubyte[] data;
+
+  nothrow:
 
     this(this) @disable;
 
@@ -45,11 +49,6 @@ struct FileBuffer
         data = null;
         return result;
     }
-
-    extern (C++) static FileBuffer* create() pure nothrow @safe
-    {
-        return new FileBuffer();
-    }
 }
 
 ///
@@ -59,7 +58,7 @@ struct File
     static struct ReadResult
     {
         bool success;
-        FileBuffer buffer;
+        Buffer buffer;
 
         /// Transfers ownership of the buffer to the caller.
         ubyte[] extractSlice() pure nothrow @nogc @safe
@@ -78,12 +77,6 @@ struct File
 
 nothrow:
     /// Read the full content of a file.
-    extern (C++) static ReadResult read(const(char)* name)
-    {
-        return read(name.toDString());
-    }
-
-    /// Ditto
     static ReadResult read(const(char)[] name)
     {
         ReadResult result;
@@ -97,13 +90,13 @@ nothrow:
             int fd = name.toCStringThen!(slice => open(slice.ptr, O_RDONLY));
             if (fd == -1)
             {
-                //printf("\topen error, errno = %d\n",errno);
+                //perror("\topen error");
                 return result;
             }
             //printf("\tfile opened\n");
             if (fstat(fd, &buf))
             {
-                perror("\tfstat error");
+                //perror("\tfstat error");
                 close(fd);
                 return result;
             }
@@ -112,12 +105,12 @@ nothrow:
             numread = .read(fd, buffer, size);
             if (numread != size)
             {
-                perror("\tread error");
+                //perror("\tread error");
                 goto err2;
             }
             if (close(fd) == -1)
             {
-                perror("\tclose error");
+                //perror("\tclose error");
                 goto err;
             }
             // Always store a wchar ^Z past end of buffer so scanner has a
@@ -179,22 +172,16 @@ nothrow:
     }
 
     /// Write a file, returning `true` on success.
-    extern (D) static bool write(const(char)* name, const void[] data)
+    static bool write(const(char)* name, const void[] data)
     {
         import dmd.common.file : writeFile;
         return writeFile(name, data);
     }
 
     ///ditto
-    extern(D) static bool write(const(char)[] name, const void[] data)
+    static bool write(const(char)[] name, const void[] data)
     {
         return name.toCStringThen!((fname) => write(fname.ptr, data));
-    }
-
-    /// ditto
-    extern (C++) static bool write(const(char)* name, const(void)* data, size_t size)
-    {
-        return write(name, data[0 .. size]);
     }
 
     /// Delete a file.
@@ -229,7 +216,7 @@ nothrow:
      * Returns:
      *  `true` on success
      */
-    extern (D) static bool update(const(char)* namez, const void[] data)
+    static bool update(const(char)* namez, const void[] data)
     {
         enum log = false;
         if (log) printf("update %s\n", namez);
@@ -252,15 +239,9 @@ nothrow:
     }
 
     ///ditto
-    extern(D) static bool update(const(char)[] name, const void[] data)
+    static bool update(const(char)[] name, const void[] data)
     {
         return name.toCStringThen!(fname => update(fname.ptr, data));
-    }
-
-    /// ditto
-    extern (C++) static bool update(const(char)* name, const(void)* data, size_t size)
-    {
-        return update(name, data[0 .. size]);
     }
 
     /// Size of a file in bytes.
@@ -289,3 +270,35 @@ nothrow:
     }
 }
 
+private
+{
+    version (linux) version (PPC)
+    {
+        // https://issues.dlang.org/show_bug.cgi?id=22823
+        // Define our own version of stat_t, as older versions of the compiler
+        // had the st_size field at the wrong offset on PPC.
+        alias stat_t_imported = core.sys.posix.sys.stat.stat_t;
+        static if (stat_t_imported.st_size.offsetof != 48)
+        {
+            extern (C) nothrow @nogc:
+            struct stat_t
+            {
+                ulong[6] __pad1;
+                ulong st_size;
+                ulong[6] __pad2;
+            }
+            version (CRuntime_Glibc)
+            {
+                int fstat64(int, stat_t*) @trusted;
+                alias fstat = fstat64;
+                int stat64(const scope char*, stat_t*) @system;
+                alias stat = stat64;
+            }
+            else
+            {
+                int fstat(int, stat_t*) @trusted;
+                int stat(const scope char*, stat_t*) @system;
+            }
+        }
+    }
+}

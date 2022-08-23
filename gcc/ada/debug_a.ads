@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains data and subprograms to support the A debug switch
+--  This package contains data and subprograms to support the -gnatda switch
 --  that is used to generate output showing what node is being analyzed,
 --  resolved, evaluated, or expanded.
 
@@ -44,18 +44,18 @@ package Debug_A is
    --  Generates a message prefixed by a sequence of bars showing the nesting
    --  depth (depth increases by 1 for a Debug_A_Entry call and is decreased
    --  by the corresponding Debug_A_Exit call). Then the string is output
-   --  (analyzing, expanding etc), followed by the node number and its kind.
-   --  This output is generated only if the debug A flag is set. If the debug
-   --  A flag is not set, then no output is generated. This call also sets the
-   --  Node_Id value in Atree.Current_Error_Node in case a bomb occurs. This
-   --  is done unconditionally, whether or not the debug A flag is set.
+   --  (analyzing, expanding etc), followed by information about the node.
+   --  This output is generated only if the -gnatda switch is set. If that
+   --  switch is not set, then no output is generated. This call also sets the
+   --  Node_Id value in Atree.Current_Error_Node in case a bomb occurs. This is
+   --  done unconditionally, whether or not the switch is set.
 
    procedure Debug_A_Exit (S : String; N : Node_Id; Comment : String);
    pragma Inline (Debug_A_Exit);
    --  Generates the corresponding termination message. The message is preceded
    --  by a sequence of bars, followed by the string S, the node number, and
    --  a trailing comment (e.g. " (already evaluated)"). This output is
-   --  generated only if the debug A flag is set. If the debug A flag is not
+   --  generated only if the -gnatda switch is set. If that switch is not
    --  set, then no output is generated. This call also resets the value in
    --  Atree.Current_Error_Node to what it was before the corresponding call
    --  to Debug_A_Entry.

@@ -47,8 +47,12 @@ test01()
   typedef std::reference_wrapper<D> D2;
   D2* p3 = std::get_deleter<D2>(p2);
 
+#if __cpp_rtti
   VERIFY( p3 != 0 );
   VERIFY( &p3->get() == &d );
+#else
+  VERIFY( p3 == 0 ); // Always returns nullptr without RTTI.
+#endif
 
   return 0;
 }

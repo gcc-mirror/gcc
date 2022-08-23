@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -mgeneral-regs-only -mno-cld -mred-zone" } */
+/* { dg-options "-O2 -mgeneral-regs-only -mno-cld -mred-zone -fno-stack-protector" } */
 
 void
 __attribute__((interrupt))

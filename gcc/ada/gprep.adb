@@ -37,6 +37,7 @@ with Snames;
 with Stringt;  use Stringt;
 with Switch;   use Switch;
 with Types;    use Types;
+with Uintp;
 
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Text_IO;      use Ada.Text_IO;
@@ -92,8 +93,8 @@ package body GPrep is
    procedure Display_Copyright;
    --  Display the copyright notice
 
-   procedure Post_Scan;
-   --  Null procedure, needed by instantiation of Scng below
+   procedure Post_Scan is null;
+   --  Needed by instantiation of Scng below
 
    package Scanner is new Scng
      (Post_Scan,
@@ -169,6 +170,7 @@ package body GPrep is
       --  Do some initializations (order is important here)
 
       Csets.Initialize;
+      Uintp.Initialize;
       Snames.Initialize;
       Stringt.Initialize;
       Prep.Initialize;
@@ -324,15 +326,6 @@ package body GPrep is
    begin
       New_Line (Outfile.all);
    end New_EOL_To_Outfile;
-
-   ---------------
-   -- Post_Scan --
-   ---------------
-
-   procedure Post_Scan is
-   begin
-      null;
-   end Post_Scan;
 
    ----------------------------
    -- Preprocess_Infile_Name --
@@ -729,7 +722,7 @@ package body GPrep is
 
       procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
 
-      --  Start of processing for Scan_Command_Line
+   --  Start of processing for Scan_Command_Line
 
    begin
       --  First check for --version or --help

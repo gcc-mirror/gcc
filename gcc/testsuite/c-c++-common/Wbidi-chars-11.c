@@ -1,6 +1,6 @@
 /* PR preprocessor/103026 */
 /* { dg-do compile } */
-/* { dg-options "-Wbidi-chars=unpaired" } */
+/* { dg-options "-Wbidi-chars=unpaired,ucn" } */
 /* Test that we warn when mixing UCN and UTF-8.  */
 
 int LRE_‪_PDF_\u202c;

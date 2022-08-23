@@ -235,6 +235,7 @@ package body Output is
 
    procedure Pop_Output is
    begin
+      Flush_Buffer;
       pragma Assert (FD_Stack_Idx >= FD_Array'First);
       Current_FD := FD_Stack (FD_Stack_Idx);
       FD_Stack_Idx := FD_Stack_Idx - 1;
@@ -292,10 +293,7 @@ package body Output is
 
    procedure Set_Output (FD : File_Descriptor) is
    begin
-      if Special_Output_Proc = null then
-         Flush_Buffer;
-      end if;
-
+      Flush_Buffer;
       Current_FD := FD;
    end Set_Output;
 
@@ -323,59 +321,99 @@ package body Output is
 
    procedure w (C : Character) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Char (''');
       Write_Char (C);
       Write_Char (''');
       Write_Eol;
+
+      Pop_Output;
    end w;
 
    procedure w (S : String) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Str (S);
       Write_Eol;
+
+      Pop_Output;
    end w;
 
    procedure w (V : Int) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Int (V);
       Write_Eol;
+
+      Pop_Output;
    end w;
 
    procedure w (B : Boolean) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       if B then
          w ("True");
       else
          w ("False");
       end if;
+
+      Pop_Output;
    end w;
 
    procedure w (L : String; C : Character) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Str (L);
       Write_Char (' ');
       w (C);
+
+      Pop_Output;
    end w;
 
    procedure w (L : String; S : String) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Str (L);
       Write_Char (' ');
       w (S);
+
+      Pop_Output;
    end w;
 
    procedure w (L : String; V : Int) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Str (L);
       Write_Char (' ');
       w (V);
+
+      Pop_Output;
    end w;
 
    procedure w (L : String; B : Boolean) is
    begin
+      Push_Output;
+      Set_Standard_Error;
+
       Write_Str (L);
       Write_Char (' ');
       w (B);
+
+      Pop_Output;
    end w;
 
    ----------------

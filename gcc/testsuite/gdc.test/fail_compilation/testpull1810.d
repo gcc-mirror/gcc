@@ -20,4 +20,3 @@ uint foo(uint i)
     }
     return 4;
 }
-

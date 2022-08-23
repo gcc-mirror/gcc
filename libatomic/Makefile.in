@@ -96,7 +96,9 @@ target_triplet = @target@
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	$(addsuffix \
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	_8_2_.lo,$(SIZEOBJS))
 @ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@am__append_3 = $(addsuffix _8_1_.lo,$(SIZEOBJS))
-@ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@am__append_4 = $(addsuffix _16_1_.lo,$(SIZEOBJS))
+@ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@am__append_4 = $(addsuffix _16_1_.lo,$(SIZEOBJS)) \
+@ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@		       $(addsuffix _16_2_.lo,$(SIZEOBJS))
+
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -435,7 +437,7 @@ libatomic_la_LIBADD = $(foreach s,$(SIZES),$(addsuffix \
 @ARCH_AARCH64_LINUX_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=armv8-a+lse
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=armv7-a+fp -DHAVE_KERNEL64
 @ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=i586
-@ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -mcx16
+@ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -mcx16 -mcx16
 libatomic_convenience_la_SOURCES = $(libatomic_la_SOURCES)
 libatomic_convenience_la_LIBADD = $(libatomic_la_LIBADD)
 MULTISRCTOP = 

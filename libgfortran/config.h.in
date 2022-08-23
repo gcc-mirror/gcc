@@ -12,11 +12,17 @@
 /* Define to 1 if you have the `acosf' function. */
 #undef HAVE_ACOSF
 
+/* Define to 1 if you have the `acosf128' function. */
+#undef HAVE_ACOSF128
+
 /* Define to 1 if you have the `acosh' function. */
 #undef HAVE_ACOSH
 
 /* Define to 1 if you have the `acoshf' function. */
 #undef HAVE_ACOSHF
+
+/* Define to 1 if you have the `acoshf128' function. */
+#undef HAVE_ACOSHF128
 
 /* Define to 1 if you have the `acoshl' function. */
 #undef HAVE_ACOSHL
@@ -33,11 +39,17 @@
 /* Define to 1 if you have the `asinf' function. */
 #undef HAVE_ASINF
 
+/* Define to 1 if you have the `asinf128' function. */
+#undef HAVE_ASINF128
+
 /* Define to 1 if you have the `asinh' function. */
 #undef HAVE_ASINH
 
 /* Define to 1 if you have the `asinhf' function. */
 #undef HAVE_ASINHF
+
+/* Define to 1 if you have the `asinhf128' function. */
+#undef HAVE_ASINHF128
 
 /* Define to 1 if you have the `asinhl' function. */
 #undef HAVE_ASINHL
@@ -54,17 +66,26 @@
 /* Define to 1 if you have the `atan2f' function. */
 #undef HAVE_ATAN2F
 
+/* Define to 1 if you have the `atan2f128' function. */
+#undef HAVE_ATAN2F128
+
 /* Define to 1 if you have the `atan2l' function. */
 #undef HAVE_ATAN2L
 
 /* Define to 1 if you have the `atanf' function. */
 #undef HAVE_ATANF
 
+/* Define to 1 if you have the `atanf128' function. */
+#undef HAVE_ATANF128
+
 /* Define to 1 if you have the `atanh' function. */
 #undef HAVE_ATANH
 
 /* Define to 1 if you have the `atanhf' function. */
 #undef HAVE_ATANHF
+
+/* Define to 1 if you have the `atanhf128' function. */
+#undef HAVE_ATANHF128
 
 /* Define to 1 if you have the `atanhl' function. */
 #undef HAVE_ATANHL
@@ -99,6 +120,9 @@
 /* Define to 1 if you have the `cabsf' function. */
 #undef HAVE_CABSF
 
+/* Define to 1 if you have the `cabsf128' function. */
+#undef HAVE_CABSF128
+
 /* Define to 1 if you have the `cabsl' function. */
 #undef HAVE_CABSL
 
@@ -108,11 +132,17 @@
 /* Define to 1 if you have the `cacosf' function. */
 #undef HAVE_CACOSF
 
+/* Define to 1 if you have the `cacosf128' function. */
+#undef HAVE_CACOSF128
+
 /* Define to 1 if you have the `cacosh' function. */
 #undef HAVE_CACOSH
 
 /* Define to 1 if you have the `cacoshf' function. */
 #undef HAVE_CACOSHF
+
+/* Define to 1 if you have the `cacoshf128' function. */
+#undef HAVE_CACOSHF128
 
 /* Define to 1 if you have the `cacoshl' function. */
 #undef HAVE_CACOSHL
@@ -126,6 +156,9 @@
 /* Define to 1 if you have the `cargf' function. */
 #undef HAVE_CARGF
 
+/* Define to 1 if you have the `cargf128' function. */
+#undef HAVE_CARGF128
+
 /* Define to 1 if you have the `cargl' function. */
 #undef HAVE_CARGL
 
@@ -135,11 +168,17 @@
 /* Define to 1 if you have the `casinf' function. */
 #undef HAVE_CASINF
 
+/* Define to 1 if you have the `casinf128' function. */
+#undef HAVE_CASINF128
+
 /* Define to 1 if you have the `casinh' function. */
 #undef HAVE_CASINH
 
 /* Define to 1 if you have the `casinhf' function. */
 #undef HAVE_CASINHF
+
+/* Define to 1 if you have the `casinhf128' function. */
+#undef HAVE_CASINHF128
 
 /* Define to 1 if you have the `casinhl' function. */
 #undef HAVE_CASINHL
@@ -153,11 +192,17 @@
 /* Define to 1 if you have the `catanf' function. */
 #undef HAVE_CATANF
 
+/* Define to 1 if you have the `catanf128' function. */
+#undef HAVE_CATANF128
+
 /* Define to 1 if you have the `catanh' function. */
 #undef HAVE_CATANH
 
 /* Define to 1 if you have the `catanhf' function. */
 #undef HAVE_CATANHF
+
+/* Define to 1 if you have the `catanhf128' function. */
+#undef HAVE_CATANHF128
 
 /* Define to 1 if you have the `catanhl' function. */
 #undef HAVE_CATANHL
@@ -171,11 +216,17 @@
 /* Define to 1 if you have the `ccosf' function. */
 #undef HAVE_CCOSF
 
+/* Define to 1 if you have the `ccosf128' function. */
+#undef HAVE_CCOSF128
+
 /* Define to 1 if you have the `ccosh' function. */
 #undef HAVE_CCOSH
 
 /* Define to 1 if you have the `ccoshf' function. */
 #undef HAVE_CCOSHF
+
+/* Define to 1 if you have the `ccoshf128' function. */
+#undef HAVE_CCOSHF128
 
 /* Define to 1 if you have the `ccoshl' function. */
 #undef HAVE_CCOSHL
@@ -189,6 +240,9 @@
 /* Define to 1 if you have the `ceilf' function. */
 #undef HAVE_CEILF
 
+/* Define to 1 if you have the `ceilf128' function. */
+#undef HAVE_CEILF128
+
 /* Define to 1 if you have the `ceill' function. */
 #undef HAVE_CEILL
 
@@ -197,6 +251,9 @@
 
 /* Define to 1 if you have the `cexpf' function. */
 #undef HAVE_CEXPF
+
+/* Define to 1 if you have the `cexpf128' function. */
+#undef HAVE_CEXPF128
 
 /* Define to 1 if you have the `cexpl' function. */
 #undef HAVE_CEXPL
@@ -222,11 +279,17 @@
 /* Define to 1 if you have the `clog10f' function. */
 #undef HAVE_CLOG10F
 
+/* Define to 1 if you have the `clog10f128' function. */
+#undef HAVE_CLOG10F128
+
 /* Define to 1 if you have the `clog10l' function. */
 #undef HAVE_CLOG10L
 
 /* Define to 1 if you have the `clogf' function. */
 #undef HAVE_CLOGF
+
+/* Define to 1 if you have the `clogf128' function. */
+#undef HAVE_CLOGF128
 
 /* Define to 1 if you have the `clogl' function. */
 #undef HAVE_CLOGL
@@ -240,6 +303,9 @@
 /* Define to 1 if you have the `copysignf' function. */
 #undef HAVE_COPYSIGNF
 
+/* Define to 1 if you have the `copysignf128' function. */
+#undef HAVE_COPYSIGNF128
+
 /* Define to 1 if you have the `copysignl' function. */
 #undef HAVE_COPYSIGNL
 
@@ -249,11 +315,17 @@
 /* Define to 1 if you have the `cosf' function. */
 #undef HAVE_COSF
 
+/* Define to 1 if you have the `cosf128' function. */
+#undef HAVE_COSF128
+
 /* Define to 1 if you have the `cosh' function. */
 #undef HAVE_COSH
 
 /* Define to 1 if you have the `coshf' function. */
 #undef HAVE_COSHF
+
+/* Define to 1 if you have the `coshf128' function. */
+#undef HAVE_COSHF128
 
 /* Define to 1 if you have the `coshl' function. */
 #undef HAVE_COSHL
@@ -267,6 +339,9 @@
 /* Define to 1 if you have the `cpowf' function. */
 #undef HAVE_CPOWF
 
+/* Define to 1 if you have the `cpowf128' function. */
+#undef HAVE_CPOWF128
+
 /* Define to 1 if you have the `cpowl' function. */
 #undef HAVE_CPOWL
 
@@ -279,11 +354,17 @@
 /* Define to 1 if you have the `csinf' function. */
 #undef HAVE_CSINF
 
+/* Define to 1 if you have the `csinf128' function. */
+#undef HAVE_CSINF128
+
 /* Define to 1 if you have the `csinh' function. */
 #undef HAVE_CSINH
 
 /* Define to 1 if you have the `csinhf' function. */
 #undef HAVE_CSINHF
+
+/* Define to 1 if you have the `csinhf128' function. */
+#undef HAVE_CSINHF128
 
 /* Define to 1 if you have the `csinhl' function. */
 #undef HAVE_CSINHL
@@ -297,6 +378,9 @@
 /* Define to 1 if you have the `csqrtf' function. */
 #undef HAVE_CSQRTF
 
+/* Define to 1 if you have the `csqrtf128' function. */
+#undef HAVE_CSQRTF128
+
 /* Define to 1 if you have the `csqrtl' function. */
 #undef HAVE_CSQRTL
 
@@ -306,11 +390,17 @@
 /* Define to 1 if you have the `ctanf' function. */
 #undef HAVE_CTANF
 
+/* Define to 1 if you have the `ctanf128' function. */
+#undef HAVE_CTANF128
+
 /* Define to 1 if you have the `ctanh' function. */
 #undef HAVE_CTANH
 
 /* Define to 1 if you have the `ctanhf' function. */
 #undef HAVE_CTANHF
+
+/* Define to 1 if you have the `ctanhf128' function. */
+#undef HAVE_CTANHF128
 
 /* Define to 1 if you have the `ctanhl' function. */
 #undef HAVE_CTANHL
@@ -333,17 +423,26 @@
 /* Define to 1 if you have the `erfcf' function. */
 #undef HAVE_ERFCF
 
+/* Define to 1 if you have the `erfcf128' function. */
+#undef HAVE_ERFCF128
+
 /* Define to 1 if you have the `erfcl' function. */
 #undef HAVE_ERFCL
 
 /* Define to 1 if you have the `erff' function. */
 #undef HAVE_ERFF
 
+/* Define to 1 if you have the `erff128' function. */
+#undef HAVE_ERFF128
+
 /* Define to 1 if you have the `exp' function. */
 #undef HAVE_EXP
 
 /* Define to 1 if you have the `expf' function. */
 #undef HAVE_EXPF
+
+/* Define to 1 if you have the `expf128' function. */
+#undef HAVE_EXPF128
 
 /* Define to 1 if you have the `expl' function. */
 #undef HAVE_EXPL
@@ -353,6 +452,9 @@
 
 /* Define to 1 if you have the `fabsf' function. */
 #undef HAVE_FABSF
+
+/* Define to 1 if you have the `fabsf128' function. */
+#undef HAVE_FABSF128
 
 /* Define to 1 if you have the `fabsl' function. */
 #undef HAVE_FABSL
@@ -366,7 +468,7 @@
 /* Define to 1 if you have the <fenv.h> header file. */
 #undef HAVE_FENV_H
 
-/* Define if have a usable __float128 type. */
+/* Define if target has usable _Float128 and __float128 types. */
 #undef HAVE_FLOAT128
 
 /* Define to 1 if you have the <floatingpoint.h> header file. */
@@ -377,6 +479,9 @@
 
 /* Define to 1 if you have the `floorf' function. */
 #undef HAVE_FLOORF
+
+/* Define to 1 if you have the `floorf128' function. */
+#undef HAVE_FLOORF128
 
 /* Define to 1 if you have the `floorl' function. */
 #undef HAVE_FLOORL
@@ -393,6 +498,9 @@
 /* Define to 1 if you have the `fmaf' function. */
 #undef HAVE_FMAF
 
+/* Define to 1 if you have the `fmaf128' function. */
+#undef HAVE_FMAF128
+
 /* Define to 1 if you have the `fmal' function. */
 #undef HAVE_FMAL
 
@@ -401,6 +509,9 @@
 
 /* Define to 1 if you have the `fmodf' function. */
 #undef HAVE_FMODF
+
+/* Define to 1 if you have the `fmodf128' function. */
+#undef HAVE_FMODF128
 
 /* Define to 1 if you have the `fmodl' function. */
 #undef HAVE_FMODL
@@ -449,6 +560,9 @@
 
 /* Define to 1 if you have the `frexpf' function. */
 #undef HAVE_FREXPF
+
+/* Define to 1 if you have the `frexpf128' function. */
+#undef HAVE_FREXPF128
 
 /* Define to 1 if you have the `frexpl' function. */
 #undef HAVE_FREXPL
@@ -507,6 +621,9 @@
 /* Define to 1 if you have the `hypotf' function. */
 #undef HAVE_HYPOTF
 
+/* Define to 1 if you have the `hypotf128' function. */
+#undef HAVE_HYPOTF128
+
 /* Define to 1 if you have the `hypotl' function. */
 #undef HAVE_HYPOTL
 
@@ -537,17 +654,26 @@
 /* Define to 1 if you have the `j0f' function. */
 #undef HAVE_J0F
 
+/* Define to 1 if you have the `j0f128' function. */
+#undef HAVE_J0F128
+
 /* Define to 1 if you have the `j1' function. */
 #undef HAVE_J1
 
 /* Define to 1 if you have the `j1f' function. */
 #undef HAVE_J1F
 
+/* Define to 1 if you have the `j1f128' function. */
+#undef HAVE_J1F128
+
 /* Define to 1 if you have the `jn' function. */
 #undef HAVE_JN
 
 /* Define to 1 if you have the `jnf' function. */
 #undef HAVE_JNF
+
+/* Define to 1 if you have the `jnf128' function. */
+#undef HAVE_JNF128
 
 /* Define to 1 if you have the `jnl' function. */
 #undef HAVE_JNL
@@ -561,6 +687,9 @@
 /* Define to 1 if you have the `ldexpf' function. */
 #undef HAVE_LDEXPF
 
+/* Define to 1 if you have the `ldexpf128' function. */
+#undef HAVE_LDEXPF128
+
 /* Define to 1 if you have the `ldexpl' function. */
 #undef HAVE_LDEXPL
 
@@ -569,6 +698,9 @@
 
 /* Define to 1 if you have the `lgammaf' function. */
 #undef HAVE_LGAMMAF
+
+/* Define to 1 if you have the `lgammaf128' function. */
+#undef HAVE_LGAMMAF128
 
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
@@ -581,6 +713,9 @@
 
 /* Define to 1 if you have the `llroundf' function. */
 #undef HAVE_LLROUNDF
+
+/* Define to 1 if you have the `llroundf128' function. */
+#undef HAVE_LLROUNDF128
 
 /* Define to 1 if you have the `llroundl' function. */
 #undef HAVE_LLROUNDL
@@ -597,11 +732,17 @@
 /* Define to 1 if you have the `log10f' function. */
 #undef HAVE_LOG10F
 
+/* Define to 1 if you have the `log10f128' function. */
+#undef HAVE_LOG10F128
+
 /* Define to 1 if you have the `log10l' function. */
 #undef HAVE_LOG10L
 
 /* Define to 1 if you have the `logf' function. */
 #undef HAVE_LOGF
+
+/* Define to 1 if you have the `logf128' function. */
+#undef HAVE_LOGF128
 
 /* Define to 1 if you have the `logl' function. */
 #undef HAVE_LOGL
@@ -611,6 +752,9 @@
 
 /* Define to 1 if you have the `lroundf' function. */
 #undef HAVE_LROUNDF
+
+/* Define to 1 if you have the `lroundf128' function. */
+#undef HAVE_LROUNDF128
 
 /* Define to 1 if you have the `lroundl' function. */
 #undef HAVE_LROUNDL
@@ -642,6 +786,9 @@
 /* Define to 1 if you have the `nextafterf' function. */
 #undef HAVE_NEXTAFTERF
 
+/* Define to 1 if you have the `nextafterf128' function. */
+#undef HAVE_NEXTAFTERF128
+
 /* Define to 1 if you have the `nextafterl' function. */
 #undef HAVE_NEXTAFTERL
 
@@ -656,6 +803,9 @@
 
 /* Define to 1 if you have the `powf' function. */
 #undef HAVE_POWF
+
+/* Define to 1 if you have the `powf128' function. */
+#undef HAVE_POWF128
 
 /* Define to 1 if the system has the type `ptrdiff_t'. */
 #undef HAVE_PTRDIFF_T
@@ -672,6 +822,9 @@
 /* Define to 1 if you have the `roundf' function. */
 #undef HAVE_ROUNDF
 
+/* Define to 1 if you have the `roundf128' function. */
+#undef HAVE_ROUNDF128
+
 /* Define to 1 if you have the `roundl' function. */
 #undef HAVE_ROUNDL
 
@@ -680,6 +833,9 @@
 
 /* Define to 1 if you have the `scalbnf' function. */
 #undef HAVE_SCALBNF
+
+/* Define to 1 if you have the `scalbnf128' function. */
+#undef HAVE_SCALBNF128
 
 /* Define to 1 if you have the `scalbnl' function. */
 #undef HAVE_SCALBNL
@@ -699,11 +855,17 @@
 /* Define to 1 if you have the `sinf' function. */
 #undef HAVE_SINF
 
+/* Define to 1 if you have the `sinf128' function. */
+#undef HAVE_SINF128
+
 /* Define to 1 if you have the `sinh' function. */
 #undef HAVE_SINH
 
 /* Define to 1 if you have the `sinhf' function. */
 #undef HAVE_SINHF
+
+/* Define to 1 if you have the `sinhf128' function. */
+#undef HAVE_SINHF128
 
 /* Define to 1 if you have the `sinhl' function. */
 #undef HAVE_SINHL
@@ -722,6 +884,9 @@
 
 /* Define to 1 if you have the `sqrtf' function. */
 #undef HAVE_SQRTF
+
+/* Define to 1 if you have the `sqrtf128' function. */
+#undef HAVE_SQRTF128
 
 /* Define to 1 if you have the `sqrtl' function. */
 #undef HAVE_SQRTL
@@ -744,6 +909,9 @@
 /* Define if strerror_r takes two arguments and is available in <string.h>. */
 #undef HAVE_STRERROR_R_2ARGS
 
+/* Define to 1 if you have the `strfromf128' function. */
+#undef HAVE_STRFROMF128
+
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 
@@ -758,6 +926,9 @@
 
 /* Define to 1 if you have the `strtof' function. */
 #undef HAVE_STRTOF
+
+/* Define to 1 if you have the `strtof128' function. */
+#undef HAVE_STRTOF128
 
 /* Define to 1 if you have the `strtold' function. */
 #undef HAVE_STRTOLD
@@ -804,11 +975,17 @@
 /* Define to 1 if you have the `tanf' function. */
 #undef HAVE_TANF
 
+/* Define to 1 if you have the `tanf128' function. */
+#undef HAVE_TANF128
+
 /* Define to 1 if you have the `tanh' function. */
 #undef HAVE_TANH
 
 /* Define to 1 if you have the `tanhf' function. */
 #undef HAVE_TANHF
+
+/* Define to 1 if you have the `tanhf128' function. */
+#undef HAVE_TANHF128
 
 /* Define to 1 if you have the `tanhl' function. */
 #undef HAVE_TANHL
@@ -822,6 +999,9 @@
 /* Define to 1 if you have the `tgammaf' function. */
 #undef HAVE_TGAMMAF
 
+/* Define to 1 if you have the `tgammaf128' function. */
+#undef HAVE_TGAMMAF128
+
 /* Define to 1 if you have the `times' function. */
 #undef HAVE_TIMES
 
@@ -830,6 +1010,9 @@
 
 /* Define to 1 if you have the `truncf' function. */
 #undef HAVE_TRUNCF
+
+/* Define to 1 if you have the `truncf128' function. */
+#undef HAVE_TRUNCF128
 
 /* Define to 1 if you have the `truncl' function. */
 #undef HAVE_TRUNCL
@@ -876,17 +1059,26 @@
 /* Define to 1 if you have the `y0f' function. */
 #undef HAVE_Y0F
 
+/* Define to 1 if you have the `y0f128' function. */
+#undef HAVE_Y0F128
+
 /* Define to 1 if you have the `y1' function. */
 #undef HAVE_Y1
 
 /* Define to 1 if you have the `y1f' function. */
 #undef HAVE_Y1F
 
+/* Define to 1 if you have the `y1f128' function. */
+#undef HAVE_Y1F128
+
 /* Define to 1 if you have the `yn' function. */
 #undef HAVE_YN
 
 /* Define to 1 if you have the `ynf' function. */
 #undef HAVE_YNF
+
+/* Define to 1 if you have the `ynf128' function. */
+#undef HAVE_YNF128
 
 /* Define to 1 if you have the `ynl' function. */
 #undef HAVE_YNL
@@ -1005,6 +1197,9 @@
 
 /* Define to 1 if the target supports weakref */
 #undef SUPPORTS_WEAKREF
+
+/* Define if IEC 60559 *f128 APIs should be used for _Float128. */
+#undef USE_IEC_60559
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE

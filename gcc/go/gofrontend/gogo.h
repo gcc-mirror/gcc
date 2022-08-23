@@ -842,6 +842,11 @@ class Gogo
   void
   check_return_statements();
 
+  // Gather references from global variables initializers to other
+  // variables.
+  void
+  record_global_init_refs();
+
   // Remove deadcode.
   void
   remove_deadcode();
@@ -2333,6 +2338,15 @@ class Variable
     this->toplevel_decl_ = s;
   }
 
+  // Note that the initializer of this global variable refers to VAR.
+  void
+  add_init_ref(Named_object* var);
+
+  // The variables that this variable's initializers refer to.
+  const std::vector<Named_object*>*
+  init_refs() const
+  { return this->init_refs_; }
+
   // Traverse the initializer expression.
   int
   traverse_expression(Traverse*, unsigned int traverse_mask);
@@ -2389,6 +2403,12 @@ class Variable
   Block* preinit_;
   // Location of variable definition.
   Location location_;
+  // The top-level declaration for this variable. Only used for local
+  // variables. Must be a Temporary_statement if not NULL.
+  Statement* toplevel_decl_;
+  // Variables that the initializer of a global variable refers to.
+  // Used for initializer ordering.
+  std::vector<Named_object*>* init_refs_;
   // Any associated go:embed comments.
   std::vector<std::string>* embeds_;
   // Backend representation.
@@ -2439,9 +2459,6 @@ class Variable
   // True if this variable is referenced from an inlined body that
   // will be put into the export data.
   bool is_referenced_by_inline_ : 1;
-  // The top-level declaration for this variable. Only used for local
-  // variables. Must be a Temporary_statement if not NULL.
-  Statement* toplevel_decl_;
 };
 
 // A variable which is really the name for a function return value, or

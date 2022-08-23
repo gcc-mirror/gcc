@@ -1,3 +1,5 @@
+/* { dg-additional-options "-Wno-analyzer-out-of-bounds" } */
+
 void
 ar (int *hd)
 {

@@ -19,5 +19,3 @@ auto f() @nogc
     scope h=&g;
     h();
 }
-
-

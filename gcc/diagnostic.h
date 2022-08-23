@@ -59,8 +59,17 @@ enum diagnostics_output_format
   /* The default: textual output.  */
   DIAGNOSTICS_OUTPUT_FORMAT_TEXT,
 
-  /* JSON-based output.  */
-  DIAGNOSTICS_OUTPUT_FORMAT_JSON
+  /* JSON-based output, to stderr.  */
+  DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR,
+
+  /* JSON-based output, to a file.  */
+  DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE,
+
+  /* SARIF-based output, to stderr.  */
+  DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR,
+
+  /* SARIF-based output, to a file.  */
+  DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE
 };
 
 /* An enum for controlling how diagnostic_paths should be printed.  */
@@ -159,6 +168,8 @@ typedef void (*diagnostic_finalizer_fn) (diagnostic_context *,
 
 class edit_context;
 namespace json { class value; }
+class diagnostic_client_data_hooks;
+class logical_location;
 
 /* This data structure bundles altogether any information relevant to
    the context of a diagnostic message.  */
@@ -215,6 +226,9 @@ struct diagnostic_context
   /* True if we should print any CWE identifiers associated with
      diagnostics.  */
   bool show_cwe;
+
+  /* True if we should print any rules associated with diagnostics.  */
+  bool show_rules;
 
   /* How should diagnostic_path objects be printed.  */
   enum diagnostic_path_format path_format;
@@ -340,6 +354,9 @@ struct diagnostic_context
      source output.  */
   bool show_ruler_p;
 
+  /* True if -freport-bug option is used.  */
+  bool report_bug;
+
   /* Used to specify additional diagnostic output to be emitted after the
      rest of the diagnostic.  This is for implementing
      -fdiagnostics-parseable-fixits and GCC_EXTRA_DIAGNOSTIC_OUTPUT.  */
@@ -391,6 +408,12 @@ struct diagnostic_context
   /* Include files that diagnostic_report_current_module has already listed the
      include path for.  */
   hash_set<location_t, false, location_hash> *includes_seen;
+
+  /* A bundle of hooks for providing data to the context about its client
+     e.g. version information, plugins, etc.
+     Used by SARIF output to give metadata about the client that's
+     producing diagnostics.  */
+  diagnostic_client_data_hooks *m_client_data_hooks;
 };
 
 static inline void
@@ -574,7 +597,14 @@ extern char *file_name_as_prefix (diagnostic_context *, const char *);
 extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 
 extern void diagnostic_output_format_init (diagnostic_context *,
+					   const char *base_file_name,
 					   enum diagnostics_output_format);
+extern void diagnostic_output_format_init_json_stderr (diagnostic_context *context);
+extern void diagnostic_output_format_init_json_file (diagnostic_context *context,
+						     const char *base_file_name);
+extern void diagnostic_output_format_init_sarif_stderr (diagnostic_context *context);
+extern void diagnostic_output_format_init_sarif_file (diagnostic_context *context,
+						      const char *base_file_name);
 
 /* Compute the number of digits in the decimal representation of an integer.  */
 extern int num_digits (int);
@@ -583,5 +613,7 @@ extern json::value *json_from_expanded_location (diagnostic_context *context,
 						 location_t loc);
 
 extern bool warning_enabled_at (location_t, int);
+
+extern char *get_cwe_url (int cwe);
 
 #endif /* ! GCC_DIAGNOSTIC_H */

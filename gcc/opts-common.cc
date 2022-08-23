@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "intl.h"
@@ -25,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "diagnostic.h"
 #include "spellcheck.h"
+#include "opts-jobserver.h"
 
 static void prune_options (struct cl_decoded_option **, unsigned int *);
 
@@ -289,26 +291,29 @@ enum_arg_ok_for_language (const struct cl_enum_arg *enum_arg,
   return (lang_mask & CL_DRIVER) || !(enum_arg->flags & CL_ENUM_DRIVER_ONLY);
 }
 
-/* Look up ARG in ENUM_ARGS for language LANG_MASK, returning true and
-   storing the value in *VALUE if found, and returning false without
+/* Look up ARG in ENUM_ARGS for language LANG_MASK, returning the cl_enum_arg
+   index and storing the value in *VALUE if found, and returning -1 without
    modifying *VALUE if not found.  */
 
-static bool
+static int
 enum_arg_to_value (const struct cl_enum_arg *enum_args,
-		   const char *arg, HOST_WIDE_INT *value,
+		   const char *arg, size_t len, HOST_WIDE_INT *value,
 		   unsigned int lang_mask)
 {
   unsigned int i;
 
   for (i = 0; enum_args[i].arg != NULL; i++)
-    if (strcmp (arg, enum_args[i].arg) == 0
+    if ((len
+	 ? (strncmp (arg, enum_args[i].arg, len) == 0
+	    && enum_args[i].arg[len] == '\0')
+	 : strcmp (arg, enum_args[i].arg) == 0)
 	&& enum_arg_ok_for_language (&enum_args[i], lang_mask))
       {
 	*value = enum_args[i].value;
-	return true;
+	return i;
       }
 
-  return false;
+  return -1;
 }
 
 /* Look up ARG in the enum used by option OPT_INDEX for language
@@ -324,8 +329,8 @@ opt_enum_arg_to_value (size_t opt_index, const char *arg,
   gcc_assert (option->var_type == CLVC_ENUM);
 
   HOST_WIDE_INT wideval;
-  if (enum_arg_to_value (cl_enums[option->var_enum].values, arg,
-			 &wideval, lang_mask))
+  if (enum_arg_to_value (cl_enums[option->var_enum].values, arg, 0,
+			 &wideval, lang_mask) >= 0)
     {
       *value = wideval;
       return true;
@@ -534,7 +539,7 @@ decode_cmdline_option (const char *const *argv, unsigned int lang_mask,
 {
   size_t opt_index;
   const char *arg = 0;
-  HOST_WIDE_INT value = 1;
+  HOST_WIDE_INT value = 1, mask = 0;
   unsigned int result = 1, i, extra_args, separate_args = 0;
   int adjust_len = 0;
   size_t total_len;
@@ -808,8 +813,67 @@ decode_cmdline_option (const char *const *argv, unsigned int lang_mask,
     {
       const struct cl_enum *e = &cl_enums[option->var_enum];
 
-      gcc_assert (value == 1);
-      if (enum_arg_to_value (e->values, arg, &value, lang_mask))
+      gcc_assert (option->var_value != CLEV_NORMAL || value == 1);
+      if (option->var_value != CLEV_NORMAL)
+	{
+	  const char *p = arg;
+	  HOST_WIDE_INT sum_value = 0;
+	  unsigned HOST_WIDE_INT used_sets = 0;
+	  do
+	    {
+	      const char *q = strchr (p, ',');
+	      HOST_WIDE_INT this_value = 0;
+	      if (q && q == p)
+		{
+		  errors |= CL_ERR_ENUM_SET_ARG;
+		  break;
+		}
+	      int idx = enum_arg_to_value (e->values, p, q ? q - p : 0,
+					   &this_value, lang_mask);
+	      if (idx < 0)
+		{
+		  errors |= CL_ERR_ENUM_SET_ARG;
+		  break;
+		}
+
+	      HOST_WIDE_INT this_mask = 0;
+	      if (option->var_value == CLEV_SET)
+		{
+		  unsigned set = e->values[idx].flags >> CL_ENUM_SET_SHIFT;
+		  gcc_checking_assert (set >= 1
+				       && set <= HOST_BITS_PER_WIDE_INT);
+		  if ((used_sets & (HOST_WIDE_INT_1U << (set - 1))) != 0)
+		    {
+		      errors |= CL_ERR_ENUM_SET_ARG;
+		      break;
+		    }
+		  used_sets |= HOST_WIDE_INT_1U << (set - 1);
+
+		  for (int i = 0; e->values[i].arg != NULL; i++)
+		    if (set == (e->values[i].flags >> CL_ENUM_SET_SHIFT))
+		      this_mask |= e->values[i].value;
+		}
+	      else
+		{
+		  gcc_assert (option->var_value == CLEV_BITSET
+			      && ((e->values[idx].flags >> CL_ENUM_SET_SHIFT)
+				  == 0));
+		  this_mask = this_value;
+		}
+
+	      sum_value |= this_value;
+	      mask |= this_mask;
+	      if (q == NULL)
+		break;
+	      p = q + 1;
+	    }
+	  while (1);
+	  if (value == 1)
+	    value = sum_value;
+	  else
+	    gcc_checking_assert (value == 0);
+	}
+      else if (enum_arg_to_value (e->values, arg, 0, &value, lang_mask) >= 0)
 	{
 	  const char *carg = NULL;
 
@@ -825,6 +889,7 @@ decode_cmdline_option (const char *const *argv, unsigned int lang_mask,
   decoded->opt_index = opt_index;
   decoded->arg = arg;
   decoded->value = value;
+  decoded->mask = mask;
   decoded->errors = errors;
   decoded->warn_message = warn_message;
 
@@ -958,6 +1023,7 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
   opt_array[0].canonical_option[2] = NULL;
   opt_array[0].canonical_option[3] = NULL;
   opt_array[0].value = 1;
+  opt_array[0].mask = 0;
   opt_array[0].errors = 0;
   num_decoded_options = 1;
 
@@ -1167,13 +1233,14 @@ handle_option (struct gcc_options *opts,
   size_t opt_index = decoded->opt_index;
   const char *arg = decoded->arg;
   HOST_WIDE_INT value = decoded->value;
+  HOST_WIDE_INT mask = decoded->mask;
   const struct cl_option *option = &cl_options[opt_index];
   void *flag_var = option_flag_var (opt_index, opts);
   size_t i;
 
   if (flag_var)
     set_option (opts, (generated_p ? NULL : opts_set),
-		opt_index, value, arg, kind, loc, dc);
+		opt_index, value, arg, kind, loc, dc, mask);
 
   for (i = 0; i < handlers->num_handlers; i++)
     if (option->flags & handlers->handlers[i].mask)
@@ -1222,6 +1289,7 @@ generate_option (size_t opt_index, const char *arg, HOST_WIDE_INT value,
   decoded->warn_message = NULL;
   decoded->arg = arg;
   decoded->value = value;
+  decoded->mask = 0;
   decoded->errors = (option_ok_for_language (option, lang_mask)
 		     ? 0
 		     : CL_ERR_WRONG_LANG);
@@ -1260,6 +1328,7 @@ generate_option_input_file (const char *file,
   decoded->canonical_option[2] = NULL;
   decoded->canonical_option[3] = NULL;
   decoded->value = 1;
+  decoded->mask = 0;
   decoded->errors = 0;
 }
 
@@ -1279,6 +1348,8 @@ candidates_list_and_hint (const char *arg, char *&str,
   int i;
   const char *candidate;
   char *p;
+
+  gcc_assert (!candidates.is_empty ());
 
   FOR_EACH_VEC_ELT (candidates, i, candidate)
     len += strlen (candidate) + 1;
@@ -1340,6 +1411,82 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
       error_at (loc, "argument to %qs is not between %d and %d",
 		option->opt_text, option->range_min, option->range_max);
       return true;
+    }
+
+  if (errors & CL_ERR_ENUM_SET_ARG)
+    {
+      const struct cl_enum *e = &cl_enums[option->var_enum];
+      const char *p = arg;
+      unsigned HOST_WIDE_INT used_sets = 0;
+      const char *second_opt = NULL;
+      size_t second_opt_len = 0;
+      errors = 0;
+      do
+	{
+	  const char *q = strchr (p, ',');
+	  HOST_WIDE_INT this_value = 0;
+	  if (q && q == p)
+	    {
+	      arg = "";
+	      errors = CL_ERR_ENUM_ARG;
+	      break;
+	    }
+	  int idx = enum_arg_to_value (e->values, p, q ? q - p : 0,
+				       &this_value, lang_mask);
+	  if (idx < 0)
+	    {
+	      if (q == NULL)
+		q = strchr (p, '\0');
+	      char *narg = XALLOCAVEC (char, (q - p) + 1);
+	      memcpy (narg, p, q - p);
+	      narg[q - p] = '\0';
+	      arg = narg;
+	      errors = CL_ERR_ENUM_ARG;
+	      break;
+	    }
+
+	  if (option->var_value == CLEV_BITSET)
+	    {
+	      if (q == NULL)
+		break;
+	      p = q + 1;
+	      continue;
+	    }
+
+	  unsigned set = e->values[idx].flags >> CL_ENUM_SET_SHIFT;
+	  gcc_checking_assert (set >= 1 && set <= HOST_BITS_PER_WIDE_INT);
+	  if ((used_sets & (HOST_WIDE_INT_1U << (set - 1))) != 0)
+	    {
+	      if (q == NULL)
+		q = strchr (p, '\0');
+	      if (second_opt == NULL)
+		{
+		  used_sets = HOST_WIDE_INT_1U << (set - 1);
+		  second_opt = p;
+		  second_opt_len = q - p;
+		  p = arg;
+		  continue;
+		}
+	      char *args = XALLOCAVEC (char, (q - p) + 1 + second_opt_len + 1);
+	      memcpy (args, p, q - p);
+	      args[q - p] = '\0';
+	      memcpy (args + (q - p) + 1, second_opt, second_opt_len);
+	      args[(q - p) + 1 + second_opt_len] = '\0';
+	      error_at (loc, "invalid argument in option %qs", opt);
+	      if (strcmp (args, args + (q - p) + 1) == 0)
+		inform (loc, "%qs specified multiple times in the same option",
+			args);
+	      else
+		inform (loc, "%qs is mutually exclusive with %qs and cannot be"
+			     " specified together", args, args + (q - p) + 1);
+	      return true;
+	    }
+	  used_sets |= HOST_WIDE_INT_1U << (set - 1);
+	  if (q == NULL)
+	    break;
+	  p = q + 1;
+	}
+      while (1);
     }
 
   if (errors & CL_ERR_ENUM_ARG)
@@ -1441,7 +1588,8 @@ read_cmdline_option (struct gcc_options *opts,
 void
 set_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	    int opt_index, HOST_WIDE_INT value, const char *arg, int kind,
-	    location_t loc, diagnostic_context *dc)
+	    location_t loc, diagnostic_context *dc,
+	    HOST_WIDE_INT mask /* = 0 */)
 {
   const struct cl_option *option = &cl_options[opt_index];
   void *flag_var = option_flag_var (opt_index, opts);
@@ -1550,7 +1698,10 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
       {
 	const struct cl_enum *e = &cl_enums[option->var_enum];
 
-	e->set (flag_var, value);
+	if (mask)
+	  e->set (flag_var, value | (e->get (flag_var) & ~mask));
+	else
+	  e->set (flag_var, value);
 	if (set_flag_var)
 	  e->set (set_flag_var, 1);
       }
@@ -1767,7 +1918,8 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
 	    {
 	      const struct cl_enum *e = &cl_enums[option->var_enum];
 
-	      if (enum_arg_to_value (e->values, arg, &value, lang_mask))
+	      if (enum_arg_to_value (e->values, arg, 0, &value,
+				     lang_mask) >= 0)
 		{
 		  const char *carg = NULL;
 
@@ -1854,4 +2006,105 @@ void prepend_xassembler_to_collect_as_options (const char *collect_as_options,
       obstack_grow (o, opt, strlen (opt));
       obstack_1grow (o, '\'');
     }
+}
+
+jobserver_info::jobserver_info ()
+{
+  /* Traditionally, GNU make uses opened pipes for jobserver-auth,
+    e.g. --jobserver-auth=3,4.
+    Starting with GNU make 4.4, one can use --jobserver-style=fifo
+    and then named pipe is used: --jobserver-auth=fifo:/tmp/hcsparta.  */
+
+  /* Detect jobserver and drop it if it's not working.  */
+  string js_needle = "--jobserver-auth=";
+  string fifo_prefix = "fifo:";
+
+  const char *envval = getenv ("MAKEFLAGS");
+  if (envval != NULL)
+    {
+      string makeflags = envval;
+      size_t n = makeflags.rfind (js_needle);
+      if (n != string::npos)
+	{
+	  string ending = makeflags.substr (n + js_needle.size ());
+	  if (ending.find (fifo_prefix) == 0)
+	    {
+	      ending = ending.substr (fifo_prefix.size ());
+	      pipe_path = ending.substr (0, ending.find (' '));
+	      is_active = true;
+	    }
+	  else if (sscanf (makeflags.c_str () + n + js_needle.size (),
+			   "%d,%d", &rfd, &wfd) == 2
+	      && rfd > 0
+	      && wfd > 0
+	      && is_valid_fd (rfd)
+	      && is_valid_fd (wfd))
+	    is_active = true;
+	  else
+	    {
+	      string dup = makeflags.substr (0, n);
+	      size_t pos = makeflags.find (' ', n);
+	      if (pos != string::npos)
+		dup += makeflags.substr (pos);
+	      skipped_makeflags = "MAKEFLAGS=" + dup;
+	      error_msg
+		= "cannot access %<" + js_needle + "%> file descriptors";
+	    }
+	}
+      error_msg = "%<" + js_needle + "%> is not present in %<MAKEFLAGS%>";
+    }
+  else
+    error_msg = "%<MAKEFLAGS%> environment variable is unset";
+
+  if (!error_msg.empty ())
+    error_msg = "jobserver is not available: " + error_msg;
+}
+
+void
+jobserver_info::connect ()
+{
+  if (!pipe_path.empty ())
+    {
+#if HOST_HAS_O_NONBLOCK
+      pipefd = open (pipe_path.c_str (), O_RDWR | O_NONBLOCK);
+      is_connected = true;
+#else
+      is_connected = false;
+#endif
+    }
+  else
+    is_connected = true;
+}
+
+void
+jobserver_info::disconnect ()
+{
+  if (!pipe_path.empty ())
+    {
+      gcc_assert (close (pipefd) == 0);
+      pipefd = -1;
+    }
+}
+
+bool
+jobserver_info::get_token ()
+{
+  int fd = pipe_path.empty () ? rfd : pipefd;
+  char c;
+  unsigned n = read (fd, &c, 1);
+  if (n != 1)
+    {
+      gcc_assert (errno == EAGAIN);
+      return false;
+    }
+  else
+    return true;
+}
+
+void
+jobserver_info::return_token ()
+{
+  int fd = pipe_path.empty () ? wfd : pipefd;
+  char c = 'G';
+  gcc_assert (write (fd, &c, 1) == 1);
 }

@@ -1,3 +1,269 @@
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR c++/104493
+	* c-decl.cc (c_decl_attributes, finish_decl): Call omp_mappable_type
+	instead of removed langhook.
+	* c-typeck.cc (c_finish_omp_clauses): Likewise.
+
+2022-08-11  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/102633
+	* c-parser.cc (c_parser_initializer): Add new tree parameter.  Use it.
+	Call suppress_warning.
+	(c_parser_declaration_or_fndef): Pass d down to c_parser_initializer.
+	(c_parser_omp_declare_reduction): Pass omp_priv down to
+	c_parser_initializer.
+
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	* c-parser.cc (c_parser_string_literal): Use char8_t as the type
+	of CPP_UTF8STRING when char8_t support is enabled.
+	* c-typeck.cc (digest_init): Allow initialization of an array
+	of character type by a string literal with type array of
+	char8_t.
+
+2022-08-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-typeck.cc (build_c_cast): Quote names of address spaces in
+	diagnostics.
+	(convert_for_assignment): Add a note to address space mismatch
+	diagnostics, specifying the expected and actual types.
+
+2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/97498
+	* c-parser.cc (c_parser_pragma): Set input_location to the
+	location of the pragma, rather than the start of the line.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_target_data, c_parser_omp_target_update,
+	c_parser_omp_target_enter_data, c_parser_omp_target_exit_data): Set
+	OMP_REQUIRES_TARGET_USED.
+	(c_parser_omp_requires): Remove sorry.
+
+2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_target_enter_data,
+	c_parser_omp_target_exit_data): Accept tofrom
+	map-type modifier but use 'to' / 'from' internally.
+
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.cc (implicitly_declare): Add auto_diagnostic_group to
+	group the warning with any note.
+	(warn_about_goto): Likewise to group error or warning with note.
+	Bail out if the warning wasn't emitted, to avoid emitting orphan
+	notes.
+	(lookup_label_for_goto): Add auto_diagnostic_group to
+	group the error with the note.
+	(check_earlier_gotos): Likewise.
+	(c_check_switch_jump_warnings): Likewise for any error/warning.
+	Conditionalize emission of the notes.
+	(diagnose_uninitialized_cst_member): Likewise for warning,
+	conditionalizing emission of the note.
+	(grokdeclarator): Add auto_diagnostic_group to group the "array
+	type has incomplete element type" error with any note.
+	(parser_xref_tag): Add auto_diagnostic_group to group warnings
+	with their notes.  Conditionalize emission of notes.
+	(start_struct): Add auto_diagnostic_group to group the
+	"redefinition of" errors with any note.
+	(start_enum): Likewise for "redeclaration of %<enum %E%>" error.
+	(check_for_loop_decls): Likewise for pre-C99 error.
+
+2022-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_linear): Parse OpenMP 5.2
+	style linear clause modifiers.  Set
+	OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER flag on the clauses when
+	old style modifiers are used.
+	* c-typeck.cc (c_finish_omp_clauses): Only reject linear clause
+	with val modifier on simd or for if the old style modifiers are
+	used.
+
+2022-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-lang.cc (LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE): Redefine.
+	(c_get_sarif_source_language): New.
+	* c-tree.h (c_get_sarif_source_language): New decl.
+
+2022-05-31  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (c.tags): Look at *.cc.
+
+2022-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (OMP_SCOPE_CLAUSE_MASK): Add firstprivate and allocate
+	clauses.
+
+2022-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_declare_target): If OMP_CLAUSE_LINK was
+	seen first, use "%<to%>" or "%<enter%>" depending on
+	OMP_CLAUSE_ENTER_TO of the current clause, otherwise use
+	"%<to%> or %<enter%>" wording.
+
+2022-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Parse enter clause.
+	(c_parser_omp_all_clauses): For to clause on declare target, use
+	OMP_CLAUSE_ENTER clause with OMP_CLAUSE_ENTER_TO instead of
+	OMP_CLAUSE_TO_DECLARE clause.  Handle PRAGMA_OMP_CLAUSE_ENTER.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Add enter clause.
+	(c_parser_omp_declare_target): Use OMP_CLAUSE_ENTER instead of
+	OMP_CLAUSE_TO_DECLARE.
+	* c-typeck.cc (c_finish_omp_clauses): Handle OMP_CLAUSE_ENTER instead
+	of OMP_CLAUSE_TO_DECLARE, to OMP_CLAUSE_ENTER_TO use "to" as clause
+	name in diagnostics instead of
+	omp_clause_code_name[OMP_CLAUSE_CODE (c)].
+
+2022-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91134
+	* c-tree.h (build_component_ref): Add ARROW_LOC location_t argument.
+	* c-typeck.cc (build_component_ref): Likewise.  If DATUM is
+	INDIRECT_REF and ARROW_LOC isn't UNKNOWN_LOCATION, print a different
+	diagnostic and fixit hint if DATUM has pointer type.
+	* c-parser.cc (c_parser_postfix_expression,
+	c_parser_omp_variable_list): Adjust build_component_ref callers.
+	* gimple-parser.cc (c_parser_gimple_postfix_expression_after_primary):
+	Likewise.
+
+2022-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105378
+	* c-parser.cc (OMP_TASKWAIT_CLAUSE_MASK): Add nowait clause.
+
+2022-05-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/105131
+	* c-decl.cc (diagnose_mismatched_decls): Warn about enum/integer type
+	mismatches.
+	* c-tree.h (comptypes_check_enum_int): Declare.
+	* c-typeck.cc (comptypes): No longer static.
+
+2022-05-17  Marek Polacek  <polacek@redhat.com>
+
+	* c-decl.cc (finish_enum): Store the CONST_DECL into TREE_VALUE, not
+	its value.
+
+2022-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_depend): Parse
+	inoutset depend-kind.
+	(c_parser_omp_depobj): Likewise.
+
+2022-05-16  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.cc (match_builtin_function_types): Use ARRAY_SIZE.
+
+2022-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parse_init): Register omp_all_memory as keyword
+	if flag_openmp.
+	(c_parser_postfix_expression): Diagnose uses of omp_all_memory
+	in postfix expressions.
+	(c_parser_omp_variable_list): Handle omp_all_memory in depend
+	clause.
+	* c-typeck.cc (c_finish_omp_clauses): Handle omp_all_memory
+	keyword in depend clause as null_pointer_node, diagnose invalid
+	uses.
+
+2022-05-09  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.cc (c_parser_conditional_expression): Use {,UN}LIKELY
+	macros.
+	(c_parser_binary_expression): Likewise.
+
+2022-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101833
+	PR c++/47634
+	* c-objc-common.cc (maybe_adjust_arg_pos_for_attribute): New.
+
+2022-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105149
+	* c-typeck.cc (c_build_va_arg): Reject function types.
+
+2022-03-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82283
+	PR c/84685
+	* c-typeck.cc (struct initializer_stack): Add 'designated' member.
+	(start_init): Set it.
+	(finish_init): Restore constructor_designated.
+	(push_init_level): Set constructor_designated to the value of
+	constructor_designated in the upper constructor_stack.
+
+2022-03-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/65095
+	* c-typeck.cc (handle_omp_array_sections_1)
+	(c_oacc_check_attachments): Call 'user_omp_clause_code_name'
+	instead of 'c_omp_map_clause_name'.
+
+2022-03-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-typeck.cc (function_types_compatible_p): Do not handle C2X
+	differently from earlier standards for unprototyped function type
+	compatibility.
+
+2022-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104711
+	* c-fold.cc (c_fully_fold_internal): Don't emit
+	-Wshift-negative-value warning if TYPE_OVERFLOW_WRAPS.
+	* c-typeck.cc (build_binary_op): Likewise.
+
+2022-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_map): Add missing space in string
+	literal.
+
+2022-02-23  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_parse_gimple_body): Diagnose
+	SSA names without definition.
+	(c_parser_gimple_declaration): Handle pointer typed SSA names.
+
+2022-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104532
+	* c-parser.cc (c_parser_omp_variable_list): For CPP_DEREF, use
+	convert_lvalue_to_rvalue and build_indirect_ref instead of
+	build_simple_mem_ref.
+
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_gimple_statement): Properly parse
+	VEC_COND_EXPRs.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Parse 'has_device_addr'
+	clause.
+	(c_parser_omp_variable_list): Handle array sections.
+	(c_parser_omp_clause_has_device_addr): Added.
+	(c_parser_omp_all_clauses): Added PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR
+	case.
+	(c_parser_omp_target_exit_data): Added HAS_DEVICE_ADDR to
+	OMP_CLAUSE_MASK.
+	* c-typeck.cc (handle_omp_array_sections): Handle clause restrictions.
+	(c_finish_omp_clauses): Handle array sections.
+
+2022-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104427
+	* c-parser.cc (c_parser_postfix_expression)
+	<case RID_BUILTIN_ASSOC_BARRIER>: Use parser_build_unary_op
+	instead of build1_loc to build PAREN_EXPR.
+	* c-typeck.cc (build_unary_op): Handle PAREN_EXPR.
+	* c-fold.cc (c_fully_fold_internal): Likewise.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* Make-lang.in: Rename .c names to .cc.

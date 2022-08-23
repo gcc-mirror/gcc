@@ -17,18 +17,27 @@ import core.stdc.ctype;
 
 nothrow:
 
-public int HtmlNamedEntity(const(char)* p, size_t length)
+/**********************************
+ * See if `name` is an HTML Named Entity
+ * Params:
+ *      name = name of the entity
+ * Returns:
+ *      code point corresponding to the named entity
+ *      ~0 for not recognized as a named entity
+ */
+public uint HtmlNamedEntity(scope const char[] name) pure @nogc @safe
 {
-    int tableIndex = tolower(*p) - 'a';
-    if (tableIndex >= 0 && tableIndex < 26)
+    const firstC = tolower(name[0]);
+    if (firstC >= 'a' && firstC <= 'z')
     {
-        foreach (entity; namesTable[tableIndex])
+        // Linear search (use hash table instead?)
+        foreach (entity; namesTable[firstC - 'a'])
         {
-            if (entity.name == p[0 .. length])
+            if (entity.name == name)
                 return entity.value;
         }
     }
-    return -1;
+    return ~0;
 }
 
 private:

@@ -31,7 +31,6 @@ with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
 with Exp_Code;       use Exp_Code;
 with Lib;            use Lib;
-with Lib.Xref;       use Lib.Xref;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
@@ -284,15 +283,15 @@ package body Sem_Warn is
 
       procedure Find_Var (N : Node_Id) is
       begin
-         --  Condition is a direct variable reference
+         --  Expression is a direct variable reference
 
          if Is_Entity_Name (N) then
             Ref := N;
             Var := Entity (Ref);
 
-         --  Case of condition is a comparison with compile time known value
+         --  If expression is an operator, check its operands
 
-         elsif Nkind (N) in N_Op_Compare then
+         elsif Nkind (N) in N_Binary_Op then
             if Compile_Time_Known_Value (Right_Opnd (N)) then
                Find_Var (Left_Opnd (N));
 
@@ -305,9 +304,9 @@ package body Sem_Warn is
                return;
             end if;
 
-         --  If condition is a negation, check its operand
+         --  If expression is a unary operator, check its operand
 
-         elsif Nkind (N) = N_Op_Not then
+         elsif Nkind (N) in N_Unary_Op then
             Find_Var (Right_Opnd (N));
 
          --  Case of condition is function call
@@ -445,8 +444,6 @@ package body Sem_Warn is
       ---------------------------------
 
       function Is_Suspicious_Function_Name (E : Entity_Id) return Boolean is
-         S : Entity_Id;
-
          function Substring_Present (S : String) return Boolean;
          --  Returns True if name buffer has given string delimited by non-
          --  alphabetic characters or by end of string. S is lower case.
@@ -472,6 +469,10 @@ package body Sem_Warn is
 
             return False;
          end Substring_Present;
+
+         --  Local variables
+
+         S : Entity_Id;
 
       --  Start of processing for Is_Suspicious_Function_Name
 
@@ -1130,8 +1131,6 @@ package body Sem_Warn is
    --  Start of processing for Check_References
 
    begin
-      Process_Deferred_References;
-
       --  No messages if warnings are suppressed, or if we have detected any
       --  real errors so far (this last check avoids junk messages resulting
       --  from errors, e.g. a subunit that is not loaded).
@@ -1273,10 +1272,6 @@ package body Sem_Warn is
 
                elsif Never_Set_In_Source_Check_Spec (E1)
 
-                 --  No warning if warning for this case turned off
-
-                 and then Warn_On_No_Value_Assigned
-
                  --  No warning if address taken somewhere
 
                  and then not Address_Taken (E1)
@@ -1382,7 +1377,7 @@ package body Sem_Warn is
                      --  force use of IN OUT, even if in this particular case
                      --  the formal is not modified.
 
-                     else
+                     elsif Warn_On_No_Value_Assigned then
                         --  Suppress the warnings for a junk name
 
                         if not Has_Junk_Name (E1) then
@@ -1398,15 +1393,17 @@ package body Sem_Warn is
                            if not Has_Pragma_Unmodified_Check_Spec (E1)
                              and then not Warnings_Off_E1
                              and then not Has_Junk_Name (E1)
+                             and then Warn_On_No_Value_Assigned
                            then
                               Output_Reference_Error
-                                ("?f?formal parameter& is read but "
+                                ("?v?formal parameter& is read but "
                                  & "never assigned!");
                            end if;
 
                         elsif not Has_Pragma_Unreferenced_Check_Spec (E1)
                           and then not Warnings_Off_E1
                           and then not Has_Junk_Name (E1)
+                          and then Check_Unreferenced_Formals
                         then
                            Output_Reference_Error
                              ("?f?formal parameter& is not referenced!");
@@ -1417,7 +1414,8 @@ package body Sem_Warn is
 
                   else
                      if Referenced (E1) then
-                        if not Has_Unmodified (E1)
+                        if Warn_On_No_Value_Assigned
+                          and then not Has_Unmodified (E1)
                           and then not Warnings_Off_E1
                           and then not Has_Junk_Name (E1)
                         then
@@ -1432,12 +1430,13 @@ package body Sem_Warn is
                            May_Need_Initialized_Actual (E1);
                         end if;
 
-                     elsif not Has_Unreferenced (E1)
+                     elsif Check_Unreferenced
+                       and then not Has_Unreferenced (E1)
                        and then not Warnings_Off_E1
                        and then not Has_Junk_Name (E1)
                      then
                         Output_Reference_Error -- CODEFIX
-                          ("?v?variable& is never read and never assigned!");
+                          ("?u?variable& is never read and never assigned!");
                      end if;
 
                      --  Deal with special case where this variable is hidden
@@ -1446,14 +1445,15 @@ package body Sem_Warn is
                      if Ekind (E1) = E_Variable
                        and then Present (Hiding_Loop_Variable (E1))
                        and then not Warnings_Off_E1
+                       and then Warn_On_Hiding
                      then
                         Error_Msg_N
-                          ("?v?for loop implicitly declares loop variable!",
+                          ("?h?for loop implicitly declares loop variable!",
                            Hiding_Loop_Variable (E1));
 
                         Error_Msg_Sloc := Sloc (E1);
                         Error_Msg_N
-                          ("\?v?declaration hides & declared#!",
+                          ("\?h?declaration hides & declared#!",
                            Hiding_Loop_Variable (E1));
                      end if;
                   end if;
@@ -1882,15 +1882,6 @@ package body Sem_Warn is
          return;
       end if;
 
-      --  Nothing to do for numeric or string literal. Do this test early to
-      --  save time in a common case (it does not matter that we do not include
-      --  character literal here, since that will be caught later on in the
-      --  when others branch of the case statement).
-
-      if Nkind (N) in N_Numeric_Or_String_Literal then
-         return;
-      end if;
-
       --  Ignore reference unless it comes from source. Almost always if we
       --  have a reference from generated code, it is bogus (e.g. calls to init
       --  procs to set default discriminant values).
@@ -1924,7 +1915,7 @@ package body Sem_Warn is
                  and then (No (Unset_Reference (E))
                             or else
                               Earlier_In_Extended_Unit
-                                (Sloc (N), Sloc (Unset_Reference (E))))
+                                (N, Unset_Reference (E)))
                  and then not Has_Pragma_Unmodified_Check_Spec (E)
                  and then not Warnings_Off_Check_Spec (E)
                  and then not Has_Junk_Name (E)
@@ -2016,6 +2007,11 @@ package body Sem_Warn is
                               then
                                  return True;
                               end if;
+
+                           --  Prevent the search from going too far
+
+                           elsif Is_Body_Or_Package_Declaration (Nod) then
+                              exit;
                            end if;
 
                            Nod := Parent (Nod);
@@ -2244,13 +2240,11 @@ package body Sem_Warn is
                Check_Unset_Reference (Pref);
             end;
 
-         --  For type conversions, qualifications, or expressions with actions,
-         --  examine the expression.
+         --  Type conversions can appear in assignment statements both
+         --  as variable names and as expressions. We examine their own
+         --  expressions only when processing their parent node.
 
-         when N_Expression_With_Actions
-            | N_Qualified_Expression
-            | N_Type_Conversion
-         =>
+         when N_Type_Conversion =>
             Check_Unset_Reference (Expression (N));
 
          --  For explicit dereference, always check prefix, which will generate
@@ -2766,8 +2760,6 @@ package body Sem_Warn is
          return;
       end if;
 
-      Process_Deferred_References;
-
       --  Flag any unused with clauses. For a subunit, check only the units
       --  in its context, not those of the parent, which may be needed by other
       --  subunits. We will get the full warnings when we compile the parent,
@@ -2876,7 +2868,9 @@ package body Sem_Warn is
         Match ("dummy")   or else
         Match ("ignore")  or else
         Match ("junk")    or else
-        Match ("unused");
+        Match ("unuse")   or else
+        Match ("tmp")     or else
+        Match ("temp");
    end Has_Junk_Name;
 
    --------------------------------------
@@ -3407,9 +3401,14 @@ package body Sem_Warn is
             False_Result => False_Result);
 
          --  Warn on a possible evaluation to False / True in the presence of
-         --  invalid values.
+         --  invalid values. But issue no warning for an assertion expression
+         --  (or a subexpression thereof); in particular, we don't want a
+         --  warning about an assertion that will always succeed.
 
-         if True_Result then
+         if In_Assertion_Expression_Pragma (Op) then
+            null;
+
+         elsif True_Result then
             Error_Msg_N
               ("condition can only be False if invalid values present?c?", Op);
 
@@ -4420,9 +4419,10 @@ package body Sem_Warn is
 
                         if (No (S) or else not Is_Dispatching_Operation (S))
                           and then not Is_Trivial_Subprogram (Scope (E))
+                          and then Check_Unreferenced_Formals
                         then
                            Error_Msg_NE -- CODEFIX
-                             ("?u?formal parameter & is not referenced!",
+                             ("?f?formal parameter & is not referenced!",
                               E, Spec_E);
                         end if;
                      end;
@@ -4602,7 +4602,7 @@ package body Sem_Warn is
                         then
                            if Warn_On_All_Unread_Out_Parameters then
                               Error_Msg_NE
-                                ("?m?& modified by call, but value might not "
+                                ("?.o?& modified by call, but value might not "
                                  & "be referenced", LA, Ent);
                            end if;
                         else
@@ -4705,8 +4705,6 @@ package body Sem_Warn is
       Ent : Entity_Id;
 
    begin
-      Process_Deferred_References;
-
       if Warn_On_Modified_Unread
         and then In_Extended_Main_Source_Unit (E)
       then

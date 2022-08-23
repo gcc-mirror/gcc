@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "gcc-rich-location.h"
 #include "json.h"
-#include "analyzer/call-string.h"
 #include "ordered-hash-map.h"
 #include "options.h"
 #include "cgraph.h"
@@ -37,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "digraph.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
+#include "analyzer/call-string.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/program-point.h"
 #include "sbitmap.h"
@@ -114,6 +114,8 @@ function_point::print (pretty_printer *pp, const format &f) const
 
     case PK_ORIGIN:
       pp_printf (pp, "origin");
+      if (f.m_newlines)
+	pp_newline (pp);
       break;
 
     case PK_BEFORE_SUPERNODE:
@@ -156,6 +158,8 @@ function_point::print (pretty_printer *pp, const format &f) const
 
     case PK_AFTER_SUPERNODE:
       pp_printf (pp, "after SN: %i", m_supernode->m_index);
+      if (f.m_newlines)
+	pp_newline (pp);
       break;
     }
 }
@@ -212,6 +216,17 @@ function_point::get_location () const
     return m_supernode->get_end_location ();
   else
     return UNKNOWN_LOCATION;
+}
+
+/* Return true if this function_point is a before_stmt for
+   the final stmt in its supernode.  */
+
+bool
+function_point::final_stmt_p () const
+{
+  if (m_kind != PK_BEFORE_STMT)
+    return false;
+  return m_stmt_idx == get_supernode ()->m_stmts.length () - 1;
 }
 
 /* Create a function_point representing the entrypoint of function FUN.  */
@@ -275,7 +290,7 @@ void
 program_point::print (pretty_printer *pp, const format &f) const
 {
   pp_string (pp, "callstring: ");
-  m_call_string.print (pp);
+  m_call_string->print (pp);
   f.spacer (pp);
 
   m_function_point.print (pp, f);
@@ -325,7 +340,7 @@ program_point::to_json () const
       break;
     }
 
-  point_obj->set ("call_string", m_call_string.to_json ());
+  point_obj->set ("call_string", m_call_string->to_json ());
 
   return point_obj;
 }
@@ -338,14 +353,15 @@ void
 program_point::push_to_call_stack (const supernode *caller,
 				   const supernode *callee)
 {
-  m_call_string.push_call (callee, caller);
+  m_call_string = m_call_string->push_call (callee, caller);
 }
 
 /* Pop the topmost call from the current callstack.  */
 void
 program_point::pop_from_call_stack ()
 {
-  m_call_string.pop ();
+  m_call_string = m_call_string->get_parent ();
+  gcc_assert (m_call_string);
 }
 
 /* Generate a hash value for this program_point.  */
@@ -355,7 +371,7 @@ program_point::hash () const
 {
   inchash::hash hstate;
   hstate.merge_hash (m_function_point.hash ());
-  hstate.merge_hash (m_call_string.hash ());
+  hstate.add_ptr (m_call_string);
   return hstate.end ();
 }
 
@@ -364,11 +380,11 @@ program_point::hash () const
 function *
 program_point::get_function_at_depth (unsigned depth) const
 {
-  gcc_assert (depth <= m_call_string.length ());
-  if (depth == m_call_string.length ())
+  gcc_assert (depth <= m_call_string->length ());
+  if (depth == m_call_string->length ())
     return m_function_point.get_function ();
   else
-    return m_call_string[depth].get_caller_function ();
+    return get_call_string ()[depth].get_caller_function ();
 }
 
 /* Assert that this object is sane.  */
@@ -381,12 +397,13 @@ program_point::validate () const
   return;
 #endif
 
-  m_call_string.validate ();
+  m_call_string->validate ();
   /* The "callee" of the final entry in the callstring should be the
      function of the m_function_point.  */
-  if (m_call_string.length () > 0)
-    gcc_assert (m_call_string[m_call_string.length () - 1].get_callee_function ()
-		== get_function ());
+  if (m_call_string->length () > 0)
+    gcc_assert
+      ((*m_call_string)[m_call_string->length () - 1].get_callee_function ()
+       == get_function ());
 }
 
 /* Check to see if SUCC is a valid edge to take (ensuring that we have
@@ -429,14 +446,15 @@ program_point::on_edge (exploded_graph &eg,
 	  }
 
 	/* Add the callsite to the call string.  */
-	m_call_string.push_call (eg.get_supergraph (), call_sedge);
+	m_call_string = m_call_string->push_call (eg.get_supergraph (),
+						  call_sedge);
 
 	/* Impose a maximum recursion depth and don't analyze paths
 	   that exceed it further.
 	   This is something of a blunt workaround, but it only
 	   applies to recursion (and mutual recursion), not to
 	   general call stacks.  */
-	if (m_call_string.calc_recursion_depth ()
+	if (m_call_string->calc_recursion_depth ()
 	    > param_analyzer_max_recursion_depth)
 	  {
 	    if (logger)
@@ -450,13 +468,15 @@ program_point::on_edge (exploded_graph &eg,
     case SUPEREDGE_RETURN:
       {
 	/* Require that we return to the call site in the call string.  */
-	if (m_call_string.empty_p ())
+	if (m_call_string->empty_p ())
 	  {
 	    if (logger)
 	      logger->log ("rejecting return edge: empty call string");
 	    return false;
 	  }
-	const call_string::element_t top_of_stack = m_call_string.pop ();
+	const call_string::element_t &top_of_stack
+	  = m_call_string->get_top_of_stack ();
+	m_call_string = m_call_string->get_parent ();
 	call_string::element_t current_call_string_element (succ->m_dest,
 							    succ->m_src);
 	if (top_of_stack != current_call_string_element)
@@ -625,6 +645,54 @@ function_point::next_stmt ()
     }
 }
 
+/* For those function points for which there is a uniquely-defined
+   successor, return it.  */
+
+function_point
+function_point::get_next () const
+{
+  switch (get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+    case PK_ORIGIN:
+    case PK_AFTER_SUPERNODE:
+      gcc_unreachable (); /* Not uniquely defined.  */
+    case PK_BEFORE_SUPERNODE:
+      if (get_supernode ()->m_stmts.length () > 0)
+	return before_stmt (get_supernode (), 0);
+      else
+	return after_supernode (get_supernode ());
+    case PK_BEFORE_STMT:
+      {
+	unsigned next_idx = get_stmt_idx () + 1;
+	if (next_idx < get_supernode ()->m_stmts.length ())
+	  return before_stmt (get_supernode (), next_idx);
+	else
+	  return after_supernode (get_supernode ());
+      }
+    }
+}
+
+/* class program_point.  */
+
+program_point
+program_point::origin (const region_model_manager &mgr)
+{
+  return program_point (function_point (NULL, NULL,
+					0, PK_ORIGIN),
+			mgr.get_empty_call_string ());
+}
+
+program_point
+program_point::from_function_entry (const region_model_manager &mgr,
+				    const supergraph &sg,
+				    function *fun)
+{
+  return program_point (function_point::from_function_entry (sg, fun),
+			mgr.get_empty_call_string ());
+}
+
 /* For those program points for which there is a uniquely-defined
    successor, return it.  */
 
@@ -645,7 +713,7 @@ program_point::get_next () const
 	return after_supernode (get_supernode (), get_call_string ());
     case PK_BEFORE_STMT:
       {
-	unsigned next_idx = get_stmt_idx ();
+	unsigned next_idx = get_stmt_idx () + 1;
 	if (next_idx < get_supernode ()->m_stmts.length ())
 	  return before_stmt (get_supernode (), next_idx, get_call_string ());
 	else
@@ -677,7 +745,6 @@ static void
 test_function_point_ordering ()
 {
   const supernode *snode = NULL;
-  const call_string call_string;
 
   /* Populate an array with various points within the same
      snode, in order.  */
@@ -712,9 +779,11 @@ test_function_point_ordering ()
 static void
 test_program_point_equality ()
 {
+  region_model_manager mgr;
+
   const supernode *snode = NULL;
 
-  const call_string cs;
+  const call_string &cs = mgr.get_empty_call_string ();
 
   program_point a = program_point::before_supernode (snode, NULL,
 						     cs);

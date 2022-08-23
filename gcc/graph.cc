@@ -169,14 +169,14 @@ draw_cfg_nodes_no_loops (pretty_printer *pp, struct function *fun)
   int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (fun));
   int i, n;
 
-  auto_sbitmap visited (last_basic_block_for_fn (cfun));
+  auto_sbitmap visited (last_basic_block_for_fn (fun));
   bitmap_clear (visited);
 
   n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, true);
   for (i = n_basic_blocks_for_fn (fun) - n;
        i < n_basic_blocks_for_fn (fun); i++)
     {
-      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
+      basic_block bb = BASIC_BLOCK_FOR_FN (fun, rpo[i]);
       draw_cfg_node (pp, fun->funcdef_no, bb);
       bitmap_set_bit (visited, bb->index);
     }
@@ -248,7 +248,8 @@ draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
 static void
 draw_cfg_nodes (pretty_printer *pp, struct function *fun)
 {
-  if (loops_for_fn (fun))
+  /* ???  The loop and dominance APIs are dependent on fun == cfun.  */
+  if (fun == cfun && loops_for_fn (fun))
     draw_cfg_nodes_for_loop (pp, fun->funcdef_no, get_loop (fun, 0));
   else
     draw_cfg_nodes_no_loops (pp, fun);
@@ -267,7 +268,7 @@ draw_cfg_edges (pretty_printer *pp, struct function *fun)
   edge e;
   edge_iterator ei;
   unsigned int idx = 0;
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     FOR_EACH_EDGE (e, ei, bb->succs)
       {
 	if (e->flags & EDGE_DFS_BACK)
@@ -275,13 +276,13 @@ draw_cfg_edges (pretty_printer *pp, struct function *fun)
 	idx++;
       }
 
-  mark_dfs_back_edges ();
-  FOR_ALL_BB_FN (bb, cfun)
+  mark_dfs_back_edges (fun);
+  FOR_ALL_BB_FN (bb, fun)
     draw_cfg_node_succ_edges (pp, fun->funcdef_no, bb);
 
   /* Restore EDGE_DFS_BACK flag from dfs_back.  */
   idx = 0;
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     FOR_EACH_EDGE (e, ei, bb->succs)
       {
 	if (bitmap_bit_p (dfs_back, idx))

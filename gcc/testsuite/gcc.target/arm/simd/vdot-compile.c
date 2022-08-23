@@ -49,8 +49,28 @@ int32x4_t sfooq_lane (int32x4_t r, int8x16_t x, int8x8_t y)
   return vdotq_lane_s32 (r, x, y, 0);
 }
 
-/* { dg-final { scan-assembler-times {v[us]dot\.[us]8\td[0-9]+, d[0-9]+, d[0-9]+} 4 } } */
+int32x2_t sfoo_laneq1 (int32x2_t r, int8x8_t x, int8x16_t y)
+{
+  return vdot_laneq_s32 (r, x, y, 0);
+}
+
+int32x4_t sfooq_lane1 (int32x4_t r, int8x16_t x, int8x16_t y)
+{
+  return vdotq_laneq_s32 (r, x, y, 0);
+}
+
+int32x2_t sfoo_laneq2 (int32x2_t r, int8x8_t x, int8x16_t y)
+{
+  return vdot_laneq_s32 (r, x, y, 2);
+}
+
+int32x4_t sfooq_lane2 (int32x4_t r, int8x16_t x, int8x16_t y)
+{
+  return vdotq_laneq_s32 (r, x, y, 2);
+}
+
+/* { dg-final { scan-assembler-times {v[us]dot\.[us]8\td[0-9]+, d[0-9]+, d[0-9]+} 6 } } */
 /* { dg-final { scan-assembler-times {v[us]dot\.[us]8\tq[0-9]+, q[0-9]+, q[0-9]+} 2 } } */
-/* { dg-final { scan-assembler-times {v[us]dot\.[us]8\td[0-9]+, d[0-9]+, d[0-9]+\[#?[0-9]\]} 2 } } */
-/* { dg-final { scan-assembler-times {v[us]dot\.[us]8\tq[0-9]+, q[0-9]+, d[0-9]+\[#?[0-9]\]} 2 } } */
+/* { dg-final { scan-assembler-times {v[us]dot\.[us]8\td[0-9]+, d[0-9]+, d[0-9]+\[#?[0-9]\]} 4 } } */
+/* { dg-final { scan-assembler-times {v[us]dot\.[us]8\tq[0-9]+, q[0-9]+, d[0-9]+\[#?[0-9]\]} 4 } } */
 

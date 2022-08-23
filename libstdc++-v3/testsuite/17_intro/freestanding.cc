@@ -38,8 +38,10 @@ int main()
 {
   std::exception e;
 
+#if __cpp_rtti
   const char* str __attribute__((unused)) = typeid(e).name();
-  
+#endif
+
   typedef std::numeric_limits<long> limit_type;
   limit_type limit_l __attribute__((unused));
   int r __attribute__((unused)) = limit_type::radix;

@@ -158,9 +158,6 @@
 #if defined(HAVE_LINUX_ETHER_H)
 #include <linux/ether.h>
 #endif
-#if defined(HAVE_LINUX_FS_H)
-#include <linux/fs.h>
-#endif
 #if defined(HAVE_LINUX_REBOOT_H)
 #include <linux/reboot.h>
 #endif
@@ -357,6 +354,23 @@ enum {
 };
 #endif
 
+#if !defined(SYS_timer_settime) && defined(SYS_timer_settime32)
+// musl defines SYS_timer_settim32 on 32-bit systems.
+#define SYS_timer_settime SYS_timer_settime32
+#endif
+
+#if defined(HAVE_LOFF_T)
+// loff_t can be defined as a macro; for -fgo-dump-spec make sure we
+// see a typedef.
+typedef loff_t libgo_loff_t_type;
+#endif
+
+#if defined(HAVE_OFF64_T)
+typedef off64_t libgo_off_t_type;
+#else
+typedef off_t libgo_off_t_type;
+#endif
+
 // The following section introduces explicit references to types and
 // constants of interest to support bootstrapping libgo using a
 // compiler that doesn't support -fdump-go-spec (e.g., clang), via
@@ -537,7 +551,8 @@ SREF(timex);
 // From sys/types.h
 TREF(pid_t);
 TREF(off_t);
-TREF(loff_t);
+TREF(libgo_loff_t_type);
+TREF(libgo_off_t_type);
 TREF(size_t);
 TREF(ssize_t);
 TREF(mode_t);

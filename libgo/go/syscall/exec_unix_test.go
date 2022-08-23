@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build aix || darwin || dragonfly || freebsd || hurd || linux || netbsd || openbsd || solaris
-// +build aix darwin dragonfly freebsd hurd linux netbsd openbsd solaris
 
 package syscall_test
 
@@ -329,7 +328,6 @@ func TestExecHelper(t *testing.T) {
 	// We don't have to worry about restoring these values.
 	// We are in a child process that only runs this test,
 	// and we are going to call syscall.Exec anyhow.
-	runtime.GOMAXPROCS(50)
 	os.Setenv("GO_WANT_HELPER_PROCESS", "3")
 
 	stop := time.Now().Add(time.Second)

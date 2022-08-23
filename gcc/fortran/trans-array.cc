@@ -172,7 +172,7 @@ static tree
 gfc_get_cfi_dim_item (tree desc, tree idx, unsigned field_idx)
 {
   tree tmp = gfc_get_cfi_descriptor_field (desc, CFI_FIELD_DIM);
-  tmp = gfc_build_array_ref (tmp, idx, NULL);
+  tmp = gfc_build_array_ref (tmp, idx, NULL_TREE, true);
   tree field = gfc_advance_chain (TYPE_FIELDS (TREE_TYPE (tmp)), field_idx);
   gcc_assert (field != NULL_TREE);
   return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
@@ -424,7 +424,7 @@ gfc_conv_descriptor_dimension (tree desc, tree dim)
 
   tmp = gfc_get_descriptor_dimension (desc);
 
-  return gfc_build_array_ref (tmp, dim, NULL);
+  return gfc_build_array_ref (tmp, dim, NULL_TREE, true);
 }
 
 
@@ -3664,10 +3664,52 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
 }
 
 
+/* Indicates that the tree EXPR is a reference to an array that can’t
+   have any negative stride.  */
+
+static bool
+non_negative_strides_array_p (tree expr)
+{
+  if (expr == NULL_TREE)
+    return false;
+
+  tree type = TREE_TYPE (expr);
+  if (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      gfc_array_kind array_kind = GFC_TYPE_ARRAY_AKIND (type);
+
+      if (array_kind == GFC_ARRAY_ALLOCATABLE
+	  || array_kind == GFC_ARRAY_ASSUMED_SHAPE_CONT)
+	return true;
+    }
+
+  /* An array with descriptor can have negative strides.
+     We try to be conservative and return false by default here
+     if we don’t recognize a contiguous array instead of
+     returning false if we can identify a non-contiguous one.  */
+  if (!GFC_ARRAY_TYPE_P (type))
+    return false;
+
+  /* If the array was originally a dummy with a descriptor, strides can be
+     negative.  */
+  if (DECL_P (expr)
+      && DECL_LANG_SPECIFIC (expr)
+      && GFC_DECL_SAVED_DESCRIPTOR (expr)
+      && GFC_DECL_SAVED_DESCRIPTOR (expr) != expr)
+    return non_negative_strides_array_p (GFC_DECL_SAVED_DESCRIPTOR (expr));
+
+  return true;
+}
+
+
 /* Build a scalarized reference to an array.  */
 
 static void
-gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
+gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar,
+			       bool tmp_array = false)
 {
   gfc_array_info *info;
   tree decl = NULL_TREE;
@@ -3717,7 +3759,10 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 	decl = info->descriptor;
     }
 
-  se->expr = gfc_build_array_ref (base, index, decl);
+  bool non_negative_stride = tmp_array
+			     || non_negative_strides_array_p (info->descriptor);
+  se->expr = gfc_build_array_ref (base, index, decl,
+				  non_negative_stride);
 }
 
 
@@ -3727,7 +3772,7 @@ void
 gfc_conv_tmp_array_ref (gfc_se * se)
 {
   se->string_length = se->ss->info->string_length;
-  gfc_conv_scalarized_array_ref (se, NULL);
+  gfc_conv_scalarized_array_ref (se, NULL, true);
   gfc_advance_se_ss_chain (se);
 }
 
@@ -3779,7 +3824,9 @@ build_array_ref (tree desc, tree offset, tree decl, tree vptr)
 
   tmp = gfc_conv_array_data (desc);
   tmp = build_fold_indirect_ref_loc (input_location, tmp);
-  tmp = gfc_build_array_ref (tmp, offset, decl, vptr);
+  tmp = gfc_build_array_ref (tmp, offset, decl,
+			     non_negative_strides_array_p (desc),
+			     vptr);
   return tmp;
 }
 
@@ -6267,10 +6314,17 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
       else
 	gfc_conv_structure (&se, expr, 1);
 
-      CONSTRUCTOR_APPEND_ELT (v, build2 (RANGE_EXPR, gfc_array_index_type,
-					 TYPE_MIN_VALUE (TYPE_DOMAIN (type)),
-					 TYPE_MAX_VALUE (TYPE_DOMAIN (type))),
-			      se.expr);
+      if (tree_int_cst_lt (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
+			   TYPE_MIN_VALUE (TYPE_DOMAIN (type))))
+	break;
+      else if (tree_int_cst_equal (TYPE_MIN_VALUE (TYPE_DOMAIN (type)),
+				   TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+	range = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
+      else
+	range = build2 (RANGE_EXPR, gfc_array_index_type,
+			TYPE_MIN_VALUE (TYPE_DOMAIN (type)),
+			TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
+      CONSTRUCTOR_APPEND_ELT (v, range, se.expr);
       break;
 
     case EXPR_ARRAY:
@@ -7716,7 +7770,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       lse.ss = loop.temp_ss;
       rse.ss = ss;
 
-      gfc_conv_scalarized_array_ref (&lse, NULL);
+      gfc_conv_tmp_array_ref (&lse);
       if (expr->ts.type == BT_CHARACTER)
 	{
 	  gfc_conv_expr (&rse, expr);
@@ -9102,6 +9156,10 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 		continue;
 	    }
 
+	  /* Do not broadcast a caf_token.  These are local to the image.  */
+	  if (attr->caf_token)
+	    continue;
+
 	  add_when_allocated = NULL_TREE;
 	  if (cmp_has_alloc_comps
 	      && !c->attr.pointer && !c->attr.proc_pointer)
@@ -9134,10 +9192,13 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	  if (attr->dimension)
 	    {
 	      tmp = gfc_get_element_type (TREE_TYPE (comp));
-	      ubound = gfc_full_array_size (&tmpblock, comp,
-					    c->ts.type == BT_CLASS
-					    ? CLASS_DATA (c)->as->rank
-					    : c->as->rank);
+	      if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (comp)))
+		ubound = GFC_TYPE_ARRAY_SIZE (TREE_TYPE (comp));
+	      else
+		ubound = gfc_full_array_size (&tmpblock, comp,
+					      c->ts.type == BT_CLASS
+					      ? CLASS_DATA (c)->as->rank
+					      : c->as->rank);
 	    }
 	  else
 	    {
@@ -9145,26 +9206,39 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      ubound = build_int_cst (gfc_array_index_type, 1);
 	    }
 
-	  cdesc = gfc_get_array_type_bounds (tmp, 1, 0, &gfc_index_one_node,
-					     &ubound, 1,
-					     GFC_ARRAY_ALLOCATABLE, false);
+	  /* Treat strings like arrays.  Or the other way around, do not
+	   * generate an additional array layer for scalar components.  */
+	  if (attr->dimension || c->ts.type == BT_CHARACTER)
+	    {
+	      cdesc = gfc_get_array_type_bounds (tmp, 1, 0, &gfc_index_one_node,
+						 &ubound, 1,
+						 GFC_ARRAY_ALLOCATABLE, false);
 
-	  cdesc = gfc_create_var (cdesc, "cdesc");
-	  DECL_ARTIFICIAL (cdesc) = 1;
+	      cdesc = gfc_create_var (cdesc, "cdesc");
+	      DECL_ARTIFICIAL (cdesc) = 1;
 
-	  gfc_add_modify (&tmpblock, gfc_conv_descriptor_dtype (cdesc),
-			  gfc_get_dtype_rank_type (1, tmp));
-	  gfc_conv_descriptor_lbound_set (&tmpblock, cdesc,
-					  gfc_index_zero_node,
-					  gfc_index_one_node);
-	  gfc_conv_descriptor_stride_set (&tmpblock, cdesc,
-					  gfc_index_zero_node,
-					  gfc_index_one_node);
-	  gfc_conv_descriptor_ubound_set (&tmpblock, cdesc,
-					  gfc_index_zero_node, ubound);
+	      gfc_add_modify (&tmpblock, gfc_conv_descriptor_dtype (cdesc),
+			      gfc_get_dtype_rank_type (1, tmp));
+	      gfc_conv_descriptor_lbound_set (&tmpblock, cdesc,
+					      gfc_index_zero_node,
+					      gfc_index_one_node);
+	      gfc_conv_descriptor_stride_set (&tmpblock, cdesc,
+					      gfc_index_zero_node,
+					      gfc_index_one_node);
+	      gfc_conv_descriptor_ubound_set (&tmpblock, cdesc,
+					      gfc_index_zero_node, ubound);
+	    }
+	  else
+	    /* Prevent warning.  */
+	    cdesc = NULL_TREE;
 
 	  if (attr->dimension)
-	    comp = gfc_conv_descriptor_data_get (comp);
+	    {
+	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (comp)))
+		comp = gfc_conv_descriptor_data_get (comp);
+	      else
+		comp = gfc_build_addr_expr (NULL_TREE, comp);
+	    }
 	  else
 	    {
 	      gfc_se se;
@@ -9172,14 +9246,18 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      gfc_init_se (&se, NULL);
 
 	      comp = gfc_conv_scalar_to_descriptor (&se, comp,
-	      					    c->ts.type == BT_CLASS
-	      					    ? CLASS_DATA (c)->attr
-	      					    : c->attr);
-	      comp = gfc_build_addr_expr (NULL_TREE, comp);
+						     c->ts.type == BT_CLASS
+						     ? CLASS_DATA (c)->attr
+						     : c->attr);
+	      if (c->ts.type == BT_CHARACTER)
+		comp = gfc_build_addr_expr (NULL_TREE, comp);
 	      gfc_add_block_to_block (&tmpblock, &se.pre);
 	    }
 
-	  gfc_conv_descriptor_data_set (&tmpblock, cdesc, comp);
+	  if (attr->dimension || c->ts.type == BT_CHARACTER)
+	    gfc_conv_descriptor_data_set (&tmpblock, cdesc, comp);
+	  else
+	    cdesc = comp;
 
 	  tree fndecl;
 

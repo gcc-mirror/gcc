@@ -24,3 +24,6 @@ main (void)
       __builtin_abort ();
   return 0;
 }
+
+// On i?86-*-* an ABI warning would actually surface.
+// { dg-prune-output "MMX vector (argument|return) without MMX enabled changes the ABI" }

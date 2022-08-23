@@ -23,6 +23,6 @@ int main ()
 
 // We do not emit Visitor vtable
 // but we do emit rtti here
-// { dg-final { scan-assembler-not {_ZTV7Visitor:} } }
-// { dg-final { scan-assembler {_ZTI7Visitor:} } }
-// { dg-final { scan-assembler {_ZTS7Visitor:} } }
+// { dg-final { scan-assembler-not {_ZTVW3foo7Visitor:} } }
+// { dg-final { scan-assembler {_ZTIW3foo7Visitor:} } }
+// { dg-final { scan-assembler {_ZTSW3foo7Visitor:} } }

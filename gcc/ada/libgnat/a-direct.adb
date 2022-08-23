@@ -38,7 +38,6 @@ use  Ada.Directories.Hierarchical_File_Names;
 with Ada.Strings.Fixed;
 with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
-with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 
 with Interfaces.C;
@@ -1404,11 +1403,11 @@ package body Ada.Directories is
                   if Error /= 0 then
                      Search.State.Dir_Contents.Append
                        (Directory_Entry_Type'
-                          [Valid           => True,
+                          (Valid           => True,
                            Name            => To_Unbounded_String (File_Name),
                            Full_Name       => To_Unbounded_String (Path),
                            Attr_Error_Code => Error,
-                           others          => <>]);
+                           others          => <>));
 
                   --  Otherwise, if the file exists and matches the file kind
                   --  Filter, add the file to the search results. We capture
@@ -1445,14 +1444,14 @@ package body Ada.Directories is
                      if Found then
                         Search.State.Dir_Contents.Append
                           (Directory_Entry_Type'
-                             [Valid             => True,
+                             (Valid             => True,
                               Name              =>
                                 To_Unbounded_String (File_Name),
                               Full_Name         => To_Unbounded_String (Path),
                               Attr_Error_Code   => 0,
                               Kind              => Kind,
                               Modification_Time => Modification_Time (Path),
-                              Size              => Size]);
+                              Size              => Size));
                      end if;
                   end if;
                end;

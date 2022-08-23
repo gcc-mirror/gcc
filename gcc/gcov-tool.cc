@@ -40,12 +40,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #include <getopt.h>
 
-extern int gcov_profile_merge (struct gcov_info*, struct gcov_info*, int, int);
+extern struct gcov_info *gcov_profile_merge (struct gcov_info*,
+					     struct gcov_info*, int, int);
+extern struct gcov_info *gcov_profile_merge_stream (const char *, int, int);
 extern int gcov_profile_overlap (struct gcov_info*, struct gcov_info*);
 extern int gcov_profile_normalize (struct gcov_info*, gcov_type);
 extern int gcov_profile_scale (struct gcov_info*, float, int, int);
 extern struct gcov_info* gcov_read_profile_dir (const char*, int);
-extern void gcov_do_dump (struct gcov_info *, int);
+extern void gcov_do_dump (struct gcov_info *, int, int);
 extern const char *gcov_get_filename (struct gcov_info *list);
 extern void gcov_set_verbose (void);
 
@@ -123,7 +125,7 @@ gcov_output_files (const char *out, struct gcov_info *profile)
     fatal_error (input_location, "output file %s already exists in folder %s",
 		 filename, out);
 
-  gcov_do_dump (profile, 0);
+  gcov_do_dump (profile, 0, 0);
 
   ret = chdir (pwd);
   if (ret)
@@ -141,26 +143,18 @@ profile_merge (const char *d1, const char *d2, const char *out, int w1, int w2)
 {
   struct gcov_info *d1_profile;
   struct gcov_info *d2_profile;
-  int ret;
+  struct gcov_info *merged_profile;
 
   d1_profile = gcov_read_profile_dir (d1, 0);
-  if (!d1_profile)
-    return 1;
+  d2_profile = gcov_read_profile_dir (d2, 0);
 
-  if (d2)
-    {
-      d2_profile = gcov_read_profile_dir (d2, 0);
-      if (!d2_profile)
-        return 1;
+  /* The actual merge: we overwrite to d1_profile.  */
+  merged_profile = gcov_profile_merge (d1_profile, d2_profile, w1, w2);
 
-      /* The actual merge: we overwrite to d1_profile.  */
-      ret = gcov_profile_merge (d1_profile, d2_profile, w1, w2);
-
-      if (ret)
-        return ret;
-    }
-
-  gcov_output_files (out, d1_profile);
+  if (merged_profile)
+    gcov_output_files (out, merged_profile);
+  else if (verbose)
+    fnotice (stdout, "no profile files were merged\n");
 
   return 0;
 }
@@ -234,6 +228,78 @@ do_merge (int argc, char **argv)
     merge_usage ();
 
   return profile_merge (argv[optind], argv[optind+1], output_dir, w1, w2);
+}
+
+/* Usage message for profile merge-stream.  */
+
+static void
+print_merge_stream_usage_message (int error_p)
+{
+  FILE *file = error_p ? stderr : stdout;
+
+  fnotice (file, "  merge-stream [options] [<file>]       Merge coverage stream file (or stdin)\n"
+		 "                                        and coverage file contents\n");
+  fnotice (file, "    -v, --verbose                       Verbose mode\n");
+  fnotice (file, "    -w, --weight <w1,w2>                Set weights (float point values)\n");
+}
+
+static const struct option merge_stream_options[] =
+{
+  { "verbose",                no_argument,       NULL, 'v' },
+  { "weight",                 required_argument, NULL, 'w' },
+  { 0, 0, 0, 0 }
+};
+
+/* Print merge-stream usage and exit.  */
+
+static void ATTRIBUTE_NORETURN
+merge_stream_usage (void)
+{
+  fnotice (stderr, "Merge-stream subcomand usage:");
+  print_merge_stream_usage_message (true);
+  exit (FATAL_EXIT_CODE);
+}
+
+/* Driver for profile merge-stream sub-command.  */
+
+static int
+do_merge_stream (int argc, char **argv)
+{
+  int opt;
+  int w1 = 1, w2 = 1;
+  struct gcov_info *merged_profile;
+
+  optind = 0;
+  while ((opt = getopt_long (argc, argv, "vw:",
+			     merge_stream_options, NULL)) != -1)
+    {
+      switch (opt)
+	{
+	case 'v':
+	  verbose = true;
+	  gcov_set_verbose ();
+	  break;
+	case 'w':
+	  sscanf (optarg, "%d,%d", &w1, &w2);
+	  if (w1 < 0 || w2 < 0)
+	    fatal_error (input_location, "weights need to be non-negative");
+	  break;
+	default:
+	  merge_stream_usage ();
+	}
+    }
+
+  if (argc - optind > 1)
+    merge_stream_usage ();
+
+  merged_profile = gcov_profile_merge_stream (argv[optind], w1, w2);
+
+  if (merged_profile)
+    gcov_do_dump (merged_profile, 0, -1);
+  else if (verbose)
+    fnotice (stdout, "no profile files were merged\n");
+
+  return 0;
 }
 
 /* If N_VAL is no-zero, normalize the profile by setting the largest counter
@@ -512,6 +578,7 @@ print_usage (int error_p)
   fnotice (file, "  -h, --help                            Print this help, then exit\n");
   fnotice (file, "  -v, --version                         Print version number, then exit\n");
   print_merge_usage_message (error_p);
+  print_merge_stream_usage_message (error_p);
   print_rewrite_usage_message (error_p);
   print_overlap_usage_message (error_p);
   fnotice (file, "\nFor bug reporting instructions, please see:\n%s.\n",
@@ -601,6 +668,8 @@ main (int argc, char **argv)
 
   if (!strcmp (sub_command, "merge"))
     return do_merge (argc - optind, argv + optind);
+  else if (!strcmp (sub_command, "merge-stream"))
+    return do_merge_stream (argc - optind, argv + optind);
   else if (!strcmp (sub_command, "rewrite"))
     return do_rewrite (argc - optind, argv + optind);
   else if (!strcmp (sub_command, "overlap"))

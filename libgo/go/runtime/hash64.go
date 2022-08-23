@@ -6,7 +6,6 @@
 // wyhash: https://github.com/wangyi-fudan/wyhash
 
 //go:build amd64 || arm64 || mips64 || mips64le || ppc64 || ppc64le || riscv64 || s390x || wasm || alpha || arm64be || ia64 || sparc64
-// +build amd64 arm64 mips64 mips64le ppc64 ppc64le riscv64 s390x wasm alpha arm64be ia64 sparc64
 
 package runtime
 

@@ -138,6 +138,22 @@ hppa*-*-*)
 lm32*-*-*)
 	cpu_type=lm32
 	;;
+loongarch*-*-*)
+	cpu_type=loongarch
+	tmake_file="loongarch/t-loongarch"
+	if test "${libgcc_cv_loongarch_hard_float}" = yes; then
+		tmake_file="${tmake_file} t-hardfp-sfdf t-hardfp"
+	else
+		tmake_file="${tmake_file} t-softfp-sfdf"
+	fi
+	if test "${ac_cv_sizeof_long_double}" = 16; then
+		tmake_file="${tmake_file} loongarch/t-softfp-tf"
+	fi
+	if test "${host_address}" = 64; then
+		tmake_file="${tmake_file} loongarch/t-loongarch64"
+	fi
+	tmake_file="${tmake_file} t-softfp"
+	;;
 m32r*-*-*)
         cpu_type=m32r
         ;;
@@ -195,12 +211,6 @@ s390*-*-*)
 # Note the 'l'; we need to be able to match e.g. "shle" or "shl".
 sh[123456789lbe]*-*-*)
 	cpu_type=sh
-	;;
-tilegx*-*-*)
-	cpu_type=tilegx
-	;;
-tilepro*-*-*)
-	cpu_type=tilepro
 	;;
 v850*-*-*)
 	cpu_type=v850
@@ -366,6 +376,7 @@ aarch64*-*-elf | aarch64*-*-rtems*)
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+	tmake_file="${tmake_file} t-dfprules"
 	md_unwind_header=aarch64/aarch64-unwind.h
 	;;
 aarch64*-*-freebsd*)
@@ -373,18 +384,21 @@ aarch64*-*-freebsd*)
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+	tmake_file="${tmake_file} t-dfprules"
 	md_unwind_header=aarch64/freebsd-unwind.h
 	;;
 aarch64*-*-netbsd*)
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+	tmake_file="${tmake_file} t-dfprules"
 	md_unwind_header=aarch64/aarch64-unwind.h
 	;;
 aarch64*-*-fuchsia*)
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
+	tmake_file="${tmake_file} t-dfprules"
 	;;
 aarch64*-*-linux*)
 	extra_parts="$extra_parts crtfastmath.o"
@@ -392,6 +406,7 @@ aarch64*-*-linux*)
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+	tmake_file="${tmake_file} t-dfprules"
 	;;
 aarch64*-*-vxworks7*)
 	extra_parts="$extra_parts crtfastmath.o"
@@ -399,6 +414,7 @@ aarch64*-*-vxworks7*)
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-lse t-slibgcc-libgcc"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+	tmake_file="${tmake_file} t-dfprules"
 	;;
 alpha*-*-linux*)
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee t-crtfm alpha/t-linux"
@@ -925,7 +941,17 @@ lm32-*-rtems*)
 lm32-*-uclinux*)
         extra_parts="$extra_parts crtbegin.o crtendS.o crtbeginT.o"
         tmake_file="lm32/t-lm32 lm32/t-uclinux t-libgcc-pic t-softfp-sfdf t-softfp"
-	;;	
+	;;
+loongarch*-*-linux*)
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} t-crtfm loongarch/t-crtstuff"
+	case ${host} in
+	  *)
+	    tmake_file="${tmake_file} t-slibgcc-libgcc"
+	    ;;
+	esac
+	md_unwind_header=loongarch/linux-unwind.h
+	;;
 m32r-*-elf*)
 	tmake_file="$tmake_file m32r/t-m32r t-fdpbit"
 	extra_parts="$extra_parts crtinit.o crtfini.o"
@@ -1455,17 +1481,6 @@ tic6x-*-elf)
 	extra_parts="$extra_parts crtbeginS.o crtendS.o crti.o crtn.o"
 	unwind_header=config/c6x/unwind-c6x.h
 	;;
-tilegx*-*-linux*)
-	if test "${host_address}" = 64; then
-		tmake_file="${tmake_file} tilegx/t-softfp"
-	fi
-	tmake_file="${tmake_file} tilegx/t-crtstuff t-softfp-sfdf t-softfp tilegx/t-tilegx"
-	md_unwind_header=tilepro/linux-unwind.h
-        ;;
-tilepro*-*-linux*)
-	tmake_file="${tmake_file} tilepro/t-crtstuff t-softfp-sfdf t-softfp tilepro/t-tilepro t-slibgcc-libgcc"
-	md_unwind_header=tilepro/linux-unwind.h
-        ;;
 v850*-*-*)
 	tmake_file="${tmake_file} v850/t-v850 t-fdpbit"
 	;;

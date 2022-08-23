@@ -88,4 +88,12 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/ice_*.c]] {
     }
 }
 
+# Test DFP support
+foreach src [lsort [glob -nocomplain $srcdir/$subdir/dfp*.c]] {
+    if {[runtest_file_p $runtests $src]} {
+	    c-torture [list $src] \
+			    $additional_flags
+    }
+}
+
 torture-finish

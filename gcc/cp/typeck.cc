@@ -1511,8 +1511,10 @@ structural_comptypes (tree t1, tree t2, int strict)
 	 substitute into the specialization arguments at instantiation
 	 time.  And aliases can't be equivalent without being ==, so
 	 we don't need to look any deeper.  */
+      ++processing_template_decl;
       tree dep1 = dependent_alias_template_spec_p (t1, nt_transparent);
       tree dep2 = dependent_alias_template_spec_p (t2, nt_transparent);
+      --processing_template_decl;
       if ((dep1 || dep2) && dep1 != dep2)
 	return false;
     }
@@ -1873,9 +1875,9 @@ compparms (const_tree parms1, const_tree parms2)
 }
 
 
-/* Process a sizeof or alignof expression where the operand is a
-   type. STD_ALIGNOF indicates whether an alignof has C++11 (minimum alignment)
-   or GNU (preferred alignment) semantics; it is ignored if op is
+/* Process a sizeof or alignof expression where the operand is a type.
+   STD_ALIGNOF indicates whether an alignof has C++11 (minimum alignment)
+   or GNU (preferred alignment) semantics; it is ignored if OP is
    SIZEOF_EXPR.  */
 
 tree
@@ -1898,6 +1900,13 @@ cxx_sizeof_or_alignof_type (location_t loc, tree type, enum tree_code op,
 	}
       else
 	return error_mark_node;
+    }
+  else if (VOID_TYPE_P (type) && std_alignof)
+    {
+      if (complain)
+	error_at (loc, "invalid application of %qs to a void type",
+		  OVL_OP_INFO (false, op)->name);
+      return error_mark_node;
     }
 
   bool dependent_p = dependent_type_p (type);
@@ -2132,11 +2141,13 @@ cxx_alignas_expr (tree e)
     /* [dcl.align]/3:
        
 	   When the alignment-specifier is of the form
-	   alignas(type-id ), it shall have the same effect as
-	   alignas(alignof(type-id )).  */
+	   alignas(type-id), it shall have the same effect as
+	   alignas(alignof(type-id)).  */
 
     return cxx_sizeof_or_alignof_type (input_location,
-				       e, ALIGNOF_EXPR, true, false);
+				       e, ALIGNOF_EXPR,
+				       /*std_alignof=*/true,
+				       /*complain=*/true);
   
   /* If we reach this point, it means the alignas expression if of
      the form "alignas(assignment-expression)", so we should follow
@@ -2726,17 +2737,14 @@ build_class_member_access_expr (cp_expr object, tree member,
   /* Transform `(a, b).x' into `(*(a, &b)).x', `(a ? b : c).x' into
      `(*(a ?  &b : &c)).x', and so on.  A COND_EXPR is only an lvalue
      in the front end; only _DECLs and _REFs are lvalues in the back end.  */
-  {
-    tree temp = unary_complex_lvalue (ADDR_EXPR, object);
-    if (temp)
-      {
-	temp = cp_build_fold_indirect_ref (temp);
-	if (xvalue_p (object) && !xvalue_p (temp))
-	  /* Preserve xvalue kind.  */
-	  temp = move (temp);
-	object = temp;
-      }
-  }
+  if (tree temp = unary_complex_lvalue (ADDR_EXPR, object))
+    {
+      temp = cp_build_fold_indirect_ref (temp);
+      if (!lvalue_p (object) && lvalue_p (temp))
+	/* Preserve rvalueness.  */
+	temp = move (temp);
+      object = temp;
+    }
 
   /* In [expr.ref], there is an explicit list of the valid choices for
      MEMBER.  We check for each of those cases here.  */
@@ -4749,8 +4757,16 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
       tree off = TREE_OPERAND (cop, 1);
       if (!integer_zerop (off)
 	  && !warning_suppressed_p (cop, OPT_Waddress))
-	warning_at (location, OPT_Waddress, "comparing the result of pointer "
-		    "addition %qE and NULL", cop);
+	{
+	  tree base = TREE_OPERAND (cop, 0);
+	  STRIP_NOPS (base);
+	  if (TYPE_REF_P (TREE_TYPE (base)))
+	    warning_at (location, OPT_Waddress, "the compiler can assume that "
+			"the address of %qE will never be NULL", base);
+	  else
+	    warning_at (location, OPT_Waddress, "comparing the result of "
+			"pointer addition %qE and NULL", cop);
+	}
       return;
     }
   else if (CONVERT_EXPR_P (op)
@@ -4923,7 +4939,7 @@ cp_build_binary_op (const op_location_t &location,
      convert it to this type.  */
   tree final_type = 0;
 
-  tree result, result_ovl;
+  tree result;
 
   /* Nonzero if this is an operation like MIN or MAX which can
      safely be computed in short if both args are promoted shorts.
@@ -5385,6 +5401,7 @@ cp_build_binary_op (const op_location_t &location,
 	  doing_shift = true;
 	  if (TREE_CODE (const_op0) == INTEGER_CST
 	      && tree_int_cst_sgn (const_op0) < 0
+	      && !TYPE_OVERFLOW_WRAPS (type0)
 	      && (complain & tf_warning)
 	      && c_inhibit_evaluation_warnings == 0)
 	    warning_at (location, OPT_Wshift_negative_value,
@@ -6246,25 +6263,29 @@ cp_build_binary_op (const op_location_t &location,
     result = build2 (COMPOUND_EXPR, TREE_TYPE (result),
 		     instrument_expr, result);
 
-  if (!processing_template_decl)
-    {
-      if (resultcode == SPACESHIP_EXPR)
-	result = get_target_expr_sfinae (result, complain);
-      op0 = cp_fully_fold (op0);
-      /* Only consider the second argument if the first isn't overflowed.  */
-      if (!CONSTANT_CLASS_P (op0) || TREE_OVERFLOW_P (op0))
-	return result;
-      op1 = cp_fully_fold (op1);
-      if (!CONSTANT_CLASS_P (op1) || TREE_OVERFLOW_P (op1))
-	return result;
-    }
-  else if (!CONSTANT_CLASS_P (op0) || !CONSTANT_CLASS_P (op1)
-	   || TREE_OVERFLOW_P (op0) || TREE_OVERFLOW_P (op1))
-    return result;
+  if (resultcode == SPACESHIP_EXPR && !processing_template_decl)
+    result = get_target_expr_sfinae (result, complain);
 
-  result_ovl = fold_build2 (resultcode, build_type, op0, op1);
-  if (TREE_OVERFLOW_P (result_ovl))
-    overflow_warning (location, result_ovl);
+  if (!c_inhibit_evaluation_warnings)
+    {
+      if (!processing_template_decl)
+	{
+	  op0 = cp_fully_fold (op0);
+	  /* Only consider the second argument if the first isn't overflowed.  */
+	  if (!CONSTANT_CLASS_P (op0) || TREE_OVERFLOW_P (op0))
+	    return result;
+	  op1 = cp_fully_fold (op1);
+	  if (!CONSTANT_CLASS_P (op1) || TREE_OVERFLOW_P (op1))
+	    return result;
+	}
+      else if (!CONSTANT_CLASS_P (op0) || !CONSTANT_CLASS_P (op1)
+	       || TREE_OVERFLOW_P (op0) || TREE_OVERFLOW_P (op1))
+	return result;
+
+      tree result_ovl = fold_build2 (resultcode, build_type, op0, op1);
+      if (TREE_OVERFLOW_P (result_ovl))
+	overflow_warning (location, result_ovl);
+    }
 
   return result;
 }
@@ -6308,7 +6329,9 @@ build_x_shufflevector (location_t loc, vec<tree, va_gc> *args,
   if (processing_template_decl)
     {
       for (unsigned i = 0; i < args->length (); ++i)
-	if (type_dependent_expression_p ((*args)[i]))
+	if (i <= 1
+	    ? type_dependent_expression_p ((*args)[i])
+	    : instantiation_dependent_expression_p ((*args)[i]))
 	  {
 	    tree exp = build_min_nt_call_vec (NULL, args);
 	    CALL_EXPR_IFN (exp) = IFN_SHUFFLEVECTOR;
@@ -6321,7 +6344,7 @@ build_x_shufflevector (location_t loc, vec<tree, va_gc> *args,
   auto_vec<tree, 16> mask;
   for (unsigned i = 2; i < args->length (); ++i)
     {
-      tree idx = maybe_constant_value ((*args)[i]);
+      tree idx = fold_non_dependent_expr ((*args)[i], complain);
       mask.safe_push (idx);
     }
   tree exp = c_build_shufflevector (loc, arg0, arg1, mask, complain & tf_error);
@@ -6857,6 +6880,12 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	    return error_mark_node;
 	  }
 
+	/* Forming a pointer-to-member is a use of non-pure-virtual fns.  */
+	if (TREE_CODE (t) == FUNCTION_DECL
+	    && !DECL_PURE_VIRTUAL_P (t)
+	    && !mark_used (t, complain) && !(complain & tf_error))
+	  return error_mark_node;
+
 	type = build_ptrmem_type (context_for_name_lookup (t),
 				  TREE_TYPE (t));
 	t = make_ptrmem_cst (type, t);
@@ -6881,9 +6910,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
      so we can just form an ADDR_EXPR with the correct type.  */
   if (processing_template_decl || TREE_CODE (arg) != COMPONENT_REF)
     {
-      tree stripped_arg = tree_strip_any_location_wrapper (arg);
-      if (TREE_CODE (stripped_arg) == FUNCTION_DECL
-	  && !mark_used (stripped_arg, complain) && !(complain & tf_error))
+      if (!mark_single_function (arg, complain))
 	return error_mark_node;
       val = build_address (arg);
       if (TREE_CODE (arg) == OFFSET_REF)
@@ -9109,10 +9136,14 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 
 	  /* An expression of the form E1 op= E2.  [expr.ass] says:
 	     "Such expressions are deprecated if E1 has volatile-qualified
-	     type."  We warn here rather than in cp_genericize_r because
+	     type and op is not one of the bitwise operators |, &, ^."
+	     We warn here rather than in cp_genericize_r because
 	     for compound assignments we are supposed to warn even if the
 	     assignment is a discarded-value expression.  */
-	  if (TREE_THIS_VOLATILE (lhs) || CP_TYPE_VOLATILE_P (lhstype))
+	  if (modifycode != BIT_AND_EXPR
+	      && modifycode != BIT_IOR_EXPR
+	      && modifycode != BIT_XOR_EXPR
+	      && (TREE_THIS_VOLATILE (lhs) || CP_TYPE_VOLATILE_P (lhstype)))
 	    warning_at (loc, OPT_Wvolatile,
 			"compound assignment with %<volatile%>-qualified left "
 			"operand is deprecated");
@@ -9596,7 +9627,9 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
   /* Handle null pointer to member function conversions.  */
   if (null_ptr_cst_p (pfn))
     {
-      pfn = cp_build_c_cast (input_location, type, pfn, complain);
+      pfn = cp_build_c_cast (input_location,
+			     TYPE_PTRMEMFUNC_FN_TYPE_RAW (to_type),
+			     pfn, complain);
       return build_ptrmemfunc1 (to_type,
 				integer_zero_node,
 				pfn);
@@ -10258,9 +10291,26 @@ can_do_nrvo_p (tree retval, tree functype)
 	  /* The cv-unqualified type of the returned value must be the
 	     same as the cv-unqualified return type of the
 	     function.  */
-	  && same_type_p ((TYPE_MAIN_VARIANT (TREE_TYPE (retval))),
-			  (TYPE_MAIN_VARIANT (functype)))
+	  && same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (retval)),
+			  TYPE_MAIN_VARIANT (functype))
 	  /* And the returned value must be non-volatile.  */
+	  && !TYPE_VOLATILE (TREE_TYPE (retval)));
+}
+
+/* Like can_do_nrvo_p, but we check if we're trying to move a class
+   prvalue.  */
+
+static bool
+can_elide_copy_prvalue_p (tree retval, tree functype)
+{
+  if (functype == error_mark_node)
+    return false;
+  if (retval)
+    STRIP_ANY_LOCATION_WRAPPER (retval);
+  return (retval != NULL_TREE
+	  && !glvalue_p (retval)
+	  && same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (retval)),
+			  TYPE_MAIN_VARIANT (functype))
 	  && !TYPE_VOLATILE (TREE_TYPE (retval)));
 }
 
@@ -10322,17 +10372,17 @@ treat_lvalue_as_rvalue_p (tree expr, bool return_p)
     }
 }
 
-/* Warn about wrong usage of std::move in a return statement.  RETVAL
-   is the expression we are returning; FUNCTYPE is the type the function
-   is declared to return.  */
+/* Warn about dubious usage of std::move (in a return statement, if RETURN_P
+   is true).  EXPR is the std::move expression; TYPE is the type of the object
+   being initialized.  */
 
-static void
-maybe_warn_pessimizing_move (tree retval, tree functype)
+void
+maybe_warn_pessimizing_move (tree expr, tree type, bool return_p)
 {
   if (!(warn_pessimizing_move || warn_redundant_move))
     return;
 
-  location_t loc = cp_expr_loc_or_input_loc (retval);
+  const location_t loc = cp_expr_loc_or_input_loc (expr);
 
   /* C++98 doesn't know move.  */
   if (cxx_dialect < cxx11)
@@ -10344,59 +10394,130 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
     return;
 
   /* This is only interesting for class types.  */
-  if (!CLASS_TYPE_P (functype))
+  if (!CLASS_TYPE_P (type))
     return;
 
-  /* We're looking for *std::move<T&> ((T &) &arg).  */
-  if (REFERENCE_REF_P (retval)
-      && TREE_CODE (TREE_OPERAND (retval, 0)) == CALL_EXPR)
+  /* A a = std::move (A());  */
+  if (TREE_CODE (expr) == TREE_LIST)
     {
-      tree fn = TREE_OPERAND (retval, 0);
-      if (is_std_move_p (fn))
+      if (list_length (expr) == 1)
+	expr = TREE_VALUE (expr);
+      else
+	return;
+    }
+  /* A a = {std::move (A())};
+     A a{std::move (A())};  */
+  else if (TREE_CODE (expr) == CONSTRUCTOR)
+    {
+      if (CONSTRUCTOR_NELTS (expr) == 1)
+	expr = CONSTRUCTOR_ELT (expr, 0)->value;
+      else
+	return;
+    }
+
+  /* First, check if this is a call to std::move.  */
+  if (!REFERENCE_REF_P (expr)
+      || TREE_CODE (TREE_OPERAND (expr, 0)) != CALL_EXPR)
+    return;
+  tree fn = TREE_OPERAND (expr, 0);
+  if (!is_std_move_p (fn))
+    return;
+  tree arg = CALL_EXPR_ARG (fn, 0);
+  if (TREE_CODE (arg) != NOP_EXPR)
+    return;
+  /* If we're looking at *std::move<T&> ((T &) &arg), do the pessimizing N/RVO
+     and implicitly-movable warnings.  */
+  if (TREE_CODE (TREE_OPERAND (arg, 0)) == ADDR_EXPR)
+    {
+      arg = TREE_OPERAND (arg, 0);
+      arg = TREE_OPERAND (arg, 0);
+      arg = convert_from_reference (arg);
+      if (can_elide_copy_prvalue_p (arg, type))
 	{
-	  tree arg = CALL_EXPR_ARG (fn, 0);
-	  tree moved;
-	  if (TREE_CODE (arg) != NOP_EXPR)
-	    return;
-	  arg = TREE_OPERAND (arg, 0);
-	  if (TREE_CODE (arg) != ADDR_EXPR)
-	    return;
-	  arg = TREE_OPERAND (arg, 0);
-	  arg = convert_from_reference (arg);
-	  /* Warn if we could do copy elision were it not for the move.  */
-	  if (can_do_nrvo_p (arg, functype))
+	  auto_diagnostic_group d;
+	  if (warning_at (loc, OPT_Wpessimizing_move,
+			  "moving a temporary object prevents copy elision"))
+	    inform (loc, "remove %<std::move%> call");
+	}
+      /* The rest of the warnings is only relevant for when we are returning
+	 from a function.  */
+      if (!return_p)
+	return;
+
+      tree moved;
+      /* Warn if we could do copy elision were it not for the move.  */
+      if (can_do_nrvo_p (arg, type))
+	{
+	  auto_diagnostic_group d;
+	  if (!warning_suppressed_p (expr, OPT_Wpessimizing_move)
+	      && warning_at (loc, OPT_Wpessimizing_move,
+			     "moving a local object in a return statement "
+			     "prevents copy elision"))
+	    inform (loc, "remove %<std::move%> call");
+	}
+      /* Warn if the move is redundant.  It is redundant when we would
+	 do maybe-rvalue overload resolution even without std::move.  */
+      else if (warn_redundant_move
+	       && !warning_suppressed_p (expr, OPT_Wredundant_move)
+	       && (moved = treat_lvalue_as_rvalue_p (arg, /*return*/true)))
+	{
+	  /* Make sure that overload resolution would actually succeed
+	     if we removed the std::move call.  */
+	  tree t = convert_for_initialization (NULL_TREE, type,
+					       moved,
+					       (LOOKUP_NORMAL
+						| LOOKUP_ONLYCONVERTING
+						| LOOKUP_PREFER_RVALUE),
+					       ICR_RETURN, NULL_TREE, 0,
+					       tf_none);
+	  /* If this worked, implicit rvalue would work, so the call to
+	     std::move is redundant.  */
+	  if (t != error_mark_node
+	      /* Trying to move something const will never succeed unless
+		 there's T(const T&&), which it almost never is, and if
+		 so, T wouldn't be error_mark_node now: the above convert_
+		 call with LOOKUP_PREFER_RVALUE returns an error if a const T&
+		 overload is selected.  */
+	      || (CP_TYPE_CONST_P (TREE_TYPE (arg))
+		  && same_type_ignoring_top_level_qualifiers_p
+		  (TREE_TYPE (arg), type)))
 	    {
 	      auto_diagnostic_group d;
-	      if (warning_at (loc, OPT_Wpessimizing_move,
-			      "moving a local object in a return statement "
-			      "prevents copy elision"))
+	      if (warning_at (loc, OPT_Wredundant_move,
+			      "redundant move in return statement"))
 		inform (loc, "remove %<std::move%> call");
 	    }
-	  /* Warn if the move is redundant.  It is redundant when we would
-	     do maybe-rvalue overload resolution even without std::move.  */
-	  else if (warn_redundant_move
-		   && (moved = treat_lvalue_as_rvalue_p (arg, /*return*/true)))
-	    {
-	      /* Make sure that the overload resolution would actually succeed
-		 if we removed the std::move call.  */
-	      tree t = convert_for_initialization (NULL_TREE, functype,
-						   moved,
-						   (LOOKUP_NORMAL
-						    | LOOKUP_ONLYCONVERTING
-						    | LOOKUP_PREFER_RVALUE),
-						   ICR_RETURN, NULL_TREE, 0,
-						   tf_none);
-	      /* If this worked, implicit rvalue would work, so the call to
-		 std::move is redundant.  */
-	      if (t != error_mark_node)
-		{
-		  auto_diagnostic_group d;
-		  if (warning_at (loc, OPT_Wredundant_move,
-				  "redundant move in return statement"))
-		    inform (loc, "remove %<std::move%> call");
-		}
-	    }
 	}
+     }
+  /* Also try to warn about redundant std::move in code such as
+      T f (const T& t)
+      {
+	return std::move(t);
+      }
+    for which EXPR will be something like
+      *std::move<const T&> ((const struct T &) (const struct T *) t)
+     and where the std::move does nothing if T does not have a T(const T&&)
+     constructor, because the argument is const.  It will not use T(T&&)
+     because that would mean losing the const.  */
+  else if (TYPE_REF_P (TREE_TYPE (arg))
+	   && CP_TYPE_CONST_P (TREE_TYPE (TREE_TYPE (arg))))
+    {
+      tree rtype = TREE_TYPE (TREE_TYPE (arg));
+      if (!same_type_ignoring_top_level_qualifiers_p (rtype, type))
+	return;
+      /* Check for the unlikely case there's T(const T&&) (we don't care if
+	 it's deleted).  */
+      for (tree fn : ovl_range (CLASSTYPE_CONSTRUCTORS (rtype)))
+	if (move_fn_p (fn))
+	  {
+	    tree t = TREE_VALUE (FUNCTION_FIRST_USER_PARMTYPE (fn));
+	    if (UNLIKELY (CP_TYPE_CONST_P (TREE_TYPE (t))))
+	      return;
+	  }
+      auto_diagnostic_group d;
+      if (warning_at (loc, OPT_Wredundant_move,
+		      "redundant move in return statement"))
+	inform (loc, "remove %<std::move%> call");
     }
 }
 
@@ -10432,7 +10553,11 @@ check_return_expr (tree retval, bool *no_warning)
     {
       if (retval)
 	error_at (loc, "returning a value from a destructor");
-      return NULL_TREE;
+
+      if (targetm.cxx.cdtor_returns_this () && !processing_template_decl)
+	retval = current_class_ptr;
+      else
+	return NULL_TREE;
     }
   else if (DECL_CONSTRUCTOR_P (current_function_decl))
     {
@@ -10443,7 +10568,11 @@ check_return_expr (tree retval, bool *no_warning)
       else if (retval)
 	/* You can't return a value from a constructor.  */
 	error_at (loc, "returning a value from a constructor");
-      return NULL_TREE;
+
+      if (targetm.cxx.cdtor_returns_this () && !processing_template_decl)
+	retval = current_class_ptr;
+      else
+	return NULL_TREE;
     }
 
   const tree saved_retval = retval;
@@ -10611,6 +10740,11 @@ check_return_expr (tree retval, bool *no_warning)
       /* We don't know if this is an lvalue or rvalue use, but
 	 either way we can mark it as read.  */
       mark_exp_read (retval);
+      /* Disable our std::move warnings when we're returning
+	 a dependent expression (c++/89780).  */
+      if (retval && TREE_CODE (retval) == CALL_EXPR)
+	/* This also suppresses -Wredundant-move.  */
+	suppress_warning (retval, OPT_Wpessimizing_move);
       return retval;
     }
 
@@ -10656,7 +10790,7 @@ check_return_expr (tree retval, bool *no_warning)
     return NULL_TREE;
 
   if (!named_return_value_okay_p)
-    maybe_warn_pessimizing_move (retval, functype);
+    maybe_warn_pessimizing_move (retval, functype, /*return_p*/true);
 
   /* Do any required conversions.  */
   if (bare_retval == result || DECL_CONSTRUCTOR_P (current_function_decl))

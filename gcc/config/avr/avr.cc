@@ -10195,7 +10195,7 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 	flags |= SECTION_BSS;  /* @nobits */
       else
 	warning (0, "only uninitialized variables can be placed in the "
-		 ".noinit section");
+		 "%<.noinit%> section");
     }
 
   if (decl && DECL_P (decl)

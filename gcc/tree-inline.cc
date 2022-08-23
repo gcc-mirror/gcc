@@ -41,10 +41,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "tree-iterator.h"
 #include "intl.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "gimple-walk.h"
 #include "tree-cfg.h"
@@ -253,8 +253,7 @@ remap_ssa_name (tree name, copy_body_data *id)
       /* So can range-info.  */
       if (!POINTER_TYPE_P (TREE_TYPE (name))
 	  && SSA_NAME_RANGE_INFO (name))
-	duplicate_ssa_name_range_info (new_tree, SSA_NAME_RANGE_TYPE (name),
-				       SSA_NAME_RANGE_INFO (name));
+	duplicate_ssa_name_range_info (new_tree, name);
       return new_tree;
     }
 
@@ -291,8 +290,7 @@ remap_ssa_name (tree name, copy_body_data *id)
       /* So can range-info.  */
       if (!POINTER_TYPE_P (TREE_TYPE (name))
 	  && SSA_NAME_RANGE_INFO (name))
-	duplicate_ssa_name_range_info (new_tree, SSA_NAME_RANGE_TYPE (name),
-				       SSA_NAME_RANGE_INFO (name));
+	duplicate_ssa_name_range_info (new_tree, name);
       if (SSA_NAME_IS_DEFAULT_DEF (name))
 	{
 	  /* By inlining function having uninitialized variable, we might
@@ -5138,7 +5136,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 	      && !is_gimple_reg (*varp)
 	      && !(id->debug_map && id->debug_map->get (p)))
 	    {
-	      tree clobber = build_clobber (TREE_TYPE (*varp));
+	      tree clobber = build_clobber (TREE_TYPE (*varp), CLOBBER_EOL);
 	      gimple *clobber_stmt;
 	      clobber_stmt = gimple_build_assign (*varp, clobber);
 	      gimple_set_location (clobber_stmt, gimple_location (stmt));
@@ -5207,7 +5205,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 	  && !is_gimple_reg (id->retvar)
 	  && !stmt_ends_bb_p (stmt))
 	{
-	  tree clobber = build_clobber (TREE_TYPE (id->retvar));
+	  tree clobber = build_clobber (TREE_TYPE (id->retvar), CLOBBER_EOL);
 	  gimple *clobber_stmt;
 	  clobber_stmt = gimple_build_assign (id->retvar, clobber);
 	  gimple_set_location (clobber_stmt, gimple_location (old_stmt));

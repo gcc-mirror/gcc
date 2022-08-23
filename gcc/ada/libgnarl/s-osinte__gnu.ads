@@ -40,7 +40,7 @@
 
 with Interfaces.C;
 with System.Parameters;
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -288,14 +288,14 @@ package System.OS_Interface is
    pragma Convention (C, Thread_Body);
 
    function Thread_Body_Access is new
-     Unchecked_Conversion (System.Address, Thread_Body);
+     Ada.Unchecked_Conversion (System.Address, Thread_Body);
 
    --  From: /usr/include/bits/pthread.h:typedef int __pthread_t;
    --  /usr/include/pthread/pthreadtypes.h:typedef __pthread_t pthread_t;
    type pthread_t is new unsigned_long;
    subtype Thread_Id        is pthread_t;
 
-   function To_pthread_t is new Unchecked_Conversion
+   function To_pthread_t is new Ada.Unchecked_Conversion
      (unsigned_long, pthread_t);
 
    type pthread_mutex_t     is limited private;

@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power8 -O0 -mno-fold-gimple -dp" } */
-/* { dg-prune-output "gimple folding of rs6000 builtins has been disabled." } */
+/* { dg-options "-mdejagnu-cpu=power8 -O0 -dp" } */
 
 #include <altivec.h>
 

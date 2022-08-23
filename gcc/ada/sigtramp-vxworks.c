@@ -49,15 +49,15 @@
 
 typedef struct mcontext
   {
-    REG_SET     regs;
+    REG_SET regs;
   } mcontext_t;
 
 typedef struct ucontext
   {
-    mcontext_t          uc_mcontext;    /* register set */
-    struct ucontext *   uc_link;        /* not used */
-    sigset_t            uc_sigmask;     /* set of signals blocked */
-    stack_t             uc_stack;       /* stack of context signaled */
+    mcontext_t        uc_mcontext;    /* register set */
+    struct ucontext * uc_link;        /* not used */
+    sigset_t          uc_sigmask;     /* set of signals blocked */
+    stack_t           uc_stack;       /* stack of context signaled */
   } ucontext_t;
 #endif
 

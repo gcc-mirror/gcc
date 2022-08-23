@@ -68,6 +68,7 @@ extern enum optimize_size_level optimize_edge_for_size_p (edge);
 extern bool optimize_edge_for_speed_p (edge);
 extern enum optimize_size_level optimize_insn_for_size_p (void);
 extern bool optimize_insn_for_speed_p (void);
+extern optimization_type insn_optimization_type ();
 extern enum optimize_size_level optimize_loop_for_size_p (class loop *);
 extern bool optimize_loop_for_speed_p (class loop *);
 extern bool optimize_loop_nest_for_speed_p (class loop *);

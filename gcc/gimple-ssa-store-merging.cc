@@ -263,7 +263,7 @@ do_shift_rotate (enum tree_code code,
 		 int count)
 {
   int i, size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
-  unsigned head_marker;
+  uint64_t head_marker;
 
   if (count < 0
       || count >= TYPE_PRECISION (n->type)
@@ -1037,12 +1037,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return flag_expensive_optimizations && optimize && BITS_PER_UNIT == 8;
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_optimize_bswap
 
@@ -2433,8 +2433,8 @@ public:
   /* Pass not supported for PDP-endian, nor for insane hosts or
      target character sizes where native_{encode,interpret}_expr
      doesn't work properly.  */
-  virtual bool
-  gate (function *)
+  bool
+  gate (function *) final override
   {
     return flag_store_merging
 	   && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
@@ -2442,7 +2442,7 @@ public:
 	   && BITS_PER_UNIT == 8;
   }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 private:
   hash_map<tree_operand_hash, class imm_store_chain_info *> m_stores;
@@ -4940,7 +4940,7 @@ mem_valid_for_store_merging (tree mem, poly_uint64 *pbitsize,
   tree base_addr = get_inner_reference (mem, &bitsize, &bitpos, &offset, &mode,
 					&unsignedp, &reversep, &volatilep);
   *pbitsize = bitsize;
-  if (known_eq (bitsize, 0))
+  if (known_le (bitsize, 0))
     return NULL_TREE;
 
   if (TREE_CODE (mem) == COMPONENT_REF
@@ -5364,6 +5364,7 @@ get_status_for_store_merging (basic_block bb)
   unsigned int num_constructors = 0;
   gimple_stmt_iterator gsi;
   edge e;
+  gimple *last_stmt = NULL;
 
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
@@ -5371,6 +5372,8 @@ get_status_for_store_merging (basic_block bb)
 
       if (is_gimple_debug (stmt))
 	continue;
+
+      last_stmt = stmt;
 
       if (store_valid_for_store_merging_p (stmt) && ++num_statements >= 2)
 	break;
@@ -5398,7 +5401,7 @@ get_status_for_store_merging (basic_block bb)
     return BB_INVALID;
 
   if (cfun->can_throw_non_call_exceptions && cfun->eh
-      && store_valid_for_store_merging_p (gimple_seq_last_stmt (bb_seq (bb)))
+      && store_valid_for_store_merging_p (last_stmt)
       && (e = find_fallthru_edge (bb->succs))
       && e->dest == bb->next_bb)
     return BB_EXTENDED_VALID;
@@ -5633,7 +5636,7 @@ verify_clear_bit_region_be (void)
 /* Run all of the selftests within this file.  */
 
 void
-store_merging_c_tests (void)
+store_merging_cc_tests (void)
 {
   verify_shift_bytes_in_array_left ();
   verify_shift_bytes_in_array_right ();

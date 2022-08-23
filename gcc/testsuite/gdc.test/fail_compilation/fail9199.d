@@ -37,4 +37,3 @@ class C
     static void fsc() shared const {}
     static void fsw() shared inout {}
 }
-

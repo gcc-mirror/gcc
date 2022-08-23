@@ -444,4 +444,3 @@ alias NTSTATUS function(ULONG, PULONG,
  PSECPKG_FUNCTION_TABLE *, PULONG) SpLsaModeInitializeFn;
 alias NTSTATUS function(ULONG, PULONG,
  PSECPKG_USER_FUNCTION_TABLE *, PULONG) SpUserModeInitializeFn;
-

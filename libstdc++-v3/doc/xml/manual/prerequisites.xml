@@ -50,6 +50,57 @@
 
 	<listitem>
 	<para>
+	  The 'gnu' locale model makes use of <function>iconv</function>
+	  for character set conversions. The relevant functions are provided
+	  by Glibc and so are always available, however they can also be
+	  provided by the separate GNU libiconv library. If GNU libiconv is
+	  found when GCC is built (e.g., because its headers are installed
+	  in <filename class="directory">/usr/local/include</filename>)
+	  then the <filename>libstdc++.so.6</filename> library will have a
+	  run-time dependency on <filename>libiconv.so.2</filename>.
+	  If you do not want that run-time dependency then you should do
+	  one of the following:
+	</para>
+	<itemizedlist>
+	  <listitem>
+	    <para>
+	      Uninstall the libiconv headers before building GCC.
+	      Glibc already provides <function>iconv</function> so you should
+	      not need libiconv anyway.
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	    <link xmlns:xlink="http://www.w3.org/1999/xlink"
+	      xlink:href="https://www.gnu.org/software/libiconv/#downloading">
+	    Download</link> the libiconv sources and extract them into the
+	    top level of the GCC source tree, e.g.,
+	    </para>
+<programlisting>
+wget https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.16.tar.gz
+tar xf libiconv-1.16.tar.gz
+ln -s libiconv-1.16 libiconv
+</programlisting>
+	    <para>
+	      This will build libiconv as part of building GCC and link to
+	      it statically, so there is no <filename>libiconv.so.2</filename>
+	      dependency.
+	    </para>
+	  </listitem>
+	  <listitem>
+	    <para>
+	      Configure GCC with <option>--with-libiconv-type=static</option>.
+	      This requires the static <filename>libiconv.a</filename> library,
+	      which is not installed by default. You might need to reinstall
+	      libiconv using the <option>--enable-static</option> configure
+	      option to get the static library.
+	    </para>
+	  </listitem>
+	</itemizedlist>
+	</listitem>
+
+	<listitem>
+	<para>
 	  If GCC 3.1.0 or later on is being used on GNU/Linux, an attempt
 	  will be made to use "C" library functionality necessary for
 	  C++ named locale support.  For GCC 4.6.0 and later, this

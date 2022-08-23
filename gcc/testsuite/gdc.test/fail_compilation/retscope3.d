@@ -53,47 +53,6 @@ void bar4()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope3.d(3027): Error: scope variable `l` assigned to `elem` with longer lifetime
----
-*/
-
-#line 3000
-
-struct List
-{
-    Elem front() @safe return scope;
-
-    ~this() @trusted scope;
-
-    @disable this(this);
-
-    void* data;
-}
-
-struct Elem
-{
-    void* data;
-}
-
-List list() @trusted
-{
-    return List();
-}
-
-void test3000() @safe
-{
-    Elem elem;
-    {
-        auto l = list(); // inferred as scope
-        elem = l.front; // escapes, b/c l isn't scoped
-    }
-}
-
-/**********************************************/
-
-/*
-TEST_OUTPUT:
----
 fail_compilation/retscope3.d(4003): Error: copying `u[]` into allocated memory escapes a reference to variadic parameter `u`
 fail_compilation/retscope3.d(4016): Error: storing reference to outer local variable `i` into allocated memory causes it to escape
 fail_compilation/retscope3.d(4025): Error: storing reference to stack allocated value returned by `makeSA()` into allocated memory causes it to escape

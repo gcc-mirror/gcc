@@ -84,7 +84,7 @@ $(BOOKTABLE ,
     )
     $(LEADINGROW Data integrity)
     $(TR
-        $(TDNW $(MREF std,experimental,checkedint))
+        $(TDNW $(MREF std,checkedint))
         $(TD Checked integral types.)
     )
     $(TR

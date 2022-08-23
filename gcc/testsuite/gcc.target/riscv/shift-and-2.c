@@ -1,5 +1,6 @@
 /* { dg-do compile { target { riscv64*-*-* } } } */
-/* { dg-options "-march=rv64gc -mabi=lp64 -O" } */
+/* { dg-options "-march=rv64gc -mabi=lp64" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 /* Test for <optab>si3_mask_1.  */
 extern int k;

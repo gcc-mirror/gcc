@@ -33,6 +33,7 @@
 #include "langhooks.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "gimple-ssa.h"
 #include "intl.h"
@@ -554,7 +555,7 @@ gimple_parm_array_size (tree ptr, wide_int rng[2],
      from the current function declaratation (e.g., attribute access or
      related).  */
   tree var = SSA_NAME_VAR (ptr);
-  if (TREE_CODE (var) != PARM_DECL)
+  if (TREE_CODE (var) != PARM_DECL || !POINTER_TYPE_P (TREE_TYPE (var)))
     return NULL_TREE;
 
   const unsigned prec = TYPE_PRECISION (sizetype);
@@ -629,7 +630,7 @@ access_ref::phi () const
    ARG refers to the null pointer.  Return true on success and false
    on failure.  */
 
-bool
+void
 access_ref::merge_ref (vec<access_ref> *all_refs, tree arg, gimple *stmt,
 		       int ostype, bool skip_null,
 		       ssa_name_limit_t &snlim, pointer_query &qry)
@@ -637,8 +638,16 @@ access_ref::merge_ref (vec<access_ref> *all_refs, tree arg, gimple *stmt,
   access_ref aref;
   if (!compute_objsize_r (arg, stmt, false, ostype, &aref, snlim, &qry)
       || aref.sizrng[0] < 0)
-    /* This may be a PHI with all null pointer arguments.  */
-    return false;
+    {
+      /* This may be a PHI with all null pointer arguments.  Handle it
+	 conservatively by setting all properties to the most permissive
+	 values. */
+      base0 = false;
+      offrng[0] = offrng[1] = 0;
+      add_max_offset ();
+      set_max_size_range ();
+      return;
+    }
 
   if (all_refs)
     {
@@ -675,13 +684,13 @@ access_ref::merge_ref (vec<access_ref> *all_refs, tree arg, gimple *stmt,
       if (arg_known_size)
 	sizrng[0] = aref.sizrng[0];
 
-      return true;
+      return;
     }
 
   /* Disregard null pointers in PHIs with two or more arguments.
      TODO: Handle this better!  */
   if (nullp)
-    return true;
+    return;
 
   const bool known_size = (sizrng[0] != 0 || sizrng[1] != maxobjsize);
 
@@ -717,7 +726,7 @@ access_ref::merge_ref (vec<access_ref> *all_refs, tree arg, gimple *stmt,
   sizrng[0] = minsize;
   parmarray = merged_parmarray;
 
-  return true;
+  return;
 }
 
 /* Determine and return the largest object to which *THIS refers.  If
@@ -755,14 +764,12 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 
 	  access_ref aref;
 	  tree arg1 = gimple_assign_rhs1 (def_stmt);
-	  if (!aref.merge_ref (all_refs, arg1, def_stmt, ostype, false,
-			       *psnlim, *qry))
-	    return NULL_TREE;
+	  aref.merge_ref (all_refs, arg1, def_stmt, ostype, false,
+			  *psnlim, *qry);
 
 	  tree arg2 = gimple_assign_rhs2 (def_stmt);
-	  if (!aref.merge_ref (all_refs, arg2, def_stmt, ostype, false,
-			       *psnlim, *qry))
-	    return NULL_TREE;
+	  aref.merge_ref (all_refs, arg2, def_stmt, ostype, false,
+			  *psnlim, *qry);
 
 	  if (pref && pref != this)
 	    {
@@ -801,15 +808,23 @@ access_ref::get_ref (vec<access_ref> *all_refs,
       phi_ref = *pref;
     }
 
+  const offset_int maxobjsize = wi::to_offset (max_object_size ());
   const unsigned nargs = gimple_phi_num_args (phi_stmt);
   for (unsigned i = 0; i < nargs; ++i)
     {
       access_ref phi_arg_ref;
       bool skip_null = i || i + 1 < nargs;
       tree arg = gimple_phi_arg_def (phi_stmt, i);
-      if (!phi_ref.merge_ref (all_refs, arg, phi_stmt, ostype, skip_null,
-			      *psnlim, *qry))
-	return NULL_TREE;
+      phi_ref.merge_ref (all_refs, arg, phi_stmt, ostype, skip_null,
+			 *psnlim, *qry);
+
+      if (!phi_ref.base0
+	  && phi_ref.sizrng[0] == 0
+	  && phi_ref.sizrng[1] >= maxobjsize)
+	/* When an argument results in the most permissive result,
+	   the remaining arguments cannot constrain it.  Short-circuit
+	   the evaluation.  */
+	break;
     }
 
   if (phi_ref.sizrng[0] < 0)
@@ -945,7 +960,7 @@ void access_ref::add_offset (const offset_int &min, const offset_int &max)
 	 (which may be greater than MAX_OBJECT_SIZE).
 	 The lower bound is either the sum of the current offset and
 	 MIN when abs(MAX) is greater than the former, or zero otherwise.
-	 Zero because then then inverted range includes the negative of
+	 Zero because then the inverted range includes the negative of
 	 the lower bound.  */
       offset_int maxoff = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
       offrng[1] = maxoff;
@@ -1419,12 +1434,11 @@ ssa_name_limit_t::~ssa_name_limit_t ()
 }
 
 /* Default ctor.  Initialize object with pointers to the range_query
-   and cache_type instances to use or null.  */
+   instance to use or null.  */
 
-pointer_query::pointer_query (range_query *qry /* = NULL */,
-			      cache_type *cache /* = NULL */)
-: rvals (qry), var_cache (cache), hits (), misses (),
-  failures (), depth (), max_depth ()
+pointer_query::pointer_query (range_query *qry /* = NULL */)
+  : rvals (qry), hits (), misses (), failures (), depth (), max_depth (),
+    var_cache ()
 {
   /* No op.  */
 }
@@ -1435,28 +1449,22 @@ pointer_query::pointer_query (range_query *qry /* = NULL */,
 const access_ref *
 pointer_query::get_ref (tree ptr, int ostype /* = 1 */) const
 {
-  if (!var_cache)
-    {
-      ++misses;
-      return NULL;
-    }
-
   unsigned version = SSA_NAME_VERSION (ptr);
   unsigned idx = version << 1 | (ostype & 1);
-  if (var_cache->indices.length () <= idx)
+  if (var_cache.indices.length () <= idx)
     {
       ++misses;
       return NULL;
     }
 
-  unsigned cache_idx = var_cache->indices[idx];
-  if (var_cache->access_refs.length () <= cache_idx)
+  unsigned cache_idx = var_cache.indices[idx];
+  if (var_cache.access_refs.length () <= cache_idx)
     {
       ++misses;
       return NULL;
     }
 
-  access_ref &cache_ref = var_cache->access_refs[cache_idx];
+  const access_ref &cache_ref = var_cache.access_refs[cache_idx];
   if (cache_ref.ref)
     {
       ++hits;
@@ -1477,17 +1485,17 @@ pointer_query::get_ref (tree ptr, gimple *stmt, access_ref *pref,
   const unsigned version
     = TREE_CODE (ptr) == SSA_NAME ? SSA_NAME_VERSION (ptr) : 0;
 
-  if (var_cache && version)
+  if (version)
     {
       unsigned idx = version << 1 | (ostype & 1);
-      if (idx < var_cache->indices.length ())
+      if (idx < var_cache.indices.length ())
 	{
-	  unsigned cache_idx = var_cache->indices[idx] - 1;
-	  if (cache_idx < var_cache->access_refs.length ()
-	      && var_cache->access_refs[cache_idx].ref)
+	  unsigned cache_idx = var_cache.indices[idx] - 1;
+	  if (cache_idx < var_cache.access_refs.length ()
+	      && var_cache.access_refs[cache_idx].ref)
 	    {
 	      ++hits;
-	      *pref = var_cache->access_refs[cache_idx];
+	      *pref = var_cache.access_refs[cache_idx];
 	      return true;
 	    }
 	}
@@ -1511,7 +1519,7 @@ void
 pointer_query::put_ref (tree ptr, const access_ref &ref, int ostype /* = 1 */)
 {
   /* Only add populated/valid entries.  */
-  if (!var_cache || !ref.ref || ref.sizrng[0] < 0)
+  if (!ref.ref || ref.sizrng[0] < 0)
     return;
 
   /* Add REF to the two-level cache.  */
@@ -1521,20 +1529,20 @@ pointer_query::put_ref (tree ptr, const access_ref &ref, int ostype /* = 1 */)
   /* Grow INDICES if necessary.  An index is valid if it's nonzero.
      Its value minus one is the index into ACCESS_REFS.  Not all
      entries are valid.  */
-  if (var_cache->indices.length () <= idx)
-    var_cache->indices.safe_grow_cleared (idx + 1);
+  if (var_cache.indices.length () <= idx)
+    var_cache.indices.safe_grow_cleared (idx + 1);
 
-  if (!var_cache->indices[idx])
-    var_cache->indices[idx] = var_cache->access_refs.length () + 1;
+  if (!var_cache.indices[idx])
+    var_cache.indices[idx] = var_cache.access_refs.length () + 1;
 
   /* Grow ACCESS_REF cache if necessary.  An entry is valid if its
      REF member is nonnull.  All entries except for the last two
      are valid.  Once nonnull, the REF value must stay unchanged.  */
-  unsigned cache_idx = var_cache->indices[idx];
-  if (var_cache->access_refs.length () <= cache_idx)
-    var_cache->access_refs.safe_grow_cleared (cache_idx + 1);
+  unsigned cache_idx = var_cache.indices[idx];
+  if (var_cache.access_refs.length () <= cache_idx)
+    var_cache.access_refs.safe_grow_cleared (cache_idx + 1);
 
-  access_ref &cache_ref = var_cache->access_refs[cache_idx];
+  access_ref &cache_ref = var_cache.access_refs[cache_idx];
   if (cache_ref.ref)
   {
     gcc_checking_assert (cache_ref.ref == ref.ref);
@@ -1549,10 +1557,8 @@ pointer_query::put_ref (tree ptr, const access_ref &ref, int ostype /* = 1 */)
 void
 pointer_query::flush_cache ()
 {
-  if (!var_cache)
-    return;
-  var_cache->indices.release ();
-  var_cache->access_refs.release ();
+  var_cache.indices.release ();
+  var_cache.access_refs.release ();
 }
 
 /* Dump statistics and, optionally, cache contents to DUMP_FILE.  */
@@ -1560,20 +1566,17 @@ pointer_query::flush_cache ()
 void
 pointer_query::dump (FILE *dump_file, bool contents /* = false */)
 {
-  if (!var_cache)
-    return;
-
   unsigned nused = 0, nrefs = 0;
-  unsigned nidxs = var_cache->indices.length ();
+  unsigned nidxs = var_cache.indices.length ();
   for (unsigned i = 0; i != nidxs; ++i)
     {
-      unsigned ari = var_cache->indices[i];
+      unsigned ari = var_cache.indices[i];
       if (!ari)
 	continue;
 
       ++nused;
 
-      const access_ref &aref = var_cache->access_refs[ari];
+      const access_ref &aref = var_cache.access_refs[ari];
       if (!aref.ref)
 	continue;
 
@@ -1590,7 +1593,7 @@ pointer_query::dump (FILE *dump_file, bool contents /* = false */)
 	   "  failures:           %u\n"
 	   "  max_depth:          %u\n",
 	   nidxs, nused,
-	   var_cache->access_refs.length (), nrefs,
+	   var_cache.access_refs.length (), nrefs,
 	   hits, misses, failures, max_depth);
 
   if (!contents || !nidxs)
@@ -1600,11 +1603,11 @@ pointer_query::dump (FILE *dump_file, bool contents /* = false */)
 
   for (unsigned i = 0; i != nidxs; ++i)
     {
-      unsigned ari = var_cache->indices[i];
+      unsigned ari = var_cache.indices[i];
       if (!ari)
 	continue;
 
-      const access_ref &aref = var_cache->access_refs[ari];
+      const access_ref &aref = var_cache.access_refs[ari];
       if (!aref.ref)
 	continue;
 
@@ -1627,36 +1630,6 @@ pointer_query::dump (FILE *dump_file, bool contents /* = false */)
     }
 
   fputc ('\n', dump_file);
-
-  {
-    fputs ("\npointer_query cache contents (again):\n", dump_file);
-
-    tree var;
-    unsigned i;
-    FOR_EACH_SSA_NAME (i, var, cfun)
-      {
-	if (TREE_CODE (TREE_TYPE (var)) != POINTER_TYPE)
-	  continue;
-
-	for (unsigned ost = 0; ost != 2; ++ost)
-	  {
-	    if (const access_ref *cache_ref = get_ref (var, ost))
-	      {
-		unsigned ver = SSA_NAME_VERSION (var);
-		fprintf (dump_file, "  %u.%u: ", ver, ost);
-		if (tree name = ssa_name (ver))
-		  {
-		    print_generic_expr (dump_file, name);
-		    fputs (" = ", dump_file);
-		  }
-		else
-		  fprintf (dump_file, "  _%u = ", ver);
-
-		cache_ref->dump (dump_file);
-	      }
-	  }
-      }
-  }
 }
 
 /* A helper of compute_objsize_r() to determine the size from an assignment
@@ -2271,7 +2244,7 @@ compute_objsize_r (tree ptr, gimple *stmt, bool addr, int ostype,
       }
 
     case ARRAY_REF:
-	return handle_array_ref (ptr, stmt, addr, ostype, pref, snlim, qry);
+      return handle_array_ref (ptr, stmt, addr, ostype, pref, snlim, qry);
 
     case COMPONENT_REF:
       return handle_component_ref (ptr, stmt, addr, ostype, pref, snlim, qry);
@@ -2292,12 +2265,14 @@ compute_objsize_r (tree ptr, gimple *stmt, bool addr, int ostype,
       }
 
     case INTEGER_CST:
-      /* Pointer constants other than null are most likely the result
-	 of erroneous null pointer addition/subtraction.  Unless zero
-	 is a valid address set size to zero.  For null pointers, set
-	 size to the maximum for now since those may be the result of
-	 jump threading.  */
-      if (integer_zerop (ptr))
+      /* Pointer constants other than null smaller than param_min_pagesize
+	 might be the result of erroneous null pointer addition/subtraction.
+	 Unless zero is a valid address set size to zero.  For null pointers,
+	 set size to the maximum for now since those may be the result of
+	 jump threading.  Similarly, for values >= param_min_pagesize in
+	 order to support (type *) 0x7cdeab00.  */
+      if (integer_zerop (ptr)
+	  || wi::to_widest (ptr) >= param_min_pagesize)
 	pref->set_max_size_range ();
       else if (POINTER_TYPE_P (TREE_TYPE (ptr)))
 	{
@@ -2325,9 +2300,10 @@ compute_objsize_r (tree ptr, gimple *stmt, bool addr, int ostype,
       if (!compute_objsize_r (ref, stmt, addr, ostype, pref, snlim, qry))
 	return false;
 
-      /* Clear DEREF since the offset is being applied to the target
-	 of the dereference.  */
-      pref->deref = 0;
+      /* The below only makes sense if the offset is being applied to the
+	 address of the object.  */
+      if (pref->deref != -1)
+	return false;
 
       offset_int orng[2];
       tree off = pref->eval (TREE_OPERAND (ptr, 1));
@@ -2472,9 +2448,13 @@ field_at_offset (tree type, tree start_after, HOST_WIDE_INT off,
       /* The offset of FLD within its immediately enclosing structure.  */
       HOST_WIDE_INT fldpos = next_pos < 0 ? int_byte_position (fld) : next_pos;
 
+      tree typesize = TYPE_SIZE_UNIT (fldtype);
+      if (typesize && TREE_CODE (typesize) != INTEGER_CST)
+	/* Bail if FLD is a variable length member.  */
+	return NULL_TREE;
+
       /* If the size is not available the field is a flexible array
 	 member.  Treat this case as success.  */
-      tree typesize = TYPE_SIZE_UNIT (fldtype);
       HOST_WIDE_INT fldsize = (tree_fits_uhwi_p (typesize)
 			       ? tree_to_uhwi (typesize)
 			       : off);
@@ -2488,7 +2468,11 @@ field_at_offset (tree type, tree start_after, HOST_WIDE_INT off,
 	{
 	  /* If OFF is equal to the offset of the next field continue
 	     to it and skip the array/struct business below.  */
-	  next_pos = int_byte_position (next_fld);
+	  tree pos = byte_position (next_fld);
+	  if (!tree_fits_shwi_p (pos))
+	    /* Bail if NEXT_FLD is a variable length member.  */
+	    return NULL_TREE;
+	  next_pos = tree_to_shwi (pos);
 	  *nextoff = *fldoff + next_pos;
 	  if (*nextoff == off && TREE_CODE (type) != UNION_TYPE)
 	    continue;

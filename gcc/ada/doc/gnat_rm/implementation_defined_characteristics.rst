@@ -54,7 +54,7 @@ See separate section on source representation.
 
 *
   "The semantics of an Ada program whose text is not in
-   Normalization Form C.  See 2.1(4)."
+  Normalization Form C.  See 2.1(4)."
 
 See separate section on source representation.
 
@@ -99,6 +99,8 @@ The Static_Predicate case is handled analogously.
 *
   "The predefined integer types declared in
   ``Standard``.  See 3.5.4(25)."
+
+.. tabularcolumns:: |l|L|
 
 ========================= =======================================
 Type                       Representation
@@ -227,7 +229,7 @@ Round to even is used in all such cases.
 
 *
   "The maximum number of chunks for a parallel generalized iterator without
-   a chunk_specification.  See 5.5.2(10)."
+  a chunk_specification.  See 5.5.2(10)."
 
 Feature unimplemented.
 
@@ -286,7 +288,7 @@ There are no such limits.
 
 *
   "The result of Calendar.Formatting.Image if its argument represents more
-   than 100 hours.  See 9.6.1(86)."
+  than 100 hours.  See 9.6.1(86)."
 
 Calendar.Time_Error is raised.
 
@@ -491,7 +493,7 @@ Unsuppress match those for the second argument of pragma Suppress.
 
 *
   "The cases that cause conflicts between the representation of the
-   ancestors of a type_declaration.  See 13.1(13.1)."
+  ancestors of a type_declaration.  See 13.1(13.1)."
 
 No such cases exist.
 
@@ -782,19 +784,19 @@ Directories.File_Size'Last is equal to Long_Long_Integer'Last .
 
 *
   "The result for Directories.Size for a directory or special file.
-   See A.16(93)."
+  See A.16(93)."
 
 Name_Error is raised.
 
 *
   "The result for Directories.Modification_Time for a directory or special file.
-   See A.16(93)."
+  See A.16(93)."
 
 Name_Error is raised.
 
 *
   "The interpretation of a nonnull search pattern in Directories.
-   See A.16(104)."
+  See A.16(104)."
 
 When the ``Pattern`` parameter is not the null string, it is interpreted
 according to the syntax of regular expressions as defined in the
@@ -804,7 +806,7 @@ See :ref:`GNAT.Regexp_(g-regexp.ads)`.
 
 *
   "The results of a Directories search if the contents of the directory are
-   altered while a search is in progress.  See A.16(110)."
+  altered while a search is in progress.  See A.16(110)."
 
 The effect of a call to Get_Next_Entry is determined by the current
 state of the directory.
@@ -836,6 +838,8 @@ Containers.Count_Type'Last is 2**31 - 1.
   "Implementation-defined convention names.  See B.1(11)."
 
 The following convention names are supported
+
+.. tabularcolumns:: |l|L|
 
 ======================= ==============================================================================
 Convention Name         Interpretation
@@ -972,7 +976,7 @@ There are no such forms.
 
 *
   "The semantics of some attributes and functions of an entity for which
-   aspect Discard_Names is True.  See C.5(7)."
+  aspect Discard_Names is True.  See C.5(7)."
 
 If Discard_Names is True for an enumeration type, the Image attribute
 provides the image of the Pos of the literal, and Value accepts
@@ -1126,13 +1130,13 @@ Unknown.
 
 *
   "When restriction No_Task_Termination applies to a partition, what happens
-   when a task terminates.  See D.7(15.1)."
+  when a task terminates.  See D.7(15.1)."
 
 Execution is erroneous in that case.
 
 *
   "The behavior when restriction Max_Storage_At_Blocking is violated.
-   See D.7(17)."
+  See D.7(17)."
 
 Execution is erroneous in that case.
 
@@ -1148,10 +1152,10 @@ Execution is erroneous in that case.
 Execution is erroneous in that case.
 
 * "Whether the use of pragma Restrictions results in a reduction in program
-   code or data size or execution time.  See D.7(20)."
+  code or data size or execution time.  See D.7(20)."
 
-   Yes it can, but the precise circumstances and properties of such reductions
-   are difficult to characterize.
+  Yes it can, but the precise circumstances and properties of such reductions
+  are difficult to characterize.
 
 *
   "The value of Barrier_Limit'Last in Synchronous_Barriers.  See D.10.1(4)."
@@ -1166,7 +1170,7 @@ Difficult to characterize.
 
 *
   "The value of Min_Handler_Ceiling in Execution_Time.Group_Budgets.
-   See D.14.2(7)."
+  See D.14.2(7)."
 
 See source file :file:`a-etgrbu.ads`.
 
@@ -1237,13 +1241,13 @@ Named Number         Value
   "The value of ``Max_Picture_Length`` in the package
   ``Text_IO.Editing``.  See F.3.3(16)."
 
-64
+  64
 
 *
   "The value of ``Max_Picture_Length`` in the package
   ``Wide_Text_IO.Editing``.  See F.3.4(5)."
 
-64
+  64
 
 *
   "The accuracy actually achieved by the complex elementary
@@ -1368,15 +1372,15 @@ Information on those subjects is not yet available.
 
 *
   "The accuracy requirements for the subprograms Solve, Inverse,
-   Determinant, Eigenvalues and Eigensystem for type Real_Matrix.
-   See G.3.1(81)."
+  Determinant, Eigenvalues and Eigensystem for type Real_Matrix.
+  See G.3.1(81)."
 
 Information on those subjects is not yet available.
 
 *
   "The accuracy requirements for the subprograms Solve, Inverse,
-   Determinant, Eigenvalues and Eigensystem for type Complex_Matrix.
-   See G.3.2(149)."
+  Determinant, Eigenvalues and Eigensystem for type Complex_Matrix.
+  See G.3.2(149)."
 
 Information on those subjects is not yet available.
 

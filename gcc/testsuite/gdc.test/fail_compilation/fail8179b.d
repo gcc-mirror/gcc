@@ -9,4 +9,3 @@ void foo(int[2][1]) {}
 void main() {
     foo(cast(int[2][1])[1, 2]);
 }
-

@@ -1,20 +1,25 @@
-/* Test compatibility of unprototyped and prototyped function types (C2x makes
-   the case of types affected by default argument promotions compatible).  Test
-   valid-in-C2x usages.  */
+/* Test compatibility of unprototyped and prototyped function types (C2x made
+   the case of types affected by default argument promotions compatible, before
+   removing unprototyped functions completely).  Test affected usages are not
+   accepted for C2x.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c2x -pedantic-errors" } */
 
-void f1 ();
-void f1 (float);
+void f1 (); /* { dg-message "previous declaration" } */
+void f1 (float); /* { dg-error "conflicting types" } */
+/* { dg-message "default promotion" "" { target *-*-* } .-1 } */
 
-void f2 (float);
-void f2 ();
+void f2 (float); /* { dg-message "previous declaration" } */
+void f2 (); /* { dg-error "conflicting types" } */
+/* { dg-message "default promotion" "" { target *-*-* } .-1 } */
 
-void f3 ();
-void f3 (char);
+void f3 (); /* { dg-message "previous declaration" } */
+void f3 (char); /* { dg-error "conflicting types" } */
+/* { dg-message "default promotion" "" { target *-*-* } .-1 } */
 
-void f4 (char);
-void f4 ();
+void f4 (char); /* { dg-message "previous declaration" } */
+void f4 (); /* { dg-error "conflicting types" } */
+/* { dg-message "default promotion" "" { target *-*-* } .-1 } */
 
 /* Built-in function case.  */
-float sqrtf ();
+float sqrtf (); /* { dg-warning "conflicting types for built-in function" } */

@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "output.h"
 #include "linux-common.h"
+#include "i386-protos.h"
 
 static void
 emit_gnu_property (unsigned int type, unsigned int data)
@@ -60,7 +61,9 @@ file_end_indicate_exec_stack_and_gnu_property (void)
 {
   file_end_indicate_exec_stack ();
 
-  if (flag_cf_protection == CF_NONE && !ix86_needed)
+  if (flag_cf_protection == CF_NONE
+      && !ix86_needed
+      && !ix86_has_no_direct_extern_access)
     return;
 
   unsigned int feature_1 = 0;
@@ -121,4 +124,9 @@ file_end_indicate_exec_stack_and_gnu_property (void)
   /* Generate GNU_PROPERTY_X86_ISA_1_NEEDED.  */
   if (isa_1)
     emit_gnu_property (0xc0008002, isa_1);
+
+  if (ix86_has_no_direct_extern_access)
+    /* Emite a GNU_PROPERTY_1_NEEDED note with
+       GNU_PROPERTY_1_NEEDED_INDIRECT_EXTERN_ACCESS.  */
+    emit_gnu_property (0xb0008000, (1U << 0));
 }

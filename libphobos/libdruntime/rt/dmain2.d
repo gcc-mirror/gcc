@@ -62,22 +62,21 @@ struct UnitTestResult
     bool summarize;
 }
 
-extern (C) void _d_monitor_staticctor();
-extern (C) void _d_monitor_staticdtor();
-extern (C) void _d_critical_init();
-extern (C) void _d_critical_term();
+extern (C) void _d_monitor_staticctor() @nogc nothrow;
+extern (C) void _d_monitor_staticdtor() @nogc nothrow;
+extern (C) void _d_critical_init() @nogc nothrow;
+extern (C) void _d_critical_term() @nogc nothrow;
 extern (C) void gc_init();
 extern (C) void gc_term();
-extern (C) void thread_init() @nogc;
-extern (C) void thread_term() @nogc;
-extern (C) void lifetime_init();
+extern (C) void thread_init() @nogc nothrow;
+extern (C) void thread_term() @nogc nothrow;
 extern (C) void rt_moduleCtor();
 extern (C) void rt_moduleTlsCtor();
 extern (C) void rt_moduleDtor();
 extern (C) void rt_moduleTlsDtor();
 extern (C) void thread_joinAll();
 extern (C) UnitTestResult runModuleUnitTests();
-extern (C) void _d_initMonoTime();
+extern (C) void _d_initMonoTime() @nogc nothrow;
 
 version (CRuntime_Microsoft)
 {
@@ -134,7 +133,6 @@ extern (C) int rt_init()
         thread_init();
         // TODO: fixme - calls GC.addRange -> Initializes GC
         initStaticDataGC();
-        lifetime_init();
         rt_moduleCtor();
         rt_moduleTlsCtor();
         return 1;
@@ -624,7 +622,7 @@ extern (C) void _d_print_throwable(Throwable t)
             {
                 WSink caption;
                 if (t)
-                    caption.sink(t.classinfo.name);
+                    caption.sink(typeid(t).name);
 
                 // Avoid static user32.dll dependency for console applications
                 // by loading it dynamically as needed
@@ -669,7 +667,7 @@ extern (C) void _d_print_throwable(Throwable t)
 
     void sink(in char[] buf) scope nothrow
     {
-        fprintf(stderr, "%.*s", cast(int)buf.length, buf.ptr);
+        fwrite(buf.ptr, char.sizeof, buf.length, stderr);
     }
     formatThrowable(t, &sink);
 }

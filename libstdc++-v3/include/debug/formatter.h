@@ -185,6 +185,7 @@ namespace __gnu_debug
       __rbegin,		// dereferenceable, and at the reverse-beginning
       __rmiddle,	// reverse-dereferenceable, not at the reverse-beginning
       __rend,		// reverse-past-the-end
+      __singular_value_init,	// singular, value initialized
       __last_state
     };
 
@@ -280,7 +281,12 @@ namespace __gnu_debug
 	  _M_variant._M_iterator._M_seq_type = _GLIBCXX_TYPEID(_Sequence);
 
 	  if (__it._M_singular())
-	    _M_variant._M_iterator._M_state = __singular;
+	    {
+	      if (__it._M_value_initialized())
+		_M_variant._M_iterator._M_state = __singular_value_init;
+	      else
+		_M_variant._M_iterator._M_state = __singular;
+	    }
 	  else
 	    {
 	      if (__it._M_is_before_begin())
@@ -308,7 +314,12 @@ namespace __gnu_debug
 	  _M_variant._M_iterator._M_seq_type = _GLIBCXX_TYPEID(_Sequence);
 
 	  if (__it._M_singular())
-	    _M_variant._M_iterator._M_state = __singular;
+	    {
+	      if (__it._M_value_initialized())
+		_M_variant._M_iterator._M_state = __singular_value_init;
+	      else
+		_M_variant._M_iterator._M_state = __singular;
+	    }
 	  else
 	    {
 	      if (__it._M_is_end())

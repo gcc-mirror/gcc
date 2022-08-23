@@ -60,10 +60,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @{
    */
 
-#if __cplusplus == 201703L
-# define __cpp_lib_optional 201606L
-#else
+#if __cplusplus > 202002L && __cpp_lib_concepts
+# define __cpp_lib_optional 202110L
+#elif __cplusplus >= 202002L
 # define __cpp_lib_optional 202106L
+#else
+# define __cpp_lib_optional 201606L
 #endif
 
   template<typename _Tp>
@@ -1043,9 +1045,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return static_cast<_Tp>(std::forward<_Up>(__u));
 	}
 
-#if __cplusplus > 202002L && __cpp_lib_concepts
-#define __cpp_lib_monadic_optional 202110L
-
+#if __cpp_lib_optional >= 202110L
       // [optional.monadic]
 
       template<typename _Fn>

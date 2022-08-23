@@ -1211,7 +1211,6 @@ package body GNAT.AWK is
       Exceptions.Raise_Exception
         (E,
          '[' & Filename & ':' & Line & "] " & Message);
-      raise Constraint_Error; -- to please GNAT as this is a No_Return proc
    end Raise_With_Info;
 
    ---------------

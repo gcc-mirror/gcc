@@ -50,10 +50,10 @@ EXPORTED_CONST int processor_flags_table[] =
     /* z15 */    PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
 		 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX
 		 | PF_Z13 | PF_VX | PF_VXE | PF_Z14 | PF_VXE2 | PF_Z15,
-    /* arch14 */ PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
+    /* z16 */    PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
 		 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX
 		 | PF_Z13 | PF_VX | PF_VXE | PF_Z14 | PF_VXE2 | PF_Z15
-		 | PF_NNPA | PF_ARCH14
+		 | PF_NNPA | PF_Z16
   };
 
 /* Change optimizations to be performed, depending on the
@@ -116,13 +116,21 @@ s390_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 
 /* -fsplit-stack uses a field in the TCB, available with glibc-2.23.
    We don't verify it, since earlier versions just have padding at
-   its place, which works just as well.  */
+   its place, which works just as well.  For other libc implementations
+   we disable the feature entirely to avoid corrupting the TCB.  */
 
 static bool
-s390_supports_split_stack (bool report ATTRIBUTE_UNUSED,
+s390_supports_split_stack (bool report,
 			   struct gcc_options *opts ATTRIBUTE_UNUSED)
 {
-  return true;
+#ifdef OPTION_GLIBC_P
+  if (OPTION_GLIBC_P (opts))
+    return true;
+#endif
+
+  if (report)
+    error ("%<-fsplit-stack%> currently only supported on GNU/Linux");
+  return false;
 }
 
 #undef TARGET_DEFAULT_TARGET_FLAGS

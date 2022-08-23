@@ -10,6 +10,8 @@
  */
 module dmd.common.string;
 
+nothrow:
+
 /**
 Defines a temporary array using a fixed-length buffer as back store. If the length
 of the buffer suffices, it is readily used. Otherwise, `malloc` is used to
@@ -25,6 +27,8 @@ struct SmallBuffer(T)
 
     private T[] _extent;
     private bool needsFree;
+
+  nothrow:
 
     @disable this(); // no default ctor
     @disable this(ref const SmallBuffer!T); // noncopyable, nonassignable

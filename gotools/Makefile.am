@@ -62,6 +62,7 @@ go_cmd_gofmt_files = \
 
 go_cmd_cgo_files = \
 	$(cmdsrcdir)/cgo/ast.go \
+	$(cmdsrcdir)/cgo/ast_go118.go \
 	$(cmdsrcdir)/cgo/doc.go \
 	$(cmdsrcdir)/cgo/gcc.go \
 	$(cmdsrcdir)/cgo/godefs.go \
@@ -224,6 +225,7 @@ check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	cp -r $(libgosrcdir)/golang.org/x/mod check-go-dir/src/cmd/vendor/golang.org/x/
 	cp -r $(libgosrcdir)/golang.org/x/crypto check-go-dir/src/cmd/vendor/golang.org/x/
 	cp -r $(libgosrcdir)/golang.org/x/xerrors check-go-dir/src/cmd/vendor/golang.org/x/
+	cp -r $(libgosrcdir)/golang.org/x/tools check-go-dir/src/cmd/vendor/golang.org/x/
 	cp $(libgodir)/objabi.go check-go-dir/src/cmd/internal/objabi/
 	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 	abs_checkdir=`cd check-go-dir && $(PWD_COMMAND)`; \

@@ -6,7 +6,6 @@
 // wyhash: https://github.com/wangyi-fudan/wyhash/blob/ceb019b530e2c1c14d70b79bfa2bc49de7d95bc1/Modern%20Non-Cryptographic%20Hash%20Function%20and%20Pseudorandom%20Number%20Generator.pdf
 
 //go:build 386 || arm || mips || mipsle || amd64p32 || armbe || m68k || mips64p32 || mips64p32le || nios2 || ppc || riscv || s390 || sh || shbe || sparc
-// +build 386 arm mips mipsle amd64p32 armbe m68k mips64p32 mips64p32le nios2 ppc riscv s390 sh shbe sparc
 
 package runtime
 

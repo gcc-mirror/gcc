@@ -1504,7 +1504,7 @@ gfc_check_associated (gfc_expr *pointer, gfc_expr *target)
      argument of intrinsic inquiry functions.  */
   if (pointer->rank != -1 && !rank_check (target, 0, pointer->rank))
     t = false;
-  if (target->rank > 0)
+  if (target->rank > 0 && target->ref)
     {
       for (i = 0; i < target->rank; i++)
 	if (target->ref->u.ar.dimen_type[i] == DIMEN_VECTOR)
@@ -4338,6 +4338,9 @@ gfc_check_norm2 (gfc_expr *array, gfc_expr *dim)
   if (!array_check (array, 0))
     return false;
 
+  if (!dim_check (dim, 1, false))
+    return false;
+
   if (!dim_rank_check (dim, array, false))
     return false;
 
@@ -4474,6 +4477,9 @@ gfc_check_parity (gfc_expr *mask, gfc_expr *dim)
     return false;
 
   if (!array_check (mask, 0))
+    return false;
+
+  if (!dim_check (dim, 1, false))
     return false;
 
   if (!dim_rank_check (dim, mask, false))
@@ -6144,8 +6150,8 @@ gfc_calculate_transfer_sizes (gfc_expr *source, gfc_expr *mold, gfc_expr *size,
    * representation is not shorter than that of SOURCE.
    * If SIZE is present, the result is an array of rank one and size SIZE.
    */
-  if (result_elt_size == 0 && *source_size > 0 && !size
-      && mold->expr_type == EXPR_ARRAY)
+  if (result_elt_size == 0 && *source_size > 0
+      && (mold->expr_type == EXPR_ARRAY || mold->rank))
     {
       gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L is an "
 		 "array and shall not have storage size 0 when %<SOURCE%> "
@@ -6346,6 +6352,8 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
 
   if (!same_type_check (vector, 0, field, 2))
     return false;
+
+  gfc_simplify_expr (mask, 0);
 
   if (mask->expr_type == EXPR_ARRAY
       && gfc_array_size (vector, &vector_size))

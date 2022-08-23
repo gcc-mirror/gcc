@@ -19,7 +19,8 @@ extern unsigned int *__restrict c;
 #pragma acc routine nohost worker
 void ROUTINE ()
 {
-#pragma acc loop /* { dg-bogus "assigned OpenACC .* loop parallelism" } */
+#pragma acc loop /* { dg-line l_loop_i1 } */
+  /* { dg-bogus {optimized: assigned OpenACC [^\n\r]+ loop parallelism} {} { target *-*-* } l_loop_i1 } */
   for (unsigned int i = 0; i < N; i++)
     c[i] = a[i] + b[i];
 }

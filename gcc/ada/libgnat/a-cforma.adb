@@ -32,11 +32,21 @@ pragma Elaborate_All
 with Ada.Containers.Red_Black_Trees.Generic_Bounded_Keys;
 pragma Elaborate_All (Ada.Containers.Red_Black_Trees.Generic_Bounded_Keys);
 
+with Ada.Numerics.Big_Numbers.Big_Integers;
+use Ada.Numerics.Big_Numbers.Big_Integers;
+
 with System; use type System.Address;
 
 package body Ada.Containers.Formal_Ordered_Maps with
   SPARK_Mode => Off
 is
+
+   --  Convert Count_Type to Big_Interger
+
+   package Conversions is new Signed_Conversions (Int => Count_Type);
+
+   function Big (J : Count_Type) return Big_Integer renames
+     Conversions.To_Big_Integer;
 
    -----------------------------
    -- Node Access Subprograms --
@@ -745,7 +755,7 @@ is
 
          while Position /= 0 loop
             R := P.Add (R, (Node => Position), I);
-            pragma Assert (P.Length (R) = I);
+            pragma Assert (P.Length (R) = Big (I));
             Position := Tree_Operations.Next (Container.Content, Position);
             I := I + 1;
          end loop;

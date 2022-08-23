@@ -51,6 +51,6 @@ g (int *p, const int *pc, const int **q)
      similar  types  T1 and T2 (_conv.qual_), respectively, and the cv-
      qualification signature of type T1 is a proper subset of  the  cv-
      qualification signature of type T2  */
-  f8 (q);
+  f8 (q); // { dg-error "call of overloaded" }
   f9 (q);
 }

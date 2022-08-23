@@ -605,7 +605,8 @@ struct cpp_reader
      characters.  */
   bool warn_bidi_p () const
   {
-    return CPP_OPTION (this, cpp_warn_bidirectional) != bidirectional_none;
+    return (CPP_OPTION (this, cpp_warn_bidirectional)
+	    & (bidirectional_unpaired|bidirectional_any));
   }
 };
 

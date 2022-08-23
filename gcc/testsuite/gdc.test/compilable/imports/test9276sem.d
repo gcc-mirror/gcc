@@ -22,4 +22,3 @@ import imports.test9276visitors;
 class OverloadableDecl : Declaration
 {
 }
-

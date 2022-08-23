@@ -9,4 +9,3 @@ class Type : Expression     // <- note to Walter.
 class BasicType : Type
 {
 }
-

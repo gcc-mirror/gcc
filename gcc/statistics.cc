@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "context.h"
 #include "pass_manager.h"
+#include "tree.h"
 
 static int statistics_dump_nr;
 static dump_flags_t statistics_dump_flags;
@@ -113,6 +114,22 @@ curr_statistics_hash (void)
   return statistics_hashes[idx];
 }
 
+/* Helper function to return asmname or name of FN
+   depending on whether asmname option is set.  */
+
+static const char *
+get_function_name (struct function *fn)
+{
+  if ((statistics_dump_flags & TDF_ASMNAME)
+      && fn && DECL_ASSEMBLER_NAME_SET_P (fn->decl))
+    {
+      tree asmname = decl_assembler_name (fn->decl);
+      if (asmname)
+	return IDENTIFIER_POINTER (asmname);
+    }
+  return function_name (fn);
+}
+
 /* Helper for statistics_fini_pass.  Print the counter difference
    since the last dump for the pass dump files.  */
 
@@ -152,7 +169,7 @@ statistics_fini_pass_2 (statistics_counter **slot,
 	     current_pass->static_pass_number,
 	     current_pass->name,
 	     counter->id, counter->val,
-	     current_function_name (),
+	     get_function_name (cfun),
 	     count);
   else
     fprintf (statistics_dump_file,
@@ -160,7 +177,7 @@ statistics_fini_pass_2 (statistics_counter **slot,
 	     current_pass->static_pass_number,
 	     current_pass->name,
 	     counter->id,
-	     current_function_name (),
+	     get_function_name (cfun),
 	     count);
   counter->prev_dumped_count = counter->count;
   return 1;
@@ -329,7 +346,7 @@ statistics_counter_event (struct function *fn, const char *id, int incr)
 	   current_pass ? current_pass->static_pass_number : -1,
 	   current_pass ? current_pass->name : "none",
 	   id,
-	   function_name (fn),
+	   get_function_name (fn),
 	   incr);
 }
 
@@ -359,5 +376,5 @@ statistics_histogram_event (struct function *fn, const char *id, int val)
 	   current_pass->static_pass_number,
 	   current_pass->name,
 	   id, val,
-	   function_name (fn));
+	   get_function_name (fn));
 }

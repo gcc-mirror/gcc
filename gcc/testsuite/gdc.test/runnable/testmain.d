@@ -3,4 +3,3 @@
 // PERMUTE_ARGS: -betterC
 
 void foo() { }
-

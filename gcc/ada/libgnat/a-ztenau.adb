@@ -306,8 +306,6 @@ package body Ada.Wide_Wide_Text_IO.Enumeration_Aux is
                 and then
                   not Is_Letter (To_Character (WC))
                 and then
-                  not Is_Letter (To_Character (WC))
-                and then
                   (WC /= '_' or else From (Stop - 1) = '_');
 
             Stop := Stop + 1;

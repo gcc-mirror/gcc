@@ -6,7 +6,21 @@
  */
 module core.sys.linux.sys.inotify;
 
-version (linux):
+// The BSDs (including macOS) have a kqueue-backed API-compatible inotify
+// library in ports. However, inotify is a Linux interface so it lives here.
+// All BSD people need this library to use inotify:
+//   https://github.com/libinotify-kqueue/libinotify-kqueue
+// It is the responsibility of all BSD people to configure the library before
+// using this interface.
+
+version (linux)        version = LinuxOrCompatible;
+version (Darwin)       version = LinuxOrCompatible;
+version (FreeBSD)      version = LinuxOrCompatible;
+version (OpenBSD)      version = LinuxOrCompatible;
+version (NetBSD)       version = LinuxOrCompatible;
+version (DragonFlyBSD) version = LinuxOrCompatible;
+
+version (LinuxOrCompatible):
 extern (C):
 @system:
 nothrow:

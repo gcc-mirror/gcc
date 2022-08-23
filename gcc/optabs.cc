@@ -52,6 +52,8 @@ static void prepare_float_lib_cmp (rtx, rtx, enum rtx_code, rtx *,
 static rtx expand_unop_direct (machine_mode, optab, rtx, rtx, int);
 static void emit_libcall_block_1 (rtx_insn *, rtx, rtx, rtx, bool);
 
+static rtx emit_conditional_move_1 (rtx, rtx, rtx, rtx, machine_mode);
+
 /* Debug facility for use in GDB.  */
 void debug_optab_libfuncs (void);
 
@@ -262,10 +264,8 @@ expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
   bool sbool = false;
 
   oprnd0 = ops->op0;
-  if (nops >= 2)
-    oprnd1 = ops->op1;
-  if (nops >= 3)
-    oprnd2 = ops->op2;
+  oprnd1 = nops >= 2 ? ops->op1 : NULL_TREE;
+  oprnd2 = nops >= 3 ? ops->op2 : NULL_TREE;
 
   tmode0 = TYPE_MODE (TREE_TYPE (oprnd0));
   if (ops->code == VEC_UNPACK_FIX_TRUNC_HI_EXPR
@@ -624,12 +624,13 @@ expand_doubleword_shift_condmove (scalar_int_mode op1_mode, optab binoptab,
 
   /* Select between them.  Do the INTO half first because INTO_SUPERWORD
      might be the current value of OUTOF_TARGET.  */
-  if (!emit_conditional_move (into_target, cmp_code, cmp1, cmp2, op1_mode,
+  if (!emit_conditional_move (into_target, { cmp_code, cmp1, cmp2, op1_mode },
 			      into_target, into_superword, word_mode, false))
     return false;
 
   if (outof_target != 0)
-    if (!emit_conditional_move (outof_target, cmp_code, cmp1, cmp2, op1_mode,
+    if (!emit_conditional_move (outof_target,
+				{ cmp_code, cmp1, cmp2, op1_mode },
 				outof_target, outof_superword,
 				word_mode, false))
       return false;
@@ -4395,12 +4396,14 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
   /* If we are optimizing, force expensive constants into a register.  */
   if (CONSTANT_P (x) && optimize
       && (rtx_cost (x, mode, COMPARE, 0, optimize_insn_for_speed_p ())
-          > COSTS_N_INSNS (1)))
+          > COSTS_N_INSNS (1))
+      && can_create_pseudo_p ())
     x = force_reg (mode, x);
 
   if (CONSTANT_P (y) && optimize
       && (rtx_cost (y, mode, COMPARE, 1, optimize_insn_for_speed_p ())
-          > COSTS_N_INSNS (1)))
+          > COSTS_N_INSNS (1))
+      && can_create_pseudo_p ())
     y = force_reg (mode, y);
 
   /* Don't let both operands fail to indicate the mode.  */
@@ -4469,6 +4472,8 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
      compare and branch in different basic blocks.  */
   if (cfun->can_throw_non_call_exceptions)
     {
+      if (!can_create_pseudo_p () && (may_trap_p (x) || may_trap_p (y)))
+	goto fail;
       if (may_trap_p (x))
 	x = copy_to_reg (x);
       if (may_trap_p (y))
@@ -4851,8 +4856,8 @@ emit_indirect_jump (rtx loc)
    is not supported.  */
 
 rtx
-emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
-		       machine_mode cmode, rtx op2, rtx op3,
+emit_conditional_move (rtx target, struct rtx_comparison comp,
+		       rtx op2, rtx op3,
 		       machine_mode mode, int unsignedp)
 {
   rtx comparison;
@@ -4874,31 +4879,33 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   /* If one operand is constant, make it the second one.  Only do this
      if the other operand is not constant as well.  */
 
-  if (swap_commutative_operands_p (op0, op1))
+  if (swap_commutative_operands_p (comp.op0, comp.op1))
     {
-      std::swap (op0, op1);
-      code = swap_condition (code);
+      std::swap (comp.op0, comp.op1);
+      comp.code = swap_condition (comp.code);
     }
 
   /* get_condition will prefer to generate LT and GT even if the old
      comparison was against zero, so undo that canonicalization here since
      comparisons against zero are cheaper.  */
-  if (code == LT && op1 == const1_rtx)
-    code = LE, op1 = const0_rtx;
-  else if (code == GT && op1 == constm1_rtx)
-    code = GE, op1 = const0_rtx;
 
-  if (cmode == VOIDmode)
-    cmode = GET_MODE (op0);
+  if (comp.code == LT && comp.op1 == const1_rtx)
+    comp.code = LE, comp.op1 = const0_rtx;
+  else if (comp.code == GT && comp.op1 == constm1_rtx)
+    comp.code = GE, comp.op1 = const0_rtx;
 
-  enum rtx_code orig_code = code;
+  if (comp.mode == VOIDmode)
+    comp.mode = GET_MODE (comp.op0);
+
+  enum rtx_code orig_code = comp.code;
   bool swapped = false;
   if (swap_commutative_operands_p (op2, op3)
-      && ((reversed = reversed_comparison_code_parts (code, op0, op1, NULL))
-          != UNKNOWN))
+      && ((reversed =
+	   reversed_comparison_code_parts (comp.code, comp.op0, comp.op1, NULL))
+	  != UNKNOWN))
     {
       std::swap (op2, op3);
-      code = reversed;
+      comp.code = reversed;
       swapped = true;
     }
 
@@ -4915,8 +4922,10 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   for (int pass = 0; ; pass++)
     {
-      code = unsignedp ? unsigned_condition (code) : code;
-      comparison = simplify_gen_relational (code, VOIDmode, cmode, op0, op1);
+      comp.code = unsignedp ? unsigned_condition (comp.code) : comp.code;
+      comparison =
+	simplify_gen_relational (comp.code, VOIDmode,
+				 comp.mode, comp.op0, comp.op1);
 
       /* We can get const0_rtx or const_true_rtx in some circumstances.  Just
 	 punt and let the caller figure out how best to deal with this
@@ -4927,24 +4936,16 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	  save_pending_stack_adjust (&save);
 	  last = get_last_insn ();
 	  do_pending_stack_adjust ();
-	  machine_mode cmpmode = cmode;
+	  machine_mode cmpmode = comp.mode;
 	  prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1),
 			    GET_CODE (comparison), NULL_RTX, unsignedp,
 			    OPTAB_WIDEN, &comparison, &cmpmode);
 	  if (comparison)
 	    {
-	      class expand_operand ops[4];
-
-	      create_output_operand (&ops[0], target, mode);
-	      create_fixed_operand (&ops[1], comparison);
-	      create_input_operand (&ops[2], op2, mode);
-	      create_input_operand (&ops[3], op3, mode);
-	      if (maybe_expand_insn (icode, 4, ops))
-		{
-		  if (ops[0].value != target)
-		    convert_move (target, ops[0].value, false);
-		  return target;
-		}
+	       rtx res = emit_conditional_move_1 (target, comparison,
+						  op2, op3, mode);
+	       if (res != NULL_RTX)
+		 return res;
 	    }
 	  delete_insns_since (last);
 	  restore_pending_stack_adjust (&save);
@@ -4956,15 +4957,86 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
       /* If the preferred op2/op3 order is not usable, retry with other
 	 operand order, perhaps it will expand successfully.  */
       if (swapped)
-	code = orig_code;
-      else if ((reversed = reversed_comparison_code_parts (orig_code, op0, op1,
+	comp.code = orig_code;
+      else if ((reversed =
+		reversed_comparison_code_parts (orig_code, comp.op0, comp.op1,
 							   NULL))
 	       != UNKNOWN)
-	code = reversed;
+	comp.code = reversed;
       else
 	return NULL_RTX;
       std::swap (op2, op3);
     }
+}
+
+/* Helper function that, in addition to COMPARISON, also tries
+   the reversed REV_COMPARISON with swapped OP2 and OP3.  As opposed
+   to when we pass the specific constituents of a comparison, no
+   additional insns are emitted for it.  It might still be necessary
+   to emit more than one insn for the final conditional move, though.  */
+
+rtx
+emit_conditional_move (rtx target, rtx comparison, rtx rev_comparison,
+		       rtx op2, rtx op3, machine_mode mode)
+{
+  rtx res = emit_conditional_move_1 (target, comparison, op2, op3, mode);
+
+  if (res != NULL_RTX)
+    return res;
+
+  return emit_conditional_move_1 (target, rev_comparison, op3, op2, mode);
+}
+
+/* Helper for emitting a conditional move.  */
+
+static rtx
+emit_conditional_move_1 (rtx target, rtx comparison,
+			 rtx op2, rtx op3, machine_mode mode)
+{
+  enum insn_code icode;
+
+  if (comparison == NULL_RTX || !COMPARISON_P (comparison))
+    return NULL_RTX;
+
+  /* If the two source operands are identical, that's just a move.
+     As the comparison comes in non-canonicalized, we must make
+     sure not to discard any possible side effects.  If there are
+     side effects, just let the target handle it.  */
+  if (!side_effects_p (comparison) && rtx_equal_p (op2, op3))
+    {
+      if (!target)
+	target = gen_reg_rtx (mode);
+
+      emit_move_insn (target, op3);
+      return target;
+    }
+
+  if (mode == VOIDmode)
+    mode = GET_MODE (op2);
+
+  icode = direct_optab_handler (movcc_optab, mode);
+
+  if (icode == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  if (!target)
+    target = gen_reg_rtx (mode);
+
+  class expand_operand ops[4];
+
+  create_output_operand (&ops[0], target, mode);
+  create_fixed_operand (&ops[1], comparison);
+  create_input_operand (&ops[2], op2, mode);
+  create_input_operand (&ops[3], op3, mode);
+
+  if (maybe_expand_insn (icode, 4, ops))
+    {
+      if (ops[0].value != target)
+	convert_move (target, ops[0].value, false);
+      return target;
+    }
+
+  return NULL_RTX;
 }
 
 
@@ -5756,7 +5828,8 @@ expand_sfix_optab (rtx to, rtx from, convert_optab tab)
   FOR_EACH_MODE_FROM (fmode, GET_MODE (from))
     FOR_EACH_MODE_FROM (imode, GET_MODE (to))
       {
-	icode = convert_optab_handler (tab, imode, fmode);
+	icode = convert_optab_handler (tab, imode, fmode,
+				       insn_optimization_type ());
 	if (icode != CODE_FOR_nothing)
 	  {
 	    rtx_insn *last = get_last_insn ();
@@ -6176,7 +6249,10 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
       if (single_arg_p)
 	v1 = v0;
 
-      if (targetm.vectorize.vec_perm_const (mode, target, v0, v1, indices))
+      gcc_checking_assert (GET_MODE (v0) == GET_MODE (v1));
+      machine_mode op_mode = GET_MODE (v0);
+      if (targetm.vectorize.vec_perm_const (mode, op_mode, target, v0, v1,
+					    indices))
 	return target;
     }
 
@@ -6190,7 +6266,7 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
       v0_qi = gen_lowpart (qimode, v0);
       v1_qi = gen_lowpart (qimode, v1);
       if (targetm.vectorize.vec_perm_const != NULL
-	  && targetm.vectorize.vec_perm_const (qimode, target_qi, v0_qi,
+	  && targetm.vectorize.vec_perm_const (qimode, qimode, target_qi, v0_qi,
 					       v1_qi, qimode_indices))
 	return gen_lowpart (mode, target_qi);
     }

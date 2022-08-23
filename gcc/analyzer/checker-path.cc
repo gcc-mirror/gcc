@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "basic-block.h"
 #include "gimple.h"
+#include "diagnostic-core.h"
 #include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "function.h"
@@ -54,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-state.h"
 #include "analyzer/checker-path.h"
 #include "gimple-iterator.h"
+#include "inlining-iterator.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/diagnostic-manager.h"
@@ -81,6 +83,8 @@ event_kind_to_string (enum event_kind ek)
       return "EK_CUSTOM";
     case EK_STMT:
       return "EK_STMT";
+    case EK_REGION_CREATION:
+      return "EK_REGION_CREATION";
     case EK_FUNCTION_ENTRY:
       return "EK_FUNCTION_ENTRY";
     case EK_STATE_CHANGE:
@@ -97,6 +101,8 @@ event_kind_to_string (enum event_kind ek)
       return "EK_START_CONSOLIDATED_CFG_EDGES";
     case EK_END_CONSOLIDATED_CFG_EDGES:
       return "EK_END_CONSOLIDATED_CFG_EDGES";
+    case EK_INLINED_CALL:
+      return "EK_INLINED_CALL";
     case EK_SETJMP:
       return "EK_SETJMP";
     case EK_REWIND_FROM_LONGJMP:
@@ -108,7 +114,79 @@ event_kind_to_string (enum event_kind ek)
     }
 }
 
+/* A class for fixing up fndecls and stack depths in checker_event, based
+   on inlining records.
+
+   The early inliner runs before the analyzer, which can lead to confusing
+   output.
+
+   Tne base fndecl and depth within a checker_event are from call strings
+   in program_points, which reflect the call strings after inlining.
+   This class lets us offset the depth and fix up the reported fndecl and
+   stack depth to better reflect the user's original code.  */
+
+class inlining_info
+{
+public:
+  inlining_info (location_t loc)
+  {
+    inlining_iterator iter (loc);
+    m_inner_fndecl = iter.get_fndecl ();
+    int num_frames = 0;
+    while (!iter.done_p ())
+      {
+	m_outer_fndecl = iter.get_fndecl ();
+	num_frames++;
+	iter.next ();
+      }
+    if (num_frames > 1)
+      m_extra_frames = num_frames - 1;
+    else
+      m_extra_frames = 0;
+  }
+
+  tree get_inner_fndecl () const { return m_inner_fndecl; }
+  int get_extra_frames () const { return m_extra_frames; }
+
+private:
+  tree m_outer_fndecl;
+  tree m_inner_fndecl;
+  int m_extra_frames;
+};
+
 /* class checker_event : public diagnostic_event.  */
+
+/* checker_event's ctor.  */
+
+checker_event::checker_event (enum event_kind kind,
+			      location_t loc, tree fndecl, int depth)
+: m_kind (kind), m_loc (loc),
+  m_original_fndecl (fndecl), m_effective_fndecl (fndecl),
+  m_original_depth (depth), m_effective_depth (depth),
+  m_pending_diagnostic (NULL), m_emission_id (),
+  m_logical_loc (fndecl)
+{
+  /* Update effective fndecl and depth if inlining has been recorded.  */
+  if (flag_analyzer_undo_inlining)
+    {
+      inlining_info info (loc);
+      if (info.get_inner_fndecl ())
+	{
+	  m_effective_fndecl = info.get_inner_fndecl ();
+	  m_effective_depth += info.get_extra_frames ();
+	  m_logical_loc = tree_logical_location (m_effective_fndecl);
+	}
+    }
+}
+
+/* No-op implementation of diagnostic_event::get_meaning vfunc for
+   checker_event: checker events have no meaning by default.  */
+
+diagnostic_event::meaning
+checker_event::get_meaning () const
+{
+  return meaning ();
+}
 
 /* Dump this event to PP (for debugging/logging purposes).  */
 
@@ -116,11 +194,20 @@ void
 checker_event::dump (pretty_printer *pp) const
 {
   label_text event_desc (get_desc (false));
-  pp_printf (pp, "\"%s\" (depth %i, m_loc=%x)",
-	     event_desc.m_buffer,
-	     get_stack_depth (),
+  pp_printf (pp, "\"%s\" (depth %i",
+	     event_desc.get (), m_effective_depth);
+
+  if (m_effective_depth != m_original_depth)
+    pp_printf (pp, " corrected from %i",
+	       m_original_depth);
+  if (m_effective_fndecl)
+    {
+      pp_printf (pp, ", fndecl %qE", m_effective_fndecl);
+      if (m_effective_fndecl != m_original_fndecl)
+	pp_printf (pp, " corrected from %qE", m_original_fndecl);
+    }
+  pp_printf (pp, ", m_loc=%x)",
 	     get_location ());
-  event_desc.maybe_free ();
 }
 
 /* Hook for being notified when this event has its final id EMISSION_ID
@@ -147,7 +234,6 @@ checker_event::prepare_for_emission (checker_path *,
   m_emission_id = emission_id;
 
   label_text desc = get_desc (false);
-  desc.maybe_free ();
 }
 
 /* class debug_event : public checker_event.  */
@@ -199,6 +285,43 @@ statement_event::get_desc (bool) const
   return label_text::take (xstrdup (pp_formatted_text (&pp)));
 }
 
+/* class region_creation_event : public checker_event.  */
+
+region_creation_event::region_creation_event (const region *reg,
+					      location_t loc,
+					      tree fndecl,
+					      int depth)
+: checker_event (EK_REGION_CREATION, loc, fndecl, depth),
+  m_reg (reg)
+{
+}
+
+/* Implementation of diagnostic_event::get_desc vfunc for
+   region_creation_event.  */
+
+label_text
+region_creation_event::get_desc (bool can_colorize) const
+{
+  if (m_pending_diagnostic)
+    {
+      label_text custom_desc
+	    = m_pending_diagnostic->describe_region_creation_event
+		(evdesc::region_creation (can_colorize, m_reg));
+      if (custom_desc.get ())
+	return custom_desc;
+    }
+
+  switch (m_reg->get_memory_space ())
+    {
+    default:
+      return label_text::borrow ("region created here");
+    case MEMSPACE_STACK:
+      return label_text::borrow ("region created on stack here");
+    case MEMSPACE_HEAP:
+      return label_text::borrow ("region created on heap here");
+    }
+}
+
 /* class function_entry_event : public checker_event.  */
 
 /* Implementation of diagnostic_event::get_desc vfunc for
@@ -209,7 +332,16 @@ statement_event::get_desc (bool) const
 label_text
 function_entry_event::get_desc (bool can_colorize) const
 {
-  return make_label_text (can_colorize, "entry to %qE", m_fndecl);
+  return make_label_text (can_colorize, "entry to %qE", m_effective_fndecl);
+}
+
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   function entry.  */
+
+diagnostic_event::meaning
+function_entry_event::get_meaning () const
+{
+  return meaning (VERB_enter, NOUN_function);
 }
 
 /* class state_change_event : public checker_event.  */
@@ -258,31 +390,35 @@ state_change_event::get_desc (bool can_colorize) const
 	= m_pending_diagnostic->describe_state_change
 	    (evdesc::state_change (can_colorize, var, origin,
 				   m_from, m_to, m_emission_id, *this));
-      if (custom_desc.m_buffer)
+      if (custom_desc.get ())
 	{
 	  if (flag_analyzer_verbose_state_changes)
 	    {
+	      /* Get any "meaning" of event.  */
+	      diagnostic_event::meaning meaning = get_meaning ();
+	      pretty_printer meaning_pp;
+	      meaning.dump_to_pp (&meaning_pp);
+
 	      /* Append debug version.  */
-	      label_text result;
 	      if (m_origin)
-		result = make_label_text
+		return make_label_text
 		  (can_colorize,
-		   "%s (state of %qE: %qs -> %qs, origin: %qE)",
-		   custom_desc.m_buffer,
+		   "%s (state of %qE: %qs -> %qs, origin: %qE, meaning: %s)",
+		   custom_desc.get (),
 		   var,
 		   m_from->get_name (),
 		   m_to->get_name (),
-		   origin);
+		   origin,
+		   pp_formatted_text (&meaning_pp));
 	      else
-		result = make_label_text
+		return make_label_text
 		  (can_colorize,
-		   "%s (state of %qE: %qs -> %qs, NULL origin)",
-		   custom_desc.m_buffer,
+		   "%s (state of %qE: %qs -> %qs, NULL origin, meaning: %s)",
+		   custom_desc.get (),
 		   var,
 		   m_from->get_name (),
-		   m_to->get_name ());
-	      custom_desc.maybe_free ();
-	      return result;
+		   m_to->get_name (),
+		   pp_formatted_text (&meaning_pp));
 	    }
 	  else
 	    return custom_desc;
@@ -299,16 +435,16 @@ state_change_event::get_desc (bool can_colorize) const
 	  return make_label_text
 	    (can_colorize,
 	     "state of %qs: %qs -> %qs (origin: %qs)",
-	     sval_desc.m_buffer,
+	     sval_desc.get (),
 	     m_from->get_name (),
 	     m_to->get_name (),
-	     origin_desc.m_buffer);
+	     origin_desc.get ());
 	}
       else
 	return make_label_text
 	  (can_colorize,
 	   "state of %qs: %qs -> %qs (NULL origin)",
-	   sval_desc.m_buffer,
+	   sval_desc.get (),
 	   m_from->get_name (),
 	   m_to->get_name ());
     }
@@ -321,6 +457,26 @@ state_change_event::get_desc (bool can_colorize) const
 	 m_from->get_name (),
 	 m_to->get_name ());
     }
+}
+
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   state change events: delegate to the pending_diagnostic to
+   get any meaning.  */
+
+diagnostic_event::meaning
+state_change_event::get_meaning () const
+{
+  if (m_pending_diagnostic)
+    {
+      region_model *model = m_dst_state.m_region_model;
+      tree var = model->get_representative_tree (m_sval);
+      tree origin = model->get_representative_tree (m_origin);
+      return m_pending_diagnostic->get_meaning_for_state_change
+	(evdesc::state_change (false, var, origin,
+			       m_from, m_to, m_emission_id, *this));
+    }
+  else
+    return meaning ();
 }
 
 /* class superedge_event : public checker_event.  */
@@ -353,10 +509,9 @@ superedge_event::should_filter_p (int verbosity) const
 	    /* Filter events with empty descriptions.  This ought to filter
 	       FALLTHRU, but retain true/false/switch edges.  */
 	    label_text desc = get_desc (false);
-	    gcc_assert (desc.m_buffer);
-	    if (desc.m_buffer[0] == '\0')
+	    gcc_assert (desc.get ());
+	    if (desc.get ()[0] == '\0')
 	      return true;
-	    desc.maybe_free ();
 	  }
       }
       break;
@@ -398,6 +553,21 @@ cfg_edge_event::cfg_edge_event (enum event_kind kind,
   gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CFG_EDGE);
 }
 
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   CFG edge events.  */
+
+diagnostic_event::meaning
+cfg_edge_event::get_meaning () const
+{
+  const cfg_superedge& cfg_sedge = get_cfg_superedge ();
+  if (cfg_sedge.true_value_p ())
+    return meaning (VERB_branch, PROPERTY_true);
+  else if (cfg_sedge.false_value_p ())
+    return meaning (VERB_branch, PROPERTY_false);
+  else
+    return meaning ();
+}
+
 /* class start_cfg_edge_event : public cfg_edge_event.  */
 
 /* Implementation of diagnostic_event::get_desc vfunc for
@@ -424,56 +594,38 @@ label_text
 start_cfg_edge_event::get_desc (bool can_colorize) const
 {
   bool user_facing = !flag_analyzer_verbose_edges;
-  char *edge_desc = m_sedge->get_description (user_facing);
+  label_text edge_desc (m_sedge->get_description (user_facing));
   if (user_facing)
     {
-      if (edge_desc && strlen (edge_desc) > 0)
+      if (edge_desc.get () && strlen (edge_desc.get ()) > 0)
 	{
 	  label_text cond_desc = maybe_describe_condition (can_colorize);
 	  label_text result;
-	  if (cond_desc.m_buffer)
-	    {
-	      result = make_label_text (can_colorize,
-					"following %qs branch (%s)...",
-					edge_desc, cond_desc.m_buffer);
-	      cond_desc.maybe_free ();
-	    }
+	  if (cond_desc.get ())
+	    return make_label_text (can_colorize,
+				    "following %qs branch (%s)...",
+				    edge_desc.get (), cond_desc.get ());
 	  else
-	    {
-	      result = make_label_text (can_colorize,
-					"following %qs branch...",
-					edge_desc);
-	    }
-	  free (edge_desc);
-	  return result;
+	    return make_label_text (can_colorize,
+				    "following %qs branch...",
+				    edge_desc.get ());
 	}
       else
-	{
-	  free (edge_desc);
-	  return label_text::borrow ("");
-	}
+	return label_text::borrow ("");
     }
   else
     {
-      if (strlen (edge_desc) > 0)
-	{
-	  label_text result
-	    = make_label_text (can_colorize,
-			       "taking %qs edge SN:%i -> SN:%i",
-			       edge_desc,
-			       m_sedge->m_src->m_index,
-			       m_sedge->m_dest->m_index);
-	  free (edge_desc);
-	  return result;
-	}
+      if (strlen (edge_desc.get ()) > 0)
+	return make_label_text (can_colorize,
+				"taking %qs edge SN:%i -> SN:%i",
+				edge_desc.get (),
+				m_sedge->m_src->m_index,
+				m_sedge->m_dest->m_index);
       else
-	{
-	  free (edge_desc);
-	  return make_label_text (can_colorize,
-				  "taking edge SN:%i -> SN:%i",
-				  m_sedge->m_src->m_index,
-				  m_sedge->m_dest->m_index);
-	}
+	return make_label_text (can_colorize,
+				"taking edge SN:%i -> SN:%i",
+				m_sedge->m_src->m_index,
+				m_sedge->m_dest->m_index);
     }
 }
 
@@ -646,14 +798,23 @@ call_event::get_desc (bool can_colorize) const
 				      m_dest_snode->m_fun->decl,
 				      var,
 				      m_critical_state));
-      if (custom_desc.m_buffer)
+      if (custom_desc.get ())
 	return custom_desc;
     }
 
   return make_label_text (can_colorize,
 			  "calling %qE from %qE",
-			  m_dest_snode->m_fun->decl,
-			  m_src_snode->m_fun->decl);
+			  get_callee_fndecl (),
+			  get_caller_fndecl ());
+}
+
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   function call events.  */
+
+diagnostic_event::meaning
+call_event::get_meaning () const
+{
+  return meaning (VERB_call, NOUN_function);
 }
 
 /* Override of checker_event::is_call_p for calls.  */
@@ -662,6 +823,18 @@ bool
 call_event::is_call_p () const
 {
   return true;
+}
+
+tree
+call_event::get_caller_fndecl () const
+{
+  return m_src_snode->m_fun->decl;
+}
+
+tree
+call_event::get_callee_fndecl () const
+{
+  return m_dest_snode->m_fun->decl;
 }
 
 /* class return_event : public superedge_event.  */
@@ -705,13 +878,22 @@ return_event::get_desc (bool can_colorize) const
 				      m_dest_snode->m_fun->decl,
 				      m_src_snode->m_fun->decl,
 				      m_critical_state));
-      if (custom_desc.m_buffer)
+      if (custom_desc.get ())
 	return custom_desc;
     }
   return make_label_text (can_colorize,
 			  "returning to %qE from %qE",
 			  m_dest_snode->m_fun->decl,
 			  m_src_snode->m_fun->decl);
+}
+
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   function return events.  */
+
+diagnostic_event::meaning
+return_event::get_meaning () const
+{
+  return meaning (VERB_return, NOUN_function);
 }
 
 /* Override of checker_event::is_return_p for returns.  */
@@ -730,6 +912,36 @@ start_consolidated_cfg_edges_event::get_desc (bool can_colorize) const
   return make_label_text (can_colorize,
 			  "following %qs branch...",
 			  m_edge_sense ? "true" : "false");
+}
+
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   start_consolidated_cfg_edges_event.  */
+
+diagnostic_event::meaning
+start_consolidated_cfg_edges_event::get_meaning () const
+{
+  return meaning (VERB_branch,
+		  (m_edge_sense ? PROPERTY_true : PROPERTY_false));
+}
+
+/* class inlined_call_event : public checker_event.  */
+
+label_text
+inlined_call_event::get_desc (bool can_colorize) const
+{
+  return make_label_text (can_colorize,
+			  "inlined call to %qE from %qE",
+			  m_apparent_callee_fndecl,
+			  m_apparent_caller_fndecl);
+}
+
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   reconstructed inlined function calls.  */
+
+diagnostic_event::meaning
+inlined_call_event::get_meaning () const
+{
+  return meaning (VERB_call, NOUN_function);
 }
 
 /* class setjmp_event : public checker_event.  */
@@ -893,23 +1105,20 @@ warning_event::get_desc (bool can_colorize) const
       label_text ev_desc
 	= m_pending_diagnostic->describe_final_event
 	    (evdesc::final_event (can_colorize, var, m_state));
-      if (ev_desc.m_buffer)
+      if (ev_desc.get ())
 	{
 	  if (m_sm && flag_analyzer_verbose_state_changes)
 	    {
-	      label_text result;
 	      if (var)
-		result = make_label_text (can_colorize,
-					  "%s (%qE is in state %qs)",
-					  ev_desc.m_buffer,
-					  var, m_state->get_name ());
+		return make_label_text (can_colorize,
+					"%s (%qE is in state %qs)",
+					ev_desc.get (),
+					var, m_state->get_name ());
 	      else
-		result = make_label_text (can_colorize,
-					  "%s (in global state %qs)",
-					  ev_desc.m_buffer,
-					  m_state->get_name ());
-	      ev_desc.maybe_free ();
-	      return result;
+		return make_label_text (can_colorize,
+					"%s (in global state %qs)",
+					ev_desc.get (),
+					m_state->get_name ());
 	    }
 	  else
 	    return ev_desc;
@@ -931,6 +1140,15 @@ warning_event::get_desc (bool can_colorize) const
     return label_text::borrow ("here");
 }
 
+/* Implementation of diagnostic_event::get_meaning vfunc for
+   warning_event.  */
+
+diagnostic_event::meaning
+warning_event::get_meaning () const
+{
+  return meaning (VERB_danger, NOUN_unknown);
+}
+
 /* Print a single-line representation of this path to PP.  */
 
 void
@@ -945,8 +1163,7 @@ checker_path::dump (pretty_printer *pp) const
       if (i > 0)
 	pp_string (pp, ", ");
       label_text event_desc (e->get_desc (false));
-      pp_printf (pp, "\"%s\"", event_desc.m_buffer);
-      event_desc.maybe_free ();
+      pp_printf (pp, "\"%s\"", event_desc.get ());
     }
   pp_character (pp, ']');
 }
@@ -986,9 +1203,19 @@ checker_path::debug () const
 	       "[%i]: %s \"%s\"\n",
 	       i,
 	       event_kind_to_string (m_events[i]->m_kind),
-	       event_desc.m_buffer);
-      event_desc.maybe_free ();
+	       event_desc.get ());
     }
+}
+
+/* Add region_creation_event instance to this path for REG,
+   describing whether REG is on the stack or heap.  */
+
+void
+checker_path::add_region_creation_event (const region *reg,
+					 location_t loc,
+					 tree fndecl, int depth)
+{
+  add_event (new region_creation_event (reg, loc, fndecl, depth));
 }
 
 /* Add a warning_event to the end of this path.  */
@@ -1023,6 +1250,163 @@ checker_path::cfg_edge_pair_at_p (unsigned idx) const
     return false;
   return (m_events[idx]->m_kind == EK_START_CFG_EDGE
 	  && m_events[idx + 1]->m_kind == EK_END_CFG_EDGE);
+}
+
+/* Consider a call from "outer" to "middle" which calls "inner",
+   where "inner" and "middle" have been inlined into "outer".
+
+   We expect the stmt locations for the inlined stmts to have a
+   chain like:
+
+     [{fndecl: inner},
+      {fndecl: middle, callsite: within middle to inner},
+      {fndecl: outer, callsite: without outer to middle}]
+
+   The location for the stmt will already be fixed up to reflect
+   the two extra frames, so that we have e.g. this as input
+   (for gcc.dg/analyzer/inlining-4.c):
+
+    before[0]:
+      EK_FUNCTION_ENTRY "entry to ‘outer’"
+      (depth 1, fndecl ‘outer’, m_loc=511c4)
+    before[1]:
+      EK_START_CFG_EDGE "following ‘true’ branch (when ‘flag != 0’)..."
+      (depth 3 corrected from 1,
+       fndecl ‘inner’ corrected from ‘outer’, m_loc=8000000f)
+    before[2]:
+      EK_END_CFG_EDGE "...to here"
+      (depth 1, fndecl ‘outer’, m_loc=0)
+    before[3]:
+      EK_WARNING "here (‘<unknown>’ is in state ‘null’)"
+      (depth 1, fndecl ‘outer’, m_loc=80000004)
+
+   We want to add inlined_call_events showing the calls, so that
+   the above becomes:
+
+    after[0]:
+      EK_FUNCTION_ENTRY "entry to ‘outer’"
+      (depth 1, fndecl ‘outer’, m_loc=511c4)
+    after[1]:
+      EK_INLINED_CALL "inlined call to ‘middle’ from ‘outer’"
+      (depth 1, fndecl ‘outer’, m_loc=53300)
+    after[2]:
+      EK_INLINED_CALL "inlined call to ‘inner’ from ‘middle’"
+      (depth 2, fndecl ‘middle’, m_loc=4d2e0)
+    after[3]:
+      EK_START_CFG_EDGE "following ‘true’ branch (when ‘flag != 0’)..."
+      (depth 3 corrected from 1,
+       fndecl ‘inner’ corrected from ‘outer’, m_loc=8000000f)
+    after[4]: EK_END_CFG_EDGE "...to here"
+      (depth 1, fndecl ‘outer’, m_loc=0)
+    after[5]: EK_WARNING "here (‘<unknown>’ is in state ‘null’)"
+      (depth 1, fndecl ‘outer’, m_loc=80000004)
+
+    where we've added events between before[0] and before[1] to show
+    the inlined calls leading to the effective stack depths, making
+    the generated path much easier for a user to read.
+
+    Note how in the above we have a branch (before[1] to before[2])
+    where the locations were originally in different functions.
+    Hence we have to add these events quite late when generating
+    checker_path.  */
+
+void
+checker_path::inject_any_inlined_call_events (logger *logger)
+{
+  LOG_SCOPE (logger);
+
+  if (!flag_analyzer_undo_inlining)
+    return;
+
+  /* Build a copy of m_events with the new events inserted.  */
+  auto_vec<checker_event *> updated_events;
+
+  maybe_log (logger, "before");
+
+  hash_set<tree> blocks_in_prev_event;
+
+  for (unsigned ev_idx = 0; ev_idx < m_events.length (); ev_idx++)
+    {
+      checker_event *curr_event = m_events[ev_idx];
+      location_t curr_loc = curr_event->get_location ();
+      hash_set<tree> blocks_in_curr_event;
+
+      if (logger)
+	{
+	  logger->start_log_line ();
+	  logger->log_partial ("event[%i]: %s ", ev_idx,
+			       event_kind_to_string (curr_event->m_kind));
+	  curr_event->dump (logger->get_printer ());
+	  logger->end_log_line ();
+	  for (inlining_iterator iter (curr_event->get_location ());
+	       !iter.done_p (); iter.next ())
+	    {
+	      logger->start_log_line ();
+	      logger->log_partial ("  %qE (%p), fndecl: %qE, callsite: 0x%x",
+				   iter.get_block (), iter.get_block (),
+				   iter.get_fndecl (), iter.get_callsite ());
+	      if (iter.get_callsite ())
+		dump_location (logger->get_printer (), iter.get_callsite ());
+	      logger->end_log_line ();
+	    }
+	}
+
+      /* We want to add events to show inlined calls.
+
+	 We want to show changes relative to the previous event, omitting
+	 the commonality between the inlining chain.
+
+	 The chain is ordered from innermost frame to outermost frame;
+	 we want to walk it backwards to show the calls, so capture it
+	 in a vec.  */
+      struct chain_element { tree m_block; tree m_fndecl; };
+      auto_vec<chain_element> elements;
+      for (inlining_iterator iter (curr_loc); !iter.done_p (); iter.next ())
+	{
+	  chain_element ce;
+	  ce.m_block = iter.get_block ();
+	  ce.m_fndecl = iter.get_fndecl ();
+
+	  if (!blocks_in_prev_event.contains (ce.m_block))
+	    elements.safe_push (ce);
+	  blocks_in_curr_event.add (ce.m_block);
+	}
+
+      /* Walk from outermost to innermost.  */
+      if (elements.length () > 0)
+	{
+	  int orig_stack_depth = curr_event->get_original_stack_depth ();
+	  for (unsigned element_idx = elements.length () - 1; element_idx > 0;
+	       element_idx--)
+	    {
+	      const chain_element &ce = elements[element_idx];
+	      int stack_depth_adjustment
+		= (blocks_in_curr_event.elements () - element_idx) - 1;
+	      if (location_t callsite = BLOCK_SOURCE_LOCATION (ce.m_block))
+		updated_events.safe_push
+		  (new inlined_call_event (callsite,
+					   elements[element_idx - 1].m_fndecl,
+					   ce.m_fndecl,
+					   orig_stack_depth,
+					   stack_depth_adjustment));
+	    }
+	}
+
+      /* Ideally we'd use assignment here:
+	   blocks_in_prev_event = blocks_in_curr_event; */
+      blocks_in_prev_event.empty ();
+      for (auto iter : blocks_in_curr_event)
+	blocks_in_prev_event.add (iter);
+
+      /* Add the existing event.  */
+      updated_events.safe_push (curr_event);
+    }
+
+  /* Replace m_events with updated_events.  */
+  m_events.truncate (0);
+  m_events.safe_splice (updated_events);
+
+  maybe_log (logger, " after");
 }
 
 } // namespace ana

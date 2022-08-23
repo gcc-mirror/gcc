@@ -9134,7 +9134,7 @@ frv_expand_builtin (tree exp,
     case FRV_BUILTIN_IACCsetl:
       if (!TARGET_FR405_BUILTINS)
 	{
-	  error ("this builtin function is only available"
+	  error ("this built-in function is only available"
 		 " on the fr405 and fr450");
 	  return NULL_RTX;
 	}
@@ -9143,7 +9143,7 @@ frv_expand_builtin (tree exp,
     case FRV_BUILTIN_PREFETCH:
       if (!TARGET_FR500_FR550_BUILTINS)
 	{
-	  error ("this builtin function is only available on the fr500"
+	  error ("this built-in function is only available on the fr500"
 		 " and fr550");
 	  return NULL_RTX;
 	}
@@ -9155,7 +9155,7 @@ frv_expand_builtin (tree exp,
     case FRV_BUILTIN_MQSRAHI:
       if (!TARGET_MEDIA_FR450)
 	{
-	  error ("this builtin function is only available on the fr450");
+	  error ("this built-in function is only available on the fr450");
 	  return NULL_RTX;
 	}
       break;

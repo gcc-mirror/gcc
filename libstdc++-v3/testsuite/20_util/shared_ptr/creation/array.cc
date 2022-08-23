@@ -65,6 +65,7 @@ test02()
 }
 
 #include <vector>
+#include <cstdint>
 
 std::vector<std::uintptr_t> addresses;
 

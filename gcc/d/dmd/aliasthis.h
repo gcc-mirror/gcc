@@ -15,7 +15,7 @@
 
 /**************************************************************/
 
-class AliasThis : public Dsymbol
+class AliasThis final : public Dsymbol
 {
 public:
    // alias Identifier this;
@@ -23,9 +23,9 @@ public:
     Dsymbol    *sym;
     bool       isDeprecated_;
 
-    AliasThis *syntaxCopy(Dsymbol *);
-    const char *kind() const;
+    AliasThis *syntaxCopy(Dsymbol *) override;
+    const char *kind() const override;
     AliasThis *isAliasThis() { return this; }
-    void accept(Visitor *v) { v->visit(this); }
-    bool isDeprecated() const { return this->isDeprecated_; }
+    void accept(Visitor *v) override { v->visit(this); }
+    bool isDeprecated() const override { return this->isDeprecated_; }
 };

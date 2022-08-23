@@ -29,4 +29,3 @@ enum a2 = __traits(getParameterStorageClasses, i, 4);
 enum a3 = __traits(getParameterStorageClasses, foo, int);
 
 enum a4 = __traits(getParameterStorageClasses, foo, 0, 1);
-

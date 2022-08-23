@@ -1,7 +1,7 @@
 --  { dg-do compile }
 --  { dg-options "-gnatwa" }
 
-with Text_IO; use Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Warn29 is
    procedure P (X : T; Y : Integer) is

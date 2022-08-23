@@ -1319,9 +1319,7 @@ lto_init (void)
      distinction should only be relevant to the front-end, so we
      always use the C definition here in lto1.
      Likewise for const struct tm*.  */
-  for (unsigned i = 0;
-       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
-       ++i)
+  for (unsigned i = 0; i < ARRAY_SIZE (builtin_structptr_types); ++i)
     {
       gcc_assert (builtin_structptr_types[i].node
 		  == builtin_structptr_types[i].base);

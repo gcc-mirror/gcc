@@ -1,6 +1,6 @@
 ! { dg-do run { target { powerpc*-*-* } } }
 ! { dg-skip-if "" { powerpc*-*-darwin* } }
-! { dg-options "-O3 -funroll-loops -ffast-math -mcpu=power4" }
+! { dg-options "-O3 -funroll-loops -ffast-math -mdejagnu-cpu=power4" }
 ! { dg-options "-O3 -funroll-loops -ffast-math" { target powerpc64le*-*-linux* } }
 
 

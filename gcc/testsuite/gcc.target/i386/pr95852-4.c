@@ -3,7 +3,13 @@
 /* { dg-options "-O2 -fdump-tree-optimized -masm=att" } */
 /* { dg-final { scan-tree-dump-times " = \.MUL_OVERFLOW " 32 "optimized" } } */
 /* { dg-final { scan-assembler-times "\timull\t" 32 } } */
-/* { dg-final { scan-assembler-times "\tseto\t" 8 } } */
+/* In functions that return 0 on non-overflow (f2, f10, f18, f26), the overflow
+   flag is propagated to the return value's PHI node in the non-call path; on
+   ia32 PIC, sibcalls are not viable, so the known value of the flag can't be
+   propagated to the return block, that is only duplicated in bbro, too late
+   for fwprop2 or even cprop_hardreg.  */
+/* { dg-final { scan-assembler-times "\tseto\t" 12 { target { ia32 && { ! nonpic } } } } } */
+/* { dg-final { scan-assembler-times "\tseto\t" 8 { target { nonpic || { ! ia32 } } } } } */
 /* { dg-final { scan-assembler-times "\tsetno\t" 8 } } */
 /* { dg-final { scan-assembler-times "\tjn\?o\t" 16 } } */
 

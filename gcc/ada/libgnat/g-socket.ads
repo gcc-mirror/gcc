@@ -1593,7 +1593,7 @@ private
    Wait_For_A_Full_Reception : constant Request_Flag_Type := 4;
    Send_End_Of_Record        : constant Request_Flag_Type := 8;
 
-   procedure Raise_Socket_Error (Error : Integer);
+   procedure Raise_Socket_Error (Error : Integer) with No_Return;
    --  Raise Socket_Error with an exception message describing the error code
    --  from errno.
 

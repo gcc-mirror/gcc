@@ -1614,6 +1614,10 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
+#ifdef HAVE_GFC_REAL_17
+	  if (type == BT_REAL && kind == 17)
+	    kind = 16;
+#endif
 	  read_radix (dtp, f, p, kind, 2);
 	  break;
 
@@ -1626,6 +1630,10 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
+#ifdef HAVE_GFC_REAL_17
+	  if (type == BT_REAL && kind == 17)
+	    kind = 16;
+#endif
 	  read_radix (dtp, f, p, kind, 8);
 	  break;
 
@@ -1638,6 +1646,10 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
+#ifdef HAVE_GFC_REAL_17
+	  if (type == BT_REAL && kind == 17)
+	    kind = 16;
+#endif
 	  read_radix (dtp, f, p, kind, 16);
 	  break;
 
@@ -2085,6 +2097,10 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
+#ifdef HAVE_GFC_REAL_17
+	  if (type == BT_REAL && kind == 17)
+	    kind = 16;
+#endif
 	  write_b (dtp, f, p, kind);
 	  break;
 
@@ -2097,6 +2113,10 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
+#ifdef HAVE_GFC_REAL_17
+	  if (type == BT_REAL && kind == 17)
+	    kind = 16;
+#endif
 	  write_o (dtp, f, p, kind);
 	  break;
 
@@ -2109,6 +2129,10 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  if (!(compile_options.allow_std & GFC_STD_F2008)
               && require_type (dtp, BT_INTEGER, type, f))
 	    return;
+#ifdef HAVE_GFC_REAL_17
+	  if (type == BT_REAL && kind == 17)
+	    kind = 16;
+#endif
 	  write_z (dtp, f, p, kind);
 	  break;
 

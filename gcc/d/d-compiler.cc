@@ -119,31 +119,44 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
    Modules we look out for are:
     - object: For D runtime type information.
     - gcc.builtins: For all gcc builtins.
-    - core.stdc.*: For all gcc library builtins.  */
+    - all other modules for extern(C) gcc library builtins.  */
 
 void
 Compiler::onParseModule (Module *m)
 {
   ModuleDeclaration *md = m->md;
 
-  if (!md || !md->id|| md->packages.length == 0)
+  if (md && md->id)
     {
-      Identifier *id = (md && md->id) ? md->id : m->ident;
-      if (!strcmp (id->toChars (), "object"))
-	create_tinfo_types (m);
+      if (md->packages.length == 0)
+	{
+	  if (!strcmp (md->id->toChars (), "object"))
+	    {
+	      create_tinfo_types (m);
+	      return;
+	    }
+	}
+      else if (md->packages.length == 1)
+	{
+	  if (!strcmp (md->packages.ptr[0]->toChars (), "gcc")
+	      && !strcmp (md->id->toChars (), "builtins"))
+	    {
+	      d_build_builtins_module (m);
+	      return;
+	    }
+	}
     }
-  else if (md->packages.length == 1)
+  else if (m->ident)
     {
-      if (!strcmp (md->packages.ptr[0]->toChars (), "gcc")
-	  && !strcmp (md->id->toChars (), "builtins"))
-	d_build_builtins_module (m);
+      if (!strcmp (m->ident->toChars (), "object"))
+	{
+	  create_tinfo_types (m);
+	  return;
+	}
     }
-  else if (md->packages.length == 2)
-    {
-      if (!strcmp (md->packages.ptr[0]->toChars (), "core")
-	  && !strcmp (md->packages.ptr[1]->toChars (), "stdc"))
-	d_add_builtin_module (m);
-    }
+
+  if (!flag_no_builtin)
+    d_add_builtin_module (m);
 }
 
 /* A callback function that is called once an imported module is parsed.

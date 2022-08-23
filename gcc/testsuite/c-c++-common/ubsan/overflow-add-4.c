@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fsanitize=signed-integer-overflow -Wno-unused-variable -fsanitize-undefined-trap-on-error" } */
+/* { dg-options "-fsanitize=signed-integer-overflow -Wno-unused-variable -fsanitize-trap=undefined" } */
 /* { dg-shouldfail "ubsan" } */
 
 #define INT_MAX __INT_MAX__

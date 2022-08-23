@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"
+#include "gimple.h"
+#include "gimple-iterator.h"
 #include "gimple-fold.h"
 #include "gimple-expr.h"
 #include "toplev.h"
@@ -67,7 +69,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "gimple-expr.h"
 #include "is-a.h"
-#include "gimple.h"
 #include "tree-pass.h"
 #include "context.h"
 #include "hash-map.h"
@@ -687,7 +688,7 @@ test_expansion_to_rtl ()
 /* Run all of the selftests within this file.  */
 
 void
-function_tests_c_tests ()
+function_tests_cc_tests ()
 {
   test_fndecl_int_void ();
   test_fndecl_float_intchar ();

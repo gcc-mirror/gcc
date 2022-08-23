@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512vl" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 /* { dg-final { scan-assembler-times "vpternlog" 4 } } */
 /* { dg-final { scan-assembler-times "\\\{1to4\\\}" 4 } } */
 #include<immintrin.h>

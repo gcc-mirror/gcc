@@ -438,7 +438,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  || vendor == VENDOR_CYRIX
 	  || vendor == VENDOR_NSC)
 	cache = detect_caches_amd (ext_level);
-      else if (vendor == VENDOR_INTEL)
+      else if (vendor == VENDOR_INTEL
+			 || vendor == VENDOR_ZHAOXIN)
 	{
 	  bool xeon_mp = (family == 15 && model == 6);
 	  cache = detect_caches_intel (xeon_mp, max_level,
@@ -516,6 +517,20 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	    processor = PROCESSOR_PENTIUMPRO;
 	  else if (model >= 6)
 	    processor = PROCESSOR_I486;
+	}
+    }
+  else if (vendor == VENDOR_ZHAOXIN)
+    {
+      processor = PROCESSOR_GENERIC;
+
+      switch (family)
+	{
+	case 7:
+	  if (model == 0x3b)
+	    processor = PROCESSOR_LUJIAZUI;
+	  break;
+	default:
+	  break;
 	}
     }
   else
@@ -772,6 +787,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       break;
     case PROCESSOR_BTVER2:
       cpu = "btver2";
+      break;
+    case PROCESSOR_LUJIAZUI:
+      cpu = "lujiazui";
       break;
 
     default:

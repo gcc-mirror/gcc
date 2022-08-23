@@ -1,5 +1,5 @@
 /* { dg-do run { target *-*-linux* *-*-gnu* } } */
-/* { dg-options "-fexceptions -fnon-call-exceptions -fasynchronous-unwind-tables -O2" } */
+/* { dg-options "-fexceptions -fnon-call-exceptions -fasynchronous-unwind-tables -O2 -fno-stack-protector" } */
 /* Test complex CFA value expressions.  */
 
 #include <unwind.h>

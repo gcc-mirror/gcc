@@ -293,7 +293,7 @@ test_set_of_type_with_ctor_and_dtor ()
 /* Run all of the selftests within this file.  */
 
 void
-hash_set_tests_c_tests ()
+hash_set_tests_cc_tests ()
 {
   test_set_of_strings ();
   test_set_of_type_with_ctor_and_dtor ();

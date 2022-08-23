@@ -51,6 +51,12 @@ value_range_equiv::set (tree min, tree max, bitmap equiv,
 }
 
 void
+value_range_equiv::set (tree min, tree max, value_range_kind kind)
+{
+  set (min, max, m_equiv, kind);
+}
+
+void
 value_range_equiv::set (tree val)
 {
   gcc_assert (TREE_CODE (val) == SSA_NAME || is_gimple_min_invariant (val));
@@ -156,7 +162,7 @@ bool
 value_range_equiv::equal_p (const value_range_equiv &other,
 			    bool ignore_equivs) const
 {
-  return (value_range::equal_p (other)
+  return (value_range::operator== (other)
 	  && (ignore_equivs || vr_bitmap_equal_p (m_equiv, other.m_equiv)));
 }
 
@@ -188,7 +194,7 @@ value_range_equiv::equiv_add (const_tree var,
 }
 
 void
-value_range_equiv::intersect (const value_range_equiv *other)
+value_range_equiv::legacy_verbose_intersect (const value_range_equiv *other)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -238,7 +244,7 @@ value_range_equiv::intersect (const value_range_equiv *other)
 }
 
 void
-value_range_equiv::union_ (const value_range_equiv *other)
+value_range_equiv::legacy_verbose_union_ (const value_range_equiv *other)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

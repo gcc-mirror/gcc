@@ -1,3 +1,4 @@
+// { dg-options "-O1" }
 // { dg-do link { target c++11 } }
 
 // Copyright (C) 2009-2022 Free Software Foundation, Inc.

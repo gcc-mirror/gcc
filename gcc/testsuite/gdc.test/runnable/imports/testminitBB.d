@@ -8,4 +8,3 @@ static this()
     printf("BB\n");
     bb = 1;
 }
-

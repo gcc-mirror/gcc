@@ -18,4 +18,3 @@ class Lexer
 {
     Token token;
 }
-

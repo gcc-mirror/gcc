@@ -40,24 +40,31 @@
 #include "builtins.h"
 #include "calls.h"
 #include "value-query.h"
+#include "cfganal.h"
 
 #include "gimple-predicate-analysis.h"
 
 #define DEBUG_PREDICATE_ANALYZER 1
 
-/* Return true if BB1 is postdominating BB2 and BB1 is not a loop exit
-   bb.  The loop exit bb check is simple and does not cover all cases.  */
+/* In our predicate normal form we have MAX_NUM_CHAINS or predicates
+   and in those MAX_CHAIN_LEN (inverted) and predicates.  */
+#define MAX_NUM_CHAINS 8
+#define MAX_CHAIN_LEN 5
+
+/* When enumerating paths between two blocks this limits the number of
+   post-dominator skips between two edges possibly defining a predicate.  */
+#define MAX_POSTDOM_CHECK 8
+
+/* The limit for the number of switch cases when we do the linear search
+   for the case corresponding to an edge.  */
+#define MAX_SWITCH_CASES 40
+
+/* Return true if, when BB1 is postdominating BB2, BB1 is a loop exit.  */
 
 static bool
-is_non_loop_exit_postdominating (basic_block bb1, basic_block bb2)
+is_loop_exit (basic_block bb2, basic_block bb1)
 {
-  if (!dominated_by_p (CDI_POST_DOMINATORS, bb2, bb1))
-    return false;
-
-  if (single_pred_p (bb1) && !single_succ_p (bb2))
-    return false;
-
-  return true;
+  return single_pred_p (bb1) && !single_succ_p (bb2);
 }
 
 /* Find BB's closest postdominator that is its control equivalent (i.e.,
@@ -69,7 +76,7 @@ find_control_equiv_block (basic_block bb)
   basic_block pdom = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
 
   /* Skip the postdominating bb that is also a loop exit.  */
-  if (!is_non_loop_exit_postdominating (pdom, bb))
+  if (is_loop_exit (bb, pdom))
     return NULL;
 
   /* If the postdominator is dominated by BB, return it.  */
@@ -1040,6 +1047,36 @@ is_degenerate_phi (gimple *phi, pred_info *pred)
   return true;
 }
 
+/* If compute_control_dep_chain bailed out due to limits this routine
+   tries to build a partial sparse path using dominators.  Returns
+   path edges whose predicates are always true when reaching E.  */
+
+static void
+simple_control_dep_chain (vec<edge>& chain, basic_block from, basic_block to)
+{
+  if (!dominated_by_p (CDI_DOMINATORS, to, from))
+    return;
+
+  basic_block src = to;
+  while (src != from
+	 && chain.length () <= MAX_CHAIN_LEN)
+    {
+      basic_block dest = src;
+      src = get_immediate_dominator (CDI_DOMINATORS, src);
+      edge pred_e;
+      if (single_pred_p (dest)
+	  && (pred_e = find_edge (src, dest)))
+	chain.safe_push (pred_e);
+    }
+}
+
+static void
+simple_control_dep_chain (vec<edge>& chain, basic_block from, edge to)
+{
+  chain.safe_push (to);
+  simple_control_dep_chain (chain, from, to->src);
+}
+
 /* Recursively compute the control dependence chains (paths of edges)
    from the dependent basic block, DEP_BB, up to the dominating basic
    block, DOM_BB (the head node of a chain should be dominated by it),
@@ -1113,7 +1150,8 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 
       basic_block cd_bb = e->dest;
       cur_cd_chain.safe_push (e);
-      while (!is_non_loop_exit_postdominating (cd_bb, dom_bb))
+      while (!dominated_by_p (CDI_POST_DOMINATORS, dom_bb, cd_bb)
+	     || is_loop_exit (dom_bb, cd_bb))
 	{
 	  if (cd_bb == dep_bb)
 	    {
@@ -1224,13 +1262,36 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
 
   /* PHI_USE_GUARDS are OR'ed together.  If we have more than one
      possible guard, there's no way of knowing which guard was true.
-     Since we need to be absolutely sure that the uninitialized
-     operands will be invalidated, bail.  */
+     In that case compute the intersection of all use predicates
+     and use that.  */
   const pred_chain_union &phi_use_guards = m_preds;
+  const pred_chain *use_guard = &phi_use_guards[0];
+  pred_chain phi_use_guard_intersection = vNULL;
   if (phi_use_guards.length () != 1)
-    return false;
-
-  const pred_chain &use_guard = phi_use_guards[0];
+    {
+      phi_use_guard_intersection = use_guard->copy ();
+      for (unsigned i = 1; i < phi_use_guards.length (); ++i)
+	{
+	  for (unsigned j = 0; j < phi_use_guard_intersection.length ();)
+	    {
+	      unsigned k;
+	      for (k = 0; k < phi_use_guards[i].length (); ++k)
+		if (pred_equal_p (phi_use_guards[i][k],
+				  phi_use_guard_intersection[j]))
+		  break;
+	      if (k == phi_use_guards[i].length ())
+		phi_use_guard_intersection.unordered_remove (j);
+	      else
+		j++;
+	    }
+	}
+      if (phi_use_guard_intersection.is_empty ())
+	{
+	  phi_use_guard_intersection.release ();
+	  return false;
+	}
+      use_guard = &phi_use_guard_intersection;
+    }
 
   /* Look for the control dependencies of all the interesting operands
      and build guard predicates describing them.  */
@@ -1250,7 +1311,15 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
       if (!compute_control_dep_chain (ENTRY_BLOCK_PTR_FOR_FN (cfun),
 				      e->src, dep_chains, &num_chains,
 				      cur_chain, &num_calls))
-	return false;
+	{
+	  gcc_assert (num_chains == 0);
+	  /* If compute_control_dep_chain bailed out due to limits
+	     build a partial sparse path using dominators.  Collect
+	     only edges whose predicates are always true when reaching E.  */
+	  simple_control_dep_chain (dep_chains[0],
+				    ENTRY_BLOCK_PTR_FOR_FN (cfun), e);
+	  num_chains++;
+	}
 
       if (DEBUG_PREDICATE_ANALYZER && dump_file)
 	{
@@ -1272,10 +1341,14 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
 
       /* Can the guard for this PHI argument be negated by the one
 	 guarding the PHI use?  */
-      if (!can_be_invalidated_p (def_preds.chain (), use_guard))
-	return false;
+      if (!can_be_invalidated_p (def_preds.chain (), *use_guard))
+	{
+	  phi_use_guard_intersection.release ();
+	  return false;
+	}
     }
 
+  phi_use_guard_intersection.release ();
   return true;
 }
 
@@ -1695,8 +1768,13 @@ predicate::predicate (basic_block def_bb, basic_block use_bb, func_t &eval)
   auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
   auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
 
-  compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains,
-			     cur_chain, &num_calls);
+  if (!compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains,
+				  cur_chain, &num_calls))
+    {
+      gcc_assert (num_chains == 0);
+      simple_control_dep_chain (dep_chains[0], cd_root, use_bb);
+      num_chains++;
+    }
 
   if (DEBUG_PREDICATE_ANALYZER && dump_file)
     {
@@ -1837,14 +1915,13 @@ predicate::is_use_guarded (gimple *use_stmt, basic_block use_bb,
      in the same bb.  */
   predicate use_preds (def_bb, use_bb, m_eval);
 
-  if (is_non_loop_exit_postdominating (use_bb, def_bb))
+  if (dominated_by_p (CDI_POST_DOMINATORS, def_bb, use_bb))
     {
       if (is_empty ())
 	{
 	  /* Lazily initialize *THIS from the PHI and build its use
 	     expression.  */
 	  init_from_phi_def (phi);
-	  m_use_expr = build_pred_expr (use_preds.m_preds);
 	}
 
       /* The use is not guarded.  */
@@ -1873,7 +1950,6 @@ predicate::is_use_guarded (gimple *use_stmt, basic_block use_bb,
       /* Lazily initialize *THIS from PHI.  */
       if (!init_from_phi_def (phi))
 	{
-	  m_use_expr = build_pred_expr (use_preds.m_preds);
 	  return false;
 	}
 
@@ -1889,8 +1965,6 @@ predicate::is_use_guarded (gimple *use_stmt, basic_block use_bb,
      USE_PREDS).  */
   if (superset_of (use_preds))
     return true;
-
-  m_use_expr = build_pred_expr (use_preds.m_preds);
 
   return false;
 }
@@ -2277,39 +2351,4 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
   else
     /* Clear M_PREDS to indicate failure.  */
     m_preds.release ();
-}
-
-/* Return the predicate expression guarding the definition of
-   the interesting variable.  When INVERT is set, return the logical
-   NOT of the predicate.  */
-
-tree
-predicate::def_expr (bool invert /* = false */) const
-{
-  /* The predicate is stored in an inverted form.  */
-  return build_pred_expr (m_preds, !invert);
-}
-
-/* Return the predicate expression guarding the use of the interesting
-   variable or null if the use predicate hasn't been determined yet.  */
-
-tree
-predicate::use_expr () const
-{
-  return m_use_expr;
-}
-
-/* Return a logical AND expression with the (optionally inverted) predicate
-   expression guarding the definition of the interesting variable and one
-   guarding its use.  Return null if the use predicate hasn't yet been
-   determined.  */
-
-tree
-predicate::expr (bool invert /* = false */) const
-{
-  if (!m_use_expr)
-    return NULL_TREE;
-
-  tree expr = build_pred_expr (m_preds, !invert);
-  return build2 (TRUTH_AND_EXPR, boolean_type_node, expr, m_use_expr);
 }

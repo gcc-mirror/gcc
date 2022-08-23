@@ -45,6 +45,8 @@ generic
 package Ada.Containers.Formal_Vectors with
   SPARK_Mode
 is
+   pragma Annotate (GNATprove, Always_Return, Formal_Vectors);
+
    --  Contracts in this unit are meant for analysis only, not for run-time
    --  checking.
 
@@ -263,7 +265,7 @@ is
 
    function Element
      (Container : Vector;
-      Index     : Index_Type) return Element_Type
+      Index     : Extended_Index) return Element_Type
    with
      Global => null,
      Pre    => Index in First_Index (Container) .. Last_Index (Container),

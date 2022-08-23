@@ -1,0 +1,17 @@
+// zicbom
+RISCV_BUILTIN (clean_si, "zicbom_cbo_clean", RISCV_BUILTIN_DIRECT_NO_TARGET, RISCV_VOID_FTYPE_VOID_PTR, clean32),
+RISCV_BUILTIN (clean_di, "zicbom_cbo_clean", RISCV_BUILTIN_DIRECT_NO_TARGET, RISCV_VOID_FTYPE_VOID_PTR, clean64),
+
+RISCV_BUILTIN (flush_si, "zicbom_cbo_flush", RISCV_BUILTIN_DIRECT_NO_TARGET, RISCV_VOID_FTYPE_VOID_PTR, flush32),
+RISCV_BUILTIN (flush_di, "zicbom_cbo_flush", RISCV_BUILTIN_DIRECT_NO_TARGET, RISCV_VOID_FTYPE_VOID_PTR, flush64),
+
+RISCV_BUILTIN (inval_si, "zicbom_cbo_inval", RISCV_BUILTIN_DIRECT_NO_TARGET, RISCV_VOID_FTYPE_VOID_PTR, inval32),
+RISCV_BUILTIN (inval_di, "zicbom_cbo_inval", RISCV_BUILTIN_DIRECT_NO_TARGET, RISCV_VOID_FTYPE_VOID_PTR, inval64),
+
+// zicboz
+RISCV_BUILTIN (zero_si, "zicboz_cbo_zero", RISCV_BUILTIN_DIRECT_NO_TARGET, RISCV_VOID_FTYPE_VOID_PTR, zero32),
+RISCV_BUILTIN (zero_di, "zicboz_cbo_zero", RISCV_BUILTIN_DIRECT_NO_TARGET, RISCV_VOID_FTYPE_VOID_PTR, zero64),
+
+// zicbop
+RISCV_BUILTIN (prefetchi_si, "zicbop_cbo_prefetchi", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, prefetchi32),
+RISCV_BUILTIN (prefetchi_di, "zicbop_cbo_prefetchi", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI, prefetchi64),

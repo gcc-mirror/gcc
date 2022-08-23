@@ -10,7 +10,7 @@ extern int foo (void);
 void
 test_mountpoint (const char *mp)
 {
-  const int nr_passes = 5 + (random () & 31);
+  const int nr_passes = 5 + (rand () & 31);
   int pass;
   int ret = 1;
   FILE *fp;

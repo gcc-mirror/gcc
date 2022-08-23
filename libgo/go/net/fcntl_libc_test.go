@@ -3,11 +3,13 @@
 // license that can be found in the LICENSE file.
 
 //go:build aix || darwin || solaris
-// +build aix darwin solaris
 
 package net
 
-import "syscall"
+import (
+	"syscall"
+	_ "unsafe"
+)
 
 // Use a helper function to call fcntl.  This is defined in C in
 // libgo/runtime.

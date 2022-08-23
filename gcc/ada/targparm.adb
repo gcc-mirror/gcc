@@ -48,7 +48,6 @@ package body Targparm is
       D32,  --   Duration_32_Bits
       DEN,  --   Denorm
       EXS,  --   Exit_Status_Supported
-      FEX,  --   Frontend_Exceptions
       MOV,  --   Machine_Overflows
       MRN,  --   Machine_Rounds
       PAS,  --   Preallocated_Stacks
@@ -79,7 +78,6 @@ package body Targparm is
    D32_Str : aliased constant Source_Buffer := "Duration_32_Bits";
    DEN_Str : aliased constant Source_Buffer := "Denorm";
    EXS_Str : aliased constant Source_Buffer := "Exit_Status_Supported";
-   FEX_Str : aliased constant Source_Buffer := "Frontend_Exceptions";
    MOV_Str : aliased constant Source_Buffer := "Machine_Overflows";
    MRN_Str : aliased constant Source_Buffer := "Machine_Rounds";
    PAS_Str : aliased constant Source_Buffer := "Preallocated_Stacks";
@@ -110,7 +108,6 @@ package body Targparm is
       D32 => D32_Str'Access,
       DEN => DEN_Str'Access,
       EXS => EXS_Str'Access,
-      FEX => FEX_Str'Access,
       MOV => MOV_Str'Access,
       MRN => MRN_Str'Access,
       PAS => PAS_Str'Access,
@@ -800,7 +797,6 @@ package body Targparm is
                      when D32 => Duration_32_Bits_On_Target          := Result;
                      when DEN => Denorm_On_Target                    := Result;
                      when EXS => Exit_Status_Supported_On_Target     := Result;
-                     when FEX => Frontend_Exceptions_On_Target       := Result;
                      when MOV => Machine_Overflows_On_Target         := Result;
                      when MRN => Machine_Rounds_On_Target            := Result;
                      when PAS => Preallocated_Stacks_On_Target       := Result;

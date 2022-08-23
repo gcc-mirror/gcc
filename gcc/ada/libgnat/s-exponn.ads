@@ -32,7 +32,6 @@
 --  Signed integer exponentiation (checks off)
 
 with Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
-use Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
 
 generic
 
@@ -41,7 +40,6 @@ generic
 package System.Exponn
   with Pure, SPARK_Mode
 is
-
    --  Preconditions in this unit are meant for analysis only, not for run-time
    --  checking, so that the expected exceptions are raised. This is enforced
    --  by setting the corresponding assertion policy to Ignore. Postconditions
@@ -53,14 +51,18 @@ is
                             Contract_Cases => Ignore,
                             Ghost          => Ignore);
 
-   package Signed_Conversion is new Signed_Conversions (Int => Int);
+   package BI_Ghost renames Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
+   subtype Big_Integer is BI_Ghost.Big_Integer with Ghost;
+   use type BI_Ghost.Big_Integer;
+
+   package Signed_Conversion is new BI_Ghost.Signed_Conversions (Int => Int);
 
    function Big (Arg : Int) return Big_Integer is
      (Signed_Conversion.To_Big_Integer (Arg))
    with Ghost;
 
    function In_Int_Range (Arg : Big_Integer) return Boolean is
-     (In_Range (Arg, Big (Int'First), Big (Int'Last)))
+     (BI_Ghost.In_Range (Arg, Big (Int'First), Big (Int'Last)))
    with Ghost;
 
    function Expon (Left : Int; Right : Natural) return Int

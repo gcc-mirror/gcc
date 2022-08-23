@@ -103,9 +103,12 @@ package Sem_Type is
    --  in N. If the name is an expanded name, the homonyms are only those that
    --  belong to the same scope.
 
-   function Is_Invisible_Operator (N : Node_Id; T : Entity_Id) return Boolean;
-   --  Check whether a predefined operation with universal operands appears in
-   --  a context in which the operators of the expected type are not visible.
+   function Is_Visible_Operator (N : Node_Id; Typ : Entity_Id) return Boolean;
+   --  Determine whether a predefined operation is performed in a context where
+   --  the predefined operators of base type Typ are visible. The existence of
+   --  this routine is an implementation artifact. A more straightforward but
+   --  more space-consuming choice would be to make all inherited operators
+   --  explicit in the symbol table. See also Sem_ch8.Has_Implicit_Operator.
 
    procedure List_Interps (Nam : Node_Id; Err : Node_Id);
    --  List candidate interpretations of an overloaded name. Used for various
@@ -181,22 +184,15 @@ package Sem_Type is
    --  opposed to an operator, type and mode conformance are required.
 
    function Find_Unique_Type (L : Node_Id; R : Node_Id) return Entity_Id;
-   --  Used in second pass of resolution, for equality and comparison nodes. L
-   --  is the left operand, whose type is known to be correct, and R is the
-   --  right operand, which has one interpretation compatible with that of L.
-   --  Return the type intersection of the two.
+   --  Used in type resolution for equality and comparison nodes. L and R are
+   --  the operands, whose type is known to be correct or Any_Type in case of
+   --  ambiguity. Return the type intersection of the two.
 
-   function Has_Compatible_Type
-     (N              : Node_Id;
-      Typ            : Entity_Id;
-      For_Comparison : Boolean := False) return Boolean;
+   function Has_Compatible_Type (N : Node_Id; Typ : Entity_Id) return Boolean;
    --  Verify that some interpretation of the node N has a type compatible with
    --  Typ. If N is not overloaded, then its unique type must be compatible
    --  with Typ. Otherwise iterate through the interpretations of N looking for
-   --  a compatible one. If For_Comparison is true, the function is invoked for
-   --  a comparison (or equality) operator and also needs to verify the reverse
-   --  compatibility, because the implementation of type resolution for these
-   --  operators is not fully symmetrical.
+   --  a compatible one.
 
    function Hides_Op (F : Entity_Id; Op : Entity_Id) return Boolean;
    --  A user-defined function hides a predefined operator if it matches the
@@ -259,13 +255,22 @@ package Sem_Type is
    procedure Set_Abstract_Op (I : Interp_Index; V : Entity_Id);
    --  Set the abstract operation field of an interpretation
 
-   function Valid_Comparison_Arg (T : Entity_Id) return Boolean;
-   --  A valid argument to an ordering operator must be a discrete type, a
-   --  real type, or a one dimensional array with a discrete component type.
+   function Specific_Type (Typ_1, Typ_2 : Entity_Id) return Entity_Id;
+   --  If Typ_1 and Typ_2 are compatible, return the one that is not universal
+   --  or is not a "class" type (any_character, etc).
 
    function Valid_Boolean_Arg (T : Entity_Id) return Boolean;
-   --  A valid argument of a boolean operator is either some boolean type, or a
-   --  one-dimensional array of boolean type.
+   --  A valid argument of a predefined boolean operator must be a boolean type
+   --  or a 1-dimensional array of boolean type.
+
+   function Valid_Comparison_Arg (T : Entity_Id) return Boolean;
+   --  A valid argument of a predefined comparison operator must be a discrete
+   --  type, real type or a 1-dimensional array with a discrete component type.
+
+   function Valid_Equality_Arg (T : Entity_Id) return Boolean;
+   --  A valid argument of a predefined equality operator must be a nonlimited
+   --  type or an array with a limited private component whose full view is not
+   --  limited.
 
    procedure Write_Interp (It : Interp);
    --  Debugging procedure to display an Interp

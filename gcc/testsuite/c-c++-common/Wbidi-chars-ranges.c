@@ -1,6 +1,6 @@
 /* PR preprocessor/103026 */
 /* { dg-do compile } */
-/* { dg-options "-Wbidi-chars=unpaired -fdiagnostics-show-caret" } */
+/* { dg-options "-Wbidi-chars=unpaired,ucn -fdiagnostics-show-caret" } */
 /* Verify that we escape and underline pertinent bidirectional
    control characters when quoting the source.  */
 

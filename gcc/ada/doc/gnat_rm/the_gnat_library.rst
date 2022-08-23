@@ -253,10 +253,32 @@ in mind, it may well be generally useful in that it is a simplified more
 efficient version than the one defined in the standard. In particular it
 does not have the complex overhead required to detect cursor tampering.
 
+.. _`Ada.Containers.Functional_Infinite_Sequences_(a-cfinse.ads)`:
+
+``Ada.Containers.Functional_Infinite_Sequences`` (:file:`a-cfinse.ads`)
+=======================================================================
+
+.. index:: Ada.Containers.Functional_Infinite_Sequences (a-cfinse.ads)
+
+.. index:: Functional Infinite Sequences
+
+This child of ``Ada.Containers`` defines immutable sequences indexed by
+``Big_Integer``. These containers are unbounded and may contain indefinite
+elements. Their API features functions creating new containers from existing
+ones. To remain reasonably efficient, their implementation involves sharing
+between data-structures. As they are functional, that is, no primitives are
+provided which would allow modifying an existing container, these containers
+can still be used safely.
+
+These containers are controlled so that the allocated memory can be reclaimed
+when the container is no longer referenced. Thus, they cannot directly be used
+in contexts where controlled types are not supported.
+The specification of this unit is compatible with SPARK 2014.
+
 .. _`Ada.Containers.Functional_Vectors_(a-cofuve.ads)`:
 
 ``Ada.Containers.Functional_Vectors`` (:file:`a-cofuve.ads`)
-=================================================================
+============================================================
 
 .. index:: Ada.Containers.Functional_Vectors (a-cofuve.ads)
 
@@ -278,46 +300,44 @@ specification of this unit is compatible with SPARK 2014.
 .. _`Ada.Containers.Functional_Sets_(a-cofuse.ads)`:
 
 ``Ada.Containers.Functional_Sets`` (:file:`a-cofuse.ads`)
-=================================================================
+=========================================================
 
 .. index:: Ada.Containers.Functional_Sets (a-cofuse.ads)
 
 .. index:: Functional sets
 
 This child of ``Ada.Containers`` defines immutable sets. These containers are
-unbounded and may contain indefinite elements. Furthermore, to be usable in
-every context, they are neither controlled nor limited. As they are functional,
-that is, no primitives are provided which would allow modifying an existing
-container, these containers can still be used safely.
+unbounded and may contain indefinite elements. Their API features functions
+creating new containers from existing ones. To remain reasonably efficient,
+their implementation involves sharing between data-structures. As they are
+functional, that is, no primitives are provided which would allow modifying an
+existing container, these containers can still be used safely.
 
-Their API features functions creating new containers from existing ones.
-As a consequence, these containers are highly inefficient. They are also
-memory consuming, as the allocated memory is not reclaimed when the container
-is no longer referenced. Thus, they should in general be used in ghost code
-and annotations, so that they can be removed from the final executable. The
-specification of this unit is compatible with SPARK 2014.
+These containers are controlled so that the allocated memory can be reclaimed
+when the container is no longer referenced. Thus, they cannot directly be used
+in contexts where controlled types are not supported.
+The specification of this unit is compatible with SPARK 2014.
 
 .. _`Ada.Containers.Functional_Maps_(a-cofuma.ads)`:
 
 ``Ada.Containers.Functional_Maps`` (:file:`a-cofuma.ads`)
-=================================================================
+=========================================================
 
 .. index:: Ada.Containers.Functional_Maps (a-cofuma.ads)
 
 .. index:: Functional maps
 
 This child of ``Ada.Containers`` defines immutable maps. These containers are
-unbounded and may contain indefinite elements. Furthermore, to be usable in
-every context, they are neither controlled nor limited. As they are functional,
-that is, no primitives are provided which would allow modifying an existing
-container, these containers can still be used safely.
+unbounded and may contain indefinite elements. Their API features functions
+creating new containers from existing ones. To remain reasonably efficient,
+their implementation involves sharing between data-structures. As they are
+functional, that is, no primitives are provided which would allow modifying an
+existing container, these containers can still be used safely.
 
-Their API features functions creating new containers from existing ones.
-As a consequence, these containers are highly inefficient. They are also
-memory consuming, as the allocated memory is not reclaimed when the container
-is no longer referenced. Thus, they should in general be used in ghost code
-and annotations, so that they can be removed from the final executable. The
-specification of this unit is compatible with SPARK 2014.
+These containers are controlled so that the allocated memory can be reclaimed
+when the container is no longer referenced. Thus, they cannot directly be used
+in contexts where controlled types are not supported.
+The specification of this unit is compatible with SPARK 2014.
 
 .. _`Ada.Containers.Bounded_Holders_(a-coboho.ads)`:
 
@@ -720,6 +740,18 @@ to the resulting slices.
 Provides AWK-like parsing functions, with an easy interface for parsing one
 or more files containing formatted data.  The file is viewed as a database
 where each record is a line and a field is a data element in this line.
+
+.. _`GNAT.Binary_Search_(g-binsea.ads)`:
+
+``GNAT.Binary_Search`` (:file:`g-binsea.ads`)
+================================================
+
+.. index:: GNAT.Binary_Search (g-binsea.ads)
+
+.. index:: Binary search
+
+Allow binary search of a sorted array (or of an array-like container;
+the generic does not reference the array directly).
 
 .. _`GNAT.Bind_Environment_(g-binenv.ads)`:
 
@@ -1289,6 +1321,24 @@ copied from the printf() routine and should therefore gives identical
 output. Some generic routines are provided to be able to use types
 derived from Integer, Float or enumerations as values for the
 formatted string.
+
+.. _`GNAT.Generic_Fast_Math_Functions_(g-gfmafu.ads)`:
+
+``GNAT.Generic_Fast_Math_Functions`` (:file:`g-gfmafu.ads`)
+===========================================================
+
+.. index:: GNAT.Generic_Fast_Math_Functions (g-gfmafu.ads)
+
+.. index:: Mathematical functions
+
+Provides direct access to the underlying implementation of the common
+mathematical functions, generally from the system mathematical library.
+This differs from ``Ada.Numerics.Generic_Elementary_Functions`` in that
+the implementation may deviate from the semantics specified for these
+functions in the Reference Manual, for example ``Numerics.Argument_Error``
+is not raised. On selected platforms, some of these functions may also
+have a vector implementation that can be automatically used by the
+compiler when auto-vectorization is enabled.
 
 .. _`GNAT.Heap_Sort_(g-heasor.ads)`:
 
@@ -2177,7 +2227,7 @@ x86, and x86_64 platforms.
 
 This package provides the interface to the low level routines used
 by the generated code for allocation and freeing storage for the
-default storage pool (analogous to the C routines malloc and free.
+default storage pool (analogous to the C routines malloc and free).
 It also provides a reallocation interface analogous to the C routine
 realloc. The body of this unit may be modified to provide alternative
 allocation mechanisms for the default pool, and in addition, direct

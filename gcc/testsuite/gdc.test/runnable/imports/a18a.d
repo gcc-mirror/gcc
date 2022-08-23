@@ -25,4 +25,3 @@ class Container(T) : IContainer!(int)
 	    return new Enumerator!(int)();
 	}
 }
-

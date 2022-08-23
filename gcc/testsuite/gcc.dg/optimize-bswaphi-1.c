@@ -68,4 +68,4 @@ get_unaligned_16_be (unsigned char *p)
 
 
 /* { dg-final { scan-tree-dump-times "16 bit load in target endianness found at" 4 "bswap" } } */
-/* { dg-final { scan-tree-dump-times "16 bit bswap implementation found at" 5 "bswap" } } */
+/* { dg-final { scan-tree-dump-times "16 bit bswap implementation found at" 4 "bswap" } } */

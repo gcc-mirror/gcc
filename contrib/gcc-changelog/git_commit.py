@@ -165,7 +165,7 @@ star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
 end_of_location_regex = re.compile(r'[\[<(:]')
 item_empty_regex = re.compile(r'\t(\* \S+ )?\(\S+\):\s*$')
 item_parenthesis_regex = re.compile(r'\t(\*|\(\S+\):)')
-revert_regex = re.compile(r'This reverts commit (?P<hash>\w+).$')
+revert_regex = re.compile(r'This reverts commit (?P<hash>[0-9a-f]+)\.$')
 cherry_pick_regex = re.compile(r'cherry picked from commit (?P<hash>\w+)')
 
 LINE_LIMIT = 100
@@ -317,7 +317,7 @@ class GitCommit:
 
         # Identify first if the commit is a Revert commit
         for line in self.info.lines:
-            m = revert_regex.match(line)
+            m = revert_regex.fullmatch(line)
             if m:
                 self.revert_commit = m.group('hash')
                 break
@@ -626,7 +626,7 @@ class GitCommit:
 
     def deduce_changelog_locations(self):
         for entry in self.changelog_entries:
-            if not entry.folder:
+            if entry.folder is None:
                 changelog = None
                 for file in entry.files:
                     location = self.get_file_changelog_location(file)
@@ -718,9 +718,15 @@ class GitCommit:
                         self.changelog_entries.append(entry)
                     # strip prefix of the file
                     assert file.startswith(entry.folder)
-                    file = file[len(entry.folder):].lstrip('/')
-                    entry.lines.append('\t* %s: New file.' % file)
-                    entry.files.append(file)
+                    # do not allow auto-addition of New files
+                    # for the top-level folder
+                    if entry.folder:
+                        file = file[len(entry.folder):].lstrip('/')
+                        entry.lines.append('\t* %s: New file.' % file)
+                        entry.files.append(file)
+                    else:
+                        msg = 'new file in the top-level folder not mentioned in a ChangeLog'
+                        self.errors.append(Error(msg, file))
                 else:
                     used_pattern = [p for p in mentioned_patterns
                                     if file.startswith(p)]

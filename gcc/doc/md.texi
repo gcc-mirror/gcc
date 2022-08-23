@@ -2747,6 +2747,32 @@ Memory addressed using the small base register ($sb).
 $r1h
 @end table
 
+@item LoongArch---@file{config/loongarch/constraints.md}
+@table @code
+@item f
+A floating-point register (if available).
+@item k
+A memory operand whose address is formed by a base register and
+(optionally scaled) index register.
+@item l
+A signed 16-bit constant.
+@item m
+A memory operand whose address is formed by a base register and offset
+that is suitable for use in instructions with the same addressing mode
+as @code{st.w} and @code{ld.w}.
+@item I
+A signed 12-bit constant (for arithmetic instructions).
+@item K
+An unsigned 12-bit constant (for logic instructions).
+@item ZB
+An address that is held in a general-purpose register.
+The offset is zero.
+@item ZC
+A memory operand whose address is formed by a base register and offset
+that is suitable for use in instructions with the same addressing mode
+as @code{ll.w} and @code{sc.w}.
+@end table
+
 @item MicroBlaze---@file{config/microblaze/constraints.md}
 @table @code
 @item d
@@ -3830,154 +3856,6 @@ A memory operand with an address that cannot be used in an unaligned access.
 @end ifset
 @item Z
 Register B14 (aka DP).
-
-@end table
-
-@item TILE-Gx---@file{config/tilegx/constraints.md}
-@table @code
-@item R00
-@itemx R01
-@itemx R02
-@itemx R03
-@itemx R04
-@itemx R05
-@itemx R06
-@itemx R07
-@itemx R08
-@itemx R09
-@itemx R10
-Each of these represents a register constraint for an individual
-register, from r0 to r10.
-
-@item I
-Signed 8-bit integer constant.
-
-@item J
-Signed 16-bit integer constant.
-
-@item K
-Unsigned 16-bit integer constant.
-
-@item L
-Integer constant that fits in one signed byte when incremented by one
-(@minus{}129 @dots{} 126).
-
-@item m
-Memory operand.  If used together with @samp{<} or @samp{>}, the
-operand can have postincrement which requires printing with @samp{%In}
-and @samp{%in} on TILE-Gx.  For example:
-
-@smallexample
-asm ("st_add %I0,%1,%i0" : "=m<>" (*mem) : "r" (val));
-@end smallexample
-
-@item M
-A bit mask suitable for the BFINS instruction.
-
-@item N
-Integer constant that is a byte tiled out eight times.
-
-@item O
-The integer zero constant.
-
-@item P
-Integer constant that is a sign-extended byte tiled out as four shorts.
-
-@item Q
-Integer constant that fits in one signed byte when incremented
-(@minus{}129 @dots{} 126), but excluding -1.
-
-@item S
-Integer constant that has all 1 bits consecutive and starting at bit 0.
-
-@item T
-A 16-bit fragment of a got, tls, or pc-relative reference.
-
-@item U
-Memory operand except postincrement.  This is roughly the same as
-@samp{m} when not used together with @samp{<} or @samp{>}.
-
-@item W
-An 8-element vector constant with identical elements.
-
-@item Y
-A 4-element vector constant with identical elements.
-
-@item Z0
-The integer constant 0xffffffff.
-
-@item Z1
-The integer constant 0xffffffff00000000.
-
-@end table
-
-@item TILEPro---@file{config/tilepro/constraints.md}
-@table @code
-@item R00
-@itemx R01
-@itemx R02
-@itemx R03
-@itemx R04
-@itemx R05
-@itemx R06
-@itemx R07
-@itemx R08
-@itemx R09
-@itemx R10
-Each of these represents a register constraint for an individual
-register, from r0 to r10.
-
-@item I
-Signed 8-bit integer constant.
-
-@item J
-Signed 16-bit integer constant.
-
-@item K
-Nonzero integer constant with low 16 bits zero.
-
-@item L
-Integer constant that fits in one signed byte when incremented by one
-(@minus{}129 @dots{} 126).
-
-@item m
-Memory operand.  If used together with @samp{<} or @samp{>}, the
-operand can have postincrement which requires printing with @samp{%In}
-and @samp{%in} on TILEPro.  For example:
-
-@smallexample
-asm ("swadd %I0,%1,%i0" : "=m<>" (mem) : "r" (val));
-@end smallexample
-
-@item M
-A bit mask suitable for the MM instruction.
-
-@item N
-Integer constant that is a byte tiled out four times.
-
-@item O
-The integer zero constant.
-
-@item P
-Integer constant that is a sign-extended byte tiled out as two shorts.
-
-@item Q
-Integer constant that fits in one signed byte when incremented
-(@minus{}129 @dots{} 126), but excluding -1.
-
-@item T
-A symbolic operand, or a 16-bit fragment of a got, tls, or pc-relative
-reference.
-
-@item U
-Memory operand except postincrement.  This is roughly the same as
-@samp{m} when not used together with @samp{<} or @samp{>}.
-
-@item W
-A 4-element vector constant with identical elements.
-
-@item Y
-A 2-element vector constant with identical elements.
 
 @end table
 
@@ -6087,6 +5965,23 @@ mode @var{m}, which is a scalar or vector floating-point mode.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{fegetround@var{m}} instruction pattern
+@item @samp{fegetround@var{m}}
+Store the current machine floating-point rounding mode into operand 0.
+Operand 0 has mode @var{m}, which is scalar.  This pattern is used to
+implement the @code{fegetround} function from the ISO C99 standard.
+
+@cindex @code{feclearexcept@var{m}} instruction pattern
+@cindex @code{feraiseexcept@var{m}} instruction pattern
+@item @samp{feclearexcept@var{m}}
+@item @samp{feraiseexcept@var{m}}
+Clears or raises the supported machine floating-point exceptions
+represented by the bits in operand 1.  Error status is stored as
+nonzero value in operand 0.  Both operands have mode @var{m}, which is
+a scalar.  These patterns are used to implement the
+@code{feclearexcept} and @code{feraiseexcept} functions from the ISO
+C99 standard.
+
 @cindex @code{exp@var{m}2} instruction pattern
 @item @samp{exp@var{m}2}
 Raise e (the base of natural logarithms) to the power of operand 1
@@ -6343,12 +6238,13 @@ Perform a vector multiply and accumulate that is semantically the same as
 a multiply and accumulate of complex numbers.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
+  complex TYPE op3[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] += a[i] * b[i];
+      op0[i] = op1[i] * op2[i] + op3[i];
     @}
 @end smallexample
 
@@ -6366,12 +6262,13 @@ the same as a multiply and accumulate of complex numbers where the second
 multiply arguments is conjugated.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
+  complex TYPE op3[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] += a[i] * conj (b[i]);
+      op0[i] = op1[i] * conj (op2[i]) + op3[i];
     @}
 @end smallexample
 
@@ -6388,12 +6285,13 @@ Perform a vector multiply and subtract that is semantically the same as
 a multiply and subtract of complex numbers.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
+  complex TYPE op3[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] -= a[i] * b[i];
+      op0[i] = op1[i] * op2[i] - op3[i];
     @}
 @end smallexample
 
@@ -6411,12 +6309,13 @@ the same as a multiply and subtract of complex numbers where the second
 multiply arguments is conjugated.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
+  complex TYPE op3[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] -= a[i] * conj (b[i]);
+      op0[i] = op1[i] * conj (op2[i]) - op3[i];
     @}
 @end smallexample
 
@@ -6433,12 +6332,12 @@ Perform a vector multiply that is semantically the same as multiply of
 complex numbers.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] = a[i] * b[i];
+      op0[i] = op1[i] * op2[i];
     @}
 @end smallexample
 
@@ -6455,12 +6354,12 @@ Perform a vector multiply by conjugate that is semantically the same as a
 multiply of complex numbers where the second multiply arguments is conjugated.
 
 @smallexample
-  complex TYPE c[N];
-  complex TYPE a[N];
-  complex TYPE b[N];
+  complex TYPE op0[N];
+  complex TYPE op1[N];
+  complex TYPE op2[N];
   for (int i = 0; i < N; i += 1)
     @{
-      c[i] = a[i] * conj (b[i]);
+      op0[i] = op1[i] * conj (op2[i]);
     @}
 @end smallexample
 
@@ -11463,7 +11362,7 @@ This is exactly equivalent to:
   [(set (match_operand:DI 0 "register_operand" "=d")
         (minus:DI (match_operand:DI 1 "register_operand" "d")
                   (match_operand:DI 2 "register_operand" "d")))]
-  ""
+  "TARGET_64BIT"
   "dsubu\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])

@@ -125,9 +125,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return optimize > 0; }
+  bool gate (function *) final override { return optimize > 0; }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_nrv
 
@@ -234,19 +234,6 @@ pass_nrv::execute (function *fun)
       fprintf (dump_file, "  with: ");
       print_generic_expr (dump_file, result, dump_flags);
       fprintf (dump_file, "\n");
-    }
-
-  /* At this point we know that all the return statements return the
-     same local which has suitable attributes for NRV.   Copy debugging
-     information from FOUND to RESULT if it will be useful.  But don't set
-     DECL_ABSTRACT_ORIGIN to point at another function.  */
-  if (!DECL_IGNORED_P (found)
-      && !(DECL_ABSTRACT_ORIGIN (found)
-	   && DECL_CONTEXT (DECL_ABSTRACT_ORIGIN (found)) != current_function_decl))
-    {
-      DECL_NAME (result) = DECL_NAME (found);
-      DECL_SOURCE_LOCATION (result) = DECL_SOURCE_LOCATION (found);
-      DECL_ABSTRACT_ORIGIN (result) = DECL_ABSTRACT_ORIGIN (found);
     }
 
   TREE_ADDRESSABLE (result) |= TREE_ADDRESSABLE (found);
@@ -357,7 +344,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_return_slot
 

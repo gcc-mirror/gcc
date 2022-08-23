@@ -21,4 +21,3 @@ int main()
     assert(stuff1.num == 1);
     return 0;
 }
-

@@ -16,5 +16,6 @@ test (void)
 
 /* After DCE2 which runs after FRE, the expressions should be fully
    constant folded.  There should be no loads from b left.  */
-/* { dg-final { scan-tree-dump-times "__complex__ \\\(1.0e\\\+0, 0.0\\\)" 2 "dce3" } } */
+/* { dg-final { scan-tree-dump-times {(?n)REALPART_EXPR.*= 1\.0e\+0} 2 "dce3" } } */
+/* { dg-final { scan-tree-dump-times {(?n)IMAGPART_EXPR.*= 0\.0} 2 "dce3" } } */
 /* { dg-final { scan-tree-dump-times "= b" 0 "dce3" } } */

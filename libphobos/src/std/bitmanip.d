@@ -1447,7 +1447,8 @@ public:
             size_t bitCount;
             foreach (i; 0 .. fullWords)
                 bitCount += countBitsSet(_ptr[i]);
-            bitCount += countBitsSet(_ptr[fullWords] & endMask);
+            if (endBits)
+                bitCount += countBitsSet(_ptr[fullWords] & endMask);
             return bitCount;
         }
         else

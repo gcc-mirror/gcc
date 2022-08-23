@@ -10,3 +10,5 @@ program pr70071
   allocate (z(2)[1::2,*])  ! { dg-error "Bad array dimension" }
   allocate (z(1::2)[2,*])  ! { dg-error "Bad array specification in ALLOCATE" }
 end program pr70071
+
+! { dg-prune-output "Bad coarray specification in ALLOCATE statement" }

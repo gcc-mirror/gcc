@@ -1,4 +1,4 @@
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 // EXTRA_SOURCES: imports/c11447.d
 // REQUIRED_ARGS: -w
 // PERMUTE_ARGS: -allinst -debug -g

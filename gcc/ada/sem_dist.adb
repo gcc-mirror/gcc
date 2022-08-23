@@ -394,11 +394,10 @@ package body Sem_Dist is
            (RTE (RE_Get_Local_Partition_Id), Loc);
       end if;
 
-      --  Get and store the String_Id corresponding to the name of the
-      --  library unit whose Partition_Id is needed.
+      --  Get the String_Id corresponding to the name of the library unit whose
+      --  Partition_Id is needed.
 
-      Get_Library_Unit_Name_String (Unit_Declaration_Node (Ety));
-      Prefix_String := String_From_Name_Buffer;
+      Prefix_String := Get_Library_Unit_Name (Unit_Declaration_Node (Ety));
 
       --  Build the function call which will replace the attribute
 

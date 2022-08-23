@@ -6,4 +6,3 @@ auto foo()()
 {
     return 1;
 }
-

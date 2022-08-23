@@ -34,7 +34,7 @@ do {									\
     {									\
       rs6000_long_double_type_size = 64;				\
       if (OPTION_SET_P (rs6000_long_double_type_size))		\
-	warning (0, "soft-float and long-double-128 are incompatible");	\
+	warning (0, "%<soft-float%> and long-double-128 are incompatible");	\
     }									\
   if (TARGET_POWERPC64 && ! TARGET_64BIT)				\
     {									\

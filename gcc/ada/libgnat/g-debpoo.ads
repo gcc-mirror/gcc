@@ -123,7 +123,8 @@ package GNAT.Debug_Pools is
    --    traces that are output to indicate locations of actions for error
    --    conditions such as bad allocations. If set to zero, the debug pool
    --    will not try to compute backtraces. This is more efficient but gives
-   --    less information on problem locations
+   --    less information on problem locations (and in particular, this
+   --    disables the tracking of the biggest users of memory).
    --
    --    Maximum_Logically_Freed_Memory: maximum amount of memory (bytes)
    --    that should be kept before starting to physically deallocate some.
@@ -275,8 +276,12 @@ package GNAT.Debug_Pools is
       Size   : Positive;
       Report : Report_Type := All_Reports);
    --  Dump information about memory usage.
-   --  Size is the number of the biggest memory users we want to show. Report
-   --  indicates which sorting order is used in the report.
+   --  Size is the number of the biggest memory users we want to show
+   --  (requires that the Debug_Pool has been configured with Stack_Trace_Depth
+   --  greater than zero). Also, for efficiency reasons, tracebacks with
+   --  a memory allocation below 1_000 bytes are not shown in the "biggest
+   --  memory users" part of the report.
+   --  Report indicates which sorting order is used in the report.
 
    procedure Dump_Stdout
      (Pool   : Debug_Pool;

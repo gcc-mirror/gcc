@@ -2300,9 +2300,12 @@ class Pointer_type : public Type
   do_verify()
   { return this->to_type_->verify(); }
 
+  // If this is a pointer to a type that can't be in the heap, then
+  // the garbage collector does not have to look at this, so pretend
+  // that this is not a pointer at all.
   bool
   do_has_pointer() const
-  { return true; }
+  { return this->to_type_->in_heap(); }
 
   bool
   do_compare_is_identity(Gogo*)
@@ -2797,7 +2800,7 @@ class Array_type : public Type
 
   // Return an expression for the pointer to the values in an array.
   Expression*
-  get_value_pointer(Gogo*, Expression* array, bool is_lvalue) const;
+  get_value_pointer(Gogo*, Expression* array) const;
 
   // Return an expression for the length of an array with this type.
   Expression*
@@ -3268,15 +3271,6 @@ class Interface_type : public Type
   bool
   methods_are_finalized() const
   { return this->methods_are_finalized_; }
-
-  // Sort embedded interfaces by name. Needed when we are preparing
-  // to emit types into the export data.
-  void
-  sort_embedded()
-  {
-    if (parse_methods_ != NULL)
-      parse_methods_->sort_by_name();
-  }
 
  protected:
   int

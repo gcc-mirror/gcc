@@ -66,7 +66,7 @@ static bool ext_gcn_constants_init = 0;
 
 /* Holds the ISA variant, derived from the command line parameters.  */
 
-int gcn_isa = 3;		/* Default to GCN3.  */
+enum gcn_isa gcn_isa = ISA_GCN3;	/* Default to GCN3.  */
 
 /* Reserve this much space for LDS (for propagating variables from
    worker-single mode to worker-partitioned mode), per workgroup.  Global
@@ -129,7 +129,13 @@ gcn_option_override (void)
   if (!flag_pic)
     flag_pic = flag_pie;
 
-  gcn_isa = gcn_arch == PROCESSOR_FIJI ? 3 : 5;
+  gcn_isa = (gcn_arch == PROCESSOR_FIJI ? ISA_GCN3
+      : gcn_arch == PROCESSOR_VEGA10 ? ISA_GCN5
+      : gcn_arch == PROCESSOR_VEGA20 ? ISA_GCN5
+      : gcn_arch == PROCESSOR_GFX908 ? ISA_CDNA1
+      : gcn_arch == PROCESSOR_GFX90a ? ISA_CDNA2
+      : ISA_UNKNOWN);
+  gcc_assert (gcn_isa != ISA_UNKNOWN);
 
   /* The default stack size needs to be small for offload kernels because
      there may be many, many threads.  Also, a smaller stack gives a
@@ -2278,7 +2284,7 @@ gcn_function_value (const_tree valtype, const_tree, bool)
       && GET_MODE_SIZE (mode) < 4)
     mode = SImode;
 
-  return gen_rtx_REG (mode, SGPR_REGNO (RETURN_VALUE_REG));
+  return gen_rtx_REG (mode, RETURN_VALUE_REG);
 }
 
 /* Implement TARGET_FUNCTION_VALUE_REGNO_P.
@@ -2302,7 +2308,9 @@ num_arg_regs (const function_arg_info &arg)
     return 0;
 
   int size = arg.promoted_size_in_bytes ();
-  return (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  int regsize = UNITS_PER_WORD * (VECTOR_MODE_P (arg.mode)
+				  ? GET_MODE_NUNITS (arg.mode) : 1);
+  return (size + regsize - 1) / regsize;
 }
 
 /* Implement TARGET_STRICT_ARGUMENT_NAMING.
@@ -2352,16 +2360,16 @@ gcn_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
       if (targetm.calls.must_pass_in_stack (arg))
 	return 0;
 
-      /* Vector parameters are not supported yet.  */
-      if (VECTOR_MODE_P (arg.mode))
-	return 0;
-
-      int reg_num = FIRST_PARM_REG + cum->num;
+      int first_reg = (VECTOR_MODE_P (arg.mode)
+		       ? FIRST_VPARM_REG : FIRST_PARM_REG);
+      int cum_num = (VECTOR_MODE_P (arg.mode)
+		     ? cum->vnum : cum->num);
+      int reg_num = first_reg + cum_num;
       int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
 	while (reg_num % num_regs != 0)
 	  reg_num++;
-      if (reg_num + num_regs <= FIRST_PARM_REG + NUM_PARM_REGS)
+      if (reg_num + num_regs <= first_reg + NUM_PARM_REGS)
 	return gen_rtx_REG (arg.mode, reg_num);
     }
   else
@@ -2413,11 +2421,15 @@ gcn_function_arg_advance (cumulative_args_t cum_v,
       if (!arg.named)
 	return;
 
+      int first_reg = (VECTOR_MODE_P (arg.mode)
+		       ? FIRST_VPARM_REG : FIRST_PARM_REG);
+      int *cum_num = (VECTOR_MODE_P (arg.mode)
+		      ? &cum->vnum : &cum->num);
       int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
-	while ((FIRST_PARM_REG + cum->num) % num_regs != 0)
-	  cum->num++;
-      cum->num += num_regs;
+	while ((first_reg + *cum_num) % num_regs != 0)
+	  (*cum_num)++;
+      *cum_num += num_regs;
     }
   else
     {
@@ -2448,14 +2460,18 @@ gcn_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   if (targetm.calls.must_pass_in_stack (arg))
     return 0;
 
-  if (cum->num >= NUM_PARM_REGS)
+  int cum_num = (VECTOR_MODE_P (arg.mode) ? cum->vnum : cum->num);
+  int regsize = UNITS_PER_WORD * (VECTOR_MODE_P (arg.mode)
+				  ? GET_MODE_NUNITS (arg.mode) : 1);
+
+  if (cum_num >= NUM_PARM_REGS)
     return 0;
 
   /* If the argument fits entirely in registers, return 0.  */
-  if (cum->num + num_arg_regs (arg) <= NUM_PARM_REGS)
+  if (cum_num + num_arg_regs (arg) <= NUM_PARM_REGS)
     return 0;
 
-  return (NUM_PARM_REGS - cum->num) * UNITS_PER_WORD;
+  return (NUM_PARM_REGS - cum_num) * regsize;
 }
 
 /* A normal function which takes a pointer argument (to a scalar) may be
@@ -2543,14 +2559,11 @@ gcn_return_in_memory (const_tree type, const_tree ARG_UNUSED (fntype))
   if (AGGREGATE_TYPE_P (type))
     return true;
 
-  /* Vector return values are not supported yet.  */
-  if (VECTOR_TYPE_P (type))
-    return true;
-
   if (mode == BLKmode)
     return true;
 
-  if (size > 2 * UNITS_PER_WORD)
+  if ((!VECTOR_TYPE_P (type) && size > 2 * UNITS_PER_WORD)
+      || size > 2 * UNITS_PER_WORD * 64)
     return true;
 
   return false;
@@ -2632,7 +2645,7 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_kind:
       return strcmp (name, "gpu") == 0;
     case omp_device_arch:
-      return strcmp (name, "gcn") == 0;
+      return strcmp (name, "amdgcn") == 0 || strcmp (name, "gcn") == 0;
     case omp_device_isa:
       if (strcmp (name, "fiji") == 0)
 	return gcn_arch == PROCESSOR_FIJI;
@@ -2642,6 +2655,8 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
 	return gcn_arch == PROCESSOR_VEGA20;
       if (strcmp (name, "gfx908") == 0)
 	return gcn_arch == PROCESSOR_GFX908;
+      if (strcmp (name, "gfx90a") == 0)
+	return gcn_arch == PROCESSOR_GFX90a;
       return 0;
     default:
       gcc_unreachable ();
@@ -3081,13 +3096,35 @@ gcn_expand_prologue ()
   /* Ensure that the scheduler doesn't do anything unexpected.  */
   emit_insn (gen_blockage ());
 
-  /* m0 is initialized for the usual LDS DS and FLAT memory case.
-     The low-part is the address of the topmost addressable byte, which is
-     size-1.  The high-part is an offset and should be zero.  */
-  emit_move_insn (gen_rtx_REG (SImode, M0_REG),
-		  gen_int_mode (LDS_SIZE, SImode));
+  if (TARGET_M0_LDS_LIMIT)
+  {
+    /* m0 is initialized for the usual LDS DS and FLAT memory case.
+       The low-part is the address of the topmost addressable byte, which is
+       size-1.  The high-part is an offset and should be zero.  */
+    emit_move_insn (gen_rtx_REG (SImode, M0_REG),
+	gen_int_mode (LDS_SIZE, SImode));
 
-  emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
+    emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
+  }
+
+  if (TARGET_PACKED_WORK_ITEMS
+      && cfun && cfun->machine && !cfun->machine->normal_function)
+  {
+    /* v0 conatins the X, Y and Z dimensions all in one.
+       Expand them out for ABI compatibility.  */
+    /* TODO: implement and use zero_extract.  */
+    rtx v1 = gen_rtx_REG (V64SImode, VGPR_REGNO (1));
+    emit_insn (gen_andv64si3 (v1, gen_rtx_REG (V64SImode, VGPR_REGNO (0)),
+	       gen_rtx_CONST_INT (VOIDmode, 0x3FF << 10)));
+    emit_insn (gen_lshrv64si3 (v1, v1, gen_rtx_CONST_INT (VOIDmode, 10)));
+    emit_insn (gen_prologue_use (v1));
+
+    rtx v2 = gen_rtx_REG (V64SImode, VGPR_REGNO (2));
+    emit_insn (gen_andv64si3 (v2, gen_rtx_REG (V64SImode, VGPR_REGNO (0)),
+	       gen_rtx_CONST_INT (VOIDmode, 0x3FF << 20)));
+    emit_insn (gen_lshrv64si3 (v2, v2, gen_rtx_CONST_INT (VOIDmode, 20)));
+    emit_insn (gen_prologue_use (v2));
+  }
 
   if (cfun && cfun->machine && !cfun->machine->normal_function && flag_openmp)
     {
@@ -3169,9 +3206,10 @@ gcn_expand_epilogue (void)
       emit_move_insn (kernarg_reg, retptr_mem);
 
       rtx retval_mem = gen_rtx_MEM (SImode, kernarg_reg);
+      rtx scalar_retval = gen_rtx_REG (SImode, FIRST_PARM_REG);
       set_mem_addr_space (retval_mem, ADDR_SPACE_SCALAR_FLAT);
-      emit_move_insn (retval_mem,
-		      gen_rtx_REG (SImode, SGPR_REGNO (RETURN_VALUE_REG)));
+      emit_move_insn (scalar_retval, gen_rtx_REG (SImode, RETURN_VALUE_REG));
+      emit_move_insn (retval_mem, scalar_retval);
     }
 
   emit_jump_insn (gen_gcn_return ());
@@ -4131,10 +4169,13 @@ gcn_make_vec_perm_address (unsigned int *perm)
    permutations.  */
 
 static bool
-gcn_vectorize_vec_perm_const (machine_mode vmode, rtx dst,
-			      rtx src0, rtx src1,
+gcn_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
+			      rtx dst, rtx src0, rtx src1,
 			      const vec_perm_indices & sel)
 {
+  if (vmode != op_mode)
+    return false;
+
   unsigned int nelt = GET_MODE_NUNITS (vmode);
 
   gcc_assert (VECTOR_MODE_P (vmode));
@@ -4460,7 +4501,7 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
      pair of lanes, then on every pair of results from the previous
      iteration (thereby effectively reducing every 4 lanes) and so on until
      all lanes are reduced.  */
-  rtx in, out = src;
+  rtx in, out = force_reg (mode, src);
   for (int i = 0, shift = 1; i < 6; i++, shift <<= 1)
     {
       rtx shift_val = gen_rtx_CONST_INT (VOIDmode, shift);
@@ -5216,49 +5257,6 @@ gcn_shared_mem_layout (unsigned HOST_WIDE_INT *lo,
 static void
 output_file_start (void)
 {
-  const char *cpu;
-  bool use_xnack_attr = true;
-  bool use_sram_attr = true;
-  switch (gcn_arch)
-    {
-    case PROCESSOR_FIJI:
-      cpu = "gfx803";
-#ifndef HAVE_GCN_XNACK_FIJI
-      use_xnack_attr = false;
-#endif
-      use_sram_attr = false;
-      break;
-    case PROCESSOR_VEGA10:
-      cpu = "gfx900";
-#ifndef HAVE_GCN_XNACK_GFX900
-      use_xnack_attr = false;
-#endif
-      use_sram_attr = false;
-      break;
-    case PROCESSOR_VEGA20:
-      cpu = "gfx906";
-#ifndef HAVE_GCN_XNACK_GFX906
-      use_xnack_attr = false;
-#endif
-      use_sram_attr = false;
-      break;
-    case PROCESSOR_GFX908:
-      cpu = "gfx908";
-#ifndef HAVE_GCN_XNACK_GFX908
-      use_xnack_attr = false;
-#endif
-#ifndef HAVE_GCN_SRAM_ECC_GFX908
-      use_sram_attr = false;
-#endif
-      break;
-    default: gcc_unreachable ();
-    }
-
-#if HAVE_GCN_ASM_V3_SYNTAX
-  const char *xnack = (flag_xnack ? "+xnack" : "");
-  const char *sram_ecc = (flag_sram_ecc ? "+sram-ecc" : "");
-#endif
-#if HAVE_GCN_ASM_V4_SYNTAX
   /* In HSACOv4 no attribute setting means the binary supports "any" hardware
      configuration.  In GCC binaries, this is true for SRAM ECC, but not
      XNACK.  */
@@ -5266,21 +5264,34 @@ output_file_start (void)
   const char *sram_ecc = (flag_sram_ecc == SRAM_ECC_ON ? ":sramecc+"
 			  : flag_sram_ecc == SRAM_ECC_OFF ? ":sramecc-"
 			  : "");
-#endif
-  if (!use_xnack_attr)
-    xnack = "";
-  if (!use_sram_attr)
-    sram_ecc = "";
+
+  const char *cpu;
+  switch (gcn_arch)
+    {
+    case PROCESSOR_FIJI:
+      cpu = "gfx803";
+      xnack = "";
+      sram_ecc = "";
+      break;
+    case PROCESSOR_VEGA10:
+      cpu = "gfx900";
+      sram_ecc = "";
+      break;
+    case PROCESSOR_VEGA20:
+      cpu = "gfx906";
+      sram_ecc = "";
+      break;
+    case PROCESSOR_GFX908:
+      cpu = "gfx908";
+      break;
+    case PROCESSOR_GFX90a:
+      cpu = "gfx90a";
+      break;
+    default: gcc_unreachable ();
+    }
 
   fprintf(asm_out_file, "\t.amdgcn_target \"amdgcn-unknown-amdhsa--%s%s%s\"\n",
-	  cpu,
-#if HAVE_GCN_ASM_V3_SYNTAX
-	  xnack, sram_ecc
-#endif
-#ifdef HAVE_GCN_ASM_V4_SYNTAX
-	  sram_ecc, xnack
-#endif
-	  );
+	  cpu, sram_ecc, xnack);
 }
 
 /* Implement ASM_DECLARE_FUNCTION_NAME via gcn-hsa.h.
@@ -5328,6 +5339,10 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
       if (sgpr < MAX_NORMAL_SGPR_COUNT)
 	sgpr = MAX_NORMAL_SGPR_COUNT;
     }
+
+  /* The gfx90a accum_offset field can't represent 0 registers.  */
+  if (gcn_arch == PROCESSOR_GFX90a && vgpr < 4)
+    vgpr = 4;
 
   fputs ("\t.rodata\n"
 	 "\t.p2align\t6\n"
@@ -5397,6 +5412,11 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	      one 64th the wave-front stack size.  */
 	   stack_size_opt / 64,
 	   LDS_SIZE);
+  if (gcn_arch == PROCESSOR_GFX90a)
+    fprintf (file,
+	     "\t  .amdhsa_accum_offset\t%i\n"
+	     "\t  .amdhsa_tg_split\t0\n",
+	     (vgpr+3)&~3); // I think this means the AGPRs come after the VGPRs
   fputs ("\t.end_amdhsa_kernel\n", file);
 
 #if 1
@@ -5425,6 +5445,8 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   LDS_SIZE,
 	   stack_size_opt / 64,
 	   sgpr, vgpr);
+  if (gcn_arch == PROCESSOR_GFX90a)
+    fprintf (file, "            .agpr_count: 0\n"); // AGPRs are not used, yet
   fputs ("        .end_amdgpu_metadata\n", file);
 #endif
 
@@ -5588,8 +5610,9 @@ gcn_print_lds_decl (FILE *f, tree var)
       fprintf (f, "%u", gang_private_hwm);
       gang_private_hwm += size;
       if (gang_private_hwm > gang_private_size_opt)
-	error ("gang-private data-share memory exhausted (increase with "
-	       "%<-mgang-private-size=<number>%>)");
+	error ("%d bytes of gang-private data-share memory exhausted"
+	       " (increase with %<-mgang-private-size=%d%>, for example)",
+	       gang_private_size_opt, gang_private_hwm);
     }
 }
 
@@ -5723,23 +5746,10 @@ print_operand_address (FILE *file, rtx mem)
 	      if (vgpr_offset == NULL_RTX)
 		/* In this case, the vector offset is zero, so we use the first
 		   lane of v1, which is initialized to zero.  */
-		{
-		  if (HAVE_GCN_ASM_GLOBAL_LOAD_FIXED)
-		    fprintf (file, "v1");
-		  else
-		    fprintf (file, "v[1:2]");
-		}
+		fprintf (file, "v1");
 	      else if (REG_P (vgpr_offset)
 		       && VGPR_REGNO_P (REGNO (vgpr_offset)))
-		{
-		  if (HAVE_GCN_ASM_GLOBAL_LOAD_FIXED)
-		    fprintf (file, "v%d",
-			     REGNO (vgpr_offset) - FIRST_VGPR_REG);
-		  else
-		    fprintf (file, "v[%d:%d]",
-			     REGNO (vgpr_offset) - FIRST_VGPR_REG,
-			     REGNO (vgpr_offset) - FIRST_VGPR_REG + 1);
-		}
+		fprintf (file, "v%d", REGNO (vgpr_offset) - FIRST_VGPR_REG);
 	      else
 		output_operand_lossage ("bad ADDR_SPACE_GLOBAL address");
 	    }

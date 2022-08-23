@@ -12,5 +12,3 @@ struct A(T)
 }
 
 A!(int) x;
-
-

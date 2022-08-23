@@ -60,7 +60,7 @@
 ;; that both registers may be set in the first insn, and will be used in the
 ;; second insn.
 ;;
-;; Since we use UNSPEC's and link both the the register holding the external
+;; Since we use UNSPEC's and link both the register holding the external
 ;; address and the value being loaded, it should prevent other passes from
 ;; modifying it.
 ;;

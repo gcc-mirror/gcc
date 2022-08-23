@@ -390,6 +390,9 @@ package body Switch.C is
                      elsif Underscore then
                         Set_Underscored_Debug_Flag (C);
                         Store_Compilation_Switch ("-gnatd_" & C);
+                        if Debug_Flag_Underscore_C then
+                           Enable_CUDA_Expansion := True;
+                        end if;
 
                      --  Normal flag
 
@@ -600,7 +603,8 @@ package body Switch.C is
                      Exception_Extra_Info := True;
                      Ptr := Ptr + 1;
 
-                  --  -gnatef (full source path for brief error messages)
+                  --  -gnatef (full source path for brief error messages and
+                  --  absolute paths for -fdiagnostics-format=json)
 
                   when 'f' =>
                      Store_Switch := False;

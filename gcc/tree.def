@@ -700,7 +700,9 @@ DEFTREECODE (POINTER_PLUS_EXPR, "pointer_plus_expr", tcc_binary, 2)
 DEFTREECODE (POINTER_DIFF_EXPR, "pointer_diff_expr", tcc_binary, 2)
 
 /* Highpart multiplication.  For an integral type with precision B,
-   returns bits [2B-1, B] of the full 2*B product.  */
+   returns bits [2B-1, B] of the full 2*B product.  Both operands
+   and the result should have integer types of the same precision
+   and signedness.  */
 DEFTREECODE (MULT_HIGHPART_EXPR, "mult_highpart_expr", tcc_binary, 2)
 
 /* Division for integer result that rounds the quotient toward zero.  */
@@ -1349,10 +1351,12 @@ DEFTREECODE (WIDEN_SUM_EXPR, "widen_sum_expr", tcc_binary, 2)
 DEFTREECODE (SAD_EXPR, "sad_expr", tcc_expression, 3)
 
 /* Widening multiplication.
-   The two arguments are of type t1.
-   The result is of type t2, such that t2 is at least twice
-   the size of t1. WIDEN_MULT_EXPR is equivalent to first widening (promoting)
-   the arguments from type t1 to type t2, and then multiplying them.  */
+   The two arguments are of type t1 and t2, both integral types that
+   have the same precision, but possibly different signedness.
+   The result is of integral type t3, such that t3 is at least twice
+   the size of t1/t2. WIDEN_MULT_EXPR is equivalent to first widening
+   (promoting) the arguments from type t1 to type t3, and from t2 to
+   type t3 and then multiplying them.  */
 DEFTREECODE (WIDEN_MULT_EXPR, "widen_mult_expr", tcc_binary, 2)
 
 /* Widening multiply-accumulate.

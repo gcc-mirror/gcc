@@ -198,6 +198,15 @@ package Inline is
    --  cases documented in Check_Body_To_Inline) then build the body-to-inline
    --  associated with N and attach it to the declaration node of Spec_Id.
 
+   procedure Check_Object_Renaming_In_GNATprove_Mode (Spec_Id : Entity_Id)
+   with
+     Pre => GNATprove_Mode;
+   --  This procedure is called only in GNATprove mode, on subprograms for
+   --  which a Body_To_Inline was created, to check if the subprogram has
+   --  references to object renamings which will be replaced by the special
+   --  SPARK expansion into nodes of a different kind, which is not expected
+   --  by the inlining mechanism. In that case, the Body_To_Inline is deleted.
+
    procedure Check_Package_Body_For_Inlining (N : Node_Id; P : Entity_Id);
    --  If front-end inlining is enabled and a package declaration contains
    --  inlined subprograms, load and compile the package body to collect the

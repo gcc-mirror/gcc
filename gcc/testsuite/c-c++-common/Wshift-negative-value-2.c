@@ -1,14 +1,13 @@
 /* PR c/65179 */
 /* { dg-do compile } */
 /* { dg-options "-O -Wshift-negative-value" } */
-/* { dg-additional-options "-std=c++11" { target c++ } } */
 
 enum E {
   A = 0 << 1,
   B = 1 << 1,
   C = -1 << 1, /* { dg-warning "10:left shift of negative value" } */
-  /* { dg-error "not an integer constant" "no constant" { target c++ } .-1 } */
-  /* { dg-error "left operand of shift expression" "shift" { target c++ } .-2 } */
+  /* { dg-error "not an integer constant" "no constant" { target { c++11 && c++17_down } } .-1 } */
+  /* { dg-error "left operand of shift expression" "shift" { target { c++11 && c++17_down } } .-2 } */
   D = 0 >> 1,
   E = 1 >> 1,
   F = -1 >> 1

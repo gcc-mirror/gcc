@@ -647,6 +647,9 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 	       && sym->ns->proc_name->attr.flavor == FL_LABEL)
 	/* This is a BLOCK construct.  */
 	add_decl_as_local (decl);
+      else if (sym->ns->omp_affinity_iterators)
+	/* This is a block-local iterator.  */
+	add_decl_as_local (decl);
       else
 	gfc_add_decl_to_parent_function (decl);
     }
@@ -6471,7 +6474,7 @@ gfc_generate_return (void)
 	     NULL_TREE, and a 'return' is generated without a variable.
 	     The following generates a 'return __result_XXX' where XXX is
 	     the function name.  */
-	  if (sym == sym->result && sym->attr.function)
+	  if (sym == sym->result && sym->attr.function && !flag_f2c)
 	    {
 	      result = gfc_get_fake_result_decl (sym, 0);
 	      result = fold_build2_loc (input_location, MODIFY_EXPR,

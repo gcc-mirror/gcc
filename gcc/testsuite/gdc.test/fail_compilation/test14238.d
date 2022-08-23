@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=dip1000
    TEST_OUTPUT:
 ---
-fail_compilation/test14238.d(20): Error: scope variable `fn` may not be returned
+fail_compilation/test14238.d(20): Error: scope parameter `fn` may not be returned
 fail_compilation/test14238.d(28): Error: escaping reference to stack allocated value returned by `&baz`
 ---
 */

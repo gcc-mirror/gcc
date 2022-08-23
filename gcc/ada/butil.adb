@@ -23,9 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Unchecked_Deallocation;
 with Opt;    use Opt;
 with Output; use Output;
-with Unchecked_Deallocation;
 
 with GNAT; use GNAT;
 
@@ -540,7 +540,7 @@ package body Butil is
    ---------------------------------
 
    function Read_Forced_Elab_Order_File return String_Ptr is
-      procedure Free is new Unchecked_Deallocation (String, String_Ptr);
+      procedure Free is new Ada.Unchecked_Deallocation (String, String_Ptr);
 
       Descr    : File_Descriptor;
       Len      : Natural;

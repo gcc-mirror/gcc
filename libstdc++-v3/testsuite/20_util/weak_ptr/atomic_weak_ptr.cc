@@ -8,6 +8,9 @@
 #include <thread>
 #include <testsuite_hooks.h>
 
+// Check constexpr constructor.
+constinit std::atomic<std::weak_ptr<int>> a;
+
 void
 test_is_lock_free()
 {

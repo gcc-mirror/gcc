@@ -476,8 +476,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_phiprop; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return flag_tree_phiprop; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_phiprop
 

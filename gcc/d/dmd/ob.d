@@ -1407,16 +1407,7 @@ void genKill(ref ObState obstate, ObNode* ob)
                     }
                     else if (auto td = s.isTupleDeclaration())
                     {
-                        foreach (o; *td.objects)
-                        {
-                            if (auto eo = o.isExpression())
-                            {
-                                if (auto se = eo.isDsymbolExp())
-                                {
-                                    Dsymbol_visit(se.s);
-                                }
-                            }
-                        }
+                        td.foreachVar(&Dsymbol_visit);
                     }
                 }
 
@@ -1747,7 +1738,7 @@ PtrState toPtrState(VarDeclaration v)
      */
 
     auto t = v.type;
-    if (v.isRef())
+    if (v.isReference())
     {
         return t.hasMutableFields() ? PtrState.Borrowed : PtrState.Readonly;
     }
@@ -1775,7 +1766,7 @@ bool hasPointersToMutableFields(Type t)
     {
         foreach (v; ts.sym.fields)
         {
-            if (v.isRef())
+            if (v.isReference())
             {
                 if (v.type.hasMutableFields())
                     return true;
@@ -1977,7 +1968,12 @@ void checkObErrors(ref ObState obstate)
             else if (isReadonlyPtr(v))
                 pvs.state = PtrState.Readonly;
             else
+            {
+                if (pvs.state == PtrState.Owner && v.type.hasPointersToMutableFields())
+                    v.error(e.loc, "assigning to Owner without disposing of owned value");
+
                 pvs.state = PtrState.Owner;
+            }
             pvs.deps.zero();
 
             EscapeByResults er;
@@ -2102,16 +2098,7 @@ void checkObErrors(ref ObState obstate)
                     }
                     else if (auto td = s.isTupleDeclaration())
                     {
-                        foreach (o; *td.objects)
-                        {
-                            if (auto eo = o.isExpression())
-                            {
-                                if (auto se = eo.isDsymbolExp())
-                                {
-                                    Dsymbol_visit(se.s);
-                                }
-                            }
-                        }
+                        td.foreachVar(&Dsymbol_visit);
                     }
                 }
 

@@ -115,3 +115,9 @@ void test_statements_22356()
     mixin("int") y22356, z22356;
     static assert(is(typeof(y22356) == int) && is(typeof(z22356) == int));
 }
+
+/**************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=22969
+
+enum e = 0;
+alias a = mixin("e");

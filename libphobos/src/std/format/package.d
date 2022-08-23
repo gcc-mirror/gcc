@@ -179,10 +179,10 @@ $(BOOKTABLE ,
              Depending on the number, a scientific notation or
              a natural notation is used.))
    $(TR $(TD $(B 'a') / $(B 'A'))
-        $(TD To be formatted as a real number in hexadezimal scientific notation.))
+        $(TD To be formatted as a real number in hexadecimal scientific notation.))
    $(TR $(TD $(B 'r'))
         $(TD To be formatted as raw bytes.
-             The output may not be printable and depends on endianess.))
+             The output may not be printable and depends on endianness.))
 )
 
 The $(I compound indicator) can be used to describe compound types
@@ -1356,6 +1356,30 @@ if (isSomeChar!Char)
     assert(result == "    1");
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=23245
+@safe unittest
+{
+    static struct S
+    {
+        string toString() { return "S"; }
+    }
+
+    S[1] s;
+    assert(format("%s", s) == "[S]");
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23246
+@safe unittest
+{
+    static struct S
+    {
+        string toString() { return "S"; }
+    }
+
+    S[int] s = [0 : S()];
+    assert(format("%s", s) == "[0:S]");
+}
+
 /// ditto
 typeof(fmt) format(alias fmt, Args...)(Args args)
 if (isSomeString!(typeof(fmt)))
@@ -1589,7 +1613,7 @@ char[] sformat(alias fmt, Args...)(char[] buf, Args args)
 if (isSomeString!(typeof(fmt)))
 {
     alias e = checkFormatException!(fmt, Args);
-    static assert(!e, e.msg);
+    static assert(!e, e);
     return .sformat(buf, fmt, args);
 }
 

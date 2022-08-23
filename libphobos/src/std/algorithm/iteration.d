@@ -1263,19 +1263,22 @@ public:
 
 // filter
 /**
-Implements the higher order filter function. The predicate is passed to
-$(REF unaryFun, std,functional), and can either accept a string, or any callable
-that can be executed via `pred(element)`.
+`filter!(predicate)(range)` returns a new range containing only elements `x` in `range` for
+which `predicate(x)` returns `true`.
+
+The predicate is passed to $(REF unaryFun, std,functional), and can be either a string, or
+any callable that can be executed via `pred(element)`.
 
 Params:
     predicate = Function to apply to each element of range
 
 Returns:
-    `filter!(predicate)(range)` returns a new range containing only elements `x` in `range` for
-    which `predicate(x)` returns `true`.
+    An input range that contains the filtered elements. If `range` is at least a forward range, the return value of `filter`
+    will also be a forward range.
 
 See_Also:
-    $(HTTP en.wikipedia.org/wiki/Filter_(higher-order_function), Filter (higher-order function))
+    $(HTTP en.wikipedia.org/wiki/Filter_(higher-order_function), Filter (higher-order function)),
+    $(REF filterBidirectional, std,algorithm,iteration)
  */
 template filter(alias predicate)
 if (is(typeof(unaryFun!predicate)))

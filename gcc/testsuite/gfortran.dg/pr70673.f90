@@ -9,14 +9,12 @@ contains
   subroutine s(inp)
     character(*), intent(in) :: inp
     character(:), allocatable :: a
-    a = a           ! This used to ICE.
     a = inp
     a = a           ! This used to ICE too
     if ((len (a) .ne. 5) .or. (a .ne. "hello")) STOP 1
     a = a(2:3)      ! Make sure that temporary creation is not broken.
     if ((len (a) .ne. 2) .or. (a .ne. "el")) STOP 2
     deallocate (a)
-    a = a           ! This would ICE too.
   end subroutine s
 end module m
 

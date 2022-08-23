@@ -9,4 +9,3 @@ size_t fn()
 {
     return find( "123" );
 }
-

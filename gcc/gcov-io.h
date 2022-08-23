@@ -60,14 +60,21 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    	file : int32:magic int32:version int32:stamp record*
 
-   The magic ident is different for the notes and the data files.  The
-   magic ident is used to determine the endianness of the file, when
-   reading.  The version is the same for both files and is derived
-   from gcc's version number. The stamp value is used to synchronize
-   note and data files and to synchronize merging within a data
-   file. It need not be an absolute time stamp, merely a ticker that
-   increments fast enough and cycles slow enough to distinguish
-   different compile/run/compile cycles.
+   A filename header may be used to provide a filename for the data in
+   a stream of data to support gcov in freestanding environments.  This
+   header is used by the merge-stream subcommand of the gcov-tool.  The
+   format of the filename header is
+
+	filename-header : int32:magic int32:version string
+
+   The magic ident is different for the notes and the data files as
+   well as the filename header.  The magic ident is used to determine
+   the endianness of the file, when reading.  The version is the same
+   for both files and is derived from gcc's version number. The stamp
+   value is used to synchronize note and data files and to synchronize
+   merging within a data file. It need not be an absolute time stamp,
+   merely a ticker that increments fast enough and cycles slow enough
+   to distinguish different compile/run/compile cycles.
 
    Although the ident and version are formally 32 bit numbers, they
    are derived from 4 character ASCII strings.  The version number
@@ -228,6 +235,7 @@ typedef uint64_t gcov_type_unsigned;
 /* File magic. Must not be palindromes.  */
 #define GCOV_DATA_MAGIC ((gcov_unsigned_t)0x67636461) /* "gcda" */
 #define GCOV_NOTE_MAGIC ((gcov_unsigned_t)0x67636e6f) /* "gcno" */
+#define GCOV_FILENAME_MAGIC ((gcov_unsigned_t)0x6763666e) /* "gcfn" */
 
 #include "version.h"
 
@@ -340,22 +348,19 @@ struct gcov_summary
 /* Functions for reading and writing gcov files. In libgcov you can
    open the file for reading then writing. Elsewhere you can open the
    file either for reading or for writing. When reading a file you may
-   use the gcov_read_* functions, gcov_sync, gcov_position, &
-   gcov_error. When writing a file you may use the gcov_write
-   functions, gcov_seek & gcov_error. When a file is to be rewritten
+   use the gcov_read_* functions, gcov_sync, gcov_position, and
+   gcov_error. When writing a file you may use the gcov_write*
+   functions and gcov_error. When a file is to be rewritten
    you use the functions for reading, then gcov_rewrite then the
    functions for writing.  Your file may become corrupted if you break
    these invariants.  */
-
-#if !IN_LIBGCOV
-GCOV_LINKAGE int gcov_open (const char */*name*/, int /*direction*/);
-#endif
 
 #if !IN_LIBGCOV || defined (IN_GCOV_TOOL)
 GCOV_LINKAGE int gcov_magic (gcov_unsigned_t, gcov_unsigned_t);
 #endif
 
 /* Available everywhere.  */
+GCOV_LINKAGE int gcov_open (const char *, int) ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE int gcov_close (void) ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE gcov_unsigned_t gcov_read_unsigned (void) ATTRIBUTE_HIDDEN;
 GCOV_LINKAGE gcov_type gcov_read_counter (void) ATTRIBUTE_HIDDEN;

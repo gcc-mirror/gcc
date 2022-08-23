@@ -17,4 +17,4 @@ int bar (struct st *s)
   foo (&s->a);
 }
 
-/* { dg-final { scan-tree-dump "\\\[1B, \\+INF\\\]" "evrp" } } */
+/* { dg-final { scan-tree-dump "\\\[1, \\+INF\\\]" "evrp" } } */

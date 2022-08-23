@@ -43,14 +43,13 @@
 --  compiling for the host, the frontend stores procedures marked with
 --  CUDA_Global in a hash table the key of which is the Node_Id of the package
 --  body that contains the CUDA_Global procedure. This is done in sem_prag.adb.
---  Once the declarations of a package body have been analyzed, variable, type
---  and procedure declarations necessary for the initialization of the CUDA
---  runtime are appended to the package that contains the CUDA_Global
---  procedure.
---
---  These declarations are used to register the CUDA kernel with the CUDA
---  runtime when the program is launched. Registering a CUDA kernel with the
---  CUDA runtime requires multiple function calls:
+--  When emitting an ALI file for a compilation unit, the frontend emits 'K'
+--  lines for each visible CUDA kernel (see Output_CUDA_Symbols in
+--  lib-writ.adb). This allows the binder to see all kernels in a program and
+--  emit code to register the kernels with the CUDA runtime.
+
+--  Registering a CUDA kernel with the CUDA runtime requires multiple function
+--  calls:
 --  - The first one registers the fat binary which corresponds to the package
 --    with the CUDA runtime.
 --  - Then, as many function calls as there are kernels in order to bind them
@@ -58,9 +57,7 @@
 --    fat binary.
 --  - The last call lets the CUDA runtime know that we are done initializing
 --    CUDA.
---  Expansion of the CUDA_Global aspect is triggered in sem_ch7.adb, during
---  analysis of the package. All of this expansion is performed in the
---  Insert_CUDA_Initialization procedure defined in GNAT_CUDA.
+--  All of that is performed by the code emitted by bindgen.adb.
 --
 --  Once a CUDA package is initialized, its kernels are ready to be used.
 --  Launching CUDA kernels is done by using the CUDA_Execute pragma. When
@@ -87,9 +84,12 @@ package GNAT_CUDA is
 
    procedure Expand_CUDA_Package (N : Node_Id);
    --  When compiling for the host:
-   --  - Generate code to register kernels with the CUDA runtime and
-   --    post-process kernels.
    --  - Empty content of CUDA_Global procedures.
    --  - Remove declarations of CUDA_Device entities.
+
+   function Get_CUDA_Kernels (Pack_Id : Entity_Id) return Elist_Id;
+   --  Returns an Elist of all procedures marked with pragma CUDA_Global that
+   --  are declared within package body Pack_Body. Returns No_Elist if Pack_Id
+   --  does not contain such procedures.
 
 end GNAT_CUDA;

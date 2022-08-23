@@ -36,16 +36,10 @@
 --  overflows in arithmetic operations passed on as formal generic subprogram
 --  parameters.
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced
---  by setting the corresponding assertion policy to Ignore. Postconditions
---  and contract cases should not be executed at runtime as well, in order
---  not to slow down the execution of these functions.
-
-pragma Assertion_Policy (Pre            => Ignore,
-                         Post           => Ignore,
-                         Contract_Cases => Ignore,
-                         Ghost          => Ignore);
+--  Preconditions in this unit are meant mostly for analysis, but will be
+--  activated at runtime depending on the assertion policy for preconditions at
+--  the program point of instantiation. These preconditions are simply checking
+--  bounds, so should not impact running time.
 
 package System.Generic_Array_Operations
   with SPARK_Mode

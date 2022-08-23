@@ -29,6 +29,12 @@ proc gcc_src_run_maintainers_verify_sh {} {
       return
     }
 
+    if { ![check_effective_target_python3_module "unidecode"] } {
+      unsupported "$script 'unidecode' python3 module is missing"
+      return
+    }
+
+
     set result [remote_exec host $contrib/$script $maintainers]
     set status [lindex $result 0]
     if { $status == 0 } then {

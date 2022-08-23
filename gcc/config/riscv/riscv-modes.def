@@ -19,4 +19,18 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+FLOAT_MODE (HF, 2, ieee_half_format);
 FLOAT_MODE (TF, 16, ieee_quad_format);
+
+/* TODO: According to RISC-V 'V' ISA spec, the maximun vector length can
+   be 65536 for a single vector register which means the vector mode in
+   GCC can be maximum = 65536 * 8 bits (LMUL=8).
+   However, 'GET_MODE_SIZE' is using poly_uint16/unsigned short which will
+   overflow if we specify vector-length = 65536. To support this feature,
+   we need to change the codes outside the RISC-V port. We will support it in
+   the future.  */
+#define MAX_BITSIZE_MODE_ANY_MODE (4096 * 8)
+
+/* Coefficient 1 is multiplied by the number of 64-bit/32-bit chunks in a vector
+   minus one.  */
+#define NUM_POLY_INT_COEFFS 2

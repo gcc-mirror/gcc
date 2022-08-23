@@ -22,9 +22,6 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-// Activate __glibcxx_assert within this file to shake out any bugs.
-#define _GLIBCXX_ASSERTIONS 1
-
 #include <charconv>
 
 #include <bit>
@@ -76,14 +73,10 @@ extern "C" int __sprintfieee128(char*, const char*, ...);
 # define LONG_DOUBLE_KIND LDK_UNSUPPORTED
 #endif
 
-#if defined _GLIBCXX_USE_FLOAT128 && __FLT128_MANT_DIG__ == 113
+// For now we only support __float128 when it's the powerpc64 __ieee128 type.
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && __FLT128_MANT_DIG__ == 113
 // Define overloads of std::to_chars for __float128.
 # define FLOAT128_TO_CHARS 1
-#endif
-
-// For now we only support __float128 when it's the powerpc64 __ieee128 type.
-#ifndef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
-# undef FLOAT128_TO_CHARS
 #endif
 
 #ifdef FLOAT128_TO_CHARS
@@ -91,6 +84,8 @@ using F128_type = __float128;
 #else
 using F128_type = void;
 #endif
+
+#include <stdint.h>
 
 namespace
 {
@@ -805,14 +800,14 @@ template<typename T>
     char leading_hexit;
     if constexpr (has_implicit_leading_bit)
       {
-	const unsigned nibble = effective_mantissa >> rounded_mantissa_bits;
+	const auto nibble = unsigned(effective_mantissa >> rounded_mantissa_bits);
 	__glibcxx_assert(nibble <= 2);
 	leading_hexit = '0' + nibble;
 	effective_mantissa &= ~(mantissa_t{0b11} << rounded_mantissa_bits);
       }
     else
       {
-	const unsigned nibble = effective_mantissa >> (rounded_mantissa_bits-4);
+	const auto nibble = unsigned(effective_mantissa >> (rounded_mantissa_bits-4));
 	__glibcxx_assert(nibble < 16);
 	leading_hexit = "0123456789abcdef"[nibble];
 	effective_mantissa &= ~(mantissa_t{0b1111} << (rounded_mantissa_bits-4));
@@ -857,7 +852,7 @@ template<typename T>
 	while (effective_mantissa != 0)
 	  {
 	    nibble_offset -= 4;
-	    const unsigned nibble = effective_mantissa >> nibble_offset;
+	    const auto nibble = unsigned(effective_mantissa >> nibble_offset);
 	    __glibcxx_assert(nibble < 16);
 	    *first++ = "0123456789abcdef"[nibble];
 	    ++written_hexits;
@@ -1118,6 +1113,7 @@ template<typename T>
       }
 
     __glibcxx_assert(false);
+    __builtin_unreachable();
   }
 
 template<typename T>
@@ -1206,6 +1202,8 @@ template<typename T>
 	    effective_precision = min(precision, max_eff_scientific_precision);
 	    output_specifier = "%.*Lg";
 	  }
+	else
+	  __builtin_unreachable();
 	const int excess_precision = (fmt != chars_format::general
 				      ? precision - effective_precision : 0);
 
@@ -1238,6 +1236,8 @@ template<typename T>
 	      output_length_upper_bound = sign + strlen("0");
 	    output_length_upper_bound += sizeof(radix) + effective_precision;
 	  }
+	else
+	  __builtin_unreachable();
 
 	// Do the sprintf into the local buffer.
 	char buffer[output_length_upper_bound+1];
@@ -1574,6 +1574,7 @@ template<typename T>
       }
 
     __glibcxx_assert(false);
+    __builtin_unreachable();
   }
 
 // Define the overloads for float.

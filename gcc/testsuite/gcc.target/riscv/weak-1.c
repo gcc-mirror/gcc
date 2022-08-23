@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcmodel=medany -mexplicit-relocs -O" } */
+/* { dg-options "-mcmodel=medany -mexplicit-relocs" } */
 
 /* Verify that the branch doesn't get optimized away.  */
 extern int weak_func(void) __attribute__ ((weak));

@@ -776,7 +776,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	    {
 	      /* Buffer big enough to format a 32-bit UINT_MAX into, plus
 		 the text.  */
-	      char temp[15];
+	      char temp[16];
 
 	      sprintf (temp, "arg:%d", i);
 	      print_node (file, temp, TREE_OPERAND (node, i), indent + 4);
@@ -886,7 +886,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	      {
 	      /* Buffer big enough to format a 32-bit UINT_MAX into, plus
 		 the text.  */
-		char temp[15];
+		char temp[16];
 		sprintf (temp, "elt:%d", i);
 		print_node (file, temp, TREE_VEC_ELT (node, i), indent + 4);
 	      }

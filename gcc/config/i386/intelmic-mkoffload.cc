@@ -370,7 +370,7 @@ generate_target_offloadend_file (const char *target_compiler)
 
 /* Generates object file with the host side descriptor.  */
 static const char *
-generate_host_descr_file (const char *host_compiler)
+generate_host_descr_file (const char *host_compiler, uint32_t omp_requires)
 {
   char *dump_filename = concat (dumppfx, "_host_descr.c", NULL);
   const char *src_filename = save_temps
@@ -386,39 +386,50 @@ generate_host_descr_file (const char *host_compiler)
   if (!src_file)
     fatal_error (input_location, "cannot open '%s'", src_filename);
 
+  fprintf (src_file, "#include <stdint.h>\n\n");
+
   fprintf (src_file,
 	   "extern const void *const __OFFLOAD_TABLE__;\n"
 	   "extern const void *const __offload_image_intelmic_start;\n"
 	   "extern const void *const __offload_image_intelmic_end;\n\n"
 
-	   "static const void *const __offload_target_data[] = {\n"
+	   "static const struct intelmic_data {\n"
+	   "  uintptr_t omp_requires_mask;\n"
+	   "  const void *const image_start;\n"
+	   "  const void *const image_end;\n"
+	   "} intelmic_data = {\n"
+	   "  %d,\n"
 	   "  &__offload_image_intelmic_start, &__offload_image_intelmic_end\n"
-	   "};\n\n");
+	   "};\n\n", omp_requires);
 
   fprintf (src_file,
 	   "#ifdef __cplusplus\n"
 	   "extern \"C\"\n"
 	   "#endif\n"
-	   "void GOMP_offload_register (const void *, int, const void *);\n"
+	   "void GOMP_offload_register_ver (unsigned, const void *, int, const void *);\n"
 	   "#ifdef __cplusplus\n"
 	   "extern \"C\"\n"
 	   "#endif\n"
-	   "void GOMP_offload_unregister (const void *, int, const void *);\n\n"
+	   "void GOMP_offload_unregister_ver (unsigned, const void *, int, const void *);\n\n"
 
 	   "__attribute__((constructor))\n"
 	   "static void\n"
 	   "init (void)\n"
 	   "{\n"
-	   "  GOMP_offload_register (&__OFFLOAD_TABLE__, %d, __offload_target_data);\n"
-	   "}\n\n", GOMP_DEVICE_INTEL_MIC);
+	   "  GOMP_offload_register_ver (%#x, &__OFFLOAD_TABLE__, %d, &intelmic_data);\n"
+	   "}\n\n",
+	   GOMP_VERSION_PACK (GOMP_VERSION, GOMP_VERSION_INTEL_MIC),
+	   GOMP_DEVICE_INTEL_MIC);
 
   fprintf (src_file,
 	   "__attribute__((destructor))\n"
 	   "static void\n"
 	   "fini (void)\n"
 	   "{\n"
-	   "  GOMP_offload_unregister (&__OFFLOAD_TABLE__, %d, __offload_target_data);\n"
-	   "}\n", GOMP_DEVICE_INTEL_MIC);
+	   "  GOMP_offload_unregister_ver (%#x, &__OFFLOAD_TABLE__, %d, &intelmic_data);\n"
+	   "}\n",
+	   GOMP_VERSION_PACK (GOMP_VERSION, GOMP_VERSION_INTEL_MIC),
+	   GOMP_DEVICE_INTEL_MIC);
 
   fclose (src_file);
 
@@ -462,7 +473,7 @@ generate_host_descr_file (const char *host_compiler)
 }
 
 static const char *
-prepare_target_image (const char *target_compiler, int argc, char **argv)
+prepare_target_image (const char *target_compiler, int argc, char **argv, uint32_t *omp_requires)
 {
   const char *target_descr_filename
     = generate_target_descr_file (target_compiler);
@@ -509,7 +520,26 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
   obstack_ptr_grow (&argv_obstack, "");
   obstack_ptr_grow (&argv_obstack, "-o");
   obstack_ptr_grow (&argv_obstack, target_so_filename);
+
+  char *omp_requires_file;
+  if (save_temps)
+    omp_requires_file = concat (dumppfx, ".mkoffload.omp_requires", NULL);
+  else
+    omp_requires_file = make_temp_file (".mkoffload.omp_requires");
+  temp_files[num_temps++] = omp_requires_file;
+  xputenv (concat ("GCC_OFFLOAD_OMP_REQUIRES_FILE=", omp_requires_file, NULL));
+
   compile_for_target (&argv_obstack);
+
+  unsetenv("GCC_OFFLOAD_OMP_REQUIRES_FILE");
+  FILE *in = fopen (omp_requires_file, "rb");
+  if (!in)
+    fatal_error (input_location, "cannot open omp_requires file %qs",
+		 omp_requires_file);
+  if (fread (omp_requires, sizeof (*omp_requires), 1, in) != 1)
+    fatal_error (input_location, "cannot read omp_requires file %qs",
+		 omp_requires_file);
+  fclose (in);
 
   /* Run objcopy.  */
   char *rename_section_opt
@@ -643,10 +673,13 @@ main (int argc, char **argv)
   if (!dumppfx)
     dumppfx = out_obj_filename;
 
-  const char *target_so_filename
-    = prepare_target_image (target_compiler, argc, argv);
+  uint32_t omp_requires;
 
-  const char *host_descr_filename = generate_host_descr_file (host_compiler);
+  const char *target_so_filename
+    = prepare_target_image (target_compiler, argc, argv, &omp_requires);
+
+  const char *host_descr_filename
+    = generate_host_descr_file (host_compiler, omp_requires);
 
   /* Perform partial linking for the target image and host side descriptor.
      As a result we'll get a finalized object file with all offload data.  */

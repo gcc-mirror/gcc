@@ -850,9 +850,12 @@ package body Exp_SPARK is
    --  Start of processing for Expand_SPARK_Potential_Renaming
 
    begin
-      --  Replace a reference to a renaming with the actual renamed object
+      --  Replace a reference to a renaming with the actual renamed object.
+      --  Protect against previous errors leaving no entity in N.
 
-      if Is_Object (Obj_Id) then
+      if Present (Obj_Id)
+        and then Is_Object (Obj_Id)
+      then
          Ren := Renamed_Object (Obj_Id);
 
          if Present (Ren) then

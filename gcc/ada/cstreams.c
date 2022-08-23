@@ -46,6 +46,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #ifdef _AIX
 /* needed to avoid conflicting declarations */
@@ -200,19 +201,6 @@ __gnat_full_name (char *nam, char *buffer)
      cannot handle more than 5 symbolic links in a full name, so we use the
      getcwd approach instead. */
   realpath (nam, buffer);
-
-#elif defined (__QNX__)
-
-  int length;
-
-  if (__gnat_is_absolute_path (nam, strlen (nam)))
-    realpath (nam, buffer);
-  else
-    {
-      length = __gnat_max_path_len;
-      __gnat_get_current_dir (buffer, &length);
-      strncat (buffer, nam, __gnat_max_path_len - length - 1);
-    }
 
 #elif defined (__vxworks)
 

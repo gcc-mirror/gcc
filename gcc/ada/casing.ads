@@ -78,12 +78,6 @@ package Casing is
    procedure Set_Casing (C : Casing_Type; D : Casing_Type := Mixed_Case);
    --  Uses Buf => Global_Name_Buffer
 
-   procedure Set_All_Upper_Case;
-   pragma Inline (Set_All_Upper_Case);
-   --  This procedure is called with an identifier name stored in Name_Buffer.
-   --  On return, the identifier is converted to all upper case. The call is
-   --  equivalent to Set_Casing (All_Upper_Case).
-
    function Determine_Casing (Ident : Text_Buffer) return Casing_Type;
    --  Determines the casing of the identifier/keyword string Ident. A special
    --  test is made for SPARK_Mode which is considered to be mixed case, since

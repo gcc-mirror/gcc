@@ -1028,6 +1028,7 @@ package body Exp_Dbug is
       E := First_Entity (Wrapper);
       while Present (E) loop
          if Nkind (Parent (E)) = N_Object_Declaration
+           and then Present (Corresponding_Generic_Association (Parent (E)))
            and then Is_Elementary_Type (Etype (E))
          then
             Loc := Sloc (Expression (Parent (E)));

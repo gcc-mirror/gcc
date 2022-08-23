@@ -1,5 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
+typedef struct FILE   FILE;
+
+FILE* fopen (const char*, const char*);
+int   fclose (FILE*);
+int fprintf (FILE *, const char *, ...);
+
+#define NULL ((void *)0)
 
 void
 test_1 (void)

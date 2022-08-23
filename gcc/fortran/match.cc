@@ -454,10 +454,11 @@ gfc_match_eos (void)
 /* Match a literal integer on the input, setting the value on
    MATCH_YES.  Literal ints occur in kind-parameters as well as
    old-style character length specifications.  If cnt is non-NULL it
-   will be set to the number of digits.  */
+   will be set to the number of digits.
+   When gobble_ws is false, do not skip over leading blanks.  */
 
 match
-gfc_match_small_literal_int (int *value, int *cnt)
+gfc_match_small_literal_int (int *value, int *cnt, bool gobble_ws)
 {
   locus old_loc;
   char c;
@@ -466,7 +467,8 @@ gfc_match_small_literal_int (int *value, int *cnt)
   old_loc = gfc_current_locus;
 
   *value = -1;
-  gfc_gobble_whitespace ();
+  if (gobble_ws)
+    gfc_gobble_whitespace ();
   c = gfc_next_ascii_char ();
   if (cnt)
     *cnt = 0;
@@ -608,17 +610,19 @@ gfc_match_label (void)
 /* See if the current input looks like a name of some sort.  Modifies
    the passed buffer which must be GFC_MAX_SYMBOL_LEN+1 bytes long.
    Note that options.cc restricts max_identifier_length to not more
-   than GFC_MAX_SYMBOL_LEN.  */
+   than GFC_MAX_SYMBOL_LEN.
+   When gobble_ws is false, do not skip over leading blanks.  */
 
 match
-gfc_match_name (char *buffer)
+gfc_match_name (char *buffer, bool gobble_ws)
 {
   locus old_loc;
   int i;
   char c;
 
   old_loc = gfc_current_locus;
-  gfc_gobble_whitespace ();
+  if (gobble_ws)
+    gfc_gobble_whitespace ();
 
   c = gfc_next_ascii_char ();
   if (!(ISALPHA (c) || (c == '_' && flag_allow_leading_underscore)))
@@ -1053,15 +1057,17 @@ cleanup:
 
 
 /* Tries to match the next non-whitespace character on the input.
-   This subroutine does not return MATCH_ERROR.  */
+   This subroutine does not return MATCH_ERROR.
+   When gobble_ws is false, do not skip over leading blanks.  */
 
 match
-gfc_match_char (char c)
+gfc_match_char (char c, bool gobble_ws)
 {
   locus where;
 
   where = gfc_current_locus;
-  gfc_gobble_whitespace ();
+  if (gobble_ws)
+    gfc_gobble_whitespace ();
 
   if (gfc_next_ascii_char () == c)
     return MATCH_YES;
@@ -1606,21 +1612,21 @@ gfc_match_if (gfc_statement *if_type)
   match ("assign", gfc_match_assign, ST_LABEL_ASSIGNMENT)
   match ("backspace", gfc_match_backspace, ST_BACKSPACE)
   match ("call", gfc_match_call, ST_CALL)
-  match ("change team", gfc_match_change_team, ST_CHANGE_TEAM)
+  match ("change% team", gfc_match_change_team, ST_CHANGE_TEAM)
   match ("close", gfc_match_close, ST_CLOSE)
   match ("continue", gfc_match_continue, ST_CONTINUE)
   match ("cycle", gfc_match_cycle, ST_CYCLE)
   match ("deallocate", gfc_match_deallocate, ST_DEALLOCATE)
   match ("end file", gfc_match_endfile, ST_END_FILE)
   match ("end team", gfc_match_end_team, ST_END_TEAM)
-  match ("error stop", gfc_match_error_stop, ST_ERROR_STOP)
-  match ("event post", gfc_match_event_post, ST_EVENT_POST)
-  match ("event wait", gfc_match_event_wait, ST_EVENT_WAIT)
+  match ("error% stop", gfc_match_error_stop, ST_ERROR_STOP)
+  match ("event% post", gfc_match_event_post, ST_EVENT_POST)
+  match ("event% wait", gfc_match_event_wait, ST_EVENT_WAIT)
   match ("exit", gfc_match_exit, ST_EXIT)
-  match ("fail image", gfc_match_fail_image, ST_FAIL_IMAGE)
+  match ("fail% image", gfc_match_fail_image, ST_FAIL_IMAGE)
   match ("flush", gfc_match_flush, ST_FLUSH)
   match ("forall", match_simple_forall, ST_FORALL)
-  match ("form team", gfc_match_form_team, ST_FORM_TEAM)
+  match ("form% team", gfc_match_form_team, ST_FORM_TEAM)
   match ("go to", gfc_match_goto, ST_GOTO)
   match ("if", match_arithmetic_if, ST_ARITHMETIC_IF)
   match ("inquire", gfc_match_inquire, ST_INQUIRE)
@@ -1634,10 +1640,10 @@ gfc_match_if (gfc_statement *if_type)
   match ("rewind", gfc_match_rewind, ST_REWIND)
   match ("stop", gfc_match_stop, ST_STOP)
   match ("wait", gfc_match_wait, ST_WAIT)
-  match ("sync all", gfc_match_sync_all, ST_SYNC_CALL);
-  match ("sync images", gfc_match_sync_images, ST_SYNC_IMAGES);
-  match ("sync memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
-  match ("sync team", gfc_match_sync_team, ST_SYNC_TEAM)
+  match ("sync% all", gfc_match_sync_all, ST_SYNC_CALL);
+  match ("sync% images", gfc_match_sync_images, ST_SYNC_IMAGES);
+  match ("sync% memory", gfc_match_sync_memory, ST_SYNC_MEMORY);
+  match ("sync% team", gfc_match_sync_team, ST_SYNC_TEAM)
   match ("unlock", gfc_match_unlock, ST_UNLOCK)
   match ("where", match_simple_where, ST_WHERE)
   match ("write", gfc_match_write, ST_WRITE)
@@ -2857,83 +2863,107 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 
   for (o = p, cnt = 0; o->state == COMP_DO && o->previous != NULL; cnt++)
     o = o->previous;
+
+  int count = 1;
   if (cnt > 0
       && o != NULL
-      && o->state == COMP_OMP_STRUCTURED_BLOCK
-      && (o->head->op == EXEC_OACC_LOOP
-	  || o->head->op == EXEC_OACC_KERNELS_LOOP
-	  || o->head->op == EXEC_OACC_PARALLEL_LOOP
-	  || o->head->op == EXEC_OACC_SERIAL_LOOP))
-    {
-      int collapse = 1;
-      gcc_assert (o->head->next != NULL
+      && o->state == COMP_OMP_STRUCTURED_BLOCK)
+    switch (o->head->op)
+      {
+      case EXEC_OACC_LOOP:
+      case EXEC_OACC_KERNELS_LOOP:
+      case EXEC_OACC_PARALLEL_LOOP:
+      case EXEC_OACC_SERIAL_LOOP:
+	gcc_assert (o->head->next != NULL
+		    && (o->head->next->op == EXEC_DO
+			|| o->head->next->op == EXEC_DO_WHILE)
+		    && o->previous != NULL
+		    && o->previous->tail->op == o->head->op);
+	if (o->previous->tail->ext.omp_clauses != NULL)
+	  {
+	    /* Both collapsed and tiled loops are lowered the same way, but are
+	       not compatible.  In gfc_trans_omp_do, the tile is prioritized. */
+	    if (o->previous->tail->ext.omp_clauses->tile_list)
+	      {
+		count = 0;
+		gfc_expr_list *el
+		  = o->previous->tail->ext.omp_clauses->tile_list;
+		for ( ; el; el = el->next)
+		  ++count;
+	      }
+	    else if (o->previous->tail->ext.omp_clauses->collapse > 1)
+	      count = o->previous->tail->ext.omp_clauses->collapse;
+	  }
+	if (st == ST_EXIT && cnt <= count)
+	  {
+	    gfc_error ("EXIT statement at %C terminating !$ACC LOOP loop");
+	    return MATCH_ERROR;
+	  }
+	if (st == ST_CYCLE && cnt < count)
+	  {
+	    gfc_error (o->previous->tail->ext.omp_clauses->tile_list
+		       ? G_("CYCLE statement at %C to non-innermost tiled "
+			    "!$ACC LOOP loop")
+		       : G_("CYCLE statement at %C to non-innermost collapsed "
+			    "!$ACC LOOP loop"));
+	    return MATCH_ERROR;
+	  }
+	break;
+      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+      case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+      case EXEC_OMP_TARGET_SIMD:
+      case EXEC_OMP_TASKLOOP_SIMD:
+      case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+      case EXEC_OMP_MASTER_TASKLOOP_SIMD:
+      case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
+      case EXEC_OMP_MASKED_TASKLOOP_SIMD:
+      case EXEC_OMP_PARALLEL_DO_SIMD:
+      case EXEC_OMP_DISTRIBUTE_SIMD:
+      case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+      case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+      case EXEC_OMP_LOOP:
+      case EXEC_OMP_PARALLEL_LOOP:
+      case EXEC_OMP_TEAMS_LOOP:
+      case EXEC_OMP_TARGET_PARALLEL_LOOP:
+      case EXEC_OMP_TARGET_TEAMS_LOOP:
+      case EXEC_OMP_DO:
+      case EXEC_OMP_PARALLEL_DO:
+      case EXEC_OMP_SIMD:
+      case EXEC_OMP_DO_SIMD:
+      case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
+      case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
+      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+      case EXEC_OMP_TARGET_PARALLEL_DO:
+      case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+
+	gcc_assert (o->head->next != NULL
 		  && (o->head->next->op == EXEC_DO
 		      || o->head->next->op == EXEC_DO_WHILE)
 		  && o->previous != NULL
 		  && o->previous->tail->op == o->head->op);
-      if (o->previous->tail->ext.omp_clauses != NULL)
-	{
-	  /* Both collapsed and tiled loops are lowered the same way, but are not
-	     compatible.  In gfc_trans_omp_do, the tile is prioritized.  */
-	  if (o->previous->tail->ext.omp_clauses->tile_list)
-	    {
-	      collapse = 0;
-	      gfc_expr_list *el = o->previous->tail->ext.omp_clauses->tile_list;
-	      for ( ; el; el = el->next)
-		++collapse;
-	    }
-	  else if (o->previous->tail->ext.omp_clauses->collapse > 1)
-	    collapse = o->previous->tail->ext.omp_clauses->collapse;
-	}
-      if (st == ST_EXIT && cnt <= collapse)
-	{
-	  gfc_error ("EXIT statement at %C terminating !$ACC LOOP loop");
-	  return MATCH_ERROR;
-	}
-      if (st == ST_CYCLE && cnt < collapse)
-	{
-	  gfc_error (o->previous->tail->ext.omp_clauses->tile_list
-		     ? G_("CYCLE statement at %C to non-innermost tiled"
-			  " !$ACC LOOP loop")
-		     : G_("CYCLE statement at %C to non-innermost collapsed"
-			  " !$ACC LOOP loop"));
-	  return MATCH_ERROR;
-	}
-    }
-  if (cnt > 0
-      && o != NULL
-      && (o->state == COMP_OMP_STRUCTURED_BLOCK)
-      && (o->head->op == EXEC_OMP_DO
-	  || o->head->op == EXEC_OMP_PARALLEL_DO
-	  || o->head->op == EXEC_OMP_SIMD
-	  || o->head->op == EXEC_OMP_DO_SIMD
-	  || o->head->op == EXEC_OMP_PARALLEL_DO_SIMD))
-    {
-      int count = 1;
-      gcc_assert (o->head->next != NULL
-		  && (o->head->next->op == EXEC_DO
-		      || o->head->next->op == EXEC_DO_WHILE)
-		  && o->previous != NULL
-		  && o->previous->tail->op == o->head->op);
-      if (o->previous->tail->ext.omp_clauses != NULL)
-	{
-	  if (o->previous->tail->ext.omp_clauses->collapse > 1)
-	    count = o->previous->tail->ext.omp_clauses->collapse;
-	  if (o->previous->tail->ext.omp_clauses->orderedc)
-	    count = o->previous->tail->ext.omp_clauses->orderedc;
-	}
-      if (st == ST_EXIT && cnt <= count)
-	{
-	  gfc_error ("EXIT statement at %C terminating !$OMP DO loop");
-	  return MATCH_ERROR;
-	}
-      if (st == ST_CYCLE && cnt < count)
-	{
-	  gfc_error ("CYCLE statement at %C to non-innermost collapsed"
-		     " !$OMP DO loop");
-	  return MATCH_ERROR;
-	}
-    }
+	if (o->previous->tail->ext.omp_clauses != NULL)
+	  {
+	    if (o->previous->tail->ext.omp_clauses->collapse > 1)
+	      count = o->previous->tail->ext.omp_clauses->collapse;
+	    if (o->previous->tail->ext.omp_clauses->orderedc)
+	      count = o->previous->tail->ext.omp_clauses->orderedc;
+	  }
+	if (st == ST_EXIT && cnt <= count)
+	  {
+	    gfc_error ("EXIT statement at %C terminating !$OMP DO loop");
+	    return MATCH_ERROR;
+	  }
+	if (st == ST_CYCLE && cnt < count)
+	  {
+	    gfc_error ("CYCLE statement at %C to non-innermost collapsed "
+		       "!$OMP DO loop");
+	    return MATCH_ERROR;
+	  }
+	break;
+      default:
+	break;
+      }
 
   /* Save the first statement in the construct - needed by the backend.  */
   new_st.ext.which_construct = p->construct;
@@ -2978,6 +3008,13 @@ Fortran 2008 has
    R856 allstop-stmt  is ALL STOP [ stop-code ]
    R857 stop-code     is scalar-default-char-constant-expr
                       or scalar-int-constant-expr
+Fortran 2018 has
+
+   R1160 stop-stmt       is STOP [ stop-code ] [ , QUIET = scalar-logical-expr]
+   R1161 error-stop-stmt is
+                      ERROR STOP [ stop-code ] [ , QUIET = scalar-logical-expr]
+   R1162 stop-code       is scalar-default-char-expr
+                         or scalar-int-expr
 
 For free-form source code, all standards contain a statement of the form:
 
@@ -2994,8 +3031,10 @@ static match
 gfc_match_stopcode (gfc_statement st)
 {
   gfc_expr *e = NULL;
+  gfc_expr *quiet = NULL;
   match m;
   bool f95, f03, f08;
+  char c;
 
   /* Set f95 for -std=f95.  */
   f95 = (gfc_option.allow_std == GFC_STD_OPT_F95);
@@ -3006,11 +3045,16 @@ gfc_match_stopcode (gfc_statement st)
   /* Set f08 for -std=f2008.  */
   f08 = (gfc_option.allow_std == GFC_STD_OPT_F08);
 
-  /* Look for a blank between STOP and the stop-code for F2008 or later.  */
-  if (gfc_current_form != FORM_FIXED && !(f95 || f03))
-    {
-      char c = gfc_peek_ascii_char ();
+  /* Plain STOP statement?  */
+  if (gfc_match_eos () == MATCH_YES)
+    goto checks;
 
+  /* Look for a blank between STOP and the stop-code for F2008 or later.
+     But allow for F2018's ,QUIET= specifier.  */
+  c = gfc_peek_ascii_char ();
+
+  if (gfc_current_form != FORM_FIXED && !(f95 || f03) && c != ',')
+    {
       /* Look for end-of-statement.  There is no stop-code.  */
       if (c == '\n' || c == '!' || c == ';')
         goto done;
@@ -3023,7 +3067,12 @@ gfc_match_stopcode (gfc_statement st)
 	}
     }
 
-  if (gfc_match_eos () != MATCH_YES)
+  if (c == ' ')
+    {
+      gfc_gobble_whitespace ();
+      c = gfc_peek_ascii_char ();
+    }
+  if (c != ',')
     {
       int stopcode;
       locus old_locus;
@@ -3053,10 +3102,19 @@ gfc_match_stopcode (gfc_statement st)
 	goto cleanup;
       if (m == MATCH_NO)
 	goto syntax;
-
-      if (gfc_match_eos () != MATCH_YES)
-	goto syntax;
     }
+
+  if (gfc_match (" , quiet = %e", &quiet) == MATCH_YES)
+    {
+      if (!gfc_notify_std (GFC_STD_F2018, "QUIET= specifier for %s at %L",
+			   gfc_ascii_statement (st), &quiet->where))
+	goto cleanup;
+    }
+
+  if (gfc_match_eos () != MATCH_YES)
+    goto syntax;
+
+checks:
 
   if (gfc_pure (NULL))
     {
@@ -3133,10 +3191,22 @@ gfc_match_stopcode (gfc_statement st)
 	  goto cleanup;
 	}
 
-      if (e->ts.type == BT_INTEGER && e->ts.kind != gfc_default_integer_kind)
+      if (e->ts.type == BT_INTEGER && e->ts.kind != gfc_default_integer_kind
+	  && !gfc_notify_std (GFC_STD_F2018,
+			      "STOP code at %L must be default integer KIND=%d",
+			      &e->where, (int) gfc_default_integer_kind))
+	goto cleanup;
+    }
+
+  if (quiet != NULL)
+    {
+      if (!gfc_simplify_expr (quiet, 0))
+	goto cleanup;
+
+      if (quiet->rank != 0)
 	{
-	  gfc_error ("STOP code at %L must be default integer KIND=%d",
-		     &e->where, (int) gfc_default_integer_kind);
+	  gfc_error ("QUIET specifier at %L must be a scalar LOGICAL",
+		     &quiet->where);
 	  goto cleanup;
 	}
     }
@@ -3159,6 +3229,7 @@ done:
     }
 
   new_st.expr1 = e;
+  new_st.expr2 = quiet;
   new_st.ext.stop_code = -1;
 
   return MATCH_YES;
@@ -3169,6 +3240,7 @@ syntax:
 cleanup:
 
   gfc_free_expr (e);
+  gfc_free_expr (quiet);
   return MATCH_ERROR;
 }
 
@@ -6650,7 +6722,7 @@ gfc_match_select_rank (void)
   if (m == MATCH_ERROR)
     return m;
 
-  m = gfc_match (" select rank ( ");
+  m = gfc_match (" select% rank ( ");
   if (m != MATCH_YES)
     return m;
 

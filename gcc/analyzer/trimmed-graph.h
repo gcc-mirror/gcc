@@ -61,7 +61,7 @@ public:
   : m_inner_node (inner_node) {}
 
   void dump_dot (graphviz_out *gv,
-		 const dump_args_t &args) const FINAL OVERRIDE;
+		 const dump_args_t &args) const final override;
 
 private:
   const exploded_node *m_inner_node;
@@ -77,7 +77,7 @@ class trimmed_edge : public dedge<tg_traits>
 		const exploded_edge *inner_edge);
 
   void dump_dot (graphviz_out *gv,
-		 const dump_args_t &args) const FINAL OVERRIDE;
+		 const dump_args_t &args) const final override;
 
  private:
   const exploded_edge *m_inner_edge;

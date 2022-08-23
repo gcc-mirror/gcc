@@ -259,11 +259,11 @@ class FileLogger : Logger
     file.close();
 }
 
-@safe unittest
+@system unittest
 {
     auto dl = cast(FileLogger) sharedLog;
     assert(dl !is null);
-    assert(dl.logLevel == LogLevel.all);
+    assert(dl.logLevel == LogLevel.info);
     assert(globalLogLevel == LogLevel.all);
 
     auto tl = cast(StdForwardLogger) stdThreadLocalLog;

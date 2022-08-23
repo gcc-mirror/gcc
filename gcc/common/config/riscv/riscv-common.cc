@@ -96,6 +96,9 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zvl32768b", "zvl16384b"},
   {"zvl65536b", "zvl32768b"},
 
+  {"zfh", "zfhmin"},
+  {"zfhmin", "f"},
+
   {NULL, NULL}
 };
 
@@ -165,6 +168,14 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zksh",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkt",   ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"zicboz",ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zicbom",ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zicbop",ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zk",    ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zkn",   ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zks",   ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"zve32x", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zve32f", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zve32d", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -185,6 +196,19 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zvl32768b", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zvl65536b", ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"zfh",       ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zfhmin",    ISA_SPEC_CLASS_NONE, 1, 0},
+
+  /* Terminate the list.  */
+  {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
+};
+
+/* Combine extensions defined in this table  */
+static const struct riscv_ext_version riscv_combine_info[] =
+{
+  {"zk",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zkn",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zks",  ISA_SPEC_CLASS_NONE, 1, 0},
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -375,7 +399,7 @@ riscv_subset_list::add (const char *subset, int major_version,
       else
 	error_at (
 	  m_loc,
-	  "%<-march=%s%>: Extension `%s' appear more than one time.",
+	  "%<-march=%s%>: extension %qs appear more than one time",
 	  m_arch,
 	  subset);
 
@@ -488,6 +512,7 @@ riscv_subset_list::to_string (bool version_p) const
 
   bool skip_zifencei = false;
   bool skip_zicsr = false;
+  bool i2p0 = false;
 
   /* For RISC-V ISA version 2.2 or earlier version, zicsr and zifencei is
      included in the base ISA.  */
@@ -496,6 +521,13 @@ riscv_subset_list::to_string (bool version_p) const
       skip_zifencei = true;
       skip_zicsr = true;
     }
+
+  for (subset = m_head; subset != NULL; subset = subset->next)
+    if (subset->name == "i")
+      {
+	i2p0 = subset->major_version == 2 && subset->minor_version == 0;
+	break;
+      }
 
 #ifndef HAVE_AS_MISA_SPEC
   /* Skip since older binutils doesn't recognize zicsr.  */
@@ -509,10 +541,12 @@ riscv_subset_list::to_string (bool version_p) const
 
   for (subset = m_head; subset != NULL; subset = subset->next)
     {
-      if (subset->implied_p && skip_zifencei && subset->name == "zifencei")
+      if (((subset->implied_p && skip_zifencei) || i2p0) &&
+	  subset->name == "zifencei")
 	continue;
 
-      if (subset->implied_p && skip_zicsr && subset->name == "zicsr")
+      if (((subset->implied_p && skip_zicsr) || i2p0) &&
+	  subset->name == "zicsr")
 	continue;
 
       /* For !version_p, we only separate extension with underline for
@@ -570,7 +604,7 @@ riscv_subset_list::lookup (const char *subset, int major_version,
 static const char *
 riscv_supported_std_ext (void)
 {
-  return "mafdqlcbjktpvn";
+  return "mafdqlcbkjtpvn";
 }
 
 /* Parsing subset version.
@@ -613,14 +647,14 @@ riscv_subset_list::parsing_subset_version (const char *ext,
 	  {
 	    if (!ISDIGIT (*(p+1)))
 	      {
-		error_at (m_loc, "%<-march=%s%>: Expect number "
-			  "after %<%dp%>.", m_arch, version);
+		error_at (m_loc, "%<-march=%s%>: expect number "
+			  "after %<%dp%>", m_arch, version);
 		return NULL;
 	      }
 	    if (!major_p)
 	      {
-		error_at (m_loc, "%<-march=%s%>: For %<%s%dp%dp?%>, version "
-			  "number with more than 2 level is not supported.",
+		error_at (m_loc, "%<-march=%s%>: for %<%s%dp%dp?%>, version "
+			  "number with more than 2 level is not supported",
 			  m_arch, ext, major, version);
 		return NULL;
 	      }
@@ -701,8 +735,8 @@ riscv_subset_list::parse_std_ext (const char *p)
 				  /* std_ext_p= */ true, &explicit_version_p);
       if (major_version != 0 || minor_version != 0)
 	{
-	  warning_at (m_loc, 0, "version of `g` will be omitted, please "
-				"specify version for individual extension.");
+	  warning_at (m_loc, 0, "version of %<g%> will be omitted, please "
+				"specify version for individual extension");
 	}
 
       /* We have special rule for G, we disallow rv32gm2p but allow rv32g_zicsr
@@ -800,6 +834,50 @@ riscv_subset_list::handle_implied_ext (riscv_subset_t *ext)
 
       if (lookup ("zifencei") == NULL)
 	add ("zifencei", true);
+    }
+}
+
+/* Check any combine extensions for EXT.  */
+void
+riscv_subset_list::handle_combine_ext ()
+{
+  const riscv_ext_version *combine_info;
+  const riscv_implied_info_t *implied_info;
+  bool is_combined = false;
+
+  for (combine_info = &riscv_combine_info[0]; combine_info->name;
+       ++combine_info)
+    {
+      /* Skip if combine extensions are present */
+      if (lookup (combine_info->name))
+	continue;
+
+      /* Find all extensions of the combine extension   */
+      for (implied_info = &riscv_implied_info[0]; implied_info->ext;
+	   ++implied_info)
+	{
+	  /* Skip if implied extension don't match combine extension */
+	  if (strcmp (combine_info->name, implied_info->ext) != 0)
+	    continue;
+
+	  if (lookup (implied_info->implied_ext))
+	    is_combined = true;
+	  else
+	    {
+	      is_combined = false;
+	      break;
+	    }
+	}
+
+      /* Add combine extensions */
+      if (is_combined)
+	{
+	  if (lookup (combine_info->name) == NULL)
+	    {
+	      add (combine_info->name, combine_info->major_version,
+		   combine_info->minor_version, false, true);
+	    }
+	}
     }
 }
 
@@ -901,12 +979,12 @@ riscv_subset_list::parse_multiletter_ext (const char *p,
 	}
 
       add (subset, major_version, minor_version, explicit_version_p, false);
-      free (subset);
       p += end_of_version - subset;
+      free (subset);
 
       if (*p != '\0' && *p != '_')
 	{
-	  error_at (m_loc, "%<-march=%s%>: %s must separate with _",
+	  error_at (m_loc, "%<-march=%s%>: %s must separate with %<_%>",
 		    m_arch, ext_type_str);
 	  return NULL;
 	}
@@ -982,6 +1060,8 @@ riscv_subset_list::parse (const char *arch, location_t loc)
       subset_list->handle_implied_ext (itr);
     }
 
+  subset_list->handle_combine_ext ();
+
   return subset_list;
 
 fail:
@@ -1040,22 +1120,26 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zksh",   &gcc_options::x_riscv_zk_subext, MASK_ZKSH},
   {"zkt",    &gcc_options::x_riscv_zk_subext, MASK_ZKT},
 
+  {"zicboz", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOZ},
+  {"zicbom", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOM},
+  {"zicbop", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOP},
+
   {"zve32x",   &gcc_options::x_target_flags, MASK_VECTOR},
   {"zve32f",   &gcc_options::x_target_flags, MASK_VECTOR},
   {"zve64x",   &gcc_options::x_target_flags, MASK_VECTOR},
   {"zve64f",   &gcc_options::x_target_flags, MASK_VECTOR},
   {"zve64d",   &gcc_options::x_target_flags, MASK_VECTOR},
 
-  /* We don't need to put complete EEW/EEW_FP info here, due to the
+  /* We don't need to put complete ELEN/ELEN_FP info here, due to the
      implication relation of vector extension.
-     e.g. v -> zve64d ... zve32x, so v has set MASK_VECTOR_EEW_FP_64,
-     MASK_VECTOR_EEW_FP_32, MASK_VECTOR_EEW_64 and MASK_VECTOR_EEW_32
+     e.g. v -> zve64d ... zve32x, so v has set MASK_VECTOR_ELEN_FP_64,
+     MASK_VECTOR_ELEN_FP_32, MASK_VECTOR_ELEN_64 and MASK_VECTOR_ELEN_32
      due to the extension implication.  */
-  {"zve32x",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_32},
-  {"zve32f",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_FP_32},
-  {"zve64x",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_64},
-  {"zve64f",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_FP_32},
-  {"zve64d",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_FP_64},
+  {"zve32x",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_32},
+  {"zve32f",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32},
+  {"zve64x",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_64},
+  {"zve64f",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32},
+  {"zve64d",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_64},
 
   {"zvl32b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL32B},
   {"zvl64b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL64B},
@@ -1070,6 +1154,8 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zvl32768b", &gcc_options::x_riscv_zvl_flags, MASK_ZVL32768B},
   {"zvl65536b", &gcc_options::x_riscv_zvl_flags, MASK_ZVL65536B},
 
+  {"zfhmin",    &gcc_options::x_riscv_zf_subext, MASK_ZFHMIN},
+  {"zfh",       &gcc_options::x_riscv_zf_subext, MASK_ZFH},
 
   {NULL, NULL, 0}
 };

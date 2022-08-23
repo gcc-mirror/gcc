@@ -24,4 +24,4 @@ bar (void)
     }
 }
 
-/* { dg-final { scan-assembler-times "bl.*__aarch64_cas2_acq_rel" 1 } } */
+/* { dg-final { scan-assembler-times "bl.*__aarch64_cas2_sync" 1 } } */

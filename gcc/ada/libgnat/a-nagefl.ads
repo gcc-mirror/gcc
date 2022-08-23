@@ -31,10 +31,10 @@
 ------------------------------------------------------------------------------
 
 --  This package provides the basic computational interface for the generic
---  elementary functions. The C library version interfaces with the routines
---  in the C mathematical library.
+--  elementary functions.
 
---  This version here is for use with normal Unix math functions.
+--  This version here delegates to interfaces that typically import as
+--  intrinsics the expected math functions.
 
 with Ada.Numerics.Aux_Long_Long_Float;
 with Ada.Numerics.Aux_Long_Float;

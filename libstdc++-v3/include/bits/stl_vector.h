@@ -62,8 +62,9 @@
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #endif
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L
 # include <compare>
+#define __cpp_lib_constexpr_vector 201907L
 #endif
 
 #include <debug/assertions.h>

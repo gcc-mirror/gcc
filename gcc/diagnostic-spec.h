@@ -45,9 +45,11 @@ public:
      NW_DANGLING = 1 << 5,
      /* All other unclassified warnings.  */
      NW_OTHER = 1 << 6,
+     /* Warnings about redundant calls.  */
+     NW_REDUNDANT = 1 << 7,
      /* All groups of warnings.  */
      NW_ALL = (NW_ACCESS | NW_LEXICAL | NW_NONNULL
-	       | NW_UNINIT | NW_VFLOW | NW_DANGLING | NW_OTHER)
+	       | NW_UNINIT | NW_VFLOW | NW_DANGLING | NW_REDUNDANT | NW_OTHER)
    };
 
   nowarn_spec_t (): m_bits () { }

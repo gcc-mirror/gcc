@@ -43,8 +43,6 @@ pragma Assertion_Policy (Pre                => Ignore,
                          Contract_Cases     => Ignore,
                          Ghost              => Ignore,
                          Subprogram_Variant => Ignore);
-pragma Warnings (Off, "postcondition does not mention function result");
---  True postconditions are used to avoid inlining for GNATprove
 
 with System.Val_Util; use System.Val_Util;
 
@@ -62,7 +60,24 @@ package System.Value_U is
          when False =>
             Value : Uns := 0;
       end case;
-   end record with Ghost;
+   end record;
+
+   function Wrap_Option (Value : Uns) return Uns_Option is
+     (Overflow => False, Value => Value)
+   with
+     Ghost;
+
+   function Only_Decimal_Ghost
+     (Str      : String;
+      From, To : Integer)
+      return Boolean
+   is
+      (for all J in From .. To => Str (J) in '0' .. '9')
+   with
+     Ghost,
+     Pre => From > To or else (From >= Str'First and then To <= Str'Last);
+   --  Ghost function that returns True if S has only decimal characters
+   --  from index From to index To.
 
    function Only_Hexa_Ghost (Str : String; From, To : Integer) return Boolean
    is
@@ -534,6 +549,46 @@ package System.Value_U is
    --  modulus does not exceed the range of System.Unsigned_Types.Unsigned. Str
    --  is the string argument of the attribute. Constraint_Error is raised if
    --  the string is malformed, or if the value is out of range.
+
+   procedure Prove_Iter_Scan_Based_Number_Ghost
+     (Str1, Str2 : String;
+      From, To : Integer;
+      Base     : Uns := 10;
+      Acc      : Uns := 0)
+   with
+     Ghost,
+     Subprogram_Variant => (Increases => From),
+     Pre  => Str1'Last /= Positive'Last
+       and then Str2'Last /= Positive'Last
+       and then
+         (From > To or else (From >= Str1'First and then To <= Str1'Last))
+       and then
+         (From > To or else (From >= Str2'First and then To <= Str2'Last))
+       and then Only_Hexa_Ghost (Str1, From, To)
+       and then (for all J in From .. To => Str1 (J) = Str2 (J)),
+     Post =>
+       Scan_Based_Number_Ghost (Str1, From, To, Base, Acc)
+         = Scan_Based_Number_Ghost (Str2, From, To, Base, Acc);
+   --  Ghost lemma used in the proof of 'Image implementation, to prove the
+   --  preservation of Scan_Based_Number_Ghost across an update in the string
+   --  in lower indexes.
+
+   procedure Prove_Scan_Only_Decimal_Ghost
+     (Str : String;
+      Val : Uns)
+   with
+     Ghost,
+     Pre  => Str'Last /= Positive'Last
+       and then Str'Length >= 2
+       and then Str (Str'First) = ' '
+       and then Only_Decimal_Ghost (Str, Str'First + 1, Str'Last)
+       and then Scan_Based_Number_Ghost (Str, Str'First + 1, Str'Last)
+         = Wrap_Option (Val),
+     Post => Is_Unsigned_Ghost (Slide_If_Necessary (Str))
+       and then Value_Unsigned (Str) = Val;
+   --  Ghost lemma used in the proof of 'Image implementation, to prove that
+   --  the result of Value_Unsigned on a decimal string is the same as the
+   --  result of Scan_Based_Number_Ghost.
 
 private
 

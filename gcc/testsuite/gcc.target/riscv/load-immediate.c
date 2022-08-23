@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc -mabi=lp64d -O2" } */
+/* { dg-options "-march=rv64gc -mabi=lp64d" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 /* Check that we don't have unnecessary load immediate instructions.  */
 void

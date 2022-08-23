@@ -2580,7 +2580,7 @@ static unsigned reg_save_order[] =
   REG_B14, REG_A15
 };
 
-#define N_SAVE_ORDER (sizeof reg_save_order / sizeof *reg_save_order)
+#define N_SAVE_ORDER (ARRAY_SIZE (reg_save_order))
 
 /* Compute the layout of the stack frame and store it in FRAME.  */
 

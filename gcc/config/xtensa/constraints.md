@@ -27,6 +27,11 @@
  "Boolean registers @code{b0}-@code{b15}; only available if the Xtensa
   Boolean Option is configured.")
 
+(define_register_constraint "c" "TARGET_WINDOWED_ABI ? NO_REGS : ISC_REGS"
+ "@internal
+  General-purpose AR registers for indirect sibling calls, @code{a2}-
+  @code{a8}.")
+
 (define_register_constraint "d" "TARGET_DENSITY ? AR_REGS: NO_REGS"
  "@internal
   All AR registers, including sp, but only if the Xtensa Code Density
@@ -92,7 +97,7 @@
  "An integer constant in the range @minus{}32-95 for use with MOVI.N
   instructions."
  (and (match_code "const_int")
-      (match_test "ival >= -32 && ival <= 95")))
+      (match_test "IN_RANGE (ival, -32, 95)")))
 
 (define_constraint "N"
  "An unsigned 8-bit integer constant shifted left by 8 bits for use
@@ -103,7 +108,7 @@
 (define_constraint "O"
  "An integer constant that can be used in ADDI.N instructions."
  (and (match_code "const_int")
-      (match_test "ival == -1 || (ival >= 1 && ival <= 15)")))
+      (match_test "ival == -1 || IN_RANGE (ival, 1, 15)")))
 
 (define_constraint "P"
  "An integer constant that can be used as a mask value in an EXTUI
@@ -113,8 +118,10 @@
 
 (define_constraint "Y"
  "A constant that can be used in relaxed MOVI instructions."
- (and (match_code "const_int,const_double,const,symbol_ref,label_ref")
-      (match_test "TARGET_AUTO_LITPOOLS")))
+ (ior (and (match_code "const_int,const_double,const,symbol_ref,label_ref")
+	   (match_test "TARGET_AUTO_LITPOOLS"))
+      (and (match_code "const_int")
+	   (match_test "can_create_pseudo_p ()"))))
 
 ;; Memory constraints.  Do not use define_memory_constraint here.  Doing so
 ;; causes reload to force some constants into the constant pool, but since

@@ -142,8 +142,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     }
 
-    constexpr auto __atomic_spin_count_1 = 12;
-    constexpr auto __atomic_spin_count_2 = 4;
+    constexpr auto __atomic_spin_count_relax = 12;
+    constexpr auto __atomic_spin_count = 16;
 
     struct __default_spin_policy
     {
@@ -157,18 +157,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       __atomic_spin(_Pred& __pred, _Spin __spin = _Spin{ }) noexcept
       {
-	for (auto __i = 0; __i < __atomic_spin_count_1; ++__i)
+	for (auto __i = 0; __i < __atomic_spin_count; ++__i)
 	  {
 	    if (__pred())
 	      return true;
-	    __detail::__thread_relax();
-	  }
 
-	for (auto __i = 0; __i < __atomic_spin_count_2; ++__i)
-	  {
-	    if (__pred())
-	      return true;
-	    __detail::__thread_yield();
+	    if (__i < __atomic_spin_count_relax)
+	      __detail::__thread_relax();
+	    else
+	      __detail::__thread_yield();
 	  }
 
 	while (__spin())
@@ -209,33 +206,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       _M_enter_wait() noexcept
-      { __atomic_fetch_add(&_M_wait, 1, __ATOMIC_ACQ_REL); }
+      { __atomic_fetch_add(&_M_wait, 1, __ATOMIC_SEQ_CST); }
 
       void
       _M_leave_wait() noexcept
-      { __atomic_fetch_sub(&_M_wait, 1, __ATOMIC_ACQ_REL); }
+      { __atomic_fetch_sub(&_M_wait, 1, __ATOMIC_RELEASE); }
 
       bool
       _M_waiting() const noexcept
       {
 	__platform_wait_t __res;
-	__atomic_load(&_M_wait, &__res, __ATOMIC_ACQUIRE);
-	return __res > 0;
+	__atomic_load(&_M_wait, &__res, __ATOMIC_SEQ_CST);
+	return __res != 0;
       }
 
       void
-      _M_notify(const __platform_wait_t* __addr, bool __all, bool __bare) noexcept
+      _M_notify(__platform_wait_t* __addr, [[maybe_unused]] bool __all,
+		bool __bare) noexcept
       {
-	if (!(__bare || _M_waiting()))
-	  return;
-
 #ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
-	__platform_notify(__addr, __all);
+	if (__addr == &_M_ver)
+	  {
+	    __atomic_fetch_add(__addr, 1, __ATOMIC_SEQ_CST);
+	    __all = true;
+	  }
+
+	if (__bare || _M_waiting())
+	  __platform_notify(__addr, __all);
 #else
-	if (__all)
+	{
+	  lock_guard<mutex> __l(_M_mtx);
+	  __atomic_fetch_add(__addr, 1, __ATOMIC_RELAXED);
+	}
+	if (__bare || _M_waiting())
 	  _M_cv.notify_all();
-	else
-	  _M_cv.notify_one();
 #endif
       }
 
@@ -258,11 +262,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__platform_wait(__addr, __old);
 #else
 	__platform_wait_t __val;
-	__atomic_load(__addr, &__val, __ATOMIC_RELAXED);
+	__atomic_load(__addr, &__val, __ATOMIC_SEQ_CST);
 	if (__val == __old)
 	  {
 	    lock_guard<mutex> __l(_M_mtx);
-	    _M_cv.wait(_M_mtx);
+	    __atomic_load(__addr, &__val, __ATOMIC_RELAXED);
+	    if (__val == __old)
+	      _M_cv.wait(_M_mtx);
 	  }
 #endif // __GLIBCXX_HAVE_PLATFORM_WAIT
       }
@@ -300,20 +306,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    , _M_addr(_S_wait_addr(__addr, &_M_w._M_ver))
 	  { }
 
-	bool
-	_M_laundered() const
-	{ return _M_addr == &_M_w._M_ver; }
-
 	void
-	_M_notify(bool __all, bool __bare = false)
-	{
-	  if (_M_laundered())
-	    {
-	      __atomic_fetch_add(_M_addr, 1, __ATOMIC_ACQ_REL);
-	      __all = true;
-	    }
-	  _M_w._M_notify(_M_addr, __all, __bare);
-	}
+	_M_notify(bool __all, bool __bare = false) noexcept
+	{ _M_w._M_notify(_M_addr, __all, __bare); }
 
 	template<typename _Up, typename _ValFn,
 		 typename _Spin = __default_spin_policy>
@@ -332,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    else
 	      {
-		__atomic_load(__addr, &__val, __ATOMIC_RELAXED);
+		__atomic_load(__addr, &__val, __ATOMIC_ACQUIRE);
 	      }
 	    return __atomic_spin(__pred, __spin);
 	  }
@@ -353,7 +348,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     __platform_wait_t& __val,
 		     _Spin __spin = _Spin{ })
 	  {
-	    __atomic_load(__addr, &__val, __ATOMIC_RELAXED);
+	    __atomic_load(__addr, &__val, __ATOMIC_ACQUIRE);
 	    return __atomic_spin(__pred, __spin);
 	  }
 
@@ -388,12 +383,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  void
 	  _M_do_wait_v(_Tp __old, _ValFn __vfn)
 	  {
-	    __platform_wait_t __val;
-	    if (__base_type::_M_do_spin_v(__old, __vfn, __val))
-	      return;
-
 	    do
 	      {
+		__platform_wait_t __val;
+		if (__base_type::_M_do_spin_v(__old, __vfn, __val))
+		  return;
 		__base_type::_M_w._M_do_wait(__base_type::_M_addr, __val);
 	      }
 	    while (__detail::__atomic_compare(__old, __vfn()));

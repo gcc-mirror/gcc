@@ -58,7 +58,6 @@ Feature-testing recommendations for C++</link>.
   <tbody>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>
 	<code>constexpr std::hardware_{constructive,destructive}_interference_size</code>
       </entry>
@@ -67,7 +66,7 @@ Feature-testing recommendations for C++</link>.
 	P0154R1
 	</link>
       </entry>
-      <entry align="center"> No </entry>
+      <entry align="center"> 12.1 </entry>
       <entry> <code>__cpp_lib_hardware_interference_size >= 201603</code> </entry>
     </row>
 
@@ -266,14 +265,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry> Deprecating Vestigial Library Parts in C++17 </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0174r2.html">
 	P0174R2
 	</link>
       </entry>
-      <entry align="center"> No  (kept for backwards compatibility)</entry>
+      <entry align="center"> 12.1 </entry>
       <entry/>
     </row>
 
@@ -518,7 +516,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 8.1 </entry>
-      <entry><code> __cpp_lib_constexpr_char_traits >= 201611 </code></entry>
+      <entry><code> __cpp_lib_constexpr_string >= 201611 </code></entry>
     </row>
 
     <row>
@@ -1011,10 +1009,9 @@ since C++14 and the implementation is complete.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>21.6.5</entry>
       <entry>Hardware interference size</entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
     <row>

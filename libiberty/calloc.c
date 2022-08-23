@@ -16,13 +16,13 @@ Uses @code{malloc} to allocate storage for @var{nelem} objects of
 #include <stddef.h>
 
 /* For systems with larger pointers than ints, this must be declared.  */
-PTR malloc (size_t);
-void bzero (PTR, size_t);
+void *malloc (size_t);
+void bzero (void *, size_t);
 
-PTR
+void *
 calloc (size_t nelem, size_t elsize)
 {
-  register PTR ptr;  
+  register void *ptr;
 
   if (nelem == 0 || elsize == 0)
     nelem = elsize = 1;

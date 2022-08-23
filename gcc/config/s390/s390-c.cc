@@ -484,7 +484,8 @@ s390_expand_overloaded_builtin (location_t loc,
     case S390_OVERLOADED_BUILTIN_s390_vec_step:
       if (TREE_CODE (TREE_TYPE ((*arglist)[0])) != VECTOR_TYPE)
 	{
-	  error_at (loc, "builtin vec_step can only be used on vector types.");
+	  error_at (loc, "builtin %qs can only be used on vector types",
+		    "vec_step");
 	  return error_mark_node;
 	}
       return build_int_cst (NULL_TREE,
@@ -905,7 +906,7 @@ s390_resolve_overloaded_builtin (location_t loc,
       if (ob_flags & B_INT)
 	{
 	  error_at (loc,
-		    "builtin %qF is for GCC internal use only.",
+		    "builtin %qF is for GCC internal use only",
 		    ob_fndecl);
 	  return error_mark_node;
 	}
@@ -913,7 +914,7 @@ s390_resolve_overloaded_builtin (location_t loc,
     }
 
   if (ob_flags & B_DEP)
-    warning_at (loc, 0, "builtin %qF is deprecated.", ob_fndecl);
+    warning_at (loc, 0, "builtin %qF is deprecated", ob_fndecl);
 
   if (!TARGET_VX && (ob_flags & B_VX))
     {
@@ -1021,7 +1022,7 @@ s390_resolve_overloaded_builtin (location_t loc,
     }
 
   if (bflags_overloaded_builtin_var[last_match_index] & B_DEP)
-    warning_at (loc, 0, "%qs matching variant is deprecated.",
+    warning_at (loc, 0, "%qs matching variant is deprecated",
 		IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
 
   /* Overloaded variants which have MAX set as low level builtin are

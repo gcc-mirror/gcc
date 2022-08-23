@@ -38,7 +38,6 @@ generic
    type Int is range <>;
 
 package System.Image_D is
-   pragma Pure;
 
    procedure Image_Decimal
      (V     : Int;

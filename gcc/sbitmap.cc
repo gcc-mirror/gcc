@@ -997,7 +997,7 @@ test_bit_in_range ()
 /* Run all of the selftests within this file.  */
 
 void
-sbitmap_c_tests ()
+sbitmap_cc_tests ()
 {
   test_set_range ();
   test_bit_in_range ();

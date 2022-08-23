@@ -51,19 +51,19 @@ void test()
     MT s = MyStruct!int(1);
     MT[] arr = [s, 2 * s, 3 * s, 4 * s, 5 * s, 6 * s];
     MT[] result = new MT[arr.length];
-    
+
     result[] = arr[] + s;
     result[] = s + arr[];
-    
+
     result[] = arr[] - s;
     result[] = s - arr[];
-    
+
     result[] = arr[] * s;
     result[] = s * arr[];
-    
+
     result[] = arr[] / s;
     result[] = s / arr[];
-    
+
     result[] = arr[] ^^ s;
     result[] = s ^^ arr[];
 }

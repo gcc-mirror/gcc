@@ -5,7 +5,7 @@ void main()
         this(int i) { instances++; }
         this(this) { instances++; }
         ~this() { instances--; }
-        static size_t instances = 0;	
+        static size_t instances = 0;
     }
 
     struct Range11934

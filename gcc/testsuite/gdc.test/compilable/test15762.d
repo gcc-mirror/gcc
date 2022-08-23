@@ -10,4 +10,3 @@ void main() @safe {
 	auto d = cast(const(ubyte)[]) c;
 	auto e = cast(const(Windows1252Char)[]) c;
 }
-

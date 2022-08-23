@@ -31,6 +31,10 @@ vcelfb_mem (vector unsigned int *a)
   return vec_float (*a);
 }
 
+/* The following immediates are being converted and directly stored
+   in the literal pool so no explicit conversion is necessary.   */
+/* { dg-final { scan-assembler-times "vl\t%v\[0-9\]+,\.L\[0-9\]+\-\.L\[0-9\]+\\(%r\[0-9\]+\\)" 2 } } */
+
 vector float
 vcefb_imm ()
 {
@@ -43,5 +47,5 @@ vcelfb_imm ()
   return vec_float ((vector unsigned int){ 1, 2 });
 }
 
-/* { dg-final { scan-assembler-times "vcefb\t" 3 } } */
-/* { dg-final { scan-assembler-times "vcelfb\t" 3 } } */
+/* { dg-final { scan-assembler-times "vcefb\t" 2 } } */
+/* { dg-final { scan-assembler-times "vcelfb\t" 2 } } */

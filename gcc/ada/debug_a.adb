@@ -25,6 +25,7 @@
 
 with Atree;          use Atree;
 with Debug;          use Debug;
+with Namet;          use Namet;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinput;         use Sinput;
@@ -33,7 +34,7 @@ with Output;         use Output;
 package body Debug_A is
 
    Debug_A_Depth : Natural := 0;
-   --  Output for the debug A flag is preceded by a sequence of vertical bar
+   --  Output for the -gnatda switch is preceded by a sequence of vertical bar
    --  characters corresponding to the recursion depth of the actions being
    --  recorded (analysis, expansion, resolution and evaluation of nodes)
    --  This variable records the depth.
@@ -66,7 +67,7 @@ package body Debug_A is
 
    procedure Debug_A_Entry (S : String; N : Node_Id) is
    begin
-      --  Output debugging information if -gnatda flag set
+      --  Output debugging information if -gnatda switch set
 
       if Debug_Flag_A then
          Debug_Output_Astring;
@@ -77,6 +78,19 @@ package body Debug_A is
          Write_Location (Sloc (N));
          Write_Str ("  ");
          Write_Str (Node_Kind'Image (Nkind (N)));
+
+         --  Print the Chars field, if appropriate
+
+         case Nkind (N) is
+            when N_Has_Chars =>
+               Write_Str (" """);
+               if Present (Chars (N)) then
+                  Write_Str (Get_Name_String (Chars (N)));
+               end if;
+               Write_Str ("""");
+            when others => null;
+         end case;
+
          Write_Eol;
       end if;
 
@@ -115,7 +129,7 @@ package body Debug_A is
          end if;
       end loop;
 
-      --  Output debugging information if -gnatda flag set
+      --  Output debugging information if -gnatda switch set
 
       if Debug_Flag_A then
          Debug_Output_Astring;
@@ -132,18 +146,8 @@ package body Debug_A is
    --------------------------
 
    procedure Debug_Output_Astring is
-      Vbars : constant String := "|||||||||||||||||||||||||";
    begin
-      if Debug_A_Depth > Vbars'Length then
-         for I in Vbars'Length .. Debug_A_Depth loop
-            Write_Char ('|');
-         end loop;
-
-         Write_Str (Vbars);
-
-      else
-         Write_Str (Vbars (1 .. Debug_A_Depth));
-      end if;
+      Write_Str ((1 .. Debug_A_Depth => '|'));
    end Debug_Output_Astring;
 
 end Debug_A;

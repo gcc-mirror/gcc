@@ -52,6 +52,9 @@ case "${target}" in
   s390*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
+  sparc*-*-solaris2.11*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
   x86_64-*-freebsd* | i?86-*-freebsd*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;

@@ -13,4 +13,3 @@ alias int* x;
 
 static assert(__traits(getFunctionVariadicStyle, 1) == "none");
 static assert(__traits(getFunctionVariadicStyle, x) == "none");
-

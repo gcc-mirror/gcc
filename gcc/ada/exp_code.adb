@@ -471,11 +471,7 @@ package body Exp_Code is
       --  Case of list of arguments
 
       elsif Nkind (Arg) = N_Aggregate then
-         if Expressions (Arg) = No_List then
-            Operand_Var := Empty;
-         else
-            Operand_Var := First (Expressions (Arg));
-         end if;
+         Operand_Var := First (Expressions (Arg));
 
       --  Otherwise must be default (no operands) case
 

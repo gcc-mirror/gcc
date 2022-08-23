@@ -43,10 +43,10 @@ fail_compilation/nogc3.d(35): Error: `@nogc` function `nogc3.testCall` cannot ca
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc3.d(52): Error: function `nogc3.testClosure1` is `@nogc` yet allocates closures with the GC
-fail_compilation/nogc3.d(55):        nogc3.testClosure1.bar closes over variable x at fail_compilation/nogc3.d(54)
-fail_compilation/nogc3.d(64): Error: function `nogc3.testClosure3` is `@nogc` yet allocates closures with the GC
-fail_compilation/nogc3.d(67):        nogc3.testClosure3.bar closes over variable x at fail_compilation/nogc3.d(66)
+fail_compilation/nogc3.d(52): Error: function `nogc3.testClosure1` is `@nogc` yet allocates closure for `testClosure1()` with the GC
+fail_compilation/nogc3.d(55):        `nogc3.testClosure1.bar` closes over variable `x` at fail_compilation/nogc3.d(54)
+fail_compilation/nogc3.d(64): Error: function `nogc3.testClosure3` is `@nogc` yet allocates closure for `testClosure3()` with the GC
+fail_compilation/nogc3.d(67):        `nogc3.testClosure3.bar` closes over variable `x` at fail_compilation/nogc3.d(66)
 ---
 */
 @nogc auto testClosure1()

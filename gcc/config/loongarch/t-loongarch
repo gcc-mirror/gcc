@@ -1,0 +1,71 @@
+# Copyright (C) 2021-2022 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Canonical target triplet from config.gcc
+LA_MULTIARCH_TRIPLET = $(patsubst LA_MULTIARCH_TRIPLET=%,%,$\
+$(filter LA_MULTIARCH_TRIPLET=%,$(tm_defines)))
+
+# String definition header
+LA_STR_H = $(srcdir)/config/loongarch/loongarch-str.h
+
+# String definition header
+$(LA_STR_H): s-loongarch-str ; @true
+s-loongarch-str: $(srcdir)/config/loongarch/genopts/genstr.sh \
+	$(srcdir)/config/loongarch/genopts/loongarch-strings
+	$(SHELL) $(srcdir)/config/loongarch/genopts/genstr.sh header \
+    $(srcdir)/config/loongarch/genopts/loongarch-strings > \
+    tmp-loongarch-str.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-loongarch-str.h \
+		$(LA_STR_H)
+	$(STAMP) s-loongarch-str
+
+loongarch-c.o: $(srcdir)/config/loongarch/loongarch-c.cc $(CONFIG_H) $(SYSTEM_H) \
+	coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H) $(TARGET_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/loongarch/loongarch-c.cc
+
+loongarch-builtins.o: $(srcdir)/config/loongarch/loongarch-builtins.cc $(CONFIG_H) \
+	$(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) $(RECOG_H) langhooks.h \
+	$(DIAGNOSTIC_CORE_H) $(OPTABS_H) $(srcdir)/config/loongarch/loongarch-ftypes.def \
+	$(srcdir)/config/loongarch/loongarch-modes.def
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/loongarch/loongarch-builtins.cc
+
+loongarch-driver.o : $(srcdir)/config/loongarch/loongarch-driver.cc $(LA_STR_H) \
+	$(CONFIG_H) $(SYSTEM_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+loongarch-opts.o: $(srcdir)/config/loongarch/loongarch-opts.cc $(LA_STR_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+loongarch-cpu.o: $(srcdir)/config/loongarch/loongarch-cpu.cc $(LA_STR_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+loongarch-def.o: $(srcdir)/config/loongarch/loongarch-def.c $(LA_STR_H)
+	$(CC) -c $(ALL_CFLAGS) $(INCLUDES) $<
+
+$(srcdir)/config/loongarch/loongarch.opt: s-loongarch-opt ; @true
+s-loongarch-opt: $(srcdir)/config/loongarch/genopts/genstr.sh \
+	$(srcdir)/config/loongarch/genopts/loongarch.opt.in \
+	$(srcdir)/config/loongarch/genopts/loongarch-strings $(LA_STR_H)
+	$(SHELL) $(srcdir)/config/loongarch/genopts/genstr.sh opt \
+    $(srcdir)/config/loongarch/genopts/loongarch.opt.in \
+    > tmp-loongarch.opt
+	$(SHELL) $(srcdir)/../move-if-change tmp-loongarch.opt \
+    $(srcdir)/config/loongarch/loongarch.opt
+	$(STAMP) s-loongarch-opt

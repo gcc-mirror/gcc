@@ -421,14 +421,12 @@ do_jump (tree exp, rtx_code_label *if_false_label,
       break;
 #endif
 
-    case NOP_EXPR:
+    CASE_CONVERT:
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == COMPONENT_REF
           || TREE_CODE (TREE_OPERAND (exp, 0)) == BIT_FIELD_REF
           || TREE_CODE (TREE_OPERAND (exp, 0)) == ARRAY_REF
           || TREE_CODE (TREE_OPERAND (exp, 0)) == ARRAY_RANGE_REF)
         goto normal;
-      /* FALLTHRU */
-    case CONVERT_EXPR:
       /* If we are narrowing the operand, we have to do the compare in the
          narrower mode.  */
       if ((TYPE_PRECISION (TREE_TYPE (exp))
@@ -1133,7 +1131,7 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	      profile_probability cprob
 		= profile_probability::guessed_always ();
 	      if (first_code == UNORDERED)
-		cprob = cprob.apply_scale (1, 100);
+		cprob /= 100;
 	      else if (first_code == ORDERED)
 		cprob = cprob.apply_scale (99, 100);
 	      else

@@ -28,7 +28,7 @@ doTests00000001 (vector unsigned __int128 a_sources [],
 	  vector unsigned __int128 b = b_sources [j];
 	  vector unsigned __int128 c = c_sources [k];
 	  vector unsigned __int128 result;
-	  result = vec_ternarylogic (a, b, c, 0xfff); /* { dg-error "8-bit unsigned literal" } */
+	  result = vec_ternarylogic (a, b, c, 0xfff); /* { dg-error "literal between 0 and 255, inclusive" } */
 	  vector unsigned __int128 intended = (a & b & c);
 	  if (!vector_equal (result, intended))
 	    abort ();
@@ -47,7 +47,7 @@ doTests11100101 (vector unsigned __int128 a_sources [],
 	  vector unsigned __int128 b = b_sources [j];
 	  vector unsigned __int128 c = c_sources [k];
 	  vector unsigned __int128 result;
-	  result = vec_ternarylogic (a, b, c, -1); /* { dg-error "8-bit unsigned literal" } */
+	  result = vec_ternarylogic (a, b, c, -1); /* { dg-error "literal between 0 and 255, inclusive" } */
 	  vector unsigned __int128 intended = { 0 };
 	  // Supposed to be a ? c: nand (b,c)
 	  for (int l = 0; l < 1; l++)
@@ -80,7 +80,7 @@ doTests11110011 (vector unsigned __int128 a_sources [],
 	  vector unsigned __int128 b = b_sources [j];
 	  vector unsigned __int128 c = c_sources [k];
 	  vector unsigned __int128 result;
-	  result = vec_ternarylogic (a, b, c, i);  /* { dg-error "8-bit unsigned literal" } */
+	  result = vec_ternarylogic (a, b, c, i);  /* { dg-error "literal between 0 and 255, inclusive" } */
 	  vector unsigned __int128 intended = { 0 };
 	  for (int i = 0; i < 1; i++)
 	    intended [i] = b [i] | ~(a [i] & c [i]);

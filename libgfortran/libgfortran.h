@@ -58,8 +58,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* If we're support quad-precision floating-point type, include the
    header to our support library.  */
-#ifdef HAVE_FLOAT128
-#  include "quadmath_weak.h"
+#if defined(HAVE_FLOAT128) && !defined(USE_IEC_60559)
+# include "quadmath_weak.h"
 #endif
 
 #ifdef __MINGW32__
@@ -247,7 +247,7 @@ extern int __mingw_snprintf (char *, size_t, const char *, ...)
 
    Another advantage for GCC's builtins for these type-generic macros
    is that it handles floating-point types that the system headers
-   may not support (like __float128).  */
+   may not support (like _Float128).  */
 
 #undef isnan
 #define isnan(x) __builtin_isnan(x)
@@ -322,6 +322,8 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
 # ifdef HAVE_GFC_REAL_16
 #  ifdef GFC_REAL_16_IS_LONG_DOUBLE
 #   define GFC_REAL_16_INFINITY __builtin_infl ()
+#  elif defined GFC_REAL_16_USE_IEC_60559
+#   define GFC_REAL_16_INFINITY __builtin_inff128 ()
 #  else
 #   define GFC_REAL_16_INFINITY __builtin_infq ()
 #  endif
@@ -343,6 +345,8 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
 # ifdef HAVE_GFC_REAL_16
 #  ifdef GFC_REAL_16_IS_LONG_DOUBLE
 #   define GFC_REAL_16_QUIET_NAN __builtin_nanl ("")
+#  elif defined GFC_REAL_16_USE_IEC_60559
+#   define GFC_REAL_16_QUIET_NAN __builtin_nanf128 ("")
 #  else
 #   define GFC_REAL_16_QUIET_NAN nanq ("")
 #  endif
@@ -1956,59 +1960,59 @@ internal_proto(cshift1_16_c17);
 
 /* Prototypes for the POWER __ieee128 functions.  */
 #ifdef POWER_IEEE128
-extern __float128 __acoshieee128 (__float128)
+extern _Float128 __acoshieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __acosieee128 (__float128)
+extern _Float128 __acosieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __asinhieee128 (__float128)
+extern _Float128 __asinhieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __asinieee128 (__float128)
+extern _Float128 __asinieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __atan2ieee128 (__float128)
+extern _Float128 __atan2ieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __atanhieee128 (__float128)
+extern _Float128 __atanhieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __atanieee128 (__float128)
+extern _Float128 __atanieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __copysignieee128 (__float128, __float128)
+extern _Float128 __copysignieee128 (_Float128, _Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __coshieee128 (__float128)
+extern _Float128 __coshieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __cosieee128 (__float128)
+extern _Float128 __cosieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __erfcieee128 (__float128)
+extern _Float128 __erfcieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __erfieee128 (__float128)
+extern _Float128 __erfieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __expieee128 (__float128)
+extern _Float128 __expieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __fabsieee128 (__float128)
+extern _Float128 __fabsieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __fmaieee128 (__float128, __float128, __float128)
+extern _Float128 __fmaieee128 (_Float128, _Float128, _Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __fmodieee128 (__float128, __float128)
+extern _Float128 __fmodieee128 (_Float128, _Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __jnieee128 (int, __float128)
+extern _Float128 __jnieee128 (int, _Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __log10ieee128 (__float128)
+extern _Float128 __log10ieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __logieee128 (__float128)
+extern _Float128 __logieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __powieee128 (__float128)
+extern _Float128 __powieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __sinhieee128 (__float128)
+extern _Float128 __sinhieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __sinieee128 (__float128)
+extern _Float128 __sinieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __sqrtieee128 (__float128)
+extern _Float128 __sqrtieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __tanhieee128 (__float128)
+extern _Float128 __tanhieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __tanieee128 (__float128)
+extern _Float128 __tanieee128 (_Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __ynieee128 (int , __float128)
+extern _Float128 __ynieee128 (int , _Float128)
   __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __strtoieee128 (const char *, char **)
+extern _Float128 __strtoieee128 (const char *, char **)
   __attribute__ ((__nothrow__, __leaf__));
 extern int __snprintfieee128 (char *, size_t, const char *, ...)
   __attribute__ ((__nothrow__));
