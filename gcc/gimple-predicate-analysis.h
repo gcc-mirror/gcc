@@ -22,10 +22,6 @@
 #ifndef GIMPLE_PREDICATE_ANALYSIS_H_INCLUDED
 #define GIMPLE_PREDICATE_ANALYSIS_H_INCLUDED
 
-#define MAX_NUM_CHAINS 8
-#define MAX_CHAIN_LEN 5
-#define MAX_POSTDOM_CHECK 8
-#define MAX_SWITCH_CASES 40
 
 /* Represents a simple Boolean predicate.  */
 struct pred_info

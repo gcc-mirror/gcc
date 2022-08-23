@@ -46,6 +46,19 @@
 
 #define DEBUG_PREDICATE_ANALYZER 1
 
+/* In our predicate normal form we have MAX_NUM_CHAINS or predicates
+   and in those MAX_CHAIN_LEN (inverted) and predicates.  */
+#define MAX_NUM_CHAINS 8
+#define MAX_CHAIN_LEN 5
+
+/* When enumerating paths between two blocks this limits the number of
+   post-dominator skips between two edges possibly defining a predicate.  */
+#define MAX_POSTDOM_CHECK 8
+
+/* The limit for the number of switch cases when we do the linear search
+   for the case corresponding to an edge.  */
+#define MAX_SWITCH_CASES 40
+
 /* Return true if, when BB1 is postdominating BB2, BB1 is a loop exit.  */
 
 static bool
@@ -1034,6 +1047,36 @@ is_degenerate_phi (gimple *phi, pred_info *pred)
   return true;
 }
 
+/* If compute_control_dep_chain bailed out due to limits this routine
+   tries to build a partial sparse path using dominators.  Returns
+   path edges whose predicates are always true when reaching E.  */
+
+static void
+simple_control_dep_chain (vec<edge>& chain, basic_block from, basic_block to)
+{
+  if (!dominated_by_p (CDI_DOMINATORS, to, from))
+    return;
+
+  basic_block src = to;
+  while (src != from
+	 && chain.length () <= MAX_CHAIN_LEN)
+    {
+      basic_block dest = src;
+      src = get_immediate_dominator (CDI_DOMINATORS, src);
+      edge pred_e;
+      if (single_pred_p (dest)
+	  && (pred_e = find_edge (src, dest)))
+	chain.safe_push (pred_e);
+    }
+}
+
+static void
+simple_control_dep_chain (vec<edge>& chain, basic_block from, edge to)
+{
+  chain.safe_push (to);
+  simple_control_dep_chain (chain, from, to->src);
+}
+
 /* Recursively compute the control dependence chains (paths of edges)
    from the dependent basic block, DEP_BB, up to the dominating basic
    block, DOM_BB (the head node of a chain should be dominated by it),
@@ -1273,20 +1316,8 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
 	  /* If compute_control_dep_chain bailed out due to limits
 	     build a partial sparse path using dominators.  Collect
 	     only edges whose predicates are always true when reaching E.  */
-	  cur_chain.truncate (0);
-	  cur_chain.quick_push (e);
-	  basic_block src = e->src;
-	  while (src->index != ENTRY_BLOCK
-		 && cur_chain.length () <= MAX_CHAIN_LEN)
-	    {
-	      basic_block dest = src;
-	      src = get_immediate_dominator (CDI_DOMINATORS, src);
-	      edge pred_e;
-	      if (single_pred_p (dest)
-		  && (pred_e = find_edge (src, dest)))
-		cur_chain.quick_push (pred_e);
-	    }
-	  dep_chains[0] = cur_chain.copy ();
+	  simple_control_dep_chain (dep_chains[0],
+				    ENTRY_BLOCK_PTR_FOR_FN (cfun), e);
 	  num_chains++;
 	}
 
@@ -1737,8 +1768,13 @@ predicate::predicate (basic_block def_bb, basic_block use_bb, func_t &eval)
   auto_vec<edge> dep_chains[MAX_NUM_CHAINS];
   auto_vec<edge, MAX_CHAIN_LEN + 1> cur_chain;
 
-  compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains,
-			     cur_chain, &num_calls);
+  if (!compute_control_dep_chain (cd_root, use_bb, dep_chains, &num_chains,
+				  cur_chain, &num_calls))
+    {
+      gcc_assert (num_chains == 0);
+      simple_control_dep_chain (dep_chains[0], cd_root, use_bb);
+      num_chains++;
+    }
 
   if (DEBUG_PREDICATE_ANALYZER && dump_file)
     {
