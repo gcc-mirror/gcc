@@ -1305,22 +1305,123 @@ operator_plus::wi_fold (irange &r, tree type,
   value_range_with_overflow (r, type, new_lb, new_ub, ov_lb, ov_ub);
 }
 
+// Given addition or subtraction, determine the possible NORMAL ranges and
+// OVERFLOW ranges given an OFFSET range.  ADD_P is true for addition.
+// Return the relation that exists between the LHS and OP1 in order for the
+// NORMAL range to apply.
+// a return value of VREL_VARYING means no ranges were applicable.
+
+static relation_kind
+plus_minus_ranges (irange &r_ov, irange &r_normal, const irange &offset,
+		bool add_p)
+{
+  relation_kind kind = VREL_VARYING;
+  // For now, only deal with constant adds.  This could be extended to ranges
+  // when someone is so motivated.
+  if (!offset.singleton_p () || offset.zero_p ())
+    return kind;
+
+  // Always work with a positive offset.  ie a+ -2 -> a-2  and a- -2 > a+2
+  wide_int off = offset.lower_bound ();
+  if (wi::neg_p (off, SIGNED))
+    {
+      add_p = !add_p;
+      off = wi::neg (off);
+    }
+
+  wi::overflow_type ov;
+  tree type = offset.type ();
+  unsigned prec = TYPE_PRECISION (type);
+  wide_int ub;
+  wide_int lb;
+  // calculate the normal range and relation for the operation.
+  if (add_p)
+    {
+      //  [ 0 , INF - OFF]
+      lb = wi::zero (prec);
+      ub = wi::sub (wi::to_wide (vrp_val_max (type)), off, UNSIGNED, &ov);
+      kind = VREL_GT;
+    }
+  else
+    {
+      //  [ OFF, INF ]
+      lb = off;
+      ub = wi::to_wide (vrp_val_max (type));
+      kind = VREL_LT;
+    }
+  int_range<2> normal_range (type, lb, ub);
+  int_range<2> ov_range (type, lb, ub, VR_ANTI_RANGE);
+
+  r_ov = ov_range;
+  r_normal = normal_range;
+  return kind;
+}
+
+// Once op1 has been calculated by operator_plus or operator_minus, check
+// to see if the relation passed causes any part of the calculation to
+// be not possible.  ie
+// a_2 = b_3 + 1  with a_2 < b_3 can refine the range of b_3 to [INF, INF]
+// and that further refines a_2 to [0, 0].
+// R is the value of op1, OP2 is the offset being added/subtracted, REL is the
+// relation between LHS relatoin OP1  and ADD_P is true for PLUS, false for
+// MINUS.    IF any adjustment can be made, R will reflect it.
+
+static void
+adjust_op1_for_overflow (irange &r, const irange &op2, relation_kind rel,
+			 bool add_p)
+{
+  tree type = r.type ();
+  // Check for unsigned overflow and calculate the overflow part.
+  signop s = TYPE_SIGN (type);
+  if (!TYPE_OVERFLOW_WRAPS (type) || s == SIGNED)
+    return;
+
+  // Only work with <, <=, >, >= relations.
+  if (!relation_lt_le_gt_ge_p (rel))
+    return;
+
+  // Get the ranges for this offset.
+  int_range_max normal, overflow;
+  relation_kind k = plus_minus_ranges (overflow, normal, op2, add_p);
+
+  // VREL_VARYING means there are no adjustments.
+  if (k == VREL_VARYING)
+    return;
+
+  // If the relations match use the normal range, otherwise use overflow range.
+  if (relation_intersect (k, rel) == k)
+    r.intersect (normal);
+  else
+    r.intersect (overflow);
+  return;
+}
+
 bool
 operator_plus::op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
-			  relation_kind rel ATTRIBUTE_UNUSED) const
+			  relation_kind rel) const
 {
-  return range_op_handler (MINUS_EXPR, type).fold_range (r, type, lhs, op2);
+  if (lhs.undefined_p ())
+    return false;
+  // Start with the default operation.
+  range_op_handler minus (MINUS_EXPR, type);
+  if (!minus)
+    return false;
+  bool res = minus.fold_range (r, type, lhs, op2);
+  // Check for a relation refinement.
+  if (res)
+    adjust_op1_for_overflow (r, op2, rel, true /* PLUS_EXPR */);
+  return res;
 }
 
 bool
 operator_plus::op2_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op1,
-			  relation_kind rel ATTRIBUTE_UNUSED) const
+			  relation_kind rel) const
 {
-  return range_op_handler (MINUS_EXPR, type).fold_range (r, type, lhs, op1);
+  return op1_range (r, type, lhs, op1, rel);
 }
 
 
@@ -1472,7 +1573,17 @@ operator_minus::op1_range (irange &r, tree type,
 			   const irange &op2,
 			   relation_kind rel ATTRIBUTE_UNUSED) const
 {
-  return range_op_handler (PLUS_EXPR, type).fold_range (r, type, lhs, op2);
+  if (lhs.undefined_p ())
+    return false;
+  // Start with the default operation.
+  range_op_handler minus (PLUS_EXPR, type);
+  if (!minus)
+    return false;
+  bool res = minus.fold_range (r, type, lhs, op2);
+  if (res)
+    adjust_op1_for_overflow (r, op2, rel, false /* PLUS_EXPR */);
+  return res;
+
 }
 
 bool

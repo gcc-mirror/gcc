@@ -78,6 +78,8 @@ relation_kind relation_union (relation_kind r1, relation_kind r2);
 relation_kind relation_intersect (relation_kind r1, relation_kind r2);
 relation_kind relation_negate (relation_kind r);
 relation_kind relation_swap (relation_kind r);
+inline bool relation_lt_le_gt_ge_p (relation_kind r)
+				    { return (r >= VREL_LT && r <= VREL_GE); }
 void print_relation (FILE *f, relation_kind rel);
 
 class relation_oracle
