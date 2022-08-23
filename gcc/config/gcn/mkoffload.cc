@@ -1082,6 +1082,7 @@ main (int argc, char **argv)
 		    }
 		  else
 		    dbgobj = make_temp_file (".mkoffload.dbg.o");
+		  obstack_ptr_grow (&files_to_cleanup, dbgobj);
 
 		  /* If the copy fails then just ignore it.  */
 		  if (copy_early_debug_info (argv[ix], dbgobj))
