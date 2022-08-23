@@ -1,3 +1,11 @@
+2022-08-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106557
+	* simplify.cc (gfc_simplify_ibclr): Ensure consistent results of
+	the simplification by dropping a redundant memory representation
+	of argument x.
+	(gfc_simplify_ibset): Likewise.
+
 2022-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/46539

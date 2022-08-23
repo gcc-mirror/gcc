@@ -1,3 +1,31 @@
+2022-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105678
+	* doc/xml/manual/using.xml: Document -lstdc++_libbacktrace
+	requirement for using std::stacktrace. Also adjust -frtti and
+	-fexceptions to document non-default (i.e. negative) forms.
+	* doc/html/*: Regenerate.
+
+2022-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106695
+	* include/bits/std_thread.h (thread::_State_impl): Forward
+	individual arguments to _Invoker constructor.
+	(thread::_Invoker): Add constructor. Delete copies.
+	* include/std/future (__future_base::_Deferred_state): Forward
+	individual arguments to _Invoker constructor.
+	(__future_base::_Async_state_impl): Likewise.
+	* testsuite/30_threads/async/106695.cc: New test.
+	* testsuite/30_threads/thread/106695.cc: New test.
+
+2022-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106607
+	* include/bits/regex_compiler.tcc (_Compiler::_M_cur_int_value):
+	Use built-ins to check for integer overflow in back-reference
+	number.
+	* testsuite/28_regex/basic_regex/106607.cc: New test.
+
 2022-08-17  Keef Aragon  <keef.aragon@konscious.net>
 
 	* libsupc++/eh_alloc.cc (pool::free): Inverse comparison.

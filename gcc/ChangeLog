@@ -1,3 +1,96 @@
+2022-08-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.md (pru_<code>di3): New alternative for
+	two operands but without earlyclobber.
+
+2022-08-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.md (prumov<mode>, mov<mode>): Add
+	variants for loading -1 consts.
+
+2022-08-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/106564
+	* config/pru/constraints.md (Um): New constraint for -1.
+	(Uf): New constraint for IOR fill-bytes constants.
+	(Uz): New constraint for AND zero-bytes constants.
+	* config/pru/predicates.md (const_fillbytes_operand): New
+	predicate for IOR fill-bytes constants.
+	(const_zerobytes_operand): New predicate for AND zero-bytes
+	constants.
+	* config/pru/pru-protos.h (pru_output_sign_extend): Remove.
+	(struct pru_byterange): New struct to describe a byte range.
+	(pru_calc_byterange): New declaration.
+	* config/pru/pru.cc (pru_rtx_costs): Add penalty for
+	64-bit zero-extend.
+	(pru_output_sign_extend): Remove.
+	(pru_calc_byterange): New helper function to extract byte
+	range info from a constant.
+	(pru_print_operand): Remove 'y' and 'z' print modifiers.
+	* config/pru/pru.md (zero_extendqidi2): New pattern.
+	(zero_extendhidi2): New pattern.
+	(zero_extendsidi2): New pattern.
+	(extend<EQS0:mode><EQD:mode>2): Rewrite as an expand.
+	(@pru_ior_fillbytes<mode>): New pattern.
+	(@pru_and_zerobytes<mode>): New pattern.
+	(<code>di3): Rewrite as an expand and handle ZERO and FILL
+	special cases.
+	(pru_<code>di3): New name for <code>di3.
+	(@cbranch_qbbx_const_<BIT_TEST:code><HIDI:mode>): New pattern to
+	handle bit-test for 64-bit registers.
+
+2022-08-22  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.h (predicate::m_use_expr): Remove.
+	(predicate::def_expr): Likewise.
+	(predicate::use_expr): Likewise.
+	(predicate::expr): Likewise.
+	* gimple-predicate-analysis.cc (predicate::def_expr): Remove.
+	(predicate::use_expr): Likewise.
+	(predicate::expr): Likewise.
+	(predicate::is_use_guarded): Do not build m_use_expr.
+
+2022-08-22  Martin Liska  <mliska@suse.cz>
+
+	PR lto/106700
+	* configure.ac: Detect O_NONBLOCK flag for open.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* opts-common.cc (jobserver_info::connect): Set is_connected
+	  properly based on O_NONBLOCK.
+	* opts-jobserver.h (struct jobserver_info): Add is_connected
+	  member variable.
+
+2022-08-22  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* simplify-rtx.cc (test_vector_subregs_fore_back): Make first value
+	and repeat value different.
+
+2022-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR lto/106686
+	* lto-wrapper.cc (free_array_of_ptrs): Move before tool_cleanup.
+	(tool_cleanup): Unlink offload_names.
+	(compile_offload_image): Take filename argument to set it early.
+	(compile_images_for_offload_targets): Update call; set
+	offload_names to NULL after freeing the array.
+
+2022-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105937
+	* tree-ssa-uninit.cc (find_uninit_use): Do not queue PHIs
+	on backedges.
+	(execute_late_warn_uninitialized): Mark backedges.
+
+2022-08-22  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (predicate::use_cannot_happen):
+	If the use is guarded with multiple predicate paths compute
+	the predicates intersection before going forward.  When
+	compute_control_dep_chain wasn't able to come up with at
+	least one path from function entry to the PHI edge compute
+	a conservative sparse path instead.
+
 2022-08-20  Lulu Cheng  <chenglulu@loongson.cn>
 
 	* config/loongarch/loongarch-opts.cc: Allow cmodel to be extreme.
