@@ -1728,7 +1728,12 @@ namespace __variant
     {
       // Get the silly case of visiting no variants out of the way first.
       if constexpr (sizeof...(_Variants) == 0)
-	return std::forward<_Visitor>(__visitor)();
+	{
+	  if constexpr (is_void_v<_Result_type>)
+	    return (void) std::forward<_Visitor>(__visitor)();
+	  else
+	    return std::forward<_Visitor>(__visitor)();
+	}
       else
 	{
 	  constexpr size_t __max = 11; // "These go to eleven."
