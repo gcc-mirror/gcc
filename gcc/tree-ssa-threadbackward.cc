@@ -719,7 +719,11 @@ back_threader_profitability::possibly_profitable_path_p
 	      gimple *stmt = gsi_stmt (gsi);
 	      if (gimple_call_internal_p (stmt, IFN_UNIQUE)
 		  || gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
-		return false;
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fputc ('\n', dump_file);
+		  return false;
+		}
 	      /* Do not count empty statements and labels.  */
 	      if (gimple_code (stmt) != GIMPLE_NOP
 		  && !is_gimple_debug (stmt))
@@ -821,6 +825,8 @@ back_threader_profitability::possibly_profitable_path_p
 		    && (m_n_insns * param_fsm_scale_path_stmts
 			>= param_max_jump_thread_duplication_stmts));
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fputc ('\n', dump_file);
   return true;
 }
 
@@ -947,6 +953,8 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
 		 "non-empty latch\n");
       return false;
     }
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fputc ('\n', dump_file);
   return true;
 }
 
