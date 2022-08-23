@@ -1978,7 +1978,8 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
   else
     ni_minus_gap = niters;
 
-  unsigned HOST_WIDE_INT const_vf;
+  /* To silence some unexpected warnings, simply initialize to 0. */
+  unsigned HOST_WIDE_INT const_vf = 0;
   if (vf.is_constant (&const_vf)
       && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
     {
