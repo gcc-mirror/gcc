@@ -676,6 +676,7 @@ languages = { language=go;	gcc-check-target=check-go;
 languages = { language=d;	gcc-check-target=check-d;
 				lib-check-target=check-target-libphobos; };
 languages = { language=jit;	gcc-check-target=check-jit; };
+languages = { language=rust;	gcc-check-target=check-rust; };
 
 // Toplevel bootstrap
 bootstrap_stage = { id=1 ; };
