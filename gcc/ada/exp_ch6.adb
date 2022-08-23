@@ -315,6 +315,15 @@ package body Exp_Ch6 is
    --  Expand simple return from function. In the case where we are returning
    --  from a function body this is called by Expand_N_Simple_Return_Statement.
 
+   function Has_BIP_Extra_Formal
+     (E    : Entity_Id;
+      Kind : BIP_Formal_Kind) return Boolean;
+   --  Given a frozen subprogram, subprogram type, entry or entry family,
+   --  return True if E has the BIP extra formal associated with Kind. It must
+   --  be invoked with a frozen entity or a subprogram type of a dispatching
+   --  call since we can only rely on the availability of the extra formals
+   --  on these entities.
+
    procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id);
    --  Insert the Post_Call list previously produced by routine Expand_Actuals
    --  or Expand_Call_Helper into the tree.
@@ -3804,7 +3813,7 @@ package body Exp_Ch6 is
         and then Thunk_Entity (Current_Scope) = Subp
         and then Present (Extra_Formals (Subp))
       then
-         pragma Assert (Extra_Formals_Match_OK (Current_Scope, Subp));
+         pragma Assert (Present (Extra_Formals (Current_Scope)));
 
          declare
             Target_Formal : Entity_Id;
@@ -7185,9 +7194,8 @@ package body Exp_Ch6 is
    --------------------------
 
    function Has_BIP_Extra_Formal
-     (E              : Entity_Id;
-      Kind           : BIP_Formal_Kind;
-      Must_Be_Frozen : Boolean := True) return Boolean
+     (E    : Entity_Id;
+      Kind : BIP_Formal_Kind) return Boolean
    is
       Extra_Formal : Entity_Id := Extra_Formals (E);
 
@@ -7197,7 +7205,7 @@ package body Exp_Ch6 is
       --  extra formals are added when the target subprogram is frozen; see
       --  Expand_Dispatching_Call).
 
-      pragma Assert ((Is_Frozen (E) or else not Must_Be_Frozen)
+      pragma Assert (Is_Frozen (E)
         or else (Ekind (E) = E_Subprogram_Type
                    and then Is_Dispatch_Table_Entity (E))
         or else (Is_Dispatching_Operation (E)
@@ -7826,7 +7834,7 @@ package body Exp_Ch6 is
                or else
              (Kind = E_Subprogram_Type and then Typ /= Standard_Void_Type))
         and then Is_Build_In_Place_Result_Type (Typ)
-        and then not Has_Foreign_Convention (E);
+        and then not (Is_Imported (E) and then Has_Foreign_Convention (E));
    end Is_Build_In_Place_Function;
 
    -------------------------------------
@@ -8555,11 +8563,6 @@ package body Exp_Ch6 is
       --  initialization expression of the object to Empty, which would be
       --  illegal Ada, and would cause gigi to misallocate X.
 
-      Is_OK_Return_Object : constant Boolean :=
-        Is_Return_Object (Obj_Def_Id)
-          and then
-        not Has_Foreign_Convention (Return_Applies_To (Scope (Obj_Def_Id)));
-
    --  Start of processing for Make_Build_In_Place_Call_In_Object_Declaration
 
    begin
@@ -8612,7 +8615,7 @@ package body Exp_Ch6 is
       --  the result object is in a different (transient) scope, so won't cause
       --  freezing.
 
-      if Definite and then not Is_OK_Return_Object then
+      if Definite and then not Is_Return_Object (Obj_Def_Id) then
 
          --  The presence of an address clause complicates the build-in-place
          --  expansion because the indicated address must be processed before
@@ -8695,7 +8698,7 @@ package body Exp_Ch6 is
       --  really be directly built in place in the aggregate and not in a
       --  temporary. ???)
 
-      if Is_OK_Return_Object then
+      if Is_Return_Object (Obj_Def_Id) then
          Pass_Caller_Acc := True;
 
          --  When the enclosing function has a BIP_Alloc_Form formal then we
@@ -8880,7 +8883,7 @@ package body Exp_Ch6 is
       --  itself the return expression of an enclosing BIP function, then mark
       --  the object as having no initialization.
 
-      if Definite and then not Is_OK_Return_Object then
+      if Definite and then not Is_Return_Object (Obj_Def_Id) then
 
          --  The related object declaration is encased in a transient block
          --  because the build-in-place function call contains at least one
@@ -9237,7 +9240,7 @@ package body Exp_Ch6 is
         and then not No_Run_Time_Mode
         and then (Has_Task (Typ)
                     or else (Is_Class_Wide_Type (Typ)
-                               and then Is_Limited_Record (Etype (Typ))
+                               and then Is_Limited_Record (Typ)
                                and then not Has_Aspect
                                  (Etype (Typ), Aspect_No_Task_Parts)));
    end Might_Have_Tasks;
@@ -9247,6 +9250,7 @@ package body Exp_Ch6 is
    ----------------------------
 
    function Needs_BIP_Task_Actuals (Func_Id : Entity_Id) return Boolean is
+      pragma Assert (Is_Build_In_Place_Function (Func_Id));
       Subp_Id  : Entity_Id;
       Func_Typ : Entity_Id;
 
@@ -9271,12 +9275,6 @@ package body Exp_Ch6 is
 
       Func_Typ := Underlying_Type (Etype (Subp_Id));
 
-      --  Functions returning types with foreign convention don't have extra
-      --  formals.
-
-      if Has_Foreign_Convention (Func_Typ) then
-         return False;
-
       --  At first sight, for all the following cases, we could add assertions
       --  to ensure that if Func_Id is frozen then the computed result matches
       --  with the availability of the task master extra formal; unfortunately
@@ -9284,7 +9282,7 @@ package body Exp_Ch6 is
       --  (that is, Is_Frozen has been set by Freeze_Entity but it has not
       --  completed its work).
 
-      elsif Has_Task (Func_Typ) then
+      if Has_Task (Func_Typ) then
          return True;
 
       elsif Ekind (Func_Id) = E_Function then
@@ -9316,6 +9314,8 @@ package body Exp_Ch6 is
       Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
 
    begin
+      pragma Assert (Is_Build_In_Place_Function (Func_Id));
+
       --  A formal giving the finalization master is needed for build-in-place
       --  functions whose result type needs finalization or is a tagged type.
       --  Tagged primitive build-in-place functions need such a formal because
@@ -9327,8 +9327,7 @@ package body Exp_Ch6 is
       --  such build-in-place functions, primitive or not.
 
       return not Restriction_Active (No_Finalization)
-        and then (Needs_Finalization (Typ) or else Is_Tagged_Type (Typ))
-        and then not Has_Foreign_Convention (Typ);
+        and then (Needs_Finalization (Typ) or else Is_Tagged_Type (Typ));
    end Needs_BIP_Finalization_Master;
 
    --------------------------
@@ -9339,6 +9338,8 @@ package body Exp_Ch6 is
       Typ : constant Entity_Id := Underlying_Type (Etype (Func_Id));
 
    begin
+      pragma Assert (Is_Build_In_Place_Function (Func_Id));
+
       --  A formal giving the allocation method is needed for build-in-place
       --  functions whose result type is returned on the secondary stack or
       --  is a tagged type. Tagged primitive build-in-place functions need
@@ -9350,8 +9351,7 @@ package body Exp_Ch6 is
       --  to be passed to all such build-in-place functions, primitive or not.
 
       return not Restriction_Active (No_Secondary_Stack)
-        and then (Needs_Secondary_Stack (Typ) or else Is_Tagged_Type (Typ))
-        and then not Has_Foreign_Convention (Typ);
+        and then (Needs_Secondary_Stack (Typ) or else Is_Tagged_Type (Typ));
    end Needs_BIP_Alloc_Form;
 
    -------------------------------------

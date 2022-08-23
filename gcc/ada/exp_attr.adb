@@ -2311,40 +2311,19 @@ package body Exp_Attr is
             if Is_Access_Protected_Subprogram_Type (Btyp) then
                Expand_Access_To_Protected_Op (N, Pref, Typ);
 
+            --  If prefix is a subprogram that has class-wide preconditions and
+            --  an indirect-call wrapper (ICW) of such subprogram is available
+            --  then replace the prefix by the ICW.
+
             elsif Is_Access_Subprogram_Type (Btyp)
               and then Is_Entity_Name (Pref)
+              and then Present (Class_Preconditions (Entity (Pref)))
+              and then Present (Indirect_Call_Wrapper (Entity (Pref)))
             then
-               --  If prefix is a subprogram that has class-wide preconditions
-               --  and an indirect-call wrapper (ICW) of the subprogram is
-               --  available then replace the prefix by the ICW.
-
-               if Present (Class_Preconditions (Entity (Pref)))
-                 and then Present (Indirect_Call_Wrapper (Entity (Pref)))
-               then
-                  Rewrite (Pref,
-                    New_Occurrence_Of
-                      (Indirect_Call_Wrapper (Entity (Pref)), Loc));
-                  Analyze_And_Resolve (N, Typ);
-               end if;
-
-               --  Ensure the availability of the extra formals to check that
-               --  they match.
-
-               if not Is_Frozen (Entity (Pref))
-                 or else From_Limited_With (Etype (Entity (Pref)))
-               then
-                  Create_Extra_Formals (Entity (Pref));
-               end if;
-
-               if not Is_Frozen (Btyp_DDT)
-                 or else From_Limited_With (Etype (Btyp_DDT))
-               then
-                  Create_Extra_Formals (Btyp_DDT);
-               end if;
-
-               pragma Assert
-                 (Extra_Formals_Match_OK
-                   (E => Entity (Pref), Ref_E => Btyp_DDT));
+               Rewrite (Pref,
+                 New_Occurrence_Of
+                   (Indirect_Call_Wrapper (Entity (Pref)), Loc));
+               Analyze_And_Resolve (N, Typ);
 
             --  If prefix is a type name, this is a reference to the current
             --  instance of the type, within its initialization procedure.

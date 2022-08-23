@@ -23226,12 +23226,9 @@ package body Sem_Util is
 
          return Present (Extra_Accessibility_Of_Result (Alias (Func_Id)));
 
-      --  Remaining cases require Ada 2012 mode, unless they are dispatching
-      --  operations, since they may be overridden by Ada_2012 primitives.
+      --  Remaining cases require Ada 2012 mode
 
-      elsif Ada_Version < Ada_2012
-        and then not Is_Dispatching_Operation (Func_Id)
-      then
+      elsif Ada_Version < Ada_2012 then
          return False;
 
       --  Handle the situation where a result is an anonymous access type
