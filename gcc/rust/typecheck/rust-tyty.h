@@ -180,9 +180,6 @@ public:
   // checks
   virtual bool can_eq (const BaseType *other, bool emit_errors) const = 0;
 
-  // this is the cast interface for TypeCastExpr
-  virtual BaseType *cast (BaseType *other) = 0;
-
   // Check value equality between two ty. Type inference rules are ignored. Two
   //   ty are considered equal if they're of the same kind, and
   //     1. (For ADTs, arrays, tuples, refs) have the same underlying ty
@@ -314,6 +311,20 @@ private:
   HirId ref;
 };
 
+class TyWithLocation
+{
+public:
+  TyWithLocation (BaseType *ty, Location locus);
+  TyWithLocation (BaseType *ty);
+
+  BaseType *get_ty () const { return ty; }
+  Location get_locus () const { return locus; }
+
+private:
+  BaseType *ty;
+  Location locus;
+};
+
 class InferType : public BaseType
 {
 public:
@@ -346,8 +357,6 @@ public:
   BaseType *unify (BaseType *other) override;
 
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
-  BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
@@ -386,8 +395,6 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
-  BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
@@ -430,8 +437,6 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
-  BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
@@ -530,8 +535,6 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
-  BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1360,8 +1363,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   bool is_equal (const BaseType &other) const override;
 
   std::string get_identifier () const { return identifier; }
@@ -1497,8 +1498,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   bool is_equal (const BaseType &other) const override;
 
   size_t num_params () const { return params.size (); }
@@ -1619,8 +1618,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
@@ -1693,8 +1690,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
@@ -1759,8 +1754,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   bool is_equal (const BaseType &other) const override;
 
   BaseType *get_element_type () const;
@@ -1809,8 +1802,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   bool is_equal (const BaseType &other) const override;
 
   BaseType *get_element_type () const;
@@ -1856,8 +1847,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
   bool is_concrete () const override final { return true; }
@@ -1901,8 +1890,6 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
-  BaseType *cast (BaseType *other) override;
 
   IntKind get_int_kind () const { return int_kind; }
 
@@ -1955,8 +1942,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   UintKind get_uint_kind () const { return uint_kind; }
 
   BaseType *clone () const final override;
@@ -2006,8 +1991,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   FloatKind get_float_kind () const { return float_kind; }
 
   BaseType *clone () const final override;
@@ -2047,8 +2030,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
   bool is_concrete () const override final { return true; }
@@ -2080,8 +2061,6 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
-  BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
@@ -2115,8 +2094,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
   bool is_concrete () const override final { return true; }
@@ -2148,8 +2125,6 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
-  BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -2193,8 +2168,6 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
-  BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -2281,8 +2254,6 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
-  BaseType *cast (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -2371,8 +2342,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
 
@@ -2412,8 +2381,6 @@ public:
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
-  BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
@@ -2489,8 +2456,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
-
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
 
@@ -2547,7 +2512,6 @@ public:
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
-  BaseType *cast (BaseType *other) override;
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;

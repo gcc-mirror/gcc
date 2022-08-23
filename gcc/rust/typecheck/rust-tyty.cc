@@ -23,7 +23,6 @@
 #include "rust-hir-type-check-type.h"
 #include "rust-tyty-rules.h"
 #include "rust-tyty-cmp.h"
-#include "rust-tyty-cast.h"
 #include "rust-hir-map.h"
 #include "rust-substitution-mapper.h"
 #include "rust-hir-trait-ref.h"
@@ -376,6 +375,16 @@ TyVar::monomorphized_clone () const
   return TyVar (c->get_ref ());
 }
 
+TyWithLocation::TyWithLocation (BaseType *ty, Location locus)
+  : ty (ty), locus (locus)
+{}
+
+TyWithLocation::TyWithLocation (BaseType *ty) : ty (ty)
+{
+  auto mappings = Analysis::Mappings::get ();
+  locus = mappings->lookup_location (ty->get_ref ());
+}
+
 void
 InferType::accept_vis (TyVisitor &vis)
 {
@@ -415,13 +424,6 @@ InferType::can_eq (const BaseType *other, bool emit_errors) const
 {
   InferCmp r (this, emit_errors);
   return r.can_eq (other);
-}
-
-BaseType *
-InferType::cast (BaseType *other)
-{
-  InferCastRules r (this);
-  return r.cast (other);
 }
 
 BaseType *
@@ -516,12 +518,6 @@ bool
 ErrorType::can_eq (const BaseType *other, bool emit_errors) const
 {
   return get_kind () == other->get_kind ();
-}
-
-BaseType *
-ErrorType::cast (BaseType *other)
-{
-  return this;
 }
 
 BaseType *
@@ -984,13 +980,6 @@ ADTType::unify (BaseType *other)
   return r.unify (other);
 }
 
-BaseType *
-ADTType::cast (BaseType *other)
-{
-  ADTCastRules r (this);
-  return r.cast (other);
-}
-
 bool
 ADTType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1191,13 +1180,6 @@ TupleType::unify (BaseType *other)
   return r.unify (other);
 }
 
-BaseType *
-TupleType::cast (BaseType *other)
-{
-  TupleCastRules r (this);
-  return r.cast (other);
-}
-
 bool
 TupleType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1303,13 +1285,6 @@ FnType::unify (BaseType *other)
 {
   FnRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-FnType::cast (BaseType *other)
-{
-  FnCastRules r (this);
-  return r.cast (other);
 }
 
 bool
@@ -1543,13 +1518,6 @@ FnPtr::unify (BaseType *other)
   return r.unify (other);
 }
 
-BaseType *
-FnPtr::cast (BaseType *other)
-{
-  FnptrCastRules r (this);
-  return r.cast (other);
-}
-
 bool
 FnPtr::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1636,14 +1604,6 @@ ClosureType::can_eq (const BaseType *other, bool emit_errors) const
   return r.can_eq (other);
 }
 
-BaseType *
-ClosureType::cast (BaseType *other)
-{
-  // FIXME
-  gcc_unreachable ();
-  return nullptr;
-}
-
 bool
 ClosureType::is_equal (const BaseType &other) const
 {
@@ -1694,13 +1654,6 @@ ArrayType::unify (BaseType *other)
 {
   ArrayRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-ArrayType::cast (BaseType *other)
-{
-  ArrayCastRules r (this);
-  return r.cast (other);
 }
 
 bool
@@ -1786,13 +1739,6 @@ SliceType::unify (BaseType *other)
   return r.unify (other);
 }
 
-BaseType *
-SliceType::cast (BaseType *other)
-{
-  SliceCastRules r (this);
-  return r.cast (other);
-}
-
 bool
 SliceType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1876,13 +1822,6 @@ BoolType::unify (BaseType *other)
   return r.unify (other);
 }
 
-BaseType *
-BoolType::cast (BaseType *other)
-{
-  BoolCastRules r (this);
-  return r.cast (other);
-}
-
 bool
 BoolType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -1939,13 +1878,6 @@ IntType::unify (BaseType *other)
 {
   IntRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-IntType::cast (BaseType *other)
-{
-  IntCastRules r (this);
-  return r.cast (other);
 }
 
 bool
@@ -2017,13 +1949,6 @@ UintType::unify (BaseType *other)
   return r.unify (other);
 }
 
-BaseType *
-UintType::cast (BaseType *other)
-{
-  UintCastRules r (this);
-  return r.cast (other);
-}
-
 bool
 UintType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2087,13 +2012,6 @@ FloatType::unify (BaseType *other)
   return r.unify (other);
 }
 
-BaseType *
-FloatType::cast (BaseType *other)
-{
-  FloatCastRules r (this);
-  return r.cast (other);
-}
-
 bool
 FloatType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2149,13 +2067,6 @@ USizeType::unify (BaseType *other)
   return r.unify (other);
 }
 
-BaseType *
-USizeType::cast (BaseType *other)
-{
-  USizeCastRules r (this);
-  return r.cast (other);
-}
-
 bool
 USizeType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2198,13 +2109,6 @@ ISizeType::unify (BaseType *other)
 {
   ISizeRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-ISizeType::cast (BaseType *other)
-{
-  ISizeCastRules r (this);
-  return r.cast (other);
 }
 
 bool
@@ -2251,13 +2155,6 @@ CharType::unify (BaseType *other)
   return r.unify (other);
 }
 
-BaseType *
-CharType::cast (BaseType *other)
-{
-  CharCastRules r (this);
-  return r.cast (other);
-}
-
 bool
 CharType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2301,13 +2198,6 @@ ReferenceType::unify (BaseType *other)
 {
   ReferenceRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-ReferenceType::cast (BaseType *other)
-{
-  ReferenceCastRules r (this);
-  return r.cast (other);
 }
 
 bool
@@ -2391,13 +2281,6 @@ PointerType::unify (BaseType *other)
 {
   PointerRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-PointerType::cast (BaseType *other)
-{
-  PointerCastRules r (this);
-  return r.cast (other);
 }
 
 bool
@@ -2495,13 +2378,6 @@ ParamType::unify (BaseType *other)
 {
   ParamRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-ParamType::cast (BaseType *other)
-{
-  ParamCastRules r (this);
-  return r.cast (other);
 }
 
 bool
@@ -2636,13 +2512,6 @@ StrType::unify (BaseType *other)
   return r.unify (other);
 }
 
-BaseType *
-StrType::cast (BaseType *other)
-{
-  StrCastRules r (this);
-  return r.cast (other);
-}
-
 bool
 StrType::can_eq (const BaseType *other, bool emit_errors) const
 {
@@ -2679,13 +2548,6 @@ NeverType::unify (BaseType *other)
 {
   NeverRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-NeverType::cast (BaseType *other)
-{
-  NeverCastRules r (this);
-  return r.cast (other);
 }
 
 bool
@@ -2733,13 +2595,6 @@ PlaceholderType::unify (BaseType *other)
 {
   PlaceholderRules r (this);
   return r.unify (other);
-}
-
-BaseType *
-PlaceholderType::cast (BaseType *other)
-{
-  PlaceholderCastRules r (this);
-  return r.cast (other);
 }
 
 bool
@@ -2837,12 +2692,6 @@ BaseType *
 ProjectionType::unify (BaseType *other)
 {
   return base->unify (other);
-}
-
-BaseType *
-ProjectionType::cast (BaseType *other)
-{
-  return base->cast (other);
 }
 
 bool
@@ -2967,13 +2816,6 @@ DynamicObjectType::can_eq (const BaseType *other, bool emit_errors) const
 {
   DynamicCmp r (this, emit_errors);
   return r.can_eq (other);
-}
-
-BaseType *
-DynamicObjectType::cast (BaseType *other)
-{
-  DynamicCastRules r (this);
-  return r.cast (other);
 }
 
 BaseType *

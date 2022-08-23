@@ -21,24 +21,33 @@
 namespace Rust {
 namespace Resolver {
 
-AutoderefTypeCoercion::CoercionResult
-AutoderefTypeCoercion::Coerce (TyTy::BaseType *receiver,
-			       TyTy::BaseType *expected, Location locus)
+TypeCoercionRules::CoercionResult
+TypeCoercionRules::Coerce (TyTy::BaseType *receiver, TyTy::BaseType *expected,
+			   Location locus)
 {
-  AutoderefTypeCoercion resolver (expected, locus);
+  TypeCoercionRules resolver (expected, locus, true);
   bool ok = resolver.do_coercion (receiver);
   return ok ? resolver.try_result : CoercionResult::get_error ();
 }
 
-AutoderefTypeCoercion::AutoderefTypeCoercion (TyTy::BaseType *expected,
-					      Location locus)
+TypeCoercionRules::CoercionResult
+TypeCoercionRules::TryCoerce (TyTy::BaseType *receiver,
+			      TyTy::BaseType *expected, Location locus)
+{
+  TypeCoercionRules resolver (expected, locus, false);
+  bool ok = resolver.do_coercion (receiver);
+  return ok ? resolver.try_result : CoercionResult::get_error ();
+}
+
+TypeCoercionRules::TypeCoercionRules (TyTy::BaseType *expected, Location locus,
+				      bool emit_errors)
   : AutoderefCycle (false), mappings (Analysis::Mappings::get ()),
     context (TypeCheckContext::get ()), expected (expected), locus (locus),
-    try_result (CoercionResult::get_error ())
+    try_result (CoercionResult::get_error ()), emit_errors (emit_errors)
 {}
 
 bool
-AutoderefTypeCoercion::do_coercion (TyTy::BaseType *receiver)
+TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
 {
   // FIXME this is not finished and might be super simplified
   // see:
@@ -87,10 +96,10 @@ AutoderefTypeCoercion::do_coercion (TyTy::BaseType *receiver)
   return !try_result.is_error ();
 }
 
-AutoderefTypeCoercion::CoercionResult
-AutoderefTypeCoercion::coerce_unsafe_ptr (TyTy::BaseType *receiver,
-					  TyTy::PointerType *expected,
-					  Mutability to_mutbl)
+TypeCoercionRules::CoercionResult
+TypeCoercionRules::coerce_unsafe_ptr (TyTy::BaseType *receiver,
+				      TyTy::PointerType *expected,
+				      Mutability to_mutbl)
 {
   rust_debug ("coerce_unsafe_ptr(a={%s}, b={%s})",
 	      receiver->debug_str ().c_str (), expected->debug_str ().c_str ());
@@ -115,8 +124,10 @@ AutoderefTypeCoercion::coerce_unsafe_ptr (TyTy::BaseType *receiver,
       break;
 
       default: {
-	TyTy::BaseType *result = receiver->unify (expected);
-	return CoercionResult{{}, result};
+	if (receiver->can_eq (expected, false))
+	  return CoercionResult{{}, expected->clone ()};
+
+	return CoercionResult::get_error ();
       }
     }
 
@@ -125,22 +136,25 @@ AutoderefTypeCoercion::coerce_unsafe_ptr (TyTy::BaseType *receiver,
       Location lhs = mappings->lookup_location (receiver->get_ref ());
       Location rhs = mappings->lookup_location (expected->get_ref ());
       mismatched_mutability_error (locus, lhs, rhs);
-      return AutoderefTypeCoercion::CoercionResult::get_error ();
+      return TypeCoercionRules::CoercionResult::get_error ();
     }
 
   TyTy::PointerType *result
     = new TyTy::PointerType (receiver->get_ref (),
 			     TyTy::TyVar (element->get_ref ()), to_mutbl);
+  if (!result->can_eq (expected, false))
+    return CoercionResult::get_error ();
+
   return CoercionResult{{}, result};
 }
 
 /// Reborrows `&mut A` to `&mut B` and `&(mut) A` to `&B`.
 /// To match `A` with `B`, autoderef will be performed,
 /// calling `deref`/`deref_mut` where necessary.
-AutoderefTypeCoercion::CoercionResult
-AutoderefTypeCoercion::coerce_borrowed_pointer (TyTy::BaseType *receiver,
-						TyTy::ReferenceType *expected,
-						Mutability to_mutbl)
+TypeCoercionRules::CoercionResult
+TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
+					    TyTy::ReferenceType *expected,
+					    Mutability to_mutbl)
 {
   rust_debug ("coerce_borrowed_pointer(a={%s}, b={%s})",
 	      receiver->debug_str ().c_str (), expected->debug_str ().c_str ());
@@ -166,7 +180,7 @@ AutoderefTypeCoercion::coerce_borrowed_pointer (TyTy::BaseType *receiver,
       Location lhs = mappings->lookup_location (receiver->get_ref ());
       Location rhs = mappings->lookup_location (expected->get_ref ());
       mismatched_mutability_error (locus, lhs, rhs);
-      return AutoderefTypeCoercion::CoercionResult::get_error ();
+      return TypeCoercionRules::CoercionResult::get_error ();
     }
 
   AutoderefCycle::cycle (receiver);
@@ -176,10 +190,9 @@ AutoderefTypeCoercion::coerce_borrowed_pointer (TyTy::BaseType *receiver,
 // &[T; n] or &mut [T; n] -> &[T]
 // or &mut [T; n] -> &mut [T]
 // or &Concrete -> &Trait, etc.
-AutoderefTypeCoercion::CoercionResult
-AutoderefTypeCoercion::coerce_unsized (TyTy::BaseType *source,
-				       TyTy::BaseType *target,
-				       bool &unsafe_error)
+TypeCoercionRules::CoercionResult
+TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
+				   TyTy::BaseType *target, bool &unsafe_error)
 {
   rust_debug ("coerce_unsized(source={%s}, target={%s})",
 	      source->debug_str ().c_str (), target->debug_str ().c_str ());
@@ -207,7 +220,7 @@ AutoderefTypeCoercion::coerce_unsized (TyTy::BaseType *source,
 	  Location lhs = mappings->lookup_location (source->get_ref ());
 	  Location rhs = mappings->lookup_location (target->get_ref ());
 	  mismatched_mutability_error (locus, lhs, rhs);
-	  return AutoderefTypeCoercion::CoercionResult::get_error ();
+	  return TypeCoercionRules::CoercionResult::get_error ();
 	}
 
       ty_a = source_ref->get_base ();
@@ -232,7 +245,7 @@ AutoderefTypeCoercion::coerce_unsized (TyTy::BaseType *source,
 	  Location lhs = mappings->lookup_location (source->get_ref ());
 	  Location rhs = mappings->lookup_location (target->get_ref ());
 	  mismatched_mutability_error (locus, lhs, rhs);
-	  return AutoderefTypeCoercion::CoercionResult::get_error ();
+	  return TypeCoercionRules::CoercionResult::get_error ();
 	}
 
       ty_a = source_ref->get_base ();
@@ -262,7 +275,7 @@ AutoderefTypeCoercion::coerce_unsized (TyTy::BaseType *source,
       if (!bounds_compatible)
 	{
 	  unsafe_error = true;
-	  return AutoderefTypeCoercion::CoercionResult::get_error ();
+	  return TypeCoercionRules::CoercionResult::get_error ();
 	}
 
       // return the unsize coercion
@@ -291,11 +304,11 @@ AutoderefTypeCoercion::coerce_unsized (TyTy::BaseType *source,
     }
 
   adjustments.clear ();
-  return AutoderefTypeCoercion::CoercionResult::get_error ();
+  return TypeCoercionRules::CoercionResult::get_error ();
 }
 
 bool
-AutoderefTypeCoercion::select (const TyTy::BaseType &autoderefed)
+TypeCoercionRules::select (const TyTy::BaseType &autoderefed)
 {
   if (autoderefed.can_eq (expected, false))
     {
@@ -308,16 +321,19 @@ AutoderefTypeCoercion::select (const TyTy::BaseType &autoderefed)
 /// Coercing a mutable reference to an immutable works, while
 /// coercing `&T` to `&mut T` should be forbidden.
 bool
-AutoderefTypeCoercion::coerceable_mutability (Mutability from_mutbl,
-					      Mutability to_mutbl)
+TypeCoercionRules::coerceable_mutability (Mutability from_mutbl,
+					  Mutability to_mutbl)
 {
   return to_mutbl == Mutability::Imm || (from_mutbl == to_mutbl);
 }
 
 void
-AutoderefTypeCoercion::mismatched_mutability_error (Location expr_locus,
-						    Location lhs, Location rhs)
+TypeCoercionRules::mismatched_mutability_error (Location expr_locus,
+						Location lhs, Location rhs)
 {
+  if (!emit_errors)
+    return;
+
   RichLocation r (expr_locus);
   r.add_range (lhs);
   r.add_range (rhs);
@@ -325,9 +341,12 @@ AutoderefTypeCoercion::mismatched_mutability_error (Location expr_locus,
 }
 
 void
-AutoderefTypeCoercion::object_unsafe_error (Location expr_locus, Location lhs,
-					    Location rhs)
+TypeCoercionRules::object_unsafe_error (Location expr_locus, Location lhs,
+					Location rhs)
 {
+  if (!emit_errors)
+    return;
+
   RichLocation r (expr_locus);
   r.add_range (lhs);
   r.add_range (rhs);

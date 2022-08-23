@@ -122,6 +122,7 @@ GRS_OBJS = \
     rust/rust-hir-type-check-implitem.o \
     rust/rust-hir-dot-operator.o \
     rust/rust-coercion.o \
+    rust/rust-casts.o \
     rust/rust-hir-type-check-base.o \
     rust/rust-autoderef.o \
     rust/rust-substitution-mapper.o \

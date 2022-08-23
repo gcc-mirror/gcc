@@ -237,16 +237,34 @@ CompileExpr::visit (HIR::LazyBooleanExpr &expr)
 void
 CompileExpr::visit (HIR::TypeCastExpr &expr)
 {
-  TyTy::BaseType *tyty = nullptr;
+  TyTy::BaseType *type_to_cast_to_ty = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
-				       &tyty))
+				       &type_to_cast_to_ty))
     {
       translated = error_mark_node;
       return;
     }
 
-  auto type_to_cast_to = TyTyResolveCompile::compile (ctx, tyty);
+  TyTy::BaseType *casted_tyty = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (
+	expr.get_casted_expr ()->get_mappings ().get_hirid (), &casted_tyty))
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  auto type_to_cast_to = TyTyResolveCompile::compile (ctx, type_to_cast_to_ty);
   auto casted_expr = CompileExpr::Compile (expr.get_casted_expr ().get (), ctx);
+
+  std::vector<Resolver::Adjustment> *adjustments = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_cast_autoderef_mappings (
+    expr.get_mappings ().get_hirid (), &adjustments);
+  if (ok)
+    {
+      casted_expr
+	= resolve_adjustements (*adjustments, casted_expr, expr.get_locus ());
+    }
+
   translated
     = type_cast_expression (type_to_cast_to, casted_expr, expr.get_locus ());
 }

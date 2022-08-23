@@ -296,8 +296,12 @@ TypeCheckExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
   switch (expr.get_expr_type ())
     {
     case ArithmeticOrLogicalOperator::LEFT_SHIFT:
-    case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
-      infered = rhs->cast (lhs);
+      case ArithmeticOrLogicalOperator::RIGHT_SHIFT: {
+	TyTy::TyWithLocation from (rhs, expr.get_rhs ()->get_locus ());
+	TyTy::TyWithLocation to (lhs, expr.get_lhs ()->get_locus ());
+	infered = cast_site (expr.get_mappings ().get_hirid (), from, to,
+			     expr.get_locus ());
+      }
       break;
 
     default:
@@ -1264,7 +1268,12 @@ TypeCheckExpr::visit (HIR::TypeCastExpr &expr)
   TyTy::BaseType *tyty_to_convert_to
     = TypeCheckType::Resolve (expr.get_type_to_convert_to ().get ());
 
-  infered = expr_to_convert->cast (tyty_to_convert_to);
+  TyTy::TyWithLocation from (expr_to_convert,
+			     expr.get_casted_expr ()->get_locus ());
+  TyTy::TyWithLocation to (tyty_to_convert_to,
+			   expr.get_type_to_convert_to ()->get_locus ());
+  infered = cast_site (expr.get_mappings ().get_hirid (), from, to,
+		       expr.get_locus ());
 }
 
 void

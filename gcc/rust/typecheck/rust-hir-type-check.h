@@ -282,6 +282,25 @@ public:
     return true;
   }
 
+  void insert_cast_autoderef_mappings (HirId id,
+				       std::vector<Adjustment> &&adjustments)
+  {
+    rust_assert (cast_autoderef_mappings.find (id)
+		 == cast_autoderef_mappings.end ());
+    cast_autoderef_mappings.emplace (id, std::move (adjustments));
+  }
+
+  bool lookup_cast_autoderef_mappings (HirId id,
+				       std::vector<Adjustment> **adjustments)
+  {
+    auto it = cast_autoderef_mappings.find (id);
+    if (it == cast_autoderef_mappings.end ())
+      return false;
+
+    *adjustments = &it->second;
+    return true;
+  }
+
   void insert_variant_definition (HirId id, HirId variant)
   {
     auto it = variants.find (id);
@@ -339,6 +358,7 @@ private:
 
   // adjustment mappings
   std::map<HirId, std::vector<Adjustment>> autoderef_mappings;
+  std::map<HirId, std::vector<Adjustment>> cast_autoderef_mappings;
 
   // operator overloads
   std::map<HirId, TyTy::FnType *> operator_overloads;

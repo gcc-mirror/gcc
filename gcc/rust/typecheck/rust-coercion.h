@@ -25,7 +25,7 @@
 namespace Rust {
 namespace Resolver {
 
-class AutoderefTypeCoercion : protected AutoderefCycle
+class TypeCoercionRules : protected AutoderefCycle
 {
 public:
   struct CoercionResult
@@ -44,6 +44,9 @@ public:
   static CoercionResult Coerce (TyTy::BaseType *receiver,
 				TyTy::BaseType *expected, Location locus);
 
+  static CoercionResult TryCoerce (TyTy::BaseType *receiver,
+				   TyTy::BaseType *expected, Location locus);
+
   CoercionResult coerce_unsafe_ptr (TyTy::BaseType *receiver,
 				    TyTy::PointerType *expected,
 				    Mutability mutability);
@@ -58,13 +61,13 @@ public:
   static bool coerceable_mutability (Mutability from_mutbl,
 				     Mutability to_mutbl);
 
-  static void mismatched_mutability_error (Location expr_locus, Location lhs,
-					   Location rhs);
-  static void object_unsafe_error (Location expr_locus, Location lhs,
-				   Location rhs);
+  void mismatched_mutability_error (Location expr_locus, Location lhs,
+				    Location rhs);
+  void object_unsafe_error (Location expr_locus, Location lhs, Location rhs);
 
 protected:
-  AutoderefTypeCoercion (TyTy::BaseType *expected, Location locus);
+  TypeCoercionRules (TyTy::BaseType *expected, Location locus,
+		     bool emit_errors);
 
   bool select (const TyTy::BaseType &autoderefed) override;
 
@@ -81,6 +84,7 @@ private:
 
   // mutable fields
   CoercionResult try_result;
+  bool emit_errors;
 };
 
 } // namespace Resolver
