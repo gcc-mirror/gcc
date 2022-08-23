@@ -7536,8 +7536,9 @@ simplify_size (gfc_expr *array, gfc_expr *dim, int k)
     }
 
   for (ref = array->ref; ref; ref = ref->next)
-    if (ref->type == REF_ARRAY && ref->u.ar.as)
-      gfc_resolve_array_spec (ref->u.ar.as, 0);
+    if (ref->type == REF_ARRAY && ref->u.ar.as
+	&& !gfc_resolve_array_spec (ref->u.ar.as, 0))
+      return NULL;
 
   if (dim == NULL)
     {
