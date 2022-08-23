@@ -1424,16 +1424,16 @@ builtin_pack_call_p (tree call)
   return builtin_pack_fn_p (CALL_EXPR_FN (call));
 }
 
-// forked from gcc/cp/pt.cc has_extra_args_mechanism_p
-
-/* Return true if the tree T has the extra args mechanism for
-   avoiding partial instantiation.  */
-
-static bool
-has_extra_args_mechanism_p (const_tree t)
-{
-  return false;
-}
+//// forked from gcc/cp/pt.cc has_extra_args_mechanism_p
+//
+///* Return true if the tree T has the extra args mechanism for
+//   avoiding partial instantiation.  */
+//
+// static bool
+// has_extra_args_mechanism_p (const_tree t)
+//{
+//  return false;
+//}
 
 // forked from gcc/cp/pt.cc find_parameter_packs_r
 
@@ -3714,23 +3714,6 @@ char_type_p (tree type)
 tree
 resolve_nondeduced_context (tree orig_expr, tsubst_flags_t complain)
 {
-  tree expr, offset, baselink;
-  bool addr;
-
-  if (!type_unknown_p (orig_expr))
-    return orig_expr;
-
-  expr = orig_expr;
-  addr = false;
-  offset = NULL_TREE;
-  baselink = NULL_TREE;
-
-  if (TREE_CODE (expr) == ADDR_EXPR)
-    {
-      expr = TREE_OPERAND (expr, 0);
-      addr = true;
-    }
-
   return orig_expr;
 }
 

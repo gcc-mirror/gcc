@@ -3379,7 +3379,7 @@ maybe_constexpr_fn (tree t);
 extern tree
 fold_non_dependent_init (tree, tsubst_flags_t = tf_warning_or_error,
 			 bool = false, tree = NULL_TREE);
-}
+} // namespace Compile
 
 } // namespace Rust
 

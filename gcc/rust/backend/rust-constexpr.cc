@@ -572,7 +572,6 @@ fold_expr (tree expr)
   rust_assert (folded != NULL_TREE);
 
   // more logic here to possibly port
-
   return folded;
 }
 
@@ -1084,9 +1083,11 @@ init_subob_ctx (const constexpr_ctx *ctx, constexpr_ctx &new_ctx, tree index,
 	/* There's no well-defined subobject for this index.  */
 	new_ctx.object = NULL_TREE;
       else
-	// Faisal: commenting this out as not sure if it's needed and it's huge
-	// new_ctx.object = build_ctor_subob_ref (index, type, ctx->object);
-	;
+	{
+	  // Faisal: commenting this out as not sure if it's needed and it's
+	  // huge new_ctx.object = build_ctor_subob_ref (index, type,
+	  // ctx->object);
+	}
     }
   tree elt = build_constructor (type, NULL);
   CONSTRUCTOR_NO_CLEARING (elt) = true;
@@ -1661,17 +1662,16 @@ eval_array_reference (const constexpr_ctx *ctx, tree t, bool lval,
   /* If it's within the array bounds but doesn't have an explicit
      initializer, it's initialized from {}.  But use build_value_init
      directly for non-aggregates to avoid creating a garbage CONSTRUCTOR.  */
-  tree val;
+  tree val = NULL_TREE;
+  sorry ("array size expression is not supported yet.");
+
   constexpr_ctx new_ctx;
   if (is_really_empty_class (elem_type, /*ignore_vptr*/ false))
     return build_constructor (elem_type, NULL);
-  // Faisal: commenting this out as not sure if we need this but we need to come
-  // back to handle this to assign suitable value to val before sending it in
-  // eval_constant_expression below
   // else if (CP_AGGREGATE_TYPE_P (elem_type))
-  //  {
-  //    tree empty_ctor = build_constructor (init_list_type_node, NULL);
-  //    val = digest_init (elem_type, empty_ctor, tf_warning_or_error);
+  // {
+  //   tree empty_ctor = build_constructor (init_list_type_node, NULL);
+  //    //val = digest_init (elem_type, empty_ctor, tf_warning_or_error);
   //  }
   // else
   //  val = build_value_init (elem_type, tf_warning_or_error);
@@ -1789,6 +1789,8 @@ eval_component_reference (const constexpr_ctx *ctx, tree t, bool lval,
       return t;
     }
 
+  value = NULL_TREE;
+  sorry ("constant folding not supported for this tree code");
   /* If there's no explicit init for this field, it's value-initialized.  */
   // Faisal: commenting this out as not sure if we need this but we need to come
   // back to handle this to assign suitable value to value before sending it in
@@ -2586,7 +2588,7 @@ eval_store_expression (const constexpr_ctx *ctx, tree t, bool lval,
   tree object = NULL_TREE;
   /* If we're modifying a const object, save it.  */
   tree const_object_being_modified = NULL_TREE;
-  bool mutable_p = false;
+  // bool mutable_p = false;
   for (tree probe = target; object == NULL_TREE;)
     {
       switch (TREE_CODE (probe))
@@ -2597,7 +2599,9 @@ eval_store_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	    tree ob = TREE_OPERAND (probe, 0);
 	    tree elt = TREE_OPERAND (probe, 1);
 	    if (TREE_CODE (elt) == FIELD_DECL /*&& DECL_MUTABLE_P (elt)*/)
-	      mutable_p = true;
+	      {
+		// mutable_p = true;
+	      }
 	    if (TREE_CODE (probe) == ARRAY_REF)
 	      {
 		// TODO
@@ -3606,44 +3610,44 @@ build_anon_member_initialization (tree member, tree init,
   return true;
 }
 
-/* V is a vector of constructor elements built up for the base and member
-   initializers of a constructor for TYPE.  They need to be in increasing
-   offset order, which they might not be yet if TYPE has a primary base
-   which is not first in the base-clause or a vptr and at least one base
-   all of which are non-primary.  */
-
-static vec<constructor_elt, va_gc> *
-sort_constexpr_mem_initializers (tree type, vec<constructor_elt, va_gc> *v)
-{
-  tree pri = CLASSTYPE_PRIMARY_BINFO (type);
-  tree field_type;
-  unsigned i;
-  constructor_elt *ce;
-
-  if (pri)
-    field_type = BINFO_TYPE (pri);
-  else if (TYPE_CONTAINS_VPTR_P (type))
-    field_type = vtbl_ptr_type_node;
-  else
-    return v;
-
-  /* Find the element for the primary base or vptr and move it to the
-     beginning of the vec.  */
-  for (i = 0; vec_safe_iterate (v, i, &ce); ++i)
-    if (TREE_TYPE (ce->index) == field_type)
-      break;
-
-  if (i > 0 && i < vec_safe_length (v))
-    {
-      vec<constructor_elt, va_gc> &vref = *v;
-      constructor_elt elt = vref[i];
-      for (; i > 0; --i)
-	vref[i] = vref[i - 1];
-      vref[0] = elt;
-    }
-
-  return v;
-}
+///* V is a vector of constructor elements built up for the base and member
+//   initializers of a constructor for TYPE.  They need to be in increasing
+//   offset order, which they might not be yet if TYPE has a primary base
+//   which is not first in the base-clause or a vptr and at least one base
+//   all of which are non-primary.  */
+//
+// static vec<constructor_elt, va_gc> *
+// sort_constexpr_mem_initializers (tree type, vec<constructor_elt, va_gc> *v)
+//{
+//  tree pri = CLASSTYPE_PRIMARY_BINFO (type);
+//  tree field_type;
+//  unsigned i;
+//  constructor_elt *ce;
+//
+//  if (pri)
+//    field_type = BINFO_TYPE (pri);
+//  else if (TYPE_CONTAINS_VPTR_P (type))
+//    field_type = vtbl_ptr_type_node;
+//  else
+//    return v;
+//
+//  /* Find the element for the primary base or vptr and move it to the
+//     beginning of the vec.  */
+//  for (i = 0; vec_safe_iterate (v, i, &ce); ++i)
+//    if (TREE_TYPE (ce->index) == field_type)
+//      break;
+//
+//  if (i > 0 && i < vec_safe_length (v))
+//    {
+//      vec<constructor_elt, va_gc> &vref = *v;
+//      constructor_elt elt = vref[i];
+//      for (; i > 0; --i)
+//	vref[i] = vref[i - 1];
+//      vref[0] = elt;
+//    }
+//
+//  return v;
+//}
 
 /* Subroutine of  build_constexpr_constructor_member_initializers.
    The expression tree T represents a data member initialization
@@ -3755,81 +3759,81 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
   return true;
 }
 
-/* Build compile-time evalable representations of member-initializer list
-   for a constexpr constructor.  */
-
-static tree
-build_constexpr_constructor_member_initializers (tree type, tree body)
-{
-  vec<constructor_elt, va_gc> *vec = NULL;
-  bool ok = true;
-  while (true)
-    switch (TREE_CODE (body))
-      {
-      case STATEMENT_LIST:
-	for (tree stmt : tsi_range (body))
-	  {
-	    body = stmt;
-	    if (TREE_CODE (body) == BIND_EXPR)
-	      break;
-	  }
-	break;
-
-      case BIND_EXPR:
-	body = BIND_EXPR_BODY (body);
-	goto found;
-
-      default:
-	gcc_unreachable ();
-      }
-found:
-
-  if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
-    {
-      body = TREE_OPERAND (body, 0);
-      if (TREE_CODE (body) == EXPR_STMT)
-	body = TREE_OPERAND (body, 0);
-      if (TREE_CODE (body) == INIT_EXPR
-	  && (same_type_ignoring_top_level_qualifiers_p (
-	    TREE_TYPE (TREE_OPERAND (body, 0)), current_class_type)))
-	{
-	  /* Trivial copy.  */
-	  return TREE_OPERAND (body, 1);
-	}
-      ok = build_data_member_initialization (body, &vec);
-    }
-  else if (TREE_CODE (body) == STATEMENT_LIST)
-    {
-      for (tree stmt : tsi_range (body))
-	{
-	  ok = build_data_member_initialization (stmt, &vec);
-	  if (!ok)
-	    break;
-	}
-    }
-  else if (EXPR_P (body))
-    ok = build_data_member_initialization (body, &vec);
-  else
-    gcc_assert (errorcount > 0);
-  if (ok)
-    {
-      if (vec_safe_length (vec) > 0)
-	{
-	  /* In a delegating constructor, return the target.  */
-	  constructor_elt *ce = &(*vec)[0];
-	  if (ce->index == current_class_ptr)
-	    {
-	      body = ce->value;
-	      vec_free (vec);
-	      return body;
-	    }
-	}
-      vec = sort_constexpr_mem_initializers (type, vec);
-      return build_constructor (type, vec);
-    }
-  else
-    return error_mark_node;
-}
+///* Build compile-time evalable representations of member-initializer list
+//   for a constexpr constructor.  */
+//
+// static tree
+// build_constexpr_constructor_member_initializers (tree type, tree body)
+//{
+//  vec<constructor_elt, va_gc> *vec = NULL;
+//  bool ok = true;
+//  while (true)
+//    switch (TREE_CODE (body))
+//      {
+//      case STATEMENT_LIST:
+//	for (tree stmt : tsi_range (body))
+//	  {
+//	    body = stmt;
+//	    if (TREE_CODE (body) == BIND_EXPR)
+//	      break;
+//	  }
+//	break;
+//
+//      case BIND_EXPR:
+//	body = BIND_EXPR_BODY (body);
+//	goto found;
+//
+//      default:
+//	gcc_unreachable ();
+//      }
+// found:
+//
+//  if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
+//    {
+//      body = TREE_OPERAND (body, 0);
+//      if (TREE_CODE (body) == EXPR_STMT)
+//	body = TREE_OPERAND (body, 0);
+//      if (TREE_CODE (body) == INIT_EXPR
+//	  && (same_type_ignoring_top_level_qualifiers_p (
+//	    TREE_TYPE (TREE_OPERAND (body, 0)), current_class_type)))
+//	{
+//	  /* Trivial copy.  */
+//	  return TREE_OPERAND (body, 1);
+//	}
+//      ok = build_data_member_initialization (body, &vec);
+//    }
+//  else if (TREE_CODE (body) == STATEMENT_LIST)
+//    {
+//      for (tree stmt : tsi_range (body))
+//	{
+//	  ok = build_data_member_initialization (stmt, &vec);
+//	  if (!ok)
+//	    break;
+//	}
+//    }
+//  else if (EXPR_P (body))
+//    ok = build_data_member_initialization (body, &vec);
+//  else
+//    gcc_assert (errorcount > 0);
+//  if (ok)
+//    {
+//      if (vec_safe_length (vec) > 0)
+//	{
+//	  /* In a delegating constructor, return the target.  */
+//	  constructor_elt *ce = &(*vec)[0];
+//	  if (ce->index == current_class_ptr)
+//	    {
+//	      body = ce->value;
+//	      vec_free (vec);
+//	      return body;
+//	    }
+//	}
+//      vec = sort_constexpr_mem_initializers (type, vec);
+//      return build_constructor (type, vec);
+//    }
+//  else
+//    return error_mark_node;
+//}
 
 // Subroutine of check_constexpr_fundef.  BODY is the body of a function
 // declared to be constexpr, or a sub-statement thereof.  Returns the
@@ -4457,7 +4461,7 @@ void
 explain_invalid_constexpr_fn (tree fun)
 {
   static hash_set<tree> *diagnosed;
-  tree body;
+  // tree body;
 
   if (diagnosed == NULL)
     diagnosed = new hash_set<tree>;
@@ -5831,7 +5835,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	/* A pointer-to-member constant.  */
 	return true;
 
-    handle_addr_expr:
+	// handle_addr_expr:
 #if 0
       /* FIXME adjust when issue 1197 is fully resolved.  For now don't do
          any checking here, as we might dereference the pointer later.  If
