@@ -1293,6 +1293,12 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
       use_guard = &phi_use_guard_intersection;
     }
 
+  basic_block phi_bb = gimple_bb (phi);
+  /* Find the closest dominating bb to be the control dependence root.  */
+  basic_block cd_root = get_immediate_dominator (CDI_DOMINATORS, phi_bb);
+  if (!cd_root)
+    return false;
+
   /* Look for the control dependencies of all the interesting operands
      and build guard predicates describing them.  */
   unsigned n = gimple_phi_num_args (phi);
@@ -1308,7 +1314,7 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
       unsigned num_calls = 0;
 
       /* Build the control dependency chain for the PHI argument...  */
-      if (!compute_control_dep_chain (ENTRY_BLOCK_PTR_FOR_FN (cfun),
+      if (!compute_control_dep_chain (cd_root,
 				      e->src, dep_chains, &num_chains,
 				      cur_chain, &num_calls))
 	{
