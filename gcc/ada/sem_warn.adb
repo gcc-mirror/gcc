@@ -928,7 +928,7 @@ package body Sem_Warn is
          if not Is_Generic_Type (T) then
             null;
 
-         elsif (Nkind (Par)) = N_Private_Extension_Declaration then
+         elsif Nkind (Par) = N_Private_Extension_Declaration then
 
             --  We only indicate the first such variable in the generic.
 
@@ -936,7 +936,7 @@ package body Sem_Warn is
                Set_Uninitialized_Variable (Par, Ent);
             end if;
 
-         elsif (Nkind (Par)) = N_Formal_Type_Declaration
+         elsif Nkind (Par) = N_Formal_Type_Declaration
            and then Nkind (Formal_Type_Definition (Par)) =
                                          N_Formal_Private_Type_Definition
          then
@@ -1151,8 +1151,6 @@ package body Sem_Warn is
 
       E1 := First_Entity (E);
       while Present (E1) loop
-         E1T := Etype (E1);
-
          --  We are only interested in source entities. We also don't issue
          --  warnings within instances, since the proper place for such
          --  warnings is on the template when it is compiled, and we don't
@@ -1161,6 +1159,8 @@ package body Sem_Warn is
          if Comes_From_Source (E1)
            and then Instantiation_Location (Sloc (E1)) = No_Location
          then
+            E1T := Etype (E1);
+
             --  We are interested in variables and out/in-out parameters, but
             --  we exclude protected types, too complicated to worry about.
 
@@ -1648,11 +1648,6 @@ package body Sem_Warn is
                                not Is_Package_Or_Generic_Package
                                      (Cunit_Entity (Current_Sem_Unit))))
 
-              --  Exclude instantiations, since there is no reason why every
-              --  entity in an instantiation should be referenced.
-
-              and then Instantiation_Location (Sloc (E1)) = No_Location
-
               --  Exclude formal parameters from bodies if the corresponding
               --  spec entity has been referenced in the case where there is
               --  a separate spec.
@@ -2001,8 +1996,7 @@ package body Sem_Warn is
                               P := Parent (Nod);
 
                               if Nkind (P) = N_Pragma
-                                and then Pragma_Name (P) =
-                                  Name_Test_Case
+                                and then Pragma_Name (P) = Name_Test_Case
                                 and then Nod = Test_Case_Arg (P, Name_Ensures)
                               then
                                  return True;
@@ -3028,7 +3022,7 @@ package body Sem_Warn is
       --  if we have seen the address of the subprogram being taken, or if the
       --  subprogram is used as a generic actual (in the latter cases the
       --  context may force use of IN OUT, even if the parameter is not
-      --  modified for this particular case.
+      --  modified for this particular case).
 
       -----------------------
       -- No_Warn_On_In_Out --

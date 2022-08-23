@@ -14794,8 +14794,15 @@ package body Sem_Util is
       loop
          if No (P) then
             return False;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (P) then
+            return False;
+
          elsif Nkind (P) = N_Pragma and then Pragma_Name (P) = Nam then
             return True;
+
          else
             P := Parent (P);
          end if;
@@ -14871,6 +14878,12 @@ package body Sem_Util is
       loop
          if No (P) then
             return False;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (P) then
+            return False;
+
          elsif Nkind (P) = N_Quantified_Expression then
             return True;
          else
