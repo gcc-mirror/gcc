@@ -553,14 +553,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<bool, typename... _Types>
     struct _TupleConstraints
     {
+      template<typename... _UTypes>
+	using __constructible = __and_<is_constructible<_Types, _UTypes>...>;
+
+      template<typename... _UTypes>
+	using __convertible = __and_<is_convertible<_UTypes, _Types>...>;
+
       // Constraint for a non-explicit constructor.
       // True iff each Ti in _Types... can be constructed from Ui in _UTypes...
       // and every Ui is implicitly convertible to Ti.
       template<typename... _UTypes>
 	static constexpr bool __is_implicitly_constructible()
 	{
-	  return __and_<is_constructible<_Types, _UTypes>...,
-			is_convertible<_UTypes, _Types>...
+	  return __and_<__constructible<_UTypes...>,
+			__convertible<_UTypes...>
 			>::value;
 	}
 
@@ -570,8 +576,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename... _UTypes>
 	static constexpr bool __is_explicitly_constructible()
 	{
-	  return __and_<is_constructible<_Types, _UTypes>...,
-			__not_<__and_<is_convertible<_UTypes, _Types>...>>
+	  return __and_<__constructible<_UTypes...>,
+			__not_<__convertible<_UTypes...>>
 			>::value;
 	}
 
