@@ -6691,8 +6691,6 @@ package body Sem_Util is
       Wmsg : Boolean;
       Eloc : Source_Ptr;
 
-   --  Start of processing for Compile_Time_Constraint_Error
-
    begin
       --  If this is a warning, convert it into an error if we are in code
       --  subject to SPARK_Mode being set On, unless Warn is True to force a
