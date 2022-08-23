@@ -215,7 +215,7 @@ finalize_intrinsic_block (Context *ctx, tree fndecl)
 
   ctx->push_function (fndecl);
 
-  DECL_DECLARED_CONSTEXPR_P (fndecl);
+  DECL_DECLARED_CONSTEXPR_P (fndecl) = 1;
   maybe_save_constexpr_fundef (fndecl);
 }
 

@@ -701,7 +701,7 @@ HIRCompileBase::compile_constant_item (
 
       gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
       DECL_SAVED_TREE (fndecl) = bind_tree;
-      DECL_DECLARED_CONSTEXPR_P (fndecl);
+      DECL_DECLARED_CONSTEXPR_P (fndecl) = 1;
       maybe_save_constexpr_fundef (fndecl);
 
       ctx->pop_fn ();

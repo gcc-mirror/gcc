@@ -5795,14 +5795,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	}
       return true;
 
-    case NOP_EXPR:
-      if (REINTERPRET_CAST_P (t))
-	{
-	  if (flags & tf_error)
-	    error_at (loc, "%<reinterpret_cast%> is not a constant expression");
-	  return false;
-	}
       /* FALLTHRU */
+    case NOP_EXPR:
     case CONVERT_EXPR:
     case VIEW_CONVERT_EXPR:
       /* -- a reinterpret_cast.  FIXME not implemented, and this rule
