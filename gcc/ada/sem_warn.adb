@@ -1221,7 +1221,7 @@ package body Sem_Warn is
                elsif Warn_On_Constant
                  and then Ekind (E1) = E_Variable
                  and then Has_Initial_Value (E1)
-                 and then Never_Set_In_Source_Check_Spec (E1)
+                 and then Never_Set_In_Source (E1)
                  and then not Generic_Package_Spec_Entity (E1)
                then
                   --  A special case, if this variable is volatile and not
@@ -1248,24 +1248,15 @@ package body Sem_Warn is
                   --  Here we give the warning if referenced and no pragma
                   --  Unreferenced or Unmodified is present.
 
-                  else
-                     --  Variable case
-
-                     if Ekind (E1) = E_Variable then
-                        if Referenced_Check_Spec (E1)
-                          and then not Has_Pragma_Unreferenced_Check_Spec (E1)
-                          and then not Has_Pragma_Unmodified_Check_Spec (E1)
-                        then
-                           if not Warnings_Off_E1
-                             and then not Has_Junk_Name (E1)
-                           then
-                              Error_Msg_N -- CODEFIX
-                                ("?k?& is not modified, "
-                                 & "could be declared constant!",
-                                 E1);
-                           end if;
-                        end if;
-                     end if;
+                  elsif Referenced (E1)
+                    and then not Has_Unreferenced (E1)
+                    and then not Has_Unmodified (E1)
+                    and then not Warnings_Off_E1
+                    and then not Has_Junk_Name (E1)
+                  then
+                     Error_Msg_N -- CODEFIX
+                       ("?k?& is not modified, could be declared constant!",
+                        E1);
                   end if;
 
                --  Other cases of a variable or parameter never set in source
