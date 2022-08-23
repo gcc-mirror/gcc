@@ -283,10 +283,25 @@
 (define_expand "movpoi"
   [(set (match_operand:POI 0 "nonimmediate_operand")
 	(match_operand:POI 1 "input_operand"))]
-  "TARGET_MMA"
+  ""
 {
-  rs6000_emit_move (operands[0], operands[1], POImode);
-  DONE;
+  if (TARGET_MMA)
+    {
+      rs6000_emit_move (operands[0], operands[1], POImode);
+      DONE;
+    }
+  else if (currently_expanding_to_rtl && seen_error ())
+    {
+      /* PR103353 shows we may want to continue to expand the __builtin_vsx_lxvp
+	 built-in function, even if we have already emitted error messages about
+	 some missing required conditions.  As shown in that PR, without one
+	 explicit mov optab on POImode provided, it would call emit_move_insn
+	 recursively.  So we allow this pattern to be generated when we are
+	 expanding to RTL and have seen errors.  It would not cause further ICEs
+	 as the compilation would stop soon after expanding.  */
+    }
+  else
+    gcc_unreachable ();
 })
 
 (define_insn_and_split "*movpoi"
@@ -323,10 +338,22 @@
 (define_expand "movpxi"
   [(set (match_operand:PXI 0 "nonimmediate_operand")
 	(match_operand:PXI 1 "input_operand"))]
-  "TARGET_MMA"
+  ""
 {
-  rs6000_emit_move (operands[0], operands[1], PXImode);
-  DONE;
+  if (TARGET_MMA)
+    {
+      rs6000_emit_move (operands[0], operands[1], PXImode);
+      DONE;
+    }
+  else if (currently_expanding_to_rtl && seen_error ())
+    {
+      /* PR103353 shows we may want to continue to expand the __builtin_vsx_lxvp
+	 built-in function, even if we have already emitted error messages about
+	 some missing required conditions.  So do the same handlings for PXImode
+	 as POImode here.  */
+    }
+  else
+    gcc_unreachable ();
 })
 
 (define_insn_and_split "*movpxi"
