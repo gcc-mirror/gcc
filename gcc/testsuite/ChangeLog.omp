@@ -1,5 +1,9 @@
 2022-08-23  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.dg/gomp/depend-4.f90: Update expected tree dumps.
+
+2022-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backport from mainline:
 	2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
 
