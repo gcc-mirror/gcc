@@ -1,3 +1,19 @@
+2022-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-08-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (main): Add dbgobj to files_to_cleanup.
+
+2022-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106548
+	* omp-low.cc (lower_rec_input_clauses): Use build_outer_var_ref
+	for 'simd' linear-step values that are variable.
+
 2022-08-19  Release Manager
 
 	* GCC 12.2.0 released.

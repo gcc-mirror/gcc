@@ -1,3 +1,14 @@
+2022-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105678
+	* doc/xml/manual/using.xml: Document -lstdc++_libbacktrace
+	requirement for using std::stacktrace. Also adjust -frtti and
+	-fexceptions to document non-default (i.e. negative) forms.
+	* doc/html/*: Regenerate.
+
 2022-08-19  Release Manager
 
 	* GCC 12.2.0 released.
