@@ -1633,14 +1633,13 @@ loongarch_rtx_constant_in_small_data_p (machine_mode mode)
 static enum loongarch_symbol_type
 loongarch_classify_symbol (const_rtx x)
 {
-  if (LABEL_REF_P (x))
+  if (!SYMBOL_REF_P (x))
     return SYMBOL_PCREL;
 
   if (SYMBOL_REF_TLS_MODEL (x))
     return SYMBOL_TLS;
 
-  if (SYMBOL_REF_P (x)
-      && !loongarch_symbol_binds_local_p (x))
+  if (!loongarch_symbol_binds_local_p (x))
     return SYMBOL_GOT_DISP;
 
   return SYMBOL_PCREL;
