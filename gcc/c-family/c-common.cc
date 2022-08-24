@@ -4550,6 +4550,7 @@ c_common_nodes_and_builtins (void)
   if (c_dialect_cxx ())
     {
       char8_type_node = make_unsigned_type (char8_type_size);
+      TYPE_STRING_FLAG (char8_type_node) = true;
 
       if (flag_char8_t)
         record_builtin_type (RID_CHAR8, "char8_t", char8_type_node);
@@ -9345,11 +9346,14 @@ braced_list_to_string (tree type, tree ctor, bool member)
   if (!member && !tree_fits_uhwi_p (typesize))
     return ctor;
 
-  /* If the target char size differes from the host char size, we'd risk
+  /* If the target char size differs from the host char size, we'd risk
      loosing data and getting object sizes wrong by converting to
      host chars.  */
   if (TYPE_PRECISION (char_type_node) != CHAR_BIT)
     return ctor;
+
+  /* STRING_CST doesn't support wide characters.  */
+  gcc_checking_assert (TYPE_PRECISION (TREE_TYPE (type)) == CHAR_BIT);
 
   /* If the array has an explicit bound, use it to constrain the size
      of the string.  If it doesn't, be sure to create a string that's
