@@ -388,8 +388,14 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
       else if (dir == &dtable[T_WARNING])
 	{
 	  if (CPP_PEDANTIC (pfile) && !CPP_OPTION (pfile, warning_directive))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "#%s before C2X is a GCC extension", dir->name);
+	    {
+	      if (CPP_OPTION (pfile, cplusplus))
+		cpp_error (pfile, CPP_DL_PEDWARN,
+			   "#%s before C++23 is a GCC extension", dir->name);
+	      else
+		cpp_error (pfile, CPP_DL_PEDWARN,
+			   "#%s before C2X is a GCC extension", dir->name);
+	    }
 	  else if (CPP_OPTION (pfile, cpp_warn_c11_c2x_compat) > 0)
 	    cpp_warning (pfile, CPP_W_C11_C2X_COMPAT,
 			 "#%s before C2X is a GCC extension", dir->name);
