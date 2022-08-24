@@ -2784,13 +2784,6 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 		      if ((name = ldgetname (ldptr, &symbol)) == NULL)
 			continue;		/* Should never happen.  */
 
-#ifdef XCOFF_DEBUGGING_INFO
-		      /* All AIX function names have a duplicate entry
-			 beginning with a dot.  */
-		      if (*name == '.')
-			++name;
-#endif
-
 		      switch (is_ctor_dtor (name))
 			{
 #if TARGET_AIX_VERSION

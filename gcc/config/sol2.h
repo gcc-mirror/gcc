@@ -498,11 +498,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define AS_NEEDS_DASH_FOR_PIPED_INPUT
 
-/* The Solaris assembler cannot grok .stabd directives.  */
-#undef NO_DBX_BNSYM_ENSYM
-#define NO_DBX_BNSYM_ENSYM 1
 #endif
-
 /* Solaris has an implementation of __enable_execute_stack.  */
 #define HAVE_ENABLE_EXECUTE_STACK
 

@@ -1426,8 +1426,6 @@ do {									\
 
 /* Specific Options for DBX Output.  */
 
-/* This is handled by dbxelf.h.  */
-
 
 /* Open ended Hooks for DBX Output.  */
 

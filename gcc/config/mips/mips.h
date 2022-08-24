@@ -1384,9 +1384,7 @@ struct mips_cpu_info {
 #ifndef SUBTARGET_ASM_DEBUGGING_SPEC
 #define SUBTARGET_ASM_DEBUGGING_SPEC "\
 %{g} %{g0} %{g1} %{g2} %{g3} \
-%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
-%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
-%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3}"
+%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3}"
 #endif
 
 /* FP_ASM_SPEC represents the floating-point options that must be passed
@@ -1508,7 +1506,6 @@ FP_ASM_SPEC "\
 #define SUBTARGET_EXTRA_SPECS
 #endif
 
-#define DBX_DEBUGGING_INFO 1		/* generate stabs (OSF/rose) */
 #define DWARF2_DEBUGGING_INFO 1         /* dwarf2 debugging info */
 
 #ifndef PREFERRED_DEBUGGING_TYPE
@@ -1547,14 +1544,6 @@ FP_ASM_SPEC "\
 #ifndef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX	""
 #endif
-
-/* On Sun 4, this limit is 2048.  We use 1500 to be safe,
-   since the length can run past this up to a continuation point.  */
-#undef DBX_CONTIN_LENGTH
-#define DBX_CONTIN_LENGTH 1500
-
-/* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO) mips_dbx_regno[REGNO]
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.  */
 #define DWARF_FRAME_REGNUM(REGNO) mips_dwarf_regno[REGNO]
@@ -1869,7 +1858,6 @@ FP_ASM_SPEC "\
 #define GP_REG_FIRST 0
 #define GP_REG_LAST  31
 #define GP_REG_NUM   (GP_REG_LAST - GP_REG_FIRST + 1)
-#define GP_DBX_FIRST 0
 #define K0_REG_NUM   (GP_REG_FIRST + 26)
 #define K1_REG_NUM   (GP_REG_FIRST + 27)
 #define KERNEL_REG_P(REGNO)	(IN_RANGE (REGNO, K0_REG_NUM, K1_REG_NUM))
@@ -1877,12 +1865,10 @@ FP_ASM_SPEC "\
 #define FP_REG_FIRST 32
 #define FP_REG_LAST  63
 #define FP_REG_NUM   (FP_REG_LAST - FP_REG_FIRST + 1)
-#define FP_DBX_FIRST ((write_symbols == DBX_DEBUG) ? 38 : 32)
 
 #define MD_REG_FIRST 64
 #define MD_REG_LAST  65
 #define MD_REG_NUM   (MD_REG_LAST - MD_REG_FIRST + 1)
-#define MD_DBX_FIRST (FP_DBX_FIRST + FP_REG_NUM)
 
 #define MSA_REG_FIRST FP_REG_FIRST
 #define MSA_REG_LAST  FP_REG_LAST
@@ -3221,7 +3207,6 @@ extern int num_source_filenames;	/* current .file # */
 extern struct mips_asm_switch mips_noreorder;
 extern struct mips_asm_switch mips_nomacro;
 extern struct mips_asm_switch mips_noat;
-extern int mips_dbx_regno[];
 extern int mips_dwarf_regno[];
 extern bool mips_split_p[];
 extern bool mips_split_hi_p[];

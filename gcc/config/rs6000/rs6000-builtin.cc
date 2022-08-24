@@ -51,9 +51,6 @@
 #include "tree-ssa-propagate.h"
 #include "builtins.h"
 #include "tree-vector-builder.h"
-#if TARGET_XCOFF
-#include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
-#endif
 #include "ppc-auxv.h"
 #include "rs6000-internal.h"
 

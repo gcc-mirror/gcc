@@ -927,26 +927,11 @@ proper position among the other output files.  */
 # else
 #  define ASM_DEBUG_DWARF_OPTION "--gdwarf2"
 # endif
-# if defined(DBX_DEBUGGING_INFO) && defined(DWARF2_DEBUGGING_INFO) \
-     && defined(HAVE_AS_GDWARF2_DEBUG_FLAG) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
-#  define ASM_DEBUG_SPEC						\
-      (PREFERRED_DEBUGGING_TYPE == DBX_DEBUG				\
-       ? "%{%:debug-level-gt(0):"					\
-	 "%{gdwarf*:" ASM_DEBUG_DWARF_OPTION "};"			\
-	 ":%{g*:--gstabs}}" ASM_MAP					\
-       : "%{%:debug-level-gt(0):"					\
-	 "%{gstabs*:--gstabs;"						\
-	 ":%{g*:" ASM_DEBUG_DWARF_OPTION "}}}" ASM_MAP)
-# else
-#  if defined(DBX_DEBUGGING_INFO) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
-#   define ASM_DEBUG_SPEC "%{g*:%{%:debug-level-gt(0):--gstabs}}" ASM_MAP
-#  endif
 #  if defined(DWARF2_DEBUGGING_INFO) && defined(HAVE_AS_GDWARF2_DEBUG_FLAG)
 #   define ASM_DEBUG_SPEC "%{g*:%{%:debug-level-gt(0):" \
 	ASM_DEBUG_DWARF_OPTION "}}" ASM_MAP
 #  endif
 # endif
-#endif
 #ifndef ASM_DEBUG_SPEC
 # define ASM_DEBUG_SPEC ""
 #endif
@@ -960,14 +945,7 @@ proper position among the other output files.  */
 	"%:dwarf-version-gt(3):--gdwarf-4 ;"				\
 	"%:dwarf-version-gt(2):--gdwarf-3 ;"				\
 	":--gdwarf2 }"
-#  if defined(DBX_DEBUGGING_INFO) && defined(DWARF2_DEBUGGING_INFO)
-#  define ASM_DEBUG_OPTION_SPEC						\
-      (PREFERRED_DEBUGGING_TYPE == DBX_DEBUG				\
-       ? "%{%:debug-level-gt(0):"					\
-	 "%{gdwarf*:" ASM_DEBUG_OPTION_DWARF_OPT "}}" 			\
-       : "%{%:debug-level-gt(0):"					\
-	 "%{!gstabs*:%{g*:" ASM_DEBUG_OPTION_DWARF_OPT "}}}")
-# elif defined(DWARF2_DEBUGGING_INFO)
+# if defined(DWARF2_DEBUGGING_INFO)
 #   define ASM_DEBUG_OPTION_SPEC "%{g*:%{%:debug-level-gt(0):" \
 	ASM_DEBUG_OPTION_DWARF_OPT "}}"
 #  endif

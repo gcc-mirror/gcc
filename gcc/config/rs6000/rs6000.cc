@@ -75,9 +75,6 @@
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "except.h"
-#if TARGET_XCOFF
-#include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
-#endif
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
 #include "rs6000-internal.h"
@@ -3823,12 +3820,6 @@ rs6000_option_override_internal (bool global_init_p)
 
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "before defaults", rs6000_isa_flags);
-
-#ifdef XCOFF_DEBUGGING_INFO
-  /* For AIX default to 64-bit DWARF.  */
-  if (!OPTION_SET_P (dwarf_offset_size))
-    dwarf_offset_size = POINTER_SIZE_UNITS;
-#endif
 
   /* Handle explicit -mno-{altivec,vsx,power8-vector,power9-vector} and turn
      off all of the options that depend on those flags.  */
@@ -20949,9 +20940,14 @@ rs6000_elf_file_end (void)
 
 #if TARGET_XCOFF
 
-#ifndef HAVE_XCOFF_DWARF_EXTRAS
-#define HAVE_XCOFF_DWARF_EXTRAS 0
-#endif
+/* Names of bss and data sections.  These should be unique names for each
+   compilation unit.  */
+
+char *xcoff_bss_section_name;
+char *xcoff_private_data_section_name;
+char *xcoff_private_rodata_section_name;
+char *xcoff_tls_data_section_name;
+char *xcoff_read_only_section_name;
 
 static enum unwind_info_type
 rs6000_xcoff_debug_unwind_info (void)
@@ -21466,9 +21462,7 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
 							&data, true);
   if (!DECL_IGNORED_P (decl))
     {
-      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	xcoffout_declare_function (file, decl, buffer);
-      else if (dwarf_debuginfo_p ())
+      if (dwarf_debuginfo_p ())
 	{
 	  name = (*targetm.strip_name_encoding) (name);
 	  fprintf (file, "\t.function .%s,.%s,2,0\n", name, name);

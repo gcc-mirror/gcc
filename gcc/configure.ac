@@ -3512,11 +3512,6 @@ AC_DEFINE_UNQUOTED(HAVE_LD_ALIGNED_SHF_MERGE,
   [`if test $gcc_cv_ld_aligned_shf_merge = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your linker supports the SHF_MERGE flag with section alignment > 1.])
 
-gcc_GAS_CHECK_FEATURE([stabs directive], gcc_cv_as_stabs_directive,,
-[.stabs "gcc2_compiled.",60,0,0,0],,
-[AC_DEFINE(HAVE_AS_STABS_DIRECTIVE, 1,
-  [Define if your assembler supports .stabs.])])
-
 gcc_GAS_CHECK_FEATURE([COMDAT group support (GNU as)],
  gcc_cv_as_comdat_group,
  [--fatal-warnings],
@@ -5076,15 +5071,6 @@ LCF0:
 	  ],,
 	  [AC_DEFINE(HAVE_AS_REF, 1,
 	    [Define if your assembler supports .ref])])
-
-	gcc_GAS_CHECK_FEATURE([AIX DWARF location lists section support],
-	  gcc_cv_as_aix_dwloc,,
-	  [	.dwsect 0xA0000
-	Lframe..0:
-		.vbyte 4,Lframe..0
-	  ],,
-	  [AC_DEFINE(HAVE_XCOFF_DWARF_EXTRAS, 1,
-	    [Define if your assembler supports AIX debug frame section label reference.])])
 	;;
     esac
     ;;
@@ -5727,12 +5713,6 @@ foo:
  compiler generated .debug_line.])
    fi
  fi
-
- gcc_GAS_CHECK_FEATURE([--gstabs option],
-  gcc_cv_as_gstabs_flag,
-  [--gstabs], [$insn],,
-  [AC_DEFINE(HAVE_AS_GSTABS_DEBUG_FLAG, 1,
-[Define if your assembler supports the --gstabs option.])])
 
  gcc_GAS_CHECK_FEATURE([--debug-prefix-map option],
   gcc_cv_as_debug_prefix_map_flag,

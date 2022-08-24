@@ -45,7 +45,7 @@ remainder.  @command{g++} accepts mostly the same options as @command{gcc}.
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7),
-cpp(1), gcov(1), as(1), ld(1), gdb(1), dbx(1)
+cpp(1), gcov(1), as(1), ld(1), gdb(1)
 and the Info entries for @file{gcc}, @file{cpp}, @file{as},
 @file{ld}, @file{binutils} and @file{gdb}.
 @c man end
@@ -496,7 +496,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version} @gol
 -gbtf -gctf  -gctf@var{level} @gol
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
--gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
+-gstrict-dwarf  -gno-strict-dwarf @gol
 -gas-loc-support  -gno-as-loc-support @gol
 -gas-locview-support  -gno-as-locview-support @gol
 -gcolumn-info  -gno-column-info  -gdwarf32  -gdwarf64 @gol
@@ -504,7 +504,7 @@ Objective-C and Objective-C++ Dialects}.
 -gvariable-location-views  -gno-variable-location-views @gol
 -ginternal-reset-location-views  -gno-internal-reset-location-views @gol
 -ginline-points  -gno-inline-points @gol
--gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
+-gvms -gz@r{[}=@var{type}@r{]} @gol
 -gsplit-dwarf  -gdescribe-dies  -gno-describe-dies @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
 -fno-eliminate-unused-debug-types @gol
@@ -10707,10 +10707,8 @@ information.
 On most systems that use stabs format, @option{-g} enables use of extra
 debugging information that only GDB can use; this extra information
 makes debugging work better in GDB but probably makes other debuggers
-crash or
-refuse to read the program.  If you want to control for certain whether
-to generate the extra information, use @option{-gstabs+}, @option{-gstabs},
-@option{-gxcoff+}, @option{-gxcoff}, or @option{-gvms} (see below).
+crash or refuse to read the program.  If you want to control for certain whether
+to generate the extra information, use @option{-gvms} (see below).
 
 @item -ggdb
 @opindex ggdb
@@ -10767,34 +10765,6 @@ information, but does not include type information.
 Level 2 produces type information for entities (functions, data objects etc.)
 at file-scope or global-scope only.
 
-@item -gstabs
-@opindex gstabs
-Produce debugging information in stabs format (if that is supported),
-without GDB extensions.  This is the format used by DBX on most BSD
-systems.  On MIPS, Alpha and System V Release 4 systems this option
-produces stabs debugging output that is not understood by DBX@.
-On System V Release 4 systems this option requires the GNU assembler.
-
-@item -gstabs+
-@opindex gstabs+
-Produce debugging information in stabs format (if that is supported),
-using GNU extensions understood only by the GNU debugger (GDB)@.  The
-use of these extensions is likely to make other debuggers crash or
-refuse to read the program.
-
-@item -gxcoff
-@opindex gxcoff
-Produce debugging information in XCOFF format (if that is supported).
-This is the format used by the DBX debugger on IBM RS/6000 systems.
-
-@item -gxcoff+
-@opindex gxcoff+
-Produce debugging information in XCOFF format (if that is supported),
-using GNU extensions understood only by the GNU debugger (GDB)@.  The
-use of these extensions is likely to make other debuggers crash or
-refuse to read the program, and may cause assemblers other than the GNU
-assembler (GAS) to fail with an error.
-
 @item -gvms
 @opindex gvms
 Produce debugging information in Alpha/VMS debug format (if that is
@@ -10802,8 +10772,6 @@ supported).  This is the format used by DEBUG on Alpha/VMS systems.
 
 @item -g@var{level}
 @itemx -ggdb@var{level}
-@itemx -gstabs@var{level}
-@itemx -gxcoff@var{level}
 @itemx -gvms@var{level}
 Request debugging information and also use @var{level} to specify how
 much information.  The default level is 2.

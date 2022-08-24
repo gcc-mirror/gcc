@@ -1510,14 +1510,6 @@ do {									   \
 #define ADDITIONAL_REGISTER_NAMES \
 {{"ccr", SPARC_ICC_REG}, {"cc", SPARC_ICC_REG}}
 
-/* On Sun 4, this limit is 2048.  We use 1000 to be safe, since the length
-   can run past this up to a continuation point.  Once we used 1500, but
-   a single entry in C++ can run more than 500 bytes, due to the length of
-   mangled symbol names.  dbxout.cc should really be fixed to do
-   continuations when they are actually needed instead of trying to
-   guess...  */
-#define DBX_CONTIN_LENGTH 1000
-
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 

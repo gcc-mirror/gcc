@@ -67,9 +67,6 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \
   sprintf ((STRING), "*%s%s%ld", LOCAL_LABEL_PREFIX, (PREFIX), (long)(NUM))
 
-#define DBX_LINES_FUNCTION_RELATIVE 1
-#define DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
-
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
   "%{!shared: crt1.o%s} crti.o%s \

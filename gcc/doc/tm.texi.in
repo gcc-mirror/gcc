@@ -6603,9 +6603,6 @@ This describes how to specify debugging information.
 
 @menu
 * All Debuggers::      Macros that affect all debugging formats uniformly.
-* DBX Options::        Macros enabling specific options in DBX format.
-* DBX Hooks::          Hook macros for varying DBX format.
-* File Names and DBX:: Macros controlling output of file names in DBX format.
 * DWARF::              Macros for DWARF format.
 * VMS Debug::          Macros for VMS debug format.
 * CTF Debug::          Macros for CTF debug format.
@@ -6656,35 +6653,18 @@ having address @var{x} (an RTL expression).  The nominal offset is
 A C expression that returns the type of debugging output GCC should
 produce when the user specifies just @option{-g}.  Define
 this if you have arranged for GCC to support more than one format of
-debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
-@code{DWARF2_DEBUG}, @code{XCOFF_DEBUG}, @code{VMS_DEBUG},
+debugging output.  Currently, the allowable values are
+@code{DWARF2_DEBUG}, @code{VMS_DEBUG},
 and @code{VMS_AND_DWARF2_DEBUG}.
 
 When the user specifies @option{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two
 exceptions.  If @code{DWARF2_DEBUGGING_INFO} is defined, GCC uses the
-value @code{DWARF2_DEBUG}.  Otherwise, if @code{DBX_DEBUGGING_INFO} is
-defined, GCC uses @code{DBX_DEBUG}.
+value @code{DWARF2_DEBUG}.
 
 The value of this macro only affects the default debugging output; the
-user can always get a specific type of output by using @option{-gstabs},
-@option{-gdwarf-2}, @option{-gxcoff}, or @option{-gvms}.
-@end defmac
-
-@node DBX Options
-@subsection Specific Options for DBX Output
-
-@c prevent bad page break with this line
-These are specific options for DBX output.
-
-@defmac DBX_DEBUGGING_INFO
-Define this macro if GCC should produce debugging output for DBX
-in response to the @option{-g} option.
-@end defmac
-
-@defmac XCOFF_DEBUGGING_INFO
-Define this macro if GCC should produce XCOFF format debugging output
-in response to the @option{-g} option.  This is a variant of DBX format.
+user can always get a specific type of output by using  @option{-gdwarf-2},
+or @option{-gvms}.
 @end defmac
 
 @defmac DEFAULT_GDB_EXTENSIONS
@@ -6693,196 +6673,6 @@ GDB's extended version of DBX debugging information (assuming DBX-format
 debugging information is enabled at all).  If you don't define the
 macro, the default is 1: always generate the extended information
 if there is any occasion to.
-@end defmac
-
-@defmac DEBUG_SYMS_TEXT
-Define this macro if all @code{.stabs} commands should be output while
-in the text section.
-@end defmac
-
-@defmac ASM_STABS_OP
-A C string constant, including spacing, naming the assembler pseudo op to
-use instead of @code{"\t.stabs\t"} to define an ordinary debugging symbol.
-If you don't define this macro, @code{"\t.stabs\t"} is used.  This macro
-applies only to DBX debugging information format.
-@end defmac
-
-@defmac ASM_STABD_OP
-A C string constant, including spacing, naming the assembler pseudo op to
-use instead of @code{"\t.stabd\t"} to define a debugging symbol whose
-value is the current location.  If you don't define this macro,
-@code{"\t.stabd\t"} is used.  This macro applies only to DBX debugging
-information format.
-@end defmac
-
-@defmac ASM_STABN_OP
-A C string constant, including spacing, naming the assembler pseudo op to
-use instead of @code{"\t.stabn\t"} to define a debugging symbol with no
-name.  If you don't define this macro, @code{"\t.stabn\t"} is used.  This
-macro applies only to DBX debugging information format.
-@end defmac
-
-@defmac DBX_NO_XREFS
-Define this macro if DBX on your system does not support the construct
-@samp{xs@var{tagname}}.  On some systems, this construct is used to
-describe a forward reference to a structure named @var{tagname}.
-On other systems, this construct is not supported at all.
-@end defmac
-
-@defmac DBX_CONTIN_LENGTH
-A symbol name in DBX-format debugging information is normally
-continued (split into two separate @code{.stabs} directives) when it
-exceeds a certain length (by default, 80 characters).  On some
-operating systems, DBX requires this splitting; on others, splitting
-must not be done.  You can inhibit splitting by defining this macro
-with the value zero.  You can override the default splitting-length by
-defining this macro as an expression for the length you desire.
-@end defmac
-
-@defmac DBX_CONTIN_CHAR
-Normally continuation is indicated by adding a @samp{\} character to
-the end of a @code{.stabs} string when a continuation follows.  To use
-a different character instead, define this macro as a character
-constant for the character you want to use.  Do not define this macro
-if backslash is correct for your system.
-@end defmac
-
-@defmac DBX_STATIC_STAB_DATA_SECTION
-Define this macro if it is necessary to go to the data section before
-outputting the @samp{.stabs} pseudo-op for a non-global static
-variable.
-@end defmac
-
-@defmac DBX_TYPE_DECL_STABS_CODE
-The value to use in the ``code'' field of the @code{.stabs} directive
-for a typedef.  The default is @code{N_LSYM}.
-@end defmac
-
-@defmac DBX_STATIC_CONST_VAR_CODE
-The value to use in the ``code'' field of the @code{.stabs} directive
-for a static variable located in the text section.  DBX format does not
-provide any ``right'' way to do this.  The default is @code{N_FUN}.
-@end defmac
-
-@defmac DBX_REGPARM_STABS_CODE
-The value to use in the ``code'' field of the @code{.stabs} directive
-for a parameter passed in registers.  DBX format does not provide any
-``right'' way to do this.  The default is @code{N_RSYM}.
-@end defmac
-
-@defmac DBX_REGPARM_STABS_LETTER
-The letter to use in DBX symbol data to identify a symbol as a parameter
-passed in registers.  DBX format does not customarily provide any way to
-do this.  The default is @code{'P'}.
-@end defmac
-
-@defmac DBX_FUNCTION_FIRST
-Define this macro if the DBX information for a function and its
-arguments should precede the assembler code for the function.  Normally,
-in DBX format, the debugging information entirely follows the assembler
-code.
-@end defmac
-
-@defmac DBX_BLOCKS_FUNCTION_RELATIVE
-Define this macro, with value 1, if the value of a symbol describing
-the scope of a block (@code{N_LBRAC} or @code{N_RBRAC}) should be
-relative to the start of the enclosing function.  Normally, GCC uses
-an absolute address.
-@end defmac
-
-@defmac DBX_LINES_FUNCTION_RELATIVE
-Define this macro, with value 1, if the value of a symbol indicating
-the current line number (@code{N_SLINE}) should be relative to the
-start of the enclosing function.  Normally, GCC uses an absolute address.
-@end defmac
-
-@defmac DBX_USE_BINCL
-Define this macro if GCC should generate @code{N_BINCL} and
-@code{N_EINCL} stabs for included header files, as on Sun systems.  This
-macro also directs GCC to output a type number as a pair of a file
-number and a type number within the file.  Normally, GCC does not
-generate @code{N_BINCL} or @code{N_EINCL} stabs, and it outputs a single
-number for a type number.
-@end defmac
-
-@node DBX Hooks
-@subsection Open-Ended Hooks for DBX Format
-
-@c prevent bad page break with this line
-These are hooks for DBX format.
-
-@defmac DBX_OUTPUT_SOURCE_LINE (@var{stream}, @var{line}, @var{counter})
-A C statement to output DBX debugging information before code for line
-number @var{line} of the current source file to the stdio stream
-@var{stream}.  @var{counter} is the number of time the macro was
-invoked, including the current invocation; it is intended to generate
-unique labels in the assembly output.
-
-This macro should not be defined if the default output is correct, or
-if it can be made correct by defining @code{DBX_LINES_FUNCTION_RELATIVE}.
-@end defmac
-
-@defmac NO_DBX_FUNCTION_END
-Some stabs encapsulation formats (in particular ECOFF), cannot handle the
-@code{.stabs "",N_FUN,,0,0,Lscope-function-1} gdb dbx extension construct.
-On those machines, define this macro to turn this feature off without
-disturbing the rest of the gdb extensions.
-@end defmac
-
-@defmac NO_DBX_BNSYM_ENSYM
-Some assemblers cannot handle the @code{.stabd BNSYM/ENSYM,0,0} gdb dbx
-extension construct.  On those machines, define this macro to turn this
-feature off without disturbing the rest of the gdb extensions.
-@end defmac
-
-@node File Names and DBX
-@subsection File Names in DBX Format
-
-@c prevent bad page break with this line
-This describes file names in DBX format.
-
-@defmac DBX_OUTPUT_MAIN_SOURCE_FILENAME (@var{stream}, @var{name})
-A C statement to output DBX debugging information to the stdio stream
-@var{stream}, which indicates that file @var{name} is the main source
-file---the file specified as the input file for compilation.
-This macro is called only once, at the beginning of compilation.
-
-This macro need not be defined if the standard form of output
-for DBX debugging information is appropriate.
-
-It may be necessary to refer to a label equal to the beginning of the
-text section.  You can use @samp{assemble_name (stream, ltext_label_name)}
-to do so.  If you do this, you must also set the variable
-@var{used_ltext_label_name} to @code{true}.
-@end defmac
-
-@defmac NO_DBX_MAIN_SOURCE_DIRECTORY
-Define this macro, with value 1, if GCC should not emit an indication
-of the current directory for compilation and current source language at
-the beginning of the file.
-@end defmac
-
-@defmac NO_DBX_GCC_MARKER
-Define this macro, with value 1, if GCC should not emit an indication
-that this object file was compiled by GCC@.  The default is to emit
-an @code{N_OPT} stab at the beginning of every source file, with
-@samp{gcc2_compiled.} for the string and value 0.
-@end defmac
-
-@defmac DBX_OUTPUT_MAIN_SOURCE_FILE_END (@var{stream}, @var{name})
-A C statement to output DBX debugging information at the end of
-compilation of the main source file @var{name}.  Output should be
-written to the stdio stream @var{stream}.
-
-If you don't define this macro, nothing special is output at the end
-of compilation, which is correct for most machines.
-@end defmac
-
-@defmac DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
-Define this macro @emph{instead of} defining
-@code{DBX_OUTPUT_MAIN_SOURCE_FILE_END}, if what needs to be output at
-the end of compilation is an @code{N_SO} stab with an empty string,
-whose value is the highest absolute text address in the file.
 @end defmac
 
 @need 2000
