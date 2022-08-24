@@ -649,6 +649,61 @@ namespace ranges
   };
 
   inline constexpr __search_fn search{};
+
+  struct __min_fn
+  {
+    template<typename _Tp, typename _Proj = identity,
+	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
+	       _Comp = ranges::less>
+      constexpr const _Tp&
+      operator()(const _Tp& __a, const _Tp& __b,
+		 _Comp __comp = {}, _Proj __proj = {}) const
+      {
+	if (std::__invoke(__comp,
+			  std::__invoke(__proj, __b),
+			  std::__invoke(__proj, __a)))
+	  return __b;
+	else
+	  return __a;
+      }
+
+    template<input_range _Range, typename _Proj = identity,
+	     indirect_strict_weak_order<projected<iterator_t<_Range>, _Proj>>
+	       _Comp = ranges::less>
+      requires indirectly_copyable_storable<iterator_t<_Range>,
+					    range_value_t<_Range>*>
+      constexpr range_value_t<_Range>
+      operator()(_Range&& __r, _Comp __comp = {}, _Proj __proj = {}) const
+      {
+	auto __first = ranges::begin(__r);
+	auto __last = ranges::end(__r);
+	__glibcxx_assert(__first != __last);
+	auto __result = *__first;
+	while (++__first != __last)
+	  {
+	    auto __tmp = *__first;
+	    if (std::__invoke(__comp,
+			      std::__invoke(__proj, __tmp),
+			      std::__invoke(__proj, __result)))
+	      __result = std::move(__tmp);
+	  }
+	return __result;
+      }
+
+    template<copyable _Tp, typename _Proj = identity,
+	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
+	       _Comp = ranges::less>
+      constexpr _Tp
+      operator()(initializer_list<_Tp> __r,
+		 _Comp __comp = {}, _Proj __proj = {}) const
+      {
+	return (*this)(ranges::subrange(__r),
+		       std::move(__comp), std::move(__proj));
+      }
+  };
+
+  inline constexpr __min_fn min{};
+
 } // namespace ranges
 
   using ranges::get;
