@@ -863,7 +863,7 @@ internal_proto(si_max);
 extern int convert_real (st_parameter_dt *, void *, const char *, int);
 internal_proto(convert_real);
 
-extern int convert_infnan (st_parameter_dt *, void *, const char *, int);
+extern void convert_infnan (st_parameter_dt *, void *, const char *, int);
 internal_proto(convert_infnan);
 
 extern void read_a (st_parameter_dt *, const fnode *, char *, size_t);

@@ -32,7 +32,7 @@
 int count = 0;
 char rbuf1[2048];
 char rbuf2[2048];
-int _fprintf(FILE *stream, const char *format, ...)
+void _fprintf(FILE *stream, const char *format, ...)
 {
   va_list args;
   va_start(args, format);
@@ -55,8 +55,6 @@ int _fprintf(FILE *stream, const char *format, ...)
     }
 
   va_end(args);
-
-  return 0;
 }
 #define fprintf _fprintf
 #endif

@@ -155,7 +155,7 @@ mpn_add_1 (register mp_ptr res_ptr,
   register mp_limb_t x;
 
   x = *s1_ptr++;
-  s2_limb = x + s2_limb;
+  s2_limb += x;
   *res_ptr++ = s2_limb;
   if (s2_limb < x)
     {

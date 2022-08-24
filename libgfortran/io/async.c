@@ -501,7 +501,6 @@ init_async_unit (gfc_unit *u)
 void
 enqueue_transfer (async_unit *au, transfer_args *arg, enum aio_do type)
 {
-  return;
 }
 
 /* Do-nothing function, which will not be called.  */
