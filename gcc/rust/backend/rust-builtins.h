@@ -18,8 +18,9 @@
 #define RUST_BUILTINS_H
 
 #include "rust-system.h"
-#include "tree.h"
+#include "rust-tree.h"
 #include "langhooks.h"
+#include "tree.h"
 
 namespace Rust {
 namespace Compile {
@@ -99,16 +100,34 @@ private:
 
   BuiltinsContext () { setup (); }
 
-  void setup ()
+  void setup_overflow_fns ()
+  {
+    tree overflow_type
+      = build_varargs_function_type_list (boolean_type_node, NULL_TREE);
+
+    define_builtin ("add_overflow", BUILT_IN_ADD_OVERFLOW,
+		    "__builtin_add_overflow", "add_overflow", overflow_type, 0);
+    define_builtin ("sub_overflow", BUILT_IN_SUB_OVERFLOW,
+		    "__builtin_sub_overflow", "sub_overflow", overflow_type, 0);
+    define_builtin ("mul_overflow", BUILT_IN_MUL_OVERFLOW,
+		    "__builtin_mul_overflow", "mul_overflow", overflow_type, 0);
+  }
+
+  void setup_math_fns ()
   {
     tree math_function_type_f32
       = build_function_type_list (float_type_node, float_type_node, NULL_TREE);
 
     define_builtin ("sinf32", BUILT_IN_SINF, "__builtin_sinf", "sinf",
 		    math_function_type_f32, builtin_const);
-
     define_builtin ("sqrtf32", BUILT_IN_SQRTF, "__builtin_sqrtf", "sqrtf",
 		    math_function_type_f32, builtin_const);
+  }
+
+  void setup ()
+  {
+    setup_math_fns ();
+    setup_overflow_fns ();
 
     define_builtin ("unreachable", BUILT_IN_UNREACHABLE,
 		    "__builtin_unreachable", NULL,
@@ -132,6 +151,16 @@ private:
       0);
   }
 
+  static void handle_flags (tree decl, int flags)
+  {
+    if (flags & builtin_const)
+      TREE_READONLY (decl) = 1;
+    if (flags & builtin_noreturn)
+      TREE_READONLY (decl) = 1;
+    if (flags & builtin_novops)
+      DECL_IS_NOVOPS (decl) = 1;
+  }
+
   // Define a builtin function.  BCODE is the builtin function code
   // defined by builtins.def.  NAME is the name of the builtin function.
   // LIBNAME is the name of the corresponding library function, and is
@@ -144,24 +173,16 @@ private:
   {
     tree decl = add_builtin_function (name, fntype, bcode, BUILT_IN_NORMAL,
 				      libname, NULL_TREE);
-    if ((flags & builtin_const) != 0)
-      TREE_READONLY (decl) = 1;
-    if ((flags & builtin_noreturn) != 0)
-      TREE_THIS_VOLATILE (decl) = 1;
-    if ((flags & builtin_novops) != 0)
-      DECL_IS_NOVOPS (decl) = 1;
+    handle_flags (decl, flags);
     set_builtin_decl (bcode, decl, true);
+
     this->builtin_functions_[name] = decl;
     if (libname != NULL)
       {
 	decl = add_builtin_function (libname, fntype, bcode, BUILT_IN_NORMAL,
 				     NULL, NULL_TREE);
-	if ((flags & builtin_const) != 0)
-	  TREE_READONLY (decl) = 1;
-	if ((flags & builtin_noreturn) != 0)
-	  TREE_THIS_VOLATILE (decl) = 1;
-	if ((flags & builtin_novops) != 0)
-	  DECL_IS_NOVOPS (decl) = 1;
+	handle_flags (decl, flags);
+
 	this->builtin_functions_[libname] = decl;
       }
 
