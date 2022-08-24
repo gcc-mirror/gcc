@@ -13210,6 +13210,7 @@ base_type_die (tree type, bool reverse)
 	{
 	  const char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 	  if (strcmp (name, "char16_t") == 0
+	      || strcmp (name, "char8_t") == 0
 	      || strcmp (name, "char32_t") == 0)
 	    {
 	      encoding = DW_ATE_UTF;
