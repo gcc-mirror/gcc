@@ -1089,9 +1089,6 @@ package body Debug is
    --       opposite endianness from the actual correct value. Useful in
    --       testing out code generation from the packed routines.
 
-   --  d9   This allows lock free implementation for protected objects
-   --       (see Exp_Ch9).
-
    --  d.1  Sets Opt.Unnest_Subprogram_Mode to enable unnesting of subprograms.
    --       This special pass does not actually unnest things, but it ensures
    --       that a nested procedure does not contain any uplevel references.
