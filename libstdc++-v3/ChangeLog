@@ -1,3 +1,55 @@
+2022-08-23  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_bvector.h (_Bit_reference::operator=): Define
+	const overload for C++23 as per P2321R2.
+	* include/bits/stl_pair.h (pair::swap): Likewise.
+	(pair::pair): Define additional converting constructors for
+	C++23 as per P2321R2.
+	(pair::operator=): Define const overloads for C++23 as per
+	P2321R2.
+	(swap): Define overload taking const pair& for C++23 as per
+	P2321R2.
+	(basic_common_reference): Define partial specialization for
+	pair for C++23 as per P2321R2.
+	(common_type): Likewise.
+	* include/bits/uses_allocator_args.h
+	(uses_allocator_construction_args): Define additional pair
+	overloads for C++23 as per P2321R2.
+	* include/std/tuple (_Tuple_impl::_Tuple_impl): Define
+	additional converting constructors for C++23 as per P2321R2.
+	(_Tuple_impl::_M_assign): Define const overloads for C++23
+	as per P2321R2.
+	(_Tuple_impl::_M_swap): Likewise.
+	(tuple::__constructible): Define as a convenient renaming of
+	_TCC<true>::__constructible.
+	(tuple::__convertible): As above but for _TCC<true>::__convertible.
+	(tuple::tuple): Define additional converting constructors for
+	C++23 as per P2321R2.
+	(tuple::operator=): Define const overloads for C++23 as per
+	P2321R2.
+	(tuple::swap): Likewise.
+	(basic_common_reference): Define partial specialization for
+	tuple for C++23 as per P2321R2.
+	(common_type): Likewise.
+	* testsuite/20_util/pair/p2321r2.cc: New test.
+	* testsuite/20_util/tuple/p2321r2.cc: New test.
+	* testsuite/23_containers/vector/bool/element_access/1.cc: New test.
+
+2022-08-23  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/tuple (_TupleConstraints::__convertible): Define.
+	(_TupleConstraints::__constructible): Define.
+	(_TupleConstraints::__is_explicitly_constructible): Redefine this
+	in terms of __convertible and __constructible.
+	(_TupleConstraints::__is_implicitly_constructible): Likewise.
+
+2022-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106589
+	* include/std/variant (__do_visit): Handle is_void<R> for zero
+	argument case.
+	* testsuite/20_util/variant/visit_r.cc: Check std::visit<void>(v).
+
 2022-08-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/105678

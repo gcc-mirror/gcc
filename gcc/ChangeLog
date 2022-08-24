@@ -1,3 +1,45 @@
+2022-08-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106714
+	* config/i386/amxtileintrin.h (_tile_loadd_internal): Cast to
+	__PTRDIFF_TYPE__.
+	(_tile_stream_loadd_internal): Likewise.
+	(_tile_stored_internal): Likewise.
+
+2022-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106722
+	* gimple-predicate-analysis.h (MAX_NUM_CHAINS, MAX_CHAIN_LEN,
+	MAX_POSTDOM_CHECK, MAX_SWITCH_CASES): Move ...
+	* gimple-predicate-analysis.cc: ... here and document.
+	(simple_control_dep_chain): New function, factored from
+	predicate::use_cannot_happen.
+	(predicate::use_cannot_happen): Adjust.
+	(predicate::predicate): Use simple_control_dep_chain as fallback.
+
+2022-08-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_equal::op1_range): Set range to
+	range of op2.
+
+2022-08-23  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (is_loop_exit): Split out
+	from ...
+	(is_non_loop_exit_postdominating): ... here.  Remove after
+	inlining ...
+	(find_control_equiv_block): ... here.
+	(compute_control_dep_chain): ... and here.
+	(predicate::is_use_guarded): Do not excempt loop exits
+	from short-cutting the case of the use post-dominating the
+	PHI definition.
+
+2022-08-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106687
+	* range-op.cc (operator_minus::lhs_op1_relation): Return VREL_LE
+	for the VREL_GT case as well.
+
 2022-08-22  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* config/pru/pru.md (pru_<code>di3): New alternative for

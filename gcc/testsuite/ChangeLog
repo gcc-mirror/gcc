@@ -1,3 +1,48 @@
+2022-08-23  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/Wpessimizing-move10.C: New test.
+	* g++.dg/cpp0x/Wredundant-move12.C: New test.
+
+2022-08-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/x86_64/abi/bf16/asm-support.S: Replace vmovdqu with
+	movdqu.
+
+2022-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106722
+	* g++.dg/uninit-pr106722-1.C: New testcase.
+
+2022-08-23  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/torture/phi-1.C: New test.
+
+2022-08-23  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/uninit-pred-10.c: New testcase.
+
+2022-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/depend-6.f90: Fix array index use for
+	depobj var + update scan-tree-dump-times.
+
+2022-08-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/depend-4.f90: Fix array index use for
+	depobj var + update scan-tree-dump-times.
+
+2022-08-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/x86_64/abi/bf16/bf16-helper.h:
+	Add _m128bf16/m256bf16/_m512bf16.
+	* gcc.target/x86_64/abi/bf16/m512bf16/bf16-zmm-check.h:
+	Include bf16-helper.h.
+
+2022-08-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106687
+	* g++.dg/pr106687.C: New.
+
 2022-08-22  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* gcc.target/pru/bitop-di.c: New test.
