@@ -20,6 +20,6 @@ extern int (*_Unwind_RaiseException) (void *) __attribute__((weak));
 int main(void)
 {
   if (&_Unwind_RaiseException != NULL)
-    abort ();;
+    abort ();
   return foo (x, y);
 }
