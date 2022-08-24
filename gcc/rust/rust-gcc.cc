@@ -50,37 +50,9 @@
 #include "rust-linemap.h"
 #include "rust-backend.h"
 #include "rust-object-export.h"
+#include "rust-gcc.h"
 
 #include "backend/rust-tree.h"
-
-// TODO: this will have to be significantly modified to work with Rust
-
-// Bvariable is a bit more complicated, because of zero-sized types.
-// The GNU linker does not permit dynamic variables with zero size.
-// When we see such a variable, we generate a version of the type with
-// non-zero size.  However, when referring to the global variable, we
-// want an expression of zero size; otherwise, if, say, the global
-// variable is passed to a function, we will be passing a
-// non-zero-sized value to a zero-sized value, which can lead to a
-// miscompilation.
-
-class Bvariable
-{
-public:
-  Bvariable (tree t) : t_ (t), orig_type_ (NULL) {}
-
-  Bvariable (tree t, tree orig_type) : t_ (t), orig_type_ (orig_type) {}
-
-  // Get the tree for use as an expression.
-  tree get_tree (Location) const;
-
-  // Get the actual decl;
-  tree get_decl () const { return this->t_; }
-
-private:
-  tree t_;
-  tree orig_type_;
-};
 
 // Get the tree of a variable for use as an expression.  If this is a
 // zero-sized global, create an expression that refers to the decl but
