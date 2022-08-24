@@ -280,7 +280,7 @@ main()
   arg_int128[0] |= 0x9405182930415263;
   expected_int128[0] = 0x6352413029180594;
   expected_int128[0] = expected_int128[0] << 64;
-  expected_int128[0] |= 0x8372615049382716;;
+  expected_int128[0] |= 0x8372615049382716;
 
   result_int128 = vec_revb (arg_int128);
 
