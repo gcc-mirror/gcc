@@ -3868,32 +3868,35 @@ package body Exp_Ch9 is
       Ident       : Entity_Id;
       Unprotected : Boolean := False) return List_Id
    is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Decl      : Node_Id;
-      Formal    : Entity_Id;
-      New_Plist : List_Id;
-      New_Param : Node_Id;
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Decl       : Node_Id;
+      Formal     : Entity_Id;
+      New_Formal : Entity_Id;
+      New_Plist  : List_Id;
 
    begin
       New_Plist := New_List;
 
       Formal := First_Formal (Ident);
       while Present (Formal) loop
-         New_Param :=
+         New_Formal :=
+           Make_Defining_Identifier (Sloc (Formal), Chars (Formal));
+         Set_Comes_From_Source (New_Formal, Comes_From_Source (Formal));
+
+         if Unprotected then
+            Mutate_Ekind (New_Formal, Ekind (Formal));
+            Set_Protected_Formal (Formal, New_Formal);
+         end if;
+
+         Append_To (New_Plist,
            Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Sloc (Formal), Chars (Formal)),
+             Defining_Identifier => New_Formal,
              Aliased_Present     => Aliased_Present (Parent (Formal)),
              In_Present          => In_Present      (Parent (Formal)),
              Out_Present         => Out_Present     (Parent (Formal)),
-             Parameter_Type      => New_Occurrence_Of (Etype (Formal), Loc));
+             Parameter_Type      => New_Occurrence_Of (Etype (Formal), Loc)));
 
-         if Unprotected then
-            Set_Protected_Formal (Formal, Defining_Identifier (New_Param));
-            Mutate_Ekind (Defining_Identifier (New_Param), Ekind (Formal));
-         end if;
-
-         Append (New_Param, New_Plist);
          Next_Formal (Formal);
       end loop;
 

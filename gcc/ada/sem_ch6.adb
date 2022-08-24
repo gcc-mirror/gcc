@@ -5511,12 +5511,22 @@ package body Sem_Ch6 is
 
          --  Check references of the subprogram spec when we are dealing with
          --  an expression function due to it having a generated body.
-         --  Otherwise, we simply check the formals of the subprogram body.
 
          if Present (Spec_Id)
            and then Is_Expression_Function (Spec_Id)
          then
             Check_References (Spec_Id);
+
+         --  Skip the check for subprograms generated for protected subprograms
+         --  because it is also done for the protected subprograms themselves.
+
+         elsif Present (Spec_Id)
+           and then Present (Protected_Subprogram (Spec_Id))
+         then
+            null;
+
+         --  Otherwise, we simply check the formals of the subprogram body.
+
          else
             Check_References (Body_Id);
          end if;
