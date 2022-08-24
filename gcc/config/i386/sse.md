@@ -1215,7 +1215,7 @@
 ;; For 256-bit modes for TARGET_AVX512VL && TARGET_AVX512DQ
 ;; i32x4, f32x4, i64x2 or f64x2 suffixes.
 (define_mode_attr i128vldq
-  [(V8SF "f32x4") (V4DF "f64x2")
+  [(V16HF "i32x4") (V8SF "f32x4") (V4DF "f64x2")
    (V32QI "i32x4") (V16HI "i32x4") (V8SI "i32x4") (V4DI "i64x2")])
 
 ;; Mix-n-match
@@ -23424,7 +23424,7 @@
 	  (match_operand:VF_128 2 "register_operand" "v")
 	  (const_int 1)))]
   "TARGET_AVX512ER"
-  "vrcp28<ssescalarmodesuffix>\t{<round_saeonly_mask_op3>%1, %2, %0<mask_operand3>|<mask_opernad3>%0, %2, %<iptr>1<round_saeonly_mask_op3>}"
+  "vrcp28<ssescalarmodesuffix>\t{<round_saeonly_mask_op3>%1, %2, %0<mask_operand3>|<mask_operand3>%0, %2, %<iptr>1<round_saeonly_mask_op3>}"
   [(set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
    (set_attr "type" "sse")
