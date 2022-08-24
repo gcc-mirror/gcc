@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
+#include "backend.h"
 #include "tm.h"
 #include "rtl.h"
 #include "regs.h"
@@ -51,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "bitmap.h"
 #include "df.h"
+#include "function-abi.h"
 #include "diagnostic.h"
 #include "builtins.h"
 #include "predict.h"
@@ -154,6 +156,11 @@ struct GTY(())  machine_function {
 
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
+
+  /* The components already handled by separate shrink-wrapping, which should
+     not be considered by the prologue and epilogue.  */
+  bool reg_is_wrapped_separately[FIRST_PSEUDO_REGISTER];
+
 };
 
 /* Information about a single argument.  */
@@ -4806,7 +4813,7 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
   for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
-	bool handle_reg = TRUE;
+	bool handle_reg = !cfun->machine->reg_is_wrapped_separately[regno];
 
 	/* If this is a normal return in a function that calls the eh_return
 	   builtin, then do not restore the eh return data registers as that
@@ -4837,9 +4844,11 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
   for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.fmask, regno - FP_REG_FIRST))
       {
+	bool handle_reg = !cfun->machine->reg_is_wrapped_separately[regno];
 	machine_mode mode = TARGET_DOUBLE_FLOAT ? DFmode : SFmode;
 
-	riscv_save_restore_reg (mode, regno, offset, fn);
+	if (handle_reg)
+	  riscv_save_restore_reg (mode, regno, offset, fn);
 	offset -= GET_MODE_SIZE (mode).to_constant ();
       }
 }
@@ -5319,6 +5328,162 @@ riscv_epilogue_uses (unsigned int regno)
     }
 
   return false;
+}
+
+/* Implement TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS.  */
+
+static sbitmap
+riscv_get_separate_components (void)
+{
+  HOST_WIDE_INT offset;
+  sbitmap components = sbitmap_alloc (FIRST_PSEUDO_REGISTER);
+  bitmap_clear (components);
+
+  if (riscv_use_save_libcall (&cfun->machine->frame)
+      || cfun->machine->interrupt_handler_p)
+    return components;
+
+  offset = cfun->machine->frame.gp_sp_offset.to_constant ();
+  for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
+      {
+	/* We can only wrap registers that have small operand offsets.
+	   For large offsets a pseudo register might be needed which
+	   cannot be created during the shrink wrapping pass.  */
+	if (SMALL_OPERAND (offset))
+	  bitmap_set_bit (components, regno);
+
+	offset -= UNITS_PER_WORD;
+      }
+
+  offset = cfun->machine->frame.fp_sp_offset.to_constant ();
+  for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+    if (BITSET_P (cfun->machine->frame.fmask, regno - FP_REG_FIRST))
+      {
+	machine_mode mode = TARGET_DOUBLE_FLOAT ? DFmode : SFmode;
+
+	/* We can only wrap registers that have small operand offsets.
+	   For large offsets a pseudo register might be needed which
+	   cannot be created during the shrink wrapping pass.  */
+	if (SMALL_OPERAND (offset))
+	  bitmap_set_bit (components, regno);
+
+	offset -= GET_MODE_SIZE (mode).to_constant ();
+      }
+
+  /* Don't mess with the hard frame pointer.  */
+  if (frame_pointer_needed)
+    bitmap_clear_bit (components, HARD_FRAME_POINTER_REGNUM);
+
+  bitmap_clear_bit (components, RETURN_ADDR_REGNUM);
+
+  return components;
+}
+
+/* Implement TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB.  */
+
+static sbitmap
+riscv_components_for_bb (basic_block bb)
+{
+  bitmap in = DF_LIVE_IN (bb);
+  bitmap gen = &DF_LIVE_BB_INFO (bb)->gen;
+  bitmap kill = &DF_LIVE_BB_INFO (bb)->kill;
+
+  sbitmap components = sbitmap_alloc (FIRST_PSEUDO_REGISTER);
+  bitmap_clear (components);
+
+  function_abi_aggregator callee_abis;
+  rtx_insn *insn;
+  FOR_BB_INSNS (bb, insn)
+    if (CALL_P (insn))
+      callee_abis.note_callee_abi (insn_callee_abi (insn));
+  HARD_REG_SET extra_caller_saves = callee_abis.caller_save_regs (*crtl->abi);
+
+  /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */
+  for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (!fixed_regs[regno]
+       && !crtl->abi->clobbers_full_reg_p (regno)
+       && (TEST_HARD_REG_BIT (extra_caller_saves, regno)
+	   || bitmap_bit_p (in, regno)
+	   || bitmap_bit_p (gen, regno)
+	   || bitmap_bit_p (kill, regno)))
+      bitmap_set_bit (components, regno);
+
+  for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+    if (!fixed_regs[regno]
+       && !crtl->abi->clobbers_full_reg_p (regno)
+       && (TEST_HARD_REG_BIT (extra_caller_saves, regno)
+	   || bitmap_bit_p (in, regno)
+	   || bitmap_bit_p (gen, regno)
+	   || bitmap_bit_p (kill, regno)))
+      bitmap_set_bit (components, regno);
+
+  return components;
+}
+
+/* Implement TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS.  */
+
+static void
+riscv_disqualify_components (sbitmap, edge, sbitmap, bool)
+{
+  /* Nothing to do for riscv.  */
+}
+
+static void
+riscv_process_components (sbitmap components, bool prologue_p)
+{
+  HOST_WIDE_INT offset;
+  riscv_save_restore_fn fn = prologue_p? riscv_save_reg : riscv_restore_reg;
+
+  offset = cfun->machine->frame.gp_sp_offset.to_constant ();
+  for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
+      {
+	if (bitmap_bit_p (components, regno))
+	  riscv_save_restore_reg (word_mode, regno, offset, fn);
+
+	offset -= UNITS_PER_WORD;
+      }
+
+  offset = cfun->machine->frame.fp_sp_offset.to_constant ();
+  for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+    if (BITSET_P (cfun->machine->frame.fmask, regno - FP_REG_FIRST))
+      {
+	machine_mode mode = TARGET_DOUBLE_FLOAT ? DFmode : SFmode;
+
+	if (bitmap_bit_p (components, regno))
+	  riscv_save_restore_reg (mode, regno, offset, fn);
+
+	offset -= GET_MODE_SIZE (mode).to_constant ();
+      }
+}
+
+/* Implement TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS.  */
+
+static void
+riscv_emit_prologue_components (sbitmap components)
+{
+  riscv_process_components (components, true);
+}
+
+/* Implement TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS.  */
+
+static void
+riscv_emit_epilogue_components (sbitmap components)
+{
+  riscv_process_components (components, false);
+}
+
+static void
+riscv_set_handled_components (sbitmap components)
+{
+  for (unsigned int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (bitmap_bit_p (components, regno))
+      cfun->machine->reg_is_wrapped_separately[regno] = true;
+
+  for (unsigned int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+    if (bitmap_bit_p (components, regno))
+      cfun->machine->reg_is_wrapped_separately[regno] = true;
 }
 
 /* Return nonzero if this function is known to have a null epilogue.
@@ -6683,6 +6848,30 @@ riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
 #define TARGET_FUNCTION_ARG_ADVANCE riscv_function_arg_advance
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY riscv_function_arg_boundary
+
+#undef TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS
+#define TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS \
+  riscv_get_separate_components
+
+#undef TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB
+#define TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB \
+  riscv_components_for_bb
+
+#undef TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS
+#define TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS \
+  riscv_disqualify_components
+
+#undef TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS
+#define TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS \
+  riscv_emit_prologue_components
+
+#undef TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS
+#define TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS \
+  riscv_emit_epilogue_components
+
+#undef TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS
+#define TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS \
+  riscv_set_handled_components
 
 /* The generic ELF target does not always have TLS support.  */
 #ifdef HAVE_AS_TLS
