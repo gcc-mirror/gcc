@@ -3521,9 +3521,14 @@ _GLIBCXX_END_NAMESPACE_CXX11
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
     _GLIBCXX20_CONSTEXPR
-    basic_string<_CharT, _Traits, _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
-	      const _CharT* __rhs);
+	      const _CharT* __rhs)
+    {
+      basic_string<_CharT, _Traits, _Alloc> __str(__lhs);
+      __str.append(__rhs);
+      return __str;
+    }
 
   /**
    *  @brief  Concatenate string and character.
