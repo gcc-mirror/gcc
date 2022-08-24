@@ -1500,8 +1500,8 @@ loongarch_build_integer (struct loongarch_integer_op *codes,
       bool lu32i[2] = {(value & LU32I_B) == 0, (value & LU32I_B) == LU32I_B};
       bool lu52i[2] = {(value & LU52I_B) == 0, (value & LU52I_B) == LU52I_B};
 
-      int sign31 = (value & (1UL << 31)) >> 31;
-      int sign51 = (value & (1UL << 51)) >> 51;
+      int sign31 = (value & (HOST_WIDE_INT_1U << 31)) >> 31;
+      int sign51 = (value & (HOST_WIDE_INT_1U << 51)) >> 51;
       /* Determine whether the upper 32 bits are sign-extended from the lower
 	 32 bits. If it is, the instructions to load the high order can be
 	 ommitted.  */
@@ -1522,7 +1522,7 @@ loongarch_build_integer (struct loongarch_integer_op *codes,
 
       /* Determine whether the 52-61 bits are sign-extended from the low order,
 	 and if not, load the 52-61 bits.  */
-      if (!lu52i[(value & (1ULL << 51)) >> 51])
+      if (!lu52i[(value & (HOST_WIDE_INT_1U << 51)) >> 51])
 	{
 	  codes[cost].method = METHOD_LU52I;
 	  codes[cost].value = value & LU52I_B;
