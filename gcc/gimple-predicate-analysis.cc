@@ -1322,9 +1322,14 @@ predicate::use_cannot_happen (gphi *phi, unsigned opnds)
 	  /* If compute_control_dep_chain bailed out due to limits
 	     build a partial sparse path using dominators.  Collect
 	     only edges whose predicates are always true when reaching E.  */
-	  simple_control_dep_chain (dep_chains[0],
-				    ENTRY_BLOCK_PTR_FOR_FN (cfun), e);
+	  simple_control_dep_chain (dep_chains[0], cd_root, e);
 	  num_chains++;
+	}
+      /* Update the chains with the phi operand edge.  */
+      else if (EDGE_COUNT (e->src->succs) > 1)
+	{
+	  for (unsigned j = 0; j < num_chains; j++)
+	    dep_chains[j].safe_push (e);
 	}
 
       if (DEBUG_PREDICATE_ANALYZER && dump_file)
@@ -1916,24 +1921,14 @@ predicate::is_use_guarded (gimple *use_stmt, basic_block use_bb,
   /* The basic block where the PHI is defined.  */
   basic_block def_bb = gimple_bb (phi);
 
+  if (dominated_by_p (CDI_POST_DOMINATORS, def_bb, use_bb))
+    /* The use is not guarded.  */
+    return false;
+
   /* Try to build the predicate expression under which the PHI flows
      into its use.  This will be empty if the PHI is defined and used
      in the same bb.  */
   predicate use_preds (def_bb, use_bb, m_eval);
-
-  if (dominated_by_p (CDI_POST_DOMINATORS, def_bb, use_bb))
-    {
-      if (is_empty ())
-	{
-	  /* Lazily initialize *THIS from the PHI and build its use
-	     expression.  */
-	  init_from_phi_def (phi);
-	}
-
-      /* The use is not guarded.  */
-      return false;
-    }
-
   if (use_preds.is_empty ())
     return false;
 
@@ -1955,9 +1950,7 @@ predicate::is_use_guarded (gimple *use_stmt, basic_block use_bb,
     {
       /* Lazily initialize *THIS from PHI.  */
       if (!init_from_phi_def (phi))
-	{
-	  return false;
-	}
+	return false;
 
       simplify (phi);
       normalize (phi);
