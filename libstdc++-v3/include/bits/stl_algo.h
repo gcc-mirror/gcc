@@ -5026,8 +5026,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       _TmpBuf __buf(__first, (__last - __first + 1) / 2);
 
       if (__builtin_expect(__buf.requested_size() == __buf.size(), true))
-	std::__stable_sort_adaptive(__first, __first + __buf.size(), __last,
-				    __buf.begin(), __comp);
+	std::__stable_sort_adaptive(__first,
+				    __first + _DistanceType(__buf.size()),
+				    __last, __buf.begin(), __comp);
       else if (__builtin_expect(__buf.begin() == 0, false))
 	std::__inplace_stable_sort(__first, __last, __comp);
       else
