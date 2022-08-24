@@ -276,6 +276,7 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+ac_lto_plugin_extra_ldflags = @ac_lto_plugin_extra_ldflags@
 ac_lto_plugin_ldflags = @ac_lto_plugin_ldflags@
 ac_lto_plugin_warn_cflags = @ac_lto_plugin_warn_cflags@
 accel_dir_suffix = @accel_dir_suffix@
@@ -343,8 +344,8 @@ AUTOMAKE_OPTIONS = no-dependencies
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 libexecsubdir := $(libexecdir)/gcc/$(real_target_noncanonical)/$(gcc_version)$(accel_dir_suffix)
 AM_CPPFLAGS = -I$(top_srcdir)/../include $(DEFS)
-AM_CFLAGS = @ac_lto_plugin_warn_cflags@ $(CET_HOST_FLAGS)
-AM_LDFLAGS = @ac_lto_plugin_ldflags@
+AM_CFLAGS = @ac_lto_plugin_warn_cflags@ $(CET_HOST_FLAGS) -DBASE_VERSION='"$(gcc_version)"'
+AM_LDFLAGS = @ac_lto_plugin_ldflags@ @ac_lto_plugin_extra_ldflags@
 AM_LIBTOOLFLAGS = --tag=disable-static
 libexecsub_LTLIBRARIES = liblto_plugin.la
 in_gcc_libs = $(foreach lib, $(libexecsub_LTLIBRARIES), $(gcc_build_dir)/$(lib))

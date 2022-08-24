@@ -1007,8 +1007,7 @@ inform_nonnull_attribute (tree fndecl, int arg_idx)
   label_text arg_desc = describe_argument_index (fndecl, arg_idx);
   inform (DECL_SOURCE_LOCATION (fndecl),
 	  "argument %s of %qD must be non-null",
-	  arg_desc.m_buffer, fndecl);
-  arg_desc.maybe_free ();
+	  arg_desc.get (), fndecl);
   /* Ideally we would use the location of the parm and underline the
      attribute also - but we don't have the location_t values at this point
      in the middle-end.
@@ -1066,13 +1065,12 @@ public:
     if (m_origin_of_unchecked_event.known_p ())
       result = ev.formatted_print ("argument %s (%qE) from %@ could be NULL"
 				   " where non-null expected",
-				   arg_desc.m_buffer, ev.m_expr,
+				   arg_desc.get (), ev.m_expr,
 				   &m_origin_of_unchecked_event);
     else
       result = ev.formatted_print ("argument %s (%qE) could be NULL"
 				   " where non-null expected",
-				   arg_desc.m_buffer, ev.m_expr);
-    arg_desc.maybe_free ();
+				   arg_desc.get (), ev.m_expr);
     return result;
   }
 
@@ -1175,12 +1173,11 @@ public:
     label_text result;
     if (zerop (ev.m_expr))
       result = ev.formatted_print ("argument %s NULL where non-null expected",
-				   arg_desc.m_buffer);
+				   arg_desc.get ());
     else
       result = ev.formatted_print ("argument %s (%qE) NULL"
 				   " where non-null expected",
-				   arg_desc.m_buffer, ev.m_expr);
-    arg_desc.maybe_free ();
+				   arg_desc.get (), ev.m_expr);
     return result;
   }
 
@@ -1303,6 +1300,7 @@ public:
 
   bool emit (rich_location *rich_loc) final override
   {
+    /* "CWE-401: Missing Release of Memory after Effective Lifetime".  */
     diagnostic_metadata m;
     m.add_cwe (401);
     if (m_arg)

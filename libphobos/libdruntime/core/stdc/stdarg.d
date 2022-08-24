@@ -47,6 +47,8 @@ version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
 version (PPC64)   version = PPC_Any;
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
 
 version (GNU)
 {
@@ -129,6 +131,12 @@ else version (AAPCS32)
 else version (AAPCS64)
 {
     alias va_list = core.internal.vararg.aarch64.va_list;
+}
+else version (RISCV_Any)
+{
+    // The va_list type is void*, according to RISCV Calling Convention
+    // https://github.com/riscv-non-isa/riscv-elf-psabi-doc/blob/master/riscv-cc.adoc
+    alias va_list = void*;
 }
 else
 {
@@ -256,6 +264,19 @@ T va_arg(T)(ref va_list ap)
         version (BigEndian)
             static if (T.sizeof < size_t.sizeof)
                 p = adjustForBigEndian(p, T.sizeof);
+        ap += T.sizeof.alignUp;
+        return *p;
+    }
+    else version (RISCV_Any)
+    {
+        static if (T.sizeof > (size_t.sizeof << 1))
+            auto p = *cast(T**) ap;
+        else
+        {
+            static if (T.alignof == (size_t.sizeof << 1))
+                ap = ap.alignUp!(size_t.sizeof << 1);
+            auto p = cast(T*) ap;
+        }
         ap += T.sizeof.alignUp;
         return *p;
     }

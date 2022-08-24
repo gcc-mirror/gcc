@@ -13267,26 +13267,31 @@ fi
 
 
 # Check for dl_iterate_phdr.
-for ac_header in link.h
+for ac_header in link.h sys/link.h
 do :
-  ac_fn_c_check_header_mongrel "$LINENO" "link.h" "ac_cv_header_link_h" "$ac_includes_default"
-if test "x$ac_cv_header_link_h" = xyes; then :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_LINK_H 1
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
 
 fi
 
 done
 
-if test "$ac_cv_header_link_h" = "no"; then
+if test "$ac_cv_header_link_h" = "no" -a "$ac_cv_header_sys_link_h" = "no"; then
   have_dl_iterate_phdr=no
 else
   if test -n "${with_target_subdir}"; then
+    link_h=link.h
+    if test "$ac_cv_header_link_h" = "no"; then
+       link_h=sys/link.h
+    fi
     # When built as a GCC target library, we can't do a link test.
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <link.h>
+#include <$link_h>
 
 _ACEOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
@@ -13831,7 +13836,7 @@ else
   libbacktrace_cv_objcopy_debuglink=no
 elif ! test -n "${OBJCOPY}"; then
   libbacktrace_cv_objcopy_debuglink=no
-elif ${OBJCOPY} --help | fgrep add-gnu-debuglink >/dev/null 2>&1; then
+elif ${OBJCOPY} --help | grep add-gnu-debuglink >/dev/null 2>&1; then
   libbacktrace_cv_objcopy_debuglink=yes
 else
   libbacktrace_cv_objcopy_debuglink=no

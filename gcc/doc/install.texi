@@ -758,7 +758,7 @@ mips64orion, mips64vr, mipsel, mipsisa32, mipsisa32r2, mipsisa64, mipsisa64r2,
 mipsisa64r2el, mipsisa64sb1, mipsisa64sr71k, mipstx39, mmix, mn10300, moxie,
 msp430, nds32be, nds32le, nios2, nvptx, or1k, pdp11, powerpc, powerpc64,
 powerpc64le, powerpcle, pru, riscv32, riscv32be, riscv64, riscv64be, rl78, rx,
-s390, s390x, sh, shle, sparc, sparc64, tic6x, tilegx, tilegxbe, tilepro, v850,
+s390, s390x, sh, shle, sparc, sparc64, tic6x, v850,
 v850e, v850e1, vax, visium, x86_64, xstormy16, xtensa
 @end quotation
 
@@ -3475,10 +3475,6 @@ contact their makers.
 AIX:
 @itemize
 @item
-@uref{http://www.bullfreeware.com,,Bull's Open Source Software Archive for
-for AIX 6 and AIX 7};
-
-@item
 @uref{http://www.perzl.org/aix/,,AIX Open Source Packages (AIX5L AIX 6.1
 AIX 7.1)}.
 @end itemize
@@ -3674,12 +3670,6 @@ information have to.
 @uref{#sparcv9-x-solaris2,,sparcv9-*-solaris2*}
 @item
 @uref{#c6x-x-x,,c6x-*-*}
-@item
-@uref{#tilegx-x-linux,,tilegx-*-linux*}
-@item
-@uref{#tilegxbe-x-linux,,tilegxbe-*-linux*}
-@item
-@uref{#tilepro-x-linux,,tilepro-*-linux*}
 @item
 @uref{#visium-x-elf, visium-*-elf}
 @item
@@ -4977,30 +4967,6 @@ This is a synonym for @samp{sparc64-*-solaris2*}.
 @anchor{c6x-x-x}
 @heading c6x-*-*
 The C6X family of processors. This port requires binutils-2.22 or newer.
-
-@html
-<hr />
-@end html
-@anchor{tilegx-*-linux}
-@heading tilegx-*-linux*
-The TILE-Gx processor in little endian mode, running GNU/Linux.  This
-port requires binutils-2.22 or newer.
-
-@html
-<hr />
-@end html
-@anchor{tilegxbe-*-linux}
-@heading tilegxbe-*-linux*
-The TILE-Gx processor in big endian mode, running GNU/Linux.  This
-port requires binutils-2.23 or newer.
-
-@html
-<hr />
-@end html
-@anchor{tilepro-*-linux}
-@heading tilepro-*-linux*
-The TILEPro processor running GNU/Linux.  This port requires
-binutils-2.22 or newer.
 
 @html
 <hr />

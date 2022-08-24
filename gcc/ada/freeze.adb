@@ -1470,6 +1470,10 @@ package body Freeze is
             if Is_Entity_Name (Prefix (Nod))
               and then Is_Type (Entity (Prefix (Nod)))
             then
+               if Expander_Active then
+                  Check_Fully_Declared (Entity (Prefix (Nod)), N);
+               end if;
+
                Freeze_Before (N, Entity (Prefix (Nod)));
             end if;
          end if;
@@ -2309,67 +2313,6 @@ package body Freeze is
       end loop;
    end Check_Unsigned_Type;
 
-   ------------------------------
-   -- Is_Full_Access_Aggregate --
-   ------------------------------
-
-   function Is_Full_Access_Aggregate (N : Node_Id) return Boolean is
-      Loc   : constant Source_Ptr := Sloc (N);
-      New_N : Node_Id;
-      Par   : Node_Id;
-      Temp  : Entity_Id;
-      Typ   : Entity_Id;
-
-   begin
-      Par := Parent (N);
-
-      --  Array may be qualified, so find outer context
-
-      if Nkind (Par) = N_Qualified_Expression then
-         Par := Parent (Par);
-      end if;
-
-      if not Comes_From_Source (Par) then
-         return False;
-      end if;
-
-      case Nkind (Par) is
-         when N_Assignment_Statement =>
-            Typ := Etype (Name (Par));
-
-            if not Is_Full_Access (Typ)
-              and then not Is_Full_Access_Object (Name (Par))
-            then
-               return False;
-            end if;
-
-         when N_Object_Declaration =>
-            Typ := Etype (Defining_Identifier (Par));
-
-            if not Is_Full_Access (Typ)
-              and then not Is_Full_Access (Defining_Identifier (Par))
-            then
-               return False;
-            end if;
-
-         when others =>
-            return False;
-      end case;
-
-      Temp := Make_Temporary (Loc, 'T', N);
-      New_N :=
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Temp,
-          Constant_Present    => True,
-          Object_Definition   => New_Occurrence_Of (Typ, Loc),
-          Expression          => Relocate_Node (N));
-      Insert_Before (Par, New_N);
-      Analyze (New_N);
-
-      Set_Expression (Par, New_Occurrence_Of (Temp, Loc));
-      return True;
-   end Is_Full_Access_Aggregate;
-
    -----------------------------------------------
    -- Explode_Initialization_Compound_Statement --
    -----------------------------------------------
@@ -2693,7 +2636,13 @@ package body Freeze is
       N      : Node_Id;
       Result : in out List_Id)
    is
-      L : constant List_Id := Freeze_Entity (Ent, N);
+      --  Freezing an Expression_Function does not freeze its profile:
+      --  the formals will have been frozen otherwise before the E_F
+      --  can be called.
+
+      L : constant List_Id :=
+        Freeze_Entity
+          (Ent, N, Do_Freeze_Profile => not Is_Expression_Function (Ent));
    begin
       if Is_Non_Empty_List (L) then
          if Result = No_List then
@@ -6447,20 +6396,6 @@ package body Freeze is
          then
             Set_Encoded_Interface_Name
               (E, Get_Default_External_Name (E));
-
-         --  If entity is an atomic object appearing in a declaration and
-         --  the expression is an aggregate, assign it to a temporary to
-         --  ensure that the actual assignment is done atomically rather
-         --  than component-wise (the assignment to the temp may be done
-         --  component-wise, but that is harmless).
-
-         elsif Is_Full_Access (E)
-           and then Nkind (Parent (E)) = N_Object_Declaration
-           and then Present (Expression (Parent (E)))
-           and then Nkind (Expression (Parent (E))) = N_Aggregate
-           and then Is_Full_Access_Aggregate (Expression (Parent (E)))
-         then
-            null;
          end if;
 
          --  Subprogram case
@@ -7882,11 +7817,37 @@ package body Freeze is
          --  type itself is frozen, because the class-wide type refers to the
          --  tagged type which generates the class.
 
+         --  For a tagged type, freeze explicitly those primitive operations
+         --  that are expression functions, which otherwise have no clear
+         --  freeze point: these have to be frozen before the dispatch table
+         --  for the type is built, and before any explicit call to the
+         --  primitive, which would otherwise be the freeze point for it.
+
          if Is_Tagged_Type (E)
            and then not Is_Class_Wide_Type (E)
            and then Present (Class_Wide_Type (E))
          then
             Freeze_And_Append (Class_Wide_Type (E), N, Result);
+
+            declare
+               Ops  : constant Elist_Id := Primitive_Operations (E);
+
+               Elmt : Elmt_Id;
+               Subp : Entity_Id;
+
+            begin
+               if Ops /= No_Elist  then
+                  Elmt := First_Elmt (Ops);
+                  while Present (Elmt) loop
+                     Subp := Node (Elmt);
+                     if Is_Expression_Function (Subp) then
+                        Freeze_And_Append (Subp, N, Result);
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+               end if;
+            end;
          end if;
       end if;
 

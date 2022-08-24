@@ -505,9 +505,8 @@ remove_exits_and_undefined_stmts (class loop *loop, unsigned int npeeled)
 	  && wi::ltu_p (elt->bound, npeeled))
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (elt->stmt);
-	  gcall *stmt = gimple_build_call
-	      (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
-	  gimple_set_location (stmt, gimple_location (elt->stmt));
+	  location_t loc = gimple_location (elt->stmt);
+	  gcall *stmt = gimple_build_builtin_unreachable (loc);
 	  gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
 	  split_block (gimple_bb (stmt), stmt);
 	  changed = true;
@@ -641,7 +640,7 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
 
       /* Create new basic block for the latch edge destination and wire
 	 it in.  */
-      stmt = gimple_build_call (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
+      stmt = gimple_build_builtin_unreachable (locus);
       latch_edge = make_edge (latch, create_basic_block (NULL, NULL, latch), flags);
       latch_edge->probability = profile_probability::never ();
       latch_edge->flags |= flags;
@@ -1539,8 +1538,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_loop_ivcanon != 0; }
-  virtual unsigned int execute (function *fun);
+  bool gate (function *) final override { return flag_tree_loop_ivcanon != 0; }
+  unsigned int execute (function *fun) final override;
 
 }; // class pass_iv_canon
 
@@ -1586,7 +1585,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_complete_unroll
 
@@ -1644,8 +1643,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return optimize >= 2; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return optimize >= 2; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_complete_unrolli
 

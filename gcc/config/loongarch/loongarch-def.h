@@ -82,9 +82,10 @@ extern const char* loongarch_cmodel_strings[];
 #define CMODEL_NORMAL	      0
 #define CMODEL_TINY	      1
 #define CMODEL_TINY_STATIC    2
-#define CMODEL_LARGE	      3
-#define CMODEL_EXTREME	      4
-#define N_CMODEL_TYPES	      5
+#define CMODEL_MEDIUM	      3
+#define CMODEL_LARGE	      4
+#define CMODEL_EXTREME	      5
+#define N_CMODEL_TYPES	      6
 
 /* enum switches */
 /* The "SW_" codes represent command-line switches (options that

@@ -1,3 +1,10 @@
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_get_num_devices):
+	Return -1 when device available but omp_requires_mask != 0.
+
 2021-10-19  Martin Liska  <mliska@suse.cz>
 
 	* include/coi/source/COIBuffer_source.h: Convert 2 chars to

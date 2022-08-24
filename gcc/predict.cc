@@ -172,7 +172,7 @@ maybe_hot_count_p (struct function *fun, profile_count count)
       if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
 	  && count < (ENTRY_BLOCK_PTR_FOR_FN (fun)->count.apply_scale (2, 3)))
 	return false;
-      if (count.apply_scale (param_hot_bb_frequency_fraction, 1)
+      if (count * param_hot_bb_frequency_fraction
 	  < ENTRY_BLOCK_PTR_FOR_FN (fun)->count)
 	return false;
       return true;
@@ -219,7 +219,7 @@ probably_never_executed (struct function *fun, profile_count count)
   if (count.precise_p () && profile_status_for_fn (fun) == PROFILE_READ)
     {
       const int unlikely_frac = param_unlikely_bb_count_fraction;
-      if (count.apply_scale (unlikely_frac, 1) >= profile_info->runs)
+      if (count * unlikely_frac >= profile_info->runs)
 	return false;
       return true;
     }
@@ -360,6 +360,17 @@ bool
 optimize_insn_for_speed_p (void)
 {
   return !optimize_insn_for_size_p ();
+}
+
+/* Return the optimization type that should be used for the current
+   instruction.  */
+
+optimization_type
+insn_optimization_type ()
+{
+  return (optimize_insn_for_speed_p ()
+	  ? OPTIMIZE_FOR_SPEED
+	  : OPTIMIZE_FOR_SIZE);
 }
 
 /* Return TRUE if LOOP should be optimized for size.  */
@@ -916,12 +927,12 @@ set_even_probabilities (basic_block bb,
 	    else
 	      {
 		profile_probability remainder = prob.invert ();
-		remainder -= profile_probability::very_unlikely ()
-		  .apply_scale (unlikely_count, 1);
+		remainder -= (profile_probability::very_unlikely ()
+			      * unlikely_count);
 		int count = nedges - unlikely_count - 1;
 		gcc_assert (count >= 0);
 
-		e->probability = remainder.apply_scale (1, count);
+		e->probability = remainder / count;
 	      }
 	  }
 	else
@@ -940,7 +951,7 @@ set_even_probabilities (basic_block bb,
 	    if (unlikely_edges != NULL && unlikely_edges->contains (e))
 	      e->probability = profile_probability::very_unlikely ();
 	    else
-	      e->probability = all.apply_scale (1, scale);
+	      e->probability = all / scale;
 	  }
 	else
 	  e->probability = profile_probability::never ();
@@ -3619,7 +3630,7 @@ handle_missing_profiles (void)
 
       if (call_count > 0
           && fn && fn->cfg
-          && call_count.apply_scale (unlikely_frac, 1) >= profile_info->runs)
+	  && call_count * unlikely_frac >= profile_info->runs)
         {
           drop_profile (node, call_count);
           worklist.safe_push (node);
@@ -3684,8 +3695,7 @@ expensive_function_p (int threshold)
   if (!ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.nonzero_p ())
     return true;
 
-  profile_count limit = ENTRY_BLOCK_PTR_FOR_FN
-			   (cfun)->count.apply_scale (threshold, 1);
+  profile_count limit = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count * threshold;
   profile_count sum = profile_count::zero ();
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -4079,8 +4089,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_guess_branch_prob; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return flag_guess_branch_prob; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_profile
 
@@ -4233,14 +4243,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_strip_predict_hints (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass * clone () final override
+  {
+    return new pass_strip_predict_hints (m_ctxt);
+  }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       early_p = param;
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 private:
   bool early_p;

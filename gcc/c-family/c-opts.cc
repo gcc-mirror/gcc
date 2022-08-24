@@ -1046,6 +1046,13 @@ c_common_post_options (const char **pfilename)
   else if (warn_narrowing == -1)
     warn_narrowing = 0;
 
+  if (cxx_dialect >= cxx20)
+    {
+      /* Don't warn about C++20 compatibility changes in C++20 or later.  */
+      warn_cxx20_compat = 0;
+      cpp_opts->cpp_warn_cxx20_compat = 0;
+    }
+
   /* C++17 has stricter evaluation order requirements; let's use some of them
      for earlier C++ as well, so chaining works as expected.  */
   if (c_dialect_cxx ()
@@ -1059,9 +1066,10 @@ c_common_post_options (const char **pfilename)
   if (flag_sized_deallocation == -1)
     flag_sized_deallocation = (cxx_dialect >= cxx14);
 
-  /* char8_t support is new in C++20.  */
+  /* char8_t support is implicitly enabled in C++20 and C2X.  */
   if (flag_char8_t == -1)
-    flag_char8_t = (cxx_dialect >= cxx20);
+    flag_char8_t = (cxx_dialect >= cxx20) || flag_isoc2x;
+  cpp_opts->unsigned_utf8char = flag_char8_t ? 1 : cpp_opts->unsigned_char;
 
   if (flag_extern_tls_init)
     {
@@ -1280,6 +1288,12 @@ c_common_finish (void)
 			 deps_file);
 	}
     }
+
+  /* When we call cpp_finish (), it may generate some diagnostics using
+     locations it remembered from the preprocessing phase, e.g. for
+     -Wunused-macros.  So inform c_cpp_diagnostic () not to override those
+     locations with input_location, which would be incorrect now.  */
+  override_libcpp_locations = false;
 
   /* For performance, avoid tearing down cpplib's internal structures
      with cpp_destroy ().  */

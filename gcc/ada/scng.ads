@@ -23,11 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains a generic lexical analyzer. This is used for scanning
---  Ada source files or text files with an Ada-like syntax, such as project
---  files. It is instantiated in Scn and Prj.Err.
+--  This is a generic lexical analyzer, used for scanning Ada source files, and
+--  also for preprocessor files.
 
 with Casing; use Casing;
+with Scans;  use Scans;
 with Styleg;
 with Types;  use Types;
 
@@ -68,32 +68,26 @@ package Scng is
    --  Scan scans out the next token, and advances the scan state accordingly
    --  (see package Scan_State for details). If the scan encounters an illegal
    --  token, then an error message is issued pointing to the bad character,
-   --  and Scan returns a reasonable substitute token of some kind.
-   --  For tokens Char_Literal, Identifier, Real_Literal, Integer_Literal,
-   --  String_Literal and Operator_Symbol, Post_Scan is called after scanning.
+   --  and Scan returns a reasonable substitute token. For tokens Char_Literal,
+   --  Identifier, Real_Literal, Integer_Literal, String_Literal and
+   --  Operator_Symbol, Post_Scan is called after scanning.
 
    function Determine_Token_Casing return Casing_Type;
    pragma Inline (Determine_Token_Casing);
    --  Determines the casing style of the current token, which is
    --  either a keyword or an identifier. See also package Casing.
 
-   procedure Set_Special_Character (C : Character);
-   --  Indicate that one of the following character '#', '$', '?',  '`',
-   --  '\', '^', '_' or '~', when found is a Special token.
-   --  AI12-0125-03 : target name (ES) is not in this list because '@' is
-   --  handled as a special token as abbreviation of LHS of assignment.
+   procedure Set_Special_Character (C : Special_Preprocessor_Character);
+   --  Called when the preprocessor is active to indicate that Scan should
+   --  return a Special token for C.
 
    procedure Reset_Special_Characters;
-   --  Indicate that there is no characters that are Special tokens., which
+   --  Indicate that there are no characters that are Special tokens, which
    --  is the default.
 
    procedure Set_End_Of_Line_As_Token (Value : Boolean);
    --  Indicate if End_Of_Line is a token or not.
    --  By default, End_Of_Line is not a token.
-
-   procedure Set_Comment_As_Token (Value : Boolean);
-   --  Indicate if a comment is a token or not.
-   --  By default, a comment is not a token.
 
    function Set_Start_Column return Column_Number;
    --  This routine is called with Scan_Ptr pointing to the first character

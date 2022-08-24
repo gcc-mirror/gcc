@@ -2184,20 +2184,13 @@ extern (C++) final class OverloadSet : Dsymbol
  */
 extern (C++) final class ForwardingScopeDsymbol : ScopeDsymbol
 {
-    /*************************
-     * Symbol to forward insertions to.
-     * Can be `null` before being lazily initialized.
-     */
-    ScopeDsymbol forward;
-    extern (D) this(ScopeDsymbol forward) nothrow
+    extern (D) this() nothrow
     {
-        super(null);
-        this.forward = forward;
+        super();
     }
 
     override Dsymbol symtabInsert(Dsymbol s) nothrow
     {
-        assert(forward);
         if (auto d = s.isDeclaration())
         {
             if (d.storage_class & STC.local)
@@ -2212,6 +2205,8 @@ extern (C++) final class ForwardingScopeDsymbol : ScopeDsymbol
                 return super.symtabInsert(s); // insert locally
             }
         }
+        auto forward = parent.isScopeDsymbol();
+        assert(forward);
         if (!forward.symtab)
         {
             forward.symtab = new DsymbolTable();
@@ -2228,7 +2223,6 @@ extern (C++) final class ForwardingScopeDsymbol : ScopeDsymbol
      */
     override Dsymbol symtabLookup(Dsymbol s, Identifier id) nothrow
     {
-        assert(forward);
         // correctly diagnose clashing foreach loop variables.
         if (auto d = s.isDeclaration())
         {
@@ -2243,6 +2237,8 @@ extern (C++) final class ForwardingScopeDsymbol : ScopeDsymbol
         }
         // Declarations within `static foreach` do not clash with
         // `static foreach` loop variables.
+        auto forward = parent.isScopeDsymbol();
+        assert(forward);
         if (!forward.symtab)
         {
             forward.symtab = new DsymbolTable();
@@ -2252,6 +2248,8 @@ extern (C++) final class ForwardingScopeDsymbol : ScopeDsymbol
 
     override void importScope(Dsymbol s, Visibility visibility)
     {
+        auto forward = parent.isScopeDsymbol();
+        assert(forward);
         forward.importScope(s, visibility);
     }
 
@@ -2443,6 +2441,15 @@ Dsymbol handleTagSymbols(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsymbol sds)
     auto sd = s.isScopeDsymbol(); // new declaration
     auto sd2 = s2.isScopeDsymbol(); // existing declaration
 
+    static if (log) void print(EnumDeclaration sd)
+    {
+        printf("members: %p\n", sd.members);
+        printf("symtab: %p\n", sd.symtab);
+        printf("endlinnum: %d\n", sd.endlinnum);
+        printf("type: %s\n", sd.type.toChars());
+        printf("memtype: %s\n", sd.memtype.toChars());
+    }
+
     if (!sd2)
     {
         /* Look in tag table
@@ -2475,6 +2482,23 @@ Dsymbol handleTagSymbols(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsymbol sds)
         {
             sd2.members = sd.members; // transfer definition to sd2
             sd.members = null;
+            if (auto ed2 = sd2.isEnumDeclaration())
+            {
+                auto ed = sd.isEnumDeclaration();
+                if (ed.memtype != ed2.memtype)
+                    return null;        // conflict
+
+                // transfer ed's members to sd2
+                ed2.members.foreachDsymbol( (s)
+                {
+                    if (auto em = s.isEnumMember())
+                        em.ed = ed2;
+                });
+
+                ed2.type = ed.type;
+                ed2.memtype = ed.memtype;
+                ed2.added = false;
+            }
             return sd2;
         }
         else

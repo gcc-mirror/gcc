@@ -2,10 +2,10 @@
 
 #include <version>
 
-#if __cplusplus >= 202200L
+#if __cplusplus >= 202207L
 #ifndef __cpp_lib_ios_noreplace
 # error "Feature-test macro for ios::noreplace missing in <version>"
-#elif __cpp_lib_ios_noreplace < 202200L
+#elif __cpp_lib_ios_noreplace < 202207L
 # error "Feature-test macro for ios::noreplace has wrong value in <version>"
 #endif
 #endif

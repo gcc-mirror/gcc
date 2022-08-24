@@ -2355,12 +2355,6 @@ transform_to_exit_first_loop_alt (class loop *loop,
   tree control = gimple_cond_lhs (cond_stmt);
   edge e;
 
-  /* Rewriting virtuals into loop-closed ssa normal form makes this
-     transformation simpler.  It also ensures that the virtuals are in
-     loop-closed ssa normal from after the transformation, which is required by
-     create_parallel_loop.  */
-  rewrite_virtuals_into_loop_closed_ssa (loop);
-
   /* Create the new_header block.  */
   basic_block new_header = split_block_before_cond_jump (exit->src);
   edge edge_at_split = single_pred_edge (new_header);
@@ -3088,7 +3082,7 @@ gen_parallel_loop (class loop *loop,
 		    profile_probability::unlikely (),
 		    profile_probability::likely (),
 		    profile_probability::unlikely (), true);
-      update_ssa (TODO_update_ssa);
+      update_ssa (TODO_update_ssa_no_phi);
       free_original_copy_tables ();
     }
 
@@ -4173,16 +4167,19 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
   {
     if (oacc_kernels_p)
       return flag_openacc;
     else
       return flag_tree_parallelize_loops > 1;
   }
-  virtual unsigned int execute (function *);
-  opt_pass * clone () { return new pass_parallelize_loops (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  unsigned int execute (function *) final override;
+  opt_pass * clone () final override
+  {
+    return new pass_parallelize_loops (m_ctxt);
+  }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       oacc_kernels_p = param;
@@ -4220,7 +4217,9 @@ pass_parallelize_loops::execute (function *fun)
 
       checking_verify_loop_structure ();
 
-      todo |= TODO_update_ssa;
+      update_ssa (TODO_update_ssa);
+      if (in_loop_pipeline)
+	rewrite_into_loop_closed_ssa (NULL, 0);
     }
 
   if (!in_loop_pipeline)

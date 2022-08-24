@@ -64,8 +64,8 @@ class pass_wrestrict : public gimple_opt_pass
  public:
   pass_wrestrict (gcc::context *);
 
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override;
 
   void check_call (gimple *);
 
@@ -430,7 +430,7 @@ builtin_memref::set_base_and_offset (tree expr)
       else if (is_gimple_assign (stmt))
 	{
 	  tree_code code = gimple_assign_rhs_code (stmt);
-	  if (code == NOP_EXPR)
+	  if (CONVERT_EXPR_CODE_P (code))
 	    {
 	      tree rhs = gimple_assign_rhs1 (stmt);
 	      if (POINTER_TYPE_P (TREE_TYPE (rhs)))

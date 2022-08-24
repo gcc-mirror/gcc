@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/svalue.h"
+#include "analyzer/program-state.h"
 
 #if ENABLE_ANALYZER
 
@@ -159,6 +160,17 @@ state_machine::to_json () const
   return sm_obj;
 }
 
+/* class sm_context.  */
+
+const region_model *
+sm_context::get_old_region_model () const
+{
+  if (const program_state *old_state = get_old_program_state ())
+    return old_state->m_region_model;
+  else
+    return NULL;
+}
+
 /* Create instances of the various state machines, each using LOGGER,
    and populate OUT with them.  */
 
@@ -167,6 +179,7 @@ make_checkers (auto_delete_vec <state_machine> &out, logger *logger)
 {
   out.safe_push (make_malloc_state_machine (logger));
   out.safe_push (make_fileptr_state_machine (logger));
+  out.safe_push (make_fd_state_machine (logger));
   /* The "taint" checker must be explicitly enabled (as it currently
      leads to state explosions that stop the other checkers working).  */
   if (flag_analyzer_checker)

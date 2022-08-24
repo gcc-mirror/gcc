@@ -188,6 +188,17 @@ vr_values::range_of_expr (vrange &r, tree expr, gimple *stmt)
 	r = *vr;
       else
 	{
+	  if (!vr->supports_type_p (TREE_TYPE (expr)))
+	    {
+	      // vr_values::extract_range_basic() use of ranger's
+	      // fold_range() can create a situation where we are
+	      // asked for the range of an unsupported legacy type.
+	      // Since get_value_range() above will return varying for
+	      // such types, avoid copying incompatible range types.
+	      gcc_checking_assert (vr->varying_p ());
+	      r.set_varying (TREE_TYPE (expr));
+	      return true;
+	    }
 	  value_range tmp = *vr;
 	  tmp.normalize_symbolics ();
 	  r = tmp;
@@ -831,14 +842,14 @@ vr_values::extract_range_from_binary_expr (value_range_equiv *vr,
   if (TREE_CODE (op0) == SSA_NAME)
     vr0 = *(get_value_range (op0));
   else if (is_gimple_min_invariant (op0))
-    vr0.set (op0);
+    vr0.set (op0, op0);
   else
     vr0.set_varying (TREE_TYPE (op0));
 
   if (TREE_CODE (op1) == SSA_NAME)
     vr1 = *(get_value_range (op1));
   else if (is_gimple_min_invariant (op1))
-    vr1.set (op1);
+    vr1.set (op1, op1);
   else
     vr1.set_varying (TREE_TYPE (op1));
 
@@ -936,7 +947,7 @@ vr_values::extract_range_from_binary_expr (value_range_equiv *vr,
 
       /* Try with [OP0, OP0] and VR1.  */
       else
-	n_vr0.set (op0);
+	n_vr0.set (op0, op0);
 
       range_fold_binary_expr (vr, code, expr_type, &n_vr0, &vr1);
     }
@@ -976,7 +987,7 @@ vr_values::extract_range_from_unary_expr (value_range_equiv *vr,
   if (TREE_CODE (op0) == SSA_NAME)
     vr0 = *(get_value_range (op0));
   else if (is_gimple_min_invariant (op0))
-    vr0.set (op0);
+    vr0.set (op0, op0);
   else
     vr0.set_varying (type);
 
@@ -1064,14 +1075,14 @@ check_for_binary_op_overflow (range_query *query,
   if (TREE_CODE (op0) == SSA_NAME)
     vr0 = *query->get_value_range (op0, s);
   else if (TREE_CODE (op0) == INTEGER_CST)
-    vr0.set (op0);
+    vr0.set (op0, op0);
   else
     vr0.set_varying (TREE_TYPE (op0));
 
   if (TREE_CODE (op1) == SSA_NAME)
     vr1 = *query->get_value_range (op1, s);
   else if (TREE_CODE (op1) == INTEGER_CST)
-    vr1.set (op1);
+    vr1.set (op1, op1);
   else
     vr1.set_varying (TREE_TYPE (op1));
 
@@ -1747,7 +1758,7 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
 	      if (TREE_CODE (init) == SSA_NAME)
 		query->range_of_expr (vr0, init, stmt);
 	      else if (is_gimple_min_invariant (init))
-		vr0.set (init);
+		vr0.set (init, init);
 	      else
 		vr0.set_varying (TREE_TYPE (init));
 	      tree tem = wide_int_to_tree (TREE_TYPE (init), wtmp);
@@ -1763,7 +1774,7 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
 		  if (TREE_CODE (init) == SSA_NAME)
 		    query->range_of_expr (initvr, init, stmt);
 		  else if (is_gimple_min_invariant (init))
-		    initvr.set (init);
+		    initvr.set (init, init);
 		  else
 		    return false;
 
@@ -3291,14 +3302,14 @@ simplify_using_ranges::simplify_bit_ops_using_ranges
   if (TREE_CODE (op0) == SSA_NAME)
     vr0 = *(query->get_value_range (op0, stmt));
   else if (is_gimple_min_invariant (op0))
-    vr0.set (op0);
+    vr0.set (op0, op0);
   else
     return false;
 
   if (TREE_CODE (op1) == SSA_NAME)
     vr1 = *(query->get_value_range (op1, stmt));
   else if (is_gimple_min_invariant (op1))
-    vr1.set (op1);
+    vr1.set (op1, op1);
   else
     return false;
 
@@ -4375,7 +4386,9 @@ simplify_using_ranges::simplify (gimple_stmt_iterator *gsi)
 
 	case MIN_EXPR:
 	case MAX_EXPR:
-	  return simplify_min_or_max_using_ranges (gsi, stmt);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
+	    return simplify_min_or_max_using_ranges (gsi, stmt);
+	  break;
 
 	case RSHIFT_EXPR:
 	  {

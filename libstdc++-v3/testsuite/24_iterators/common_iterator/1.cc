@@ -27,14 +27,29 @@ test01()
   using I = std::common_iterator<int*, const int*>;
   static_assert( std::is_default_constructible_v<I> );
   static_assert( std::is_copy_constructible_v<I> );
+  static_assert( std::is_move_constructible_v<I> );
   static_assert( std::is_copy_assignable_v<I> );
+  static_assert( std::is_move_assignable_v<I> );
   static_assert( std::is_constructible_v<I, int*> );
   static_assert( std::is_constructible_v<I, const int*> );
 
-  struct sentinel { operator int*() const { return nullptr; } };
+  static_assert( std::is_nothrow_copy_constructible_v<I> ); // GCC extension
+  static_assert( std::is_nothrow_move_constructible_v<I> ); // GCC extension
+  static_assert( std::is_nothrow_copy_assignable_v<I> ); // GCC extension
+  static_assert( std::is_nothrow_move_assignable_v<I> ); // GCC extension
+
+  struct sentinel { operator int*() const noexcept { return nullptr; } };
   using K = std::common_iterator<int*, sentinel>;
   static_assert( std::is_constructible_v<I, const K&> );
   static_assert( std::is_assignable_v<I, const K&> );
+
+  static_assert( std::is_nothrow_assignable_v<I&, const K&> ); // GCC extension
+
+  struct sentinel_throwing { operator int*() const { return nullptr; } };
+  using K_throwing = std::common_iterator<int*, sentinel_throwing>;
+  // Conversion is noexcept(false)
+  static_assert( ! std::is_nothrow_assignable_v<I&, const K_throwing&> );
+
 
   struct sentinel2
   {
@@ -46,6 +61,12 @@ test01()
   using J = std::common_iterator<const int*, sentinel2>;
   static_assert( std::is_constructible_v<J, const I&> );
   static_assert( std::is_convertible_v<const I&, J> );
+
+  static_assert( std::is_constructible_v<J, I> );
+  static_assert( std::is_convertible_v<I, J> );
+
+  // Constructor is noexcept(false)
+  static_assert( ! std::is_nothrow_constructible_v<J, I> );
 }
 
 void

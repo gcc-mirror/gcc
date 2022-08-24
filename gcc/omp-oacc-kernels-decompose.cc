@@ -1615,12 +1615,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
   {
     return (flag_openacc
 	    && param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE);
   }
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
   {
     return omp_oacc_kernels_decompose ();
   }

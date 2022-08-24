@@ -40,7 +40,12 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <unistd.h>
 
 #ifdef HAVE_DL_ITERATE_PHDR
-#include <link.h>
+ #ifdef HAVE_LINK_H
+  #include <link.h>
+ #endif
+ #ifdef HAVE_SYS_LINK_H
+  #include <sys/link.h>
+ #endif
 #endif
 
 #include "backtrace.h"

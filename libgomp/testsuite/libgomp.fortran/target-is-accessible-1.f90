@@ -19,11 +19,14 @@ program main
   if (omp_target_is_accessible (p, c_sizeof (d), id) /= 1) &
     stop 2
 
-  if (omp_target_is_accessible (p, c_sizeof (d), -1) /= 0) &
+  if (omp_target_is_accessible (p, c_sizeof (d), omp_initial_device) /= 1) &
     stop 3
 
-  if (omp_target_is_accessible (p, c_sizeof (d), n + 1) /= 0) &
+  if (omp_target_is_accessible (p, c_sizeof (d), -5) /= 0) &
     stop 4
+
+  if (omp_target_is_accessible (p, c_sizeof (d), n + 1) /= 0) &
+    stop 5
 
   ! Currently, a host pointer is accessible if the device supports shared
   ! memory or omp_target_is_accessible is executed on the host. This
@@ -35,14 +38,14 @@ program main
     !$omp end target
 
     if (omp_target_is_accessible (p, c_sizeof (d), d) /= shared_mem) &
-      stop 5;
+      stop 6;
 
     if (omp_target_is_accessible (c_loc (a), 128 * sizeof (a(1)), d) /= shared_mem) &
-      stop 6;
+      stop 7;
 
     do i = 1, 128
       if (omp_target_is_accessible (c_loc (a(i)), sizeof (a(i)), d) /= shared_mem) &
-        stop 7;
+        stop 8;
     end do
 
   end do

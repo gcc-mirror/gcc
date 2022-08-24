@@ -46,6 +46,7 @@ loongarch_config_target (struct loongarch_target *target,
 #define TARGET_CMODEL_NORMAL	    (la_target.cmodel == CMODEL_NORMAL)
 #define TARGET_CMODEL_TINY	    (la_target.cmodel == CMODEL_TINY)
 #define TARGET_CMODEL_TINY_STATIC   (la_target.cmodel == CMODEL_TINY_STATIC)
+#define TARGET_CMODEL_MEDIUM	    (la_target.cmodel == CMODEL_MEDIUM)
 #define TARGET_CMODEL_LARGE	    (la_target.cmodel == CMODEL_LARGE)
 #define TARGET_CMODEL_EXTREME	    (la_target.cmodel == CMODEL_EXTREME)
 
@@ -86,5 +87,9 @@ loongarch_config_target (struct loongarch_target *target,
 /* Note: optimize_size may vary across functions,
    while -m[no]-memcpy imposes a global constraint.  */
 #define TARGET_DO_OPTIMIZE_BLOCK_MOVE_P  loongarch_do_optimize_block_move_p()
+
+#ifndef HAVE_AS_EXPLICIT_RELOCS
+#define HAVE_AS_EXPLICIT_RELOCS 0
+#endif
 
 #endif /* LOONGARCH_OPTS_H */

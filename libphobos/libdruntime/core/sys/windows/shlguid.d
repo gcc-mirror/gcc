@@ -16,4 +16,3 @@ import core.sys.windows.basetyps, core.sys.windows.w32api;
 
 // I think this is just a helper macro for other win32 headers?
 //MACRO #define DEFINE_SHLGUID(n,l,w1,w2) DEFINE_GUID(n,l,w1,w2,0xC0,0,0,0,0,0,0,0x46)
-

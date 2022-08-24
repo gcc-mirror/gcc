@@ -223,6 +223,10 @@ unsigned int flag_sanitize
 Variable
 unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT | SANITIZE_KERNEL_ADDRESS | SANITIZE_KERNEL_HWADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
 
+; What sanitizers should use __builtin_trap () instead of runtime diagnostics
+Variable
+unsigned int flag_sanitize_trap
+
 ; Flag whether a prefix has been added to dump_base_name
 Variable
 bool dump_base_name_prefixed = false
@@ -1105,12 +1109,19 @@ fsanitize-recover
 Common
 This switch is deprecated; use -fsanitize-recover= instead.
 
+fsanitize-trap=
+Common Driver Joined
+Use traps instead of diagnostics of undefined behavior sanitizers.
+
+fsanitize-trap
+Common Driver
+
 fsanitize-address-use-after-scope
 Common Driver Var(flag_sanitize_address_use_after_scope) Init(0)
 
 fsanitize-undefined-trap-on-error
-Common Driver Var(flag_sanitize_undefined_trap_on_error) Init(0)
-Use trap instead of a library function for undefined behavior sanitization.
+Common Driver Alias(fsanitize-trap)
+This switch is deprecated; use -fsanitize-trap= instead.
 
 fasynchronous-unwind-tables
 Common Var(flag_asynchronous_unwind_tables) Optimization
@@ -1454,6 +1465,10 @@ Amend appropriate diagnostic messages with the command line option that controls
 fdiagnostics-show-cwe
 Common Var(flag_diagnostics_show_cwe) Init(1)
 Print CWE identifiers for diagnostic messages, where available.
+
+fdiagnostics-show-rules
+Common Var(flag_diagnostics_show_rules) Init(1)
+Print any rules associated with diagnostic messages.
 
 fdiagnostics-path-format=
 Common Joined RejectNegative Var(flag_diagnostics_path_format) Enum(diagnostic_path_format) Init(DPF_INLINE_EVENTS)
@@ -1890,8 +1905,12 @@ EnumValue
 Enum(cf_protection_level) String(none) Value(CF_NONE)
 
 finstrument-functions
-Common Var(flag_instrument_function_entry_exit)
+Common Var(flag_instrument_function_entry_exit,1)
 Instrument function entry and exit with profiling calls.
+
+finstrument-functions-once
+Common Var(flag_instrument_function_entry_exit,2)
+Instrument function entry and exit with profiling calls invoked once.
 
 finstrument-functions-exclude-function-list=
 Common RejectNegative Joined
@@ -3002,6 +3021,10 @@ funit-at-a-time
 Common Var(flag_unit_at_a_time) Init(1)
 Compile whole compilation unit at a time.
 
+funreachable-traps
+Common Var(flag_unreachable_traps) Optimization
+Trap on __builtin_unreachable instead of using it for optimization.
+
 funroll-loops
 Common Var(flag_unroll_loops) Optimization EnabledBy(funroll-all-loops)
 Perform loop unrolling when iteration count is known.
@@ -3444,6 +3467,9 @@ Driver
 nostdlib
 Driver
 
+nostdlib++
+Driver
+
 o
 Common Driver Joined Separate Var(asm_file_name) MissingArgError(missing filename after %qs)
 -o <file>	Place output into <file>.
@@ -3574,6 +3600,10 @@ Driver
 static-libphobos
 Driver
 ; Documented for D, but always accepted by driver.
+
+static-libquadmath
+Driver
+; Documented for Fortran, but always accepted by driver.
 
 static-libstdc++
 Driver

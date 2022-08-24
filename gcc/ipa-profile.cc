@@ -1053,8 +1053,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_ipa_profile || in_lto_p; }
-  virtual unsigned int execute (function *) { return ipa_profile (); }
+  bool gate (function *) final override { return flag_ipa_profile || in_lto_p; }
+  unsigned int execute (function *) final override { return ipa_profile (); }
 
 }; // class pass_ipa_profile
 

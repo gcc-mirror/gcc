@@ -310,6 +310,15 @@ struct byte_range
 	    && m_size_in_bytes == other.m_size_in_bytes);
   }
 
+  bool intersects_p (const byte_range &other,
+		     byte_size_t *out_num_overlap_bytes) const;
+
+  bool exceeds_p (const byte_range &other,
+		  byte_range *out_overhanging_byte_range) const;
+
+  bool falls_short_of_p (byte_offset_t offset,
+			 byte_range *out_fall_short_bytes) const;
+
   byte_offset_t get_start_byte_offset () const
   {
     return m_start_byte_offset;
@@ -544,9 +553,7 @@ public:
   typedef hash_map <const binding_key *, const svalue *> map_t;
   typedef map_t::iterator iterator_t;
 
-  binding_cluster (const region *base_region)
-  : m_base_region (base_region), m_map (),
-    m_escaped (false), m_touched (false) {}
+  binding_cluster (const region *base_region);
   binding_cluster (const binding_cluster &other);
   binding_cluster& operator=(const binding_cluster &other);
 

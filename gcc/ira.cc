@@ -6074,11 +6074,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return !targetm.no_register_allocation;
     }
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       ira (dump_file);
       return 0;
@@ -6117,11 +6117,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return !targetm.no_register_allocation;
     }
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       do_reload ();
       return 0;

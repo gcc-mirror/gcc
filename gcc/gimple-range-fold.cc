@@ -853,12 +853,13 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
       }
 
   // If SCEV is available, query if this PHI has any knonwn values.
-  if (scev_initialized_p () && !POINTER_TYPE_P (TREE_TYPE (phi_def)))
+  if (scev_initialized_p ()
+      && !POINTER_TYPE_P (TREE_TYPE (phi_def)))
     {
-      value_range loop_range;
       class loop *l = loop_containing_stmt (phi);
       if (l && loop_outer (l))
 	{
+	  Value_Range loop_range (type);
 	  range_of_ssa_name_with_loop_info (loop_range, phi_def, l, phi, src);
 	  if (!loop_range.varying_p ())
 	    {
@@ -1006,19 +1007,21 @@ fold_using_range::range_of_builtin_int_call (irange &r, gcall *call,
   switch (func)
     {
     case CFN_BUILT_IN_CONSTANT_P:
-      arg = gimple_call_arg (call, 0);
-      if (src.get_operand (r, arg) && r.singleton_p ())
-	{
-	  r.set (build_one_cst (type), build_one_cst (type));
-	  return true;
-	}
-      if (cfun->after_inlining)
-	{
-	  r.set_zero (type);
-	  // r.equiv_clear ();
-	  return true;
-	}
-      break;
+      {
+	arg = gimple_call_arg (call, 0);
+	Value_Range tmp (TREE_TYPE (arg));
+	if (src.get_operand (tmp, arg) && tmp.singleton_p ())
+	  {
+	    r.set (build_one_cst (type), build_one_cst (type));
+	    return true;
+	  }
+	if (cfun->after_inlining)
+	  {
+	    r.set_zero (type);
+	    return true;
+	  }
+	break;
+      }
 
     case CFN_BUILT_IN_TOUPPER:
       {
@@ -1326,10 +1329,32 @@ fold_using_range::range_of_cond_expr  (vrange &r, gassign *s, fur_source &src)
   return true;
 }
 
+// Return the lower bound of R as a tree.
+
+static inline tree
+tree_lower_bound (const vrange &r, tree type)
+{
+  if (is_a <irange> (r))
+    return wide_int_to_tree (type, as_a <irange> (r).lower_bound ());
+  // ?? Handle floats when they contain endpoints.
+  return NULL;
+}
+
+// Return the upper bound of R as a tree.
+
+static inline tree
+tree_upper_bound (const vrange &r, tree type)
+{
+  if (is_a <irange> (r))
+    return wide_int_to_tree (type, as_a <irange> (r).upper_bound ());
+  // ?? Handle floats when they contain endpoints.
+  return NULL;
+}
+
 // If SCEV has any information about phi node NAME, return it as a range in R.
 
 void
-fold_using_range::range_of_ssa_name_with_loop_info (irange &r, tree name,
+fold_using_range::range_of_ssa_name_with_loop_info (vrange &r, tree name,
 						    class loop *l, gphi *phi,
 						    fur_source &src)
 {
@@ -1337,24 +1362,27 @@ fold_using_range::range_of_ssa_name_with_loop_info (irange &r, tree name,
   tree min, max, type = TREE_TYPE (name);
   if (bounds_of_var_in_loop (&min, &max, src.query (), l, phi, name))
     {
-      if (TREE_CODE (min) != INTEGER_CST)
+      if (!is_gimple_constant (min))
 	{
 	  if (src.query ()->range_of_expr (r, min, phi) && !r.undefined_p ())
-	    min = wide_int_to_tree (type, r.lower_bound ());
+	    min = tree_lower_bound (r, type);
 	  else
 	    min = vrp_val_min (type);
 	}
-      if (TREE_CODE (max) != INTEGER_CST)
+      if (!is_gimple_constant (max))
 	{
 	  if (src.query ()->range_of_expr (r, max, phi) && !r.undefined_p ())
-	    max = wide_int_to_tree (type, r.upper_bound ());
+	    max = tree_upper_bound (r, type);
 	  else
 	    max = vrp_val_max (type);
 	}
-      r.set (min, max);
+      if (min && max)
+	{
+	  r.set (min, max);
+	  return;
+	}
     }
-  else
-    r.set_varying (type);
+  r.set_varying (type);
 }
 
 // -----------------------------------------------------------------------
@@ -1397,27 +1425,31 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
   // Ideally we search dependencies for common names, and see what pops out.
   // until then, simply try to resolve direct dependencies.
 
-  // Both names will need to have 2 direct dependencies.
-  tree ssa1_dep2 = src.gori ()->depend2 (ssa1);
-  tree ssa2_dep2 = src.gori ()->depend2 (ssa2);
-  if (!ssa1_dep2 || !ssa2_dep2)
+  gimple *ssa1_stmt = SSA_NAME_DEF_STMT (ssa1);
+  gimple *ssa2_stmt = SSA_NAME_DEF_STMT (ssa2);
+
+  range_op_handler handler1 (SSA_NAME_DEF_STMT (ssa1));
+  range_op_handler handler2 (SSA_NAME_DEF_STMT (ssa2));
+
+  // If either handler is not present, no relation can be found.
+  if (!handler1 || !handler2)
     return;
 
-  tree ssa1_dep1 = src.gori ()->depend1 (ssa1);
-  tree ssa2_dep1 = src.gori ()->depend1 (ssa2);
+  // Both stmts will need to have 2 ssa names in the stmt.
+  tree ssa1_dep1 = gimple_range_ssa_p (gimple_range_operand1 (ssa1_stmt));
+  tree ssa1_dep2 = gimple_range_ssa_p (gimple_range_operand2 (ssa1_stmt));
+  tree ssa2_dep1 = gimple_range_ssa_p (gimple_range_operand1 (ssa2_stmt));
+  tree ssa2_dep2 = gimple_range_ssa_p (gimple_range_operand2 (ssa2_stmt));
+
+  if (!ssa1_dep1 || !ssa1_dep2 || !ssa2_dep1 || !ssa2_dep2)
+    return;
+
   // Make sure they are the same dependencies, and detect the order of the
   // relationship.
   bool reverse_op2 = true;
   if (ssa1_dep1 == ssa2_dep1 && ssa1_dep2 == ssa2_dep2)
     reverse_op2 = false;
   else if (ssa1_dep1 != ssa2_dep2 || ssa1_dep2 != ssa2_dep1)
-    return;
-
-  range_op_handler handler1 (SSA_NAME_DEF_STMT (ssa1));
-  range_op_handler handler2 (SSA_NAME_DEF_STMT (ssa2));
-
-  // If either handler is not present, no relation is found.
-  if (!handler1 || !handler2)
     return;
 
   int_range<2> bool_one (boolean_true_node, boolean_true_node);
@@ -1464,6 +1496,10 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range, edge e0, edge 
   tree name;
   basic_block bb = gimple_bb (s);
 
+  range_op_handler handler (s);
+  if (!handler)
+    return;
+
   if (e0)
     {
       // If this edge is never taken, ignore it.
@@ -1492,8 +1528,6 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range, edge e0, edge 
   tree ssa2 = gimple_range_ssa_p (gimple_range_operand2 (s));
   if (ssa1 && ssa2)
     {
-      range_op_handler handler (s);
-      gcc_checking_assert (handler);
       if (e0)
 	{
 	  relation_kind relation = handler.op1_op2_relation (e0_range);
@@ -1545,4 +1579,37 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range, edge e0, edge 
 	    }
 	}
     }
+}
+
+// Given stmt S, fill VEC, up to VEC_SIZE elements, with relevant ssa-names
+// on the statement.  For efficiency, it is an error to not pass in enough
+// elements for the vector.  Return the number of ssa-names.
+
+unsigned
+gimple_range_ssa_names (tree *vec, unsigned vec_size, gimple *stmt)
+{
+  tree ssa;
+  int count = 0;
+
+  if (range_op_handler (stmt))
+    {
+      gcc_checking_assert (vec_size >= 2);
+      if ((ssa = gimple_range_ssa_p (gimple_range_operand1 (stmt))))
+	vec[count++] = ssa;
+      if ((ssa = gimple_range_ssa_p (gimple_range_operand2 (stmt))))
+	vec[count++] = ssa;
+    }
+  else if (is_a<gassign *> (stmt)
+	   && gimple_assign_rhs_code (stmt) == COND_EXPR)
+    {
+      gcc_checking_assert (vec_size >= 3);
+      gassign *st = as_a<gassign *> (stmt);
+      if ((ssa = gimple_range_ssa_p (gimple_assign_rhs1 (st))))
+	vec[count++] = ssa;
+      if ((ssa = gimple_range_ssa_p (gimple_assign_rhs2 (st))))
+	vec[count++] = ssa;
+      if ((ssa = gimple_range_ssa_p (gimple_assign_rhs3 (st))))
+	vec[count++] = ssa;
+    }
+  return count;
 }

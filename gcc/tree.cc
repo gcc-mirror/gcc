@@ -71,6 +71,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "gomp-constants.h"
 #include "dfp.h"
+#include "asan.h"
+#include "ubsan.h"
 
 /* Tree code classes.  */
 
@@ -9649,6 +9651,7 @@ build_common_builtin_nodes (void)
     }
 
   if (!builtin_decl_explicit_p (BUILT_IN_UNREACHABLE)
+      || !builtin_decl_explicit_p (BUILT_IN_TRAP)
       || !builtin_decl_explicit_p (BUILT_IN_ABORT))
     {
       ftype = build_function_type (void_type_node, void_list_node);
@@ -9662,6 +9665,10 @@ build_common_builtin_nodes (void)
 	local_define_builtin ("__builtin_abort", ftype, BUILT_IN_ABORT,
 			      "abort",
 			      ECF_LEAF | ECF_NORETURN | ECF_CONST | ECF_COLD);
+      if (!builtin_decl_explicit_p (BUILT_IN_TRAP))
+	local_define_builtin ("__builtin_trap", ftype, BUILT_IN_TRAP,
+			      "__builtin_trap",
+			      ECF_NORETURN | ECF_NOTHROW | ECF_LEAF | ECF_COLD);
     }
 
   if (!builtin_decl_explicit_p (BUILT_IN_MEMCPY)
@@ -10777,6 +10784,39 @@ build_alloca_call_expr (tree size, unsigned int align, HOST_WIDE_INT max_size)
       tree t = builtin_decl_explicit (BUILT_IN_ALLOCA);
       return build_call_expr (t, 1, size);
     }
+}
+
+/* The built-in decl to use to mark code points believed to be unreachable.
+   Typically __builtin_unreachable, but __builtin_trap if
+   -fsanitize=unreachable -fsanitize-trap=unreachable.  If only
+   -fsanitize=unreachable, we rely on sanopt to replace calls with the
+   appropriate ubsan function.  When building a call directly, use
+   {gimple_},build_builtin_unreachable instead.  */
+
+tree
+builtin_decl_unreachable ()
+{
+  enum built_in_function fncode = BUILT_IN_UNREACHABLE;
+
+  if (sanitize_flags_p (SANITIZE_UNREACHABLE)
+      ? (flag_sanitize_trap & SANITIZE_UNREACHABLE)
+      : flag_unreachable_traps)
+    fncode = BUILT_IN_TRAP;
+  /* For non-trapping sanitize, we will rewrite __builtin_unreachable () later,
+     in the sanopt pass.  */
+
+  return builtin_decl_explicit (fncode);
+}
+
+/* Build a call to __builtin_unreachable, possibly rewritten by
+   -fsanitize=unreachable.  Use this rather than the above when practical.  */
+
+tree
+build_builtin_unreachable (location_t loc)
+{
+  tree data = NULL_TREE;
+  tree fn = sanitize_unreachable_fn (&data, loc);
+  return build_call_expr_loc (loc, fn, data != NULL_TREE, data);
 }
 
 /* Create a new constant string literal of type ELTYPE[SIZE] (or LEN
@@ -12738,6 +12778,10 @@ array_at_struct_end_p (tree ref)
       && DECL_SIZE_UNIT (ref)
       && TREE_CODE (DECL_SIZE_UNIT (ref)) == INTEGER_CST)
     {
+      /* If the object itself is the array it is not at struct end.  */
+      if (DECL_P (ref_to_array))
+	return false;
+
       /* Check whether the array domain covers all of the available
          padding.  */
       poly_int64 offset;

@@ -589,8 +589,7 @@ json::value *
 region::to_json () const
 {
   label_text desc = get_desc (true);
-  json::value *reg_js = new json::string (desc.m_buffer);
-  desc.maybe_free ();
+  json::value *reg_js = new json::string (desc.get ());
   return reg_js;
 }
 
@@ -628,6 +627,14 @@ region::symbolic_for_unknown_ptr_p () const
     if (sym_reg->get_pointer ()->get_kind () == SK_UNKNOWN)
       return true;
   return false;
+}
+
+/* Return true if this is a symbolic region.  */
+
+bool
+region::symbolic_p () const
+{
+  return get_kind () == RK_SYMBOLIC;
 }
 
 /* Return true if this is a region for a decl with name DECL_NAME.
@@ -1153,6 +1160,11 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
       if (binding->symbolic_p ())
 	return NULL;
 
+      /* If we don't care about tracking the content of this region, then
+	 it's unused, and the value doesn't matter.  */
+      if (!tracked_p ())
+	return NULL;
+
       binding_cluster c (this);
       c.zero_fill_region (mgr->get_store_manager (), this);
       return mgr->get_or_create_compound_svalue (TREE_TYPE (m_decl),
@@ -1424,6 +1436,30 @@ offset_region::get_relative_concrete_offset (bit_offset_t *out) const
       return true;
     }
   return false;
+}
+
+/* Implementation of region::get_byte_size_sval vfunc for offset_region.  */
+
+const svalue *
+offset_region::get_byte_size_sval (region_model_manager *mgr) const
+{
+  tree offset_cst = get_byte_offset ()->maybe_get_constant ();
+  byte_size_t byte_size;
+  /* If the offset points in the middle of the region,
+     return the remaining bytes.  */
+  if (get_byte_size (&byte_size) && offset_cst)
+    {
+      byte_size_t offset = wi::to_offset (offset_cst);
+      byte_range r (0, byte_size);
+      if (r.contains_p (offset))
+	{
+	  tree remaining_byte_size = wide_int_to_tree (size_type_node,
+						       byte_size - offset);
+	  return mgr->get_or_create_constant_svalue (remaining_byte_size);
+	}
+    }
+
+  return region::get_byte_size_sval (mgr);
 }
 
 /* class sized_region : public region.  */

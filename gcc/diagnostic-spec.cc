@@ -96,13 +96,18 @@ nowarn_spec_t::nowarn_spec_t (opt_code opt)
     case OPT_Winit_self:
     case OPT_Wuninitialized:
     case OPT_Wmaybe_uninitialized:
-	m_bits = NW_UNINIT;
+      m_bits = NW_UNINIT;
       break;
 
     case OPT_Wdangling_pointer_:
     case OPT_Wreturn_local_addr:
     case OPT_Wuse_after_free_:
       m_bits = NW_DANGLING;
+      break;
+
+    case OPT_Wpessimizing_move:
+    case OPT_Wredundant_move:
+      m_bits = NW_REDUNDANT;
       break;
 
     default:

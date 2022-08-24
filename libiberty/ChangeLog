@@ -1,3 +1,33 @@
+2022-07-22  Martin Liska  <mliska@suse.cz>
+
+	PR other/106370
+	* _doprnt.c: Remove continue as last stmt
+	in a loop.
+
+2022-07-14  Martin Liska  <mliska@suse.cz>
+
+	* functions.texi: Replace strtoul with strtoull.
+
+2022-07-04  Nick Clifton  <nickc@redhat.com>
+
+	* rust-demangle.c (demangle_const): Add a missing goto pass_return
+	at the end of the function.
+
+2022-07-04  Nick Clifton  <nickc@redhat.com>
+
+	* rust-demangle.c (demangle_path_maybe_open_generics): Add
+	recursion limit.
+
+2022-07-01  Nick Clifton  <nickc@redhat.com>
+
+	PR demangler/105039
+	* rust-demangle.c (demangle_const): Add recursion limit.
+
+2022-06-26  Simon Marchi  <simon.marchi@efficios.com>
+
+	* configure.ac: Add AC_CONFIG_MACRO_DIRS call.
+	* configure: Re-generate.
+
 2022-05-23  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-demangle.c (d_make_comp): Adjust.

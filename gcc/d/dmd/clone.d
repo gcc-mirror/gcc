@@ -404,7 +404,12 @@ bool needOpEquals(StructDeclaration sd)
 {
     //printf("StructDeclaration::needOpEquals() %s\n", sd.toChars());
     if (sd.isUnionDeclaration())
-        goto Ldontneed;
+    {
+        /* If a union has only one field, treat it like a struct
+         */
+        if (sd.fields.length != 1)
+            goto Ldontneed;
+    }
     if (sd.hasIdentityEquals)
         goto Lneed;
     /* If any of the fields has an opEquals, then we
@@ -421,7 +426,7 @@ bool needOpEquals(StructDeclaration sd)
         if (tvbase.ty == Tstruct)
         {
             TypeStruct ts = cast(TypeStruct)tvbase;
-            if (ts.sym.isUnionDeclaration())
+            if (ts.sym.isUnionDeclaration() && ts.sym.fields.length != 1)
                 continue;
             if (needOpEquals(ts.sym))
                 goto Lneed;
@@ -1114,6 +1119,10 @@ private DtorDeclaration buildExternDDtor(AggregateDeclaration ad, Scope* sc)
 {
     auto dtor = ad.aggrDtor;
     if (!dtor)
+        return null;
+
+    // Don't try to call `@disable`d dtors
+    if (dtor.storage_class & STC.disable)
         return null;
 
     // Generate shim only when ABI incompatible on target platform

@@ -619,7 +619,7 @@ extern (C++) final class Module : Package
         else
         {
             // if module is not named 'package' but we're trying to read 'package.d', we're looking for a package module
-            bool isPackageMod = (strcmp(toChars(), "package") != 0) && (strcmp(srcfile.name(), package_d) == 0 || (strcmp(srcfile.name(), package_di) == 0));
+            bool isPackageMod = (strcmp(toChars(), "package") != 0) && isPackageFileName(srcfile);
             if (isPackageMod)
                 .error(loc, "importing package '%s' requires a 'package.d' file which cannot be found in '%s'", toChars(), srcfile.toChars());
             else
@@ -680,7 +680,7 @@ extern (C++) final class Module : Package
             FileName.equalsExt(srcfile.toString(), c_ext) &&
             FileName.exists(srcfile.toString()))
         {
-            filename = global.preprocess(srcfile, loc, global.params.cppswitches, ifile, &defines);  // run C preprocessor
+            filename = global.preprocess(srcfile, loc, ifile, &defines);  // run C preprocessor
         }
 
         if (auto result = global.fileManager.lookup(filename))
@@ -824,8 +824,7 @@ extern (C++) final class Module : Package
 
         const(char)* srcname = srcfile.toChars();
         //printf("Module::parse(srcname = '%s')\n", srcname);
-        isPackageFile = (strcmp(srcfile.name(), package_d) == 0 ||
-                         strcmp(srcfile.name(), package_di) == 0);
+        isPackageFile = isPackageFileName(srcfile);
         const(char)[] buf = cast(const(char)[]) this.src;
 
         bool needsReencoding = true;
@@ -1032,8 +1031,7 @@ extern (C++) final class Module : Package
             }
             assert(dst);
             Module m = ppack ? ppack.isModule() : null;
-            if (m && (strcmp(m.srcfile.name(), package_d) != 0 &&
-                      strcmp(m.srcfile.name(), package_di) != 0))
+            if (m && !isPackageFileName(m.srcfile))
             {
                 .error(md.loc, "package name '%s' conflicts with usage as a module name in file %s", ppack.toPrettyChars(), m.srcfile.toChars());
             }

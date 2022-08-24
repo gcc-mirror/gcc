@@ -498,17 +498,21 @@ struct File
     private Impl* _p;
     private string _name;
 
-    package this(FILE* handle, string name, uint refs = 1, bool isPopened = false) @trusted
+    package this(FILE* handle, string name, uint refs = 1, bool isPopened = false) @trusted @nogc nothrow
     {
         import core.stdc.stdlib : malloc;
-        import std.exception : enforce;
 
         assert(!_p);
-        _p = cast(Impl*) enforce(malloc(Impl.sizeof), "Out of memory");
+        _p = cast(Impl*) malloc(Impl.sizeof);
+        if (!_p)
+        {
+            import core.exception : onOutOfMemoryError;
+            onOutOfMemoryError();
+        }
         initImpl(handle, name, refs, isPopened);
     }
 
-    private void initImpl(FILE* handle, string name, uint refs = 1, bool isPopened = false)
+    private void initImpl(FILE* handle, string name, uint refs = 1, bool isPopened = false) @nogc nothrow pure @safe
     {
         assert(_p);
         _p.handle = handle;
@@ -1128,10 +1132,9 @@ each item is inferred from the size and type of the input array, respectively.
 
 Returns: The slice of `buffer` containing the data that was actually read.
 This will be shorter than `buffer` if EOF was reached before the buffer
-could be filled.
+could be filled. If the buffer is empty, it will be returned.
 
-Throws: `Exception` if `buffer` is empty.
-        `ErrnoException` if the file is not opened or the call to `fread` fails.
+Throws: `ErrnoException` if the file is not opened or the call to `fread` fails.
 
 `rawRead` always reads in binary mode on Windows.
  */
@@ -1140,7 +1143,7 @@ Throws: `Exception` if `buffer` is empty.
         import std.exception : enforce, errnoEnforce;
 
         if (!buffer.length)
-            throw new Exception("rawRead must take a non-empty buffer");
+            return buffer;
         enforce(isOpen, "Attempting to read from an unopened file");
         version (Windows)
         {
@@ -1205,6 +1208,16 @@ Throws: `Exception` if `buffer` is empty.
             ubyte[1] u;
             assertThrown(p.readEnd.rawRead(u));
         }
+    }
+
+    // https://issues.dlang.org/show_bug.cgi?id=13893
+    @system unittest
+    {
+        import std.exception : assertNotThrown;
+
+        File f;
+        ubyte[0] u;
+        assertNotThrown(f.rawRead(u));
     }
 
 /**

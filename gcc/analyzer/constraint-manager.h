@@ -138,6 +138,9 @@ public:
 
   static int cmp (const bounded_ranges *a, const bounded_ranges *b);
 
+  unsigned get_count () const { return m_ranges.length (); }
+  const bounded_range &get_range (unsigned idx) const { return m_ranges[idx]; }
+
 private:
   void canonicalize ();
   void validate () const;

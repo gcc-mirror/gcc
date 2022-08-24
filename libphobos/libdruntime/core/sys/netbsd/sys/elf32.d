@@ -18,6 +18,16 @@ alias Elf32_Word Elf32_Hashelt;
 alias Elf32_Word Elf32_Size;
 alias Elf32_Sword Elf32_Ssize;
 
+struct Elf32_Dyn
+{
+  Elf32_Sword   d_tag;
+  union _d_un
+  {
+      Elf32_Word d_val;
+      Elf32_Addr d_ptr;
+  } _d_un d_un;
+}
+
 alias Elf_Note Elf32_Nhdr;
 
 struct Elf32_Cap

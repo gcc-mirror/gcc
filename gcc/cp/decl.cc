@@ -2294,8 +2294,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	      merge_default_template_args (new_parms, old_parms,
 					   /*class_p=*/false);
 	    }
-	  if (!DECL_UNIQUE_FRIEND_P (old_result))
-	    DECL_UNIQUE_FRIEND_P (new_result) = false;
+	  if (!DECL_UNIQUE_FRIEND_P (new_result))
+	    DECL_UNIQUE_FRIEND_P (old_result) = false;
 
 	  check_default_args (newdecl);
 
@@ -2654,13 +2654,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       if (LANG_DECL_HAS_MIN (newdecl))
 	{
 	  DECL_ACCESS (newdecl) = DECL_ACCESS (olddecl);
-	  if (new_defines_function
-	      && DECL_TEMPLATE_INFO (olddecl)
-	      && DECL_UNIQUE_FRIEND_P (DECL_TEMPLATE_RESULT
-				       (DECL_TI_TEMPLATE (olddecl))))
-	    /* Don't copy template info from a non-template friend declaration
-	       in a class template (PR105761).  */;
-	  else if (DECL_TEMPLATE_INFO (newdecl))
+	  if (DECL_TEMPLATE_INFO (newdecl))
 	    {
 	      new_template_info = DECL_TEMPLATE_INFO (newdecl);
 	      if (DECL_TEMPLATE_INSTANTIATION (olddecl)
@@ -2668,10 +2662,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		/* Remember the presence of explicit specialization args.  */
 		TINFO_USED_TEMPLATE_ID (DECL_TEMPLATE_INFO (olddecl))
 		  = TINFO_USED_TEMPLATE_ID (new_template_info);
-	      DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	    }
-	  else
-	    DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
+
+	  /* We don't want to copy template info from a non-templated friend
+	     (PR105761), but these shouldn't have DECL_TEMPLATE_INFO now.  */
+	  gcc_checking_assert (!DECL_TEMPLATE_INFO (olddecl)
+			       || !non_templated_friend_p (olddecl));
+	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	}
 
       if (DECL_DECLARES_FUNCTION_P (newdecl))
@@ -4010,14 +4007,24 @@ struct typename_hasher : ggc_ptr_hash<tree_node>
   /* Hash a TYPENAME_TYPE.  */
 
   static hashval_t
+  hash (tree context, tree fullname)
+  {
+    hashval_t hash = 0;
+    hash = iterative_hash_object (context, hash);
+    hash = iterative_hash_object (fullname, hash);
+    return hash;
+  }
+
+  static hashval_t
+  hash (const typename_info *ti)
+  {
+    return typename_hasher::hash (ti->scope, ti->template_id);
+  }
+
+  static hashval_t
   hash (tree t)
   {
-    hashval_t hash;
-
-    hash = (htab_hash_pointer (TYPE_CONTEXT (t))
-	    ^ htab_hash_pointer (TYPE_IDENTIFIER (t)));
-
-    return hash;
+    return typename_hasher::hash (TYPE_CONTEXT (t), TYPENAME_TYPE_FULLNAME (t));
   }
 
   /* Compare two TYPENAME_TYPEs.  */
@@ -4056,8 +4063,7 @@ build_typename_type (tree context, tree name, tree fullname,
   ti.class_p = (tag_type == class_type
 		|| tag_type == record_type
 		|| tag_type == union_type);
-  hashval_t hash =  (htab_hash_pointer (ti.scope)
-		     ^ htab_hash_pointer (ti.name));
+  hashval_t hash = typename_hasher::hash (&ti);
 
   /* See if we already have this type.  */
   tree *e = typename_htab->find_slot_with_hash (&ti, hash, INSERT);
@@ -6499,6 +6505,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       tree elt_init;
       constructor_elt *old_cur = d->cur;
 
+      if (d->cur->index)
+	CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
       check_array_designated_initializer (d->cur, index);
       elt_init = reshape_init_r (elt_type, d,
 				 /*first_initializer_p=*/NULL_TREE,
@@ -6668,6 +6676,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	    }
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
 	    {
+	      CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
 	      field = get_class_binding (type, d->cur->index);
 	      direct_desig = true;
 	    }
@@ -7152,7 +7161,8 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
     CONSTRUCTOR_IS_DIRECT_INIT (new_init) = true;
   if (CONSTRUCTOR_IS_DESIGNATED_INIT (init)
       && BRACE_ENCLOSED_INITIALIZER_P (new_init))
-    CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
+    gcc_checking_assert (CONSTRUCTOR_IS_DESIGNATED_INIT (new_init)
+			 || seen_error ());
 
   return new_init;
 }
@@ -7210,9 +7220,10 @@ check_array_initializer (tree decl, tree type, tree init)
 
 static tree
 build_aggr_init_full_exprs (tree decl, tree init, int flags)
-     
 {
   gcc_assert (stmts_are_full_exprs_p ());
+  if (init)
+    maybe_warn_pessimizing_move (init, TREE_TYPE (decl), /*return_p*/false);
   return build_aggr_init (decl, init, flags, tf_warning_or_error);
 }
 
@@ -8243,6 +8254,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	      && !TYPE_REF_P (type))
 	    TREE_CONSTANT (decl) = 1;
 	}
+      /* This is handled mostly by gimplify.cc, but we have to deal with
+	 not warning about int x = x; as it is a GCC extension to turn off
+	 this warning but only if warn_init_self is zero.  */
+      if (!DECL_EXTERNAL (decl)
+	  && !TREE_STATIC (decl)
+	  && decl == tree_strip_any_location_wrapper (init)
+	  && !warn_init_self)
+	suppress_warning (decl, OPT_Winit_self);
     }
 
   if (flag_openmp
@@ -8615,11 +8634,13 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	= remove_attribute ("omp declare target implicit",
 			    DECL_ATTRIBUTES (decl));
       complete_type (TREE_TYPE (decl));
-      if (!cp_omp_mappable_type (TREE_TYPE (decl)))
+      if (!omp_mappable_type (TREE_TYPE (decl)))
 	{
 	  error ("%q+D in declare target directive does not have mappable"
 		 " type", decl);
-	  cp_omp_emit_unmappable_type_notes (TREE_TYPE (decl));
+	  if (TREE_TYPE (decl) != error_mark_node
+	      && !COMPLETE_TYPE_P (TREE_TYPE (decl)))
+	    cxx_incomplete_type_inform (TREE_TYPE (decl));
 	}
       else if (!lookup_attribute ("omp declare target",
 				  DECL_ATTRIBUTES (decl))
@@ -15012,8 +15033,6 @@ copy_fn_p (const_tree d)
 bool
 move_fn_p (const_tree d)
 {
-  gcc_assert (DECL_FUNCTION_MEMBER_P (d));
-
   if (cxx_dialect == cxx98)
     /* There are no move constructors if we are in C++98 mode.  */
     return false;

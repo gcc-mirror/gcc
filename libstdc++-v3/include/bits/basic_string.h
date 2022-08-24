@@ -352,7 +352,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 #if __cpp_lib_is_constant_evaluated
 	if (std::is_constant_evaluated())
-	  _M_local_buf[0] = _CharT();
+	  for (_CharT& __c : _M_local_buf)
+	    __c = _CharT();
 #endif
 	return _M_local_data();
       }
@@ -3235,7 +3236,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       _GLIBCXX20_CONSTEXPR
       int
-      compare(size_type __pos, size_type __n, const basic_string& __str) const;
+      compare(size_type __pos, size_type __n, const basic_string& __str) const
+      {
+	_M_check(__pos, "basic_string::compare");
+	__n = _M_limit(__pos, __n);
+	const size_type __osize = __str.size();
+	const size_type __len = std::min(__n, __osize);
+	int __r = traits_type::compare(_M_data() + __pos, __str.data(), __len);
+	if (!__r)
+	  __r = _S_compare(__n, __osize);
+	return __r;
+      }
 
       /**
        *  @brief  Compare substring to a substring.
@@ -3263,7 +3274,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX20_CONSTEXPR
       int
       compare(size_type __pos1, size_type __n1, const basic_string& __str,
-	      size_type __pos2, size_type __n2 = npos) const;
+	      size_type __pos2, size_type __n2 = npos) const
+      {
+	_M_check(__pos1, "basic_string::compare");
+	__str._M_check(__pos2, "basic_string::compare");
+	__n1 = _M_limit(__pos1, __n1);
+	__n2 = __str._M_limit(__pos2, __n2);
+	const size_type __len = std::min(__n1, __n2);
+	int __r = traits_type::compare(_M_data() + __pos1,
+				       __str.data() + __pos2, __len);
+	if (!__r)
+	  __r = _S_compare(__n1, __n2);
+	return __r;
+      }
 
       /**
        *  @brief  Compare to a C string.
@@ -3281,7 +3304,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       _GLIBCXX20_CONSTEXPR
       int
-      compare(const _CharT* __s) const _GLIBCXX_NOEXCEPT;
+      compare(const _CharT* __s) const _GLIBCXX_NOEXCEPT
+      {
+	__glibcxx_requires_string(__s);
+	const size_type __size = this->size();
+	const size_type __osize = traits_type::length(__s);
+	const size_type __len = std::min(__size, __osize);
+	int __r = traits_type::compare(_M_data(), __s, __len);
+	if (!__r)
+	  __r = _S_compare(__size, __osize);
+	return __r;
+      }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 5 String::compare specification questionable
@@ -3306,7 +3339,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       */
       _GLIBCXX20_CONSTEXPR
       int
-      compare(size_type __pos, size_type __n1, const _CharT* __s) const;
+      compare(size_type __pos, size_type __n1, const _CharT* __s) const
+      {
+	__glibcxx_requires_string(__s);
+	_M_check(__pos, "basic_string::compare");
+	__n1 = _M_limit(__pos, __n1);
+	const size_type __osize = traits_type::length(__s);
+	const size_type __len = std::min(__n1, __osize);
+	int __r = traits_type::compare(_M_data() + __pos, __s, __len);
+	if (!__r)
+	  __r = _S_compare(__n1, __osize);
+	return __r;
+      }
 
       /**
        *  @brief  Compare substring against a character %array.
@@ -3335,7 +3379,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX20_CONSTEXPR
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s,
-	      size_type __n2) const;
+	      size_type __n2) const
+      {
+	__glibcxx_requires_string_len(__s, __n2);
+	_M_check(__pos, "basic_string::compare");
+	__n1 = _M_limit(__pos, __n1);
+	const size_type __len = std::min(__n1, __n2);
+	int __r = traits_type::compare(_M_data() + __pos, __s, __len);
+	if (!__r)
+	  __r = _S_compare(__n1, __n2);
+	return __r;
+      }
 
 #if __cplusplus >= 202002L
       constexpr bool
@@ -3574,17 +3628,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
     _GLIBCXX_NOEXCEPT
-    { return __lhs.compare(__rhs) == 0; }
-
-  template<typename _CharT>
-    _GLIBCXX20_CONSTEXPR
-    inline
-    typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, bool>::__type
-    operator==(const basic_string<_CharT>& __lhs,
-	       const basic_string<_CharT>& __rhs) _GLIBCXX_NOEXCEPT
-    { return (__lhs.size() == __rhs.size()
-	      && !std::char_traits<_CharT>::compare(__lhs.data(), __rhs.data(),
-						    __lhs.size())); }
+    {
+      return __lhs.size() == __rhs.size()
+	       && !_Traits::compare(__lhs.data(), __rhs.data(), __lhs.size());
+    }
 
   /**
    *  @brief  Test equivalence of string and C string.
@@ -3597,7 +3644,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const _CharT* __rhs)
-    { return __lhs.compare(__rhs) == 0; }
+    {
+      return __lhs.size() == _Traits::length(__rhs)
+	       && !_Traits::compare(__lhs.data(), __rhs, __lhs.size());
+    }
 
 #if __cpp_lib_three_way_comparison
   /**
@@ -3638,7 +3688,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator==(const _CharT* __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
-    { return __rhs.compare(__lhs) == 0; }
+    { return __rhs == __lhs; }
 
   // operator !=
   /**
@@ -3664,7 +3714,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline bool
     operator!=(const _CharT* __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
-    { return !(__lhs == __rhs); }
+    { return !(__rhs == __lhs); }
 
   /**
    *  @brief  Test difference of string and C string.
@@ -4226,85 +4276,75 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  // DR 1182.
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3705. Hashability shouldn't depend on basic_string's allocator
+
+  template<typename _CharT, typename _Alloc,
+	   typename _StrT = basic_string<_CharT, char_traits<_CharT>, _Alloc>>
+    struct __str_hash_base
+    : public __hash_base<size_t, _StrT>
+    {
+      size_t
+      operator()(const _StrT& __s) const noexcept
+      { return _Hash_impl::hash(__s.data(), __s.length() * sizeof(_CharT)); }
+    };
 
 #ifndef _GLIBCXX_COMPATIBILITY_CXX0X
   /// std::hash specialization for string.
-  template<>
-    struct hash<string>
-    : public __hash_base<size_t, string>
-    {
-      size_t
-      operator()(const string& __s) const noexcept
-      { return std::_Hash_impl::hash(__s.data(), __s.length()); }
-    };
-
-  template<>
-    struct __is_fast_hash<hash<string>> : std::false_type
+  template<typename _Alloc>
+    struct hash<basic_string<char, char_traits<char>, _Alloc>>
+    : public __str_hash_base<char, _Alloc>
     { };
 
   /// std::hash specialization for wstring.
-  template<>
-    struct hash<wstring>
-    : public __hash_base<size_t, wstring>
-    {
-      size_t
-      operator()(const wstring& __s) const noexcept
-      { return std::_Hash_impl::hash(__s.data(),
-                                     __s.length() * sizeof(wchar_t)); }
-    };
+  template<typename _Alloc>
+    struct hash<basic_string<wchar_t, char_traits<wchar_t>, _Alloc>>
+    : public __str_hash_base<wchar_t, _Alloc>
+    { };
 
-  template<>
-    struct __is_fast_hash<hash<wstring>> : std::false_type
+  template<typename _Alloc>
+    struct __is_fast_hash<hash<basic_string<wchar_t, char_traits<wchar_t>,
+					    _Alloc>>>
+    : std::false_type
     { };
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   /// std::hash specialization for u8string.
-  template<>
-    struct hash<u8string>
-    : public __hash_base<size_t, u8string>
-    {
-      size_t
-      operator()(const u8string& __s) const noexcept
-      { return std::_Hash_impl::hash(__s.data(),
-                                     __s.length() * sizeof(char8_t)); }
-    };
-
-  template<>
-    struct __is_fast_hash<hash<u8string>> : std::false_type
+  template<typename _Alloc>
+    struct hash<basic_string<char8_t, char_traits<char8_t>, _Alloc>>
+    : public __str_hash_base<char8_t, _Alloc>
     { };
 #endif
 
   /// std::hash specialization for u16string.
-  template<>
-    struct hash<u16string>
-    : public __hash_base<size_t, u16string>
-    {
-      size_t
-      operator()(const u16string& __s) const noexcept
-      { return std::_Hash_impl::hash(__s.data(),
-                                     __s.length() * sizeof(char16_t)); }
-    };
-
-  template<>
-    struct __is_fast_hash<hash<u16string>> : std::false_type
+  template<typename _Alloc>
+    struct hash<basic_string<char16_t, char_traits<char16_t>, _Alloc>>
+    : public __str_hash_base<char16_t, _Alloc>
     { };
 
   /// std::hash specialization for u32string.
-  template<>
-    struct hash<u32string>
-    : public __hash_base<size_t, u32string>
-    {
-      size_t
-      operator()(const u32string& __s) const noexcept
-      { return std::_Hash_impl::hash(__s.data(),
-                                     __s.length() * sizeof(char32_t)); }
-    };
-
-  template<>
-    struct __is_fast_hash<hash<u32string>> : std::false_type
+  template<typename _Alloc>
+    struct hash<basic_string<char32_t, char_traits<char32_t>, _Alloc>>
+    : public __str_hash_base<char32_t, _Alloc>
     { };
+
+#if ! _GLIBCXX_INLINE_VERSION
+  // PR libstdc++/105907 - __is_fast_hash affects unordered container ABI.
+  template<> struct __is_fast_hash<hash<string>> : std::false_type { };
+  template<> struct __is_fast_hash<hash<wstring>> : std::false_type { };
+  template<> struct __is_fast_hash<hash<u16string>> : std::false_type { };
+  template<> struct __is_fast_hash<hash<u32string>> : std::false_type { };
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<> struct __is_fast_hash<hash<u8string>> : std::false_type { };
+#endif
+#else
+  // For versioned namespace, assume every std::hash<basic_string<>> is slow.
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    struct __is_fast_hash<hash<basic_string<_CharT, _Traits, _Alloc>>>
+    : std::false_type
+    { };
+#endif
 
 #if __cplusplus >= 201402L
 

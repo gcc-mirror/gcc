@@ -120,6 +120,7 @@ init_internal_fns ()
 #define len_store_direct { 3, 3, false }
 #define vec_set_direct { 3, 3, false }
 #define unary_direct { 0, 0, true }
+#define unary_convert_direct { -1, 0, true }
 #define binary_direct { 0, 0, true }
 #define ternary_direct { 0, 0, true }
 #define cond_unary_direct { 1, 1, true }
@@ -139,6 +140,86 @@ const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #include "internal-fn.def"
   not_direct
 };
+
+/* Expand STMT using instruction ICODE.  The instruction has NOUTPUTS
+   output operands and NINPUTS input operands, where NOUTPUTS is either
+   0 or 1.  The output operand (if any) comes first, followed by the
+   NINPUTS input operands.  */
+
+static void
+expand_fn_using_insn (gcall *stmt, insn_code icode, unsigned int noutputs,
+		      unsigned int ninputs)
+{
+  gcc_assert (icode != CODE_FOR_nothing);
+
+  expand_operand *ops = XALLOCAVEC (expand_operand, noutputs + ninputs);
+  unsigned int opno = 0;
+  rtx lhs_rtx = NULL_RTX;
+  tree lhs = gimple_call_lhs (stmt);
+
+  if (noutputs)
+    {
+      gcc_assert (noutputs == 1);
+      if (lhs)
+	lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+
+      /* Do not assign directly to a promoted subreg, since there is no
+	 guarantee that the instruction will leave the upper bits of the
+	 register in the state required by SUBREG_PROMOTED_SIGN.  */
+      rtx dest = lhs_rtx;
+      if (dest && GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
+	dest = NULL_RTX;
+      create_output_operand (&ops[opno], dest,
+			     insn_data[icode].operand[opno].mode);
+      opno += 1;
+    }
+  else
+    gcc_assert (!lhs);
+
+  for (unsigned int i = 0; i < ninputs; ++i)
+    {
+      tree rhs = gimple_call_arg (stmt, i);
+      tree rhs_type = TREE_TYPE (rhs);
+      rtx rhs_rtx = expand_normal (rhs);
+      if (INTEGRAL_TYPE_P (rhs_type))
+	create_convert_operand_from (&ops[opno], rhs_rtx,
+				     TYPE_MODE (rhs_type),
+				     TYPE_UNSIGNED (rhs_type));
+      else
+	create_input_operand (&ops[opno], rhs_rtx, TYPE_MODE (rhs_type));
+      opno += 1;
+    }
+
+  gcc_assert (opno == noutputs + ninputs);
+  expand_insn (icode, opno, ops);
+  if (lhs_rtx && !rtx_equal_p (lhs_rtx, ops[0].value))
+    {
+      /* If the return value has an integral type, convert the instruction
+	 result to that type.  This is useful for things that return an
+	 int regardless of the size of the input.  If the instruction result
+	 is smaller than required, assume that it is signed.
+
+	 If the return value has a nonintegral type, its mode must match
+	 the instruction result.  */
+      if (GET_CODE (lhs_rtx) == SUBREG && SUBREG_PROMOTED_VAR_P (lhs_rtx))
+	{
+	  /* If this is a scalar in a register that is stored in a wider
+	     mode than the declared mode, compute the result into its
+	     declared mode and then convert to the wider mode.  */
+	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
+	  rtx tmp = convert_to_mode (GET_MODE (lhs_rtx), ops[0].value, 0);
+	  convert_move (SUBREG_REG (lhs_rtx), tmp,
+			SUBREG_PROMOTED_SIGN (lhs_rtx));
+	}
+      else if (GET_MODE (lhs_rtx) == GET_MODE (ops[0].value))
+	emit_move_insn (lhs_rtx, ops[0].value);
+      else
+	{
+	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
+	  convert_move (lhs_rtx, ops[0].value, 0);
+	}
+    }
+}
 
 /* ARRAY_TYPE is an array of vector modes.  Return the associated insn
    for load-lanes-style optab OPTAB, or CODE_FOR_nothing if none.  */
@@ -735,9 +816,9 @@ expand_arith_set_overflow (tree lhs, rtx target)
 {
   if (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (lhs))) == 1
       && !TYPE_UNSIGNED (TREE_TYPE (TREE_TYPE (lhs))))
-    write_complex_part (target, constm1_rtx, true);
+    write_complex_part (target, constm1_rtx, true, false);
   else
-    write_complex_part (target, const1_rtx, true);
+    write_complex_part (target, const1_rtx, true, false);
 }
 
 /* Helper for expand_*_overflow.  Store RES into the __real__ part
@@ -792,7 +873,7 @@ expand_arith_overflow_result_store (tree lhs, rtx target,
       expand_arith_set_overflow (lhs, target);
       emit_label (done_label);
     }
-  write_complex_part (target, lres, false);
+  write_complex_part (target, lres, false, false);
 }
 
 /* Helper for expand_*_overflow.  Store RES into TARGET.  */
@@ -837,7 +918,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
     {
       target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
       if (!is_ubsan)
-	write_complex_part (target, const0_rtx, true);
+	write_complex_part (target, const0_rtx, true, false);
     }
 
   /* We assume both operands and result have the same precision
@@ -1282,7 +1363,7 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan,
     {
       target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
       if (!is_ubsan)
-	write_complex_part (target, const0_rtx, true);
+	write_complex_part (target, const0_rtx, true, false);
     }
 
   enum insn_code icode = optab_handler (negv3_optab, mode);
@@ -1407,7 +1488,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
     {
       target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
       if (!is_ubsan)
-	write_complex_part (target, const0_rtx, true);
+	write_complex_part (target, const0_rtx, true, false);
     }
 
   if (is_ubsan)
@@ -2224,7 +2305,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
       do_compare_rtx_and_jump (op1, res, NE, true, mode, NULL_RTX, NULL,
 			       all_done_label, profile_probability::very_unlikely ());
       emit_label (set_noovf);
-      write_complex_part (target, const0_rtx, true);
+      write_complex_part (target, const0_rtx, true, false);
       emit_label (all_done_label);
     }
 
@@ -2493,7 +2574,7 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
 	{
 	  /* The infinity precision result will always fit into result.  */
 	  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-	  write_complex_part (target, const0_rtx, true);
+	  write_complex_part (target, const0_rtx, true, false);
 	  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
 	  struct separate_ops ops;
 	  ops.code = code;
@@ -3565,67 +3646,9 @@ static void
 expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
 			unsigned int nargs)
 {
-  expand_operand *ops = XALLOCAVEC (expand_operand, nargs + 1);
-
   tree_pair types = direct_internal_fn_types (fn, stmt);
   insn_code icode = direct_optab_handler (optab, TYPE_MODE (types.first));
-  gcc_assert (icode != CODE_FOR_nothing);
-
-  tree lhs = gimple_call_lhs (stmt);
-  rtx lhs_rtx = NULL_RTX;
-  if (lhs)
-    lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-
-  /* Do not assign directly to a promoted subreg, since there is no
-     guarantee that the instruction will leave the upper bits of the
-     register in the state required by SUBREG_PROMOTED_SIGN.  */
-  rtx dest = lhs_rtx;
-  if (dest && GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
-    dest = NULL_RTX;
-
-  create_output_operand (&ops[0], dest, insn_data[icode].operand[0].mode);
-
-  for (unsigned int i = 0; i < nargs; ++i)
-    {
-      tree rhs = gimple_call_arg (stmt, i);
-      tree rhs_type = TREE_TYPE (rhs);
-      rtx rhs_rtx = expand_normal (rhs);
-      if (INTEGRAL_TYPE_P (rhs_type))
-	create_convert_operand_from (&ops[i + 1], rhs_rtx,
-				     TYPE_MODE (rhs_type),
-				     TYPE_UNSIGNED (rhs_type));
-      else
-	create_input_operand (&ops[i + 1], rhs_rtx, TYPE_MODE (rhs_type));
-    }
-
-  expand_insn (icode, nargs + 1, ops);
-  if (lhs_rtx && !rtx_equal_p (lhs_rtx, ops[0].value))
-    {
-      /* If the return value has an integral type, convert the instruction
-	 result to that type.  This is useful for things that return an
-	 int regardless of the size of the input.  If the instruction result
-	 is smaller than required, assume that it is signed.
-
-	 If the return value has a nonintegral type, its mode must match
-	 the instruction result.  */
-      if (GET_CODE (lhs_rtx) == SUBREG && SUBREG_PROMOTED_VAR_P (lhs_rtx))
-	{
-	  /* If this is a scalar in a register that is stored in a wider
-	     mode than the declared mode, compute the result into its
-	     declared mode and then convert to the wider mode.  */
-	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
-	  rtx tmp = convert_to_mode (GET_MODE (lhs_rtx), ops[0].value, 0);
-	  convert_move (SUBREG_REG (lhs_rtx), tmp,
-			SUBREG_PROMOTED_SIGN (lhs_rtx));
-	}
-      else if (GET_MODE (lhs_rtx) == GET_MODE (ops[0].value))
-	emit_move_insn (lhs_rtx, ops[0].value);
-      else
-	{
-	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
-	  convert_move (lhs_rtx, ops[0].value, 0);
-	}
-    }
+  expand_fn_using_insn (stmt, icode, 1, nargs);
 }
 
 /* Expand WHILE_ULT call STMT using optab OPTAB.  */
@@ -3655,6 +3678,19 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   expand_insn (icode, 3, ops);
   if (!rtx_equal_p (lhs_rtx, ops[0].value))
     emit_move_insn (lhs_rtx, ops[0].value);
+}
+
+/* Expand a call to a convert-like optab using the operands in STMT.
+   FN has a single output operand and NARGS input operands.  */
+
+static void
+expand_convert_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab,
+			 unsigned int nargs)
+{
+  tree_pair types = direct_internal_fn_types (fn, stmt);
+  insn_code icode = convert_optab_handler (optab, TYPE_MODE (types.first),
+					  TYPE_MODE (types.second));
+  expand_fn_using_insn (stmt, icode, 1, nargs);
 }
 
 /* Expanders for optabs that can use expand_direct_optab_fn.  */
@@ -3688,6 +3724,11 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 
 #define expand_check_ptrs_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 4)
+
+/* Expanders for optabs that can use expand_convert_optab_fn.  */
+
+#define expand_unary_convert_optab_fn(FN, STMT, OPTAB) \
+  expand_convert_optab_fn (FN, STMT, OPTAB, 1)
 
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
@@ -3761,6 +3802,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 }
 
 #define direct_unary_optab_supported_p direct_optab_supported_p
+#define direct_unary_convert_optab_supported_p convert_optab_supported_p
 #define direct_binary_optab_supported_p direct_optab_supported_p
 #define direct_ternary_optab_supported_p direct_optab_supported_p
 #define direct_cond_unary_optab_supported_p direct_optab_supported_p
@@ -4451,4 +4493,10 @@ expand_SPACESHIP (internal_fn, gcall *stmt)
   expand_insn (icode, 3, ops);
   if (!rtx_equal_p (target, ops[0].value))
     emit_move_insn (target, ops[0].value);
+}
+
+void
+expand_TRAP (internal_fn, gcall *)
+{
+  expand_builtin_trap ();
 }

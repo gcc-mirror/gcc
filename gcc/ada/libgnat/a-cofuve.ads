@@ -40,7 +40,10 @@ generic
    type Element_Type (<>) is private;
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
-package Ada.Containers.Functional_Vectors with SPARK_Mode is
+package Ada.Containers.Functional_Vectors with
+  SPARK_Mode,
+  Annotate => (GNATprove, Always_Return)
+is
 
    subtype Extended_Index is Index_Type'Base range
      Index_Type'Pred (Index_Type'First) .. Index_Type'Last;

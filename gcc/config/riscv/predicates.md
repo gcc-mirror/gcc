@@ -71,12 +71,12 @@
 {
   /* Don't handle multi-word moves this way; we don't want to introduce
      the individual word-mode moves until after reload.  */
-  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+  if (GET_MODE_SIZE (mode).to_constant () > UNITS_PER_WORD)
     return false;
 
   /* Check whether the constant can be loaded in a single
      instruction with zbs extensions.  */
-  if (TARGET_64BIT && TARGET_ZBS && SINGLE_BIT_MASK_OPERAND (INTVAL (op)))
+  if (TARGET_ZBS && SINGLE_BIT_MASK_OPERAND (INTVAL (op)))
     return false;
 
   /* Otherwise check whether the constant can be loaded in a single
@@ -243,3 +243,14 @@
 (define_predicate "imm5_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) < 5")))
+
+;; A CONST_INT operand that consists of a single run of consecutive set bits.
+(define_predicate "consecutive_bits_operand"
+  (match_code "const_int")
+{
+	unsigned HOST_WIDE_INT val = UINTVAL (op);
+	if (exact_log2 ((val >> ctz_hwi (val)) + 1) < 0)
+	        return false;
+
+	return true;
+})

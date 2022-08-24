@@ -146,8 +146,11 @@ endif
 # CFLAGS is for the user to override to, e.g., do a cross build with -O2.
 # TCFLAGS is used for compilations with the GCC just built.
 # T_CFLAGS is used for all compilations and is overridden by t-* files.
+# TFLAGS is also for the user to override, passed down from the top-level
+# Makefile.  It is used for all compilations.
 T_CFLAGS =
 TCFLAGS =
+TFLAGS =
 CFLAGS = @CFLAGS@
 CXXFLAGS = @CXXFLAGS@
 LDFLAGS = @LDFLAGS@
@@ -457,7 +460,7 @@ T_STDINT_GCC_H = $(srcdir)/ginclude/stdint-gcc.h
 # The GCC to use for compiling crt*.o.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES).
-GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include -L$(objdir)/../ld
+GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include -L$(objdir)/../ld $(TFLAGS)
 
 # Set if the compiler was configured with --with-build-sysroot.
 SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
@@ -499,7 +502,6 @@ RANLIB_FOR_TARGET := $(shell \
 ORIGINAL_LD_FOR_TARGET = @ORIGINAL_LD_FOR_TARGET@
 ORIGINAL_NM_FOR_TARGET = @ORIGINAL_NM_FOR_TARGET@
 NM_FOR_TARGET = ./nm
-ORIGINAL_OBJCOPY_FOR_TARGET = @ORIGINAL_OBJCOPY_FOR_TARGET@
 STRIP_FOR_TARGET := $(shell \
   if [ -f $(objdir)/../binutils/strip-new ] ; then \
     echo $(objdir)/../binutils/strip-new ; \
@@ -1194,6 +1196,7 @@ FLAGS_TO_PASS = \
 	"MAKEINFOFLAGS=$(MAKEINFOFLAGS)" \
 	"MAKEOVERRIDES=" \
 	"SHELL=$(SHELL)" \
+	"TFLAGS=$(TFLAGS)" \
 	"exeext=$(exeext)" \
 	"build_exeext=$(build_exeext)" \
 	"objext=$(objext)" \
@@ -1270,6 +1273,7 @@ ANALYZER_OBJS = \
 	analyzer/region-model-reachability.o \
 	analyzer/sm.o \
 	analyzer/sm-file.o \
+	analyzer/sm-fd.o \
 	analyzer/sm-malloc.o \
 	analyzer/sm-pattern-test.o \
 	analyzer/sm-sensitive.o \
@@ -1414,8 +1418,6 @@ OBJS = \
 	gimple-range-infer.o \
 	gimple-range-trace.o \
 	gimple-ssa-backprop.o \
-	gimple-ssa-evrp.o \
-	gimple-ssa-evrp-analyze.o \
 	gimple-ssa-isolate-paths.o \
 	gimple-ssa-nonnull-compare.o \
 	gimple-ssa-split-paths.o \
@@ -1546,6 +1548,7 @@ OBJS = \
 	profile-count.o \
 	range.o \
 	range-op.o \
+	range-op-float.o \
 	read-md.o \
 	read-rtl.o \
 	read-rtl-function.o \
@@ -1709,6 +1712,8 @@ OBJS = \
 	value-query.o \
 	value-range.o \
 	value-range-equiv.o \
+	value-range-pretty-print.o \
+	value-range-storage.o \
 	value-relation.o \
 	value-prof.o \
 	var-tracking.o \
@@ -2717,6 +2722,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssanames.h \
   $(srcdir)/tree-vrp.h \
   $(srcdir)/value-range.h \
+  $(srcdir)/value-range-storage.h \
   $(srcdir)/ipa-prop.h \
   $(srcdir)/trans-mem.cc \
   $(srcdir)/lto-streamer.h \

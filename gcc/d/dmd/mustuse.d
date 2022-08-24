@@ -98,7 +98,7 @@ void checkMustUseReserved(Dsymbol sym)
  */
 private bool isAssignment(Expression e)
 {
-    if (e.isAssignExp || e.isBinAssignExp)
+    if (e.isAssignExp || e.isBinAssignExp || e.isConstructExp || e.isBlitExp)
         return true;
     if (auto ce = e.isCallExp())
     {

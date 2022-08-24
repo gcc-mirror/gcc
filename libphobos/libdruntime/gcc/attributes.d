@@ -182,6 +182,33 @@ enum flatten = attribute("flatten");
 enum no_icf = attribute("no_icf");
 
 /**
+ * The `@no_sanitize` attribute on functions is used to inform the compiler
+ * that it should not do sanitization of any option mentioned in
+ * sanitize_option.  A list of values acceptable by the `-fsanitize` option
+ * can be provided.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @no_sanitize("alignment", "object-size") void func1() { }
+ * @no_sanitize("alignment,object-size") void func2() { }
+ * ---
+ */
+
+auto no_sanitize(A...)(A arguments)
+    if (allSatisfy!(isStringValue, arguments))
+{
+    return attribute("no_sanitize", arguments);
+}
+
+auto no_sanitize(A...)(A arguments)
+    if (!allSatisfy!(isStringValue, arguments))
+{
+    assert(false, "no_sanitize attribute argument not a string constant");
+}
+
+/**
  * The `@noclone` attribute prevents a function from being considered for
  * cloning - a mechanism that produces specialized copies of functions and
  * which is (currently) performed by interprocedural constant propagation.
@@ -275,6 +302,34 @@ auto optimize(A...)(A arguments)
 }
 
 /**
+ * The `@register` attribute specifies that a local or `__gshared` variable
+ * is to be given a register storage-class in the C99 sense of the term, and
+ * will be placed into a register named `registerName`.
+ *
+ * The variable needs to boiled down to a data type that fits the target
+ * register.  It also cannot have either thread-local or `extern` storage.
+ * It is an error to take the address of a register variable.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @register("ebx") __gshared int ebx = void;
+ *
+ * void func() { @register("r10") long r10 = 0x2a; }
+ * ---
+ */
+auto register(string registerName)
+{
+    return attribute("register", registerName);
+}
+
+auto register(A...)(A arguments)
+{
+    assert(false, "register attribute argument not a string constant");
+}
+
+/**
  * The `@restrict` attribute specifies that a function parameter is to be
  * restrict-qualified in the C99 sense of the term.  The parameter needs to
  * boil down to either a pointer or reference type, such as a D pointer,
@@ -314,6 +369,46 @@ auto section(string sectionName)
 auto section(A...)(A arguments)
 {
     assert(false, "section attribute argument not a string constant");
+}
+
+/**
+ * The `@simd` attribute enables creation of one or more function versions that
+ * can process multiple arguments using SIMD instructions from a single
+ * invocation. Specifying this attribute allows compiler to assume that such
+ * versions are available at link time (provided in the same or another module).
+ * Generated versions are target-dependent and described in the corresponding
+ * Vector ABI document. For x86_64 target this document can be found here.
+ * https://sourceware.org/glibc/wiki/libmvec?action=AttachFile&do=view&target=VectorABI.txt
+ * 
+ * The `@simd_clones` attribute is the same as `@simd`, but also includes a
+ * `mask` argument.  Valid masks values are `notinbranch` or `inbranch`, and
+ * instructs the compiler to generate non-masked or masked clones
+ * correspondingly.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @simd double sqrt(double x);
+ * @simd("notinbranch") double atan2(double y, double x);
+ * ---
+ */
+enum simd = attribute("simd");
+
+auto simd_clones(string mask)
+{
+    if (mask == "notinbranch" || mask == "inbranch")
+        return attribute("simd", mask);
+    else
+    {
+        assert(false, "unrecognized parameter `" ~ mask
+               ~ "` for `gcc.attribute.simd_clones`");
+    }
+}
+
+auto simd_clones(A...)(A arguments)
+{
+    assert(false, "simd_clones attribute argument not a string constant");
 }
 
 /**
@@ -423,6 +518,30 @@ auto target_clones(A...)(A arguments)
  * ---
  */
 enum used = attribute("used");
+
+/**
+ * The `@visibility` attribute affects the linkage of the declaration to which
+ * it is attached. It can be applied to variables, types, and functions.
+ *
+ * There are four supported visibility_type values: `default`, `hidden`,
+ * `protected`, or `internal` visibility.
+ *
+ * Example:
+ * ---
+ * import gcc.attributes;
+ *
+ * @visibility("protected") void func() {  }
+ * ---
+ */
+auto visibility(string visibilityName)
+{
+    return attribute("visibility", visibilityName);
+}
+
+auto visibility(A...)(A arguments)
+{
+    assert(false, "visibility attribute argument not a string constant");
+}
 
 /**
  * The `@weak` attribute causes a declaration of an external symbol to be
@@ -543,6 +662,16 @@ enum dynamicCompileEmit = false;
 enum fastmath = optimize("Ofast");
 
 /**
+ * Sets the visibility of a function or global variable to "hidden".
+ * Such symbols aren't directly accessible from outside the DSO
+ * (executable or DLL/.so/.dylib) and are resolved inside the DSO
+ * during linking. If unreferenced within the DSO, the linker can
+ * strip a hidden symbol.
+ * An `export` visibility overrides this attribute.
+ */
+enum hidden = visibility("hidden");
+
+/**
  * Adds GCC's "naked" attribute to a function, disabling function prologue /
  * epilogue emission.
  * Intended to be used in combination with basic `asm` statement.  While using
@@ -559,6 +688,14 @@ enum fastmath = optimize("Ofast");
  * ---
  */
 enum naked = attribute("naked");
+
+/**
+ * Disables a particular sanitizer for this function.
+ * Valid sanitizer names are all names accepted by `-fsanitize=` commandline option.
+ * Multiple sanitizers can be disabled by applying this UDA multiple times, e.g.
+ * `@noSanitize("address") `@noSanitize("thread")` to disable both ASan and TSan.
+ */
+alias noSanitize = no_sanitize;
 
 /**
  * Sets the optimization strategy for a function.

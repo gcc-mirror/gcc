@@ -625,6 +625,11 @@ package Sem_Util is
    --  create a new compatible record type. Loc is the source location assigned
    --  to the created nodes.
 
+   procedure Copy_Ghost_Aspect (From : Node_Id; To : Node_Id);
+   --  Copy the Ghost aspect if present in the aspect specifications of node
+   --  From to node To. On entry it is assumed that To does not have aspect
+   --  specifications. If From has no aspects, the routine has no effect.
+
    function Copy_Parameter_List (Subp_Id : Entity_Id) return List_Id;
    --  Utility to create a parameter profile for a new subprogram spec, when
    --  the subprogram has a body that acts as spec. This is done for some cases
@@ -1182,6 +1187,12 @@ package Sem_Util is
    function Get_Enclosing_Object (N : Node_Id) return Entity_Id;
    --  If expression N references a part of an object, return this object.
    --  Otherwise return Empty. Expression N should have been resolved already.
+
+   function Get_Enclosing_Deep_Object (N : Node_Id) return Entity_Id;
+   --  If expression N references a reachable part of an object (as defined in
+   --  SPARK RM 6.9), return this object. Otherwise return Empty. It is similar
+   --  to Get_Enclosing_Object, but treats pointer dereference like component
+   --  selection. Expression N should have been resolved already.
 
    function Get_Generic_Entity (N : Node_Id) return Entity_Id;
    --  Returns the true generic entity in an instantiation. If the name in the
@@ -2470,6 +2481,10 @@ package Sem_Util is
    --  unconditional transfer of control at run time, i.e. the following
    --  statement definitely will not be executed.
 
+   function Is_Trivial_Boolean (N : Node_Id) return Boolean;
+   --  Determine whether source node N denotes "True" or "False". Note that
+   --  this is not true for expressions that got folded to True or False.
+
    function Is_Unchecked_Conversion_Instance (Id : Entity_Id) return Boolean;
    --  Determine whether an arbitrary entity denotes an instance of function
    --  Ada.Unchecked_Conversion.
@@ -2872,7 +2887,7 @@ package Sem_Util is
    --  This routine is called if the sub-expression N maybe the target of
    --  an assignment (e.g. it is the left side of an assignment, used as
    --  an out parameters, or used as prefixes of access attributes). It
-   --  sets May_Be_Modified in the associated entity if there is one,
+   --  sets Never_Set_In_Source in the associated entity if there is one,
    --  taking into account the rule that in the case of renamed objects,
    --  it is the flag in the renamed object that must be set.
    --
@@ -3665,21 +3680,26 @@ package Sem_Util is
       --  Given a type with aspect Storage_Model_Type or an object of such a
       --  type, and Nam denoting the name of one of the argument kinds allowed
       --  for that aspect, returns the Entity_Id corresponding to the entity
-      --  associated with Nam in the aspect. If such an entity is not present,
-      --  then returns Empty. (Note: This function is modeled on function
-      --  Get_Iterable_Type_Primitive.)
+      --  associated with Nam in the aspect. If an entity was not explicitly
+      --  specified for Nam, then returns Empty, except that in the defaulted
+      --  Address_Type case, System.Address will be returned, and in the
+      --  defaulted Null_Address case, System.Null_Address will be returned.
+      --  (Note: This function is modeled on Get_Iterable_Type_Primitive.)
 
       function Storage_Model_Address_Type
         (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
       --  Given a type with aspect Storage_Model_Type or an object of such a
       --  type, returns the type specified for the Address_Type choice in that
-      --  aspect; returns Empty if the type isn't specified.
+      --  aspect; returns type System.Address if the address type was not
+      --  explicitly specified (indicating use of the native memory model).
 
       function Storage_Model_Null_Address
         (SM_Obj_Or_Type : Entity_Id) return Entity_Id;
       --  Given a type with aspect Storage_Model_Type or an object of such a
       --  type, returns the constant specified for the Null_Address choice in
-      --  that aspect; returns Empty if the constant object isn't specified.
+      --  that aspect; returns Empty if the constant object isn't specified,
+      --  unless the native memory model is in use (System.Address), in which
+      --  case it returns System.Null_Address.
 
       function Storage_Model_Allocate
         (SM_Obj_Or_Type : Entity_Id) return Entity_Id;

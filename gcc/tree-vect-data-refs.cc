@@ -5195,6 +5195,14 @@ bump_vector_ptr (vec_info *vinfo,
 
   if (TREE_CODE (dataref_ptr) == SSA_NAME)
     new_dataref_ptr = copy_ssa_name (dataref_ptr);
+  else if (is_gimple_min_invariant (dataref_ptr))
+    /* When possible avoid emitting a separate increment stmt that will
+       force the addressed object addressable.  */
+    return build1 (ADDR_EXPR, TREE_TYPE (dataref_ptr),
+		   fold_build2 (MEM_REF,
+				TREE_TYPE (TREE_TYPE (dataref_ptr)),
+				dataref_ptr,
+				fold_convert (ptr_type_node, update)));
   else
     new_dataref_ptr = make_ssa_name (TREE_TYPE (dataref_ptr));
   incr_stmt = gimple_build_assign (new_dataref_ptr, POINTER_PLUS_EXPR,
@@ -5777,8 +5785,15 @@ vect_setup_realignment (vec_info *vinfo, stmt_vec_info stmt_info,
   if (at_loop)
     *at_loop = loop_for_initial_load;
 
+  tree vuse = NULL_TREE;
   if (loop_for_initial_load)
-    pe = loop_preheader_edge (loop_for_initial_load);
+    {
+      pe = loop_preheader_edge (loop_for_initial_load);
+      if (gphi *vphi = get_virtual_phi (loop_for_initial_load->header))
+	vuse = PHI_ARG_DEF_FROM_EDGE (vphi, pe);
+    }
+  if (!vuse)
+    vuse = gimple_vuse (gsi_stmt (*gsi));
 
   /* 3. For the case of the optimized realignment, create the first vector
       load at the loop preheader.  */
@@ -5813,6 +5828,7 @@ vect_setup_realignment (vec_info *vinfo, stmt_vec_info stmt_info,
       new_stmt = gimple_build_assign (vec_dest, data_ref);
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);
+      gimple_set_vuse (new_stmt, vuse);
       if (pe)
         {
           new_bb = gsi_insert_on_edge_immediate (pe, new_stmt);

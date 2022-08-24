@@ -1113,7 +1113,7 @@ package body Sem_Ch12 is
       Analyzed_Formal : Node_Id;
       First_Named     : Node_Id := Empty;
       Formal          : Node_Id;
-      Match           : Node_Id;
+      Match           : Node_Id := Empty;
       Named           : Node_Id;
       Saved_Formal    : Node_Id;
 
@@ -2204,6 +2204,19 @@ package body Sem_Ch12 is
                   raise Program_Error;
             end case;
 
+            --  Check here the correct use of Ghost entities in generic
+            --  instantiations, as now the generic has been resolved and
+            --  we know which formal generic parameters are ghost (SPARK
+            --  RM 6.9(10)).
+
+            if Nkind (Formal) not in N_Use_Package_Clause
+                                   | N_Use_Type_Clause
+            then
+               Check_Ghost_Context_In_Generic_Association
+                 (Actual => Match,
+                  Formal => Defining_Entity (Analyzed_Formal));
+            end if;
+
             Formal := Saved_Formal;
             Next_Non_Pragma (Analyzed_Formal);
          end loop;
@@ -2714,6 +2727,17 @@ package body Sem_Ch12 is
 
          if Present (E) then
             Preanalyze_Spec_Expression (E, T);
+
+            --  The default for a ghost generic formal IN parameter of
+            --  access-to-variable type should be a ghost object (SPARK
+            --  RM 6.9(13)).
+
+            if Is_Access_Variable (T) then
+               Check_Ghost_Formal_Variable
+                 (Actual     => E,
+                  Formal     => Id,
+                  Is_Default => True);
+            end if;
 
             if Is_Limited_Type (T) and then not OK_For_Limited_Init (T, E) then
                Error_Msg_N
@@ -3396,6 +3420,25 @@ package body Sem_Ch12 is
             Analyze (Prefix (Def));
             Valid_Default_Attribute (Nam, Def);
             goto Leave;
+         end if;
+
+         --  The default for a ghost generic formal procedure should be a ghost
+         --  procedure (SPARK RM 6.9(13)).
+
+         if Ekind (Nam) = E_Procedure then
+            declare
+               Def_E : Entity_Id := Empty;
+            begin
+               if Nkind (Def) in N_Has_Entity then
+                  Def_E := Entity (Def);
+               end if;
+
+               Check_Ghost_Formal_Procedure_Or_Package
+                 (N          => Def,
+                  Actual     => Def_E,
+                  Formal     => Nam,
+                  Is_Default => True);
+            end;
          end if;
 
          --  Default name may be overloaded, in which case the interpretation
@@ -4254,7 +4297,6 @@ package body Sem_Ch12 is
 
       if Nkind (N) = N_Package_Instantiation then
          Act_Decl_Id := New_Copy (Defining_Entity (N));
-         Set_Comes_From_Source (Act_Decl_Id, True);
 
          if Nkind (Defining_Unit_Name (N)) = N_Defining_Program_Unit_Name then
             Act_Decl_Name :=
@@ -10572,7 +10614,6 @@ package body Sem_Ch12 is
          Error_Msg_N
            ("expect package instance to instantiate formal", Actual);
          Abandon_Instantiation (Actual);
-         raise Program_Error;
 
       else
          Actual_Pack := Entity (Actual);
@@ -10594,6 +10635,14 @@ package body Sem_Ch12 is
 
          Gen_Parent := Generic_Parent (Specification (Analyzed_Formal));
          Formal_Pack := Defining_Unit_Name (Specification (Analyzed_Formal));
+
+         --  The actual for a ghost generic formal package should be a ghost
+         --  package (SPARK RM 6.9(14)).
+
+         Check_Ghost_Formal_Procedure_Or_Package
+           (N      => Actual,
+            Actual => Actual_Pack,
+            Formal => Formal_Pack);
 
          if Nkind (Parent (Actual_Pack)) = N_Defining_Program_Unit_Name then
             Parent_Spec := Package_Specification (Actual_Pack);
@@ -10880,6 +10929,18 @@ package body Sem_Ch12 is
 
          else
             Act_E := Empty;
+         end if;
+
+         --  The actual for a ghost generic formal procedure should be a ghost
+         --  procedure (SPARK RM 6.9(14)).
+
+         if Present (Act_E)
+           and then Ekind (Act_E) = E_Procedure
+         then
+            Check_Ghost_Formal_Procedure_Or_Package
+              (N      => Act,
+               Actual => Act_E,
+               Formal => Analyzed_S);
          end if;
 
          if (Present (Act_E) and then Is_Overloadable (Act_E))
@@ -11401,39 +11462,21 @@ package body Sem_Ch12 is
          --  volatility refinement aspects.
 
          declare
-            Actual_Obj : Entity_Id;
-            N          : Node_Id := Actual;
+            Actual_Obj : constant Entity_Id :=
+              Get_Enclosing_Deep_Object (Actual);
          begin
-            --  Similar to Sem_Util.Get_Enclosing_Object, but treat
-            --  pointer dereference like component selection.
-            loop
-               if Is_Entity_Name (N) then
-                  Actual_Obj := Entity (N);
-                  exit;
-               end if;
-
-               case Nkind (N) is
-                  when N_Indexed_Component
-                     | N_Selected_Component
-                     | N_Slice
-                     | N_Explicit_Dereference
-                  =>
-                     N := Prefix (N);
-
-                  when N_Type_Conversion =>
-                     N := Expression (N);
-
-                  when others =>
-                     Actual_Obj := Etype (N);
-                     exit;
-               end case;
-            end loop;
-
             Check_Volatility_Compatibility
               (Actual_Obj, A_Gen_Obj, "actual object",
                "its corresponding formal object of mode in out",
                Srcpos_Bearer => Actual);
          end;
+
+         --  The actual for a ghost generic formal IN OUT parameter should be a
+         --  ghost object (SPARK RM 6.9(14)).
+
+         Check_Ghost_Formal_Variable
+           (Actual => Actual,
+            Formal => A_Gen_Obj);
 
       --  Formal in-parameter
 
@@ -11460,6 +11503,7 @@ package body Sem_Ch12 is
                 Object_Definition      => Def,
                 Expression             => Actual);
 
+            Copy_Ghost_Aspect (Formal, To => Decl_Node);
             Set_Corresponding_Generic_Association (Decl_Node, Act_Assoc);
 
             --  A generic formal object of a tagged type is defined to be
@@ -11470,6 +11514,16 @@ package body Sem_Ch12 is
             end if;
 
             Append (Decl_Node, List);
+
+            --  The actual for a ghost generic formal IN parameter of
+            --  access-to-variable type should be a ghost object (SPARK
+            --  RM 6.9(14)).
+
+            if Is_Access_Variable (Etype (A_Gen_Obj)) then
+               Check_Ghost_Formal_Variable
+                 (Actual => Actual,
+                  Formal => A_Gen_Obj);
+            end if;
 
             --  No need to repeat (pre-)analysis of some expression nodes
             --  already handled in Preanalyze_Actuals.
@@ -11544,6 +11598,7 @@ package body Sem_Ch12 is
                 Expression             => New_Copy_Tree
                                             (Default_Expression (Formal)));
 
+            Copy_Ghost_Aspect (Formal, To => Decl_Node);
             Set_Corresponding_Generic_Association
               (Decl_Node, Expression (Decl_Node));
 
@@ -14199,6 +14254,8 @@ package body Sem_Ch12 is
         Make_Subtype_Declaration (Loc,
           Defining_Identifier => Subt,
           Subtype_Indication  => New_Occurrence_Of (Act_T, Loc));
+
+      Copy_Ghost_Aspect (Formal, To => Decl_Node);
 
       --  Record whether the actual is private at this point, so that
       --  Check_Generic_Actuals can restore its proper view before the

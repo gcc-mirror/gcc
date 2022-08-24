@@ -83,8 +83,9 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
 	  x = NULL_TREE;
 	  flag = SANITIZE_SI_OVERFLOW;
 	}
-      else if (flag_sanitize_undefined_trap_on_error
-	       || (((flag_sanitize_recover & SANITIZE_DIVIDE) == 0)
+      else if ((((flag_sanitize_trap & SANITIZE_DIVIDE) == 0)
+		== ((flag_sanitize_trap & SANITIZE_SI_OVERFLOW) == 0))
+	       && (((flag_sanitize_recover & SANITIZE_DIVIDE) == 0)
 		   == ((flag_sanitize_recover & SANITIZE_SI_OVERFLOW) == 0)))
 	{
 	  t = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t, x);
@@ -105,7 +106,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
      make sure it gets evaluated before the condition.  */
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op0), t);
   t = fold_build2 (COMPOUND_EXPR, TREE_TYPE (t), unshare_expr (op1), t);
-  if (flag_sanitize_undefined_trap_on_error)
+  if ((flag_sanitize_trap & flag) && x == NULL_TREE)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
@@ -113,25 +114,41 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
 				     ubsan_type_descriptor (type), NULL_TREE,
 				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
-      enum built_in_function bcode
-	= (flag_sanitize_recover & flag)
-	  ? BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW
-	  : BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW_ABORT;
-      tt = builtin_decl_explicit (bcode);
-      op0 = unshare_expr (op0);
-      op1 = unshare_expr (op1);
-      tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
-				ubsan_encode_value (op1));
-      if (x)
+      if (flag_sanitize_trap & flag)
+	tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP),
+				  0);
+      else
 	{
-	  bcode = (flag_sanitize_recover & SANITIZE_SI_OVERFLOW)
-		  ? BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW
-		  : BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW_ABORT;
-	  tree xt = builtin_decl_explicit (bcode);
+	  enum built_in_function bcode
+	    = (flag_sanitize_recover & flag)
+	      ? BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW
+	      : BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW_ABORT;
+	  tt = builtin_decl_explicit (bcode);
 	  op0 = unshare_expr (op0);
 	  op1 = unshare_expr (op1);
-	  xt = build_call_expr_loc (loc, xt, 3, data, ubsan_encode_value (op0),
+	  tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
 				    ubsan_encode_value (op1));
+	}
+      if (x)
+	{
+	  tree xt;
+	  if (flag_sanitize_trap & SANITIZE_SI_OVERFLOW)
+	    xt = build_call_expr_loc (loc,
+				      builtin_decl_explicit (BUILT_IN_TRAP),
+				      0);
+	  else
+	    {
+	      enum built_in_function bcode
+		= (flag_sanitize_recover & SANITIZE_SI_OVERFLOW)
+		   ? BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW
+		   : BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW_ABORT;
+	      xt = builtin_decl_explicit (bcode);
+	      op0 = unshare_expr (op0);
+	      op1 = unshare_expr (op1);
+	      xt = build_call_expr_loc (loc, xt, 3, data,
+					ubsan_encode_value (op0),
+					ubsan_encode_value (op1));
+	    }
 	  x = fold_build3 (COND_EXPR, void_type_node, x, xt, void_node);
 	}
     }
@@ -225,8 +242,9 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
 	}
       else
 	{
-	  if (flag_sanitize_undefined_trap_on_error
-	      || ((!(flag_sanitize_recover & SANITIZE_SHIFT_EXPONENT))
+	  if (((!(flag_sanitize_trap & SANITIZE_SHIFT_EXPONENT))
+	       == (!(flag_sanitize_trap & SANITIZE_SHIFT_BASE)))
+	      && ((!(flag_sanitize_recover & SANITIZE_SHIFT_EXPONENT))
 		  == (!(flag_sanitize_recover & SANITIZE_SHIFT_BASE))))
 	    t = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t, tt);
 	  else
@@ -234,7 +252,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
 	}
     }
 
-  if (flag_sanitize_undefined_trap_on_error)
+  if ((flag_sanitize_trap & recover_kind) && else_t == void_node)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
@@ -244,26 +262,40 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
 				     NULL_TREE);
       data = build_fold_addr_expr_loc (loc, data);
 
-      enum built_in_function bcode
-	= (flag_sanitize_recover & recover_kind)
-	  ? BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS
-	  : BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS_ABORT;
-      tt = builtin_decl_explicit (bcode);
-      op0 = unshare_expr (op0);
-      op1 = unshare_expr (op1);
-      tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
-				ubsan_encode_value (op1));
-      if (else_t != void_node)
+      if (flag_sanitize_trap & recover_kind)
+	tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
+      else
 	{
-	  bcode = (flag_sanitize_recover & SANITIZE_SHIFT_BASE)
-		  ? BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS
-		  : BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS_ABORT;
-	  tree else_tt = builtin_decl_explicit (bcode);
+	  enum built_in_function bcode
+	    = (flag_sanitize_recover & recover_kind)
+	      ? BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS
+	      : BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS_ABORT;
+	  tt = builtin_decl_explicit (bcode);
 	  op0 = unshare_expr (op0);
 	  op1 = unshare_expr (op1);
-	  else_tt = build_call_expr_loc (loc, else_tt, 3, data,
-					 ubsan_encode_value (op0),
-					 ubsan_encode_value (op1));
+	  tt = build_call_expr_loc (loc, tt, 3, data, ubsan_encode_value (op0),
+				    ubsan_encode_value (op1));
+	}
+      if (else_t != void_node)
+	{
+	  tree else_tt;
+	  if (flag_sanitize_trap & SANITIZE_SHIFT_BASE)
+	    else_tt
+	      = build_call_expr_loc (loc,
+				     builtin_decl_explicit (BUILT_IN_TRAP), 0);
+	  else
+	    {
+	      enum built_in_function bcode
+		= (flag_sanitize_recover & SANITIZE_SHIFT_BASE)
+		  ? BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS
+		  : BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS_ABORT;
+	      else_tt = builtin_decl_explicit (bcode);
+	      op0 = unshare_expr (op0);
+	      op1 = unshare_expr (op1);
+	      else_tt = build_call_expr_loc (loc, else_tt, 3, data,
+					     ubsan_encode_value (op0),
+					     ubsan_encode_value (op1));
+	    }
 	  else_t = fold_build3 (COND_EXPR, void_type_node, else_t,
 				else_tt, void_node);
 	}
@@ -282,7 +314,7 @@ ubsan_instrument_vla (location_t loc, tree size)
   tree t, tt;
 
   t = fold_build2 (LE_EXPR, boolean_type_node, size, build_int_cst (type, 0));
-  if (flag_sanitize_undefined_trap_on_error)
+  if (flag_sanitize_trap & SANITIZE_VLA)
     tt = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
   else
     {
@@ -307,8 +339,10 @@ ubsan_instrument_vla (location_t loc, tree size)
 tree
 ubsan_instrument_return (location_t loc)
 {
-  if (flag_sanitize_undefined_trap_on_error)
-    return build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  if (flag_sanitize_trap & SANITIZE_RETURN)
+    /* pass_warn_function_return checks for BUILTINS_LOCATION.  */
+    return build_call_expr_loc (BUILTINS_LOCATION,
+				builtin_decl_explicit (BUILT_IN_TRAP), 0);
 
   tree data = ubsan_create_data ("__ubsan_missing_return_data", 1, &loc,
 				 NULL_TREE, NULL_TREE);

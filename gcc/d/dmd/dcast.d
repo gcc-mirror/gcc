@@ -916,7 +916,7 @@ MATCH implicitConvTo(Expression e, Type t)
             if (i - j < nparams)
             {
                 Parameter fparam = tf.parameterList[i - j];
-                if (fparam.storageClass & STC.lazy_)
+                if (fparam.isLazy())
                     return result; // not sure what to do with this
                 Type tparam = fparam.type;
                 if (!tparam)
@@ -1106,9 +1106,14 @@ MATCH implicitConvTo(Expression e, Type t)
 
     MATCH visitCond(CondExp e)
     {
-        auto result = visit(e);
-        if (result != MATCH.nomatch)
-            return result;
+        e.econd = e.econd.optimize(WANTvalue);
+        const opt = e.econd.toBool();
+        if (opt.isPresent())
+        {
+            auto result = visit(e);
+            if (result != MATCH.nomatch)
+                return result;
+        }
 
         MATCH m1 = e.e1.implicitConvTo(t);
         MATCH m2 = e.e2.implicitConvTo(t);
@@ -1224,7 +1229,7 @@ MATCH implicitConvTo(Expression e, Type t)
                 if (i - j < nparams)
                 {
                     Parameter fparam = tf.parameterList[i - j];
-                    if (fparam.storageClass & STC.lazy_)
+                    if (fparam.isLazy())
                         return MATCH.nomatch; // not sure what to do with this
                     Type tparam = fparam.type;
                     if (!tparam)
@@ -2942,6 +2947,9 @@ Lagain:
 
         t1 = Type.basic[ty1];
         t2 = Type.basic[ty2];
+
+        if (!(t1 && t2))
+            return null;
         e1 = e1.castTo(sc, t1);
         e2 = e2.castTo(sc, t2);
         return Lret(Type.basic[ty]);

@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "value-query.h"
+#include "value-range-storage.h"
 
 /* Rewriting a function into SSA form can create a huge number of SSA_NAMEs,
    many of which may be thrown away shortly after their creation if jumps
@@ -71,6 +72,74 @@ unsigned int ssa_name_nodes_created;
 #define FREE_SSANAMES(fun) (fun)->gimple_df->free_ssanames
 #define FREE_SSANAMES_QUEUE(fun) (fun)->gimple_df->free_ssanames_queue
 
+static ggc_vrange_allocator ggc_allocator;
+static vrange_storage vstore (&ggc_allocator);
+
+/* Return TRUE if NAME has global range info.  */
+
+inline bool
+range_info_p (const_tree name)
+{
+  return SSA_NAME_RANGE_INFO (name);
+}
+
+/* Return TRUE if R fits in the global range of NAME.  */
+
+inline bool
+range_info_fits_p (tree name, const vrange &r)
+{
+  gcc_checking_assert (range_info_p (name));
+  void *mem = SSA_NAME_RANGE_INFO (name);
+  return vrange_storage::fits_p (mem, r);
+}
+
+/* Allocate a new global range for NAME and set it to R.  Return the
+   allocation slot.  */
+
+inline void *
+range_info_alloc (tree name, const vrange &r)
+{
+  void *mem = vstore.alloc_slot (r);
+  SSA_NAME_RANGE_INFO (name) = mem;
+  return mem;
+}
+
+/* Free storage allocated for the global range for NAME.  */
+
+inline void
+range_info_free (tree name)
+{
+  void *mem = SSA_NAME_RANGE_INFO (name);
+  vstore.free (mem);
+}
+
+/* Return the global range for NAME in R.  */
+
+inline void
+range_info_get_range (tree name, vrange &r)
+{
+  vstore.get_vrange (SSA_NAME_RANGE_INFO (name), r, TREE_TYPE (name));
+}
+
+/* Set the global range for NAME from R.  Return TRUE if successfull,
+   or FALSE if we can't set a range of NAME's type.  */
+
+inline bool
+range_info_set_range (tree name, const vrange &r)
+{
+  if (!range_info_p (name) || !range_info_fits_p (name, r))
+    {
+      if (range_info_p (name))
+	range_info_free (name);
+
+      return range_info_alloc (name, r);
+    }
+  else
+    {
+      vstore.set_vrange (SSA_NAME_RANGE_INFO (name), r);
+      return true;
+    }
+}
 
 /* Initialize management of SSA_NAMEs to default SIZE.  If SIZE is
    zero use default.  */
@@ -343,94 +412,38 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
   return t;
 }
 
-/* Helper function for set_range_info.
+/* Update the range information for NAME, intersecting into an existing
+   range if applicable.  Return TRUE if the range was updated.  */
 
-   Store range information RANGE_TYPE, MIN, and MAX to tree ssa_name
-   NAME.  */
-
-void
-set_range_info_raw (tree name, enum value_range_kind range_type,
-		    const wide_int_ref &min, const wide_int_ref &max)
+bool
+set_range_info (tree name, const vrange &r)
 {
-  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
-  gcc_assert (range_type == VR_RANGE || range_type == VR_ANTI_RANGE);
-  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
-  unsigned int precision = TYPE_PRECISION (TREE_TYPE (name));
-
-  /* Allocate if not available.  */
-  if (ri == NULL)
-    {
-      size_t size = (sizeof (range_info_def)
-		     + trailing_wide_ints <3>::extra_size (precision));
-      ri = static_cast<range_info_def *> (ggc_internal_alloc (size));
-      ri->ints.set_precision (precision);
-      SSA_NAME_RANGE_INFO (name) = ri;
-      ri->set_nonzero_bits (wi::shwi (-1, precision));
-    }
-
-  /* Record the range type.  */
-  if (SSA_NAME_RANGE_TYPE (name) != range_type)
-    SSA_NAME_ANTI_RANGE_P (name) = (range_type == VR_ANTI_RANGE);
-
-  /* Set the values.  */
-  ri->set_min (min);
-  ri->set_max (max);
-
-  /* If it is a range, try to improve nonzero_bits from the min/max.  */
-  if (range_type == VR_RANGE)
-    {
-      wide_int xorv = ri->get_min () ^ ri->get_max ();
-      if (xorv != 0)
-	xorv = wi::mask (precision - wi::clz (xorv), false, precision);
-      ri->set_nonzero_bits (ri->get_nonzero_bits () & (ri->get_min () | xorv));
-    }
-}
-
-/* Store range information RANGE_TYPE, MIN, and MAX to tree ssa_name
-   NAME while making sure we don't store useless range info.  */
-
-static void
-set_range_info (tree name, enum value_range_kind range_type,
-		const wide_int_ref &min, const wide_int_ref &max)
-{
-  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+  if (r.undefined_p () || r.varying_p ())
+    return false;
 
   tree type = TREE_TYPE (name);
-  if (range_type == VR_VARYING)
+  if (POINTER_TYPE_P (type))
     {
-      /* SSA_NAME_RANGE_TYPE can only hold a VR_RANGE or
-	 VR_ANTI_RANGE.  Denormalize VR_VARYING to VR_RANGE.  */
-      range_type = VR_RANGE;
-      gcc_checking_assert (min == wi::min_value (type));
-      gcc_checking_assert (max == wi::max_value (type));
-    }
-
-  /* A range of the entire domain is really no range at all.  */
-  if (min == wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type))
-      && max == wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type)))
-    {
-      range_info_def *ri = SSA_NAME_RANGE_INFO (name);
-      if (ri == NULL)
-	return;
-      if (ri->get_nonzero_bits () == -1)
+      if (r.nonzero_p ())
 	{
-	  ggc_free (ri);
-	  SSA_NAME_RANGE_INFO (name) = NULL;
-	  return;
+	  set_ptr_nonnull (name);
+	  return true;
 	}
+      return false;
     }
 
-  set_range_info_raw (name, range_type, min, max);
-}
+  /* If a global range already exists, incorporate it.  */
+  if (range_info_p (name))
+    {
+      Value_Range tmp (type);
+      range_info_get_range (name, tmp);
+      tmp.intersect (r);
+      if (tmp.undefined_p ())
+	return false;
 
-/* Store range information for NAME from a value_range.  */
-
-void
-set_range_info (tree name, const value_range &vr)
-{
-  wide_int min = wi::to_wide (vr.min ());
-  wide_int max = wi::to_wide (vr.max ());
-  set_range_info (name, vr.kind (), min, max);
+      return range_info_set_range (name, tmp);
+    }
+  return range_info_set_range (name, r);
 }
 
 /* Set nonnull attribute to pointer NAME.  */
@@ -443,22 +456,16 @@ set_ptr_nonnull (tree name)
   pi->pt.null = 0;
 }
 
-/* Change non-zero bits bitmask of NAME.  */
+/* Update the non-zero bits bitmask of NAME.  */
 
 void
 set_nonzero_bits (tree name, const wide_int_ref &mask)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
-  if (SSA_NAME_RANGE_INFO (name) == NULL)
-    {
-      if (mask == -1)
-	return;
-      set_range_info_raw (name, VR_RANGE,
-			  wi::to_wide (TYPE_MIN_VALUE (TREE_TYPE (name))),
-			  wi::to_wide (TYPE_MAX_VALUE (TREE_TYPE (name))));
-    }
-  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
-  ri->set_nonzero_bits (mask);
+
+  int_range<2> r (TREE_TYPE (name));
+  r.set_nonzero_bits (mask);
+  set_range_info (name, r);
 }
 
 /* Return a widest_int with potentially non-zero bits in SSA_NAME
@@ -482,10 +489,14 @@ get_nonzero_bits (const_tree name)
       return wi::shwi (-1, precision);
     }
 
-  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
-  if (!ri)
+  if (!range_info_p (name) || !irange::supports_p (TREE_TYPE (name)))
     return wi::shwi (-1, precision);
 
+  /* Optimization to get at the nonzero bits because we know the
+     storage type.  This saves us measurable time compared to going
+     through vrange_storage.  */
+  irange_storage_slot *ri
+    = static_cast <irange_storage_slot *> (SSA_NAME_RANGE_INFO (name));
   return ri->get_nonzero_bits ();
 }
 
@@ -727,38 +738,18 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
   SSA_NAME_PTR_INFO (name) = new_ptr_info;
 }
 
-/* Creates a duplicate of the range_info_def at RANGE_INFO of type
-   RANGE_TYPE for use by the SSA name NAME.  */
-static void
-duplicate_ssa_name_range_info (tree name, enum value_range_kind range_type,
-			       struct range_info_def *range_info)
-{
-  struct range_info_def *new_range_info;
-
-  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
-  gcc_assert (!SSA_NAME_RANGE_INFO (name));
-
-  if (!range_info)
-    return;
-
-  unsigned int precision = TYPE_PRECISION (TREE_TYPE (name));
-  size_t size = (sizeof (range_info_def)
-		 + trailing_wide_ints <3>::extra_size (precision));
-  new_range_info = static_cast<range_info_def *> (ggc_internal_alloc (size));
-  memcpy (new_range_info, range_info, size);
-
-  gcc_assert (range_type == VR_RANGE || range_type == VR_ANTI_RANGE);
-  SSA_NAME_ANTI_RANGE_P (name) = (range_type == VR_ANTI_RANGE);
-  SSA_NAME_RANGE_INFO (name) = new_range_info;
-}
-
 void
 duplicate_ssa_name_range_info (tree name, tree src)
 {
   gcc_checking_assert (!POINTER_TYPE_P (TREE_TYPE (src)));
-  duplicate_ssa_name_range_info (name,
-				 SSA_NAME_RANGE_TYPE (src),
-				 SSA_NAME_RANGE_INFO (src));
+  gcc_checking_assert (!range_info_p (name));
+
+  if (range_info_p (src))
+    {
+      Value_Range src_range (TREE_TYPE (src));
+      range_info_get_range (src, src_range);
+      range_info_set_range (name, src_range);
+    }
 }
 
 
@@ -776,14 +767,8 @@ duplicate_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
       if (old_ptr_info)
 	duplicate_ssa_name_ptr_info (new_name, old_ptr_info);
     }
-  else
-    {
-      struct range_info_def *old_range_info = SSA_NAME_RANGE_INFO (name);
-
-      if (old_range_info)
-	duplicate_ssa_name_range_info (new_name, SSA_NAME_RANGE_TYPE (name),
-				       old_range_info);
-    }
+  else if (range_info_p (name))
+    duplicate_ssa_name_range_info (new_name, name);
 
   return new_name;
 }
@@ -920,7 +905,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_release_ssa_names
 

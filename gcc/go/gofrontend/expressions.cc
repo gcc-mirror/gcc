@@ -1426,7 +1426,12 @@ Sink_expression::do_get_backend(Translate_context* context)
   Gogo* gogo = context->gogo();
   if (this->bvar_ == NULL)
     {
-      go_assert(this->type_ != NULL && !this->type_->is_sink_type());
+      if (this->type_ == NULL || this->type_->is_sink_type())
+	{
+	  go_assert(saw_errors());
+	  return gogo->backend()->error_expression();
+	}
+
       Named_object* fn = context->function();
       go_assert(fn != NULL);
       Bfunction* fn_ctx = fn->func_value()->get_or_make_decl(gogo, fn);
@@ -2715,7 +2720,7 @@ Integer_expression::do_import(Import_expression* imp, Location loc)
 	  return Expression::make_error(loc);
 	}
       if (pos == std::string::npos)
-	mpfr_set_ui(real, 0, MPFR_RNDN);
+	mpfr_init_set_ui(real, 0, MPFR_RNDN);
       else
 	{
 	  std::string real_str = num.substr(0, pos);
@@ -3347,97 +3352,7 @@ class Find_named_object : public Traverse
   bool found_;
 };
 
-// A reference to a const in an expression.
-
-class Const_expression : public Expression
-{
- public:
-  Const_expression(Named_object* constant, Location location)
-    : Expression(EXPRESSION_CONST_REFERENCE, location),
-      constant_(constant), type_(NULL), seen_(false)
-  { }
-
-  Named_object*
-  named_object()
-  { return this->constant_; }
-
-  const Named_object*
-  named_object() const
-  { return this->constant_; }
-
-  // Check that the initializer does not refer to the constant itself.
-  void
-  check_for_init_loop();
-
- protected:
-  int
-  do_traverse(Traverse*);
-
-  Expression*
-  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
-
-  bool
-  do_is_constant() const
-  { return true; }
-
-  bool
-  do_is_zero_value() const
-  { return this->constant_->const_value()->expr()->is_zero_value(); }
-
-  bool
-  do_is_static_initializer() const
-  { return true; }
-
-  bool
-  do_numeric_constant_value(Numeric_constant* nc) const;
-
-  bool
-  do_string_constant_value(std::string* val) const;
-
-  bool
-  do_boolean_constant_value(bool* val) const;
-
-  Type*
-  do_type();
-
-  // The type of a const is set by the declaration, not the use.
-  void
-  do_determine_type(const Type_context*);
-
-  void
-  do_check_types(Gogo*);
-
-  Expression*
-  do_copy()
-  { return this; }
-
-  Bexpression*
-  do_get_backend(Translate_context* context);
-
-  int
-  do_inlining_cost() const
-  { return 1; }
-
-  // When exporting a reference to a const as part of a const
-  // expression, we export the value.  We ignore the fact that it has
-  // a name.
-  void
-  do_export(Export_function_body* efb) const
-  { this->constant_->const_value()->expr()->export_expression(efb); }
-
-  void
-  do_dump_expression(Ast_dump_context*) const;
-
- private:
-  // The constant.
-  Named_object* constant_;
-  // The type of this reference.  This is used if the constant has an
-  // abstract type.
-  Type* type_;
-  // Used to prevent infinite recursion when a constant incorrectly
-  // refers to itself.
-  mutable bool seen_;
-};
+// Class Const_expression.
 
 // Traversal.
 
@@ -3447,6 +3362,14 @@ Const_expression::do_traverse(Traverse* traverse)
   if (this->type_ != NULL)
     return Type::traverse(this->type_, traverse);
   return TRAVERSE_CONTINUE;
+}
+
+// Whether this is the zero value.
+
+bool
+Const_expression::do_is_zero_value() const
+{
+  return this->constant_->const_value()->expr()->is_zero_value();
 }
 
 // Lower a constant expression.  This is where we convert the
@@ -3701,6 +3624,16 @@ Const_expression::do_get_backend(Translate_context* context)
   if (this->type_ != NULL)
     expr = Expression::make_cast(this->type_, expr, this->location());
   return expr->get_backend(context);
+}
+
+// When exporting a reference to a const as part of a const
+// expression, we export the value.  We ignore the fact that it has
+// a name.
+
+void
+Const_expression::do_export(Export_function_body* efb) const
+{
+  this->constant_->const_value()->expr()->export_expression(efb);
 }
 
 // Dump ast representation for constant expression.
@@ -6824,11 +6757,12 @@ Binary_expression::do_determine_type(const Type_context* context)
     {
       if ((tleft->integer_type() != NULL && tright->integer_type() != NULL)
 	  || (tleft->float_type() != NULL && tright->float_type() != NULL)
-	  || (tleft->complex_type() != NULL && tright->complex_type() != NULL))
+	  || (tleft->complex_type() != NULL && tright->complex_type() != NULL)
+	  || (tleft->is_boolean_type() && tright->is_boolean_type()))
 	{
-	  // Both sides have an abstract integer, abstract float, or
-	  // abstract complex type.  Just let CONTEXT determine
-	  // whether they may remain abstract or not.
+	  // Both sides have an abstract integer, abstract float,
+	  // abstract complex, or abstract boolean type.  Just let
+	  // CONTEXT determine whether they may remain abstract or not.
 	}
       else if (tleft->complex_type() != NULL)
 	subcontext.type = tleft;
@@ -8552,6 +8486,11 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
 	     pa != this->args()->end();
 	     ++pa)
 	  {
+	    if ((*pa)->is_error_expression())
+	      {
+		go_assert(saw_errors());
+		return Expression::make_error(loc);
+	      }
 	    if ((*pa)->is_nil_expression())
 	      {
 		Expression* nil = Expression::make_nil(loc);
@@ -13457,6 +13396,7 @@ Array_index_expression::do_check_types(Gogo*)
   if (array_type == NULL)
     {
       go_assert(this->array_->type()->is_error());
+      this->set_is_error();
       return;
     }
 
@@ -15235,7 +15175,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 	   p != method_parameters->end();
 	   ++p, ++i)
 	{
-	  if (!p->name().empty())
+	  if (!p->name().empty() && !Gogo::is_sink_name(p->name()))
 	    parameters->push_back(*p);
 	  else
 	    {

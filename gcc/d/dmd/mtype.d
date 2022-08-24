@@ -529,7 +529,6 @@ extern (C++) abstract class Type : ASTNode
      * Returns:
      *     An enum value of either `Covariant.yes` or a reason it's not covariant.
      */
-    extern (D)
     final Covariant covariant(Type t, StorageClass* pstc = null, bool cppCovariant = false)
     {
         version (none)
@@ -4361,7 +4360,7 @@ extern (C++) final class TypeFunction : TypeNext
     {
         foreach (i, fparam; parameterList)
         {
-            if (fparam.storageClass & STC.lazy_)
+            if (fparam.isLazy())
                 return true;
         }
         return false;
@@ -4438,15 +4437,7 @@ extern (C++) final class TypeFunction : TypeNext
             // Check escaping through `this`
             if (tthis && tthis.isMutable())
             {
-                auto tb = tthis.toBasetype();
-                AggregateDeclaration ad;
-                if (auto tc = tb.isTypeClass())
-                    ad = tc.sym;
-                else if (auto ts = tb.isTypeStruct())
-                    ad = ts.sym;
-                else
-                    assert(0);
-                foreach (VarDeclaration v; ad.fields)
+                foreach (VarDeclaration v; isAggregate(tthis).fields)
                 {
                     if (v.hasPointers())
                         return stc;
@@ -4675,7 +4666,7 @@ extern (C++) final class TypeFunction : TypeNext
             Type tprm = p.type;
             Type targ = arg.type;
 
-            if (!(p.storageClass & STC.lazy_ && tprm.ty == Tvoid && targ.ty != Tvoid))
+            if (!(p.isLazy() && tprm.ty == Tvoid && targ.ty != Tvoid))
             {
                 const isRef = p.isReference();
                 wildmatch |= targ.deduceWild(tprm, isRef);
@@ -4718,7 +4709,7 @@ extern (C++) final class TypeFunction : TypeNext
                 Type targ = arg.type;
                 Type tprm = wildmatch ? p.type.substWildTo(wildmatch) : p.type;
 
-                if (p.storageClass & STC.lazy_ && tprm.ty == Tvoid && targ.ty != Tvoid)
+                if (p.isLazy() && tprm.ty == Tvoid && targ.ty != Tvoid)
                     m = MATCH.convert;
                 else
                 {
@@ -6656,16 +6647,18 @@ extern (C++) final class TypeTag : Type
     Type resolved;          /// type after semantic() in case there are more others
                             /// pointing to this instance, which can happen with
                             ///   struct S { int a; } s1, *s2;
+    MOD mod;                /// modifiers to apply after type is resolved (only MODFlags.const_ at the moment)
 
     extern (D) this(const ref Loc loc, TOK tok, Identifier id, Type base, Dsymbols* members)
     {
-        //printf("TypeTag %p\n", this);
+        //printf("TypeTag ctor %s %p\n", id ? id.toChars() : "null".ptr, this);
         super(Ttag);
         this.loc = loc;
         this.tok = tok;
         this.id = id;
         this.base = base;
         this.members = members;
+        this.mod = 0;
     }
 
     override const(char)* kind() const
@@ -6675,6 +6668,7 @@ extern (C++) final class TypeTag : Type
 
     override TypeTag syntaxCopy()
     {
+        //printf("TypeTag syntaxCopy()\n");
         // No semantic analysis done, no need to copy
         return this;
     }
@@ -6823,6 +6817,12 @@ extern (C++) final class Parameter : ASTNode
             }
         }
         return null;
+    }
+
+    /// Returns: Whether the function parameter is lazy
+    bool isLazy() const @safe pure nothrow @nogc
+    {
+        return (this.storageClass & (STC.lazy_)) != 0;
     }
 
     /// Returns: Whether the function parameter is a reference (out / ref)

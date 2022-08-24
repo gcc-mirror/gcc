@@ -1638,8 +1638,10 @@ vect_finish_stmt_generation (vec_info *vinfo,
 	      && ((is_gimple_assign (vec_stmt)
 		   && !is_gimple_reg (gimple_assign_lhs (vec_stmt)))
 		  || (is_gimple_call (vec_stmt)
-		      && !(gimple_call_flags (vec_stmt)
-			   & (ECF_CONST|ECF_PURE|ECF_NOVOPS)))))
+		      && (!(gimple_call_flags (vec_stmt)
+			    & (ECF_CONST|ECF_PURE|ECF_NOVOPS))
+			  || (gimple_call_lhs (vec_stmt)
+			      && !is_gimple_reg (gimple_call_lhs (vec_stmt)))))))
 	    {
 	      tree new_vdef = copy_ssa_name (vuse, vec_stmt);
 	      gimple_set_vdef (vec_stmt, new_vdef);
@@ -3421,6 +3423,14 @@ vectorizable_call (vec_info *vinfo,
       return false;
     }
 
+  if (vect_emulated_vector_p (vectype_in) || vect_emulated_vector_p (vectype_out))
+  {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "use emulated vector type for call\n");
+      return false;
+  }
+
   /* FORNOW */
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
@@ -4245,6 +4255,14 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (!vec_stmt) /* transformation not required.  */
     {
+      /* When the original call is pure or const but the SIMD ABI dictates
+	 an aggregate return we will have to use a virtual definition and
+	 in a loop eventually even need to add a virtual PHI.  That's
+	 not straight-forward so allow to fix this up via renaming.  */
+      if (gimple_call_lhs (stmt)
+	  && !gimple_vdef (stmt)
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (bestn->decl))) == ARRAY_TYPE)
+	vinfo->any_known_not_updated_vssa = true;
       STMT_VINFO_SIMD_CLONE_INFO (stmt_info).safe_push (bestn->decl);
       for (i = 0; i < nargs; i++)
 	if ((bestn->simdclone->args[i].arg_type
@@ -8979,6 +8997,9 @@ vectorizable_load (vec_info *vinfo,
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "Vectorizing an unaligned access.\n");
 
+      if (memory_access_type == VMAT_LOAD_STORE_LANES)
+	vinfo->any_known_not_updated_vssa = true;
+
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
       vect_model_load_cost (vinfo, stmt_info, ncopies, vf, memory_access_type,
 			    alignment_support_scheme, misalignment,
@@ -9024,9 +9045,16 @@ vectorizable_load (vec_info *vinfo,
 			     "hoisting out of the vectorized loop: %G", stmt);
 	  scalar_dest = copy_ssa_name (scalar_dest);
 	  tree rhs = unshare_expr (gimple_assign_rhs1 (stmt));
-	  gsi_insert_on_edge_immediate
-	    (loop_preheader_edge (loop),
-	     gimple_build_assign (scalar_dest, rhs));
+	  edge pe = loop_preheader_edge (loop);
+	  gphi *vphi = get_virtual_phi (loop->header);
+	  tree vuse;
+	  if (vphi)
+	    vuse = PHI_ARG_DEF_FROM_EDGE (vphi, pe);
+	  else
+	    vuse = gimple_vuse (gsi_stmt (*gsi));
+	  gimple *new_stmt = gimple_build_assign (scalar_dest, rhs);
+	  gimple_set_vuse (new_stmt, vuse);
+	  gsi_insert_on_edge_immediate (pe, new_stmt);
 	}
       /* These copies are all equivalent, but currently the representation
 	 requires a separate STMT_VINFO_VEC_STMT for each one.  */
@@ -9769,6 +9797,8 @@ vectorizable_load (vec_info *vinfo,
 			    tree ref = build2 (MEM_REF, ltype, ptr,
 					       build_int_cst (ref_type, 0));
 			    new_stmt = gimple_build_assign (elt, ref);
+			    gimple_set_vuse (new_stmt,
+					     gimple_vuse (gsi_stmt (*gsi)));
 			    gimple_seq_add_stmt (&stmts, new_stmt);
 			    CONSTRUCTOR_APPEND_ELT (ctor_elts, NULL_TREE, elt);
 			  }
@@ -9995,7 +10025,10 @@ vectorizable_load (vec_info *vinfo,
 				 (NULL_TREE, BIT_AND_EXPR, ptr,
 				  build_int_cst
 				  (TREE_TYPE (ptr), -(HOST_WIDE_INT) align));
-		    ptr = copy_ssa_name (ptr, new_stmt);
+		    if (TREE_CODE (ptr) == SSA_NAME)
+		      ptr = copy_ssa_name (ptr, new_stmt);
+		    else
+		      ptr = make_ssa_name (TREE_TYPE (ptr), new_stmt);
 		    gimple_assign_set_lhs (new_stmt, ptr);
 		    vect_finish_stmt_generation (vinfo, stmt_info,
 						 new_stmt, gsi);

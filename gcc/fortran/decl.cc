@@ -2129,10 +2129,21 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  /* The shape may be NULL for EXPR_ARRAY, set it.  */
 	  if (init->shape == NULL)
 	    {
-	      gcc_assert (init->expr_type == EXPR_ARRAY);
+	      if (init->expr_type != EXPR_ARRAY)
+		{
+		  gfc_error ("Bad shape of initializer at %L", &init->where);
+		  return false;
+		}
+
 	      init->shape = gfc_get_shape (1);
 	      if (!gfc_array_size (init, &init->shape[0]))
-		  gfc_internal_error ("gfc_array_size failed");
+		{
+		  gfc_error ("Cannot determine shape of initializer at %L",
+			     &init->where);
+		  free (init->shape);
+		  init->shape = NULL;
+		  return false;
+		}
 	    }
 
 	  for (dim = 0; dim < sym->as->rank; ++dim)
@@ -2775,6 +2786,18 @@ variable_decl (int elem)
 		  else
 		    gfc_free_expr (n);
 		}
+	      /* For an explicit-shape spec with constant bounds, ensure
+		 that the effective upper bound is not lower than the
+		 respective lower bound minus one.  Otherwise adjust it so
+		 that the extent is trivially derived to be zero.  */
+	      if (as->lower[i]->expr_type == EXPR_CONSTANT
+		  && as->upper[i]->expr_type == EXPR_CONSTANT
+		  && as->lower[i]->ts.type == BT_INTEGER
+		  && as->upper[i]->ts.type == BT_INTEGER
+		  && mpz_cmp (as->upper[i]->value.integer,
+			      as->lower[i]->value.integer) < 0)
+		mpz_sub_ui (as->upper[i]->value.integer,
+			    as->lower[i]->value.integer, 1);
 	    }
 	}
     }
@@ -6247,6 +6270,14 @@ gfc_match_data_decl (void)
   if (m == MATCH_ERROR)
     {
       m = MATCH_NO;
+      goto cleanup;
+    }
+
+  /* F2018:C708.  */
+  if (current_ts.type == BT_CLASS && current_attr.flavor == FL_PARAMETER)
+    {
+      gfc_error ("CLASS entity at %C cannot have the PARAMETER attribute");
+      m = MATCH_ERROR;
       goto cleanup;
     }
 

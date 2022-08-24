@@ -1,7 +1,7 @@
 /* PR target/99881.  */
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-Ofast -march=skylake" } */
-/* { dg-final { scan-assembler-not "xmm\[0-9\]" } } */
+/* { dg-final { scan-assembler-not "xmm\[0-9\]" { xfail *-*-* } } } */
 
 void
 foo (int* __restrict a, int n, int c)

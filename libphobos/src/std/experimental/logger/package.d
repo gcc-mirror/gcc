@@ -146,26 +146,6 @@ To gain more precise control over the logging process, additionally to
 overriding the `writeLogMsg` method the methods `beginLogMsg`,
 `logMsgPart` and `finishLogMsg` can be overridden.
 
-$(H3 Compile Time Disabling of `Logger`)
-In order to disable logging at compile time, pass `StdLoggerDisableLogging` as a
-version argument to the `D` compiler when compiling your program code.
-This will disable all logging functionality.
-Specific `LogLevel` can be disabled at compile time as well.
-In order to disable logging with the `trace` `LogLevel` pass
-`StdLoggerDisableTrace` as a version.
-The following table shows which version statement disables which
-`LogLevel`.
-$(TABLE
-    $(TR $(TD `LogLevel.trace` ) $(TD StdLoggerDisableTrace))
-    $(TR $(TD `LogLevel.info` ) $(TD StdLoggerDisableInfo))
-    $(TR $(TD `LogLevel.warning` ) $(TD StdLoggerDisableWarning))
-    $(TR $(TD `LogLevel.error` ) $(TD StdLoggerDisableError))
-    $(TR $(TD `LogLevel.critical` ) $(TD StdLoggerDisableCritical))
-    $(TR $(TD `LogLevel.fatal` ) $(TD StdLoggerDisableFatal))
-)
-Such a version statement will only disable logging in the associated compile
-unit.
-
 $(H3 Provided Logger)
 By default four `Logger` implementations are given. The `FileLogger`
 logs data to files. It can also be used to log to `stdout` and `stderr`

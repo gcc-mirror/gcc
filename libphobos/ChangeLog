@@ -1,3 +1,63 @@
+2022-08-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+	* configure.ac (libtool_VERSION): Update to 4:0:0.
+	* libdruntime/MERGE: Merge upstream druntime d7772a2369.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	core/internal/array/duplication.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 5748ca43f.
+	* testsuite/libphobos.gc/nocollect.d:
+
+2022-07-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 651389b5.
+	* src/MERGE: Merge upstream phobos 1516ecad9.
+
+2022-06-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add gcc/simd.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/gcc/simd.d: New file.
+
+2022-06-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/attributes.d (simd): Define.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/105413
+	* libdruntime/gcc/attributes.d (register): Define.
+
+2022-06-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 148608b7.
+
+2022-06-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e150cca1.
+	* src/MERGE: Merge upstream phobos a4a18d21c.
+	* testsuite/libphobos.cycles/cycles.exp (cycle_test_list): Update
+	expected result of deprecate test.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/attributes.d (no_sanitize): Define.
+	(noSanitize): Define.
+
+2022-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/attributes.d (visibility): Define.
+	(hidden): Define.
+
+2022-06-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 454471d8.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	core/sync/package.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 1206fc94f.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/lib/libphobos-dg.exp: Add load_gcc_lib of scansarif.exp.

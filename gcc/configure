@@ -731,8 +731,6 @@ gcc_cv_dsymutil
 gcc_cv_otool
 gcc_cv_readelf
 gcc_cv_objdump
-ORIGINAL_OBJCOPY_FOR_TARGET
-gcc_cv_objcopy
 ORIGINAL_NM_FOR_TARGET
 gcc_cv_nm
 ORIGINAL_LD_GOLD_FOR_TARGET
@@ -5228,12 +5226,16 @@ else
   GNATMAKE="$ac_cv_prog_GNATMAKE"
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler driver understands Ada" >&5
-$as_echo_n "checking whether compiler driver understands Ada... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler driver understands Ada and is recent enough" >&5
+$as_echo_n "checking whether compiler driver understands Ada and is recent enough... " >&6; }
 if ${acx_cv_cc_gcc_supports_ada+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   cat >conftest.adb <<EOF
+pragma Warnings (Off);
+with System.CRTL;
+pragma Warnings (On);
+use type System.CRTL.int64;
 procedure conftest is begin null; end conftest;
 EOF
 acx_cv_cc_gcc_supports_ada=no
@@ -12458,6 +12460,31 @@ $as_echo "#define HOST_HAS_O_CLOEXEC 1" >>confdefs.h
 
 fi
 
+# Check if O_NONBLOCK is defined by fcntl
+for ac_header in fcntl.h
+do :
+  ac_fn_cxx_check_header_preproc "$LINENO" "fcntl.h" "ac_cv_header_fcntl_h"
+if test "x$ac_cv_header_fcntl_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FCNTL_H 1
+_ACEOF
+
+fi
+done
+
+ac_fn_cxx_check_decl "$LINENO" "O_NONBLOCK" "ac_cv_have_decl_O_NONBLOCK" "#include <fcntl.h>
+"
+if test "x$ac_cv_have_decl_O_NONBLOCK" = xyes; then :
+
+fi
+
+if test $ac_cv_have_decl_O_NONBLOCK = yes; then
+
+$as_echo "#define HOST_HAS_O_NONBLOCK 1" >>confdefs.h
+
+fi
+
+
 # C++ Modules would like some networking features to provide the mapping
 # server.  You can still use modules without them though.
 # The following network-related checks could probably do with some
@@ -19676,7 +19703,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19679 "configure"
+#line 19706 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19782,7 +19809,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19785 "configure"
+#line 19812 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23438,83 +23465,6 @@ case "$ORIGINAL_NM_FOR_TARGET" in
  ;;
 esac
 
-# Figure out what objcopy we will be using.
-if ${gcc_cv_objcopy+:} false; then :
-
-else
-
-if test -f $gcc_cv_binutils_srcdir/configure.ac \
-     && test -f ../binutils/Makefile \
-     && test x$build = x$host; then
-	gcc_cv_objcopy=../binutils/objcopy$build_exeext
-elif test -x objcopy$build_exeext; then
-	gcc_cv_objcopy=./objcopy$build_exeext
-elif ( set dummy $OBJCOPY_FOR_TARGET; test -x $2 ); then
-        gcc_cv_objcopy="$OBJCOPY_FOR_TARGET"
-else
-        # Extract the first word of "$OBJCOPY_FOR_TARGET", so it can be a program name with args.
-set dummy $OBJCOPY_FOR_TARGET; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_gcc_cv_objcopy+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $gcc_cv_objcopy in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_gcc_cv_objcopy="$gcc_cv_objcopy" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_gcc_cv_objcopy="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-gcc_cv_objcopy=$ac_cv_path_gcc_cv_objcopy
-if test -n "$gcc_cv_objcopy"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_objcopy" >&5
-$as_echo "$gcc_cv_objcopy" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-fi
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking what objcopy to use" >&5
-$as_echo_n "checking what objcopy to use... " >&6; }
-if test "$gcc_cv_objcopy" = ../binutils/objcopy$build_exeext; then
-	# Single tree build which includes binutils.
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: newly built objcopy" >&5
-$as_echo "newly built objcopy" >&6; }
-	in_tree_objcopy=yes
-else
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_objcopy" >&5
-$as_echo "$gcc_cv_objcopy" >&6; }
-	in_tree_objcopy=no
-fi
-
-ORIGINAL_OBJCOPY_FOR_TARGET=$gcc_cv_objcopy
-
-case "$ORIGINAL_OBJCOPY_FOR_TARGET" in
-  ./objcopy | ./objcopy$build_exeext) ;;
-  *) ac_config_files="$ac_config_files objcopy:exec-tool.in"
- ;;
-esac
 
 # Figure out what objdump we will be using.
 if ${gcc_cv_objdump+:} false; then :
@@ -25882,33 +25832,6 @@ foo:	.long	25
 	sethi	%tle_hix22(foo), %l1
 	xor	%l1, %tle_lox10(foo), %o5
 	ld	[%g7 + %o5], %o1"
-	;;
-  tilepro*-*-*)
-      conftest_s='
-	.section ".tdata","awT",@progbits
-foo:	.long	25
-	.text
-	addli	r0, zero, tls_gd(foo)
-	auli	r0, zero, tls_gd_ha16(foo)
-	addli	r0, r0, tls_gd_lo16(foo)
-	jal	__tls_get_addr
-	addli	r0, zero, tls_ie(foo)
-	auli	r0, r0, tls_ie_ha16(foo)
-	addli	r0, r0, tls_ie_lo16(foo)'
-	tls_as_opt="--fatal-warnings"
-	;;
-  tilegx*-*-*)
-      conftest_s='
-	.section ".tdata","awT",@progbits
-foo:	.long	25
-	.text
-	shl16insli r0, zero, hw0_last_tls_gd(foo)
-	shl16insli r0, zero, hw1_last_tls_gd(foo)
-	shl16insli r0, r0,   hw0_tls_gd(foo)
-	jal	   __tls_get_addr
-	shl16insli r0, zero, hw1_last_tls_ie(foo)
-	shl16insli r0, r0,   hw0_tls_ie(foo)'
-	tls_as_opt="--fatal-warnings"
 	;;
   xtensa*-*-*)
     conftest_s='
@@ -28877,7 +28800,7 @@ $as_echo "#define HAVE_AS_MARCH_ZIFENCEI 1" >>confdefs.h
 fi
 
     ;;
-  loongarch*-*-*)
+    loongarch*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .dtprelword support" >&5
 $as_echo_n "checking assembler for .dtprelword support... " >&6; }
 if ${gcc_cv_as_loongarch_dtprelword+:} false; then :
@@ -28913,6 +28836,71 @@ if test $gcc_cv_as_loongarch_dtprelword != yes; then
 $as_echo "#define HAVE_AS_DTPRELWORD 1" >>confdefs.h
 
 fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for explicit relocation support" >&5
+$as_echo_n "checking assembler for explicit relocation support... " >&6; }
+if ${gcc_cv_as_loongarch_explicit_relocs+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_loongarch_explicit_relocs=no
+  if test x$gcc_cv_as != x; then
+    $as_echo 'a:pcalau12i $t0,%pc_hi20(a)' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_loongarch_explicit_relocs=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_loongarch_explicit_relocs" >&5
+$as_echo "$gcc_cv_as_loongarch_explicit_relocs" >&6; }
+if test $gcc_cv_as_loongarch_explicit_relocs = yes; then
+
+$as_echo "#define HAVE_AS_EXPLICIT_RELOCS 1" >>confdefs.h
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for eh_frame pcrel encoding support" >&5
+$as_echo_n "checking assembler for eh_frame pcrel encoding support... " >&6; }
+if ${gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.cfi_startproc
+       .cfi_personality 0x9b,a
+       .cfi_lsda 0x1b,b
+       .cfi_endproc' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support" >&5
+$as_echo "$gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support" >&6; }
+if test $gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support = yes; then
+
+$as_echo "#define HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT 1" >>confdefs.h
+
+fi
+
     ;;
     s390*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .gnu_attribute support" >&5
@@ -29165,7 +29153,7 @@ esac
 case "$cpu_type" in
   aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
   | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
-  | tilegx | tilepro | visium | xstormy16 | xtensa)
+  | visium | xstormy16 | xtensa)
     insn="nop"
     ;;
   ia64 | s390)
@@ -33293,7 +33281,6 @@ do
     "as") CONFIG_FILES="$CONFIG_FILES as:exec-tool.in" ;;
     "collect-ld") CONFIG_FILES="$CONFIG_FILES collect-ld:exec-tool.in" ;;
     "nm") CONFIG_FILES="$CONFIG_FILES nm:exec-tool.in" ;;
-    "objcopy") CONFIG_FILES="$CONFIG_FILES objcopy:exec-tool.in" ;;
     "dsymutil") CONFIG_FILES="$CONFIG_FILES dsymutil:exec-tool.in" ;;
     "clearcap.map") CONFIG_LINKS="$CONFIG_LINKS clearcap.map:${srcdir}/config/$clearcap_map" ;;
     "$all_outputs") CONFIG_FILES="$CONFIG_FILES $all_outputs" ;;
@@ -33929,7 +33916,6 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
     "as":F) chmod +x as ;;
     "collect-ld":F) chmod +x collect-ld ;;
     "nm":F) chmod +x nm ;;
-    "objcopy":F) chmod +x objcopy ;;
     "dsymutil":F) chmod +x dsymutil ;;
     "default":C)
 case ${CONFIG_HEADERS} in

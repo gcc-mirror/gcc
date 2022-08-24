@@ -35,10 +35,15 @@ public:
     Expression *maxval;
     Expression *minval;
     Expression *defaultval;     // default initializer
-
-    bool isdeprecated;
-    bool added;
-    int inuse;
+private:
+    uint8_t bitFields;
+public:
+    bool isdeprecated() const;
+    bool isdeprecated(bool v);
+    bool added() const;
+    bool added(bool v);
+    bool inuse() const;
+    bool inuse(bool v);
 
     EnumDeclaration *syntaxCopy(Dsymbol *s) override;
     void addMember(Scope *sc, ScopeDsymbol *sds) override;

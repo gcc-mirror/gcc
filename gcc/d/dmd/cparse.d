@@ -1619,6 +1619,12 @@ final class CParser(AST) : Parser!AST
             return;
         }
 
+        if (token.value == TOK.__pragma)
+        {
+            uupragmaDirective(scanloc);
+            return;
+        }
+
         if (token.value == TOK._import) // import declaration extension
         {
             auto a = parseImport();
@@ -1669,7 +1675,7 @@ final class CParser(AST) : Parser!AST
             auto stags = applySpecifier(stag, specifier);
             symbols.push(stags);
 
-            if (tt.tok == TOK.enum_)
+            if (0 && tt.tok == TOK.enum_)    // C11 proscribes enums with no members, but we allow it
             {
                 if (!tt.members)
                     error(tt.loc, "`enum %s` has no members", stag.toChars());
@@ -2322,6 +2328,14 @@ final class CParser(AST) : Parser!AST
                     break;
                 }
 
+                case TOK.__declspec:
+                {
+                    /* Microsoft extension
+                     */
+                    cparseDeclspec(specifier);
+                    break;
+                }
+
                 case TOK.typeof_:
                 {
                     nextToken();
@@ -2413,11 +2427,19 @@ final class CParser(AST) : Parser!AST
                 if (scw & scwx)
                     error("duplicate storage class");
                 scw |= scwx;
+                // C11 6.7.1-2 At most one storage-class may be given, except that
+                // _Thread_local may appear with static or extern.
                 const scw2 = scw & (SCW.xstatic | SCW.xextern | SCW.xauto | SCW.xregister | SCW.xtypedef);
                 if (scw2 & (scw2 - 1) ||
-                    scw & (SCW.xauto | SCW.xregister) && scw & (SCW.xinline | SCW.x_Noreturn))
+                    scw & (SCW.x_Thread_local) && scw & (SCW.xauto | SCW.xregister | SCW.xtypedef))
                 {
-                    error("conflicting storage class");
+                    error("multiple storage classes in declaration specifiers");
+                    scw &= ~scwx;
+                }
+                if (level == LVL.local &&
+                    scw & (SCW.x_Thread_local) && scw & (SCW.xinline | SCW.x_Noreturn))
+                {
+                    error("`inline` and `_Noreturn` function specifiers not allowed for `_Thread_local`");
                     scw &= ~scwx;
                 }
                 if (level & (LVL.parameter | LVL.prototype) &&
@@ -2964,7 +2986,8 @@ final class CParser(AST) : Parser!AST
                 cparseGnuAttributes(specifier);
             if (specifier.mod & MOD.xconst)
                 t = toConst(t);
-            auto param = new AST.Parameter(STC.parameter, t, id, null, null);
+            auto param = new AST.Parameter(specifiersToSTC(LVL.parameter, specifier),
+                                           t, id, null, null);
             parameters.push(param);
             if (token.value == TOK.rightParenthesis)
                 break;
@@ -3033,9 +3056,13 @@ final class CParser(AST) : Parser!AST
      * extended-decl-modifier:
      *    dllimport
      *    dllexport
+     *    noreturn
+     * Params:
+     *  specifier = filled in with the attribute(s)
      */
-    private void cparseDeclspec()
+    private void cparseDeclspec(ref Specifier specifier)
     {
+        //printf("cparseDeclspec()\n");
         /* Check for dllexport, dllimport
          * Ignore the rest
          */
@@ -3064,6 +3091,11 @@ final class CParser(AST) : Parser!AST
                     dllexport = true;
                     nextToken();
                 }
+                else if (token.ident == Id.noreturn)
+                {
+                    specifier.noreturn = true;
+                    nextToken();
+                }
                 else
                 {
                     nextToken();
@@ -3074,8 +3106,8 @@ final class CParser(AST) : Parser!AST
             else
             {
                 error("extended-decl-modifier expected");
+                break;
             }
-            break;
         }
     }
 
@@ -4630,6 +4662,15 @@ final class CParser(AST) : Parser!AST
                     stc = AST.STC.extern_ | AST.STC.gshared;
                 else if (specifier.scw & SCW.xstatic)
                     stc = AST.STC.gshared;
+                else if (specifier.scw & SCW.xregister)
+                    stc = AST.STC.register;
+            }
+            else if (level == LVL.parameter)
+            {
+                if (specifier.scw & SCW.xregister)
+                    stc = AST.STC.register | AST.STC.parameter;
+                else
+                    stc = AST.STC.parameter;
             }
             else if (level == LVL.member)
             {
@@ -4771,6 +4812,8 @@ final class CParser(AST) : Parser!AST
         // type function itself.
         if (auto tf = t.isTypeFunction())
             tf.next = tf.next.addSTC(STC.const_);
+        else if (auto tt = t.isTypeTag())
+            tt.mod |= MODFlags.const_;
         else
             t = t.addSTC(STC.const_);
         return t;
@@ -4943,8 +4986,38 @@ final class CParser(AST) : Parser!AST
                 return true;
             }
         }
-        error("C preprocessor directive `#%s` is not supported", n.toChars());
+        if (n.ident != Id.undef)
+            error("C preprocessor directive `#%s` is not supported", n.toChars());
         return false;
+    }
+
+    /*********************************************
+     * VC __pragma
+     * https://docs.microsoft.com/en-us/cpp/preprocessor/pragma-directives-and-the-pragma-keyword?view=msvc-170
+     * Scanner is on the `__pragma`
+     * Params:
+     *  startloc = location to use for error messages
+     */
+    private void uupragmaDirective(const ref Loc startloc)
+    {
+        const loc = startloc;
+        nextToken();
+        if (token.value != TOK.leftParenthesis)
+        {
+            error(loc, "left parenthesis expected to follow `__pragma`");
+            return;
+        }
+        nextToken();
+        if (token.value == TOK.identifier && token.ident == Id.pack)
+            pragmaPack(startloc, false);
+        else
+            error(loc, "unrecognized __pragma");
+        if (token.value != TOK.rightParenthesis)
+        {
+            error(loc, "right parenthesis expected to close `__pragma(...)`");
+            return;
+        }
+        nextToken();
     }
 
     /*********************************************
@@ -4959,7 +5032,7 @@ final class CParser(AST) : Parser!AST
         Token n;
         scan(&n);
         if (n.value == TOK.identifier && n.ident == Id.pack)
-            return pragmaPack(loc);
+            return pragmaPack(loc, true);
         if (n.value != TOK.endOfLine)
             skipToNextLine();
     }
@@ -4971,10 +5044,27 @@ final class CParser(AST) : Parser!AST
      * Scanner is on the `pack`
      * Params:
      *  startloc = location to use for error messages
+     *  useScan = use scan() to retrieve next token, instead of nextToken()
      */
-    private void pragmaPack(const ref Loc startloc)
+    private void pragmaPack(const ref Loc startloc, bool useScan)
     {
         const loc = startloc;
+
+        /* Pull tokens from scan() or nextToken()
+         */
+        void scan(Token* t)
+        {
+            if (useScan)
+            {
+                Lexer.scan(t);
+            }
+            else
+            {
+                nextToken();
+                *t = token;
+            }
+        }
+
         Token n;
         scan(&n);
         if (n.value != TOK.leftParenthesis)
@@ -5137,11 +5227,34 @@ final class CParser(AST) : Parser!AST
     {
         if (!defines || defines.length < 10)  // minimum length of a #define line
             return;
-        const length = defines.length;
-        auto slice = defines.peekChars()[0 .. length];
+        OutBuffer* buf = defines;
+        defines = null;                 // prevent skipToNextLine() and parseSpecialTokenSequence()
+                                        // from appending to slice[]
+        const length = buf.length;
+        buf.writeByte(0);
+        auto slice = buf.peekChars()[0 .. length];
         resetDefineLines(slice);                // reset lexer
 
         const(char)* endp = &slice[length - 7];
+
+        size_t[void*] defineTab;    // hash table of #define's turned into Symbol's
+                                    // indexed by Identifier, returns index into symbols[]
+                                    // The memory for this is leaked
+
+        void addVar(AST.VarDeclaration v)
+        {
+            /* If it's already defined, replace the earlier
+             * definition
+             */
+            if (size_t* pd = cast(void*)v.ident in defineTab)
+            {
+                //printf("replacing %s\n", v.toChars());
+                (*symbols)[*pd] = v;
+                return;
+            }
+            defineTab[cast(void*)v.ident] = symbols.length;
+            symbols.push(v);
+        }
 
         Token n;
 
@@ -5156,37 +5269,96 @@ final class CParser(AST) : Parser!AST
                 {
                     auto id = n.ident;
                     scan(&n);
-                    if (n.value == TOK.endOfLine)       // #define identifier
+
+                    AST.Type t;
+
+                    switch (n.value)
                     {
-                        nextDefineLine();
-                        continue;
-                    }
-                    if (n.value == TOK.int32Literal)
-                    {
-                        const value = n.intvalue;
-                        scan(&n);
-                        if (n.value == TOK.endOfLine)
-                        {
-                            /* Declare manifest constant:
-                             *  enum id = value;
-                             */
-                            AST.Expression e = new AST.IntegerExp(scanloc, value, AST.Type.tint32);
-                            auto v = new AST.VarDeclaration(scanloc, AST.Type.tint32, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
-                            symbols.push(v);
+                        case TOK.endOfLine:     // #define identifier
                             nextDefineLine();
                             continue;
-                        }
+
+                        case TOK.int32Literal:
+                        case TOK.charLiteral:       t = AST.Type.tint32;    goto Linteger;
+                        case TOK.uns32Literal:      t = AST.Type.tuns32;    goto Linteger;
+                        case TOK.int64Literal:      t = AST.Type.tint64;    goto Linteger;
+                        case TOK.uns64Literal:      t = AST.Type.tuns64;    goto Linteger;
+
+                        Linteger:
+                            const intvalue = n.intvalue;
+                            scan(&n);
+                            if (n.value == TOK.endOfLine)
+                            {
+                                /* Declare manifest constant:
+                                 *  enum id = intvalue;
+                                 */
+                                AST.Expression e = new AST.IntegerExp(scanloc, intvalue, t);
+                                auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
+                                addVar(v);
+                                nextDefineLine();
+                                continue;
+                            }
+                            break;
+
+                        case TOK.float32Literal:      t = AST.Type.tfloat32;     goto Lfloat;
+                        case TOK.float64Literal:      t = AST.Type.tfloat64;     goto Lfloat;
+                        case TOK.float80Literal:      t = AST.Type.tfloat80;     goto Lfloat;
+                        case TOK.imaginary32Literal:  t = AST.Type.timaginary32; goto Lfloat;
+                        case TOK.imaginary64Literal:  t = AST.Type.timaginary64; goto Lfloat;
+                        case TOK.imaginary80Literal:  t = AST.Type.timaginary80; goto Lfloat;
+
+                        Lfloat:
+                            const floatvalue = n.floatvalue;
+                            scan(&n);
+                            if (n.value == TOK.endOfLine)
+                            {
+                                /* Declare manifest constant:
+                                 *  enum id = floatvalue;
+                                 */
+                                AST.Expression e = new AST.RealExp(scanloc, floatvalue, t);
+                                auto v = new AST.VarDeclaration(scanloc, t, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
+                                addVar(v);
+                                nextDefineLine();
+                                continue;
+                            }
+                            break;
+
+                        case TOK.string_:
+                            const str = n.ustring;
+                            const len = n.len;
+                            const postfix = n.postfix;
+                            scan(&n);
+                            if (n.value == TOK.endOfLine)
+                            {
+                                /* Declare manifest constant:
+                                 *  enum id = "string";
+                                 */
+                                AST.Expression e = new AST.StringExp(scanloc, str[0 .. len], len, 1, postfix);
+                                auto v = new AST.VarDeclaration(scanloc, null, id, new AST.ExpInitializer(scanloc, e), STC.manifest);
+                                addVar(v);
+                                nextDefineLine();
+                                continue;
+                            }
+                            break;
+
+                        default:
+                            break;
                     }
                 }
                 skipToNextLine();
             }
-            else if (n.value != TOK.endOfLine)
+            else
             {
-                skipToNextLine();
+                scan(&n);
+                if (n.value != TOK.endOfLine)
+                {
+                    skipToNextLine();
+                }
             }
             nextDefineLine();
-            assert(p - slice.ptr <= length);
         }
+
+        defines = buf;
     }
 
     //}

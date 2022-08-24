@@ -134,25 +134,6 @@ Maximum number of basic blocks before EVRP uses a sparse cache.
 Common Joined UInteger Var(param_evrp_switch_limit) Init(50) Optimization Param
 Maximum number of outgoing edges in a switch before EVRP will not process it.
 
--param=evrp-mode=
-Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_RVRP_ONLY) Param Optimization
---param=evrp-mode=[legacy|ranger|legacy-first|ranger-first] Specifies the mode Early VRP should operate in.
-
-Enum
-Name(evrp_mode) Type(enum evrp_mode) UnknownError(unknown evrp mode %qs)
-
-EnumValue
-Enum(evrp_mode) String(legacy) Value(EVRP_MODE_EVRP_ONLY)
-
-EnumValue
-Enum(evrp_mode) String(ranger) Value(EVRP_MODE_RVRP_ONLY)
-
-EnumValue
-Enum(evrp_mode) String(legacy-first) Value(EVRP_MODE_EVRP_FIRST)
-
-EnumValue
-Enum(evrp_mode) String(ranger-first) Value(EVRP_MODE_RVRP_FIRST)
-
 -param=fsm-scale-path-blocks=
 Common Joined UInteger Var(param_fsm_scale_path_blocks) Init(3) IntegerRange(1, 10) Param Optimization
 Scale factor to apply to the number of blocks in a threading path when comparing to the number of (scaled) statements.
@@ -517,10 +498,6 @@ The maximum number of nested indirect inlining performed by early inliner.
 Common Joined UInteger Var(param_max_fields_for_field_sensitive) Param
 Maximum number of fields in a structure before pointer analysis treats the structure as a single variable.
 
--param=max-fsm-thread-length=
-Common Joined UInteger Var(param_max_fsm_thread_length) Init(10) IntegerRange(1, 999999) Param Optimization
-Maximum number of basic blocks on a jump thread path.
-
 -param=max-fsm-thread-path-insns=
 Common Joined UInteger Var(param_max_fsm_thread_path_insns) Init(100) IntegerRange(1, 999999) Param Optimization
 Maximum number of instructions to copy when duplicating blocks on a finite state automaton jump thread path.
@@ -600,6 +577,10 @@ Bound on the number of iterations the brute force # of iterations analysis algor
 -param=max-jump-thread-duplication-stmts=
 Common Joined UInteger Var(param_max_jump_thread_duplication_stmts) Init(15) Param Optimization
 Maximum number of statements allowed in a block that needs to be duplicated when threading jumps.
+
+-param=max-jump-thread-paths=
+Common Joined UInteger Var(param_max_jump_thread_paths) Init(64) IntegerRange(1, 65536) Param Optimization
+Search space limit for the backwards jump threader.
 
 -param=max-last-value-rtl=
 Common Joined UInteger Var(param_max_last_value_rtl) Init(10000) Param Optimization

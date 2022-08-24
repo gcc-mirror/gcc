@@ -1011,7 +1011,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_AVX256_REG_MODE(MODE)					\
   ((MODE) == V32QImode || (MODE) == V16HImode || (MODE) == V8SImode	\
    || (MODE) == V4DImode || (MODE) == V2TImode || (MODE) == V8SFmode	\
-   || (MODE) == V4DFmode || (MODE) == V16HFmode)
+   || (MODE) == V4DFmode || (MODE) == V16HFmode || (MODE) == V16BFmode)
 
 #define VALID_AVX256_REG_OR_OI_MODE(MODE)		\
   (VALID_AVX256_REG_MODE (MODE) || (MODE) == OImode)
@@ -1026,7 +1026,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_AVX512F_REG_MODE(MODE)					\
   ((MODE) == V8DImode || (MODE) == V8DFmode || (MODE) == V64QImode	\
    || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode \
-   || (MODE) == V4TImode || (MODE) == V32HFmode)
+   || (MODE) == V4TImode || (MODE) == V32HFmode || (MODE) == V32BFmode)
 
 #define VALID_AVX512F_REG_OR_XI_MODE(MODE)				\
   (VALID_AVX512F_REG_MODE (MODE) || (MODE) == XImode)
@@ -1035,7 +1035,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   ((MODE) == V2DImode || (MODE) == V2DFmode || (MODE) == V16QImode	\
    || (MODE) == V4SImode || (MODE) == V4SFmode || (MODE) == V8HImode	\
    || (MODE) == TFmode || (MODE) == V1TImode || (MODE) == V8HFmode	\
-   || (MODE) == TImode)
+   || (MODE) == V8BFmode || (MODE) == TImode)
 
 #define VALID_AVX512FP16_REG_MODE(MODE)					\
   ((MODE) == V8HFmode || (MODE) == V16HFmode || (MODE) == V32HFmode	\
@@ -1044,9 +1044,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
    || (MODE) == V8HFmode || (MODE) == V4HFmode || (MODE) == V2HFmode	\
+   || (MODE) == V8BFmode \
    || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
    || (MODE) == V2DImode || (MODE) == V2QImode || (MODE) == DFmode	\
-   || (MODE) == HFmode)
+   || (MODE) == HFmode || (MODE) == BFmode)
 
 #define VALID_SSE_REG_MODE(MODE)					\
   ((MODE) == V1TImode || (MODE) == TImode				\
@@ -1077,7 +1078,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == CQImode || (MODE) == CHImode				\
    || (MODE) == CSImode || (MODE) == CDImode				\
    || (MODE) == SDmode || (MODE) == DDmode				\
-   || (MODE) == HFmode || (MODE) == HCmode				\
+   || (MODE) == HFmode || (MODE) == HCmode || (MODE) == BFmode		\
    || (MODE) == V2HImode || (MODE) == V2HFmode				\
    || (MODE) == V1SImode || (MODE) == V4QImode || (MODE) == V2QImode	\
    || (TARGET_64BIT							\
@@ -1095,8 +1096,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V4DImode || (MODE) == V8SFmode || (MODE) == V4DFmode	\
    || (MODE) == V2TImode || (MODE) == V8DImode || (MODE) == V64QImode	\
    || (MODE) == V16SImode || (MODE) == V32HImode || (MODE) == V8DFmode	\
-   || (MODE) == V16SFmode || (MODE) == V32HFmode || (MODE) == V16HFmode \
-   || (MODE) == V8HFmode)
+   || (MODE) == V16SFmode \
+   || (MODE) == V32HFmode || (MODE) == V16HFmode || (MODE) == V8HFmode  \
+   || (MODE) == V32BFmode || (MODE) == V16BFmode || (MODE) == V8BFmode)
 
 #define X87_FLOAT_MODE_P(MODE)	\
   (TARGET_80387 && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode))

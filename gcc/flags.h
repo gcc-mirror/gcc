@@ -112,6 +112,6 @@ extern class target_flag_state *this_target_flag_state;
 /* Whether to emit an overflow warning whose code is C.  */
 #define issue_strict_overflow_warning(c) (warn_strict_overflow >= (int) (c))
 
-#endif
+#endif /* ! in target library */
 
 #endif /* ! GCC_FLAGS_H */

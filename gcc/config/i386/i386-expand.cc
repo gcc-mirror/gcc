@@ -165,6 +165,46 @@ split_double_mode (machine_mode mode, rtx operands[],
     }
 }
 
+/* Emit the double word assignment DST = { LO, HI }.  */
+
+void
+split_double_concat (machine_mode mode, rtx dst, rtx lo, rtx hi)
+{
+  rtx dlo, dhi;
+  int deleted_move_count = 0;
+  split_double_mode (mode, &dst, 1, &dlo, &dhi);
+  if (!rtx_equal_p (dlo, hi))
+    {
+      if (!rtx_equal_p (dlo, lo))
+	emit_move_insn (dlo, lo);
+      else
+	deleted_move_count++;
+      if (!rtx_equal_p (dhi, hi))
+	emit_move_insn (dhi, hi);
+      else
+	deleted_move_count++;
+    }
+  else if (!rtx_equal_p (lo, dhi))
+    {
+      if (!rtx_equal_p (dhi, hi))
+	emit_move_insn (dhi, hi);
+      else
+	deleted_move_count++;
+      if (!rtx_equal_p (dlo, lo))
+	emit_move_insn (dlo, lo);
+      else
+	deleted_move_count++;
+    }
+  else if (mode == TImode)
+    emit_insn (gen_swapdi (dlo, dhi));
+  else
+    emit_insn (gen_swapsi (dlo, dhi));
+
+  if (deleted_move_count == 2)
+    emit_note (NOTE_INSN_DELETED);
+}
+
+
 /* Generate either "mov $0, reg" or "xor reg, reg", as appropriate
    for the target.  */
 
@@ -4024,6 +4064,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     case E_V16QImode:
     case E_V8HImode:
     case E_V8HFmode:
+    case E_V8BFmode:
     case E_V4SImode:
     case E_V2DImode:
     case E_V1TImode:
@@ -4044,6 +4085,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     case E_V32QImode:
     case E_V16HImode:
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V8SImode:
     case E_V4DImode:
       if (TARGET_AVX2)
@@ -4061,6 +4103,9 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       break;
     case E_V32HFmode:
       gen = gen_avx512bw_blendmv32hf;
+      break;
+    case E_V32BFmode:
+      gen = gen_avx512bw_blendmv32bf;
       break;
     case E_V16SImode:
       gen = gen_avx512f_blendmv16si;
@@ -9770,47 +9815,121 @@ ix86_expand_sse_compare (const struct builtin_description *d,
   return target;
 }
 
+/* Subroutine of ix86_sse_comi and ix86_sse_comi_round to take care of
+ * ordered EQ or unordered NE, generate PF jump.  */
+
+static rtx
+ix86_ssecom_setcc (const enum rtx_code comparison,
+		   bool check_unordered, machine_mode mode,
+		   rtx set_dst, rtx target)
+{
+
+  rtx_code_label *label = NULL;
+
+  /* NB: For ordered EQ or unordered NE, check ZF alone isn't sufficient
+     with NAN operands.  */
+  if (check_unordered)
+    {
+      gcc_assert (comparison == EQ || comparison == NE);
+
+      rtx flag = gen_rtx_REG (CCFPmode, FLAGS_REG);
+      label = gen_label_rtx ();
+      rtx tmp = gen_rtx_fmt_ee (UNORDERED, VOIDmode, flag, const0_rtx);
+      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
+				  gen_rtx_LABEL_REF (VOIDmode, label),
+				  pc_rtx);
+      emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+    }
+
+  /* NB: Set CCFPmode and check a different CCmode which is in subset
+     of CCFPmode.  */
+  if (GET_MODE (set_dst) != mode)
+    {
+      gcc_assert (mode == CCAmode || mode == CCCmode
+		  || mode == CCOmode || mode == CCPmode
+		  || mode == CCSmode || mode == CCZmode);
+      set_dst = gen_rtx_REG (mode, FLAGS_REG);
+    }
+
+  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
+			  gen_rtx_fmt_ee (comparison, QImode,
+					  set_dst,
+					  const0_rtx)));
+
+  if (label)
+    emit_label (label);
+
+  return SUBREG_REG (target);
+}
+
 /* Subroutine of ix86_expand_builtin to take care of comi insns.  */
 
 static rtx
 ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
 		      rtx target)
 {
-  rtx pat;
+  rtx pat, set_dst;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
   tree arg1 = CALL_EXPR_ARG (exp, 1);
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
-  machine_mode mode0 = insn_data[d->icode].operand[0].mode;
-  machine_mode mode1 = insn_data[d->icode].operand[1].mode;
-  enum rtx_code comparison = d->comparison;
+  enum insn_code icode = d->icode;
+  const struct insn_data_d *insn_p = &insn_data[icode];
+  machine_mode mode0 = insn_p->operand[0].mode;
+  machine_mode mode1 = insn_p->operand[1].mode;
 
   if (VECTOR_MODE_P (mode0))
     op0 = safe_vector_operand (op0, mode0);
   if (VECTOR_MODE_P (mode1))
     op1 = safe_vector_operand (op1, mode1);
 
+  enum rtx_code comparison = d->comparison;
+  rtx const_val = const0_rtx;
+
+  bool check_unordered = false;
+  machine_mode mode = CCFPmode;
+  switch (comparison)
+    {
+    case LE:	/* -> GE  */
+    case LT:	/* -> GT  */
+      std::swap (op0, op1);
+      comparison = swap_condition (comparison);
+      /* FALLTHRU */
+    case GT:
+    case GE:
+      break;
+    case EQ:
+      check_unordered = true;
+      mode = CCZmode;
+      break;
+    case NE:
+      check_unordered = true;
+      mode = CCZmode;
+      const_val = const1_rtx;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
   target = gen_reg_rtx (SImode);
-  emit_move_insn (target, const0_rtx);
+  emit_move_insn (target, const_val);
   target = gen_rtx_SUBREG (QImode, target, 0);
 
   if ((optimize && !register_operand (op0, mode0))
-      || !insn_data[d->icode].operand[0].predicate (op0, mode0))
+      || !insn_p->operand[0].predicate (op0, mode0))
     op0 = copy_to_mode_reg (mode0, op0);
   if ((optimize && !register_operand (op1, mode1))
-      || !insn_data[d->icode].operand[1].predicate (op1, mode1))
+      || !insn_p->operand[1].predicate (op1, mode1))
     op1 = copy_to_mode_reg (mode1, op1);
 
-  pat = GEN_FCN (d->icode) (op0, op1);
+  pat = GEN_FCN (icode) (op0, op1);
   if (! pat)
     return 0;
-  emit_insn (pat);
-  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
-			  gen_rtx_fmt_ee (comparison, QImode,
-					  SET_DEST (pat),
-					  const0_rtx)));
 
-  return SUBREG_REG (target);
+  set_dst = SET_DEST (pat);
+  emit_insn (pat);
+  return ix86_ssecom_setcc (comparison, check_unordered, mode,
+			    set_dst, target);
 }
 
 /* Subroutines of ix86_expand_args_builtin to take care of round insns.  */
@@ -11410,42 +11529,8 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
 
   emit_insn (pat);
 
-  rtx_code_label *label = NULL;
-
-  /* NB: For ordered EQ or unordered NE, check ZF alone isn't sufficient
-     with NAN operands.  */
-  if (check_unordered)
-    {
-      gcc_assert (comparison == EQ || comparison == NE);
-
-      rtx flag = gen_rtx_REG (CCFPmode, FLAGS_REG);
-      label = gen_label_rtx ();
-      rtx tmp = gen_rtx_fmt_ee (UNORDERED, VOIDmode, flag, const0_rtx);
-      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
-				  gen_rtx_LABEL_REF (VOIDmode, label),
-				  pc_rtx);
-      emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
-    }
-
-  /* NB: Set CCFPmode and check a different CCmode which is in subset
-     of CCFPmode.  */
-  if (GET_MODE (set_dst) != mode)
-    {
-      gcc_assert (mode == CCAmode || mode == CCCmode
-		  || mode == CCOmode || mode == CCPmode
-		  || mode == CCSmode || mode == CCZmode);
-      set_dst = gen_rtx_REG (mode, FLAGS_REG);
-    }
-
-  emit_insn (gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode, target),
-			  gen_rtx_fmt_ee (comparison, QImode,
-					  set_dst,
-					  const0_rtx)));
-
-  if (label)
-    emit_label (label);
-
-  return SUBREG_REG (target);
+  return ix86_ssecom_setcc (comparison, check_unordered, mode,
+			    set_dst, target);
 }
 
 static rtx
@@ -14928,6 +15013,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 
     case E_V8HImode:
     case E_V8HFmode:
+    case E_V8BFmode:
       if (TARGET_AVX2)
 	return ix86_vector_duplicate_value (mode, target, val);
 
@@ -15012,6 +15098,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 
     case E_V16HImode:
     case E_V16HFmode:
+    case E_V16BFmode:
     case E_V32QImode:
       if (TARGET_AVX2)
 	return ix86_vector_duplicate_value (mode, target, val);
@@ -15032,6 +15119,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 
     case E_V32HImode:
     case E_V32HFmode:
+    case E_V32BFmode:
     case E_V64QImode:
       if (TARGET_AVX512BW)
 	return ix86_vector_duplicate_value (mode, target, val);
@@ -15039,6 +15127,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	{
 	  machine_mode hvmode = (mode == V32HImode ? V16HImode
 				 : mode == V32HFmode ? V16HFmode
+				 : mode == V32BFmode ? V16BFmode
 				 : V32QImode);
 	  rtx x = gen_reg_rtx (hvmode);
 
@@ -15151,6 +15240,18 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
     case E_V32HFmode:
       use_vector_set = TARGET_AVX512FP16 && one_var == 0;
       gen_vec_set_0 = gen_vec_setv32hf_0;
+      break;
+    case E_V8BFmode:
+      use_vector_set = TARGET_AVX512FP16 && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv8bf_0;
+      break;
+    case E_V16BFmode:
+      use_vector_set = TARGET_AVX512FP16 && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv16bf_0;
+      break;
+    case E_V32BFmode:
+      use_vector_set = TARGET_AVX512FP16 && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv32bf_0;
       break;
     case E_V32HImode:
       use_vector_set = TARGET_AVX512FP16 && one_var == 0;
@@ -15306,6 +15407,8 @@ ix86_expand_vector_init_one_var (bool mmx_ok, machine_mode mode,
       /* FALLTHRU */
     case E_V8HFmode:
     case E_V16HFmode:
+    case E_V8BFmode:
+    case E_V16BFmode:
     case E_V4DFmode:
     case E_V8SFmode:
     case E_V8SImode:
@@ -15389,6 +15492,9 @@ ix86_expand_vector_init_concat (machine_mode mode,
 	case E_V32HFmode:
 	  half_mode = V16HFmode;
 	  break;
+	case E_V32BFmode:
+	  half_mode = V16BFmode;
+	  break;
 	case E_V16SImode:
 	  half_mode = V8SImode;
 	  break;
@@ -15403,6 +15509,9 @@ ix86_expand_vector_init_concat (machine_mode mode,
 	  break;
 	case E_V16HFmode:
 	  half_mode = V8HFmode;
+	  break;
+	case E_V16BFmode:
+	  half_mode = V8BFmode;
 	  break;
 	case E_V8SImode:
 	  half_mode = V4SImode;
@@ -15562,6 +15671,15 @@ ix86_expand_vector_init_interleave (machine_mode mode,
       second_imode = V2DImode;
       third_imode = VOIDmode;
       break;
+    case E_V8BFmode:
+      gen_load_even = gen_vec_interleave_lowv8bf;
+      gen_interleave_first_low = gen_vec_interleave_lowv4si;
+      gen_interleave_second_low = gen_vec_interleave_lowv2di;
+      inner_mode = BFmode;
+      first_imode = V4SImode;
+      second_imode = V2DImode;
+      third_imode = VOIDmode;
+      break;
     case E_V8HImode:
       gen_load_even = gen_vec_setv8hi;
       gen_interleave_first_low = gen_vec_interleave_lowv4si;
@@ -15587,15 +15705,18 @@ ix86_expand_vector_init_interleave (machine_mode mode,
   for (i = 0; i < n; i++)
     {
       op = ops [i + i];
-      if (inner_mode == HFmode)
+      if (inner_mode == HFmode || inner_mode == BFmode)
 	{
 	  rtx even, odd;
-	  /* Use vpuncklwd to pack 2 HFmode.  */
-	  op0 = gen_reg_rtx (V8HFmode);
-	  even = lowpart_subreg (V8HFmode, force_reg (HFmode, op), HFmode);
-	  odd = lowpart_subreg (V8HFmode,
-				force_reg (HFmode, ops[i + i + 1]),
-				HFmode);
+	  /* Use vpuncklwd to pack 2 HFmode or BFmode.  */
+	  machine_mode vec_mode =
+	    (inner_mode == HFmode) ? V8HFmode : V8BFmode;
+	  op0 = gen_reg_rtx (vec_mode);
+	  even = lowpart_subreg (vec_mode,
+				 force_reg (inner_mode, op), inner_mode);
+	  odd = lowpart_subreg (vec_mode,
+				force_reg (inner_mode, ops[i + i + 1]),
+				inner_mode);
 	  emit_insn (gen_load_even (op0, even, odd));
 	}
       else
@@ -15744,6 +15865,10 @@ ix86_expand_vector_init_general (bool mmx_ok, machine_mode mode,
       half_mode = V8HFmode;
       goto half;
 
+    case E_V16BFmode:
+      half_mode = V8BFmode;
+      goto half;
+
 half:
       n = GET_MODE_NUNITS (mode);
       for (i = 0; i < n; i++)
@@ -15770,6 +15895,11 @@ half:
     case E_V32HFmode:
       quarter_mode = V8HFmode;
       half_mode = V16HFmode;
+      goto quarter;
+
+    case E_V32BFmode:
+      quarter_mode = V8BFmode;
+      half_mode = V16BFmode;
       goto quarter;
 
 quarter:
@@ -15811,6 +15941,7 @@ quarter:
       /* FALLTHRU */
 
     case E_V8HFmode:
+    case E_V8BFmode:
 
       n = GET_MODE_NUNITS (mode);
       for (i = 0; i < n; i++)
@@ -15914,7 +16045,8 @@ ix86_expand_vector_init (bool mmx_ok, rtx target, rtx vals)
 	  if (inner_mode == QImode
 	      || inner_mode == HImode
 	      || inner_mode == TImode
-	      || inner_mode == HFmode)
+	      || inner_mode == HFmode
+	      || inner_mode == BFmode)
 	    {
 	      unsigned int n_bits = n_elts * GET_MODE_SIZE (inner_mode);
 	      scalar_mode elt_mode = inner_mode == TImode ? DImode : SImode;
@@ -15998,7 +16130,8 @@ ix86_expand_vector_set_var (rtx target, rtx val, rtx idx)
   /* 512-bits vector byte/word broadcast and comparison only available
      under TARGET_AVX512BW, break 512-bits vector into two 256-bits vector
      when without TARGET_AVX512BW.  */
-  if ((mode == V32HImode || mode == V32HFmode || mode == V64QImode)
+  if ((mode == V32HImode || mode == V32HFmode || mode == V32BFmode
+       || mode == V64QImode)
       && !TARGET_AVX512BW)
     {
       gcc_assert (TARGET_AVX512F);
@@ -16018,6 +16151,12 @@ ix86_expand_vector_set_var (rtx target, rtx val, rtx idx)
 	  half_mode = V16HFmode;
 	  extract_hi = gen_vec_extract_hi_v32hf;
 	  extract_lo = gen_vec_extract_lo_v32hf;
+	}
+      else if (mode == V32BFmode)
+	{
+	  half_mode = V16BFmode;
+	  extract_hi = gen_vec_extract_hi_v32bf;
+	  extract_lo = gen_vec_extract_lo_v32bf;
 	}
       else
 	{
@@ -16075,6 +16214,15 @@ ix86_expand_vector_set_var (rtx target, rtx val, rtx idx)
 	case E_V32HFmode:
 	  cmp_mode = V32HImode;
 	  break;
+	case E_V8BFmode:
+	  cmp_mode = V8HImode;
+	  break;
+	case E_V16BFmode:
+	  cmp_mode = V16HImode;
+	  break;
+	case E_V32BFmode:
+	  cmp_mode = V32HImode;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -16112,7 +16260,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
   bool use_vec_merge = false;
   bool blendm_const = false;
   rtx tmp;
-  static rtx (*gen_extract[7][2]) (rtx, rtx)
+  static rtx (*gen_extract[8][2]) (rtx, rtx)
     = {
 	{ gen_vec_extract_lo_v32qi, gen_vec_extract_hi_v32qi },
 	{ gen_vec_extract_lo_v16hi, gen_vec_extract_hi_v16hi },
@@ -16120,9 +16268,10 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	{ gen_vec_extract_lo_v4di, gen_vec_extract_hi_v4di },
 	{ gen_vec_extract_lo_v8sf, gen_vec_extract_hi_v8sf },
 	{ gen_vec_extract_lo_v4df, gen_vec_extract_hi_v4df },
-	{ gen_vec_extract_lo_v16hf, gen_vec_extract_hi_v16hf }
+	{ gen_vec_extract_lo_v16hf, gen_vec_extract_hi_v16hf },
+	{ gen_vec_extract_lo_v16bf, gen_vec_extract_hi_v16bf }
       };
-  static rtx (*gen_insert[7][2]) (rtx, rtx, rtx)
+  static rtx (*gen_insert[8][2]) (rtx, rtx, rtx)
     = {
 	{ gen_vec_set_lo_v32qi, gen_vec_set_hi_v32qi },
 	{ gen_vec_set_lo_v16hi, gen_vec_set_hi_v16hi },
@@ -16131,6 +16280,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	{ gen_vec_set_lo_v8sf, gen_vec_set_hi_v8sf },
 	{ gen_vec_set_lo_v4df, gen_vec_set_hi_v4df },
 	{ gen_vec_set_lo_v16hf, gen_vec_set_hi_v16hf },
+	{ gen_vec_set_lo_v16bf, gen_vec_set_hi_v16bf },
       };
   int i, j, n;
   machine_mode mmode = VOIDmode;
@@ -16299,6 +16449,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 
     case E_V8HImode:
     case E_V8HFmode:
+    case E_V8BFmode:
     case E_V2HImode:
       use_vec_merge = TARGET_SSE2;
       break;
@@ -16322,18 +16473,20 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       goto half;
 
     case E_V16HFmode:
+    case E_V16BFmode:
       /* For ELT == 0, vec_setv8hf_0 can save 1 vpbroadcastw.  */
       if (TARGET_AVX2 && elt != 0)
 	{
 	  mmode = SImode;
-	  gen_blendm = gen_avx2_pblendph_1;
+	  gen_blendm = ((mode == E_V16HFmode) ? gen_avx2_pblendph_1
+						: gen_avx2_pblendbf_1);
 	  blendm_const = true;
 	  break;
 	}
       else
 	{
-	  half_mode = V8HFmode;
-	  j = 6;
+	  half_mode = ((mode == E_V16HFmode) ? V8HFmode : V8BFmode);
+	  j = ((mode == E_V16HFmode) ? 6 : 7);
 	  n = 8;
 	  goto half;
 	}
@@ -16423,6 +16576,13 @@ half:
 	{
 	  mmode = SImode;
 	  gen_blendm = gen_avx512bw_blendmv32hf;
+	}
+      break;
+    case E_V32BFmode:
+      if (TARGET_AVX512BW)
+	{
+	  mmode = SImode;
+	  gen_blendm = gen_avx512bw_blendmv32bf;
 	}
       break;
     case E_V32HImode:
@@ -16632,6 +16792,7 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 
     case E_V8HImode:
     case E_V8HFmode:
+    case E_V8BFmode:
     case E_V2HImode:
       use_vec_extr = TARGET_SSE2;
       break;
@@ -16798,26 +16959,32 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
       return;
 
     case E_V32HFmode:
+    case E_V32BFmode:
       if (TARGET_AVX512BW)
 	{
-	  tmp = gen_reg_rtx (V16HFmode);
+	  tmp = (mode == E_V32HFmode
+		 ? gen_reg_rtx (V16HFmode)
+		 : gen_reg_rtx (V16BFmode));
 	  if (elt < 16)
-	    emit_insn (gen_vec_extract_lo_v32hf (tmp, vec));
+	    emit_insn (maybe_gen_vec_extract_lo (mode, tmp, vec));
 	  else
-	    emit_insn (gen_vec_extract_hi_v32hf (tmp, vec));
+	    emit_insn (maybe_gen_vec_extract_hi (mode, tmp, vec));
 	  ix86_expand_vector_extract (false, target, tmp, elt & 15);
 	  return;
 	}
       break;
 
     case E_V16HFmode:
+    case E_V16BFmode:
       if (TARGET_AVX)
 	{
-	  tmp = gen_reg_rtx (V8HFmode);
+	  tmp = (mode == E_V16HFmode
+		 ? gen_reg_rtx (V8HFmode)
+		 : gen_reg_rtx (V8BFmode));
 	  if (elt < 8)
-	    emit_insn (gen_vec_extract_lo_v16hf (tmp, vec));
+	    emit_insn (maybe_gen_vec_extract_lo (mode, tmp, vec));
 	  else
-	    emit_insn (gen_vec_extract_hi_v16hf (tmp, vec));
+	    emit_insn (maybe_gen_vec_extract_hi (mode, tmp, vec));
 	  ix86_expand_vector_extract (false, target, tmp, elt & 7);
 	  return;
 	}
@@ -19548,9 +19715,11 @@ expand_vec_perm_palignr (struct expand_vec_perm_d *d, bool single_insn_only_p)
   shift = GEN_INT (min * GET_MODE_UNIT_BITSIZE (d->vmode));
   if (GET_MODE_SIZE (d->vmode) == 16)
     {
-      target = gen_reg_rtx (TImode);
-      emit_insn (gen_ssse3_palignrti (target, gen_lowpart (TImode, dcopy.op1),
-				      gen_lowpart (TImode, dcopy.op0), shift));
+      target = gen_reg_rtx (V1TImode);
+      emit_insn (gen_ssse3_palignrv1ti (target,
+					gen_lowpart (V1TImode, dcopy.op1),
+					gen_lowpart (V1TImode, dcopy.op0),
+					shift));
     }
   else
     {

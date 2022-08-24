@@ -353,6 +353,30 @@ else
 
     AC_DEFINE(HAVE_ICONV)
     AC_DEFINE(HAVE_MEMALIGN)
+
+    case "${target}" in
+      *-rtems*)
+        case "${target}" in
+          bfin* | lm32* | mips* | moxie* | or1k* | v850*)
+            ;;
+          *)
+            AC_DEFINE(HAVE_TLS)
+            ;;
+        esac
+        AC_DEFINE(HAVE_ALIGNED_ALLOC)
+        AC_DEFINE(HAVE_AT_QUICK_EXIT)
+        AC_DEFINE(HAVE_LINK)
+        AC_DEFINE(HAVE_QUICK_EXIT)
+        AC_DEFINE(HAVE_READLINK)
+        AC_DEFINE(HAVE_SETENV)
+        AC_DEFINE(HAVE_SLEEP)
+        AC_DEFINE(HAVE_SOCKATMARK)
+        AC_DEFINE(HAVE_STRERROR_L)
+        AC_DEFINE(HAVE_SYMLINK)
+        AC_DEFINE(HAVE_TRUNCATE)
+        AC_DEFINE(HAVE_USLEEP)
+        ;;
+    esac
   elif test "x$with_headers" != "xno"; then
     GLIBCXX_CROSSCONFIG
   fi

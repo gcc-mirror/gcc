@@ -87,6 +87,28 @@ AM_CONDITIONAL(LTO_PLUGIN_USE_SYMVER, [test "x$lto_plugin_use_symver" != xno])
 AM_CONDITIONAL(LTO_PLUGIN_USE_SYMVER_GNU, [test "x$lto_plugin_use_symver" = xgnu])
 AM_CONDITIONAL(LTO_PLUGIN_USE_SYMVER_SUN, [test "x$lto_plugin_use_symver" = xsun])
 
+# Check for thread headers.
+use_locking=no
+ac_lto_plugin_extra_ldflags=
+
+case $host in
+  riscv*)
+    # do not use locking as pthread depends on libatomic
+    ;;
+  *-linux*)
+    use_locking=yes
+    ;;
+esac
+
+if test x$use_locking = xyes; then
+  AC_CHECK_HEADER(pthread.h,
+    [AC_DEFINE(HAVE_PTHREAD_LOCKING, 1, [Define if the system provides pthread locking mechanism.])])
+
+  ac_lto_plugin_extra_ldflags="-pthread"
+fi
+
+AC_SUBST(ac_lto_plugin_extra_ldflags)
+
 AM_PROG_LIBTOOL
 ACX_LT_HOST_FLAGS
 AC_SUBST(target_noncanonical)

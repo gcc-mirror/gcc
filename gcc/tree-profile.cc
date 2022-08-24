@@ -884,8 +884,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *) { return tree_profiling (); }
+  bool gate (function *) final override;
+  unsigned int execute (function *) final override { return tree_profiling (); }
 
 }; // class pass_ipa_tree_profile
 

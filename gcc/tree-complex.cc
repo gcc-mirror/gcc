@@ -297,6 +297,11 @@ init_dont_simulate_again (void)
 		break;
 
 	      default:
+		/* When expand_complex_move would trigger make sure we
+		   perform lowering even when there is no actual complex
+		   operation.  This helps consistency and vectorization.  */
+		if (TREE_CODE (TREE_TYPE (gimple_op (stmt, 0))) == COMPLEX_TYPE)
+		  saw_a_complex_op = true;
 		break;
 	      }
 
@@ -869,7 +874,9 @@ expand_complex_move (gimple_stmt_iterator *gsi, tree type)
 	  update_complex_assignment (gsi, r, i);
 	}
     }
-  else if (rhs && TREE_CODE (rhs) == SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
+  else if (rhs
+	   && (TREE_CODE (rhs) == SSA_NAME || TREE_CODE (rhs) == COMPLEX_CST)
+	   && !TREE_SIDE_EFFECTS (lhs))
     {
       tree x;
       gimple *t;
@@ -1915,8 +1922,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_lower_complex (m_ctxt); }
-  virtual unsigned int execute (function *) { return tree_lower_complex (); }
+  opt_pass * clone () final override { return new pass_lower_complex (m_ctxt); }
+  unsigned int execute (function *) final override
+  {
+    return tree_lower_complex ();
+  }
 
 }; // class pass_lower_complex
 
@@ -1952,14 +1962,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  bool gate (function *fun) final override
     {
       /* With errors, normal optimization passes are not run.  If we don't
 	 lower complex operations at all, rtl expansion will abort.  */
       return !(fun->curr_properties & PROP_gimple_lcx);
     }
 
-  virtual unsigned int execute (function *) { return tree_lower_complex (); }
+  unsigned int execute (function *) final override
+  {
+    return tree_lower_complex ();
+  }
 
 }; // class pass_lower_complex_O0
 

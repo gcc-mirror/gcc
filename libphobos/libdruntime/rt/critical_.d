@@ -18,13 +18,13 @@ nothrow:
 
 import rt.monitor_, core.atomic;
 
-extern (C) void _d_critical_init()
+extern (C) void _d_critical_init() @nogc nothrow
 {
     initMutex(cast(Mutex*)&gcs.mtx);
     head = &gcs;
 }
 
-extern (C) void _d_critical_term()
+extern (C) void _d_critical_term() @nogc nothrow
 {
     // This function is only ever called by the runtime shutdown code
     // and therefore is single threaded so the following cast is fine.

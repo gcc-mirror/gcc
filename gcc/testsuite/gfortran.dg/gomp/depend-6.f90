@@ -52,7 +52,7 @@ subroutine foo(dss, dsp, dsa, daa, daaa, daap, doss, dosp, dosa, doaa, doaaa, do
   !$omp depobj(elem(4)) depend(in: daa(2))
   !$omp depobj(elem(5)) depend(in: daaa(2))
   !$omp depobj(elem(6)) depend(in: daap(2))
-  !$omp depobj(elem(6)) depend(in: doaa(2))
+  !$omp depobj(elem(7)) depend(in: doaa(2))
   !$omp depobj(elem(8)) depend(in: doaaa(2))
   !$omp depobj(elem(9)) depend(in: doaap(2))
 
@@ -199,7 +199,7 @@ end
 ! { dg-final { scan-tree-dump-times "&elem\\\[3\\\] = &\\(\\*daa\\)\\\[1\\\];" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&elem\\\[4\\\] = &\\(\\*\\(void \\*\\\[0:\\\] \\* restrict\\) daaa->data\\)\\\[daaa->offset \\+ 2\\\];" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&elem\\\[5\\\] = \\(void \\* \\*\\) \\(daap->data \\+ .sizetype. \\(\\(daap->offset \\+ daap->dim\\\[0\\\].stride \\* 2\\) \\* daap->span\\)\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&elem\\\[5\\\] = &\\(\\*doaa\\)\\\[1\\\];" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&elem\\\[6\\\] = &\\(\\*doaa\\)\\\[1\\\];" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&elem\\\[7\\\] = &\\(\\*\\(void \\*\\\[0:\\\] \\* restrict\\) doaaa->data\\)\\\[doaaa->offset \\+ 2\\\];" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&elem\\\[8\\\] = \\(void \\* \\*\\) \\(doaap->data \\+ .sizetype. \\(\\(doaap->offset \\+ doaap->dim\\\[0\\\].stride \\* 2\\) \\* doaap->span\\)\\);" 1 "original" } }
 

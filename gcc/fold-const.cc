@@ -7530,7 +7530,7 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1)
 static tree
 fold_to_nonsharp_ineq_using_bound (location_t loc, tree ineq, tree bound)
 {
-  tree a, typea, type = TREE_TYPE (ineq), a1, diff, y;
+  tree a, typea, type = TREE_TYPE (bound), a1, diff, y;
 
   if (TREE_CODE (bound) == LT_EXPR)
     a = TREE_OPERAND (bound, 0);
@@ -12037,11 +12037,15 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	{
 	  tem = fold_to_nonsharp_ineq_using_bound (loc, arg0, arg1);
 	  if (tem && !operand_equal_p (tem, arg0, 0))
-	    return fold_build2_loc (loc, code, type, tem, arg1);
+	    return fold_convert (type,
+				 fold_build2_loc (loc, code, TREE_TYPE (arg1),
+						  tem, arg1));
 
 	  tem = fold_to_nonsharp_ineq_using_bound (loc, arg1, arg0);
 	  if (tem && !operand_equal_p (tem, arg1, 0))
-	    return fold_build2_loc (loc, code, type, arg0, tem);
+	    return fold_convert (type,
+				 fold_build2_loc (loc, code, TREE_TYPE (arg0),
+						  arg0, tem));
 	}
 
       if ((tem = fold_truth_andor (loc, code, type, arg0, arg1, op0, op1))
@@ -12197,60 +12201,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	      return fold_build2_loc (loc, code, type,
 				      fold_convert_loc (loc, TREE_TYPE (arg1),
 							tem), arg1);
-	    }
-	}
-
-      /* Fold ((X >> C1) & C2) == 0 and ((X >> C1) & C2) != 0 where
-	 C1 is a valid shift constant, and C2 is a power of two, i.e.
-	 a single bit.  */
-      if (TREE_CODE (arg0) == BIT_AND_EXPR
-	  && integer_pow2p (TREE_OPERAND (arg0, 1))
-	  && integer_zerop (arg1))
-	{
-	  tree arg00 = TREE_OPERAND (arg0, 0);
-	  STRIP_NOPS (arg00);
-	  if (TREE_CODE (arg00) == RSHIFT_EXPR
-	      && TREE_CODE (TREE_OPERAND (arg00, 1)) == INTEGER_CST)
-	    {
-	      tree itype = TREE_TYPE (arg00);
-	      tree arg001 = TREE_OPERAND (arg00, 1);
-	      prec = TYPE_PRECISION (itype);
-
-	      /* Check for a valid shift count.  */
-	      if (wi::ltu_p (wi::to_wide (arg001), prec))
-		{
-		  tree arg01 = TREE_OPERAND (arg0, 1);
-		  tree arg000 = TREE_OPERAND (arg00, 0);
-		  unsigned HOST_WIDE_INT log2 = tree_log2 (arg01);
-		  /* If (C2 << C1) doesn't overflow, then
-		     ((X >> C1) & C2) != 0 can be rewritten as
-		     (X & (C2 << C1)) != 0.  */
-		  if ((log2 + TREE_INT_CST_LOW (arg001)) < prec)
-		    {
-		      tem = fold_build2_loc (loc, LSHIFT_EXPR, itype,
-					     arg01, arg001);
-		      tem = fold_build2_loc (loc, BIT_AND_EXPR, itype,
-					     arg000, tem);
-		      return fold_build2_loc (loc, code, type, tem,
-				fold_convert_loc (loc, itype, arg1));
-		    }
-		  /* Otherwise, for signed (arithmetic) shifts,
-		     ((X >> C1) & C2) != 0 is rewritten as X < 0, and
-		     ((X >> C1) & C2) == 0 is rewritten as X >= 0.  */
-		  else if (!TYPE_UNSIGNED (itype))
-		    return fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR
-								 : LT_EXPR,
-					    type, arg000,
-					    build_int_cst (itype, 0));
-		  /* Otherwise, of unsigned (logical) shifts,
-		     ((X >> C1) & C2) != 0 is rewritten as (X,false), and
-		     ((X >> C1) & C2) == 0 is rewritten as (X,true).  */
-		  else
-		    return omit_one_operand_loc (loc, type,
-					 code == EQ_EXPR ? integer_one_node
-							 : integer_zero_node,
-					 arg000);
-		}
 	    }
 	}
 

@@ -168,6 +168,9 @@ package Restrict is
       Unit : Node_Id;
       --  The unit parameter from the No_Dependence pragma
 
+      System_Child : Name_Id;
+      --  The name if the unit is a child of System, or else No_Name
+
       Warn : Boolean;
       --  True if from Restriction_Warnings, False if from Restrictions
 
@@ -268,6 +271,13 @@ package Restrict is
    --  Called when a dependence on a unit is created (either implicitly, or by
    --  an explicit WITH clause). U is a node for the unit involved, and Err is
    --  the node to which an error will be attached if necessary.
+
+   procedure Check_Restriction_No_Dependence_On_System
+     (U   : Name_Id;
+      Err : Node_Id);
+   --  Likewise, but for the child units of System referenced by their name
+
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
    procedure Check_Restriction_No_Specification_Of_Aspect (N : Node_Id);
    --  N is the node id for an N_Aspect_Specification, an N_Pragma, or an

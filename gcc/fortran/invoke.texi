@@ -170,7 +170,7 @@ and warnings}.
 
 @item Link Options
 @xref{Link Options,,Options for influencing the linking step}.
-@gccoptlist{-static-libgfortran}
+@gccoptlist{-static-libgfortran  -static-libquadmath}
 
 @item Runtime Options
 @xref{Runtime Options,,Options for influencing runtime behavior}.
@@ -1422,6 +1422,20 @@ On systems that provide @file{libgfortran} as a shared and a static
 library, this option forces the use of the static version. If no
 shared version of @file{libgfortran} was built when the compiler was
 configured, this option has no effect.
+@end table
+
+
+@table @gcctabopt
+@item -static-libquadmath
+@opindex @code{static-libquadmath}
+On systems that provide @file{libquadmath} as a shared and a static
+library, this option forces the use of the static version. If no
+shared version of @file{libquadmath} was built when the compiler was
+configured, this option has no effect.
+
+Please note that the @file{libquadmath} runtime library is licensed under the
+GNU Lesser General Public License (LGPL), and linking it statically introduces
+requirements when redistributing the resulting binaries.
 @end table
 
 

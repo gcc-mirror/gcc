@@ -3419,17 +3419,20 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         }
     }
 
+    Target result = cast(Target) (sign ? -ldval : ldval);
+
     // if overflow occurred
-    enforce(ldval != real.infinity, new ConvException("Range error"));
+    import std.math : isFinite;
+    enforce(isFinite(result), new ConvException("Range error"));
 
     advanceSource();
     static if (doCount)
     {
-        return tuple!("data", "count")(cast (Target) (sign ? -ldval : ldval), count);
+        return tuple!("data", "count")(result, count);
     }
     else
     {
-        return cast (Target) (sign ? -ldval : ldval);
+        return result;
     }
 }
 
@@ -3783,6 +3786,16 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         parse!double(s);
     foreach (s; ssKO)
         assertThrown!ConvException(parse!double(s));
+}
+
+@safe unittest // https://issues.dlang.org/show_bug.cgi?id=22637
+{
+    import std.exception : assertThrown, assertNotThrown;
+    auto src = "9991232549867999698999493543521458974414359998784641646846435132132543645435456345634541999999999999999"
+    ~ "9999999943321231321311999231345312413646846354354354399999934153465464654646464654134135354199999999996515734999"
+    ~ "9999999320135273486741354354731567431324134999999999999999999999999999999999999999999999135411.9";
+    assertThrown!ConvException(parse!double(src));
+    static if (real.max_10_exp > 310) assertNotThrown!ConvException(parse!real(src));
 }
 
 /**

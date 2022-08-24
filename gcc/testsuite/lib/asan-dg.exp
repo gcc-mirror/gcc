@@ -111,6 +111,8 @@ proc asan_init { args } {
     global asan_saved_TEST_ALWAYS_FLAGS
     global asan_saved_ALWAYS_CXXFLAGS
 
+    setenv ASAN_OPTIONS "color=never"
+
     set link_flags ""
     if ![is_remote host] {
 	if [info exists TOOL_OPTIONS] {

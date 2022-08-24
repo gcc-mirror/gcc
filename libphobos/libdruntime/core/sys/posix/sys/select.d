@@ -608,4 +608,3 @@ pure unittest
         assert(!FD_ISSET(i, &fd));
     }
 }
-

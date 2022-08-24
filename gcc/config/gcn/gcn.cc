@@ -2284,7 +2284,7 @@ gcn_function_value (const_tree valtype, const_tree, bool)
       && GET_MODE_SIZE (mode) < 4)
     mode = SImode;
 
-  return gen_rtx_REG (mode, SGPR_REGNO (RETURN_VALUE_REG));
+  return gen_rtx_REG (mode, RETURN_VALUE_REG);
 }
 
 /* Implement TARGET_FUNCTION_VALUE_REGNO_P.
@@ -2308,7 +2308,9 @@ num_arg_regs (const function_arg_info &arg)
     return 0;
 
   int size = arg.promoted_size_in_bytes ();
-  return (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  int regsize = UNITS_PER_WORD * (VECTOR_MODE_P (arg.mode)
+				  ? GET_MODE_NUNITS (arg.mode) : 1);
+  return (size + regsize - 1) / regsize;
 }
 
 /* Implement TARGET_STRICT_ARGUMENT_NAMING.
@@ -2358,16 +2360,16 @@ gcn_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
       if (targetm.calls.must_pass_in_stack (arg))
 	return 0;
 
-      /* Vector parameters are not supported yet.  */
-      if (VECTOR_MODE_P (arg.mode))
-	return 0;
-
-      int reg_num = FIRST_PARM_REG + cum->num;
+      int first_reg = (VECTOR_MODE_P (arg.mode)
+		       ? FIRST_VPARM_REG : FIRST_PARM_REG);
+      int cum_num = (VECTOR_MODE_P (arg.mode)
+		     ? cum->vnum : cum->num);
+      int reg_num = first_reg + cum_num;
       int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
 	while (reg_num % num_regs != 0)
 	  reg_num++;
-      if (reg_num + num_regs <= FIRST_PARM_REG + NUM_PARM_REGS)
+      if (reg_num + num_regs <= first_reg + NUM_PARM_REGS)
 	return gen_rtx_REG (arg.mode, reg_num);
     }
   else
@@ -2419,11 +2421,15 @@ gcn_function_arg_advance (cumulative_args_t cum_v,
       if (!arg.named)
 	return;
 
+      int first_reg = (VECTOR_MODE_P (arg.mode)
+		       ? FIRST_VPARM_REG : FIRST_PARM_REG);
+      int *cum_num = (VECTOR_MODE_P (arg.mode)
+		      ? &cum->vnum : &cum->num);
       int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
-	while ((FIRST_PARM_REG + cum->num) % num_regs != 0)
-	  cum->num++;
-      cum->num += num_regs;
+	while ((first_reg + *cum_num) % num_regs != 0)
+	  (*cum_num)++;
+      *cum_num += num_regs;
     }
   else
     {
@@ -2454,14 +2460,18 @@ gcn_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   if (targetm.calls.must_pass_in_stack (arg))
     return 0;
 
-  if (cum->num >= NUM_PARM_REGS)
+  int cum_num = (VECTOR_MODE_P (arg.mode) ? cum->vnum : cum->num);
+  int regsize = UNITS_PER_WORD * (VECTOR_MODE_P (arg.mode)
+				  ? GET_MODE_NUNITS (arg.mode) : 1);
+
+  if (cum_num >= NUM_PARM_REGS)
     return 0;
 
   /* If the argument fits entirely in registers, return 0.  */
-  if (cum->num + num_arg_regs (arg) <= NUM_PARM_REGS)
+  if (cum_num + num_arg_regs (arg) <= NUM_PARM_REGS)
     return 0;
 
-  return (NUM_PARM_REGS - cum->num) * UNITS_PER_WORD;
+  return (NUM_PARM_REGS - cum_num) * regsize;
 }
 
 /* A normal function which takes a pointer argument (to a scalar) may be
@@ -2549,14 +2559,11 @@ gcn_return_in_memory (const_tree type, const_tree ARG_UNUSED (fntype))
   if (AGGREGATE_TYPE_P (type))
     return true;
 
-  /* Vector return values are not supported yet.  */
-  if (VECTOR_TYPE_P (type))
-    return true;
-
   if (mode == BLKmode)
     return true;
 
-  if (size > 2 * UNITS_PER_WORD)
+  if ((!VECTOR_TYPE_P (type) && size > 2 * UNITS_PER_WORD)
+      || size > 2 * UNITS_PER_WORD * 64)
     return true;
 
   return false;
@@ -3199,9 +3206,10 @@ gcn_expand_epilogue (void)
       emit_move_insn (kernarg_reg, retptr_mem);
 
       rtx retval_mem = gen_rtx_MEM (SImode, kernarg_reg);
+      rtx scalar_retval = gen_rtx_REG (SImode, FIRST_PARM_REG);
       set_mem_addr_space (retval_mem, ADDR_SPACE_SCALAR_FLAT);
-      emit_move_insn (retval_mem,
-		      gen_rtx_REG (SImode, SGPR_REGNO (RETURN_VALUE_REG)));
+      emit_move_insn (scalar_retval, gen_rtx_REG (SImode, RETURN_VALUE_REG));
+      emit_move_insn (retval_mem, scalar_retval);
     }
 
   emit_jump_insn (gen_gcn_return ());

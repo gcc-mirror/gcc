@@ -53,7 +53,7 @@ struct fs::_Dir : std::filesystem::_Dir_base
 {
   _Dir(const fs::path& p, bool skip_permission_denied, bool nofollow,
        error_code& ec)
-  : _Dir_base(this->fdcwd(), p.c_str(), skip_permission_denied, nofollow, ec)
+  : _Dir_base(p.c_str(), skip_permission_denied, nofollow, ec)
   {
     if (!ec)
       path = p;
@@ -113,17 +113,17 @@ struct fs::_Dir : std::filesystem::_Dir_base
     return false;
   }
 
-  // Return a file descriptor for the directory and current entry's path.
-  // If dirfd is available, use it and return only the filename.
-  // Otherwise, return AT_FDCWD and return the full path.
-  pair<int, const posix::char_type*>
-  dir_and_pathname() const noexcept
+  // Return a pathname for the current directory entry, as an _At_path.
+  _Dir_base::_At_path
+  current() const noexcept
   {
     const fs::path& p = entry.path();
 #if _GLIBCXX_HAVE_DIRFD
-    return {::dirfd(this->dirp), std::prev(p.end())->c_str()};
+    auto len = std::prev(p.end())->native().size();
+    return {::dirfd(this->dirp), p.c_str(), p.native().size() - len};
+#else
+    return p.c_str();
 #endif
-    return {this->fdcwd(), p.c_str()};
   }
 
   // Create a new _Dir for the directory this->entry.path().
@@ -131,8 +131,7 @@ struct fs::_Dir : std::filesystem::_Dir_base
   open_subdir(bool skip_permission_denied, bool nofollow,
 	      error_code& ec) noexcept
   {
-    auto [dirfd, pathname] = dir_and_pathname();
-    _Dir_base d(dirfd, pathname, skip_permission_denied, nofollow, ec);
+    _Dir_base d(current(), skip_permission_denied, nofollow, ec);
     return _Dir(std::move(d), entry.path());
   }
 

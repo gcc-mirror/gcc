@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-dom.h"
+#include "tree-ssa-strlen.h"
 #include "builtins.h"
 #include "tree-cfgcleanup.h"
 #include "cfganal.h"
@@ -1177,6 +1178,15 @@ constant_pointer_difference (tree p1, tree p2)
    memcpy (p, "abcd   ", 7);
    call if the latter can be stored by pieces during expansion.
 
+   Optimize
+   memchr ("abcd", a, 4) == 0;
+   or
+   memchr ("abcd", a, 4) != 0;
+   to
+   (a == 'a' || a == 'b' || a == 'c' || a == 'd') == 0
+   or
+   (a == 'a' || a == 'b' || a == 'c' || a == 'd') != 0
+
    Also canonicalize __atomic_fetch_op (p, x, y) op x
    to __atomic_op_fetch (p, x, y) or
    __atomic_op_fetch (p, x, y) iop x
@@ -1193,8 +1203,70 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
     return false;
   stmt1 = SSA_NAME_DEF_STMT (vuse);
 
+  tree res;
+
   switch (DECL_FUNCTION_CODE (callee2))
     {
+    case BUILT_IN_MEMCHR:
+      if (gimple_call_num_args (stmt2) == 3
+	  && (res = gimple_call_lhs (stmt2)) != nullptr
+	  && use_in_zero_equality (res) != nullptr
+	  && CHAR_BIT == 8
+	  && BITS_PER_UNIT == 8)
+	{
+	  tree ptr = gimple_call_arg (stmt2, 0);
+	  if (TREE_CODE (ptr) != ADDR_EXPR
+	      || TREE_CODE (TREE_OPERAND (ptr, 0)) != STRING_CST)
+	    break;
+	  unsigned HOST_WIDE_INT slen
+	    = TREE_STRING_LENGTH (TREE_OPERAND (ptr, 0));
+	  /* It must be a non-empty string constant.  */
+	  if (slen < 2)
+	    break;
+	  /* For -Os, only simplify strings with a single character.  */
+	  if (!optimize_bb_for_speed_p (gimple_bb (stmt2))
+	      && slen > 2)
+	    break;
+	  tree size = gimple_call_arg (stmt2, 2);
+	  /* Size must be a constant which is <= UNITS_PER_WORD and
+	     <= the string length.  */
+	  if (TREE_CODE (size) != INTEGER_CST || integer_zerop (size))
+	    break;
+
+	  if (!tree_fits_uhwi_p (size))
+	    break;
+
+	  unsigned HOST_WIDE_INT sz = tree_to_uhwi (size);
+	  if (sz > UNITS_PER_WORD || sz >= slen)
+	    break;
+
+	  tree ch = gimple_call_arg (stmt2, 1);
+	  location_t loc = gimple_location (stmt2);
+	  if (!useless_type_conversion_p (char_type_node,
+					  TREE_TYPE (ch)))
+	    ch = fold_convert_loc (loc, char_type_node, ch);
+	  const char *p = TREE_STRING_POINTER (TREE_OPERAND (ptr, 0));
+	  unsigned int isize = sz;
+	  tree *op = XALLOCAVEC (tree, isize);
+	  for (unsigned int i = 0; i < isize; i++)
+	    {
+	      op[i] = build_int_cst (char_type_node, p[i]);
+	      op[i] = fold_build2_loc (loc, EQ_EXPR, boolean_type_node,
+				       op[i], ch);
+	    }
+	  for (unsigned int i = isize - 1; i >= 1; i--)
+	    op[i - 1] = fold_convert_loc (loc, boolean_type_node,
+					  fold_build2_loc (loc,
+							   BIT_IOR_EXPR,
+							   boolean_type_node,
+							   op[i - 1],
+							   op[i]));
+	  res = fold_convert_loc (loc, TREE_TYPE (res), op[0]);
+	  gimplify_and_update_call_from_tree (gsi_p, res);
+	  return true;
+	}
+      break;
+
     case BUILT_IN_MEMSET:
       if (gimple_call_num_args (stmt2) != 3
 	  || gimple_call_lhs (stmt2)
@@ -3266,9 +3338,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_forwprop (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_forwprop; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_forwprop (m_ctxt); }
+  bool gate (function *) final override { return flag_tree_forwprop; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_forwprop
 

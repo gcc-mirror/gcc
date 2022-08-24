@@ -254,8 +254,6 @@ extern char  *__gnat_to_host_dir_spec              (char *, int);
 extern char  *__gnat_to_host_file_spec             (char *);
 extern char  *__gnat_to_canonical_path_spec	   (char *);
 extern void   __gnat_adjust_os_resource_limits	   (void);
-extern void   convert_addresses			   (const char *, void *, int,
-						    void *, int *);
 extern int    __gnat_copy_attribs		   (char *, char *, int);
 extern int    __gnat_feof		  	   (FILE *);
 extern int    __gnat_ferror                        (FILE *);

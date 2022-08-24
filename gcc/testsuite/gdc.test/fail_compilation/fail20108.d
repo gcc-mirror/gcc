@@ -3,7 +3,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/fail20108.d(15): Error: address of variable `y` assigned to `x` with longer lifetime
-fail_compilation/fail20108.d(16): Error: scope variable `x` may not be returned
+fail_compilation/fail20108.d(16): Error: scope parameter `x` may not be returned
 fail_compilation/fail20108.d(23): Error: address of variable `y` assigned to `x` with longer lifetime
 fail_compilation/fail20108.d(24): Error: scope variable `x` may not be returned
 ---

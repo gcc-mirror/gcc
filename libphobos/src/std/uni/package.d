@@ -7032,9 +7032,7 @@ template genericDecodeGrapheme(bool getValue)
             case RI:
                 if (isRegionalIndicator(ch))
                     mixin(eat);
-                else
-                    goto L_End_Extend;
-            break;
+                goto L_End_Extend;
             case L:
                 if (isHangL(ch))
                     mixin(eat);
@@ -7166,6 +7164,10 @@ if (isInputRange!Input && is(immutable ElementType!Input == immutable dchar))
     s = "\u11A8\u0308\uAC01";
     assert(equal(decodeGrapheme(s)[], "\u11A8\u0308"));
     assert(equal(decodeGrapheme(s)[], "\uAC01"));
+
+    // Two Union Jacks of the Great Britain
+    s = "\U0001F1EC\U0001F1E7\U0001F1EC\U0001F1E7";
+    assert(equal(decodeGrapheme(s)[], "\U0001F1EC\U0001F1E7"));
 }
 
 /++

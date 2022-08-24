@@ -508,12 +508,11 @@ package body Sem_Disp is
          return Empty;
 
       --  The dispatching type and the primitive operation must be defined in
-      --  the same scope, except in the case of internal operations and formal
-      --  abstract subprograms.
+      --  the same scope, except in the case of abstract formal subprograms.
 
-      elsif ((Scope (Subp) = Scope (Tagged_Type) or else Is_Internal (Subp))
-               and then (not Is_Generic_Type (Tagged_Type)
-                          or else not Comes_From_Source (Subp)))
+      elsif (Scope (Subp) = Scope (Tagged_Type)
+              and then (not Is_Generic_Type (Tagged_Type)
+                         or else not Comes_From_Source (Subp)))
         or else
           (Is_Formal_Subprogram (Subp) and then Is_Abstract_Subprogram (Subp))
         or else
@@ -541,8 +540,10 @@ package body Sem_Disp is
       Control                : Node_Id := Empty;
       Func                   : Entity_Id;
       Subp_Entity            : Entity_Id;
-      Indeterm_Ancestor_Call : Boolean := False;
-      Indeterm_Ctrl_Type     : Entity_Id := Empty; -- init to avoid warning
+
+      Indeterm_Ctrl_Type : Entity_Id := Empty;
+      --  Type of a controlling formal whose actual is a tag-indeterminate call
+      --  whose result type is different from, but is an ancestor of, the type.
 
       Static_Tag : Node_Id := Empty;
       --  If a controlling formal has a statically tagged actual, the tag of
@@ -936,8 +937,7 @@ package body Sem_Disp is
               and then Base_Type (Etype (Actual)) /= Base_Type (Etype (Formal))
               and then Is_Ancestor (Etype (Actual), Etype (Formal))
             then
-               Indeterm_Ancestor_Call := True;
-               Indeterm_Ctrl_Type     := Etype (Formal);
+               Indeterm_Ctrl_Type := Etype (Formal);
 
             --  If the formal is controlling but the actual is not, the type
             --  of the actual is statically known, and may be used as the
@@ -947,38 +947,12 @@ package body Sem_Disp is
               and then Is_Entity_Name (Actual)
               and then Is_Tagged_Type (Etype (Actual))
             then
-               Static_Tag := Actual;
+               Static_Tag := Etype (Actual);
             end if;
 
             Next_Actual (Actual);
             Next_Formal (Formal);
          end loop;
-
-         --  If the call doesn't have a controlling actual but does have an
-         --  indeterminate actual that requires dispatching treatment, then an
-         --  object is needed that will serve as the controlling argument for
-         --  a dispatching call on the indeterminate actual. This can occur
-         --  in the unusual situation of a default actual given by a tag-
-         --  indeterminate call and where the type of the call is an ancestor
-         --  of the type associated with a containing call to an inherited
-         --  operation (see AI-239).
-
-         --  Rather than create an object of the tagged type, which would
-         --  be problematic for various reasons (default initialization,
-         --  discriminants), the tag of the containing call's associated
-         --  tagged type is directly used to control the dispatching.
-
-         if No (Control)
-           and then Indeterm_Ancestor_Call
-           and then No (Static_Tag)
-         then
-            Control :=
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Occurrence_Of (Indeterm_Ctrl_Type, Loc),
-                Attribute_Name => Name_Tag);
-
-            Analyze (Control);
-         end if;
 
          if Present (Control) then
 
@@ -1031,17 +1005,35 @@ package body Sem_Disp is
 
             Check_Direct_Call;
 
-         --  If there is a statically tagged actual and a tag-indeterminate
-         --  call to a function of the ancestor (such as that provided by a
-         --  default), then treat this as a dispatching call and propagate
-         --  the tag to the tag-indeterminate call(s).
+         --  If the call doesn't have a controlling actual but does have an
+         --  indeterminate actual that requires dispatching treatment, then an
+         --  object is needed that will serve as the controlling argument for
+         --  a dispatching call on the indeterminate actual. This can occur
+         --  in the unusual situation of a default actual given by a tag-
+         --  indeterminate call and where the type of the call is an ancestor
+         --  of the type associated with a containing call to an inherited
+         --  operation (see AI-239).
 
-         elsif Present (Static_Tag) and then Indeterm_Ancestor_Call then
-            Control :=
-              Make_Attribute_Reference (Loc,
-                Prefix         =>
-                  New_Occurrence_Of (Etype (Static_Tag), Loc),
-                Attribute_Name => Name_Tag);
+         --  Rather than create an object of the tagged type, which would
+         --  be problematic for various reasons (default initialization,
+         --  discriminants), the tag of the containing call's associated
+         --  tagged type is directly used to control the dispatching.
+
+         elsif Present (Indeterm_Ctrl_Type) then
+            if Present (Static_Tag) then
+               Control :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                     New_Occurrence_Of (Static_Tag, Loc),
+                   Attribute_Name => Name_Tag);
+
+            else
+               Control :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                      New_Occurrence_Of (Indeterm_Ctrl_Type, Loc),
+                   Attribute_Name => Name_Tag);
+            end if;
 
             Analyze (Control);
 

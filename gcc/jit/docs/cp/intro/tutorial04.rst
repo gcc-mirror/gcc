@@ -50,30 +50,55 @@ Naturally, a real interpreter would be much more complicated that this.
 
 The following operations are supported:
 
-====================== ======================== =============== ==============
-Operation              Meaning                  Old Stack       New Stack
-====================== ======================== =============== ==============
-DUP                    Duplicate top of stack.  ``[..., x]``    ``[..., x, x]``
-ROT                    Swap top two elements    ``[..., x, y]`` ``[..., y, x]``
-                       of stack.
-BINARY_ADD             Add the top two elements ``[..., x, y]`` ``[..., (x+y)]``
-                       on the stack.
-BINARY_SUBTRACT        Likewise, but subtract.  ``[..., x, y]`` ``[..., (x-y)]``
-BINARY_MULT            Likewise, but multiply.  ``[..., x, y]`` ``[..., (x*y)]``
-BINARY_COMPARE_LT      Compare the top two      ``[..., x, y]`` ``[..., (x<y)]``
-                       elements on the stack
-                       and push a nonzero/zero
-                       if (x<y).
-RECURSE                Recurse, passing the top ``[..., x]``    ``[..., fn(x)]``
-                       of the stack, and
-                       popping the result.
-RETURN                 Return the top of the    ``[x]``         ``[]``
-                       stack.
-PUSH_CONST `arg`       Push an int const.       ``[...]``       ``[..., arg]``
-JUMP_ABS_IF_TRUE `arg` Pop; if top of stack was ``[..., x]``    ``[...]``
-                       nonzero, jump to
-                       ``arg``.
-====================== ======================== =============== ==============
+.. list-table::
+   :header-rows: 1
+   :widths: 35 50 25 25
+
+   * - Operation
+     - Meaning
+     - Old Stack
+     - New Stack
+
+   * - DUP
+     - Duplicate top of stack.
+     - ``[..., x]``
+     - ``[..., x, x]``
+   * - ROT
+     - Swap top two elements of stack.
+     - ``[..., x, y]``
+     - ``[..., y, x]``
+   * - BINARY_ADD
+     - Add the top two elements on the stack.
+     - ``[..., x, y]``
+     - ``[..., (x+y)]``
+   * - BINARY_SUBTRACT
+     - Likewise, but subtract.
+     - ``[..., x, y]``
+     - ``[..., (x-y)]``
+   * - BINARY_MULT
+     - Likewise, but multiply.
+     - ``[..., x, y]``
+     - ``[..., (x*y)]``
+   * - BINARY_COMPARE_LT
+     - Compare the top two elements on the stack and push a nonzero/zero if (x<y).
+     - ``[..., x, y]``
+     - ``[..., (x<y)]``
+   * - RECURSE
+     - Recurse, passing the top of the stack, and popping the result.
+     - ``[..., x]``
+     - ``[..., fn(x)]``
+   * - RETURN
+     - Return the top of the stack.
+     - ``[x]``
+     - ``[]``
+   * - PUSH_CONST `arg`
+     - Push an int const.
+     - ``[...]``
+     - ``[..., arg]``
+   * - JUMP_ABS_IF_TRUE `arg`
+     - Pop; if top of stack was nonzero, jump to ``arg``.
+     - ``[..., x]``
+     - ``[...]``
 
 Programs can be interpreted, disassembled, and compiled to machine code.
 
@@ -549,7 +574,7 @@ yields this code, which is simple enough to quote in its entirety:
           .cfi_endproc
   .LFE0:
           .size   factorial, .-factorial
-          .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2-%{gcc_release})"
+          .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2)"
           .section        .note.GNU-stack,"",@progbits
 
 Note that the stack pushing and popping have been eliminated, as has the

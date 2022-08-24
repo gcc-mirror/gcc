@@ -282,11 +282,13 @@ private:
 public:
   /* Return true if two operands are equal.  The flags fields can be used
      to specify OEP flags described above.  */
-  virtual bool operand_equal_p (const_tree, const_tree, unsigned int flags);
+  bool operand_equal_p (const_tree, const_tree, unsigned int flags)
+    final override;
 
   /* Generate a hash value for an expression.  This can be used iteratively
      by passing a previous result as the HSTATE argument.  */
-  virtual void hash_operand (const_tree, inchash::hash &, unsigned flags);
+  void hash_operand (const_tree, inchash::hash &, unsigned flags)
+    final override;
   void hash_operand (const_tree, inchash::hash &, unsigned flags,
 		     operand_access_type access);
 };

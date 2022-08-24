@@ -222,7 +222,7 @@ HOST_EXPORTS = \
 	AR_FOR_TARGET="$(AR_FOR_TARGET)"; export AR_FOR_TARGET; \
 	AS_FOR_TARGET="$(AS_FOR_TARGET)"; export AS_FOR_TARGET; \
 	DSYMUTIL_FOR_TARGET="$(DSYMUTIL_FOR_TARGET)"; export DSYMUTIL_FOR_TARGET; \
-	GCC_FOR_TARGET="$(GCC_FOR_TARGET)"; export GCC_FOR_TARGET; \
+	GCC_FOR_TARGET="$(GCC_FOR_TARGET) $$TFLAGS"; export GCC_FOR_TARGET; \
 	LD_FOR_TARGET="$(LD_FOR_TARGET)"; export LD_FOR_TARGET; \
 	NM_FOR_TARGET="$(NM_FOR_TARGET)"; export NM_FOR_TARGET; \
 	OBJDUMP_FOR_TARGET="$(OBJDUMP_FOR_TARGET)"; export OBJDUMP_FOR_TARGET; \
@@ -236,8 +236,6 @@ HOST_EXPORTS = \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
 	ISLLIBS="$(HOST_ISLLIBS)"; export ISLLIBS; \
 	ISLINC="$(HOST_ISLINC)"; export ISLINC; \
-	LIBELFLIBS="$(HOST_LIBELFLIBS)"; export LIBELFLIBS; \
-	LIBELFINC="$(HOST_LIBELFINC)"; export LIBELFINC; \
 	XGCC_FLAGS_FOR_TARGET="$(XGCC_FLAGS_FOR_TARGET)"; export XGCC_FLAGS_FOR_TARGET; \
 @if gcc-bootstrap
 	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
@@ -342,10 +340,6 @@ HOST_GMPINC = @gmpinc@
 # Where to find isl
 HOST_ISLLIBS = @isllibs@
 HOST_ISLINC = @islinc@
-
-# Where to find libelf
-HOST_LIBELFLIBS = @libelflibs@
-HOST_LIBELFINC = @libelfinc@
 
 # ----------------------------------------------
 # Programs producing files for the BUILD machine
@@ -754,7 +748,7 @@ TARGET_LIB_PATH_libatomic = $$r/$(TARGET_SUBDIR)/libatomic/.libs:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the host machine work.
-HOST_LIB_PATH = $(HOST_LIB_PATH_gmp)$(HOST_LIB_PATH_mpfr)$(HOST_LIB_PATH_mpc)$(HOST_LIB_PATH_isl)$(HOST_LIB_PATH_libelf)
+HOST_LIB_PATH = $(HOST_LIB_PATH_gmp)$(HOST_LIB_PATH_mpfr)$(HOST_LIB_PATH_mpc)$(HOST_LIB_PATH_isl)
 
 # Define HOST_LIB_PATH_gcc here, for the sake of TARGET_LIB_PATH, ouch
 @if gcc
@@ -781,11 +775,6 @@ HOST_LIB_PATH_mpc = \
 HOST_LIB_PATH_isl = \
   $$r/$(HOST_SUBDIR)/isl/.libs:$$r/$(HOST_SUBDIR)/prev-isl/.libs:
 @endif isl
-
-@if libelf
-HOST_LIB_PATH_libelf = \
-  $$r/$(HOST_SUBDIR)/libelf/.libs:$$r/$(HOST_SUBDIR)/prev-libelf/.libs:
-@endif libelf
 
 
 CXX_FOR_TARGET_FLAG_TO_PASS = \
@@ -1047,7 +1036,7 @@ TARGET_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)
 # The BUILD_* variables are a special case, which are used for the gcc
 # cross-building scheme.
 EXTRA_GCC_FLAGS = \
-	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
+	"GCC_FOR_TARGET=$(GCC_FOR_TARGET) $$TFLAGS" \
 	"`echo 'STMP_FIXPROTO=$(STMP_FIXPROTO)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
 	"`echo 'LIMITS_H_TEST=$(LIMITS_H_TEST)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 
@@ -1078,7 +1067,6 @@ configure-host:  \
     maybe-configure-mpfr \
     maybe-configure-mpc \
     maybe-configure-isl \
-    maybe-configure-libelf \
     maybe-configure-gold \
     maybe-configure-gprof \
     maybe-configure-intl \
@@ -1229,9 +1217,6 @@ all-host: maybe-all-mpc
 @if isl-no-bootstrap
 all-host: maybe-all-isl
 @endif isl-no-bootstrap
-@if libelf-no-bootstrap
-all-host: maybe-all-libelf
-@endif libelf-no-bootstrap
 @if gold-no-bootstrap
 all-host: maybe-all-gold
 @endif gold-no-bootstrap
@@ -1370,7 +1355,6 @@ info-host: maybe-info-gmp
 info-host: maybe-info-mpfr
 info-host: maybe-info-mpc
 info-host: maybe-info-isl
-info-host: maybe-info-libelf
 info-host: maybe-info-gold
 info-host: maybe-info-gprof
 info-host: maybe-info-intl
@@ -1460,7 +1444,6 @@ dvi-host: maybe-dvi-gmp
 dvi-host: maybe-dvi-mpfr
 dvi-host: maybe-dvi-mpc
 dvi-host: maybe-dvi-isl
-dvi-host: maybe-dvi-libelf
 dvi-host: maybe-dvi-gold
 dvi-host: maybe-dvi-gprof
 dvi-host: maybe-dvi-intl
@@ -1550,7 +1533,6 @@ pdf-host: maybe-pdf-gmp
 pdf-host: maybe-pdf-mpfr
 pdf-host: maybe-pdf-mpc
 pdf-host: maybe-pdf-isl
-pdf-host: maybe-pdf-libelf
 pdf-host: maybe-pdf-gold
 pdf-host: maybe-pdf-gprof
 pdf-host: maybe-pdf-intl
@@ -1640,7 +1622,6 @@ html-host: maybe-html-gmp
 html-host: maybe-html-mpfr
 html-host: maybe-html-mpc
 html-host: maybe-html-isl
-html-host: maybe-html-libelf
 html-host: maybe-html-gold
 html-host: maybe-html-gprof
 html-host: maybe-html-intl
@@ -1730,7 +1711,6 @@ TAGS-host: maybe-TAGS-gmp
 TAGS-host: maybe-TAGS-mpfr
 TAGS-host: maybe-TAGS-mpc
 TAGS-host: maybe-TAGS-isl
-TAGS-host: maybe-TAGS-libelf
 TAGS-host: maybe-TAGS-gold
 TAGS-host: maybe-TAGS-gprof
 TAGS-host: maybe-TAGS-intl
@@ -1820,7 +1800,6 @@ install-info-host: maybe-install-info-gmp
 install-info-host: maybe-install-info-mpfr
 install-info-host: maybe-install-info-mpc
 install-info-host: maybe-install-info-isl
-install-info-host: maybe-install-info-libelf
 install-info-host: maybe-install-info-gold
 install-info-host: maybe-install-info-gprof
 install-info-host: maybe-install-info-intl
@@ -1910,7 +1889,6 @@ install-dvi-host: maybe-install-dvi-gmp
 install-dvi-host: maybe-install-dvi-mpfr
 install-dvi-host: maybe-install-dvi-mpc
 install-dvi-host: maybe-install-dvi-isl
-install-dvi-host: maybe-install-dvi-libelf
 install-dvi-host: maybe-install-dvi-gold
 install-dvi-host: maybe-install-dvi-gprof
 install-dvi-host: maybe-install-dvi-intl
@@ -2000,7 +1978,6 @@ install-pdf-host: maybe-install-pdf-gmp
 install-pdf-host: maybe-install-pdf-mpfr
 install-pdf-host: maybe-install-pdf-mpc
 install-pdf-host: maybe-install-pdf-isl
-install-pdf-host: maybe-install-pdf-libelf
 install-pdf-host: maybe-install-pdf-gold
 install-pdf-host: maybe-install-pdf-gprof
 install-pdf-host: maybe-install-pdf-intl
@@ -2090,7 +2067,6 @@ install-html-host: maybe-install-html-gmp
 install-html-host: maybe-install-html-mpfr
 install-html-host: maybe-install-html-mpc
 install-html-host: maybe-install-html-isl
-install-html-host: maybe-install-html-libelf
 install-html-host: maybe-install-html-gold
 install-html-host: maybe-install-html-gprof
 install-html-host: maybe-install-html-intl
@@ -2180,7 +2156,6 @@ installcheck-host: maybe-installcheck-gmp
 installcheck-host: maybe-installcheck-mpfr
 installcheck-host: maybe-installcheck-mpc
 installcheck-host: maybe-installcheck-isl
-installcheck-host: maybe-installcheck-libelf
 installcheck-host: maybe-installcheck-gold
 installcheck-host: maybe-installcheck-gprof
 installcheck-host: maybe-installcheck-intl
@@ -2270,7 +2245,6 @@ mostlyclean-host: maybe-mostlyclean-gmp
 mostlyclean-host: maybe-mostlyclean-mpfr
 mostlyclean-host: maybe-mostlyclean-mpc
 mostlyclean-host: maybe-mostlyclean-isl
-mostlyclean-host: maybe-mostlyclean-libelf
 mostlyclean-host: maybe-mostlyclean-gold
 mostlyclean-host: maybe-mostlyclean-gprof
 mostlyclean-host: maybe-mostlyclean-intl
@@ -2360,7 +2334,6 @@ clean-host: maybe-clean-gmp
 clean-host: maybe-clean-mpfr
 clean-host: maybe-clean-mpc
 clean-host: maybe-clean-isl
-clean-host: maybe-clean-libelf
 clean-host: maybe-clean-gold
 clean-host: maybe-clean-gprof
 clean-host: maybe-clean-intl
@@ -2450,7 +2423,6 @@ distclean-host: maybe-distclean-gmp
 distclean-host: maybe-distclean-mpfr
 distclean-host: maybe-distclean-mpc
 distclean-host: maybe-distclean-isl
-distclean-host: maybe-distclean-libelf
 distclean-host: maybe-distclean-gold
 distclean-host: maybe-distclean-gprof
 distclean-host: maybe-distclean-intl
@@ -2540,7 +2512,6 @@ maintainer-clean-host: maybe-maintainer-clean-gmp
 maintainer-clean-host: maybe-maintainer-clean-mpfr
 maintainer-clean-host: maybe-maintainer-clean-mpc
 maintainer-clean-host: maybe-maintainer-clean-isl
-maintainer-clean-host: maybe-maintainer-clean-libelf
 maintainer-clean-host: maybe-maintainer-clean-gold
 maintainer-clean-host: maybe-maintainer-clean-gprof
 maintainer-clean-host: maybe-maintainer-clean-intl
@@ -2688,7 +2659,6 @@ check-host:  \
     maybe-check-mpfr \
     maybe-check-mpc \
     maybe-check-isl \
-    maybe-check-libelf \
     maybe-check-gold \
     maybe-check-gprof \
     maybe-check-intl \
@@ -2825,7 +2795,6 @@ install-host-nogcc:  \
     maybe-install-mpfr \
     maybe-install-mpc \
     maybe-install-isl \
-    maybe-install-libelf \
     maybe-install-gold \
     maybe-install-gprof \
     maybe-install-intl \
@@ -2880,7 +2849,6 @@ install-host:  \
     maybe-install-mpfr \
     maybe-install-mpc \
     maybe-install-isl \
-    maybe-install-libelf \
     maybe-install-gold \
     maybe-install-gprof \
     maybe-install-intl \
@@ -2990,7 +2958,6 @@ install-strip-host:  \
     maybe-install-strip-mpfr \
     maybe-install-strip-mpc \
     maybe-install-strip-isl \
-    maybe-install-strip-libelf \
     maybe-install-strip-gold \
     maybe-install-strip-gprof \
     maybe-install-strip-intl \
@@ -17672,1143 +17639,6 @@ maintainer-clean-isl:
 	  || exit 1
 
 @endif isl
-
-
-
-.PHONY: configure-libelf maybe-configure-libelf
-maybe-configure-libelf:
-@if gcc-bootstrap
-configure-libelf: stage_current
-@endif gcc-bootstrap
-@if libelf
-maybe-configure-libelf: configure-libelf
-configure-libelf: 
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	test ! -f $(HOST_SUBDIR)/libelf/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf; \
-	$(HOST_EXPORTS)  \
-	echo Configuring in $(HOST_SUBDIR)/libelf; \
-	cd "$(HOST_SUBDIR)/libelf" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libelf; \
-	$(SHELL) \
-	  $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} --disable-shared \
-	  || exit 1
-@endif libelf
-
-
-
-.PHONY: configure-stage1-libelf maybe-configure-stage1-libelf
-maybe-configure-stage1-libelf:
-@if libelf-bootstrap
-maybe-configure-stage1-libelf: configure-stage1-libelf
-configure-stage1-libelf:
-	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE1_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libelf/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 1 in $(HOST_SUBDIR)/libelf; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf; \
-	cd $(HOST_SUBDIR)/libelf || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libelf; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	   \
-	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared
-@endif libelf-bootstrap
-
-.PHONY: configure-stage2-libelf maybe-configure-stage2-libelf
-maybe-configure-stage2-libelf:
-@if libelf-bootstrap
-maybe-configure-stage2-libelf: configure-stage2-libelf
-configure-stage2-libelf:
-	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE2_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libelf/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 2 in $(HOST_SUBDIR)/libelf; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf; \
-	cd $(HOST_SUBDIR)/libelf || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libelf; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared
-@endif libelf-bootstrap
-
-.PHONY: configure-stage3-libelf maybe-configure-stage3-libelf
-maybe-configure-stage3-libelf:
-@if libelf-bootstrap
-maybe-configure-stage3-libelf: configure-stage3-libelf
-configure-stage3-libelf:
-	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE3_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libelf/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 3 in $(HOST_SUBDIR)/libelf; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf; \
-	cd $(HOST_SUBDIR)/libelf || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libelf; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared
-@endif libelf-bootstrap
-
-.PHONY: configure-stage4-libelf maybe-configure-stage4-libelf
-maybe-configure-stage4-libelf:
-@if libelf-bootstrap
-maybe-configure-stage4-libelf: configure-stage4-libelf
-configure-stage4-libelf:
-	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE4_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libelf/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 4 in $(HOST_SUBDIR)/libelf; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf; \
-	cd $(HOST_SUBDIR)/libelf || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libelf; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared
-@endif libelf-bootstrap
-
-.PHONY: configure-stageprofile-libelf maybe-configure-stageprofile-libelf
-maybe-configure-stageprofile-libelf:
-@if libelf-bootstrap
-maybe-configure-stageprofile-libelf: configure-stageprofile-libelf
-configure-stageprofile-libelf:
-	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEprofile_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libelf/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage profile in $(HOST_SUBDIR)/libelf; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf; \
-	cd $(HOST_SUBDIR)/libelf || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libelf; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared
-@endif libelf-bootstrap
-
-.PHONY: configure-stagetrain-libelf maybe-configure-stagetrain-libelf
-maybe-configure-stagetrain-libelf:
-@if libelf-bootstrap
-maybe-configure-stagetrain-libelf: configure-stagetrain-libelf
-configure-stagetrain-libelf:
-	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEtrain_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libelf/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGEtrain_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGEtrain_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEtrain_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage train in $(HOST_SUBDIR)/libelf; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf; \
-	cd $(HOST_SUBDIR)/libelf || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libelf; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEtrain_CONFIGURE_FLAGS) \
-	  --disable-shared
-@endif libelf-bootstrap
-
-.PHONY: configure-stagefeedback-libelf maybe-configure-stagefeedback-libelf
-maybe-configure-stagefeedback-libelf:
-@if libelf-bootstrap
-maybe-configure-stagefeedback-libelf: configure-stagefeedback-libelf
-configure-stagefeedback-libelf:
-	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libelf/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage feedback in $(HOST_SUBDIR)/libelf; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf; \
-	cd $(HOST_SUBDIR)/libelf || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libelf; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared
-@endif libelf-bootstrap
-
-.PHONY: configure-stageautoprofile-libelf maybe-configure-stageautoprofile-libelf
-maybe-configure-stageautoprofile-libelf:
-@if libelf-bootstrap
-maybe-configure-stageautoprofile-libelf: configure-stageautoprofile-libelf
-configure-stageautoprofile-libelf:
-	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libelf/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGEautoprofile_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEautoprofile_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage autoprofile in $(HOST_SUBDIR)/libelf; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf; \
-	cd $(HOST_SUBDIR)/libelf || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libelf; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEautoprofile_CONFIGURE_FLAGS) \
-	  --disable-shared
-@endif libelf-bootstrap
-
-.PHONY: configure-stageautofeedback-libelf maybe-configure-stageautofeedback-libelf
-maybe-configure-stageautofeedback-libelf:
-@if libelf-bootstrap
-maybe-configure-stageautofeedback-libelf: configure-stageautofeedback-libelf
-configure-stageautofeedback-libelf:
-	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/libelf/Makefile || exit 0; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(STAGEautofeedback_CFLAGS)"; export CFLAGS; \
-	CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEautofeedback_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage autofeedback in $(HOST_SUBDIR)/libelf; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libelf; \
-	cd $(HOST_SUBDIR)/libelf || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/libelf/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libelf; \
-	$(SHELL) $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} \
-	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEautofeedback_CONFIGURE_FLAGS) \
-	  --disable-shared
-@endif libelf-bootstrap
-
-
-
-
-
-.PHONY: all-libelf maybe-all-libelf
-maybe-all-libelf:
-@if gcc-bootstrap
-all-libelf: stage_current
-@endif gcc-bootstrap
-@if libelf
-TARGET-libelf=all
-maybe-all-libelf: all-libelf
-all-libelf: configure-libelf
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS)  \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
-		$(TARGET-libelf))
-@endif libelf
-
-
-
-.PHONY: all-stage1-libelf maybe-all-stage1-libelf
-.PHONY: clean-stage1-libelf maybe-clean-stage1-libelf
-maybe-all-stage1-libelf:
-maybe-clean-stage1-libelf:
-@if libelf-bootstrap
-maybe-all-stage1-libelf: all-stage1-libelf
-all-stage1: all-stage1-libelf
-TARGET-stage1-libelf = $(TARGET-libelf)
-all-stage1-libelf: configure-stage1-libelf
-	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE1_TFLAGS)"; \
-	$(HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libelf && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE1_CFLAGS)" \
-		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
-		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
-		LIBCFLAGS="$(LIBCFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)  \
-		$(STAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGE1_TFLAGS)"  \
-		$(TARGET-stage1-libelf)
-
-maybe-clean-stage1-libelf: clean-stage1-libelf
-clean-stage1: clean-stage1-libelf
-clean-stage1-libelf:
-	@if [ $(current_stage) = stage1 ]; then \
-	  [ -f $(HOST_SUBDIR)/libelf/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage1-libelf/Makefile ] || exit 0; \
-	  $(MAKE) stage1-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-	$(STAGE1_FLAGS_TO_PASS)  clean
-@endif libelf-bootstrap
-
-
-.PHONY: all-stage2-libelf maybe-all-stage2-libelf
-.PHONY: clean-stage2-libelf maybe-clean-stage2-libelf
-maybe-all-stage2-libelf:
-maybe-clean-stage2-libelf:
-@if libelf-bootstrap
-maybe-all-stage2-libelf: all-stage2-libelf
-all-stage2: all-stage2-libelf
-TARGET-stage2-libelf = $(TARGET-libelf)
-all-stage2-libelf: configure-stage2-libelf
-	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE2_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libelf && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE2_CFLAGS)" \
-		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
-		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGE2_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGE2_TFLAGS)"  \
-		$(TARGET-stage2-libelf)
-
-maybe-clean-stage2-libelf: clean-stage2-libelf
-clean-stage2: clean-stage2-libelf
-clean-stage2-libelf:
-	@if [ $(current_stage) = stage2 ]; then \
-	  [ -f $(HOST_SUBDIR)/libelf/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage2-libelf/Makefile ] || exit 0; \
-	  $(MAKE) stage2-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libelf-bootstrap
-
-
-.PHONY: all-stage3-libelf maybe-all-stage3-libelf
-.PHONY: clean-stage3-libelf maybe-clean-stage3-libelf
-maybe-all-stage3-libelf:
-maybe-clean-stage3-libelf:
-@if libelf-bootstrap
-maybe-all-stage3-libelf: all-stage3-libelf
-all-stage3: all-stage3-libelf
-TARGET-stage3-libelf = $(TARGET-libelf)
-all-stage3-libelf: configure-stage3-libelf
-	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE3_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libelf && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE3_CFLAGS)" \
-		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
-		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGE3_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGE3_TFLAGS)"  \
-		$(TARGET-stage3-libelf)
-
-maybe-clean-stage3-libelf: clean-stage3-libelf
-clean-stage3: clean-stage3-libelf
-clean-stage3-libelf:
-	@if [ $(current_stage) = stage3 ]; then \
-	  [ -f $(HOST_SUBDIR)/libelf/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage3-libelf/Makefile ] || exit 0; \
-	  $(MAKE) stage3-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libelf-bootstrap
-
-
-.PHONY: all-stage4-libelf maybe-all-stage4-libelf
-.PHONY: clean-stage4-libelf maybe-clean-stage4-libelf
-maybe-all-stage4-libelf:
-maybe-clean-stage4-libelf:
-@if libelf-bootstrap
-maybe-all-stage4-libelf: all-stage4-libelf
-all-stage4: all-stage4-libelf
-TARGET-stage4-libelf = $(TARGET-libelf)
-all-stage4-libelf: configure-stage4-libelf
-	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE4_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libelf && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGE4_CFLAGS)" \
-		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
-		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGE4_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGE4_TFLAGS)"  \
-		$(TARGET-stage4-libelf)
-
-maybe-clean-stage4-libelf: clean-stage4-libelf
-clean-stage4: clean-stage4-libelf
-clean-stage4-libelf:
-	@if [ $(current_stage) = stage4 ]; then \
-	  [ -f $(HOST_SUBDIR)/libelf/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stage4-libelf/Makefile ] || exit 0; \
-	  $(MAKE) stage4-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libelf-bootstrap
-
-
-.PHONY: all-stageprofile-libelf maybe-all-stageprofile-libelf
-.PHONY: clean-stageprofile-libelf maybe-clean-stageprofile-libelf
-maybe-all-stageprofile-libelf:
-maybe-clean-stageprofile-libelf:
-@if libelf-bootstrap
-maybe-all-stageprofile-libelf: all-stageprofile-libelf
-all-stageprofile: all-stageprofile-libelf
-TARGET-stageprofile-libelf = $(TARGET-libelf)
-all-stageprofile-libelf: configure-stageprofile-libelf
-	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEprofile_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libelf && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGEprofile_CFLAGS)" \
-		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
-		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGEprofile_TFLAGS)"  \
-		$(TARGET-stageprofile-libelf)
-
-maybe-clean-stageprofile-libelf: clean-stageprofile-libelf
-clean-stageprofile: clean-stageprofile-libelf
-clean-stageprofile-libelf:
-	@if [ $(current_stage) = stageprofile ]; then \
-	  [ -f $(HOST_SUBDIR)/libelf/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stageprofile-libelf/Makefile ] || exit 0; \
-	  $(MAKE) stageprofile-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libelf-bootstrap
-
-
-.PHONY: all-stagetrain-libelf maybe-all-stagetrain-libelf
-.PHONY: clean-stagetrain-libelf maybe-clean-stagetrain-libelf
-maybe-all-stagetrain-libelf:
-maybe-clean-stagetrain-libelf:
-@if libelf-bootstrap
-maybe-all-stagetrain-libelf: all-stagetrain-libelf
-all-stagetrain: all-stagetrain-libelf
-TARGET-stagetrain-libelf = $(TARGET-libelf)
-all-stagetrain-libelf: configure-stagetrain-libelf
-	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEtrain_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libelf && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGEtrain_CFLAGS)" \
-		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
-		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGEtrain_TFLAGS)"  \
-		$(TARGET-stagetrain-libelf)
-
-maybe-clean-stagetrain-libelf: clean-stagetrain-libelf
-clean-stagetrain: clean-stagetrain-libelf
-clean-stagetrain-libelf:
-	@if [ $(current_stage) = stagetrain ]; then \
-	  [ -f $(HOST_SUBDIR)/libelf/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stagetrain-libelf/Makefile ] || exit 0; \
-	  $(MAKE) stagetrain-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libelf-bootstrap
-
-
-.PHONY: all-stagefeedback-libelf maybe-all-stagefeedback-libelf
-.PHONY: clean-stagefeedback-libelf maybe-clean-stagefeedback-libelf
-maybe-all-stagefeedback-libelf:
-maybe-clean-stagefeedback-libelf:
-@if libelf-bootstrap
-maybe-all-stagefeedback-libelf: all-stagefeedback-libelf
-all-stagefeedback: all-stagefeedback-libelf
-TARGET-stagefeedback-libelf = $(TARGET-libelf)
-all-stagefeedback-libelf: configure-stagefeedback-libelf
-	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libelf && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGEfeedback_CFLAGS)" \
-		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
-		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGEfeedback_TFLAGS)"  \
-		$(TARGET-stagefeedback-libelf)
-
-maybe-clean-stagefeedback-libelf: clean-stagefeedback-libelf
-clean-stagefeedback: clean-stagefeedback-libelf
-clean-stagefeedback-libelf:
-	@if [ $(current_stage) = stagefeedback ]; then \
-	  [ -f $(HOST_SUBDIR)/libelf/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stagefeedback-libelf/Makefile ] || exit 0; \
-	  $(MAKE) stagefeedback-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libelf-bootstrap
-
-
-.PHONY: all-stageautoprofile-libelf maybe-all-stageautoprofile-libelf
-.PHONY: clean-stageautoprofile-libelf maybe-clean-stageautoprofile-libelf
-maybe-all-stageautoprofile-libelf:
-maybe-clean-stageautoprofile-libelf:
-@if libelf-bootstrap
-maybe-all-stageautoprofile-libelf: all-stageautoprofile-libelf
-all-stageautoprofile: all-stageautoprofile-libelf
-TARGET-stageautoprofile-libelf = $(TARGET-libelf)
-all-stageautoprofile-libelf: configure-stageautoprofile-libelf
-	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libelf && \
-	$$s/gcc/config/i386/$(AUTO_PROFILE) \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
-		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
-		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGEautoprofile_TFLAGS)"  \
-		$(TARGET-stageautoprofile-libelf)
-
-maybe-clean-stageautoprofile-libelf: clean-stageautoprofile-libelf
-clean-stageautoprofile: clean-stageautoprofile-libelf
-clean-stageautoprofile-libelf:
-	@if [ $(current_stage) = stageautoprofile ]; then \
-	  [ -f $(HOST_SUBDIR)/libelf/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stageautoprofile-libelf/Makefile ] || exit 0; \
-	  $(MAKE) stageautoprofile-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libelf-bootstrap
-
-
-.PHONY: all-stageautofeedback-libelf maybe-all-stageautofeedback-libelf
-.PHONY: clean-stageautofeedback-libelf maybe-clean-stageautofeedback-libelf
-maybe-all-stageautofeedback-libelf:
-maybe-clean-stageautofeedback-libelf:
-@if libelf-bootstrap
-maybe-all-stageautofeedback-libelf: all-stageautofeedback-libelf
-all-stageautofeedback: all-stageautofeedback-libelf
-TARGET-stageautofeedback-libelf = $(TARGET-libelf)
-all-stageautofeedback-libelf: configure-stageautofeedback-libelf
-	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
-	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/libelf && \
-	 \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
-		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
-		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
-		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
-		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
-		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
-		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
-		TFLAGS="$(STAGEautofeedback_TFLAGS)" PERF_DATA=perf.data \
-		$(TARGET-stageautofeedback-libelf)
-
-maybe-clean-stageautofeedback-libelf: clean-stageautofeedback-libelf
-clean-stageautofeedback: clean-stageautofeedback-libelf
-clean-stageautofeedback-libelf:
-	@if [ $(current_stage) = stageautofeedback ]; then \
-	  [ -f $(HOST_SUBDIR)/libelf/Makefile ] || exit 0; \
-	else \
-	  [ -f $(HOST_SUBDIR)/stageautofeedback-libelf/Makefile ] || exit 0; \
-	  $(MAKE) stageautofeedback-start; \
-	fi; \
-	cd $(HOST_SUBDIR)/libelf && \
-	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif libelf-bootstrap
-
-
-
-
-
-.PHONY: check-libelf maybe-check-libelf
-maybe-check-libelf:
-@if libelf
-maybe-check-libelf: check-libelf
-
-check-libelf:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) $(EXTRA_HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(FLAGS_TO_PASS)  $(EXTRA_BOOTSTRAP_FLAGS) check)
-
-@endif libelf
-
-.PHONY: install-libelf maybe-install-libelf
-maybe-install-libelf:
-@if libelf
-maybe-install-libelf: install-libelf
-
-install-libelf:
-
-@endif libelf
-
-.PHONY: install-strip-libelf maybe-install-strip-libelf
-maybe-install-strip-libelf:
-@if libelf
-maybe-install-strip-libelf: install-strip-libelf
-
-install-strip-libelf:
-
-@endif libelf
-
-# Other targets (info, dvi, pdf, etc.)
-
-.PHONY: maybe-info-libelf info-libelf
-maybe-info-libelf:
-@if libelf
-maybe-info-libelf: info-libelf
-
-info-libelf: \
-    configure-libelf 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing info in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          info) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-dvi-libelf dvi-libelf
-maybe-dvi-libelf:
-@if libelf
-maybe-dvi-libelf: dvi-libelf
-
-dvi-libelf: \
-    configure-libelf 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing dvi in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          dvi) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-pdf-libelf pdf-libelf
-maybe-pdf-libelf:
-@if libelf
-maybe-pdf-libelf: pdf-libelf
-
-pdf-libelf: \
-    configure-libelf 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing pdf in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          pdf) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-html-libelf html-libelf
-maybe-html-libelf:
-@if libelf
-maybe-html-libelf: html-libelf
-
-html-libelf: \
-    configure-libelf 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing html in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          html) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-TAGS-libelf TAGS-libelf
-maybe-TAGS-libelf:
-@if libelf
-maybe-TAGS-libelf: TAGS-libelf
-
-TAGS-libelf: \
-    configure-libelf 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing TAGS in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          TAGS) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-install-info-libelf install-info-libelf
-maybe-install-info-libelf:
-@if libelf
-maybe-install-info-libelf: install-info-libelf
-
-install-info-libelf: \
-    configure-libelf \
-    info-libelf 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-info in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-info) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-install-dvi-libelf install-dvi-libelf
-maybe-install-dvi-libelf:
-@if libelf
-maybe-install-dvi-libelf: install-dvi-libelf
-
-install-dvi-libelf: \
-    configure-libelf \
-    dvi-libelf 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-dvi in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-dvi) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-install-pdf-libelf install-pdf-libelf
-maybe-install-pdf-libelf:
-@if libelf
-maybe-install-pdf-libelf: install-pdf-libelf
-
-install-pdf-libelf: \
-    configure-libelf \
-    pdf-libelf 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-pdf in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-pdf) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-install-html-libelf install-html-libelf
-maybe-install-html-libelf:
-@if libelf
-maybe-install-html-libelf: install-html-libelf
-
-install-html-libelf: \
-    configure-libelf \
-    html-libelf 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing install-html in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          install-html) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-installcheck-libelf installcheck-libelf
-maybe-installcheck-libelf:
-@if libelf
-maybe-installcheck-libelf: installcheck-libelf
-
-installcheck-libelf: \
-    configure-libelf 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing installcheck in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          installcheck) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-mostlyclean-libelf mostlyclean-libelf
-maybe-mostlyclean-libelf:
-@if libelf
-maybe-mostlyclean-libelf: mostlyclean-libelf
-
-mostlyclean-libelf: 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing mostlyclean in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          mostlyclean) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-clean-libelf clean-libelf
-maybe-clean-libelf:
-@if libelf
-maybe-clean-libelf: clean-libelf
-
-clean-libelf: 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing clean in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          clean) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-distclean-libelf distclean-libelf
-maybe-distclean-libelf:
-@if libelf
-maybe-distclean-libelf: distclean-libelf
-
-distclean-libelf: 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing distclean in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          distclean) \
-	  || exit 1
-
-@endif libelf
-
-.PHONY: maybe-maintainer-clean-libelf maintainer-clean-libelf
-maybe-maintainer-clean-libelf:
-@if libelf
-maybe-maintainer-clean-libelf: maintainer-clean-libelf
-
-maintainer-clean-libelf: 
-	@[ -f ./libelf/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing maintainer-clean in libelf"; \
-	(cd $(HOST_SUBDIR)/libelf && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          maintainer-clean) \
-	  || exit 1
-
-@endif libelf
 
 
 
@@ -61875,11 +60705,6 @@ stage1-start::
 	  mkdir stage1-isl; \
 	mv stage1-isl isl
 @endif isl
-@if libelf
-	@cd $(HOST_SUBDIR); [ -d stage1-libelf ] || \
-	  mkdir stage1-libelf; \
-	mv stage1-libelf libelf
-@endif libelf
 @if gold
 	@cd $(HOST_SUBDIR); [ -d stage1-gold ] || \
 	  mkdir stage1-gold; \
@@ -62000,11 +60825,6 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv isl stage1-isl; \
 	fi
 @endif isl
-@if libelf
-	@if test -d $(HOST_SUBDIR)/libelf; then \
-	  cd $(HOST_SUBDIR); mv libelf stage1-libelf; \
-	fi
-@endif libelf
 @if gold
 	@if test -d $(HOST_SUBDIR)/gold; then \
 	  cd $(HOST_SUBDIR); mv gold stage1-gold; \
@@ -62178,12 +60998,6 @@ stage2-start::
 	mv stage2-isl isl; \
 	mv stage1-isl prev-isl || test -f stage1-lean 
 @endif isl
-@if libelf
-	@cd $(HOST_SUBDIR); [ -d stage2-libelf ] || \
-	  mkdir stage2-libelf; \
-	mv stage2-libelf libelf; \
-	mv stage1-libelf prev-libelf || test -f stage1-lean 
-@endif libelf
 @if gold
 	@cd $(HOST_SUBDIR); [ -d stage2-gold ] || \
 	  mkdir stage2-gold; \
@@ -62328,12 +61142,6 @@ stage2-end::
 	  mv prev-isl stage1-isl; : ; \
 	fi
 @endif isl
-@if libelf
-	@if test -d $(HOST_SUBDIR)/libelf; then \
-	  cd $(HOST_SUBDIR); mv libelf stage2-libelf; \
-	  mv prev-libelf stage1-libelf; : ; \
-	fi
-@endif libelf
 @if gold
 	@if test -d $(HOST_SUBDIR)/gold; then \
 	  cd $(HOST_SUBDIR); mv gold stage2-gold; \
@@ -62544,12 +61352,6 @@ stage3-start::
 	mv stage3-isl isl; \
 	mv stage2-isl prev-isl || test -f stage2-lean 
 @endif isl
-@if libelf
-	@cd $(HOST_SUBDIR); [ -d stage3-libelf ] || \
-	  mkdir stage3-libelf; \
-	mv stage3-libelf libelf; \
-	mv stage2-libelf prev-libelf || test -f stage2-lean 
-@endif libelf
 @if gold
 	@cd $(HOST_SUBDIR); [ -d stage3-gold ] || \
 	  mkdir stage3-gold; \
@@ -62694,12 +61496,6 @@ stage3-end::
 	  mv prev-isl stage2-isl; : ; \
 	fi
 @endif isl
-@if libelf
-	@if test -d $(HOST_SUBDIR)/libelf; then \
-	  cd $(HOST_SUBDIR); mv libelf stage3-libelf; \
-	  mv prev-libelf stage2-libelf; : ; \
-	fi
-@endif libelf
 @if gold
 	@if test -d $(HOST_SUBDIR)/gold; then \
 	  cd $(HOST_SUBDIR); mv gold stage3-gold; \
@@ -62966,12 +61762,6 @@ stage4-start::
 	mv stage4-isl isl; \
 	mv stage3-isl prev-isl || test -f stage3-lean 
 @endif isl
-@if libelf
-	@cd $(HOST_SUBDIR); [ -d stage4-libelf ] || \
-	  mkdir stage4-libelf; \
-	mv stage4-libelf libelf; \
-	mv stage3-libelf prev-libelf || test -f stage3-lean 
-@endif libelf
 @if gold
 	@cd $(HOST_SUBDIR); [ -d stage4-gold ] || \
 	  mkdir stage4-gold; \
@@ -63116,12 +61906,6 @@ stage4-end::
 	  mv prev-isl stage3-isl; : ; \
 	fi
 @endif isl
-@if libelf
-	@if test -d $(HOST_SUBDIR)/libelf; then \
-	  cd $(HOST_SUBDIR); mv libelf stage4-libelf; \
-	  mv prev-libelf stage3-libelf; : ; \
-	fi
-@endif libelf
 @if gold
 	@if test -d $(HOST_SUBDIR)/gold; then \
 	  cd $(HOST_SUBDIR); mv gold stage4-gold; \
@@ -63376,12 +62160,6 @@ stageprofile-start::
 	mv stageprofile-isl isl; \
 	mv stage1-isl prev-isl || test -f stage1-lean 
 @endif isl
-@if libelf
-	@cd $(HOST_SUBDIR); [ -d stageprofile-libelf ] || \
-	  mkdir stageprofile-libelf; \
-	mv stageprofile-libelf libelf; \
-	mv stage1-libelf prev-libelf || test -f stage1-lean 
-@endif libelf
 @if gold
 	@cd $(HOST_SUBDIR); [ -d stageprofile-gold ] || \
 	  mkdir stageprofile-gold; \
@@ -63526,12 +62304,6 @@ stageprofile-end::
 	  mv prev-isl stage1-isl; : ; \
 	fi
 @endif isl
-@if libelf
-	@if test -d $(HOST_SUBDIR)/libelf; then \
-	  cd $(HOST_SUBDIR); mv libelf stageprofile-libelf; \
-	  mv prev-libelf stage1-libelf; : ; \
-	fi
-@endif libelf
 @if gold
 	@if test -d $(HOST_SUBDIR)/gold; then \
 	  cd $(HOST_SUBDIR); mv gold stageprofile-gold; \
@@ -63719,12 +62491,6 @@ stagetrain-start::
 	mv stagetrain-isl isl; \
 	mv stageprofile-isl prev-isl || test -f stageprofile-lean 
 @endif isl
-@if libelf
-	@cd $(HOST_SUBDIR); [ -d stagetrain-libelf ] || \
-	  mkdir stagetrain-libelf; \
-	mv stagetrain-libelf libelf; \
-	mv stageprofile-libelf prev-libelf || test -f stageprofile-lean 
-@endif libelf
 @if gold
 	@cd $(HOST_SUBDIR); [ -d stagetrain-gold ] || \
 	  mkdir stagetrain-gold; \
@@ -63869,12 +62635,6 @@ stagetrain-end::
 	  mv prev-isl stageprofile-isl; : ; \
 	fi
 @endif isl
-@if libelf
-	@if test -d $(HOST_SUBDIR)/libelf; then \
-	  cd $(HOST_SUBDIR); mv libelf stagetrain-libelf; \
-	  mv prev-libelf stageprofile-libelf; : ; \
-	fi
-@endif libelf
 @if gold
 	@if test -d $(HOST_SUBDIR)/gold; then \
 	  cd $(HOST_SUBDIR); mv gold stagetrain-gold; \
@@ -64062,12 +62822,6 @@ stagefeedback-start::
 	mv stagefeedback-isl isl; \
 	mv stagetrain-isl prev-isl || test -f stagetrain-lean 
 @endif isl
-@if libelf
-	@cd $(HOST_SUBDIR); [ -d stagefeedback-libelf ] || \
-	  mkdir stagefeedback-libelf; \
-	mv stagefeedback-libelf libelf; \
-	mv stagetrain-libelf prev-libelf || test -f stagetrain-lean 
-@endif libelf
 @if gold
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-gold ] || \
 	  mkdir stagefeedback-gold; \
@@ -64212,12 +62966,6 @@ stagefeedback-end::
 	  mv prev-isl stagetrain-isl; : ; \
 	fi
 @endif isl
-@if libelf
-	@if test -d $(HOST_SUBDIR)/libelf; then \
-	  cd $(HOST_SUBDIR); mv libelf stagefeedback-libelf; \
-	  mv prev-libelf stagetrain-libelf; : ; \
-	fi
-@endif libelf
 @if gold
 	@if test -d $(HOST_SUBDIR)/gold; then \
 	  cd $(HOST_SUBDIR); mv gold stagefeedback-gold; \
@@ -64428,12 +63176,6 @@ stageautoprofile-start::
 	mv stageautoprofile-isl isl; \
 	mv stage1-isl prev-isl || test -f stage1-lean 
 @endif isl
-@if libelf
-	@cd $(HOST_SUBDIR); [ -d stageautoprofile-libelf ] || \
-	  mkdir stageautoprofile-libelf; \
-	mv stageautoprofile-libelf libelf; \
-	mv stage1-libelf prev-libelf || test -f stage1-lean 
-@endif libelf
 @if gold
 	@cd $(HOST_SUBDIR); [ -d stageautoprofile-gold ] || \
 	  mkdir stageautoprofile-gold; \
@@ -64578,12 +63320,6 @@ stageautoprofile-end::
 	  mv prev-isl stage1-isl; : ; \
 	fi
 @endif isl
-@if libelf
-	@if test -d $(HOST_SUBDIR)/libelf; then \
-	  cd $(HOST_SUBDIR); mv libelf stageautoprofile-libelf; \
-	  mv prev-libelf stage1-libelf; : ; \
-	fi
-@endif libelf
 @if gold
 	@if test -d $(HOST_SUBDIR)/gold; then \
 	  cd $(HOST_SUBDIR); mv gold stageautoprofile-gold; \
@@ -64771,12 +63507,6 @@ stageautofeedback-start::
 	mv stageautofeedback-isl isl; \
 	mv stageautoprofile-isl prev-isl || test -f stageautoprofile-lean 
 @endif isl
-@if libelf
-	@cd $(HOST_SUBDIR); [ -d stageautofeedback-libelf ] || \
-	  mkdir stageautofeedback-libelf; \
-	mv stageautofeedback-libelf libelf; \
-	mv stageautoprofile-libelf prev-libelf || test -f stageautoprofile-lean 
-@endif libelf
 @if gold
 	@cd $(HOST_SUBDIR); [ -d stageautofeedback-gold ] || \
 	  mkdir stageautofeedback-gold; \
@@ -64921,12 +63651,6 @@ stageautofeedback-end::
 	  mv prev-isl stageautoprofile-isl; : ; \
 	fi
 @endif isl
-@if libelf
-	@if test -d $(HOST_SUBDIR)/libelf; then \
-	  cd $(HOST_SUBDIR); mv libelf stageautofeedback-libelf; \
-	  mv prev-libelf stageautoprofile-libelf; : ; \
-	fi
-@endif libelf
 @if gold
 	@if test -d $(HOST_SUBDIR)/gold; then \
 	  cd $(HOST_SUBDIR); mv gold stageautofeedback-gold; \
@@ -65361,16 +64085,6 @@ configure-stagetrain-gcc: maybe-all-stagetrain-gold
 configure-stagefeedback-gcc: maybe-all-stagefeedback-gold
 configure-stageautoprofile-gcc: maybe-all-stageautoprofile-gold
 configure-stageautofeedback-gcc: maybe-all-stageautofeedback-gold
-configure-gcc: maybe-all-libelf
-configure-stage1-gcc: maybe-all-stage1-libelf
-configure-stage2-gcc: maybe-all-stage2-libelf
-configure-stage3-gcc: maybe-all-stage3-libelf
-configure-stage4-gcc: maybe-all-stage4-libelf
-configure-stageprofile-gcc: maybe-all-stageprofile-libelf
-configure-stagetrain-gcc: maybe-all-stagetrain-libelf
-configure-stagefeedback-gcc: maybe-all-stagefeedback-libelf
-configure-stageautoprofile-gcc: maybe-all-stageautoprofile-libelf
-configure-stageautofeedback-gcc: maybe-all-stageautofeedback-libelf
 configure-gcc: maybe-all-libiconv
 configure-stage1-gcc: maybe-all-stage1-libiconv
 configure-stage2-gcc: maybe-all-stage2-libiconv
@@ -66523,6 +65237,7 @@ all-target-liboffloadmic: maybe-all-target-libgomp
 configure-target-newlib: maybe-all-binutils
 configure-target-newlib: maybe-all-ld
 configure-target-libgfortran: maybe-all-target-libbacktrace
+configure-target-libgo: maybe-all-target-libbacktrace
 @endunless gcc-bootstrap
 
 # Dependencies for target modules on other target modules are

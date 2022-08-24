@@ -55,6 +55,9 @@ along with this program; see the file COPYING3.  If not see
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#if HAVE_PTHREAD_LOCKING
+#include <pthread.h>
+#endif
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
@@ -136,6 +139,7 @@ struct plugin_file_info
   void *handle;
   struct plugin_symtab symtab;
   struct plugin_symtab conflicts;
+  bool skip_file;
 };
 
 /* List item with name of the file with offloading.  */
@@ -156,15 +160,30 @@ enum symbol_style
   ss_uscore,	/* Underscore prefix all symbols.  */
 };
 
+#if HAVE_PTHREAD_LOCKING
+/* Plug-in mutex.  */
+static pthread_mutex_t plugin_lock;
+
+#define LOCK_SECTION pthread_mutex_lock (&plugin_lock)
+#define UNLOCK_SECTION pthread_mutex_unlock (&plugin_lock)
+#else
+#define LOCK_SECTION
+#define UNLOCK_SECTION
+#endif
+
 static char *arguments_file_name;
 static ld_plugin_register_claim_file register_claim_file;
 static ld_plugin_register_all_symbols_read register_all_symbols_read;
-static ld_plugin_get_symbols get_symbols, get_symbols_v2;
+static ld_plugin_get_symbols get_symbols, get_symbols_v2, get_symbols_v3;
 static ld_plugin_register_cleanup register_cleanup;
 static ld_plugin_add_input_file add_input_file;
 static ld_plugin_add_input_library add_input_library;
 static ld_plugin_message message;
 static ld_plugin_add_symbols add_symbols, add_symbols_v2;
+static ld_plugin_get_api_version get_api_version;
+
+/* By default, use version LAPI_V0 if there is not negotiation.  */
+static enum linker_api_version api_version = LAPI_V0;
 
 static struct plugin_file_info *claimed_files = NULL;
 static unsigned int num_claimed_files = 0;
@@ -547,14 +566,12 @@ free_symtab (struct plugin_symtab *symtab)
 static void
 write_resolution (void)
 {
-  unsigned int i;
+  unsigned int i, included_files = 0;
   FILE *f;
 
   check (resolution_file, LDPL_FATAL, "resolution file not specified");
   f = fopen (resolution_file, "w");
   check (f, LDPL_FATAL, "could not open file");
-
-  fprintf (f, "%d\n", num_claimed_files);
 
   for (i = 0; i < num_claimed_files; i++)
     {
@@ -563,13 +580,38 @@ write_resolution (void)
       struct ld_plugin_symbol *syms = symtab->syms;
 
       /* Version 2 of API supports IRONLY_EXP resolution that is
-         accepted by GCC-4.7 and newer.  */
-      if (get_symbols_v2)
+	 accepted by GCC-4.7 and newer.
+	 Version 3 can return LDPS_NO_SYMS that means the object
+	 will not be used at all.  */
+      if (get_symbols_v3)
+	{
+	  enum ld_plugin_status status
+	    = get_symbols_v3 (info->handle, symtab->nsyms, syms);
+	  if (status == LDPS_NO_SYMS)
+	    {
+	      info->skip_file = true;
+	      continue;
+	    }
+	}
+      else if (get_symbols_v2)
         get_symbols_v2 (info->handle, symtab->nsyms, syms);
       else
         get_symbols (info->handle, symtab->nsyms, syms);
 
+      ++included_files;
+
       finish_conflict_resolution (symtab, &info->conflicts);
+    }
+
+  fprintf (f, "%d\n", included_files);
+
+  for (i = 0; i < num_claimed_files; i++)
+    {
+      struct plugin_file_info *info = &claimed_files[i];
+      struct plugin_symtab *symtab = &info->symtab;
+
+      if (info->skip_file)
+	continue;
 
       fprintf (f, "%s %d\n", info->name, symtab->nsyms + info->conflicts.nsyms);
       dump_symtab (f, symtab);
@@ -833,7 +875,8 @@ all_symbols_read_handler (void)
     {
       struct plugin_file_info *info = &claimed_files[i];
 
-      *lto_arg_ptr++ = info->name;
+      if (!info->skip_file)
+	*lto_arg_ptr++ = info->name;
     }
 
   *lto_arg_ptr++ = NULL;
@@ -1237,15 +1280,18 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
 			      lto_file.symtab.syms);
       check (status == LDPS_OK, LDPL_FATAL, "could not add symbols");
 
+      LOCK_SECTION;
       num_claimed_files++;
       claimed_files =
 	xrealloc (claimed_files,
 		  num_claimed_files * sizeof (struct plugin_file_info));
       claimed_files[num_claimed_files - 1] = lto_file;
+      UNLOCK_SECTION;
 
       *claimed = 1;
     }
 
+  LOCK_SECTION;
   if (offload_files == NULL)
     {
       /* Add dummy item to the start of the list.  */
@@ -1309,10 +1355,14 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
       num_offload_files++;
     }
 
+  UNLOCK_SECTION;
+
   goto cleanup;
 
  err:
+  LOCK_SECTION;
   non_claimed_files++;
+  UNLOCK_SECTION;
   free (lto_file.name);
 
  cleanup:
@@ -1382,6 +1432,43 @@ process_option (const char *option)
   verbose = verbose || debug;
 }
 
+/* Negotiate linker API version.  */
+
+static void
+negotiate_api_version (void)
+{
+  const char *linker_identifier;
+  const char *linker_version;
+
+  enum linker_api_version supported_api = LAPI_V0;
+#if HAVE_PTHREAD_LOCKING
+  supported_api = LAPI_V1;
+#endif
+
+  api_version = get_api_version ("GCC", BASE_VERSION, LAPI_V0,
+				 supported_api, &linker_identifier, &linker_version);
+  if (api_version > supported_api)
+    {
+      fprintf (stderr, "requested an unsupported API version (%d)\n", api_version);
+      abort ();
+    }
+
+  switch (api_version)
+    {
+    case LAPI_V0:
+      break;
+    case LAPI_V1:
+      check (get_symbols_v3, LDPL_FATAL,
+	     "get_symbols_v3 required for API version 1");
+      check (add_symbols_v2, LDPL_FATAL,
+	     "add_symbols_v2 required for API version 1");
+      break;
+    default:
+      fprintf (stderr, "unsupported API version (%d)\n", api_version);
+      abort ();
+    }
+}
+
 /* Called by a linker after loading the plugin. TV is the transfer vector. */
 
 enum ld_plugin_status
@@ -1389,6 +1476,14 @@ onload (struct ld_plugin_tv *tv)
 {
   struct ld_plugin_tv *p;
   enum ld_plugin_status status;
+
+#if HAVE_PTHREAD_LOCKING
+  if (pthread_mutex_init (&plugin_lock, NULL) != 0)
+    {
+      fprintf (stderr, "mutex init failed\n");
+      abort ();
+    }
+#endif
 
   p = tv;
   while (p->tv_tag)
@@ -1409,6 +1504,9 @@ onload (struct ld_plugin_tv *tv)
 	  break;
 	case LDPT_REGISTER_ALL_SYMBOLS_READ_HOOK:
 	  register_all_symbols_read = p->tv_u.tv_register_all_symbols_read;
+	  break;
+	case LDPT_GET_SYMBOLS_V3:
+	  get_symbols_v3 = p->tv_u.tv_get_symbols;
 	  break;
 	case LDPT_GET_SYMBOLS_V2:
 	  get_symbols_v2 = p->tv_u.tv_get_symbols;
@@ -1439,11 +1537,17 @@ onload (struct ld_plugin_tv *tv)
 	  /* We only use this to make user-friendly temp file names.  */
 	  link_output_name = p->tv_u.tv_string;
 	  break;
+	case LDPT_GET_API_VERSION:
+	  get_api_version = p->tv_u.tv_get_api_version;
+	  break;
 	default:
 	  break;
 	}
       p++;
     }
+
+  if (get_api_version)
+    negotiate_api_version ();
 
   check (register_claim_file, LDPL_FATAL, "register_claim_file not found");
   check (add_symbols, LDPL_FATAL, "add_symbols not found");

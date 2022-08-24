@@ -1764,6 +1764,9 @@ Type::needs_specific_type_functions(Gogo* gogo)
 Named_object*
 Type::hash_function(Gogo* gogo, Function_type* hash_fntype)
 {
+  if (this->named_type() != NULL)
+    go_assert(!this->named_type()->is_alias());
+
   if (!this->is_comparable())
     return NULL;
 
@@ -2067,6 +2070,9 @@ Type::write_identity_hash(Gogo* gogo, int64_t size)
 Named_object*
 Type::equal_function(Gogo* gogo, Named_type* name, Function_type* equal_fntype)
 {
+  if (this->named_type() != NULL)
+    go_assert(!this->named_type()->is_alias());
+
   // If the unaliased type is not a named type, then the type does not
   // have a name after all.
   if (name != NULL)
@@ -4648,8 +4654,11 @@ class Sink_type : public Type
   { return false; }
 
   Btype*
-  do_get_backend(Gogo*)
-  { go_unreachable(); }
+  do_get_backend(Gogo* gogo)
+  {
+    go_assert(saw_errors());
+    return gogo->backend()->error_type();
+  }
 
   Expression*
   do_type_descriptor(Gogo*, Named_type*)
@@ -6700,7 +6709,8 @@ Struct_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
       subkey = Expression::make_cast(key_arg_type, subkey, bloc);
 
       // Get the hash function to use for the type of this field.
-      Named_object* hash_fn = pf->type()->hash_function(gogo, hash_fntype);
+      Named_object* hash_fn =
+	pf->type()->unalias()->hash_function(gogo, hash_fntype);
 
       // Call the hash function for the field, passing retval as the seed.
       ref = Expression::make_temporary_reference(retval, bloc);
@@ -6957,7 +6967,7 @@ Struct_type::do_import(Import* imp)
 
 bool
 Struct_type::can_write_to_c_header(
-    std::vector<const Named_object*>* requires,
+    std::vector<const Named_object*>* needs,
     std::vector<const Named_object*>* declare) const
 {
   const Struct_field_list* fields = this->fields_;
@@ -6968,7 +6978,7 @@ Struct_type::can_write_to_c_header(
        p != fields->end();
        ++p)
     {
-      if (!this->can_write_type_to_c_header(p->type(), requires, declare))
+      if (!this->can_write_type_to_c_header(p->type(), needs, declare))
 	return false;
       if (Gogo::message_name(p->field_name()) == "_")
 	sinks++;
@@ -6983,7 +6993,7 @@ Struct_type::can_write_to_c_header(
 bool
 Struct_type::can_write_type_to_c_header(
     const Type* t,
-    std::vector<const Named_object*>* requires,
+    std::vector<const Named_object*>* needs,
     std::vector<const Named_object*>* declare) const
 {
   t = t->forwarded();
@@ -7017,13 +7027,13 @@ Struct_type::can_write_type_to_c_header(
       return true;
 
     case TYPE_STRUCT:
-      return t->struct_type()->can_write_to_c_header(requires, declare);
+      return t->struct_type()->can_write_to_c_header(needs, declare);
 
     case TYPE_ARRAY:
       if (t->is_slice_type())
 	return true;
       return this->can_write_type_to_c_header(t->array_type()->element_type(),
-					      requires, declare);
+					      needs, declare);
 
     case TYPE_NAMED:
       {
@@ -7039,10 +7049,10 @@ Struct_type::can_write_type_to_c_header(
 	    // We will accept empty struct fields, but not print them.
 	    if (t->struct_type()->total_field_count() == 0)
 	      return true;
-	    requires->push_back(no);
-	    return t->struct_type()->can_write_to_c_header(requires, declare);
+	    needs->push_back(no);
+	    return t->struct_type()->can_write_to_c_header(needs, declare);
 	  }
-	return this->can_write_type_to_c_header(t->base(), requires, declare);
+	return this->can_write_type_to_c_header(t->base(), needs, declare);
       }
 
     case TYPE_CALL_MULTIPLE_RESULT:
@@ -7140,9 +7150,9 @@ Struct_type::write_field_to_c_header(std::ostream& os, const std::string& name,
 
     case TYPE_POINTER:
       {
-	std::vector<const Named_object*> requires;
+	std::vector<const Named_object*> needs;
 	std::vector<const Named_object*> declare;
-	if (!this->can_write_type_to_c_header(t->points_to(), &requires,
+	if (!this->can_write_type_to_c_header(t->points_to(), &needs,
 					      &declare))
 	  os << "void*";
 	else
@@ -7419,7 +7429,10 @@ bool
 Array_type::do_verify()
 {
   if (this->element_type()->is_error_type())
-    return false;
+    {
+      this->set_is_error();
+      return false;
+    }
   if (!this->verify_length())
     {
       this->length_ = Expression::make_error(this->length_->location());
@@ -7553,8 +7566,8 @@ Array_type::write_hash_function(Gogo* gogo, Function_type* hash_fntype)
   gogo->start_block(bloc);
 
   // Get the hash function for the element type.
-  Named_object* hash_fn = this->element_type_->hash_function(gogo,
-							     hash_fntype);
+  Named_object* hash_fn =
+    this->element_type_->unalias()->hash_function(gogo, hash_fntype);
 
   // Get a pointer to this element in the loop.
   Expression* subkey = Expression::make_temporary_reference(key, bloc);
@@ -8441,8 +8454,8 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   ++p;
   go_assert(p->is_field_name("hasher"));
   Function_type* hasher_fntype = p->type()->function_type();
-  Named_object* hasher_fn = this->key_type_->hash_function(gogo,
-							   hasher_fntype);
+  Named_object* hasher_fn =
+    this->key_type_->unalias()->hash_function(gogo, hasher_fntype);
   if (hasher_fn == NULL)
     vals->push_back(Expression::make_cast(hasher_fntype,
 					  Expression::make_nil(bloc),
@@ -11891,7 +11904,7 @@ Type::build_direct_iface_stub_methods(Gogo* gogo, const Type* type,
         need_stub = true;
       if (!in_heap && !m->is_value_method())
         need_stub = true;
-      if (!need_stub)
+      if (!need_stub || m->is_ambiguous())
         continue;
 
       Type* receiver_type = const_cast<Type*>(type);

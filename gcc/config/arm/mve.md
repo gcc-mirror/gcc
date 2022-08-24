@@ -18,66 +18,73 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_insn "*mve_mov<mode>"
-  [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w,w,r,w,Ux,w")
-	(match_operand:MVE_types 1 "general_operand" "w,r,w,Dn,UxUi,r,Dm,w,Ul"))]
+  [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w   , w,   r,Ux,w")
+	(match_operand:MVE_types 1 "general_operand"      " w,r,w,DnDm,UxUi,r,w, Ul"))]
   "TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT"
 {
-  if (which_alternative == 3 || which_alternative == 6)
-    {
-      int width, is_valid;
-      static char templ[40];
-
-      is_valid = simd_immediate_valid_for_move (operands[1], <MODE>mode,
-	&operands[1], &width);
-
-      gcc_assert (is_valid != 0);
-
-      if (width == 0)
-	return "vmov.f32\t%q0, %1  @ <mode>";
-      else
-	sprintf (templ, "vmov.i%d\t%%q0, %%x1  @ <mode>", width);
-      return templ;
-    }
-
-  if (which_alternative == 4 || which_alternative == 7)
-    {
-      if (<MODE>mode == V2DFmode || <MODE>mode == V2DImode || <MODE>mode == TImode)
-	{
-	  if (which_alternative == 7)
-	    output_asm_insn ("vstrw.32\t%q1, %E0", operands);
-	  else
-	    output_asm_insn ("vldrw.u32\t%q0, %E1",operands);
-	}
-      else
-	{
-	  if (which_alternative == 7)
-	    output_asm_insn ("vstr<V_sz_elem1>.<V_sz_elem>\t%q1, %E0", operands);
-	  else
-	    output_asm_insn ("vldr<V_sz_elem1>.<V_sz_elem>\t%q0, %E1", operands);
-	}
-      return "";
-    }
   switch (which_alternative)
     {
-    case 0:
+    case 0:  /* [w,w].  */
       return "vmov\t%q0, %q1";
-    case 1:
-      return "vmov\t%e0, %Q1, %R1  @ <mode>\;vmov\t%f0, %J1, %K1";
-    case 2:
-      return "vmov\t%Q0, %R0, %e1  @ <mode>\;vmov\t%J0, %K0, %f1";
-    case 5:
+
+    case 1:  /* [w,r].  */
+      return "vmov\t%e0, %Q1, %R1  %@ <mode>\;vmov\t%f0, %J1, %K1";
+
+    case 2:  /* [r,w].  */
+      return "vmov\t%Q0, %R0, %e1  %@ <mode>\;vmov\t%J0, %K0, %f1";
+
+    case 3:  /* [w,DnDm].  */
+      {
+	int width, is_valid;
+
+	is_valid = simd_immediate_valid_for_move (operands[1], <MODE>mode,
+						  &operands[1], &width);
+
+	gcc_assert (is_valid);
+
+	if (width == 0)
+	  return "vmov.f32\t%q0, %1  %@ <mode>";
+	else
+	  {
+	    const int templ_size = 40;
+	    static char templ[templ_size];
+	    if (snprintf (templ, templ_size,
+			  "vmov.i%d\t%%q0, %%x1  %%@ <mode>", width)
+		> templ_size)
+	      abort ();
+	    return templ;
+	  }
+      }
+
+    case 4:  /* [w,UxUi].  */
+      if (<MODE>mode == V2DFmode || <MODE>mode == V2DImode
+	  || <MODE>mode == TImode)
+	return "vldrw.u32\t%q0, %E1";
+      else
+	return "vldr<V_sz_elem1>.<V_sz_elem>\t%q0, %E1";
+
+    case 5:  /* [r,r].  */
       return output_move_quad (operands);
-    case 8:
+
+    case 6:  /* [Ux,w].  */
+      if (<MODE>mode == V2DFmode || <MODE>mode == V2DImode
+	  || <MODE>mode == TImode)
+	return "vstrw.32\t%q1, %E0";
+      else
+	return "vstr<V_sz_elem1>.<V_sz_elem>\t%q1, %E0";
+
+    case 7:  /* [w,Ul].  */
 	return output_move_neon (operands);
+
     default:
       gcc_unreachable ();
       return "";
     }
 }
-  [(set_attr "type" "mve_move,mve_move,mve_move,mve_move,mve_load,multiple,mve_move,mve_store,mve_load")
-   (set_attr "length" "4,8,8,4,8,8,4,4,4")
-   (set_attr "thumb2_pool_range" "*,*,*,*,1018,*,*,*,*")
-   (set_attr "neg_pool_range" "*,*,*,*,996,*,*,*,*")])
+  [(set_attr "type" "mve_move,mve_move,mve_move,mve_move,mve_load,multiple,mve_store,mve_load")
+   (set_attr "length" "4,8,8,4,4,8,4,8")
+   (set_attr "thumb2_pool_range" "*,*,*,*,1018,*,*,*")
+   (set_attr "neg_pool_range" "*,*,*,*,996,*,*,*")])
 
 (define_insn "*mve_vdup<mode>"
   [(set (match_operand:MVE_vecs 0 "s_register_operand" "=w")

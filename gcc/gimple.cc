@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "ubsan.h"
 #include "langhooks.h"
 #include "attr-fnspec.h"
 #include "ipa-modref-tree.h"
@@ -421,6 +422,27 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
   return call;
 }
 
+/* Build a gcall to __builtin_unreachable as rewritten by
+   -fsanitize=unreachable.  */
+
+gcall *
+gimple_build_builtin_unreachable (location_t loc)
+{
+  tree data = NULL_TREE;
+  tree fn = sanitize_unreachable_fn (&data, loc);
+  gcall *g;
+  if (DECL_FUNCTION_CODE (fn) != BUILT_IN_TRAP)
+    g = gimple_build_call (fn, data != NULL_TREE, data);
+  else
+    {
+      /* Instead of __builtin_trap use .TRAP, so that it doesn't
+	 need vops.  */
+      gcc_checking_assert (data == NULL_TREE);
+      g = gimple_build_call_internal (IFN_TRAP, 0);
+    }
+  gimple_set_location (g, loc);
+  return g;
+}
 
 /* Build a GIMPLE_ASSIGN statement.
 

@@ -472,6 +472,13 @@ package body Ghost is
                if Is_Ignored_Ghost_Node (Par) then
                   return True;
 
+               --  It is not possible to check correct use of Ghost entities
+               --  in generic instantiations until after the generic has been
+               --  resolved. Postpone that verification to after resolution.
+
+               elsif Nkind (Par) = N_Generic_Association then
+                  return True;
+
                --  A reference to a Ghost entity can appear within an aspect
                --  specification (SPARK RM 6.9(10)). The precise checking will
                --  occur when analyzing the corresponding pragma. We make an
@@ -508,20 +515,16 @@ package body Ghost is
                elsif Nkind (Parent (Par)) in N_Generic_Instantiation
                                            | N_Renaming_Declaration
                                            | N_Generic_Renaming_Declaration
-                   and then Par = Name (Parent (Par))
+                 and then Par = Name (Parent (Par))
                then
                   return True;
 
-               --  In the context of an instantiation, accept currently Ghost
-               --  arguments for formal subprograms, as SPARK does not provide
-               --  a way to distinguish Ghost formal parameters from non-Ghost
-               --  ones. Illegal use of such arguments in a non-Ghost context
-               --  will lead to errors inside the instantiation.
+               --  In the case of the renaming of a ghost object, the type
+               --  itself may be ghost.
 
-               elsif Nkind (Parent (Par)) = N_Generic_Association
-                 and then (Nkind (Par) in N_Has_Entity
-                            and then Present (Entity (Par))
-                            and then Is_Subprogram (Entity (Par)))
+               elsif Nkind (Parent (Par)) = N_Object_Renaming_Declaration
+                 and then (Par = Subtype_Mark (Parent (Par))
+                             or else Par = Access_Definition (Parent (Par)))
                then
                   return True;
 
@@ -670,6 +673,128 @@ package body Ghost is
          end if;
       end if;
    end Check_Ghost_Context;
+
+   ------------------------------------------------
+   -- Check_Ghost_Context_In_Generic_Association --
+   ------------------------------------------------
+
+   procedure Check_Ghost_Context_In_Generic_Association
+     (Actual : Node_Id;
+      Formal : Entity_Id)
+   is
+      function Emit_Error_On_Ghost_Reference
+        (N : Node_Id)
+         return Traverse_Result;
+      --  Determine wether N denotes a reference to a ghost entity, and if so
+      --  issue an error.
+
+      -----------------------------------
+      -- Emit_Error_On_Ghost_Reference --
+      -----------------------------------
+
+      function Emit_Error_On_Ghost_Reference
+        (N : Node_Id)
+         return Traverse_Result
+      is
+      begin
+         if Is_Entity_Name (N)
+           and then Present (Entity (N))
+           and then Is_Ghost_Entity (Entity (N))
+         then
+            Error_Msg_N ("ghost entity cannot appear in this context", N);
+            Error_Msg_Sloc := Sloc (Formal);
+            Error_Msg_NE ("\formal & was not declared as ghost #", N, Formal);
+            return Abandon;
+         end if;
+
+         return OK;
+      end Emit_Error_On_Ghost_Reference;
+
+      procedure Check_Ghost_References is
+        new Traverse_Proc (Emit_Error_On_Ghost_Reference);
+
+   --  Start of processing for Check_Ghost_Context_In_Generic_Association
+
+   begin
+      --  The context is ghost when it appears within a Ghost package or
+      --  subprogram.
+
+      if Ghost_Mode > None then
+         return;
+
+      --  The context is ghost if Formal is explicitly marked as ghost
+
+      elsif Is_Ghost_Entity (Formal) then
+         return;
+
+      else
+         Check_Ghost_References (Actual);
+      end if;
+   end Check_Ghost_Context_In_Generic_Association;
+
+   ---------------------------------------------
+   -- Check_Ghost_Formal_Procedure_Or_Package --
+   ---------------------------------------------
+
+   procedure Check_Ghost_Formal_Procedure_Or_Package
+     (N          : Node_Id;
+      Actual     : Entity_Id;
+      Formal     : Entity_Id;
+      Is_Default : Boolean := False)
+   is
+   begin
+      if not Is_Ghost_Entity (Formal) then
+         return;
+      end if;
+
+      if Present (Actual) and then Is_Ghost_Entity (Actual) then
+         return;
+      end if;
+
+      if Is_Default then
+         Error_Msg_N ("ghost procedure expected as default", N);
+         Error_Msg_NE ("\formal & is declared as ghost", N, Formal);
+
+      else
+         if Ekind (Formal) = E_Procedure then
+            Error_Msg_N ("ghost procedure expected for actual", N);
+         else
+            Error_Msg_N ("ghost package expected for actual", N);
+         end if;
+
+         Error_Msg_Sloc := Sloc (Formal);
+         Error_Msg_NE ("\formal & was declared as ghost #", N, Formal);
+      end if;
+   end Check_Ghost_Formal_Procedure_Or_Package;
+
+   ---------------------------------
+   -- Check_Ghost_Formal_Variable --
+   ---------------------------------
+
+   procedure Check_Ghost_Formal_Variable
+     (Actual     : Node_Id;
+      Formal     : Entity_Id;
+      Is_Default : Boolean := False)
+   is
+      Actual_Obj : constant Entity_Id := Get_Enclosing_Deep_Object (Actual);
+   begin
+      if not Is_Ghost_Entity (Formal) then
+         return;
+      end if;
+
+      if No (Actual_Obj)
+        or else not Is_Ghost_Entity (Actual_Obj)
+      then
+         if Is_Default then
+            Error_Msg_N ("ghost object expected as default", Actual);
+            Error_Msg_NE ("\formal & is declared as ghost", Actual, Formal);
+         else
+            Error_Msg_N ("ghost object expected for mutable actual", Actual);
+            Error_Msg_Sloc := Sloc (Formal);
+            Error_Msg_NE ("\formal & was declared as ghost #", Actual, Formal);
+         end if;
+      end if;
+   end Check_Ghost_Formal_Variable;
 
    ----------------------------
    -- Check_Ghost_Overriding --

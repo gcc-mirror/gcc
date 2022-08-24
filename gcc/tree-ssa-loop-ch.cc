@@ -45,17 +45,30 @@ along with GCC; see the file COPYING3.  If not see
    increases effectiveness of code motion optimizations, and reduces the need
    for loop preconditioning.  */
 
+/* Given a path through edge E, whose last statement is COND, return
+   the range of the solved conditional in R.  */
+
+static void
+edge_range_query (irange &r, edge e, gcond *cond, gimple_ranger &ranger)
+{
+  auto_vec<basic_block> path (2);
+  path.safe_push (e->dest);
+  path.safe_push (e->src);
+  path_range_query query (ranger, path);
+  if (!query.range_of_stmt (r, cond))
+    r.set_varying (boolean_type_node);
+}
+
 /* Return true if the condition on the first iteration of the loop can
    be statically determined.  */
 
 static bool
-entry_loop_condition_is_static (class loop *l, path_range_query *query)
+entry_loop_condition_is_static (class loop *l, gimple_ranger *ranger)
 {
   edge e = loop_preheader_edge (l);
   gcond *last = safe_dyn_cast <gcond *> (last_stmt (e->dest));
 
-  if (!last
-      || !irange::supports_p (TREE_TYPE (gimple_cond_lhs (last))))
+  if (!last)
     return false;
 
   edge true_e, false_e;
@@ -73,8 +86,7 @@ entry_loop_condition_is_static (class loop *l, path_range_query *query)
     desired_static_value = boolean_true_node;
 
   int_range<2> r;
-  query->compute_ranges (e);
-  query->range_of_stmt (r, last);
+  edge_range_query (r, e, last, *ranger);
   return r == int_range<2> (desired_static_value, desired_static_value);
 }
 
@@ -311,16 +323,16 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_ch != 0; }
+  bool gate (function *) final override { return flag_tree_ch != 0; }
   
   /* Initialize and finalize loop structures, copying headers inbetween.  */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
-  opt_pass * clone () { return new pass_ch (m_ctxt); }
+  opt_pass * clone () final override { return new pass_ch (m_ctxt); }
 
 protected:
   /* ch_base method: */
-  virtual bool process_loop_p (class loop *loop);
+  bool process_loop_p (class loop *loop) final override;
 }; // class pass_ch
 
 const pass_data pass_data_ch_vect =
@@ -347,18 +359,18 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *fun)
+  bool gate (function *fun) final override
   {
     return flag_tree_ch != 0
 	   && (flag_tree_loop_vectorize != 0 || fun->has_force_vectorize_loops);
   }
   
   /* Just copy headers, no initialization/finalization of loop structures.  */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 protected:
   /* ch_base method: */
-  virtual bool process_loop_p (class loop *loop);
+  bool process_loop_p (class loop *loop) final override;
 }; // class pass_ch_vect
 
 /* For all loops, copy the condition at the end of the loop body in front
@@ -386,7 +398,7 @@ ch_base::copy_headers (function *fun)
   auto_vec<std::pair<edge, loop_p> > copied;
 
   mark_dfs_back_edges ();
-  path_range_query *query = new path_range_query;
+  gimple_ranger *ranger = new gimple_ranger;
   for (auto loop : loops_list (cfun, 0))
     {
       int initial_limit = param_max_loop_header_insns;
@@ -410,7 +422,7 @@ ch_base::copy_headers (function *fun)
 	 iteration.  */
       if (optimize_loop_for_size_p (loop)
 	  && !loop->force_vectorize
-	  && !entry_loop_condition_is_static (loop, query))
+	  && !entry_loop_condition_is_static (loop, ranger))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
@@ -423,7 +435,7 @@ ch_base::copy_headers (function *fun)
 	candidates.safe_push (loop);
     }
   /* Do not use ranger after we change the IL and not have updated SSA.  */
-  delete query;
+  delete ranger;
 
   for (auto loop : candidates)
     {

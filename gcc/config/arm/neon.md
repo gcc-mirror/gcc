@@ -635,6 +635,13 @@
  [(set_attr "type" "neon_fp_mla_s<q>")]
 )
 
+(define_expand "<NEON_VRINT:nvrint_pattern><VCVTF:mode>2"
+  [(set (match_operand:VCVTF 0 "s_register_operand")
+        (unspec:VCVTF [(match_operand:VCVTF 1 "s_register_operand")]
+		      NEON_VRINT))]
+  "TARGET_NEON && TARGET_VFP5 && flag_unsafe_math_optimizations"
+)
+
 (define_insn "neon_vrint<NEON_VRINT:nvrint_variant><VCVTF:mode>"
   [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
         (unspec:VCVTF [(match_operand:VCVTF 1
@@ -643,6 +650,14 @@
   "TARGET_NEON && TARGET_VFP5"
   "vrint<nvrint_variant>.f32\\t%<V_reg>0, %<V_reg>1"
   [(set_attr "type" "neon_fp_round_<V_elem_ch><q>")]
+)
+
+(define_expand "l<NEON_VCVT:nvrint_pattern><su_optab><VCVTF:mode><v_cmp_result>2"
+  [(set (match_operand:<V_cmp_result> 0 "register_operand")
+	(FIXUORS:<V_cmp_result>
+	  (unspec:VCVTF [(match_operand:VCVTF 1 "register_operand")]
+			NEON_VCVT)))]
+  "TARGET_NEON && TARGET_VFP5 && flag_unsafe_math_optimizations"
 )
 
 (define_insn "neon_vcvt<NEON_VCVT:nvrint_variant><su_optab><VCVTF:mode><v_cmp_result>"
@@ -3059,7 +3074,7 @@
   "TARGET_I8MM"
 )
 
-(define_expand "neon_copysignf<mode>"
+(define_expand "copysign<mode>3"
   [(match_operand:VCVTF 0 "register_operand")
    (match_operand:VCVTF 1 "register_operand")
    (match_operand:VCVTF 2 "register_operand")]

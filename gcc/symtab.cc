@@ -894,7 +894,8 @@ symtab_node::dump_base (FILE *f)
   };
 
   fprintf (f, "%s (%s)", dump_asm_name (), name ());
-  dump_addr (f, " @", (void *)this);
+  if (dump_flags & TDF_ADDRESS)
+    dump_addr (f, " @", (void *)this);
   fprintf (f, "\n  Type: %s", symtab_type_names[type]);
 
   if (definition)

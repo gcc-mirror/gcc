@@ -34,10 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 static const struct default_options loongarch_option_optimization_table[] =
 {
   { OPT_LEVELS_ALL, OPT_fasynchronous_unwind_tables, NULL, 1 },
+  { OPT_LEVELS_1_PLUS, OPT_fsection_anchors, NULL, 1 },
   { OPT_LEVELS_NONE, 0, NULL, 0 }
 };
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS	MASK_CHECK_ZERO_DIV
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

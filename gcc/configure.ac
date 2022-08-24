@@ -1707,6 +1707,15 @@ if test $ac_cv_o_cloexec = yes; then
   [Define if O_CLOEXEC supported by fcntl.])
 fi
 
+# Check if O_NONBLOCK is defined by fcntl
+AC_CHECK_HEADERS([fcntl.h])
+AC_CHECK_DECL(O_NONBLOCK,,,[#include <fcntl.h>])
+if test $ac_cv_have_decl_O_NONBLOCK = yes; then
+  AC_DEFINE(HOST_HAS_O_NONBLOCK, 1,
+  [Define if O_NONBLOCK supported by fcntl.])
+fi
+
+
 # C++ Modules would like some networking features to provide the mapping
 # server.  You can still use modules without them though.
 # The following network-related checks could probably do with some
@@ -2815,36 +2824,6 @@ case "$ORIGINAL_NM_FOR_TARGET" in
   *) AC_CONFIG_FILES(nm:exec-tool.in, [chmod +x nm]) ;;
 esac
 
-# Figure out what objcopy we will be using.
-AS_VAR_SET_IF(gcc_cv_objcopy,, [
-if test -f $gcc_cv_binutils_srcdir/configure.ac \
-     && test -f ../binutils/Makefile \
-     && test x$build = x$host; then
-	gcc_cv_objcopy=../binutils/objcopy$build_exeext
-elif test -x objcopy$build_exeext; then
-	gcc_cv_objcopy=./objcopy$build_exeext
-elif ( set dummy $OBJCOPY_FOR_TARGET; test -x $[2] ); then
-        gcc_cv_objcopy="$OBJCOPY_FOR_TARGET"
-else
-        AC_PATH_PROG(gcc_cv_objcopy, $OBJCOPY_FOR_TARGET)
-fi])
-
-AC_MSG_CHECKING(what objcopy to use)
-if test "$gcc_cv_objcopy" = ../binutils/objcopy$build_exeext; then
-	# Single tree build which includes binutils.
-	AC_MSG_RESULT(newly built objcopy)
-	in_tree_objcopy=yes
-else
-	AC_MSG_RESULT($gcc_cv_objcopy)
-	in_tree_objcopy=no
-fi
-
-ORIGINAL_OBJCOPY_FOR_TARGET=$gcc_cv_objcopy
-AC_SUBST(ORIGINAL_OBJCOPY_FOR_TARGET)
-case "$ORIGINAL_OBJCOPY_FOR_TARGET" in
-  ./objcopy | ./objcopy$build_exeext) ;;
-  *) AC_CONFIG_FILES(objcopy:exec-tool.in, [chmod +x objcopy]) ;;
-esac
 
 # Figure out what objdump we will be using.
 AS_VAR_SET_IF(gcc_cv_objdump,, [
@@ -4112,33 +4091,6 @@ foo:	.long	25
 	xor	%l1, %tle_lox10(foo), %o5
 	ld	[%g7 + %o5], %o1"
 	;;
-  tilepro*-*-*)
-      conftest_s='
-	.section ".tdata","awT",@progbits
-foo:	.long	25
-	.text
-	addli	r0, zero, tls_gd(foo)
-	auli	r0, zero, tls_gd_ha16(foo)
-	addli	r0, r0, tls_gd_lo16(foo)
-	jal	__tls_get_addr
-	addli	r0, zero, tls_ie(foo)
-	auli	r0, r0, tls_ie_ha16(foo)
-	addli	r0, r0, tls_ie_lo16(foo)'
-	tls_as_opt="--fatal-warnings"
-	;;
-  tilegx*-*-*)
-      conftest_s='
-	.section ".tdata","awT",@progbits
-foo:	.long	25
-	.text
-	shl16insli r0, zero, hw0_last_tls_gd(foo)
-	shl16insli r0, zero, hw1_last_tls_gd(foo)
-	shl16insli r0, r0,   hw0_tls_gd(foo)
-	jal	   __tls_get_addr
-	shl16insli r0, zero, hw1_last_tls_ie(foo)
-	shl16insli r0, r0,   hw0_tls_ie(foo)'
-	tls_as_opt="--fatal-warnings"
-	;;
   xtensa*-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits
@@ -5344,7 +5296,7 @@ configured with --enable-newlib-nano-formatted-io.])
       [AC_DEFINE(HAVE_AS_MARCH_ZIFENCEI, 1,
 		 [Define if the assembler understands -march=rv*_zifencei.])])
     ;;
-  loongarch*-*-*)
+    loongarch*-*-*)
     gcc_GAS_CHECK_FEATURE([.dtprelword support],
       gcc_cv_as_loongarch_dtprelword, [2,18,0],,
       [.section .tdata,"awT",@progbits
@@ -5354,6 +5306,19 @@ x:
 	.dtprelword x+0x8000],,
       [AC_DEFINE(HAVE_AS_DTPRELWORD, 1,
 	  [Define if your assembler supports .dtprelword.])])
+    gcc_GAS_CHECK_FEATURE([explicit relocation support],
+      gcc_cv_as_loongarch_explicit_relocs,,
+      [a:pcalau12i $t0,%pc_hi20(a)],,
+      [AC_DEFINE(HAVE_AS_EXPLICIT_RELOCS, 1,
+	  [Define if your assembler supports explicit relocation.])])
+    gcc_GAS_CHECK_FEATURE([eh_frame pcrel encoding support],
+      gcc_cv_as_loongarch_eh_frame_pcrel_encoding_support,,
+      [.cfi_startproc
+       .cfi_personality 0x9b,a
+       .cfi_lsda 0x1b,b
+       .cfi_endproc],,
+      [AC_DEFINE(HAVE_AS_EH_FRAME_PCREL_ENCODING_SUPPORT, 1,
+	  [Define if your assembler supports eh_frame pcrel encoding.])])
     ;;
     s390*-*-*)
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
@@ -5449,7 +5414,7 @@ esac
 case "$cpu_type" in
   aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
   | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
-  | tilegx | tilepro | visium | xstormy16 | xtensa)
+  | visium | xstormy16 | xtensa)
     insn="nop"
     ;;
   ia64 | s390)

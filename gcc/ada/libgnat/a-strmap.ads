@@ -54,6 +54,8 @@ is
    pragma Pure;
    --  In accordance with Ada 2005 AI-362
 
+   pragma Annotate (GNATprove, Always_Return, Maps);
+
    --------------------------------
    -- Character Set Declarations --
    --------------------------------

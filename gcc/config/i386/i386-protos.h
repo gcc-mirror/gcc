@@ -85,6 +85,7 @@ extern void print_reg (rtx, int, FILE*);
 extern void ix86_print_operand (FILE *, rtx, int);
 
 extern void split_double_mode (machine_mode, rtx[], int, rtx[], rtx[]);
+extern void split_double_concat (machine_mode, rtx, rtx lo, rtx);
 
 extern const char *output_set_got (rtx, rtx);
 extern const char *output_387_binary_op (rtx_insn *, rtx*);
@@ -122,6 +123,8 @@ extern void ix86_expand_unary_operator (enum rtx_code, machine_mode,
 					rtx[]);
 extern rtx ix86_build_const_vector (machine_mode, bool, rtx);
 extern rtx ix86_build_signbit_mask (machine_mode, bool, bool);
+extern HOST_WIDE_INT ix86_convert_const_vector_to_integer (rtx,
+							   machine_mode);
 extern void ix86_split_convert_uns_si_sse (rtx[]);
 extern void ix86_expand_convert_uns_didf_sse (rtx, rtx);
 extern void ix86_expand_convert_uns_sixf_sse (rtx, rtx);

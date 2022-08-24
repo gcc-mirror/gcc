@@ -101,11 +101,9 @@ json_from_location_range (diagnostic_context *context,
 
   if (loc_range->m_label)
     {
-      label_text text;
-      text = loc_range->m_label->get_text (range_idx);
-      if (text.m_buffer)
-	result->set ("label", new json::string (text.m_buffer));
-      text.maybe_free ();
+      label_text text (loc_range->m_label->get_text (range_idx));
+      if (text.get ())
+	result->set ("label", new json::string (text.get ()));
     }
 
   return result;
@@ -345,6 +343,7 @@ diagnostic_output_format_init_json (diagnostic_context *context)
 
   /* The metadata is handled in JSON format, rather than as text.  */
   context->show_cwe = false;
+  context->show_rules = false;
 
   /* The option is handled in JSON format, rather than as text.  */
   context->show_option_requested = false;

@@ -1838,7 +1838,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_noexcept1()
       {
 	if constexpr (is_trivially_default_constructible_v<_Tp>)
-	  return is_nothrow_assignable_v<_Tp, _Up>;
+	  return is_nothrow_assignable_v<_Tp&, _Up>;
 	else
 	  return is_nothrow_constructible_v<_Tp, _Up>;
       }
@@ -1908,6 +1908,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       noexcept(_S_noexcept<const _It2&, const _Sent2&>())
       : _M_valueless(), _M_index(__x._M_index)
       {
+	__glibcxx_assert(__x._M_has_value());
 	if (_M_index == 0)
 	  {
 	    if constexpr (is_trivially_default_constructible_v<_It>)
@@ -1924,9 +1925,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
+    common_iterator(const common_iterator&) = default;
+
     constexpr
     common_iterator(const common_iterator& __x)
     noexcept(_S_noexcept<const _It&, const _Sent&>())
+    requires (!is_trivially_copyable_v<_It> || !is_trivially_copyable_v<_Sent>)
+    : _M_valueless(), _M_index(__x._M_index)
+    {
+      if (_M_index == 0)
+	{
+	  if constexpr (is_trivially_default_constructible_v<_It>)
+	    _M_it = __x._M_it;
+	  else
+	    std::construct_at(std::__addressof(_M_it), __x._M_it);
+	}
+      else if (_M_index == 1)
+	{
+	  if constexpr (is_trivially_default_constructible_v<_Sent>)
+	    _M_sent = __x._M_sent;
+	  else
+	    std::construct_at(std::__addressof(_M_sent), __x._M_sent);
+	}
+    }
+
+    common_iterator(common_iterator&&) = default;
+
+    constexpr
+    common_iterator(common_iterator&& __x)
+    noexcept(_S_noexcept<_It, _Sent>())
+    requires (!is_trivially_copyable_v<_It> || !is_trivially_copyable_v<_Sent>)
     : _M_valueless(), _M_index(__x._M_index)
     {
       if (_M_index == 0)
@@ -1934,16 +1962,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if constexpr (is_trivially_default_constructible_v<_It>)
 	    _M_it = std::move(__x._M_it);
 	  else
-	    std::construct_at(std::__addressof(_M_it), __x._M_it);
+	    std::construct_at(std::__addressof(_M_it), std::move(__x._M_it));
 	}
       else if (_M_index == 1)
 	{
 	  if constexpr (is_trivially_default_constructible_v<_Sent>)
 	    _M_sent = std::move(__x._M_sent);
 	  else
-	    std::construct_at(std::__addressof(_M_sent), __x._M_sent);
+	    std::construct_at(std::__addressof(_M_sent),
+			      std::move(__x._M_sent));
 	}
     }
+
+    constexpr common_iterator&
+    operator=(const common_iterator&) = default;
 
     constexpr common_iterator&
     operator=(const common_iterator& __x)
@@ -1951,8 +1983,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     && is_nothrow_copy_assignable_v<_Sent>
 	     && is_nothrow_copy_constructible_v<_It>
 	     && is_nothrow_copy_constructible_v<_Sent>)
+    requires (!is_trivially_copy_assignable_v<_It>
+		|| !is_trivially_copy_assignable_v<_Sent>)
     {
-      return this->operator=<_It, _Sent>(__x);
+      _M_assign(__x);
+      return *this;
+    }
+
+    constexpr common_iterator&
+    operator=(common_iterator&&) = default;
+
+    constexpr common_iterator&
+    operator=(common_iterator&& __x)
+    noexcept(is_nothrow_move_assignable_v<_It>
+	     && is_nothrow_move_assignable_v<_Sent>
+	     && is_nothrow_move_constructible_v<_It>
+	     && is_nothrow_move_constructible_v<_Sent>)
+    requires (!is_trivially_move_assignable_v<_It>
+		|| !is_trivially_move_assignable_v<_Sent>)
+    {
+      _M_assign(std::move(__x));
+      return *this;
     }
 
     template<typename _It2, typename _Sent2>
@@ -1964,52 +2015,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(const common_iterator<_It2, _Sent2>& __x)
       noexcept(is_nothrow_constructible_v<_It, const _It2&>
 	       && is_nothrow_constructible_v<_Sent, const _Sent2&>
-	       && is_nothrow_assignable_v<_It, const _It2&>
-	       && is_nothrow_assignable_v<_Sent, const _Sent2&>)
+	       && is_nothrow_assignable_v<_It&, const _It2&>
+	       && is_nothrow_assignable_v<_Sent&, const _Sent2&>)
       {
-	switch(_M_index << 2 | __x._M_index)
-	  {
-	  case 0b0000:
-	    _M_it = __x._M_it;
-	    break;
-	  case 0b0101:
-	    _M_sent = __x._M_sent;
-	    break;
-	  case 0b0001:
-	    _M_it.~_It();
-	    _M_index = -1;
-	    [[fallthrough]];
-	  case 0b1001:
-	    std::construct_at(std::__addressof(_M_sent), _Sent(__x._M_sent));
-	    _M_index = 1;
-	    break;
-	  case 0b0100:
-	    _M_sent.~_Sent();
-	    _M_index = -1;
-	    [[fallthrough]];
-	  case 0b1000:
-	    std::construct_at(std::__addressof(_M_it), _It(__x._M_it));
-	    _M_index = 0;
-	    break;
-	  default:
-	    __glibcxx_assert(__x._M_has_value());
-	    __builtin_unreachable();
-	  }
+	__glibcxx_assert(__x._M_has_value());
+	_M_assign(__x);
 	return *this;
       }
 
+#if __cpp_concepts >= 202002L // Constrained special member functions
+    ~common_iterator() = default;
+
     constexpr
     ~common_iterator()
+      requires (!is_trivially_destructible_v<_It>
+		  || !is_trivially_destructible_v<_Sent>)
+#else
+    constexpr
+    ~common_iterator()
+#endif
     {
-      switch (_M_index)
-	{
-	case 0:
-	  _M_it.~_It();
-	  break;
-	case 1:
-	  _M_sent.~_Sent();
-	  break;
-	}
+      if (_M_index == 0)
+	_M_it.~_It();
+      else if (_M_index == 1)
+	_M_sent.~_Sent();
     }
 
     [[nodiscard]]
@@ -2029,7 +2058,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     [[nodiscard]]
-    constexpr decltype(auto)
+    constexpr auto
     operator->() const requires __detail::__common_iter_has_arrow<_It>
     {
       __glibcxx_assert(_M_index == 0);
@@ -2164,9 +2193,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   private:
     template<input_or_output_iterator _It2, sentinel_for<_It2> _Sent2>
+      requires (!same_as<_It2, _Sent2>) && copyable<_It2>
       friend class common_iterator;
 
-    constexpr bool _M_has_value() const noexcept { return _M_index < 2; }
+    constexpr bool
+    _M_has_value() const noexcept { return _M_index != _S_valueless; }
+
+    template<typename _CIt>
+      constexpr void
+      _M_assign(_CIt&& __x)
+      {
+	if (_M_index == __x._M_index)
+	  {
+	    if (_M_index == 0)
+	      _M_it = std::forward<_CIt>(__x)._M_it;
+	    else if (_M_index == 1)
+	      _M_sent = std::forward<_CIt>(__x)._M_sent;
+	  }
+	else
+	  {
+	    if (_M_index == 0)
+	      _M_it.~_It();
+	    else if (_M_index == 1)
+	      _M_sent.~_Sent();
+	    _M_index = _S_valueless;
+
+	    if (__x._M_index == 0)
+	      std::construct_at(std::__addressof(_M_it),
+				std::forward<_CIt>(__x)._M_it);
+	    else if (__x._M_index == 1)
+	      std::construct_at(std::__addressof(_M_sent),
+				std::forward<_CIt>(__x)._M_sent);
+	    _M_index = __x._M_index;
+	  }
+      }
 
     union
     {
@@ -2174,7 +2234,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Sent _M_sent;
       unsigned char _M_valueless;
     };
-    unsigned char _M_index; // 0==_M_it, 1==_M_sent, 2==valueless
+    unsigned char _M_index; // 0 == _M_it, 1 == _M_sent, 2 == valueless
+
+    static constexpr unsigned char _S_valueless{2};
   };
 
   template<typename _It, typename _Sent>
@@ -2536,19 +2598,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // of associative containers.
   template<typename _InputIterator>
     using __iter_key_t = remove_const_t<
-    typename iterator_traits<_InputIterator>::value_type::first_type>;
+      typename iterator_traits<_InputIterator>::value_type::first_type>;
 
   template<typename _InputIterator>
-    using __iter_val_t =
-    typename iterator_traits<_InputIterator>::value_type::second_type;
+    using __iter_val_t
+      = typename iterator_traits<_InputIterator>::value_type::second_type;
 
   template<typename _T1, typename _T2>
     struct pair;
 
   template<typename _InputIterator>
-    using __iter_to_alloc_t =
-    pair<add_const_t<__iter_key_t<_InputIterator>>,
-	 __iter_val_t<_InputIterator>>;
+    using __iter_to_alloc_t
+      = pair<const __iter_key_t<_InputIterator>, __iter_val_t<_InputIterator>>;
 #endif // __cpp_deduction_guides
 
 _GLIBCXX_END_NAMESPACE_VERSION

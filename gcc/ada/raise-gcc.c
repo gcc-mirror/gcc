@@ -1377,6 +1377,10 @@ __gnat_cleanupunwind_handler (int version ATTRIBUTE_UNUSED,
 _Unwind_Reason_Code
 __gnat_Unwind_RaiseException (_Unwind_Exception *e)
 {
+#ifdef NO_EXCEPTION_PROPAGATION
+  abort();
+#endif
+
 #ifdef __USING_SJLJ_EXCEPTIONS__
   return _Unwind_SjLj_RaiseException (e);
 #else

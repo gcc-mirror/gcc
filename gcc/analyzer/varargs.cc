@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sbitmap.h"
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/exploded-graph.h"
+#include "diagnostic-metadata.h"
 
 #if ENABLE_ANALYZER
 
@@ -666,11 +667,27 @@ region_model::impl_call_va_start (const call_details &cd)
   const svalue *ptr_to_impl_reg = m_mgr->get_ptr_svalue (NULL_TREE, impl_reg);
   set_value (out_reg, ptr_to_impl_reg, cd.get_ctxt ());
 
-  /* "*(&IMPL_REGION) = VA_LIST_VAL (0);".  */
-  const region *init_var_arg_reg
-    = m_mgr->get_var_arg_region (get_current_frame (), 0);
-  const svalue *ap_sval = m_mgr->get_ptr_svalue (NULL_TREE, init_var_arg_reg);
-  set_value (impl_reg, ap_sval, cd.get_ctxt ());
+  if (get_stack_depth () > 1)
+    {
+      /* The interprocedural case: the frame containing the va_start call
+	 will have been populated with any variadic aruguments.
+	 Initialize IMPL_REGION with a ptr to var_arg_region 0.  */
+      const region *init_var_arg_reg
+	= m_mgr->get_var_arg_region (get_current_frame (), 0);
+      const svalue *ap_sval
+	= m_mgr->get_ptr_svalue (NULL_TREE, init_var_arg_reg);
+      set_value (impl_reg, ap_sval, cd.get_ctxt ());
+    }
+  else
+    {
+      /* The frame containing va_start is an entry-point to the analysis,
+	 so there won't be any specific var_arg_regions populated within it.
+	 Initialize IMPL_REGION as the UNKNOWN_SVALUE to avoid state
+	 explosions on repeated calls to va_arg.  */
+      const svalue *unknown_sval
+	= m_mgr->get_or_create_unknown_svalue (NULL_TREE);
+      set_value (impl_reg, unknown_sval, cd.get_ctxt ());
+    }
 }
 
 /* Handle the on_call_pre part of "__builtin_va_copy".  */
@@ -856,12 +873,15 @@ public:
   bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
+    diagnostic_metadata m;
+    /* "CWE-686: Function Call With Incorrect Argument Type".  */
+    m.add_cwe (686);
     bool warned
-      = warning_at (rich_loc, get_controlling_option (),
-		    "%<va_arg%> expected %qT but received %qT"
-		    " for variadic argument %i of %qE",
-		    m_expected_type, m_actual_type,
-		    get_variadic_index_for_diagnostic (), m_va_list_tree);
+      = warning_meta (rich_loc, m, get_controlling_option (),
+		      "%<va_arg%> expected %qT but received %qT"
+		      " for variadic argument %i of %qE",
+		      m_expected_type, m_actual_type,
+		      get_variadic_index_for_diagnostic (), m_va_list_tree);
     return warned;
   }
 
@@ -903,9 +923,12 @@ public:
   bool emit (rich_location *rich_loc) final override
   {
     auto_diagnostic_group d;
-    bool warned = warning_at (rich_loc, get_controlling_option (),
-			      "%qE has no more arguments (%i consumed)",
-			      m_va_list_tree, get_num_consumed ());
+    diagnostic_metadata m;
+    /* CWE-685: Function Call With Incorrect Number of Arguments.  */
+    m.add_cwe (685);
+    bool warned = warning_meta (rich_loc, m, get_controlling_option (),
+				"%qE has no more arguments (%i consumed)",
+				m_va_list_tree, get_num_consumed ());
     return warned;
   }
 
@@ -964,7 +987,7 @@ region_model::impl_call_va_arg (const call_details &cd)
 	  const frame_region *frame_reg = arg_reg->get_frame_region ();
 	  unsigned next_arg_idx = arg_reg->get_index ();
 
-	  if (get_stack_depth () > 1)
+	  if (frame_reg->get_stack_depth () > 1)
 	    {
 	      /* The interprocedural case: the called frame will have been
 		 populated with any variadic aruguments.
@@ -1002,7 +1025,7 @@ region_model::impl_call_va_arg (const call_details &cd)
 		 any specific var_arg_regions populated within it.
 		 We already have a conjured_svalue for the result, so leave
 		 it untouched.  */
-	      gcc_assert (get_stack_depth () == 1);
+	      gcc_assert (frame_reg->get_stack_depth () == 1);
 	    }
 
 	  if (saw_problem)

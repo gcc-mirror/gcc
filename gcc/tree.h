@@ -1841,6 +1841,11 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_LINEAR_VARIABLE_STRIDE(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR))
 
+/* True for a LINEAR clause with old style modifier syntax
+   linear(modifier(list)) or linear(modifier(list):step).  */
+#define OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LINEAR)->base.addressable_flag)
+
 /* True if a LINEAR clause is for an array or allocatable variable that
    needs special handling by the frontend.  */
 #define OMP_CLAUSE_LINEAR_ARRAY(NODE) \
@@ -2024,14 +2029,6 @@ class auto_suppress_location_wrappers
 /* Attributes for SSA_NAMEs for pointer-type variables.  */
 #define SSA_NAME_PTR_INFO(N) \
    SSA_NAME_CHECK (N)->ssa_name.info.ptr_info
-
-/* True if SSA_NAME_RANGE_INFO describes an anti-range.  */
-#define SSA_NAME_ANTI_RANGE_P(N) \
-    SSA_NAME_CHECK (N)->base.static_flag
-
-/* The type of range described by SSA_NAME_RANGE_INFO.  */
-#define SSA_NAME_RANGE_TYPE(N) \
-    (SSA_NAME_ANTI_RANGE_P (N) ? VR_ANTI_RANGE : VR_RANGE)
 
 /* Value range info attributes for SSA_NAMEs of non pointer-type variables.  */
 #define SSA_NAME_RANGE_INFO(N) \
@@ -5852,6 +5849,11 @@ builtin_decl_implicit (enum built_in_function fncode)
 
   return builtin_info[uns_fncode].decl;
 }
+
+/* For BUILTIN_UNREACHABLE, use one of these or
+   gimple_build_builtin_unreachable instead of one of the above.  */
+extern tree builtin_decl_unreachable ();
+extern tree build_builtin_unreachable (location_t);
 
 /* Set explicit builtin function nodes and whether it is an implicit
    function.  */

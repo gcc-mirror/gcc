@@ -63,6 +63,12 @@
 			   V1DF V2DF
 			   (V1TF "TARGET_VXE") (TF "TARGET_VXE")])
 
+; All modes present in V_HW and VFT.
+(define_mode_iterator V_HW_FT [V16QI V8HI V4SI V2DI (V1TI "TARGET_VXE") V1DF
+			       V2DF (V1SF "TARGET_VXE") (V2SF "TARGET_VXE")
+			       (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")
+			       (TF "TARGET_VXE")])
+
 ; FP vector modes directly supported by the HW.  This does not include
 ; vector modes using only part of a vector register and should be used
 ; for instructions which might trigger IEEE exceptions.

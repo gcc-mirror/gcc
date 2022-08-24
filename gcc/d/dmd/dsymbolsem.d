@@ -49,6 +49,7 @@ import dmd.identifier;
 import dmd.importc;
 import dmd.init;
 import dmd.initsem;
+import dmd.intrange;
 import dmd.hdrgen;
 import dmd.mtype;
 import dmd.mustuse;
@@ -646,7 +647,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 else
                     ti = dsym._init ? dsym._init.syntaxCopy() : null;
 
-                StorageClass storage_class = STC.temp | STC.local | dsym.storage_class;
+                StorageClass storage_class = STC.temp | dsym.storage_class;
                 if ((dsym.storage_class & STC.parameter) && (arg.storageClass & STC.parameter))
                     storage_class |= arg.storageClass;
                 auto v = new VarDeclaration(dsym.loc, arg.type, id, ti, storage_class);
@@ -655,15 +656,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
                 v.dsymbolSemantic(sc);
 
-                if (sc.scopesym)
-                {
-                    //printf("adding %s to %s\n", v.toChars(), sc.scopesym.toChars());
-                    if (sc.scopesym.members)
-                        // Note this prevents using foreach() over members, because the limits can change
-                        sc.scopesym.members.push(v);
-                }
-
-                Expression e = new DsymbolExp(dsym.loc, v);
+                Expression e = new VarExp(dsym.loc, v);
                 (*exps)[i] = e;
             }
             auto v2 = new TupleDeclaration(dsym.loc, dsym.ident, exps);
@@ -727,6 +720,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             else if (!dsym.type.hasPointers())
             {
                 dsym.storage_class &= ~STC.scope_;     // silently ignore; may occur in generic code
+                // https://issues.dlang.org/show_bug.cgi?id=23168
+                if (dsym.storage_class & STC.returnScope)
+                {
+                    dsym.storage_class &= ~(STC.return_ | STC.returnScope);
+                }
             }
         }
 
@@ -2025,7 +2023,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     override void visit(EnumDeclaration ed)
     {
         //printf("EnumDeclaration::semantic(sd = %p, '%s') %s\n", sc.scopesym, sc.scopesym.toChars(), ed.toChars());
-        //printf("EnumDeclaration::semantic() %p %s\n", this, ed.toChars());
+        //printf("EnumDeclaration::semantic() %p %s\n", ed, ed.toChars());
         if (ed.semanticRun >= PASS.semanticdone)
             return; // semantic() already completed
         if (ed.semanticRun == PASS.semantic)
@@ -2177,6 +2175,13 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             assert(ed.memtype);
             int nextValue = 0;        // C11 6.7.2.2-3 first member value defaults to 0
 
+            // C11 6.7.2.2-2 value must be representable as an int.
+            // The sizemask represents all values that int will fit into,
+            // from 0..uint.max.  We want to cover int.min..uint.max.
+            const mask = Type.tint32.sizemask();
+            IntRange ir = IntRange(SignExtendedNumber(~(mask >> 1), true),
+                                   SignExtendedNumber(mask));
+
             void emSemantic(EnumMember em, ref int nextValue)
             {
                 static void errorReturn(EnumMember em)
@@ -2206,21 +2211,32 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         em.error("enum member must be an integral constant expression, not `%s` of type `%s`", e.toChars(), e.type.toChars());
                         return errorReturn(em);
                     }
-                    const sinteger_t v = ie.toInteger();
-                    if (v < int.min || v > uint.max)
+                    if (!ir.contains(getIntRange(ie)))
                     {
                         // C11 6.7.2.2-2
                         em.error("enum member value `%s` does not fit in an `int`", e.toChars());
                         return errorReturn(em);
                     }
-                    em.value = new IntegerExp(em.loc, cast(int)v, Type.tint32);
-                    nextValue = cast(int)v;
+                    nextValue = cast(int)ie.toInteger();
+                    em.value = new IntegerExp(em.loc, nextValue, Type.tint32);
                 }
                 else
                 {
+                    // C11 6.7.2.2-3 add 1 to value of previous enumeration constant
+                    bool first = (em == (*em.ed.members)[0]);
+                    if (!first)
+                    {
+                        import core.checkedint : adds;
+                        bool overflow;
+                        nextValue = adds(nextValue, 1, overflow);
+                        if (overflow)
+                        {
+                            em.error("initialization with `%d+1` causes overflow for type `int`", nextValue - 1);
+                            return errorReturn(em);
+                        }
+                    }
                     em.value = new IntegerExp(em.loc, nextValue, Type.tint32);
                 }
-                ++nextValue; // C11 6.7.2.2-3 add 1 to value of previous enumeration constant
                 em.semanticRun = PASS.semanticdone;
             }
 
@@ -3189,10 +3205,19 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 sc.stc |= STC.scope_;
 
             // If 'this' has no pointers, remove 'scope' as it has no meaning
+            // Note: this is already covered by semantic of `VarDeclaration` and `TypeFunction`,
+            // but existing code relies on `hasPointers()` being called here to resolve forward references:
+            // https://github.com/dlang/dmd/pull/14232#issuecomment-1162906573
             if (sc.stc & STC.scope_ && ad && ad.isStructDeclaration() && !ad.type.hasPointers())
             {
                 sc.stc &= ~STC.scope_;
                 tf.isScopeQual = false;
+                if (tf.isreturnscope)
+                {
+                    sc.stc &= ~(STC.return_ | STC.returnScope);
+                    tf.isreturn = false;
+                    tf.isreturnscope = false;
+                }
             }
 
             sc.linkage = funcdecl._linkage;
@@ -3275,13 +3300,6 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         if ((funcdecl.storage_class & STC.auto_) && !f.isref && !funcdecl.inferRetType)
             funcdecl.error("storage class `auto` has no effect if return type is not inferred");
-
-        /* Functions can only be 'scope' if they have a 'this'
-         */
-        if (f.isScopeQual && !funcdecl.isNested() && !ad)
-        {
-            funcdecl.error("functions cannot be `scope`");
-        }
 
         if (f.isreturn && !funcdecl.needThis() && !funcdecl.isNested())
         {
@@ -4424,7 +4442,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
              invd.semanticRun < PASS.semantic &&
              !ad.isUnionDeclaration()           // users are on their own with union fields
            )
+        {
+            invd.fixupInvariantIdent(ad.invs.length);
             ad.invs.push(invd);
+        }
         if (!invd.type)
             invd.type = new TypeFunction(ParameterList(), Type.tvoid, LINK.d, invd.storage_class);
 
@@ -5695,6 +5716,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
  */
 void addEnumMembers(EnumDeclaration ed, Scope* sc, ScopeDsymbol sds)
 {
+    //printf("addEnumMembers(ed: %p)\n", ed);
     if (ed.added)
         return;
     ed.added = true;
@@ -5718,6 +5740,7 @@ void addEnumMembers(EnumDeclaration ed, Scope* sc, ScopeDsymbol sds)
             em.ed = ed;
             if (isCEnum)
             {
+                //printf("adding EnumMember %s to %p\n", em.toChars(), ed);
                 em.addMember(sc, ed);   // add em to ed's symbol table
                 em.addMember(sc, sds);  // add em to symbol table that ed is in
                 em.parent = ed; // restore it after previous addMember() changed it
@@ -6828,7 +6851,12 @@ bool determineFields(AggregateDeclaration ad)
             return 1;
 
         if (v.aliassym)
-            return 0;   // If this variable was really a tuple, skip it.
+        {
+            // If this variable was really a tuple, process each element.
+            if (auto tup = v.aliassym.isTupleDeclaration())
+                return tup.foreachVar(tv => tv.apply(&func, ad));
+            return 0;
+        }
 
         if (v.storage_class & (STC.static_ | STC.extern_ | STC.tls | STC.gshared | STC.manifest | STC.ctfe | STC.templateparameter))
             return 0;

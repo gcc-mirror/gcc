@@ -4,6 +4,7 @@ Source: $(PHOBOSSRC std/experimental/logger/core.d)
 */
 module std.experimental.logger.core;
 
+import core.atomic : atomicLoad, atomicOp, atomicStore, MemoryOrder;
 import core.sync.mutex : Mutex;
 import std.datetime.date : DateTime;
 import std.datetime.systime : Clock, SysTime;
@@ -11,56 +12,6 @@ import std.range.primitives;
 import std.traits;
 
 import std.experimental.logger.filelogger;
-
-/** This template evaluates if the passed `LogLevel` is active.
-The previously described version statements are used to decide if the
-`LogLevel` is active. The version statements only influence the compile
-unit they are used with, therefore this function can only disable logging this
-specific compile unit.
-*/
-template isLoggingActiveAt(LogLevel ll)
-{
-    version (StdLoggerDisableLogging)
-    {
-        enum isLoggingActiveAt = false;
-    }
-    else
-    {
-        static if (ll == LogLevel.trace)
-        {
-            version (StdLoggerDisableTrace) enum isLoggingActiveAt = false;
-        }
-        else static if (ll == LogLevel.info)
-        {
-            version (StdLoggerDisableInfo) enum isLoggingActiveAt = false;
-        }
-        else static if (ll == LogLevel.warning)
-        {
-            version (StdLoggerDisableWarning) enum isLoggingActiveAt = false;
-        }
-        else static if (ll == LogLevel.error)
-        {
-            version (StdLoggerDisableError) enum isLoggingActiveAt = false;
-        }
-        else static if (ll == LogLevel.critical)
-        {
-            version (StdLoggerDisableCritical) enum isLoggingActiveAt = false;
-        }
-        else static if (ll == LogLevel.fatal)
-        {
-            version (StdLoggerDisableFatal) enum isLoggingActiveAt = false;
-        }
-        // If `isLoggingActiveAt` didn't get defined above to false,
-        // we default it to true.
-        static if (!is(typeof(isLoggingActiveAt) == bool))
-        {
-            enum isLoggingActiveAt = true;
-        }
-    }
-}
-
-/// This compile-time flag is `true` if logging is not statically disabled.
-enum isLoggingActive = isLoggingActiveAt!(LogLevel.all);
 
 /** This functions is used at runtime to determine if a `LogLevel` is
 active. The same previously defined version statements are used to disable
@@ -71,92 +22,12 @@ pure bool isLoggingEnabled()(LogLevel ll) @safe nothrow @nogc
 bool isLoggingEnabled()(LogLevel ll, LogLevel loggerLL,
     LogLevel globalLL, lazy bool condition = true) @safe
 {
-    switch (ll)
-    {
-        case LogLevel.trace:
-            version (StdLoggerDisableTrace) return false;
-            else break;
-        case LogLevel.info:
-            version (StdLoggerDisableInfo) return false;
-            else break;
-        case LogLevel.warning:
-            version (StdLoggerDisableWarning) return false;
-            else break;
-        case LogLevel.critical:
-            version (StdLoggerDisableCritical) return false;
-            else break;
-        case LogLevel.fatal:
-            version (StdLoggerDisableFatal) return false;
-            else break;
-        default: break;
-    }
-
     return ll >= globalLL
         && ll >= loggerLL
         && ll != LogLevel.off
         && globalLL != LogLevel.off
         && loggerLL != LogLevel.off
         && condition;
-}
-
-/** This template returns the `LogLevel` named "logLevel" of type $(D
-LogLevel) defined in a user defined module where the filename has the
-suffix "_loggerconfig.d". This `LogLevel` sets the minimal `LogLevel`
-of the module.
-
-A minimal `LogLevel` can be defined on a per module basis.
-In order to define a module `LogLevel` a file with a modulename
-"MODULENAME_loggerconfig" must be found. If no such module exists and the
-module is a nested module, it is checked if there exists a
-"PARENT_MODULE_loggerconfig" module with such a symbol.
-If this module exists and it contains a `LogLevel` called logLevel this $(D
-LogLevel) will be used. This parent lookup is continued until there is no
-parent module. Then the moduleLogLevel is `LogLevel.all`.
-*/
-template moduleLogLevel(string moduleName)
-if (!moduleName.length)
-{
-    // default
-    enum moduleLogLevel = LogLevel.all;
-}
-
-///
-@system unittest
-{
-    static assert(moduleLogLevel!"" == LogLevel.all);
-}
-
-/// ditto
-template moduleLogLevel(string moduleName)
-if (moduleName.length)
-{
-    import std.string : format;
-    mixin(q{
-        static if (__traits(compiles, {import %1$s : logLevel;}))
-        {
-            import %1$s : logLevel;
-            static assert(is(typeof(logLevel) : LogLevel),
-                          "Expect 'logLevel' to be of Type 'LogLevel'.");
-            // don't enforce enum here
-            alias moduleLogLevel = logLevel;
-        }
-        else
-            // use logLevel of package or default
-            alias moduleLogLevel = moduleLogLevel!(parentOf(moduleName));
-    }.format(moduleName ~ "_loggerconfig"));
-}
-
-///
-@system unittest
-{
-    static assert(moduleLogLevel!"not.amodule.path" == LogLevel.all);
-}
-
-private string parentOf(string mod)
-{
-    foreach_reverse (i, c; mod)
-        if (c == '.') return mod[0 .. i];
-    return null;
 }
 
 /* This function formates a `SysTime` into an `OutputRange`.
@@ -200,14 +71,8 @@ void log(int line = __LINE__, string file = __FILE__,
     lazy bool condition, lazy A args)
 if (args.length != 1)
 {
-    static if (isLoggingActive)
-    {
-        if (ll >= moduleLogLevel!moduleName)
-        {
-               stdThreadLocalLog.log!(line, file, funcName, prettyFuncName, moduleName)
-                (ll, condition, args);
-        }
-    }
+    stdThreadLocalLog.log!(line, file, funcName, prettyFuncName, moduleName)
+        (ll, condition, args);
 }
 
 /// Ditto
@@ -215,14 +80,8 @@ void log(T, string moduleName = __MODULE__)(const LogLevel ll,
     lazy bool condition, lazy T arg, int line = __LINE__, string file = __FILE__,
     string funcName = __FUNCTION__, string prettyFuncName = __PRETTY_FUNCTION__)
 {
-    static if (isLoggingActive)
-    {
-        if (ll >= moduleLogLevel!moduleName)
-        {
-            stdThreadLocalLog.log!(T,moduleName)(ll, condition, arg, line, file, funcName,
-                prettyFuncName);
-        }
-    }
+    stdThreadLocalLog.log!(T,moduleName)(ll, condition, arg, line, file, funcName,
+        prettyFuncName);
 }
 
 /** This function logs data.
@@ -244,14 +103,8 @@ void log(int line = __LINE__, string file = __FILE__,
     string moduleName = __MODULE__, A...)(const LogLevel ll, lazy A args)
 if (args.length > 1 && !is(Unqual!(A[0]) : bool))
 {
-    static if (isLoggingActive)
-    {
-        if (ll >= moduleLogLevel!moduleName)
-        {
-            stdThreadLocalLog.log!(line, file, funcName, prettyFuncName, moduleName)
-                (ll, args);
-        }
-    }
+    stdThreadLocalLog.log!(line, file, funcName, prettyFuncName, moduleName)
+        (ll, args);
 }
 
 /// Ditto
@@ -259,14 +112,8 @@ void log(T, string moduleName = __MODULE__)(const LogLevel ll, lazy T arg,
     int line = __LINE__, string file = __FILE__, string funcName = __FUNCTION__,
     string prettyFuncName = __PRETTY_FUNCTION__)
 {
-    static if (isLoggingActive)
-    {
-        if (ll >= moduleLogLevel!moduleName)
-        {
-            stdThreadLocalLog.log!T(ll, arg, line, file, funcName, prettyFuncName,
-                moduleName);
-        }
-    }
+    stdThreadLocalLog.log!T(ll, arg, line, file, funcName, prettyFuncName,
+        moduleName);
 }
 
 /** This function logs data.
@@ -289,11 +136,8 @@ void log(int line = __LINE__, string file = __FILE__,
     string moduleName = __MODULE__, A...)(lazy bool condition, lazy A args)
 if (args.length != 1)
 {
-    static if (isLoggingActive)
-    {
-        stdThreadLocalLog.log!(line, file, funcName, prettyFuncName, moduleName)
-            (stdThreadLocalLog.logLevel, condition, args);
-    }
+    stdThreadLocalLog.log!(line, file, funcName, prettyFuncName, moduleName)
+        (stdThreadLocalLog.logLevel, condition, args);
 }
 
 /// Ditto
@@ -301,11 +145,8 @@ void log(T, string moduleName = __MODULE__)(lazy bool condition, lazy T arg,
     int line = __LINE__, string file = __FILE__, string funcName = __FUNCTION__,
     string prettyFuncName = __PRETTY_FUNCTION__)
 {
-    static if (isLoggingActive)
-    {
-        stdThreadLocalLog.log!(T,moduleName)(stdThreadLocalLog.logLevel,
-            condition, arg, line, file, funcName, prettyFuncName);
-    }
+    stdThreadLocalLog.log!(T,moduleName)(stdThreadLocalLog.logLevel,
+        condition, arg, line, file, funcName, prettyFuncName);
 }
 
 /** This function logs data.
@@ -328,22 +169,16 @@ if ((args.length > 1 && !is(Unqual!(A[0]) : bool)
     && !is(Unqual!(A[0]) == LogLevel))
     || args.length == 0)
 {
-    static if (isLoggingActive)
-    {
-        stdThreadLocalLog.log!(line, file, funcName,
-           prettyFuncName, moduleName)(stdThreadLocalLog.logLevel, args);
-    }
+    stdThreadLocalLog.log!(line, file, funcName,
+       prettyFuncName, moduleName)(stdThreadLocalLog.logLevel, args);
 }
 
 void log(T)(lazy T arg, int line = __LINE__, string file = __FILE__,
     string funcName = __FUNCTION__, string prettyFuncName = __PRETTY_FUNCTION__,
     string moduleName = __MODULE__)
 {
-    static if (isLoggingActive)
-    {
-        stdThreadLocalLog.log!T(stdThreadLocalLog.logLevel, arg, line, file,
-            funcName, prettyFuncName, moduleName);
-    }
+    stdThreadLocalLog.log!T(stdThreadLocalLog.logLevel, arg, line, file,
+        funcName, prettyFuncName, moduleName);
 }
 
 /** This function logs data in a `printf`-style manner.
@@ -369,14 +204,8 @@ void logf(int line = __LINE__, string file = __FILE__,
     string moduleName = __MODULE__, A...)(const LogLevel ll,
     lazy bool condition, lazy string msg, lazy A args)
 {
-    static if (isLoggingActive)
-    {
-        if (ll >= moduleLogLevel!moduleName)
-        {
-            stdThreadLocalLog.logf!(line, file, funcName, prettyFuncName, moduleName)
-                (ll, condition, msg, args);
-        }
-    }
+    stdThreadLocalLog.logf!(line, file, funcName, prettyFuncName, moduleName)
+        (ll, condition, msg, args);
 }
 
 /** This function logs data in a `printf`-style manner.
@@ -400,14 +229,8 @@ void logf(int line = __LINE__, string file = __FILE__,
     string moduleName = __MODULE__, A...)(const LogLevel ll, lazy string msg,
         lazy A args)
 {
-    static if (isLoggingActive)
-    {
-        if (ll >= moduleLogLevel!moduleName)
-        {
-            stdThreadLocalLog.logf!(line, file, funcName, prettyFuncName, moduleName)
-                (ll, msg, args);
-        }
-    }
+    stdThreadLocalLog.logf!(line, file, funcName, prettyFuncName, moduleName)
+        (ll, msg, args);
 }
 
 /** This function logs data in a `printf`-style manner.
@@ -431,11 +254,8 @@ void logf(int line = __LINE__, string file = __FILE__,
     string moduleName = __MODULE__, A...)(lazy bool condition,
         lazy string msg, lazy A args)
 {
-    static if (isLoggingActive)
-    {
-        stdThreadLocalLog.logf!(line, file, funcName, prettyFuncName, moduleName)
-            (stdThreadLocalLog.logLevel, condition, msg, args);
-    }
+    stdThreadLocalLog.logf!(line, file, funcName, prettyFuncName, moduleName)
+        (stdThreadLocalLog.logLevel, condition, msg, args);
 }
 
 /** This function logs data in a `printf`-style manner.
@@ -457,11 +277,8 @@ void logf(int line = __LINE__, string file = __FILE__,
     string prettyFuncName = __PRETTY_FUNCTION__,
     string moduleName = __MODULE__, A...)(lazy string msg, lazy A args)
 {
-    static if (isLoggingActive)
-    {
-        stdThreadLocalLog.logf!(line, file, funcName,prettyFuncName, moduleName)
-            (stdThreadLocalLog.logLevel, msg, args);
-    }
+    stdThreadLocalLog.logf!(line, file, funcName,prettyFuncName, moduleName)
+        (stdThreadLocalLog.logLevel, msg, args);
 }
 
 /** This template provides the global log functions with the `LogLevel`
@@ -478,11 +295,8 @@ template defaultLogFunction(LogLevel ll)
         string moduleName = __MODULE__, A...)(lazy A args)
         if ((args.length > 0 && !is(Unqual!(A[0]) : bool)) || args.length == 0)
     {
-        static if (isLoggingActiveAt!ll && ll >= moduleLogLevel!moduleName)
-        {
             stdThreadLocalLog.memLogFunctions!(ll).logImpl!(line, file, funcName,
                 prettyFuncName, moduleName)(args);
-        }
     }
 
     void defaultLogFunction(int line = __LINE__, string file = __FILE__,
@@ -490,11 +304,8 @@ template defaultLogFunction(LogLevel ll)
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(lazy bool condition, lazy A args)
     {
-        static if (isLoggingActiveAt!ll && ll >= moduleLogLevel!moduleName)
-        {
-            stdThreadLocalLog.memLogFunctions!(ll).logImpl!(line, file, funcName,
-                prettyFuncName, moduleName)(condition, args);
-        }
+        stdThreadLocalLog.memLogFunctions!(ll).logImpl!(line, file, funcName,
+            prettyFuncName, moduleName)(condition, args);
     }
 }
 
@@ -551,11 +362,8 @@ template defaultLogFunctionf(LogLevel ll)
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(lazy string msg, lazy A args)
     {
-        static if (isLoggingActiveAt!ll && ll >= moduleLogLevel!moduleName)
-        {
-            stdThreadLocalLog.memLogFunctions!(ll).logImplf!(line, file, funcName,
-                prettyFuncName, moduleName)(msg, args);
-        }
+        stdThreadLocalLog.memLogFunctions!(ll).logImplf!(line, file, funcName,
+            prettyFuncName, moduleName)(msg, args);
     }
 
     void defaultLogFunctionf(int line = __LINE__, string file = __FILE__,
@@ -564,11 +372,8 @@ template defaultLogFunctionf(LogLevel ll)
         string moduleName = __MODULE__, A...)(lazy bool condition,
             lazy string msg, lazy A args)
     {
-        static if (isLoggingActiveAt!ll && ll >= moduleLogLevel!moduleName)
-        {
-            stdThreadLocalLog.memLogFunctions!(ll).logImplf!(line, file, funcName,
-                prettyFuncName, moduleName)(condition, msg, args);
-        }
+        stdThreadLocalLog.memLogFunctions!(ll).logImplf!(line, file, funcName,
+            prettyFuncName, moduleName)(condition, msg, args);
     }
 }
 
@@ -751,14 +556,14 @@ abstract class Logger
     Params:
          lv = `LogLevel` to use for this `Logger` instance.
     */
-    this(LogLevel lv) @safe
+    this(this This)(LogLevel lv)
     {
         this.logLevel_ = lv;
         this.fatalHandler_ = delegate() {
             throw new Error("A fatal log message was logged");
         };
 
-        this.mutex = new Mutex();
+        this.mutex = new typeof(mutex)();
     }
 
     /** A custom logger must implement this method in order to work in a
@@ -816,32 +621,23 @@ abstract class Logger
         Tid threadId, SysTime timestamp, Logger logger)
         @safe
     {
-        static if (isLoggingActive)
-        {
-            msgAppender = appender!string();
-            header = LogEntry(file, line, funcName, prettyFuncName,
-                moduleName, logLevel, threadId, timestamp, null, logger);
-        }
+        msgAppender = appender!string();
+        header = LogEntry(file, line, funcName, prettyFuncName,
+            moduleName, logLevel, threadId, timestamp, null, logger);
     }
 
     /** Logs a part of the log message. */
     protected void logMsgPart(scope const(char)[] msg) @safe
     {
-        static if (isLoggingActive)
-        {
-               msgAppender.put(msg);
-        }
+       msgAppender.put(msg);
     }
 
     /** Signals that the message has been written and no more calls to
     `logMsgPart` follow. */
     protected void finishLogMsg() @safe
     {
-        static if (isLoggingActive)
-        {
-            header.msg = msgAppender.data;
-            this.writeLogMsg(header);
-        }
+        header.msg = msgAppender.data;
+        this.writeLogMsg(header);
     }
 
     /** The `LogLevel` determines if the log call are processed or dropped
@@ -866,7 +662,7 @@ abstract class Logger
     /// Ditto
     @property final void logLevel(const LogLevel lv) @safe @nogc
     {
-        synchronized (mutex) this.logLevel_ = lv;
+        atomicStore(this.logLevel_, lv);
     }
 
     /** This `delegate` is called in case a log message with
@@ -895,16 +691,13 @@ abstract class Logger
     */
     void forwardMsg(ref LogEntry payload) @trusted
     {
-        static if (isLoggingActive) synchronized (mutex)
+        if (isLoggingEnabled(payload.logLevel, this.logLevel_,
+            globalLogLevel))
         {
-            if (isLoggingEnabled(payload.logLevel, this.logLevel_,
-                globalLogLevel))
-            {
-                this.writeLogMsg(payload);
+            this.writeLogMsg(payload);
 
-                if (payload.logLevel == LogLevel.fatal)
-                    this.fatalHandler_();
-            }
+            if (payload.logLevel == LogLevel.fatal)
+                this.fatalHandler_();
         }
     }
 
@@ -944,8 +737,7 @@ abstract class Logger
             string moduleName = __MODULE__, A...)(lazy A args)
             if (args.length == 0 || (args.length > 0 && !is(A[0] : bool)))
         {
-            static if (isLoggingActiveAt!ll && ll >= moduleLogLevel!moduleName)
-                synchronized (mutex)
+            synchronized (mutex)
             {
                 if (isLoggingEnabled(ll, this.logLevel_, globalLogLevel))
                 {
@@ -991,8 +783,7 @@ abstract class Logger
             string moduleName = __MODULE__, A...)(lazy bool condition,
                 lazy A args)
         {
-            static if (isLoggingActiveAt!ll && ll >= moduleLogLevel!moduleName)
-                synchronized (mutex)
+            synchronized (mutex)
             {
                 if (isLoggingEnabled(ll, this.logLevel_, globalLogLevel,
                                      condition))
@@ -1040,8 +831,7 @@ abstract class Logger
             string moduleName = __MODULE__, A...)(lazy bool condition,
                 lazy string msg, lazy A args)
         {
-            static if (isLoggingActiveAt!ll && ll >= moduleLogLevel!moduleName)
-                synchronized (mutex)
+            synchronized (mutex)
             {
                 import std.format.write : formattedWrite;
 
@@ -1088,8 +878,7 @@ abstract class Logger
             string prettyFuncName = __PRETTY_FUNCTION__,
             string moduleName = __MODULE__, A...)(lazy string msg, lazy A args)
         {
-            static if (isLoggingActiveAt!ll && ll >= moduleLogLevel!moduleName)
-                synchronized (mutex)
+            synchronized (mutex)
             {
                 import std.format.write : formattedWrite;
 
@@ -1161,7 +950,7 @@ abstract class Logger
         lazy bool condition, lazy A args)
         if (args.length != 1)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
             if (isLoggingEnabled(ll, this.logLevel_, globalLogLevel, condition))
             {
@@ -1185,10 +974,9 @@ abstract class Logger
         string file = __FILE__, string funcName = __FUNCTION__,
         string prettyFuncName = __PRETTY_FUNCTION__)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
-            if (isLoggingEnabled(ll, this.logLevel_, globalLogLevel,
-                condition) && ll >= moduleLogLevel!moduleName)
+            if (isLoggingEnabled(ll, this.logLevel_, globalLogLevel, condition))
             {
                 this.beginLogMsg(file, line, funcName, prettyFuncName,
                     moduleName, ll, thisTid, Clock.currTime, this);
@@ -1230,7 +1018,7 @@ abstract class Logger
         string moduleName = __MODULE__, A...)(const LogLevel ll, lazy A args)
         if ((args.length > 1 && !is(Unqual!(A[0]) : bool)) || args.length == 0)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
             if (isLoggingEnabled(ll, this.logLevel_, globalLogLevel))
             {
@@ -1254,7 +1042,7 @@ abstract class Logger
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
             if (isLoggingEnabled(ll, this.logLevel_, globalLogLevel))
             {
@@ -1299,7 +1087,7 @@ abstract class Logger
         string moduleName = __MODULE__, A...)(lazy bool condition, lazy A args)
         if (args.length != 1)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
             if (isLoggingEnabled(this.logLevel_, this.logLevel_,
                 globalLogLevel, condition))
@@ -1324,7 +1112,7 @@ abstract class Logger
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
             if (isLoggingEnabled(this.logLevel_, this.logLevel_, globalLogLevel,
                 condition))
@@ -1371,7 +1159,7 @@ abstract class Logger
                 && !is(immutable A[0] == immutable LogLevel))
             || args.length == 0)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
             if (isLoggingEnabled(this.logLevel_, this.logLevel_,
                 globalLogLevel))
@@ -1395,7 +1183,7 @@ abstract class Logger
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
             if (isLoggingEnabled(this.logLevel_, this.logLevel_, globalLogLevel))
             {
@@ -1442,7 +1230,7 @@ abstract class Logger
         string moduleName = __MODULE__, A...)(const LogLevel ll,
         lazy bool condition, lazy string msg, lazy A args)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
             import std.format.write : formattedWrite;
 
@@ -1490,7 +1278,7 @@ abstract class Logger
         string moduleName = __MODULE__, A...)(const LogLevel ll,
             lazy string msg, lazy A args)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
             import std.format.write : formattedWrite;
 
@@ -1539,7 +1327,7 @@ abstract class Logger
         string moduleName = __MODULE__, A...)(lazy bool condition,
             lazy string msg, lazy A args)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
             import std.format.write : formattedWrite;
 
@@ -1585,7 +1373,7 @@ abstract class Logger
         string prettyFuncName = __PRETTY_FUNCTION__,
         string moduleName = __MODULE__, A...)(lazy string msg, lazy A args)
     {
-        static if (isLoggingActive) synchronized (mutex)
+        synchronized (mutex)
         {
             import std.format.write : formattedWrite;
 
@@ -1616,28 +1404,28 @@ abstract class Logger
 
 // Thread Global
 
-private __gshared Logger stdSharedDefaultLogger;
+private shared Logger stdSharedDefaultLogger;
 private shared Logger stdSharedLogger;
 private shared LogLevel stdLoggerGlobalLogLevel = LogLevel.all;
 
 /* This method returns the global default Logger.
  * Marked @trusted because of excessive reliance on __gshared data
  */
-private @property Logger defaultSharedLoggerImpl() @trusted
+private @property shared(Logger) defaultSharedLoggerImpl() @trusted
 {
     import core.lifetime : emplace;
     import std.stdio : stderr;
 
     __gshared align(__traits(classInstanceAlignment, FileLogger))
-        void[__traits(classInstanceSize, FileLogger)] _buffer;
+        void[__traits(classInstanceSize, FileLogger)] _buffer = void;
 
     import std.concurrency : initOnce;
     initOnce!stdSharedDefaultLogger({
         auto buffer = cast(ubyte[]) _buffer;
-        return emplace!FileLogger(buffer, stderr, LogLevel.info);
+        return cast(shared) emplace!(FileLogger)(buffer, stderr, LogLevel.info);
     }());
 
-    return stdSharedDefaultLogger;
+    return atomicLoad(stdSharedDefaultLogger);
 }
 
 /** This property sets and gets the default `Logger`. Unless set to another
@@ -1665,19 +1453,12 @@ if (sharedLog !is myLogger)
     sharedLog = new myLogger;
 -------------
 */
-@property Logger sharedLog() @safe
+@property shared(Logger) sharedLog() @safe
 {
-    static auto trustedLoad(ref shared Logger logger) @trusted
-    {
-        import core.atomic : atomicLoad, MemoryOrder;
-        return cast() atomicLoad!(MemoryOrder.acq)(logger);
-            //FIXME: Casting shared away here. Not good. See issue 16232.
-    }
-
     // If we have set up our own logger use that
-    if (auto logger = trustedLoad(stdSharedLogger))
+    if (auto logger = atomicLoad!(MemoryOrder.seq)(stdSharedLogger))
     {
-        return logger;
+        return atomicLoad(logger);
     }
     else
     {
@@ -1687,10 +1468,9 @@ if (sharedLog !is myLogger)
 }
 
 /// Ditto
-@property void sharedLog(Logger logger) @trusted
+@property void sharedLog(shared(Logger) logger) @safe
 {
-    import core.atomic : atomicStore, MemoryOrder;
-    atomicStore!(MemoryOrder.rel)(stdSharedLogger, cast(shared) logger);
+    atomicStore!(MemoryOrder.seq)(stdSharedLogger, atomicLoad(logger));
 }
 
 /** This methods get and set the global `LogLevel`.
@@ -1736,9 +1516,12 @@ class StdForwardLogger : Logger
         this.fatalHandler = delegate() {};
     }
 
-    override protected void writeLogMsg(ref LogEntry payload)
+    override protected void writeLogMsg(ref LogEntry payload) @trusted
     {
-          sharedLog.forwardMsg(payload);
+        synchronized (sharedLog.mutex)
+        {
+            (cast() sharedLog).forwardMsg(payload);
+        }
     }
 }
 
@@ -1746,6 +1529,40 @@ class StdForwardLogger : Logger
 @safe unittest
 {
     auto nl1 = new StdForwardLogger(LogLevel.all);
+}
+
+@safe unittest
+{
+    import core.thread : Thread, msecs;
+
+    static class RaceLogger : Logger
+    {
+        int value;
+        this() @safe shared
+        {
+            super(LogLevel.init);
+        }
+        override void writeLogMsg(ref LogEntry payload) @safe
+        {
+            import core.thread : Thread, msecs;
+            if (payload.msg == "foo")
+            {
+                value = 42;
+                () @trusted { Thread.sleep(100.msecs); }();
+                assert(value == 42, "Another thread changed the value");
+            }
+            else
+            {
+                () @trusted { Thread.sleep(50.msecs); } ();
+                value = 13;
+            }
+        }
+    }
+
+    sharedLog = new shared RaceLogger;
+    scope(exit) { sharedLog = null; }
+    () @trusted { new Thread(() { log("foo"); }).start(); }();
+    log("bar");
 }
 
 /** This `LogLevel` is unqiue to every thread.
@@ -1774,7 +1591,7 @@ private @property Logger stdThreadLocalLogImpl() @trusted
 }
 
 /** This function returns a thread unique `Logger`, that by default
-propergates all data logged to it to the `sharedLog`.
+propagates all data logged to it to the `sharedLog`.
 
 These properties can be used to set and get this `Logger`. Every
 modification to this `Logger` will only be visible in the thread the
@@ -1884,10 +1701,12 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     auto oldunspecificLogger = sharedLog;
     scope(exit) {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
     }
 
-    sharedLog = tl1;
+    () @trusted {
+        sharedLog = cast(shared) tl1;
+    }();
 
     log();
     assert(tl1.line == __LINE__ - 1);
@@ -2006,22 +1825,34 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
     assert(l.line == lineNumber);
     assert(l.logLevel == LogLevel.all);
 
-    auto oldunspecificLogger = sharedLog;
+    Logger oldunspecificLogger;
+    () @trusted {
+        oldunspecificLogger = cast() sharedLog;
+    }();
 
     assert(oldunspecificLogger.logLevel == LogLevel.info,
          to!string(oldunspecificLogger.logLevel));
 
     assert(l.logLevel == LogLevel.all);
-    sharedLog = l;
+
+    () @trusted {
+        sharedLog = cast(shared) l;
+    }();
+
     assert(globalLogLevel == LogLevel.all,
             to!string(globalLogLevel));
 
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        () @trusted {
+            sharedLog = atomicLoad(cast(shared) oldunspecificLogger);
+        }();
     }
 
-    assert(sharedLog.logLevel == LogLevel.all);
+    () @trusted {
+        assert((cast() sharedLog).logLevel == LogLevel.all);
+    }();
+
     assert(stdThreadLocalLog.logLevel == LogLevel.all);
     assert(globalLogLevel == LogLevel.all);
 
@@ -2093,13 +1924,14 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
     string filename = deleteme ~ __FUNCTION__ ~ ".tempLogFile";
     FileLogger l = new FileLogger(filename);
     auto oldunspecificLogger = sharedLog;
-    sharedLog = l;
+
+    sharedLog = cast(shared) l;
 
     scope(exit)
     {
         remove(filename);
         assert(!exists(filename));
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -2136,7 +1968,7 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
     scope(exit)
     {
         remove(filename);
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -2144,8 +1976,11 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
     string written = "this should be written to file";
 
     auto l = new FileLogger(filename);
-    sharedLog = l;
-    sharedLog.logLevel = LogLevel.critical;
+    sharedLog = cast(shared) l;
+
+    () @trusted {
+        (cast() sharedLog).logLevel = LogLevel.critical;
+    }();
 
     log(LogLevel.error, false, notWritten);
     log(LogLevel.critical, true, written);
@@ -2187,11 +2022,14 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     auto mem = new TestLogger;
     mem.fatalHandler = delegate() {};
-    sharedLog = mem;
+
+    () @trusted {
+        sharedLog = cast(shared) mem;
+    }();
 
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -2434,11 +2272,14 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     auto mem = new TestLogger;
     mem.fatalHandler = delegate() {};
-    sharedLog = mem;
+
+    () @trusted {
+        sharedLog = cast(shared) mem;
+    }();
 
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -2690,10 +2531,13 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     stdThreadLocalLog.logLevel = LogLevel.all;
 
-    sharedLog = mem;
+    () @trusted {
+        sharedLog = cast(shared) mem;
+    }();
+
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -2920,12 +2764,15 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
     auto tl = new TestLogger(LogLevel.info);
-    sharedLog = tl;
+
+    () @trusted {
+        sharedLog = cast(shared) tl;
+    }();
 
     trace("trace");
     assert(tl.msg.indexOf("trace") == -1);
@@ -2943,7 +2790,7 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     scope(exit)
     {
-        sharedLog = oldunspecificLogger;
+        sharedLog = atomicLoad(oldunspecificLogger);
         globalLogLevel = LogLevel.all;
     }
 
@@ -2951,7 +2798,10 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 
     auto tl = new TestLogger(LogLevel.info);
     logger.insertLogger("required", tl);
-    sharedLog = logger;
+
+    () @trusted {
+        sharedLog = cast(shared) logger;
+    }();
 
     trace("trace");
     assert(tl.msg.indexOf("trace") == -1);
@@ -2987,14 +2837,12 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
 // Workaround for atomics not allowed in @safe code
 private auto trustedLoad(T)(ref shared T value) @trusted
 {
-    import core.atomic : atomicLoad, MemoryOrder;
     return atomicLoad!(MemoryOrder.acq)(value);
 }
 
 // ditto
 private void trustedStore(T)(ref shared T dst, ref T src) @trusted
 {
-    import core.atomic : atomicStore, MemoryOrder;
     atomicStore!(MemoryOrder.rel)(dst, src);
 }
 
@@ -3002,7 +2850,7 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
 // to shared logger
 @system unittest
 {
-    import core.atomic, core.thread, std.concurrency;
+    import core.thread, std.concurrency;
 
     static shared logged_count = 0;
 
@@ -3039,10 +2887,13 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
     auto oldSharedLog = sharedLog;
     scope(exit)
     {
-        sharedLog = oldSharedLog;
+        sharedLog = atomicLoad(oldSharedLog);
     }
 
-    sharedLog = new IgnoredLog;
+    () @trusted {
+        sharedLog = cast(shared) new IgnoredLog;
+    }();
+
     Thread[] spawned;
 
     foreach (i; 0 .. 4)
@@ -3062,7 +2913,9 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
 
 @safe unittest
 {
-    auto dl = cast(FileLogger) sharedLog;
+    auto dl = () @trusted {
+        return cast(FileLogger) cast() sharedLog;
+    }();
     assert(dl !is null);
     assert(dl.logLevel == LogLevel.info);
     assert(globalLogLevel == LogLevel.all);
@@ -3159,7 +3012,7 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
     auto oldShared = sharedLog;
     scope(exit)
     {
-        sharedLog = oldShared;
+        sharedLog = atomicLoad(oldShared);
         if (exists(fn))
         {
             remove(fn);
@@ -3169,7 +3022,11 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
     auto ts = [ "Test log 1", "Test log 2", "Test log 3"];
 
     auto fl = new FileLogger(fn);
-    sharedLog = fl;
+
+    () @trusted {
+        sharedLog = cast(shared) fl;
+    }();
+
     assert(exists(fn));
 
     foreach (t; ts)

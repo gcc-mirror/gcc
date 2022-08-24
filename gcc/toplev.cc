@@ -721,7 +721,7 @@ init_asm_output (const char *name)
 		     "cannot open %qs for writing: %m", asm_file_name);
     }
 
-  if (!flag_syntax_only)
+  if (!flag_syntax_only && !(global_dc->lang_mask & CL_LTODump))
     {
       targetm.asm_out.file_start ();
 
@@ -1038,6 +1038,8 @@ general_init (const char *argv0, bool init_signals)
     = global_options_init.x_flag_diagnostics_show_line_numbers;
   global_dc->show_cwe
     = global_options_init.x_flag_diagnostics_show_cwe;
+  global_dc->show_rules
+    = global_options_init.x_flag_diagnostics_show_rules;
   global_dc->path_format
     = (enum diagnostic_path_format)global_options_init.x_flag_diagnostics_path_format;
   global_dc->show_path_depths

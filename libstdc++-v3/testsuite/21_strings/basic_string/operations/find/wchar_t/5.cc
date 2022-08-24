@@ -24,14 +24,14 @@
 // [string::find.first.not.of]
 // [string::find.last.not.of]
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 void
 test03()
 {
   std::wstring_view str1(L"bar");
-  std::wstring str2(L"foobar");
+  __gnu_test::wstring str2(L"foobar");
 
   auto x = str2.find(str1);
   VERIFY (x == 3);

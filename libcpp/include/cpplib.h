@@ -513,11 +513,17 @@ struct cpp_options
   /* Nonzero for the '#elifdef' and '#elifndef' directives.  */
   unsigned char elifdef;
 
+  /* Nonzero for the '#warning' directive.  */
+  unsigned char warning_directive;
+
   /* Nonzero means tokenize C++20 module directives.  */
   unsigned char module_directives;
 
   /* Nonzero for C++23 size_t literals.  */
   unsigned char size_t_literals;
+
+  /* Nonzero for C++23 delimited escape sequences.  */
+  unsigned char delimited_escape_seqs;
 
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
@@ -546,6 +552,9 @@ struct cpp_options
 
   /* True if warn about differences between C++98 and C++11.  */
   bool cpp_warn_cxx11_compat;
+
+  /* True if warn about differences between C++17 and C++20.  */
+  bool cpp_warn_cxx20_compat;
 
   /* Nonzero if bidirectional control characters checking is on.  See enum
      cpp_bidirectional_level.  */
@@ -581,8 +590,8 @@ struct cpp_options
      ints and target wide characters, respectively.  */
   size_t precision, char_precision, int_precision, wchar_precision;
 
-  /* True means chars (wide chars) are unsigned.  */
-  bool unsigned_char, unsigned_wchar;
+  /* True means chars (wide chars, UTF-8 chars) are unsigned.  */
+  bool unsigned_char, unsigned_wchar, unsigned_utf8char;
 
   /* True if the most significant byte in a word has the lowest
      address in memory.  */
@@ -655,6 +664,7 @@ enum cpp_warning_reason {
   CPP_W_C90_C99_COMPAT,
   CPP_W_C11_C2X_COMPAT,
   CPP_W_CXX11_COMPAT,
+  CPP_W_CXX20_COMPAT,
   CPP_W_EXPANSION_TO_DEFINED,
   CPP_W_BIDIRECTIONAL
 };

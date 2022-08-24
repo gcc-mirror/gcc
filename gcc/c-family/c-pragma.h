@@ -219,7 +219,7 @@ union gen_pragma_handler {
 };
 /* Internally used to keep the data of the handler.  */
 struct internal_pragma_handler {
-  union gen_pragma_handler handler;
+  union gen_pragma_handler handler, early_handler;
   /* Permits to know if handler is a pragma_handler_1arg (extra_data is false)
      or a pragma_handler_2arg (extra_data is true).  */
   bool extra_data;
@@ -241,6 +241,17 @@ extern void c_register_pragma_with_expansion_and_data (const char *space,
                                                    pragma_handler_2arg handler,
                                                        void *data);
 extern void c_invoke_pragma_handler (unsigned int);
+
+/* Early pragma handlers run in addition to the normal ones.  They can be used
+   by frontends such as C++ that may want to process some pragmas during lexing
+   before they start processing them.  */
+extern void
+c_register_pragma_with_early_handler (const char *space, const char *name,
+				      pragma_handler_1arg handler,
+				      pragma_handler_1arg early_handler);
+extern void c_invoke_early_pragma_handler (unsigned int);
+extern void c_pp_invoke_early_pragma_handler (unsigned int);
+
 
 extern void maybe_apply_pragma_weak (tree);
 extern void maybe_apply_pending_pragma_weaks (void);

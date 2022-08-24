@@ -611,6 +611,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   struct regcount *regcounts = XOBFINISH (&regcounts_os, struct regcount *);
 
   fprintf (cfile, "#include <stdlib.h>\n");
+  fprintf (cfile, "#include <stdint.h>\n");
   fprintf (cfile, "#include <stdbool.h>\n\n");
 
   fprintf (cfile, "static const int gcn_num_vars = %d;\n\n", var_count);
@@ -664,7 +665,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 /* Embed an object file into a C source file.  */
 
 static void
-process_obj (FILE *in, FILE *cfile)
+process_obj (FILE *in, FILE *cfile, uint32_t omp_requires)
 {
   size_t len = 0;
   const char *input = read_file (in, &len);
@@ -691,17 +692,19 @@ process_obj (FILE *in, FILE *cfile)
 	   len);
 
   fprintf (cfile,
-	   "static const struct gcn_image_desc {\n"
+	   "static const struct gcn_data {\n"
+	   "  uintptr_t omp_requires_mask;\n"
 	   "  const struct gcn_image *gcn_image;\n"
 	   "  unsigned kernel_count;\n"
 	   "  const struct hsa_kernel_description *kernel_infos;\n"
 	   "  unsigned global_variable_count;\n"
-	   "} target_data = {\n"
+	   "} gcn_data = {\n"
+	   "  %d,\n"
 	   "  &gcn_image,\n"
 	   "  sizeof (gcn_kernels) / sizeof (gcn_kernels[0]),\n"
 	   "  gcn_kernels,\n"
 	   "  gcn_num_vars\n"
-	   "};\n\n");
+	   "};\n\n", omp_requires);
 
   fprintf (cfile,
 	   "#ifdef __cplusplus\n"
@@ -720,7 +723,7 @@ process_obj (FILE *in, FILE *cfile)
   fprintf (cfile, "static __attribute__((constructor)) void init (void)\n"
 	   "{\n"
 	   "  GOMP_offload_register_ver (%#x, __OFFLOAD_TABLE__,"
-	   " %d/*GCN*/, &target_data);\n"
+	   " %d/*GCN*/, &gcn_data);\n"
 	   "};\n",
 	   GOMP_VERSION_PACK (GOMP_VERSION, GOMP_VERSION_GCN),
 	   GOMP_DEVICE_GCN);
@@ -728,7 +731,7 @@ process_obj (FILE *in, FILE *cfile)
   fprintf (cfile, "static __attribute__((destructor)) void fini (void)\n"
 	   "{\n"
 	   "  GOMP_offload_unregister_ver (%#x, __OFFLOAD_TABLE__,"
-	   " %d/*GCN*/, &target_data);\n"
+	   " %d/*GCN*/, &gcn_data);\n"
 	   "};\n",
 	   GOMP_VERSION_PACK (GOMP_VERSION, GOMP_VERSION_GCN),
 	   GOMP_DEVICE_GCN);
@@ -1027,6 +1030,7 @@ main (int argc, char **argv)
 		    }
 		  else
 		    dbgobj = make_temp_file (".mkoffload.dbg.o");
+		  obstack_ptr_grow (&files_to_cleanup, dbgobj);
 
 		  /* If the copy fails then just ignore it.  */
 		  if (copy_early_debug_info (argv[ix], dbgobj))
@@ -1077,9 +1081,28 @@ main (int argc, char **argv)
       unsetenv ("COMPILER_PATH");
       unsetenv ("LIBRARY_PATH");
 
+      char *omp_requires_file;
+      if (save_temps)
+	omp_requires_file = concat (dumppfx, ".mkoffload.omp_requires", NULL);
+      else
+	omp_requires_file = make_temp_file (".mkoffload.omp_requires");
+      obstack_ptr_grow (&files_to_cleanup, omp_requires_file);
+
       /* Run the compiler pass.  */
+      xputenv (concat ("GCC_OFFLOAD_OMP_REQUIRES_FILE=", omp_requires_file, NULL));
       fork_execute (cc_argv[0], CONST_CAST (char **, cc_argv), true, ".gcc_args");
       obstack_free (&cc_argv_obstack, NULL);
+      unsetenv("GCC_OFFLOAD_OMP_REQUIRES_FILE");
+
+      in = fopen (omp_requires_file, "rb");
+      if (!in)
+	fatal_error (input_location, "cannot open omp_requires file %qs",
+		     omp_requires_file);
+      uint32_t omp_requires;
+      if (fread (&omp_requires, sizeof (omp_requires), 1, in) != 1)
+	fatal_error (input_location, "cannot read omp_requires file %qs",
+		     omp_requires_file);
+      fclose (in);
 
       in = fopen (gcn_s1_name, "r");
       if (!in)
@@ -1102,7 +1125,7 @@ main (int argc, char **argv)
       if (!in)
 	fatal_error (input_location, "cannot open intermediate gcn obj file");
 
-      process_obj (in, cfile);
+      process_obj (in, cfile, omp_requires);
 
       fclose (in);
 

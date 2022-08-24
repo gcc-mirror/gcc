@@ -2488,7 +2488,7 @@ private immutable long[__traits(allMembers, ClockType).length] _ticksPerSecond;
 // https://issues.dlang.org/show_bug.cgi?id=14863
 // The assert will occur when someone attempts to use _ticksPerSecond for that
 // value.
-extern(C) void _d_initMonoTime()
+extern(C) void _d_initMonoTime() @nogc nothrow
 {
     // We need a mutable pointer to the ticksPerSecond array. Although this
     // would appear to break immutability, it is logically the same as a static
@@ -3823,7 +3823,7 @@ unittest
 }
 
 version (Darwin)
-long machTicksPerSecond()
+long machTicksPerSecond() @nogc nothrow
 {
     // Be optimistic that ticksPerSecond (1e9*denom/numer) is integral. So far
     // so good on Darwin based platforms OS X, iOS.

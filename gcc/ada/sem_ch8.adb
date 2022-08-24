@@ -6082,7 +6082,7 @@ package body Sem_Ch8 is
                --  If not that special case, then just reset the Etype
 
                else
-                  Set_Etype (N, Etype (Entity (N)));
+                  Set_Etype (N, Entyp);
                end if;
             end;
          end if;
@@ -10758,15 +10758,26 @@ package body Sem_Ch8 is
                      return;
                   end if;
 
-                  --  There is a redundant use_type_clause in a child unit.
-                  --  Determine which of the units is more deeply nested. If a
+                  --  If there is a redundant use_type_clause in a child unit
+                  --  determine which of the units is more deeply nested. If a
                   --  unit is a package instance, retrieve the entity and its
                   --  scope from the instance spec.
 
                   Ent1 := Entity_Of_Unit (Unit1);
                   Ent2 := Entity_Of_Unit (Unit2);
 
-                  if Scope (Ent2) = Standard_Standard then
+                  --  When the scope of both units' entities are
+                  --  Standard_Standard then neither Unit1 or Unit2 are child
+                  --  units - so return in that case.
+
+                  if Scope (Ent1) = Standard_Standard
+                    and then Scope (Ent2) = Standard_Standard
+                  then
+                     return;
+
+                  --  Otherwise, determine if one of the units is not a child
+
+                  elsif Scope (Ent2) = Standard_Standard then
                      Error_Msg_Sloc := Sloc (Clause2);
                      Err_No := Clause1;
 

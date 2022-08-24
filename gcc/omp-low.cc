@@ -6188,6 +6188,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		      && gimple_omp_for_combined_into_p (ctx->stmt))
 		    {
 		      tree t = OMP_CLAUSE_LINEAR_STEP (c);
+		      if (DECL_P (t))
+			t = build_outer_var_ref (t, ctx);
 		      tree stept = TREE_TYPE (t);
 		      tree ct = omp_find_clause (clauses,
 						 OMP_CLAUSE__LOOPTEMP_);
@@ -6241,10 +6243,10 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			}
 
 		      if (POINTER_TYPE_P (TREE_TYPE (x)))
-			x = fold_build2 (POINTER_PLUS_EXPR,
-					 TREE_TYPE (x), x, t);
+			x = fold_build_pointer_plus (x, t);
 		      else
-			x = fold_build2 (PLUS_EXPR, TREE_TYPE (x), x, t);
+			x = fold_build2 (PLUS_EXPR, TREE_TYPE (x), x,
+					 fold_convert (TREE_TYPE (x), t));
 		    }
 
 		  if ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_LINEAR
@@ -12701,6 +12703,11 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gcc_unreachable ();
     }
 
+  /* Ensure that requires map is written via output_offload_tables, even if only
+     'target (enter/exit) data' is used in the translation unit.  */
+  if (ENABLE_OFFLOADING && (omp_requires_mask & OMP_REQUIRES_TARGET_USED))
+    g->have_offload = true;
+
   clauses = gimple_omp_target_clauses (stmt);
 
   gimple_seq dep_ilist = NULL;
@@ -14697,7 +14704,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return execute_lower_omp (); }
+  unsigned int execute (function *) final override
+  {
+    return execute_lower_omp ();
+  }
 
 }; // class pass_lower_omp
 
@@ -15005,11 +15015,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
   {
     return flag_openacc || flag_openmp || flag_openmp_simd;
   }
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return diagnose_omp_structured_block_errors ();
     }

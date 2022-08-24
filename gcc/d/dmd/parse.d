@@ -1460,7 +1460,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
         if (token.value != TOK.leftCurly)
         {
-            error("members of template declaration expected");
+            error("`{` expected after template parameter list, not `%s`", token.toChars());
             goto Lerr;
         }
         decldefs = parseBlock(null);
@@ -2186,7 +2186,13 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         if (token.value == TOK.identifier)
             s = new AST.DebugSymbol(token.loc, token.ident);
         else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+        {
+            // @@@DEPRECATED_2.111@@@
+            // Deprecated in 2.101, remove in 2.111
+            deprecation("`debug = <integer>` is deprecated, use debug identifiers instead");
+
             s = new AST.DebugSymbol(token.loc, cast(uint)token.unsvalue);
+        }
         else
         {
             error("identifier or integer expected, not `%s`", token.toChars());
@@ -2215,7 +2221,13 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             if (token.value == TOK.identifier)
                 id = token.ident;
             else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+            {
+                // @@@DEPRECATED_2.111@@@
+                // Deprecated in 2.101, remove in 2.111
+                deprecation("`debug( <integer> )` is deprecated, use debug identifiers instead");
+
                 level = cast(uint)token.unsvalue;
+            }
             else
                 error("identifier or integer expected inside `debug(...)`, not `%s`", token.toChars());
             loc = token.loc;
@@ -2235,7 +2247,12 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         if (token.value == TOK.identifier)
             s = new AST.VersionSymbol(token.loc, token.ident);
         else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+        {
+            // @@@DEPRECATED_2.111@@@
+            // Deprecated in 2.101, remove in 2.111
+            deprecation("`version = <integer>` is deprecated, use version identifiers instead");
             s = new AST.VersionSymbol(token.loc, cast(uint)token.unsvalue);
+        }
         else
         {
             error("identifier or integer expected, not `%s`", token.toChars());
@@ -2269,7 +2286,13 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             if (token.value == TOK.identifier)
                 id = token.ident;
             else if (token.value == TOK.int32Literal || token.value == TOK.int64Literal)
+            {
+                // @@@DEPRECATED_2.111@@@
+                // Deprecated in 2.101, remove in 2.111
+                deprecation("`version( <integer> )` is deprecated, use version identifiers instead");
+
                 level = cast(uint)token.unsvalue;
+            }
             else if (token.value == TOK.unittest_)
                 id = Identifier.idPool(Token.toString(TOK.unittest_));
             else if (token.value == TOK.assert_)
@@ -4862,7 +4885,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                     if (udas !is null)
                     {
                         if (storage_class != 0)
-                            error("cannot put a storage-class in an alias declaration.");
+                            error("cannot put a storage-class in an `alias` declaration.");
                         // parseAttributes shouldn't have set these variables
                         assert(link == linkage && !setAlignment && ealign is null);
                         auto tpl_ = cast(AST.TemplateDeclaration) s;
@@ -4887,7 +4910,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                     parseAttributes();
                     // type
                     if (udas)
-                        error("user-defined attributes not allowed for alias declarations");
+                        error("user-defined attributes not allowed for `alias` declarations");
 
                     auto t = parseType();
 
@@ -5877,7 +5900,8 @@ LagainStc:
             {
                 if (isDeclaration(&token, NeedDeclaratorId.mustIfDstyle, TOK.reserved, null))
                     goto Ldeclaration;
-                if (peekNext() == TOK.leftParenthesis)
+                const tv = peekNext();
+                if (tv == TOK.leftParenthesis)
                 {
                     // mixin(string)
                     AST.Expression e = parseAssignExp();
@@ -5891,6 +5915,14 @@ LagainStc:
                     {
                         s = new AST.ExpStatement(loc, e);
                     }
+                    break;
+                }
+                else if (tv == TOK.template_)
+                {
+                    // mixin template
+                    nextToken();
+                    AST.Dsymbol d = parseTemplateDeclaration(true);
+                    s = new AST.ExpStatement(loc, d);
                     break;
                 }
                 AST.Dsymbol d = parseMixin();
@@ -9303,13 +9335,10 @@ LagainStc:
         {
             AST.TypeAArray taa = cast(AST.TypeAArray)t;
             AST.Type index = taa.index;
+            // `new Type[expr]` is a static array
             auto edim = AST.typeToExpression(index);
-            if (!edim)
-            {
-                error("cannot create a `%s` with `new`", t.toChars);
-                return new AST.NullExp(loc);
-            }
-            t = new AST.TypeSArray(taa.next, edim);
+            if (edim)
+                t = new AST.TypeSArray(taa.next, edim);
         }
         else if (token.value == TOK.leftParenthesis && t.ty != Tsarray)
         {

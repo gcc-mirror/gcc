@@ -1,4 +1,7 @@
-// { dg-additional-options "-O1 -Wno-free-nonheap-object" }
+// { dg-additional-options "-O1 -Wno-free-nonheap-object -Wno-analyzer-out-of-bounds" }
+/* Disabled out-of-bounds checker because the output relied
+   on optimizations.  out-of-bounds-placement-new.C tests
+   the same pattern but without optimizations.  */
 
 inline void *operator new (__SIZE_TYPE__, void *__p) { return __p; }
 

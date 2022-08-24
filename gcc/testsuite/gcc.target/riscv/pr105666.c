@@ -7,7 +7,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target hard_float } */
-/* { dg-options "-march=rv64g -ffast-math" } */
+/* { dg-options "-march=rv64g -mabi=lp64d -ffast-math" } */
 
 #define NITER 4
 #define NVARS 20

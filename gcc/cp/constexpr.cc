@@ -1438,6 +1438,20 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 	/* These builtins shall be ignored during constant expression
 	   evaluation.  */
 	return void_node;
+      case BUILT_IN_UNREACHABLE:
+      case BUILT_IN_TRAP:
+	if (!*non_constant_p && !ctx->quiet)
+	  {
+	    /* Do not allow__builtin_unreachable in constexpr function.
+	       The __builtin_unreachable call with BUILTINS_LOCATION
+	       comes from cp_maybe_instrument_return.  */
+	    if (EXPR_LOCATION (t) == BUILTINS_LOCATION)
+	      error ("%<constexpr%> call flows off the end of the function");
+	    else
+	      error ("%q+E is not a constant expression", t);
+	  }
+	*non_constant_p = true;
+	return t;
       default:
 	break;
       }
@@ -1531,18 +1545,9 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
     {
       if (!*non_constant_p && !ctx->quiet)
 	{
-	  /* Do not allow__builtin_unreachable in constexpr function.
-	     The __builtin_unreachable call with BUILTINS_LOCATION
-	     comes from cp_maybe_instrument_return.  */
-	  if (fndecl_built_in_p (fun, BUILT_IN_UNREACHABLE)
-	      && EXPR_LOCATION (t) == BUILTINS_LOCATION)
-	    error ("%<constexpr%> call flows off the end of the function");
-	  else
-	    {
-	      new_call = build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
-					       CALL_EXPR_FN (t), nargs, args);
-	      error ("%q+E is not a constant expression", new_call);
-	    }
+	  new_call = build_call_array_loc (EXPR_LOCATION (t), TREE_TYPE (t),
+					   CALL_EXPR_FN (t), nargs, args);
+	  error ("%q+E is not a constant expression", new_call);
 	}
       *non_constant_p = true;
       return t;
@@ -3076,7 +3081,13 @@ reduced_constant_expression_p (tree t)
 	     element.  */
 	  if (!reduced_constant_expression_p (e.value))
 	    return false;
-	  /* Empty class field may or may not have an initializer.  */
+	  /* We want to remove initializers for empty fields in a struct to
+	     avoid confusing output_constructor.  */
+	  if (is_empty_field (e.index)
+	      && TREE_CODE (TREE_TYPE (t)) == RECORD_TYPE)
+	    return false;
+	  /* Check for non-empty fields between initialized fields when
+	     CONSTRUCTOR_NO_CLEARING.  */
 	  for (; field && e.index != field;
 	       field = next_subobject_field (DECL_CHAIN (field)))
 	    if (!is_really_empty_class (TREE_TYPE (field),
@@ -3502,6 +3513,13 @@ cxx_eval_conditional_expression (const constexpr_ctx *ctx, tree t,
     val = TREE_OPERAND (t, 1);
   if (TREE_CODE (t) == IF_STMT && !val)
     val = void_node;
+  /* A TARGET_EXPR may be nested inside another TARGET_EXPR, but still
+     serve as the initializer for the same object as the outer TARGET_EXPR,
+     as in
+       A a = true ? A{} : A{};
+     so strip the inner TARGET_EXPR so we don't materialize a temporary.  */
+  if (TREE_CODE (val) == TARGET_EXPR)
+    val = TARGET_EXPR_INITIAL (val);
   return cxx_eval_constant_expression (ctx, val, lval, non_constant_p,
 				       overflow_p, jump_target);
 }
@@ -4198,9 +4216,16 @@ cxx_eval_bit_field_ref (const constexpr_ctx *ctx, tree t,
   if (*non_constant_p)
     return t;
 
-  if (TREE_CODE (whole) == VECTOR_CST)
-    return fold_ternary (BIT_FIELD_REF, TREE_TYPE (t), whole,
-			 TREE_OPERAND (t, 1), TREE_OPERAND (t, 2));
+  if (TREE_CODE (whole) == VECTOR_CST || !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+    {
+      if (tree r = fold_ternary (BIT_FIELD_REF, TREE_TYPE (t), whole,
+				 TREE_OPERAND (t, 1), TREE_OPERAND (t, 2)))
+	return r;
+      if (!ctx->quiet)
+	error ("%qE is not a constant expression", orig_whole);
+      *non_constant_p = true;
+      return t;
+    }
 
   start = TREE_OPERAND (t, 2);
   istart = tree_to_shwi (start);
@@ -5707,6 +5732,20 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  }
 	  break;
 
+	case REALPART_EXPR:
+	  gcc_assert (probe == target);
+	  vec_safe_push (refs, probe);
+	  vec_safe_push (refs, TREE_TYPE (probe));
+	  probe = TREE_OPERAND (probe, 0);
+	  break;
+
+	case IMAGPART_EXPR:
+	  gcc_assert (probe == target);
+	  vec_safe_push (refs, probe);
+	  vec_safe_push (refs, TREE_TYPE (probe));
+	  probe = TREE_OPERAND (probe, 0);
+	  break;
+
 	default:
 	  if (evaluated)
 	    object = probe;
@@ -5745,7 +5784,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   type = TREE_TYPE (object);
   bool no_zero_init = true;
 
-  releasing_vec ctors, indexes;
+  auto_vec<tree *> ctors;
+  releasing_vec indexes;
   auto_vec<int> index_pos_hints;
   bool activated_union_member_p = false;
   bool empty_base = false;
@@ -5785,13 +5825,35 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  *valp = ary_ctor;
 	}
 
-      /* If the value of object is already zero-initialized, any new ctors for
-	 subobjects will also be zero-initialized.  */
-      no_zero_init = CONSTRUCTOR_NO_CLEARING (*valp);
-
       enum tree_code code = TREE_CODE (type);
       tree reftype = refs->pop();
       tree index = refs->pop();
+
+      if (code == COMPLEX_TYPE)
+	{
+	  if (TREE_CODE (*valp) == COMPLEX_CST)
+	    *valp = build2 (COMPLEX_EXPR, type, TREE_REALPART (*valp),
+			    TREE_IMAGPART (*valp));
+	  else if (TREE_CODE (*valp) == CONSTRUCTOR
+		   && CONSTRUCTOR_NELTS (*valp) == 0
+		   && CONSTRUCTOR_NO_CLEARING (*valp))
+	    {
+	      tree r = build_constructor (reftype, NULL);
+	      CONSTRUCTOR_NO_CLEARING (r) = 1;
+	      *valp = build2 (COMPLEX_EXPR, type, r, r);
+	    }
+	  gcc_assert (TREE_CODE (*valp) == COMPLEX_EXPR);
+	  ctors.safe_push (valp);
+	  vec_safe_push (indexes, index);
+	  valp = &TREE_OPERAND (*valp, TREE_CODE (index) == IMAGPART_EXPR);
+	  gcc_checking_assert (refs->is_empty ());
+	  type = reftype;
+	  break;
+	}
+
+      /* If the value of object is already zero-initialized, any new ctors for
+	 subobjects will also be zero-initialized.  */
+      no_zero_init = CONSTRUCTOR_NO_CLEARING (*valp);
 
       if (code == RECORD_TYPE && is_empty_field (index))
 	/* Don't build a sub-CONSTRUCTOR for an empty base or field, as they
@@ -5835,7 +5897,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  no_zero_init = true;
 	}
 
-      vec_safe_push (ctors, *valp);
+      ctors.safe_push (valp);
       vec_safe_push (indexes, index);
 
       constructor_elt *cep
@@ -5897,11 +5959,11 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	     semantics are not applied on an object under construction.
 	     They come into effect when the constructor for the most
 	     derived object ends."  */
-	  for (tree elt : *ctors)
+	  for (tree *elt : ctors)
 	    if (same_type_ignoring_top_level_qualifiers_p
-		(TREE_TYPE (const_object_being_modified), TREE_TYPE (elt)))
+		(TREE_TYPE (const_object_being_modified), TREE_TYPE (*elt)))
 	      {
-		fail = TREE_READONLY (elt);
+		fail = TREE_READONLY (*elt);
 		break;
 	      }
 	}
@@ -5942,6 +6004,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       valp = ctx->global->values.get (object);
       for (unsigned i = 0; i < vec_safe_length (indexes); i++)
 	{
+	  ctors[i] = valp;
 	  constructor_elt *cep
 	    = get_or_insert_ctor_field (*valp, indexes[i], index_pos_hints[i]);
 	  valp = &cep->value;
@@ -6004,17 +6067,45 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
      CONSTRUCTORs, if any.  */
   bool c = TREE_CONSTANT (init);
   bool s = TREE_SIDE_EFFECTS (init);
+  if (!indexes->is_empty ())
+    {
+      tree last = indexes->last ();
+      if (TREE_CODE (last) == REALPART_EXPR
+	  || TREE_CODE (last) == IMAGPART_EXPR)
+	{
+	  /* And canonicalize COMPLEX_EXPR into COMPLEX_CST if
+	     possible.  */
+	  tree *cexpr = ctors.last ();
+	  if (tree c = const_binop (COMPLEX_EXPR, TREE_TYPE (*cexpr),
+				    TREE_OPERAND (*cexpr, 0),
+				    TREE_OPERAND (*cexpr, 1)))
+	    *cexpr = c;
+	  else
+	    {
+	      TREE_CONSTANT (*cexpr)
+		= (TREE_CONSTANT (TREE_OPERAND (*cexpr, 0))
+		   & TREE_CONSTANT (TREE_OPERAND (*cexpr, 1)));
+	      TREE_SIDE_EFFECTS (*cexpr)
+		= (TREE_SIDE_EFFECTS (TREE_OPERAND (*cexpr, 0))
+		   | TREE_SIDE_EFFECTS (TREE_OPERAND (*cexpr, 1)));
+	    }
+	  c = TREE_CONSTANT (*cexpr);
+	  s = TREE_SIDE_EFFECTS (*cexpr);
+	}
+    }
   if (!c || s || activated_union_member_p)
-    for (tree elt : *ctors)
+    for (tree *elt : ctors)
       {
+	if (TREE_CODE (*elt) != CONSTRUCTOR)
+	  continue;
 	if (!c)
-	  TREE_CONSTANT (elt) = false;
+	  TREE_CONSTANT (*elt) = false;
 	if (s)
-	  TREE_SIDE_EFFECTS (elt) = true;
+	  TREE_SIDE_EFFECTS (*elt) = true;
 	/* Clear CONSTRUCTOR_NO_CLEARING since we've activated a member of
 	   this union.  */
-	if (TREE_CODE (TREE_TYPE (elt)) == UNION_TYPE)
-	  CONSTRUCTOR_NO_CLEARING (elt) = false;
+	if (TREE_CODE (TREE_TYPE (*elt)) == UNION_TYPE)
+	  CONSTRUCTOR_NO_CLEARING (*elt) = false;
       }
 
   if (lval)

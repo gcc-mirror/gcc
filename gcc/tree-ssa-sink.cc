@@ -208,6 +208,12 @@ select_best_block (basic_block early_bb,
       temp_bb = get_immediate_dominator (CDI_DOMINATORS, temp_bb);
     }
 
+  /* Placing a statement before a setjmp-like function would be invalid
+     (it cannot be reevaluated when execution follows an abnormal edge).
+     If we selected a block with abnormal predecessors, just punt.  */
+  if (bb_has_abnormal_pred (best_bb))
+    return early_bb;
+
   /* If we found a shallower loop nest, then we always consider that
      a win.  This will always give us the most control dependent block
      within that loop nest.  */
@@ -230,8 +236,7 @@ select_best_block (basic_block early_bb,
   if (bb_loop_depth (best_bb) == bb_loop_depth (early_bb)
       /* If result of comparsion is unknown, prefer EARLY_BB.
 	 Thus use !(...>=..) rather than (...<...)  */
-      && !(best_bb->count.apply_scale (100, 1)
-	   >= early_bb->count.apply_scale (threshold, 1)))
+      && !(best_bb->count * 100 >= early_bb->count * threshold))
     return best_bb;
 
   /* No better block found, so return EARLY_BB, which happens to be the
@@ -829,10 +834,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_sink != 0; }
-  virtual unsigned int execute (function *);
-  opt_pass *clone (void) { return new pass_sink_code (m_ctxt); }
-  void set_pass_param (unsigned n, bool param)
+  bool gate (function *) final override { return flag_tree_sink != 0; }
+  unsigned int execute (function *) final override;
+  opt_pass *clone (void) final override { return new pass_sink_code (m_ctxt); }
+  void set_pass_param (unsigned n, bool param) final override
     {
       gcc_assert (n == 0);
       unsplit_edges = param;

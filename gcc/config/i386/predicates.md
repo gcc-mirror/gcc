@@ -672,6 +672,12 @@
 {
   if (SUBREG_P (op))
     op = SUBREG_REG (op);
+
+  /* Before reload, we can allow (SUBREG (MEM...)) as a register operand
+     because it is guaranteed to be reloaded into one.  */
+  if (MEM_P (op))
+    return true;
+
   return !(op == arg_pointer_rtx
 	   || op == frame_pointer_rtx
 	   || IN_RANGE (REGNO (op),
@@ -685,6 +691,7 @@
 {
   if (SUBREG_P (op))
     op = SUBREG_REG (op);
+
   if (reload_completed)
     return REG_OK_FOR_INDEX_STRICT_P (op);
   else
@@ -922,6 +929,14 @@
 {
   unsigned HOST_WIDE_INT val = INTVAL (op);
   return val <= 255*8 && val % 8 == 0;
+})
+
+;; Match 1 to 255 except multiples of 8
+(define_predicate "const_0_to_255_not_mul_8_operand"
+  (match_code "const_int")
+{
+  unsigned HOST_WIDE_INT val = INTVAL (op);
+  return val <= 255 && val % 8 != 0;
 })
 
 ;; Return true if OP is CONST_INT >= 1 and <= 31 (a valid operand
@@ -1186,6 +1201,25 @@
 (define_predicate "reg_or_const_vector_operand"
   (ior (match_operand 0 "register_operand")
        (match_code "const_vector")))
+
+;; Return true when OP is CONST_VECTOR which can be converted to a
+;; sign extended 32-bit integer.
+(define_predicate "x86_64_const_vector_operand"
+  (match_code "const_vector")
+{
+  if (mode == VOIDmode)
+    mode = GET_MODE (op);
+  else if (GET_MODE (op) != mode)
+    return false;
+  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+    return false;
+  HOST_WIDE_INT val = ix86_convert_const_vector_to_integer (op, mode);
+  return trunc_int_for_mode (val, SImode) == val;
+})
+
+(define_predicate "nonimmediate_or_x86_64_const_vector_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_operand 0 "x86_64_const_vector_operand")))
 
 ;; Return true when OP is nonimmediate or standard SSE constant.
 (define_predicate "nonimmediate_or_sse_const_operand"

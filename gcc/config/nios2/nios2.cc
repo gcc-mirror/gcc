@@ -2552,7 +2552,10 @@ nios2_load_pic_address (rtx sym, int unspec, rtx tmp)
       return nios2_large_got_address (offset, tmp);
     }
 
-  return gen_const_mem (Pmode, nios2_got_address (sym, unspec));
+  if (unspec == UNSPEC_PIC_CALL_SYM)
+    return gen_rtx_MEM (Pmode, nios2_got_address (sym, unspec));
+  else
+    return gen_const_mem (Pmode, nios2_got_address (sym, unspec));
 }
 
 /* Nonzero if the constant value X is a legitimate general operand

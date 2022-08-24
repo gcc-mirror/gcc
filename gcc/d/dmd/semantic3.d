@@ -470,20 +470,12 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     if (f.parameterList.varargs == VarArg.typesafe && i + 1 == nparams)
                     {
                         stc |= STC.variadic;
-                        auto vtypeb = vtype.toBasetype();
-                        if (vtypeb.ty == Tarray || vtypeb.ty == Tclass)
-                        {
-                            /* Since it'll be pointing into the stack for the array
-                             * contents, it needs to be `scope`
-                             */
-                            stc |= STC.scope_;
-                        }
                     }
 
                     if ((funcdecl.flags & FUNCFLAG.inferScope) && !(fparam.storageClass & STC.scope_))
                         stc |= STC.maybescope;
 
-                    stc |= fparam.storageClass & (STC.IOR | STC.return_ | STC.scope_ | STC.lazy_ | STC.final_ | STC.TYPECTOR | STC.nodtor | STC.returnScope);
+                    stc |= fparam.storageClass & (STC.IOR | STC.return_ | STC.scope_ | STC.lazy_ | STC.final_ | STC.TYPECTOR | STC.nodtor | STC.returnScope | STC.register);
                     v.storage_class = stc;
                     v.dsymbolSemantic(sc2);
                     if (!sc2.insert(v))
@@ -1379,7 +1371,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             funcdecl.flags &= ~FUNCFLAG.semantic3Errors;
         if (funcdecl.type.ty == Terror)
             funcdecl.errors = true;
-        //printf("-FuncDeclaration::semantic3('%s.%s', sc = %p, loc = %s)\n", parent.toChars(), toChars(), sc, loc.toChars());
+        //printf("-FuncDeclaration::semantic3('%s.%s', sc = %p, loc = %s)\n", funcdecl.parent.toChars(), funcdecl.toChars(), sc, funcdecl.loc.toChars());
         //fflush(stdout);
     }
 

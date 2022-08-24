@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "gimple-range.h"
+#include "value-range-storage.h"
 #include "tree-cfg.h"
 #include "target.h"
 #include "attribs.h"
@@ -320,7 +321,7 @@ block_range_cache::block_range_cache ()
   bitmap_obstack_initialize (&m_bitmaps);
   m_ssa_ranges.create (0);
   m_ssa_ranges.safe_grow_cleared (num_ssa_names);
-  m_range_allocator = new vrange_allocator;
+  m_range_allocator = new obstack_vrange_allocator;
 }
 
 // Remove any m_block_caches which have been created.
@@ -478,7 +479,7 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
 ssa_global_cache::ssa_global_cache ()
 {
   m_tab.create (0);
-  m_range_allocator = new vrange_allocator;
+  m_range_allocator = new obstack_vrange_allocator;
 }
 
 // Deconstruct a global cache.
@@ -959,7 +960,7 @@ ranger_cache::edge_range (vrange &r, edge e, tree name, enum rfd_mode mode)
   // If this is not an abnormal edge, check for inferred ranges on exit.
   if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
     m_exit.maybe_adjust_range (r, name, e->src);
-  int_range_max er;
+  Value_Range er (TREE_TYPE (name));
   if (m_gori.outgoing_edge_range_p (er, e, name, *this))
     r.intersect (er);
   return true;
@@ -1210,13 +1211,56 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   // Check if a dominators can supply the range.
   if (range_from_dom (block_result, name, bb, RFD_FILL))
     {
-      m_on_entry.set_bb_range (name, bb, block_result);
       if (DEBUG_RANGE_CACHE)
 	{
 	  fprintf (dump_file, "Filled from dominator! :  ");
 	  block_result.dump (dump_file);
 	  fprintf (dump_file, "\n");
 	}
+      // See if any equivalences can refine it.
+      if (m_oracle)
+	{
+	  unsigned i;
+	  bitmap_iterator bi;
+	  // Query equivalences in read-only mode.
+	  const_bitmap equiv = m_oracle->equiv_set (name, bb);
+	  EXECUTE_IF_SET_IN_BITMAP (equiv, 0, i, bi)
+	    {
+	      if (i == SSA_NAME_VERSION (name))
+		continue;
+	      tree equiv_name = ssa_name (i);
+	      basic_block equiv_bb = gimple_bb (SSA_NAME_DEF_STMT (equiv_name));
+
+	      // Check if the equiv has any ranges calculated.
+	      if (!m_gori.has_edge_range_p (equiv_name))
+		continue;
+
+	      // Check if the equiv definition dominates this block
+	      if (equiv_bb == bb ||
+		  (equiv_bb && !dominated_by_p (CDI_DOMINATORS, bb, equiv_bb)))
+		continue;
+
+	      Value_Range equiv_range (TREE_TYPE (equiv_name));
+	      if (range_from_dom (equiv_range, equiv_name, bb, RFD_READ_ONLY))
+		{
+		  if (block_result.intersect (equiv_range))
+		    {
+		      if (DEBUG_RANGE_CACHE)
+			{
+			  fprintf (dump_file, "Equivalence update! :  ");
+			  print_generic_expr (dump_file, equiv_name, TDF_SLIM);
+			  fprintf (dump_file, "had range  :  ");
+			  equiv_range.dump (dump_file);
+			  fprintf (dump_file, " refining range to :");
+			  block_result.dump (dump_file);
+			  fprintf (dump_file, "\n");
+			}
+		    }
+		}
+	    }
+	}
+
+      m_on_entry.set_bb_range (name, bb, block_result);
       gcc_checking_assert (m_workback.length () == 0);
       return;
     }
@@ -1311,6 +1355,38 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
     fprintf (dump_file, "  Propagation update done.\n");
 }
 
+// Resolve the range of BB if the dominators range is R by calculating incoming
+// edges to this block.  All lead back to the dominator so should be cheap.
+// The range for BB is set and returned in R.
+
+void
+ranger_cache::resolve_dom (vrange &r, tree name, basic_block bb)
+{
+  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+  basic_block dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+
+  // if it doesn't already have a value, store the incoming range.
+  if (!m_on_entry.bb_range_p (name, dom_bb) && def_bb != dom_bb)
+    {
+      // If the range can't be store, don't try to accumulate
+      // the range in PREV_BB due to excessive recalculations.
+      if (!m_on_entry.set_bb_range (name, dom_bb, r))
+	return;
+    }
+  // With the dominator set, we should be able to cheaply query
+  // each incoming edge now and accumulate the results.
+  r.set_undefined ();
+  edge e;
+  edge_iterator ei;
+  Value_Range er (TREE_TYPE (name));
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      edge_range (er, e, name, RFD_READ_ONLY);
+      r.union_ (er);
+    }
+  // Set the cache in PREV_BB so it is not calculated again.
+  m_on_entry.set_bb_range (name, bb, r);
+}
 
 // Get the range of NAME from dominators of BB and return it in R.  Search the
 // dominator tree based on MODE.
@@ -1331,7 +1407,8 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
   basic_block prev_bb = start_bb;
 
   // Track any inferred ranges seen.
-  int_range_max infer (TREE_TYPE (name));
+  Value_Range infer (TREE_TYPE (name));
+  infer.set_varying (TREE_TYPE (name));
 
   // Range on entry to the DEF block should not be queried.
   gcc_checking_assert (start_bb != def_bb);
@@ -1340,7 +1417,7 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
   // Default value is global range.
   get_global_range (r, name);
 
-  // Search until a value is found, pushing outgoing edges encountered.
+  // Search until a value is found, pushing blocks which may need calculating.
   for (bb = get_immediate_dominator (CDI_DOMINATORS, start_bb);
        bb;
        prev_bb = bb, bb = get_immediate_dominator (CDI_DOMINATORS, bb))
@@ -1350,37 +1427,31 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 
       // This block has an outgoing range.
       if (m_gori.has_edge_range_p (name, bb))
+	m_workback.quick_push (prev_bb);
+      else
 	{
-	  // Only outgoing ranges to single_pred blocks are dominated by
-	  // outgoing edge ranges, so those can be simply adjusted on the fly.
-	  edge e = find_edge (bb, prev_bb);
-	  if (e && single_pred_p (prev_bb))
-	    m_workback.quick_push (prev_bb);
-	  else if (mode == RFD_FILL)
+	  // Normally join blocks don't carry any new range information on
+	  // incoming edges.  If the first incoming edge to this block does
+	  // generate a range, calculate the ranges if all incoming edges
+	  // are also dominated by the dominator.  (Avoids backedges which
+	  // will break the rule of moving only upward in the domniator tree).
+	  // If the first pred does not generate a range, then we will be
+	  // using the dominator range anyway, so thats all the check needed.
+	  if (EDGE_COUNT (prev_bb->preds) > 1
+	      && m_gori.has_edge_range_p (name, EDGE_PRED (prev_bb, 0)->src))
 	    {
-	      // Multiple incoming edges, so recursively satisfy this block,
-	      // store the range, then calculate the incoming range for PREV_BB.
-	      if (def_bb != bb)
-		{
-		  range_from_dom (r, name, bb, RFD_FILL);
-		  // If the range can't be store, don't try to accumulate
-		  // the range in PREV_BB due to excessive recalculations.
-		  if (!m_on_entry.set_bb_range (name, bb, r))
-		    break;
-		}
-	      // With the dominator set, we should be able to cheaply query
-	      // each incoming edge now and accumulate the results.
-	      r.set_undefined ();
+	      edge e;
 	      edge_iterator ei;
-	      Value_Range er (TREE_TYPE (name));
+	      bool all_dom = true;
 	      FOR_EACH_EDGE (e, ei, prev_bb->preds)
-		{
-		  edge_range (er, e, name, RFD_READ_ONLY);
-		  r.union_ (er);
-		}
-	      // Set the cache in PREV_BB so it is not calculated again.
-	      m_on_entry.set_bb_range (name, prev_bb, r);
-	      break;
+		if (e->src != bb
+		    && !dominated_by_p (CDI_DOMINATORS, e->src, bb))
+		  {
+		    all_dom = false;
+		    break;
+		  }
+	      if (all_dom)
+		m_workback.quick_push (prev_bb);
 	    }
 	}
 
@@ -1401,14 +1472,25 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 	fprintf (dump_file, " at function top\n");
     }
 
-  // Now process any outgoing edges that we seen along the way.
+  // Now process any blocks wit incoming edges that nay have adjustemnts.
   while (m_workback.length () > start_limit)
     {
-      int_range_max er;
+      Value_Range er (TREE_TYPE (name));
       prev_bb = m_workback.pop ();
+      if (!single_pred_p (prev_bb))
+	{
+	  // Non single pred means we need to cache a vsalue in the dominator
+	  // so we can cheaply calculate incoming edges to this block, and
+	  // then store the resulting value.  If processing mode is not
+	  // RFD_FILL, then the cache cant be stored to, so don't try.
+	  // Otherwise this becomes a quadratic timed calculation.
+	  if (mode == RFD_FILL)
+	    resolve_dom (r, name, prev_bb);
+	  continue;
+	}
+
       edge e = single_pred_edge (prev_bb);
       bb = e->src;
-
       if (m_gori.outgoing_edge_range_p (er, e, name, *this))
 	{
 	  r.intersect (er);
@@ -1474,7 +1556,12 @@ ranger_cache::apply_inferred_ranges (gimple *s)
 	  if (!m_on_entry.get_bb_range (r, name, bb))
 	    exit_range (r, name, bb, RFD_READ_ONLY);
 	  if (r.intersect (infer.range (x)))
-	    m_on_entry.set_bb_range (name, bb, r);
+	    {
+	      m_on_entry.set_bb_range (name, bb, r);
+	      // If this range was invariant before, remove invariance.
+	      if (!m_gori.has_edge_range_p (name))
+		m_gori.set_range_invariant (name, false);
+	    }
 	}
     }
 }

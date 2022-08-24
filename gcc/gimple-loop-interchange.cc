@@ -1705,9 +1705,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_linterchange (m_ctxt); }
-  virtual bool gate (function *) { return flag_loop_interchange; }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_linterchange (m_ctxt); }
+  bool gate (function *) final override { return flag_loop_interchange; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_linterchange
 

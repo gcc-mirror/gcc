@@ -670,10 +670,19 @@ package body Sem_Ch4 is
                then
                   Def_Id := Make_Temporary (Loc, 'S');
 
-                  Insert_Action (E,
-                    Make_Subtype_Declaration (Loc,
-                      Defining_Identifier => Def_Id,
-                      Subtype_Indication  => Relocate_Node (E)));
+                  declare
+                     Subtype_Decl : constant Node_Id :=
+                       Make_Subtype_Declaration (Loc,
+                         Defining_Identifier => Def_Id,
+                         Subtype_Indication  => Relocate_Node (E));
+                  begin
+                     Insert_Action (E, Subtype_Decl);
+
+                     --  Handle unusual case where Insert_Action does not
+                     --  analyze the declaration. Subtype_Decl must be
+                     --  preanalyzed before call to Process_Subtype below.
+                     Preanalyze (Subtype_Decl);
+                  end;
 
                   if Sav_Errs /= Serious_Errors_Detected
                     and then Nkind (Constraint (E)) =
@@ -5149,11 +5158,26 @@ package body Sem_Ch4 is
 
       elsif Is_Record_Type (Prefix_Type) then
 
-         --  Find component with given name. In an instance, if the node is
-         --  known as a prefixed call, do not examine components whose
-         --  visibility may be accidental.
+         --  Find a component with the given name. If the node is a prefixed
+         --  call, do not examine components whose visibility may be
+         --  accidental.
 
-         while Present (Comp) and then not Is_Prefixed_Call (N) loop
+         while Present (Comp)
+           and then not Is_Prefixed_Call (N)
+
+           --  When the selector has been resolved to a function then we may be
+           --  looking at a prefixed call which has been preanalyzed already as
+           --  part of a class condition. In such cases it is possible for a
+           --  derived type to declare a component which has the same name as
+           --  a primitive used in a parent's class condition.
+
+           --  Avoid seeing components as possible interpretations of the
+           --  selected component when this is true.
+
+           and then not (Inside_Class_Condition_Preanalysis
+                          and then Present (Entity (Sel))
+                          and then Ekind (Entity (Sel)) = E_Function)
+         loop
             if Chars (Comp) = Chars (Sel)
               and then Is_Visible_Component (Comp, N)
             then

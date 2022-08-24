@@ -10592,12 +10592,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return (flag_var_tracking && !targetm.delay_vartrack);
     }
 
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return variable_tracking_main ();
     }

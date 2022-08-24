@@ -1,3 +1,230 @@
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/106548
+	* testsuite/libgomp.c/linear-2.c: New test.
+
+2022-08-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* splay-tree.h: Fix splay_* macro unsetting if
+	splay_tree_prefix is defined.
+
+2022-07-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/pr106449-2.c: New test.
+
+2022-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106449
+	* testsuite/libgomp.c-c++-common/pr106449.c: New test.
+
+2022-07-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* target.c (gomp_target_init): Added tailing '\n' to gomp_debug.
+
+2022-07-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/101551
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: XFAIL
+	'offloading_enabled' diagnostics issue.
+
+2022-07-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Enhance
+	'_Pragma' diagnostics verification.
+
+2022-07-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Adapt for
+	improved warning locations.
+	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: Likewise.
+
+2022-07-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/requires-1.c: Add 'dg-note's.
+	* testsuite/libgomp.c-c++-common/requires-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-3.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-7.c: Likewise.
+	* testsuite/libgomp.fortran/requires-1.f90: Likewise.
+
+2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (GOMP_offload_register, GOMP_offload_unregister):
+	Denote as legacy entry points.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_target_any): New proc.
+	* testsuite/libgomp.c-c++-common/requires-1.c: Enable for
+	'offload_target_any'.
+	* testsuite/libgomp.c-c++-common/requires-3.c: Likewise.
+	* testsuite/libgomp.c-c++-common/requires-7.c: Likewise.
+	* testsuite/libgomp.fortran/requires-1.f90: Likewise.
+
+2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/requires-4.c: Enhance testing.
+	* testsuite/libgomp.c-c++-common/requires-5.c: Likewise.
+
+2022-07-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/requires-3.c: Adjust.
+
+2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (GOMP_offload_register_ver): Clarify 'target_data' ->
+	'data'.
+	(GOMP_offload_unregister_ver): Likewise.  Fix up 'target_data'.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark linear-clause change as 'Y'.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_get_num_devices): Add
+	omp_requires_mask arg.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices): Likewise;
+	return -1 when device available but omp_requires_mask != 0.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_num_devices): Likewise.
+	* oacc-host.c (host_get_num_devices, host_openacc_get_property):
+	Update call.
+	* oacc-init.c (resolve_device, acc_init_1, acc_shutdown_1,
+	goacc_attach_host_thread_to_device, acc_get_num_devices,
+	acc_set_device_num, get_property_any): Likewise.
+	* target.c (omp_requires_mask): New global var.
+	(gomp_requires_to_name): New.
+	(GOMP_offload_register_ver): Handle passed omp_requires_mask.
+	(gomp_target_init): Handle omp_requires_mask.
+	* libgomp.texi (OpenMP 5.0): Update requires impl. status.
+	(OpenMP 5.1): Add a missed item.
+	(OpenMP 5.2): Mark linear-clause change as supported in C/C++.
+	* testsuite/libgomp.c-c++-common/requires-1-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-1.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-2-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-2.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-3-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-3.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-4-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-4.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-5-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-5.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-6.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-7-aux.c: New test.
+	* testsuite/libgomp.c-c++-common/requires-7.c: New test.
+	* testsuite/libgomp.fortran/requires-1-aux.f90: New test.
+	* testsuite/libgomp.fortran/requires-1.f90: New test.
+
+2022-07-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.2): Mark target enter/exit data
+	with fromto as implemented.
+
+2022-06-28  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Fix typo in mold linker detection.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2022-06-21  Jakub Jelinek  <jakub@redhat.com>
+	    Paul Iannetta  <piannetta@kalrayinc.com>
+
+	PR libgomp/106045
+	* testsuite/libgomp.c/target-31.c: Add private (i) clause.
+
+2022-06-17  Martin Liska  <mliska@suse.cz>
+
+	* libgomp.texi: Add table header for new features of
+	OpenMP 5.2.
+
+2022-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/get-mapped-ptr-1.c (main): Initialize
+	q to ddress of an automatic variable.  Use -5 instead of -1 in
+	omp_get_mapped_ptr call.  Add test with omp_initial_device.
+	* testsuite/libgomp.fortran/get-mapped-ptr-1.f90 (main): Use -5 instead
+	of -1 in omp_get_mapped_ptr call.  Add test with omp_initial_device.
+	Renumber stop arguments afterwards.
+
+2022-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (omp_initial_device, omp_invalid_device): New enumerators.
+	* omp_lib.f90.in (omp_initial_device, omp_invalid_device): New
+	parameters.
+	* omp_lib.h.in (omp_initial_device, omp_invalid_device): Likewise.
+	* target.c (resolve_device): Add remapped argument, handle
+	GOMP_DEVICE_ICV only if remapped is true (and clear remapped),
+	for negative values, treat GOMP_DEVICE_FALLBACK as fallback only
+	if remapped, otherwise treat omp_initial_device that way.  For
+	omp_invalid_device, always emit gomp_fatal, even when
+	OMP_TARGET_OFFLOAD isn't mandatory.
+	(GOMP_target, GOMP_target_ext, GOMP_target_data, GOMP_target_data_ext,
+	GOMP_target_update, GOMP_target_update_ext,
+	GOMP_target_enter_exit_data): Pass true as remapped argument to
+	resolve_device.
+	(omp_target_alloc, omp_target_free, omp_target_is_present,
+	omp_target_memcpy_check, omp_target_associate_ptr,
+	omp_target_disassociate_ptr, omp_get_mapped_ptr,
+	omp_target_is_accessible): Pass false as remapped argument to
+	resolve_device.  Treat omp_initial_device the same as
+	gomp_get_num_devices ().  Don't bypass resolve_device calls if
+	device_num is negative.
+	(omp_pause_resource): Treat omp_initial_device the same as
+	gomp_get_num_devices ().  Call resolve_device.
+	* icv-device.c (omp_set_default_device): Always set to device_num
+	even when it is negative.
+	* libgomp.texi: Document that Conforming device numbers,
+	omp_initial_device and omp_invalid_device is implemented.
+	* testsuite/libgomp.c/target-41.c (main): Add test with
+	omp_initial_device.
+	* testsuite/libgomp.c/target-45.c: New test.
+	* testsuite/libgomp.c/target-46.c: New test.
+	* testsuite/libgomp.c/target-47.c: New test.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-1.c (main): Add
+	test with omp_initial_device.  Use -5 instead of -1 for negative value
+	test.
+	* testsuite/libgomp.fortran/target-is-accessible-1.f90 (main):
+	Likewise.  Reorder stop numbers.
+
+2022-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c (gomp_init_memkind): Call dlopen with "libmemkind.so.0"
+	rather than "libmemkind.so".
+
+2022-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/Makefrag.am: Evaluate 'if PLUGIN_NVPTX_DYNAMIC' to true.
+	* plugin/configfrag.ac (--with-cuda-driver)
+	(--with-cuda-driver-include, --with-cuda-driver-lib)
+	(CUDA_DRIVER_INCLUDE, CUDA_DRIVER_LIB, PLUGIN_NVPTX_CPPFLAGS)
+	(PLUGIN_NVPTX_LDFLAGS, PLUGIN_NVPTX_LIBS, PLUGIN_NVPTX_DYNAMIC):
+	Remove.
+	* testsuite/libgomp-test-support.exp.in (cuda_driver_include)
+	(cuda_driver_lib): Remove.
+	* testsuite/lib/libgomp.exp (libgomp_init): Don't consider these.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
+2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/allocator.c: Fix up #include directive.
+
+2022-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* allocator.c: Include dlfcn.h if LIBGOMP_USE_MEMKIND is defined.
+	(enum gomp_memkind_kind): New type.
+	(struct omp_allocator_data): Add memkind field if LIBGOMP_USE_MEMKIND
+	is defined.
+	(struct gomp_memkind_data): New type.
+	(memkind_data, memkind_data_once): New variables.
+	(gomp_init_memkind, gomp_get_memkind): New functions.
+	(omp_init_allocator): Initialize data.memkind, don't fail for
+	omp_high_bw_mem_space if libmemkind supports it.
+	(omp_aligned_alloc, omp_free, omp_aligned_calloc, omp_realloc): Add
+	memkind support of LIBGOMP_USE_MEMKIND is defined.
+	* config/linux/allocator.c: New file.
+
 2022-06-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.2): Mark scope w/ firstprivate/allocate as Y.

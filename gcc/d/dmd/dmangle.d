@@ -371,10 +371,20 @@ public:
         if (ta.isnogc)
             buf.writestring("Ni");
 
-        if (ta.isreturn && !ta.isreturninferred)
-            buf.writestring("Nj");
-        else if (ta.isScopeQual && !ta.isscopeinferred)
-            buf.writestring("Nl");
+        // `return scope` must be in that order
+        if (ta.isreturnscope && !ta.isreturninferred)
+        {
+            buf.writestring("NjNl");
+        }
+        else
+        {
+            // when return ref, the order is `scope return`
+            if (ta.isScopeQual && !ta.isscopeinferred)
+                buf.writestring("Nl");
+
+            if (ta.isreturn && !ta.isreturninferred)
+                buf.writestring("Nj");
+        }
 
         if (ta.islive)
             buf.writestring("Nm");

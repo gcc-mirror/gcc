@@ -68,6 +68,7 @@ namespace ana {
 
 region_model_manager::region_model_manager (logger *logger)
 : m_logger (logger),
+  m_empty_call_string (),
   m_next_region_id (0),
   m_root_region (alloc_region_id ()),
   m_stack_region (alloc_region_id (), &m_root_region),
@@ -1748,6 +1749,8 @@ void
 region_model_manager::log_stats (logger *logger, bool show_objs) const
 {
   LOG_SCOPE (logger);
+  logger->log ("call string consolidation");
+  m_empty_call_string.recursive_log (logger);
   logger->log ("svalue consolidation");
   log_uniq_map (logger, show_objs, "constant_svalue", m_constants_map);
   log_uniq_map (logger, show_objs, "unknown_svalue", m_unknowns_map);

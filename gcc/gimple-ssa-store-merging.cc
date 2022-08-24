@@ -263,7 +263,7 @@ do_shift_rotate (enum tree_code code,
 		 int count)
 {
   int i, size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
-  unsigned head_marker;
+  uint64_t head_marker;
 
   if (count < 0
       || count >= TYPE_PRECISION (n->type)
@@ -1037,12 +1037,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return flag_expensive_optimizations && optimize && BITS_PER_UNIT == 8;
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_optimize_bswap
 
@@ -2433,8 +2433,8 @@ public:
   /* Pass not supported for PDP-endian, nor for insane hosts or
      target character sizes where native_{encode,interpret}_expr
      doesn't work properly.  */
-  virtual bool
-  gate (function *)
+  bool
+  gate (function *) final override
   {
     return flag_store_merging
 	   && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
@@ -2442,7 +2442,7 @@ public:
 	   && BITS_PER_UNIT == 8;
   }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 private:
   hash_map<tree_operand_hash, class imm_store_chain_info *> m_stores;

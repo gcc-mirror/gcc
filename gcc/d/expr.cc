@@ -427,7 +427,7 @@ public:
 	    tree result = build_libcall (LIBCALL_ADEQ2, e->type, 3,
 					 d_array_convert (e->e1),
 					 d_array_convert (e->e2),
-					 build_typeinfo (e->loc, t1array));
+					 build_typeinfo (e, t1array));
 
 	    if (e->op == EXP::notEqual)
 	      result = build1 (TRUTH_NOT_EXPR, build_ctype (e->type), result);
@@ -450,7 +450,7 @@ public:
       {
 	/* Use _aaEqual() for associative arrays.  */
 	tree result = build_libcall (LIBCALL_AAEQUAL, e->type, 3,
-				     build_typeinfo (e->loc, tb1),
+				     build_typeinfo (e, tb1),
 				     build_expr (e->e1),
 				     build_expr (e->e2));
 
@@ -484,7 +484,7 @@ public:
     /* Build a call to _aaInX().  */
     this->result_ = build_libcall (LIBCALL_AAINX, e->type, 3,
 				   build_expr (e->e2),
-				   build_typeinfo (e->loc, tkey),
+				   build_typeinfo (e, tkey),
 				   build_address (key));
   }
 
@@ -728,13 +728,13 @@ public:
 				   size_int (ndims), build_address (var));
 
 	result = build_libcall (LIBCALL_ARRAYCATNTX, e->type, 2,
-				build_typeinfo (e->loc, e->type), arrs);
+				build_typeinfo (e, e->type), arrs);
       }
     else
       {
 	/* Handle single concatenation (a ~ b).  */
 	result = build_libcall (LIBCALL_ARRAYCATT, e->type, 3,
-				build_typeinfo (e->loc, e->type),
+				build_typeinfo (e, e->type),
 				d_array_convert (etype, e->e1),
 				d_array_convert (etype, e->e2));
       }
@@ -873,6 +873,17 @@ public:
 	gcc_unreachable ();
       }
 
+    /* Look for exp = noreturn;  */
+    if (e->e2->type->isTypeNoreturn ())
+      {
+	/* If the RHS is a `noreturn' expression, there is no point generating
+	   any code for the assignment, just evaluate side effects.  */
+	tree t1 = build_expr (e->e1);
+	tree t2 = build_expr (e->e2);
+	this->result_ = compound_expr (t1, t2);
+	return;
+      }
+
     /* Look for array[] = n;  */
     if (e->e1->op == EXP::slice)
       {
@@ -903,7 +914,7 @@ public:
 
 		/* So we can call postblits on const/immutable objects.  */
 		Type *tm = etype->unSharedOf ()->mutableOf ();
-		tree ti = build_typeinfo (e->loc, tm);
+		tree ti = build_typeinfo (e, tm);
 
 		/* Generate: _d_arraysetassign (t1.ptr, &t2, t1.length, ti);  */
 		result = build_libcall (LIBCALL_ARRAYSETASSIGN, Type::tvoid, 4,
@@ -977,7 +988,7 @@ public:
 	      {
 		/* Generate: _d_arrayassign(ti, from, to);  */
 		this->result_ = build_libcall (LIBCALL_ARRAYASSIGN, e->type, 3,
-					       build_typeinfo (e->loc, etype),
+					       build_typeinfo (e, etype),
 					       d_array_convert (e->e2),
 					       d_array_convert (e->e1));
 	      }
@@ -1122,7 +1133,7 @@ public:
 	Type *arrtype = (e->type->ty == TY::Tsarray)
 	  ? etype->arrayOf () : e->type;
 	tree result = build_libcall (libcall, arrtype, 4,
-				     build_typeinfo (e->loc, etype),
+				     build_typeinfo (e, etype),
 				     d_array_convert (e->e2),
 				     d_array_convert (e->e1),
 				     build_address (elembuf));
@@ -1193,13 +1204,13 @@ public:
 	  {
 	    libcall = LIBCALL_AAGETY;
 	    ptr = build_address (build_expr (e->e1));
-	    tinfo = build_typeinfo (e->loc, tb1->unSharedOf ()->mutableOf ());
+	    tinfo = build_typeinfo (e, tb1->unSharedOf ()->mutableOf ());
 	  }
 	else
 	  {
 	    libcall = LIBCALL_AAGETRVALUEX;
 	    ptr = build_expr (e->e1);
-	    tinfo = build_typeinfo (e->loc, tkey);
+	    tinfo = build_typeinfo (e, tkey);
 	  }
 
 	/* Index the associative array.  */
@@ -1222,9 +1233,8 @@ public:
       }
     else
       {
-	/* Get the data pointer and length for static and dynamic arrays.  */
+	/* Get the array and length for static and dynamic arrays.  */
 	tree array = d_save_expr (build_expr (e->e1));
-	tree ptr = convert_expr (array, tb1, tb1->nextOf ()->pointerTo ());
 
 	tree length = NULL_TREE;
 	if (tb1->ty != TY::Tpointer)
@@ -1245,10 +1255,35 @@ public:
 	if (tb1->ty != TY::Tpointer)
 	  index = build_bounds_index_condition (e, index, length);
 
-	/* Index the .ptr.  */
-	ptr = void_okay_p (ptr);
-	this->result_ = indirect_ref (TREE_TYPE (TREE_TYPE (ptr)),
-				      build_array_index (ptr, index));
+	/* Convert vectors to their underlying array type.  */
+	if (VECTOR_TYPE_P (TREE_TYPE (array)))
+	  {
+	    tree array_type =
+	      build_array_type_nelts (TREE_TYPE (TREE_TYPE (array)),
+				      TYPE_VECTOR_SUBPARTS (TREE_TYPE (array)));
+	    d_mark_addressable (array, false);
+	    array = build1 (VIEW_CONVERT_EXPR, array_type, array);
+	  }
+
+	if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
+	  {
+	    /* Generate `array[index]'.  When the index is non-constant, we must
+	       mark the array as addressable because we'll need to do pointer
+	       arithmetic on its address.  */
+	    if (TREE_CODE (index) != INTEGER_CST)
+	      d_mark_addressable (array);
+
+	    this->result_ = build4 (ARRAY_REF, TREE_TYPE (TREE_TYPE (array)),
+				    array, index, NULL_TREE, NULL_TREE);
+	  }
+	else
+	  {
+	    /* Generate `array.ptr[index]'.  */
+	    tree ptr = convert_expr (array, tb1, tb1->nextOf ()->pointerTo ());
+	    ptr = void_okay_p (ptr);
+	    this->result_ = indirect_ref (TREE_TYPE (TREE_TYPE (ptr)),
+					  build_pointer_index (ptr, index));
+	  }
       }
   }
 
@@ -1347,7 +1382,7 @@ public:
     if (!integer_zerop (lwr_tree))
       {
 	tree ptrtype = TREE_TYPE (ptr);
-	ptr = build_array_index (void_okay_p (ptr), lwr_tree);
+	ptr = build_pointer_index (void_okay_p (ptr), lwr_tree);
 	ptr = build_nop (ptrtype, ptr);
       }
 
@@ -1427,7 +1462,7 @@ public:
 
 	this->result_ = build_libcall (LIBCALL_AADELX, Type::tbool, 3,
 				       build_expr (e->e1),
-				       build_typeinfo (e->loc, tkey),
+				       build_typeinfo (e, tkey),
 				       build_address (index));
       }
     else
@@ -1857,7 +1892,7 @@ public:
 	       underlying is really a complex type.  */
 	    if (e->e1->type->ty == TY::Tenum
 		&& e->e1->type->isTypeEnum ()->sym->isSpecial ())
-	      object = build_vconvert (build_ctype (tb), object);
+	      object = underlying_complex_expr (build_ctype (tb), object);
 
 	    this->result_ = component_ref (object, get_symbol_decl (vd));
 	  }
@@ -1981,7 +2016,7 @@ public:
   {
     if (Type *tid = isType (e->obj))
       {
-	tree ti = build_typeinfo (e->loc, tid);
+	tree ti = build_typeinfo (e, tid);
 
 	/* If the typeinfo is at an offset.  */
 	if (tid->vtinfo->offset)
@@ -2238,13 +2273,17 @@ public:
 	    new_call = build_nop (type, build_address (var));
 	    setup_exp = modify_expr (var, aggregate_initializer_decl (cd));
 	  }
+	else if (global.params.ehnogc && e->thrownew)
+	  {
+	    /* Allocating a `@nogc' Exception with `_d_newThrowable' has already
+	       been handled by the front-end.  */
+	    gcc_unreachable ();
+	  }
 	else
 	  {
 	    /* Generate: _d_newclass()  */
 	    tree arg = build_address (get_classinfo_decl (cd));
-	    libcall_fn libcall = (global.params.ehnogc && e->thrownew)
-	      ? LIBCALL_NEWTHROW : LIBCALL_NEWCLASS;
-	    new_call = build_libcall (libcall, tb, 1, arg);
+	    new_call = build_libcall (LIBCALL_NEWCLASS, tb, 1, arg);
 	  }
 
 	/* Set the context pointer for nested classes.  */
@@ -2315,7 +2354,7 @@ public:
 	/* Generate: _d_newitemT()  */
 	libcall_fn libcall = htype->isZeroInit ()
 	  ? LIBCALL_NEWITEMT : LIBCALL_NEWITEMIT;
-	tree arg = build_typeinfo (e->loc, e->newtype);
+	tree arg = build_typeinfo (e, e->newtype);
 	new_call = build_libcall (libcall, tb, 1, arg);
 
 	if (e->member || !e->arguments)
@@ -2383,7 +2422,7 @@ public:
 	    libcall_fn libcall = tarray->next->isZeroInit ()
 	      ? LIBCALL_NEWARRAYT : LIBCALL_NEWARRAYIT;
 	    result = build_libcall (libcall, tb, 2,
-				    build_typeinfo (e->loc, e->type),
+				    build_typeinfo (e, e->type),
 				    build_expr (arg));
 	  }
 	else
@@ -2415,7 +2454,7 @@ public:
 	    libcall_fn libcall = telem->isZeroInit ()
 	      ? LIBCALL_NEWARRAYMTX : LIBCALL_NEWARRAYMITX;
 
-	    tree tinfo = build_typeinfo (e->loc, e->type);
+	    tree tinfo = build_typeinfo (e, e->type);
 	    tree dims = d_array_value (build_ctype (Type::tsize_t->arrayOf ()),
 				       size_int (e->arguments->length),
 				       build_address (var));
@@ -2442,7 +2481,7 @@ public:
 	libcall_fn libcall = tpointer->next->isZeroInit (e->loc)
 	  ? LIBCALL_NEWITEMT : LIBCALL_NEWITEMIT;
 
-	tree arg = build_typeinfo (e->loc, e->newtype);
+	tree arg = build_typeinfo (e, e->newtype);
 	result = build_libcall (libcall, tb, 1, arg);
 
 	if (e->arguments && e->arguments->length == 1)
@@ -2687,7 +2726,7 @@ public:
 	/* Allocate space on the memory managed heap.  */
 	tree mem = build_libcall (LIBCALL_ARRAYLITERALTX,
 				  etype->pointerTo (), 2,
-				  build_typeinfo (e->loc, etype->arrayOf ()),
+				  build_typeinfo (e, etype->arrayOf ()),
 				  size_int (e->elements->length));
 	mem = d_save_expr (mem);
 
@@ -2744,7 +2783,7 @@ public:
 			       build_address (avals));
 
     tree mem = build_libcall (LIBCALL_ASSOCARRAYLITERALTX, Type::tvoidptr, 3,
-			      build_typeinfo (e->loc, ta), keys, vals);
+			      build_typeinfo (e, ta), keys, vals);
 
     /* Return an associative array pointed to by MEM.  */
     tree aatype = build_ctype (ta);
@@ -2889,14 +2928,13 @@ public:
 
   void visit (VectorExp *e) final override
   {
-    tree type = build_ctype (e->type);
-
     /* First handle array literal expressions.  */
     if (e->e1->op == EXP::arrayLiteral)
       {
 	ArrayLiteralExp *ale = e->e1->isArrayLiteralExp ();
 	vec <constructor_elt, va_gc> *elms = NULL;
 	bool constant_p = true;
+	tree type = build_ctype (e->type);
 
 	vec_safe_reserve (elms, ale->elements->length);
 	for (size_t i = 0; i < ale->elements->length; i++)
@@ -2916,9 +2954,16 @@ public:
 	else
 	  this->result_ = build_constructor (type, elms);
       }
+    else if (e->e1->type->toBasetype ()->ty == TY::Tsarray)
+      {
+	/* Build a vector representation from a static array.  */
+	this->result_ = convert_expr (build_expr (e->e1, this->constp_),
+				      e->e1->type, e->type);
+      }
     else
       {
 	/* Build constructor from single value.  */
+	tree type = build_ctype (e->type);
 	tree value = d_convert (TREE_TYPE (type),
 				build_expr (e->e1, this->constp_, true));
 	this->result_ = build_vector_from_val (type, value);

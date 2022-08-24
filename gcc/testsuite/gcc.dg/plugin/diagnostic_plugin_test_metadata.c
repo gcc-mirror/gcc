@@ -106,9 +106,16 @@ pass_test_metadata::execute (function *fun)
 	if (gcall *call = check_for_named_call (stmt, "gets", 1))
 	  {
 	    gcc_rich_location richloc (gimple_location (call));
-	    /* CWE-242: Use of Inherently Dangerous Function.  */
 	    diagnostic_metadata m;
+
+	    /* CWE-242: Use of Inherently Dangerous Function.  */
 	    m.add_cwe (242);
+
+	    /* Example of a diagnostic_metadata::rule.  */
+	    diagnostic_metadata::precanned_rule
+	      test_rule ("STR34-C", "https://example.com/");
+	    m.add_rule (test_rule);
+
 	    warning_meta (&richloc, m, 0,
 			  "never use %qs", "gets");
 	  }

@@ -190,19 +190,6 @@ proc libgomp_init { args } {
 		append always_ld_library_path ":${atomic_library_path}"
 	    }
 	}
-	global cuda_driver_include
-	global cuda_driver_lib
-	if { $cuda_driver_include != "" } {
-	    # Stop gfortran from freaking out:
-	    # Warning: Nonexistent include directory "[...]"
-	    if {[file exists $cuda_driver_include]} {
-		lappend ALWAYS_CFLAGS "additional_flags=-I$cuda_driver_include"
-	    }
-	}
-	if { $cuda_driver_lib != "" } {
-	    lappend ALWAYS_CFLAGS "additional_flags=-L$cuda_driver_lib"
-	    append always_ld_library_path ":$cuda_driver_lib"
-	}
     }
 
     # We use atomic operations in the testcases to validate results.
@@ -359,6 +346,11 @@ proc libgomp_check_effective_target_offload_target { target_name } {
 
     verbose "not compiling for $target_name offload target"
     return 0
+}
+
+# Return 1 if compiling for any offload target.
+proc check_effective_target_offload_target_any { } {
+    return [libgomp_check_effective_target_offload_target ""]
 }
 
 # Return 1 if compiling for offload target nvptx.

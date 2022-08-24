@@ -40,9 +40,8 @@ struct E {
   A d = true ? (false ? A{} : A{}) : (false ? A{} : A{});
 };
 
-// FIXME: When fixing this, also fix nsdmi-aggr17.C.
-constexpr E e;	    // { dg-bogus "" "PR105550" { xfail *-*-* } }
-SA (e.a.p == &e.a); // { dg-bogus "" "PR105550" { xfail *-*-* } }
+constexpr E e;
+SA (e.a.p == &e.a);
 
 E e1 = { };
 

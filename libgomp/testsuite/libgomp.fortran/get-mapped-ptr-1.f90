@@ -19,7 +19,7 @@ program main
   if (omp_target_associate_ptr (c_loc (q), p, c_sizeof (q), &
                                 0_c_size_t, d) == 0) then
 
-    if(c_associated (omp_get_mapped_ptr (c_loc (q), -1))) &
+    if(c_associated (omp_get_mapped_ptr (c_loc (q), -5))) &
       stop 1
 
     if(c_associated (omp_get_mapped_ptr (c_loc (q), &
@@ -29,14 +29,18 @@ program main
     if(.not. c_associated (omp_get_mapped_ptr (c_loc (q), id), c_loc (q))) &
       stop 3
 
-    if(.not. c_associated (omp_get_mapped_ptr (c_loc (q), d), p)) &
+    if(.not. c_associated (omp_get_mapped_ptr (c_loc (q), omp_initial_device), &
+                           c_loc (q))) &
       stop 4
 
-    if (omp_target_disassociate_ptr (c_loc (q), d) /= 0) &
+    if(.not. c_associated (omp_get_mapped_ptr (c_loc (q), d), p)) &
       stop 5
 
-    if(c_associated (omp_get_mapped_ptr (c_loc (q), d))) &
+    if (omp_target_disassociate_ptr (c_loc (q), d) /= 0) &
       stop 6
+
+    if(c_associated (omp_get_mapped_ptr (c_loc (q), d))) &
+      stop 7
   end if
 
   call omp_target_free (p, d)

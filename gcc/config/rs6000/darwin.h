@@ -367,7 +367,7 @@
    default as well.  */
 
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_MULTIPLE | MASK_PPC_GFXOPT)
+#define TARGET_DEFAULT (OPTION_MASK_MULTIPLE | OPTION_MASK_PPC_GFXOPT)
 
 /* Darwin always uses IBM long double, never IEEE long double.  */
 #undef  TARGET_IEEEQUAD

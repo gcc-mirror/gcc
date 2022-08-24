@@ -6032,18 +6032,18 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  if (!addr_space_superset (as_to, as_from, &as_common))
 	    {
 	      if (ADDR_SPACE_GENERIC_P (as_from))
-		warning_at (loc, 0, "cast to %s address space pointer "
+		warning_at (loc, 0, "cast to %qs address space pointer "
 			    "from disjoint generic address space pointer",
 			    c_addr_space_name (as_to));
 
 	      else if (ADDR_SPACE_GENERIC_P (as_to))
 		warning_at (loc, 0, "cast to generic address space pointer "
-			    "from disjoint %s address space pointer",
+			    "from disjoint %qs address space pointer",
 			    c_addr_space_name (as_from));
 
 	      else
-		warning_at (loc, 0, "cast to %s address space pointer "
-			    "from disjoint %s address space pointer",
+		warning_at (loc, 0, "cast to %qs address space pointer "
+			    "from disjoint %qs address space pointer",
 			    c_addr_space_name (as_to),
 			    c_addr_space_name (as_from));
 	    }
@@ -7252,6 +7252,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       if (!null_pointer_constant_p (rhs)
 	  && asr != asl && !targetm.addr_space.subset_p (asr, asl))
 	{
+	  auto_diagnostic_group d;
+	  bool diagnosed = true;
 	  switch (errtype)
 	    {
 	    case ic_argpass:
@@ -7259,7 +7261,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		const char msg[] = G_("passing argument %d of %qE from "
 				      "pointer to non-enclosed address space");
 		if (warnopt)
-		  warning_at (expr_loc, warnopt, msg, parmnum, rname);
+		  diagnosed
+		    = warning_at (expr_loc, warnopt, msg, parmnum, rname);
 		else
 		  error_at (expr_loc, msg, parmnum, rname);
 	      break;
@@ -7269,7 +7272,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		const char msg[] = G_("assignment from pointer to "
 				      "non-enclosed address space");
 		if (warnopt)
-		  warning_at (location, warnopt, msg);
+		  diagnosed = warning_at (location, warnopt, msg);
 		else
 		  error_at (location, msg);
 		break;
@@ -7280,7 +7283,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		const char msg[] = G_("initialization from pointer to "
 				      "non-enclosed address space");
 		if (warnopt)
-		  warning_at (location, warnopt, msg);
+		  diagnosed = warning_at (location, warnopt, msg);
 		else
 		  error_at (location, msg);
 		break;
@@ -7290,13 +7293,21 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		const char msg[] = G_("return from pointer to "
 				      "non-enclosed address space");
 		if (warnopt)
-		  warning_at (location, warnopt, msg);
+		  diagnosed = warning_at (location, warnopt, msg);
 		else
 		  error_at (location, msg);
 		break;
 	      }
 	    default:
 	      gcc_unreachable ();
+	    }
+	  if (diagnosed)
+	    {
+	      if (errtype == ic_argpass)
+		inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	      else
+		inform (location, "expected %qT but pointer is of type %qT",
+			type, rhstype);
 	    }
 	  return error_mark_node;
 	}
@@ -8045,7 +8056,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 
 	  if (char_array)
 	    {
-	      if (typ2 != char_type_node)
+	      if (typ2 != char_type_node && typ2 != char8_type_node)
 		incompat_string_cst = true;
 	    }
 	  else if (!comptypes (typ1, typ2))
@@ -14478,11 +14489,13 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    need_implicitly_determined = true;
 	  t = OMP_CLAUSE_DECL (c);
 	  if (ort != C_ORT_OMP_DECLARE_SIMD
-	      && OMP_CLAUSE_LINEAR_KIND (c) != OMP_CLAUSE_LINEAR_DEFAULT)
+	      && OMP_CLAUSE_LINEAR_KIND (c) != OMP_CLAUSE_LINEAR_DEFAULT
+	      && OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (c))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"modifier should not be specified in %<linear%> "
-			"clause on %<simd%> or %<for%> constructs");
+			"clause on %<simd%> or %<for%> constructs when not "
+			"using OpenMP 5.2 modifiers");
 	      OMP_CLAUSE_LINEAR_KIND (c) = OMP_CLAUSE_LINEAR_DEFAULT;
 	    }
 	  if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
@@ -14942,7 +14955,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      else
 		{
 		  t = OMP_CLAUSE_DECL (c);
-		  if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
+		  if (!omp_mappable_type (TREE_TYPE (t)))
 		    {
 		      error_at (OMP_CLAUSE_LOCATION (c),
 				"array section does not have mappable type "
@@ -15079,7 +15092,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			    t, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		  remove = true;
 		}
-	      else if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
+	      else if (!omp_mappable_type (TREE_TYPE (t)))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "%qE does not have a mappable type in %qs clause",
@@ -15160,7 +15173,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			 || (OMP_CLAUSE_MAP_KIND (c)
 			     == GOMP_MAP_FORCE_DEVICEPTR)))
 		   && t == OMP_CLAUSE_DECL (c)
-		   && !lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
+		   && !omp_mappable_type (TREE_TYPE (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD does not have a mappable type in %qs clause", t,
@@ -15277,7 +15290,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			cname);
 	      remove = true;
 	    }
-	  else if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (t)))
+	  else if (!omp_mappable_type (TREE_TYPE (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD does not have a mappable type in %qs clause", t,

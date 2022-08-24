@@ -37,7 +37,7 @@
 
 #include <bits/c++config.h>
 #include <bits/stringfwd.h>
-#include <bits/char_traits.h>  // NB: In turn includes stl_algobase.h
+#include <bits/char_traits.h>
 #include <bits/allocator.h>
 #include <bits/cpp_type_traits.h>
 #include <bits/localefwd.h>    // For operators >>, <<, and getline.
@@ -69,39 +69,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using u32string = basic_string<char32_t>;
     using wstring   = basic_string<wchar_t>;
   } // namespace pmr
-
-  template<typename _Str>
-    struct __hash_string_base
-    : public __hash_base<size_t, _Str>
-    {
-      size_t
-      operator()(const _Str& __s) const noexcept
-      { return hash<basic_string_view<typename _Str::value_type>>{}(__s); }
-    };
-
-  template<>
-    struct hash<pmr::string>
-    : public __hash_string_base<pmr::string>
-    { };
-#ifdef _GLIBCXX_USE_CHAR8_T
-  template<>
-    struct hash<pmr::u8string>
-    : public __hash_string_base<pmr::u8string>
-    { };
-#endif
-  template<>
-    struct hash<pmr::u16string>
-    : public __hash_string_base<pmr::u16string>
-    { };
-  template<>
-    struct hash<pmr::u32string>
-    : public __hash_string_base<pmr::u32string>
-    { };
-  template<>
-    struct hash<pmr::wstring>
-    : public __hash_string_base<pmr::wstring>
-    { };
-
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17

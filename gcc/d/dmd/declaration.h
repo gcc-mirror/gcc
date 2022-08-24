@@ -684,6 +684,7 @@ public:
     const char *kind() const override;
     bool isUnique();
     bool needsClosure();
+    bool checkClosure();
     bool hasNestedFrameRefs();
     ParameterList getParameterList();
 

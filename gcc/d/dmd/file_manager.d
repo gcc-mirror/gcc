@@ -20,6 +20,12 @@ import dmd.identifier;
 enum package_d  = "package." ~ mars_ext;
 enum package_di = "package." ~ hdr_ext;
 
+/// Returns: whether a file with `name` is a special "package.d" module
+bool isPackageFileName(scope FileName fileName) nothrow
+{
+    return FileName.equals(fileName.name, package_d) || FileName.equals(fileName.name, package_di);
+}
+
 final class FileManager
 {
     private StringTable!(const(ubyte)[]) files;

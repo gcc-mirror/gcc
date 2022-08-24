@@ -121,8 +121,6 @@ sh port			Alexandre Oliva		<aoliva@gcc.gnu.org>
 sh port			Oleg Endo		<olegendo@gcc.gnu.org>
 sparc port		David S. Miller		<davem@redhat.com>
 sparc port		Eric Botcazou		<ebotcazou@libertysurf.fr>
-tilegx port		Walter Lee		<walt@tilera.com>
-tilepro port		Walter Lee		<walt@tilera.com>
 v850 port		Nick Clifton		<nickc@redhat.com>
 vax port		Matt Thomas		<matt@3am-software.com>
 vax port		Maciej W. Rozycki	<macro@embecosm.com>
@@ -159,6 +157,7 @@ cygwin, mingw-w64	Jonathan Yong		<10walls@gmail.com>
 C front end/ISO C99	Joseph Myers		<joseph@codesourcery.com>
 Ada front end		Arnaud Charlet		<charlet@adacore.com>
 Ada front end		Eric Botcazou		<ebotcazou@libertysurf.fr>
+Ada front end		Marc Poulhiès		<poulhies@adacore.com>
 Ada front end		Pierre-Marie de Rodat	<derodat@adacore.com>
 c++			Jason Merrill		<jason@redhat.com>
 c++			Nathan Sidwell		<nathan@acm.org>
@@ -240,6 +239,7 @@ tree-ssa		Andrew MacLeod		<amacleod@redhat.com>
 tree browser/unparser	Sebastian Pop		<sebpop@gmail.com>
 scev, data dependence	Sebastian Pop		<sebpop@gmail.com>
 profile feedback	Jan Hubicka		<hubicka@ucw.cz>
+AutoFDO			Eugene Rozenfeld	<erozen@microsoft.com>
 reload			Ulrich Weigand		<uweigand@de.ibm.com>
 RTL optimizers		Eric Botcazou		<ebotcazou@libertysurf.fr>
 instruction combiner	Segher Boessenkool	<segher@kernel.crashing.org>
@@ -268,6 +268,7 @@ arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 callgraph		Martin Liska		<mliska@suse.cz>
 callgraph		Martin Jambor		<mjambor@suse.cz>
 C front end		Marek Polacek		<polacek@redhat.com>
+CTF, BTF		David Faust		<david.faust@oracle.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>
 dataflow		Kenneth Zadeck		<zadeck@naturalbridge.com>
@@ -354,6 +355,7 @@ Kevin Buettner					<kevinb@redhat.com>
 Andrew Burgess					<aburgess@redhat.com>
 Adam Butcher					<adam@jessamine.co.uk>
 Andrew Cagney					<cagney@gnu.org>
+Andrew Carlotti					<andrew.carlotti@arm.com>
 Daniel Carrera					<dcarrera@gmail.com>
 Stephane Carrez					<stcarrez@nerim.fr>
 Gabriel Charette				<gchare@google.com>
@@ -397,7 +399,7 @@ Doug Evans					<dje@google.com>
 Chris Fairles					<cfairles@gcc.gnu.org>
 Alessandro Fanfarillo				<fanfarillo.gcc@gmail.com>
 Changpeng Fang					<changpeng.fang@amd.com>
-David Faust					<david.faust@oracle.com>
+Sam Feifer					<sfeifer@redhat.com>
 Li Feng						<nemokingdom@gmail.com>
 Thomas Fitzsimmons				<fitzsim@redhat.com>
 Alexander Fomin					<afomin.mailbox@gmail.com>
@@ -465,6 +467,7 @@ Andreas Jaeger					<aj@suse.de>
 Harsha Jagasia					<harsha.jagasia@amd.com>
 Fariborz Jahanian				<fjahanian@apple.com>
 Surya Kumari Jangala				<jskumari@linux.ibm.com>
+Haochen Jiang					<haochen.jiang@intel.com>
 Qian Jianhua					<qianjh@fujitsu.com>
 Janis Johnson					<janis.marie.johnson@gmail.com>
 Teresa Johnson					<tejohnson@google.com>
@@ -480,6 +483,7 @@ Jeff Knaggs					<jknaggs@redhat.com>
 Michael Koch					<konqueror@gmx.de>
 Nicolas Koenig					<koenigni@student.ethz.ch>
 Boris Kolpackov					<boris@codesynthesis.com>
+Lingling Kong					<lingling.kong@intel.com>
 Dave Korn					<dave.korn.cygwin@gmail.com>
 Julia Koval					<julia.koval@intel.com>
 Matt Kraai					<kraai@ftbfs.org>
@@ -495,6 +499,7 @@ Razya Ladelsky					<razya@gcc.gnu.org>
 Thierry Lafage					<thierry.lafage@inria.fr>
 Rask Ingemann Lambertsen			<ccc94453@vip.cybercity.dk>
 Jerome Lambourg					<lambourg@adacore.com>
+Tim Lange					<mail@tim-lange.me>
 Asher Langton					<langton2@llnl.gov>
 Chris Lattner					<sabre@nondot.org>
 Terry Laurenzo					<tlaurenzo@gmail.com>
@@ -541,6 +546,7 @@ Bingfeng Mei					<bmei@broadcom.com>
 Jim Meyering					<jim@meyering.net>
 Martin Michlmayr				<tbm@cyrius.com>
 Lee Millward					<lee.millward@gmail.com>
+Immad Mir					<mir@sourceware.org>
 Dragan Mladjenovic				<Dragan.Mladjenovic@syrmia.com>
 Alan Modra					<amodra@gmail.com>
 Catherine Moore					<clm@codesourcery.com>
@@ -578,7 +584,6 @@ Nicolas Pitre					<nico@cam.org>
 Michael Ploujnikov				<michael.ploujnikov@oracle.com>
 Paul Pluzhnikov					<ppluzhnikov@google.com>
 Antoniu Pop					<antoniu.pop@gmail.com>
-Marc Poulhiès					<poulhies@adacore.com>
 Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Vidya Praveen					<vidyapraveen@arm.com>
 Thomas Preud'homme				<thomas.preudhomme@celest.fr>
@@ -599,7 +604,6 @@ Craig Rodrigues					<rodrigc@gcc.gnu.org>
 Erven Rohou					<erven.rohou@inria.fr>
 Ira Rosen					<irar@il.ibm.com>
 Yvan Roux					<yvan.roux@linaro.org>
-Eugene Rozenfeld				<erozen@microsoft.com>
 Silvius Rus					<rus@google.com>
 Matthew Sachs					<msachs@apple.com>
 Ankur Saini					<arsenic@sourceware.org>
@@ -608,7 +612,7 @@ Duncan Sands					<baldrick@gcc.gnu.org>
 Sujoy Saraswati					<sujoy.saraswati@hpe.com>
 Trevor Saunders					<tbsaunde+gcc@tbsaunde.org>
 Aaron Sawdey					<acsawdey@linux.ibm.com>
-Roger Sayle					<roger@eyesopen.com>
+Roger Sayle					<roger@nextmovesoftware.com>
 Will Schmidt					<will_schmidt@vnet.ibm.com>
 Stefan Schulze Frielinghaus			<stefansf@linux.ibm.com>
 Tilo Schwarz					<tilo@tilo-schwarz.de>
@@ -716,8 +720,10 @@ information.
 
 
 Matthias Kretz					<m.kretz@gsi.de>
+Tim Lange					<mail@tim-lange.me>
 Jeff Law					<jeffreyalaw@gmail.com>
 Jeff Law					<jlaw@tachyum.com>
+Immad Mir					<mir@sourceware.org>
 Gaius Mulley					<gaiusmod2@gmail.com>
 Siddhesh Poyarekar				<siddhesh@gotplt.org>
 Navid Rahimi					<navidrahimi@microsoft.com>

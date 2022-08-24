@@ -184,6 +184,71 @@ relation_transitive (relation_kind r1, relation_kind r2)
   return rr_transitive_table[r1][r2];
 }
 
+// This vector maps a relation to the equivalent tree code.
+
+tree_code relation_to_code [VREL_LAST + 1] = {
+  ERROR_MARK, ERROR_MARK, LT_EXPR, LE_EXPR, GT_EXPR, GE_EXPR, EQ_EXPR,
+  NE_EXPR };
+
+// This routine validates that a relation can be applied to a specific set of
+// ranges.  In particular, floating point x == x may not be true if the NaN bit
+// is set in the range.  Symbolically the oracle will determine x == x,
+// but specific range instances may override this.
+// To verify, attempt to fold the relation using the supplied ranges.
+// One would expect [1,1] to be returned, anything else means there is something
+// in the range preventing the relation from applying.
+// If there is no mechanism to verify, assume the relation is acceptable.
+
+relation_kind
+relation_oracle::validate_relation (relation_kind rel, vrange &op1, vrange &op2)
+{
+  // If there is no mapping to a tree code, leave the relation as is.
+  tree_code code = relation_to_code [rel];
+  if (code == ERROR_MARK)
+    return rel;
+
+  // Undefined ranges cannot be checked either.
+  if (op1.undefined_p () || op2.undefined_p ())
+    return rel;
+
+  tree t1 = op1.type ();
+  tree t2 = op2.type ();
+
+  // If the range types are not compatible, no relation can exist.
+  if (!range_compatible_p (t1, t2))
+    return VREL_VARYING;
+
+  // If there is no handler, leave the relation as is.
+  range_op_handler handler (code, t1);
+  if (!handler)
+    return rel;
+
+  // If the relation cannot be folded for any reason, leave as is.
+  Value_Range result (boolean_type_node);
+  if (!handler.fold_range (result, boolean_type_node, op1, op2, rel))
+    return rel;
+
+  // The expression op1 REL op2 using REL should fold to [1,1].
+  // Any other result means the relation is not verified to be true.
+  if (result.varying_p () || result.zero_p ())
+    return VREL_VARYING;
+
+  return rel;
+}
+
+// If no range is available, create a varying range for each SSA name and
+// verify.
+
+relation_kind
+relation_oracle::validate_relation (relation_kind rel, tree ssa1, tree ssa2)
+{
+  Value_Range op1, op2;
+  op1.set_varying (TREE_TYPE (ssa1));
+  op2.set_varying (TREE_TYPE (ssa2));
+
+  return validate_relation (rel, op1, op2);
+}
+
 // Given an equivalence set EQUIV, set all the bits in B that are still valid
 // members of EQUIV in basic block BB.
 
@@ -602,7 +667,6 @@ private:
 inline void
 value_relation::set_relation (relation_kind r, tree n1, tree n2)
 {
-  gcc_checking_assert (SSA_NAME_VERSION (n1) != SSA_NAME_VERSION (n2));
   related = r;
   name1 = n1;
   name2 = n2;
@@ -901,8 +965,12 @@ dom_oracle::register_relation (basic_block bb, relation_kind k, tree op1,
     equiv_oracle::register_relation (bb, k, op1, op2);
   else
     {
+      // if neither op1 nor op2 are in a relation before this is registered,
+      // there will be no transitive.
+      bool check = bitmap_bit_p (m_relation_set, SSA_NAME_VERSION (op1))
+		   || bitmap_bit_p (m_relation_set, SSA_NAME_VERSION (op2));
       relation_chain *ptr = set_one_relation (bb, k, op1, op2);
-      if (ptr)
+      if (ptr && check)
 	register_transitives (bb, *ptr);
     }
 }
@@ -944,13 +1012,16 @@ dom_oracle::set_one_relation (basic_block bb, relation_kind k, tree op1,
       // Check into whether we can simply replace the relation rather than
       // intersecting it.  THis may help with some optimistic iterative
       // updating algorithms.
-      ptr->intersect (vr);
+      bool new_rel = ptr->intersect (vr);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, " to produce ");
 	  ptr->dump (dump_file);
-	  fprintf (dump_file, "\n");
+	  fprintf (dump_file, " %s.\n", new_rel ? "Updated" : "No Change");
 	}
+      // If there was no change, return no record..
+      if (!new_rel)
+	return NULL;
     }
   else
     {
@@ -1199,7 +1270,7 @@ dom_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
   if (kind != VREL_VARYING)
     return kind;
 
-  // Query using the equiovalence sets.
+  // Query using the equivalence sets.
   kind = query_relation (bb, equiv1, equiv2);
   return kind;
 }
@@ -1329,16 +1400,7 @@ path_oracle::killing_def (tree ssa)
   unsigned v = SSA_NAME_VERSION (ssa);
 
   bitmap_set_bit (m_killed_defs, v);
-
-  // Walk the equivalency list and remove SSA from any equivalencies.
-  if (bitmap_bit_p (m_equiv.m_names, v))
-    {
-      for (equiv_chain *ptr = m_equiv.m_next; ptr; ptr = ptr->m_next)
-	if (bitmap_bit_p (ptr->m_names, v))
-	  bitmap_clear_bit (ptr->m_names, v);
-    }
-  else
-    bitmap_set_bit (m_equiv.m_names, v);
+  bitmap_set_bit (m_equiv.m_names, v);
 
   // Now add an equivalency with itself so we don't look to the root oracle.
   bitmap b = BITMAP_ALLOC (&m_bitmaps);
@@ -1376,6 +1438,11 @@ void
 path_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
 				tree ssa2)
 {
+  // If the 2 ssa_names are the same, do nothing.  An equivalence is implied,
+  // and no other relation makes sense.
+  if (ssa1 == ssa2)
+    return;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       value_relation vr (k, ssa1, ssa2);
@@ -1446,11 +1513,13 @@ path_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
   return query_relation (bb, equiv_1, equiv_2);
 }
 
-// Reset any relations registered on this path.
+// Reset any relations registered on this path.  ORACLE is the root
+// oracle to use.
 
 void
-path_oracle::reset_path ()
+path_oracle::reset_path (relation_oracle *oracle)
 {
+  set_root_oracle (oracle);
   m_equiv.m_next = NULL;
   bitmap_clear (m_equiv.m_names);
   m_relations.m_head = NULL;

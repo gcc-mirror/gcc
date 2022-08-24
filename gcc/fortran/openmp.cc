@@ -1181,7 +1181,6 @@ gfc_match_iterator (gfc_namespace **ns, bool permit_var)
 	}
       if (':' == gfc_peek_ascii_char ())
 	{
-	  step = gfc_get_expr ();
 	  if (gfc_match (": %e ", &step) != MATCH_YES)
 	    {
 	      gfc_free_expr (begin);
@@ -2014,8 +2013,15 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		}
 	      else if (gfc_match ("ancestor : ") == MATCH_YES)
 		{
+		  bool has_requires = false;
 		  c->ancestor = true;
-		  if (!(gfc_current_ns->omp_requires & OMP_REQ_REVERSE_OFFLOAD))
+		  for (gfc_namespace *ns = gfc_current_ns; ns; ns = ns->parent)
+		    if (ns->omp_requires & OMP_REQ_REVERSE_OFFLOAD)
+		      {
+			has_requires = true;
+			break;
+		      }
+		  if (!has_requires)
 		    {
 		      gfc_error ("%<ancestor%> device modifier not "
 				 "preceded by %<requires%> directive "
@@ -2317,6 +2323,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  if ((mask & OMP_CLAUSE_LINEAR)
 	      && gfc_match ("linear (") == MATCH_YES)
 	    {
+	      bool old_linear_modifier = false;
 	      gfc_omp_linear_op linear_op = OMP_LINEAR_DEFAULT;
 	      gfc_expr *step = NULL;
 
@@ -2324,17 +2331,26 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					       &c->lists[OMP_LIST_LINEAR],
 					       false, NULL, &head)
 		  == MATCH_YES)
-		linear_op = OMP_LINEAR_REF;
+		{
+		  linear_op = OMP_LINEAR_REF;
+		  old_linear_modifier = true;
+		}
 	      else if (gfc_match_omp_variable_list (" val (",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, NULL, &head)
 		       == MATCH_YES)
-		linear_op = OMP_LINEAR_VAL;
+		{
+		  linear_op = OMP_LINEAR_VAL;
+		  old_linear_modifier = true;
+		}
 	      else if (gfc_match_omp_variable_list (" uval (",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, NULL, &head)
 		       == MATCH_YES)
-		linear_op = OMP_LINEAR_UVAL;
+		{
+		  linear_op = OMP_LINEAR_UVAL;
+		  old_linear_modifier = true;
+		}
 	      else if (gfc_match_omp_variable_list ("",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, &end_colon, &head)
@@ -2357,14 +2373,114 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      break;
 		    }
 		}
-	      if (end_colon && gfc_match (" %e )", &step) != MATCH_YES)
+	      gfc_gobble_whitespace ();
+	      if (old_linear_modifier && end_colon)
 		{
-		  gfc_free_omp_namelist (*head, false);
-		  gfc_current_locus = old_loc;
-		  *head = NULL;
-		  break;
+		  if (gfc_match (" %e )", &step) != MATCH_YES)
+		    {
+		      gfc_free_omp_namelist (*head, false);
+		      gfc_current_locus = old_loc;
+		      *head = NULL;
+		      goto error;
+		    }
 		}
-	      else if (!end_colon)
+	      else if (end_colon)
+		{
+		  bool has_error = false;
+		  bool has_modifiers = false;
+		  bool has_step = false;
+		  bool duplicate_step = false;
+		  bool duplicate_mod = false;
+		  while (true)
+		    {
+		      old_loc = gfc_current_locus;
+		      bool close_paren = gfc_match ("val )") == MATCH_YES;
+		      if (close_paren || gfc_match ("val , ") == MATCH_YES)
+			{
+			  if (linear_op != OMP_LINEAR_DEFAULT)
+			    {
+			      duplicate_mod = true;
+			      break;
+			    }
+			  linear_op = OMP_LINEAR_VAL;
+			  has_modifiers = true;
+			  if (close_paren)
+			    break;
+			  continue;
+			}
+		      close_paren = gfc_match ("uval )") == MATCH_YES;
+		      if (close_paren || gfc_match ("uval , ") == MATCH_YES)
+			{
+			  if (linear_op != OMP_LINEAR_DEFAULT)
+			    {
+			      duplicate_mod = true;
+			      break;
+			    }
+			  linear_op = OMP_LINEAR_UVAL;
+			  has_modifiers = true;
+			  if (close_paren)
+			    break;
+			  continue;
+			}
+		      close_paren = gfc_match ("ref )") == MATCH_YES;
+		      if (close_paren || gfc_match ("ref , ") == MATCH_YES)
+			{
+			  if (linear_op != OMP_LINEAR_DEFAULT)
+			    {
+			      duplicate_mod = true;
+			      break;
+			    }
+			  linear_op = OMP_LINEAR_REF;
+			  has_modifiers = true;
+			  if (close_paren)
+			    break;
+			  continue;
+			}
+		      close_paren = (gfc_match ("step ( %e ) )", &step)
+				     == MATCH_YES);
+		      if (close_paren
+			  || gfc_match ("step ( %e ) , ", &step) == MATCH_YES)
+			{
+			  if (has_step)
+			    {
+			      duplicate_step = true;
+			      break;
+			    }
+			  has_modifiers = has_step = true;
+			  if (close_paren)
+			    break;
+			  continue;
+			}
+		      if (!has_modifiers
+			  && gfc_match ("%e )", &step) == MATCH_YES)
+			{
+			  if ((step->expr_type == EXPR_FUNCTION
+				|| step->expr_type == EXPR_VARIABLE)
+			      && strcmp (step->symtree->name, "step") == 0)
+			    {
+			      gfc_current_locus = old_loc;
+			      gfc_match ("step (");
+			      has_error = true;
+			    }
+			  break;
+			}
+		      has_error = true;
+		      break;
+		    }
+		  if (duplicate_mod || duplicate_step)
+		    {
+		      gfc_error ("Multiple %qs modifiers specified at %C",
+				 duplicate_mod ? "linear" : "step");
+		      has_error = true;
+		    }
+		  if (has_error)
+		    {
+		      gfc_free_omp_namelist (*head, false);
+		      *head = NULL;
+		      goto error;
+		    }
+		}
+	      if (step == NULL)
 		{
 		  step = gfc_get_constant_expr (BT_INTEGER,
 						gfc_default_integer_kind,
@@ -2372,9 +2488,12 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		  mpz_set_si (step->value.integer, 1);
 		}
 	      (*head)->expr = step;
-	      if (linear_op != OMP_LINEAR_DEFAULT)
+	      if (linear_op != OMP_LINEAR_DEFAULT || old_linear_modifier)
 		for (gfc_omp_namelist *n = *head; n; n = n->next)
-		  n->u.linear_op = linear_op;
+		  {
+		    n->u.linear.op = linear_op;
+		    n->u.linear.old_modifier = old_linear_modifier;
+		  }
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_LINK)
@@ -4094,9 +4213,13 @@ gfc_match_omp_declare_simd (void)
   gfc_omp_declare_simd *ods;
   bool needs_space = false;
 
-  switch (gfc_match (" ( %s ) ", &proc_name))
+  switch (gfc_match (" ( "))
     {
-    case MATCH_YES: break;
+    case MATCH_YES:
+      if (gfc_match_symbol (&proc_name, /* host assoc = */ true) != MATCH_YES
+	  || gfc_match (" ) ") != MATCH_YES)
+	return MATCH_ERROR;
+      break;
     case MATCH_NO: proc_name = NULL; needs_space = true; break;
     case MATCH_ERROR: return MATCH_ERROR;
     }
@@ -5481,10 +5604,6 @@ gfc_match_omp_requires (void)
       else
 	goto error;
 
-      if (requires_clause & ~(OMP_REQ_ATOMIC_MEM_ORDER_MASK
-			      | OMP_REQ_DYNAMIC_ALLOCATORS))
-	gfc_error_now ("Sorry, %qs clause at %L on REQUIRES directive is not "
-		       "yet supported", clause, &old_loc);
       if (!gfc_omp_requires_add_clause (requires_clause, clause, &old_loc, NULL))
 	goto error;
       requires_clauses |= requires_clause;
@@ -7146,10 +7265,16 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			case OMP_MAP_ALWAYS_TO:
 			case OMP_MAP_ALLOC:
 			  break;
+			case OMP_MAP_TOFROM:
+			  n->u.map_op = OMP_MAP_TO;
+			  break;
+			case OMP_MAP_ALWAYS_TOFROM:
+			  n->u.map_op = OMP_MAP_ALWAYS_TO;
+			  break;
 			default:
 			  gfc_error ("TARGET ENTER DATA with map-type other "
-				     "than TO, or ALLOC on MAP clause at %L",
-				     &n->where);
+				     "than TO, TOFROM or ALLOC on MAP clause "
+				     "at %L", &n->where);
 			  break;
 			}
 		      break;
@@ -7161,10 +7286,16 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			case OMP_MAP_RELEASE:
 			case OMP_MAP_DELETE:
 			  break;
+			case OMP_MAP_TOFROM:
+			  n->u.map_op = OMP_MAP_FROM;
+			  break;
+			case OMP_MAP_ALWAYS_TOFROM:
+			  n->u.map_op = OMP_MAP_ALWAYS_FROM;
+			  break;
 			default:
 			  gfc_error ("TARGET EXIT DATA with map-type other "
-				     "than FROM, RELEASE, or DELETE on MAP "
-				     "clause at %L", &n->where);
+				     "than FROM, TOFROM, RELEASE, or DELETE on "
+				     "MAP clause at %L", &n->where);
 			  break;
 			}
 		      break;
@@ -7259,7 +7390,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			|| code->op == EXEC_OACC_PARALLEL
 			|| code->op == EXEC_OACC_SERIAL))
 		  check_array_not_assumed (n->sym, n->where, name);
-		else if (n->sym->as && n->sym->as->type == AS_ASSUMED_SIZE)
+		else if (list != OMP_LIST_UNIFORM
+			 && n->sym->as && n->sym->as->type == AS_ASSUMED_SIZE)
 		  gfc_error ("Assumed size array %qs in %s clause at %L",
 			     n->sym->name, name, &n->where);
 		if (n->sym->attr.in_namelist && !is_reduction)
@@ -7424,28 +7556,38 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    break;
 		  case OMP_LIST_LINEAR:
 		    if (code
-			&& n->u.linear_op != OMP_LINEAR_DEFAULT
-			&& n->u.linear_op != linear_op)
+			&& n->u.linear.op != OMP_LINEAR_DEFAULT
+			&& n->u.linear.op != linear_op)
 		      {
-			gfc_error ("LINEAR clause modifier used on DO or SIMD"
-				   " construct at %L", &n->where);
-			linear_op = n->u.linear_op;
+			if (n->u.linear.old_modifier)
+			  {
+			    gfc_error ("LINEAR clause modifier used on DO or "
+				       "SIMD construct at %L", &n->where);
+			    linear_op = n->u.linear.op;
+			  }
+			else if (n->u.linear.op != OMP_LINEAR_VAL)
+			  {
+			    gfc_error ("LINEAR clause modifier other than VAL "
+				       "used on DO or SIMD construct at %L",
+				       &n->where);
+			    linear_op = n->u.linear.op;
+			  }
 		      }
 		    else if (omp_clauses->orderedc)
 		      gfc_error ("LINEAR clause specified together with "
 				 "ORDERED clause with argument at %L",
 				 &n->where);
-		    else if (n->u.linear_op != OMP_LINEAR_REF
+		    else if (n->u.linear.op != OMP_LINEAR_REF
 			     && n->sym->ts.type != BT_INTEGER)
 		      gfc_error ("LINEAR variable %qs must be INTEGER "
 				 "at %L", n->sym->name, &n->where);
-		    else if ((n->u.linear_op == OMP_LINEAR_REF
-			      || n->u.linear_op == OMP_LINEAR_UVAL)
+		    else if ((n->u.linear.op == OMP_LINEAR_REF
+			      || n->u.linear.op == OMP_LINEAR_UVAL)
 			     && n->sym->attr.value)
 		      gfc_error ("LINEAR dummy argument %qs with VALUE "
 				 "attribute with %s modifier at %L",
 				 n->sym->name,
-				 n->u.linear_op == OMP_LINEAR_REF
+				 n->u.linear.op == OMP_LINEAR_REF
 				 ? "REF" : "UVAL", &n->where);
 		    else if (n->expr)
 		      {

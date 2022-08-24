@@ -4,7 +4,7 @@ AutoGen definitions Makefile.tpl;
 // Makefile.in is generated from Makefile.tpl by 'autogen Makefile.def'.
 // This file was originally written by Nathanael Nerode.
 //
-//   Copyright 2002-2021 Free Software Foundation
+//   Copyright 2002-2022 Free Software Foundation
 //
 // This file is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -69,9 +69,6 @@ host_modules= { module= mpc; lib_path=src/.libs; bootstrap=true;
 host_modules= { module= isl; lib_path=.libs; bootstrap=true;
 		extra_configure_flags='--disable-shared @extra_isl_gmp_configure_flags@';
 		extra_make_flags='V=1';
-		no_install= true; };
-host_modules= { module= libelf; lib_path=.libs; bootstrap=true;
-		extra_configure_flags='--disable-shared';
 		no_install= true; };
 host_modules= { module= gold; bootstrap=true; };
 host_modules= { module= gprof; };
@@ -353,7 +350,6 @@ dependencies = { module=configure-gcc; on=all-binutils; };
 dependencies = { module=configure-gcc; on=all-gas; };
 dependencies = { module=configure-gcc; on=all-ld; };
 dependencies = { module=configure-gcc; on=all-gold; };
-dependencies = { module=configure-gcc; on=all-libelf; };
 dependencies = { module=configure-gcc; on=all-libiconv; };
 dependencies = { module=all-gcc; on=all-libiberty; hard=true; };
 dependencies = { module=all-gcc; on=all-intl; };
@@ -663,6 +659,7 @@ dependencies = { module=configure-target-newlib; on=all-binutils; };
 dependencies = { module=configure-target-newlib; on=all-ld; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libquadmath; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libbacktrace; };
+dependencies = { module=configure-target-libgo; on=all-target-libbacktrace; };
 
 languages = { language=c;	gcc-check-target=check-gcc; };
 languages = { language=c++;	gcc-check-target=check-c++;

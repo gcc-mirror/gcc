@@ -311,6 +311,7 @@ immutable Msgtable[] msgtable =
     { "__ArrayPostblit" },
     { "__ArrayDtor" },
     { "_d_delThrowable" },
+    { "_d_newThrowable" },
     { "_d_assert_fail" },
     { "dup" },
     { "_aaApply" },

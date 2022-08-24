@@ -57,45 +57,78 @@ Standard types
 
    Access a specific type.  The available types are:
 
-   ==========================================  ================================
-   `enum gcc_jit_types` value                  Meaning
-   ==========================================  ================================
-   :c:data:`GCC_JIT_TYPE_VOID`                 C's ``void`` type.
-   :c:data:`GCC_JIT_TYPE_VOID_PTR`             C's ``void *``.
-   :c:data:`GCC_JIT_TYPE_BOOL`                 C++'s ``bool`` type; also C99's
-                                               ``_Bool`` type, aka ``bool`` if
-                                               using stdbool.h.
-   :c:data:`GCC_JIT_TYPE_CHAR`                 C's ``char`` (of some signedness)
-   :c:data:`GCC_JIT_TYPE_SIGNED_CHAR`          C's ``signed char``
-   :c:data:`GCC_JIT_TYPE_UNSIGNED_CHAR`        C's ``unsigned char``
-   :c:data:`GCC_JIT_TYPE_SHORT`                C's ``short`` (signed)
-   :c:data:`GCC_JIT_TYPE_UNSIGNED_SHORT`       C's ``unsigned short``
-   :c:data:`GCC_JIT_TYPE_INT`                  C's ``int`` (signed)
-   :c:data:`GCC_JIT_TYPE_UNSIGNED_INT`         C's ``unsigned int``
-   :c:data:`GCC_JIT_TYPE_LONG`                 C's ``long`` (signed)
-   :c:data:`GCC_JIT_TYPE_UNSIGNED_LONG`        C's ``unsigned long``
-   :c:data:`GCC_JIT_TYPE_LONG_LONG`            C99's ``long long`` (signed)
-   :c:data:`GCC_JIT_TYPE_UNSIGNED_LONG_LONG`   C99's ``unsigned long long``
-   :c:data:`GCC_JIT_TYPE_UINT8_T`              C99's ``uint8_t``
-   :c:data:`GCC_JIT_TYPE_UINT16_T`             C99's ``uint16_t``
-   :c:data:`GCC_JIT_TYPE_UINT32_T`             C99's ``uint32_t``
-   :c:data:`GCC_JIT_TYPE_UINT64_T`             C99's ``uint64_t``
-   :c:data:`GCC_JIT_TYPE_UINT128_T`            C99's ``__uint128_t``
-   :c:data:`GCC_JIT_TYPE_INT8_T`               C99's ``int8_t``
-   :c:data:`GCC_JIT_TYPE_INT16_T`              C99's ``int16_t``
-   :c:data:`GCC_JIT_TYPE_INT32_T`              C99's ``int32_t``
-   :c:data:`GCC_JIT_TYPE_INT64_T`              C99's ``int64_t``
-   :c:data:`GCC_JIT_TYPE_INT128_T`             C99's ``__int128_t``
-   :c:data:`GCC_JIT_TYPE_FLOAT`
-   :c:data:`GCC_JIT_TYPE_DOUBLE`
-   :c:data:`GCC_JIT_TYPE_LONG_DOUBLE`
-   :c:data:`GCC_JIT_TYPE_CONST_CHAR_PTR`       C type: ``(const char *)``
-   :c:data:`GCC_JIT_TYPE_SIZE_T`               C's ``size_t`` type
-   :c:data:`GCC_JIT_TYPE_FILE_PTR`             C type: ``(FILE *)``
-   :c:data:`GCC_JIT_TYPE_COMPLEX_FLOAT`        C99's ``_Complex float``
-   :c:data:`GCC_JIT_TYPE_COMPLEX_DOUBLE`       C99's ``_Complex double``
-   :c:data:`GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE`  C99's ``_Complex long double``
-   ==========================================  ================================
+  .. list-table::
+     :header-rows: 1
+
+     * - `enum gcc_jit_types` value
+       - Meaning
+
+     * - :c:data:`GCC_JIT_TYPE_VOID`
+       - C's ``void`` type.
+     * - :c:data:`GCC_JIT_TYPE_VOID_PTR`
+       - C's ``void *``.
+     * - :c:data:`GCC_JIT_TYPE_BOOL`
+       - C++'s ``bool`` type; also C99's ``_Bool`` type, aka ``bool`` if using stdbool.h.
+     * - :c:data:`GCC_JIT_TYPE_CHAR`
+       - C's ``char`` (of some signedness)
+     * - :c:data:`GCC_JIT_TYPE_SIGNED_CHAR`
+       - C's ``signed char``
+     * - :c:data:`GCC_JIT_TYPE_UNSIGNED_CHAR`
+       - C's ``unsigned char``
+     * - :c:data:`GCC_JIT_TYPE_SHORT`
+       - C's ``short`` (signed)
+     * - :c:data:`GCC_JIT_TYPE_UNSIGNED_SHORT`
+       - C's ``unsigned short``
+     * - :c:data:`GCC_JIT_TYPE_INT`
+       - C's ``int`` (signed)
+     * - :c:data:`GCC_JIT_TYPE_UNSIGNED_INT`
+       - C's ``unsigned int``
+     * - :c:data:`GCC_JIT_TYPE_LONG`
+       - C's ``long`` (signed)
+     * - :c:data:`GCC_JIT_TYPE_UNSIGNED_LONG`
+       - C's ``unsigned long``
+     * - :c:data:`GCC_JIT_TYPE_LONG_LONG`
+       - C99's ``long long`` (signed)
+     * - :c:data:`GCC_JIT_TYPE_UNSIGNED_LONG_LONG`
+       - C99's ``unsigned long long``
+     * - :c:data:`GCC_JIT_TYPE_UINT8_T`
+       - C99's ``uint8_t``
+     * - :c:data:`GCC_JIT_TYPE_UINT16_T`
+       - C99's ``uint16_t``
+     * - :c:data:`GCC_JIT_TYPE_UINT32_T`
+       - C99's ``uint32_t``
+     * - :c:data:`GCC_JIT_TYPE_UINT64_T`
+       - C99's ``uint64_t``
+     * - :c:data:`GCC_JIT_TYPE_UINT128_T`
+       - C99's ``__uint128_t``
+     * - :c:data:`GCC_JIT_TYPE_INT8_T`
+       - C99's ``int8_t``
+     * - :c:data:`GCC_JIT_TYPE_INT16_T`
+       - C99's ``int16_t``
+     * - :c:data:`GCC_JIT_TYPE_INT32_T`
+       - C99's ``int32_t``
+     * - :c:data:`GCC_JIT_TYPE_INT64_T`
+       - C99's ``int64_t``
+     * - :c:data:`GCC_JIT_TYPE_INT128_T`
+       - C99's ``__int128_t``
+     * - :c:data:`GCC_JIT_TYPE_FLOAT`
+       -
+     * - :c:data:`GCC_JIT_TYPE_DOUBLE`
+       -
+     * - :c:data:`GCC_JIT_TYPE_LONG_DOUBLE`
+       -
+     * - :c:data:`GCC_JIT_TYPE_CONST_CHAR_PTR`
+       - C type: ``(const char *)``
+     * - :c:data:`GCC_JIT_TYPE_SIZE_T`
+       - C's ``size_t`` type
+     * - :c:data:`GCC_JIT_TYPE_FILE_PTR`
+       - C type: ``(FILE *)``
+     * - :c:data:`GCC_JIT_TYPE_COMPLEX_FLOAT`
+       - C99's ``_Complex float``
+     * - :c:data:`GCC_JIT_TYPE_COMPLEX_DOUBLE`
+       - C99's ``_Complex double``
+     * - :c:data:`GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE`
+       - C99's ``_Complex long double``
 
 .. function:: gcc_jit_type *\
               gcc_jit_context_get_int_type (gcc_jit_context *ctxt, \

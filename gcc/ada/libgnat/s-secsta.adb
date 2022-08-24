@@ -506,12 +506,17 @@ package body System.Secondary_Stack is
       Mem_Size : Memory_Size) return Boolean
    is
    begin
+      --  First check if the chunk is full (Byte is > Memory'Last in that
+      --  case), then check there is enough free memory.
+
       --  Byte - 1 denotes the last occupied byte. Subtracting that byte from
       --  the memory capacity of the chunk yields the size of the free memory
       --  within the chunk. The chunk can fit the request as long as the free
       --  memory is as big as the request.
 
-      return Chunk.Size - (Byte - 1) >= Mem_Size;
+      return Chunk.Memory'Last >= Byte
+        and then Chunk.Size - (Byte - 1) >= Mem_Size;
+
    end Has_Enough_Free_Memory;
 
    ----------------------
@@ -550,22 +555,52 @@ package body System.Secondary_Stack is
 
    procedure SS_Allocate
      (Addr         : out Address;
-      Storage_Size : Storage_Count)
+      Storage_Size : Storage_Count;
+      Alignment    : SSE.Storage_Count := Standard'Maximum_Alignment)
    is
+
       function Round_Up (Size : Storage_Count) return Memory_Size;
       pragma Inline (Round_Up);
       --  Round Size up to the nearest multiple of the maximum alignment
+
+      function Align_Addr (Addr : Address) return Address;
+      pragma Inline (Align_Addr);
+      --  Align Addr to the next multiple of Alignment
+
+      ----------------
+      -- Align_Addr --
+      ----------------
+
+      function Align_Addr (Addr : Address) return Address is
+         Int_Algn : constant Integer_Address := Integer_Address (Alignment);
+         Int_Addr : constant Integer_Address := To_Integer (Addr);
+      begin
+
+         --  L : Alignment
+         --  A : Standard'Maximum_Alignment
+
+         --           Addr
+         --      L     |     L           L
+         --      A--A--A--A--A--A--A--A--A--A--A
+         --                  |     |
+         --      \----/      |     |
+         --     Addr mod L   |   Addr + L
+         --                  |
+         --                Addr + L - (Addr mod L)
+
+         return To_Address (Int_Addr + Int_Algn - (Int_Addr mod Int_Algn));
+      end Align_Addr;
 
       --------------
       -- Round_Up --
       --------------
 
       function Round_Up (Size : Storage_Count) return Memory_Size is
-         Algn_MS : constant Memory_Size := Memory_Alignment;
+         Algn_MS : constant Memory_Size := Standard'Maximum_Alignment;
          Size_MS : constant Memory_Size := Memory_Size (Size);
 
       begin
-         --  Detect a case where the Storage_Size is very large and may yield
+         --  Detect a case where the Size is very large and may yield
          --  a rounded result which is outside the range of Chunk_Memory_Size.
          --  Treat this case as secondary-stack depletion.
 
@@ -581,27 +616,46 @@ package body System.Secondary_Stack is
       Stack    : constant SS_Stack_Ptr := Get_Sec_Stack.all;
       Mem_Size : Memory_Size;
 
+      Over_Aligning : constant Boolean :=
+        Alignment > Standard'Maximum_Alignment;
+
+      Padding : SSE.Storage_Count := 0;
+
    --  Start of processing for SS_Allocate
 
    begin
-      --  Round the requested size up to the nearest multiple of the maximum
-      --  alignment to ensure efficient access.
+      --  Alignment must be a power of two and can be:
 
-      if Storage_Size = 0 then
-         Mem_Size := Memory_Alignment;
-      else
-         --  It should not be possible to request an allocation of negative
-         --  size.
+      --  - lower than or equal to Maximum_Alignment, in which case the result
+      --    will be aligned on Maximum_Alignment;
+      --  - higher than Maximum_Alignment, in which case the result will be
+      --    dynamically realigned.
 
-         pragma Assert (Storage_Size >= 0);
-         Mem_Size := Round_Up (Storage_Size);
+      if Over_Aligning then
+         Padding := Alignment;
       end if;
+
+      --  Round the requested size (plus the needed padding in case of
+      --  over-alignment) up to the nearest multiple of the default
+      --  alignment to ensure efficient access and that the next available
+      --  Byte is always aligned on the default alignement value.
+
+      --  It should not be possible to request an allocation of negative
+      --  size.
+
+      pragma Assert (Storage_Size >= 0);
+      Mem_Size := Round_Up (Storage_Size + Padding);
 
       if Sec_Stack_Dynamic then
          Allocate_Dynamic (Stack, Mem_Size, Addr);
       else
          Allocate_Static  (Stack, Mem_Size, Addr);
       end if;
+
+      if Over_Aligning then
+         Addr := Align_Addr (Addr);
+      end if;
+
    end SS_Allocate;
 
    -------------

@@ -3697,6 +3697,7 @@ implicitly_declare (location_t loc, tree functionid)
 						      (TREE_TYPE (decl)));
 	      if (!comptypes (newtype, TREE_TYPE (decl)))
 		{
+		  auto_diagnostic_group d;
 		  bool warned = warning_at (loc,
 					    OPT_Wbuiltin_declaration_mismatch,
 					    "incompatible implicit "
@@ -3890,12 +3891,14 @@ lookup_label (tree name)
 static void
 warn_about_goto (location_t goto_loc, tree label, tree decl)
 {
+  auto_diagnostic_group d;
   if (variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
     error_at (goto_loc,
 	      "jump into scope of identifier with variably modified type");
   else
-    warning_at (goto_loc, OPT_Wjump_misses_init,
-		"jump skips variable initialization");
+    if (!warning_at (goto_loc, OPT_Wjump_misses_init,
+		     "jump skips variable initialization"))
+      return;
   inform (DECL_SOURCE_LOCATION (label), "label %qD defined here", label);
   inform (DECL_SOURCE_LOCATION (decl), "%qD declared here", decl);
 }
@@ -3950,6 +3953,7 @@ lookup_label_for_goto (location_t loc, tree name)
 
   if (label_vars->label_bindings.left_stmt_expr)
     {
+      auto_diagnostic_group d;
       error_at (loc, "jump into statement expression");
       inform (DECL_SOURCE_LOCATION (label), "label %qD defined here", label);
     }
@@ -4040,6 +4044,7 @@ check_earlier_gotos (tree label, struct c_label_vars* label_vars)
 
       if (g->goto_bindings.stmt_exprs > 0)
 	{
+	  auto_diagnostic_group d;
 	  error_at (g->loc, "jump into statement expression");
 	  inform (DECL_SOURCE_LOCATION (label), "label %qD defined here",
 		  label);
@@ -4159,19 +4164,26 @@ c_check_switch_jump_warnings (struct c_spot_bindings *switch_bindings,
 	{
 	  if (decl_jump_unsafe (b->decl))
 	    {
+	      auto_diagnostic_group d;
+	      bool emitted;
 	      if (variably_modified_type_p (TREE_TYPE (b->decl), NULL_TREE))
 		{
 		  saw_error = true;
 		  error_at (case_loc,
 			    ("switch jumps into scope of identifier with "
 			     "variably modified type"));
+		  emitted = true;
 		}
 	      else
-		warning_at (case_loc, OPT_Wjump_misses_init,
-			    "switch jumps over variable initialization");
-	      inform (switch_loc, "switch starts here");
-	      inform (DECL_SOURCE_LOCATION (b->decl), "%qD declared here",
-		      b->decl);
+		emitted
+		  = warning_at (case_loc, OPT_Wjump_misses_init,
+				"switch jumps over variable initialization");
+	      if (emitted)
+		{
+		  inform (switch_loc, "switch starts here");
+		  inform (DECL_SOURCE_LOCATION (b->decl), "%qD declared here",
+			  b->decl);
+		}
 	    }
 	}
     }
@@ -4179,6 +4191,7 @@ c_check_switch_jump_warnings (struct c_spot_bindings *switch_bindings,
   if (switch_bindings->stmt_exprs > 0)
     {
       saw_error = true;
+      auto_diagnostic_group d;
       error_at (case_loc, "switch jumps into statement expression");
       inform (switch_loc, "switch starts here");
     }
@@ -5061,8 +5074,7 @@ c_decl_attributes (tree *node, tree attributes, int flags)
       && ((VAR_P (*node) && is_global_var (*node))
 	  || TREE_CODE (*node) == FUNCTION_DECL))
     {
-      if (VAR_P (*node)
-	  && !lang_hooks.types.omp_mappable_type (TREE_TYPE (*node)))
+      if (VAR_P (*node) && !omp_mappable_type (TREE_TYPE (*node)))
 	attributes = tree_cons (get_identifier ("omp declare target implicit"),
 				NULL_TREE, attributes);
       else
@@ -5317,10 +5329,11 @@ diagnose_uninitialized_cst_member (tree decl, tree type)
 
       if (TYPE_QUALS (field_type) & TYPE_QUAL_CONST)
       	{
-	  warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
-	  	      "uninitialized const member in %qT is invalid in C++",
-		      strip_array_types (TREE_TYPE (decl)));
-	  inform (DECL_SOURCE_LOCATION (field), "%qD should be initialized", field);
+	  auto_diagnostic_group d;
+	  if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
+			  "uninitialized const member in %qT is invalid in C++",
+			  strip_array_types (TREE_TYPE (decl))))
+	    inform (DECL_SOURCE_LOCATION (field), "%qD should be initialized", field);
 	}
 
       if (RECORD_OR_UNION_TYPE_P (field_type))
@@ -5687,7 +5700,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
       DECL_ATTRIBUTES (decl)
 	= remove_attribute ("omp declare target implicit",
 			    DECL_ATTRIBUTES (decl));
-      if (!lang_hooks.types.omp_mappable_type (TREE_TYPE (decl)))
+      if (!omp_mappable_type (TREE_TYPE (decl)))
 	error ("%q+D in declare target directive does not have mappable type",
 	       decl);
       else if (!lookup_attribute ("omp declare target",
@@ -6942,6 +6955,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    /* Complain about arrays of incomplete types.  */
 	    if (!COMPLETE_TYPE_P (type))
 	      {
+		auto_diagnostic_group d;
 		error_at (loc, "array type has incomplete element type %qT",
 			  type);
 		/* See if we can be more helpful.  */
@@ -8201,25 +8215,26 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
 	  && loc != UNKNOWN_LOCATION
 	  && warn_cxx_compat)
 	{
+	  auto_diagnostic_group d;
 	  switch (code)
 	    {
 	    case ENUMERAL_TYPE:
-	      warning_at (loc, OPT_Wc___compat,
-			  ("enum type defined in struct or union "
-			   "is not visible in C++"));
-	      inform (refloc, "enum type defined here");
+	      if (warning_at (loc, OPT_Wc___compat,
+			      ("enum type defined in struct or union "
+			       "is not visible in C++")))
+		  inform (refloc, "enum type defined here");
 	      break;
 	    case RECORD_TYPE:
-	      warning_at (loc, OPT_Wc___compat,
-			  ("struct defined in struct or union "
-			   "is not visible in C++"));
-	      inform (refloc, "struct defined here");
+	      if (warning_at (loc, OPT_Wc___compat,
+			      ("struct defined in struct or union "
+			       "is not visible in C++")))
+		inform (refloc, "struct defined here");
 	      break;
 	    case UNION_TYPE:
-	      warning_at (loc, OPT_Wc___compat,
-			  ("union defined in struct or union "
-			   "is not visible in C++"));
-	      inform (refloc, "union defined here");
+	      if (warning_at (loc, OPT_Wc___compat,
+			      ("union defined in struct or union "
+			       "is not visible in C++")))
+		inform (refloc, "union defined here");
 	      break;
 	    default:
 	      gcc_unreachable();
@@ -8295,6 +8310,7 @@ start_struct (location_t loc, enum tree_code code, tree name,
 
       if (TYPE_SIZE (ref))
 	{
+	  auto_diagnostic_group d;
 	  if (code == UNION_TYPE)
 	    error_at (loc, "redefinition of %<union %E%>", name);
 	  else
@@ -9121,6 +9137,7 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
   if (TYPE_VALUES (enumtype) != NULL_TREE)
     {
       /* This enum is a named one that has been declared already.  */
+      auto_diagnostic_group d;
       error_at (loc, "redeclaration of %<enum %E%>", name);
       if (enumloc != UNKNOWN_LOCATION)
 	inform (enumloc, "originally defined here");
@@ -10428,6 +10445,7 @@ check_for_loop_decls (location_t loc, bool turn_off_iso_c99_error)
       /* If we get here, declarations have been used in a for loop without
 	 the C99 for loop scope.  This doesn't make much sense, so don't
 	 allow it.  */
+      auto_diagnostic_group d;
       error_at (loc, "%<for%> loop initial declarations "
 		"are only allowed in C99 or C11 mode");
       if (hint)

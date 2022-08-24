@@ -407,7 +407,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return execute_build_cfg (); }
+  unsigned int execute (function *) final override
+  {
+    return execute_build_cfg ();
+  }
 
 }; // class pass_build_cfg
 
@@ -4297,18 +4300,14 @@ verify_gimple_assign_ternary (gassign *stmt)
       break;
 
     case VEC_PERM_EXPR:
-      if (!useless_type_conversion_p (lhs_type, rhs1_type)
-	  || !useless_type_conversion_p (lhs_type, rhs2_type))
-	{
-	  error ("type mismatch in %qs", code_name);
-	  debug_generic_expr (lhs_type);
-	  debug_generic_expr (rhs1_type);
-	  debug_generic_expr (rhs2_type);
-	  debug_generic_expr (rhs3_type);
-	  return true;
-	}
+      /* If permute is constant, then we allow for lhs and rhs
+	 to have different vector types, provided:
+	 (1) lhs, rhs1, rhs2 have same element type.
+	 (2) rhs3 vector is constant and has integer element type.
+	 (3) len(lhs) == len(rhs3) && len(rhs1) == len(rhs2).  */
 
-      if (TREE_CODE (rhs1_type) != VECTOR_TYPE
+      if (TREE_CODE (lhs_type) != VECTOR_TYPE
+	  || TREE_CODE (rhs1_type) != VECTOR_TYPE
 	  || TREE_CODE (rhs2_type) != VECTOR_TYPE
 	  || TREE_CODE (rhs3_type) != VECTOR_TYPE)
 	{
@@ -4320,10 +4319,28 @@ verify_gimple_assign_ternary (gassign *stmt)
 	  return true;
 	}
 
+      /* If rhs3 is constant, we allow lhs, rhs1 and rhs2 to be different vector types,
+	 as long as lhs, rhs1 and rhs2 have same element type.  */
+      if (TREE_CONSTANT (rhs3)
+	  ? (!useless_type_conversion_p (TREE_TYPE (lhs_type), TREE_TYPE (rhs1_type))
+	     || !useless_type_conversion_p (TREE_TYPE (lhs_type), TREE_TYPE (rhs2_type)))
+	  : (!useless_type_conversion_p (lhs_type, rhs1_type)
+	     || !useless_type_conversion_p (lhs_type, rhs2_type)))
+	{
+	    error ("type mismatch in %qs", code_name);
+	    debug_generic_expr (lhs_type);
+	    debug_generic_expr (rhs1_type);
+	    debug_generic_expr (rhs2_type);
+	    debug_generic_expr (rhs3_type);
+	    return true;
+	}
+
+      /* If rhs3 is constant, relax the check len(rhs2) == len(rhs3).  */
       if (maybe_ne (TYPE_VECTOR_SUBPARTS (rhs1_type),
 		    TYPE_VECTOR_SUBPARTS (rhs2_type))
-	  || maybe_ne (TYPE_VECTOR_SUBPARTS (rhs2_type),
-		       TYPE_VECTOR_SUBPARTS (rhs3_type))
+	  || (!TREE_CONSTANT(rhs3)
+	      && maybe_ne (TYPE_VECTOR_SUBPARTS (rhs2_type),
+			   TYPE_VECTOR_SUBPARTS (rhs3_type)))
 	  || maybe_ne (TYPE_VECTOR_SUBPARTS (rhs3_type),
 		       TYPE_VECTOR_SUBPARTS (lhs_type)))
 	{
@@ -5636,6 +5653,7 @@ gimple_verify_flow_info (void)
 	}
 
       /* Verify that body of basic block BB is free of control flow.  */
+      bool seen_nondebug_stmt = false;
       for (; !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -5656,6 +5674,38 @@ gimple_verify_flow_info (void)
 		     gimple_label_label (label_stmt), bb->index);
 	      err = 1;
 	    }
+
+	  /* Check that no statements appear between a returns_twice call
+	     and its associated abnormal edge.  */
+	  if (gimple_code (stmt) == GIMPLE_CALL
+	      && gimple_call_flags (stmt) & ECF_RETURNS_TWICE)
+	    {
+	      const char *misplaced = NULL;
+	      /* TM is an exception: it points abnormal edges just after the
+		 call that starts a transaction, i.e. it must end the BB.  */
+	      if (gimple_call_builtin_p (stmt, BUILT_IN_TM_START))
+		{
+		  if (single_succ_p (bb)
+		      && bb_has_abnormal_pred (single_succ (bb))
+		      && !gsi_one_nondebug_before_end_p (gsi))
+		    misplaced = "not last";
+		}
+	      else
+		{
+		  if (seen_nondebug_stmt
+		      && bb_has_abnormal_pred (bb))
+		    misplaced = "not first";
+		}
+	      if (misplaced)
+		{
+		  error ("returns_twice call is %s in basic block %d",
+			 misplaced, bb->index);
+		  print_gimple_stmt (stderr, stmt, 0, TDF_SLIM);
+		  err = 1;
+		}
+	    }
+	  if (!is_gimple_debug (stmt))
+	    seen_nondebug_stmt = true;
 	}
 
       gsi = gsi_last_nondebug_bb (bb);
@@ -6296,12 +6346,15 @@ gimple_can_duplicate_bb_p (const_basic_block bb)
     {
       gimple *g = gsi_stmt (gsi);
 
-      /* An IFN_GOMP_SIMT_ENTER_ALLOC/IFN_GOMP_SIMT_EXIT call must be
+      /* Prohibit duplication of returns_twice calls, otherwise associated
+	 abnormal edges also need to be duplicated properly.
+	 An IFN_GOMP_SIMT_ENTER_ALLOC/IFN_GOMP_SIMT_EXIT call must be
 	 duplicated as part of its group, or not at all.
 	 The IFN_GOMP_SIMT_VOTE_ANY and IFN_GOMP_SIMT_XCHG_* are part of such a
 	 group, so the same holds there.  */
       if (is_gimple_call (g)
-	  && (gimple_call_internal_p (g, IFN_GOMP_SIMT_ENTER_ALLOC)
+	  && (gimple_call_flags (g) & ECF_RETURNS_TWICE
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_ENTER_ALLOC)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_EXIT)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_VOTE_ANY)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_XCHG_BFLY)
@@ -9195,9 +9248,15 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return split_critical_edges (); }
+  unsigned int execute (function *)  final override
+  {
+    return split_critical_edges ();
+  }
 
-  opt_pass * clone () { return new pass_split_crit_edges (m_ctxt); }
+  opt_pass * clone () final override
+  {
+    return new pass_split_crit_edges (m_ctxt);
+  }
 }; // class pass_split_crit_edges
 
 } // anon namespace
@@ -9454,7 +9513,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_warn_function_return
 
@@ -9489,9 +9548,8 @@ pass_warn_function_return::execute (function *fun)
 	     with __builtin_unreachable () call.  */
 	  if (optimize && gimple_code (last) == GIMPLE_RETURN)
 	    {
-	      tree fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
-	      gimple *new_stmt = gimple_build_call (fndecl, 0);
-	      gimple_set_location (new_stmt, gimple_location (last));
+	      location_t loc = gimple_location (last);
+	      gimple *new_stmt = gimple_build_builtin_unreachable (loc);
 	      gimple_stmt_iterator gsi = gsi_for_stmt (last);
 	      gsi_replace (&gsi, new_stmt, true);
 	      remove_edge (e);
@@ -9529,7 +9587,7 @@ pass_warn_function_return::execute (function *fun)
 	}
       /* The C++ FE turns fallthrough from the end of non-void function
 	 into __builtin_unreachable () call with BUILTINS_LOCATION.
-	 Recognize those too.  */
+	 Recognize those as well as calls from ubsan_instrument_return.  */
       basic_block bb;
       if (!warning_suppressed_p (fun->decl, OPT_Wreturn_type))
 	FOR_EACH_BB_FN (bb, fun)
@@ -9541,7 +9599,8 @@ pass_warn_function_return::execute (function *fun)
 	      if (last
 		  && ((LOCATION_LOCUS (gimple_location (last))
 		       == BUILTINS_LOCATION
-		       && gimple_call_builtin_p (last, BUILT_IN_UNREACHABLE))
+		       && (gimple_call_builtin_p (last, BUILT_IN_UNREACHABLE)
+			   || gimple_call_builtin_p (last, BUILT_IN_TRAP)))
 		      || gimple_call_builtin_p (last, ubsan_missing_ret)))
 		{
 		  gimple_stmt_iterator gsi = gsi_for_stmt (last);
@@ -9660,8 +9719,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_warn_unused_result; }
-  virtual unsigned int execute (function *)
+  bool gate (function *)  final override { return flag_warn_unused_result; }
+  unsigned int execute (function *) final override
     {
       do_warn_unused_result (gimple_body (current_function_decl));
       return 0;
@@ -9819,7 +9878,7 @@ execute_fixup_cfg (void)
 	    {
 	      if (stmt && is_gimple_call (stmt))
 		gimple_call_set_ctrl_altering (stmt, false);
-	      tree fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+	      tree fndecl = builtin_decl_unreachable ();
 	      stmt = gimple_build_call (fndecl, 0);
 	      gimple_stmt_iterator gsi = gsi_last_bb (bb);
 	      gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
@@ -9870,8 +9929,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_fixup_cfg (m_ctxt); }
-  virtual unsigned int execute (function *) { return execute_fixup_cfg (); }
+  opt_pass * clone () final override { return new pass_fixup_cfg (m_ctxt); }
+  unsigned int execute (function *) final override
+  {
+    return execute_fixup_cfg ();
+  }
 
 }; // class pass_fixup_cfg
 

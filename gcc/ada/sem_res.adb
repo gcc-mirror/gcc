@@ -31,6 +31,7 @@ with Debug_A;        use Debug_A;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
 with Errout;         use Errout;
 with Expander;       use Expander;
 with Exp_Ch6;        use Exp_Ch6;
@@ -61,6 +62,7 @@ with Sem_Case;       use Sem_Case;
 with Sem_Cat;        use Sem_Cat;
 with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch4;        use Sem_Ch4;
+with Sem_Ch5;        use Sem_Ch5;
 with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch13;       use Sem_Ch13;
@@ -144,7 +146,7 @@ package body Sem_Res is
    --  returns true if the prefix denotes an atomic object that has an address
    --  clause (the case in which we may want to issue a warning).
 
-   function Is_Definite_Access_Type (E : Entity_Id) return Boolean;
+   function Is_Definite_Access_Type (E : N_Entity_Id) return Boolean;
    --  Determine whether E is an access type declared by an access declaration,
    --  and not an (anonymous) allocator type.
 
@@ -1510,7 +1512,7 @@ package body Sem_Res is
    -- Is_Definite_Access_Type --
    -----------------------------
 
-   function Is_Definite_Access_Type (E : Entity_Id) return Boolean is
+   function Is_Definite_Access_Type (E : N_Entity_Id) return Boolean is
       Btyp : constant Entity_Id := Base_Type (E);
    begin
       return Ekind (Btyp) = E_Access_Type
@@ -1561,7 +1563,7 @@ package body Sem_Res is
       Orig_Type : Entity_Id := Empty;
       Pack      : Entity_Id;
 
-      type Kind_Test is access function (E : Entity_Id) return Boolean;
+      type Kind_Test is access function (E : N_Entity_Id) return Boolean;
 
       function Operand_Type_In_Scope (S : Entity_Id) return Boolean;
       --  If the operand is not universal, and the operator is given by an
@@ -2045,16 +2047,18 @@ package body Sem_Res is
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
+      --  See also Preanalyze_And_Resolve in sem.adb for similar handling
+
       --  Normally, we suppress all checks for this preanalysis. There is no
       --  point in processing them now, since they will be applied properly
       --  and in the proper location when the default expressions reanalyzed
       --  and reexpanded later on. We will also have more information at that
       --  point for possible suppression of individual checks.
 
-      --  However, in SPARK mode, most expansion is suppressed, and this
-      --  later reanalysis and reexpansion may not occur. SPARK mode does
+      --  However, in GNATprove mode, most expansion is suppressed, and this
+      --  later reanalysis and reexpansion may not occur. GNATprove mode does
       --  require the setting of checking flags for proof purposes, so we
-      --  do the SPARK preanalysis without suppressing checks.
+      --  do the GNATprove preanalysis without suppressing checks.
 
       --  This special handling for SPARK mode is required for example in the
       --  case of Ada 2012 constructs such as quantified expressions, which are
@@ -4620,6 +4624,7 @@ package body Sem_Res is
                  ("invalid use of untagged formal incomplete type", A);
             end if;
 
+            --  For mode IN, if actual is an entity, and the type of the formal
             --  has warnings suppressed, then we reset Never_Set_In_Source for
             --  the calling entity. The reason for this is to catch cases like
             --  GNAT.Spitbol.Patterns.Vstring_Var where the called subprogram
@@ -7189,6 +7194,12 @@ package body Sem_Res is
 
       Analyze_Dimension_Call (N, Nam);
 
+      --  Check unreachable code after calls to procedures with No_Return
+
+      if Ekind (Nam) = E_Procedure and then No_Return (Nam) then
+         Check_Unreachable_Code (N);
+      end if;
+
       --  All done, evaluate call and deal with elaboration issues
 
       Eval_Call (N);
@@ -7539,9 +7550,7 @@ package body Sem_Res is
       if T = Any_Type then
          --  Deal with explicit ambiguity of operands
 
-         if Ekind (Entity (N)) = E_Operator
-           and then (Is_Overloaded (L) or else Is_Overloaded (R))
-         then
+         if Is_Overloaded (L) or else Is_Overloaded (R) then
             Ambiguous_Operands (N);
          end if;
 
@@ -8563,6 +8572,16 @@ package body Sem_Res is
       L : constant Node_Id := Left_Opnd (N);
       R : constant Node_Id := Right_Opnd (N);
 
+      Implicit_NE_For_User_Defined_Operator : constant Boolean :=
+        Nkind (N) = N_Op_Ne
+          and then Ekind (Entity (N)) = E_Function
+          and then not Comes_From_Source (Entity (N))
+          and then not
+            Is_Intrinsic_Subprogram (Corresponding_Equality (Entity (N)));
+      --  Whether this is a call to the implicit inequality operator created
+      --  for a user-defined operator that is not an intrinsic subprogram, in
+      --  which case we need to skip some processing.
+
       T : Entity_Id := Find_Unique_Type (L, R);
 
       procedure Check_Access_Attribute (N : Node_Id);
@@ -8833,9 +8852,12 @@ package body Sem_Res is
       Generate_Reference (T, N, ' ');
 
       if T = Any_Type then
-         --  Deal with explicit ambiguity of operands
+         --  Deal with explicit ambiguity of operands, unless this is a call
+         --  to the implicit inequality operator created for a user-defined
+         --  operator that is not an intrinsic subprogram, since the common
+         --  resolution of operands done here does not apply to it.
 
-         if Ekind (Entity (N)) = E_Operator
+         if not Implicit_NE_For_User_Defined_Operator
            and then (Is_Overloaded (L) or else Is_Overloaded (R))
          then
             Ambiguous_Operands (N);
@@ -9009,17 +9031,11 @@ package body Sem_Res is
          Generate_Operator_Reference (N, T);
          Check_Low_Bound_Tested (N);
 
-         --  If this is an inequality, it may be the implicit inequality
-         --  created for a user-defined operation, in which case the corres-
-         --  ponding equality operation is not intrinsic, and the operation
-         --  cannot be constant-folded. Else fold.
+         --  Unless this is a call to the implicit inequality operator created
+         --  for a user-defined operator that is not an intrinsic subprogram,
+         --  try to fold the operation.
 
-         if Nkind (N) = N_Op_Eq
-           or else Comes_From_Source (Entity (N))
-           or else Ekind (Entity (N)) = E_Operator
-           or else
-             Is_Intrinsic_Subprogram (Corresponding_Equality (Entity (N)))
-         then
+         if not Implicit_NE_For_User_Defined_Operator then
             Analyze_Dimension (N);
             Eval_Relational_Op (N);
 
@@ -12302,26 +12318,7 @@ package body Sem_Res is
             --  Conversion to interface type
 
             elsif Is_Interface (Target) then
-
-               --  Handle subtypes
-
-               if Ekind (Opnd) in E_Protected_Subtype | E_Task_Subtype then
-                  Opnd := Etype (Opnd);
-               end if;
-
-               if Is_Class_Wide_Type (Opnd)
-                 or else Interface_Present_In_Ancestor
-                           (Typ   => Opnd,
-                            Iface => Target)
-               then
-                  Expand_Interface_Conversion (N);
-               else
-                  Error_Msg_Name_1 := Chars (Etype (Target));
-                  Error_Msg_Name_2 := Chars (Opnd);
-                  Error_Msg_N
-                    ("wrong interface conversion (% is not a progenitor "
-                     & "of %)", N);
-               end if;
+               Expand_Interface_Conversion (N);
             end if;
          end;
       end if;
@@ -13615,29 +13612,115 @@ package body Sem_Res is
               Conversion_Check (False,
                 "downward conversion of tagged objects not allowed");
 
-         --  Ada 2005 (AI-251): The conversion to/from interface types is
-         --  always valid. The types involved may be class-wide (sub)types.
+         --  Ada 2005 (AI-251): A conversion is valid if the operand and target
+         --  types are both class-wide types and the specific type associated
+         --  with at least one of them is an interface type (RM 4.6 (23.1/2));
+         --  at run-time a check will verify the validity of this interface
+         --  type conversion.
 
-         elsif Is_Interface (Etype (Base_Type (Target_Type)))
-           or else Is_Interface (Etype (Base_Type (Opnd_Type)))
+         elsif Is_Class_Wide_Type (Target_Type)
+            and then Is_Class_Wide_Type (Opnd_Type)
+            and then (Is_Interface (Target_Type)
+                        or else Is_Interface (Opnd_Type))
          then
             return True;
 
-         --  If the operand is a class-wide type obtained through a limited_
-         --  with clause, and the context includes the nonlimited view, use
-         --  it to determine whether the conversion is legal.
+         --  Report errors
+
+         elsif Is_Class_Wide_Type (Target_Type)
+           and then Is_Interface (Target_Type)
+           and then not Is_Interface (Opnd_Type)
+           and then not Interface_Present_In_Ancestor
+                          (Typ   => Opnd_Type,
+                           Iface => Target_Type)
+         then
+            Error_Msg_Name_1 := Chars (Etype (Target_Type));
+            Error_Msg_Name_2 := Chars (Opnd_Type);
+            Conversion_Error_N
+              ("wrong interface conversion (% is not a progenitor "
+               & "of %)", N);
+            return False;
 
          elsif Is_Class_Wide_Type (Opnd_Type)
-           and then From_Limited_With (Opnd_Type)
-           and then Present (Non_Limited_View (Etype (Opnd_Type)))
-           and then Is_Interface (Non_Limited_View (Etype (Opnd_Type)))
+           and then Is_Interface (Opnd_Type)
+           and then not Is_Interface (Target_Type)
+           and then not Interface_Present_In_Ancestor
+                          (Typ   => Target_Type,
+                           Iface => Opnd_Type)
          then
-            return True;
+            Error_Msg_Name_1 := Chars (Etype (Opnd_Type));
+            Error_Msg_Name_2 := Chars (Target_Type);
+            Conversion_Error_N
+              ("wrong interface conversion (% is not a progenitor "
+               & "of %)", N);
 
-         elsif Is_Access_Type (Opnd_Type)
-           and then Is_Interface (Directly_Designated_Type (Opnd_Type))
+            --  Search for interface types shared between the target type and
+            --  the operand interface type to complete the text of the error
+            --  since the source of this error is a missing type conversion
+            --  to such interface type.
+
+            if Has_Interfaces (Target_Type) then
+               declare
+                  Operand_Ifaces_List : Elist_Id;
+                  Operand_Iface_Elmt  : Elmt_Id;
+                  Target_Ifaces_List  : Elist_Id;
+                  Target_Iface_Elmt   : Elmt_Id;
+                  First_Candidate     : Boolean := True;
+
+               begin
+                  Collect_Interfaces (Base_Type (Target_Type),
+                    Target_Ifaces_List);
+                  Collect_Interfaces (Root_Type (Base_Type (Opnd_Type)),
+                    Operand_Ifaces_List);
+
+                  Operand_Iface_Elmt := First_Elmt (Operand_Ifaces_List);
+                  while Present (Operand_Iface_Elmt) loop
+                     Target_Iface_Elmt := First_Elmt (Target_Ifaces_List);
+                     while Present (Target_Iface_Elmt) loop
+                        if Node (Operand_Iface_Elmt)
+                          = Node (Target_Iface_Elmt)
+                        then
+                           Error_Msg_Name_1 :=
+                             Chars (Node (Target_Iface_Elmt));
+
+                           if First_Candidate then
+                              First_Candidate := False;
+                              Conversion_Error_N
+                                ("\must convert to `%''Class` before downward "
+                                 & "conversion", Operand);
+                           else
+                              Conversion_Error_N
+                                ("\or must convert to `%''Class` before "
+                                 & "downward conversion", Operand);
+                           end if;
+                        end if;
+
+                        Next_Elmt (Target_Iface_Elmt);
+                     end loop;
+
+                     Next_Elmt (Operand_Iface_Elmt);
+                  end loop;
+               end;
+            end if;
+
+            return False;
+
+         elsif not Is_Class_Wide_Type (Target_Type)
+           and then Is_Interface (Target_Type)
          then
-            return True;
+            Conversion_Error_N
+              ("wrong use of interface type in tagged conversion", N);
+            Conversion_Error_N
+              ("\add ''Class to the target interface type", N);
+            return False;
+
+         elsif not Is_Class_Wide_Type (Opnd_Type)
+           and then Is_Interface (Opnd_Type)
+         then
+            Conversion_Error_N
+              ("must convert to class-wide interface type before downward "
+               & "conversion", Operand);
+            return False;
 
          else
             Conversion_Error_NE

@@ -579,11 +579,11 @@ expand_thunk (cgraph_node *node, bool output_asm_thunks,
 		     adjustment, because that's why we're emitting a
 		     thunk.  */
 		  then_bb = create_basic_block (NULL, bb);
-		  then_bb->count = cfg_count - cfg_count.apply_scale (1, 16);
+		  then_bb->count = cfg_count - cfg_count / 16;
 		  return_bb = create_basic_block (NULL, then_bb);
 		  return_bb->count = cfg_count;
 		  else_bb = create_basic_block (NULL, else_bb);
-		  else_bb->count = cfg_count.apply_scale (1, 16);
+		  else_bb->count = cfg_count / 16;
 		  add_bb_to_loop (then_bb, bb->loop_father);
 		  add_bb_to_loop (return_bb, bb->loop_father);
 		  add_bb_to_loop (else_bb, bb->loop_father);
@@ -594,11 +594,9 @@ expand_thunk (cgraph_node *node, bool output_asm_thunks,
 					    NULL_TREE, NULL_TREE);
 		  gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 		  e = make_edge (bb, then_bb, EDGE_TRUE_VALUE);
-		  e->probability = profile_probability::guessed_always ()
-					.apply_scale (1, 16);
+		  e->probability = profile_probability::guessed_always () / 16;
 		  e = make_edge (bb, else_bb, EDGE_FALSE_VALUE);
-		  e->probability = profile_probability::guessed_always ()
-					.apply_scale (1, 16);
+		  e->probability = profile_probability::guessed_always () / 16;
 		  make_single_succ_edge (return_bb,
 					 EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
 		  make_single_succ_edge (then_bb, return_bb, EDGE_FALLTHRU);

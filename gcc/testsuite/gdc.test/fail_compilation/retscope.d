@@ -2,7 +2,7 @@
 REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(22): Error: scope variable `p` may not be returned
+fail_compilation/retscope.d(22): Error: scope parameter `p` may not be returned
 fail_compilation/retscope.d(32): Error: returning `b ? nested1(& i) : nested2(& j)` escapes a reference to local variable `j`
 fail_compilation/retscope.d(45): Error: scope variable `p` assigned to non-scope `q`
 fail_compilation/retscope.d(47): Error: address of variable `i` assigned to `q` with longer lifetime
@@ -54,8 +54,8 @@ void test2(scope int* p, int[] a ...) @safe
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(75): Error: function `retscope.HTTP.Impl.onReceive` is `@nogc` yet allocates closures with the GC
-fail_compilation/retscope.d(77):        retscope.HTTP.Impl.onReceive.__lambda1 closes over variable this at fail_compilation/retscope.d(75)
+fail_compilation/retscope.d(75): Error: function `retscope.HTTP.Impl.onReceive` is `@nogc` yet allocates closure for `onReceive()` with the GC
+fail_compilation/retscope.d(77):        `retscope.HTTP.Impl.onReceive.__lambda1` closes over variable `this` at fail_compilation/retscope.d(75)
 ---
 */
 
@@ -85,7 +85,7 @@ struct HTTP
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(96): Error: reference to local variable `sa` assigned to non-scope parameter `a`
+fail_compilation/retscope.d(96): Error: reference to local variable `sa` assigned to non-scope parameter `a` calling `bar8`
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=8838
@@ -149,7 +149,7 @@ S10* test10()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(158): Error: scope variable `this` may not be returned
+fail_compilation/retscope.d(158): Error: scope parameter `this` may not be returned
 ---
 */
 
@@ -218,7 +218,7 @@ void* escape3 (scope void* p) @safe {
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(229): Error: scope variable `ptr` may not be returned
+fail_compilation/retscope.d(229): Error: scope parameter `ptr` may not be returned
 ---
 */
 
@@ -403,7 +403,7 @@ class Foo13
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(1205): Error: scope variable `f14` assigned to non-scope parameter `this`
+fail_compilation/retscope.d(1205): Error: scope variable `f14` assigned to non-scope parameter `this` calling `foo`
 ---
 */
 
@@ -454,7 +454,7 @@ fail_compilation/retscope.d(1311): Error: scope variable `u2` assigned to `ek` w
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(1405): Error: reference to local variable `buf` assigned to non-scope parameter `__anonymous_param`
+fail_compilation/retscope.d(1405): Error: reference to local variable `buf` assigned to non-scope parameter `__anonymous_param` calling `myprintf`
 ---
 */
 

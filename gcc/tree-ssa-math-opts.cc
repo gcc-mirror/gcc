@@ -920,8 +920,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return optimize && flag_reciprocal_math; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override
+  {
+    return optimize && flag_reciprocal_math;
+  }
+  unsigned int execute (function *) final override;
 
 }; // class pass_cse_reciprocals
 
@@ -2223,8 +2226,7 @@ gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, location_t loc, tree arg)
 }
 
 /* Go through all calls to sin, cos and cexpi and call execute_cse_sincos_1
-   on the SSA_NAME argument of each of them.  Also expand powi(x,n) into
-   an optimal number of multiplies, when n is a constant.  */
+   on the SSA_NAME argument of each of them.  */
 
 namespace {
 
@@ -2249,14 +2251,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
-      /* We no longer require either sincos or cexp, since powi expansion
-	 piggybacks on this pass.  */
       return optimize;
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_cse_sincos
 
@@ -2268,6 +2268,99 @@ pass_cse_sincos::execute (function *fun)
 
   calculate_dominance_info (CDI_DOMINATORS);
   memset (&sincos_stats, 0, sizeof (sincos_stats));
+
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      gimple_stmt_iterator gsi;
+
+      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+        {
+	  gimple *stmt = gsi_stmt (gsi);
+
+	  if (is_gimple_call (stmt)
+	      && gimple_call_lhs (stmt))
+	    {
+	      tree arg;
+	      switch (gimple_call_combined_fn (stmt))
+		{
+		CASE_CFN_COS:
+		CASE_CFN_SIN:
+		CASE_CFN_CEXPI:
+		  arg = gimple_call_arg (stmt, 0);
+		  /* Make sure we have either sincos or cexp.  */
+		  if (!targetm.libc_has_function (function_c99_math_complex,
+						  TREE_TYPE (arg))
+		      && !targetm.libc_has_function (function_sincos,
+						     TREE_TYPE (arg)))
+		    break;
+
+		  if (TREE_CODE (arg) == SSA_NAME)
+		    cfg_changed |= execute_cse_sincos_1 (arg);
+		  break;
+		default:
+		  break;
+		}
+	    }
+	}
+    }
+
+  statistics_counter_event (fun, "sincos statements inserted",
+			    sincos_stats.inserted);
+  statistics_counter_event (fun, "conv statements removed",
+			    sincos_stats.conv_removed);
+
+  return cfg_changed ? TODO_cleanup_cfg : 0;
+}
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_cse_sincos (gcc::context *ctxt)
+{
+  return new pass_cse_sincos (ctxt);
+}
+
+/* Expand powi(x,n) into an optimal number of multiplies, when n is a constant.
+   Also expand CABS.  */
+namespace {
+
+const pass_data pass_data_expand_powcabs =
+{
+  GIMPLE_PASS, /* type */
+  "powcabs", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_TREE_POWCABS, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_update_ssa, /* todo_flags_finish */
+};
+
+class pass_expand_powcabs : public gimple_opt_pass
+{
+public:
+  pass_expand_powcabs (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_expand_powcabs, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate (function *) final override
+    {
+      return optimize;
+    }
+
+  unsigned int execute (function *) final override;
+
+}; // class pass_expand_powcabs
+
+unsigned int
+pass_expand_powcabs::execute (function *fun)
+{
+  basic_block bb;
+  bool cfg_changed = false;
+
+  calculate_dominance_info (CDI_DOMINATORS);
 
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -2286,27 +2379,12 @@ pass_cse_sincos::execute (function *fun)
 	  if (is_gimple_call (stmt)
 	      && gimple_call_lhs (stmt))
 	    {
-	      tree arg, arg0, arg1, result;
+	      tree arg0, arg1, result;
 	      HOST_WIDE_INT n;
 	      location_t loc;
 
 	      switch (gimple_call_combined_fn (stmt))
 		{
-		CASE_CFN_COS:
-		CASE_CFN_SIN:
-		CASE_CFN_CEXPI:
-		  arg = gimple_call_arg (stmt, 0);
-		  /* Make sure we have either sincos or cexp.  */
-		  if (!targetm.libc_has_function (function_c99_math_complex,
-						  TREE_TYPE (arg))
-		      && !targetm.libc_has_function (function_sincos,
-						     TREE_TYPE (arg)))
-		    break;
-
-		  if (TREE_CODE (arg) == SSA_NAME)
-		    cfg_changed |= execute_cse_sincos_1 (arg);
-		  break;
-
 		CASE_CFN_POW:
 		  arg0 = gimple_call_arg (stmt, 0);
 		  arg1 = gimple_call_arg (stmt, 1);
@@ -2402,20 +2480,15 @@ pass_cse_sincos::execute (function *fun)
 	cfg_changed |= gimple_purge_dead_eh_edges (bb);
     }
 
-  statistics_counter_event (fun, "sincos statements inserted",
-			    sincos_stats.inserted);
-  statistics_counter_event (fun, "conv statements removed",
-			    sincos_stats.conv_removed);
-
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
 } // anon namespace
 
 gimple_opt_pass *
-make_pass_cse_sincos (gcc::context *ctxt)
+make_pass_expand_powcabs (gcc::context *ctxt)
 {
-  return new pass_cse_sincos (ctxt);
+  return new pass_expand_powcabs (ctxt);
 }
 
 /* Return true if stmt is a type conversion operation that can be stripped
@@ -4892,12 +4965,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return flag_expensive_optimizations && optimize;
     }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_optimize_widening_mul
 
@@ -4915,7 +4988,7 @@ public:
 
   /* The actual actions performed in the walk.  */
 
-  virtual void after_dom_children (basic_block);
+  void after_dom_children (basic_block) final override;
 
   /* Set of results of chains of multiply and add statement combinations that
      were not transformed into FMAs because of active deferring.  */

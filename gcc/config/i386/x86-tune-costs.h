@@ -1897,15 +1897,15 @@ struct processor_costs skylake_cost = {
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
   17,					/* CLEAR_RATIO */
-  {4, 4, 4},				/* cost of loading integer registers
+  {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {6, 6, 6},				/* cost of storing integer registers */
-  {6, 6, 6, 10, 20},			/* cost of loading SSE register
+  {8, 8, 8},				/* cost of storing integer registers */
+  {8, 8, 8, 8, 16},			/* cost of loading SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
   {8, 8, 8, 8, 16},			/* cost of storing SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {6, 6, 6, 10, 20},			/* cost of unaligned loads.  */
+  {8, 8, 8, 8, 16},			/* cost of unaligned loads.  */
   {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
   2, 2, 4,				/* cost of moving XMM,YMM,ZMM register */
   6,					/* cost of moving SSE register to integer.  */
@@ -2023,15 +2023,15 @@ struct processor_costs icelake_cost = {
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
   17,					/* CLEAR_RATIO */
-  {4, 4, 4},				/* cost of loading integer registers
+  {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {6, 6, 6},				/* cost of storing integer registers */
-  {6, 6, 6, 10, 20},			/* cost of loading SSE register
+  {8, 8, 8},				/* cost of storing integer registers */
+  {8, 8, 8, 8, 16},			/* cost of loading SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
   {8, 8, 8, 8, 16},			/* cost of storing SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {6, 6, 6, 10, 20},			/* cost of unaligned loads.  */
+  {8, 8, 8, 8, 16},			/* cost of unaligned loads.  */
   {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
   2, 2, 4,				/* cost of moving XMM,YMM,ZMM register */
   6,					/* cost of moving SSE register to integer.  */
@@ -2146,13 +2146,13 @@ struct processor_costs alderlake_cost = {
   {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {6, 6, 6},				/* cost of storing integer registers */
-  {6, 6, 6, 10, 15},			/* cost of loading SSE register
+  {8, 8, 8},				/* cost of storing integer registers */
+  {8, 8, 8, 10, 15},			/* cost of loading SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {6, 6, 6, 10, 15},			/* cost of storing SSE register
+  {8, 8, 8, 10, 15},			/* cost of storing SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {6, 6, 6, 10, 15},			/* cost of unaligned loads.  */
-  {6, 6, 6, 10, 15},			/* cost of unaligned storess.  */
+  {8, 8, 8, 10, 15},			/* cost of unaligned loads.  */
+  {8, 8, 8, 10, 15},			/* cost of unaligned storess.  */
   2, 3, 4,				/* cost of moving XMM,YMM,ZMM register */
   6,					/* cost of moving SSE register to integer.  */
   18, 6,				/* Gather load static, per_elt.  */

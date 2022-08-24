@@ -1176,13 +1176,43 @@ fs::space(const path& p, error_code& ec) noexcept
   return info;
 }
 
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+static bool has_trailing_slash(const fs::path& p)
+{
+  wchar_t c = p.native().back();
+  return c == '/' || c == L'\\';
+}
+#endif
+
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
 fs::file_status
 fs::status(const fs::path& p, error_code& ec) noexcept
 {
   file_status status;
+
+  auto str = p.c_str();
+
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  // stat() fails if there's a trailing slash (PR 88881)
+  path p2;
+  if (p.has_relative_path() && has_trailing_slash(p))
+    {
+      __try
+	{
+	  p2 = p.parent_path();
+	  str = p2.c_str();
+	}
+      __catch(const bad_alloc&)
+	{
+	  ec = std::make_error_code(std::errc::not_enough_memory);
+	  return status;
+	}
+      str = p2.c_str();
+    }
+#endif
+
   stat_type st;
-  if (posix::stat(p.c_str(), &st))
+  if (posix::stat(str, &st))
     {
       int err = errno;
       ec.assign(err, std::generic_category());
@@ -1205,8 +1235,30 @@ fs::file_status
 fs::symlink_status(const fs::path& p, std::error_code& ec) noexcept
 {
   file_status status;
+
+  auto str = p.c_str();
+
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  // stat() fails if there's a trailing slash (PR 88881)
+  path p2;
+  if (p.has_relative_path() && has_trailing_slash(p))
+    {
+      __try
+	{
+	  p2 = p.parent_path();
+	  str = p2.c_str();
+	}
+      __catch(const bad_alloc&)
+	{
+	  ec = std::make_error_code(std::errc::not_enough_memory);
+	  return status;
+	}
+      str = p2.c_str();
+    }
+#endif
+
   stat_type st;
-  if (posix::lstat(p.c_str(), &st))
+  if (posix::lstat(str, &st))
     {
       int err = errno;
       ec.assign(err, std::generic_category());
@@ -1274,25 +1326,32 @@ fs::path
 fs::temp_directory_path()
 {
   error_code ec;
-  path tmp = temp_directory_path(ec);
-  if (ec.value())
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error("temp_directory_path", ec));
-  return tmp;
+  path p = fs::get_temp_directory_from_env(ec);
+  if (!ec)
+    {
+      auto st = status(p, ec);
+      if (!ec && !is_directory(st))
+	ec = std::make_error_code(std::errc::not_a_directory);
+    }
+  if (ec)
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("temp_directory_path", p, ec));
+  return p;
 }
 
 fs::path
 fs::temp_directory_path(error_code& ec)
 {
   path p = fs::get_temp_directory_from_env(ec);
-  if (ec)
-    return p;
-  auto st = status(p, ec);
-  if (ec)
-    p.clear();
-  else if (!is_directory(st))
+  if (!ec)
     {
-      p.clear();
-      ec = std::make_error_code(std::errc::not_a_directory);
+      auto st = status(p, ec);
+      if (ec)
+	p.clear();
+      else if (!is_directory(st))
+	{
+	  p.clear();
+	  ec = std::make_error_code(std::errc::not_a_directory);
+	}
     }
   return p;
 }

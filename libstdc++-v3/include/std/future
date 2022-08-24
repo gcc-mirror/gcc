@@ -1681,7 +1681,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	explicit
 	_Deferred_state(_Args&&... __args)
 	: _M_result(new _Result<_Res>()),
-	  _M_fn{{std::forward<_Args>(__args)...}}
+	  _M_fn(std::forward<_Args>(__args)...)
 	{ }
 
     private:
@@ -1748,7 +1748,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	explicit
 	_Async_state_impl(_Args&&... __args)
 	: _M_result(new _Result<_Res>()),
-	  _M_fn{{std::forward<_Args>(__args)...}}
+	  _M_fn(std::forward<_Args>(__args)...)
 	{
 	  _M_thread = std::thread{&_Async_state_impl::_M_run, this};
 	}

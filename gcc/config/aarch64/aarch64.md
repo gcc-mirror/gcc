@@ -347,9 +347,6 @@
    ; must not operate on inactive inputs if doing so could induce a fault.
    (SVE_STRICT_GP 1)])
 
-;; If further include files are added the defintion of MD_INCLUDES
-;; must be updated.
-
 (include "constraints.md")
 (include "predicates.md")
 (include "iterators.md")
@@ -4950,7 +4947,7 @@
     rtx ccreg = aarch64_gen_compare_reg (EQ, operands[1], const0_rtx);
     rtx x = gen_rtx_NE (VOIDmode, ccreg, const0_rtx);
 
-    emit_insn (gen_rbit<mode>2 (operands[0], operands[1]));
+    emit_insn (gen_aarch64_rbit (<MODE>mode, operands[0], operands[1]));
     emit_insn (gen_clz<mode>2 (operands[0], operands[0]));
     emit_insn (gen_csinc3<mode>_insn (operands[0], x, operands[0], const0_rtx));
     DONE;
@@ -4996,7 +4993,7 @@
   [(set_attr "type" "clz")]
 )
 
-(define_insn "rbit<mode>2"
+(define_insn "@aarch64_rbit<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(unspec:GPI [(match_operand:GPI 1 "register_operand" "r")] UNSPEC_RBIT))]
   ""
@@ -5017,7 +5014,7 @@
   "reload_completed"
   [(const_int 0)]
   "
-  emit_insn (gen_rbit<mode>2 (operands[0], operands[1]));
+  emit_insn (gen_aarch64_rbit (<MODE>mode, operands[0], operands[1]));
   emit_insn (gen_clz<mode>2 (operands[0], operands[0]));
   DONE;
 ")
@@ -6021,6 +6018,13 @@
   "rev16\\t%w0, %w1"
   [(set_attr "type" "rev")]
 )
+
+(define_insn "@aarch64_rev16<mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(unspec:GPI [(match_operand:GPI 1 "register_operand" "r")] UNSPEC_REV))]
+  ""
+  "rev16\\t%<w>0, %<w>1"
+  [(set_attr "type" "rev")])
 
 (define_insn "*aarch64_bfxil<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r,r")

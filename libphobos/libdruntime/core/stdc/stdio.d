@@ -9,7 +9,7 @@
  *    (See accompanying file LICENSE)
  * Authors:   Sean Kelly,
  *            Alex Rønne Petersen
- * Source:    https://github.com/dlang/druntime/blob/master/src/core/stdc/stdio.d
+ * Source:    https://github.com/dlang/dmd/blob/master/druntime/src/core/stdc/stdio.d
  * Standards: ISO/IEC 9899:1999 (E)
  */
 
@@ -347,6 +347,24 @@ else version (CRuntime_UClibc)
         L_tmpnam     = 20
     }
 }
+else version (WASI)
+{
+    enum
+    {
+        ///
+        BUFSIZ       = 1024,
+        ///
+        EOF          = -1,
+        ///
+        FOPEN_MAX    = 1000,
+        ///
+        FILENAME_MAX = 4096,
+        ///
+        TMP_MAX      = 10000,
+        ///
+        L_tmpnam     = 20
+    }
+}
 else
 {
     static assert( false, "Unsupported platform" );
@@ -446,6 +464,20 @@ else version (CRuntime_Glibc)
 
     ///
     alias _IO_FILE _iobuf;
+    ///
+    alias shared(_IO_FILE) FILE;
+}
+else version (WASI)
+{
+    union fpos_t
+    {
+        char[16] __opaque = 0;
+        double __align;
+    }
+    struct _IO_FILE;
+
+    ///
+    alias _IO_FILE _iobuf; // needed for phobos
     ///
     alias shared(_IO_FILE) FILE;
 }
@@ -1125,6 +1157,24 @@ else version (CRuntime_UClibc)
     ///
     extern shared FILE* stderr;
 }
+else version (WASI)
+{
+    // needs tail const
+    extern shared FILE* stdin;
+    ///
+    extern shared FILE* stdout;
+    ///
+    extern shared FILE* stderr;
+    enum
+    {
+        ///
+        _IOFBF = 0,
+        ///
+        _IOLBF = 1,
+        ///
+        _IONBF = 2,
+    }
+}
 else
 {
     static assert( false, "Unsupported platform" );
@@ -1235,6 +1285,57 @@ version (MinGW)
     int __mingw_scanf(scope const char* format, scope ...);
     ///
     alias __mingw_scanf scanf;
+}
+else version (CRuntime_Glibc)
+{
+    ///
+    pragma(printf)
+    int fprintf(FILE* stream, scope const char* format, scope const ...);
+    ///
+    pragma(scanf)
+    int __isoc99_fscanf(FILE* stream, scope const char* format, scope ...);
+    ///
+    alias fscanf = __isoc99_fscanf;
+    ///
+    pragma(printf)
+    int sprintf(scope char* s, scope const char* format, scope const ...);
+    ///
+    pragma(scanf)
+    int __isoc99_sscanf(scope const char* s, scope const char* format, scope ...);
+    ///
+    alias sscanf = __isoc99_sscanf;
+    ///
+    pragma(printf)
+    int vfprintf(FILE* stream, scope const char* format, va_list arg);
+    ///
+    pragma(scanf)
+    int __isoc99_vfscanf(FILE* stream, scope const char* format, va_list arg);
+    ///
+    alias vfscanf = __isoc99_vfscanf;
+    ///
+    pragma(printf)
+    int vsprintf(scope char* s, scope const char* format, va_list arg);
+    ///
+    pragma(scanf)
+    int __isoc99_vsscanf(scope const char* s, scope const char* format, va_list arg);
+    ///
+    alias vsscanf = __isoc99_vsscanf;
+    ///
+    pragma(printf)
+    int vprintf(scope const char* format, va_list arg);
+    ///
+    pragma(scanf)
+    int __isoc99_vscanf(scope const char* format, va_list arg);
+    ///
+    alias vscanf = __isoc99_vscanf;
+    ///
+    pragma(printf)
+    int printf(scope const char* format, scope const ...);
+    ///
+    pragma(scanf)
+    int __isoc99_scanf(scope const char* format, scope ...);
+    ///
+    alias scanf = __isoc99_scanf;
 }
 else
 {
@@ -1791,6 +1892,28 @@ else version (CRuntime_UClibc)
     int  snprintf(scope char* s, size_t n, scope const char* format, scope const ...);
     ///
     pragma(printf)
+    int  vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
+}
+else version (WASI)
+{
+    // No unsafe pointer manipulation.
+    @trusted
+    {
+        ///
+        void rewind(FILE* stream);
+        ///
+        pure void clearerr(FILE* stream);
+        ///
+        pure int  feof(FILE* stream);
+        ///
+        pure int  ferror(FILE* stream);
+        ///
+        int  fileno(FILE *);
+    }
+
+    ///
+    int  snprintf(scope char* s, size_t n, scope const char* format, ...);
+    ///
     int  vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
 }
 else

@@ -364,7 +364,12 @@ gigi (Node_Id gnat_root,
 
   /* Enable GNAT stack checking method if needed */
   if (!Stack_Check_Probes_On_Target)
-    set_stack_check_libfunc ("_gnat_stack_check");
+    {
+      set_stack_check_libfunc ("__gnat_stack_check");
+      if (flag_stack_check != NO_STACK_CHECK)
+	Check_Restriction_No_Dependence_On_System (Name_Stack_Checking,
+						   gnat_root);
+    }
 
   /* Retrieve alignment settings.  */
   double_float_alignment = get_target_double_float_alignment ();
@@ -4111,9 +4116,11 @@ node_is_atomic (Node_Id gnat_node)
     case N_Identifier:
     case N_Expanded_Name:
       gnat_entity = Entity (gnat_node);
-      if (Ekind (gnat_entity) != E_Variable)
+      if (!Is_Object (gnat_entity))
 	break;
-      return Is_Atomic (gnat_entity) || Is_Atomic (Etype (gnat_entity));
+      return Is_Atomic (gnat_entity)
+	     || (Is_Atomic (Etype (gnat_entity))
+		 && !simple_constant_p (gnat_entity));
 
     case N_Selected_Component:
       return Is_Atomic (Etype (gnat_node))
@@ -4152,7 +4159,8 @@ node_is_volatile_full_access (Node_Id gnat_node)
       if (!Is_Object (gnat_entity))
 	break;
       return Is_Volatile_Full_Access (gnat_entity)
-	     || Is_Volatile_Full_Access (Etype (gnat_entity));
+	     || (Is_Volatile_Full_Access (Etype (gnat_entity))
+		 && !simple_constant_p (gnat_entity));
 
     case N_Selected_Component:
       return Is_Volatile_Full_Access (Etype (gnat_node))
@@ -6930,9 +6938,18 @@ gnat_to_gnu (Node_Id gnat_node)
 	      = convert (TREE_TYPE (gnu_rhs), TYPE_SIZE (gnu_type));
 	  }
 
+	/* If this is a comparison between (potentially) large aggregates, then
+	   declare the dependence on the memcmp routine.  */
+	else if ((kind == N_Op_Eq || kind == N_Op_Ne)
+		 && AGGREGATE_TYPE_P (TREE_TYPE (gnu_lhs))
+		 && (!TREE_CONSTANT (TYPE_SIZE (TREE_TYPE (gnu_lhs)))
+		     || compare_tree_int (TYPE_SIZE (TREE_TYPE (gnu_lhs)),
+					  2 * BITS_PER_WORD) > 0))
+	  Check_Restriction_No_Dependence_On_System (Name_Memory_Compare,
+						     gnat_node);
+
 	/* Pending generic support for efficient vector logical operations in
-	   GCC, convert vectors to their representative array type view and
-	   fallthrough.  */
+	   GCC, convert vectors to their representative array type view.  */
 	gnu_lhs = maybe_vector_array (gnu_lhs);
 	gnu_rhs = maybe_vector_array (gnu_rhs);
 
@@ -7164,7 +7181,7 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Assignment_Statement:
-      /* Get the LHS and RHS of the statement and convert any reference to an
+      /* First get the LHS of the statement and convert any reference to an
 	 unconstrained array into a reference to the underlying array.  */
       gnu_lhs = maybe_unconstrained_array (gnat_to_gnu (Name (gnat_node)));
 
@@ -7174,6 +7191,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	   && !valid_constant_size_p (TYPE_SIZE_UNIT (TREE_TYPE (gnu_lhs))))
 	gnu_result = build_call_raise (SE_Object_Too_Large, gnat_node,
 				       N_Raise_Storage_Error);
+
+      /* If the RHS is a function call, let Call_to_gnu do the entire work.  */
       else if (Nkind (Expression (gnat_node)) == N_Function_Call)
 	{
 	  get_atomic_access (Name (gnat_node), &aa_type, &aa_sync);
@@ -7181,6 +7200,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	    = Call_to_gnu (Expression (gnat_node), &gnu_result_type, gnu_lhs,
 			   aa_type, aa_sync);
 	}
+
+      /* Otherwise we need to build the assignment statement manually.  */
       else
 	{
 	  const Node_Id gnat_expr = Expression (gnat_node);
@@ -7206,6 +7227,9 @@ gnat_to_gnu (Node_Id gnat_node)
 		       && Is_Single_Aggregate (gnat_temp));
 	      gnu_rhs = gnat_to_gnu (gnat_temp);
 	    }
+
+	  /* Otherwise get the RHS of the statement and do the same processing
+	     as for the LHS above.  */
 	  else
 	    gnu_rhs = maybe_unconstrained_array (gnat_to_gnu (gnat_expr));
 
@@ -7251,6 +7275,8 @@ gnat_to_gnu (Node_Id gnat_node)
 		  value = int_const_binop (BIT_AND_EXPR, value, mask);
 		}
 	      gnu_result = build_call_expr (t, 3, dest, value, size);
+	      Check_Restriction_No_Dependence_On_System (Name_Memory_Set,
+							 gnat_node);
 	    }
 
 	  /* Otherwise build a regular assignment.  */
@@ -7275,7 +7301,18 @@ gnat_to_gnu (Node_Id gnat_node)
 	      tree from_ptr = build_fold_addr_expr (from);
 	      tree t = builtin_decl_explicit (BUILT_IN_MEMMOVE);
 	      gnu_result = build_call_expr (t, 3, to_ptr, from_ptr, size);
+	      Check_Restriction_No_Dependence_On_System (Name_Memory_Move,
+							 gnat_node);
 	   }
+
+	  /* If this is an assignment between (potentially) large aggregates,
+	     then declare the dependence on the memcpy routine.  */
+	  else if (AGGREGATE_TYPE_P (TREE_TYPE (gnu_lhs))
+		   && (!TREE_CONSTANT (TYPE_SIZE (TREE_TYPE (gnu_lhs)))
+		       || compare_tree_int (TYPE_SIZE (TREE_TYPE (gnu_lhs)),
+					    2 * BITS_PER_WORD) > 0))
+	    Check_Restriction_No_Dependence_On_System (Name_Memory_Copy,
+						       gnat_node);
 	}
       break;
 
@@ -7384,9 +7421,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		    gnu_ret_val = maybe_unconstrained_array (gnu_ret_val);
 
 		    /* And find out whether it is a candidate for Named Return
-		       Value.  If so, record it.  Note that we disable this NRV
-		       optimization when we're preserving the control flow as
-		       it entails hoisting the allocation done below.  */
+		       Value.  If so, record it.  */
 		    if (optimize
 			&& !optimize_debug
 			&& !TYPE_CI_CO_LIST (gnu_subprog_type))
@@ -8436,27 +8471,37 @@ add_decl_expr (tree gnu_decl, Node_Id gnat_node)
       && !TYPE_FAT_POINTER_P (type))
     MARK_VISITED (TYPE_ADA_SIZE (type));
 
-  /* If this is a variable and an initializer is attached to it, it must be
-     valid for the context.  Similar to init_const in create_var_decl.  */
-  if (TREE_CODE (gnu_decl) == VAR_DECL
-      && (gnu_init = DECL_INITIAL (gnu_decl))
-      && (!gnat_types_compatible_p (type, TREE_TYPE (gnu_init))
+  if (TREE_CODE (gnu_decl) == VAR_DECL && (gnu_init = DECL_INITIAL (gnu_decl)))
+    {
+      /* If this is a variable and an initializer is attached to it, it must be
+	 valid for the context.  Similar to init_const in create_var_decl.  */
+      if (!gnat_types_compatible_p (type, TREE_TYPE (gnu_init))
 	  || (TREE_STATIC (gnu_decl)
 	      && !initializer_constant_valid_p (gnu_init,
-						TREE_TYPE (gnu_init)))))
-    {
-      DECL_INITIAL (gnu_decl) = NULL_TREE;
-      if (TREE_READONLY (gnu_decl))
+						TREE_TYPE (gnu_init))))
 	{
-	  TREE_READONLY (gnu_decl) = 0;
-	  DECL_READONLY_ONCE_ELAB (gnu_decl) = 1;
+	  DECL_INITIAL (gnu_decl) = NULL_TREE;
+	  if (TREE_READONLY (gnu_decl))
+	    {
+	      TREE_READONLY (gnu_decl) = 0;
+	      DECL_READONLY_ONCE_ELAB (gnu_decl) = 1;
+	    }
+
+	  /* Remove any padding so the assignment is done properly.  */
+	  gnu_decl = maybe_padded_object (gnu_decl);
+
+	  gnu_stmt
+	    = build_binary_op (INIT_EXPR, NULL_TREE, gnu_decl, gnu_init);
+	  add_stmt_with_node (gnu_stmt, gnat_node);
 	}
 
-      /* Remove any padding so the assignment is done properly.  */
-      gnu_decl = maybe_padded_object (gnu_decl);
-
-      gnu_stmt = build_binary_op (INIT_EXPR, NULL_TREE, gnu_decl, gnu_init);
-      add_stmt_with_node (gnu_stmt, gnat_node);
+      /* If this is the initialization of a (potentially) large aggregate, then
+	 declare the dependence on the memcpy routine.  */
+      if (AGGREGATE_TYPE_P (type)
+	  && (!TREE_CONSTANT (TYPE_SIZE (type))
+	      || compare_tree_int (TYPE_SIZE (type), 2 * BITS_PER_WORD) > 0))
+	Check_Restriction_No_Dependence_On_System (Name_Memory_Copy,
+						   gnat_node);
     }
 }
 
@@ -8730,6 +8775,17 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 
       gimplify_and_add (TREE_OPERAND (expr, 0), pre_p);
       return GS_OK;
+
+    case SAVE_EXPR:
+      op = TREE_OPERAND (expr, 0);
+
+      /* Propagate TREE_NO_WARNING from expression to temporary by using the
+	 SAVE_EXPR itself as an intermediate step.  See gimplify_save_expr.  */
+      if (SAVE_EXPR_RESOLVED_P (expr))
+	TREE_NO_WARNING (op) = TREE_NO_WARNING (expr);
+      else
+	TREE_NO_WARNING (expr) = TREE_NO_WARNING (op);
+      break;
 
     case UNCONSTRAINED_ARRAY_REF:
       /* We should only do this if we are just elaborating for side effects,
@@ -9347,6 +9403,7 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
       if (code == MULT_EXPR && precision == 64 && BITS_PER_WORD < 64)
 	{
 	  tree int64 = gnat_type_for_size (64, 0);
+	  Check_Restriction_No_Dependence_On_System (Name_Arith_64, gnat_node);
 	  return convert (gnu_type, build_call_n_expr (mulv64_decl, 2,
 						       convert (int64, lhs),
 						       convert (int64, rhs)));
@@ -9356,6 +9413,7 @@ build_binary_op_trapv (enum tree_code code, tree gnu_type, tree left,
       else if (code == MULT_EXPR && precision == 128 && BITS_PER_WORD < 128)
 	{
 	  tree int128 = gnat_type_for_size (128, 0);
+	  Check_Restriction_No_Dependence_On_System (Name_Arith_128, gnat_node);
 	  return convert (gnu_type, build_call_n_expr (mulv128_decl, 2,
 						       convert (int128, lhs),
 						       convert (int128, rhs)));

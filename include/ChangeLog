@@ -1,3 +1,27 @@
+2022-07-12  Martin Liska  <mliska@suse.cz>
+
+	* plugin-api.h (enum linker_api_version): New enum.
+	(ld_plugin_get_api_version): New.
+	(enum ld_plugin_tag): Add LDPT_GET_API_VERSION.
+	(struct ld_plugin_tv): Add tv_get_api_version.
+
+2022-07-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (OMP_REQUIRES_[...]): Update comment.
+
+2022-07-04  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION): Bump to 2.
+	(GOMP_REQUIRES_UNIFIED_ADDRESS, GOMP_REQUIRES_UNIFIED_SHARED_MEMORY,
+	GOMP_REQUIRES_REVERSE_OFFLOAD, GOMP_REQUIRES_TARGET_USED):
+	New defines.
+
+2022-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gomp-constants.h (GOMP_DEVICE_INVALID): Define.
+
 2022-05-31  Alan Modra  <amodra@gmail.com>
 
 	* dwarf2.def: Correct spelling of DW_AT_namelist_item.

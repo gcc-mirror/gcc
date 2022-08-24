@@ -183,12 +183,14 @@ find_sibling_superloop (class loop *use_loop, class loop *def_loop)
 /* DEF_BB is a basic block containing a DEF that needs rewriting into
    loop-closed SSA form.  USE_BLOCKS is the set of basic blocks containing
    uses of DEF that "escape" from the loop containing DEF_BB (i.e. blocks in
-   USE_BLOCKS are dominated by DEF_BB but not in the loop father of DEF_B).
+   USE_BLOCKS are dominated by DEF_BB but not in the loop father of DEF_BB).
    ALL_EXITS[I] is the set of all basic blocks that exit loop I.
+   DEF_LOOP_EXITS is a bitmap of loop exit blocks that exit the loop
+   containing DEF_BB or its outer loops.
 
-   Compute the subset of LOOP_EXITS that exit the loop containing DEF_BB
-   or one of its loop fathers, in which DEF is live.  This set is returned
-   in the bitmap LIVE_EXITS.
+   Compute the subset of loop exit destinations that exit the loop
+   containing DEF_BB or one of its loop fathers, in which DEF is live.
+   This set is returned in the bitmap LIVE_EXITS.
 
    Instead of computing the complete livein set of the def, we use the loop
    nesting tree as a form of poor man's structure analysis.  This greatly
@@ -197,18 +199,17 @@ find_sibling_superloop (class loop *use_loop, class loop *def_loop)
 
 static void
 compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
-			 bitmap *loop_exits, basic_block def_bb)
+			 basic_block def_bb, bitmap def_loop_exits)
 {
   unsigned i;
   bitmap_iterator bi;
   class loop *def_loop = def_bb->loop_father;
   unsigned def_loop_depth = loop_depth (def_loop);
-  bitmap def_loop_exits;
 
   /* Normally the work list size is bounded by the number of basic
      blocks in the largest loop.  We don't know this number, but we
      can be fairly sure that it will be relatively small.  */
-  auto_vec<basic_block> worklist (MAX (8, n_basic_blocks_for_fn (cfun) / 128));
+  auto_vec<basic_block, 8> worklist (MAX (8, n_basic_blocks_for_fn (cfun) / 128));
 
   EXECUTE_IF_SET_IN_BITMAP (use_blocks, 0, i, bi)
     {
@@ -272,13 +273,7 @@ compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
 	}
     }
 
-  def_loop_exits = BITMAP_ALLOC (&loop_renamer_obstack);
-  for (class loop *loop = def_loop;
-       loop != current_loops->tree_root;
-       loop = loop_outer (loop))
-    bitmap_ior_into (def_loop_exits, loop_exits[loop->num]);
   bitmap_and_into (live_exits, def_loop_exits);
-  BITMAP_FREE (def_loop_exits);
 }
 
 /* Add a loop-closing PHI for VAR in basic block EXIT.  */
@@ -319,59 +314,85 @@ add_exit_phi (basic_block exit, tree var)
 }
 
 /* Add exit phis for VAR that is used in LIVEIN.
-   Exits of the loops are stored in LOOP_EXITS.  */
+   Exits of the loops are stored in LOOP_EXITS.  Returns the number
+   of PHIs added for VAR.  */
 
-static void
-add_exit_phis_var (tree var, bitmap use_blocks, bitmap *loop_exits)
+static unsigned
+add_exit_phis_var (tree var, bitmap use_blocks, bitmap def_loop_exits)
 {
   unsigned index;
   bitmap_iterator bi;
   basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (var));
-  bitmap live_exits = BITMAP_ALLOC (&loop_renamer_obstack);
 
   gcc_checking_assert (! bitmap_bit_p (use_blocks, def_bb->index));
 
-  compute_live_loop_exits (live_exits, use_blocks, loop_exits, def_bb);
+  auto_bitmap live_exits (&loop_renamer_obstack);
+  compute_live_loop_exits (live_exits, use_blocks, def_bb, def_loop_exits);
 
+  unsigned cnt = 0;
   EXECUTE_IF_SET_IN_BITMAP (live_exits, 0, index, bi)
     {
       add_exit_phi (BASIC_BLOCK_FOR_FN (cfun, index), var);
+      cnt++;
     }
+  return cnt;
+}
 
-  BITMAP_FREE (live_exits);
+static int
+loop_name_cmp (const void *p1, const void *p2)
+{
+  auto l1 = (const std::pair<int, int> *)p1;
+  auto l2 = (const std::pair<int, int> *)p2;
+  if (l1->first < l2->first)
+    return -1;
+  else if (l1->first > l2->first)
+    return 1;
+  return 0;
 }
 
 /* Add exit phis for the names marked in NAMES_TO_RENAME.
    Exits of the loops are stored in EXITS.  Sets of blocks where the ssa
-   names are used are stored in USE_BLOCKS.  */
+   names are used are stored in USE_BLOCKS.  Returns whether any name
+   required multiple LC PHI nodes.  */
 
-static void
-add_exit_phis (bitmap names_to_rename, bitmap *use_blocks, bitmap *loop_exits)
+static bool
+add_exit_phis (bitmap names_to_rename, bitmap *use_blocks)
 {
   unsigned i;
   bitmap_iterator bi;
+  bool multiple_p = false;
 
+  /* Sort names_to_rename after definition loop so we can avoid re-computing
+     def_loop_exits.  */
+  auto_vec<std::pair<int, int> > names (bitmap_count_bits (names_to_rename));
   EXECUTE_IF_SET_IN_BITMAP (names_to_rename, 0, i, bi)
     {
-      add_exit_phis_var (ssa_name (i), use_blocks[i], loop_exits);
+      tree name = ssa_name (i);
+      loop_p def_loop = gimple_bb (SSA_NAME_DEF_STMT (name))->loop_father;
+      names.quick_push (std::make_pair (def_loop->num, i));
     }
-}
+  names.qsort (loop_name_cmp);
 
-/* Fill the array of bitmaps LOOP_EXITS with all loop exit edge targets.  */
-
-static void
-get_loops_exits (bitmap *loop_exits)
-{
-  unsigned j;
-  edge e;
-
-  for (auto loop : loops_list (cfun, 0))
+  auto_bitmap def_loop_exits (&loop_renamer_obstack);
+  loop_p last_def_loop = NULL;
+  for (auto p : names)
     {
-      auto_vec<edge> exit_edges = get_loop_exit_edges (loop);
-      loop_exits[loop->num] = BITMAP_ALLOC (&loop_renamer_obstack);
-      FOR_EACH_VEC_ELT (exit_edges, j, e)
-        bitmap_set_bit (loop_exits[loop->num], e->dest->index);
+      loop_p def_loop = get_loop (cfun, p.first);
+      if (def_loop != last_def_loop)
+	{
+	  bitmap_clear (def_loop_exits);
+	  last_def_loop = def_loop;
+	  for (class loop *loop = def_loop; loop != current_loops->tree_root;
+	       loop = loop_outer (loop))
+	    for (auto exit = loop->exits->next; exit->e; exit = exit->next)
+	      bitmap_set_bit (def_loop_exits, exit->e->dest->index);
+	}
+      if (add_exit_phis_var (ssa_name (p.second), use_blocks[p.second],
+			     def_loop_exits) > 1)
+	multiple_p = true;
     }
+
+  return multiple_p;
 }
 
 /* For USE in BB, if it is used outside of the loop it is defined in,
@@ -498,94 +519,6 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis,
       find_uses_to_rename_bb (bb, use_blocks, need_phis, use_flags);
 }
 
-/* Mark uses of DEF that are used outside of the loop they are defined in for
-   rewrite.  Record the set of blocks in which the ssa names are used to
-   USE_BLOCKS.  Record the SSA names that will need exit PHIs in NEED_PHIS.  */
-
-static void
-find_uses_to_rename_def (tree def, bitmap *use_blocks, bitmap need_phis)
-{
-  gimple *use_stmt;
-  imm_use_iterator imm_iter;
-
-  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    {
-      if (is_gimple_debug (use_stmt))
-	continue;
-
-      basic_block use_bb = gimple_bb (use_stmt);
-
-      use_operand_p use_p;
-      FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	{
-	  if (gimple_code (use_stmt) == GIMPLE_PHI)
-	    {
-	      edge e = gimple_phi_arg_edge (as_a <gphi *> (use_stmt),
-					    PHI_ARG_INDEX_FROM_USE (use_p));
-	      use_bb = e->src;
-	    }
-	  find_uses_to_rename_use (use_bb, USE_FROM_PTR (use_p), use_blocks,
-				   need_phis);
-	}
-    }
-}
-
-/* Marks names matching USE_FLAGS that are defined in LOOP and used outside of
-   it for rewrite.  Records the set of blocks in which the ssa names are used to
-   USE_BLOCKS.  Record the SSA names that will need exit PHIs in NEED_PHIS.  */
-
-static void
-find_uses_to_rename_in_loop (class loop *loop, bitmap *use_blocks,
-			     bitmap need_phis, int use_flags)
-{
-  bool do_virtuals = (use_flags & SSA_OP_VIRTUAL_USES) != 0;
-  bool do_nonvirtuals = (use_flags & SSA_OP_USE) != 0;
-  int def_flags = ((do_virtuals ? SSA_OP_VIRTUAL_DEFS : 0)
-		   | (do_nonvirtuals ? SSA_OP_DEF : 0));
-
-
-  basic_block *bbs = get_loop_body (loop);
-
-  for (unsigned int i = 0; i < loop->num_nodes; i++)
-    {
-      basic_block bb = bbs[i];
-
-      for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);
-	   gsi_next (&bsi))
-	{
-	  gphi *phi = bsi.phi ();
-	  tree res = gimple_phi_result (phi);
-	  bool virtual_p = virtual_operand_p (res);
-	  if ((virtual_p && do_virtuals)
-	      || (!virtual_p && do_nonvirtuals))
-	    find_uses_to_rename_def (res, use_blocks, need_phis);
-      }
-
-      for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
-	   gsi_next (&bsi))
-	{
-	  gimple *stmt = gsi_stmt (bsi);
-	  /* FOR_EACH_SSA_TREE_OPERAND iterator does not allows
-	     SSA_OP_VIRTUAL_DEFS only.  */
-	  if (def_flags == SSA_OP_VIRTUAL_DEFS)
-	    {
-	      tree vdef = gimple_vdef (stmt);
-	      if (vdef != NULL)
-		find_uses_to_rename_def (vdef, use_blocks, need_phis);
-	    }
-	  else
-	    {
-	      tree var;
-	      ssa_op_iter iter;
-	      FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, def_flags)
-		find_uses_to_rename_def (var, use_blocks, need_phis);
-	    }
-	}
-    }
-
-  XDELETEVEC (bbs);
-}
-
 /* Rewrites the program into a loop closed ssa form -- i.e. inserts extra
    phi nodes to ensure that no variable is used outside the loop it is
    defined in.
@@ -615,8 +548,7 @@ find_uses_to_rename_in_loop (class loop *loop, bitmap *use_blocks,
       is not well-behaved, while the second one is an induction variable with
       base 99 and step 1.
 
-      If LOOP is non-null, only rewrite uses that have defs in LOOP.  Otherwise,
-      if CHANGED_BBS is not NULL, we look for uses outside loops only in the
+      If CHANGED_BBS is not NULL, we look for uses outside loops only in the
       basic blocks in this set.
 
       USE_FLAGS allows us to specify whether we want virtual, non-virtual or
@@ -625,9 +557,9 @@ find_uses_to_rename_in_loop (class loop *loop, bitmap *use_blocks,
       UPDATE_FLAG is used in the call to update_ssa.  See
       TODO_update_ssa* for documentation.  */
 
-void
+static void
 rewrite_into_loop_closed_ssa_1 (bitmap changed_bbs, unsigned update_flag,
-				int use_flags, class loop *loop)
+				int use_flags)
 {
   bitmap *use_blocks;
   bitmap names_to_rename;
@@ -651,59 +583,47 @@ rewrite_into_loop_closed_ssa_1 (bitmap changed_bbs, unsigned update_flag,
      because we know that we will only have entries for the SSA names
      in NAMES_TO_RENAME.  */
   use_blocks = XNEWVEC (bitmap, num_ssa_names);
-
-  if (loop != NULL)
-    {
-      gcc_assert (changed_bbs == NULL);
-      find_uses_to_rename_in_loop (loop, use_blocks, names_to_rename,
-				   use_flags);
-    }
-  else
-    {
-      gcc_assert (loop == NULL);
-      find_uses_to_rename (changed_bbs, use_blocks, names_to_rename, use_flags);
-    }
+  find_uses_to_rename (changed_bbs, use_blocks, names_to_rename, use_flags);
 
   if (!bitmap_empty_p (names_to_rename))
     {
-      /* An array of bitmaps where LOOP_EXITS[I] is the set of basic blocks
-	 that are the destination of an edge exiting loop number I.  */
-      bitmap *loop_exits = XNEWVEC (bitmap, number_of_loops (cfun));
-      get_loops_exits (loop_exits);
+      bool release_recorded_exits_p = false;
+      if (!loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
+	{
+	  /* Doing one scan over the whole function is cheaper than
+	     traversing the loop tree and gathering BBs of each loop.  */
+	  record_loop_exits ();
+	  release_recorded_exits_p = true;
+	}
 
       /* Add the PHI nodes on exits of the loops for the names we need to
-	 rewrite.  */
-      add_exit_phis (names_to_rename, use_blocks, loop_exits);
+	 rewrite.  When no variable required multiple LC PHI nodes to be
+	 inserted then we know that all uses outside of the loop are
+	 dominated by the single LC SSA definition and no further PHI
+	 node insertions are required.  */
+      bool need_phis_p = add_exit_phis (names_to_rename, use_blocks);
 
-      free (loop_exits);
+      if (release_recorded_exits_p)
+	release_recorded_exits (cfun);
 
       /* Fix up all the names found to be used outside their original
 	 loops.  */
-      update_ssa (TODO_update_ssa);
+      update_ssa (need_phis_p ? TODO_update_ssa : TODO_update_ssa_no_phi);
     }
 
   bitmap_obstack_release (&loop_renamer_obstack);
   free (use_blocks);
 }
 
-/* Rewrites the non-virtual defs and uses into a loop closed ssa form.  If
-   CHANGED_BBS is not NULL, we look for uses outside loops only in the basic
+/* Rewrites the defs and uses into a loop closed ssa form.
+   If CHANGED_BBS is not NULL, we look for uses outside loops only in the basic
    blocks in this set.  UPDATE_FLAG is used in the call to update_ssa.  See
    TODO_update_ssa* for documentation.  */
 
 void
 rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
 {
-  rewrite_into_loop_closed_ssa_1 (changed_bbs, update_flag, SSA_OP_USE, NULL);
-}
-
-/* Rewrites virtual defs and uses with def in LOOP into loop closed ssa
-   form.  */
-
-void
-rewrite_virtuals_into_loop_closed_ssa (class loop *loop)
-{
-  rewrite_into_loop_closed_ssa_1 (NULL, 0, SSA_OP_VIRTUAL_USES, loop);
+  rewrite_into_loop_closed_ssa_1 (changed_bbs, update_flag, SSA_OP_ALL_USES);
 }
 
 /* Check invariants of the loop closed ssa form for the def in DEF_BB.  */
@@ -736,8 +656,7 @@ check_loop_closed_ssa_bb (basic_block bb)
     {
       gphi *phi = bsi.phi ();
 
-      if (!virtual_operand_p (PHI_RESULT (phi)))
-	check_loop_closed_ssa_def (bb, PHI_RESULT (phi));
+      check_loop_closed_ssa_def (bb, PHI_RESULT (phi));
     }
 
   for (gimple_stmt_iterator bsi = gsi_start_nondebug_bb (bb); !gsi_end_p (bsi);
@@ -747,7 +666,7 @@ check_loop_closed_ssa_bb (basic_block bb)
       tree var;
       gimple *stmt = gsi_stmt (bsi);
 
-      FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_DEF)
+      FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_DEFS)
 	check_loop_closed_ssa_def (bb, var);
     }
 }
@@ -1289,7 +1208,7 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 			       profile_probability::guessed_always (),
 			       true);
       gcc_assert (new_loop != NULL);
-      update_ssa (TODO_update_ssa);
+      update_ssa (TODO_update_ssa_no_phi);
 
       /* Prepare the cfg and update the phi nodes.  Move the loop exit to the
 	 loop latch (and make its condition dummy, for the moment).  */
@@ -1421,8 +1340,8 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 	}
 
       basic_block rest = new_exit->dest;
-      new_exit->probability = profile_probability::always ()
-	.apply_scale (1, new_est_niter + 1);
+      new_exit->probability
+	= (profile_probability::always () / (new_est_niter + 1));
 
       rest->count += new_exit->count ();
 
@@ -1463,8 +1382,7 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 	  && TREE_CODE (desc->niter) == INTEGER_CST)
 	{
 	  /* The + 1 converts latch counts to iteration counts.  */
-	  profile_count new_header_count
-	    = (in_count.apply_scale (new_est_niter + 1, 1));
+	  profile_count new_header_count = in_count * (new_est_niter + 1);
 	  basic_block *body = get_loop_body (loop);
 	  scale_bbs_frequencies_profile_count (body, loop->num_nodes,
 					       new_header_count,
@@ -1502,15 +1420,16 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 	    e->dest->count / e->src->count ~= new e->probability
 
 	 for every outgoing edge e of NEW_EXIT->src.  */
-      profile_probability new_exit_prob = profile_probability::always ()
-	.apply_scale (1, new_est_niter + 1);
+      profile_probability new_exit_prob
+	= profile_probability::always () / (new_est_niter + 1);
       change_edge_frequency (new_exit, new_exit_prob);
     }
 
   checking_verify_flow_info ();
   checking_verify_loop_structure ();
   checking_verify_loop_closed_ssa (true, loop);
-  checking_verify_loop_closed_ssa (true, new_loop);
+  if (new_loop)
+    checking_verify_loop_closed_ssa (true, new_loop);
 }
 
 /* Wrapper over tree_transform_and_unroll_loop for case we do not

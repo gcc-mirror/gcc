@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function-abi.h"
 #include "rtl-iter.h"
 
-static int reload_cse_noop_set_p (rtx);
 static bool reload_cse_simplify (rtx_insn *, rtx);
 static void reload_cse_regs_1 (void);
 static int reload_cse_simplify_set (rtx, rtx_insn *);
@@ -72,16 +71,6 @@ reload_cse_regs (rtx_insn *first ATTRIBUTE_UNUSED)
 	reload_combine ();
       reload_cse_regs_1 ();
     }
-}
-
-/* See whether a single set SET is a noop.  */
-static int
-reload_cse_noop_set_p (rtx set)
-{
-  if (cselib_reg_set_mode (SET_DEST (set)) != GET_MODE (SET_DEST (set)))
-    return 0;
-
-  return rtx_equal_for_cselib_p (SET_DEST (set), SET_SRC (set));
 }
 
 /* Try to simplify INSN.  Return true if the CFG may have changed.  */
@@ -118,7 +107,7 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
          this out, so it's safer to simplify before we delete.  */
       count += reload_cse_simplify_set (body, insn);
 
-      if (!count && reload_cse_noop_set_p (body))
+      if (!count && cselib_redundant_set_p (body))
 	{
 	  if (check_for_inc_dec (insn))
 	    delete_insn_and_edges (insn);
@@ -157,7 +146,7 @@ reload_cse_simplify (rtx_insn *insn, rtx testreg)
 	  rtx part = XVECEXP (body, 0, i);
 	  if (GET_CODE (part) == SET)
 	    {
-	      if (! reload_cse_noop_set_p (part))
+	      if (! cselib_redundant_set_p (part))
 		break;
 	      if (REG_P (SET_DEST (part))
 		  && REG_FUNCTION_VALUE_P (SET_DEST (part)))
@@ -2339,9 +2328,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return (optimize > 0 && reload_completed); }
+  bool gate (function *) final override
+  {
+    return (optimize > 0 && reload_completed);
+  }
 
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_postreload_cse
 

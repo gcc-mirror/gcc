@@ -76,7 +76,7 @@ __analyzer_called_by_test_not_enough_args (int placeholder, ...)
   s = __builtin_va_arg (ap, char *);
   __analyzer_eval (s[0] == 'f'); /* { dg-warning "TRUE" } */
 
-  i = __builtin_va_arg (ap, int); /* { dg-warning "'ap' has no more arguments \\(1 consumed\\)" } */
+  i = __builtin_va_arg (ap, int); /* { dg-warning "'ap' has no more arguments \\(1 consumed\\) \\\[CWE-685\\\]" } */
 
   __builtin_va_end (ap);
 }
@@ -195,7 +195,7 @@ __analyzer_called_by_test_type_mismatch_1 (int placeholder, ...)
   __builtin_va_list ap;
   __builtin_va_start (ap, placeholder);
 
-  i = __builtin_va_arg (ap, int); /* { dg-warning "'va_arg' expected 'int' but received '\[^\n\r\]*' for variadic argument 1 of 'ap'" } */
+  i = __builtin_va_arg (ap, int); /* { dg-warning "'va_arg' expected 'int' but received '\[^\n\r\]*' for variadic argument 1 of 'ap' \\\[CWE-686\\\]" } */
 
   __builtin_va_end (ap);
 }

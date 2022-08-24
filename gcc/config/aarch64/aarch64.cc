@@ -3552,7 +3552,7 @@ aarch64_classify_vector_mode (machine_mode mode)
     case E_V8QImode:
     case E_V4HImode:
     case E_V2SImode:
-    /* ...E_V1DImode doesn't exist.  */
+    case E_V1DImode:
     case E_V4HFmode:
     case E_V4BFmode:
     case E_V2SFmode:
@@ -15631,7 +15631,7 @@ private:
   unsigned int adjust_body_cost (loop_vec_info, const aarch64_vector_costs *,
 				 unsigned int);
   bool prefer_unrolled_loop () const;
-  unsigned int determine_suggested_unroll_factor (loop_vec_info);
+  unsigned int determine_suggested_unroll_factor ();
 
   /* True if we have performed one-time initialization based on the
      vec_info.  */
@@ -16740,8 +16740,7 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
 }
 
 unsigned int
-aarch64_vector_costs::
-determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
+aarch64_vector_costs::determine_suggested_unroll_factor ()
 {
   bool sve = m_vec_flags & VEC_ANY_SVE;
   /* If we are trying to unroll an Advanced SIMD main loop that contains
@@ -16755,7 +16754,6 @@ determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
     return 1;
 
   unsigned int max_unroll_factor = 1;
-  auto vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   for (auto vec_ops : m_ops)
     {
       aarch64_simd_vec_issue_info const *vec_issue
@@ -16764,8 +16762,7 @@ determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
 	return 1;
       /* Limit unroll factor to a value adjustable by the user, the default
 	 value is 4. */
-      unsigned int unroll_factor = MIN (aarch64_vect_unroll_limit,
-					(int) known_alignment (vf));
+      unsigned int unroll_factor = aarch64_vect_unroll_limit;
       unsigned int factor
        = vec_ops.reduction_latency > 1 ? vec_ops.reduction_latency : 1;
       unsigned int temp;
@@ -16943,8 +16940,7 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
     {
       m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
 					     m_costs[vect_body]);
-      m_suggested_unroll_factor
-	= determine_suggested_unroll_factor (loop_vinfo);
+      m_suggested_unroll_factor = determine_suggested_unroll_factor ();
     }
 
   /* Apply the heuristic described above m_stp_sequence_cost.  Prefer
@@ -23342,7 +23338,9 @@ struct expand_vec_perm_d
   rtx target, op0, op1;
   vec_perm_indices perm;
   machine_mode vmode;
+  machine_mode op_mode;
   unsigned int vec_flags;
+  unsigned int op_vec_flags;
   bool one_vector_p;
   bool testing_p;
 };
@@ -23500,7 +23498,7 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 {
   HOST_WIDE_INT odd;
   poly_uint64 nelt = d->perm.length ();
-  rtx out, in0, in1, x;
+  rtx out, in0, in1;
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -23524,7 +23522,7 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
      at the head of aarch64-sve.md for details.  */
   if (BYTES_BIG_ENDIAN && d->vec_flags == VEC_ADVSIMD)
     {
-      x = in0, in0 = in1, in1 = x;
+      std::swap (in0, in1);
       odd = !odd;
     }
   out = d->target;
@@ -23577,6 +23575,8 @@ aarch64_evpc_reencode (struct expand_vec_perm_d *d)
 
   newd.vmode = new_mode;
   newd.vec_flags = VEC_ADVSIMD;
+  newd.op_mode = newd.vmode;
+  newd.op_vec_flags = newd.vec_flags;
   newd.target = d->target ? gen_lowpart (new_mode, d->target) : NULL;
   newd.op0 = d->op0 ? gen_lowpart (new_mode, d->op0) : NULL;
   newd.op1 = d->op1 ? gen_lowpart (new_mode, d->op1) : NULL;
@@ -23592,7 +23592,7 @@ static bool
 aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 {
   HOST_WIDE_INT odd;
-  rtx out, in0, in1, x;
+  rtx out, in0, in1;
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -23615,7 +23615,7 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
      at the head of aarch64-sve.md for details.  */
   if (BYTES_BIG_ENDIAN && d->vec_flags == VEC_ADVSIMD)
     {
-      x = in0, in0 = in1, in1 = x;
+      std::swap (in0, in1);
       odd = !odd;
     }
   out = d->target;
@@ -23631,7 +23631,7 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
 {
   unsigned int high;
   poly_uint64 nelt = d->perm.length ();
-  rtx out, in0, in1, x;
+  rtx out, in0, in1;
   machine_mode vmode = d->vmode;
 
   if (GET_MODE_UNIT_SIZE (vmode) > 8)
@@ -23656,7 +23656,7 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
      at the head of aarch64-sve.md for details.  */
   if (BYTES_BIG_ENDIAN && d->vec_flags == VEC_ADVSIMD)
     {
-      x = in0, in0 = in1, in1 = x;
+      std::swap (in0, in1);
       high = !high;
     }
   out = d->target;
@@ -23891,6 +23891,33 @@ aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Try to implement D using SVE dup instruction.  */
+
+static bool
+aarch64_evpc_sve_dup (struct expand_vec_perm_d *d)
+{
+  if (BYTES_BIG_ENDIAN
+      || !d->one_vector_p
+      || d->vec_flags != VEC_SVE_DATA
+      || d->op_vec_flags != VEC_ADVSIMD
+      || d->perm.encoding ().nelts_per_pattern () != 1
+      || !known_eq (d->perm.encoding ().npatterns (),
+		    GET_MODE_NUNITS (d->op_mode))
+      || !known_eq (GET_MODE_BITSIZE (d->op_mode), 128))
+    return false;
+
+  int npatterns = d->perm.encoding ().npatterns ();
+  for (int i = 0; i < npatterns; i++)
+    if (!known_eq (d->perm[i], i))
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  aarch64_expand_sve_dupq (d->target, GET_MODE (d->target), d->op0);
+  return true;
+}
+
 /* Try to implement D using SVE SEL instruction.  */
 
 static bool
@@ -24014,6 +24041,8 @@ aarch64_evpc_ins (struct expand_vec_perm_d *d)
 static bool
 aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 {
+  gcc_assert (d->op_mode != E_VOIDmode);
+
   /* The pattern matching functions above are written to look for a small
      number to begin the sequence (0, 1, N/2).  If we begin with an index
      from the second operand, we can swap the operands.  */
@@ -24030,30 +24059,39 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
        || d->vec_flags == VEC_SVE_PRED)
       && known_gt (nelt, 1))
     {
-      if (aarch64_evpc_rev_local (d))
-	return true;
-      else if (aarch64_evpc_rev_global (d))
-	return true;
-      else if (aarch64_evpc_ext (d))
-	return true;
-      else if (aarch64_evpc_dup (d))
-	return true;
-      else if (aarch64_evpc_zip (d))
-	return true;
-      else if (aarch64_evpc_uzp (d))
-	return true;
-      else if (aarch64_evpc_trn (d))
-	return true;
-      else if (aarch64_evpc_sel (d))
-	return true;
-      else if (aarch64_evpc_ins (d))
-	return true;
-      else if (aarch64_evpc_reencode (d))
-	return true;
-      if (d->vec_flags == VEC_SVE_DATA)
-	return aarch64_evpc_sve_tbl (d);
-      else if (d->vec_flags == VEC_ADVSIMD)
-	return aarch64_evpc_tbl (d);
+      if (d->vmode == d->op_mode)
+	{
+	  if (aarch64_evpc_rev_local (d))
+	    return true;
+	  else if (aarch64_evpc_rev_global (d))
+	    return true;
+	  else if (aarch64_evpc_ext (d))
+	    return true;
+	  else if (aarch64_evpc_dup (d))
+	    return true;
+	  else if (aarch64_evpc_zip (d))
+	    return true;
+	  else if (aarch64_evpc_uzp (d))
+	    return true;
+	  else if (aarch64_evpc_trn (d))
+	    return true;
+	  else if (aarch64_evpc_sel (d))
+	    return true;
+	  else if (aarch64_evpc_ins (d))
+	    return true;
+	  else if (aarch64_evpc_reencode (d))
+	    return true;
+
+	  if (d->vec_flags == VEC_SVE_DATA)
+	    return aarch64_evpc_sve_tbl (d);
+	  else if (d->vec_flags == VEC_ADVSIMD)
+	    return aarch64_evpc_tbl (d);
+	}
+      else
+	{
+	  if (aarch64_evpc_sve_dup (d))
+	    return true;
+	}
     }
   return false;
 }
@@ -24065,9 +24103,6 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 				  rtx target, rtx op0, rtx op1,
 				  const vec_perm_indices &sel)
 {
-  if (vmode != op_mode)
-    return false;
-
   struct expand_vec_perm_d d;
 
   /* Check whether the mask can be applied to a single vector.  */
@@ -24091,12 +24126,14 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 		     sel.nelts_per_input ());
   d.vmode = vmode;
   d.vec_flags = aarch64_classify_vector_mode (d.vmode);
+  d.op_mode = op_mode;
+  d.op_vec_flags = aarch64_classify_vector_mode (d.op_mode);
   d.target = target;
-  d.op0 = op0 ? force_reg (vmode, op0) : NULL_RTX;
+  d.op0 = op0 ? force_reg (op_mode, op0) : NULL_RTX;
   if (op0 == op1)
     d.op1 = d.op0;
   else
-    d.op1 = op1 ? force_reg (vmode, op1) : NULL_RTX;
+    d.op1 = op1 ? force_reg (op_mode, op1) : NULL_RTX;
   d.testing_p = !target;
 
   if (!d.testing_p)
@@ -27546,10 +27583,6 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_VECTORIZE_BUILTINS
 #define TARGET_VECTORIZE_BUILTINS
-
-#undef TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
-#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
-  aarch64_builtin_vectorized_function
 
 #undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \

@@ -255,7 +255,7 @@ region_model::impl_call_analyzer_describe (const gcall *call,
   const svalue *sval = get_rvalue (t_val, ctxt);
   bool simple = zerop (t_verbosity);
   label_text desc = sval->get_desc (simple);
-  warning_at (call->location, 0, "svalue: %qs", desc.m_buffer);
+  warning_at (call->location, 0, "svalue: %qs", desc.get ());
 }
 
 /* Handle a call to "__analyzer_dump_capacity".
@@ -274,7 +274,7 @@ region_model::impl_call_analyzer_dump_capacity (const gcall *call,
   const region *base_reg = reg->get_base_region ();
   const svalue *capacity = get_capacity (base_reg);
   label_text desc = capacity->get_desc (true);
-  warning_at (call->location, 0, "capacity: %qs", desc.m_buffer);
+  warning_at (call->location, 0, "capacity: %qs", desc.get ());
 }
 
 /* Compare D1 and D2 using their names, and then IDs to order them.  */
@@ -549,6 +549,123 @@ region_model::impl_call_memset (const call_details &cd)
   fill_region (sized_dest_reg, fill_value_u8);
 }
 
+/* A subclass of pending_diagnostic for complaining about 'putenv'
+   called on an auto var.  */
+
+class putenv_of_auto_var
+: public pending_diagnostic_subclass<putenv_of_auto_var>
+{
+public:
+  putenv_of_auto_var (tree fndecl, const region *reg)
+  : m_fndecl (fndecl), m_reg (reg),
+    m_var_decl (reg->get_base_region ()->maybe_get_decl ())
+  {
+  }
+
+  const char *get_kind () const final override
+  {
+    return "putenv_of_auto_var";
+  }
+
+  bool operator== (const putenv_of_auto_var &other) const
+  {
+    return (m_fndecl == other.m_fndecl
+	    && m_reg == other.m_reg
+	    && same_tree_p (m_var_decl, other.m_var_decl));
+  }
+
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_putenv_of_auto_var;
+  }
+
+  bool emit (rich_location *rich_loc) final override
+  {
+    auto_diagnostic_group d;
+    diagnostic_metadata m;
+
+    /* SEI CERT C Coding Standard: "POS34-C. Do not call putenv() with a
+       pointer to an automatic variable as the argument".  */
+    diagnostic_metadata::precanned_rule
+      rule ("POS34-C", "https://wiki.sei.cmu.edu/confluence/x/6NYxBQ");
+    m.add_rule (rule);
+
+    bool warned;
+    if (m_var_decl)
+      warned = warning_meta (rich_loc, m, get_controlling_option (),
+			     "%qE on a pointer to automatic variable %qE",
+			     m_fndecl, m_var_decl);
+    else
+      warned = warning_meta (rich_loc, m, get_controlling_option (),
+			     "%qE on a pointer to an on-stack buffer",
+			     m_fndecl);
+    if (warned)
+      {
+	if (m_var_decl)
+	  inform (DECL_SOURCE_LOCATION (m_var_decl),
+		  "%qE declared on stack here", m_var_decl);
+	inform (rich_loc->get_loc (), "perhaps use %qs rather than %qE",
+		"setenv", m_fndecl);
+      }
+
+    return warned;
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) final override
+  {
+    if (m_var_decl)
+      return ev.formatted_print ("%qE on a pointer to automatic variable %qE",
+				 m_fndecl, m_var_decl);
+    else
+      return ev.formatted_print ("%qE on a pointer to an on-stack buffer",
+				 m_fndecl);
+  }
+
+  void mark_interesting_stuff (interesting_t *interest) final override
+  {
+    if (!m_var_decl)
+      interest->add_region_creation (m_reg->get_base_region ());
+  }
+
+private:
+  tree m_fndecl; // non-NULL
+  const region *m_reg; // non-NULL
+  tree m_var_decl; // could be NULL
+};
+
+/* Handle the on_call_pre part of "putenv".
+
+   In theory we could try to model the state of the environment variables
+   for the process; for now we merely complain about putenv of regions
+   on the stack.  */
+
+void
+region_model::impl_call_putenv (const call_details &cd)
+{
+  tree fndecl = cd.get_fndecl_for_call ();
+  gcc_assert (fndecl);
+  region_model_context *ctxt = cd.get_ctxt ();
+  const svalue *ptr_sval = cd.get_arg_svalue (0);
+  const region *reg = deref_rvalue (ptr_sval, cd.get_arg_tree (0), ctxt);
+  m_store.mark_as_escaped (reg);
+  enum memory_space mem_space = reg->get_memory_space ();
+  switch (mem_space)
+    {
+    default:
+      gcc_unreachable ();
+    case MEMSPACE_UNKNOWN:
+    case MEMSPACE_CODE:
+    case MEMSPACE_GLOBALS:
+    case MEMSPACE_HEAP:
+    case MEMSPACE_READONLY_DATA:
+      break;
+    case MEMSPACE_STACK:
+      if (ctxt)
+	ctxt->warn (new putenv_of_auto_var (fndecl, reg));
+      break;
+    }
+}
+
 /* Handle the on_call_pre part of "operator new".  */
 
 void
@@ -732,15 +849,17 @@ region_model::impl_call_realloc (const call_details &cd)
 	  const svalue *old_size_sval = model->get_dynamic_extents (freed_reg);
 	  if (old_size_sval)
 	    {
-	      const region *sized_old_reg
+	      const svalue *copied_size_sval
+		= get_copied_size (old_size_sval, new_size_sval);
+	      const region *copied_old_reg
 		= model->m_mgr->get_sized_region (freed_reg, NULL,
-						  old_size_sval);
+						  copied_size_sval);
 	      const svalue *buffer_content_sval
-		= model->get_store_value (sized_old_reg, cd.get_ctxt ());
-	      const region *sized_new_reg
+		= model->get_store_value (copied_old_reg, cd.get_ctxt ());
+	      const region *copied_new_reg
 		= model->m_mgr->get_sized_region (new_reg, NULL,
-						  old_size_sval);
-	      model->set_value (sized_new_reg, buffer_content_sval,
+						  copied_size_sval);
+	      model->set_value (copied_new_reg, buffer_content_sval,
 				cd.get_ctxt ());
 	    }
 	  else
@@ -773,6 +892,40 @@ region_model::impl_call_realloc (const call_details &cd)
 	}
       else
 	return true;
+    }
+
+  private:
+    /* Return the lesser of OLD_SIZE_SVAL and NEW_SIZE_SVAL.
+       If either one is symbolic, the symbolic svalue is returned.  */
+    const svalue *get_copied_size (const svalue *old_size_sval,
+				   const svalue *new_size_sval) const
+    {
+      tree old_size_cst = old_size_sval->maybe_get_constant ();
+      tree new_size_cst = new_size_sval->maybe_get_constant ();
+
+      if (old_size_cst && new_size_cst)
+	{
+	  /* Both are constants and comparable.  */
+	  tree cmp = fold_binary (LT_EXPR, boolean_type_node,
+				  old_size_cst, new_size_cst);
+
+	  if (cmp == boolean_true_node)
+	    return old_size_sval;
+	  else
+	    return new_size_sval;
+	}
+      else if (new_size_cst)
+	{
+	  /* OLD_SIZE_SVAL is symbolic, so return that.  */
+	  return old_size_sval;
+	}
+      else
+	{
+	  /* NEW_SIZE_SVAL is symbolic or both are symbolic.
+	     Return NEW_SIZE_SVAL, because implementations of realloc
+	     probably only moves the buffer if the new size is larger.  */
+	  return new_size_sval;
+	}
     }
   };
 

@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-query.h"
 #include "alloc-pool.h"
 #include "gimple-range.h"
+#include "value-range-storage.h"
 
 // value_query default methods.
 
@@ -166,6 +167,7 @@ range_query::free_value_range_equiv (value_range_equiv *v)
 const class value_range_equiv *
 range_query::get_value_range (const_tree expr, gimple *stmt)
 {
+  gcc_checking_assert (value_range_equiv::supports_p (TREE_TYPE (expr)));
   int_range_max r;
   if (range_of_expr (r, const_cast<tree> (expr), stmt))
     return new (equiv_alloc->allocate ()) value_range_equiv (r);
@@ -209,6 +211,7 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
   switch (TREE_CODE (expr))
     {
     case INTEGER_CST:
+    case REAL_CST:
       if (TREE_OVERFLOW_P (expr))
 	expr = drop_tree_overflow (expr);
       r.set (expr, expr);
@@ -271,23 +274,21 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
 // Return the range for NAME from SSA_NAME_RANGE_INFO.
 
 static inline void
-get_ssa_name_range_info (irange &r, const_tree name)
+get_ssa_name_range_info (vrange &r, const_tree name)
 {
   tree type = TREE_TYPE (name);
   gcc_checking_assert (!POINTER_TYPE_P (type));
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
 
-  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+  void *ri = SSA_NAME_RANGE_INFO (name);
 
-  // Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
-  // with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.
-  if (!ri || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (name)))
-	      > 2 * HOST_BITS_PER_WIDE_INT))
-    r.set_varying (type);
+  if (ri)
+    {
+      vrange_storage vstore (NULL);
+      vstore.get_vrange (ri, r, TREE_TYPE (name));
+    }
   else
-    r.set (wide_int_to_tree (type, ri->get_min ()),
-	   wide_int_to_tree (type, ri->get_max ()),
-	   SSA_NAME_RANGE_TYPE (name));
+    r.set_varying (type);
 }
 
 // Return nonnull attribute of pointer NAME from SSA_NAME_PTR_INFO.
@@ -311,43 +312,6 @@ get_ssa_name_ptr_info_nonnull (const_tree name)
 }
 
 // Update the global range for NAME into the SSA_RANGE_NAME_INFO and
-// SSA_NAME_PTR_INFO fields.  Return TRUE if the range for NAME was
-// updated.
-
-bool
-update_global_range (vrange &r, tree name)
-{
-  tree type = TREE_TYPE (name);
-
-  if (r.undefined_p () || r.varying_p ())
-    return false;
-
-  if (INTEGRAL_TYPE_P (type))
-    {
-      // If a global range already exists, incorporate it.
-      if (SSA_NAME_RANGE_INFO (name))
-	{
-	  value_range glob;
-	  get_ssa_name_range_info (glob, name);
-	  r.intersect (glob);
-	}
-      if (r.undefined_p ())
-	return false;
-
-      set_range_info (name, as_a <irange> (r));
-      return true;
-    }
-  else if (POINTER_TYPE_P (type))
-    {
-      if (r.nonzero_p ())
-	{
-	  set_ptr_nonnull (name);
-	  return true;
-	}
-    }
-  return false;
-}
-
 // Return the legacy global range for NAME if it has one, otherwise
 // return VARYING.
 
@@ -372,7 +336,7 @@ get_range_global (vrange &r, tree name)
 	    r.set_nonzero (type);
 	  else if (INTEGRAL_TYPE_P (type))
 	    {
-	      get_ssa_name_range_info (as_a <irange> (r), name);
+	      get_ssa_name_range_info (r, name);
 	      if (r.undefined_p ())
 		r.set_varying (type);
 	    }
@@ -387,8 +351,7 @@ get_range_global (vrange &r, tree name)
    }
   else if (!POINTER_TYPE_P (type) && SSA_NAME_RANGE_INFO (name))
     {
-      gcc_checking_assert (irange::supports_p (TREE_TYPE (name)));
-      get_ssa_name_range_info (as_a <irange> (r), name);
+      get_ssa_name_range_info (r, name);
       if (r.undefined_p ())
 	r.set_varying (type);
     }

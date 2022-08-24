@@ -180,6 +180,7 @@ make_internal_typeinfo (tinfo_kind tk, Identifier *ident, ...)
 
   /* Create the TypeInfo type.  */
   tree type = make_node (RECORD_TYPE);
+  TYPE_ARTIFICIAL (type) = 1;
   finish_builtin_struct (type, ident->toChars (), fields, NULL_TREE);
 
   tinfo_types[tk] = type;
@@ -243,6 +244,10 @@ make_frontend_typeinfo (Identifier *ident, ClassDeclaration *base = NULL)
 void
 create_tinfo_types (Module *mod)
 {
+  /* Already generated internal types for the object module.  */
+  if (object_module != NULL)
+    return;
+
   /* Build the internal TypeInfo and ClassInfo types.
      See TypeInfoVisitor for documentation of field layout.  */
   make_internal_typeinfo (TK_TYPEINFO_TYPE, Identifier::idPool ("TypeInfo"),
@@ -1049,7 +1054,7 @@ public:
     this->layout_string (ti->deco);
 
     /* Default initializer for struct.  */
-    tree ptr = (sd->zeroInit) ? null_pointer_node
+    tree ptr = (sd->zeroInit ()) ? null_pointer_node
       : build_address (aggregate_initializer_decl (sd));
     this->layout_field (d_array_value (array_type_node,
 				       size_int (sd->structsize), ptr));
@@ -1394,21 +1399,29 @@ get_classinfo_decl (ClassDeclaration *decl)
 }
 
 /* Performs sanity checks on the `object.TypeInfo' type, raising an error if
-   RTTI is disabled, or the type is missing.  */
+   RTTI is disabled, or the type is missing.  LOC is the location used for error
+   messages.  SC is the context, and EXPR is expression where TypeInfo is
+   required from, if either are set.  */
 
 void
-check_typeinfo_type (const Loc &loc, Scope *sc)
+check_typeinfo_type (const Loc &loc, Scope *sc, Expression *expr)
 {
   if (!global.params.useTypeInfo)
     {
-      static int warned = 0;
-
       /* Even when compiling without RTTI we should still be able to evaluate
 	 TypeInfo at compile-time, just not at run-time.  */
-      if (!warned && (!sc || !(sc->flags & SCOPEctfe)))
+      if (!sc || !(sc->flags & SCOPEctfe))
 	{
-	  error_at (make_location_t (loc),
-		    "%<object.TypeInfo%> cannot be used with %<-fno-rtti%>");
+	  static int warned = 0;
+
+	  if (expr != NULL)
+	    error_at (make_location_t (loc),
+		     "expression %qs requires %<object.TypeInfo%> and cannot "
+		     "be used with %<-fno-rtti%>", expr->toChars ());
+	  else if (!warned)
+	    error_at (make_location_t (loc),
+		      "%<object.TypeInfo%> cannot be used with %<-fno-rtti%>");
+
 	  warned = 1;
 	}
     }
@@ -1429,15 +1442,21 @@ check_typeinfo_type (const Loc &loc, Scope *sc)
     }
 }
 
-/* Returns typeinfo reference for TYPE.  */
+/* Returns typeinfo reference for TYPE.  LOC is the location used for error
+   messages.  EXPR is the expression where TypeInfo is required, if set.  */
 
 tree
-build_typeinfo (const Loc &loc, Type *type)
+build_typeinfo (const Loc &loc, Type *type, Expression *expr)
 {
   gcc_assert (type->ty != TY::Terror);
-  check_typeinfo_type (loc, NULL);
+  check_typeinfo_type (loc, NULL, expr);
   create_typeinfo (type, NULL);
   return build_address (get_typeinfo_decl (type->vtinfo));
+}
+
+tree build_typeinfo (Expression *expr, Type *type)
+{
+  return build_typeinfo (expr->loc, type, expr);
 }
 
 /* Like layout_classinfo, but generates an Object that wraps around a
@@ -1756,7 +1775,7 @@ public:
       {
 	if (!ti->needsCodegen ())
 	  {
-	    if (ti->minst || sd->requestTypeInfo)
+	    if (ti->minst || sd->requestTypeInfo ())
 	      return;
 
 	    this->result_ |= true;

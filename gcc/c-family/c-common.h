@@ -184,6 +184,8 @@ enum rid
   RID_IS_UNION,                RID_UNDERLYING_TYPE,
   RID_IS_ASSIGNABLE,           RID_IS_CONSTRUCTIBLE,
   RID_IS_NOTHROW_ASSIGNABLE,   RID_IS_NOTHROW_CONSTRUCTIBLE,
+  RID_REF_CONSTRUCTS_FROM_TEMPORARY,
+  RID_REF_CONVERTS_FROM_TEMPORARY,
 
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
@@ -271,7 +273,7 @@ enum rid
   RID_FIRST_CXX11 = RID_CONSTEXPR,
   RID_LAST_CXX11 = RID_STATIC_ASSERT,
   RID_FIRST_CXX20 = RID_CONSTINIT,
-  RID_LAST_CXX20 = RID_CONSTINIT,
+  RID_LAST_CXX20 = RID_CO_RETURN,
   RID_FIRST_AT = RID_AT_ENCODE,
   RID_LAST_AT = RID_AT_IMPLEMENTATION,
   RID_FIRST_PQ = RID_IN,
@@ -765,10 +767,12 @@ extern int max_tinst_depth;
 
 extern int c_inhibit_evaluation_warnings;
 
-/* Whether lexing has been completed, so subsequent preprocessor
-   errors should use the compiler's input_location.  */
+/* Depending on which phase of processing we are in, we may need
+   to prefer input_location to libcpp's locations.  (Specifically,
+   after the C++ lexer is done lexing tokens, but prior to calling
+   cpp_finish (), we need to do so.  */
 
-extern bool done_lexing;
+extern bool override_libcpp_locations;
 
 /* C types are partitioned into three subsets: object, function, and
    incomplete types.  */
@@ -911,6 +915,7 @@ extern tree fold_for_warn (tree);
 extern tree c_common_get_narrower (tree, int *);
 extern bool get_attribute_operand (tree, unsigned HOST_WIDE_INT *);
 extern void c_common_finalize_early_debug (void);
+extern bool c_option_is_from_cpp_diagnostics (int);
 
 /* Used by convert_and_check; in front ends.  */
 extern tree convert_init (tree, tree);
@@ -1191,6 +1196,7 @@ extern void preprocess_file (cpp_reader *);
 extern void pp_file_change (const line_map_ordinary *);
 extern void pp_dir_change (cpp_reader *, const char *);
 extern bool check_missing_format_attribute (tree, tree);
+extern void c_pp_stream_token (cpp_reader *, const cpp_token *, location_t loc);
 
 /* In c-omp.cc  */
 typedef wide_int_bitmask omp_clause_mask;

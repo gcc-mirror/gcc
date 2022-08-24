@@ -1,3 +1,116 @@
+2022-08-09  Vibhav Pant  <vibhavp@gmail.com>
+
+	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_context_new_bitcast): Move
+	definition out of comment.
+
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst: Remove reference to ".c" extensions
+	of source files.
+
+2022-07-28  Martin Liška  <mliska@suse.cz>
+
+	* docs/cp/intro/tutorial02.rst:
+	Shorten the assembly example so that there is not slider.
+	* docs/cp/intro/tutorial04.rst: Likewise.
+	* docs/intro/tutorial02.rst: Likewise.
+	* docs/intro/tutorial04.rst: Likewise.
+	* docs/topics/contexts.rst: Likewise.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/index.rst: Remove reference to module index
+	as we don't emit any.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/cp/intro/tutorial02.rst: Use :expr:`type *` for pointers to a type
+	* docs/cp/topics/asm.rst: Likewise.
+	* docs/cp/topics/contexts.rst: Likewise.
+	* docs/cp/topics/expressions.rst: Likewise.
+	* docs/cp/topics/functions.rst: Likewise.
+	* docs/cp/topics/objects.rst: Likewise.
+	* docs/intro/tutorial02.rst: Likewise.
+	* docs/intro/tutorial03.rst: Likewise.
+	* docs/intro/tutorial04.rst: Likewise.
+	* docs/intro/tutorial05.rst: Likewise.
+	* docs/topics/compilation.rst: Likewise.
+	* docs/topics/contexts.rst: Likewise.
+	* docs/topics/objects.rst: Likewise.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/cp/intro/tutorial04.rst: Use list-table.
+	* docs/intro/tutorial04.rst: Likewise.
+	* docs/intro/tutorial05.rst: Likewise.
+	* docs/topics/compilation.rst: Likewise.
+	* docs/topics/expressions.rst: Likewise.
+	* docs/topics/types.rst: Likewise.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/cp/topics/expressions.rst: Compact so that the generated
+	output is also more compact.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/cp/intro/tutorial02.rst: Use proper reference.
+	* docs/cp/topics/contexts.rst: Likewise.
+	* docs/cp/topics/functions.rst: Put `class` directive before a
+	function as it is not allowed declaring a class in a fn.
+	* docs/cp/topics/types.rst: Add template keyword.
+	* docs/examples/tut04-toyvm/toyvm.c (toyvm_function_compile):
+	Add removed comment used for code snippet ending detection.
+	* docs/intro/tutorial04.rst: Fix to match the real comment.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/cp/topics/expressions.rst: Use :expr: for basic types.
+	* docs/topics/compilation.rst: Likewise.
+	* docs/topics/expressions.rst: Likewise.
+	* docs/topics/function-pointers.rst: Likewise.
+
+2022-07-28  marxin  <mliska@suse.cz>
+
+	* docs/conf.py: Add needs_sphinx = '3.0' where c:type was added.
+	* docs/index.rst: Remove note about it.
+	* docs/topics/compilation.rst: Use enum directive and reference.
+	* docs/topics/contexts.rst: Likewise.
+	* docs/topics/expressions.rst: Likewise.
+	* docs/topics/functions.rst: Likewise.
+
+2022-07-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* jit-recording.h (recording::memento): Define copy constructor
+	and copy assignment operator as deleted.
+	(recording::string): Likewise.
+	(recording::string::c_str): Add const qualifier.
+
+2022-06-29  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/105812
+	* jit-playback.cc: Use the correct return type when folding in
+	as_truth_value.
+
+2022-06-29  Sergei Trofimovich  <siarheit@google.com>
+
+	PR c++/106102
+	* jit-playback.cc: Include <pthread.h> via "system.h" to avoid calloc()
+	poisoning.
+	* jit-recording.cc: Ditto.
+	* libgccjit.cc: Ditto.
+
+2022-06-10  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/105829
+	* libgccjit.cc: Add support for floating-point types in
+	gcc_jit_type_get_size.
+
+2022-06-08  Yang Yujie  <yangyujie@loongson.cn>
+
+	* Make-lang.in: only link objects from $(EXTRA_GCC_OBJS)
+	that's not in $(EXTRA_OBJS) into libgccjit.
+
 2022-05-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-recording.h: Add "final" and "override" to all vfunc

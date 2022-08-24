@@ -1577,20 +1577,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// add_const
   template<typename _Tp>
     struct add_const
-    { typedef _Tp const     type; };
+    { using type = _Tp const; };
 
   /// add_volatile
   template<typename _Tp>
     struct add_volatile
-    { typedef _Tp volatile     type; };
+    { using type = _Tp volatile; };
 
   /// add_cv
   template<typename _Tp>
     struct add_cv
-    {
-      typedef typename
-      add_const<typename add_volatile<_Tp>::type>::type     type;
-    };
+    { using type = _Tp const volatile; };
 
 #if __cplusplus > 201103L
 
@@ -3508,6 +3505,49 @@ template<typename _Ret, typename _Fn, typename... _Args>
   template<typename _Tp>
     inline constexpr bool is_scoped_enum_v = is_scoped_enum<_Tp>::value;
 
+#if __has_builtin(__reference_constructs_from_temporary) \
+  && __has_builtin(__reference_converts_from_temporary)
+
+#define __cpp_lib_reference_from_temporary 202202L
+
+  /// True if _Tp is a reference type, a _Up value can be bound to _Tp in
+  /// direct-initialization, and a temporary object would be bound to
+  /// the reference, false otherwise.
+  /// @since C++23
+  template<typename _Tp, typename _Up>
+    struct reference_constructs_from_temporary
+    : public bool_constant<__reference_constructs_from_temporary(_Tp, _Up)>
+    {
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{})
+		    && std::__is_complete_or_unbounded(__type_identity<_Up>{}),
+	"template argument must be a complete class or an unbounded array");
+    };
+
+  /// True if _Tp is a reference type, a _Up value can be bound to _Tp in
+  /// copy-initialization, and a temporary object would be bound to
+  /// the reference, false otherwise.
+  /// @since C++23
+  template<typename _Tp, typename _Up>
+    struct reference_converts_from_temporary
+    : public bool_constant<__reference_converts_from_temporary(_Tp, _Up)>
+    {
+      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{})
+		    && std::__is_complete_or_unbounded(__type_identity<_Up>{}),
+	"template argument must be a complete class or an unbounded array");
+    };
+
+  /// @ingroup variable_templates
+  /// @since C++23
+  template<typename _Tp, typename _Up>
+    inline constexpr bool reference_constructs_from_temporary_v
+      = reference_constructs_from_temporary<_Tp, _Up>::value;
+
+  /// @ingroup variable_templates
+  /// @since C++23
+  template<typename _Tp, typename _Up>
+    inline constexpr bool reference_converts_from_temporary_v
+      = reference_converts_from_temporary<_Tp, _Up>::value;
+#endif // __has_builtin for reference_from_temporary
 #endif // C++23
 
 #if _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED

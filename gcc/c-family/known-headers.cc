@@ -199,6 +199,20 @@ get_stdlib_header_for_name (const char *name, enum stdlib lib)
     {"WINT_MAX", {"<stdint.h>", "<cstdint>"} },
     {"WINT_MIN", {"<stdint.h>", "<cstdint>"} },
 
+    /* <time.h>.  */
+    {"asctime", {"<time.h>", "<ctime>"} },
+    {"clock", {"<time.h>", "<ctime>"} },
+    {"clock_t", {"<time.h>", "<ctime>"} },
+    {"ctime", {"<time.h>", "<ctime>"} },
+    {"difftime", {"<time.h>", "<ctime>"} },
+    {"gmtime", {"<time.h>", "<ctime>"} },
+    {"localtime", {"<time.h>", "<ctime>"} },
+    {"mktime", {"<time.h>", "<ctime>"} },
+    {"strftime", {"<time.h>", "<ctime>"} },
+    {"time", {"<time.h>", "<ctime>"} },
+    {"time_t", {"<time.h>", "<ctime>"} },
+    {"tm", {"<time.h>", "<ctime>"} },
+
     /* <wchar.h>.  */
     {"WCHAR_MAX", {"<wchar.h>", "<cwchar>"} },
     {"WCHAR_MIN", {"<wchar.h>", "<cwchar>"} }

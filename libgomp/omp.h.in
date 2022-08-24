@@ -184,6 +184,12 @@ typedef enum omp_event_handle_t __GOMP_UINTPTR_T_ENUM
   __omp_event_handle_t_max__ = __UINTPTR_MAX__
 } omp_event_handle_t;
 
+enum
+{
+  omp_initial_device = -1,
+  omp_invalid_device = -4
+};
+
 #ifdef __cplusplus
 extern "C" {
 # define __GOMP_NOTHROW throw ()

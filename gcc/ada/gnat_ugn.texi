@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , May 24, 2022
+GNAT User's Guide for Native Platforms , Jul 11, 2022
 
 AdaCore
 
@@ -7120,6 +7120,21 @@ If @code{--version} was not used, display usage, then exit disregarding
 all other options.
 @end table
 
+@geindex -P (gnatmake)
+
+
+@table @asis
+
+@item @code{-P@emph{project}}
+
+Build GNAT project file @code{project} using GPRbuild. When this switch is
+present, all other command-line switches are treated as GPRbuild switches
+and not @code{gnatmake} switches.
+@end table
+
+@c -- Comment:
+@c :ref:`gnatmake_and_Project_Files`.
+
 @geindex --GCC=compiler_name (gnatmake)
 
 
@@ -7619,19 +7634,6 @@ This switch cannot be used when invoking @code{gnatmake} with several
 
 Same as @code{--create-missing-dirs}
 @end table
-
-@geindex -P (gnatmake)
-
-
-@table @asis
-
-@item @code{-P@emph{project}}
-
-Use project file @code{project}. Only one such switch can be used.
-@end table
-
-@c -- Comment:
-@c :ref:`gnatmake_and_Project_Files`.
 
 @geindex -q (gnatmake)
 
@@ -11383,8 +11385,7 @@ This switch disables warnings on overlapping actuals in a call.
 If this warning option is activated, then warnings are generated for
 calls to subprograms marked with @code{pragma Obsolescent} and
 for use of features in Annex J of the Ada Reference Manual. In the
-case of Annex J, not all features are flagged. In particular use
-of the renamed packages (like @code{Text_IO}) and use of package
+case of Annex J, not all features are flagged. In particular, uses of package
 @code{ASCII} are not flagged, since these are very common and
 would generate many annoying positive warnings. The default is that
 such warnings are not generated.
@@ -12853,15 +12854,31 @@ Which is a shorthand for:
 
 @example
 pragma Assertion_Policy
-  (Assert               => Check,
-   Static_Predicate     => Check,
-   Dynamic_Predicate    => Check,
-   Pre                  => Check,
-   Pre'Class            => Check,
-   Post                 => Check,
-   Post'Class           => Check,
-   Type_Invariant       => Check,
-   Type_Invariant'Class => Check);
+--  Ada RM assertion pragmas
+  (Assert                    => Check,
+   Static_Predicate          => Check,
+   Dynamic_Predicate         => Check,
+   Pre                       => Check,
+   Pre'Class                 => Check,
+   Post                      => Check,
+   Post'Class                => Check,
+   Type_Invariant            => Check,
+   Type_Invariant'Class      => Check,
+   Default_Initial_Condition => Check,
+--  GNAT specific assertion pragmas
+   Assert_And_Cut            => Check,
+   Assume                    => Check,
+   Contract_Cases            => Check,
+   Debug                     => Check,
+   Ghost                     => Check,
+   Initial_Condition         => Check,
+   Loop_Invariant            => Check,
+   Loop_Variant              => Check,
+   Postcondition             => Check,
+   Precondition              => Check,
+   Predicate                 => Check,
+   Refined_Post              => Check,
+   Subprogram_Variant        => Check);
 @end example
 
 The pragmas @code{Assert} and @code{Debug} normally have no effect and
@@ -29249,8 +29266,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 @anchor{cf}@w{                              }
+@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 
 @c %**end of body
 @bye

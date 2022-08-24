@@ -119,9 +119,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       allocate(size_type __n, const void* = static_cast<const void*>(0))
       {
 #if __cplusplus >= 201103L
-	 // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	 // 3308. std::allocator<void>().allocate(n)
-	 static_assert(sizeof(_Tp) != 0, "cannot allocate incomplete types");
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3308. std::allocator<void>().allocate(n)
+	static_assert(sizeof(_Tp) != 0, "cannot allocate incomplete types");
 #endif
 
 	if (__builtin_expect(__n > this->_M_max_size(), false))

@@ -139,7 +139,7 @@ struct unswitch_predicate
 	auto range_op = range_op_handler (code, TREE_TYPE (lhs));
 	int_range<2> rhs_range (TREE_TYPE (rhs));
 	if (CONSTANT_CLASS_P (rhs))
-	  rhs_range.set (rhs);
+	  rhs_range.set (rhs, rhs);
 	if (!range_op.op1_range (true_range, TREE_TYPE (lhs),
 				 int_range<2> (boolean_true_node,
 					       boolean_true_node), rhs_range)
@@ -535,7 +535,7 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	  else
 	    {
 	      cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx, low);
-	      lab_range.set (low);
+	      lab_range.set (low, low);
 	    }
 
 	  /* Combine the expression with the existing one.  */
@@ -980,7 +980,7 @@ tree_unswitch_single_loop (class loop *loop, dump_user_location_t loc,
       free_original_copy_tables ();
 
       /* Update the SSA form after unswitching.  */
-      update_ssa (TODO_update_ssa);
+      update_ssa (TODO_update_ssa_no_phi);
 
       /* Invoke itself on modified loops.  */
       bitmap handled_copy = BITMAP_ALLOC (NULL);
@@ -1068,8 +1068,6 @@ tree_unswitch_outer_loop (class loop *loop)
   auto_vec<gimple *> dbg_to_reset;
   while ((guard = find_loop_guard (loop, dbg_to_reset)))
     {
-      if (! changed)
-	rewrite_virtuals_into_loop_closed_ssa (loop);
       hoist_guard (loop, guard);
       for (gimple *debug_stmt : dbg_to_reset)
 	{
@@ -1614,8 +1612,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_unswitch_loops != 0; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return flag_unswitch_loops != 0; }
+  unsigned int execute (function *) final override;
 
 }; // class pass_tree_unswitch
 

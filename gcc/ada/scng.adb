@@ -27,9 +27,9 @@ with Atree;    use Atree;
 with Csets;    use Csets;
 with Errout;   use Errout;
 with Hostparm; use Hostparm;
+with Lib;      use Lib;
 with Namet;    use Namet;
 with Opt;      use Opt;
-with Scans;    use Scans;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stringt;  use Stringt;
@@ -52,9 +52,6 @@ package body Scng is
 
    Special_Characters : array (Character) of Boolean := (others => False);
    --  For characters that are Special token, the value is True
-
-   Comment_Is_Token : Boolean := False;
-   --  True if comments are tokens
 
    End_Of_Line_Is_Token : Boolean := False;
    --  True if End_Of_Line is a token
@@ -258,9 +255,6 @@ package body Scng is
    ----------
 
    procedure Scan is
-
-      Start_Of_Comment : Source_Ptr;
-      --  Record start of comment position
 
       Underline_Found : Boolean;
       --  During scanning of an identifier, set to True if last character
@@ -1609,10 +1603,6 @@ package body Scng is
                   return;
                end if;
 
-               --  Otherwise scan out the comment
-
-               Start_Of_Comment := Scan_Ptr;
-
                --  Loop to scan comment (this loop runs more than once only if
                --  a horizontal tab or other non-graphic character is scanned)
 
@@ -1711,18 +1701,8 @@ package body Scng is
                   end if;
                end loop;
 
-               --  Note that, except when comments are tokens, we do NOT
-               --  execute a return here, instead we fall through to reexecute
-               --  the scan loop to look for a token.
-
-               if Comment_Is_Token then
-                  Name_Len := Integer (Scan_Ptr - Start_Of_Comment);
-                  Name_Buffer (1 .. Name_Len) :=
-                    String (Source (Start_Of_Comment .. Scan_Ptr - 1));
-                  Comment_Id := Name_Find;
-                  Token := Tok_Comment;
-                  return;
-               end if;
+               --  Note that we do not return here; instead we fall through to
+               --  reexecute the scan loop to look for a token.
             end if;
          end Minus_Case;
 
@@ -2072,15 +2052,15 @@ package body Scng is
          --  Underline character
 
          when '_' =>
-            if Special_Characters ('_') then
-               Token_Ptr := Scan_Ptr;
-               Scan_Ptr := Scan_Ptr + 1;
-               Token := Tok_Special;
-               Special_Character := '_';
-               return;
+            --  Identifiers with leading underscores are not allowed in Ada.
+            --  However, we allow them in the run-time library, so we can
+            --  create names that are hidden from normal Ada code. For an
+            --  example, search for "Name_uNext", which is "_Next".
+
+            if not In_Internal_Unit (Scan_Ptr) then
+               Error_Msg_S ("identifier cannot start with underline");
             end if;
 
-            Error_Msg_S ("identifier cannot start with underline");
             Name_Len := 1;
             Name_Buffer (1) := '_';
             Scan_Ptr := Scan_Ptr + 1;
@@ -2132,42 +2112,19 @@ package body Scng is
                Error_Illegal_Character;
             end if;
 
-         --  Invalid control characters
+         --  Illegal characters
 
-         when ACK
-            | ASCII.SO
-            | BEL
-            | BS
-            | CAN
-            | DC1
-            | DC2
-            | DC3
-            | DC4
-            | DEL
-            | DLE
-            | EM
-            | ENQ
-            | EOT
-            | ETB
-            | ETX
-            | FS
-            | GS
-            | NAK
-            | NUL
-            | RS
-            | SI
-            | SOH
-            | STX
-            | SYN
-            | US
+         when ACK | ASCII.SO | BEL | BS | CAN | DC1 | DC2 | DC3 | DC4 | DEL
+           | DLE | EM | ENQ | EOT | ETB | ETX | FS | GS | NAK | NUL | RS | SI
+           | SOH | STX | SYN | US
+           | '?' | '`' | '\' | '^' | '~'
          =>
             Error_Illegal_Character;
 
-         --  Invalid graphic characters
-         --  Note that '@' is handled elsewhere, because following AI12-125
-         --  it denotes the target_name of an assignment.
+         --  Special preprocessor characters. If Set_Special_Character has been
+         --  called, return a Special token. Otherwise give an error.
 
-         when '#' | '$' | '?' | '`' | '\' | '^' | '~' =>
+         when Special_Preprocessor_Character =>
 
             --  If Set_Special_Character has been called for this character,
             --  set Scans.Special_Character and return a Special token.
@@ -2710,15 +2667,6 @@ package body Scng is
          end if;
    end Scan;
 
-   --------------------------
-   -- Set_Comment_As_Token --
-   --------------------------
-
-   procedure Set_Comment_As_Token (Value : Boolean) is
-   begin
-      Comment_Is_Token := Value;
-   end Set_Comment_As_Token;
-
    ------------------------------
    -- Set_End_Of_Line_As_Token --
    ------------------------------
@@ -2732,15 +2680,9 @@ package body Scng is
    -- Set_Special_Character --
    ---------------------------
 
-   procedure Set_Special_Character (C : Character) is
+   procedure Set_Special_Character (C : Special_Preprocessor_Character) is
    begin
-      case C is
-         when '#' | '$' | '_' | '?' | '@' | '`' | '\' | '^' | '~' =>
-            Special_Characters (C) := True;
-
-         when others =>
-            null;
-      end case;
+      Special_Characters (C) := True;
    end Set_Special_Character;
 
    ----------------------

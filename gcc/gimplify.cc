@@ -573,12 +573,15 @@ create_tmp_from_val (tree val)
 }
 
 /* Create a temporary to hold the value of VAL.  If IS_FORMAL, try to reuse
-   an existing expression temporary.  */
+   an existing expression temporary.  If NOT_GIMPLE_REG, mark it as such.  */
 
 static tree
-lookup_tmp_var (tree val, bool is_formal)
+lookup_tmp_var (tree val, bool is_formal, bool not_gimple_reg)
 {
   tree ret;
+
+  /* We cannot mark a formal temporary with DECL_NOT_GIMPLE_REG_P.  */
+  gcc_assert (!is_formal || !not_gimple_reg);
 
   /* If not optimizing, never really reuse a temporary.  local-alloc
      won't allocate any variable that is used in more than one basic
@@ -586,7 +589,10 @@ lookup_tmp_var (tree val, bool is_formal)
      work in reload and final and poorer code generation, outweighing
      the extra memory allocation here.  */
   if (!optimize || !is_formal || TREE_SIDE_EFFECTS (val))
-    ret = create_tmp_from_val (val);
+    {
+      ret = create_tmp_from_val (val);
+      DECL_NOT_GIMPLE_REG_P (ret) = not_gimple_reg;
+    }
   else
     {
       elt_t elt, *elt_p;
@@ -617,7 +623,7 @@ lookup_tmp_var (tree val, bool is_formal)
 
 static tree
 internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
-                      bool is_formal, bool allow_ssa)
+		      bool is_formal, bool allow_ssa, bool not_gimple_reg)
 {
   tree t, mod;
 
@@ -639,7 +645,7 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
 	}
     }
   else
-    t = lookup_tmp_var (val, is_formal);
+    t = lookup_tmp_var (val, is_formal, not_gimple_reg);
 
   mod = build2 (INIT_EXPR, TREE_TYPE (t), t, unshare_expr (val));
 
@@ -667,7 +673,7 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
 tree
 get_formal_tmp_var (tree val, gimple_seq *pre_p)
 {
-  return internal_get_tmp_var (val, pre_p, NULL, true, true);
+  return internal_get_tmp_var (val, pre_p, NULL, true, true, false);
 }
 
 /* Return a temporary variable initialized with VAL.  PRE_P and POST_P
@@ -678,7 +684,7 @@ get_initialized_tmp_var (tree val, gimple_seq *pre_p,
 			 gimple_seq *post_p /* = NULL */,
 			 bool allow_ssa /* = true */)
 {
-  return internal_get_tmp_var (val, pre_p, post_p, false, allow_ssa);
+  return internal_get_tmp_var (val, pre_p, post_p, false, allow_ssa, false);
 }
 
 /* Declare all the variables in VARS in SCOPE.  If DEBUG_INFO is true,
@@ -4574,13 +4580,10 @@ prepare_gimple_addressable (tree *expr_p, gimple_seq *seq_p)
 {
   while (handled_component_p (*expr_p))
     expr_p = &TREE_OPERAND (*expr_p, 0);
+
+  /* Do not allow an SSA name as the temporary.  */
   if (is_gimple_reg (*expr_p))
-    {
-      /* Do not allow an SSA name as the temporary.  */
-      tree var = get_initialized_tmp_var (*expr_p, seq_p, NULL, false);
-      DECL_NOT_GIMPLE_REG_P (var) = 1;
-      *expr_p = var;
-    }
+    *expr_p = internal_get_tmp_var (*expr_p, seq_p, NULL, false, false, true);
 }
 
 /* A subroutine of gimplify_modify_expr.  Replace a MODIFY_EXPR with
@@ -5485,8 +5488,11 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   if (ret == GS_ERROR)
     return GS_ERROR;
   /* If we have gimplified both sides of the initializer but have
-     not emitted an assignment, do so now.  */
-  if (*expr_p)
+     not emitted an assignment, do so now.   */
+  if (*expr_p
+      /* If the type is an empty type, we don't need to emit the
+	 assignment. */
+      && !is_empty_type (TREE_TYPE (TREE_OPERAND (*expr_p, 0))))
     {
       tree lhs = TREE_OPERAND (*expr_p, 0);
       tree rhs = TREE_OPERAND (*expr_p, 1);
@@ -7879,7 +7885,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 	      if (gimplify_omp_ctxp->target_firstprivatize_array_bases
 		  && omp_privatize_by_reference (decl))
 		type = TREE_TYPE (type);
-	      if (!lang_hooks.types.omp_mappable_type (type))
+	      if (!omp_mappable_type (type))
 		{
 		  error ("%qD referenced in target region does not have "
 			 "a mappable type", decl);
@@ -16586,6 +16592,51 @@ flag_instrument_functions_exclude_p (tree fndecl)
   return false;
 }
 
+/* Build a call to the instrumentation function FNCODE and add it to SEQ.
+   If COND_VAR is not NULL, it is a boolean variable guarding the call to
+   the instrumentation function.  IF STMT is not NULL, it is a statement
+   to be executed just before the call to the instrumentation function.  */
+
+static void
+build_instrumentation_call (gimple_seq *seq, enum built_in_function fncode,
+			    tree cond_var, gimple *stmt)
+{
+  /* The instrumentation hooks aren't going to call the instrumented
+     function and the address they receive is expected to be matchable
+     against symbol addresses.  Make sure we don't create a trampoline,
+     in case the current function is nested.  */
+  tree this_fn_addr = build_fold_addr_expr (current_function_decl);
+  TREE_NO_TRAMPOLINE (this_fn_addr) = 1;
+
+  tree label_true, label_false;
+  if (cond_var)
+    {
+      label_true = create_artificial_label (UNKNOWN_LOCATION);
+      label_false = create_artificial_label (UNKNOWN_LOCATION);
+      gcond *cond = gimple_build_cond (EQ_EXPR, cond_var, boolean_false_node,
+				      label_true, label_false);
+      gimplify_seq_add_stmt (seq, cond);
+      gimplify_seq_add_stmt (seq, gimple_build_label (label_true));
+      gimplify_seq_add_stmt (seq, gimple_build_predict (PRED_COLD_LABEL,
+							NOT_TAKEN));
+    }
+
+  if (stmt)
+    gimplify_seq_add_stmt (seq, stmt);
+
+  tree x = builtin_decl_implicit (BUILT_IN_RETURN_ADDRESS);
+  gcall *call = gimple_build_call (x, 1, integer_zero_node);
+  tree tmp_var = create_tmp_var (ptr_type_node, "return_addr");
+  gimple_call_set_lhs (call, tmp_var);
+  gimplify_seq_add_stmt (seq, call);
+  x = builtin_decl_implicit (fncode);
+  call = gimple_build_call (x, 2, this_fn_addr, tmp_var);
+  gimplify_seq_add_stmt (seq, call);
+
+  if (cond_var)
+    gimplify_seq_add_stmt (seq, gimple_build_label (label_false));
+}
+
 /* Entry point to the gimplification pass.  FNDECL is the FUNCTION_DECL
    node for the function we want to gimplify.
 
@@ -16636,40 +16687,66 @@ gimplify_function_tree (tree fndecl)
 	   && DECL_DISREGARD_INLINE_LIMITS (fndecl))
       && !flag_instrument_functions_exclude_p (fndecl))
     {
-      tree x;
-      gbind *new_bind;
-      gimple *tf;
-      gimple_seq cleanup = NULL, body = NULL;
-      tree tmp_var, this_fn_addr;
-      gcall *call;
+      gimple_seq body = NULL, cleanup = NULL;
+      gassign *assign;
+      tree cond_var;
 
-      /* The instrumentation hooks aren't going to call the instrumented
-	 function and the address they receive is expected to be matchable
-	 against symbol addresses.  Make sure we don't create a trampoline,
-	 in case the current function is nested.  */
-      this_fn_addr = build_fold_addr_expr (current_function_decl);
-      TREE_NO_TRAMPOLINE (this_fn_addr) = 1;
+      /* If -finstrument-functions-once is specified, generate:
 
-      x = builtin_decl_implicit (BUILT_IN_RETURN_ADDRESS);
-      call = gimple_build_call (x, 1, integer_zero_node);
-      tmp_var = create_tmp_var (ptr_type_node, "return_addr");
-      gimple_call_set_lhs (call, tmp_var);
-      gimplify_seq_add_stmt (&cleanup, call);
-      x = builtin_decl_implicit (BUILT_IN_PROFILE_FUNC_EXIT);
-      call = gimple_build_call (x, 2, this_fn_addr, tmp_var);
-      gimplify_seq_add_stmt (&cleanup, call);
-      tf = gimple_build_try (seq, cleanup, GIMPLE_TRY_FINALLY);
+	   static volatile bool C.0 = false;
+	   bool tmp_called;
 
-      x = builtin_decl_implicit (BUILT_IN_RETURN_ADDRESS);
-      call = gimple_build_call (x, 1, integer_zero_node);
-      tmp_var = create_tmp_var (ptr_type_node, "return_addr");
-      gimple_call_set_lhs (call, tmp_var);
-      gimplify_seq_add_stmt (&body, call);
-      x = builtin_decl_implicit (BUILT_IN_PROFILE_FUNC_ENTER);
-      call = gimple_build_call (x, 2, this_fn_addr, tmp_var);
-      gimplify_seq_add_stmt (&body, call);
+	   tmp_called = C.0;
+	   if (!tmp_called)
+	     {
+	       C.0 = true;
+	       [call profiling enter function]
+	     }
+
+	 without specific protection for data races.  */
+      if (flag_instrument_function_entry_exit > 1)
+	{
+	  tree first_var
+	    = build_decl (DECL_SOURCE_LOCATION (current_function_decl),
+			  VAR_DECL,
+			  create_tmp_var_name ("C"),
+			  boolean_type_node);
+	  DECL_ARTIFICIAL (first_var) = 1;
+	  DECL_IGNORED_P (first_var) = 1;
+	  TREE_STATIC (first_var) = 1;
+	  TREE_THIS_VOLATILE (first_var) = 1;
+	  TREE_USED (first_var) = 1;
+	  DECL_INITIAL (first_var) = boolean_false_node;
+	  varpool_node::add (first_var);
+
+	  cond_var = create_tmp_var (boolean_type_node, "tmp_called");
+	  assign = gimple_build_assign (cond_var, first_var);
+	  gimplify_seq_add_stmt (&body, assign);
+
+	  assign = gimple_build_assign (first_var, boolean_true_node);
+	}
+
+      else
+	{
+	  cond_var = NULL_TREE;
+	  assign = NULL;
+	}
+
+      build_instrumentation_call (&body, BUILT_IN_PROFILE_FUNC_ENTER,
+				  cond_var, assign);
+
+      /* If -finstrument-functions-once is specified, generate:
+
+	   if (!tmp_called)
+	     [call profiling exit function]
+
+	 without specific protection for data races.  */
+      build_instrumentation_call (&cleanup, BUILT_IN_PROFILE_FUNC_EXIT,
+				  cond_var, NULL);
+
+      gimple *tf = gimple_build_try (seq, cleanup, GIMPLE_TRY_FINALLY);
       gimplify_seq_add_stmt (&body, tf);
-      new_bind = gimple_build_bind (NULL, body, NULL);
+      gbind *new_bind = gimple_build_bind (NULL, body, NULL);
 
       /* Replace the current function body with the body
          wrapped in the try/finally TF.  */

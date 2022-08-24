@@ -328,12 +328,12 @@ bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Parameter par, STC
         else if (par)
         {
             result |= sc.setUnsafeDIP1000(gag, arg.loc,
-                desc ~ " `%s` assigned to non-scope parameter `%s`", v, par);
+                desc ~ " `%s` assigned to non-scope parameter `%s` calling `%s`", v, par, fdc);
         }
         else
         {
             result |= sc.setUnsafeDIP1000(gag, arg.loc,
-                desc ~ " `%s` assigned to non-scope parameter `this`", v);
+                desc ~ " `%s` assigned to non-scope parameter `this` calling `%s`", v, fdc);
         }
     }
 
@@ -351,7 +351,7 @@ bool checkParamArgumentEscape(Scope* sc, FuncDeclaration fdc, Parameter par, STC
         {
             unsafeAssign!"scope variable"(v);
         }
-        else if (v.storage_class & STC.variadic && p == sc.func)
+        else if (v.isTypesafeVariadicParameter && p == sc.func)
         {
             Type tb = v.type.toBasetype();
             if (tb.ty == Tarray || tb.ty == Tsarray)
@@ -649,7 +649,8 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag, bool byRef)
         Dsymbol p = v.toParent2();
 
         if (va && !vaIsRef && !va.isScope() && !v.isScope() &&
-            (va.storage_class & v.storage_class & (STC.maybescope | STC.variadic)) == STC.maybescope &&
+            !v.isTypesafeVariadicParameter && !va.isTypesafeVariadicParameter &&
+            (va.storage_class & v.storage_class & STC.maybescope) &&
             p == fd)
         {
             /* Add v to va's list of dependencies
@@ -663,7 +664,8 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag, bool byRef)
             !(v.storage_class & STC.return_) &&
             v.isParameter() &&
             fd.flags & FUNCFLAG.returnInprocess &&
-            p == fd)
+            p == fd &&
+            !v.isTypesafeVariadicParameter)
         {
             if (log) printf("inferring 'return' for parameter %s in function %s\n", v.toChars(), fd.toChars());
             inferReturn(fd, v, /*returnScope:*/ true); // infer addition of 'return' to make `return scope`
@@ -735,7 +737,7 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag, bool byRef)
             }
             result |= sc.setUnsafeDIP1000(gag, ae.loc, "scope variable `%s` assigned to non-scope `%s`", v, e1);
         }
-        else if (v.storage_class & STC.variadic && p == fd)
+        else if (v.isTypesafeVariadicParameter && p == fd)
         {
             Type tb = v.type.toBasetype();
             if (tb.ty == Tarray || tb.ty == Tsarray)
@@ -1022,7 +1024,7 @@ bool checkNewEscape(Scope* sc, Expression e, bool gag)
                 continue;
             }
         }
-        else if (v.storage_class & STC.variadic && p == sc.func)
+        else if (v.isTypesafeVariadicParameter && p == sc.func)
         {
             Type tb = v.type.toBasetype();
             if (tb.ty == Tarray || tb.ty == Tsarray)
@@ -1194,7 +1196,8 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
             v.isParameter() &&
             !v.doNotInferReturn &&
             sc.func.flags & FUNCFLAG.returnInprocess &&
-            p == sc.func)
+            p == sc.func &&
+            !v.isTypesafeVariadicParameter)
         {
             inferReturn(sc.func, v, /*returnScope:*/ true); // infer addition of 'return'
             continue;
@@ -1230,12 +1233,27 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
                 !(!refs && sc.func.isFuncDeclaration().getLevel(pfunc, sc.intypeof) > 0)
                )
             {
-                // https://issues.dlang.org/show_bug.cgi?id=17029
-                result |= sc.setUnsafeDIP1000(gag, e.loc, "scope variable `%s` may not be returned", v);
-                continue;
+                if (v.isParameter() && !(v.storage_class & STC.return_))
+                {
+                    // https://issues.dlang.org/show_bug.cgi?id=23191
+                    if (!gag)
+                    {
+                        previewErrorFunc(sc.isDeprecated(), global.params.useDIP1000)(e.loc,
+                            "scope parameter `%s` may not be returned", v.toChars()
+                        );
+                        result = true;
+                        continue;
+                    }
+                }
+                else
+                {
+                    // https://issues.dlang.org/show_bug.cgi?id=17029
+                    result |= sc.setUnsafeDIP1000(gag, e.loc, "scope variable `%s` may not be returned", v);
+                    continue;
+                }
             }
         }
-        else if (v.storage_class & STC.variadic && p == sc.func)
+        else if (v.isTypesafeVariadicParameter && p == sc.func)
         {
             Type tb = v.type.toBasetype();
             if (tb.ty == Tarray || tb.ty == Tsarray)
@@ -1612,7 +1630,7 @@ void escapeByValue(Expression e, EscapeByResults* er, bool live = false, bool re
             {
                 if (tb.ty == Tsarray)
                     return;
-                if (v.storage_class & STC.variadic)
+                if (v.isTypesafeVariadicParameter)
                 {
                     er.byvalue.push(v);
                     return;
@@ -1928,7 +1946,7 @@ void escapeByRef(Expression e, EscapeByResults* er, bool live = false, bool retR
             VarDeclaration v = ve.var.isVarDeclaration();
             if (tb.ty == Tarray || tb.ty == Tsarray)
             {
-                if (v && v.storage_class & STC.variadic)
+                if (v && v.isTypesafeVariadicParameter)
                 {
                     er.pushRef(v, retRefTransition);
                     return;
@@ -2492,9 +2510,11 @@ private void addMaybe(VarDeclaration va, VarDeclaration v)
  *   fmt = printf-style format string
  *   arg0  = (optional) argument for first %s format specifier
  *   arg1  = (optional) argument for second %s format specifier
+ *   arg2  = (optional) argument for third %s format specifier
  * Returns: whether an actual safe error (not deprecation) occured
  */
-private bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* msg, RootObject arg0 = null, RootObject arg1 = null)
+private bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* msg,
+    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
 {
     if (fs == FeatureState.disabled)
     {
@@ -2502,7 +2522,7 @@ private bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, con
     }
     else if (fs == FeatureState.enabled)
     {
-        return sc.setUnsafe(gag, loc, msg, arg0, arg1);
+        return sc.setUnsafe(gag, loc, msg, arg0, arg1, arg2);
     }
     else
     {
@@ -2510,22 +2530,23 @@ private bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, con
         {
             if (!gag)
                 previewErrorFunc(sc.isDeprecated(), fs)(
-                    loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : ""
+                    loc, msg, arg0 ? arg0.toChars() : "", arg1 ? arg1.toChars() : "", arg2 ? arg2.toChars() : ""
                 );
         }
         else if (!sc.func.safetyViolation)
         {
             import dmd.func : AttributeViolation;
-            sc.func.safetyViolation = new AttributeViolation(loc, msg, arg0, arg1);
+            sc.func.safetyViolation = new AttributeViolation(loc, msg, arg0, arg1, arg2);
         }
         return false;
     }
 }
 
 // `setUnsafePreview` partially evaluated for dip1000
-private bool setUnsafeDIP1000(Scope* sc, bool gag, Loc loc, const(char)* msg, RootObject arg0 = null, RootObject arg1 = null)
+private bool setUnsafeDIP1000(Scope* sc, bool gag, Loc loc, const(char)* msg,
+    RootObject arg0 = null, RootObject arg1 = null, RootObject arg2 = null)
 {
-    return setUnsafePreview(sc, global.params.useDIP1000, gag, loc, msg, arg0, arg1);
+    return setUnsafePreview(sc, global.params.useDIP1000, gag, loc, msg, arg0, arg1, arg2);
 }
 
 /***************************************
@@ -2567,4 +2588,16 @@ private bool checkScopeVarAddr(VarDeclaration v, Expression e, Scope* sc, bool g
     // take address of `scope` variable not allowed, requires transitive scope
     return sc.setUnsafeDIP1000(gag, e.loc,
         "cannot take address of `scope` variable `%s` since `scope` applies to first indirection only", v);
+}
+
+/****************************
+ * Determine if `v` is a typesafe variadic parameter.
+ * Params:
+ *      v = variable to check
+ * Returns:
+ *      true if `v` is a variadic parameter
+ */
+bool isTypesafeVariadicParameter(VarDeclaration v)
+{
+    return !!(v.storage_class & STC.variadic);
 }

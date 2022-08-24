@@ -851,7 +851,6 @@ proc check_effective_target_nonlocal_goto {} {
 
 proc check_effective_target_global_constructor {} {
     if { [istarget nvptx-*-*]
-	 || [istarget amdgcn-*-*]
 	 || [istarget bpf-*-*] } {
 	return 0
     }
@@ -2289,7 +2288,7 @@ proc check_p9modulo_hw_available { } {
 		{
 		    int i = 5, j = 3, r = -1;
 		    asm ("modsw %0,%1,%2" : "+r" (r) : "r" (i), "r" (j));
-		    return (r == 2);
+		    return (r != 2);
 		}
 	    } $options
 	}
@@ -2903,6 +2902,15 @@ proc check_effective_target_be { } {
 proc check_effective_target_le { } {
     return [check_no_compiler_messages le object {
 	int dummy[__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ ? 1 : -1];
+    }]
+}
+
+# Return 1 if we can link a program with 2+GB of data.
+
+proc check_effective_target_two_plus_gigs { } {
+    return [check_no_compiler_messages two_plus_gigs executable {
+	char dummy[0x80000000];
+	int main () { return 0; }
     }]
 }
 
@@ -7539,6 +7547,19 @@ proc check_effective_target_vect_aligned_arrays { } {
     verbose "check_effective_target_vect_aligned_arrays:\
 	     returning $et_vect_aligned_arrays" 2
     return $et_vect_aligned_arrays
+}
+
+# Return 1 if the biggest alignment required by target is 1 * BITS_PER_UNIT.
+# In such case the target does not impose any alignment constraints.
+
+proc check_effective_target_no_alignment_constraints { } {
+    return [check_runtime_nocache no_alignment_constraints {
+        int
+        main (void)
+        {
+          return __BIGGEST_ALIGNMENT__ == 1 ? 0 : 1;
+        }
+    }]
 }
 
 # Return 1 if types of size 32 bit or less are naturally aligned

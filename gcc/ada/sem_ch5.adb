@@ -1376,11 +1376,7 @@ package body Sem_Ch5 is
          --  Initialize unblocked exit count for statements of begin block
          --  plus one for each exception handler that is present.
 
-         Unblocked_Exit_Count := 1;
-
-         if Present (EH) then
-            Unblocked_Exit_Count := Unblocked_Exit_Count + List_Length (EH);
-         end if;
+         Unblocked_Exit_Count := 1 + List_Length (EH);
 
          --  If a label is present analyze it and mark it as referenced
 
@@ -4397,12 +4393,37 @@ package body Sem_Ch5 is
    ----------------------------
 
    procedure Check_Unreachable_Code (N : Node_Id) is
+
+      function Is_Simple_Case (N : Node_Id) return Boolean;
+      --  N is the condition of an if statement. True if N is simple enough
+      --  that we should not set Unblocked_Exit_Count in the special case
+      --  below.
+
+      --------------------
+      -- Is_Simple_Case --
+      --------------------
+
+      function Is_Simple_Case (N : Node_Id) return Boolean is
+      begin
+         return
+            Is_Trivial_Boolean (N)
+           or else
+            (Comes_From_Source (N)
+               and then Is_Static_Expression (N)
+               and then Nkind (N) in N_Identifier | N_Expanded_Name
+               and then Ekind (Entity (N)) = E_Constant)
+           or else
+            (not In_Instance
+               and then Nkind (Original_Node (N)) = N_Op_Not
+               and then Is_Simple_Case (Right_Opnd (Original_Node (N))));
+      end Is_Simple_Case;
+
       Error_Node : Node_Id;
       Nxt        : Node_Id;
       P          : Node_Id;
 
    begin
-      if Is_List_Member (N) and then Comes_From_Source (N) then
+      if Comes_From_Source (N) then
          Nxt := Original_Node (Next (N));
 
          --  Skip past pragmas
@@ -4419,16 +4440,23 @@ package body Sem_Ch5 is
 
          --  Otherwise see if we have a real statement following us
 
-         elsif Present (Nxt)
-           and then Comes_From_Source (Nxt)
+         elsif Comes_From_Source (Nxt)
            and then Is_Statement (Nxt)
          then
-            --  Special very annoying exception. If we have a return that
-            --  follows a raise, then we allow it without a warning, since
-            --  the Ada RM annoyingly requires a useless return here.
+            --  Special very annoying exception. Ada RM 6.5(5) annoyingly
+            --  requires functions to have at least one return statement, so
+            --  don't complain about a simple return that follows a raise or a
+            --  call to procedure with No_Return.
 
-            if Nkind (Original_Node (N)) /= N_Raise_Statement
-              or else Nkind (Nxt) /= N_Simple_Return_Statement
+            if not (Present (Current_Subprogram)
+                    and then Ekind (Current_Subprogram) = E_Function
+                    and then (Nkind (N) in N_Raise_Statement
+                                or else
+                              (Nkind (N) = N_Procedure_Call_Statement
+                               and then Is_Entity_Name (Name (N))
+                               and then Present (Entity (Name (N)))
+                               and then No_Return (Entity (Name (N)))))
+                    and then Nkind (Nxt) = N_Simple_Return_Statement)
             then
                --  The rather strange shenanigans with the warning message
                --  here reflects the fact that Kill_Dead_Code is very good at
@@ -4441,40 +4469,59 @@ package body Sem_Ch5 is
                --  unreachable code, since it is useless and we don't want
                --  to generate junk warnings.
 
-               --  We skip this step if we are not in code generation mode
-               --  or CodePeer mode.
+               --  We skip this step if we are not in code generation mode.
 
                --  This is the one case where we remove dead code in the
                --  semantics as opposed to the expander, and we do not want
                --  to remove code if we are not in code generation mode, since
                --  this messes up the tree or loses useful information for
-               --  CodePeer.
+               --  analysis tools such as CodePeer.
 
                --  Note that one might react by moving the whole circuit to
                --  exp_ch5, but then we lose the warning in -gnatc mode.
 
-               if Operating_Mode = Generate_Code
-                 and then not CodePeer_Mode
-               then
+               if Operating_Mode = Generate_Code then
                   loop
-                     Nxt := Next (N);
+                     declare
+                        Del : constant Node_Id := Next (N);
+                        --  Node to be possibly deleted
+                     begin
+                        --  Quit deleting when we have nothing more to delete
+                        --  or if we hit a label (since someone could transfer
+                        --  control to a label, so we should not delete it).
 
-                     --  Quit deleting when we have nothing more to delete
-                     --  or if we hit a label (since someone could transfer
-                     --  control to a label, so we should not delete it).
+                        exit when No (Del) or else Nkind (Del) = N_Label;
 
-                     exit when No (Nxt) or else Nkind (Nxt) = N_Label;
+                        --  Statement/declaration is to be deleted
 
-                     --  Statement/declaration is to be deleted
-
-                     Analyze (Nxt);
-                     Remove (Nxt);
-                     Kill_Dead_Code (Nxt);
+                        Analyze (Del);
+                        Kill_Dead_Code (Del);
+                        Remove (Del);
+                     end;
                   end loop;
+
+                  --  If this is a function, we add "raise Program_Error;",
+                  --  because otherwise, we will get incorrect warnings about
+                  --  falling off the end of the function.
+
+                  declare
+                     Subp : constant Entity_Id := Current_Subprogram;
+                  begin
+                     if Present (Subp) and then Ekind (Subp) = E_Function then
+                        Insert_After_And_Analyze (N,
+                          Make_Raise_Program_Error (Sloc (Error_Node),
+                            Reason => PE_Missing_Return));
+                     end if;
+                  end;
+
                end if;
 
-               Error_Msg
-                 ("??unreachable code!", Sloc (Error_Node), Error_Node);
+               --  Suppress the warning in instances, because a statement can
+               --  be unreachable in some instances but not others.
+
+               if not In_Instance then
+                  Error_Msg_N ("??unreachable code!", Error_Node);
+               end if;
             end if;
 
          --  If the unconditional transfer of control instruction is the
@@ -4533,9 +4580,32 @@ package body Sem_Ch5 is
             end if;
 
             --  This was one of the cases we are looking for (i.e. the parent
-            --  construct was IF, CASE or block) so decrement count.
+            --  construct was IF, CASE or block). In most cases, we simply
+            --  decrement the count. However, if the parent is something like:
+            --
+            --     if cond then
+            --        raise ...; -- or some other jump
+            --     end if;
+            --
+            --  where cond is an expression that is known-true at compile time,
+            --  we can treat that as just the jump -- i.e. anything following
+            --  the if statement is unreachable. We don't do this for simple
+            --  cases like "if True" or "if Debug_Flag", because that causes
+            --  too many warnings.
 
-            Unblocked_Exit_Count := Unblocked_Exit_Count - 1;
+            if Nkind (P) = N_If_Statement
+              and then Present (Then_Statements (P))
+              and then No (Elsif_Parts (P))
+              and then No (Else_Statements (P))
+              and then Is_OK_Static_Expression (Condition (P))
+              and then Is_True (Expr_Value (Condition (P)))
+              and then not Is_Simple_Case (Condition (P))
+            then
+               pragma Assert (Unblocked_Exit_Count = 2);
+               Unblocked_Exit_Count := 0;
+            else
+               Unblocked_Exit_Count := Unblocked_Exit_Count - 1;
+            end if;
          end if;
       end if;
    end Check_Unreachable_Code;

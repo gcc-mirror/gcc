@@ -667,19 +667,12 @@ OPT_LDFLAGS
 SECTION_LDFLAGS
 PLUGIN_GCN_FALSE
 PLUGIN_GCN_TRUE
-PLUGIN_NVPTX_DYNAMIC_FALSE
-PLUGIN_NVPTX_DYNAMIC_TRUE
 PLUGIN_NVPTX_FALSE
 PLUGIN_NVPTX_TRUE
 offload_additional_lib_paths
 offload_additional_options
 offload_targets
 offload_plugins
-PLUGIN_NVPTX_LIBS
-PLUGIN_NVPTX_LDFLAGS
-PLUGIN_NVPTX_CPPFLAGS
-CUDA_DRIVER_LIB
-CUDA_DRIVER_INCLUDE
 DL_LIBS
 libtool_VERSION
 ac_ct_FC
@@ -829,9 +822,6 @@ enable_fast_install
 with_gnu_ld
 enable_libtool_lock
 enable_maintainer_mode
-with_cuda_driver
-with_cuda_driver_include
-with_cuda_driver_lib
 enable_linux_futex
 enable_tls
 enable_symvers
@@ -1504,16 +1494,6 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
-  --with-cuda-driver=PATH specify prefix directory for installed CUDA driver
-                          package. Equivalent to
-                          --with-cuda-driver-include=PATH/include plus
-                          --with-cuda-driver-lib=PATH/lib
-  --with-cuda-driver-include=PATH
-                          specify directory for installed CUDA driver include
-                          files
-  --with-cuda-driver-lib=PATH
-                          specify directory for the installed CUDA driver
-                          library
   --with-gcc-major-version-only
                           use only GCC major number in filesystem paths
 
@@ -11414,7 +11394,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11417 "configure"
+#line 11397 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11520,7 +11500,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11523 "configure"
+#line 11503 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15158,67 +15138,8 @@ done
 
 
 
-# Look for the CUDA driver package.
-CUDA_DRIVER_INCLUDE=
-CUDA_DRIVER_LIB=
-
-
-CUDA_DRIVER_CPPFLAGS=
-CUDA_DRIVER_LDFLAGS=
-
-# Check whether --with-cuda-driver was given.
-if test "${with_cuda_driver+set}" = set; then :
-  withval=$with_cuda_driver;
-fi
-
-
-# Check whether --with-cuda-driver-include was given.
-if test "${with_cuda_driver_include+set}" = set; then :
-  withval=$with_cuda_driver_include;
-fi
-
-
-# Check whether --with-cuda-driver-lib was given.
-if test "${with_cuda_driver_lib+set}" = set; then :
-  withval=$with_cuda_driver_lib;
-fi
-
-case "x$with_cuda_driver" in
-  x) ;;
-  xno)
-    CUDA_DRIVER_INCLUDE=no
-    CUDA_DRIVER_LIB=no
-    ;;
-  *) CUDA_DRIVER_INCLUDE=$with_cuda_driver/include
-     CUDA_DRIVER_LIB=$with_cuda_driver/lib
-     ;;
-esac
-if test "x$with_cuda_driver_include" != x; then
-  CUDA_DRIVER_INCLUDE=$with_cuda_driver_include
-fi
-if test "x$with_cuda_driver_lib" != x; then
-  CUDA_DRIVER_LIB=$with_cuda_driver_lib
-fi
-if test "x$CUDA_DRIVER_INCLUDE" != x \
-   && test "x$CUDA_DRIVER_INCLUDE" != xno; then
-  CUDA_DRIVER_CPPFLAGS=-I$CUDA_DRIVER_INCLUDE
-fi
-if test "x$CUDA_DRIVER_LIB" != x \
-   && test "x$CUDA_DRIVER_LIB" != xno; then
-  CUDA_DRIVER_LDFLAGS=-L$CUDA_DRIVER_LIB
-fi
-
 PLUGIN_NVPTX=0
-PLUGIN_NVPTX_CPPFLAGS=
-PLUGIN_NVPTX_LDFLAGS=
-PLUGIN_NVPTX_LIBS=
-PLUGIN_NVPTX_DYNAMIC=0
-
-
-
-
 PLUGIN_GCN=0
-
 # Parse '--enable-offload-targets', figure out the corresponding libgomp
 # plugins, and configure to find the corresponding offload compilers.
 # 'offload_plugins' and 'offload_targets' will be populated in the same order.
@@ -15250,53 +15171,7 @@ if test x"$enable_offload_targets" != x; then
 		;;
 	      *)
 		tgt_plugin=nvptx
-		PLUGIN_NVPTX=$tgt
-		if test "x$CUDA_DRIVER_LIB" != xno \
-		   && test "x$CUDA_DRIVER_LIB" != xno; then
-		  PLUGIN_NVPTX_CPPFLAGS=$CUDA_DRIVER_CPPFLAGS
-		  PLUGIN_NVPTX_LDFLAGS=$CUDA_DRIVER_LDFLAGS
-		  PLUGIN_NVPTX_LIBS='-lcuda'
-
-		  PLUGIN_NVPTX_save_CPPFLAGS=$CPPFLAGS
-		  CPPFLAGS="$PLUGIN_NVPTX_CPPFLAGS $CPPFLAGS"
-		  PLUGIN_NVPTX_save_LDFLAGS=$LDFLAGS
-		  LDFLAGS="$PLUGIN_NVPTX_LDFLAGS $LDFLAGS"
-		  PLUGIN_NVPTX_save_LIBS=$LIBS
-		  LIBS="$PLUGIN_NVPTX_LIBS $LIBS"
-		  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include "cuda.h"
-int
-main ()
-{
-CUresult r = cuCtxPushCurrent (NULL);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  PLUGIN_NVPTX=1
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-		  CPPFLAGS=$PLUGIN_NVPTX_save_CPPFLAGS
-		  LDFLAGS=$PLUGIN_NVPTX_save_LDFLAGS
-		  LIBS=$PLUGIN_NVPTX_save_LIBS
-		fi
-		case $PLUGIN_NVPTX in
-		  nvptx*)
-		    if (test "x$CUDA_DRIVER_INCLUDE" = x \
-			|| test "x$CUDA_DRIVER_INCLUDE" = xno) \
-		       && (test "x$CUDA_DRIVER_LIB" = x \
-			   || test "x$CUDA_DRIVER_LIB" = xno); then
-		      PLUGIN_NVPTX=1
-		      PLUGIN_NVPTX_DYNAMIC=1
-		    else
-		      PLUGIN_NVPTX=0
-		      as_fn_error $? "CUDA driver package required for nvptx support" "$LINENO" 5
-		    fi
-		    ;;
-		esac
+		PLUGIN_NVPTX=1
 		;;
 	    esac
 	    ;;
@@ -15360,14 +15235,6 @@ _ACEOF
 else
   PLUGIN_NVPTX_TRUE='#'
   PLUGIN_NVPTX_FALSE=
-fi
-
- if test $PLUGIN_NVPTX_DYNAMIC = 1; then
-  PLUGIN_NVPTX_DYNAMIC_TRUE=
-  PLUGIN_NVPTX_DYNAMIC_FALSE='#'
-else
-  PLUGIN_NVPTX_DYNAMIC_TRUE='#'
-  PLUGIN_NVPTX_DYNAMIC_FALSE=
 fi
 
  if test $PLUGIN_GCN = 1; then
@@ -16160,7 +16027,7 @@ with_gnu_ld=$lt_cv_prog_gnu_ld
   if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
     libgomp_ld_is_gold=yes
   elif $LD --version 2>/dev/null | grep 'mold'> /dev/null 2>&1; then
-    libat_ld_is_mold=yes
+    libgomp_ld_is_mold=yes
   fi
 
   ldver=`$LD --version 2>/dev/null |
@@ -17135,10 +17002,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${PLUGIN_NVPTX_TRUE}" && test -z "${PLUGIN_NVPTX_FALSE}"; then
   as_fn_error $? "conditional \"PLUGIN_NVPTX\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${PLUGIN_NVPTX_DYNAMIC_TRUE}" && test -z "${PLUGIN_NVPTX_DYNAMIC_FALSE}"; then
-  as_fn_error $? "conditional \"PLUGIN_NVPTX_DYNAMIC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${PLUGIN_GCN_TRUE}" && test -z "${PLUGIN_GCN_FALSE}"; then

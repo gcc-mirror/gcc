@@ -65,6 +65,9 @@ class impl_region_model_context : public region_model_context
 		     enum tree_code op,
 		     const svalue *rhs) final override;
 
+  void on_bounded_ranges (const svalue &sval,
+			  const bounded_ranges &ranges) final override;
+
   void on_unknown_change (const svalue *sval, bool is_mutable) final override;
 
   void on_phi (const gphi *phi, tree rhs) final override;
@@ -599,63 +602,8 @@ struct per_call_string_data
   : m_key (key), m_stats (num_supernodes)
   {}
 
-  const call_string m_key;
+  const call_string &m_key;
   stats m_stats;
-};
-
-/* Traits class for storing per-call_string data within
-   an exploded_graph.  */
-
-struct eg_call_string_hash_map_traits
-{
-  typedef const call_string *key_type;
-  typedef per_call_string_data *value_type;
-  typedef per_call_string_data *compare_type;
-
-  static inline hashval_t hash (const key_type &k)
-  {
-    gcc_assert (k != NULL);
-    gcc_assert (k != reinterpret_cast<key_type> (1));
-    return k->hash ();
-  }
-  static inline bool equal_keys (const key_type &k1, const key_type &k2)
-  {
-    gcc_assert (k1 != NULL);
-    gcc_assert (k2 != NULL);
-    gcc_assert (k1 != reinterpret_cast<key_type> (1));
-    gcc_assert (k2 != reinterpret_cast<key_type> (1));
-    if (k1 && k2)
-      return *k1 == *k2;
-    else
-      /* Otherwise they must both be non-NULL.  */
-      return k1 == k2;
-  }
-  template <typename T>
-  static inline void remove (T &)
-  {
-    /* empty; the nodes are handled elsewhere.  */
-  }
-  template <typename T>
-  static inline void mark_deleted (T &entry)
-  {
-    entry.m_key = reinterpret_cast<key_type> (1);
-  }
-  template <typename T>
-  static inline void mark_empty (T &entry)
-  {
-    entry.m_key = NULL;
-  }
-  template <typename T>
-  static inline bool is_deleted (const T &entry)
-  {
-    return entry.m_key == reinterpret_cast<key_type> (1);
-  }
-  template <typename T>
-  static inline bool is_empty (const T &entry)
-  {
-    return entry.m_key == NULL;
-  }
-  static const bool empty_zero_p = false;
 };
 
 /* Data about a particular function within an exploded_graph.  */
@@ -791,8 +739,8 @@ private:
 class exploded_graph : public digraph<eg_traits>
 {
 public:
-  typedef hash_map <const call_string *, per_call_string_data *,
-		    eg_call_string_hash_map_traits> call_string_data_map_t;
+  typedef hash_map <const call_string *,
+		    per_call_string_data *> call_string_data_map_t;
 
   exploded_graph (const supergraph &sg, logger *logger,
 		  const extrinsic_state &ext_state,

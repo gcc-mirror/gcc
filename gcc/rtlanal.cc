@@ -2878,35 +2878,6 @@ in_insn_list_p (const rtx_insn_list *listp, const rtx_insn *node)
   return false;
 }
 
-/* Search LISTP (an EXPR_LIST) for an entry whose first operand is NODE and
-   remove that entry from the list if it is found.
-
-   A simple equality test is used to determine if NODE matches.  */
-
-void
-remove_node_from_expr_list (const_rtx node, rtx_expr_list **listp)
-{
-  rtx_expr_list *temp = *listp;
-  rtx_expr_list *prev = NULL;
-
-  while (temp)
-    {
-      if (node == temp->element ())
-	{
-	  /* Splice the node out of the list.  */
-	  if (prev)
-	    XEXP (prev, 1) = temp->next ();
-	  else
-	    *listp = temp->next ();
-
-	  return;
-	}
-
-      prev = temp;
-      temp = temp->next ();
-    }
-}
-
 /* Search LISTP (an INSN_LIST) for an entry whose first operand is NODE and
    remove that entry from the list if it is found.
 
@@ -2928,6 +2899,7 @@ remove_node_from_insn_list (const rtx_insn *node, rtx_insn_list **listp)
 	  else
 	    *listp = temp->next ();
 
+	  gcc_checking_assert (!in_insn_list_p (temp->next (), node));
 	  return;
 	}
 

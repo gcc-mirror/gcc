@@ -1,3 +1,592 @@
+2022-08-22  Martin Liska  <mliska@suse.cz>
+
+	* region-model.cc: Add missing final keyword.
+
+2022-08-18  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106181
+	* analyzer.opt: Add Wanalyzer-imprecise-floating-point-arithmetic.
+	* region-model.cc (is_any_cast_p): Formatting.
+	(region_model::check_region_size): Ensure precondition.
+	(class imprecise_floating_point_arithmetic): New abstract
+	diagnostic class for all floating-point related warnings.
+	(class float_as_size_arg): Concrete diagnostic class to complain
+	about floating-point operands inside the size argument.
+	(class contains_floating_point_visitor):
+	New visitor to find floating-point operands inside svalues.
+	(region_model::check_dynamic_size_for_floats): New function.
+	(region_model::set_dynamic_extents):
+	Call to check_dynamic_size_for_floats.
+	* region-model.h (class region_model):
+	Add region_model::check_dynamic_size_for_floats.
+
+2022-08-16  Martin Liska  <mliska@suse.cz>
+
+	* region-model.cc: Fix -Winconsistent-missing-override clang
+	  warning.
+	* region.h: Likewise.
+
+2022-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106626
+	* region-model.cc (buffer_overread::emit): Fix copy&paste error in
+	direction of the access in the note.
+
+2022-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106573
+	* region-model.cc (region_model::on_call_pre): Use check_call_args
+	when ensuring that we call get_arg_svalue on all args.  Remove
+	redundant call from handling for stdio builtins.
+
+2022-08-15  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106551
+	* sm-fd.cc (check_for_dup): exit early if first
+	argument is invalid for all dup functions.
+
+2022-08-12  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106000
+	* analyzer.opt: Add Wanalyzer-out-of-bounds.
+	* region-model.cc (class out_of_bounds): Diagnostics base class
+	for all out-of-bounds diagnostics.
+	(class past_the_end): Base class derived from out_of_bounds for
+	the buffer_overflow and buffer_overread diagnostics.
+	(class buffer_overflow): Buffer overflow diagnostics.
+	(class buffer_overread): Buffer overread diagnostics.
+	(class buffer_underflow): Buffer underflow diagnostics.
+	(class buffer_underread): Buffer overread diagnostics.
+	(region_model::check_region_bounds): New function to check region
+	bounds for out-of-bounds accesses.
+	(region_model::check_region_access):
+	Add call to check_region_bounds.
+	(region_model::get_representative_tree): New function that accepts
+	a region instead of an svalue.
+	* region-model.h (class region_model):
+	Add region_model::check_region_bounds.
+	* region.cc (region::symbolic_p): New predicate.
+	(offset_region::get_byte_size_sval): Only return the remaining
+	byte size on offset_regions.
+	* region.h: Add region::symbolic_p.
+	* store.cc (byte_range::intersects_p):
+	Add new function equivalent to bit_range::intersects_p.
+	(byte_range::exceeds_p): New function.
+	(byte_range::falls_short_of_p): New function.
+	* store.h (struct byte_range): Add byte_range::intersects_p,
+	byte_range::exceeds_p and byte_range::falls_short_of_p.
+
+2022-08-12  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106539
+	* region-model-impl-calls.cc (region_model::impl_call_realloc):
+	Use the result of get_copied_size as the size for the
+	sized_regions in realloc.
+	(success_with_move::get_copied_size): New function.
+
+2022-08-11  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106551
+	* sm-fd.cc (check_for_dup): handle the m_start
+	state when transitioning the state of LHS
+	of dup, dup2 and dup3 call.
+
+2022-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106573
+	* region-model.cc (region_model::on_call_pre): Ensure that we call
+	get_arg_svalue on all arguments.
+
+2022-08-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105947
+	* analyzer.opt (Wanalyzer-jump-through-null): New option.
+	* engine.cc (class jump_through_null): New.
+	(exploded_graph::process_node): Complain about jumps through NULL
+	function pointers.
+
+2022-08-02  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106298
+	* sm-fd.cc (fd_state_machine::on_open): Add
+	creat, dup, dup2 and dup3 functions.
+	(enum dup): New.
+	(fd_state_machine::valid_to_unchecked_state): New.
+	(fd_state_machine::on_creat): New.
+	(fd_state_machine::on_dup): New.
+
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105893
+	* analyzer.opt (Wanalyzer-putenv-of-auto-var): New.
+	* region-model-impl-calls.cc (class putenv_of_auto_var): New.
+	(region_model::impl_call_putenv): New.
+	* region-model.cc (region_model::on_call_pre): Handle putenv.
+	* region-model.h (region_model::impl_call_putenv): New decl.
+
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-malloc.cc (free_of_non_heap::emit): Add comment about CWE.
+	* sm-taint.cc (tainted_size::emit): Likewise.
+
+2022-07-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* region.h: Add notes to the comment describing the region
+	class hierarchy.
+
+2022-07-27  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106286
+	* sm-fd.cc:
+	(fd_diagnostic::get_meaning_for_state_change): New.
+
+2022-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106319
+	* store.cc (store::set_value): Don't strip away casts if the
+	region has NULL type.
+
+2022-07-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* region.h (code_region::get_element): Remove stray decl.
+	(function_region::get_element): Likewise.
+
+2022-07-25  Martin Liska  <mliska@suse.cz>
+
+	* sm-fd.cc: Run dos2unix and fix coding style issues.
+
+2022-07-23  Immad Mir  <mirimmad@outlook.com>
+
+	* sm-fd.cc (fd_param_diagnostic): New diagnostic class.
+	(fd_access_mode_mismatch): Change inheritance from fd_diagnostic
+	to fd_param_diagnostic. Add new overloaded constructor.
+	(fd_use_after_close): Likewise.
+	(unchecked_use_of_fd): Likewise and also change name to fd_use_without_check.
+	(double_close): Change name to fd_double_close.
+	(enum access_directions): New.
+	(fd_state_machine::on_stmt): Handle calls to function with the
+	new three function attributes.
+	(fd_state_machine::check_for_fd_attrs): New.
+	(fd_state_machine::on_open): Use the new overloaded constructors
+	of diagnostic classes.
+
+2022-07-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106413
+	* varargs.cc (region_model::impl_call_va_start): Avoid iterating
+	through non-existant variadic arguments by initializing the
+	impl_region to "UNKNOWN" if the va_start occurs in the top-level
+	function to the analysis.
+
+2022-07-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106401
+	* store.cc (binding_cluster::binding_cluster): Remove overzealous
+	assertion; we're checking for tracked_p in
+	store::get_or_create_cluster.
+
+2022-07-22  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106394
+	* region-model.cc (capacity_compatible_with_type): Always return true
+	if alloc_size is zero.
+
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106383
+	* varargs.cc (region_model::impl_call_va_arg): When determining if
+	we're doing interprocedural analysis, use the stack depth of the
+	frame in which va_start was called, rather than the current stack
+	depth.
+
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-taint.cc (tainted_array_index::emit): Bulletproof against
+	NULL m_arg.
+	(tainted_array_index::describe_final_event): Likewise.
+	(tainted_size::emit): Likewise.
+	(tainted_size::describe_final_event): Likewise.
+
+2022-07-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106374
+	* region.cc (decl_region::get_svalue_for_initializer): Bail out on
+	untracked regions.
+
+2022-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106373
+	* sm-taint.cc (taint_state_machine::on_condition): Potentially
+	update the state of the RHS as well as the LHS.
+
+2022-07-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106359
+	* region.h (string_region::tracked_p): New.
+	* store.cc (binding_cluster::binding_cluster): Move here from
+	store.h.  Add assertion that base_region is tracked_p.
+	* store.h (binding_cluster::binding_cluster): Move to store.cc.
+
+2022-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106321
+	* constraint-manager.h (bounded_ranges::get_count): New.
+	(bounded_ranges::get_range): New.
+	* engine.cc (impl_region_model_context::on_bounded_ranges): New.
+	* exploded-graph.h (impl_region_model_context::on_bounded_ranges):
+	New decl.
+	* region-model.cc (region_model::apply_constraints_for_gswitch):
+	Potentially call ctxt->on_bounded_ranges.
+	* region-model.h (region_model_context::on_bounded_ranges): New
+	vfunc.
+	(noop_region_model_context::on_bounded_ranges): New.
+	(region_model_context_decorator::on_bounded_ranges): New.
+	* sm-taint.cc: Include "analyzer/constraint-manager.h".
+	(taint_state_machine::on_bounded_ranges): New.
+	* sm.h (state_machine::on_bounded_ranges): New.
+
+2022-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_graph::process_node): Show any description
+	of the out-edge when logging it for consideration.
+
+2022-07-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106284
+	* sm-taint.cc (taint_state_machine::on_condition): Handle range
+	checks optimized by build_range_check.
+
+2022-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* call-info.cc (call_info::print): Adjust to new label_text API.
+	* checker-path.cc (checker_event::dump): Likewise.
+	(region_creation_event::get_desc): Likewise.
+	(state_change_event::get_desc): Likewise.
+	(superedge_event::should_filter_p): Likewise.
+	(start_cfg_edge_event::get_desc): Likewise.
+	(call_event::get_desc): Likewise.
+	(return_event::get_desc): Likewise.
+	(warning_event::get_desc): Likewise.
+	(checker_path::dump): Likewise.
+	(checker_path::debug): Likewise.
+	* diagnostic-manager.cc (diagnostic_manager::prune_for_sm_diagnostic):
+	Likewise.
+	(diagnostic_manager::prune_interproc_events): Likewise.
+	* engine.cc (feasibility_state::maybe_update_for_edge):
+	Likewise.
+	* program-state.cc (sm_state_map::to_json): Likewise.
+	* region-model-impl-calls.cc (region_model::impl_call_analyzer_describe): Likewise.
+	(region_model::impl_call_analyzer_dump_capacity): Likewise.
+	* region.cc (region::to_json): Likewise.
+	* sm-malloc.cc (inform_nonnull_attribute): Likewise.
+	* store.cc (binding_map::to_json): Likewise.
+	(store::to_json): Likewise.
+	* supergraph.cc (superedge::dump): Likewise.
+	* svalue.cc (svalue::to_json): Likewise.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (start_cfg_edge_event::get_desc): Update for
+	superedge::get_description returning a label_text.
+	* engine.cc (feasibility_state::maybe_update_for_edge): Likewise.
+	* supergraph.cc (superedge::dump): Likewise.
+	(superedge::get_description): Convert return type from char * to
+	label_text.
+	* supergraph.h (superedge::get_description): Likewise.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-info.cc (call_info::print): Update for removal of
+	label_text::maybe_free in favor of automatic memory management.
+	* checker-path.cc (checker_event::dump): Likewise.
+	(checker_event::prepare_for_emission): Likewise.
+	(state_change_event::get_desc): Likewise.
+	(superedge_event::should_filter_p): Likewise.
+	(start_cfg_edge_event::get_desc): Likewise.
+	(warning_event::get_desc): Likewise.
+	(checker_path::dump): Likewise.
+	(checker_path::debug): Likewise.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_for_sm_diagnostic): Likewise.
+	(diagnostic_manager::prune_interproc_events): Likewise.
+	* program-state.cc (sm_state_map::to_json): Likewise.
+	* region.cc (region::to_json): Likewise.
+	* sm-malloc.cc (inform_nonnull_attribute): Likewise.
+	* store.cc (binding_map::to_json): Likewise.
+	(store::to_json): Likewise.
+	* svalue.cc (svalue::to_json): Likewise.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106225
+	* sm-taint.cc (taint_state_machine::on_stmt): Move handling of
+	assignments from division to...
+	(taint_state_machine::check_for_tainted_divisor): ...this new
+	function.  Reject warning when the divisor is known to be non-zero.
+	* sm.cc: Include "analyzer/program-state.h".
+	(sm_context::get_old_region_model): New.
+	* sm.h (sm_context::get_old_region_model): New decl.
+
+2022-07-06  Immad Mir  <mirimmad@outlook.com>
+
+	PR analyzer/106184
+	* sm-fd.cc (fd_state_machine): Change ordering of initialization
+	of state m_invalid so that the order of initializers is same as
+	the ordering of the fields in the class decl.
+
+2022-07-06  Immad Mir  <mirimmad@outlook.com>
+
+	* sm-fd.cc (use_after_close): save the "close" event and
+	show it where possible.
+
+2022-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106204
+	* region-model.cc (within_short_circuited_stmt_p): Move extraction
+	of assign_stmt to caller.
+	(due_to_ifn_deferred_init_p): New.
+	(region_model::check_for_poison): Move extraction of assign_stmt
+	from within_short_circuited_stmt_p to here.  Share logic with
+	call to due_to_ifn_deferred_init_p.
+
+2022-07-02  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/105900
+	* analyzer.opt: Added Wanalyzer-allocation-size.
+	* checker-path.cc (region_creation_event::get_desc): Added call to new
+	virtual function pending_diagnostic::describe_region_creation_event.
+	* checker-path.h: Added region_creation_event::get_desc.
+	* diagnostic-manager.cc (diagnostic_manager::add_event_on_final_node):
+	New function.
+	* diagnostic-manager.h:
+	Added diagnostic_manager::add_event_on_final_node.
+	* pending-diagnostic.h (struct region_creation): New event_desc struct.
+	(pending_diagnostic::describe_region_creation_event): Added virtual
+	function to overwrite description of a region creation.
+	* region-model.cc (class dubious_allocation_size): New class.
+	(capacity_compatible_with_type): New helper function.
+	(class size_visitor): New class.
+	(struct_or_union_with_inheritance_p): New helper function.
+	(is_any_cast_p): New helper function.
+	(region_model::check_region_size): New function.
+	(region_model::set_value): Added call to
+	region_model::check_region_size.
+	* region-model.h (class region_model): New function check_region_size.
+	* svalue.cc (region_svalue::accept): Changed to post-order traversal.
+	(initial_svalue::accept): Likewise.
+	(unaryop_svalue::accept): Likewise.
+	(binop_svalue::accept): Likewise.
+	(sub_svalue::accept): Likewise.
+	(repeated_svalue::accept): Likewise.
+	(bits_within_svalue::accept): Likewise.
+	(widening_svalue::accept): Likewise.
+	(unmergeable_svalue::accept): Likewise.
+	(compound_svalue::accept): Likewise.
+	(conjured_svalue::accept): Likewise.
+	(asm_output_svalue::accept): Likewise.
+	(const_fn_result_svalue::accept): Likewise.
+
+2022-07-02  Immad Mir  <mirimmad17@gmail.com>
+
+	PR analyzer/106003
+	* analyzer.opt (Wanalyzer-fd-leak): New option.
+	(Wanalyzer-fd-access-mode-mismatch): New option.
+	(Wanalyzer-fd-use-without-check): New option.
+	(Wanalyzer-fd-double-close): New option.
+	(Wanalyzer-fd-use-after-close): New option.
+	* sm.h (make_fd_state_machine): New decl.
+	* sm.cc (make_checkers): Call make_fd_state_machine.
+	* sm-fd.cc: New file.
+
+2022-06-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-string.cc: Add includes of "analyzer/analyzer.h"
+	and "analyzer/analyzer-logging.h".
+	(call_string::call_string): Delete copy ctor.
+	(call_string::operator=): Delete.
+	(call_string::operator==): Delete.
+	(call_string::hash): Delete.
+	(call_string::push_call): Make const, returning the resulting
+	call_string.
+	(call_string::pop): Delete.
+	(call_string::cmp_ptr_ptr): New.
+	(call_string::validate): Assert that m_parent is non-NULL, or
+	m_elements is empty.
+	(call_string::call_string): Move default ctor here from
+	call-string.h and reimplement.  Add ctor taking a parent
+	and an element.
+	(call_string::~call_string): New.
+	(call_string::recursive_log): New.
+	* call-string.h (call_string::call_string): Move default ctor's
+	defn to call-string.cc.  Delete copy ctor.  Add ctor taking a
+	parent and an element.
+	(call_string::operator=): Delete.
+	(call_string::operator==): Delete.
+	(call_string::hash): Delete.
+	(call_string::push_call): Make const, returning the resulting
+	call_string.
+	(call_string::pop): Delete decl.
+	(call_string::get_parent): New.
+	(call_string::cmp_ptr_ptr): New decl.
+	(call_string::get_top_of_stack): New.
+	(struct call_string::hashmap_traits_t): New.
+	(class call_string): Add friend class region_model_manager.  Add
+	DISABLE_COPY_AND_ASSIGN.
+	(call_string::~call_string): New decl.
+	(call_string::recursive_log): New decl.
+	(call_string::m_parent): New field.
+	(call_string::m_children): New field.
+	* constraint-manager.cc (selftest::test_many_constants): Pass
+	model manager to program_point::origin.
+	* engine.cc (exploded_graph::exploded_graph): Likewise.
+	(exploded_graph::add_function_entry): Likewise for
+	program_point::from_function_entry.
+	(add_tainted_args_callback): Likewise.
+	(exploded_graph::maybe_process_run_of_before_supernode_enodes):
+	Update for change to program_point.get_call_string.
+	(exploded_graph::process_node): Likewise.
+	(class function_call_string_cluster): Convert m_cs from a
+	call_string to a const call_string &.
+	(struct function_call_string): Likewise.
+	(pod_hash_traits<function_call_string>::hash): Use pointer_hash
+	for m_cs.
+	(pod_hash_traits<function_call_string>::equal): Update for change
+	to m_cs.
+	(root_cluster::add_node): Update for change to
+	function_call_string.
+	(viz_callgraph_node::dump_dot): Update for change to call_string.
+	* exploded-graph.h (per_call_string_data::m_key): Convert to a
+	reference.
+	(struct eg_call_string_hash_map_traits): Delete.
+	(exploded_graph::call_string_data_map_t): Remove traits class.
+	* program-point.cc: Move include of "analyzer/call-string.h" to
+	after "analyzer/analyzer-logging.h".
+	(program_point::print): Update for conversion of m_call_string to
+	a pointer.
+	(program_point::to_json): Likewise.
+	(program_point::push_to_call_stack): Update for immutability of
+	call strings.
+	(program_point::pop_from_call_stack): Likewise.
+	(program_point::hash): Use pointer hashing for m_call_string.
+	(program_point::get_function_at_depth): Update for change to
+	m_call_string.
+	(program_point::validate): Update for changes to call_string.
+	(program_point::on_edge): Likewise.
+	(program_point::origin): Move here from call-string.h.  Add
+	region_model_manager param and use it to get empty call string.
+	(program_point::from_function_entry): Likewise.
+	(selftest::test_function_point_ordering): Likewise.
+	(selftest::test_function_point_ordering): Likewise.
+	* program-point.h (program_point::program_point): Update for
+	change to m_call_string.
+	(program_point::get_call_string): Likewise.
+	(program_point::get_stack_depth): Likewise.
+	(program_point::origin): Add region_model_manager param, and move
+	defn to call-string.cc.
+	(program_point::from_function_entry): Likewise.
+	(program_point::empty): Drop call_string.
+	(program_point::deleted): Likewise.
+	(program_point::program_point): New private ctor.
+	(program_point::m_call_string): Convert from call_string to const
+	call_string *.
+	* program-state.cc (selftest::test_program_state_merging): Update
+	for call_string changes.
+	(selftest::test_program_state_merging_2): Likewise.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Construct
+	m_empty_call_string.
+	(region_model_manager::log_stats): Log the call strings.
+	* region-model.cc (assert_region_models_merge): Pass the
+	region_model_manager when creating program_point instances.
+	(selftest::test_state_merging): Likewise.
+	(selftest::test_constraint_merging): Likewise.
+	(selftest::test_widening_constraints): Likewise.
+	(selftest::test_iteration_1): Likewise.
+	* region-model.h (region_model_manager::get_empty_call_string):
+	New.
+	(region_model_manager::m_empty_call_string): New.
+	* sm-signal.cc (register_signal_handler::impl_transition): Update
+	for changes to call_string.
+
+2022-06-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-string.cc (call_string::calc_recursion_depth): Whitespace
+	cleanups.
+	(call_string::cmp): Likewise.
+	(call_string::get_caller_node): Likewise.
+	(call_string::validate): Likewise.
+	* engine.cc (dynamic_call_info_t::add_events_to_path): Likewise.
+	(exploded_graph::get_per_function_data): Likewise.
+	(exploded_graph::maybe_create_dynamic_call): Likewise.
+	(exploded_graph::maybe_create_dynamic_call): Likewise.
+	(exploded_graph::process_node): Likewise.
+
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* varargs.cc (va_arg_type_mismatch::emit): Associate the warning
+	with CWE-686 ("Function Call With Incorrect Argument Type").
+
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* varargs.cc: Include "diagnostic-metadata.h".
+	(va_list_exhausted::emit): Associate the warning with
+	CWE-685 ("Function Call With Incorrect Number of Arguments").
+
+2022-06-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-file.cc (double_fclose::emit): Associate the warning with
+	CWE-1341 ("Multiple Releases of Same Resource or Handle").
+
+2022-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105962
+	* analyzer.opt (fanalyzer-undo-inlining): New option.
+	* checker-path.cc: Include "diagnostic-core.h" and
+	"inlining-iterator.h".
+	(event_kind_to_string): Handle EK_INLINED_CALL.
+	(class inlining_info): New class.
+	(checker_event::checker_event): Move here from checker-path.h.
+	Store original fndecl and depth, and calculate effective fndecl
+	and depth based on inlining information.
+	(checker_event::dump): Emit original depth as well as effective
+	depth when they differ; likewise for fndecl.
+	(region_creation_event::get_desc): Use m_effective_fndecl.
+	(inlined_call_event::get_desc): New.
+	(inlined_call_event::get_meaning): New.
+	(checker_path::inject_any_inlined_call_events): New.
+	* checker-path.h (enum event_kind): Add EK_INLINED_CALL.
+	(checker_event::checker_event): Make protected, and move
+	definition to checker-path.cc.
+	(checker_event::get_fndecl): Use effective fndecl.
+	(checker_event::get_stack_depth): Use effective stack depth.
+	(checker_event::get_logical_location): Use effective stack depth.
+	(checker_event::get_original_stack_depth): New.
+	(checker_event::m_fndecl): Rename to...
+	(checker_event::m_original_fndecl): ...this.
+	(checker_event::m_depth): Rename to...
+	(checker_event::m_original_depth): ...this.
+	(checker_event::m_effective_fndecl): New field.
+	(checker_event::m_effective_depth): New field.
+	(class inlined_call_event): New checker_event subclass.
+	(checker_path::inject_any_inlined_call_events): New decl.
+	* diagnostic-manager.cc: Include "inlining-iterator.h".
+	(diagnostic_manager::emit_saved_diagnostic): Call
+	checker_path::inject_any_inlined_call_events.
+	(diagnostic_manager::prune_for_sm_diagnostic): Handle
+	EK_INLINED_CALL.
+	* engine.cc (tainted_args_function_custom_event::get_desc): Use
+	effective fndecl.
+	* inlining-iterator.h: New file.
+
+2022-06-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (saved_diagnostic::dump_dot_id): New.
+	(saved_diagnostic::dump_as_dot_node): New.
+	* diagnostic-manager.h (saved_diagnostic::dump_dot_id): New decl.
+	(saved_diagnostic::dump_as_dot_node): New decl.
+	* engine.cc (exploded_node::dump_dot): Add nodes for saved
+	diagnostics.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-path.cc (checker_event::get_meaning): New.

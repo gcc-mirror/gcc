@@ -55,30 +55,37 @@ generic
    --  Additional parameters for ghost subprograms used inside contracts
 
    type Uns_Option is private;
-   with function Wrap_Option (Value : Uns) return Uns_Option;
-   with function Is_Raw_Unsigned_Format_Ghost (Str : String) return Boolean;
+   with function Wrap_Option (Value : Uns) return Uns_Option
+      with Ghost;
+   with function Is_Raw_Unsigned_Format_Ghost (Str : String) return Boolean
+      with Ghost;
    with function Raw_Unsigned_Overflows_Ghost
      (Str      : String;
       From, To : Integer)
-      return Boolean;
+      return Boolean
+      with Ghost;
    with function Scan_Raw_Unsigned_Ghost
      (Str      : String;
       From, To : Integer)
-      return Uns;
+      return Uns
+      with Ghost;
    with function Raw_Unsigned_Last_Ghost
      (Str      : String;
       From, To : Integer)
-      return Positive;
+      return Positive
+      with Ghost;
    with function Only_Decimal_Ghost
      (Str      : String;
       From, To : Integer)
-      return Boolean;
+      return Boolean
+      with Ghost;
    with function Scan_Based_Number_Ghost
      (Str      : String;
       From, To : Integer;
       Base     : Uns := 10;
       Acc      : Uns := 0)
-      return Uns_Option;
+      return Uns_Option
+      with Ghost;
 
 package System.Value_I is
    pragma Preelaborate;

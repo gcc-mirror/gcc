@@ -1095,7 +1095,11 @@ cleanup_tree_cfg_noloop (unsigned ssa_update_flags)
   /* After doing the above SSA form should be valid (or an update SSA
      should be required).  */
   if (ssa_update_flags)
-    update_ssa (ssa_update_flags);
+    {
+      timevar_pop (TV_TREE_CLEANUP_CFG);
+      update_ssa (ssa_update_flags);
+      timevar_push (TV_TREE_CLEANUP_CFG);
+    }
 
   /* Compute dominator info which we need for the iterative process below.  */
   if (!dom_info_available_p (CDI_DOMINATORS))
@@ -1170,22 +1174,22 @@ static void
 repair_loop_structures (void)
 {
   bitmap changed_bbs;
-  unsigned n_new_loops;
+  unsigned n_new_or_deleted_loops;
 
   calculate_dominance_info (CDI_DOMINATORS);
 
   timevar_push (TV_REPAIR_LOOPS);
   changed_bbs = BITMAP_ALLOC (NULL);
-  n_new_loops = fix_loop_structure (changed_bbs);
+  n_new_or_deleted_loops = fix_loop_structure (changed_bbs);
 
   /* This usually does nothing.  But sometimes parts of cfg that originally
      were inside a loop get out of it due to edge removal (since they
      become unreachable by back edges from latch).  Also a former
      irreducible loop can become reducible - in this case force a full
      rewrite into loop-closed SSA form.  */
-  if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
-    rewrite_into_loop_closed_ssa (n_new_loops ? NULL : changed_bbs,
-				  TODO_update_ssa);
+  if (loops_state_satisfies_p (LOOP_CLOSED_SSA)
+      && (!bitmap_empty_p (changed_bbs) || n_new_or_deleted_loops))
+    rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
 
   BITMAP_FREE (changed_bbs);
 
@@ -1406,8 +1410,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_merge_phi (m_ctxt); }
-  virtual unsigned int execute (function *);
+  opt_pass * clone () final override { return new pass_merge_phi (m_ctxt); }
+  unsigned int execute (function *) final override;
 
 }; // class pass_merge_phi
 
@@ -1584,7 +1588,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *)
+  unsigned int execute (function *) final override
     {
       return execute_cleanup_cfg_post_optimizing ();
     }

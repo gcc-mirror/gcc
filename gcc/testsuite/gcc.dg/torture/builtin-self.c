@@ -1,4 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 /* Check that we can use this idiom to define out-of-line copies of built-in
    functions.  This is used by libgcc/sync.c, for example.  */
 void __sync_synchronize (void)

@@ -22743,7 +22743,12 @@ mips_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 static unsigned HOST_WIDE_INT
 mips_asan_shadow_offset (void)
 {
-  return SUBTARGET_SHADOW_OFFSET;
+  if (mips_abi == ABI_N32)
+    return (HOST_WIDE_INT_1 << 29);
+  if (POINTER_SIZE == 64)
+    return (HOST_WIDE_INT_1 << 37);
+  else
+    return HOST_WIDE_INT_C (0x0aaa0000);
 }
 
 /* Implement TARGET_STARTING_FRAME_OFFSET.  See mips_compute_frame_info

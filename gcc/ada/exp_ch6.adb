@@ -83,7 +83,48 @@ with Validsw;        use Validsw;
 
 package body Exp_Ch6 is
 
-   --  Suffix for BIP formals
+   --------------------------------
+   -- Function return mechanisms --
+   --------------------------------
+
+   --  This is a summary of the various function return mechanisms implemented
+   --  in GNAT for Ada 2005 and later versions of the language. In the below
+   --  table, the first column must be read as an if expression: if the result
+   --  type of the function is limited, then the return mechanism is and ...;
+   --  elsif the result type is indefinite or large definite, then ...; elsif
+   --  ...; else ... The different mechanisms are implemented either in the
+   --  front end, or in the back end, or partly in both ends, depending on the
+   --  result type.
+
+   --    Result type    |  Return mechanism    |    Front end    |   Back end
+   --    --------------------------------------------------------------------
+
+   --     Limited           Build In Place              All
+
+   --     Indefinite/       Secondary Stack          Needs Fin.       Others
+   --     Large definite
+
+   --     Needs Fin.        Secondary Stack             All
+   --     (BERS False)
+
+   --     Needs Fin.        Invisible Parameter         All            All
+   --     (BERS True)                                 (return)        (call)
+
+   --     By Reference      Invisible Parameter                        All
+
+   --     Others            Primary stack/                             All
+   --                       Registers
+
+   --    Needs Fin.: type needs finalization [RM 7.6(9.1/2-9.6/2)]
+   --    BERS: Opt.Back_End_Return_Slot setting
+
+   --  The table is valid for all calls except for those dispatching on result;
+   --  the latter calls are considered as returning a class-wide type and thus
+   --  always return on the secondary stack, with the help of a small wrapper
+   --  function (thunk) if the original result type is not itself returned on
+   --  the secondary stack as per the above table.
+
+   --  Suffixes for Build-In-Place extra formals
 
    BIP_Alloc_Suffix               : constant String := "BIPalloc";
    BIP_Storage_Pool_Suffix        : constant String := "BIPstoragepool";
@@ -247,10 +288,10 @@ package body Exp_Ch6 is
    procedure Expand_Call_Helper (N : Node_Id; Post_Call : out List_Id);
    --  Does the main work of Expand_Call. Post_Call is as for Expand_Actuals.
 
-   procedure Expand_Ctrl_Function_Call (N : Node_Id);
+   procedure Expand_Ctrl_Function_Call (N : Node_Id; Use_Sec_Stack : Boolean);
    --  N is a function call which returns a controlled object. Transform the
    --  call into a temporary which retrieves the returned object from the
-   --  secondary stack using 'reference.
+   --  primary or secondary stack (Use_Sec_Stack says which) using 'reference.
 
    procedure Expand_Non_Function_Return (N : Node_Id);
    --  Expand a simple return statement found in a procedure body, entry body,
@@ -850,11 +891,12 @@ package body Exp_Ch6 is
       --  The return type in the function declaration may have been a limited
       --  view, and the extra formals for the function were not generated at
       --  that point. At the point of call the full view must be available and
-      --  the extra formals can be created.
+      --  the extra formals can be created and Returns_By_Ref computed.
 
       if No (Extra_Formal) then
          Create_Extra_Formals (Func);
          Extra_Formal := Extra_Formals (Func);
+         Compute_Returns_By_Ref (Func);
       end if;
 
       --  We search for a formal with a matching suffix. We can't search
@@ -4915,7 +4957,7 @@ package body Exp_Ch6 is
       --  different processing applies. If the call is to a protected function,
       --  the expansion above will call Expand_Call recursively. Otherwise the
       --  function call is transformed into a reference to the result that has
-      --  been built either on the return or the secondary stack.
+      --  been built either on the primary or the secondary stack.
 
       if Needs_Finalization (Etype (Subp)) then
          if not Is_Build_In_Place_Function_Call (Call_Node)
@@ -4924,7 +4966,8 @@ package body Exp_Ch6 is
                or else
                  not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
          then
-            Expand_Ctrl_Function_Call (Call_Node);
+            Expand_Ctrl_Function_Call
+              (Call_Node, Needs_Secondary_Stack (Etype (Subp)));
 
          --  Build-in-place function calls which appear in anonymous contexts
          --  need a transient scope to ensure the proper finalization of the
@@ -4955,7 +4998,10 @@ package body Exp_Ch6 is
    -- Expand_Ctrl_Function_Call --
    -------------------------------
 
-   procedure Expand_Ctrl_Function_Call (N : Node_Id) is
+   procedure Expand_Ctrl_Function_Call (N : Node_Id; Use_Sec_Stack : Boolean)
+   is
+      Par : constant Node_Id := Parent (N);
+
       function Is_Element_Reference (N : Node_Id) return Boolean;
       --  Determine whether node N denotes a reference to an Ada 2012 container
       --  element.
@@ -4980,12 +5026,19 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_Ctrl_Function_Call
 
    begin
-      --  Optimization, if the returned value (which is on the sec-stack) is
-      --  returned again, no need to copy/readjust/finalize, we can just pass
-      --  the value thru (see Expand_N_Simple_Return_Statement), and thus no
-      --  attachment is needed.
+      --  Optimization: if the returned value is returned again, then no need
+      --  to copy/readjust/finalize, we can just pass the value through (see
+      --  Expand_N_Simple_Return_Statement), and thus no attachment is needed.
 
-      if Nkind (Parent (N)) = N_Simple_Return_Statement then
+      if Nkind (Par) = N_Simple_Return_Statement then
+         return;
+      end if;
+
+      --  Another optimization: if the returned value is used to initialize an
+      --  object, and the secondary stack is not involved in the call, then no
+      --  need to copy/readjust/finalize, we can just initialize it in place.
+
+      if Nkind (Par) = N_Object_Declaration and then not Use_Sec_Stack then
          return;
       end if;
 
@@ -5067,48 +5120,15 @@ package body Exp_Ch6 is
    --  (in which case default initial values might need to be set)).
 
    procedure Expand_N_Extended_Return_Statement (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-
-      function Build_Heap_Or_Pool_Allocator
-        (Temp_Id    : Entity_Id;
-         Temp_Typ   : Entity_Id;
-         Func_Id    : Entity_Id;
-         Ret_Typ    : Entity_Id;
-         Alloc_Expr : Node_Id) return Node_Id;
-      --  Create the statements necessary to allocate a return object on the
-      --  heap or user-defined storage pool. The object may need finalization
-      --  actions depending on the return type.
-      --
-      --    * Controlled case
-      --
-      --       if BIPfinalizationmaster = null then
-      --          Temp_Id := <Alloc_Expr>;
-      --       else
-      --          declare
-      --             type Ptr_Typ is access Ret_Typ;
-      --             for Ptr_Typ'Storage_Pool use
-      --                   Base_Pool (BIPfinalizationmaster.all).all;
-      --             Local : Ptr_Typ;
-      --
-      --          begin
-      --             procedure Allocate (...) is
-      --             begin
-      --                System.Storage_Pools.Subpools.Allocate_Any (...);
-      --             end Allocate;
-      --
-      --             Local := <Alloc_Expr>;
-      --             Temp_Id := Temp_Typ (Local);
-      --          end;
-      --       end if;
-      --
-      --    * Non-controlled case
-      --
-      --       Temp_Id := <Alloc_Expr>;
-      --
-      --  Temp_Id is the temporary which is used to reference the internally
-      --  created object in all allocation forms. Temp_Typ is the type of the
-      --  temporary. Func_Id is the enclosing function. Ret_Typ is the return
-      --  type of Func_Id. Alloc_Expr is the actual allocator.
+      Loc          : constant Source_Ptr := Sloc (N);
+      Func_Id      : constant Entity_Id :=
+                       Return_Applies_To (Return_Statement_Entity (N));
+      Is_BIP_Func  : constant Boolean   :=
+                       Is_Build_In_Place_Function (Func_Id);
+      Ret_Obj_Id   : constant Entity_Id :=
+                       First_Entity (Return_Statement_Entity (N));
+      Ret_Obj_Decl : constant Node_Id   := Parent (Ret_Obj_Id);
+      Ret_Typ      : constant Entity_Id := Etype (Func_Id);
 
       function Move_Activation_Chain (Func_Id : Entity_Id) return Node_Id;
       --  Construct a call to System.Tasking.Stages.Move_Activation_Chain
@@ -5119,173 +5139,6 @@ package body Exp_Ch6 is
       --
       --  Func_Id is the entity of the function where the extended return
       --  statement appears.
-
-      ----------------------------------
-      -- Build_Heap_Or_Pool_Allocator --
-      ----------------------------------
-
-      function Build_Heap_Or_Pool_Allocator
-        (Temp_Id    : Entity_Id;
-         Temp_Typ   : Entity_Id;
-         Func_Id    : Entity_Id;
-         Ret_Typ    : Entity_Id;
-         Alloc_Expr : Node_Id) return Node_Id
-      is
-      begin
-         pragma Assert (Is_Build_In_Place_Function (Func_Id));
-
-         --  Processing for objects that require finalization actions
-
-         if Needs_Finalization (Ret_Typ) then
-            declare
-               Decls      : constant List_Id := New_List;
-               Fin_Mas_Id : constant Entity_Id :=
-                              Build_In_Place_Formal
-                                (Func_Id, BIP_Finalization_Master);
-               Orig_Expr  : constant Node_Id :=
-                              New_Copy_Tree
-                                (Source           => Alloc_Expr,
-                                 Scopes_In_EWA_OK => True);
-               Stmts      : constant List_Id := New_List;
-               Desig_Typ  : Entity_Id;
-               Local_Id   : Entity_Id;
-               Pool_Id    : Entity_Id;
-               Ptr_Typ    : Entity_Id;
-
-            begin
-               --  Generate:
-               --    Pool_Id renames Base_Pool (BIPfinalizationmaster.all).all;
-
-               Pool_Id := Make_Temporary (Loc, 'P');
-
-               Append_To (Decls,
-                 Make_Object_Renaming_Declaration (Loc,
-                   Defining_Identifier => Pool_Id,
-                   Subtype_Mark        =>
-                     New_Occurrence_Of (RTE (RE_Root_Storage_Pool), Loc),
-                   Name                =>
-                     Make_Explicit_Dereference (Loc,
-                       Prefix =>
-                         Make_Function_Call (Loc,
-                           Name                   =>
-                             New_Occurrence_Of (RTE (RE_Base_Pool), Loc),
-                           Parameter_Associations => New_List (
-                             Make_Explicit_Dereference (Loc,
-                               Prefix =>
-                                 New_Occurrence_Of (Fin_Mas_Id, Loc)))))));
-
-               --  Create an access type which uses the storage pool of the
-               --  caller's master. This additional type is necessary because
-               --  the finalization master cannot be associated with the type
-               --  of the temporary. Otherwise the secondary stack allocation
-               --  will fail.
-
-               Desig_Typ := Ret_Typ;
-
-               --  Ensure that the build-in-place machinery uses a fat pointer
-               --  when allocating an unconstrained array on the heap. In this
-               --  case the result object type is a constrained array type even
-               --  though the function type is unconstrained.
-
-               if Ekind (Desig_Typ) = E_Array_Subtype then
-                  Desig_Typ := Base_Type (Desig_Typ);
-               end if;
-
-               --  Generate:
-               --    type Ptr_Typ is access Desig_Typ;
-
-               Ptr_Typ := Make_Temporary (Loc, 'P');
-
-               Append_To (Decls,
-                 Make_Full_Type_Declaration (Loc,
-                   Defining_Identifier => Ptr_Typ,
-                   Type_Definition     =>
-                     Make_Access_To_Object_Definition (Loc,
-                       Subtype_Indication =>
-                         New_Occurrence_Of (Desig_Typ, Loc))));
-
-               --  Perform minor decoration in order to set the master and the
-               --  storage pool attributes.
-
-               Mutate_Ekind                (Ptr_Typ, E_Access_Type);
-               Set_Finalization_Master     (Ptr_Typ, Fin_Mas_Id);
-               Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
-
-               --  Create the temporary, generate:
-               --    Local_Id : Ptr_Typ;
-
-               Local_Id := Make_Temporary (Loc, 'T');
-
-               Append_To (Decls,
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Local_Id,
-                   Object_Definition   =>
-                     New_Occurrence_Of (Ptr_Typ, Loc)));
-
-               --  Allocate the object, generate:
-               --    Local_Id := <Alloc_Expr>;
-
-               Append_To (Stmts,
-                 Make_Assignment_Statement (Loc,
-                   Name       => New_Occurrence_Of (Local_Id, Loc),
-                   Expression => Alloc_Expr));
-
-               --  Generate:
-               --    Temp_Id := Temp_Typ (Local_Id);
-
-               Append_To (Stmts,
-                 Make_Assignment_Statement (Loc,
-                   Name       => New_Occurrence_Of (Temp_Id, Loc),
-                   Expression =>
-                     Unchecked_Convert_To (Temp_Typ,
-                       New_Occurrence_Of (Local_Id, Loc))));
-
-               --  Wrap the allocation in a block. This is further conditioned
-               --  by checking the caller finalization master at runtime. A
-               --  null value indicates a non-existent master, most likely due
-               --  to a Finalize_Storage_Only allocation.
-
-               --  Generate:
-               --    if BIPfinalizationmaster = null then
-               --       Temp_Id := <Orig_Expr>;
-               --    else
-               --       declare
-               --          <Decls>
-               --       begin
-               --          <Stmts>
-               --       end;
-               --    end if;
-
-               return
-                 Make_If_Statement (Loc,
-                   Condition       =>
-                     Make_Op_Eq (Loc,
-                       Left_Opnd  => New_Occurrence_Of (Fin_Mas_Id, Loc),
-                       Right_Opnd => Make_Null (Loc)),
-
-                   Then_Statements => New_List (
-                     Make_Assignment_Statement (Loc,
-                       Name       => New_Occurrence_Of (Temp_Id, Loc),
-                       Expression => Orig_Expr)),
-
-                   Else_Statements => New_List (
-                     Make_Block_Statement (Loc,
-                       Declarations               => Decls,
-                       Handled_Statement_Sequence =>
-                         Make_Handled_Sequence_Of_Statements (Loc,
-                           Statements => Stmts))));
-            end;
-
-         --  For all other cases, generate:
-         --    Temp_Id := <Alloc_Expr>;
-
-         else
-            return
-              Make_Assignment_Statement (Loc,
-                Name       => New_Occurrence_Of (Temp_Id, Loc),
-                Expression => Alloc_Expr);
-         end if;
-      end Build_Heap_Or_Pool_Allocator;
 
       ---------------------------
       -- Move_Activation_Chain --
@@ -5319,19 +5172,10 @@ package body Exp_Ch6 is
 
       --  Local variables
 
-      Func_Id      : constant Entity_Id :=
-                       Return_Applies_To (Return_Statement_Entity (N));
-      Is_BIP_Func  : constant Boolean   :=
-                       Is_Build_In_Place_Function (Func_Id);
-      Ret_Obj_Id   : constant Entity_Id :=
-                       First_Entity (Return_Statement_Entity (N));
-      Ret_Obj_Decl : constant Node_Id   := Parent (Ret_Obj_Id);
-      Ret_Typ      : constant Entity_Id := Etype (Func_Id);
-
       Exp         : Node_Id;
       HSS         : Node_Id;
       Result      : Node_Id;
-      Stmts       : List_Id;
+      Stmts       : List_Id := No_List;
 
       Return_Stmt : Node_Id := Empty;
       --  Force initialization to facilitate static analysis
@@ -5496,13 +5340,6 @@ package body Exp_Ch6 is
             end;
          end if;
 
-         --  Build a simple_return_statement that returns the return object
-
-         Return_Stmt :=
-           Make_Simple_Return_Statement (Loc,
-             Expression => New_Occurrence_Of (Ret_Obj_Id, Loc));
-         Append_To (Stmts, Return_Stmt);
-
          HSS := Make_Handled_Sequence_Of_Statements (Loc, Stmts);
       end if;
 
@@ -5523,571 +5360,12 @@ package body Exp_Ch6 is
          Set_Identifier
            (Result, New_Occurrence_Of (Return_Statement_Entity (N), Loc));
 
-         --  If the object decl was already rewritten as a renaming, then we
-         --  don't want to do the object allocation and transformation of
-         --  the return object declaration to a renaming. This case occurs
-         --  when the return object is initialized by a call to another
-         --  build-in-place function, and that function is responsible for
-         --  the allocation of the return object.
-
-         if Is_BIP_Func
-           and then Nkind (Ret_Obj_Decl) = N_Object_Renaming_Declaration
-         then
-            pragma Assert
-              (Nkind (Original_Node (Ret_Obj_Decl)) = N_Object_Declaration
-                and then
-
-                  --  It is a regular BIP object declaration
-
-                  (Is_Build_In_Place_Function_Call
-                     (Expression (Original_Node (Ret_Obj_Decl)))
-
-                  --  It is a BIP object declaration that displaces the pointer
-                  --  to the object to reference a converted interface type.
-
-                  or else
-                    Present (Unqual_BIP_Iface_Function_Call
-                              (Expression (Original_Node (Ret_Obj_Decl))))));
-
-         elsif Is_BIP_Func then
-
-            --  Locate the implicit access parameter associated with the
-            --  caller-supplied return object and convert the return
-            --  statement's return object declaration to a renaming of a
-            --  dereference of the access parameter. If the return object's
-            --  declaration includes an expression that has not already been
-            --  expanded as separate assignments, then add an assignment
-            --  statement to ensure the return object gets initialized.
-
-            --    declare
-            --       Result : T [:= <expression>];
-            --    begin
-            --       ...
-
-            --  is converted to
-
-            --    declare
-            --       Result : T renames FuncRA.all;
-            --       [Result := <expression;]
-            --    begin
-            --       ...
-
-            declare
-               Ret_Obj_Expr : constant Node_Id   := Expression (Ret_Obj_Decl);
-               Ret_Obj_Typ  : constant Entity_Id := Etype (Ret_Obj_Id);
-
-               Init_Assignment  : Node_Id := Empty;
-               Obj_Acc_Formal   : Entity_Id;
-               Obj_Acc_Deref    : Node_Id;
-               Obj_Alloc_Formal : Entity_Id;
-
-            begin
-               --  Retrieve the implicit access parameter passed by the caller
-
-               Obj_Acc_Formal :=
-                 Build_In_Place_Formal (Func_Id, BIP_Object_Access);
-
-               --  If the return object's declaration includes an expression
-               --  and the declaration isn't marked as No_Initialization, then
-               --  we need to generate an assignment to the object and insert
-               --  it after the declaration before rewriting it as a renaming
-               --  (otherwise we'll lose the initialization). The case where
-               --  the result type is an interface (or class-wide interface)
-               --  is also excluded because the context of the function call
-               --  must be unconstrained, so the initialization will always
-               --  be done as part of an allocator evaluation (storage pool
-               --  or secondary stack), never to a constrained target object
-               --  passed in by the caller. Besides the assignment being
-               --  unneeded in this case, it avoids problems with trying to
-               --  generate a dispatching assignment when the return expression
-               --  is a nonlimited descendant of a limited interface (the
-               --  interface has no assignment operation).
-
-               if Present (Ret_Obj_Expr)
-                 and then not No_Initialization (Ret_Obj_Decl)
-                 and then not Is_Interface (Ret_Obj_Typ)
-               then
-                  Init_Assignment :=
-                    Make_Assignment_Statement (Loc,
-                      Name       => New_Occurrence_Of (Ret_Obj_Id, Loc),
-                      Expression =>
-                        New_Copy_Tree
-                          (Source           => Ret_Obj_Expr,
-                           Scopes_In_EWA_OK => True));
-
-                  Set_Etype (Name (Init_Assignment), Etype (Ret_Obj_Id));
-                  Set_Assignment_OK (Name (Init_Assignment));
-                  Set_No_Ctrl_Actions (Init_Assignment);
-
-                  Set_Parent (Name (Init_Assignment), Init_Assignment);
-                  Set_Parent (Expression (Init_Assignment), Init_Assignment);
-
-                  Set_Expression (Ret_Obj_Decl, Empty);
-
-                  if Is_Class_Wide_Type (Etype (Ret_Obj_Id))
-                    and then not Is_Class_Wide_Type
-                                   (Etype (Expression (Init_Assignment)))
-                  then
-                     Rewrite (Expression (Init_Assignment),
-                       Make_Type_Conversion (Loc,
-                         Subtype_Mark =>
-                           New_Occurrence_Of (Etype (Ret_Obj_Id), Loc),
-                         Expression   =>
-                           Relocate_Node (Expression (Init_Assignment))));
-                  end if;
-
-                  --  In the case of functions where the calling context can
-                  --  determine the form of allocation needed, initialization
-                  --  is done with each part of the if statement that handles
-                  --  the different forms of allocation (this is true for
-                  --  unconstrained, tagged, and controlled result subtypes).
-
-                  if not Needs_BIP_Alloc_Form (Func_Id) then
-                     Insert_After (Ret_Obj_Decl, Init_Assignment);
-                  end if;
-               end if;
-
-               --  When the function's subtype is unconstrained, a run-time
-               --  test may be needed to decide the form of allocation to use
-               --  for the return object. The function has an implicit formal
-               --  parameter indicating this. If the BIP_Alloc_Form formal has
-               --  the value one, then the caller has passed access to an
-               --  existing object for use as the return object. If the value
-               --  is two, then the return object must be allocated on the
-               --  secondary stack. Otherwise, the object must be allocated in
-               --  a storage pool. We generate an if statement to test the
-               --  implicit allocation formal and initialize a local access
-               --  value appropriately, creating allocators in the secondary
-               --  stack and global heap cases. The special formal also exists
-               --  and must be tested when the function has a tagged result,
-               --  even when the result subtype is constrained, because in
-               --  general such functions can be called in dispatching contexts
-               --  and must be handled similarly to functions with a class-wide
-               --  result.
-
-               if Needs_BIP_Alloc_Form (Func_Id) then
-                  Obj_Alloc_Formal :=
-                    Build_In_Place_Formal (Func_Id, BIP_Alloc_Form);
-
-                  declare
-                     Pool_Id        : constant Entity_Id :=
-                                        Make_Temporary (Loc, 'P');
-                     Alloc_Obj_Id   : Entity_Id;
-                     Alloc_Obj_Decl : Node_Id;
-                     Alloc_If_Stmt  : Node_Id;
-                     Guard_Except   : Node_Id;
-                     Heap_Allocator : Node_Id;
-                     Pool_Decl      : Node_Id;
-                     Pool_Allocator : Node_Id;
-                     Ptr_Type_Decl  : Node_Id;
-                     Ref_Type       : Entity_Id;
-                     SS_Allocator   : Node_Id;
-
-                  begin
-                     --  Create an access type designating the function's
-                     --  result subtype.
-
-                     Ref_Type := Make_Temporary (Loc, 'A');
-
-                     Ptr_Type_Decl :=
-                       Make_Full_Type_Declaration (Loc,
-                         Defining_Identifier => Ref_Type,
-                         Type_Definition     =>
-                           Make_Access_To_Object_Definition (Loc,
-                             All_Present        => True,
-                             Subtype_Indication =>
-                               New_Occurrence_Of (Ret_Obj_Typ, Loc)));
-
-                     Insert_Before (Ret_Obj_Decl, Ptr_Type_Decl);
-
-                     --  Create an access object that will be initialized to an
-                     --  access value denoting the return object, either coming
-                     --  from an implicit access value passed in by the caller
-                     --  or from the result of an allocator.
-
-                     Alloc_Obj_Id := Make_Temporary (Loc, 'R');
-                     Set_Etype (Alloc_Obj_Id, Ref_Type);
-
-                     Alloc_Obj_Decl :=
-                       Make_Object_Declaration (Loc,
-                         Defining_Identifier => Alloc_Obj_Id,
-                         Object_Definition   =>
-                           New_Occurrence_Of (Ref_Type, Loc));
-
-                     Insert_Before (Ret_Obj_Decl, Alloc_Obj_Decl);
-
-                     --  Create allocators for both the secondary stack and
-                     --  global heap. If there's an initialization expression,
-                     --  then create these as initialized allocators.
-
-                     if Present (Ret_Obj_Expr)
-                       and then not No_Initialization (Ret_Obj_Decl)
-                     then
-                        --  Always use the type of the expression for the
-                        --  qualified expression, rather than the result type.
-                        --  In general we cannot always use the result type
-                        --  for the allocator, because the expression might be
-                        --  of a specific type, such as in the case of an
-                        --  aggregate or even a nonlimited object when the
-                        --  result type is a limited class-wide interface type.
-
-                        Heap_Allocator :=
-                          Make_Allocator (Loc,
-                            Expression =>
-                              Make_Qualified_Expression (Loc,
-                                Subtype_Mark =>
-                                  New_Occurrence_Of
-                                    (Etype (Ret_Obj_Expr), Loc),
-                                Expression   =>
-                                  New_Copy_Tree
-                                    (Source           => Ret_Obj_Expr,
-                                     Scopes_In_EWA_OK => True)));
-
-                     else
-                        --  If the function returns a class-wide type we cannot
-                        --  use the return type for the allocator. Instead we
-                        --  use the type of the expression, which must be an
-                        --  aggregate of a definite type.
-
-                        if Is_Class_Wide_Type (Ret_Obj_Typ) then
-                           Heap_Allocator :=
-                             Make_Allocator (Loc,
-                               Expression =>
-                                 New_Occurrence_Of
-                                   (Etype (Ret_Obj_Expr), Loc));
-                        else
-                           Heap_Allocator :=
-                             Make_Allocator (Loc,
-                               Expression =>
-                                 New_Occurrence_Of (Ret_Obj_Typ, Loc));
-                        end if;
-
-                        --  If the object requires default initialization then
-                        --  that will happen later following the elaboration of
-                        --  the object renaming. If we don't turn it off here
-                        --  then the object will be default initialized twice.
-
-                        Set_No_Initialization (Heap_Allocator);
-                     end if;
-
-                     --  Set the flag indicating that the allocator came from
-                     --  a build-in-place return statement, so we can avoid
-                     --  adjusting the allocated object. Note that this flag
-                     --  will be inherited by the copies made below.
-
-                     Set_Alloc_For_BIP_Return (Heap_Allocator);
-
-                     --  The Pool_Allocator is just like the Heap_Allocator,
-                     --  except we set Storage_Pool and Procedure_To_Call so
-                     --  it will use the user-defined storage pool.
-
-                     Pool_Allocator :=
-                       New_Copy_Tree
-                         (Source           => Heap_Allocator,
-                          Scopes_In_EWA_OK => True);
-
-                     pragma Assert (Alloc_For_BIP_Return (Pool_Allocator));
-
-                     --  Do not generate the renaming of the build-in-place
-                     --  pool parameter on ZFP because the parameter is not
-                     --  created in the first place.
-
-                     if RTE_Available (RE_Root_Storage_Pool_Ptr) then
-                        Pool_Decl :=
-                          Make_Object_Renaming_Declaration (Loc,
-                            Defining_Identifier => Pool_Id,
-                            Subtype_Mark        =>
-                              New_Occurrence_Of
-                                (RTE (RE_Root_Storage_Pool), Loc),
-                            Name                =>
-                              Make_Explicit_Dereference (Loc,
-                                New_Occurrence_Of
-                                  (Build_In_Place_Formal
-                                     (Func_Id, BIP_Storage_Pool), Loc)));
-                        Set_Storage_Pool (Pool_Allocator, Pool_Id);
-                        Set_Procedure_To_Call
-                          (Pool_Allocator, RTE (RE_Allocate_Any));
-                     else
-                        Pool_Decl := Make_Null_Statement (Loc);
-                     end if;
-
-                     --  If the No_Allocators restriction is active, then only
-                     --  an allocator for secondary stack allocation is needed.
-                     --  It's OK for such allocators to have Comes_From_Source
-                     --  set to False, because gigi knows not to flag them as
-                     --  being a violation of No_Implicit_Heap_Allocations.
-
-                     if Restriction_Active (No_Allocators) then
-                        SS_Allocator   := Heap_Allocator;
-                        Heap_Allocator := Make_Null (Loc);
-                        Pool_Allocator := Make_Null (Loc);
-
-                     --  Otherwise the heap and pool allocators may be needed,
-                     --  so we make another allocator for secondary stack
-                     --  allocation.
-
-                     else
-                        SS_Allocator :=
-                          New_Copy_Tree
-                            (Source           => Heap_Allocator,
-                             Scopes_In_EWA_OK => True);
-
-                        pragma Assert (Alloc_For_BIP_Return (SS_Allocator));
-
-                        --  The heap and pool allocators are marked as
-                        --  Comes_From_Source since they correspond to an
-                        --  explicit user-written allocator (that is, it will
-                        --  only be executed on behalf of callers that call the
-                        --  function as initialization for such an allocator).
-                        --  Prevents errors when No_Implicit_Heap_Allocations
-                        --  is in force.
-
-                        Set_Comes_From_Source (Heap_Allocator, True);
-                        Set_Comes_From_Source (Pool_Allocator, True);
-                     end if;
-
-                     --  The allocator is returned on the secondary stack
-
-                     Check_Restriction (No_Secondary_Stack, N);
-                     Set_Storage_Pool (SS_Allocator, RTE (RE_SS_Pool));
-                     Set_Procedure_To_Call
-                       (SS_Allocator, RTE (RE_SS_Allocate));
-
-                     --  The allocator is returned on the secondary stack,
-                     --  so indicate that the function return, as well as
-                     --  all blocks that encloses the allocator, must not
-                     --  release it. The flags must be set now because
-                     --  the decision to use the secondary stack is done
-                     --  very late in the course of expanding the return
-                     --  statement, past the point where these flags are
-                     --  normally set.
-
-                     Set_Uses_Sec_Stack (Func_Id);
-                     Set_Uses_Sec_Stack (Return_Statement_Entity (N));
-                     Set_Sec_Stack_Needed_For_Return
-                       (Return_Statement_Entity (N));
-                     Set_Enclosing_Sec_Stack_Return (N);
-
-                     --  Guard against poor expansion on the caller side by
-                     --  using a raise statement to catch out-of-range values
-                     --  of formal parameter BIP_Alloc_Form.
-
-                     if Exceptions_OK then
-                        Guard_Except :=
-                          Make_Raise_Program_Error (Loc,
-                            Reason => PE_Build_In_Place_Mismatch);
-                     else
-                        Guard_Except := Make_Null_Statement (Loc);
-                     end if;
-
-                     --  Create an if statement to test the BIP_Alloc_Form
-                     --  formal and initialize the access object to either the
-                     --  BIP_Object_Access formal (BIP_Alloc_Form =
-                     --  Caller_Allocation), the result of allocating the
-                     --  object in the secondary stack (BIP_Alloc_Form =
-                     --  Secondary_Stack), or else an allocator to create the
-                     --  return object in the heap or user-defined pool
-                     --  (BIP_Alloc_Form = Global_Heap or User_Storage_Pool).
-
-                     --  ??? An unchecked type conversion must be made in the
-                     --  case of assigning the access object formal to the
-                     --  local access object, because a normal conversion would
-                     --  be illegal in some cases (such as converting access-
-                     --  to-unconstrained to access-to-constrained), but the
-                     --  the unchecked conversion will presumably fail to work
-                     --  right in just such cases. It's not clear at all how to
-                     --  handle this. ???
-
-                     Alloc_If_Stmt :=
-                       Make_If_Statement (Loc,
-                         Condition =>
-                           Make_Op_Eq (Loc,
-                             Left_Opnd  =>
-                               New_Occurrence_Of (Obj_Alloc_Formal, Loc),
-                             Right_Opnd =>
-                               Make_Integer_Literal (Loc,
-                                 UI_From_Int (BIP_Allocation_Form'Pos
-                                                (Caller_Allocation)))),
-
-                         Then_Statements => New_List (
-                           Make_Assignment_Statement (Loc,
-                             Name       =>
-                               New_Occurrence_Of (Alloc_Obj_Id, Loc),
-                             Expression =>
-                               Unchecked_Convert_To
-                                 (Ref_Type,
-                                  New_Occurrence_Of (Obj_Acc_Formal, Loc)))),
-
-                         Elsif_Parts => New_List (
-                           Make_Elsif_Part (Loc,
-                             Condition =>
-                               Make_Op_Eq (Loc,
-                                 Left_Opnd  =>
-                                   New_Occurrence_Of (Obj_Alloc_Formal, Loc),
-                                 Right_Opnd =>
-                                   Make_Integer_Literal (Loc,
-                                     UI_From_Int (BIP_Allocation_Form'Pos
-                                                    (Secondary_Stack)))),
-
-                             Then_Statements => New_List (
-                               Make_Assignment_Statement (Loc,
-                                 Name       =>
-                                   New_Occurrence_Of (Alloc_Obj_Id, Loc),
-                                 Expression => SS_Allocator))),
-
-                           Make_Elsif_Part (Loc,
-                             Condition =>
-                               Make_Op_Eq (Loc,
-                                 Left_Opnd  =>
-                                   New_Occurrence_Of (Obj_Alloc_Formal, Loc),
-                                 Right_Opnd =>
-                                   Make_Integer_Literal (Loc,
-                                     UI_From_Int (BIP_Allocation_Form'Pos
-                                                    (Global_Heap)))),
-
-                             Then_Statements => New_List (
-                               Build_Heap_Or_Pool_Allocator
-                                 (Temp_Id    => Alloc_Obj_Id,
-                                  Temp_Typ   => Ref_Type,
-                                  Func_Id    => Func_Id,
-                                  Ret_Typ    => Ret_Obj_Typ,
-                                  Alloc_Expr => Heap_Allocator))),
-
-                           --  ???If all is well, we can put the following
-                           --  'elsif' in the 'else', but this is a useful
-                           --  self-check in case caller and callee don't agree
-                           --  on whether BIPAlloc and so on should be passed.
-
-                           Make_Elsif_Part (Loc,
-                             Condition =>
-                               Make_Op_Eq (Loc,
-                                 Left_Opnd  =>
-                                   New_Occurrence_Of (Obj_Alloc_Formal, Loc),
-                                 Right_Opnd =>
-                                   Make_Integer_Literal (Loc,
-                                     UI_From_Int (BIP_Allocation_Form'Pos
-                                                    (User_Storage_Pool)))),
-
-                             Then_Statements => New_List (
-                               Pool_Decl,
-                               Build_Heap_Or_Pool_Allocator
-                                 (Temp_Id    => Alloc_Obj_Id,
-                                  Temp_Typ   => Ref_Type,
-                                  Func_Id    => Func_Id,
-                                  Ret_Typ    => Ret_Obj_Typ,
-                                  Alloc_Expr => Pool_Allocator)))),
-
-                         --  Raise Program_Error if it's none of the above;
-                         --  this is a compiler bug.
-
-                         Else_Statements => New_List (Guard_Except));
-
-                     --  If a separate initialization assignment was created
-                     --  earlier, append that following the assignment of the
-                     --  implicit access formal to the access object, to ensure
-                     --  that the return object is initialized in that case. In
-                     --  this situation, the target of the assignment must be
-                     --  rewritten to denote a dereference of the access to the
-                     --  return object passed in by the caller.
-
-                     if Present (Init_Assignment) then
-                        Rewrite (Name (Init_Assignment),
-                          Make_Explicit_Dereference (Loc,
-                            Prefix => New_Occurrence_Of (Alloc_Obj_Id, Loc)));
-                        pragma Assert
-                          (Assignment_OK
-                             (Original_Node (Name (Init_Assignment))));
-                        Set_Assignment_OK (Name (Init_Assignment));
-
-                        Set_Etype (Name (Init_Assignment), Etype (Ret_Obj_Id));
-
-                        Append_To
-                          (Then_Statements (Alloc_If_Stmt), Init_Assignment);
-                     end if;
-
-                     Insert_Before (Ret_Obj_Decl, Alloc_If_Stmt);
-
-                     --  Remember the local access object for use in the
-                     --  dereference of the renaming created below.
-
-                     Obj_Acc_Formal := Alloc_Obj_Id;
-                  end;
-
-               --  When the function's subtype is unconstrained and a run-time
-               --  test is not needed, we nevertheless need to build the return
-               --  using the function's result subtype.
-
-               elsif not Is_Constrained (Underlying_Type (Etype (Func_Id)))
-               then
-                  declare
-                     Alloc_Obj_Id   : Entity_Id;
-                     Alloc_Obj_Decl : Node_Id;
-                     Ptr_Type_Decl  : Node_Id;
-                     Ref_Type       : Entity_Id;
-
-                  begin
-                     --  Create an access type designating the function's
-                     --  result subtype.
-
-                     Ref_Type := Make_Temporary (Loc, 'A');
-
-                     Ptr_Type_Decl :=
-                       Make_Full_Type_Declaration (Loc,
-                         Defining_Identifier => Ref_Type,
-                         Type_Definition     =>
-                           Make_Access_To_Object_Definition (Loc,
-                             All_Present        => True,
-                             Subtype_Indication =>
-                               New_Occurrence_Of (Ret_Obj_Typ, Loc)));
-
-                     Insert_Before (Ret_Obj_Decl, Ptr_Type_Decl);
-
-                     --  Create an access object initialized to the conversion
-                     --  of the implicit access value passed in by the caller.
-
-                     Alloc_Obj_Id := Make_Temporary (Loc, 'R');
-                     Set_Etype (Alloc_Obj_Id, Ref_Type);
-
-                     --  See the ??? comment a few lines above about the use of
-                     --  an unchecked conversion here.
-
-                     Alloc_Obj_Decl :=
-                       Make_Object_Declaration (Loc,
-                         Defining_Identifier => Alloc_Obj_Id,
-                         Object_Definition   =>
-                           New_Occurrence_Of (Ref_Type, Loc),
-                         Expression =>
-                           Unchecked_Convert_To
-                             (Ref_Type,
-                              New_Occurrence_Of (Obj_Acc_Formal, Loc)));
-
-                     Insert_Before (Ret_Obj_Decl, Alloc_Obj_Decl);
-
-                     --  Remember the local access object for use in the
-                     --  dereference of the renaming created below.
-
-                     Obj_Acc_Formal := Alloc_Obj_Id;
-                  end;
-               end if;
-
-               --  Replace the return object declaration with a renaming of a
-               --  dereference of the access value designating the return
-               --  object.
-
-               Obj_Acc_Deref :=
-                 Make_Explicit_Dereference (Loc,
-                   Prefix => New_Occurrence_Of (Obj_Acc_Formal, Loc));
-
-               Rewrite (Ret_Obj_Decl,
-                 Make_Object_Renaming_Declaration (Loc,
-                   Defining_Identifier => Ret_Obj_Id,
-                   Access_Definition   => Empty,
-                   Subtype_Mark        => New_Occurrence_Of (Ret_Obj_Typ, Loc),
-                   Name                => Obj_Acc_Deref));
-
-               Set_Renamed_Object (Ret_Obj_Id, Obj_Acc_Deref);
-            end;
-         end if;
+         --  Build a simple_return_statement that returns the return object
+
+         Return_Stmt :=
+           Make_Simple_Return_Statement (Loc,
+             Expression => New_Occurrence_Of (Ret_Obj_Id, Loc));
+         Append_To (Stmts, Return_Stmt);
 
       --  Case where we do not need to build a block. But we're about to drop
       --  Return_Object_Declarations on the floor, so assert that it contains
@@ -6112,9 +5390,7 @@ package body Exp_Ch6 is
       --  before an object is returned. A predicate that applies to the return
       --  subtype is checked immediately before an object is returned.
 
-      --  Suppress access checks to avoid generating extra checks for b-i-p.
-
-      Analyze (N, Suppress => Access_Check);
+      Analyze (N);
    end Expand_N_Extended_Return_Statement;
 
    ----------------------------
@@ -7240,7 +6516,6 @@ package body Exp_Ch6 is
 
       if not Comes_From_Extended_Return_Statement (N)
         and then Is_Build_In_Place_Function (Scope_Id)
-        and then not Debug_Flag_Dot_L
 
          --  The functionality of interface thunks is simple and it is always
          --  handled by means of simple return statements. This leaves their
@@ -8344,9 +7619,7 @@ package body Exp_Ch6 is
               and then Etype (F) /= Etype (A)
             then
                Append_To (Actuals,
-                 Make_Unchecked_Type_Conversion (Loc,
-                   New_Occurrence_Of (Etype (F), Loc),
-                   New_Copy_Tree (A)));
+                 Unchecked_Convert_To (Etype (F), New_Copy_Tree (A)));
             else
                Append_To (Actuals, New_Copy_Tree (A));
             end if;
@@ -8507,89 +7780,6 @@ package body Exp_Ch6 is
       end if;
    end Install_Class_Preconditions_Check;
 
-   -----------------------------------
-   -- Is_Build_In_Place_Result_Type --
-   -----------------------------------
-
-   function Is_Build_In_Place_Result_Type (Typ : Entity_Id) return Boolean is
-   begin
-      if not Expander_Active then
-         return False;
-      end if;
-
-      --  In Ada 2005 all functions with an inherently limited return type
-      --  must be handled using a build-in-place profile, including the case
-      --  of a function with a limited interface result, where the function
-      --  may return objects of nonlimited descendants.
-
-      if Is_Limited_View (Typ) then
-         return Ada_Version >= Ada_2005 and then not Debug_Flag_Dot_L;
-
-      else
-         if Debug_Flag_Dot_9 then
-            return False;
-         end if;
-
-         if Has_Interfaces (Typ) then
-            return False;
-         end if;
-
-         declare
-            T : Entity_Id := Typ;
-         begin
-            --  For T'Class, return True if it's True for T. This is necessary
-            --  because a class-wide function might say "return F (...)", where
-            --  F returns the corresponding specific type. We need a loop in
-            --  case T is a subtype of a class-wide type.
-
-            while Is_Class_Wide_Type (T) loop
-               T := Etype (T);
-            end loop;
-
-            --  If this is a generic formal type in an instance, return True if
-            --  it's True for the generic actual type.
-
-            if Nkind (Parent (T)) = N_Subtype_Declaration
-              and then Present (Generic_Parent_Type (Parent (T)))
-            then
-               T := Entity (Subtype_Indication (Parent (T)));
-
-               if Present (Full_View (T)) then
-                  T := Full_View (T);
-               end if;
-            end if;
-
-            if Present (Underlying_Type (T)) then
-               T := Underlying_Type (T);
-            end if;
-
-            declare
-               Result : Boolean;
-               --  So we can stop here in the debugger
-            begin
-               --  ???For now, enable build-in-place for a very narrow set of
-               --  controlled types. Change "if True" to "if False" to
-               --  experiment with more controlled types. Eventually, we might
-               --  like to enable build-in-place for all tagged types, all
-               --  types that need finalization, and all caller-unknown-size
-               --  types.
-
-               if True then
-                  Result := Is_Controlled (T)
-                    and then not Is_Generic_Actual_Type (T)
-                    and then Present (Enclosing_Subprogram (T))
-                    and then not Is_Compilation_Unit (Enclosing_Subprogram (T))
-                    and then Ekind (Enclosing_Subprogram (T)) = E_Procedure;
-               else
-                  Result := Is_Controlled (T);
-               end if;
-
-               return Result;
-            end;
-         end;
-      end if;
-   end Is_Build_In_Place_Result_Type;
-
    ------------------------------
    -- Is_Build_In_Place_Entity --
    ------------------------------
@@ -8623,6 +7813,9 @@ package body Exp_Ch6 is
    --------------------------------
 
    function Is_Build_In_Place_Function (E : Entity_Id) return Boolean is
+      Kind : constant Entity_Kind := Ekind (E);
+      Typ  : constant Entity_Id   := Etype (E);
+
    begin
       --  This function is called from Expand_Subtype_From_Expr during
       --  semantic analysis, even when expansion is off. In those cases
@@ -8632,22 +7825,16 @@ package body Exp_Ch6 is
          return False;
       end if;
 
-      if Ekind (E) in E_Function | E_Generic_Function
-        or else (Ekind (E) = E_Subprogram_Type
-                  and then Etype (E) /= Standard_Void_Type)
-      then
-         --  If the function is imported from a foreign language, we don't do
-         --  build-in-place. Note that Import (Ada) functions can do
-         --  build-in-place. Note that it is OK for a build-in-place function
-         --  to return a type with a foreign convention; the build-in-place
-         --  machinery will ensure there is no copying.
+      --  If the function is imported from a foreign language, we don't do
+      --  build-in-place, whereas Import (Ada) functions can do it. Note also
+      --  that it is OK for a build-in-place function to return a type with a
+      --  foreign convention because the machinery ensures there is no copying.
 
-         return Is_Build_In_Place_Result_Type (Etype (E))
-           and then not (Has_Foreign_Convention (E) and then Is_Imported (E))
-           and then not Debug_Flag_Dot_L;
-      else
-         return False;
-      end if;
+      return (Kind in E_Function | E_Generic_Function
+               or else
+             (Kind = E_Subprogram_Type and then Typ /= Standard_Void_Type))
+        and then Is_Build_In_Place_Result_Type (Typ)
+        and then not (Is_Imported (E) and then Has_Foreign_Convention (E));
    end Is_Build_In_Place_Function;
 
    -------------------------------------
@@ -8709,6 +7896,36 @@ package body Exp_Ch6 is
          return Result;
       end;
    end Is_Build_In_Place_Function_Call;
+
+   -----------------------------------
+   -- Is_Build_In_Place_Result_Type --
+   -----------------------------------
+
+   function Is_Build_In_Place_Result_Type (Typ : Entity_Id) return Boolean is
+   begin
+      if not Expander_Active then
+         return False;
+      end if;
+
+      --  In Ada 2005 all functions with an inherently limited return type
+      --  must be handled using a build-in-place profile, including the case
+      --  of a function with a limited interface result, where the function
+      --  may return objects of nonlimited descendants.
+
+      return Is_Limited_View (Typ)
+        and then Ada_Version >= Ada_2005
+        and then not Debug_Flag_Dot_L;
+   end Is_Build_In_Place_Result_Type;
+
+   -------------------------------------
+   -- Is_Build_In_Place_Return_Object --
+   -------------------------------------
+
+   function Is_Build_In_Place_Return_Object (E : Entity_Id) return Boolean is
+   begin
+      return Is_Return_Object (E)
+        and then Is_Build_In_Place_Function (Return_Applies_To (Scope (E)));
+   end Is_Build_In_Place_Return_Object;
 
    -----------------------
    -- Is_Null_Procedure --

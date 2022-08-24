@@ -96,8 +96,7 @@ json::value *
 svalue::to_json () const
 {
   label_text desc = get_desc (true);
-  json::value *sval_js = new json::string (desc.m_buffer);
-  desc.maybe_free ();
+  json::value *sval_js = new json::string (desc.get ());
   return sval_js;
 }
 
@@ -732,8 +731,8 @@ region_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 region_svalue::accept (visitor *v) const
 {
-  v->visit_region_svalue (this);
   m_reg->accept (v);
+  v->visit_region_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for region_svalue.  */
@@ -1031,8 +1030,8 @@ initial_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 initial_svalue::accept (visitor *v) const
 {
-  v->visit_initial_svalue (this);
   m_reg->accept (v);
+  v->visit_initial_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for initial_svalue.  */
@@ -1123,8 +1122,8 @@ unaryop_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 unaryop_svalue::accept (visitor *v) const
 {
-  v->visit_unaryop_svalue (this);
   m_arg->accept (v);
+  v->visit_unaryop_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for unaryop_svalue.  */
@@ -1225,9 +1224,9 @@ binop_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 binop_svalue::accept (visitor *v) const
 {
-  v->visit_binop_svalue (this);
   m_arg0->accept (v);
   m_arg1->accept (v);
+  v->visit_binop_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for binop_svalue.  */
@@ -1283,9 +1282,9 @@ sub_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 sub_svalue::accept (visitor *v) const
 {
-  v->visit_sub_svalue (this);
   m_parent_svalue->accept (v);
   m_subregion->accept (v);
+  v->visit_sub_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for sub_svalue.  */
@@ -1352,8 +1351,8 @@ repeated_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 repeated_svalue::accept (visitor *v) const
 {
-  v->visit_repeated_svalue (this);
   m_inner_svalue->accept (v);
+  v->visit_repeated_svalue (this);
 }
 
 /* Implementation of svalue::all_zeroes_p for repeated_svalue.  */
@@ -1494,8 +1493,8 @@ bits_within_svalue::maybe_fold_bits_within (tree type,
 void
 bits_within_svalue::accept (visitor *v) const
 {
-  v->visit_bits_within_svalue (this);
   m_inner_svalue->accept (v);
+  v->visit_bits_within_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for bits_within_svalue.  */
@@ -1544,9 +1543,9 @@ widening_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 widening_svalue::accept (visitor *v) const
 {
-  v->visit_widening_svalue (this);
   m_base_sval->accept (v);
   m_iter_sval->accept (v);
+  v->visit_widening_svalue (this);
 }
 
 /* Attempt to determine in which direction this value is changing
@@ -1711,8 +1710,8 @@ unmergeable_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 unmergeable_svalue::accept (visitor *v) const
 {
-  v->visit_unmergeable_svalue (this);
   m_arg->accept (v);
+  v->visit_unmergeable_svalue (this);
 }
 
 /* Implementation of svalue::implicitly_live_p vfunc for unmergeable_svalue.  */
@@ -1776,13 +1775,13 @@ compound_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 compound_svalue::accept (visitor *v) const
 {
-  v->visit_compound_svalue (this);
   for (binding_map::iterator_t iter = m_map.begin ();
        iter != m_map.end (); ++iter)
     {
       //(*iter).first.accept (v);
       (*iter).second->accept (v);
     }
+  v->visit_compound_svalue (this);
 }
 
 /* Calculate what the complexity of a compound_svalue instance for MAP
@@ -1903,8 +1902,8 @@ conjured_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 conjured_svalue::accept (visitor *v) const
 {
-  v->visit_conjured_svalue (this);
   m_id_reg->accept (v);
+  v->visit_conjured_svalue (this);
 }
 
 /* class asm_output_svalue : public svalue.  */
@@ -1968,9 +1967,9 @@ asm_output_svalue::input_idx_to_asm_idx (unsigned input_idx) const
 void
 asm_output_svalue::accept (visitor *v) const
 {
-  v->visit_asm_output_svalue (this);
   for (unsigned i = 0; i < m_num_inputs; i++)
     m_input_arr[i]->accept (v);
+  v->visit_asm_output_svalue (this);
 }
 
 /* class const_fn_result_svalue : public svalue.  */
@@ -2021,9 +2020,9 @@ const_fn_result_svalue::dump_input (pretty_printer *pp,
 void
 const_fn_result_svalue::accept (visitor *v) const
 {
-  v->visit_const_fn_result_svalue (this);
   for (unsigned i = 0; i < m_num_inputs; i++)
     m_input_arr[i]->accept (v);
+  v->visit_const_fn_result_svalue (this);
 }
 
 } // namespace ana

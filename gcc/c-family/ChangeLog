@@ -1,3 +1,153 @@
+2022-08-16  Tom Honermann  <tom@honermann.net>
+
+	PR c++/106423
+	* c-opts.cc (c_common_post_options): Disable -Wc++20-compat
+	diagnostics in C++20 and later.
+	* c.opt (Wc++20-compat): Enable hooks for the preprocessor.
+
+2022-08-11  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/102633
+	* c-gimplify.cc (c_gimplify_expr) <case DECL_EXPR>: Don't call
+	suppress_warning here.
+
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	PR preprocessor/106426
+	* c-opts.cc (c_common_post_options): Assign cpp_opts->unsigned_utf8char
+	subject to -fchar8_t, -fsigned-char, and/or -funsigned-char.
+
+2022-08-08  Tom Honermann  <tom@honermann.net>
+
+	* c-lex.cc (lex_string, lex_charconst): Use char8_t as the type
+	of CPP_UTF8CHAR and CPP_UTF8STRING when char8_t support is
+	enabled.
+	* c-opts.cc (c_common_post_options): Set flag_char8_t if
+	targeting C2x.
+
+2022-07-31  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c++/66290
+	* c-common.h: Rename global done_lexing to
+	override_libcpp_locations.
+	* c-common.cc (c_cpp_diagnostic): Likewise.
+	* c-opts.cc (c_common_finish): Set override_libcpp_locations
+	(formerly done_lexing) immediately prior to calling cpp_finish ().
+
+2022-07-27  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-ppoutput.cc (token_streamer::stream): Update input_location
+	prior to streaming each token.
+
+2022-07-23  Immad Mir  <mirimmad@outlook.com>
+
+	* c-attribs.cc: (c_common_attribute_table): add three new attributes
+	namely: fd_arg, fd_arg_read and fd_arg_write.
+	(handle_fd_arg_attribute): New.
+
+2022-07-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104477
+	* c-common.cc (c_common_reswords): Add
+	__reference_constructs_from_temporary and
+	__reference_converts_from_temporary.
+	* c-common.h (enum rid): Add RID_REF_CONSTRUCTS_FROM_TEMPORARY and
+	RID_REF_CONVERTS_FROM_TEMPORARY.
+
+2022-07-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-format.cc (class range_label_for_format_type_mismatch):
+	Adjust to new label_text API.
+
+2022-07-11  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/106252
+	* c-pragma.cc (handle_pragma_diagnostic_impl): Don't look up the
+	option argument prior to verifying the option was found.
+
+2022-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.cc (range_label_for_format_type_mismatch::get_text):
+	Update for removal of label_text::maybe_free in favor of automatic
+	memory management.
+
+2022-07-06  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/53920
+	PR c++/53431
+	* c-common.cc (c_option_is_from_cpp_diagnostics): New function.
+	* c-common.h (c_option_is_from_cpp_diagnostics): Declare.
+	(c_pp_stream_token): Declare.
+	* c-ppoutput.cc (init_pp_output): Refactor logic about skipping
+	pragmas to...
+	(should_output_pragmas): ...here. New function.
+	(token_streamer::stream): Support handling early pragmas.
+	(do_line_change): Likewise.
+	(c_pp_stream_token): New function.
+	* c-pragma.cc (struct pragma_diagnostic_data): New helper class.
+	(pragma_diagnostic_lex_normal): New function. Moved logic for
+	interpreting GCC diagnostic pragmas here.
+	(pragma_diagnostic_lex_pp): New function for parsing diagnostic pragmas
+	directly from libcpp.
+	(handle_pragma_diagnostic): Refactor into helper function...
+	(handle_pragma_diagnostic_impl): ...here.  New function.
+	(handle_pragma_diagnostic_early): New function.
+	(handle_pragma_diagnostic_early_pp): New function.
+	(struct pragma_ns_name): Renamed to...
+	(struct pragma_pp_data): ...this.  Add new "early_handler" member.
+	(c_register_pragma_1): Support early pragmas in the preprocessor.
+	(c_register_pragma_with_early_handler): New function.
+	(c_register_pragma): Support the new early handlers in struct
+	internal_pragma_handler.
+	(c_register_pragma_with_data): Likewise.
+	(c_register_pragma_with_expansion): Likewise.
+	(c_register_pragma_with_expansion_and_data): Likewise.
+	(c_invoke_early_pragma_handler): New function.
+	(c_pp_invoke_early_pragma_handler): New function.
+	(init_pragma): Add early pragma support for diagnostic pragmas.
+	* c-pragma.h (struct internal_pragma_handler): Add new early handler
+	members.
+	(c_register_pragma_with_early_handler): Declare.
+	(c_invoke_early_pragma_handler): Declare.
+	(c_pp_invoke_early_pragma_handler): Declare.
+
+2022-07-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105626
+	* c-format.cc (check_format_arg): Don't emit -Wformat warnings with
+	u8 strings.
+
+2022-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106111
+	* c-common.h (enum rid): Update RID_LAST_CXX20.
+
+2022-06-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* known-headers.cc (get_stdlib_header_for_name): Add <time.h>
+	names.
+
+2022-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87729
+	PR c++/20423
+	* c.opt (Woverloaded-virtual): Add levels, include in -Wall.
+
+2022-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.cc (ubsan_instrument_division, ubsan_instrument_shift):
+	Use flag_sanitize_trap & SANITIZE_??? instead of
+	flag_sanitize_undefined_trap_on_error.  If 2 sanitizers are involved
+	and flag_sanitize_trap differs for them, emit __builtin_trap only
+	for the comparison where trap is requested.
+	(ubsan_instrument_vla, ubsan_instrument_return): Use
+	lag_sanitize_trap & SANITIZE_??? instead of
+	flag_sanitize_undefined_trap_on_error.
+
+2022-06-13  Jason Merrill  <jason@redhat.com>
+
+	* c-ubsan.cc (ubsan_instrument_return): Use BUILTINS_LOCATION.
+
 2022-05-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/90658

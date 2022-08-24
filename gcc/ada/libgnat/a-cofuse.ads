@@ -47,7 +47,10 @@ generic
    --  of equivalence over elements is needed, that is, Equivalent_Elements
    --  defines an element uniquely.
 
-package Ada.Containers.Functional_Sets with SPARK_Mode is
+package Ada.Containers.Functional_Sets with
+  SPARK_Mode,
+  Annotate => (GNATprove, Always_Return)
+is
 
    type Set is private with
      Default_Initial_Condition => Is_Empty (Set),

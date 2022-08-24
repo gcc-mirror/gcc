@@ -36,6 +36,7 @@
 # include <inttypes.h>  /* For PRIu64.  */
 #endif
 #include <string.h>
+#include <stdio.h>  /* For snprintf. */
 #include <assert.h>
 #include <errno.h>
 
@@ -98,6 +99,9 @@ static int num_devices;
 /* Number of GOMP_OFFLOAD_CAP_OPENMP_400 devices.  */
 static int num_devices_openmp;
 
+/* OpenMP requires mask.  */
+static int omp_requires_mask;
+
 /* Similar to gomp_realloc, but release register_lock before gomp_fatal.  */
 
 static void *
@@ -126,18 +130,31 @@ gomp_get_num_devices (void)
 }
 
 static struct gomp_device_descr *
-resolve_device (int device_id)
+resolve_device (int device_id, bool remapped)
 {
-  if (device_id == GOMP_DEVICE_ICV)
+  if (remapped && device_id == GOMP_DEVICE_ICV)
     {
       struct gomp_task_icv *icv = gomp_icv (false);
       device_id = icv->default_device_var;
+      remapped = false;
     }
 
-  if (device_id < 0 || device_id >= gomp_get_num_devices ())
+  if (device_id < 0)
+    {
+      if (device_id == (remapped ? GOMP_DEVICE_HOST_FALLBACK
+				 : omp_initial_device))
+	return NULL;
+      if (device_id == omp_invalid_device)
+	gomp_fatal ("omp_invalid_device encountered");
+      else if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY)
+	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
+		    "but device not found");
+
+      return NULL;
+    }
+  else if (device_id >= gomp_get_num_devices ())
     {
       if (gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY
-	  && device_id != GOMP_DEVICE_HOST_FALLBACK
 	  && device_id != num_devices_openmp)
 	gomp_fatal ("OMP_TARGET_OFFLOAD is set to MANDATORY, "
 		    "but device not found");
@@ -2301,21 +2318,71 @@ gomp_unload_image_from_device (struct gomp_device_descr *devicep,
     }
 }
 
+static void
+gomp_requires_to_name (char *buf, size_t size, int requires_mask)
+{
+  char *end = buf + size, *p = buf;
+  if (requires_mask & GOMP_REQUIRES_UNIFIED_ADDRESS)
+    p += snprintf (p, end - p, "unified_address");
+  if (requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY)
+    p += snprintf (p, end - p, "%sunified_shared_memory",
+		   (p == buf ? "" : ", "));
+  if (requires_mask & GOMP_REQUIRES_REVERSE_OFFLOAD)
+    p += snprintf (p, end - p, "%sreverse_offload",
+		   (p == buf ? "" : ", "));
+}
+
 /* This function should be called from every offload image while loading.
    It gets the descriptor of the host func and var tables HOST_TABLE, TYPE of
-   the target, and TARGET_DATA needed by target plugin.  */
+   the target, and DATA.  */
 
 void
 GOMP_offload_register_ver (unsigned version, const void *host_table,
-			   int target_type, const void *target_data)
+			   int target_type, const void *data)
 {
   int i;
 
   if (GOMP_VERSION_LIB (version) > GOMP_VERSION)
     gomp_fatal ("Library too old for offload (version %u < %u)",
 		GOMP_VERSION, GOMP_VERSION_LIB (version));
-  
+
+  int omp_req;
+  const void *target_data;
+  if (GOMP_VERSION_LIB (version) > 1)
+    {
+      omp_req = (int) (size_t) ((void **) data)[0];
+      target_data = &((void **) data)[1];
+    }
+  else
+    {
+      omp_req = 0;
+      target_data = data;
+    }
+
   gomp_mutex_lock (&register_lock);
+
+  if (omp_req && omp_requires_mask && omp_requires_mask != omp_req)
+    {
+      char buf1[sizeof ("unified_address, unified_shared_memory, "
+			"reverse_offload")];
+      char buf2[sizeof ("unified_address, unified_shared_memory, "
+			"reverse_offload")];
+      gomp_requires_to_name (buf2, sizeof (buf2),
+			     omp_req != GOMP_REQUIRES_TARGET_USED
+			     ? omp_req : omp_requires_mask);
+      if (omp_req != GOMP_REQUIRES_TARGET_USED
+	  && omp_requires_mask != GOMP_REQUIRES_TARGET_USED)
+	{
+	  gomp_requires_to_name (buf1, sizeof (buf1), omp_requires_mask);
+	  gomp_fatal ("OpenMP 'requires' directive with non-identical clauses "
+		      "in multiple compilation units: '%s' vs. '%s'",
+		      buf1, buf2);
+	}
+      else
+	gomp_fatal ("OpenMP 'requires' directive with '%s' specified only in "
+		    "some compilation units", buf2);
+    }
+  omp_requires_mask = omp_req;
 
   /* Load image to all initialized devices.  */
   for (i = 0; i < num_devices; i++)
@@ -2343,6 +2410,8 @@ GOMP_offload_register_ver (unsigned version, const void *host_table,
   gomp_mutex_unlock (&register_lock);
 }
 
+/* Legacy entry point.  */
+
 void
 GOMP_offload_register (const void *host_table, int target_type,
 		       const void *target_data)
@@ -2352,13 +2421,23 @@ GOMP_offload_register (const void *host_table, int target_type,
 
 /* This function should be called from every offload image while unloading.
    It gets the descriptor of the host func and var tables HOST_TABLE, TYPE of
-   the target, and TARGET_DATA needed by target plugin.  */
+   the target, and DATA.  */
 
 void
 GOMP_offload_unregister_ver (unsigned version, const void *host_table,
-			     int target_type, const void *target_data)
+			     int target_type, const void *data)
 {
   int i;
+
+  if (GOMP_VERSION_LIB (version) > GOMP_VERSION)
+    gomp_fatal ("Library too old for offload (version %u < %u)",
+		GOMP_VERSION, GOMP_VERSION_LIB (version));
+
+  const void *target_data;
+  if (GOMP_VERSION_LIB (version) > 1)
+    target_data = &((void **) data)[1];
+  else
+    target_data = data;
 
   gomp_mutex_lock (&register_lock);
 
@@ -2384,6 +2463,8 @@ GOMP_offload_unregister_ver (unsigned version, const void *host_table,
 
   gomp_mutex_unlock (&register_lock);
 }
+
+/* Legacy entry point.  */
 
 void
 GOMP_offload_unregister (const void *host_table, int target_type,
@@ -2588,7 +2669,7 @@ GOMP_target (int device, void (*fn) (void *), const void *unused,
 	     size_t mapnum, void **hostaddrs, size_t *sizes,
 	     unsigned char *kinds)
 {
-  struct gomp_device_descr *devicep = resolve_device (device);
+  struct gomp_device_descr *devicep = resolve_device (device, true);
 
   void *fn_addr;
   if (devicep == NULL
@@ -2647,7 +2728,7 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 		 void **hostaddrs, size_t *sizes, unsigned short *kinds,
 		 unsigned int flags, void **depend, void **args)
 {
-  struct gomp_device_descr *devicep = resolve_device (device);
+  struct gomp_device_descr *devicep = resolve_device (device, true);
   size_t tgt_align = 0, tgt_size = 0;
   bool fpc_done = false;
 
@@ -2805,7 +2886,7 @@ void
 GOMP_target_data (int device, const void *unused, size_t mapnum,
 		  void **hostaddrs, size_t *sizes, unsigned char *kinds)
 {
-  struct gomp_device_descr *devicep = resolve_device (device);
+  struct gomp_device_descr *devicep = resolve_device (device, true);
 
   if (devicep == NULL
       || !(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
@@ -2824,7 +2905,7 @@ void
 GOMP_target_data_ext (int device, size_t mapnum, void **hostaddrs,
 		      size_t *sizes, unsigned short *kinds)
 {
-  struct gomp_device_descr *devicep = resolve_device (device);
+  struct gomp_device_descr *devicep = resolve_device (device, true);
 
   if (devicep == NULL
       || !(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
@@ -2855,7 +2936,7 @@ void
 GOMP_target_update (int device, const void *unused, size_t mapnum,
 		    void **hostaddrs, size_t *sizes, unsigned char *kinds)
 {
-  struct gomp_device_descr *devicep = resolve_device (device);
+  struct gomp_device_descr *devicep = resolve_device (device, true);
 
   if (devicep == NULL
       || !(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
@@ -2870,7 +2951,7 @@ GOMP_target_update_ext (int device, size_t mapnum, void **hostaddrs,
 			size_t *sizes, unsigned short *kinds,
 			unsigned int flags, void **depend)
 {
-  struct gomp_device_descr *devicep = resolve_device (device);
+  struct gomp_device_descr *devicep = resolve_device (device, true);
 
   /* If there are depend clauses, but nowait is not present,
      block the parent task until the dependencies are resolved
@@ -3063,7 +3144,7 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 			     size_t *sizes, unsigned short *kinds,
 			     unsigned int flags, void **depend)
 {
-  struct gomp_device_descr *devicep = resolve_device (device);
+  struct gomp_device_descr *devicep = resolve_device (device, true);
 
   /* If there are depend clauses, but nowait is not present,
      block the parent task until the dependencies are resolved
@@ -3296,13 +3377,11 @@ GOMP_teams4 (unsigned int num_teams_low, unsigned int num_teams_high,
 void *
 omp_target_alloc (size_t size, int device_num)
 {
-  if (device_num == gomp_get_num_devices ())
+  if (device_num == omp_initial_device
+      || device_num == gomp_get_num_devices ())
     return malloc (size);
 
-  if (device_num < 0)
-    return NULL;
-
-  struct gomp_device_descr *devicep = resolve_device (device_num);
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
   if (devicep == NULL)
     return NULL;
 
@@ -3319,20 +3398,15 @@ omp_target_alloc (size_t size, int device_num)
 void
 omp_target_free (void *device_ptr, int device_num)
 {
-  if (device_ptr == NULL)
-    return;
-
-  if (device_num == gomp_get_num_devices ())
+  if (device_num == omp_initial_device
+      || device_num == gomp_get_num_devices ())
     {
       free (device_ptr);
       return;
     }
 
-  if (device_num < 0)
-    return;
-
-  struct gomp_device_descr *devicep = resolve_device (device_num);
-  if (devicep == NULL)
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
+  if (devicep == NULL || device_ptr == NULL)
     return;
 
   if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
@@ -3350,18 +3424,16 @@ omp_target_free (void *device_ptr, int device_num)
 int
 omp_target_is_present (const void *ptr, int device_num)
 {
-  if (ptr == NULL)
+  if (device_num == omp_initial_device
+      || device_num == gomp_get_num_devices ())
     return 1;
 
-  if (device_num == gomp_get_num_devices ())
-    return 1;
-
-  if (device_num < 0)
-    return 0;
-
-  struct gomp_device_descr *devicep = resolve_device (device_num);
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
   if (devicep == NULL)
     return 0;
+
+  if (ptr == NULL)
+    return 1;
 
   if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
       || devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
@@ -3384,12 +3456,11 @@ omp_target_memcpy_check (int dst_device_num, int src_device_num,
 			 struct gomp_device_descr **dst_devicep,
 			 struct gomp_device_descr **src_devicep)
 {
-  if (dst_device_num != gomp_get_num_devices ())
+  if (dst_device_num != gomp_get_num_devices ()
+      /* Above gomp_get_num_devices has to be called unconditionally.  */
+      && dst_device_num != omp_initial_device)
     {
-      if (dst_device_num < 0)
-	return EINVAL;
-
-      *dst_devicep = resolve_device (dst_device_num);
+      *dst_devicep = resolve_device (dst_device_num, false);
       if (*dst_devicep == NULL)
 	return EINVAL;
 
@@ -3398,12 +3469,10 @@ omp_target_memcpy_check (int dst_device_num, int src_device_num,
 	*dst_devicep = NULL;
     }
 
-  if (src_device_num != num_devices_openmp)
+  if (src_device_num != num_devices_openmp
+      && src_device_num != omp_initial_device)
     {
-      if (src_device_num < 0)
-	return EINVAL;
-
-      *src_devicep = resolve_device (src_device_num);
+      *src_devicep = resolve_device (src_device_num, false);
       if (*src_devicep == NULL)
 	return EINVAL;
 
@@ -3767,13 +3836,11 @@ int
 omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
 			  size_t size, size_t device_offset, int device_num)
 {
-  if (device_num == gomp_get_num_devices ())
+  if (device_num == omp_initial_device
+      || device_num == gomp_get_num_devices ())
     return EINVAL;
 
-  if (device_num < 0)
-    return EINVAL;
-
-  struct gomp_device_descr *devicep = resolve_device (device_num);
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
   if (devicep == NULL)
     return EINVAL;
 
@@ -3830,13 +3897,7 @@ omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
 int
 omp_target_disassociate_ptr (const void *ptr, int device_num)
 {
-  if (device_num == gomp_get_num_devices ())
-    return EINVAL;
-
-  if (device_num < 0)
-    return EINVAL;
-
-  struct gomp_device_descr *devicep = resolve_device (device_num);
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
   if (devicep == NULL)
     return EINVAL;
 
@@ -3872,13 +3933,11 @@ omp_target_disassociate_ptr (const void *ptr, int device_num)
 void *
 omp_get_mapped_ptr (const void *ptr, int device_num)
 {
-  if (device_num < 0 || device_num > gomp_get_num_devices ())
-    return NULL;
-
-  if (device_num == omp_get_initial_device ())
+  if (device_num == omp_initial_device
+      || device_num == omp_get_initial_device ())
     return (void *) ptr;
 
-  struct gomp_device_descr *devicep = resolve_device (device_num);
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
   if (devicep == NULL)
     return NULL;
 
@@ -3910,13 +3969,11 @@ omp_get_mapped_ptr (const void *ptr, int device_num)
 int
 omp_target_is_accessible (const void *ptr, size_t size, int device_num)
 {
-  if (device_num < 0 || device_num > gomp_get_num_devices ())
-    return false;
-
-  if (device_num == gomp_get_num_devices ())
+  if (device_num == omp_initial_device
+      || device_num == gomp_get_num_devices ())
     return true;
 
-  struct gomp_device_descr *devicep = resolve_device (device_num);
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
   if (devicep == NULL)
     return false;
 
@@ -3929,10 +3986,14 @@ int
 omp_pause_resource (omp_pause_resource_t kind, int device_num)
 {
   (void) kind;
-  if (device_num == gomp_get_num_devices ())
+  if (device_num == omp_initial_device
+      || device_num == gomp_get_num_devices ())
     return gomp_pause_host ();
-  if (device_num < 0 || device_num >= num_devices_openmp)
+
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
+  if (devicep == NULL)
     return -1;
+
   /* Do nothing for target devices for now.  */
   return 0;
 }
@@ -4132,8 +4193,30 @@ gomp_target_init (void)
 
 	if (gomp_load_plugin_for_device (&current_device, plugin_name))
 	  {
-	    new_num_devs = current_device.get_num_devices_func ();
-	    if (new_num_devs >= 1)
+	    int omp_req = omp_requires_mask & ~GOMP_REQUIRES_TARGET_USED;
+	    new_num_devs = current_device.get_num_devices_func (omp_req);
+	    if (gomp_debug_var > 0 && new_num_devs < 0)
+	      {
+		bool found = false;
+		int type = current_device.get_type_func ();
+		for (int img = 0; img < num_offload_images; img++)
+		  if (type == offload_images[img].type)
+		    found = true;
+		if (found)
+		  {
+		    char buf[sizeof ("unified_address, unified_shared_memory, "
+				     "reverse_offload")];
+		    gomp_requires_to_name (buf, sizeof (buf), omp_req);
+		    char *name = (char *) malloc (cur_len + 1);
+		    memcpy (name, cur, cur_len);
+		    name[cur_len] = '\0';
+		    gomp_debug (1,
+				"%s devices present but 'omp requires %s' "
+				"cannot be fulfilled\n", name, buf);
+		    free (name);
+		  }
+	      }
+	    else if (new_num_devs >= 1)
 	      {
 		/* Augment DEVICES and NUM_DEVICES.  */
 

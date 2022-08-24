@@ -1,3 +1,27 @@
+2022-08-22  Martin Liska  <mliska@suse.cz>
+
+	PR lto/106700
+	* lto.cc (wait_for_child): Ask if we are connected to jobserver.
+	(stream_out_partitions): Likewise.
+
+2022-08-10  Martin Liska  <mliska@suse.cz>
+
+	PR lto/106328
+	* lto.cc (wait_for_child): Decrement nruns once a process
+	finishes.
+	(stream_out_partitions): Use job server if active.
+	(do_whole_program_analysis): Likewise.
+
+2022-07-08  Martin Liska  <mliska@suse.cz>
+
+	* lto-dump.cc (lto_main): Exit in the function
+	as we don't want any LTO bytecode processing.
+
+2022-06-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* lto-dump.cc: Add "final" and "override" to various vfunc
+	implementations, removing redundant "virtual" as appropriate.
+
 2022-05-16  Martin Liska  <mliska@suse.cz>
 
 	* lto-common.cc (lto_resolution_read): Use ARRAY_SIZE.

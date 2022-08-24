@@ -233,8 +233,19 @@ enum gomp_map_kind
 #define GOMP_DEVICE_HSA			7
 #define GOMP_DEVICE_GCN			8
 
+/* We have a compatibility issue.  OpenMP 5.2 introduced
+   omp_initial_device with value of -1 which clashes with our
+   GOMP_DEVICE_ICV, so we need to remap user supplied device
+   ids, -1 (aka omp_initial_device) to GOMP_DEVICE_HOST_FALLBACK,
+   and -2 (one of many non-conforming device numbers, but with
+   OMP_TARGET_OFFLOAD=mandatory needs to be treated a
+   omp_invalid_device) to -3 (so that for dev_num >= -2U we can
+   subtract 1).  -4 is then what we use for omp_invalid_device,
+   which unlike the other non-conforming device numbers results
+   in fatal error regardless of OMP_TARGET_OFFLOAD.  */
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
+#define GOMP_DEVICE_INVALID		-4
 
 /* GOMP_task/GOMP_taskloop* flags argument.  */
 #define GOMP_TASK_FLAG_UNTIED		(1 << 0)
@@ -271,7 +282,7 @@ enum gomp_map_kind
 /* Versions of libgomp and device-specific plugins.  GOMP_VERSION
    should be incremented whenever an ABI-incompatible change is introduced
    to the plugin interface defined in libgomp/libgomp.h.  */
-#define GOMP_VERSION	1
+#define GOMP_VERSION	2
 #define GOMP_VERSION_NVIDIA_PTX 1
 #define GOMP_VERSION_INTEL_MIC 0
 #define GOMP_VERSION_GCN 2
@@ -329,6 +340,12 @@ enum gomp_map_kind
 #define GOMP_DEPEND_INOUT		3
 #define GOMP_DEPEND_MUTEXINOUTSET	4
 #define GOMP_DEPEND_INOUTSET		5
+
+/* Flag values for OpenMP 'requires' directive features.  */
+#define GOMP_REQUIRES_UNIFIED_ADDRESS       0x10
+#define GOMP_REQUIRES_UNIFIED_SHARED_MEMORY 0x20
+#define GOMP_REQUIRES_REVERSE_OFFLOAD       0x80
+#define GOMP_REQUIRES_TARGET_USED           0x200
 
 /* HSA specific data structures.  */
 

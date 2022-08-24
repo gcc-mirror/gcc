@@ -3100,7 +3100,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 }; // class pass_early_inline
 
@@ -3150,7 +3150,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual unsigned int execute (function *) { return ipa_inline (); }
+  unsigned int execute (function *) final override { return ipa_inline (); }
 
 }; // class pass_ipa_inline
 

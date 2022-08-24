@@ -635,9 +635,19 @@ public:
 
                 this.match!destroyIfOwner;
 
-                mixin("Storage newStorage = { ",
-                    Storage.memberName!T, ": forward!rhs",
-                " };");
+                static if (isCopyable!T)
+                {
+                    // Workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                    mixin("Storage newStorage = { ",
+                        Storage.memberName!T, ": __ctfe ? rhs : forward!rhs",
+                    " };");
+                }
+                else
+                {
+                    mixin("Storage newStorage = { ",
+                        Storage.memberName!T, ": forward!rhs",
+                    " };");
+                }
 
                 storage = newStorage;
                 tag = tid;
@@ -678,7 +688,17 @@ public:
         {
             import core.lifetime : move;
 
-            rhs.match!((ref value) { this = move(value); });
+            rhs.match!((ref value) {
+                static if (isCopyable!(typeof(value)))
+                {
+                    // Workaround for https://issues.dlang.org/show_bug.cgi?id=21542
+                    this = __ctfe ? value : move(value);
+                }
+                else
+                {
+                    this = move(value);
+                }
+            });
             return this;
         }
     }
@@ -1313,6 +1333,7 @@ version (D_BetterC) {} else
 // Types with invariants
 // Disabled in BetterC due to use of exceptions
 version (D_BetterC) {} else
+version (D_Invariants)
 @system unittest
 {
     import std.exception : assertThrown;
@@ -1330,22 +1351,13 @@ version (D_BetterC) {} else
         invariant { assert(i >= 0); }
     }
 
-    // Only run test if contract checking is enabled
-    try
-    {
-        S probe = S(-1);
-        assert(&probe);
-    }
-    catch (AssertError _)
-    {
-        SumType!S x;
-        x.match!((ref v) { v.i = -1; });
-        assertThrown!AssertError(assert(&x));
+    SumType!S x;
+    x.match!((ref v) { v.i = -1; });
+    assertThrown!AssertError(assert(&x));
 
-        SumType!C y = new C();
-        y.match!((ref v) { v.i = -1; });
-        assertThrown!AssertError(assert(&y));
-    }
+    SumType!C y = new C();
+    y.match!((ref v) { v.i = -1; });
+    assertThrown!AssertError(assert(&y));
 }
 
 // Calls value postblit on self-assignment
@@ -1575,6 +1587,28 @@ version (D_BetterC) {} else
     {
         return inout(SumType!(int[]))(arr);
     }
+}
+
+// Assignment of struct with overloaded opAssign in CTFE
+// https://issues.dlang.org/show_bug.cgi?id=23182
+@safe unittest
+{
+    static struct HasOpAssign
+    {
+        void opAssign(HasOpAssign rhs) {}
+    }
+
+    static SumType!HasOpAssign test()
+    {
+        SumType!HasOpAssign s;
+        // Test both overloads
+        s = HasOpAssign();
+        s = SumType!HasOpAssign();
+        return s;
+    }
+
+    // Force CTFE
+    enum result = test();
 }
 
 /// True if `T` is an instance of the `SumType` template, otherwise false.
@@ -1907,79 +1941,8 @@ private template matchImpl(Flag!"exhaustive" exhaustive, handlers...)
     auto ref matchImpl(SumTypes...)(auto ref SumTypes args)
     if (allSatisfy!(isSumType, SumTypes) && args.length > 0)
     {
-        enum typeCount(SumType) = SumType.Types.length;
         alias stride(size_t i) = .stride!(i, Map!(typeCount, SumTypes));
-
-        /* A TagTuple represents a single possible set of tags that `args`
-         * could have at runtime.
-         *
-         * Because D does not allow a struct to be the controlling expression
-         * of a switch statement, we cannot dispatch on the TagTuple directly.
-         * Instead, we must map each TagTuple to a unique integer and generate
-         * a case label for each of those integers.
-         *
-         * This mapping is implemented in `fromCaseId` and `toCaseId`. It uses
-         * the same technique that's used to map index tuples to memory offsets
-         * in a multidimensional static array.
-         *
-         * For example, when `args` consists of two SumTypes with two member
-         * types each, the TagTuples corresponding to each case label are:
-         *
-         *   case 0:  TagTuple([0, 0])
-         *   case 1:  TagTuple([1, 0])
-         *   case 2:  TagTuple([0, 1])
-         *   case 3:  TagTuple([1, 1])
-         *
-         * When there is only one argument, the caseId is equal to that
-         * argument's tag.
-         */
-        static struct TagTuple
-        {
-            size_t[SumTypes.length] tags;
-            alias tags this;
-
-            invariant
-            {
-                static foreach (i; 0 .. tags.length)
-                {
-                    assert(tags[i] < SumTypes[i].Types.length, "Invalid tag");
-                }
-            }
-
-            this(ref const(SumTypes) args)
-            {
-                static foreach (i; 0 .. tags.length)
-                {
-                    tags[i] = args[i].tag;
-                }
-            }
-
-            static TagTuple fromCaseId(size_t caseId)
-            {
-                TagTuple result;
-
-                // Most-significant to least-significant
-                static foreach_reverse (i; 0 .. result.length)
-                {
-                    result[i] = caseId / stride!i;
-                    caseId %= stride!i;
-                }
-
-                return result;
-            }
-
-            size_t toCaseId()
-            {
-                size_t result;
-
-                static foreach (i; 0 .. tags.length)
-                {
-                    result += tags[i] * stride!i;
-                }
-
-                return result;
-            }
-        }
+        alias TagTuple = .TagTuple!(SumTypes);
 
         /*
          * A list of arguments to be passed to a handler needed for the case
@@ -2112,6 +2075,81 @@ private template matchImpl(Flag!"exhaustive" exhaustive, handlers...)
         }
 
         assert(false, "unreachable");
+    }
+}
+
+private enum typeCount(SumType) = SumType.Types.length;
+
+/* A TagTuple represents a single possible set of tags that `args`
+ * could have at runtime.
+ *
+ * Because D does not allow a struct to be the controlling expression
+ * of a switch statement, we cannot dispatch on the TagTuple directly.
+ * Instead, we must map each TagTuple to a unique integer and generate
+ * a case label for each of those integers.
+ *
+ * This mapping is implemented in `fromCaseId` and `toCaseId`. It uses
+ * the same technique that's used to map index tuples to memory offsets
+ * in a multidimensional static array.
+ *
+ * For example, when `args` consists of two SumTypes with two member
+ * types each, the TagTuples corresponding to each case label are:
+ *
+ *   case 0:  TagTuple([0, 0])
+ *   case 1:  TagTuple([1, 0])
+ *   case 2:  TagTuple([0, 1])
+ *   case 3:  TagTuple([1, 1])
+ *
+ * When there is only one argument, the caseId is equal to that
+ * argument's tag.
+ */
+private struct TagTuple(SumTypes...)
+{
+    size_t[SumTypes.length] tags;
+    alias tags this;
+
+    alias stride(size_t i) = .stride!(i, Map!(typeCount, SumTypes));
+
+    invariant
+    {
+        static foreach (i; 0 .. tags.length)
+        {
+            assert(tags[i] < SumTypes[i].Types.length, "Invalid tag");
+        }
+    }
+
+    this(ref const(SumTypes) args)
+    {
+        static foreach (i; 0 .. tags.length)
+        {
+            tags[i] = args[i].tag;
+        }
+    }
+
+    static TagTuple fromCaseId(size_t caseId)
+    {
+        TagTuple result;
+
+        // Most-significant to least-significant
+        static foreach_reverse (i; 0 .. result.length)
+        {
+            result[i] = caseId / stride!i;
+            caseId %= stride!i;
+        }
+
+        return result;
+    }
+
+    size_t toCaseId()
+    {
+        size_t result;
+
+        static foreach (i; 0 .. tags.length)
+        {
+            result += tags[i] * stride!i;
+        }
+
+        return result;
     }
 }
 

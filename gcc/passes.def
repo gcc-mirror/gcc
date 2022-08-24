@@ -253,7 +253,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
-      NEXT_PASS (pass_cse_sincos);
+      NEXT_PASS (pass_expand_powcabs);
       NEXT_PASS (pass_optimize_bswap);
       NEXT_PASS (pass_laddress);
       NEXT_PASS (pass_lim);
@@ -328,6 +328,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_simduid_cleanup);
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_lower_switch);
+      NEXT_PASS (pass_cse_sincos);
       NEXT_PASS (pass_cse_reciprocals);
       NEXT_PASS (pass_reassoc, false /* early_p */);
       NEXT_PASS (pass_strength_reduction);

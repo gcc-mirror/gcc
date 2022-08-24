@@ -38,7 +38,7 @@ First we need to include the relevant header:
   #include <libgccjit.h>
 
 All state associated with compilation is associated with a
-:c:type:`gcc_jit_context *`.
+:c:expr:`gcc_jit_context *`.
 
 Create one using :c:func:`gcc_jit_context_acquire`:
 
@@ -50,7 +50,7 @@ Create one using :c:func:`gcc_jit_context_acquire`:
 The JIT library has a system of types.  It is statically-typed: every
 expression is of a specific type, fixed at compile-time.  In our example,
 all of the expressions are of the C `int` type, so let's obtain this from
-the context, as a :c:type:`gcc_jit_type *`, using
+the context, as a :c:expr:`gcc_jit_type *`, using
 :c:func:`gcc_jit_context_get_type`:
 
 .. code-block:: c
@@ -58,8 +58,8 @@ the context, as a :c:type:`gcc_jit_type *`, using
   gcc_jit_type *int_type =
     gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_INT);
 
-:c:type:`gcc_jit_type *` is an example of a "contextual" object: every
-entity in the API is associated with a :c:type:`gcc_jit_context *`.
+:c:expr:`gcc_jit_type *` is an example of a "contextual" object: every
+entity in the API is associated with a :c:expr:`gcc_jit_context *`.
 
 Memory management is easy: all such "contextual" objects are automatically
 cleaned up for you when the context is released, using
@@ -93,7 +93,7 @@ For example, :c:func:`gcc_jit_type_as_object`:
 
    gcc_jit_object *obj = gcc_jit_type_as_object (int_type);
 
-One thing you can do with a :c:type:`gcc_jit_object *` is
+One thing you can do with a :c:expr:`gcc_jit_object *` is
 to ask it for a human-readable description, using
 :c:func:`gcc_jit_object_get_debug_string`:
 
@@ -157,8 +157,8 @@ We can build the expression using :c:func:`gcc_jit_context_new_binary_op`:
        gcc_jit_param_as_rvalue (param_i),
        gcc_jit_param_as_rvalue (param_i));
 
-A :c:type:`gcc_jit_rvalue *` is another example of a
-:c:type:`gcc_jit_object *` subclass.  We can upcast it using
+A :c:expr:`gcc_jit_rvalue *` is another example of a
+:c:expr:`gcc_jit_object *` subclass.  We can upcast it using
 :c:func:`gcc_jit_rvalue_as_object` and as before print it with
 :c:func:`gcc_jit_object_get_debug_string`.
 
@@ -190,7 +190,7 @@ OK, we've populated the context.  We can now compile it using
    gcc_jit_result *result;
    result = gcc_jit_context_compile (ctxt);
 
-and get a :c:type:`gcc_jit_result *`.
+and get a :c:expr:`gcc_jit_result *`.
 
 At this point we're done with the context; we can release it:
 
@@ -332,7 +332,7 @@ before compiling:
         .cfi_endproc
   .LFE6:
         .size   square, .-square
-        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2-0.5.1920c315ff984892399893b380305ab36e07b455.fc20)"
+        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2)"
         .section       .note.GNU-stack,"",@progbits
 
 By default, no optimizations are performed, the equivalent of GCC's
@@ -364,7 +364,7 @@ By default, no optimizations are performed, the equivalent of GCC's
         .cfi_endproc
   .LFE7:
         .size   square, .-square
-        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2-0.5.1920c315ff984892399893b380305ab36e07b455.fc20)"
+        .ident  "GCC: (GNU) 4.9.0 20131023 (Red Hat 0.2)"
         .section        .note.GNU-stack,"",@progbits
 
 Naturally this has only a small effect on such a trivial function.

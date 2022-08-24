@@ -436,7 +436,7 @@ namespace __detail
     __from_chars_alnum_to_val(unsigned char __c)
     {
       if _GLIBCXX17_CONSTEXPR (_DecOnly)
-	return __c - '0';
+	return static_cast<unsigned char>(__c - '0');
       else
 	{
 	  // This initializer is deliberately made dependent in order to work

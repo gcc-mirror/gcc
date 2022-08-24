@@ -1,3 +1,59 @@
+2022-08-01  Martin Liska  <mliska@suse.cz>
+
+	PR lto/106170
+	* configure.ac: Replace $target with $host.
+	* configure: Regenerate.
+
+2022-07-14  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/106156
+	* Makefile.am: Use ac_lto_plugin_extra_ldflags for AM_LDFLAGS.
+	* configure.ac: Use AC_SUBST(ac_lto_plugin_extra_ldflags).
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2022-07-12  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (negotiate_api_version): New.
+	(onload): Negotiate API version.
+	* Makefile.am: Add -DBASE_VERSION.
+	* Makefile.in: Regenerate.
+
+2022-07-07  Martin Liska  <mliska@suse.cz>
+
+	PR lto/106170
+	* configure.ac: Configure HAVE_PTHREAD_LOCKING.
+	* lto-plugin.c (LOCK_SECTION): New.
+	(UNLOCK_SECTION): New.
+	(claim_file_handler): Use the newly added macros.
+	(onload): Likewise.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2022-07-01  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
+
+	PR lto/106118
+	* configure.ac: Move -pthread from here...
+	* Makefile.am: ...to here.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+
+2022-06-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (plugin_lock): New lock.
+	(claim_file_handler): Use mutex for critical section.
+	(onload): Initialize mutex.
+	* configure.ac: Check for pthread.h.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2022-06-20  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (struct plugin_file_info): Add skip_file flag.
+	(write_resolution): Write resolution only if get_symbols != LDPS_NO_SYMS.
+	(all_symbols_read_handler): Ignore file if skip_file is true.
+	(onload): Handle LDPT_GET_SYMBOLS_V3.
+
 2022-05-04  Martin Liska  <mliska@suse.cz>
 
 	* lto-plugin.c (struct plugin_objfile): Use bool for offset

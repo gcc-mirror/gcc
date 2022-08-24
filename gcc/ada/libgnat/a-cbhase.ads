@@ -369,6 +369,25 @@ is
      (Container : Set)
       return Set_Iterator_Interfaces.Forward_Iterator'Class;
 
+   --  Ada 2022 features:
+
+   function Has_Element (Container : Set; Position : Cursor) return Boolean;
+
+   function Tampering_With_Cursors_Prohibited (Container : Set) return Boolean;
+
+   function Element (Container : Set; Position : Cursor) return Element_Type;
+
+   procedure Query_Element
+     (Container : Set;
+      Position  : Cursor;
+      Process   : not null access procedure (Element : Element_Type));
+
+   function Next (Container : Set; Position : Cursor) return Cursor;
+
+   procedure Next (Container : Set; Position : in out Cursor);
+
+   ----------------
+
    generic
       type Key_Type (<>) is private;
 
@@ -383,6 +402,9 @@ is
       function Key (Position : Cursor) return Key_Type;
       --  Applies generic formal operation Key to the element of the node
       --  designated by Position.
+
+      function Key (Container : Set; Position : Cursor) return Key_Type is
+        (Key (Element (Container, Position)));
 
       function Element (Container : Set; Key : Key_Type) return Element_Type;
       --  Searches (as per the key-based Find) for the node containing Key, and
@@ -574,10 +596,9 @@ private
 
    for Constant_Reference_Type'Write use Write;
 
-   --  Three operations are used to optimize in the expansion of "for ... of"
-   --  loops: the Next(Cursor) procedure in the visible part, and the following
-   --  Pseudo_Reference and Get_Element_Access functions. See Sem_Ch5 for
-   --  details.
+   --  See Ada.Containers.Vectors for documentation on the following
+
+   procedure _Next (Position : in out Cursor) renames Next;
 
    function Pseudo_Reference
      (Container : aliased Set'Class) return Reference_Control_Type;

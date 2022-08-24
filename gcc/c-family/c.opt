@@ -455,7 +455,7 @@ Wc++2a-compat
 C++ ObjC++ Warning Alias(Wc++20-compat) Undocumented
 
 Wc++20-compat
-C++ ObjC++ Var(warn_cxx20_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
+C++ ObjC++ Var(warn_cxx20_compat) Warning LangEnabledBy(C++ ObjC++,Wall) Init(0) CPP(cpp_warn_cxx20_compat) CppReason(CPP_W_CXX20_COMPAT)
 Warn about C++ constructs whose meaning differs between ISO C++ 2017 and ISO C++ 2020.
 
 Wc++11-extensions
@@ -1126,7 +1126,11 @@ C ObjC C++ ObjC++ Var(warn_overlength_strings) Warning LangEnabledBy(C ObjC C++ 
 Warn if a string is longer than the maximum portable length specified by the standard.
 
 Woverloaded-virtual
-C++ ObjC++ Var(warn_overloaded_virtual) Warning
+C++ ObjC++ Warning Alias(Woverloaded-virtual=,2,0)
+Warn about overloaded virtual function names.
+
+Woverloaded-virtual=
+C++ ObjC++ Joined UInteger IntegerRange(0,2) Var(warn_overloaded_virtual) Warning LangEnabledBy(C++ ObjC++,Wall,1,0)
 Warn about overloaded virtual function names.
 
 Woverride-init

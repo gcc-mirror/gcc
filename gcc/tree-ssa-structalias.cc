@@ -8085,7 +8085,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_pta; }
+  bool gate (function *) final override { return flag_tree_pta; }
 
 }; // class pass_build_alias
 
@@ -8123,7 +8123,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_tree_pta; }
+  bool gate (function *) final override { return flag_tree_pta; }
 
 }; // class pass_build_ealias
 
@@ -8737,7 +8737,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return (optimize
 	      && flag_ipa_pta
@@ -8745,9 +8745,12 @@ public:
 	      && !seen_error ());
     }
 
-  opt_pass * clone () { return new pass_ipa_pta (m_ctxt); }
+  opt_pass * clone () final override { return new pass_ipa_pta (m_ctxt); }
 
-  virtual unsigned int execute (function *) { return ipa_pta_execute (); }
+  unsigned int execute (function *) final override
+  {
+    return ipa_pta_execute ();
+  }
 
 }; // class pass_ipa_pta
 

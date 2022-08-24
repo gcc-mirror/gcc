@@ -176,9 +176,9 @@ class FileException : Exception
     private this(scope const(char)[] name, scope const(char)[] msg, string file, size_t line, uint errno) @safe pure
     {
         if (msg.empty)
-            super(name.idup, file, line);
+            super(name is null ? "(null)" : name.idup, file, line);
         else
-            super(text(name, ": ", msg), file, line);
+            super(text(name is null ? "(null)" : name, ": ", msg), file, line);
 
         this.errno = errno;
     }
@@ -1067,11 +1067,38 @@ private void removeImpl(scope const(char)[] name, scope const(FSChar)* namez) @t
         if (!name)
         {
             import core.stdc.string : strlen;
-            auto len = strlen(namez);
+
+            auto len = namez ? strlen(namez) : 0;
             name = namez[0 .. len];
         }
         cenforce(core.stdc.stdio.remove(namez) == 0,
-            "Failed to remove file " ~ name);
+            "Failed to remove file " ~ (name is null ? "(null)" : name));
+    }
+}
+
+@safe unittest
+{
+    import std.exception : collectExceptionMsg, assertThrown;
+
+    string filename = null; // e.g. as returned by File.tmpfile.name
+
+    version (linux)
+    {
+        // exact exception message is OS-dependent
+        auto msg = filename.remove.collectExceptionMsg!FileException;
+        assert("Failed to remove file (null): Bad address" == msg, msg);
+    }
+    else version (Windows)
+    {
+        import std.algorithm.searching : startsWith;
+
+        // don't test exact message on windows, it's language dependent
+        auto msg = filename.remove.collectExceptionMsg!FileException;
+        assert(msg.startsWith("(null):"), msg);
+    }
+    else
+    {
+        assertThrown!FileException(filename.remove);
     }
 }
 
@@ -1483,7 +1510,7 @@ private
         ushort bitmapcount, reserved;
         attrgroup_t commonattr, volattr, dirattr, fileattr, forkattr;
     }
-    extern(C) int setattrlist(in char* path, scope ref attrlist attrs,
+    extern(C) int setattrlist(scope const(char)* path, scope ref attrlist attrs,
         scope void* attrbuf, size_t attrBufSize, c_ulong options) nothrow @nogc @system;
 }
 
@@ -3610,7 +3637,7 @@ version (StdDdoc)
             Throws:
                 $(LREF FileException) if the file does not exist.
         +/
-        this(string path);
+        this(return scope string path);
 
         version (Windows)
         {
@@ -3772,7 +3799,7 @@ else version (Windows)
     public:
         alias name this;
 
-        this(string path)
+        this(return scope string path)
         {
             import std.datetime.systime : FILETIMEToSysTime;
 
@@ -3881,7 +3908,7 @@ else version (Posix)
     public:
         alias name this;
 
-        this(string path)
+        this(return scope string path)
         {
             if (!path.exists)
                 throw new FileException(path, "File does not exist");
@@ -4424,7 +4451,7 @@ void rmdirRecurse(scope const(char)[] pathname) @safe
 }
 
 /// ditto
-void rmdirRecurse(ref DirEntry de) @safe
+void rmdirRecurse(ref scope DirEntry de) @safe
 {
     if (!de.isDir)
         throw new FileException(de.name, "Not a directory");
@@ -4459,7 +4486,7 @@ void rmdirRecurse(ref DirEntry de) @safe
 //"rmdirRecurse(in char[] pathname)" implementation. That is needlessly
 //expensive.
 //A DirEntry is a bit big (72B), so keeping the "by ref" signature is desirable.
-void rmdirRecurse(DirEntry de) @safe
+void rmdirRecurse(scope DirEntry de) @safe
 {
     rmdirRecurse(de);
 }
@@ -4511,22 +4538,20 @@ version (Posix) @system unittest
     enforce(!exists(deleteme));
 }
 
-@system unittest
+@safe unittest
 {
-    void[] buf;
-
-    buf = new void[10];
-    (cast(byte[]) buf)[] = 3;
+    ubyte[] buf = new ubyte[10];
+    buf[] = 3;
     string unit_file = deleteme ~ "-unittest_write.tmp";
     if (exists(unit_file)) remove(unit_file);
-    write(unit_file, buf);
+    write(unit_file, cast(void[]) buf);
     void[] buf2 = read(unit_file);
-    assert(buf == buf2);
+    assert(cast(void[]) buf == buf2);
 
     string unit2_file = deleteme ~ "-unittest_write2.tmp";
     copy(unit_file, unit2_file);
     buf2 = read(unit2_file);
-    assert(buf == buf2);
+    assert(cast(void[]) buf == buf2);
 
     remove(unit_file);
     assert(!exists(unit_file));
@@ -5042,7 +5067,7 @@ auto dirEntries(string path, string pattern, SpanMode mode,
     return filter!f(DirIterator(path, mode, followSymlink));
 }
 
-@system unittest
+@safe unittest
 {
     import std.stdio : writefln;
     immutable dpath = deleteme ~ "_dir";
@@ -5059,11 +5084,11 @@ auto dirEntries(string path, string pattern, SpanMode mode,
 
     mkdir(dpath);
     write(fpath, "hello world");
-    version (Posix)
+    version (Posix) () @trusted
     {
         core.sys.posix.unistd.symlink((dpath ~ '\0').ptr, (sdpath ~ '\0').ptr);
         core.sys.posix.unistd.symlink((fpath ~ '\0').ptr, (sfpath ~ '\0').ptr);
-    }
+    } ();
 
     static struct Flags { bool dir, file, link; }
     auto tests = [dpath : Flags(true), fpath : Flags(false, true)];

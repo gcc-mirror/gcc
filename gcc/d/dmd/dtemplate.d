@@ -1632,7 +1632,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                             if (farg.op == EXP.error || farg.type.ty == Terror)
                                 return nomatch();
 
-                            if (!(fparam.storageClass & STC.lazy_) && farg.type.ty == Tvoid)
+                            if (!fparam.isLazy() && farg.type.ty == Tvoid)
                                 return nomatch();
 
                             Type tt;
@@ -1837,7 +1837,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                     }
                     Type argtype = farg.type;
 
-                    if (!(fparam.storageClass & STC.lazy_) && argtype.ty == Tvoid && farg.op != EXP.function_)
+                    if (!fparam.isLazy() && argtype.ty == Tvoid && farg.op != EXP.function_)
                         return nomatch();
 
                     // https://issues.dlang.org/show_bug.cgi?id=12876
@@ -1958,7 +1958,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                         if (!farg.type.isMutable()) // https://issues.dlang.org/show_bug.cgi?id=11916
                             return nomatch();
                     }
-                    if (m == MATCH.nomatch && (fparam.storageClass & STC.lazy_) && prmtype.ty == Tvoid && farg.type.ty != Tvoid)
+                    if (m == MATCH.nomatch && fparam.isLazy() && prmtype.ty == Tvoid && farg.type.ty != Tvoid)
                         m = MATCH.convert;
                     if (m != MATCH.nomatch)
                     {
@@ -7323,7 +7323,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                         errors = true;
                     }
                 L1:
-                    //printf("\tnested inside %s\n", enclosing.toChars());
+                    //printf("\tnested inside %s as it references %s\n", enclosing.toChars(), sa.toChars());
                     nested |= 1;
                 }
             }
@@ -7723,7 +7723,7 @@ extern (C++) final class TemplateMixin : TemplateInstance
             }
             if (!tempdecl)
             {
-                error("`%s` isn't a template", s.toChars());
+                error("- `%s` is a %s, not a template", s.toChars(), s.kind());
                 return false;
             }
         }

@@ -1790,6 +1790,7 @@ struct pd_range
 struct pd_data
 {
   tree rhs;
+  HOST_WIDE_INT rhs_off;
   HOST_WIDE_INT offset;
   HOST_WIDE_INT size;
 };
@@ -1816,6 +1817,7 @@ struct vn_walk_cb_data
 	unsigned int pos = 0, prec = w.get_precision ();
 	pd_data pd;
 	pd.rhs = build_constructor (NULL_TREE, NULL);
+	pd.rhs_off = 0;
 	/* When bitwise and with a constant is done on a memory load,
 	   we don't really need all the bits to be defined or defined
 	   to constants, we don't really care what is in the position
@@ -1976,6 +1978,7 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
 
   bool pd_constant_p = (TREE_CODE (pd.rhs) == CONSTRUCTOR
 			|| CONSTANT_CLASS_P (pd.rhs));
+  pd_range *r;
   if (partial_defs.is_empty ())
     {
       /* If we get a clobber upfront, fail.  */
@@ -1989,65 +1992,70 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
       first_set = set;
       first_base_set = base_set;
       last_vuse_ptr = NULL;
-      /* Continue looking for partial defs.  */
-      return NULL;
-    }
-
-  if (!known_ranges)
-    {
-      /* ???  Optimize the case where the 2nd partial def completes things.  */
-      gcc_obstack_init (&ranges_obstack);
-      known_ranges = splay_tree_new_with_allocator (pd_range_compare, 0, 0,
-						    pd_tree_alloc,
-						    pd_tree_dealloc, this);
-      splay_tree_insert (known_ranges,
-			 (splay_tree_key)&first_range.offset,
-			 (splay_tree_value)&first_range);
-    }
-
-  pd_range newr = { pd.offset, pd.size };
-  splay_tree_node n;
-  pd_range *r;
-  /* Lookup the predecessor of offset + 1 and see if we need to merge.  */
-  HOST_WIDE_INT loffset = newr.offset + 1;
-  if ((n = splay_tree_predecessor (known_ranges, (splay_tree_key)&loffset))
-      && ((r = (pd_range *)n->value), true)
-      && ranges_known_overlap_p (r->offset, r->size + 1,
-				 newr.offset, newr.size))
-    {
-      /* Ignore partial defs already covered.  Here we also drop shadowed
-         clobbers arriving here at the floor.  */
-      if (known_subrange_p (newr.offset, newr.size, r->offset, r->size))
-	return NULL;
-      r->size = MAX (r->offset + r->size, newr.offset + newr.size) - r->offset;
+      r = &first_range;
+      /* Go check if the first partial definition was a full one in case
+	 the caller didn't optimize for this.  */
     }
   else
     {
-      /* newr.offset wasn't covered yet, insert the range.  */
-      r = XOBNEW (&ranges_obstack, pd_range);
-      *r = newr;
-      splay_tree_insert (known_ranges, (splay_tree_key)&r->offset,
-			 (splay_tree_value)r);
+      if (!known_ranges)
+	{
+	  /* ???  Optimize the case where the 2nd partial def completes
+	     things.  */
+	  gcc_obstack_init (&ranges_obstack);
+	  known_ranges = splay_tree_new_with_allocator (pd_range_compare, 0, 0,
+							pd_tree_alloc,
+							pd_tree_dealloc, this);
+	  splay_tree_insert (known_ranges,
+			     (splay_tree_key)&first_range.offset,
+			     (splay_tree_value)&first_range);
+	}
+
+      pd_range newr = { pd.offset, pd.size };
+      splay_tree_node n;
+      /* Lookup the predecessor of offset + 1 and see if we need to merge.  */
+      HOST_WIDE_INT loffset = newr.offset + 1;
+      if ((n = splay_tree_predecessor (known_ranges, (splay_tree_key)&loffset))
+	  && ((r = (pd_range *)n->value), true)
+	  && ranges_known_overlap_p (r->offset, r->size + 1,
+				     newr.offset, newr.size))
+	{
+	  /* Ignore partial defs already covered.  Here we also drop shadowed
+	     clobbers arriving here at the floor.  */
+	  if (known_subrange_p (newr.offset, newr.size, r->offset, r->size))
+	    return NULL;
+	  r->size
+	    = MAX (r->offset + r->size, newr.offset + newr.size) - r->offset;
+	}
+      else
+	{
+	  /* newr.offset wasn't covered yet, insert the range.  */
+	  r = XOBNEW (&ranges_obstack, pd_range);
+	  *r = newr;
+	  splay_tree_insert (known_ranges, (splay_tree_key)&r->offset,
+			     (splay_tree_value)r);
+	}
+      /* Merge r which now contains newr and is a member of the splay tree with
+	 adjacent overlapping ranges.  */
+      pd_range *rafter;
+      while ((n = splay_tree_successor (known_ranges,
+					(splay_tree_key)&r->offset))
+	     && ((rafter = (pd_range *)n->value), true)
+	     && ranges_known_overlap_p (r->offset, r->size + 1,
+					rafter->offset, rafter->size))
+	{
+	  r->size = MAX (r->offset + r->size,
+			 rafter->offset + rafter->size) - r->offset;
+	  splay_tree_remove (known_ranges, (splay_tree_key)&rafter->offset);
+	}
+      /* If we get a clobber, fail.  */
+      if (TREE_CLOBBER_P (pd.rhs))
+	return (void *)-1;
+      /* Non-constants are OK as long as they are shadowed by a constant.  */
+      if (!pd_constant_p)
+	return (void *)-1;
+      partial_defs.safe_push (pd);
     }
-  /* Merge r which now contains newr and is a member of the splay tree with
-     adjacent overlapping ranges.  */
-  pd_range *rafter;
-  while ((n = splay_tree_successor (known_ranges, (splay_tree_key)&r->offset))
-	 && ((rafter = (pd_range *)n->value), true)
-	 && ranges_known_overlap_p (r->offset, r->size + 1,
-				    rafter->offset, rafter->size))
-    {
-      r->size = MAX (r->offset + r->size,
-		     rafter->offset + rafter->size) - r->offset;
-      splay_tree_remove (known_ranges, (splay_tree_key)&rafter->offset);
-    }
-  /* If we get a clobber, fail.  */
-  if (TREE_CLOBBER_P (pd.rhs))
-    return (void *)-1;
-  /* Non-constants are OK as long as they are shadowed by a constant.  */
-  if (!pd_constant_p)
-    return (void *)-1;
-  partial_defs.safe_push (pd);
 
   /* Now we have merged newr into the range tree.  When we have covered
      [offseti, sizei] then the tree will contain exactly one node which has
@@ -2081,7 +2089,8 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
       else
 	{
 	  len = native_encode_expr (pd.rhs, this_buffer, bufsize,
-				    MAX (0, -pd.offset) / BITS_PER_UNIT);
+				    (MAX (0, -pd.offset)
+				     + pd.rhs_off) / BITS_PER_UNIT);
 	  if (len <= 0
 	      || len < (ROUND_UP (pd.size, BITS_PER_UNIT) / BITS_PER_UNIT
 			- MAX (0, -pd.offset) / BITS_PER_UNIT))
@@ -2493,8 +2502,8 @@ public:
   eliminate_dom_walker (cdi_direction, bitmap);
   ~eliminate_dom_walker ();
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
   virtual tree eliminate_avail (basic_block, tree op);
   virtual void eliminate_push_avail (basic_block, tree op);
@@ -2534,9 +2543,9 @@ public:
     : eliminate_dom_walker (CDI_DOMINATORS, NULL), entry (entry_),
       m_avail_freelist (NULL) {}
 
-  virtual tree eliminate_avail (basic_block, tree op);
+  tree eliminate_avail (basic_block, tree op) final override;
 
-  virtual void eliminate_push_avail (basic_block, tree);
+  void eliminate_push_avail (basic_block, tree) final override;
 
   basic_block entry;
   /* Freelist of avail entries which are allocated from the vn_ssa_aux
@@ -2906,6 +2915,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	{
 	  pd_data pd;
 	  pd.rhs = build_constructor (NULL_TREE, NULL);
+	  pd.rhs_off = 0;
 	  pd.offset = offset2i;
 	  pd.size = leni << LOG2_BITS_PER_UNIT;
 	  return data->push_partial_def (pd, 0, 0, offseti, maxsizei);
@@ -2955,6 +2965,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		 by a later def.  */
 	      pd_data pd;
 	      pd.rhs = gimple_assign_rhs1 (def_stmt);
+	      pd.rhs_off = 0;
 	      pd.offset = offset2i;
 	      pd.size = size2i;
 	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
@@ -3107,6 +3118,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      if (TREE_CODE (rhs) == SSA_NAME)
 		rhs = SSA_VAL (rhs);
 	      pd.rhs = rhs;
+	      pd.rhs_off = 0;
 	      pd.offset = offset2i;
 	      pd.size = size2i;
 	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
@@ -3186,11 +3198,140 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    {
 	      pd_data pd;
 	      pd.rhs = SSA_VAL (def_rhs);
+	      pd.rhs_off = 0;
 	      pd.offset = offset2i;
 	      pd.size = size2i;
 	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
 					     ao_ref_base_alias_set (&lhs_ref),
 					     offseti, maxsizei);
+	    }
+	}
+    }
+
+  /* 4b) Assignment done via one of the vectorizer internal store
+     functions where we may be able to access pieces from or we can
+     combine to a larger entity.  */
+  else if (known_eq (ref->size, maxsize)
+	   && is_gimple_reg_type (vr->type)
+	   && !reverse_storage_order_for_component_p (vr->operands)
+	   && !contains_storage_order_barrier_p (vr->operands)
+	   && is_gimple_call (def_stmt)
+	   && gimple_call_internal_p (def_stmt)
+	   && internal_store_fn_p (gimple_call_internal_fn (def_stmt)))
+    {
+      gcall *call = as_a <gcall *> (def_stmt);
+      internal_fn fn = gimple_call_internal_fn (call);
+
+      tree mask = NULL_TREE, len = NULL_TREE, bias = NULL_TREE;
+      switch (fn)
+	{
+	case IFN_MASK_STORE:
+	  mask = gimple_call_arg (call, internal_fn_mask_index (fn));
+	  mask = vn_valueize (mask);
+	  if (TREE_CODE (mask) != VECTOR_CST)
+	    return (void *)-1;
+	  break;
+	case IFN_LEN_STORE:
+	  len = gimple_call_arg (call, 2);
+	  bias = gimple_call_arg (call, 4);
+	  if (!tree_fits_uhwi_p (len) || !tree_fits_shwi_p (bias))
+	    return (void *)-1;
+	  break;
+	default:
+	  return (void *)-1;
+	}
+      tree def_rhs = gimple_call_arg (call,
+				      internal_fn_stored_value_index (fn));
+      def_rhs = vn_valueize (def_rhs);
+      if (TREE_CODE (def_rhs) != VECTOR_CST)
+	return (void *)-1;
+
+      ao_ref_init_from_ptr_and_size (&lhs_ref,
+				     vn_valueize (gimple_call_arg (call, 0)),
+				     TYPE_SIZE_UNIT (TREE_TYPE (def_rhs)));
+      tree base2;
+      poly_int64 offset2, size2, maxsize2;
+      HOST_WIDE_INT offset2i, size2i, offseti;
+      base2 = ao_ref_base (&lhs_ref);
+      offset2 = lhs_ref.offset;
+      size2 = lhs_ref.size;
+      maxsize2 = lhs_ref.max_size;
+      if (known_size_p (maxsize2)
+	  && known_eq (maxsize2, size2)
+	  && adjust_offsets_for_equal_base_address (base, &offset,
+						    base2, &offset2)
+	  && maxsize.is_constant (&maxsizei)
+	  && offset.is_constant (&offseti)
+	  && offset2.is_constant (&offset2i)
+	  && size2.is_constant (&size2i))
+	{
+	  if (!ranges_maybe_overlap_p (offset, maxsize, offset2, size2))
+	    /* Poor-mans disambiguation.  */
+	    return NULL;
+	  else if (ranges_known_overlap_p (offset, maxsize, offset2, size2))
+	    {
+	      pd_data pd;
+	      pd.rhs = def_rhs;
+	      tree aa = gimple_call_arg (call, 1);
+	      alias_set_type set = get_deref_alias_set (TREE_TYPE (aa));
+	      tree vectype = TREE_TYPE (def_rhs);
+	      unsigned HOST_WIDE_INT elsz
+		= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype)));
+	      if (mask)
+		{
+		  HOST_WIDE_INT start = 0, len = 0;
+		  unsigned mask_idx = 0;
+		  do
+		    {
+		      if (integer_zerop (VECTOR_CST_ELT (mask, mask_idx)))
+			{
+			  if (len != 0)
+			    {
+			      pd.rhs_off = start;
+			      pd.offset = offset2i + start;
+			      pd.size = len;
+			      if (ranges_known_overlap_p
+				    (offset, maxsize, pd.offset, pd.size))
+				{
+				  void *res = data->push_partial_def
+					      (pd, set, set, offseti, maxsizei);
+				  if (res != NULL)
+				    return res;
+				}
+			    }
+			  start = (mask_idx + 1) * elsz;
+			  len = 0;
+			}
+		      else
+			len += elsz;
+		      mask_idx++;
+		    }
+		  while (known_lt (mask_idx, TYPE_VECTOR_SUBPARTS (vectype)));
+		  if (len != 0)
+		    {
+		      pd.rhs_off = start;
+		      pd.offset = offset2i + start;
+		      pd.size = len;
+		      if (ranges_known_overlap_p (offset, maxsize,
+						  pd.offset, pd.size))
+			return data->push_partial_def (pd, set, set,
+						       offseti, maxsizei);
+		    }
+		}
+	      else if (fn == IFN_LEN_STORE)
+		{
+		  pd.rhs_off = 0;
+		  pd.offset = offset2i;
+		  pd.size = (tree_to_uhwi (len)
+			     + -tree_to_shwi (bias)) * BITS_PER_UNIT;
+		  if (ranges_known_overlap_p (offset, maxsize,
+					      pd.offset, pd.size))
+		    return data->push_partial_def (pd, set, set,
+						   offseti, maxsizei);
+		}
+	      else
+		gcc_unreachable ();
+	      return NULL;
 	    }
 	}
     }
@@ -3275,6 +3416,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       copy_reference_ops_from_ref (rhs1, &rhs);
 
       /* Apply an extra offset to the inner MEM_REF of the RHS.  */
+      bool force_no_tbaa = false;
       if (maybe_ne (extra_off, 0))
 	{
 	  if (rhs.length () < 2)
@@ -3287,6 +3429,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  rhs[ix].op0 = int_const_binop (PLUS_EXPR, rhs[ix].op0,
 					 build_int_cst (TREE_TYPE (rhs[ix].op0),
 							extra_off));
+	  /* When we have offsetted the RHS, reading only parts of it,
+	     we can no longer use the original TBAA type, force alias-set
+	     zero.  */
+	  force_no_tbaa = true;
 	}
 
       /* Save the operands since we need to use the original ones for
@@ -3322,6 +3468,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    {
 	      pd_data pd;
 	      pd.rhs = val;
+	      pd.rhs_off = 0;
 	      pd.offset = 0;
 	      pd.size = maxsizei;
 	      return data->push_partial_def (pd, ao_ref_alias_set (&lhs_ref),
@@ -3339,8 +3486,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* Adjust *ref from the new operands.  */
       ao_ref rhs1_ref;
       ao_ref_init (&rhs1_ref, rhs1);
-      if (!ao_ref_init_from_vn_reference (&r, ao_ref_alias_set (&rhs1_ref),
-					  ao_ref_base_alias_set (&rhs1_ref),
+      if (!ao_ref_init_from_vn_reference (&r,
+					  force_no_tbaa ? 0
+					  : ao_ref_alias_set (&rhs1_ref),
+					  force_no_tbaa ? 0
+					  : ao_ref_base_alias_set (&rhs1_ref),
 					  vr->type, vr->operands))
 	return (void *)-1;
       /* This can happen with bitfields.  */
@@ -4235,9 +4385,10 @@ vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table)
 		      if (dominated_by_p (CDI_DOMINATORS, vno_bb, val_bb))
 			/* Value registered with more generic predicate.  */
 			return *slot;
-		      else if (dominated_by_p (CDI_DOMINATORS, val_bb, vno_bb))
+		      else if (flag_checking)
 			/* Shouldn't happen, we insert in RPO order.  */
-			gcc_unreachable ();
+			gcc_assert (!dominated_by_p (CDI_DOMINATORS,
+						     val_bb, vno_bb));
 		    }
 		  /* Append value.  */
 		  *next = (vn_pval *) obstack_alloc (&vn_tables_obstack,
@@ -4983,7 +5134,7 @@ valueized_wider_op (tree wide_type, tree op, bool allow_truncate)
 
   /* For constants simply extend it.  */
   if (TREE_CODE (op) == INTEGER_CST)
-    return wide_int_to_tree (wide_type, wi::to_wide (op));
+    return wide_int_to_tree (wide_type, wi::to_widest (op));
 
   return NULL_TREE;
 }
@@ -6807,7 +6958,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	      if (targets.length () == 1)
 		fn = targets[0]->decl;
 	      else
-		fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		fn = builtin_decl_unreachable ();
 	      if (dump_enabled_p ())
 		{
 		  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt,
@@ -8295,17 +8446,17 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_fre (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass * clone () final override { return new pass_fre (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       may_iterate = param;
     }
-  virtual bool gate (function *)
+  bool gate (function *) final override
     {
       return flag_tree_fre != 0 && (may_iterate || optimize > 1);
     }
-  virtual unsigned int execute (function *);
+  unsigned int execute (function *) final override;
 
 private:
   bool may_iterate;

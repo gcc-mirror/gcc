@@ -48,7 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "tree-vrp.h"
 #include "vr-values.h"
-#include "gimple-ssa-evrp-analyze.h"
+#include "gimple-range.h"
+#include "gimple-range-path.h"
 #include "alias.h"
 
 /* This file implements optimizations on the dominator tree.  */
@@ -111,7 +112,8 @@ static void record_equality (tree, tree, class const_and_copies *);
 static void record_equivalences_from_phis (basic_block);
 static void record_equivalences_from_incoming_edge (basic_block,
 						    class const_and_copies *,
-						    class avail_exprs_stack *);
+						    class avail_exprs_stack *,
+						    bitmap blocks_on_stack);
 static void eliminate_redundant_computations (gimple_stmt_iterator *,
 					      class const_and_copies *,
 					      class avail_exprs_stack *);
@@ -119,6 +121,8 @@ static void record_equivalences_from_stmt (gimple *, int,
 					   class avail_exprs_stack *);
 static void dump_dominator_optimization_stats (FILE *file,
 					       hash_table<expr_elt_hasher> *);
+static void record_temporary_equivalences (edge, class const_and_copies *,
+					   class avail_exprs_stack *, bitmap);
 
 /* Constructor for EDGE_INFO.  An EDGE_INFO instance is always
    associated with an edge E.  */
@@ -587,133 +591,68 @@ record_edge_info (basic_block bb)
 class dom_jt_state : public jt_state
 {
 public:
-  dom_jt_state (const_and_copies *copies, avail_exprs_stack *avails,
-		evrp_range_analyzer *evrp)
-    : m_copies (copies), m_avails (avails), m_evrp (evrp)
+  dom_jt_state (const_and_copies *copies, avail_exprs_stack *avails)
+    : m_copies (copies), m_avails (avails)
   {
+    bitmap_tree_view (m_blocks_on_stack);
   }
   void push (edge e) override
   {
     m_copies->push_marker ();
     m_avails->push_marker ();
-    m_evrp->push_marker ();
     jt_state::push (e);
   }
   void pop () override
   {
     m_copies->pop_to_marker ();
     m_avails->pop_to_marker ();
-    m_evrp->pop_to_marker ();
     jt_state::pop ();
   }
   void register_equivs_edge (edge e) override
   {
-    record_temporary_equivalences (e, m_copies, m_avails);
-  }
-  void record_ranges_from_stmt (gimple *stmt, bool temporary) override
-  {
-    m_evrp->record_ranges_from_stmt (stmt, temporary);
+    record_temporary_equivalences (e, m_copies, m_avails, m_blocks_on_stack);
   }
   void register_equiv (tree dest, tree src, bool update) override;
+  bitmap get_blocks_on_stack () { return m_blocks_on_stack; }
 private:
   const_and_copies *m_copies;
   avail_exprs_stack *m_avails;
-  evrp_range_analyzer *m_evrp;
+  /* Set of blocks on the stack, to be used for medium-fast
+     dominance queries in back_propagate_equivalences.  */
+  auto_bitmap m_blocks_on_stack;
 };
 
 void
-dom_jt_state::register_equiv (tree dest, tree src, bool update)
+dom_jt_state::register_equiv (tree dest, tree src, bool)
 {
   m_copies->record_const_or_copy (dest, src);
-
-  /* If requested, update the value range associated with DST, using
-     the range from SRC.  */
-  if (update)
-    {
-      /* Get new VR we can pass to push_value_range.  */
-      value_range_equiv *new_vr = m_evrp->allocate_value_range_equiv ();
-      new (new_vr) value_range_equiv ();
-
-      /* There are three cases to consider:
-
-	 First if SRC is an SSA_NAME, then we can copy the value range
-	 from SRC into NEW_VR.
-
-	 Second if SRC is an INTEGER_CST, then we can just set NEW_VR
-	 to a singleton range.  Note that even if SRC is a constant we
-	 need to set a suitable output range so that VR_UNDEFINED
-	 ranges do not leak through.
-
-	 Otherwise set NEW_VR to varying.  This may be overly
-	 conservative.  */
-      if (TREE_CODE (src) == SSA_NAME)
-	new_vr->deep_copy (m_evrp->get_value_range (src));
-      else if (TREE_CODE (src) == INTEGER_CST)
-	new_vr->set (src);
-      else
-	new_vr->set_varying (TREE_TYPE (src));
-
-      /* This is a temporary range for DST, so push it.  */
-      m_evrp->push_value_range (dest, new_vr);
-    }
 }
 
-class dom_jt_simplifier : public jt_simplifier
+class dom_jt_simplifier : public hybrid_jt_simplifier
 {
 public:
-  dom_jt_simplifier (vr_values *v, avail_exprs_stack *avails)
-    : m_vr_values (v), m_avails (avails) { }
+  dom_jt_simplifier (avail_exprs_stack *avails, gimple_ranger *ranger,
+		     path_range_query *query)
+    : hybrid_jt_simplifier (ranger, query), m_avails (avails) { }
 
 private:
   tree simplify (gimple *, gimple *, basic_block, jt_state *) override;
-  vr_values *m_vr_values;
   avail_exprs_stack *m_avails;
 };
 
 tree
 dom_jt_simplifier::simplify (gimple *stmt, gimple *within_stmt,
-			     basic_block, jt_state *)
+			     basic_block bb, jt_state *state)
 {
   /* First see if the conditional is in the hash table.  */
   tree cached_lhs =  m_avails->lookup_avail_expr (stmt, false, true);
   if (cached_lhs)
     return cached_lhs;
 
-  if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
-    {
-      simplify_using_ranges simplifier (m_vr_values);
-      return simplifier.vrp_evaluate_conditional (gimple_cond_code (cond_stmt),
-						  gimple_cond_lhs (cond_stmt),
-						  gimple_cond_rhs (cond_stmt),
-						  within_stmt);
-    }
-  if (gswitch *switch_stmt = dyn_cast <gswitch *> (stmt))
-    {
-      tree op = gimple_switch_index (switch_stmt);
-      if (TREE_CODE (op) != SSA_NAME)
-	return NULL_TREE;
+  /* Otherwise call the ranger if possible.  */
+  if (state)
+    return hybrid_jt_simplifier::simplify (stmt, within_stmt, bb, state);
 
-      const value_range *vr = m_vr_values->get_value_range (op);
-      return find_case_label_range (switch_stmt, vr);
-    }
-  if (gassign *assign_stmt = dyn_cast <gassign *> (stmt))
-    {
-      tree lhs = gimple_assign_lhs (assign_stmt);
-      if (TREE_CODE (lhs) == SSA_NAME
-	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-	      || POINTER_TYPE_P (TREE_TYPE (lhs)))
-	  && stmt_interesting_for_vrp (stmt))
-	{
-	  edge dummy_e;
-	  tree dummy_tree;
-	  value_range_equiv new_vr;
-	  m_vr_values->extract_range_from_stmt (stmt, &dummy_e, &dummy_tree,
-						&new_vr);
-	  tree singleton;
-	  if (new_vr.singleton_p (&singleton))
-	    return singleton;
-	}
-    }
   return NULL;
 }
 
@@ -722,13 +661,13 @@ class dom_opt_dom_walker : public dom_walker
 public:
   dom_opt_dom_walker (cdi_direction direction,
 		      jump_threader *threader,
-		      jt_state *state,
-		      evrp_range_analyzer *analyzer,
+		      dom_jt_state *state,
+		      gimple_ranger *ranger,
 		      const_and_copies *const_and_copies,
 		      avail_exprs_stack *avail_exprs_stack)
     : dom_walker (direction, REACHABLE_BLOCKS)
     {
-      m_evrp_range_analyzer = analyzer;
+      m_ranger = ranger;
       m_state = state;
       m_dummy_cond = gimple_build_cond (NE_EXPR, integer_zero_node,
 					integer_zero_node, NULL, NULL);
@@ -737,8 +676,8 @@ public:
       m_threader = threader;
     }
 
-  virtual edge before_dom_children (basic_block);
-  virtual void after_dom_children (basic_block);
+  edge before_dom_children (basic_block) final override;
+  void after_dom_children (basic_block) final override;
 
 private:
 
@@ -755,12 +694,14 @@ private:
      value.  */
   edge optimize_stmt (basic_block, gimple_stmt_iterator *, bool *);
 
+  void set_global_ranges_from_unreachable_edges (basic_block);
 
   void test_for_singularity (gimple *, avail_exprs_stack *);
+  edge fold_cond (gcond *cond);
 
   jump_threader *m_threader;
-  evrp_range_analyzer *m_evrp_range_analyzer;
-  jt_state *m_state;
+  gimple_ranger *m_ranger;
+  dom_jt_state *m_state;
 };
 
 /* Jump threading, redundancy elimination and const/copy propagation.
@@ -793,14 +734,14 @@ public:
   {}
 
   /* opt_pass methods: */
-  opt_pass * clone () { return new pass_dominator (m_ctxt); }
-  void set_pass_param (unsigned int n, bool param)
+  opt_pass * clone () final override { return new pass_dominator (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
       may_peel_loop_headers_p = param;
     }
-  virtual bool gate (function *) { return flag_tree_dom != 0; }
-  virtual unsigned int execute (function *);
+  bool gate (function *) final override { return flag_tree_dom != 0; }
+  unsigned int execute (function *) final override;
 
  private:
   /* This flag is used to prevent loops from being peeled repeatedly in jump
@@ -856,17 +797,21 @@ pass_dominator::execute (function *fun)
     record_edge_info (bb);
 
   /* Recursively walk the dominator tree optimizing statements.  */
-  evrp_range_analyzer analyzer (true);
-  dom_jt_simplifier simplifier (&analyzer, avail_exprs_stack);
-  dom_jt_state state (const_and_copies, avail_exprs_stack, &analyzer);
+  gimple_ranger *ranger = enable_ranger (fun);
+  path_range_query path_query (*ranger);
+  dom_jt_simplifier simplifier (avail_exprs_stack, ranger, &path_query);
+  dom_jt_state state (const_and_copies, avail_exprs_stack);
   jump_threader threader (&simplifier, &state);
   dom_opt_dom_walker walker (CDI_DOMINATORS,
 			     &threader,
 			     &state,
-			     &analyzer,
+			     ranger,
 			     const_and_copies,
 			     avail_exprs_stack);
   walker.walk (fun->cfg->x_entry_block_ptr);
+
+  ranger->export_global_ranges ();
+  disable_ranger (fun);
 
   /* Look for blocks where we cleared EDGE_EXECUTABLE on an outgoing
      edge.  When found, remove jump threads which contain any outgoing
@@ -1025,7 +970,7 @@ dom_valueize (tree t)
 static void
 back_propagate_equivalences (tree lhs, edge e,
 			     class const_and_copies *const_and_copies,
-			     bitmap *domby)
+			     bitmap domby)
 {
   use_operand_p use_p;
   imm_use_iterator iter;
@@ -1060,29 +1005,12 @@ back_propagate_equivalences (tree lhs, edge e,
 	}
       else
 	{
-	  /* Profiling has shown the domination tests here can be fairly
-	     expensive when the fast indexes are not computed.
-	     We get significant improvements by building the
-	     set of blocks that dominate BB.  We can then just test
-	     for set membership below.
-
-	     We also initialize the set lazily since often the only uses
-	     are going to be in the same block as DEST.  */
-
-	  if (!*domby)
-	    {
-	      *domby = BITMAP_ALLOC (NULL);
-	      bitmap_tree_view (*domby);
-	      basic_block bb = get_immediate_dominator (CDI_DOMINATORS, dest);
-	      while (bb)
-		{
-		  bitmap_set_bit (*domby, bb->index);
-		  bb = get_immediate_dominator (CDI_DOMINATORS, bb);
-		}
-	    }
-
+	  /* We can use the set of BBs on the stack from a domwalk
+	     for a medium fast way to query dominance.  Profiling
+	     has shown non-fast query dominance tests here can be fairly
+	     expensive.  */
 	  /* This tests if USE_STMT does not dominate DEST.  */
-	  if (!bitmap_bit_p (*domby, gimple_bb (use_stmt)->index))
+	  if (!bitmap_bit_p (domby, gimple_bb (use_stmt)->index))
 	    continue;
 	}
 
@@ -1100,10 +1028,11 @@ back_propagate_equivalences (tree lhs, edge e,
    by traversing edge E (which are cached in E->aux).
 
    Callers are responsible for managing the unwinding markers.  */
-void
+static void
 record_temporary_equivalences (edge e,
 			       class const_and_copies *const_and_copies,
-			       class avail_exprs_stack *avail_exprs_stack)
+			       class avail_exprs_stack *avail_exprs_stack,
+			       bitmap blocks_on_stack)
 {
   int i;
   class edge_info *edge_info = (class edge_info *) e->aux;
@@ -1118,7 +1047,6 @@ record_temporary_equivalences (edge e,
       for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
 	avail_exprs_stack->record_cond (eq);
 
-      bitmap domby = NULL;
       edge_info::equiv_pair *seq;
       for (i = 0; edge_info->simple_equivalences.iterate (i, &seq); ++i)
 	{
@@ -1155,10 +1083,9 @@ record_temporary_equivalences (edge e,
 	  /* Any equivalence found for LHS may result in additional
 	     equivalences for other uses of LHS that we have already
 	     processed.  */
-	  back_propagate_equivalences (lhs, e, const_and_copies, &domby);
+	  back_propagate_equivalences (lhs, e, const_and_copies,
+				       blocks_on_stack);
 	}
-      if (domby)
-	BITMAP_FREE (domby);
     }
 }
 
@@ -1252,6 +1179,79 @@ record_equivalences_from_phis (basic_block bb)
     }
 }
 
+/* Return true if all uses of NAME are dominated by STMT or feed STMT
+   via a chain of single immediate uses.  */
+
+static bool
+all_uses_feed_or_dominated_by_stmt (tree name, gimple *stmt)
+{
+  use_operand_p use_p, use2_p;
+  imm_use_iterator iter;
+  basic_block stmt_bb = gimple_bb (stmt);
+
+  FOR_EACH_IMM_USE_FAST (use_p, iter, name)
+    {
+      gimple *use_stmt = USE_STMT (use_p), *use_stmt2;
+      if (use_stmt == stmt
+	  || is_gimple_debug (use_stmt)
+	  || (gimple_bb (use_stmt) != stmt_bb
+	      && dominated_by_p (CDI_DOMINATORS,
+				 gimple_bb (use_stmt), stmt_bb)))
+	continue;
+      while (use_stmt != stmt
+	     && is_gimple_assign (use_stmt)
+	     && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME
+	     && single_imm_use (gimple_assign_lhs (use_stmt),
+				&use2_p, &use_stmt2))
+	use_stmt = use_stmt2;
+      if (use_stmt != stmt)
+	return false;
+    }
+  return true;
+}
+
+/* Set global ranges that can be determined from the C->M edge:
+
+   <bb C>:
+   ...
+   if (something)
+     goto <bb N>;
+   else
+     goto <bb M>;
+   <bb N>:
+   __builtin_unreachable ();
+   <bb M>:
+*/
+
+void
+dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
+{
+  edge pred_e = single_pred_edge_ignoring_loop_edges (bb, false);
+
+  if (!pred_e)
+    return;
+
+  gimple *stmt = last_stmt (pred_e->src);
+  tree name;
+  if (stmt
+      && gimple_code (stmt) == GIMPLE_COND
+      && (name = gimple_cond_lhs (stmt))
+      && TREE_CODE (name) == SSA_NAME
+      && assert_unreachable_fallthru_edge_p (pred_e)
+      && all_uses_feed_or_dominated_by_stmt (name, stmt))
+    {
+      Value_Range r (TREE_TYPE (name));
+
+      if (m_ranger->range_on_edge (r, pred_e, name)
+	  && !r.varying_p ()
+	  && !r.undefined_p ())
+	{
+	  set_range_info (name, r);
+	  maybe_set_nonzero_bits (pred_e, name);
+	}
+    }
+}
+
 /* Record any equivalences created by the incoming edge to BB into
    CONST_AND_COPIES and AVAIL_EXPRS_STACK.  If BB has more than one
    incoming edge, then no equivalence is created.  */
@@ -1259,7 +1259,8 @@ record_equivalences_from_phis (basic_block bb)
 static void
 record_equivalences_from_incoming_edge (basic_block bb,
     class const_and_copies *const_and_copies,
-    class avail_exprs_stack *avail_exprs_stack)
+    class avail_exprs_stack *avail_exprs_stack,
+    bitmap blocks_on_stack)
 {
   edge e;
   basic_block parent;
@@ -1274,7 +1275,8 @@ record_equivalences_from_incoming_edge (basic_block bb,
   /* If we had a single incoming edge from our parent block, then enter
      any data associated with the edge into our tables.  */
   if (e && e->src == parent)
-    record_temporary_equivalences (e, const_and_copies, avail_exprs_stack);
+    record_temporary_equivalences (e, const_and_copies, avail_exprs_stack,
+				   blocks_on_stack);
 }
 
 /* Dump statistics for the hash table HTAB.  */
@@ -1505,15 +1507,16 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\n\nOptimizing block #%d\n\n", bb->index);
 
-  m_evrp_range_analyzer->enter (bb);
-
   /* Push a marker on the stacks of local information so that we know how
      far to unwind when we finalize this block.  */
   m_avail_exprs_stack->push_marker ();
   m_const_and_copies->push_marker ();
+  bitmap_set_bit (m_state->get_blocks_on_stack (), bb->index);
 
   record_equivalences_from_incoming_edge (bb, m_const_and_copies,
-					  m_avail_exprs_stack);
+					  m_avail_exprs_stack,
+					  m_state->get_blocks_on_stack ());
+  set_global_ranges_from_unreachable_edges (bb);
 
   /* PHI nodes can create equivalences too.  */
   record_equivalences_from_phis (bb);
@@ -1542,7 +1545,6 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 	  continue;
 	}
 
-      m_state->record_ranges_from_stmt (gsi_stmt (gsi), false);
       bool removed_p = false;
       taken_edge = this->optimize_stmt (bb, &gsi, &removed_p);
       if (!removed_p)
@@ -1588,9 +1590,9 @@ void
 dom_opt_dom_walker::after_dom_children (basic_block bb)
 {
   m_threader->thread_outgoing_edges (bb);
+  bitmap_clear_bit (m_state->get_blocks_on_stack (), bb->index);
   m_avail_exprs_stack->pop_to_marker ();
   m_const_and_copies->pop_to_marker ();
-  m_evrp_range_analyzer->leave (bb);
 }
 
 /* Search for redundant computations in STMT.  If any are found, then
@@ -1832,7 +1834,7 @@ cprop_operand (gimple *stmt, use_operand_p op_p, range_query *query)
   val = SSA_NAME_VALUE (op);
   if (!val)
     {
-      value_range r;
+      Value_Range r (TREE_TYPE (op));
       tree single;
       if (query->range_of_expr (r, op, stmt) && r.singleton_p (&single))
 	val = single;
@@ -2073,6 +2075,24 @@ reduce_vector_comparison_to_scalar_comparison (gimple *stmt)
     }
 }
 
+/* If possible, rewrite the conditional as TRUE or FALSE, and return
+   the taken edge.  Otherwise, return NULL.  */
+
+edge
+dom_opt_dom_walker::fold_cond (gcond *cond)
+{
+  simplify_using_ranges simplify (m_ranger);
+  if (simplify.fold_cond (cond))
+    {
+      basic_block bb = gimple_bb (cond);
+      if (gimple_cond_true_p (cond))
+	return find_taken_edge (bb, boolean_true_node);
+      if (gimple_cond_false_p (cond))
+	return find_taken_edge (bb, boolean_false_node);
+    }
+  return NULL;
+}
+
 /* Optimize the statement in block BB pointed to by iterator SI.
 
    We try to perform some simplistic global redundancy elimination and
@@ -2121,7 +2141,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
   opt_stats.num_stmts++;
 
   /* Const/copy propagate into USES, VUSES and the RHS of VDEFs.  */
-  cprop_into_stmt (stmt, m_evrp_range_analyzer);
+  cprop_into_stmt (stmt, m_ranger);
 
   /* If the statement has been modified with constant replacements,
      fold its RHS before checking for redundant computations.  */
@@ -2218,17 +2238,9 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
 		 IL because we've attached range information to new
 		 SSA_NAMES.  */
 	      update_stmt_if_modified (stmt);
-	      edge taken_edge = NULL;
-	      simplify_using_ranges simpl (m_evrp_range_analyzer);
-	      simpl.vrp_visit_cond_stmt (as_a <gcond *> (stmt), &taken_edge);
+	      edge taken_edge = fold_cond (as_a <gcond *> (stmt));
 	      if (taken_edge)
 		{
-		  if (taken_edge->flags & EDGE_TRUE_VALUE)
-		    gimple_cond_make_true (as_a <gcond *> (stmt));
-		  else if (taken_edge->flags & EDGE_FALSE_VALUE)
-		    gimple_cond_make_false (as_a <gcond *> (stmt));
-		  else
-		    gcc_unreachable ();
 		  gimple_set_modified (stmt, true);
 		  update_stmt (stmt);
 		  cfg_altered = true;

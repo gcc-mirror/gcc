@@ -316,7 +316,7 @@ Some basic guidelines for editing this document:
 * @code{TRANSFER}:      TRANSFER,  Transfer bit patterns
 * @code{TRANSPOSE}:     TRANSPOSE, Transpose an array of rank two
 * @code{TRIM}:          TRIM,      Remove trailing blank characters of a string
-* @code{TTYNAM}:        TTYNAM,    Get the name of a terminal device.
+* @code{TTYNAM}:        TTYNAM,    Get the name of a terminal device
 * @code{UBOUND}:        UBOUND,    Upper dimension bounds of an array
 * @code{UCOBOUND}:      UCOBOUND,  Upper codimension bounds of an array
 * @code{UMASK}:         UMASK,     Set the file creation mask
@@ -8750,7 +8750,7 @@ END PROGRAM
 
 
 @node ISATTY
-@section @code{ISATTY} --- Whether a unit is a terminal device.
+@section @code{ISATTY} --- Whether a unit is a terminal device
 @fnindex ISATTY
 @cindex system, terminal
 
@@ -14613,7 +14613,7 @@ END PROGRAM
 
 
 @node TTYNAM
-@section @code{TTYNAM} --- Get the name of a terminal device.
+@section @code{TTYNAM} --- Get the name of a terminal device
 @fnindex TTYNAM
 @cindex system, terminal
 

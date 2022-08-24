@@ -1,3 +1,113 @@
+2022-08-18  Sergei Trofimovich  <siarheit@google.com>
+
+	* Makefile.def: Drop libelf module and gcc-configure dependency
+	on it.
+	* Makefile.in: Regenerate with 'autogen Makefile.def'.
+	* Makefile.tpl (HOST_EXPORTS): Drop unused LIBELFLIBS and
+	LIBELFINC.
+	* configure: Regenrate.
+	* configure.ac (host_libs): Drop unused libelf.
+
+2022-08-18  Sergei Trofimovich  <siarheit@google.com>
+
+	* Makefile.in: Regenerate.
+
+2022-08-04  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* MAINTAINERS: Add myself as AutoFDO maintainer.
+
+2022-08-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Arnaud Charlet  <charlet@adacore.com>
+
+	* configure: Regenerate.
+
+2022-07-31  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR bootstrap/106472
+	* Makefile.def (dependencies): Make configure-target-libgo depend
+	upon all-target-libbacktrace.
+
+2022-07-27  David Faust  <david.faust@oracle.com>
+
+	* MAINTAINERS: Add myself as reviewer for CTF and BTF.
+
+2022-07-27  Richard Biener  <rguenther@suse.de>
+
+	* MAINTAINERS (Roger Sayle): Update e-mail address.
+
+2022-07-21  Sam Feifer  <sfeifer@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-07-21  Marc Poulhiès  <poulhies@adacore.com>
+
+	* MAINTAINERS: Add myself as Ada front end co-maintainer.
+
+2022-07-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	* .gitignore: Do not ignore config.h.
+
+2022-07-15  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* MAINTAINERS: Add myself to Write After Approval.
+
+2022-07-04  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: fix sorting of names
+
+2022-07-03  Immad Mir  <mirimmad17@gmail.com>
+
+	* MAINTAINERS: add myself.
+
+2022-07-03  Immad Mir  <mirimmad17@gmail.com>
+
+	* MAINTAINERS: Add myself to write after approval and DCO.
+
+2022-07-02  Tim Lange  <mail@tim-lange.me>
+
+	* MAINTAINERS: Add myself.
+
+2022-07-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-06-30  Cui,Lili  <lili.cui@intel.com>
+
+	Revert:
+	2022-06-30  Cui,Lili  <lili.cui@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-06-30  Cui,Lili  <lili.cui@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-06-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.tpl (HOST_EXPORTS): Add TFLAGS to GCC_FOR_TARGET.
+	(EXTRA_GCC_FLAGS): Likewise.
+	* Makefile.in: Rebuilt.
+
+2022-06-28  konglin1  <lingling.kong@intel.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2022-06-27  Tom de Vries  <tdevries@suse.de>
+
+	* configure.ac: Build libiberty pic variant for gdbserver.
+	* configure: Regenerate.
+
+2022-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Correct use of $host.
+
+2022-06-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Remove tilegx and tilepro entries.
+	* configure.ac: Remove tilegx and tilepro stanzas.
+	* configure: Rebuilt.
+
 2022-05-28  Bruce Korb  <bkorb@gnu.org>
 
 	* .gitignore: Ignore vim swap files
