@@ -2436,7 +2436,19 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
       /* Split tls symbol to high and low.  */
       rtx high = gen_rtx_HIGH (Pmode, copy_rtx (loc));
       high = loongarch_force_temporary (tmp, high);
-      emit_insn (gen_tls_low (Pmode, a0, high, loc));
+
+      if (TARGET_CMODEL_EXTREME)
+	{
+	  gcc_assert (TARGET_EXPLICIT_RELOCS);
+
+	  rtx tmp1 = gen_reg_rtx (Pmode);
+	  emit_insn (gen_tls_low (Pmode, tmp1, gen_rtx_REG (Pmode, 0), loc));
+	  emit_insn (gen_lui_h_lo20 (tmp1, tmp1, loc));
+	  emit_insn (gen_lui_h_hi12 (tmp1, tmp1, loc));
+	  emit_move_insn (a0, gen_rtx_PLUS (Pmode, high, tmp1));
+	}
+      else
+	emit_insn (gen_tls_low (Pmode, a0, high, loc));
     }
   else
     {
@@ -2449,14 +2461,96 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
     }
 
   if (flag_plt)
-    insn = emit_call_insn (gen_call_value_internal (v0, loongarch_tls_symbol,
-						    const0_rtx));
+    {
+      switch (la_opt_cmodel)
+	{
+	case CMODEL_NORMAL:
+	  insn = emit_call_insn (gen_call_value_internal (v0,
+							  loongarch_tls_symbol,
+							  const0_rtx));
+	  break;
+
+	case CMODEL_MEDIUM:
+	    {
+	      rtx reg = gen_reg_rtx (Pmode);
+	      if (TARGET_EXPLICIT_RELOCS)
+		{
+		  emit_insn (gen_pcalau12i (Pmode, reg, loongarch_tls_symbol));
+		  rtx call = gen_call_value_internal_1 (Pmode, v0, reg,
+							loongarch_tls_symbol,
+							const0_rtx);
+		  insn = emit_call_insn (call);
+		}
+	      else
+		{
+		  emit_move_insn (reg, loongarch_tls_symbol);
+		  insn = emit_call_insn (gen_call_value_internal (v0,
+								  reg,
+								  const0_rtx));
+		}
+	      break;
+	    }
+
+	/* code model extreme not support plt.  */
+	case CMODEL_EXTREME:
+	case CMODEL_LARGE:
+	case CMODEL_TINY:
+	case CMODEL_TINY_STATIC:
+	default:
+	  gcc_unreachable ();
+	}
+    }
   else
     {
       rtx dest = gen_reg_rtx (Pmode);
-      rtx high = gen_reg_rtx (Pmode);
-      loongarch_emit_move (high, gen_rtx_HIGH (Pmode, loongarch_tls_symbol));
-      emit_insn (gen_ld_from_got (Pmode, dest, high, loongarch_tls_symbol));
+
+      switch (la_opt_cmodel)
+	{
+	case CMODEL_NORMAL:
+	case CMODEL_MEDIUM:
+	    {
+	      if (TARGET_EXPLICIT_RELOCS)
+		{
+		  rtx high = gen_reg_rtx (Pmode);
+		  loongarch_emit_move (high,
+				       gen_rtx_HIGH (Pmode,
+						     loongarch_tls_symbol));
+		  emit_insn (gen_ld_from_got (Pmode, dest, high,
+					      loongarch_tls_symbol));
+		}
+	      else
+		loongarch_emit_move (dest, loongarch_tls_symbol);
+	      break;
+	    }
+
+	case CMODEL_EXTREME:
+	    {
+	      gcc_assert (TARGET_EXPLICIT_RELOCS);
+
+	      rtx tmp1 = gen_reg_rtx (Pmode);
+	      rtx high = gen_reg_rtx (Pmode);
+
+	      loongarch_emit_move (high,
+				   gen_rtx_HIGH (Pmode, loongarch_tls_symbol));
+	      loongarch_emit_move (tmp1, gen_rtx_LO_SUM (Pmode,
+							 gen_rtx_REG (Pmode, 0),
+							 loongarch_tls_symbol));
+	      emit_insn (gen_lui_h_lo20 (tmp1, tmp1, loongarch_tls_symbol));
+	      emit_insn (gen_lui_h_hi12 (tmp1, tmp1, loongarch_tls_symbol));
+	      loongarch_emit_move (dest,
+				   gen_rtx_MEM (Pmode,
+						gen_rtx_PLUS (Pmode,
+							      high, tmp1)));
+	    }
+	  break;
+
+	case CMODEL_LARGE:
+	case CMODEL_TINY:
+	case CMODEL_TINY_STATIC:
+	default:
+	  gcc_unreachable ();
+	}
+
       insn = emit_call_insn (gen_call_value_internal (v0, dest, const0_rtx));
     }
 
@@ -2508,7 +2602,23 @@ loongarch_legitimize_tls_address (rtx loc)
 	      tmp3 = gen_reg_rtx (Pmode);
 	      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
 	      high = loongarch_force_temporary (tmp3, high);
-	      emit_insn (gen_ld_from_got (Pmode, tmp1, high, tmp2));
+
+	      if (TARGET_CMODEL_EXTREME)
+		{
+		  gcc_assert (TARGET_EXPLICIT_RELOCS);
+
+		  rtx tmp3 = gen_reg_rtx (Pmode);
+		  emit_insn (gen_tls_low (Pmode, tmp3,
+					  gen_rtx_REG (Pmode, 0), tmp2));
+		  emit_insn (gen_lui_h_lo20 (tmp3, tmp3, tmp2));
+		  emit_insn (gen_lui_h_hi12 (tmp3, tmp3, tmp2));
+		  emit_move_insn (tmp1,
+				  gen_rtx_MEM (Pmode,
+					       gen_rtx_PLUS (Pmode,
+							     high, tmp3)));
+		}
+	      else
+		emit_insn (gen_ld_from_got (Pmode, tmp1, high, tmp2));
 	    }
 	  else
 	    emit_insn (loongarch_got_load_tls_ie (tmp1, loc));
@@ -2530,11 +2640,18 @@ loongarch_legitimize_tls_address (rtx loc)
 	      rtx high = gen_rtx_HIGH (Pmode, copy_rtx (tmp2));
 	      high = loongarch_force_temporary (tmp3, high);
 	      emit_insn (gen_ori_l_lo12 (Pmode, tmp1, high, tmp2));
+
+	      if (TARGET_CMODEL_EXTREME)
+		{
+		  gcc_assert (TARGET_EXPLICIT_RELOCS);
+
+		  emit_insn (gen_lui_h_lo20 (tmp1, tmp1, tmp2));
+		  emit_insn (gen_lui_h_hi12 (tmp1, tmp1, tmp2));
+		}
 	    }
 	  else
 	    emit_insn (loongarch_got_load_tls_le (tmp1, loc));
 	  emit_insn (gen_add3_insn (dest, tmp1, tp));
-
 	}
       break;
 
@@ -2553,6 +2670,24 @@ loongarch_legitimize_call_address (rtx addr)
       loongarch_emit_move (reg, addr);
       return reg;
     }
+
+  enum loongarch_symbol_type symbol_type = loongarch_classify_symbol (addr);
+
+  /* Split function call insn 'bl sym' or 'bl %plt(sym)' to :
+     pcalau12i $rd, %pc_hi20(sym)
+     jr $rd, %pc_lo12(sym).  */
+
+  if (TARGET_CMODEL_MEDIUM
+      && TARGET_EXPLICIT_RELOCS
+      && (SYMBOL_REF_P (addr) || LABEL_REF_P (addr))
+      && (symbol_type == SYMBOL_PCREL
+	  || (symbol_type == SYMBOL_GOT_DISP && flag_plt)))
+    {
+      rtx reg = gen_reg_rtx (Pmode);
+      emit_insn (gen_pcalau12i (Pmode, reg, addr));
+      return gen_rtx_LO_SUM (Pmode, reg, addr);
+    }
+
   return addr;
 }
 
@@ -2603,7 +2738,6 @@ bool
 loongarch_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
 {
   enum loongarch_symbol_type symbol_type;
-  rtx high;
 
   /* If build with '-mno-explicit-relocs', don't split symbol.  */
   if (!TARGET_EXPLICIT_RELOCS)
@@ -2615,6 +2749,8 @@ loongarch_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
       || !loongarch_split_symbol_type (symbol_type))
     return false;
 
+  rtx high, temp1 = NULL;
+
   if (temp == NULL)
     temp = gen_reg_rtx (Pmode);
 
@@ -2622,20 +2758,42 @@ loongarch_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
   high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
   high = loongarch_force_temporary (temp, high);
 
+  if (TARGET_CMODEL_EXTREME && can_create_pseudo_p ())
+    {
+      gcc_assert (TARGET_EXPLICIT_RELOCS);
+
+      temp1 = gen_reg_rtx (Pmode);
+      emit_move_insn (temp1, gen_rtx_LO_SUM (Pmode, gen_rtx_REG (Pmode, 0),
+					     addr));
+      emit_insn (gen_lui_h_lo20 (temp1, temp1, addr));
+      emit_insn (gen_lui_h_hi12 (temp1, temp1, addr));
+    }
+
   if (low_out)
     switch (symbol_type)
       {
       case SYMBOL_PCREL:
-	*low_out = gen_rtx_LO_SUM (Pmode, high, addr);
-	break;
+	{
+	  if (TARGET_CMODEL_EXTREME && can_create_pseudo_p ())
+	    *low_out = gen_rtx_PLUS (Pmode, high, temp1);
+	  else
+	    *low_out = gen_rtx_LO_SUM (Pmode, high, addr);
+	  break;
+	}
 
       case SYMBOL_GOT_DISP:
 	/* SYMBOL_GOT_DISP symbols are loaded from the GOT.  */
 	{
-	  rtx low = gen_rtx_LO_SUM (Pmode, high, addr);
-	  rtx mem = gen_rtx_MEM (Pmode, low);
-	  *low_out = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, mem),
-				     UNSPEC_LOAD_FROM_GOT);
+	  if (TARGET_CMODEL_EXTREME && can_create_pseudo_p ())
+	    *low_out = gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, high, temp1));
+	  else
+	    {
+	      rtx low = gen_rtx_LO_SUM (Pmode, high, addr);
+	      rtx mem = gen_rtx_MEM (Pmode, low);
+	      *low_out = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, mem),
+					 UNSPEC_LOAD_FROM_GOT);
+	    }
+
 	  break;
 	}
 
@@ -4584,34 +4742,86 @@ loongarch_memmodel_needs_release_fence (enum memmodel model)
    in context CONTEXT.  HI_RELOC indicates a high-part reloc.  */
 
 static void
-loongarch_print_operand_reloc (FILE *file, rtx op, bool hi_reloc)
+loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
+			       bool hi_reloc)
 {
   const char *reloc;
+
+  if (TARGET_CMODEL_EXTREME)
+    gcc_assert (TARGET_EXPLICIT_RELOCS);
 
   switch (loongarch_classify_symbolic_expression (op))
     {
     case SYMBOL_PCREL:
-      reloc = hi_reloc ? "%pc_hi20" : "%pc_lo12";
+      if (hi64_part)
+	{
+	  if (TARGET_CMODEL_EXTREME)
+	    reloc = hi_reloc ? "%pc64_hi12" : "%pc64_lo20";
+	  else
+	    gcc_unreachable ();
+	}
+      else
+	reloc = hi_reloc ? "%pc_hi20" : "%pc_lo12";
       break;
 
     case SYMBOL_GOT_DISP:
-      reloc = hi_reloc ? "%got_pc_hi20" : "%got_pc_lo12";
+      if (hi64_part)
+	{
+	  if (TARGET_CMODEL_EXTREME)
+	    reloc = hi_reloc ? "%got64_pc_hi12" : "%got64_pc_lo20";
+	  else
+	    gcc_unreachable ();
+	}
+      else
+	reloc = hi_reloc ? "%got_pc_hi20" : "%got_pc_lo12";
       break;
 
     case SYMBOL_TLS_IE:
-      reloc = hi_reloc ? "%ie_pc_hi20" : "%ie_pc_lo12";
+      if (hi64_part)
+	{
+	  if (TARGET_CMODEL_EXTREME)
+	    reloc = hi_reloc ? "%ie64_pc_hi12" : "%ie64_pc_lo20";
+	  else
+	    gcc_unreachable ();
+	}
+      else
+	reloc = hi_reloc ? "%ie_pc_hi20" : "%ie_pc_lo12";
       break;
 
     case SYMBOL_TLS_LE:
-      reloc = hi_reloc ? "%le_hi20" : "%le_lo12";
+      if (hi64_part)
+	{
+	  if (TARGET_CMODEL_EXTREME)
+	    reloc = hi_reloc ? "%le64_hi12" : "%le64_lo20";
+	  else
+	    gcc_unreachable ();
+	}
+      else
+	reloc = hi_reloc ? "%le_hi20" : "%le_lo12";
       break;
 
     case SYMBOL_TLSGD:
-      reloc = hi_reloc ? "%gd_pc_hi20" : "%got_pc_lo12";
+      if (hi64_part)
+	{
+	  if (TARGET_CMODEL_EXTREME)
+	    reloc = hi_reloc ? "%got64_pc_hi12" : "%got64_pc_lo20";
+	  else
+	    gcc_unreachable ();
+	}
+      else
+	reloc = hi_reloc ? "%gd_pc_hi20" : "%got_pc_lo12";
       break;
 
     case SYMBOL_TLSLDM:
-      reloc = hi_reloc ? "%ld_pc_hi20" : "%got_pc_lo12";
+      if (hi64_part)
+	{
+	  if (TARGET_CMODEL_EXTREME)
+	    reloc = hi_reloc ? "%got64_pc_hi12" : "%got64_pc_lo20";
+	  else
+	    gcc_unreachable ();
+	}
+      else
+	reloc = hi_reloc ? "%ld_pc_hi20" : "%got_pc_lo12";
       break;
 
     default:
@@ -4637,6 +4847,8 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi_reloc)
    'L'  Print the low-part relocation associated with OP.
    'm'	Print one less than CONST_INT OP in decimal.
    'N'	Print the inverse of the integer branch condition for comparison OP.
+   'r'  Print address 12-31bit relocation associated with OP.
+   'R'  Print address 32-51bit relocation associated with OP.
    'T'	Print 'f' for (eq:CC ...), 't' for (ne:CC ...),
 	      'z' for (eq:?I ...), 'n' for (ne:?I ...).
    't'	Like 'T', but with the EQ/NE cases reversed
@@ -4694,7 +4906,13 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
     case 'h':
       if (code == HIGH)
 	op = XEXP (op, 0);
-      loongarch_print_operand_reloc (file, op, true /* hi_reloc */);
+      loongarch_print_operand_reloc (file, op, false /* hi64_part */,
+				     true /* hi_reloc */);
+      break;
+
+    case 'H':
+      loongarch_print_operand_reloc (file, op, true /* hi64_part */,
+				     true /* hi_reloc */);
       break;
 
     case 'i':
@@ -4703,7 +4921,8 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
       break;
 
     case 'L':
-      loongarch_print_operand_reloc (file, op, false /* lo_reloc */);
+      loongarch_print_operand_reloc (file, op, false /* hi64_part*/,
+				     false /* lo_reloc */);
       break;
 
     case 'm':
@@ -4716,6 +4935,16 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
     case 'N':
       loongarch_print_int_branch_condition (file, reverse_condition (code),
 					    letter);
+      break;
+
+    case 'r':
+      loongarch_print_operand_reloc (file, op, false /* hi64_part */,
+				     true /* lo_reloc */);
+      break;
+
+    case 'R':
+      loongarch_print_operand_reloc (file, op, true /* hi64_part */,
+				     false /* lo_reloc */);
       break;
 
     case 't':
@@ -4848,7 +5077,8 @@ loongarch_print_operand_address (FILE *file, machine_mode /* mode  */, rtx x)
 
       case ADDRESS_LO_SUM:
 	fprintf (file, "%s,", reg_names[REGNO (addr.reg)]);
-	loongarch_print_operand_reloc (file, addr.offset, false /* hi_reloc */);
+	loongarch_print_operand_reloc (file, addr.offset, false /* hi64_part */,
+				       false /* hi_reloc */);
 	return;
 
       case ADDRESS_CONST_INT:
@@ -5821,13 +6051,22 @@ loongarch_option_override_internal (struct gcc_options *opts)
 
   switch (la_target.cmodel)
     {
-      case CMODEL_TINY_STATIC:
       case CMODEL_EXTREME:
+	if (!TARGET_EXPLICIT_RELOCS)
+	  error ("code model %qs needs %s",
+		 "extreme", "-mexplicit-relocs");
+
 	if (opts->x_flag_plt)
-	  error ("code model %qs and %qs not support %s mode",
-		 "tiny-static", "extreme", "plt");
+	  {
+	    if (global_options_set.x_flag_plt)
+	      error ("code model %qs is not compatible with %s",
+		     "extreme", "-fplt");
+	    opts->x_flag_plt = 0;
+	  }
 	break;
 
+      case CMODEL_TINY_STATIC:
+      case CMODEL_MEDIUM:
       case CMODEL_NORMAL:
       case CMODEL_TINY:
       case CMODEL_LARGE:

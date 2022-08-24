@@ -39,6 +39,11 @@
 ;;  N: -32768 to 32767 (16-bit signed integer).
 ;;  O: -128 to 127 (8-bit signed integer).
 ;;  P: 1
+;;  Um: -1 constant.
+;;  Uf: A constant with a single consecutive range of 0xff bytes.  Rest
+;;      of bytes are zeros.
+;;  Uz: A constant with a single consecutive range of 0x00 bytes.  Rest
+;;      of bytes are 0xff.
 
 ;; Register constraints.
 
@@ -111,3 +116,21 @@
   "An integer constant zero."
   (and (match_code "const_int")
        (match_test "ival == 0")))
+
+(define_constraint "Um"
+  "@internal
+  A constant -1."
+  (and (match_code "const_int")
+       (match_test "ival == -1")))
+
+(define_constraint "Uf"
+  "@internal
+  An integer constant with a consecutive range of 0xff bytes."
+  (and (match_code "const_int")
+       (match_test "const_fillbytes_operand (op, DImode)")))
+
+(define_constraint "Uz"
+  "@internal
+  An integer constant with a consecutive range of 0x00 bytes."
+  (and (match_code "const_int")
+       (match_test "const_zerobytes_operand (op, DImode)")))

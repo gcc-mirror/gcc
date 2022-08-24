@@ -860,11 +860,11 @@ Fortran Joined Separate
 ; Documented in common.opt
 
 static-libgfortran
-Fortran
+Driver
 Statically link the GNU Fortran helper library (libgfortran).
 
 static-libquadmath
-Fortran
+Driver
 Statically link the GCC Quad-Precision Math Library (libquadmath).
 
 std=f2003

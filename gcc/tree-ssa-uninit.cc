@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-predicate-analysis.h"
 #include "domwalk.h"
 #include "tree-ssa-sccvn.h"
+#include "cfganal.h"
 
 /* This implements the pass that does predicate aware warning on uses of
    possibly uninitialized variables.  The pass first collects the set of
@@ -1191,8 +1192,16 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
 
       basic_block use_bb;
       if (gphi *use_phi = dyn_cast<gphi *> (use_stmt))
-	use_bb = gimple_phi_arg_edge (use_phi,
-				      PHI_ARG_INDEX_FROM_USE (use_p))->src;
+	{
+	  edge e = gimple_phi_arg_edge (use_phi,
+					PHI_ARG_INDEX_FROM_USE (use_p));
+	  use_bb = e->src;
+	  /* Do not look for uses in the next iteration of a loop, predicate
+	     analysis will not use the appropriate predicates to prove
+	     reachability.  */
+	  if (e->flags & EDGE_DFS_BACK)
+	    continue;
+	}
       else
 	use_bb = gimple_bb (use_stmt);
 
@@ -1342,6 +1351,7 @@ execute_late_warn_uninitialized (function *fun)
   /* Mark all edges executable, warn_uninitialized_vars will skip
      unreachable blocks.  */
   set_all_edges_as_executable (fun);
+  mark_dfs_back_edges (fun);
 
   /* Re-do the plain uninitialized variable check, as optimization may have
      straightened control flow.  Do this first so that we don't accidentally

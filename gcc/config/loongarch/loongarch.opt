@@ -180,6 +180,9 @@ EnumValue
 Enum(cmodel) String(tiny-static) Value(CMODEL_TINY_STATIC)
 
 EnumValue
+Enum(cmodel) String(medium) Value(CMODEL_MEDIUM)
+
+EnumValue
 Enum(cmodel) String(large) Value(CMODEL_LARGE)
 
 EnumValue

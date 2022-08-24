@@ -1,3 +1,424 @@
+2022-08-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/106714
+	* config/i386/amxtileintrin.h (_tile_loadd_internal): Cast to
+	__PTRDIFF_TYPE__.
+	(_tile_stream_loadd_internal): Likewise.
+	(_tile_stored_internal): Likewise.
+
+2022-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106722
+	* gimple-predicate-analysis.h (MAX_NUM_CHAINS, MAX_CHAIN_LEN,
+	MAX_POSTDOM_CHECK, MAX_SWITCH_CASES): Move ...
+	* gimple-predicate-analysis.cc: ... here and document.
+	(simple_control_dep_chain): New function, factored from
+	predicate::use_cannot_happen.
+	(predicate::use_cannot_happen): Adjust.
+	(predicate::predicate): Use simple_control_dep_chain as fallback.
+
+2022-08-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-float.cc (foperator_equal::op1_range): Set range to
+	range of op2.
+
+2022-08-23  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (is_loop_exit): Split out
+	from ...
+	(is_non_loop_exit_postdominating): ... here.  Remove after
+	inlining ...
+	(find_control_equiv_block): ... here.
+	(compute_control_dep_chain): ... and here.
+	(predicate::is_use_guarded): Do not excempt loop exits
+	from short-cutting the case of the use post-dominating the
+	PHI definition.
+
+2022-08-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/106687
+	* range-op.cc (operator_minus::lhs_op1_relation): Return VREL_LE
+	for the VREL_GT case as well.
+
+2022-08-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.md (pru_<code>di3): New alternative for
+	two operands but without earlyclobber.
+
+2022-08-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.md (prumov<mode>, mov<mode>): Add
+	variants for loading -1 consts.
+
+2022-08-22  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/106564
+	* config/pru/constraints.md (Um): New constraint for -1.
+	(Uf): New constraint for IOR fill-bytes constants.
+	(Uz): New constraint for AND zero-bytes constants.
+	* config/pru/predicates.md (const_fillbytes_operand): New
+	predicate for IOR fill-bytes constants.
+	(const_zerobytes_operand): New predicate for AND zero-bytes
+	constants.
+	* config/pru/pru-protos.h (pru_output_sign_extend): Remove.
+	(struct pru_byterange): New struct to describe a byte range.
+	(pru_calc_byterange): New declaration.
+	* config/pru/pru.cc (pru_rtx_costs): Add penalty for
+	64-bit zero-extend.
+	(pru_output_sign_extend): Remove.
+	(pru_calc_byterange): New helper function to extract byte
+	range info from a constant.
+	(pru_print_operand): Remove 'y' and 'z' print modifiers.
+	* config/pru/pru.md (zero_extendqidi2): New pattern.
+	(zero_extendhidi2): New pattern.
+	(zero_extendsidi2): New pattern.
+	(extend<EQS0:mode><EQD:mode>2): Rewrite as an expand.
+	(@pru_ior_fillbytes<mode>): New pattern.
+	(@pru_and_zerobytes<mode>): New pattern.
+	(<code>di3): Rewrite as an expand and handle ZERO and FILL
+	special cases.
+	(pru_<code>di3): New name for <code>di3.
+	(@cbranch_qbbx_const_<BIT_TEST:code><HIDI:mode>): New pattern to
+	handle bit-test for 64-bit registers.
+
+2022-08-22  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.h (predicate::m_use_expr): Remove.
+	(predicate::def_expr): Likewise.
+	(predicate::use_expr): Likewise.
+	(predicate::expr): Likewise.
+	* gimple-predicate-analysis.cc (predicate::def_expr): Remove.
+	(predicate::use_expr): Likewise.
+	(predicate::expr): Likewise.
+	(predicate::is_use_guarded): Do not build m_use_expr.
+
+2022-08-22  Martin Liska  <mliska@suse.cz>
+
+	PR lto/106700
+	* configure.ac: Detect O_NONBLOCK flag for open.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* opts-common.cc (jobserver_info::connect): Set is_connected
+	  properly based on O_NONBLOCK.
+	* opts-jobserver.h (struct jobserver_info): Add is_connected
+	  member variable.
+
+2022-08-22  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* simplify-rtx.cc (test_vector_subregs_fore_back): Make first value
+	and repeat value different.
+
+2022-08-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR lto/106686
+	* lto-wrapper.cc (free_array_of_ptrs): Move before tool_cleanup.
+	(tool_cleanup): Unlink offload_names.
+	(compile_offload_image): Take filename argument to set it early.
+	(compile_images_for_offload_targets): Update call; set
+	offload_names to NULL after freeing the array.
+
+2022-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105937
+	* tree-ssa-uninit.cc (find_uninit_use): Do not queue PHIs
+	on backedges.
+	(execute_late_warn_uninitialized): Mark backedges.
+
+2022-08-22  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (predicate::use_cannot_happen):
+	If the use is guarded with multiple predicate paths compute
+	the predicates intersection before going forward.  When
+	compute_control_dep_chain wasn't able to come up with at
+	least one path from function entry to the PHI edge compute
+	a conservative sparse path instead.
+
+2022-08-20  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-opts.cc: Allow cmodel to be extreme.
+	* config/loongarch/loongarch.cc (loongarch_call_tls_get_addr):
+	Add extreme support for TLS GD and LD types.
+	(loongarch_legitimize_tls_address): Add extreme support for TLS LE
+	and IE.
+	(loongarch_split_symbol): When compiling with -mcmodel=extreme,
+	the symbol address will be obtained through five instructions.
+	(loongarch_print_operand_reloc): Add support.
+	(loongarch_print_operand): Add support.
+	(loongarch_print_operand_address): Add support.
+	(loongarch_option_override_internal): Set '-mcmodel=extreme' option
+	incompatible with '-mno-explicit-relocs'.
+	* config/loongarch/loongarch.md (@lui_l_hi20<mode>):
+	Loads bits 12-31 of data into registers.
+	(lui_h_lo20): Load bits 32-51 of the data and spell bits 0-31 of
+	the source register.
+	(lui_h_hi12): Load bits 52-63 of the data and spell bits 0-51 of
+	the source register.
+	* config/loongarch/predicates.md: Symbols need to be decomposed
+	when defining the macro TARGET_CMODEL_EXTREME
+	* doc/invoke.texi: Modify the description information of cmodel in the document.
+	Document -W[no-]extreme-plt.
+
+2022-08-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (main): Add omp_requires_file and dbgobj to
+	files_to_cleanup.
+	* config/i386/intelmic-mkoffload.cc (prepare_target_image): Add
+	omp_requires_file to temp_files.
+	* config/nvptx/mkoffload.cc (omp_requires_file): New global static var.
+	(main): Remove local omp_requires_file var.
+	(tool_cleanup): Handle omp_requires_file.
+
+2022-08-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::path_range_query):
+	Remove constructor that takes edge.
+	* gimple-range-path.h (class path_range_query): Same.
+	* tree-ssa-loop-ch.cc (edge_range_query): New.
+	(entry_loop_condition_is_static): Call edge_range_query.
+
+2022-08-18  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.h
+	(enum reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS):
+	Add new register class "ISC_REGS".
+	* config/xtensa/constraints.md (c): Add new register constraint.
+	* config/xtensa/xtensa.md (define_constants): Remove "A11_REG".
+	(sibcall_internal, sibcall_value_internal):
+	Change to use the new register constraint, and remove two split
+	patterns for fixups that are no longer needed.
+
+2022-08-18  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md (*mov<GPR:mode><X:mode>cc): Fix output
+	pattern formatting.
+
+2022-08-18  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106181
+	* doc/invoke.texi: Add Wanalyzer-imprecise-fp-arithmetic.
+
+2022-08-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::path_range_query): Add
+	various constructors to take a path.
+	(path_range_query::~path_range_query): Remove m_alloced_ranger.
+	(path_range_query::range_on_path_entry): Adjust for m_ranger being
+	a reference.
+	(path_range_query::set_path): Rename to...
+	(path_range_query::reset_path): ...this and call compute_ranges.
+	(path_range_query::ssa_range_in_phi): Adjust for m_ranger
+	reference.
+	(path_range_query::range_defined_in_block): Same.
+	(path_range_query::compute_ranges_in_block): Same.
+	(path_range_query::adjust_for_non_null_uses): Same.
+	(path_range_query::compute_exit_dependencies): Use m_path instead
+	of argument.
+	(path_range_query::compute_ranges): Remove path argument.
+	(path_range_query::range_of_stmt): Adjust for m_ranger reference.
+	(path_range_query::compute_outgoing_relations): Same.
+	* gimple-range-path.h (class path_range_query): Add various
+	constructors.
+	Make compute_ranges and compute_exit_dependencies private.
+	Rename set_path to reset_path.
+	Make m_ranger a reference.
+	Remove m_alloced_ranger.
+	* tree-ssa-dom.cc (pass_dominator::execute): Adjust constructor to
+	path_range_query.
+	* tree-ssa-loop-ch.cc (entry_loop_condition_is_static): Take a
+	ranger and instantiate a new path_range_query every time.
+	(ch_base::copy_headers): Pass ranger instead of path_range_query.
+	* tree-ssa-threadbackward.cc (class back_threader): Remove m_solver.
+	(back_threader::~back_threader): Remove m_solver.
+	(back_threader::find_taken_edge_switch): Adjust for m_ranger
+	reference.
+	(back_threader::find_taken_edge_cond): Same.
+	(back_threader::dump): Remove m_solver.
+	(back_threader::back_threader): Move verify_marked_backedges
+	here from the path_range_query constructor.
+	* tree-ssa-threadedge.cc (hybrid_jt_simplifier::simplify): Move
+	some code from compute_ranges_from_state here.
+	(hybrid_jt_simplifier::compute_ranges_from_state): Rename...
+	(hybrid_jt_simplifier::compute_exit_dependencies): ...to this.
+	* tree-ssa-threadedge.h (class hybrid_jt_simplifier): Rename
+	compute_ranges_from_state to compute_exit_dependencies.
+	Remove m_path.
+
+2022-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/106617
+	* match.pd ((a ? b : c) > d -> a ? (b > d) : (c > d)): Fix
+	guard, disable on GENERIC to not cause quadratic behavior
+	with the fold-const.cc implementation and the use of !
+
+2022-08-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR gcov-profile/106659
+	* gcov-dump.cc (INCLUDE_VECTOR): Include vector.h with
+	  INCLUDE_VECTOR.
+
+2022-08-18  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_sse_movcc): Handle vector
+	BFmode.
+	(ix86_expand_vector_init_duplicate): Support vector BFmode.
+	(ix86_expand_vector_init_one_nonzero): Ditto.
+	(ix86_expand_vector_init_one_var): Ditto.
+	(ix86_expand_vector_init_concat): Ditto.
+	(ix86_expand_vector_init_interleave): Ditto.
+	(ix86_expand_vector_init_general): Ditto.
+	(ix86_expand_vector_init): Ditto.
+	(ix86_expand_vector_set_var): Ditto.
+	(ix86_expand_vector_set): Ditto.
+	(ix86_expand_vector_extract): Ditto.
+	* config/i386/i386.cc (classify_argument): Add BF vector modes.
+	(function_arg_64): Ditto.
+	(ix86_gimplify_va_arg): Ditto.
+	(ix86_get_ssemov): Ditto.
+	* config/i386/i386.h (VALID_AVX256_REG_MODE): Add BF vector modes.
+	(VALID_AVX512F_REG_MODE): Ditto.
+	(host_detect_local_cpu): Ditto.
+	(VALID_SSE2_REG_MODE): Ditto.
+	* config/i386/i386.md: Add BF vector modes.
+	(MODE_SIZE): Ditto.
+	(ssemodesuffix): Add bf suffix for BF vector modes.
+	(ssevecmode): Ditto.
+	* config/i386/sse.md (VMOVE): Adjust for BF vector modes.
+	(VI12HFBF_AVX512VL): Ditto.
+	(V_256_512): Ditto.
+	(VF_AVX512HFBF16): Ditto.
+	(VF_AVX512BWHFBF16): Ditto.
+	(VIHFBF): Ditto.
+	(avx512): Ditto.
+	(VIHFBF_256): Ditto.
+	(VIHFBF_AVX512BW): Ditto.
+	(VI2F_256_512):Ditto.
+	(V8_128):Ditto.
+	(V16_256): Ditto.
+	(V32_512): Ditto.
+	(sseinsnmode): Ditto.
+	(sseconstm1): Ditto.
+	(sseintmodesuffix): New mode_attr.
+	(avx512fmaskmode): Ditto.
+	(avx512fmaskmodelower): Ditto.
+	(ssedoublevecmode): Ditto.
+	(ssehalfvecmode): Ditto.
+	(ssehalfvecmodelower): Ditto.
+	(ssescalarmode): Add vector BFmode mapping.
+	(ssescalarmodelower): Ditto.
+	(ssexmmmode): Ditto.
+	(ternlogsuffix): Ditto.
+	(ssescalarsize): Ditto.
+	(sseintprefix): Ditto.
+	(i128): Ditto.
+	(xtg_mode): Ditto.
+	(bcstscalarsuff): Ditto.
+	(<avx512>_blendm<mode>): New define_insn for BFmode.
+	(<avx512>_store<mode>_mask): Ditto.
+	(vcond_mask_<mode><avx512fmaskmodelower>): Ditto.
+	(vec_set<mode>_0): New define_insn for BF vector set.
+	(V8BFH_128): New mode_iterator for BFmode.
+	(avx512fp16_mov<mode>): Ditto.
+	(vec_set<mode>): New define_insn for BF vector set.
+	(@vec_extract_hi_<mode>): Ditto.
+	(@vec_extract_lo_<mode>): Ditto.
+	(vec_set_hi_<mode>): Ditto.
+	(vec_set_lo_<mode>): Ditto.
+	(*vec_extract<mode>_0): New define_insn_and_split for BF
+	vector extract.
+	(*vec_extract<mode>): New define_insn.
+	(VEC_EXTRACT_MODE): Add BF vector modes.
+	(PINSR_MODE): Add V8BF.
+	(sse2p4_1): Ditto.
+	(pinsr_evex_isa): Ditto.
+	(<sse2p4_1>_pinsr<ssemodesuffix>): Adjust to support
+	insert for V8BFmode.
+	(pbroadcast_evex_isa): Add BF vector modes.
+	(AVX2_VEC_DUP_MODE): Ditto.
+	(VEC_INIT_MODE): Ditto.
+	(VEC_INIT_HALF_MODE): Ditto.
+	(avx2_pbroadcast<mode>): Adjust to support BF vector mode
+	broadcast.
+	(avx2_pbroadcast<mode>_1): Ditto.
+	(<avx512>_vec_dup<mode>_1): Ditto.
+	(<mask_codefor><avx512>_vec_dup_gpr<mode><mask_name>):
+	Ditto.
+
+2022-08-18  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-08-18  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/103109
+	* config/rs6000/rs6000.md (<u>maddditi4): New pattern for multiply-add.
+	(<u>madddi4_highpart): New.
+	(<u>madddi4_highpart_le): New.
+
+2022-08-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc
+	(path_range_query::compute_exit_dependencies): Use
+	gimple_range_ssa_names.
+
+2022-08-18  zhongjuzhe  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/predicates.md: Adjust runtime invariant.
+	* config/riscv/riscv-modes.def (MAX_BITSIZE_MODE_ANY_MODE): New.
+	(NUM_POLY_INT_COEFFS): New.
+	* config/riscv/riscv-protos.h (riscv_initial_elimination_offset):Adjust
+	runtime invariant.
+	* config/riscv/riscv-sr.cc (riscv_remove_unneeded_save_restore_calls):
+	Adjust runtime invariant.
+	* config/riscv/riscv.cc (struct riscv_frame_info): Adjust runtime
+	invariant.
+	(enum riscv_microarchitecture_type): Ditto.
+	(riscv_valid_offset_p): Ditto.
+	(riscv_valid_lo_sum_p): Ditto.
+	(riscv_address_insns): Ditto.
+	(riscv_load_store_insns): Ditto.
+	(riscv_legitimize_move): Ditto.
+	(riscv_binary_cost): Ditto.
+	(riscv_rtx_costs): Ditto.
+	(riscv_output_move): Ditto.
+	(riscv_extend_comparands): Ditto.
+	(riscv_flatten_aggregate_field): Ditto.
+	(riscv_get_arg_info): Ditto.
+	(riscv_pass_by_reference): Ditto.
+	(riscv_elf_select_rtx_section): Ditto.
+	(riscv_stack_align): Ditto.
+	(riscv_compute_frame_info): Ditto.
+	(riscv_initial_elimination_offset): Ditto.
+	(riscv_set_return_address): Ditto.
+	(riscv_for_each_saved_reg): Ditto.
+	(riscv_first_stack_step): Ditto.
+	(riscv_expand_prologue): Ditto.
+	(riscv_expand_epilogue): Ditto.
+	(riscv_can_use_return_insn): Ditto.
+	(riscv_secondary_memory_needed): Ditto.
+	(riscv_hard_regno_nregs): Ditto.
+	(riscv_convert_vector_bits): New.
+	(riscv_option_override): Adjust runtime invariant.
+	(riscv_promote_function_mode): Ditto.
+	* config/riscv/riscv.h (POLY_SMALL_OPERAND_P): New.
+	(BITS_PER_RISCV_VECTOR): New.
+	(BYTES_PER_RISCV_VECTOR): New.
+	* config/riscv/riscv.md: Adjust runtime invariant.
+
+2022-08-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_call_tls_get_addr):
+	Get __tls_get_addr address through got table when disable plt.
+
+2022-08-18  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_expand_prologue):
+	Use an "addmi" machine instruction for updating the stack pointer
+	rather than addition/subtraction via hard register A9, if the amount
+	of change satisfies the literal value conditions of that instruction
+	when the CALL0 ABI is used.
+	(xtensa_expand_epilogue): Ditto.
+	And also inhibit the stack pointer addition of constant zero.
+
 2022-08-17  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR target/106640

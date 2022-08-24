@@ -227,7 +227,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	template<typename... _Args>
 	  _State_impl(_Args&&... __args)
-	  : _M_func{{std::forward<_Args>(__args)...}}
+	  : _M_func(std::forward<_Args>(__args)...)
 	  { }
 
 	void
@@ -261,6 +261,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tuple>
       struct _Invoker
       {
+	template<typename... _Args>
+	  explicit
+	  _Invoker(_Args&&... __args)
+	  : _M_t(std::forward<_Args>(__args)...)
+	  { }
+
 	_Tuple _M_t;
 
 	template<typename>

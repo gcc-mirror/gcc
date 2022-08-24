@@ -55,6 +55,8 @@ struct jobserver_info
   int pipefd = -1;
   /* Return true if jobserver is active.  */
   bool is_active = false;
+  /* Return true if communication with jobserver is working.  */
+  bool is_connected = false;
 };
 
 #endif /* GCC_JOBSERVER_H */

@@ -1,3 +1,8 @@
+2022-08-23  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.cc (maybe_warn_pessimizing_move): Don't warn about
+	redundant std::move when the expression was wrapped in { }.
+
 2022-08-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90428

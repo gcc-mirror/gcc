@@ -1,3 +1,17 @@
+2022-08-18  Sergei Trofimovich  <siarheit@google.com>
+
+	* Makefile.def: Drop libelf module and gcc-configure dependency
+	on it.
+	* Makefile.in: Regenerate with 'autogen Makefile.def'.
+	* Makefile.tpl (HOST_EXPORTS): Drop unused LIBELFLIBS and
+	LIBELFINC.
+	* configure: Regenrate.
+	* configure.ac (host_libs): Drop unused libelf.
+
+2022-08-18  Sergei Trofimovich  <siarheit@google.com>
+
+	* Makefile.in: Regenerate.
+
 2022-08-04  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* MAINTAINERS: Add myself as AutoFDO maintainer.

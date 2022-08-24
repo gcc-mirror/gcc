@@ -3380,6 +3380,13 @@ gfc_simplify_ibclr (gfc_expr *x, gfc_expr *y)
   k = gfc_validate_kind (x->ts.type, x->ts.kind, false);
 
   result = gfc_copy_expr (x);
+  /* Drop any separate memory representation of x to avoid potential
+     inconsistencies in result.  */
+  if (result->representation.string)
+    {
+      free (result->representation.string);
+      result->representation.string = NULL;
+    }
 
   convert_mpz_to_unsigned (result->value.integer,
 			   gfc_integer_kinds[k].bit_size);
@@ -3471,6 +3478,13 @@ gfc_simplify_ibset (gfc_expr *x, gfc_expr *y)
   k = gfc_validate_kind (x->ts.type, x->ts.kind, false);
 
   result = gfc_copy_expr (x);
+  /* Drop any separate memory representation of x to avoid potential
+     inconsistencies in result.  */
+  if (result->representation.string)
+    {
+      free (result->representation.string);
+      result->representation.string = NULL;
+    }
 
   convert_mpz_to_unsigned (result->value.integer,
 			   gfc_integer_kinds[k].bit_size);

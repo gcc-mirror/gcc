@@ -1,3 +1,25 @@
+2022-08-22  Martin Liska  <mliska@suse.cz>
+
+	* region-model.cc: Add missing final keyword.
+
+2022-08-18  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/106181
+	* analyzer.opt: Add Wanalyzer-imprecise-floating-point-arithmetic.
+	* region-model.cc (is_any_cast_p): Formatting.
+	(region_model::check_region_size): Ensure precondition.
+	(class imprecise_floating_point_arithmetic): New abstract
+	diagnostic class for all floating-point related warnings.
+	(class float_as_size_arg): Concrete diagnostic class to complain
+	about floating-point operands inside the size argument.
+	(class contains_floating_point_visitor):
+	New visitor to find floating-point operands inside svalues.
+	(region_model::check_dynamic_size_for_floats): New function.
+	(region_model::set_dynamic_extents):
+	Call to check_dynamic_size_for_floats.
+	* region-model.h (class region_model):
+	Add region_model::check_dynamic_size_for_floats.
+
 2022-08-16  Martin Liska  <mliska@suse.cz>
 
 	* region-model.cc: Fix -Winconsistent-missing-override clang

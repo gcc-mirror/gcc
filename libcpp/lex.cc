@@ -1426,19 +1426,35 @@ get_bidi_utf8 (cpp_reader *pfile, const unsigned char *const p, location_t *out)
 /* Parse a UCN where P points just past \u or \U and return its bidi code.  */
 
 static bidi::kind
-get_bidi_ucn_1 (const unsigned char *p, bool is_U)
+get_bidi_ucn_1 (const unsigned char *p, bool is_U, const unsigned char **end)
 {
   /* 6.4.3 Universal Character Names
       \u hex-quad
       \U hex-quad hex-quad
+      \u { simple-hexadecimal-digit-sequence }
      where \unnnn means \U0000nnnn.  */
 
+  *end = p + 4;
   if (is_U)
     {
       if (p[0] != '0' || p[1] != '0' || p[2] != '0' || p[3] != '0')
 	return bidi::kind::NONE;
       /* Skip 4B so we can treat \u and \U the same below.  */
       p += 4;
+      *end += 4;
+    }
+  else if (p[0] == '{')
+    {
+      p++;
+      while (*p == '0')
+	p++;
+      if (p[0] != '2'
+	  || p[1] != '0'
+	  || !ISXDIGIT (p[2])
+	  || !ISXDIGIT (p[3])
+	  || p[4] != '}')
+	return bidi::kind::NONE;
+      *end = p + 5;
     }
 
   /* All code points we are looking for start with 20xx.  */
@@ -1499,14 +1515,15 @@ get_bidi_ucn_1 (const unsigned char *p, bool is_U)
    If the kind is not NONE, write the location to *OUT.*/
 
 static bidi::kind
-get_bidi_ucn (cpp_reader *pfile,  const unsigned char *p, bool is_U,
+get_bidi_ucn (cpp_reader *pfile, const unsigned char *p, bool is_U,
 	      location_t *out)
 {
-  bidi::kind result = get_bidi_ucn_1 (p, is_U);
+  const unsigned char *end;
+  bidi::kind result = get_bidi_ucn_1 (p, is_U, &end);
   if (result != bidi::kind::NONE)
     {
       const unsigned char *start = p - 2;
-      size_t num_bytes = 2 + (is_U ? 8 : 4);
+      size_t num_bytes = end - start;
       *out = get_location_for_byte_range_in_cur_line (pfile, start, num_bytes);
     }
   return result;

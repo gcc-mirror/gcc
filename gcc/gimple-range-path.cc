@@ -59,21 +59,6 @@ path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
   m_oracle = new path_oracle (m_ranger.oracle ());
 }
 
-path_range_query::path_range_query (gimple_ranger &ranger,
-				    edge e,
-				    bool resolve)
-  : m_cache (new ssa_global_cache),
-    m_has_cache_entry (BITMAP_ALLOC (NULL)),
-    m_ranger (ranger),
-    m_resolve (resolve)
-{
-  m_oracle = new path_oracle (m_ranger.oracle ());
-  auto_vec<basic_block> bbs (2);
-  bbs.quick_push (e->dest);
-  bbs.quick_push (e->src);
-  reset_path (bbs, NULL);
-}
-
 path_range_query::~path_range_query ()
 {
   delete m_oracle;

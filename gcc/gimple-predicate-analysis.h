@@ -22,10 +22,6 @@
 #ifndef GIMPLE_PREDICATE_ANALYSIS_H_INCLUDED
 #define GIMPLE_PREDICATE_ANALYSIS_H_INCLUDED
 
-#define MAX_NUM_CHAINS 8
-#define MAX_CHAIN_LEN 5
-#define MAX_POSTDOM_CHECK 8
-#define MAX_SWITCH_CASES 40
 
 /* Represents a simple Boolean predicate.  */
 struct pred_info
@@ -69,11 +65,11 @@ class predicate
 
   /* Construct with the specified EVAL object.  */
   predicate (func_t &eval)
-    : m_preds (vNULL), m_eval (eval), m_use_expr () { }
+    : m_preds (vNULL), m_eval (eval) { }
 
   /* Copy.  */
   predicate (const predicate &rhs)
-    : m_preds (vNULL), m_eval (rhs.m_eval), m_use_expr ()
+    : m_preds (vNULL), m_eval (rhs.m_eval)
     {
       *this = rhs;
     }
@@ -109,15 +105,6 @@ class predicate
   bool is_use_guarded (gimple *, basic_block, gphi *, unsigned,
 		       hash_set<gphi *> *);
 
-  /* Return the predicate expression guarding the definition of
-     the interesting variable, optionally inverted.  */
-  tree def_expr (bool = false) const;
-  /* Return the predicate expression guarding the use of the interesting
-     variable.  */
-  tree use_expr () const;
-
-  tree expr (bool = false) const;
-
 private:
   bool includes (const pred_chain &) const;
   bool superset_of (const predicate &) const;
@@ -145,9 +132,6 @@ private:
   pred_chain_union m_preds;
   /* Callback to evaluate an operand.  Return true if it's interesting.  */
   func_t &m_eval;
-  /* The predicate expression guarding the use of the interesting
-     variable.  */
-  tree m_use_expr;
 };
 
 /* Bit mask handling macros.  */
