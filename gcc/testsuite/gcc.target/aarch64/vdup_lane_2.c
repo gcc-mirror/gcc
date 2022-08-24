@@ -260,7 +260,7 @@ test_vdups_lane_u32 ()
 uint64_t __attribute__ ((noinline))
 wrap_vdupd_lane_u64_0 (uint64x1_t dummy, uint64x1_t a)
 {
-  return vdupd_lane_u64 (a, 0);;
+  return vdupd_lane_u64 (a, 0);
 }
 
 int __attribute__ ((noinline))
