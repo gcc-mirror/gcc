@@ -44,6 +44,60 @@ typedef vec<pred_chain, va_heap, vl_ptr> pred_chain_union;
 class predicate
 {
  public:
+  /* Construct with the specified EVAL object.  */
+  predicate () : m_preds (vNULL) { }
+
+  /* Copy.  */
+  predicate (const predicate &rhs) : m_preds (vNULL) { *this = rhs; }
+
+  ~predicate ();
+
+  /* Assign.  */
+  predicate& operator= (const predicate &);
+
+  bool is_empty () const
+  {
+    return m_preds.is_empty ();
+  }
+
+  const pred_chain_union chain () const
+  {
+    return m_preds;
+  }
+
+  void init_from_control_deps (const vec<edge> *, unsigned);
+
+  void dump (gimple *, const char *) const;
+
+  void normalize (gimple * = NULL, bool = false);
+  void simplify (gimple * = NULL, bool = false);
+
+  bool superset_of (const predicate &) const;
+
+private:
+
+  bool includes (const pred_chain &) const;
+  void push_pred (const pred_info &);
+
+  /* Normalization functions.  */
+  void normalize (pred_chain *, pred_info, tree_code, pred_chain *,
+		  hash_set<tree> *);
+  void normalize (const pred_info &);
+  void normalize (const pred_chain &);
+
+  /* Simplification functions.  */
+  bool simplify_2 ();
+  bool simplify_3 ();
+  bool simplify_4 ();
+
+  /* Representation of the predicate expression(s).  */
+  pred_chain_union m_preds;
+};
+
+/* Represents a complex Boolean predicate expression.  */
+class uninit_analysis
+{
+ public:
   /* Base function object type used to determine whether an expression
      is of interest.  */
   struct func_t
@@ -64,72 +118,35 @@ class predicate
   };
 
   /* Construct with the specified EVAL object.  */
-  predicate (func_t &eval)
-    : m_preds (vNULL), m_eval (eval) { }
+  uninit_analysis (func_t &eval)
+    : m_phi_def_preds (), m_eval (eval) { }
 
   /* Copy.  */
-  predicate (const predicate &rhs)
-    : m_preds (vNULL), m_eval (rhs.m_eval)
-    {
-      *this = rhs;
-    }
-
-  predicate (basic_block, basic_block, func_t &);
-
-  ~predicate ();
+  uninit_analysis (const uninit_analysis &rhs) = delete;
 
   /* Assign.  */
-  predicate& operator= (const predicate &);
-
-  bool is_empty () const
-  {
-    return m_preds.is_empty ();
-  }
-
-  const pred_chain_union chain () const
-  {
-    return m_preds;
-  }
+  uninit_analysis& operator= (const uninit_analysis&) = delete;
 
   /* Return true if the use by a statement in the basic block of
      a PHI operand is ruled out (i.e., guarded) by *THIS.  */
   bool is_use_guarded (gimple *, basic_block, gphi *, unsigned);
 
-  void init_from_control_deps (const vec<edge> *, unsigned);
-
-  void dump (gimple *, const char *) const;
-
-  void normalize (gimple * = NULL, bool = false);
-  void simplify (gimple * = NULL, bool = false);
-
+private:
   bool is_use_guarded (gimple *, basic_block, gphi *, unsigned,
 		       hash_set<gphi *> *);
+  bool prune_phi_opnds (gphi *, unsigned, gphi *, tree, tree_code,
+			hash_set<gphi *> *, bitmap *);
+  bool overlap (gphi *, unsigned, hash_set<gphi *> *, const predicate &);
+  bool use_cannot_happen (gphi *, unsigned, const predicate &);
 
-private:
-  bool includes (const pred_chain &) const;
-  bool superset_of (const predicate &) const;
-  bool overlap (gphi *, unsigned, hash_set<gphi *> *);
-  bool use_cannot_happen (gphi *, unsigned);
-
+  void collect_phi_def_edges (gphi *, basic_block, vec<edge> *,
+			      hash_set<gimple *> *);
   bool init_from_phi_def (gphi *);
+  bool init_use_preds (predicate &, basic_block, basic_block);
 
-  void push_pred (const pred_info &);
 
-  /* Normalization functions.  */
-  void normalize (pred_chain *, pred_info, tree_code, pred_chain *,
-		  hash_set<tree> *);
-
-  void normalize (const pred_info &);
-  void normalize (const pred_chain &);
-
-  /* Simplification functions.  */
-  bool simplify_2 ();
-  bool simplify_3 ();
-  bool simplify_4 ();
-
-private:
   /* Representation of the predicate expression(s).  */
-  pred_chain_union m_preds;
+  predicate m_phi_def_preds;
   /* Callback to evaluate an operand.  Return true if it's interesting.  */
   func_t &m_eval;
 };

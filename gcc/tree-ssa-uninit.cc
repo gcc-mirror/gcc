@@ -1111,7 +1111,7 @@ compute_uninit_opnds_pos (gphi *phi)
 
   unsigned n = gimple_phi_num_args (phi);
   /* Bail out for phi with too many args.  */
-  if (n > predicate::func_t::max_phi_args)
+  if (n > uninit_analysis::func_t::max_phi_args)
     return 0;
 
   for (unsigned i = 0; i < n; ++i)
@@ -1137,7 +1137,7 @@ compute_uninit_opnds_pos (gphi *phi)
 /* Function object type used to determine whether an expression
    is of interest to the predicate analyzer.  */
 
-struct uninit_undef_val_t: public predicate::func_t
+struct uninit_undef_val_t: public uninit_analysis::func_t
 {
   virtual bool operator()(tree) override;
   virtual unsigned phi_arg_set (gphi *) override;
@@ -1179,7 +1179,7 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds,
      lazily from PHI in the first call to is_use_guarded() and cached
      for subsequent iterations.  */
   uninit_undef_val_t eval;
-  predicate def_preds (eval);
+  uninit_analysis def_preds (eval);
 
   use_operand_p use_p;
   imm_use_iterator iter;
