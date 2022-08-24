@@ -18,7 +18,7 @@
 #along with GCC; see the file COPYING3.  If not see
 #<http://www.gnu.org/licenses/>.
 
-
+# QUIAT=@
 XGCC = ./xgcc -B./
 GM2_2 = ./gm2 -B./stage2/m2 -g -fm2-g
 
@@ -30,8 +30,11 @@ PPG-INTERFACE-C = libc.c mcrts.c Selective.c termios.c \
 
 PPG-INTERFACE-CC = UnixArgs.cc ldtoa.cc dtoa.cc
 
-PPG-MODS         =  SymbolKey.mod   NameKey.mod  Lists.mod  bnflex.mod  Output.mod
+# Implementation modules found in the gm2-compiler directory.
 
+PPG-MODS         = SymbolKey.mod   NameKey.mod  Lists.mod  bnflex.mod  Output.mod
+
+# Core library definition modules used by ppg found in the gm2-libs directory.
 
 PPG-LIB-DEFS     = Args.def Assertion.def ASCII.def Debug.def \
                    DynamicStrings.def FIO.def Indexing.def IO.def \
@@ -41,6 +44,8 @@ PPG-LIB-DEFS     = Args.def Assertion.def ASCII.def Debug.def \
                    RTExceptions.def \
                    StdIO.def SFIO.def StrIO.def StrLib.def \
                    Storage.def StrCase.def SysStorage.def
+
+# Core library implementation modules used by ppg found in the gm2-libs directory.
 
 PPG-LIB-MODS     = ASCII.mod \
                    Args.mod \
@@ -63,6 +68,10 @@ PPG-LIB-MODS     = ASCII.mod \
                    StrIO.mod \
                    StrLib.mod \
                    SysStorage.mod
+
+# Program module ppg.mod from which pge.mod is created.  ppg.mod is
+# where changes should be made and then you should run pge-maintainer
+# to recreate the C++ version of pge.
 
 PPG-SRC          = ppg.mod
 
@@ -300,11 +309,53 @@ m2/gm2-auto/pge.o: m2/gm2-auto/pge.mod $(MCDEPS)
 	$(MC) --quiet -o=m2/gm2-auto/pge.c m2/gm2-auto/pge.mod
 	$(COMPILER) -c $(CFLAGS) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2 -Im2/gm2-libs-boot -Im2/gm2-compiler-boot -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) m2/gm2-auto/pge.c -o $@
 
+pge-help: force
+	@echo "The pge maintainer commands are:"
+	@echo " "
+	@echo " make pge-maintainer"
+	@echo " make pge-verify"
+	@echo " make pge-push       # copy pge C++ sources (app and libs) into srcdir/m2/pge-boot"
+	@echo " make pge-libs-push  # copy C++ libraries which pge uses into srcdir/m2/pge-boot"
+	@echo " make pge-app-push   # copy pge C++ application modules into srcdir/m2/pge-boot"		
+	@echo " make pge-clean"
+
+pge-maintainer: $(PGE)
+
+# Copy the C++ sources for ppe.mod into $(srcdir)/pge-boot.
+
+pge-push: pge-libs-push pge-app-push
+
+pge-libs-push: force
+	for i in $(cat $(srcdir)/m2/init/ppginit) ; do \
+	    if [ -f $(srcdir)/m2/gm2-libs-ch/${i}.h ] ; then \
+                cp $(srcdir)/m2/gm2-libs-ch/${i}.h $(srcdir) ; \
+            else \
+                echo "not found ${i}" ; \
+            fi ; \
+	    if [ -f $(srcdir)/m2/gm2-libs-ch/${i}.c* ] ; then \
+                cp $(srcdir)/m2/gm2-libs-ch/${i}.c* $(srcdir) ; \
+	    elif [ -f $(srcdir)/m2/gm2-pge-libs/${i}.c* ] ; then \
+                cp $(srcdir)/m2/gm2-pge-libs/${i}.c* $(srcdir) ; \
+            else \
+                echo "not found ${i}" ; \
+            fi ; \
+        done
+
+pge-app-push: force
+	cp m2/gm2-pge-boot/*.c $(srcdir)/m2/pge-boot	
+
+# Perform sanity checks.
+
+pge-verify: force
+
+# Remove pge build files.
+
+pge-clean: force
 
 
-# The rest of the Make-lang.in handles the bootstrap tool (maintained mode) and
-# also provides testing between different versions of the Modula-2 compilers.
-# (the one created from Modula-2 -> C -> .o  vs the Modula-2 -> .o).
+# The rest of the Make-lang.in handles the bootstrap tool (maintained
+# mode) and also provides testing between the bootstrapped and the
+# non-bootstrapped compilers.
 
 # Rules for mc
 

@@ -18,7 +18,6 @@
 #along with GCC; see the file COPYING3.  If not see
 #<http://www.gnu.org/licenses/>.
 
-# QUIAT=@
 GM2_MAKE_DEBUG=
 
 # Actual names to use when installing a native compiler.
@@ -524,182 +523,525 @@ m2/gm2-gcc/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-gcc/%.def $(MCDEPS)
 # The following tables define the source files which are translated into C using mc
 # and defines the system interface C files.
 
-GM2-LIBS-BOOT-DEFS = ASCII.def       IO.def          Args.def        M2RTS.def       \
-                     Assertion.def   NumberIO.def    Break.def       SYSTEM.def      \
-                     CmdArgs.def     Scan.def                        StrCase.def     \
-                     FIO.def         StrIO.def       StrLib.def      TimeString.def  \
-                     UnixArgs.def    wrapc.def                       Environment.def \
-                     FpuIO.def       Debug.def       SysStorage.def  DynamicStrings.def \
-                     SFIO.def        SArgs.def       StdIO.def       \
-                     FormatStrings.def PushBackInput.def Storage.def SEnvironment.def \
-                     StringConvert.def               M2EXCEPTION.def RTExceptions.def \
-                     dtoa.def        ldtoa.def       termios.def     errno.def       \
-                     SysExceptions.def               Indexing.def    libc.def        \
-                     libm.def        M2LINK.def      M2Dependent.def
+# Core library definition modules found in gm2-libs.
 
-GM2-LIBS-BOOT-MODS = ASCII.mod       IO.mod          Args.mod        Assertion.mod   \
-                     NumberIO.mod    Break.mod       CmdArgs.mod     Scan.mod        \
-                                     StrCase.mod     FIO.mod         StrIO.mod       \
-                     TimeString.mod  StrLib.mod                      Environment.mod \
-                     FpuIO.mod       Debug.mod       SysStorage.mod  Storage.mod     \
-                     DynamicStrings.mod \
-                     SFIO.mod        M2RTS.mod       SArgs.mod                       \
-                     FormatStrings.mod               PushBackInput.mod \
-                     SEnvironment.mod                StringConvert.mod \
-                     M2EXCEPTION.mod RTExceptions.mod \
-                     Indexing.mod    M2Dependent.mod
+GM2-LIBS-BOOT-DEFS = \
+   ASCII.def \
+   Args.def \
+   Assertion.def \
+   Break.def \
+   CmdArgs.def \
+   Debug.def \
+   DynamicStrings.def \
+   Environment.def \
+   FIO.def \
+   FormatStrings.def \
+   FpuIO.def \
+   IO.def \
+   Indexing.def \
+   M2Dependent.def \
+   M2EXCEPTION.def \
+   M2LINK.def \
+   M2RTS.def \
+   NumberIO.def \
+   PushBackInput.def \
+   RTExceptions.def \
+   SArgs.def \
+   SEnvironment.def \
+   SFIO.def \
+   SYSTEM.def \
+   Scan.def \
+   StdIO.def \
+   Storage.def \
+   StrCase.def \
+   StrIO.def \
+   StrLib.def \
+   StringConvert.def \
+   SysExceptions.def \
+   SysStorage.def \
+   TimeString.def \
+   UnixArgs.def \
+   dtoa.def \
+   errno.def \
+   ldtoa.def \
+   libc.def \
+   libm.def \
+   termios.def \
+   wrapc.def \
 
-GM2-LIBS-BOOT-C    = wrapc.c         StdIO.c                         \
-                     choosetemp.c    termios.c       \
-                     errno.c         SysExceptions.c
+# Core library implementation modules found in gm2-libs.
 
-GM2-LIBS-BOOT-CC   = UnixArgs.cc     dtoa.cc         ldtoa.cc
+GM2-LIBS-BOOT-MODS = \
+   ASCII.mod \
+   Args.mod \
+   Assertion.mod \
+   Break.mod \
+   CmdArgs.mod \
+   Debug.mod \
+   DynamicStrings.mod \
+   Environment.mod \
+   FIO.mod \
+   FormatStrings.mod \
+   FpuIO.mod \
+   IO.mod \
+   Indexing.mod \
+   M2Dependent.mod \
+   M2EXCEPTION.mod \
+   M2RTS.mod \
+   NumberIO.mod \
+   PushBackInput.mod \
+   RTExceptions.mod \
+   SArgs.mod \
+   SEnvironment.mod \
+   SFIO.mod \
+   Scan.mod \
+   Storage.mod \
+   StrCase.mod \
+   StrIO.mod \
+   StrLib.mod \
+   StringConvert.mod \
+   SysStorage.mod \
+   TimeString.mod \
 
-GM2-COMP-BOOT-DEFS = FifoQueue.def   M2Debug.def     M2Optimize.def  M2Defaults.def  \
-                     M2Options.def   P3SymBuild.def  M2ALU.def       \
-                     M2Pass.def      P0SymBuild.def  P1SymBuild.def  M2AsmUtil.def   \
-                     M2EvalSym.def   \
-                     M2Quads.def     M2FileName.def  M2StackWord.def M2StackAddress.def \
-                     M2Base.def      M2Reserved.def  SymbolKey.def   M2BasicBlock.def\
-                     M2Search.def    M2Batch.def     M2System.def    P2SymBuild.def  \
-                     M2Code.def      M2Comp.def      m2flex.def      NameKey.def     \
-                     M2LexBuf.def    M2Version.def   M2Error.def     M2Graph.def     \
-                     M2Students.def  \
-                     M2GenGCC.def    M2GCCDeclare.def \
-                     SymbolTable.def Lists.def       SymbolConversion.def \
-                     P0SyntaxCheck.def \
-                     P1Build.def     P2Build.def     P3Build.def     PHBuild.def     \
-                     M2Printf.def    bnflex.def      M2Quiet.def     M2Preprocess.def \
-                                                     M2Bitset.def    M2Size.def      \
-                     M2Scope.def     M2Range.def     M2Swig.def      \
-                     M2MetaError.def Sets.def        M2CaseList.def  PCSymBuild.def  \
-                     PCBuild.def     M2Const.def     M2DebugStack.def \
-                     M2DriverOptions.def             ObjectFiles.def \
-                     M2ColorString.def               M2Emit.def      M2Check.def \
-                     M2SSA.def       Output.def      M2Scaffold.def
+# Hand translated C files and C files for definition module for "C" modules
+# found in gm2-libs-ch.
 
-GM2-COMP-BOOT-MODS = FifoQueue.mod   M2LexBuf.mod                             \
-                     M2AsmUtil.mod   M2Optimize.mod  M2StackWord.mod \
-                     M2Options.mod   M2Pass.mod      M2Batch.mod     M2Quads.mod     \
-                     M2Comp.mod      M2Reserved.mod                  M2StackAddress.mod \
-                     M2Debug.mod     M2Defaults.mod  NameKey.mod     \
-                     M2FileName.mod  P0SymBuild.mod  P1SymBuild.mod  P2SymBuild.mod  \
-                     P3SymBuild.mod  \
-                     SymbolKey.mod   SymbolTable.mod                 M2Error.mod     \
-                     M2Graph.mod     M2Students.mod  \
-                     M2BasicBlock.mod M2Code.mod     M2GenGCC.mod    M2GCCDeclare.mod \
-                     SymbolConversion.mod            M2Base.mod      \
-                     M2ALU.mod       M2System.mod    Lists.mod       \
-                     M2Printf.mod    bnflex.mod      M2Quiet.mod     M2Search.mod    \
-                     M2Preprocess.mod                                M2Bitset.mod    \
-                     M2Size.mod      M2Scope.mod     M2Range.mod     \
-                     M2Swig.mod      M2MetaError.mod Sets.mod        M2CaseList.mod  \
-                     PCSymBuild.mod  M2Const.mod     M2DebugStack.mod \
-                     M2DriverOptions.mod \
-                     SymbolKey.mod   NameKey.mod     Lists.mod       ObjectFiles.mod \
-                     M2ColorString.mod               M2Emit.mod      M2Check.mod \
-                     M2SSA.mod       Output.mod      M2Scaffold.mod
+GM2-LIBS-BOOT-C = \
+   StdIO.c \
+   SysExceptions.c \
+   choosetemp.c \
+   errno.c \
+   termios.c \
+   wrapc.c \
 
-GM2-GCC-DEFS      =  m2builtins.def  m2except.def    m2convert.def   m2decl.def \
-                     m2except.def    m2expr.def      m2misc.def      m2block.def \
-                     m2statement.def m2top.def       m2tree.def      m2treelib.def \
-                     m2type.def      m2linemap.def   m2color.def     m2configure.def
+# C++ implemented modules found in gm2-libs-ch.
 
-# The following tables define the source files used to build gm2 using only Modula-2
-# sources (except for interfacing to libc and gcc).
+GM2-LIBS-BOOT-CC = \
+   UnixArgs.cc \
+   dtoa.cc \
+   ldtoa.cc
+
+# Definition modules for the front end found in gm2-compiler.
+
+GM2-COMP-BOOT-DEFS = \
+   FifoQueue.def \
+   Lists.def \
+   M2ALU.def \
+   M2AsmUtil.def \
+   M2Base.def \
+   M2BasicBlock.def \
+   M2Batch.def \
+   M2Bitset.def \
+   M2CaseList.def \
+   M2Check.def \
+   M2Code.def \
+   M2ColorString.def \
+   M2Comp.def \
+   M2Const.def \
+   M2Debug.def \
+   M2DebugStack.def \
+   M2Defaults.def \
+   M2DriverOptions.def \
+   M2Emit.def \
+   M2Error.def \
+   M2EvalSym.def \
+   M2FileName.def \
+   M2GCCDeclare.def \
+   M2GenGCC.def \
+   M2Graph.def \
+   M2LexBuf.def \
+   M2MetaError.def \
+   M2Optimize.def \
+   M2Options.def \
+   M2Pass.def \
+   M2Preprocess.def \
+   M2Printf.def \
+   M2Quads.def \
+   M2Quiet.def \
+   M2Range.def \
+   M2Reserved.def \
+   M2SSA.def \
+   M2Scaffold.def \
+   M2Scope.def \
+   M2Search.def \
+   M2Size.def \
+   M2StackAddress.def \
+   M2StackWord.def \
+   M2Students.def \
+   M2Swig.def \
+   M2System.def \
+   M2Version.def \
+   NameKey.def \
+   ObjectFiles.def \
+   Output.def \
+   P0SymBuild.def \
+   P0SyntaxCheck.def \
+   P1Build.def \
+   P1SymBuild.def \
+   P2Build.def \
+   P2SymBuild.def \
+   P3Build.def \
+   P3SymBuild.def \
+   PCBuild.def \
+   PCSymBuild.def \
+   PHBuild.def \
+   Sets.def \
+   SymbolConversion.def \
+   SymbolKey.def \
+   SymbolTable.def \
+   bnflex.def \
+   m2flex.def \
+
+# Implementation modules for the front end found in gm2-compiler.
+
+GM2-COMP-BOOT-MODS = \
+   FifoQueue.mod \
+   Lists.mod \
+   Lists.mod \
+   M2ALU.mod \
+   M2AsmUtil.mod \
+   M2Base.mod \
+   M2BasicBlock.mod \
+   M2Batch.mod \
+   M2Bitset.mod \
+   M2CaseList.mod \
+   M2Check.mod \
+   M2Code.mod \
+   M2ColorString.mod \
+   M2Comp.mod \
+   M2Const.mod \
+   M2Debug.mod \
+   M2DebugStack.mod \
+   M2Defaults.mod \
+   M2DriverOptions.mod \
+   M2Emit.mod \
+   M2Error.mod \
+   M2FileName.mod \
+   M2GCCDeclare.mod \
+   M2GenGCC.mod \
+   M2Graph.mod \
+   M2LexBuf.mod \
+   M2MetaError.mod \
+   M2Optimize.mod \
+   M2Options.mod \
+   M2Pass.mod \
+   M2Preprocess.mod \
+   M2Printf.mod \
+   M2Quads.mod \
+   M2Quiet.mod \
+   M2Range.mod \
+   M2Reserved.mod \
+   M2SSA.mod \
+   M2Scaffold.mod \
+   M2Scope.mod \
+   M2Search.mod \
+   M2Size.mod \
+   M2StackAddress.mod \
+   M2StackWord.mod \
+   M2Students.mod \
+   M2Swig.mod \
+   M2System.mod \
+   NameKey.mod \
+   NameKey.mod \
+   ObjectFiles.mod \
+   Output.mod \
+   P0SymBuild.mod \
+   P1SymBuild.mod \
+   P2SymBuild.mod \
+   P3SymBuild.mod \
+   PCSymBuild.mod \
+   Sets.mod \
+   SymbolConversion.mod \
+   SymbolKey.mod \
+   SymbolKey.mod \
+   SymbolTable.mod \
+   bnflex.mod \
+
+# The interface between the modula-2 front end and gimple/trees found in directory gm2-gcc.
+
+GM2-GCC-DEFS = \
+   m2block.def \
+   m2builtins.def \
+   m2color.def \
+   m2configure.def \
+   m2convert.def \
+   m2decl.def \
+   m2except.def \
+   m2except.def \
+   m2expr.def \
+   m2linemap.def \
+   m2misc.def \
+   m2statement.def \
+   m2top.def \
+   m2tree.def \
+   m2treelib.def \
+   m2type.def \
+
+# The following lists define the source files used to build gm2 using Modula-2
+# sources directly.
 #
 # cc1gm2$(exeext) uses these definition modules from the core libraries.
 
-GM2-LIBS-DEFS      = ASCII.def         IO.def          Args.def        M2RTS.def       \
-                     Assertion.def     NumberIO.def    Break.def       SYSTEM.def      \
-                     CmdArgs.def       Scan.def                        StrCase.def     \
-                     FIO.def           StrIO.def       StrLib.def      TimeString.def  \
-                     UnixArgs.def      wrapc.def                       Environment.def \
-                     FpuIO.def         Debug.def       SysStorage.def  \
-                     Storage.def       StdIO.def       libc.def        SEnvironment.def\
-                     DynamicStrings.def                SFIO.def        SArgs.def \
-                     PushBackInput.def StringConvert.def               FormatStrings.def \
-                     Builtins.def      cbuiltin.def    MathLib0.def    M2EXCEPTION.def \
-                     RTExceptions.def  SMathLib0.def   dtoa.def        ldtoa.def       \
-                     termios.def       RTint.def       COROUTINES.def  Indexing.def    \
-                     LMathLib0.def     LegacyReal.def  MemUtils.def    GetOpt.def      \
-                     M2LINK.def        M2Dependent.def
+GM2-LIBS-DEFS = \
+   ASCII.def \
+   Args.def \
+   Assertion.def \
+   Break.def \
+   Builtins.def \
+   COROUTINES.def \
+   CmdArgs.def \
+   Debug.def \
+   DynamicStrings.def \
+   Environment.def \
+   FIO.def \
+   FormatStrings.def \
+   FpuIO.def \
+   GetOpt.def \
+   IO.def \
+   Indexing.def \
+   LMathLib0.def \
+   LegacyReal.def \
+   M2Dependent.def \
+   M2EXCEPTION.def \
+   M2LINK.def \
+   M2RTS.def \
+   MathLib0.def \
+   MemUtils.def \
+   NumberIO.def \
+   PushBackInput.def \
+   RTExceptions.def \
+   RTint.def \
+   SArgs.def \
+   SEnvironment.def \
+   SFIO.def \
+   SMathLib0.def \
+   SYSTEM.def \
+   Scan.def \
+   StdIO.def \
+   Storage.def \
+   StrCase.def \
+   StrIO.def \
+   StrLib.def \
+   StringConvert.def \
+   SysStorage.def \
+   TimeString.def \
+   UnixArgs.def \
+   cbuiltin.def \
+   dtoa.def \
+   ldtoa.def \
+   libc.def \
+   termios.def \
+   wrapc.def \
 
 # cc1gm2$(exeext) uses these implementation modules from the core libraries.
 
-GM2-LIBS-MODS      = ASCII.mod         IO.mod          Args.mod        M2RTS.mod       \
-                     Assertion.mod     NumberIO.mod    Break.mod       SYSTEM.mod      \
-                     CmdArgs.mod       Scan.mod                        StrCase.mod     \
-                     FIO.mod           StrIO.mod       StrLib.mod      TimeString.mod  \
-                                                                       Environment.mod \
-                     FpuIO.mod         Debug.mod       SysStorage.mod  \
-                     Storage.mod       StdIO.mod                       SEnvironment.mod\
-                     DynamicStrings.mod                SFIO.mod        SArgs.mod \
-                     PushBackInput.mod StringConvert.mod               FormatStrings.mod \
-                     Builtins.mod                      MathLib0.mod    M2EXCEPTION.mod \
-                     RTExceptions.mod  SMathLib0.mod   RTint.mod       COROUTINES.mod  \
-                     Indexing.mod      LMathLib0.mod   LegacyReal.mod  MemUtils.mod    \
-                     GetOpt.mod        M2Dependent.mod
+GM2-LIBS-MODS = \
+   ASCII.mod \
+   Args.mod \
+   Assertion.mod \
+   Break.mod \
+   Builtins.mod \
+   COROUTINES.mod \
+   CmdArgs.mod \
+   Debug.mod \
+   DynamicStrings.mod \
+   Environment.mod \
+   FIO.mod \
+   FormatStrings.mod \
+   FpuIO.mod \
+   GetOpt.mod \
+   IO.mod \
+   Indexing.mod \
+   LMathLib0.mod \
+   LegacyReal.mod \
+   M2Dependent.mod \
+   M2EXCEPTION.mod \
+   M2RTS.mod \
+   MathLib0.mod \
+   MemUtils.mod \
+   NumberIO.mod \
+   PushBackInput.mod \
+   RTExceptions.mod \
+   RTint.mod \
+   SArgs.mod \
+   SEnvironment.mod \
+   SFIO.mod \
+   SMathLib0.mod \
+   SYSTEM.mod \
+   Scan.mod \
+   StdIO.mod \
+   Storage.mod \
+   StrCase.mod \
+   StrIO.mod \
+   StrLib.mod \
+   StringConvert.mod \
+   SysStorage.mod \
+   TimeString.mod \
 
 # cc1gm2$(exeext) uses these C modules from the core libraries.
 
-GM2-LIBS-C         = wrapc.c           Selective.c     choosetemp.c    \
-                     errno.c           \
-                     termios.c         SysExceptions.c host.c          cgetopt.c
+GM2-LIBS-C = \
+   Selective.c \
+   SysExceptions.c \
+   cgetopt.c \
+   choosetemp.c \
+   errno.c \
+   host.c \
+   termios.c \
+   wrapc.c \
 
 # cc1gm2$(exeext) uses these C++ modules from the core libraries.
 
-GM2-LIBS-CC        = UnixArgs.cc       dtoa.cc         ldtoa.cc
+GM2-LIBS-CC = \
+   UnixArgs.cc \
+   dtoa.cc \
+   ldtoa.cc \
 
 # cc1gm2$(exeext) uses these definition modules found in the gm2-compiler directory.
 
-GM2-COMP-DEFS      = FifoQueue.def     M2Debug.def     M2Optimize.def  M2Defaults.def  \
-                     M2Options.def     P3SymBuild.def  M2ALU.def       M2Graph.def     \
-                     M2Pass.def        P0SymBuild.def  P1SymBuild.def  M2AsmUtil.def   \
-                     M2Quads.def     \
-                     M2StackWord.def   M2FileName.def  M2Base.def      M2Reserved.def  \
-                     SymbolKey.def     M2BasicBlock.def M2Search.def   M2Batch.def     \
-                     M2System.def      P2SymBuild.def  M2Code.def      M2Comp.def      \
-                     NameKey.def       M2Version.def   M2Error.def     M2StackAddress.def \
-                     M2Students.def    M2GenGCC.def    \
-                     M2GCCDeclare.def  SymbolTable.def Lists.def       \
-                     P0SyntaxCheck.def bnflex.def      P1Build.def     P2Build.def     \
-                     P3Build.def       PHBuild.def     SymbolConversion.def \
-                     M2Preprocess.def  M2Printf.def    M2LexBuf.def    M2Quiet.def     \
-                     M2Bitset.def      M2Size.def      M2Scope.def     M2Range.def     \
-                     M2Swig.def        M2MetaError.def Sets.def        M2CaseList.def  \
-                     PCSymBuild.def    PCBuild.def     M2Const.def     M2DebugStack.def \
-                     M2DriverOptions.def               ObjectFiles.def M2ColorString.def \
-                     M2Emit.def        M2Check.def     M2SSA.def       M2Scaffold.def
+GM2-COMP-DEFS = \
+   FifoQueue.def \
+   Lists.def \
+   M2ALU.def \
+   M2AsmUtil.def   \
+   M2Base.def \
+   M2BasicBlock.def \
+   M2Batch.def \
+   M2Bitset.def \
+   M2CaseList.def \
+   M2Check.def \
+   M2Code.def \
+   M2ColorString.def \
+   M2Comp.def \
+   M2Const.def \
+   M2Debug.def \
+   M2DebugStack.def \
+   M2Defaults.def \
+   M2DriverOptions.def \
+   M2Emit.def \
+   M2Error.def \
+   M2FileName.def \
+   M2GCCDeclare.def \
+   M2GenGCC.def \
+   M2Graph.def \
+   M2LexBuf.def \
+   M2MetaError.def \
+   M2Optimize.def \
+   M2Options.def \
+   M2Pass.def \
+   M2Preprocess.def \
+   M2Printf.def \
+   M2Quads.def     \
+   M2Quiet.def \
+   M2Range.def \
+   M2Reserved.def \
+   M2SSA.def \
+   M2Scaffold.def \
+   M2Scope.def \
+   M2Search.def \
+   M2Size.def \
+   M2StackAddress.def \
+   M2StackWord.def \
+   M2Students.def \
+   M2Swig.def \
+   M2System.def \
+   M2Version.def \
+   NameKey.def \
+   ObjectFiles.def \
+   P0SymBuild.def \
+   P0SyntaxCheck.def \
+   P1Build.def \
+   P1SymBuild.def \
+   P2Build.def \
+   P2SymBuild.def \
+   P3Build.def \
+   P3SymBuild.def \
+   PCBuild.def \
+   PCSymBuild.def \
+   PHBuild.def \
+   Sets.def \
+   SymbolConversion.def \
+   SymbolKey.def \
+   SymbolTable.def \
+   bnflex.def \
 
 # cc1gm2$(exeext) uses these implementation modules found in the gm2-compiler directory.
 
-GM2-COMP-MODS      = FifoQueue.mod     M2AsmUtil.mod                   M2Optimize.mod  \
-                     M2StackWord.mod   M2Options.mod   M2Pass.mod      M2Batch.mod     \
-                     M2Quads.mod       M2Comp.mod      M2Reserved.mod                  \
-                     M2Debug.mod       M2Defaults.mod  NameKey.mod     M2Graph.mod     \
-                     M2FileName.mod    P0SymBuild.mod  P1SymBuild.mod  P2SymBuild.mod  \
-                     P3SymBuild.mod  \
-                     SymbolKey.mod     SymbolTable.mod                 M2Error.mod     \
-                     M2Students.mod    M2StackAddress.mod \
-                     M2BasicBlock.mod  M2Code.mod      M2GenGCC.mod    M2GCCDeclare.mod\
-                     M2ALU.mod         M2System.mod    M2Base.mod      Lists.mod       \
-                     M2Search.mod      bnflex.mod      \
-                     SymbolConversion.mod \
-                     M2Preprocess.mod  M2Printf.mod    M2LexBuf.mod    M2Quiet.mod     \
-                     M2Bitset.mod      M2Size.mod      M2Scope.mod     M2Range.mod     \
-                     M2Swig.mod        M2MetaError.mod Sets.mod        M2CaseList.mod  \
-                     PCSymBuild.mod    M2Const.mod     M2DebugStack.mod \
-                     M2DriverOptions.mod               ObjectFiles.mod M2ColorString.mod \
-                     M2Emit.mod        M2Check.mod     M2SSA.mod       Output.mod      \
-                     M2Scaffold.mod
+GM2-COMP-MODS = \
+   FifoQueue.mod \
+   Lists.mod \
+   M2ALU.mod \
+   M2AsmUtil.mod \
+   M2Base.mod \
+   M2BasicBlock.mod \
+   M2Batch.mod \
+   M2Bitset.mod \
+   M2CaseList.mod \
+   M2Check.mod \
+   M2Code.mod \
+   M2ColorString.mod \
+   M2Comp.mod \
+   M2Const.mod \
+   M2Debug.mod \
+   M2DebugStack.mod \
+   M2Defaults.mod \
+   M2DriverOptions.mod \
+   M2Emit.mod \
+   M2Error.mod \
+   M2FileName.mod \
+   M2GCCDeclare.mod \
+   M2GenGCC.mod \
+   M2Graph.mod \
+   M2LexBuf.mod \
+   M2MetaError.mod \
+   M2Optimize.mod \
+   M2Options.mod \
+   M2Pass.mod \
+   M2Preprocess.mod \
+   M2Printf.mod \
+   M2Quads.mod \
+   M2Quiet.mod \
+   M2Range.mod \
+   M2Reserved.mod \
+   M2SSA.mod \
+   M2Scaffold.mod \
+   M2Scope.mod \
+   M2Search.mod \
+   M2Size.mod \
+   M2StackAddress.mod \
+   M2StackWord.mod \
+   M2Students.mod \
+   M2Swig.mod \
+   M2System.mod \
+   NameKey.mod \
+   ObjectFiles.mod \
+   Output.mod \
+   P0SymBuild.mod \
+   P1SymBuild.mod \
+   P2SymBuild.mod  \
+   P3SymBuild.mod  \
+   PCSymBuild.mod \
+   Sets.mod \
+   SymbolConversion.mod \
+   SymbolKey.mod \
+   SymbolTable.mod \
+   bnflex.mod \
 
-# Modules are created by the parser generator pge.
+# Implementation modules created by the parser generator pge from .bnf files.
 
-GM2-AUTO-MODS      = P2Build.mod       P3Build.mod     PHBuild.mod     PCBuild.mod     \
-                     P1Build.mod       P0SyntaxCheck.mod
+GM2-AUTO-MODS = \
+   P2Build.mod \
+   P3Build.mod \
+   PHBuild.mod \
+   PCBuild.mod \
+   P1Build.mod \
+   P0SyntaxCheck.mod \
 
-GM2-LIBIBERTY-DEFS = choosetemp.def    pexecute.def
+# LIBIBERTY interface definition modules
+
+GM2-LIBIBERTY-DEFS = \
+   choosetemp.def \
+   pexecute.def
 
 BUILD-LIBS-BOOT-H = $(GM2-LIBS-BOOT-DEFS:%.def=m2/gm2-libs-boot/$(SRC_PREFIX)%.h)
 
@@ -722,68 +1064,186 @@ BUILD-COMPILER-BOOT = $(BUILD-COMPILER-BOOT-H) \
 BUILD-BOOT-H = m2/boot-bin/mc$(exeext) \
                $(BUILD-LIBS-BOOT-H) $(BUILD-COMPILER-BOOT-H) $(TARGET_H) $(PLUGIN_HEADERS)
 
-MC-LIB-DEFS = Args.def ASCII.def Assertion.def Break.def  \
-              CmdArgs.def Debug.def \
-              dtoa.def DynamicStrings.def Environment.def \
-              errno.def FIO.def FormatStrings.def FpuIO.def \
-              IO.def ldtoa.def libc.def \
-              libm.def M2EXCEPTION.def M2RTS.def M2Dependent.def \
-              MemUtils.def NumberIO.def PushBackInput.def \
-              RTExceptions.def RTint.def SArgs.def \
-              SFIO.def StdIO.def Storage.def StrCase.def \
-              StringConvert.def StrIO.def StrLib.def \
-              SysExceptions.def SysStorage.def \
-              SYSTEM.def TimeString.def \
-              UnixArgs.def wrapc.def \
-              RTco.def \
-              COROUTINES.def Selective.def termios.def M2LINK.def
+# Core library definition modules used by the modula-2 to C++ translator.
 
-MC-LIB-MODS = Args.mod ASCII.mod Assertion.mod Break.mod  \
-              CmdArgs.mod Debug.mod \
-              DynamicStrings.mod Environment.mod \
-              FIO.mod FormatStrings.mod FpuIO.mod \
-              IO.mod \
-              RTExceptions.mod RTint.mod \
-              M2EXCEPTION.mod M2RTS.mod M2Dependent.mod \
-              MemUtils.mod NumberIO.mod PushBackInput.mod \
-              SArgs.mod \
-              SFIO.mod StdIO.mod Storage.mod StrCase.mod \
-              StringConvert.mod StrIO.mod StrLib.mod \
-              SysStorage.mod \
-              TimeString.mod
+MC-LIB-DEFS = \
+   ASCII.def \
+   Args.def \
+   Assertion.def \
+   Break.def  \
+   COROUTINES.def \
+   CmdArgs.def \
+   Debug.def \
+   DynamicStrings.def \
+   Environment.def \
+   FIO.def \
+   FormatStrings.def \
+   FpuIO.def \
+   IO.def \
+   M2Dependent.def \
+   M2EXCEPTION.def \
+   M2LINK.def \
+   M2RTS.def \
+   MemUtils.def \
+   NumberIO.def \
+   PushBackInput.def \
+   RTExceptions.def \
+   RTco.def \
+   RTint.def \
+   SArgs.def \
+   SFIO.def \
+   SYSTEM.def \
+   Selective.def \
+   StdIO.def \
+   Storage.def \
+   StrCase.def \
+   StrIO.def \
+   StrLib.def \
+   StringConvert.def \
+   SysExceptions.def \
+   SysStorage.def \
+   TimeString.def \
+   UnixArgs.def \
+   dtoa.def \
+   errno.def \
+   ldtoa.def \
+   libc.def \
+   libm.def \
+   termios.def \
+   wrapc.def \
+
+# Core library implementation modules used by the modula-2 to C++ translator.
+
+MC-LIB-MODS = \
+   ASCII.mod \
+   Args.mod \
+   Assertion.mod \
+   Break.mod  \
+   CmdArgs.mod \
+   Debug.mod \
+   DynamicStrings.mod \
+   Environment.mod \
+   FIO.mod \
+   FormatStrings.mod \
+   FpuIO.mod \
+   IO.mod \
+   M2Dependent.mod \
+   M2EXCEPTION.mod \
+   M2RTS.mod \
+   MemUtils.mod \
+   NumberIO.mod \
+   PushBackInput.mod \
+   RTExceptions.mod \
+   RTint.mod \
+   SArgs.mod \
+   SFIO.mod \
+   StdIO.mod \
+   Storage.mod \
+   StrCase.mod \
+   StrIO.mod \
+   StrLib.mod \
+   StringConvert.mod \
+   SysStorage.mod \
+   TimeString.mod \
 
 MC-LIB-BOOT-C = $(MC-LIB-MODS:%.mod=%.c)
 
-MC-DEFS = alists.def  decl.def  Indexing.def  keyc.def  lists.def  \
-          mcComp.def  mcComment.def \
-          mcDebug.def  mcError.def  mcFileName.def \
-          mcflex.def  mcLexBuf.def  mcMetaError.def  mcOptions.def \
-          mcp1.def  mcp2.def  mcp3.def  mcp4.def  mcp5.def  \
-          mcPreprocess.def \
-          mcPretty.def  mcPrintf.def  mcQuiet.def  mcReserved.def \
-          mcSearch.def  mcStack.def  mcStream.def \
-          nameKey.def  symbolKey.def \
-          varargs.def  wlists.def
+# Definition modules for the modula-2 to C++ translator found in mc.
 
-MC-MODS = alists.mod  decl.mod  Indexing.mod  keyc.mod  lists.mod \
-          mcComp.mod  mcComment.mod \
-          mcDebug.mod  mcError.mod  mcFileName.mod \
-          mcLexBuf.mod  mcMetaError.mod  mcOptions.mod \
-          mcPreprocess.mod \
-          mcPretty.mod  mcPrintf.mod  mcQuiet.mod  mcReserved.mod \
-          mcSearch.mod  mcStack.mod  mcStream.mod \
-          nameKey.mod  symbolKey.mod \
-          varargs.mod  wlists.mod top.mod
+MC-DEFS = \
+   Indexing.def \
+   alists.def \
+   decl.def \
+   keyc.def \
+   lists.def \
+   mcComment.def \
+   mcComp.def \
+   mcDebug.def \
+   mcError.def \
+   mcFileName.def \
+   mcLexBuf.def \
+   mcMetaError.def \
+   mcOptions.def \
+   mcPreprocess.def \
+   mcPretty.def \
+   mcPrintf.def \
+   mcQuiet.def \
+   mcReserved.def \
+   mcSearch.def \
+   mcStack.def \
+   mcStream.def \
+   mcflex.def \
+   mcp1.def \
+   mcp2.def \
+   mcp3.def \
+   mcp4.def \
+   mcp5.def  \
+   nameKey.def \
+   symbolKey.def \
+   varargs.def \
+   wlists.def \
 
-MC-AUTO-MODS = mcp1.mod  mcp2.mod  mcp3.mod  mcp4.mod  mcp5.mod
+# Implementation modules for the modula-2 to C++ translator found in mc.
+
+MC-MODS = \
+   Indexing.mod \
+   alists.mod \
+   decl.mod \
+   keyc.mod \
+   lists.mod \
+   mcComment.mod \
+   mcComp.mod \
+   mcDebug.mod \
+   mcError.mod \
+   mcFileName.mod \
+   mcLexBuf.mod \
+   mcMetaError.mod \
+   mcOptions.mod \
+   mcPreprocess.mod \
+   mcPretty.mod \
+   mcPrintf.mod \
+   mcQuiet.mod \
+   mcReserved.mod \
+   mcSearch.mod \
+   mcStack.mod \
+   mcStream.mod \
+   nameKey.mod \
+   symbolKey.mod \
+   top.mod \
+   varargs.mod \
+   wlists.mod \
+
+# Parser files generated by pge from .bnf files.
+
+MC-AUTO-MODS = \
+   mcp1.mod \
+   mcp2.mod \
+   mcp3.mod \
+   mcp4.mod \
+   mcp5.mod
 
 MC-BOOT-C = $(MC-MODS:%.mod=%.c) $(MC-AUTO-MODS:%.mod=%.c)
 
-MC-INTERFACE-C = libc.c mcrts.c Selective.c termios.c \
-                 SysExceptions.c wrapc.c \
-                 SYSTEM.c errno.c abort.c M2LINK.c
+# C interface files for mc.
 
-MC-INTERFACE-CC = UnixArgs.cc ldtoa.cc dtoa.cc
+MC-INTERFACE-C = \
+   M2LINK.c \
+   SYSTEM.c \
+   Selective.c \
+   SysExceptions.c \
+   abort.c \
+   errno.c \
+   libc.c \
+   mcrts.c \
+   termios.c \
+   wrapc.c \
+
+# C++ interface files for mc.
+
+MC-INTERFACE-CC = \
+   UnixArgs.cc \
+   dtoa.cc \
+   ldtoa.cc \
 
 BUILD-MC-BOOT-H =  $(MC-LIB-DEFS:%.def=m2/mc-boot-gen/$(SRC_PREFIX)%.h) \
                    $(MC-DEFS:%.def=m2/mc-boot-gen/$(SRC_PREFIX)%.h)
@@ -842,8 +1302,6 @@ m2/gm2-libs-boot/%.o: $(srcdir)/m2/gm2-libs/%.mod $(MCDEPS) $(BUILD-BOOT-H)
 
 m2/gm2-libs-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libs/%.def $(MCDEPS)
 	$(MC) -o=$@ $(srcdir)/m2/gm2-libs/$*.def
-
-
 
 m2/gm2-libs-boot/RTcodummy.o: $(srcdir)/m2/gm2-libs-ch/RTcodummy.c m2/gm2-libs/gm2-libs-host.h
 	$(CXX) -c -DIN_GCC $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
@@ -1091,42 +1549,43 @@ check-gm2-local: $(GM2TESTSUITEDIR)/site.exp
 	    export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool gm2 --directory testsuite/m2/pim/pass)
 
-BUILD-PGE-O = m2/pge-boot/GArgs.o \
-              m2/pge-boot/GASCII.o \
-              m2/pge-boot/GAssertion.o \
-              m2/pge-boot/Gbnflex.o \
-              m2/pge-boot/GDebug.o \
-              m2/pge-boot/GDynamicStrings.o \
-              m2/pge-boot/GFIO.o \
-              m2/pge-boot/GIndexing.o \
-              m2/pge-boot/GIO.o \
-              m2/pge-boot/GLists.o \
-              m2/pge-boot/GM2Dependent.o \
-              m2/pge-boot/GM2EXCEPTION.o \
-              m2/pge-boot/GM2RTS.o \
-              m2/pge-boot/GNameKey.o \
-              m2/pge-boot/GNumberIO.o \
-              m2/pge-boot/GOutput.o \
-              m2/pge-boot/Gpge.o \
-              m2/pge-boot/GPushBackInput.o \
-              m2/pge-boot/GRTExceptions.o \
-              m2/pge-boot/GSFIO.o \
-              m2/pge-boot/GStdIO.o \
-              m2/pge-boot/GStorage.o \
-              m2/pge-boot/GStrCase.o \
-              m2/pge-boot/GStrIO.o \
-              m2/pge-boot/GStrLib.o \
-              m2/pge-boot/GSymbolKey.o \
-              m2/pge-boot/GSysStorage.o \
-              m2/pge-boot/Glibc.o \
-              m2/pge-boot/Gerrno.o \
-              m2/pge-boot/GUnixArgs.o \
-              m2/pge-boot/GM2LINK.o \
-              m2/pge-boot/Gtermios.o \
-              m2/pge-boot/GSysExceptions.o \
-              m2/pge-boot/Gabort.o \
-              m2/pge-boot/Gmcrts.o \
-              m2/pge-boot/main.o
+BUILD-PGE-O = \
+   m2/pge-boot/GArgs.o \
+   m2/pge-boot/GASCII.o \
+   m2/pge-boot/GAssertion.o \
+   m2/pge-boot/Gbnflex.o \
+   m2/pge-boot/GDebug.o \
+   m2/pge-boot/GDynamicStrings.o \
+   m2/pge-boot/GFIO.o \
+   m2/pge-boot/GIndexing.o \
+   m2/pge-boot/GIO.o \
+   m2/pge-boot/GLists.o \
+   m2/pge-boot/GM2Dependent.o \
+   m2/pge-boot/GM2EXCEPTION.o \
+   m2/pge-boot/GM2RTS.o \
+   m2/pge-boot/GNameKey.o \
+   m2/pge-boot/GNumberIO.o \
+   m2/pge-boot/GOutput.o \
+   m2/pge-boot/Gpge.o \
+   m2/pge-boot/GPushBackInput.o \
+   m2/pge-boot/GRTExceptions.o \
+   m2/pge-boot/GSFIO.o \
+   m2/pge-boot/GStdIO.o \
+   m2/pge-boot/GStorage.o \
+   m2/pge-boot/GStrCase.o \
+   m2/pge-boot/GStrIO.o \
+   m2/pge-boot/GStrLib.o \
+   m2/pge-boot/GSymbolKey.o \
+   m2/pge-boot/GSysStorage.o \
+   m2/pge-boot/Glibc.o \
+   m2/pge-boot/Gerrno.o \
+   m2/pge-boot/GUnixArgs.o \
+   m2/pge-boot/GM2LINK.o \
+   m2/pge-boot/Gtermios.o \
+   m2/pge-boot/GSysExceptions.o \
+   m2/pge-boot/Gabort.o \
+   m2/pge-boot/Gmcrts.o \
+   m2/pge-boot/main.o
 
 ifeq ($(M2_MAINTAINER),yes)
 include m2/Make-maintainer

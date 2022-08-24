@@ -908,8 +908,6 @@ END IsSameScope ;
 *)
 
 PROCEDURE AnnounceScope (e: Error; message: String) : String ;
-VAR
-   filename: String ;
 BEGIN
    IF NOT IsSameScope (lastScope, e^.scope)
    THEN
