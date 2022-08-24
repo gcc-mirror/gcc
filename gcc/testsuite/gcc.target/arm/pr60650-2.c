@@ -34,7 +34,7 @@ fn2 ()
             register int m asm ("r0");
             asm ("  .err  .endif\n\t": "=r" (h), "=r" (j):"r" (m),
             "r"
-            (l));;
+            (l));
         });
     }
 }
