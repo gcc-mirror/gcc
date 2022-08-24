@@ -1639,15 +1639,6 @@ package body Sem_Warn is
                                not Is_Package_Or_Generic_Package
                                      (Cunit_Entity (Current_Sem_Unit))))
 
-              --  Exclude formal parameters from bodies if the corresponding
-              --  spec entity has been referenced in the case where there is
-              --  a separate spec.
-
-              and then not (Is_Formal (E1)
-                             and then Ekind (Scope (E1)) = E_Subprogram_Body
-                             and then Present (Spec_Entity (E1))
-                             and then Referenced (Spec_Entity (E1)))
-
               --  Consider private type referenced if full view is referenced.
               --  If there is not full view, this is a generic type on which
               --  warnings are also useful.
