@@ -1176,9 +1176,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _Inherited::_M_swap(__in); }
 
 #if __cplusplus > 202002L
+      // As an extension, we constrain the const swap member function in order
+      // to continue accepting explicit instantiation of tuples whose elements
+      // are not all const swappable.  Without this constraint, such an
+      // explicit instantiation would also instantiate the ill-formed body of
+      // this function and yield a hard error.  This constraint shouldn't
+      // affect the behavior of valid programs.
       constexpr void
       swap(const tuple& __in) const
       noexcept(__and_v<__is_nothrow_swappable<const _Elements>...>)
+      requires (is_swappable_v<const _Elements> && ...)
       { _Inherited::_M_swap(__in); }
 #endif // C++23
     };
@@ -1730,6 +1737,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       swap(const tuple& __in) const
       noexcept(__and_v<__is_nothrow_swappable<const _T1>,
 		       __is_nothrow_swappable<const _T2>>)
+      requires is_swappable_v<const _T1> && is_swappable_v<const _T2>
       { _Inherited::_M_swap(__in); }
 #endif // C++23
     };
